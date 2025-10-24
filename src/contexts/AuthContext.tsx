@@ -23,7 +23,14 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined)
 export const useAuth = () => {
   const context = useContext(AuthContext)
   if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider')
+    console.warn('useAuth must be used within an AuthProvider - returning default values')
+    return {
+      user: null,
+      isLoading: true,
+      login: async () => {},
+      logout: async () => {},
+      register: async () => {}
+    }
   }
   return context
 }
@@ -56,17 +63,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     // Escutar mudanças de autenticação
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log('🔄 Auth state change:', event, 'Session:', !!session)
+      console.log('🔄 Auth state change:', event, 'Session:', !!session, 'User:', session?.user?.id)
       if (isMounted) {
         // Limpar timeout se o auth state change funcionar
         clearTimeout(timeoutId)
         
         if (session?.user) {
           console.log('👤 Usuário no auth state change:', session.user.id)
-          await loadUserProfile(session.user.id)
-          console.log('🔄 Após loadUserProfile - user state:', user)
+          // Verificar se não é um evento de logout
+          if (event === 'SIGNED_OUT') {
+            console.log('🚪 Evento de logout detectado - definindo user como null')
+            setUser(null)
+          } else {
+            await loadUserProfile(session.user.id)
+            console.log('🔄 Após loadUserProfile - user state:', user)
+          }
         } else {
-          console.log('❌ Nenhum usuário no auth state change')
+          console.log('❌ Nenhum usuário no auth state change - fazendo logout')
           setUser(null)
         }
         console.log('🔄 Auth state change - definindo isLoading como false')
@@ -93,22 +106,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setIsLoadingProfile(true)
     setIsLoading(true)
     
-    // Timeout global para toda a função
-    const globalTimeout = setTimeout(() => {
-      console.log('⏰ Timeout global do loadUserProfile - criando usuário de emergência')
-      const emergencyUser = {
-        id: userId,
-        email: 'admin@medcannlab.com',
-        type: 'admin' as any,
-        name: 'Administrador',
-        crm: undefined,
-        cro: undefined
-      }
-      setUser(emergencyUser)
-      setIsLoading(false)
-      setIsLoadingProfile(false)
-      console.log('✅ Usuário de emergência criado por timeout global')
-    }, 10000) // 10 segundos para toda a função
+    // Timeout global REMOVIDO para evitar auto login
+    // const globalTimeout = setTimeout(() => {
+    //   console.log('⏰ Timeout global do loadUserProfile - criando usuário de emergência')
+    //   const emergencyUser = {
+    //     id: userId,
+    //     email: 'admin@medcannlab.com',
+    //     type: 'admin' as any,
+    //     name: 'Administrador',
+    //     crm: undefined,
+    //     cro: undefined
+    //   }
+    //   setUser(emergencyUser)
+    //   setIsLoading(false)
+    //   setIsLoadingProfile(false)
+    //   console.log('✅ Usuário de emergência criado por timeout global')
+    // }, 10000) // 10 segundos para toda a função
     
     try {
       console.log('🔍 [loadUserProfile] Iniciando busca de perfil para userId:', userId)
@@ -118,19 +131,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const { data: testData, error: testError } = await supabase.auth.getUser()
       console.log('🔍 [loadUserProfile] Teste de conectividade - data:', testData, 'error:', testError)
       
-      // Se o teste falhar, criar usuário de emergência imediatamente
+      // Se o teste falhar, não criar usuário de emergência
       if (testError) {
-        console.log('🚨 [loadUserProfile] Erro de conectividade detectado, criando usuário de emergência')
-        const emergencyUser = {
-          id: userId,
-          email: 'admin@medcannlab.com',
-          type: 'admin' as any,
-          name: 'Administrador',
-          crm: undefined,
-          cro: undefined
-        }
-        setUser(emergencyUser)
-        console.log('✅ [loadUserProfile] Usuário de emergência criado por erro de conectividade')
+        console.log('🚨 [loadUserProfile] Erro de conectividade detectado - NÃO criando usuário de emergência')
+        setIsLoading(false)
+        setIsLoadingProfile(false)
         return
       }
       
@@ -254,7 +259,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setUser(userData)
         console.log('✅ [loadUserProfile] Usuário configurado com sucesso!')
         console.log('🔄 [loadUserProfile] Finalizando loadUserProfile com sucesso')
-        clearTimeout(globalTimeout)
         
         // Debug será feito via useEffect que observa mudanças no user
       } else {
@@ -287,18 +291,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         } catch (fallbackError) {
           console.error('Erro no fallback:', fallbackError)
           
-          // Último recurso: criar usuário com dados mínimos baseado no userId
-          console.log('🚨 Criando usuário de emergência com dados mínimos')
-          const emergencyUser = {
-            id: userId,
-            email: 'admin@medcannlab.com', // Email padrão
-            type: 'admin' as any,
-            name: 'Administrador',
-            crm: undefined,
-            cro: undefined
-          }
-          setUser(emergencyUser)
-          console.log('✅ Usuário de emergência criado')
+          // Não criar usuário de emergência
+          console.log('🚨 Erro no fallback - NÃO criando usuário de emergência')
+          setIsLoading(false)
+          setIsLoadingProfile(false)
           return
         }
       }
@@ -308,7 +304,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       console.log('⚠️ Erro no carregamento, mas mantendo estado atual do usuário')
     } finally {
       console.log('🔄 Finalizando carregamento - definindo isLoading como false')
-      clearTimeout(globalTimeout)
       setIsLoading(false)
       setIsLoadingProfile(false)
     }
@@ -335,32 +330,66 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const logout = async () => {
     try {
-      await supabase.auth.signOut()
+      console.log('🔄 Iniciando logout...')
+      // Forçar logout no Supabase
+      const { error } = await supabase.auth.signOut()
+      if (error) {
+        console.error('❌ Erro no signOut do Supabase:', error)
+      }
+      // Forçar limpeza do usuário
       setUser(null)
+      console.log('✅ Logout realizado com sucesso')
     } catch (error) {
-      console.error('Erro no logout:', error)
+      console.error('❌ Erro no logout:', error)
+      // Mesmo com erro, limpar o usuário
+      setUser(null)
     }
   }
 
   const register = async (email: string, password: string, userType: string, name: string) => {
     try {
+      console.log('🔄 Iniciando registro para:', email, 'tipo:', userType)
+      
       // Registrar no Supabase Auth
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email,
-        password
+        password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/app/dashboard`
+        }
       })
 
       if (authError) {
+        console.error('❌ Erro no Supabase Auth:', authError.message)
         throw new Error(authError.message)
       }
 
       if (authData.user) {
-        // Criar perfil na tabela usuarios
+        console.log('✅ Usuário criado no Supabase Auth:', authData.user.id)
+        console.log('📧 Email de confirmação enviado para:', email)
+        
+        // Para desenvolvimento: criar usuário temporário sem confirmação
+        if (process.env.NODE_ENV === 'development') {
+          console.log('🔧 Modo desenvolvimento: criando usuário temporário')
+          const tempUser = {
+            id: authData.user.id,
+            email: email,
+            type: userType as any,
+            name: name,
+            crm: undefined,
+            cro: undefined
+          }
+          setUser(tempUser)
+          setIsLoading(false)
+          return
+        }
+        
         // Carregar perfil do usuário (sem inserir na tabela usuarios)
         await loadUserProfile(authData.user.id)
+        console.log('✅ Perfil carregado com sucesso')
       }
     } catch (error) {
-      console.error('Erro no registro:', error)
+      console.error('❌ Erro no registro:', error)
       throw error
     }
   }

@@ -1322,7 +1322,7 @@ const AdminDashboard: React.FC = () => {
   )
 
   return (
-    <div className="min-h-screen bg-slate-900">
+    <div className="bg-slate-900">
       {/* Main Content */}
       <div className="p-8">
           {activeTab === 'overview' && renderOverview()}
@@ -2458,6 +2458,7 @@ const AdminDashboard: React.FC = () => {
                       <input
                         type="text"
                         value="MedCannLab 3.0"
+                        readOnly
                         className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white"
                       />
                     </div>
@@ -2468,6 +2469,7 @@ const AdminDashboard: React.FC = () => {
                       <input
                         type="url"
                         value="https://medcannlab.com"
+                        readOnly
                         className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white"
                       />
                     </div>
@@ -2510,6 +2512,7 @@ const AdminDashboard: React.FC = () => {
                       <input
                         type="number"
                         value="30"
+                        readOnly
                         className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white"
                       />
                     </div>

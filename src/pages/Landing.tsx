@@ -37,8 +37,6 @@ const Landing: React.FC = () => {
 
   // Redirecionar quando o usuário fizer login
   useEffect(() => {
-    let timeoutId: NodeJS.Timeout;
-    
     console.log('🔄 useEffect - user:', user, 'authLoading:', authLoading)
     if (user && !authLoading) {
       console.log('🔄 Usuário logado detectado, redirecionando...', user.type)
@@ -47,22 +45,11 @@ const Landing: React.FC = () => {
       } else {
         navigate('/app/dashboard')
       }
-    } else if (!authLoading && !user) {
-      // Fallback: redirecionar após 2 segundos se não houver usuário
-      timeoutId = setTimeout(() => {
-        console.log('⏰ Fallback: redirecionando para admin após timeout')
-        navigate('/app/admin')
-      }, 2000)
     }
-
-    // 🔧 Limpa o fallback se o user aparecer antes dos 2s
-    return () => clearTimeout(timeoutId)
+    // Removido o timeout que estava causando loop infinito
   }, [user, authLoading, navigate])
 
-  // Debug adicional para verificar mudanças no user
-  useEffect(() => {
-    console.log('🔄 User changed:', user)
-  }, [user])
+  // Debug adicional removido para evitar spam
 
   const [registerData, setRegisterData] = useState({
     name: '',
@@ -289,7 +276,7 @@ const Landing: React.FC = () => {
       </header>
 
       {/* Hero Section */}
-      <section className="py-16 relative overflow-hidden" style={{ background: 'linear-gradient(135deg, #0A192F 0%, #1a365d 50%, #2d5a3d 100%)' }}> {/* Azul frio → verde escuro */}
+      <section className="py-12 relative overflow-hidden" style={{ background: 'linear-gradient(135deg, #0A192F 0%, #1a365d 50%, #2d5a3d 100%)' }}> {/* Compactado */}
         {/* Background Effects */}
         <div className="absolute inset-0 bg-gradient-to-r from-green-800/30 via-slate-800/30 to-yellow-800/30"></div>
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
@@ -367,9 +354,9 @@ const Landing: React.FC = () => {
       </section>
 
       {/* Profile Selection */}
-      <section id="profiles" className="py-9" style={{ backgroundColor: '#0A192F' }}> {/* Reduzido 25% (py-12 → py-9) */}
+      <section id="profiles" className="py-6" style={{ backgroundColor: '#0A192F' }}> {/* Compactado */}
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-9"> {/* Reduzido 25% (mb-12 → mb-9) */}
+          <div className="text-center mb-6"> {/* Compactado */}
             <h2 className="text-4xl font-bold text-white mb-4">
               Escolha seu Perfil
             </h2>
@@ -381,7 +368,7 @@ const Landing: React.FC = () => {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-9"> {/* Reduzido 25% (gap-8 → gap-6, mb-12 → mb-9) */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6"> {/* Compactado */}
             {profiles.map((profile) => (
               <div
                 key={profile.id}
@@ -426,7 +413,7 @@ const Landing: React.FC = () => {
 
           {/* Card de Cadastro */}
           {activeProfile && (
-            <div className="max-w-md mx-auto mt-9"> {/* Reduzido 25% (mt-12 → mt-9) */}
+            <div className="max-w-md mx-auto mt-6"> {/* Compactado */}
               <div className="p-8" 
                    style={{ 
                      backgroundColor: 'rgba(255,255,255,0.03)', 
@@ -606,9 +593,9 @@ const Landing: React.FC = () => {
       </section>
 
       {/* Partners Section */}
-      <section id="partners" className="py-12" style={{ background: 'linear-gradient(135deg, #2d5a3d 0%, #1a365d 50%, #0A192F 100%)' }}> {/* Verde escuro → azul frio (invertido) */}
+      <section id="partners" className="py-8" style={{ backgroundColor: '#0A192F' }}> {/* Compactado */}
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
+          <div className="text-center mb-8">
             <h2 className="text-4xl font-bold text-white mb-4">
               Nossos Parceiros
             </h2>
@@ -651,7 +638,7 @@ const Landing: React.FC = () => {
 
 
       {/* Footer Profissional - Simplificado */}
-      <footer className="text-white py-2" style={{ backgroundColor: '#0A192F' }}> {/* Azul frio para rodapé */}
+      <footer className="text-white py-2" style={{ background: 'linear-gradient(135deg, #2d5a3d 0%, #1a365d 50%, #0A192F 100%)' }}> {/* Mesma cor do background dos parceiros */}
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2">

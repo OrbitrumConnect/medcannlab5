@@ -10,7 +10,8 @@ import {
   FileText,
   Brain,
   Clock,
-  Award
+  Award,
+  Menu
 } from 'lucide-react'
 
 interface SidebarProps {
@@ -19,6 +20,7 @@ interface SidebarProps {
 
 const Sidebar: React.FC<SidebarProps> = ({ userType = 'patient' }) => {
   const [isCollapsed, setIsCollapsed] = useState(false)
+  const [isMobileOpen, setIsMobileOpen] = useState(false)
   const location = useLocation()
 
   const getNavigationItems = () => {
@@ -105,11 +107,23 @@ const Sidebar: React.FC<SidebarProps> = ({ userType = 'patient' }) => {
   const isActive = (path: string) => location.pathname === path
 
   return (
-    <div className={`bg-slate-800 text-white transition-all duration-300 ${
-      isCollapsed ? 'w-20' : 'w-80'
-    } flex flex-col h-screen sticky top-0`}>
+    <>
+      {/* Mobile Overlay */}
+      {isMobileOpen && (
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
+          onClick={() => setIsMobileOpen(false)}
+        />
+      )}
+      
+      {/* Sidebar */}
+      <div className={`bg-slate-800 text-white transition-all duration-300 ${
+        isCollapsed ? 'w-20' : 'w-80'
+      } flex flex-col fixed left-0 top-0 z-50 ${
+        isMobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
+      }`} style={{ top: '0.1%', height: '99.9%' }}>
       {/* Header */}
-      <div className="p-6 border-b border-slate-700">
+      <div className="p-4 border-b border-slate-700">
         <div className="flex items-center justify-between">
           {!isCollapsed && (
             <div className="flex items-center space-x-3">
@@ -132,51 +146,30 @@ const Sidebar: React.FC<SidebarProps> = ({ userType = 'patient' }) => {
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 p-6 space-y-3">
+      <nav className="flex-1 p-4 space-y-2">
         {navigationItems.map((item) => {
           const Icon = item.icon
           return (
             <Link
               key={item.name}
               to={item.href}
-              className={`flex items-center space-x-4 px-4 py-3 rounded-lg transition-colors duration-200 ${
+              className={`flex items-center space-x-3 px-3 py-2 rounded-lg transition-colors duration-200 ${
                 isActive(item.href)
                   ? 'bg-primary-600 text-white'
                   : 'text-slate-300 hover:bg-slate-700 hover:text-white'
               }`}
             >
-              <Icon className="w-6 h-6 flex-shrink-0" />
-              {!isCollapsed && <span className="text-base font-medium">{item.name}</span>}
+              <Icon className="w-5 h-5 flex-shrink-0" />
+              {!isCollapsed && <span className="text-sm font-medium">{item.name}</span>}
             </Link>
           )
         })}
       </nav>
 
-      {/* Quick Actions */}
-      {!isCollapsed && (
-        <div className="p-6 border-t border-slate-700">
-          <h3 className="text-base font-semibold text-slate-400 mb-4">Ações Rápidas</h3>
-          <div className="grid grid-cols-2 gap-3">
-            {quickActions.map((action) => {
-              const Icon = action.icon
-              return (
-                <Link
-                  key={action.name}
-                  to={action.href}
-                  className={`${action.color} p-3 rounded-lg text-white text-center hover:opacity-80 transition-opacity duration-200`}
-                >
-                  <Icon className="w-5 h-5 mx-auto mb-2" />
-                  <span className="text-sm font-medium">{action.name}</span>
-                </Link>
-              )
-            })}
-          </div>
-        </div>
-      )}
 
       {/* System Stats */}
       {!isCollapsed && userType === 'admin' && (
-        <div className="p-6 border-t border-slate-700">
+        <div className="p-4 border-t border-slate-700">
           <h3 className="text-base font-semibold text-slate-400 mb-4">Status do Sistema</h3>
           <div className="space-y-3">
             {systemStats.map((stat, index) => (
@@ -193,20 +186,29 @@ const Sidebar: React.FC<SidebarProps> = ({ userType = 'patient' }) => {
       <div className="p-6 border-t border-slate-700">
         <Link
           to="/app/profile"
-          className="flex items-center space-x-4 px-4 py-3 rounded-lg hover:bg-slate-700 transition-colors duration-200"
+          className="flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-slate-700 transition-colors duration-200"
         >
-          <div className="w-10 h-10 bg-primary-600 rounded-full flex items-center justify-center">
-            <User className="w-5 h-5 text-white" />
+          <div className="w-8 h-8 bg-primary-600 rounded-full flex items-center justify-center">
+            <User className="w-4 h-4 text-white" />
           </div>
           {!isCollapsed && (
             <div>
-              <p className="text-base font-medium text-white">Perfil</p>
-              <p className="text-sm text-slate-400">Configurações</p>
+              <p className="text-sm font-medium text-white">Perfil</p>
+              <p className="text-xs text-slate-400">Configurações</p>
             </div>
           )}
         </Link>
       </div>
-    </div>
+      </div>
+      
+      {/* Mobile Toggle Button */}
+      <button
+        onClick={() => setIsMobileOpen(!isMobileOpen)}
+        className="fixed top-4 left-4 z-50 lg:hidden bg-slate-800 text-white p-2 rounded-md"
+      >
+        <Menu className="w-6 h-6" />
+      </button>
+    </>
   )
 }
 

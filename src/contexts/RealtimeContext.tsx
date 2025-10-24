@@ -59,7 +59,8 @@ export const useRealtime = () => {
 }
 
 export const RealtimeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { user } = useAuth()
+  const authContext = useAuth()
+  const user = authContext?.user || null
   const [data, setData] = useState<RealtimeData>({
     patientStats: {
       totalConsultations: 0,

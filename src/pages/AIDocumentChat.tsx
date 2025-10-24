@@ -280,8 +280,8 @@ Ocorreu um erro ao processar o arquivo. Tente novamente ou verifique se o arquiv
   }
 
   return (
-    <div className="min-h-screen bg-slate-900">
-      <div className="flex h-screen">
+    <div className="bg-slate-900 min-h-screen">
+      <div className="flex min-h-screen">
         {/* Sidebar - Base de Conhecimentos */}
         <div className="w-80 bg-slate-800/80 border-r border-slate-700 flex flex-col">
           <div className="p-6 border-b border-slate-700">

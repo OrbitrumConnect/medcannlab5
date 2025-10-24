@@ -66,14 +66,14 @@ const Layout: React.FC = () => {
 
   return (
     <ProtectedRoute>
-      <div className="min-h-screen flex bg-slate-900">
+      <div className="min-h-screen bg-slate-900">
         {/* Sidebar */}
         <Sidebar userType={user?.type} />
         
         {/* Main Content */}
-        <div className="flex-1 flex flex-col">
+        <div className="flex flex-col min-h-screen lg:ml-80">
           <Header />
-          <main className="flex-1 bg-slate-900">
+          <main className="flex-1 bg-slate-900 lg:ml-4" style={{ marginLeft: '2%', marginRight: '2%' }}>
             <Outlet />
           </main>
           <Footer />

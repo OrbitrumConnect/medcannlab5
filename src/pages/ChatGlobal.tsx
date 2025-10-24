@@ -220,14 +220,14 @@ const ChatGlobal: React.FC = () => {
 
   // Carregar mensagens do canal ativo
   useEffect(() => {
-    console.log('🔄 useEffect executando - carregando dados do chat (OFFLINE)')
+    console.log('🔄 useEffect executando - carregando dados do chat (OFFLINE) - activeChannel:', activeChannel)
     
     // Chat offline - sem Supabase
     loadMessagesOffline()
     setupOfflineRealtime()
     loadChannelsDataOffline()
     loadOnlineUsersOffline()
-  }, [activeChannel])
+  }, [activeChannel]) // Mantém apenas activeChannel como dependência
 
   // Configurar tempo real para mensagens
   const setupRealtimeSubscription = () => {
@@ -268,8 +268,9 @@ const ChatGlobal: React.FC = () => {
 
   // Carregar usuários online
   useEffect(() => {
+    console.log('🔄 Carregando usuários online - executando uma vez')
     loadOnlineUsers()
-  }, [])
+  }, []) // Array vazio garante que executa apenas uma vez
 
   // Carregar solicitações de moderador (apenas para admins)
   useEffect(() => {
@@ -390,9 +391,9 @@ const ChatGlobal: React.FC = () => {
   const setupOfflineRealtime = () => {
     console.log('🔄 Configurando tempo real offline')
     
-    // Limpar canal anterior
+    // Evitar re-criação se já existe
     if (window.offlineChannel) {
-      window.offlineChannel.close()
+      return
     }
     
     // Criar novo canal

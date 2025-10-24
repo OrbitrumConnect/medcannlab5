@@ -3,7 +3,7 @@ import NOAChatBox from '../components/NOAChatBox'
 
 const PatientNOAChat: React.FC = () => {
   return (
-    <div className="min-h-screen bg-slate-900">
+    <div className="bg-slate-900">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="space-y-6">
           <div className="text-center">

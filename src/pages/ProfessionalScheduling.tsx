@@ -521,7 +521,7 @@ const ProfessionalScheduling: React.FC = () => {
   )
 
   return (
-    <div className="min-h-screen bg-slate-900">
+    <div className="bg-slate-900">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <div className="flex justify-between items-center mb-8">
