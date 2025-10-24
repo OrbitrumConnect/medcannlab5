@@ -9,7 +9,8 @@ import {
   User,
   FileText,
   Brain,
-  Clock
+  Clock,
+  Award
 } from 'lucide-react'
 
 interface SidebarProps {
@@ -21,11 +22,8 @@ const Sidebar: React.FC<SidebarProps> = ({ userType = 'patient' }) => {
   const location = useLocation()
 
   const getNavigationItems = () => {
-    const baseItems = [
-      { name: 'Início', href: '/dashboard', icon: Home },
-    ]
-
     const patientItems = [
+      { name: 'Início', href: '/dashboard', icon: Home },
       { name: '🤖 Chat NOA', href: '/patient-noa-chat', icon: Brain },
       { name: '📋 Avaliação Clínica', href: '/clinical-assessment', icon: Stethoscope },
       { name: '📊 Meus Relatórios', href: '/reports', icon: FileText },
@@ -35,6 +33,7 @@ const Sidebar: React.FC<SidebarProps> = ({ userType = 'patient' }) => {
     ]
 
     const professionalItems = [
+      { name: 'Início', href: '/dashboard', icon: Home },
       { name: '👥 Meus Pacientes', href: '/patients', icon: Users },
       { name: '📊 Avaliações', href: '/evaluations', icon: Stethoscope },
       { name: '📅 Agendamentos', href: '/scheduling', icon: Clock },
@@ -44,6 +43,7 @@ const Sidebar: React.FC<SidebarProps> = ({ userType = 'patient' }) => {
     ]
 
     const studentItems = [
+      { name: 'Início', href: '/dashboard', icon: Home },
       { name: '🎓 Meus Cursos', href: '/courses', icon: BookOpen },
       { name: '🏆 Gamificação', href: '/gamificacao', icon: Users },
       { name: '📊 Meu Progresso', href: '/progress', icon: BarChart3 },
@@ -51,7 +51,17 @@ const Sidebar: React.FC<SidebarProps> = ({ userType = 'patient' }) => {
     ]
 
     const adminItems = [
-      { name: '📊 Dashboard Admin', href: '/admin', icon: BarChart3 },
+      { name: '🏠 Dashboard', href: '/admin', icon: BarChart3 },
+      { name: '👥 Usuários', href: '/admin?tab=users', icon: Users },
+      { name: '🎓 Cursos', href: '/admin?tab=courses', icon: BookOpen },
+      { name: '💰 Financeiro', href: '/admin?tab=financial', icon: BarChart3 },
+      { name: '💬 Chat Global + Moderação', href: '/chat', icon: Users },
+      { name: '🏛️ Moderação Fórum', href: '/admin?tab=forum', icon: BookOpen },
+      { name: '🏆 Ranking & Gamificação', href: '/admin?tab=gamification', icon: Award },
+      { name: '📁 Upload', href: '/admin?tab=upload', icon: FileText },
+      { name: '📊 Analytics', href: '/admin?tab=analytics', icon: BarChart3 },
+      { name: '🫀 Função Renal', href: '/admin?tab=renal', icon: Stethoscope },
+      { name: '⚙️ Sistema', href: '/admin?tab=settings', icon: Clock },
       { name: '📚 Biblioteca', href: '/library', icon: BookOpen },
       { name: '🤖 Chat IA Documentos', href: '/ai-documents', icon: Brain },
     ]
@@ -74,7 +84,7 @@ const Sidebar: React.FC<SidebarProps> = ({ userType = 'patient' }) => {
         specificItems = patientItems
     }
 
-    return [...baseItems, ...specificItems]
+    return specificItems
   }
 
   const quickActions = [

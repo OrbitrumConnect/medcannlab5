@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import { 
   Users, 
   BookOpen, 
@@ -22,13 +22,25 @@ import {
   Target,
   Zap,
   Clock,
-  TrendingDown
+  TrendingDown,
+  Award,
+  Pin,
+  Flag
 } from 'lucide-react'
 import { supabase } from '../lib/supabase'
+import { imreMigration } from '../lib/imreMigration'
+import { noaIntegration } from '../lib/noaIntegration'
+import { unifiedAssessment } from '../lib/unifiedAssessment'
 
 const AdminDashboard: React.FC = () => {
+  const [searchParams] = useSearchParams()
   const [activeTab, setActiveTab] = useState<string>('overview')
   const [libraryDocuments, setLibraryDocuments] = useState<any[]>([])
+  
+  // Estados para Unificação 3.0→5.0
+  const [migrationStatus, setMigrationStatus] = useState<'idle' | 'migrating' | 'completed' | 'error'>('idle')
+  const [migrationProgress, setMigrationProgress] = useState<number>(0)
+  const [migrationResults, setMigrationResults] = useState<any>(null)
   const [selectedDocs, setSelectedDocs] = useState<string[]>([])
   const [searchTerm, setSearchTerm] = useState('')
   const [filteredDocs, setFilteredDocs] = useState<any[]>([])
@@ -39,6 +51,76 @@ const AdminDashboard: React.FC = () => {
   useEffect(() => {
     loadLibraryDocuments()
   }, [])
+
+  // =====================================================
+  // FUNÇÕES DE UNIFICAÇÃO 3.0→5.0
+  // =====================================================
+
+  const handleIMREMigration = async () => {
+    try {
+      setMigrationStatus('migrating')
+      setMigrationProgress(0)
+      
+      console.log('🔄 Iniciando migração IMRE...')
+      const results = await imreMigration.migrateIndexedDBToSupabase()
+      
+      setMigrationResults(results)
+      setMigrationStatus('completed')
+      setMigrationProgress(100)
+      
+      console.log('✅ Migração IMRE concluída:', results)
+    } catch (error) {
+      console.error('❌ Erro na migração IMRE:', error)
+      setMigrationStatus('error')
+    }
+  }
+
+  const handleNOAIntegration = async () => {
+    try {
+      console.log('🤖 Inicializando integração NOA...')
+      const success = await noaIntegration.initializeNOA('current-user', 'current-session')
+      
+      if (success) {
+        console.log('✅ NOA integrado com sucesso')
+      } else {
+        console.error('❌ Erro na integração NOA')
+      }
+    } catch (error) {
+      console.error('❌ Erro na integração NOA:', error)
+    }
+  }
+
+  const handleUnifiedAssessment = async () => {
+    try {
+      console.log('🔄 Inicializando avaliação unificada...')
+      const assessment = await unifiedAssessment.initializeUnifiedAssessment('current-user', 'current-patient')
+      
+      console.log('✅ Avaliação unificada inicializada:', assessment)
+    } catch (error) {
+      console.error('❌ Erro na avaliação unificada:', error)
+    }
+  }
+
+  const validateMigration = async () => {
+    try {
+      console.log('🔍 Validando migração...')
+      const validation = await imreMigration.validateMigration()
+      
+      console.log('✅ Validação concluída:', validation)
+      return validation
+    } catch (error) {
+      console.error('❌ Erro na validação:', error)
+      return null
+    }
+  }
+
+  // Ler parâmetro da URL para definir tab ativa
+  useEffect(() => {
+    const tab = searchParams.get('tab')
+    if (tab) {
+      setActiveTab(tab)
+    }
+  }, [searchParams])
 
   // Filtrar documentos baseado na busca
   useEffect(() => {
@@ -81,9 +163,12 @@ const AdminDashboard: React.FC = () => {
     { id: 'courses', name: 'Cursos', icon: <BookOpen className="w-4 h-4" /> },
     { id: 'financial', name: 'Financeiro', icon: <Database className="w-4 h-4" /> },
     { id: 'chat', name: 'Chat Global', icon: <Users className="w-4 h-4" /> },
+    { id: 'forum', name: 'Moderação Fórum', icon: <BookOpen className="w-4 h-4" /> },
+    { id: 'gamification', name: 'Ranking & Gamificação', icon: <Award className="w-4 h-4" /> },
     { id: 'upload', name: 'Upload', icon: <FileText className="w-4 h-4" /> },
     { id: 'analytics', name: 'Analytics', icon: <TrendingUp className="w-4 h-4" /> },
     { id: 'renal', name: 'Função Renal', icon: <Heart className="w-4 h-4" /> },
+    { id: 'unification', name: 'Unificação 3.0→5.0', icon: <Brain className="w-4 h-4" /> },
     { id: 'settings', name: 'Sistema', icon: <Settings className="w-4 h-4" /> }
   ]
 
@@ -138,6 +223,144 @@ const AdminDashboard: React.FC = () => {
     { month: 'Jun', tfg: 60, creatinine: 1.7, patients: 3065 }
   ]
 
+  // Dados do Fórum
+  const forumStats = [
+    { label: 'Debates Ativos', value: '47', icon: <BookOpen className="w-5 h-5" />, color: 'text-blue-400' },
+    { label: 'Posts Hoje', value: '156', icon: <FileText className="w-5 h-5" />, color: 'text-green-400' },
+    { label: 'Usuários Participando', value: '892', icon: <Users className="w-5 h-5" />, color: 'text-purple-400' },
+    { label: 'Reportes Pendentes', value: '8', icon: <Flag className="w-5 h-5" />, color: 'text-red-400' }
+  ]
+
+  const forumDebates = [
+    {
+      id: 1,
+      title: 'CBD vs THC: Qual é mais eficaz para dor crônica?',
+      author: 'Dr. João Silva',
+      category: 'Cannabis Medicinal',
+      participants: 24,
+      views: 156,
+      replies: 18,
+      votes: { up: 15, down: 3 },
+      status: 'active',
+      priority: 'high',
+      lastActivity: '2 horas atrás',
+      isPinned: true,
+      isHot: true,
+      reports: 0
+    },
+    {
+      id: 2,
+      title: 'Protocolo de dosagem para pacientes idosos',
+      author: 'Dra. Maria Santos',
+      category: 'Protocolos',
+      participants: 18,
+      views: 89,
+      replies: 12,
+      votes: { up: 22, down: 1 },
+      status: 'active',
+      priority: 'normal',
+      lastActivity: '4 horas atrás',
+      isPinned: false,
+      isHot: false,
+      reports: 0
+    },
+    {
+      id: 3,
+      title: 'Interações medicamentosas com cannabis',
+      author: 'Dr. Pedro Costa',
+      category: 'Farmacologia',
+      participants: 31,
+      views: 203,
+      replies: 25,
+      votes: { up: 28, down: 2 },
+      status: 'moderated',
+      priority: 'high',
+      lastActivity: '1 hora atrás',
+      isPinned: false,
+      isHot: true,
+      reports: 2
+    }
+  ]
+
+  // Dados de Gamificação e Ranking
+  const gamificationStats = [
+    { label: 'Pontos Totais Distribuídos', value: '45,230', icon: <Award className="w-5 h-5" />, color: 'text-yellow-400' },
+    { label: 'Usuários Ativos', value: '1,247', icon: <Users className="w-5 h-5" />, color: 'text-blue-400' },
+    { label: 'Conquistas Desbloqueadas', value: '892', icon: <Target className="w-5 h-5" />, color: 'text-green-400' },
+    { label: 'Níveis Completados', value: '156', icon: <TrendingUp className="w-5 h-5" />, color: 'text-purple-400' }
+  ]
+
+  const userRankings = [
+    {
+      id: 1,
+      name: 'Dr. João Silva',
+      type: 'professional',
+      specialty: 'Psiquiatria',
+      crm: '12345-SP',
+      points: 2847,
+      level: 15,
+      achievements: 12,
+      rank: 1,
+      avatar: 'JS',
+      badges: ['Especialista', 'Mentor', 'Pesquisador'],
+      activity: 'Muito Ativo',
+      lastActivity: '2 horas atrás'
+    },
+    {
+      id: 2,
+      name: 'Dra. Maria Santos',
+      type: 'professional',
+      specialty: 'Neurologia',
+      crm: '67890-RJ',
+      points: 2634,
+      level: 14,
+      achievements: 10,
+      rank: 2,
+      avatar: 'MS',
+      badges: ['Especialista', 'Colaborador'],
+      activity: 'Ativo',
+      lastActivity: '4 horas atrás'
+    },
+    {
+      id: 3,
+      name: 'Carlos Oliveira',
+      type: 'student',
+      specialty: 'Medicina',
+      crm: '',
+      points: 1892,
+      level: 12,
+      achievements: 8,
+      rank: 3,
+      avatar: 'CO',
+      badges: ['Estudante Dedicado', 'Curioso'],
+      activity: 'Muito Ativo',
+      lastActivity: '1 hora atrás'
+    },
+    {
+      id: 4,
+      name: 'Ana Costa',
+      type: 'patient',
+      specialty: '',
+      crm: '',
+      points: 1456,
+      level: 10,
+      achievements: 6,
+      rank: 4,
+      avatar: 'AC',
+      badges: ['Paciente Engajado'],
+      activity: 'Ativo',
+      lastActivity: '6 horas atrás'
+    }
+  ]
+
+  const achievements = [
+    { id: 1, name: 'Primeiro Post', description: 'Faça seu primeiro post no fórum', icon: '📝', points: 50, unlocked: 1247 },
+    { id: 2, name: 'Especialista', description: 'Responda 100 perguntas', icon: '🎓', points: 500, unlocked: 234 },
+    { id: 3, name: 'Mentor', description: 'Ajude 50 usuários', icon: '👨‍🏫', points: 1000, unlocked: 89 },
+    { id: 4, name: 'Pesquisador', description: 'Compartilhe 25 artigos', icon: '🔬', points: 750, unlocked: 156 },
+    { id: 5, name: 'Colaborador', description: 'Participe de 10 debates', icon: '🤝', points: 300, unlocked: 445 }
+  ]
+
   const getColorClasses = (color: string) => {
     const colors = {
       blue: 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-200',
@@ -162,17 +385,17 @@ const AdminDashboard: React.FC = () => {
       {/* Header */}
       <div className="text-center">
         <h1 className="text-4xl font-bold text-white mb-4">
-          Dashboard Administrativo
+          🏥 MedCannLab 3.0 - Dashboard Administrativo
         </h1>
         <p className="text-slate-300 text-lg">
-          Gerencie a plataforma e monitore o sistema
+          Plataforma completa de cannabis medicinal com IA, gestão de pacientes e educação médica
         </p>
       </div>
 
-      {/* Stats Cards */}
+      {/* Stats Cards Principais */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {stats.map((stat, index) => (
-          <div key={index} className="bg-slate-800/80 rounded-lg p-6 text-center">
+          <div key={index} className="bg-slate-800/80 rounded-lg p-6 text-center border border-slate-700">
             <div className={`${stat.color} mb-2`}>
               {stat.icon}
             </div>
@@ -180,6 +403,97 @@ const AdminDashboard: React.FC = () => {
             <div className="text-slate-300">{stat.label}</div>
           </div>
         ))}
+      </div>
+
+      {/* Métricas Avançadas do Sistema */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="bg-slate-800/80 rounded-lg p-6 border border-slate-700">
+          <h3 className="text-xl font-bold text-white mb-6">⚡ Performance do Sistema</h3>
+          <div className="space-y-4">
+            <div className="flex justify-between items-center">
+              <span className="text-slate-300">Uptime do Servidor</span>
+              <div className="flex items-center space-x-2">
+                <div className="w-20 bg-slate-700 rounded-full h-2">
+                  <div className="bg-green-500 h-2 rounded-full" style={{width: '99.9%'}}></div>
+                </div>
+                <span className="text-green-400 font-bold">99.9%</span>
+              </div>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-slate-300">Tempo de Resposta</span>
+              <span className="text-blue-400 font-bold">120ms</span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-slate-300">CPU Usage</span>
+              <span className="text-purple-400 font-bold">45%</span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-slate-300">Memória RAM</span>
+              <span className="text-orange-400 font-bold">2.1GB / 8GB</span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-slate-300">Armazenamento</span>
+              <div className="flex items-center space-x-2">
+                <div className="w-20 bg-slate-700 rounded-full h-2">
+                  <div className="bg-yellow-500 h-2 rounded-full" style={{width: '75%'}}></div>
+                </div>
+                <span className="text-yellow-400 font-bold">75%</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-slate-800/80 rounded-lg p-6 border border-slate-700">
+          <h3 className="text-xl font-bold text-white mb-6">🤖 IA & Tecnologia</h3>
+          <div className="space-y-4">
+            <div className="flex justify-between items-center">
+              <span className="text-slate-300">Chat NOA Ativo</span>
+              <span className="text-green-400 font-bold">✅ Online</span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-slate-300">Consultas IA Hoje</span>
+              <span className="text-blue-400 font-bold">1,247</span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-slate-300">Precisão NOA</span>
+              <span className="text-purple-400 font-bold">94.2%</span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-slate-300">Modelos Ativos</span>
+              <span className="text-orange-400 font-bold">3</span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-slate-300">Processamento RAG</span>
+              <span className="text-green-400 font-bold">2.3s</span>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-slate-800/80 rounded-lg p-6 border border-slate-700">
+          <h3 className="text-xl font-bold text-white mb-6">🏥 Atividade Médica</h3>
+          <div className="space-y-4">
+            <div className="flex justify-between items-center">
+              <span className="text-slate-300">Avaliações Hoje</span>
+              <span className="text-green-400 font-bold">156</span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-slate-300">Casos Ativos</span>
+              <span className="text-blue-400 font-bold">892</span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-slate-300">Chats Médicos</span>
+              <span className="text-purple-400 font-bold">47</span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-slate-300">Relatórios Gerados</span>
+              <span className="text-orange-400 font-bold">89</span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-slate-300">Tempo Médio Consulta</span>
+              <span className="text-yellow-400 font-bold">12min</span>
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Analytics & Financeiro */}
@@ -277,36 +591,189 @@ const AdminDashboard: React.FC = () => {
         </div>
       </div>
 
-      {/* Ações Rápidas */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Link
-          to="/admin/users"
-          className="bg-slate-800/80 hover:bg-slate-700/80 rounded-lg p-6 text-center transition-colors duration-200"
-        >
-          <div className="text-3xl mb-3">👥</div>
-          <div className="text-white font-medium">Gerenciar Usuários</div>
-        </Link>
-        <Link
-          to="/admin/courses"
-          className="bg-slate-800/80 hover:bg-slate-700/80 rounded-lg p-6 text-center transition-colors duration-200"
-        >
-          <div className="text-3xl mb-3">🎓</div>
-          <div className="text-white font-medium">Gerenciar Cursos</div>
-        </Link>
-        <Link
-          to="/admin/analytics"
-          className="bg-slate-800/80 hover:bg-slate-700/80 rounded-lg p-6 text-center transition-colors duration-200"
-        >
-          <div className="text-3xl mb-3">📊</div>
-          <div className="text-white font-medium">Analytics</div>
-        </Link>
-        <Link
-          to="/admin/upload"
-          className="bg-slate-800/80 hover:bg-slate-700/80 rounded-lg p-6 text-center transition-colors duration-200"
-        >
-          <div className="text-3xl mb-3">📁</div>
-          <div className="text-white font-medium">Upload Documentos</div>
-        </Link>
+      {/* Status dos Serviços */}
+      <div className="bg-slate-800/80 rounded-lg p-6 border border-slate-700">
+        <h3 className="text-xl font-bold text-white mb-6">🔧 Status dos Serviços</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="flex items-center space-x-3">
+            <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
+            <div>
+              <div className="text-white font-medium">Supabase Database</div>
+              <div className="text-slate-400 text-sm">Operacional</div>
+            </div>
+          </div>
+          <div className="flex items-center space-x-3">
+            <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
+            <div>
+              <div className="text-white font-medium">IA NOA Engine</div>
+              <div className="text-slate-400 text-sm">Processando</div>
+            </div>
+          </div>
+          <div className="flex items-center space-x-3">
+            <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
+            <div>
+              <div className="text-white font-medium">Chat Global</div>
+              <div className="text-slate-400 text-sm">247 usuários online</div>
+            </div>
+          </div>
+          <div className="flex items-center space-x-3">
+            <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
+            <div>
+              <div className="text-white font-medium">Backup Automático</div>
+              <div className="text-slate-400 text-sm">Próximo: 02:00</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Atividade Recente */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div className="bg-slate-800/80 rounded-lg p-6 border border-slate-700">
+          <h3 className="text-xl font-bold text-white mb-6">📈 Atividade Recente</h3>
+          <div className="space-y-4">
+            <div className="flex items-center space-x-3 p-3 bg-slate-700/50 rounded-lg">
+              <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
+                <span className="text-white text-sm">👤</span>
+              </div>
+              <div className="flex-1">
+                <div className="text-white text-sm">Dr. João Silva fez login</div>
+                <div className="text-slate-400 text-xs">2 minutos atrás</div>
+              </div>
+            </div>
+            <div className="flex items-center space-x-3 p-3 bg-slate-700/50 rounded-lg">
+              <div className="w-8 h-8 bg-green-600 rounded-full flex items-center justify-center">
+                <span className="text-white text-sm">🤖</span>
+              </div>
+              <div className="flex-1">
+                <div className="text-white text-sm">NOA respondeu 47 consultas</div>
+                <div className="text-slate-400 text-xs">5 minutos atrás</div>
+              </div>
+            </div>
+            <div className="flex items-center space-x-3 p-3 bg-slate-700/50 rounded-lg">
+              <div className="w-8 h-8 bg-purple-600 rounded-full flex items-center justify-center">
+                <span className="text-white text-sm">📊</span>
+              </div>
+              <div className="flex-1">
+                <div className="text-white text-sm">Nova avaliação clínica concluída</div>
+                <div className="text-slate-400 text-xs">8 minutos atrás</div>
+              </div>
+            </div>
+            <div className="flex items-center space-x-3 p-3 bg-slate-700/50 rounded-lg">
+              <div className="w-8 h-8 bg-orange-600 rounded-full flex items-center justify-center">
+                <span className="text-white text-sm">💬</span>
+              </div>
+              <div className="flex-1">
+                <div className="text-white text-sm">12 mensagens no Chat Global</div>
+                <div className="text-slate-400 text-xs">10 minutos atrás</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-slate-800/80 rounded-lg p-6 border border-slate-700">
+          <h3 className="text-xl font-bold text-white mb-6">🚨 Alertas & Notificações</h3>
+          <div className="space-y-4">
+            <div className="p-3 bg-green-500/10 border border-green-500/20 rounded-lg">
+              <div className="flex items-center space-x-2 mb-1">
+                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                <span className="text-green-400 font-medium text-sm">Sistema Operacional</span>
+              </div>
+              <div className="text-slate-300 text-xs">Todos os serviços funcionando normalmente</div>
+            </div>
+            <div className="p-3 bg-yellow-500/10 border border-yellow-500/20 rounded-lg">
+              <div className="flex items-center space-x-2 mb-1">
+                <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
+                <span className="text-yellow-400 font-medium text-sm">Backup Pendente</span>
+              </div>
+              <div className="text-slate-300 text-xs">Backup automático agendado para 02:00</div>
+            </div>
+            <div className="p-3 bg-blue-500/10 border border-blue-500/20 rounded-lg">
+              <div className="flex items-center space-x-2 mb-1">
+                <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                <span className="text-blue-400 font-medium text-sm">Atualização Disponível</span>
+              </div>
+              <div className="text-slate-300 text-xs">Nova versão 3.0.2 disponível</div>
+            </div>
+            <div className="p-3 bg-purple-500/10 border border-purple-500/20 rounded-lg">
+              <div className="flex items-center space-x-2 mb-1">
+                <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
+                <span className="text-purple-400 font-medium text-sm">Relatório Mensal</span>
+              </div>
+              <div className="text-slate-300 text-xs">Relatório de performance disponível</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Ações Rápidas Expandidas */}
+      <div className="bg-slate-800/80 rounded-lg p-6 border border-slate-700">
+        <h3 className="text-xl font-bold text-white mb-6">⚡ Ações Rápidas</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <Link
+            to="/admin/users"
+            className="bg-slate-700/50 hover:bg-slate-600/50 rounded-lg p-4 text-center transition-colors duration-200 border border-slate-600"
+          >
+            <div className="text-3xl mb-3">👥</div>
+            <div className="text-white font-medium mb-1">Gerenciar Usuários</div>
+            <div className="text-slate-400 text-sm">1,247 usuários ativos</div>
+          </Link>
+          <Link
+            to="/admin/courses"
+            className="bg-slate-700/50 hover:bg-slate-600/50 rounded-lg p-4 text-center transition-colors duration-200 border border-slate-600"
+          >
+            <div className="text-3xl mb-3">🎓</div>
+            <div className="text-white font-medium mb-1">Gerenciar Cursos</div>
+            <div className="text-slate-400 text-sm">28 cursos disponíveis</div>
+          </Link>
+          <Link
+            to="/admin/analytics"
+            className="bg-slate-700/50 hover:bg-slate-600/50 rounded-lg p-4 text-center transition-colors duration-200 border border-slate-600"
+          >
+            <div className="text-3xl mb-3">📊</div>
+            <div className="text-white font-medium mb-1">Analytics</div>
+            <div className="text-slate-400 text-sm">Métricas detalhadas</div>
+          </Link>
+          <Link
+            to="/admin/upload"
+            className="bg-slate-700/50 hover:bg-slate-600/50 rounded-lg p-4 text-center transition-colors duration-200 border border-slate-600"
+          >
+            <div className="text-3xl mb-3">📁</div>
+            <div className="text-white font-medium mb-1">Upload Documentos</div>
+            <div className="text-slate-400 text-sm">156 documentos</div>
+          </Link>
+          <Link
+            to="/chat"
+            className="bg-slate-700/50 hover:bg-slate-600/50 rounded-lg p-4 text-center transition-colors duration-200 border border-slate-600"
+          >
+            <div className="text-3xl mb-3">💬</div>
+            <div className="text-white font-medium mb-1">Chat Global</div>
+            <div className="text-slate-400 text-sm">247 usuários online</div>
+          </Link>
+          <Link
+            to="/admin?tab=forum"
+            className="bg-slate-700/50 hover:bg-slate-600/50 rounded-lg p-4 text-center transition-colors duration-200 border border-slate-600"
+          >
+            <div className="text-3xl mb-3">🏛️</div>
+            <div className="text-white font-medium mb-1">Moderar Fórum</div>
+            <div className="text-slate-400 text-sm">47 debates ativos</div>
+          </Link>
+          <Link
+            to="/admin?tab=gamification"
+            className="bg-slate-700/50 hover:bg-slate-600/50 rounded-lg p-4 text-center transition-colors duration-200 border border-slate-600"
+          >
+            <div className="text-3xl mb-3">🏆</div>
+            <div className="text-white font-medium mb-1">Ranking & Gamificação</div>
+            <div className="text-slate-400 text-sm">45,230 pontos distribuídos</div>
+          </Link>
+          <Link
+            to="/admin?tab=settings"
+            className="bg-slate-700/50 hover:bg-slate-600/50 rounded-lg p-4 text-center transition-colors duration-200 border border-slate-600"
+          >
+            <div className="text-3xl mb-3">⚙️</div>
+            <div className="text-white font-medium mb-1">Configurações</div>
+            <div className="text-slate-400 text-sm">Sistema e segurança</div>
+          </Link>
+        </div>
       </div>
     </div>
   )
@@ -666,29 +1133,8 @@ const AdminDashboard: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-slate-900">
-      <div className="flex">
-        {/* Sidebar */}
-        <div className="w-64 bg-slate-800/80 min-h-screen p-6">
-          <div className="space-y-2">
-            {tabs.map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors duration-200 ${
-                  activeTab === tab.id
-                    ? 'bg-primary-600 text-white'
-                    : 'text-slate-300 hover:bg-slate-700/50 hover:text-white'
-                }`}
-              >
-                {tab.icon}
-                <span>{tab.name}</span>
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Main Content */}
-        <div className="flex-1 p-8">
+      {/* Main Content */}
+      <div className="p-8">
           {activeTab === 'overview' && renderOverview()}
           {activeTab === 'users' && renderUsers()}
           {activeTab === 'courses' && renderCourses()}
@@ -820,6 +1266,344 @@ const AdminDashboard: React.FC = () => {
                       </tr>
                     </tbody>
                   </table>
+                </div>
+              </div>
+            </div>
+          )}
+          {activeTab === 'forum' && (
+            <div className="space-y-8">
+              <div className="text-center">
+                <h2 className="text-3xl font-bold text-white mb-4">🏛️ Moderação do Fórum</h2>
+                <p className="text-slate-300">Gerencie debates, modere conteúdo e monitore atividade do fórum</p>
+              </div>
+
+              {/* Estatísticas do Fórum */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                {forumStats.map((stat, index) => (
+                  <div key={index} className="bg-slate-800/80 rounded-lg p-6 text-center">
+                    <div className={`${stat.color} mb-2`}>
+                      {stat.icon}
+                    </div>
+                    <div className="text-3xl font-bold text-white mb-1">{stat.value}</div>
+                    <div className="text-slate-300">{stat.label}</div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Debates que Precisam de Moderação */}
+              <div className="bg-slate-800/80 rounded-lg p-6">
+                <h3 className="text-xl font-bold text-white mb-6">🚨 Debates que Precisam de Atenção</h3>
+                <div className="space-y-4">
+                  {forumDebates.map((debate) => (
+                    <div key={debate.id} className={`p-4 rounded-lg border ${
+                      debate.reports > 0 ? 'bg-red-500/10 border-red-500/20' :
+                      debate.priority === 'high' ? 'bg-orange-500/10 border-orange-500/20' :
+                      'bg-slate-700/50 border-slate-600'
+                    }`}>
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <div className="flex items-center space-x-3 mb-2">
+                            <h4 className="text-white font-semibold">{debate.title}</h4>
+                            {debate.isPinned && <Pin className="w-4 h-4 text-yellow-400" />}
+                            {debate.isHot && <TrendingUp className="w-4 h-4 text-red-400" />}
+                            {debate.reports > 0 && (
+                              <span className="bg-red-500/20 text-red-400 px-2 py-1 rounded-full text-xs">
+                                {debate.reports} reportes
+                              </span>
+                            )}
+                            <span className={`px-2 py-1 rounded-full text-xs ${
+                              debate.status === 'active' ? 'bg-green-500/20 text-green-400' :
+                              debate.status === 'moderated' ? 'bg-yellow-500/20 text-yellow-400' :
+                              'bg-red-500/20 text-red-400'
+                            }`}>
+                              {debate.status}
+                            </span>
+                          </div>
+                          <div className="flex items-center space-x-4 text-sm text-slate-400 mb-2">
+                            <span>Por: {debate.author}</span>
+                            <span>•</span>
+                            <span>{debate.category}</span>
+                            <span>•</span>
+                            <span>{debate.participants} participantes</span>
+                            <span>•</span>
+                            <span>{debate.views} visualizações</span>
+                            <span>•</span>
+                            <span>{debate.lastActivity}</span>
+                          </div>
+                          <div className="flex items-center space-x-4 text-sm">
+                            <div className="flex items-center space-x-1">
+                              <TrendingUp className="w-4 h-4 text-green-400" />
+                              <span className="text-green-400">{debate.votes.up}</span>
+                            </div>
+                            <div className="flex items-center space-x-1">
+                              <TrendingDown className="w-4 h-4 text-red-400" />
+                              <span className="text-red-400">{debate.votes.down}</span>
+                            </div>
+                            <span className="text-slate-400">{debate.replies} respostas</span>
+                          </div>
+                        </div>
+                        <div className="flex space-x-2">
+                          <button className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm">
+                            Ver Debate
+                          </button>
+                          <button className="bg-yellow-600 hover:bg-yellow-700 text-white px-3 py-1 rounded text-sm">
+                            Moderar
+                          </button>
+                          <button className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-sm">
+                            Fechar
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Analytics do Fórum */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div className="bg-slate-800/80 rounded-lg p-6">
+                  <h3 className="text-xl font-bold text-white mb-6">📊 Atividade por Categoria</h3>
+                  <div className="space-y-4">
+                    <div className="flex justify-between items-center">
+                      <span className="text-slate-300">Cannabis Medicinal</span>
+                      <div className="flex items-center space-x-2">
+                        <div className="w-32 bg-slate-700 rounded-full h-2">
+                          <div className="bg-blue-500 h-2 rounded-full" style={{width: '85%'}}></div>
+                        </div>
+                        <span className="text-blue-400 font-bold">85%</span>
+                      </div>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-slate-300">Casos Clínicos</span>
+                      <div className="flex items-center space-x-2">
+                        <div className="w-32 bg-slate-700 rounded-full h-2">
+                          <div className="bg-green-500 h-2 rounded-full" style={{width: '72%'}}></div>
+                        </div>
+                        <span className="text-green-400 font-bold">72%</span>
+                      </div>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-slate-300">Protocolos</span>
+                      <div className="flex items-center space-x-2">
+                        <div className="w-32 bg-slate-700 rounded-full h-2">
+                          <div className="bg-purple-500 h-2 rounded-full" style={{width: '68%'}}></div>
+                        </div>
+                        <span className="text-purple-400 font-bold">68%</span>
+                      </div>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-slate-300">Farmacologia</span>
+                      <div className="flex items-center space-x-2">
+                        <div className="w-32 bg-slate-700 rounded-full h-2">
+                          <div className="bg-orange-500 h-2 rounded-full" style={{width: '45%'}}></div>
+                        </div>
+                        <span className="text-orange-400 font-bold">45%</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-slate-800/80 rounded-lg p-6">
+                  <h3 className="text-xl font-bold text-white mb-6">📈 Tendências de Engajamento</h3>
+                  <div className="space-y-4">
+                    <div className="flex justify-between items-center">
+                      <span className="text-slate-300">Posts por Dia</span>
+                      <span className="text-green-400 font-bold">+23%</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-slate-300">Usuários Ativos</span>
+                      <span className="text-blue-400 font-bold">+15%</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-slate-300">Tempo Médio de Resposta</span>
+                      <span className="text-purple-400 font-bold">2.4h</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-slate-300">Taxa de Resolução</span>
+                      <span className="text-orange-400 font-bold">89%</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+          {activeTab === 'gamification' && (
+            <div className="space-y-8">
+              <div className="text-center">
+                <h2 className="text-3xl font-bold text-white mb-4">🏆 Sistema de Gamificação & Ranking</h2>
+                <p className="text-slate-300">Monitore pontuações, conquistas e engajamento dos usuários</p>
+              </div>
+
+              {/* Estatísticas de Gamificação */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                {gamificationStats.map((stat, index) => (
+                  <div key={index} className="bg-slate-800/80 rounded-lg p-6 text-center">
+                    <div className={`${stat.color} mb-2`}>
+                      {stat.icon}
+                    </div>
+                    <div className="text-3xl font-bold text-white mb-1">{stat.value}</div>
+                    <div className="text-slate-300">{stat.label}</div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Ranking de Usuários */}
+              <div className="bg-slate-800/80 rounded-lg p-6">
+                <h3 className="text-xl font-bold text-white mb-6">🏅 Ranking de Usuários</h3>
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead className="bg-slate-700/50">
+                      <tr>
+                        <th className="px-4 py-3 text-left text-slate-300">Posição</th>
+                        <th className="px-4 py-3 text-left text-slate-300">Usuário</th>
+                        <th className="px-4 py-3 text-left text-slate-300">Tipo</th>
+                        <th className="px-4 py-3 text-left text-slate-300">Pontos</th>
+                        <th className="px-4 py-3 text-left text-slate-300">Nível</th>
+                        <th className="px-4 py-3 text-left text-slate-300">Conquistas</th>
+                        <th className="px-4 py-3 text-left text-slate-300">Atividade</th>
+                        <th className="px-4 py-3 text-left text-slate-300">Ações</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-700">
+                      {userRankings.map((user) => (
+                        <tr key={user.id} className="hover:bg-slate-700/50">
+                          <td className="px-4 py-3">
+                            <div className="flex items-center space-x-2">
+                              {user.rank <= 3 && (
+                                <span className="text-2xl">
+                                  {user.rank === 1 ? '🥇' : user.rank === 2 ? '🥈' : '🥉'}
+                                </span>
+                              )}
+                              <span className="text-white font-bold">#{user.rank}</span>
+                            </div>
+                          </td>
+                          <td className="px-4 py-3">
+                            <div className="flex items-center space-x-3">
+                              <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+                                <span className="text-white font-bold text-sm">{user.avatar}</span>
+                              </div>
+                              <div>
+                                <div className="text-white font-medium">{user.name}</div>
+                                {user.crm && <div className="text-slate-400 text-sm">{user.crm}</div>}
+                              </div>
+                            </div>
+                          </td>
+                          <td className="px-4 py-3">
+                            <span className={`px-2 py-1 text-xs rounded-full ${
+                              user.type === 'professional' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-200' :
+                              user.type === 'student' ? 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-200' :
+                              'bg-purple-100 text-purple-800 dark:bg-purple-900/20 dark:text-purple-200'
+                            }`}>
+                              {user.type === 'professional' ? 'Profissional' :
+                               user.type === 'student' ? 'Estudante' : 'Paciente'}
+                            </span>
+                          </td>
+                          <td className="px-4 py-3">
+                            <div className="text-yellow-400 font-bold">{user.points.toLocaleString()}</div>
+                          </td>
+                          <td className="px-4 py-3">
+                            <div className="flex items-center space-x-2">
+                              <span className="text-white font-bold">Nível {user.level}</span>
+                              <div className="w-16 bg-slate-700 rounded-full h-2">
+                                <div className="bg-gradient-to-r from-blue-500 to-purple-600 h-2 rounded-full" style={{width: `${(user.level / 20) * 100}%`}}></div>
+                              </div>
+                            </div>
+                          </td>
+                          <td className="px-4 py-3">
+                            <div className="flex flex-wrap gap-1">
+                              {user.badges.slice(0, 2).map((badge, idx) => (
+                                <span key={idx} className="bg-yellow-500/20 text-yellow-400 text-xs px-2 py-1 rounded">
+                                  {badge}
+                                </span>
+                              ))}
+                              {user.badges.length > 2 && (
+                                <span className="text-slate-400 text-xs">+{user.badges.length - 2}</span>
+                              )}
+                            </div>
+                          </td>
+                          <td className="px-4 py-3">
+                            <span className={`px-2 py-1 text-xs rounded-full ${
+                              user.activity === 'Muito Ativo' ? 'bg-green-500/20 text-green-400' :
+                              user.activity === 'Ativo' ? 'bg-blue-500/20 text-blue-400' :
+                              'bg-gray-500/20 text-gray-400'
+                            }`}>
+                              {user.activity}
+                            </span>
+                          </td>
+                          <td className="px-4 py-3">
+                            <div className="flex space-x-2">
+                              <button className="text-blue-400 hover:text-blue-300">
+                                <Eye className="w-4 h-4" />
+                              </button>
+                              <button className="text-green-400 hover:text-green-300">
+                                <Award className="w-4 h-4" />
+                              </button>
+                              <button className="text-purple-400 hover:text-purple-300">
+                                <TrendingUp className="w-4 h-4" />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              {/* Sistema de Conquistas */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div className="bg-slate-800/80 rounded-lg p-6">
+                  <h3 className="text-xl font-bold text-white mb-6">🎖️ Conquistas Disponíveis</h3>
+                  <div className="space-y-4">
+                    {achievements.map((achievement) => (
+                      <div key={achievement.id} className="flex items-center justify-between p-3 bg-slate-700/50 rounded-lg">
+                        <div className="flex items-center space-x-3">
+                          <span className="text-2xl">{achievement.icon}</span>
+                          <div>
+                            <div className="text-white font-medium">{achievement.name}</div>
+                            <div className="text-slate-400 text-sm">{achievement.description}</div>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <div className="text-yellow-400 font-bold">{achievement.points} pts</div>
+                          <div className="text-slate-400 text-sm">{achievement.unlocked} desbloqueadas</div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="bg-slate-800/80 rounded-lg p-6">
+                  <h3 className="text-xl font-bold text-white mb-6">📊 Distribuição de Pontos</h3>
+                  <div className="space-y-4">
+                    <div className="flex justify-between items-center">
+                      <span className="text-slate-300">Profissionais</span>
+                      <div className="flex items-center space-x-2">
+                        <div className="w-32 bg-slate-700 rounded-full h-2">
+                          <div className="bg-blue-500 h-2 rounded-full" style={{width: '65%'}}></div>
+                        </div>
+                        <span className="text-blue-400 font-bold">65%</span>
+                      </div>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-slate-300">Estudantes</span>
+                      <div className="flex items-center space-x-2">
+                        <div className="w-32 bg-slate-700 rounded-full h-2">
+                          <div className="bg-green-500 h-2 rounded-full" style={{width: '25%'}}></div>
+                        </div>
+                        <span className="text-green-400 font-bold">25%</span>
+                      </div>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-slate-300">Pacientes</span>
+                      <div className="flex items-center space-x-2">
+                        <div className="w-32 bg-slate-700 rounded-full h-2">
+                          <div className="bg-purple-500 h-2 rounded-full" style={{width: '10%'}}></div>
+                        </div>
+                        <span className="text-purple-400 font-bold">10%</span>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -1438,6 +2222,7 @@ const AdminDashboard: React.FC = () => {
               </div>
             </div>
           )}
+          {activeTab === 'unification' && renderUnification()}
           {activeTab === 'settings' && (
             <div className="space-y-8">
               <div className="text-center">
@@ -1639,9 +2424,241 @@ const AdminDashboard: React.FC = () => {
               </div>
             </div>
           )}
+      </div>
+    </div>
+  )
+
+  const renderUnification = () => (
+    <div className="space-y-8">
+      {/* Header */}
+      <div className="text-center">
+        <h1 className="text-4xl font-bold text-white mb-4">
+          🧬 MedCannLab 3.0 → 5.0 Unificação
+        </h1>
+        <p className="text-slate-300 text-lg">
+          Unindo a "alma" semântica do 3.0 com o "corpo" real do 5.0
+        </p>
+      </div>
+
+      {/* Status da Migração */}
+      <div className="bg-slate-800/80 rounded-lg p-6 border border-slate-700">
+        <h3 className="text-xl font-bold text-white mb-6">📊 Status da Unificação</h3>
+        
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="bg-slate-700/50 rounded-lg p-4">
+            <div className="flex items-center space-x-3 mb-2">
+              <div className={`w-3 h-3 rounded-full ${
+                migrationStatus === 'completed' ? 'bg-green-500' : 
+                migrationStatus === 'migrating' ? 'bg-yellow-500 animate-pulse' : 
+                migrationStatus === 'error' ? 'bg-red-500' : 'bg-gray-500'
+              }`}></div>
+              <span className="text-white font-medium">Migração IMRE</span>
+            </div>
+            <div className="text-slate-400 text-sm">
+              {migrationStatus === 'completed' ? 'Concluída' : 
+               migrationStatus === 'migrating' ? 'Em andamento...' : 
+               migrationStatus === 'error' ? 'Erro' : 'Pendente'}
+            </div>
+          </div>
+
+          <div className="bg-slate-700/50 rounded-lg p-4">
+            <div className="flex items-center space-x-3 mb-2">
+              <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+              <span className="text-white font-medium">Integração NOA</span>
+            </div>
+            <div className="text-slate-400 text-sm">Conectado ao banco real</div>
+          </div>
+
+          <div className="bg-slate-700/50 rounded-lg p-4">
+            <div className="flex items-center space-x-3 mb-2">
+              <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+              <span className="text-white font-medium">Avaliação Unificada</span>
+            </div>
+            <div className="text-slate-400 text-sm">IMRE + Clínico integrados</div>
+          </div>
+        </div>
+
+        {/* Barra de Progresso */}
+        {migrationStatus === 'migrating' && (
+          <div className="mt-6">
+            <div className="flex justify-between text-sm text-slate-300 mb-2">
+              <span>Progresso da Migração</span>
+              <span>{migrationProgress}%</span>
+            </div>
+            <div className="w-full bg-slate-700 rounded-full h-2">
+              <div 
+                className="bg-blue-500 h-2 rounded-full transition-all duration-300"
+                style={{ width: `${migrationProgress}%` }}
+              ></div>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Resultados da Migração */}
+      {migrationResults && (
+        <div className="bg-slate-800/80 rounded-lg p-6 border border-slate-700">
+          <h3 className="text-xl font-bold text-white mb-6">📈 Resultados da Migração</h3>
+          
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div className="bg-slate-700/50 rounded-lg p-4 text-center">
+              <div className="text-2xl font-bold text-green-400 mb-1">
+                {migrationResults.migratedAssessments || 0}
+              </div>
+              <div className="text-slate-300 text-sm">Avaliações Migradas</div>
+            </div>
+            
+            <div className="bg-slate-700/50 rounded-lg p-4 text-center">
+              <div className="text-2xl font-bold text-blue-400 mb-1">
+                {migrationResults.migratedBlocks || 0}
+              </div>
+              <div className="text-slate-300 text-sm">Blocos Semânticos</div>
+            </div>
+            
+            <div className="bg-slate-700/50 rounded-lg p-4 text-center">
+              <div className="text-2xl font-bold text-purple-400 mb-1">
+                {migrationResults.migratedInteractions || 0}
+              </div>
+              <div className="text-slate-300 text-sm">Interações NOA</div>
+            </div>
+            
+            <div className="bg-slate-700/50 rounded-lg p-4 text-center">
+              <div className="text-2xl font-bold text-red-400 mb-1">
+                {migrationResults.errors?.length || 0}
+              </div>
+              <div className="text-slate-300 text-sm">Erros</div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Ações de Unificação */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        {/* FASE 1: Preservar a Alma */}
+        <div className="bg-slate-800/80 rounded-lg p-6 border border-slate-700">
+          <h3 className="text-xl font-bold text-white mb-6">🧬 FASE 1: Preservar a Alma</h3>
+          
+          <div className="space-y-4">
+            <div className="bg-slate-700/50 rounded-lg p-4">
+              <h4 className="text-white font-medium mb-2">Sistema IMRE Triaxial</h4>
+              <p className="text-slate-300 text-sm mb-3">
+                Migrar dados semânticos do IndexedDB para Supabase preservando toda funcionalidade
+              </p>
+              <button
+                onClick={handleIMREMigration}
+                disabled={migrationStatus === 'migrating'}
+                className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 text-white px-4 py-2 rounded-lg transition-colors"
+              >
+                {migrationStatus === 'migrating' ? 'Migrando...' : 'Migrar IMRE'}
+              </button>
+            </div>
+
+            <div className="bg-slate-700/50 rounded-lg p-4">
+              <h4 className="text-white font-medium mb-2">NOA Multimodal</h4>
+              <p className="text-slate-300 text-sm mb-3">
+                Conectar avatar com escuta real ao banco de dados real
+              </p>
+              <button
+                onClick={handleNOAIntegration}
+                className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition-colors"
+              >
+                Integrar NOA
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* FASE 2: Unificar Corpo e Alma */}
+        <div className="bg-slate-800/80 rounded-lg p-6 border border-slate-700">
+          <h3 className="text-xl font-bold text-white mb-6">🔄 FASE 2: Unificar Corpo e Alma</h3>
+          
+          <div className="space-y-4">
+            <div className="bg-slate-700/50 rounded-lg p-4">
+              <h4 className="text-white font-medium mb-2">Avaliação Unificada</h4>
+              <p className="text-slate-300 text-sm mb-3">
+                Integrar avaliação IMRE com monitoramento renal no mesmo prontuário
+              </p>
+              <button
+                onClick={handleUnifiedAssessment}
+                className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg transition-colors"
+              >
+                Inicializar Avaliação
+              </button>
+            </div>
+
+            <div className="bg-slate-700/50 rounded-lg p-4">
+              <h4 className="text-white font-medium mb-2">Validação da Migração</h4>
+              <p className="text-slate-300 text-sm mb-3">
+                Verificar integridade dos dados migrados e correlações
+              </p>
+              <button
+                onClick={validateMigration}
+                className="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-lg transition-colors"
+              >
+                Validar Migração
+              </button>
+            </div>
+          </div>
         </div>
       </div>
 
+      {/* Arquitetura da Unificação */}
+      <div className="bg-slate-800/80 rounded-lg p-6 border border-slate-700">
+        <h3 className="text-xl font-bold text-white mb-6">🏗️ Arquitetura da Unificação</h3>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div>
+            <h4 className="text-white font-medium mb-4">MedCannLab 3.0 (A "Alma")</h4>
+            <div className="space-y-3">
+              <div className="flex items-center space-x-3">
+                <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                <span className="text-slate-300 text-sm">Sistema IMRE Triaxial (37 blocos)</span>
+              </div>
+              <div className="flex items-center space-x-3">
+                <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                <span className="text-slate-300 text-sm">NOA Multimodal com escuta real</span>
+              </div>
+              <div className="flex items-center space-x-3">
+                <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                <span className="text-slate-300 text-sm">IndexedDB com persistência semântica</span>
+              </div>
+              <div className="flex items-center space-x-3">
+                <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                <span className="text-slate-300 text-sm">Avaliação clínica profunda</span>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <h4 className="text-white font-medium mb-4">MedCannLab 5.0 (O "Corpo")</h4>
+            <div className="space-y-3">
+              <div className="flex items-center space-x-3">
+                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                <span className="text-slate-300 text-sm">Supabase com estrutura real</span>
+              </div>
+              <div className="flex items-center space-x-3">
+                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                <span className="text-slate-300 text-sm">Usuários reais e relacionamentos</span>
+              </div>
+              <div className="flex items-center space-x-3">
+                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                <span className="text-slate-300 text-sm">Chat Global e fóruns</span>
+              </div>
+              <div className="flex items-center space-x-3">
+                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                <span className="text-slate-300 text-sm">Monitoramento renal e gamificação</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-8 text-center">
+          <div className="text-2xl font-bold text-white mb-2">🧬 = 🏥</div>
+          <p className="text-slate-300">
+            Unindo a escuta semântica profunda com dados clínicos reais
+          </p>
+        </div>
+      </div>
     </div>
   )
 }

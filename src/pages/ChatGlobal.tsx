@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react'
 import { useAuth } from '../contexts/AuthContext'
 import { useNavigate } from 'react-router-dom'
+import { supabase } from '../lib/supabase'
 import { 
   Send, 
   Mic, 
@@ -49,6 +50,13 @@ const ChatGlobal: React.FC = () => {
   const [isVideoCall, setIsVideoCall] = useState(false)
   const [searchTerm, setSearchTerm] = useState('')
   const [showFriendRequests, setShowFriendRequests] = useState(false)
+  const [messages, setMessages] = useState<any[]>([])
+  const [onlineUsers, setOnlineUsers] = useState<any[]>([])
+  const [isAdmin, setIsAdmin] = useState(false)
+  const [showModeration, setShowModeration] = useState(false)
+  const [moderatorRequests, setModeratorRequests] = useState<any[]>([])
+  const [showModeratorRequest, setShowModeratorRequest] = useState(false)
+  const [requestReason, setRequestReason] = useState('')
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
   const channels = [
@@ -116,54 +124,87 @@ const ChatGlobal: React.FC = () => {
     }
   ]
 
-  const messages = [
-    {
-      id: 1,
-      user: 'Dr. João Silva',
-      userAvatar: 'JS',
-      message: 'Alguém tem experiência com CBD para ansiedade em adolescentes?',
-      timestamp: '10:30',
-      type: 'text',
-      reactions: { heart: 5, thumbs: 3, reply: 2 },
-      isPinned: false,
-      isOnline: true,
-      crm: '12345-SP',
-      specialty: 'Psiquiatria'
-    },
-    {
-      id: 2,
-      user: 'Dra. Maria Santos',
-      userAvatar: 'MS',
-      message: 'Sim! Tenho usado com bons resultados. Posso compartilhar alguns casos e protocolos.',
-      timestamp: '10:32',
-      type: 'text',
-      reactions: { heart: 2, thumbs: 1, reply: 1 },
-      isPinned: false,
-      isOnline: true,
-      crm: '67890-RJ',
-      specialty: 'Neurologia'
-    },
-    {
-      id: 3,
-      user: 'Dr. Pedro Costa',
-      userAvatar: 'PC',
-      message: 'Excelente discussão! Vou compartilhar um artigo recente sobre o tema.',
-      timestamp: '10:35',
-      type: 'text',
-      reactions: { heart: 1, thumbs: 2, reply: 0 },
-      isPinned: true,
-      isOnline: false,
-      crm: '11111-MG',
-      specialty: 'Pesquisa'
+  // Verificar se é admin
+  useEffect(() => {
+    if (user?.type === 'admin') {
+      setIsAdmin(true)
     }
-  ]
+  }, [user])
 
-  const onlineUsers = [
-    { id: 1, name: 'Dr. Ana Oliveira', avatar: 'AO', status: 'online', specialty: 'Cardiologia', crm: '22222-SP', isFriend: true },
-    { id: 2, name: 'Dr. Carlos Lima', avatar: 'CL', status: 'online', specialty: 'Oncologia', crm: '33333-RJ', isFriend: false },
-    { id: 3, name: 'Dra. Sofia Costa', avatar: 'SC', status: 'away', specialty: 'Pediatria', crm: '44444-MG', isFriend: true },
-    { id: 4, name: 'Dr. Rafael Silva', avatar: 'RS', status: 'online', specialty: 'Psiquiatria', crm: '55555-SP', isFriend: false }
-  ]
+  // Carregar mensagens do canal ativo
+  useEffect(() => {
+    loadMessages()
+  }, [activeChannel])
+
+  // Carregar usuários online
+  useEffect(() => {
+    loadOnlineUsers()
+  }, [])
+
+  // Carregar solicitações de moderador (apenas para admins)
+  useEffect(() => {
+    if (isAdmin) {
+      loadModeratorRequests()
+    }
+  }, [isAdmin])
+
+  const loadMessages = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('chat_messages')
+        .select('*')
+        .eq('channel', activeChannel)
+        .order('created_at', { ascending: true })
+        .limit(50)
+
+      if (error) {
+        console.error('Erro ao carregar mensagens:', error)
+        return
+      }
+
+      setMessages(data || [])
+    } catch (error) {
+      console.error('Erro ao carregar mensagens:', error)
+    }
+  }
+
+  const loadOnlineUsers = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('is_online', true)
+        .order('last_seen', { ascending: false })
+
+      if (error) {
+        console.error('Erro ao carregar usuários online:', error)
+        return
+      }
+
+      setOnlineUsers(data || [])
+    } catch (error) {
+      console.error('Erro ao carregar usuários online:', error)
+    }
+  }
+
+  const loadModeratorRequests = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('moderator_requests')
+        .select('*')
+        .eq('status', 'pending')
+        .order('created_at', { ascending: false })
+
+      if (error) {
+        console.error('Erro ao carregar solicitações:', error)
+        return
+      }
+
+      setModeratorRequests(data || [])
+    } catch (error) {
+      console.error('Erro ao carregar solicitações:', error)
+    }
+  }
 
   const friendRequests = [
     { id: 1, name: 'Dr. Lucas Ferreira', avatar: 'LF', specialty: 'Dermatologia', crm: '66666-RS', message: 'Gostaria de conectar para discutir casos de dermatite atópica' },
@@ -178,10 +219,35 @@ const ChatGlobal: React.FC = () => {
     scrollToBottom()
   }, [messages])
 
-  const handleSendMessage = () => {
-    if (message.trim()) {
-      console.log('Enviando mensagem:', message)
-      setMessage('')
+  const handleSendMessage = async () => {
+    if (message.trim() && user) {
+      try {
+        const { error } = await supabase
+          .from('chat_messages')
+          .insert({
+            user_id: user.id,
+            user_name: user.name || 'Usuário',
+            user_avatar: user.avatar || 'U',
+            message: message.trim(),
+            channel: activeChannel,
+            crm: user.crm || '',
+            specialty: user.specialty || '',
+            type: 'text',
+            reactions: { heart: 0, thumbs: 0, reply: 0 },
+            is_pinned: false,
+            is_online: true
+          })
+
+        if (error) {
+          console.error('Erro ao enviar mensagem:', error)
+          return
+        }
+
+        setMessage('')
+        loadMessages() // Recarregar mensagens
+      } catch (error) {
+        console.error('Erro ao enviar mensagem:', error)
+      }
     }
   }
 
@@ -202,6 +268,125 @@ const ChatGlobal: React.FC = () => {
 
   const handleRejectFriend = (requestId: number) => {
     console.log('Rejeitando solicitação:', requestId)
+  }
+
+  // Funções de moderação para admins
+  const handleDeleteMessage = async (messageId: number) => {
+    if (!isAdmin) return
+    
+    try {
+      const { error } = await supabase
+        .from('chat_messages')
+        .delete()
+        .eq('id', messageId)
+
+      if (error) {
+        console.error('Erro ao deletar mensagem:', error)
+        return
+      }
+
+      loadMessages()
+    } catch (error) {
+      console.error('Erro ao deletar mensagem:', error)
+    }
+  }
+
+  const handlePinMessage = async (messageId: number) => {
+    if (!isAdmin) return
+    
+    try {
+      const { error } = await supabase
+        .from('chat_messages')
+        .update({ is_pinned: true })
+        .eq('id', messageId)
+
+      if (error) {
+        console.error('Erro ao fixar mensagem:', error)
+        return
+      }
+
+      loadMessages()
+    } catch (error) {
+      console.error('Erro ao fixar mensagem:', error)
+    }
+  }
+
+  const handleMuteUser = async (userId: string) => {
+    if (!isAdmin) return
+    
+    try {
+      const { error } = await supabase
+        .from('user_mutes')
+        .insert({
+          user_id: userId,
+          muted_by: user?.id,
+          reason: 'Comportamento inadequado',
+          expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000) // 24 horas
+        })
+
+      if (error) {
+        console.error('Erro ao silenciar usuário:', error)
+        return
+      }
+
+      console.log('Usuário silenciado por 24 horas')
+    } catch (error) {
+      console.error('Erro ao silenciar usuário:', error)
+    }
+  }
+
+  // Função para solicitar moderador
+  const handleRequestModerator = async () => {
+    if (!user || !requestReason.trim()) return
+
+    try {
+      const { error } = await supabase
+        .from('moderator_requests')
+        .insert({
+          requester_id: user.id,
+          requester_name: user.name || 'Usuário',
+          channel: activeChannel,
+          reason: requestReason.trim(),
+          status: 'pending',
+          priority: 'normal'
+        })
+
+      if (error) {
+        console.error('Erro ao solicitar moderador:', error)
+        return
+      }
+
+      setRequestReason('')
+      setShowModeratorRequest(false)
+      alert('Solicitação enviada! Um moderador será notificado.')
+    } catch (error) {
+      console.error('Erro ao solicitar moderador:', error)
+    }
+  }
+
+  // Função para responder à solicitação (apenas admins)
+  const handleRespondToRequest = async (requestId: number, action: 'accept' | 'decline') => {
+    if (!isAdmin) return
+
+    try {
+      const { error } = await supabase
+        .from('moderator_requests')
+        .update({
+          status: action === 'accept' ? 'accepted' : 'declined',
+          responded_by: user?.id,
+          responded_at: new Date().toISOString()
+        })
+        .eq('id', requestId)
+
+      if (error) {
+        console.error('Erro ao responder solicitação:', error)
+        return
+      }
+
+      loadModeratorRequests()
+    } catch (error) {
+      console.error('Erro ao responder solicitação:', error)
+    }
   }
 
   const handleOpenDebate = (debateId: number) => {
@@ -247,6 +432,31 @@ const ChatGlobal: React.FC = () => {
         <p className="text-slate-300 text-lg">
           Conecte-se com colegas, participe de debates e compartilhe conhecimento
         </p>
+        {isAdmin && (
+          <div className="mt-4 flex justify-center space-x-4">
+            <button
+              onClick={() => setShowModeration(!showModeration)}
+              className={`px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors ${
+                showModeration 
+                  ? 'bg-red-700 text-white' 
+                  : 'bg-red-600 hover:bg-red-700 text-white'
+              }`}
+            >
+              <Flag className="w-4 h-4" />
+              <span>{showModeration ? 'Ocultar Moderação' : 'Painel de Moderação'}</span>
+            </button>
+            <div className="bg-green-500/20 text-green-400 px-3 py-2 rounded-lg flex items-center space-x-2">
+              <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+              <span className="text-sm font-medium">Admin Online</span>
+            </div>
+            {moderatorRequests.length > 0 && (
+              <div className="bg-orange-500/20 text-orange-400 px-3 py-2 rounded-lg flex items-center space-x-2">
+                <Flag className="w-4 h-4" />
+                <span className="text-sm font-medium">{moderatorRequests.length} Solicitações</span>
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Navigation Tabs */}
@@ -295,7 +505,7 @@ const ChatGlobal: React.FC = () => {
 
       {/* Chat Tab */}
       {activeTab === 'chat' && (
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+        <div className={`grid gap-8 ${showModeration && isAdmin ? 'grid-cols-1 lg:grid-cols-3' : 'grid-cols-1 lg:grid-cols-4'}`}>
           {/* Sidebar - Channels */}
           <div className="lg:col-span-1">
             <div className="bg-slate-800/80 rounded-lg p-6 border border-slate-700">
@@ -382,7 +592,7 @@ const ChatGlobal: React.FC = () => {
           </div>
 
           {/* Chat Area */}
-          <div className="lg:col-span-3">
+          <div className={`${showModeration && isAdmin ? 'lg:col-span-2' : 'lg:col-span-3'}`}>
             <div className="bg-slate-800/80 rounded-lg border border-slate-700 h-[600px] flex flex-col">
               {/* Chat Header */}
               <div className="p-4 border-b border-slate-700 bg-slate-700/50">
@@ -396,6 +606,15 @@ const ChatGlobal: React.FC = () => {
                     </p>
                   </div>
                   <div className="flex items-center space-x-2">
+                    {!isAdmin && (
+                      <button
+                        onClick={() => setShowModeratorRequest(true)}
+                        className="p-2 text-red-400 hover:text-red-300 hover:bg-red-500/20 rounded transition-colors"
+                        title="Solicitar Moderador"
+                      >
+                        <Flag className="w-5 h-5" />
+                      </button>
+                    )}
                     <button className="p-2 text-slate-400 hover:text-blue-400 transition-colors">
                       <Video className="w-5 h-5" />
                     </button>
@@ -496,6 +715,90 @@ const ChatGlobal: React.FC = () => {
               </div>
             </div>
           </div>
+
+          {/* Painel de Moderação Integrado (apenas para admins) */}
+          {showModeration && isAdmin && (
+            <div className="lg:col-span-1">
+              <div className="bg-slate-800/80 rounded-lg p-6 border border-slate-700 h-[600px] overflow-y-auto">
+                <h3 className="text-lg font-semibold text-white mb-4">🛡️ Moderação</h3>
+                
+                {/* Solicitações Pendentes */}
+                <div className="mb-6">
+                  <h4 className="text-sm font-semibold text-slate-300 mb-3">
+                    📨 Solicitações ({moderatorRequests.length})
+                  </h4>
+                  <div className="space-y-3 max-h-40 overflow-y-auto">
+                    {moderatorRequests.map((request) => (
+                      <div key={request.id} className="bg-slate-700/50 rounded-lg p-3">
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1">
+                            <div className="text-white text-sm font-medium">{request.requester_name}</div>
+                            <div className="text-slate-400 text-xs mb-2">{request.reason}</div>
+                            <div className="text-slate-500 text-xs">{request.channel}</div>
+                          </div>
+                          <div className="flex space-x-1">
+                            <button
+                              onClick={() => handleRespondToRequest(request.id, 'accept')}
+                              className="bg-green-600 hover:bg-green-700 text-white px-2 py-1 rounded text-xs"
+                            >
+                              ✓
+                            </button>
+                            <button
+                              onClick={() => handleRespondToRequest(request.id, 'decline')}
+                              className="bg-red-600 hover:bg-red-700 text-white px-2 py-1 rounded text-xs"
+                            >
+                              ✗
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                    {moderatorRequests.length === 0 && (
+                      <p className="text-slate-400 text-xs text-center py-2">Nenhuma solicitação</p>
+                    )}
+                  </div>
+                </div>
+
+                {/* Estatísticas Rápidas */}
+                <div className="mb-6">
+                  <h4 className="text-sm font-semibold text-slate-300 mb-3">📊 Estatísticas</h4>
+                  <div className="space-y-2">
+                    <div className="flex justify-between text-xs">
+                      <span className="text-slate-400">Usuários Online</span>
+                      <span className="text-green-400 font-bold">{onlineUsers.length}</span>
+                    </div>
+                    <div className="flex justify-between text-xs">
+                      <span className="text-slate-400">Mensagens Hoje</span>
+                      <span className="text-blue-400 font-bold">{messages.length}</span>
+                    </div>
+                    <div className="flex justify-between text-xs">
+                      <span className="text-slate-400">Canal Ativo</span>
+                      <span className="text-purple-400 font-bold">{activeChannel}</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Ações Rápidas */}
+                <div>
+                  <h4 className="text-sm font-semibold text-slate-300 mb-3">⚡ Ações Rápidas</h4>
+                  <div className="space-y-2">
+                    <button className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 px-3 rounded text-xs">
+                      📊 Ver Analytics
+                    </button>
+                    <button className="w-full bg-yellow-600 hover:bg-yellow-700 text-white py-2 px-3 rounded text-xs">
+                      🚨 Reportes
+                    </button>
+                    <button className="w-full bg-purple-600 hover:bg-purple-700 text-white py-2 px-3 rounded text-xs">
+                      👥 Usuários
+                    </button>
+                    <button className="w-full bg-green-600 hover:bg-green-700 text-white py-2 px-3 rounded text-xs">
+                      📈 Estatísticas
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       )}
 
@@ -703,6 +1006,117 @@ const ChatGlobal: React.FC = () => {
                   </div>
                 </div>
               ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal para Solicitar Moderador */}
+      {showModeratorRequest && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-slate-800 rounded-lg p-6 w-full max-w-md mx-4">
+            <h3 className="text-xl font-bold text-white mb-4">🚨 Solicitar Moderador</h3>
+            <p className="text-slate-300 mb-4">
+              Descreva brevemente o motivo da solicitação. Um moderador será notificado e entrará no chat.
+            </p>
+            <textarea
+              value={requestReason}
+              onChange={(e) => setRequestReason(e.target.value)}
+              placeholder="Ex: Discussão acalorada, usuário inadequado, dúvida técnica complexa..."
+              rows={4}
+              className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-red-500 mb-4"
+            />
+            <div className="flex space-x-3">
+              <button
+                onClick={handleRequestModerator}
+                className="flex-1 bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded-lg transition-colors"
+              >
+                Enviar Solicitação
+              </button>
+              <button
+                onClick={() => {
+                  setShowModeratorRequest(false)
+                  setRequestReason('')
+                }}
+                className="flex-1 bg-slate-600 hover:bg-slate-700 text-white py-2 px-4 rounded-lg transition-colors"
+              >
+                Cancelar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Painel de Moderação (apenas para admins) */}
+      {showModeration && isAdmin && (
+        <div className="bg-slate-800/80 rounded-lg p-6 border border-slate-700">
+          <h3 className="text-xl font-bold text-white mb-6">🛡️ Painel de Moderação</h3>
+          
+          {/* Solicitações Pendentes */}
+          <div className="mb-6">
+            <h4 className="text-lg font-semibold text-white mb-4">
+              📨 Solicitações de Moderador ({moderatorRequests.length})
+            </h4>
+            <div className="space-y-4">
+              {moderatorRequests.map((request) => (
+                <div key={request.id} className="bg-slate-700/50 rounded-lg p-4">
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <div className="flex items-center space-x-2 mb-2">
+                        <span className="text-white font-medium">{request.requester_name}</span>
+                        <span className="text-slate-400 text-sm">•</span>
+                        <span className="text-slate-400 text-sm">Canal: {request.channel}</span>
+                        <span className="bg-red-500/20 text-red-400 px-2 py-1 rounded-full text-xs">
+                          {request.priority}
+                        </span>
+                      </div>
+                      <p className="text-slate-300 text-sm mb-2">{request.reason}</p>
+                      <p className="text-slate-400 text-xs">
+                        {new Date(request.created_at).toLocaleString()}
+                      </p>
+                    </div>
+                    <div className="flex space-x-2">
+                      <button
+                        onClick={() => handleRespondToRequest(request.id, 'accept')}
+                        className="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-sm transition-colors"
+                      >
+                        Aceitar
+                      </button>
+                      <button
+                        onClick={() => handleRespondToRequest(request.id, 'decline')}
+                        className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-sm transition-colors"
+                      >
+                        Recusar
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+              {moderatorRequests.length === 0 && (
+                <p className="text-slate-400 text-center py-4">Nenhuma solicitação pendente</p>
+              )}
+            </div>
+          </div>
+
+          {/* Estatísticas de Moderação */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="bg-slate-700/50 rounded-lg p-4 text-center">
+              <div className="text-2xl font-bold text-red-400 mb-1">
+                {moderatorRequests.length}
+              </div>
+              <div className="text-slate-300 text-sm">Solicitações Pendentes</div>
+            </div>
+            <div className="bg-slate-700/50 rounded-lg p-4 text-center">
+              <div className="text-2xl font-bold text-green-400 mb-1">
+                {onlineUsers.filter(u => u.is_admin).length}
+              </div>
+              <div className="text-slate-300 text-sm">Moderadores Online</div>
+            </div>
+            <div className="bg-slate-700/50 rounded-lg p-4 text-center">
+              <div className="text-2xl font-bold text-blue-400 mb-1">
+                {onlineUsers.length}
+              </div>
+              <div className="text-slate-300 text-sm">Usuários Online</div>
             </div>
           </div>
         </div>
