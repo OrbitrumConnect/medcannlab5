@@ -1,16 +1,42 @@
 import React, { useState } from 'react'
-import { Link, useLocation } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
-import { Menu, X, User, LogOut, Settings } from 'lucide-react'
+import { Menu, X, User, LogOut, Settings, ChevronLeft, ChevronRight } from 'lucide-react'
 
 const Header: React.FC = () => {
   const { user, logout } = useAuth()
   const location = useLocation()
+  const navigate = useNavigate()
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isProfileOpen, setIsProfileOpen] = useState(false)
+  const [isAdminMode, setIsAdminMode] = useState(false)
+
+  // Debug: verificar se o usuário é admin
+  console.log('🔍 Header - User type:', user?.type, 'isAdmin:', user?.type === 'admin')
 
   const getNavigationByUserType = () => {
     if (!user) return []
+    
+    // Se for admin e estiver no modo admin, mostrar menu admin
+    if (user.type === 'admin' && isAdminMode) {
+      return [
+        { name: '👑 Dashboard Admin', href: '/admin' },
+        { name: '📚 Biblioteca', href: '/library' },
+        { name: '🤖 Chat IA Documentos', href: '/ai-documents' },
+      ]
+    }
+    
+    // Se for admin mas estiver no modo profissional, mostrar menu profissional
+    if (user.type === 'admin' && !isAdminMode) {
+      return [
+        { name: '🏥 Dashboard Profissional', href: '/dashboard' },
+        { name: '👥 Meus Pacientes', href: '/patients' },
+        { name: '📊 Avaliações', href: '/evaluations' },
+        { name: '📚 Biblioteca Médica', href: '/library' },
+        { name: '💬 Chat Global + Fórum', href: '/chat' },
+        { name: '📈 Relatórios', href: '/reports' },
+      ]
+    }
     
     switch (user.type) {
       case 'patient':
@@ -40,12 +66,6 @@ const Header: React.FC = () => {
           { name: '📊 Meu Progresso', href: '/progress' },
           { name: '👤 Meu Perfil', href: '/profile' },
         ]
-      case 'admin':
-        return [
-          { name: '👑 Dashboard Admin', href: '/admin' },
-          { name: '📚 Biblioteca', href: '/library' },
-          { name: '🤖 Chat IA Documentos', href: '/ai-documents' },
-        ]
       default:
         return []
     }
@@ -70,14 +90,42 @@ const Header: React.FC = () => {
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-6">
+            {/* Toggle Admin/Professional para admins */}
+            {user?.type === 'admin' && (
+              <div className="flex items-center space-x-2 bg-gradient-to-r from-blue-600/20 to-yellow-600/20 border border-blue-500/30 px-3 py-2 rounded-lg">
+                <button
+                  onClick={() => {
+                    console.log('🔄 Toggle clicked, current mode:', isAdminMode)
+                    setIsAdminMode(!isAdminMode)
+                    // Redirecionar para a página apropriada
+                    if (!isAdminMode) {
+                      navigate('/admin')
+                    } else {
+                      navigate('/dashboard')
+                    }
+                  }}
+                  className="flex items-center space-x-2 text-white hover:text-yellow-300 transition-colors"
+                >
+                  {isAdminMode ? (
+                    <ChevronRight className="w-4 h-4 text-yellow-400" />
+                  ) : (
+                    <ChevronLeft className="w-4 h-4 text-blue-400" />
+                  )}
+                  <span className="text-sm font-medium">
+                    {isAdminMode ? '👑 Admin' : '👨‍⚕️ Profissional'}
+                  </span>
+                </button>
+              </div>
+            )}
+            
             {/* Indicador de Perfil */}
             <div className="flex items-center space-x-2 bg-slate-700/50 px-3 py-1 rounded-full">
-              <div className="w-2 h-2 bg-green-400 rounded-full"></div>
+              <div className={`w-2 h-2 rounded-full ${user?.type === 'admin' ? 'bg-yellow-400' : 'bg-green-400'}`}></div>
               <span className="text-sm text-slate-300">
                 {user?.type === 'patient' && '👤 Paciente'}
                 {user?.type === 'professional' && '👨‍⚕️ Profissional'}
                 {user?.type === 'student' && '👨‍🎓 Estudante'}
-                {user?.type === 'admin' && '👑 Administrador'}
+                {user?.type === 'admin' && (isAdminMode ? '👑 Administrador' : '👨‍⚕️ Profissional')}
               </span>
             </div>
             
@@ -158,6 +206,34 @@ const Header: React.FC = () => {
         {isMenuOpen && (
           <div className="md:hidden">
             <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 border-t border-slate-700">
+              {/* Toggle Admin/Professional para admins - Mobile */}
+              {user?.type === 'admin' && (
+                <div className="px-3 py-2 border-b border-slate-600">
+                  <button
+                    onClick={() => {
+                      setIsAdminMode(!isAdminMode)
+                      setIsMenuOpen(false)
+                      // Redirecionar para a página apropriada
+                      if (!isAdminMode) {
+                        navigate('/admin')
+                      } else {
+                        navigate('/dashboard')
+                      }
+                    }}
+                    className="flex items-center space-x-2 text-slate-300 hover:text-white transition-colors w-full"
+                  >
+                    {isAdminMode ? (
+                      <ChevronRight className="w-4 h-4 text-yellow-400" />
+                    ) : (
+                      <ChevronLeft className="w-4 h-4 text-blue-400" />
+                    )}
+                    <span className="text-sm">
+                      {isAdminMode ? '👑 Modo Admin' : '👨‍⚕️ Modo Profissional'}
+                    </span>
+                  </button>
+                </div>
+              )}
+              
               {navigation.map((item) => (
                 <Link
                   key={item.name}

@@ -55,6 +55,7 @@ const ChatGlobal: React.FC = () => {
   const [isAdmin, setIsAdmin] = useState(false)
   const [showModeration, setShowModeration] = useState(false)
   const [moderatorRequests, setModeratorRequests] = useState<any[]>([])
+  const [realtimeSubscription, setRealtimeSubscription] = useState<any>(null)
   const [showModeratorRequest, setShowModeratorRequest] = useState(false)
   const [requestReason, setRequestReason] = useState('')
   const messagesEndRef = useRef<HTMLDivElement>(null)
@@ -134,7 +135,45 @@ const ChatGlobal: React.FC = () => {
   // Carregar mensagens do canal ativo
   useEffect(() => {
     loadMessages()
+    setupRealtimeSubscription()
   }, [activeChannel])
+
+  // Configurar tempo real para mensagens
+  const setupRealtimeSubscription = () => {
+    // Limpar subscription anterior
+    if (realtimeSubscription) {
+      supabase.removeChannel(realtimeSubscription)
+    }
+
+    // Configurar nova subscription
+    const subscription = supabase
+      .channel(`chat_messages_${activeChannel}`)
+      .on('postgres_changes', {
+        event: 'INSERT',
+        schema: 'public',
+        table: 'chat_messages',
+        filter: `channel=eq.${activeChannel}`
+      }, (payload) => {
+        console.log('📨 Nova mensagem recebida:', payload.new)
+        // Adicionar nova mensagem à lista
+        setMessages(prev => [...prev, payload.new])
+        // Scroll para baixo
+        scrollToBottom()
+      })
+      .on('postgres_changes', {
+        event: 'DELETE',
+        schema: 'public',
+        table: 'chat_messages',
+        filter: `channel=eq.${activeChannel}`
+      }, (payload) => {
+        console.log('🗑️ Mensagem removida:', payload.old)
+        // Remover mensagem da lista
+        setMessages(prev => prev.filter(msg => msg.id !== payload.old.id))
+      })
+      .subscribe()
+
+    setRealtimeSubscription(subscription)
+  }
 
   // Carregar usuários online
   useEffect(() => {
@@ -148,14 +187,60 @@ const ChatGlobal: React.FC = () => {
     }
   }, [isAdmin])
 
+  // Limpeza da subscription ao desmontar
+  useEffect(() => {
+    return () => {
+      if (realtimeSubscription) {
+        supabase.removeChannel(realtimeSubscription)
+      }
+    }
+  }, [realtimeSubscription])
+
+  // Limpeza automática de mensagens antigas (24 horas)
+  useEffect(() => {
+    const cleanupOldMessages = async () => {
+      try {
+        const twentyFourHoursAgo = new Date()
+        twentyFourHoursAgo.setHours(twentyFourHoursAgo.getHours() - 24)
+        
+        // Deletar mensagens antigas
+        const { error } = await supabase
+          .from('chat_messages')
+          .delete()
+          .lt('created_at', twentyFourHoursAgo.toISOString())
+
+        if (error) {
+          console.error('Erro ao limpar mensagens antigas:', error)
+        } else {
+          console.log('🧹 Mensagens antigas removidas automaticamente')
+        }
+      } catch (error) {
+        console.error('Erro na limpeza automática:', error)
+      }
+    }
+
+    // Executar limpeza a cada hora
+    const cleanupInterval = setInterval(cleanupOldMessages, 60 * 60 * 1000)
+    
+    // Executar limpeza imediatamente
+    cleanupOldMessages()
+
+    return () => clearInterval(cleanupInterval)
+  }, [])
+
   const loadMessages = async () => {
     try {
+      // Carregar apenas mensagens das últimas 24 horas
+      const twentyFourHoursAgo = new Date()
+      twentyFourHoursAgo.setHours(twentyFourHoursAgo.getHours() - 24)
+      
       const { data, error } = await supabase
         .from('chat_messages')
         .select('*')
         .eq('channel', activeChannel)
+        .gte('created_at', twentyFourHoursAgo.toISOString())
         .order('created_at', { ascending: true })
-        .limit(50)
+        .limit(100)
 
       if (error) {
         console.error('Erro ao carregar mensagens:', error)
@@ -163,9 +248,16 @@ const ChatGlobal: React.FC = () => {
       }
 
       setMessages(data || [])
+      scrollToBottom()
     } catch (error) {
       console.error('Erro ao carregar mensagens:', error)
     }
+  }
+
+  const scrollToBottom = () => {
+    setTimeout(() => {
+      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+    }, 100)
   }
 
   const loadOnlineUsers = async () => {
@@ -210,10 +302,6 @@ const ChatGlobal: React.FC = () => {
     { id: 1, name: 'Dr. Lucas Ferreira', avatar: 'LF', specialty: 'Dermatologia', crm: '66666-RS', message: 'Gostaria de conectar para discutir casos de dermatite atópica' },
     { id: 2, name: 'Dra. Camila Alves', avatar: 'CA', specialty: 'Ginecologia', crm: '77777-BA', message: 'Interessada em trocar experiências sobre cannabis na ginecologia' }
   ]
-
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }
 
   useEffect(() => {
     scrollToBottom()
@@ -630,6 +718,17 @@ const ChatGlobal: React.FC = () => {
 
               {/* Messages */}
               <div className="flex-1 overflow-y-auto p-4 space-y-4">
+                {/* Indicador de tempo real */}
+                <div className="text-center mb-4">
+                  <div className="inline-flex items-center space-x-2 bg-green-500/20 border border-green-500/30 rounded-full px-4 py-2">
+                    <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                    <span className="text-green-400 text-sm font-medium">Chat em tempo real ativo</span>
+                  </div>
+                  <p className="text-slate-400 text-xs mt-2">
+                    💬 Conversas expiram em 24 horas para manter o chat limpo e focado
+                  </p>
+                </div>
+                
                 {messages.map((msg) => (
                   <div key={msg.id} className="flex space-x-3">
                     <div className="relative">

@@ -1,100 +1,102 @@
--- =====================================================
--- 🔍 VERIFICAR TABELAS EXISTENTES DO MEDCANLAB
--- =====================================================
--- Execute este script para ver o que já temos configurado
+-- Verificar tabelas existentes no Supabase
+-- Execute este script no Supabase SQL Editor
 
--- 1. VERIFICAR DADOS NAS TABELAS PRINCIPAIS
+-- 1. Listar todas as tabelas no schema public
 SELECT 
-    'usuarios' as tabela,
-    COUNT(*) as total_registros
-FROM usuarios
-UNION ALL
-SELECT 
-    'pacientes' as tabela,
-    COUNT(*) as total_registros
-FROM pacientes
-UNION ALL
-SELECT 
-    'avaliacoes_renais' as tabela,
-    COUNT(*) as total_registros
-FROM avaliacoes_renais
-UNION ALL
-SELECT 
-    'dados_imre_coletados' as tabela,
-    COUNT(*) as total_registros
-FROM dados_imre_coletados
-UNION ALL
-SELECT 
-    'interacoes_ia' as tabela,
-    COUNT(*) as total_registros
-FROM interacoes_ia
-UNION ALL
-SELECT 
-    'base_conhecimento' as tabela,
-    COUNT(*) as total_registros
-FROM base_conhecimento
-UNION ALL
-SELECT 
-    'contexto_longitudinal' as tabela,
-    COUNT(*) as total_registros
-FROM contexto_longitudinal
-UNION ALL
-SELECT 
-    'desenvolvimento_indiciario' as tabela,
-    COUNT(*) as total_registros
-FROM desenvolvimento_indiciario
-UNION ALL
-SELECT 
-    'abertura_exponencial' as tabela,
-    COUNT(*) as total_registros
-FROM abertura_exponencial
-UNION ALL
-SELECT 
-    'fechamento_consensual' as tabela,
-    COUNT(*) as total_registros
-FROM fechamento_consensual
-UNION ALL
-SELECT 
-    'permissoes_compartilhamento' as tabela,
-    COUNT(*) as total_registros
-FROM permissoes_compartilhamento;
+  schemaname,
+  tablename,
+  tableowner,
+  rowsecurity as rls_enabled
+FROM pg_tables 
+WHERE schemaname = 'public'
+ORDER BY tablename;
 
--- 2. VERIFICAR ESTRUTURA DAS TABELAS PRINCIPAIS
+-- 2. Verificar tabelas do sistema Supabase
 SELECT 
-    'ESTRUTURA DA TABELA USUARIOS' as info,
-    column_name,
-    data_type,
-    is_nullable
-FROM information_schema.columns 
-WHERE table_name = 'usuarios' AND table_schema = 'public'
-ORDER BY ordinal_position;
+  schemaname,
+  tablename,
+  rowsecurity as rls_enabled
+FROM pg_tables 
+WHERE schemaname IN ('auth', 'storage', 'realtime')
+ORDER BY schemaname, tablename;
 
--- 3. VERIFICAR ESTRUTURA DA TABELA PACIENTES
+-- 3. Verificar se as tabelas que estamos tentando usar existem
 SELECT 
-    'ESTRUTURA DA TABELA PACIENTES' as info,
-    column_name,
-    data_type,
-    is_nullable
-FROM information_schema.columns 
-WHERE table_name = 'pacientes' AND table_schema = 'public'
-ORDER BY ordinal_position;
+  CASE 
+    WHEN EXISTS (SELECT 1 FROM pg_tables WHERE tablename = 'usuarios' AND schemaname = 'public') 
+    THEN 'usuarios: ✅ EXISTE'
+    ELSE 'usuarios: ❌ NÃO EXISTE'
+  END as usuarios_status,
+  CASE 
+    WHEN EXISTS (SELECT 1 FROM pg_tables WHERE tablename = 'notifications' AND schemaname = 'public') 
+    THEN 'notifications: ✅ EXISTE'
+    ELSE 'notifications: ❌ NÃO EXISTE'
+  END as notifications_status,
+  CASE 
+    WHEN EXISTS (SELECT 1 FROM pg_tables WHERE tablename = 'chat_messages' AND schemaname = 'public') 
+    THEN 'chat_messages: ✅ EXISTE'
+    ELSE 'chat_messages: ❌ NÃO EXISTE'
+  END as chat_messages_status,
+  CASE 
+    WHEN EXISTS (SELECT 1 FROM pg_tables WHERE tablename = 'profiles' AND schemaname = 'public') 
+    THEN 'profiles: ✅ EXISTE'
+    ELSE 'profiles: ❌ NÃO EXISTE'
+  END as profiles_status;
 
--- 4. VERIFICAR ESTRUTURA DA TABELA DADOS_IMRE_COLETADOS
+-- 4. Verificar tabelas de autenticação
 SELECT 
-    'ESTRUTURA DA TABELA DADOS_IMRE_COLETADOS' as info,
-    column_name,
-    data_type,
-    is_nullable
-FROM information_schema.columns 
-WHERE table_name = 'dados_imre_coletados' AND table_schema = 'public'
-ORDER BY ordinal_position;
+  CASE 
+    WHEN EXISTS (SELECT 1 FROM pg_tables WHERE tablename = 'users' AND schemaname = 'auth') 
+    THEN 'auth.users: ✅ EXISTE'
+    ELSE 'auth.users: ❌ NÃO EXISTE'
+  END as auth_users_status;
 
--- 5. RESUMO GERAL
+-- 5. Verificar políticas RLS
 SELECT 
-    'RESUMO DAS TABELAS EXISTENTES' as title,
-    (SELECT COUNT(*) FROM usuarios) as total_usuarios,
-    (SELECT COUNT(*) FROM pacientes) as total_pacientes,
-    (SELECT COUNT(*) FROM avaliacoes_renais) as total_avaliacoes_renais,
-    (SELECT COUNT(*) FROM dados_imre_coletados) as total_dados_imre,
-    (SELECT COUNT(*) FROM interacoes_ia) as total_interacoes_ia,
-    (SELECT COUNT(*) FROM base_conhecimento) as total_base_conhecimento;
+  schemaname,
+  tablename,
+  policyname,
+  permissive,
+  roles,
+  cmd
+FROM pg_policies 
+WHERE schemaname = 'public'
+ORDER BY tablename, policyname;
+
+-- 6. Verificar publicações de tempo real
+SELECT 
+  pubname,
+  schemaname,
+  tablename
+FROM pg_publication_tables 
+WHERE pubname = 'supabase_realtime'
+ORDER BY tablename;
+
+-- 7. Verificar se há dados nas tabelas existentes (sem tentar acessar tabelas que não existem)
+SELECT 
+  'usuarios' as tabela,
+  CASE 
+    WHEN EXISTS (SELECT 1 FROM pg_tables WHERE tablename = 'usuarios' AND schemaname = 'public')
+    THEN 'Tabela existe - verificar dados manualmente'
+    ELSE 'Tabela não existe'
+  END as status
+UNION ALL
+SELECT 
+  'notifications' as tabela,
+  CASE 
+    WHEN EXISTS (SELECT 1 FROM pg_tables WHERE tablename = 'notifications' AND schemaname = 'public')
+    THEN 'Tabela existe - verificar dados manualmente'
+    ELSE 'Tabela não existe'
+  END as status
+UNION ALL
+SELECT 
+  'chat_messages' as tabela,
+  CASE 
+    WHEN EXISTS (SELECT 1 FROM pg_tables WHERE tablename = 'chat_messages' AND schemaname = 'public')
+    THEN 'Tabela existe - verificar dados manualmente'
+    ELSE 'Tabela não existe'
+  END as status;
+
+-- Status: 🔍 Diagnóstico completo das tabelas
+-- Execute este script para ver exatamente quais tabelas existem
+-- e quais estão faltando no seu Supabase

@@ -160,24 +160,11 @@ const AdminDashboard: React.FC = () => {
       setLibraryDocuments(docsData || [])
       setFilteredDocs(docsData || [])
 
-      // Carregar usuários recentes
-      const { data: usersData, error: usersError } = await supabase
-        .from('usuarios')
-        .select('*')
-        .order('timestamp', { ascending: false })
-        .limit(10)
+      // Usar dados mockados temporariamente até as tabelas estarem prontas
+      setRecentUsers([])
 
-      if (usersError) {
-        console.error('Erro ao carregar usuários:', usersError)
-        return
-      }
-
-      setRecentUsers(usersData || [])
-
-      // Carregar estatísticas reais
-      const { count: totalUsers } = await supabase
-        .from('usuarios')
-        .select('*', { count: 'exact' })
+      // Usar dados mockados para estatísticas
+      const totalUsers = 0
 
       const { count: totalCourses } = await supabase
         .from('courses')
@@ -202,7 +189,7 @@ const AdminDashboard: React.FC = () => {
       // Atualizar estatísticas
       setStats([
         { label: 'Usuários Totais', value: totalUsers?.toString() || '0', icon: <Users className="w-5 h-5" />, color: 'text-primary-400' },
-        { label: 'Usuários Ativos', value: usersData?.length?.toString() || '0', icon: <Activity className="w-5 h-5" />, color: 'text-green-400' },
+        { label: 'Usuários Ativos', value: recentUsers?.length?.toString() || '0', icon: <Activity className="w-5 h-5" />, color: 'text-green-400' },
         { label: 'Cursos Disponíveis', value: totalCourses?.toString() || '0', icon: <BookOpen className="w-5 h-5" />, color: 'text-purple-400' },
         { label: 'Documentos', value: totalDocuments?.toString() || '0', icon: <Activity className="w-5 h-5" />, color: 'text-orange-400' }
       ])
@@ -679,7 +666,7 @@ const AdminDashboard: React.FC = () => {
         <h3 className="text-xl font-bold text-white mb-6">⚡ Ações Rápidas</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <Link
-            to="/admin/users"
+            to="/app/admin/users"
             className="bg-slate-700/50 hover:bg-slate-600/50 rounded-lg p-4 text-center transition-colors duration-200 border border-slate-600"
           >
             <div className="text-3xl mb-3">👥</div>
@@ -687,7 +674,7 @@ const AdminDashboard: React.FC = () => {
             <div className="text-slate-400 text-sm">1,247 usuários ativos</div>
           </Link>
           <Link
-            to="/admin/courses"
+            to="/app/admin/courses"
             className="bg-slate-700/50 hover:bg-slate-600/50 rounded-lg p-4 text-center transition-colors duration-200 border border-slate-600"
           >
             <div className="text-3xl mb-3">🎓</div>
@@ -695,7 +682,7 @@ const AdminDashboard: React.FC = () => {
             <div className="text-slate-400 text-sm">28 cursos disponíveis</div>
           </Link>
           <Link
-            to="/admin/analytics"
+            to="/app/admin/analytics"
             className="bg-slate-700/50 hover:bg-slate-600/50 rounded-lg p-4 text-center transition-colors duration-200 border border-slate-600"
           >
             <div className="text-3xl mb-3">📊</div>
@@ -703,7 +690,7 @@ const AdminDashboard: React.FC = () => {
             <div className="text-slate-400 text-sm">Métricas detalhadas</div>
           </Link>
           <Link
-            to="/admin/upload"
+            to="/app/admin/upload"
             className="bg-slate-700/50 hover:bg-slate-600/50 rounded-lg p-4 text-center transition-colors duration-200 border border-slate-600"
           >
             <div className="text-3xl mb-3">📁</div>
@@ -711,7 +698,7 @@ const AdminDashboard: React.FC = () => {
             <div className="text-slate-400 text-sm">156 documentos</div>
           </Link>
           <Link
-            to="/chat"
+            to="/app/chat"
             className="bg-slate-700/50 hover:bg-slate-600/50 rounded-lg p-4 text-center transition-colors duration-200 border border-slate-600"
           >
             <div className="text-3xl mb-3">💬</div>
@@ -719,7 +706,7 @@ const AdminDashboard: React.FC = () => {
             <div className="text-slate-400 text-sm">247 usuários online</div>
           </Link>
           <Link
-            to="/admin?tab=forum"
+            to="/app/forum"
             className="bg-slate-700/50 hover:bg-slate-600/50 rounded-lg p-4 text-center transition-colors duration-200 border border-slate-600"
           >
             <div className="text-3xl mb-3">🏛️</div>
@@ -727,7 +714,7 @@ const AdminDashboard: React.FC = () => {
             <div className="text-slate-400 text-sm">47 debates ativos</div>
           </Link>
           <Link
-            to="/admin?tab=gamification"
+            to="/app/gamificacao"
             className="bg-slate-700/50 hover:bg-slate-600/50 rounded-lg p-4 text-center transition-colors duration-200 border border-slate-600"
           >
             <div className="text-3xl mb-3">🏆</div>
@@ -735,7 +722,7 @@ const AdminDashboard: React.FC = () => {
             <div className="text-slate-400 text-sm">45,230 pontos distribuídos</div>
           </Link>
           <Link
-            to="/admin?tab=settings"
+            to="/app/admin"
             className="bg-slate-700/50 hover:bg-slate-600/50 rounded-lg p-4 text-center transition-colors duration-200 border border-slate-600"
           >
             <div className="text-3xl mb-3">⚙️</div>

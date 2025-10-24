@@ -1,5 +1,5 @@
 
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider } from './contexts/AuthContext'
 import { ToastProvider } from './contexts/ToastContext'
 import { NoaProvider } from './contexts/NoaContext'
@@ -9,7 +9,6 @@ import ProtectedRoute from './components/ProtectedRoute'
 
 // Pages
 import Landing from './pages/Landing'
-import Login from './pages/Login'
 import Dashboard from './pages/Dashboard'
 import Courses from './pages/Courses'
 import ClinicalAssessment from './pages/ClinicalAssessment'
@@ -46,14 +45,13 @@ function App() {
                 <RealtimeProvider>
             <Routes>
               <Route path="/" element={<Landing />} />
-              <Route path="/login" element={<Login />} />
-              <Route path="/register" element={<Login />} />
               <Route path="/termos-lgpd" element={<TermosLGPD />} />
               <Route path="/pre-anamnese" element={<PreAnamnese />} />
               <Route path="/experiencia-paciente" element={<ExperienciaPaciente />} />
               <Route path="/curso-eduardo-faveret" element={<CursoEduardoFaveret />} />
               
-              <Route path="/" element={<Layout />}>
+              <Route path="/app" element={<Layout />}>
+                <Route index element={<Navigate to="dashboard" replace />} />
                 <Route path="home" element={<Dashboard />} />
                 <Route path="test" element={<TestPage />} />
                 <Route path="dashboard" element={<Dashboard />} />
@@ -122,6 +120,41 @@ function App() {
                   </ProtectedRoute>
                 } />
                 <Route path="admin/reports" element={
+                  <ProtectedRoute requiredRole="admin">
+                    <AdminDashboard />
+                  </ProtectedRoute>
+                } />
+                <Route path="admin/upload" element={
+                  <ProtectedRoute requiredRole="admin">
+                    <AdminDashboard />
+                  </ProtectedRoute>
+                } />
+                <Route path="admin/chat" element={
+                  <ProtectedRoute requiredRole="admin">
+                    <AdminDashboard />
+                  </ProtectedRoute>
+                } />
+                <Route path="admin/forum" element={
+                  <ProtectedRoute requiredRole="admin">
+                    <AdminDashboard />
+                  </ProtectedRoute>
+                } />
+                <Route path="admin/gamification" element={
+                  <ProtectedRoute requiredRole="admin">
+                    <AdminDashboard />
+                  </ProtectedRoute>
+                } />
+                <Route path="admin/renal" element={
+                  <ProtectedRoute requiredRole="admin">
+                    <AdminDashboard />
+                  </ProtectedRoute>
+                } />
+                <Route path="admin/unification" element={
+                  <ProtectedRoute requiredRole="admin">
+                    <AdminDashboard />
+                  </ProtectedRoute>
+                } />
+                <Route path="admin/financial" element={
                   <ProtectedRoute requiredRole="admin">
                     <AdminDashboard />
                   </ProtectedRoute>

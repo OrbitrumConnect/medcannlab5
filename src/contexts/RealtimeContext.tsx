@@ -191,31 +191,13 @@ export const RealtimeProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
   const loadAdminStats = async () => {
     try {
-      // Buscar total de usuários
-      const { data: users } = await supabase
-        .from('usuarios')
-        .select('*')
-
-      // Buscar usuários ativos (últimos 30 dias)
-      const thirtyDaysAgo = new Date()
-      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
-      
-      const { data: activeUsers } = await supabase
-        .from('usuarios')
-        .select('*')
-        .gte('created_at', thirtyDaysAgo.toISOString())
-
-      // Buscar total de cursos
-      const { data: courses } = await supabase
-        .from('courses')
-        .select('*')
-
+      // Usar dados mockados temporariamente até as tabelas estarem prontas
       setData(prev => ({
         ...prev,
         adminStats: {
-          totalUsers: users?.length || 0,
-          activeUsers: activeUsers?.length || 0,
-          totalCourses: courses?.length || 0,
+          totalUsers: 0, // Será preenchido quando as tabelas estiverem prontas
+          activeUsers: 0,
+          totalCourses: 0,
           systemHealth: 'healthy'
         }
       }))
@@ -226,27 +208,11 @@ export const RealtimeProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
   const loadNotifications = async () => {
     try {
-      // Buscar notificações do usuário
-      const { data: notifications } = await supabase
-        .from('notifications')
-        .select('*')
-        .eq('user_id', user?.id)
-        .order('created_at', { ascending: false })
-        .limit(10)
-
-      if (notifications) {
-        setData(prev => ({
-          ...prev,
-          notifications: notifications.map(notif => ({
-            id: notif.id,
-            type: notif.type,
-            title: notif.title,
-            message: notif.message,
-            timestamp: new Date(notif.created_at),
-            read: notif.read
-          }))
-        }))
-      }
+      // Usar notificações mockadas temporariamente até a tabela estar pronta
+      setData(prev => ({
+        ...prev,
+        notifications: []
+      }))
     } catch (error) {
       console.error('Erro ao carregar notificações:', error)
     }
@@ -275,34 +241,16 @@ export const RealtimeProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
   const addNotification = async (notification: Omit<RealtimeData['notifications'][0], 'id' | 'timestamp'>) => {
     try {
-      // Salvar notificação no Supabase
-      const { data: newNotification, error } = await supabase
-        .from('notifications')
-        .insert({
-          user_id: user?.id,
-          type: notification.type,
-          title: notification.title,
-          message: notification.message,
-          read: notification.read
-        })
-        .select()
-        .single()
-
-      if (error) {
-        console.error('Erro ao salvar notificação:', error)
-        return
+      // Adicionar notificação localmente temporariamente
+      const newNotification = {
+        ...notification,
+        id: Date.now().toString(),
+        timestamp: new Date()
       }
 
       setData(prev => ({
         ...prev,
-        notifications: [
-          {
-            ...notification,
-            id: newNotification.id,
-            timestamp: new Date(newNotification.created_at)
-          },
-          ...prev.notifications
-        ]
+        notifications: [newNotification, ...prev.notifications]
       }))
     } catch (error) {
       console.error('Erro ao adicionar notificação:', error)
@@ -311,12 +259,7 @@ export const RealtimeProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
   const markNotificationAsRead = async (id: string) => {
     try {
-      // Marcar como lida no Supabase
-      await supabase
-        .from('notifications')
-        .update({ read: true })
-        .eq('id', id)
-
+      // Marcar como lida localmente
       setData(prev => ({
         ...prev,
         notifications: prev.notifications.map(notif => 
@@ -330,12 +273,7 @@ export const RealtimeProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
   const clearNotifications = async () => {
     try {
-      // Limpar notificações no Supabase
-      await supabase
-        .from('notifications')
-        .delete()
-        .eq('user_id', user?.id)
-
+      // Limpar notificações localmente
       setData(prev => ({
         ...prev,
         notifications: []

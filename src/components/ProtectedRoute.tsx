@@ -10,14 +10,14 @@ interface ProtectedRouteProps {
 const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, requiredRole }) => {
   const { user } = useAuth()
 
-  // Se não estiver logado, redirecionar para login
+  // Se não estiver logado, redirecionar para landing
   if (!user) {
-    return <Navigate to="/login" replace />
+    return <Navigate to="/" replace />
   }
 
   // Se tiver role específico e não for o role correto, redirecionar para dashboard
   if (requiredRole && user.type !== requiredRole) {
-    return <Navigate to="/dashboard" replace />
+    return <Navigate to="/app/dashboard" replace />
   }
 
   return <>{children}</>
