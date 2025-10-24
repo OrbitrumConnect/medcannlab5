@@ -100,7 +100,7 @@ const Landing: React.FC = () => {
       title: 'Profissional da Saúde',
       subtitle: 'CRM, CRO, Enfermeiros',
       icon: <Stethoscope className="w-8 h-8" />,
-      color: 'from-primary-500 to-primary-600',
+      color: 'from-green-500 to-green-600',
       features: [
         'Avaliação Clínica IMRE',
         'Gestão de Pacientes',
@@ -126,7 +126,7 @@ const Landing: React.FC = () => {
       title: 'Estudante',
       subtitle: 'Formação Médica',
       icon: <GraduationCap className="w-8 h-8" />,
-      color: 'from-purple-500 to-purple-600',
+      color: 'from-green-400 to-green-500',
       features: [
         'Cursos Especializados',
         'Certificações',
@@ -167,18 +167,18 @@ const Landing: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-primary-900 to-slate-800 relative overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-green-900 to-slate-800 relative overflow-hidden">
       {/* Background Pattern */}
       <div className="absolute inset-0 opacity-20" style={{
         backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%2322c55e' fill-opacity='0.1'%3E%3Ccircle cx='30' cy='30' r='2'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`
       }}></div>
       {/* Header Profissional */}
-      <header className="bg-slate-800/90 backdrop-blur-sm shadow-lg border-b border-slate-700/50">
+      <header className="bg-slate-800/90 backdrop-blur-sm shadow-lg border-b border-slate-700/50 py-4">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-20">
+          <div className="flex justify-between items-center h-16">
             {/* Logo */}
             <div className="flex items-center space-x-3">
-              <div className="w-12 h-12 bg-gradient-to-r from-primary-600 to-accent-500 rounded-xl flex items-center justify-center">
+              <div className="w-12 h-12 bg-green-600 rounded-xl flex items-center justify-center">
                 <span className="text-white font-bold text-xl">M</span>
               </div>
               <div>
@@ -191,10 +191,10 @@ const Landing: React.FC = () => {
 
             {/* Navigation */}
             <nav className="hidden md:flex space-x-8">
-              <a href="#features" className="text-slate-200 hover:text-primary-300 font-medium transition-colors">Recursos</a>
-              <a href="#partners" className="text-slate-200 hover:text-primary-300 font-medium transition-colors">Parceiros</a>
-              <a href="#about" className="text-slate-200 hover:text-primary-300 font-medium transition-colors">Sobre</a>
-              <a href="#contact" className="text-slate-200 hover:text-primary-300 font-medium transition-colors">Contato</a>
+              <a href="#features" className="text-slate-200 hover:text-green-300 font-medium transition-colors">Recursos</a>
+              <a href="#partners" className="text-slate-200 hover:text-green-300 font-medium transition-colors">Parceiros</a>
+              <a href="#about" className="text-slate-200 hover:text-green-300 font-medium transition-colors">Sobre</a>
+              <a href="#contact" className="text-slate-200 hover:text-green-300 font-medium transition-colors">Contato</a>
             </nav>
 
             {/* CTA */}
@@ -204,7 +204,7 @@ const Landing: React.FC = () => {
                   // Scroll para a seção de perfis
                   document.getElementById('profiles')?.scrollIntoView({ behavior: 'smooth' })
                 }}
-                className="bg-gradient-to-r from-primary-600 to-accent-500 hover:from-primary-700 hover:to-accent-600 text-white px-6 py-3 rounded-lg font-medium transition-all duration-300 shadow-lg hover:shadow-xl"
+                className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-medium transition-all duration-300 shadow-lg hover:shadow-xl"
               >
                 Começar Agora
               </button>
@@ -214,40 +214,62 @@ const Landing: React.FC = () => {
       </header>
 
       {/* Hero Section */}
-      <section className="py-20 bg-gradient-to-br from-slate-800 via-primary-800 to-slate-700 relative overflow-hidden">
+      <section className="py-16 bg-gradient-to-br from-green-900 via-slate-800 to-yellow-900 relative overflow-hidden">
         {/* Background Effects */}
-        <div className="absolute inset-0 bg-gradient-to-r from-primary-900/30 via-slate-800/30 to-slate-900/30"></div>
+        <div className="absolute inset-0 bg-gradient-to-r from-green-900/40 via-slate-800/40 to-yellow-900/40"></div>
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <div className="text-center max-w-4xl mx-auto">
-            <h1 className="text-5xl md:text-6xl font-bold text-white mb-6">
-              Medicina do <span className="text-yellow-300">Futuro</span>
-              <br />Hoje
-            </h1>
-            <p className="text-xl text-white/90 mb-8 max-w-2xl mx-auto">
-              Plataforma médica completa com IA, avaliação clínica avançada e 
-              metodologia AEC para profissionais e pacientes.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
-              <button
-                onClick={() => {
-                  // Scroll para a seção de perfis
-                  document.getElementById('profiles')?.scrollIntoView({ behavior: 'smooth' })
-                }}
-                className="bg-gradient-to-r from-primary-600 to-accent-500 hover:from-primary-700 hover:to-accent-600 text-white px-8 py-4 rounded-xl font-semibold text-lg transition-all duration-300 inline-flex items-center justify-center shadow-xl hover:shadow-2xl"
-              >
-                Começar Gratuitamente
-                <ArrowRight className="w-5 h-5 ml-2" />
-              </button>
-              <button className="border-2 border-slate-200 text-slate-200 hover:bg-slate-700/50 hover:text-white backdrop-blur-sm px-8 py-4 rounded-xl font-semibold text-lg transition-all duration-300">
-                Ver Demonstração
-              </button>
+          <div className="flex flex-col mx-auto" style={{ transform: 'translateY(-30%)', maxWidth: '1000px' }}>
+            {/* Imagem do Cérebro com Glow - ACIMA */}
+            <div className="relative flex justify-center mb-8" style={{ transform: 'translateX(38%) translateY(103%) scale(1.44)' }}>
+              <div className="relative">
+                <img 
+                  src="/src/assets/brain.png" 
+                  alt="Cérebro com IA" 
+                  className="w-80 h-80 object-contain drop-shadow-2xl"
+                  style={{
+                    filter: 'drop-shadow(0 0 20px rgba(34, 197, 94, 0.3)) drop-shadow(0 0 40px rgba(251, 191, 36, 0.2))'
+                  }}
+                />
+              </div>
+            </div>
+
+            <div className="flex flex-col lg:flex-row items-center justify-between mb-8">
+              <div className="text-center lg:text-left max-w-2xl mb-8 lg:mb-0">
+                <h1 className="text-5xl md:text-6xl font-bold text-white mb-6">
+                  Medicina do <span className="text-yellow-300">Futuro</span>
+                  <br />Hoje
+                </h1>
+                <p className="text-xl text-white/90 mb-8">
+                  Plataforma médica completa com IA, avaliação clínica avançada e 
+                  metodologia AEC para profissionais e pacientes.
+                </p>
+                
+                <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start mb-8">
+                  <button
+                    onClick={() => {
+                      // Scroll para a seção de perfis
+                      document.getElementById('profiles')?.scrollIntoView({ behavior: 'smooth' })
+                    }}
+                    className="bg-green-600 hover:bg-green-700 text-white px-8 py-4 rounded-xl font-semibold text-lg transition-all duration-300 inline-flex items-center justify-center shadow-xl hover:shadow-2xl"
+                  >
+                    Começar Gratuitamente
+                    <ArrowRight className="w-5 h-5 ml-2" />
+                  </button>
+                  <button className="border-2 border-slate-200 text-slate-200 hover:bg-slate-700/50 hover:text-white backdrop-blur-sm px-8 py-4 rounded-xl font-semibold text-lg transition-all duration-300">
+                    Ver Demonstração
+                  </button>
+                </div>
+              </div>
+              
+              {/* Espaço vazio para balancear o layout */}
+              <div className="hidden lg:block w-80"></div>
             </div>
 
             {/* Stats */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-8 w-full">
               {stats.map((stat, index) => (
-                <div key={index} className="text-center bg-slate-800/50 backdrop-blur-sm rounded-xl p-6 border border-slate-700/50">
-                  <div className="text-3xl font-bold text-primary-400 mb-2">{stat.number}</div>
+                <div key={index} className="text-center bg-gradient-to-br from-green-800/30 to-yellow-800/30 backdrop-blur-sm rounded-xl p-6 border border-green-500/30">
+                  <div className="text-3xl font-bold text-green-400 mb-2">{stat.number}</div>
                   <div className="text-slate-200">{stat.label}</div>
                 </div>
               ))}
@@ -257,9 +279,9 @@ const Landing: React.FC = () => {
       </section>
 
       {/* Profile Selection */}
-      <section id="profiles" className="py-20 bg-slate-900">
+      <section id="profiles" className="py-12 bg-slate-800">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
+          <div className="text-center mb-12">
             <h2 className="text-4xl font-bold text-white mb-4">
               Escolha seu Perfil
             </h2>
@@ -281,8 +303,8 @@ const Landing: React.FC = () => {
                 }}
                 className={`p-8 rounded-2xl border-2 cursor-pointer transition-all duration-300 group ${
                   activeProfile === profile.id
-                    ? 'border-primary-500 bg-slate-800 shadow-2xl scale-105'
-                    : 'border-slate-700 bg-slate-800/50 backdrop-blur-sm hover:border-primary-400 hover:shadow-xl hover:scale-102'
+                    ? 'border-green-500 bg-gradient-to-br from-green-800/40 to-yellow-800/40 shadow-2xl scale-105'
+                    : 'border-slate-700 bg-gradient-to-br from-slate-800/50 to-slate-700/50 backdrop-blur-sm hover:border-green-400 hover:shadow-xl hover:scale-102'
                 }`}
               >
                 <div className="text-center">
@@ -314,7 +336,7 @@ const Landing: React.FC = () => {
           {/* Card de Cadastro */}
           {activeProfile && (
             <div className="max-w-md mx-auto mt-12">
-              <div className="bg-slate-800 rounded-2xl shadow-xl border border-slate-700 p-8">
+              <div className="bg-gradient-to-br from-green-800/40 to-yellow-800/40 rounded-2xl shadow-xl border border-green-500/30 p-8">
                 <div className="text-center mb-6">
                   <h3 className="text-2xl font-bold text-white mb-2">
                     {isLoginMode ? 'Entrar' : profiles.find(p => p.id === activeProfile)?.title}
@@ -335,7 +357,7 @@ const Landing: React.FC = () => {
                         value={registerData.name}
                         onChange={(e) => setRegisterData(prev => ({ ...prev, name: e.target.value }))}
                         onClick={(e) => e.stopPropagation()}
-                        className="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:border-primary-500 focus:outline-none relative z-20"
+                        className="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:border-green-500 focus:outline-none relative z-20"
                         placeholder="Seu nome completo"
                       />
                     </div>
@@ -356,7 +378,7 @@ const Landing: React.FC = () => {
                         }
                       }}
                       onClick={(e) => e.stopPropagation()}
-                      className="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:border-primary-500 focus:outline-none relative z-20"
+                      className="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:border-green-500 focus:outline-none relative z-20"
                       placeholder="seu@email.com"
                     />
                   </div>
@@ -377,7 +399,7 @@ const Landing: React.FC = () => {
                           }
                         }}
                         onClick={(e) => e.stopPropagation()}
-                        className="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:border-primary-500 focus:outline-none pr-10"
+                        className="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:border-green-500 focus:outline-none pr-10"
                         placeholder="Sua senha"
                       />
                       <button
@@ -403,7 +425,7 @@ const Landing: React.FC = () => {
                         value={registerData.confirmPassword}
                         onChange={(e) => setRegisterData(prev => ({ ...prev, confirmPassword: e.target.value }))}
                         onClick={(e) => e.stopPropagation()}
-                        className="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:border-primary-500 focus:outline-none relative z-20"
+                        className="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:border-green-500 focus:outline-none relative z-20"
                         placeholder="Confirme sua senha"
                       />
                     </div>
@@ -421,7 +443,7 @@ const Landing: React.FC = () => {
                         }
                       }}
                       disabled={isLoading}
-                      className="w-full bg-gradient-to-r from-primary-600 to-accent-500 hover:from-primary-700 hover:to-accent-600 text-white py-3 rounded-lg font-medium transition-all duration-300 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="w-full bg-green-600 hover:bg-green-700 text-white py-3 rounded-lg font-medium transition-all duration-300 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       {isLoading ? (isLoginMode ? 'Entrando...' : 'Criando conta...') : (isLoginMode ? 'Entrar' : 'Criar Conta')}
                     </button>
@@ -434,7 +456,7 @@ const Landing: React.FC = () => {
                         e.stopPropagation()
                         setIsLoginMode(!isLoginMode)
                       }}
-                      className="text-primary-400 hover:text-primary-300 font-medium"
+                      className="text-green-400 hover:text-green-300 font-medium"
                     >
                       {isLoginMode ? 'Não tem uma conta? Criar conta' : 'Já tem uma conta? Entrar'}
                     </button>
@@ -449,9 +471,9 @@ const Landing: React.FC = () => {
       </section>
 
       {/* Partners Section */}
-      <section id="partners" className="py-20 bg-slate-800">
+      <section id="partners" className="py-12 bg-gradient-to-br from-green-900 via-slate-800 to-yellow-900">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
+          <div className="text-center mb-12">
             <h2 className="text-4xl font-bold text-white mb-4">
               Nossos Parceiros
             </h2>
@@ -466,17 +488,17 @@ const Landing: React.FC = () => {
               {[...partners, ...partners].map((partner, index) => (
                 <div key={index} className="flex-shrink-0 w-64 bg-slate-700 rounded-xl shadow-lg p-6 hover:shadow-xl transition-all duration-300 border border-slate-600">
                   <div className="text-center">
-                    <div className="w-16 h-16 bg-gradient-to-r from-primary-600 to-accent-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <div className="w-16 h-16 bg-green-600 rounded-full flex items-center justify-center mx-auto mb-4">
                       <span className="text-white font-bold text-lg">{partner.name.charAt(0)}</span>
                     </div>
                     <h3 className="font-semibold text-white mb-2">{partner.name}</h3>
                     <p className="text-sm text-slate-200 mb-3">{partner.type}</p>
                     <div className="flex justify-center">
-                      <Star className="w-4 h-4 text-primary-400 fill-current" />
-                      <Star className="w-4 h-4 text-primary-400 fill-current" />
-                      <Star className="w-4 h-4 text-primary-400 fill-current" />
-                      <Star className="w-4 h-4 text-primary-400 fill-current" />
-                      <Star className="w-4 h-4 text-primary-400 fill-current" />
+                      <Star className="w-4 h-4 text-yellow-400 fill-current" />
+                      <Star className="w-4 h-4 text-yellow-400 fill-current" />
+                      <Star className="w-4 h-4 text-yellow-400 fill-current" />
+                      <Star className="w-4 h-4 text-yellow-400 fill-current" />
+                      <Star className="w-4 h-4 text-yellow-400 fill-current" />
                     </div>
                   </div>
                 </div>
@@ -486,53 +508,14 @@ const Landing: React.FC = () => {
         </div>
       </section>
 
-      {/* Features Section */}
-      <section className="py-20 bg-slate-900">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-white mb-4">
-              Recursos Avançados
-            </h2>
-            <p className="text-xl text-slate-200 max-w-3xl mx-auto">
-              Tecnologia de ponta para medicina moderna
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            <div className="text-center p-6 bg-slate-800/50 backdrop-blur-sm rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 border border-slate-700/50">
-              <div className="w-16 h-16 bg-gradient-to-r from-primary-600 to-accent-500 rounded-xl flex items-center justify-center mx-auto mb-4">
-                <Brain className="w-8 h-8 text-white" />
-              </div>
-              <h3 className="text-xl font-semibold text-white mb-2">IA Residente Nôa</h3>
-              <p className="text-slate-200">Assistente médica multimodal com chat, voz e vídeo</p>
-            </div>
-
-            <div className="text-center p-6 bg-slate-800/50 backdrop-blur-sm rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 border border-slate-700/50">
-              <div className="w-16 h-16 bg-gradient-to-r from-green-600 to-emerald-600 rounded-xl flex items-center justify-center mx-auto mb-4">
-                <Stethoscope className="w-8 h-8 text-white" />
-              </div>
-              <h3 className="text-xl font-semibold text-white mb-2">Sistema IMRE</h3>
-              <p className="text-slate-200">Avaliação clínica com 28 blocos especializados</p>
-            </div>
-
-            <div className="text-center p-6 bg-slate-800/50 backdrop-blur-sm rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 border border-slate-700/50">
-              <div className="w-16 h-16 bg-gradient-to-r from-accent-500 to-primary-600 rounded-xl flex items-center justify-center mx-auto mb-4">
-                <Shield className="w-8 h-8 text-white" />
-              </div>
-              <h3 className="text-xl font-semibold text-white mb-2">LGPD Compliant</h3>
-              <p className="text-slate-200">Privacidade e segurança de dados garantidas</p>
-            </div>
-          </div>
-        </div>
-      </section>
 
       {/* Footer Profissional */}
-      <footer className="bg-gray-900 text-white py-16">
+      <footer className="bg-slate-800 text-white py-8">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
             <div className="col-span-1 md:col-span-2">
               <div className="flex items-center space-x-3 mb-4">
-                <div className="w-10 h-10 bg-gradient-to-r from-primary-600 to-purple-600 rounded-lg flex items-center justify-center">
+                <div className="w-10 h-10 bg-green-600 rounded-lg flex items-center justify-center">
                   <span className="text-white font-bold text-lg">M</span>
                 </div>
                 <span className="text-xl font-bold">MedCannLab</span>

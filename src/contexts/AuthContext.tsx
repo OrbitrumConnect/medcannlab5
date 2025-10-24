@@ -72,11 +72,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       console.log('🔍 Carregando perfil para userId:', userId)
       
-      // Usar dados diretamente do Supabase Auth
+      // Usar dados diretamente do Supabase Auth com timeout
       console.log('🔍 Carregando dados do usuário do Supabase Auth...')
       
-      const { data: { user: authUser } } = await supabase.auth.getUser()
-      console.log('👤 Auth user:', authUser)
+      const getUserPromise = supabase.auth.getUser()
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Timeout')), 5000)
+      )
+      
+      const { data: { user: authUser } } = await Promise.race([getUserPromise, timeoutPromise]) as any
+        console.log('👤 Auth user:', authUser)
+        console.log('📋 User metadata:', authUser.user_metadata)
+        console.log('📧 Email:', authUser.email)
+        console.log('🔍 Metadata keys:', Object.keys(authUser.user_metadata || {}))
       
       if (authUser) {
         // Determinar tipo de usuário baseado nos metadados
@@ -87,6 +95,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           userType = authUser.user_metadata.user_type
         } else if (authUser.user_metadata?.role) {
           userType = authUser.user_metadata.role
+        } else if (authUser.email?.includes('admin') || authUser.email?.includes('philip') || authUser.email?.includes('phpg6')) {
+          // Forçar admin para emails específicos
+          userType = 'admin'
         } else {
           // Default para patient
           userType = 'patient'
@@ -109,6 +120,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
     } catch (error) {
       console.error('Erro ao carregar perfil do usuário:', error)
+      // Em caso de erro, definir como não carregando
+      setIsLoading(false)
     } finally {
       console.log('🔄 Finalizando carregamento - definindo isLoading como false')
       setIsLoading(false)
@@ -127,9 +140,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         throw new Error(error.message)
       }
 
-      if (data.user) {
-        await loadUserProfile(data.user.id)
-      }
+      // Não chamar loadUserProfile aqui - o onAuthStateChange já vai chamar
+      console.log('✅ Login realizado com sucesso, aguardando onAuthStateChange...')
     } catch (error) {
       console.error('Erro no login:', error)
       throw error
