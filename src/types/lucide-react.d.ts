@@ -61,4 +61,40 @@ declare module 'lucide-react' {
   export const MessageCircle: ComponentType<LucideProps>
   export const Volume2: ComponentType<LucideProps>
   export const VolumeX: ComponentType<LucideProps>
+  export const Bot: ComponentType<LucideProps>
+  export const Loader2: ComponentType<LucideProps>
+  export const Link: ComponentType<LucideProps>
+  export const Share: ComponentType<LucideProps>
+  export const MessageSquare: ComponentType<LucideProps>
+  export const Copy: ComponentType<LucideProps>
+  export const Check: ComponentType<LucideProps>
+  export const AlertTriangle: ComponentType<LucideProps>
+  export const Target: ComponentType<LucideProps>
+  export const TrendingDown: ComponentType<LucideProps>
+  export const Upload: ComponentType<LucideProps>
+  export const Download: ComponentType<LucideProps>
+  export const Lightbulb: ComponentType<LucideProps>
+  export const UserPlus: ComponentType<LucideProps>
+  export const Filter: ComponentType<LucideProps>
+  export const Calendar: ComponentType<LucideProps>
+  export const ThumbsUp: ComponentType<LucideProps>
+  export const ThumbsDown: ComponentType<LucideProps>
+  export const Share2: ComponentType<LucideProps>
+  export const Flag: ComponentType<LucideProps>
+  export const LinkIcon: ComponentType<LucideProps>
+  export const XCircle: ComponentType<LucideProps>
+  export const Play: ComponentType<LucideProps>
+  export const Key: ComponentType<LucideProps>
+  export const Crown: ComponentType<LucideProps>
+  export const Maximize2: ComponentType<LucideProps>
+  export const Minimize2: ComponentType<LucideProps>
+  export const Image: ComponentType<LucideProps>
+  export const Archive: ComponentType<LucideProps>
+  export const ChevronLeft: ComponentType<LucideProps>
+  export const ChevronRight: ComponentType<LucideProps>
+  export const ChevronDown: ComponentType<LucideProps>
+  export const ChevronUp: ComponentType<LucideProps>
+  export const PieChart: ComponentType<LucideProps>
+  export const LineChart: ComponentType<LucideProps>
+  export const Printer: ComponentType<LucideProps>
 }

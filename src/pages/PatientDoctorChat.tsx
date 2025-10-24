@@ -361,9 +361,9 @@ const PatientDoctorChat: React.FC = () => {
         type: 'file',
         isRead: false,
         reactions: { heart: 0, thumbs: 0 },
-        attachments: [newAttachment]
+        attachments: [newAttachment] as any[]
       }
-      setMessages([...messages, fileMessage])
+      setMessages([...messages, fileMessage] as any)
     }
   }
 
@@ -487,7 +487,7 @@ const PatientDoctorChat: React.FC = () => {
                       <p className="text-white mb-2">{msg.message}</p>
                       {msg.attachments.length > 0 && (
                         <div className="space-y-2">
-                          {msg.attachments.map((attachment) => (
+                          {msg.attachments.map((attachment: any) => (
                             <div key={attachment.id} className="flex items-center space-x-2 p-2 bg-slate-600/50 rounded">
                               {getFileIcon(attachment.type)}
                               <span className="text-white text-sm">{attachment.name}</span>

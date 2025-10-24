@@ -102,7 +102,7 @@ export class RAGSystem {
       const answer = await this.localLLM.answerQuestion(question, context)
       
       // 5. Formatar resposta com análise cruzada
-      return this.formatCrossAnalysisResponse(answer, relevantDocs, crossAnalysis, question)
+      return this.formatCannabisResponse(answer, relevantDocs)
     } catch (error) {
       console.error('Erro ao gerar resposta:', error)
       return "Desculpe, ocorreu um erro ao processar sua pergunta. Tente novamente."
@@ -170,7 +170,7 @@ export class RAGSystem {
   }
 
   private findCrossReferences(docs: Document[]): any[] {
-    const references = []
+    const references: any[] = []
     docs.forEach(doc => {
       if (doc.content.includes('estudo') || doc.content.includes('pesquisa')) {
         references.push({

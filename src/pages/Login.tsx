@@ -79,11 +79,12 @@ const Login: React.FC = () => {
           error('As senhas não coincidem')
           return
         }
-        await register({
-          name: formData.name,
-          email: formData.email,
-          type: formData.userType
-        })
+        await register(
+          formData.email,
+          formData.password,
+          formData.userType,
+          formData.name
+        )
         success('Conta criada com sucesso!')
         navigate('/dashboard')
       }

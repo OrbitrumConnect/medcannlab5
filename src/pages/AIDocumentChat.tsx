@@ -19,9 +19,11 @@ import { supabase } from '../lib/supabase'
 interface Document {
   id: string
   name: string
+  title: string
   type: string
   size: string
   uploadDate: string
+  created_at: string
   content?: string
   summary?: string
   keywords?: string[]
@@ -81,9 +83,11 @@ const AIDocumentChat: React.FC = () => {
         setDocuments(docs.map(doc => ({
           id: doc.id,
           name: doc.title,
+          title: doc.title,
           type: 'PDF',
           size: 'Processado',
           uploadDate: new Date(doc.created_at).toLocaleDateString('pt-BR'),
+          created_at: doc.created_at,
           summary: doc.summary,
           keywords: doc.keywords
         })))
@@ -219,9 +223,11 @@ Com base na análise semântica dos documentos, posso fornecer informações esp
       setDocuments(docs.map(doc => ({
         id: doc.id,
         name: doc.title,
+        title: doc.title,
         type: 'PDF',
         size: 'Processado',
         uploadDate: new Date(doc.created_at).toLocaleDateString('pt-BR'),
+        created_at: doc.created_at,
         summary: doc.summary,
         keywords: doc.keywords
       })))
