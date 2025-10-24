@@ -61,10 +61,10 @@ const PatientDashboard: React.FC = () => {
       {/* Meu Médico Atual */}
       <div className="mb-8">
         <h4 className="text-lg font-semibold text-white mb-4">🏥 Meu Médico Atual</h4>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           <div className="space-y-4">
             <div className="flex items-center space-x-4 p-4 bg-slate-700/50 rounded-lg">
-              <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+              <div className="w-12 h-12 bg-gradient-to-br from-primary-500 to-purple-600 rounded-full flex items-center justify-center">
                 <span className="text-white font-bold text-sm">PM</span>
               </div>
               <div>
@@ -83,7 +83,7 @@ const PatientDashboard: React.FC = () => {
               </div>
             </div>
             <div className="flex space-x-2">
-              <button className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center justify-center space-x-2 transition-colors">
+              <button className="flex-1 bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 rounded-lg flex items-center justify-center space-x-2 transition-colors">
                 <MessageCircle className="w-4 h-4" />
                 <span>Chat Exclusivo</span>
               </button>
@@ -113,7 +113,7 @@ const PatientDashboard: React.FC = () => {
       {/* Top Médicos do App */}
       <div>
         <h4 className="text-lg font-semibold text-white mb-4">⭐ Top Médicos do App</h4>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {/* Dr. Ana Costa - Cardiologista */}
           <div className="bg-slate-700/50 rounded-lg p-4 hover:bg-slate-700/70 transition-colors cursor-pointer">
             <div className="flex items-center space-x-3 mb-3">
@@ -237,7 +237,7 @@ const PatientDashboard: React.FC = () => {
           {/* Dr. Pedro Lima - Ortopedista */}
           <div className="bg-slate-700/50 rounded-lg p-4 hover:bg-slate-700/70 transition-colors cursor-pointer">
             <div className="flex items-center space-x-3 mb-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-cyan-500 to-blue-600 rounded-full flex items-center justify-center">
+              <div className="w-10 h-10 bg-gradient-to-br from-cyan-500 to-primary-600 rounded-full flex items-center justify-center">
                 <span className="text-white font-bold text-sm">PL</span>
               </div>
               <div>
@@ -300,7 +300,7 @@ const PatientDashboard: React.FC = () => {
     {/* Calendário do Paciente */}
     <div className="bg-slate-800/80 rounded-lg p-6 border border-slate-700">
       <h3 className="text-xl font-bold text-white mb-4">📅 Meu Calendário de Consultas</h3>
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* Próximas Consultas */}
         <div>
           <h4 className="text-lg font-semibold text-white mb-4">Próximas Consultas</h4>
@@ -308,7 +308,7 @@ const PatientDashboard: React.FC = () => {
             <div className="bg-slate-700/50 rounded-lg p-4">
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center space-x-3">
-                  <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center">
+                  <div className="w-10 h-10 bg-primary-600 rounded-full flex items-center justify-center">
                     <Clock className="w-5 h-5 text-white" />
                   </div>
                   <div>
@@ -316,7 +316,7 @@ const PatientDashboard: React.FC = () => {
                     <p className="text-slate-400 text-sm">Dr. Passos Mir</p>
                   </div>
                 </div>
-                <span className="text-blue-400 text-sm font-medium">22/01/2024</span>
+                <span className="text-primary-400 text-sm font-medium">22/01/2024</span>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-slate-300 text-sm">14:30 - 15:30</span>
@@ -335,7 +335,7 @@ const PatientDashboard: React.FC = () => {
                     <p className="text-slate-400 text-sm">Dra. Ana Costa</p>
                   </div>
                 </div>
-                <span className="text-blue-400 text-sm font-medium">25/01/2024</span>
+                <span className="text-primary-400 text-sm font-medium">25/01/2024</span>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-slate-300 text-sm">10:00 - 11:00</span>
@@ -354,11 +354,11 @@ const PatientDashboard: React.FC = () => {
                     <p className="text-slate-400 text-sm">Dr. Passos Mir</p>
                   </div>
                 </div>
-                <span className="text-blue-400 text-sm font-medium">28/01/2024</span>
+                <span className="text-primary-400 text-sm font-medium">28/01/2024</span>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-slate-300 text-sm">09:00 - 10:00</span>
-                <span className="bg-blue-500/20 text-blue-400 px-2 py-1 rounded text-xs">Agendada</span>
+                <span className="bg-primary-500/20 text-primary-400 px-2 py-1 rounded text-xs">Agendada</span>
               </div>
             </div>
           </div>
@@ -391,7 +391,7 @@ const PatientDashboard: React.FC = () => {
                         : 'text-slate-500'
                     } ${
                       isToday
-                        ? 'bg-blue-600 text-white'
+                        ? 'bg-primary-600 text-white'
                         : ''
                     } ${
                       hasAppointment && isCurrentMonth
@@ -416,7 +416,7 @@ const PatientDashboard: React.FC = () => {
       {/* Ações Rápidas */}
       <div className="bg-slate-800/80 rounded-xl p-6 border border-slate-700">
         <h3 className="text-xl font-bold text-white mb-4 text-center">Ações Rápidas</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <Link
             to="/clinical-assessment"
             className="bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-700 hover:to-teal-700 text-white py-4 px-6 rounded-lg transition-all duration-200 text-center font-medium text-lg flex items-center justify-center space-x-2"
@@ -435,9 +435,9 @@ const PatientDashboard: React.FC = () => {
       </div>
 
       {/* Status Rápido */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
         <div className="bg-slate-800/80 rounded-lg p-6 text-center">
-          <div className="text-3xl font-bold text-blue-400 mb-2">2</div>
+          <div className="text-3xl font-bold text-primary-400 mb-2">2</div>
           <div className="text-slate-300">Consultas Agendadas</div>
         </div>
         <div className="bg-slate-800/80 rounded-lg p-6 text-center">
@@ -451,7 +451,7 @@ const PatientDashboard: React.FC = () => {
       </div>
 
       {/* Ações Rápidas */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <Link
           to="/library"
           className="bg-slate-800/80 hover:bg-slate-700/80 rounded-lg p-6 text-center transition-colors duration-200"
@@ -492,8 +492,8 @@ const ProfessionalDashboard: React.FC = () => {
       value: '24', 
       change: '+12%', 
       icon: <Users className="w-6 h-6" />, 
-      color: 'text-blue-400',
-      bgColor: 'bg-blue-500/20'
+      color: 'text-primary-400',
+      bgColor: 'bg-primary-500/20'
     },
     { 
       label: 'Avaliações Hoje', 
@@ -575,7 +575,7 @@ const ProfessionalDashboard: React.FC = () => {
             <h3 className="text-xl font-bold text-white">👥 Meus Pacientes</h3>
             <Link 
               to="/patients" 
-              className="text-blue-400 hover:text-blue-300 text-sm font-medium"
+              className="text-primary-400 hover:text-blue-300 text-sm font-medium"
             >
               Ver Todos →
             </Link>
@@ -584,7 +584,7 @@ const ProfessionalDashboard: React.FC = () => {
             {recentPatients.map((patient) => (
               <div key={patient.id} className="flex items-center justify-between p-4 bg-slate-700/50 rounded-lg hover:bg-slate-700/70 transition-colors">
                 <div className="flex items-center space-x-4">
-                  <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+                  <div className="w-12 h-12 bg-gradient-to-br from-primary-500 to-purple-600 rounded-full flex items-center justify-center">
                     <span className="text-white font-bold text-sm">
                       {patient.name.split(' ').map(n => n[0]).join('')}
                     </span>
@@ -604,7 +604,7 @@ const ProfessionalDashboard: React.FC = () => {
                   </span>
                   <Link
                     to={`/patient/${patient.id}`}
-                    className="text-blue-400 hover:text-blue-300 text-sm font-medium"
+                    className="text-primary-400 hover:text-blue-300 text-sm font-medium"
                   >
                     Ver →
                   </Link>
@@ -622,7 +622,7 @@ const ProfessionalDashboard: React.FC = () => {
             <div className="space-y-3">
               {upcomingAppointments.map((appointment, index) => (
                 <div key={index} className="flex items-center space-x-3 p-3 bg-slate-700/50 rounded-lg">
-                  <div className="text-blue-400 font-mono text-sm">{appointment.time}</div>
+                  <div className="text-primary-400 font-mono text-sm">{appointment.time}</div>
                   <div className="flex-1">
                     <p className="text-white text-sm font-medium">{appointment.patient}</p>
                     <p className="text-slate-400 text-xs">{appointment.type}</p>
@@ -638,9 +638,9 @@ const ProfessionalDashboard: React.FC = () => {
             <div className="space-y-3">
               <Link
                 to="/clinical-assessment"
-                className="flex items-center space-x-3 p-3 bg-blue-500/20 hover:bg-blue-500/30 rounded-lg transition-colors"
+                className="flex items-center space-x-3 p-3 bg-primary-500/20 hover:bg-blue-500/30 rounded-lg transition-colors"
               >
-                <Stethoscope className="w-5 h-5 text-blue-400" />
+                <Stethoscope className="w-5 h-5 text-primary-400" />
                 <span className="text-white font-medium">Avaliação IMRE</span>
               </Link>
               <Link
@@ -670,7 +670,7 @@ const ProfessionalDashboard: React.FC = () => {
             <h3 className="text-lg font-bold text-white">📋 Avaliações Recentes</h3>
             <Link 
               to="/evaluations" 
-              className="text-blue-400 hover:text-blue-300 text-sm font-medium"
+              className="text-primary-400 hover:text-blue-300 text-sm font-medium"
             >
               Ver Todas →
             </Link>
@@ -690,7 +690,7 @@ const ProfessionalDashboard: React.FC = () => {
                 </div>
               </div>
               <div className="flex space-x-2">
-                <button className="text-blue-400 hover:text-blue-300 text-sm px-3 py-1 bg-blue-500/20 rounded-lg">
+                <button className="text-primary-400 hover:text-blue-300 text-sm px-3 py-1 bg-primary-500/20 rounded-lg">
                   👁️ Ver
                 </button>
                 <button className="text-green-400 hover:text-green-300 text-sm px-3 py-1 bg-green-500/20 rounded-lg">
@@ -713,7 +713,7 @@ const ProfessionalDashboard: React.FC = () => {
                 </div>
               </div>
               <div className="flex space-x-2">
-                <button className="text-blue-400 hover:text-blue-300 text-sm px-3 py-1 bg-blue-500/20 rounded-lg">
+                <button className="text-primary-400 hover:text-blue-300 text-sm px-3 py-1 bg-primary-500/20 rounded-lg">
                   👁️ Ver
                 </button>
                 <button className="text-yellow-400 hover:text-yellow-300 text-sm px-3 py-1 bg-yellow-500/20 rounded-lg">
@@ -736,7 +736,7 @@ const ProfessionalDashboard: React.FC = () => {
                 </div>
               </div>
               <div className="flex space-x-2">
-                <button className="text-blue-400 hover:text-blue-300 text-sm px-3 py-1 bg-blue-500/20 rounded-lg">
+                <button className="text-primary-400 hover:text-blue-300 text-sm px-3 py-1 bg-primary-500/20 rounded-lg">
                   👁️ Ver
                 </button>
                 <button className="text-green-400 hover:text-green-300 text-sm px-3 py-1 bg-green-500/20 rounded-lg">
@@ -753,7 +753,7 @@ const ProfessionalDashboard: React.FC = () => {
             <h3 className="text-lg font-bold text-white">👥 Meus Pacientes</h3>
             <Link 
               to="/patients" 
-              className="text-blue-400 hover:text-blue-300 text-sm font-medium"
+              className="text-primary-400 hover:text-blue-300 text-sm font-medium"
             >
               Ver Todos →
             </Link>
@@ -762,7 +762,7 @@ const ProfessionalDashboard: React.FC = () => {
             <div className="p-4 bg-slate-700/50 rounded-lg">
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center space-x-3">
-                  <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+                  <div className="w-12 h-12 bg-gradient-to-br from-primary-500 to-purple-600 rounded-full flex items-center justify-center">
                     <span className="text-white font-bold text-sm">MS</span>
                   </div>
                   <div>
@@ -840,7 +840,7 @@ const ProfessionalDashboard: React.FC = () => {
                     <p className="text-slate-400 text-sm">38 anos • Feminino</p>
                   </div>
                 </div>
-                <span className="px-2 py-1 bg-blue-500/20 text-blue-400 text-xs rounded-full">
+                <span className="px-2 py-1 bg-primary-500/20 text-primary-400 text-xs rounded-full">
                   Nova
                 </span>
               </div>
@@ -859,7 +859,7 @@ const ProfessionalDashboard: React.FC = () => {
                 </div>
                 <div>
                   <span className="text-slate-400">Status:</span>
-                  <p className="text-blue-400">Em Análise</p>
+                  <p className="text-primary-400">Em Análise</p>
                 </div>
               </div>
             </div>
@@ -958,7 +958,7 @@ const StudentDashboard: React.FC = () => {
                 <span className={`px-2 py-1 text-xs rounded-full ${
                   class_.type === 'live' 
                     ? 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400'
-                    : 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400'
+                    : 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-primary-400'
                 }`}>
                   {class_.type === 'live' ? 'Ao Vivo' : 'Gravada'}
                 </span>

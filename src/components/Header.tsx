@@ -61,14 +61,10 @@ const Header: React.FC = () => {
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
           <div className="flex items-center">
-            <Link to="/" className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-gradient-to-r from-primary-600 to-accent-600 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-lg">M</span>
+            <Link to="/" className="flex items-center">
+              <div className="w-10 h-10 bg-gradient-to-r from-primary-600 to-accent-500 rounded-lg flex items-center justify-center">
+                <span className="text-white font-bold text-xl">M</span>
               </div>
-              <span className="text-xl font-bold text-white">
-                MedCannLab
-                <span className="text-sm text-blue-400 ml-1">3.0</span>
-              </span>
             </Link>
           </div>
 
@@ -92,8 +88,8 @@ const Header: React.FC = () => {
                   to={item.href}
                   className={`px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 ${
                     isActive(item.href)
-                      ? 'text-blue-400 bg-blue-900/30'
-                      : 'text-slate-200 hover:text-blue-400 hover:bg-slate-700/50'
+                      ? 'text-primary-400 bg-primary-900/30'
+                      : 'text-slate-200 hover:text-primary-400 hover:bg-slate-700/50'
                   }`}
                 >
                   {item.name}
@@ -108,9 +104,9 @@ const Header: React.FC = () => {
               <div className="relative">
                 <button
                   onClick={() => setIsProfileOpen(!isProfileOpen)}
-                  className="flex items-center space-x-2 text-slate-200 hover:text-blue-400 transition-colors duration-200"
+                  className="flex items-center space-x-2 text-slate-200 hover:text-primary-400 transition-colors duration-200"
                 >
-                  <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
+                  <div className="w-8 h-8 bg-primary-600 rounded-full flex items-center justify-center">
                     <User className="w-4 h-4 text-white" />
                   </div>
                   <span className="hidden sm:block text-sm font-medium">{user.name}</span>
@@ -142,7 +138,7 @@ const Header: React.FC = () => {
             ) : (
               <Link
                 to="/login"
-                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors duration-200"
+                className="bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 rounded-lg font-medium transition-colors duration-200"
               >
                 Entrar
               </Link>
@@ -151,7 +147,7 @@ const Header: React.FC = () => {
             {/* Mobile menu button */}
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="md:hidden p-2 rounded-md text-slate-200 hover:text-blue-400 hover:bg-slate-700"
+              className="md:hidden p-2 rounded-md text-slate-200 hover:text-primary-400 hover:bg-slate-700"
             >
               {isMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
             </button>
@@ -168,8 +164,8 @@ const Header: React.FC = () => {
                   to={item.href}
                   className={`block px-3 py-2 rounded-md text-base font-medium transition-colors duration-200 ${
                     isActive(item.href)
-                      ? 'text-blue-400 bg-blue-900/30'
-                      : 'text-slate-200 hover:text-blue-400 hover:bg-slate-700/50'
+                      ? 'text-primary-400 bg-primary-900/30'
+                      : 'text-slate-200 hover:text-primary-400 hover:bg-slate-700/50'
                   }`}
                   onClick={() => setIsMenuOpen(false)}
                 >

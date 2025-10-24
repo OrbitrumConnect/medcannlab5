@@ -37,21 +37,8 @@ export default {
           DEFAULT: "#ffffff",
           foreground: "#0f172a",
         },
-        // Cores primárias do MedCannLab
+        // Cores primárias do MedCannLab - Verde (60%)
         primary: {
-          50: '#eef2ff',
-          100: '#e0e7ff',
-          200: '#c7d2fe',
-          300: '#a5b4fc',
-          400: '#818cf8',
-          500: '#6366f1',
-          600: '#4f46e5',
-          700: '#4338ca',
-          800: '#3730a3',
-          900: '#312e81',
-        },
-        // Cores accent do MedCannLab - Verde médico
-        accent: {
           50: '#f0fdf4',
           100: '#dcfce7',
           200: '#bbf7d0',
@@ -62,6 +49,19 @@ export default {
           700: '#15803d',
           800: '#166534',
           900: '#14532d',
+        },
+        // Cores accent do MedCannLab - Amarelo (20%)
+        accent: {
+          50: '#fffbeb',
+          100: '#fef3c7',
+          200: '#fde68a',
+          300: '#fcd34d',
+          400: '#fbbf24',
+          500: '#f59e0b',
+          600: '#d97706',
+          700: '#b45309',
+          800: '#92400e',
+          900: '#78350f',
         },
         // Cores customizadas do MedCannLab
         success: {

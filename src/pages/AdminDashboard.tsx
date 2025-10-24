@@ -31,11 +31,17 @@ import { supabase } from '../lib/supabase'
 import { imreMigration } from '../lib/imreMigration'
 import { noaIntegration } from '../lib/noaIntegration'
 import { unifiedAssessment } from '../lib/unifiedAssessment'
+// import { useDashboardData } from '../hooks/useDashboardData'
+// import { useFinancialData } from '../hooks/useFinancialData'
 
 const AdminDashboard: React.FC = () => {
   const [searchParams] = useSearchParams()
   const [activeTab, setActiveTab] = useState<string>('overview')
   const [libraryDocuments, setLibraryDocuments] = useState<any[]>([])
+  
+  // Hooks para dados reais (comentados temporariamente)
+  // const { stats: dashboardStats, userRanking, achievements, loading: dashboardLoading } = useDashboardData()
+  // const { stats: financialStats, revenueHistory, paymentMethods, recentTransactions, loading: financialLoading } = useFinancialData()
   
   // Estados para Unificação 3.0→5.0
   const [migrationStatus, setMigrationStatus] = useState<'idle' | 'migrating' | 'completed' | 'error'>('idle')
@@ -140,20 +146,68 @@ const AdminDashboard: React.FC = () => {
 
   const loadLibraryDocuments = async () => {
     try {
-      const { data, error } = await supabase
+      // Carregar documentos
+      const { data: docsData, error: docsError } = await supabase
         .from('documents')
         .select('*')
         .order('created_at', { ascending: false })
 
-      if (error) {
-        console.error('Erro ao carregar documentos:', error)
+      if (docsError) {
+        console.error('Erro ao carregar documentos:', docsError)
         return
       }
 
-      setLibraryDocuments(data || [])
-      setFilteredDocs(data || [])
+      setLibraryDocuments(docsData || [])
+      setFilteredDocs(docsData || [])
+
+      // Carregar usuários recentes
+      const { data: usersData, error: usersError } = await supabase
+        .from('usuarios')
+        .select('*')
+        .order('timestamp', { ascending: false })
+        .limit(10)
+
+      if (usersError) {
+        console.error('Erro ao carregar usuários:', usersError)
+        return
+      }
+
+      setRecentUsers(usersData || [])
+
+      // Carregar estatísticas reais
+      const { count: totalUsers } = await supabase
+        .from('usuarios')
+        .select('*', { count: 'exact' })
+
+      const { count: totalCourses } = await supabase
+        .from('courses')
+        .select('*', { count: 'exact' })
+
+      const { count: totalDocuments } = await supabase
+        .from('documents')
+        .select('*', { count: 'exact' })
+
+      // Carregar cursos
+      const { data: coursesData, error: coursesError } = await supabase
+        .from('courses')
+        .select('*')
+        .order('created_at', { ascending: false })
+
+      if (coursesError) {
+        console.error('Erro ao carregar cursos:', coursesError)
+      } else {
+        setCourses(coursesData || [])
+      }
+
+      // Atualizar estatísticas
+      setStats([
+        { label: 'Usuários Totais', value: totalUsers?.toString() || '0', icon: <Users className="w-5 h-5" />, color: 'text-primary-400' },
+        { label: 'Usuários Ativos', value: usersData?.length?.toString() || '0', icon: <Activity className="w-5 h-5" />, color: 'text-green-400' },
+        { label: 'Cursos Disponíveis', value: totalCourses?.toString() || '0', icon: <BookOpen className="w-5 h-5" />, color: 'text-purple-400' },
+        { label: 'Documentos', value: totalDocuments?.toString() || '0', icon: <Activity className="w-5 h-5" />, color: 'text-orange-400' }
+      ])
     } catch (error) {
-      console.error('Erro ao carregar documentos:', error)
+      console.error('Erro ao carregar dados:', error)
     }
   }
 
@@ -172,29 +226,20 @@ const AdminDashboard: React.FC = () => {
     { id: 'settings', name: 'Sistema', icon: <Settings className="w-4 h-4" /> }
   ]
 
-  const stats = [
-    { label: 'Usuários Totais', value: '1,247', icon: <Users className="w-5 h-5" />, color: 'text-blue-400' },
-    { label: 'Usuários Ativos', value: '892', icon: <Activity className="w-5 h-5" />, color: 'text-green-400' },
-    { label: 'Cursos Disponíveis', value: '28', icon: <BookOpen className="w-5 h-5" />, color: 'text-purple-400' },
-    { label: 'Avaliações Hoje', value: '156', icon: <Activity className="w-5 h-5" />, color: 'text-orange-400' }
-  ]
+  const [stats, setStats] = useState([
+    { label: 'Usuários Totais', value: '0', icon: <Users className="w-5 h-5" />, color: 'text-primary-400' },
+    { label: 'Usuários Ativos', value: '0', icon: <Activity className="w-5 h-5" />, color: 'text-green-400' },
+    { label: 'Cursos Disponíveis', value: '0', icon: <BookOpen className="w-5 h-5" />, color: 'text-purple-400' },
+    { label: 'Avaliações Hoje', value: '0', icon: <Activity className="w-5 h-5" />, color: 'text-orange-400' }
+  ])
 
-  const recentUsers = [
-    { id: 1, name: 'Dr. João Silva', email: 'joao@email.com', type: 'professional', status: 'active', lastLogin: '2 horas atrás' },
-    { id: 2, name: 'Maria Santos', email: 'maria@email.com', type: 'patient', status: 'active', lastLogin: '4 horas atrás' },
-    { id: 3, name: 'Carlos Oliveira', email: 'carlos@email.com', type: 'student', status: 'pending', lastLogin: '1 dia atrás' },
-    { id: 4, name: 'Ana Costa', email: 'ana@email.com', type: 'professional', status: 'active', lastLogin: '6 horas atrás' }
-  ]
+  const [recentUsers, setRecentUsers] = useState<any[]>([])
 
-  const courses = [
-    { id: 1, title: 'Arte da Entrevista Clínica', students: 1247, status: 'active', created: '2025-01-01' },
-    { id: 2, title: 'Pós-Graduação Cannabis', students: 856, status: 'active', created: '2025-01-02' },
-    { id: 3, title: 'Sistema IMRE Triaxial', students: 634, status: 'draft', created: '2025-01-03' }
-  ]
+  const [courses, setCourses] = useState<any[]>([])
 
   // Dados para Função Renal
   const renalStats = [
-    { label: 'Pacientes Monitorados', value: '2,847', icon: <Heart className="w-5 h-5" />, color: 'text-blue-400' },
+    { label: 'Pacientes Monitorados', value: '2,847', icon: <Heart className="w-5 h-5" />, color: 'text-primary-400' },
     { label: 'Alto Risco DRC', value: '156', icon: <AlertTriangle className="w-5 h-5" />, color: 'text-red-400' },
     { label: 'Função Renal Estável', value: '2,691', icon: <Shield className="w-5 h-5" />, color: 'text-green-400' },
     { label: 'Alertas Hoje', value: '23', icon: <Zap className="w-5 h-5" />, color: 'text-orange-400' }
@@ -224,141 +269,65 @@ const AdminDashboard: React.FC = () => {
   ]
 
   // Dados do Fórum
-  const forumStats = [
-    { label: 'Debates Ativos', value: '47', icon: <BookOpen className="w-5 h-5" />, color: 'text-blue-400' },
-    { label: 'Posts Hoje', value: '156', icon: <FileText className="w-5 h-5" />, color: 'text-green-400' },
-    { label: 'Usuários Participando', value: '892', icon: <Users className="w-5 h-5" />, color: 'text-purple-400' },
-    { label: 'Reportes Pendentes', value: '8', icon: <Flag className="w-5 h-5" />, color: 'text-red-400' }
-  ]
+  const [forumStats, setForumStats] = useState([
+    { label: 'Debates Ativos', value: '0', icon: <BookOpen className="w-5 h-5" />, color: 'text-primary-400' },
+    { label: 'Posts Hoje', value: '0', icon: <FileText className="w-5 h-5" />, color: 'text-green-400' },
+    { label: 'Usuários Participando', value: '0', icon: <Users className="w-5 h-5" />, color: 'text-purple-400' },
+    { label: 'Reportes Pendentes', value: '0', icon: <Flag className="w-5 h-5" />, color: 'text-red-400' }
+  ])
 
-  const forumDebates = [
-    {
-      id: 1,
-      title: 'CBD vs THC: Qual é mais eficaz para dor crônica?',
-      author: 'Dr. João Silva',
-      category: 'Cannabis Medicinal',
-      participants: 24,
-      views: 156,
-      replies: 18,
-      votes: { up: 15, down: 3 },
-      status: 'active',
-      priority: 'high',
-      lastActivity: '2 horas atrás',
-      isPinned: true,
-      isHot: true,
-      reports: 0
+  const [forumDebates, setForumDebates] = useState([])
+
+  // Dados de Gamificação e Ranking (será populado com dados reais do Supabase)
+  const gamificationStats = [
+    { 
+      label: 'Pontos Totais Distribuídos', 
+      value: '0', 
+      icon: <Award className="w-5 h-5" />, 
+      color: 'text-yellow-400' 
     },
-    {
-      id: 2,
-      title: 'Protocolo de dosagem para pacientes idosos',
-      author: 'Dra. Maria Santos',
-      category: 'Protocolos',
-      participants: 18,
-      views: 89,
-      replies: 12,
-      votes: { up: 22, down: 1 },
-      status: 'active',
-      priority: 'normal',
-      lastActivity: '4 horas atrás',
-      isPinned: false,
-      isHot: false,
-      reports: 0
+    { 
+      label: 'Usuários Ativos', 
+      value: '0', 
+      icon: <Users className="w-5 h-5" />, 
+      color: 'text-primary-400' 
     },
-    {
-      id: 3,
-      title: 'Interações medicamentosas com cannabis',
-      author: 'Dr. Pedro Costa',
-      category: 'Farmacologia',
-      participants: 31,
-      views: 203,
-      replies: 25,
-      votes: { up: 28, down: 2 },
-      status: 'moderated',
-      priority: 'high',
-      lastActivity: '1 hora atrás',
-      isPinned: false,
-      isHot: true,
-      reports: 2
+    { 
+      label: 'Conquistas Desbloqueadas', 
+      value: '0', 
+      icon: <Target className="w-5 h-5" />, 
+      color: 'text-green-400' 
+    },
+    { 
+      label: 'Níveis Completados', 
+      value: '0', 
+      icon: <TrendingUp className="w-5 h-5" />, 
+      color: 'text-purple-400' 
     }
   ]
 
-  // Dados de Gamificação e Ranking
-  const gamificationStats = [
-    { label: 'Pontos Totais Distribuídos', value: '45,230', icon: <Award className="w-5 h-5" />, color: 'text-yellow-400' },
-    { label: 'Usuários Ativos', value: '1,247', icon: <Users className="w-5 h-5" />, color: 'text-blue-400' },
-    { label: 'Conquistas Desbloqueadas', value: '892', icon: <Target className="w-5 h-5" />, color: 'text-green-400' },
-    { label: 'Níveis Completados', value: '156', icon: <TrendingUp className="w-5 h-5" />, color: 'text-purple-400' }
-  ]
-
+  // Ranking de usuários (será populado com dados reais do Supabase)
   const userRankings = [
     {
       id: 1,
-      name: 'Dr. João Silva',
+      name: 'Carregando...',
       type: 'professional',
-      specialty: 'Psiquiatria',
-      crm: '12345-SP',
-      points: 2847,
-      level: 15,
-      achievements: 12,
-      rank: 1,
-      avatar: 'JS',
-      badges: ['Especialista', 'Mentor', 'Pesquisador'],
-      activity: 'Muito Ativo',
-      lastActivity: '2 horas atrás'
-    },
-    {
-      id: 2,
-      name: 'Dra. Maria Santos',
-      type: 'professional',
-      specialty: 'Neurologia',
-      crm: '67890-RJ',
-      points: 2634,
-      level: 14,
-      achievements: 10,
-      rank: 2,
-      avatar: 'MS',
-      badges: ['Especialista', 'Colaborador'],
-      activity: 'Ativo',
-      lastActivity: '4 horas atrás'
-    },
-    {
-      id: 3,
-      name: 'Carlos Oliveira',
-      type: 'student',
-      specialty: 'Medicina',
-      crm: '',
-      points: 1892,
-      level: 12,
-      achievements: 8,
-      rank: 3,
-      avatar: 'CO',
-      badges: ['Estudante Dedicado', 'Curioso'],
-      activity: 'Muito Ativo',
-      lastActivity: '1 hora atrás'
-    },
-    {
-      id: 4,
-      name: 'Ana Costa',
-      type: 'patient',
       specialty: '',
       crm: '',
-      points: 1456,
-      level: 10,
-      achievements: 6,
-      rank: 4,
-      avatar: 'AC',
-      badges: ['Paciente Engajado'],
+      points: 0,
+      level: 0,
+      achievements: 0,
+      rank: 1,
+      avatar: '...',
+      badges: [],
       activity: 'Ativo',
-      lastActivity: '6 horas atrás'
+      lastActivity: 'Carregando...'
     }
   ]
 
-  const achievements = [
-    { id: 1, name: 'Primeiro Post', description: 'Faça seu primeiro post no fórum', icon: '📝', points: 50, unlocked: 1247 },
-    { id: 2, name: 'Especialista', description: 'Responda 100 perguntas', icon: '🎓', points: 500, unlocked: 234 },
-    { id: 3, name: 'Mentor', description: 'Ajude 50 usuários', icon: '👨‍🏫', points: 1000, unlocked: 89 },
-    { id: 4, name: 'Pesquisador', description: 'Compartilhe 25 artigos', icon: '🔬', points: 750, unlocked: 156 },
-    { id: 5, name: 'Colaborador', description: 'Participe de 10 debates', icon: '🤝', points: 300, unlocked: 445 }
+  // Conquistas (será populado com dados reais do Supabase)
+  const achievementsData = [
+    { id: 1, name: 'Carregando...', description: 'Dados serão carregados do Supabase', icon: '⏳', points: 0, unlocked: 0 }
   ]
 
   const getColorClasses = (color: string) => {
@@ -393,8 +362,8 @@ const AdminDashboard: React.FC = () => {
       </div>
 
       {/* Stats Cards Principais */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {stats.map((stat, index) => (
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+        {gamificationStats.map((stat, index) => (
           <div key={index} className="bg-slate-800/80 rounded-lg p-6 text-center border border-slate-700">
             <div className={`${stat.color} mb-2`}>
               {stat.icon}
@@ -406,7 +375,7 @@ const AdminDashboard: React.FC = () => {
       </div>
 
       {/* Métricas Avançadas do Sistema */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
         <div className="bg-slate-800/80 rounded-lg p-6 border border-slate-700">
           <h3 className="text-xl font-bold text-white mb-6">⚡ Performance do Sistema</h3>
           <div className="space-y-4">
@@ -421,7 +390,7 @@ const AdminDashboard: React.FC = () => {
             </div>
             <div className="flex justify-between items-center">
               <span className="text-slate-300">Tempo de Resposta</span>
-              <span className="text-blue-400 font-bold">120ms</span>
+              <span className="text-primary-400 font-bold">120ms</span>
             </div>
             <div className="flex justify-between items-center">
               <span className="text-slate-300">CPU Usage</span>
@@ -452,7 +421,7 @@ const AdminDashboard: React.FC = () => {
             </div>
             <div className="flex justify-between items-center">
               <span className="text-slate-300">Consultas IA Hoje</span>
-              <span className="text-blue-400 font-bold">1,247</span>
+              <span className="text-primary-400 font-bold">1,247</span>
             </div>
             <div className="flex justify-between items-center">
               <span className="text-slate-300">Precisão NOA</span>
@@ -478,7 +447,7 @@ const AdminDashboard: React.FC = () => {
             </div>
             <div className="flex justify-between items-center">
               <span className="text-slate-300">Casos Ativos</span>
-              <span className="text-blue-400 font-bold">892</span>
+              <span className="text-primary-400 font-bold">892</span>
             </div>
             <div className="flex justify-between items-center">
               <span className="text-slate-300">Chats Médicos</span>
@@ -497,7 +466,7 @@ const AdminDashboard: React.FC = () => {
       </div>
 
       {/* Analytics & Financeiro */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
         {/* Analytics */}
         <div className="bg-slate-800/80 rounded-lg p-6">
           <h3 className="text-xl font-bold text-white mb-6">📊 Analytics em Tempo Real</h3>
@@ -508,7 +477,7 @@ const AdminDashboard: React.FC = () => {
             </div>
             <div className="flex justify-between items-center">
               <span className="text-slate-300">Avaliações Hoje</span>
-              <span className="text-blue-400 font-bold">156</span>
+              <span className="text-primary-400 font-bold">156</span>
             </div>
             <div className="flex justify-between items-center">
               <span className="text-slate-300">Chats Ativos</span>
@@ -531,7 +500,7 @@ const AdminDashboard: React.FC = () => {
             </div>
             <div className="flex justify-between items-center">
               <span className="text-slate-300">Assinaturas Ativas</span>
-              <span className="text-blue-400 font-bold">892</span>
+              <span className="text-primary-400 font-bold">892</span>
             </div>
             <div className="flex justify-between items-center">
               <span className="text-slate-300">Taxa de Conversão</span>
@@ -550,7 +519,7 @@ const AdminDashboard: React.FC = () => {
         <h3 className="text-xl font-bold text-white mb-6">💬 Chat Global - Monitoramento</h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="bg-slate-700/50 rounded-lg p-4 text-center">
-            <div className="text-2xl font-bold text-blue-400 mb-2">89</div>
+            <div className="text-2xl font-bold text-primary-400 mb-2">89</div>
             <div className="text-slate-300">Chats Ativos</div>
           </div>
           <div className="bg-slate-700/50 rounded-lg p-4 text-center">
@@ -627,12 +596,12 @@ const AdminDashboard: React.FC = () => {
       </div>
 
       {/* Atividade Recente */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
         <div className="bg-slate-800/80 rounded-lg p-6 border border-slate-700">
           <h3 className="text-xl font-bold text-white mb-6">📈 Atividade Recente</h3>
           <div className="space-y-4">
             <div className="flex items-center space-x-3 p-3 bg-slate-700/50 rounded-lg">
-              <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
+              <div className="w-8 h-8 bg-primary-600 rounded-full flex items-center justify-center">
                 <span className="text-white text-sm">👤</span>
               </div>
               <div className="flex-1">
@@ -690,7 +659,7 @@ const AdminDashboard: React.FC = () => {
             <div className="p-3 bg-blue-500/10 border border-blue-500/20 rounded-lg">
               <div className="flex items-center space-x-2 mb-1">
                 <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                <span className="text-blue-400 font-medium text-sm">Atualização Disponível</span>
+                <span className="text-primary-400 font-medium text-sm">Atualização Disponível</span>
               </div>
               <div className="text-slate-300 text-xs">Nova versão 3.0.2 disponível</div>
             </div>
@@ -708,7 +677,7 @@ const AdminDashboard: React.FC = () => {
       {/* Ações Rápidas Expandidas */}
       <div className="bg-slate-800/80 rounded-lg p-6 border border-slate-700">
         <h3 className="text-xl font-bold text-white mb-6">⚡ Ações Rápidas</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <Link
             to="/admin/users"
             className="bg-slate-700/50 hover:bg-slate-600/50 rounded-lg p-4 text-center transition-colors duration-200 border border-slate-600"
@@ -823,7 +792,7 @@ const AdminDashboard: React.FC = () => {
                     {user.lastLogin}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
-                    <button className="text-blue-400 hover:text-blue-300">
+                    <button className="text-primary-400 hover:text-blue-300">
                       <Eye className="w-4 h-4" />
                     </button>
                     <button className="text-green-400 hover:text-green-300">
@@ -895,7 +864,7 @@ const AdminDashboard: React.FC = () => {
                       setEditingCourse(course)
                       setCourseEditorMode('edit')
                     }}
-                    className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg text-sm"
+                    className="flex-1 bg-primary-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg text-sm"
                   >
                     Editar
                   </button>
@@ -950,7 +919,7 @@ const AdminDashboard: React.FC = () => {
                       key={doc.id}
                       className={`p-3 rounded-lg border cursor-pointer transition-colors ${
                         selectedDocs.includes(doc.id)
-                          ? 'bg-blue-600 border-blue-500'
+                          ? 'bg-primary-600 border-blue-500'
                           : 'bg-slate-700 border-slate-600 hover:bg-slate-600'
                       }`}
                       onClick={() => {
@@ -979,7 +948,7 @@ const AdminDashboard: React.FC = () => {
                         </div>
                         <div className="ml-2">
                           {selectedDocs.includes(doc.id) ? (
-                            <CheckCircle className="w-5 h-5 text-blue-400" />
+                            <CheckCircle className="w-5 h-5 text-primary-400" />
                           ) : (
                             <div className="w-5 h-5 border-2 border-slate-400 rounded"></div>
                           )}
@@ -1131,6 +1100,240 @@ const AdminDashboard: React.FC = () => {
     }
   }
 
+  const renderUnification = () => (
+    <div className="space-y-8">
+      {/* Header */}
+      <div className="text-center">
+        <h1 className="text-4xl font-bold text-white mb-4">
+          🧬 MedCannLab 3.0 → 5.0 Unificação
+        </h1>
+        <p className="text-slate-300 text-lg">
+          Unindo a "alma" semântica do 3.0 com o "corpo" real do 5.0
+        </p>
+      </div>
+
+      {/* Status da Migração */}
+      <div className="bg-slate-800/80 rounded-lg p-6 border border-slate-700">
+        <h3 className="text-xl font-bold text-white mb-6">📊 Status da Unificação</h3>
+        
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="bg-slate-700/50 rounded-lg p-4">
+            <div className="flex items-center space-x-3 mb-2">
+              <div className={`w-3 h-3 rounded-full ${
+                migrationStatus === 'completed' ? 'bg-green-500' : 
+                migrationStatus === 'migrating' ? 'bg-yellow-500 animate-pulse' : 
+                migrationStatus === 'error' ? 'bg-red-500' : 'bg-gray-500'
+              }`}></div>
+              <span className="text-white font-medium">Migração IMRE</span>
+            </div>
+            <div className="text-slate-400 text-sm">
+              {migrationStatus === 'completed' ? 'Concluída' : 
+               migrationStatus === 'migrating' ? 'Em andamento...' : 
+               migrationStatus === 'error' ? 'Erro' : 'Pendente'}
+            </div>
+          </div>
+
+          <div className="bg-slate-700/50 rounded-lg p-4">
+            <div className="flex items-center space-x-3 mb-2">
+              <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+              <span className="text-white font-medium">Integração NOA</span>
+            </div>
+            <div className="text-slate-400 text-sm">Conectado ao banco real</div>
+          </div>
+
+          <div className="bg-slate-700/50 rounded-lg p-4">
+            <div className="flex items-center space-x-3 mb-2">
+              <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+              <span className="text-white font-medium">Avaliação Unificada</span>
+            </div>
+            <div className="text-slate-400 text-sm">IMRE + Clínico integrados</div>
+          </div>
+        </div>
+
+        {/* Barra de Progresso */}
+        {migrationStatus === 'migrating' && (
+          <div className="mt-6">
+            <div className="flex justify-between text-sm text-slate-300 mb-2">
+              <span>Progresso da Migração</span>
+              <span>{migrationProgress}%</span>
+            </div>
+            <div className="w-full bg-slate-700 rounded-full h-2">
+              <div 
+                className="bg-blue-500 h-2 rounded-full transition-all duration-300"
+                style={{ width: `${migrationProgress}%` }}
+              ></div>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Resultados da Migração */}
+      {migrationResults && (
+        <div className="bg-slate-800/80 rounded-lg p-6 border border-slate-700">
+          <h3 className="text-xl font-bold text-white mb-6">📈 Resultados da Migração</h3>
+          
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div className="bg-slate-700/50 rounded-lg p-4 text-center">
+              <div className="text-2xl font-bold text-green-400 mb-1">
+                {migrationResults.migratedAssessments || 0}
+              </div>
+              <div className="text-slate-300 text-sm">Avaliações Migradas</div>
+            </div>
+            
+            <div className="bg-slate-700/50 rounded-lg p-4 text-center">
+              <div className="text-2xl font-bold text-primary-400 mb-1">
+                {migrationResults.migratedBlocks || 0}
+              </div>
+              <div className="text-slate-300 text-sm">Blocos Semânticos</div>
+            </div>
+            
+            <div className="bg-slate-700/50 rounded-lg p-4 text-center">
+              <div className="text-2xl font-bold text-purple-400 mb-1">
+                {migrationResults.migratedInteractions || 0}
+              </div>
+              <div className="text-slate-300 text-sm">Interações NOA</div>
+            </div>
+            
+            <div className="bg-slate-700/50 rounded-lg p-4 text-center">
+              <div className="text-2xl font-bold text-red-400 mb-1">
+                {migrationResults.errors?.length || 0}
+              </div>
+              <div className="text-slate-300 text-sm">Erros</div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Ações de Unificação */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        {/* FASE 1: Preservar a Alma */}
+        <div className="bg-slate-800/80 rounded-lg p-6 border border-slate-700">
+          <h3 className="text-xl font-bold text-white mb-6">🧬 FASE 1: Preservar a Alma</h3>
+          
+          <div className="space-y-4">
+            <div className="bg-slate-700/50 rounded-lg p-4">
+              <h4 className="text-white font-medium mb-2">Sistema IMRE Triaxial</h4>
+              <p className="text-slate-300 text-sm mb-3">
+                Migrar dados semânticos do IndexedDB para Supabase preservando toda funcionalidade
+              </p>
+              <button
+                onClick={handleIMREMigration}
+                disabled={migrationStatus === 'migrating'}
+                className="bg-primary-600 hover:bg-blue-700 disabled:bg-gray-600 text-white px-4 py-2 rounded-lg transition-colors"
+              >
+                {migrationStatus === 'migrating' ? 'Migrando...' : 'Migrar IMRE'}
+              </button>
+            </div>
+
+            <div className="bg-slate-700/50 rounded-lg p-4">
+              <h4 className="text-white font-medium mb-2">NOA Multimodal</h4>
+              <p className="text-slate-300 text-sm mb-3">
+                Conectar avatar com escuta real ao banco de dados real
+              </p>
+              <button
+                onClick={handleNOAIntegration}
+                className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition-colors"
+              >
+                Integrar NOA
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* FASE 2: Unificar Corpo e Alma */}
+        <div className="bg-slate-800/80 rounded-lg p-6 border border-slate-700">
+          <h3 className="text-xl font-bold text-white mb-6">🔄 FASE 2: Unificar Corpo e Alma</h3>
+          
+          <div className="space-y-4">
+            <div className="bg-slate-700/50 rounded-lg p-4">
+              <h4 className="text-white font-medium mb-2">Avaliação Unificada</h4>
+              <p className="text-slate-300 text-sm mb-3">
+                Integrar avaliação IMRE com monitoramento renal no mesmo prontuário
+              </p>
+              <button
+                onClick={handleUnifiedAssessment}
+                className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg transition-colors"
+              >
+                Inicializar Avaliação
+              </button>
+            </div>
+
+            <div className="bg-slate-700/50 rounded-lg p-4">
+              <h4 className="text-white font-medium mb-2">Validação da Migração</h4>
+              <p className="text-slate-300 text-sm mb-3">
+                Verificar integridade dos dados migrados e correlações
+              </p>
+              <button
+                onClick={validateMigration}
+                className="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-lg transition-colors"
+              >
+                Validar Migração
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Arquitetura da Unificação */}
+      <div className="bg-slate-800/80 rounded-lg p-6 border border-slate-700">
+        <h3 className="text-xl font-bold text-white mb-6">🏗️ Arquitetura da Unificação</h3>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div>
+            <h4 className="text-white font-medium mb-4">MedCannLab 3.0 (A "Alma")</h4>
+            <div className="space-y-3">
+              <div className="flex items-center space-x-3">
+                <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                <span className="text-slate-300 text-sm">Sistema IMRE Triaxial (37 blocos)</span>
+              </div>
+              <div className="flex items-center space-x-3">
+                <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                <span className="text-slate-300 text-sm">NOA Multimodal com escuta real</span>
+              </div>
+              <div className="flex items-center space-x-3">
+                <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                <span className="text-slate-300 text-sm">IndexedDB com persistência semântica</span>
+              </div>
+              <div className="flex items-center space-x-3">
+                <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                <span className="text-slate-300 text-sm">Avaliação clínica profunda</span>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <h4 className="text-white font-medium mb-4">MedCannLab 5.0 (O "Corpo")</h4>
+            <div className="space-y-3">
+              <div className="flex items-center space-x-3">
+                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                <span className="text-slate-300 text-sm">Supabase com estrutura real</span>
+              </div>
+              <div className="flex items-center space-x-3">
+                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                <span className="text-slate-300 text-sm">Usuários reais e relacionamentos</span>
+              </div>
+              <div className="flex items-center space-x-3">
+                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                <span className="text-slate-300 text-sm">Chat Global e fóruns</span>
+              </div>
+              <div className="flex items-center space-x-3">
+                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                <span className="text-slate-300 text-sm">Monitoramento renal e gamificação</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-8 text-center">
+          <div className="text-2xl font-bold text-white mb-2">🧬 = 🏥</div>
+          <p className="text-slate-300">
+            Unindo a escuta semântica profunda com dados clínicos reais
+          </p>
+        </div>
+      </div>
+    </div>
+  )
+
   return (
     <div className="min-h-screen bg-slate-900">
       {/* Main Content */}
@@ -1148,24 +1351,24 @@ const AdminDashboard: React.FC = () => {
               {/* Métricas Financeiras */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 <div className="bg-slate-800/80 rounded-lg p-6 text-center">
-                  <div className="text-3xl font-bold text-green-400 mb-2">R$ 45.230</div>
+                  <div className="text-3xl font-bold text-green-400 mb-2">R$ 0</div>
                   <div className="text-slate-300">Receita Mensal</div>
-                  <div className="text-green-400 text-sm">+12.5% vs mês anterior</div>
+                  <div className="text-green-400 text-sm">Dados do Supabase</div>
                 </div>
                 <div className="bg-slate-800/80 rounded-lg p-6 text-center">
-                  <div className="text-3xl font-bold text-blue-400 mb-2">R$ 8.920</div>
+                  <div className="text-3xl font-bold text-primary-400 mb-2">R$ 0</div>
                   <div className="text-slate-300">Despesas Mensais</div>
-                  <div className="text-blue-400 text-sm">-3.2% vs mês anterior</div>
+                  <div className="text-primary-400 text-sm">Dados do Supabase</div>
                 </div>
                 <div className="bg-slate-800/80 rounded-lg p-6 text-center">
-                  <div className="text-3xl font-bold text-purple-400 mb-2">R$ 36.310</div>
+                  <div className="text-3xl font-bold text-purple-400 mb-2">R$ 0</div>
                   <div className="text-slate-300">Lucro Líquido</div>
-                  <div className="text-purple-400 text-sm">+18.7% vs mês anterior</div>
+                  <div className="text-purple-400 text-sm">Dados do Supabase</div>
                 </div>
                 <div className="bg-slate-800/80 rounded-lg p-6 text-center">
-                  <div className="text-3xl font-bold text-orange-400 mb-2">892</div>
+                  <div className="text-3xl font-bold text-orange-400 mb-2">0</div>
                   <div className="text-slate-300">Assinaturas Ativas</div>
-                  <div className="text-orange-400 text-sm">+45 novas este mês</div>
+                  <div className="text-orange-400 text-sm">Dados do Supabase</div>
                 </div>
               </div>
 
@@ -1180,7 +1383,7 @@ const AdminDashboard: React.FC = () => {
                     </div>
                     <div className="flex justify-between items-center">
                       <span className="text-slate-300">Dezembro 2023</span>
-                      <span className="text-blue-400 font-bold">R$ 40.180</span>
+                      <span className="text-primary-400 font-bold">R$ 40.180</span>
                     </div>
                     <div className="flex justify-between items-center">
                       <span className="text-slate-300">Novembro 2023</span>
@@ -1202,7 +1405,7 @@ const AdminDashboard: React.FC = () => {
                     </div>
                     <div className="flex justify-between items-center">
                       <span className="text-slate-300">PIX</span>
-                      <span className="text-blue-400 font-bold">25%</span>
+                      <span className="text-primary-400 font-bold">25%</span>
                     </div>
                     <div className="flex justify-between items-center">
                       <span className="text-slate-300">Boleto</span>
@@ -1294,7 +1497,7 @@ const AdminDashboard: React.FC = () => {
               <div className="bg-slate-800/80 rounded-lg p-6">
                 <h3 className="text-xl font-bold text-white mb-6">🚨 Debates que Precisam de Atenção</h3>
                 <div className="space-y-4">
-                  {forumDebates.map((debate) => (
+                  {forumDebates.length > 0 ? forumDebates.map((debate: any) => (
                     <div key={debate.id} className={`p-4 rounded-lg border ${
                       debate.reports > 0 ? 'bg-red-500/10 border-red-500/20' :
                       debate.priority === 'high' ? 'bg-orange-500/10 border-orange-500/20' :
@@ -1343,7 +1546,7 @@ const AdminDashboard: React.FC = () => {
                           </div>
                         </div>
                         <div className="flex space-x-2">
-                          <button className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm">
+                          <button className="bg-primary-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm">
                             Ver Debate
                           </button>
                           <button className="bg-yellow-600 hover:bg-yellow-700 text-white px-3 py-1 rounded text-sm">
@@ -1355,7 +1558,13 @@ const AdminDashboard: React.FC = () => {
                         </div>
                       </div>
                     </div>
-                  ))}
+                  )) : (
+                    <div className="text-center py-8">
+                      <div className="text-slate-400 mb-2">📝</div>
+                      <div className="text-slate-300">Nenhum debate encontrado</div>
+                      <div className="text-slate-400 text-sm">Os debates aparecerão aqui quando houver atividade</div>
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -1370,7 +1579,7 @@ const AdminDashboard: React.FC = () => {
                         <div className="w-32 bg-slate-700 rounded-full h-2">
                           <div className="bg-blue-500 h-2 rounded-full" style={{width: '85%'}}></div>
                         </div>
-                        <span className="text-blue-400 font-bold">85%</span>
+                        <span className="text-primary-400 font-bold">85%</span>
                       </div>
                     </div>
                     <div className="flex justify-between items-center">
@@ -1412,7 +1621,7 @@ const AdminDashboard: React.FC = () => {
                     </div>
                     <div className="flex justify-between items-center">
                       <span className="text-slate-300">Usuários Ativos</span>
-                      <span className="text-blue-400 font-bold">+15%</span>
+                      <span className="text-primary-400 font-bold">+15%</span>
                     </div>
                     <div className="flex justify-between items-center">
                       <span className="text-slate-300">Tempo Médio de Resposta</span>
@@ -1524,7 +1733,7 @@ const AdminDashboard: React.FC = () => {
                           <td className="px-4 py-3">
                             <span className={`px-2 py-1 text-xs rounded-full ${
                               user.activity === 'Muito Ativo' ? 'bg-green-500/20 text-green-400' :
-                              user.activity === 'Ativo' ? 'bg-blue-500/20 text-blue-400' :
+                              user.activity === 'Ativo' ? 'bg-blue-500/20 text-primary-400' :
                               'bg-gray-500/20 text-gray-400'
                             }`}>
                               {user.activity}
@@ -1532,7 +1741,7 @@ const AdminDashboard: React.FC = () => {
                           </td>
                           <td className="px-4 py-3">
                             <div className="flex space-x-2">
-                              <button className="text-blue-400 hover:text-blue-300">
+                              <button className="text-primary-400 hover:text-blue-300">
                                 <Eye className="w-4 h-4" />
                               </button>
                               <button className="text-green-400 hover:text-green-300">
@@ -1555,7 +1764,7 @@ const AdminDashboard: React.FC = () => {
                 <div className="bg-slate-800/80 rounded-lg p-6">
                   <h3 className="text-xl font-bold text-white mb-6">🎖️ Conquistas Disponíveis</h3>
                   <div className="space-y-4">
-                    {achievements.map((achievement) => (
+                      {achievementsData.map((achievement) => (
                       <div key={achievement.id} className="flex items-center justify-between p-3 bg-slate-700/50 rounded-lg">
                         <div className="flex items-center space-x-3">
                           <span className="text-2xl">{achievement.icon}</span>
@@ -1582,7 +1791,7 @@ const AdminDashboard: React.FC = () => {
                         <div className="w-32 bg-slate-700 rounded-full h-2">
                           <div className="bg-blue-500 h-2 rounded-full" style={{width: '65%'}}></div>
                         </div>
-                        <span className="text-blue-400 font-bold">65%</span>
+                        <span className="text-primary-400 font-bold">65%</span>
                       </div>
                     </div>
                     <div className="flex justify-between items-center">
@@ -1618,7 +1827,7 @@ const AdminDashboard: React.FC = () => {
               {/* Estatísticas do Chat */}
               <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                 <div className="bg-slate-800/80 rounded-lg p-6 text-center">
-                  <div className="text-3xl font-bold text-blue-400 mb-2">89</div>
+                  <div className="text-3xl font-bold text-primary-400 mb-2">89</div>
                   <div className="text-slate-300">Chats Ativos</div>
                 </div>
                 <div className="bg-slate-800/80 rounded-lg p-6 text-center">
@@ -1641,7 +1850,7 @@ const AdminDashboard: React.FC = () => {
                 <div className="space-y-4">
                   <div className="flex items-center justify-between p-4 bg-slate-700/50 rounded-lg">
                     <div className="flex items-center space-x-3">
-                      <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center">
+                      <div className="w-10 h-10 bg-primary-600 rounded-full flex items-center justify-center">
                         <span className="text-sm font-medium text-white">JS</span>
                       </div>
                       <div>
@@ -1653,7 +1862,7 @@ const AdminDashboard: React.FC = () => {
                       <span className="bg-green-500/20 text-green-400 px-2 py-1 rounded-full text-xs">
                         Online
                       </span>
-                      <button className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm">
+                      <button className="bg-primary-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm">
                         Ver Chat
                       </button>
                     </div>
@@ -1673,7 +1882,7 @@ const AdminDashboard: React.FC = () => {
                       <span className="bg-yellow-500/20 text-yellow-400 px-2 py-1 rounded-full text-xs">
                         Aguardando
                       </span>
-                      <button className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm">
+                      <button className="bg-primary-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm">
                         Ver Chat
                       </button>
                     </div>
@@ -1727,7 +1936,7 @@ const AdminDashboard: React.FC = () => {
                     </div>
                     <div className="flex items-center justify-between">
                       <div className="flex items-center space-x-3">
-                        <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
+                        <div className="w-8 h-8 bg-primary-600 rounded-full flex items-center justify-center">
                           <span className="text-xs font-medium text-white">M</span>
                         </div>
                         <div>
@@ -1754,7 +1963,7 @@ const AdminDashboard: React.FC = () => {
               {/* Estatísticas de Upload */}
               <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                 <div className="bg-slate-800/80 rounded-lg p-6 text-center">
-                  <div className="text-3xl font-bold text-blue-400 mb-2">156</div>
+                  <div className="text-3xl font-bold text-primary-400 mb-2">156</div>
                   <div className="text-slate-300">Documentos</div>
                 </div>
                 <div className="bg-slate-800/80 rounded-lg p-6 text-center">
@@ -1907,7 +2116,7 @@ const AdminDashboard: React.FC = () => {
                           </span>
                         </td>
                         <td className="px-4 py-3">
-                          <button className="text-blue-400 hover:text-blue-300 mr-2">👁️</button>
+                          <button className="text-primary-400 hover:text-blue-300 mr-2">👁️</button>
                           <button className="text-yellow-400 hover:text-yellow-300 mr-2">✏️</button>
                           <button className="text-red-400 hover:text-red-300">🗑️</button>
                         </td>
@@ -1923,7 +2132,7 @@ const AdminDashboard: React.FC = () => {
                           </span>
                         </td>
                         <td className="px-4 py-3">
-                          <button className="text-blue-400 hover:text-blue-300 mr-2">👁️</button>
+                          <button className="text-primary-400 hover:text-blue-300 mr-2">👁️</button>
                           <button className="text-yellow-400 hover:text-yellow-300 mr-2">✏️</button>
                           <button className="text-red-400 hover:text-red-300">🗑️</button>
                         </td>
@@ -1944,7 +2153,7 @@ const AdminDashboard: React.FC = () => {
               {/* Métricas Principais */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 <div className="bg-slate-800/80 rounded-lg p-6 text-center">
-                  <div className="text-3xl font-bold text-blue-400 mb-2">89.2%</div>
+                  <div className="text-3xl font-bold text-primary-400 mb-2">89.2%</div>
                   <div className="text-slate-300">Taxa de Engajamento</div>
                   <div className="text-green-400 text-sm">+5.3% vs mês anterior</div>
                 </div>
@@ -1976,7 +2185,7 @@ const AdminDashboard: React.FC = () => {
                         <div className="w-32 bg-slate-700 rounded-full h-2">
                           <div className="bg-blue-500 h-2 rounded-full" style={{width: '85%'}}></div>
                         </div>
-                        <span className="text-blue-400 font-bold">85%</span>
+                        <span className="text-primary-400 font-bold">85%</span>
                       </div>
                     </div>
                     <div className="flex justify-between items-center">
@@ -2009,7 +2218,7 @@ const AdminDashboard: React.FC = () => {
                     </div>
                     <div className="flex justify-between items-center">
                       <span className="text-slate-300">Chat com Nôa</span>
-                      <span className="text-blue-400 font-bold">892 usos</span>
+                      <span className="text-primary-400 font-bold">892 usos</span>
                     </div>
                     <div className="flex justify-between items-center">
                       <span className="text-slate-300">Biblioteca</span>
@@ -2070,7 +2279,7 @@ const AdminDashboard: React.FC = () => {
                   <div className="space-y-4">
                     <div className="flex justify-between items-center">
                       <span className="text-slate-300">Desktop</span>
-                      <span className="text-blue-400 font-bold">65%</span>
+                      <span className="text-primary-400 font-bold">65%</span>
                     </div>
                     <div className="flex justify-between items-center">
                       <span className="text-slate-300">Mobile</span>
@@ -2204,7 +2413,7 @@ const AdminDashboard: React.FC = () => {
                 <h3 className="text-lg font-bold text-white mb-4">🔬 Relatórios de Pesquisa</h3>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   <div className="text-center p-4 bg-slate-700/50 rounded-lg">
-                    <Target className="w-8 h-8 text-blue-400 mx-auto mb-2" />
+                    <Target className="w-8 h-8 text-primary-400 mx-auto mb-2" />
                     <h4 className="text-white font-semibold mb-2">Prevenção DRC</h4>
                     <p className="text-slate-400 text-sm">Identificação precoce de fatores de risco</p>
                   </div>
@@ -2237,7 +2446,7 @@ const AdminDashboard: React.FC = () => {
                   <div className="text-slate-300">Status do Servidor</div>
                 </div>
                 <div className="bg-slate-800/80 rounded-lg p-6 text-center">
-                  <div className="text-3xl font-bold text-blue-400 mb-2">v3.0.1</div>
+                  <div className="text-3xl font-bold text-primary-400 mb-2">v3.0.1</div>
                   <div className="text-slate-300">Versão Atual</div>
                 </div>
                 <div className="bg-slate-800/80 rounded-lg p-6 text-center">
@@ -2345,7 +2554,7 @@ const AdminDashboard: React.FC = () => {
                       </span>
                     </div>
                     <p className="text-slate-400 text-sm mb-3">Banco de dados e autenticação</p>
-                    <button className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded text-sm">
+                    <button className="w-full bg-primary-600 hover:bg-blue-700 text-white py-2 px-4 rounded text-sm">
                       Configurar
                     </button>
                   </div>
@@ -2366,12 +2575,12 @@ const AdminDashboard: React.FC = () => {
                   <div className="bg-slate-700/50 rounded-lg p-4">
                     <div className="flex items-center justify-between mb-3">
                       <h4 className="text-white font-medium">Analytics</h4>
-                      <span className="bg-blue-500/20 text-blue-400 px-2 py-1 rounded-full text-xs">
+                      <span className="bg-blue-500/20 text-primary-400 px-2 py-1 rounded-full text-xs">
                         Ativo
                       </span>
                     </div>
                     <p className="text-slate-400 text-sm mb-3">Google Analytics</p>
-                    <button className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded text-sm">
+                    <button className="w-full bg-primary-600 hover:bg-blue-700 text-white py-2 px-4 rounded text-sm">
                       Configurar
                     </button>
                   </div>
@@ -2389,7 +2598,7 @@ const AdminDashboard: React.FC = () => {
                     </div>
                     <div className="flex justify-between items-center">
                       <span className="text-slate-300">Tamanho do Backup</span>
-                      <span className="text-blue-400">1.2GB</span>
+                      <span className="text-primary-400">1.2GB</span>
                     </div>
                     <div className="flex justify-between items-center">
                       <span className="text-slate-300">Próximo Backup</span>
@@ -2414,7 +2623,7 @@ const AdminDashboard: React.FC = () => {
                     </div>
                     <div className="flex justify-between items-center">
                       <span className="text-slate-300">Otimização DB</span>
-                      <span className="text-blue-400">Pendente</span>
+                      <span className="text-primary-400">Pendente</span>
                     </div>
                     <button className="w-full bg-orange-600 hover:bg-orange-700 text-white py-2 px-4 rounded-lg">
                       🧹 Limpeza Completa
@@ -2428,239 +2637,6 @@ const AdminDashboard: React.FC = () => {
     </div>
   )
 
-  const renderUnification = () => (
-    <div className="space-y-8">
-      {/* Header */}
-      <div className="text-center">
-        <h1 className="text-4xl font-bold text-white mb-4">
-          🧬 MedCannLab 3.0 → 5.0 Unificação
-        </h1>
-        <p className="text-slate-300 text-lg">
-          Unindo a "alma" semântica do 3.0 com o "corpo" real do 5.0
-        </p>
-      </div>
-
-      {/* Status da Migração */}
-      <div className="bg-slate-800/80 rounded-lg p-6 border border-slate-700">
-        <h3 className="text-xl font-bold text-white mb-6">📊 Status da Unificação</h3>
-        
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="bg-slate-700/50 rounded-lg p-4">
-            <div className="flex items-center space-x-3 mb-2">
-              <div className={`w-3 h-3 rounded-full ${
-                migrationStatus === 'completed' ? 'bg-green-500' : 
-                migrationStatus === 'migrating' ? 'bg-yellow-500 animate-pulse' : 
-                migrationStatus === 'error' ? 'bg-red-500' : 'bg-gray-500'
-              }`}></div>
-              <span className="text-white font-medium">Migração IMRE</span>
-            </div>
-            <div className="text-slate-400 text-sm">
-              {migrationStatus === 'completed' ? 'Concluída' : 
-               migrationStatus === 'migrating' ? 'Em andamento...' : 
-               migrationStatus === 'error' ? 'Erro' : 'Pendente'}
-            </div>
-          </div>
-
-          <div className="bg-slate-700/50 rounded-lg p-4">
-            <div className="flex items-center space-x-3 mb-2">
-              <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-              <span className="text-white font-medium">Integração NOA</span>
-            </div>
-            <div className="text-slate-400 text-sm">Conectado ao banco real</div>
-          </div>
-
-          <div className="bg-slate-700/50 rounded-lg p-4">
-            <div className="flex items-center space-x-3 mb-2">
-              <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-              <span className="text-white font-medium">Avaliação Unificada</span>
-            </div>
-            <div className="text-slate-400 text-sm">IMRE + Clínico integrados</div>
-          </div>
-        </div>
-
-        {/* Barra de Progresso */}
-        {migrationStatus === 'migrating' && (
-          <div className="mt-6">
-            <div className="flex justify-between text-sm text-slate-300 mb-2">
-              <span>Progresso da Migração</span>
-              <span>{migrationProgress}%</span>
-            </div>
-            <div className="w-full bg-slate-700 rounded-full h-2">
-              <div 
-                className="bg-blue-500 h-2 rounded-full transition-all duration-300"
-                style={{ width: `${migrationProgress}%` }}
-              ></div>
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* Resultados da Migração */}
-      {migrationResults && (
-        <div className="bg-slate-800/80 rounded-lg p-6 border border-slate-700">
-          <h3 className="text-xl font-bold text-white mb-6">📈 Resultados da Migração</h3>
-          
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div className="bg-slate-700/50 rounded-lg p-4 text-center">
-              <div className="text-2xl font-bold text-green-400 mb-1">
-                {migrationResults.migratedAssessments || 0}
-              </div>
-              <div className="text-slate-300 text-sm">Avaliações Migradas</div>
-            </div>
-            
-            <div className="bg-slate-700/50 rounded-lg p-4 text-center">
-              <div className="text-2xl font-bold text-blue-400 mb-1">
-                {migrationResults.migratedBlocks || 0}
-              </div>
-              <div className="text-slate-300 text-sm">Blocos Semânticos</div>
-            </div>
-            
-            <div className="bg-slate-700/50 rounded-lg p-4 text-center">
-              <div className="text-2xl font-bold text-purple-400 mb-1">
-                {migrationResults.migratedInteractions || 0}
-              </div>
-              <div className="text-slate-300 text-sm">Interações NOA</div>
-            </div>
-            
-            <div className="bg-slate-700/50 rounded-lg p-4 text-center">
-              <div className="text-2xl font-bold text-red-400 mb-1">
-                {migrationResults.errors?.length || 0}
-              </div>
-              <div className="text-slate-300 text-sm">Erros</div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Ações de Unificação */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* FASE 1: Preservar a Alma */}
-        <div className="bg-slate-800/80 rounded-lg p-6 border border-slate-700">
-          <h3 className="text-xl font-bold text-white mb-6">🧬 FASE 1: Preservar a Alma</h3>
-          
-          <div className="space-y-4">
-            <div className="bg-slate-700/50 rounded-lg p-4">
-              <h4 className="text-white font-medium mb-2">Sistema IMRE Triaxial</h4>
-              <p className="text-slate-300 text-sm mb-3">
-                Migrar dados semânticos do IndexedDB para Supabase preservando toda funcionalidade
-              </p>
-              <button
-                onClick={handleIMREMigration}
-                disabled={migrationStatus === 'migrating'}
-                className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 text-white px-4 py-2 rounded-lg transition-colors"
-              >
-                {migrationStatus === 'migrating' ? 'Migrando...' : 'Migrar IMRE'}
-              </button>
-            </div>
-
-            <div className="bg-slate-700/50 rounded-lg p-4">
-              <h4 className="text-white font-medium mb-2">NOA Multimodal</h4>
-              <p className="text-slate-300 text-sm mb-3">
-                Conectar avatar com escuta real ao banco de dados real
-              </p>
-              <button
-                onClick={handleNOAIntegration}
-                className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition-colors"
-              >
-                Integrar NOA
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {/* FASE 2: Unificar Corpo e Alma */}
-        <div className="bg-slate-800/80 rounded-lg p-6 border border-slate-700">
-          <h3 className="text-xl font-bold text-white mb-6">🔄 FASE 2: Unificar Corpo e Alma</h3>
-          
-          <div className="space-y-4">
-            <div className="bg-slate-700/50 rounded-lg p-4">
-              <h4 className="text-white font-medium mb-2">Avaliação Unificada</h4>
-              <p className="text-slate-300 text-sm mb-3">
-                Integrar avaliação IMRE com monitoramento renal no mesmo prontuário
-              </p>
-              <button
-                onClick={handleUnifiedAssessment}
-                className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg transition-colors"
-              >
-                Inicializar Avaliação
-              </button>
-            </div>
-
-            <div className="bg-slate-700/50 rounded-lg p-4">
-              <h4 className="text-white font-medium mb-2">Validação da Migração</h4>
-              <p className="text-slate-300 text-sm mb-3">
-                Verificar integridade dos dados migrados e correlações
-              </p>
-              <button
-                onClick={validateMigration}
-                className="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-lg transition-colors"
-              >
-                Validar Migração
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Arquitetura da Unificação */}
-      <div className="bg-slate-800/80 rounded-lg p-6 border border-slate-700">
-        <h3 className="text-xl font-bold text-white mb-6">🏗️ Arquitetura da Unificação</h3>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          <div>
-            <h4 className="text-white font-medium mb-4">MedCannLab 3.0 (A "Alma")</h4>
-            <div className="space-y-3">
-              <div className="flex items-center space-x-3">
-                <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                <span className="text-slate-300 text-sm">Sistema IMRE Triaxial (37 blocos)</span>
-              </div>
-              <div className="flex items-center space-x-3">
-                <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                <span className="text-slate-300 text-sm">NOA Multimodal com escuta real</span>
-              </div>
-              <div className="flex items-center space-x-3">
-                <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                <span className="text-slate-300 text-sm">IndexedDB com persistência semântica</span>
-              </div>
-              <div className="flex items-center space-x-3">
-                <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                <span className="text-slate-300 text-sm">Avaliação clínica profunda</span>
-              </div>
-            </div>
-          </div>
-
-          <div>
-            <h4 className="text-white font-medium mb-4">MedCannLab 5.0 (O "Corpo")</h4>
-            <div className="space-y-3">
-              <div className="flex items-center space-x-3">
-                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                <span className="text-slate-300 text-sm">Supabase com estrutura real</span>
-              </div>
-              <div className="flex items-center space-x-3">
-                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                <span className="text-slate-300 text-sm">Usuários reais e relacionamentos</span>
-              </div>
-              <div className="flex items-center space-x-3">
-                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                <span className="text-slate-300 text-sm">Chat Global e fóruns</span>
-              </div>
-              <div className="flex items-center space-x-3">
-                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                <span className="text-slate-300 text-sm">Monitoramento renal e gamificação</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="mt-8 text-center">
-          <div className="text-2xl font-bold text-white mb-2">🧬 = 🏥</div>
-          <p className="text-slate-300">
-            Unindo a escuta semântica profunda com dados clínicos reais
-          </p>
-        </div>
-      </div>
-    </div>
-  )
 }
 
 export default AdminDashboard

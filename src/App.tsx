@@ -5,6 +5,7 @@ import { ToastProvider } from './contexts/ToastContext'
 import { NoaProvider } from './contexts/NoaContext'
 import { RealtimeProvider } from './contexts/RealtimeContext'
 import Layout from './components/Layout'
+import ProtectedRoute from './components/ProtectedRoute'
 
 // Pages
 import Landing from './pages/Landing'
@@ -38,7 +39,7 @@ import NotFound from './pages/NotFound'
 
 function App() {
   return (
-        <BrowserRouter>
+        <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
           <AuthProvider>
             <ToastProvider>
               <NoaProvider>
@@ -64,23 +65,67 @@ function App() {
                     <Route path="forum" element={<ForumCasosClinicos />} />
                 <Route path="gamificacao" element={<Gamificacao />} />
                 <Route path="profile" element={<Profile />} />
-                <Route path="admin" element={<AdminDashboard />} />
+                <Route path="admin" element={
+                  <ProtectedRoute requiredRole="admin">
+                    <AdminDashboard />
+                  </ProtectedRoute>
+                } />
                 <Route path="ai-documents" element={<AIDocumentChat />} />
-                <Route path="patients" element={<Patients />} />
+                <Route path="patients" element={
+                  <ProtectedRoute requiredRole="professional">
+                    <Patients />
+                  </ProtectedRoute>
+                } />
                 <Route path="evaluations" element={<Evaluations />} />
                 <Route path="reports" element={<Reports />} />
                 <Route path="debate/:debateId" element={<DebateRoom />} />
-                <Route path="patient-chat/:patientId" element={<PatientDoctorChat />} />
+                <Route path="patient-chat/:patientId" element={
+                  <ProtectedRoute requiredRole="professional">
+                    <PatientDoctorChat />
+                  </ProtectedRoute>
+                } />
                 <Route path="patient/:patientId" element={<PatientProfile />} />
                 <Route path="appointments" element={<Profile />} />
-                <Route path="scheduling" element={<ProfessionalScheduling />} />
-                <Route path="patient-appointments" element={<PatientAppointments />} />
-                <Route path="patient-noa-chat" element={<PatientNOAChat />} />
-                <Route path="admin/users" element={<AdminDashboard />} />
-                <Route path="admin/courses" element={<AdminDashboard />} />
-                <Route path="admin/analytics" element={<AdminDashboard />} />
-                <Route path="admin/system" element={<AdminDashboard />} />
-                <Route path="admin/reports" element={<AdminDashboard />} />
+                <Route path="scheduling" element={
+                  <ProtectedRoute requiredRole="professional">
+                    <ProfessionalScheduling />
+                  </ProtectedRoute>
+                } />
+                <Route path="patient-appointments" element={
+                  <ProtectedRoute requiredRole="patient">
+                    <PatientAppointments />
+                  </ProtectedRoute>
+                } />
+                <Route path="patient-noa-chat" element={
+                  <ProtectedRoute requiredRole="patient">
+                    <PatientNOAChat />
+                  </ProtectedRoute>
+                } />
+                <Route path="admin/users" element={
+                  <ProtectedRoute requiredRole="admin">
+                    <AdminDashboard />
+                  </ProtectedRoute>
+                } />
+                <Route path="admin/courses" element={
+                  <ProtectedRoute requiredRole="admin">
+                    <AdminDashboard />
+                  </ProtectedRoute>
+                } />
+                <Route path="admin/analytics" element={
+                  <ProtectedRoute requiredRole="admin">
+                    <AdminDashboard />
+                  </ProtectedRoute>
+                } />
+                <Route path="admin/system" element={
+                  <ProtectedRoute requiredRole="admin">
+                    <AdminDashboard />
+                  </ProtectedRoute>
+                } />
+                <Route path="admin/reports" element={
+                  <ProtectedRoute requiredRole="admin">
+                    <AdminDashboard />
+                  </ProtectedRoute>
+                } />
               </Route>
               
               <Route path="*" element={<NotFound />} />

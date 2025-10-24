@@ -227,11 +227,11 @@ const ChatGlobal: React.FC = () => {
           .insert({
             user_id: user.id,
             user_name: user.name || 'Usuário',
-            user_avatar: user.avatar || 'U',
+            user_avatar: 'U',
             message: message.trim(),
             channel: activeChannel,
             crm: user.crm || '',
-            specialty: user.specialty || '',
+            specialty: '',
             type: 'text',
             reactions: { heart: 0, thumbs: 0, reply: 0 },
             is_pinned: false,
@@ -466,7 +466,7 @@ const ChatGlobal: React.FC = () => {
             onClick={() => setActiveTab('chat')}
             className={`flex-1 flex items-center justify-center space-x-2 py-3 px-4 rounded-lg transition-colors ${
               activeTab === 'chat'
-                ? 'bg-blue-600 text-white'
+                ? 'bg-primary-600 text-white'
                 : 'text-slate-300 hover:text-white hover:bg-slate-700/50'
             }`}
           >
@@ -477,7 +477,7 @@ const ChatGlobal: React.FC = () => {
             onClick={() => setActiveTab('forum')}
             className={`flex-1 flex items-center justify-center space-x-2 py-3 px-4 rounded-lg transition-colors ${
               activeTab === 'forum'
-                ? 'bg-blue-600 text-white'
+                ? 'bg-primary-600 text-white'
                 : 'text-slate-300 hover:text-white hover:bg-slate-700/50'
             }`}
           >
@@ -488,7 +488,7 @@ const ChatGlobal: React.FC = () => {
             onClick={() => setActiveTab('friends')}
             className={`flex-1 flex items-center justify-center space-x-2 py-3 px-4 rounded-lg transition-colors ${
               activeTab === 'friends'
-                ? 'bg-blue-600 text-white'
+                ? 'bg-primary-600 text-white'
                 : 'text-slate-300 hover:text-white hover:bg-slate-700/50'
             }`}
           >
@@ -505,7 +505,7 @@ const ChatGlobal: React.FC = () => {
 
       {/* Chat Tab */}
       {activeTab === 'chat' && (
-        <div className={`grid gap-8 ${showModeration && isAdmin ? 'grid-cols-1 lg:grid-cols-3' : 'grid-cols-1 lg:grid-cols-4'}`}>
+        <div className={`grid gap-10 ${showModeration && isAdmin ? 'grid-cols-1 lg:grid-cols-3' : 'grid-cols-1 lg:grid-cols-4'}`}>
           {/* Sidebar - Channels */}
           <div className="lg:col-span-1">
             <div className="bg-slate-800/80 rounded-lg p-6 border border-slate-700">
@@ -513,7 +513,7 @@ const ChatGlobal: React.FC = () => {
                 <h3 className="text-lg font-semibold text-white">
                   📋 Canais
                 </h3>
-                <button className="p-2 text-slate-400 hover:text-blue-400 transition-colors">
+                <button className="p-2 text-slate-400 hover:text-primary-400 transition-colors">
                   <Plus className="w-5 h-5" />
                 </button>
               </div>
@@ -525,7 +525,7 @@ const ChatGlobal: React.FC = () => {
                     onClick={() => setActiveChannel(channel.id)}
                     className={`w-full flex items-center justify-between p-3 rounded-lg transition-colors ${
                       activeChannel === channel.id
-                        ? 'bg-blue-600 text-white'
+                        ? 'bg-primary-600 text-white'
                         : 'hover:bg-slate-700/50 text-slate-300'
                     }`}
                   >
@@ -561,7 +561,7 @@ const ChatGlobal: React.FC = () => {
                   <div key={user.id} className="flex items-center justify-between p-3 hover:bg-slate-700/50 rounded-lg transition-colors">
                     <div className="flex items-center space-x-3">
                       <div className="relative">
-                        <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+                        <div className="w-10 h-10 bg-gradient-to-br from-primary-500 to-purple-600 rounded-full flex items-center justify-center">
                           <span className="text-white font-bold text-sm">{user.avatar}</span>
                         </div>
                         <div className={`absolute -bottom-1 -right-1 w-3 h-3 ${getStatusColor(user.status)} rounded-full border-2 border-slate-800`}></div>
@@ -575,7 +575,7 @@ const ChatGlobal: React.FC = () => {
                       {!user.isFriend && (
                         <button
                           onClick={() => handleAddFriend(user.id)}
-                          className="p-1 text-blue-400 hover:text-blue-300 hover:bg-blue-500/20 rounded transition-colors"
+                          className="p-1 text-primary-400 hover:text-primary-300 hover:bg-primary-500/20 rounded transition-colors"
                           title="Adicionar amigo"
                         >
                           <UserPlus className="w-4 h-4" />
@@ -615,7 +615,7 @@ const ChatGlobal: React.FC = () => {
                         <Flag className="w-5 h-5" />
                       </button>
                     )}
-                    <button className="p-2 text-slate-400 hover:text-blue-400 transition-colors">
+                    <button className="p-2 text-slate-400 hover:text-primary-400 transition-colors">
                       <Video className="w-5 h-5" />
                     </button>
                     <button className="p-2 text-slate-400 hover:text-green-400 transition-colors">
@@ -633,7 +633,7 @@ const ChatGlobal: React.FC = () => {
                 {messages.map((msg) => (
                   <div key={msg.id} className="flex space-x-3">
                     <div className="relative">
-                      <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+                      <div className="w-10 h-10 bg-gradient-to-br from-primary-500 to-purple-600 rounded-full flex items-center justify-center">
                         <span className="text-white font-bold text-sm">{msg.userAvatar}</span>
                       </div>
                       {msg.isOnline && (
@@ -658,7 +658,7 @@ const ChatGlobal: React.FC = () => {
                           <Heart className="w-4 h-4" />
                           <span className="text-sm">{msg.reactions.heart}</span>
                         </button>
-                        <button className="flex items-center space-x-1 text-slate-400 hover:text-blue-400 transition-colors">
+                        <button className="flex items-center space-x-1 text-slate-400 hover:text-primary-400 transition-colors">
                           <ThumbsUp className="w-4 h-4" />
                           <span className="text-sm">{msg.reactions.thumbs}</span>
                         </button>
@@ -666,7 +666,7 @@ const ChatGlobal: React.FC = () => {
                           <Reply className="w-4 h-4" />
                           <span className="text-sm">{msg.reactions.reply}</span>
                         </button>
-                        <button className="text-slate-400 hover:text-blue-400 transition-colors">
+                        <button className="text-slate-400 hover:text-primary-400 transition-colors">
                           <UserPlus className="w-4 h-4" />
                         </button>
                       </div>
@@ -679,7 +679,7 @@ const ChatGlobal: React.FC = () => {
               {/* Message Input */}
               <div className="p-4 border-t border-slate-700">
                 <div className="flex items-center space-x-3">
-                  <button className="p-2 text-slate-400 hover:text-blue-400 transition-colors">
+                  <button className="p-2 text-slate-400 hover:text-primary-400 transition-colors">
                     <Paperclip className="w-5 h-5" />
                   </button>
                   <div className="flex-1 relative">
@@ -689,7 +689,7 @@ const ChatGlobal: React.FC = () => {
                       onChange={(e) => setMessage(e.target.value)}
                       onKeyPress={handleKeyPress}
                       placeholder="Digite sua mensagem..."
-                      className="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary-500"
                     />
                   </div>
                   <button className="p-2 text-slate-400 hover:text-yellow-400 transition-colors">
@@ -707,7 +707,7 @@ const ChatGlobal: React.FC = () => {
                   </button>
                   <button
                     onClick={handleSendMessage}
-                    className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-3 rounded-lg transition-colors"
+                    className="bg-primary-600 hover:bg-primary-700 text-white px-4 py-3 rounded-lg transition-colors"
                   >
                     <Send className="w-5 h-5" />
                   </button>
@@ -769,7 +769,7 @@ const ChatGlobal: React.FC = () => {
                     </div>
                     <div className="flex justify-between text-xs">
                       <span className="text-slate-400">Mensagens Hoje</span>
-                      <span className="text-blue-400 font-bold">{messages.length}</span>
+                      <span className="text-primary-400 font-bold">{messages.length}</span>
                     </div>
                     <div className="flex justify-between text-xs">
                       <span className="text-slate-400">Canal Ativo</span>
@@ -782,7 +782,7 @@ const ChatGlobal: React.FC = () => {
                 <div>
                   <h4 className="text-sm font-semibold text-slate-300 mb-3">⚡ Ações Rápidas</h4>
                   <div className="space-y-2">
-                    <button className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 px-3 rounded text-xs">
+                    <button className="w-full bg-primary-600 hover:bg-primary-700 text-white py-2 px-3 rounded text-xs">
                       📊 Ver Analytics
                     </button>
                     <button className="w-full bg-yellow-600 hover:bg-yellow-700 text-white py-2 px-3 rounded text-xs">
@@ -804,7 +804,7 @@ const ChatGlobal: React.FC = () => {
 
       {/* Forum Tab */}
       {activeTab === 'forum' && (
-        <div className="space-y-6">
+        <div className="space-y-8">
           {/* Forum Header */}
           <div className="bg-slate-800/80 rounded-lg p-6 border border-slate-700">
             <div className="flex items-center justify-between mb-4">
@@ -812,7 +812,7 @@ const ChatGlobal: React.FC = () => {
                 <h2 className="text-2xl font-bold text-white mb-2">🏛️ Fórum Profissional</h2>
                 <p className="text-slate-300">Debates, discussões e troca de conhecimento entre profissionais</p>
               </div>
-              <button className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg flex items-center space-x-2 transition-colors">
+              <button className="bg-primary-600 hover:bg-primary-700 text-white px-6 py-3 rounded-lg flex items-center space-x-2 transition-colors">
                 <Plus className="w-5 h-5" />
                 <span>Novo Debate</span>
               </button>
@@ -827,7 +827,7 @@ const ChatGlobal: React.FC = () => {
                   placeholder="Buscar debates..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full pl-10 pr-4 py-3 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary-500"
                 />
               </div>
               <button className="px-4 py-3 bg-slate-700 border border-slate-600 rounded-lg text-slate-300 hover:text-white hover:bg-slate-600 transition-colors flex items-center space-x-2">
@@ -855,22 +855,22 @@ const ChatGlobal: React.FC = () => {
                       )}
                       {debate.isPasswordProtected && (
                         <div className="flex items-center space-x-1">
-                          <Lock className="w-4 h-4 text-blue-400" />
-                          <span className="text-blue-400 text-sm">Protegido</span>
+                          <Lock className="w-4 h-4 text-primary-400" />
+                          <span className="text-primary-400 text-sm">Protegido</span>
                         </div>
                       )}
                     </div>
                     <p className="text-slate-300 text-sm mb-3">{debate.description}</p>
                     <div className="flex flex-wrap gap-2 mb-3">
                       {debate.tags.map((tag, index) => (
-                        <span key={index} className="px-2 py-1 bg-blue-500/20 text-blue-400 text-xs rounded-full">
+                        <span key={index} className="px-2 py-1 bg-primary-500/20 text-primary-400 text-xs rounded-full">
                           {tag}
                         </span>
                       ))}
                     </div>
                     <div className="flex items-center space-x-4 text-sm text-slate-400">
                       <div className="flex items-center space-x-1">
-                        <div className="w-6 h-6 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+                        <div className="w-6 h-6 bg-gradient-to-br from-primary-500 to-purple-600 rounded-full flex items-center justify-center">
                           <span className="text-white font-bold text-xs">{debate.authorAvatar}</span>
                         </div>
                         <span>{debate.author}</span>
@@ -895,12 +895,12 @@ const ChatGlobal: React.FC = () => {
                     <div className="flex items-center space-x-2">
                       <button 
                         onClick={() => handleOpenDebate(debate.id)}
-                        className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg flex items-center space-x-2 transition-colors"
+                        className="px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-lg flex items-center space-x-2 transition-colors"
                       >
                         <MessageSquare className="w-4 h-4" />
                         <span>Participar</span>
                       </button>
-                      <button className="p-2 text-slate-400 hover:text-blue-400 transition-colors">
+                      <button className="p-2 text-slate-400 hover:text-primary-400 transition-colors">
                         <Eye className="w-4 h-4" />
                       </button>
                       <button className="p-2 text-slate-400 hover:text-green-400 transition-colors">
@@ -923,7 +923,7 @@ const ChatGlobal: React.FC = () => {
 
       {/* Friends Tab */}
       {activeTab === 'friends' && (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
           {/* Friend Requests */}
           <div className="bg-slate-800/80 rounded-lg p-6 border border-slate-700">
             <div className="flex items-center justify-between mb-6">
@@ -932,7 +932,7 @@ const ChatGlobal: React.FC = () => {
               </h3>
               <button
                 onClick={() => setShowFriendRequests(!showFriendRequests)}
-                className="text-blue-400 hover:text-blue-300 text-sm"
+                className="text-primary-400 hover:text-primary-300 text-sm"
               >
                 {showFriendRequests ? 'Ocultar' : 'Ver Todas'}
               </button>
@@ -942,7 +942,7 @@ const ChatGlobal: React.FC = () => {
               {friendRequests.map((request) => (
                 <div key={request.id} className="p-4 bg-slate-700/50 rounded-lg">
                   <div className="flex items-start space-x-3 mb-3">
-                    <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+                    <div className="w-12 h-12 bg-gradient-to-br from-primary-500 to-purple-600 rounded-full flex items-center justify-center">
                       <span className="text-white font-bold">{request.avatar}</span>
                     </div>
                     <div className="flex-1">
@@ -983,7 +983,7 @@ const ChatGlobal: React.FC = () => {
                 <div key={friend.id} className="flex items-center justify-between p-3 hover:bg-slate-700/50 rounded-lg transition-colors">
                   <div className="flex items-center space-x-3">
                     <div className="relative">
-                      <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+                      <div className="w-10 h-10 bg-gradient-to-br from-primary-500 to-purple-600 rounded-full flex items-center justify-center">
                         <span className="text-white font-bold text-sm">{friend.avatar}</span>
                       </div>
                       <div className={`absolute -bottom-1 -right-1 w-3 h-3 ${getStatusColor(friend.status)} rounded-full border-2 border-slate-800`}></div>
@@ -997,7 +997,7 @@ const ChatGlobal: React.FC = () => {
                     <button className="p-1 text-green-400 hover:text-green-300 hover:bg-green-500/20 rounded transition-colors" title="Conversar">
                       <MessageSquare className="w-4 h-4" />
                     </button>
-                    <button className="p-1 text-blue-400 hover:text-blue-300 hover:bg-blue-500/20 rounded transition-colors" title="Videochamada">
+                    <button className="p-1 text-primary-400 hover:text-primary-300 hover:bg-primary-500/20 rounded transition-colors" title="Videochamada">
                       <Video className="w-4 h-4" />
                     </button>
                     <button className="p-1 text-purple-400 hover:text-purple-300 hover:bg-purple-500/20 rounded transition-colors" title="Mais opções">
@@ -1099,7 +1099,7 @@ const ChatGlobal: React.FC = () => {
           </div>
 
           {/* Estatísticas de Moderação */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="bg-slate-700/50 rounded-lg p-4 text-center">
               <div className="text-2xl font-bold text-red-400 mb-1">
                 {moderatorRequests.length}
@@ -1113,7 +1113,7 @@ const ChatGlobal: React.FC = () => {
               <div className="text-slate-300 text-sm">Moderadores Online</div>
             </div>
             <div className="bg-slate-700/50 rounded-lg p-4 text-center">
-              <div className="text-2xl font-bold text-blue-400 mb-1">
+              <div className="text-2xl font-bold text-primary-400 mb-1">
                 {onlineUsers.length}
               </div>
               <div className="text-slate-300 text-sm">Usuários Online</div>
