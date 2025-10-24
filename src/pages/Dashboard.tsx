@@ -9,9 +9,10 @@ import {
   Award,
   Clock,
   CheckCircle,
-  AlertCircle
+  AlertCircle,
+  MessageCircle,
+  Phone
 } from 'lucide-react'
-import NOAChatBox from '../components/NOAChatBox'
 
 const Dashboard: React.FC = () => {
   const { user } = useAuth()
@@ -53,79 +54,382 @@ const PatientDashboard: React.FC = () => {
         </p>
       </div>
 
-    {/* Seleção de Médico Parceiro */}
+    {/* Médicos Parceiros e Ranking */}
     <div className="bg-slate-800/80 rounded-lg p-6 border border-slate-700">
-      <h3 className="text-xl font-bold text-white mb-4">👨‍⚕️ Meu Médico Parceiro</h3>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="space-y-4">
-          <div className="flex items-center space-x-4 p-4 bg-slate-700/50 rounded-lg">
-            <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
-              <span className="text-white font-bold text-sm">PM</span>
+      <h3 className="text-xl font-bold text-white mb-6">👨‍⚕️ Médicos Parceiros</h3>
+      
+      {/* Meu Médico Atual */}
+      <div className="mb-8">
+        <h4 className="text-lg font-semibold text-white mb-4">🏥 Meu Médico Atual</h4>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="space-y-4">
+            <div className="flex items-center space-x-4 p-4 bg-slate-700/50 rounded-lg">
+              <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+                <span className="text-white font-bold text-sm">PM</span>
+              </div>
+              <div>
+                <p className="text-white font-semibold">Dr. Passos Mir</p>
+                <p className="text-slate-400 text-sm">CRM: 12345-SP • Clínico Geral</p>
+                <div className="flex items-center space-x-2 mt-1">
+                  <div className="flex items-center">
+                    <span className="text-yellow-400">⭐⭐⭐⭐⭐</span>
+                    <span className="text-slate-300 text-sm ml-2">4.9 (127 avaliações)</span>
+                  </div>
+                </div>
+                <div className="flex items-center space-x-2 mt-1">
+                  <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                  <span className="text-green-400 text-xs">Online</span>
+                </div>
+              </div>
             </div>
-            <div>
-              <p className="text-white font-semibold">Dr. Passos Mir</p>
-              <p className="text-slate-400 text-sm">CRM: 12345-SP • Clínico Geral</p>
-              <div className="flex items-center space-x-2 mt-1">
-                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                <span className="text-green-400 text-xs">Online</span>
+            <div className="flex space-x-2">
+              <button className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center justify-center space-x-2 transition-colors">
+                <MessageCircle className="w-4 h-4" />
+                <span>Chat Exclusivo</span>
+              </button>
+              <button className="flex-1 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center justify-center space-x-2 transition-colors">
+                <Phone className="w-4 h-4" />
+                <span>Ligar</span>
+              </button>
+            </div>
+          </div>
+          <div className="space-y-3">
+            <div className="text-center">
+              <h4 className="text-lg font-semibold text-white mb-2">📅 Próxima Consulta</h4>
+              <p className="text-slate-300">22/01/2024 às 14:30</p>
+              <p className="text-slate-400 text-sm">Consulta de retorno</p>
+            </div>
+            <div className="text-center">
+              <h4 className="text-lg font-semibold text-white mb-2">📊 Status do Tratamento</h4>
+              <div className="flex items-center justify-center space-x-2">
+                <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                <span className="text-green-400 text-sm">Estável</span>
               </div>
             </div>
           </div>
-          <div className="flex space-x-2">
-            <button className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center justify-center space-x-2 transition-colors">
-              <MessageSquare className="w-4 h-4" />
-              <span>Chat Exclusivo</span>
-            </button>
-            <button className="flex-1 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center justify-center space-x-2 transition-colors">
-              <Phone className="w-4 h-4" />
-              <span>Ligar</span>
-            </button>
-          </div>
         </div>
-        <div className="space-y-3">
-          <div className="text-center">
-            <h4 className="text-lg font-semibold text-white mb-2">📅 Próxima Consulta</h4>
-            <p className="text-slate-300">22/01/2024 às 14:30</p>
-            <p className="text-slate-400 text-sm">Consulta de retorno</p>
+      </div>
+
+      {/* Top Médicos do App */}
+      <div>
+        <h4 className="text-lg font-semibold text-white mb-4">⭐ Top Médicos do App</h4>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {/* Dr. Ana Costa - Cardiologista */}
+          <div className="bg-slate-700/50 rounded-lg p-4 hover:bg-slate-700/70 transition-colors cursor-pointer">
+            <div className="flex items-center space-x-3 mb-3">
+              <div className="w-10 h-10 bg-gradient-to-br from-pink-500 to-red-600 rounded-full flex items-center justify-center">
+                <span className="text-white font-bold text-sm">AC</span>
+              </div>
+              <div>
+                <p className="text-white font-semibold">Dra. Ana Costa</p>
+                <p className="text-slate-400 text-sm">Cardiologista</p>
+              </div>
+            </div>
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center">
+                <span className="text-yellow-400">⭐⭐⭐⭐⭐</span>
+                <span className="text-slate-300 text-sm ml-2">4.9</span>
+              </div>
+              <span className="text-slate-400 text-xs">89 avaliações</span>
+            </div>
+            <p className="text-slate-300 text-sm mb-3">
+              Especialista em cardiologia preventiva e tratamento de arritmias. 
+              Experiência de 15 anos em hospitais de referência.
+            </p>
+            <div className="flex items-center justify-between">
+              <span className="text-green-400 text-sm">🟢 Online</span>
+              <button className="bg-primary-600 hover:bg-primary-700 text-white px-3 py-1 rounded text-sm transition-colors">
+                Ver Perfil
+              </button>
+            </div>
           </div>
-          <div className="text-center">
-            <h4 className="text-lg font-semibold text-white mb-2">📊 Status do Tratamento</h4>
-            <div className="flex items-center justify-center space-x-2">
-              <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-              <span className="text-green-400 text-sm">Estável</span>
+
+          {/* Dr. Carlos Silva - Neurologista */}
+          <div className="bg-slate-700/50 rounded-lg p-4 hover:bg-slate-700/70 transition-colors cursor-pointer">
+            <div className="flex items-center space-x-3 mb-3">
+              <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-full flex items-center justify-center">
+                <span className="text-white font-bold text-sm">CS</span>
+              </div>
+              <div>
+                <p className="text-white font-semibold">Dr. Carlos Silva</p>
+                <p className="text-slate-400 text-sm">Neurologista</p>
+              </div>
+            </div>
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center">
+                <span className="text-yellow-400">⭐⭐⭐⭐⭐</span>
+                <span className="text-slate-300 text-sm ml-2">4.8</span>
+              </div>
+              <span className="text-slate-400 text-xs">156 avaliações</span>
+            </div>
+            <p className="text-slate-300 text-sm mb-3">
+              Especialista em neurologia clínica e tratamento de epilepsia. 
+              Pesquisador em neurociências com publicações internacionais.
+            </p>
+            <div className="flex items-center justify-between">
+              <span className="text-orange-400 text-sm">🟡 Ausente</span>
+              <button className="bg-primary-600 hover:bg-primary-700 text-white px-3 py-1 rounded text-sm transition-colors">
+                Ver Perfil
+              </button>
+            </div>
+          </div>
+
+          {/* Dr. Maria Santos - Endocrinologista */}
+          <div className="bg-slate-700/50 rounded-lg p-4 hover:bg-slate-700/70 transition-colors cursor-pointer">
+            <div className="flex items-center space-x-3 mb-3">
+              <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-teal-600 rounded-full flex items-center justify-center">
+                <span className="text-white font-bold text-sm">MS</span>
+              </div>
+              <div>
+                <p className="text-white font-semibold">Dra. Maria Santos</p>
+                <p className="text-slate-400 text-sm">Endocrinologista</p>
+              </div>
+            </div>
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center">
+                <span className="text-yellow-400">⭐⭐⭐⭐⭐</span>
+                <span className="text-slate-300 text-sm ml-2">4.9</span>
+              </div>
+              <span className="text-slate-400 text-xs">203 avaliações</span>
+            </div>
+            <p className="text-slate-300 text-sm mb-3">
+              Especialista em diabetes e distúrbios hormonais. 
+              Coordenadora do programa de diabetes do hospital.
+            </p>
+            <div className="flex items-center justify-between">
+              <span className="text-green-400 text-sm">🟢 Online</span>
+              <button className="bg-primary-600 hover:bg-primary-700 text-white px-3 py-1 rounded text-sm transition-colors">
+                Ver Perfil
+              </button>
+            </div>
+          </div>
+
+          {/* Dr. João Oliveira - Psiquiatra */}
+          <div className="bg-slate-700/50 rounded-lg p-4 hover:bg-slate-700/70 transition-colors cursor-pointer">
+            <div className="flex items-center space-x-3 mb-3">
+              <div className="w-10 h-10 bg-gradient-to-br from-orange-500 to-yellow-600 rounded-full flex items-center justify-center">
+                <span className="text-white font-bold text-sm">JO</span>
+              </div>
+              <div>
+                <p className="text-white font-semibold">Dr. João Oliveira</p>
+                <p className="text-slate-400 text-sm">Psiquiatra</p>
+              </div>
+            </div>
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center">
+                <span className="text-yellow-400">⭐⭐⭐⭐</span>
+                <span className="text-slate-300 text-sm ml-2">4.7</span>
+              </div>
+              <span className="text-slate-400 text-xs">134 avaliações</span>
+            </div>
+            <p className="text-slate-300 text-sm mb-3">
+              Especialista em psiquiatria clínica e terapia cognitivo-comportamental. 
+              Experiência em transtornos de ansiedade e depressão.
+            </p>
+            <div className="flex items-center justify-between">
+              <span className="text-green-400 text-sm">🟢 Online</span>
+              <button className="bg-primary-600 hover:bg-primary-700 text-white px-3 py-1 rounded text-sm transition-colors">
+                Ver Perfil
+              </button>
+            </div>
+          </div>
+
+          {/* Dr. Pedro Lima - Ortopedista */}
+          <div className="bg-slate-700/50 rounded-lg p-4 hover:bg-slate-700/70 transition-colors cursor-pointer">
+            <div className="flex items-center space-x-3 mb-3">
+              <div className="w-10 h-10 bg-gradient-to-br from-cyan-500 to-blue-600 rounded-full flex items-center justify-center">
+                <span className="text-white font-bold text-sm">PL</span>
+              </div>
+              <div>
+                <p className="text-white font-semibold">Dr. Pedro Lima</p>
+                <p className="text-slate-400 text-sm">Ortopedista</p>
+              </div>
+            </div>
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center">
+                <span className="text-yellow-400">⭐⭐⭐⭐⭐</span>
+                <span className="text-slate-300 text-sm ml-2">4.8</span>
+              </div>
+              <span className="text-slate-400 text-xs">98 avaliações</span>
+            </div>
+            <p className="text-slate-300 text-sm mb-3">
+              Especialista em ortopedia e traumatologia. 
+              Cirurgião de coluna com técnicas minimamente invasivas.
+            </p>
+            <div className="flex items-center justify-between">
+              <span className="text-orange-400 text-sm">🟡 Ausente</span>
+              <button className="bg-primary-600 hover:bg-primary-700 text-white px-3 py-1 rounded text-sm transition-colors">
+                Ver Perfil
+              </button>
+            </div>
+          </div>
+
+          {/* Dr. Sofia Ferreira - Dermatologista */}
+          <div className="bg-slate-700/50 rounded-lg p-4 hover:bg-slate-700/70 transition-colors cursor-pointer">
+            <div className="flex items-center space-x-3 mb-3">
+              <div className="w-10 h-10 bg-gradient-to-br from-rose-500 to-pink-600 rounded-full flex items-center justify-center">
+                <span className="text-white font-bold text-sm">SF</span>
+              </div>
+              <div>
+                <p className="text-white font-semibold">Dra. Sofia Ferreira</p>
+                <p className="text-slate-400 text-sm">Dermatologista</p>
+              </div>
+            </div>
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center">
+                <span className="text-yellow-400">⭐⭐⭐⭐⭐</span>
+                <span className="text-slate-300 text-sm ml-2">4.9</span>
+              </div>
+              <span className="text-slate-400 text-xs">167 avaliações</span>
+            </div>
+            <p className="text-slate-300 text-sm mb-3">
+              Especialista em dermatologia clínica e estética. 
+              Experiência em tratamento de câncer de pele e dermatoscopia.
+            </p>
+            <div className="flex items-center justify-between">
+              <span className="text-green-400 text-sm">🟢 Online</span>
+              <button className="bg-primary-600 hover:bg-primary-700 text-white px-3 py-1 rounded text-sm transition-colors">
+                Ver Perfil
+              </button>
             </div>
           </div>
         </div>
       </div>
     </div>
 
-    {/* NOA Esperanza - Chat Interativo */}
-    <div className="space-y-6">
-      <div className="text-center">
-        <h2 className="text-3xl font-bold text-white mb-2">🤖 NOA Esperanza</h2>
-        <p className="text-slate-300 text-lg">Sua Assistente Médica Inteligente</p>
+    {/* Calendário do Paciente */}
+    <div className="bg-slate-800/80 rounded-lg p-6 border border-slate-700">
+      <h3 className="text-xl font-bold text-white mb-4">📅 Meu Calendário de Consultas</h3>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Próximas Consultas */}
+        <div>
+          <h4 className="text-lg font-semibold text-white mb-4">Próximas Consultas</h4>
+          <div className="space-y-3">
+            <div className="bg-slate-700/50 rounded-lg p-4">
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center space-x-3">
+                  <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center">
+                    <Clock className="w-5 h-5 text-white" />
+                  </div>
+                  <div>
+                    <p className="text-white font-semibold">Consulta de Retorno</p>
+                    <p className="text-slate-400 text-sm">Dr. Passos Mir</p>
+                  </div>
+                </div>
+                <span className="text-blue-400 text-sm font-medium">22/01/2024</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-slate-300 text-sm">14:30 - 15:30</span>
+                <span className="bg-green-500/20 text-green-400 px-2 py-1 rounded text-xs">Confirmada</span>
+              </div>
+            </div>
+            
+            <div className="bg-slate-700/50 rounded-lg p-4">
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center space-x-3">
+                  <div className="w-10 h-10 bg-purple-600 rounded-full flex items-center justify-center">
+                    <Stethoscope className="w-5 h-5 text-white" />
+                  </div>
+                  <div>
+                    <p className="text-white font-semibold">Avaliação Cardiológica</p>
+                    <p className="text-slate-400 text-sm">Dra. Ana Costa</p>
+                  </div>
+                </div>
+                <span className="text-blue-400 text-sm font-medium">25/01/2024</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-slate-300 text-sm">10:00 - 11:00</span>
+                <span className="bg-yellow-500/20 text-yellow-400 px-2 py-1 rounded text-xs">Pendente</span>
+              </div>
+            </div>
+            
+            <div className="bg-slate-700/50 rounded-lg p-4">
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center space-x-3">
+                  <div className="w-10 h-10 bg-green-600 rounded-full flex items-center justify-center">
+                    <BarChart3 className="w-5 h-5 text-white" />
+                  </div>
+                  <div>
+                    <p className="text-white font-semibold">Exame de Rotina</p>
+                    <p className="text-slate-400 text-sm">Dr. Passos Mir</p>
+                  </div>
+                </div>
+                <span className="text-blue-400 text-sm font-medium">28/01/2024</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-slate-300 text-sm">09:00 - 10:00</span>
+                <span className="bg-blue-500/20 text-blue-400 px-2 py-1 rounded text-xs">Agendada</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        {/* Calendário Visual */}
+        <div>
+          <h4 className="text-lg font-semibold text-white mb-4">Calendário</h4>
+          <div className="bg-slate-700/50 rounded-lg p-4">
+            <div className="grid grid-cols-7 gap-1 mb-2">
+              {['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'].map(day => (
+                <div key={day} className="text-center text-sm font-medium text-slate-400 p-2">
+                  {day}
+                </div>
+              ))}
+            </div>
+            <div className="grid grid-cols-7 gap-1">
+              {Array.from({ length: 35 }, (_, i) => {
+                const day = i - 6 + 1
+                const isCurrentMonth = day > 0 && day <= 31
+                const isToday = day === 22
+                const hasAppointment = day === 22 || day === 25 || day === 28
+                
+                return (
+                  <div
+                    key={i}
+                    className={`p-2 text-center text-sm rounded ${
+                      isCurrentMonth
+                        ? 'text-white hover:bg-slate-600 cursor-pointer'
+                        : 'text-slate-500'
+                    } ${
+                      isToday
+                        ? 'bg-blue-600 text-white'
+                        : ''
+                    } ${
+                      hasAppointment && isCurrentMonth
+                        ? 'bg-green-500/20 border border-green-500'
+                        : ''
+                    }`}
+                  >
+                    {isCurrentMonth ? day : ''}
+                    {hasAppointment && isCurrentMonth && (
+                      <div className="w-1 h-1 bg-green-400 rounded-full mx-auto mt-1"></div>
+                    )}
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        </div>
       </div>
-      
-      <NOAChatBox />
     </div>
+
 
       {/* Ações Rápidas */}
       <div className="bg-slate-800/80 rounded-xl p-6 border border-slate-700">
         <h3 className="text-xl font-bold text-white mb-4 text-center">Ações Rápidas</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <Link
-            to="/pre-anamnese"
-            className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white py-4 px-6 rounded-lg transition-all duration-200 text-center font-medium text-lg flex items-center justify-center space-x-2"
-          >
-            <span>🚀</span>
-            <span>Iniciar Avaliação com Nôa</span>
-          </Link>
-          <Link
             to="/clinical-assessment"
             className="bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-700 hover:to-teal-700 text-white py-4 px-6 rounded-lg transition-all duration-200 text-center font-medium text-lg flex items-center justify-center space-x-2"
           >
             <span>📋</span>
             <span>Avaliação Clínica Completa</span>
+          </Link>
+          <Link
+            to="/reports"
+            className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white py-4 px-6 rounded-lg transition-all duration-200 text-center font-medium text-lg flex items-center justify-center space-x-2"
+          >
+            <span>📊</span>
+            <span>Meus Relatórios</span>
           </Link>
         </div>
       </div>

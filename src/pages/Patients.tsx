@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { 
   Users, 
   Search, 
@@ -24,6 +24,7 @@ import {
 } from 'lucide-react'
 
 const Patients: React.FC = () => {
+  const navigate = useNavigate()
   const [searchTerm, setSearchTerm] = useState('')
   const [filterStatus, setFilterStatus] = useState('all')
   const [currentPage, setCurrentPage] = useState(1)
@@ -226,7 +227,28 @@ const Patients: React.FC = () => {
 
   const handleChatWithPatient = (patientId: number) => {
     // Navegar para o chat exclusivo com o paciente
-    window.location.href = `/patient-chat/${patientId}`
+    navigate(`/patient-chat/${patientId}`)
+  }
+
+  const handleGenerateReport = (patientId: number) => {
+    // Gerar relatório do paciente
+    console.log('Gerando relatório para paciente:', patientId)
+    // Navegar para página de relatórios com filtro do paciente
+    navigate(`/reports?patient=${patientId}`)
+  }
+
+  const handleScheduleAppointment = (patientId: number) => {
+    // Agendar consulta para o paciente
+    console.log('Agendando consulta para paciente:', patientId)
+    // Navegar para perfil do paciente na aba de agendamentos
+    navigate(`/patient/${patientId}?tab=appointments`)
+  }
+
+  const handleEditPatient = (patientId: number) => {
+    // Editar dados do paciente
+    console.log('Editando paciente:', patientId)
+    // Navegar para perfil do paciente na aba de perfil com modo de edição
+    navigate(`/patient/${patientId}?tab=profile&edit=true`)
   }
 
   const getStatusColor = (status: string) => {
@@ -363,7 +385,11 @@ const Patients: React.FC = () => {
             </thead>
             <tbody className="divide-y divide-slate-700">
               {currentPatients.map((patient) => (
-                <tr key={patient.id} className="hover:bg-slate-700/30 transition-colors">
+                <tr 
+                  key={patient.id} 
+                  className="hover:bg-slate-700/30 transition-colors cursor-pointer"
+                  onClick={() => navigate(`/patient/${patient.id}`)}
+                >
                   <td className="px-6 py-4">
                     <div className="flex items-center space-x-3">
                       <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
@@ -426,22 +452,53 @@ const Patients: React.FC = () => {
                   <td className="px-6 py-4">
                     <div className="flex items-center space-x-2">
                       <button 
-                        onClick={() => handleChatWithPatient(patient.id)}
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          handleChatWithPatient(patient.id)
+                        }}
                         className="p-2 text-green-400 hover:text-green-300 hover:bg-green-500/20 rounded-lg transition-colors" 
                         title="Chat Exclusivo"
                       >
                         <MessageSquare className="w-4 h-4" />
                       </button>
-                      <button className="p-2 text-blue-400 hover:text-blue-300 hover:bg-blue-500/20 rounded-lg transition-colors" title="Ver Detalhes">
+                      <button 
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          navigate(`/patient/${patient.id}`)
+                        }}
+                        className="p-2 text-blue-400 hover:text-blue-300 hover:bg-blue-500/20 rounded-lg transition-colors" 
+                        title="Ver Perfil Completo"
+                      >
                         <Eye className="w-4 h-4" />
                       </button>
-                      <button className="p-2 text-yellow-400 hover:text-yellow-300 hover:bg-yellow-500/20 rounded-lg transition-colors" title="Editar">
+                      <button 
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          handleEditPatient(patient.id)
+                        }}
+                        className="p-2 text-yellow-400 hover:text-yellow-300 hover:bg-yellow-500/20 rounded-lg transition-colors" 
+                        title="Editar"
+                      >
                         <Edit className="w-4 h-4" />
                       </button>
-                      <button className="p-2 text-green-400 hover:text-green-300 hover:bg-green-500/20 rounded-lg transition-colors" title="Relatório">
+                      <button 
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          handleGenerateReport(patient.id)
+                        }}
+                        className="p-2 text-green-400 hover:text-green-300 hover:bg-green-500/20 rounded-lg transition-colors" 
+                        title="Relatório"
+                      >
                         <FileText className="w-4 h-4" />
                       </button>
-                      <button className="p-2 text-purple-400 hover:text-purple-300 hover:bg-purple-500/20 rounded-lg transition-colors" title="Agendar">
+                      <button 
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          handleScheduleAppointment(patient.id)
+                        }}
+                        className="p-2 text-purple-400 hover:text-purple-300 hover:bg-purple-500/20 rounded-lg transition-colors" 
+                        title="Agendar"
+                      >
                         <Calendar className="w-4 h-4" />
                       </button>
                     </div>

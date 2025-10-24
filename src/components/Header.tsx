@@ -29,7 +29,6 @@ const Header: React.FC = () => {
           { name: '📊 Avaliações', href: '/evaluations' },
           { name: '📚 Biblioteca Médica', href: '/library' },
           { name: '💬 Chat Global + Fórum', href: '/chat' },
-          { name: '🎓 Liberar Cursos', href: '/courses' },
           { name: '📈 Relatórios', href: '/reports' },
         ]
       case 'student':

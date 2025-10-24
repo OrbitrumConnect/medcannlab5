@@ -62,103 +62,205 @@ const PatientDoctorChat: React.FC = () => {
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
-  // Dados do paciente (simulado)
-  const patient = {
-    id: parseInt(patientId || '1'),
-    name: 'Maria Silva',
-    age: 45,
-    gender: 'Feminino',
-    email: 'maria.silva@email.com',
-    phone: '(11) 99999-9999',
-    address: 'São Paulo, SP',
-    diagnosis: 'Hipertensão',
-    status: 'ativo',
-    priority: 'medium',
-    crm: '12345-SP',
-    notes: 'Paciente estável, seguindo tratamento corretamente.',
-    bloodType: 'O+',
-    allergies: ['Penicilina'],
-    medications: ['Losartana 50mg', 'Hidroclorotiazida 25mg'],
-    lastVisit: '15/01/2024',
-    nextVisit: '22/01/2024',
-    avatar: 'MS'
+  // Dados dos pacientes (simulados) - baseado no patientId
+  const patients = {
+    1: {
+      id: 1,
+      name: 'Maria Silva',
+      age: 45,
+      gender: 'Feminino',
+      email: 'maria.silva@email.com',
+      phone: '(11) 99999-9999',
+      address: 'São Paulo, SP',
+      diagnosis: 'Hipertensão',
+      status: 'ativo',
+      priority: 'medium',
+      crm: '12345-SP',
+      notes: 'Paciente estável, seguindo tratamento corretamente.',
+      bloodType: 'O+',
+      allergies: ['Penicilina'],
+      medications: ['Losartana 50mg', 'Hidroclorotiazida 25mg'],
+      lastVisit: '15/01/2024',
+      nextVisit: '22/01/2024',
+      avatar: 'MS'
+    },
+    2: {
+      id: 2,
+      name: 'João Santos',
+      age: 52,
+      gender: 'Masculino',
+      email: 'joao.santos@email.com',
+      phone: '(11) 88888-8888',
+      address: 'São Paulo, SP',
+      diagnosis: 'Diabetes Tipo 2',
+      status: 'pendente',
+      priority: 'high',
+      crm: '12345-SP',
+      notes: 'Aguardando resultados de exames laboratoriais.',
+      bloodType: 'A+',
+      allergies: ['Nenhuma'],
+      medications: ['Metformina 850mg', 'Gliclazida 80mg'],
+      lastVisit: '10/01/2024',
+      nextVisit: '20/01/2024',
+      avatar: 'JS'
+    },
+    3: {
+      id: 3,
+      name: 'Ana Costa',
+      age: 38,
+      gender: 'Feminino',
+      email: 'ana.costa@email.com',
+      phone: '(11) 77777-7777',
+      address: 'São Paulo, SP',
+      diagnosis: 'Avaliação Inicial',
+      status: 'nova',
+      priority: 'low',
+      crm: '12345-SP',
+      notes: 'Primeira consulta, avaliação completa em andamento.',
+      bloodType: 'B+',
+      allergies: ['Nenhuma'],
+      medications: ['Nenhuma'],
+      lastVisit: 'Hoje',
+      nextVisit: '28/01/2024',
+      avatar: 'AC'
+    },
+    4: {
+      id: 4,
+      name: 'Carlos Lima',
+      age: 60,
+      gender: 'Masculino',
+      email: 'carlos.lima@email.com',
+      phone: '(11) 66666-6666',
+      address: 'São Paulo, SP',
+      diagnosis: 'Cardiopatia',
+      status: 'ativo',
+      priority: 'high',
+      crm: '12345-SP',
+      notes: 'Paciente com histórico de infarto, monitoramento contínuo.',
+      bloodType: 'AB+',
+      allergies: ['Aspirina'],
+      medications: ['AAS 100mg', 'Atorvastatina 20mg', 'Carvedilol 25mg'],
+      lastVisit: '12/01/2024',
+      nextVisit: '25/01/2024',
+      avatar: 'CL'
+    }
   }
 
-  // Mensagens do chat (simuladas)
-  const [messages, setMessages] = useState([
-    {
-      id: 1,
-      sender: 'doctor',
-      senderName: 'Dr. Passos Mir',
-      senderAvatar: 'PM',
-      message: 'Olá Maria! Como você está se sentindo hoje?',
-      timestamp: '10:00',
-      type: 'text',
-      isRead: true,
-      reactions: { heart: 0, thumbs: 0 },
-      attachments: []
-    },
-    {
-      id: 2,
-      sender: 'patient',
-      senderName: 'Maria Silva',
-      senderAvatar: 'MS',
-      message: 'Olá doutor! Estou me sentindo bem, a pressão está controlada.',
-      timestamp: '10:05',
-      type: 'text',
-      isRead: true,
-      reactions: { heart: 1, thumbs: 0 },
-      attachments: []
-    },
-    {
-      id: 3,
-      sender: 'doctor',
-      senderName: 'Dr. Passos Mir',
-      senderAvatar: 'PM',
-      message: 'Ótimo! Continue tomando a medicação regularmente. Tem alguma dúvida sobre o tratamento?',
-      timestamp: '10:08',
-      type: 'text',
-      isRead: true,
-      reactions: { heart: 0, thumbs: 1 },
-      attachments: []
-    },
-    {
-      id: 4,
-      sender: 'patient',
-      senderName: 'Maria Silva',
-      senderAvatar: 'MS',
-      message: 'Sim, posso fazer exercícios físicos normalmente?',
-      timestamp: '10:12',
-      type: 'text',
-      isRead: true,
-      reactions: { heart: 0, thumbs: 0 },
-      attachments: []
-    },
-    {
-      id: 5,
-      sender: 'doctor',
-      senderName: 'Dr. Passos Mir',
-      senderAvatar: 'PM',
-      message: 'Sim, exercícios são muito recomendados! Caminhada, natação e yoga são excelentes. Evite exercícios muito intensos sem orientação.',
-      timestamp: '10:15',
-      type: 'text',
-      isRead: true,
-      reactions: { heart: 2, thumbs: 1 },
-      attachments: []
-    },
-    {
-      id: 6,
-      sender: 'patient',
-      senderName: 'Maria Silva',
-      senderAvatar: 'MS',
-      message: 'Perfeito! Vou começar com caminhadas leves. Obrigada doutor!',
-      timestamp: '10:18',
-      type: 'text',
-      isRead: true,
-      reactions: { heart: 1, thumbs: 0 },
-      attachments: []
+  // Obter dados do paciente baseado no ID
+  const patient = patients[parseInt(patientId || '1') as keyof typeof patients] || patients[1]
+
+  // Mensagens do chat (simuladas) - baseadas no paciente
+  const getMessagesForPatient = (patientId: number) => {
+    const patientMessages = {
+      1: [ // Maria Silva
+        {
+          id: 1,
+          sender: 'doctor',
+          senderName: 'Dr. Passos Mir',
+          senderAvatar: 'PM',
+          message: 'Olá Maria! Como você está se sentindo hoje?',
+          timestamp: '10:00',
+          type: 'text',
+          isRead: true,
+          reactions: { heart: 0, thumbs: 0 },
+          attachments: []
+        },
+        {
+          id: 2,
+          sender: 'patient',
+          senderName: 'Maria Silva',
+          senderAvatar: 'MS',
+          message: 'Olá doutor! Estou me sentindo bem, a pressão está controlada.',
+          timestamp: '10:05',
+          type: 'text',
+          isRead: true,
+          reactions: { heart: 1, thumbs: 0 },
+          attachments: []
+        },
+      ],
+      2: [ // João Santos
+        {
+          id: 1,
+          sender: 'doctor',
+          senderName: 'Dr. Passos Mir',
+          senderAvatar: 'PM',
+          message: 'Olá João! Como está a glicemia hoje?',
+          timestamp: '09:00',
+          type: 'text',
+          isRead: true,
+          reactions: { heart: 0, thumbs: 0 },
+          attachments: []
+        },
+        {
+          id: 2,
+          sender: 'patient',
+          senderName: 'João Santos',
+          senderAvatar: 'JS',
+          message: 'Doutor, a glicemia está em 140mg/dL. Está normal?',
+          timestamp: '09:05',
+          type: 'text',
+          isRead: true,
+          reactions: { heart: 0, thumbs: 0 },
+          attachments: []
+        },
+      ],
+      3: [ // Ana Costa
+        {
+          id: 1,
+          sender: 'doctor',
+          senderName: 'Dr. Passos Mir',
+          senderAvatar: 'PM',
+          message: 'Olá Ana! Bem-vinda! Como posso ajudá-la?',
+          timestamp: '08:00',
+          type: 'text',
+          isRead: true,
+          reactions: { heart: 0, thumbs: 0 },
+          attachments: []
+        },
+        {
+          id: 2,
+          sender: 'patient',
+          senderName: 'Ana Costa',
+          senderAvatar: 'AC',
+          message: 'Olá doutor! Primeira vez aqui. Tenho algumas dúvidas.',
+          timestamp: '08:05',
+          type: 'text',
+          isRead: true,
+          reactions: { heart: 0, thumbs: 0 },
+          attachments: []
+        },
+      ],
+      4: [ // Carlos Lima
+        {
+          id: 1,
+          sender: 'doctor',
+          senderName: 'Dr. Passos Mir',
+          senderAvatar: 'PM',
+          message: 'Carlos, como está o coração hoje?',
+          timestamp: '16:00',
+          type: 'text',
+          isRead: true,
+          reactions: { heart: 0, thumbs: 0 },
+          attachments: []
+        },
+        {
+          id: 2,
+          sender: 'patient',
+          senderName: 'Carlos Lima',
+          senderAvatar: 'CL',
+          message: 'Doutor, sinto uma dor no peito ocasional. É normal?',
+          timestamp: '16:05',
+          type: 'text',
+          isRead: true,
+          reactions: { heart: 0, thumbs: 0 },
+          attachments: []
+        },
+      ]
     }
-  ])
+    return patientMessages[patientId as keyof typeof patientMessages] || patientMessages[1]
+  }
+
+  const [messages, setMessages] = useState(getMessagesForPatient(parseInt(patientId || '1')))
 
   const [attachments, setAttachments] = useState([
     {

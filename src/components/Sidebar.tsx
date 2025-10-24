@@ -8,9 +8,8 @@ import {
   BarChart3,
   User,
   FileText,
-  Shield,
   Brain,
-  Database
+  Clock
 } from 'lucide-react'
 
 interface SidebarProps {
@@ -24,14 +23,13 @@ const Sidebar: React.FC<SidebarProps> = ({ userType = 'patient' }) => {
   const getNavigationItems = () => {
     const baseItems = [
       { name: 'Início', href: '/dashboard', icon: Home },
-      { name: 'Dashboard', href: '/dashboard', icon: BarChart3 },
     ]
 
     const patientItems = [
-      { name: '🤖 Avaliação com Nôa', href: '/pre-anamnese', icon: Brain },
+      { name: '🤖 Chat NOA', href: '/patient-noa-chat', icon: Brain },
       { name: '📋 Avaliação Clínica', href: '/clinical-assessment', icon: Stethoscope },
       { name: '📊 Meus Relatórios', href: '/reports', icon: FileText },
-      { name: '📅 Agendamentos', href: '/appointments', icon: FileText },
+      { name: '📅 Agendamentos', href: '/patient-appointments', icon: Clock },
       { name: '💬 Chat com Meu Médico', href: '/patient-chat', icon: Users },
       { name: '👤 Meu Perfil', href: '/profile', icon: User },
     ]
@@ -39,6 +37,7 @@ const Sidebar: React.FC<SidebarProps> = ({ userType = 'patient' }) => {
     const professionalItems = [
       { name: '👥 Meus Pacientes', href: '/patients', icon: Users },
       { name: '📊 Avaliações', href: '/evaluations', icon: Stethoscope },
+      { name: '📅 Agendamentos', href: '/scheduling', icon: Clock },
       { name: '💬 Chat Global + Fórum', href: '/chat', icon: Users },
       { name: '📈 Relatórios', href: '/reports', icon: BarChart3 },
       { name: '👤 Meu Perfil', href: '/profile', icon: User },

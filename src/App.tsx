@@ -30,6 +30,10 @@ import Evaluations from './pages/Evaluations'
 import Reports from './pages/Reports'
 import DebateRoom from './pages/DebateRoom'
 import PatientDoctorChat from './pages/PatientDoctorChat'
+import PatientProfile from './pages/PatientProfile'
+import ProfessionalScheduling from './pages/ProfessionalScheduling'
+import PatientAppointments from './pages/PatientAppointments'
+import PatientNOAChat from './pages/PatientNOAChat'
 import NotFound from './pages/NotFound'
 
 function App() {
@@ -67,7 +71,11 @@ function App() {
                 <Route path="reports" element={<Reports />} />
                 <Route path="debate/:debateId" element={<DebateRoom />} />
                 <Route path="patient-chat/:patientId" element={<PatientDoctorChat />} />
+                <Route path="patient/:patientId" element={<PatientProfile />} />
                 <Route path="appointments" element={<Profile />} />
+                <Route path="scheduling" element={<ProfessionalScheduling />} />
+                <Route path="patient-appointments" element={<PatientAppointments />} />
+                <Route path="patient-noa-chat" element={<PatientNOAChat />} />
                 <Route path="admin/users" element={<AdminDashboard />} />
                 <Route path="admin/courses" element={<AdminDashboard />} />
                 <Route path="admin/analytics" element={<AdminDashboard />} />

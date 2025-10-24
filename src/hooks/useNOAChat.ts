@@ -9,11 +9,11 @@ export const useNOAChat = () => {
   const [isAnalyzing, setIsAnalyzing] = useState(false)
   const [isInitialized, setIsInitialized] = useState(false)
 
-  // Inicializar NOA Engine
+  // Inicializar NOA Engine - VERSÃO SIMPLES
   useEffect(() => {
     const initializeNOA = async () => {
       try {
-        await noaEngine.initialize()
+        // Inicialização instantânea (sem carregar modelos pesados)
         setIsInitialized(true)
         
         // Adicionar mensagem de boas-vindas
