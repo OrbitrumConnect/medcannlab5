@@ -20,6 +20,7 @@ import Gamificacao from './pages/Gamificacao'
 import PreAnamnese from './pages/PreAnamnese'
 import Profile from './pages/Profile'
 import AdminDashboard from './pages/AdminDashboard'
+import AdminDashboardWrapper from './components/AdminDashboardWrapper'
 import ExperienciaPaciente from './pages/ExperienciaPaciente'
 import CursoEduardoFaveret from './pages/CursoEduardoFaveret'
 import TermosLGPD from './pages/TermosLGPD'
@@ -65,7 +66,7 @@ function App() {
                 <Route path="profile" element={<Profile />} />
                 <Route path="admin" element={
                   <ProtectedRoute requiredRole="admin">
-                    <AdminDashboard />
+                    <AdminDashboardWrapper />
                   </ProtectedRoute>
                 } />
                 <Route path="ai-documents" element={<AIDocumentChat />} />
@@ -101,62 +102,62 @@ function App() {
                 } />
                 <Route path="admin/users" element={
                   <ProtectedRoute requiredRole="admin">
-                    <AdminDashboard />
+                    <AdminDashboardWrapper />
                   </ProtectedRoute>
                 } />
                 <Route path="admin/courses" element={
                   <ProtectedRoute requiredRole="admin">
-                    <AdminDashboard />
+                    <AdminDashboardWrapper />
                   </ProtectedRoute>
                 } />
                 <Route path="admin/analytics" element={
                   <ProtectedRoute requiredRole="admin">
-                    <AdminDashboard />
+                    <AdminDashboardWrapper />
                   </ProtectedRoute>
                 } />
                 <Route path="admin/system" element={
                   <ProtectedRoute requiredRole="admin">
-                    <AdminDashboard />
+                    <AdminDashboardWrapper />
                   </ProtectedRoute>
                 } />
                 <Route path="admin/reports" element={
                   <ProtectedRoute requiredRole="admin">
-                    <AdminDashboard />
+                    <AdminDashboardWrapper />
                   </ProtectedRoute>
                 } />
                 <Route path="admin/upload" element={
                   <ProtectedRoute requiredRole="admin">
-                    <AdminDashboard />
+                    <AdminDashboardWrapper />
                   </ProtectedRoute>
                 } />
                 <Route path="admin/chat" element={
                   <ProtectedRoute requiredRole="admin">
-                    <AdminDashboard />
+                    <AdminDashboardWrapper />
                   </ProtectedRoute>
                 } />
                 <Route path="admin/forum" element={
                   <ProtectedRoute requiredRole="admin">
-                    <AdminDashboard />
+                    <AdminDashboardWrapper />
                   </ProtectedRoute>
                 } />
                 <Route path="admin/gamification" element={
                   <ProtectedRoute requiredRole="admin">
-                    <AdminDashboard />
+                    <AdminDashboardWrapper />
                   </ProtectedRoute>
                 } />
                 <Route path="admin/renal" element={
                   <ProtectedRoute requiredRole="admin">
-                    <AdminDashboard />
+                    <AdminDashboardWrapper />
                   </ProtectedRoute>
                 } />
                 <Route path="admin/unification" element={
                   <ProtectedRoute requiredRole="admin">
-                    <AdminDashboard />
+                    <AdminDashboardWrapper />
                   </ProtectedRoute>
                 } />
                 <Route path="admin/financial" element={
                   <ProtectedRoute requiredRole="admin">
-                    <AdminDashboard />
+                    <AdminDashboardWrapper />
                   </ProtectedRoute>
                 } />
               </Route>

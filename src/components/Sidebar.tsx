@@ -23,47 +23,47 @@ const Sidebar: React.FC<SidebarProps> = ({ userType = 'patient' }) => {
 
   const getNavigationItems = () => {
     const patientItems = [
-      { name: 'Início', href: '/dashboard', icon: Home },
-      { name: '🤖 Chat NOA', href: '/patient-noa-chat', icon: Brain },
-      { name: '📋 Avaliação Clínica', href: '/clinical-assessment', icon: Stethoscope },
-      { name: '📊 Meus Relatórios', href: '/reports', icon: FileText },
-      { name: '📅 Agendamentos', href: '/patient-appointments', icon: Clock },
-      { name: '💬 Chat com Meu Médico', href: '/patient-chat', icon: Users },
-      { name: '👤 Meu Perfil', href: '/profile', icon: User },
+      { name: 'Início', href: '/app/dashboard', icon: Home },
+      { name: '🤖 Chat NOA', href: '/app/patient-noa-chat', icon: Brain },
+      { name: '📋 Avaliação Clínica', href: '/app/clinical-assessment', icon: Stethoscope },
+      { name: '📊 Meus Relatórios', href: '/app/reports', icon: FileText },
+      { name: '📅 Agendamentos', href: '/app/patient-appointments', icon: Clock },
+      { name: '💬 Chat com Meu Médico', href: '/app/patient-chat', icon: Users },
+      { name: '👤 Meu Perfil', href: '/app/profile', icon: User },
     ]
 
     const professionalItems = [
-      { name: 'Início', href: '/dashboard', icon: Home },
-      { name: '👥 Meus Pacientes', href: '/patients', icon: Users },
-      { name: '📊 Avaliações', href: '/evaluations', icon: Stethoscope },
-      { name: '📅 Agendamentos', href: '/scheduling', icon: Clock },
-      { name: '💬 Chat Global + Fórum', href: '/chat', icon: Users },
-      { name: '📈 Relatórios', href: '/reports', icon: BarChart3 },
-      { name: '👤 Meu Perfil', href: '/profile', icon: User },
+      { name: 'Início', href: '/app/dashboard', icon: Home },
+      { name: '👥 Meus Pacientes', href: '/app/patients', icon: Users },
+      { name: '📊 Avaliações', href: '/app/evaluations', icon: Stethoscope },
+      { name: '📅 Agendamentos', href: '/app/scheduling', icon: Clock },
+      { name: '💬 Chat Global + Fórum', href: '/app/chat', icon: Users },
+      { name: '📈 Relatórios', href: '/app/reports', icon: BarChart3 },
+      { name: '👤 Meu Perfil', href: '/app/profile', icon: User },
     ]
 
     const studentItems = [
-      { name: 'Início', href: '/dashboard', icon: Home },
-      { name: '🎓 Meus Cursos', href: '/courses', icon: BookOpen },
-      { name: '🏆 Gamificação', href: '/gamificacao', icon: Users },
-      { name: '📊 Meu Progresso', href: '/progress', icon: BarChart3 },
-      { name: '👤 Meu Perfil', href: '/profile', icon: User },
+      { name: 'Início', href: '/app/dashboard', icon: Home },
+      { name: '🎓 Meus Cursos', href: '/app/courses', icon: BookOpen },
+      { name: '🏆 Gamificação', href: '/app/gamificacao', icon: Users },
+      { name: '📊 Meu Progresso', href: '/app/progress', icon: BarChart3 },
+      { name: '👤 Meu Perfil', href: '/app/profile', icon: User },
     ]
 
     const adminItems = [
-      { name: '🏠 Dashboard', href: '/admin', icon: BarChart3 },
-      { name: '👥 Usuários', href: '/admin?tab=users', icon: Users },
-      { name: '🎓 Cursos', href: '/admin?tab=courses', icon: BookOpen },
-      { name: '💰 Financeiro', href: '/admin?tab=financial', icon: BarChart3 },
-      { name: '💬 Chat Global + Moderação', href: '/chat', icon: Users },
-      { name: '🏛️ Moderação Fórum', href: '/admin?tab=forum', icon: BookOpen },
-      { name: '🏆 Ranking & Gamificação', href: '/admin?tab=gamification', icon: Award },
-      { name: '📁 Upload', href: '/admin?tab=upload', icon: FileText },
-      { name: '📊 Analytics', href: '/admin?tab=analytics', icon: BarChart3 },
-      { name: '🫀 Função Renal', href: '/admin?tab=renal', icon: Stethoscope },
-      { name: '⚙️ Sistema', href: '/admin?tab=settings', icon: Clock },
-      { name: '📚 Biblioteca', href: '/library', icon: BookOpen },
-      { name: '🤖 Chat IA Documentos', href: '/ai-documents', icon: Brain },
+      { name: '🏠 Dashboard', href: '/app/admin', icon: BarChart3 },
+      { name: '👥 Usuários', href: '/app/admin/users', icon: Users },
+      { name: '🎓 Cursos', href: '/app/admin/courses', icon: BookOpen },
+      { name: '💰 Financeiro', href: '/app/admin/financial', icon: BarChart3 },
+      { name: '💬 Chat Global + Moderação', href: '/app/chat', icon: Users },
+      { name: '🏛️ Moderação Fórum', href: '/app/admin/forum', icon: BookOpen },
+      { name: '🏆 Ranking & Gamificação', href: '/app/admin/gamification', icon: Award },
+      { name: '📁 Upload', href: '/app/admin/upload', icon: FileText },
+      { name: '📊 Analytics', href: '/app/admin/analytics', icon: BarChart3 },
+      { name: '🫀 Função Renal', href: '/app/admin/renal', icon: Stethoscope },
+      { name: '⚙️ Sistema', href: '/app/admin/system', icon: Clock },
+      { name: '📚 Biblioteca', href: '/app/library', icon: BookOpen },
+      { name: '🤖 Chat IA Documentos', href: '/app/ai-documents', icon: Brain },
     ]
 
     let specificItems = []
@@ -88,10 +88,10 @@ const Sidebar: React.FC<SidebarProps> = ({ userType = 'patient' }) => {
   }
 
   const quickActions = [
-    { name: 'Nova Avaliação', href: '/clinical-assessment', icon: Stethoscope, color: 'bg-blue-500' },
-    { name: 'Chat IA', href: '/chat', icon: Brain, color: 'bg-purple-500' },
-    { name: 'Biblioteca', href: '/library', icon: BookOpen, color: 'bg-green-500' },
-    { name: 'Relatórios', href: '/reports', icon: FileText, color: 'bg-orange-500' },
+    { name: 'Nova Avaliação', href: '/app/clinical-assessment', icon: Stethoscope, color: 'bg-blue-500' },
+    { name: 'Chat IA', href: '/app/chat', icon: Brain, color: 'bg-purple-500' },
+    { name: 'Biblioteca', href: '/app/library', icon: BookOpen, color: 'bg-green-500' },
+    { name: 'Relatórios', href: '/app/reports', icon: FileText, color: 'bg-orange-500' },
   ]
 
   const systemStats = [
@@ -192,7 +192,7 @@ const Sidebar: React.FC<SidebarProps> = ({ userType = 'patient' }) => {
       {/* User Profile */}
       <div className="p-6 border-t border-slate-700">
         <Link
-          to="/profile"
+          to="/app/profile"
           className="flex items-center space-x-4 px-4 py-3 rounded-lg hover:bg-slate-700 transition-colors duration-200"
         >
           <div className="w-10 h-10 bg-primary-600 rounded-full flex items-center justify-center">

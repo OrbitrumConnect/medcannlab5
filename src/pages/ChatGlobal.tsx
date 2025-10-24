@@ -2,6 +2,13 @@ import React, { useState, useRef, useEffect } from 'react'
 import { useAuth } from '../contexts/AuthContext'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
+
+// Declaração do tipo para BroadcastChannel
+declare global {
+  interface Window {
+    offlineChannel?: BroadcastChannel
+  }
+}
 import { 
   Send, 
   Mic, 
@@ -60,13 +67,13 @@ const ChatGlobal: React.FC = () => {
   const [requestReason, setRequestReason] = useState('')
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
-  const channels = [
-    { id: 'general', name: 'Geral', type: 'public', members: 1247, unread: 0, description: 'Discussões gerais sobre medicina' },
-    { id: 'cannabis', name: 'Cannabis Medicinal', type: 'public', members: 892, unread: 3, description: 'Especialistas em cannabis medicinal' },
-    { id: 'clinical', name: 'Casos Clínicos', type: 'public', members: 456, unread: 1, description: 'Discussão de casos complexos' },
-    { id: 'research', name: 'Pesquisa', type: 'public', members: 234, unread: 0, description: 'Pesquisas e estudos recentes' },
-    { id: 'support', name: 'Suporte', type: 'private', members: 12, unread: 2, description: 'Suporte técnico e ajuda' }
-  ]
+  const [channels, setChannels] = useState([
+    { id: 'general', name: 'Geral', type: 'public', members: 0, unread: 0, description: 'Discussões gerais sobre medicina' },
+    { id: 'cannabis', name: 'Cannabis Medicinal', type: 'public', members: 0, unread: 0, description: 'Especialistas em cannabis medicinal' },
+    { id: 'clinical', name: 'Casos Clínicos', type: 'public', members: 0, unread: 0, description: 'Discussão de casos complexos' },
+    { id: 'research', name: 'Pesquisa', type: 'public', members: 0, unread: 0, description: 'Pesquisas e estudos recentes' },
+    { id: 'support', name: 'Suporte', type: 'private', members: 0, unread: 0, description: 'Suporte técnico e ajuda' }
+  ])
 
   const debates = [
     {
@@ -132,10 +139,94 @@ const ChatGlobal: React.FC = () => {
     }
   }, [user])
 
+  // Carregar dados dos canais
+  const loadChannelsData = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('chat_messages')
+        .select('channel, user_id, created_at')
+        .gte('created_at', new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString())
+
+      if (error) {
+        console.error('Erro ao carregar dados dos canais:', error)
+        return
+      }
+
+      // Contar membros únicos por canal
+      const channelData = channels.map(channel => {
+        const channelMessages = data?.filter(msg => msg.channel === channel.id) || []
+        const uniqueUsers = new Set(channelMessages.map(msg => msg.user_id))
+        const recentMessages = channelMessages.filter(msg => 
+          new Date(msg.created_at) > new Date(Date.now() - 60 * 60 * 1000) // Última hora
+        )
+
+        return {
+          ...channel,
+          members: uniqueUsers.size,
+          unread: recentMessages.length
+        }
+      })
+
+      setChannels(channelData)
+    } catch (error) {
+      console.error('Erro ao carregar dados dos canais:', error)
+    }
+  }
+
+  // Carregar usuários online
+  const loadOnlineUsers = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('chat_messages')
+        .select('user_id, user_name, user_avatar, crm, specialty')
+        .eq('is_online', true)
+        .gte('created_at', new Date(Date.now() - 5 * 60 * 1000).toISOString()) // Últimos 5 minutos
+
+      if (error) {
+        console.error('Erro ao carregar usuários online:', error)
+        return
+      }
+
+      // Remover duplicatas e criar lista de usuários únicos
+      const uniqueUsers = data?.reduce((acc, msg) => {
+        if (!acc.find(user => user.user_id === msg.user_id)) {
+          acc.push({
+            id: msg.user_id,
+            name: msg.user_name,
+            avatar: msg.user_avatar,
+            crm: msg.crm,
+            specialty: msg.specialty
+          })
+        }
+        return acc
+      }, [] as any[]) || []
+
+      // Adicionar usuário atual se não estiver na lista
+      if (user && !uniqueUsers.find(u => u.id === user.id)) {
+        uniqueUsers.unshift({
+          id: user.id,
+          name: user.name || 'Usuário',
+          avatar: 'U',
+          crm: user.crm || '',
+          specialty: ''
+        })
+      }
+
+      setOnlineUsers(uniqueUsers)
+    } catch (error) {
+      console.error('Erro ao carregar usuários online:', error)
+    }
+  }
+
   // Carregar mensagens do canal ativo
   useEffect(() => {
-    loadMessages()
-    setupRealtimeSubscription()
+    console.log('🔄 useEffect executando - carregando dados do chat (OFFLINE)')
+    
+    // Chat offline - sem Supabase
+    loadMessagesOffline()
+    setupOfflineRealtime()
+    loadChannelsDataOffline()
+    loadOnlineUsersOffline()
   }, [activeChannel])
 
   // Configurar tempo real para mensagens
@@ -254,30 +345,115 @@ const ChatGlobal: React.FC = () => {
     }
   }
 
+  // Chat offline - carregar mensagens do localStorage
+  const loadMessagesOffline = () => {
+    console.log('🔄 Carregando mensagens offline do canal:', activeChannel)
+    try {
+      const storedMessages = localStorage.getItem(`chat_messages_${activeChannel}`)
+      const messages = storedMessages ? JSON.parse(storedMessages) : []
+      
+      console.log('📨 Mensagens offline encontradas:', messages.length)
+      console.log('📨 Dados das mensagens:', messages)
+      
+      setMessages(messages)
+      scrollToBottom()
+    } catch (error) {
+      console.error('Erro ao carregar mensagens offline:', error)
+      setMessages([])
+    }
+  }
+
+  // Chat offline - salvar mensagem no localStorage
+  const saveMessageOffline = (message: any) => {
+    try {
+      const storedMessages = localStorage.getItem(`chat_messages_${activeChannel}`)
+      const messages = storedMessages ? JSON.parse(storedMessages) : []
+      
+      const newMessage = {
+        ...message,
+        id: Date.now().toString(),
+        created_at: new Date().toISOString()
+      }
+      
+      messages.push(newMessage)
+      localStorage.setItem(`chat_messages_${activeChannel}`, JSON.stringify(messages))
+      
+      console.log('💾 Mensagem salva offline:', newMessage)
+      return newMessage
+    } catch (error) {
+      console.error('Erro ao salvar mensagem offline:', error)
+      return null
+    }
+  }
+
+  // Chat offline - tempo real com BroadcastChannel
+  const setupOfflineRealtime = () => {
+    console.log('🔄 Configurando tempo real offline')
+    
+    // Limpar canal anterior
+    if (window.offlineChannel) {
+      window.offlineChannel.close()
+    }
+    
+    // Criar novo canal
+    window.offlineChannel = new BroadcastChannel('medcannlab-chat')
+    
+    window.offlineChannel.onmessage = (event) => {
+      if (event.data.type === 'new_message' && event.data.channel === activeChannel) {
+        console.log('📨 Nova mensagem recebida via BroadcastChannel:', event.data.message)
+        setMessages(prev => [...prev, event.data.message])
+        scrollToBottom()
+      }
+    }
+  }
+
+  // Chat offline - carregar dados dos canais
+  const loadChannelsDataOffline = () => {
+    console.log('🔄 Carregando dados dos canais offline')
+    try {
+      const channelsData = channels.map(channel => {
+        const storedMessages = localStorage.getItem(`chat_messages_${channel.id}`)
+        const messages = storedMessages ? JSON.parse(storedMessages) : []
+        
+        return {
+          ...channel,
+          members: messages.length > 0 ? new Set(messages.map((m: any) => m.user_id)).size : 0,
+          unread: 0 // Simplificado para offline
+        }
+      })
+      
+      setChannels(channelsData)
+    } catch (error) {
+      console.error('Erro ao carregar dados dos canais offline:', error)
+    }
+  }
+
+  // Chat offline - carregar usuários online
+  const loadOnlineUsersOffline = () => {
+    console.log('🔄 Carregando usuários online offline')
+    try {
+      const onlineUsers = [
+        {
+          id: user?.id || 'current-user',
+          name: user?.name || 'Usuário Atual',
+          avatar: 'U',
+          crm: user?.crm || '',
+          specialty: ''
+        }
+      ]
+      
+      setOnlineUsers(onlineUsers)
+    } catch (error) {
+      console.error('Erro ao carregar usuários online offline:', error)
+    }
+  }
+
   const scrollToBottom = () => {
     setTimeout(() => {
       messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
     }, 100)
   }
 
-  const loadOnlineUsers = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('is_online', true)
-        .order('last_seen', { ascending: false })
-
-      if (error) {
-        console.error('Erro ao carregar usuários online:', error)
-        return
-      }
-
-      setOnlineUsers(data || [])
-    } catch (error) {
-      console.error('Erro ao carregar usuários online:', error)
-    }
-  }
 
   const loadModeratorRequests = async () => {
     try {
@@ -307,40 +483,65 @@ const ChatGlobal: React.FC = () => {
     scrollToBottom()
   }, [messages])
 
+  const [isSending, setIsSending] = useState(false)
+
   const handleSendMessage = async () => {
-    if (message.trim() && user) {
-      try {
-        const { error } = await supabase
-          .from('chat_messages')
-          .insert({
-            user_id: user.id,
-            user_name: user.name || 'Usuário',
-            user_avatar: 'U',
-            message: message.trim(),
-            channel: activeChannel,
-            crm: user.crm || '',
-            specialty: '',
-            type: 'text',
-            reactions: { heart: 0, thumbs: 0, reply: 0 },
-            is_pinned: false,
-            is_online: true
-          })
-
-        if (error) {
-          console.error('Erro ao enviar mensagem:', error)
-          return
-        }
-
-        setMessage('')
-        loadMessages() // Recarregar mensagens
-      } catch (error) {
-        console.error('Erro ao enviar mensagem:', error)
+    if (!message.trim() || !user || isSending) return
+    
+    setIsSending(true)
+    console.log('💬 Enviando (OFFLINE):', message)
+    
+    try {
+      // Chat offline - salvar mensagem localmente
+      const messageData = {
+        user_id: user.id,
+        user_name: user.name || 'Usuário',
+        user_avatar: 'U',
+        content: message.trim(),
+        channel: activeChannel,
+        crm: user.crm || '',
+        specialty: '',
+        type: 'text',
+        reactions: { heart: 0, thumbs: 0, reply: 0 },
+        is_pinned: false,
+        is_online: true
       }
+
+      const savedMessage = saveMessageOffline(messageData)
+      
+      if (savedMessage) {
+        console.log('✅ Mensagem salva offline!')
+        setMessage('')
+        
+        // Adicionar mensagem à lista atual
+        setMessages(prev => [...prev, savedMessage])
+        
+        // Enviar via BroadcastChannel para outras abas
+        if (window.offlineChannel) {
+          window.offlineChannel.postMessage({
+            type: 'new_message',
+            channel: activeChannel,
+            message: savedMessage
+          })
+        }
+        
+        // Atualizar dados dos canais
+        loadChannelsDataOffline()
+        loadOnlineUsersOffline()
+        
+        scrollToBottom()
+      } else {
+        console.error('❌ Erro ao salvar mensagem offline')
+      }
+    } catch (error) {
+      console.error('Erro ao enviar mensagem offline:', error)
+    } finally {
+      setIsSending(false)
     }
   }
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
+    if (e.key === 'Enter' && !e.shiftKey && !isSending) {
       e.preventDefault()
       handleSendMessage()
     }
@@ -733,7 +934,7 @@ const ChatGlobal: React.FC = () => {
                   <div key={msg.id} className="flex space-x-3">
                     <div className="relative">
                       <div className="w-10 h-10 bg-gradient-to-br from-primary-500 to-purple-600 rounded-full flex items-center justify-center">
-                        <span className="text-white font-bold text-sm">{msg.userAvatar}</span>
+                        <span className="text-white font-bold text-sm">{msg.user_avatar}</span>
                       </div>
                       {msg.isOnline && (
                         <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-green-500 rounded-full border-2 border-slate-800"></div>
@@ -741,29 +942,29 @@ const ChatGlobal: React.FC = () => {
                     </div>
                     <div className="flex-1">
                       <div className="flex items-center space-x-2 mb-1">
-                        <span className="text-white font-medium">{msg.user}</span>
+                        <span className="text-white font-medium">{msg.user_name}</span>
                         <span className="text-slate-400 text-sm">{msg.crm}</span>
                         <span className="text-slate-500 text-sm">•</span>
                         <span className="text-slate-400 text-sm">{msg.specialty}</span>
                         <span className="text-slate-500 text-sm">•</span>
-                        <span className="text-slate-400 text-sm">{msg.timestamp}</span>
+                        <span className="text-slate-400 text-sm">{new Date(msg.created_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</span>
                         {msg.isPinned && (
                           <Pin className="w-4 h-4 text-yellow-400" />
                         )}
                       </div>
-                      <p className="text-slate-200 mb-2">{msg.message}</p>
+                      <p className="text-slate-200 mb-2">{msg.content}</p>
                       <div className="flex items-center space-x-4">
                         <button className="flex items-center space-x-1 text-slate-400 hover:text-red-400 transition-colors">
                           <Heart className="w-4 h-4" />
-                          <span className="text-sm">{msg.reactions.heart}</span>
+                          <span className="text-sm">{msg.reactions?.heart || 0}</span>
                         </button>
                         <button className="flex items-center space-x-1 text-slate-400 hover:text-primary-400 transition-colors">
                           <ThumbsUp className="w-4 h-4" />
-                          <span className="text-sm">{msg.reactions.thumbs}</span>
+                          <span className="text-sm">{msg.reactions?.thumbs || 0}</span>
                         </button>
                         <button className="flex items-center space-x-1 text-slate-400 hover:text-green-400 transition-colors">
                           <Reply className="w-4 h-4" />
-                          <span className="text-sm">{msg.reactions.reply}</span>
+                          <span className="text-sm">{msg.reactions?.reply || 0}</span>
                         </button>
                         <button className="text-slate-400 hover:text-primary-400 transition-colors">
                           <UserPlus className="w-4 h-4" />
@@ -806,7 +1007,8 @@ const ChatGlobal: React.FC = () => {
                   </button>
                   <button
                     onClick={handleSendMessage}
-                    className="bg-primary-600 hover:bg-primary-700 text-white px-4 py-3 rounded-lg transition-colors"
+                    disabled={isSending}
+                    className="bg-primary-600 hover:bg-primary-700 text-white px-4 py-3 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <Send className="w-5 h-5" />
                   </button>

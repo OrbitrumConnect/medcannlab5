@@ -20,51 +20,51 @@ const Header: React.FC = () => {
     // Se for admin e estiver no modo admin, mostrar menu admin
     if (user.type === 'admin' && isAdminMode) {
       return [
-        { name: '👑 Dashboard Admin', href: '/admin' },
-        { name: '📚 Biblioteca', href: '/library' },
-        { name: '🤖 Chat IA Documentos', href: '/ai-documents' },
+        { name: '👑 Dashboard Admin', href: '/app/admin' },
+        { name: '📚 Biblioteca', href: '/app/library' },
+        { name: '🤖 Chat IA Documentos', href: '/app/ai-documents' },
       ]
     }
     
     // Se for admin mas estiver no modo profissional, mostrar menu profissional
     if (user.type === 'admin' && !isAdminMode) {
       return [
-        { name: '🏥 Dashboard Profissional', href: '/dashboard' },
-        { name: '👥 Meus Pacientes', href: '/patients' },
-        { name: '📊 Avaliações', href: '/evaluations' },
-        { name: '📚 Biblioteca Médica', href: '/library' },
-        { name: '💬 Chat Global + Fórum', href: '/chat' },
-        { name: '📈 Relatórios', href: '/reports' },
+        { name: '🏥 Dashboard Profissional', href: '/app/dashboard' },
+        { name: '👥 Meus Pacientes', href: '/app/patients' },
+        { name: '📊 Avaliações', href: '/app/evaluations' },
+        { name: '📚 Biblioteca Médica', href: '/app/library' },
+        { name: '💬 Chat Global + Fórum', href: '/app/chat' },
+        { name: '📈 Relatórios', href: '/app/reports' },
       ]
     }
     
     switch (user.type) {
       case 'patient':
         return [
-          { name: '🏠 Dashboard', href: '/dashboard' },
+          { name: '🏠 Dashboard', href: '/app/dashboard' },
           { name: '🤖 Avaliação com Nôa', href: '/pre-anamnese' },
-          { name: '📋 Avaliação Clínica', href: '/clinical-assessment' },
-          { name: '📊 Meus Relatórios', href: '/reports' },
-          { name: '💬 Chat com Médico', href: '/patient-chat' },
-          { name: '👤 Meu Perfil', href: '/profile' },
+          { name: '📋 Avaliação Clínica', href: '/app/clinical-assessment' },
+          { name: '📊 Meus Relatórios', href: '/app/reports' },
+          { name: '💬 Chat com Médico', href: '/app/patient-chat' },
+          { name: '👤 Meu Perfil', href: '/app/profile' },
         ]
       case 'professional':
         return [
-          { name: '🏥 Dashboard Profissional', href: '/dashboard' },
-          { name: '👥 Meus Pacientes', href: '/patients' },
-          { name: '📊 Avaliações', href: '/evaluations' },
-          { name: '📚 Biblioteca Médica', href: '/library' },
-          { name: '💬 Chat Global + Fórum', href: '/chat' },
-          { name: '📈 Relatórios', href: '/reports' },
+          { name: '🏥 Dashboard Profissional', href: '/app/dashboard' },
+          { name: '👥 Meus Pacientes', href: '/app/patients' },
+          { name: '📊 Avaliações', href: '/app/evaluations' },
+          { name: '📚 Biblioteca Médica', href: '/app/library' },
+          { name: '💬 Chat Global + Fórum', href: '/app/chat' },
+          { name: '📈 Relatórios', href: '/app/reports' },
         ]
       case 'student':
         return [
-          { name: '🎓 Dashboard Estudante', href: '/dashboard' },
-          { name: '📚 Meus Cursos', href: '/courses' },
-          { name: '📖 Biblioteca', href: '/library' },
-          { name: '🏆 Gamificação', href: '/gamificacao' },
-          { name: '📊 Meu Progresso', href: '/progress' },
-          { name: '👤 Meu Perfil', href: '/profile' },
+          { name: '🎓 Dashboard Estudante', href: '/app/dashboard' },
+          { name: '📚 Meus Cursos', href: '/app/courses' },
+          { name: '📖 Biblioteca', href: '/app/library' },
+          { name: '🏆 Gamificação', href: '/app/gamificacao' },
+          { name: '📊 Meu Progresso', href: '/app/progress' },
+          { name: '👤 Meu Perfil', href: '/app/profile' },
         ]
       default:
         return []
@@ -99,9 +99,9 @@ const Header: React.FC = () => {
                     setIsAdminMode(!isAdminMode)
                     // Redirecionar para a página apropriada
                     if (!isAdminMode) {
-                      navigate('/admin')
+                      navigate('/app/admin')
                     } else {
-                      navigate('/dashboard')
+                      navigate('/app/dashboard')
                     }
                   }}
                   className="flex items-center space-x-2 text-white hover:text-yellow-300 transition-colors"
@@ -215,9 +215,9 @@ const Header: React.FC = () => {
                       setIsMenuOpen(false)
                       // Redirecionar para a página apropriada
                       if (!isAdminMode) {
-                        navigate('/admin')
+                        navigate('/app/admin')
                       } else {
-                        navigate('/dashboard')
+                        navigate('/app/dashboard')
                       }
                     }}
                     className="flex items-center space-x-2 text-slate-300 hover:text-white transition-colors w-full"
