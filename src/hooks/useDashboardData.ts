@@ -172,7 +172,7 @@ export const useDashboardData = () => {
           points: user.points || 0,
           level: Math.floor((user.points || 0) / 100) + 1,
           achievements: user.achievements || [],
-          activity: user.last_activity > new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) ? 'Muito Ativo' : 'Ativo'
+          activity: user.last_activity > new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) ? 'Muito Ativo' as const : 'Ativo' as const
         }))
         
         setUserRanking(ranking)
