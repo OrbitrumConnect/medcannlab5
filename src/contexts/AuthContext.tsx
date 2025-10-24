@@ -126,14 +126,27 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       console.log('🔍 [loadUserProfile] Iniciando busca de perfil para userId:', userId)
       
-      // Teste rápido de conectividade com Supabase
+      // Teste rápido de conectividade com Supabase com timeout
       console.log('🔍 [loadUserProfile] Testando conectividade com Supabase...')
-      const { data: testData, error: testError } = await supabase.auth.getUser()
-      console.log('🔍 [loadUserProfile] Teste de conectividade - data:', testData, 'error:', testError)
       
-      // Se o teste falhar, não criar usuário de emergência
-      if (testError) {
-        console.log('🚨 [loadUserProfile] Erro de conectividade detectado - NÃO criando usuário de emergência')
+      const connectPromise = supabase.auth.getUser()
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Timeout')), 5000)
+      )
+      
+      try {
+        const { data: testData, error: testError } = await Promise.race([connectPromise, timeoutPromise]) as any
+        console.log('🔍 [loadUserProfile] Teste de conectividade - data:', testData, 'error:', testError)
+        
+        // Se o teste falhar, não criar usuário de emergência
+        if (testError) {
+          console.log('🚨 [loadUserProfile] Erro de conectividade detectado - NÃO criando usuário de emergência')
+          setIsLoading(false)
+          setIsLoadingProfile(false)
+          return
+        }
+      } catch (timeoutError) {
+        console.log('⏰ [loadUserProfile] Timeout de conectividade - NÃO criando usuário de emergência')
         setIsLoading(false)
         setIsLoadingProfile(false)
         return
