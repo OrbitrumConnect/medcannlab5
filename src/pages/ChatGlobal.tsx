@@ -497,7 +497,7 @@ const ChatGlobal: React.FC = () => {
           user_id: user.id,
           user_name: user.name || 'Usuário',
           user_avatar: user.name?.charAt(0).toUpperCase() || 'U',
-          content: message.trim(),
+          message: message.trim(), // Campo correto da tabela
           channel: activeChannel,
           crm: user.crm || '',
           specialty: '',
@@ -940,7 +940,7 @@ const ChatGlobal: React.FC = () => {
                           <Pin className="w-4 h-4 text-yellow-400" />
                         )}
                       </div>
-                      <p className="text-slate-200 mb-2">{msg.content}</p>
+                      <p className="text-slate-200 mb-2">{msg.message || msg.content}</p>
                       <div className="flex items-center space-x-4">
                         <button className="flex items-center space-x-1 text-slate-400 hover:text-red-400 transition-colors">
                           <Heart className="w-4 h-4" />
