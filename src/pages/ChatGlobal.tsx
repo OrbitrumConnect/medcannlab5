@@ -143,7 +143,7 @@ const ChatGlobal: React.FC = () => {
   const loadChannelsData = async () => {
     try {
       const { data, error } = await supabase
-        .from('chat_messages')
+        .from('global_chat_messages')
         .select('channel, user_id, created_at')
         .gte('created_at', new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString())
 
@@ -177,7 +177,7 @@ const ChatGlobal: React.FC = () => {
   const loadOnlineUsers = async () => {
     try {
       const { data, error } = await supabase
-        .from('chat_messages')
+        .from('global_chat_messages')
         .select('user_id, user_name, user_avatar, crm, specialty')
         .eq('is_online', true)
         .gte('created_at', new Date(Date.now() - 5 * 60 * 1000).toISOString()) // Últimos 5 minutos
@@ -242,7 +242,7 @@ const ChatGlobal: React.FC = () => {
       .on('postgres_changes', {
         event: 'INSERT',
         schema: 'public',
-        table: 'chat_messages',
+        table: 'global_chat_messages',
         filter: `channel=eq.${activeChannel}`
       }, (payload) => {
         console.log('📨 Nova mensagem recebida:', payload.new)
@@ -254,7 +254,7 @@ const ChatGlobal: React.FC = () => {
       .on('postgres_changes', {
         event: 'DELETE',
         schema: 'public',
-        table: 'chat_messages',
+        table: 'global_chat_messages',
         filter: `channel=eq.${activeChannel}`
       }, (payload) => {
         console.log('🗑️ Mensagem removida:', payload.old)
@@ -297,7 +297,7 @@ const ChatGlobal: React.FC = () => {
         
         // Deletar mensagens antigas
         const { error } = await supabase
-          .from('chat_messages')
+          .from('global_chat_messages')
           .delete()
           .lt('created_at', twentyFourHoursAgo.toISOString())
 
@@ -327,7 +327,7 @@ const ChatGlobal: React.FC = () => {
       twentyFourHoursAgo.setHours(twentyFourHoursAgo.getHours() - 24)
       
       const { data, error } = await supabase
-        .from('chat_messages')
+        .from('global_chat_messages')
         .select('*')
         .eq('channel', activeChannel)
         .gte('created_at', twentyFourHoursAgo.toISOString())
@@ -492,7 +492,7 @@ const ChatGlobal: React.FC = () => {
     try {
       // Salvar no Supabase
       const { data, error } = await supabase
-        .from('chat_messages')
+        .from('global_chat_messages')
         .insert({
           user_id: user.id,
           user_name: user.name || 'Usuário',
@@ -553,7 +553,7 @@ const ChatGlobal: React.FC = () => {
     
     try {
       const { error } = await supabase
-        .from('chat_messages')
+        .from('global_chat_messages')
         .delete()
         .eq('id', messageId)
 
@@ -573,7 +573,7 @@ const ChatGlobal: React.FC = () => {
     
     try {
       const { error } = await supabase
-        .from('chat_messages')
+        .from('global_chat_messages')
         .update({ is_pinned: true })
         .eq('id', messageId)
 
