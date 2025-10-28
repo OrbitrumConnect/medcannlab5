@@ -32,7 +32,8 @@ const BanknoteIcon = (props: any) => (
 )
 
 interface SidebarProps {
-  userType?: 'patient' | 'professional' | 'student' | 'admin' | 'unconfirmed'
+  userType?: 'patient' | 'professional' | 'student' | 'aluno' | 'admin' | 'unconfirmed'
+  // 'aluno' e 'student' são equivalentes - aceita ambos
 }
 
 const Sidebar: React.FC<SidebarProps> = ({ userType = 'patient' }) => {
@@ -192,6 +193,9 @@ const Sidebar: React.FC<SidebarProps> = ({ userType = 'patient' }) => {
         specificItems = professionalItems
         break
       case 'student':
+        specificItems = studentItems
+        break
+      case 'aluno':
         specificItems = studentItems
         break
       case 'admin':

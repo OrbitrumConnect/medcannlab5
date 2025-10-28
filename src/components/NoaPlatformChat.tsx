@@ -9,6 +9,7 @@ import { useNoaPlatform } from '../contexts/NoaPlatformContext'
 interface NoaPlatformChatProps {
   userCode?: string
   userName?: string
+  userType?: string
   position?: 'bottom-right' | 'bottom-left' | 'top-right' | 'top-left'
   hideButton?: boolean // Nova prop para esconder o botão
 }
@@ -16,6 +17,7 @@ interface NoaPlatformChatProps {
 export const NoaPlatformChat: React.FC<NoaPlatformChatProps> = ({
   userCode = 'DEV-001',
   userName = 'Dr. Ricardo Valença',
+  userType = 'professional',
   position = 'bottom-right',
   hideButton = false
 }) => {
@@ -40,10 +42,20 @@ export const NoaPlatformChat: React.FC<NoaPlatformChatProps> = ({
   const [avatarUrl, setAvatarUrl] = useState<string>('https://via.placeholder.com/200x200/8B5CF6/FFFFFF?text=N')
   const [chatSize, setChatSize] = useState<'small' | 'medium' | 'large'>('medium')
 
+  // Determinar role baseado no userType
+  const getUserRole = (type?: string): 'developer' | 'admin' | 'professional' | 'observer' => {
+    if (type === 'admin') return 'admin'
+    if (type === 'professional') return 'professional'
+    if (type === 'patient') return 'professional'
+    return 'observer'
+  }
+
   // Registrar usuário no sistema de treinamento
   useEffect(() => {
-    trainingSystem.registerUser(userCode, userName, 'developer', ['full'])
-  }, [userCode, userName])
+    const role = getUserRole(userType)
+    trainingSystem.registerUser(userCode, userName, role, ['full'])
+    console.log('👤 Balão flutuante - Usuário registrado:', { userCode, userName, userType, role })
+  }, [userCode, userName, userType])
 
   // Atualizar rota atual
   useEffect(() => {
@@ -210,6 +222,17 @@ export const NoaPlatformChat: React.FC<NoaPlatformChatProps> = ({
     }
   }
 
+  const toggleChat = () => {
+    const newState = !isOpen
+    setIsOpen(newState)
+    if (newState) {
+      // Abrir chat
+    } else {
+      // Fechar chat
+      closeChat()
+    }
+  }
+
   const toggleChatSize = () => {
     setChatSize(prev => {
       switch (prev) {
@@ -238,13 +261,10 @@ export const NoaPlatformChat: React.FC<NoaPlatformChatProps> = ({
 
   return (
     <>
-      {/* Botão Flutuante */}
+      {/* Botão Flutuante - Abre o chat balão */}
       {!hideButton && !isOpen && (
         <button
-          onClick={() => {
-            // Navegar para a página de chat da Nôa
-            navigate('/app/patient-noa-chat')
-          }}
+          onClick={toggleChat}
           className={`fixed ${getPositionClasses()} z-50 w-16 h-16 bg-gradient-to-r from-purple-600 to-pink-600 
             rounded-full shadow-lg hover:shadow-xl transform hover:scale-110 
             transition-all duration-300 flex items-center justify-center text-white overflow-hidden`}
@@ -292,7 +312,7 @@ export const NoaPlatformChat: React.FC<NoaPlatformChatProps> = ({
               <button
                 onClick={() => navigate('/app/patient-noa-chat')}
                 className="text-white hover:bg-white/20 rounded-full p-1.5 transition-colors"
-                title="Abrir em página dedicada"
+                title="Abrir chat dedicado (tela cheia com vídeo)"
               >
                 <Brain className="w-4 h-4" />
               </button>
@@ -308,10 +328,7 @@ export const NoaPlatformChat: React.FC<NoaPlatformChatProps> = ({
                 </div>
               </button>
               <button
-                onClick={() => {
-                  setIsOpen(false)
-                  closeChat()
-                }}
+                onClick={toggleChat}
                 className="text-white hover:bg-white/20 rounded-full p-1 transition-colors"
               >
                 <X className="w-5 h-5" />

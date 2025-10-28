@@ -322,7 +322,7 @@ const Landing: React.FC = () => {
             <div className="relative flex justify-center mb-8" style={{ transform: 'translateX(38%) translateY(103%) scale(1.44)' }}>
               <div className="relative">
                 <img 
-                  src="/src/assets/brain.png" 
+                  src="/brain.png" 
                   alt="Cérebro com IA" 
                   className="w-80 h-80 object-contain drop-shadow-2xl"
                         style={{

@@ -71,7 +71,7 @@ const Layout: React.FC = () => {
     <ProtectedRoute>
       <div className="min-h-screen bg-slate-900">
         {/* Sidebar */}
-        <Sidebar userType={user?.type} />
+        <Sidebar userType={user?.type === 'aluno' ? 'student' : (user?.type || undefined)} />
         
         {/* Main Content */}
         <div className="flex flex-col min-h-screen lg:ml-80">
@@ -85,7 +85,11 @@ const Layout: React.FC = () => {
         </div>
         
         {/* Avatar Nôa Esperança */}
-        <NoaPlatformChat />
+        <NoaPlatformChat 
+          userCode={user?.id || 'DEV-001'} 
+          userName={user?.name || 'Usuário'}
+          userType={user?.type}
+        />
       </div>
     </ProtectedRoute>
   )
