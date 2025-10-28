@@ -220,13 +220,13 @@ const ChatGlobal: React.FC = () => {
 
   // Carregar mensagens do canal ativo
   useEffect(() => {
-    console.log('🔄 useEffect executando - carregando dados do chat (OFFLINE) - activeChannel:', activeChannel)
+    console.log('🔄 useEffect executando - carregando dados do chat ONLINE - activeChannel:', activeChannel)
     
-    // Chat offline - sem Supabase
-    loadMessagesOffline()
-    setupOfflineRealtime()
-    loadChannelsDataOffline()
-    loadOnlineUsersOffline()
+    // Usar Supabase Realtime
+    loadMessages()
+    setupRealtimeSubscription()
+    loadChannelsData()
+    loadOnlineUsers()
   }, [activeChannel]) // Mantém apenas activeChannel como dependência
 
   // Configurar tempo real para mensagens
@@ -487,52 +487,42 @@ const ChatGlobal: React.FC = () => {
     if (!message.trim() || !user || isSending) return
     
     setIsSending(true)
-    console.log('💬 Enviando (OFFLINE):', message)
+    console.log('💬 Enviando mensagem ONLINE:', message)
     
     try {
-      // Chat offline - salvar mensagem localmente
-      const messageData = {
-        user_id: user.id,
-        user_name: user.name || 'Usuário',
-        user_avatar: 'U',
-        content: message.trim(),
-        channel: activeChannel,
-        crm: user.crm || '',
-        specialty: '',
-        type: 'text',
-        reactions: { heart: 0, thumbs: 0, reply: 0 },
-        is_pinned: false,
-        is_online: true
-      }
+      // Salvar no Supabase
+      const { data, error } = await supabase
+        .from('chat_messages')
+        .insert({
+          user_id: user.id,
+          user_name: user.name || 'Usuário',
+          user_avatar: user.name?.charAt(0).toUpperCase() || 'U',
+          content: message.trim(),
+          channel: activeChannel,
+          crm: user.crm || '',
+          specialty: '',
+          type: 'text',
+          reactions: { heart: 0, thumbs: 0, reply: 0 },
+          is_pinned: false,
+          is_online: true
+        })
+        .select()
+        .single()
 
-      const savedMessage = saveMessageOffline(messageData)
-      
-      if (savedMessage) {
-        console.log('✅ Mensagem salva offline!')
-        setMessage('')
-        
-        // Adicionar mensagem à lista atual
-        setMessages(prev => [...prev, savedMessage])
-        
-        // Enviar via BroadcastChannel para outras abas
-        if (window.offlineChannel) {
-          window.offlineChannel.postMessage({
-            type: 'new_message',
-            channel: activeChannel,
-            message: savedMessage
-          })
-        }
-        
-        // Atualizar dados dos canais
-        loadChannelsDataOffline()
-        loadOnlineUsersOffline()
-        
-        scrollToBottom()
+      if (error) {
+        console.error('Erro ao salvar mensagem:', error)
+        alert('Erro ao enviar mensagem. Verifique sua conexão.')
       } else {
-        console.error('❌ Erro ao salvar mensagem offline')
+        console.log('✅ Mensagem salva no Supabase!', data)
+        setMessage('')
+        // A subscription em tempo real irá adicionar a mensagem automaticamente
+        loadChannelsData()
+        loadOnlineUsers()
+        scrollToBottom()
       }
     } catch (error) {
-      console.error('Erro ao enviar mensagem offline:', error)
+      console.error('Erro ao enviar mensagem:', error)
+      alert('Erro ao enviar mensagem')
     } finally {
       setIsSending(false)
     }
