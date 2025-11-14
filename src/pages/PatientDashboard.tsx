@@ -1049,7 +1049,7 @@ const PatientDashboard: React.FC = () => {
           {/* Dias na Plataforma */}
           <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-6">
             <div className="flex items-center justify-between mb-4">
-              <Clock className="w-9 h-9 text-indigo-300" />
+              <Clock className="w-10 h-10 text-indigo-300" />
               <span className="text-3xl font-bold text-white">{diasNoPlataforma}</span>
             </div>
             <h3 className="text-lg font-semibold text-slate-300 mb-2">Dias na Plataforma</h3>
@@ -1059,18 +1059,18 @@ const PatientDashboard: React.FC = () => {
           {/* Consultas */}
           <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-6">
             <div className="flex items-center justify-between mb-4">
-              <Calendar className="w-9 h-9 text-primary-300" />
+              <Calendar className="w-10 h-10 text-primary-300" />
               <span className="text-3xl font-bold text-white">{totalConsultas}</span>
             </div>
             <h3 className="text-lg font-semibold text-slate-300 mb-2">Consultas</h3>
             <div className="space-y-1.5 text-base text-slate-400">
               <div className="flex justify-between">
                 <span>Agendadas:</span>
-                <span className="text-emerald-400">{consultasAgendadas}</span>
+                <span className="text-emerald-400 font-semibold">{consultasAgendadas}</span>
               </div>
               <div className="flex justify-between">
                 <span>Concluídas:</span>
-                <span className="text-blue-400">{consultasConcluidas}</span>
+                <span className="text-blue-400 font-semibold">{consultasConcluidas}</span>
               </div>
             </div>
           </div>
@@ -1078,18 +1078,18 @@ const PatientDashboard: React.FC = () => {
           {/* Prescrições */}
           <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-6">
             <div className="flex items-center justify-between mb-4">
-              <Heart className="w-9 h-9 text-emerald-300" />
+              <Heart className="w-10 h-10 text-emerald-300" />
               <span className="text-3xl font-bold text-white">{totalPrescricoes}</span>
             </div>
             <h3 className="text-lg font-semibold text-slate-300 mb-2">Prescrições</h3>
             <div className="space-y-1.5 text-base text-slate-400">
               <div className="flex justify-between">
                 <span>Ativas:</span>
-                <span className="text-emerald-400">{prescricoesAtivas}</span>
+                <span className="text-emerald-400 font-semibold">{prescricoesAtivas}</span>
               </div>
               <div className="flex justify-between">
                 <span>Total:</span>
-                <span className="text-slate-300">{totalPrescricoes}</span>
+                <span className="text-slate-300 font-semibold">{totalPrescricoes}</span>
               </div>
             </div>
           </div>
@@ -1097,19 +1097,19 @@ const PatientDashboard: React.FC = () => {
           {/* Relatórios */}
           <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-6">
             <div className="flex items-center justify-between mb-4">
-              <FileText className="w-9 h-9 text-purple-300" />
+              <FileText className="w-10 h-10 text-purple-300" />
               <span className="text-3xl font-bold text-white">{totalRelatorios}</span>
             </div>
             <h3 className="text-lg font-semibold text-slate-300 mb-2">Relatórios Clínicos</h3>
             <div className="space-y-1.5 text-base text-slate-400">
               <div className="flex justify-between">
                 <span>Gerados:</span>
-                <span className="text-purple-400">{totalRelatorios}</span>
+                <span className="text-purple-400 font-semibold">{totalRelatorios}</span>
               </div>
               {latestClinicalReport && (
                 <div className="flex justify-between">
                   <span>Último:</span>
-                  <span className="text-slate-300">
+                  <span className="text-slate-300 font-semibold">
                     {latestClinicalReport.generated_at 
                       ? new Date(latestClinicalReport.generated_at).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })
                       : 'N/A'}
@@ -1122,14 +1122,14 @@ const PatientDashboard: React.FC = () => {
           {/* Recursos Educacionais */}
           <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-6">
             <div className="flex items-center justify-between mb-4">
-              <BookOpen className="w-9 h-9 text-sky-300" />
+              <BookOpen className="w-10 h-10 text-sky-300" />
               <span className="text-3xl font-bold text-white">{totalRecursosEducacionais}</span>
             </div>
             <h3 className="text-lg font-semibold text-slate-300 mb-2">Recursos Acessados</h3>
             <div className="space-y-1.5 text-base text-slate-400">
               <div className="flex justify-between">
                 <span>Disponíveis:</span>
-                <span className="text-sky-400">{totalRecursosEducacionais}</span>
+                <span className="text-sky-400 font-semibold">{totalRecursosEducacionais}</span>
               </div>
             </div>
           </div>

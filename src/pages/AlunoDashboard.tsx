@@ -51,7 +51,7 @@ const FALLBACK_COURSE = {
   instructor: 'Equipe MedCannLab',
   duration: '60 horas',
   nextClass: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toLocaleDateString('pt-BR'),
-  color: 'from-green-400 to-green-500',
+  color: '#1a365d, #2d5a3d',
   logo: '🌿',
   studentsCount: 32,
   modules: [
@@ -292,7 +292,7 @@ const AlunoDashboard: React.FC = () => {
         instructor: instructor,
         duration: course.duration_text || `${course.duration || 60} horas`,
         nextClass: course.next_class_date ? new Date(course.next_class_date).toLocaleDateString('pt-BR') : null,
-        color: 'from-green-400 to-green-500',
+        color: '#1a365d, #2d5a3d',
         logo: '🌿',
         studentsCount: studentsCount || 0,
         modules: (modules || []).map((m: any) => ({
@@ -409,7 +409,14 @@ const AlunoDashboard: React.FC = () => {
             {activeTab === 'dashboard' && (
               <>
             {/* Welcome Section */}
-            <div className={`bg-gradient-to-r ${mainCourse.color || 'from-green-400 to-green-500'} rounded-xl p-6 mb-8 relative overflow-hidden`}>
+            <div 
+              className="rounded-xl p-6 mb-8 relative overflow-hidden"
+              style={{ 
+                background: mainCourse.color 
+                  ? `linear-gradient(135deg, ${mainCourse.color.split(', ').join(' 0%, ') + ' 100%'})` 
+                  : 'linear-gradient(135deg, #1a365d 0%, #2d5a3d 100%)'
+              }}
+            >
               <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -mr-32 -mt-32"></div>
               <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/5 rounded-full -ml-24 -mb-24"></div>
               <div className="relative z-10">
@@ -619,13 +626,6 @@ const AlunoDashboard: React.FC = () => {
             {/* Redes Sociais */}
             {activeTab === 'redes-sociais' && (
               <div className="space-y-6">
-                <div className="bg-gradient-to-r from-pink-600 to-purple-600 rounded-xl p-6 mb-8">
-                  <h2 className="text-2xl font-bold text-white mb-2">📱 Ferramentas de Redes Sociais</h2>
-                  <p className="text-white/90">
-                    Conteúdo educativo formatado para TikTok e Instagram. Aprenda e compartilhe conhecimento de forma moderna.
-                  </p>
-                </div>
-
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {/* TikTok */}
                   <div className="rounded-xl p-6 transition-transform transform hover:scale-[1.01]" style={surfaceStyle}>
@@ -726,13 +726,6 @@ const AlunoDashboard: React.FC = () => {
             {/* Notícias */}
             {activeTab === 'noticias' && (
               <div className="space-y-6">
-                <div className="bg-gradient-to-r from-blue-600 to-cyan-600 rounded-xl p-6 mb-8">
-                  <h2 className="text-2xl font-bold text-white mb-2">📰 Notícias e Atualizações</h2>
-                  <p className="text-white/90">
-                    Fique por dentro das últimas notícias sobre Cannabis Medicinal, pesquisa clínica e metodologia AEC.
-                  </p>
-                </div>
-
                 {/* Filtros de Notícias */}
                 <div className="rounded-xl p-4" style={secondarySurfaceStyle}>
                   <div className="flex flex-wrap gap-2">
@@ -813,14 +806,6 @@ const AlunoDashboard: React.FC = () => {
             {/* Simulações de Pacientes */}
             {activeTab === 'simulacoes' && (
               <div className="space-y-6">
-                <div className="bg-gradient-to-r from-orange-600 to-red-600 rounded-xl p-6 mb-8">
-                  <h2 className="text-2xl font-bold text-white mb-2">🩺 Simulações de Pacientes</h2>
-                  <p className="text-white/90">
-                    Pratique entrevistas clínicas com pacientes simulados pela IA residente Nôa Esperança. 
-                    Desenvolva suas habilidades de comunicação e avaliação clínica usando a metodologia Arte da Entrevista Clínica.
-                  </p>
-                </div>
-
                 {/* Seleção de Sistema */}
                 <div className="rounded-xl p-6 mb-6" style={surfaceStyle}>
                   <div className="flex items-center space-x-4 mb-6">
@@ -1117,13 +1102,6 @@ const AlunoDashboard: React.FC = () => {
             {/* Teste de Nivelamento */}
             {activeTab === 'teste' && (
               <div className="space-y-6">
-                <div className="bg-gradient-to-r from-yellow-600 to-orange-600 rounded-xl p-6 mb-8">
-                  <h2 className="text-2xl font-bold text-white mb-2">📝 Teste de Nivelamento</h2>
-                  <p className="text-white/90">
-                    Avalie seus conhecimentos sobre Arte da Entrevista Clínica e descubra o melhor ponto de partida no curso.
-                  </p>
-                </div>
-
                 {/* Informações do Teste */}
                 <div className="bg-slate-800 rounded-xl p-6 border border-slate-700 mb-6">
                   <h3 className="text-xl font-semibold text-white mb-4">Sobre o Teste de Nivelamento</h3>

@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { useUserView } from '../contexts/UserViewContext'
@@ -12,9 +12,45 @@ const Header: React.FC = () => {
   const navigate = useNavigate()
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isProfileOpen, setIsProfileOpen] = useState(false)
+  const profileMenuRef = useRef<HTMLDivElement>(null)
+  const profileButtonRef = useRef<HTMLButtonElement>(null)
+  const [menuPosition, setMenuPosition] = useState({ top: 0, right: 0 })
 
   const headerGradient = 'linear-gradient(135deg, rgba(10,25,47,0.96) 0%, rgba(26,54,93,0.92) 55%, rgba(45,90,61,0.9) 100%)'
   const neutralSurface = 'rgba(7, 22, 41, 0.85)'
+
+  // Calcular posição do menu quando abrir
+  useEffect(() => {
+    if (isProfileOpen && profileButtonRef.current) {
+      const buttonRect = profileButtonRef.current.getBoundingClientRect()
+      setMenuPosition({
+        top: buttonRect.bottom + window.scrollY + 8,
+        right: window.innerWidth - buttonRect.right
+      })
+    }
+  }, [isProfileOpen])
+
+  // Fechar menu de perfil ao clicar fora
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        profileMenuRef.current && 
+        !profileMenuRef.current.contains(event.target as Node) &&
+        profileButtonRef.current &&
+        !profileButtonRef.current.contains(event.target as Node)
+      ) {
+        setIsProfileOpen(false)
+      }
+    }
+
+    if (isProfileOpen) {
+      document.addEventListener('mousedown', handleClickOutside)
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [isProfileOpen])
 
   const getNavigationByUserType = () => {
     if (!user) return []
@@ -327,7 +363,11 @@ const Header: React.FC = () => {
                 
                 <div className="relative">
                   <button
-                    onClick={() => setIsProfileOpen(!isProfileOpen)}
+                    ref={profileButtonRef}
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      setIsProfileOpen(!isProfileOpen)
+                    }}
                     className="flex items-center space-x-2 text-[#C8D6E5] hover:text-[#00C16A] transition-colors duration-200"
                   >
                     <div
@@ -340,54 +380,69 @@ const Header: React.FC = () => {
                       <User className="w-3 h-3 md:w-4 md:h-4 text-white" />
                     </div>
                     <span className="hidden sm:block text-xs md:text-sm font-medium">{user.name}</span>
+                    <ChevronDown className={`w-3 h-3 md:w-4 md:h-4 transition-transform duration-200 ${isProfileOpen ? 'rotate-180' : ''}`} />
                   </button>
+                </div>
 
                 {isProfileOpen && (
-                  <div
-                    className="absolute right-0 mt-2 w-40 md:w-48 rounded-md shadow-lg py-1 z-50"
-                    style={{
-                      background: neutralSurface,
-                      border: '1px solid rgba(0,193,106,0.18)'
-                    }}
-                  >
-                    <div className="px-3 md:px-4 py-2 border-b border-[#17324d]">
-                      <p className="text-xs md:text-sm font-medium text-white">{user.name}</p>
-                      <p className="text-xs text-[#8FA7BF] truncate">{user.email}</p>
-                    </div>
-                    <Link
-                      to={normalizeUserType(user?.type || 'paciente') === 'admin' ? '/app/admin-settings' : '/app/profile'}
+                  <>
+                    {/* Overlay para fechar ao clicar fora */}
+                    <div
+                      className="fixed inset-0 z-[9998]"
                       onClick={() => setIsProfileOpen(false)}
-                      className="flex items-center px-3 md:px-4 py-2 text-xs md:text-sm text-[#C8D6E5] hover:bg-[#1b314e]"
-                    >
-                      <Settings className="w-3 h-3 md:w-4 md:h-4 mr-2" />
-                      Configurações
-                    </Link>
-                    <button
-                      onClick={async () => {
-                        console.log('🚪 Botão Sair clicado')
-                        setIsProfileOpen(false)
-                        try {
-                          await logout()
-                          console.log('✅ Logout concluído, redirecionando...')
-                          // Limpar storage
-                          localStorage.clear()
-                          sessionStorage.clear()
-                          // Redirecionar
-                          window.location.href = '/'
-                        } catch (error) {
-                          console.error('❌ Erro no logout:', error)
-                          // Forçar redirecionamento mesmo com erro
-                          window.location.href = '/'
-                        }
+                    />
+                    {/* Menu dropdown com posicionamento fixed */}
+                    <div
+                      ref={profileMenuRef}
+                      className="fixed w-48 md:w-56 rounded-lg shadow-xl py-2 z-[9999]"
+                      style={{
+                        top: `${menuPosition.top}px`,
+                        right: `${menuPosition.right}px`,
+                        background: neutralSurface,
+                        border: '1px solid rgba(0,193,106,0.3)',
+                        boxShadow: '0 8px 24px rgba(0, 0, 0, 0.4)'
                       }}
-                      className="flex items-center w-full px-3 md:px-4 py-2 text-xs md:text-sm text-[#C8D6E5] hover:bg-[#1b314e]"
+                      onClick={(e) => e.stopPropagation()}
                     >
-                      <LogOut className="w-3 h-3 md:w-4 md:h-4 mr-2" />
-                      Sair
-                    </button>
-                  </div>
+                      <div className="px-4 py-3 border-b border-[#17324d]">
+                        <p className="text-sm font-medium text-white">{user.name}</p>
+                        <p className="text-xs text-[#8FA7BF] truncate mt-1">{user.email}</p>
+                      </div>
+                      <Link
+                        to={normalizeUserType(user?.type || 'paciente') === 'admin' ? '/app/admin-settings' : '/app/profile'}
+                        onClick={() => setIsProfileOpen(false)}
+                        className="flex items-center px-4 py-2.5 text-sm text-[#C8D6E5] hover:bg-[#1b314e] hover:text-white transition-colors"
+                      >
+                        <Settings className="w-4 h-4 mr-3" />
+                        Configurações
+                      </Link>
+                      <button
+                        onClick={async (e) => {
+                          e.stopPropagation()
+                          console.log('🚪 Botão Sair clicado')
+                          setIsProfileOpen(false)
+                          try {
+                            await logout()
+                            console.log('✅ Logout concluído, redirecionando...')
+                            // Limpar storage
+                            localStorage.clear()
+                            sessionStorage.clear()
+                            // Redirecionar
+                            window.location.href = '/'
+                          } catch (error) {
+                            console.error('❌ Erro no logout:', error)
+                            // Forçar redirecionamento mesmo com erro
+                            window.location.href = '/'
+                          }
+                        }}
+                        className="flex items-center w-full px-4 py-2.5 text-sm text-[#C8D6E5] hover:bg-[#1b314e] hover:text-white transition-colors border-t border-[#17324d]"
+                      >
+                        <LogOut className="w-4 h-4 mr-3" />
+                        Sair
+                      </button>
+                    </div>
+                  </>
                 )}
-                </div>
               </>
             ) : (
               <Link
