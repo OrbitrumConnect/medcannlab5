@@ -34,8 +34,7 @@ import {
   Heart,
   Brain,
   Activity,
-  Stethoscope,
-  LayoutDashboard
+  Stethoscope
 } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { ClinicalAssessmentService } from '../lib/clinicalAssessmentService'
@@ -578,7 +577,7 @@ const EduardoFaveretDashboard: React.FC = () => {
               style={cardStyle}
             >
               <div className="flex items-center justify-between mb-3">
-                <LayoutDashboard className="w-6 h-6 text-[#4FE0C1]" />
+                <BarChart3 className="w-6 h-6 text-[#4FE0C1]" />
                 <span className="text-xs uppercase tracking-[0.28em] text-[rgba(200,214,229,0.7)]">Resumo</span>
               </div>
               <h3 className="text-base font-semibold text-white mb-1">Resumo Administrativo</h3>
