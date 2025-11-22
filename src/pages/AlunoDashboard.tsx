@@ -264,9 +264,10 @@ const AlunoDashboard: React.FC = () => {
         const { count } = await supabase
           .from('forum_posts')
           .select('*', { count: 'exact', head: true })
-          .eq('user_id', user.id)
+          .eq('author_id', user.id)
         forumPostsCount = count || 0
-      } catch {
+      } catch (error) {
+        console.warn('Erro ao buscar posts do fórum:', error)
         forumPostsCount = 0
       }
 
