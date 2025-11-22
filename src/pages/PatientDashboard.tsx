@@ -2901,7 +2901,7 @@ const PatientDashboard: React.FC = () => {
     <div className="flex w-full min-h-screen text-white" style={{ background: backgroundGradient }}>
       {/* PatientSidebar - Integrado ao Layout - Começa do topo */}
       <div 
-        className={`${isSidebarCollapsed ? 'w-20' : 'w-64'} flex-shrink-0 overflow-y-auto transition-all duration-300 fixed left-0 top-0 bottom-0 z-40`} 
+        className={`${isSidebarCollapsed ? 'w-16 sm:w-20' : 'w-56 sm:w-64'} flex-shrink-0 overflow-y-auto transition-all duration-300 fixed left-0 top-0 bottom-0 z-40 hidden sm:block`} 
         style={{ 
           background: backgroundGradient
         }}
@@ -2942,7 +2942,7 @@ const PatientDashboard: React.FC = () => {
 
       {/* Main Content Area */}
       <div
-        className={`flex-1 transition-all duration-300 flex flex-col ${isSidebarCollapsed ? 'ml-20' : 'ml-64'}`}
+        className={`flex-1 transition-all duration-300 flex flex-col ${isSidebarCollapsed ? 'sm:ml-20' : 'sm:ml-64'}`}
         style={{
           overflow: activeTab === 'chat' || activeTab === 'chat-noa' || activeTab === 'meus-agendamentos' ? 'hidden' : 'auto',
           minHeight: '100vh'

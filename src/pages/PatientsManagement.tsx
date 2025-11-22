@@ -142,6 +142,30 @@ const PatientsManagement: React.FC = () => {
     loadPatients()
   }, [user])
 
+  // Verificar se há patientId na URL e selecionar o paciente
+  useEffect(() => {
+    const patientIdParam = searchParams.get('patientId')
+    if (patientIdParam && patients.length > 0) {
+      const patient = patients.find(p => p.id === patientIdParam)
+      if (patient) {
+        setSelectedPatient(patient)
+        setActiveTab('overview')
+        // Scroll para o card do paciente após um pequeno delay
+        setTimeout(() => {
+          const patientCard = document.getElementById(`patient-${patient.id}`)
+          if (patientCard) {
+            patientCard.scrollIntoView({ behavior: 'smooth', block: 'center' })
+            // Destacar o card temporariamente
+            patientCard.classList.add('ring-2', 'ring-blue-500')
+            setTimeout(() => {
+              patientCard.classList.remove('ring-2', 'ring-blue-500')
+            }, 2000)
+          }
+        }, 300)
+      }
+    }
+  }, [searchParams, patients])
+
   // Carregar evoluções quando um paciente é selecionado
   useEffect(() => {
     if (selectedPatient) {
@@ -610,6 +634,7 @@ const PatientsManagement: React.FC = () => {
                   filteredPatients.map(patient => (
                   <button
                     key={patient.id}
+                    id={`patient-${patient.id}`}
                     onClick={() => handleSelectPatient(patient)}
                     className={`w-full p-4 text-left border-b border-slate-700 hover:bg-slate-700/50 transition-colors ${
                       selectedPatient?.id === patient.id ? 'bg-slate-700' : ''
@@ -899,8 +924,34 @@ const PatientsManagement: React.FC = () => {
 
                     {activeTab === 'evolution' && (
                       <div className="space-y-4">
+                        {/* Botão Criar Nova Evolução - ANTES do histórico */}
+                        <div className="flex items-center justify-between mb-4">
+                          <h3 className="text-lg font-semibold text-white">Histórico de Evoluções</h3>
+                          {!showNewEvolution && (
+                            <button
+                              onClick={() => {
+                                setShowNewEvolution(true)
+                                // Scroll para o card após um pequeno delay para garantir que ele foi renderizado
+                                setTimeout(() => {
+                                  const newEvolutionCard = document.getElementById('new-evolution-card')
+                                  if (newEvolutionCard) {
+                                    newEvolutionCard.scrollIntoView({ behavior: 'smooth', block: 'start' })
+                                  }
+                                }, 100)
+                              }}
+                              className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-lg hover:from-green-600 hover:to-emerald-600 transition-colors"
+                            >
+                              <Plus className="w-4 h-4" />
+                              <span>Criar Nova Evolução</span>
+                            </button>
+                          )}
+                        </div>
+
                         {showNewEvolution && (
-                          <div className="bg-gradient-to-r from-blue-500/10 to-cyan-500/10 border border-blue-500/30 rounded-xl p-6">
+                          <div 
+                            id="new-evolution-card"
+                            className="bg-gradient-to-r from-blue-500/10 to-cyan-500/10 border border-blue-500/30 rounded-xl p-6"
+                          >
                             <h3 className="text-lg font-bold text-white mb-4">Nova Evolução</h3>
                             <div className="space-y-4">
                               <div>

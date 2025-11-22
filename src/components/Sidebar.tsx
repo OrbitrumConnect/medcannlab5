@@ -387,10 +387,10 @@ const Sidebar: React.FC<SidebarProps> = ({
       
       {/* Sidebar */}
       <div className={`bg-slate-800 text-white transition-all duration-300 ${
-        isCollapsed ? 'w-16 sm:w-20' : 'w-72 sm:w-80'
+        isCollapsed ? 'w-16 sm:w-20' : 'w-64 sm:w-72 md:w-80'
       } flex flex-col fixed left-0 top-0 z-50 overflow-x-hidden ${
         mobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
-      } ${isMobile ? 'w-72 sm:w-80' : ''}`} style={{ top: '0.1%', height: '99.9%', maxWidth: isCollapsed ? '80px' : '320px' }}>
+      } ${isMobile ? 'w-64 sm:w-72' : ''}`} style={{ top: '0.1%', height: '99.9%', maxWidth: isCollapsed ? '80px' : isMobile ? '288px' : '320px' }}>
       {/* Header */}
       <div className="p-2 sm:p-3 md:p-4 border-b border-slate-700">
         <div className="flex items-center justify-between">
