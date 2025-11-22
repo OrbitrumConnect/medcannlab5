@@ -9,6 +9,15 @@ import {
   RotateCcw, HelpCircle, CheckCircle, XCircle, Image, File, 
   Layout, Type, Sparkles, Brain
 } from 'lucide-react'
+import {
+  backgroundGradient,
+  surfaceStyle,
+  secondarySurfaceStyle,
+  cardStyle,
+  accentGradient,
+  secondaryGradient,
+  colors
+} from '../constants/designSystem'
 
 interface Case {
   id: string
@@ -595,7 +604,7 @@ export function LessonPreparation() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 p-6">
+    <div className="min-h-screen p-6" style={{ background: backgroundGradient }}>
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="flex justify-between items-center mb-8">
@@ -621,14 +630,20 @@ export function LessonPreparation() {
               <>
                 <button
                   onClick={handleSaveLesson}
-                  className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-semibold flex items-center gap-2"
+                  className="text-white px-4 py-2 rounded-lg font-semibold flex items-center gap-2 transition-colors"
+                  style={{ background: accentGradient }}
+                  onMouseEnter={(e) => e.currentTarget.style.opacity = '0.9'}
+                  onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
                 >
                   <Save size={18} />
                   Salvar
                 </button>
                 <button
                   onClick={handlePublishLesson}
-                  className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-semibold flex items-center gap-2"
+                  className="text-white px-4 py-2 rounded-lg font-semibold flex items-center gap-2 transition-colors"
+                  style={{ background: accentGradient }}
+                  onMouseEnter={(e) => e.currentTarget.style.opacity = '0.9'}
+                  onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
                 >
                   <Globe size={18} />
                   Publicar no Curso
@@ -648,7 +663,15 @@ export function LessonPreparation() {
                 placeholder="Buscar casos ou aulas..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full pl-10 pr-4 py-3 rounded-lg text-white focus:outline-none focus:ring-2"
+                style={{ 
+                  background: colors.background.secondary, 
+                  border: `1px solid ${colors.border.secondary}`,
+                  color: colors.text.primary,
+                  placeholderColor: colors.text.tertiary
+                }}
+                onFocus={(e) => e.currentTarget.style.borderColor = colors.primary}
+                onBlur={(e) => e.currentTarget.style.borderColor = colors.border.secondary}
               />
             </div>
           </div>
@@ -656,14 +679,18 @@ export function LessonPreparation() {
 
         {/* Tabs */}
         <div className="mb-6">
-          <div className="flex gap-4 border-b border-slate-700">
+          <div className="flex gap-4 border-b" style={{ borderColor: colors.border.secondary }}>
             <button 
               onClick={() => setActiveTab('cases')}
               className={`pb-3 px-4 font-semibold transition-colors ${
                 activeTab === 'cases'
-                  ? 'text-blue-400 border-b-2 border-blue-400'
+                  ? 'text-white'
                   : 'text-gray-400 hover:text-white'
               }`}
+              style={activeTab === 'cases' ? { 
+                color: colors.text.primary, 
+                borderBottom: `2px solid ${colors.primary}` 
+              } : { color: colors.text.tertiary }}
             >
               📁 Casos Clínicos ({cases.length})
             </button>
@@ -671,9 +698,13 @@ export function LessonPreparation() {
               onClick={() => setActiveTab('lessons')}
               className={`pb-3 px-4 font-semibold transition-colors ${
                 activeTab === 'lessons'
-                  ? 'text-blue-400 border-b-2 border-blue-400'
+                  ? 'text-white'
                   : 'text-gray-400 hover:text-white'
               }`}
+              style={activeTab === 'lessons' ? { 
+                color: colors.text.primary, 
+                borderBottom: `2px solid ${colors.primary}` 
+              } : { color: colors.text.tertiary }}
             >
               📚 Minhas Aulas ({lessons.length})
             </button>
@@ -681,9 +712,13 @@ export function LessonPreparation() {
               onClick={() => setActiveTab('slides')}
               className={`pb-3 px-4 font-semibold transition-colors ${
                 activeTab === 'slides'
-                  ? 'text-blue-400 border-b-2 border-blue-400'
+                  ? 'text-white'
                   : 'text-gray-400 hover:text-white'
               }`}
+              style={activeTab === 'slides' ? { 
+                color: colors.text.primary, 
+                borderBottom: `2px solid ${colors.primary}` 
+              } : { color: colors.text.tertiary }}
             >
               📊 Preparação de Slides ({slides.length})
             </button>
@@ -691,9 +726,13 @@ export function LessonPreparation() {
               onClick={() => setActiveTab('flipped')}
               className={`pb-3 px-4 font-semibold transition-colors ${
                 activeTab === 'flipped'
-                  ? 'text-blue-400 border-b-2 border-blue-400'
+                  ? 'text-white'
                   : 'text-gray-400 hover:text-white'
               }`}
+              style={activeTab === 'flipped' ? { 
+                color: colors.text.primary, 
+                borderBottom: `2px solid ${colors.primary}` 
+              } : { color: colors.text.tertiary }}
             >
               🔄 Sala de Aula Invertida ({flippedLessons.length})
             </button>
@@ -701,15 +740,23 @@ export function LessonPreparation() {
               onClick={() => setActiveTab('quizzes')}
               className={`pb-3 px-4 font-semibold transition-colors ${
                 activeTab === 'quizzes'
-                  ? 'text-blue-400 border-b-2 border-blue-400'
+                  ? 'text-white'
                   : 'text-gray-400 hover:text-white'
               }`}
+              style={activeTab === 'quizzes' ? { 
+                color: colors.text.primary, 
+                borderBottom: `2px solid ${colors.primary}` 
+              } : { color: colors.text.tertiary }}
             >
               📝 Geração de Quizzes ({quizzes.length})
             </button>
             {editingLesson && (
               <button 
-                className="pb-3 px-4 font-semibold text-blue-400 border-b-2 border-blue-400"
+                className="pb-3 px-4 font-semibold"
+                style={{ 
+                  color: colors.text.primary, 
+                  borderBottom: `2px solid ${colors.primary}` 
+                }}
               >
                 ✏️ Editor Científico
               </button>
@@ -772,11 +819,18 @@ export function LessonPreparation() {
             {filteredLessons.map((lesson) => (
               <div
                 key={lesson.id}
-                className="bg-slate-800 rounded-xl p-6 border border-slate-700 hover:border-blue-500 transition-all"
+                className="rounded-xl p-6 transition-all"
+                style={cardStyle}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.borderColor = colors.primary
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.borderColor = colors.border.secondary
+                }}
               >
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex items-start gap-4">
-                    <div className="w-12 h-12 bg-blue-600 rounded-lg flex items-center justify-center">
+                    <div className="w-12 h-12 rounded-lg flex items-center justify-center" style={{ background: accentGradient }}>
                       <Presentation className="text-white" size={24} />
                     </div>
                     <div>
@@ -811,13 +865,23 @@ export function LessonPreparation() {
                 <div className="flex gap-3 mt-4">
                   <button 
                     onClick={() => handleEditLesson(lesson.id)}
-                    className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg font-semibold text-sm"
+                    className="flex-1 text-white py-2 rounded-lg font-semibold text-sm transition-colors"
+                    style={{ background: accentGradient }}
+                    onMouseEnter={(e) => e.currentTarget.style.opacity = '0.9'}
+                    onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
                   >
                     Editar
                   </button>
                   <button 
                     onClick={() => handleViewLesson(lesson.id)}
-                    className="flex-1 bg-slate-700 hover:bg-slate-600 text-white py-2 rounded-lg font-semibold text-sm"
+                    className="flex-1 text-white py-2 rounded-lg font-semibold text-sm transition-colors"
+                    style={{ background: colors.background.secondary, border: `1px solid ${colors.border.secondary}` }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.background = colors.background.card
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.background = colors.background.secondary
+                    }}
                   >
                     Visualizar
                   </button>
