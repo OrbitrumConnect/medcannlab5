@@ -852,6 +852,7 @@ export const useMedCannLabConversation = () => {
                 category: 'slides',
                 file_type: 'slide',
                 author: user.name || user.email,
+                uploaded_by: user.id,
                 summary: slideContent.substring(0, 200) || '',
                 tags: ['slide', 'aula', 'pedagogico', 'ai-generated'],
                 keywords: ['slide', 'presentation', 'ai'],

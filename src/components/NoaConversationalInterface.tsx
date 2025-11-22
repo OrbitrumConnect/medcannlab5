@@ -767,6 +767,7 @@ const NoaConversationalInterface: React.FC<NoaConversationalInterfaceProps> = ({
         file_url: finalUrl,
         file_size: uploadedFile.size,
         author: user?.name || 'Usuário',
+        uploaded_by: user?.id,
         category: dbCategory,
         target_audience: uploadUserType.length > 0 ? uploadUserType : ['professional', 'student'],
         tags: ['upload', 'chat-upload', uploadCategory, uploadArea],

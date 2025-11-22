@@ -52,7 +52,10 @@ export class RAGSystem {
       // 4. Gerar embeddings
       const embeddings = await this.localLLM.generateEmbeddings(text)
       
-      // 5. Salvar no banco de dados
+      // 5. Obter usuário atual para uploaded_by
+      const { data: { user } } = await supabase.auth.getUser()
+      
+      // 6. Salvar no banco de dados
       const { data, error } = await supabase
         .from('documents')
         .insert({
@@ -61,7 +64,8 @@ export class RAGSystem {
           summary,
           keywords,
           medical_terms: keywords,
-          embeddings: JSON.stringify(embeddings)
+          embeddings: JSON.stringify(embeddings),
+          uploaded_by: user?.id || null
         })
         .select()
         .single()

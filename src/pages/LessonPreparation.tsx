@@ -346,6 +346,7 @@ export function LessonPreparation() {
         category: 'slides',
         file_type: 'slide',
         author: user.name || user.email,
+        uploaded_by: user.id,
         summary: contentPreview.substring(0, 200),
         tags: ['slide', 'aula', 'pedagogico'],
         keywords: ['slide', 'presentation'],

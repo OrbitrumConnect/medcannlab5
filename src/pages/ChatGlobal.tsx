@@ -473,36 +473,71 @@ const ChatGlobal: React.FC = () => {
   // Carregar usuários online
   const loadOnlineUsers = async () => {
     try {
+      // Tentar buscar com estrutura antiga (user_id) primeiro
       const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString()
-      const { data, error } = await supabase
+      let data: any[] = []
+      let error: any = null
+
+      // Tentar com user_id (estrutura antiga)
+      const result1 = await supabase
         .from('chat_messages')
         .select('user_id, user_name, user_avatar, crm, specialty, is_online, created_at')
         .gte('created_at', fiveMinutesAgo)
         .order('created_at', { ascending: false })
 
-      if (error) {
-        console.warn('Erro ao carregar usuários online (fallback para modo offline):', error)
-        loadOnlineUsersOffline()
-        return
+      if (result1.error) {
+        // Se falhar, tentar com sender_id (estrutura nova)
+        const result2 = await supabase
+          .from('chat_messages')
+          .select('sender_id, created_at')
+          .gte('created_at', fiveMinutesAgo)
+          .order('created_at', { ascending: false })
+          .limit(50)
+
+        if (result2.error) {
+          console.warn('Erro ao carregar usuários online (fallback para modo offline):', result2.error)
+          loadOnlineUsersOffline()
+          return
+        }
+
+        // Se usar sender_id, buscar dados dos usuários na tabela users
+        const senderIds = [...new Set((result2.data || []).map((msg: any) => msg.sender_id).filter(Boolean))]
+        if (senderIds.length > 0) {
+          const { data: usersData } = await supabase
+            .from('users')
+            .select('id, name, crm, specialty')
+            .in('id', senderIds)
+
+          data = (usersData || []).map((u: any) => ({
+            user_id: u.id,
+            user_name: u.name || 'Usuário',
+            user_avatar: 'U',
+            crm: u.crm || '',
+            specialty: u.specialty || '',
+            is_online: true
+          }))
+        }
+      } else {
+        data = result1.data || []
       }
 
-      const uniqueUsers = (data || [])
+      const uniqueUsers = data
         .filter(msg => msg.is_online !== false)
         .reduce((acc, msg) => {
-          if (!acc.find(user => user.id === msg.user_id)) {
+          if (!acc.find((user: any) => user.id === msg.user_id)) {
             acc.push({
               id: msg.user_id,
               name: msg.user_name,
-              avatar: msg.user_avatar,
-              crm: msg.crm,
-              specialty: msg.specialty,
+              avatar: msg.user_avatar || 'U',
+              crm: msg.crm || '',
+              specialty: msg.specialty || '',
               status: 'online'
             })
           }
           return acc
         }, [] as any[])
 
-      if (user && !uniqueUsers.find(u => u.id === user.id)) {
+      if (user && !uniqueUsers.find((u: any) => u.id === user.id)) {
         uniqueUsers.unshift({
           id: user.id,
           name: user.name || 'Usuário',

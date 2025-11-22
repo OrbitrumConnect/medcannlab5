@@ -423,6 +423,7 @@ const Library: React.FC = () => {
         file_url: finalUrl,
         file_size: file.size,
         author: user?.name || 'Usuário',
+        uploaded_by: user?.id,
         category: documentCategory,
         target_audience: targetAudience,
         tags: tags,
