@@ -4,10 +4,10 @@ import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
 import { useNoaPlatform } from '../contexts/NoaPlatformContext'
 import { 
-  BookOpen, FileText, Users, Clock, Search, Plus, Video, Presentation, 
-  Edit, Save, Globe, Book, Upload, Download, ArrowLeft, 
-  RotateCcw, HelpCircle, CheckCircle, XCircle, Image, File, 
-  Layout, Type, Sparkles, Brain
+  BookOpen, FileText, Users, Clock, Search, Plus, Video, 
+  Edit, Download, Globe, Upload, ArrowLeft, 
+  AlertCircle, CheckCircle, XCircle, Image, 
+  Star, Brain
 } from 'lucide-react'
 import {
   backgroundGradient,
@@ -636,7 +636,7 @@ export function LessonPreparation() {
                   onMouseEnter={(e) => e.currentTarget.style.opacity = '0.9'}
                   onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
                 >
-                  <Save size={18} />
+                  <Download size={18} />
                   Salvar
                 </button>
                 <button
@@ -669,7 +669,6 @@ export function LessonPreparation() {
                   background: colors.background.secondary, 
                   border: `1px solid ${colors.border.secondary}`,
                   color: colors.text.primary,
-                  placeholderColor: colors.text.tertiary
                 }}
                 onFocus={(e) => e.currentTarget.style.borderColor = colors.primary}
                 onBlur={(e) => e.currentTarget.style.borderColor = colors.border.secondary}
@@ -832,7 +831,7 @@ export function LessonPreparation() {
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex items-start gap-4">
                     <div className="w-12 h-12 rounded-lg flex items-center justify-center" style={{ background: accentGradient }}>
-                      <Presentation className="text-white" size={24} />
+                      <FileText className="text-white" size={24} />
                     </div>
                     <div>
                       <h3 className="text-lg font-bold text-white mb-1">{lesson.title}</h3>
@@ -1037,7 +1036,7 @@ export function LessonPreparation() {
                 onClick={handleSaveLesson}
                 className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold flex items-center gap-2"
               >
-                <Save size={20} />
+                <Download size={20} />
                 Salvar Rascunho
               </button>
               <button
@@ -1110,7 +1109,7 @@ export function LessonPreparation() {
                     >
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2 text-sm font-semibold text-white">
-                          <Layout size={16} />
+                          <FileText size={16} />
                           {template.label}
                         </div>
                         {isSelected && <CheckCircle className="w-5 h-5 text-[#00F5A0]" />}
@@ -1128,7 +1127,7 @@ export function LessonPreparation() {
                   <div className="flex items-center justify-between mb-3">
                     <h3 className="text-xs font-semibold text-white uppercase tracking-wide">Meus slides ({slides.length})</h3>
                     <button onClick={loadSlides} className="text-xs text-slate-400 flex items-center gap-1">
-                      <RotateCcw size={14} />
+                      <ArrowLeft size={14} />
                       Recarregar
                     </button>
                   </div>
@@ -1177,7 +1176,7 @@ export function LessonPreparation() {
                               <p className="text-xs text-slate-400">Ajuste o layout e veja como o slide será apresentado.</p>
                             </div>
                             <div className="flex items-center gap-2 text-xs text-slate-300">
-                              <Sparkles size={14} />
+                              <Star size={14} />
                               {slide.aiDraft ? 'Rascunho gerado pela IA' : 'Edição manual'}
                             </div>
                           </div>
@@ -1366,7 +1365,7 @@ export function LessonPreparation() {
                           disabled={isGeneratingSlide}
                           className="bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white px-4 py-2 rounded-lg font-semibold flex items-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
                         >
-                          <Sparkles size={18} />
+                          <Star size={18} />
                           {isGeneratingSlide ? 'Gerando rascunho...' : 'Gerar texto com IA'}
                         </button>
                         <button
@@ -1479,7 +1478,7 @@ export function LessonPreparation() {
               {/* Post-Class Activity */}
               <div className="bg-slate-800 rounded-xl p-6">
                 <div className="flex items-center gap-2 mb-4">
-                  <RotateCcw className="w-5 h-5 text-purple-400" />
+                  <ArrowLeft className="w-5 h-5 text-purple-400" />
                   <h3 className="text-lg font-semibold text-white">Atividade Pós-Aula</h3>
                 </div>
                 <textarea
@@ -1634,7 +1633,7 @@ export function LessonPreparation() {
                               />
                             </div>
                             <div className="space-y-2">
-                              {question.options.map((option, oIndex) => (
+                              {question.options.map((option: string, oIndex: number) => (
                                 <div key={oIndex} className="flex items-center gap-2">
                                   <input
                                     type="radio"
@@ -1696,7 +1695,7 @@ export function LessonPreparation() {
                           }}
                           className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg font-semibold flex items-center justify-center gap-2"
                         >
-                          <Save size={18} />
+                          <Download size={18} />
                           Salvar Quiz
                         </button>
                         <button 
@@ -1722,7 +1721,7 @@ export function LessonPreparation() {
                           }}
                           className="flex-1 bg-purple-600 hover:bg-purple-700 text-white py-2 rounded-lg font-semibold flex items-center justify-center gap-2"
                         >
-                          <Sparkles size={18} />
+                          <Star size={18} />
                           Gerar com IA
                         </button>
                       </div>
@@ -1732,7 +1731,7 @@ export function LessonPreparation() {
               </div>
             ) : (
               <div className="bg-slate-800 rounded-xl p-12 text-center">
-                <HelpCircle className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+                <AlertCircle className="w-16 h-16 text-gray-400 mx-auto mb-4" />
                 <p className="text-gray-400 mb-4">Nenhum quiz criado ainda</p>
                 <button
                   onClick={() => {
