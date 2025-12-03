@@ -375,13 +375,13 @@ const Landing: React.FC = () => {
             
             {/* Imagem do Cérebro - Redimensionada com Partículas */}
             <div className="flex-shrink-0 lg:flex-1 lg:max-w-md relative">
-              <div className="relative w-64 h-64 md:w-80 md:h-80 lg:w-full lg:h-auto mx-auto" ref={brainParticlesRef}>
+              <div className="relative w-64 h-64 md:w-80 md:h-80 lg:w-full lg:h-auto mx-auto min-h-[256px] md:min-h-[320px]" ref={brainParticlesRef}>
                 {/* Canvas de partículas - micropartículas sutis piscando */}
                 <AnimatedParticles 
-                  count={40}
+                  count={50}
                   colors={['#00D9FF', '#FFD33D', '#00C16A']} // Azul neon, amarelo, verde
-                  minSize={0.3}
-                  maxSize={1.2}
+                  minSize={0.5}
+                  maxSize={1.5}
                   containerRef={brainParticlesRef}
                 />
                 <img 
@@ -464,7 +464,7 @@ const Landing: React.FC = () => {
       {/* Seção: Declaração de Integração Cosmoética */}
       <section id="missao-humanitaria" className="py-16" style={{ backgroundColor: '#0A192F' }}>
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="max-w-4xl mx-auto">
+          <div className="max-w-7xl mx-auto">
             <div className="text-center mb-12">
               <div className="inline-flex items-center justify-center w-20 h-20 rounded-full mb-6" style={{ backgroundColor: 'rgba(0, 193, 106, 0.2)' }}>
                 <Heart className="w-10 h-10" style={{ color: '#00C16A' }} />
@@ -480,9 +480,9 @@ const Landing: React.FC = () => {
               </p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
               {/* Plurinacionalidade */}
-              <div className="bg-slate-800/50 rounded-xl p-5 border border-slate-700/50 flex flex-col h-full">
+              <div className="bg-slate-800/50 rounded-xl p-6 border border-slate-700/50 flex flex-col h-full">
                 <div className="flex items-start space-x-3 mb-3">
                   <div className="flex-shrink-0 w-10 h-10 rounded-lg flex items-center justify-center" style={{ backgroundColor: 'rgba(0, 193, 106, 0.2)' }}>
                     <Globe className="w-5 h-5" style={{ color: '#00C16A' }} />
@@ -500,7 +500,7 @@ const Landing: React.FC = () => {
               </div>
 
               {/* Alianças Afetivas */}
-              <div className="bg-slate-800/50 rounded-xl p-5 border border-slate-700/50 flex flex-col h-full">
+              <div className="bg-slate-800/50 rounded-xl p-6 border border-slate-700/50 flex flex-col h-full">
                 <div className="flex items-start space-x-3 mb-3">
                   <div className="flex-shrink-0 w-10 h-10 rounded-lg flex items-center justify-center" style={{ backgroundColor: 'rgba(0, 193, 106, 0.2)' }}>
                     <Heart className="w-5 h-5" style={{ color: '#00C16A' }} />
@@ -518,7 +518,7 @@ const Landing: React.FC = () => {
               </div>
 
               {/* Resistência à Homogeneização */}
-              <div className="bg-slate-800/50 rounded-xl p-5 border border-slate-700/50 flex flex-col h-full">
+              <div className="bg-slate-800/50 rounded-xl p-6 border border-slate-700/50 flex flex-col h-full">
                 <div className="flex items-start space-x-3 mb-3">
                   <div className="flex-shrink-0 w-10 h-10 rounded-lg flex items-center justify-center" style={{ backgroundColor: 'rgba(0, 193, 106, 0.2)' }}>
                     <Shield className="w-5 h-5" style={{ color: '#00C16A' }} />
@@ -536,7 +536,7 @@ const Landing: React.FC = () => {
               </div>
 
               {/* Adiar o Fim do Mundo */}
-              <div className="bg-gradient-to-r from-green-800/30 to-blue-800/30 rounded-xl p-5 border-2 flex flex-col h-full" style={{ borderColor: 'rgba(0, 193, 106, 0.5)' }}>
+              <div className="bg-gradient-to-r from-green-800/30 to-blue-800/30 rounded-xl p-6 border-2 flex flex-col h-full" style={{ borderColor: 'rgba(0, 193, 106, 0.5)' }}>
                 <div className="flex items-start space-x-3 mb-3">
                   <div className="flex-shrink-0 w-10 h-10 rounded-lg flex items-center justify-center" style={{ backgroundColor: 'rgba(0, 193, 106, 0.3)' }}>
                     <Brain className="w-5 h-5" style={{ color: '#00C16A' }} />

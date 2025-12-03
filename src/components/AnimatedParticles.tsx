@@ -66,7 +66,7 @@ const AnimatedParticles: React.FC<AnimatedParticlesProps> = ({
           y: Math.random() * height,
           size: Math.random() * (maxSize - minSize) + minSize,
           color: colors[Math.floor(Math.random() * colors.length)],
-          opacity: Math.random() * 0.4 + 0.2, // Opacidade entre 0.2 e 0.6 (mais sutil)
+          opacity: Math.random() * 0.5 + 0.4, // Opacidade entre 0.4 e 0.9 (mais visível)
           speedX: (Math.random() - 0.5) * 0.15, // Movimento mais lento
           speedY: (Math.random() - 0.5) * 0.15,
           twinkleSpeed: Math.random() * 0.015 + 0.008 // Velocidade de piscar mais suave
@@ -92,13 +92,13 @@ const AnimatedParticles: React.FC<AnimatedParticlesProps> = ({
         if (particle.y < 0) particle.y = height
         if (particle.y > height) particle.y = 0
 
-        // Efeito de piscar (twinkle) - mais sutil
+        // Efeito de piscar (twinkle) - mais visível
         particle.opacity += particle.twinkleSpeed
-        if (particle.opacity > 0.8) {
-          particle.opacity = 0.8
+        if (particle.opacity > 1.0) {
+          particle.opacity = 1.0
           particle.twinkleSpeed = -particle.twinkleSpeed
-        } else if (particle.opacity < 0.15) {
-          particle.opacity = 0.15
+        } else if (particle.opacity < 0.3) {
+          particle.opacity = 0.3
           particle.twinkleSpeed = -particle.twinkleSpeed
         }
 
@@ -108,8 +108,8 @@ const AnimatedParticles: React.FC<AnimatedParticlesProps> = ({
         ctx.fillStyle = particle.color
         ctx.globalAlpha = particle.opacity
         
-        // Brilho sutil e fino
-        ctx.shadowBlur = 2
+        // Brilho mais visível
+        ctx.shadowBlur = 4
         ctx.shadowColor = particle.color
         ctx.fill()
         
@@ -135,7 +135,7 @@ const AnimatedParticles: React.FC<AnimatedParticlesProps> = ({
     <canvas
       ref={canvasRef}
       className="absolute inset-0 pointer-events-none"
-      style={{ zIndex: 1 }}
+      style={{ zIndex: 5 }}
     />
   )
 }
