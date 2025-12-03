@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MedCannLab 3.0 - Plataforma de Avaliação Clínica e Ensino Médico</title>
+    <meta name="description" content="Plataforma avançada de avaliação clínica, ensino médico e IA residente para profissionais da saúde" />
+    <meta name="keywords" content="medicina, cannabis medicinal, avaliação clínica, ensino médico, IA médica" />
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="/manifest.json" />
+    <meta name="theme-color" content="#3b82f6" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="MedCannLab" />
+    
+    <!-- Apple Touch Icons -->
+    <link rel="apple-touch-icon" href="/brain.png" />
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Merriweather:wght@300;400;700&display=swap" rel="stylesheet">
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+    
+    <!-- Service Worker Registration -->
+    <script>
+      // Desabilitar Service Worker em desenvolvimento para evitar conflitos com HMR
+      // Verificar se está em desenvolvimento (localhost ou 127.0.0.1)
+      const isDevelopment = window.location.hostname === 'localhost' || 
+                            window.location.hostname === '127.0.0.1' ||
+                            window.location.hostname.includes('localhost')
+      
+      if ('serviceWorker' in navigator) {
+        if (isDevelopment) {
+          // Em desenvolvimento, desregistrar qualquer Service Worker existente
+          navigator.serviceWorker.getRegistrations().then((registrations) => {
+            registrations.forEach((registration) => {
+              registration.unregister().then(() => {
+                console.log('🔧 Service Worker desregistrado em desenvolvimento (evita conflitos com HMR)')
+              })
+            })
+          })
+        } else {
+          // Em produção, registrar o Service Worker
+          window.addEventListener('load', () => {
+            navigator.serviceWorker.register('/sw.js')
+              .then((registration) => {
+                console.log('✅ Service Worker registrado:', registration.scope)
+                
+                // Verificar atualizações periodicamente
+                setInterval(() => {
+                  registration.update()
+                }, 60000) // A cada 1 minuto
+                
+                // Forçar atualização imediata se houver nova versão
+                registration.addEventListener('updatefound', () => {
+                  const newWorker = registration.installing
+                  newWorker.addEventListener('statechange', () => {
+                    if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                      // Nova versão disponível, recarregar página
+                      console.log('🔄 Nova versão do Service Worker disponível, recarregando...')
+                      window.location.reload()
+                    }
+                  })
+                })
+              })
+              .catch((error) => {
+                console.warn('⚠️ Erro ao registrar Service Worker:', error)
+              })
+          })
+        }
+      }
+    </script>
+  </body>
+</html>

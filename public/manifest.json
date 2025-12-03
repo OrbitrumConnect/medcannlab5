@@ -1,0 +1,44 @@
+{
+  "name": "MedCannLab 3.0",
+  "short_name": "MedCannLab",
+  "description": "Plataforma de Avaliação Clínica e Ensino Médico com IA Residente",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0f172a",
+  "theme_color": "#3b82f6",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/brain.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/brain.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ],
+  "categories": ["medical", "health", "education"],
+  "screenshots": [],
+  "shortcuts": [
+    {
+      "name": "Avaliação Clínica",
+      "short_name": "Avaliação",
+      "description": "Iniciar avaliação clínica inicial",
+      "url": "/app/clinica/paciente/agendamentos",
+      "icons": [{ "src": "/brain.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Chat com Nôa",
+      "short_name": "Chat",
+      "description": "Conversar com a IA Residente",
+      "url": "/app/chat-noa-esperanca",
+      "icons": [{ "src": "/brain.png", "sizes": "192x192" }]
+    }
+  ],
+  "prefer_related_applications": false
+}
+

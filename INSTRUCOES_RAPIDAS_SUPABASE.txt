@@ -1,0 +1,72 @@
+===========================================
+INSTRUÇÕES RÁPIDAS - SUPABASE
+===========================================
+
+⚠️ IMPORTANTE: Execute APENAS arquivos .sql no SQL Editor!
+   NÃO execute arquivos .md ou .txt
+
+===========================================
+PASSO 1: EXECUTAR CRIAR_VIEWS_CORRIGIDO.sql
+===========================================
+
+1. Abra o Supabase Dashboard
+2. Vá em "SQL Editor"
+3. Clique em "New Query"
+4. Abra o arquivo: CRIAR_VIEWS_CORRIGIDO.sql
+5. Copie TODO o conteúdo do arquivo
+6. Cole no SQL Editor
+7. Clique em "Run" (ou pressione Ctrl+Enter)
+
+Este script cria:
+- Função RPC: get_unread_notifications_count
+- View: v_doctor_dashboard_kpis
+- View: v_next_appointments
+
+===========================================
+PASSO 2: EXECUTAR CRIAR_TABELA_LESSON_CONTENT.sql
+===========================================
+
+1. No mesmo SQL Editor, clique em "New Query"
+2. Abra o arquivo: CRIAR_TABELA_LESSON_CONTENT.sql
+3. Copie TODO o conteúdo do arquivo
+4. Cole no SQL Editor
+5. Clique em "Run"
+
+Este script cria:
+- Tabela: lesson_content (para armazenar conteúdo de aulas)
+
+===========================================
+VERIFICAÇÃO (OPCIONAL)
+===========================================
+
+Execute este SQL para verificar se tudo foi criado:
+
+SELECT 
+  'Views' as tipo,
+  viewname as nome
+FROM pg_views 
+WHERE schemaname = 'public' 
+AND viewname IN ('v_doctor_dashboard_kpis', 'v_next_appointments')
+
+UNION ALL
+
+SELECT 
+  'Funções RPC' as tipo,
+  routine_name as nome
+FROM information_schema.routines 
+WHERE routine_schema = 'public' 
+AND routine_name = 'get_unread_notifications_count'
+
+UNION ALL
+
+SELECT 
+  'Tabelas' as tipo,
+  table_name as nome
+FROM information_schema.tables 
+WHERE table_schema = 'public' 
+AND table_name = 'lesson_content';
+
+===========================================
+PRONTO! ✅
+===========================================
+
