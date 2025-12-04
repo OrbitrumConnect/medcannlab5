@@ -189,9 +189,9 @@ const Layout: React.FC = () => {
           <div 
             className="flex flex-col min-h-screen transition-all duration-300"
             style={{
-              marginLeft: isMobile ? '0' : isSidebarCollapsed ? '80px' : '320px',
-              width: isMobile ? '100%' : `calc(100% - ${isSidebarCollapsed ? '80px' : '320px'})`,
-              maxWidth: isMobile ? '100%' : `calc(100% - ${isSidebarCollapsed ? '80px' : '320px'})`
+              marginLeft: isMobile ? '0' : isSidebarCollapsed ? '72px' : '288px',
+              width: isMobile ? '100%' : `calc(100% - ${isSidebarCollapsed ? '72px' : '288px'})`,
+              maxWidth: isMobile ? '100%' : `calc(100% - ${isSidebarCollapsed ? '72px' : '288px'})`
             }}
           >
             <Header />
@@ -206,8 +206,8 @@ const Layout: React.FC = () => {
           
           {/* Footer - Fora do container principal para ficar colado ao sidebar */}
           <Footer 
-            marginLeft={isMobile ? '0' : isSidebarCollapsed ? '80px' : '320px'}
-            width={isMobile ? '100%' : `calc(100% - ${isSidebarCollapsed ? '80px' : '320px'})`}
+            marginLeft={isMobile ? '0' : isSidebarCollapsed ? '72px' : '288px'}
+            width={isMobile ? '100%' : `calc(100% - ${isSidebarCollapsed ? '72px' : '288px'})`}
           />
           
           {/* Interface Conversacional Nôa Esperança */}

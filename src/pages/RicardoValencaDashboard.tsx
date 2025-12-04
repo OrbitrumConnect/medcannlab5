@@ -2536,16 +2536,6 @@ const RicardoValencaDashboard: React.FC = () => {
 
   const renderPrescricoes = () => (
     <div className="space-y-6">
-      <div className="bg-gradient-to-r from-blue-700 via-indigo-700 to-slate-800 rounded-xl p-6 text-white border border-slate-700/40">
-        <h2 className="text-2xl font-bold mb-2 flex items-center gap-2">
-          <FileText className="w-6 h-6" />
-          Prescrições Integrativas
-        </h2>
-        <p className="text-blue-100 text-sm md:text-base max-w-3xl">
-          Acompanhe os protocolos terapêuticos, selecione um paciente e registre novas prescrições integradas às cinco racionalidades médicas.
-        </p>
-      </div>
-
       <div className="flex flex-col xl:flex-row gap-6">
         <div className="bg-slate-900/70 border border-slate-800 rounded-2xl p-5 space-y-4 w-full xl:w-[320px] flex-shrink-0">
           <div className="flex items-center justify-between gap-2">
@@ -2649,16 +2639,6 @@ const RicardoValencaDashboard: React.FC = () => {
 
   const renderPacientes = () => (
     <div className="space-y-6">
-      <div className="bg-gradient-to-r from-green-800 to-green-700 rounded-lg p-6">
-        <h2 className="text-2xl font-bold text-white mb-2 flex items-center space-x-2">
-          <Users className="w-6 h-6" />
-          <span>👥 Meus Pacientes</span>
-        </h2>
-        <p className="text-green-200">
-          Gerencie prontuários e acompanhe a evolução dos seus pacientes
-        </p>
-      </div>
-
       {/* Estatísticas */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <div className="bg-slate-800/80 rounded-lg p-4 border border-slate-700">
@@ -4150,30 +4130,12 @@ const RicardoValencaDashboard: React.FC = () => {
 
   const renderRelatoriosClinicos = () => (
     <div className="space-y-6">
-      <div className="bg-gradient-to-r from-amber-800 to-amber-700 rounded-lg p-6">
-        <h2 className="text-2xl font-bold text-white mb-2 flex items-center space-x-2">
-          <BarChart3 className="w-6 h-6" />
-          <span>📊 Relatórios Clínicos</span>
-        </h2>
-        <p className="text-amber-200">
-          Visualize e gerencie relatórios clínicos gerados pela IA Residente Nôa Esperança
-        </p>
-      </div>
       <ClinicalReports />
     </div>
   )
 
   const renderChatProfissionais = () => (
     <div className="space-y-6">
-      <div className="bg-gradient-to-r from-indigo-800 to-indigo-700 rounded-lg p-6">
-        <h2 className="text-2xl font-bold text-white mb-2 flex items-center space-x-2">
-          <MessageCircle className="w-6 h-6" />
-          <span>Chat com Profissionais</span>
-        </h2>
-        <p className="text-indigo-200">
-          Comunicação segura entre consultórios da plataforma MedCannLab
-        </p>
-      </div>
       <ProfessionalChatSystem />
     </div>
   )

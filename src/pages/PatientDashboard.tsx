@@ -1836,9 +1836,10 @@ const PatientDashboard: React.FC = () => {
     <div className="flex w-full min-h-screen text-white" style={{ background: backgroundGradient }}>
       {/* PatientSidebar - Integrado ao Layout - Começa do topo */}
       <div 
-        className={`${isSidebarCollapsed ? 'w-20' : 'w-64'} flex-shrink-0 overflow-y-auto transition-all duration-300 fixed left-0 top-0 bottom-0 z-40`} 
+        className="flex-shrink-0 overflow-y-auto transition-all duration-300 fixed left-0 top-0 bottom-0 z-40"
         style={{ 
-          background: backgroundGradient
+          background: backgroundGradient,
+          width: isSidebarCollapsed ? '72px' : '230px'
         }}
       >
         <PatientSidebar
@@ -1875,13 +1876,14 @@ const PatientDashboard: React.FC = () => {
       </div>
 
       {/* Main Content Area */}
-      <div
-        className={`flex-1 transition-all duration-300 flex flex-col ${isSidebarCollapsed ? 'ml-20' : 'ml-64'}`}
-        style={{
-          overflow: activeTab === 'chat' || activeTab === 'chat-noa' || activeTab === 'meus-agendamentos' ? 'hidden' : 'auto',
-          minHeight: '100vh',
-          paddingBottom: '80px' // Espaço para o Footer fixo
-        }}
+          <div
+            className="flex-1 transition-all duration-300 flex flex-col"
+            style={{
+              marginLeft: isSidebarCollapsed ? '72px' : '230px',
+              overflow: activeTab === 'chat' || activeTab === 'chat-noa' || activeTab === 'meus-agendamentos' ? 'hidden' : 'auto',
+              minHeight: '100vh',
+              paddingBottom: '80px' // Espaço para o Footer fixo
+            }}
       >
       {/* Aviso de Visualização (Admin) */}
       {isViewingAsPatient && (
@@ -1961,10 +1963,10 @@ const PatientDashboard: React.FC = () => {
       {/* Footer - Fixo na parte inferior, colado ao sidebar */}
       <div
         className="fixed bottom-0 right-0 transition-all duration-300 z-30"
-        style={{
-          left: isSidebarCollapsed ? '80px' : '256px',
-          width: isSidebarCollapsed ? 'calc(100% - 80px)' : 'calc(100% - 256px)'
-        }}
+            style={{
+              left: isSidebarCollapsed ? '72px' : '230px',
+              width: isSidebarCollapsed ? 'calc(100% - 72px)' : 'calc(100% - 230px)'
+            }}
       >
         <Footer 
           marginLeft="0"

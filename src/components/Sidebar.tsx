@@ -113,6 +113,13 @@ const Sidebar: React.FC<SidebarProps> = ({
     ]
 
     const professionalItems = [
+      // MAIN
+      {
+        name: '📊 Meu Dashboard',
+        href: '/app/professional-my-dashboard',
+        icon: LayoutDashboard,
+        section: 'main'
+      },
       // OUTROS
       {
         name: '💬 Fórum Cann Matrix',
@@ -125,12 +132,6 @@ const Sidebar: React.FC<SidebarProps> = ({
         href: '/app/professional-financial', 
         icon: BanknoteIcon,
         section: 'other'
-      },
-      { 
-        name: '👤 Meu Perfil', 
-        href: '/app/profile', 
-        icon: User,
-        section: 'profile'
       },
     ]
 
@@ -222,6 +223,13 @@ const Sidebar: React.FC<SidebarProps> = ({
 
   const clinicaSections: AxisSection[] = [
     {
+      id: 'prontuario-eletronico',
+      label: 'Prontuário Eletrônico',
+      description: 'Gestão completa de prontuários e pacientes',
+      icon: FileText,
+      href: '/app/clinica/profissional/pacientes'
+    },
+    {
       id: 'atendimento',
       label: 'Atendimento',
       description: 'Fluxo completo de consultas e telemedicina',
@@ -232,12 +240,6 @@ const Sidebar: React.FC<SidebarProps> = ({
       label: 'Agenda',
       description: 'Gestão de sessões e follow-ups clínicos',
       icon: Calendar
-    },
-    {
-      id: 'pacientes',
-      label: 'Pacientes',
-      description: 'Histórico, prioridades e anotações clínicas',
-      icon: Users
     },
     {
       id: 'prescricoes',
@@ -392,15 +394,14 @@ const Sidebar: React.FC<SidebarProps> = ({
       )}
       
       {/* Sidebar - Estilo do PatientSidebar */}
-      <div className={`text-white transition-all duration-300 ${
-        isCollapsed ? 'w-16 sm:w-20' : 'w-72 sm:w-80'
-      } flex flex-col fixed left-0 top-0 z-50 overflow-x-hidden ${
+      <div className={`text-white transition-all duration-300 flex flex-col fixed left-0 top-0 z-50 overflow-x-hidden ${
         mobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
-      } ${isMobile ? 'w-72 sm:w-80' : ''}`} style={{ 
+      }`} style={{ 
         background: backgroundGradient,
         top: '0.1%', 
-        height: '99.9%', 
-        maxWidth: isCollapsed ? '80px' : '320px' 
+        height: '99.9%',
+        width: isCollapsed ? '36px' : '288px',
+        maxWidth: isCollapsed ? '36px' : '288px' 
       }}>
       {/* Header - Estilo do PatientSidebar */}
       <div className={`flex items-center px-4 border-b ${isCollapsed ? 'justify-center px-2 py-4' : 'py-5'} min-h-[3.815rem] sm:min-h-[4.356rem] md:min-h-[4.905rem]`} style={{ borderColor: 'rgba(0,193,106,0.18)' }}>
@@ -460,6 +461,65 @@ const Sidebar: React.FC<SidebarProps> = ({
           return normalizedType === 'profissional' || normalizedType === 'admin'
         })() ? (
           <>
+            {/* Meu Dashboard - Apenas para Profissionais - Antes dos Eixos */}
+            {normalizedType === 'profissional' && navigationItems.some(item => (item as any).section === 'main') && (
+              <div className="mb-6 pb-4 border-b" style={{ borderColor: 'rgba(0,193,106,0.18)' }}>
+                {navigationItems
+                  .filter(item => (item as any).section === 'main')
+                  .map((item) => {
+                    const Icon = item.icon
+                    const itemIsActive = isActive(item.href)
+                    return (
+                      <Link
+                        key={item.name}
+                        to={item.href}
+                        className={`flex items-center ${isCollapsed ? 'justify-center' : 'gap-3'} ${isCollapsed ? 'px-2 py-2.5' : 'px-3 py-2.5'} rounded-lg transition-all mb-1`}
+                        style={{
+                          ...(itemIsActive ? {
+                            background: accentGradient,
+                            border: '1px solid rgba(0,193,106,0.35)',
+                            boxShadow: '0 4px 12px rgba(0,193,106,0.25)'
+                          } : {
+                            background: 'rgba(12, 34, 54, 0.6)',
+                            border: '1px solid rgba(0,193,106,0.08)'
+                          })
+                        }}
+                        onMouseEnter={(e) => {
+                          if (!itemIsActive) {
+                            e.currentTarget.style.background = 'rgba(0, 193, 106, 0.08)'
+                            e.currentTarget.style.borderColor = 'rgba(0,193,106,0.15)'
+                          }
+                        }}
+                        onMouseLeave={(e) => {
+                          if (!itemIsActive) {
+                            e.currentTarget.style.background = 'rgba(12, 34, 54, 0.6)'
+                            e.currentTarget.style.borderColor = 'rgba(0,193,106,0.08)'
+                          }
+                        }}
+                        onTouchStart={(e) => {
+                          if (!itemIsActive) {
+                            e.currentTarget.style.background = 'rgba(0, 193, 106, 0.08)'
+                            e.currentTarget.style.borderColor = 'rgba(0,193,106,0.15)'
+                          }
+                        }}
+                        onTouchEnd={(e) => {
+                          if (!itemIsActive) {
+                            setTimeout(() => {
+                              e.currentTarget.style.background = 'rgba(12, 34, 54, 0.6)'
+                              e.currentTarget.style.borderColor = 'rgba(0,193,106,0.08)'
+                            }, 150)
+                          }
+                        }}
+                        onClick={() => isMobile && setMobileOpen?.()}
+                      >
+                        <Icon className={`w-5 h-5 flex-shrink-0 ${itemIsActive ? 'text-white' : 'text-[#C8D6E5]'}`} />
+                        {!isCollapsed && <span className={`text-sm font-medium flex-1 ${itemIsActive ? 'text-white' : 'text-[#C8D6E5]'}`}>{item.name}</span>}
+                      </Link>
+                    )
+                  })}
+              </div>
+            )}
+
             {/* Seletor de Eixos - No Topo - Estilo do PatientSidebar */}
             <div className={`mb-6 pb-4 border-b ${isCollapsed ? 'px-2' : ''}`} style={{ borderColor: 'rgba(0,193,106,0.18)' }}>
               {!isCollapsed && (
@@ -478,9 +538,9 @@ const Sidebar: React.FC<SidebarProps> = ({
                     pesquisa: 'bg-purple-600 text-white'
                   }
 
-                  // Adicionar seções administrativas para profissionais e admins em todos os eixos
+                  // Adicionar seções administrativas apenas para admins em todos os eixos
                   const combinedSections: AxisSection[] = []
-                  if (normalizedType === 'admin' || normalizedType === 'profissional') {
+                  if (normalizedType === 'admin') {
                     adminSections.forEach((section) => {
                       if (!combinedSections.some(existing => existing.id === section.id)) {
                         combinedSections.push(section)
@@ -631,63 +691,6 @@ const Sidebar: React.FC<SidebarProps> = ({
                   )
                 })}
               </div>
-            </div>
-            
-            {/* Dashboard - Estilo do PatientSidebar */}
-            <div className="mb-2">
-              {navigationItems
-                .filter(item => (item as any).section === 'main')
-                .map((item) => {
-                  const Icon = item.icon
-                  const itemIsActive = isActive(item.href)
-                  return (
-                    <Link
-                      key={item.name}
-                      to={item.href}
-                      className={`flex items-center ${isCollapsed ? 'justify-center' : 'gap-3'} ${isCollapsed ? 'px-2 py-2.5' : 'px-3 py-2.5'} rounded-lg transition-all mb-1`}
-                      style={{
-                        ...(itemIsActive ? {
-                          background: accentGradient,
-                          border: '1px solid rgba(0,193,106,0.35)',
-                          boxShadow: '0 4px 12px rgba(0,193,106,0.25)'
-                        } : {
-                          background: 'rgba(12, 34, 54, 0.6)',
-                          border: '1px solid rgba(0,193,106,0.08)'
-                        })
-                      }}
-                      onMouseEnter={(e) => {
-                        if (!itemIsActive) {
-                          e.currentTarget.style.background = 'rgba(0, 193, 106, 0.08)'
-                          e.currentTarget.style.borderColor = 'rgba(0,193,106,0.15)'
-                        }
-                      }}
-                      onMouseLeave={(e) => {
-                        if (!itemIsActive) {
-                          e.currentTarget.style.background = 'rgba(12, 34, 54, 0.6)'
-                          e.currentTarget.style.borderColor = 'rgba(0,193,106,0.08)'
-                        }
-                      }}
-                      onTouchStart={(e) => {
-                        if (!itemIsActive) {
-                          e.currentTarget.style.background = 'rgba(0, 193, 106, 0.08)'
-                          e.currentTarget.style.borderColor = 'rgba(0,193,106,0.15)'
-                        }
-                      }}
-                      onTouchEnd={(e) => {
-                        if (!itemIsActive) {
-                          setTimeout(() => {
-                            e.currentTarget.style.background = 'rgba(12, 34, 54, 0.6)'
-                            e.currentTarget.style.borderColor = 'rgba(0,193,106,0.08)'
-                          }, 150)
-                        }
-                      }}
-                      onClick={() => isMobile && setMobileOpen?.()}
-                    >
-                      <Icon className={`w-5 h-5 flex-shrink-0 ${itemIsActive ? 'text-white' : 'text-[#C8D6E5]'}`} />
-                      {!isCollapsed && <span className={`text-sm font-medium flex-1 ${itemIsActive ? 'text-white' : 'text-[#C8D6E5]'}`}>{item.name}</span>}
-                    </Link>
-                  )
-                })}
             </div>
 
 

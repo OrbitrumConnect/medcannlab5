@@ -48,6 +48,7 @@ import ArteEntrevistaClinica from './pages/ArteEntrevistaClinica'
 import PatientDashboard from './pages/PatientDashboard'
 import PatientAgenda from './pages/PatientAgenda'
 import PatientKPIs from './pages/PatientKPIs'
+import ProfessionalMyDashboard from './pages/ProfessionalMyDashboard'
 import ProfessionalDashboard from './pages/ProfessionalDashboard'
 import AlunoDashboard from './pages/AlunoDashboard'
 import ClinicaDashboard from './pages/ClinicaDashboard'
@@ -177,6 +178,11 @@ function App() {
                     <Route path="forum" element={<ForumCasosClinicos />} />
                 <Route path="gamificacao" element={<Gamificacao />} />
                 <Route path="profile" element={<Profile />} />
+                <Route path="professional-my-dashboard" element={
+                  <ProtectedRoute requiredRole="profissional">
+                    <ProfessionalMyDashboard />
+                  </ProtectedRoute>
+                } />
                 <Route path="admin-settings" element={
                   <ProtectedRoute requiredRole="admin">
                     <AdminSettings />

@@ -337,26 +337,44 @@ const ClinicalReports: React.FC<ClinicalReportsProps> = ({ className = '' }) => 
   return (
     <div className={`space-y-6 ${className}`}>
       {/* Header */}
-      <div className="bg-gradient-to-r from-orange-50 to-orange-100 rounded-xl p-6 shadow-lg border border-orange-200">
+      <div 
+        className="rounded-xl p-6 shadow-lg border"
+        style={{
+          background: 'rgba(7, 22, 41, 0.88)',
+          borderColor: 'rgba(0, 193, 106, 0.12)',
+          boxShadow: '0 18px 42px rgba(2, 12, 27, 0.55)'
+        }}
+      >
         <div className="flex items-center justify-between mb-4">
           <div>
-            <h2 className="text-2xl font-bold text-orange-900 mb-2 flex items-center space-x-2">
-              <FileText className="w-6 h-6" />
+            <h2 className="text-2xl font-bold text-white mb-2 flex items-center space-x-2">
+              <FileText className="w-6 h-6 text-[#00C16A]" />
               <span>Relatórios da Avaliação Clínica Inicial</span>
             </h2>
-            <p className="text-orange-700">
+            <p className="text-[#C8D6E5]">
               Relatórios compartilhados pelos pacientes com você
             </p>
           </div>
           <div className="flex items-center space-x-2">
             <button
               onClick={() => loadSharedReports()}
-              className="px-3 py-1 text-sm bg-orange-600 text-white rounded-md hover:bg-orange-700 transition-colors"
+              className="px-3 py-1 text-sm rounded-md transition-colors"
+              style={{
+                background: 'linear-gradient(135deg, #00C16A 0%, #13794f 100%)',
+                color: '#FFFFFF',
+                boxShadow: '0 4px 12px rgba(0, 193, 106, 0.3)'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = 'linear-gradient(135deg, #00D97A 0%, #158A5F 100%)'
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = 'linear-gradient(135deg, #00C16A 0%, #13794f 100%)'
+              }}
               title="Recarregar relatórios"
             >
               🔄 Atualizar
             </button>
-            <span className="text-sm text-orange-600">
+            <span className="text-sm text-[#94A3B8]">
               {filteredReports.length} relatórios
             </span>
           </div>
@@ -373,11 +391,32 @@ const ClinicalReports: React.FC<ClinicalReportsProps> = ({ className = '' }) => 
             <button
               key={key}
               onClick={() => setFilterStatus(key as any)}
-              className={`flex items-center space-x-1 px-3 py-2 rounded-md text-sm transition-colors ${
+              className="flex items-center space-x-1 px-3 py-2 rounded-md text-sm transition-colors"
+              style={
                 filterStatus === key
-                  ? 'bg-orange-600 text-white'
-                  : 'bg-white text-orange-700 border border-orange-200 hover:bg-orange-50'
-              }`}
+                  ? {
+                      background: 'linear-gradient(135deg, #00C16A 0%, #13794f 100%)',
+                      color: '#FFFFFF',
+                      boxShadow: '0 4px 12px rgba(0, 193, 106, 0.3)'
+                    }
+                  : {
+                      background: 'rgba(15, 36, 60, 0.7)',
+                      color: '#C8D6E5',
+                      border: '1px solid rgba(0, 193, 106, 0.12)'
+                    }
+              }
+              onMouseEnter={(e) => {
+                if (filterStatus !== key) {
+                  e.currentTarget.style.background = 'rgba(0, 193, 106, 0.1)'
+                  e.currentTarget.style.borderColor = 'rgba(0, 193, 106, 0.2)'
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (filterStatus !== key) {
+                  e.currentTarget.style.background = 'rgba(15, 36, 60, 0.7)'
+                  e.currentTarget.style.borderColor = 'rgba(0, 193, 106, 0.12)'
+                }
+              }}
             >
               {icon}
               <span>{label}</span>
