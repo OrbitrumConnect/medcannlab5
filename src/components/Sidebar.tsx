@@ -19,11 +19,10 @@ import {
   Activity,
   UserPlus,
   GraduationCap,
-  Microscope,
+  Search,
   Bell,
   TrendingUp,
   Upload,
-  LayoutDashboard,
   CheckCircle,
   ChevronLeft,
   ChevronRight
@@ -78,7 +77,13 @@ const Sidebar: React.FC<SidebarProps> = ({
 
   // Usar props do Layout quando disponíveis
   const mobileOpen = isMobile ? isOpen : isMobileOpen
-  const setMobileOpen = isMobile ? onClose : setIsMobileOpen
+  const handleMobileToggle = () => {
+    if (isMobile && onClose) {
+      onClose()
+    } else if (!isMobile) {
+      setIsMobileOpen(!isMobileOpen)
+    }
+  }
 
   const getNavigationItems = () => {
     const adminItems = [
@@ -104,7 +109,7 @@ const Sidebar: React.FC<SidebarProps> = ({
     ]
 
     const patientItems = [
-      { name: 'Dashboard', href: '/app/clinica/paciente/dashboard', icon: LayoutDashboard, section: 'main' },
+      { name: 'Dashboard', href: '/app/clinica/paciente/dashboard', icon: Home, section: 'main' },
       { name: 'Início', href: '/app/dashboard', icon: Home, section: 'main' },
       { name: '🤖 Chat NOA', href: '/app/patient-noa-chat', icon: Brain, section: 'quick' },
       { name: '📅 Agendamentos', href: '/app/patient-appointments', icon: Clock, section: 'quick' },
@@ -117,7 +122,7 @@ const Sidebar: React.FC<SidebarProps> = ({
       {
         name: '📊 Meu Dashboard',
         href: '/app/professional-my-dashboard',
-        icon: LayoutDashboard,
+        icon: Home,
         section: 'main'
       },
       // OUTROS
@@ -149,15 +154,12 @@ const Sidebar: React.FC<SidebarProps> = ({
     let specificItems = []
     switch (normalizedType) {
       case 'paciente':
-      case 'patient': // Compatibilidade
         specificItems = patientItems
         break
       case 'profissional':
-      case 'professional': // Compatibilidade
         specificItems = professionalItems
         break
       case 'aluno':
-      case 'student': // Compatibilidade
         specificItems = studentItems
         break
       case 'admin':
@@ -210,7 +212,7 @@ const Sidebar: React.FC<SidebarProps> = ({
       id: 'dashboard',
       label: 'Resumo Administrativo',
       description: 'Visão consolidada da plataforma',
-      icon: LayoutDashboard
+      icon: Home
     },
     {
       id: 'admin-upload',
@@ -299,7 +301,7 @@ const Sidebar: React.FC<SidebarProps> = ({
       id: 'dashboard',
       label: 'Dashboard de Pesquisa',
       description: 'Gestão de projetos de pesquisa',
-      icon: LayoutDashboard,
+      icon: Home,
       href: '/app/pesquisa/profissional/dashboard'
     },
     {
@@ -357,7 +359,7 @@ const Sidebar: React.FC<SidebarProps> = ({
       key: 'pesquisa',
       label: '🔬 Pesquisa',
       path: getAxisPath('pesquisa'),
-      icon: Microscope,
+      icon: Search,
       sections: pesquisaSections
     }
   ]
@@ -389,7 +391,7 @@ const Sidebar: React.FC<SidebarProps> = ({
       {mobileOpen && (
         <div 
           className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
-          onClick={() => setMobileOpen?.()}
+          onClick={handleMobileToggle}
         />
       )}
       
@@ -470,6 +472,11 @@ const Sidebar: React.FC<SidebarProps> = ({
             {/* Meu Dashboard - Apenas para Profissionais - Antes dos Eixos */}
             {normalizedType === 'profissional' && navigationItems.some(item => (item as any).section === 'main') && (
               <div className="mb-6 pb-4 border-b" style={{ borderColor: 'rgba(0,193,106,0.18)' }}>
+                {!isCollapsed && (
+                  <h3 className="text-xs font-semibold text-[rgba(200,214,229,0.75)] uppercase tracking-wider mb-3 px-3">
+                    Dashboard
+                  </h3>
+                )}
                 {navigationItems
                   .filter(item => (item as any).section === 'main')
                   .map((item) => {
@@ -516,7 +523,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                             }, 150)
                           }
                         }}
-                        onClick={() => isMobile && setMobileOpen?.()}
+                        onClick={() => isMobile && handleMobileToggle()}
                       >
                         <Icon className={`w-5 h-5 flex-shrink-0 ${itemIsActive ? 'text-white' : 'text-[#C8D6E5]'}`} />
                         {!isCollapsed && <span className={`text-sm font-medium flex-1 ${itemIsActive ? 'text-white' : 'text-[#C8D6E5]'}`}>{item.name}</span>}
@@ -610,7 +617,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                             setExpandedAxis(axis.key)
                           }
                           if (isMobile) {
-                            setMobileOpen?.()
+                            handleMobileToggle()
                           }
                         }}
                         title={isCollapsed ? axis.label : ''}
@@ -674,7 +681,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                                     }, 150)
                                   }
                                 }}
-                                onClick={() => isMobile && setMobileOpen?.()}
+                                onClick={() => isMobile && handleMobileToggle()}
                                 title={isCollapsed ? section.label : ''}
                               >
                                 <SectionIcon className={`w-5 h-5 flex-shrink-0 ${sectionIsActive ? 'text-white' : 'text-[#C8D6E5]'}`} />
@@ -755,7 +762,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                           }, 150)
                         }
                       }}
-                      onClick={() => isMobile && setMobileOpen?.()}
+                      onClick={() => isMobile && handleMobileToggle()}
                     >
                       <Icon className={`w-5 h-5 flex-shrink-0 ${itemIsActive ? 'text-white' : 'text-[#C8D6E5]'}`} />
                       {!isCollapsed && <span className={`text-sm font-medium flex-1 ${itemIsActive ? 'text-white' : 'text-[#C8D6E5]'}`}>{item.name}</span>}
@@ -764,11 +771,12 @@ const Sidebar: React.FC<SidebarProps> = ({
                 })}
             </div>
 
-            {/* Profile - Estilo do PatientSidebar */}
-            <div className="space-y-1 mt-4">
-              {navigationItems
-                .filter(item => (item as any).section === 'profile')
-                .map((item) => {
+            {/* Profile - Estilo do PatientSidebar - Apenas para não-profissionais */}
+            {normalizedType !== 'profissional' && (
+              <div className="space-y-1 mt-4">
+                {navigationItems
+                  .filter(item => (item as any).section === 'profile')
+                  .map((item) => {
                   const Icon = item.icon
                   const itemIsActive = isActive(item.href)
                   return (
@@ -812,14 +820,15 @@ const Sidebar: React.FC<SidebarProps> = ({
                           }, 150)
                         }
                       }}
-                      onClick={() => isMobile && setMobileOpen?.()}
+                      onClick={() => isMobile && handleMobileToggle()}
                     >
                       <Icon className={`w-5 h-5 flex-shrink-0 ${itemIsActive ? 'text-white' : 'text-[#C8D6E5]'}`} />
                       {!isCollapsed && <span className={`text-sm font-medium flex-1 ${itemIsActive ? 'text-white' : 'text-[#C8D6E5]'}`}>{item.name}</span>}
                     </Link>
                   )
                 })}
-            </div>
+              </div>
+            )}
           </>
         ) : (
           // Other user types (patient, student, admin) - default navigation - Estilo do PatientSidebar
@@ -868,7 +877,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                       }, 150)
                     }
                   }}
-                  onClick={() => isMobile && setMobileOpen?.()}
+                  onClick={() => isMobile && handleMobileToggle()}
                 >
                   <Icon className={`w-5 h-5 flex-shrink-0 ${itemIsActive ? 'text-white' : 'text-[#C8D6E5]'}`} />
                   {!isCollapsed && <span className={`text-sm font-medium flex-1 ${itemIsActive ? 'text-white' : 'text-[#C8D6E5]'}`}>{item.name}</span>}
