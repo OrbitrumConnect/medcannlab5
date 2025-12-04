@@ -166,7 +166,14 @@ const PatientSidebar: React.FC<PatientSidebarProps> = ({
   ]
 
   return (
-    <div className="w-full flex flex-col h-full overflow-y-auto" style={{ background: backgroundGradient }}>
+    <div 
+      className="w-full flex flex-col h-full overflow-y-auto" 
+      style={{ 
+        background: backgroundGradient,
+        scrollbarWidth: 'thin',
+        scrollbarColor: 'rgba(0, 193, 106, 0.3) rgba(7, 22, 41, 0.5)'
+      }}
+    >
       {/* Logo e Nome MedCannLab - Alinhado com o header */}
       <div className={`flex items-center px-4 border-b ${isCollapsed ? 'justify-center px-2 py-4' : 'py-5'} min-h-[3.815rem] sm:min-h-[4.356rem] md:min-h-[4.905rem]`} style={{ borderColor: 'rgba(0,193,106,0.18)' }}>
         <div className={`flex items-center ${isCollapsed ? 'justify-center' : 'space-x-2'}`}>

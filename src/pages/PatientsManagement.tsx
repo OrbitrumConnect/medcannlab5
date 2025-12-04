@@ -722,15 +722,27 @@ const PatientsManagement: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+    <div className="min-h-screen text-white" style={{ background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #1e3a3a 100%)' }}>
       {/* Header */}
-      <div className="bg-slate-800/50 border-b border-slate-700/50 backdrop-blur-sm sticky top-0 z-10">
+      <div className="border-b backdrop-blur-sm sticky top-0 z-10" style={{ background: 'rgba(7, 22, 41, 0.88)', borderColor: 'rgba(0, 193, 106, 0.12)' }}>
         <div className="max-w-7xl mx-auto px-6 py-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
               <button
                 onClick={handleBack}
-                className="p-2 hover:bg-slate-700 rounded-lg transition-colors"
+                className="p-2 rounded-lg transition-colors"
+                style={{ 
+                  background: 'rgba(12, 34, 54, 0.6)',
+                  border: '1px solid rgba(0,193,106,0.08)'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = 'rgba(0, 193, 106, 0.08)'
+                  e.currentTarget.style.borderColor = 'rgba(0,193,106,0.15)'
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = 'rgba(12, 34, 54, 0.6)'
+                  e.currentTarget.style.borderColor = 'rgba(0,193,106,0.08)'
+                }}
               >
                 <ArrowLeft className="w-5 h-5 text-white" />
               </button>
@@ -749,14 +761,21 @@ const PatientsManagement: React.FC = () => {
             </button>
               
               {showNewPatientMenu && (
-                <div className="absolute right-0 mt-2 w-64 bg-slate-800 border border-slate-700 rounded-lg shadow-xl z-50 new-patient-menu-container">
+                <div className="absolute right-0 mt-2 w-64 rounded-lg shadow-xl z-50 new-patient-menu-container" style={{ background: 'rgba(7, 22, 41, 0.95)', border: '1px solid rgba(0, 193, 106, 0.12)' }}>
                   <div className="p-2">
                     <button
                       onClick={() => {
                         setShowNewPatientMenu(false)
                         navigate('/app/new-patient?mode=manual')
                       }}
-                      className="w-full text-left px-4 py-2 rounded-lg hover:bg-slate-700 transition-colors text-white flex items-center space-x-2"
+                      className="w-full text-left px-4 py-2 rounded-lg transition-colors text-white flex items-center space-x-2"
+                      style={{ background: 'transparent' }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.background = 'rgba(0, 193, 106, 0.08)'
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.background = 'transparent'
+                      }}
                     >
                       <UserPlus className="w-4 h-4" />
                       <span>Cadastro Manual</span>
@@ -766,7 +785,14 @@ const PatientsManagement: React.FC = () => {
                         setShowNewPatientMenu(false)
                         navigate('/app/new-patient?mode=csv')
                       }}
-                      className="w-full text-left px-4 py-2 rounded-lg hover:bg-slate-700 transition-colors text-white flex items-center space-x-2"
+                      className="w-full text-left px-4 py-2 rounded-lg transition-colors text-white flex items-center space-x-2"
+                      style={{ background: 'transparent' }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.background = 'rgba(0, 193, 106, 0.08)'
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.background = 'transparent'
+                      }}
                     >
                       <FileText className="w-4 h-4" />
                       <span>Importar CSV</span>
@@ -776,7 +802,14 @@ const PatientsManagement: React.FC = () => {
                         setShowNewPatientMenu(false)
                         navigate('/app/new-patient?mode=database')
                       }}
-                      className="w-full text-left px-4 py-2 rounded-lg hover:bg-slate-700 transition-colors text-white flex items-center space-x-2"
+                      className="w-full text-left px-4 py-2 rounded-lg transition-colors text-white flex items-center space-x-2"
+                      style={{ background: 'transparent' }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.background = 'rgba(0, 193, 106, 0.08)'
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.background = 'transparent'
+                      }}
                     >
                       <Archive className="w-4 h-4" />
                       <span>Importar do Banco</span>
@@ -786,7 +819,14 @@ const PatientsManagement: React.FC = () => {
                         setShowNewPatientMenu(false)
                         navigate('/app/new-patient?mode=drag-drop')
                       }}
-                      className="w-full text-left px-4 py-2 rounded-lg hover:bg-slate-700 transition-colors text-white flex items-center space-x-2"
+                      className="w-full text-left px-4 py-2 rounded-lg transition-colors text-white flex items-center space-x-2"
+                      style={{ background: 'transparent' }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.background = 'rgba(0, 193, 106, 0.08)'
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.background = 'transparent'
+                      }}
                     >
                       <Upload className="w-4 h-4" />
                       <span>Arrastar Arquivos</span>
@@ -801,7 +841,7 @@ const PatientsManagement: React.FC = () => {
 
       <div className="max-w-7xl mx-auto px-6 py-8">
         {/* Filters Bar */}
-        <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl p-6 mb-8 border border-slate-700/50">
+        <div className="backdrop-blur-sm rounded-xl p-6 mb-8" style={{ background: 'rgba(7, 22, 41, 0.88)', border: '1px solid rgba(0, 193, 106, 0.12)' }}>
           <h2 className="text-xl font-bold text-white mb-4">Filtros de Busca</h2>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             {/* Search */}

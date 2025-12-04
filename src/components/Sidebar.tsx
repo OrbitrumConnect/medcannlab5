@@ -456,7 +456,13 @@ const Sidebar: React.FC<SidebarProps> = ({
       </div>
 
       {/* Navigation - Estilo do PatientSidebar */}
-      <nav className={`flex-1 overflow-y-auto p-3 space-y-1 ${isCollapsed ? 'p-2' : ''}`}>
+      <nav 
+        className={`flex-1 overflow-y-auto p-3 space-y-1 ${isCollapsed ? 'p-2' : ''}`}
+        style={{
+          scrollbarWidth: 'thin',
+          scrollbarColor: 'rgba(0, 193, 106, 0.3) rgba(7, 22, 41, 0.5)'
+        }}
+      >
         {(() => {
           return normalizedType === 'profissional' || normalizedType === 'admin'
         })() ? (
