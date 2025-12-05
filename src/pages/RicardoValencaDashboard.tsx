@@ -44,6 +44,7 @@ import {
 import { supabase } from '../lib/supabase'
 import { getAllPatients, isAdmin } from '../lib/adminPermissions'
 import { KnowledgeBaseIntegration, KnowledgeDocument, KnowledgeStats } from '../services/knowledgeBaseIntegration'
+import { backgroundGradient, cardStyle, secondarySurfaceStyle } from '../constants/designSystem'
 
 interface Patient {
   id: string
@@ -1481,7 +1482,8 @@ const RicardoValencaDashboard: React.FC = () => {
               
               <button 
                 onClick={() => navigate('/app/admin-settings')}
-                className="bg-gradient-to-r from-slate-500 to-gray-400 rounded-xl p-4 md:p-6 text-white hover:shadow-lg hover:scale-105 transition-all text-left overflow-hidden cursor-pointer"
+                className="rounded-xl p-4 md:p-6 text-white hover:shadow-lg hover:scale-105 transition-all text-left overflow-hidden cursor-pointer"
+                style={{ background: secondaryGradient }}
               >
                 <div className="flex items-center justify-between mb-2 gap-2">
                   <h3 className="text-xs md:text-sm font-medium opacity-90 break-words flex-1 min-w-0">⚙️ Sistema</h3>
@@ -1533,11 +1535,11 @@ const RicardoValencaDashboard: React.FC = () => {
                 </button>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="bg-slate-800/50 rounded-lg p-4 border border-slate-700">
+                <div className="rounded-lg p-4" style={cardStyle}>
                   <h3 className="text-sm font-semibold text-blue-400 mb-2">🔗 Interconexão</h3>
                   <p className="text-xs text-slate-300">Cidade Amiga dos Rins ↔ Pós-graduação Cannabis Medicinal (Função Renal)</p>
                 </div>
-                <div className="bg-slate-800/50 rounded-lg p-4 border border-slate-700">
+                <div className="rounded-lg p-4" style={cardStyle}>
                   <h3 className="text-sm font-semibold text-cyan-400 mb-2">🎯 Objetivo</h3>
                   <p className="text-xs text-slate-300">Pesquisa pioneira da cannabis medicinal aplicada à nefrologia</p>
                 </div>
@@ -1564,11 +1566,11 @@ const RicardoValencaDashboard: React.FC = () => {
                 </button>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="bg-slate-800/50 rounded-lg p-4 border border-slate-700">
+                <div className="rounded-lg p-4" style={cardStyle}>
                   <h3 className="text-sm font-semibold text-green-400 mb-2">🔗 Interconexão</h3>
                   <p className="text-xs text-slate-300">Arte da Entrevista Clínica ↔ Pós-graduação Cannabis Medicinal (Anamnese)</p>
                 </div>
-                <div className="bg-slate-800/50 rounded-lg p-4 border border-slate-700">
+                <div className="rounded-lg p-4" style={cardStyle}>
                   <h3 className="text-sm font-semibold text-emerald-400 mb-2">🎯 Metodologia</h3>
                   <p className="text-xs text-slate-300">Metodologia AEC - Espinha Dorsal que conecta todos os eixos</p>
                 </div>
@@ -1589,22 +1591,22 @@ const RicardoValencaDashboard: React.FC = () => {
                   <span>📊 Camada Administrativa</span>
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                  <div className="bg-slate-800/80 rounded-lg p-4 border border-slate-700">
+                  <div className="rounded-lg p-4" style={cardStyle}>
                     <h4 className="text-sm font-medium text-slate-300 mb-2">Total de Pacientes</h4>
                     <p className="text-2xl font-bold text-white">{kpis.administrativos.totalPacientes}</p>
                     <p className="text-xs text-slate-400 mt-1">Pacientes no sistema</p>
                   </div>
-                  <div className="bg-slate-800/80 rounded-lg p-4 border border-slate-700">
+                  <div className="rounded-lg p-4" style={cardStyle}>
                     <h4 className="text-sm font-medium text-slate-300 mb-2">Avaliações Completas</h4>
                     <p className="text-2xl font-bold text-white">{kpis.administrativos.avaliacoesCompletas}</p>
                     <p className="text-xs text-slate-400 mt-1">Protocolos finalizados</p>
                   </div>
-                  <div className="bg-slate-800/80 rounded-lg p-4 border border-slate-700">
+                  <div className="rounded-lg p-4" style={cardStyle}>
                     <h4 className="text-sm font-medium text-slate-300 mb-2">Protocolos AEC</h4>
                     <p className="text-2xl font-bold text-white">{kpis.administrativos.protocolosAEC}</p>
                     <p className="text-xs text-slate-400 mt-1">Metodologia aplicada</p>
                   </div>
-                  <div className="bg-slate-800/80 rounded-lg p-4 border border-slate-700">
+                  <div className="rounded-lg p-4" style={cardStyle}>
                     <h4 className="text-sm font-medium text-slate-300 mb-2">Consultórios Ativos</h4>
                     <p className="text-2xl font-bold text-white">{kpis.administrativos.consultoriosAtivos}</p>
                     <p className="text-xs text-slate-400 mt-1">Rede integrada</p>
@@ -1619,22 +1621,22 @@ const RicardoValencaDashboard: React.FC = () => {
                   <span>🧠 Camada Semântica</span>
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                  <div className="bg-slate-800/80 rounded-lg p-4 border border-slate-700">
+                  <div className="rounded-lg p-4" style={cardStyle}>
                     <h4 className="text-sm font-medium text-slate-300 mb-2">Qualidade da Escuta</h4>
                     <p className="text-2xl font-bold text-white">{kpis.semanticos.qualidadeEscuta}%</p>
                     <p className="text-xs text-slate-400 mt-1">Análise semântica</p>
                   </div>
-                  <div className="bg-slate-800/80 rounded-lg p-4 border border-slate-700">
+                  <div className="rounded-lg p-4" style={cardStyle}>
                     <h4 className="text-sm font-medium text-slate-300 mb-2">Engajamento</h4>
                     <p className="text-2xl font-bold text-white">{kpis.semanticos.engajamentoPaciente}%</p>
                     <p className="text-xs text-slate-400 mt-1">Participação ativa</p>
                   </div>
-                  <div className="bg-slate-800/80 rounded-lg p-4 border border-slate-700">
+                  <div className="rounded-lg p-4" style={cardStyle}>
                     <h4 className="text-sm font-medium text-slate-300 mb-2">Satisfação Clínica</h4>
                     <p className="text-2xl font-bold text-white">{kpis.semanticos.satisfacaoClinica}%</p>
                     <p className="text-xs text-slate-400 mt-1">Avaliação da experiência</p>
                   </div>
-                  <div className="bg-slate-800/80 rounded-lg p-4 border border-slate-700">
+                  <div className="rounded-lg p-4" style={cardStyle}>
                     <h4 className="text-sm font-medium text-slate-300 mb-2">Aderência ao Tratamento</h4>
                     <p className="text-2xl font-bold text-white">{kpis.semanticos.aderenciaTratamento}%</p>
                     <p className="text-xs text-slate-400 mt-1">Compliance</p>
@@ -1649,22 +1651,22 @@ const RicardoValencaDashboard: React.FC = () => {
                   <span>🏥 Camada Clínica</span>
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                  <div className="bg-slate-800/80 rounded-lg p-4 border border-slate-700 hover:border-blue-500/50 transition-colors">
+                  <div className="rounded-lg p-4 hover:border-blue-500/50 transition-colors" style={cardStyle}>
                     <h4 className="text-sm font-medium text-slate-300 mb-2">Narrativas Preservadas</h4>
                     <p className="text-2xl font-bold text-white">{kpis.clinicos.narrativasPreservadas}</p>
                     <p className="text-xs text-slate-400 mt-1">Fala espontânea preservada</p>
                   </div>
-                  <div className="bg-slate-800/80 rounded-lg p-4 border border-slate-700 hover:border-blue-500/50 transition-colors">
+                  <div className="rounded-lg p-4 hover:border-blue-500/50 transition-colors" style={cardStyle}>
                     <h4 className="text-sm font-medium text-slate-300 mb-2">Análise Multirracional</h4>
                     <p className="text-2xl font-bold text-white">{kpis.clinicos.analiseMultirracional}</p>
                     <p className="text-xs text-slate-400 mt-1">4+ cosmologias aplicadas</p>
                   </div>
-                  <div className="bg-slate-800/80 rounded-lg p-4 border border-slate-700 hover:border-blue-500/50 transition-colors">
+                  <div className="rounded-lg p-4 hover:border-blue-500/50 transition-colors" style={cardStyle}>
                     <h4 className="text-sm font-medium text-slate-300 mb-2">Dados Primários</h4>
                     <p className="text-2xl font-bold text-white">{kpis.clinicos.dadosPrimariosColetados}</p>
                     <p className="text-xs text-slate-400 mt-1">Blocos semânticos coletados</p>
                   </div>
-                  <div className="bg-slate-800/80 rounded-lg p-4 border border-slate-700 hover:border-blue-500/50 transition-colors">
+                  <div className="rounded-lg p-4 hover:border-blue-500/50 transition-colors" style={cardStyle}>
                     <h4 className="text-sm font-medium text-slate-300 mb-2">Correlações</h4>
                     <p className="text-2xl font-bold text-white">{kpis.clinicos.correlacoesIdentificadas}</p>
                     <p className="text-xs text-slate-400 mt-1">Fala × Avaliação clínica</p>
@@ -1675,15 +1677,15 @@ const RicardoValencaDashboard: React.FC = () => {
 
             {/* System Info */}
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 md:gap-4 mb-4 md:mb-6 lg:mb-8">
-              <div className="bg-slate-800/50 rounded-lg p-3 md:p-4 border border-slate-700">
+              <div className="rounded-lg p-3 md:p-4" style={secondarySurfaceStyle}>
                 <p className="text-xs md:text-sm text-slate-400 mb-1">Sistema Online</p>
                 <p className="text-xl md:text-2xl font-bold text-green-400">99.9%</p>
               </div>
-              <div className="bg-slate-800/50 rounded-lg p-3 md:p-4 border border-slate-700">
+              <div className="rounded-lg p-3 md:p-4" style={secondarySurfaceStyle}>
                 <p className="text-xs md:text-sm text-slate-400 mb-1">Usuários Ativos</p>
                 <p className="text-xl md:text-2xl font-bold text-blue-400">1,234</p>
               </div>
-              <div className="bg-slate-800/50 rounded-lg p-3 md:p-4 border border-slate-700">
+              <div className="rounded-lg p-3 md:p-4" style={secondarySurfaceStyle}>
                 <p className="text-xs md:text-sm text-slate-400 mb-1">Avaliações Hoje</p>
                 <p className="text-xl md:text-2xl font-bold text-purple-400">156</p>
               </div>
@@ -1761,14 +1763,15 @@ const RicardoValencaDashboard: React.FC = () => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-8">
           {/* Left Sidebar - Patient List */}
           <div className="lg:col-span-1">
-            <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl border border-slate-700/50">
-              <div className="p-4 border-b border-slate-700">
+            <div className="backdrop-blur-sm rounded-xl" style={cardStyle}>
+              <div className="p-4 border-b" style={{ borderColor: 'rgba(0, 193, 106, 0.12)' }}>
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-5 h-5" />
                   <input
                     type="text"
                     placeholder="Buscar paciente..."
-                    className="w-full pl-10 pr-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full pl-10 pr-4 py-2 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    style={{ background: 'rgba(15, 36, 60, 0.7)', border: '1px solid rgba(0, 193, 106, 0.12)' }}
                     value={patientSearch}
                     onChange={(e) => setPatientSearch(e.target.value)}
                   />
@@ -1788,7 +1791,7 @@ const RicardoValencaDashboard: React.FC = () => {
                         className={`p-3 rounded-lg border cursor-pointer transition-all hover:shadow-md ${
                           selectedPatient === patient.id
                             ? 'bg-blue-600 border-blue-400 text-white'
-                            : 'bg-slate-700 border-slate-600 text-slate-300 hover:bg-slate-600'
+                            : 'text-slate-300 hover:opacity-80'
                         }`}
                       >
                         <h4 className="font-semibold text-lg">{patient.name}</h4>
@@ -1805,7 +1808,7 @@ const RicardoValencaDashboard: React.FC = () => {
           {/* Main Content Area */}
           <div className="lg:col-span-2 space-y-8">
             {selectedPatient ? (
-              <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl p-6 border border-slate-700/50">
+              <div className="backdrop-blur-sm rounded-xl p-6" style={cardStyle}>
                 <h3 className="text-2xl font-bold text-white mb-4">Detalhes do Paciente</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-slate-300">
                 <div>
@@ -1822,7 +1825,8 @@ const RicardoValencaDashboard: React.FC = () => {
               <div className="mt-6">
                 <h4 className="font-semibold text-white mb-2">Notas Clínicas</h4>
                 <textarea
-                  className="w-full h-32 p-3 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full h-32 p-3 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  style={{ background: 'rgba(15, 36, 60, 0.7)', border: '1px solid rgba(0, 193, 106, 0.12)' }}
                   placeholder="Adicione notas clínicas aqui..."
                   value={clinicalNotes}
                   onChange={(e) => setClinicalNotes(e.target.value)}
@@ -1836,7 +1840,7 @@ const RicardoValencaDashboard: React.FC = () => {
               </div>
             </div>
             ) : (
-              <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl p-6 text-center text-slate-400 border border-slate-700/50 h-full flex items-center justify-center">
+              <div className="backdrop-blur-sm rounded-xl p-6 text-center text-slate-400 h-full flex items-center justify-center" style={cardStyle}>
                 Selecione um paciente para ver os detalhes e notas clínicas.
               </div>
             )}
@@ -1854,28 +1858,28 @@ const RicardoValencaDashboard: React.FC = () => {
       </div>
 
       {/* Camada Administrativa */}
-      <div className="bg-gradient-to-r from-slate-800 to-slate-700 rounded-xl p-6 border border-slate-600">
+      <div className="rounded-xl p-6" style={cardStyle}>
         <h3 className="text-xl font-bold text-white mb-4 flex items-center">
           <BarChart3 className="w-6 h-6 mr-2 text-blue-400" />
           📊 Camada Administrativa
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <div className="bg-slate-600 rounded-lg p-4">
+          <div className="rounded-lg p-4" style={secondarySurfaceStyle}>
             <h4 className="text-sm font-medium text-slate-300 mb-2">Total de Pacientes</h4>
             <p className="text-2xl font-bold text-white">{kpis.administrativos.totalPacientes}</p>
             <p className="text-xs text-slate-400">Pacientes no sistema</p>
           </div>
-          <div className="bg-slate-600 rounded-lg p-4">
+          <div className="rounded-lg p-4" style={secondarySurfaceStyle}>
             <h4 className="text-sm font-medium text-slate-300 mb-2">Avaliações Completas</h4>
             <p className="text-2xl font-bold text-white">{kpis.administrativos.avaliacoesCompletas}</p>
             <p className="text-xs text-slate-400">Protocolos finalizados</p>
           </div>
-          <div className="bg-slate-600 rounded-lg p-4">
+          <div className="rounded-lg p-4" style={secondarySurfaceStyle}>
             <h4 className="text-sm font-medium text-slate-300 mb-2">Protocolos AEC</h4>
             <p className="text-2xl font-bold text-white">{kpis.administrativos.protocolosAEC}</p>
             <p className="text-xs text-slate-400">Metodologia aplicada</p>
           </div>
-          <div className="bg-slate-600 rounded-lg p-4">
+          <div className="rounded-lg p-4" style={secondarySurfaceStyle}>
             <h4 className="text-sm font-medium text-slate-300 mb-2">Consultórios Ativos</h4>
             <p className="text-2xl font-bold text-white">{kpis.administrativos.consultoriosAtivos}</p>
             <p className="text-xs text-slate-400">Rede integrada</p>
@@ -1884,28 +1888,28 @@ const RicardoValencaDashboard: React.FC = () => {
       </div>
 
       {/* Camada Semântica */}
-      <div className="bg-gradient-to-r from-slate-800 to-slate-700 rounded-xl p-6 border border-slate-600">
+      <div className="rounded-xl p-6" style={cardStyle}>
         <h3 className="text-xl font-bold text-white mb-4 flex items-center">
           <Brain className="w-6 h-6 mr-2 text-purple-400" />
           🧠 Camada Semântica
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <div className="bg-slate-600 rounded-lg p-4">
+          <div className="rounded-lg p-4" style={secondarySurfaceStyle}>
             <h4 className="text-sm font-medium text-slate-300 mb-2">Qualidade da Escuta</h4>
             <p className="text-2xl font-bold text-white">{kpis.semanticos.qualidadeEscuta}%</p>
             <p className="text-xs text-slate-400">Análise semântica</p>
           </div>
-          <div className="bg-slate-600 rounded-lg p-4">
+          <div className="rounded-lg p-4" style={secondarySurfaceStyle}>
             <h4 className="text-sm font-medium text-slate-300 mb-2">Engajamento</h4>
             <p className="text-2xl font-bold text-white">{kpis.semanticos.engajamentoPaciente}%</p>
             <p className="text-xs text-slate-400">Participação ativa</p>
           </div>
-          <div className="bg-slate-600 rounded-lg p-4">
+          <div className="rounded-lg p-4" style={secondarySurfaceStyle}>
             <h4 className="text-sm font-medium text-slate-300 mb-2">Satisfação Clínica</h4>
             <p className="text-2xl font-bold text-white">{kpis.semanticos.satisfacaoClinica}%</p>
             <p className="text-xs text-slate-400">Avaliação da experiência</p>
           </div>
-          <div className="bg-slate-600 rounded-lg p-4">
+          <div className="rounded-lg p-4" style={secondarySurfaceStyle}>
             <h4 className="text-sm font-medium text-slate-300 mb-2">Aderência ao Tratamento</h4>
             <p className="text-2xl font-bold text-white">{kpis.semanticos.aderenciaTratamento}%</p>
             <p className="text-xs text-slate-400">Compliance</p>
@@ -1914,28 +1918,28 @@ const RicardoValencaDashboard: React.FC = () => {
       </div>
 
       {/* Camada Clínica */}
-      <div className="bg-gradient-to-r from-slate-800 to-slate-700 rounded-xl p-6 border border-slate-600">
+      <div className="rounded-xl p-6" style={cardStyle}>
         <h3 className="text-xl font-bold text-white mb-4 flex items-center">
           <Activity className="w-6 h-6 mr-2 text-orange-400" />
           🏥 Camada Clínica
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <div className="bg-slate-600 rounded-lg p-4">
+          <div className="rounded-lg p-4" style={secondarySurfaceStyle}>
             <h4 className="text-sm font-medium text-slate-300 mb-2">Narrativas Preservadas</h4>
             <p className="text-2xl font-bold text-white">{kpis.clinicos.narrativasPreservadas}</p>
             <p className="text-xs text-slate-400">Fala espontânea preservada</p>
           </div>
-          <div className="bg-slate-600 rounded-lg p-4 hover:bg-slate-500/50 transition-colors">
+          <div className="rounded-lg p-4 hover:opacity-80 transition-colors" style={secondarySurfaceStyle}>
             <h4 className="text-sm font-medium text-slate-300 mb-2">Análise Multirracional</h4>
             <p className="text-2xl font-bold text-white">{kpis.clinicos.analiseMultirracional}</p>
             <p className="text-xs text-slate-400">4+ cosmologias aplicadas</p>
           </div>
-          <div className="bg-slate-600 rounded-lg p-4 hover:bg-slate-500/50 transition-colors">
+          <div className="rounded-lg p-4 hover:opacity-80 transition-colors" style={secondarySurfaceStyle}>
             <h4 className="text-sm font-medium text-slate-300 mb-2">Dados Primários</h4>
             <p className="text-2xl font-bold text-white">{kpis.clinicos.dadosPrimariosColetados}</p>
             <p className="text-xs text-slate-400">Blocos semânticos coletados</p>
           </div>
-          <div className="bg-slate-600 rounded-lg p-4 hover:bg-slate-500/50 transition-colors">
+          <div className="rounded-lg p-4 hover:opacity-80 transition-colors" style={secondarySurfaceStyle}>
             <h4 className="text-sm font-medium text-slate-300 mb-2">Correlações</h4>
             <p className="text-2xl font-bold text-white">{kpis.clinicos.correlacoesIdentificadas}</p>
             <p className="text-xs text-slate-400">Fala × Avaliação clínica</p>
@@ -1943,7 +1947,7 @@ const RicardoValencaDashboard: React.FC = () => {
         </div>
       </div>
 
-      <div className="bg-gradient-to-br from-emerald-900/30 via-slate-900/60 to-slate-950/80 border border-emerald-500/20 rounded-2xl shadow-lg shadow-emerald-900/30 overflow-hidden">
+      <div className="rounded-2xl shadow-lg shadow-emerald-900/30 overflow-hidden" style={cardStyle}>
         <div className="p-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div className="flex items-start gap-3">
             <div className="w-12 h-12 rounded-xl bg-emerald-500/15 border border-emerald-400/20 flex items-center justify-center">
@@ -1967,7 +1971,7 @@ const RicardoValencaDashboard: React.FC = () => {
             <ArrowRight className="w-4 h-4" />
           </button>
         </div>
-        <div className="border-t border-emerald-500/10 bg-slate-950/40">
+        <div className="border-t" style={{ borderColor: 'rgba(0, 193, 106, 0.1)', ...secondarySurfaceStyle }}>
           {knowledgeLoading ? (
             <div className="flex items-center gap-2 text-emerald-200 px-6 py-5">
               <Loader2 className="w-5 h-5 animate-spin" />
@@ -2204,7 +2208,8 @@ const RicardoValencaDashboard: React.FC = () => {
 
               <div className="space-y-3">
                 <select
-                  className="w-full px-3 py-2 bg-slate-800 border border-emerald-500/20 rounded-lg text-sm text-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-400"
+                  className="w-full px-3 py-2 rounded-lg text-sm text-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-400"
+                  style={{ background: 'rgba(15, 36, 60, 0.7)', border: '1px solid rgba(0, 193, 106, 0.2)' }}
                   value={selectedPatient || ''}
                   onChange={event => {
                     const patientId = event.target.value || null
@@ -2230,7 +2235,8 @@ const RicardoValencaDashboard: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => handleOpenPatientHistory()}
-                    className="px-3 py-2 rounded-lg text-sm font-semibold text-white bg-slate-700 hover:bg-slate-600 transition-colors"
+                    className="px-3 py-2 rounded-lg text-sm font-semibold text-white transition-colors"
+                    style={{ background: 'rgba(15, 36, 60, 0.7)' }}
                   >
                     Ver Histórico
                   </button>
@@ -2250,7 +2256,7 @@ const RicardoValencaDashboard: React.FC = () => {
                 </p>
               </div>
 
-              <div className="rounded-xl border border-slate-700/60 bg-slate-900/70 p-4 space-y-4">
+              <div className="rounded-xl p-4 space-y-4" style={cardStyle}>
                 <div className="flex items-center justify-between">
                   <h4 className="text-sm font-semibold text-white flex items-center gap-2">
                     <MessageCircle className="w-4 h-4 text-emerald-300" />
@@ -2282,7 +2288,7 @@ const RicardoValencaDashboard: React.FC = () => {
                         className={`p-3 rounded-lg border cursor-pointer transition-all hover:shadow-md ${
                           selectedPatient === patient.id
                             ? 'bg-emerald-600/40 border-emerald-300 text-white'
-                            : 'bg-slate-800/80 border-slate-700 text-slate-300 hover:bg-slate-700/80'
+                            : 'text-slate-300 hover:opacity-80'
                         }`}
                       >
                         <div className="flex items-center justify-between gap-3">
@@ -2303,16 +2309,16 @@ const RicardoValencaDashboard: React.FC = () => {
                           </span>
                         </div>
                         <div className="mt-3 flex items-center gap-2 text-[11px] text-slate-400 flex-wrap">
-                          <span className="px-2 py-0.5 rounded bg-slate-700/80 border border-slate-600/60">
+                          <span className="px-2 py-0.5 rounded" style={{ background: 'rgba(15, 36, 60, 0.7)', border: '1px solid rgba(0, 193, 106, 0.12)' }}>
                             {patient.assessments?.length || 0} avaliações
                           </span>
                           {patient.condition && (
-                            <span className="px-2 py-0.5 rounded bg-slate-700/80 border border-slate-600/60">
+                            <span className="px-2 py-0.5 rounded" style={{ background: 'rgba(15, 36, 60, 0.7)', border: '1px solid rgba(0, 193, 106, 0.12)' }}>
                               {patient.condition}
                             </span>
                           )}
                           {patient.priority && (
-                            <span className="px-2 py-0.5 rounded bg-slate-700/80 border border-slate-600/60 capitalize">
+                            <span className="px-2 py-0.5 rounded capitalize" style={{ background: 'rgba(15, 36, 60, 0.7)', border: '1px solid rgba(0, 193, 106, 0.12)' }}>
                               Prioridade {patient.priority}
                             </span>
                           )}
@@ -2335,7 +2341,8 @@ const RicardoValencaDashboard: React.FC = () => {
                               event.stopPropagation()
                               handleOpenPatientRecord(patient.id)
                             }}
-                            className="px-3 py-1.5 rounded-lg bg-slate-700/80 text-slate-200 hover:bg-slate-600 transition-colors"
+                            className="px-3 py-1.5 rounded-lg text-slate-200 hover:opacity-80 transition-colors"
+                            style={{ background: 'rgba(15, 36, 60, 0.7)' }}
                           >
                             Ver prontuário
                           </button>
@@ -2420,8 +2427,8 @@ const RicardoValencaDashboard: React.FC = () => {
                   className="rounded-2xl p-4 animate-pulse"
                   style={appointmentCardStyle}
                 >
-                  <div className="h-4 bg-slate-600/40 rounded w-1/3 mb-2" />
-                  <div className="h-3 bg-slate-600/30 rounded w-1/4" />
+                  <div className="h-4 rounded w-1/3 mb-2" style={{ background: 'rgba(15, 36, 60, 0.4)' }} />
+                  <div className="h-3 rounded w-1/4" style={{ background: 'rgba(15, 36, 60, 0.3)' }} />
                 </div>
               ))}
             </div>
@@ -2497,7 +2504,8 @@ const RicardoValencaDashboard: React.FC = () => {
                         </button>
                         <button
                           onClick={() => handleStartAppointment(appointment, { navigateToChat: true })}
-                          className="px-3 py-2 rounded-lg text-sm font-semibold text-slate-200 border border-slate-600/60 hover:border-emerald-300/60 transition-transform hover:-translate-y-0.5"
+                          className="px-3 py-2 rounded-lg text-sm font-semibold text-slate-200 hover:border-emerald-300/60 transition-transform hover:-translate-y-0.5"
+                          style={{ border: '1px solid rgba(0, 193, 106, 0.12)' }}
                         >
                           Abrir Chat
                         </button>
@@ -2537,7 +2545,7 @@ const RicardoValencaDashboard: React.FC = () => {
   const renderPrescricoes = () => (
     <div className="space-y-6">
       <div className="flex flex-col xl:flex-row gap-6">
-        <div className="bg-slate-900/70 border border-slate-800 rounded-2xl p-5 space-y-4 w-full xl:w-[320px] flex-shrink-0">
+        <div className="rounded-2xl p-5 space-y-4 w-full xl:w-[320px] flex-shrink-0" style={cardStyle}>
           <div className="flex items-center justify-between gap-2">
             <div>
               <h3 className="text-lg font-semibold text-white flex items-center gap-2">
@@ -2590,7 +2598,7 @@ const RicardoValencaDashboard: React.FC = () => {
                     className={`w-full text-left rounded-xl border px-4 py-3 transition-colors ${
                       isActive
                         ? 'border-emerald-500/50 bg-emerald-500/10 text-white'
-                        : 'border-slate-800 bg-slate-900/60 text-slate-200 hover:border-emerald-400/40 hover:bg-emerald-500/5'
+                        : 'text-slate-200 hover:border-emerald-400/40 hover:opacity-80'
                     }`}
                   >
                     <div className="flex items-start justify-between gap-3">
@@ -2613,7 +2621,7 @@ const RicardoValencaDashboard: React.FC = () => {
                         className={`px-2 py-0.5 rounded-full text-[11px] font-semibold uppercase tracking-[0.12em] whitespace-nowrap ${
                           statusLabel === 'Ativo'
                             ? 'bg-emerald-500/20 text-emerald-200 border border-emerald-400/30'
-                            : 'bg-slate-800 text-slate-300 border border-slate-700'
+                            : 'text-slate-300'
                         }`}
                       >
                         {statusLabel}
@@ -2641,7 +2649,7 @@ const RicardoValencaDashboard: React.FC = () => {
     <div className="space-y-6">
       {/* Estatísticas */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="bg-slate-800/80 rounded-lg p-4 border border-slate-700">
+        <div className="rounded-lg p-4" style={cardStyle}>
           <div className="flex items-center justify-between">
             <div>
               <p className="text-slate-400 text-sm">Total</p>
@@ -2650,7 +2658,7 @@ const RicardoValencaDashboard: React.FC = () => {
             <Users className="w-8 h-8 text-green-400" />
           </div>
         </div>
-        <div className="bg-slate-800/80 rounded-lg p-4 border border-slate-700">
+        <div className="rounded-lg p-4" style={cardStyle}>
           <div className="flex items-center justify-between">
             <div>
               <p className="text-slate-400 text-sm">Ativos</p>
@@ -2659,7 +2667,7 @@ const RicardoValencaDashboard: React.FC = () => {
             <CheckCircle className="w-8 h-8 text-blue-400" />
           </div>
         </div>
-        <div className="bg-slate-800/80 rounded-lg p-4 border border-slate-700">
+        <div className="rounded-lg p-4" style={cardStyle}>
           <div className="flex items-center justify-between">
             <div>
               <p className="text-slate-400 text-sm">Em Tratamento</p>
@@ -2668,7 +2676,7 @@ const RicardoValencaDashboard: React.FC = () => {
             <Activity className="w-8 h-8 text-orange-400" />
           </div>
         </div>
-        <div className="bg-slate-800/80 rounded-lg p-4 border border-slate-700">
+        <div className="rounded-lg p-4" style={cardStyle}>
           <div className="flex items-center justify-between">
             <div>
               <p className="text-slate-400 text-sm">Novos</p>
@@ -2680,7 +2688,7 @@ const RicardoValencaDashboard: React.FC = () => {
       </div>
 
       {/* Lista de Pacientes */}
-      <div className="bg-slate-800/80 rounded-lg p-6 border border-slate-700">
+      <div className="rounded-lg p-6" style={cardStyle}>
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-xl font-semibold text-white flex items-center">
             <Users className="w-6 h-6 mr-2 text-green-400" />
@@ -2713,7 +2721,8 @@ const RicardoValencaDashboard: React.FC = () => {
             {patients.map((patient) => (
               <div
                 key={patient.id}
-                className="bg-slate-700 rounded-lg p-4 hover:bg-slate-600 transition-colors cursor-pointer"
+                className="rounded-lg p-4 hover:opacity-80 transition-colors cursor-pointer"
+                style={secondarySurfaceStyle}
                 onClick={() => setSelectedPatient(patient.id)}
               >
                 <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
@@ -2756,7 +2765,8 @@ const RicardoValencaDashboard: React.FC = () => {
                           setSelectedPatient(patient.id)
                           handleOpenPatientChat(patient.id)
                         }}
-                        className="px-3 py-2 rounded-lg text-xs font-semibold text-white bg-slate-600 hover:bg-slate-500 transition-colors"
+                        className="px-3 py-2 rounded-lg text-xs font-semibold text-white transition-colors"
+                        style={{ background: 'rgba(15, 36, 60, 0.7)' }}
                       >
                         Chat Clínico
                       </button>
@@ -2767,7 +2777,8 @@ const RicardoValencaDashboard: React.FC = () => {
                           setSelectedPatient(patient.id)
                           handleOpenPatientHistory(patient.id)
                         }}
-                        className="px-3 py-2 rounded-lg text-xs font-semibold text-white bg-slate-700 hover:bg-slate-600 transition-colors"
+                        className="px-3 py-2 rounded-lg text-xs font-semibold text-white transition-colors"
+                        style={{ background: 'rgba(15, 36, 60, 0.7)' }}
                       >
                         Prontuário
                       </button>
@@ -2796,13 +2807,13 @@ const RicardoValencaDashboard: React.FC = () => {
 
       {/* Cursos Ativos */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="bg-slate-800/80 rounded-lg p-6 border border-slate-700">
+        <div className="rounded-lg p-6" style={cardStyle}>
           <h3 className="text-xl font-semibold text-white mb-4 flex items-center">
             <BookOpen className="w-6 h-6 mr-2 text-yellow-400" />
             Pós-Graduação Cannabis Medicinal
           </h3>
           <div className="space-y-3">
-            <div className="bg-slate-700 rounded-lg p-3">
+            <div className="rounded-lg p-3" style={secondarySurfaceStyle}>
               <h4 className="font-semibold text-white">Módulo 1: Fundamentos</h4>
               <p className="text-slate-400 text-sm">Aula 1 - Introdução à Cannabis Medicinal</p>
               <div className="flex items-center justify-between mt-2">
@@ -2812,7 +2823,7 @@ const RicardoValencaDashboard: React.FC = () => {
                 </button>
               </div>
             </div>
-            <div className="bg-slate-700 rounded-lg p-3">
+            <div className="rounded-lg p-3" style={secondarySurfaceStyle}>
               <h4 className="font-semibold text-white">Módulo 2: Aplicações Clínicas</h4>
               <p className="text-slate-400 text-sm">Aula 3 - Epilepsia e TEA</p>
               <div className="flex items-center justify-between mt-2">
@@ -2825,13 +2836,13 @@ const RicardoValencaDashboard: React.FC = () => {
           </div>
         </div>
 
-        <div className="bg-slate-800/80 rounded-lg p-6 border border-slate-700">
+        <div className="rounded-lg p-6" style={cardStyle}>
           <h3 className="text-xl font-semibold text-white mb-4 flex items-center">
             <Stethoscope className="w-6 h-6 mr-2 text-blue-400" />
             Arte da Entrevista Clínica (AEC)
           </h3>
           <div className="space-y-3">
-            <div className="bg-slate-700 rounded-lg p-3">
+            <div className="rounded-lg p-3" style={secondarySurfaceStyle}>
               <h4 className="font-semibold text-white">Fundamentos AEC</h4>
               <p className="text-slate-400 text-sm">Técnicas de escuta ativa</p>
               <div className="flex items-center justify-between mt-2">
@@ -2841,7 +2852,7 @@ const RicardoValencaDashboard: React.FC = () => {
                 </button>
               </div>
             </div>
-            <div className="bg-slate-700 rounded-lg p-3">
+            <div className="rounded-lg p-3" style={secondarySurfaceStyle}>
               <h4 className="font-semibold text-white">Protocolo IMRE</h4>
               <p className="text-slate-400 text-sm">Metodologia triaxial</p>
               <div className="flex items-center justify-between mt-2">
@@ -2856,18 +2867,18 @@ const RicardoValencaDashboard: React.FC = () => {
       </div>
 
       {/* Materiais e Recursos */}
-      <div className="bg-slate-800/80 rounded-lg p-6 border border-slate-700">
+      <div className="rounded-lg p-6" style={cardStyle}>
         <h3 className="text-xl font-semibold text-white mb-4">Materiais e Recursos</h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <button className="bg-slate-700 hover:bg-slate-600 rounded-lg p-4 transition-colors">
+          <button className="rounded-lg p-4 transition-colors hover:opacity-80" style={{ background: 'rgba(15, 36, 60, 0.7)' }}>
             <Upload className="w-6 h-6 mx-auto mb-2 text-white" />
             <span className="font-semibold text-white">Upload de Materiais</span>
           </button>
-          <button className="bg-slate-700 hover:bg-slate-600 rounded-lg p-4 transition-colors">
+          <button className="rounded-lg p-4 transition-colors hover:opacity-80" style={{ background: 'rgba(15, 36, 60, 0.7)' }}>
             <BookOpen className="w-6 h-6 mx-auto mb-2 text-white" />
             <span className="font-semibold text-white">Biblioteca</span>
           </button>
-          <button className="bg-slate-700 hover:bg-slate-600 rounded-lg p-4 transition-colors">
+          <button className="rounded-lg p-4 transition-colors hover:opacity-80" style={{ background: 'rgba(15, 36, 60, 0.7)' }}>
             <BarChart3 className="w-6 h-6 mx-auto mb-2 text-white" />
             <span className="font-semibold text-white">Relatórios</span>
           </button>
@@ -3043,7 +3054,7 @@ const RicardoValencaDashboard: React.FC = () => {
 
       {/* Resumo Financeiro */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="bg-slate-800/80 rounded-lg p-4 border border-slate-700">
+        <div className="rounded-lg p-4" style={cardStyle}>
           <div className="flex items-center justify-between">
             <div>
               <p className="text-slate-400 text-sm">Receita do Mês</p>
@@ -3052,7 +3063,7 @@ const RicardoValencaDashboard: React.FC = () => {
             <TrendingUp className="w-8 h-8 text-green-400" />
           </div>
         </div>
-        <div className="bg-slate-800/80 rounded-lg p-4 border border-slate-700">
+        <div className="rounded-lg p-4" style={cardStyle}>
           <div className="flex items-center justify-between">
             <div>
               <p className="text-slate-400 text-sm">Despesas</p>
@@ -3061,7 +3072,7 @@ const RicardoValencaDashboard: React.FC = () => {
             <TrendingUp className="w-8 h-8 text-red-400" />
           </div>
         </div>
-        <div className="bg-slate-800/80 rounded-lg p-4 border border-slate-700">
+        <div className="rounded-lg p-4" style={cardStyle}>
           <div className="flex items-center justify-between">
             <div>
               <p className="text-slate-400 text-sm">Lucro Líquido</p>
@@ -3070,7 +3081,7 @@ const RicardoValencaDashboard: React.FC = () => {
             <TrendingUp className="w-8 h-8 text-blue-400" />
           </div>
         </div>
-        <div className="bg-slate-800/80 rounded-lg p-4 border border-slate-700">
+        <div className="rounded-lg p-4" style={cardStyle}>
           <div className="flex items-center justify-between">
             <div>
               <p className="text-slate-400 text-sm">Pacientes Ativos</p>
@@ -3082,10 +3093,10 @@ const RicardoValencaDashboard: React.FC = () => {
       </div>
 
       {/* Transações Recentes */}
-      <div className="bg-slate-800/80 rounded-lg p-6 border border-slate-700">
+      <div className="rounded-lg p-6" style={cardStyle}>
         <h3 className="text-xl font-semibold text-white mb-4">Transações Recentes</h3>
         <div className="space-y-3">
-          <div className="bg-slate-700 rounded-lg p-4 flex items-center justify-between">
+          <div className="rounded-lg p-4 flex items-center justify-between" style={secondarySurfaceStyle}>
             <div className="flex items-center space-x-4">
               <div className="w-10 h-10 bg-green-500 rounded-lg flex items-center justify-center">
                 <TrendingUp className="w-5 h-5 text-white" />
@@ -3100,7 +3111,7 @@ const RicardoValencaDashboard: React.FC = () => {
               <span className="text-xs text-slate-500">Pago</span>
             </div>
           </div>
-          <div className="bg-slate-700 rounded-lg p-4 flex items-center justify-between">
+          <div className="rounded-lg p-4 flex items-center justify-between" style={secondarySurfaceStyle}>
             <div className="flex items-center space-x-4">
               <div className="w-10 h-10 bg-blue-500 rounded-lg flex items-center justify-center">
                 <TrendingUp className="w-5 h-5 text-white" />
@@ -3115,7 +3126,7 @@ const RicardoValencaDashboard: React.FC = () => {
               <span className="text-xs text-slate-500">Pago</span>
             </div>
           </div>
-          <div className="bg-slate-700 rounded-lg p-4 flex items-center justify-between">
+          <div className="rounded-lg p-4 flex items-center justify-between" style={secondarySurfaceStyle}>
             <div className="flex items-center space-x-4">
               <div className="w-10 h-10 bg-red-500 rounded-lg flex items-center justify-center">
                 <TrendingUp className="w-5 h-5 text-white" />
@@ -3134,7 +3145,7 @@ const RicardoValencaDashboard: React.FC = () => {
       </div>
 
       {/* Ações Financeiras */}
-      <div className="bg-slate-800/80 rounded-lg p-6 border border-slate-700">
+      <div className="rounded-lg p-6" style={cardStyle}>
         <h3 className="text-xl font-semibold text-white mb-4">Ações Financeiras</h3>
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <button className="bg-green-600 hover:bg-green-700 text-white p-4 rounded-lg transition-colors">
@@ -3318,7 +3329,8 @@ const RicardoValencaDashboard: React.FC = () => {
                   key={action.id}
                   type="button"
                   onClick={action.action}
-                  className="group text-left rounded-xl border border-slate-700/60 bg-slate-900/60 hover:border-blue-400/40 hover:bg-slate-900/80 transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400"
+                  className="group text-left rounded-xl border hover:border-blue-400/40 hover:opacity-80 transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400"
+                  style={cardStyle}
                 >
                   <div className="p-4 flex items-start gap-3">
                     <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-blue-500/15 text-blue-200 group-hover:text-blue-100">
@@ -3481,8 +3493,8 @@ const RicardoValencaDashboard: React.FC = () => {
                       className="rounded-xl p-4 animate-pulse"
                       style={cardStyle}
                     >
-                      <div className="h-4 bg-slate-600/40 rounded w-1/2 mb-2" />
-                      <div className="h-3 bg-slate-600/30 rounded w-1/3" />
+                      <div className="h-4 rounded w-1/2 mb-2" style={{ background: 'rgba(15, 36, 60, 0.4)' }} />
+                      <div className="h-3 rounded w-1/3" style={{ background: 'rgba(15, 36, 60, 0.3)' }} />
                     </div>
                   ))}
                 </div>
@@ -3513,7 +3525,7 @@ const RicardoValencaDashboard: React.FC = () => {
                     className={`rounded-xl p-4 transition-all border ${
                       isSelected
                         ? 'border-[#00F5A0]/40 bg-emerald-500/10 shadow-lg'
-                        : 'border-slate-600/40 hover:border-[#00F5A0]/30 bg-slate-800/70'
+                        : 'hover:border-[#00F5A0]/30'
                     } cursor-pointer`}
                   >
                     <div className="flex items-start justify-between gap-4">
@@ -3582,7 +3594,7 @@ const RicardoValencaDashboard: React.FC = () => {
 
               {selectedAppointment ? (
                 <div className="space-y-4">
-                  <div className="bg-slate-900/70 rounded-lg p-4 border border-slate-700/60">
+                  <div className="rounded-lg p-4" style={cardStyle}>
                     <div className="flex items-start justify-between">
                       <div>
                         <p className="text-xs text-slate-400">Paciente</p>
@@ -3604,19 +3616,19 @@ const RicardoValencaDashboard: React.FC = () => {
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs text-slate-300">
-                    <div className="bg-slate-900/70 rounded-lg p-3 border border-slate-700/60">
+                    <div className="rounded-lg p-3" style={secondarySurfaceStyle}>
                       <p className="uppercase tracking-[0.15em] text-white/50 mb-1">Tipo</p>
                       <p className="text-white font-semibold">{selectedAppointment.type || 'Consulta clínica'}</p>
                     </div>
-                    <div className="bg-slate-900/70 rounded-lg p-3 border border-slate-700/60">
+                    <div className="rounded-lg p-3" style={secondarySurfaceStyle}>
                       <p className="uppercase tracking-[0.15em] text-white/50 mb-1">Duração</p>
                       <p className="text-white font-semibold">{selectedAppointment.duration ? `${selectedAppointment.duration} min` : '60 min'}</p>
                     </div>
-                    <div className="bg-slate-900/70 rounded-lg p-3 border border-slate-700/60">
+                    <div className="rounded-lg p-3" style={secondarySurfaceStyle}>
                       <p className="uppercase tracking-[0.15em] text-white/50 mb-1">Formato</p>
                       <p className="text-white font-semibold">{selectedAppointment.is_remote ? 'Teleatendimento' : 'Presencial'}</p>
                     </div>
-                    <div className="bg-slate-900/70 rounded-lg p-3 border border-slate-700/60">
+                    <div className="rounded-lg p-3" style={secondarySurfaceStyle}>
                       <p className="uppercase tracking-[0.15em] text-white/50 mb-1">Local / Link</p>
                       <p className="text-white font-semibold break-words">
                         {selectedAppointment.is_remote
@@ -3627,7 +3639,7 @@ const RicardoValencaDashboard: React.FC = () => {
                   </div>
 
                   {selectedAppointment.description && (
-                    <div className="bg-slate-900/70 rounded-lg p-3 border border-slate-700/60">
+                    <div className="rounded-lg p-3" style={secondarySurfaceStyle}>
                       <p className="uppercase tracking-[0.15em] text-white/50 mb-1">Observações</p>
                       <p className="text-xs text-slate-300 leading-relaxed">{selectedAppointment.description}</p>
                     </div>
@@ -3643,7 +3655,8 @@ const RicardoValencaDashboard: React.FC = () => {
                     {selectedAppointment.meeting_url && (
                       <button
                         onClick={() => window.open(selectedAppointment.meeting_url as string, '_blank', 'noopener,noreferrer')}
-                        className="bg-slate-800 border border-slate-600 hover:border-[#00F5A0]/40 text-white px-4 py-2 rounded-lg text-sm"
+                        className="hover:border-[#00F5A0]/40 text-white px-4 py-2 rounded-lg text-sm"
+                        style={{ background: 'rgba(15, 36, 60, 0.7)', border: '1px solid rgba(0, 193, 106, 0.12)' }}
                       >
                         Abrir link da consulta
                       </button>
@@ -3665,7 +3678,8 @@ const RicardoValencaDashboard: React.FC = () => {
                             placeholder="Digite o nome do paciente (ou letra inicial)..."
                             value={patientSearch}
                             onChange={(e) => setPatientSearch(e.target.value)}
-                            className="w-full pl-10 pr-4 py-2.5 bg-slate-800/50 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-[#00C16A] focus:ring-1 focus:ring-[#00C16A] transition-colors"
+                            className="w-full pl-10 pr-4 py-2.5 rounded-lg text-white focus:outline-none focus:border-[#00C16A] focus:ring-1 focus:ring-[#00C16A] transition-colors"
+                            style={{ background: 'rgba(15, 36, 60, 0.7)', border: '1px solid rgba(0, 193, 106, 0.12)' }}
                             onFocus={() => {
                               if (patients.length === 0 && !loading) {
                                 loadPatients()
@@ -3687,7 +3701,7 @@ const RicardoValencaDashboard: React.FC = () => {
 
                         {/* Dropdown de Resultados */}
                         {patientSearch && (
-                          <div className="absolute z-50 w-full mt-2 bg-slate-800 border border-slate-700 rounded-lg shadow-xl max-h-60 overflow-y-auto">
+                          <div className="absolute z-50 w-full mt-2 rounded-lg shadow-xl max-h-60 overflow-y-auto" style={cardStyle}>
                             {loading ? (
                               <div className="p-4 text-center text-slate-400">
                                 <Loader2 className="w-5 h-5 animate-spin mx-auto mb-2" />
@@ -3701,9 +3715,13 @@ const RicardoValencaDashboard: React.FC = () => {
                                     setSelectedPatient(patient.id)
                                     setPatientSearch(patient.name)
                                   }}
-                                  className={`w-full px-4 py-3 text-left hover:bg-slate-700/50 transition-colors border-b border-slate-700/50 last:border-b-0 ${
-                                    selectedPatient === patient.id ? 'bg-slate-700/70' : ''
+                                  className={`w-full px-4 py-3 text-left transition-colors border-b last:border-b-0 ${
+                                    selectedPatient === patient.id ? '' : ''
                                   }`}
+                                  style={{ 
+                                    background: selectedPatient === patient.id ? 'rgba(0, 193, 106, 0.15)' : 'transparent',
+                                    borderColor: 'rgba(0, 193, 106, 0.12)'
+                                  }}
                                 >
                                   <div className="flex items-center space-x-3">
                                     <User className="w-4 h-4 text-[#00C16A] flex-shrink-0" />
@@ -3732,7 +3750,7 @@ const RicardoValencaDashboard: React.FC = () => {
                   ) : (
                     <>
                       {/* Paciente Selecionado */}
-                      <div className="bg-slate-900/70 rounded-lg p-4 border border-slate-700/60 mb-4">
+                      <div className="rounded-lg p-4 mb-4" style={cardStyle}>
                         <div className="flex items-center justify-between mb-3">
                           <div className="flex items-center space-x-3">
                             <div className="w-10 h-10 bg-gradient-to-r from-green-500 to-emerald-500 rounded-full flex items-center justify-center">
@@ -3877,7 +3895,7 @@ const RicardoValencaDashboard: React.FC = () => {
 
       {/* Tipos de Avaliação */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-slate-800/80 rounded-lg p-6 border border-slate-700">
+        <div className="rounded-lg p-6" style={cardStyle}>
           <h3 className="text-xl font-semibold text-white mb-4 flex items-center">
             <Brain className="w-6 h-6 mr-2 text-blue-400" />
             Protocolo IMRE
@@ -3890,7 +3908,7 @@ const RicardoValencaDashboard: React.FC = () => {
           </button>
         </div>
 
-        <div className="bg-slate-800/80 rounded-lg p-6 border border-slate-700">
+        <div className="rounded-lg p-6" style={cardStyle}>
           <h3 className="text-xl font-semibold text-white mb-4 flex items-center">
             <Stethoscope className="w-6 h-6 mr-2 text-green-400" />
             Arte da Entrevista Clínica
@@ -3903,7 +3921,7 @@ const RicardoValencaDashboard: React.FC = () => {
           </button>
         </div>
 
-        <div className="bg-slate-800/80 rounded-lg p-6 border border-slate-700">
+        <div className="rounded-lg p-6" style={cardStyle}>
           <h3 className="text-xl font-semibold text-white mb-4 flex items-center">
             <Clock className="w-6 h-6 mr-2 text-orange-400" />
             Consulta de Retorno
@@ -3918,10 +3936,10 @@ const RicardoValencaDashboard: React.FC = () => {
       </div>
 
       {/* Avaliações Recentes */}
-      <div className="bg-slate-800/80 rounded-lg p-6 border border-slate-700">
+      <div className="rounded-lg p-6" style={cardStyle}>
         <h3 className="text-xl font-semibold text-white mb-4">Avaliações Recentes</h3>
         <div className="space-y-3">
-          <div className="bg-slate-700 rounded-lg p-4 flex items-center justify-between">
+          <div className="rounded-lg p-4 flex items-center justify-between" style={secondarySurfaceStyle}>
             <div className="flex items-center space-x-4">
               <div className="w-12 h-12 bg-blue-500 rounded-lg flex items-center justify-center">
                 <Brain className="w-6 h-6 text-white" />
@@ -3936,7 +3954,7 @@ const RicardoValencaDashboard: React.FC = () => {
               <p className="text-slate-400 text-xs mt-1">Relatório gerado</p>
             </div>
           </div>
-          <div className="bg-slate-700 rounded-lg p-4 flex items-center justify-between">
+          <div className="rounded-lg p-4 flex items-center justify-between" style={secondarySurfaceStyle}>
             <div className="flex items-center space-x-4">
               <div className="w-12 h-12 bg-green-500 rounded-lg flex items-center justify-center">
                 <Stethoscope className="w-6 h-6 text-white" />
@@ -3970,7 +3988,7 @@ const RicardoValencaDashboard: React.FC = () => {
 
       {/* Categorias */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="bg-slate-800/80 rounded-lg p-4 border border-slate-700">
+        <div className="rounded-lg p-4" style={cardStyle}>
           <div className="flex items-center justify-between">
             <div>
               <p className="text-slate-400 text-sm">Artigos</p>
@@ -3979,7 +3997,7 @@ const RicardoValencaDashboard: React.FC = () => {
             <BookOpen className="w-8 h-8 text-teal-400" />
           </div>
         </div>
-        <div className="bg-slate-800/80 rounded-lg p-4 border border-slate-700">
+        <div className="rounded-lg p-4" style={cardStyle}>
           <div className="flex items-center justify-between">
             <div>
               <p className="text-slate-400 text-sm">Protocolos</p>
@@ -3988,7 +4006,7 @@ const RicardoValencaDashboard: React.FC = () => {
             <FileText className="w-8 h-8 text-blue-400" />
           </div>
         </div>
-        <div className="bg-slate-800/80 rounded-lg p-4 border border-slate-700">
+        <div className="rounded-lg p-4" style={cardStyle}>
           <div className="flex items-center justify-between">
             <div>
               <p className="text-slate-400 text-sm">Vídeos</p>
@@ -3997,7 +4015,7 @@ const RicardoValencaDashboard: React.FC = () => {
             <Video className="w-8 h-8 text-green-400" />
           </div>
         </div>
-        <div className="bg-slate-800/80 rounded-lg p-4 border border-slate-700">
+        <div className="rounded-lg p-4" style={cardStyle}>
           <div className="flex items-center justify-between">
             <div>
               <p className="text-slate-400 text-sm">Apresentações</p>
@@ -4009,10 +4027,10 @@ const RicardoValencaDashboard: React.FC = () => {
       </div>
 
       {/* Recursos Recentes */}
-      <div className="bg-slate-800/80 rounded-lg p-6 border border-slate-700">
+      <div className="rounded-lg p-6" style={cardStyle}>
         <h3 className="text-xl font-semibold text-white mb-4">Recursos Recentes</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="bg-slate-700 rounded-lg p-4">
+          <div className="rounded-lg p-4" style={secondarySurfaceStyle}>
             <h4 className="font-semibold text-white mb-2">Protocolo IMRE - Versão 2.1</h4>
             <p className="text-slate-400 text-sm mb-3">Metodologia triaxial atualizada para avaliações clínicas</p>
             <div className="flex items-center justify-between">
@@ -4022,7 +4040,7 @@ const RicardoValencaDashboard: React.FC = () => {
               </button>
             </div>
           </div>
-          <div className="bg-slate-700 rounded-lg p-4">
+          <div className="rounded-lg p-4" style={secondarySurfaceStyle}>
             <h4 className="font-semibold text-white mb-2">AEC - Guia Completo</h4>
             <p className="text-slate-400 text-sm mb-3">Arte da Entrevista Clínica - Dr. Eduardo Faveret</p>
             <div className="flex items-center justify-between">
@@ -4032,7 +4050,7 @@ const RicardoValencaDashboard: React.FC = () => {
               </button>
             </div>
           </div>
-          <div className="bg-slate-700 rounded-lg p-4">
+          <div className="rounded-lg p-4" style={secondarySurfaceStyle}>
             <h4 className="font-semibold text-white mb-2">Cannabis Medicinal - Evidências</h4>
             <p className="text-slate-400 text-sm mb-3">Revisão sistemática de evidências científicas</p>
             <div className="flex items-center justify-between">
@@ -4042,7 +4060,7 @@ const RicardoValencaDashboard: React.FC = () => {
               </button>
             </div>
           </div>
-          <div className="bg-slate-700 rounded-lg p-4">
+          <div className="rounded-lg p-4" style={secondarySurfaceStyle}>
             <h4 className="font-semibold text-white mb-2">Epilepsia e TEA - Protocolos</h4>
             <p className="text-slate-400 text-sm mb-3">Protocolos específicos para epilepsia e TEA</p>
             <div className="flex items-center justify-between">
@@ -4056,7 +4074,7 @@ const RicardoValencaDashboard: React.FC = () => {
       </div>
 
       {/* Ações da Biblioteca */}
-      <div className="bg-slate-800/80 rounded-lg p-6 border border-slate-700">
+      <div className="rounded-lg p-6" style={cardStyle}>
         <h3 className="text-xl font-semibold text-white mb-4">Ações da Biblioteca</h3>
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <button className="bg-teal-600 hover:bg-teal-700 text-white p-4 rounded-lg transition-colors">
@@ -4094,7 +4112,7 @@ const RicardoValencaDashboard: React.FC = () => {
 
       {/* Artigos Recentes */}
       <div className="space-y-4">
-        <div className="bg-slate-800/80 rounded-lg p-6 border border-slate-700">
+        <div className="rounded-lg p-6" style={cardStyle}>
           <h4 className="font-semibold text-white mb-2 text-lg">Cannabis Medicinal em Epilepsia Refratária</h4>
           <p className="text-slate-400 mb-2 text-sm">Novos estudos sobre eficácia do CBD em crianças com síndrome de Dravet mostram redução significativa de convulsões...</p>
           <div className="flex items-center justify-between">
@@ -4104,7 +4122,7 @@ const RicardoValencaDashboard: React.FC = () => {
             </button>
           </div>
         </div>
-        <div className="bg-slate-800/80 rounded-lg p-6 border border-slate-700">
+        <div className="rounded-lg p-6" style={cardStyle}>
           <h4 className="font-semibold text-white mb-2 text-lg">Protocolos IMRE em TEA</h4>
           <p className="text-slate-400 mb-2 text-sm">Implementação da metodologia IMRE para avaliação de pacientes com TEA demonstra melhorias na qualidade da entrevista clínica...</p>
           <div className="flex items-center justify-between">
@@ -4114,7 +4132,7 @@ const RicardoValencaDashboard: React.FC = () => {
             </button>
           </div>
         </div>
-        <div className="bg-slate-800/80 rounded-lg p-6 border border-slate-700">
+        <div className="rounded-lg p-6" style={cardStyle}>
           <h4 className="font-semibold text-white mb-2 text-lg">Arte da Entrevista Clínica - Metodologia AEC</h4>
           <p className="text-slate-400 mb-2 text-sm">Técnicas avançadas de escuta ativa e comunicação empática na prática clínica com Cannabis Medicinal...</p>
           <div className="flex items-center justify-between">
@@ -4151,7 +4169,7 @@ const RicardoValencaDashboard: React.FC = () => {
           </h2>
           <p className="text-slate-200">Gerencie todos os usuários do sistema, suas permissões e configurações</p>
         </div>
-        <div className="bg-slate-800/50 rounded-lg p-6 border border-slate-700">
+        <div className="rounded-lg p-6" style={cardStyle}>
           <p className="text-slate-300 text-center py-8">
             Área de desenvolvimento: Gestão completa de usuários será implementada aqui.
             <br />
@@ -4204,15 +4222,15 @@ const RicardoValencaDashboard: React.FC = () => {
             </button>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
-            <div className="bg-slate-900/60 rounded-xl p-4 border border-emerald-400/20">
+            <div className="rounded-xl p-4" style={cardStyle}>
               <p className="text-xs text-emerald-200/80 uppercase tracking-widest">Vinculados à IA Residente</p>
               <p className="text-3xl font-bold text-white mt-2">{aiLinkedDocs}</p>
             </div>
-            <div className="bg-slate-900/60 rounded-xl p-4 border border-emerald-400/20">
+            <div className="rounded-xl p-4" style={cardStyle}>
               <p className="text-xs text-emerald-200/80 uppercase tracking-widest">Relevância Média IA</p>
               <p className="text-3xl font-bold text-white mt-2">{averageRelevance.toFixed(2)}</p>
             </div>
-            <div className="bg-slate-900/60 rounded-xl p-4 border border-emerald-400/20">
+            <div className="rounded-xl p-4" style={cardStyle}>
               <p className="text-xs text-emerald-200/80 uppercase tracking-widest">Último Treinamento</p>
               <p className="text-lg font-semibold text-white mt-2">{latestUpdateLabel}</p>
             </div>
@@ -4226,7 +4244,7 @@ const RicardoValencaDashboard: React.FC = () => {
         </div>
 
         {knowledgeShowStats && knowledgeStats && (
-          <div className="bg-slate-900/70 rounded-2xl p-6 border border-emerald-500/20 space-y-6">
+          <div className="rounded-2xl p-6 space-y-6" style={cardStyle}>
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               <div className="text-center">
                 <p className="text-3xl font-bold text-[#00F5A0]">{knowledgeStats.totalDocuments}</p>
@@ -4256,7 +4274,8 @@ const RicardoValencaDashboard: React.FC = () => {
                   {knowledgeStats.topCategories.map(category => (
                     <span
                       key={category.category}
-                      className="px-3 py-1 rounded-full bg-slate-800 border border-emerald-500/20 text-sm text-slate-200"
+                      className="px-3 py-1 rounded-full text-sm text-slate-200"
+                      style={{ background: 'rgba(15, 36, 60, 0.7)', border: '1px solid rgba(0, 193, 106, 0.2)' }}
                     >
                       {category.category} • {category.count}
                     </span>
@@ -4275,7 +4294,8 @@ const RicardoValencaDashboard: React.FC = () => {
                   {knowledgeStats.topAuthors.map(author => (
                     <span
                       key={author.author}
-                      className="px-3 py-1 rounded-full bg-slate-800 border border-emerald-500/20 text-sm text-slate-200"
+                      className="px-3 py-1 rounded-full text-sm text-slate-200"
+                      style={{ background: 'rgba(15, 36, 60, 0.7)', border: '1px solid rgba(0, 193, 106, 0.2)' }}
                     >
                       {author.author} • {author.count}
                     </span>
@@ -4286,7 +4306,7 @@ const RicardoValencaDashboard: React.FC = () => {
           </div>
         )}
 
-        <div className="bg-slate-900/70 rounded-2xl p-6 border border-slate-700/60">
+        <div className="rounded-2xl p-6" style={cardStyle}>
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
             <div className="flex-1">
               <div className="relative">
@@ -4295,7 +4315,8 @@ const RicardoValencaDashboard: React.FC = () => {
                   value={knowledgeSearch}
                   onChange={event => setKnowledgeSearch(event.target.value)}
                   placeholder="Buscar documentos por título, conteúdo, autor..."
-                  className="w-full px-4 py-3 rounded-xl bg-slate-950/80 border border-slate-700/70 text-slate-200 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/60 focus:border-emerald-500/40"
+                  className="w-full px-4 py-3 rounded-xl text-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500/60 focus:border-emerald-500/40"
+                  style={{ background: 'rgba(15, 36, 60, 0.8)', border: '1px solid rgba(0, 193, 106, 0.12)' }}
                 />
                 <span className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 text-sm">⌘K</span>
               </div>
@@ -4303,7 +4324,8 @@ const RicardoValencaDashboard: React.FC = () => {
             <div className="flex-shrink-0 flex items-center gap-2">
               <button
                 onClick={handleKnowledgeCategories}
-                className="px-4 py-2 rounded-lg bg-slate-800 border border-slate-600 text-slate-200 text-sm font-medium hover:bg-slate-750 transition-colors"
+                className="px-4 py-2 rounded-lg text-slate-200 text-sm font-medium hover:opacity-80 transition-colors"
+                style={{ background: 'rgba(15, 36, 60, 0.7)', border: '1px solid rgba(0, 193, 106, 0.12)' }}
               >
                 Gerenciar Categorias
               </button>
@@ -4323,7 +4345,7 @@ const RicardoValencaDashboard: React.FC = () => {
               className={`px-3 py-1 rounded-full border text-sm font-medium ${
                 knowledgeCategory === 'all'
                   ? 'bg-emerald-500/20 border-emerald-400/30 text-emerald-200'
-                  : 'bg-slate-800 border-slate-600 text-slate-300 hover:bg-slate-750'
+                  : 'text-slate-300 hover:opacity-80'
               }`}
             >
               Todos ({totalDocs})
@@ -4337,7 +4359,7 @@ const RicardoValencaDashboard: React.FC = () => {
                   className={`px-3 py-1 rounded-full border text-sm font-medium ${
                     knowledgeCategory === category
                       ? 'bg-emerald-500/20 border-emerald-400/30 text-emerald-200'
-                      : 'bg-slate-800 border-slate-600 text-slate-300 hover:bg-slate-750'
+                      : 'text-slate-300 hover:opacity-80'
                   }`}
                 >
                   {category} ({count})
@@ -4363,7 +4385,8 @@ const RicardoValencaDashboard: React.FC = () => {
                   <button
                     key={doc.id}
                     onClick={() => openKnowledgeDocument(doc)}
-                    className="p-4 rounded-xl border border-slate-700/70 bg-slate-950/60 hover:border-emerald-500/30 transition-colors text-left"
+                    className="p-4 rounded-xl border hover:border-emerald-500/30 transition-colors text-left"
+                    style={{ background: 'rgba(15, 36, 60, 0.6)', border: '1px solid rgba(0, 193, 106, 0.12)' }}
                   >
                     <p className="text-xs text-emerald-200/70 uppercase tracking-widest flex items-center gap-2">
                       <span>{doc.category || 'Sem categoria'}</span>
@@ -4490,7 +4513,7 @@ const RicardoValencaDashboard: React.FC = () => {
                 Dados agregados das últimas 90 sessões + wearables conectados
               </div>
             </div>
-            <div className="w-full lg:max-w-xs bg-slate-950/60 rounded-2xl border border-rose-500/20 p-5 space-y-3 text-sm text-slate-200">
+            <div className="w-full lg:max-w-xs rounded-2xl border border-rose-500/20 p-5 space-y-3 text-sm text-slate-200" style={{ background: 'rgba(15, 36, 60, 0.6)' }}>
               <div className="flex items-center justify-between">
                 <span className="text-slate-400">Pacientes acompanhados</span>
                 <span className="font-semibold text-white">42</span>
@@ -4527,7 +4550,7 @@ const RicardoValencaDashboard: React.FC = () => {
         </div>
 
         <div className="grid grid-cols-1 xl:grid-cols-[1.2fr_1.8fr] gap-6">
-          <div className="bg-slate-900/70 rounded-2xl border border-slate-700/60 p-6">
+          <div className="rounded-2xl p-6" style={cardStyle}>
             <h3 className="text-lg font-semibold text-white flex items-center gap-2">
               <span>Fatores de Risco Tradicionais</span>
               <span className="text-xs px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-300 border border-emerald-400/20">
@@ -4537,7 +4560,7 @@ const RicardoValencaDashboard: React.FC = () => {
             <p className="text-xs text-slate-400 mt-1">Principais determinantes clássicos para progressão da DRC.</p>
             <div className="mt-4 space-y-3">
               {traditionalFactors.map(item => (
-                <div key={item.factor} className="rounded-xl border border-white/5 bg-slate-950/40 p-4">
+                <div key={item.factor} className="rounded-xl border border-white/5 p-4" style={secondarySurfaceStyle}>
                   <div className="flex items-center justify-between gap-3">
                     <h4 className="text-sm font-semibold text-white">{item.factor}</h4>
                     <span className="text-xs text-emerald-300 bg-emerald-500/10 px-2 py-0.5 rounded-full">Prevalência {item.prevalence}</span>
@@ -4548,7 +4571,7 @@ const RicardoValencaDashboard: React.FC = () => {
             </div>
           </div>
 
-          <div className="bg-slate-900/70 rounded-2xl border border-slate-700/60 p-6">
+          <div className="rounded-2xl p-6" style={cardStyle}>
             <h3 className="text-lg font-semibold text-white flex items-center gap-2">
               <span>Fatores de Risco Não Tradicionais</span>
               <span className="text-xs px-2 py-0.5 rounded-full bg-sky-500/10 text-sky-300 border border-sky-400/20">
@@ -4558,7 +4581,7 @@ const RicardoValencaDashboard: React.FC = () => {
             <p className="text-xs text-slate-400 mt-1">Elementos emergentes que aceleram a perda de função renal.</p>
             <div className="mt-4 space-y-3">
               {nonTraditionalFactors.map(item => (
-                <div key={item.factor} className="rounded-xl border border-white/5 bg-slate-950/40 p-4">
+                <div key={item.factor} className="rounded-xl border border-white/5 p-4" style={secondarySurfaceStyle}>
                   <div className="flex items-center justify-between gap-3">
                     <h4 className="text-sm font-semibold text-white">{item.factor}</h4>
                     <span className="text-xs text-sky-300 bg-sky-500/10 px-2 py-0.5 rounded-full">Prevalência {item.prevalence}</span>
@@ -4570,7 +4593,7 @@ const RicardoValencaDashboard: React.FC = () => {
           </div>
         </div>
 
-        <div className="bg-slate-900/70 rounded-2xl border border-slate-700/60 p-6">
+        <div className="rounded-2xl p-6" style={cardStyle}>
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
             <h3 className="text-lg font-semibold text-white flex items-center gap-2">
               <span>Indicadores Laboratoriais Prioritários</span>
@@ -4596,7 +4619,7 @@ const RicardoValencaDashboard: React.FC = () => {
               </thead>
               <tbody className="divide-y divide-white/5">
                 {renalMonitoringMatrix.map(row => (
-                  <tr key={row.biomarker} className="hover:bg-slate-800/40 transition-colors">
+                  <tr key={row.biomarker} className="hover:opacity-80 transition-colors">
                     <td className="py-3 pr-6 font-semibold text-white">{row.biomarker}</td>
                     <td className="py-3 pr-6">{row.last}</td>
                     <td className={`py-3 pr-6 ${row.variation.startsWith('-') ? 'text-emerald-300' : 'text-amber-300'}`}>{row.variation}</td>
@@ -4609,7 +4632,7 @@ const RicardoValencaDashboard: React.FC = () => {
           </div>
         </div>
 
-        <div className="bg-slate-900/70 rounded-2xl border border-slate-700/60 p-6">
+        <div className="rounded-2xl p-6" style={cardStyle}>
           <h3 className="text-lg font-semibold text-white flex items-center gap-2 mb-3">
             <span>Protocolos Prioritários para DRC</span>
             <span className="text-xs px-2 py-0.5 rounded-full bg-white/10 text-white/80 border border-white/10">
@@ -4617,7 +4640,7 @@ const RicardoValencaDashboard: React.FC = () => {
             </span>
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 text-xs text-slate-300">
-            <div className="rounded-xl border border-white/10 bg-slate-950/50 p-4">
+            <div className="rounded-xl border border-white/10 p-4" style={secondarySurfaceStyle}>
               <p className="text-white font-semibold mb-1">Tripé Cardiometabólico</p>
               <ul className="space-y-1 list-disc list-inside">
                 <li>iSGLT2 como base ● HbA1c meta 6,8%</li>
@@ -4625,7 +4648,7 @@ const RicardoValencaDashboard: React.FC = () => {
                 <li>Intervalo nutracêutico anti-inflamatório</li>
               </ul>
             </div>
-            <div className="rounded-xl border border-white/10 bg-slate-950/50 p-4">
+            <div className="rounded-xl border border-white/10 p-4" style={secondarySurfaceStyle}>
               <p className="text-white font-semibold mb-1">Foco em Proteinúria</p>
               <ul className="space-y-1 list-disc list-inside">
                 <li>Bloqueio dual do SRAA quando tolerado</li>
@@ -4633,7 +4656,7 @@ const RicardoValencaDashboard: React.FC = () => {
                 <li>Reposição de bicarbonato se TFG &lt; 45</li>
               </ul>
             </div>
-            <div className="rounded-xl border border-white/10 bg-slate-950/50 p-4">
+            <div className="rounded-xl border border-white/10 p-4" style={secondarySurfaceStyle}>
               <p className="text-white font-semibold mb-1">Estratégia LRA &amp; recuperação</p>
               <ul className="space-y-1 list-disc list-inside">
                 <li>Checklist de nefrotoxicidade medicamentosa</li>
@@ -4641,7 +4664,7 @@ const RicardoValencaDashboard: React.FC = () => {
                 <li>Alertas cross-clínica para queda de TFG</li>
               </ul>
             </div>
-            <div className="rounded-xl border border-white/10 bg-slate-950/50 p-4">
+            <div className="rounded-xl border border-white/10 p-4" style={secondarySurfaceStyle}>
               <p className="text-white font-semibold mb-1">Determinantes não tradicionais</p>
               <ul className="space-y-1 list-disc list-inside">
                 <li>Dashboard socioambiental (“Cidade Amiga dos Rins”)</li>
@@ -4774,7 +4797,7 @@ const RicardoValencaDashboard: React.FC = () => {
         default:
           return {
             label: 'Sem status',
-            className: 'bg-slate-500/15 text-slate-300 border border-slate-400/20'
+            className: 'text-slate-300'
           }
       }
     },
@@ -5148,7 +5171,8 @@ const RicardoValencaDashboard: React.FC = () => {
 
   return (
     <div
-      className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 overflow-x-hidden w-full"
+      className="min-h-screen overflow-x-hidden w-full"
+      style={{ background: backgroundGradient }}
       data-page="ricardo-valenca-dashboard"
     >
       <div className="max-w-7xl mx-auto px-2 md:px-4 lg:px-6 py-4 md:py-6 lg:py-8 w-full overflow-x-hidden">
@@ -5185,7 +5209,7 @@ const RicardoValencaDashboard: React.FC = () => {
                       'group text-left rounded-xl border transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400',
                       isActive
                         ? 'bg-emerald-600/20 border-emerald-500/40 shadow-lg shadow-emerald-900/30'
-                        : 'bg-slate-900/60 border-slate-700/60 hover:border-emerald-400/40 hover:bg-slate-900/80'
+                        : 'hover:border-emerald-400/40 hover:opacity-80'
                     ].join(' ')}
                   >
                     <div className="p-4 flex items-start gap-3">
@@ -5194,7 +5218,7 @@ const RicardoValencaDashboard: React.FC = () => {
                           'w-10 h-10 rounded-lg flex items-center justify-center transition-colors',
                           isActive
                             ? 'bg-emerald-500/20 text-emerald-200'
-                            : 'bg-slate-800/80 text-slate-300 group-hover:text-emerald-300'
+                            : 'text-slate-300 group-hover:text-emerald-300'
                         ].join(' ')}
                       >
                         <OptionIcon className="w-5 h-5" />
@@ -5226,7 +5250,7 @@ const RicardoValencaDashboard: React.FC = () => {
         {/* Modal de Seleção de Dashboard Profissional */}
         {showProfessionalModal && (
           <div className="fixed inset-0 bg-black bg-opacity-50 z-[100] flex items-center justify-center p-4">
-            <div className="bg-slate-800 rounded-xl border border-slate-700 max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="rounded-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto" style={cardStyle}>
               <div className="p-6 border-b border-slate-700">
                 <div className="flex items-center justify-between">
                   <h2 className="text-2xl font-bold text-white flex items-center">
@@ -5308,8 +5332,8 @@ const RicardoValencaDashboard: React.FC = () => {
         )}
 
         {showVoicePrescriptionModal && (
-          <div className="fixed inset-0 z-[90] flex items-center justify-center bg-slate-950/80 backdrop-blur-sm px-4">
-            <div className="w-full max-w-2xl bg-slate-900 border border-emerald-500/30 rounded-2xl shadow-2xl p-6 relative">
+          <div className="fixed inset-0 z-[90] flex items-center justify-center backdrop-blur-sm px-4" style={{ background: 'rgba(15, 36, 60, 0.8)' }}>
+            <div className="w-full max-w-2xl rounded-2xl shadow-2xl p-6 relative" style={cardStyle}>
               <button
                 type="button"
                 onClick={handleCloseVoicePrescriptionModal}
@@ -5373,25 +5397,25 @@ const RicardoValencaDashboard: React.FC = () => {
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-slate-300">
-                    <div className="bg-slate-800/60 rounded-xl p-4 border border-slate-700/60">
+                    <div className="rounded-xl p-4" style={secondarySurfaceStyle}>
                       <p className="text-xs uppercase tracking-[0.35em] text-slate-500 mb-2">Dosagem</p>
                       <p className="text-white">
                         {voicePrescriptionPreview.dosage ?? 'Definida com a equipe clínica'}
                       </p>
                     </div>
-                    <div className="bg-slate-800/60 rounded-xl p-4 border border-slate-700/60">
+                    <div className="rounded-xl p-4" style={secondarySurfaceStyle}>
                       <p className="text-xs uppercase tracking-[0.35em] text-slate-500 mb-2">Frequência</p>
                       <p className="text-white">
                         {voicePrescriptionPreview.frequency ?? 'Frequência personalizada'}
                       </p>
                     </div>
-                    <div className="bg-slate-800/60 rounded-xl p-4 border border-slate-700/60">
+                    <div className="rounded-xl p-4" style={secondarySurfaceStyle}>
                       <p className="text-xs uppercase tracking-[0.35em] text-slate-500 mb-2">Duração</p>
                       <p className="text-white">
                         {voicePrescriptionPreview.duration ?? 'Definida no plano terapêutico'}
                       </p>
                     </div>
-                    <div className="bg-slate-800/60 rounded-xl p-4 border border-slate-700/60">
+                    <div className="rounded-xl p-4" style={secondarySurfaceStyle}>
                       <p className="text-xs uppercase tracking-[0.35em] text-slate-500 mb-2">Profissional</p>
                       <p className="text-white">
                         {voicePrescriptionPreview.professionalName ?? 'Equipe MedCannLab'}
@@ -5400,7 +5424,7 @@ const RicardoValencaDashboard: React.FC = () => {
                   </div>
 
                   {voicePrescriptionPreview.instructions && (
-                    <div className="bg-slate-800/60 rounded-xl p-4 border border-slate-700/60">
+                    <div className="rounded-xl p-4" style={secondarySurfaceStyle}>
                       <p className="text-xs uppercase tracking-[0.35em] text-slate-500 mb-2">Instruções</p>
                       <p className="text-slate-200 whitespace-pre-wrap">{voicePrescriptionPreview.instructions}</p>
                     </div>
@@ -5454,7 +5478,7 @@ const RicardoValencaDashboard: React.FC = () => {
 
       {knowledgeSelectedDocument && (
         <div className="fixed inset-0 bg-black/70 z-[120] flex items-center justify-center p-4">
-          <div className="bg-slate-900 rounded-2xl border border-slate-700 shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col">
+          <div className="rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col" style={cardStyle}>
             <div className="flex items-center justify-between p-4 border-b border-slate-700">
               <div>
                 <p className="text-xs text-emerald-200/70 uppercase tracking-widest flex items-center gap-2">
@@ -5477,17 +5501,19 @@ const RicardoValencaDashboard: React.FC = () => {
             </div>
 
             {(knowledgeSelectedDocument as any).file_url && (
-              <div className="flex items-center justify-between px-4 py-2 border-b border-slate-800 bg-slate-900/70">
+              <div className="flex items-center justify-between px-4 py-2 border-b" style={secondarySurfaceStyle}>
                 <div className="flex items-center gap-2">
                   <button
                     onClick={() => setKnowledgeViewerMode('preview')}
-                    className={`px-3 py-1 rounded-lg text-sm ${knowledgeViewerMode === 'preview' ? 'bg-emerald-500/20 text-emerald-200 border border-emerald-500/40' : 'bg-slate-800 text-slate-400 hover:bg-slate-750'}`}
+                    className={`px-3 py-1 rounded-lg text-sm ${knowledgeViewerMode === 'preview' ? 'bg-emerald-500/20 text-emerald-200 border border-emerald-500/40' : 'text-slate-400 hover:opacity-80'}`}
+                    style={knowledgeViewerMode !== 'preview' ? { background: 'rgba(15, 36, 60, 0.7)' } : {}}
                   >
                     Visualização
                   </button>
                   <button
                     onClick={() => setKnowledgeViewerMode('raw')}
-                    className={`px-3 py-1 rounded-lg text-sm ${knowledgeViewerMode === 'raw' ? 'bg-emerald-500/20 text-emerald-200 border border-emerald-500/40' : 'bg-slate-800 text-slate-400 hover:bg-slate-750'}`}
+                    className={`px-3 py-1 rounded-lg text-sm ${knowledgeViewerMode === 'raw' ? 'bg-emerald-500/20 text-emerald-200 border border-emerald-500/40' : 'text-slate-400 hover:opacity-80'}`}
+                    style={knowledgeViewerMode !== 'raw' ? { background: 'rgba(15, 36, 60, 0.7)' } : {}}
                   >
                     Texto bruto
                   </button>
@@ -5506,7 +5532,8 @@ const RicardoValencaDashboard: React.FC = () => {
                         document.body.removeChild(link)
                       }
                     }}
-                    className="px-3 py-1 rounded-lg text-sm bg-slate-800 text-slate-300 hover:bg-slate-750"
+                    className="px-3 py-1 rounded-lg text-sm text-slate-300 hover:opacity-80"
+                    style={{ background: 'rgba(15, 36, 60, 0.7)' }}
                   >
                     Baixar
                   </button>
@@ -5525,7 +5552,7 @@ const RicardoValencaDashboard: React.FC = () => {
               </div>
             )}
 
-            <div className="flex-1 overflow-y-auto px-4 py-6 bg-slate-950/80">
+            <div className="flex-1 overflow-y-auto px-4 py-6" style={{ background: 'rgba(15, 36, 60, 0.8)' }}>
               {knowledgeDocumentLoading ? (
                 <div className="flex items-center justify-center text-slate-400 gap-2">
                   <Loader2 className="w-5 h-5 animate-spin" /> Carregando conteúdo...
@@ -5536,7 +5563,7 @@ const RicardoValencaDashboard: React.FC = () => {
                     <pre className="whitespace-pre-wrap text-sm">{knowledgeDocumentContent}</pre>
                   </div>
                 ) : (
-                  <pre className="whitespace-pre-wrap text-xs bg-slate-900/90 p-4 rounded-lg border border-slate-800 overflow-x-auto">
+                  <pre className="whitespace-pre-wrap text-xs p-4 rounded-lg overflow-x-auto" style={secondarySurfaceStyle}>
                     {knowledgeDocumentContent}
                   </pre>
                 )

@@ -43,6 +43,7 @@ import {
   generateAppointmentSlots,
   isSchedulingWorkingDay
 } from '../lib/schedulingConfig'
+import { backgroundGradient, cardStyle, secondarySurfaceStyle } from '../constants/designSystem'
 
 const ProfessionalScheduling: React.FC = () => {
   const { user } = useAuth()
@@ -74,6 +75,7 @@ const ProfessionalScheduling: React.FC = () => {
 
   const [patients, setPatients] = useState<any[]>([])
   const [appointments, setAppointments] = useState<any[]>([])
+  const [pendingRequests, setPendingRequests] = useState<any[]>([])
   const [analyticsData, setAnalyticsData] = useState<any>(null)
   const [isCreatingPatient, setIsCreatingPatient] = useState(false)
   const [isSavingPatient, setIsSavingPatient] = useState(false)
@@ -118,7 +120,7 @@ const ProfessionalScheduling: React.FC = () => {
       // Buscar agendamentos do profissional
       const { data: appointmentsData, error: appointmentsError } = await supabase
         .from('appointments')
-        .select('*')
+        .select('*, patient:patient_id(id, name, email, phone)')
         .eq('professional_id', user.id)
         .order('appointment_date', { ascending: true })
 
@@ -141,7 +143,7 @@ const ProfessionalScheduling: React.FC = () => {
       // Transformar agendamentos
       const formattedAppointments = (appointmentsData || []).map((apt: any) => {
         const appointmentDate = new Date(apt.appointment_date)
-        const patient = patientsData?.find((p: any) => p.id === apt.patient_id)
+        const patient = apt.patient || patientsData?.find((p: any) => p.id === apt.patient_id)
         return {
           id: apt.id,
           patientId: apt.patient_id,
@@ -149,7 +151,7 @@ const ProfessionalScheduling: React.FC = () => {
           date: appointmentDate.toISOString().split('T')[0],
           time: appointmentDate.toTimeString().slice(0, 5),
           type: apt.is_remote ? 'online' : 'presencial',
-          specialty: apt.type || 'Cannabis Medicinal',
+          specialty: apt.specialty || apt.type || 'Cannabis Medicinal',
           service: apt.title || 'Consulta',
           room: apt.location || (apt.is_remote ? 'Plataforma digital' : 'Sala'),
           status: apt.status,
@@ -158,11 +160,31 @@ const ProfessionalScheduling: React.FC = () => {
           notes: apt.description || apt.notes,
           rating: apt.rating,
           patientComment: apt.comment,
-          createdAt: new Date(apt.created_at).toISOString().split('T')[0]
+          createdAt: new Date(apt.created_at).toISOString().split('T')[0],
+          createdBy: apt.created_by
         }
       })
 
-      setAppointments(formattedAppointments)
+      // Separar agendamentos confirmados e solicitações pendentes
+      const confirmedAppointments = formattedAppointments.filter(apt => 
+        apt.status === 'scheduled' || apt.status === 'confirmed' || apt.status === 'completed'
+      )
+      const pending = formattedAppointments.filter(apt => {
+        // Solicitações pendentes: status pending/requested OU criadas por pacientes (não pelo profissional)
+        const isPendingStatus = apt.status === 'pending' || apt.status === 'requested'
+        const isCreatedByPatient = apt.createdBy && apt.createdBy !== user.id
+        return isPendingStatus || isCreatedByPatient
+      })
+      
+      // Debug: log para verificar solicitações
+      if (pending.length > 0) {
+        console.log('📋 Solicitações pendentes encontradas:', pending.length, pending)
+      } else {
+        console.log('ℹ️ Nenhuma solicitação pendente encontrada. Total de agendamentos:', formattedAppointments.length)
+      }
+
+      setAppointments(confirmedAppointments)
+      setPendingRequests(pending)
       setPatients(patientsData || [])
 
       // Calcular analytics
@@ -227,25 +249,62 @@ const ProfessionalScheduling: React.FC = () => {
     Homeopatia: ['Consultório Escola Ricardo Valença']
   }
 
-  // Salas disponíveis (consultórios)
-  const rooms = useMemo(() => {
-    if (!appointmentData.specialty || !specialtyConsultorioMap[appointmentData.specialty]) {
-      return [
-        'Consultório Escola Ricardo Valença',
-        'Consultório Escola Eduardo Faveret'
-      ]
+  // Salas disponíveis (consultórios) - Baseado no profissional logado
+  const professionalRoom = useMemo(() => {
+    if (!user?.name) return 'Consultório'
+    // Criar nome da sala baseado no nome do profissional
+    const professionalName = user.name
+    // Se for Dr. Ricardo Valença ou similar
+    if (professionalName.toLowerCase().includes('ricardo') || professionalName.toLowerCase().includes('valença')) {
+      return 'Consultório Escola Ricardo Valença'
     }
-    return specialtyConsultorioMap[appointmentData.specialty]
-  }, [appointmentData.specialty])
+    // Se for Dr. Eduardo Faveret ou similar
+    if (professionalName.toLowerCase().includes('eduardo') || professionalName.toLowerCase().includes('faveret')) {
+      return 'Consultório Escola Eduardo Faveret'
+    }
+    // Para outros profissionais, usar o nome dele
+    return `Consultório ${professionalName}`
+  }, [user?.name])
+
+  const rooms = useMemo(() => {
+    // Sempre incluir a sala do profissional logado como primeira opção
+    const baseRooms = [professionalRoom]
+    
+    // Adicionar outras salas se necessário baseado na especialidade
+    if (appointmentData.specialty && specialtyConsultorioMap[appointmentData.specialty]) {
+      const specialtyRooms = specialtyConsultorioMap[appointmentData.specialty]
+      specialtyRooms.forEach(room => {
+        if (!baseRooms.includes(room)) {
+          baseRooms.push(room)
+        }
+      })
+    } else {
+      // Se não houver especialidade selecionada, adicionar as outras salas padrão
+      if (!baseRooms.includes('Consultório Escola Ricardo Valença')) {
+        baseRooms.push('Consultório Escola Ricardo Valença')
+      }
+      if (!baseRooms.includes('Consultório Escola Eduardo Faveret')) {
+        baseRooms.push('Consultório Escola Eduardo Faveret')
+      }
+    }
+    
+    return baseRooms
+  }, [appointmentData.specialty, professionalRoom])
 
   useEffect(() => {
-    if (rooms.length > 0 && !rooms.includes(appointmentData.room)) {
+    // Sempre definir a sala do profissional como padrão
+    if (professionalRoom && (!appointmentData.room || appointmentData.room !== professionalRoom)) {
+      setAppointmentData(prev => ({
+        ...prev,
+        room: professionalRoom
+      }))
+    } else if (rooms.length > 0 && !rooms.includes(appointmentData.room)) {
       setAppointmentData(prev => ({
         ...prev,
         room: rooms[0]
       }))
     }
-  }, [rooms])
+  }, [rooms, professionalRoom, appointmentData.room])
 
   const resetNewPatientForm = () => {
     setNewPatientData({
@@ -478,7 +537,7 @@ const ProfessionalScheduling: React.FC = () => {
           is_remote: true,
           duration: appointmentData.duration || 60,
           description: appointmentData.notes || '',
-          location: appointmentData.room || 'Consultório Escola Ricardo Valença',
+          location: appointmentData.room || professionalRoom,
           created_at: new Date().toISOString()
         })
         .select()
@@ -499,7 +558,7 @@ const ProfessionalScheduling: React.FC = () => {
         type: 'online',
         specialty: '',
         service: 'Primeira consulta',
-        room: rooms[0] || '',
+        room: professionalRoom || rooms[0] || '',
         notes: '',
         duration: 60,
         priority: 'normal'
@@ -522,7 +581,7 @@ const ProfessionalScheduling: React.FC = () => {
     const dayNames = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb']
 
     return (
-      <div className="bg-slate-800 rounded-xl p-6">
+      <div className="rounded-xl p-6" style={cardStyle}>
         {/* Header do calendário */}
         <div className="flex justify-between items-center mb-6">
           <h3 className="text-xl font-semibold text-white">
@@ -531,13 +590,15 @@ const ProfessionalScheduling: React.FC = () => {
           <div className="flex items-center space-x-2">
             <button
               onClick={() => navigateMonth('prev')}
-              className="p-2 hover:bg-slate-700 rounded-lg transition-colors"
+                className="p-2 rounded-lg transition-colors hover:opacity-80"
+                style={{ background: 'rgba(15, 36, 60, 0.5)' }}
             >
               <ChevronLeft className="w-5 h-5 text-slate-400" />
             </button>
             <button
               onClick={() => navigateMonth('next')}
-              className="p-2 hover:bg-slate-700 rounded-lg transition-colors"
+                className="p-2 rounded-lg transition-colors hover:opacity-80"
+                style={{ background: 'rgba(15, 36, 60, 0.5)' }}
             >
               <ChevronRight className="w-5 h-5 text-slate-400" />
             </button>
@@ -561,7 +622,7 @@ const ProfessionalScheduling: React.FC = () => {
               onClick={() => handleDateSelect(day)}
               className={`p-2 h-20 border border-slate-700 rounded-lg cursor-pointer transition-colors ${
                 day.isCurrentMonth
-                  ? 'hover:bg-slate-700'
+                  ? 'hover:opacity-80'
                   : 'text-slate-500'
               } ${
                 day.isToday
@@ -619,7 +680,7 @@ const ProfessionalScheduling: React.FC = () => {
     const bookedTimes = dayAppointments.map(apt => apt.time)
 
     return (
-      <div className="bg-slate-800 rounded-xl p-6">
+      <div className="rounded-xl p-6" style={cardStyle}>
         <h3 className="text-xl font-semibold text-white mb-4">
           Horários Disponíveis - {selectedDate.toLocaleDateString('pt-BR')}
         </h3>
@@ -633,8 +694,8 @@ const ProfessionalScheduling: React.FC = () => {
                 disabled={isBooked}
                 className={`p-3 rounded-lg text-sm font-medium transition-colors ${
                   isBooked
-                    ? 'bg-slate-700 text-slate-500 cursor-not-allowed'
-                    : 'bg-slate-700 hover:bg-primary-600 text-slate-300 hover:text-white'
+                    ? 'text-slate-500 cursor-not-allowed'
+                    : 'hover:bg-primary-600 text-slate-300 hover:text-white'
                 }`}
               >
                 {time}
@@ -651,7 +712,7 @@ const ProfessionalScheduling: React.FC = () => {
     <div className="space-y-6">
       {/* Cards de estatísticas */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div className="bg-slate-800 rounded-xl p-6">
+        <div className="rounded-xl p-6" style={cardStyle}>
           <div className="flex items-center justify-between">
             <div>
               <p className="text-slate-400 text-sm">Total de Consultas</p>
@@ -661,7 +722,7 @@ const ProfessionalScheduling: React.FC = () => {
           </div>
         </div>
         
-        <div className="bg-slate-800 rounded-xl p-6">
+        <div className="rounded-xl p-6" style={cardStyle}>
           <div className="flex items-center justify-between">
             <div>
               <p className="text-slate-400 text-sm">Taxa de Conclusão</p>
@@ -673,7 +734,7 @@ const ProfessionalScheduling: React.FC = () => {
           </div>
         </div>
         
-        <div className="bg-slate-800 rounded-xl p-6">
+        <div className="rounded-xl p-6" style={cardStyle}>
           <div className="flex items-center justify-between">
             <div>
               <p className="text-slate-400 text-sm">Avaliação Média</p>
@@ -683,7 +744,7 @@ const ProfessionalScheduling: React.FC = () => {
           </div>
         </div>
         
-        <div className="bg-slate-800 rounded-xl p-6">
+        <div className="rounded-xl p-6" style={cardStyle}>
           <div className="flex items-center justify-between">
             <div>
               <p className="text-slate-400 text-sm">Receita Total</p>
@@ -697,14 +758,14 @@ const ProfessionalScheduling: React.FC = () => {
       {/* Gráficos */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Gráfico de especialidades */}
-        <div className="bg-slate-800 rounded-xl p-6">
+        <div className="rounded-xl p-6" style={cardStyle}>
           <h3 className="text-lg font-semibold text-white mb-4">Consultas por Especialidade</h3>
           <div className="space-y-3">
             {analyticsData.specialtyStats.map(specialty => (
               <div key={specialty.specialty} className="flex items-center justify-between">
                 <span className="text-slate-300">{specialty.specialty}</span>
                 <div className="flex items-center space-x-2">
-                  <div className="w-32 bg-slate-700 rounded-full h-2">
+                  <div className="w-32 rounded-full h-2" style={{ background: 'rgba(15, 36, 60, 0.7)' }}>
                     <div 
                       className="bg-primary-500 h-2 rounded-full"
                       style={{ width: `${(specialty.appointments / 50) * 100}%` }}
@@ -718,14 +779,14 @@ const ProfessionalScheduling: React.FC = () => {
         </div>
 
         {/* Gráfico de horários */}
-        <div className="bg-slate-800 rounded-xl p-6">
+        <div className="rounded-xl p-6" style={cardStyle}>
           <h3 className="text-lg font-semibold text-white mb-4">Ocupação por Horário</h3>
           <div className="space-y-3">
             {analyticsData.timeSlotStats.map(slot => (
               <div key={slot.time} className="flex items-center justify-between">
                 <span className="text-slate-300">{slot.time}</span>
                 <div className="flex items-center space-x-2">
-                  <div className="w-32 bg-slate-700 rounded-full h-2">
+                  <div className="w-32 rounded-full h-2" style={{ background: 'rgba(15, 36, 60, 0.7)' }}>
                     <div 
                       className="bg-green-500 h-2 rounded-full"
                       style={{ width: `${slot.utilization}%` }}
@@ -742,7 +803,7 @@ const ProfessionalScheduling: React.FC = () => {
   )
 
   return (
-    <div className="bg-slate-900">
+    <div className="min-h-screen" style={{ background: backgroundGradient }}>
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <div className="flex justify-between items-center mb-8">
@@ -752,11 +813,35 @@ const ProfessionalScheduling: React.FC = () => {
           </div>
           <div className="flex items-center space-x-4">
             <button
+              onClick={() => {
+                setSelectedDate(findNextWorkingDate(new Date()))
+                setSelectedTime(null)
+                setAppointmentData({
+                  patientId: '',
+                  patientName: '',
+                  date: findNextWorkingDate(new Date()).toISOString().split('T')[0],
+                  time: '',
+                  type: 'online',
+                  specialty: '',
+                  service: 'Primeira consulta',
+                  room: professionalRoom || rooms[0] || '',
+                  notes: '',
+                  duration: 60,
+                  priority: 'normal'
+                })
+                setShowAppointmentModal(true)
+              }}
+              className="bg-gradient-to-r from-emerald-600 to-sky-500 text-white px-6 py-2.5 rounded-lg font-semibold shadow-lg hover:from-emerald-500 hover:to-sky-400 transition-all flex items-center space-x-2"
+            >
+              <Plus className="w-5 h-5" />
+              <span>Agendar Paciente</span>
+            </button>
+            <button
               onClick={() => setViewMode('calendar')}
               className={`px-4 py-2 rounded-lg transition-colors ${
                 viewMode === 'calendar'
                   ? 'bg-primary-600 text-white'
-                  : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
+                  : 'text-slate-300 hover:opacity-80'
               }`}
             >
               <Calendar className="w-4 h-4 mr-2" />
@@ -767,7 +852,7 @@ const ProfessionalScheduling: React.FC = () => {
               className={`px-4 py-2 rounded-lg transition-colors ${
                 viewMode === 'list'
                   ? 'bg-primary-600 text-white'
-                  : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
+                  : 'text-slate-300 hover:opacity-80'
               }`}
             >
               <FileText className="w-4 h-4 mr-2" />
@@ -778,13 +863,134 @@ const ProfessionalScheduling: React.FC = () => {
               className={`px-4 py-2 rounded-lg transition-colors ${
                 viewMode === 'analytics'
                   ? 'bg-primary-600 text-white'
-                  : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
+                  : 'text-slate-300 hover:opacity-80'
               }`}
             >
               <BarChart3 className="w-4 h-4 mr-2" />
               Analytics
             </button>
           </div>
+        </div>
+
+        {/* Solicitações Pendentes - Sempre visível */}
+        <div className="bg-gradient-to-r from-amber-900/30 to-orange-900/30 rounded-xl p-6 border border-amber-700/50 mb-6">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center space-x-3">
+              <Bell className="w-6 h-6 text-amber-400" />
+              <div>
+                <h2 className="text-xl font-bold text-white">Solicitações de Agendamento Pendentes</h2>
+                <p className="text-sm text-amber-200/80">
+                  {pendingRequests.length > 0 
+                    ? `${pendingRequests.length} solicitação(ões) aguardando aprovação`
+                    : 'Nenhuma solicitação pendente no momento'
+                  }
+                </p>
+              </div>
+            </div>
+          </div>
+          {pendingRequests.length > 0 ? (
+            <div className="space-y-3">
+              {pendingRequests.map((request) => {
+                const patient = patients.find((p: any) => p.id === request.patientId)
+                return (
+                  <div
+                    key={request.id}
+                    className="rounded-lg p-4 border border-amber-600/30"
+                    style={cardStyle}
+                  >
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <div className="flex items-center space-x-3 mb-2">
+                          <div className="w-10 h-10 bg-amber-600/20 rounded-full flex items-center justify-center">
+                            <User className="w-5 h-5 text-amber-400" />
+                          </div>
+                          <div>
+                            <h4 className="text-white font-semibold">{request.patientName || patient?.name || 'Paciente'}</h4>
+                            <p className="text-slate-400 text-sm">{patient?.email || ''}</p>
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm ml-13">
+                          <div>
+                            <p className="text-slate-400">Data</p>
+                            <p className="text-white font-medium">{new Date(request.date).toLocaleDateString('pt-BR')}</p>
+                          </div>
+                          <div>
+                            <p className="text-slate-400">Horário</p>
+                            <p className="text-white font-medium">{request.time}</p>
+                          </div>
+                          <div>
+                            <p className="text-slate-400">Tipo</p>
+                            <p className="text-white capitalize">{request.type || 'Online'}</p>
+                          </div>
+                          <div>
+                            <p className="text-slate-400">Especialidade</p>
+                            <p className="text-white">{request.specialty || 'Não especificada'}</p>
+                          </div>
+                        </div>
+                        {request.notes && (
+                          <div className="mt-3 ml-13">
+                            <p className="text-slate-400 text-sm">Observações do paciente:</p>
+                            <p className="text-slate-300 text-sm p-2 rounded mt-1" style={secondarySurfaceStyle}>{request.notes}</p>
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex items-center space-x-2 ml-4">
+                        <button
+                          onClick={async () => {
+                            try {
+                              const { error } = await supabase
+                                .from('appointments')
+                                .update({ status: 'scheduled' })
+                                .eq('id', request.id)
+                              
+                              if (error) throw error
+                              await loadData()
+                              alert('Solicitação aprovada com sucesso!')
+                            } catch (error: any) {
+                              console.error('Erro ao aprovar solicitação:', error)
+                              alert(`Erro ao aprovar: ${error.message}`)
+                            }
+                          }}
+                          className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center space-x-1"
+                        >
+                          <CheckCircle className="w-4 h-4" />
+                          <span>Aprovar</span>
+                        </button>
+                        <button
+                          onClick={async () => {
+                            if (!confirm('Tem certeza que deseja rejeitar esta solicitação?')) return
+                            try {
+                              const { error } = await supabase
+                                .from('appointments')
+                                .update({ status: 'cancelled' })
+                                .eq('id', request.id)
+                              
+                              if (error) throw error
+                              await loadData()
+                              alert('Solicitação rejeitada.')
+                            } catch (error: any) {
+                              console.error('Erro ao rejeitar solicitação:', error)
+                              alert(`Erro ao rejeitar: ${error.message}`)
+                            }
+                          }}
+                          className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center space-x-1"
+                        >
+                          <AlertCircle className="w-4 h-4" />
+                          <span>Rejeitar</span>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          ) : (
+            <div className="text-center py-6">
+              <p className="text-slate-400 text-sm">
+                Quando pacientes solicitarem agendamentos, eles aparecerão aqui para sua aprovação.
+              </p>
+            </div>
+          )}
         </div>
 
         {/* Conteúdo baseado na visualização */}
@@ -796,11 +1002,11 @@ const ProfessionalScheduling: React.FC = () => {
         )}
 
         {viewMode === 'list' && (
-          <div className="bg-slate-800 rounded-xl p-6">
+          <div className="rounded-xl p-6" style={cardStyle}>
             <h3 className="text-xl font-semibold text-white mb-4">Próximas Consultas</h3>
             <div className="space-y-4">
               {appointments.map(appointment => (
-                <div key={appointment.id} className="bg-slate-700 rounded-lg p-4">
+                <div key={appointment.id} className="rounded-lg p-4" style={secondarySurfaceStyle}>
                   <div className="flex justify-between items-start">
                     <div className="flex-1">
                       <div className="flex items-center space-x-4 mb-2">
@@ -860,7 +1066,7 @@ const ProfessionalScheduling: React.FC = () => {
         {/* Modal de agendamento */}
         {showAppointmentModal && (
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-            <div className="bg-slate-800 rounded-xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            <div className="rounded-xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto" style={cardStyle}>
               <h3 className="text-xl font-semibold text-white mb-4">Novo Agendamento</h3>
               <div className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -877,7 +1083,8 @@ const ProfessionalScheduling: React.FC = () => {
                           patientName: patient?.name || ''
                         })
                       }}
-                      className="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-white"
+                      className="w-full rounded-lg px-3 py-2 text-white"
+                      style={{ background: 'rgba(15, 36, 60, 0.7)', border: '1px solid rgba(0, 193, 106, 0.12)' }}
                     >
                       <option value="">Selecione um paciente</option>
                       {patients.map(patient => (
@@ -903,14 +1110,15 @@ const ProfessionalScheduling: React.FC = () => {
                       </button>
                     </div>
                     {isCreatingPatient && (
-                      <div className="mt-3 space-y-3 bg-slate-900/60 border border-slate-700/60 rounded-lg p-4">
+                      <div className="mt-3 space-y-3 rounded-lg p-4" style={secondarySurfaceStyle}>
                         <div>
                           <label className="block text-xs text-slate-400 mb-1">Nome completo</label>
                           <input
                             type="text"
                             value={newPatientData.name}
                             onChange={(e) => setNewPatientData(prev => ({ ...prev, name: e.target.value }))}
-                            className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-white text-sm"
+                            className="w-full rounded-lg px-3 py-2 text-white text-sm"
+                            style={{ background: 'rgba(15, 36, 60, 0.7)', border: '1px solid rgba(0, 193, 106, 0.12)' }}
                             placeholder="Ex: Maria da Silva"
                           />
                         </div>
@@ -920,7 +1128,8 @@ const ProfessionalScheduling: React.FC = () => {
                             type="email"
                             value={newPatientData.email}
                             onChange={(e) => setNewPatientData(prev => ({ ...prev, email: e.target.value }))}
-                            className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-white text-sm"
+                            className="w-full rounded-lg px-3 py-2 text-white text-sm"
+                            style={{ background: 'rgba(15, 36, 60, 0.7)', border: '1px solid rgba(0, 193, 106, 0.12)' }}
                             placeholder="paciente@exemplo.com"
                           />
                         </div>
@@ -930,7 +1139,8 @@ const ProfessionalScheduling: React.FC = () => {
                             type="tel"
                             value={newPatientData.phone}
                             onChange={(e) => setNewPatientData(prev => ({ ...prev, phone: e.target.value }))}
-                            className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-white text-sm"
+                            className="w-full rounded-lg px-3 py-2 text-white text-sm"
+                            style={{ background: 'rgba(15, 36, 60, 0.7)', border: '1px solid rgba(0, 193, 106, 0.12)' }}
                             placeholder="(11) 99999-9999"
                           />
                         </div>
@@ -966,7 +1176,8 @@ const ProfessionalScheduling: React.FC = () => {
                       type="date"
                       value={appointmentData.date}
                       onChange={(e) => setAppointmentData({...appointmentData, date: e.target.value})}
-                      className="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-white"
+                      className="w-full rounded-lg px-3 py-2 text-white"
+                      style={{ background: 'rgba(15, 36, 60, 0.7)', border: '1px solid rgba(0, 193, 106, 0.12)' }}
                     />
                   </div>
                   <div>
@@ -975,7 +1186,8 @@ const ProfessionalScheduling: React.FC = () => {
                       type="time"
                       value={appointmentData.time}
                       onChange={(e) => setAppointmentData({...appointmentData, time: e.target.value})}
-                      className="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-white"
+                      className="w-full rounded-lg px-3 py-2 text-white"
+                      style={{ background: 'rgba(15, 36, 60, 0.7)', border: '1px solid rgba(0, 193, 106, 0.12)' }}
                     />
                   </div>
                   <div>
@@ -984,7 +1196,8 @@ const ProfessionalScheduling: React.FC = () => {
                       type="text"
                       value="Online"
                       readOnly
-                      className="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-white uppercase tracking-wide"
+                      className="w-full rounded-lg px-3 py-2 text-white uppercase tracking-wide"
+                      style={{ background: 'rgba(15, 36, 60, 0.7)', border: '1px solid rgba(0, 193, 106, 0.12)' }}
                     />
                   </div>
                   <div>
@@ -992,7 +1205,8 @@ const ProfessionalScheduling: React.FC = () => {
                     <select
                       value={appointmentData.specialty}
                       onChange={(e) => setAppointmentData({ ...appointmentData, specialty: e.target.value })}
-                      className="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-white"
+                      className="w-full rounded-lg px-3 py-2 text-white"
+                      style={{ background: 'rgba(15, 36, 60, 0.7)', border: '1px solid rgba(0, 193, 106, 0.12)' }}
                       required
                     >
                       <option value="">Selecione</option>
@@ -1006,7 +1220,8 @@ const ProfessionalScheduling: React.FC = () => {
                     <select
                       value={appointmentData.room}
                       onChange={(e) => setAppointmentData({...appointmentData, room: e.target.value})}
-                      className="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-white"
+                      className="w-full rounded-lg px-3 py-2 text-white"
+                      style={{ background: 'rgba(15, 36, 60, 0.7)', border: '1px solid rgba(0, 193, 106, 0.12)' }}
                     >
                       <option value="">Selecione</option>
                       {rooms.map(room => (
@@ -1020,7 +1235,8 @@ const ProfessionalScheduling: React.FC = () => {
                   <select
                     value={appointmentData.service}
                     onChange={(e) => setAppointmentData({ ...appointmentData, service: e.target.value })}
-                    className="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-white"
+                    className="w-full rounded-lg px-3 py-2 text-white"
+                    style={{ background: 'rgba(15, 36, 60, 0.7)', border: '1px solid rgba(0, 193, 106, 0.12)' }}
                     required
                   >
                     <option value="Primeira consulta">Primeira consulta</option>

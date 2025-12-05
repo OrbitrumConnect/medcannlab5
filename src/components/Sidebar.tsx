@@ -232,6 +232,13 @@ const Sidebar: React.FC<SidebarProps> = ({
       href: '/app/clinica/profissional/pacientes'
     },
     {
+      id: 'agendamento-consultas',
+      label: 'Agendamento de Consultas',
+      description: 'Consulte nossos profissionais e agende sua consulta online',
+      icon: Calendar,
+      href: '/app/clinica/profissional/agendamentos'
+    },
+    {
       id: 'atendimento',
       label: 'Atendimento',
       description: 'Fluxo completo de consultas e telemedicina',
