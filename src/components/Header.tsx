@@ -112,6 +112,16 @@ const Header: React.FC = () => {
 
       <div className="w-full max-w-full px-2 sm:px-3 md:px-4 lg:px-6 xl:px-8 relative" style={{ zIndex: 10 }}>
         <div className="flex justify-between items-center h-14 sm:h-16 md:h-18">
+          {/* Mobile menu button - apenas se houver itens de navegação */}
+          {navigation.length > 0 && (
+            <button
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+              className="md:hidden p-2 rounded-md text-[#C8D6E5] hover:text-[#00C16A] active:text-[#00C16A] hover:bg-[#1b314e] active:bg-[#1b314e] touch-manipulation min-w-[44px] min-h-[44px] flex items-center justify-center"
+            >
+              {isMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+            </button>
+          )}
+
           {/* Logo removido - já existe na sidebar */}
           <div className="hidden"></div>
 
@@ -425,15 +435,7 @@ const Header: React.FC = () => {
               </Link>
             )}
 
-            {/* Mobile menu button - apenas se houver itens de navegação */}
-            {navigation.length > 0 && (
-              <button
-                onClick={() => setIsMenuOpen(!isMenuOpen)}
-                className="md:hidden p-2 rounded-md text-[#C8D6E5] hover:text-[#00C16A] active:text-[#00C16A] hover:bg-[#1b314e] active:bg-[#1b314e] touch-manipulation min-w-[44px] min-h-[44px] flex items-center justify-center"
-              >
-                {isMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-              </button>
-            )}
+
           </div>
 
         </div>
