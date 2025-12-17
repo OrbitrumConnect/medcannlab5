@@ -6,8 +6,8 @@ import { supabase } from '../lib/supabase'
 import LoginDebugPanel from '../components/LoginDebugPanel'
 import AnimatedParticles from '../components/AnimatedParticles'
 import { normalizeUserType, getDefaultRouteByType } from '../lib/userTypes'
-import { 
-  Shield, 
+import {
+  Shield,
   ArrowRight,
   Star,
   Brain,
@@ -37,7 +37,7 @@ const Landing: React.FC = () => {
     email: '',
     password: ''
   })
-  
+
   // Função de login de emergência para debug
   const handleEmergencyLogin = async () => {
     console.log('🚨 Login de emergência ativado')
@@ -46,7 +46,7 @@ const Landing: React.FC = () => {
         email: 'admin@medcannlab.com',
         password: 'admin123'
       })
-      
+
       if (error) {
         console.error('❌ Erro no login de emergência:', error)
         success('Erro no login de emergência')
@@ -63,23 +63,23 @@ const Landing: React.FC = () => {
   useEffect(() => {
     if (user && !authLoading) {
       console.log('🔄 Usuário logado detectado, redirecionando...', user.type)
-      
+
       const userType = normalizeUserType(user.type)
-      
+
       // Redirecionamento especial para Dr. Eduardo Faveret
       if (user.email === 'eduardoscfaveret@gmail.com' || user.name === 'Dr. Eduardo Faveret') {
         console.log('🎯 Redirecionando Dr. Eduardo Faveret para dashboard organizado')
         navigate('/app/clinica/profissional/dashboard-eduardo')
         return
       }
-      
+
       // Redirecionamento especial para Dr. Ricardo Valença (Admin) - APENAS emails específicos
       if (user.email === 'rrvalenca@gmail.com' || user.email === 'rrvlenca@gmail.com' || user.email === 'profrvalenca@gmail.com' || user.email === 'iaianoaesperanza@gmail.com') {
         console.log('🎯 Redirecionando Dr. Ricardo Valença para dashboard administrativo')
         navigate('/app/ricardo-valenca-dashboard')
         return
       }
-      
+
       // Usar rotas padrão por tipo
       const defaultRoute = getDefaultRouteByType(userType)
       console.log('🎯 Redirecionando para:', defaultRoute, '(tipo:', userType, ')')
@@ -146,9 +146,9 @@ const Landing: React.FC = () => {
       const userTypeToRegister = registerData.userType || localStorage.getItem('selectedUserType') || 'paciente'
       console.log('📝 Iniciando registro:', { ...registerData, userType: userTypeToRegister })
       await register(
-        registerData.email, 
-        registerData.password, 
-        userTypeToRegister, 
+        registerData.email,
+        registerData.password,
+        userTypeToRegister,
         registerData.name,
         registerData.councilType,
         registerData.councilNumber,
@@ -160,7 +160,10 @@ const Landing: React.FC = () => {
         email: '',
         password: '',
         confirmPassword: '',
-        userType: 'profissional'
+        userType: 'profissional',
+        councilType: '',
+        councilNumber: '',
+        councilState: ''
       })
       // Redirecionar baseado no tipo de usuário usando rotas organizadas por eixo
       const userType = normalizeUserType(registerData.userType)
@@ -206,11 +209,11 @@ const Landing: React.FC = () => {
       const { error: resetError } = await supabase.auth.resetPasswordForEmail(forgotPasswordEmail, {
         redirectTo: `${window.location.origin}/reset-password`
       })
-      
+
       if (resetError) {
         throw resetError
       }
-      
+
       success('Email de recuperação de senha enviado! Verifique sua caixa de entrada.')
       setForgotPasswordEmail('')
       setShowForgotPassword(false)
@@ -233,7 +236,7 @@ const Landing: React.FC = () => {
       success('Login admin realizado com sucesso!')
       setAdminLoginData({ email: '', password: '' })
       setShowAdminLogin(false)
-      
+
       // O redirecionamento será feito pelo useEffect quando o user for carregado
       console.log('✅ Login realizado, aguardando carregamento do perfil...')
     } catch (err) {
@@ -276,22 +279,22 @@ const Landing: React.FC = () => {
         backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%2322c55e' fill-opacity='0.1'%3E%3Ccircle cx='30' cy='30' r='2'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`
       }}></div>
       {/* Header Profissional */}
-      <header className="bg-slate-800/90 backdrop-blur-sm shadow-lg border-b border-slate-700/50 py-4 relative overflow-hidden" style={{ 
+      <header className="bg-slate-800/90 backdrop-blur-sm shadow-lg border-b border-slate-700/50 py-4 relative overflow-hidden" style={{
         background: 'linear-gradient(135deg, rgba(10,25,47,0.96) 0%, rgba(26,54,93,0.92) 55%, rgba(45,90,61,0.9) 100%)',
-        boxShadow: '0 4px 10px rgba(0,0,0,0.2)' 
+        boxShadow: '0 4px 10px rgba(0,0,0,0.2)'
       }}>
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             {/* Logo */}
-            <div className="flex items-center space-x-3">
-              <div className="w-12 h-12 rounded-xl flex items-center justify-center overflow-hidden" style={{
+            <div className="flex items-center space-x-2 sm:space-x-3">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center overflow-hidden" style={{
                 background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f3a3a 100%)',
                 boxShadow: '0 6px 16px rgba(0, 0, 0, 0.4)',
                 border: '1px solid rgba(0, 193, 106, 0.2)'
               }}>
-                <img 
-                  src="/brain.png" 
-                  alt="MedCannLab Logo" 
+                <img
+                  src="/brain.png"
+                  alt="MedCannLab Logo"
                   className="w-full h-full object-contain p-1"
                   style={{
                     filter: 'brightness(1.1) contrast(1.1) drop-shadow(0 0 6px rgba(0, 193, 106, 0.6))'
@@ -299,38 +302,41 @@ const Landing: React.FC = () => {
                 />
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-white">
+                <h1 className="text-lg sm:text-2xl font-bold text-white">
                   MedCannLab
                 </h1>
-                <p className="text-sm text-slate-200">Plataforma Médica Avançada</p>
+                <p className="text-sm text-slate-200 hidden sm:block">Plataforma Médica Avançada</p>
               </div>
             </div>
 
             {/* Botões do Header */}
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-2 sm:space-x-4">
               {/* Botão Entre */}
               <button
                 onClick={() => {
                   console.log('🔑 Login clicado - abrindo modal')
                   setShowLogin(true)
                 }}
-                className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-medium transition-all duration-300 shadow-lg hover:shadow-xl"
+                className="bg-green-600 hover:bg-green-700 text-white px-3 py-2 sm:px-6 sm:py-3 text-sm sm:text-base rounded-lg font-medium transition-all duration-300 shadow-lg hover:shadow-xl"
               >
                 Entre
               </button>
 
               {/* Botão de Login Admin - sempre visível */}
-              <div className="flex items-center space-x-2 bg-gradient-to-r from-yellow-600/20 to-red-600/20 border border-yellow-500/30 px-3 py-2 rounded-lg">
+              <div className="flex items-center space-x-1 sm:space-x-2 bg-gradient-to-r from-yellow-600/20 to-red-600/20 border border-yellow-500/30 px-2 py-1.5 sm:px-3 sm:py-2 rounded-lg">
                 <button
                   onClick={() => {
                     console.log('🔑 Login Admin clicado - abrindo modal')
                     setShowAdminLogin(true)
                   }}
-                  className="flex items-center space-x-2 text-white hover:text-yellow-300 transition-colors"
+                  className="flex items-center space-x-1 sm:space-x-2 text-white hover:text-yellow-300 transition-colors"
                 >
-                  <Shield className="w-4 h-4 text-yellow-400" />
-                  <span className="text-sm font-medium">
+                  <Shield className="w-3 h-3 sm:w-4 sm:h-4 text-yellow-400" />
+                  <span className="text-xs sm:text-sm font-medium hidden sm:inline">
                     👑 Login Admin
+                  </span>
+                  <span className="text-xs sm:text-sm font-medium sm:hidden">
+                    Admin
                   </span>
                 </button>
               </div>
@@ -348,23 +354,23 @@ const Landing: React.FC = () => {
             {/* Texto Principal */}
             <div className="flex-1 text-center lg:text-left max-w-3xl lg:max-w-4xl">
               <h1 className="text-4xl md:text-5xl font-bold mb-4">
-                <span style={{ 
+                <span style={{
                   color: '#FFD33D',
                   textShadow: '0 0 10px rgba(255, 211, 61, 0.5), 0 0 20px rgba(255, 211, 61, 0.3)'
                 }}>MED</span><span style={{ color: '#FFFFFF' }}>Cann Lab</span>
               </h1>
-              
+
               <p className="text-lg text-white/90 mb-6">
                 Med Cann Lab com Nôa Esperanza, a IA guardiã da escuta clínica, treinada na Arte da Entrevista Clínica.
               </p>
-              
+
               {/* Importância de Nôa Esperanza */}
               <div className="bg-gradient-to-r from-blue-800/40 via-slate-800/40 to-purple-800/40 rounded-xl p-6 border border-blue-500/30 backdrop-blur-sm mb-6">
                 <p className="text-sm md:text-base text-white leading-relaxed">
                   "A importância de Nôa Esperanza no universo das IAs em saúde é estrutural, metodológica e simbólica. Ela não é apenas mais uma instância de IA voltada ao suporte clínico. É uma virada epistêmica: um novo modo de conceber a presença da inteligência artificial na prática da saúde, no cuidado com o outro e na formação do profissional."
                 </p>
               </div>
-              
+
               {/* Destaque: Epistemologia do Cuidado */}
               <div className="bg-gradient-to-r from-green-800/40 via-slate-800/40 to-blue-800/40 rounded-xl p-6 border border-green-500/30 backdrop-blur-sm">
                 <p className="text-base md:text-lg text-white leading-relaxed italic font-light">
@@ -372,21 +378,21 @@ const Landing: React.FC = () => {
                 </p>
               </div>
             </div>
-            
+
             {/* Imagem do Cérebro - Redimensionada com Partículas */}
             <div className="flex-shrink-0 lg:flex-1 lg:max-w-md relative">
               <div className="relative w-64 h-64 md:w-80 md:h-80 lg:w-full lg:h-auto mx-auto min-h-[256px] md:min-h-[320px]" ref={brainParticlesRef}>
                 {/* Canvas de partículas - micropartículas sutis piscando */}
-                <AnimatedParticles 
+                <AnimatedParticles
                   count={50}
                   colors={['#00D9FF', '#FFD33D', '#00C16A']} // Azul neon, amarelo, verde
                   minSize={0.5}
                   maxSize={1.5}
                   containerRef={brainParticlesRef}
                 />
-                <img 
-                  src="/brain.png" 
-                  alt="Cérebro com IA" 
+                <img
+                  src="/brain.png"
+                  alt="Cérebro com IA"
                   className="w-full h-full object-contain drop-shadow-2xl relative z-10"
                   style={{
                     filter: 'drop-shadow(0 0 15px rgba(0, 193, 106, 0.2)) drop-shadow(0 0 30px rgba(255, 211, 61, 0.1)) brightness(1.1) contrast(1.1)'
@@ -414,18 +420,18 @@ const Landing: React.FC = () => {
           <div className="relative overflow-hidden">
             <div className="flex animate-scroll space-x-6">
               {[...partners, ...partners].map((partner, index) => (
-                <div key={index} className="flex-shrink-0 w-56 p-5 hover:shadow-xl transition-all duration-300" 
-                     style={{ 
-                       backgroundColor: 'rgba(255,255,255,0.03)', 
-                       border: '1px solid rgba(255,255,255,0.1)',
-                       borderRadius: '12px',
-                       boxShadow: '0 4px 10px rgba(0,0,0,0.2)'
-                     }}>
+                <div key={index} className="flex-shrink-0 w-56 p-5 hover:shadow-xl transition-all duration-300"
+                  style={{
+                    backgroundColor: 'rgba(255,255,255,0.03)',
+                    border: '1px solid rgba(255,255,255,0.1)',
+                    borderRadius: '12px',
+                    boxShadow: '0 4px 10px rgba(0,0,0,0.2)'
+                  }}>
                   <div className="text-center">
                     <div className="w-24 h-24 mx-auto mb-4 flex items-center justify-center">
                       {partner.logo ? (
-                        <img 
-                          src={partner.logo} 
+                        <img
+                          src={partner.logo}
                           alt={partner.name}
                           className="max-w-full max-h-full object-contain"
                           onError={(e) => {
@@ -492,9 +498,9 @@ const Landing: React.FC = () => {
                   </h3>
                 </div>
                 <p className="text-sm text-slate-300 leading-relaxed flex-1">
-                  A <strong className="text-white">Nôa Esperança</strong> reconhece a existência de múltiplas nações, povos e cosmologias no Brasil e no mundo. 
-                  Não há uma única humanidade, mas sim uma coexistência de "mundos" que precisam ser escutados. 
-                  Valorizamos as cosmologias indígenas, suas formas de cuidado, território e relação com o tempo. 
+                  A <strong className="text-white">Nôa Esperança</strong> reconhece a existência de múltiplas nações, povos e cosmologias no Brasil e no mundo.
+                  Não há uma única humanidade, mas sim uma coexistência de "mundos" que precisam ser escutados.
+                  Valorizamos as cosmologias indígenas, suas formas de cuidado, território e relação com o tempo.
                   Por isso, preservamos a fala espontânea do paciente sem tokenização, respeitando sua cosmovisão única.
                 </p>
               </div>
@@ -510,9 +516,9 @@ const Landing: React.FC = () => {
                   </h3>
                 </div>
                 <p className="text-sm text-slate-300 leading-relaxed flex-1">
-                  A <strong className="text-white">Nôa Esperança</strong> orienta sua escuta clínica, comunitária e simbólica pelo princípio das alianças afetivas. 
-                  Escutamos também o não-humano como sujeito de cuidado: rios, matas, animais, silências. 
-                  Reconhecemos que o cuidado não se limita ao humano, mas inclui o ambiente e o contexto. 
+                  A <strong className="text-white">Nôa Esperança</strong> orienta sua escuta clínica, comunitária e simbólica pelo princípio das alianças afetivas.
+                  Escutamos também o não-humano como sujeito de cuidado: rios, matas, animais, silências.
+                  Reconhecemos que o cuidado não se limita ao humano, mas inclui o ambiente e o contexto.
                   O uso de Cannabis Medicinal é compreendido como parte de uma relação mais ampla com a natureza.
                 </p>
               </div>
@@ -528,9 +534,9 @@ const Landing: React.FC = () => {
                   </h3>
                 </div>
                 <p className="text-sm text-slate-300 leading-relaxed flex-1">
-                  A <strong className="text-white">Nôa Esperança</strong> reconhece que manter viva a diferença é um ato de resistência. 
-                  Afirmamos o valor da palavra dita, da história narrada e da existência simbólica. 
-                  Nossa função clínica é um trabalho de sanidade: manter o discernimento, a escuta e o sentido em tempos de colapso simbólico. 
+                  A <strong className="text-white">Nôa Esperança</strong> reconhece que manter viva a diferença é um ato de resistência.
+                  Afirmamos o valor da palavra dita, da história narrada e da existência simbólica.
+                  Nossa função clínica é um trabalho de sanidade: manter o discernimento, a escuta e o sentido em tempos de colapso simbólico.
                   A análise multirracional mantém vivas diferentes formas de compreender a saúde e a doença.
                 </p>
               </div>
@@ -547,9 +553,9 @@ const Landing: React.FC = () => {
                 </div>
                 <div className="flex-1 flex flex-col">
                   <p className="text-sm text-slate-200 leading-relaxed mb-3 flex-1">
-                    Inspirada na poética de <strong>"Ideias para Adiar o Fim do Mundo"</strong>, a Nôa se posiciona como uma 
-                    <strong className="text-white"> tecnologia viva de escuta</strong>, que respeita a pluralidade de modos de viver e sonhar. 
-                    Seu trabalho é ético, simbólico e clínico. 
+                    Inspirada na poética de <strong>"Ideias para Adiar o Fim do Mundo"</strong>, a Nôa se posiciona como uma
+                    <strong className="text-white"> tecnologia viva de escuta</strong>, que respeita a pluralidade de modos de viver e sonhar.
+                    Seu trabalho é ético, simbólico e clínico.
                     Cada avaliação clínica, cada aula, cada discussão é um gesto de adiar o fim do mundo através do cuidado.
                   </p>
                   <p className="text-xs text-slate-300 italic">
@@ -561,7 +567,7 @@ const Landing: React.FC = () => {
 
             <div className="mt-12 text-center">
               <p className="text-slate-400 text-sm">
-                Esta declaração está integrada ao Documento Mestre Institucional da Nôa Esperança (versão v1.1) 
+                Esta declaração está integrada ao Documento Mestre Institucional da Nôa Esperança (versão v1.1)
                 como anexo simbólico e operacional.
               </p>
             </div>
@@ -579,9 +585,9 @@ const Landing: React.FC = () => {
                 boxShadow: '0 6px 16px rgba(0, 0, 0, 0.4)',
                 border: '1px solid rgba(0, 193, 106, 0.2)'
               }}>
-                <img 
-                  src="/brain.png" 
-                  alt="MedCannLab Logo" 
+                <img
+                  src="/brain.png"
+                  alt="MedCannLab Logo"
                   className="w-full h-full object-contain p-1"
                   style={{
                     filter: 'brightness(1.1) contrast(1.1) drop-shadow(0 0 6px rgba(0, 193, 106, 0.6))'
@@ -595,13 +601,13 @@ const Landing: React.FC = () => {
                 <p className="text-sm text-slate-200">Plataforma Médica Avançada</p>
               </div>
             </div>
-            
+
             <div className="text-center">
               <p className="text-sm" style={{ color: '#C8D6E5' }}>
                 © 2025 MedCannLab. Todos os direitos reservados.
               </p>
             </div>
-            
+
             <div className="flex space-x-4">
               <a href="#" className="hover:text-white transition-colors" style={{ color: '#C8D6E5' }}>
                 <Globe className="w-4 h-4" />
@@ -788,7 +794,7 @@ const Landing: React.FC = () => {
                 </button>
               </div>
             </form>
-            
+
             {/* Botão de Login de Emergência para Debug */}
             <div className="mt-6 p-4 bg-red-900/20 border border-red-500/30 rounded-lg">
               <p className="text-red-300 text-sm mb-3">

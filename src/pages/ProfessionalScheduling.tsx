@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react'
 import { useAuth } from '../contexts/AuthContext'
 import { supabase } from '../lib/supabase'
-import { 
+import {
   Calendar,
   Clock,
   User,
@@ -155,7 +155,7 @@ const ProfessionalScheduling: React.FC = () => {
           service: apt.title || 'Consulta',
           room: apt.location || (apt.is_remote ? 'Plataforma digital' : 'Sala'),
           status: apt.status,
-          duration: apt.duration || 60,
+          duration: Number(apt.duration) || 60,
           priority: 'normal',
           notes: apt.description || apt.notes,
           rating: apt.rating,
@@ -166,7 +166,7 @@ const ProfessionalScheduling: React.FC = () => {
       })
 
       // Separar agendamentos confirmados e solicitações pendentes
-      const confirmedAppointments = formattedAppointments.filter(apt => 
+      const confirmedAppointments = formattedAppointments.filter(apt =>
         apt.status === 'scheduled' || apt.status === 'confirmed' || apt.status === 'completed'
       )
       const pending = formattedAppointments.filter(apt => {
@@ -175,7 +175,7 @@ const ProfessionalScheduling: React.FC = () => {
         const isCreatedByPatient = apt.createdBy && apt.createdBy !== user.id
         return isPendingStatus || isCreatedByPatient
       })
-      
+
       // Debug: log para verificar solicitações
       if (pending.length > 0) {
         console.log('📋 Solicitações pendentes encontradas:', pending.length, pending)
@@ -192,7 +192,7 @@ const ProfessionalScheduling: React.FC = () => {
       const completedAppointments = formattedAppointments.filter(a => a.status === 'completed').length
       const cancelledAppointments = formattedAppointments.filter(a => a.status === 'cancelled').length
       const ratings = formattedAppointments.filter(a => a.rating).map(a => a.rating)
-      const averageRating = ratings.length > 0 
+      const averageRating = ratings.length > 0
         ? ratings.reduce((a, b) => a + b, 0) / ratings.length
         : 0
 
@@ -209,15 +209,57 @@ const ProfessionalScheduling: React.FC = () => {
 
       const totalRevenue = transactions?.reduce((sum, t) => sum + parseFloat(t.amount || '0'), 0) || 0
 
+      // Calcular estatísticas mensais
+      const appointmentsByMonth = formattedAppointments.reduce((acc: any, curr: any) => {
+        const date = new Date(curr.date);
+        // Ajustar fuso horário para evitar erro de dia/mês
+        const userTimezoneOffset = date.getTimezoneOffset() * 60000;
+        const adjustedDate = new Date(date.getTime() + userTimezoneOffset);
+
+        const month = adjustedDate.toLocaleString('pt-BR', { month: 'short' });
+        const key = month.charAt(0).toUpperCase() + month.slice(1); // Capitalizar
+        acc[key] = (acc[key] || 0) + 1;
+        return acc;
+      }, {});
+
+      const monthlyStats = Object.keys(appointmentsByMonth).map(month => ({
+        name: month,
+        appointments: appointmentsByMonth[month]
+      }));
+
+      // Calcular estatísticas por especialidade
+      const appointmentsBySpecialty = formattedAppointments.reduce((acc: any, curr: any) => {
+        const spec = curr.specialty || 'Geral';
+        acc[spec] = (acc[spec] || 0) + 1;
+        return acc;
+      }, {});
+
+      const specialtyStats = Object.keys(appointmentsBySpecialty).map(spec => ({
+        name: spec,
+        value: appointmentsBySpecialty[spec]
+      }));
+
+      // Calcular estatísticas por horário
+      const appointmentsByTime = formattedAppointments.reduce((acc: any, curr: any) => {
+        const time = curr.time.substring(0, 5); // HH:MM
+        acc[time] = (acc[time] || 0) + 1;
+        return acc;
+      }, {});
+
+      const timeSlotStats = Object.keys(appointmentsByTime).map(time => ({
+        name: time,
+        bookings: appointmentsByTime[time]
+      })).sort((a: any, b: any) => a.name.localeCompare(b.name));
+
       setAnalyticsData({
         totalAppointments,
         completedAppointments,
         cancelledAppointments,
         averageRating: Math.round(averageRating * 10) / 10,
         totalRevenue,
-        monthlyStats: [], // TODO: Calcular estatísticas mensais
-        specialtyStats: [], // TODO: Calcular estatísticas por especialidade
-        timeSlotStats: [] // TODO: Calcular estatísticas por horário
+        monthlyStats,
+        specialtyStats,
+        timeSlotStats
       })
     } catch (error) {
       console.error('Erro ao carregar dados:', error)
@@ -269,7 +311,7 @@ const ProfessionalScheduling: React.FC = () => {
   const rooms = useMemo(() => {
     // Sempre incluir a sala do profissional logado como primeira opção
     const baseRooms = [professionalRoom]
-    
+
     // Adicionar outras salas se necessário baseado na especialidade
     if (appointmentData.specialty && specialtyConsultorioMap[appointmentData.specialty]) {
       const specialtyRooms = specialtyConsultorioMap[appointmentData.specialty]
@@ -287,7 +329,7 @@ const ProfessionalScheduling: React.FC = () => {
         baseRooms.push('Consultório Escola Eduardo Faveret')
       }
     }
-    
+
     return baseRooms
   }, [appointmentData.specialty, professionalRoom])
 
@@ -400,9 +442,9 @@ const ProfessionalScheduling: React.FC = () => {
     // Dias do mês anterior
     for (let i = startingDay - 1; i >= 0; i--) {
       const prevMonth = new Date(year, month - 1, 0)
-       prevMonth.setHours(0, 0, 0, 0)
-       const fullDate = new Date(year, month - 1, prevMonth.getDate() - i)
-       fullDate.setHours(0, 0, 0, 0)
+      prevMonth.setHours(0, 0, 0, 0)
+      const fullDate = new Date(year, month - 1, prevMonth.getDate() - i)
+      fullDate.setHours(0, 0, 0, 0)
       days.push({
         date: fullDate.getDate(),
         fullDate,
@@ -418,12 +460,12 @@ const ProfessionalScheduling: React.FC = () => {
       const date = new Date(year, month, day)
       date.setHours(0, 0, 0, 0)
       const isToday = date.toDateString() === new Date().toDateString()
-      const dayAppointments = appointments.filter(apt => 
+      const dayAppointments = appointments.filter(apt =>
         apt.date === `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`
       )
       const isBeforeStart = date < schedulingStartDate
       const isWorking = isSchedulingWorkingDay(date)
-      
+
       days.push({
         date: day,
         fullDate: date,
@@ -507,7 +549,7 @@ const ProfessionalScheduling: React.FC = () => {
     try {
       // 1. Verificar disponibilidade do horário
       const appointmentDateTime = new Date(`${appointmentData.date}T${appointmentData.time}`)
-      
+
       // Verificar conflitos
       const { data: conflicting } = await supabase
         .from('appointments')
@@ -516,12 +558,12 @@ const ProfessionalScheduling: React.FC = () => {
         .eq('appointment_date', appointmentDateTime.toISOString())
         .in('status', ['scheduled', 'confirmed'])
         .maybeSingle()
-      
+
       if (conflicting) {
         alert('Este horário já está ocupado. Por favor, escolha outro horário.')
         return
       }
-      
+
       // 2. Salvar no Supabase
       const { data, error } = await supabase
         .from('appointments')
@@ -542,12 +584,12 @@ const ProfessionalScheduling: React.FC = () => {
         })
         .select()
         .single()
-      
+
       if (error) throw error
-      
+
       // 3. Recarregar dados
       await loadData()
-      
+
       // 4. Fechar modal e limpar formulário
       setShowAppointmentModal(false)
       setAppointmentData({
@@ -563,7 +605,7 @@ const ProfessionalScheduling: React.FC = () => {
         duration: 60,
         priority: 'normal'
       })
-      
+
       alert('Agendamento criado com sucesso!')
     } catch (error: any) {
       console.error('Erro ao criar agendamento:', error)
@@ -590,15 +632,15 @@ const ProfessionalScheduling: React.FC = () => {
           <div className="flex items-center space-x-2">
             <button
               onClick={() => navigateMonth('prev')}
-                className="p-2 rounded-lg transition-colors hover:opacity-80"
-                style={{ background: 'rgba(15, 36, 60, 0.5)' }}
+              className="p-2 rounded-lg transition-colors hover:opacity-80"
+              style={{ background: 'rgba(15, 36, 60, 0.5)' }}
             >
               <ChevronLeft className="w-5 h-5 text-slate-400" />
             </button>
             <button
               onClick={() => navigateMonth('next')}
-                className="p-2 rounded-lg transition-colors hover:opacity-80"
-                style={{ background: 'rgba(15, 36, 60, 0.5)' }}
+              className="p-2 rounded-lg transition-colors hover:opacity-80"
+              style={{ background: 'rgba(15, 36, 60, 0.5)' }}
             >
               <ChevronRight className="w-5 h-5 text-slate-400" />
             </button>
@@ -620,23 +662,19 @@ const ProfessionalScheduling: React.FC = () => {
             <div
               key={index}
               onClick={() => handleDateSelect(day)}
-              className={`p-2 h-20 border border-slate-700 rounded-lg cursor-pointer transition-colors ${
-                day.isCurrentMonth
-                  ? 'hover:opacity-80'
-                  : 'text-slate-500'
-              } ${
-                day.isToday
+              className={`p-2 h-20 border border-slate-700 rounded-lg cursor-pointer transition-colors ${day.isCurrentMonth
+                ? 'hover:opacity-80'
+                : 'text-slate-500'
+                } ${day.isToday
                   ? 'bg-primary-600/20 border-primary-500'
                   : ''
-              } ${
-                day.isDisabled ? 'opacity-40 cursor-not-allowed hover:bg-transparent' : ''
-              } ${
-                selectedDate &&
-                day.isCurrentMonth &&
-                selectedDate.toDateString() === day.fullDate.toDateString()
+                } ${day.isDisabled ? 'opacity-40 cursor-not-allowed hover:bg-transparent' : ''
+                } ${selectedDate &&
+                  day.isCurrentMonth &&
+                  selectedDate.toDateString() === day.fullDate.toDateString()
                   ? 'bg-primary-600 border-primary-500'
                   : ''
-              }`}
+                }`}
             >
               <div className="text-sm font-medium mb-1">
                 {day.date}
@@ -646,13 +684,12 @@ const ProfessionalScheduling: React.FC = () => {
                   {day.appointments.slice(0, 2).map(apt => (
                     <div
                       key={apt.id}
-                      className={`text-xs px-1 py-0.5 rounded ${
-                        apt.priority === 'high'
-                          ? 'bg-red-500/20 text-red-400'
-                          : apt.priority === 'normal'
+                      className={`text-xs px-1 py-0.5 rounded ${apt.priority === 'high'
+                        ? 'bg-red-500/20 text-red-400'
+                        : apt.priority === 'normal'
                           ? 'bg-blue-500/20 text-blue-400'
                           : 'bg-green-500/20 text-green-400'
-                      }`}
+                        }`}
                     >
                       {apt.time} - {apt.patientName.split(' ')[0]}
                     </div>
@@ -692,11 +729,10 @@ const ProfessionalScheduling: React.FC = () => {
                 key={time}
                 onClick={() => !isBooked && handleTimeSelect(time)}
                 disabled={isBooked}
-                className={`p-3 rounded-lg text-sm font-medium transition-colors ${
-                  isBooked
-                    ? 'text-slate-500 cursor-not-allowed'
-                    : 'hover:bg-primary-600 text-slate-300 hover:text-white'
-                }`}
+                className={`p-3 rounded-lg text-sm font-medium transition-colors ${isBooked
+                  ? 'text-slate-500 cursor-not-allowed'
+                  : 'hover:bg-primary-600 text-slate-300 hover:text-white'
+                  }`}
               >
                 {time}
               </button>
@@ -721,7 +757,7 @@ const ProfessionalScheduling: React.FC = () => {
             <Calendar className="w-8 h-8 text-primary-400" />
           </div>
         </div>
-        
+
         <div className="rounded-xl p-6" style={cardStyle}>
           <div className="flex items-center justify-between">
             <div>
@@ -733,7 +769,7 @@ const ProfessionalScheduling: React.FC = () => {
             <CheckCircle className="w-8 h-8 text-green-400" />
           </div>
         </div>
-        
+
         <div className="rounded-xl p-6" style={cardStyle}>
           <div className="flex items-center justify-between">
             <div>
@@ -743,7 +779,7 @@ const ProfessionalScheduling: React.FC = () => {
             <Star className="w-8 h-8 text-yellow-400" />
           </div>
         </div>
-        
+
         <div className="rounded-xl p-6" style={cardStyle}>
           <div className="flex items-center justify-between">
             <div>
@@ -761,12 +797,12 @@ const ProfessionalScheduling: React.FC = () => {
         <div className="rounded-xl p-6" style={cardStyle}>
           <h3 className="text-lg font-semibold text-white mb-4">Consultas por Especialidade</h3>
           <div className="space-y-3">
-            {analyticsData.specialtyStats.map(specialty => (
+            {analyticsData.specialtyStats.map((specialty: any) => (
               <div key={specialty.specialty} className="flex items-center justify-between">
                 <span className="text-slate-300">{specialty.specialty}</span>
                 <div className="flex items-center space-x-2">
                   <div className="w-32 rounded-full h-2" style={{ background: 'rgba(15, 36, 60, 0.7)' }}>
-                    <div 
+                    <div
                       className="bg-primary-500 h-2 rounded-full"
                       style={{ width: `${(specialty.appointments / 50) * 100}%` }}
                     ></div>
@@ -782,12 +818,12 @@ const ProfessionalScheduling: React.FC = () => {
         <div className="rounded-xl p-6" style={cardStyle}>
           <h3 className="text-lg font-semibold text-white mb-4">Ocupação por Horário</h3>
           <div className="space-y-3">
-            {analyticsData.timeSlotStats.map(slot => (
+            {analyticsData.timeSlotStats.map((slot: any) => (
               <div key={slot.time} className="flex items-center justify-between">
                 <span className="text-slate-300">{slot.time}</span>
                 <div className="flex items-center space-x-2">
                   <div className="w-32 rounded-full h-2" style={{ background: 'rgba(15, 36, 60, 0.7)' }}>
-                    <div 
+                    <div
                       className="bg-green-500 h-2 rounded-full"
                       style={{ width: `${slot.utilization}%` }}
                     ></div>
@@ -838,33 +874,30 @@ const ProfessionalScheduling: React.FC = () => {
             </button>
             <button
               onClick={() => setViewMode('calendar')}
-              className={`px-4 py-2 rounded-lg transition-colors ${
-                viewMode === 'calendar'
-                  ? 'bg-primary-600 text-white'
-                  : 'text-slate-300 hover:opacity-80'
-              }`}
+              className={`px-4 py-2 rounded-lg transition-colors ${viewMode === 'calendar'
+                ? 'bg-primary-600 text-white'
+                : 'text-slate-300 hover:opacity-80'
+                }`}
             >
               <Calendar className="w-4 h-4 mr-2" />
               Calendário
             </button>
             <button
               onClick={() => setViewMode('list')}
-              className={`px-4 py-2 rounded-lg transition-colors ${
-                viewMode === 'list'
-                  ? 'bg-primary-600 text-white'
-                  : 'text-slate-300 hover:opacity-80'
-              }`}
+              className={`px-4 py-2 rounded-lg transition-colors ${viewMode === 'list'
+                ? 'bg-primary-600 text-white'
+                : 'text-slate-300 hover:opacity-80'
+                }`}
             >
               <FileText className="w-4 h-4 mr-2" />
               Lista
             </button>
             <button
               onClick={() => setViewMode('analytics')}
-              className={`px-4 py-2 rounded-lg transition-colors ${
-                viewMode === 'analytics'
-                  ? 'bg-primary-600 text-white'
-                  : 'text-slate-300 hover:opacity-80'
-              }`}
+              className={`px-4 py-2 rounded-lg transition-colors ${viewMode === 'analytics'
+                ? 'bg-primary-600 text-white'
+                : 'text-slate-300 hover:opacity-80'
+                }`}
             >
               <BarChart3 className="w-4 h-4 mr-2" />
               Analytics
@@ -880,7 +913,7 @@ const ProfessionalScheduling: React.FC = () => {
               <div>
                 <h2 className="text-xl font-bold text-white">Solicitações de Agendamento Pendentes</h2>
                 <p className="text-sm text-amber-200/80">
-                  {pendingRequests.length > 0 
+                  {pendingRequests.length > 0
                     ? `${pendingRequests.length} solicitação(ões) aguardando aprovação`
                     : 'Nenhuma solicitação pendente no momento'
                   }
@@ -942,7 +975,7 @@ const ProfessionalScheduling: React.FC = () => {
                                 .from('appointments')
                                 .update({ status: 'scheduled' })
                                 .eq('id', request.id)
-                              
+
                               if (error) throw error
                               await loadData()
                               alert('Solicitação aprovada com sucesso!')
@@ -964,7 +997,7 @@ const ProfessionalScheduling: React.FC = () => {
                                 .from('appointments')
                                 .update({ status: 'cancelled' })
                                 .eq('id', request.id)
-                              
+
                               if (error) throw error
                               await loadData()
                               alert('Solicitação rejeitada.')
@@ -1175,7 +1208,7 @@ const ProfessionalScheduling: React.FC = () => {
                     <input
                       type="date"
                       value={appointmentData.date}
-                      onChange={(e) => setAppointmentData({...appointmentData, date: e.target.value})}
+                      onChange={(e) => setAppointmentData({ ...appointmentData, date: e.target.value })}
                       className="w-full rounded-lg px-3 py-2 text-white"
                       style={{ background: 'rgba(15, 36, 60, 0.7)', border: '1px solid rgba(0, 193, 106, 0.12)' }}
                     />
@@ -1185,7 +1218,7 @@ const ProfessionalScheduling: React.FC = () => {
                     <input
                       type="time"
                       value={appointmentData.time}
-                      onChange={(e) => setAppointmentData({...appointmentData, time: e.target.value})}
+                      onChange={(e) => setAppointmentData({ ...appointmentData, time: e.target.value })}
                       className="w-full rounded-lg px-3 py-2 text-white"
                       style={{ background: 'rgba(15, 36, 60, 0.7)', border: '1px solid rgba(0, 193, 106, 0.12)' }}
                     />
@@ -1219,7 +1252,7 @@ const ProfessionalScheduling: React.FC = () => {
                     <label className="block text-sm text-slate-400 mb-2">Sala</label>
                     <select
                       value={appointmentData.room}
-                      onChange={(e) => setAppointmentData({...appointmentData, room: e.target.value})}
+                      onChange={(e) => setAppointmentData({ ...appointmentData, room: e.target.value })}
                       className="w-full rounded-lg px-3 py-2 text-white"
                       style={{ background: 'rgba(15, 36, 60, 0.7)', border: '1px solid rgba(0, 193, 106, 0.12)' }}
                     >
@@ -1247,7 +1280,7 @@ const ProfessionalScheduling: React.FC = () => {
                   <label className="block text-sm text-slate-400 mb-2">Observações</label>
                   <textarea
                     value={appointmentData.notes}
-                    onChange={(e) => setAppointmentData({...appointmentData, notes: e.target.value})}
+                    onChange={(e) => setAppointmentData({ ...appointmentData, notes: e.target.value })}
                     placeholder="Observações adicionais..."
                     className="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-white h-20"
                   />
