@@ -302,7 +302,7 @@ const Landing: React.FC = () => {
                 />
               </div>
               <div>
-                <h1 className="text-lg sm:text-2xl font-bold text-white">
+                <h1 className="text-sm sm:text-2xl font-bold text-white">
                   MedCannLab
                 </h1>
                 <p className="text-sm text-slate-200 hidden sm:block">Plataforma Médica Avançada</p>
@@ -310,7 +310,7 @@ const Landing: React.FC = () => {
             </div>
 
             {/* Botões do Header */}
-            <div className="flex items-center space-x-2 sm:space-x-4 mr-[30%] sm:mr-0">
+            <div className="flex items-center space-x-2 sm:space-x-4 mr-[50%] sm:mr-0">
               {/* Botão Entre */}
               <button
                 onClick={() => {
