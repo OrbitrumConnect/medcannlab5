@@ -310,7 +310,7 @@ const Landing: React.FC = () => {
             </div>
 
             {/* Botões do Header */}
-            <div className="flex items-center space-x-2 sm:space-x-4">
+            <div className="flex items-center space-x-2 sm:space-x-4 mr-[30%] sm:mr-0">
               {/* Botão Entre */}
               <button
                 onClick={() => {
