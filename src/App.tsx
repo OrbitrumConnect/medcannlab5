@@ -124,6 +124,7 @@ function App() {
                       <Route path="clinica/profissional/agendamentos" element={<ProfessionalScheduling />} />
                       <Route path="clinica/profissional/relatorios" element={<Reports />} />
                       <Route path="clinica/profissional/chat-profissionais" element={<ProfessionalChat />} />
+                      <Route path="clinica/prescricoes" element={<Prescriptions />} />
 
                       <Route path="clinica/paciente/dashboard" element={<PatientDashboard />} />
                       <Route path="clinica/paciente/avaliacao-clinica" element={<ClinicalAssessment />} />
