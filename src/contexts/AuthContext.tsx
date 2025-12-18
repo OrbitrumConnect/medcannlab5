@@ -221,14 +221,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (session?.user) {
           loadUser(session.user)
         } else {
-          // BYPASS: Inject mock admin user for evaluation
-          console.log('⚡ BYPASS: Injecting mock admin user for evaluation (initial)')
-          setUser({
-            id: 'mock-admin-id',
-            email: 'admin@medcannlab.com',
-            type: 'admin',
-            name: 'Evaluator Admin'
-          })
+          setUser(null)
           setIsLoading(false)
         }
       })
@@ -254,14 +247,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (session?.user) {
         loadUser(session.user)
       } else {
-        // BYPASS: Inject mock admin user for evaluation
-        console.log('⚡ BYPASS: Injecting mock admin user for evaluation')
-        setUser({
-          id: 'mock-admin-id',
-          email: 'admin@medcannlab.com',
-          type: 'admin',
-          name: 'Evaluator Admin'
-        })
+        setUser(null)
         setIsLoading(false)
       }
     })

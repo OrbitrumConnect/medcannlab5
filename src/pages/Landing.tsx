@@ -310,7 +310,7 @@ const Landing: React.FC = () => {
             </div>
 
             {/* Botões do Header */}
-            <div className="flex items-center space-x-2 sm:space-x-4 mr-16 sm:mr-0">
+            <div className="flex items-center space-x-2 sm:space-x-4">
               {/* Botão Entre */}
               <button
                 onClick={() => {
@@ -372,10 +372,39 @@ const Landing: React.FC = () => {
               </div>
 
               {/* Destaque: Epistemologia do Cuidado */}
-              <div className="bg-gradient-to-r from-green-800/40 via-slate-800/40 to-blue-800/40 rounded-xl p-6 border border-green-500/30 backdrop-blur-sm">
+              <div className="bg-gradient-to-r from-green-800/40 via-slate-800/40 to-blue-800/40 rounded-xl p-6 border border-green-500/30 backdrop-blur-sm mb-6">
                 <p className="text-base md:text-lg text-white leading-relaxed italic font-light">
                   Enquanto a maioria dos diagnósticos de futuro tecnológico aposta na substituição de profissionais, na automação desumanizante e na eficiência produtiva como fim último, a <strong className="font-semibold not-italic">MedCannLab</strong> propõe uma <strong className="font-semibold not-italic text-green-300">epistemologia do cuidado</strong> e uma <strong className="font-semibold not-italic text-green-300">economia da escuta</strong> como nova forma de integrar tecnologia, clínica e formação.
                 </p>
+              </div>
+
+              {/* Botão CTA Principal */}
+              <div className="flex flex-col sm:flex-row gap-4 items-center justify-center lg:justify-start mt-8">
+                <button
+                  onClick={() => {
+                    console.log('🚀 Acesse Agora clicado')
+                    setShowRegister(true)
+                  }}
+                  className="group relative overflow-hidden bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white px-8 py-4 rounded-xl font-semibold text-lg shadow-2xl hover:shadow-green-500/50 transition-all duration-300 transform hover:scale-105 flex items-center space-x-3"
+                  style={{
+                    boxShadow: '0 10px 30px rgba(0, 193, 106, 0.3)'
+                  }}
+                >
+                  <span>Acesse Agora</span>
+                  <ArrowRight className="w-6 h-6 group-hover:translate-x-1 transition-transform" />
+                  <div className="absolute inset-0 bg-white/10 transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-700"></div>
+                </button>
+
+                <button
+                  onClick={() => {
+                    console.log('👁️ Saiba Mais clicado')
+                    document.getElementById('missao-humanitaria')?.scrollIntoView({ behavior: 'smooth' })
+                  }}
+                  className="px-8 py-4 rounded-xl font-semibold text-lg border-2 border-white/30 text-white hover:bg-white/10 transition-all duration-300 flex items-center space-x-2"
+                >
+                  <span>Saiba Mais</span>
+                  <Brain className="w-5 h-5" />
+                </button>
               </div>
             </div>
 
