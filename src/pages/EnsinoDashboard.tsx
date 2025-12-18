@@ -104,7 +104,7 @@ const EnsinoDashboard: React.FC = () => {
 
   const handleContinueLearning = () => {
     // Navigate to the main course
-    navigate('/curso-eduardo-faveret')
+    navigate('/app/ensino/profissional/pos-graduacao-cannabis')
   }
 
   const handleOpenModule = (moduleId: number) => {
@@ -117,13 +117,13 @@ const EnsinoDashboard: React.FC = () => {
 
   const handleJoinClass = (courseTitle: string) => {
     if (courseTitle.includes('Cannabis Medicinal') || courseTitle.includes('Pós-Graduação')) {
-      navigate('/curso-eduardo-faveret')
+      navigate('/app/ensino/profissional/pos-graduacao-cannabis')
     } else if (courseTitle.includes('Arte da Entrevista') || courseTitle.includes('Entrevista Clínica') || courseTitle.includes('AEC')) {
       navigate('/app/arte-entrevista-clinica')
     } else if (courseTitle.includes('IMRE')) {
       navigate('/app/arte-entrevista-clinica')
     } else {
-      navigate('/curso-eduardo-faveret')
+      navigate('/app/ensino/profissional/pos-graduacao-cannabis')
     }
   }
 
