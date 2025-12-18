@@ -792,7 +792,10 @@ const PatientsManagement: React.FC = () => {
               </button>
 
               {showNewPatientMenu && (
-                <div className="absolute right-0 mt-2 w-64 bg-slate-800 border border-slate-700 rounded-lg shadow-xl z-[100] new-patient-menu-container">
+                <div
+                  className="fixed top-24 right-6 w-64 bg-slate-800 border border-slate-700 rounded-lg shadow-2xl z-[9999] new-patient-menu-container"
+                  style={{ marginTop: '0px' }}
+                >
                   <div className="p-2">
                     <button
                       onClick={() => {
