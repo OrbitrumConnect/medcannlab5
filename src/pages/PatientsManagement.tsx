@@ -716,9 +716,52 @@ const PatientsManagement: React.FC = () => {
     }
   }
 
-  const handleUploadFiles = () => {
-    // Implementar upload de arquivos
-    alert('Funcionalidade de upload de arquivos em desenvolvimento')
+  const handleUploadFiles = async () => {
+    if (!selectedPatient) {
+      alert('Selecione um paciente primeiro')
+      return
+    }
+
+    const input = document.createElement('input')
+    input.type = 'file'
+    input.multiple = true
+    input.accept = '.pdf,.jpg,.jpeg,.png,.doc,.docx,.txt'
+
+    input.onchange = async (e) => {
+      const files = (e.target as HTMLInputElement).files
+      if (!files || files.length === 0) return
+
+      try {
+        let uploadedCount = 0
+        let errorCount = 0
+
+        for (const file of Array.from(files)) {
+          const filePath = `patient-files/${selectedPatient.id}/${Date.now()}-${file.name}`
+
+          const { error } = await supabase.storage
+            .from('medical-files')
+            .upload(filePath, file)
+
+          if (error) {
+            console.error('Erro upload:', error)
+            errorCount++
+          } else {
+            uploadedCount++
+          }
+        }
+
+        if (uploadedCount > 0) {
+          alert(`${uploadedCount} arquivo(s) enviado(s) com sucesso!${errorCount > 0 ? ` ${errorCount} falharam.` : ''}`)
+        } else {
+          alert('Erro ao enviar arquivos. Verifique se o bucket "medical-files" existe no Supabase Storage.')
+        }
+      } catch (error) {
+        console.error('Erro ao fazer upload:', error)
+        alert('Erro ao enviar arquivos.')
+      }
+    }
+
+    input.click()
   }
 
   return (
@@ -1075,8 +1118,8 @@ const PatientsManagement: React.FC = () => {
                         onClick={handleOpenPatientChat}
                         disabled={openingChat}
                         className={`px-4 py-2 rounded-lg transition-colors ${openingChat
-                            ? 'bg-primary-500/60 text-white cursor-wait'
-                            : 'bg-primary-500 text-white hover:bg-primary-400'
+                          ? 'bg-primary-500/60 text-white cursor-wait'
+                          : 'bg-primary-500 text-white hover:bg-primary-400'
                           }`}
                       >
                         {openingChat ? 'Abrindo chat...' : 'Chat Clínico'}
@@ -1121,8 +1164,8 @@ const PatientsManagement: React.FC = () => {
                               key={tab.id}
                               onClick={() => setActiveTab(tab.id as any)}
                               className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors ${activeTab === tab.id
-                                  ? 'bg-blue-500 text-white'
-                                  : 'text-slate-400 hover:text-white hover:bg-slate-700'
+                                ? 'bg-blue-500 text-white'
+                                : 'text-slate-400 hover:text-white hover:bg-slate-700'
                                 }`}
                             >
                               <Icon className="w-4 h-4" />
@@ -1171,8 +1214,8 @@ const PatientsManagement: React.FC = () => {
                                     <div className="flex items-start justify-between mb-1">
                                       <p className="text-xs text-slate-300 font-medium">{evolution.date} • {evolution.time}</p>
                                       <span className={`px-2 py-0.5 rounded text-xs ${evolution.type === 'current'
-                                          ? 'bg-green-500/20 text-green-400'
-                                          : 'bg-blue-500/20 text-blue-400'
+                                        ? 'bg-green-500/20 text-green-400'
+                                        : 'bg-blue-500/20 text-blue-400'
                                         }`}>
                                         {evolution.type === 'current' ? 'Atual' : 'Histórico'}
                                       </span>
@@ -1257,8 +1300,8 @@ const PatientsManagement: React.FC = () => {
                                       <p className="text-xs text-slate-400">{evolution.professional}</p>
                                     </div>
                                     <span className={`px-2 py-1 rounded-full text-xs ${evolution.type === 'current'
-                                        ? 'bg-green-500/20 text-green-400'
-                                        : 'bg-blue-500/20 text-blue-400'
+                                      ? 'bg-green-500/20 text-green-400'
+                                      : 'bg-blue-500/20 text-blue-400'
                                       }`}>
                                       {evolution.type === 'current' ? 'Atual' : 'Histórico'}
                                     </span>

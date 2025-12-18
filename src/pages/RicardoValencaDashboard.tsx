@@ -5023,7 +5023,14 @@ const RicardoValencaDashboard: React.FC = () => {
           <div className="text-center py-12">
             <User className="w-16 h-16 text-cyan-400 mx-auto mb-4" />
             <h2 className="text-2xl font-bold text-white mb-2">👤 Meu Perfil</h2>
-            <p className="text-slate-300">Gestão de perfil em desenvolvimento</p>
+            <p className="text-slate-300 mb-6">Acesse a página de perfil para gerenciar suas informações</p>
+            <button
+              onClick={() => navigate('/app/profile')}
+              className="px-6 py-3 bg-cyan-600 hover:bg-cyan-700 text-white rounded-lg font-semibold transition-colors inline-flex items-center space-x-2"
+            >
+              <User className="w-5 h-5" />
+              <span>Ir para Perfil</span>
+            </button>
           </div>
         )}
       </div>
