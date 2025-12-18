@@ -35,7 +35,8 @@ import {
   Zap,
   Activity,
   PieChart,
-  LineChart
+  LineChart,
+  X
 } from 'lucide-react'
 import {
   SCHEDULING_CONFIG,
@@ -59,6 +60,8 @@ const ProfessionalScheduling: React.FC = () => {
   const [showAppointmentModal, setShowAppointmentModal] = useState(false)
   const [showAnalytics, setShowAnalytics] = useState(false)
   const [viewMode, setViewMode] = useState<'calendar' | 'list' | 'analytics'>('calendar')
+  const [showDayDetailsModal, setShowDayDetailsModal] = useState(false)
+  const [selectedDayAppointments, setSelectedDayAppointments] = useState<any[]>([])
   const [appointmentData, setAppointmentData] = useState({
     patientId: '',
     patientName: '',
@@ -517,6 +520,12 @@ const ProfessionalScheduling: React.FC = () => {
     if (day.isCurrentMonth && !day.isDisabled) {
       setSelectedDate(new Date(day.fullDate))
       setSelectedTime(null)
+
+      // Se o dia tem agendamentos, abrir modal de detalhes
+      if (day.appointments && day.appointments.length > 0) {
+        setSelectedDayAppointments(day.appointments)
+        setShowDayDetailsModal(true)
+      }
     }
   }
 
@@ -738,6 +747,167 @@ const ProfessionalScheduling: React.FC = () => {
               </button>
             )
           })}
+        </div>
+      </div>
+    )
+  }
+
+  // Função para renderizar modal de detalhes do dia
+  const renderDayDetailsModal = () => {
+    if (!showDayDetailsModal || !selectedDate) return null
+
+    const formattedDate = selectedDate.toLocaleDateString('pt-BR', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    })
+
+    return (
+      <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+        <div className="rounded-xl p-6 max-w-4xl w-full max-h-[90vh] overflow-y-auto" style={cardStyle}>
+          {/* Header */}
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h2 className="text-2xl font-bold text-white capitalize">{formattedDate}</h2>
+              <p className="text-slate-400 mt-1">
+                {selectedDayAppointments.length} agendamento(s) neste dia
+              </p>
+            </div>
+            <button
+              onClick={() => setShowDayDetailsModal(false)}
+              className="p-2 rounded-lg hover:bg-slate-700/50 transition-colors"
+            >
+              <X className="w-6 h-6 text-slate-400" />
+            </button>
+          </div>
+
+          {/* Lista de agendamentos */}
+          <div className="space-y-4 mb-6">
+            {selectedDayAppointments.length > 0 ? (
+              selectedDayAppointments.map((apt) => {
+                const patient = patients.find((p: any) => p.id === apt.patientId)
+                return (
+                  <div
+                    key={apt.id}
+                    className="rounded-lg p-5 border border-slate-700/50"
+                    style={secondarySurfaceStyle}
+                  >
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <div className="flex items-center space-x-3 mb-3">
+                          <div className="w-12 h-12 bg-primary-600/20 rounded-full flex items-center justify-center">
+                            <User className="w-6 h-6 text-primary-400" />
+                          </div>
+                          <div>
+                            <h3 className="text-lg font-semibold text-white">
+                              {apt.patientName || patient?.name || 'Paciente'}
+                            </h3>
+                            <p className="text-sm text-slate-400">{patient?.email || ''}</p>
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                          <div>
+                            <p className="text-slate-400 mb-1">Horário</p>
+                            <div className="flex items-center space-x-2">
+                              <Clock className="w-4 h-4 text-primary-400" />
+                              <p className="text-white font-medium">{apt.time}</p>
+                            </div>
+                          </div>
+
+                          <div>
+                            <p className="text-slate-400 mb-1">Especialidade</p>
+                            <p className="text-white font-medium">{apt.specialty}</p>
+                          </div>
+
+                          <div>
+                            <p className="text-slate-400 mb-1">Tipo</p>
+                            <div className="flex items-center space-x-2">
+                              {apt.type === 'online' ? (
+                                <Video className="w-4 h-4 text-sky-400" />
+                              ) : (
+                                <MapPin className="w-4 h-4 text-emerald-400" />
+                              )}
+                              <p className="text-white font-medium">
+                                {apt.type === 'online' ? 'Online' : 'Presencial'}
+                              </p>
+                            </div>
+                          </div>
+
+                          <div>
+                            <p className="text-slate-400 mb-1">Status</p>
+                            <span
+                              className={`inline-flex px-3 py-1 rounded-full text-xs font-medium ${apt.status === 'confirmed' || apt.status === 'scheduled'
+                                ? 'bg-green-500/20 text-green-400'
+                                : apt.status === 'completed'
+                                  ? 'bg-blue-500/20 text-blue-400'
+                                  : apt.status === 'cancelled'
+                                    ? 'bg-red-500/20 text-red-400'
+                                    : 'bg-amber-500/20 text-amber-400'
+                                }`}
+                            >
+                              {apt.status === 'scheduled' || apt.status === 'confirmed'
+                                ? 'Confirmado'
+                                : apt.status === 'completed'
+                                  ? 'Concluído'
+                                  : apt.status === 'cancelled'
+                                    ? 'Cancelado'
+                                    : 'Pendente'}
+                            </span>
+                          </div>
+                        </div>
+
+                        {apt.notes && (
+                          <div className="mt-3 p-3 rounded-lg" style={{ background: 'rgba(15, 36, 60, 0.3)' }}>
+                            <p className="text-sm text-slate-300">{apt.notes}</p>
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="flex items-center space-x-2 ml-4">
+                        <button
+                          className="p-2 rounded-lg hover:bg-primary-600/20 transition-colors"
+                          title="Editar"
+                        >
+                          <Edit className="w-5 h-5 text-primary-400" />
+                        </button>
+                        <button
+                          className="p-2 rounded-lg hover:bg-red-600/20 transition-colors"
+                          title="Cancelar"
+                        >
+                          <Trash2 className="w-5 h-5 text-red-400" />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )
+              })
+            ) : (
+              <div className="text-center py-8 text-slate-400">
+                <Calendar className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                <p>Nenhum agendamento neste dia</p>
+              </div>
+            )}
+          </div>
+
+          {/* Botão para novo agendamento */}
+          <button
+            onClick={() => {
+              setShowDayDetailsModal(false)
+              setAppointmentData(prev => ({
+                ...prev,
+                date: selectedDate.toISOString().split('T')[0],
+                time: ''
+              }))
+              // Scroll para a seção de horários
+              setSelectedTime(null)
+            }}
+            className="w-full bg-gradient-to-r from-emerald-600 to-sky-500 text-white px-6 py-3 rounded-lg font-semibold shadow-lg hover:from-emerald-500 hover:to-sky-400 transition-all flex items-center justify-center space-x-2"
+          >
+            <Plus className="w-5 h-5" />
+            <span>Novo Agendamento Neste Dia</span>
+          </button>
         </div>
       </div>
     )
@@ -1304,6 +1474,9 @@ const ProfessionalScheduling: React.FC = () => {
           </div>
         )}
       </div>
+
+      {/* Modal de detalhes do dia */}
+      {renderDayDetailsModal()}
     </div>
   )
 }
