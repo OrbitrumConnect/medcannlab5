@@ -813,7 +813,6 @@ const EnsinoDashboard: React.FC = () => {
                   </div>
                 ))}
               </div>
-              </div>
 
               <div className="rounded-xl p-4 md:p-6" style={surfaceStyle}>
                 <h4 className="text-lg font-semibold text-white mb-3">LabPEC – Agenda Semanal</h4>
@@ -834,224 +833,224 @@ const EnsinoDashboard: React.FC = () => {
               </div>
             </div>
           )}
+        </div>
       </div>
-    </div>
 
-      {/* Chat Modal */ }
-  {
-    isOpen && (
-      <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-2 md:p-4">
-        <div
-          className="rounded-xl w-full max-w-md h-[90vh] max-h-[600px] flex flex-col overflow-hidden"
-          style={{ background: 'rgba(7,22,41,0.95)', border: '1px solid rgba(0,193,106,0.12)', boxShadow: '0 20px 48px rgba(2,12,27,0.55)' }}
-        >
-          {/* Chat Header */}
-          <div className="p-4" style={{ borderBottom: '1px solid rgba(0,193,106,0.12)' }}>
-            <div className="flex items-center justify-between stack-mobile">
-              <div className="flex items-center space-x-3">
-                <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{ background: accentGradient }}>
-                  <GraduationCap className="w-4 h-4 text-white" />
-                </div>
-                <div>
-                  <h3 className="font-semibold text-white">Nôa Esperança</h3>
-                  <p className="text-xs text-slate-400">Tutora Acadêmica</p>
-                </div>
-              </div>
-              <button
-                onClick={toggleChat}
-                className="text-slate-400 hover:text-white transition-colors"
-              >
-                ×
-              </button>
-            </div>
-          </div>
-
-          {/* Messages */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-4">
-            {messages.length === 0 ? (
-              <div className="text-center text-slate-300 py-8">
-                <GraduationCap className="w-12 h-12 mx-auto mb-3" style={{ color: '#00F5A0' }} />
-                <p className="text-sm">Olá! Sou a Nôa Esperança, sua tutora acadêmica.</p>
-              </div>
-            ) : (
-              messages.map((message) => (
-                <div
-                  key={message.id}
-                  className={`flex ${message.type === 'user' ? 'justify-end' : 'justify-start'}`}
-                >
-                  <div
-                    className={`max-w-[70%] px-4 py-2 rounded-lg text-sm ${message.type === 'user'
-                      ? 'text-white'
-                      : 'text-slate-100'
-                      }`}
-                    style={
-                      message.type === 'user'
-                        ? { background: accentGradient }
-                        : { background: 'rgba(12,34,54,0.72)', border: '1px solid rgba(0,193,106,0.08)' }
-                    }
+      {/* Chat Modal */}
+      {
+        isOpen && (
+          <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-2 md:p-4">
+            <div
+              className="rounded-xl w-full max-w-md h-[90vh] max-h-[600px] flex flex-col overflow-hidden"
+              style={{ background: 'rgba(7,22,41,0.95)', border: '1px solid rgba(0,193,106,0.12)', boxShadow: '0 20px 48px rgba(2,12,27,0.55)' }}
+            >
+              {/* Chat Header */}
+              <div className="p-4" style={{ borderBottom: '1px solid rgba(0,193,106,0.12)' }}>
+                <div className="flex items-center justify-between stack-mobile">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{ background: accentGradient }}>
+                      <GraduationCap className="w-4 h-4 text-white" />
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-white">Nôa Esperança</h3>
+                      <p className="text-xs text-slate-400">Tutora Acadêmica</p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={toggleChat}
+                    className="text-slate-400 hover:text-white transition-colors"
                   >
-                    {message.content}
-                  </div>
-                </div>
-              ))
-            )}
-
-            {isTyping && (
-              <div className="flex justify-start">
-                <div className="px-4 py-2 rounded-lg" style={{ background: 'rgba(12,34,54,0.72)', border: '1px solid rgba(0,193,106,0.08)' }}>
-                  <div className="flex space-x-1">
-                    <div className="w-2 h-2 bg-slate-400 rounded-full animate-bounce" />
-                    <div className="w-2 h-2 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }} />
-                    <div className="w-2 h-2 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }} />
-                  </div>
+                    ×
+                  </button>
                 </div>
               </div>
-            )}
-          </div>
 
-          {/* Input */}
-          <div className="p-4" style={{ borderTop: '1px solid rgba(0,193,106,0.12)' }}>
-            <div className="flex items-center space-x-2">
-              <input
-                type="text"
-                value={inputMessage}
-                onChange={(e) => setInputMessage(e.target.value)}
-                onKeyPress={handleKeyPress}
-                placeholder="Digite sua mensagem..."
-                className="flex-1 px-3 py-2 rounded-lg text-white placeholder-slate-400 focus:outline-none"
-                style={{ background: 'rgba(12,34,54,0.78)', border: '1px solid rgba(0,193,106,0.18)' }}
-              />
-              <button
-                onClick={handleSendMessage}
-                disabled={!inputMessage.trim()}
-                className="p-2 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                style={{ background: accentGradient }}
-              >
-                <MessageCircle className="w-4 h-4" />
-              </button>
+              {/* Messages */}
+              <div className="flex-1 overflow-y-auto p-4 space-y-4">
+                {messages.length === 0 ? (
+                  <div className="text-center text-slate-300 py-8">
+                    <GraduationCap className="w-12 h-12 mx-auto mb-3" style={{ color: '#00F5A0' }} />
+                    <p className="text-sm">Olá! Sou a Nôa Esperança, sua tutora acadêmica.</p>
+                  </div>
+                ) : (
+                  messages.map((message) => (
+                    <div
+                      key={message.id}
+                      className={`flex ${message.type === 'user' ? 'justify-end' : 'justify-start'}`}
+                    >
+                      <div
+                        className={`max-w-[70%] px-4 py-2 rounded-lg text-sm ${message.type === 'user'
+                          ? 'text-white'
+                          : 'text-slate-100'
+                          }`}
+                        style={
+                          message.type === 'user'
+                            ? { background: accentGradient }
+                            : { background: 'rgba(12,34,54,0.72)', border: '1px solid rgba(0,193,106,0.08)' }
+                        }
+                      >
+                        {message.content}
+                      </div>
+                    </div>
+                  ))
+                )}
+
+                {isTyping && (
+                  <div className="flex justify-start">
+                    <div className="px-4 py-2 rounded-lg" style={{ background: 'rgba(12,34,54,0.72)', border: '1px solid rgba(0,193,106,0.08)' }}>
+                      <div className="flex space-x-1">
+                        <div className="w-2 h-2 bg-slate-400 rounded-full animate-bounce" />
+                        <div className="w-2 h-2 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }} />
+                        <div className="w-2 h-2 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }} />
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Input */}
+              <div className="p-4" style={{ borderTop: '1px solid rgba(0,193,106,0.12)' }}>
+                <div className="flex items-center space-x-2">
+                  <input
+                    type="text"
+                    value={inputMessage}
+                    onChange={(e) => setInputMessage(e.target.value)}
+                    onKeyPress={handleKeyPress}
+                    placeholder="Digite sua mensagem..."
+                    className="flex-1 px-3 py-2 rounded-lg text-white placeholder-slate-400 focus:outline-none"
+                    style={{ background: 'rgba(12,34,54,0.78)', border: '1px solid rgba(0,193,106,0.18)' }}
+                  />
+                  <button
+                    onClick={handleSendMessage}
+                    disabled={!inputMessage.trim()}
+                    className="p-2 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    style={{ background: accentGradient }}
+                  >
+                    <MessageCircle className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
-        </div>
-      </div>
-    )
-  }
+        )
+      }
 
-  {/* Modal de Solicitação de Mentoria */ }
-  {
-    selectedMentor && selectedMentor.id !== 'noa' && (
-      <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-        <div className="bg-slate-800 rounded-xl border border-slate-700 w-full max-w-md">
-          {/* Header */}
-          <div className="flex items-center justify-between p-6 border-b border-slate-700">
-            <div>
-              <h2 className="text-2xl font-bold text-white">Solicitar Mentoria</h2>
-              <p className="text-sm text-slate-400 mt-1">{selectedMentor.mentor}</p>
+      {/* Modal de Solicitação de Mentoria */}
+      {
+        selectedMentor && selectedMentor.id !== 'noa' && (
+          <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+            <div className="bg-slate-800 rounded-xl border border-slate-700 w-full max-w-md">
+              {/* Header */}
+              <div className="flex items-center justify-between p-6 border-b border-slate-700">
+                <div>
+                  <h2 className="text-2xl font-bold text-white">Solicitar Mentoria</h2>
+                  <p className="text-sm text-slate-400 mt-1">{selectedMentor.mentor}</p>
+                </div>
+                <button
+                  onClick={() => setSelectedMentor(null)}
+                  className="p-2 hover:bg-slate-700 rounded-lg transition-colors"
+                >
+                  <X className="w-5 h-5 text-slate-400" />
+                </button>
+              </div>
+
+              {/* Form */}
+              <div className="p-6 space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-slate-300 mb-2">
+                    Data da Mentoria
+                  </label>
+                  <input
+                    type="date"
+                    value={mentorshipDate}
+                    onChange={(e) => {
+                      const date = e.target.value
+                      if (!date || isValidDateForMentor(date, selectedMentor.id)) {
+                        setMentorshipDate(date)
+                      } else {
+                        const validDays = selectedMentor.id === 'ricardo'
+                          ? ['Terça', 'Quarta', 'Quinta']
+                          : ['Terça']
+                        alert(`Este mentor está disponível apenas nas ${validDays.join('s e ')}s. Por favor, selecione uma data válida.`)
+                      }
+                    }}
+                    min={new Date().toISOString().split('T')[0]}
+                    className="w-full px-4 py-2 bg-slate-900 border border-slate-600 rounded-lg text-white focus:outline-none focus:border-blue-500"
+                  />
+                  <p className="text-xs text-slate-400 mt-1">
+                    Disponível: {selectedMentor.availability}
+                  </p>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-slate-300 mb-2">
+                    Horário
+                  </label>
+                  <select
+                    value={mentorshipTime}
+                    onChange={(e) => setMentorshipTime(e.target.value)}
+                    className="w-full px-4 py-2 bg-slate-900 border border-slate-600 rounded-lg text-white focus:outline-none focus:border-blue-500"
+                  >
+                    <option value="">Selecione um horário</option>
+                    {getAvailableTimes(selectedMentor.id).map(time => (
+                      <option key={time} value={time}>{time}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-slate-300 mb-2">
+                    Mensagem (opcional)
+                  </label>
+                  <textarea
+                    value={mentorshipMessage}
+                    onChange={(e) => setMentorshipMessage(e.target.value)}
+                    placeholder="Descreva o que você gostaria de discutir na mentoria..."
+                    rows={4}
+                    className="w-full px-4 py-2 bg-slate-900 border border-slate-600 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 resize-none"
+                  />
+                </div>
+
+                <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-3">
+                  <p className="text-xs text-blue-300">
+                    <strong>Canal:</strong> {selectedMentor.channel}
+                  </p>
+                  <p className="text-xs text-blue-300 mt-1">
+                    <strong>Foco:</strong> {selectedMentor.focus}
+                  </p>
+                </div>
+              </div>
+
+              {/* Footer */}
+              <div className="flex items-center justify-end gap-3 p-6 border-t border-slate-700">
+                <button
+                  onClick={() => setSelectedMentor(null)}
+                  className="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg transition-colors"
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={handleSubmitMentorship}
+                  disabled={isSubmittingMentorship || !mentorshipDate || !mentorshipTime}
+                  className="px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-800 disabled:cursor-not-allowed text-white rounded-lg transition-colors flex items-center gap-2"
+                >
+                  {isSubmittingMentorship ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                      Enviando...
+                    </>
+                  ) : (
+                    <>
+                      <Send className="w-4 h-4" />
+                      Enviar Solicitação
+                    </>
+                  )}
+                </button>
+              </div>
             </div>
-            <button
-              onClick={() => setSelectedMentor(null)}
-              className="p-2 hover:bg-slate-700 rounded-lg transition-colors"
-            >
-              <X className="w-5 h-5 text-slate-400" />
-            </button>
           </div>
-
-          {/* Form */}
-          <div className="p-6 space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-slate-300 mb-2">
-                Data da Mentoria
-              </label>
-              <input
-                type="date"
-                value={mentorshipDate}
-                onChange={(e) => {
-                  const date = e.target.value
-                  if (!date || isValidDateForMentor(date, selectedMentor.id)) {
-                    setMentorshipDate(date)
-                  } else {
-                    const validDays = selectedMentor.id === 'ricardo'
-                      ? ['Terça', 'Quarta', 'Quinta']
-                      : ['Terça']
-                    alert(`Este mentor está disponível apenas nas ${validDays.join('s e ')}s. Por favor, selecione uma data válida.`)
-                  }
-                }}
-                min={new Date().toISOString().split('T')[0]}
-                className="w-full px-4 py-2 bg-slate-900 border border-slate-600 rounded-lg text-white focus:outline-none focus:border-blue-500"
-              />
-              <p className="text-xs text-slate-400 mt-1">
-                Disponível: {selectedMentor.availability}
-              </p>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-slate-300 mb-2">
-                Horário
-              </label>
-              <select
-                value={mentorshipTime}
-                onChange={(e) => setMentorshipTime(e.target.value)}
-                className="w-full px-4 py-2 bg-slate-900 border border-slate-600 rounded-lg text-white focus:outline-none focus:border-blue-500"
-              >
-                <option value="">Selecione um horário</option>
-                {getAvailableTimes(selectedMentor.id).map(time => (
-                  <option key={time} value={time}>{time}</option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-slate-300 mb-2">
-                Mensagem (opcional)
-              </label>
-              <textarea
-                value={mentorshipMessage}
-                onChange={(e) => setMentorshipMessage(e.target.value)}
-                placeholder="Descreva o que você gostaria de discutir na mentoria..."
-                rows={4}
-                className="w-full px-4 py-2 bg-slate-900 border border-slate-600 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 resize-none"
-              />
-            </div>
-
-            <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-3">
-              <p className="text-xs text-blue-300">
-                <strong>Canal:</strong> {selectedMentor.channel}
-              </p>
-              <p className="text-xs text-blue-300 mt-1">
-                <strong>Foco:</strong> {selectedMentor.focus}
-              </p>
-            </div>
-          </div>
-
-          {/* Footer */}
-          <div className="flex items-center justify-end gap-3 p-6 border-t border-slate-700">
-            <button
-              onClick={() => setSelectedMentor(null)}
-              className="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg transition-colors"
-            >
-              Cancelar
-            </button>
-            <button
-              onClick={handleSubmitMentorship}
-              disabled={isSubmittingMentorship || !mentorshipDate || !mentorshipTime}
-              className="px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-800 disabled:cursor-not-allowed text-white rounded-lg transition-colors flex items-center gap-2"
-            >
-              {isSubmittingMentorship ? (
-                <>
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                  Enviando...
-                </>
-              ) : (
-                <>
-                  <Send className="w-4 h-4" />
-                  Enviar Solicitação
-                </>
-              )}
-            </button>
-          </div>
-        </div>
-      </div>
-    )
-  }
+        )
+      }
     </div >
   )
 }
