@@ -3,8 +3,8 @@ import { useNavigate, useSearchParams, useLocation } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
 import IntegrativePrescriptions from '../components/IntegrativePrescriptions'
-import { 
-  ArrowLeft, 
+import {
+  ArrowLeft,
   Search,
   Plus,
   User,
@@ -67,19 +67,19 @@ const PatientsManagement: React.FC = () => {
   const [selectedRoom, setSelectedRoom] = useState<string>('indifferent')
   const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null)
   const [activeTab, setActiveTab] = useState<'overview' | 'evolution' | 'prescription' | 'files' | 'receipts' | 'charts' | 'appointments'>('overview')
-  
+
   // Ler parâmetros da URL para abrir aba e formulário
   useEffect(() => {
     const tabParam = searchParams.get('tab')
     const patientIdParam = searchParams.get('patientId')
     const newEvolutionParam = searchParams.get('newEvolution')
-    
+
     if (tabParam === 'appointments') {
       setActiveTab('appointments')
     } else if (tabParam === 'evolution') {
       setActiveTab('evolution')
     }
-    
+
     // Se houver patientId na URL, buscar e selecionar o paciente
     // Se os pacientes ainda não foram carregados, tentar carregar o paciente individualmente
     if (patientIdParam) {
@@ -97,7 +97,7 @@ const PatientsManagement: React.FC = () => {
                 .select('*')
                 .eq('id', patientIdParam)
                 .single()
-              
+
               if (error) {
                 console.error('Erro ao carregar paciente individual:', error)
               } else if (data) {
@@ -138,7 +138,7 @@ const PatientsManagement: React.FC = () => {
               .select('*')
               .eq('id', patientIdParam)
               .single()
-            
+
             if (error) {
               console.error('Erro ao carregar paciente individual:', error)
             } else if (data) {
@@ -171,7 +171,7 @@ const PatientsManagement: React.FC = () => {
         void loadSinglePatient()
       }
     }
-    
+
     // Se newEvolution=true, mostrar formulário de nova evolução
     if (newEvolutionParam === 'true' && tabParam === 'evolution') {
       setShowNewEvolution(true)
@@ -272,7 +272,7 @@ const PatientsManagement: React.FC = () => {
   const loadPatients = async () => {
     try {
       setLoading(true)
-      
+
       // BUSCAR TODOS OS PACIENTES DIRETAMENTE NA TABELA USERS
       // Isso garante que pacientes criados pelo profissional apareçam mesmo sem avaliações
       let usersData: any[] = []
@@ -290,7 +290,7 @@ const PatientsManagement: React.FC = () => {
           console.log('✅ Pacientes encontrados na tabela users:', usersData.length)
         } else if (usersError) {
           console.log('⚠️ Erro ao buscar em users, tentando users_compatible:', usersError)
-          
+
           // Fallback para users_compatible se users falhar
           const { data: usersDataFromCompatible, error: compatibleError } = await supabase
             .from('users_compatible')
@@ -342,7 +342,7 @@ const PatientsManagement: React.FC = () => {
 
       // Consolidar dados dos pacientes (excluindo o próprio usuário se for profissional)
       const patientsMap = new Map<string, Patient>()
-      
+
       usersData?.filter(u => {
         // Excluir o próprio usuário da lista de pacientes
         if (user?.id && u.id === user.id) {
@@ -354,18 +354,18 @@ const PatientsManagement: React.FC = () => {
         // Contar atendimentos e faltas
         const patientAssessments = assessments?.filter(a => a.patient_id === u.id) || []
         const appointmentsCount = patientAssessments.length
-        
+
         // Buscar dados adicionais do paciente em TODAS as avaliações (não só a primeira)
         // Usar a avaliação mais recente com dados completos
         const latestAssessment = patientAssessments[0]
         const patientData = latestAssessment?.data || {}
-        
+
         // Tentar buscar nome de todas as avaliações
         let patientName = u.name || 'Paciente'
         let patientCpf = ''
         let patientPhone = (u.phone || u.telefone || '') as string // phone pode não existir na tabela users
         let patientAge = 0
-        
+
         // Buscar em todas as avaliações
         for (const assessment of patientAssessments) {
           const data = assessment.data || {}
@@ -383,7 +383,7 @@ const PatientsManagement: React.FC = () => {
           }
           if (patientName !== 'Paciente' && patientCpf && patientPhone) break // Se já encontrou tudo, parar
         }
-        
+
         // Se ainda não encontrou nome, usar dados da avaliação clinical_report ou data
         if (patientName === 'Paciente' || !patientName) {
           // Tentar buscar nome do clinical_report da avaliação
@@ -394,25 +394,25 @@ const PatientsManagement: React.FC = () => {
               patientName = reportMatch[1]
             }
           }
-          
+
           // Se ainda não encontrou, buscar do campo data da avaliação
           if ((patientName === 'Paciente' || !patientName) && latestAssessment?.data) {
-            const dataObj = typeof latestAssessment.data === 'string' 
-              ? JSON.parse(latestAssessment.data) 
+            const dataObj = typeof latestAssessment.data === 'string'
+              ? JSON.parse(latestAssessment.data)
               : latestAssessment.data
             if (dataObj?.patientName || dataObj?.name) {
               patientName = dataObj.patientName || dataObj.name
             }
           }
         }
-        
+
         // Calcular idade se disponível
         let age = patientAge, months = 0, days = 0
-        
+
         // Gerar código do paciente (PAT + últimos dígitos do ID)
         const patientIdStr = u.id?.toString().replace(/-/g, '') || ''
         const patientCode = `#PAT${patientIdStr.substring(0, 8).toUpperCase() || '0001'}`
-        
+
         patientsMap.set(u.id, {
           id: u.id,
           name: patientName,
@@ -422,12 +422,12 @@ const PatientsManagement: React.FC = () => {
           phone: patientPhone || 'Não informado',
           cpf: patientCpf,
           code: patientCode,
-      photo: '',
+          photo: '',
           specialty: patientData.specialty || 'Cannabis Medicinal',
           clinic: patientData.clinic || 'Consultório Dr. Ricardo Valença',
           room: patientData.room || 'Sala 1',
           referringDoctor: patientData.referringDoctor || 'Dr. Ricardo Valença',
-      status: 'active',
+          status: 'active',
           appointmentsCount,
           absences: 0, // Calcular de appointments se houver tabela
           servicesCount: patientAssessments.filter(a => a.status === 'completed').length
@@ -445,9 +445,9 @@ const PatientsManagement: React.FC = () => {
   const loadEvolutions = async (patientId: string) => {
     try {
       setLoadingEvolutions(true)
-      
+
       const evolutionsList: Evolution[] = []
-      
+
       // 1. Buscar avaliações clínicas do paciente
       const { data: assessments, error: assessmentsError } = await supabase
         .from('clinical_assessments')
@@ -485,8 +485,8 @@ const PatientsManagement: React.FC = () => {
               date: new Date(report.generated_at).toLocaleDateString('pt-BR'),
               time: new Date(report.generated_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
               type: report.status === 'completed' ? 'current' : 'historical',
-              content: typeof report.content === 'string' 
-                ? report.content 
+              content: typeof report.content === 'string'
+                ? report.content
                 : report.content?.investigation || report.content?.result || 'Relatório clínico gerado',
               professional: report.professional_name || report.generated_by === 'ai_resident' ? 'IA Residente' : 'Profissional'
             })
@@ -541,7 +541,7 @@ const PatientsManagement: React.FC = () => {
     }
   }
 
-  const filteredPatients = patients.filter(patient => 
+  const filteredPatients = patients.filter(patient =>
     patient.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     patient.cpf?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     patient.code.toLowerCase().includes(searchTerm.toUpperCase())
@@ -584,7 +584,7 @@ const PatientsManagement: React.FC = () => {
         if (roomError) {
           // Se a função RPC falhar, tentar método direto como fallback
           console.warn('Erro ao usar função RPC, tentando método direto:', roomError)
-          
+
           // Verificar se o paciente existe na tabela users antes de inserir
           const { data: patientExists, error: checkError } = await supabase
             .from('users')
@@ -724,7 +724,7 @@ const PatientsManagement: React.FC = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
       {/* Header */}
-      <div className="bg-slate-800/50 border-b border-slate-700/50 backdrop-blur-sm sticky top-0 z-10">
+      <div className="bg-slate-800/50 border-b border-slate-700/50 backdrop-blur-sm sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-6 py-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
@@ -740,16 +740,16 @@ const PatientsManagement: React.FC = () => {
               </div>
             </div>
             <div className="relative new-patient-menu-container">
-            <button
+              <button
                 onClick={() => setShowNewPatientMenu(!showNewPatientMenu)}
-              className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-blue-500 to-cyan-500 text-white rounded-lg hover:from-blue-600 hover:to-cyan-600 transition-colors"
-            >
-              <UserPlus className="w-5 h-5" />
-              <span>Novo Paciente</span>
-            </button>
-              
+                className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-blue-500 to-cyan-500 text-white rounded-lg hover:from-blue-600 hover:to-cyan-600 transition-colors"
+              >
+                <UserPlus className="w-5 h-5" />
+                <span>Novo Paciente</span>
+              </button>
+
               {showNewPatientMenu && (
-                <div className="absolute right-0 mt-2 w-64 bg-slate-800 border border-slate-700 rounded-lg shadow-xl z-50 new-patient-menu-container">
+                <div className="absolute right-0 mt-2 w-64 bg-slate-800 border border-slate-700 rounded-lg shadow-xl z-[100] new-patient-menu-container">
                   <div className="p-2">
                     <button
                       onClick={() => {
@@ -873,30 +873,29 @@ const PatientsManagement: React.FC = () => {
                   </div>
                 ) : (
                   filteredPatients.map(patient => (
-                  <button
-                    key={patient.id}
-                    onClick={() => handleSelectPatient(patient)}
-                    className={`w-full p-4 text-left border-b border-slate-700 hover:bg-slate-700/50 transition-colors ${
-                      selectedPatient?.id === patient.id ? 'bg-slate-700' : ''
-                    }`}
-                  >
-                    <div className="flex items-center space-x-3">
-                      <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-full flex items-center justify-center">
-                        {patient.photo ? (
-                          <img src={patient.photo} alt={patient.name} className="w-12 h-12 rounded-full" />
-                        ) : (
-                          <User className="w-6 h-6 text-white" />
-                        )}
+                    <button
+                      key={patient.id}
+                      onClick={() => handleSelectPatient(patient)}
+                      className={`w-full p-4 text-left border-b border-slate-700 hover:bg-slate-700/50 transition-colors ${selectedPatient?.id === patient.id ? 'bg-slate-700' : ''
+                        }`}
+                    >
+                      <div className="flex items-center space-x-3">
+                        <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-full flex items-center justify-center">
+                          {patient.photo ? (
+                            <img src={patient.photo} alt={patient.name} className="w-12 h-12 rounded-full" />
+                          ) : (
+                            <User className="w-6 h-6 text-white" />
+                          )}
+                        </div>
+                        <div className="flex-1">
+                          <p className="font-semibold text-white">{patient.name}</p>
+                          <p className="text-xs text-slate-400">{patient.code} • {patient.cpf}</p>
+                          <p className="text-xs text-slate-400">
+                            {patient.appointmentsCount} atendimentos • {patient.absences} faltas
+                          </p>
+                        </div>
                       </div>
-                      <div className="flex-1">
-                        <p className="font-semibold text-white">{patient.name}</p>
-                        <p className="text-xs text-slate-400">{patient.code} • {patient.cpf}</p>
-                        <p className="text-xs text-slate-400">
-                          {patient.appointmentsCount} atendimentos • {patient.absences} faltas
-                        </p>
-                      </div>
-                    </div>
-                  </button>
+                    </button>
                   ))
                 )}
               </div>
@@ -1075,11 +1074,10 @@ const PatientsManagement: React.FC = () => {
                       <button
                         onClick={handleOpenPatientChat}
                         disabled={openingChat}
-                        className={`px-4 py-2 rounded-lg transition-colors ${
-                          openingChat
+                        className={`px-4 py-2 rounded-lg transition-colors ${openingChat
                             ? 'bg-primary-500/60 text-white cursor-wait'
                             : 'bg-primary-500 text-white hover:bg-primary-400'
-                        }`}
+                          }`}
                       >
                         {openingChat ? 'Abrindo chat...' : 'Chat Clínico'}
                       </button>
@@ -1105,344 +1103,341 @@ const PatientsManagement: React.FC = () => {
 
                 {/* Tabs - Apenas quando há paciente selecionado */}
                 {selectedPatient && (
-                <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl border border-slate-700/50">
-                  <div className="border-b border-slate-700">
-                    <div className="flex space-x-1 p-4">
-                      {[
-                        { id: 'overview', label: 'Visão Geral', icon: Activity },
-                        { id: 'evolution', label: 'Evolução', icon: FileText },
-                        { id: 'prescription', label: 'Prescrição Médica', icon: Edit },
-                        { id: 'appointments', label: 'Agendamentos', icon: Calendar },
-                        { id: 'files', label: 'Arquivos', icon: Archive },
-                        { id: 'receipts', label: 'Recebimentos', icon: Download },
-                        { id: 'charts', label: 'Gráficos', icon: TrendingUp }
-                      ].map(tab => {
-                        const Icon = tab.icon
-                        return (
-                          <button
-                            key={tab.id}
-                            onClick={() => setActiveTab(tab.id as any)}
-                            className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors ${
-                              activeTab === tab.id
-                                ? 'bg-blue-500 text-white'
-                                : 'text-slate-400 hover:text-white hover:bg-slate-700'
-                            }`}
-                          >
-                            <Icon className="w-4 h-4" />
-                            <span>{tab.label}</span>
-                          </button>
-                        )
-                      })}
+                  <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl border border-slate-700/50">
+                    <div className="border-b border-slate-700">
+                      <div className="flex space-x-1 p-4">
+                        {[
+                          { id: 'overview', label: 'Visão Geral', icon: Activity },
+                          { id: 'evolution', label: 'Evolução', icon: FileText },
+                          { id: 'prescription', label: 'Prescrição Médica', icon: Edit },
+                          { id: 'appointments', label: 'Agendamentos', icon: Calendar },
+                          { id: 'files', label: 'Arquivos', icon: Archive },
+                          { id: 'receipts', label: 'Recebimentos', icon: Download },
+                          { id: 'charts', label: 'Gráficos', icon: TrendingUp }
+                        ].map(tab => {
+                          const Icon = tab.icon
+                          return (
+                            <button
+                              key={tab.id}
+                              onClick={() => setActiveTab(tab.id as any)}
+                              className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors ${activeTab === tab.id
+                                  ? 'bg-blue-500 text-white'
+                                  : 'text-slate-400 hover:text-white hover:bg-slate-700'
+                                }`}
+                            >
+                              <Icon className="w-4 h-4" />
+                              <span>{tab.label}</span>
+                            </button>
+                          )
+                        })}
+                      </div>
                     </div>
-                  </div>
 
-                  {/* Tab Content */}
-                  <div className="p-4 sm:p-6 w-full max-w-full overflow-x-hidden">
-                    {activeTab === 'overview' && (
-                      <div className="space-y-4">
-                        <div className="grid grid-cols-2 gap-4">
-                          <div className="bg-slate-700/50 rounded-lg p-4">
-                            <p className="text-sm text-slate-400 mb-1">Especialidade</p>
-                            <p className="font-semibold text-white">{selectedPatient.specialty}</p>
+                    {/* Tab Content */}
+                    <div className="p-4 sm:p-6 w-full max-w-full overflow-x-hidden">
+                      {activeTab === 'overview' && (
+                        <div className="space-y-4">
+                          <div className="grid grid-cols-2 gap-4">
+                            <div className="bg-slate-700/50 rounded-lg p-4">
+                              <p className="text-sm text-slate-400 mb-1">Especialidade</p>
+                              <p className="font-semibold text-white">{selectedPatient.specialty}</p>
+                            </div>
+                            <div className="bg-slate-700/50 rounded-lg p-4">
+                              <p className="text-sm text-slate-400 mb-1">Unidade</p>
+                              <p className="font-semibold text-white">{selectedPatient.clinic}</p>
+                            </div>
+                            <div className="bg-slate-700/50 rounded-lg p-4">
+                              <p className="text-sm text-slate-400 mb-1">Sala</p>
+                              <p className="font-semibold text-white">{selectedPatient.room}</p>
+                            </div>
+                            <div className="bg-slate-700/50 rounded-lg p-4">
+                              <p className="text-sm text-slate-400 mb-1">Encaminhador</p>
+                              <p className="font-semibold text-white">{selectedPatient.referringDoctor || 'Não informado'}</p>
+                            </div>
                           </div>
                           <div className="bg-slate-700/50 rounded-lg p-4">
-                            <p className="text-sm text-slate-400 mb-1">Unidade</p>
-                            <p className="font-semibold text-white">{selectedPatient.clinic}</p>
-                          </div>
-                          <div className="bg-slate-700/50 rounded-lg p-4">
-                            <p className="text-sm text-slate-400 mb-1">Sala</p>
-                            <p className="font-semibold text-white">{selectedPatient.room}</p>
-                          </div>
-                          <div className="bg-slate-700/50 rounded-lg p-4">
-                            <p className="text-sm text-slate-400 mb-1">Encaminhador</p>
-                            <p className="font-semibold text-white">{selectedPatient.referringDoctor || 'Não informado'}</p>
+                            <p className="text-sm text-slate-400 mb-2">Histórico</p>
+                            {loadingEvolutions ? (
+                              <div className="text-center text-slate-400 py-4">
+                                <Clock className="w-6 h-6 mx-auto mb-2 animate-spin" />
+                                <p className="text-sm">Carregando histórico...</p>
+                              </div>
+                            ) : evolutions.length === 0 ? (
+                              <p className="text-slate-300">Não há informações para serem exibidas.</p>
+                            ) : (
+                              <div className="space-y-2 max-h-60 overflow-y-auto">
+                                {evolutions.slice(0, 5).map(evolution => (
+                                  <div key={evolution.id} className="bg-slate-600/50 rounded p-2 border border-slate-500/50">
+                                    <div className="flex items-start justify-between mb-1">
+                                      <p className="text-xs text-slate-300 font-medium">{evolution.date} • {evolution.time}</p>
+                                      <span className={`px-2 py-0.5 rounded text-xs ${evolution.type === 'current'
+                                          ? 'bg-green-500/20 text-green-400'
+                                          : 'bg-blue-500/20 text-blue-400'
+                                        }`}>
+                                        {evolution.type === 'current' ? 'Atual' : 'Histórico'}
+                                      </span>
+                                    </div>
+                                    <p className="text-xs text-slate-400 line-clamp-2">{evolution.content}</p>
+                                    <p className="text-xs text-slate-500 mt-1">{evolution.professional}</p>
+                                  </div>
+                                ))}
+                                {evolutions.length > 5 && (
+                                  <p className="text-xs text-slate-400 text-center pt-2">
+                                    ... e mais {evolutions.length - 5} registro(s). Veja mais na aba "Evolução"
+                                  </p>
+                                )}
+                              </div>
+                            )}
                           </div>
                         </div>
-                        <div className="bg-slate-700/50 rounded-lg p-4">
-                          <p className="text-sm text-slate-400 mb-2">Histórico</p>
+                      )}
+
+                      {activeTab === 'evolution' && (
+                        <div className="space-y-4">
+                          {showNewEvolution && (
+                            <div className="bg-gradient-to-r from-blue-500/10 to-cyan-500/10 border border-blue-500/30 rounded-xl p-6">
+                              <h3 className="text-lg font-bold text-white mb-4">Nova Evolução</h3>
+                              <div className="space-y-4">
+                                <div>
+                                  <label className="block text-sm font-medium text-slate-300 mb-2">
+                                    Tipo de Evolução
+                                  </label>
+                                  <select className="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:border-blue-500">
+                                    <option value="current">Atual</option>
+                                    <option value="historical">Histórico</option>
+                                  </select>
+                                </div>
+                                <div>
+                                  <label className="block text-sm font-medium text-slate-300 mb-2">
+                                    Evolução
+                                  </label>
+                                  <textarea
+                                    value={evolutionContent}
+                                    onChange={(e) => setEvolutionContent(e.target.value)}
+                                    rows={6}
+                                    placeholder="Digite a evolução... Use @ para modelos e # para tags"
+                                    className="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:border-blue-500"
+                                  />
+                                </div>
+                                <div className="flex space-x-3">
+                                  <button
+                                    onClick={handleSaveEvolution}
+                                    className="flex-1 px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-lg hover:from-green-600 hover:to-emerald-600 transition-colors"
+                                  >
+                                    Salvar Evolução
+                                  </button>
+                                  <button
+                                    onClick={() => setShowNewEvolution(false)}
+                                    className="px-4 py-2 bg-slate-700 text-white rounded-lg hover:bg-slate-600 transition-colors"
+                                  >
+                                    Cancelar
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+                          )}
+
                           {loadingEvolutions ? (
-                            <div className="text-center text-slate-400 py-4">
-                              <Clock className="w-6 h-6 mx-auto mb-2 animate-spin" />
-                              <p className="text-sm">Carregando histórico...</p>
+                            <div className="text-center text-slate-400 py-8">
+                              <Clock className="w-12 h-12 mx-auto mb-3 text-slate-600 animate-spin" />
+                              <p>Carregando evoluções...</p>
                             </div>
                           ) : evolutions.length === 0 ? (
-                            <p className="text-slate-300">Não há informações para serem exibidas.</p>
+                            <div className="text-center text-slate-400 py-8">
+                              <FileText className="w-12 h-12 mx-auto mb-3 text-slate-600" />
+                              <p>Nenhuma evolução registrada</p>
+                            </div>
                           ) : (
-                            <div className="space-y-2 max-h-60 overflow-y-auto">
-                              {evolutions.slice(0, 5).map(evolution => (
-                                <div key={evolution.id} className="bg-slate-600/50 rounded p-2 border border-slate-500/50">
-                                  <div className="flex items-start justify-between mb-1">
-                                    <p className="text-xs text-slate-300 font-medium">{evolution.date} • {evolution.time}</p>
-                                    <span className={`px-2 py-0.5 rounded text-xs ${
-                                      evolution.type === 'current' 
-                                        ? 'bg-green-500/20 text-green-400' 
+                            <div className="space-y-4">
+                              {evolutions.map(evolution => (
+                                <div key={evolution.id} className="bg-slate-700/50 rounded-lg p-4 border border-slate-600">
+                                  <div className="flex items-start justify-between mb-2">
+                                    <div>
+                                      <p className="font-semibold text-white">{evolution.date} • {evolution.time}</p>
+                                      <p className="text-xs text-slate-400">{evolution.professional}</p>
+                                    </div>
+                                    <span className={`px-2 py-1 rounded-full text-xs ${evolution.type === 'current'
+                                        ? 'bg-green-500/20 text-green-400'
                                         : 'bg-blue-500/20 text-blue-400'
-                                    }`}>
+                                      }`}>
                                       {evolution.type === 'current' ? 'Atual' : 'Histórico'}
                                     </span>
                                   </div>
-                                  <p className="text-xs text-slate-400 line-clamp-2">{evolution.content}</p>
-                                  <p className="text-xs text-slate-500 mt-1">{evolution.professional}</p>
+                                  <p className="text-slate-300 text-sm whitespace-pre-wrap">{evolution.content}</p>
                                 </div>
                               ))}
-                              {evolutions.length > 5 && (
-                                <p className="text-xs text-slate-400 text-center pt-2">
-                                  ... e mais {evolutions.length - 5} registro(s). Veja mais na aba "Evolução"
-                                </p>
-                              )}
                             </div>
                           )}
                         </div>
-                      </div>
-                    )}
+                      )}
 
-                    {activeTab === 'evolution' && (
-                      <div className="space-y-4">
-                        {showNewEvolution && (
-                          <div className="bg-gradient-to-r from-blue-500/10 to-cyan-500/10 border border-blue-500/30 rounded-xl p-6">
-                            <h3 className="text-lg font-bold text-white mb-4">Nova Evolução</h3>
-                            <div className="space-y-4">
+                      {activeTab === 'prescription' && (
+                        <div className="space-y-4 w-full max-w-full overflow-x-hidden">
+                          <IntegrativePrescriptions
+                            patientId={selectedPatient?.id}
+                            patientName={selectedPatient?.name}
+                          />
+                        </div>
+                      )}
+
+                      {activeTab === 'appointments' && (
+                        <div className="space-y-4 w-full max-w-full overflow-x-hidden">
+                          <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl border border-slate-700/50 p-6">
+                            <div className="flex items-center justify-between mb-6">
                               <div>
-                                <label className="block text-sm font-medium text-slate-300 mb-2">
-                                  Tipo de Evolução
-                                </label>
-                                <select className="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:border-blue-500">
-                                  <option value="current">Atual</option>
-                                  <option value="historical">Histórico</option>
-                                </select>
+                                <h3 className="text-xl font-bold text-white mb-2 flex items-center space-x-2">
+                                  <Calendar className="w-5 h-5 text-green-400" />
+                                  <span>Agendamentos</span>
+                                </h3>
+                                <p className="text-slate-400">Gerencie agendamentos e visualize sua agenda completa</p>
                               </div>
-                              <div>
-                                <label className="block text-sm font-medium text-slate-300 mb-2">
-                                  Evolução
-                                </label>
-                                <textarea
-                                  value={evolutionContent}
-                                  onChange={(e) => setEvolutionContent(e.target.value)}
-                                  rows={6}
-                                  placeholder="Digite a evolução... Use @ para modelos e # para tags"
-                                  className="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:border-blue-500"
-                                />
+                              <button
+                                onClick={() => navigate('/app/scheduling')}
+                                className="flex items-center space-x-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors"
+                              >
+                                <Plus className="w-4 h-4" />
+                                <span>Novo Agendamento</span>
+                              </button>
+                            </div>
+
+                            {/* KPIs de Agendamentos */}
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                              <div className="bg-slate-700/50 rounded-lg p-4">
+                                <p className="text-sm text-slate-400 mb-1">Hoje</p>
+                                <p className="text-2xl font-bold text-white">8</p>
                               </div>
-                              <div className="flex space-x-3">
-                                <button
-                                  onClick={handleSaveEvolution}
-                                  className="flex-1 px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-lg hover:from-green-600 hover:to-emerald-600 transition-colors"
-                                >
-                                  Salvar Evolução
-                                </button>
-                                <button
-                                  onClick={() => setShowNewEvolution(false)}
-                                  className="px-4 py-2 bg-slate-700 text-white rounded-lg hover:bg-slate-600 transition-colors"
-                                >
-                                  Cancelar
-                                </button>
+                              <div className="bg-slate-700/50 rounded-lg p-4">
+                                <p className="text-sm text-slate-400 mb-1">Esta Semana</p>
+                                <p className="text-2xl font-bold text-white">24</p>
+                              </div>
+                              <div className="bg-slate-700/50 rounded-lg p-4">
+                                <p className="text-sm text-slate-400 mb-1">Confirmados</p>
+                                <p className="text-2xl font-bold text-green-400">18</p>
+                              </div>
+                              <div className="bg-slate-700/50 rounded-lg p-4">
+                                <p className="text-sm text-slate-400 mb-1">Pendentes</p>
+                                <p className="text-2xl font-bold text-yellow-400">6</p>
                               </div>
                             </div>
+
+                            {/* Agenda de Hoje */}
+                            <div className="mb-6">
+                              <h4 className="text-lg font-bold text-white mb-4">Agenda de Hoje</h4>
+                              <div className="space-y-3">
+                                {/* Agendamento 1 */}
+                                <div className="bg-slate-700/50 rounded-lg p-4 border border-slate-600">
+                                  <div className="flex items-start justify-between">
+                                    <div className="flex items-start space-x-3">
+                                      <div className="bg-blue-500 rounded-lg p-2 text-white font-bold text-sm">09</div>
+                                      <div>
+                                        <h5 className="font-semibold text-white mb-1">Maria Santos</h5>
+                                        <p className="text-sm text-slate-400 mb-2">Consulta de retorno - Epilepsia</p>
+                                        <div className="flex items-center space-x-4 text-xs text-slate-300">
+                                          <div className="flex items-center space-x-1">
+                                            <Clock className="w-3 h-3" />
+                                            <span>09:00</span>
+                                          </div>
+                                          <span className="px-2 py-1 bg-green-500/20 text-green-400 rounded">Confirmado</span>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+
+                                {/* Agendamento 2 */}
+                                <div className="bg-slate-700/50 rounded-lg p-4 border border-slate-600">
+                                  <div className="flex items-start justify-between">
+                                    <div className="flex items-start space-x-3">
+                                      <div className="bg-blue-500 rounded-lg p-2 text-white font-bold text-sm">14</div>
+                                      <div>
+                                        <h5 className="font-semibold text-white mb-1">João Silva</h5>
+                                        <p className="text-sm text-slate-400 mb-2">Avaliação inicial - TEA</p>
+                                        <div className="flex items-center space-x-4 text-xs text-slate-300">
+                                          <div className="flex items-center space-x-1">
+                                            <Clock className="w-3 h-3" />
+                                            <span>14:00</span>
+                                          </div>
+                                          <span className="px-2 py-1 bg-green-500/20 text-green-400 rounded">Confirmado</span>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+
+                                {/* Agendamento 3 */}
+                                <div className="bg-slate-700/50 rounded-lg p-4 border border-slate-600">
+                                  <div className="flex items-start justify-between">
+                                    <div className="flex items-start space-x-3">
+                                      <div className="bg-blue-500 rounded-lg p-2 text-white font-bold text-sm">16</div>
+                                      <div>
+                                        <h5 className="font-semibold text-white mb-1">Ana Costa</h5>
+                                        <p className="text-sm text-slate-400 mb-2">Consulta de emergência</p>
+                                        <div className="flex items-center space-x-4 text-xs text-slate-300">
+                                          <div className="flex items-center space-x-1">
+                                            <Clock className="w-3 h-3" />
+                                            <span>16:30</span>
+                                          </div>
+                                          <span className="px-2 py-1 bg-yellow-500/20 text-yellow-400 rounded">Pendente</span>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* Ações Rápidas */}
+                            <div className="flex flex-wrap gap-3">
+                              <button
+                                onClick={() => navigate('/app/scheduling')}
+                                className="flex items-center space-x-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
+                              >
+                                <Plus className="w-4 h-4" />
+                                <span>Novo Agendamento</span>
+                              </button>
+                              <button
+                                onClick={() => navigate('/app/clinica/profissional/agendamentos')}
+                                className="flex items-center space-x-2 px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg transition-colors"
+                              >
+                                <Calendar className="w-4 h-4" />
+                                <span>Ver Agenda Completa</span>
+                              </button>
+                            </div>
                           </div>
-                        )}
-                        
-                        {loadingEvolutions ? (
+                        </div>
+                      )}
+
+                      {activeTab === 'files' && (
+                        <div className="space-y-4">
                           <div className="text-center text-slate-400 py-8">
-                            <Clock className="w-12 h-12 mx-auto mb-3 text-slate-600 animate-spin" />
-                            <p>Carregando evoluções...</p>
+                            <Archive className="w-12 h-12 mx-auto mb-3 text-slate-600" />
+                            <p>Nenhum arquivo anexado</p>
+                            <button
+                              onClick={handleUploadFiles}
+                              className="mt-4 px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-lg hover:from-purple-600 hover:to-pink-600 transition-colors"
+                            >
+                              <Upload className="w-5 h-5 inline mr-2" />
+                              Upload de Arquivos
+                            </button>
                           </div>
-                        ) : evolutions.length === 0 ? (
+                        </div>
+                      )}
+
+                      {activeTab === 'receipts' && (
                         <div className="text-center text-slate-400 py-8">
-                          <FileText className="w-12 h-12 mx-auto mb-3 text-slate-600" />
-                          <p>Nenhuma evolução registrada</p>
+                          <Download className="w-12 h-12 mx-auto mb-3 text-slate-600" />
+                          <p>Nenhum recebimento registrado</p>
                         </div>
-                        ) : (
-                          <div className="space-y-4">
-                            {evolutions.map(evolution => (
-                              <div key={evolution.id} className="bg-slate-700/50 rounded-lg p-4 border border-slate-600">
-                                <div className="flex items-start justify-between mb-2">
-                                  <div>
-                                    <p className="font-semibold text-white">{evolution.date} • {evolution.time}</p>
-                                    <p className="text-xs text-slate-400">{evolution.professional}</p>
-                                  </div>
-                                  <span className={`px-2 py-1 rounded-full text-xs ${
-                                    evolution.type === 'current' 
-                                      ? 'bg-green-500/20 text-green-400' 
-                                      : 'bg-blue-500/20 text-blue-400'
-                                  }`}>
-                                    {evolution.type === 'current' ? 'Atual' : 'Histórico'}
-                                  </span>
-                                </div>
-                                <p className="text-slate-300 text-sm whitespace-pre-wrap">{evolution.content}</p>
-                              </div>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    )}
+                      )}
 
-                    {activeTab === 'prescription' && (
-                      <div className="space-y-4 w-full max-w-full overflow-x-hidden">
-                        <IntegrativePrescriptions
-                          patientId={selectedPatient?.id}
-                          patientName={selectedPatient?.name}
-                        />
-                      </div>
-                    )}
-
-                    {activeTab === 'appointments' && (
-                      <div className="space-y-4 w-full max-w-full overflow-x-hidden">
-                        <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl border border-slate-700/50 p-6">
-                          <div className="flex items-center justify-between mb-6">
-                            <div>
-                              <h3 className="text-xl font-bold text-white mb-2 flex items-center space-x-2">
-                                <Calendar className="w-5 h-5 text-green-400" />
-                                <span>Agendamentos</span>
-                              </h3>
-                              <p className="text-slate-400">Gerencie agendamentos e visualize sua agenda completa</p>
-                            </div>
-                            <button
-                              onClick={() => navigate('/app/scheduling')}
-                              className="flex items-center space-x-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors"
-                            >
-                              <Plus className="w-4 h-4" />
-                              <span>Novo Agendamento</span>
-                            </button>
-                          </div>
-
-                          {/* KPIs de Agendamentos */}
-                          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-                            <div className="bg-slate-700/50 rounded-lg p-4">
-                              <p className="text-sm text-slate-400 mb-1">Hoje</p>
-                              <p className="text-2xl font-bold text-white">8</p>
-                            </div>
-                            <div className="bg-slate-700/50 rounded-lg p-4">
-                              <p className="text-sm text-slate-400 mb-1">Esta Semana</p>
-                              <p className="text-2xl font-bold text-white">24</p>
-                            </div>
-                            <div className="bg-slate-700/50 rounded-lg p-4">
-                              <p className="text-sm text-slate-400 mb-1">Confirmados</p>
-                              <p className="text-2xl font-bold text-green-400">18</p>
-                            </div>
-                            <div className="bg-slate-700/50 rounded-lg p-4">
-                              <p className="text-sm text-slate-400 mb-1">Pendentes</p>
-                              <p className="text-2xl font-bold text-yellow-400">6</p>
-                            </div>
-                          </div>
-
-                          {/* Agenda de Hoje */}
-                          <div className="mb-6">
-                            <h4 className="text-lg font-bold text-white mb-4">Agenda de Hoje</h4>
-                            <div className="space-y-3">
-                              {/* Agendamento 1 */}
-                              <div className="bg-slate-700/50 rounded-lg p-4 border border-slate-600">
-                                <div className="flex items-start justify-between">
-                                  <div className="flex items-start space-x-3">
-                                    <div className="bg-blue-500 rounded-lg p-2 text-white font-bold text-sm">09</div>
-                                    <div>
-                                      <h5 className="font-semibold text-white mb-1">Maria Santos</h5>
-                                      <p className="text-sm text-slate-400 mb-2">Consulta de retorno - Epilepsia</p>
-                                      <div className="flex items-center space-x-4 text-xs text-slate-300">
-                                        <div className="flex items-center space-x-1">
-                                          <Clock className="w-3 h-3" />
-                                          <span>09:00</span>
-                                        </div>
-                                        <span className="px-2 py-1 bg-green-500/20 text-green-400 rounded">Confirmado</span>
-                                      </div>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-
-                              {/* Agendamento 2 */}
-                              <div className="bg-slate-700/50 rounded-lg p-4 border border-slate-600">
-                                <div className="flex items-start justify-between">
-                                  <div className="flex items-start space-x-3">
-                                    <div className="bg-blue-500 rounded-lg p-2 text-white font-bold text-sm">14</div>
-                                    <div>
-                                      <h5 className="font-semibold text-white mb-1">João Silva</h5>
-                                      <p className="text-sm text-slate-400 mb-2">Avaliação inicial - TEA</p>
-                                      <div className="flex items-center space-x-4 text-xs text-slate-300">
-                                        <div className="flex items-center space-x-1">
-                                          <Clock className="w-3 h-3" />
-                                          <span>14:00</span>
-                                        </div>
-                                        <span className="px-2 py-1 bg-green-500/20 text-green-400 rounded">Confirmado</span>
-                                      </div>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-
-                              {/* Agendamento 3 */}
-                              <div className="bg-slate-700/50 rounded-lg p-4 border border-slate-600">
-                                <div className="flex items-start justify-between">
-                                  <div className="flex items-start space-x-3">
-                                    <div className="bg-blue-500 rounded-lg p-2 text-white font-bold text-sm">16</div>
-                                    <div>
-                                      <h5 className="font-semibold text-white mb-1">Ana Costa</h5>
-                                      <p className="text-sm text-slate-400 mb-2">Consulta de emergência</p>
-                                      <div className="flex items-center space-x-4 text-xs text-slate-300">
-                                        <div className="flex items-center space-x-1">
-                                          <Clock className="w-3 h-3" />
-                                          <span>16:30</span>
-                                        </div>
-                                        <span className="px-2 py-1 bg-yellow-500/20 text-yellow-400 rounded">Pendente</span>
-                                      </div>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-
-                          {/* Ações Rápidas */}
-                          <div className="flex flex-wrap gap-3">
-                            <button
-                              onClick={() => navigate('/app/scheduling')}
-                              className="flex items-center space-x-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
-                            >
-                              <Plus className="w-4 h-4" />
-                              <span>Novo Agendamento</span>
-                            </button>
-                            <button
-                              onClick={() => navigate('/app/clinica/profissional/agendamentos')}
-                              className="flex items-center space-x-2 px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg transition-colors"
-                            >
-                              <Calendar className="w-4 h-4" />
-                              <span>Ver Agenda Completa</span>
-                            </button>
-                          </div>
+                      {activeTab === 'charts' && (
+                        <div className="text-center text-slate-400 py-8">
+                          <TrendingUp className="w-12 h-12 mx-auto mb-3 text-slate-600" />
+                          <p>Nenhum gráfico disponível</p>
                         </div>
-                      </div>
-                    )}
-
-                    {activeTab === 'files' && (
-                      <div className="space-y-4">
-                      <div className="text-center text-slate-400 py-8">
-                          <Archive className="w-12 h-12 mx-auto mb-3 text-slate-600" />
-                        <p>Nenhum arquivo anexado</p>
-                        <button
-                            onClick={handleUploadFiles}
-                          className="mt-4 px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-lg hover:from-purple-600 hover:to-pink-600 transition-colors"
-                        >
-                          <Upload className="w-5 h-5 inline mr-2" />
-                          Upload de Arquivos
-                        </button>
-                        </div>
-                      </div>
-                    )}
-
-                    {activeTab === 'receipts' && (
-                      <div className="text-center text-slate-400 py-8">
-                        <Download className="w-12 h-12 mx-auto mb-3 text-slate-600" />
-                        <p>Nenhum recebimento registrado</p>
-                      </div>
-                    )}
-
-                    {activeTab === 'charts' && (
-                      <div className="text-center text-slate-400 py-8">
-                        <TrendingUp className="w-12 h-12 mx-auto mb-3 text-slate-600" />
-                        <p>Nenhum gráfico disponível</p>
-                      </div>
-                    )}
+                      )}
+                    </div>
                   </div>
-                </div>
                 )}
               </div>
             ) : (
