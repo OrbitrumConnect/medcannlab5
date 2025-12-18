@@ -570,8 +570,7 @@ const EnsinoDashboard: React.FC = () => {
                 {/* Curso Pós-Graduação Cannabis Medicinal */}
                 <div
                   onClick={() => handleJoinClass('Pós-Graduação Cannabis Medicinal')}
-                  className="rounded-xl p-4 md:p-5 lg:p-6 cursor-pointer hover:shadow-lg hover:scale-[1.02] transition-all overflow-hidden w-full max-w-full"
-                  style={cardStyle}
+                  className="rounded-2xl border border-[#00C16A]/20 bg-gradient-to-br from-[#0A192F] via-[#102C45] to-[#1F4B38] p-4 md:p-5 lg:p-6 shadow-xl cursor-pointer hover:shadow-2xl hover:scale-[1.02] transition-all overflow-hidden w-full max-w-full"
                 >
                   <div className="flex items-center justify-between mb-3 md:mb-4 gap-2 stack-mobile">
                     <h3 className="text-lg md:text-xl lg:text-2xl font-bold text-white break-words flex-1 min-w-0">🌿 Pós-Graduação Cannabis Medicinal</h3>
@@ -601,8 +600,7 @@ const EnsinoDashboard: React.FC = () => {
                 {/* Curso Arte da Entrevista Clínica */}
                 <div
                   onClick={() => handleJoinClass('Arte da Entrevista Clínica')}
-                  className="rounded-xl p-4 md:p-5 lg:p-6 cursor-pointer hover:shadow-lg hover:scale-[1.02] transition-all overflow-hidden w-full max-w-full"
-                  style={cardStyle}
+                  className="rounded-2xl border border-[#00C16A]/20 bg-gradient-to-br from-[#0A192F] via-[#102C45] to-[#1F4B38] p-4 md:p-5 lg:p-6 shadow-xl cursor-pointer hover:shadow-2xl hover:scale-[1.02] transition-all overflow-hidden w-full max-w-full"
                 >
                   <div className="flex items-center justify-between mb-3 md:mb-4 gap-2 stack-mobile">
                     <h3 className="text-lg md:text-xl lg:text-2xl font-bold text-white break-words flex-1 min-w-0">🎭 Arte da Entrevista Clínica</h3>
@@ -795,7 +793,7 @@ const EnsinoDashboard: React.FC = () => {
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {mentorshipPrograms.map(program => (
-                  <div key={program.id} className="rounded-xl p-5" style={cardStyle}>
+                  <div key={program.id} className="rounded-2xl border border-[#00C16A]/20 bg-gradient-to-br from-[#0A192F] via-[#102C45] to-[#1F4B38] p-5 shadow-xl">
                     <div className="mb-4">
                       <h4 className="text-xl font-bold text-white mb-1">{program.mentor}</h4>
                       <p className="text-sm text-emerald-400">{program.role}</p>
