@@ -570,17 +570,18 @@ const EnsinoDashboard: React.FC = () => {
                 {/* Curso Pós-Graduação Cannabis Medicinal */}
                 <div
                   onClick={() => handleJoinClass('Pós-Graduação Cannabis Medicinal')}
-                  className="bg-gradient-to-r from-green-600 to-teal-600 rounded-xl p-4 md:p-5 lg:p-6 cursor-pointer hover:shadow-lg hover:scale-105 transition-all overflow-hidden w-full max-w-full"
+                  className="rounded-xl p-4 md:p-5 lg:p-6 cursor-pointer hover:shadow-lg hover:scale-[1.02] transition-all overflow-hidden w-full max-w-full"
+                  style={cardStyle}
                 >
                   <div className="flex items-center justify-between mb-3 md:mb-4 gap-2 stack-mobile">
                     <h3 className="text-lg md:text-xl lg:text-2xl font-bold text-white break-words flex-1 min-w-0">🌿 Pós-Graduação Cannabis Medicinal</h3>
-                    <GraduationCap className="w-6 h-6 md:w-7 md:h-7 lg:w-8 lg:h-8 text-white flex-shrink-0" />
+                    <GraduationCap className="w-6 h-6 md:w-7 md:h-7 lg:w-8 lg:h-8 text-emerald-400 flex-shrink-0" />
                   </div>
-                  <p className="text-white/90 mb-4 break-words">
+                  <p className="text-slate-300 mb-4 break-words">
                     Curso completo de cannabis medicinal com metodologia prática e casos clínicos reais.
                     Desenvolvido pelo Dr. Eduardo Faveret, especialista em medicina integrativa.
                   </p>
-                  <div className="flex items-center flex-wrap gap-x-2 gap-y-1 text-sm text-white/80 mb-4">
+                  <div className="flex items-center flex-wrap gap-x-2 gap-y-1 text-sm text-slate-400 mb-4">
                     <span className="whitespace-nowrap">Dr. Eduardo Faveret</span>
                     <span>•</span>
                     <span className="whitespace-nowrap">360 horas</span>
@@ -600,17 +601,18 @@ const EnsinoDashboard: React.FC = () => {
                 {/* Curso Arte da Entrevista Clínica */}
                 <div
                   onClick={() => handleJoinClass('Arte da Entrevista Clínica')}
-                  className="bg-gradient-to-r from-emerald-600 to-teal-600 rounded-xl p-4 md:p-5 lg:p-6 cursor-pointer hover:shadow-lg hover:scale-105 transition-all overflow-hidden w-full max-w-full"
+                  className="rounded-xl p-4 md:p-5 lg:p-6 cursor-pointer hover:shadow-lg hover:scale-[1.02] transition-all overflow-hidden w-full max-w-full"
+                  style={cardStyle}
                 >
                   <div className="flex items-center justify-between mb-3 md:mb-4 gap-2 stack-mobile">
                     <h3 className="text-lg md:text-xl lg:text-2xl font-bold text-white break-words flex-1 min-w-0">🎭 Arte da Entrevista Clínica</h3>
-                    <Heart className="w-8 h-8 text-white flex-shrink-0" />
+                    <Heart className="w-8 h-8 text-emerald-400 flex-shrink-0" />
                   </div>
-                  <p className="text-white/90 mb-4 break-words">
+                  <p className="text-slate-300 mb-4 break-words">
                     Metodologia completa de entrevista clínica aplicada à Cannabis Medicinal.
                     Desenvolva habilidades de comunicação e avaliação clínica.
                   </p>
-                  <div className="flex items-center flex-wrap gap-x-2 gap-y-1 text-sm text-white/80 mb-4">
+                  <div className="flex items-center flex-wrap gap-x-2 gap-y-1 text-sm text-slate-400 mb-4">
                     <span className="whitespace-nowrap">Dr. Ricardo Valença</span>
                     <span>•</span>
                     <span className="whitespace-nowrap">40 horas</span>
