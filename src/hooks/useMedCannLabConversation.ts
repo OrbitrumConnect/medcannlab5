@@ -40,7 +40,7 @@ const mapResponseToIntent = (response: AIResponse): ConversationalIntent => {
     ? response.metadata.intent
     : undefined
 
-  if (metadataIntent && ['CHECK_STATUS','GET_TRAINING_CONTEXT','MANAGE_SIMULATION','ACCESS_LIBRARY','IMRE_ANALYSIS','SMALL_TALK','FOLLOW_UP','HELP','UNKNOWN'].includes(metadataIntent)) {
+  if (metadataIntent && ['CHECK_STATUS', 'GET_TRAINING_CONTEXT', 'MANAGE_SIMULATION', 'ACCESS_LIBRARY', 'IMRE_ANALYSIS', 'SMALL_TALK', 'FOLLOW_UP', 'HELP', 'UNKNOWN'].includes(metadataIntent)) {
     return metadataIntent as ConversationalIntent
   }
 
@@ -121,14 +121,14 @@ export const useMedCannLabConversation = () => {
   const [lastIntent, setLastIntent] = useState<ConversationalIntent | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [usedEndpoints, setUsedEndpoints] = useState<string[]>([])
-  
+
   // Inicializar IA apenas quando houver um usuário logado
   useEffect(() => {
     if (user && !residentRef.current) {
       try {
         residentRef.current = new NoaResidentAI()
         console.log('✅ IA Residente inicializada para:', user.email)
-        
+
         // Adicionar mensagem de boas-vindas apenas uma vez
         if (!hasShownWelcome && messages.length === 0) {
           const welcomeMessage: ConversationMessage = {
@@ -454,7 +454,7 @@ export const useMedCannLabConversation = () => {
     if (!lastMessage || lastMessage.role !== 'noa') {
       return
     }
-    
+
     console.log('🔍 Verificando síntese de voz para mensagem:', {
       messageId: lastMessage.id,
       role: lastMessage.role,
@@ -565,9 +565,9 @@ export const useMedCannLabConversation = () => {
     revealStep()
 
     // Adicionar delay antes de iniciar a síntese de voz
-    // Isso dá tempo para o usuário pensar e processar a resposta antes da IA falar
-    const startSpeakingDelay = 800 // 0.8 segundos de delay antes de falar (reduzido para não ser muito longo)
-    
+    // Delay reduzido para evitar que o chat feche antes do áudio tocar
+    const startSpeakingDelay = 100 // 0.1 segundos de delay antes de falar
+
     const utterance = new SpeechSynthesisUtterance(sanitized.length > 0 ? sanitized : fullContent)
     utterance.lang = 'pt-BR'
     utterance.rate = 1.15 // Andante (mais rápido que o anterior 0.94)
@@ -680,7 +680,7 @@ export const useMedCannLabConversation = () => {
       if (window.speechSynthesis.speaking) {
         window.speechSynthesis.cancel()
       }
-      
+
       // Aguardar delay antes de iniciar a síntese de voz
       // Isso dá tempo para o usuário pensar e processar antes da IA responder
       setTimeout(() => {
@@ -702,19 +702,19 @@ export const useMedCannLabConversation = () => {
             console.warn('⚠️ Queue foi cancelada, não iniciando síntese')
             return
           }
-          
+
           // Verificar se síntese de voz ainda está habilitada
           if (!speechEnabledRef.current) {
             console.warn('⚠️ Síntese de voz desabilitada')
             return
           }
-          
+
           // Verificar se speechSynthesis ainda está disponível
           if (!window.speechSynthesis) {
             console.warn('⚠️ speechSynthesis não disponível')
             return
           }
-          
+
           // Verificar se ainda está falando antes de iniciar nova síntese
           if (window.speechSynthesis.speaking) {
             console.log('⚠️ Ainda há síntese em andamento, aguardando...')
@@ -862,23 +862,23 @@ export const useMedCannLabConversation = () => {
       // Detectar se a IA mencionou ter criado um slide (mais robusto)
       const responseLower = response.content.toLowerCase()
       const slideKeywords = [
-        'criei um slide', 'criei slide', 'slide criado', 'slide foi criado', 
+        'criei um slide', 'criei slide', 'slide criado', 'slide foi criado',
         'slide disponível', 'slide está disponível', 'novo slide', 'slide pronto',
         'slide gerado', 'slide foi gerado', 'preparação de slides', 'área de preparação de slides',
         'criar slide', 'gerar slide', 'slide na área', 'na área de preparação'
       ]
-      
+
       const hasSlideMention = slideKeywords.some(keyword => responseLower.includes(keyword))
-      
+
       // Também verificar se há estrutura de slide na resposta (título, conteúdo estruturado)
-      const hasSlideStructure = response.content.match(/#+\s+[^\n]+\n/s) || 
-                                response.content.match(/\*\*[^\*]+\*\*/) ||
-                                response.content.match(/slide[:\s]+[^\n]+/i)
-      
+      const hasSlideStructure = response.content.match(/#+\s+[^\n]+\n/s) ||
+        response.content.match(/\*\*[^\*]+\*\*/) ||
+        response.content.match(/slide[:\s]+[^\n]+/i)
+
       if (hasSlideMention || hasSlideStructure) {
         // Extrair título do slide de várias formas
         let slideTitle = `Slide ${new Date().toLocaleDateString('pt-BR')}`
-        
+
         // Tentar extrair título de diferentes formatos
         const titlePatterns = [
           /slide[:\s]+"?([^"\n]+)"?/i,
@@ -887,7 +887,7 @@ export const useMedCannLabConversation = () => {
           /\*\*([^\*]+)\*\*/,
           /slide\s+(\d+)[:\s]+([^\n]+)/i
         ]
-        
+
         for (const pattern of titlePatterns) {
           const match = response.content.match(pattern)
           if (match) {
@@ -895,17 +895,17 @@ export const useMedCannLabConversation = () => {
             if (slideTitle && slideTitle.length > 3) break
           }
         }
-        
+
         // Extrair conteúdo do slide
         let slideContent = response.content
-        
+
         // Se a resposta contém estrutura de slide, tentar extrair melhor
         const contentPatterns = [
           /conteúdo[:\s]+([^\n]+)/i,
           /slide[:\s]+[^\n]+\n([\s\S]+)/i,
           /#+\s+[^\n]+\n([\s\S]+)/,
         ]
-        
+
         for (const pattern of contentPatterns) {
           const match = response.content.match(pattern)
           if (match && match[1]) {
@@ -917,12 +917,12 @@ export const useMedCannLabConversation = () => {
             break
           }
         }
-        
+
         // Se não encontrou conteúdo específico, usar a resposta inteira (limitada)
         if (slideContent === response.content && slideContent.length > 500) {
           slideContent = slideContent.substring(0, 2000) + '...'
         }
-        
+
         // Criar evento para notificar a criação do slide
         const slideEvent = new CustomEvent('slideCreated', {
           detail: {
@@ -933,7 +933,7 @@ export const useMedCannLabConversation = () => {
           }
         })
         window.dispatchEvent(slideEvent)
-        
+
         // Salvar slide no Supabase
         if (user?.id) {
           try {
@@ -954,7 +954,7 @@ export const useMedCannLabConversation = () => {
               })
               .select()
               .single()
-            
+
             if (!error && data) {
               console.log('✅ Slide criado pela IA e salvo no Supabase:', data.id)
               // Atualizar evento com ID real do banco e recarregar slides na interface
