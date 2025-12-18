@@ -1051,7 +1051,7 @@ const EnsinoDashboard: React.FC = () => {
           </div>
         )
       }
-    </div >
+    </div>
   )
 }
 
