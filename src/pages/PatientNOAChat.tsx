@@ -12,21 +12,28 @@ const PatientNOAChat: React.FC = () => {
   const { sendInitialMessage, openChat } = useNoaPlatform()
   const { user } = useAuth()
   const hasInitiatedRef = useRef(false)
-  
+
   // Verificar se está em modo embed
   const searchParams = new URLSearchParams(location.search)
   const isEmbed = searchParams.get('embed') === 'true'
 
   // Verificar se veio do agendamento e iniciar avaliação automaticamente
   useEffect(() => {
+    // Abrir o chat automaticamente ao acessar esta página
+    if (!isEmbed) {
+      setTimeout(() => {
+        openChat()
+      }, 500)
+    }
+
     const state = location.state as { startAssessment?: boolean; appointmentData?: any }
-    
+
     if (state?.startAssessment && !hasInitiatedRef.current && user) {
       hasInitiatedRef.current = true
-      
+
       // Abrir o chat automaticamente
       openChat()
-      
+
       // Aguardar para garantir que o chat esteja pronto antes de enviar mensagem
       setTimeout(() => {
         const assessmentPrompt = `Iniciar Avaliação Clínica Inicial IMRE Triaxial. Acabei de agendar uma consulta.
@@ -42,7 +49,7 @@ Por favor, inicie o protocolo IMRE para minha avaliação clínica inicial.`
         sendInitialMessage(assessmentPrompt)
       }, 1500)
     }
-  }, [location.state, sendInitialMessage, openChat, user])
+  }, [location.state, sendInitialMessage, openChat, user, isEmbed])
 
   // Se estiver em modo embed, renderizar apenas o conteúdo sem header
   if (isEmbed) {
@@ -55,14 +62,14 @@ Por favor, inicie o protocolo IMRE para minha avaliação clínica inicial.`
               <h3 className="text-xl font-semibold text-white mb-1">Nôa Esperança</h3>
               <p className="text-xs text-slate-400">IA Residente - Especializada em Avaliações Clínicas</p>
             </div>
-            
+
             <div className="flex justify-center mb-4">
               <NoaAnimatedAvatar
                 size="lg"
                 showStatus={true}
               />
             </div>
-            
+
             <div className="text-center">
               <p className="text-sm text-slate-300 mb-2">
                 🌬️ Bons ventos sóprem! Sou Nôa Esperança, sua IA Residente.
@@ -78,7 +85,7 @@ Por favor, inicie o protocolo IMRE para minha avaliação clínica inicial.`
 
           {/* Interface Conversacional - Expandida no modo embed */}
           <div className="flex-1 min-h-0">
-            <NoaConversationalInterface 
+            <NoaConversationalInterface
               userName={user?.name || 'Paciente'}
               userCode={user?.id || 'PATIENT-001'}
               position="bottom-right"
@@ -97,7 +104,7 @@ Por favor, inicie o protocolo IMRE para minha avaliação clínica inicial.`
         <div className="max-w-4xl mx-auto">
           {/* Header */}
           <div className="flex items-center justify-between mb-8">
-            <button 
+            <button
               onClick={() => navigate('/app/clinica/paciente/dashboard')}
               className="flex items-center space-x-2 text-slate-300 hover:text-white transition-colors"
             >
@@ -110,21 +117,21 @@ Por favor, inicie o protocolo IMRE para minha avaliação clínica inicial.`
             </div>
             <div className="w-20"></div>
           </div>
-          
+
           {/* Avatar da Nôa Residente AI */}
           <div className="bg-slate-800 rounded-xl p-8 flex flex-col items-center mb-8">
             <div className="text-center mb-6">
               <h3 className="text-2xl font-semibold text-white mb-2">Nôa Esperança</h3>
               <p className="text-sm text-slate-400">IA Residente - Especializada em Avaliações Clínicas</p>
             </div>
-            
+
             <div className="flex justify-center mb-6">
               <NoaAnimatedAvatar
                 size="xl"
                 showStatus={true}
               />
             </div>
-            
+
             <div className="text-center">
               <p className="text-lg text-slate-300 mb-4">
                 🌬️ Bons ventos sóprem! Sou Nôa Esperança, sua IA Residente.
@@ -141,7 +148,7 @@ Por favor, inicie o protocolo IMRE para minha avaliação clínica inicial.`
       </div>
 
       {/* Interface Conversacional - Fixa no canto */}
-      <NoaConversationalInterface 
+      <NoaConversationalInterface
         userName={user?.name || 'Paciente'}
         userCode={user?.id || 'PATIENT-001'}
         position="bottom-right"
