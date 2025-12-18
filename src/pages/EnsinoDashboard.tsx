@@ -145,7 +145,7 @@ const EnsinoDashboard: React.FC = () => {
       description: 'Mecanismos de ação, receptores e sistemas endocanabinoides',
       lessons: 6,
       completed: 2,
-      color: 'from-blue-500 to-cyan-500',
+      color: 'from-emerald-500 to-green-600',
       status: 'Em Andamento'
     },
     {
@@ -155,7 +155,7 @@ const EnsinoDashboard: React.FC = () => {
       description: 'Regulamentação, prescrição e aspectos éticos do uso medicinal',
       lessons: 3,
       completed: 0,
-      color: 'from-purple-500 to-pink-500',
+      color: 'from-green-600 to-emerald-700',
       status: 'Pendente'
     },
     {
@@ -165,7 +165,7 @@ const EnsinoDashboard: React.FC = () => {
       description: 'Indicações clínicas, protocolos de tratamento e monitoramento',
       lessons: 8,
       completed: 0,
-      color: 'from-orange-500 to-red-500',
+      color: 'from-teal-600 to-green-700',
       status: 'Pendente'
     },
     {
@@ -185,7 +185,7 @@ const EnsinoDashboard: React.FC = () => {
       description: 'Análise de casos reais e simulações práticas',
       lessons: 5,
       completed: 0,
-      color: 'from-indigo-500 to-purple-500',
+      color: 'from-emerald-600 to-teal-700',
       status: 'Pendente'
     },
     {
@@ -195,7 +195,7 @@ const EnsinoDashboard: React.FC = () => {
       description: 'Metodologia de pesquisa e publicação científica',
       lessons: 3,
       completed: 0,
-      color: 'from-pink-500 to-rose-500',
+      color: 'from-green-700 to-emerald-800',
       status: 'Pendente'
     },
     {
@@ -205,7 +205,7 @@ const EnsinoDashboard: React.FC = () => {
       description: 'Prova final e obtenção do certificado',
       lessons: 2,
       completed: 0,
-      color: 'from-yellow-500 to-orange-500',
+      color: 'from-teal-500 to-green-600',
       status: 'Pendente'
     }
   ]
@@ -255,18 +255,18 @@ const EnsinoDashboard: React.FC = () => {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'Em Andamento': return 'text-blue-400'
+      case 'Em Andamento': return 'text-emerald-400'
       case 'Concluído': return 'text-green-400'
-      case 'Pendente': return 'text-yellow-400'
-      case 'Aguardando Inscrição': return 'text-purple-400'
+      case 'Pendente': return 'text-teal-400'
+      case 'Aguardando Inscrição': return 'text-green-300'
       default: return 'text-slate-400'
     }
   }
 
   const getProgressColor = (progress: number) => {
     if (progress >= 80) return 'bg-green-500'
-    if (progress >= 50) return 'bg-blue-500'
-    return 'bg-yellow-500'
+    if (progress >= 50) return 'bg-emerald-500'
+    return 'bg-teal-500'
   }
 
   const libraryCollections = [
@@ -284,7 +284,7 @@ const EnsinoDashboard: React.FC = () => {
       description: 'Casos clínicos, roteiros de simulação e guias de supervisão formativa.',
       format: 'Toolkit • 12 roteiros',
       highlight: 'Inclui vídeos comentados',
-      color: 'from-blue-500 to-cyan-500'
+      color: 'from-emerald-500 to-teal-600'
     },
     {
       id: 'referencias-nefro',
@@ -292,7 +292,7 @@ const EnsinoDashboard: React.FC = () => {
       description: 'Estudos, biomarcadores e guidelines combinando nefrologia e cannabis.',
       format: 'Base científica • 48 artigos',
       highlight: 'Curadoria Dr. Ricardo Valença',
-      color: 'from-indigo-500 to-purple-500'
+      color: 'from-green-600 to-emerald-700'
     }
   ]
 
