@@ -1076,7 +1076,7 @@ const ProfessionalScheduling: React.FC = () => {
         </div>
 
         {/* Solicitações Pendentes - Sempre visível */}
-        <div className="bg-gradient-to-r from-amber-900/30 to-orange-900/30 rounded-xl p-6 border border-amber-700/50 mb-6">
+        <div className="bg-gradient-to-r from-amber-900/30 to-orange-900/30 rounded-xl p-6 border border-amber-700/50 mb-6 max-w-4xl">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center space-x-3">
               <Bell className="w-6 h-6 text-amber-400" />
