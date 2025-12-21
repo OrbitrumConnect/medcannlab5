@@ -11,11 +11,13 @@ import NavegacaoIndividualizada from './NavegacaoIndividualizada'
 import MobileResponsiveWrapper from './MobileResponsiveWrapper'
 import { normalizeUserType } from '../lib/userTypes'
 import { useUserView } from '../contexts/UserViewContext'
+import { useNoaPlatform } from '../contexts/NoaPlatformContext'
 import { backgroundGradient, colors } from '../constants/designSystem'
 
 const Layout: React.FC = () => {
   const { user, isLoading } = useAuth()
   const { getEffectiveUserType, viewAsType } = useUserView()
+  const { isGlobalChatHidden } = useNoaPlatform()
   const [isMobile, setIsMobile] = useState(false)
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false)
@@ -186,10 +188,12 @@ const Layout: React.FC = () => {
           />
 
           {/* Interface Conversacional Nôa Esperança */}
-          <NoaConversationalInterface
-            userName={user?.name || 'Usuário'}
-            userCode={user?.id || 'USER-001'}
-          />
+          {!isGlobalChatHidden && (
+            <NoaConversationalInterface
+              userName={user?.name || 'Usuário'}
+              userCode={user?.id || 'USER-001'}
+            />
+          )}
         </div>
       </MobileResponsiveWrapper>
     </ProtectedRoute>

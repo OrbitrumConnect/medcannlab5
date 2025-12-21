@@ -225,7 +225,7 @@ const PatientDashboard: React.FC = () => {
   const { getEffectiveUserType, isAdminViewingAs } = useUserView()
   const navigate = useNavigate()
   const location = useLocation()
-  const { openChat, sendInitialMessage } = useNoaPlatform()
+  const { openChat, sendInitialMessage, hideGlobalChat, showGlobalChat } = useNoaPlatform()
 
   // Se admin está visualizando como paciente
   const effectiveType = getEffectiveUserType(user?.type)
@@ -564,6 +564,16 @@ const PatientDashboard: React.FC = () => {
       setEducationalLoading(false)
     }
   }, [])
+
+  // Gerenciar visibilidade do chat global
+  useEffect(() => {
+    if (activeTab === 'chat-noa') {
+      hideGlobalChat()
+    } else {
+      showGlobalChat()
+    }
+    return () => showGlobalChat()
+  }, [activeTab, hideGlobalChat, showGlobalChat])
 
   // Abrir chat NOA automaticamente quando a tab chat-noa for ativada
   useEffect(() => {
@@ -2633,14 +2643,7 @@ const PatientDashboard: React.FC = () => {
           minHeight: '100vh'
         }}
       >
-        {/* HACK: Esconder chat flutuante global quando o chat inline estiver ativo */}
-        {activeTab === 'chat-noa' && (
-          <style>{`
-            div[data-position="bottom-right"], button[data-position="bottom-right"] {
-              display: none !important;
-            }
-          `}</style>
-        )}
+
 
         {activeTab !== 'dashboard' && (
           <div style={{ background: 'rgba(15, 36, 60, 0.75)', borderBottom: '1px solid rgba(28,64,94,0.6)' }}>
@@ -2736,15 +2739,7 @@ const PatientDashboard: React.FC = () => {
         />
       )}
 
-      {/* Interface Conversacional da Nôa Esperança - Fixa no canto - Ocultar quando estiver na aba de chat inline */}
-      {activeTab !== 'chat-noa' && (
-        <NoaConversationalInterface
-          userName={user?.name || 'Paciente'}
-          userCode={user?.id || 'PATIENT-001'}
-          position="bottom-right"
-          hideButton={false}
-        />
-      )}
+      {/* Interface Conversacional da Nôa Esperança - Fixa no canto - Controlada pelo Contexto agora */}
     </div>
   )
 }

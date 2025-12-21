@@ -40,4 +40,11 @@ Hoje focamos na reestruturação e simplificação do **Dashboard do Paciente** 
 *   Limpeza de imports duplicados e código morto no Dashboard.
 
 ---
+
+### 4. Polimento Profissional & Responsividade (Pós-Unificação)
+*   **Responsividade Mobile Fix:** Removidas regras CSS agressivas em `mobile-responsive.css` que forçavam layout de 1 coluna em tablets, restaurando o comportamento correto do grid.
+*   **Header Mobile Otimizado:** Criado um "Switcher de Visão" compacto para o Header no mobile, agrupando os botões de administração (Admin, Profissional, Aluno, etc.) em um dropdown para evitar quebra de layout.
+*   **Clean Code:** Removido "hack" de CSS `<style>` em `PatientDashboard.tsx` que escondia o chat global. Substituído por controle de estado limpo via `NoaPlatformContext` (`hideGlobalChat`).
+
+---
 **Status:** ✅ Concluído e Testado.

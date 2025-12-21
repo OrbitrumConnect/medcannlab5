@@ -12,6 +12,7 @@ const Header: React.FC = () => {
   const navigate = useNavigate()
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isProfileOpen, setIsProfileOpen] = useState(false)
+  const [isViewSwitcherOpen, setIsViewSwitcherOpen] = useState(false)
 
   const headerGradient = 'linear-gradient(135deg, rgba(10,25,47,0.96) 0%, rgba(26,54,93,0.92) 55%, rgba(45,90,61,0.9) 100%)'
   const neutralSurface = 'rgba(7, 22, 41, 0.85)'
@@ -250,114 +251,180 @@ const Header: React.FC = () => {
 
                   const allTypes = [...availableTypes, ...consultorios]
 
+                  // Encontrar o tipo ativo para mostrar no mobile
+                  const activeTypeObj = allTypes.find(type => {
+                    const Icon = type.icon
+                    const isConsultorioType = type.id.includes('profissional-ricardo') || type.id.includes('profissional-eduardo')
+                    const isRicardoRoute = location.pathname.includes('ricardo-valenca-dashboard') && !location.pathname.includes('dashboard-eduardo') && !location.pathname.includes('eduardo-faveret-dashboard')
+                    const isEduardoRoute = location.pathname.includes('dashboard-eduardo') || location.pathname.includes('eduardo-faveret-dashboard')
+
+                    const isViewingAsThisType = isAdmin && (
+                      (type.id === 'profissional-ricardo' && isRicardoRoute && !viewAsType) ||
+                      (type.id === 'profissional-eduardo' && isEduardoRoute && !viewAsType) ||
+                      (viewAsType === type.id && !isConsultorioType)
+                    )
+                    const isAdminOnDefaultRoute = isAdmin && type.id === 'admin' && isRicardoRoute && !viewAsType
+                    const isCurrentType = !isConsultorioType && normalizeUserType(user.type) === type.id
+                    const isViewingAsGenericType = isAdmin && !isConsultorioType && viewAsType === type.id
+
+                    return isViewingAsThisType || isCurrentType || isAdminOnDefaultRoute || isViewingAsGenericType
+                  }) || allTypes[0]
+
                   return (
-                    <div className="flex items-center justify-center flex-1 space-x-3 sm:space-x-4 md:space-x-5 ml-[5%]">
-                      {allTypes.map((type) => {
-                        const Icon = type.icon
-                        const isConsultorioType = type.id.includes('profissional-ricardo') || type.id.includes('profissional-eduardo')
+                    <div className="flex-1 flex justify-center ml-[2%] sm:ml-[5%]">
+                      {/* DESKTOP VIEW: Lista Horizontal */}
+                      <div className="hidden md:flex items-center space-x-3 sm:space-x-4 md:space-x-5">
+                        {allTypes.map((type) => {
+                          const Icon = type.icon
+                          const isConsultorioType = type.id.includes('profissional-ricardo') || type.id.includes('profissional-eduardo')
 
-                        // Verificar se está ativo
-                        // Para consultórios específicos, verificar se está na rota correta
-                        const isRicardoRoute = location.pathname.includes('ricardo-valenca-dashboard') && !location.pathname.includes('dashboard-eduardo') && !location.pathname.includes('eduardo-faveret-dashboard')
-                        const isEduardoRoute = location.pathname.includes('dashboard-eduardo') || location.pathname.includes('eduardo-faveret-dashboard')
+                          // Verificar se está ativo
+                          const isRicardoRoute = location.pathname.includes('ricardo-valenca-dashboard') && !location.pathname.includes('dashboard-eduardo') && !location.pathname.includes('eduardo-faveret-dashboard')
+                          const isEduardoRoute = location.pathname.includes('dashboard-eduardo') || location.pathname.includes('eduardo-faveret-dashboard')
 
-                        const isViewingAsThisType = isAdmin && (
-                          (type.id === 'profissional-ricardo' && isRicardoRoute && !viewAsType) ||
-                          (type.id === 'profissional-eduardo' && isEduardoRoute && !viewAsType) ||
-                          (viewAsType === type.id && !isConsultorioType)
-                        )
-                        const isAdminOnDefaultRoute = isAdmin && type.id === 'admin' && isRicardoRoute && !viewAsType
-                        const isCurrentType = !isConsultorioType && normalizeUserType(user.type) === type.id
-                        const isViewingAsGenericType = isAdmin && !isConsultorioType && viewAsType === type.id
+                          const isViewingAsThisType = isAdmin && (
+                            (type.id === 'profissional-ricardo' && isRicardoRoute && !viewAsType) ||
+                            (type.id === 'profissional-eduardo' && isEduardoRoute && !viewAsType) ||
+                            (viewAsType === type.id && !isConsultorioType)
+                          )
+                          const isAdminOnDefaultRoute = isAdmin && type.id === 'admin' && isRicardoRoute && !viewAsType
+                          const isCurrentType = !isConsultorioType && normalizeUserType(user.type) === type.id
+                          const isViewingAsGenericType = isAdmin && !isConsultorioType && viewAsType === type.id
 
-                        const isActive = isViewingAsThisType || isCurrentType || isAdminOnDefaultRoute || isViewingAsGenericType
+                          const isActive = isViewingAsThisType || isCurrentType || isAdminOnDefaultRoute || isViewingAsGenericType
 
-                        return (
-                          <button
-                            key={type.id}
-                            onClick={(e) => {
-                              e.stopPropagation()
-                              console.log('🔍 Tipo selecionado:', type.id)
-
-                              // Detectar eixo atual da URL
-                              const currentPath = location.pathname
-                              let targetEixo: 'clinica' | 'ensino' | 'pesquisa' = 'clinica'
-                              if (currentPath.includes('/ensino/')) targetEixo = 'ensino'
-                              else if (currentPath.includes('/pesquisa/')) targetEixo = 'pesquisa'
-                              else if (currentPath.includes('/clinica/')) targetEixo = 'clinica'
-                              else {
-                                if (type.id === 'paciente') targetEixo = 'clinica'
-                                else if (type.id === 'aluno') targetEixo = 'ensino'
-                                else targetEixo = 'clinica'
-                              }
-
-                              // Se for admin e não for consultório, definir o tipo visual
-                              if (isAdmin && !isConsultorioType) {
-                                const viewType = type.id as UserType
-                                setViewAsType(viewType)
-                                console.log('✅ Admin visualizando como:', viewType, 'no eixo:', targetEixo)
-
-                                // Navegar para a rota correta baseada no tipo e eixo
-                                let targetRoute = ''
-                                if (viewType === 'paciente') {
-                                  targetRoute = '/app/clinica/paciente/dashboard'
-                                } else if (viewType === 'profissional') {
-                                  targetRoute = `/app/${targetEixo}/profissional/dashboard`
-                                } else if (viewType === 'aluno') {
-                                  const alunoEixo = targetEixo === 'pesquisa' ? 'pesquisa' : 'ensino'
-                                  targetRoute = `/app/${alunoEixo}/aluno/dashboard`
-                                } else if (viewType === 'admin') {
-                                  setViewAsType(null)
-                                  targetRoute = '/app/ricardo-valenca-dashboard'
-                                } else {
-                                  targetRoute = type.route
+                          return (
+                            <button
+                              key={type.id}
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                // Detectar eixo atual da URL
+                                const currentPath = location.pathname
+                                let targetEixo: 'clinica' | 'ensino' | 'pesquisa' = 'clinica'
+                                if (currentPath.includes('/ensino/')) targetEixo = 'ensino'
+                                else if (currentPath.includes('/pesquisa/')) targetEixo = 'pesquisa'
+                                else if (currentPath.includes('/clinica/')) targetEixo = 'clinica'
+                                else {
+                                  if (type.id === 'paciente') targetEixo = 'clinica'
+                                  else if (type.id === 'aluno') targetEixo = 'ensino'
+                                  else targetEixo = 'clinica'
                                 }
 
-                                console.log('🎯 Navegando para:', targetRoute)
-                                navigate(targetRoute)
-                              } else if (isAdmin && isConsultorioType) {
-                                setViewAsType(null)
-                                console.log('✅ Admin navegando para consultório:', type.id)
-                                navigate(type.route)
-                              } else {
-                                navigate(type.route)
-                              }
+                                // Se for admin e não for consultório, definir o tipo visual
+                                if (isAdmin && !isConsultorioType) {
+                                  const viewType = type.id as UserType
+                                  setViewAsType(viewType)
+                                  let targetRoute = ''
+                                  if (viewType === 'paciente') targetRoute = '/app/clinica/paciente/dashboard'
+                                  else if (viewType === 'profissional') targetRoute = `/app/${targetEixo}/profissional/dashboard`
+                                  else if (viewType === 'aluno') {
+                                    const alunoEixo = targetEixo === 'pesquisa' ? 'pesquisa' : 'ensino'
+                                    targetRoute = `/app/${alunoEixo}/aluno/dashboard`
+                                  } else if (viewType === 'admin') {
+                                    setViewAsType(null)
+                                    targetRoute = '/app/ricardo-valenca-dashboard'
+                                  } else targetRoute = type.route
+                                  navigate(targetRoute)
+                                } else if (isAdmin && isConsultorioType) {
+                                  setViewAsType(null)
+                                  navigate(type.route)
+                                } else {
+                                  navigate(type.route)
+                                }
+                                localStorage.setItem('selectedUserType', type.id)
+                              }}
+                              className={`flex items-center space-x-1.5 px-4 py-2 rounded-lg transition-all duration-200 active:scale-95 ${isActive
+                                ? 'text-white shadow-lg scale-105'
+                                : 'bg-[#102642] text-[#C8D6E5]'
+                                }`}
+                              style={{
+                                ...(isActive
+                                  ? { background: 'linear-gradient(135deg, #00c16a 0%, #00a85a 100%)' }
+                                  : {})
+                              }}
+                              title={type.description}
+                            >
+                              <Icon className="w-4 h-4 flex-shrink-0" />
+                              <span className="text-xs font-medium whitespace-nowrap">
+                                {type.label}
+                              </span>
+                              {isActive && isAdmin && viewAsType && !isConsultorioType && (
+                                <span className="text-[10px] ml-0.5">👁️</span>
+                              )}
+                            </button>
+                          )
+                        })}
+                      </div>
 
-                              localStorage.setItem('selectedUserType', type.id)
-                            }}
-                            className={`flex items-center space-x-1 sm:space-x-1.5 px-2 sm:px-3 md:px-4 py-1 sm:py-1.5 md:py-2 rounded-lg transition-all duration-200 active:scale-95 touch-manipulation ${isActive
-                              ? 'text-white shadow-lg scale-105'
-                              : 'bg-[#102642] text-[#C8D6E5]'
-                              }`}
-                            style={{
-                              ...(isActive
-                                ? { background: 'linear-gradient(135deg, #00c16a 0%, #00a85a 100%)' }
-                                : {})
-                            }}
-                            onMouseEnter={(e) => {
-                              if (!isActive) {
-                                e.currentTarget.style.background = 'rgba(0,193,106,0.2)'
-                                e.currentTarget.style.color = '#00F5A0'
-                              }
-                            }}
-                            onMouseLeave={(e) => {
-                              if (!isActive) {
-                                e.currentTarget.style.background = '#102642'
-                                e.currentTarget.style.color = '#C8D6E5'
-                              }
-                            }}
-                            title={type.description}
-                          >
-                            <Icon className="w-3 h-3 sm:w-3.5 sm:h-3.5 md:w-4 md:h-4 flex-shrink-0" />
-                            <span className="hidden xs:block text-[10px] sm:text-[11px] md:text-xs font-medium whitespace-nowrap">
-                              {type.label}
-                            </span>
-                            {isActive && isAdmin && viewAsType && !isConsultorioType && (
-                              <span className="text-[10px] ml-0.5">👁️</span>
-                            )}
-                          </button>
-                        )
-                      })}
+                      {/* MOBILE VIEW: Dropdown Switcher */}
+                      <div className="md:hidden relative">
+                        <button
+                          onClick={() => setIsViewSwitcherOpen(!isViewSwitcherOpen)}
+                          className="flex items-center space-x-2 px-3 py-1.5 rounded-lg bg-[#102642] text-white border border-[#213553] active:bg-[#1b314e]"
+                        >
+                          {activeTypeObj.icon && <activeTypeObj.icon className="w-4 h-4 text-[#00C16A]" />}
+                          <span className="text-xs font-medium max-w-[100px] truncate">{activeTypeObj.label}</span>
+                          <ChevronDown className={`w-3 h-3 text-slate-400 transition-transform ${isViewSwitcherOpen ? 'rotate-180' : ''}`} />
+                        </button>
+
+                        {isViewSwitcherOpen && (
+                          <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-48 bg-[#0f243c] border border-[#213553] rounded-lg shadow-xl py-1 z-50 animate-in fade-in zoom-in-95 duration-100">
+                            {allTypes.map((type) => {
+                              const Icon = type.icon
+                              const isConsultorioType = type.id.includes('profissional-ricardo') || type.id.includes('profissional-eduardo')
+                              const isSelected = type.id === activeTypeObj.id
+
+                              return (
+                                <button
+                                  key={type.id}
+                                  onClick={(e) => {
+                                    e.stopPropagation()
+                                    setIsViewSwitcherOpen(false)
+                                    // (Same logic as desktop - duplicate for now or allow generic handler if extracted)
+                                    const currentPath = location.pathname
+                                    let targetEixo: 'clinica' | 'ensino' | 'pesquisa' = 'clinica'
+                                    if (currentPath.includes('/ensino/')) targetEixo = 'ensino'
+                                    else if (currentPath.includes('/pesquisa/')) targetEixo = 'pesquisa'
+                                    else if (currentPath.includes('/clinica/')) targetEixo = 'clinica'
+                                    else {
+                                      if (type.id === 'paciente') targetEixo = 'clinica'
+                                      else if (type.id === 'aluno') targetEixo = 'ensino'
+                                      else targetEixo = 'clinica'
+                                    }
+
+                                    if (isAdmin && !isConsultorioType) {
+                                      const viewType = type.id as UserType
+                                      setViewAsType(viewType)
+                                      let targetRoute = ''
+                                      if (viewType === 'paciente') targetRoute = '/app/clinica/paciente/dashboard'
+                                      else if (viewType === 'profissional') targetRoute = `/app/${targetEixo}/profissional/dashboard`
+                                      else if (viewType === 'aluno') {
+                                        const alunoEixo = targetEixo === 'pesquisa' ? 'pesquisa' : 'ensino'
+                                        targetRoute = `/app/${alunoEixo}/aluno/dashboard`
+                                      } else if (viewType === 'admin') {
+                                        setViewAsType(null)
+                                        targetRoute = '/app/ricardo-valenca-dashboard'
+                                      } else targetRoute = type.route
+                                      navigate(targetRoute)
+                                    } else if (isAdmin && isConsultorioType) {
+                                      setViewAsType(null)
+                                      navigate(type.route)
+                                    } else {
+                                      navigate(type.route)
+                                    }
+                                    localStorage.setItem('selectedUserType', type.id)
+                                  }}
+                                  className={`w-full text-left px-4 py-2.5 flex items-center gap-3 hover:bg-[#1b314e] transition-colors ${isSelected ? 'bg-[#1b314e]/50 text-[#00C16A]' : 'text-slate-300'}`}
+                                >
+                                  <Icon className="w-4 h-4" />
+                                  <span className="text-sm">{type.label}</span>
+                                  {isSelected && <div className="ml-auto w-1.5 h-1.5 rounded-full bg-[#00C16A]"></div>}
+                                </button>
+                              )
+                            })}
+                          </div>
+                        )}
+                      </div>
                     </div>
                   )
                 })()}

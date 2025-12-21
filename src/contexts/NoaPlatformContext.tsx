@@ -7,6 +7,9 @@ interface NoaPlatformContextType {
   sendInitialMessage: (message: string) => void
   pendingMessage: string | null
   clearPendingMessage: () => void
+  isGlobalChatHidden: boolean
+  hideGlobalChat: () => void
+  showGlobalChat: () => void
 }
 
 const NoaPlatformContext = createContext<NoaPlatformContextType | undefined>(undefined)
@@ -26,6 +29,7 @@ interface NoaPlatformProviderProps {
 export const NoaPlatformProvider: React.FC<NoaPlatformProviderProps> = ({ children }) => {
   const [isOpen, setIsOpen] = useState(false)
   const [pendingMessage, setPendingMessage] = useState<string | null>(null)
+  const [isGlobalChatHidden, setIsGlobalChatHidden] = useState(false)
 
   const openChat = () => {
     setIsOpen(true)
@@ -44,6 +48,9 @@ export const NoaPlatformProvider: React.FC<NoaPlatformProviderProps> = ({ childr
     setPendingMessage(null)
   }
 
+  const hideGlobalChat = () => setIsGlobalChatHidden(true)
+  const showGlobalChat = () => setIsGlobalChatHidden(false)
+
   return (
     <NoaPlatformContext.Provider value={{
       isOpen,
@@ -51,7 +58,10 @@ export const NoaPlatformProvider: React.FC<NoaPlatformProviderProps> = ({ childr
       closeChat,
       sendInitialMessage,
       pendingMessage,
-      clearPendingMessage
+      clearPendingMessage,
+      isGlobalChatHidden,
+      hideGlobalChat,
+      showGlobalChat
     }}>
       {children}
     </NoaPlatformContext.Provider>
