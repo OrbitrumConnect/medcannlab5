@@ -50,7 +50,7 @@ const Header: React.FC = () => {
 
   return (
     <header
-      className="shadow-lg border-b header-mobile w-full relative"
+      className="shadow-lg border-b header-mobile w-full relative z-[60]"
       style={{ background: headerGradient, borderColor: 'rgba(0,193,106,0.15)' }}
     >
       {/* Animação Matrix no background - apenas quando usuário está logado */}
@@ -251,7 +251,7 @@ const Header: React.FC = () => {
                   const allTypes = [...availableTypes, ...consultorios]
 
                   return (
-                    <div className="flex items-center justify-center flex-1 space-x-1 sm:space-x-1.5 md:space-x-2 ml-8 md:ml-20">
+                    <div className="flex items-center justify-center flex-1 space-x-3 sm:space-x-4 md:space-x-5 ml-[5%]">
                       {allTypes.map((type) => {
                         const Icon = type.icon
                         const isConsultorioType = type.id.includes('profissional-ricardo') || type.id.includes('profissional-eduardo')
@@ -325,7 +325,7 @@ const Header: React.FC = () => {
 
                               localStorage.setItem('selectedUserType', type.id)
                             }}
-                            className={`flex items-center space-x-0.5 sm:space-x-1 px-1 sm:px-1.5 md:px-2.5 py-0.5 sm:py-1 md:py-1.5 rounded-lg transition-all duration-200 active:scale-95 touch-manipulation ${isActive
+                            className={`flex items-center space-x-1 sm:space-x-1.5 px-2 sm:px-3 md:px-4 py-1 sm:py-1.5 md:py-2 rounded-lg transition-all duration-200 active:scale-95 touch-manipulation ${isActive
                               ? 'text-white shadow-lg scale-105'
                               : 'bg-[#102642] text-[#C8D6E5]'
                               }`}
@@ -349,7 +349,7 @@ const Header: React.FC = () => {
                             title={type.description}
                           >
                             <Icon className="w-3 h-3 sm:w-3.5 sm:h-3.5 md:w-4 md:h-4 flex-shrink-0" />
-                            <span className="hidden xs:block text-[9px] sm:text-[10px] md:text-xs font-medium whitespace-nowrap">
+                            <span className="hidden xs:block text-[10px] sm:text-[11px] md:text-xs font-medium whitespace-nowrap">
                               {type.label}
                             </span>
                             {isActive && isAdmin && viewAsType && !isConsultorioType && (
@@ -362,7 +362,7 @@ const Header: React.FC = () => {
                   )
                 })()}
 
-                <div className="ml-auto !pl-4 md:!pl-12 relative">
+                <div className="ml-auto relative">
                   <button
                     onClick={() => setIsProfileOpen(!isProfileOpen)}
                     className="flex items-center space-x-2 text-[#C8D6E5] hover:text-[#00C16A] transition-colors duration-200"

@@ -29,6 +29,7 @@ import {
   Loader2,
   GraduationCap
 } from 'lucide-react'
+import { backgroundGradient, colors, accentGradient } from '../constants/designSystem'
 
 // Tipos para racionalidades médicas
 type Rationality = 'biomedical' | 'traditional_chinese' | 'ayurvedic' | 'homeopathic' | 'integrative'
@@ -157,16 +158,10 @@ const ForumCasosClinicos: React.FC = () => {
     try {
       setLoading(true)
 
+      // Buscar posts sem relação FK (não existe no schema atual)
       const { data: postsData, error: postsError } = await supabase
         .from('forum_posts')
-        .select(`
-          *,
-          author:author_id (
-            id,
-            name,
-            type
-          )
-        `)
+        .select('*')
         .order('created_at', { ascending: false })
 
       if (postsError) {
@@ -175,6 +170,12 @@ const ForumCasosClinicos: React.FC = () => {
         setLoading(false)
         return
       }
+
+      // Buscar dados dos autores separadamente
+      const authorIds = [...new Set((postsData || []).map((p: any) => p.author_id).filter(Boolean))]
+      const { data: authorsData } = authorIds.length > 0
+        ? await supabase.from('users').select('id, name, type').in('id', authorIds)
+        : { data: [] }
 
       const { data: commentsData } = await supabase
         .from('forum_comments')
@@ -189,7 +190,9 @@ const ForumCasosClinicos: React.FC = () => {
         .select('post_id, user_id')
 
       const posts: CasePost[] = (postsData || []).map((post: any) => {
-        const author = post.author || { id: post.author_id, name: 'Autor', type: 'professional' }
+        // Buscar autor de authorsData (buscado separadamente)
+        const authorFromDb = authorsData?.find((a: any) => a.id === post.author_id)
+        const author = authorFromDb || { id: post.author_id, name: 'Autor', type: 'professional' }
         const comments = commentsData?.filter(c => c.post_id === post.id) || []
         const likes = likesData?.filter(l => l.post_id === post.id) || []
         const views = viewsData?.filter(v => v.post_id === post.id) || []
@@ -540,12 +543,12 @@ Forneça:
     return `${diffInWeeks}w atrás`
   }
 
-  // Paleta de cores da landing page: verde #00C16A, azul, slate-900
-  const primaryGreen = '#00C16A'
+  // Usar cores do designSystem
+  const primaryGreen = colors.primary
   const primaryBlue = '#0ea5e9'
 
   return (
-    <div className="min-h-screen relative overflow-hidden" style={{ background: 'linear-gradient(135deg, rgba(10,25,47,0.98) 0%, rgba(15,35,55,0.95) 50%, rgba(10,40,35,0.92) 100%)' }}>
+    <div className="min-h-screen relative overflow-hidden" style={{ background: backgroundGradient }}>
 
       {/* Background Pattern */}
       <div className="absolute inset-0 opacity-20" style={{

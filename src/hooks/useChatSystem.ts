@@ -77,9 +77,28 @@ export const useChatSystem = (activeRoomId?: string, options?: UseChatSystemOpti
     if (!enabled) return
 
     setInboxLoading(true)
-    const { data, error } = await supabase.from('v_chat_inbox').select('*')
+    // ✅ CORREÇÃO: Buscar de chat_rooms ao invés de v_chat_inbox
+    // A view estava vazia porque requer mensagens nas salas
+    const { data, error } = await supabase
+      .from('chat_rooms')
+      .select('id, name, type, created_at')
+      .order('created_at', { ascending: false })
+
     if (!error && data) {
-      setInbox(data.map(mapRoomSummary))
+      // ✅ FILTRO: Excluir salas type='patient' (Canal de cuidado)
+      const filtered = data.filter((room: any) => room.type !== 'patient')
+
+      // Mapear para formato esperado (simular v_chat_inbox)
+      const mapped = filtered.map((room: any) => ({
+        id: room.id,
+        name: room.name,
+        type: room.type,
+        lastMessageAt: null, // Sem mensagens ainda
+        unreadCount: 0
+      }))
+
+      setInbox(mapped.map(mapRoomSummary))
+      console.log(`✅ Chat Profissionais: ${mapped.length} salas disponíveis (${data.length - filtered.length} pacientes excluídos)`)
     } else if (error) {
       console.warn('Falha ao carregar inbox:', error)
       setInbox([])
@@ -155,6 +174,13 @@ export const useChatSystem = (activeRoomId?: string, options?: UseChatSystemOpti
   const markRoomAsRead = useCallback(
     async (roomId: string) => {
       if (!enabled) return
+
+      // Validação básica de UUID para evitar erro 400
+      const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+      if (!uuidRegex.test(roomId)) {
+        console.warn('markRoomAsRead ignorado: ID de sala inválido (não é UUID):', roomId)
+        return
+      }
 
       try {
         await supabase.rpc('mark_room_read', { p_room_id: roomId })

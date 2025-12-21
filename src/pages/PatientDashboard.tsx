@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 import {
   Calendar,
   TrendingUp,
@@ -40,6 +40,7 @@ import ShareReportModal from '../components/ShareReportModal'
 import PatientSidebar from '../components/PatientSidebar'
 import NoaAnimatedAvatar from '../components/NoaAnimatedAvatar'
 import NoaConversationalInterface from '../components/NoaConversationalInterface'
+import JourneyManualModal from '../components/JourneyManualModal'
 import { useNoaPlatform } from '../contexts/NoaPlatformContext'
 import {
   backgroundGradient,
@@ -223,6 +224,7 @@ const PatientDashboard: React.FC = () => {
   const { user } = useAuth()
   const { getEffectiveUserType, isAdminViewingAs } = useUserView()
   const navigate = useNavigate()
+  const location = useLocation()
   const { openChat, sendInitialMessage } = useNoaPlatform()
 
   // Se admin está visualizando como paciente
@@ -255,7 +257,9 @@ const PatientDashboard: React.FC = () => {
   const [appointmentsViewMode, setAppointmentsViewMode] = useState<'calendar' | 'list'>('calendar')
   const [appointmentsCurrentDate, setAppointmentsCurrentDate] = useState(new Date())
   const [appointmentsSelectedDate, setAppointmentsSelectedDate] = useState<Date | null>(null)
+
   const [appointmentsSelectedTime, setAppointmentsSelectedTime] = useState<string | null>(null)
+  const [journeyManualOpen, setJourneyManualOpen] = useState(false)
 
   const normalizeAccessList = (raw: unknown): string[] | null => {
     if (!raw) return null
@@ -293,28 +297,7 @@ const PatientDashboard: React.FC = () => {
     return axes.some(axis => clinicTokens.includes(axis))
   }
 
-  const availableProfessionals = [
-    {
-      id: 'eduardo-faveret',
-      name: 'Dr. Eduardo Faveret',
-      role: 'Neurologista Pediátrico',
-      rating: '4.9',
-      excerpt: 'Especialista em Epilepsia e Cannabis Medicinal. Atendimento personalizado com metodologia AEC.',
-      accentClasses: 'bg-emerald-500/20 text-emerald-300',
-      buttonClasses: 'bg-emerald-500 hover:bg-emerald-400',
-      navigateTo: '/app/clinica/paciente/agendamentos?professional=eduardo-faveret'
-    },
-    {
-      id: 'ricardo-valenca',
-      name: 'Dr. Ricardo Valença',
-      role: 'Administrador • Especialista',
-      rating: '5.0',
-      excerpt: 'Coordenador científico. Especialista em Arte da Entrevista Clínica e metodologia IMRE.',
-      accentClasses: 'bg-primary-500/20 text-primary-300',
-      buttonClasses: 'bg-primary-500 hover:bg-primary-400',
-      navigateTo: '/app/clinica/paciente/agendamentos?professional=ricardo-valenca'
-    }
-  ]
+
 
   const loadPatientData = async () => {
     if (!user?.id) return
@@ -600,6 +583,21 @@ const PatientDashboard: React.FC = () => {
     }
   }, [activeTab, shouldStartAssessment, openChat, sendInitialMessage])
 
+  // Sincronizar tab com URL parameter
+  useEffect(() => {
+    const searchParams = new URLSearchParams(location.search)
+    const section = searchParams.get('section')
+    if (section) {
+      const validTabs = ['dashboard', 'agendamento', 'meus-agendamentos', 'plano', 'conteudo', 'chat', 'chat-noa', 'perfil', 'reportar-problema']
+      if (validTabs.includes(section)) {
+        setActiveTab(section as any)
+
+        // Scroll to top if switching sections
+        window.scrollTo({ top: 0, behavior: 'smooth' })
+      }
+    }
+  }, [location.search])
+
   // Carregar dados do paciente
   useEffect(() => {
     if (user?.id) {
@@ -618,9 +616,7 @@ const PatientDashboard: React.FC = () => {
   }
 
   const handleScheduleAppointment = () => {
-    setActiveTab('agendamento')
-    setActiveCard('agendar-consulta')
-    window.scrollTo({ top: 0, behavior: 'smooth' })
+    navigate('/app/patient-appointments')
   }
 
   const handleOpenPlan = () => {
@@ -1050,108 +1046,39 @@ const PatientDashboard: React.FC = () => {
           </button>
         </div>
 
-        {/* Jornada de Cuidado */}
-        <div className="bg-slate-900/60 border border-slate-800 rounded-2xl p-6 space-y-6">
-          <h2 className="text-xl font-semibold text-white flex items-center gap-2">
-            <Target className="w-6 h-6 text-primary-300" />
-            Sua Jornada de Cuidado
-          </h2>
-          <p className="text-slate-300 text-sm">
-            Para garantir o melhor atendimento, seguimos uma jornada estruturada que começa com sua avaliação clínica inicial.
-          </p>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* Passo 1 */}
-            <div className="bg-slate-800/50 rounded-xl p-4 border border-slate-700">
-              <div className="flex items-start gap-3">
-                <div className="w-8 h-8 rounded-full bg-primary-500/20 border border-primary-500/40 flex items-center justify-center flex-shrink-0">
-                  <span className="text-primary-300 font-bold text-sm">1</span>
-                </div>
-                <div className="flex-1">
-                  <h3 className="text-white font-semibold mb-1 flex items-center gap-2">
-                    <Brain className="w-4 h-4 text-primary-300" />
-                    Avaliação Clínica Inicial
-                  </h3>
-                  <p className="text-slate-300 text-xs mb-3">
-                    Realize uma avaliação clínica completa com a IA Residente Nôa Esperança usando o protocolo IMRE. Esta avaliação é privada e confidencial - apenas você pode ver o conteúdo completo do relatório.
-                  </p>
-                  <button
-                    onClick={() => {
-                      setActiveTab('chat-noa')
-                      setActiveCard(null)
-                      window.scrollTo({ top: 0, behavior: 'smooth' })
-                    }}
-                    className="text-xs px-3 py-1.5 bg-primary-500 hover:bg-primary-400 text-white rounded-lg font-semibold transition-colors"
-                  >
-                    Iniciar Avaliação Clínica
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            {/* Passo 2 */}
-            <div className="bg-slate-800/50 rounded-xl p-4 border border-slate-700">
-              <div className="flex items-start gap-3">
-                <div className="w-8 h-8 rounded-full bg-primary-500/20 border border-primary-500/40 flex items-center justify-center flex-shrink-0">
-                  <span className="text-primary-300 font-bold text-sm">2</span>
-                </div>
-                <div className="flex-1">
-                  <h3 className="text-white font-semibold mb-1 flex items-center gap-2">
-                    <FileText className="w-4 h-4 text-primary-300" />
-                    Relatório Gerado
-                  </h3>
-                  <p className="text-slate-300 text-xs">
-                    Após a avaliação, a IA gera um relatório clínico completo que fica disponível no seu histórico de saúde. Você controla o compartilhamento - o médico não recebe automaticamente.
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {/* Passo 3 */}
-            <div className="bg-slate-800/50 rounded-xl p-4 border border-slate-700">
-              <div className="flex items-start gap-3">
-                <div className="w-8 h-8 rounded-full bg-primary-500/20 border border-primary-500/40 flex items-center justify-center flex-shrink-0">
-                  <span className="text-primary-300 font-bold text-sm">3</span>
-                </div>
-                <div className="flex-1">
-                  <h3 className="text-white font-semibold mb-1 flex items-center gap-2">
-                    <Shield className="w-4 h-4 text-primary-300" />
-                    Compartilhamento Seguro
-                  </h3>
-                  <p className="text-slate-300 text-xs">
-                    Quando você agendar uma consulta, você pode opcionalmente compartilhar o relatório com o profissional. O médico saberá que um relatório existe, mas só verá o conteúdo se você compartilhar explicitamente.
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {/* Passo 4 */}
-            <div className="bg-slate-800/50 rounded-xl p-4 border border-slate-700">
-              <div className="flex items-start gap-3">
-                <div className="w-8 h-8 rounded-full bg-primary-500/20 border border-primary-500/40 flex items-center justify-center flex-shrink-0">
-                  <span className="text-primary-300 font-bold text-sm">4</span>
-                </div>
-                <div className="flex-1">
-                  <h3 className="text-white font-semibold mb-1 flex items-center gap-2">
-                    <Calendar className="w-4 h-4 text-primary-300" />
-                    Agendar Consulta
-                  </h3>
-                  <p className="text-slate-300 text-xs">
-                    Após a avaliação, agende sua consulta com os profissionais da plataforma. Todas as suas consultas ficam integradas ao seu plano de cuidado personalizado.
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-primary-500/10 border border-primary-500/30 rounded-lg p-4 flex items-start gap-3">
-            <Shield className="w-5 h-5 text-primary-300 flex-shrink-0 mt-0.5" />
+        {/* Jornada de Cuidado - Simplificado */}
+        <div className="bg-slate-900/60 border border-slate-800 rounded-2xl p-6 space-y-4">
+          <div className="flex items-center justify-between">
             <div>
-              <p className="text-primary-200 text-xs font-semibold mb-1">Segurança de Dados</p>
-              <p className="text-slate-300 text-xs">
-                Todos os seus dados são protegidos por sigilo médico e LGPD. Você tem controle total sobre o compartilhamento do seu relatório de avaliação clínica.
+              <h2 className="text-xl font-semibold text-white flex items-center gap-2">
+                <Target className="w-6 h-6 text-primary-300" />
+                Avaliação Clínica
+              </h2>
+              <p className="text-slate-400 text-sm mt-1">
+                Realize sua avaliação clínica completa com a IA Residente Nôa Esperança
               </p>
             </div>
+            <button
+              onClick={() => {
+                setActiveTab('chat-noa')
+                setActiveCard(null)
+                window.scrollTo({ top: 0, behavior: 'smooth' })
+              }}
+              className="px-4 py-2 bg-primary-500 hover:bg-primary-400 text-white rounded-lg font-semibold transition-colors flex items-center gap-2"
+            >
+              <Brain className="w-4 h-4" />
+              Iniciar Avaliação
+            </button>
+          </div>
+          <div className="flex items-center gap-2 text-xs text-slate-400">
+            <Shield className="w-4 h-4 text-primary-400" />
+            <span>Dados protegidos por LGPD • </span>
+            <button
+              onClick={() => setJourneyManualOpen(true)}
+              className="text-primary-400 hover:text-primary-300 underline"
+            >
+              Ver manual completo da jornada
+            </button>
           </div>
         </div>
 
@@ -2294,152 +2221,7 @@ const PatientDashboard: React.FC = () => {
   }
 
   // Renderizar Sistema de Agendamento
-  const renderAgendamento = () => (
-    <div className="space-y-6">
-      <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-        <div>
-          <p className="text-xs uppercase tracking-[0.3em] text-primary-300 mb-2">Atendimento Integrado</p>
-          <h2 className="text-2xl font-semibold text-white flex items-center gap-3">
-            <Calendar className="w-6 h-6 text-primary-300" />
-            Sistema de Agendamento
-          </h2>
-          <p className="text-slate-400 text-sm mt-2 max-w-2xl">
-            Agende consultas com os profissionais especializados do MedCannLab e acompanhe seu cronograma clínico em um só lugar.
-          </p>
-        </div>
-        <button
-          onClick={() => {
-            setActiveTab('meus-agendamentos')
-            setActiveCard('meus-agendamentos')
-            window.scrollTo({ top: 0, behavior: 'smooth' })
-          }}
-          className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-primary-500 hover:bg-primary-400 text-white text-sm transition-colors"
-        >
-          Ver agenda completa
-          <ArrowRight className="w-4 h-4" />
-        </button>
-      </div>
 
-      <div className="bg-slate-900/60 border border-slate-800 rounded-2xl p-6 space-y-5">
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
-          <h3 className="text-lg font-semibold text-white flex items-center gap-2">
-            <Stethoscope className="w-5 h-5 text-primary-300" />
-            Profissionais disponíveis
-          </h3>
-          <p className="text-xs text-slate-400">
-            Escolha um especialista e selecione o melhor horário para o seu acompanhamento.
-          </p>
-        </div>
-
-        <div className="space-y-4">
-          {availableProfessionals.map(professional => (
-            <div
-              key={professional.id}
-              className="rounded-2xl border border-slate-800 bg-slate-950/60 p-5 flex flex-col md:flex-row md:items-center md:justify-between gap-4 transition-colors hover:border-primary-500/40"
-            >
-              <div className="flex items-start gap-4">
-                <div className={`w-14 h-14 rounded-xl flex items-center justify-center border border-slate-800/60 ${professional.accentClasses}`}>
-                  <Stethoscope className="w-6 h-6" />
-                </div>
-                <div>
-                  <div className="flex items-center gap-3">
-                    <h4 className="text-white text-lg font-semibold">{professional.name}</h4>
-                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-slate-800 border border-slate-700 text-xs text-slate-300">
-                      <Star className="w-3 h-3 text-amber-300 fill-amber-300" />
-                      {professional.rating}
-                    </span>
-                  </div>
-                  <p className="text-sm text-slate-400 mt-1">{professional.role}</p>
-                  <p className="text-sm text-slate-300 mt-3 max-w-xl">{professional.excerpt}</p>
-                </div>
-              </div>
-              <button
-                onClick={() => navigate(professional.navigateTo)}
-                className={`inline-flex items-center justify-center gap-2 px-5 py-2 rounded-xl text-sm font-semibold text-white transition-colors ${professional.buttonClasses}`}
-              >
-                Agendar consulta
-                <ArrowRight className="w-4 h-4" />
-              </button>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      <div className="bg-slate-900/60 border border-slate-800 rounded-2xl p-6 space-y-5">
-        <div className="flex items-center justify-between gap-4">
-          <h3 className="text-lg font-semibold text-white flex items-center gap-2">
-            <Clock className="w-5 h-5 text-primary-300" />
-            Minhas consultas
-          </h3>
-          {appointments.length > 0 && (
-            <button
-              onClick={() => navigate('/app/clinica/paciente/agendamentos?view=calendar')}
-              className="text-xs text-primary-300 hover:text-primary-200 inline-flex items-center gap-1 transition-colors"
-            >
-              Ver histórico completo
-              <ArrowRight className="w-3 h-3" />
-            </button>
-          )}
-        </div>
-
-        {appointments.length > 0 ? (
-          <div className="space-y-3">
-            {appointments.map(appointment => (
-              <div
-                key={appointment.id}
-                className="rounded-2xl border border-slate-800 bg-slate-950/50 p-4 flex flex-col md:flex-row md:items-center md:justify-between gap-4"
-              >
-                <div className="flex items-start gap-3">
-                  <div className="w-11 h-11 rounded-lg bg-primary-500/15 border border-primary-500/30 flex items-center justify-center">
-                    <Calendar className="w-5 h-5 text-primary-300" />
-                  </div>
-                  <div>
-                    <p className="text-sm text-slate-400 uppercase tracking-[0.2em] mb-1">
-                      {appointment.type}
-                    </p>
-                    <h4 className="text-white font-semibold">{appointment.professional}</h4>
-                    <p className="text-sm text-slate-300">
-                      {new Date(appointment.date).toLocaleDateString('pt-BR', { day: '2-digit', month: 'long' })} às {appointment.time}
-                    </p>
-                  </div>
-                </div>
-                <span
-                  className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold border ${appointment.status === 'scheduled'
-                    ? 'bg-emerald-500/10 text-emerald-300 border-emerald-400/40'
-                    : appointment.status === 'completed'
-                      ? 'bg-blue-500/10 text-blue-300 border-blue-400/40'
-                      : 'bg-rose-500/10 text-rose-300 border-rose-400/40'
-                    }`}
-                >
-                  {appointment.status === 'scheduled'
-                    ? 'Agendada'
-                    : appointment.status === 'completed'
-                      ? 'Concluída'
-                      : 'Cancelada'}
-                </span>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <div className="border border-dashed border-slate-800 rounded-2xl py-12 text-center space-y-4">
-            <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-slate-900 border border-slate-800 mx-auto">
-              <Calendar className="w-6 h-6 text-slate-500" />
-            </div>
-            <div>
-              <p className="text-sm text-slate-400">Nenhuma consulta agendada até o momento.</p>
-              <button
-                onClick={handleScheduleAppointment}
-                className="mt-4 inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-primary-500/40 text-primary-300 hover:bg-primary-500/10 transition-colors text-sm font-semibold"
-              >
-                Agendar primeira consulta
-                <ArrowRight className="w-4 h-4" />
-              </button>
-            </div>
-          </div>
-        )}
-      </div>
-    </div>
-  )
 
   // Renderizar Acompanhamento do Plano Terapêutico
   const renderPlanoTerapeutico = () => {
@@ -2842,51 +2624,10 @@ const PatientDashboard: React.FC = () => {
   const totalPrescriptions = patientPrescriptions.length
 
   return (
-    <div className="flex w-full min-h-screen text-white" style={{ background: backgroundGradient }}>
-      {/* PatientSidebar - Integrado ao Layout - Começa do topo */}
+    <div className="w-full min-h-screen text-white">
+      {/* Main Content Area - Layout sem sidebar próprio, usa sidebar global do Layout */}
       <div
-        className={`${isSidebarCollapsed ? 'w-28' : 'w-64'} flex-shrink-0 overflow-y-auto transition-all duration-300 fixed left-0 top-0 bottom-0 z-40`}
-        style={{
-          background: backgroundGradient
-        }}
-      >
-        <PatientSidebar
-          isCollapsed={isSidebarCollapsed}
-          onToggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
-          user={user || undefined}
-          activeCard={activeCard}
-          onCardClick={handleCardClick}
-          chatLoading={chatLoading}
-          therapeuticPlan={therapeuticPlan}
-          patientPrescriptionsLoading={patientPrescriptionsLoading}
-          totalPrescriptions={totalPrescriptions}
-          activePrescriptions={activePrescriptions}
-          latestClinicalReport={latestClinicalReport}
-          onScheduleAppointment={handleScheduleAppointment}
-          onOpenChat={handleOpenChat}
-          onOpenPlan={handleOpenPlan}
-          onViewEducational={handleViewEducational}
-          onViewAppointments={handleViewAppointments}
-          onViewProfile={handleViewProfile}
-          onReportProblem={handleReportProblem}
-          onShareReport={() => {
-            if (latestClinicalReport) {
-              setActiveCard('relatorio-clinico')
-              handleShareReport(latestClinicalReport)
-            }
-          }}
-          onStartAssessment={() => {
-            setActiveCard('relatorio-clinico')
-            setShouldStartAssessment(true)
-            setActiveTab('chat-noa')
-            window.scrollTo({ top: 0, behavior: 'smooth' })
-          }}
-        />
-      </div>
-
-      {/* Main Content Area */}
-      <div
-        className={`flex-1 transition-all duration-300 flex flex-col ${isSidebarCollapsed ? 'ml-28' : 'ml-64'}`}
+        className="flex-1 transition-all duration-300 flex flex-col"
         style={{
           overflow: activeTab === 'chat' || activeTab === 'chat-noa' || activeTab === 'meus-agendamentos' ? 'hidden' : 'auto',
           minHeight: '100vh'
@@ -2903,7 +2644,7 @@ const PatientDashboard: React.FC = () => {
 
         {activeTab !== 'dashboard' && (
           <div style={{ background: 'rgba(15, 36, 60, 0.75)', borderBottom: '1px solid rgba(28,64,94,0.6)' }}>
-            <div className="max-w-7xl mx-auto px-6 py-4">
+            <div className="w-full pl-0 pr-4 py-4">
               <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
                 {activeTab !== 'perfil' && (
                   <button
@@ -2960,10 +2701,10 @@ const PatientDashboard: React.FC = () => {
           </div>
         ) : (
           <div className="px-4 py-6 md:px-6 md:py-8">
-            <div className="max-w-7xl mx-auto space-y-6">
-              <div className="w-full max-w-full mx-auto overflow-x-hidden space-y-8">
+            <div className="w-full space-y-6">
+              <div className="w-full overflow-x-hidden space-y-8">
                 {activeTab === 'dashboard' && renderDashboard()}
-                {activeTab === 'agendamento' && renderAgendamento()}
+
                 {activeTab === 'plano' && renderPlanoTerapeutico()}
                 {activeTab === 'conteudo' && renderConteudoEducacional()}
                 {activeTab === 'perfil' && renderPerfil()}
@@ -2973,14 +2714,24 @@ const PatientDashboard: React.FC = () => {
           </div>
         )}
       </div>
-      {shareModalOpen && shareModalReportId && user?.id && (
+      {/* Modal de Manual da Jornada */}
+      <JourneyManualModal
+        isOpen={journeyManualOpen}
+        onClose={() => setJourneyManualOpen(false)}
+      />
+
+      {/* Modais existentes... */}
+      {shareModalReportId && (
         <ShareReportModal
           reportId={shareModalReportId}
-          patientId={user.id}
+          patientId={user?.id || ''}
           reportName={shareModalReportName}
-          onClose={() => setShareModalOpen(false)}
+          onClose={() => {
+            setShareModalOpen(false)
+            setShareModalReportId(null)
+          }}
           onShareSuccess={() => {
-            void loadPatientData()
+            // Recarregar dados se necessário
           }}
         />
       )}

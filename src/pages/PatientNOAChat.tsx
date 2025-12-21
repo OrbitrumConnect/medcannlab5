@@ -19,77 +19,51 @@ const PatientNOAChat: React.FC = () => {
 
   // Verificar se veio do agendamento e iniciar avaliação automaticamente
   useEffect(() => {
-    // Abrir o chat automaticamente ao acessar esta página
-    if (!isEmbed) {
-      setTimeout(() => {
-        openChat()
-      }, 500)
-    }
+    // REMOVIDO: Não abrir chat flutuante automaticamente
+    // O chat será renderizado inline
 
-    const state = location.state as { startAssessment?: boolean; appointmentData?: any }
+    const state = location.state as {
+      startAssessment?: boolean;
+      appointmentData?: any;
+      targetProfessional?: { name: string; specialty: string }
+    }
 
     if (state?.startAssessment && !hasInitiatedRef.current && user) {
       hasInitiatedRef.current = true
 
-      // Abrir o chat automaticamente
-      openChat()
-
       // Aguardar para garantir que o chat esteja pronto antes de enviar mensagem
       setTimeout(() => {
-        const assessmentPrompt = `Iniciar Avaliação Clínica Inicial IMRE Triaxial. Acabei de agendar uma consulta.
+        let assessmentPrompt = `Iniciar Avaliação Clínica Inicial IMRE Triaxial.`
 
-Detalhes do agendamento:
-- Data: ${state.appointmentData?.date || 'Não informado'}
-- Horário: ${state.appointmentData?.time || 'Não informado'}
-- Especialidade: ${state.appointmentData?.specialty || 'Não informado'}
-- Tipo de Serviço: ${state.appointmentData?.service || 'Não informado'}
+        if (state.targetProfessional) {
+          assessmentPrompt += ` Gostaria de realizar minha avaliação para posterior agendamento com ${state.targetProfessional.name} (${state.targetProfessional.specialty}).`
+        } else {
+          assessmentPrompt += ` Acabei de solicitar uma avaliação clínica.`
+        }
 
-Por favor, inicie o protocolo IMRE para minha avaliação clínica inicial.`
+        if (state.appointmentData) {
+          assessmentPrompt += `\n\nDetalhes do agendamento prévio:\n- Data: ${state.appointmentData?.date || 'Não informado'}\n- Horário: ${state.appointmentData?.time || 'Não informado'}`
+        }
+
+        assessmentPrompt += `\n\nPor favor, inicie o protocolo IMRE para minha avaliação clínica inicial.`
 
         sendInitialMessage(assessmentPrompt)
       }, 1500)
     }
-  }, [location.state, sendInitialMessage, openChat, user, isEmbed])
+  }, [location.state, sendInitialMessage, user])
 
   // Se estiver em modo embed, renderizar apenas o conteúdo sem header
   if (isEmbed) {
     return (
       <div className="bg-slate-900 min-h-screen h-full w-full">
         <div className="h-full flex flex-col">
-          {/* Avatar da Nôa Residente AI */}
-          <div className="bg-slate-800 rounded-xl p-6 flex flex-col items-center mb-6 flex-shrink-0">
-            <div className="text-center mb-4">
-              <h3 className="text-xl font-semibold text-white mb-1">Nôa Esperança</h3>
-              <p className="text-xs text-slate-400">IA Residente - Especializada em Avaliações Clínicas</p>
-            </div>
-
-            <div className="flex justify-center mb-4">
-              <NoaAnimatedAvatar
-                size="lg"
-                showStatus={true}
-              />
-            </div>
-
-            <div className="text-center">
-              <p className="text-sm text-slate-300 mb-2">
-                🌬️ Bons ventos sóprem! Sou Nôa Esperança, sua IA Residente.
-              </p>
-              <p className="text-xs text-slate-400 mb-2">
-                Especializada em avaliações clínicas e treinamentos
-              </p>
-              <p className="text-xs text-blue-400">
-                💬 Clique no botão de chat no canto inferior direito para começar a conversar comigo!
-              </p>
-            </div>
-          </div>
-
           {/* Interface Conversacional - Expandida no modo embed */}
-          <div className="flex-1 min-h-0">
+          <div className="flex-1 min-h-0 relative">
             <NoaConversationalInterface
               userName={user?.name || 'Paciente'}
               userCode={user?.id || 'PATIENT-001'}
-              position="bottom-right"
-              hideButton={false}
+              position="inline"
+              hideButton={true}
             />
           </div>
         </div>
@@ -99,61 +73,36 @@ Por favor, inicie o protocolo IMRE para minha avaliação clínica inicial.`
 
   // Modo normal (não embed) - renderizar com header
   return (
-    <div className="bg-slate-900 min-h-screen">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="max-w-4xl mx-auto">
-          {/* Header */}
-          <div className="flex items-center justify-between mb-8">
-            <button
-              onClick={() => navigate('/app/clinica/paciente/dashboard')}
-              className="flex items-center space-x-2 text-slate-300 hover:text-white transition-colors"
-            >
-              <ArrowLeft className="w-5 h-5" />
-              <span>Voltar</span>
-            </button>
-            <div className="text-center">
-              <h1 className="text-3xl font-bold text-white mb-2">🤖 Nôa Esperança</h1>
-              <p className="text-slate-300 text-lg">IA Residente</p>
-            </div>
-            <div className="w-20"></div>
+    <div className="bg-slate-900 min-h-screen flex flex-col">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-shrink-0">
+        <div className="max-w-6xl mx-auto flex items-center justify-between">
+          <button
+            onClick={() => navigate('/app/clinica/paciente/dashboard')}
+            className="flex items-center space-x-2 text-slate-300 hover:text-white transition-colors"
+          >
+            <ArrowLeft className="w-5 h-5" />
+            <span>Voltar ao Dashboard</span>
+          </button>
+          <div className="text-center">
+            <h1 className="text-2xl font-bold text-white flex items-center gap-2">
+              <span className="text-3xl">🤖</span> Nôa Esperança
+            </h1>
+            <p className="text-slate-400 text-sm">IA Residente • Avaliação Clínica</p>
           </div>
-
-          {/* Avatar da Nôa Residente AI */}
-          <div className="bg-slate-800 rounded-xl p-8 flex flex-col items-center mb-8">
-            <div className="text-center mb-6">
-              <h3 className="text-2xl font-semibold text-white mb-2">Nôa Esperança</h3>
-              <p className="text-sm text-slate-400">IA Residente - Especializada em Avaliações Clínicas</p>
-            </div>
-
-            <div className="flex justify-center mb-6">
-              <NoaAnimatedAvatar
-                size="xl"
-                showStatus={true}
-              />
-            </div>
-
-            <div className="text-center">
-              <p className="text-lg text-slate-300 mb-4">
-                🌬️ Bons ventos sóprem! Sou Nôa Esperança, sua IA Residente.
-              </p>
-              <p className="text-sm text-slate-400 mb-4">
-                Especializada em avaliações clínicas e treinamentos
-              </p>
-              <p className="text-sm text-blue-400">
-                💬 Clique no botão de chat no canto inferior direito para começar a conversar comigo!
-              </p>
-            </div>
-          </div>
+          <div className="w-32"></div>
         </div>
       </div>
 
-      {/* Interface Conversacional - Fixa no canto */}
-      <NoaConversationalInterface
-        userName={user?.name || 'Paciente'}
-        userCode={user?.id || 'PATIENT-001'}
-        position="bottom-right"
-        hideButton={false}
-      />
+      <div className="flex-1 container mx-auto px-4 sm:px-6 lg:px-8 pb-8 min-h-0">
+        <div className="max-w-6xl mx-auto h-[calc(100vh-140px)] bg-slate-800/50 rounded-2xl border border-slate-700 overflow-hidden relative shadow-2xl">
+          <NoaConversationalInterface
+            userName={user?.name || 'Paciente'}
+            userCode={user?.id || 'PATIENT-001'}
+            position="inline"
+            hideButton={true}
+          />
+        </div>
+      </div>
     </div>
   )
 }

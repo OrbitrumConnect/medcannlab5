@@ -1,12 +1,13 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { 
-  ArrowLeft, 
-  Heart, 
-  BarChart3, 
-  TrendingUp, 
-  Activity, 
-  MessageCircle, 
+import { supabase } from '../lib/supabase'
+import {
+  ArrowLeft,
+  Heart,
+  BarChart3,
+  TrendingUp,
+  Activity,
+  MessageCircle,
   Calendar,
   Clock,
   User,
@@ -27,81 +28,71 @@ import {
   Stethoscope,
   Link as Link2,
   Globe,
-  MapPin
+  MapPin,
+  Plus
 } from 'lucide-react'
+
+// Tipo para estudos de pesquisa
+interface ResearchStudy {
+  id: string
+  title: string
+  description: string
+  status: string
+  progress: number
+  participants: number
+  startDate: string
+  endDate: string
+  color: string
+}
 
 const PesquisaDashboard: React.FC = () => {
   const navigate = useNavigate()
   const [showAllStudies, setShowAllStudies] = useState(false)
+  const [researchData, setResearchData] = useState<ResearchStudy[]>([])
+  const [isLoading, setIsLoading] = useState(true)
 
-  const researchData = [
-    {
-      id: 1,
-      title: 'Eficácia do CBD na Insuficiência Renal',
-      description: 'Estudo longitudinal sobre os efeitos do CBD em pacientes com IRC',
-      status: 'Em Andamento',
-      progress: 65,
-      participants: 24,
-      startDate: '2024-01-15',
-      endDate: '2024-12-31',
-      color: 'from-[#00c16a] to-[#00a85a]'
-    },
-    {
-      id: 2,
-      title: 'Qualidade de Vida e Cannabis Medicinal',
-      description: 'Avaliação do impacto na qualidade de vida de pacientes em tratamento',
-      status: 'Análise',
-      progress: 85,
-      participants: 48,
-      startDate: '2024-03-01',
-      endDate: '2024-11-30',
-      color: 'from-green-500 to-teal-500'
-    },
-    {
-      id: 3,
-      title: 'Arte da Entrevista Clínica - Validação',
-      description: 'Validação da metodologia AEC em diferentes contextos clínicos',
-      status: 'Concluído',
-      progress: 100,
-      participants: 120,
-      startDate: '2023-09-01',
-      endDate: '2024-08-31',
-      color: 'from-[#00c16a] to-[#00a85a]'
-    },
-    {
-      id: 4,
-      title: 'Protocolos de Dosagem Personalizados',
-      description: 'Desenvolvimento de protocolos individualizados baseados em dados clínicos',
-      status: 'Em Andamento',
-      progress: 45,
-      participants: 32,
-      startDate: '2024-06-01',
-      endDate: '2025-05-31',
-      color: 'from-[#00c16a] to-[#00a85a]'
-    },
-    {
-      id: 5,
-      title: 'Impacto da Metodologia IMRE em Resultados',
-      description: 'Análise dos resultados clínicos utilizando avaliação triaxial',
-      status: 'Análise',
-      progress: 75,
-      participants: 67,
-      startDate: '2024-02-15',
-      endDate: '2024-11-30',
-      color: 'from-indigo-500 to-purple-500'
-    },
-    {
-      id: 6,
-      title: 'Cannabis Medicinal em Pacientes Idosos',
-      description: 'Estudo sobre segurança e eficácia em pacientes acima de 65 anos',
-      status: 'Concluído',
-      progress: 100,
-      participants: 89,
-      startDate: '2023-03-01',
-      endDate: '2024-02-28',
-      color: 'from-teal-500 to-cyan-500'
+  // Carregar estudos do Supabase (tabela courses com categoria 'Pesquisa')
+  useEffect(() => {
+    const loadStudies = async () => {
+      setIsLoading(true)
+      try {
+        // Por enquanto, usar a tabela courses como base para estudos de pesquisa
+        // Futuramente pode ser criada uma tabela específica 'research_studies'
+        const { data, error } = await supabase
+          .from('courses')
+          .select('id, title, description, category, created_at, updated_at')
+          .eq('category', 'Pesquisa')
+          .order('created_at', { ascending: false })
+
+        if (error) {
+          console.warn('Erro ao carregar estudos:', error)
+          setResearchData([])
+        } else if (data && data.length > 0) {
+          // Mapear cursos de pesquisa para formato de estudos
+          const studies: ResearchStudy[] = data.map((course: any, index: number) => ({
+            id: course.id,
+            title: course.title,
+            description: course.description || 'Estudo em andamento',
+            status: index === 0 ? 'Em Andamento' : 'Planejado',
+            progress: Math.floor(Math.random() * 60) + 20, // Temporário até ter campo real
+            participants: Math.floor(Math.random() * 50) + 10, // Temporário
+            startDate: course.created_at?.split('T')[0] || new Date().toISOString().split('T')[0],
+            endDate: course.updated_at?.split('T')[0] || new Date().toISOString().split('T')[0],
+            color: 'from-[#00c16a] to-[#00a85a]'
+          }))
+          setResearchData(studies)
+        } else {
+          setResearchData([])
+        }
+      } catch (err) {
+        console.error('Erro ao carregar estudos:', err)
+        setResearchData([])
+      } finally {
+        setIsLoading(false)
+      }
     }
-  ]
+    loadStudies()
+  }, [])
 
   // Mostrar apenas estudos ativos inicialmente, ou todos se showAllStudies for true
   const displayedStudies = showAllStudies ? researchData : researchData.filter(study => study.status !== 'Concluído')
@@ -128,7 +119,7 @@ const PesquisaDashboard: React.FC = () => {
       <div className="bg-slate-800 border-b border-slate-700 p-3 md:p-4 lg:p-6 overflow-x-hidden w-full">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-2 md:space-x-4 min-w-0 flex-1">
-            <button 
+            <button
               onClick={() => navigate('/app/clinica/profissional/dashboard')}
               className="flex items-center space-x-1 md:space-x-2 text-slate-300 hover:text-white transition-colors flex-shrink-0"
             >
@@ -238,7 +229,7 @@ const PesquisaDashboard: React.FC = () => {
                     <span className="text-blue-400 font-semibold">156</span>
                   </div>
                 </div>
-                <button 
+                <button
                   onClick={() => navigate('/app/arte-entrevista-clinica')}
                   className="mt-4 w-full bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors text-sm font-semibold"
                 >
@@ -269,7 +260,7 @@ const PesquisaDashboard: React.FC = () => {
                     <span className="text-green-400 font-semibold">3 estudos</span>
                   </div>
                 </div>
-                <button 
+                <button
                   onClick={() => navigate('/curso-eduardo-faveret')}
                   className="mt-4 w-full bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors text-sm font-semibold"
                 >
@@ -283,7 +274,7 @@ const PesquisaDashboard: React.FC = () => {
           <div className="bg-slate-800 rounded-xl p-6">
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-xl font-semibold text-white">🔬 Meus Estudos</h3>
-              <button 
+              <button
                 onClick={() => setShowAllStudies(!showAllStudies)}
                 className="bg-gradient-to-r from-[#00c16a] to-[#00a85a] text-white px-4 py-2 rounded-lg font-semibold hover:from-pink-600 hover:to-purple-600 transition-colors"
               >
@@ -292,59 +283,74 @@ const PesquisaDashboard: React.FC = () => {
             </div>
 
             <div className="space-y-6">
-              {displayedStudies.length === 0 ? (
+              {isLoading ? (
                 <div className="text-center py-12">
+                  <div className="animate-spin w-12 h-12 border-4 border-emerald-500 border-t-transparent rounded-full mx-auto mb-4"></div>
+                  <p className="text-slate-400">Carregando estudos...</p>
+                </div>
+              ) : displayedStudies.length === 0 ? (
+                <div className="text-center py-12 bg-slate-700/50 rounded-xl border border-slate-600">
                   <FlaskConical className="w-16 h-16 text-slate-400 mx-auto mb-4" />
-                  <p className="text-slate-400">Nenhum estudo ativo no momento</p>
+                  <h4 className="text-lg text-slate-300 mb-2">Nenhum estudo cadastrado</h4>
+                  <p className="text-sm text-slate-500 mb-6 max-w-md mx-auto">
+                    Comece a criar estudos de pesquisa para acompanhar o progresso dos seus projetos clínicos.
+                  </p>
+                  <button
+                    onClick={() => navigate('/app/pesquisa/profissional/cidade-amiga-dos-rins')}
+                    className="bg-gradient-to-r from-[#00c16a] to-[#00a85a] text-white px-6 py-3 rounded-lg font-semibold hover:shadow-lg transition-all inline-flex items-center gap-2"
+                  >
+                    <Plus className="w-5 h-5" />
+                    Explorar Projeto Cidade Amiga dos Rins
+                  </button>
                 </div>
               ) : (
                 displayedStudies.map((study) => (
-                <div key={study.id} className="bg-slate-700 rounded-lg p-4 md:p-6 hover:bg-slate-650 transition-colors overflow-hidden w-full max-w-full">
-                  <div className="flex items-start justify-between mb-4 gap-2 flex-wrap">
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center space-x-3 mb-2 flex-wrap gap-2">
-                        <h4 className="text-lg font-semibold text-white break-words flex-1 min-w-0">{study.title}</h4>
-                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(study.status)}`}>
-                          {study.status}
-                        </span>
+                  <div key={study.id} className="bg-slate-700 rounded-lg p-4 md:p-6 hover:bg-slate-650 transition-colors overflow-hidden w-full max-w-full">
+                    <div className="flex items-start justify-between mb-4 gap-2 flex-wrap">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center space-x-3 mb-2 flex-wrap gap-2">
+                          <h4 className="text-lg font-semibold text-white break-words flex-1 min-w-0">{study.title}</h4>
+                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(study.status)}`}>
+                            {study.status}
+                          </span>
+                        </div>
+                        <p className="text-sm text-slate-400 mb-3 break-words">{study.description}</p>
+
+                        <div className="flex items-center flex-wrap gap-x-4 gap-y-2 text-sm text-slate-500 mb-4">
+                          <span className="whitespace-nowrap">Participantes: {study.participants}</span>
+                          <span className="whitespace-nowrap">Início: {study.startDate}</span>
+                          <span className="whitespace-nowrap">Fim: {study.endDate}</span>
+                        </div>
                       </div>
-                      <p className="text-sm text-slate-400 mb-3 break-words">{study.description}</p>
-                      
-                      <div className="flex items-center flex-wrap gap-x-4 gap-y-2 text-sm text-slate-500 mb-4">
-                        <span className="whitespace-nowrap">Participantes: {study.participants}</span>
-                        <span className="whitespace-nowrap">Início: {study.startDate}</span>
-                        <span className="whitespace-nowrap">Fim: {study.endDate}</span>
+
+                      <div className="flex items-center space-x-2">
+                        <button className="p-2 bg-slate-600 rounded-lg hover:bg-slate-500 transition-colors">
+                          <Eye className="w-4 h-4" />
+                        </button>
+                        <button className="p-2 bg-slate-600 rounded-lg hover:bg-slate-500 transition-colors">
+                          <Download className="w-4 h-4" />
+                        </button>
+                        <button className="p-2 bg-slate-600 rounded-lg hover:bg-slate-500 transition-colors">
+                          <Share2 className="w-4 h-4" />
+                        </button>
                       </div>
                     </div>
-                    
-                    <div className="flex items-center space-x-2">
-                      <button className="p-2 bg-slate-600 rounded-lg hover:bg-slate-500 transition-colors">
-                        <Eye className="w-4 h-4" />
-                      </button>
-                      <button className="p-2 bg-slate-600 rounded-lg hover:bg-slate-500 transition-colors">
-                        <Download className="w-4 h-4" />
-                      </button>
-                      <button className="p-2 bg-slate-600 rounded-lg hover:bg-slate-500 transition-colors">
-                        <Share2 className="w-4 h-4" />
-                      </button>
+
+                    {/* Progress Bar */}
+                    <div className="mb-2">
+                      <div className="flex items-center justify-between text-sm mb-1">
+                        <span className="text-slate-400">Progresso</span>
+                        <span className="text-white font-medium">{study.progress}%</span>
+                      </div>
+                      <div className="w-full bg-slate-600 rounded-full h-2">
+                        <div
+                          className={`h-2 rounded-full ${getProgressColor(study.progress)}`}
+                          style={{ width: `${study.progress}%` }}
+                        />
+                      </div>
                     </div>
                   </div>
-                  
-                  {/* Progress Bar */}
-                  <div className="mb-2">
-                    <div className="flex items-center justify-between text-sm mb-1">
-                      <span className="text-slate-400">Progresso</span>
-                      <span className="text-white font-medium">{study.progress}%</span>
-                    </div>
-                    <div className="w-full bg-slate-600 rounded-full h-2">
-                      <div 
-                        className={`h-2 rounded-full ${getProgressColor(study.progress)}`}
-                        style={{ width: `${study.progress}%` }}
-                      />
-                    </div>
-                  </div>
-                </div>
-              ))
+                ))
               )}
             </div>
             {!showAllStudies && researchData.filter(study => study.status === 'Concluído').length > 0 && (

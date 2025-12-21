@@ -89,19 +89,19 @@ const Sidebar: React.FC<SidebarProps> = ({
     const adminItems = [
       // OUTROS
       {
-        name: '💬 Fórum Cann Matrix',
+        name: 'Fórum Cann Matrix',
         href: '/app/chat',
         icon: MessageCircle,
         section: 'other'
       },
       {
-        name: '💰 Gestão Financeira',
+        name: 'Gestão Financeira',
         href: '/app/professional-financial',
         icon: BanknoteIcon,
         section: 'other'
       },
       {
-        name: '👤 Meu Perfil',
+        name: 'Meu Perfil',
         href: '/app/profile',
         icon: User,
         section: 'profile'
@@ -111,29 +111,30 @@ const Sidebar: React.FC<SidebarProps> = ({
     const patientItems = [
       { name: 'Dashboard', href: '/app/clinica/paciente/dashboard', icon: Home, section: 'main' },
       { name: 'Início', href: '/app/dashboard', icon: Home, section: 'main' },
-      { name: '🤖 Chat NOA', href: '/app/patient-noa-chat', icon: Brain, section: 'quick' },
-      { name: '📅 Agendamentos', href: '/app/patient-appointments', icon: Clock, section: 'quick' },
-      { name: '💬 Chat com Meu Médico', href: '/app/patient-chat', icon: Users, section: 'quick' },
-      { name: '👤 Meu Perfil', href: '/app/profile', icon: User, section: 'profile' },
+      { name: 'Acompanhamento do Plano', href: '/app/clinica/paciente/dashboard?section=plano', icon: Activity, section: 'main' },
+      { name: 'Biblioteca Personalizada', href: '/app/clinica/paciente/dashboard?section=conteudo', icon: BookOpen, section: 'main' },
+      { name: 'Chat NOA', href: '/app/patient-noa-chat', icon: Brain, section: 'quick' },
+      { name: 'Agendamentos', href: '/app/patient-appointments', icon: Clock, section: 'quick' },
+      { name: 'Chat com Meu Médico', href: '/app/patient-chat', icon: Users, section: 'quick' },
     ]
 
     const professionalItems = [
       // MAIN
       {
-        name: '📊 Meu Dashboard',
+        name: 'Meu Dashboard',
         href: '/app/professional-my-dashboard',
         icon: Home,
         section: 'main'
       },
       // OUTROS
       {
-        name: '💬 Fórum Cann Matrix',
+        name: 'Fórum Cann Matrix',
         href: '/app/chat',
         icon: MessageCircle,
         section: 'other'
       },
       {
-        name: '💰 Gestão Financeira',
+        name: 'Gestão Financeira',
         href: '/app/professional-financial',
         icon: BanknoteIcon,
         section: 'other'
@@ -213,6 +214,13 @@ const Sidebar: React.FC<SidebarProps> = ({
       label: 'Resumo Administrativo',
       description: 'Visão consolidada da plataforma',
       icon: Home
+    },
+    {
+      id: 'clinical-governance',
+      label: 'Clinical Governance (ACDSS)',
+      description: 'Sistema de governança cognitiva e apoio à decisão clínica',
+      icon: Brain,
+      href: '/app/admin/clinical-governance'
     },
     {
       id: 'admin-upload',
@@ -402,14 +410,15 @@ const Sidebar: React.FC<SidebarProps> = ({
         />
       )}
 
-      {/* Sidebar - Estilo do PatientSidebar */}
+      {/* Sidebar - Estilo do PatientSidebar - RESPONSIVO MOBILE */}
       <div className={`text-white transition-all duration-300 flex flex-col fixed left-0 top-0 z-50 overflow-x-hidden ${mobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
         }`} style={{
           background: backgroundGradient,
           top: '0.1%',
           height: '99.9%',
-          width: isCollapsed ? '112px' : '288px',
-          maxWidth: isCollapsed ? '112px' : '288px'
+          // Mobile: 256px (reduzido), Desktop: 288px expandido, 112px colapsado
+          width: isCollapsed ? '112px' : 'min(256px, 80vw)',  // Mobile: max 80% viewport
+          maxWidth: isCollapsed ? '112px' : 'min(288px, 80vw)'
         }}>
         {/* Header - Estilo do PatientSidebar */}
         <div className={`flex items-center px-4 border-b ${isCollapsed ? 'justify-center px-2 py-4' : 'py-5'} min-h-[3.815rem] sm:min-h-[4.356rem] md:min-h-[4.905rem]`} style={{ borderColor: 'rgba(0,193,106,0.18)' }}>
@@ -693,11 +702,6 @@ const Sidebar: React.FC<SidebarProps> = ({
                                   {!isCollapsed && (
                                     <div className="flex flex-col min-w-0 flex-1">
                                       <span className={`text-sm font-medium truncate ${sectionIsActive ? 'text-white' : 'text-[#C8D6E5]'}`}>{section.label}</span>
-                                      {section.description && (
-                                        <span className="text-xs text-[rgba(200,214,229,0.75)] leading-tight line-clamp-2">
-                                          {section.description}
-                                        </span>
-                                      )}
                                     </div>
                                   )}
                                 </Link>

@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { supabase } from '../lib/supabase'
-import { 
+import {
   Clock,
   Calendar,
   User,
@@ -37,7 +37,9 @@ import {
   Activity,
   PieChart,
   LineChart,
-  Brain
+  Brain,
+  Stethoscope,
+  ArrowRight
 } from 'lucide-react'
 import {
   SCHEDULING_CONFIG,
@@ -46,8 +48,37 @@ import {
   isSchedulingWorkingDay
 } from '../lib/schedulingConfig'
 
+
+import JourneyManualModal from '../components/JourneyManualModal'
+import AssessmentRequiredModal from '../components/AssessmentRequiredModal'
+
+// Profissionais disponíveis (unificado do Dashboard)
+const AVAILABLE_PROFESSIONALS = [
+  {
+    id: 'eduardo-faveret',
+    name: 'Dr. Eduardo Faveret',
+    role: 'Neurologista Pediátrico',
+    specialty: 'Neurologia',
+    rating: '4.9',
+    excerpt: 'Especialista em Epilepsia e Cannabis Medicinal. Atendimento personalizado com metodologia AEC.',
+    accentClasses: 'bg-emerald-500/20 text-emerald-300',
+    buttonClasses: 'bg-emerald-500 hover:bg-emerald-400',
+  },
+  {
+    id: 'ricardo-valenca',
+    name: 'Dr. Ricardo Valença',
+    role: 'Administrador • Especialista',
+    specialty: 'Nefrologia',
+    rating: '5.0',
+    excerpt: 'Coordenador científico. Especialista em Arte da Entrevista Clínica e metodologia IMRE.',
+    accentClasses: 'bg-primary-500/20 text-primary-300',
+    buttonClasses: 'bg-primary-500 hover:bg-primary-400',
+  }
+]
+
 const PatientAppointments: React.FC = () => {
   const { user } = useAuth()
+  const [showJourneyManual, setShowJourneyManual] = useState(false)
   const navigate = useNavigate()
   const schedulingStartDate = useMemo(() => {
     const date = new Date(SCHEDULING_CONFIG.startDateISO)
@@ -59,6 +90,8 @@ const PatientAppointments: React.FC = () => {
   const [selectedDate, setSelectedDate] = useState<Date | null>(null)
   const [selectedTime, setSelectedTime] = useState<string | null>(null)
   const [showAppointmentModal, setShowAppointmentModal] = useState(false)
+  const [showAssessmentModal, setShowAssessmentModal] = useState(false)
+  const [selectedProfessional, setSelectedProfessional] = useState<{ name: string, specialty: string } | null>(null)
   const [viewMode, setViewMode] = useState<'calendar' | 'list'>('calendar')
   const [appointmentData, setAppointmentData] = useState({
     date: '',
@@ -130,14 +163,14 @@ const PatientAppointments: React.FC = () => {
         }))
 
         setAppointments(formattedAppointments)
-        
+
         // Filtrar próximas consultas (apenas agendadas e futuras)
         const now = new Date()
         const upcoming = formattedAppointments.filter(apt => {
           const aptDate = new Date(`${apt.date}T${apt.time}`)
           return apt.status === 'scheduled' && aptDate >= now
         }).slice(0, 3) // Próximas 3 consultas
-        
+
         setUpcomingAppointments(upcoming)
       }
     } catch (error) {
@@ -230,7 +263,7 @@ const PatientAppointments: React.FC = () => {
     const startingDay = firstDay.getDay()
 
     const days = []
-    
+
     // Dias do mês anterior
     for (let i = startingDay - 1; i >= 0; i--) {
       const prevMonth = new Date(year, month - 1, 0)
@@ -252,12 +285,12 @@ const PatientAppointments: React.FC = () => {
       const date = new Date(year, month, day)
       date.setHours(0, 0, 0, 0)
       const isToday = date.toDateString() === new Date().toDateString()
-      const dayAppointments = appointments.filter(apt => 
+      const dayAppointments = appointments.filter(apt =>
         apt.date === `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`
       )
       const isBeforeStart = date < schedulingStartDate
       const isWorking = isSchedulingWorkingDay(date)
-      
+
       days.push({
         date: day,
         fullDate: date,
@@ -367,7 +400,7 @@ const PatientAppointments: React.FC = () => {
         alert('Nenhum profissional disponível para esta especialidade. Por favor, escolha outra especialidade.')
         return
       }
-      
+
       // 2. Verificar disponibilidade do horário
       const appointmentDateTime = new Date(`${appointmentData.date}T${appointmentData.time}`)
       const { data: conflicting } = await supabase
@@ -377,12 +410,12 @@ const PatientAppointments: React.FC = () => {
         .eq('appointment_date', appointmentDateTime.toISOString())
         .eq('status', 'scheduled')
         .maybeSingle()
-      
+
       if (conflicting) {
         alert('Este horário já está ocupado. Por favor, escolha outro horário.')
         return
       }
-      
+
       // 3. Salvar agendamento no Supabase
       const { data: appointment, error: appointmentError } = await supabase
         .from('appointments')
@@ -409,7 +442,7 @@ const PatientAppointments: React.FC = () => {
       if (appointmentError) {
         throw appointmentError
       }
-      
+
       // 4. Verificar se é primeira consulta e criar avaliação clínica inicial pendente
       const { data: previousAppointments } = await supabase
         .from('appointments')
@@ -418,7 +451,7 @@ const PatientAppointments: React.FC = () => {
         .eq('status', 'completed')
         .limit(1)
         .maybeSingle()
-      
+
       if (!previousAppointments && appointment) {
         // Primeira consulta - criar avaliação clínica inicial pendente
         await supabase
@@ -432,13 +465,13 @@ const PatientAppointments: React.FC = () => {
             created_at: new Date().toISOString()
           })
       }
-      
+
       // 5. Recarregar agendamentos
       await loadAppointments()
-      
+
       // 6. Fechar modal
       setShowAppointmentModal(false)
-      
+
       // 7. Redirecionar para a IA residente para avaliação clínica inicial
       navigate('/app/chat-noa-esperanca', {
         state: {
@@ -506,23 +539,19 @@ const PatientAppointments: React.FC = () => {
             <div
               key={index}
               onClick={() => handleDateSelect(day)}
-              className={`p-1.5 h-14 md:h-16 border border-slate-700 rounded-md cursor-pointer transition-all hover:scale-105 ${
-                day.isCurrentMonth
-                  ? 'hover:bg-slate-700/50'
-                  : 'text-slate-500 opacity-50'
-              } ${
-                day.isToday
+              className={`p-1.5 h-14 md:h-16 border border-slate-700 rounded-md cursor-pointer transition-all hover:scale-105 ${day.isCurrentMonth
+                ? 'hover:bg-slate-700/50'
+                : 'text-slate-500 opacity-50'
+                } ${day.isToday
                   ? 'bg-primary-600/20 border-primary-500 ring-1 ring-primary-500'
                   : ''
-              } ${
-                day.isDisabled ? 'opacity-40 cursor-not-allowed hover:scale-100 hover:bg-transparent' : ''
-              } ${
-                selectedDate &&
-                day.isCurrentMonth &&
-                selectedDate.toDateString() === day.fullDate.toDateString()
+                } ${day.isDisabled ? 'opacity-40 cursor-not-allowed hover:scale-100 hover:bg-transparent' : ''
+                } ${selectedDate &&
+                  day.isCurrentMonth &&
+                  selectedDate.toDateString() === day.fullDate.toDateString()
                   ? 'bg-primary-600 border-primary-500 ring-2 ring-primary-400'
                   : ''
-              }`}
+                }`}
             >
               <div className="text-xs md:text-sm font-medium mb-0.5">
                 {day.date}
@@ -532,13 +561,12 @@ const PatientAppointments: React.FC = () => {
                   {day.appointments.slice(0, 1).map(apt => (
                     <div
                       key={apt.id}
-                      className={`text-[10px] px-0.5 py-0.5 rounded truncate ${
-                        apt.priority === 'high'
-                          ? 'bg-red-500/30 text-red-300'
-                          : apt.priority === 'normal'
+                      className={`text-[10px] px-0.5 py-0.5 rounded truncate ${apt.priority === 'high'
+                        ? 'bg-red-500/30 text-red-300'
+                        : apt.priority === 'normal'
                           ? 'bg-blue-500/30 text-blue-300'
                           : 'bg-green-500/30 text-green-300'
-                      }`}
+                        }`}
                       title={`${apt.time} - ${apt.doctorName}`}
                     >
                       {apt.time}
@@ -579,11 +607,10 @@ const PatientAppointments: React.FC = () => {
                 key={time}
                 onClick={() => !isBooked && handleTimeSelect(time)}
                 disabled={isBooked}
-                className={`p-2 rounded-lg text-xs md:text-sm font-medium transition-all ${
-                  isBooked
-                    ? 'bg-slate-700/50 text-slate-500 cursor-not-allowed opacity-50'
-                    : 'bg-slate-700 hover:bg-primary-600 hover:scale-105 text-slate-300 hover:text-white active:scale-95'
-                }`}
+                className={`p-2 rounded-lg text-xs md:text-sm font-medium transition-all ${isBooked
+                  ? 'bg-slate-700/50 text-slate-500 cursor-not-allowed opacity-50'
+                  : 'bg-slate-700 hover:bg-primary-600 hover:scale-105 text-slate-300 hover:text-white active:scale-95'
+                  }`}
               >
                 {time}
               </button>
@@ -606,22 +633,20 @@ const PatientAppointments: React.FC = () => {
           <div className="flex items-center space-x-2">
             <button
               onClick={() => setViewMode('calendar')}
-              className={`px-3 py-1.5 rounded-lg transition-colors text-sm flex items-center ${
-                viewMode === 'calendar'
-                  ? 'bg-primary-600 text-white'
-                  : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
-              }`}
+              className={`px-3 py-1.5 rounded-lg transition-colors text-sm flex items-center ${viewMode === 'calendar'
+                ? 'bg-primary-600 text-white'
+                : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
+                }`}
             >
               <Calendar className="w-4 h-4 mr-1.5" />
               Calendário
             </button>
             <button
               onClick={() => setViewMode('list')}
-              className={`px-3 py-1.5 rounded-lg transition-colors text-sm flex items-center ${
-                viewMode === 'list'
-                  ? 'bg-primary-600 text-white'
-                  : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
-              }`}
+              className={`px-3 py-1.5 rounded-lg transition-colors text-sm flex items-center ${viewMode === 'list'
+                ? 'bg-primary-600 text-white'
+                : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
+                }`}
             >
               <FileText className="w-4 h-4 mr-1.5" />
               Lista
@@ -629,99 +654,122 @@ const PatientAppointments: React.FC = () => {
           </div>
         </div>
 
-        {/* Jornada do Paciente - Explicação do Fluxo */}
+        {/* Jornada do Paciente - Simplificado */}
         <div className="bg-gradient-to-r from-blue-900/30 to-purple-900/30 border border-blue-500/30 rounded-xl p-6 mb-6">
-          <div className="flex items-start space-x-4">
-            <div className="flex-shrink-0 w-12 h-12 bg-gradient-to-br from-[#00c16a] to-[#00a85a] rounded-lg flex items-center justify-center">
-              <Brain className="w-6 h-6 text-white" />
+          <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 bg-gradient-to-br from-[#00c16a] to-[#00a85a] rounded-lg flex items-center justify-center shrink-0">
+                <Brain className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <h3 className="text-xl font-semibold text-white">Sua Jornada de Cuidado</h3>
+                <p className="text-slate-300 text-sm">Saiba como funciona nossa jornada de cuidado estruturada.</p>
+              </div>
             </div>
-            <div className="flex-1">
-              <h3 className="text-xl font-semibold text-white mb-3">🎯 Sua Jornada de Cuidado</h3>
-              <p className="text-slate-300 mb-4 text-sm">
-                Para garantir o melhor atendimento, seguimos uma jornada estruturada que começa com sua avaliação clínica inicial.
+
+            <div className="flex flex-wrap gap-3">
+              <button
+                onClick={() => setShowJourneyManual(true)}
+                className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg text-sm font-medium transition-colors border border-slate-700 flex items-center gap-2"
+              >
+                <FileText className="w-4 h-4" />
+                Manual da Jornada
+              </button>
+
+              <button
+                onClick={() => navigate('/app/chat-noa-esperanca')}
+                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm transition-colors flex items-center space-x-2 font-medium"
+              >
+                <Brain className="w-4 h-4" />
+                <span>Iniciar Avaliação Clínica</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <JourneyManualModal
+          isOpen={showJourneyManual}
+          onClose={() => setShowJourneyManual(false)}
+        />
+
+        <AssessmentRequiredModal
+          isOpen={showAssessmentModal}
+          onClose={() => setShowAssessmentModal(false)}
+          professionalName={selectedProfessional?.name}
+          onStartAssessment={() => {
+            navigate('/app/patient-noa-chat', {
+              state: {
+                startAssessment: true,
+                targetProfessional: selectedProfessional
+              }
+            })
+          }}
+        />
+
+
+
+
+        {/* Profissionais Disponíveis - Unificado */}
+        <div className="bg-slate-800 rounded-xl p-6 mb-6">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-6">
+            <div>
+              <h3 className="text-xl font-semibold text-white flex items-center gap-2">
+                <Stethoscope className="w-6 h-6 text-primary-300" />
+                Agendar com Especialista
+              </h3>
+              <p className="text-sm text-slate-400 mt-1">
+                Escolha um especialista para iniciar seu acompanhamento ou agende sua consulta.
               </p>
-              
-              {/* Fluxo em Passos */}
-              <div className="space-y-4 mb-4">
-                {/* Passo 1: Avaliação Clínica */}
-                <div className="bg-slate-800/50 rounded-lg p-4 border border-blue-500/20">
-                  <div className="flex items-start space-x-3">
-                    <div className="flex-shrink-0 w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white font-bold text-sm">
-                      1
-                    </div>
-                    <div className="flex-1">
-                      <h4 className="text-white font-semibold mb-1">🧠 Avaliação Clínica Inicial</h4>
-                      <p className="text-slate-300 text-sm mb-2">
-                        Realize uma avaliação clínica completa com a IA Residente Nôa Esperança usando o protocolo IMRE.
-                        Esta avaliação é <strong className="text-white">privada e confidencial</strong> - apenas você pode ver o conteúdo completo do relatório.
-                      </p>
-                      <button
-                        onClick={() => navigate('/app/chat-noa-esperanca')}
-                        className="mt-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm transition-colors flex items-center space-x-2"
-                      >
-                        <Brain className="w-4 h-4" />
-                        <span>Iniciar Avaliação Clínica</span>
-                      </button>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Passo 2: Relatório */}
-                <div className="bg-slate-800/50 rounded-lg p-4 border border-purple-500/20">
-                  <div className="flex items-start space-x-3">
-                    <div className="flex-shrink-0 w-8 h-8 bg-purple-500 rounded-full flex items-center justify-center text-white font-bold text-sm">
-                      2
-                    </div>
-                    <div className="flex-1">
-                      <h4 className="text-white font-semibold mb-1">📋 Relatório Gerado</h4>
-                      <p className="text-slate-300 text-sm mb-2">
-                        Após a avaliação, a IA gera um relatório clínico completo que fica disponível no seu histórico de saúde.
-                        <strong className="text-white"> Você controla o compartilhamento</strong> - o médico não recebe automaticamente.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Passo 3: Compartilhamento */}
-                <div className="bg-slate-800/50 rounded-lg p-4 border border-green-500/20">
-                  <div className="flex items-start space-x-3">
-                    <div className="flex-shrink-0 w-8 h-8 bg-green-500 rounded-full flex items-center justify-center text-white font-bold text-sm">
-                      3
-                    </div>
-                    <div className="flex-1">
-                      <h4 className="text-white font-semibold mb-1">🔐 Compartilhamento Seguro</h4>
-                      <p className="text-slate-300 text-sm mb-2">
-                        Quando você agendar uma consulta, você pode <strong className="text-white">opcionalmente compartilhar</strong> o relatório com o profissional.
-                        O médico saberá que um relatório existe, mas só verá o conteúdo se você compartilhar explicitamente.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Passo 4: Consulta */}
-                <div className="bg-slate-800/50 rounded-lg p-4 border border-cyan-500/20">
-                  <div className="flex items-start space-x-3">
-                    <div className="flex-shrink-0 w-8 h-8 bg-cyan-500 rounded-full flex items-center justify-center text-white font-bold text-sm">
-                      4
-                    </div>
-                    <div className="flex-1">
-                      <h4 className="text-white font-semibold mb-1">📅 Agendar Consulta</h4>
-                      <p className="text-slate-300 text-sm">
-                        Após a avaliação, agende sua consulta com os profissionais da plataforma.
-                        Todas as suas consultas ficam integradas ao seu plano de cuidado personalizado.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-3">
-                <p className="text-blue-300 text-xs">
-                  <strong className="text-blue-200">🔒 Segurança de Dados:</strong> Todos os seus dados são protegidos por sigilo médico e LGPD. 
-                  Você tem controle total sobre o compartilhamento do seu relatório de avaliação clínica.
-                </p>
-              </div>
             </div>
+            <button
+              onClick={() => setShowAppointmentModal(true)}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-sm font-semibold transition-colors"
+            >
+              <Plus className="w-4 h-4" />
+              Novo Agendamento
+            </button>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {AVAILABLE_PROFESSIONALS.map(professional => (
+              <div
+                key={professional.id}
+                className="rounded-xl border border-slate-700 bg-slate-900/50 p-5 flex flex-col justify-between gap-4 transition-colors hover:border-primary-500/40"
+              >
+                <div className="flex items-start gap-4">
+                  <div className={`w-14 h-14 rounded-xl flex items-center justify-center border border-slate-800/60 ${professional.accentClasses} shrink-0`}>
+                    <Stethoscope className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <h4 className="text-white text-lg font-semibold">{professional.name}</h4>
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-slate-800 border border-slate-700 text-xs text-slate-300">
+                        <Star className="w-3 h-3 text-amber-300 fill-amber-300" />
+                        {professional.rating}
+                      </span>
+                    </div>
+                    <p className="text-sm text-slate-400 mt-1">{professional.role}</p>
+                    <p className="text-sm text-slate-300 mt-2 line-clamp-2">{professional.excerpt}</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => {
+                    // Verificar se usuário tem avaliação (carePlan ou flag vinda do banco)
+                    if (!carePlan?.id) {
+                      setSelectedProfessional({ name: professional.name, specialty: professional.specialty })
+                      setShowAssessmentModal(true)
+                    } else {
+                      setAppointmentData(prev => ({ ...prev, specialty: professional.specialty }))
+                      setShowAppointmentModal(true)
+                    }
+                  }}
+                  className={`w-full inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold text-white transition-colors ${professional.buttonClasses}`}
+                >
+                  Agendar consulta
+                  <ArrowRight className="w-4 h-4" />
+                </button>
+              </div>
+            ))}
           </div>
         </div>
 
@@ -765,13 +813,12 @@ const PatientAppointments: React.FC = () => {
                       </div>
                     )}
                   </div>
-                  <span className={`px-3 py-1 rounded-full text-xs ml-4 ${
-                    apt.status === 'scheduled' ? 'bg-green-500/20 text-green-400' :
+                  <span className={`px-3 py-1 rounded-full text-xs ml-4 ${apt.status === 'scheduled' ? 'bg-green-500/20 text-green-400' :
                     apt.status === 'completed' ? 'bg-blue-500/20 text-blue-400' :
-                    'bg-red-500/20 text-red-400'
-                  }`}>
+                      'bg-red-500/20 text-red-400'
+                    }`}>
                     {apt.status === 'scheduled' ? 'Agendada' :
-                     apt.status === 'completed' ? 'Concluída' : 'Cancelada'}
+                      apt.status === 'completed' ? 'Concluída' : 'Cancelada'}
                   </span>
                 </div>
               ))}
@@ -897,7 +944,7 @@ const PatientAppointments: React.FC = () => {
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
             <div className="bg-slate-800 rounded-xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
               <h3 className="text-xl font-semibold text-white mb-4">Novo Agendamento</h3>
-              
+
               {/* Informações sobre IA Residente e Fluxo */}
               <div className="bg-blue-900/30 border border-blue-700/50 rounded-lg p-4 mb-4">
                 <div className="flex items-start space-x-3">
@@ -936,7 +983,7 @@ const PatientAppointments: React.FC = () => {
                     <input
                       type="date"
                       value={appointmentData.date}
-                      onChange={(e) => setAppointmentData({...appointmentData, date: e.target.value})}
+                      onChange={(e) => setAppointmentData({ ...appointmentData, date: e.target.value })}
                       className="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-white"
                       required
                     />
@@ -946,7 +993,7 @@ const PatientAppointments: React.FC = () => {
                     <input
                       type="time"
                       value={appointmentData.time}
-                      onChange={(e) => setAppointmentData({...appointmentData, time: e.target.value})}
+                      onChange={(e) => setAppointmentData({ ...appointmentData, time: e.target.value })}
                       className="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-white"
                       required
                     />
@@ -964,7 +1011,7 @@ const PatientAppointments: React.FC = () => {
                     <label className="block text-sm text-slate-400 mb-2">Especialidade <span className="text-red-400">*</span></label>
                     <select
                       value={appointmentData.specialty}
-                      onChange={(e) => setAppointmentData({...appointmentData, specialty: e.target.value})}
+                      onChange={(e) => setAppointmentData({ ...appointmentData, specialty: e.target.value })}
                       className="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-white"
                       required
                     >
@@ -978,7 +1025,7 @@ const PatientAppointments: React.FC = () => {
                     <label className="block text-sm text-slate-400 mb-2">Consultório <span className="text-red-400">*</span></label>
                     <select
                       value={appointmentData.room}
-                      onChange={(e) => setAppointmentData({...appointmentData, room: e.target.value})}
+                      onChange={(e) => setAppointmentData({ ...appointmentData, room: e.target.value })}
                       className="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-white"
                       required
                     >
@@ -1004,7 +1051,7 @@ const PatientAppointments: React.FC = () => {
                   <label className="block text-sm text-slate-400 mb-2">Observações</label>
                   <textarea
                     value={appointmentData.notes}
-                    onChange={(e) => setAppointmentData({...appointmentData, notes: e.target.value})}
+                    onChange={(e) => setAppointmentData({ ...appointmentData, notes: e.target.value })}
                     placeholder="Informações adicionais relevantes para a avaliação clínica inicial..."
                     className="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-white h-20"
                   />

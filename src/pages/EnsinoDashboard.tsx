@@ -31,6 +31,15 @@ import { useAuth } from '../contexts/AuthContext'
 import { supabase } from '../lib/supabase'
 import NoaAnimatedAvatar from '../components/NoaAnimatedAvatar'
 import AlunoDashboard from './AlunoDashboard'
+import {
+  backgroundGradient,
+  surfaceStyle,
+  secondarySurfaceStyle,
+  cardStyle,
+  accentGradient,
+  secondaryGradient,
+  goldenGradient
+} from '../constants/designSystem'
 
 type EnsinoSection = 'dashboard' | 'aulas' | 'biblioteca' | 'avaliacao' | 'newsletter' | 'mentoria'
 
@@ -375,14 +384,8 @@ const EnsinoDashboard: React.FC = () => {
     }
   ]
 
-  const backgroundGradient = 'linear-gradient(135deg, #0A192F 0%, #1a365d 55%, #2d5a3d 100%)'
-  const surfaceStyle: React.CSSProperties = { background: 'rgba(7,22,41,0.88)', border: '1px solid rgba(0,193,106,0.08)', boxShadow: '0 18px 42px rgba(2,12,27,0.45)' }
-  const secondarySurfaceStyle: React.CSSProperties = { background: 'rgba(12,34,54,0.78)', border: '1px solid rgba(0,193,106,0.1)', boxShadow: '0 14px 32px rgba(2,12,27,0.38)' }
-  const cardStyle: React.CSSProperties = { background: 'rgba(15,36,60,0.7)', border: '1px solid rgba(0,193,106,0.12)', boxShadow: '0 10px 26px rgba(2,12,27,0.35)' }
-  const accentGradient = 'linear-gradient(135deg, #00C16A 0%, #13794f 100%)'
-  const secondaryGradient = 'linear-gradient(135deg, #1a365d 0%, #274a78 100%)'
+  // highlightGradient específico desta página (não existe no designSystem)
   const highlightGradient = 'linear-gradient(135deg, rgba(0,193,106,0.22) 0%, rgba(16,49,91,0.38) 55%, rgba(7,22,41,0.82) 100%)'
-  const goldenGradient = 'linear-gradient(135deg, #FFD33D 0%, #FFAA00 100%)'
 
   const navButtonBase = 'flex items-center space-x-1 md:space-x-2 px-2 md:px-3 lg:px-4 py-1.5 md:py-2 transition-all text-xs md:text-sm rounded-lg font-medium'
 

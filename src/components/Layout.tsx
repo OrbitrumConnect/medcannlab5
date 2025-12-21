@@ -11,6 +11,7 @@ import NavegacaoIndividualizada from './NavegacaoIndividualizada'
 import MobileResponsiveWrapper from './MobileResponsiveWrapper'
 import { normalizeUserType } from '../lib/userTypes'
 import { useUserView } from '../contexts/UserViewContext'
+import { backgroundGradient, colors } from '../constants/designSystem'
 
 const Layout: React.FC = () => {
   const { user, isLoading } = useAuth()
@@ -20,8 +21,8 @@ const Layout: React.FC = () => {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false)
   const location = useLocation()
 
-  const landingGradient = 'linear-gradient(135deg, #0A192F 0%, #1a365d 50%, #2d5a3d 100%)'
-  const surfaceColor = 'rgba(7, 22, 41, 0.82)'
+  // Usar cores do designSystem
+  const surfaceColor = colors.background.surface
 
   useEffect(() => {
     const checkMobile = () => {
@@ -135,38 +136,11 @@ const Layout: React.FC = () => {
     )
   }
 
-  // Layout específico para pacientes (sem sidebar externa)
-  if (normalizedUserType === 'paciente') {
-    return (
-      <ProtectedRoute>
-        <MobileResponsiveWrapper>
-          <div
-            className="min-h-screen"
-            style={{ background: landingGradient }}
-          >
-            {/* Main Content - sem sidebar externa */}
-            {/* Footer removido - PatientDashboard renderiza seu próprio Footer */}
-            <div className="flex flex-col min-h-screen">
-              <Header />
-              {/* NavegacaoIndividualizada removida - botões dos eixos já estão na sidebar */}
-              <main
-                className={`flex-1 ${isMobile ? 'px-2 py-2' : 'px-4 py-4'}`}
-                style={{ backgroundColor: surfaceColor }}
-              >
-                <Outlet />
-              </main>
-            </div>
+  // Layout padrão - TODOS os tipos usam a mesma estrutura com Sidebar
+  // PatientDashboard também usará o sidebar global igual aos outros dashboards
 
-            {/* Interface Conversacional Nôa Esperança */}
-            <NoaConversationalInterface
-              userName={user?.name || 'Usuário'}
-              userCode={user?.id || 'USER-001'}
-            />
-          </div>
-        </MobileResponsiveWrapper>
-      </ProtectedRoute>
-    )
-  }
+  // Usar sidebar global para todos os dashboards (incluindo paciente)
+  const hasOwnSidebar = false
 
   // Layout padrão para outros tipos de usuário (com sidebar)
   return (
@@ -174,31 +148,32 @@ const Layout: React.FC = () => {
       <MobileResponsiveWrapper onMobileMenuToggle={setIsSidebarOpen}>
         <div
           className="min-h-screen w-full overflow-x-hidden"
-          style={{ background: landingGradient }}
+          style={{ background: backgroundGradient }}
         >
-          {/* Sidebar */}
-          <Sidebar
-            userType={viewAsType ?? user?.type}
-            isMobile={isMobile}
-            isOpen={isSidebarOpen}
-            onClose={() => setIsSidebarOpen(false)}
-            onCollapseChange={setIsSidebarCollapsed}
-          />
+          {/* Sidebar - Não renderizar se a página já tem sidebar próprio */}
+          {!hasOwnSidebar && (
+            <Sidebar
+              userType={viewAsType ?? user?.type}
+              isMobile={isMobile}
+              isOpen={isSidebarOpen}
+              onClose={() => setIsSidebarOpen(false)}
+              onCollapseChange={setIsSidebarCollapsed}
+            />
+          )}
 
           {/* Main Content */}
           <div
             className="flex flex-col min-h-screen transition-all duration-300"
             style={{
-              marginLeft: isMobile ? '0' : isSidebarCollapsed ? '112px' : '288px',
-              width: isMobile ? '100%' : `calc(100% - ${isSidebarCollapsed ? '112px' : '288px'})`,
-              maxWidth: isMobile ? '100%' : `calc(100% - ${isSidebarCollapsed ? '112px' : '288px'})`
+              marginLeft: hasOwnSidebar ? '0' : (isMobile ? '0' : isSidebarCollapsed ? '112px' : '256px'),
+              width: hasOwnSidebar ? '100%' : (isMobile ? '100%' : `calc(100% - ${isSidebarCollapsed ? '112px' : '256px'})`),
+              maxWidth: hasOwnSidebar ? '100%' : (isMobile ? '100%' : `calc(100% - ${isSidebarCollapsed ? '112px' : '256px'})`)
             }}
           >
             <Header />
             {/* NavegacaoIndividualizada removida - botões dos eixos já estão na sidebar */}
             <main
               className={`flex-1 ${isMobile ? 'px-2 py-2' : 'px-4 py-4'}`}
-              style={{ backgroundColor: surfaceColor }}
             >
               <Outlet />
             </main>
@@ -206,8 +181,8 @@ const Layout: React.FC = () => {
 
           {/* Footer - Fora do container principal para ficar colado ao sidebar */}
           <Footer
-            marginLeft={isMobile ? '0' : isSidebarCollapsed ? '112px' : '288px'}
-            width={isMobile ? '100%' : `calc(100% - ${isSidebarCollapsed ? '112px' : '288px'})`}
+            marginLeft={hasOwnSidebar ? '0' : (isMobile ? '0' : isSidebarCollapsed ? '112px' : '256px')}
+            width={hasOwnSidebar ? '100%' : (isMobile ? '100%' : `calc(100% - ${isSidebarCollapsed ? '112px' : '256px'})`)}
           />
 
           {/* Interface Conversacional Nôa Esperança */}

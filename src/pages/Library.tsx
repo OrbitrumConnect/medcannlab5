@@ -28,6 +28,14 @@ import {
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
 import { KnowledgeBaseIntegration, KnowledgeDocument, KnowledgeStats } from '../services/knowledgeBaseIntegration'
+import {
+  backgroundGradient,
+  surfaceStyle,
+  secondarySurfaceStyle,
+  accentGradient,
+  secondaryGradient,
+  goldenGradient
+} from '../constants/designSystem'
 
 // 🧪 TESTE DE CONTROLE DO DEPLOY: Teste concluído com sucesso!
 // ✅ O Vercel detecta erros de build automaticamente
@@ -1146,104 +1154,98 @@ const Library: React.FC = () => {
 
             <div
               key={doc.id}
-              className="rounded-xl border transition-all duration-300 hover:shadow-2xl hover:scale-[1.01]"
+              className="rounded-xl border transition-all duration-300 hover:shadow-2xl hover:scale-[1.01] p-4"
               style={{ ...secondarySurfaceStyle, border: '1px solid rgba(0,193,106,0.16)' }}
             >
-              <div className="flex items-start gap-4">
-                {/* Icon */}
+              <div className="flex items-start gap-3">
+                {/* Icon Compacto */}
                 <div
-                  className="flex-shrink-0 w-16 h-16 rounded-xl flex items-center justify-center shadow-lg"
+                  className="flex-shrink-0 w-12 h-12 rounded-lg flex items-center justify-center shadow-lg"
                   style={{ background: 'linear-gradient(135deg, #00C16A 0%, #1a6ab3 100%)', boxShadow: '0 16px 32px rgba(0,0,0,0.35)' }}
                 >
-                  <div className="text-3xl">
+                  <div className="text-xl">
                     {getTypeIcon(doc.file_type)}
                   </div>
                 </div>
 
                 {/* Content */}
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-start justify-between gap-2 mb-3">
-                    <div className="flex-1">
-                      <h3 className="text-base font-bold text-white mb-2 line-clamp-2">
-                        {doc.title}
-                      </h3>
-                      <div className="flex items-center gap-3 text-xs text-slate-300 font-medium mb-3">
+                  <div className="flex items-start justify-between gap-2 mb-2">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        <h3 className="text-sm font-bold text-white line-clamp-1 truncate" title={doc.title}>
+                          {doc.title}
+                        </h3>
+                        {/* AI Badge Compacto */}
+                        {doc.isLinkedToAI === true && (
+                          <div
+                            className="flex-shrink-0 text-white px-2 py-0.5 rounded-full text-[10px] font-bold shadow-lg flex items-center gap-1 whitespace-nowrap"
+                            style={{ background: accentGradient }}
+                          >
+                            <Brain className="w-3 h-3" />
+                            IA
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-slate-300 font-medium">
                         <span className="flex items-center gap-1">
                           <User className="w-3 h-3" />
-                          {doc.author || 'Autor não disponível'}
+                          <span className="truncate max-w-[100px]">{doc.author || 'Autor n/d'}</span>
                         </span>
-                        <span>•</span>
+                        <span className="hidden sm:inline">•</span>
                         <span className="flex items-center gap-1">
                           <FileText className="w-3 h-3" />
                           {formatFileSize(doc.file_size || 0)}
                         </span>
-                        <span>•</span>
+                        <span className="hidden sm:inline">•</span>
                         <span className="flex items-center gap-1">
                           📅 {formatDate(doc.created_at)}
                         </span>
                       </div>
                     </div>
-
-                    {/* AI Badge */}
-                    {doc.isLinkedToAI === true && (
-                      <div className="flex-shrink-0">
-                        <div
-                          className="text-white px-3 py-1.5 rounded-full text-xs font-bold shadow-lg flex items-center gap-1"
-                          style={{ background: accentGradient }}
-                        >
-                          <Brain className="w-3 h-3" />
-                          IA Ativa
-                        </div>
-                      </div>
-                    )}
                   </div>
 
                   {/* Summary */}
                   {doc.summary && (
-                    <p className="text-sm text-slate-200 mb-3 line-clamp-2 italic">
+                    <p className="text-xs text-slate-200 mb-2 line-clamp-1 italic">
                       {doc.summary}
                     </p>
                   )}
 
-                  {/* Tags */}
-                  {(doc.tags?.length > 0 || doc.keywords?.length > 0) && (
-                    <div className="flex flex-wrap gap-2 mb-3">
-                      {doc.tags && doc.tags.length > 0 && doc.tags.map((tag: string, index: number) => (
+                  {/* Tags Compactas */}
+                  {((doc.tags?.length > 0) || (doc.keywords?.length > 0)) && (
+                    <div className="flex flex-wrap gap-1 mb-2">
+                      {[...(doc.tags || []), ...(doc.keywords || [])].slice(0, 4).map((tag: string, index: number) => (
                         <span
                           key={index}
-                          className="px-3 py-1 text-white text-xs rounded-full font-semibold shadow-md"
-                          style={{ background: secondaryGradient }}
+                          className="px-2 py-0.5 text-white text-[10px] rounded-full font-bold shadow-sm bg-slate-700/50 border border-slate-600/50"
                         >
                           {tag}
                         </span>
                       ))}
-                      {doc.keywords && doc.keywords.map((keyword: string, index: number) => (
-                        <span
-                          key={`kw-${index}`}
-                          className="px-3 py-1 text-white text-xs rounded-full font-semibold shadow-md"
-                          style={{ background: accentGradient }}
-                        >
-                          {keyword}
-                        </span>
-                      ))}
-                    </div>
-                  )}
-
-                  {/* Actions */}
-                  <div className="flex items-center justify-between mt-3 pt-3" style={{ borderTop: '1px solid rgba(0,193,106,0.16)' }}>
-                    <div className="flex items-center gap-4 text-xs text-slate-200 font-medium">
-                      <span className="flex items-center gap-1 px-2 py-1 rounded" style={{ background: 'rgba(12, 48, 68, 0.65)' }}>
-                        ⬇️ {doc.downloads || 0} downloads
-                      </span>
-                      {doc.aiRelevance && doc.aiRelevance > 0 && (
-                        <span className="flex items-center gap-1 px-2 py-1 rounded" style={{ background: 'rgba(0,193,106,0.12)', border: '1px solid rgba(0,193,106,0.35)', color: '#4FE0C1' }}>
-                          <Brain className="w-3 h-3" />
-                          Relevância IA: {doc.aiRelevance}
+                      {([...(doc.tags || []), ...(doc.keywords || [])].length > 4) && (
+                        <span className="px-2 py-0.5 text-slate-300 text-[10px] rounded-full font-semibold bg-slate-800/50 border border-slate-700">
+                          +{([...(doc.tags || []), ...(doc.keywords || [])].length - 4)}
                         </span>
                       )}
                     </div>
+                  )}
 
-                    <div className="flex items-center gap-2">
+                  {/* Actions Compactas */}
+                  <div className="flex flex-wrap items-center gap-2 pt-2 mt-2 border-t border-slate-700/50">
+                    <div className="flex items-center gap-2 mr-auto">
+                      <div className="flex items-center gap-1 text-[10px] text-slate-400 bg-slate-800/50 px-2 py-1 rounded">
+                        <span>⬇️ {doc.downloads || 0}</span>
+                      </div>
+                      {doc.aiRelevance !== undefined && doc.aiRelevance > 0 && (
+                        <div className="flex items-center gap-1 text-[10px] text-slate-400 bg-slate-800/50 px-2 py-1 rounded">
+                          <Brain className="w-3 h-3" />
+                          <span>Rel: {doc.aiRelevance}</span>
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="flex flex-wrap items-center gap-2">
                       <button
                         onClick={async () => {
                           try {
@@ -1304,11 +1306,11 @@ const Library: React.FC = () => {
                             alert('Erro ao visualizar o arquivo. Verifique as permissões do Storage.')
                           }
                         }}
-                        className="flex items-center gap-2 px-4 py-2 text-white text-sm rounded-lg font-bold transition-all shadow-lg hover:shadow-xl"
+                        className="flex items-center gap-1.5 px-3 py-1.5 text-white text-xs rounded-lg font-bold transition-all shadow-md hover:shadow-lg"
                         style={{ background: secondaryGradient }}
                       >
-                        <Eye className="w-4 h-4" />
-                        Visualizar
+                        <Eye className="w-3.5 h-3.5" />
+                        Ver
                       </button>
                       <button
                         onClick={async () => {
@@ -1380,7 +1382,7 @@ const Library: React.FC = () => {
                             alert('Erro ao fazer download do arquivo')
                           }
                         }}
-                        className="flex items-center gap-2 px-4 py-2 text-white text-sm rounded-lg font-bold transition-all shadow-lg hover:shadow-xl"
+                        className="flex items-center gap-1.5 px-3 py-1.5 text-white text-xs rounded-lg font-bold transition-all shadow-md hover:shadow-lg"
                         style={{ background: accentGradient }}
                       >
                         ⬇️ Baixar
@@ -1414,12 +1416,12 @@ const Library: React.FC = () => {
                               alert('Erro ao desvincular documento da IA.')
                             }
                           }}
-                          className="flex items-center gap-2 px-4 py-2 text-white text-sm rounded-lg font-bold transition-all shadow-lg hover:shadow-xl"
+                          className="flex items-center gap-1.5 px-3 py-1.5 text-white text-xs rounded-lg font-bold transition-all shadow-md hover:shadow-lg"
                           style={{ background: 'linear-gradient(135deg, #1a365d 0%, #00A176 100%)' }}
                           title="Desvincular da IA residente"
                         >
-                          <XCircle className="w-4 h-4" />
-                          Desvincular IA
+                          <XCircle className="w-3.5 h-3.5" />
+                          Desvincular
                         </button>
                       ) : (
                         <button
@@ -1446,12 +1448,12 @@ const Library: React.FC = () => {
                               alert('Erro ao vincular documento à IA.')
                             }
                           }}
-                          className="flex items-center gap-2 px-4 py-2 text-white text-sm rounded-lg font-bold transition-all shadow-lg hover:shadow-xl"
+                          className="flex items-center gap-1.5 px-3 py-1.5 text-white text-xs rounded-lg font-bold transition-all shadow-md hover:shadow-lg"
                           style={{ background: accentGradient }}
                           title="Atribuir à IA residente"
                         >
-                          <LinkIcon className="w-4 h-4" />
-                          Atribuir à IA
+                          <LinkIcon className="w-3.5 h-3.5" />
+                          Vincular
                         </button>
                       )}
                       <button
@@ -1522,11 +1524,11 @@ const Library: React.FC = () => {
                             alert('Erro ao excluir documento. Verifique as permissões.')
                           }
                         }}
-                        className="flex items-center gap-2 px-4 py-2 text-sm rounded-lg font-bold transition-all shadow-lg hover:shadow-xl"
+                        className="flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-lg font-bold transition-all shadow-md hover:shadow-lg"
                         style={{ background: 'linear-gradient(135deg, #FF5F6D 0%, #FFC371 100%)', color: '#0A192F' }}
                         title="Excluir documento"
                       >
-                        <Trash2 className="w-4 h-4" />
+                        <Trash2 className="w-3.5 h-3.5" />
                         Excluir
                       </button>
                     </div>
@@ -1559,8 +1561,8 @@ const Library: React.FC = () => {
                   key={page}
                   onClick={() => setCurrentPage(page)}
                   className={`w-10 h-10 rounded-xl font-bold text-sm transition-all ${currentPage === page
-                      ? 'text-white shadow-lg'
-                      : 'text-slate-300 hover:text-white'
+                    ? 'text-white shadow-lg'
+                    : 'text-slate-300 hover:text-white'
                     }`}
                   style={{
                     background: currentPage === page ? accentGradient : 'rgba(12, 31, 54, 0.6)',

@@ -1,6 +1,7 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
 import { Heart, Mail, Phone, MapPin } from 'lucide-react'
+import { backgroundGradient } from '../constants/designSystem'
 
 interface FooterProps {
   marginLeft?: string
@@ -10,8 +11,8 @@ interface FooterProps {
 const Footer: React.FC<FooterProps> = ({ marginLeft, width }) => {
   return (
     <footer
-      className="bg-gray-900 text-white overflow-x-hidden transition-all duration-300"
-      style={{ marginLeft, width }}
+      className="text-white overflow-x-hidden transition-all duration-300"
+      style={{ marginLeft, width, background: backgroundGradient }}
     >
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 w-full max-w-full overflow-x-hidden">
         <div className="flex flex-col md:flex-row justify-between items-center">

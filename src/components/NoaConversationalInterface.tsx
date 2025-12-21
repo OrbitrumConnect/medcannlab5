@@ -1690,7 +1690,7 @@ const NoaConversationalInterface: React.FC<NoaConversationalInterfaceProps> = ({
           data-position={position}
           className={clsx(
             position === 'inline'
-              ? 'relative w-full h-full flex flex-col bg-slate-900'
+              ? 'relative w-full h-[100%] max-h-none flex flex-col bg-slate-900 border-none'
               : 'fixed z-[9999] bg-slate-900/95 border border-slate-700 rounded-2xl sm:rounded-3xl shadow-2xl backdrop-blur-xl flex flex-col transition-all duration-300',
             position !== 'inline' && (
               isExpanded
@@ -1710,7 +1710,7 @@ const NoaConversationalInterface: React.FC<NoaConversationalInterfaceProps> = ({
             display: 'flex',
             flexDirection: 'column',
             height: '100%',
-            maxHeight: '100vh'
+            maxHeight: '100%'
           }}
         >
           <div className="bg-gradient-to-r from-emerald-600 via-emerald-500 to-sky-500 px-5 py-2 sm:py-3 flex items-center justify-between flex-shrink-0">
@@ -1828,7 +1828,7 @@ const NoaConversationalInterface: React.FC<NoaConversationalInterfaceProps> = ({
               flex: '1 1 auto',
               overflowY: 'auto',
               minHeight: 0, // Permitir que o flex funcione corretamente
-              maxHeight: 'none' // Remover limite de altura que pode estar cortando
+              maxHeight: '100%' // Remover limite de altura que pode estar cortando
             }}
           >
             {/* Mensagem inicial da Nôa quando não há histórico */}

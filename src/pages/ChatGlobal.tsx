@@ -11,13 +11,13 @@ declare global {
     offlineChannel?: BroadcastChannel
   }
 }
-import { 
-  Send, 
-  Mic, 
-  MicOff, 
-  Video, 
-  VideoOff, 
-  Phone, 
+import {
+  Send,
+  Mic,
+  MicOff,
+  Video,
+  VideoOff,
+  Phone,
   MoreVertical,
   Smile,
   Paperclip,
@@ -157,69 +157,9 @@ const BASE_CHANNELS: ChannelPermissionConfig[] = [
   }
 ]
 
-const BASE_DEBATES: DebateConfig[] = [
-  {
-    id: 1,
-    title: 'CBD vs THC: Qual é mais eficaz para dor crônica?',
-    author: 'Dr. João Silva',
-    authorAvatar: 'JS',
-    category: 'Cannabis Medicinal',
-    participants: 24,
-    views: 156,
-    replies: 18,
-    votes: { up: 15, down: 3 },
-    tags: ['CBD', 'THC', 'Dor Crônica', 'Cannabis'],
-    lastActivity: '2 horas atrás',
-    isPinned: true,
-    isHot: true,
-    isActive: true,
-    isPasswordProtected: false,
-    description:
-      'Discussão sobre a eficácia comparativa entre CBD e THC no tratamento da dor crônica, baseada em evidências clínicas recentes.',
-    allowedRoles: ['admin', 'profissional', 'aluno'],
-    postRoles: ['admin', 'profissional']
-  },
-  {
-    id: 2,
-    title: 'Protocolo de dosagem para pacientes idosos com cannabis',
-    author: 'Dra. Maria Santos',
-    authorAvatar: 'MS',
-    category: 'Protocolos',
-    participants: 18,
-    views: 89,
-    replies: 12,
-    votes: { up: 22, down: 1 },
-    tags: ['Dosagem', 'Idosos', 'Protocolo', 'Segurança'],
-    lastActivity: '4 horas atrás',
-    isPinned: false,
-    isHot: false,
-    isActive: false,
-    isPasswordProtected: true,
-    description: 'Compartilhamento de protocolos seguros para dosagem de cannabis em pacientes da terceira idade.',
-    allowedRoles: ['admin', 'profissional'],
-    postRoles: ['admin', 'profissional']
-  },
-  {
-    id: 3,
-    title: 'Interações medicamentosas com cannabis: Casos reais',
-    author: 'Dr. Pedro Costa',
-    authorAvatar: 'PC',
-    category: 'Farmacologia',
-    participants: 31,
-    views: 203,
-    replies: 25,
-    votes: { up: 28, down: 2 },
-    tags: ['Interações', 'Farmacologia', 'Casos Reais', 'Segurança'],
-    lastActivity: '1 hora atrás',
-    isPinned: false,
-    isHot: true,
-    isActive: true,
-    isPasswordProtected: false,
-    description: 'Análise de casos reais de interações medicamentosas com cannabis e estratégias de prevenção.',
-    allowedRoles: ['admin', 'profissional', 'aluno'],
-    postRoles: ['admin', 'profissional']
-  }
-]
+// BASE_DEBATES removido - agora carregado do banco via loadDebates()
+// Debates ficam vazios até serem carregados de forum_posts
+const BASE_DEBATES: DebateConfig[] = []
 
 const ChatGlobal: React.FC = () => {
   const { user } = useAuth()
@@ -441,7 +381,7 @@ const ChatGlobal: React.FC = () => {
   const loadDebates = async () => {
     try {
       setLoadingDebates(true)
-      
+
       // Buscar debates do banco
       const { data: forumPosts, error } = await supabase
         .from('forum_posts')
@@ -486,7 +426,7 @@ const ChatGlobal: React.FC = () => {
             allowedRoles: post.allowed_roles || [],
             postRoles: post.post_roles || []
           }))
-        
+
         setDebates(debatesFromDb)
       } else {
         // Se não houver posts no banco, usar fallback
@@ -558,7 +498,7 @@ const ChatGlobal: React.FC = () => {
       const channelData = channels.map(channel => {
         const channelMessages = data?.filter(msg => msg.channel === channel.id) || []
         const uniqueUsers = new Set(channelMessages.map(msg => msg.user_id))
-        const recentMessages = channelMessages.filter(msg => 
+        const recentMessages = channelMessages.filter(msg =>
           new Date(msg.created_at) > new Date(Date.now() - 60 * 60 * 1000) // Última hora
         )
 
@@ -578,19 +518,54 @@ const ChatGlobal: React.FC = () => {
     }
   }
 
-  // Carregar usuários online
+  // Carregar usuários online (CORRIGIDO - buscar apenas profissionais)
   const loadOnlineUsers = async () => {
     try {
       const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString()
+
+      // NOVA QUERY: Buscar profissionais ativos (que enviaram mensagens recentemente)
       const { data, error } = await supabase
         .from('chat_messages')
-        .select('user_id, user_name, user_avatar, crm, specialty, is_online, created_at')
+        .select(`
+          user_id, 
+          user_name, 
+          user_avatar, 
+          crm, 
+          specialty, 
+          is_online, 
+          created_at,
+          profiles!inner(user_type)
+        `)
         .gte('created_at', fiveMinutesAgo)
+        .eq('profiles.user_type', 'profissional')  // ✅ FILTRO para profissionais!
         .order('created_at', { ascending: false })
 
       if (error) {
-        console.warn('Erro ao carregar usuários online (fallback para modo offline):', error)
-        loadOnlineUsersOffline()
+        console.warn('Erro ao carregar profissionais online, tentando fallback:', error)
+        // Fallback: buscar direto de profiles
+        const { data: profilesData, error: profilesError } = await supabase
+          .from('profiles')
+          .select('id, name, crm, specialty, user_type')
+          .eq('user_type', 'profissional')
+          .limit(20)
+
+        if (profilesError) {
+          console.warn('Erro ao carregar de profiles também:', profilesError)
+          loadOnlineUsersOffline()
+          return
+        }
+
+        // Converter formato de profiles para formato de onlineUsers
+        const formattedUsers = (profilesData || []).map(prof => ({
+          id: prof.id,
+          name: prof.name,
+          avatar: prof.name?.substring(0, 1).toUpperCase() || 'P',
+          crm: prof.crm || '',
+          specialty: prof.specialty || '',
+          status: 'online'
+        }))
+
+        setOnlineUsers(formattedUsers)
         return
       }
 
@@ -610,49 +585,49 @@ const ChatGlobal: React.FC = () => {
           return acc
         }, [] as any[])
 
-      if (user && !uniqueUsers.find(u => u.id === user.id)) {
+      // Adicionar usuário atual se for profissional
+      if (user && user.type === 'profissional' && !uniqueUsers.find(u => u.id === user.id)) {
         uniqueUsers.unshift({
           id: user.id,
           name: user.name || 'Usuário',
-          avatar: 'U',
+          avatar: user.name?.substring(0, 1).toUpperCase() || 'U',
           crm: user.crm || '',
-          specialty: '',
+          specialty: user.specialty || '',
           status: 'online'
         })
       }
 
+      console.log('✅ Profissionais online carregados:', uniqueUsers.length)
       setOnlineUsers(uniqueUsers)
     } catch (error) {
-      console.error('Erro ao carregar usuários online (fallback para offline):', error)
+      console.error('Erro ao carregar profissionais online (fallback para offline):', error)
       loadOnlineUsersOffline()
     }
   }
 
+
   // Carregar mensagens do canal ativo
   useEffect(() => {
     console.log('🔄 useEffect executando - carregando dados do chat - activeChannel:', activeChannel)
-    
-    // Tentar carregar dados reais do banco primeiro
+
+    // Tentar carregar do banco primeiro, com fallback para modo offline
     const loadData = async () => {
       try {
-        // Tentar carregar mensagens do banco
+        // Tentar carregar do banco (room_id mapeado pelo nome do canal)
         await loadMessages()
-        // Tentar carregar dados dos canais
-        await loadChannelsData()
-        // Tentar carregar usuários online
-        await loadOnlineUsers()
-        // Configurar tempo real
+        // Se funcionar, configurar realtime do banco
         setupRealtimeSubscription()
+        loadChannelsData()
+        loadOnlineUsers()
       } catch (error) {
-        console.warn('Erro ao carregar dados do banco, usando modo offline:', error)
-        // Fallback para modo offline
+        console.warn('Usando modo offline:', error)
         loadMessagesOffline()
         setupOfflineRealtime()
         loadChannelsDataOffline()
         loadOnlineUsersOffline()
       }
     }
-    
+
     loadData()
   }, [activeChannel]) // Mantém apenas activeChannel como dependência
 
@@ -753,7 +728,7 @@ const ChatGlobal: React.FC = () => {
       try {
         const twentyFourHoursAgo = new Date()
         twentyFourHoursAgo.setHours(twentyFourHoursAgo.getHours() - 24)
-        
+
         // Deletar mensagens antigas
         const { error } = await supabase
           .from('chat_messages')
@@ -772,7 +747,7 @@ const ChatGlobal: React.FC = () => {
 
     // Executar limpeza a cada hora
     const cleanupInterval = setInterval(cleanupOldMessages, 60 * 60 * 1000)
-    
+
     // Executar limpeza imediatamente
     cleanupOldMessages()
 
@@ -781,27 +756,62 @@ const ChatGlobal: React.FC = () => {
 
   const loadMessages = async () => {
     try {
-      // Carregar apenas mensagens das últimas 24 horas
+      // Buscar ou criar uma room para o canal ativo
+      const channelName = activeChannel || 'general'
+
+      // Primeiro, tentar encontrar uma room existente com este nome
+      let { data: existingRoom } = await supabase
+        .from('chat_rooms')
+        .select('id')
+        .eq('name', `Chat: ${channelName}`)
+        .maybeSingle()
+
+      // Se não existe, criar a room
+      if (!existingRoom && user) {
+        const { data: newRoom, error: createError } = await supabase
+          .from('chat_rooms')
+          .insert({
+            name: `Chat: ${channelName}`,
+            type: 'professional',
+            created_by: user.id
+          })
+          .select('id')
+          .single()
+
+        if (!createError && newRoom) {
+          existingRoom = newRoom
+        }
+      }
+
+      if (!existingRoom) {
+        console.warn('Não foi possível obter room, usando modo offline')
+        loadMessagesOffline()
+        return
+      }
+
+      // Carregar mensagens da room das últimas 24 horas
       const twentyFourHoursAgo = new Date()
       twentyFourHoursAgo.setHours(twentyFourHoursAgo.getHours() - 24)
-      
+
       const { data, error } = await supabase
         .from('chat_messages')
         .select('*')
-        .eq('channel', activeChannel)
+        .eq('room_id', existingRoom.id)
         .gte('created_at', twentyFourHoursAgo.toISOString())
         .order('created_at', { ascending: true })
         .limit(100)
 
       if (error) {
         console.error('Erro ao carregar mensagens:', error)
+        loadMessagesOffline()
         return
       }
 
       setMessages(data || [])
       scrollToBottom()
     } catch (error) {
-      console.error('Erro ao carregar mensagens:', error)
+      console.error('Erro ao carregar mensagens (fallback offline):', error)
+      loadMessagesOffline()
     }
   }
 
@@ -811,10 +821,10 @@ const ChatGlobal: React.FC = () => {
     try {
       const storedMessages = localStorage.getItem(`chat_messages_${activeChannel}`)
       const messages = storedMessages ? JSON.parse(storedMessages) : []
-      
+
       console.log('📨 Mensagens offline encontradas:', messages.length)
       console.log('📨 Dados das mensagens:', messages)
-      
+
       setMessages(messages)
       scrollToBottom()
     } catch (error) {
@@ -828,16 +838,16 @@ const ChatGlobal: React.FC = () => {
     try {
       const storedMessages = localStorage.getItem(`chat_messages_${activeChannel}`)
       const messages = storedMessages ? JSON.parse(storedMessages) : []
-      
+
       const newMessage = {
         ...message,
         id: Date.now().toString(),
         created_at: new Date().toISOString()
       }
-      
+
       messages.push(newMessage)
       localStorage.setItem(`chat_messages_${activeChannel}`, JSON.stringify(messages))
-      
+
       console.log('💾 Mensagem salva offline:', newMessage)
       return newMessage
     } catch (error) {
@@ -849,15 +859,15 @@ const ChatGlobal: React.FC = () => {
   // Chat offline - tempo real com BroadcastChannel
   const setupOfflineRealtime = () => {
     console.log('🔄 Configurando tempo real offline')
-    
+
     // Evitar re-criação se já existe
     if (window.offlineChannel) {
       return
     }
-    
+
     // Criar novo canal
     window.offlineChannel = new BroadcastChannel('medcannlab-chat')
-    
+
     window.offlineChannel.onmessage = (event) => {
       if (event.data.type === 'new_message' && event.data.channel === activeChannel) {
         console.log('📨 Nova mensagem recebida via BroadcastChannel:', event.data.message)
@@ -874,7 +884,7 @@ const ChatGlobal: React.FC = () => {
       const channelsData = channels.map(channel => {
         const storedMessages = localStorage.getItem(`chat_messages_${channel.id}`)
         const messages = storedMessages ? JSON.parse(storedMessages) : []
-        
+
         return {
           ...channel,
           members: messages.length > 0 ? new Set(messages.map((m: any) => m.user_id)).size : 0,
@@ -882,7 +892,7 @@ const ChatGlobal: React.FC = () => {
           messageCount: messages.length || 0 // Contagem de mensagens offline
         }
       })
-      
+
       setChannels(channelsData)
     } catch (error) {
       console.error('Erro ao carregar dados dos canais offline:', error)
@@ -903,7 +913,7 @@ const ChatGlobal: React.FC = () => {
           status: 'online'
         }
       ]
-      
+
       setOnlineUsers(onlineUsers)
     } catch (error) {
       console.error('Erro ao carregar usuários online offline:', error)
@@ -956,7 +966,7 @@ const ChatGlobal: React.FC = () => {
     setIsSending(true)
     const messageContent = message.trim()
     setMessage('') // Limpar campo imediatamente para melhor UX
-    
+
     try {
       // Tentar salvar no banco primeiro
       const messageData = {
@@ -1002,12 +1012,12 @@ const ChatGlobal: React.FC = () => {
 
       // Fallback: salvar offline
       const savedMessage = saveMessageOffline(messageData)
-      
+
       if (savedMessage) {
         console.log('✅ Mensagem salva offline!')
         // Adicionar mensagem à lista atual
         setMessages(prev => [...prev, savedMessage])
-        
+
         // Enviar via BroadcastChannel para outras abas
         if (window.offlineChannel) {
           window.offlineChannel.postMessage({
@@ -1016,11 +1026,11 @@ const ChatGlobal: React.FC = () => {
             message: savedMessage
           })
         }
-        
+
         // Atualizar dados dos canais
         loadChannelsDataOffline()
         loadOnlineUsersOffline()
-        
+
         scrollToBottom()
       } else {
         console.error('❌ Erro ao salvar mensagem offline')
@@ -1056,7 +1066,7 @@ const ChatGlobal: React.FC = () => {
   // Funções de moderação para admins
   const handleDeleteMessage = async (messageId: number) => {
     if (!isAdmin) return
-    
+
     try {
       const { error } = await supabase
         .from('chat_messages')
@@ -1076,7 +1086,7 @@ const ChatGlobal: React.FC = () => {
 
   const handlePinMessage = async (messageId: number) => {
     if (!isAdmin) return
-    
+
     try {
       const { error } = await supabase
         .from('chat_messages')
@@ -1096,7 +1106,7 @@ const ChatGlobal: React.FC = () => {
 
   const handleMuteUser = async (userId: string) => {
     if (!isAdmin) return
-    
+
     try {
       const { error } = await supabase
         .from('user_mutes')
@@ -1195,14 +1205,14 @@ const ChatGlobal: React.FC = () => {
         .replace(/-+/g, '-')
 
       // Definir permissões padrão baseado no tipo de usuário
-      const defaultAllowedRoles: UserType[] = userType === 'admin' 
-        ? ['admin', 'profissional', 'aluno'] 
-        : userType === 'profissional' 
+      const defaultAllowedRoles: UserType[] = userType === 'admin'
         ? ['admin', 'profissional', 'aluno']
-        : ['admin', 'profissional']
-      
-      const defaultPostRoles: UserType[] = userType === 'admin' 
-        ? ['admin', 'profissional'] 
+        : userType === 'profissional'
+          ? ['admin', 'profissional', 'aluno']
+          : ['admin', 'profissional']
+
+      const defaultPostRoles: UserType[] = userType === 'admin'
+        ? ['admin', 'profissional']
         : ['admin', 'profissional']
 
       const { data, error } = await supabase
@@ -1245,10 +1255,10 @@ const ChatGlobal: React.FC = () => {
       })
       setNewTag('')
       setShowNewPostModal(false)
-      
+
       // Recarregar debates
       await loadDebates()
-      
+
       alert('Discussão criada com sucesso!')
     } catch (error) {
       console.error('Erro ao criar postagem:', error)
@@ -1320,11 +1330,10 @@ const ChatGlobal: React.FC = () => {
             <div className="mt-4 flex justify-center space-x-4">
               <button
                 onClick={() => setShowModeration(!showModeration)}
-                className={`px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors ${
-                  showModeration 
-                    ? 'bg-red-700 text-white' 
-                    : 'bg-red-600 hover:bg-red-700 text-white'
-                }`}
+                className={`px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors ${showModeration
+                  ? 'bg-red-700 text-white'
+                  : 'bg-red-600 hover:bg-red-700 text-white'
+                  }`}
               >
                 <Flag className="w-4 h-4" />
                 <span>{showModeration ? 'Ocultar Moderação' : 'Painel de Moderação'}</span>
@@ -1423,9 +1432,8 @@ const ChatGlobal: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setShowGuidelines(prev => !prev)}
-                className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors border border-slate-700/60 ${
-                  showGuidelines ? 'bg-slate-800/80 text-white' : 'bg-slate-900/40 text-slate-200 hover:text-white'
-                }`}
+                className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors border border-slate-700/60 ${showGuidelines ? 'bg-slate-800/80 text-white' : 'bg-slate-900/40 text-slate-200 hover:text-white'
+                  }`}
                 aria-expanded={showGuidelines}
               >
                 {showGuidelines ? 'Ocultar orientações' : 'Ver orientações'}
@@ -1433,9 +1441,8 @@ const ChatGlobal: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setShowCommunityColumn(prev => !prev)}
-                className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors border border-slate-700/60 ${
-                  showCommunityColumn ? 'bg-slate-900/40 text-slate-200 hover:text-white' : 'bg-primary-600 text-white'
-                }`}
+                className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors border border-slate-700/60 ${showCommunityColumn ? 'bg-slate-900/40 text-slate-200 hover:text-white' : 'bg-primary-600 text-white'
+                  }`}
                 aria-pressed={showCommunityColumn}
               >
                 {showCommunityColumn ? 'Ocultar painel lateral' : 'Mostrar painel lateral'}
@@ -1657,7 +1664,7 @@ const ChatGlobal: React.FC = () => {
                     💬 Conversas expiram em 24 horas para manter o chat limpo e focado
                   </p>
                 </div>
-                
+
                 {messages.map((msg) => (
                   <div key={msg.id} className="flex space-x-3">
                     <div className="relative">
@@ -1726,11 +1733,10 @@ const ChatGlobal: React.FC = () => {
                   </button>
                   <button
                     onClick={isRecording ? () => setIsRecording(false) : startRecording}
-                    className={`p-1.5 md:p-2 transition-colors ${
-                      isRecording 
-                        ? 'text-red-400 hover:text-red-300' 
-                        : 'text-slate-400 hover:text-red-400'
-                    }`}
+                    className={`p-1.5 md:p-2 transition-colors ${isRecording
+                      ? 'text-red-400 hover:text-red-300'
+                      : 'text-slate-400 hover:text-red-400'
+                      }`}
                   >
                     {isRecording ? <MicOff className="w-4 h-4 md:w-5 md:h-5" /> : <Mic className="w-4 h-4 md:w-5 md:h-5" />}
                   </button>
@@ -1774,11 +1780,10 @@ const ChatGlobal: React.FC = () => {
                       key={tab.id}
                       type="button"
                       onClick={() => setActiveCommunityPanel(tab.id)}
-                      className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors border border-slate-700/60 ${
-                        activeCommunityPanel === tab.id
-                          ? 'bg-primary-600 text-white'
-                          : 'bg-slate-900/40 text-slate-300 hover:text-white'
-                      }`}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors border border-slate-700/60 ${activeCommunityPanel === tab.id
+                        ? 'bg-primary-600 text-white'
+                        : 'bg-slate-900/40 text-slate-300 hover:text-white'
+                        }`}
                       aria-pressed={activeCommunityPanel === tab.id}
                     >
                       {tab.label}
@@ -1792,12 +1797,12 @@ const ChatGlobal: React.FC = () => {
             </div>
           )}
 
-          {/* Painel de Moderação Integrado (apenas para admins) */}
-          {showModeration && isAdmin && (
+          {/* Painel de Moderação Integrado (apenas para admins e Eduardo Faveret) */}
+          {showModeration && (isAdmin || user?.email?.includes('faveret')) && (
             <div className="lg:col-span-1">
               <div className="bg-slate-800/80 rounded-lg p-6 border border-slate-700 h-[600px] overflow-y-auto">
                 <h3 className="text-lg font-semibold text-white mb-4">🛡️ Moderação</h3>
-                
+
                 {/* Solicitações Pendentes */}
                 <div className="mb-6">
                   <h4 className="text-sm font-semibold text-slate-300 mb-3">
@@ -1902,7 +1907,7 @@ const ChatGlobal: React.FC = () => {
                   className="w-full pl-10 pr-4 py-3 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary-500"
                 />
               </div>
-              <button 
+              <button
                 onClick={() => setShowNewPostModal(true)}
                 className="px-4 py-3 bg-primary-600 hover:bg-primary-700 text-white rounded-lg transition-colors flex items-center space-x-2"
               >
@@ -1920,7 +1925,7 @@ const ChatGlobal: React.FC = () => {
             <div className="bg-slate-800/80 border border-blue-500/30 rounded-lg p-5 space-y-3">
               <div>
                 <p className="text-xs text-blue-300 uppercase tracking-[0.32em]">Tema central</p>
-                <h3 
+                <h3
                   onClick={() => {
                     setSearchTerm(preselectedForumTopic)
                     // Scroll para as discussões
@@ -1981,110 +1986,109 @@ const ChatGlobal: React.FC = () => {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
             {/* Debates List */}
             <div className="lg:col-span-2 space-y-4">
-            {filteredDebates.length > 0 ? (
-              filteredDebates.map((debate) => {
-                const canPostInDebate = debate.postRoles.includes(userType)
-                return (
-                  <div key={debate.id} className="bg-slate-800/80 rounded-lg p-6 border border-slate-700 hover:bg-slate-800/90 transition-colors">
-                    <div className="flex items-start justify-between mb-4">
-                      <div 
-                        className="flex-1 cursor-pointer"
-                        onClick={() => handleOpenDebate(debate.id)}
-                        title="Clique para ver as discussões deste debate"
-                      >
-                        <div className="flex items-center space-x-3 mb-2">
-                          <h3 className="text-lg font-semibold text-white hover:text-blue-300 transition-colors">{debate.title}</h3>
-                          {debate.isPinned && <Pin className="w-5 h-5 text-yellow-400" />}
-                          {debate.isHot && <TrendingUp className="w-5 h-5 text-red-400" />}
-                          {debate.isActive && (
-                            <div className="flex items-center space-x-1">
-                              <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                              <span className="text-green-400 text-sm font-medium">ONLINE</span>
-                            </div>
-                          )}
-                          {debate.isPasswordProtected && (
-                            <div className="flex items-center space-x-1">
-                              <Lock className="w-4 h-4 text-primary-400" />
-                              <span className="text-primary-400 text-sm">Protegido</span>
-                            </div>
-                          )}
-                        </div>
-                        <p className="text-slate-300 text-sm mb-3 hover:text-slate-200 transition-colors">{debate.description}</p>
-                        <div className="flex flex-wrap gap-2 mb-3">
-                          {debate.tags.map((tag, index) => (
-                            <span key={index} className="px-2 py-1 bg-primary-500/20 text-primary-400 text-xs rounded-full">
-                              {tag}
-                            </span>
-                          ))}
-                        </div>
-                        <div className="flex items-center space-x-4 text-sm text-slate-400">
-                          <div className="flex items-center space-x-1">
-                            <div className="w-6 h-6 bg-gradient-to-br from-primary-500 to-purple-600 rounded-full flex items-center justify-center">
-                              <span className="text-white font-bold text-xs">{debate.authorAvatar}</span>
-                            </div>
-                            <span>{debate.author}</span>
+              {filteredDebates.length > 0 ? (
+                filteredDebates.map((debate) => {
+                  const canPostInDebate = debate.postRoles.includes(userType)
+                  return (
+                    <div key={debate.id} className="bg-slate-800/80 rounded-lg p-6 border border-slate-700 hover:bg-slate-800/90 transition-colors">
+                      <div className="flex items-start justify-between mb-4">
+                        <div
+                          className="flex-1 cursor-pointer"
+                          onClick={() => handleOpenDebate(debate.id)}
+                          title="Clique para ver as discussões deste debate"
+                        >
+                          <div className="flex items-center space-x-3 mb-2">
+                            <h3 className="text-lg font-semibold text-white hover:text-blue-300 transition-colors">{debate.title}</h3>
+                            {debate.isPinned && <Pin className="w-5 h-5 text-yellow-400" />}
+                            {debate.isHot && <TrendingUp className="w-5 h-5 text-red-400" />}
+                            {debate.isActive && (
+                              <div className="flex items-center space-x-1">
+                                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                                <span className="text-green-400 text-sm font-medium">ONLINE</span>
+                              </div>
+                            )}
+                            {debate.isPasswordProtected && (
+                              <div className="flex items-center space-x-1">
+                                <Lock className="w-4 h-4 text-primary-400" />
+                                <span className="text-primary-400 text-sm">Protegido</span>
+                              </div>
+                            )}
                           </div>
-                          <span>•</span>
-                          <span>{debate.category}</span>
-                          <span>•</span>
-                          <span>{debate.participants} participantes</span>
-                          <span>•</span>
-                          <span>{debate.views} visualizações</span>
-                          <span>•</span>
-                          <span>{debate.lastActivity}</span>
-                          {!canPostInDebate && (
-                            <>
-                              <span>•</span>
-                              <span className="text-slate-500 italic">Somente leitura para o seu perfil</span>
-                            </>
-                          )}
+                          <p className="text-slate-300 text-sm mb-3 hover:text-slate-200 transition-colors">{debate.description}</p>
+                          <div className="flex flex-wrap gap-2 mb-3">
+                            {debate.tags.map((tag, index) => (
+                              <span key={index} className="px-2 py-1 bg-primary-500/20 text-primary-400 text-xs rounded-full">
+                                {tag}
+                              </span>
+                            ))}
+                          </div>
+                          <div className="flex items-center space-x-4 text-sm text-slate-400">
+                            <div className="flex items-center space-x-1">
+                              <div className="w-6 h-6 bg-gradient-to-br from-primary-500 to-purple-600 rounded-full flex items-center justify-center">
+                                <span className="text-white font-bold text-xs">{debate.authorAvatar}</span>
+                              </div>
+                              <span>{debate.author}</span>
+                            </div>
+                            <span>•</span>
+                            <span>{debate.category}</span>
+                            <span>•</span>
+                            <span>{debate.participants} participantes</span>
+                            <span>•</span>
+                            <span>{debate.views} visualizações</span>
+                            <span>•</span>
+                            <span>{debate.lastActivity}</span>
+                            {!canPostInDebate && (
+                              <>
+                                <span>•</span>
+                                <span className="text-slate-500 italic">Somente leitura para o seu perfil</span>
+                              </>
+                            )}
+                          </div>
                         </div>
-                      </div>
-                      <div className="flex flex-col items-end space-y-2">
-                        <div className={`flex items-center space-x-1 ${getVoteColor(debate.votes)}`}>
-                          <ThumbsUp className="w-4 h-4" />
-                          <span className="text-sm font-medium">{debate.votes.up}</span>
-                          <ThumbsDown className="w-4 h-4" />
-                          <span className="text-sm font-medium">{debate.votes.down}</span>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <button 
-                            onClick={() => handleOpenDebate(debate.id)}
-                            disabled={!canPostInDebate}
-                            className={`px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors ${
-                              canPostInDebate
+                        <div className="flex flex-col items-end space-y-2">
+                          <div className={`flex items-center space-x-1 ${getVoteColor(debate.votes)}`}>
+                            <ThumbsUp className="w-4 h-4" />
+                            <span className="text-sm font-medium">{debate.votes.up}</span>
+                            <ThumbsDown className="w-4 h-4" />
+                            <span className="text-sm font-medium">{debate.votes.down}</span>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <button
+                              onClick={() => handleOpenDebate(debate.id)}
+                              disabled={!canPostInDebate}
+                              className={`px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors ${canPostInDebate
                                 ? 'bg-primary-600 hover:bg-primary-700 text-white'
                                 : 'bg-slate-700 text-slate-300 cursor-not-allowed'
-                            }`}
-                          >
-                            <MessageSquare className="w-4 h-4" />
-                            <span>{canPostInDebate ? 'Participar' : 'Somente leitura'}</span>
-                          </button>
-                          <button className="p-2 text-slate-400 hover:text-primary-400 transition-colors">
-                            <Eye className="w-4 h-4" />
-                          </button>
-                          <button className="p-2 text-slate-400 hover:text-green-400 transition-colors">
-                            <Reply className="w-4 h-4" />
-                          </button>
-                          <button className="p-2 text-slate-400 hover:text-purple-400 transition-colors">
-                            <Share2 className="w-4 h-4" />
-                          </button>
-                          <button className="p-2 text-slate-400 hover:text-red-400 transition-colors">
-                            <Flag className="w-4 h-4" />
-                          </button>
+                                }`}
+                            >
+                              <MessageSquare className="w-4 h-4" />
+                              <span>{canPostInDebate ? 'Participar' : 'Somente leitura'}</span>
+                            </button>
+                            <button className="p-2 text-slate-400 hover:text-primary-400 transition-colors">
+                              <Eye className="w-4 h-4" />
+                            </button>
+                            <button className="p-2 text-slate-400 hover:text-green-400 transition-colors">
+                              <Reply className="w-4 h-4" />
+                            </button>
+                            <button className="p-2 text-slate-400 hover:text-purple-400 transition-colors">
+                              <Share2 className="w-4 h-4" />
+                            </button>
+                            <button className="p-2 text-slate-400 hover:text-red-400 transition-colors">
+                              <Flag className="w-4 h-4" />
+                            </button>
+                          </div>
                         </div>
                       </div>
                     </div>
-                  </div>
-                )
-              })
-            ) : (
-              <div className="bg-slate-800/80 rounded-lg p-6 border border-slate-700 text-slate-300 text-sm">
-                {debatesForUser.length === 0
-                  ? 'O seu perfil participa do fórum por meio de canais mediados. Converse com a coordenação para ser convidado a debates especializados.'
-                  : 'Nenhum debate encontrado para a sua busca. Ajuste os filtros ou tente outra palavra-chave.'}
-              </div>
-            )}
+                  )
+                })
+              ) : (
+                <div className="bg-slate-800/80 rounded-lg p-6 border border-slate-700 text-slate-300 text-sm">
+                  {debatesForUser.length === 0
+                    ? 'O seu perfil participa do fórum por meio de canais mediados. Converse com a coordenação para ser convidado a debates especializados.'
+                    : 'Nenhum debate encontrado para a sua busca. Ajuste os filtros ou tente outra palavra-chave.'}
+                </div>
+              )}
             </div>
 
             {/* Coluna de Notícias, Parcerias, Patrocinadores e Apoiadores */}
@@ -2501,11 +2505,11 @@ const ChatGlobal: React.FC = () => {
         </div>
       )}
 
-      {/* Painel de Moderação (apenas para admins) */}
-      {showModeration && isAdmin && (
+      {/* Painel de Moderação (apenas para admins e Eduardo Faveret) */}
+      {showModeration && (isAdmin || user?.email?.includes('faveret')) && (
         <div className="bg-slate-800/80 rounded-lg p-6 border border-slate-700">
           <h3 className="text-xl font-bold text-white mb-6">🛡️ Painel de Moderação</h3>
-          
+
           {/* Solicitações Pendentes */}
           <div className="mb-6">
             <h4 className="text-lg font-semibold text-white mb-4">

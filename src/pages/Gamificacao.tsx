@@ -1,9 +1,10 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useAuth } from '../contexts/AuthContext'
-import { 
-  Award, 
-  Star, 
-  Zap, 
+import { supabase } from '../lib/supabase'
+import {
+  Award,
+  Star,
+  Zap,
   TrendingUp,
   Users,
   CheckCircle,
@@ -54,9 +55,68 @@ interface DailyGoal {
   category: 'learning' | 'clinical' | 'social'
 }
 
+interface LeaderboardUser {
+  rank: number
+  name: string
+  points: number
+  level: number
+  nfts: number
+}
+
 const Gamificacao: React.FC = () => {
   const { user } = useAuth()
   const [activeTab, setActiveTab] = useState('overview')
+  const [leaderboard, setLeaderboard] = useState<LeaderboardUser[]>([])
+  const [isLoadingLeaderboard, setIsLoadingLeaderboard] = useState(true)
+
+  // Carregar leaderboard do Supabase
+  useEffect(() => {
+    const loadLeaderboard = async () => {
+      setIsLoadingLeaderboard(true)
+      try {
+        // Buscar estatísticas de usuários ordenadas por pontos
+        const { data: statsData, error: statsError } = await supabase
+          .from('user_statistics')
+          .select('user_id, experience_points, level')
+          .order('experience_points', { ascending: false })
+          .limit(10)
+
+        if (statsError || !statsData || statsData.length === 0) {
+          console.warn('Nenhuma estatística encontrada, usando estado vazio')
+          setLeaderboard([])
+          setIsLoadingLeaderboard(false)
+          return
+        }
+
+        // Buscar nomes dos usuários
+        const userIds = statsData.map(s => s.user_id)
+        const { data: usersData } = await supabase
+          .from('users')
+          .select('id, name')
+          .in('id', userIds)
+
+        // Montar leaderboard
+        const board: LeaderboardUser[] = statsData.map((stat, index) => {
+          const userData = usersData?.find(u => u.id === stat.user_id)
+          return {
+            rank: index + 1,
+            name: userData?.name || 'Usuário',
+            points: stat.experience_points || 0,
+            level: stat.level || 1,
+            nfts: 0 // Por enquanto sem NFTs no banco
+          }
+        })
+
+        setLeaderboard(board)
+      } catch (err) {
+        console.error('Erro ao carregar leaderboard:', err)
+        setLeaderboard([])
+      } finally {
+        setIsLoadingLeaderboard(false)
+      }
+    }
+    loadLeaderboard()
+  }, [])
 
   const tabs = [
     { id: 'overview', name: 'Visão Geral', icon: <BarChart3 className="w-4 h-4" /> },
@@ -218,13 +278,7 @@ const Gamificacao: React.FC = () => {
     }
   ]
 
-  const leaderboard = [
-    { rank: 1, name: 'Dr. Maria Santos', points: 25420, level: 18, nfts: 12 },
-    { rank: 2, name: 'Dr. Carlos Oliveira', points: 23890, level: 17, nfts: 10 },
-    { rank: 3, name: 'Dra. Ana Costa', points: 22150, level: 16, nfts: 9 },
-    { rank: 4, name: 'Dr. Pedro Lima', points: 19800, level: 15, nfts: 8 },
-    { rank: 5, name: 'Dr. João Silva', points: 18750, level: 14, nfts: 7 }
-  ]
+  // Leaderboard agora vem do useEffect (user_statistics)
 
   const getRarityColor = (rarity: string) => {
     switch (rarity) {
@@ -292,11 +346,10 @@ const Gamificacao: React.FC = () => {
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`flex items-center space-x-2 py-2 px-1 border-b-2 font-medium text-sm transition-colors duration-200 ${
-                    activeTab === tab.id
-                      ? 'border-primary-500 text-primary-600 dark:text-primary-400'
-                      : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600'
-                  }`}
+                  className={`flex items-center space-x-2 py-2 px-1 border-b-2 font-medium text-sm transition-colors duration-200 ${activeTab === tab.id
+                    ? 'border-primary-500 text-primary-600 dark:text-primary-400'
+                    : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600'
+                    }`}
                 >
                   {tab.icon}
                   <span>{tab.name}</span>
@@ -384,9 +437,8 @@ const Gamificacao: React.FC = () => {
                 {dailyGoals.map((goal) => (
                   <div key={goal.id} className="flex items-center justify-between p-4 bg-slate-100/30 dark:bg-slate-800/50 rounded-lg">
                     <div className="flex items-center space-x-4">
-                      <div className={`p-2 rounded-lg ${
-                        goal.isCompleted ? 'bg-green-100 dark:bg-green-900/20' : 'bg-gray-100 dark:bg-gray-700'
-                      }`}>
+                      <div className={`p-2 rounded-lg ${goal.isCompleted ? 'bg-green-100 dark:bg-green-900/20' : 'bg-gray-100 dark:bg-gray-700'
+                        }`}>
                         {goal.isCompleted ? (
                           <CheckCircle className="w-5 h-5 text-green-600" />
                         ) : (
@@ -539,9 +591,8 @@ const Gamificacao: React.FC = () => {
                 {dailyGoals.map((goal) => (
                   <div key={goal.id} className="flex items-center justify-between p-4 bg-slate-100/30 dark:bg-slate-800/50 rounded-lg">
                     <div className="flex items-center space-x-4">
-                      <div className={`p-2 rounded-lg ${
-                        goal.isCompleted ? 'bg-green-100 dark:bg-green-900/20' : 'bg-gray-100 dark:bg-gray-700'
-                      }`}>
+                      <div className={`p-2 rounded-lg ${goal.isCompleted ? 'bg-green-100 dark:bg-green-900/20' : 'bg-gray-100 dark:bg-gray-700'
+                        }`}>
                         {goal.isCompleted ? (
                           <CheckCircle className="w-5 h-5 text-green-600" />
                         ) : (
@@ -582,31 +633,46 @@ const Gamificacao: React.FC = () => {
                 Ranking da Comunidade
               </h3>
               <div className="space-y-4">
-                {leaderboard.map((user, index) => (
-                  <div key={index} className="flex items-center justify-between p-4 bg-slate-100/30 dark:bg-slate-800/50 rounded-lg">
-                    <div className="flex items-center space-x-4">
-                      <div className="flex items-center justify-center w-8 h-8 rounded-full bg-primary-100 dark:bg-primary-900 text-primary-600 dark:text-primary-400 font-bold">
-                        {user.rank}
-                      </div>
-                      <div>
-                        <h4 className="font-medium text-slate-900 dark:text-white dark:text-slate-900 dark:text-white">
-                          {user.name}
-                        </h4>
-                        <p className="text-sm text-gray-600 dark:text-gray-300">
-                          Nível {user.level} • {user.nfts} NFTs
-                        </p>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <div className="text-lg font-bold text-primary-600">
-                        {user.points.toLocaleString()}
-                      </div>
-                      <div className="text-xs text-gray-500 dark:text-gray-400">
-                        pontos
-                      </div>
-                    </div>
+                {isLoadingLeaderboard ? (
+                  <div className="text-center py-12">
+                    <div className="animate-spin w-10 h-10 border-4 border-emerald-500 border-t-transparent rounded-full mx-auto mb-4"></div>
+                    <p className="text-gray-500">Carregando ranking...</p>
                   </div>
-                ))}
+                ) : leaderboard.length === 0 ? (
+                  <div className="text-center py-12 bg-slate-100/30 dark:bg-slate-800/50 rounded-xl">
+                    <Users className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+                    <h4 className="text-lg text-gray-600 dark:text-gray-300 mb-2">Ranking ainda vazio</h4>
+                    <p className="text-sm text-gray-500 dark:text-gray-400 max-w-md mx-auto">
+                      Seja o primeiro a ganhar pontos participando de atividades na plataforma!
+                    </p>
+                  </div>
+                ) : (
+                  leaderboard.map((user, index) => (
+                    <div key={index} className="flex items-center justify-between p-4 bg-slate-100/30 dark:bg-slate-800/50 rounded-lg">
+                      <div className="flex items-center space-x-4">
+                        <div className="flex items-center justify-center w-8 h-8 rounded-full bg-primary-100 dark:bg-primary-900 text-primary-600 dark:text-primary-400 font-bold">
+                          {user.rank}
+                        </div>
+                        <div>
+                          <h4 className="font-medium text-slate-900 dark:text-white dark:text-slate-900 dark:text-white">
+                            {user.name}
+                          </h4>
+                          <p className="text-sm text-gray-600 dark:text-gray-300">
+                            Nível {user.level} • {user.nfts} NFTs
+                          </p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-lg font-bold text-primary-600">
+                          {user.points.toLocaleString()}
+                        </div>
+                        <div className="text-xs text-gray-500 dark:text-gray-400">
+                          pontos
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                )}
               </div>
             </div>
           </div>

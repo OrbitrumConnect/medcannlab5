@@ -120,10 +120,10 @@ const ProfessionalScheduling: React.FC = () => {
     if (!user) return
 
     try {
-      // Buscar agendamentos do profissional
+      // Buscar agendamentos do profissional (SEM relação FK - não existe no schema)
       const { data: appointmentsData, error: appointmentsError } = await supabase
         .from('appointments')
-        .select('*, patient:patient_id(id, name, email, phone)')
+        .select('*')
         .eq('professional_id', user.id)
         .order('appointment_date', { ascending: true })
 
@@ -1075,23 +1075,20 @@ const ProfessionalScheduling: React.FC = () => {
           </div>
         </div>
 
-        {/* Solicitações Pendentes - Sempre visível */}
-        <div className="bg-gradient-to-r from-amber-900/30 to-orange-900/30 rounded-xl p-6 border border-amber-700/50 mb-6 max-w-4xl">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center space-x-3">
-              <Bell className="w-6 h-6 text-amber-400" />
-              <div>
-                <h2 className="text-xl font-bold text-white">Solicitações de Agendamento Pendentes</h2>
-                <p className="text-sm text-amber-200/80">
-                  {pendingRequests.length > 0
-                    ? `${pendingRequests.length} solicitação(ões) aguardando aprovação`
-                    : 'Nenhuma solicitação pendente no momento'
-                  }
-                </p>
+        {/* Solicitações Pendentes - Visível apenas quando houver solicitações */}
+        {pendingRequests.length > 0 && (
+          <div className="bg-gradient-to-r from-amber-900/30 to-orange-900/30 rounded-xl p-6 border border-amber-700/50 mb-6 max-w-4xl">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center space-x-3">
+                <Bell className="w-6 h-6 text-amber-400" />
+                <div>
+                  <h2 className="text-xl font-bold text-white">Solicitações de Agendamento Pendentes</h2>
+                  <p className="text-sm text-amber-200/80">
+                    {pendingRequests.length} solicitação(ões) aguardando aprovação
+                  </p>
+                </div>
               </div>
             </div>
-          </div>
-          {pendingRequests.length > 0 ? (
             <div className="space-y-3">
               {pendingRequests.map((request) => {
                 const patient = patients.find((p: any) => p.id === request.patientId)
@@ -1187,14 +1184,8 @@ const ProfessionalScheduling: React.FC = () => {
                 )
               })}
             </div>
-          ) : (
-            <div className="text-center py-6">
-              <p className="text-slate-400 text-sm">
-                Quando pacientes solicitarem agendamentos, eles aparecerão aqui para sua aprovação.
-              </p>
-            </div>
-          )}
-        </div>
+          </div>
+        )}
 
         {/* Conteúdo baseado na visualização */}
         {viewMode === 'calendar' && (
@@ -1269,7 +1260,7 @@ const ProfessionalScheduling: React.FC = () => {
         {/* Modal de agendamento */}
         {showAppointmentModal && (
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-            <div className="rounded-xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto" style={cardStyle}>
+            <div className="rounded-xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto" style={{ ...cardStyle, background: 'rgba(15, 36, 60, 0.98)' }}>
               <h3 className="text-xl font-semibold text-white mb-4">Novo Agendamento</h3>
               <div className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
