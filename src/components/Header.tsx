@@ -451,21 +451,25 @@ const Header: React.FC<HeaderProps> = ({ onOpenSidebar }) => {
                   )
                 })()}
 
-                <div className="ml-auto relative" style={{ transform: 'translateX(30%)' }}>
+
+
+                {/* Profile Avatar & Menu */}
+                <div className="relative ml-2 sm:ml-4">
                   <button
                     onClick={() => setIsProfileOpen(!isProfileOpen)}
-                    className="flex items-center space-x-2 text-[#C8D6E5] hover:text-[#00C16A] transition-colors duration-200"
+                    className="flex items-center space-x-2 text-[#C8D6E5] hover:text-[#00C16A] transition-colors duration-200 p-1 rounded-full hover:bg-slate-800/50"
                   >
                     <div
-                      className="w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8 rounded-full flex items-center justify-center flex-shrink-0"
+                      className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 border border-[#00C16A]/30"
                       style={{
                         background: 'linear-gradient(135deg, #00C16A 0%, #1a365d 100%)',
-                        boxShadow: '0 4px 12px rgba(0,193,106,0.25)'
+                        boxShadow: '0 2px 8px rgba(0,193,106,0.2)'
                       }}
                     >
-                      <User className="w-3 h-3 sm:w-3.5 sm:h-3.5 md:w-4 md:h-4 text-white" />
+                      <User className="w-4 h-4 text-white" />
                     </div>
-                    <span className="hidden xs:block text-[10px] sm:text-xs md:text-sm font-medium truncate max-w-[80px] sm:max-w-[120px] md:max-w-none">{user.name}</span>
+                    {/* Hide name on very small screens, show on larger */}
+                    <span className="hidden sm:block text-xs md:text-sm font-medium truncate max-w-[100px]">{user.name}</span>
                   </button>
 
                   {isProfileOpen && (

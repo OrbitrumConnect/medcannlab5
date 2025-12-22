@@ -1555,23 +1555,54 @@ const Library: React.FC = () => {
               ← Anterior
             </button>
 
-            <div className="flex items-center gap-2">
-              {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
-                <button
-                  key={page}
-                  onClick={() => setCurrentPage(page)}
-                  className={`w-10 h-10 rounded-xl font-bold text-sm transition-all ${currentPage === page
-                    ? 'text-white shadow-lg'
-                    : 'text-slate-300 hover:text-white'
-                    }`}
-                  style={{
-                    background: currentPage === page ? accentGradient : 'rgba(12, 31, 54, 0.6)',
-                    boxShadow: currentPage === page ? '0 8px 20px rgba(0,193,106,0.3)' : 'none'
-                  }}
-                >
-                  {page}
-                </button>
-              ))}
+            <div className="flex items-center gap-1">
+              {/* Show first page */}
+              {currentPage > 3 && (
+                <>
+                  <button
+                    onClick={() => setCurrentPage(1)}
+                    className="w-9 h-9 rounded-lg font-bold text-sm transition-all text-slate-300 hover:text-white"
+                    style={{ background: 'rgba(12, 31, 54, 0.6)' }}
+                  >
+                    1
+                  </button>
+                  {currentPage > 4 && <span className="text-slate-500 px-1">...</span>}
+                </>
+              )}
+
+              {/* Show nearby pages */}
+              {Array.from({ length: totalPages }, (_, i) => i + 1)
+                .filter(page => page >= currentPage - 2 && page <= currentPage + 2)
+                .map(page => (
+                  <button
+                    key={page}
+                    onClick={() => setCurrentPage(page)}
+                    className={`w-9 h-9 rounded-lg font-bold text-sm transition-all ${currentPage === page
+                      ? 'text-white shadow-lg'
+                      : 'text-slate-300 hover:text-white'
+                      }`}
+                    style={{
+                      background: currentPage === page ? accentGradient : 'rgba(12, 31, 54, 0.6)',
+                      boxShadow: currentPage === page ? '0 8px 20px rgba(0,193,106,0.3)' : 'none'
+                    }}
+                  >
+                    {page}
+                  </button>
+                ))}
+
+              {/* Show last page */}
+              {currentPage < totalPages - 2 && (
+                <>
+                  {currentPage < totalPages - 3 && <span className="text-slate-500 px-1">...</span>}
+                  <button
+                    onClick={() => setCurrentPage(totalPages)}
+                    className="w-9 h-9 rounded-lg font-bold text-sm transition-all text-slate-300 hover:text-white"
+                    style={{ background: 'rgba(12, 31, 54, 0.6)' }}
+                  >
+                    {totalPages}
+                  </button>
+                </>
+              )}
             </div>
 
             <button

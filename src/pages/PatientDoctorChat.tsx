@@ -37,8 +37,11 @@ const PatientDoctorChat: React.FC = () => {
   const [participantsLoading, setParticipantsLoading] = useState(false)
   const [messageInput, setMessageInput] = useState('')
   const [allPatients, setAllPatients] = useState<Array<{ id: string; name: string | null; email: string | null }>>([])
+  const [allProfessionals, setAllProfessionals] = useState<Array<{ id: string; name: string | null; email: string | null; specialty?: string }>>([])
   const [patientsLoading, setPatientsLoading] = useState(false)
+  const [professionalsLoading, setProfessionalsLoading] = useState(false)
   const [savingEvolution, setSavingEvolution] = useState(false)
+  const [searchQuery, setSearchQuery] = useState('')
   const hasTriggeredStartRef = useRef(false)
 
   const {
@@ -63,10 +66,13 @@ const PatientDoctorChat: React.FC = () => {
 
   // Mapear pacientes que já têm salas (baseado nos participantes)
   const [patientsWithRooms, setPatientsWithRooms] = useState<Set<string>>(new Set());
+  // Mapear profissionais vinculados ao paciente atual (baseado em salas compartilhadas)
+  const [linkedProfessionalIds, setLinkedProfessionalIds] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     if (!user || patientRooms.length === 0) {
       setPatientsWithRooms(new Set());
+      setLinkedProfessionalIds(new Set());
       return;
     }
 
@@ -75,18 +81,29 @@ const PatientDoctorChat: React.FC = () => {
         const roomIds = patientRooms.map(room => room.id);
         const { data: participants } = await supabase
           .from('chat_participants')
-          .select('room_id, user_id')
-          .in('room_id', roomIds)
-          .eq('role', 'patient');
+          .select('room_id, user_id, role')
+          .in('room_id', roomIds);
 
         const patientIds = new Set<string>();
+        const professionalIds = new Set<string>();
+
         participants?.forEach(p => {
-          if (p.user_id) patientIds.add(p.user_id);
+          if (p.user_id) {
+            if (p.role === 'patient') {
+              patientIds.add(p.user_id);
+            } else if (p.role === 'professional' || p.role === 'admin') {
+              professionalIds.add(p.user_id);
+            }
+          }
         });
+
         setPatientsWithRooms(patientIds);
+        setLinkedProfessionalIds(professionalIds);
+        console.log('🔗 Profissionais vinculados ao paciente:', professionalIds.size);
       } catch (error) {
-        console.warn('Erro ao carregar pacientes com salas:', error);
+        console.warn('Erro ao carregar participantes das salas:', error);
         setPatientsWithRooms(new Set());
+        setLinkedProfessionalIds(new Set());
       }
     };
 
@@ -96,7 +113,7 @@ const PatientDoctorChat: React.FC = () => {
   // Carregar todos os pacientes do profissional (apenas para profissionais/admins)
   useEffect(() => {
     if (!user || isImpersonatingPatient || isPatient) return;
-    
+
     // Apenas profissionais e admins podem ver a lista completa de pacientes
     if (user.type !== 'profissional' && user.type !== 'admin') return;
 
@@ -119,7 +136,7 @@ const PatientDoctorChat: React.FC = () => {
               .from('clinical_assessments')
               .select('patient_id, data')
               .not('patient_id', 'is', null);
-            
+
             if (assessmentData && assessmentData.length > 0) {
               const patientIds = [...new Set(assessmentData.map(a => a.patient_id))];
               const { data: fallbackData } = await supabase
@@ -151,6 +168,37 @@ const PatientDoctorChat: React.FC = () => {
     loadAllPatients();
   }, [user, isImpersonatingPatient]);
 
+  // Carregar profissionais disponíveis (para mostrar na lista de contatos)
+  useEffect(() => {
+    if (!user) return;
+
+    const loadAllProfessionals = async () => {
+      setProfessionalsLoading(true);
+      try {
+        const { data: professionalsData, error: professionalsError } = await supabase
+          .from('users')
+          .select('id, name, email, type')
+          .in('type', ['profissional', 'professional', 'admin'])
+          .order('name', { ascending: true });
+
+        if (professionalsError) {
+          console.warn('Erro ao carregar profissionais:', professionalsError);
+          setAllProfessionals([]);
+        } else {
+          console.log('👨‍⚕️ Profissionais carregados:', professionalsData?.length || 0);
+          setAllProfessionals(professionalsData || []);
+        }
+      } catch (error) {
+        console.error('Erro ao carregar lista de profissionais:', error);
+        setAllProfessionals([]);
+      } finally {
+        setProfessionalsLoading(false);
+      }
+    };
+
+    loadAllProfessionals();
+  }, [user, isPatient]);
+
   // Quando há roomId na URL, garantir que ele seja usado e recarregar inbox se necessário
   useEffect(() => {
     if (roomIdParam && roomIdParam !== activeRoomId) {
@@ -177,7 +225,7 @@ const PatientDoctorChat: React.FC = () => {
         // Verificar se já existe uma sala para este paciente
         // Primeiro, verificar nas salas existentes se o paciente está como participante
         let existingRoomId: string | undefined = undefined;
-        
+
         for (const room of patientRooms) {
           try {
             const { data: participants } = await supabase
@@ -187,7 +235,7 @@ const PatientDoctorChat: React.FC = () => {
               .eq('user_id', patientIdParam)
               .eq('role', 'patient')
               .limit(1);
-            
+
             if (participants && participants.length > 0) {
               existingRoomId = room.id;
               break;
@@ -268,13 +316,13 @@ const PatientDoctorChat: React.FC = () => {
         // PRIMEIRO: Tentar usar função RPC (contorna RLS e recursão)
         let participantRows: any[] | null = null;
         let participantError: any = null;
-        
+
         try {
           const { data: rpcData, error: rpcError } = await supabase.rpc(
             'get_chat_participants_for_room',
             { p_room_id: activeRoomId }
           );
-          
+
           if (!rpcError && rpcData) {
             participantRows = rpcData;
             console.log('✅ Participantes carregados via RPC:', participantRows.length);
@@ -285,14 +333,14 @@ const PatientDoctorChat: React.FC = () => {
         } catch (rpcErr) {
           console.warn('⚠️ Erro ao chamar RPC, tentando query direta...', rpcErr);
         }
-        
+
         // FALLBACK: Se RPC não funcionar, tentar query direta
         if (!participantRows) {
           const { data: directData, error: directError } = await supabase
             .from('chat_participants')
             .select('user_id')
             .eq('room_id', activeRoomId);
-          
+
           if (!directError && directData) {
             participantRows = directData;
           } else {
@@ -430,6 +478,45 @@ const PatientDoctorChat: React.FC = () => {
     await markRoomAsRead(roomId);
   }
 
+  // Função para PACIENTE criar sala com um profissional específico
+  const handleCreateRoomWithProfessional = async (professionalId: string, professionalName: string | null) => {
+    if (!user?.id) {
+      alert('Erro: usuário não identificado. Faça login novamente.');
+      return;
+    }
+
+    try {
+      console.log('🔄 Paciente criando sala com profissional:', { professionalId, professionalName, patientId: user.id });
+
+      // Usar RPC com os parâmetros invertidos (paciente = user, profissional = parâmetro)
+      const { data: roomIdFromRPC, error: rpcError } = await supabase.rpc(
+        'create_chat_room_for_patient',
+        {
+          p_patient_id: user.id,
+          p_patient_name: user.name,
+          p_professional_id: professionalId
+        }
+      );
+
+      if (!rpcError && roomIdFromRPC) {
+        console.log('✅ Sala criada via RPC:', roomIdFromRPC);
+        await new Promise(resolve => setTimeout(resolve, 500));
+        await reloadInbox();
+        setActiveRoomId(roomIdFromRPC);
+        console.log('✅ Sala criada com profissional com sucesso!');
+        return;
+      }
+
+      if (rpcError) {
+        console.error('❌ Erro ao criar sala com profissional:', rpcError);
+        alert(`Erro ao iniciar conversa: ${rpcError.message}`);
+      }
+    } catch (error: any) {
+      console.error('Erro ao criar sala com profissional:', error);
+      alert(`Erro ao iniciar conversa: ${error?.message || 'Tente novamente.'}`);
+    }
+  };
+
   const handleCreateRoomForPatient = async (patientId: string, patientName: string | null) => {
     if (!user?.id) {
       alert('Erro: usuário não identificado. Faça login novamente.');
@@ -467,7 +554,7 @@ const PatientDoctorChat: React.FC = () => {
 
       // Se não retornou ID, tentar método direto como fallback
       console.log('⚠️ RPC não retornou ID, tentando método direto...');
-      
+
       // Criar nova sala diretamente
       const { data: newRoom, error: roomError } = await supabase
         .from('chat_rooms')
@@ -489,7 +576,7 @@ const PatientDoctorChat: React.FC = () => {
           userId: user.id,
           patientId: patientId
         });
-        
+
         // Mensagem mais detalhada para o usuário
         const errorMessage = roomError?.message || 'Não foi possível criar a sala clínica do paciente';
         if (roomError?.code === '42501' || errorMessage.includes('row-level security')) {
@@ -568,39 +655,39 @@ const PatientDoctorChat: React.FC = () => {
 
     try {
       // Identificar paciente e profissional da sala
-        // Usar RPC function para evitar recursão RLS
-        let participants: any[] | null = null;
-        try {
-          const { data: participantsData, error: participantsError } = await supabase.rpc(
-            'get_chat_participants_for_room',
-            { p_room_id: activeRoomId }
-          );
-          
-          if (!participantsError && participantsData) {
-            participants = participantsData;
-          } else {
-            // Fallback: tentar query direta (pode falhar se RLS tiver recursão)
-            const { data: directData, error: directError } = await supabase
-              .from('chat_participants')
-              .select('user_id, role')
-              .eq('room_id', activeRoomId);
-            
-            if (!directError && directData) {
-              participants = directData;
-            } else if (directError) {
-              console.warn('⚠️ Erro ao buscar participantes (pode ser recursão RLS):', directError);
-              // Continuar com array vazio para não quebrar a interface
-              participants = [];
-            }
+      // Usar RPC function para evitar recursão RLS
+      let participants: any[] | null = null;
+      try {
+        const { data: participantsData, error: participantsError } = await supabase.rpc(
+          'get_chat_participants_for_room',
+          { p_room_id: activeRoomId }
+        );
+
+        if (!participantsError && participantsData) {
+          participants = participantsData;
+        } else {
+          // Fallback: tentar query direta (pode falhar se RLS tiver recursão)
+          const { data: directData, error: directError } = await supabase
+            .from('chat_participants')
+            .select('user_id, role')
+            .eq('room_id', activeRoomId);
+
+          if (!directError && directData) {
+            participants = directData;
+          } else if (directError) {
+            console.warn('⚠️ Erro ao buscar participantes (pode ser recursão RLS):', directError);
+            // Continuar com array vazio para não quebrar a interface
+            participants = [];
           }
-        } catch (error) {
-          console.warn('⚠️ Erro ao buscar participantes:', error);
-          participants = [];
         }
-        
-        if (!participants) {
-          participants = [];
-        }
+      } catch (error) {
+        console.warn('⚠️ Erro ao buscar participantes:', error);
+        participants = [];
+      }
+
+      if (!participants) {
+        participants = [];
+      }
 
       if (!participants || participants.length < 2) {
         throw new Error('Não foi possível identificar os participantes da conversa.');
@@ -683,9 +770,8 @@ const PatientDoctorChat: React.FC = () => {
               </p>
             </div>
             <div className="flex flex-wrap items-center gap-3">
-              <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                isOnline ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-400/50' : 'bg-slate-800 text-slate-400 border border-slate-700'
-              }`}>
+              <span className={`px-3 py-1 rounded-full text-xs font-semibold ${isOnline ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-400/50' : 'bg-slate-800 text-slate-400 border border-slate-700'
+                }`}>
                 {isOnline ? 'Conectado ao Realtime' : 'Offline'}
               </span>
               <span className="px-3 py-1 rounded-full bg-slate-800/80 border border-slate-700 text-xs text-slate-300">
@@ -706,70 +792,161 @@ const PatientDoctorChat: React.FC = () => {
                   <Loader2 className="w-4 h-4 animate-spin mr-2" /> Carregando pacientes...
                 </div>
               ) : (
-                <div className="flex-1 space-y-2 overflow-y-auto pr-1 custom-scrollbar">
-                  {/* Salas existentes */}
-                  {patientRooms.map(room => {
-                    const isActive = room.id === activeRoomId;
-                    const unreadBadge = room.unreadCount > 0 && !isActive;
+                <>
+                  {/* Barra de Pesquisa */}
+                  <div className="mb-3">
+                    <input
+                      type="text"
+                      placeholder="Buscar por nome..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-primary-500/50"
+                    />
+                  </div>
+                  <div className="flex-1 space-y-2 overflow-y-auto pr-1 max-h-[400px] custom-scrollbar">
+                    {/* Salas existentes */}
+                    {patientRooms.map(room => {
+                      const isActive = room.id === activeRoomId;
+                      const unreadBadge = room.unreadCount > 0 && !isActive;
 
-                    return (
-                      <button
-                        key={room.id}
-                        onClick={() => handleSelectRoom(room.id)}
-                        className={`w-full rounded-xl border px-3 py-3 text-left transition-colors ${
-                          isActive
+                      return (
+                        <button
+                          key={room.id}
+                          onClick={() => handleSelectRoom(room.id)}
+                          className={`w-full rounded-xl border px-3 py-3 text-left transition-colors ${isActive
                             ? 'border-primary-500/60 bg-primary-500/10 text-white'
                             : 'border-slate-800 bg-slate-900/80 text-slate-200 hover:border-primary-500/40 hover:bg-primary-500/5'
-                        }`}
-                      >
-                        <div className="flex items-center justify-between gap-2">
-                          <div className="flex-1 min-w-0">
-                            <p className="text-sm font-semibold truncate">{room.name || 'Canal Clínico'}</p>
-                            <p className="text-xs text-slate-400">
-                              {room.lastMessageAt
-                                ? new Date(room.lastMessageAt).toLocaleString('pt-BR', {
+                            }`}
+                        >
+                          <div className="flex items-center justify-between gap-2">
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm font-semibold truncate">{room.name || 'Canal Clínico'}</p>
+                              <p className="text-xs text-slate-400">
+                                {room.lastMessageAt
+                                  ? new Date(room.lastMessageAt).toLocaleString('pt-BR', {
                                     day: '2-digit',
                                     month: 'short',
                                     hour: '2-digit',
                                     minute: '2-digit'
                                   })
-                                : 'Em aberto'}
-                            </p>
+                                  : 'Em aberto'}
+                              </p>
+                            </div>
+                            <div className="flex items-center gap-3 ml-2">
+                              {unreadBadge && (
+                                <span className="px-2 py-0.5 rounded-full bg-primary-500 text-white text-[10px] font-semibold">
+                                  {room.unreadCount}
+                                </span>
+                              )}
+                              <ChevronRight className="w-4 h-4 text-slate-500" />
+                            </div>
                           </div>
-                          <div className="flex items-center gap-3 ml-2">
-                            {unreadBadge && (
-                              <span className="px-2 py-0.5 rounded-full bg-primary-500 text-white text-[10px] font-semibold">
-                                {room.unreadCount}
-                              </span>
-                            )}
+                        </button>
+                      );
+                    })}
+
+                    {/* Pacientes sem sala (apenas para profissionais/admins, não para pacientes) */}
+                    {(user?.type === 'profissional' || user?.type === 'admin') && !isPatient && (() => {
+                      const patientsWithoutRooms = allPatients.filter(patient => !patientsWithRooms.has(patient.id));
+                      console.log('📋 Pacientes sem sala:', patientsWithoutRooms.length, 'de', allPatients.length);
+                      return patientsWithoutRooms.map(patient => (
+                        <button
+                          key={`patient-${patient.id}`}
+                          onClick={() => handleCreateRoomForPatient(patient.id, patient.name)}
+                          className="w-full rounded-xl border border-slate-800 bg-slate-900/40 text-slate-300 hover:border-primary-500/40 hover:bg-primary-500/5 hover:text-white px-3 py-3 text-left transition-colors"
+                        >
+                          <div className="flex items-center justify-between gap-2">
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm font-semibold truncate">{patient.name || 'Paciente'}</p>
+                              <p className="text-xs text-slate-500">Clique para criar canal</p>
+                            </div>
                             <ChevronRight className="w-4 h-4 text-slate-500" />
                           </div>
-                        </div>
-                      </button>
-                    );
-                  })}
+                        </button>
+                      ));
+                    })()}
 
-                  {/* Pacientes sem sala (apenas para profissionais/admins, não para pacientes) */}
-                  {(user?.type === 'profissional' || user?.type === 'admin') && !isPatient && (() => {
-                    const patientsWithoutRooms = allPatients.filter(patient => !patientsWithRooms.has(patient.id));
-                    console.log('📋 Pacientes sem sala:', patientsWithoutRooms.length, 'de', allPatients.length);
-                    return patientsWithoutRooms.map(patient => (
-                      <button
-                        key={`patient-${patient.id}`}
-                        onClick={() => handleCreateRoomForPatient(patient.id, patient.name)}
-                        className="w-full rounded-xl border border-slate-800 bg-slate-900/40 text-slate-300 hover:border-primary-500/40 hover:bg-primary-500/5 hover:text-white px-3 py-3 text-left transition-colors"
-                      >
-                        <div className="flex items-center justify-between gap-2">
-                          <div className="flex-1 min-w-0">
-                            <p className="text-sm font-semibold truncate">{patient.name || 'Paciente'}</p>
-                            <p className="text-xs text-slate-500">Clique para criar canal</p>
-                          </div>
-                          <ChevronRight className="w-4 h-4 text-slate-500" />
-                        </div>
-                      </button>
-                    ));
-                  })()}
-                </div>
+                    {/* Profissionais disponíveis (para iniciar conversa) */}
+                    {allProfessionals.length > 0 && !professionalsLoading && (() => {
+                      // Para pacientes: mostrar apenas profissionais vinculados
+                      // Para admin: mostrar todos
+                      const isAdmin = user?.type === 'admin';
+                      const availableProfessionals = isAdmin
+                        ? allProfessionals.filter(prof => prof.id !== user?.id)
+                        : allProfessionals.filter(prof =>
+                          prof.id !== user?.id && linkedProfessionalIds.has(prof.id)
+                        );
+
+                      // Profissionais não vinculados (para adicionar)
+                      const unlinkedProfessionals = allProfessionals.filter(prof =>
+                        prof.id !== user?.id && !linkedProfessionalIds.has(prof.id)
+                      );
+
+                      console.log('👨‍⚕️ Profissionais vinculados:', availableProfessionals.length, '| Não vinculados:', unlinkedProfessionals.length);
+
+                      return (
+                        <>
+                          {/* Minha Equipe - Profissionais Vinculados */}
+                          {availableProfessionals.length > 0 && (
+                            <div className="mb-3">
+                              <p className="text-xs text-primary-400 font-semibold mb-2 px-1">💚 Minha Equipe</p>
+                              {availableProfessionals.map(prof => (
+                                <button
+                                  key={`prof-${prof.id}`}
+                                  onClick={() => handleCreateRoomWithProfessional(prof.id, prof.name)}
+                                  className="w-full mb-1 rounded-xl border border-emerald-800/50 bg-emerald-900/20 text-emerald-300 hover:border-emerald-500/50 hover:bg-emerald-900/40 hover:text-emerald-200 px-3 py-3 text-left transition-colors"
+                                >
+                                  <div className="flex items-center justify-between gap-2">
+                                    <div className="flex-1 min-w-0">
+                                      <p className="text-sm font-semibold truncate">{prof.name || 'Profissional'}</p>
+                                      <p className="text-xs text-emerald-500/70">Clique para conversar</p>
+                                    </div>
+                                    <ChevronRight className="w-4 h-4 text-emerald-500" />
+                                  </div>
+                                </button>
+                              ))}
+                            </div>
+                          )}
+
+                          {/* Add Profissional - Mostrar opções para adicionar */}
+                          {(isAdmin || isPatient) && unlinkedProfessionals.length > 0 && (
+                            <div className="mt-3 pt-3 border-t border-slate-700/50">
+                              <p className="text-xs text-slate-400 font-semibold mb-2 px-1">➕ Adicionar Profissional</p>
+                              {unlinkedProfessionals.slice(0, 5).map(prof => (
+                                <button
+                                  key={`add-prof-${prof.id}`}
+                                  onClick={() => handleCreateRoomWithProfessional(prof.id, prof.name)}
+                                  className="w-full mb-1 rounded-xl border border-slate-700 bg-slate-800/50 text-slate-400 hover:border-primary-500/40 hover:bg-primary-500/10 hover:text-primary-300 px-3 py-2 text-left transition-colors"
+                                >
+                                  <div className="flex items-center justify-between gap-2">
+                                    <div className="flex-1 min-w-0">
+                                      <p className="text-sm font-medium truncate">{prof.name || 'Profissional'}</p>
+                                      <p className="text-xs text-slate-500">Clique para adicionar à equipe</p>
+                                    </div>
+                                    <span className="text-xs bg-primary-500/20 text-primary-400 px-2 py-0.5 rounded-full">Add</span>
+                                  </div>
+                                </button>
+                              ))}
+                              {unlinkedProfessionals.length > 5 && (
+                                <p className="text-xs text-slate-500 text-center mt-2">
+                                  +{unlinkedProfessionals.length - 5} profissionais disponíveis
+                                </p>
+                              )}
+                            </div>
+                          )}
+
+                          {/* Mensagem se não há profissionais */}
+                          {availableProfessionals.length === 0 && patientRooms.length === 0 && !isAdmin && (
+                            <div className="text-center py-6 text-slate-400 text-sm">
+                              <p>Nenhum profissional vinculado.</p>
+                              <p className="text-xs mt-1">Adicione um profissional acima para começar.</p>
+                            </div>
+                          )}
+                        </>
+                      );
+                    })()}
+                  </div>
+                </>
               )}
             </aside>
 
@@ -806,11 +983,10 @@ const PatientDoctorChat: React.FC = () => {
                       return (
                         <div key={msg.id} className={`flex ${isOwn ? 'justify-end' : 'justify-start'}`}>
                           <div
-                            className={`max-w-lg rounded-2xl px-4 py-3 shadow transition-colors ${
-                              isOwn
-                                ? 'bg-primary-600 text-white'
-                                : 'bg-slate-800 text-slate-100'
-                            }`}
+                            className={`max-w-lg rounded-2xl px-4 py-3 shadow transition-colors ${isOwn
+                              ? 'bg-primary-600 text-white'
+                              : 'bg-slate-800 text-slate-100'
+                              }`}
                           >
                             <div className="flex items-center justify-between gap-3 mb-1">
                               <span className="text-xs font-semibold">

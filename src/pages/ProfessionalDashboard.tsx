@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { 
+import {
   Video,
   Phone,
   MessageCircle,
@@ -70,7 +70,7 @@ const ProfessionalDashboard: React.FC = () => {
   const loadPatients = async () => {
     try {
       setLoading(true)
-      
+
       // Se for admin, usar função com permissões administrativas
       if (userIsAdmin) {
         console.log('✅ Admin carregando pacientes com permissões administrativas')
@@ -79,7 +79,7 @@ const ProfessionalDashboard: React.FC = () => {
         setLoading(false)
         return
       }
-      
+
       // Busca normal para profissionais
       const { data: assessments, error } = await supabase
         .from('clinical_assessments')
@@ -98,7 +98,7 @@ const ProfessionalDashboard: React.FC = () => {
       }
 
       const patientsMap = new Map<string, Patient>()
-      
+
       assessments?.forEach(assessment => {
         const patientId = assessment.patient_id
         if (!patientsMap.has(patientId)) {
@@ -115,7 +115,7 @@ const ProfessionalDashboard: React.FC = () => {
             assessments: []
           })
         }
-        
+
         const patient = patientsMap.get(patientId)!
         patient.assessments = patient.assessments || []
         patient.assessments.push(assessment)
@@ -186,7 +186,7 @@ const ProfessionalDashboard: React.FC = () => {
             </div>
           </div>
         </div>
-        
+
         <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-xl p-6 shadow-lg border border-green-200">
           <div className="flex items-center justify-between">
             <div>
@@ -199,8 +199,8 @@ const ProfessionalDashboard: React.FC = () => {
             </div>
           </div>
         </div>
-        
-        <div 
+
+        <div
           onClick={() => setActiveSection('clinical-reports')}
           className="bg-gradient-to-br from-orange-50 to-orange-100 rounded-xl p-6 shadow-lg border border-orange-200 cursor-pointer hover:shadow-xl transition-shadow"
         >
@@ -233,7 +233,7 @@ const ProfessionalDashboard: React.FC = () => {
             className="w-full pl-10 pr-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white shadow-sm"
           />
         </div>
-        
+
         {loading ? (
           <div className="text-center text-slate-500 py-8">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-2"></div>
@@ -245,18 +245,16 @@ const ProfessionalDashboard: React.FC = () => {
               <div
                 key={patient.id}
                 onClick={() => handlePatientSelect(patient.id)}
-                className={`p-4 border rounded-lg cursor-pointer transition-all ${
-                  selectedPatient === patient.id
+                className={`p-4 border rounded-lg cursor-pointer transition-all ${selectedPatient === patient.id
                     ? 'border-blue-500 bg-blue-50 shadow-md'
                     : 'border-slate-200 hover:border-slate-300 hover:shadow-sm bg-white'
-                }`}
+                  }`}
               >
                 <div className="flex justify-between items-center">
                   <div className="flex items-center space-x-3">
-                    <div className={`w-3 h-3 rounded-full ${
-                      patient.priority === 'high' ? 'bg-red-500' :
-                      patient.priority === 'medium' ? 'bg-yellow-500' : 'bg-green-500'
-                    }`}></div>
+                    <div className={`w-3 h-3 rounded-full ${patient.priority === 'high' ? 'bg-red-500' :
+                        patient.priority === 'medium' ? 'bg-yellow-500' : 'bg-green-500'
+                      }`}></div>
                     <div>
                       <p className="font-medium text-slate-900">{patient.name}</p>
                       <p className="text-sm text-slate-500">CPF: {patient.cpf} • {patient.condition}</p>
@@ -264,11 +262,10 @@ const ProfessionalDashboard: React.FC = () => {
                   </div>
                   <div className="text-right">
                     <p className="text-sm text-slate-500">Última consulta: {patient.lastVisit}</p>
-                    <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${
-                      patient.status === 'completed' 
+                    <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${patient.status === 'completed'
                         ? 'bg-green-100 text-green-800'
                         : 'bg-yellow-100 text-yellow-800'
-                    }`}>
+                      }`}>
                       {patient.status}
                     </span>
                   </div>
@@ -382,25 +379,8 @@ const ProfessionalDashboard: React.FC = () => {
   )
 
   const renderPrescriptions = () => (
-    <div className="space-y-6">
-      <div className="bg-gradient-to-r from-slate-50 to-slate-100 rounded-xl p-6 shadow-lg border border-slate-200">
-        <h3 className="text-lg font-semibold text-slate-800 mb-4 flex items-center">
-          <FileText className="w-5 h-5 mr-2 text-slate-600" />
-          Sistema de Prescrições Integrativas - CFM
-        </h3>
-        <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-          <h4 className="font-semibold text-blue-900 mb-2">Conforme Diretrizes CFM + Práticas Integrativas</h4>
-          <ul className="text-sm text-blue-800 space-y-1">
-            <li>• Assinatura Digital com Certificado ICP Brasil</li>
-            <li>• Validação no Portal do ITI</li>
-            <li>• Envio por Email e SMS com QR Code</li>
-            <li>• Cinco racionalidades médicas integradas</li>
-            <li>• Camadas clínicas de leitura dos dados primários</li>
-            <li>• NFT e Blockchain para rastreabilidade</li>
-          </ul>
-        </div>
-        <IntegrativePrescriptions />
-      </div>
+    <div className="w-full">
+      <IntegrativePrescriptions />
     </div>
   )
 
@@ -420,51 +400,46 @@ const ProfessionalDashboard: React.FC = () => {
           <nav className="flex space-x-1 bg-white rounded-lg p-1 shadow-lg border border-slate-200">
             <button
               onClick={() => setActiveSection('dashboard')}
-              className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-                activeSection === 'dashboard'
+              className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${activeSection === 'dashboard'
                   ? 'bg-blue-600 text-white shadow-sm'
                   : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
-              }`}
+                }`}
             >
               Dashboard
             </button>
             <button
               onClick={() => setActiveSection('kpis')}
-              className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-                activeSection === 'kpis'
+              className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${activeSection === 'kpis'
                   ? 'bg-blue-600 text-white shadow-sm'
                   : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
-              }`}
+                }`}
             >
               KPIs Tempo Real
             </button>
             <button
               onClick={() => setActiveSection('newsletter')}
-              className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-                activeSection === 'newsletter'
+              className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${activeSection === 'newsletter'
                   ? 'bg-blue-600 text-white shadow-sm'
                   : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
-              }`}
+                }`}
             >
               Newsletter Científico
             </button>
             <button
               onClick={() => setActiveSection('prescriptions')}
-              className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-                activeSection === 'prescriptions'
+              className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${activeSection === 'prescriptions'
                   ? 'bg-blue-600 text-white shadow-sm'
                   : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
-              }`}
+                }`}
             >
               Prescrições
             </button>
             <button
               onClick={() => setActiveSection('clinical-reports')}
-              className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-                activeSection === 'clinical-reports'
+              className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${activeSection === 'clinical-reports'
                   ? 'bg-blue-600 text-white shadow-sm'
                   : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
-              }`}
+                }`}
             >
               Relatórios Clínicos
             </button>

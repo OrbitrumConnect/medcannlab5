@@ -14,19 +14,19 @@ const Footer: React.FC<FooterProps> = ({ marginLeft, width }) => {
       className="text-white overflow-x-hidden transition-all duration-300"
       style={{ marginLeft, width, background: backgroundGradient }}
     >
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 w-full max-w-full overflow-x-hidden">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-2 md:py-6 w-full max-w-full overflow-x-hidden">
         <div className="flex flex-col md:flex-row justify-between items-center">
-          <div className="flex items-center space-x-2 mb-4 md:mb-0">
-            <div className="w-6 h-6 bg-gradient-to-r from-primary-600 to-accent-600 rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-sm">M</span>
+          <div className="flex items-center space-x-2 mb-2 md:mb-0">
+            <div className="w-5 h-5 md:w-6 md:h-6 bg-gradient-to-r from-primary-600 to-accent-600 rounded-lg flex items-center justify-center">
+              <span className="text-white font-bold text-xs md:text-sm">M</span>
             </div>
-            <span className="text-lg font-bold">
+            <span className="text-sm md:text-lg font-bold">
               MedCannLab
-              <span className="text-sm text-primary-400 ml-1">3.0</span>
+              <span className="text-xs md:text-sm text-primary-400 ml-1">3.0</span>
             </span>
           </div>
 
-          <div className="flex space-x-6 text-sm">
+          <div className="hidden md:flex space-x-6 text-sm">
             <Link to="/courses" className="text-gray-300 hover:text-white transition-colors duration-200">
               Cursos
             </Link>
@@ -42,13 +42,13 @@ const Footer: React.FC<FooterProps> = ({ marginLeft, width }) => {
           </div>
         </div>
 
-        <div className="border-t border-gray-800 mt-4 pt-4">
-          <div className="flex flex-col md:flex-row justify-between items-center">
-            <p className="text-gray-400 text-xs">
-              © 2025 MedCannLab 3.0. Todos os direitos reservados.
+        <div className="border-t border-gray-800 mt-2 md:mt-4 pt-2 md:pt-4">
+          <div className="flex flex-row justify-center md:justify-between items-center gap-2">
+            <p className="text-gray-400 text-[10px] md:text-xs">
+              © 2025 MedCannLab 3.0
             </p>
-            <p className="text-gray-400 text-xs mt-1 md:mt-0 flex items-center">
-              Feito com <Heart className="w-3 h-3 text-red-500 mx-1" /> para a medicina
+            <p className="text-gray-400 text-[10px] md:text-xs flex items-center">
+              <Heart className="w-2.5 h-2.5 md:w-3 md:h-3 text-red-500 mx-0.5 md:mx-1" />
             </p>
           </div>
         </div>

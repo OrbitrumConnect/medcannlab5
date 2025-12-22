@@ -17,7 +17,11 @@ import {
   Target,
   User,
   X,
-  Zap
+  Zap,
+  History,
+  LayoutGrid,
+  List,
+  Printer
 } from 'lucide-react'
 
 import { supabase } from '../lib/supabase'
@@ -89,13 +93,13 @@ const RATIONALITY_OPTIONS: Array<{
   label: string
   icon: React.ReactNode
 }> = [
-  { key: 'all', label: 'Todas', icon: <Brain className="w-4 h-4" /> },
-  { key: 'biomedical', label: 'Biomédica', icon: <Heart className="w-4 h-4" /> },
-  { key: 'traditional_chinese', label: 'MTC', icon: <Stethoscope className="w-4 h-4" /> },
-  { key: 'ayurvedic', label: 'Ayurvédica', icon: <Zap className="w-4 h-4" /> },
-  { key: 'homeopathic', label: 'Homeopática', icon: <Target className="w-4 h-4" /> },
-  { key: 'integrative', label: 'Integrativa', icon: <Brain className="w-4 h-4" /> }
-]
+    { key: 'all', label: 'Todas', icon: <Brain className="w-4 h-4" /> },
+    { key: 'biomedical', label: 'Biomédica', icon: <Heart className="w-4 h-4" /> },
+    { key: 'traditional_chinese', label: 'MTC', icon: <Stethoscope className="w-4 h-4" /> },
+    { key: 'ayurvedic', label: 'Ayurvédica', icon: <Zap className="w-4 h-4" /> },
+    { key: 'homeopathic', label: 'Homeopática', icon: <Target className="w-4 h-4" /> },
+    { key: 'integrative', label: 'Integrativa', icon: <Brain className="w-4 h-4" /> }
+  ]
 
 const RATIONALITY_LABEL: Record<Rationality, string> = {
   biomedical: 'Biomédica',
@@ -113,6 +117,9 @@ const IntegrativePrescriptions: React.FC<IntegrativePrescriptionsProps> = ({
 }) => {
   const navigate = useNavigate()
   const { user } = useAuth()
+
+  // Tab State
+  const [activeTab, setActiveTab] = useState<'library' | 'history'>('library')
 
   const [templates, setTemplates] = useState<PrescriptionTemplate[]>([])
   const [templatesLoading, setTemplatesLoading] = useState(false)
@@ -327,6 +334,7 @@ const IntegrativePrescriptions: React.FC<IntegrativePrescriptionsProps> = ({
         text: 'Prescrição registrada e vinculada ao plano terapêutico.'
       })
       await loadPatientPrescriptions()
+      setActiveTab('history') // Auto-switch to history on success
     } catch (error) {
       console.error('Falha ao emitir prescrição:', error)
       setActionMessage({
@@ -369,321 +377,264 @@ const IntegrativePrescriptions: React.FC<IntegrativePrescriptionsProps> = ({
   return (
     <>
       <div className={`space-y-6 ${className} w-full`}>
-        <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-6 space-y-4 w-full">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        {/* Header & Controls */}
+        <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-6 space-y-6">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
-              <p className="text-xs uppercase tracking-[0.3em] text-primary-300 mb-2">Prescrições integrativas</p>
+              <p className="text-xs uppercase tracking-[0.3em] text-primary-300 mb-2">Prescrições Integrativas</p>
               <h2 className="text-2xl font-semibold text-white flex items-center gap-2">
                 <Brain className="w-6 h-6 text-primary-300" />
-                Biblioteca de protocolos clínicos
+                Gestão de Prescrições
               </h2>
-              <p className="text-sm text-slate-400 mt-2 max-w-2xl">
-                Selecione um protocolo para emitir uma prescrição conectada ao plano terapêutico do paciente. As cinco racionalidades médicas estão disponíveis com os ajustes recomendados pela equipe MedCannLab.
-              </p>
             </div>
-            <div className="flex flex-col gap-2 w-full md:w-auto">
+            {/* Tabs */}
+            <div className="flex items-center gap-2 bg-slate-950/50 p-1 rounded-xl border border-slate-800/50">
               <button
-                onClick={() => setShowCFMModal(true)}
-                className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-primary-500 hover:bg-primary-400 text-white text-sm transition-colors"
+                onClick={() => setActiveTab('library')}
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${activeTab === 'library'
+                    ? 'bg-primary-500 text-white shadow-lg shadow-primary-500/20'
+                    : 'text-slate-400 hover:text-white hover:bg-slate-800'
+                  }`}
               >
-                <Plus className="w-4 h-4" />
-                Nova prescrição CFM
+                <LayoutGrid className="w-4 h-4" />
+                Biblioteca
               </button>
               <button
-                onClick={() => navigate('/app/clinica/prescricoes')}
-                className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg border border-slate-700 text-slate-300 hover:text-primary-200 hover:border-primary-500/50 text-sm transition-colors"
+                onClick={() => setActiveTab('history')}
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${activeTab === 'history'
+                    ? 'bg-primary-500 text-white shadow-lg shadow-primary-500/20'
+                    : 'text-slate-400 hover:text-white hover:bg-slate-800'
+                  }`}
               >
-                Gerenciar prescrições
-                <ArrowRight className="w-4 h-4" />
+                <History className="w-4 h-4" />
+                Histórico
               </button>
             </div>
           </div>
+
+          {/* Subheader Actions */}
+          <div className="flex items-center justify-between border-t border-slate-800 pt-6">
+            <div className="flex items-center gap-2 text-sm text-slate-400">
+              {activeTab === 'library' ? (
+                <>
+                  <BookOpen className="w-4 h-4 text-primary-400" />
+                  <span>Selecione um protocolo para iniciar a prescrição</span>
+                </>
+              ) : (
+                <>
+                  <List className="w-4 h-4 text-primary-400" />
+                  <span>Histórico de prescrições emitidas para o paciente</span>
+                </>
+              )}
+            </div>
+            <button
+              onClick={() => setShowCFMModal(true)}
+              className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-medium transition-colors shadow-lg shadow-emerald-900/20"
+            >
+              <Plus className="w-4 h-4" />
+              Nova Prescrição CFM
+            </button>
+          </div>
+
           {actionMessage && (
             <div
-              className={`rounded-xl px-4 py-3 text-sm ${
-                actionMessage.type === 'success'
+              className={`rounded-xl px-4 py-3 text-sm flex items-center gap-2 ${actionMessage.type === 'success'
                   ? 'bg-emerald-500/10 border border-emerald-400/40 text-emerald-200'
                   : 'bg-rose-500/10 border border-rose-400/40 text-rose-200'
-              }`}
+                }`}
             >
+              <div className={`w-2 h-2 rounded-full ${actionMessage.type === 'success' ? 'bg-emerald-400' : 'bg-rose-400'}`} />
               {actionMessage.text}
             </div>
           )}
-          <div className="grid grid-cols-1 md:grid-cols-[2fr_1fr] gap-4">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 w-4 h-4" />
-              <input
-                type="text"
-                value={searchTerm}
-                onChange={event => setSearchTerm(event.target.value)}
-                placeholder="Buscar por nome, descrição ou indicação..."
-                className="w-full bg-slate-950/70 border border-slate-800 rounded-xl pl-10 pr-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-primary-500/60"
-              />
-            </div>
-            <div className="flex flex-wrap gap-2 justify-start md:justify-end overflow-x-auto md:overflow-visible">
-              {RATIONALITY_OPTIONS.map(option => (
-                <button
-                  key={option.key}
-                  onClick={() => setSelectedRationality(option.key)}
-                  className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border text-xs font-medium transition-colors ${
-                    selectedRationality === option.key
-                      ? 'border-primary-500/60 bg-primary-500/10 text-primary-200'
-                      : 'border-slate-700 bg-slate-900/60 text-slate-300 hover:border-primary-500/40'
-                  }`}
-                >
-                  {option.icon}
-                  {option.label}
-                </button>
-              ))}
-            </div>
-          </div>
         </div>
 
-        <div className="bg-slate-900/60 border border-slate-800 rounded-2xl p-6 space-y-4 min-w-0 w-full">
-          <div className="flex items-center justify-between text-sm text-slate-400">
-            <span>
-              📋{' '}
-              {templatesLoading
-                ? 'Carregando modelos...'
-                : filteredTemplates.length === 1
-                ? '1 modelo disponível'
-                : `${filteredTemplates.length} modelos disponíveis`}
-            </span>
-            {selectedRationality !== 'all' && (
-              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-primary-500/10 text-primary-200 text-xs border border-primary-500/30">
-                Racionalidade: {RATIONALITY_OPTIONS.find(option => option.key === selectedRationality)?.label}
-              </span>
-            )}
-          </div>
-
-          {templatesError && (
-            <div className="rounded-xl border border-rose-500/30 bg-rose-950/40 text-rose-200 px-4 py-3 text-sm">
-              {templatesError}
-            </div>
-          )}
-
-          {templatesLoading ? (
-            <div className="flex items-center justify-center py-16 text-slate-400 text-sm">
-              <Loader2 className="w-4 h-4 animate-spin mr-2" />
-              Carregando biblioteca de protocolos...
-            </div>
-          ) : filteredTemplates.length === 0 ? (
-            <div className="border border-dashed border-slate-800 rounded-2xl py-12 text-center space-y-3">
-              <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-slate-900 border border-slate-800 mx-auto">
-                <BookOpen className="w-6 h-6 text-slate-500" />
+        {/* --- LIBRARY TAB --- */}
+        {activeTab === 'library' && (
+          <div className="space-y-6 animate-in fade-in zoom-in-95 duration-300">
+            {/* Filters */}
+            <div className="bg-slate-900/60 border border-slate-800 rounded-2xl p-4 flex flex-col md:flex-row gap-4 items-center justify-between">
+              <div className="relative w-full md:w-96">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 w-4 h-4" />
+                <input
+                  type="text"
+                  value={searchTerm}
+                  onChange={event => setSearchTerm(event.target.value)}
+                  placeholder="Buscar protocolo..."
+                  className="w-full bg-slate-950/70 border border-slate-800 rounded-xl pl-10 pr-4 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-primary-500/60"
+                />
               </div>
-              <div className="space-y-1">
-                <p className="text-sm text-slate-400">Nenhum protocolo encontrado com os filtros atuais.</p>
-                <button
-                  onClick={() => {
-                    setSelectedRationality('all')
-                    setSearchTerm('')
-                  }}
-                  className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-slate-700 text-slate-200 hover:border-primary-500/40 hover:text-primary-200 transition-colors text-sm"
-                >
-                  Limpar filtros
-                </button>
+              <div className="flex items-center gap-2 overflow-x-auto w-full md:w-auto pb-2 md:pb-0 scrollbar-hide">
+                {RATIONALITY_OPTIONS.map(option => (
+                  <button
+                    key={option.key}
+                    onClick={() => setSelectedRationality(option.key)}
+                    className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-medium transition-colors whitespace-nowrap ${selectedRationality === option.key
+                        ? 'border-primary-500/60 bg-primary-500/10 text-primary-200'
+                        : 'border-slate-800 bg-slate-900/50 text-slate-400 hover:border-slate-700 hover:text-slate-200'
+                      }`}
+                  >
+                    {option.icon}
+                    {option.label}
+                  </button>
+                ))}
               </div>
             </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
-              {filteredTemplates.map(template => (
-                <article
-                  key={template.id}
-                  className="rounded-2xl border border-slate-800 bg-slate-950/60 p-5 space-y-4 transition-colors hover:border-primary-500/40"
-                >
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="space-y-2">
-                      <h3 className="text-white text-lg font-semibold leading-snug">{template.name}</h3>
-                      <p className="text-sm text-slate-400 line-clamp-3">{template.summary ?? template.description}</p>
-                      <div className="flex flex-wrap gap-2">
-                        {rationalityBadge(template.rationality)}
-                        {template.tags.slice(0, 2).map(tag => (
-                          <span
-                            key={tag}
-                            className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full border border-slate-700 bg-slate-900/60 text-[11px] text-slate-300"
-                          >
-                            {tag}
-                          </span>
-                        ))}
+
+            {/* Grid */}
+            {templatesLoading ? (
+              <div className="flex items-center justify-center py-20 text-slate-400 text-sm">
+                <Loader2 className="w-5 h-5 animate-spin mr-3 text-primary-500" />
+                Carregando biblioteca...
+              </div>
+            ) : filteredTemplates.length === 0 ? (
+              <div className="border border-dashed border-slate-800 rounded-2xl py-16 text-center space-y-4 bg-slate-900/20">
+                <div className="bg-slate-900/50 w-16 h-16 rounded-full flex items-center justify-center mx-auto border border-slate-800">
+                  <Search className="w-6 h-6 text-slate-600" />
+                </div>
+                <div>
+                  <p className="text-slate-300 font-medium">Nenhum protocolo encontrado</p>
+                  <p className="text-sm text-slate-500">Tente ajustar seus filtros de busca.</p>
+                </div>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+                {filteredTemplates.map(template => (
+                  <article
+                    key={template.id}
+                    className="group rounded-2xl border border-slate-800 bg-slate-950/40 p-5 space-y-4 transition-all hover:border-primary-500/30 hover:bg-slate-900/80 hover:shadow-xl hover:shadow-primary-900/5 flex flex-col"
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between w-full">
+                          <h3 className="text-white text-base font-semibold leading-snug group-hover:text-primary-200 transition-colors">
+                            {template.name}
+                          </h3>
+                        </div>
+                        <div className="flex flex-wrap gap-2">
+                          {rationalityBadge(template.rationality)}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                  <div className="grid grid-cols-2 gap-3 text-xs text-slate-300">
-                    <div className="flex items-center gap-2">
-                      <Stethoscope className="w-3.5 h-3.5 text-primary-300" />
-                      <span>{template.defaultDosage ?? 'Dosagem personalizada'}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Clock className="w-3.5 h-3.5 text-emerald-300" />
-                      <span>{template.defaultFrequency ?? 'Definir frequência'}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Calendar className="w-3.5 h-3.5 text-sky-300" />
-                      <span>{template.defaultDuration ?? 'Definir duração'}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <User className="w-3.5 h-3.5 text-amber-300" />
-                      <span>{template.indications.length} indicação(ões)</span>
-                    </div>
-                  </div>
-                  <div className="flex flex-wrap gap-2">
-                    {template.indications.slice(0, 3).map(indication => (
-                      <span key={indication} className="inline-flex items-center px-2 py-1 rounded-full border border-emerald-400/40 bg-emerald-500/10 text-[11px] text-emerald-200">
-                        {indication}
+                    <p className="text-sm text-slate-400 line-clamp-3 leading-relaxed flex-grow">
+                      {template.summary ?? template.description}
+                    </p>
+
+                    <div className="grid grid-cols-2 gap-3 text-xs text-slate-500 border-t border-slate-800/60 pt-4 mt-auto">
+                      <span className="flex items-center gap-1.5" title="Dosagem Padrão">
+                        <Stethoscope className="w-3.5 h-3.5 text-slate-600" />
+                        {template.defaultDosage ? 'Dosagem pré-def.' : 'Personalizável'}
                       </span>
-                    ))}
-                    {template.indications.length > 3 && (
-                      <span className="inline-flex items-center px-2 py-1 rounded-full border border-slate-700 bg-slate-900/70 text-[11px] text-slate-300">
-                        +{template.indications.length - 3}
+                      <span className="flex items-center gap-1.5" title="Duração Padrão">
+                        <Calendar className="w-3.5 h-3.5 text-slate-600" />
+                        {template.defaultDuration ?? 'Duração aberta'}
                       </span>
-                    )}
-                  </div>
-                  <div className="flex justify-between items-center pt-2">
+                    </div>
+
                     <button
                       onClick={() => handleOpenTemplate(template)}
-                      className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-primary-500/90 hover:bg-primary-400 text-white text-sm font-semibold transition-colors"
+                      className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-slate-800 text-slate-300 text-sm font-medium hover:bg-primary-600 hover:text-white transition-all shadow-sm"
                     >
-                      Prescrever
+                      Prescrever este protocolo
                       <ArrowRight className="w-4 h-4" />
                     </button>
-                    <button
-                      onClick={() => setSelectedTemplate(template)}
-                      className="text-xs text-slate-400 hover:text-primary-200 transition-colors"
-                    >
-                      Ver detalhes
-                    </button>
-                  </div>
-                </article>
-              ))}
-            </div>
-          )}
-        </div>
-
-        <div className="bg-slate-900/60 border border-slate-800 rounded-2xl p-6 space-y-4 min-w-0">
-          <div className="flex items-center justify-between gap-3">
-            <div>
-              <h3 className="text-lg font-semibold text-white flex items-center gap-2">
-                <FileText className="w-5 h-5 text-primary-300" />
-                Prescrições emitidas
-              </h3>
-              <p className="text-xs text-slate-400">
-                Visão consolidada das prescrições registradas para {patientName ?? 'o paciente selecionado'}.
-              </p>
-            </div>
-            {patientId && (
-              <div className="text-xs text-slate-400">
-                {patientPrescriptions.length > 0 ? `${patientPrescriptions.length} registro(s)` : 'Nenhum registro'}
+                  </article>
+                ))}
               </div>
             )}
           </div>
+        )}
 
-          {!patientId ? (
-            <div className="border border-dashed border-slate-800 rounded-2xl py-12 text-center space-y-3">
-              <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-slate-900 border border-slate-800 mx-auto">
-                <Brain className="w-6 h-6 text-slate-500" />
-              </div>
-              <p className="text-sm text-slate-400">Selecione um paciente para visualizar as prescrições registradas.</p>
+        {/* --- HISTORY TAB --- */}
+        {activeTab === 'history' && (
+          <div className="bg-slate-900/60 border border-slate-800 rounded-2xl overflow-hidden animate-in fade-in slide-in-from-bottom-2 duration-300">
+            <div className="p-4 border-b border-slate-800 flex items-center justify-between bg-slate-900/80">
+              <h3 className="text-sm font-semibold text-white flex items-center gap-2">
+                <FileText className="w-4 h-4 text-primary-300" />
+                Registros de Prescrições
+              </h3>
+              {!patientId && (
+                <span className="text-xs text-amber-300 bg-amber-500/10 px-3 py-1 rounded-full border border-amber-500/20 flex items-center gap-1">
+                  <User className="w-3 h-3" />
+                  Selecione um paciente
+                </span>
+              )}
             </div>
-          ) : prescriptionsLoading ? (
-            <div className="flex items-center justify-center py-12 text-slate-400 text-sm">
-              <Loader2 className="w-4 h-4 animate-spin mr-2" />
-              Carregando prescrições emitidas...
-            </div>
-          ) : prescriptionsError ? (
-            <div className="rounded-xl border border-rose-500/30 bg-rose-950/40 text-rose-200 px-4 py-3 text-sm">
-              {prescriptionsError}
-            </div>
-          ) : patientPrescriptions.length === 0 ? (
-            <div className="border border-dashed border-slate-800 rounded-2xl py-12 text-center space-y-3">
-              <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-slate-900 border border-slate-800 mx-auto">
-                <CheckCircle className="w-6 h-6 text-slate-500" />
-              </div>
-              <p className="text-sm text-slate-400">Nenhuma prescrição registrada para este paciente.</p>
-            </div>
-          ) : (
-            <div className="space-y-4">
-              {patientPrescriptions.map(prescription => (
-                <article
-                  key={prescription.id}
-                  className="rounded-2xl border border-slate-800 bg-slate-950/60 p-5 space-y-3"
-                >
-                  <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
-                    <div>
-                      <h4 className="text-white font-semibold flex items-center gap-2">
-                        {prescription.title}
-                        {rationalityBadge(prescription.rationality)}
-                      </h4>
-                      <p className="text-xs text-slate-400 mt-1">
-                        Emitida em {new Date(prescription.issuedAt).toLocaleDateString('pt-BR')}
-                        {prescription.professionalName ? ` • Profissional: ${prescription.professionalName}` : ''}
-                        {prescription.planTitle ? ` • Plano: ${prescription.planTitle}` : ''}
-                      </p>
-                    </div>
-                    <span
-                      className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold border ${
-                        prescription.status === 'active'
-                          ? 'bg-emerald-500/10 text-emerald-200 border-emerald-400/40'
-                          : prescription.status === 'completed'
-                          ? 'bg-sky-500/10 text-sky-200 border-sky-400/40'
-                          : prescription.status === 'suspended'
-                          ? 'bg-amber-500/10 text-amber-200 border-amber-400/40'
-                          : 'bg-rose-500/10 text-rose-200 border-rose-400/40'
-                      }`}
-                    >
-                      {prescription.status === 'active'
-                        ? 'Ativa'
-                        : prescription.status === 'completed'
-                        ? 'Concluída'
-                        : prescription.status === 'suspended'
-                        ? 'Suspensa'
-                        : 'Cancelada'}
-                    </span>
-                  </div>
-                  {prescription.summary && (
-                    <p className="text-sm text-slate-300">{prescription.summary}</p>
+
+            <div className="overflow-x-auto custom-scrollbar">
+              <table className="w-full text-left text-sm text-slate-400">
+                <thead className="bg-slate-950/80 text-xs uppercase font-semibold text-slate-500 border-b border-slate-800 sticky top-0">
+                  <tr>
+                    <th className="px-6 py-4 whitespace-nowrap">Data / Hora</th>
+                    <th className="px-6 py-4 whitespace-nowrap">Protocolo / Título</th>
+                    <th className="px-6 py-4 whitespace-nowrap">Racionalidade</th>
+                    <th className="px-6 py-4 whitespace-nowrap">Status</th>
+                    <th className="px-6 py-4 whitespace-nowrap">Profissional</th>
+                    <th className="px-6 py-4 text-right whitespace-nowrap">Ações</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-800/50">
+                  {prescriptionsLoading ? (
+                    <tr>
+                      <td colSpan={6} className="px-6 py-12 text-center text-slate-500">
+                        <Loader2 className="w-5 h-5 animate-spin mx-auto mb-2 text-primary-500" />
+                        Carregando histórico...
+                      </td>
+                    </tr>
+                  ) : patientPrescriptions.length === 0 ? (
+                    <tr>
+                      <td colSpan={6} className="px-6 py-16 text-center text-slate-600 bg-slate-900/20">
+                        <div className="bg-slate-800/50 w-12 h-12 rounded-full flex items-center justify-center mx-auto border border-slate-700 mb-3">
+                          <History className="w-5 h-5 text-slate-500" />
+                        </div>
+                        Nenhuma prescrição encontrada para este paciente.
+                      </td>
+                    </tr>
+                  ) : (
+                    patientPrescriptions.map(presc => (
+                      <tr key={presc.id} className="hover:bg-slate-800/30 transition-colors group">
+                        <td className="px-6 py-4 text-slate-300 whitespace-nowrap">
+                          <div className="font-medium text-white">{new Date(presc.issuedAt).toLocaleDateString('pt-BR')}</div>
+                          <div className="text-xs text-slate-600">{new Date(presc.issuedAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</div>
+                        </td>
+                        <td className="px-6 py-4">
+                          <span className="text-slate-200 font-medium block truncate max-w-[200px] group-hover:text-primary-200 transition-colors">{presc.title}</span>
+                          {presc.templateName && <span className="text-xs text-slate-500">Base: {presc.templateName}</span>}
+                        </td>
+                        <td className="px-6 py-4">
+                          {rationalityBadge(presc.rationality)}
+                        </td>
+                        <td className="px-6 py-4">
+                          <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border ${presc.status === 'active' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' :
+                              presc.status === 'completed' ? 'bg-blue-500/10 text-blue-400 border-blue-500/20' :
+                                'bg-slate-800 text-slate-400 border-slate-700'
+                            }`}>
+                            {presc.status === 'active' ? 'Ativa' : presc.status}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 text-slate-400 whitespace-nowrap">
+                          {presc.professionalName || <span className="text-slate-600 italic">Sistema</span>}
+                        </td>
+                        <td className="px-6 py-4 text-right">
+                          <button className="text-slate-500 hover:text-primary-300 p-2 hover:bg-primary-500/10 rounded-lg transition-colors" title="Imprimir / Visualizar">
+                            <Printer className="w-4 h-4" />
+                          </button>
+                        </td>
+                      </tr>
+                    ))
                   )}
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs text-slate-300">
-                    <div className="flex items-center gap-2">
-                      <Stethoscope className="w-3.5 h-3.5 text-primary-300" />
-                      <span>{prescription.dosage ?? 'Dosagem definida pelo profissional'}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Clock className="w-3.5 h-3.5 text-emerald-300" />
-                      <span>{prescription.frequency ?? 'Frequência personalizada'}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Calendar className="w-3.5 h-3.5 text-sky-300" />
-                      <span>
-                        {prescription.duration ??
-                          (prescription.startsAt
-                            ? `De ${new Date(prescription.startsAt).toLocaleDateString('pt-BR')}${
-                                prescription.endsAt ? ` a ${new Date(prescription.endsAt).toLocaleDateString('pt-BR')}` : ''
-                              }`
-                            : 'Duração personalizada')}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <FileText className="w-3.5 h-3.5 text-slate-300" />
-                      <span>{prescription.templateName ?? 'Modelo personalizado'}</span>
-                    </div>
-                  </div>
-                  {prescription.instructions && (
-                    <div className="rounded-xl bg-slate-900/70 border border-slate-800 px-4 py-3 text-xs text-slate-300">
-                      {prescription.instructions}
-                    </div>
-                  )}
-                </article>
-              ))}
+                </tbody>
+              </table>
             </div>
-          )}
-        </div>
+          </div>
+        )}
       </div>
 
+      {/* --- TEMPLATE MODAL (UNCHANGED) --- */}
       {showTemplateModal && selectedTemplate && (
-        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center z-[1000] px-4">
-          <div className="bg-slate-950 rounded-2xl w-full max-w-3xl max-h-[85vh] overflow-y-auto">
-            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-800">
+        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center z-[1000] px-4 animate-in fade-in duration-200">
+          <div className="bg-slate-950 rounded-2xl w-full max-w-3xl max-h-[85vh] overflow-y-auto border border-slate-800 shadow-2xl">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-800 bg-slate-900/50 sticky top-0 backdrop-blur-md z-10">
               <div>
                 <h3 className="text-xl font-semibold text-white">{selectedTemplate.name}</h3>
                 <p className="text-xs text-slate-400 mt-1">
@@ -700,69 +651,69 @@ const IntegrativePrescriptions: React.FC<IntegrativePrescriptionsProps> = ({
             <div className="px-6 py-5 space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="text-xs uppercase tracking-[0.3em] text-slate-500">Dosagem</label>
+                  <label className="text-xs uppercase tracking-[0.3em] text-slate-500 font-medium">Dosagem</label>
                   <input
                     value={draft.dosage}
                     onChange={event => setDraft(prev => ({ ...prev, dosage: event.target.value }))}
                     placeholder={selectedTemplate.defaultDosage ?? 'Defina a dosagem'}
-                    className="w-full mt-1 bg-slate-950/60 border border-slate-800 rounded-xl px-3 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-primary-500/60"
+                    className="w-full mt-1.5 bg-slate-950/60 border border-slate-800 rounded-xl px-3 py-2.5 text-sm text-white placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-primary-500/60 focus:border-transparent transition-all"
                   />
                 </div>
                 <div>
-                  <label className="text-xs uppercase tracking-[0.3em] text-slate-500">Frequência</label>
+                  <label className="text-xs uppercase tracking-[0.3em] text-slate-500 font-medium">Frequência</label>
                   <input
                     value={draft.frequency}
                     onChange={event => setDraft(prev => ({ ...prev, frequency: event.target.value }))}
                     placeholder={selectedTemplate.defaultFrequency ?? 'Defina a frequência'}
-                    className="w-full mt-1 bg-slate-950/60 border border-slate-800 rounded-xl px-3 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-primary-500/60"
+                    className="w-full mt-1.5 bg-slate-950/60 border border-slate-800 rounded-xl px-3 py-2.5 text-sm text-white placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-primary-500/60 focus:border-transparent transition-all"
                   />
                 </div>
                 <div>
-                  <label className="text-xs uppercase tracking-[0.3em] text-slate-500">Duração</label>
+                  <label className="text-xs uppercase tracking-[0.3em] text-slate-500 font-medium">Duração</label>
                   <input
                     value={draft.duration}
                     onChange={event => setDraft(prev => ({ ...prev, duration: event.target.value }))}
                     placeholder={selectedTemplate.defaultDuration ?? 'Defina a duração'}
-                    className="w-full mt-1 bg-slate-950/60 border border-slate-800 rounded-xl px-3 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-primary-500/60"
+                    className="w-full mt-1.5 bg-slate-950/60 border border-slate-800 rounded-xl px-3 py-2.5 text-sm text-white placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-primary-500/60 focus:border-transparent transition-all"
                   />
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="text-xs uppercase tracking-[0.3em] text-slate-500">Início</label>
+                    <label className="text-xs uppercase tracking-[0.3em] text-slate-500 font-medium">Início</label>
                     <input
                       type="date"
                       value={draft.startsAt}
                       onChange={event => setDraft(prev => ({ ...prev, startsAt: event.target.value }))}
-                      className="w-full mt-1 bg-slate-950/60 border border-slate-800 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-primary-500/60"
+                      className="w-full mt-1.5 bg-slate-950/60 border border-slate-800 rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-primary-500/60 focus:border-transparent transition-all"
                     />
                   </div>
                   <div>
-                    <label className="text-xs uppercase tracking-[0.3em] text-slate-500">Término</label>
+                    <label className="text-xs uppercase tracking-[0.3em] text-slate-500 font-medium">Término</label>
                     <input
                       type="date"
                       value={draft.endsAt}
                       onChange={event => setDraft(prev => ({ ...prev, endsAt: event.target.value }))}
-                      className="w-full mt-1 bg-slate-950/60 border border-slate-800 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-primary-500/60"
+                      className="w-full mt-1.5 bg-slate-950/60 border border-slate-800 rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-primary-500/60 focus:border-transparent transition-all"
                     />
                   </div>
                 </div>
               </div>
               <div>
-                <label className="text-xs uppercase tracking-[0.3em] text-slate-500">Instruções clínicas</label>
+                <label className="text-xs uppercase tracking-[0.3em] text-slate-500 font-medium">Instruções clínicas</label>
                 <textarea
                   value={draft.instructions}
                   onChange={event => setDraft(prev => ({ ...prev, instructions: event.target.value }))}
                   placeholder={selectedTemplate.defaultInstructions ?? 'Descreva as orientações para o paciente'}
-                  className="w-full mt-1 bg-slate-950/60 border border-slate-800 rounded-xl px-3 py-3 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-primary-500/60 min-h-[120px]"
+                  className="w-full mt-1.5 bg-slate-950/60 border border-slate-800 rounded-xl px-3 py-3 text-sm text-white placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-primary-500/60 focus:border-transparent min-h-[120px] transition-all"
                 />
               </div>
               <div>
-                <label className="text-xs uppercase tracking-[0.3em] text-slate-500">Notas adicionais (visão do profissional)</label>
+                <label className="text-xs uppercase tracking-[0.3em] text-slate-500 font-medium">Notas adicionais (interno)</label>
                 <textarea
                   value={draft.notes}
                   onChange={event => setDraft(prev => ({ ...prev, notes: event.target.value }))}
                   placeholder="Informações complementares visíveis apenas para a equipe profissional."
-                  className="w-full mt-1 bg-slate-950/60 border border-slate-800 rounded-xl px-3 py-3 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-primary-500/60 min-h-[100px]"
+                  className="w-full mt-1.5 bg-slate-950/60 border border-slate-800 rounded-xl px-3 py-3 text-sm text-white placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-primary-500/60 focus:border-transparent min-h-[100px] transition-all"
                 />
               </div>
               <div className="rounded-xl border border-slate-800 bg-slate-900/60 px-4 py-3 text-xs text-slate-300 space-y-1">
@@ -775,7 +726,7 @@ const IntegrativePrescriptions: React.FC<IntegrativePrescriptionsProps> = ({
                 )}
               </div>
             </div>
-            <div className="px-6 py-5 border-t border-slate-800 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+            <div className="px-6 py-5 border-t border-slate-800 flex flex-col md:flex-row md:items-center md:justify-between gap-3 bg-slate-900/30 sticky bottom-0 backdrop-blur-md">
               <button
                 onClick={() => setShowTemplateModal(false)}
                 className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg border border-slate-700 text-slate-300 hover:text-primary-200 hover:border-primary-500/40 text-sm transition-colors"
@@ -785,7 +736,7 @@ const IntegrativePrescriptions: React.FC<IntegrativePrescriptionsProps> = ({
               <button
                 onClick={handleConfirmPrescription}
                 disabled={actionLoading}
-                className="inline-flex items-center justify-center gap-2 px-5 py-2 rounded-lg bg-primary-500 hover:bg-primary-400 text-white text-sm font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="inline-flex items-center justify-center gap-2 px-6 py-2 rounded-lg bg-primary-500 hover:bg-primary-400 text-white text-sm font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-primary-900/20"
               >
                 {actionLoading && <Loader2 className="w-4 h-4 animate-spin" />}
                 Confirmar prescrição
@@ -795,9 +746,10 @@ const IntegrativePrescriptions: React.FC<IntegrativePrescriptionsProps> = ({
         </div>
       )}
 
+      {/* --- CFM MODAL (UNCHANGED) --- */}
       {showCFMModal && (
         <div
-          className="fixed inset-0 bg-slate-950/90 backdrop-blur-sm flex items-center justify-center z-[1100] px-4"
+          className="fixed inset-0 bg-slate-950/90 backdrop-blur-sm flex items-center justify-center z-[1100] px-4 animate-in fade-in zoom-in-95 duration-200"
           onClick={event => {
             if (event.target === event.currentTarget) {
               setShowCFMModal(false)
@@ -805,10 +757,10 @@ const IntegrativePrescriptions: React.FC<IntegrativePrescriptionsProps> = ({
           }}
         >
           <div
-            className="bg-slate-950 rounded-2xl w-full max-w-4xl max-h-[85vh] overflow-y-auto"
+            className="bg-slate-950 rounded-2xl w-full max-w-4xl max-h-[85vh] overflow-y-auto border border-slate-800 shadow-2xl"
             onClick={event => event.stopPropagation()}
           >
-            <div className="flex items-center justify-between px-6 py-5 border-b border-slate-800">
+            <div className="flex items-center justify-between px-6 py-5 border-b border-slate-800 bg-slate-900/50">
               <div>
                 <h3 className="text-xl font-semibold text-white flex items-center gap-2">
                   <Lock className="w-5 h-5 text-primary-300" />
@@ -832,7 +784,7 @@ const IntegrativePrescriptions: React.FC<IntegrativePrescriptionsProps> = ({
                     navigate('/app/prescriptions?type=simple')
                     setShowCFMModal(false)
                   }}
-                  className="p-5 rounded-2xl border border-slate-800 bg-slate-950/60 text-left space-y-2 hover:border-primary-500/40 transition-colors"
+                  className="p-5 rounded-2xl border border-slate-800 bg-slate-950/60 text-left space-y-2 hover:border-primary-500/40 hover:bg-slate-900/80 transition-all hover:scale-[1.01]"
                 >
                   <FileText className="w-7 h-7 text-primary-300" />
                   <p className="text-white font-semibold text-lg">Receituário simples</p>
@@ -843,7 +795,7 @@ const IntegrativePrescriptions: React.FC<IntegrativePrescriptionsProps> = ({
                     navigate('/app/prescriptions?type=special')
                     setShowCFMModal(false)
                   }}
-                  className="p-5 rounded-2xl border border-slate-800 bg-slate-950/60 text-left space-y-2 hover:border-primary-500/40 transition-colors"
+                  className="p-5 rounded-2xl border border-slate-800 bg-slate-950/60 text-left space-y-2 hover:border-primary-500/40 hover:bg-slate-900/80 transition-all hover:scale-[1.01]"
                 >
                   <Lock className="w-7 h-7 text-sky-300" />
                   <p className="text-white font-semibold text-lg">Receita branca controle especial</p>
@@ -854,7 +806,7 @@ const IntegrativePrescriptions: React.FC<IntegrativePrescriptionsProps> = ({
                     navigate('/app/prescriptions?type=blue')
                     setShowCFMModal(false)
                   }}
-                  className="p-5 rounded-2xl border border-slate-800 bg-slate-950/60 text-left space-y-2 hover:border-primary-500/40 transition-colors"
+                  className="p-5 rounded-2xl border border-slate-800 bg-slate-950/60 text-left space-y-2 hover:border-primary-500/40 hover:bg-slate-900/80 transition-all hover:scale-[1.01]"
                 >
                   <Lock className="w-7 h-7 text-blue-300" />
                   <p className="text-white font-semibold text-lg">Receita azul (B1/B2)</p>
@@ -865,7 +817,7 @@ const IntegrativePrescriptions: React.FC<IntegrativePrescriptionsProps> = ({
                     navigate('/app/prescriptions?type=yellow')
                     setShowCFMModal(false)
                   }}
-                  className="p-5 rounded-2xl border border-slate-800 bg-slate-950/60 text-left space-y-2 hover:border-primary-500/40 transition-colors"
+                  className="p-5 rounded-2xl border border-slate-800 bg-slate-950/60 text-left space-y-2 hover:border-primary-500/40 hover:bg-slate-900/80 transition-all hover:scale-[1.01]"
                 >
                   <Lock className="w-7 h-7 text-amber-300" />
                   <p className="text-white font-semibold text-lg">Receita amarela (A1/A2/A3)</p>
