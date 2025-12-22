@@ -55,5 +55,11 @@ Hoje focamos na reestruturação e simplificação do **Dashboard do Paciente** 
     *   Adicionado seção "Consentimento Informado & NFT Escute-se" ao `JourneyManualModal` para centralizar informações legais.
 *   **Correção de Dados:** Ampliada a query de profissionais no chat para incluir tipos `admin`, `medico` e `specialist`, garantindo que toda a equipe clínica apareça na lista (fix para Ricardo Valença/Eduardo Faveret).
 
+### 6. Follow-up (22/12): Correções Mobile
+*   **Correção de Botão Flutuante (Sidebar):** Removido botão de menu antigo (`MobileResponsiveWrapper`) que estava fixado no topo (`fixed top-4`) e sobrepunha o novo cabeçalho, causando inconsistência visual e movimento indesejado ao rolar. Agora o controle da sidebar é exclusivo do Header.
+
+---
+
+
 ---
 **Status:** ✅ Concluído e Testado.
