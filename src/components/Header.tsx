@@ -123,15 +123,30 @@ const Header: React.FC<HeaderProps> = ({ onOpenSidebar }) => {
       )}
 
       <div className="w-full max-w-full px-2 sm:px-3 md:px-4 lg:px-6 xl:px-8 relative" style={{ zIndex: 10 }}>
-        <div className="flex justify-between items-center h-14 sm:h-16 md:h-18">
-          {/* Mobile Sidebar Trigger (Sandwich) - Sempre visível no mobile */}
-          <button
-            onClick={() => onOpenSidebar?.()}
-            className="md:hidden p-2 -ml-2 rounded-md text-[#C8D6E5] hover:text-[#00C16A] active:text-[#00C16A] hover:bg-[#1b314e] active:bg-[#1b314e] touch-manipulation min-w-[44px] min-h-[44px] flex items-center justify-center"
-            aria-label="Abrir menu"
-          >
-            <Menu className="w-5 h-5 sm:w-6 sm:h-6" />
-          </button>
+        <div className="flex justify-between items-center h-14 sm:h-16 md:h-18 relative">
+
+          {/* ESQUERDA: Menu Sanduíche + Bandeira */}
+          <div className="flex items-center gap-2 z-20">
+            {/* Menu Mobile */}
+            <button
+              onClick={() => onOpenSidebar?.()}
+              className="md:hidden p-2 -ml-2 rounded-md text-[#C8D6E5] hover:text-[#00C16A] active:text-[#00C16A] hover:bg-[#1b314e] active:bg-[#1b314e] touch-manipulation min-w-[44px] min-h-[44px] flex items-center justify-center"
+              aria-label="Abrir menu"
+            >
+              <Menu className="w-5 h-5 sm:w-6 sm:h-6" />
+            </button>
+
+            {/* Language Toggle (Mobile: ao lado do menu) */}
+            <button
+              onClick={toggleLanguage}
+              className="md:hidden p-2 rounded-lg hover:bg-[#1b314e] transition-colors -ml-1"
+              title={i18n.language === 'en' ? 'Mudar para Português' : 'Switch to English'}
+            >
+              <span className="text-xl leading-none">
+                {i18n.language === 'en' ? '🇺🇸' : '🇧🇷'}
+              </span>
+            </button>
+          </div>
 
           {/* Logo removido - já existe na sidebar */}
           <div className="hidden"></div>
@@ -162,7 +177,7 @@ const Header: React.FC<HeaderProps> = ({ onOpenSidebar }) => {
             {/* Language Toggle */}
             <button
               onClick={toggleLanguage}
-              className="p-2 rounded-lg hover:bg-[#1b314e] transition-colors"
+              className="hidden md:block p-2 rounded-lg hover:bg-[#1b314e] transition-colors"
               title={i18n.language === 'en' ? 'Mudar para Português' : 'Switch to English'}
             >
               <span className="text-xl leading-none">
@@ -379,7 +394,7 @@ const Header: React.FC<HeaderProps> = ({ onOpenSidebar }) => {
                       </div>
 
                       {/* MOBILE VIEW: Dropdown Switcher */}
-                      <div className="md:hidden relative">
+                      <div className="md:hidden absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-30">
                         <button
                           onClick={() => setIsViewSwitcherOpen(!isViewSwitcherOpen)}
                           className="flex items-center space-x-2 px-3 py-1.5 rounded-lg bg-[#102642] text-white border border-[#213553] active:bg-[#1b314e]"

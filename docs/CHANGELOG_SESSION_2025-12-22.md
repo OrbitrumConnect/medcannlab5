@@ -11,6 +11,10 @@
 ## 📱 Interface (Mobile)
 - **Header Mobile:**
   - Corrigido layout quebrado onde Avatar e Seletores ficavam fora da barra.
+  - **Layout Final Mobile:**
+    - Esquerda: Menu + Bandeira.
+    - Centro: Seletor de Perfil (Absoluto).
+    - Direita: Avatar.
   - Removido `transform` CSS que desalinhava o Avatar.
   - Organizado container Flexbox para melhor distribuição dos itens no mobile.
 
