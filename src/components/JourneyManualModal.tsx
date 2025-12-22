@@ -124,6 +124,16 @@ const JourneyManualModal: React.FC<JourneyManualModalProps> = ({ isOpen, onClose
 
                     </div>
 
+                    {/* Footer - NFT & Consent */}
+                    <div className="bg-purple-900/30 rounded-lg p-3 border border-purple-700/50 mb-3">
+                        <p className="text-xs text-slate-300 mb-1 font-semibold">
+                            🔐 Consentimento Informado & NFT Escute-se
+                        </p>
+                        <p className="text-[10px] text-slate-400 leading-relaxed">
+                            Ao agendar, você concorda com o processamento de seus dados pela IA Residente e reconhece o vínculo com o <strong className="text-purple-300">NFT Escute-se</strong>, garantindo seus direitos de privacidade e propriedade dos dados.
+                        </p>
+                    </div>
+
                     {/* Footer - Security Note */}
                     <div className="bg-slate-800/30 rounded-lg p-3 flex items-center gap-3 border border-slate-700/50">
                         <Shield className="w-4 h-4 text-emerald-400 flex-shrink-0" />

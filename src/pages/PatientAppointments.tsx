@@ -945,35 +945,23 @@ const PatientAppointments: React.FC = () => {
             <div className="bg-slate-800 rounded-xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
               <h3 className="text-xl font-semibold text-white mb-4">Novo Agendamento</h3>
 
-              {/* Informações sobre IA Residente e Fluxo */}
-              <div className="bg-blue-900/30 border border-blue-700/50 rounded-lg p-4 mb-4">
-                <div className="flex items-start space-x-3">
-                  <div className="flex-shrink-0 w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center">
-                    <MessageSquare className="w-5 h-5 text-white" />
+              {/* Link para Manual da Jornada */}
+              <div className="bg-slate-700/50 border border-slate-600 rounded-lg p-3 mb-4 flex items-center justify-between">
+                <div className="flex items-center space-x-2">
+                  <div className="w-8 h-8 bg-emerald-500/20 rounded-full flex items-center justify-center">
+                    <Brain className="w-4 h-4 text-emerald-400" />
                   </div>
-                  <div className="flex-1">
-                    <h4 className="text-white font-semibold mb-2">🤖 Avaliação Clínica Inicial pela IA Residente</h4>
-                    <p className="text-sm text-slate-300 mb-3">
-                      Sua consulta será precedida por uma <strong>Avaliação Clínica Inicial</strong> realizada pela <strong>IA Residente Nôa Esperança</strong>, especializada em Cannabis Medicinal e Nefrologia.
-                    </p>
-                    <div className="bg-slate-900/50 rounded p-3 mb-3">
-                      <p className="text-xs text-slate-400 mb-2"><strong className="text-slate-300">Fluxo do Processo:</strong></p>
-                      <ol className="text-xs text-slate-400 space-y-1 list-decimal list-inside">
-                        <li>Você realizará a <strong className="text-slate-300">Avaliação Clínica Inicial</strong> com a IA Nôa Esperança</li>
-                        <li>A IA gerará um <strong className="text-slate-300">Relatório da Avaliação Clínica Inicial</strong></li>
-                        <li>O relatório será direcionado para seu <strong className="text-slate-300">Prontuário Eletrônico</strong></li>
-                        <li>Você poderá acessar o relatório na área de <strong className="text-slate-300">Atendimento</strong> ou <strong className="text-slate-300">Chat com Profissional</strong></li>
-                        <li>O profissional receberá o relatório antes da consulta presencial/online</li>
-                      </ol>
-                    </div>
-                    <div className="bg-purple-900/30 border border-purple-700/50 rounded p-3">
-                      <p className="text-xs text-slate-300 mb-1"><strong>🔐 Consentimento Informado & NFT Escute-se</strong></p>
-                      <p className="text-xs text-slate-400">
-                        Ao agendar, você concorda com o processamento de seus dados pela IA Residente e reconhece o vínculo com o <strong className="text-purple-300">NFT Escute-se</strong>, garantindo seus direitos de privacidade e propriedade dos dados.
-                      </p>
-                    </div>
-                  </div>
+                  <span className="text-sm text-slate-300">
+                    Consulte o <strong className="text-emerald-400">Manual da Jornada</strong> para entender o fluxo de avaliação.
+                  </span>
                 </div>
+                <button
+                  type="button"
+                  onClick={() => setShowJourneyManual(true)}
+                  className="text-xs text-emerald-400 hover:text-emerald-300 underline"
+                >
+                  Abrir Manual
+                </button>
               </div>
 
               <div className="space-y-4">

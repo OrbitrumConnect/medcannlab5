@@ -9,12 +9,12 @@ import {
   MicOff,
   Clock,
   CheckCircle,
-  AlertCircle,
   ChevronDown,
-  MessageSquare
+  BookOpen
 } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
 import { supabase } from '../lib/supabase'
+import JourneyManualModal from '../components/JourneyManualModal'
 
 interface Message {
   id: string
@@ -34,6 +34,7 @@ const PatientChat: React.FC = () => {
   const [professionals, setProfessionals] = useState<any[]>([])
   const [messages, setMessages] = useState<Message[]>([])
   const [showProfessionalSelect, setShowProfessionalSelect] = useState(false)
+  const [showJourneyManual, setShowJourneyManual] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const dropdownRef = useRef<HTMLDivElement>(null)
 
@@ -44,7 +45,7 @@ const PatientChat: React.FC = () => {
         const { data, error } = await supabase
           .from('users')
           .select('id, name, email, type, specialty')
-          .in('type', ['profissional', 'professional'])
+          .in('type', ['profissional', 'professional', 'admin', 'medico', 'specialist'])
 
         if (!error && data) {
           setProfessionals(data)
@@ -208,100 +209,71 @@ const PatientChat: React.FC = () => {
   return (
     <div className="min-h-screen bg-slate-900 p-8">
       <div className="max-w-4xl mx-auto">
-        {/* Header */}
-        <div className="text-center mb-6">
-          <h1 className="text-4xl font-bold text-white mb-4">
-            Chat com Profissional
-          </h1>
-          <p className="text-slate-300 text-lg mb-4">
-            Converse diretamente com seu profissional de saúde
-          </p>
+        {/* Header removido conforme solicitação do usuário */}
 
-          {/* Professional Selector */}
-          <div className="relative">
-            <button
-              onClick={() => setShowProfessionalSelect(!showProfessionalSelect)}
-              className="bg-slate-800 border border-slate-700 rounded-lg px-6 py-3 flex items-center space-x-3 hover:bg-slate-700 transition-colors mx-auto"
-            >
-              <div className="w-10 h-10 bg-gradient-to-r from-[#00c16a] to-[#00a85a] rounded-full flex items-center justify-center">
-                <span className="text-white font-bold">{currentProfessional?.name?.[0] || 'P'}</span>
-              </div>
-              <div className="text-left">
-                <div className="flex items-center space-x-2">
-                  <p className="font-semibold text-white">{currentProfessional?.name || 'Profissional'}</p>
-                  <div className="w-2 h-2 bg-green-400 rounded-full"></div>
-                </div>
-                <p className="text-sm text-slate-400">{currentProfessional?.specialty || 'Cannabis Medicinal'}</p>
-              </div>
-              <ChevronDown className="w-5 h-5 text-slate-400" />
-            </button>
 
-            {/* Dropdown */}
-            {showProfessionalSelect && (
-              <div
-                ref={dropdownRef}
-                className="absolute left-1/2 transform -translate-x-1/2 mt-2 w-80 bg-slate-800 border border-slate-700 rounded-lg shadow-xl z-10"
-                onClick={(e) => e.stopPropagation()}
-              >
-                <div className="p-2">
-                  {professionals.map((professional) => (
-                    <button
-                      key={professional.id}
-                      onClick={(e) => {
-                        e.preventDefault()
-                        e.stopPropagation()
-                        setSelectedProfessional(professional.id)
-                        setShowProfessionalSelect(false)
-                      }}
-                      className="w-full p-3 rounded-lg hover:bg-slate-700 transition-colors flex items-center space-x-3"
-                    >
-                      <div className="w-10 h-10 bg-gradient-to-r from-[#00c16a] to-[#00a85a] rounded-full flex items-center justify-center">
-                        <span className="text-white font-bold">{professional.name?.[0] || 'P'}</span>
-                      </div>
-                      <div className="flex-1 text-left">
-                        <div className="flex items-center space-x-2">
-                          <p className="font-semibold text-white">{professional.name}</p>
-                          <div className="w-2 h-2 bg-green-400 rounded-full"></div>
-                        </div>
-                        <p className="text-sm text-slate-400">{professional.specialty || 'Cannabis Medicinal'}</p>
-                      </div>
-                      {selectedProfessional === professional.id && (
-                        <CheckCircle className="w-5 h-5 text-green-400" />
-                      )}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
 
-        {/* Status de Espera */}
-        <div className="bg-orange-500/20 border border-orange-500/50 rounded-lg p-4 mb-6">
-          <div className="flex items-center space-x-3">
-            <Clock className="w-5 h-5 text-orange-400" />
-            <div>
-              <p className="text-orange-200 font-medium">Tempo de Resposta: 1 hora</p>
-              <p className="text-orange-300 text-sm">
-                Se não obtiver resposta em 1 hora, aguarde o próximo horário disponível.
-              </p>
-            </div>
-          </div>
-        </div>
+
 
         {/* Chat Container */}
-        <div className="bg-slate-800/80 rounded-lg shadow-2xl overflow-hidden">
+        <div className="bg-slate-800/80 rounded-lg shadow-2xl overflow-hidden mt-6 relative" style={{ zIndex: 1 }}>
           {/* Chat Header */}
           <div className="bg-slate-700/50 px-6 py-4 border-b border-slate-600">
             <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 bg-primary-600 rounded-full flex items-center justify-center">
-                  <span className="text-sm font-medium text-white">{currentProfessional?.name?.[0] || 'P'}</span>
-                </div>
-                <div>
-                  <h2 className="text-lg font-semibold text-white">{currentProfessional?.name || 'Profissional'}</h2>
-                  <p className="text-slate-300 text-sm">{currentProfessional?.specialty || 'Cannabis Medicinal'}</p>
-                </div>
+              <div className="relative" style={{ zIndex: 100 }}>
+                <button
+                  onClick={() => setShowProfessionalSelect(!showProfessionalSelect)}
+                  className="flex items-center space-x-3 hover:bg-slate-700/50 p-2 rounded-lg transition-colors border border-transparent hover:border-slate-600"
+                >
+                  <div className="w-10 h-10 bg-primary-600 rounded-full flex items-center justify-center">
+                    <span className="text-sm font-medium text-white">{currentProfessional?.name?.[0] || 'P'}</span>
+                  </div>
+                  <div className="text-left">
+                    <h2 className="text-lg font-semibold text-white flex items-center gap-2">
+                      {currentProfessional?.name || 'Profissional'}
+                      <ChevronDown className="w-4 h-4 text-slate-400" />
+                    </h2>
+                    <p className="text-slate-300 text-sm">{currentProfessional?.specialty || 'Cannabis Medicinal'}</p>
+                  </div>
+                </button>
+
+                {/* Dropdown */}
+                {showProfessionalSelect && (
+                  <div
+                    ref={dropdownRef}
+                    className="absolute top-full left-0 mt-2 w-80 bg-slate-800 border border-slate-700 rounded-lg shadow-xl"
+                    style={{ zIndex: 100 }}
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <div className="p-2">
+                      {professionals.map((professional) => (
+                        <button
+                          key={professional.id}
+                          onClick={(e) => {
+                            e.preventDefault()
+                            e.stopPropagation()
+                            setSelectedProfessional(professional.id)
+                            setShowProfessionalSelect(false)
+                          }}
+                          className="w-full p-3 rounded-lg hover:bg-slate-700 transition-colors flex items-center space-x-3"
+                        >
+                          <div className="w-8 h-8 flex-shrink-0 bg-gradient-to-r from-[#00c16a] to-[#00a85a] rounded-full flex items-center justify-center">
+                            <span className="text-white text-xs font-bold">{professional.name?.[0] || 'P'}</span>
+                          </div>
+                          <div className="flex-1 text-left">
+                            <div className="flex items-center space-x-2">
+                              <p className="font-semibold text-white text-sm">{professional.name}</p>
+                            </div>
+                            <p className="text-xs text-slate-400">{professional.specialty || 'Cannabis Medicinal'}</p>
+                          </div>
+                          {selectedProfessional === professional.id && (
+                            <CheckCircle className="w-4 h-4 text-green-400" />
+                          )}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
               <div className="flex items-center space-x-2">
                 <button
@@ -327,8 +299,8 @@ const PatientChat: React.FC = () => {
                   </div>
                 )}
                 <div className={`max-w-xs lg:max-w-md px-4 py-3 rounded-lg ${msg.isDoctor
-                    ? 'bg-slate-700 text-white'
-                    : 'bg-primary-600 text-white'
+                  ? 'bg-slate-700 text-white'
+                  : 'bg-primary-600 text-white'
                   }`}>
                   <div className="flex items-center space-x-2 mb-1">
                     <span className="text-sm font-medium">{msg.user}</span>
@@ -368,8 +340,8 @@ const PatientChat: React.FC = () => {
               <button
                 onClick={startRecording}
                 className={`p-2 transition-colors duration-200 ${isRecording
-                    ? 'text-red-600 bg-red-100 dark:bg-red-900/20'
-                    : 'text-slate-400 hover:text-red-500'
+                  ? 'text-red-600 bg-red-100 dark:bg-red-900/20'
+                  : 'text-slate-400 hover:text-red-500'
                   }`}
               >
                 {isRecording ? <MicOff className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
@@ -384,40 +356,21 @@ const PatientChat: React.FC = () => {
           </div>
         </div>
 
-        {/* Banner de Avaliação Clínica Inicial com IA Nôa Esperança */}
-        <div className="mt-8">
-          <div style={{ background: 'rgba(0,193,106,0.15)', border: '1px solid rgba(0,193,106,0.3)' }} className="rounded-lg p-6">
-            <div className="flex items-start space-x-3">
-              <div className="flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #00c16a 0%, #00a85a 100%)' }}>
-                <MessageSquare className="w-5 h-5 text-white" />
-              </div>
-              <div className="flex-1">
-                <h4 className="text-white font-semibold mb-2">🤖 Avaliação Clínica Inicial pela IA Residente</h4>
-                <p className="text-sm text-slate-300 mb-3">
-                  Sua consulta será precedida por uma <strong>Avaliação Clínica Inicial</strong> realizada pela <strong>IA Residente Nôa Esperança</strong>, especializada em Cannabis Medicinal e Nefrologia.
-                </p>
-                <div className="bg-slate-900/50 rounded p-3 mb-3">
-                  <p className="text-xs text-slate-400 mb-2"><strong className="text-slate-300">Fluxo do Processo:</strong></p>
-                  <ol className="text-xs text-slate-400 space-y-1 list-decimal list-inside">
-                    <li>Você realizará a <strong className="text-slate-300">Avaliação Clínica Inicial</strong> com a IA Nôa Esperança</li>
-                    <li>A IA gerará um <strong className="text-slate-300">Relatório da Avaliação Clínica Inicial</strong></li>
-                    <li>O relatório será direcionado para seu <strong className="text-slate-300">Prontuário Eletrônico</strong></li>
-                    <li>Você poderá acessar o relatório na área de <strong className="text-slate-300">Atendimento</strong> ou <strong className="text-slate-300">Chat com Profissional</strong></li>
-                    <li>O profissional receberá o relatório antes da consulta presencial/online</li>
-                  </ol>
-                </div>
-                <div className="bg-purple-900/30 border border-purple-700/50 rounded p-3">
-                  <p className="text-xs text-slate-300 mb-1"><strong>🔐 Consentimento Informado & NFT Escute-se</strong></p>
-                  <p className="text-xs text-slate-400">
-                    Ao agendar, você concorda com o processamento de seus dados pela IA Residente e reconhece o vínculo com o <strong className="text-purple-300">NFT Escute-se</strong>, garantindo seus direitos de privacidade e propriedade dos dados.
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
+        {/* Trigger para Manual da Jornada */}
+        <div className="mt-6 flex justify-center">
+          <button
+            onClick={() => setShowJourneyManual(true)}
+            className="flex items-center space-x-2 px-4 py-2 bg-slate-800/80 hover:bg-slate-700 border border-slate-700 rounded-lg text-sm text-slate-300 hover:text-white transition-colors"
+          >
+            <BookOpen className="w-4 h-4 text-emerald-400" />
+            <span>Manual da Jornada de Cuidado</span>
+          </button>
         </div>
+
+        {/* Modal */}
+        <JourneyManualModal isOpen={showJourneyManual} onClose={() => setShowJourneyManual(false)} />
       </div>
-    </div>
+    </div >
   )
 }
 

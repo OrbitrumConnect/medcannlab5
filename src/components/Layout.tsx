@@ -147,7 +147,7 @@ const Layout: React.FC = () => {
   // Layout padrão para outros tipos de usuário (com sidebar)
   return (
     <ProtectedRoute>
-      <MobileResponsiveWrapper onMobileMenuToggle={setIsSidebarOpen}>
+      <MobileResponsiveWrapper>
         <div
           className="min-h-screen w-full overflow-x-hidden"
           style={{ background: backgroundGradient }}
@@ -172,7 +172,7 @@ const Layout: React.FC = () => {
               maxWidth: hasOwnSidebar ? '100%' : (isMobile ? '100%' : `calc(100% - ${isSidebarCollapsed ? '112px' : '256px'})`)
             }}
           >
-            <Header />
+            <Header onOpenSidebar={() => setIsSidebarOpen(true)} />
             {/* NavegacaoIndividualizada removida - botões dos eixos já estão na sidebar */}
             <main
               className={`flex-1 ${isMobile ? 'px-2 py-2' : 'px-4 py-4'}`}

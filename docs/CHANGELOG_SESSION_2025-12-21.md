@@ -46,5 +46,14 @@ Hoje focamos na reestruturação e simplificação do **Dashboard do Paciente** 
 *   **Header Mobile Otimizado:** Criado um "Switcher de Visão" compacto para o Header no mobile, agrupando os botões de administração (Admin, Profissional, Aluno, etc.) em um dropdown para evitar quebra de layout.
 *   **Clean Code:** Removido "hack" de CSS `<style>` em `PatientDashboard.tsx` que escondia o chat global. Substituído por controle de estado limpo via `NoaPlatformContext` (`hideGlobalChat`).
 
+### 5. Melhorias de UI/UX e Correções no Chat (PatientChat & Appointments)
+*   **Correção de Sobreposição (Z-Index):** Resolvido problema onde o dropdown de seleção de profissionais era cortado ou ficava atrás do chat. Implementado `z-[100]` para garantir visibilidade.
+*   **Merge de Interface:** Seletor de profissionais foi integrado ao cabeçalho do chat, eliminando cards redundantes e otimizando o espaço.
+*   **Limpeza Visual:**
+    *   Removido banner duplicado "Avaliação Clínica Inicial" do modal de agendamento (`PatientAppointments`).
+    *   Substituído por um link discreto para o "Manual da Jornada".
+    *   Adicionado seção "Consentimento Informado & NFT Escute-se" ao `JourneyManualModal` para centralizar informações legais.
+*   **Correção de Dados:** Ampliada a query de profissionais no chat para incluir tipos `admin`, `medico` e `specialist`, garantindo que toda a equipe clínica apareça na lista (fix para Ricardo Valença/Eduardo Faveret).
+
 ---
 **Status:** ✅ Concluído e Testado.
