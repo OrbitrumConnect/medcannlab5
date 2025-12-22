@@ -58,7 +58,12 @@ Hoje focamos na reestruturação e simplificação do **Dashboard do Paciente** 
 ### 6. Follow-up (22/12): Correções Mobile
 *   **Correção de Botão Flutuante (Sidebar):** Removido botão de menu antigo (`MobileResponsiveWrapper`) que estava fixado no topo (`fixed top-4`) e sobrepunha o novo cabeçalho, causando inconsistência visual e movimento indesejado ao rolar. Agora o controle da sidebar é exclusivo do Header.
 
+### 7. Follow-up (22/12): Internacionalização (I18N)
+*   **Fundação I18N:** Instaladas bibliotecas `i18next` e `react-i18next`. Criada configuração base em `src/lib/i18n.ts` e arquivos de tradução `src/locales/pt.json` e `en.json`.
+*   **Trigger de Idioma:** Adicionado botão de troca de idioma (🇧🇷/🇺🇸) no Header. Textos do Header ("Configurações", "Sair") agora são dinâmicos e traduzíveis.
+
 ---
+
 
 
 ---

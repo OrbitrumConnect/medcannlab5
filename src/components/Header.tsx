@@ -4,6 +4,7 @@ import { useAuth } from '../contexts/AuthContext'
 import { useUserView } from '../contexts/UserViewContext'
 import { Menu, X, User, LogOut, Settings, Stethoscope, GraduationCap, Shield, ChevronDown } from 'lucide-react'
 import { normalizeUserType, getDefaultRouteByType, UserType } from '../lib/userTypes'
+import { useTranslation } from 'react-i18next'
 
 interface HeaderProps {
   onOpenSidebar?: () => void
@@ -17,6 +18,12 @@ const Header: React.FC<HeaderProps> = ({ onOpenSidebar }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isProfileOpen, setIsProfileOpen] = useState(false)
   const [isViewSwitcherOpen, setIsViewSwitcherOpen] = useState(false)
+  const { t, i18n } = useTranslation()
+
+  const toggleLanguage = () => {
+    const newLang = i18n.language === 'en' ? 'pt' : 'en'
+    i18n.changeLanguage(newLang)
+  }
 
   const headerGradient = 'linear-gradient(135deg, rgba(10,25,47,0.96) 0%, rgba(26,54,93,0.92) 55%, rgba(45,90,61,0.9) 100%)'
   const neutralSurface = 'rgba(7, 22, 41, 0.85)'
@@ -151,6 +158,18 @@ const Header: React.FC<HeaderProps> = ({ onOpenSidebar }) => {
 
           {/* User Menu */}
           <div className="flex items-center space-x-1 sm:space-x-2 md:space-x-3 lg:space-x-4">
+
+            {/* Language Toggle */}
+            <button
+              onClick={toggleLanguage}
+              className="p-2 rounded-lg hover:bg-[#1b314e] transition-colors"
+              title={i18n.language === 'en' ? 'Mudar para Português' : 'Switch to English'}
+            >
+              <span className="text-xl leading-none">
+                {i18n.language === 'en' ? '🇺🇸' : '🇧🇷'}
+              </span>
+            </button>
+
             {user ? (
               <>
                 {/* Menu de Tipos de Usuário - Botões Visíveis no Header */}
@@ -432,7 +451,7 @@ const Header: React.FC<HeaderProps> = ({ onOpenSidebar }) => {
                   )
                 })()}
 
-                <div className="ml-auto relative">
+                <div className="ml-auto relative" style={{ transform: 'translateX(30%)' }}>
                   <button
                     onClick={() => setIsProfileOpen(!isProfileOpen)}
                     className="flex items-center space-x-2 text-[#C8D6E5] hover:text-[#00C16A] transition-colors duration-200"
@@ -467,7 +486,7 @@ const Header: React.FC<HeaderProps> = ({ onOpenSidebar }) => {
                         className="flex items-center px-2 sm:px-3 md:px-4 py-2 text-[10px] sm:text-xs md:text-sm text-[#C8D6E5] hover:bg-[#1b314e] active:bg-[#1b314e] touch-manipulation"
                       >
                         <Settings className="w-3 h-3 sm:w-3.5 sm:h-3.5 md:w-4 md:h-4 mr-1.5 sm:mr-2 flex-shrink-0" />
-                        Configurações
+                        {t('header.settings')}
                       </Link>
                       <button
                         onClick={async () => {
@@ -490,7 +509,7 @@ const Header: React.FC<HeaderProps> = ({ onOpenSidebar }) => {
                         className="flex items-center w-full px-2 sm:px-3 md:px-4 py-2 text-[10px] sm:text-xs md:text-sm text-[#C8D6E5] hover:bg-[#1b314e] active:bg-[#1b314e] touch-manipulation"
                       >
                         <LogOut className="w-3 h-3 sm:w-3.5 sm:h-3.5 md:w-4 md:h-4 mr-1.5 sm:mr-2 flex-shrink-0" />
-                        Sair
+                        {t('header.logout')}
                       </button>
                     </div>
                   )}
@@ -501,7 +520,7 @@ const Header: React.FC<HeaderProps> = ({ onOpenSidebar }) => {
                 to="/login"
                 className="bg-primary-600 hover:bg-primary-700 active:bg-primary-800 text-white px-2 sm:px-3 md:px-4 py-1.5 sm:py-2 rounded-lg font-medium transition-colors duration-200 text-[10px] sm:text-xs md:text-sm active:scale-95 touch-manipulation"
               >
-                Entrar
+                {t('header.login')}
               </Link>
             )}
 
@@ -531,7 +550,7 @@ const Header: React.FC<HeaderProps> = ({ onOpenSidebar }) => {
           </div>
         )}
       </div>
-    </header>
+    </header >
   )
 }
 

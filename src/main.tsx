@@ -2,6 +2,7 @@ import React from 'react'
 import ReactDOM from 'react-dom/client'
 import App from './App'
 import './index.css'
+import './lib/i18n' // Import i18n configuration
 import './styles/mobile-responsive.css'
 
 // Desregistrar qualquer service worker existente que possa estar causando problemas
@@ -19,7 +20,7 @@ if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
   }).catch((error) => {
     console.warn('⚠️ Erro ao obter registros de Service Worker:', error)
   })
-  
+
   // Limpar cache do service worker
   if ('caches' in window) {
     caches.keys().then((cacheNames) => {
