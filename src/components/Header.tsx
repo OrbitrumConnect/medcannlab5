@@ -308,7 +308,7 @@ const Header: React.FC<HeaderProps> = ({ onOpenSidebar }) => {
                   }) || allTypes[0]
 
                   return (
-                    <div className="flex-1 flex justify-center ml-[2%] sm:ml-[5%]">
+                    <div className="flex justify-center md:ml-6">
                       {/* DESKTOP VIEW: Lista Horizontal */}
                       <div className="hidden md:flex items-center space-x-3 sm:space-x-4 md:space-x-5">
                         {allTypes.map((type) => {

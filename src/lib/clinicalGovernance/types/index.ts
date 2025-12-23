@@ -40,6 +40,9 @@ export interface IMREData {
         tfg: number
         proteinuria: string
     }
+    psiquiatria?: {
+        ideacao_suicida?: boolean
+    }
     existencial: any
 }
 

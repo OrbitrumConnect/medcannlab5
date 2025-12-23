@@ -110,7 +110,7 @@ const Sidebar: React.FC<SidebarProps> = ({
 
     const patientItems = [
       { name: 'Dashboard', href: '/app/clinica/paciente/dashboard', icon: Home, section: 'main' },
-      { name: 'Início', href: '/app/dashboard', icon: Home, section: 'main' },
+
       { name: 'Acompanhamento do Plano', href: '/app/clinica/paciente/dashboard?section=plano', icon: Activity, section: 'main' },
       { name: 'Biblioteca Personalizada', href: '/app/clinica/paciente/dashboard?section=conteudo', icon: BookOpen, section: 'main' },
       { name: 'Chat NOA', href: '/app/patient-noa-chat', icon: Brain, section: 'quick' },

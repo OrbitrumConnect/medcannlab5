@@ -80,6 +80,7 @@ import NewsManagement from './pages/NewsManagement'
 import ProfessionalMyDashboard from './pages/ProfessionalMyDashboard'
 import ClinicalGovernanceDemo from './pages/ClinicalGovernanceDemo'
 import ClinicalGovernanceAdmin from './pages/ClinicalGovernanceAdmin'
+import InvitePatient from './pages/InvitePatient' // IMPORT AT TOP
 
 function App() {
   return (
@@ -93,6 +94,7 @@ function App() {
                   <ClinicalGovernanceProvider>
                     <Routes>
                       <Route path="/" element={<Landing />} />
+                      <Route path="/invite" element={<InvitePatient />} /> {/* NEW ROUTE */}
                       <Route path="/termos-lgpd" element={<TermosLGPD />} />
                       <Route path="/experiencia-paciente" element={<ExperienciaPaciente />} />
                       <Route path="/curso-eduardo-faveret" element={<CursoEduardoFaveret />} />

@@ -31,11 +31,27 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [toasts, setToasts] = useState<Toast[]>([])
 
   const addToast = (toast: Omit<Toast, 'id'>) => {
+    // 🛑 SUPRESSÃO DE NOTIFICAÇÕES NO CHAT
+    // Se o usuário já está na seção de chat, não mostrar notificações de novas mensagens (tipo info)
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search)
+      const section = params.get('section')
+
+      // Se estiver na seção de chat ou na página de chat direto
+      if (
+        (section === 'chat-profissionais' || window.location.pathname.includes('/chat-profissional')) &&
+        (toast.type === 'info' || toast.title?.toLowerCase().includes('mensagem'))
+      ) {
+        console.log('🔇 Notificação suprimida (usuário já está no chat):', toast.title)
+        return
+      }
+    }
+
     const id = Date.now().toString()
     const newToast = { ...toast, id }
-    
+
     setToasts(prev => [...prev, newToast])
-    
+
     // Auto remove after duration
     setTimeout(() => {
       removeToast(id)
@@ -85,12 +101,11 @@ const ToastContainer: React.FC<{ toasts: Toast[], removeToast: (id: string) => v
       {toasts.map(toast => (
         <div
           key={toast.id}
-          className={`p-4 rounded-lg shadow-lg max-w-sm ${
-            toast.type === 'success' ? 'bg-green-500 text-white' :
-            toast.type === 'error' ? 'bg-red-500 text-white' :
-            toast.type === 'warning' ? 'bg-yellow-500 text-white' :
-            'bg-blue-500 text-white'
-          }`}
+          className={`p-4 rounded-lg shadow-lg max-w-sm ${toast.type === 'success' ? 'bg-green-500 text-white' :
+              toast.type === 'error' ? 'bg-red-500 text-white' :
+                toast.type === 'warning' ? 'bg-yellow-500 text-white' :
+                  'bg-blue-500 text-white'
+            }`}
         >
           <div className="flex items-center justify-between">
             <div>

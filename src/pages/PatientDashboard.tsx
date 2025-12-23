@@ -668,6 +668,7 @@ const PatientDashboard: React.FC = () => {
   const handleOpenChat = async () => {
     if (!user?.id) return
 
+    // Se admin está visualizando como paciente, apenas redirecionar
     if (isViewingAsPatient) {
       navigate('/app/clinica/paciente/chat-profissional?origin=patient-dashboard')
       return
@@ -677,6 +678,7 @@ const PatientDashboard: React.FC = () => {
     try {
       let targetRoomId: string | undefined
 
+      // 1. Tentar encontrar sala existente
       const { data: existingRooms, error: existingError } = await supabase
         .from('chat_participants')
         .select('room_id, chat_rooms!inner(id, type)')
@@ -686,48 +688,39 @@ const PatientDashboard: React.FC = () => {
 
       if (!existingError && existingRooms?.length) {
         targetRoomId = existingRooms[0].room_id
+        console.log('✅ Sala existente encontrada:', targetRoomId)
       } else {
-        const { data: newRoom, error: roomError } = await supabase
-          .from('chat_rooms')
-          .insert({
-            name: user.name ? `Canal de cuidado • ${user.name}` : 'Canal do paciente',
-            type: 'patient',
-            created_by: user.id
-          })
-          .select('id')
-          .single()
+        // 2. Se não existir, criar via RPC (seguro contra duplicatas)
+        console.log('🔄 Nenhuma sala encontrada, criando via RPC...')
 
-        if (roomError || !newRoom) {
-          throw roomError ?? new Error('Não foi possível criar o canal do paciente')
-        }
-
-        targetRoomId = newRoom.id
-
-        // Buscar profissionais pelo tipo ao invés de emails hardcoded
+        // Buscar um profissional para vincular (prioridade para admin ou primeiro profissional)
         const { data: professionals } = await supabase
           .from('users_compatible')
           .select('id')
           .in('type', ['profissional', 'professional', 'admin'])
-          .limit(10)
+          .limit(1)
 
-        const professionalIds = (professionals ?? [])
-          .map(profile => profile.id)
-          .filter((id): id is string => Boolean(id))
+        const professionalId = professionals?.[0]?.id
 
+        if (professionalId) {
+          const { data: rpcData, error: rpcError } = await supabase.rpc(
+            'create_chat_room_for_patient',
+            {
+              p_patient_id: user.id,
+              p_patient_name: user.name,
+              p_professional_id: professionalId
+            }
+          )
 
-        const participantsPayload = [
-          { room_id: newRoom.id, user_id: user.id, role: 'patient' },
-          ...professionalIds.map(proId => ({
-            room_id: newRoom.id,
-            user_id: proId,
-            role: 'professional'
-          }))
-        ]
-
-        if (participantsPayload.length) {
-          await supabase
-            .from('chat_participants')
-            .upsert(participantsPayload, { onConflict: 'room_id,user_id' })
+          if (!rpcError && rpcData) {
+            targetRoomId = rpcData
+            console.log('✅ Sala criada/recuperada via RPC:', targetRoomId)
+          } else {
+            console.error('❌ Erro no RPC create_chat_room_for_patient:', rpcError)
+            // Fallback: deixar o PatientDoctorChat tentar resolver
+          }
+        } else {
+          console.warn('⚠️ Nenhum profissional encontrado para vincular à sala.')
         }
       }
 

@@ -37,9 +37,10 @@ import {
   User,
   UserPlus,
   GraduationCap,
-  Loader2,
   ArrowRight,
-  X
+  X,
+  Share2,
+  Loader2
 } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { getAllPatients, isAdmin } from '../lib/adminPermissions'
@@ -3819,12 +3820,71 @@ const RicardoValencaDashboard: React.FC = () => {
           </h2>
           <p className="text-slate-200">Gerencie todos os usuários do sistema, suas permissões e configurações</p>
         </div>
-        <div className="bg-slate-800/50 rounded-lg p-6 border border-slate-700">
-          <p className="text-slate-300 text-center py-8">
-            Área de desenvolvimento: Gestão completa de usuários será implementada aqui.
-            <br />
-            <span className="text-sm text-slate-400">Funcionalidades: Listagem, criação, edição, exclusão, permissões, tipos de usuário, etc.</span>
-          </p>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Card de Convite */}
+          <div className="bg-slate-800 rounded-lg p-6 border border-slate-700">
+            <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
+              <UserPlus className="w-5 h-5 text-primary-400" />
+              Convidar Pacientes
+            </h3>
+            <p className="text-slate-400 text-sm mb-4">
+              Envie este link para seus pacientes se conectarem diretamente ao seu perfil.
+              Ao clicarem, uma sala de chat segura será criada automaticamente.
+            </p>
+
+            <div className="bg-slate-900/50 p-4 rounded-lg border border-slate-800 mb-4">
+              <p className="text-xs text-slate-500 mb-1">Link de Convite Pessoal</p>
+              <div className="flex items-center gap-2">
+                <code className="flex-1 bg-slate-950 p-2 rounded text-primary-300 text-xs break-all">
+                  {typeof window !== 'undefined' ? `${window.location.origin}/invite?doctor_id=${user?.id}` : '...'}
+                </code>
+                <button
+                  onClick={() => {
+                    const link = `${window.location.origin}/invite?doctor_id=${user?.id}`
+                    navigator.clipboard.writeText(link)
+                    alert('Link copiado para a área de transferência!')
+                  }}
+                  className="p-2 bg-slate-700 hover:bg-slate-600 rounded-lg text-white transition-colors"
+                  title="Copiar Link"
+                >
+                  <Clipboard className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+
+            <div className="flex gap-2">
+              <button className="flex-1 bg-primary-600 hover:bg-primary-700 text-white py-2 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2">
+                <Share2 className="w-4 h-4" />
+                Compartilhar via WhatsApp
+              </button>
+              <button
+                onClick={() => {
+                  const link = `${window.location.origin}/invite?doctor_id=${user?.id}`
+                  window.open(link, '_blank')
+                }}
+                className="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg text-sm font-medium transition-colors"
+              >
+                Testar Link
+              </button>
+            </div>
+          </div>
+
+          {/* Card de Gestão (Placeholder melhorado) */}
+          <div className="bg-slate-800/50 rounded-lg p-6 border border-slate-700">
+            <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
+              <Users className="w-5 h-5 text-slate-400" />
+              Lista de Usuários
+            </h3>
+            <p className="text-slate-400 text-sm mb-6">
+              Gerencie permissões, resets de senha e cadastro manual de usuários.
+            </p>
+            <div className="flex items-center justify-center p-8 bg-slate-900/30 rounded-lg border border-dashed border-slate-700">
+              <p className="text-slate-500 text-sm text-center">
+                Funcionalidade de gestão completa em desenvolvimento.<br />
+                Use o painel do Supabase para alterações críticas.
+              </p>
+            </div>
+          </div>
         </div>
       </div>
     )

@@ -26,6 +26,10 @@ import {
   CheckCircle,
   XCircle
 } from 'lucide-react'
+import { useClinicalGovernance } from '../hooks/useClinicalGovernance'
+import { ContextAnalysisCard } from '../components/ClinicalGovernance/ContextAnalysisCard'
+import { mapPatientToContext } from '../lib/clinicalGovernance/utils/patientMapper'
+import type { Specialty } from '../lib/clinicalGovernance/utils/specialtyConfigs'
 
 interface Patient {
   id: string
@@ -67,6 +71,26 @@ const PatientsManagement: React.FC = () => {
   const [selectedRoom, setSelectedRoom] = useState<string>('indifferent')
   const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null)
   const [activeTab, setActiveTab] = useState<'overview' | 'evolution' | 'prescription' | 'files' | 'receipts' | 'charts' | 'appointments'>('overview')
+
+  // ACDSS Integration
+  const patientContext = React.useMemo(() => {
+    if (!selectedPatient) return null
+    // Here we map the selected patient (which might have limited data) to the context
+    // Ideally we would fetch full patient data here if needed
+    return mapPatientToContext(selectedPatient)
+  }, [selectedPatient])
+
+  // Determine specialty from patient or default
+  const rawSpecialty = selectedPatient?.specialty?.toLowerCase().replace(' ', '_')
+  // Map display strings to internal keys if needed
+  const patientSpecialty: Specialty = (
+    rawSpecialty === 'cannabis_medicinal' ? 'cannabis' :
+      (rawSpecialty as Specialty) || 'geral'
+  )
+
+  const { analysis, loading: loadingAnalysis } = useClinicalGovernance(patientContext, {
+    specialty: patientSpecialty
+  })
 
   // Ler parâmetros da URL para abrir aba e formulário
   useEffect(() => {
@@ -1183,6 +1207,11 @@ const PatientsManagement: React.FC = () => {
                     <div className="p-4 sm:p-6 w-full max-w-full overflow-x-hidden">
                       {activeTab === 'overview' && (
                         <div className="space-y-4">
+                          {/* ACDSS Analysis Card */}
+                          <div className="mb-6">
+                            <ContextAnalysisCard analysis={analysis} loading={loadingAnalysis} />
+                          </div>
+
                           <div className="grid grid-cols-2 gap-4">
                             <div className="bg-slate-700/50 rounded-lg p-4">
                               <p className="text-sm text-slate-400 mb-1">Especialidade</p>

@@ -78,6 +78,62 @@ const mockPatientCritical: PatientContext = {
     }
 }
 
+const mockPatientCannabis: PatientContext = {
+    patientId: 'patient-cannabis',
+    currentAssessment: {
+        id: 'assess-cannabis',
+        imreData: { integrativa: {}, multidimensional: {}, renal: { creatinina: 1.0, tfg: 90, proteinuria: 'negativa' }, existencial: {} },
+        createdAt: new Date(),
+        professionalId: 'prof-cannabis'
+    },
+    prescriptionHistory: [
+        { id: '1', medications: {}, protocolType: 'cannabis', createdAt: new Date('2024-10-01') },
+        { id: '2', medications: {}, protocolType: 'cannabis', createdAt: new Date('2024-11-01') }
+    ],
+    kpiHistory: [
+        { type: 'dose_thc', value: 10, date: new Date('2024-10-01'), trend: 'stable' },
+        { type: 'dose_thc', value: 25, date: new Date('2024-11-01'), trend: 'up' }, // Dose subiu muito
+        { type: 'eva_dor', value: 8, date: new Date('2024-10-01'), trend: 'stable' },
+        { type: 'eva_dor', value: 8, date: new Date('2024-11-01'), trend: 'stable' }, // Dor não melhorou
+        { type: 'efeitos_colaterais', value: 2, date: new Date('2024-10-01'), trend: 'stable' },
+        { type: 'efeitos_colaterais', value: 6, date: new Date('2024-11-01'), trend: 'up' } // Efeitos colaterais subiram
+    ],
+    timeContext: {
+        treatmentDuration: 60,
+        lastModification: new Date('2024-11-01'),
+        changeFrequency: 2,
+        daysSinceLastChange: 30
+    }
+}
+
+const mockPatientPsychiatry: PatientContext = {
+    patientId: 'patient-psych',
+    currentAssessment: {
+        id: 'assess-psych',
+        imreData: {
+            integrativa: {},
+            multidimensional: {},
+            renal: { creatinina: 1.0, tfg: 90, proteinuria: 'negativa' },
+            existencial: {},
+            psiquiatria: { ideacao_suicida: true } // Gatilho Crítico
+        },
+        createdAt: new Date(),
+        professionalId: 'prof-psych'
+    },
+    prescriptionHistory: [],
+    kpiHistory: [
+        { type: 'gad7', value: 12, date: new Date('2024-10-01'), trend: 'stable' },
+        { type: 'gad7', value: 18, date: new Date('2024-11-01'), trend: 'up' }, // Piora grave
+        { type: 'ideacao_suicida', value: 1, date: new Date('2024-11-01'), trend: 'up' }
+    ],
+    timeContext: {
+        treatmentDuration: 30,
+        lastModification: new Date(),
+        changeFrequency: 1,
+        daysSinceLastChange: 10
+    }
+}
+
 const SPECIALTY_OPTIONS: { value: Specialty; label: string; icon: any, color: string }[] = [
     { value: 'nefrologia', label: 'Nefrologia', icon: Stethoscope, color: 'blue' },
     { value: 'cannabis', label: 'Cannabis', icon: Activity, color: 'green' },
@@ -92,7 +148,15 @@ export default function ClinicalGovernanceDemo() {
     const [selectedCase, setSelectedCase] = useState<'stable' | 'critical'>('stable')
     const [selectedSpecialty, setSelectedSpecialty] = useState<Specialty>('nefrologia')
 
-    const patientContext = selectedCase === 'stable' ? mockPatientStable : mockPatientCritical
+    // Lógica inteligente para escolher o paciente de teste baseado na especialidade e caso
+    let patientContext = selectedCase === 'stable' ? mockPatientStable : mockPatientCritical
+
+    // Override para especialidades específicas (para demonstrar a lógica)
+    if (selectedSpecialty === 'cannabis') {
+        patientContext = mockPatientCannabis
+    } else if (selectedSpecialty === 'psiquiatria') {
+        patientContext = mockPatientPsychiatry
+    }
 
     const { analysis, loading } = useClinicalGovernance(patientContext, {
         specialty: selectedSpecialty

@@ -77,33 +77,41 @@ export const useChatSystem = (activeRoomId?: string, options?: UseChatSystemOpti
     if (!enabled) return
 
     setInboxLoading(true)
-    // ✅ CORREÇÃO: Buscar de chat_rooms ao invés de v_chat_inbox
-    // A view estava vazia porque requer mensagens nas salas
-    const { data, error } = await supabase
-      .from('chat_rooms')
-      .select('id, name, type, created_at')
-      .order('created_at', { ascending: false })
+    setInboxLoading(true)
 
-    if (!error && data) {
-      // ✅ FILTRO: Excluir salas type='patient' (Canal de cuidado)
-      const filtered = data.filter((room: any) => room.type !== 'patient')
+    // ✅ OTIMIZAÇÃO: Usar RPC para buscar apenas as salas do usuário
+    // Isso evita carregar todas as salas do banco (que causa travamento) e bypasses problemas de RLS
+    try {
+      const { data, error } = await supabase.rpc('get_my_rooms')
 
-      // Mapear para formato esperado (simular v_chat_inbox)
-      const mapped = filtered.map((room: any) => ({
-        id: room.id,
-        name: room.name,
-        type: room.type,
-        lastMessageAt: null, // Sem mensagens ainda
-        unreadCount: 0
-      }))
+      if (!error && data) {
+        // Mapear retorno da RPC para ChatRoomSummary
+        const mapped = data.map((room: any) => ({
+          id: room.id,
+          name: room.name,
+          type: room.type,
+          lastMessageAt: room.last_message_at,
+          unreadCount: room.unread_count ?? 0
+        }))
 
-      setInbox(mapped.map(mapRoomSummary))
-      console.log(`✅ Chat Profissionais: ${mapped.length} salas disponíveis (${data.length - filtered.length} pacientes excluídos)`)
-    } else if (error) {
-      console.warn('Falha ao carregar inbox:', error)
+        setInbox(mapped)
+        console.log(`✅ Chat System: ${mapped.length} salas carregadas via RPC`)
+      } else {
+        if (error) {
+          console.warn('Falha ao carregar inbox via RPC:', error)
+          // Fallback silencioso ou retry se necessário, mas por enquanto logar e limpar
+          if (error.code === '42883') {
+            console.error('⚠️ Função RPC get_my_rooms não encontrada! Execute scripts/OPTIMIZE_CHAT_PERFORMANCE.sql')
+          }
+        }
+        setInbox([])
+      }
+    } catch (err) {
+      console.error('Erro inesperado ao carregar inbox:', err)
       setInbox([])
+    } finally {
+      setInboxLoading(false)
     }
-    setInboxLoading(false)
   }, [enabled])
 
   const loadMessages = useCallback(async (roomId: string) => {

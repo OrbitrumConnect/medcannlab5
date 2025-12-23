@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react'
-import { MessageCircle, Search, Send, Video, Phone, FileText, Wifi, WifiOff } from 'lucide-react'
+import { MessageCircle, Search, Send, Video, Phone, FileText, Activity, X } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
 import { ChatRoomSummary, useChatSystem } from '../hooks/useChatSystem'
 
@@ -52,7 +52,11 @@ const ProfessionalChatSystem: React.FC<ProfessionalChatSystemProps> = ({ classNa
   }, [activeRoomId, inbox])
 
   const filteredRooms = useMemo(() => {
-    const byFilter = inbox.filter(room => filter === 'all' || room.type === filter)
+    const byFilter = inbox.filter(room => {
+      if (filter === 'all') return true
+      if (filter === 'professional') return room.type === 'professional' || room.type === 'direct' || room.type === 'admin'
+      return room.type === filter
+    })
 
     if (!searchTerm.trim()) {
       return byFilter
@@ -89,11 +93,10 @@ const ProfessionalChatSystem: React.FC<ProfessionalChatSystemProps> = ({ classNa
             Chat Profissionais
           </h2>
           <span
-            className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs ${
-              isOnline ? 'bg-green-100 text-green-800' : 'bg-orange-100 text-orange-800'
-            }`}
+            className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs ${isOnline ? 'bg-green-100 text-green-800' : 'bg-orange-100 text-orange-800'
+              }`}
           >
-            {isOnline ? <Wifi className="w-3 h-3" /> : <WifiOff className="w-3 h-3" />}
+            {isOnline ? <Activity className="w-3 h-3" /> : <X className="w-3 h-3" />}
             {isOnline ? 'Online' : 'Offline'}
           </span>
         </div>
@@ -101,41 +104,37 @@ const ProfessionalChatSystem: React.FC<ProfessionalChatSystemProps> = ({ classNa
         <div className="flex items-center gap-2">
           <button
             onClick={() => setFilter('all')}
-            className={`px-3 py-1 rounded-lg text-sm transition-colors ${
-              filter === 'all'
-                ? 'bg-blue-600 text-white'
-                : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
-            }`}
+            className={`px-3 py-1 rounded-lg text-sm transition-colors ${filter === 'all'
+              ? 'bg-blue-600 text-white'
+              : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
+              }`}
           >
             Todos
           </button>
           <button
             onClick={() => setFilter('professional')}
-            className={`px-3 py-1 rounded-lg text-sm transition-colors ${
-              filter === 'professional'
-                ? 'bg-blue-600 text-white'
-                : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
-            }`}
+            className={`px-3 py-1 rounded-lg text-sm transition-colors ${filter === 'professional'
+              ? 'bg-blue-600 text-white'
+              : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
+              }`}
           >
             Profissionais
           </button>
           <button
             onClick={() => setFilter('student')}
-            className={`px-3 py-1 rounded-lg text-sm transition-colors ${
-              filter === 'student'
-                ? 'bg-blue-600 text-white'
-                : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
-            }`}
+            className={`px-3 py-1 rounded-lg text-sm transition-colors ${filter === 'student'
+              ? 'bg-blue-600 text-white'
+              : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
+              }`}
           >
             Estudantes
           </button>
           <button
             onClick={() => setFilter('patient')}
-            className={`px-3 py-1 rounded-lg text-sm transition-colors ${
-              filter === 'patient'
-                ? 'bg-blue-600 text-white'
-                : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
-            }`}
+            className={`px-3 py-1 rounded-lg text-sm transition-colors ${filter === 'patient'
+              ? 'bg-blue-600 text-white'
+              : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
+              }`}
           >
             Pacientes
           </button>
@@ -175,9 +174,12 @@ const ProfessionalChatSystem: React.FC<ProfessionalChatSystemProps> = ({ classNa
                 <button
                   key={room.id}
                   onClick={() => handleSelectRoom(room)}
-                  className={`w-full text-left p-4 border-b border-slate-700 transition-colors ${
-                    isActive ? 'bg-blue-600 text-white' : 'hover:bg-slate-700 text-slate-300'
-                  }`}
+                  className={`w-full text-left p-4 border-b border-slate-700 transition-all ${isActive
+                    ? 'bg-blue-600 text-white shadow-md'
+                    : room.unreadCount > 0
+                      ? 'bg-slate-700/60 text-slate-200 border-l-4 border-l-blue-500 pl-3'
+                      : 'hover:bg-slate-700 text-slate-300'
+                    }`}
                 >
                   <div className="flex items-center justify-between">
                     <span className="font-semibold truncate">{room.name ?? 'Sala sem nome'}</span>
@@ -239,9 +241,8 @@ const ProfessionalChatSystem: React.FC<ProfessionalChatSystemProps> = ({ classNa
                       className={`flex ${isOwn ? 'justify-end' : 'justify-start'}`}
                     >
                       <div
-                        className={`max-w-xs rounded-lg px-3 py-2 text-sm ${
-                          isOwn ? 'bg-blue-600 text-white' : 'bg-slate-700 text-white'
-                        }`}
+                        className={`max-w-xs rounded-lg px-3 py-2 text-sm ${isOwn ? 'bg-blue-600 text-white' : 'bg-slate-700 text-white'
+                          }`}
                       >
                         <div className="mb-1 flex items-center justify-between gap-3">
                           <span className="font-semibold text-xs">{message.senderName}</span>
@@ -292,12 +293,12 @@ const ProfessionalChatSystem: React.FC<ProfessionalChatSystemProps> = ({ classNa
                 <p className="mt-2 text-xs text-slate-400 flex items-center gap-2">
                   {isOnline ? (
                     <>
-                      <Wifi className="w-3 h-3" />
+                      <Activity className="w-3 h-3" />
                       Conectado ao Supabase Realtime
                     </>
                   ) : (
                     <>
-                      <WifiOff className="w-3 h-3" />
+                      <X className="w-3 h-3" />
                       Offline – mensagens serão sincronizadas quando a conexão voltar
                     </>
                   )}

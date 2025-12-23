@@ -273,7 +273,7 @@ const PatientChat: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-slate-900 p-8">
-      <div className="max-w-4xl mx-auto">
+      <div className="max-w-5xl mx-auto">
         {/* Header removido conforme solicitação do usuário */}
 
 

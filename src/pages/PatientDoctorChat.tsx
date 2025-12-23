@@ -69,6 +69,9 @@ const PatientDoctorChat: React.FC = () => {
   // Mapear profissionais vinculados ao paciente atual (baseado em salas compartilhadas)
   const [linkedProfessionalIds, setLinkedProfessionalIds] = useState<Set<string>>(new Set());
 
+  // Ref para evitar criação duplicada
+  const isCreatingRoomRef = useRef(false);
+
   useEffect(() => {
     if (!user || patientRooms.length === 0) {
       setPatientsWithRooms(new Set());
@@ -211,7 +214,8 @@ const PatientDoctorChat: React.FC = () => {
   // Quando há patientId na URL, criar ou selecionar sala automaticamente
   useEffect(() => {
     // Só processar se não há roomId (roomId tem prioridade) e se é profissional/admin
-    if (roomIdParam || !patientIdParam || !user || isPatient || isImpersonatingPatient) {
+    // E, crucialmente, se o inbox já terminou de carregar (para saber se a sala já existe)
+    if (roomIdParam || !patientIdParam || !user || isPatient || isImpersonatingPatient || inboxLoading) {
       return;
     }
 
@@ -221,6 +225,10 @@ const PatientDoctorChat: React.FC = () => {
     }
 
     const handlePatientIdFromUrl = async () => {
+      // Bloqueio de reentrância para evitar múltiplas criações
+      if (isCreatingRoomRef.current) return;
+      isCreatingRoomRef.current = true;
+
       try {
         // Verificar se já existe uma sala para este paciente
         // Primeiro, verificar nas salas existentes se o paciente está como participante
@@ -276,15 +284,19 @@ const PatientDoctorChat: React.FC = () => {
         await handleCreateRoomForPatient(patientIdParam, patientName);
       } catch (error) {
         console.error('❌ Erro ao processar patientId da URL:', error);
+      } finally {
+        // Liberar bloqueio após conclusão (com sucesso ou erro)
+        isCreatingRoomRef.current = false;
       }
     };
 
     // Aguardar um pouco para garantir que os dados foram carregados
-    if (allPatients.length > 0 || inbox.length > 0) {
+    // Modificado para usar !inboxLoading como gate principal
+    if (allPatients.length > 0 || !inboxLoading) {
       void handlePatientIdFromUrl();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [patientIdParam, roomIdParam, user, isPatient, isImpersonatingPatient, patientRooms, allPatients, inbox.length]);
+  }, [patientIdParam, roomIdParam, user, isPatient, isImpersonatingPatient, patientRooms, allPatients, inboxLoading]);
 
   // Selecionar primeira sala se não há roomId na URL
   useEffect(() => {

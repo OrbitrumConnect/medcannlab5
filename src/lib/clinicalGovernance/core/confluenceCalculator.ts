@@ -86,9 +86,115 @@ export function calculateConfluences(
             confluences.push({
                 indicator: 'Proteinúria Detectada',
                 points,
-                reasoning: `Proteinúria: ${currentAssessment.imreData.renal.proteinuria}`,
+                reasoning: `Proteinúria: ${currentAssessment.imreData?.renal?.proteinuria}`,
                 weight: 1.0
             })
+        }
+    }
+
+    // ============================================================================
+    // INDICADORES CANNABIS MEDICINAL
+    // ============================================================================
+
+    // 1. Aumento de Dose sem Melhora (Exaustão Terapêutica)
+    if (isIndicatorRelevant('dose_thc', specialty)) {
+        const recentDose = kpiHistory.filter(k => k.type === 'dose_thc').slice(-2)
+        const recentPain = kpiHistory.filter(k => k.type === 'eva_dor').slice(-2)
+
+        if (recentDose.length >= 2 && recentPain.length >= 2) {
+            const [prevDose, currDose] = recentDose
+            const [prevPain, currPain] = recentPain
+
+            if (currDose.value > prevDose.value * 1.2 && currPain.value >= prevPain.value) {
+                const points = getIndicatorWeight('dose_increased_no_response', specialty, 25)
+                totalScore += points
+                confluences.push({
+                    indicator: 'Aumento Dose s/ Resposta',
+                    points,
+                    reasoning: `Dose subiu ${((currDose.value / prevDose.value - 1) * 100).toFixed(0)}% sem melhora na dor`,
+                    weight: 1.0
+                })
+            }
+        }
+    }
+
+    // 2. Efeitos Colaterais em Alta
+    if (isIndicatorRelevant('efeitos_colaterais', specialty)) {
+        const recentSideEffects = kpiHistory.filter(k => k.type === 'efeitos_colaterais').slice(-2)
+        if (recentSideEffects.length >= 2) {
+            const [prev, curr] = recentSideEffects
+            if (curr.value > prev.value) {
+                const points = getIndicatorWeight('side_effects_increasing', specialty, 30)
+                totalScore += points
+                confluences.push({
+                    indicator: 'Efeitos Colaterais',
+                    points,
+                    reasoning: 'Score de efeitos adversos aumentando',
+                    weight: 1.0
+                })
+            }
+        }
+    }
+
+    // ============================================================================
+    // INDICADORES PSIQUIATRIA
+    // ============================================================================
+
+    // 1. Piora nos Scores (GAD7 / PHQ9)
+    if (isIndicatorRelevant('gad7', specialty)) {
+        const recentGad = kpiHistory.filter(k => k.type === 'gad7').slice(-2)
+        if (recentGad.length >= 2) {
+            const [prev, curr] = recentGad
+            if (curr.value >= prev.value + 2) { // Variação clínica significativa
+                const points = getIndicatorWeight('gad7_worsening', specialty, 30)
+                totalScore += points
+                confluences.push({
+                    indicator: 'Ansiedade em Alta',
+                    points,
+                    reasoning: `GAD-7 subiu de ${prev.value} para ${curr.value}`,
+                    weight: 1.0
+                })
+            }
+        }
+    }
+
+    // 2. Ideação Suicida (Gatekeeper)
+    if (isIndicatorRelevant('ideacao_suicida', specialty)) {
+        const suicideRisk = kpiHistory.find(k => k.type === 'ideacao_suicida' && k.value > 0)
+        // Check current assessment data directly if available
+        const currentRisk = currentAssessment.imreData?.psiquiatria?.ideacao_suicida
+
+        if (suicideRisk || currentRisk) {
+            const points = getIndicatorWeight('suicidal_ideation', specialty, 50)
+            totalScore += points
+            confluences.push({
+                indicator: 'Risco Elevado (Ideação)',
+                points,
+                reasoning: 'Sinalização de ideação suicida detectada',
+                weight: 1.0
+            })
+        }
+    }
+
+    // ============================================================================
+    // INDICADORES DOR CRÔNICA
+    // ============================================================================
+
+    // 1. Uso Excessivo de Resgate
+    if (isIndicatorRelevant('rescue_medication', specialty)) {
+        const rescueUsage = kpiHistory.filter(k => k.type === 'rescue_medication').slice(-2)
+        if (rescueUsage.length >= 2) {
+            const [prev, curr] = rescueUsage
+            if (curr.value > prev.value) {
+                const points = getIndicatorWeight('rescue_overuse', specialty, 25)
+                totalScore += points
+                confluences.push({
+                    indicator: 'Uso de Resgate',
+                    points,
+                    reasoning: 'Aumento na frequência de medicação de resgate',
+                    weight: 1.0
+                })
+            }
         }
     }
 

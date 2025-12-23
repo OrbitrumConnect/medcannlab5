@@ -4,7 +4,7 @@
  * Card visual para exibir análise de governança clínica
  */
 
-import { Brain, TrendingUp, TrendingDown, Minus, AlertTriangle } from 'lucide-react'
+import { Brain, TrendingUp, TrendingDown, MinusCircle, AlertTriangle } from 'lucide-react'
 import type { ClinicalGovernanceOutput } from '../../lib/clinicalGovernance'
 import { PatientState, UrgencyLevel, RecommendationType } from '../../lib/clinicalGovernance'
 
@@ -41,26 +41,26 @@ export function ContextAnalysisCard({ analysis, loading }: ContextAnalysisCardPr
         switch (analysis.urgencyLevel) {
             case UrgencyLevel.CRITICAL:
                 return {
-                    bg: 'from-red-900/30 to-red-800/20',
-                    border: 'border-red-700/50',
+                    bg: 'from-red-900/20 to-red-800/10',
+                    border: 'border-red-700/30',
                     text: 'text-red-300'
                 }
             case UrgencyLevel.HIGH:
                 return {
-                    bg: 'from-orange-900/30 to-orange-800/20',
-                    border: 'border-orange-700/50',
+                    bg: 'from-orange-900/20 to-orange-800/10',
+                    border: 'border-orange-700/30',
                     text: 'text-orange-300'
                 }
             case UrgencyLevel.MEDIUM:
                 return {
-                    bg: 'from-yellow-900/30 to-yellow-800/20',
-                    border: 'border-yellow-700/50',
+                    bg: 'from-yellow-900/20 to-yellow-800/10',
+                    border: 'border-yellow-700/30',
                     text: 'text-yellow-300'
                 }
             default:
                 return {
-                    bg: 'from-green-900/30 to-green-800/20',
-                    border: 'border-green-700/50',
+                    bg: 'from-green-900/20 to-green-800/10',
+                    border: 'border-green-700/30',
                     text: 'text-green-300'
                 }
         }
@@ -77,7 +77,7 @@ export function ContextAnalysisCard({ analysis, loading }: ContextAnalysisCardPr
             case PatientState.CRITICAL:
                 return <TrendingDown className="w-5 h-5 text-red-400" />
             default:
-                return <Minus className="w-5 h-5 text-gray-400" />
+                return <MinusCircle className="w-5 h-5 text-gray-400" />
         }
     }
 
