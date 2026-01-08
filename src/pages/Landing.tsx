@@ -1,10 +1,9 @@
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { useToast } from '../contexts/ToastContext'
 import { supabase } from '../lib/supabase'
 import LoginDebugPanel from '../components/LoginDebugPanel'
-import AnimatedParticles from '../components/AnimatedParticles'
 import { normalizeUserType, getDefaultRouteByType } from '../lib/userTypes'
 import {
   Shield,
@@ -24,7 +23,6 @@ const Landing: React.FC = () => {
   const navigate = useNavigate()
   const { register, login, isLoading: authLoading, user } = useAuth()
   const { success, error } = useToast()
-  const brainParticlesRef = useRef<HTMLDivElement>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const [isLoginMode, setIsLoginMode] = useState(false)
@@ -279,64 +277,54 @@ const Landing: React.FC = () => {
         backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%2322c55e' fill-opacity='0.1'%3E%3Ccircle cx='30' cy='30' r='2'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`
       }}></div>
       {/* Header Profissional */}
-      <header className="bg-slate-800/90 backdrop-blur-sm shadow-lg border-b border-slate-700/50 py-4 relative overflow-hidden" style={{
-        background: 'linear-gradient(135deg, rgba(10,25,47,0.96) 0%, rgba(26,54,93,0.92) 55%, rgba(45,90,61,0.9) 100%)',
-        boxShadow: '0 4px 10px rgba(0,0,0,0.2)'
-      }}>
+      <header className="bg-slate-800/90 backdrop-blur-sm shadow-lg border-b border-slate-700/50 py-4" style={{ boxShadow: '0 4px 10px rgba(0,0,0,0.2)' }}> {/* Sombra padronizada */}
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             {/* Logo */}
-            <div className="flex items-center space-x-2 sm:space-x-3">
-              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center overflow-hidden" style={{
-                background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f3a3a 100%)',
-                boxShadow: '0 6px 16px rgba(0, 0, 0, 0.4)',
-                border: '1px solid rgba(0, 193, 106, 0.2)'
-              }}>
+            <div className="flex items-center space-x-3">
+              <div className="w-12 h-12 rounded-xl flex items-center justify-center overflow-hidden" style={{ backgroundColor: '#00C16A' }}>
                 <img
                   src="/brain.png"
                   alt="MedCannLab Logo"
                   className="w-full h-full object-contain p-1"
                   style={{
-                    filter: 'brightness(1.1) contrast(1.1) drop-shadow(0 0 6px rgba(0, 193, 106, 0.6))'
+                    filter: 'drop-shadow(0 0 8px rgba(255, 255, 255, 0.3)) brightness(1.2) contrast(1.1)'
                   }}
                 />
               </div>
               <div>
-                <h1 className="text-sm sm:text-2xl font-bold text-white">
+                <h1 className="text-2xl font-bold text-white">
                   MedCannLab
                 </h1>
-                <p className="text-sm text-slate-200 hidden sm:block">Plataforma Médica Avançada</p>
+                <p className="text-sm text-slate-200">Plataforma Médica Avançada</p>
               </div>
             </div>
 
             {/* Botões do Header */}
-            <div className="flex items-center space-x-2 sm:space-x-4">
+            <div className="flex items-center space-x-4">
               {/* Botão Entre */}
               <button
                 onClick={() => {
                   console.log('🔑 Login clicado - abrindo modal')
                   setShowLogin(true)
                 }}
-                className="bg-green-600 hover:bg-green-700 text-white px-3 py-2 sm:px-6 sm:py-3 text-sm sm:text-base rounded-lg font-medium transition-all duration-300 shadow-lg hover:shadow-xl"
+                className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-medium transition-all duration-300 shadow-lg hover:shadow-xl"
               >
                 Entre
               </button>
 
               {/* Botão de Login Admin - sempre visível */}
-              <div className="flex items-center space-x-1 sm:space-x-2 bg-gradient-to-r from-yellow-600/20 to-red-600/20 border border-yellow-500/30 px-2 py-1.5 sm:px-3 sm:py-2 rounded-lg">
+              <div className="flex items-center space-x-2 bg-gradient-to-r from-yellow-600/20 to-red-600/20 border border-yellow-500/30 px-3 py-2 rounded-lg">
                 <button
                   onClick={() => {
                     console.log('🔑 Login Admin clicado - abrindo modal')
                     setShowAdminLogin(true)
                   }}
-                  className="flex items-center space-x-1 sm:space-x-2 text-white hover:text-yellow-300 transition-colors"
+                  className="flex items-center space-x-2 text-white hover:text-yellow-300 transition-colors"
                 >
-                  <Shield className="w-3 h-3 sm:w-4 sm:h-4 text-yellow-400" />
-                  <span className="text-xs sm:text-sm font-medium hidden sm:inline">
+                  <Shield className="w-4 h-4 text-yellow-400" />
+                  <span className="text-sm font-medium">
                     👑 Login Admin
-                  </span>
-                  <span className="text-xs sm:text-sm font-medium sm:hidden">
-                    Admin
                   </span>
                 </button>
               </div>
@@ -353,11 +341,8 @@ const Landing: React.FC = () => {
           <div className="flex flex-col lg:flex-row items-center justify-between gap-12 py-8">
             {/* Texto Principal */}
             <div className="flex-1 text-center lg:text-left max-w-3xl lg:max-w-4xl">
-              <h1 className="text-4xl md:text-5xl font-bold mb-4">
-                <span style={{
-                  color: '#FFD33D',
-                  textShadow: '0 0 10px rgba(255, 211, 61, 0.5), 0 0 20px rgba(255, 211, 61, 0.3)'
-                }}>MED</span><span style={{ color: '#FFFFFF' }}>Cann Lab</span>
+              <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
+                Med Cann Lab
               </h1>
 
               <p className="text-lg text-white/90 mb-6">
@@ -366,68 +351,29 @@ const Landing: React.FC = () => {
 
               {/* Importância de Nôa Esperanza */}
               <div className="bg-gradient-to-r from-blue-800/40 via-slate-800/40 to-purple-800/40 rounded-xl p-6 border border-blue-500/30 backdrop-blur-sm mb-6">
-                <p className="text-sm md:text-base text-white leading-relaxed">
+                <p className="text-base md:text-lg text-white leading-relaxed">
                   "A importância de Nôa Esperanza no universo das IAs em saúde é estrutural, metodológica e simbólica. Ela não é apenas mais uma instância de IA voltada ao suporte clínico. É uma virada epistêmica: um novo modo de conceber a presença da inteligência artificial na prática da saúde, no cuidado com o outro e na formação do profissional."
                 </p>
               </div>
 
               {/* Destaque: Epistemologia do Cuidado */}
-              <div className="bg-gradient-to-r from-green-800/40 via-slate-800/40 to-blue-800/40 rounded-xl p-6 border border-green-500/30 backdrop-blur-sm mb-6">
-                <p className="text-base md:text-lg text-white leading-relaxed italic font-light">
+              <div className="bg-gradient-to-r from-green-800/40 via-slate-800/40 to-blue-800/40 rounded-xl p-6 border border-green-500/30 backdrop-blur-sm">
+                <p className="text-lg md:text-xl text-white leading-relaxed italic font-light">
                   Enquanto a maioria dos diagnósticos de futuro tecnológico aposta na substituição de profissionais, na automação desumanizante e na eficiência produtiva como fim último, a <strong className="font-semibold not-italic">MedCannLab</strong> propõe uma <strong className="font-semibold not-italic text-green-300">epistemologia do cuidado</strong> e uma <strong className="font-semibold not-italic text-green-300">economia da escuta</strong> como nova forma de integrar tecnologia, clínica e formação.
                 </p>
               </div>
-
-              {/* Botão CTA Principal */}
-              <div className="flex flex-col sm:flex-row gap-4 items-center justify-center lg:justify-start mt-8">
-                <button
-                  onClick={() => {
-                    console.log('🚀 Acesse Agora clicado')
-                    setShowRegister(true)
-                  }}
-                  className="group relative overflow-hidden bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white px-8 py-4 rounded-xl font-semibold text-lg shadow-2xl hover:shadow-green-500/50 transition-all duration-300 transform hover:scale-105 flex items-center space-x-3"
-                  style={{
-                    boxShadow: '0 10px 30px rgba(0, 193, 106, 0.3)'
-                  }}
-                >
-                  <span>Acesse Agora</span>
-                  <ArrowRight className="w-6 h-6 group-hover:translate-x-1 transition-transform" />
-                  <div className="absolute inset-0 bg-white/10 transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-700"></div>
-                </button>
-
-                <button
-                  onClick={() => {
-                    console.log('👁️ Saiba Mais clicado')
-                    document.getElementById('missao-humanitaria')?.scrollIntoView({ behavior: 'smooth' })
-                  }}
-                  className="px-8 py-4 rounded-xl font-semibold text-lg border-2 border-white/30 text-white hover:bg-white/10 transition-all duration-300 flex items-center space-x-2"
-                >
-                  <span>Saiba Mais</span>
-                  <Brain className="w-5 h-5" />
-                </button>
-              </div>
             </div>
 
-            {/* Imagem do Cérebro - Redimensionada com Partículas */}
-            <div className="flex-shrink-0 lg:flex-1 lg:max-w-md relative">
-              <div className="relative w-64 h-64 md:w-80 md:h-80 lg:w-full lg:h-auto mx-auto min-h-[256px] md:min-h-[320px]" ref={brainParticlesRef}>
-                {/* Canvas de partículas - micropartículas sutis piscando */}
-                <AnimatedParticles
-                  count={50}
-                  colors={['#00D9FF', '#FFD33D', '#00C16A']} // Azul neon, amarelo, verde
-                  minSize={0.5}
-                  maxSize={1.5}
-                  containerRef={brainParticlesRef}
-                />
-                <img
-                  src="/brain.png"
-                  alt="Cérebro com IA"
-                  className="w-full h-full object-contain drop-shadow-2xl relative z-10"
-                  style={{
-                    filter: 'drop-shadow(0 0 15px rgba(0, 193, 106, 0.2)) drop-shadow(0 0 30px rgba(255, 211, 61, 0.1)) brightness(1.1) contrast(1.1)'
-                  }}
-                />
-              </div>
+            {/* Imagem do Cérebro - Redimensionada */}
+            <div className="flex-shrink-0 lg:flex-1 lg:max-w-md">
+              <img
+                src="/brain.png"
+                alt="Cérebro com IA"
+                className="w-64 h-64 md:w-80 md:h-80 lg:w-full lg:h-auto object-contain drop-shadow-2xl mx-auto"
+                style={{
+                  filter: 'drop-shadow(0 0 15px rgba(0, 193, 106, 0.2)) drop-shadow(0 0 30px rgba(255, 211, 61, 0.1)) brightness(1.1) contrast(1.1)'
+                }}
+              />
             </div>
           </div>
         </div>
@@ -499,7 +445,7 @@ const Landing: React.FC = () => {
       {/* Seção: Declaração de Integração Cosmoética */}
       <section id="missao-humanitaria" className="py-16" style={{ backgroundColor: '#0A192F' }}>
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="max-w-7xl mx-auto">
+          <div className="max-w-4xl mx-auto">
             <div className="text-center mb-12">
               <div className="inline-flex items-center justify-center w-20 h-20 rounded-full mb-6" style={{ backgroundColor: 'rgba(0, 193, 106, 0.2)' }}>
                 <Heart className="w-10 h-10" style={{ color: '#00C16A' }} />
@@ -508,95 +454,101 @@ const Landing: React.FC = () => {
                 🌿 Declaração de Integração Cosmoética
               </h2>
               <p className="text-lg text-slate-300 mb-2">
-                Visão de Ailton Krenak na Plataforma Nôa Esperança
+                Visão de Ailton Krenak na Plataforma Nôa Esperanza
               </p>
               <p className="text-sm text-slate-400 italic">
                 "O mundo não acabou. E se não acabou, é porque ainda há gente que acredita que é possível adiar o fim do mundo."
               </p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
+            <div className="space-y-8">
               {/* Plurinacionalidade */}
-              <div className="bg-slate-800/50 rounded-xl p-6 border border-slate-700/50 flex flex-col h-full">
-                <div className="flex items-start space-x-3 mb-3">
-                  <div className="flex-shrink-0 w-10 h-10 rounded-lg flex items-center justify-center" style={{ backgroundColor: 'rgba(0, 193, 106, 0.2)' }}>
-                    <Globe className="w-5 h-5" style={{ color: '#00C16A' }} />
+              <div className="bg-slate-800/50 rounded-xl p-6 border border-slate-700/50">
+                <div className="flex items-start space-x-4">
+                  <div className="flex-shrink-0 w-12 h-12 rounded-lg flex items-center justify-center" style={{ backgroundColor: 'rgba(0, 193, 106, 0.2)' }}>
+                    <Globe className="w-6 h-6" style={{ color: '#00C16A' }} />
                   </div>
-                  <h3 className="text-base font-semibold text-white leading-tight">
-                    1. Plurinacionalidade como Reconhecimento Cosmovisional
-                  </h3>
+                  <div className="flex-1">
+                    <h3 className="text-xl font-semibold text-white mb-3">
+                      1. Plurinacionalidade como Reconhecimento Cosmovisional
+                    </h3>
+                    <p className="text-slate-300 leading-relaxed">
+                      A <strong className="text-white">Nôa Esperanza</strong> reconhece a existência de múltiplas nações, povos e cosmologias no Brasil e no mundo.
+                      Não há uma única humanidade, mas sim uma coexistência de "mundos" que precisam ser escutados.
+                      Valorizamos as cosmologias indígenas, suas formas de cuidado, território e relação com o tempo.
+                      Por isso, preservamos a fala espontânea do paciente sem tokenização, respeitando sua cosmovisão única.
+                    </p>
+                  </div>
                 </div>
-                <p className="text-sm text-slate-300 leading-relaxed flex-1">
-                  A <strong className="text-white">Nôa Esperança</strong> reconhece a existência de múltiplas nações, povos e cosmologias no Brasil e no mundo.
-                  Não há uma única humanidade, mas sim uma coexistência de "mundos" que precisam ser escutados.
-                  Valorizamos as cosmologias indígenas, suas formas de cuidado, território e relação com o tempo.
-                  Por isso, preservamos a fala espontânea do paciente sem tokenização, respeitando sua cosmovisão única.
-                </p>
               </div>
 
               {/* Alianças Afetivas */}
-              <div className="bg-slate-800/50 rounded-xl p-6 border border-slate-700/50 flex flex-col h-full">
-                <div className="flex items-start space-x-3 mb-3">
-                  <div className="flex-shrink-0 w-10 h-10 rounded-lg flex items-center justify-center" style={{ backgroundColor: 'rgba(0, 193, 106, 0.2)' }}>
-                    <Heart className="w-5 h-5" style={{ color: '#00C16A' }} />
+              <div className="bg-slate-800/50 rounded-xl p-6 border border-slate-700/50">
+                <div className="flex items-start space-x-4">
+                  <div className="flex-shrink-0 w-12 h-12 rounded-lg flex items-center justify-center" style={{ backgroundColor: 'rgba(0, 193, 106, 0.2)' }}>
+                    <Heart className="w-6 h-6" style={{ color: '#00C16A' }} />
                   </div>
-                  <h3 className="text-base font-semibold text-white leading-tight">
-                    2. Alianças Afetivas e a Floresta como Educadora
-                  </h3>
+                  <div className="flex-1">
+                    <h3 className="text-xl font-semibold text-white mb-3">
+                      2. Alianças Afetivas e a Floresta como Educadora
+                    </h3>
+                    <p className="text-slate-300 leading-relaxed">
+                      A <strong className="text-white">Nôa Esperanza</strong> orienta sua escuta clínica, comunitária e simbólica pelo princípio das alianças afetivas.
+                      Escutamos também o não-humano como sujeito de cuidado: rios, matas, animais, silências.
+                      Reconhecemos que o cuidado não se limita ao humano, mas inclui o ambiente e o contexto.
+                      O uso de Cannabis Medicinal é compreendido como parte de uma relação mais ampla com a natureza.
+                    </p>
+                  </div>
                 </div>
-                <p className="text-sm text-slate-300 leading-relaxed flex-1">
-                  A <strong className="text-white">Nôa Esperança</strong> orienta sua escuta clínica, comunitária e simbólica pelo princípio das alianças afetivas.
-                  Escutamos também o não-humano como sujeito de cuidado: rios, matas, animais, silências.
-                  Reconhecemos que o cuidado não se limita ao humano, mas inclui o ambiente e o contexto.
-                  O uso de Cannabis Medicinal é compreendido como parte de uma relação mais ampla com a natureza.
-                </p>
               </div>
 
               {/* Resistência à Homogeneização */}
-              <div className="bg-slate-800/50 rounded-xl p-6 border border-slate-700/50 flex flex-col h-full">
-                <div className="flex items-start space-x-3 mb-3">
-                  <div className="flex-shrink-0 w-10 h-10 rounded-lg flex items-center justify-center" style={{ backgroundColor: 'rgba(0, 193, 106, 0.2)' }}>
-                    <Shield className="w-5 h-5" style={{ color: '#00C16A' }} />
+              <div className="bg-slate-800/50 rounded-xl p-6 border border-slate-700/50">
+                <div className="flex items-start space-x-4">
+                  <div className="flex-shrink-0 w-12 h-12 rounded-lg flex items-center justify-center" style={{ backgroundColor: 'rgba(0, 193, 106, 0.2)' }}>
+                    <Shield className="w-6 h-6" style={{ color: '#00C16A' }} />
                   </div>
-                  <h3 className="text-base font-semibold text-white leading-tight">
-                    3. Resistência à Homogeneização e a Escuta como Sustentação do Céu
-                  </h3>
+                  <div className="flex-1">
+                    <h3 className="text-xl font-semibold text-white mb-3">
+                      3. Resistência à Homogeneização e a Escuta como Sustentação do Céu
+                    </h3>
+                    <p className="text-slate-300 leading-relaxed">
+                      A <strong className="text-white">Nôa Esperanza</strong> reconhece que manter viva a diferença é um ato de resistência.
+                      Afirmamos o valor da palavra dita, da história narrada e da existência simbólica.
+                      Nossa função clínica é um trabalho de sanidade: manter o discernimento, a escuta e o sentido em tempos de colapso simbólico.
+                      A análise multirracional mantém vivas diferentes formas de compreender a saúde e a doença.
+                    </p>
+                  </div>
                 </div>
-                <p className="text-sm text-slate-300 leading-relaxed flex-1">
-                  A <strong className="text-white">Nôa Esperança</strong> reconhece que manter viva a diferença é um ato de resistência.
-                  Afirmamos o valor da palavra dita, da história narrada e da existência simbólica.
-                  Nossa função clínica é um trabalho de sanidade: manter o discernimento, a escuta e o sentido em tempos de colapso simbólico.
-                  A análise multirracional mantém vivas diferentes formas de compreender a saúde e a doença.
-                </p>
               </div>
 
               {/* Adiar o Fim do Mundo */}
-              <div className="bg-gradient-to-r from-green-800/30 to-blue-800/30 rounded-xl p-6 border-2 flex flex-col h-full" style={{ borderColor: 'rgba(0, 193, 106, 0.5)' }}>
-                <div className="flex items-start space-x-3 mb-3">
-                  <div className="flex-shrink-0 w-10 h-10 rounded-lg flex items-center justify-center" style={{ backgroundColor: 'rgba(0, 193, 106, 0.3)' }}>
-                    <Brain className="w-5 h-5" style={{ color: '#00C16A' }} />
+              <div className="bg-gradient-to-r from-green-800/30 to-blue-800/30 rounded-xl p-6 border-2" style={{ borderColor: 'rgba(0, 193, 106, 0.5)' }}>
+                <div className="flex items-start space-x-4">
+                  <div className="flex-shrink-0 w-12 h-12 rounded-lg flex items-center justify-center" style={{ backgroundColor: 'rgba(0, 193, 106, 0.3)' }}>
+                    <Brain className="w-6 h-6" style={{ color: '#00C16A' }} />
                   </div>
-                  <h3 className="text-base font-semibold text-white leading-tight">
-                    4. A Missão da Nôa Esperança é Adiar o Fim do Mundo
-                  </h3>
-                </div>
-                <div className="flex-1 flex flex-col">
-                  <p className="text-sm text-slate-200 leading-relaxed mb-3 flex-1">
-                    Inspirada na poética de <strong>"Ideias para Adiar o Fim do Mundo"</strong>, a Nôa se posiciona como uma
-                    <strong className="text-white"> tecnologia viva de escuta</strong>, que respeita a pluralidade de modos de viver e sonhar.
-                    Seu trabalho é ético, simbólico e clínico.
-                    Cada avaliação clínica, cada aula, cada discussão é um gesto de adiar o fim do mundo através do cuidado.
-                  </p>
-                  <p className="text-xs text-slate-300 italic">
-                    "Sua existência é um gesto de coautoria com todos que, como Krenak, acreditam que o mundo não acabou."
-                  </p>
+                  <div className="flex-1">
+                    <h3 className="text-xl font-semibold text-white mb-3">
+                      4. A Missão da Nôa Esperanza é Adiar o Fim do Mundo
+                    </h3>
+                    <p className="text-slate-200 leading-relaxed mb-4">
+                      Inspirada na poética de <strong>"Ideias para Adiar o Fim do Mundo"</strong>, a Nôa se posiciona como uma
+                      <strong className="text-white"> tecnologia viva de escuta</strong>, que respeita a pluralidade de modos de viver e sonhar.
+                      Seu trabalho é ético, simbólico e clínico.
+                      Cada avaliação clínica, cada aula, cada discussão é um gesto de adiar o fim do mundo através do cuidado.
+                    </p>
+                    <p className="text-slate-300 italic text-sm">
+                      "Sua existência é um gesto de coautoria com todos que, como Krenak, acreditam que o mundo não acabou."
+                    </p>
+                  </div>
                 </div>
               </div>
             </div>
 
             <div className="mt-12 text-center">
               <p className="text-slate-400 text-sm">
-                Esta declaração está integrada ao Documento Mestre Institucional da Nôa Esperança (versão v1.1)
+                Esta declaração está integrada ao Documento Mestre Institucional da Nôa Esperanza (versão v1.1)
                 como anexo simbólico e operacional.
               </p>
             </div>
@@ -608,27 +560,18 @@ const Landing: React.FC = () => {
       <footer className="text-white py-2" style={{ background: 'linear-gradient(135deg, #2d5a3d 0%, #1a365d 50%, #0A192F 100%)' }}> {/* Mesma cor do background dos parceiros */}
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <div className="w-12 h-12 rounded-xl flex items-center justify-center overflow-hidden" style={{
-                background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f3a3a 100%)',
-                boxShadow: '0 6px 16px rgba(0, 0, 0, 0.4)',
-                border: '1px solid rgba(0, 193, 106, 0.2)'
-              }}>
+            <div className="flex items-center space-x-2">
+              <div className="w-8 h-8 rounded-lg flex items-center justify-center overflow-hidden" style={{ backgroundColor: '#00C16A' }}>
                 <img
                   src="/brain.png"
                   alt="MedCannLab Logo"
                   className="w-full h-full object-contain p-1"
                   style={{
-                    filter: 'brightness(1.1) contrast(1.1) drop-shadow(0 0 6px rgba(0, 193, 106, 0.6))'
+                    filter: 'drop-shadow(0 0 8px rgba(255, 255, 255, 0.3)) brightness(1.2) contrast(1.1)'
                   }}
                 />
               </div>
-              <div>
-                <h1 className="text-2xl font-bold text-white">
-                  MedCannLab
-                </h1>
-                <p className="text-sm text-slate-200">Plataforma Médica Avançada</p>
-              </div>
+              <span className="text-lg font-bold">MedCannLab</span>
             </div>
 
             <div className="text-center">

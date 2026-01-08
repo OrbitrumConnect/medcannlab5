@@ -100,7 +100,7 @@ const Layout: React.FC = () => {
   const normalizedUserType = effectiveType ? normalizeUserType(effectiveType) : null
 
   // Verificar se o email não foi confirmado
-  if (user?.type === 'unconfirmed') {
+  if ((user?.type as string) === 'unconfirmed') {
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-900">
         <div className="text-center max-w-md mx-auto p-8">
@@ -113,7 +113,7 @@ const Layout: React.FC = () => {
             Confirme seu Email
           </h1>
           <p className="text-slate-300 mb-6">
-            Enviamos um link de confirmação para <strong>{user.email}</strong>
+            Enviamos um link de confirmação para <strong>{user?.email}</strong>
           </p>
           <p className="text-slate-400 text-sm mb-8">
             Verifique sua caixa de entrada e clique no link para ativar sua conta.
