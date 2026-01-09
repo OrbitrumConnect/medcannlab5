@@ -9,6 +9,7 @@ import VideoCall from '../components/VideoCall'
 import ClinicalReports from '../components/ClinicalReports'
 import IntegrativePrescriptions from '../components/IntegrativePrescriptions'
 import RenalFunctionModule from '../components/RenalFunctionModule'
+import MedicalWorkstation from '../components/MedicalWorkstation'
 import {
   Brain,
   Users,
@@ -4140,7 +4141,7 @@ const RicardoValencaDashboard: React.FC = () => {
       case 'admin-renal':
         return renderAdminRenal()
       case 'atendimento':
-        return renderAtendimento()
+        return <MedicalWorkstation />
       case 'pacientes':
         return renderPacientes()
       case 'prescricoes':
@@ -4556,8 +4557,8 @@ const RicardoValencaDashboard: React.FC = () => {
                 <button
                   onClick={() => goToSection('atendimento')}
                   className={`px-4 py-2 rounded-lg text-sm font-medium transition-all flex items-center gap-2 ${resolvedSection === 'atendimento'
-                      ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40'
-                      : 'bg-slate-700/50 text-slate-300 hover:bg-slate-700 hover:text-white border border-slate-600/50'
+                    ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40'
+                    : 'bg-slate-700/50 text-slate-300 hover:bg-slate-700 hover:text-white border border-slate-600/50'
                     }`}
                 >
                   <Stethoscope className="w-4 h-4" />
@@ -4566,8 +4567,8 @@ const RicardoValencaDashboard: React.FC = () => {
                 <button
                   onClick={() => goToSection('prescricoes')}
                   className={`px-4 py-2 rounded-lg text-sm font-medium transition-all flex items-center gap-2 ${resolvedSection === 'prescricoes'
-                      ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40'
-                      : 'bg-slate-700/50 text-slate-300 hover:bg-slate-700 hover:text-white border border-slate-600/50'
+                    ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40'
+                    : 'bg-slate-700/50 text-slate-300 hover:bg-slate-700 hover:text-white border border-slate-600/50'
                     }`}
                 >
                   <FileText className="w-4 h-4" />
@@ -4576,8 +4577,8 @@ const RicardoValencaDashboard: React.FC = () => {
                 <button
                   onClick={() => goToSection('admin-renal')}
                   className={`px-4 py-2 rounded-lg text-sm font-medium transition-all flex items-center gap-2 ${resolvedSection === 'admin-renal'
-                      ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40'
-                      : 'bg-slate-700/50 text-slate-300 hover:bg-slate-700 hover:text-white border border-slate-600/50'
+                    ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40'
+                    : 'bg-slate-700/50 text-slate-300 hover:bg-slate-700 hover:text-white border border-slate-600/50'
                     }`}
                 >
                   <Activity className="w-4 h-4" />
@@ -4586,8 +4587,8 @@ const RicardoValencaDashboard: React.FC = () => {
                 <button
                   onClick={() => goToSection('agendamentos')}
                   className={`px-4 py-2 rounded-lg text-sm font-medium transition-all flex items-center gap-2 ${resolvedSection === 'agendamentos'
-                      ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40'
-                      : 'bg-slate-700/50 text-slate-300 hover:bg-slate-700 hover:text-white border border-slate-600/50'
+                    ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40'
+                    : 'bg-slate-700/50 text-slate-300 hover:bg-slate-700 hover:text-white border border-slate-600/50'
                     }`}
                 >
                   <Calendar className="w-4 h-4" />
