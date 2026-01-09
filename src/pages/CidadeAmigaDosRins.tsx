@@ -273,6 +273,7 @@ const CidadeAmigaDosRins: React.FC = () => {
   })
   const [selectedPatientForRenal, setSelectedPatientForRenal] = useState<string | undefined>(undefined)
   const [showRenalModule, setShowRenalModule] = useState(false)
+  const [patientsList, setPatientsList] = useState<Array<{ id: string, name: string, email: string }>>([])
 
   useEffect(() => {
     loadData()
@@ -359,6 +360,26 @@ const CidadeAmigaDosRins: React.FC = () => {
         renalExams: renalExamsCount,
         patientsWithExams: uniquePatientsCount
       })
+
+      // Carregar lista de pacientes para o seletor
+      try {
+        const { data: patientsData, error: patientsError } = await supabase
+          .from('users')
+          .select('id, name, email')
+          .eq('type', 'paciente')
+          .order('name')
+          .limit(50)
+
+        if (!patientsError && patientsData) {
+          setPatientsList(patientsData.map(p => ({
+            id: p.id,
+            name: p.name || p.email || 'Paciente',
+            email: p.email || ''
+          })))
+        }
+      } catch (err) {
+        console.warn('Erro ao carregar pacientes:', err)
+      }
 
     } catch (error) {
       console.error('Erro ao carregar dados:', error)
@@ -889,7 +910,36 @@ const CidadeAmigaDosRins: React.FC = () => {
 
           {/* RenalFunctionModule Expandido */}
           {showRenalModule && (
-            <div className="mb-6">
+            <div className="mb-6 space-y-4">
+              {/* Seletor de Paciente */}
+              <div className="bg-slate-700/50 rounded-lg p-4 border border-cyan-500/20">
+                <div className="flex flex-col md:flex-row md:items-center gap-4">
+                  <div className="flex-1">
+                    <label className="block text-sm font-medium text-cyan-200 mb-2">
+                      Selecione um Paciente para Avaliar
+                    </label>
+                    <select
+                      value={selectedPatientForRenal || ''}
+                      onChange={(e) => setSelectedPatientForRenal(e.target.value || undefined)}
+                      className="w-full px-4 py-3 bg-slate-800 border border-cyan-500/30 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                    >
+                      <option value="">-- Selecione um paciente --</option>
+                      {patientsList.map(p => (
+                        <option key={p.id} value={p.id}>
+                          {p.name} {p.email ? `(${p.email})` : ''}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  {patientsList.length === 0 && (
+                    <div className="text-yellow-400 text-sm">
+                      ⚠️ Nenhum paciente encontrado no sistema
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Módulo de Função Renal */}
               <RenalFunctionModule patientId={selectedPatientForRenal} />
             </div>
           )}
