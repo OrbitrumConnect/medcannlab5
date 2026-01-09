@@ -10,7 +10,7 @@ interface RealtimeData {
     availableReports: number
     nextAppointment: string
   }
-  
+
   // Dados do profissional
   professionalStats: {
     activePatients: number
@@ -18,7 +18,7 @@ interface RealtimeData {
     pendingReports: number
     completedCourses: number
   }
-  
+
   // Dados do admin
   adminStats: {
     totalUsers: number
@@ -26,7 +26,7 @@ interface RealtimeData {
     totalCourses: number
     systemHealth: 'healthy' | 'warning' | 'critical'
   }
-  
+
   // Notificações em tempo real
   notifications: Array<{
     id: string
@@ -95,9 +95,9 @@ export const RealtimeProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
     try {
       // Carregar dados baseado no tipo de usuário
-      if (user.type === 'patient') {
+      if (user.type === 'paciente') {
         await loadPatientStats()
-      } else if (user.type === 'professional') {
+      } else if (user.type === 'profissional') {
         await loadProfessionalStats()
       } else if (user.type === 'admin') {
         await loadAdminStats()
@@ -263,7 +263,7 @@ export const RealtimeProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       // Marcar como lida localmente
       setData(prev => ({
         ...prev,
-        notifications: prev.notifications.map(notif => 
+        notifications: prev.notifications.map(notif =>
           notif.id === id ? { ...notif, read: true } : notif
         )
       }))

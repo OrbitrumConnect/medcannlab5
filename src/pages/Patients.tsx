@@ -1,13 +1,13 @@
 import React, { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { 
-  Users, 
-  Search, 
-  Filter, 
-  Plus, 
-  Eye, 
-  Edit, 
-  FileText, 
+import {
+  Users,
+  Search,
+  Filter,
+  Plus,
+  Eye,
+  Edit,
+  FileText,
   Calendar,
   Phone,
   Mail,
@@ -36,11 +36,11 @@ const Patients: React.FC = () => {
 
   const filteredPatients = patients.filter(patient => {
     const matchesSearch = patient.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         patient.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         patient.diagnosis.toLowerCase().includes(searchTerm.toLowerCase())
-    
+      patient.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      patient.diagnosis.toLowerCase().includes(searchTerm.toLowerCase())
+
     const matchesFilter = filterStatus === 'all' || patient.status === filterStatus
-    
+
     return matchesSearch && matchesFilter
   })
 
@@ -116,7 +116,7 @@ const Patients: React.FC = () => {
           <p className="text-slate-300">Gerencie seus pacientes e acompanhe o tratamento</p>
         </div>
         <div className="mt-4 md:mt-0">
-          <button 
+          <button
             onClick={() => navigate('/app/new-patient')}
             className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg flex items-center space-x-2 transition-colors"
           >
@@ -169,7 +169,7 @@ const Patients: React.FC = () => {
             <Users className="w-8 h-8 text-blue-400" />
           </div>
         </div>
-        
+
         <div className="bg-slate-800/80 rounded-lg p-6 border border-slate-700">
           <div className="flex items-center justify-between">
             <div>
@@ -179,7 +179,7 @@ const Patients: React.FC = () => {
             <CheckCircle className="w-8 h-8 text-green-400" />
           </div>
         </div>
-        
+
         <div className="bg-slate-800/80 rounded-lg p-6 border border-slate-700">
           <div className="flex items-center justify-between">
             <div>
@@ -189,7 +189,7 @@ const Patients: React.FC = () => {
             <Clock className="w-8 h-8 text-yellow-400" />
           </div>
         </div>
-        
+
         <div className="bg-slate-800/80 rounded-lg p-6 border border-slate-700">
           <div className="flex items-center justify-between">
             <div>
@@ -217,8 +217,8 @@ const Patients: React.FC = () => {
             </thead>
             <tbody className="divide-y divide-slate-700">
               {currentPatients.map((patient) => (
-                <tr 
-                  key={patient.id} 
+                <tr
+                  key={patient.id}
                   className="hover:bg-slate-700/30 transition-colors cursor-pointer"
                   onClick={() => navigate(`/patient/${patient.id}`)}
                 >
@@ -226,7 +226,7 @@ const Patients: React.FC = () => {
                     <div className="flex items-center space-x-3">
                       <div className="w-12 h-12 bg-gradient-to-br from-[#00c16a] to-[#00a85a] rounded-full flex items-center justify-center">
                         <span className="text-white font-bold text-sm">
-                          {patient.name.split(' ').map(n => n[0]).join('')}
+                          {patient.name.split(' ').map((n: string) => n[0]).join('')}
                         </span>
                       </div>
                       <div>
@@ -240,7 +240,7 @@ const Patients: React.FC = () => {
                       </div>
                     </div>
                   </td>
-                  
+
                   <td className="px-6 py-4">
                     <div className="space-y-1">
                       <div className="flex items-center space-x-2">
@@ -257,14 +257,14 @@ const Patients: React.FC = () => {
                       </div>
                     </div>
                   </td>
-                  
+
                   <td className="px-6 py-4">
                     <div>
                       <p className="text-white font-medium">{patient.diagnosis}</p>
                       <p className="text-slate-400 text-sm">CRM: {patient.crm}</p>
                     </div>
                   </td>
-                  
+
                   <td className="px-6 py-4">
                     <div className="flex items-center space-x-2">
                       {getStatusIcon(patient.status)}
@@ -273,62 +273,62 @@ const Patients: React.FC = () => {
                       </span>
                     </div>
                   </td>
-                  
+
                   <td className="px-6 py-4">
                     <div>
                       <p className="text-white">{patient.lastVisit}</p>
                       <p className="text-slate-400 text-sm">Próxima: {patient.nextVisit}</p>
                     </div>
                   </td>
-                  
+
                   <td className="px-6 py-4">
                     <div className="flex items-center space-x-2">
-                      <button 
+                      <button
                         onClick={(e) => {
                           e.stopPropagation()
                           handleChatWithPatient(patient.id)
                         }}
-                        className="p-2 text-green-400 hover:text-green-300 hover:bg-green-500/20 rounded-lg transition-colors" 
+                        className="p-2 text-green-400 hover:text-green-300 hover:bg-green-500/20 rounded-lg transition-colors"
                         title="Chat Exclusivo"
                       >
                         <MessageSquare className="w-4 h-4" />
                       </button>
-                      <button 
+                      <button
                         onClick={(e) => {
                           e.stopPropagation()
                           navigate(`/patient/${patient.id}`)
                         }}
-                        className="p-2 text-blue-400 hover:text-blue-300 hover:bg-blue-500/20 rounded-lg transition-colors" 
+                        className="p-2 text-blue-400 hover:text-blue-300 hover:bg-blue-500/20 rounded-lg transition-colors"
                         title="Ver Perfil Completo"
                       >
                         <Eye className="w-4 h-4" />
                       </button>
-                      <button 
+                      <button
                         onClick={(e) => {
                           e.stopPropagation()
                           handleEditPatient(patient.id)
                         }}
-                        className="p-2 text-yellow-400 hover:text-yellow-300 hover:bg-yellow-500/20 rounded-lg transition-colors" 
+                        className="p-2 text-yellow-400 hover:text-yellow-300 hover:bg-yellow-500/20 rounded-lg transition-colors"
                         title="Editar"
                       >
                         <Edit className="w-4 h-4" />
                       </button>
-                      <button 
+                      <button
                         onClick={(e) => {
                           e.stopPropagation()
                           handleGenerateReport(patient.id)
                         }}
-                        className="p-2 text-green-400 hover:text-green-300 hover:bg-green-500/20 rounded-lg transition-colors" 
+                        className="p-2 text-green-400 hover:text-green-300 hover:bg-green-500/20 rounded-lg transition-colors"
                         title="Relatório"
                       >
                         <FileText className="w-4 h-4" />
                       </button>
-                      <button 
+                      <button
                         onClick={(e) => {
                           e.stopPropagation()
                           handleScheduleAppointment(patient.id)
                         }}
-                        className="p-2 text-purple-400 hover:text-purple-300 hover:bg-purple-500/20 rounded-lg transition-colors" 
+                        className="p-2 text-purple-400 hover:text-purple-300 hover:bg-purple-500/20 rounded-lg transition-colors"
                         title="Agendar"
                       >
                         <Calendar className="w-4 h-4" />
@@ -357,21 +357,20 @@ const Patients: React.FC = () => {
               >
                 <ChevronLeft className="w-5 h-5" />
               </button>
-              
+
               {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
                 <button
                   key={page}
                   onClick={() => handlePageChange(page)}
-                  className={`px-3 py-2 rounded-lg transition-colors ${
-                    currentPage === page
+                  className={`px-3 py-2 rounded-lg transition-colors ${currentPage === page
                       ? 'bg-blue-600 text-white'
                       : 'text-slate-400 hover:text-white hover:bg-slate-700/50'
-                  }`}
+                    }`}
                 >
                   {page}
                 </button>
               ))}
-              
+
               <button
                 onClick={() => handlePageChange(currentPage + 1)}
                 disabled={currentPage === totalPages}

@@ -220,7 +220,7 @@ const PatientDoctorChat: React.FC = () => {
     }
 
     // Só profissionais e admins podem criar salas
-    if (user.type !== 'profissional' && user.type !== 'admin' && user.type !== 'professional') {
+    if (user.type !== 'profissional' && user.type !== 'admin') {
       return;
     }
 
@@ -337,7 +337,7 @@ const PatientDoctorChat: React.FC = () => {
 
           if (!rpcError && rpcData) {
             participantRows = rpcData;
-            console.log('✅ Participantes carregados via RPC:', participantRows.length);
+            console.log('✅ Participantes carregados via RPC:', participantRows?.length);
           } else {
             participantError = rpcError;
             console.warn('⚠️ RPC não disponível, tentando query direta...', rpcError);

@@ -511,14 +511,14 @@ const EduardoFaveretDashboard: React.FC = () => {
 
             <button
               onClick={() => setActiveSection('chat-profissionais')}
-              className="rounded-xl p-6 text-white hover:shadow-lg hover:scale-105 transition-all text-left"
-              style={cardStyle}
+              className="bg-gradient-to-r from-blue-700 to-indigo-600 rounded-xl p-6 text-white hover:shadow-lg hover:scale-105 transition-all text-left border border-white/10"
             >
               <div className="flex items-center justify-between mb-2">
-                <h3 className="text-sm font-medium text-white">🏥 Comunicação entre Consultórios</h3>
-                <Users className="w-6 h-6 text-[#4FE0C1]" />
+                <h3 className="text-sm font-bold text-white uppercase tracking-wider">🏥 Acesso Direto</h3>
+                <MessageCircle className="w-6 h-6 text-white" />
               </div>
-              <p className="text-xs text-[rgba(200,214,229,0.75)] mt-1">Chat com Dr. Ricardo Valença</p>
+              <h4 className="text-lg font-bold text-white mb-1">Dr. Ricardo Valença</h4>
+              <p className="text-xs text-blue-100 opacity-90 mt-1">Comunicação entre consultórios</p>
             </button>
           </div>
         </div>
@@ -1167,7 +1167,7 @@ const EduardoFaveretDashboard: React.FC = () => {
                 Comunicação segura entre consultórios da plataforma MedCannLab
               </p>
             </div>
-            <ProfessionalChatSystem />
+            <ProfessionalChatSystem interlocutor="Ricardo Valença" />
           </div>
         )}
 

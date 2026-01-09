@@ -660,8 +660,8 @@ export function LessonPreparation() {
             <button
               onClick={() => setActiveTab('cases')}
               className={`pb-3 px-4 font-semibold transition-colors ${activeTab === 'cases'
-                  ? 'text-emerald-400 border-b-2 border-emerald-400'
-                  : 'text-gray-400 hover:text-white'
+                ? 'text-emerald-400 border-b-2 border-emerald-400'
+                : 'text-gray-400 hover:text-white'
                 }`}
             >
               📁 Casos Clínicos ({cases.length})
@@ -669,8 +669,8 @@ export function LessonPreparation() {
             <button
               onClick={() => setActiveTab('lessons')}
               className={`pb-3 px-4 font-semibold transition-colors ${activeTab === 'lessons'
-                  ? 'text-emerald-400 border-b-2 border-emerald-400'
-                  : 'text-gray-400 hover:text-white'
+                ? 'text-emerald-400 border-b-2 border-emerald-400'
+                : 'text-gray-400 hover:text-white'
                 }`}
             >
               📚 Minhas Aulas ({lessons.length})
@@ -678,8 +678,8 @@ export function LessonPreparation() {
             <button
               onClick={() => setActiveTab('slides')}
               className={`pb-3 px-4 font-semibold transition-colors ${activeTab === 'slides'
-                  ? 'text-emerald-400 border-b-2 border-emerald-400'
-                  : 'text-gray-400 hover:text-white'
+                ? 'text-emerald-400 border-b-2 border-emerald-400'
+                : 'text-gray-400 hover:text-white'
                 }`}
             >
               📊 Preparação de Slides ({slides.length})
@@ -687,8 +687,8 @@ export function LessonPreparation() {
             <button
               onClick={() => setActiveTab('flipped')}
               className={`pb-3 px-4 font-semibold transition-colors ${activeTab === 'flipped'
-                  ? 'text-emerald-400 border-b-2 border-emerald-400'
-                  : 'text-gray-400 hover:text-white'
+                ? 'text-emerald-400 border-b-2 border-emerald-400'
+                : 'text-gray-400 hover:text-white'
                 }`}
             >
               🔄 Sala de Aula Invertida ({flippedLessons.length})
@@ -696,8 +696,8 @@ export function LessonPreparation() {
             <button
               onClick={() => setActiveTab('quizzes')}
               className={`pb-3 px-4 font-semibold transition-colors ${activeTab === 'quizzes'
-                  ? 'text-emerald-400 border-b-2 border-emerald-400'
-                  : 'text-gray-400 hover:text-white'
+                ? 'text-emerald-400 border-b-2 border-emerald-400'
+                : 'text-gray-400 hover:text-white'
                 }`}
             >
               📝 Geração de Quizzes ({quizzes.length})
@@ -780,8 +780,8 @@ export function LessonPreparation() {
                       </div>
                     </div>
                     <span className={`px-3 py-1 rounded-full text-xs font-semibold ${lesson.status === 'published'
-                        ? 'bg-green-500/20 text-green-400'
-                        : 'bg-yellow-500/20 text-yellow-400'
+                      ? 'bg-green-500/20 text-green-400'
+                      : 'bg-yellow-500/20 text-yellow-400'
                       }`}>
                       {lesson.status === 'published' ? 'Publicada' : 'Rascunho'}
                     </span>
@@ -1032,8 +1032,8 @@ export function LessonPreparation() {
                       key={template.id}
                       onClick={() => setSelectedTemplateId(template.id)}
                       className={`text-left p-4 rounded-xl transition-all border ${isSelected
-                          ? 'border-[#00F5A0] bg-slate-900/80 shadow-xl scale-[1.02]'
-                          : 'border-slate-700/60 bg-slate-900/60 hover:border-slate-500/60'
+                        ? 'border-[#00F5A0] bg-slate-900/80 shadow-xl scale-[1.02]'
+                        : 'border-slate-700/60 bg-slate-900/60 hover:border-slate-500/60'
                         }`}
                     >
                       <div className="flex items-center justify-between">
@@ -1070,8 +1070,8 @@ export function LessonPreparation() {
                           key={slide.id}
                           onClick={() => setCurrentSlide(index)}
                           className={`w-full p-3 rounded-lg text-left transition-all border ${isActive
-                              ? 'border-[#00F5A0] bg-slate-800/90 shadow-lg'
-                              : 'border-slate-700/60 bg-slate-800/60 hover:border-slate-500/60'
+                            ? 'border-[#00F5A0] bg-slate-800/90 shadow-lg'
+                            : 'border-slate-700/60 bg-slate-800/60 hover:border-slate-500/60'
                             }`}
                         >
                           <div className="flex items-center justify-between mb-1">
@@ -1490,8 +1490,8 @@ export function LessonPreparation() {
                           setQuizQuestions(quiz.questions || [])
                         }}
                         className={`p-3 rounded-lg cursor-pointer transition-colors ${currentQuiz?.id === quiz.id
-                            ? 'bg-emerald-600 text-white'
-                            : 'bg-slate-700 hover:bg-slate-600 text-gray-300'
+                          ? 'bg-emerald-600 text-white'
+                          : 'bg-slate-700 hover:bg-slate-600 text-gray-300'
                           }`}
                       >
                         <div className="font-medium">{quiz.title}</div>
@@ -1560,7 +1560,7 @@ export function LessonPreparation() {
                               />
                             </div>
                             <div className="space-y-2">
-                              {question.options.map((option, oIndex) => (
+                              {question.options.map((option: string, oIndex: number) => (
                                 <div key={oIndex} className="flex items-center gap-2">
                                   <input
                                     type="radio"

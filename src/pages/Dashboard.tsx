@@ -2,11 +2,11 @@ import React, { useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { Link } from 'react-router-dom'
-import { 
-  BookOpen, 
-  Stethoscope, 
-  BarChart3, 
-  Users, 
+import {
+  BookOpen,
+  Stethoscope,
+  BarChart3,
+  Users,
   Award,
   Clock,
   CheckCircle,
@@ -33,23 +33,23 @@ const Dashboard: React.FC = () => {
     if (!user || hasRedirectedRef.current || lastUserTypeRef.current === user.type) {
       return
     }
-    
+
     lastUserTypeRef.current = user.type
-    
-    if (user.type === 'patient') {
+
+    if (user.type === 'paciente') {
       hasRedirectedRef.current = true
       navigate('/app/clinica/paciente/dashboard', { replace: true })
     } else if (user.type === 'admin') {
       hasRedirectedRef.current = true
       navigate('/app/ricardo-valenca-dashboard', { replace: true })
-    } else if (!['professional', 'student', 'aluno'].includes(user.type)) { // Compatibilidade com 'aluno'
+    } else if (!['profissional', 'aluno'].includes(user.type)) { // Compatibilidade com 'aluno'
       hasRedirectedRef.current = true
       const defaultRoute = getDefaultRoute(user.type)
       navigate(defaultRoute, { replace: true })
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.type])
-  
+
   // Resetar ref se o usuário mudou completamente
   useEffect(() => {
     if (!user) {
@@ -59,7 +59,7 @@ const Dashboard: React.FC = () => {
   }, [user?.id])
 
   // Se paciente, admin ou tipo não reconhecido, não renderizar nada (aguardar redirecionamento)
-  if (user?.type === 'patient' || user?.type === 'admin' || (user && !['professional', 'aluno'].includes(user.type))) {
+  if (user?.type === 'paciente' || user?.type === 'admin' || (user && !['profissional', 'aluno'].includes(user.type))) {
     return null
   }
 
@@ -85,10 +85,10 @@ const Dashboard: React.FC = () => {
     }
 
     switch (user?.type) {
-      case 'patient':
+      case 'paciente':
         // Não deve chegar aqui devido ao redirecionamento acima
         return <PatientDashboard />
-      case 'professional':
+      case 'profissional':
         return <ProfessionalDashboard />
       case 'aluno':
         return <AlunoDashboard />

@@ -48,7 +48,13 @@ const ShareReportModal: React.FC<ShareReportModalProps> = ({
           return
         }
 
-        setDoctors(data || [])
+        const mappedDoctors = (data || []).map((d: any) => ({
+          id: d.id,
+          name: d.name,
+          email: d.email,
+          type: d.user_type || d.type
+        }))
+        setDoctors(mappedDoctors)
       } catch (err) {
         console.error('Erro ao carregar médicos:', err)
       }
@@ -58,7 +64,7 @@ const ShareReportModal: React.FC<ShareReportModalProps> = ({
   }, [])
 
   const toggleDoctor = (doctorId: string) => {
-    setSelectedDoctors(prev => 
+    setSelectedDoctors(prev =>
       prev.includes(doctorId)
         ? prev.filter(id => id !== doctorId)
         : [...prev, doctorId]
@@ -89,7 +95,7 @@ const ShareReportModal: React.FC<ShareReportModalProps> = ({
       }
 
       setSuccess(true)
-      
+
       // Chamar callback de sucesso
       if (onShareSuccess) {
         setTimeout(() => {

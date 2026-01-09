@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import {
   Video,
   Phone,
@@ -37,6 +38,7 @@ import QuickPrescriptions from '../components/QuickPrescriptions'
 import MedicalRecord from '../components/MedicalRecord'
 import IntegrativePrescriptions from '../components/IntegrativePrescriptions'
 import ClinicalReports from '../components/ClinicalReports'
+import ProfessionalScheduling from './ProfessionalScheduling'
 import { isAdmin, getAllPatients } from '../lib/adminPermissions'
 import { useUserView } from '../hooks/useUserView'
 
@@ -62,7 +64,23 @@ const ProfessionalDashboard: React.FC = () => {
   const [selectedPatientData, setSelectedPatientData] = useState<Patient | null>(null)
   const [patients, setPatients] = useState<Patient[]>([])
   const [loading, setLoading] = useState(true)
-  const [activeSection, setActiveSection] = useState<'dashboard' | 'prescriptions' | 'clinical-reports'>('dashboard')
+
+  const [searchParams, setSearchParams] = useSearchParams()
+  const sectionParam = searchParams.get('section') as 'dashboard' | 'prescriptions' | 'clinical-reports' | 'agendamentos' | null
+  const [activeSection, setActiveSection] = useState<'dashboard' | 'prescriptions' | 'clinical-reports' | 'agendamentos'>(sectionParam || 'dashboard')
+
+  // Sync state with URL param
+  useEffect(() => {
+    if (sectionParam && sectionParam !== activeSection) {
+      setActiveSection(sectionParam)
+    }
+  }, [sectionParam])
+
+  // Sync URL param with state
+  const handleSectionChange = (section: 'dashboard' | 'prescriptions' | 'clinical-reports' | 'agendamentos') => {
+    setActiveSection(section)
+    setSearchParams({ section })
+  }
 
   // Verificar se é admin
   const effectiveType = getEffectiveUserType(user?.type)
@@ -383,7 +401,7 @@ const ProfessionalDashboard: React.FC = () => {
           <div className="mb-8">
             <nav className="flex space-x-1 bg-white/10 backdrop-blur-md rounded-lg p-1 border border-white/10 w-fit">
               <button
-                onClick={() => setActiveSection('dashboard')}
+                onClick={() => handleSectionChange('dashboard')}
                 className={`px-6 py-2 rounded-md text-sm font-medium transition-colors ${activeSection === 'dashboard'
                   ? 'bg-blue-600 text-white shadow-lg'
                   : 'text-slate-300 hover:text-white hover:bg-white/5'
@@ -392,7 +410,16 @@ const ProfessionalDashboard: React.FC = () => {
                 Visão Geral
               </button>
               <button
-                onClick={() => setActiveSection('prescriptions')}
+                onClick={() => handleSectionChange('agendamentos')}
+                className={`px-6 py-2 rounded-md text-sm font-medium transition-colors ${activeSection === 'agendamentos'
+                  ? 'bg-blue-600 text-white shadow-lg'
+                  : 'text-slate-300 hover:text-white hover:bg-white/5'
+                  }`}
+              >
+                Agendamentos
+              </button>
+              <button
+                onClick={() => handleSectionChange('prescriptions')}
                 className={`px-6 py-2 rounded-md text-sm font-medium transition-colors ${activeSection === 'prescriptions'
                   ? 'bg-blue-600 text-white shadow-lg'
                   : 'text-slate-300 hover:text-white hover:bg-white/5'
@@ -401,7 +428,7 @@ const ProfessionalDashboard: React.FC = () => {
                 Todas Prescrições
               </button>
               <button
-                onClick={() => setActiveSection('clinical-reports')}
+                onClick={() => handleSectionChange('clinical-reports')}
                 className={`px-6 py-2 rounded-md text-sm font-medium transition-colors ${activeSection === 'clinical-reports'
                   ? 'bg-blue-600 text-white shadow-lg'
                   : 'text-slate-300 hover:text-white hover:bg-white/5'
@@ -415,6 +442,12 @@ const ProfessionalDashboard: React.FC = () => {
 
         {/* Renderização Condicional */}
         {activeSection === 'dashboard' && renderDashboard()}
+
+        {activeSection === 'agendamentos' && !selectedPatient && (
+          <div className="bg-white rounded-xl shadow-xl overflow-hidden text-slate-900 border-none">
+            <ProfessionalScheduling />
+          </div>
+        )}
 
         {activeSection === 'prescriptions' && !selectedPatient && (
           <div className="bg-white rounded-xl shadow-xl overflow-hidden text-slate-900">

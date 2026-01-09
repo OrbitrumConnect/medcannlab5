@@ -62,7 +62,7 @@ export function PaymentCheckout() {
             consultation_discount: 30
           }
         }
-        setPlan(mockPlans[planId] || mockPlans['mock-2'])
+        setPlan(planId ? mockPlans[planId] : mockPlans['mock-2'])
       }
     } catch (error) {
       console.error('Erro ao carregar plano:', error)
@@ -201,8 +201,8 @@ export function PaymentCheckout() {
                 <button
                   onClick={() => setPaymentMethod('pix')}
                   className={`w-full p-4 rounded-lg flex items-center gap-3 transition-all ${paymentMethod === 'pix'
-                      ? 'bg-emerald-600 border-2 border-emerald-500'
-                      : 'bg-slate-700 border-2 border-slate-600 hover:border-emerald-500'
+                    ? 'bg-emerald-600 border-2 border-emerald-500'
+                    : 'bg-slate-700 border-2 border-slate-600 hover:border-emerald-500'
                     }`}
                 >
                   <QrCode size={24} className="text-white" />
@@ -219,8 +219,8 @@ export function PaymentCheckout() {
                 <button
                   onClick={() => setPaymentMethod('card')}
                   className={`w-full p-4 rounded-lg flex items-center gap-3 transition-all ${paymentMethod === 'card'
-                      ? 'bg-emerald-600 border-2 border-emerald-500'
-                      : 'bg-slate-700 border-2 border-slate-600 hover:border-emerald-500'
+                    ? 'bg-emerald-600 border-2 border-emerald-500'
+                    : 'bg-slate-700 border-2 border-slate-600 hover:border-emerald-500'
                     }`}
                 >
                   <CreditCard size={24} className="text-white" />
@@ -237,8 +237,8 @@ export function PaymentCheckout() {
                 <button
                   onClick={() => setPaymentMethod('boleto')}
                   className={`w-full p-4 rounded-lg flex items-center gap-3 transition-all ${paymentMethod === 'boleto'
-                      ? 'bg-emerald-600 border-2 border-emerald-500'
-                      : 'bg-slate-700 border-2 border-slate-600 hover:border-emerald-500'
+                    ? 'bg-emerald-600 border-2 border-emerald-500'
+                    : 'bg-slate-700 border-2 border-slate-600 hover:border-emerald-500'
                     }`}
                 >
                   <Barcode size={24} className="text-white" />
@@ -295,7 +295,7 @@ export function PaymentCheckout() {
             {/* Botão de Pagamento */}
             <button
               onClick={handlePayment}
-              disabled={processing || (paymentMethod === 'pix' && qrCode)}
+              disabled={processing || (paymentMethod === 'pix' && Boolean(qrCode))}
               className="w-full bg-green-600 hover:bg-green-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white py-4 rounded-lg font-semibold text-lg transition-all flex items-center justify-center gap-2"
             >
               {processing && <Loader2 className="animate-spin" size={20} />}

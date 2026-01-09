@@ -5,6 +5,7 @@ import { ChatRoomSummary, useChatSystem } from '../hooks/useChatSystem'
 
 interface ProfessionalChatSystemProps {
   className?: string
+  interlocutor?: string
 }
 
 type RoomFilter = 'all' | 'professional' | 'student' | 'patient'
@@ -28,7 +29,7 @@ const formatTime = (isoDate: string) => {
   })
 }
 
-const ProfessionalChatSystem: React.FC<ProfessionalChatSystemProps> = ({ className = '' }) => {
+const ProfessionalChatSystem: React.FC<ProfessionalChatSystemProps> = ({ className = '', interlocutor }) => {
   const { user } = useAuth()
   const [activeRoomId, setActiveRoomId] = useState<string | null>(null)
   const [filter, setFilter] = useState<RoomFilter>('all')
@@ -46,10 +47,23 @@ const ProfessionalChatSystem: React.FC<ProfessionalChatSystemProps> = ({ classNa
   } = useChatSystem(activeRoomId ?? undefined)
 
   useEffect(() => {
-    if (!activeRoomId && inbox.length > 0) {
+    if (activeRoomId) return
+
+    if (interlocutor && inbox.length > 0) {
+      // Tentar encontrar sala com o interlocutor
+      const targetRoom = inbox.find(room =>
+        room.name?.toLowerCase().includes(interlocutor.toLowerCase())
+      )
+      if (targetRoom) {
+        setActiveRoomId(targetRoom.id)
+      } else if (inbox.length > 0) {
+        // Fallback: primeira sala
+        setActiveRoomId(inbox[0].id)
+      }
+    } else if (!activeRoomId && inbox.length > 0) {
       setActiveRoomId(inbox[0].id)
     }
-  }, [activeRoomId, inbox])
+  }, [activeRoomId, inbox, interlocutor])
 
   const filteredRooms = useMemo(() => {
     const byFilter = inbox.filter(room => {

@@ -78,6 +78,7 @@ import DRCMonitoringSchedule from './pages/DRCMonitoringSchedule'
 import LessonDetail from './pages/LessonDetail'
 import NewsManagement from './pages/NewsManagement'
 import ProfessionalMyDashboard from './pages/ProfessionalMyDashboard'
+import EduardoFaveretDashboard from './pages/EduardoFaveretDashboard'
 import ClinicalGovernanceDemo from './pages/ClinicalGovernanceDemo'
 import ClinicalGovernanceAdmin from './pages/ClinicalGovernanceAdmin'
 import InvitePatient from './pages/InvitePatient' // IMPORT AT TOP
@@ -124,7 +125,7 @@ function App() {
                           path="clinica/profissional/dashboard-eduardo"
                           element={
                             <ProtectedRoute requiredRole="profissional">
-                              <RicardoValencaDashboard />
+                              <EduardoFaveretDashboard />
                             </ProtectedRoute>
                           }
                         />
