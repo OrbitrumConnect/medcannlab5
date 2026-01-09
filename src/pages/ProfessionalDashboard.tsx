@@ -26,7 +26,10 @@ import {
   TrendingUp,
   UserPlus,
   Bell,
-  Settings
+  Settings,
+  Pill,
+  ChevronRight,
+  ChevronLeft
 } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
@@ -44,7 +47,8 @@ interface Patient {
   cpf: string
   phone: string
   lastVisit: string
-  status: string
+  email: string
+  status: 'active' | 'inactive' | 'pending'
   assessments?: any[]
   condition?: string
   priority?: 'high' | 'medium' | 'low'
@@ -54,11 +58,11 @@ const ProfessionalDashboard: React.FC = () => {
   const { user } = useAuth()
   const { getEffectiveUserType, isAdminViewingAs } = useUserView()
   const [patientSearch, setPatientSearch] = useState('')
-  const [clinicalNotes, setClinicalNotes] = useState('')
   const [selectedPatient, setSelectedPatient] = useState<string | null>(null)
+  const [selectedPatientData, setSelectedPatientData] = useState<Patient | null>(null)
   const [patients, setPatients] = useState<Patient[]>([])
   const [loading, setLoading] = useState(true)
-  const [activeSection, setActiveSection] = useState<'dashboard' | 'kpis' | 'newsletter' | 'prescriptions' | 'clinical-reports'>('dashboard')
+  const [activeSection, setActiveSection] = useState<'dashboard' | 'prescriptions' | 'clinical-reports'>('dashboard')
 
   // Verificar se é admin
   const effectiveType = getEffectiveUserType(user?.type)
@@ -110,8 +114,9 @@ const ProfessionalDashboard: React.FC = () => {
             age: assessment.patient_age || 0,
             cpf: assessment.patient_cpf || '',
             phone: assessment.patient_phone || '',
+            email: '',
             lastVisit: new Date(assessment.created_at).toLocaleDateString('pt-BR'),
-            status: assessment.status || 'Aguardando',
+            status: 'active',
             condition: assessment.condition || 'Epilepsia',
             priority: assessment.priority || 'medium',
             assessments: []
@@ -134,37 +139,7 @@ const ProfessionalDashboard: React.FC = () => {
   const handlePatientSelect = (patientId: string) => {
     setSelectedPatient(patientId)
     const patient = patients.find(p => p.id === patientId)
-    if (patient) {
-      setClinicalNotes(patient.assessments?.[0]?.clinical_notes || '')
-    }
-  }
-
-  const handleSaveNotes = async () => {
-    if (!selectedPatient || !clinicalNotes.trim()) return
-
-    try {
-      const assessmentData = {
-        patient_id: selectedPatient,
-        doctor_id: user?.id,
-        clinical_notes: clinicalNotes,
-        status: 'completed',
-        assessment_type: 'follow_up'
-      }
-
-      const { error } = await supabase
-        .from('clinical_assessments')
-        .insert(assessmentData)
-
-      if (error) {
-        console.error('❌ Erro ao salvar notas:', error)
-        return
-      }
-
-      console.log('✅ Notas clínicas salvas com sucesso')
-      loadPatients() // Recarregar dados
-    } catch (error) {
-      console.error('❌ Erro ao salvar notas:', error)
-    }
+    setSelectedPatientData(patient || null)
   }
 
   const filteredPatients = patients.filter(patient =>
@@ -174,215 +149,221 @@ const ProfessionalDashboard: React.FC = () => {
 
   const renderDashboard = () => (
     <div className="space-y-6">
-      {/* KPIs Principais */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-6 shadow-lg border border-blue-200">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-blue-700">Total de Pacientes</p>
-              <p className="text-3xl font-bold text-blue-900">{patients.length}</p>
-              <p className="text-xs text-blue-600 mt-1">+2 esta semana</p>
+      {!selectedPatient ? (
+        <>
+          {/* Header Metrics */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+            <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-6 shadow-lg border border-blue-200">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-blue-700">Total de Pacientes</p>
+                  <p className="text-3xl font-bold text-blue-900">{patients.length}</p>
+                  <p className="text-xs text-blue-600 mt-1">+2 esta semana</p>
+                </div>
+                <div className="w-12 h-12 bg-blue-500 rounded-lg flex items-center justify-center">
+                  <Users className="h-6 w-6 text-white" />
+                </div>
+              </div>
             </div>
-            <div className="w-12 h-12 bg-blue-500 rounded-lg flex items-center justify-center">
-              <Users className="h-6 w-6 text-white" />
+
+            <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-xl p-6 shadow-lg border border-green-200">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-green-700">Agendamentos Hoje</p>
+                  <p className="text-3xl font-bold text-green-900">8</p>
+                  <p className="text-xs text-green-600 mt-1">3 próximos</p>
+                </div>
+                <div className="w-12 h-12 bg-green-500 rounded-lg flex items-center justify-center">
+                  <Calendar className="h-6 w-6 text-white" />
+                </div>
+              </div>
+            </div>
+
+            <div
+              onClick={() => setActiveSection('clinical-reports')}
+              className="bg-gradient-to-br from-orange-50 to-orange-100 rounded-xl p-6 shadow-lg border border-orange-200 cursor-pointer hover:shadow-xl transition-shadow"
+            >
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-orange-700">Relatórios Iniciais</p>
+                  <p className="text-3xl font-bold text-orange-900">3</p>
+                  <p className="text-xs text-orange-600 mt-1">Novos envios</p>
+                </div>
+                <div className="w-12 h-12 bg-orange-500 rounded-lg flex items-center justify-center">
+                  <FileText className="h-6 w-6 text-white" />
+                </div>
+              </div>
             </div>
           </div>
-        </div>
 
-        <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-xl p-6 shadow-lg border border-green-200">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-green-700">Agendamentos Hoje</p>
-              <p className="text-3xl font-bold text-green-900">8</p>
-              <p className="text-xs text-green-600 mt-1">3 próximos</p>
-            </div>
-            <div className="w-12 h-12 bg-green-500 rounded-lg flex items-center justify-center">
-              <Calendar className="h-6 w-6 text-white" />
-            </div>
-          </div>
-        </div>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Lista de Pacientes */}
+            <div className="lg:col-span-2 bg-gradient-to-r from-slate-50 to-slate-100 rounded-xl p-6 shadow-lg border border-slate-200">
+              <h3 className="text-lg font-semibold text-slate-800 mb-4 flex items-center">
+                <Search className="w-5 h-5 mr-2 text-slate-600" />
+                Atendimento Rápido
+              </h3>
+              <div className="relative mb-4">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 h-5 w-5" />
+                <input
+                  type="text"
+                  placeholder="Buscar paciente para abrir prontuário..."
+                  value={patientSearch}
+                  onChange={(e) => setPatientSearch(e.target.value)}
+                  className="w-full pl-10 pr-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white shadow-sm"
+                />
+              </div>
 
-        <div
-          onClick={() => setActiveSection('clinical-reports')}
-          className="bg-gradient-to-br from-orange-50 to-orange-100 rounded-xl p-6 shadow-lg border border-orange-200 cursor-pointer hover:shadow-xl transition-shadow"
-        >
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-orange-700">Relatórios da Avaliação Clínica Inicial</p>
-              <p className="text-3xl font-bold text-orange-900">3</p>
-              <p className="text-xs text-orange-600 mt-1">Compartilhados pelos pacientes</p>
+              {loading ? (
+                <div className="text-center text-slate-500 py-8">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-2"></div>
+                  Carregando...
+                </div>
+              ) : filteredPatients.length > 0 ? (
+                <div className="space-y-3 max-h-[500px] overflow-y-auto pr-2">
+                  {filteredPatients.map((patient) => (
+                    <div
+                      key={patient.id}
+                      onClick={() => handlePatientSelect(patient.id)}
+                      className="p-4 border border-slate-200 rounded-lg cursor-pointer hover:border-blue-300 hover:shadow-md bg-white transition-all group"
+                    >
+                      <div className="flex justify-between items-center">
+                        <div className="flex items-center space-x-3">
+                          <div className={`w-3 h-3 rounded-full ${patient.priority === 'high' ? 'bg-red-500' :
+                            patient.priority === 'medium' ? 'bg-yellow-500' : 'bg-green-500'
+                            }`}></div>
+                          <div>
+                            <p className="font-medium text-slate-900 group-hover:text-blue-700">{patient.name}</p>
+                            <p className="text-sm text-slate-500">CPF: {patient.cpf} • {patient.condition}</p>
+                          </div>
+                        </div>
+                        <ChevronRight className="w-5 h-5 text-slate-300 group-hover:text-blue-500" />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center text-slate-500 py-8">
+                  {patientSearch ? 'Nenhum paciente encontrado' : 'Nenhum paciente cadastrado'}
+                </div>
+              )}
             </div>
-            <div className="w-12 h-12 bg-orange-500 rounded-lg flex items-center justify-center">
-              <FileText className="h-6 w-6 text-white" />
-            </div>
-          </div>
-        </div>
-      </div>
 
-      {/* Busca de Pacientes */}
-      <div className="bg-gradient-to-r from-slate-50 to-slate-100 rounded-xl p-6 shadow-lg border border-slate-200">
-        <h3 className="text-lg font-semibold text-slate-800 mb-4 flex items-center">
-          <Search className="w-5 h-5 mr-2 text-slate-600" />
-          Buscar Paciente
-        </h3>
-        <div className="relative mb-4">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 h-5 w-5" />
-          <input
-            type="text"
-            placeholder="Digite nome ou CPF do paciente..."
-            value={patientSearch}
-            onChange={(e) => setPatientSearch(e.target.value)}
-            className="w-full pl-10 pr-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white shadow-sm"
-          />
-        </div>
-
-        {loading ? (
-          <div className="text-center text-slate-500 py-8">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-2"></div>
-            Carregando pacientes...
-          </div>
-        ) : filteredPatients.length > 0 ? (
-          <div className="space-y-3">
-            {filteredPatients.map((patient) => (
-              <div
-                key={patient.id}
-                onClick={() => handlePatientSelect(patient.id)}
-                className={`p-4 border rounded-lg cursor-pointer transition-all ${selectedPatient === patient.id
-                  ? 'border-blue-500 bg-blue-50 shadow-md'
-                  : 'border-slate-200 hover:border-slate-300 hover:shadow-sm bg-white'
-                  }`}
-              >
-                <div className="flex justify-between items-center">
-                  <div className="flex items-center space-x-3">
-                    <div className={`w-3 h-3 rounded-full ${patient.priority === 'high' ? 'bg-red-500' :
-                      patient.priority === 'medium' ? 'bg-yellow-500' : 'bg-green-500'
-                      }`}></div>
-                    <div>
-                      <p className="font-medium text-slate-900">{patient.name}</p>
-                      <p className="text-sm text-slate-500">CPF: {patient.cpf} • {patient.condition}</p>
+            {/* KPIs Rápidos & News (Lateral) */}
+            <div className="space-y-6">
+              <div className="bg-white rounded-xl p-6 shadow-md border border-slate-200">
+                <h3 className="text-md font-semibold text-slate-800 mb-4 flex items-center">
+                  <Activity className="w-5 h-5 mr-2 text-blue-600" />
+                  Eficácia Clínica
+                </h3>
+                <div className="space-y-4">
+                  <div>
+                    <div className="flex justify-between text-sm mb-1">
+                      <span className="text-slate-600">Retenção de Pacientes</span>
+                      <span className="font-bold text-slate-900">94%</span>
+                    </div>
+                    <div className="w-full bg-slate-100 rounded-full h-2">
+                      <div className="bg-blue-600 h-2 rounded-full" style={{ width: '94%' }}></div>
                     </div>
                   </div>
-                  <div className="text-right">
-                    <p className="text-sm text-slate-500">Última consulta: {patient.lastVisit}</p>
-                    <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${patient.status === 'completed'
-                      ? 'bg-green-100 text-green-800'
-                      : 'bg-yellow-100 text-yellow-800'
-                      }`}>
-                      {patient.status}
-                    </span>
+                  <div>
+                    <div className="flex justify-between text-sm mb-1">
+                      <span className="text-slate-600">Adesão ao Tratamento</span>
+                      <span className="font-bold text-slate-900">87%</span>
+                    </div>
+                    <div className="w-full bg-slate-100 rounded-full h-2">
+                      <div className="bg-green-600 h-2 rounded-full" style={{ width: '87%' }}></div>
+                    </div>
                   </div>
                 </div>
               </div>
-            ))}
-          </div>
-        ) : (
-          <div className="text-center text-slate-500 py-8">
-            {patientSearch ? 'Nenhum paciente encontrado' : 'Nenhum paciente cadastrado'}
-          </div>
-        )}
-      </div>
 
-      {/* Notas Clínicas */}
-      {selectedPatient && (
-        <div className="bg-gradient-to-r from-slate-50 to-slate-100 rounded-xl p-6 shadow-lg border border-slate-200">
-          <h3 className="text-lg font-semibold text-slate-800 mb-4 flex items-center">
-            <FileText className="w-5 h-5 mr-2 text-slate-600" />
-            Notas Clínicas
-          </h3>
-          <textarea
-            value={clinicalNotes}
-            onChange={(e) => setClinicalNotes(e.target.value)}
-            placeholder="Digite suas observações clínicas..."
-            className="w-full h-32 p-4 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none bg-white shadow-sm"
-          />
-          <div className="mt-4 flex justify-end space-x-3">
+              {/* Newsletter Mini */}
+              <div className="bg-gradient-to-b from-indigo-50 to-white rounded-xl p-6 shadow-md border border-indigo-100">
+                <h3 className="text-md font-semibold text-indigo-900 mb-3 flex items-center">
+                  <BookOpen className="w-4 h-4 mr-2" />
+                  Destaque Científico
+                </h3>
+                <div className="space-y-3">
+                  <a href="#" className="block group">
+                    <p className="text-sm font-medium text-slate-900 group-hover:text-indigo-600 transition-colors line-clamp-2">
+                      Eficácia do Canabidiol em Epilepsia Refratária: Estudo Fase 3
+                    </p>
+                    <span className="text-xs text-slate-500 mt-1 block">Nature Medicine • 2 dias atrás</span>
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </>
+      ) : (
+        /* Visão Detalhada do Paciente (Prontuário + Prescrição) */
+        <div className="space-y-6 animate-fadeIn">
+          <div className="flex items-center space-x-4 mb-2">
             <button
               onClick={() => setSelectedPatient(null)}
-              className="px-4 py-2 text-slate-600 border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors bg-white"
+              className="p-2 hover:bg-white/10 rounded-full text-slate-300 hover:text-white transition-colors"
             >
-              Cancelar
+              <ChevronLeft className="w-6 h-6" />
             </button>
-            <button
-              onClick={handleSaveNotes}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-sm"
-            >
-              Salvar Notas
-            </button>
+            <div>
+              <h2 className="text-2xl font-bold text-white flex items-center gap-2">
+                {selectedPatientData?.name}
+                <span className={`text-xs px-2 py-1 rounded-full border ${selectedPatientData?.status === 'active' ? 'border-green-500 text-green-400' : 'border-slate-500 text-slate-400'
+                  }`}>
+                  {selectedPatientData?.status === 'active' ? 'Em Acompanhamento' : 'Inativo'}
+                </span>
+              </h2>
+              <p className="text-slate-400 flex items-center gap-2 text-sm">
+                <User className="w-3 h-3" /> CPF: {selectedPatientData?.cpf}
+                <span className="mx-1">•</span>
+                <Phone className="w-3 h-3" /> {selectedPatientData?.phone || 'Sem telefone'}
+              </p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Coluna Principal: Prontuário */}
+            <div className="lg:col-span-2 space-y-6">
+              <MedicalRecord
+                patientId={selectedPatient}
+                patientData={selectedPatientData || undefined}
+              />
+
+              <div className="bg-white rounded-xl shadow-lg border border-slate-200 overflow-hidden">
+                <div className="p-4 bg-slate-50 border-b border-slate-200 flex justify-between items-center">
+                  <h3 className="font-semibold text-slate-800 flex items-center gap-2">
+                    <Pill className="w-5 h-5 text-green-600" />
+                    Histórico de Prescrições
+                  </h3>
+                </div>
+                <div className="p-0">
+                  <IntegrativePrescriptions />
+                </div>
+              </div>
+            </div>
+
+            {/* Coluna Lateral: Ações Rápidas */}
+            <div className="space-y-6">
+              <QuickPrescriptions className="sticky top-6" />
+
+              <div className="bg-blue-50 rounded-xl p-4 border border-blue-200">
+                <h4 className="font-semibold text-blue-900 mb-2">Lembretes Clínicos</h4>
+                <ul className="space-y-2 text-sm text-blue-800">
+                  <li className="flex items-start gap-2">
+                    <AlertCircle className="w-4 h-4 mt-0.5 shrink-0" />
+                    Revisar função renal em 30 dias.
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Clock className="w-4 h-4 mt-0.5 shrink-0" />
+                    Renovar receita de controle especial.
+                  </li>
+                </ul>
+              </div>
+            </div>
           </div>
         </div>
       )}
-    </div>
-  )
-
-  const renderKPIs = () => (
-    <div className="space-y-6">
-      <div className="bg-gradient-to-r from-slate-50 to-slate-100 rounded-xl p-6 shadow-lg border border-slate-200">
-        <h3 className="text-lg font-semibold text-slate-800 mb-4 flex items-center">
-          <TrendingUp className="w-5 h-5 mr-2 text-slate-600" />
-          KPIs Clínicos - Neurologia Pediátrica
-        </h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="bg-white rounded-lg p-4 shadow-sm border border-slate-200">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-medium text-slate-600">Epilepsia Controlada</span>
-              <Brain className="w-5 h-5 text-purple-600" />
-            </div>
-            <p className="text-2xl font-bold text-slate-900">78%</p>
-            <p className="text-xs text-green-600">+5% vs mês anterior</p>
-          </div>
-          <div className="bg-white rounded-lg p-4 shadow-sm border border-slate-200">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-medium text-slate-600">TEA Respondedores</span>
-              <Heart className="w-5 h-5 text-pink-600" />
-            </div>
-            <p className="text-2xl font-bold text-slate-900">65%</p>
-            <p className="text-xs text-green-600">+3% vs mês anterior</p>
-          </div>
-          <div className="bg-white rounded-lg p-4 shadow-sm border border-slate-200">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-medium text-slate-600">Satisfação Familiar</span>
-              <Users className="w-5 h-5 text-blue-600" />
-            </div>
-            <p className="text-2xl font-bold text-slate-900">92%</p>
-            <p className="text-xs text-green-600">+2% vs mês anterior</p>
-          </div>
-        </div>
-      </div>
-    </div>
-  )
-
-  const renderNewsletter = () => (
-    <div className="space-y-6">
-      <div className="bg-gradient-to-r from-slate-50 to-slate-100 rounded-xl p-6 shadow-lg border border-slate-200">
-        <h3 className="text-lg font-semibold text-slate-800 mb-4 flex items-center">
-          <BookOpen className="w-5 h-5 mr-2 text-slate-600" />
-          Newsletter Científica
-        </h3>
-        <div className="space-y-4">
-          <div className="bg-white rounded-lg p-4 shadow-sm border border-slate-200">
-            <h4 className="font-semibold text-slate-900 mb-2">Cannabis Medicinal em Epilepsia Refratária</h4>
-            <p className="text-sm text-slate-600 mb-2">Novos estudos sobre eficácia do CBD em crianças com síndrome de Dravet...</p>
-            <div className="flex items-center justify-between">
-              <span className="text-xs text-slate-500">Nature Medicine • Janeiro 2024</span>
-              <button className="text-blue-600 text-sm hover:text-blue-800">Ler mais</button>
-            </div>
-          </div>
-          <div className="bg-white rounded-lg p-4 shadow-sm border border-slate-200">
-            <h4 className="font-semibold text-slate-900 mb-2">Protocolos IMRE em TEA</h4>
-            <p className="text-sm text-slate-600 mb-2">Implementação da metodologia IMRE para avaliação de pacientes com TEA...</p>
-            <div className="flex items-center justify-between">
-              <span className="text-xs text-slate-500">Journal of Autism • Dezembro 2023</span>
-              <button className="text-blue-600 text-sm hover:text-blue-800">Ler mais</button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  )
-
-  const renderPrescriptions = () => (
-    <div className="w-full">
-      <IntegrativePrescriptions />
     </div>
   )
 
@@ -391,69 +372,63 @@ const ProfessionalDashboard: React.FC = () => {
       <div className="container mx-auto px-4 py-8">
         <div className="mb-6">
           <h1 className="text-3xl font-bold text-white mb-2">Área de Atendimento</h1>
-          <p className="text-slate-300">Prontuário Eletrônico - Atendimento ao Paciente</p>
+          <p className="text-slate-300">Prontuário Eletrônico • Prescrição • Gestão Clínica</p>
           <div className="mt-2 text-sm text-slate-400">
-            Conectado como <span className="font-semibold text-white">{user?.user_metadata?.name || 'Usuário'}</span>
+            Dr(a). <span className="font-semibold text-white">{user?.user_metadata?.name || 'Profissional'}</span>
           </div>
         </div>
 
-        {/* Navegação */}
-        <div className="mb-6">
-          <nav className="flex space-x-1 bg-white rounded-lg p-1 shadow-lg border border-slate-200">
-            <button
-              onClick={() => setActiveSection('dashboard')}
-              className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${activeSection === 'dashboard'
-                ? 'bg-blue-600 text-white shadow-sm'
-                : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
-                }`}
-            >
-              Dashboard
-            </button>
-            <button
-              onClick={() => setActiveSection('kpis')}
-              className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${activeSection === 'kpis'
-                ? 'bg-blue-600 text-white shadow-sm'
-                : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
-                }`}
-            >
-              KPIs Tempo Real
-            </button>
-            <button
-              onClick={() => setActiveSection('newsletter')}
-              className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${activeSection === 'newsletter'
-                ? 'bg-blue-600 text-white shadow-sm'
-                : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
-                }`}
-            >
-              Newsletter Científico
-            </button>
-            <button
-              onClick={() => setActiveSection('prescriptions')}
-              className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${activeSection === 'prescriptions'
-                ? 'bg-blue-600 text-white shadow-sm'
-                : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
-                }`}
-            >
-              Prescrições
-            </button>
-            <button
-              onClick={() => setActiveSection('clinical-reports')}
-              className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${activeSection === 'clinical-reports'
-                ? 'bg-blue-600 text-white shadow-sm'
-                : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
-                }`}
-            >
-              Relatórios Clínicos
-            </button>
-          </nav>
-        </div>
+        {/* Navegação Topo (Simplificada) */}
+        {!selectedPatient && (
+          <div className="mb-8">
+            <nav className="flex space-x-1 bg-white/10 backdrop-blur-md rounded-lg p-1 border border-white/10 w-fit">
+              <button
+                onClick={() => setActiveSection('dashboard')}
+                className={`px-6 py-2 rounded-md text-sm font-medium transition-colors ${activeSection === 'dashboard'
+                  ? 'bg-blue-600 text-white shadow-lg'
+                  : 'text-slate-300 hover:text-white hover:bg-white/5'
+                  }`}
+              >
+                Visão Geral
+              </button>
+              <button
+                onClick={() => setActiveSection('prescriptions')}
+                className={`px-6 py-2 rounded-md text-sm font-medium transition-colors ${activeSection === 'prescriptions'
+                  ? 'bg-blue-600 text-white shadow-lg'
+                  : 'text-slate-300 hover:text-white hover:bg-white/5'
+                  }`}
+              >
+                Todas Prescrições
+              </button>
+              <button
+                onClick={() => setActiveSection('clinical-reports')}
+                className={`px-6 py-2 rounded-md text-sm font-medium transition-colors ${activeSection === 'clinical-reports'
+                  ? 'bg-blue-600 text-white shadow-lg'
+                  : 'text-slate-300 hover:text-white hover:bg-white/5'
+                  }`}
+              >
+                Relatórios
+              </button>
+            </nav>
+          </div>
+        )}
 
-        {/* Conteúdo */}
+        {/* Renderização Condicional */}
         {activeSection === 'dashboard' && renderDashboard()}
-        {activeSection === 'kpis' && renderKPIs()}
-        {activeSection === 'newsletter' && renderNewsletter()}
-        {activeSection === 'prescriptions' && renderPrescriptions()}
-        {activeSection === 'clinical-reports' && <ClinicalReports />}
+
+        {activeSection === 'prescriptions' && !selectedPatient && (
+          <div className="bg-white rounded-xl shadow-xl overflow-hidden text-slate-900">
+            <div className="p-6 bg-slate-50 border-b border-slate-100 mb-6">
+              <h2 className="text-xl font-bold text-slate-800">Central de Prescrições</h2>
+              <p className="text-slate-500">Gerencie templates e histórico geral</p>
+            </div>
+            <div className="p-6 pt-0">
+              <IntegrativePrescriptions />
+            </div>
+          </div>
+        )}
+
+        {activeSection === 'clinical-reports' && !selectedPatient && <ClinicalReports />}
       </div>
     </div>
   )

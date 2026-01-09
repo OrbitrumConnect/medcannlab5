@@ -74,11 +74,12 @@ interface ClinicalReport {
 }
 
 interface MedicalRecordProps {
-  patientId?: string
+  patientId?: string | null
+  patientData?: any
   className?: string
 }
 
-const MedicalRecord: React.FC<MedicalRecordProps> = ({ patientId, className = '' }) => {
+const MedicalRecord: React.FC<MedicalRecordProps> = ({ patientId, patientData, className = '' }) => {
   const { user } = useAuth()
   const [patients, setPatients] = useState<Patient[]>([])
   const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null)
@@ -92,6 +93,22 @@ const MedicalRecord: React.FC<MedicalRecordProps> = ({ patientId, className = ''
   useEffect(() => {
     loadPatients()
   }, [])
+
+  // Efeito para selecionar paciente via prop
+  useEffect(() => {
+    if (patientId) {
+      // Se vier o objeto completo, usa ele
+      if (patientData) {
+        setSelectedPatient(patientData)
+        return
+      }
+      // Senão, tenta achar na lista carregada
+      if (patients.length > 0) {
+        const found = patients.find(p => p.id === patientId)
+        if (found) setSelectedPatient(found)
+      }
+    }
+  }, [patientId, patientData, patients])
 
   useEffect(() => {
     if (selectedPatient) {
