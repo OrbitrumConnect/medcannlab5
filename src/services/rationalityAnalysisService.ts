@@ -106,8 +106,7 @@ Plano: ${reportContent.plan || 'Não informado'}
       const response = await this.noaAI.processMessage(
         fullMessage,
         userId,
-        userEmail,
-        'profissional'
+        userEmail
       )
 
       // Estruturar resposta
@@ -148,8 +147,8 @@ Plano: ${reportContent.plan || 'Não informado'}
       const currentRationalities = currentContent.rationalities || {}
 
       // Mapear nome da racionalidade para o formato do banco
-      const rationalityKey = rationality === 'traditional_chinese' 
-        ? 'traditionalChinese' 
+      const rationalityKey = rationality === 'traditional_chinese'
+        ? 'traditionalChinese'
         : rationality
 
       currentRationalities[rationalityKey] = {
@@ -184,7 +183,7 @@ Plano: ${reportContent.plan || 'Não informado'}
   private extractRecommendations(content: string): string[] {
     const recommendations: string[] = []
     const lines = content.split('\n')
-    
+
     let inRecommendations = false
     for (const line of lines) {
       if (line.toLowerCase().includes('recomenda') || line.toLowerCase().includes('sugest')) {

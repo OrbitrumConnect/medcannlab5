@@ -39,7 +39,7 @@ export function useClinicalGovernance(
                 setLoading(true)
                 setError(null)
 
-                const result = await analyzePatientContext(patientContext, mode, specialty)
+                const result = await analyzePatientContext(patientContext as PatientContext, mode, specialty)
 
                 if (!cancelled) {
                     setAnalysis(result)

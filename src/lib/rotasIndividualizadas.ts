@@ -5,7 +5,7 @@ import { UserType, normalizeUserType, getDefaultRouteByType } from './userTypes'
 
 export interface RouteConfig {
   path: string
-  component: React.ComponentType
+  component: React.ComponentType | (() => Promise<React.ComponentType<any>>)
   requiredRole?: 'admin' | 'professional' | 'patient' | 'aluno'
   title: string
   description: string
@@ -248,14 +248,14 @@ export const getDefaultRoute = (userType: string): string => {
   return getDefaultRouteByType(normalizedType)
 }
 
-export const getBreadcrumbs = (path: string): Array<{label: string, path: string}> => {
+export const getBreadcrumbs = (path: string): Array<{ label: string, path: string }> => {
   const segments = path.split('/').filter(Boolean)
   const breadcrumbs = []
-  
+
   let currentPath = ''
   for (const segment of segments) {
     currentPath += `/${segment}`
-    
+
     // Mapear segmentos para labels amigáveis
     const labelMap: Record<string, string> = {
       'app': 'MedCannLab',
@@ -279,12 +279,12 @@ export const getBreadcrumbs = (path: string): Array<{label: string, path: string
       'arte-entrevista-clinica': 'Arte da Entrevista Clínica',
       'forum-casos': 'Fórum de Casos'
     }
-    
+
     breadcrumbs.push({
       label: labelMap[segment] || segment,
       path: currentPath
     })
   }
-  
+
   return breadcrumbs
 }

@@ -13,13 +13,13 @@ const Reports: React.FC = () => {
 
   // Redirecionar pacientes automaticamente para o dashboard
   useEffect(() => {
-    if (user?.type === 'patient') {
+    if (user?.type === 'paciente') {
       navigate('/app/clinica/paciente/dashboard')
     }
   }, [user, navigate])
 
   // Para profissionais: mostrar mensagem informativa
-  if (user?.type === 'patient') {
+  if (user?.type === 'paciente') {
     return null // Componente será redirecionado
   }
 

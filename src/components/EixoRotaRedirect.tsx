@@ -8,7 +8,7 @@ interface EixoRotaParams {
 }
 
 const EixoRotaRedirect: React.FC = () => {
-  const { eixo, tipo } = useParams<EixoRotaParams>()
+  const { eixo, tipo } = useParams() as unknown as EixoRotaParams
   const { user } = useAuth()
 
   if (!user) {
@@ -17,7 +17,7 @@ const EixoRotaRedirect: React.FC = () => {
 
   // Verificar se o usuário tem acesso ao eixo/tipo solicitado
   const temAcesso = verificarAcesso(user.type, eixo, tipo)
-  
+
   if (!temAcesso) {
     console.warn(`⚠️ Usuário ${user.type} não tem acesso a ${eixo}/${tipo}`)
     return <Navigate to="/app/dashboard" replace />
@@ -25,7 +25,7 @@ const EixoRotaRedirect: React.FC = () => {
 
   // Redirecionar para o dashboard específico baseado no eixo e tipo
   const rotaDestino = determinarRotaDestino(eixo, tipo)
-  
+
   console.log(`🔄 Redirecionando ${user.type} para ${eixo}/${tipo} → ${rotaDestino}`)
   return <Navigate to={rotaDestino} replace />
 }
@@ -33,10 +33,10 @@ const EixoRotaRedirect: React.FC = () => {
 const verificarAcesso = (userType: string, eixo?: string, tipo?: string): boolean => {
   // Admin tem acesso a tudo
   if (userType === 'admin') return true
-  
+
   // Verificar acesso específico por eixo e tipo
   if (!eixo || !tipo) return false
-  
+
   // Lógica de acesso baseada na metodologia AEC
   switch (eixo) {
     case 'clinica':
@@ -55,7 +55,7 @@ const verificarAcesso = (userType: string, eixo?: string, tipo?: string): boolea
 
 const determinarRotaDestino = (eixo?: string, tipo?: string): string => {
   if (!eixo || !tipo) return '/app/dashboard'
-  
+
   // Rotas específicas por eixo e tipo
   switch (eixo) {
     case 'clinica':

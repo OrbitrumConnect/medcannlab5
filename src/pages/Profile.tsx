@@ -3,12 +3,12 @@ import { useAuth } from '../contexts/AuthContext'
 import { useToast } from '../contexts/ToastContext'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
-import { 
-  User, 
-  Mail, 
-  Phone, 
-  MapPin, 
-  Edit, 
+import {
+  User,
+  Mail,
+  Phone,
+  MapPin,
+  Edit,
   X,
   Shield,
   Bell,
@@ -28,7 +28,7 @@ const Profile: React.FC = () => {
   const [isPasswordEditing, setIsPasswordEditing] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
-  
+
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -61,9 +61,9 @@ const Profile: React.FC = () => {
       setFormData({
         name: user.name || '',
         email: user.email || '',
-        phone: (user as any).phone || '',
-        location: (user as any).location || '',
-        bio: (user as any).bio || ''
+        phone: user.phone || '',
+        location: user.location || '',
+        bio: user.bio || ''
       })
     }
   }, [user])
@@ -167,7 +167,7 @@ const Profile: React.FC = () => {
 
   const handleExportData = async () => {
     if (!user) return
-    
+
     try {
       const data = {
         name: user.name,
@@ -176,7 +176,7 @@ const Profile: React.FC = () => {
         created_at: new Date().toISOString(),
         profile: formData
       }
-      
+
       const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
       const url = URL.createObjectURL(blob)
       const link = document.createElement('a')
@@ -186,7 +186,7 @@ const Profile: React.FC = () => {
       link.click()
       document.body.removeChild(link)
       URL.revokeObjectURL(url)
-      
+
       success('Dados exportados com sucesso!')
     } catch (err: any) {
       showError('Erro ao exportar dados')
@@ -212,7 +212,7 @@ const Profile: React.FC = () => {
     return {
       memberSince: 'Janeiro 2024',
       lastLogin: 'Hoje',
-      accountType: user?.type || 'professional'
+      accountType: user?.type || 'profissional'
     }
   }
 
@@ -282,9 +282,9 @@ const Profile: React.FC = () => {
                     {user?.name || 'Usuário'}
                   </h3>
                   <p className="text-slate-300">
-                    {user?.type === 'professional' ? '👨‍⚕️ Profissional' : 
-                     user?.type === 'patient' ? '👤 Paciente' : 
-                     user?.type === 'student' ? '👨‍🎓 Estudante' : '👑 Administrador'}
+                    {user?.type === 'profissional' ? '👨‍⚕️ Profissional' :
+                      user?.type === 'paciente' ? '👤 Paciente' :
+                        user?.type === 'aluno' ? '👨‍🎓 Estudante' : '👑 Administrador'}
                   </p>
                 </div>
               </div>
@@ -480,9 +480,9 @@ const Profile: React.FC = () => {
               <div className="flex justify-between">
                 <span className="text-sm text-slate-400">Tipo de conta:</span>
                 <span className="text-sm font-medium text-white">
-                  {user?.type === 'professional' ? '👨‍⚕️ Profissional' : 
-                   user?.type === 'patient' ? '👤 Paciente' : 
-                   user?.type === 'student' ? '👨‍🎓 Estudante' : '👑 Administrador'}
+                  {user?.type === 'profissional' ? '👨‍⚕️ Profissional' :
+                    user?.type === 'paciente' ? '👤 Paciente' :
+                      user?.type === 'aluno' ? '👨‍🎓 Estudante' : '👑 Administrador'}
                 </span>
               </div>
             </div>
@@ -500,9 +500,9 @@ const Profile: React.FC = () => {
                   <span className="text-sm text-slate-300">Notificações</span>
                 </div>
                 <label className="relative inline-flex items-center cursor-pointer">
-                  <input 
-                    type="checkbox" 
-                    className="sr-only peer" 
+                  <input
+                    type="checkbox"
+                    className="sr-only peer"
                     checked={preferences.notifications}
                     onChange={(e) => setPreferences(prev => ({ ...prev, notifications: e.target.checked }))}
                   />
@@ -514,7 +514,7 @@ const Profile: React.FC = () => {
                   <Globe className="w-4 h-4 text-slate-400" />
                   <span className="text-sm text-slate-300">Idioma</span>
                 </div>
-                <select 
+                <select
                   className="text-sm border border-slate-600 rounded px-2 py-1 bg-slate-700 text-white"
                   value={preferences.language}
                   onChange={(e) => setPreferences(prev => ({ ...prev, language: e.target.value }))}
@@ -541,7 +541,7 @@ const Profile: React.FC = () => {
               ⚡ Ações Rápidas
             </h3>
             <div className="space-y-3">
-              <button 
+              <button
                 onClick={handleExportData}
                 className="w-full flex items-center space-x-3 p-3 text-left hover:bg-slate-700/50 rounded-lg transition-colors duration-200"
               >

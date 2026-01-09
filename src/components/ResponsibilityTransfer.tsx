@@ -107,11 +107,10 @@ const ResponsibilityTransfer: React.FC<ResponsibilityTransferProps> = ({ classNa
           <button
             onClick={handleTransferResponsibilities}
             disabled={isTransferring}
-            className={`px-6 py-3 rounded-lg font-semibold transition-all duration-200 ${
-              isTransferring
+            className={`px-6 py-3 rounded-lg font-semibold transition-all duration-200 ${isTransferring
                 ? 'bg-slate-600 text-slate-400 cursor-not-allowed'
                 : 'bg-gradient-to-r from-purple-600 to-pink-600 text-white hover:from-purple-700 hover:to-pink-700 transform hover:scale-105'
-            }`}
+              }`}
           >
             {isTransferring ? (
               <div className="flex items-center space-x-2">
@@ -129,20 +128,18 @@ const ResponsibilityTransfer: React.FC<ResponsibilityTransferProps> = ({ classNa
 
         {/* Resultado da Transferência */}
         {transferResult && (
-          <div className={`rounded-lg p-4 mb-6 ${
-            transferResult.success 
-              ? 'bg-green-900/20 border border-green-500' 
+          <div className={`rounded-lg p-4 mb-6 ${transferResult.success
+              ? 'bg-green-900/20 border border-green-500'
               : 'bg-red-900/20 border border-red-500'
-          }`}>
+            }`}>
             <div className="flex items-center space-x-2 mb-2">
               {transferResult.success ? (
                 <CheckCircle className="w-5 h-5 text-green-400" />
               ) : (
                 <AlertCircle className="w-5 h-5 text-red-400" />
               )}
-              <span className={`font-semibold ${
-                transferResult.success ? 'text-green-400' : 'text-red-400'
-              }`}>
+              <span className={`font-semibold ${transferResult.success ? 'text-green-400' : 'text-red-400'
+                }`}>
                 {transferResult.success ? 'Transferência Realizada' : 'Erro na Transferência'}
               </span>
             </div>
@@ -159,7 +156,7 @@ const ResponsibilityTransfer: React.FC<ResponsibilityTransferProps> = ({ classNa
         {responsibilityStatus && (
           <div className="space-y-4">
             <h4 className="text-sm font-semibold text-white">Status por Categoria</h4>
-            {Object.entries(responsibilityStatus.categories).map(([category, stats]) => (
+            {Object.entries(responsibilityStatus.categories).map(([category, stats]: [string, any]) => (
               <div key={category} className="bg-slate-700 rounded-lg p-4">
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center space-x-2">
@@ -173,7 +170,7 @@ const ResponsibilityTransfer: React.FC<ResponsibilityTransferProps> = ({ classNa
                   </div>
                 </div>
                 <div className="w-full bg-slate-600 rounded-full h-2">
-                  <div 
+                  <div
                     className="bg-gradient-to-r from-purple-500 to-pink-500 h-2 rounded-full transition-all duration-300"
                     style={{ width: `${(stats.transferred / stats.total) * 100}%` }}
                   ></div>

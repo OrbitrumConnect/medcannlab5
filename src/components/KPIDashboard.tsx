@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react'
-import { 
-  Activity, 
-  Users, 
-  FileText, 
-  TrendingUp, 
-  Brain, 
+import {
+  Activity,
+  Users,
+  FileText,
+  TrendingUp,
+  Brain,
   Database,
   BarChart3,
   PieChart,
@@ -270,16 +270,16 @@ const KPIDashboard: React.FC<KPIDashboardProps> = ({ userType, userName }) => {
       const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)()
       const oscillator = audioContext.createOscillator()
       const gainNode = audioContext.createGain()
-      
+
       oscillator.connect(gainNode)
       gainNode.connect(audioContext.destination)
-      
+
       oscillator.frequency.setValueAtTime(800, audioContext.currentTime)
       oscillator.frequency.exponentialRampToValueAtTime(400, audioContext.currentTime + 0.5)
-      
+
       gainNode.gain.setValueAtTime(0.1, audioContext.currentTime)
       gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5)
-      
+
       oscillator.start(audioContext.currentTime)
       oscillator.stop(audioContext.currentTime + 0.5)
     }
@@ -330,11 +330,10 @@ const KPIDashboard: React.FC<KPIDashboardProps> = ({ userType, userName }) => {
             <button
               key={layer.key}
               onClick={() => handleLayerChange(layer.key as any)}
-              className={`flex items-center space-x-2 px-4 py-2 rounded-md transition-colors ${
-                selectedLayer === layer.key 
-                  ? getLayerColor(layer.key) 
-                  : 'bg-slate-700 hover:bg-slate-600 text-slate-300'
-              }`}
+              className={`flex items-center space-x-2 px-4 py-2 rounded-md transition-colors ${selectedLayer === layer.key
+                ? getLayerColor(layer.key)
+                : 'bg-slate-700 hover:bg-slate-600 text-slate-300'
+                }`}
             >
               {layer.icon}
               <span>{layer.label}</span>
@@ -364,11 +363,10 @@ const KPIDashboard: React.FC<KPIDashboardProps> = ({ userType, userName }) => {
                 <span className="text-2xl font-bold text-white">
                   {kpi.value}%
                 </span>
-                <span className={`px-2 py-1 rounded text-xs ${
-                  kpi.trend === 'up' ? 'bg-green-500/20 text-green-400' : 
-                  kpi.trend === 'down' ? 'bg-red-500/20 text-red-400' : 
-                  'bg-gray-500/20 text-gray-400'
-                }`}>
+                <span className={`px-2 py-1 rounded text-xs ${kpi.trend === 'up' ? 'bg-green-500/20 text-green-400' :
+                  kpi.trend === 'down' ? 'bg-red-500/20 text-red-400' :
+                    'bg-gray-500/20 text-gray-400'
+                  }`}>
                   {kpi.change > 0 ? '+' : ''}{kpi.change}%
                 </span>
               </div>

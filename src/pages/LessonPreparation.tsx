@@ -1713,3 +1713,5 @@ export function LessonPreparation() {
     </div>
   )
 }
+
+export default LessonPreparation

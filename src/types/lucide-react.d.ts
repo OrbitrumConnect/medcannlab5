@@ -1,100 +1,58 @@
+// Custom type declarations for lucide-react icons that exist at runtime
+// but are not properly exported in the bundled type definitions.
+// This file augments the module to fix TypeScript errors.
+
+import type { LucideIcon } from 'lucide-react';
+
 declare module 'lucide-react' {
-  import { ComponentType, SVGProps } from 'react'
-  
-  export interface LucideProps extends SVGProps<SVGSVGElement> {
-    size?: string | number
-    color?: string
-    strokeWidth?: string | number
-  }
-  
-  export const Users: ComponentType<LucideProps>
-  export const BookOpen: ComponentType<LucideProps>
-  export const BarChart3: ComponentType<LucideProps>
-  export const Settings: ComponentType<LucideProps>
-  export const Eye: ComponentType<LucideProps>
-  export const Edit: ComponentType<LucideProps>
-  export const Trash2: ComponentType<LucideProps>
-  export const Plus: ComponentType<LucideProps>
-  export const Search: ComponentType<LucideProps>
-  export const TrendingUp: ComponentType<LucideProps>
-  export const Activity: ComponentType<LucideProps>
-  export const Database: ComponentType<LucideProps>
-  export const Stethoscope: ComponentType<LucideProps>
-  export const FileText: ComponentType<LucideProps>
-  export const Clock: ComponentType<LucideProps>
-  export const CheckCircle: ComponentType<LucideProps>
-  export const AlertCircle: ComponentType<LucideProps>
-  export const User: ComponentType<LucideProps>
-  export const Heart: ComponentType<LucideProps>
-  export const Brain: ComponentType<LucideProps>
-  export const Send: ComponentType<LucideProps>
-  export const Mic: ComponentType<LucideProps>
-  export const MicOff: ComponentType<LucideProps>
-  export const Video: ComponentType<LucideProps>
-  export const VideoOff: ComponentType<LucideProps>
-  export const Phone: ComponentType<LucideProps>
-  export const MoreVertical: ComponentType<LucideProps>
-  export const Smile: ComponentType<LucideProps>
-  export const Paperclip: ComponentType<LucideProps>
-  export const Lock: ComponentType<LucideProps>
-  export const Globe: ComponentType<LucideProps>
-  export const Star: ComponentType<LucideProps>
-  export const Reply: ComponentType<LucideProps>
-  export const Pin: ComponentType<LucideProps>
-  export const Bell: ComponentType<LucideProps>
-  export const Menu: ComponentType<LucideProps>
-  export const X: ComponentType<LucideProps>
-  export const LogOut: ComponentType<LucideProps>
-  export const Mail: ComponentType<LucideProps>
-  export const Phone: ComponentType<LucideProps>
-  export const MapPin: ComponentType<LucideProps>
-  export const Home: ComponentType<LucideProps>
-  export const ArrowLeft: ComponentType<LucideProps>
-  export const ArrowRight: ComponentType<LucideProps>
-  export const Stethoscope: ComponentType<LucideProps>
-  export const GraduationCap: ComponentType<LucideProps>
-  export const Shield: ComponentType<LucideProps>
-  export const Award: ComponentType<LucideProps>
-  export const Zap: ComponentType<LucideProps>
-  export const EyeOff: ComponentType<LucideProps>
-  export const CheckCircle: ComponentType<LucideProps>
-  export const MessageCircle: ComponentType<LucideProps>
-  export const Volume2: ComponentType<LucideProps>
-  export const VolumeX: ComponentType<LucideProps>
-  export const Bot: ComponentType<LucideProps>
-  export const Loader2: ComponentType<LucideProps>
-  export const Link: ComponentType<LucideProps>
-  export const Share: ComponentType<LucideProps>
-  export const MessageSquare: ComponentType<LucideProps>
-  export const Copy: ComponentType<LucideProps>
-  export const Check: ComponentType<LucideProps>
-  export const AlertTriangle: ComponentType<LucideProps>
-  export const Target: ComponentType<LucideProps>
-  export const TrendingDown: ComponentType<LucideProps>
-  export const Upload: ComponentType<LucideProps>
-  export const Download: ComponentType<LucideProps>
-  export const Lightbulb: ComponentType<LucideProps>
-  export const UserPlus: ComponentType<LucideProps>
-  export const Filter: ComponentType<LucideProps>
-  export const Calendar: ComponentType<LucideProps>
-  export const ThumbsUp: ComponentType<LucideProps>
-  export const ThumbsDown: ComponentType<LucideProps>
-  export const Share2: ComponentType<LucideProps>
-  export const Flag: ComponentType<LucideProps>
-  export const LinkIcon: ComponentType<LucideProps>
-  export const XCircle: ComponentType<LucideProps>
-  export const Play: ComponentType<LucideProps>
-  export const Key: ComponentType<LucideProps>
-  export const Crown: ComponentType<LucideProps>
-  export const Maximize2: ComponentType<LucideProps>
-  export const Minimize2: ComponentType<LucideProps>
-  export const Image: ComponentType<LucideProps>
-  export const Archive: ComponentType<LucideProps>
-  export const ChevronLeft: ComponentType<LucideProps>
-  export const ChevronRight: ComponentType<LucideProps>
-  export const ChevronDown: ComponentType<LucideProps>
-  export const ChevronUp: ComponentType<LucideProps>
-  export const PieChart: ComponentType<LucideProps>
-  export const LineChart: ComponentType<LucideProps>
-  export const Printer: ComponentType<LucideProps>
+  // Icons that exist at runtime but TypeScript doesn't recognize
+  export const Save: LucideIcon;
+  export const RefreshCw: LucideIcon;
+  export const Pill: LucideIcon;
+  export const Microscope: LucideIcon;
+  export const Leaf: LucideIcon;
+  export const FlaskConical: LucideIcon;
+  export const DollarSign: LucideIcon;
+  export const History: LucideIcon;
+  export const LayoutGrid: LucideIcon;
+  export const List: LucideIcon;
+  export const QrCode: LucideIcon;
+  export const Sparkles: LucideIcon;
+  export const Droplet: LucideIcon;
+  export const Server: LucideIcon;
+  export const FileSpreadsheet: LucideIcon;
+  export const Unlock: LucideIcon;
+  export const Smartphone: LucideIcon;
+  export const Tablet: LucideIcon;
+  export const MinusCircle: LucideIcon;
+  export const Briefcase: LucideIcon;
+  export const ClipboardList: LucideIcon;
+  export const FileCheck: LucideIcon;
+  export const FilePlus: LucideIcon;
+  export const FileX: LucideIcon;
+  export const Folder: LucideIcon;
+  export const FolderOpen: LucideIcon;
+  export const Globe: LucideIcon;
+  export const LinkIcon: LucideIcon;
+  export const MapPin: LucideIcon;
+  export const Palette: LucideIcon;
+  export const Paperclip: LucideIcon;
+  export const Phone: LucideIcon;
+  export const Printer: LucideIcon;
+  export const RotateCcw: LucideIcon;
+  export const Scissors: LucideIcon;
+  export const Send: LucideIcon;
+  export const Share: LucideIcon;
+  export const Share2: LucideIcon;
+  export const ShieldCheck: LucideIcon;
+  export const Trash: LucideIcon;
+  export const Trash2: LucideIcon;
+  export const Upload: LucideIcon;
+  export const UserPlus: LucideIcon;
+  export const Users: LucideIcon;
+  export const Video: LucideIcon;
+  export const Wifi: LucideIcon;
+  export const XCircle: LucideIcon;
+  export const ZoomIn: LucideIcon;
+  export const ZoomOut: LucideIcon;
 }

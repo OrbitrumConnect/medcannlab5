@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import {
   FileText,
   User,
+  Users,
   Calendar,
   Share2,
   Download,
@@ -31,6 +32,7 @@ import {
   Send,
   Bell
 } from 'lucide-react'
+import QuickPrescriptions from './QuickPrescriptions'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
 
@@ -100,7 +102,7 @@ const MedicalRecord: React.FC<MedicalRecordProps> = ({ patientId, className = ''
   const loadPatients = async () => {
     try {
       setLoading(true)
-      
+
       // Buscar pacientes da tabela users
       const { data: usersData, error: usersError } = await supabase
         .from('users')
@@ -345,7 +347,7 @@ const MedicalRecord: React.FC<MedicalRecordProps> = ({ patientId, className = ''
             />
           </div>
         </div>
-        
+
         {loading ? (
           <p className="text-slate-500 text-center py-4">Carregando pacientes...</p>
         ) : (
@@ -354,11 +356,10 @@ const MedicalRecord: React.FC<MedicalRecordProps> = ({ patientId, className = ''
               <div
                 key={patient.id}
                 onClick={() => handlePatientSelect(patient)}
-                className={`p-4 rounded-lg border cursor-pointer transition-colors ${
-                  selectedPatient?.id === patient.id
-                    ? 'bg-blue-50 border-blue-200'
-                    : 'bg-slate-50 border-slate-200 hover:bg-slate-100'
-                }`}
+                className={`p-4 rounded-lg border cursor-pointer transition-colors ${selectedPatient?.id === patient.id
+                  ? 'bg-blue-50 border-blue-200'
+                  : 'bg-slate-50 border-slate-200 hover:bg-slate-100'
+                  }`}
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-3">
@@ -369,9 +370,8 @@ const MedicalRecord: React.FC<MedicalRecordProps> = ({ patientId, className = ''
                     </div>
                   </div>
                   <div className="flex items-center space-x-2">
-                    <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
-                      patient.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
-                    }`}>
+                    <span className={`px-2 py-1 rounded-full text-xs font-semibold ${patient.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
+                      }`}>
                       {patient.status === 'active' ? 'Ativo' : 'Pendente'}
                     </span>
                     <Bell className="w-4 h-4 text-orange-500" />
@@ -389,7 +389,7 @@ const MedicalRecord: React.FC<MedicalRecordProps> = ({ patientId, className = ''
     <div className="space-y-6">
       <div className="bg-white rounded-xl p-6 shadow-lg border border-slate-200">
         <h3 className="text-lg font-semibold text-slate-800 mb-4">Relatórios Clínicos</h3>
-        
+
         {selectedPatient ? (
           <div className="space-y-4">
             {clinicalReports.map((report) => (
@@ -403,9 +403,8 @@ const MedicalRecord: React.FC<MedicalRecordProps> = ({ patientId, className = ''
                     </div>
                   </div>
                   <div className="flex items-center space-x-2">
-                    <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
-                      report.status === 'shared' ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800'
-                    }`}>
+                    <span className={`px-2 py-1 rounded-full text-xs font-semibold ${report.status === 'shared' ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800'
+                      }`}>
                       {report.status === 'shared' ? 'Compartilhado' : 'Rascunho'}
                     </span>
                     {report.nftToken && (
@@ -415,11 +414,11 @@ const MedicalRecord: React.FC<MedicalRecordProps> = ({ patientId, className = ''
                     )}
                   </div>
                 </div>
-                
+
                 <div className="mb-3">
                   <p className="text-sm text-slate-700"><strong>Queixa Principal:</strong> {report.content.chiefComplaint}</p>
                 </div>
-                
+
                 <div className="flex items-center space-x-2">
                   <button
                     onClick={() => handleShareReport(report)}
@@ -454,7 +453,7 @@ const MedicalRecord: React.FC<MedicalRecordProps> = ({ patientId, className = ''
     <div className="space-y-6">
       <div className="bg-white rounded-xl p-6 shadow-lg border border-slate-200">
         <h3 className="text-lg font-semibold text-slate-800 mb-4">Cinco Racionalidades Médicas</h3>
-        
+
         {selectedPatient && clinicalReports.length > 0 ? (
           <div className="space-y-6">
             {Object.entries(clinicalReports[0].content.rationalities).map(([key, value]) => (
@@ -463,7 +462,7 @@ const MedicalRecord: React.FC<MedicalRecordProps> = ({ patientId, className = ''
                   {getRationalityIcon(key)}
                   <h4 className="font-semibold text-slate-800 capitalize">{key.replace(/([A-Z])/g, ' $1')}</h4>
                 </div>
-                
+
                 <div className="space-y-2">
                   {Object.entries(value).map(([subKey, subValue]) => (
                     <div key={subKey} className="flex">
@@ -515,11 +514,10 @@ const MedicalRecord: React.FC<MedicalRecordProps> = ({ patientId, className = ''
           <button
             key={key}
             onClick={() => setActiveTab(key as any)}
-            className={`flex items-center space-x-2 px-4 py-2 rounded-md transition-colors ${
-              activeTab === key
-                ? 'bg-white text-slate-800 shadow-sm'
-                : 'text-slate-600 hover:text-slate-800'
-            }`}
+            className={`flex items-center space-x-2 px-4 py-2 rounded-md transition-colors ${activeTab === key
+              ? 'bg-white text-slate-800 shadow-sm'
+              : 'text-slate-600 hover:text-slate-800'
+              }`}
           >
             <Icon className="w-4 h-4" />
             <span>{label}</span>

@@ -14,6 +14,10 @@ interface User {
   name: string
   crm?: string
   cro?: string
+  phone?: string
+  location?: string
+  bio?: string
+  user_metadata?: any
 }
 
 interface AuthContextType {

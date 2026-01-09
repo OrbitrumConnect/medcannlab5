@@ -89,15 +89,15 @@ export class SemanticSearch {
     score += summaryScore * 0.3
 
     // 3. Busca em keywords (peso alto)
-    const keywords = (doc.keywords || []).map((k: string) => k.toLowerCase())
-    const keywordMatches = queryTerms.filter(term => 
+    const keywords: string[] = (doc.keywords || []).map((k: string) => k.toLowerCase())
+    const keywordMatches = queryTerms.filter(term =>
       keywords.some((kw: string) => kw.includes(term) || term.includes(kw))
     ).length
     score += (keywordMatches / queryTerms.length) * 0.2
 
     // 4. Busca em tags (peso médio)
-    const tags = (doc.tags || []).map((t: string) => t.toLowerCase())
-    const tagMatches = queryTerms.filter(term => 
+    const tags: string[] = (doc.tags || []).map((t: string) => t.toLowerCase())
+    const tagMatches = queryTerms.filter(term =>
       tags.some((t: string) => t.includes(term))
     ).length
     score += (tagMatches / queryTerms.length) * 0.1
@@ -121,7 +121,7 @@ export class SemanticSearch {
   private static textSimilarity(text1: string, text2: string): number {
     const words1 = text1.split(/\s+/)
     const words2 = text2.split(/\s+/)
-    
+
     const intersection = words1.filter(word => words2.includes(word)).length
     const union = new Set([...words1, ...words2]).size
 
@@ -198,13 +198,13 @@ export class SemanticSearch {
     // Similaridade por keywords
     const keywords1 = (doc1.keywords || []).map((k: string) => k.toLowerCase())
     const keywords2 = (doc2.keywords || []).map((k: string) => k.toLowerCase())
-    const commonKeywords = keywords1.filter(k => keywords2.includes(k)).length
+    const commonKeywords = keywords1.filter((k: string) => keywords2.includes(k)).length
     score += (commonKeywords / Math.max(keywords1.length, keywords2.length, 1)) * 0.3
 
     // Similaridade por tags
     const tags1 = (doc1.tags || []).map((t: string) => t.toLowerCase())
     const tags2 = (doc2.tags || []).map((t: string) => t.toLowerCase())
-    const commonTags = tags1.filter(t => tags2.includes(t)).length
+    const commonTags = tags1.filter((t: string) => tags2.includes(t)).length
     score += (commonTags / Math.max(tags1.length, tags2.length, 1)) * 0.2
 
     // Similaridade textual
@@ -237,18 +237,18 @@ export class SemanticSearch {
 
       documents.forEach(doc => {
         // Adicionar keywords que contêm a query
-        ;(doc.keywords || []).forEach((kw: string) => {
+        ; (doc.keywords || []).forEach((kw: string) => {
           if (kw.toLowerCase().includes(normalizedQuery) && kw.length > 2) {
             suggestions.add(kw)
           }
         })
 
-        // Adicionar tags que contêm a query
-        ;(doc.tags || []).forEach((tag: string) => {
-          if (tag.toLowerCase().includes(normalizedQuery) && tag.length > 2) {
-            suggestions.add(tag)
-          }
-        })
+          // Adicionar tags que contêm a query
+          ; (doc.tags || []).forEach((tag: string) => {
+            if (tag.toLowerCase().includes(normalizedQuery) && tag.length > 2) {
+              suggestions.add(tag)
+            }
+          })
       })
 
       return Array.from(suggestions).slice(0, limit)

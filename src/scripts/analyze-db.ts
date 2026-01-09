@@ -49,7 +49,7 @@ for (const table of tables) {
                 console.log(`\n⚠️  ${table}: VAZIA`)
             }
         }
-    } catch (e) {
+    } catch (e: any) {
         console.log(`\n❌ ${table}: ERRO - ${e.message}`)
     }
 }

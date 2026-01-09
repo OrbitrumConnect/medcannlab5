@@ -34,6 +34,8 @@ import QuickPrescriptions from '../components/QuickPrescriptions'
 import MedicalRecord from '../components/MedicalRecord'
 import IntegrativePrescriptions from '../components/IntegrativePrescriptions'
 import ClinicalReports from '../components/ClinicalReports'
+import { isAdmin, getAllPatients } from '../lib/adminPermissions'
+import { useUserView } from '../hooks/useUserView'
 
 interface Patient {
   id: string
@@ -246,14 +248,14 @@ const ProfessionalDashboard: React.FC = () => {
                 key={patient.id}
                 onClick={() => handlePatientSelect(patient.id)}
                 className={`p-4 border rounded-lg cursor-pointer transition-all ${selectedPatient === patient.id
-                    ? 'border-blue-500 bg-blue-50 shadow-md'
-                    : 'border-slate-200 hover:border-slate-300 hover:shadow-sm bg-white'
+                  ? 'border-blue-500 bg-blue-50 shadow-md'
+                  : 'border-slate-200 hover:border-slate-300 hover:shadow-sm bg-white'
                   }`}
               >
                 <div className="flex justify-between items-center">
                   <div className="flex items-center space-x-3">
                     <div className={`w-3 h-3 rounded-full ${patient.priority === 'high' ? 'bg-red-500' :
-                        patient.priority === 'medium' ? 'bg-yellow-500' : 'bg-green-500'
+                      patient.priority === 'medium' ? 'bg-yellow-500' : 'bg-green-500'
                       }`}></div>
                     <div>
                       <p className="font-medium text-slate-900">{patient.name}</p>
@@ -263,8 +265,8 @@ const ProfessionalDashboard: React.FC = () => {
                   <div className="text-right">
                     <p className="text-sm text-slate-500">Última consulta: {patient.lastVisit}</p>
                     <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${patient.status === 'completed'
-                        ? 'bg-green-100 text-green-800'
-                        : 'bg-yellow-100 text-yellow-800'
+                      ? 'bg-green-100 text-green-800'
+                      : 'bg-yellow-100 text-yellow-800'
                       }`}>
                       {patient.status}
                     </span>
@@ -401,8 +403,8 @@ const ProfessionalDashboard: React.FC = () => {
             <button
               onClick={() => setActiveSection('dashboard')}
               className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${activeSection === 'dashboard'
-                  ? 'bg-blue-600 text-white shadow-sm'
-                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+                ? 'bg-blue-600 text-white shadow-sm'
+                : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
                 }`}
             >
               Dashboard
@@ -410,8 +412,8 @@ const ProfessionalDashboard: React.FC = () => {
             <button
               onClick={() => setActiveSection('kpis')}
               className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${activeSection === 'kpis'
-                  ? 'bg-blue-600 text-white shadow-sm'
-                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+                ? 'bg-blue-600 text-white shadow-sm'
+                : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
                 }`}
             >
               KPIs Tempo Real
@@ -419,8 +421,8 @@ const ProfessionalDashboard: React.FC = () => {
             <button
               onClick={() => setActiveSection('newsletter')}
               className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${activeSection === 'newsletter'
-                  ? 'bg-blue-600 text-white shadow-sm'
-                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+                ? 'bg-blue-600 text-white shadow-sm'
+                : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
                 }`}
             >
               Newsletter Científico
@@ -428,8 +430,8 @@ const ProfessionalDashboard: React.FC = () => {
             <button
               onClick={() => setActiveSection('prescriptions')}
               className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${activeSection === 'prescriptions'
-                  ? 'bg-blue-600 text-white shadow-sm'
-                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+                ? 'bg-blue-600 text-white shadow-sm'
+                : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
                 }`}
             >
               Prescrições
@@ -437,8 +439,8 @@ const ProfessionalDashboard: React.FC = () => {
             <button
               onClick={() => setActiveSection('clinical-reports')}
               className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${activeSection === 'clinical-reports'
-                  ? 'bg-blue-600 text-white shadow-sm'
-                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+                ? 'bg-blue-600 text-white shadow-sm'
+                : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
                 }`}
             >
               Relatórios Clínicos

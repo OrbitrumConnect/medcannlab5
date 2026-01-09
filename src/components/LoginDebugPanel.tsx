@@ -20,7 +20,7 @@ const LoginDebugPanel: React.FC = () => {
     try {
       // Obter sessão atual
       const { data: { session }, error: sessionError } = await supabase.auth.getSession()
-      
+
       if (sessionError) {
         console.error('Erro ao obter sessão:', sessionError)
         return
@@ -34,7 +34,7 @@ const LoginDebugPanel: React.FC = () => {
 
       const authUser = session.user
       const metadata = authUser.user_metadata || {}
-      
+
       // Determinar tipo de usuário usando a mesma lógica do AuthContext
       let userType = 'patient'
       if (metadata.type) {

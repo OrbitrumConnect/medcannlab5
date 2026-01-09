@@ -77,7 +77,7 @@ const PatientImportModal: React.FC<PatientImportModalProps> = ({ isOpen, onClose
     try {
       const arrayBuffer = await pdfFile.arrayBuffer()
       const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise
-      
+
       const patients: PatientData[] = []
       const patientNames = new Set<string>()
 
@@ -90,16 +90,16 @@ const PatientImportModal: React.FC<PatientImportModalProps> = ({ isOpen, onClose
         // Extrair nomes de pacientes (heurística simples - pode ser melhorada)
         // Procurar por padrões comuns em planilhas: linhas com nomes próprios
         const lines = text.split('\n').filter(line => line.trim().length > 0)
-        
+
         for (const line of lines) {
           // Tentar identificar linhas que contêm nomes de pacientes
           // Normalmente em planilhas, a primeira coluna contém o nome
           const words = line.trim().split(/\s+/)
-          
+
           // Se a linha tem 2+ palavras e parece um nome (primeira letra maiúscula)
           if (words.length >= 2) {
             const potentialName = words.slice(0, 2).join(' ')
-            
+
             // Verificar se parece um nome (não é número, não é data, etc.)
             if (
               /^[A-ZÁÉÍÓÚÇ][a-záéíóúç]+ [A-ZÁÉÍÓÚÇ][a-záéíóúç]+/.test(potentialName) &&
@@ -129,7 +129,7 @@ const PatientImportModal: React.FC<PatientImportModalProps> = ({ isOpen, onClose
         // Procurar por padrões de nomes em português
         const namePattern = /([A-ZÁÉÍÓÚÇ][a-záéíóúç]+(?:\s+[A-ZÁÉÍÓÚÇ][a-záéíóúç]+)+)/g
         const matches = fullText.match(namePattern) || []
-        
+
         for (const match of matches) {
           if (!patientNames.has(match) && match.split(' ').length >= 2) {
             patientNames.add(match)
@@ -143,7 +143,7 @@ const PatientImportModal: React.FC<PatientImportModalProps> = ({ isOpen, onClose
 
       setExtractedPatients(patients)
       setIsProcessing(false)
-      
+
       if (patients.length === 0) {
         showError('Nenhum paciente encontrado na planilha. Verifique se o formato está correto.')
       } else {
@@ -160,7 +160,7 @@ const PatientImportModal: React.FC<PatientImportModalProps> = ({ isOpen, onClose
     try {
       const text = await csvFile.text()
       const lines = text.split('\n').filter(line => line.trim().length > 0)
-      
+
       if (lines.length === 0) {
         showError('Arquivo CSV vazio')
         setIsProcessing(false)
@@ -169,7 +169,7 @@ const PatientImportModal: React.FC<PatientImportModalProps> = ({ isOpen, onClose
 
       // Assumir que a primeira linha é cabeçalho
       const headers = lines[0].split(',').map(h => h.trim().toLowerCase())
-      const nameColumnIndex = headers.findIndex(h => 
+      const nameColumnIndex = headers.findIndex(h =>
         h.includes('nome') || h.includes('name') || h.includes('paciente')
       )
 
@@ -180,30 +180,30 @@ const PatientImportModal: React.FC<PatientImportModalProps> = ({ isOpen, onClose
       }
 
       const patients: PatientData[] = []
-      
+
       for (let i = 1; i < lines.length; i++) {
         const values = lines[i].split(',').map(v => v.trim())
         const name = values[nameColumnIndex]
-        
+
         if (name && name.length > 0) {
           const patient: PatientData = { name }
-          
+
           // Tentar extrair outros campos se existirem
           const emailIndex = headers.findIndex(h => h.includes('email') || h.includes('e-mail'))
           const phoneIndex = headers.findIndex(h => h.includes('telefone') || h.includes('phone') || h.includes('celular'))
           const cpfIndex = headers.findIndex(h => h.includes('cpf'))
-          
+
           if (emailIndex !== -1 && values[emailIndex]) patient.email = values[emailIndex]
           if (phoneIndex !== -1 && values[phoneIndex]) patient.phone = values[phoneIndex]
           if (cpfIndex !== -1 && values[cpfIndex]) patient.cpf = values[cpfIndex]
-          
+
           patients.push(patient)
         }
       }
 
       setExtractedPatients(patients)
       setIsProcessing(false)
-      
+
       if (patients.length === 0) {
         showError('Nenhum paciente encontrado no CSV')
       } else {
@@ -224,7 +224,7 @@ const PatientImportModal: React.FC<PatientImportModalProps> = ({ isOpen, onClose
 
     setIsImporting(true)
     setImportProgress(0)
-    
+
     const results = {
       success: 0,
       errors: 0,
@@ -240,14 +240,14 @@ const PatientImportModal: React.FC<PatientImportModalProps> = ({ isOpen, onClose
         try {
           // Verificar se paciente já existe (por nome ou email)
           let existingPatient = null
-          
+
           if (patient.email) {
             const { data: emailMatch } = await supabase
               .from('profiles')
               .select('id, name, email')
               .eq('email', patient.email)
               .single()
-            
+
             if (emailMatch) {
               existingPatient = emailMatch
             }
@@ -260,7 +260,7 @@ const PatientImportModal: React.FC<PatientImportModalProps> = ({ isOpen, onClose
               .select('id, name, email')
               .ilike('name', `%${patient.name}%`)
               .limit(1)
-            
+
             if (nameMatches && nameMatches.length > 0) {
               existingPatient = nameMatches[0]
             }
@@ -275,14 +275,14 @@ const PatientImportModal: React.FC<PatientImportModalProps> = ({ isOpen, onClose
           // Criar novo paciente
           // Primeiro criar usuário no auth.users
           const email = patient.email || `${patient.name.toLowerCase().replace(/\s+/g, '.')}@importado.medcannlab.com`
-          
+
           // Verificar se email já existe na tabela profiles
           const { data: existingProfile } = await supabase
             .from('profiles')
             .select('id, email')
             .eq('email', email)
             .single()
-          
+
           if (existingProfile) {
             results.skipped++
             results.details.push(`⏭️ ${patient.name} - Email já cadastrado`)
@@ -294,7 +294,7 @@ const PatientImportModal: React.FC<PatientImportModalProps> = ({ isOpen, onClose
           // e o usuário precisará fazer signup depois ou usar uma função RPC no backend
           const tempPassword = Math.random().toString(36).slice(-12)
           const userId = crypto.randomUUID()
-          
+
           // Criar perfil do paciente diretamente
           // Nota: Para criar usuário completo, seria necessário uma função RPC no Supabase
           const { error: profileError } = await supabase
@@ -321,8 +321,8 @@ const PatientImportModal: React.FC<PatientImportModalProps> = ({ isOpen, onClose
               user_email: email,
               user_password: tempPassword,
               user_name: patient.name
-            }).catch(() => ({ error: null }))
-            
+            })
+
             // Se RPC não existir, não é problema crítico - o perfil já foi criado
             if (rpcError && !rpcError.message.includes('function') && !rpcError.message.includes('does not exist')) {
               console.warn('RPC create_patient_user não disponível ou erro:', rpcError)
@@ -332,24 +332,7 @@ const PatientImportModal: React.FC<PatientImportModalProps> = ({ isOpen, onClose
             console.warn('RPC não disponível, perfil criado mas usuário auth precisa ser criado manualmente')
           }
 
-          // Criar perfil do paciente
-          const { error: profileError } = await supabase
-            .from('profiles')
-            .insert({
-              id: newUser.user.id,
-              name: patient.name,
-              email: email,
-              phone: patient.phone || null,
-              cpf: patient.cpf || null,
-              type: 'patient',
-              created_at: new Date().toISOString()
-            })
 
-          if (profileError) {
-            // Se der erro no perfil, tentar deletar o usuário criado
-            await supabase.auth.admin.deleteUser(newUser.user.id).catch(() => {})
-            throw profileError
-          }
 
           results.success++
           results.details.push(`✅ ${patient.name} - Importado com sucesso`)
@@ -362,7 +345,7 @@ const PatientImportModal: React.FC<PatientImportModalProps> = ({ isOpen, onClose
 
       setImportResults(results)
       setIsImporting(false)
-      
+
       if (results.success > 0) {
         success(`${results.success} paciente(s) importado(s) com sucesso!`)
         if (onImportComplete) {
@@ -384,7 +367,7 @@ const PatientImportModal: React.FC<PatientImportModalProps> = ({ isOpen, onClose
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault()
     e.stopPropagation()
-    
+
     const files = e.dataTransfer.files
     if (files.length > 0) {
       handleFileSelect(files[0])
@@ -423,22 +406,20 @@ const PatientImportModal: React.FC<PatientImportModalProps> = ({ isOpen, onClose
             <div className="grid grid-cols-3 gap-3">
               <button
                 onClick={() => setImportMode('pdf')}
-                className={`p-4 rounded-lg border-2 transition-colors ${
-                  importMode === 'pdf'
-                    ? 'border-blue-500 bg-blue-500/20 text-white'
-                    : 'border-slate-600 bg-slate-700/50 text-slate-300 hover:border-slate-500'
-                }`}
+                className={`p-4 rounded-lg border-2 transition-colors ${importMode === 'pdf'
+                  ? 'border-blue-500 bg-blue-500/20 text-white'
+                  : 'border-slate-600 bg-slate-700/50 text-slate-300 hover:border-slate-500'
+                  }`}
               >
                 <FileText className="w-6 h-6 mx-auto mb-2" />
                 <span className="text-sm font-medium">PDF</span>
               </button>
               <button
                 onClick={() => setImportMode('csv')}
-                className={`p-4 rounded-lg border-2 transition-colors ${
-                  importMode === 'csv'
-                    ? 'border-blue-500 bg-blue-500/20 text-white'
-                    : 'border-slate-600 bg-slate-700/50 text-slate-300 hover:border-slate-500'
-                }`}
+                className={`p-4 rounded-lg border-2 transition-colors ${importMode === 'csv'
+                  ? 'border-blue-500 bg-blue-500/20 text-white'
+                  : 'border-slate-600 bg-slate-700/50 text-slate-300 hover:border-slate-500'
+                  }`}
               >
                 <FileSpreadsheet className="w-6 h-6 mx-auto mb-2" />
                 <span className="text-sm font-medium">CSV</span>
