@@ -259,6 +259,7 @@ const INTEGRATED_PROTOCOL_TOPIC = 'Protocolos Clínicos Integrados - Integraçã
 const CidadeAmigaDosRins: React.FC = () => {
   const navigate = useNavigate()
   const { user } = useAuth()
+  const [searchParams] = React.useState(() => new URLSearchParams(window.location.search))
   const [activePillar, setActivePillar] = useState<string>('introducao')
   const [protocolTab, setProtocolTab] = useState<'ativos' | 'novos'>('ativos')
   const [loading, setLoading] = useState(true)
@@ -274,6 +275,21 @@ const CidadeAmigaDosRins: React.FC = () => {
   const [selectedPatientForRenal, setSelectedPatientForRenal] = useState<string | undefined>(undefined)
   const [showRenalModule, setShowRenalModule] = useState(false)
   const [patientsList, setPatientsList] = useState<Array<{ id: string, name: string, email: string }>>([])
+
+  // Auto-abrir módulo renal se URL contiver ?openRenal=true (acesso direto do sidebar)
+  useEffect(() => {
+    const openRenal = searchParams.get('openRenal')
+    if (openRenal === 'true') {
+      setShowRenalModule(true)
+      // Scroll suave até a seção de sistemas ativos
+      setTimeout(() => {
+        const element = document.getElementById('sistemas-ativos')
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth', block: 'start' })
+        }
+      }, 500)
+    }
+  }, [searchParams])
 
   useEffect(() => {
     loadData()

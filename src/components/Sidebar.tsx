@@ -332,6 +332,13 @@ const Sidebar: React.FC<SidebarProps> = ({
       description: 'Gestão de estudos e métricas de pesquisa',
       icon: Activity,
       href: '/app/pesquisa/profissional/cidade-amiga-dos-rins'
+    },
+    {
+      id: 'saude-renal',
+      label: '🩺 Saúde Renal',
+      description: 'Calculadora TFG e avaliação de função renal',
+      icon: Heart,
+      href: '/app/pesquisa/profissional/cidade-amiga-dos-rins?openRenal=true'
     }
   ]
 
