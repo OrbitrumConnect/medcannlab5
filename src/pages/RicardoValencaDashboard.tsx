@@ -4535,6 +4535,76 @@ const RicardoValencaDashboard: React.FC = () => {
       data-page="ricardo-valenca-dashboard"
     >
       <div className="w-full max-w-full mx-auto px-2 md:px-4 lg:px-6 py-4 md:py-6 lg:py-8 overflow-x-hidden">
+        {/* Barra de Contexto do Paciente - Navegação Integrada */}
+        {selectedPatient && selectedPatientData && (
+          <div className="mb-6 bg-gradient-to-r from-slate-800/90 to-slate-900/90 rounded-xl border border-emerald-500/30 p-4 shadow-lg">
+            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+              {/* Info do Paciente */}
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 bg-gradient-to-br from-emerald-500 to-cyan-500 rounded-full flex items-center justify-center text-white font-bold text-lg">
+                  {selectedPatientData.name?.charAt(0)?.toUpperCase() || '?'}
+                </div>
+                <div>
+                  <p className="text-xs text-emerald-300/70 uppercase tracking-wider">Paciente Selecionado</p>
+                  <p className="text-white font-semibold text-lg">{selectedPatientData.name || 'Paciente'}</p>
+                  <p className="text-slate-400 text-xs">{selectedPatientData.email || ''}</p>
+                </div>
+              </div>
+
+              {/* Abas de Navegação Rápida */}
+              <div className="flex flex-wrap gap-2">
+                <button
+                  onClick={() => goToSection('atendimento')}
+                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-all flex items-center gap-2 ${resolvedSection === 'atendimento'
+                      ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40'
+                      : 'bg-slate-700/50 text-slate-300 hover:bg-slate-700 hover:text-white border border-slate-600/50'
+                    }`}
+                >
+                  <Stethoscope className="w-4 h-4" />
+                  Atendimento
+                </button>
+                <button
+                  onClick={() => goToSection('prescricoes')}
+                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-all flex items-center gap-2 ${resolvedSection === 'prescricoes'
+                      ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40'
+                      : 'bg-slate-700/50 text-slate-300 hover:bg-slate-700 hover:text-white border border-slate-600/50'
+                    }`}
+                >
+                  <FileText className="w-4 h-4" />
+                  Prescrições
+                </button>
+                <button
+                  onClick={() => goToSection('admin-renal')}
+                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-all flex items-center gap-2 ${resolvedSection === 'admin-renal'
+                      ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40'
+                      : 'bg-slate-700/50 text-slate-300 hover:bg-slate-700 hover:text-white border border-slate-600/50'
+                    }`}
+                >
+                  <Activity className="w-4 h-4" />
+                  Função Renal
+                </button>
+                <button
+                  onClick={() => goToSection('agendamentos')}
+                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-all flex items-center gap-2 ${resolvedSection === 'agendamentos'
+                      ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40'
+                      : 'bg-slate-700/50 text-slate-300 hover:bg-slate-700 hover:text-white border border-slate-600/50'
+                    }`}
+                >
+                  <Calendar className="w-4 h-4" />
+                  Agenda
+                </button>
+                <button
+                  onClick={() => setSelectedPatient(null)}
+                  className="px-3 py-2 rounded-lg text-sm font-medium bg-red-500/10 text-red-400 hover:bg-red-500/20 border border-red-500/30 transition-all"
+                  title="Limpar seleção"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
         {renderActiveSection(resolvedSection)}
 
         {resolvedSection === 'chat-profissionais' && (
