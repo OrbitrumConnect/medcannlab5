@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
+import RenalFunctionModule from '../components/RenalFunctionModule'
 import {
   FileText as DollarSign,
   FileText as CreditCard,
@@ -266,8 +267,12 @@ const CidadeAmigaDosRins: React.FC = () => {
     cities: 0,
     professionals: 0,
     patients: 0,
-    riskFactors: 0
+    riskFactors: 0,
+    renalExams: 0,
+    patientsWithExams: 0
   })
+  const [selectedPatientForRenal, setSelectedPatientForRenal] = useState<string | undefined>(undefined)
+  const [showRenalModule, setShowRenalModule] = useState(false)
 
   useEffect(() => {
     loadData()
@@ -319,12 +324,40 @@ const CidadeAmigaDosRins: React.FC = () => {
 
       setImplementationPhases(phases)
 
-      // Estatísticas - valores zerados já que não há dados reais
+      // Buscar estatísticas REAIS da tabela renal_exams
+      let renalExamsCount = 0
+      let uniquePatientsCount = 0
+
+      try {
+        const { count: examsCount, error: examsError } = await supabase
+          .from('renal_exams')
+          .select('*', { count: 'exact', head: true })
+
+        if (!examsError && examsCount !== null) {
+          renalExamsCount = examsCount
+        }
+
+        // Buscar pacientes únicos com exames
+        const { data: uniquePatients, error: patientsError } = await supabase
+          .from('renal_exams')
+          .select('patient_id')
+
+        if (!patientsError && uniquePatients) {
+          const uniqueIds = new Set(uniquePatients.map(p => p.patient_id))
+          uniquePatientsCount = uniqueIds.size
+        }
+      } catch (err) {
+        console.warn('⚠️ Erro ao buscar dados renais:', err)
+      }
+
+      // Estatísticas com dados reais de renal_exams
       setStats({
         cities: 0,
         professionals: 0,
-        patients: 0,
-        riskFactors: 0
+        patients: uniquePatientsCount,
+        riskFactors: 0,
+        renalExams: renalExamsCount,
+        patientsWithExams: uniquePatientsCount
       })
 
     } catch (error) {
@@ -650,22 +683,35 @@ const CidadeAmigaDosRins: React.FC = () => {
           </div>
 
           {/* Stats Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-6">
             <div className="bg-slate-800/50 rounded-lg p-6 border border-emerald-500/20 text-center">
-              <div className="text-4xl font-bold text-blue-400 mb-2">{stats.cities}</div>
-              <div className="text-sm text-blue-200">Cidades Participantes</div>
+              <div className="text-3xl font-bold text-blue-400 mb-2">{stats.cities}</div>
+              <div className="text-xs text-blue-200">Cidades Participantes</div>
             </div>
             <div className="bg-slate-800/50 rounded-lg p-6 border border-emerald-500/20 text-center">
-              <div className="text-4xl font-bold text-cyan-400 mb-2">{stats.professionals}</div>
-              <div className="text-sm text-blue-200">Profissionais Treinados</div>
+              <div className="text-3xl font-bold text-cyan-400 mb-2">{stats.professionals}</div>
+              <div className="text-xs text-blue-200">Profissionais Treinados</div>
             </div>
             <div className="bg-slate-800/50 rounded-lg p-6 border border-emerald-500/20 text-center">
-              <div className="text-4xl font-bold text-green-400 mb-2">{stats.patients}</div>
-              <div className="text-sm text-blue-200">Pacientes Avaliados</div>
+              <div className="text-3xl font-bold text-green-400 mb-2">{stats.patients}</div>
+              <div className="text-xs text-blue-200">Pacientes Avaliados</div>
             </div>
             <div className="bg-slate-800/50 rounded-lg p-6 border border-emerald-500/20 text-center">
-              <div className="text-4xl font-bold text-purple-400 mb-2">{stats.riskFactors}%</div>
-              <div className="text-sm text-blue-200">Fatores de Risco Identificados</div>
+              <div className="text-3xl font-bold text-purple-400 mb-2">{stats.riskFactors}%</div>
+              <div className="text-xs text-blue-200">Fatores de Risco</div>
+            </div>
+            {/* NOVOS: Dados reais de exames renais */}
+            <div className="bg-gradient-to-br from-cyan-900/50 to-blue-900/50 rounded-lg p-6 border border-cyan-500/30 text-center">
+              <Activity className="w-6 h-6 mx-auto mb-2 text-cyan-400" />
+              <div className="text-3xl font-bold text-cyan-400 mb-2">{stats.renalExams}</div>
+              <div className="text-xs text-cyan-200">Exames Renais</div>
+              <div className="text-[10px] text-cyan-300/70 mt-1">Dados em tempo real</div>
+            </div>
+            <div className="bg-gradient-to-br from-green-900/50 to-emerald-900/50 rounded-lg p-6 border border-green-500/30 text-center">
+              <Heart className="w-6 h-6 mx-auto mb-2 text-green-400" />
+              <div className="text-3xl font-bold text-green-400 mb-2">{stats.patientsWithExams}</div>
+              <div className="text-xs text-green-200">Pacientes c/ TFG</div>
+              <div className="text-[10px] text-green-300/70 mt-1">Função renal avaliada</div>
             </div>
           </div>
         </div>
@@ -781,7 +827,7 @@ const CidadeAmigaDosRins: React.FC = () => {
             integrando múltiplas formas de pagamento e agenda inteligente.
           </p>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
             {/* Sistema Financeiro */}
             <div className="bg-slate-700/50 rounded-lg p-6 border border-green-500/20">
               <div className="flex items-center justify-between mb-4">
@@ -800,7 +846,53 @@ const CidadeAmigaDosRins: React.FC = () => {
               </div>
               <AgendamentoStatus />
             </div>
+
+            {/* NOVO: Módulo de Função Renal */}
+            <div className="bg-gradient-to-br from-cyan-900/30 to-blue-900/30 rounded-lg p-6 border border-cyan-500/30">
+              <div className="flex items-center justify-between mb-4">
+                <h4 className="text-lg font-semibold text-white flex items-center gap-2">
+                  <Activity className="w-5 h-5 text-cyan-400" />
+                  Função Renal
+                </h4>
+                <span className="px-3 py-1 bg-cyan-600 text-white rounded-full text-xs font-semibold">Novo!</span>
+              </div>
+              <p className="text-slate-300 text-sm mb-4">
+                Calculadora de Taxa de Filtração Glomerular (TFG) usando fórmula CKD-EPI 2021 e classificação KDIGO.
+              </p>
+              <ul className="space-y-2 text-xs text-slate-400 mb-4">
+                <li className="flex items-center space-x-2">
+                  <CheckCircle className="w-4 h-4 text-cyan-400" />
+                  <span>Cálculo eGFR em tempo real</span>
+                </li>
+                <li className="flex items-center space-x-2">
+                  <CheckCircle className="w-4 h-4 text-cyan-400" />
+                  <span>Classificação automática G1-G5</span>
+                </li>
+                <li className="flex items-center space-x-2">
+                  <CheckCircle className="w-4 h-4 text-cyan-400" />
+                  <span>Histórico de exames por paciente</span>
+                </li>
+                <li className="flex items-center space-x-2">
+                  <CheckCircle className="w-4 h-4 text-cyan-400" />
+                  <span>Persistência no Supabase</span>
+                </li>
+              </ul>
+              <button
+                onClick={() => setShowRenalModule(!showRenalModule)}
+                className="w-full bg-cyan-600 hover:bg-cyan-700 text-white px-4 py-2 rounded-lg text-sm font-semibold transition-colors flex items-center justify-center gap-2"
+              >
+                <Activity className="w-4 h-4" />
+                {showRenalModule ? 'Ocultar Módulo' : 'Abrir Calculadora TFG'}
+              </button>
+            </div>
           </div>
+
+          {/* RenalFunctionModule Expandido */}
+          {showRenalModule && (
+            <div className="mb-6">
+              <RenalFunctionModule patientId={selectedPatientForRenal} />
+            </div>
+          )}
 
           {/* Programa Amores */}
           <div className="bg-gradient-to-r from-purple-900/40 to-pink-900/40 rounded-lg p-6 border border-purple-500/20 mb-6">
