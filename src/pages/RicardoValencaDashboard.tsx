@@ -8,6 +8,7 @@ import ProfessionalChatSystem from '../components/ProfessionalChatSystem'
 import VideoCall from '../components/VideoCall'
 import ClinicalReports from '../components/ClinicalReports'
 import IntegrativePrescriptions from '../components/IntegrativePrescriptions'
+import RenalFunctionModule from '../components/RenalFunctionModule'
 import {
   Brain,
   Users,
@@ -4112,271 +4113,9 @@ const RicardoValencaDashboard: React.FC = () => {
   }
 
   const renderAdminRenal = (): React.ReactNode => {
-    const surfaceStyle: React.CSSProperties = {
-      background: 'rgba(15,27,45,0.85)',
-      border: '1px solid rgba(239,68,68,0.25)',
-      boxShadow: '0 16px 40px rgba(15,23,42,0.35)'
-    }
-
-    const renalSummaryCards = [
-      {
-        id: 'egfr',
-        label: 'TFG Média (últimos 90 dias)',
-        value: '68 mL/min/1,73m²',
-        trend: '+4 pts',
-        caption: 'Meta ≥ 60 mL/min/1,73m²',
-        gradient: 'linear-gradient(135deg, rgba(56,189,248,0.35) 0%, rgba(14,165,233,0.6) 100%)'
-      },
-      {
-        id: 'albuminuria',
-        label: 'Albuminúria',
-        value: '78 mg/g',
-        trend: '-12 mg/g',
-        caption: 'Meta < 30 mg/g • Screening trimestral',
-        gradient: 'linear-gradient(135deg, rgba(250,204,21,0.35) 0%, rgba(253,186,116,0.6) 100%)'
-      },
-      {
-        id: 'bp',
-        label: 'PA Controlada',
-        value: '72%',
-        trend: '+9%',
-        caption: 'Meta ≥ 70% pacientes < 130x80 mmHg',
-        gradient: 'linear-gradient(135deg, rgba(74,222,128,0.35) 0%, rgba(16,185,129,0.6) 100%)'
-      },
-      {
-        id: 'visits',
-        label: 'Telemonitoramento Ativo',
-        value: '19 pacientes',
-        trend: '+4 pacientes',
-        caption: 'Inclui wearable com estimativa contínua de TFG',
-        gradient: 'linear-gradient(135deg, rgba(244,114,182,0.35) 0%, rgba(236,72,153,0.6) 100%)'
-      }
-    ]
-
-    const traditionalFactors = [
-      { factor: 'Hipertensão arterial sistêmica', prevalence: '48%', management: 'Bloqueio do SRAA + controle pressórico <130x80' },
-      { factor: 'Diabetes mellitus tipo 2', prevalence: '33%', management: 'iSGLT2 + agonistas GLP-1 + controle glicêmico intensivo' },
-      { factor: 'Obesidade / Resistência insulínica', prevalence: '27%', management: 'Programa metabólico integrado + dieta plant-based' },
-      { factor: 'Dislipidemia', prevalence: '22%', management: 'Estatinas de alta potência + ômega-3 medicinal' }
-    ]
-
-    const nonTraditionalFactors = [
-      { factor: 'Inflamação crônica de baixo grau', prevalence: '19%', management: 'Protocolos anti-inflamatórios com canabinoides + nutracêuticos' },
-      { factor: 'Microbiota disbiótica / Uremia', prevalence: '16%', management: 'Probióticos direcionados + ajuste alimentar + fibra prebiótica' },
-      { factor: 'Poluição ambiental / metais pesados', prevalence: '11%', management: 'Quelantes supervisionados + monitoramento ambiental' },
-      { factor: 'Distúrbios do sono / Ritmo circadiano', prevalence: '15%', management: 'Cronoterapia + protocolos de luz + microdoses de CBD' }
-    ]
-
-    const renalMonitoringMatrix = [
-      {
-        biomarker: 'Creatinina sérica',
-        last: '1,38 mg/dL',
-        variation: '+0,08 mg/dL',
-        cadence: 'Mensal',
-        alert: '⚠️ Alerta suave (avaliar hidratação e uso de nefrotóxicos)'
-      },
-      {
-        biomarker: 'TFG (CKD-EPI)',
-        last: '61 mL/min/1,73m²',
-        variation: '+3 mL/min',
-        cadence: 'Mensal',
-        alert: '✅ Dentro da meta após otimização terapêutica'
-      },
-      {
-        biomarker: 'Albumina/Creatinina urinária',
-        last: '96 mg/g',
-        variation: '-18 mg/g',
-        cadence: 'Trimestral',
-        alert: '🟠 Manter terapia anti-proteinúrica; reforçar adesão'
-      },
-      {
-        biomarker: 'Potássio plasmático',
-        last: '5,2 mEq/L',
-        variation: '+0,3 mEq/L',
-        cadence: 'Mensal',
-        alert: '⚠️ Monitorar dieta e uso de bloqueadores do SRAA'
-      }
-    ]
-
     return (
       <div className="space-y-6">
-        <div className="rounded-2xl p-6 lg:p-8 border border-rose-500/25 shadow-2xl" style={surfaceStyle}>
-          <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6">
-            <div className="space-y-4 max-w-3xl">
-              <h2 className="text-2xl lg:text-3xl font-bold text-white flex items-center gap-3">
-                <Activity className="w-7 h-7 text-rose-300" />
-                <span>🫀 Monitoramento Clínico da Função Renal</span>
-              </h2>
-              <p className="text-sm lg:text-base text-slate-200/90">
-                Visão consolidada para pacientes em risco ou vivendo com Doença Renal Crônica (DRC), integrando fatores tradicionais,
-                determinantes não tradicionais e parâmetros laboratoriais críticos.
-              </p>
-              <div className="inline-flex items-center gap-2 text-xs text-rose-200/80 bg-rose-500/10 px-3 py-1 rounded-full border border-rose-400/20">
-                <span className="h-2 w-2 rounded-full bg-rose-400 animate-pulse" />
-                Dados agregados das últimas 90 sessões + wearables conectados
-              </div>
-            </div>
-            <div className="w-full lg:max-w-xs bg-slate-950/60 rounded-2xl border border-rose-500/20 p-5 space-y-3 text-sm text-slate-200">
-              <div className="flex items-center justify-between">
-                <span className="text-slate-400">Pacientes acompanhados</span>
-                <span className="font-semibold text-white">42</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-slate-400">Alertas ativos</span>
-                <span className="font-semibold text-amber-300">3 moderados</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-slate-400">Última atualização</span>
-                <span className="font-semibold text-white">11/11/2025 - 00h42</span>
-              </div>
-              <button
-                type="button"
-                className="w-full mt-2 bg-gradient-to-r from-rose-500 to-fuchsia-500 text-white font-semibold py-2 px-4 rounded-lg shadow-lg hover:shadow-xl transition-all hover:scale-[1.01]"
-                onClick={() => navigate('/app/clinica/profissional/agendamentos?filter=renal-monitoring')}
-              >
-                Ver Cronograma de Monitoramento
-              </button>
-            </div>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mt-8">
-            {renalSummaryCards.map(card => (
-              <div key={card.id} className="rounded-xl border border-white/10 p-4 text-white backdrop-blur" style={{ background: card.gradient }}>
-                <p className="text-[10px] uppercase tracking-[0.4em] text-white/80">{card.label}</p>
-                <div className="mt-3 flex items-baseline gap-3">
-                  <span className="text-3xl font-semibold">{card.value}</span>
-                  <span className="text-xs text-white/70 bg-white/20 px-2 py-0.5 rounded-full">{card.trend}</span>
-                </div>
-                <p className="text-xs text-white/80 mt-3">{card.caption}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 xl:grid-cols-[1.2fr_1.8fr] gap-6">
-          <div className="bg-slate-900/70 rounded-2xl border border-slate-700/60 p-6">
-            <h3 className="text-lg font-semibold text-white flex items-center gap-2">
-              <span>Fatores de Risco Tradicionais</span>
-              <span className="text-xs px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-300 border border-emerald-400/20">
-                Controle clínico intensivo
-              </span>
-            </h3>
-            <p className="text-xs text-slate-400 mt-1">Principais determinantes clássicos para progressão da DRC.</p>
-            <div className="mt-4 space-y-3">
-              {traditionalFactors.map(item => (
-                <div key={item.factor} className="rounded-xl border border-white/5 bg-slate-950/40 p-4">
-                  <div className="flex items-center justify-between gap-3">
-                    <h4 className="text-sm font-semibold text-white">{item.factor}</h4>
-                    <span className="text-xs text-emerald-300 bg-emerald-500/10 px-2 py-0.5 rounded-full">Prevalência {item.prevalence}</span>
-                  </div>
-                  <p className="text-xs text-slate-300 mt-2 leading-relaxed">{item.management}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="bg-slate-900/70 rounded-2xl border border-slate-700/60 p-6">
-            <h3 className="text-lg font-semibold text-white flex items-center gap-2">
-              <span>Fatores de Risco Não Tradicionais</span>
-              <span className="text-xs px-2 py-0.5 rounded-full bg-sky-500/10 text-sky-300 border border-sky-400/20">
-                Determinantes sistêmicos & estilo de vida
-              </span>
-            </h3>
-            <p className="text-xs text-slate-400 mt-1">Elementos emergentes que aceleram a perda de função renal.</p>
-            <div className="mt-4 space-y-3">
-              {nonTraditionalFactors.map(item => (
-                <div key={item.factor} className="rounded-xl border border-white/5 bg-slate-950/40 p-4">
-                  <div className="flex items-center justify-between gap-3">
-                    <h4 className="text-sm font-semibold text-white">{item.factor}</h4>
-                    <span className="text-xs text-sky-300 bg-sky-500/10 px-2 py-0.5 rounded-full">Prevalência {item.prevalence}</span>
-                  </div>
-                  <p className="text-xs text-slate-300 mt-2 leading-relaxed">{item.management}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-slate-900/70 rounded-2xl border border-slate-700/60 p-6">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
-            <h3 className="text-lg font-semibold text-white flex items-center gap-2">
-              <span>Indicadores Laboratoriais Prioritários</span>
-            </h3>
-            <button
-              type="button"
-              className="text-xs px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-200 border border-emerald-400/20 hover:bg-emerald-500/15 transition-colors"
-              onClick={() => navigate('/app/clinica/profissional/pacientes?filter=renal')}
-            >
-              Filtrar Pacientes com Risco Renal
-            </button>
-          </div>
-          <div className="overflow-x-auto">
-            <table className="min-w-full text-sm text-slate-200">
-              <thead>
-                <tr className="text-left text-xs uppercase tracking-[0.3em] text-slate-400 border-b border-white/5">
-                  <th className="py-3 pr-6">Biomarcador</th>
-                  <th className="py-3 pr-6">Último Resultado</th>
-                  <th className="py-3 pr-6">Variação (30 dias)</th>
-                  <th className="py-3 pr-6">Periodicidade</th>
-                  <th className="py-3 pr-6">Status / Alerta</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-white/5">
-                {renalMonitoringMatrix.map(row => (
-                  <tr key={row.biomarker} className="hover:bg-slate-800/40 transition-colors">
-                    <td className="py-3 pr-6 font-semibold text-white">{row.biomarker}</td>
-                    <td className="py-3 pr-6">{row.last}</td>
-                    <td className={`py-3 pr-6 ${row.variation.startsWith('-') ? 'text-emerald-300' : 'text-amber-300'}`}>{row.variation}</td>
-                    <td className="py-3 pr-6 text-slate-400">{row.cadence}</td>
-                    <td className="py-3 pr-6 text-slate-300">{row.alert}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        <div className="bg-slate-900/70 rounded-2xl border border-slate-700/60 p-6">
-          <h3 className="text-lg font-semibold text-white flex items-center gap-2 mb-3">
-            <span>Protocolos Prioritários para DRC</span>
-            <span className="text-xs px-2 py-0.5 rounded-full bg-white/10 text-white/80 border border-white/10">
-              Alinhado à diretriz KDIGO 2024
-            </span>
-          </h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 text-xs text-slate-300">
-            <div className="rounded-xl border border-white/10 bg-slate-950/50 p-4">
-              <p className="text-white font-semibold mb-1">Tripé Cardiometabólico</p>
-              <ul className="space-y-1 list-disc list-inside">
-                <li>iSGLT2 como base ● HbA1c meta 6,8%</li>
-                <li>Controle pressórico integrado ao wearable</li>
-                <li>Intervalo nutracêutico anti-inflamatório</li>
-              </ul>
-            </div>
-            <div className="rounded-xl border border-white/10 bg-slate-950/50 p-4">
-              <p className="text-white font-semibold mb-1">Foco em Proteinúria</p>
-              <ul className="space-y-1 list-disc list-inside">
-                <li>Bloqueio dual do SRAA quando tolerado</li>
-                <li>Canabinoides para modulação inflamatória</li>
-                <li>Reposição de bicarbonato se TFG &lt; 45</li>
-              </ul>
-            </div>
-            <div className="rounded-xl border border-white/10 bg-slate-950/50 p-4">
-              <p className="text-white font-semibold mb-1">Estratégia LRA &amp; recuperação</p>
-              <ul className="space-y-1 list-disc list-inside">
-                <li>Checklist de nefrotoxicidade medicamentosa</li>
-                <li>Fluxo rápido de hidratação guiada por IA</li>
-                <li>Alertas cross-clínica para queda de TFG</li>
-              </ul>
-            </div>
-            <div className="rounded-xl border border-white/10 bg-slate-950/50 p-4">
-              <p className="text-white font-semibold mb-1">Determinantes não tradicionais</p>
-              <ul className="space-y-1 list-disc list-inside">
-                <li>Dashboard socioambiental (“Cidade Amiga dos Rins”)</li>
-                <li>Triagem de exposomas + suporte desintoxicante</li>
-                <li>Protocolo de sono reparador individualizado</li>
-              </ul>
-            </div>
-          </div>
-        </div>
+        <RenalFunctionModule patientId={selectedPatient || undefined} />
       </div>
     )
   }
@@ -4797,6 +4536,18 @@ const RicardoValencaDashboard: React.FC = () => {
     >
       <div className="w-full max-w-full mx-auto px-2 md:px-4 lg:px-6 py-4 md:py-6 lg:py-8 overflow-x-hidden">
         {renderActiveSection(resolvedSection)}
+
+        {resolvedSection === 'chat-profissionais' && (
+          <div id="chat-section" className="space-y-6 mb-12">
+            <h2 className="text-2xl font-bold text-white mb-6 flex items-center gap-3">
+              <MessageCircle className="w-8 h-8 text-blue-400" />
+              Comunicação Clínica Integrada
+            </h2>
+            <div className="h-[600px]">
+              <ProfessionalChatSystem className="h-full" interlocutor="Eduardo" />
+            </div>
+          </div>
+        )}
 
         {sectionNavOptions && sectionNavOptions.length > 0 && (
           <div className="space-y-3 mt-12">
