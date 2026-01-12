@@ -250,7 +250,8 @@ const Sidebar: React.FC<SidebarProps> = ({
       id: 'atendimento',
       label: 'Atendimento',
       description: 'Fluxo completo de consultas e telemedicina',
-      icon: Stethoscope
+      icon: Stethoscope,
+      href: '/app/clinica/profissional/dashboard?section=atendimento'
     },
     {
       id: 'agendamentos',
