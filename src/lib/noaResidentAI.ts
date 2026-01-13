@@ -3,7 +3,8 @@ import { clinicalReportService, ClinicalReport } from './clinicalReportService'
 import { KnowledgeBaseIntegration } from '../services/knowledgeBaseIntegration'
 import { getNoaAssistantIntegration } from './noaAssistantIntegration'
 import { getPlatformFunctionsModule } from './platformFunctionsModule'
-import masterDocumentRaw from './data/documentoMestreResumo.md?raw'
+// Remoção da injeção manual para uso de File Search no Assistant API
+
 
 export interface AIResponse {
   id: string
@@ -90,38 +91,40 @@ export class NoaResidentAI {
   private apiKey: string = ''
   private assistantIntegration = getNoaAssistantIntegration()
   private platformFunctions = getPlatformFunctionsModule()
-  private readonly masterDocumentDigest = this.buildMasterDocumentDigest()
   private activeAssessments: Map<string, IMREAssessmentState> = new Map()
+
 
   constructor() {
     this.config = {
       model: 'gpt-4',
       temperature: 0.7,
       maxTokens: 2000,
-      systemPrompt: `Você é Nôa Esperança, a IA Residente da plataforma MedCannLab 3.0, guardiã da escuta simbólica e da formação clínica.
-Sua identidade:
-- Voz de contralto, ~35 anos, clara, macia, pausada, otimista e conciliadora.
-- Valoriza sustentabilidade, direitos humanos, equidade em saúde e o espírito pacificador da rede Nôa.
+      systemPrompt: `Você é Nôa Esperança, a IA Residente da MedCannLab 3.0.
+Sua voz é de contralto, ~35 anos, clara, macia, pausada, otimista e conciliadora.
+Guardiã da escuta simbólica e da formação clínica.
 
-SUA MISSÃO:
-- Acolher, contextualizar e orientar usuários (Pacientes, Alunos, Profissionais).
-- Atuar nos eixos Clínico, Ensino e Pesquisa.
-- Estimular relatos espontâneos e construir narrativas institucionais.
+# PROTOCOLO CLÍNICO MASTER: AEC 001 (ARTE DA ENTREVISTA CLÍNICA)
+Você deve seguir RIGOROSAMENTE as 10 etapas abaixo, sem pular blocos e sem inferir dados:
 
-ARTE DA ENTREVISTA CLÍNICA (AEC) - SEU NÚCLEO DE ATUAÇÃO:
-Ao realizar avaliações clínicas ou interagir com pacientes, siga rigorosamente:
-1. Abertura Exponencial: "Por favor, apresente-se e diga em que posso ajudar hoje."
-2. Lista Indiciária: Sempre pergunte "O que mais?" até esgotar as queixas iniciais.
-3. Desenvolvimento Indiciário: Use perguntas cercadoras (quando, onde, como, o que melhora/piora) para cada sintoma.
-4. Fechamento Consensual: "Você concorda com meu entendimento?" antes de prosseguir.
-5. Hipóteses Sindrômicas: Integre as cinco racionalidades médicas, mas NÃO prescreva. Encaminhe ao Dr. Ricardo Valença.
+1. ABERTURA: "Olá! Eu sou Nôa Esperanza. Por favor, apresente-se também e vamos iniciar a sua avaliação inicial para consultas com Dr. Ricardo Valença."
+2. LISTA INDICIÁRIA: Pergunte "O que trouxe você à nossa avaliação hoje?" e depois repita "O que mais?" até o usuário encerrar.
+3. QUEIXA PRINCIPAL: "De todas essas questões, qual mais o(a) incomoda?"
+4. DESENVOLVIMENTO DA QUEIXA: Pergunte Onde, Quando, Como, O que mais sente, O que parece melhorar e O que parece piorar a [queixa específica]. Substitua [queixa] pela resposta literal do usuário.
+5. HISTÓRIA PREGRESSA: "Desde o nascimento, quais as questões de saúde que você já viveu? Vamos do mais antigo ao mais recente. O que veio primeiro?" (Use "O que mais?" até encerrar).
+6. HISTÓRIA FAMILIAR: Investigue o lado materno e o lado paterno separadamente usando o "O que mais?".
+7. HÁBITOS DE VIDA: "Que outros hábitos você acha importante mencionar?"
+8. PERGUNTAS FINAIS: Investigue Alergias, Medicações Regulares e Medicações Esporádicas.
+9. FECHAMENTO CONSENSUAL: "Vamos revisar a sua história rapidamente para garantir que não perdemos nenhum detalhe importante." -> Resuma de forma descritiva e neutra. Pergunte: "Você concorda com meu entendimento? Há mais alguma coisa que gostaria de adicionar?"
+10. ENCERRAMENTO: "Essa é uma avaliação inicial de acordo com o método desenvolvido pelo Dr. Ricardo Valença, com o objetivo de aperfeiçoar o seu atendimento. Apresente sua avaliação durante a consulta com Dr. Ricardo Valença ou com outro profissional de saúde da plataforma Med-Cann Lab."
 
-REGRAS ESPECIAIS:
-- Se o usuário for **Administrador** (identificado pelo sistema), seja executiva, estratégica e direta. Não liste funcionalidades óbvias. Foque na ação solicitada.
-- Nunca revele detalhes do backend (Supabase, json, etc).
-- Mantenha conformidade total com a LGPD.
-
-Você tem acesso a dados em tempo real da plataforma. Use-os para personalizar cada resposta.`,
+REGRAS DE CONDUTA:
+- NUNCA forneça diagnósticos ou sugira interpretações clínicas.
+- NUNCA antecipe blocos ou altere a ordem do roteiro.
+- Faça APENAS UMA pergunta por vez. Respeite as pausas.
+- Sua linguagem deve ser clara, empática e NÃO TÉCNICA.
+- Resumos devem ser puramente descritivos (não use "sugere", "indica" ou "parece ser").
+- Se o usuário for Administrador (como Dr. Ricardo), seja executiva, estratégica e direta.
+- Nunca revele detalhes do backend. Conformidade total com LGPD.`,
       assessmentEnabled: true
     }
   }
@@ -184,7 +187,7 @@ Você tem acesso a dados em tempo real da plataforma. Use-os para personalizar c
         this.saveToMemory(userMessage, assistantResponse, userId)
 
         // 🔥 SALVAR AUTOMATICAMENTE NO PRONTUÁRIO DO PACIENTE (tempo real)
-        const assessmentState = intent === 'assessment'
+        const assessmentState = intent === 'CLÍNICA'
           ? this.activeAssessments.get(userId || '')
           : undefined
 
@@ -204,19 +207,18 @@ Você tem acesso a dados em tempo real da plataforma. Use-os para personalizar c
       let response: AIResponse
 
       switch (intent) {
-        case 'assessment':
-          response = await this.processAssessment(userMessage, userId, platformData, userEmail)
+        case 'CLÍNICA':
+          // Prioridade para avaliação se detectar palavras-chave de início
+          if (userMessage.toLowerCase().includes('iniciar') || userMessage.toLowerCase().includes('avaliação')) {
+            response = await this.processAssessment(userMessage, userId, platformData, userEmail)
+          } else {
+            response = await this.processClinicalQuery(userMessage, userId, platformData, userEmail)
+          }
           break
-        case 'clinical':
-          response = await this.processClinicalQuery(userMessage, userId, platformData, userEmail)
-          break
-        case 'training':
-          response = await this.processTrainingQuery(userMessage, userId, platformData, userEmail)
-          break
-        case 'platform':
+        case 'ADMINISTRATIVA':
           response = await this.processPlatformQuery(userMessage, userId, platformData, userEmail)
           break
-        case 'general':
+        case 'TÉCNICA':
         default:
           response = await this.processGeneralQuery(userMessage, userId, platformData, userEmail)
           break
@@ -339,59 +341,44 @@ Você tem acesso a dados em tempo real da plataforma. Use-os para personalizar c
     }
   }
 
-  private detectIntent(message: string): string {
+  private detectIntent(message: string): 'CLÍNICA' | 'ADMINISTRATIVA' | 'TÉCNICA' {
     const lowerMessage = message.toLowerCase()
 
-    // Detectar avaliação clínica
-    if (lowerMessage.includes('avaliação') || lowerMessage.includes('avaliacao') ||
+    // 🔴 ESCUTA CLÍNICA (Avaliação, sintomas, tratamentos, cannabis)
+    if (
+      lowerMessage.includes('avaliação') || lowerMessage.includes('avaliacao') ||
       lowerMessage.includes('imre') || lowerMessage.includes('aec') ||
-      lowerMessage.includes('entrevista') || lowerMessage.includes('anamnese')) {
-      return 'assessment'
-    }
-
-    // Detectar consulta clínica
-    if (lowerMessage.includes('cannabis') || lowerMessage.includes('nefrologia') ||
+      lowerMessage.includes('entrevista') || lowerMessage.includes('anamnese') ||
+      lowerMessage.includes('cannabis') || lowerMessage.includes('nefrologia') ||
       lowerMessage.includes('tratamento') || lowerMessage.includes('sintoma') ||
-      lowerMessage.includes('medicamento') || lowerMessage.includes('terapia')) {
-      return 'clinical'
+      lowerMessage.includes('medicamento') || lowerMessage.includes('terapia')
+    ) {
+      return 'CLÍNICA'
     }
 
-    // Detectar agendamento de consulta
-    if (lowerMessage.includes('agendar') || lowerMessage.includes('marcar consulta') ||
-      lowerMessage.includes('nova consulta') || lowerMessage.includes('marcar')) {
-      return 'appointment'
-    }
-
-    // Detectar cadastro de paciente
-    if (lowerMessage.includes('novo paciente') || lowerMessage.includes('cadastrar paciente') ||
-      lowerMessage.includes('adicionar paciente') || lowerMessage.includes('registrar paciente')) {
-      return 'patient_registration'
-    }
-
-    // Detectar treinamento
-    if (lowerMessage.includes('treinamento') || lowerMessage.includes('curso') ||
-      lowerMessage.includes('aprender') || lowerMessage.includes('ensinar') ||
-      lowerMessage.includes('método') || lowerMessage.includes('metodologia') ||
-      lowerMessage.includes('jardins de cura') || lowerMessage.includes('jardins-de-cura') ||
-      lowerMessage.includes('acs') || lowerMessage.includes('agente comunitário') ||
-      lowerMessage.includes('dengue') || lowerMessage.includes('prevenção dengue')) {
-      return 'training'
-    }
-
-    // Detectar consultas sobre a plataforma
-    if (lowerMessage.includes('dashboard') || lowerMessage.includes('área') ||
+    // 🔵 ESCUTA ADMINISTRATIVA (Agendamentos, Dashboard, Plataforma, Cadastro, Treinamento)
+    if (
+      lowerMessage.includes('agendar') || lowerMessage.includes('marcar consulta') ||
+      lowerMessage.includes('dashboard') || lowerMessage.includes('área') ||
       lowerMessage.includes('atendimento') || lowerMessage.includes('plataforma') ||
-      lowerMessage.includes('sistema') || lowerMessage.includes('verificar') ||
-      lowerMessage.includes('alterações') || lowerMessage.includes('mudanças') ||
-      lowerMessage.includes('conectada') || lowerMessage.includes('executando') ||
       lowerMessage.includes('agendamentos') || lowerMessage.includes('relatórios') ||
-      lowerMessage.includes('dados mocados') || lowerMessage.includes('hoje') ||
-      lowerMessage.includes('pendentes') || lowerMessage.includes('instaladas') ||
-      lowerMessage.includes('cursor') || lowerMessage.includes('funções')) {
-      return 'platform'
+      lowerMessage.includes('novo paciente') || lowerMessage.includes('cadastrar') ||
+      lowerMessage.includes('treinamento') || lowerMessage.includes('curso')
+    ) {
+      return 'ADMINISTRATIVA'
     }
 
-    return 'general'
+    // 🟢 ESCUTA TÉCNICA (Erros, código, servidor, funções, cursor)
+    if (
+      lowerMessage.includes('erro') || lowerMessage.includes('falhou') ||
+      lowerMessage.includes('servidor') || lowerMessage.includes('api') ||
+      lowerMessage.includes('cursor') || lowerMessage.includes('funções') ||
+      lowerMessage.includes('instaladas') || lowerMessage.includes('executando')
+    ) {
+      return 'TÉCNICA'
+    }
+
+    return 'CLÍNICA'
   }
 
   private getPlatformData(): any {
@@ -1508,26 +1495,9 @@ Gere apenas a próxima pergunta sobre hábitos de vida.`
   private async generateAndSaveReport(assessment: IMREAssessmentState): Promise<void> {
     try {
       const summary = await this.generateClinicalSummary(assessment.userId)
-      // Aqui chamaria o serviço para salvar, por enquanto log
       console.log('📝 Relatório gerado:', summary)
     } catch (error) {
       console.error('Erro ao gerar relatório:', error)
     }
-  }
-
-  private buildMasterDocumentDigest(): string {
-    if (!masterDocumentRaw) {
-      return 'Documento mestre indisponível.'
-    }
-
-    const trimmed = masterDocumentRaw
-      .replace(/\r\n/g, '\n')
-      .split('\n')
-      .filter((line: string) => line.trim().length > 0)
-      .slice(0, 80)
-      .join('\n')
-
-    const maxChars = 1600
-    return trimmed.length > maxChars ? `${trimmed.slice(0, maxChars)}...` : trimmed
   }
 }
