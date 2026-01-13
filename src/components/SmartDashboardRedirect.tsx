@@ -17,12 +17,13 @@ const SmartDashboardRedirect: React.FC = () => {
 
   // Normalizar tipo de usuário (garantir que está em português)
   const userType = normalizeUserType(user.type)
-  
+
   // Se admin está visualizando como outro tipo, usar o tipo visual
   const effectiveType = getEffectiveUserType(user.type)
 
-  // Redirecionamento especial para Dr. Eduardo Faveret - usando a mesma estrutura organizada
-  if (user.email === 'eduardoscfaveret@gmail.com' || user.name === 'Dr. Eduardo Faveret') {
+  // Redirecionamento Específico (Eduardo Faveret) - Substituir por flag no futuro
+  // Mantendo temporariamente para não quebrar fluxo específico dele, mas idealmente deve virar configuração de perfil
+  if (user.email === 'eduardoscfaveret@gmail.com') {
     console.log('🎯 Redirecionando Dr. Eduardo Faveret para dashboard organizado')
     return <Navigate to="/app/clinica/profissional/dashboard-eduardo" replace />
   }
@@ -34,11 +35,11 @@ const SmartDashboardRedirect: React.FC = () => {
     return <Navigate to={viewRoute} replace />
   }
 
-  // Redirecionamento especial para Dr. Ricardo Valença (Admin) - APENAS emails específicos (não por nome)
-  if (user.email === 'rrvalenca@gmail.com' || user.email === 'rrvlenca@gmail.com' || user.email === 'profrvalenca@gmail.com' || user.email === 'iaianoaesperanza@gmail.com') {
+  // Redirecionamento baseado em ADMIN (Flag no Banco)
+  if (userType === 'admin') {
     // Se não está visualizando como outro tipo, ir para dashboard admin
     if (!viewAsType) {
-      console.log('🎯 Redirecionando Dr. Ricardo Valença para dashboard administrativo')
+      console.log('🎯 Redirecionando Admin para dashboard administrativo')
       return <Navigate to="/app/ricardo-valenca-dashboard" replace />
     }
   }
@@ -51,9 +52,9 @@ const SmartDashboardRedirect: React.FC = () => {
 
   // Usar o sistema de rotas por tipo de usuário (ou tipo efetivo se admin)
   const defaultRoute = getDefaultRouteByType(effectiveType)
-  
+
   console.log('🎯 Redirecionando para rota individualizada:', defaultRoute, '(tipo efetivo:', effectiveType, ')')
-  
+
   return <Navigate to={defaultRoute} replace />
 }
 

@@ -13,7 +13,13 @@ export default defineConfig({
     },
     // Configurações adicionais para melhor compatibilidade
     cors: true,
-    proxy: {} // Pode adicionar proxies se necessário
+    proxy: {
+      '/api': {
+        target: 'http://localhost:3001',
+        changeOrigin: true,
+        secure: false,
+      }
+    }
   },
   optimizeDeps: {
     include: ['@xenova/transformers'],

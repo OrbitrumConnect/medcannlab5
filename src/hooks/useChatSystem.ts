@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { supabase } from '../lib/supabase'
+import { encryptMessage, decryptMessage } from '../lib/encryption'
 
 export interface ChatRoomSummary {
   id: string
@@ -159,21 +160,25 @@ export const useChatSystem = (activeRoomId?: string, options?: UseChatSystemOpti
       }
     }
 
-    const normalized: RoomMessage[] = rows.map(row => {
+    // Decrypt messages concurrently
+    const normalized: RoomMessage[] = await Promise.all(rows.map(async row => {
       const meta = profileMap.get(row.sender_id) ?? { name: 'Usuário', email: null }
+
+      const decryptedContent = await decryptMessage(row.message ?? '')
+
       return {
         id: String(row.id),
         roomId: row.room_id,
         senderId: row.sender_id,
         senderName: meta.name,
         senderEmail: meta.email ?? '',
-        message: row.message ?? '',
+        message: decryptedContent,
         createdAt: row.created_at,
         messageType: row.message_type ?? 'text',
         fileUrl: row.file_url ?? null,
         readAt: row.read_at ?? null
       }
-    })
+    }))
 
     setMessages(normalized)
     setMessagesLoading(false)
@@ -207,10 +212,13 @@ export const useChatSystem = (activeRoomId?: string, options?: UseChatSystemOpti
 
       const trimmed = content.trim()
       if (!trimmed) return
+
+      const encryptedContent = await encryptMessage(trimmed)
+
       await supabase.from('chat_messages').insert({
         room_id: roomId,
         sender_id: senderId,
-        message: trimmed,
+        message: encryptedContent,
         message_type: 'text'
       })
     },

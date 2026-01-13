@@ -1,8 +1,8 @@
 import React, { useState } from 'react'
-import { 
-  FileText, 
-  Plus, 
-  Search, 
+import {
+  FileText,
+  Plus,
+  Search,
   Filter,
   Clock,
   User,
@@ -30,9 +30,10 @@ interface PrescriptionTemplate {
 
 interface QuickPrescriptionsProps {
   className?: string
+  patientId?: string | null
 }
 
-const QuickPrescriptions: React.FC<QuickPrescriptionsProps> = ({ className = '' }) => {
+const QuickPrescriptions: React.FC<QuickPrescriptionsProps> = ({ className = '', patientId }) => {
   const [selectedCategory, setSelectedCategory] = useState<string>('all')
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedTemplate, setSelectedTemplate] = useState<PrescriptionTemplate | null>(null)
@@ -128,7 +129,7 @@ const QuickPrescriptions: React.FC<QuickPrescriptionsProps> = ({ className = '' 
   const filteredTemplates = prescriptionTemplates.filter(template => {
     const matchesCategory = selectedCategory === 'all' || template.category === selectedCategory
     const matchesSearch = template.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         template.description.toLowerCase().includes(searchTerm.toLowerCase())
+      template.description.toLowerCase().includes(searchTerm.toLowerCase())
     return matchesCategory && matchesSearch
   })
 
@@ -205,11 +206,10 @@ const QuickPrescriptions: React.FC<QuickPrescriptionsProps> = ({ className = '' 
               <button
                 key={category.key}
                 onClick={() => setSelectedCategory(category.key)}
-                className={`flex items-center space-x-1 px-3 py-2 rounded-md text-sm transition-colors ${
-                  selectedCategory === category.key 
-                    ? 'bg-green-600 hover:bg-green-700 text-white' 
+                className={`flex items-center space-x-1 px-3 py-2 rounded-md text-sm transition-colors ${selectedCategory === category.key
+                    ? 'bg-green-600 hover:bg-green-700 text-white'
                     : 'text-slate-300 border border-slate-600 hover:bg-slate-700'
-                }`}
+                  }`}
               >
                 {category.icon}
                 <span>{category.label}</span>
@@ -276,7 +276,7 @@ const QuickPrescriptions: React.FC<QuickPrescriptionsProps> = ({ className = '' 
 
               {/* Ações */}
               <div className="flex space-x-2 pt-2">
-                <button 
+                <button
                   onClick={() => handlePrescribe(template)}
                   className="flex-1 flex items-center justify-center space-x-1 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md transition-colors"
                 >

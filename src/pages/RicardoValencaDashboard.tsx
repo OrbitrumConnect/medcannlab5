@@ -9,7 +9,7 @@ import VideoCall from '../components/VideoCall'
 import ClinicalReports from '../components/ClinicalReports'
 import IntegrativePrescriptions from '../components/IntegrativePrescriptions'
 import RenalFunctionModule from '../components/RenalFunctionModule'
-import MedicalWorkstation from '../components/MedicalWorkstation'
+import IntegratedWorkstation from '../components/IntegratedWorkstation'
 import {
   Brain,
   Users,
@@ -60,6 +60,7 @@ import {
 interface Patient {
   id: string
   name: string
+  email: string | null
   age: number
   cpf: string
   phone: string
@@ -775,6 +776,7 @@ const RicardoValencaDashboard: React.FC = () => {
           uniquePatients.set(assessment.patient_id, {
             id: assessment.patient_id,
             name: assessment.data?.name || 'Paciente',
+            email: assessment.data?.email || null,
             age: assessment.data?.age || 30,
             cpf: assessment.data?.cpf || '000.000.000-00',
             phone: assessment.data?.phone || '(00) 00000-0000',
@@ -4139,15 +4141,15 @@ const RicardoValencaDashboard: React.FC = () => {
       case 'admin-upload':
         return renderAdminUpload()
       case 'admin-renal':
-        return renderAdminRenal()
+        return <IntegratedWorkstation initialTab="renal" />
       case 'atendimento':
-        return <MedicalWorkstation />
+        return <IntegratedWorkstation />
       case 'pacientes':
-        return renderPacientes()
+        return <IntegratedWorkstation initialTab="patients" />
       case 'prescricoes':
-        return renderPrescricoes()
+        return <IntegratedWorkstation initialTab="prescriptions" />
       case 'agendamentos':
-        return renderAgendamentos()
+        return <IntegratedWorkstation initialTab="scheduling" />
       case 'financeiro':
         return renderFinanceiro()
       case 'relatorios-clinicos':

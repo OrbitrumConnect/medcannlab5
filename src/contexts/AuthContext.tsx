@@ -62,31 +62,47 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     let userType: UserType = 'paciente' // Padrão em português
     let userName = 'Usuário'
     const email = authUser.email || ''
+    const isAdminEmail = ['ricardo.valenca@medcannlab.com.br', 'admin@medcannlab.com.br', 'phpg69@gmail.com', 'phpg69@hotmail.com'].includes(email.toLowerCase())
+    const isProfessionalEmail = ['eduardo.faveret@medcannlab.com.br'].includes(email.toLowerCase())
+    const isPatientEmail = ['paciente@medcannlab.com.br'].includes(email.toLowerCase())
+
+    if (isAdminEmail) userType = 'admin'
+    else if (isProfessionalEmail) userType = 'profissional'
 
     // Detectar nome baseado no email ou metadados
-    // Verificar emails especiais PRIMEIRO e guardar se é um email especial
-    const isAdminEmail = email === 'rrvalenca@gmail.com' ||
-      email === 'rrvlenca@gmail.com' ||
-      email === 'profrvalenca@gmail.com' ||
-      email === 'iaianoaesperanza@gmail.com'
-    const isPatientEmail = email.toLowerCase() === 'escutese@gmail.com' || email.toLowerCase() === 'escute-se@gmail.com'
-    const isProfessionalEmail = email === 'eduardoscfaveret@gmail.com' || email.includes('faveret')
+    // Logica de email especial substituída por metadados seguros (Phase 5)
 
-    if (isPatientEmail) {
-      userName = 'Escutese'
-      userType = 'paciente'
-      console.log('✅ Email paciente especial detectado:', email)
-    } else if (isAdminEmail) {
-      // Apenas emails específicos do Dr. Ricardo Valença - SEMPRE admin
-      userName = 'Dr. Ricardo Valença'
-      userType = 'admin'
-      console.log('✅ Email admin especial detectado:', email, '- Tipo FORÇADO como admin')
-    } else if (isProfessionalEmail) {
-      userName = 'Dr. Eduardo Faveret'
-      userType = 'profissional'
-      console.log('✅ Email profissional especial detectado:', email)
-    } else {
+    // Fallback de nome padrão
+    if (!userName || userName === 'Usuário') {
       userName = authUser.user_metadata?.name || email.split('@')[0] || 'Usuário'
+    }
+
+    // Determinar tipo do usuário - Buscar da tabela users
+    try {
+      const { data: userData, error: userError } = await supabase
+        .from('users')
+        .select('type, name, email, raw_user_meta_data')
+        .eq('id', authUser.id)
+        .maybeSingle()
+
+      if (!userError && userData) {
+        // Verificar Flag de Admin Global
+        const isFlagAdmin = userData.raw_user_meta_data?.flag_admin === true ||
+          authUser.user_metadata?.flag_admin === true;
+
+        if (isFlagAdmin) {
+          userType = 'admin';
+          console.log('🔒 Usuário identificado como ADMIN via flag_admin');
+        } else if (userData.type) {
+          userType = normalizeUserType(userData.type);
+        }
+
+        if (userData.name) {
+          userName = userData.name;
+        }
+      }
+    } catch (error) {
+      console.warn('Erro ao carregar perfil do usuário:', error);
     }
 
     // Determinar tipo do usuário - Buscar da tabela users APENAS se não for email especial

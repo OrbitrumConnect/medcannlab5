@@ -6,6 +6,7 @@ import { ChatRoomSummary, useChatSystem } from '../hooks/useChatSystem'
 interface ProfessionalChatSystemProps {
   className?: string
   interlocutor?: string
+  selectedPatientId?: string | null
 }
 
 type RoomFilter = 'all' | 'professional' | 'student' | 'patient'
@@ -29,7 +30,7 @@ const formatTime = (isoDate: string) => {
   })
 }
 
-const ProfessionalChatSystem: React.FC<ProfessionalChatSystemProps> = ({ className = '', interlocutor }) => {
+const ProfessionalChatSystem: React.FC<ProfessionalChatSystemProps> = ({ className = '', interlocutor, selectedPatientId }) => {
   const { user } = useAuth()
   const [activeRoomId, setActiveRoomId] = useState<string | null>(null)
   const [filter, setFilter] = useState<RoomFilter>('all')
@@ -49,6 +50,31 @@ const ProfessionalChatSystem: React.FC<ProfessionalChatSystemProps> = ({ classNa
   useEffect(() => {
     if (activeRoomId) return
 
+    // Prioridade 1: ID do Paciente (vinda do Workstation)
+    if (selectedPatientId && inbox.length > 0) {
+      // Tenta encontrar sala onde o ID do paciente está nos participantes (metadata ou nome)
+      // Como não temos participants exposto, vamos pelo NOME (que geralmente é o nome do paciente)
+      // ou se o room.id for igual ao patientId (caso raro, mas possível em sistemas 1:1)
+
+      // TODO: Melhorar useChatSystem para expor metadados de participantes
+      // Por enquanto, tentamos matching flexível
+      const targetRoom = inbox.find(room =>
+        // Verifica se o ID do paciente é parte do ID da sala (convenção)
+        room.id === selectedPatientId ||
+        // Verifica se o nome da sala contem o ID (im improvável) ou Nome
+        (room.name && selectedPatientId && room.name.includes(selectedPatientId)) // Isso é frágil se selectedPatientId for UUID
+      )
+
+      // Estratégia de Fallback: Se selectedPatientId for um NOME (prop passada errada), tenta pelo nome
+      // Se selectedPatientId for UUID, precisamos de uma query mais robusta no futuro.
+
+      if (targetRoom) {
+        setActiveRoomId(targetRoom.id)
+        return
+      }
+    }
+
+    // Prioridade 2: Interlocutor (Nome)
     if (interlocutor && inbox.length > 0) {
       // Tentar encontrar sala com o interlocutor
       const targetRoom = inbox.find(room =>
@@ -63,7 +89,7 @@ const ProfessionalChatSystem: React.FC<ProfessionalChatSystemProps> = ({ classNa
     } else if (!activeRoomId && inbox.length > 0) {
       setActiveRoomId(inbox[0].id)
     }
-  }, [activeRoomId, inbox, interlocutor])
+  }, [activeRoomId, inbox, interlocutor, selectedPatientId])
 
   const filteredRooms = useMemo(() => {
     const byFilter = inbox.filter(room => {

@@ -1,7 +1,7 @@
 import React, { useMemo, useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
-import { 
+import {
   Calendar as CalendarIcon,
   Clock,
   Video,
@@ -125,24 +125,8 @@ const Scheduling: React.FC = () => {
       } catch (err) {
         console.error('Erro ao carregar profissionais:', err)
         // Fallback para profissionais hardcoded
-        setProfessionals([
-          {
-            id: 'ricardo-valenca',
-            name: 'Dr. Ricardo Valença',
-            specialty: 'Coordenador Científico',
-            workingDays: ['Terça', 'Quarta', 'Quinta'],
-            workingHours: { start: '08:00', end: '20:30' },
-            avatar: '👨‍⚕️'
-          },
-          {
-            id: 'eduardo-faveret',
-            name: 'Dr. Eduardo Faveret',
-            specialty: 'Diretor Médico',
-            workingDays: ['Segunda', 'Quarta'],
-            workingHours: { start: '10:00', end: '18:00' },
-            avatar: '👨‍⚕️'
-          }
-        ])
+        setProfessionals([])
+        setError('Não foi possível carregar a lista de profissionais. Tente novamente mais tarde.')
       }
     }
 
@@ -171,7 +155,7 @@ const Scheduling: React.FC = () => {
             .select('id')
             .eq('email', selectedProfessional === 'ricardo-valenca' ? 'rrvalenca@gmail.com' : 'eduardo.faveret@medcannlab.com')
             .maybeSingle()
-          
+
           if (profData?.id) {
             professionalId = profData.id
           }
@@ -238,14 +222,14 @@ const Scheduling: React.FC = () => {
     const date = clampToSchedulingStartDate(baseDate ? new Date(baseDate) : new Date())
     date.setHours(0, 0, 0, 0)
     const professional = professionals.find(p => p.id === professionalId)
-    
+
     let guard = 0
     while (professional && !professional.workingDays.includes(getDayName(date))) {
       date.setDate(date.getDate() + 1)
       guard += 1
       if (guard > 14) break
     }
-    
+
     return date
   }
 
@@ -267,7 +251,7 @@ const Scheduling: React.FC = () => {
     const days = []
     const schedulingStart = new Date(SCHEDULING_CONFIG.startDateISO)
     schedulingStart.setHours(0, 0, 0, 0)
-    
+
     // Dias do mês anterior
     const prevMonth = new Date(year, month, 0)
     prevMonth.setHours(0, 0, 0, 0)
@@ -355,20 +339,20 @@ const Scheduling: React.FC = () => {
         // É um ID hardcoded, buscar o real
         const emailToSearch = selectedProfessional === 'ricardo-valenca' ? 'rrvalenca@gmail.com' : 'eduardo.faveret@medcannlab.com'
         console.log('🔍 Buscando profissional com email:', emailToSearch)
-        
+
         const { data: profData, error: profError } = await supabase
           .from('users')
           .select('id, email, name')
           .eq('email', emailToSearch)
           .maybeSingle()
-        
+
         if (profError) {
           console.error('❌ Erro ao buscar profissional:', profError)
           setError(`Erro ao buscar profissional: ${profError.message}. Tente novamente.`)
           setLoading(false)
           return
         }
-        
+
         if (profData?.id) {
           professionalId = profData.id
           console.log('✅ Profissional encontrado:', profData.name, 'ID:', professionalId)
@@ -436,11 +420,11 @@ const Scheduling: React.FC = () => {
           const apptDate = new Date(appt.appointment_date)
           const apptEnd = new Date(apptDate)
           apptEnd.setMinutes(apptEnd.getMinutes() + 60) // Duração padrão
-          
+
           // Verificar sobreposição
           return (appointmentDateTime >= apptDate && appointmentDateTime < apptEnd) ||
-                 (appointmentEnd > apptDate && appointmentEnd <= apptEnd) ||
-                 (appointmentDateTime <= apptDate && appointmentEnd >= apptEnd)
+            (appointmentEnd > apptDate && appointmentEnd <= apptEnd) ||
+            (appointmentDateTime <= apptDate && appointmentEnd >= apptEnd)
         })
 
         if (hasConflict) {
@@ -481,7 +465,7 @@ const Scheduling: React.FC = () => {
         console.error('Mensagem:', insertError.message)
         console.error('Detalhes:', insertError.details)
         console.error('Hint:', insertError.hint)
-        
+
         if (insertError.code === '23505') {
           setError('Este horário já está ocupado. Por favor, selecione outro.')
         } else if (insertError.code === '42501') {
@@ -504,13 +488,13 @@ const Scheduling: React.FC = () => {
       }
 
       console.log('✅ Consulta agendada com sucesso:', appointment)
-      
+
       // Atualizar lista de horários ocupados
       setOccupiedSlots(prev => new Set([...prev, selectedTime]))
-      
+
       // Mostrar mensagem de sucesso e redirecionar
       alert(`✅ Consulta agendada com sucesso!\n\nProfissional: ${professional.name}\nData: ${selectedDate.toLocaleDateString('pt-BR')}\nHorário: ${selectedTime}\n\nVocê receberá um email de confirmação em breve.`)
-      
+
       // Redirecionar para página de agendamentos do paciente
       navigate('/app/clinica/paciente/agendamentos')
     } catch (error: any) {
@@ -555,7 +539,7 @@ const Scheduling: React.FC = () => {
             </button>
           </div>
         )}
-        
+
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Calendário */}
           <div className="lg:col-span-2">
@@ -645,7 +629,7 @@ const Scheduling: React.FC = () => {
                   {(() => {
                     const professional = professionals.find(p => p.id === selectedProfessional)
                     if (!professional) return []
-                    
+
                     return generateAppointmentSlots(
                       professional.workingHours.start,
                       professional.workingHours.end,
@@ -657,7 +641,7 @@ const Scheduling: React.FC = () => {
                     const isWorkingDay = professional?.workingDays.includes(getDayName(selectedDate))
                     const isPastStartDate = selectedDate >= clampToSchedulingStartDate(new Date(selectedDate))
                     const isOccupied = occupiedSlots.has(time)
-                    
+
                     if (!isWorkingDay || !isPastStartDate) return null
 
                     return (
@@ -675,8 +659,8 @@ const Scheduling: React.FC = () => {
                           ${isOccupied
                             ? 'bg-slate-800/30 border-slate-700 text-slate-500 cursor-not-allowed'
                             : selectedTime === time
-                            ? 'bg-gradient-to-br from-blue-500 to-cyan-500 border-blue-400 text-white'
-                            : 'bg-slate-700/50 border-slate-600 hover:border-slate-500 text-white'
+                              ? 'bg-gradient-to-br from-blue-500 to-cyan-500 border-blue-400 text-white'
+                              : 'bg-slate-700/50 border-slate-600 hover:border-slate-500 text-white'
                           }
                         `}
                         title={isOccupied ? 'Horário ocupado' : `Agendar para ${time}`}

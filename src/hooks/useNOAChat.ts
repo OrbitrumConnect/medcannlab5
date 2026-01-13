@@ -15,7 +15,7 @@ export const useNOAChat = () => {
       try {
         // Inicialização instantânea (sem carregar modelos pesados)
         setIsInitialized(true)
-        
+
         // Adicionar mensagem de boas-vindas
         const welcomeMessage: ChatMessage = {
           id: 'welcome',
@@ -72,7 +72,7 @@ export const useNOAChat = () => {
 
         // Adicionar respostas da NOA
         const noaResponses = generateNOAResponses(chatMessages)
-        const allMessages = [...chatMessages, ...noaResponses].sort((a, b) => 
+        const allMessages = [...chatMessages, ...noaResponses].sort((a, b) =>
           a.timestamp.getTime() - b.timestamp.getTime()
         )
 
@@ -84,21 +84,9 @@ export const useNOAChat = () => {
   }
 
   const generateNOAResponses = (userMessages: ChatMessage[]): ChatMessage[] => {
-    const responses: ChatMessage[] = []
-    
-    userMessages.forEach((message, index) => {
-      if (message.analysis) {
-        const noaResponse = noaEngine.generateNOAResponse(message.text, message.analysis)
-        responses.push({
-          id: `noa-${message.id}`,
-          text: noaResponse,
-          timestamp: new Date(message.timestamp.getTime() + 1000), // 1 segundo depois
-          isUser: false
-        })
-      }
-    })
-
-    return responses
+    // Na versão TradeVision, o histórico deve vir do banco (ai_chat_interactions)
+    // Por enquanto, retornamos vazio para não gerar alucinações no histórico antigo
+    return []
   }
 
   const sendMessage = useCallback(async (text: string) => {
@@ -111,88 +99,41 @@ export const useNOAChat = () => {
       isUser: true
     }
 
-    // Adicionar mensagem do usuário
+    // 1. Adicionar mensagem do usuário na UI imediatamente
     setMessages(prev => [...prev, userMessage])
     noaEngine.addToContext(userMessage)
-
     setIsAnalyzing(true)
 
     try {
-      // Salvar interação no Supabase
-      const { data: interaction, error: interactionError } = await supabase
-        .from('user_interactions')
-        .insert({
-          user_id: user.id,
-          text_raw: text.trim(),
-          context: JSON.stringify(noaEngine.getContext().slice(-5)), // Últimos 5 contextos
-          timestamp: new Date().toISOString()
-        })
-        .select()
-        .single()
+      // 2. Chamar TradeVision Core (Secure API)
+      // TODO: Passar contexto do paciente real aqui quando disponível
+      const { response, analysis } = await noaEngine.processUserMessage(text.trim())
 
-      if (interactionError) {
-        console.error('Erro ao salvar interação:', interactionError)
-      }
-
-      // Análise semântica
-      const analysis = await noaEngine.analyzePatientInput(text.trim())
-
-      // Salvar análise semântica
-      if (interaction) {
-        const { error: analysisError } = await supabase
-          .from('semantic_analysis')
-          .insert({
-            chat_id: interaction.id,
-            topics: analysis.topics,
-            emotions: analysis.emotions,
-            biomedical_terms: analysis.biomedical_terms,
-            interpretations: analysis.interpretations,
-            confidence: analysis.confidence
-          })
-
-        if (analysisError) {
-          console.error('Erro ao salvar análise:', analysisError)
-        }
-      }
-
-      // Atualizar mensagem com análise
-      setMessages(prev => prev.map(msg => 
-        msg.id === userMessage.id 
-          ? { ...msg, analysis }
-          : msg
-      ))
-
-      // Gerar resposta da NOA
-      const noaResponse = noaEngine.generateNOAResponse(text.trim(), analysis)
-      const noaMessage: ChatMessage = {
-        id: `noa-${Date.now()}`,
-        text: noaResponse,
+      // 3. Criar mensagem da IA
+      const aiMessage: ChatMessage = {
+        id: `tv-${Date.now()}`,
+        text: response,
         timestamp: new Date(),
-        isUser: false
+        isUser: false,
+        analysis: analysis
       }
 
-      // Adicionar resposta da NOA
-      setTimeout(() => {
-        setMessages(prev => [...prev, noaMessage])
-        noaEngine.addToContext(noaMessage)
-        setIsAnalyzing(false)
-      }, 1000 + Math.random() * 2000) // Delay realista
+      // 4. Atualizar UI
+      setMessages(prev => [...prev, aiMessage])
+      noaEngine.addToContext(aiMessage)
 
     } catch (error) {
       console.error('Erro ao processar mensagem:', error)
-      setIsAnalyzing(false)
-      
-      // Resposta de erro da NOA
+
       const errorMessage: ChatMessage = {
         id: `error-${Date.now()}`,
-        text: 'Desculpe, estou processando suas palavras. Pode repetir?',
+        text: '⚠️ Falha na conexão com TradeVision Core. Tente novamente.',
         timestamp: new Date(),
         isUser: false
       }
-      
-      setTimeout(() => {
-        setMessages(prev => [...prev, errorMessage])
-      }, 1000)
+      setMessages(prev => [...prev, errorMessage])
+    } finally {
+      setIsAnalyzing(false)
     }
   }, [user, isInitialized])
 

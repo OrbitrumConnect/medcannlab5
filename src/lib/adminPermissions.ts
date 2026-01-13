@@ -4,25 +4,21 @@
 import { supabase } from './supabase'
 import { normalizeUserType } from './userTypes'
 
-// IDs de emails de admin com acesso completo
-const ADMIN_EMAILS = [
-  'rrvalenca@gmail.com',
-  'rrvlenca@gmail.com',
-  'profrvalenca@gmail.com',
-  'iaianoaesperanza@gmail.com'
-]
+// ADMIN_EMAILS removidos conforme Protocolo de Segurança (Phase 5)
+// Acesso deve ser governado estritamente por flag_admin no banco de dados.
 
 /**
  * Verifica se um usuário é admin
  */
 export const isAdmin = (user: { email?: string; type?: string } | null): boolean => {
   if (!user) return false
-  
-  // Verificar email
-  if (user.email && ADMIN_EMAILS.includes(user.email.toLowerCase())) {
-    return true
-  }
-  
+
+  // Verificar flag_admin (Prioridade)
+  if ((user as any).flag_admin === true) return true;
+
+  // Email Check removido - violação de segurança
+  // if (user.email && ADMIN_EMAILS.includes(user.email.toLowerCase())) ...
+
   // Verificar tipo
   const normalizedType = normalizeUserType(user.type)
   return normalizedType === 'admin'

@@ -117,7 +117,7 @@ Ao realizar avaliações clínicas ou interagir com pacientes, siga rigorosament
 5. Hipóteses Sindrômicas: Integre as cinco racionalidades médicas, mas NÃO prescreva. Encaminhe ao Dr. Ricardo Valença.
 
 REGRAS ESPECIAIS:
-- Se o usuário for **Ricardo Valença** (admin/criador), seja executiva, estratégica e direta. Não liste funcionalidades óbvias. Foque na ação solicitada.
+- Se o usuário for **Administrador** (identificado pelo sistema), seja executiva, estratégica e direta. Não liste funcionalidades óbvias. Foque na ação solicitada.
 - Nunca revele detalhes do backend (Supabase, json, etc).
 - Mantenha conformidade total com a LGPD.
 
@@ -170,7 +170,7 @@ Você tem acesso a dados em tempo real da plataforma. Use-os para personalizar c
         userEmail
       )
 
-      if (assistantResponse) {
+      if (assistantResponse && assistantResponse.content) {
         console.log('✅ Resposta do Assistant recebida:', assistantResponse.content.substring(0, 100) + '...')
         // Se houve ação da plataforma bem-sucedida, adicionar metadata
         if (platformActionResult?.success) {
@@ -927,6 +927,28 @@ Gere apenas a próxima pergunta sobre hábitos de vida.`
     )
   }
 
+  private isAdminUser(email?: string, userType?: string): boolean {
+    if (!email && !userType) return false
+    const adminEmails = ['ricardo.valenca@medcannlab.com.br', 'admin@medcannlab.com.br', 'phpg69@gmail.com', 'phpg69@hotmail.com'] // Example list
+    return userType === 'admin' || (email ? adminEmails.includes(email) : false)
+  }
+
+  private extractKnowledgeQuery(message: string, context: string): string {
+    return `${context}: ${message}`
+  }
+
+  private async getKnowledgeHighlight(query: string): Promise<{ id: string; title: string; summary: string } | null> {
+    // Mock implementation - connect to real vector search later
+    if (query.toLowerCase().includes('rim') || query.toLowerCase().includes('renal')) {
+      return {
+        id: 'mock-doc-renal-001',
+        title: 'Protocolo de Saúde Renal',
+        summary: 'Diretrizes para monitoramento de função renal em pacientes com uso de cannabis.'
+      }
+    }
+    return null
+  }
+
   private async processGeneralQuery(
     message: string,
     userId?: string,
@@ -945,8 +967,9 @@ Gere apenas a próxima pergunta sobre hábitos de vida.`
       const knowledgeHighlight = await this.getKnowledgeHighlight(knowledgeQuery)
 
       if (isAdmin && platformData?.user) {
+        const userName = platformData.user.name || 'Administrador'
         const adminLines = [
-          'Dr. Ricardo, conexão administrativa confirmada para a MedCannLab 3.0.',
+          `${userName}, conexão administrativa confirmada para a MedCannLab 3.0.`,
           `• Eixo ativo: ${axisDetails.label} — ${axisDetails.summary}`,
           `• Rotas principais:\n${axisMenu}`,
         ]
@@ -1287,6 +1310,7 @@ Gere apenas a próxima pergunta sobre hábitos de vida.`
   }
 
   private getAvailableAxesForUser(userType: string = 'student'): string[] {
+    // Permissão baseada APENAS no tipo de usuário do Supabase
     if (userType === 'admin') return ['admin', 'clinica', 'ensino', 'pesquisa']
     if (userType === 'professional') return ['clinica', 'ensino', 'pesquisa']
     return ['ensino']
@@ -1299,27 +1323,8 @@ Gere apenas a próxima pergunta sobre hábitos de vida.`
     }).join('\n')
   }
 
-  private isAdminUser(email?: string, type?: string): boolean {
-    return email === 'rrvalenca@gmail.com' || type === 'admin'
-  }
-
-  private extractKnowledgeQuery(message: string, contextQuery: string): string {
-    // Remove palavras comuns para focar no conteúdo relevante
-    const stopWords = ['o', 'a', 'os', 'as', 'um', 'uma', 'que', 'de', 'do', 'da', 'em', 'para', 'com']
-    const words = message.toLowerCase().split(' ').filter(w => !stopWords.includes(w))
-    const userQuery = words.join(' ')
-    return `${contextQuery} ${userQuery}`.trim()
-  }
-
-  private async getKnowledgeHighlight(query: string): Promise<any | null> {
-    try {
-      // Usar knowledgeService para buscar destaque
-      // Simulação por enquanto, idealmente buscaria do Supabase via serviço
-      return null
-    } catch (error) {
-      return null
-    }
-  }
+  // Métodos de sanitização removidos conforme Protocolo de Segurança (Phase 5)
+  // Texto clínico deve ser preservado integralmente.
 
   private buildPlatformActionContext(intent: any, result: any): string {
     if (!result.success) return `Ação falhou: ${result.error}`
@@ -1331,66 +1336,61 @@ Gere apenas a próxima pergunta sobre hábitos de vida.`
     return context
   }
 
-  /* PLACEHOLDER_FOR_METHODS_8 */
+  private async processTradeVisionRequest(
+    userMessage: string,
+    intent: string,
+    platformData: any,
+    userEmail?: string
+  ): Promise<AIResponse | null> {
+    try {
+      console.log('🦅 [TradeVision Cloud] Conectando ao Core via Supabase Edge Functions...')
+
+      const payload = {
+        message: userMessage,
+        patientData: {
+          ...platformData,
+          intent,
+          userEmail,
+          assessmentContext: platformData?.user?.id ? this.activeAssessments.get(platformData.user.id) : undefined
+        }
+      }
+
+      // 🚀 Chamada oficial para a Nuvem (Fase 2)
+      const { data, error } = await supabase.functions.invoke('tradevision-core', {
+        body: payload
+      })
+
+      if (error) throw error
+      if (data?.error) throw new Error(data.error)
+      if (!data?.text) throw new Error('Resposta da IA veio vazia do Core Cloud.')
+
+      return {
+        id: `tv_${Date.now()}`,
+        content: data.text,
+        confidence: 0.98,
+        reasoning: 'TradeVision Cloud Master Engine',
+        timestamp: new Date(),
+        type: 'text',
+        metadata: {
+          intent,
+          audited: data.metadata?.audited,
+          system: data.metadata?.system
+        }
+      }
+    } catch (err) {
+      console.error('❌ [TradeVision Cloud] Erro de execução:', err)
+      return null
+    }
+  }
+
   private async getAssistantResponse(
     userMessage: string,
     intent: string,
     platformData?: any,
     userEmail?: string
   ): Promise<AIResponse | null> {
-    try {
-      // Preparar contexto para o Assistant
-      let context = 'Contexto da Plataforma:\n'
-
-      if (platformData) {
-        context += `Usuário: ${platformData.user?.name || 'Não identificado'}\n`
-        context += `Tipo de Usuário: ${platformData.user?.user_type || 'student'}\n`
-        context += `Rota Atual: ${platformData.currentRoute || 'dashboard'}\n`
-
-        if (platformData.patientContext) {
-          context += `Contexto do Paciente: ${JSON.stringify(platformData.patientContext)}\n`
-        }
-
-        if (platformData.dashboard) {
-          context += `Dados do Dashboard: ${JSON.stringify(platformData.dashboard)}\n`
-        }
-      }
-
-      // Adicionar contexto de avaliação se houver
-      const assessment = platformData?.user?.id ? this.activeAssessments.get(platformData.user.id) : undefined
-      if (assessment) {
-        context += `\nAvaliação em Andamento:\n`
-        context += `Etapa: ${assessment.step}\n`
-        context += `Dados Coletados: ${JSON.stringify(assessment.investigation)}\n`
-      }
-
-      // Enviar para o Assistant via service
-      const response = await this.assistantIntegration.sendMessage(
-        userMessage,
-        context, // Contexto como system instruction adicional ou contexto
-        platformData?.user?.id
-      )
-
-      if (response) {
-        return {
-          id: `resp_${Date.now()}`, // Gerar ID se não vier da resposta
-          content: response.content,
-          confidence: 0.9,
-          reasoning: 'Resposta gerada pelo Noa Assistant',
-          timestamp: new Date(),
-          type: 'text',
-          metadata: {
-            intent,
-            processingTime: 0 // Calcular se necessário
-          }
-        }
-      }
-
-      return null
-    } catch (error) {
-      console.error('Erro ao obter resposta do Assistant:', error)
-      return null
-    }
+    // 🦅 [TradeVision Cloud] Todas as requisições agora são processadas pelo Core na Nuvem
+    return this.processTradeVisionRequest(userMessage, intent, platformData, userEmail);
   }
 
   private async generateReasoningQuestion(

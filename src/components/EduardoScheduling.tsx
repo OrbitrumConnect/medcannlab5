@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { 
+import {
   Calendar,
   Clock,
   Users,
@@ -45,9 +45,10 @@ interface Analytics {
 
 interface EduardoSchedulingProps {
   className?: string
+  patientId?: string | null
 }
 
-const EduardoScheduling: React.FC<EduardoSchedulingProps> = ({ className = '' }) => {
+const EduardoScheduling: React.FC<EduardoSchedulingProps> = ({ className = '', patientId }) => {
   const { user } = useAuth()
   const [activeTab, setActiveTab] = useState<'calendar' | 'list' | 'analytics'>('calendar')
   const [appointments, setAppointments] = useState<Appointment[]>([])
@@ -65,7 +66,7 @@ const EduardoScheduling: React.FC<EduardoSchedulingProps> = ({ className = '' })
 
   const loadData = async () => {
     if (!user) return
-    
+
     setLoading(true)
     try {
       // Buscar agendamentos do profissional atual
@@ -117,9 +118,9 @@ const EduardoScheduling: React.FC<EduardoSchedulingProps> = ({ className = '' })
       const totalAppointments = formattedAppointments.length
       const completedAppointments = formattedAppointments.filter(a => a.status === 'completed').length
       const completionRate = totalAppointments > 0 ? Math.round((completedAppointments / totalAppointments) * 100) : 0
-      
+
       const ratings = formattedAppointments.filter(a => a.rating).map(a => a.rating!)
-      const averageRating = ratings.length > 0 
+      const averageRating = ratings.length > 0
         ? Math.round((ratings.reduce((a, b) => a + b, 0) / ratings.length) * 10) / 10
         : 0
 
@@ -167,9 +168,13 @@ const EduardoScheduling: React.FC<EduardoSchedulingProps> = ({ className = '' })
 
   const filteredAppointments = appointments.filter(appointment => {
     const matchesSearch = appointment.patientName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         appointment.specialty.toLowerCase().includes(searchTerm.toLowerCase())
+      appointment.specialty.toLowerCase().includes(searchTerm.toLowerCase())
     const matchesSpecialty = filterSpecialty === 'all' || appointment.specialty === filterSpecialty
-    return matchesSearch && matchesSpecialty
+
+    // Filtro por Paciente (Contexto do Workstation)
+    const matchesPatient = patientId ? appointment.patientId === patientId : true
+
+    return matchesSearch && matchesSpecialty && matchesPatient
   })
 
   const getStatusColor = (status: string) => {
@@ -222,11 +227,10 @@ const EduardoScheduling: React.FC<EduardoSchedulingProps> = ({ className = '' })
             <button
               key={tab.key}
               onClick={() => setActiveTab(tab.key as any)}
-              className={`flex items-center space-x-2 px-4 py-2 rounded-md transition-colors ${
-                activeTab === tab.key 
-                  ? 'bg-green-600 text-white' 
+              className={`flex items-center space-x-2 px-4 py-2 rounded-md transition-colors ${activeTab === tab.key
+                  ? 'bg-green-600 text-white'
                   : 'bg-green-700 text-green-200 hover:bg-green-600'
-              }`}
+                }`}
             >
               {tab.icon}
               <span>{tab.label}</span>
@@ -299,40 +303,40 @@ const EduardoScheduling: React.FC<EduardoSchedulingProps> = ({ className = '' })
               </div>
             ) : (
               filteredAppointments.map((appointment) => (
-              <div key={appointment.id} className="bg-slate-800 border border-slate-700 rounded-lg p-4 hover:border-slate-600 transition-colors">
-                <div className="flex items-center justify-between">
-                  <div className="flex-1">
-                    <div className="flex items-center space-x-4">
-                      <div>
-                        <h4 className="text-white font-semibold">{appointment.patientName}</h4>
-                        <p className="text-slate-400 text-sm">{appointment.specialty}</p>
+                <div key={appointment.id} className="bg-slate-800 border border-slate-700 rounded-lg p-4 hover:border-slate-600 transition-colors">
+                  <div className="flex items-center justify-between">
+                    <div className="flex-1">
+                      <div className="flex items-center space-x-4">
+                        <div>
+                          <h4 className="text-white font-semibold">{appointment.patientName}</h4>
+                          <p className="text-slate-400 text-sm">{appointment.specialty}</p>
+                        </div>
+                        <div className="text-slate-300 text-sm">
+                          <p>{new Date(appointment.date).toLocaleDateString('pt-BR')}</p>
+                          <p>{appointment.time} ({appointment.duration}min)</p>
+                        </div>
+                        <span className={`px-2 py-1 rounded text-xs ${getStatusColor(appointment.status)}`}>
+                          {getStatusText(appointment.status)}
+                        </span>
                       </div>
-                      <div className="text-slate-300 text-sm">
-                        <p>{new Date(appointment.date).toLocaleDateString('pt-BR')}</p>
-                        <p>{appointment.time} ({appointment.duration}min)</p>
-                      </div>
-                      <span className={`px-2 py-1 rounded text-xs ${getStatusColor(appointment.status)}`}>
-                        {getStatusText(appointment.status)}
-                      </span>
+                      {appointment.notes && (
+                        <p className="text-slate-400 text-sm mt-2">{appointment.notes}</p>
+                      )}
                     </div>
-                    {appointment.notes && (
-                      <p className="text-slate-400 text-sm mt-2">{appointment.notes}</p>
-                    )}
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <button className="p-2 text-blue-400 hover:text-blue-300 transition-colors">
-                      <Eye className="w-4 h-4" />
-                    </button>
-                    <button className="p-2 text-green-400 hover:text-green-300 transition-colors">
-                      <Edit className="w-4 h-4" />
-                    </button>
-                    <button className="p-2 text-red-400 hover:text-red-300 transition-colors">
-                      <Trash2 className="w-4 h-4" />
-                    </button>
+                    <div className="flex items-center space-x-2">
+                      <button className="p-2 text-blue-400 hover:text-blue-300 transition-colors">
+                        <Eye className="w-4 h-4" />
+                      </button>
+                      <button className="p-2 text-green-400 hover:text-green-300 transition-colors">
+                        <Edit className="w-4 h-4" />
+                      </button>
+                      <button className="p-2 text-red-400 hover:text-red-300 transition-colors">
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))
+              ))
             )}
           </div>
         </div>
@@ -383,8 +387,8 @@ const EduardoScheduling: React.FC<EduardoSchedulingProps> = ({ className = '' })
                     <span className="text-slate-300">{item.specialty}</span>
                     <div className="flex items-center space-x-2">
                       <div className="w-20 bg-slate-700 rounded-full h-2">
-                        <div 
-                          className="bg-green-500 h-2 rounded-full" 
+                        <div
+                          className="bg-green-500 h-2 rounded-full"
                           style={{ width: `${(item.count / Math.max(...analytics.appointmentsBySpecialty.map(i => i.count))) * 100}%` }}
                         ></div>
                       </div>
@@ -404,8 +408,8 @@ const EduardoScheduling: React.FC<EduardoSchedulingProps> = ({ className = '' })
                     <span className="text-slate-300">{item.hour}</span>
                     <div className="flex items-center space-x-2">
                       <div className="w-20 bg-slate-700 rounded-full h-2">
-                        <div 
-                          className="bg-blue-500 h-2 rounded-full" 
+                        <div
+                          className="bg-blue-500 h-2 rounded-full"
                           style={{ width: `${item.percentage}%` }}
                         ></div>
                       </div>
