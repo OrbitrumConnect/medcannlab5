@@ -29,85 +29,62 @@ export const isAdmin = (user: { email?: string; type?: string } | null): boolean
  */
 export const getAllPatients = async (userId: string, userType: string) => {
   try {
-    // Se for admin, buscar todos os pacientes sem filtro
-    if (isAdmin({ type: userType })) {
-      const { data: assessments, error } = await supabase
-        .from('clinical_assessments')
-        .select('*')
-        .order('created_at', { ascending: false })
+    const isUserAdmin = isAdmin({ type: userType })
 
-      if (error) {
-        console.error('❌ Erro ao buscar pacientes (admin):', error)
-        throw error
-      }
+    if (isUserAdmin) {
+      // ADMIN: Busca direta na tabela de usuários para obter nomes reais
+      const { data: users, error } = await supabase
+        .from('users')
+        .select('id, name, email, phone, created_at')
+        .eq('type', 'paciente')
+        .order('name', { ascending: true })
 
-      // Agrupar por paciente
-      const patientsMap = new Map()
-      assessments?.forEach(assessment => {
-        if (assessment.patient_id && !patientsMap.has(assessment.patient_id)) {
-          patientsMap.set(assessment.patient_id, {
-            id: assessment.patient_id,
-            name: assessment.patient_name || `Paciente ${assessment.patient_id.slice(0, 8)}`,
-            age: assessment.patient_age || 0,
-            cpf: assessment.patient_cpf || '',
-            phone: assessment.patient_phone || '',
-            email: assessment.patient_email || '',
-            lastVisit: new Date(assessment.created_at).toLocaleDateString('pt-BR'),
-            status: assessment.status || 'Aguardando',
-            condition: assessment.condition || 'Não especificado',
-            priority: assessment.priority || 'medium',
-            assessments: [assessment]
-          })
-        } else {
-          const patient = patientsMap.get(assessment.patient_id)
-          if (patient) {
-            patient.assessments.push(assessment)
-          }
-        }
-      })
+      if (error) throw error
 
-      return Array.from(patientsMap.values())
+      return users.map(u => ({
+        id: u.id,
+        name: u.name || `Paciente ${u.id.slice(0, 8)}`,
+        email: u.email || '',
+        phone: u.phone || '',
+        status: 'Ativo',
+        lastVisit: new Date(u.created_at).toLocaleDateString('pt-BR'),
+        assessments: []
+      }))
     } else {
-      // Usuário normal: buscar apenas seus próprios pacientes (com RLS)
-      const { data: assessments, error } = await supabase
+      // PROFISSIONAL: Busca pacientes vinculados via avaliações ou agendamentos
+      // Primeiro, pegamos os IDs dos pacientes atendidos por este profissional
+      const { data: assessments, error: assError } = await supabase
         .from('clinical_assessments')
-        .select('*')
+        .select('patient_id')
         .eq('doctor_id', userId)
-        .order('created_at', { ascending: false })
 
-      if (error) {
-        console.error('❌ Erro ao buscar pacientes:', error)
-        throw error
-      }
+      if (assError) throw assError
 
-      const patientsMap = new Map()
-      assessments?.forEach(assessment => {
-        if (assessment.patient_id && !patientsMap.has(assessment.patient_id)) {
-          patientsMap.set(assessment.patient_id, {
-            id: assessment.patient_id,
-            name: assessment.patient_name || `Paciente ${assessment.patient_id.slice(0, 8)}`,
-            age: assessment.patient_age || 0,
-            cpf: assessment.patient_cpf || '',
-            phone: assessment.patient_phone || '',
-            email: assessment.patient_email || '',
-            lastVisit: new Date(assessment.created_at).toLocaleDateString('pt-BR'),
-            status: assessment.status || 'Aguardando',
-            condition: assessment.condition || 'Não especificado',
-            priority: assessment.priority || 'medium',
-            assessments: [assessment]
-          })
-        } else {
-          const patient = patientsMap.get(assessment.patient_id)
-          if (patient) {
-            patient.assessments.push(assessment)
-          }
-        }
-      })
+      const patientIds = Array.from(new Set(assessments?.map(a => a.patient_id).filter(Boolean)))
 
-      return Array.from(patientsMap.values())
+      if (patientIds.length === 0) return []
+
+      // Buscamos os nomes reais desses pacientes na tabela users
+      const { data: users, error: userError } = await supabase
+        .from('users')
+        .select('id, name, email, phone, created_at')
+        .in('id', patientIds)
+        .order('name', { ascending: true })
+
+      if (userError) throw userError
+
+      return users.map(u => ({
+        id: u.id,
+        name: u.name || `Paciente ${u.id.slice(0, 8)}`,
+        email: u.email || '',
+        phone: u.phone || '',
+        status: 'Em acompanhamento',
+        lastVisit: new Date(u.created_at).toLocaleDateString('pt-BR'),
+        assessments: []
+      }))
     }
   } catch (error) {
-    console.error('❌ Erro ao buscar pacientes:', error)
+    console.error('❌ Erro ao buscar pacientes com nomes reais:', error)
     throw error
   }
 }
