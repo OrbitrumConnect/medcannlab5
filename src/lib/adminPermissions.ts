@@ -27,9 +27,11 @@ export const isAdmin = (user: { email?: string; type?: string } | null): boolean
 /**
  * Buscar todos os pacientes (admin tem acesso completo)
  */
-export const getAllPatients = async (userId: string, userType: string) => {
+export const getAllPatients = async (user: { id: string; type?: string; email?: string } | null) => {
+  if (!user) return []
+
   try {
-    const isUserAdmin = isAdmin({ type: userType })
+    const isUserAdmin = isAdmin(user)
 
     if (isUserAdmin) {
       // ADMIN: Busca direta na tabela de usuários para obter nomes reais
@@ -48,15 +50,16 @@ export const getAllPatients = async (userId: string, userType: string) => {
         phone: u.phone || '',
         status: 'Ativo',
         lastVisit: new Date(u.created_at).toLocaleDateString('pt-BR'),
+        age: 0, // Fallback para TypeScript
+        cpf: '', // Fallback para TypeScript
         assessments: []
       }))
     } else {
       // PROFISSIONAL: Busca pacientes vinculados via avaliações ou agendamentos
-      // Primeiro, pegamos os IDs dos pacientes atendidos por este profissional
       const { data: assessments, error: assError } = await supabase
         .from('clinical_assessments')
         .select('patient_id')
-        .eq('doctor_id', userId)
+        .eq('doctor_id', user.id)
 
       if (assError) throw assError
 
@@ -80,6 +83,8 @@ export const getAllPatients = async (userId: string, userType: string) => {
         phone: u.phone || '',
         status: 'Em acompanhamento',
         lastVisit: new Date(u.created_at).toLocaleDateString('pt-BR'),
+        age: 0,
+        cpf: '',
         assessments: []
       }))
     }

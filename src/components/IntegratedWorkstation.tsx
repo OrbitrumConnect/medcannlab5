@@ -51,7 +51,7 @@ const IntegratedWorkstation: React.FC<IntegratedWorkstationProps> = ({
         try {
             setLoadingPatients(true)
             // Usando a lógica centralizada de permissões para garantir que admin veja tudo e profs vejam seus pacientes
-            const data = await getAllPatients(user!.id, user!.type || 'profissional')
+            const data = await getAllPatients(user)
             setPatients(data || [])
         } catch (err) {
             console.error('Erro ao carregar pacientes no Terminal:', err)
@@ -141,13 +141,13 @@ const IntegratedWorkstation: React.FC<IntegratedWorkstationProps> = ({
                             key={patient.id}
                             onClick={() => handlePatientSelect(patient.id)}
                             className={`w-full p-3 text-left rounded-xl transition-all flex items-center gap-3 group ${selectedPatientId === patient.id
-                                    ? 'bg-emerald-500/10 text-white border border-emerald-500/20'
-                                    : 'text-slate-500 hover:bg-slate-800/40 hover:text-slate-300'
+                                ? 'bg-emerald-500/10 text-white border border-emerald-500/20'
+                                : 'text-slate-500 hover:bg-slate-800/40 hover:text-slate-300'
                                 }`}
                         >
                             <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm transition-transform ${selectedPatientId === patient.id
-                                    ? 'bg-emerald-500 text-white shadow-[0_0_15px_rgba(16,185,129,0.3)]'
-                                    : 'bg-slate-800/80 group-hover:scale-105'
+                                ? 'bg-emerald-500 text-white shadow-[0_0_15px_rgba(16,185,129,0.3)]'
+                                : 'bg-slate-800/80 group-hover:scale-105'
                                 }`}>
                                 {patient.name?.charAt(0).toUpperCase() || '?'}
                             </div>
@@ -176,8 +176,8 @@ const IntegratedWorkstation: React.FC<IntegratedWorkstationProps> = ({
                                 key={tab.id}
                                 onClick={() => setActiveTab(tab.id)}
                                 className={`px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-widest transition-all flex items-center gap-2 ${activeTab === tab.id
-                                        ? 'bg-slate-800 text-emerald-400 border border-emerald-500/20'
-                                        : 'text-slate-500 hover:text-slate-300'
+                                    ? 'bg-slate-800 text-emerald-400 border border-emerald-500/20'
+                                    : 'text-slate-500 hover:text-slate-300'
                                     }`}
                             >
                                 <tab.icon className="w-3.5 h-3.5" />

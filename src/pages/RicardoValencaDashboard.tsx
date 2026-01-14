@@ -749,8 +749,8 @@ const RicardoValencaDashboard: React.FC = () => {
 
       if (user && isAdmin(user)) {
         console.log('✅ Admin carregando pacientes com permissões administrativas')
-        const allPatients = await getAllPatients(user.id, user.type || 'admin')
-        setPatients(allPatients)
+        const allPatients = await getAllPatients(user)
+        setPatients(allPatients as Patient[])
         setLoading(false)
         return
       }
