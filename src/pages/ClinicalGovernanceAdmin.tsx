@@ -226,7 +226,7 @@ export default function ClinicalGovernanceAdmin({ onAssumirChat }: ClinicalGover
                                 <th className="px-6 py-4">TimeStamp</th>
                                 <th className="px-6 py-4">Paciente</th>
                                 <th className="px-6 py-4">Eixo</th>
-                                <th className="px-6 py-4">Risco</th>
+                                <th className="px-6 py-4">Risco ou nao?!</th>
                                 <th className="px-6 py-4 text-right">Auditar</th>
                             </tr>
                         </thead>

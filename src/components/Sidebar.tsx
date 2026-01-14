@@ -248,22 +248,10 @@ const Sidebar: React.FC<SidebarProps> = ({
     },
     {
       id: 'atendimento',
-      label: 'Atendimento',
-      description: 'Fluxo completo de consultas e telemedicina',
+      label: 'Terminal de Atendimento',
+      description: 'Estação de trabalho clínica integrada',
       icon: Stethoscope,
       href: '/app/clinica/profissional/dashboard?section=atendimento'
-    },
-    {
-      id: 'agendamentos',
-      label: 'Agenda',
-      description: 'Gestão de sessões e follow-ups clínicos',
-      icon: Calendar
-    },
-    {
-      id: 'prescricoes',
-      label: 'Prescrições',
-      description: 'Protocolos terapêuticos e integrações',
-      icon: FileText
     },
     {
       id: 'relatorios-clinicos',

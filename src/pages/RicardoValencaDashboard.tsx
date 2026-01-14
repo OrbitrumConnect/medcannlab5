@@ -134,6 +134,7 @@ type SectionId =
   | 'agendamentos'
   | 'relatorios-clinicos'
   | 'chat-profissionais'
+  | 'chat-clinico'
   | 'aulas'
   | 'biblioteca'
   | 'avaliacao'
@@ -304,32 +305,26 @@ const RicardoValencaDashboard: React.FC = () => {
       },
       {
         id: 'atendimento',
-        label: 'Atendimento',
-        description: 'Fluxo completo de consultas e telemedicina',
+        label: 'Terminal de Atendimento',
+        description: 'Fluxo integrado de consultas, chat e prescrições',
         icon: Stethoscope
       },
       {
-        id: 'agendamentos',
-        label: 'Agenda',
-        description: 'Gestão de sessões e follow-ups clínicos',
-        icon: Calendar
-      },
-      {
         id: 'pacientes',
-        label: 'Pacientes',
-        description: 'Histórico, prioridades e anotações clínicas',
+        label: 'Gestão de Pacientes',
+        description: 'Base de dados e prontuários eletrônicos',
         icon: Users
       },
       {
-        id: 'relatorios-clinicos',
-        label: 'Relatórios',
-        description: 'Documentos e insights gerados pela IA',
-        icon: BarChart3
+        id: 'agendamentos',
+        label: 'Agenda Clínica',
+        description: 'Controle de consultas e horários',
+        icon: Calendar
       },
       {
         id: 'chat-profissionais',
         label: 'Equipe Clínica',
-        description: 'Discussões entre profissionais da plataforma',
+        description: 'Comunicação interna entre profissionais',
         icon: MessageCircle
       }
     ]
@@ -4141,15 +4136,17 @@ const RicardoValencaDashboard: React.FC = () => {
       case 'admin-upload':
         return renderAdminUpload()
       case 'admin-renal':
-        return <IntegratedWorkstation initialTab="renal" />
+        return <IntegratedWorkstation initialTab="renal" defaultPatientId={selectedPatient || undefined} />
       case 'atendimento':
-        return <IntegratedWorkstation />
+        return <IntegratedWorkstation defaultPatientId={selectedPatient || undefined} />
       case 'pacientes':
-        return <IntegratedWorkstation initialTab="patients" />
+        return <IntegratedWorkstation initialTab="patients" defaultPatientId={selectedPatient || undefined} />
+      case 'chat-clinico':
+        return <IntegratedWorkstation initialTab="chat" defaultPatientId={selectedPatient || undefined} />
       case 'prescricoes':
-        return <IntegratedWorkstation initialTab="prescriptions" />
+        return <IntegratedWorkstation initialTab="prescriptions" defaultPatientId={selectedPatient || undefined} />
       case 'agendamentos':
-        return <IntegratedWorkstation initialTab="scheduling" />
+        return <IntegratedWorkstation initialTab="scheduling" defaultPatientId={selectedPatient || undefined} />
       case 'financeiro':
         return renderFinanceiro()
       case 'relatorios-clinicos':
