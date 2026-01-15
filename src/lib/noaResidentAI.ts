@@ -210,8 +210,14 @@ REGRAS DE CONDUTA:
 
       switch (intent) {
         case 'CLÍNICA':
-          // Prioridade para avaliação se detectar palavras-chave de início
-          if (userMessage.toLowerCase().includes('iniciar') || userMessage.toLowerCase().includes('avaliação')) {
+          // Prioridade para avaliação se detectar palavras-chave de início (normalizado para ignorar acentos)
+          const normalizedMessage = userMessage.toLowerCase()
+            .normalize("NFD").replace(/[\u0300-\u036f]/g, "") // Remove acentos
+
+          if (normalizedMessage.includes('iniciar') ||
+            normalizedMessage.includes('avaliacao') ||
+            normalizedMessage.includes('avaliação') ||
+            normalizedMessage.includes('assessment')) {
             response = await this.processAssessment(userMessage, userId, platformData, userEmail)
           } else {
             response = await this.processClinicalQuery(userMessage, userId, platformData, userEmail)
