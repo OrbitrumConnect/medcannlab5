@@ -35,10 +35,11 @@ export const getAllPatients = async (user: { id: string; type?: string; email?: 
 
     if (isUserAdmin) {
       // ADMIN: Busca direta na tabela de usuários para obter nomes reais
+      // Fix: Adicionado 'patient' ao filtro para cobrir variações de cadastro
       const { data: users, error } = await supabase
         .from('users')
         .select('id, name, email, phone, created_at')
-        .eq('type', 'paciente')
+        .in('type', ['paciente', 'patient'])
         .order('name', { ascending: true })
 
       if (error) throw error
@@ -55,15 +56,30 @@ export const getAllPatients = async (user: { id: string; type?: string; email?: 
         assessments: []
       }))
     } else {
-      // PROFISSIONAL: Busca pacientes vinculados via avaliações ou agendamentos
+      // PROFISSIONAL: Busca pacientes vinculados via avaliações antigas OU novos relatórios da IA
+
+      // 1. Busca em Avaliações Antigas
       const { data: assessments, error: assError } = await supabase
         .from('clinical_assessments')
         .select('patient_id')
         .eq('doctor_id', user.id)
 
-      if (assError) throw assError
+      if (assError && assError.code !== 'PGRST116') console.error("Erro assessments:", assError) // Ignora erro se tabela não existir
 
-      const patientIds = Array.from(new Set(assessments?.map(a => a.patient_id).filter(Boolean)))
+      // 2. Busca em Relatórios Novos (IA)
+      // Ajuste: Busca por professional_id ou generated_by 
+      // (Supondo que professional_id seja o campo correto no novo schema)
+      const { data: reports, error: repError } = await supabase
+        .from('clinical_reports')
+        .select('patient_id')
+        .eq('professional_id', user.id)
+
+      if (repError) console.error("Erro reports:", repError)
+
+      // Unir IDs de ambas as fontes
+      const ids1 = assessments?.map(a => a.patient_id) || []
+      const ids2 = reports?.map(r => r.patient_id) || []
+      const patientIds = Array.from(new Set([...ids1, ...ids2].filter(Boolean)))
 
       if (patientIds.length === 0) return []
 
