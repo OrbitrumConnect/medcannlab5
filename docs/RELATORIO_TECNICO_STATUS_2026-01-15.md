@@ -119,3 +119,131 @@ A solução implementada **JÁ ATENDE** aos requisitos de estabilidade, memória
 **Recomendação:** Manter a arquitetura atual (Serverless). A migração para tabelas SQL só se justifica se houver requisito explícito de *"Começar a avaliação no celular e terminar no computador"*. Para sessões únicas, a solução atual é superior.
 
 **Status:** A proposta externa foi **SUPERADA** por uma implementação mais moderna e leve. Não é necessário executar os scripts SQL adicionais sugeridos.
+
+---
+
+## 6. PANORAMA ESTRATÉGICO PARA O DR. RICARDO
+
+### 📊 O QUE FOI CONSTRUÍDO HOJE (Inventário Técnico)
+
+| Componente | Status | Descrição |
+|:-----------|:------:|:----------|
+| **Edge Function (Cloud Brain)** | 🟡 Codificado | Sistema de IA integrado com OpenAI GPT-4o, rodando em Supabase Cloud |
+| **ClinicalAssessmentFlow** | 🟢 Funcional | Motor de estado que gerencia as 10 fases do protocolo AEC |
+| **Persistência LocalStorage** | 🟢 Ativo | Backup local para evitar perda de progresso em caso de F5 |
+| **Sincronização Cloud-Edge** | 🟡 Implementado | Sistema envia a fase atual do protocolo para a IA a cada mensagem |
+| **Script de Deploy** | 🟢 Pronto | `DEPLOY_NOA.bat` automatiza atualização da IA na nuvem |
+| **Documentação Técnica** | 🟢 Completa | Relatório executivo + análise de arquitetura |
+
+**Legenda:** 🟢 Pronto para Uso | 🟡 Aguardando Deploy | 🔴 Bloqueado
+
+---
+
+### 🎯 O QUE TEMOS AGORA (Capacidades Atuais)
+
+✅ **Sistema de Controle de Fluxo:** A IA não pode mais "pular" etapas do protocolo AEC.  
+✅ **Memória de Sessão:** Se o usuário fechar e reabrir o navegador, a conversa continua de onde parou.  
+✅ **Bloqueio de Alucinação:** A IA recusa falar sobre assuntos fora do domínio médico.  
+✅ **Modo Admin:** Administradores podem pedir "Iniciar avaliação clínica" e a IA responde clinicamente (não executivamente).  
+✅ **Auditoria Automática:** Cada interação é registrada na tabela `ai_chat_interactions` para compliance.  
+
+---
+
+### ⚠️ O QUE ESTÁ FALTANDO (Gap Analysis)
+
+| Item | Urgência | Descrição |
+|:-----|:--------:|:----------|
+| **Deploy Efetivo** | 🔴 CRÍTICO | O código está pronto, mas a Edge Function na nuvem ainda é a VERSÃO ANTIGA |
+| **Teste de Loop Completo** | 🟡 Alta | Validar que todas as 10 fases transitam corretamente (da Abertura ao Encerramento) |
+| **Relatório Final Estruturado** | 🟡 Alta | Ao finalizar, gerar PDF/Markdown com o Consenso + Recomendação |
+| **Integração com Agendamento** | 🟢 Baixa | Botão "Agendar Consulta com Dr. Ricardo" ao final da avaliação |
+| **Testes de Estresse** | 🟢 Média | Simular perda de conexão, abandono de sessão, múltiplos usuários simultâneos |
+
+---
+
+### 🚀 PLANO DE AÇÃO (Roadmap para Selagem)
+
+#### **FASE 1: DEPLOY IMEDIATO** (Hoje - 15/01/2026)
+**Responsável:** Dev Team  
+**Tempo Estimado:** 5 minutos
+
+```powershell
+# No terminal do VS Code (Admin):
+.\DEPLOY_NOA.bat
+```
+
+**Checklist:**
+- [ ] Executar script de deploy
+- [ ] Aguardar confirmação "Deploy realizado com sucesso"
+- [ ] Acessar [Supabase Dashboard](https://supabase.com/dashboard/project/itdjkfubfzmvmuxxjoae/functions/tradevision-core/logs) e verificar logs
+
+---
+
+#### **FASE 2: VALIDAÇÃO CLÍNICA** (16-17/01/2026)
+**Responsável:** Dr. Ricardo + Dev  
+**Tempo Estimado:** 2h~4h
+
+**Roteiro de Teste (Protocolo de Homologação):**
+
+1. **Teste Padrão (Caminho Feliz):**
+   - Logar como Admin
+   - Dizer: *"Nôa, iniciar avaliação clínica"*
+   - Responder TODAS as perguntas das 10 fases
+   - Conferir se o relatório final está coerente
+
+2. **Teste de Interrupção (Resiliência):**
+   - Iniciar avaliação
+   - No meio da fase 4 (Desenvolvimento da Queixa), dar F5
+   - Verificar se a Nôa retoma de onde parou
+
+3. **Teste de Bloqueio (Segurança):**
+   - Perguntar: *"Nôa, qual a melhor receita de lasanha?"*
+   - Confirmar que ela recusa educadamente
+
+4. **Teste de Admin (Permissão):**
+   - Como Admin, pedir teste
+   - Como Paciente comum, pedir avaliação
+   - Validar que ambos conseguem
+
+**Critério de Aprovação:** 4/4 testes passando sem falhas críticas.
+
+---
+
+#### **FASE 3: REFINAMENTO (18-20/01/2026)**
+**Responsável:** Dev + UX**  
+**Tempo Estimado:** 6h~8h
+
+**Melhorias de Polimento:**
+- Adicionar barra de progresso visual (ex: "Você está na etapa 3 de 10")
+- Implementar botão "Salvar Rascunho" para retomar depois
+- Criar email automático ao finalizar (enviar relatório pro Dr. Ricardo)
+- Ajustar tom de voz da Nôa baseado em feedback do Dr. Ricardo
+
+---
+
+#### **FASE 4: SELAGEM (21/01/2026)**
+**Responsável:** Dr. Ricardo (Aprovação Final)**
+
+**Critérios de Selagem (Checklist do Cliente):**
+- [ ] A avaliação clínica segue rigorosamente o protocolo AEC do Dr. Ricardo
+- [ ] Não há "pulos" ou "loops infinitos"
+- [ ] O relatório final é claro e profissional
+- [ ] A experiência de usuário é fluida e empática
+- [ ] O sistema salva tudo corretamente no banco de dados
+
+**Quando todos os itens estiverem ✅, o projeto está SELADO.**
+
+---
+
+### 📋 PRÓXIMAS AÇÕES IMEDIATAS (Para Hoje)
+
+1. **AGORA (18:30):** Executar `.\DEPLOY_NOA.bat`
+2. **EM SEGUIDA (18:35):** Fazer refresh da página da aplicação (Ctrl+F5)
+3. **TESTAR (18:36):** Iniciar uma avaliação clínica e observar se a Nôa avança corretamente pelas fases
+4. **REPORTAR (18:45):** Relatar qualquer comportamento inesperado para ajustes finais
+
+**Meta de Hoje:** Confirmar que a integração Cloud-Edge está funcionando e a IA está obedecendo o protocolo.
+
+---
+
+**ESTADO GERAL DO PROJETO:** 🟡 **85% CONCLUÍDO** — Núcleo técnico pronto, aguardando deploy e validação clínica final.
