@@ -626,26 +626,26 @@ const EduardoScheduling: React.FC<EduardoSchedulingProps> = ({ className = '', p
       {/* MODAL VIEW DAY DETAIL */}
       {isViewDayModalOpen && viewDayDate && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-          <div className="bg-[#1e293b] rounded-2xl shadow-2xl w-full max-w-lg border border-slate-700 max-h-[85vh] flex flex-col overflow-hidden animate-in scale-95 duration-200">
+          <div className="bg-[#1e293b] rounded-2xl shadow-2xl w-full max-w-2xl border border-slate-700 max-h-[85vh] flex flex-col overflow-hidden animate-in scale-95 duration-200">
             {/* Header com Data */}
-            <div className="flex items-center justify-between p-6 border-b border-slate-700 bg-gradient-to-r from-slate-800 to-slate-900">
+            <div className="flex items-center justify-between p-7 border-b border-slate-700 bg-gradient-to-r from-slate-800 to-slate-900">
               <div>
-                <h2 className="text-xl font-bold text-white flex items-center gap-2 capitalize">
-                  <Calendar className="w-5 h-5 text-green-400" />
+                <h2 className="text-2xl font-bold text-white flex items-center gap-3 capitalize">
+                  <Calendar className="w-6 h-6 text-green-400" />
                   {viewDayDate.toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' })}
                 </h2>
-                <p className="text-slate-400 text-xs mt-1 font-medium tracking-wide uppercase">Visão Detalhada do Dia</p>
+                <p className="text-slate-400 text-sm mt-1 font-medium tracking-wide uppercase">Visão Detalhada do Dia</p>
               </div>
               <button
                 onClick={() => setIsViewDayModalOpen(false)}
                 className="p-2 hover:bg-slate-700 rounded-full transition-colors text-slate-400 hover:text-white"
               >
-                <X className="w-5 h-5" />
+                <X className="w-6 h-6" />
               </button>
             </div>
 
             {/* Lista Cronológica */}
-            <div className="p-6 overflow-y-auto custom-scrollbar flex-1 space-y-3 bg-[#0f172a]/50">
+            <div className="p-7 overflow-y-auto custom-scrollbar flex-1 space-y-4 bg-[#0f172a]/50">
               {(() => {
                 // Filtrar e ordenar agendamentos do dia
                 const dayApps = appointments
@@ -654,39 +654,39 @@ const EduardoScheduling: React.FC<EduardoSchedulingProps> = ({ className = '', p
 
                 if (dayApps.length === 0) {
                   return (
-                    <div className="flex flex-col items-center justify-center py-16 text-slate-500 rounded-xl border-2 border-dashed border-slate-800 bg-slate-800/20">
-                      <div className="bg-slate-800/50 p-4 rounded-full mb-3">
-                        <Clock className="w-8 h-8 opacity-40" />
+                    <div className="flex flex-col items-center justify-center py-20 text-slate-500 rounded-xl border-2 border-dashed border-slate-800 bg-slate-800/20">
+                      <div className="bg-slate-800/50 p-5 rounded-full mb-4">
+                        <Clock className="w-10 h-10 opacity-40" />
                       </div>
-                      <p className="font-medium">Nenhum agendamento.</p>
-                      <p className="text-xs mt-1 text-slate-600">Este dia está livre para marcações.</p>
+                      <p className="font-medium text-lg">Nenhum agendamento.</p>
+                      <p className="text-sm mt-1 text-slate-600">Este dia está livre para marcações.</p>
                     </div>
                   )
                 }
 
                 return dayApps.map(app => (
-                  <div key={app.id} className="flex gap-4 p-4 rounded-xl bg-slate-800 border border-slate-700/50 hover:border-green-500/30 hover:shadow-lg hover:shadow-green-900/10 transition-all group relative overflow-hidden">
+                  <div key={app.id} className="flex gap-5 p-5 rounded-xl bg-slate-800 border border-slate-700/50 hover:border-green-500/30 hover:shadow-xl hover:shadow-green-900/10 transition-all group relative overflow-hidden">
                     {/* Faixa lateral de status */}
-                    <div className={`absolute left-0 top-0 bottom-0 w-1 ${app.status === 'completed' ? 'bg-green-500' :
+                    <div className={`absolute left-0 top-0 bottom-0 w-1.5 ${app.status === 'completed' ? 'bg-green-500' :
                         app.status === 'cancelled' ? 'bg-red-500' : 'bg-blue-500'
                       }`}></div>
 
-                    <div className="flex flex-col items-center min-w-[60px] border-r border-slate-700/50 pr-4 pl-2">
-                      <span className="text-xl font-bold text-white tracking-tight">{app.time}</span>
-                      <span className={`text-[9px] uppercase font-bold px-1.5 py-0.5 rounded mt-1 bg-slate-700/50 text-slate-300`}>
+                    <div className="flex flex-col items-center justify-center min-w-[70px] border-r border-slate-700/50 pr-5 pl-2">
+                      <span className="text-2xl font-bold text-white tracking-tight">{app.time}</span>
+                      <span className={`text-[10px] uppercase font-bold px-2 py-0.5 rounded mt-1 bg-slate-700/50 text-slate-300`}>
                         60 min
                       </span>
                     </div>
 
-                    <div className="flex-1 min-w-0">
-                      <h4 className="text-white font-semibold truncate text-base mb-1 group-hover:text-green-400 transition-colors">
+                    <div className="flex-1 min-w-0 flex flex-col justify-center">
+                      <h4 className="text-white font-bold truncate text-lg mb-1.5 group-hover:text-green-400 transition-colors">
                         {app.patientName}
                       </h4>
                       <div className="flex flex-wrap gap-2">
-                        <span className="inline-flex items-center gap-1 text-[10px] bg-slate-700/50 text-slate-300 px-2 py-0.5 rounded-full border border-slate-600/30">
+                        <span className="inline-flex items-center gap-1.5 text-xs bg-slate-700/50 text-slate-300 px-2.5 py-1 rounded-full border border-slate-600/30">
                           {app.specialty === 'Cannabis Medicinal' ? '🌿 Cannabis' : '🩺 Geral'}
                         </span>
-                        <span className={`inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full border border-transparent ${app.status === 'scheduled' ? 'bg-blue-900/30 text-blue-300' :
+                        <span className={`inline-flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-full border border-transparent ${app.status === 'scheduled' ? 'bg-blue-900/30 text-blue-300' :
                             app.status === 'completed' ? 'bg-green-900/30 text-green-300' :
                               'bg-red-900/30 text-red-300'
                           }`}>
@@ -701,10 +701,10 @@ const EduardoScheduling: React.FC<EduardoSchedulingProps> = ({ className = '', p
                         setSelectedAppointment(app)
                         setIsDetailsModalOpen(true)
                       }}
-                      className="self-center p-2 rounded-lg bg-slate-700/50 hover:bg-slate-700 text-slate-400 hover:text-white transition-all opacity-0 group-hover:opacity-100"
+                      className="self-center p-3 rounded-lg bg-slate-700/50 hover:bg-slate-700 text-slate-400 hover:text-white transition-all opacity-0 group-hover:opacity-100 transform hover:scale-110"
                       title="Ver Detalhes"
                     >
-                      <Eye className="w-5 h-5" />
+                      <Eye className="w-6 h-6" />
                     </button>
                   </div>
                 ))
@@ -712,12 +712,12 @@ const EduardoScheduling: React.FC<EduardoSchedulingProps> = ({ className = '', p
             </div>
 
             {/* Footer com Ação Principal */}
-            <div className="p-5 border-t border-slate-700 bg-slate-800">
+            <div className="p-6 border-t border-slate-700 bg-slate-800">
               <button
                 onClick={handleCreateFromDayView}
-                className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white p-3 rounded-xl font-bold shadow-lg shadow-green-900/20 transition-all transform hover:scale-[1.02] active:scale-[0.98]"
+                className="w-full flex items-center justify-center gap-3 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white p-4 rounded-xl font-bold text-lg shadow-lg shadow-green-900/20 transition-all transform hover:scale-[1.01] active:scale-[0.99]"
               >
-                <Plus className="w-5 h-5" />
+                <Plus className="w-6 h-6" />
                 Agendar Nova Consulta
               </button>
             </div>
