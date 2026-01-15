@@ -89,6 +89,12 @@ const Sidebar: React.FC<SidebarProps> = ({
     const adminItems = [
       // OUTROS
       {
+        name: 'Análise de Avaliações',
+        href: '/app/assessment-analytics',
+        icon: BarChart3,
+        section: 'other'
+      },
+      {
         name: 'Fórum Cann Matrix',
         href: '/app/chat',
         icon: MessageCircle,

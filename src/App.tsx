@@ -82,6 +82,7 @@ import EduardoFaveretDashboard from './pages/EduardoFaveretDashboard'
 import ClinicalGovernanceDemo from './pages/ClinicalGovernanceDemo'
 import ClinicalGovernanceAdmin from './pages/ClinicalGovernanceAdmin'
 import InvitePatient from './pages/InvitePatient' // IMPORT AT TOP
+import AssessmentAnalytics from './pages/AssessmentAnalytics'
 
 function App() {
   return (
@@ -206,6 +207,11 @@ function App() {
                         <Route path="admin/clinical-governance" element={
                           <ProtectedRoute requiredRole="admin">
                             <ClinicalGovernanceAdmin />
+                          </ProtectedRoute>
+                        } />
+                        <Route path="assessment-analytics" element={
+                          <ProtectedRoute requiredRole="admin">
+                            <AssessmentAnalytics />
                           </ProtectedRoute>
                         } />
                         <Route path="ai-documents" element={<AIDocumentChat />} />
