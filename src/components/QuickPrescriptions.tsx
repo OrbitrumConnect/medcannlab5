@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import {
   FileText,
   Plus,
@@ -10,8 +10,15 @@ import {
   Droplets,
   Zap,
   CheckCircle,
-  AlertCircle
+  AlertCircle,
+  X,
+  Printer,
+  Save,
+  Trash2,
+  Loader2
 } from 'lucide-react'
+import { supabase } from '../lib/supabase'
+import { useAuth } from '../contexts/AuthContext'
 
 interface PrescriptionTemplate {
   id: string
@@ -34,11 +41,99 @@ interface QuickPrescriptionsProps {
 }
 
 const QuickPrescriptions: React.FC<QuickPrescriptionsProps> = ({ className = '', patientId }) => {
+  const { user } = useAuth() // Hook de auth para pegar ID do profissional
   const [selectedCategory, setSelectedCategory] = useState<string>('all')
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedTemplate, setSelectedTemplate] = useState<PrescriptionTemplate | null>(null)
 
-  // Templates de prescrição mockados
+  // Estado do Modal
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [selectedPatient, setSelectedPatient] = useState(patientId || '')
+
+  // Lista de Pacientes Reais
+  const [patientsList, setPatientsList] = useState<{ id: string, name: string }[]>([])
+  const [saving, setSaving] = useState(false)
+
+  // Estado do Formulário de Prescrição (para edição)
+  const [prescriptionForm, setPrescriptionForm] = useState({
+    medication: '',
+    dosage: '',
+    frequency: '',
+    duration: '',
+    notes: ''
+  })
+
+  // Carregar lista de pacientes ao montar
+  useEffect(() => {
+    loadPatientsList()
+  }, [])
+
+  // Atualizar selectedPatient se a prop mudar
+  useEffect(() => {
+    if (patientId) setSelectedPatient(patientId)
+  }, [patientId])
+
+  const loadPatientsList = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('users')
+        .select('id, name')
+        .eq('type', 'patient')
+        .order('name')
+
+      if (data) {
+        setPatientsList(data)
+      }
+    } catch (err) {
+      console.error("Erro ao carregar lista de pacientes", err)
+    }
+  }
+
+  const handleSavePrescription = async () => {
+    if (!selectedPatient || !prescriptionForm.medication) {
+      alert('Selecione um paciente e preencha a medicação.')
+      return
+    }
+
+    setSaving(true)
+    try {
+      // Tenta salvar na tabela 'prescriptions' (ou fallback para log se nao existir)
+      const { error } = await supabase.from('prescriptions').insert({
+        patient_id: selectedPatient,
+        professional_id: user?.id,
+        medication: prescriptionForm.medication,
+        dosage: prescriptionForm.dosage,
+        frequency: prescriptionForm.frequency,
+        duration: prescriptionForm.duration,
+        notes: prescriptionForm.notes,
+        created_at: new Date().toISOString()
+      })
+
+      if (error) {
+        // Se erro for tabela nao existe, tenta medical_records ou avisa
+        console.error('Erro ao salvar prescrição:', error)
+        throw new Error('Falha ao salvar no banco de dados. Verifique se a tabela prescriptions existe.')
+      }
+
+      alert('Prescrição salva com sucesso!')
+      setIsModalOpen(false)
+      // Limpar form
+      setPrescriptionForm({
+        medication: '',
+        dosage: '',
+        frequency: '',
+        duration: '',
+        notes: ''
+      })
+
+    } catch (err: any) {
+      alert(err.message)
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  // Templates de prescrição mockados (Mantidos para agilidade)
   const prescriptionTemplates: PrescriptionTemplate[] = [
     {
       id: '1',
@@ -98,32 +193,26 @@ const QuickPrescriptions: React.FC<QuickPrescriptionsProps> = ({ className = '',
     },
     {
       id: '5',
-      name: 'Controle de Pressão Arterial',
-      category: 'nefrologia',
-      description: 'Protocolo para controle de pressão arterial em pacientes renais',
-      dosage: 'Conforme prescrição',
-      frequency: 'Conforme prescrição',
-      duration: 'Contínuo',
-      indications: ['Hipertensão', 'Proteinúria'],
-      contraindications: ['Hipotensão'],
-      monitoring: ['Pressão arterial', 'Função renal', 'Eletrólitos'],
-      lastUsed: '2024-01-14',
-      usageCount: 30
-    },
-    {
-      id: '6',
-      name: 'CBD para Ansiedade',
+      name: 'Sintomáticos Gerais',
       category: 'sintomatico',
-      description: 'Protocolo de CBD para controle de ansiedade em pacientes renais',
-      dosage: '5-15mg',
-      frequency: '2x ao dia',
-      duration: '30 dias',
-      indications: ['Ansiedade', 'Estresse', 'Insônia'],
-      contraindications: ['Sedação excessiva'],
-      monitoring: ['Estado mental', 'Sono', 'Ansiedade'],
-      lastUsed: '2024-01-09',
-      usageCount: 18
+      description: 'Prescrição padrão para sintomas leves',
+      dosage: 'Conforme bula',
+      frequency: '6/6 horas',
+      duration: '5 dias',
+      indications: ['Dor leve', 'Febre'],
+      contraindications: ['Alergia a dipirona'],
+      monitoring: [],
+      lastUsed: '2024-01-14',
+      usageCount: 42
     }
+  ]
+
+  const categories = [
+    { id: 'all', label: 'Todos' },
+    { id: 'cannabis', label: 'Cannabis' },
+    { id: 'nefrologia', label: 'Nefrologia' },
+    { id: 'sintomatico', label: 'Sintomático' },
+    { id: 'suporte', label: 'Suporte' }
   ]
 
   const filteredTemplates = prescriptionTemplates.filter(template => {
@@ -133,186 +222,252 @@ const QuickPrescriptions: React.FC<QuickPrescriptionsProps> = ({ className = '',
     return matchesCategory && matchesSearch
   })
 
-  const getCategoryIcon = (category: string) => {
-    switch (category) {
-      case 'cannabis': return <Pill className="w-4 h-4" />
-      case 'nefrologia': return <Droplets className="w-4 h-4" />
-      case 'sintomatico': return <Zap className="w-4 h-4" />
-      case 'suporte': return <CheckCircle className="w-4 h-4" />
-      default: return <FileText className="w-4 h-4" />
+  const loadTemplateIntoForm = (templateId: string) => {
+    const template = prescriptionTemplates.find(t => t.id === templateId)
+    if (template) {
+      setPrescriptionForm({
+        medication: template.name,
+        dosage: template.dosage,
+        frequency: template.frequency,
+        duration: template.duration,
+        notes: template.description
+      })
     }
-  }
-
-  const getCategoryColor = (category: string) => {
-    switch (category) {
-      case 'cannabis': return 'bg-green-600'
-      case 'nefrologia': return 'bg-blue-600'
-      case 'sintomatico': return 'bg-yellow-600'
-      case 'suporte': return 'bg-purple-600'
-      default: return 'bg-gray-600'
-    }
-  }
-
-  const categories = [
-    { key: 'all', label: 'Todos', icon: <FileText className="w-4 h-4" /> },
-    { key: 'cannabis', label: 'Cannabis', icon: <Pill className="w-4 h-4" /> },
-    { key: 'nefrologia', label: 'Nefrologia', icon: <Droplets className="w-4 h-4" /> },
-    { key: 'sintomatico', label: 'Sintomático', icon: <Zap className="w-4 h-4" /> },
-    { key: 'suporte', label: 'Suporte', icon: <CheckCircle className="w-4 h-4" /> }
-  ]
-
-  const handlePrescribe = (template: PrescriptionTemplate) => {
-    // Aqui você implementaria a lógica para gerar a prescrição
-    console.log('Prescrevendo:', template.name)
-    // Por exemplo, abrir um modal de prescrição ou navegar para uma página específica
   }
 
   return (
     <div className={`space-y-6 ${className}`}>
       {/* Header */}
-      <div className="bg-gradient-to-r from-slate-800 to-slate-700 rounded-lg p-6">
+      <div className="bg-gradient-to-r from-blue-900 to-indigo-900 rounded-lg p-6">
         <div className="flex items-center justify-between mb-4">
           <div>
             <h2 className="text-2xl font-bold text-white mb-2 flex items-center space-x-2">
               <FileText className="w-6 h-6" />
               <span>Prescrições Rápidas</span>
             </h2>
-            <p className="text-slate-300">
-              Templates de prescrição para Cannabis Medicinal e Nefrologia
+            <p className="text-blue-200">
+              Gerencie modelos e crie prescrições com agilidade
             </p>
           </div>
-          <button className="flex items-center space-x-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md transition-colors">
+          <button
+            onClick={() => setIsModalOpen(true)}
+            className="flex items-center space-x-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md transition-colors shadow-lg"
+          >
             <Plus className="w-4 h-4" />
             <span>Nova Prescrição</span>
           </button>
         </div>
 
-        {/* Filtros e busca */}
-        <div className="flex flex-col sm:flex-row gap-4">
-          <div className="flex-1">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-4 h-4" />
-              <input
-                type="text"
-                placeholder="Buscar prescrições..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full bg-slate-700 text-white px-10 py-2 rounded-md border border-slate-600 focus:border-green-500 focus:outline-none"
-              />
-            </div>
-          </div>
-          <div className="flex space-x-2">
-            {categories.map((category) => (
-              <button
-                key={category.key}
-                onClick={() => setSelectedCategory(category.key)}
-                className={`flex items-center space-x-1 px-3 py-2 rounded-md text-sm transition-colors ${selectedCategory === category.key
-                    ? 'bg-green-600 hover:bg-green-700 text-white'
-                    : 'text-slate-300 border border-slate-600 hover:bg-slate-700'
-                  }`}
-              >
-                {category.icon}
-                <span>{category.label}</span>
-              </button>
-            ))}
-          </div>
+        {/* Categories */}
+        <div className="flex space-x-2 overflow-x-auto pb-2 custom-scrollbar">
+          {categories.map((category) => (
+            <button
+              key={category.id}
+              onClick={() => setSelectedCategory(category.id)}
+              className={`px-4 py-2 rounded-md whitespace-nowrap transition-colors ${selectedCategory === category.id
+                  ? 'bg-white/20 text-white'
+                  : 'bg-transparent text-blue-200 hover:bg-white/10'
+                }`}
+            >
+              {category.label}
+            </button>
+          ))}
         </div>
       </div>
 
-      {/* Grid de templates */}
+      {/* Search and Filter */}
+      <div className="flex space-x-4">
+        <div className="flex-1 relative">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-4 h-4" />
+          <input
+            type="text"
+            placeholder="Buscar modelos de prescrição..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full bg-slate-800 text-white px-10 py-3 rounded-lg border border-slate-700 focus:border-blue-500 focus:outline-none"
+          />
+        </div>
+      </div>
+
+      {/* Templates Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {filteredTemplates.map((template) => (
-          <div key={template.id} className="bg-slate-800 border border-slate-700 rounded-lg p-6 hover:border-slate-600 transition-colors">
-            <div className="flex items-start justify-between mb-4">
-              <div className="flex-1">
-                <h3 className="text-white text-lg mb-2">
-                  {template.name}
-                </h3>
-                <p className="text-slate-400 text-sm">
-                  {template.description}
-                </p>
+          <div
+            key={template.id}
+            className="bg-slate-800 border border-slate-700 rounded-lg p-6 hover:border-blue-500 transition-colors group cursor-pointer"
+            onClick={() => {
+              loadTemplateIntoForm(template.id);
+              setIsModalOpen(true);
+            }}
+          >
+            <div className="flex justify-between items-start mb-4">
+              <div className={`p-2 rounded-lg ${template.category === 'cannabis' ? 'bg-green-500/20 text-green-400' :
+                  template.category === 'nefrologia' ? 'bg-orange-500/20 text-orange-400' :
+                    'bg-blue-500/20 text-blue-400'
+                }`}>
+                {template.category === 'cannabis' ? <Droplets className="w-5 h-5" /> : <Pill className="w-5 h-5" />}
               </div>
-              <span className={`flex items-center space-x-1 px-2 py-1 rounded text-sm ${getCategoryColor(template.category)} text-white`}>
-                {getCategoryIcon(template.category)}
+              <span className="text-xs text-slate-500 flex items-center">
+                <Clock className="w-3 h-3 mr-1" />
+                {template.lastUsed}
               </span>
             </div>
-            <div className="space-y-4">
-              {/* Informações básicas */}
-              <div className="grid grid-cols-2 gap-2 text-sm">
-                <div className="flex items-center space-x-2 text-slate-300">
-                  <Pill className="w-3 h-3" />
-                  <span>{template.dosage}</span>
-                </div>
-                <div className="flex items-center space-x-2 text-slate-300">
-                  <Clock className="w-3 h-3" />
-                  <span>{template.frequency}</span>
-                </div>
-                <div className="flex items-center space-x-2 text-slate-300">
-                  <FileText className="w-3 h-3" />
-                  <span>{template.duration}</span>
-                </div>
-                <div className="flex items-center space-x-2 text-slate-300">
-                  <User className="w-3 h-3" />
-                  <span>{template.usageCount}x usado</span>
-                </div>
-              </div>
 
-              {/* Indicações */}
-              <div>
-                <h4 className="text-slate-300 text-sm font-medium mb-2">Indicações:</h4>
-                <div className="flex flex-wrap gap-1">
-                  {template.indications.slice(0, 3).map((indication) => (
-                    <span key={indication} className="px-2 py-1 text-xs text-green-400 border border-green-600 rounded">
-                      {indication}
-                    </span>
-                  ))}
-                  {template.indications.length > 3 && (
-                    <span className="px-2 py-1 text-xs text-slate-400 border border-slate-600 rounded">
-                      +{template.indications.length - 3} mais
-                    </span>
-                  )}
-                </div>
-              </div>
+            <h3 className="text-lg font-bold text-white mb-2 group-hover:text-blue-400 transition-colors">
+              {template.name}
+            </h3>
+            <p className="text-slate-400 text-sm mb-4 line-clamp-2">
+              {template.description}
+            </p>
 
-              {/* Ações */}
-              <div className="flex space-x-2 pt-2">
-                <button
-                  onClick={() => handlePrescribe(template)}
-                  className="flex-1 flex items-center justify-center space-x-1 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md transition-colors"
-                >
-                  <FileText className="w-4 h-4" />
-                  <span>Prescrever</span>
-                </button>
-                <button className="flex items-center justify-center px-3 py-2 text-slate-300 border border-slate-600 rounded-md hover:bg-slate-700 transition-colors">
-                  <FileText className="w-4 h-4" />
-                </button>
+            <div className="flex items-center justify-between pt-4 border-t border-slate-700">
+              <div className="text-sm text-slate-400">
+                <span className="text-white font-medium">{template.dosage}</span>
+                <span className="mx-2">•</span>
+                <span>{template.frequency}</span>
               </div>
-
-              {/* Último uso */}
-              <div className="text-xs text-slate-500 pt-2 border-t border-slate-700">
-                Último uso: {new Date(template.lastUsed).toLocaleDateString('pt-BR')}
+              <div className="text-xs text-slate-500 flex items-center" title="Usado recentemente">
+                <User className="w-3 h-3 mr-1" />
+                {template.usageCount}x
               </div>
             </div>
           </div>
         ))}
       </div>
 
-      {/* Estatísticas */}
-      <div className="bg-slate-800 border border-slate-700 rounded-lg p-4">
-        <div className="flex items-center justify-between text-sm text-slate-400">
-          <div className="flex items-center space-x-4">
-            <span>📋 {filteredTemplates.length} templates disponíveis</span>
-            <span>💊 Cobertura: Cannabis, Nefrologia, Sintomático</span>
-          </div>
-          <div className="flex items-center space-x-2">
-            <span>Atualização automática</span>
-            <span className="px-2 py-1 text-xs text-green-400 border border-green-600 rounded">
-              <CheckCircle className="w-3 h-3 inline mr-1" />
-              Ativo
-            </span>
+      {/* MODAL DE NOVA PRESCRIÇÃO */}
+      {isModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 text-left">
+          <div className="bg-slate-800 border border-slate-700 rounded-xl w-full max-w-2xl shadow-2xl animate-in fade-in zoom-in duration-200 flex flex-col max-h-[90vh]">
+            <div className="flex items-center justify-between p-6 border-b border-slate-700 shrink-0">
+              <h3 className="text-xl font-bold text-white flex items-center gap-2">
+                <FileText className="w-5 h-5 text-green-500" />
+                Nova Prescrição
+              </h3>
+              <button
+                onClick={() => setIsModalOpen(false)}
+                className="text-slate-400 hover:text-white transition-colors"
+              >
+                <X className="w-5 h-5" />
+                <span className="sr-only">Fechar</span>
+              </button>
+            </div>
+
+            <div className="p-6 space-y-5 overflow-y-auto custom-scrollbar">
+              {/* Seleção de Paciente */}
+              <div>
+                <label className="block text-sm font-medium text-slate-300 mb-1">Paciente</label>
+                <div className="flex gap-2">
+                  <select
+                    className="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-blue-500"
+                    value={selectedPatient}
+                    onChange={(e) => setSelectedPatient(e.target.value)}
+                  >
+                    <option value="">Selecione um paciente</option>
+                    {patientsList.map(p => (
+                      <option key={p.id} value={p.id}>{p.name}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              {/* Seleção de Modelo (Template) */}
+              <div>
+                <label className="block text-sm font-medium text-slate-300 mb-1">Carregar Modelo (Opcional)</label>
+                <select
+                  className="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-blue-500"
+                  onChange={(e) => loadTemplateIntoForm(e.target.value)}
+                  defaultValue=""
+                >
+                  <option value="">Selecione um modelo para preencher...</option>
+                  {prescriptionTemplates.map(t => (
+                    <option key={t.id} value={t.id}>{t.name} ({t.category})</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="border-t border-slate-700 pt-4 mt-2">
+                <h4 className="text-white font-medium mb-4 flex items-center gap-2">
+                  <Pill className="w-4 h-4 text-blue-400" /> Detalhes da Medicação
+                </h4>
+
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-slate-300 mb-1">Medicamento / Princípio Ativo</label>
+                    <input
+                      type="text"
+                      className="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-blue-500"
+                      placeholder="Ex: Canabidiol (CBD) Isolate"
+                      value={prescriptionForm.medication}
+                      onChange={(e) => setPrescriptionForm({ ...prescriptionForm, medication: e.target.value })}
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <div>
+                      <label className="block text-sm font-medium text-slate-300 mb-1">Dosagem</label>
+                      <input
+                        type="text"
+                        className="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-blue-500"
+                        placeholder="Ex: 50mg/ml"
+                        value={prescriptionForm.dosage}
+                        onChange={(e) => setPrescriptionForm({ ...prescriptionForm, dosage: e.target.value })}
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-slate-300 mb-1">Frequência/Posologia</label>
+                      <input
+                        type="text"
+                        className="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-blue-500"
+                        placeholder="Ex: 10 gotas de 12/12h"
+                        value={prescriptionForm.frequency}
+                        onChange={(e) => setPrescriptionForm({ ...prescriptionForm, frequency: e.target.value })}
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-slate-300 mb-1">Duração do Tratamento</label>
+                    <input
+                      type="text"
+                      className="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-blue-500"
+                      placeholder="Ex: 30 dias ou Uso Contínuo"
+                      value={prescriptionForm.duration}
+                      onChange={(e) => setPrescriptionForm({ ...prescriptionForm, duration: e.target.value })}
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-slate-300 mb-1">Instruções / Observações</label>
+                    <textarea
+                      className="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-blue-500 min-h-[80px] resize-none"
+                      placeholder="Instruções especiais de uso..."
+                      value={prescriptionForm.notes}
+                      onChange={(e) => setPrescriptionForm({ ...prescriptionForm, notes: e.target.value })}
+                    ></textarea>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="p-6 border-t border-slate-700 flex justify-end gap-3 shrink-0 bg-slate-800/50">
+              <button
+                onClick={() => setIsModalOpen(false)}
+                className="px-6 py-2.5 text-slate-300 hover:text-white hover:bg-slate-700 rounded-lg transition-colors font-medium border border-transparent hover:border-slate-600"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handleSavePrescription}
+                disabled={saving}
+                className="px-6 py-2.5 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium shadow-lg shadow-green-900/20 transition-all hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+              >
+                {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <><Save className="w-4 h-4" /> Salvar Prescrição</>}
+              </button>
+            </div>
           </div>
         </div>
-      </div>
+      )}
     </div>
   )
 }

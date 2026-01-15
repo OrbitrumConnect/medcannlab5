@@ -102,30 +102,30 @@ const RenalFunctionModule: React.FC<RenalFunctionModuleProps> = ({ patientId, pa
     };
 
     const getStageColor = (stage: string) => {
-        if (['G1', 'G2'].includes(stage)) return 'bg-green-100 text-green-800 border-green-200';
-        if (['G3a', 'G3b'].includes(stage)) return 'bg-yellow-100 text-yellow-800 border-yellow-200';
-        return 'bg-red-100 text-red-800 border-red-200';
+        if (['G1', 'G2'].includes(stage)) return 'bg-green-900/40 text-green-300 border-green-800';
+        if (['G3a', 'G3b'].includes(stage)) return 'bg-yellow-900/40 text-yellow-300 border-yellow-800';
+        return 'bg-red-900/40 text-red-300 border-red-800';
     };
 
     if (!patientId) {
         return (
-            <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-12 text-center">
-                <Activity className="w-16 h-16 text-slate-300 mx-auto mb-4" />
-                <h3 className="text-xl font-medium text-slate-700">Módulo de Função Renal</h3>
-                <p className="text-slate-500 mt-2">Selecione um paciente na lista para visualizar o histórico de exames e calcular a TFG.</p>
+            <div className="bg-slate-800 rounded-xl shadow-lg border border-slate-700 p-12 text-center">
+                <Activity className="w-16 h-16 text-slate-600 mx-auto mb-4" />
+                <h3 className="text-xl font-medium text-slate-300">Módulo de Função Renal</h3>
+                <p className="text-slate-400 mt-2">Selecione um paciente na lista para visualizar o histórico de exames e calcular a TFG.</p>
             </div>
         );
     }
 
     return (
-        <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+        <div className="bg-slate-800 rounded-xl shadow-lg border border-slate-700 overflow-hidden">
             {/* Header */}
-            <div className="p-4 border-b border-slate-100 bg-slate-50 flex justify-between items-center">
-                <h3 className="font-bold text-slate-800 flex items-center gap-2">
-                    <Activity className="w-5 h-5 text-indigo-600" />
+            <div className="p-4 border-b border-slate-700 bg-slate-900/50 flex justify-between items-center">
+                <h3 className="font-bold text-white flex items-center gap-2">
+                    <Activity className="w-5 h-5 text-indigo-400" />
                     Módulo de Função Renal
                 </h3>
-                <span className="text-xs text-slate-500 bg-white px-2 py-1 rounded border">
+                <span className="text-xs text-slate-400 bg-slate-800 px-2 py-1 rounded border border-slate-600">
                     Protocolo CKD-EPI 2021
                 </span>
             </div>
@@ -133,58 +133,58 @@ const RenalFunctionModule: React.FC<RenalFunctionModuleProps> = ({ patientId, pa
             <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-8">
                 {/* Left Column: Input */}
                 <div className="space-y-4">
-                    <h4 className="font-medium text-slate-700 flex items-center gap-2">
+                    <h4 className="font-medium text-slate-300 flex items-center gap-2">
                         <TrendingUp className="w-4 h-4" /> Novo Registro
                     </h4>
 
                     <div className="grid grid-cols-2 gap-4">
                         <div>
-                            <label className="block text-xs font-medium text-slate-500 mb-1">Creatinina (mg/dL)</label>
+                            <label className="block text-xs font-medium text-slate-400 mb-1">Creatinina (mg/dL)</label>
                             <input
                                 type="number"
                                 step="0.01"
                                 value={creatinine}
                                 onChange={(e) => setCreatinine(e.target.value)}
-                                className="w-full rounded-md border-slate-200 text-sm focus:ring-indigo-500 focus:border-indigo-500"
+                                className="w-full bg-slate-700 rounded-md border-slate-600 text-sm text-white focus:ring-indigo-500 focus:border-indigo-500 placeholder-slate-500"
                                 placeholder="Ex: 0.9"
                             />
                         </div>
                         <div>
-                            <label className="block text-xs font-medium text-slate-500 mb-1">Ureia (mg/dL)</label>
+                            <label className="block text-xs font-medium text-slate-400 mb-1">Ureia (mg/dL)</label>
                             <input
                                 type="number"
                                 value={urea}
                                 onChange={(e) => setUrea(e.target.value)}
-                                className="w-full rounded-md border-slate-200 text-sm focus:ring-indigo-500 focus:border-indigo-500"
+                                className="w-full bg-slate-700 rounded-md border-slate-600 text-sm text-white focus:ring-indigo-500 focus:border-indigo-500 placeholder-slate-500"
                                 placeholder="Ex: 35"
                             />
                         </div>
                     </div>
 
                     <div>
-                        <label className="block text-xs font-medium text-slate-500 mb-1">Data do Exame</label>
+                        <label className="block text-xs font-medium text-slate-400 mb-1">Data do Exame</label>
                         <input
                             type="date"
                             value={examDate}
                             onChange={(e) => setExamDate(e.target.value)}
-                            className="w-full rounded-md border-slate-200 text-sm"
+                            className="w-full bg-slate-700 rounded-md border-slate-600 text-sm text-white focus:ring-indigo-500 focus:border-indigo-500"
                         />
                     </div>
 
                     {/* Calculator Result Preview */}
                     {previewEgfr && (
-                        <div className={`p-4 rounded-lg border flex items-center justify-between animate-in fade-in ${previewEgfr >= 60 ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'
+                        <div className={`p-4 rounded-lg border flex items-center justify-between animate-in fade-in ${previewEgfr >= 60 ? 'bg-green-900/20 border-green-800' : 'bg-red-900/20 border-red-800'
                             }`}>
                             <div>
-                                <p className="text-xs font-medium text-slate-500 uppercase tracking-wide">eTFG Estimada</p>
-                                <div className="text-2xl font-bold text-slate-800">
-                                    {previewEgfr} <span className="text-sm font-normal text-slate-500">mL/min/1.73m²</span>
+                                <p className="text-xs font-medium text-slate-400 uppercase tracking-wide">eTFG Estimada</p>
+                                <div className="text-2xl font-bold text-white">
+                                    {previewEgfr} <span className="text-sm font-normal text-slate-400">mL/min/1.73m²</span>
                                 </div>
                             </div>
                             <div className="text-right">
                                 <span className={`inline-block px-3 py-1 rounded-full text-xs font-bold ${classifyStage(previewEgfr).startsWith('G3') || classifyStage(previewEgfr).startsWith('G4')
-                                    ? 'bg-red-100 text-red-700'
-                                    : 'bg-green-100 text-green-700'
+                                    ? 'bg-red-900/50 text-red-300'
+                                    : 'bg-green-900/50 text-green-300'
                                     }`}>
                                     Estágio {classifyStage(previewEgfr)}
                                 </span>
@@ -202,24 +202,24 @@ const RenalFunctionModule: React.FC<RenalFunctionModuleProps> = ({ patientId, pa
                 </div>
 
                 {/* Right Column: History */}
-                <div className="border-l border-slate-100 pl-8 space-y-4">
-                    <h4 className="font-medium text-slate-700 flex items-center gap-2">
+                <div className="border-l border-slate-700 pl-8 space-y-4">
+                    <h4 className="font-medium text-slate-300 flex items-center gap-2">
                         <History className="w-4 h-4" /> Histórico Renal
                     </h4>
 
                     {exams.length === 0 ? (
-                        <div className="text-center py-8 text-slate-400">
-                            <Info className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                        <div className="text-center py-8 text-slate-500">
+                            <Info className="w-8 h-8 mx-auto mb-2 opacity-30" />
                             <p className="text-sm">Nenhum exame registrado</p>
                         </div>
                     ) : (
-                        <div className="space-y-3 max-h-[300px] overflow-y-auto pr-2">
+                        <div className="space-y-3 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
                             {exams.map((exam) => (
-                                <div key={exam.id} className="flex items-center justify-between p-3 rounded-lg border border-slate-100 hover:bg-slate-50 transition-colors">
+                                <div key={exam.id} className="flex items-center justify-between p-3 rounded-lg border border-slate-700 bg-slate-800/50 hover:bg-slate-700 transition-colors">
                                     <div>
-                                        <p className="text-xs text-slate-500">{new Date(exam.exam_date).toLocaleDateString('pt-BR')}</p>
-                                        <p className="text-sm font-medium text-slate-800">
-                                            Cr: {exam.creatinine} <span className="text-slate-400">|</span> eTFG: {exam.egfr}
+                                        <p className="text-xs text-slate-400">{new Date(exam.exam_date).toLocaleDateString('pt-BR')}</p>
+                                        <p className="text-sm font-medium text-slate-200">
+                                            Cr: {exam.creatinine} <span className="text-slate-600">|</span> eTFG: {exam.egfr}
                                         </p>
                                     </div>
                                     <span className={`text-xs px-2 py-1 rounded font-medium border ${getStageColor(exam.drc_stage)}`}>
