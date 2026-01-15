@@ -34,14 +34,19 @@ serve(async (req) => {
         // const { data: { user }, error: authError } = await supabaseClient.auth.getUser(token)
 
         // 4. Extrair Dados da Requisição
-        const { message, patientData, assessmentPhase } = await req.json()
+        const { message, patientData, assessmentPhase, nextQuestionHint } = await req.json()
 
         if (!message) throw new Error('Mensagem não fornecida.')
 
         // Instrução dinâmica de fase (controle de fluxo)
-        const phaseInstruction = assessmentPhase
+        // Instrução dinâmica de fase (controle de fluxo)
+        let phaseInstruction = assessmentPhase
             ? `\n\n🚨 FASE ATUAL DO PROTOCOLO (ESTADO ATIVO): "${assessmentPhase}".\nATENÇÃO: Você DEVE conduzir o diálogo focado EXCLUSIVAMENTE nesta fase. Não pule para a próxima até que esta esteja concluída.`
             : ''
+
+        if (nextQuestionHint) {
+            phaseInstruction += `\n\n👉 PRÓXIMA PERGUNTA SUGERIDA PELO PROTOCOLO: "${nextQuestionHint}". Use esta pergunta para manter o fluxo correto.`
+        }
 
         // 5. Engenharia de Prompt Clínica (Nôa Master - Protocolo AEC v4)
         const systemPrompt = `Você é Nôa Esperança, a IA Residente da MedCannLab 3.0.

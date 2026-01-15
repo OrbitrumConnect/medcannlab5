@@ -582,6 +582,10 @@ REGRAS DE CONDUTA:
       }
       this.activeAssessments.set(assessmentKey, assessment)
 
+      // INICIAR FLUXO AEC MASTER (ClinicalAssessmentFlow)
+      clinicalAssessmentFlow.startAssessment(userId)
+      console.log('🚀 Fluxo AEC iniciado para:', userId)
+
       // Sincronizar com platformFunctions para que ele saiba da avaliação
       this.platformFunctions.updateAssessmentState(userId, assessment)
 
@@ -1336,17 +1340,38 @@ Gere apenas a próxima pergunta sobre hábitos de vida.`
 
       // Obter fase do ClinicalAssessmentFlow (AEC 001) para controle de estado
       let currentPhase = undefined
+      let nextQuestionHint = undefined
+
       if (intent === 'CLÍNICA' && platformData?.user?.id) {
-        const flowState = clinicalAssessmentFlow.getState(platformData.user.id)
+        let flowState = clinicalAssessmentFlow.getState(platformData.user.id)
+
+        // Se existe fluxo ativo, processar a resposta do usuário para avançar
         if (flowState) {
-          console.log(`📡 Sincronizando Fase AEC: ${flowState.phase}`)
-          currentPhase = flowState.phase
+          try {
+            // Só processa se não for o comando de iniciar (que já foi tratado no processAssessment)
+            const isStartCommand = userMessage.toLowerCase().includes('iniciar') || userMessage.toLowerCase().includes('avaliação')
+
+            if (!isStartCommand) {
+              const stepResult = clinicalAssessmentFlow.processResponse(platformData.user.id, userMessage)
+              console.log(`✅ Fluxo AEC avançou para: ${stepResult.phase}`)
+              nextQuestionHint = stepResult.nextQuestion
+            }
+
+            // Recarrega estado atualizado
+            flowState = clinicalAssessmentFlow.getState(platformData.user.id)
+            if (flowState) {
+              currentPhase = flowState.phase
+            }
+          } catch (e) {
+            console.warn('Erro ao processar fluxo AEC:', e)
+          }
         }
       }
 
       const payload = {
         message: userMessage,
         assessmentPhase: currentPhase,
+        nextQuestionHint,
         patientData: {
           ...platformData,
           intent,
