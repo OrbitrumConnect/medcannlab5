@@ -8,7 +8,7 @@ SELECT
     left(user_message, 50) as user_msg_preview,
     left(ai_response, 50) as ai_response_preview,
     intent,
-    model,
+    metadata->>'system' as ai_system,
     metadata->>'simbologia' as tipo_escuta
 FROM ai_chat_interactions
 ORDER BY created_at DESC

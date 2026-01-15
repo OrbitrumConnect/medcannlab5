@@ -105,9 +105,9 @@ ${JSON.stringify(patientData, null, 2)}`
                 user_message: message,
                 ai_response: aiResponse,
                 intent: currentIntent,
-                model: 'gpt-4o',
                 metadata: {
                     system: "TradeVision Core V2",
+                    model: 'gpt-4o',
                     audited: true,
                     simbologia: currentIntent === 'CLÍNICA' ? '🔴 Escuta Clínica' : (currentIntent === 'ADMINISTRATIVA' ? '🔵 Escuta Institucional' : '🟢 Escuta Técnica')
                 }
