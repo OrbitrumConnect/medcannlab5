@@ -25,16 +25,26 @@ interface ClinicalReportsViewerProps {
     professionalId?: string
     limit?: number
     title?: string
+    onContactPatient?: (patientId: string) => void
 }
 
 export default function ClinicalReportsViewer({
     professionalId,
     limit = 50,
-    title = "📋 Relatórios Clínicos"
+    title = "📋 Relatórios Clínicos",
+    onContactPatient
 }: ClinicalReportsViewerProps) {
     const [reports, setReports] = useState<ClinicalReport[]>([])
     const [selectedReport, setSelectedReport] = useState<ClinicalReport | null>(null)
     const [loading, setLoading] = useState(true)
+
+    // Helper para detectar score crítico
+    const isCritical = (content: any) => {
+        if (!content?.scores) return false
+        // Se qualquer score for menor que 50, considera crítico
+        return Object.values(content.scores).some((val: any) => typeof val === 'number' && val < 50)
+    }
+
 
     useEffect(() => {
         loadData()
@@ -80,6 +90,8 @@ export default function ClinicalReportsViewer({
     }
 
     if (selectedReport) {
+        const critical = isCritical(selectedReport.content)
+
         return (
             <div className="rounded-2xl p-6 animate-in fade-in slide-in-from-bottom-4 duration-300" style={surfaceStyle}>
                 <div className="flex justify-between items-center mb-6">
@@ -90,11 +102,25 @@ export default function ClinicalReportsViewer({
                     >
                         ← Voltar para lista
                     </button>
-                    <div className="text-xs px-3 py-1 rounded-full" style={{
-                        background: 'rgba(255,255,255,0.05)',
-                        color: colors.text.tertiary
-                    }}>
-                        ID: {selectedReport.id.substring(0, 8)}...
+
+                    <div className="flex items-center gap-3">
+                        {onContactPatient && (
+                            <button
+                                onClick={() => onContactPatient(selectedReport.patient_id)}
+                                className={`px-4 py-2 rounded-lg font-bold text-sm flex items-center gap-2 transition-all ${critical
+                                        ? 'bg-red-500/20 text-red-400 hover:bg-red-500/30 border border-red-500/50 animate-pulse'
+                                        : 'bg-blue-500/20 text-blue-400 hover:bg-blue-500/30'
+                                    }`}
+                            >
+                                {critical ? '🚨 ALERTA: CHAMAR PACIENTE' : '💬 Iniciar Chat'}
+                            </button>
+                        )}
+                        <div className="text-xs px-3 py-1 rounded-full" style={{
+                            background: 'rgba(255,255,255,0.05)',
+                            color: colors.text.tertiary
+                        }}>
+                            ID: {selectedReport.id.substring(0, 8)}...
+                        </div>
                     </div>
                 </div>
 

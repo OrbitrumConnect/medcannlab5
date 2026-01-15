@@ -290,6 +290,10 @@ const IntegratedWorkstation: React.FC<IntegratedWorkstationProps> = ({ initialTa
                         <ClinicalReportsViewer
                             professionalId={user?.type === 'admin' ? undefined : user?.id}
                             title={user?.type === 'admin' ? "📊 Visão Global de Relatórios" : "📊 Meus Relatórios Clínicos"}
+                            onContactPatient={(patientId) => {
+                                setSelectedPatientId(patientId)
+                                setActiveTab('chat')
+                            }}
                         />
                     </div>
                 )
