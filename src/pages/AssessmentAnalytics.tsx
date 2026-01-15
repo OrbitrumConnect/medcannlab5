@@ -34,10 +34,21 @@ interface SavedDocument {
     created_at: string
 }
 
+interface ScoreMetric {
+    date: string
+    total_assessments: number
+    completed_assessments: number
+    stuck_assessments: number
+    avg_score: number
+    total_score: number
+    completion_rate: number
+}
+
 export default function AssessmentAnalytics() {
     const { user } = useAuth()
     const [reports, setReports] = useState<ClinicalReport[]>([])
     const [documents, setDocuments] = useState<SavedDocument[]>([])
+    const [scores, setScores] = useState<ScoreMetric[]>([])
     const [selectedReport, setSelectedReport] = useState<ClinicalReport | null>(null)
     const [selectedDocument, setSelectedDocument] = useState<SavedDocument | null>(null)
     const [loading, setLoading] = useState(true)
@@ -71,6 +82,17 @@ export default function AssessmentAnalytics() {
 
             if (!docsError && docsData) {
                 setDocuments(docsData)
+            }
+
+            // Carregar métricas de qualidade/scores
+            const { data: scoresData, error: scoresError } = await supabase
+                .from('v_ai_quality_metrics')
+                .select('*')
+                .order('date', { ascending: false })
+                .limit(30) // Últimos 30 dias
+
+            if (!scoresError && scoresData) {
+                setScores(scoresData.reverse()) // Inverter para ordem crescente no gráfico
             }
         } catch (error) {
             console.error('Erro ao carregar dados:', error)
@@ -158,6 +180,106 @@ export default function AssessmentAnalytics() {
                             <div className="text-xs mt-2" style={{ color: colors.text.tertiary }}>
                                 is_shared_with_patient: true
                             </div>
+                        </div>
+                    </div>
+
+                    {/* Score System & Growth Chart */}
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
+                        {/* Card de Score Total */}
+                        <div className="rounded-xl p-6" style={cardStyle}>
+                            <div className="text-sm font-semibold mb-2" style={{ color: colors.primary }}>
+                                🎯 Score Total da IA
+                            </div>
+                            <div className="text-4xl font-bold" style={{
+                                color: scores.reduce((sum, s) => sum + (s.total_score || 0), 0) >= 0 ? colors.primary : '#ff6b6b'
+                            }}>
+                                {scores.reduce((sum, s) => sum + (s.total_score || 0), 0).toFixed(1)}
+                            </div>
+                            <div className="text-xs mt-2" style={{ color: colors.text.tertiary }}>
+                                +1.5 completo | -1.0 travou
+                            </div>
+                            <div className="mt-4 space-y-1">
+                                <div className="flex justify-between text-xs" style={{ color: colors.text.secondary }}>
+                                    <span>✅ Completas:</span>
+                                    <span className="font-semibold">{scores.reduce((sum, s) => sum + (s.completed_assessments || 0), 0)}</span>
+                                </div>
+                                <div className="flex justify-between text-xs" style={{ color: colors.text.secondary }}>
+                                    <span>❌ Travadas:</span>
+                                    <span className="font-semibold">{scores.reduce((sum, s) => sum + (s.stuck_assessments || 0), 0)}</span>
+                                </div>
+                                <div className="flex justify-between text-xs" style={{ color: colors.text.secondary }}>
+                                    <span>📊 Taxa de Sucesso:</span>
+                                    <span className="font-semibold">
+                                        {scores.length > 0
+                                            ? (scores.reduce((sum, s) => sum + (s.completion_rate || 0), 0) / scores.length).toFixed(1)
+                                            : 0}%
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Gráfico de Crescimento */}
+                        <div className="lg:col-span-2 rounded-xl p-6" style={cardStyle}>
+                            <div className="text-sm font-semibold mb-4" style={{ color: colors.primary }}>
+                                📈 Curva de Crescimento (Últimos 30 dias)
+                            </div>
+                            {scores.length > 0 ? (
+                                <div className="relative h-48">
+                                    <svg width="100%" height="100%" className="overflow-visible">
+                                        {/* Grid lines */}
+                                        {[0, 25, 50, 75, 100].map((y) => (
+                                            <line
+                                                key={y}
+                                                x1="0"
+                                                y1={`${y}%`}
+                                                x2="100%"
+                                                y2={`${y}%`}
+                                                stroke="rgba(0, 193, 106, 0.1)"
+                                                strokeWidth="1"
+                                            />
+                                        ))}
+
+                                        {/* Linha de Avaliações Completas */}
+                                        <polyline
+                                            fill="none"
+                                            stroke={colors.primary}
+                                            strokeWidth="3"
+                                            points={scores.map((s, i) => {
+                                                const x = (i / (scores.length - 1)) * 100
+                                                const maxValue = Math.max(...scores.map(s => s.completed_assessments || 0))
+                                                const y = 100 - ((s.completed_assessments || 0) / (maxValue || 1)) * 100
+                                                return `${x},${y}`
+                                            }).join(' ')}
+                                        />
+
+                                        {/* Pontos */}
+                                        {scores.map((s, i) => {
+                                            const x = (i / (scores.length - 1)) * 100
+                                            const maxValue = Math.max(...scores.map(s => s.completed_assessments || 0))
+                                            const y = 100 - ((s.completed_assessments || 0) / (maxValue || 1)) * 100
+                                            return (
+                                                <circle
+                                                    key={i}
+                                                    cx={`${x}%`}
+                                                    cy={`${y}%`}
+                                                    r="4"
+                                                    fill={colors.primary}
+                                                />
+                                            )
+                                        })}
+                                    </svg>
+                                    <div className="flex justify-between mt-2 text-xs" style={{ color: colors.text.tertiary }}>
+                                        <span>{scores[0]?.date ? new Date(scores[0].date).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' }) : ''}</span>
+                                        <span>Hoje</span>
+                                    </div>
+                                </div>
+                            ) : (
+                                <div className="h-48 flex items-center justify-center" style={{ color: colors.text.tertiary }}>
+                                    Nenhum dado disponível ainda.
+                                    <br />
+                                    <span className="text-xs mt-2">Execute o script CREATE_AI_SCORE_SYSTEM.sql</span>
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>

@@ -696,6 +696,63 @@ export class ClinicalAssessmentFlow {
   }
 
   /**
+   * Registra score negativo quando avaliação trava (para monitoramento)
+   */
+  async registerStuckScore(userId: string, errorMessage?: string): Promise<void> {
+    const state = this.states.get(userId)
+    if (!state) return
+
+    try {
+      const { supabase } = await import('./supabase')
+
+      const elapsedSeconds = Math.floor((new Date().getTime() - state.startedAt.getTime()) / 1000)
+
+      await supabase.from('ai_assessment_scores').insert({
+        user_id: userId,
+        completed: false,
+        phases_completed: this.getPhaseNumber(state.phase),
+        total_phases: 10,
+        score: -1.0, // Score negativo quando trava
+        stuck_at_phase: state.phase,
+        completion_time_seconds: elapsedSeconds,
+        error_message: errorMessage || 'Avaliação travou sem erro específico',
+        metadata: {
+          last_question_index: state.currentQuestionIndex,
+          data_collected: state.data
+        }
+      })
+
+      console.log(`❌ Score negativo registrado: travou em ${state.phase}`)
+    } catch (error) {
+      console.error('Erro ao registrar score negativo:', error)
+    }
+  }
+
+  /**
+   * Converte fase para número (para tracking)
+   */
+  private getPhaseNumber(phase: AssessmentPhase): number {
+    const phaseMap: Record<AssessmentPhase, number> = {
+      'INITIAL_GREETING': 1,
+      'IDENTIFICATION': 1,
+      'COMPLAINT_LIST': 2,
+      'MAIN_COMPLAINT': 3,
+      'COMPLAINT_DETAILS': 4,
+      'MEDICAL_HISTORY': 5,
+      'FAMILY_HISTORY_MOTHER': 6,
+      'FAMILY_HISTORY_FATHER': 7,
+      'LIFESTYLE_HABITS': 8,
+      'OBJECTIVE_QUESTIONS': 9,
+      'CONSENSUS_REVIEW': 10,
+      'CONSENSUS_REPORT': 10,
+      'CONSENSUS_CONFIRMATION': 10,
+      'FINAL_RECOMMENDATION': 10,
+      'COMPLETED': 10
+    }
+    return phaseMap[phase] || 0
+  }
+
+  /**
    * Reseta uma avaliação
    */
   resetAssessment(userId: string): void {
