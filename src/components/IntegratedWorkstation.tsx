@@ -28,6 +28,7 @@ import ProfessionalChatSystem from './ProfessionalChatSystem'
 import VideoCall from './VideoCall'
 import ClinicalGovernanceAdmin from '../pages/ClinicalGovernanceAdmin'
 import EduardoScheduling from './EduardoScheduling'
+import ClinicalReportsViewer from './analytics/ClinicalReportsViewer'
 
 // Interfaces
 interface Patient {
@@ -49,7 +50,7 @@ interface IntegratedWorkstationProps {
     defaultPatientId?: string
 }
 
-type TabId = 'patients' | 'chat' | 'renal' | 'prescriptions' | 'scheduling' | 'governance'
+type TabId = 'patients' | 'chat' | 'renal' | 'prescriptions' | 'scheduling' | 'governance' | 'analytics'
 
 const IntegratedWorkstation: React.FC<IntegratedWorkstationProps> = ({ initialTab, defaultPatientId }) => {
     const { user } = useAuth()
@@ -57,11 +58,12 @@ const IntegratedWorkstation: React.FC<IntegratedWorkstationProps> = ({ initialTa
     // Configuração de Abas
     const tabs = [
         { id: 'patients' as TabId, label: 'Pacientes', icon: Users, color: 'text-blue-400' },
+        { id: 'analytics' as TabId, label: 'Análise Clínica', icon: Brain, color: 'text-emerald-400' },
         { id: 'chat' as TabId, label: 'Chat Clínico', icon: MessageSquare, color: 'text-green-400' },
         ...(user?.type === 'admin' ? [{ id: 'governance' as any, label: 'Governança (ACDSS)', icon: Activity, color: 'text-purple-400' }] : []),
         { id: 'renal' as TabId, label: 'Saúde Renal', icon: Activity, color: 'text-orange-400' },
         { id: 'prescriptions' as TabId, label: 'Prescrições', icon: FileText, color: 'text-pink-400' },
-        { id: 'scheduling' as TabId, label: 'Agendamentos', icon: Calendar, color: 'text-cyan-400' }
+        { id: 'scheduling' as TabId, label: 'Agendamentos', icon: Calendar, color: 'text-cyan-400' },
     ]
 
     // Inicialização do Estado com Props (se fornecidas)
@@ -280,6 +282,15 @@ const IntegratedWorkstation: React.FC<IntegratedWorkstationProps> = ({ initialTa
                                 </div>
                             )}
                         </div>
+                    </div>
+                )
+            case 'analytics':
+                return (
+                    <div className="h-full overflow-y-auto bg-[#0f172a] p-6">
+                        <ClinicalReportsViewer
+                            professionalId={user?.type === 'admin' ? undefined : user?.id}
+                            title={user?.type === 'admin' ? "📊 Visão Global de Relatórios" : "📊 Meus Relatórios Clínicos"}
+                        />
                     </div>
                 )
             case 'chat':
