@@ -591,6 +591,111 @@ export class ClinicalAssessmentFlow {
   }
 
   /**
+   * Gera relatório estruturado da avaliação completa
+   */
+  async generateReport(userId: string, patientId: string): Promise<string | null> {
+    const state = this.states.get(userId)
+    if (!state || state.phase !== 'COMPLETED') return null
+
+    const data = state.data
+
+    // Gerar relatório estruturado
+    const report = {
+      id: `aec-${Date.now()}-${userId.substring(0, 8)}`,
+      patient_id: patientId,
+      patient_name: data.patientName || 'Não informado',
+      report_type: 'initial_assessment',
+      protocol: 'AEC',
+      generated_by: 'ai_resident',
+      generated_at: new Date().toISOString(),
+      status: 'completed',
+      content: {
+        identificacao: {
+          nome: data.patientName,
+          apresentacao: data.patientPresentation
+        },
+        lista_indiciaria: data.complaintList,
+        queixa_principal: data.mainComplaint,
+        desenvolvimento_queixa: {
+          localizacao: data.complaintLocation,
+          inicio: data.complaintOnset,
+          descricao: data.complaintDescription,
+          sintomas_associados: data.complaintAssociatedSymptoms,
+          fatores_melhora: data.complaintImprovements,
+          fatores_piora: data.complaintWorsening
+        },
+        historia_patologica_pregressa: data.medicalHistory,
+        historia_familiar: {
+          lado_materno: data.familyHistoryMother,
+          lado_paterno: data.familyHistoryFather
+        },
+        habitos_vida: data.lifestyleHabits,
+        perguntas_objetivas: {
+          alergias: data.allergies,
+          medicacoes_regulares: data.regularMedications,
+          medicacoes_esporadicas: data.sporadicMedications
+        },
+        consenso: {
+          aceito: data.consensusAgreed,
+          revisoes_realizadas: data.consensusRevisions
+        }
+      }
+    }
+
+    try {
+      // Importar supabase do caminho correto
+      const { supabase } = await import('./supabase')
+
+      // Salvar em clinical_reports
+      const { data: savedReport, error: reportError } = await supabase
+        .from('clinical_reports')
+        .insert(report)
+        .select()
+        .single()
+
+      if (reportError) {
+        console.error('❌ Erro ao salvar relatório clínico:', reportError)
+      } else {
+        console.log('✅ Relatório clínico salvo:', savedReport.id)
+      }
+
+      // Salvar também em ai_saved_documents para fácil acesso
+      const documentPayload = {
+        user_id: userId,
+        patient_id: patientId,
+        document_type: 'assessment_report',
+        title: `Avaliação Clínica Inicial - ${data.patientName || 'Paciente'}`,
+        content: JSON.stringify(report.content, null, 2),
+        summary: `Avaliação completa seguindo o protocolo AEC com ${data.complaintList.length} queixas identificadas, sendo "${data.mainComplaint}" a principal.`,
+        metadata: {
+          protocol: 'AEC',
+          assessment_phase_count: 10,
+          completion_date: new Date().toISOString(),
+          consensus_revisions: data.consensusRevisions
+        },
+        is_shared_with_patient: true
+      }
+
+      const { data: savedDoc, error: docError } = await supabase
+        .from('ai_saved_documents')
+        .insert(documentPayload)
+        .select()
+        .single()
+
+      if (docError) {
+        console.error('❌ Erro ao salvar documento:', docError)
+      } else {
+        console.log('✅ Documento salvo para dashboard:', savedDoc.id)
+      }
+
+      return report.id
+    } catch (error) {
+      console.error('❌ Erro ao gerar relatório:', error)
+      return null
+    }
+  }
+
+  /**
    * Reseta uma avaliação
    */
   resetAssessment(userId: string): void {

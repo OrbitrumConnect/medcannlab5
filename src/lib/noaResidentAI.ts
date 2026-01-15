@@ -1362,6 +1362,23 @@ Gere apenas a próxima pergunta sobre hábitos de vida.`
               console.log(`✅ Fluxo AEC avançou para: ${stepResult.phase}`)
               nextQuestionHint = stepResult.nextQuestion
 
+              // Se a avaliação foi concluída, gerar relatório automaticamente
+              if (stepResult.phase === 'COMPLETED' && stepResult.isComplete) {
+                console.log('🎯 Avaliação concluída! Gerando relatório automático...')
+                try {
+                  const reportId = await clinicalAssessmentFlow.generateReport(
+                    platformData.user.id,
+                    platformData.user.id // patientId = userId para agora
+                  )
+                  if (reportId) {
+                    console.log(`✅ Relatório gerado e salvo: ${reportId}`)
+                    console.log('📊 Disponível no dashboard do paciente e médico')
+                  }
+                } catch (err) {
+                  console.error('❌ Erro ao gerar relatório automático:', err)
+                }
+              }
+
               // Persistir estado
               clinicalAssessmentFlow.persist()
             }
