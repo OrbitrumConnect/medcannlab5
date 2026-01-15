@@ -273,77 +273,67 @@ const IntegratedWorkstation: React.FC<IntegratedWorkstationProps> = ({ initialTa
                                         </div>
                                     </div>
 
-                                    <div className="bg-gradient-to-br from-[#1e293b] to-[#0f172a] rounded-xl border border-[#334155] p-6 shadow-lg relative overflow-hidden">
-                                        <div className="absolute top-0 right-0 p-4 opacity-5">
-                                            <Brain className="w-32 h-32 text-emerald-400" />
-                                        </div>
-                                        <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2 relative z-10">
-                                            <Brain className="w-5 h-5 text-emerald-400" />
-                                            Análise Clínica Nôa (IA)
-                                        </h3>
-                                        <div className="bg-[#0f172a]/50 p-4 rounded-lg border border-[#334155]/50 relative z-10">
-                                            {loadingReport ? (
-                                                <div className="flex items-center gap-2 text-slate-400">
-                                                    <Loader2 className="w-4 h-4 animate-spin" />
-                                                    <span className="text-sm">Analisando histórico clínico...</span>
-                                                </div>
-                                            ) : patientReport ? (
-                                                <div className="space-y-4">
-                                                    <div>
-                                                        <p className="text-slate-300 text-sm leading-relaxed italic mb-3">
-                                                            "{patientReport.content?.evolution || patientReport.content?.summary || "Avaliação clínica realizada. Ver detalhes completos."}"
-                                                        </p>
-                                                        <div className="text-xs text-emerald-400 font-medium">
-                                                            Última atualização: {new Date(patientReport.generated_at).toLocaleDateString('pt-BR')}  •  Protocolo {patientReport.protocol}
-                                                        </div>
+                                    {patientReport && (
+                                        <div className="bg-gradient-to-br from-[#1e293b] to-[#0f172a] rounded-xl border border-[#334155] p-6 shadow-lg relative overflow-hidden">
+                                            <div className="absolute top-0 right-0 p-4 opacity-5">
+                                                <Brain className="w-32 h-32 text-emerald-400" />
+                                            </div>
+                                            <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2 relative z-10">
+                                                <Brain className="w-5 h-5 text-emerald-400" />
+                                                Análise Clínica Nôa (IA)
+                                            </h3>
+                                            <div className="bg-[#0f172a]/50 p-4 rounded-lg border border-[#334155]/50 relative z-10">
+                                                {loadingReport ? (
+                                                    <div className="flex items-center gap-2 text-slate-400">
+                                                        <Loader2 className="w-4 h-4 animate-spin" />
+                                                        <span className="text-sm">Analisando histórico clínico...</span>
                                                     </div>
-
-                                                    {/* Mini Scores */}
-                                                    {patientReport.content?.scores && (
-                                                        <div className="grid grid-cols-2 gap-3 pt-2 border-t border-[#334155]/50">
-                                                            {[
-                                                                { label: 'Clínico', val: patientReport.content.scores.clinical_score, color: 'text-emerald-400', bar: 'bg-emerald-500' },
-                                                                { label: 'QoL', val: patientReport.content.scores.quality_of_life, color: 'text-yellow-400', bar: 'bg-yellow-500' },
-                                                                { label: 'Sintomas', val: patientReport.content.scores.symptom_improvement, color: 'text-blue-400', bar: 'bg-blue-500' },
-                                                                { label: 'Aderência', val: patientReport.content.scores.treatment_adherence, color: 'text-purple-400', bar: 'bg-purple-500' }
-                                                            ].map((s) => (
-                                                                s.val && (
-                                                                    <div key={s.label}>
-                                                                        <div className="flex justify-between text-[10px] uppercase mb-1 font-semibold">
-                                                                            <span className="text-slate-400">{s.label}</span>
-                                                                            <span className={s.color}>{s.val}%</span>
-                                                                        </div>
-                                                                        <div className="h-1.5 w-full bg-[#0f172a] rounded-full overflow-hidden">
-                                                                            <div className={`h-full ${s.bar} rounded-full`} style={{ width: `${s.val}%` }}></div>
-                                                                        </div>
-                                                                    </div>
-                                                                )
-                                                            ))}
+                                                ) : (
+                                                    <div className="space-y-4">
+                                                        <div>
+                                                            <p className="text-slate-300 text-sm leading-relaxed italic mb-3">
+                                                                "{patientReport.content?.evolution || patientReport.content?.summary || "Avaliação clínica realizada."}"
+                                                            </p>
+                                                            <div className="text-xs text-emerald-400 font-medium">
+                                                                Última atualização: {new Date(patientReport.generated_at).toLocaleDateString('pt-BR')}  •  Protocolo {patientReport.protocol}
+                                                            </div>
                                                         </div>
-                                                    )}
 
-                                                    <button
-                                                        onClick={() => setActiveTab('analytics')}
-                                                        className="w-full mt-2 py-2 text-xs font-medium text-center text-slate-400 hover:text-white hover:bg-[#334155]/50 rounded-lg transition-colors border border-dashed border-[#334155] hover:border-slate-400"
-                                                    >
-                                                        Ver Histórico Completo & Gráficos Detalhados →
-                                                    </button>
-                                                </div>
-                                            ) : (
-                                                <div className="text-center py-4">
-                                                    <p className="text-slate-400 text-sm italic mb-3">
-                                                        "Ainda não há dados clínicos suficientes gerados pela IA para este paciente."
-                                                    </p>
-                                                    <button
-                                                        onClick={() => setActiveTab('chat')}
-                                                        className="px-4 py-2 bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-400 rounded-lg text-xs font-bold uppercase tracking-wide transition-colors"
-                                                    >
-                                                        Iniciar Primeira Avaliação
-                                                    </button>
-                                                </div>
-                                            )}
+                                                        {/* Mini Scores */}
+                                                        {patientReport.content?.scores && (
+                                                            <div className="grid grid-cols-2 gap-3 pt-2 border-t border-[#334155]/50">
+                                                                {[
+                                                                    { label: 'Clínico', val: patientReport.content.scores.clinical_score, color: 'text-emerald-400', bar: 'bg-emerald-500' },
+                                                                    { label: 'QoL', val: patientReport.content.scores.quality_of_life, color: 'text-yellow-400', bar: 'bg-yellow-500' },
+                                                                    { label: 'Sintomas', val: patientReport.content.scores.symptom_improvement, color: 'text-blue-400', bar: 'bg-blue-500' },
+                                                                    { label: 'Aderência', val: patientReport.content.scores.treatment_adherence, color: 'text-purple-400', bar: 'bg-purple-500' }
+                                                                ].map((s) => (
+                                                                    s.val && (
+                                                                        <div key={s.label}>
+                                                                            <div className="flex justify-between text-[10px] uppercase mb-1 font-semibold">
+                                                                                <span className="text-slate-400">{s.label}</span>
+                                                                                <span className={s.color}>{s.val}%</span>
+                                                                            </div>
+                                                                            <div className="h-1.5 w-full bg-[#0f172a] rounded-full overflow-hidden">
+                                                                                <div className={`h-full ${s.bar} rounded-full`} style={{ width: `${s.val}%` }}></div>
+                                                                            </div>
+                                                                        </div>
+                                                                    )
+                                                                ))}
+                                                            </div>
+                                                        )}
+
+                                                        <button
+                                                            onClick={() => setActiveTab('analytics')}
+                                                            className="w-full mt-2 py-2 text-xs font-medium text-center text-slate-400 hover:text-white hover:bg-[#334155]/50 rounded-lg transition-colors border border-dashed border-[#334155] hover:border-slate-400"
+                                                        >
+                                                            Ver Histórico Completo & Gráficos Detalhados →
+                                                        </button>
+                                                    </div>
+                                                )}
+                                            </div>
                                         </div>
-                                    </div>
+                                    )}
                                 </div>
                             ) : (
                                 <div className="flex flex-col items-center justify-center h-full text-slate-500 p-8">
