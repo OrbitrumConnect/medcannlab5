@@ -82,7 +82,7 @@ export class TestMonitoringSystem {
 
         // Simular treinamento da IA
         const success = await this.simulateAITraining(iteration)
-        
+
         const metric: AITrainingMetrics = {
           sessionId: this.currentSession.id,
           iteration,
@@ -111,7 +111,7 @@ export class TestMonitoringSystem {
 
       } catch (error) {
         console.error(`❌ Erro na iteração ${iteration}:`, error)
-        
+
         const metric: AITrainingMetrics = {
           sessionId: this.currentSession.id,
           iteration,
@@ -128,7 +128,7 @@ export class TestMonitoringSystem {
     }
 
     console.log('🎉 Treinamento da IA concluído!')
-    console.log(`📊 Taxa final de sucesso: ${(this.currentSession.successRate * 100).toFixed(1)}%`)
+    console.log(`📊 Taxa final de sucesso: ${((this.currentSession?.successRate || 0) * 100).toFixed(1)}%`)
   }
 
   /**
@@ -155,12 +155,12 @@ export class TestMonitoringSystem {
         return true
       } else {
         console.log(`⚠️ Meta não atingida. Faltam ${1000 - patientCount} pacientes`)
-        
+
         // Criar pacientes de teste se necessário
         if (patientCount < 1000) {
           await this.createTestPatients(1000 - patientCount)
         }
-        
+
         return false
       }
     } catch (error) {
@@ -204,7 +204,7 @@ export class TestMonitoringSystem {
     const baseSuccessRate = 0.7
     const improvementRate = 0.00025
     const successRate = Math.min(0.98, baseSuccessRate + (iteration * improvementRate))
-    
+
     return Math.random() < successRate
   }
 
@@ -226,7 +226,7 @@ export class TestMonitoringSystem {
     return total / this.trainingMetrics.length
   }
 
-  private async getPatientCount(): Promise<number> {
+  public async getPatientCount(): Promise<number> {
     const { data, error } = await supabase
       .from('users')
       .select('id', { count: 'exact' })

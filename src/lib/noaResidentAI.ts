@@ -14,6 +14,7 @@ export interface AIResponse {
   timestamp: Date
   type: 'text' | 'assessment' | 'error'
   metadata?: any
+  suggestions?: string[]
 }
 
 export interface AIMemory {
@@ -43,7 +44,7 @@ interface AxisDetails {
   knowledgeQuery: string
 }
 
-interface IMREAssessmentState {
+export interface IMREAssessmentState {
   userId: string
   step: 'INVESTIGATION' | 'METHODOLOGY' | 'RESULT' | 'EVOLUTION' | 'COMPLETED'
   status?: 'active' | 'completed'

@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, ReactNode, useEffect, useRef } from 'react'
 import { NoaEsperancaCore, noaEsperancaConfig, NoaInteraction } from '../lib/noaEsperancaCore'
-import { NoaResidentAI, residentAIConfig, AIResponse } from '../lib/noaResidentAI'
+import { NoaResidentAI, AIResponse } from '../lib/noaResidentAI'
 import { useAuth } from './AuthContext'
 
 export interface NoaMessage {
@@ -50,16 +50,16 @@ export const NoaProvider: React.FC<NoaProviderProps> = ({ children }) => {
   const [isTyping, setIsTyping] = useState(false)
   const [isListening, setIsListening] = useState(false)
   const [isSpeaking, setIsSpeaking] = useState(false)
-  
+
   // Acessar dados do usuário para individualização
   const { user } = useAuth()
-  
+
   // Inicializar Nôa Esperança Core (apenas uma vez)
   const [noaCore] = useState(() => new NoaEsperancaCore(noaEsperancaConfig))
-  
+
   // Inicializar IA Residente apenas quando houver usuário logado
   const residentAIRef = useRef<NoaResidentAI | null>(null)
-  
+
   useEffect(() => {
     if (user && !residentAIRef.current) {
       residentAIRef.current = new NoaResidentAI()
@@ -106,15 +106,15 @@ export const NoaProvider: React.FC<NoaProviderProps> = ({ children }) => {
     try {
       // Processar com IA Residente incluindo email do usuário para individualização
       const aiResponse = await residentAIRef.current.processMessage(
-        content, 
-        user.id, 
+        content,
+        user.id,
         user.email
       )
-      
+
       if (!aiResponse) {
         throw new Error('A IA não retornou uma resposta válida')
       }
-      
+
       const noaMessage: NoaMessage = {
         id: (Date.now() + 1).toString(),
         type: 'noa',
@@ -128,7 +128,7 @@ export const NoaProvider: React.FC<NoaProviderProps> = ({ children }) => {
       setMessages(prev => [...prev, noaMessage])
     } catch (error) {
       console.error('❌ Erro ao processar mensagem com Nôa:', error)
-      
+
       const noaMessage: NoaMessage = {
         id: (Date.now() + 1).toString(),
         type: 'noa',

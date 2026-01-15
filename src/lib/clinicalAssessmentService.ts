@@ -80,8 +80,8 @@ export class ClinicalAssessmentService {
         return clinicalData.id
       }
 
-      console.log('✅ Avaliação IMRE salva com sucesso:', imreData.id)
-      return imreData.id
+      console.log('✅ Avaliação IMRE salva com sucesso:', imreData?.id)
+      return imreData?.id || ''
     } catch (error) {
       console.error('❌ Erro ao salvar avaliação clínica:', error)
       throw error

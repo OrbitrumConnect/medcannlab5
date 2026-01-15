@@ -98,8 +98,16 @@ const ProfessionalDashboard: React.FC = () => {
       // Se for admin, usar função com permissões administrativas
       if (userIsAdmin) {
         console.log('✅ Admin carregando pacientes com permissões administrativas')
-        const allPatients = await getAllPatients(user!.id, effectiveType)
-        setPatients(allPatients)
+        const allPatients = await getAllPatients(user)
+
+        // Mapear para o tipo Patient local
+        const mappedPatients: Patient[] = allPatients.map(p => ({
+          ...p,
+          status: 'active' as const, // Força status válido
+          assessments: p.assessments || []
+        }))
+
+        setPatients(mappedPatients)
         setLoading(false)
         return
       }
@@ -134,7 +142,7 @@ const ProfessionalDashboard: React.FC = () => {
             phone: assessment.patient_phone || '',
             email: '',
             lastVisit: new Date(assessment.created_at).toLocaleDateString('pt-BR'),
-            status: 'active',
+            status: 'active' as const,
             condition: assessment.condition || 'Epilepsia',
             priority: assessment.priority || 'medium',
             assessments: []
