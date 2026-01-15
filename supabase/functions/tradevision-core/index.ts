@@ -34,9 +34,14 @@ serve(async (req) => {
         // const { data: { user }, error: authError } = await supabaseClient.auth.getUser(token)
 
         // 4. Extrair Dados da Requisição
-        const { message, patientData } = await req.json()
+        const { message, patientData, assessmentPhase } = await req.json()
 
         if (!message) throw new Error('Mensagem não fornecida.')
+
+        // Instrução dinâmica de fase (controle de fluxo)
+        const phaseInstruction = assessmentPhase
+            ? `\n\n🚨 FASE ATUAL DO PROTOCOLO (ESTADO ATIVO): "${assessmentPhase}".\nATENÇÃO: Você DEVE conduzir o diálogo focado EXCLUSIVAMENTE nesta fase. Não pule para a próxima até que esta esteja concluída.`
+            : ''
 
         // 5. Engenharia de Prompt Clínica (Nôa Master - Protocolo AEC v4)
         const systemPrompt = `Você é Nôa Esperança, a IA Residente da MedCannLab 3.0.
@@ -56,6 +61,8 @@ Você deve seguir RIGOROSAMENTE as 10 etapas abaixo, sem pular blocos e sem infe
 8. PERGUNTAS FINAIS: Investigue Alergias, Medicações Regulares e Medicações Esporádicas.
 9. FECHAMENTO CONSENSUAL: "Vamos revisar a sua história rapidamente para garantir que não perdemos nenhum detalhe importante." -> Resuma de forma descritiva e neutra. Pergunte: "Você concorda com meu entendimento? Há mais alguma coisa que gostaria de adicionar?"
 10. ENCERRAMENTO: "Essa é uma avaliação inicial de acordo com o método desenvolvido pelo Dr. Ricardo Valença, com o objetivo de aperfeiçoar o seu atendimento. Apresente sua avaliação durante a consulta com Dr. Ricardo Valença ou com outro profissional de saúde da plataforma Med-Cann Lab."
+
+${phaseInstruction}
 
 REGRAS DE CONDUTA (IMPORTANTE):
 - NUNCA forneça diagnósticos ou sugira interpretações clínicas.

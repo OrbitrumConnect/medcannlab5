@@ -3,6 +3,7 @@ import { clinicalReportService, ClinicalReport } from './clinicalReportService'
 import { KnowledgeBaseIntegration } from '../services/knowledgeBaseIntegration'
 import { getNoaAssistantIntegration } from './noaAssistantIntegration'
 import { getPlatformFunctionsModule } from './platformFunctionsModule'
+import { clinicalAssessmentFlow } from './clinicalAssessmentFlow'
 // Remoção da injeção manual para uso de File Search no Assistant API
 
 
@@ -1333,8 +1334,19 @@ Gere apenas a próxima pergunta sobre hábitos de vida.`
     try {
       console.log('🦅 [TradeVision Cloud] Conectando ao Core via Supabase Edge Functions...')
 
+      // Obter fase do ClinicalAssessmentFlow (AEC 001) para controle de estado
+      let currentPhase = undefined
+      if (intent === 'CLÍNICA' && platformData?.user?.id) {
+        const flowState = clinicalAssessmentFlow.getState(platformData.user.id)
+        if (flowState) {
+          console.log(`📡 Sincronizando Fase AEC: ${flowState.phase}`)
+          currentPhase = flowState.phase
+        }
+      }
+
       const payload = {
         message: userMessage,
+        assessmentPhase: currentPhase,
         patientData: {
           ...platformData,
           intent,
