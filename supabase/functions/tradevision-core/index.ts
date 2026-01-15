@@ -34,14 +34,15 @@ serve(async (req) => {
         // const { data: { user }, error: authError } = await supabaseClient.auth.getUser(token)
 
         // 4. Extrair Dados da Requisição
-        const { message, patientData, assessmentPhase, nextQuestionHint } = await req.json()
+        const { message, conversationHistory, patientData, assessmentPhase, nextQuestionHint } = await req.json()
 
         console.log('📥 [REQUEST]', {
             messageLength: message?.length || 0,
             userId: patientData?.user?.id?.substring(0, 8) || 'unknown',
             intent: patientData?.intent || 'none',
             assessmentPhase: assessmentPhase || 'none',
-            hasNextQuestion: !!nextQuestionHint
+            hasNextQuestion: !!nextQuestionHint,
+            historyLength: conversationHistory?.length || 0
         })
 
         if (!message) throw new Error('Mensagem não fornecida.')
@@ -92,13 +93,24 @@ DIRETRIZES DE SEGURANÇA E ADMINISTRAÇÃO:
 CONTEXTO ADICIONAL DO USUÁRIO:
 ${JSON.stringify(patientData, null, 2)}`
 
-        // 6. Chamada à OpenAI (GPT-4o)
+        // 6. Preparar mensagens para OpenAI (incluindo histórico)
+        const messages: any[] = [
+            { role: "system", content: systemPrompt }
+        ]
+
+        // Adicionar histórico de conversas (se existir)
+        if (conversationHistory && conversationHistory.length > 0) {
+            messages.push(...conversationHistory)
+            console.log(`🧠 Contexto histórico de ${conversationHistory.length} mensagens adicionado`)
+        }
+
+        // Adicionar mensagem atual do usuário
+        messages.push({ role: "user", content: message })
+
+        // 7. Chamada à OpenAI (GPT-4o)
         const completion = await openai.chat.completions.create({
             model: "gpt-4o",
-            messages: [
-                { role: "system", content: systemPrompt },
-                { role: "user", content: message }
-            ],
+            messages,
             temperature: 0.2,
             max_tokens: 1500
         })

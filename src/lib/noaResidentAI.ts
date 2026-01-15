@@ -1377,8 +1377,34 @@ Gere apenas a próxima pergunta sobre hábitos de vida.`
         }
       }
 
+      // 🧠 CARREGAR HISTÓRICO DE CONVERSAS (Memória de Contexto)
+      let conversationHistory: Array<{ role: string, content: string }> = []
+
+      if (platformData?.user?.id) {
+        try {
+          const { data: historyData, error: historyError } = await supabase
+            .from('ai_chat_interactions')
+            .select('user_message, ai_response, created_at')
+            .eq('user_id', platformData.user.id)
+            .order('created_at', { ascending: false })
+            .limit(10) // Últimas 10 interações
+
+          if (!historyError && historyData && historyData.length > 0) {
+            // Reverter para ordem cronológica e formatar para OpenAI
+            conversationHistory = historyData.reverse().flatMap(h => [
+              { role: 'user', content: h.user_message },
+              { role: 'assistant', content: h.ai_response }
+            ])
+            console.log(`🧠 Histórico carregado: ${historyData.length} interações anteriores`)
+          }
+        } catch (e) {
+          console.warn('⚠️ Erro ao carregar histórico:', e)
+        }
+      }
+
       const payload = {
         message: userMessage,
+        conversationHistory, // ← NOVO: Histórico para contexto
         assessmentPhase: currentPhase,
         nextQuestionHint,
         patientData: {
