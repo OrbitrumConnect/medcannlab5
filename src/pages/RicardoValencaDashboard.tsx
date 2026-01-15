@@ -677,6 +677,7 @@ const RicardoValencaDashboard: React.FC = () => {
       const { data, error } = await supabase
         .from('v_kpi_basic')
         .select('*')
+        .limit(1)
         .maybeSingle()
 
       if (error) {
