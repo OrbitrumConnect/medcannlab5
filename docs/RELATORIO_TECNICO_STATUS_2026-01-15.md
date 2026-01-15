@@ -247,3 +247,69 @@ A solução implementada **JÁ ATENDE** aos requisitos de estabilidade, memória
 ---
 
 **ESTADO GERAL DO PROJETO:** 🟡 **85% CONCLUÍDO** — Núcleo técnico pronto, aguardando deploy e validação clínica final.
+
+---
+
+## 7. MONITORAMENTO E VERIFICAÇÃO DA EDGE FUNCTION
+
+### 🔍 Como Verificar se a TradeVision Core Está Funcionando
+
+#### **Método 1: Verificar Dados no Banco (Mais Confiável)**
+Execute o script SQL no Supabase SQL Editor:
+
+📄 **Arquivo:** `scripts/VERIFICAR_DADOS_EDGE_FUNCTION.sql`
+
+**Link Direto:** [Supabase SQL Editor](https://supabase.com/dashboard/project/itdjkfubfzmvmuxxjoae/editor)
+
+Este script mostra:
+- ✅ Últimas 10 interações da IA
+- ✅ Total de interações por hora (últimas 24h)
+- ✅ Usuários ativos hoje
+
+**Se retornar dados:** A function está rodando perfeitamente.  
+**Se retornar vazio:** A function não foi chamada OU o deploy não foi feito.
+
+---
+
+#### **Método 2: Testar Manualmente**
+1. Abrir a aplicação: `http://localhost:5173/app/chat/noa-esperanca`
+2. Enviar mensagem: *"Olá Nôa, como você está?"*
+3. Aguardar resposta
+4. Verificar se a tabela `ai_chat_interactions` recebeu novo registro (rodar SQL acima)
+
+---
+
+#### **Método 3: Ver Logs em Tempo Real**
+1. Acessar: [Supabase Function Logs](https://supabase.com/dashboard/project/itdjkfubfzmvmuxxjoae/functions/tradevision-core/logs)
+2. Enviar uma mensagem no chat
+3. Observar se aparece log novo (pode demorar 10-30 segundos)
+
+**Logs Esperados:**
+- `booted (time: XXms)` → Function acordou
+- `200 OK` → Resposta bem-sucedida
+- Sem erros `4xx` ou `5xx`
+
+---
+
+### 🚨 TROUBLESHOOTING: "No Data To Show"
+
+| Sintoma | Causa Provável | Solução |
+|:--------|:---------------|:--------|
+| Dashboard vazio | Deploy não foi feito | Executar `.\DEPLOY_NOA.bat` |
+| Logs vazios mas chat funciona | Dashboard desatualizado | Aguardar 24h OU verificar SQL diretamente |
+| Erro `500` nos logs | Variável de ambiente faltando | Verificar `OPENAI_API_KEY` no Supabase Secrets |
+| Erro `404` ao chamar | URL errada no frontend | Verificar `VITE_SUPABASE_URL` no `.env` |
+
+---
+
+### 📋 Checklist de Status da Function
+
+Execute esta checklist para garantir que tudo está funcionando:
+
+- [ ] **Deploy Realizado:** Última modificação no Supabase é hoje (15/01/2026)
+- [ ] **Logs Ativos:** Aparecem logs ao enviar mensagens no chat
+- [ ] **Dados Salvos:** Query SQL retorna interações recentes
+- [ ] **Sem Erros:** Nenhum erro `4xx`/`5xx` nos logs
+- [ ] **Latência OK:** Resposta em menos de 5 segundos
+
+**Se todos os itens estiverem ✅, a function está OPERACIONAL.**
