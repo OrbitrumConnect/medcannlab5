@@ -38,6 +38,11 @@ export default function ClinicalReportsViewer({
     const [selectedReport, setSelectedReport] = useState<ClinicalReport | null>(null)
     const [loading, setLoading] = useState(true)
 
+    // Paginação
+    const [page, setPage] = useState(0)
+    const pageSize = 12 // Múltiplo de 2 e 3 e 4 para ficar bonito no grid
+    const [totalReportsCount, setTotalReportsCount] = useState(0) // To store total count for pagination
+
     // Helper para detectar score crítico
     const isCritical = (content: any) => {
         if (!content?.scores) return false
@@ -48,16 +53,16 @@ export default function ClinicalReportsViewer({
 
     useEffect(() => {
         loadData()
-    }, [professionalId])
+    }, [professionalId, page]) // Added 'page' to dependencies
 
     async function loadData() {
         setLoading(true)
         try {
             let query = supabase
                 .from('clinical_reports')
-                .select('*')
+                .select('*', { count: 'exact' }) // Request exact count
                 .order('generated_at', { ascending: false })
-                .limit(limit)
+                .range(page * pageSize, (page + 1) * pageSize - 1) // Apply pagination range
 
             if (professionalId) {
                 // Se houver um campo professional_id na tabela, filtra por ele
@@ -68,10 +73,11 @@ export default function ClinicalReportsViewer({
                 query = query.eq('professional_id', professionalId)
             }
 
-            const { data, error } = await query
+            const { data, error, count } = await query // Destructure count
 
             if (!error && data) {
                 setReports(data)
+                setTotalReportsCount(count || 0) // Update total count
             }
         } catch (error) {
             console.error('Erro ao carregar relatórios:', error)
@@ -80,7 +86,7 @@ export default function ClinicalReportsViewer({
         }
     }
 
-    if (loading) {
+    if (loading && page === 0) { // Only show full spinner on initial load
         return (
             <div className="rounded-2xl p-12 text-center" style={surfaceStyle}>
                 <div className="animate-spin rounded-full h-12 w-12 border-b-4 mx-auto mb-4" style={{ borderColor: colors.primary }}></div>
@@ -108,8 +114,8 @@ export default function ClinicalReportsViewer({
                             <button
                                 onClick={() => onContactPatient(selectedReport.patient_id)}
                                 className={`px-4 py-2 rounded-lg font-bold text-sm flex items-center gap-2 transition-all ${critical
-                                        ? 'bg-red-500/20 text-red-400 hover:bg-red-500/30 border border-red-500/50 animate-pulse'
-                                        : 'bg-blue-500/20 text-blue-400 hover:bg-blue-500/30'
+                                    ? 'bg-red-500/20 text-red-400 hover:bg-red-500/30 border border-red-500/50 animate-pulse'
+                                    : 'bg-blue-500/20 text-blue-400 hover:bg-blue-500/30'
                                     }`}
                             >
                                 {critical ? '🚨 ALERTA: CHAMAR PACIENTE' : '💬 Iniciar Chat'}
@@ -172,61 +178,88 @@ export default function ClinicalReportsViewer({
         )
     }
 
-    // LIST VIEW
+    // LIST VIEW (GRID)
+    const totalPages = Math.ceil(totalReportsCount / pageSize)
+
     return (
-        <div className="rounded-2xl p-6" style={surfaceStyle}>
-            <div className="flex justify-between items-center mb-6">
+        <div className="rounded-2xl p-6 h-full flex flex-col" style={surfaceStyle}>
+            <div className="flex justify-between items-center mb-6 shrink-0">
                 <h2 className="text-xl font-bold" style={{ color: colors.text.primary }}>
                     {title}
                 </h2>
-                <div className="text-xs px-3 py-1 rounded-full" style={{ background: colors.primary, color: '#000', fontWeight: 'bold' }}>
-                    Total: {reports.length}
+                <div className="flex gap-2">
+                    <button
+                        disabled={page === 0 || loading}
+                        onClick={() => setPage(p => Math.max(0, p - 1))}
+                        className="text-xs px-3 py-1 rounded-lg disabled:opacity-30 transition-all hover:bg-white/10"
+                        style={{ border: `1px solid ${colors.border.primary}`, color: colors.text.secondary }}
+                    >
+                        ◀ Anterior
+                    </button>
+                    <div className="text-xs px-3 py-1 rounded-full flex items-center" style={{ background: 'rgba(255,255,255,0.05)', color: colors.text.secondary }}>
+                        Página {page + 1} de {totalPages || 1}
+                    </div>
+                    <button
+                        disabled={reports.length < pageSize || loading || page >= totalPages - 1}
+                        onClick={() => setPage(p => p + 1)}
+                        className="text-xs px-3 py-1 rounded-lg disabled:opacity-30 transition-all hover:bg-white/10"
+                        style={{ border: `1px solid ${colors.border.primary}`, color: colors.text.secondary }}
+                    >
+                        Próximo ▶
+                    </button>
                 </div>
             </div>
 
-            <div className="space-y-4 max-h-[600px] overflow-y-auto pr-2 custom-scrollbar">
-                {reports.length > 0 ? (
-                    reports.map((report) => (
-                        <div
-                            key={report.id}
-                            onClick={() => setSelectedReport(report)}
-                            className="p-5 rounded-xl cursor-pointer transition-all hover:scale-[1.01] group relative overflow-hidden"
-                            style={cardStyle}
-                        >
-                            <div className="absolute left-0 top-0 bottom-0 w-1 transition-all group-hover:w-2" style={{ background: accentGradient }}></div>
+            <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar">
+                {loading && page > 0 ? ( // Show a smaller spinner when loading subsequent pages
+                    <div className="text-center py-12">
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 mx-auto mb-4" style={{ borderColor: colors.primary }}></div>
+                        <p style={{ color: colors.text.secondary }}>Carregando mais relatórios...</p>
+                    </div>
+                ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                        {reports.length > 0 ? (
+                            reports.map((report) => (
+                                <div
+                                    key={report.id}
+                                    onClick={() => setSelectedReport(report)}
+                                    className="p-4 rounded-xl cursor-pointer transition-all hover:scale-[1.02] group relative overflow-hidden flex flex-col justify-between h-full"
+                                    style={cardStyle}
+                                >
+                                    <div className="absolute left-0 top-0 bottom-0 w-1 transition-all group-hover:w-2" style={{ background: accentGradient }}></div>
 
-                            <div className="flex justify-between items-start pl-3">
-                                <div>
-                                    <div className="font-bold text-lg mb-1" style={{ color: colors.text.primary }}>
-                                        {report.patient_name || 'Paciente Sem Nome'}
+                                    <div className="pl-3 mb-3">
+                                        <div className="flex justify-between items-start">
+                                            <div className="font-bold text-base truncate pr-2" style={{ color: colors.text.primary }}>
+                                                {report.patient_name || 'Paciente Sem Nome'}
+                                            </div>
+                                        </div>
+                                        <div className="text-xs mt-1 opacity-70" style={{ color: colors.text.secondary }}>
+                                            {new Date(report.generated_at).toLocaleDateString('pt-BR')}
+                                        </div>
                                     </div>
-                                    <div className="flex gap-2 text-xs">
-                                        <span className="px-2 py-1 rounded-md" style={{ background: 'rgba(255,255,255,0.1)', color: colors.text.secondary }}>
+
+                                    <div className="pl-3 flex flex-wrap gap-2 mt-auto">
+                                        <span className="px-2 py-1 rounded-md text-[10px] uppercase tracking-wider font-semibold" style={{ background: 'rgba(255,255,255,0.05)', color: colors.text.secondary }}>
                                             {report.protocol}
                                         </span>
-                                        <span className="px-2 py-1 rounded-md" style={{ background: 'rgba(255,255,255,0.1)', color: colors.text.secondary }}>
-                                            {report.report_type}
+                                        <span className="px-2 py-1 rounded-md text-[10px] uppercase tracking-wider font-semibold" style={{ background: 'rgba(0, 193, 106, 0.1)', color: colors.primary }}>
+                                            SCORE: {report.content?.scores?.clinical_score || '-'}
                                         </span>
                                     </div>
                                 </div>
-                                <div className="text-right">
-                                    <div className="text-sm font-semibold" style={{ color: colors.primary }}>
-                                        {new Date(report.generated_at).toLocaleDateString('pt-BR')}
-                                    </div>
-                                    <div className="text-xs" style={{ color: colors.text.tertiary }}>
-                                        {new Date(report.generated_at).toLocaleTimeString('pt-BR')}
-                                    </div>
-                                </div>
+                            ))
+                        ) : (
+                            <div className="col-span-full text-center py-12">
+                                <div className="text-4xl mb-4">📭</div>
+                                <p style={{ color: colors.text.secondary }}>Nenhum relatório encontrado nesta página.</p>
+                                {page > 0 && (
+                                    <p className="text-sm mt-2" style={{ color: colors.text.tertiary }}>
+                                        Tente voltar para a página anterior.
+                                    </p>
+                                )}
                             </div>
-                        </div>
-                    ))
-                ) : (
-                    <div className="text-center py-12">
-                        <div className="text-4xl mb-4">📭</div>
-                        <p style={{ color: colors.text.secondary }}>Nenhum relatório encontrado.</p>
-                        <p className="text-sm mt-2" style={{ color: colors.text.tertiary }}>
-                            As avaliações concluídas aparecerão aqui automaticamente.
-                        </p>
+                        )}
                     </div>
                 )}
             </div>
