@@ -350,7 +350,7 @@ const EduardoScheduling: React.FC<EduardoSchedulingProps> = ({ className = '', p
 
             {/* Empty Days */}
             {Array.from({ length: firstDay }).map((_, i) => (
-              <div key={`empty-${i}`} className="bg-slate-800/50 min-h-[90px]"></div>
+              <div key={`empty-${i}`} className="bg-slate-800/50 min-h-[60px]"></div>
             ))}
 
             {/* Actual Days */}
@@ -360,9 +360,9 @@ const EduardoScheduling: React.FC<EduardoSchedulingProps> = ({ className = '', p
               const isToday = new Date().toDateString() === new Date(year, month, day).toDateString()
 
               return (
-                <div key={day} className={`bg-slate-800 min-h-[90px] p-1 hover:bg-slate-700/50 transition-colors border-t border-slate-700 ${isToday ? 'bg-slate-700/30 ring-1 ring-inset ring-green-500' : ''}`}>
-                  <div className="text-right mb-1">
-                    <span className={`text-xs font-medium ${isToday ? 'bg-green-600 text-white w-5 h-5 rounded-full inline-flex items-center justify-center' : 'text-slate-400'}`}>
+                <div key={day} className={`bg-slate-800 min-h-[60px] p-0.5 hover:bg-slate-700/50 transition-colors border-t border-slate-700 ${isToday ? 'bg-slate-700/30 ring-1 ring-inset ring-green-500' : ''}`}>
+                  <div className="text-right mb-0.5">
+                    <span className={`text-[10px] font-medium px-1 ${isToday ? 'bg-green-600 text-white rounded-full' : 'text-slate-500'}`}>
                       {day}
                     </span>
                   </div>
@@ -389,6 +389,26 @@ const EduardoScheduling: React.FC<EduardoSchedulingProps> = ({ className = '', p
                 </div>
               )
             })}
+          </div>
+
+          {/* Legenda e Ferramentas */}
+          <div className="mt-3 flex flex-wrap items-center gap-4 text-xs bg-slate-700/30 p-2 rounded-lg border border-slate-700">
+            <div className="font-semibold text-slate-400 uppercase tracking-wider mr-2">Legenda:</div>
+            {[
+              { color: 'bg-blue-500', label: 'Agendado' },
+              { color: 'bg-green-500', label: 'Concluído' },
+              { color: 'bg-yellow-500', label: 'No-Show' },
+              { color: 'bg-red-500', label: 'Cancelado' }
+            ].map(st => (
+              <div key={st.label} className="flex items-center gap-1.5">
+                <div className={`w-2 h-2 rounded-full ${st.color}`}></div>
+                <span className="text-slate-300">{st.label}</span>
+              </div>
+            ))}
+
+            <div className="ml-auto text-slate-500 hidden sm:block">
+              💡 Clique no agendamento para ver detalhes.
+            </div>
           </div>
         </div>
       )}
