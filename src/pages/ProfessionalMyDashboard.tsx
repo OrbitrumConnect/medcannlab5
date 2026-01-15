@@ -2,12 +2,12 @@ import React, { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { supabase } from '../lib/supabase'
-import { 
-  User, 
-  Users, 
-  FileText, 
-  Calendar, 
-  BarChart3, 
+import {
+  User,
+  Users,
+  FileText,
+  Calendar,
+  BarChart3,
   TrendingUp,
   Activity,
   Stethoscope,
@@ -42,15 +42,27 @@ const ProfessionalMyDashboard: React.FC = () => {
   const loadDashboardData = async () => {
     try {
       setLoading(true)
-      
-      // Buscar pacientes do profissional
-      const { data: patientsData, error: patientsError } = await supabase
-        .from('users')
-        .select('id, name, status')
-        .eq('type', 'paciente')
-        .or('professional_id.eq.' + user?.id + ',assigned_professional_id.eq.' + user?.id)
 
-      if (patientsError) console.error('Erro ao buscar pacientes:', patientsError)
+      // Buscar pacientes vinculados ao profissional via clinical_assessments
+      const { data: assessmentsData, error: assessmentsError } = await supabase
+        .from('clinical_assessments')
+        .select('patient_id')
+        .eq('doctor_id', user?.id)
+
+      if (assessmentsError) console.error('Erro ao buscar avaliações:', assessmentsError)
+
+      const patientIds = Array.from(new Set(assessmentsData?.map(a => a.patient_id).filter(Boolean)))
+
+      let patientsData: any[] = []
+      if (patientIds.length > 0) {
+        const { data, error } = await supabase
+          .from('users')
+          .select('id, name, status')
+          .in('id', patientIds)
+
+        if (error) console.error('Erro ao buscar pacientes:', error)
+        patientsData = data || []
+      }
 
       // Buscar agendamentos
       const { data: appointmentsData, error: appointmentsError } = await supabase
@@ -203,7 +215,7 @@ const ProfessionalMyDashboard: React.FC = () => {
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center space-x-4 mb-4">
-            <div 
+            <div
               className="w-16 h-16 rounded-full flex items-center justify-center"
               style={{ background: accentGradient }}
             >
