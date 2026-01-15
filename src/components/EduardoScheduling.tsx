@@ -281,47 +281,43 @@ const EduardoScheduling: React.FC<EduardoSchedulingProps> = ({ className = '', p
 
   return (
     <div className={`space-y-6 ${className}`}>
-      {/* Header */}
-      <div className="bg-gradient-to-r from-green-800 to-emerald-700 rounded-lg p-6">
-        <div className="flex items-center justify-between mb-4">
-          <div>
-            <h2 className="text-2xl font-bold text-white mb-2 flex items-center space-x-2">
-              <Calendar className="w-6 h-6" />
-              <span>Sistema de Agendamento</span>
-            </h2>
-            <p className="text-green-200">
-              Gerencie consultas, visualize analytics e acompanhe performance
-            </p>
+      {/* Header Compacto */}
+      <div className="bg-gradient-to-r from-green-800 to-emerald-700 rounded-lg p-3 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-md">
+        <div className="flex items-center gap-4">
+          <h2 className="text-lg font-bold text-white flex items-center space-x-2">
+            <Calendar className="w-5 h-5" />
+            <span>Agendamentos</span>
+          </h2>
+
+          {/* Tabs Compactas */}
+          <div className="flex space-x-1 bg-green-900/30 p-1 rounded-lg">
+            {[
+              { key: 'calendar', label: 'Calendário', icon: <Calendar className="w-3.5 h-3.5" /> },
+              { key: 'list', label: 'Lista', icon: <Users className="w-3.5 h-3.5" /> },
+              { key: 'analytics', label: 'Analytics', icon: <BarChart3 className="w-3.5 h-3.5" /> }
+            ].map((tab) => (
+              <button
+                key={tab.key}
+                onClick={() => setActiveTab(tab.key as any)}
+                className={`flex items-center space-x-1 px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${activeTab === tab.key
+                  ? 'bg-green-500 text-white shadow-sm'
+                  : 'text-green-100 hover:bg-green-600/50'
+                  }`}
+              >
+                {tab.icon}
+                <span className="hidden sm:inline">{tab.label}</span>
+              </button>
+            ))}
           </div>
-          <button
-            onClick={() => setIsNewAppointmentModalOpen(true)}
-            className="flex items-center space-x-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md transition-colors shadow-lg"
-          >
-            <Plus className="w-4 h-4" />
-            <span>Nova Consulta</span>
-          </button>
         </div>
 
-        {/* Tabs */}
-        <div className="flex space-x-2">
-          {[
-            { key: 'calendar', label: 'Calendário', icon: <Calendar className="w-4 h-4" /> },
-            { key: 'list', label: 'Lista', icon: <Users className="w-4 h-4" /> },
-            { key: 'analytics', label: 'Analytics', icon: <BarChart3 className="w-4 h-4" /> }
-          ].map((tab) => (
-            <button
-              key={tab.key}
-              onClick={() => setActiveTab(tab.key as any)}
-              className={`flex items-center space-x-2 px-4 py-2 rounded-md transition-colors ${activeTab === tab.key
-                ? 'bg-green-600 text-white'
-                : 'bg-green-700 text-green-200 hover:bg-green-600'
-                }`}
-            >
-              {tab.icon}
-              <span>{tab.label}</span>
-            </button>
-          ))}
-        </div>
+        <button
+          onClick={() => setIsNewAppointmentModalOpen(true)}
+          className="flex items-center space-x-1 px-3 py-1.5 bg-white text-green-700 hover:bg-green-50 rounded-md transition-colors shadow-sm text-xs font-bold uppercase tracking-wider"
+        >
+          <Plus className="w-4 h-4" />
+          <span>Nova Consulta</span>
+        </button>
       </div>
 
       {/* CALENDAR VIEW */}
@@ -354,7 +350,7 @@ const EduardoScheduling: React.FC<EduardoSchedulingProps> = ({ className = '', p
 
             {/* Empty Days */}
             {Array.from({ length: firstDay }).map((_, i) => (
-              <div key={`empty-${i}`} className="bg-slate-800/50 min-h-[120px]"></div>
+              <div key={`empty-${i}`} className="bg-slate-800/50 min-h-[90px]"></div>
             ))}
 
             {/* Actual Days */}
@@ -364,9 +360,9 @@ const EduardoScheduling: React.FC<EduardoSchedulingProps> = ({ className = '', p
               const isToday = new Date().toDateString() === new Date(year, month, day).toDateString()
 
               return (
-                <div key={day} className={`bg-slate-800 min-h-[120px] p-2 hover:bg-slate-700/50 transition-colors border-t border-slate-700 ${isToday ? 'bg-slate-700/30 ring-1 ring-inset ring-green-500' : ''}`}>
-                  <div className="text-right mb-2">
-                    <span className={`text-sm font-medium ${isToday ? 'bg-green-600 text-white w-6 h-6 rounded-full inline-flex items-center justify-center' : 'text-slate-400'}`}>
+                <div key={day} className={`bg-slate-800 min-h-[90px] p-1 hover:bg-slate-700/50 transition-colors border-t border-slate-700 ${isToday ? 'bg-slate-700/30 ring-1 ring-inset ring-green-500' : ''}`}>
+                  <div className="text-right mb-1">
+                    <span className={`text-xs font-medium ${isToday ? 'bg-green-600 text-white w-5 h-5 rounded-full inline-flex items-center justify-center' : 'text-slate-400'}`}>
                       {day}
                     </span>
                   </div>
