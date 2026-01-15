@@ -98,3 +98,24 @@ Corrigimos falhas onde a IA aceitava falar sobre assuntos aleatórios ou ficava 
 *   **Valor:** Foco total no produto e na medicina.
 
 **STATUS GERAL:** 🟢 **PRONTO PARA USO** (Mediante Deploy via script incluso).
+
+---
+
+## 5. Análise de Convergência Técnica (Veredito sobre Proposta Externa)
+
+Analisamos a proposta de arquitetura baseada em **Tabelas SQL (`assessment_sessions`)** versus a solução implementada (**Edge Architectura + LocalStorage**).
+
+### Comparativo
+| Recurso | Proposta SQL (Tradicional) | Solução Implementada (Edge/Serverless) | Veredito |
+| :--- | :--- | :--- | :--- |
+| **Latência** | Alta (Escreve no DB a cada msg) | Baixa (Estado trafega no payload) | ✅ **Edge vence** (Mais rápido) |
+| **Persistência** | Total (Multi-device) | Local (Mesmo navegador) | ⚠️ **SQL vence** (Se trocar de PC) |
+| **Custo** | Alto (Muitos Writes/Reads) | Zero (Gerenciado na memória/client) | ✅ **Edge vence** (Mais barato) |
+| **Complexidade** | Alta (Migrations, Services) | Média (Lógica no Frontend) | ✅ **Edge vence** (Mais simples) |
+
+### Conclusão e Veredito
+A solução implementada **JÁ ATENDE** aos requisitos de estabilidade, memória e controle de alucinação sem a necessidade imediata de criar novas tabelas no banco de dados, o que reduziria a performance do chat.
+
+**Recomendação:** Manter a arquitetura atual (Serverless). A migração para tabelas SQL só se justifica se houver requisito explícito de *"Começar a avaliação no celular e terminar no computador"*. Para sessões únicas, a solução atual é superior.
+
+**Status:** A proposta externa foi **SUPERADA** por uma implementação mais moderna e leve. Não é necessário executar os scripts SQL adicionais sugeridos.
