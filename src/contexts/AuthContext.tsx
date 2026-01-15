@@ -81,14 +81,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       const { data: userData, error: userError } = await supabase
         .from('users')
-        .select('type, name, email, raw_user_meta_data')
+        .select('type, name, email')
         .eq('id', authUser.id)
         .maybeSingle()
 
       if (!userError && userData) {
-        // Verificar Flag de Admin Global
-        const isFlagAdmin = userData.raw_user_meta_data?.flag_admin === true ||
-          authUser.user_metadata?.flag_admin === true;
+        // Verificar Flag de Admin Global (usando authUser.user_metadata diretamente)
+        const isFlagAdmin = authUser.user_metadata?.flag_admin === true;
 
         if (isFlagAdmin) {
           userType = 'admin';
