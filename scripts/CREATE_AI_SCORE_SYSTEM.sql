@@ -5,7 +5,7 @@
 CREATE TABLE IF NOT EXISTS public.ai_assessment_scores (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   assessment_id TEXT REFERENCES public.clinical_reports(id),
-  user_id UUID REFERENCES auth.users(id),
+  patient_id UUID REFERENCES auth.users(id), -- Renomeado de user_id para clareza semântica
   completed BOOLEAN NOT NULL DEFAULT false,
   phases_completed INTEGER NOT NULL DEFAULT 0,
   total_phases INTEGER NOT NULL DEFAULT 10,
@@ -18,7 +18,7 @@ CREATE TABLE IF NOT EXISTS public.ai_assessment_scores (
 );
 
 -- Index para queries rápidas
-CREATE INDEX IF NOT EXISTS idx_ai_assessment_scores_user_id ON public.ai_assessment_scores(user_id);
+CREATE INDEX IF NOT EXISTS idx_ai_assessment_scores_patient_id ON public.ai_assessment_scores(patient_id);
 CREATE INDEX IF NOT EXISTS idx_ai_assessment_scores_created_at ON public.ai_assessment_scores(created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_ai_assessment_scores_completed ON public.ai_assessment_scores(completed);
 
@@ -96,7 +96,7 @@ CREATE POLICY "Admins can view all scores"
 CREATE POLICY "Users can view own scores"
   ON public.ai_assessment_scores
   FOR SELECT
-  USING (user_id = auth.uid());
+  USING (patient_id = auth.uid());
 
 COMMENT ON TABLE public.ai_assessment_scores IS 'Rastreamento de qualidade e performance da IA Nôa - Score: +1.5 se completo, -1.0 se travou';
 COMMENT ON VIEW public.v_ai_quality_metrics IS 'Métricas agregadas de qualidade da IA por dia';
