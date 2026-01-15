@@ -2,7 +2,8 @@
 
 Bem-vindo ao repositório do **MedCannLab 3.0**. Este documento serve como guia definitivo de arquitetura, padrões e manutenção para a equipe técnica.
 
-> **⚠️ ESTADO DO PROJETO:** Em produção (Estável). Documentação atualizada em 09/01/2026.
+> **⚠️ ESTADO DO PROJETO:** Em produção (Estável). Documentação atualizada em 15/01/2026.
+> **Última Atualização:** [RELATÓRIO TÉCNICO 15/01/2026](./docs/RELATORIO_TECNICO_STATUS_2026-01-15.md) - Refinamento da IA e Correção de Build.
 
 ---
 
@@ -65,7 +66,7 @@ Para evitar perdas de tempo debugando módulos que ainda não existem no backend
 | **Prontuário** | 🟢 100% Real | Tabela `clinical_assessments`. Leitura/Escrita completa. |
 | **Chat** | 🟢 100% Real | Tabela `chat_messages` + `chat_rooms`. Realtime via Supabase. |
 | **Vídeo Chamada** | 🔴 Mock | UI existe (`VideoCall.tsx`), mas **não** tem servidor WebRTC/Twilio. |
-| **IA (Nôa)** | 🟡 Simulado | Chat funciona, mas respostas são scriptadas. Não consome API OpenAI. |
+| **IA (Nôa)** | 🟢 Real | Chat Integrado via Supabase Edge Function (`tradevision-core`) + OpenAI GPT-4o. |
 | **Prescrições** | 🟡 Híbrido | Gera dados na tela, mas PDF é render html-to-pdf frontend. |
 
 ---
