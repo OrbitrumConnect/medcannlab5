@@ -192,6 +192,7 @@ const EduardoScheduling: React.FC<EduardoSchedulingProps> = ({ className = '', p
         status: 'scheduled',
         type: newAppointment.specialty,
         notes: newAppointment.notes,
+        title: `${newAppointment.service === 'primeira' ? 'Primeira Consulta' : newAppointment.service === 'retorno' ? 'Retorno' : 'Urgência'} - ${newAppointment.specialty}`
       })
 
       if (error) throw error
