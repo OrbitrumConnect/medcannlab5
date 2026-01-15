@@ -279,6 +279,18 @@ const EduardoScheduling: React.FC<EduardoSchedulingProps> = ({ className = '', p
     }
   }
 
+  const handleDayClick = (day: number) => {
+    const selectedDate = new Date(year, month, day)
+    // Formato YYYY-MM-DD
+    const dateStr = `${selectedDate.getFullYear()}-${String(selectedDate.getMonth() + 1).padStart(2, '0')}-${String(selectedDate.getDate()).padStart(2, '0')}`
+
+    setNewAppointment(prev => ({
+      ...prev,
+      date: dateStr
+    }))
+    setIsNewAppointmentModalOpen(true)
+  }
+
   return (
     <div className={`space-y-6 ${className}`}>
       {/* Header Compacto */}
@@ -360,11 +372,18 @@ const EduardoScheduling: React.FC<EduardoSchedulingProps> = ({ className = '', p
               const isToday = new Date().toDateString() === new Date(year, month, day).toDateString()
 
               return (
-                <div key={day} className={`bg-slate-800 min-h-[100px] p-1.5 hover:bg-slate-700/50 transition-colors border-t border-slate-700 ${isToday ? 'bg-slate-700/30 ring-1 ring-inset ring-green-500' : ''}`}>
-                  <div className="text-right mb-1.5">
-                    <span className={`text-xs font-semibold px-1.5 py-0.5 rounded-md ${isToday ? 'bg-green-600 text-white shadow-sm' : 'text-slate-500'}`}>
+                <div
+                  key={day}
+                  onClick={() => handleDayClick(day)}
+                  className={`bg-slate-800 min-h-[100px] p-1.5 hover:bg-slate-700/80 transition-colors border-t border-slate-700 cursor-pointer group ${isToday ? 'bg-slate-700/30 ring-1 ring-inset ring-green-500' : ''}`}
+                >
+                  <div className="flex justify-between items-start mb-1.5">
+                    <span className={`text-xs font-semibold px-1.5 py-0.5 rounded-md ${isToday ? 'bg-green-600 text-white shadow-sm' : 'text-slate-500 group-hover:text-slate-300'}`}>
                       {day}
                     </span>
+                    <div className="opacity-0 group-hover:opacity-100 transition-opacity">
+                      <Plus className="w-3 h-3 text-green-500" />
+                    </div>
                   </div>
                   <div className="space-y-1">
                     {dayAppointments.map(app => (
