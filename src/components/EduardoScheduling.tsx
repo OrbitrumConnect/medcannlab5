@@ -21,7 +21,8 @@ import {
   ChevronRight,
   MessageCircle,
   X,
-  Phone
+  Phone,
+  Check
 } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
@@ -67,6 +68,7 @@ const EduardoScheduling: React.FC<EduardoSchedulingProps> = ({ className = '', p
   const [isNewAppointmentModalOpen, setIsNewAppointmentModalOpen] = useState(false)
   const [patientsList, setPatientsList] = useState<{ id: string, name: string }[]>([])
   const [saving, setSaving] = useState(false)
+  const [showSuccess, setShowSuccess] = useState(false) // Novo estado para feedback visual
 
   // Detalhes do Agendamento (Modal)
   const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null)
@@ -176,7 +178,7 @@ const EduardoScheduling: React.FC<EduardoSchedulingProps> = ({ className = '', p
 
   const handleCreateAppointment = async () => {
     if (!newAppointment.patientId || !newAppointment.date || !newAppointment.time) {
-      alert("Preencha os campos obrigatórios!")
+      alert("Preencha os campos obrigatórios!") // Mantido para validação
       return
     }
 
@@ -197,8 +199,8 @@ const EduardoScheduling: React.FC<EduardoSchedulingProps> = ({ className = '', p
 
       if (error) throw error
 
-      alert('Agendamento criado com sucesso!')
-      setIsNewAppointmentModalOpen(false)
+      // SUCESSO ELEGANTE
+      setShowSuccess(true)
       loadData()
 
       setNewAppointment({
@@ -210,6 +212,12 @@ const EduardoScheduling: React.FC<EduardoSchedulingProps> = ({ className = '', p
         service: 'primeira',
         notes: ''
       })
+
+      // Fechar modal após 2 segundos
+      setTimeout(() => {
+        setShowSuccess(false)
+        setIsNewAppointmentModalOpen(false)
+      }, 2000)
 
     } catch (err: any) {
       console.error("Erro ao criar agendamento:", err)
@@ -230,7 +238,7 @@ const EduardoScheduling: React.FC<EduardoSchedulingProps> = ({ className = '', p
 
       if (error) throw error
 
-      alert('Agendamento cancelado.')
+      alert('Agendamento cancelado.') // Aqui pode ficar alert simples por enquanto
       setIsDetailsModalOpen(false)
       loadData()
     } catch (err: any) {
@@ -392,7 +400,6 @@ const EduardoScheduling: React.FC<EduardoSchedulingProps> = ({ className = '', p
       {/* List View */}
       {activeTab === 'list' && (
         <div className="space-y-4">
-          {/* ... keeping simplified list logic ... */}
           <div className="bg-slate-800 border border-slate-700 rounded-lg p-4">
             <input
               type="text"
@@ -422,9 +429,20 @@ const EduardoScheduling: React.FC<EduardoSchedulingProps> = ({ className = '', p
 
       {/* Modal de Novo Agendamento */}
       {isNewAppointmentModalOpen && (
-        // ... (Reusing existing New Appointment Modal - Omitted to save space but assuming it's here) ...
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 text-left">
-          <div className="bg-slate-800 border border-slate-700 rounded-xl w-full max-w-2xl shadow-2xl animate-in fade-in zoom-in duration-200 flex flex-col max-h-[90vh]">
+          <div className="bg-slate-800 border border-slate-700 rounded-xl w-full max-w-2xl shadow-2xl animate-in fade-in zoom-in duration-200 flex flex-col max-h-[90vh] relative overflow-hidden">
+
+            {/* SUCESSO ELEGANTE - OVERLAY */}
+            {showSuccess && (
+              <div className="absolute inset-0 z-50 bg-slate-800 flex flex-col items-center justify-center animate-in fade-in duration-300">
+                <div className="w-20 h-20 bg-green-500/20 rounded-full flex items-center justify-center mb-6 animate-bounce">
+                  <Check className="w-10 h-10 text-green-400" />
+                </div>
+                <h3 className="text-2xl font-bold text-white mb-2">Agendamento Realizado!</h3>
+                <p className="text-slate-400">Consulta confirmada no calendário.</p>
+              </div>
+            )}
+
             <div className="flex items-center justify-between p-6 border-b border-slate-700 shrink-0">
               <h3 className="text-xl font-bold text-white flex items-center gap-2">
                 <Calendar className="w-5 h-5 text-green-500" />
@@ -433,6 +451,7 @@ const EduardoScheduling: React.FC<EduardoSchedulingProps> = ({ className = '', p
               <button
                 onClick={() => setIsNewAppointmentModalOpen(false)}
                 className="text-slate-400 hover:text-white transition-colors"
+                disabled={showSuccess}
               >
                 <Trash2 className="w-5 h-5 rotate-45" />
                 <span className="sr-only">Fechar</span>
@@ -466,8 +485,8 @@ const EduardoScheduling: React.FC<EduardoSchedulingProps> = ({ className = '', p
                 </div>
               </div>
               <div className="p-6 border-t border-slate-700 flex justify-end gap-3 shrink-0">
-                <button onClick={() => setIsNewAppointmentModalOpen(false)} className="px-6 py-2.5 text-slate-300 hover:text-white hover:bg-slate-700 rounded-lg transition-colors font-medium">Cancelar</button>
-                <button onClick={handleCreateAppointment} className="px-6 py-2.5 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium shadow-lg hover:scale-105">Agendar</button>
+                <button onClick={() => setIsNewAppointmentModalOpen(false)} className="px-6 py-2.5 text-slate-300 hover:text-white hover:bg-slate-700 rounded-lg transition-colors font-medium" disabled={showSuccess}>Cancelar</button>
+                <button onClick={handleCreateAppointment} className="px-6 py-2.5 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium shadow-lg hover:scale-105" disabled={saving || showSuccess}>Agendar</button>
               </div>
             </div>
           </div>

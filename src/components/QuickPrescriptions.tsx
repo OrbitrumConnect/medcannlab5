@@ -15,7 +15,8 @@ import {
   Printer,
   Save,
   Trash2,
-  Loader2
+  Loader2,
+  Check
 } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
@@ -41,7 +42,7 @@ interface QuickPrescriptionsProps {
 }
 
 const QuickPrescriptions: React.FC<QuickPrescriptionsProps> = ({ className = '', patientId }) => {
-  const { user } = useAuth() // Hook de auth para pegar ID do profissional
+  const { user } = useAuth()
   const [selectedCategory, setSelectedCategory] = useState<string>('all')
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedTemplate, setSelectedTemplate] = useState<PrescriptionTemplate | null>(null)
@@ -53,6 +54,7 @@ const QuickPrescriptions: React.FC<QuickPrescriptionsProps> = ({ className = '',
   // Lista de Pacientes Reais
   const [patientsList, setPatientsList] = useState<{ id: string, name: string }[]>([])
   const [saving, setSaving] = useState(false)
+  const [showSuccess, setShowSuccess] = useState(false) // Novo estado para feedback visual
 
   // Estado do Formulário de Prescrição (para edição)
   const [prescriptionForm, setPrescriptionForm] = useState({
@@ -91,7 +93,7 @@ const QuickPrescriptions: React.FC<QuickPrescriptionsProps> = ({ className = '',
 
   const handleSavePrescription = async () => {
     if (!selectedPatient || !prescriptionForm.medication) {
-      alert('Selecione um paciente e preencha a medicação.')
+      alert('Selecione um paciente e preencha a medicação.') // Esse alert de validação pode ficar ou mudar para toast depois
       return
     }
 
@@ -110,13 +112,13 @@ const QuickPrescriptions: React.FC<QuickPrescriptionsProps> = ({ className = '',
       })
 
       if (error) {
-        // Se erro for tabela nao existe, tenta medical_records ou avisa
         console.error('Erro ao salvar prescrição:', error)
         throw new Error('Falha ao salvar no banco de dados. Verifique se a tabela prescriptions existe.')
       }
 
-      alert('Prescrição salva com sucesso!')
-      setIsModalOpen(false)
+      // SUCESSO ELEGANTE
+      setShowSuccess(true)
+
       // Limpar form
       setPrescriptionForm({
         medication: '',
@@ -126,8 +128,14 @@ const QuickPrescriptions: React.FC<QuickPrescriptionsProps> = ({ className = '',
         notes: ''
       })
 
+      // Fechar modal após 2 segundos
+      setTimeout(() => {
+        setShowSuccess(false)
+        setIsModalOpen(false)
+      }, 2000)
+
     } catch (err: any) {
-      alert(err.message)
+      alert(err.message) // Erro mantém alert por enquanto para garantir leitura
     } finally {
       setSaving(false)
     }
@@ -338,7 +346,19 @@ const QuickPrescriptions: React.FC<QuickPrescriptionsProps> = ({ className = '',
       {/* MODAL DE NOVA PRESCRIÇÃO */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 text-left">
-          <div className="bg-slate-800 border border-slate-700 rounded-xl w-full max-w-2xl shadow-2xl animate-in fade-in zoom-in duration-200 flex flex-col max-h-[90vh]">
+          <div className="bg-slate-800 border border-slate-700 rounded-xl w-full max-w-2xl shadow-2xl animate-in fade-in zoom-in duration-200 flex flex-col max-h-[90vh] relative overflow-hidden">
+
+            {/* SUCESSO ELEGANTE - OVERLAY */}
+            {showSuccess && (
+              <div className="absolute inset-0 z-50 bg-slate-800 flex flex-col items-center justify-center animate-in fade-in duration-300">
+                <div className="w-20 h-20 bg-green-500/20 rounded-full flex items-center justify-center mb-6 animate-bounce">
+                  <Check className="w-10 h-10 text-green-400" />
+                </div>
+                <h3 className="text-2xl font-bold text-white mb-2">Prescrição Salva!</h3>
+                <p className="text-slate-400">Registrado com sucesso no prontuário.</p>
+              </div>
+            )}
+
             <div className="flex items-center justify-between p-6 border-b border-slate-700 shrink-0">
               <h3 className="text-xl font-bold text-white flex items-center gap-2">
                 <FileText className="w-5 h-5 text-green-500" />
@@ -347,6 +367,7 @@ const QuickPrescriptions: React.FC<QuickPrescriptionsProps> = ({ className = '',
               <button
                 onClick={() => setIsModalOpen(false)}
                 className="text-slate-400 hover:text-white transition-colors"
+                disabled={showSuccess}
               >
                 <X className="w-5 h-5" />
                 <span className="sr-only">Fechar</span>
@@ -454,12 +475,13 @@ const QuickPrescriptions: React.FC<QuickPrescriptionsProps> = ({ className = '',
               <button
                 onClick={() => setIsModalOpen(false)}
                 className="px-6 py-2.5 text-slate-300 hover:text-white hover:bg-slate-700 rounded-lg transition-colors font-medium border border-transparent hover:border-slate-600"
+                disabled={showSuccess}
               >
                 Cancelar
               </button>
               <button
                 onClick={handleSavePrescription}
-                disabled={saving}
+                disabled={saving || showSuccess}
                 className="px-6 py-2.5 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium shadow-lg shadow-green-900/20 transition-all hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
               >
                 {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <><Save className="w-4 h-4" /> Salvar Prescrição</>}
