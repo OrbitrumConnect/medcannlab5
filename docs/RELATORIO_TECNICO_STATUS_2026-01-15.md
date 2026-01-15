@@ -29,21 +29,25 @@ Arquivo: `supabase/functions/tradevision-core/index.ts`
 
 1.  **System Prompt Reforçado:**
     *   Inserida instrução explícita de **BLOQUEIO DE TÓPICOS**: "Se o usuário perguntar sobre assuntos fora do seu domínio... RECUSE educadamente."
-    *   **Protocolo de Teste de Admin:** Adicionada regra de exceção para permitir que Admins solicitem "Simulação" ou "Teste", ativando o modo de avaliação clínica mesmo para usuários privilegiados.
+    *   **Protocolo de Teste de Admin:** Adicionada regra de exceção para permitir que Admins solicitem "Simulação" ou "Teste", ativando o modo de avaliação clínica.
 
-2.  **Automação de Deploy:**
-    *   Criado o script `DEPLOY_NOA.bat` na raiz para facilitar a atualização da Edge Function no Supabase sem necessidade de decorar comandos CLI complexos.
+2.  **Sincronização de Estado (AEC 001):**
+    *   **Payload Estendido:** A Edge Function agora aceita o parâmetro `assessmentPhase`.
+    *   **Injeção de Contexto:** A fase atual do protocolo (ex: 'QUEIXA PRINCIPAL') é injetada dinamicamente no System Prompt, instruindo a IA a focar *exclusivamente* naquela etapa até que seja concluída.
 
-### B. Correção de TypeScript (Build Repair)
+3.  **Automação de Deploy:**
+    *   Criado o script `DEPLOY_NOA.bat` na raiz para facilitar a atualização da Edge Function no Supabase.
+
+### B. Correção de TypeScript e Integração de Fluxo
 Arquivos afetados: `src/lib/noaResidentAI.ts`, `src/contexts/NoaContext.tsx`, `src/pages/ProfessionalDashboard.tsx`, `src/lib/clinicalAssessmentFlow.ts`.
 
-1.  **Interfaces Exportadas:** Adicionado `export` à interface `IMREAssessmentState` em `noaResidentAI.ts` para permitir seu uso global.
-2.  **Extensão de Tipos:** Adicionado campo opcional `suggestions?: string[]` à interface `AIResponse`.
-3.  **Limpeza de Imports:** Removida a tentativa de importar `residentAIConfig` inexistente em `NoaContext.tsx`.
-4.  **Casting e Segurança:**
-    *   Implementado type casting explícito (`as any` / `as keyof`) no fluxo de avaliação para lidar com propriedades dinâmicas.
-    *   Adicionado *Optional Chaining* (`?.`) no serviço de avaliação para prevenir crashes em runtime.
-    *   Corrigida a chamada de `getAllPatients` passando o objeto `user` completo e normalizando o status do paciente para tipos literais válidos.
+1.  **Conexão Frontend -> Edge:**
+    *   `NoaResidentAI` foi conectado ao `clinicalAssessmentFlow` para ler o estado atual do usuário.
+    *   A cada mensagem, o sistema verifica a fase clínica e a envia para a nuvem, garantindo que a "memória" da conversa esteja alinhada com o roteiro estruturado.
+2.  **Interfaces Exportadas:** Adicionado `export` à interface `IMREAssessmentState`.
+3.  **Extensão de Tipos:** Adicionado campo `suggestions` à interface `AIResponse`.
+4.  **Limpeza de Imports:** Removidos imports quebrados em `NoaContext.tsx`.
+5.  **Casting e Segurança:** Implementado type casting seguro no fluxo de avaliação e tratamentos de nulos.
 
 ---
 
