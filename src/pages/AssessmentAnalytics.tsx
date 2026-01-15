@@ -8,6 +8,7 @@ import {
     accentGradient,
     colors
 } from '../constants/designSystem'
+import ClinicalScoresVisualizer from '../components/ClinicalScoresVisualizer'
 
 interface ClinicalReport {
     id: string
@@ -442,9 +443,19 @@ export default function AssessmentAnalytics() {
                                             ))}
                                         </div>
 
+                                        {/* Visualização de Scores */}
+                                        {selectedReport.content?.scores && (
+                                            <div className="mb-6">
+                                                <ClinicalScoresVisualizer
+                                                    scores={selectedReport.content.scores}
+                                                    recommendations={selectedReport.content.recommendations}
+                                                />
+                                            </div>
+                                        )}
+
                                         <div className="p-6 rounded-xl" style={cardStyle}>
                                             <h3 className="font-bold mb-4" style={{ color: colors.text.primary }}>
-                                                📋 Conteúdo Estruturado:
+                                                📋 Conteúdo Estruturado (JSON):
                                             </h3>
                                             <pre className="text-xs p-4 rounded-lg overflow-x-auto" style={{
                                                 background: 'rgba(0,0,0,0.3)',
