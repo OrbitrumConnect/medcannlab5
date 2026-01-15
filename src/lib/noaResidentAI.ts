@@ -1355,6 +1355,9 @@ Gere apenas a próxima pergunta sobre hábitos de vida.`
               const stepResult = clinicalAssessmentFlow.processResponse(platformData.user.id, userMessage)
               console.log(`✅ Fluxo AEC avançou para: ${stepResult.phase}`)
               nextQuestionHint = stepResult.nextQuestion
+
+              // Persistir estado
+              clinicalAssessmentFlow.persist()
             }
 
             // Recarrega estado atualizado

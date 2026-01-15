@@ -70,6 +70,35 @@ export interface AssessmentState {
 
 export class ClinicalAssessmentFlow {
   private states: Map<string, AssessmentState> = new Map()
+  private readonly STORAGE_KEY = 'medcannlab_aec_states_v1'
+
+  constructor() {
+    // Tentar restaurar do localStorage ao iniciar
+    try {
+      const saved = localStorage.getItem(this.STORAGE_KEY)
+      if (saved) {
+        const parsed = JSON.parse(saved)
+        // Converter strings de data de volta para objetos Date
+        Object.keys(parsed).forEach(key => {
+          const state = parsed[key]
+          if (state.startedAt) state.startedAt = new Date(state.startedAt)
+          if (state.lastUpdate) state.lastUpdate = new Date(state.lastUpdate)
+          this.states.set(key, state)
+        })
+      }
+    } catch (e) {
+      console.warn('Falha ao restaurar estado AEC do localStorage', e)
+    }
+  }
+
+  public persist() {
+    try {
+      const obj = Object.fromEntries(this.states)
+      localStorage.setItem(this.STORAGE_KEY, JSON.stringify(obj))
+    } catch (e) {
+      console.warn('Falha ao persistir estado AEC no localStorage', e)
+    }
+  }
 
   /**
    * Inicia uma nova avaliação clínica inicial
@@ -96,6 +125,7 @@ export class ClinicalAssessmentFlow {
     }
 
     this.states.set(userId, state)
+    this.persist()
     return state
   }
 
