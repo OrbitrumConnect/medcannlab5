@@ -44,6 +44,7 @@ import {
   Share2,
   Loader2
 } from 'lucide-react'
+import { CreatePatientModal } from '../components/CreatePatientModal'
 import { supabase } from '../lib/supabase'
 import { getAllPatients, isAdmin } from '../lib/adminPermissions'
 import { KnowledgeBaseIntegration, KnowledgeDocument, KnowledgeStats } from '../services/knowledgeBaseIntegration'
@@ -161,6 +162,7 @@ interface NoaCommandDetail {
 }
 
 const RicardoValencaDashboard: React.FC = () => {
+  const [showCreatePatientModal, setShowCreatePatientModal] = useState(false)
   const { user } = useAuth()
   const { isAdminViewingAs, viewAsType, setViewAsType, getEffectiveUserType } = useUserView()
   const navigate = useNavigate()
@@ -1576,16 +1578,25 @@ const RicardoValencaDashboard: React.FC = () => {
           {/* Left Sidebar - Patient List */}
           <div className="lg:col-span-1">
             <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl border border-slate-700/50">
-              <div className="p-4 border-b border-slate-700">
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-5 h-5" />
-                  <input
-                    type="text"
-                    placeholder="Buscar paciente..."
-                    className="w-full pl-10 pr-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    value={patientSearch}
-                    onChange={(e) => setPatientSearch(e.target.value)}
-                  />
+              <div className="p-4 border-b border-slate-700 space-y-3">
+                <div className="flex items-center gap-2">
+                  <div className="relative flex-1">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-5 h-5" />
+                    <input
+                      type="text"
+                      placeholder="Buscar paciente..."
+                      className="w-full pl-10 pr-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      value={patientSearch}
+                      onChange={(e) => setPatientSearch(e.target.value)}
+                    />
+                  </div>
+                  <button
+                    onClick={() => setShowCreatePatientModal(true)}
+                    className="p-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg transition-colors tooltip-trigger"
+                    title="Adicionar Novo Paciente"
+                  >
+                    <Plus className="w-5 h-5" />
+                  </button>
                 </div>
               </div>
               <div className="p-4 h-[calc(100vh-300px)] overflow-y-auto">
@@ -5022,6 +5033,14 @@ const RicardoValencaDashboard: React.FC = () => {
           </div>
         </div>
       )}
+      <CreatePatientModal
+        isOpen={showCreatePatientModal}
+        onClose={() => setShowCreatePatientModal(false)}
+        onSuccess={() => {
+          loadPatients()
+          alert('Paciente adicionado com sucesso!')
+        }}
+      />
     </div>
   )
 }
