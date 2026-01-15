@@ -36,6 +36,14 @@ serve(async (req) => {
         // 4. Extrair Dados da Requisição
         const { message, patientData, assessmentPhase, nextQuestionHint } = await req.json()
 
+        console.log('📥 [REQUEST]', {
+            messageLength: message?.length || 0,
+            userId: patientData?.user?.id?.substring(0, 8) || 'unknown',
+            intent: patientData?.intent || 'none',
+            assessmentPhase: assessmentPhase || 'none',
+            hasNextQuestion: !!nextQuestionHint
+        })
+
         if (!message) throw new Error('Mensagem não fornecida.')
 
         // Instrução dinâmica de fase (controle de fluxo)
@@ -97,9 +105,17 @@ ${JSON.stringify(patientData, null, 2)}`
 
         const aiResponse = completion.choices[0].message.content
 
+        console.log('🤖 [AI RESPONSE]', {
+            responseLength: aiResponse?.length || 0,
+            tokensUsed: completion.usage?.total_tokens || 0,
+            model: completion.model
+        })
+
         // 7. Registro Automático de Auditoria (Simbologia de Escuta)
         if (patientData?.user?.id) {
             const currentIntent = patientData?.intent || 'CLÍNICA'
+            const simbologia = currentIntent === 'CLÍNICA' ? '🔴 Escuta Clínica' : (currentIntent === 'ADMINISTRATIVA' ? '🔵 Escuta Institucional' : '🟢 Escuta Técnica')
+
             await supabaseClient.from('ai_chat_interactions').insert({
                 user_id: patientData.user.id,
                 user_message: message,
@@ -109,8 +125,16 @@ ${JSON.stringify(patientData, null, 2)}`
                     system: "TradeVision Core V2",
                     model: 'gpt-4o',
                     audited: true,
-                    simbologia: currentIntent === 'CLÍNICA' ? '🔴 Escuta Clínica' : (currentIntent === 'ADMINISTRATIVA' ? '🔵 Escuta Institucional' : '🟢 Escuta Técnica')
+                    simbologia,
+                    assessmentPhase: assessmentPhase || null,
+                    tokensUsed: completion.usage?.total_tokens || 0
                 }
+            })
+
+            console.log('💾 [DB SAVED]', {
+                userId: patientData.user.id.substring(0, 8),
+                intent: currentIntent,
+                simbologia
             })
         }
 
