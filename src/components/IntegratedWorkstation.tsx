@@ -13,8 +13,10 @@ import {
     Brain,
     MessageCircle,
     LayoutDashboard,
-    Stethoscope
+    Stethoscope,
+    UserPlus
 } from 'lucide-react'
+import { CreatePatientModal } from '../components/CreatePatientModal'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
 import { getAllPatients } from '../lib/adminPermissions'
@@ -73,6 +75,7 @@ const IntegratedWorkstation: React.FC<IntegratedWorkstationProps> = ({ initialTa
 
     // Video Call
     const [isVideoCallOpen, setIsVideoCallOpen] = useState(false)
+    const [showCreatePatientModal, setShowCreatePatientModal] = useState(false)
 
     // Efeito para atualizar estado se props mudarem externamente
     useEffect(() => {
@@ -157,25 +160,38 @@ const IntegratedWorkstation: React.FC<IntegratedWorkstationProps> = ({ initialTa
                                     <div className="flex justify-center p-8"><Loader2 className="w-6 h-6 animate-spin text-blue-500" /></div>
                                 ) : (
                                     <div className="divide-y divide-[#334155]/50">
-                                        {filteredPatients.map(patient => (
-                                            <button
-                                                key={patient.id}
-                                                onClick={() => handlePatientSelect(patient.id)}
-                                                className={`w-full p-4 text-left transition-colors flex items-center gap-3 border-l-4 ${selectedPatientId === patient.id
+                                        {filteredPatients.length > 0 ? (
+                                            filteredPatients.map(patient => (
+                                                <button
+                                                    key={patient.id}
+                                                    onClick={() => handlePatientSelect(patient.id)}
+                                                    className={`w-full p-4 text-left transition-colors flex items-center gap-3 border-l-4 ${selectedPatientId === patient.id
                                                         ? 'bg-[#334155] border-blue-500 text-white'
                                                         : 'border-transparent hover:bg-[#334155]/50 text-slate-300'
-                                                    }`}
-                                            >
-                                                <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs shrink-0 ${selectedPatientId === patient.id ? 'bg-blue-600 text-white' : 'bg-slate-700 text-slate-300'
-                                                    }`}>
-                                                    {patient.name.charAt(0).toUpperCase()}
-                                                </div>
-                                                <div className="overflow-hidden min-w-0">
-                                                    <p className="font-medium truncate text-sm">{patient.name}</p>
-                                                    <p className="text-xs text-slate-500 truncate">{patient.email}</p>
-                                                </div>
-                                            </button>
-                                        ))}
+                                                        }`}
+                                                >
+                                                    <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs shrink-0 ${selectedPatientId === patient.id ? 'bg-blue-600 text-white' : 'bg-slate-700 text-slate-300'
+                                                        }`}>
+                                                        {patient.name.charAt(0).toUpperCase()}
+                                                    </div>
+                                                    <div className="overflow-hidden min-w-0">
+                                                        <p className="font-medium truncate text-sm">{patient.name}</p>
+                                                        <p className="text-xs text-slate-500 truncate">{patient.email}</p>
+                                                    </div>
+                                                </button>
+                                            ))
+                                        ) : (
+                                            <div className="p-8 text-center bg-[#1e293b]/30 m-4 rounded-xl border border-dashed border-slate-700">
+                                                <p className="text-slate-400 text-sm mb-3">Nenhum paciente encontrado com esse nome.</p>
+                                                <button
+                                                    onClick={() => setShowCreatePatientModal(true)}
+                                                    className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-sm font-medium transition-colors inline-flex items-center gap-2"
+                                                >
+                                                    <UserPlus className="w-4 h-4" />
+                                                    Cadastrar Novo
+                                                </button>
+                                            </div>
+                                        )}
                                     </div>
                                 )}
                             </div>
@@ -251,7 +267,16 @@ const IntegratedWorkstation: React.FC<IntegratedWorkstationProps> = ({ initialTa
                                         <Users className="w-10 h-10 text-slate-600" />
                                     </div>
                                     <h3 className="text-xl font-bold text-slate-300">Terminal de Atendimento</h3>
-                                    <p className="text-sm mt-2 max-w-md text-center">Selecione um paciente na lista à esquerda para carregar o prontuário e as ferramentas clínicas.</p>
+                                    <p className="text-sm mt-2 max-w-md text-center text-slate-400 mb-6">
+                                        Selecione um paciente na lista à esquerda para carregar o prontuário.
+                                    </p>
+                                    <button
+                                        onClick={() => setShowCreatePatientModal(true)}
+                                        className="px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white rounded-xl font-medium transition-all shadow-lg hover:shadow-blue-500/25 flex items-center gap-2"
+                                    >
+                                        <UserPlus className="w-5 h-5" />
+                                        Novo Atendimento (Cadastrar Paciente)
+                                    </button>
                                 </div>
                             )}
                         </div>
@@ -331,6 +356,15 @@ const IntegratedWorkstation: React.FC<IntegratedWorkstationProps> = ({ initialTa
                 // Removed: patientName, isVideo (not in interface)
                 />
             )}
+
+            <CreatePatientModal
+                isOpen={showCreatePatientModal}
+                onClose={() => setShowCreatePatientModal(false)}
+                onSuccess={() => {
+                    loadPatients()
+                    // Feedback visual opcional
+                }}
+            />
         </div>
     )
 }
