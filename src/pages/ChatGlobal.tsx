@@ -492,9 +492,10 @@ const ChatGlobal: React.FC = () => {
       const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString()
 
       // 1. Buscar IDs de quem mandou mensagem recentemente
+      // CORREÇÃO: Usar 'sender_id' em vez de 'user_id', pois é o nome correto na tabela chat_messages
       const { data: messagesData, error: msgError } = await supabase
         .from('chat_messages')
-        .select('user_id, created_at')
+        .select('sender_id, created_at')
         .gte('created_at', fiveMinutesAgo)
         .order('created_at', { ascending: false })
 
@@ -505,7 +506,8 @@ const ChatGlobal: React.FC = () => {
         return
       }
 
-      const activeUserIds = [...new Set(messagesData.map(m => m.user_id))]
+      // Extrair IDs únicos usando a coluna correta 'sender_id'
+      const activeUserIds = [...new Set(messagesData.map(m => m.sender_id))]
 
       // 2. Buscar detalhes desses usuários na tabela users
       const { data: usersData, error: usersError } = await supabase
@@ -520,8 +522,8 @@ const ChatGlobal: React.FC = () => {
         id: u.id,
         name: u.name || u.email?.split('@')[0] || 'Profissional',
         avatar: u.name?.substring(0, 1).toUpperCase() || 'P',
-        crm: '', // CRM removido da query pois não existe na tabela base facilmente
-        specialty: 'Medicina Canabinoide', // Placeholder seguro
+        crm: '',
+        specialty: 'Medicina Canabinoide',
         status: 'online'
       }))
 
