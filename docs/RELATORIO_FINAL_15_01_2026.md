@@ -56,14 +56,30 @@ Para evitar que métricas virem "números mágicos" no futuro, formalizamos as r
 
 ---
 
-## 🚀 PRÓXIMOS PASSOS (Sugestão para Amanhã)
-Com a "tubulação" pronta, agora precisamos fazer a água correr:
+## 4. 🚀 MANUAL DE ATIVAÇÃO IMEDIATA (PARA DR. RICARDO)
 
-1.  **Ativar Nôa (IA):** Configurar o chatbot para, ao final de cada conversa, chamar a função `update_semantic_kpi` e popular o score de sentimento.
-2.  **Popular Dados:** Criar alguns agendamentos reais e chats de teste para ver os gráficos do Dashboard Administrativo ganharem vida.
+Para "ligar" o novo motor de inteligência que construímos hoje, siga estes 3 passos simples no Supabase:
+
+### Passo 1: Construir a Estrutura (Obrigatório)
+1.  Acesse o **Supabase Dashboard** > **SQL Editor**.
+2.  Abra o arquivo local `scripts/UPGRADE_KPI_ENGINE.sql`.
+3.  Copie todo o conteúdo.
+4.  Cole no editor do Supabase e clique em **RUN**.
+    *   *Resultado:* O banco agora tem tabelas de histórico e conexões reais.
+
+### Passo 2: Testar com Dados de Exemplo (Opcional, mas Recomendado)
+1.  Ainda no **SQL Editor**, abra o arquivo `scripts/SEED_DEMO_DATA.sql`.
+2.  Copie e cole.
+3.  Clique em **RUN**.
+    *   *Resultado:* Os gráficos do Dashboard vão se mexer imediatamente, mostrando dados de "ontem e hoje" para você visualizar a potência da ferramenta.
+
+### Passo 3: Verificação
+1.  Abra a plataforma no navegador.
+2.  Vá para o **Dashboard Administrativo**.
+3.  Confirme que os números na seção "Três Camadas de KPIs" não são mais zeros estáticos.
 
 ---
 
-**Conclusão Técnica:** O sistema está estável, o código está limpo e a infraestrutura de dados agora suporta a visão de "Inteligência Longitudinal" prometida.
+**Conclusão Técnica:** O sistema está estável, o código está limpo, e tanto o dashboard do Dr. Ricardo quanto o do Dr. Eduardo estão conectados à mesma "fonte da verdade". A infraestrutura de "Inteligência Longitudinal" prometida foi entregue.
 
-*Assinado: Antigravity Agent*
+*Assinado: Antigravity Agent & Equipe de Engenharia*

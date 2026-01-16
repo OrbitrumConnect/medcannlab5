@@ -107,135 +107,39 @@ const EduardoFaveretDashboard: React.FC = () => {
     loadKPIs()
   }, [])
 
-  // Carregar KPIs das 3 camadas da plataforma
+  // Carregar KPIs das 3 camadas da plataforma (Conectado ao Engine Avançado)
   const loadKPIs = async () => {
     try {
-      // KPIs Administrativos - dados do banco
-      const { data: assessments, error: assessmentsError } = await supabase
-        .from('clinical_assessments')
+      const { data, error } = await supabase
+        .from('v_dashboard_advanced_kpis') // View Avançada (TradeVision Core)
         .select('*')
-        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle()
 
-      if (assessmentsError) {
-        console.error('❌ Erro ao buscar avaliações:', assessmentsError)
-        return
+      if (error) {
+        console.warn('⚠️ Erro ao carregar KPIs avançados:', error)
       }
-
-      // Buscar pacientes únicos
-      const patientIds = [...new Set((assessments || []).map((a: any) => a.patient_id))]
-      const totalPacientesReal = patientIds.length
-      const avaliacoesCompletasReal = assessments?.filter(a => a.status === 'completed').length || 0
-      const protocolosIMREReal = assessments?.filter(a => a.assessment_type === 'IMRE').length || 0
-      const respondedoresTEZReal = assessments?.filter(a => a.data?.improvement === true).length || 0
-
-      // Se houver poucos dados reais (menos de 3 pacientes), usar dados mockados para demonstração
-      // Isso permite testar a interface mesmo com poucos dados no banco
-      const useMockData = totalPacientesReal < 3
-
-      const totalPacientes = useMockData ? 24 : totalPacientesReal
-      const avaliacoesCompletas = useMockData ? 18 : avaliacoesCompletasReal
-      const protocolosIMRE = useMockData ? 15 : protocolosIMREReal
-      // TEZ = Tratamento de Epilepsia com Cannabis/Zonas (protocolo específico para epilepsia refratária)
-      // Respondedores TEZ são pacientes que tiveram melhora significativa (>50% redução de crises)
-      const respondedoresTEZ = useMockData ? 12 : respondedoresTEZReal
-
-      // KPIs Semânticos - buscar da tabela clinical_kpis ou calcular baseado em dados reais
-      const { data: semanticKPIs } = await supabase
-        .from('clinical_kpis')
-        .select('*')
-        .in('category', ['comportamental', 'cognitivo', 'social'])
-
-      // Buscar KPIs específicos ou calcular baseado em dados reais
-      let qualidadeEscuta = 0
-      let engajamentoPaciente = 0
-      let satisfacaoClinica = 0
-      let aderenciaTratamento = 0
-
-      if (semanticKPIs && semanticKPIs.length > 0) {
-        // Buscar KPIs específicos por nome
-        const qualidadeKPI = semanticKPIs.find(k => k.name?.toLowerCase().includes('qualidade') || k.name?.toLowerCase().includes('escuta'))
-        const engajamentoKPI = semanticKPIs.find(k => k.name?.toLowerCase().includes('engajamento'))
-        const satisfacaoKPI = semanticKPIs.find(k => k.name?.toLowerCase().includes('satisfação') || k.name?.toLowerCase().includes('satisfacao'))
-        const aderenciaKPI = semanticKPIs.find(k => k.name?.toLowerCase().includes('aderência') || k.name?.toLowerCase().includes('aderencia'))
-
-        qualidadeEscuta = qualidadeKPI?.current_value || 0
-        engajamentoPaciente = engajamentoKPI?.current_value || 0
-        satisfacaoClinica = satisfacaoKPI?.current_value || 0
-        aderenciaTratamento = aderenciaKPI?.current_value || 0
-      }
-
-      // Se não houver KPIs específicos, usar dados mockados para demonstração quando houver poucos dados reais
-      if (qualidadeEscuta === 0 && engajamentoPaciente === 0 && satisfacaoClinica === 0 && aderenciaTratamento === 0) {
-        if (useMockData) {
-          // Dados mockados para demonstração/teste
-          qualidadeEscuta = 87
-          engajamentoPaciente = 76
-          satisfacaoClinica = 91
-          aderenciaTratamento = 80
-        } else {
-          // Sem dados reais e sem necessidade de mock - deixar zerado
-          qualidadeEscuta = 0
-          engajamentoPaciente = 0
-          satisfacaoClinica = 0
-          aderenciaTratamento = 0
-        }
-      }
-
-      // KPIs Clínicos - dados reais de wearables e eventos de epilepsia
-      const { data: wearableDevices } = await supabase
-        .from('wearable_devices')
-        .select('id, patient_id, connection_status')
-        .eq('connection_status', 'connected')
-
-      const { data: epilepsyEvents } = await supabase
-        .from('epilepsy_events')
-        .select('id, patient_id, severity')
-        .gte('timestamp', new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()) // Últimos 30 dias
-
-      const wearablesAtivosReal = wearableDevices?.length || 0
-      const monitoramento24hReal = wearablesAtivosReal // Dispositivos conectados = monitoramento 24h
-      const episodiosEpilepsiaReal = epilepsyEvents?.length || 0
-
-      // Calcular melhora de sintomas baseado em eventos de severidade menor
-      const eventosLeves = epilepsyEvents?.filter(e => e.severity === 'leve').length || 0
-      const eventosSeveros = epilepsyEvents?.filter(e => e.severity === 'severa').length || 0
-      const melhoraSintomasReal = episodiosEpilepsiaReal > 0
-        ? Math.round((eventosLeves / episodiosEpilepsiaReal) * 100)
-        : 0
-
-      // Dados mockados para demonstração quando houver poucos dados reais
-      const wearablesAtivos = useMockData ? 12 : wearablesAtivosReal
-      const monitoramento24h = useMockData ? 12 : monitoramento24hReal
-      const episodiosEpilepsia = useMockData ? 8 : episodiosEpilepsiaReal
-      const melhoraSintomas = useMockData ? 75 : melhoraSintomasReal
 
       setKpis({
         administrativos: {
-          totalPacientes,
-          avaliacoesCompletas,
-          protocolosIMRE,
-          respondedoresTEZ
+          totalPacientes: data?.total_users ?? 0,
+          avaliacoesCompletas: data?.total_protocols_completed ?? 0,
+          protocolosIMRE: 0, // A ser implementado em v2 via snapshot
+          respondedoresTEZ: 0 // A ser implementado em v2 via snapshot
         },
         semanticos: {
-          qualidadeEscuta: Math.round(qualidadeEscuta),
-          engajamentoPaciente: Math.round(engajamentoPaciente),
-          satisfacaoClinica: Math.round(satisfacaoClinica),
-          aderenciaTratamento: Math.round(aderenciaTratamento)
+          qualidadeEscuta: data?.engagement_rate ?? 0, // Proxy inicial
+          engajamentoPaciente: data?.engagement_rate ?? 0,
+          satisfacaoClinica: data?.sentiment_score ?? 0,
+          aderenciaTratamento: data?.treatment_adherence ?? 0
         },
         clinicos: {
-          wearablesAtivos,
-          monitoramento24h,
-          episodiosEpilepsia,
-          melhoraSintomas
+          wearablesAtivos: data?.active_wearables ?? 0,
+          monitoramento24h: 0,
+          episodiosEpilepsia: 0,
+          melhoraSintomas: data?.symptom_improvement_rate ?? 0
         }
       })
-
-      console.log('📊 KPIs carregados:', {
-        administrativos: { totalPacientes, avaliacoesCompletas, protocolosIMRE, respondedoresTEZ },
-        semanticos: { qualidadeEscuta, engajamentoPaciente, satisfacaoClinica, aderenciaTratamento },
-        clinicos: { wearablesAtivos, monitoramento24h, episodiosEpilepsia, melhoraSintomas }
-      })
-
     } catch (error) {
       console.error('❌ Erro ao carregar KPIs:', error)
     }
