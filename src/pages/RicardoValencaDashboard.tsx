@@ -673,39 +673,39 @@ const RicardoValencaDashboard: React.FC = () => {
   // Debug para verificar seção ativa
   console.log('🎯 Seção ativa:', resolvedSection)
 
-  // Carregar KPIs das 3 camadas da plataforma
+  // Carregar KPIs das 3 camadas da plataforma (Conectado ao Engine Avançado)
   const loadKPIs = useCallback(async () => {
     try {
       const { data, error } = await supabase
-        .from('v_kpi_basic')
+        .from('v_dashboard_advanced_kpis') // View Avançada (TradeVision Core)
         .select('*')
         .limit(1)
         .maybeSingle()
 
       if (error) {
-        console.warn('⚠️ Erro ao carregar KPIs básicos:', error)
+        console.warn('⚠️ Erro ao carregar KPIs avançados:', error)
       }
 
       setKpis({
         administrativos: {
-          totalPacientes: data?.total_reports ?? 0,
-          avaliacoesCompletas: data?.total_assessments ?? 0,
-          protocolosAEC: 0,
-          protocolosIMRE: 0,
-          respondedoresTEZ: 0,
-          consultoriosAtivos: data?.total_appointments ?? 0
+          totalPacientes: data?.total_users ?? 0,
+          avaliacoesCompletas: data?.total_protocols_completed ?? 0,
+          protocolosAEC: 0, // A ser implementado em v2
+          protocolosIMRE: 0, // A ser implementado em v2
+          respondedoresTEZ: 0, // A ser implementado em v2
+          consultoriosAtivos: data?.total_appointments ?? 0 // Usando total appointments como proxy temporário
         },
         semanticos: {
-          qualidadeEscuta: 0,
-          engajamentoPaciente: 0,
-          satisfacaoClinica: 0,
-          aderenciaTratamento: 0
+          qualidadeEscuta: data?.engagement_rate ?? 0, // Proxy inicial
+          engajamentoPaciente: data?.engagement_rate ?? 0,
+          satisfacaoClinica: data?.sentiment_score ?? 0,
+          aderenciaTratamento: data?.treatment_adherence ?? 0
         },
         clinicos: {
-          wearablesAtivos: 0,
-          monitoramento24h: 0,
-          episodiosEpilepsia: 0,
-          melhoraSintomas: 0
+          wearablesAtivos: data?.active_wearables ?? 0,
+          monitoramento24h: 0, // Futuro
+          episodiosEpilepsia: 0, // Futuro
+          melhoraSintomas: data?.symptom_improvement_rate ?? 0
         }
       })
     } catch (error) {
