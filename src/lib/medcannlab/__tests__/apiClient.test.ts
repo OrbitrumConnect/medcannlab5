@@ -3,6 +3,13 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { MedCannLabApiClient } from '../apiClient'
 import type { MedCannLabApiKeyManager } from '../apiKeyManager'
 
+// Mock do auditLogger para evitar chamadas extras ao fetch (via Supabase)
+vi.mock('../auditLogger', () => ({
+  getAuditLogger: () => ({
+    log: vi.fn().mockResolvedValue(undefined)
+  })
+}))
+
 const createMockResponse = (payload: unknown, status = 200) => ({
   ok: status >= 200 && status < 300,
   status,
@@ -57,4 +64,3 @@ describe('MedCannLabApiClient', () => {
     expect(() => new MedCannLabApiClient({ baseUrl: 'http://insecure.test', apiKeyManager: stubKeyManager })).toThrow()
   })
 })
-

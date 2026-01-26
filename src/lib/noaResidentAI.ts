@@ -937,15 +937,28 @@ Gere apenas a próxima pergunta sobre hábitos de vida.`
   }
 
   private async getKnowledgeHighlight(query: string): Promise<{ id: string; title: string; summary: string } | null> {
-    // Mock implementation - connect to real vector search later
-    if (query.toLowerCase().includes('rim') || query.toLowerCase().includes('renal')) {
-      return {
-        id: 'mock-doc-renal-001',
-        title: 'Protocolo de Saúde Renal',
-        summary: 'Diretrizes para monitoramento de função renal em pacientes com uso de cannabis.'
+    try {
+      // 🦅 Restore RAG: Search actual documents using semantic search
+      const documents = await KnowledgeBaseIntegration.semanticSearch(query, {
+        limit: 1,
+        aiLinkedOnly: false // Allow searching all documents
+      })
+
+      if (documents && documents.length > 0) {
+        const topDoc = documents[0]
+        console.log('📚 RAG encontrado:', topDoc.title)
+        return {
+          id: topDoc.id,
+          title: topDoc.title,
+          summary: topDoc.summary || `Documento relevante encontrado na biblioteca: ${topDoc.title}`
+        }
       }
+
+      return null
+    } catch (error) {
+      console.error('⚠️ Erro no RAG (Semantic Search):', error)
+      return null
     }
-    return null
   }
 
   private async processGeneralQuery(
@@ -1059,6 +1072,21 @@ Gere apenas a próxima pergunta sobre hábitos de vida.`
   ): Promise<void> {
     if (!userId) return
 
+    // Tentar salvar offline primeiro (localStorage) como backup imediato
+    try {
+        const offlineKey = `medcannlab_chat_backup_${userId}`
+        const pendingInteractions = JSON.parse(localStorage.getItem(offlineKey) || '[]')
+        pendingInteractions.push({
+            userMessage,
+            aiResponse,
+            timestamp: new Date().toISOString(),
+            synced: false
+        })
+        localStorage.setItem(offlineKey, JSON.stringify(pendingInteractions))
+    } catch (e) {
+        console.warn('⚠️ Falha no backup local:', e)
+    }
+
     try {
       // Salvar interação no prontuário do paciente em tempo real
       const patientId = userId
@@ -1091,6 +1119,7 @@ Gere apenas a próxima pergunta sobre hábitos de vida.`
         console.warn('⚠️ Erro ao salvar interação no prontuário:', recordError)
       } else {
         console.log('✅ Interação salva no prontuário do paciente')
+        // Se salvou com sucesso, marcar como sincronizado no local storage (opcional, ou limpar)
       }
 
       // Se houver avaliação em andamento, atualizar clinical_assessments
@@ -1419,9 +1448,30 @@ Gere apenas a próxima pergunta sobre hábitos de vida.`
         }
       }
 
+      // 🧠 RAG INJECTION - Buscar documentos relevantes para o contexto
+      let contextDocs = []
+      try {
+        const searchResults = await KnowledgeBaseIntegration.semanticSearch(userMessage, {
+          limit: 2,
+          aiLinkedOnly: false
+        })
+
+        if (searchResults && searchResults.length > 0) {
+          contextDocs = searchResults.map(doc => ({
+            title: doc.title,
+            summary: doc.summary,
+            relevance: doc.aiRelevance || 0.8
+          }))
+          console.log(`🧠 RAG: ${contextDocs.length} documentos injetados no contexto.`)
+        }
+      } catch (ragError) {
+        console.warn('⚠️ Erro ao buscar contexto RAG:', ragError)
+      }
+
       const payload = {
         message: userMessage,
         conversationHistory, // ← NOVO: Histórico para contexto
+        ragContext: contextDocs, // ← NOVO: Documentos do RAG
         assessmentPhase: currentPhase,
         nextQuestionHint,
         patientData: {
