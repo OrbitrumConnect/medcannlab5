@@ -34,7 +34,8 @@ serve(async (req) => {
         // const { data: { user }, error: authError } = await supabaseClient.auth.getUser(token)
 
         // 4. Extrair Dados da Requisição
-        const { message, conversationHistory, patientData, assessmentPhase, nextQuestionHint } = await req.json()
+        // ATUALIZAÇÃO RAG: Adicionado ragContext na desestruturação
+        const { message, conversationHistory, patientData, assessmentPhase, nextQuestionHint, ragContext } = await req.json()
 
         console.log('📥 [REQUEST]', {
             messageLength: message?.length || 0,
@@ -42,12 +43,12 @@ serve(async (req) => {
             intent: patientData?.intent || 'none',
             assessmentPhase: assessmentPhase || 'none',
             hasNextQuestion: !!nextQuestionHint,
-            historyLength: conversationHistory?.length || 0
+            historyLength: conversationHistory?.length || 0,
+            ragDocs: ragContext?.length || 0
         })
 
         if (!message) throw new Error('Mensagem não fornecida.')
 
-        // Instrução dinâmica de fase (controle de fluxo)
         // Instrução dinâmica de fase (controle de fluxo)
         let phaseInstruction = assessmentPhase
             ? `\n\n🚨 FASE ATUAL DO PROTOCOLO (ESTADO ATIVO): "${assessmentPhase}".\nATENÇÃO: Você DEVE conduzir o diálogo focado EXCLUSIVAMENTE nesta fase. Não pule para a próxima até que esta esteja concluída.`
@@ -55,6 +56,16 @@ serve(async (req) => {
 
         if (nextQuestionHint) {
             phaseInstruction += `\n\n👉 PRÓXIMA PERGUNTA SUGERIDA PELO PROTOCOLO: "${nextQuestionHint}". Use esta pergunta para manter o fluxo correto.`
+        }
+
+        // Preparar contexto RAG (Base de Conhecimento)
+        let ragInstruction = ''
+        if (ragContext && ragContext.length > 0) {
+            const docsList = ragContext.map((doc: any, index: number) =>
+                `[${index + 1}] Título: ${doc.title}\n    Resumo: ${doc.summary}\n    Relevância: ${doc.relevance}`
+            ).join('\n\n')
+
+            ragInstruction = `\n\n📚 BASE DE CONHECIMENTO RECUPERADA (RAG):\nUse estas informações para enriquecer sua resposta se for clinicamente relevante. Cite a fonte se usar um dado específico.\n\n${docsList}`
         }
 
         // 5. Engenharia de Prompt Clínica (Nôa Master - Protocolo AEC v4)
@@ -77,6 +88,7 @@ Você deve seguir RIGOROSAMENTE as 10 etapas abaixo, sem pular blocos e sem infe
 10. ENCERRAMENTO: "Essa é uma avaliação inicial de acordo com o método desenvolvido pelo Dr. Ricardo Valença, com o objetivo de aperfeiçoar o seu atendimento. Apresente sua avaliação durante a consulta com Dr. Ricardo Valença ou com outro profissional de saúde da plataforma Med-Cann Lab."
 
 ${phaseInstruction}
+${ragInstruction}
 
 REGRAS DE CONDUTA (IMPORTANTE):
 - NUNCA forneça diagnósticos ou sugira interpretações clínicas.
@@ -139,7 +151,8 @@ ${JSON.stringify(patientData, null, 2)}`
                     audited: true,
                     simbologia,
                     assessmentPhase: assessmentPhase || null,
-                    tokensUsed: completion.usage?.total_tokens || 0
+                    tokensUsed: completion.usage?.total_tokens || 0,
+                    ragDocsUsed: ragContext ? ragContext.length : 0
                 }
             })
 
