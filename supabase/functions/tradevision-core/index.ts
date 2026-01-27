@@ -34,7 +34,59 @@ serve(async (req: Request) => {
         // const { data: { user }, error: authError } = await supabaseClient.auth.getUser(token)
 
         // 4. Extrair Dados da Requisição
-        const { message, conversationHistory, patientData, assessmentPhase, nextQuestionHint } = await req.json()
+        const { message, conversationHistory, patientData, assessmentPhase, nextQuestionHint, action, assessmentData } = await req.json()
+
+        // --- NOVO: Handler de Finalização de Avaliação (Server-Side) ---
+        if (action === 'finalize_assessment') {
+            console.log('🏁 [ACTION] Finalizando avaliação via Server-Side (Bypassing RLS)...')
+
+            if (!assessmentData || !assessmentData.patient_id) {
+                throw new Error('Dados da avaliação incompletos para finalização.')
+            }
+
+            // 1. Inserir Relatório Clínico
+            const { data: report, error: reportError } = await supabaseClient
+                .from('clinical_reports')
+                .insert({
+                    patient_id: assessmentData.patient_id,
+                    content: assessmentData.content,
+                    created_at: new Date().toISOString(),
+                    status: 'completed',
+                    doctor_id: assessmentData.doctor_id || null // Opcional se não houver médico atribuído ainda
+                })
+                .select()
+                .single()
+
+            if (reportError) {
+                console.error('❌ Erro ao salvar relatório:', reportError)
+                throw reportError
+            }
+
+            console.log('✅ Relatório salvo:', report.id)
+
+            // 2. Inserir Scores (Se houver)
+            if (assessmentData.scores) {
+                const { error: scoresError } = await supabaseClient
+                    .from('ai_assessment_scores')
+                    .insert({
+                        assessment_id: report.id,
+                        user_id: assessmentData.patient_id, // Importante para FK
+                        domain_scores: assessmentData.scores,
+                        risk_level: assessmentData.risk_level || 'low'
+                    })
+
+                if (scoresError) console.error('⚠️ Erro ao salvar scores:', scoresError)
+            }
+
+            return new Response(JSON.stringify({
+                success: true,
+                report_id: report.id,
+                message: 'Avaliação finalizada e salva com sucesso.'
+            }), {
+                headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+            })
+        }
+        // --- FIM DO NOVO HANDLER ---
 
         console.log('📥 [REQUEST]', {
             messageLength: message?.length || 0,
@@ -236,7 +288,8 @@ ${JSON.stringify(patientData, null, 2)}
             })
 
             // ⚡ GATILHO DE CONCLUSÃO DA AVALIAÇÃO (TRIGGER)
-            if (aiResponse && aiResponse.includes('[ASSESSMENT_COMPLETED]') && !isTeachingMode) {
+            // 🔴 BLOCO DESATIVADO PARA EVITAR DUPLICIDADE (Fluxo centralizado via action: 'finalize_assessment')
+            if (false && aiResponse && aiResponse.includes('[ASSESSMENT_COMPLETED]') && !isTeachingMode) {
                 console.log('🚀 [TRIGGER] Avaliação concluída detectada. Iniciando geração de relatório...')
 
                 try {

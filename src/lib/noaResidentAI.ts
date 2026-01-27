@@ -1455,19 +1455,30 @@ Gere apenas a próxima pergunta sobre hábitos de vida.`
         aiContent = aiContent.replace('[ASSESSMENT_COMPLETED]', '').trim()
 
         // Forçar finalização se o fluxo local não tiver detectado
+        // Forçar finalização e geração de relatório sempre que a tag for detectada
         if (platformData?.user?.id) {
-          const flowState = clinicalAssessmentFlow.getState(platformData.user.id)
-          if (flowState && flowState.phase !== 'COMPLETED') {
-            console.log('⚠️ Forçando conclusão de avaliação baseada na tag da IA')
-            // Simular conclusão no fluxo
-            const finalState = clinicalAssessmentFlow.completeAssessment(platformData.user.id)
-            if (finalState) {
-              console.log('[ClinicalFlow] Assessment completed → session finalized')
-              // Tentar gerar relatório se ainda não foi gerado
-              clinicalAssessmentFlow.generateReport(platformData.user.id, platformData.user.id)
-                .then(id => console.log('✅ Relatório forçado gerado:', id))
-                .catch(e => console.error('Erro geração forçada:', e))
+          console.log('⚠️ [Force Trigger] Tag detectada. Iniciando protocolo de salvamento...')
+
+          let flowState = clinicalAssessmentFlow.getState(platformData.user.id)
+
+          // Se não houver estado (ex: chat direto sem widget), iniciar um silenciosamente
+          if (!flowState) {
+            console.log('⚠️ Estado local não encontrado. Criando estado temporário para relatório.')
+            clinicalAssessmentFlow.startAssessment(platformData.user.id)
+            flowState = clinicalAssessmentFlow.getState(platformData.user.id)
+          }
+
+          if (flowState) {
+            // Força o status para COMPLETED se ainda não estiver
+            if (flowState.phase !== 'COMPLETED') {
+              clinicalAssessmentFlow.completeAssessment(platformData.user.id)
             }
+
+            console.log('[ClinicalFlow] Solicitando geração de relatório...')
+            // Tentar gerar relatório
+            clinicalAssessmentFlow.generateReport(platformData.user.id, platformData.user.id)
+              .then(id => console.log('✅ [SUCESSO] Relatório clínico gerado e salvo. ID:', id))
+              .catch(e => console.error('❌ [ERRO] Falha crítica na geração do relatório:', e))
           }
         }
       }

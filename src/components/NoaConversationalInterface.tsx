@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { Mic, MicOff, X, Send, Loader2, Activity, BookOpen, Brain, Upload, Maximize2, Minimize2, User } from 'lucide-react'
 import clsx from 'clsx'
 import NoaAnimatedAvatar from './NoaAnimatedAvatar'
@@ -62,6 +63,7 @@ const NoaConversationalInterface: React.FC<NoaConversationalInterfaceProps> = ({
   hideButton = false
 }) => {
   const { isOpen: contextIsOpen, pendingMessage, clearPendingMessage, closeChat } = useNoaPlatform()
+  const navigate = useNavigate()
   const [isOpen, setIsOpen] = useState(hideButton || contextIsOpen)
   const [isExpanded, setIsExpanded] = useState(false)
   const [inputValue, setInputValue] = useState('')
@@ -1877,7 +1879,7 @@ const NoaConversationalInterface: React.FC<NoaConversationalInterfaceProps> = ({
                           <button
                             onClick={() => {
                               // Navegar via evento costumizado que o main layout ouviu
-                              window.location.href = `/app/paciente/dashboard?section=analytics`
+                              navigate(`/app/clinica/paciente/dashboard?section=analytics`)
                               setIsOpen(false)
                             }}
                             className="bg-emerald-500 hover:bg-emerald-600 text-white px-6 py-2.5 rounded-xl text-sm font-medium transition-all shadow-lg hover:shadow-emerald-500/20 flex items-center gap-2"
