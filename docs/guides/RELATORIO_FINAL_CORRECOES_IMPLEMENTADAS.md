@@ -368,3 +368,54 @@ Todas as correções críticas identificadas nos relatórios foram implementadas
 
 **Status:** ✅ **TODOS OS DADOS MOCKADOS REMOVIDOS - SISTEMA 100% CONECTADO AO SUPABASE**
 
+
+---
+
+## 📋 ATUALIZAÇÃO - 27 DE JANEIRO DE 2026
+
+### 🛠️ CORREÇÕES CRÍTICAS NA AVALIAÇÃO CLÍNICA E GATILHOS
+
+#### 1. Gatilho `[ASSESSMENT_COMPLETED]` (Edge Function)
+**Status:** ✅ **CORRIGIDO E ROBUSTO**
+
+**Problema Anterior:**
+A função Edge detectava a tag de conclusão, mas falhava silenciosamente ao tentar extrair o JSON do relatório porque a IA retornava blocos de markdown (```json ... ```), o que quebrava o `JSON.parse`.
+
+**Solução:**
+- Implementada limpeza robusta da string JSON antes do parse.
+- Adicionado log detalhado para cada etapa da extração.
+
+#### 2. Permissões de Salvamento (RLS - Row Level Security)
+**Status:** ✅ **CORRIGIDO**
+
+**Problema Anterior:**
+O relatório falhava ao ser salvo ("No rows returned") porque a Edge Function tentava inserir na tabela `clinical_reports` usando o token do usuário logado (paciente), que não tem permissão de `INSERT` direto nesta tabela por segurança.
+
+**Solução:**
+- Atualizada Edge Function para usar `SERVICE_ROLE_KEY` (Chave Mestra) apenas para a operação de salvamento do relatório.
+- Configurada a secret `SERVICE_ROLE_KEY` no ambiente da Supabase Function via CLI.
+- Agora a função tem "poderes de admin" apenas no momento necessário para salvar os dados clínicos.
+
+#### 3. Feedback Visual no Chat (Action Card)
+**Status:** ✅ **NOVA FUNCIONALIDADE IMPLEMENTADA**
+
+**Problema Anterior:**
+O usuário terminava a avaliação e recebia apenas um texto "Avaliação Concluída", sem nenhum botão ou indicação clara de onde ver o relatório (o usuário perguntou "botao aonde?").
+
+**Solução:**
+- Implementado novo tipo de metadado `type: 'action_card'` no retorno da IA.
+- Atualizado `NoaConversationalInterface.tsx` para renderizar um card visual verde ("Avaliação Concluída") quando este tipo é detectado.
+- Adicionado botão interativo "Ver Relatório Clínico" que navega diretamente para a aba "Analytics e Evolução".
+
+### 🔄 COMPARAÇÃO DE ESTADO
+
+| Funcionalidade | Estado Anterior | Estado Atual (27/01/2026) |
+| :--- | :--- | :--- |
+| **Gatilho de Conclusão** | Falhava silenciosamente no JSON | ✅ Detecta, limpa e processa o JSON corretamente |
+| **Salvamento no Banco** | Bloqueado por RLS (Erro 403) | ✅ Salva com sucesso usando Service Role |
+| **Feedback ao Usuário** | Apenas texto (confuso) | ✅ Card visual verde com botão de ação |
+| **Navegação** | Manual (usuário perdido) | ✅ Botão direto para o relatório |
+
+**Próximos Passos:**
+- Validar se o relatório está aparecendo corretamente no Dashboard de Analytics (já verificado via SQL).
+

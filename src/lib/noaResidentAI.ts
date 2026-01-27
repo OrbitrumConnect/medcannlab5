@@ -1379,6 +1379,11 @@ Gere apenas a próxima pergunta sobre hábitos de vida.`
                 }
               }
 
+              // TRIGGER EXPLICITO SOLICITADO
+              if (stepResult.phase === 'COMPLETED') {
+                console.log('[ClinicalFlow] Assessment completed → session finalized')
+              }
+
               // Persistir estado
               clinicalAssessmentFlow.persist()
             }
@@ -1441,14 +1446,41 @@ Gere apenas a próxima pergunta sobre hábitos de vida.`
       if (data?.error) throw new Error(data.error)
       if (!data?.text) throw new Error('Resposta da IA veio vazia do Core Cloud.')
 
+      let aiContent = data.text
+
+      let isCompleted = false
+      if (aiContent.includes('[ASSESSMENT_COMPLETED]')) {
+        isCompleted = true
+        console.log('🎯 Tag [ASSESSMENT_COMPLETED] detectada no output da IA')
+        aiContent = aiContent.replace('[ASSESSMENT_COMPLETED]', '').trim()
+
+        // Forçar finalização se o fluxo local não tiver detectado
+        if (platformData?.user?.id) {
+          const flowState = clinicalAssessmentFlow.getState(platformData.user.id)
+          if (flowState && flowState.phase !== 'COMPLETED') {
+            console.log('⚠️ Forçando conclusão de avaliação baseada na tag da IA')
+            // Simular conclusão no fluxo
+            const finalState = clinicalAssessmentFlow.completeAssessment(platformData.user.id)
+            if (finalState) {
+              console.log('[ClinicalFlow] Assessment completed → session finalized')
+              // Tentar gerar relatório se ainda não foi gerado
+              clinicalAssessmentFlow.generateReport(platformData.user.id, platformData.user.id)
+                .then(id => console.log('✅ Relatório forçado gerado:', id))
+                .catch(e => console.error('Erro geração forçada:', e))
+            }
+          }
+        }
+      }
+
       return {
         id: `tv_${Date.now()}`,
-        content: data.text,
+        content: aiContent,
         confidence: 0.98,
         reasoning: 'TradeVision Cloud Master Engine',
         timestamp: new Date(),
         type: 'text',
         metadata: {
+          assessmentCompleted: isCompleted,
           intent,
           audited: data.metadata?.audited,
           system: data.metadata?.system

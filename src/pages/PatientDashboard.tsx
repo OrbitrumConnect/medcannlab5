@@ -41,6 +41,7 @@ import PatientSidebar from '../components/PatientSidebar'
 import NoaAnimatedAvatar from '../components/NoaAnimatedAvatar'
 import NoaConversationalInterface from '../components/NoaConversationalInterface'
 import JourneyManualModal from '../components/JourneyManualModal'
+import PatientAnalytics from '../components/PatientAnalytics'
 import { useNoaPlatform } from '../contexts/NoaPlatformContext'
 import {
   backgroundGradient,
@@ -236,7 +237,7 @@ const PatientDashboard: React.FC = () => {
   const [loadingReports, setLoadingReports] = useState(true)
   const [appointments, setAppointments] = useState<Appointment[]>([])
   const [therapeuticPlan, setTherapeuticPlan] = useState<TherapeuticPlan | null>(null)
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'agendamento' | 'meus-agendamentos' | 'plano' | 'conteudo' | 'chat' | 'chat-noa' | 'perfil' | 'reportar-problema'>('perfil')
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'agendamento' | 'meus-agendamentos' | 'plano' | 'conteudo' | 'chat' | 'chat-noa' | 'perfil' | 'reportar-problema' | 'analytics'>('perfil')
   const [shouldStartAssessment, setShouldStartAssessment] = useState(false)
   const [activeCard, setActiveCard] = useState<string | null>(null)
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false)
@@ -598,7 +599,7 @@ const PatientDashboard: React.FC = () => {
     const searchParams = new URLSearchParams(location.search)
     const section = searchParams.get('section')
     if (section) {
-      const validTabs = ['dashboard', 'agendamento', 'meus-agendamentos', 'plano', 'conteudo', 'chat', 'chat-noa', 'perfil', 'reportar-problema']
+      const validTabs = ['dashboard', 'agendamento', 'meus-agendamentos', 'plano', 'conteudo', 'chat', 'chat-noa', 'perfil', 'reportar-problema', 'analytics']
       if (validTabs.includes(section)) {
         setActiveTab(section as any)
 
@@ -656,6 +657,12 @@ const PatientDashboard: React.FC = () => {
   const handleReportProblem = () => {
     setActiveTab('reportar-problema')
     setActiveCard('reportar-problema')
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
+  const handleViewAnalytics = () => {
+    setActiveTab('analytics')
+    setActiveCard('analytics')
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
@@ -2661,17 +2668,19 @@ const PatientDashboard: React.FC = () => {
                         ? 'Meus Agendamentos'
                         : activeTab === 'plano'
                           ? 'Plano Terapêutico'
-                          : activeTab === 'conteudo'
-                            ? 'Conteúdo Educacional'
-                            : activeTab === 'chat'
-                              ? 'Chat com Médico'
-                              : activeTab === 'chat-noa'
-                                ? 'Avaliação IA'
-                                : activeTab === 'perfil'
-                                  ? 'Meu Perfil'
-                                  : activeTab === 'reportar-problema'
-                                    ? 'Reportar Problema'
-                                    : 'Dashboard'}
+                          : activeTab === 'analytics'
+                            ? 'Analytics e Evolução'
+                            : activeTab === 'conteudo'
+                              ? 'Conteúdo Educacional'
+                              : activeTab === 'chat'
+                                ? 'Chat com Médico'
+                                : activeTab === 'chat-noa'
+                                  ? 'Avaliação IA'
+                                  : activeTab === 'perfil'
+                                    ? 'Meu Perfil'
+                                    : activeTab === 'reportar-problema'
+                                      ? 'Reportar Problema'
+                                      : 'Dashboard'}
                   </span>
                 </div>
               </div>
@@ -2702,6 +2711,13 @@ const PatientDashboard: React.FC = () => {
                 {activeTab === 'dashboard' && renderDashboard()}
 
                 {activeTab === 'plano' && renderPlanoTerapeutico()}
+                {activeTab === 'analytics' && (
+                  <PatientAnalytics
+                    reports={reports}
+                    loading={loadingReports}
+                    user={user}
+                  />
+                )}
                 {activeTab === 'conteudo' && renderConteudoEducacional()}
                 {activeTab === 'perfil' && renderPerfil()}
                 {activeTab === 'reportar-problema' && renderReportProblem()}

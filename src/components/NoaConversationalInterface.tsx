@@ -1851,23 +1851,66 @@ const NoaConversationalInterface: React.FC<NoaConversationalInterfaceProps> = ({
               </div>
             )}
 
-            {messages.map(message => (
-              <div key={message.id} className={clsx('flex', message.role === 'user' ? 'justify-end' : 'justify-start')}>
-                <div
-                  className={clsx(
-                    'max-w-[85%] sm:max-w-[80%] px-3 sm:px-4 py-2 sm:py-3 rounded-xl sm:rounded-2xl text-sm sm:text-base shadow-sm backdrop-blur-sm border',
-                    message.role === 'user'
-                      ? 'bg-emerald-600/90 text-white border-emerald-400/50'
-                      : 'bg-slate-800/90 text-slate-100 border-slate-700'
-                  )}
-                >
-                  <p className="whitespace-pre-wrap leading-relaxed break-words text-sm sm:text-base">
-                    {(message.metadata as Record<string, any> | undefined)?.fullContent || message.content}
-                  </p>
-                  <span className="block text-[9px] sm:text-[10px] mt-1.5 sm:mt-2 text-slate-400">{message.timestamp.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</span>
+            {messages.map(message => {
+              // Renderização Especial para Cards de Sistema (Ação)
+              if (message.role === 'system' && message.metadata?.type === 'action_card') {
+                const action = message.metadata.action as any
+                return (
+                  <div key={message.id} className="flex justify-start w-full my-2 animate-in fade-in slide-in-from-bottom-2">
+                    <div className="w-full max-w-[85%] sm:max-w-[80%] bg-emerald-900/40 border border-emerald-500/30 rounded-2xl overflow-hidden shadow-lg backdrop-blur-md">
+                      <div className="p-4 sm:p-5">
+                        <div className="flex items-start gap-4">
+                          <div className="p-3 bg-emerald-500/20 rounded-full flex-shrink-0">
+                            <Activity className="w-6 h-6 text-emerald-400" />
+                          </div>
+                          <div className="flex-1 space-y-1">
+                            <h3 className="font-semibold text-emerald-100 text-base sm:text-lg">Avaliação Concluída</h3>
+                            <p className="text-emerald-200/80 text-sm leading-relaxed whitespace-pre-wrap">
+                              {message.content.replace('✅ **Avaliação Concluída com Sucesso!**\n\n', '')}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+
+                      {action && (
+                        <div className="bg-emerald-950/30 p-3 sm:p-4 border-t border-emerald-500/20 flex justify-end">
+                          <button
+                            onClick={() => {
+                              // Navegar via evento costumizado que o main layout ouviu
+                              window.location.href = `/app/paciente/dashboard?section=analytics`
+                              setIsOpen(false)
+                            }}
+                            className="bg-emerald-500 hover:bg-emerald-600 text-white px-6 py-2.5 rounded-xl text-sm font-medium transition-all shadow-lg hover:shadow-emerald-500/20 flex items-center gap-2"
+                          >
+                            <Activity className="w-4 h-4" />
+                            {action.label}
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )
+              }
+
+              // Renderização Padrão
+              return (
+                <div key={message.id} className={clsx('flex', message.role === 'user' ? 'justify-end' : 'justify-start')}>
+                  <div
+                    className={clsx(
+                      'max-w-[85%] sm:max-w-[80%] px-3 sm:px-4 py-2 sm:py-3 rounded-xl sm:rounded-2xl text-sm sm:text-base shadow-sm backdrop-blur-sm border',
+                      message.role === 'user'
+                        ? 'bg-emerald-600/90 text-white border-emerald-400/50'
+                        : 'bg-slate-800/90 text-slate-100 border-slate-700'
+                    )}
+                  >
+                    <p className="whitespace-pre-wrap leading-relaxed break-words text-sm sm:text-base">
+                      {(message.metadata as Record<string, any> | undefined)?.fullContent || message.content}
+                    </p>
+                    <span className="block text-[9px] sm:text-[10px] mt-1.5 sm:mt-2 text-slate-400">{message.timestamp.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</span>
+                  </div>
                 </div>
-              </div>
-            ))}
+              )
+            })}
 
             {isProcessing && (
               <div className="flex justify-start">

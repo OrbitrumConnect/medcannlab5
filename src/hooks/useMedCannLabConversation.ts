@@ -17,7 +17,7 @@ const sanitizeForSpeech = (text: string): string => {
 
 export interface ConversationMessage {
   id: string
-  role: 'user' | 'noa'
+  role: 'user' | 'noa' | 'system'
   content: string
   timestamp: Date
   intent?: ConversationalIntent
@@ -858,6 +858,30 @@ export const useMedCannLabConversation = () => {
       setLastIntent(intent)
       setUsedEndpoints(prev => [...prev, 'resident-ai'])
       console.log('💬 Mensagem da IA adicionada ao chat. Total de mensagens:', messages.length + 2)
+      console.log('🔍 Metadata recebida:', response.metadata) // Debug log
+
+      // 🎯 TRIGGER VISUAL: Se avaliação concluída, mostrar card de sucesso
+      if (response.metadata?.assessmentCompleted) {
+        setTimeout(() => {
+          const systemMsg: ConversationMessage = {
+            id: `sys-${Date.now()}`,
+            role: 'system',
+            content: `✅ **Avaliação Concluída com Sucesso!**\n\nSeu relatório clínico preliminar foi gerado.\nVocê pode visualizá-lo agora na aba **"Analytics e Evolução"** ou clicando no botão abaixo.`,
+            timestamp: new Date(),
+            metadata: {
+              type: 'action_card',
+              action: {
+                label: 'Ver Relatório Clínico',
+                command: 'reports-section' // Mapeia para navegação
+              }
+            }
+          }
+          setMessages(prev => [...prev, systemMsg])
+
+          // Tocar som de sucesso (se houver)
+          // playSuccessSound() 
+        }, 1000)
+      }
 
       // Detectar se a IA mencionou ter criado um slide (mais robusto)
       const responseLower = response.content.toLowerCase()

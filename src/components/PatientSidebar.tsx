@@ -16,7 +16,9 @@ import {
   User,
   AlertCircle,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  BarChart3,
+  Activity
 } from 'lucide-react'
 import {
   backgroundGradient,
@@ -42,6 +44,7 @@ interface PatientSidebarProps {
   onOpenChat: () => void
   onOpenPlan: () => void
   onViewEducational: () => void
+  onViewAnalytics?: () => void
   onViewAppointments?: () => void
   onShareReport?: () => void
   onStartAssessment?: () => void
@@ -65,6 +68,7 @@ const PatientSidebar: React.FC<PatientSidebarProps> = ({
   onOpenChat,
   onOpenPlan,
   onViewEducational,
+  onViewAnalytics,
   onViewAppointments,
   onShareReport,
   onStartAssessment,
@@ -141,6 +145,21 @@ const PatientSidebar: React.FC<PatientSidebarProps> = ({
       badges: [
         { icon: GraduationCap, label: 'Trilhas guiadas' },
         { icon: FileText, label: 'Protocolos clínicos' }
+      ]
+    },
+    {
+      id: 'analytics',
+      title: 'Analytics & Evolução',
+      subtitle: 'Acompanhe seu progresso',
+      description: 'Visualize sua evolução clínica, adesão ao tratamento e histórico de avaliações em gráficos detalhados.',
+      icon: BarChart3,
+      onClick: () => {
+        onCardClick('analytics')
+        if (onViewAnalytics) onViewAnalytics()
+      },
+      accent: 'emerald',
+      badges: [
+        { icon: Activity, label: 'Evolução' }
       ]
     },
     {
