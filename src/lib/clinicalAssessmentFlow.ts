@@ -675,11 +675,12 @@ export class ClinicalAssessmentFlow {
 
       console.log('✅ [Edge Function] Resposta:', edgeResponse)
 
-      if (edgeResponse && edgeResponse.success) {
+      if (edgeResponse && edgeResponse.success && edgeResponse.report_id) {
         console.log('✅ Relatório clínico salvo via Server-Side:', edgeResponse.report_id)
         return edgeResponse.report_id
       } else {
-        throw new Error('Edge Function retornou insucesso.')
+        const errorMsg = edgeResponse?.error || 'Edge Function retornou sucesso=false ou report_id nulo.'
+        throw new Error(errorMsg)
       }
 
     } catch (error) {

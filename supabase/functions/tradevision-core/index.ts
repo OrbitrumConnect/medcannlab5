@@ -44,15 +44,25 @@ serve(async (req: Request) => {
                 throw new Error('Dados da avaliação incompletos para finalização.')
             }
 
+            // 0. Buscar dados do usuário para garantir patient_name (CRITICAL FIX)
+            const { data: userData } = await supabaseClient.auth.admin.getUserById(assessmentData.patient_id)
+            const patientName = userData?.user?.user_metadata?.name ||
+                userData?.user?.user_metadata?.full_name ||
+                userData?.user?.email ||
+                'Paciente'
+
             // 1. Inserir Relatório Clínico
             const { data: report, error: reportError } = await supabaseClient
                 .from('clinical_reports')
                 .insert({
                     patient_id: assessmentData.patient_id,
+                    patient_name: patientName,
+                    report_type: assessmentData.report_type || 'initial_assessment',
+                    generated_by: 'noa_ai', // Identidade Sistêmica da IA (System User)
                     content: assessmentData.content,
                     created_at: new Date().toISOString(),
-                    status: 'completed',
-                    doctor_id: assessmentData.doctor_id || null // Opcional se não houver médico atribuído ainda
+                    status: 'completed'
+                    // doctor_id removed as it does not exist in schema. Use professional_id if needed in future.
                 })
                 .select()
                 .single()
@@ -70,7 +80,7 @@ serve(async (req: Request) => {
                     .from('ai_assessment_scores')
                     .insert({
                         assessment_id: report.id,
-                        user_id: assessmentData.patient_id, // Importante para FK
+                        patient_id: assessmentData.patient_id, // CORREÇÃO: user_id -> patient_id
                         domain_scores: assessmentData.scores,
                         risk_level: assessmentData.risk_level || 'low'
                     })

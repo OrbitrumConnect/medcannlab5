@@ -5,13 +5,13 @@
 
 -- Tabela para relatórios clínicos
 CREATE TABLE IF NOT EXISTS clinical_reports (
-  id TEXT PRIMARY KEY,
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   patient_id TEXT NOT NULL,
   patient_name TEXT NOT NULL,
-  report_type TEXT NOT NULL CHECK (report_type IN ('initial_assessment', 'follow_up', 'emergency')),
+  report_type TEXT NOT NULL DEFAULT 'initial_assessment',
   protocol TEXT NOT NULL DEFAULT 'IMRE',
   content JSONB NOT NULL,
-  generated_by TEXT NOT NULL CHECK (generated_by IN ('ai_resident', 'professional')),
+  generated_by TEXT NOT NULL DEFAULT 'noa_ai' CHECK (generated_by IN ('noa_ai', 'professional', 'system')),
   generated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
   status TEXT NOT NULL DEFAULT 'completed' CHECK (status IN ('draft', 'completed', 'reviewed')),
   professional_id TEXT,
