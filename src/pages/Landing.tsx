@@ -65,7 +65,7 @@ const Landing: React.FC = () => {
       const userType = normalizeUserType(user.type)
 
       // Redirecionamento especial para Dr. Eduardo Faveret
-      if (user.email === 'eduardoscfaveret@gmail.com' || user.name === 'Dr. Eduardo Faveret') {
+      if (user.email === 'eduardoscfaveret@gmail.com' || user.email === 'eduardo.faveret@hotmail.com' || user.name === 'Dr. Eduardo Faveret') {
         console.log('🎯 Redirecionando Dr. Eduardo Faveret para dashboard organizado')
         navigate('/app/clinica/profissional/dashboard-eduardo')
         return
