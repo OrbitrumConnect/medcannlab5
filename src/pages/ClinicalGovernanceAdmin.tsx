@@ -30,7 +30,7 @@ type Domain = 'todos' | 'cannabis' | 'nefrologia'
 
 interface AuditLog {
     created_at: string
-    patient_id: string
+    patient_id: string | null
     patient_masked: string
     domain: string
     risk_level: string
@@ -239,9 +239,10 @@ export default function ClinicalGovernanceAdmin({ onAssumirChat }: ClinicalGover
                                     <td className="px-6 py-4">
                                         <div className="flex items-center gap-2">
                                             <div className="w-6 h-6 rounded-full bg-slate-700 flex items-center justify-center text-[10px] font-bold text-white uppercase">
-                                                {log.patient_masked.charAt(0)}
+                                                {/* SAFE GUARD: Hard fallback to '?' if null/undefined */}
+                                                {(log.patient_masked && typeof log.patient_masked === 'string') ? log.patient_masked.charAt(0) : '?'}
                                             </div>
-                                            <span className="text-sm font-medium text-slate-200">{log.patient_masked}</span>
+                                            <span className="text-sm font-medium text-slate-200">{log.patient_masked || 'Paciente Desconhecido'}</span>
                                         </div>
                                     </td>
                                     <td className="px-6 py-4">
@@ -283,7 +284,7 @@ export default function ClinicalGovernanceAdmin({ onAssumirChat }: ClinicalGover
                                 </div>
                                 <div>
                                     <h3 className="font-bold text-white">Terminal de Auditoria</h3>
-                                    <p className="text-xs text-slate-500 font-mono">HASH: {selectedLog.patient_id.slice(0, 8)}</p>
+                                    <p className="text-xs text-slate-500 font-mono">HASH: {(selectedLog.patient_id || 'UNKNOWN').slice(0, 8)}</p>
                                 </div>
                             </div>
                             <button onClick={() => setSelectedLog(null)} className="p-2 hover:bg-slate-800 rounded-lg text-slate-400">
@@ -317,8 +318,13 @@ export default function ClinicalGovernanceAdmin({ onAssumirChat }: ClinicalGover
                                     NOTIFICAR PACIENTE
                                 </button>
                                 <button
-                                    onClick={() => onAssumirChat?.(selectedLog.patient_id)}
-                                    className="flex-1 bg-slate-800 hover:bg-slate-700 text-white font-bold py-4 rounded-2xl flex items-center justify-center gap-3 transition-all transform hover:scale-[1.02]"
+                                    onClick={() => {
+                                        if (selectedLog.patient_id) {
+                                            onAssumirChat?.(selectedLog.patient_id)
+                                        }
+                                    }}
+                                    disabled={!selectedLog.patient_id}
+                                    className="flex-1 bg-slate-800 hover:bg-slate-700 disabled:opacity-50 text-white font-bold py-4 rounded-2xl flex items-center justify-center gap-3 transition-all transform hover:scale-[1.02]"
                                 >
                                     <MessageSquare className="w-5 h-5" />
                                     ASSUMIR CHAT

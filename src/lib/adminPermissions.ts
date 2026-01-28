@@ -38,7 +38,7 @@ export const getAllPatients = async (user: { id: string; type?: string; email?: 
       const { data: users, error } = await supabase
         .from('users')
         .select('id, name, email, phone, created_at')
-        .eq('type', 'paciente')
+        .in('type', ['paciente', 'patient'])
         .order('name', { ascending: true })
 
       if (error) throw error
@@ -63,7 +63,17 @@ export const getAllPatients = async (user: { id: string; type?: string; email?: 
 
       if (assError) throw assError
 
-      const patientIds = Array.from(new Set(assessments?.map(a => a.patient_id).filter(Boolean)))
+      const { data: appointmentData, error: appError } = await supabase
+        .from('appointments')
+        .select('patient_id')
+        .eq('professional_id', user.id)
+
+      if (appError) throw appError
+
+      const assessmentIds = assessments?.map(a => a.patient_id).filter(Boolean) || []
+      const appointmentIds = appointmentData?.map(a => a.patient_id).filter(Boolean) || []
+
+      const patientIds = Array.from(new Set([...assessmentIds, ...appointmentIds]))
 
       if (patientIds.length === 0) return []
 
