@@ -423,18 +423,16 @@ O usuário terminava a avaliação e recebia apenas um texto "Avaliação Conclu
 **Ações Realizadas:**
 - **UUIDs Mandatórios:** Migração completa de IDs para `gen_random_uuid()` via `pgcrypto`.
 - **Identidade Híbrida:** Separação conceitual entre `users.id` (Auth) e `patient_id` (Clínico/Simulado), permitindo suporte a casos de ensino.
+- **Desacoplamento de Scores:** Remoção das FKs em `ai_assessment_scores` para permitir IDs simulados (`0000...001`) sem quebrar o sistema.
 - **Constraints Semânticas:** `generated_by` restrito a valores canônicos (`noa_ai`, `professional`, `system`).
 - **Sanitização de Edge Function:** Remoção de código morto e alinhamento do `generated_by: 'noa_ai'`.
 
-**Documentação Master:**
-Foi criado o arquivo `docs/guides/TRADEVISION_CORE_MASTER_V2.md`, que serve como a referência arquitetural completa (o "Sistema Operacional Clínico") para a equipe e auditoria.
+**Documentação Master (ADR):**
+Foi criado o arquivo `docs/guides/TRADEVISION_CORE_MASTER_V2.md`, incluindo a **ADR #12** que justifica formalmente o relaxamento da integridade referencial nos scores para viabilizar o modo educacional.
 
 ---
 
-## 🏁 CONCLUSÃO DO DIA
+## 🏁 CONCLUSÃO DO DIA (28/01/2026)
 
 O sistema atingiu o estado de **Produção (V2)**.
-Todas as vulnerabilidades de integridade de dados (FKs, Nulls, Constraints) foram resolvidas.
-A arquitetura agora reflete a separação clara entre "Quem fala" (Frontend) e "Quem decide" (Edge Function), com o banco atuando como fonte única da verdade blindada.
-
-
+Resolvido o erro persistente de persistência (Constraint/FK). A arquitetura agora reflete a separação clara entre "Quem fala" (Frontend) e "Quem decide" (Edge Function), com o banco atuando como fonte única da verdade blindada e pronta para simulações acadêmicas.

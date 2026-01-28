@@ -221,4 +221,8 @@ Características:
 
 O TradeVision Core V2 representa a consolidação de um motor clínico-digital maduro, projetado para operar com segurança, clareza e responsabilidade institucional.
 
-Este documento serve como referência técnica, conceitual e operacional de tudo o que foi implementado do início ao fim.
+---
+
+## 12. Registo de Decisões Arquiteturais (ADR)
+
+> ⚠️ **IMPORTANTE:** A integridade referencial de `ai_assessment_scores` foi relaxada para permitir simulação e ensino. Essa tabela não deve ser usada para decisões clínicas nem auditoria regulatória. Os dados aqui contidos são de natureza educacional e analítica interna.

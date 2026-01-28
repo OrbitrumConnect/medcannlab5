@@ -297,103 +297,10 @@ ${JSON.stringify(patientData, null, 2)}
                 simbologia
             })
 
-            // ⚡ GATILHO DE CONCLUSÃO DA AVALIAÇÃO (TRIGGER)
-            // 🔴 BLOCO DESATIVADO PARA EVITAR DUPLICIDADE (Fluxo centralizado via action: 'finalize_assessment')
-            if (false && aiResponse && aiResponse.includes('[ASSESSMENT_COMPLETED]') && !isTeachingMode) {
-                console.log('🚀 [TRIGGER] Avaliação concluída detectada. Iniciando geração de relatório...')
-
-                try {
-                    // 1. Compilar todo o histórico para análise
-                    const fullHistory = conversationHistory ? [...conversationHistory, { role: 'user', content: message }, { role: 'assistant', content: aiResponse }] : []
-
-                    // 2. Prompt de Extração de Dados Clínicos
-                    const EXTRACTION_PROMPT = `
-                    ATUE COMO UM AUDITOR CLÍNICO SÊNIOR.
-                    Analise a conversa abaixo, que é uma anamnese médica realizada pela IA residente Nôa.
-                    Seu objetivo é extrair os dados e gerar um JSON estruturado para o prontuário.
-
-                    CONTEXTO DA CONVERSA:
-                    ${JSON.stringify(fullHistory)}
-
-                    GERAR JSON NO SEGUINTE FORMATO ESTRITO:
-                    {
-                        "investigation": "Resumo detalhado da queixa principal, HDA, HPP, HF e Hábitos.",
-                        "methodology": "Protocolo IMRE (Arte da Entrevista Clínica) - Triaxial",
-                        "result": "Hipótese diagnóstica sindrômica ou descrição fenomenológica (NÃO DÊ DIAGNÓSTICO CID)",
-                        "evolution": "Paciente avaliado, aguardando conduta do médico assistente.",
-                        "recommendations": ["Lista de 3 a 5 recomendações de saúde integrativa baseadas no relato"],
-                        "scores": {
-                            "clinical_score": (Inteiro 0-100, onde 100 é saúde perfeita. Calcule baseado na gravidade dos sintomas),
-                            "treatment_adherence": (Inteiro 0-100, estimativa de adesão baseada no perfil psicocomportamental),
-                            "symptom_improvement": 0 (Inicial),
-                            "quality_of_life": (Inteiro 0-100, inferido do relato)
-                        }
-                    }
-                    
-                    RESPONDA APENAS O JSON. SEM MARKDOWN. SEM COMENTÁRIOS.
-                    `
-
-                    // 3. Chamada de Extração
-                    const extraction = await openai.chat.completions.create({
-                        model: "gpt-4o",
-                        messages: [{ role: "system", content: EXTRACTION_PROMPT }],
-                        temperature: 0.2,
-                        response_format: { type: "json_object" }
-                    })
-
-                    let jsonContent = extraction.choices[0].message.content || '{}'
-                    // Limpar Markdown se houver (```json ... ```)
-                    jsonContent = jsonContent.replace(/```json\n?|```/g, '').trim()
-
-                    const reportData = JSON.parse(jsonContent)
-                    console.log('✅ [EXTRACTION SUCCESS]', reportData)
-
-                    // Criar cliente Admin para furar RLS
-                    // OBS: A CLI bloqueia nomes começando com SUPABASE_, então usamos SERVICE_ROLE_KEY
-                    const serviceRoleKey = Deno.env.get('SERVICE_ROLE_KEY')
-                    console.log('🔑 Service Role Key exists:', !!serviceRoleKey)
-
-                    if (!serviceRoleKey) {
-                        throw new Error('SERVICE_ROLE_KEY não configurada no ambiente!')
-                    }
-
-                    const supabaseAdmin = createClient(
-                        Deno.env.get('SUPABASE_URL') ?? '',
-                        serviceRoleKey
-                    )
-
-                    console.log('📝 Tentando salvar relatório via Admin...')
-
-                    // 4. Salvar na Tabela clinical_reports usando Admin
-                    const { data: savedReport, error: reportError } = await supabaseAdmin
-                        .from('clinical_reports')
-                        .insert({
-                            patient_id: patientData.user.id,
-                            patient_name: patientData.user.name || 'Paciente',
-                            report_type: 'initial_assessment',
-                            protocol: 'IMRE',
-                            content: reportData,
-                            generated_by: 'ai_resident',
-                            status: 'completed',
-                            generated_at: new Date().toISOString()
-                        })
-                        .select() // Para confirmar que salvou
-
-                    if (reportError) {
-                        console.error('❌ ERRO AO SALVAR RELATÓRIO (ADMIN):', reportError)
-                    } else {
-                        console.log('✅ RELATÓRIO SALVO COM SUCESSO (ADMIN)! ID:', savedReport)
-                    }
-
-                    if (reportError) {
-                        console.error('❌ [REPORT SAVE ERROR]', reportError)
-                    } else {
-                        console.log('✅ [REPORT SAVED] Relatório clínico gerado com sucesso.')
-                    }
-
-                } catch (triggerError: any) {
-                    console.error('❌ [TRIGGER FAILED]', triggerError.message)
-                }
+            // 🚨 GATILHO ANTIGO (REMOVIDO PARA SEGURANÇA)
+            // O fluxo agora é 100% via 'finalize_assessment' action.
+            if (false) {
+                // Bloco deletado para evitar conflitos de restrição (generated_by_check)
             }
         }
 
