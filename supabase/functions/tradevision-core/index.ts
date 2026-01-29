@@ -252,6 +252,24 @@ Você deve seguir RIGOROSAMENTE as 10 etapas abaixo, sem pular blocos e sem infe
 9. FECHAMENTO CONSENSUAL: "Vamos revisar a sua história rapidamente para garantir que não perdemos nenhum detalhe importante." -> Resuma de forma descritiva e neutra. Pergunte: "Você concorda com meu entendimento? Há mais alguma coisa que gostaria de adicionar?"
 10. ENCERRAMENTO: "Essa é uma avaliação inicial de acordo com o método desenvolvido pelo Dr. Ricardo Valença, com o objetivo de aperfeiçoar o seu atendimento. Apresente sua avaliação durante a consulta com Dr. Ricardo Valença ou com outro profissional de saúde da plataforma Med-Cann Lab."\n\n     IMPORTANTE: AO FINAL DESTA FALA DO PASSO 10, VOCÊ DEVE INCLUIR A TAG: [ASSESSMENT_COMPLETED]
 
+# PERFIS DE PROFISSIONAIS E AGENDAMENTO (SECRETARIA MASTER)
+Você é a secretária master da MedCannLab e deve orientar o usuário sobre os médicos disponíveis:
+
+1. **Dr. Ricardo Valença (Coordenador Científico)**:
+   - Especialidade: Medicina Integrativa e Canabinoide.
+   - Disponibilidade: Terça, Quarta e Quinta-feira.
+   - Horários: 08:00 às 20:30.
+   - Perfil: Criador do método IMRE.
+
+2. **Dr. Eduardo Faveret (Diretor Médico)**:
+   - Especialidade: Neurologia e Medicina Canabinoide.
+   - Disponibilidade: Segunda e Quarta-feira.
+   - Horários: 10:00 às 18:00.
+
+DIRETRIZ DE DISPONIBILIDADE:
+- Se o usuário perguntar "Quando o Dr. Ricardo atende?", responda: "O Dr. Ricardo atende de terça a quinta, das 08:00 às 20:30. Gostaria de ver os horários mais próximos?"
+- Se o usuário perguntar "E o Dr. Faveret?", responda: "O Dr. Faveret atende às segundas e quartas, das 10:00 às 18:00."
+
 ${phaseInstruction}
 
 REGRAS DE CONDUTA (IMPORTANTE):
@@ -351,6 +369,16 @@ AGORA: Analise o contexto. Se pedir Sistema Renal/Urinário, atue como LÚCIA ou
             currentIntent = 'APPOINTMENT_CREATE';
         }
 
+        // 👨‍⚕️ DETECÇÃO DE PROFISSIONAL (SECRETARIA MASTER)
+        let detectedProfessionalId = 'ricardo-valenca'; // Default
+        if (msgNormalized.includes('faveret') || msgNormalized.includes('eduardo')) {
+            detectedProfessionalId = 'eduardo-faveret';
+            console.log('👨‍⚕️ [DOCTOR] Dr. Faveret detectado.');
+        } else if (msgNormalized.includes('ricardo') || msgNormalized.includes('valenca')) {
+            detectedProfessionalId = 'ricardo-valenca';
+            console.log('👨‍⚕️ [DOCTOR] Dr. Ricardo detectado.');
+        }
+
         // Mapear intenções para modos
         const isTeachingMode = ['TESTE_NIVELAMENTO', 'EDUCACIONAL', 'SIMULACAO_ALUNO'].includes(currentIntent);
 
@@ -443,24 +471,22 @@ ${JSON.stringify(patientData, null, 2)}
                 metadata: {
                     audited: true,
                     intent: currentIntent, // CRÍTICO: Envia a intenção para o Frontend ativar o Widget
-                    professionalId: 'ricardo-valenca', // Fallback ID por enquanto
+                    professionalId: detectedProfessionalId,
                     system: "TradeVision Core V2",
                     timestamp: new Date().toISOString()
                 }
             }),
             { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         )
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-)
 
     } catch (error: any) {
-    console.error('❌ [TradeVision Error]:', error.message)
-    return new Response(
-        JSON.stringify({ error: error.message }),
-        {
-            status: 200, // Retornamos 200 para o frontend tratar como mensagem de erro amigável se quiser
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-        }
-    )
-}
+        console.error('❌ [TradeVision Error]:', error.message)
+        return new Response(
+            JSON.stringify({ error: error.message }),
+            {
+                status: 200, // Retornamos 200 para o frontend tratar como mensagem de erro amigável se quiser
+                headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+            }
+        )
+    }
 })
