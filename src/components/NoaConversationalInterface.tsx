@@ -9,6 +9,8 @@ import { useAuth } from '../contexts/AuthContext'
 import { supabase } from '../lib/supabase'
 import { KnowledgeBaseIntegration } from '../services/knowledgeBaseIntegration'
 import { normalizeUserType } from '../lib/userTypes'
+import { getAvailableSlots, bookAppointment } from '../lib/scheduling'
+import { Calendar as CalendarIcon, Clock, CheckCircle } from 'lucide-react'
 import * as pdfjsLib from 'pdfjs-dist'
 
 // Configurar PDF.js worker
@@ -54,6 +56,165 @@ type RecognitionHandle = {
   maxDuration?: number // Duração máxima em ms (padrão: 30 segundos)
   inactivityTimer?: number // Timer para detectar inatividade
   restartScheduled?: boolean // Flag para evitar múltiplas tentativas de reinício simultâneas
+}
+
+// Widget de Agendamento Inteligente para o Chat
+const SchedulingWidget = ({
+  patientId,
+  professionalId,
+  onSuccess,
+  onCancel
+}: {
+  patientId: string
+  professionalId: string
+  onSuccess: (appointmentId: string) => void
+  onCancel: () => void
+}) => {
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date())
+  const [availableSlots, setAvailableSlots] = useState<string[]>([])
+  const [selectedSlot, setSelectedSlot] = useState<string | null>(null)
+  const [loading, setLoading] = useState(false)
+  const [bookingLoading, setBookingLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  // Carregar slots ao mudar a data
+  useEffect(() => {
+    const loadSlots = async () => {
+      setLoading(true)
+      try {
+        const slots = await getAvailableSlots(professionalId, selectedDate, selectedDate)
+        setAvailableSlots(slots)
+      } catch (err) {
+        console.error('Erro ao buscar slots:', err)
+      } finally {
+        setLoading(false)
+      }
+    }
+    loadSlots()
+  }, [professionalId, selectedDate])
+
+  const handleBooking = async () => {
+    if (!selectedSlot) return
+
+    setBookingLoading(true)
+    setError(null)
+    try {
+      // Construir data completa
+      const [hours, minutes] = selectedSlot.split(':')
+      const appointmentDate = new Date(selectedDate)
+      appointmentDate.setHours(parseInt(hours), parseInt(minutes), 0, 0)
+
+      const appointmentId = await bookAppointment(
+        patientId,
+        professionalId,
+        appointmentDate.toISOString(),
+        'consultation',
+        'Agendamento via Chat IA'
+      )
+
+      onSuccess(appointmentId)
+    } catch (err: any) {
+      setError(err.message || 'Erro ao agendar.')
+    } finally {
+      setBookingLoading(false)
+    }
+  }
+
+  return (
+    <div className="bg-slate-800/80 rounded-lg p-4 mb-4 border border-slate-700 w-full animate-in fade-in zoom-in duration-300">
+      <div className="flex items-center justify-between mb-3 border-b border-slate-700 pb-2">
+        <h4 className="text-white font-semibold flex items-center">
+          <CalendarIcon className="w-4 h-4 mr-2 text-blue-400" />
+          Agendar Consulta
+        </h4>
+        <button onClick={onCancel} className="text-slate-400 hover:text-white">
+          <X className="w-4 h-4" />
+        </button>
+      </div>
+
+      {/* Seletor de Data Simplificado */}
+      <div className="flex justify-between items-center mb-4">
+        <button
+          onClick={() => setSelectedDate(new Date(selectedDate.setDate(selectedDate.getDate() - 1)))}
+          className="p-1 hover:bg-slate-700 rounded transition-colors text-slate-300"
+          disabled={selectedDate <= new Date()}
+        >
+          &lt;
+        </button>
+        <span className="text-white font-medium">
+          {selectedDate.toLocaleDateString('pt-BR', { weekday: 'short', day: '2-digit', month: 'short' })}
+        </span>
+        <button
+          onClick={() => setSelectedDate(new Date(selectedDate.setDate(selectedDate.getDate() + 1)))}
+          className="p-1 hover:bg-slate-700 rounded transition-colors text-slate-300"
+        >
+          &gt;
+        </button>
+      </div>
+
+      {/* Grid de Horários */}
+      <div className="grid grid-cols-3 gap-2 mb-4 max-h-40 overflow-y-auto pr-1">
+        {loading ? (
+          <div className="col-span-3 text-center py-4 text-slate-400">
+            <Loader2 className="w-5 h-5 animate-spin mx-auto mb-2" />
+            Buscando horários...
+          </div>
+        ) : availableSlots.length === 0 ? (
+          <div className="col-span-3 text-center py-4 text-slate-500 text-sm">
+            Nenhum horário disponível
+          </div>
+        ) : (
+          availableSlots.map(slot => (
+            <button
+              key={slot}
+              onClick={() => setSelectedSlot(slot)}
+              className={clsx(
+                "py-1.5 px-2 rounded text-xs transition-colors border",
+                selectedSlot === slot
+                  ? "bg-blue-600 border-blue-500 text-white"
+                  : "bg-slate-700/50 border-slate-600 text-slate-300 hover:bg-slate-700"
+              )}
+            >
+              {slot}
+            </button>
+          ))
+        )}
+      </div>
+
+      {/* Error Message */}
+      {error && (
+        <div className="mb-3 text-xs text-red-400 bg-red-900/20 p-2 rounded border border-red-900/50">
+          ⚠️ {error}
+        </div>
+      )}
+
+      {/* Disclaimer e Botão */}
+      <div className="space-y-3 pt-2 border-t border-slate-700">
+        <div className="flex items-start text-xs text-yellow-400/90 bg-yellow-900/10 p-2 rounded">
+          <Activity className="w-3 h-3 mr-1.5 mt-0.5 flex-shrink-0" />
+          <span>Valor da consulta particular: <strong>R$ 350,00</strong></span>
+        </div>
+
+        <button
+          onClick={handleBooking}
+          disabled={!selectedSlot || bookingLoading}
+          className="w-full bg-green-600 hover:bg-green-500 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-semibold py-2 rounded-md transition-colors flex items-center justify-center space-x-2 shadow-lg shadow-green-900/20"
+        >
+          {bookingLoading ? (
+            <>
+              <Loader2 className="w-4 h-4 animate-spin" />
+              <span>Confirmando...</span>
+            </>
+          ) : (
+            <>
+              <CheckCircle className="w-4 h-4" />
+              <span>Confirmar Agendamento</span>
+            </>
+          )}
+        </button>
+      </div>
+    </div>
+  )
 }
 
 const NoaConversationalInterface: React.FC<NoaConversationalInterfaceProps> = ({
@@ -1889,6 +2050,41 @@ const NoaConversationalInterface: React.FC<NoaConversationalInterfaceProps> = ({
                           </button>
                         </div>
                       )}
+                    </div>
+                  </div>
+                )
+              }
+
+              // Renderização do Widget de Agendamento
+              if (
+                (message.metadata as any)?.intent === 'APPOINTMENT_CREATE' ||
+                (message.metadata as any)?.type === 'scheduling_prompt'
+              ) {
+                return (
+                  <div key={message.id} className="w-full mb-4">
+                    {/* Renderizar a mensagem de texto da IA antes do widget */}
+                    <div className="flex justify-start mb-2">
+                      <div className="max-w-[85%] sm:max-w-[80%] px-3 sm:px-4 py-2 sm:py-3 rounded-xl sm:rounded-2xl text-sm sm:text-base shadow-sm backdrop-blur-sm border bg-slate-800/90 text-slate-100 border-slate-700">
+                        <p className="whitespace-pre-wrap leading-relaxed break-words text-sm sm:text-base">
+                          {message.content}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Renderizar o Widget */}
+                    <div className="flex justify-start">
+                      <div className="w-full max-w-sm">
+                        <SchedulingWidget
+                          patientId={user?.id || ''}
+                          professionalId={(message.metadata as any)?.professionalId || 'ricardo-valenca'} // Fallback seguro
+                          onSuccess={(appointmentId) => {
+                            sendMessage(`✅ Agendamento confirmado! ID: ${appointmentId}`, { preferVoice: false })
+                          }}
+                          onCancel={() => {
+                            // Opcional: remover widget ou apenas fechar
+                          }}
+                        />
+                      </div>
                     </div>
                   </div>
                 )

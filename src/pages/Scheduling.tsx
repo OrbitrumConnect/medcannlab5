@@ -16,6 +16,7 @@ import {
   AlertCircle
 } from 'lucide-react'
 import { supabase } from '../lib/supabase'
+import { bookAppointment } from '../lib/scheduling'
 import {
   SCHEDULING_CONFIG,
   clampToSchedulingStartDate,
@@ -434,60 +435,23 @@ const Scheduling: React.FC = () => {
         }
       }
 
-      // Criar agendamento
-      console.log('📅 Criando agendamento:', {
+      // Criar agendamento via RPC (V3 Atomic)
+      console.log('📅 Criando agendamento via RPC V3:', {
         patient_id: user.id,
         professional_id: professionalId,
         appointment_date: appointmentDateTime.toISOString(),
         duration: 60,
-        status: 'scheduled'
       })
 
-      const { data: appointment, error: insertError } = await supabase
-        .from('appointments')
-        .insert({
-          patient_id: user.id,
-          professional_id: professionalId,
-          title: 'Consulta Médica',
-          appointment_date: appointmentDateTime.toISOString(),
-          duration: 60,
-          status: 'scheduled',
-          type: 'consultation',
-          is_remote: true,
-          meeting_url: null // Será gerado posteriormente
-        })
-        .select()
-        .single()
+      const appointmentId = await bookAppointment(
+        user.id,
+        professionalId,
+        appointmentDateTime.toISOString(),
+        'consultation',
+        'Consulta Médica'
+      )
 
-      if (insertError) {
-        console.error('❌ Erro ao agendar consulta:', insertError)
-        console.error('Código do erro:', insertError.code)
-        console.error('Mensagem:', insertError.message)
-        console.error('Detalhes:', insertError.details)
-        console.error('Hint:', insertError.hint)
-
-        if (insertError.code === '23505') {
-          setError('Este horário já está ocupado. Por favor, selecione outro.')
-        } else if (insertError.code === '42501') {
-          setError('Você não tem permissão para criar agendamentos. Entre em contato com o suporte.')
-        } else if (insertError.code === '23503') {
-          setError('Erro: Profissional ou paciente não encontrado. Por favor, recarregue a página e tente novamente.')
-        } else if (insertError.code === 'PGRST116') {
-          setError('Erro: Dados inválidos. Por favor, verifique se todos os campos estão corretos.')
-        } else {
-          setError(`Erro ao agendar consulta: ${insertError.message || 'Erro desconhecido'}. Código: ${insertError.code || 'N/A'}`)
-        }
-        setLoading(false)
-        return
-      }
-
-      if (!appointment) {
-        setError('Erro ao criar agendamento. Tente novamente.')
-        setLoading(false)
-        return
-      }
-
-      console.log('✅ Consulta agendada com sucesso:', appointment)
+      console.log('✅ Consulta agendada com sucesso ID:', appointmentId)
 
       // Atualizar lista de horários ocupados
       setOccupiedSlots(prev => new Set([...prev, selectedTime]))
@@ -497,9 +461,10 @@ const Scheduling: React.FC = () => {
 
       // Redirecionar para página de agendamentos do paciente
       navigate('/app/clinica/paciente/agendamentos')
+
     } catch (error: any) {
       console.error('Erro ao agendar consulta:', error)
-      setError(`Erro inesperado: ${error.message || 'Tente novamente.'}`)
+      setError(`Erro ao agendar: ${error.message || 'Tente novamente.'}`)
     } finally {
       setLoading(false)
     }

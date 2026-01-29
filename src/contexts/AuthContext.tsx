@@ -17,6 +17,7 @@ interface User {
   phone?: string
   location?: string
   bio?: string
+  payment_status?: 'pending' | 'paid' | 'exempt'
   user_metadata?: any
 }
 
@@ -61,6 +62,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const loadUser = async (authUser: any) => {
     let userType: UserType = 'paciente' // Padrão em português
     let userName = 'Usuário'
+    let paymentStatus: 'pending' | 'paid' | 'exempt' = 'pending' // Default para pending
     const email = authUser.email || ''
     const isAdminEmail = ['ricardo.valenca@medcannlab.com.br', 'admin@medcannlab.com.br', 'phpg69@gmail.com', 'phpg69@hotmail.com'].includes(email.toLowerCase())
     const isProfessionalEmail = ['eduardo.faveret@medcannlab.com.br'].includes(email.toLowerCase())
@@ -81,7 +83,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       const { data: userData, error: userError } = await supabase
         .from('users')
-        .select('type, name, email')
+        .select('type, name, email, payment_status')
         .eq('id', authUser.id)
         .maybeSingle()
 
@@ -99,6 +101,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (userData.name) {
           userName = userData.name;
         }
+        if (userData.payment_status) {
+          paymentStatus = userData.payment_status
+        }
       }
     } catch (error) {
       console.warn('Erro ao carregar perfil do usuário:', error);
@@ -110,7 +115,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       try {
         const { data: userData, error: userError } = await supabase
           .from('users')
-          .select('type, name, email')
+          .select('type, name, email, payment_status')
           .eq('id', authUser.id)
           .maybeSingle()
 
@@ -119,6 +124,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           userType = normalizeUserType(userData.type)
           if (userData.name && !userData.name.match(/^(patient|professional|student|admin|aluno|paciente|profissional)$/i)) {
             userName = userData.name
+          }
+          if (userData.payment_status) {
+            paymentStatus = userData.payment_status
           }
           console.log('✅ Tipo de usuário obtido da tabela users:', userData.type, '→ normalizado:', userType)
         } else {
@@ -190,7 +198,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       type: userType, // Sempre em português
       name: userName,
       crm: authUser.user_metadata?.crm,
-      cro: authUser.user_metadata?.cro
+      cro: authUser.user_metadata?.cro,
+      payment_status: paymentStatus
     }
 
     console.log('✅ Usuário carregado:', { email, type: userType, name: userName })

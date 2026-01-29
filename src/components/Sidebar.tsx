@@ -123,6 +123,7 @@ const Sidebar: React.FC<SidebarProps> = ({
       { name: 'Chat NOA', href: '/app/patient-noa-chat', icon: Brain, section: 'quick' },
       { name: 'Agendamentos', href: '/app/patient-appointments', icon: Clock, section: 'quick' },
       { name: 'Chat com Meu Médico', href: '/app/patient-chat', icon: Users, section: 'quick' },
+      { name: 'Gestão Financeira', href: '/app/checkout', icon: BanknoteIcon, section: 'main' }, // NOVO: Link de Pagamento
     ]
 
     const professionalItems = [

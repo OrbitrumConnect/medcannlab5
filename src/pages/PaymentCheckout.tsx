@@ -8,8 +8,10 @@ interface Plan {
   id: string
   name: string
   monthly_price: number
+  setup_fee?: number // Taxa de Adesão
   consultation_discount: number
 }
+
 
 export function PaymentCheckout() {
   const [searchParams] = useSearchParams()
@@ -25,18 +27,21 @@ export function PaymentCheckout() {
   const [processing, setProcessing] = useState(false)
 
   useEffect(() => {
-    if (planId) {
-      loadPlan()
-    }
+    loadPlan()
   }, [planId])
 
   const loadPlan = async () => {
     try {
-      const { data } = await supabase
-        .from('subscription_plans')
-        .select('*')
-        .eq('id', planId)
-        .single()
+      let data = null
+
+      if (planId) {
+        const response = await supabase
+          .from('subscription_plans')
+          .select('*')
+          .eq('id', planId)
+          .single()
+        data = response.data
+      }
 
       if (data) {
         setPlan(data)
@@ -45,20 +50,23 @@ export function PaymentCheckout() {
         const mockPlans: Record<string, Plan> = {
           'mock-1': {
             id: 'mock-1',
-            name: 'Med Cann 150',
-            monthly_price: 150.00,
+            name: 'Plano Acesso - Básico',
+            monthly_price: 60.00,
+            setup_fee: 79.99,
             consultation_discount: 10
           },
           'mock-2': {
             id: 'mock-2',
-            name: 'Med Cann 250',
-            monthly_price: 250.00,
+            name: 'Plano Acesso - Premium',
+            monthly_price: 60.00,
+            setup_fee: 79.99,
             consultation_discount: 20
           },
           'mock-3': {
             id: 'mock-3',
-            name: 'Med Cann 350',
-            monthly_price: 350.00,
+            name: 'Plano Acesso - Familiar',
+            monthly_price: 159.90,
+            setup_fee: 99.90,
             consultation_discount: 30
           }
         }
@@ -159,18 +167,39 @@ export function PaymentCheckout() {
               </div>
 
               <div className="flex justify-between text-gray-300">
-                <span>Cobrança:</span>
-                <span className="font-semibold text-white">Mensal</span>
+                <span>Mensalidade:</span>
+                <span className="font-semibold text-white">R$ {plan.monthly_price.toFixed(2)}</span>
               </div>
 
-              <div className="border-t border-slate-700 pt-3 mt-3">
-                <div className="flex justify-between">
-                  <span className="text-lg font-semibold text-white">Total:</span>
-                  <span className="text-2xl font-bold text-emerald-400">
-                    R$ {plan.monthly_price.toFixed(2)}
-                  </span>
+              {plan.setup_fee && (
+                <div className="flex justify-between text-gray-300">
+                  <span>Taxa de Adesão (Única):</span>
+                  <span className="font-semibold text-amber-400">R$ {plan.setup_fee.toFixed(2)}</span>
                 </div>
-                <p className="text-xs text-gray-400 mt-1">/mês</p>
+              )}
+
+              <div className="border-t border-slate-700 pt-3 mt-3">
+                <div className="flex justify-between items-center">
+                  <span className="text-lg font-semibold text-white">Total Hoje:</span>
+                  <div className="text-right">
+                    <span className="text-2xl font-bold text-emerald-400">
+                      R$ {((plan.setup_fee || 0) + (0)).toFixed(2)}
+                      {/* O usuário paga Adesão agora. A mensalidade é recorrente (30 dias). 
+                          Se quiser cobrar a primeira mensalidade JUNTO, somar. 
+                          Geralmente Adesão cobra a entrada. Vamos somar Setup + 1ª Mensalidade ou só Setup? 
+                          User disse "inscricao 70... mensal 55". Geralmente cobra TUDO na entrada ou SÓ inscrição.
+                          Vou somar Setup Fee + 0 (Considerando que Adesão cobre o Mês 1 ou cobrar separado).
+                          DECISÃO: Cobrar ADESÃO agora. Mensalidade em 30 dias.
+                          Mas para simplificar e garantir caixa: Total = Setup Fee.
+                      */}
+                    </span>
+                    <p className="text-xs text-gray-400">cobrança única imediata</p>
+                  </div>
+                </div>
+                <div className="mt-2 text-right">
+                  <span className="text-sm text-gray-400">Recorrência mensal (30 dias): </span>
+                  <span className="text-sm font-semibold text-white">R$ {plan.monthly_price.toFixed(2)}</span>
+                </div>
               </div>
             </div>
 

@@ -98,6 +98,120 @@ serve(async (req: Request) => {
         }
         // --- FIM DO NOVO HANDLER ---
 
+        // --- HANDLER: PREDICT SCHEDULING RISK (PHASE 3B) ---
+        if (action === 'predict_scheduling_risk') {
+            console.log('🔮 [ACTION] Predicting Scheduling Risk...')
+
+            const { appointmentData } = await req.json()
+            if (!appointmentData || !appointmentData.patient_id || !appointmentData.appointment_id) {
+                throw new Error('Dados do agendamento incompletos (patient_id, appointment_id required).')
+            }
+
+            const appointmentId = appointmentData.appointment_id
+            const patientId = appointmentData.patient_id
+            const professionalId = appointmentData.professional_id
+            const slotTime = appointmentData.date || new Date().toISOString()
+
+            // 1. Idempotency Check (Enterprise Safeguard)
+            const { data: existingPrediction } = await supabaseClient
+                .from('ai_scheduling_predictions')
+                .select('id, no_show_probability')
+                .eq('appointment_id', appointmentId)
+                .maybeSingle()
+
+            if (existingPrediction) {
+                console.log('✅ Predição já existe, retornando cache.', existingPrediction.id)
+                return new Response(JSON.stringify({
+                    success: true,
+                    prediction: existingPrediction,
+                    cached: true
+                }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+            }
+
+            // 2. Coletar Estatísticas do Paciente (Data-Driven, sem Chat History)
+            // Buscar total de agendamentos e status anteriores
+            const { data: historyStats, error: statError } = await supabaseClient
+                .from('appointments')
+                .select('status, appointment_date')
+                .eq('patient_id', patientId)
+                .lt('appointment_date', new Date().toISOString()) // Só passado
+
+            if (statError) console.error('⚠️ Erro ao buscar histórico:', statError)
+
+            const totalAppointments = historyStats?.length || 0
+            const noShowCount = historyStats?.filter((a: any) => a.status === 'no_show').length || 0
+            const cancelledCount = historyStats?.filter((a: any) => a.status === 'cancelled').length || 0
+            const completedCount = historyStats?.filter((a: any) => a.status === 'completed').length || 0
+
+            const noShowRate = totalAppointments > 0 ? (noShowCount / totalAppointments).toFixed(2) : '0.00'
+
+            // 3. Construir Prompt Estatístico (Token Efficient)
+            const RISK_PROMPT = `
+            ATUE COMO UM ANALISTA DE RISCO CLÍNICO.
+            Analise os dados abaixo e estime a probabilidade de NO-SHOW (0.00 a 1.00) para este agendamento.
+            
+            DADOS DO PACIENTE:
+            - Histórico Total: ${totalAppointments} consultas
+            - No-Shows Prévios: ${noShowCount} (${noShowRate}%)
+            - Cancelamentos: ${cancelledCount}
+            - Realizadas: ${completedCount}
+            
+            DADOS DO AGENDAMENTO:
+            - Data/Hora: ${slotTime}
+            - Dia da Semana: ${new Date(slotTime).toLocaleDateString('pt-BR', { weekday: 'long' })}
+            
+            SAÍDA JSON OBRIGATÓRIA:
+            {
+               "no_show_probability": 0.XX,
+               "expected_duration_minutes": 60,
+               "recommended_action": "NONE" | "CONFIRM_MANUALLY" | "REQUIRE_PREPAYMENT",
+               "reasoning_tags": ["tag1", "tag2"]
+            }
+            Use tags como: 'high_no_show_history', 'new_patient', 'friday_afternoon', 'reliable_patient'.
+            `
+
+            // 4. Chamada OpenAI (Low Temperature for consistency)
+            const completion = await openai.chat.completions.create({
+                model: "gpt-4o",
+                messages: [{ role: "system", content: RISK_PROMPT }],
+                temperature: 0.1,
+                response_format: { type: "json_object" }
+            })
+
+            const analysisRaw = completion.choices[0].message.content
+            const analysis = JSON.parse(analysisRaw || '{}')
+
+            console.log('🤖 [AI PREDICTION]', analysis)
+
+            // 5. Salvar Predição no Banco (Source of Truth)
+            const { error: saveError } = await supabaseClient
+                .from('ai_scheduling_predictions')
+                .insert({
+                    appointment_id: appointmentId,
+                    no_show_probability: analysis.no_show_probability || 0.1,
+                    expected_duration_minutes: analysis.expected_duration_minutes || 60,
+                    recommended_action: analysis.recommended_action || 'NONE',
+                    model_version: 'gpt-4o-v1',
+                    // reasoning_tags (se tivermos coluna JSONB ou array no schema futuro, por enquanto vai no metadata se precisar, 
+                    // mas o schema atual V3 não tem tags explicito na tabela, vamos manter simples ou adicionar se der)
+                    // Schema V3 tem colunas fixas. Vamos focar no que tem.
+                })
+
+            if (saveError) {
+                console.error('❌ Erro ao salvar predição:', saveError)
+                throw saveError
+            }
+
+            return new Response(JSON.stringify({
+                success: true,
+                prediction: analysis,
+                message: 'Risco calculado e salvo.'
+            }), {
+                headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+            })
+        }
+        // --- FIM HANDLER RISK ---
+
         console.log('📥 [REQUEST]', {
             messageLength: message?.length || 0,
             userId: patientData?.user?.id?.substring(0, 8) || 'unknown',
@@ -148,9 +262,10 @@ REGRAS DE CONDUTA (IMPORTANTE):
 - Resumos devem ser puramente descritivos.
 
 DIRETRIZES DE SEGURANÇA E ADMINISTRAÇÃO:
-1. **BLOQUEIO DE ASSUNTOS**: Você fala APENAS sobre MedCannLab, Saúde e Protocolos. RECUSE polidamente falar sobre carros, política, culinária, etc.
-2. **ADMINISTRADORES**: Se o usuário é Admin, seja executiva. MAS, se ele pedir para "Testar", "Simular" ou "Avaliar", MUDAR PARA MODO CLÍNICO imediatamente e conduzir a avaliação como se fosse um paciente.
-3. **RELATÓRIOS**: Se solicitado relatório, use os dados da conversa para estruturar.`;
+1. **BLOQUEIO DE ASSUNTOS**: Você fala APENAS sobre MedCannLab, Saúde, Protocolos e Agendamentos. RECUSE polidamente falar sobre carros, política, culinária, etc.
+2. **AGENDAMENTO (IMPORTANTE)**: **VOCÊ TEM PERMISSÃO PARA AGENDAR.** Se o usuário pedir para agendar, marcar consultou ou ver horários, responda com entusiasmo: "Claro! Posso ajudar com isso. Veja os horários disponíveis para o Dr. Ricardo logo abaixo." (O sistema exibirá o widget automaticamente). NÃO diga que não pode agendar.
+3. **ADMINISTRADORES**: Se o usuário é Admin, seja executiva. MAS, se ele pedir para "Testar", "Simular" ou "Avaliar", MUDAR PARA MODO CLÍNICO imediatamente e conduzir a avaliação como se fosse um paciente.
+4. **RELATÓRIOS**: Se solicitado relatório, use os dados da conversa para estruturar.`;
 
         const TEACHING_PROMPT = `SIMULAÇÃO DE PACIENTE (Roleplay Instrucional - Aleatório ou Guiado)
 
@@ -217,6 +332,23 @@ AGORA: Analise o contexto. Se pedir Sistema Renal/Urinário, atue como LÚCIA ou
         if (msgLower.includes('nivelamento') || msgLower.includes('prova') || msgLower.includes('simulação') || msgLower.includes('começar teste')) {
             console.log('⚡ [TRIGGER] Palavra-chave de teste detectada. Forçando modo ENSINO.');
             currentIntent = 'TESTE_NIVELAMENTO';
+        }
+
+        // 🗓️ GATILHO DE AGENDAMENTO (SMART WIDGET TRIGGER) - V3 ROBUST
+        // Normalização para remover acentos e facilitar match
+        const msgNormalized = msgLower.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+
+        if (
+            msgNormalized.includes('agendar') ||
+            msgNormalized.includes('marcar') ||
+            msgNormalized.includes('agenda') ||
+            (msgNormalized.includes('consulta') && (msgNormalized.includes('nova') || msgNormalized.includes('quero') || msgNormalized.includes('marcar'))) ||
+            msgNormalized.includes('horario') ||
+            msgNormalized.includes('disponivel') ||
+            msgNormalized.includes('disponibilidade')
+        ) {
+            console.log('⚡ [TRIGGER] Palavra-chave de agendamento detectada. Ativando WIDGET.');
+            currentIntent = 'APPOINTMENT_CREATE';
         }
 
         // Mapear intenções para modos
@@ -310,21 +442,25 @@ ${JSON.stringify(patientData, null, 2)}
                 text: aiResponse,
                 metadata: {
                     audited: true,
+                    intent: currentIntent, // CRÍTICO: Envia a intenção para o Frontend ativar o Widget
+                    professionalId: 'ricardo-valenca', // Fallback ID por enquanto
                     system: "TradeVision Core V2",
                     timestamp: new Date().toISOString()
                 }
             }),
             { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         )
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+)
 
     } catch (error: any) {
-        console.error('❌ [TradeVision Error]:', error.message)
-        return new Response(
-            JSON.stringify({ error: error.message }),
-            {
-                status: 200, // Retornamos 200 para o frontend tratar como mensagem de erro amigável se quiser
-                headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-            }
-        )
-    }
+    console.error('❌ [TradeVision Error]:', error.message)
+    return new Response(
+        JSON.stringify({ error: error.message }),
+        {
+            status: 200, // Retornamos 200 para o frontend tratar como mensagem de erro amigável se quiser
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        }
+    )
+}
 })

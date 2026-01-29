@@ -24,6 +24,7 @@ interface SavedDocument {
     metadata: any
     is_shared_with_patient: boolean
     created_at: string
+    content?: any
 }
 
 export default function AssessmentAnalytics() {
@@ -150,8 +151,8 @@ export default function AssessmentAnalytics() {
                         <button
                             onClick={() => setTab('overview')}
                             className={`flex-1 py-3 px-6 rounded-xl font-semibold transition-all ${tab === 'overview'
-                                    ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-lg'
-                                    : 'text-gray-600 hover:bg-gray-100'
+                                ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-lg'
+                                : 'text-gray-600 hover:bg-gray-100'
                                 }`}
                         >
                             📊 Visão Geral
@@ -159,8 +160,8 @@ export default function AssessmentAnalytics() {
                         <button
                             onClick={() => setTab('professional')}
                             className={`flex-1 py-3 px-6 rounded-xl font-semibold transition-all ${tab === 'professional'
-                                    ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-lg'
-                                    : 'text-gray-600 hover:bg-gray-100'
+                                ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-lg'
+                                : 'text-gray-600 hover:bg-gray-100'
                                 }`}
                         >
                             👨‍⚕️ Visão Profissional
@@ -168,8 +169,8 @@ export default function AssessmentAnalytics() {
                         <button
                             onClick={() => setTab('patient')}
                             className={`flex-1 py-3 px-6 rounded-xl font-semibold transition-all ${tab === 'patient'
-                                    ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-lg'
-                                    : 'text-gray-600 hover:bg-gray-100'
+                                ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-lg'
+                                : 'text-gray-600 hover:bg-gray-100'
                                 }`}
                         >
                             🧑‍🦰 Visão Paciente

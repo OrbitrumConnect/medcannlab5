@@ -15,6 +15,7 @@ import NavegacaoIndividualizada from './components/NavegacaoIndividualizada'
 import EixoRotaRedirect from './components/EixoRotaRedirect'
 import Breadcrumbs from './components/Breadcrumbs'
 import EixoSelector from './components/EixoSelector'
+import PaymentGuard from './components/PaymentGuard'
 
 // Pages
 import Landing from './pages/Landing'
@@ -109,7 +110,11 @@ function App() {
                       {/* Seletor de eixo */}
                       <Route path="/selecionar-eixo" element={<EixoSelector />} />
 
-                      <Route path="/app" element={<Layout />}>
+                      <Route path="/app" element={
+                        <PaymentGuard>
+                          <Layout />
+                        </PaymentGuard>
+                      }>
                         <Route index element={<SmartDashboardRedirect />} />
                         <Route path="dashboard" element={<Dashboard />} />
                         <Route path="home" element={<SmartDashboardRedirect />} />
