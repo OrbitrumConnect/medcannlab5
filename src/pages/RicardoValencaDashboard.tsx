@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react'
+import { useNoaPlatform } from '../contexts/NoaPlatformContext'
+import NoaConversationalInterface from '../components/NoaConversationalInterface'
 import { useAuth } from '../contexts/AuthContext'
 import { useUserView } from '../contexts/UserViewContext'
 import { useNavigate, useLocation, useSearchParams } from 'react-router-dom'
@@ -165,7 +167,30 @@ interface NoaCommandDetail {
 
 const RicardoValencaDashboard: React.FC = () => {
   const [showCreatePatientModal, setShowCreatePatientModal] = useState(false)
-  const { user } = useAuth()
+  /* -------------------------------------------------------------------------- */
+  /* NOA PLATFORM INTEGRATION                                                   */
+  /* -------------------------------------------------------------------------- */
+  const {
+    openChat: openNoaChat,
+    hideGlobalChat,
+    showGlobalChat
+  } = useNoaPlatform()
+
+  // Gerenciar visibilidade do chat global
+  useEffect(() => {
+    // Esconder o chat global (botão flutuante) quando entrar neste dashboard
+    hideGlobalChat()
+
+    // Restaurar quando sair (cleanup) - CRÍTICO para outras páginas
+    return () => {
+      showGlobalChat()
+    }
+  }, [hideGlobalChat, showGlobalChat])
+
+  /* -------------------------------------------------------------------------- */
+  /* ESTADO E CONTEXTO                                                          */
+  /* -------------------------------------------------------------------------- */
+  const { user, signOut } = useAuth()
   const { isAdminViewingAs, viewAsType, setViewAsType, getEffectiveUserType } = useUserView()
   const navigate = useNavigate()
   const location = useLocation()
@@ -4679,6 +4704,7 @@ const RicardoValencaDashboard: React.FC = () => {
                 <div className="absolute inset-0 bg-emerald-500/20 rounded-full blur-xl group-hover:bg-emerald-500/30 transition-all duration-500"></div>
                 <button
                   type="button"
+                  onClick={openNoaChat}
                   className="relative w-16 h-16 rounded-full bg-gradient-to-b from-emerald-500 to-emerald-700 flex items-center justify-center shadow-lg shadow-emerald-500/20 border border-emerald-400/20 hover:scale-110 hover:-translate-y-1 transition-all duration-300 z-10"
                 >
                   <Brain className="w-8 h-8 text-white drop-shadow-md" />
@@ -5044,15 +5070,23 @@ const RicardoValencaDashboard: React.FC = () => {
                     </pre>
                   )
                 ) : (
-                  <div className="text-slate-400 text-sm text-center">
-                    {knowledgeSelectedDocument.summary || 'Sem conteúdo disponível para visualização.'}
+                  <div className="flex flex-col items-center justify-center h-full text-slate-500 gap-2">
+                    <FileText className="w-8 h-8 opacity-20" />
+                    <p>Conteúdo não disponível</p>
                   </div>
                 )}
               </div>
             </div>
           </div>
-        )
-      }
+        )}
+
+      {/* Interface Conversacional Nôa Local (Sem botão flutuante, controlada pelo trigger central) */}
+      <NoaConversationalInterface
+        hideButton={true}
+        position="bottom-right"
+        userName={user?.name}
+        userCode={user?.id}
+      />
       <CreatePatientModal
         isOpen={showCreatePatientModal}
         onClose={() => setShowCreatePatientModal(false)}
