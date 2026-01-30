@@ -791,23 +791,28 @@ const PatientsManagement: React.FC = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
       {/* Header */}
-      <div className="bg-slate-800/50 border-b border-slate-700/50 backdrop-blur-sm sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-6 py-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
+
+
+      <div className="w-full max-w-[98%] mx-auto px-4 py-6">
+        {/* Filters Bar */}
+        <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl p-6 mb-8 border border-slate-700/50">
+          <div className="flex flex-col md:flex-row md:items-center justify-between mb-4 gap-4">
+            <div className="flex items-center gap-4">
               <button
                 onClick={handleBack}
                 className="p-2 hover:bg-slate-700 rounded-lg transition-colors"
+                title="Voltar"
               >
                 <ArrowLeft className="w-5 h-5 text-white" />
               </button>
-              <div>
-              </div>
+              <h2 className="text-xl font-bold text-white">Filtros de Busca</h2>
             </div>
+
             <div className="relative new-patient-menu-container">
               <button
                 onClick={() => setShowNewPatientMenu(!showNewPatientMenu)}
                 className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-blue-500 to-cyan-500 text-white rounded-lg hover:from-blue-600 hover:to-cyan-600 transition-colors"
+                title="Cadastrar novo paciente"
               >
                 <UserPlus className="w-5 h-5" />
                 <span>Novo Paciente</span>
@@ -815,8 +820,7 @@ const PatientsManagement: React.FC = () => {
 
               {showNewPatientMenu && (
                 <div
-                  className="fixed top-24 right-6 w-64 bg-slate-800 border border-slate-700 rounded-lg shadow-2xl z-[9999] new-patient-menu-container"
-                  style={{ marginTop: '0px' }}
+                  className="absolute top-12 right-0 w-64 bg-slate-800 border border-slate-700 rounded-lg shadow-2xl z-[9999] new-patient-menu-container"
                 >
                   <div className="p-2">
                     <button
@@ -864,13 +868,6 @@ const PatientsManagement: React.FC = () => {
               )}
             </div>
           </div>
-        </div>
-      </div>
-
-      <div className="max-w-7xl mx-auto px-6 py-8">
-        {/* Filters Bar */}
-        <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl p-6 mb-8 border border-slate-700/50">
-          <h2 className="text-xl font-bold text-white mb-4">Filtros de Busca</h2>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             {/* Search */}
             <div className="relative">
