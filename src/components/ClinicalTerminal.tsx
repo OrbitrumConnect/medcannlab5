@@ -10,7 +10,6 @@ import {
     Users
 } from 'lucide-react'
 import ClinicalGovernanceAdmin from '../pages/ClinicalGovernanceAdmin'
-import PatientsManagement from '../pages/PatientsManagement'
 import Reports from '../pages/Reports'
 import Library from '../pages/Library'
 
@@ -21,7 +20,6 @@ const ClinicalTerminal: React.FC = () => {
 
     const tabs = [
         { id: 'mission' as TabId, label: 'Mission Control', icon: Activity, color: 'text-indigo-400' },
-        { id: 'records' as TabId, label: 'Prontuário Eletrônico', icon: Users, color: 'text-blue-400' },
         { id: 'reports' as TabId, label: 'Relatórios IA', icon: BarChart3, color: 'text-orange-400' },
         { id: 'knowledge' as TabId, label: 'Base de Conhecimento', icon: BookOpen, color: 'text-emerald-400' }
     ]
@@ -30,8 +28,6 @@ const ClinicalTerminal: React.FC = () => {
         switch (activeTab) {
             case 'mission':
                 return <div className="h-full overflow-y-auto"><ClinicalGovernanceAdmin /></div>
-            case 'records':
-                return <div className="h-full overflow-y-auto"><PatientsManagement /></div>
             case 'reports':
                 return <div className="h-full overflow-y-auto"><Reports /></div>
             case 'knowledge':
