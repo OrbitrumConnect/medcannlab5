@@ -4649,9 +4649,10 @@ const RicardoValencaDashboard: React.FC = () => {
         )}
 
         {sectionNavOptions && sectionNavOptions.length > 0 && (
-          <div className="space-y-3 mt-6">
-            <div className="flex flex-wrap gap-2">
-              {sectionNavOptions.map(option => {
+          <div className="mt-8 mb-8">
+            <div className="flex flex-wrap items-center justify-center gap-4">
+              {/* Left Side Options */}
+              {sectionNavOptions.slice(0, Math.ceil(sectionNavOptions.length / 2)).map(option => {
                 const OptionIcon = option.icon
                 const isActive = resolvedSection === option.id
                 return (
@@ -4660,10 +4661,44 @@ const RicardoValencaDashboard: React.FC = () => {
                     type="button"
                     onClick={() => goToSection(option.id)}
                     className={[
-                      'group flex items-center gap-2 px-3 py-2 rounded-lg border transition-all duration-200',
+                      'group flex items-center justify-center gap-2 px-4 py-3 rounded-full border transition-all duration-300',
                       isActive
-                        ? 'bg-emerald-600/20 border-emerald-500/40 text-emerald-100 shadow-sm'
-                        : 'bg-slate-900/60 border-slate-700/60 text-slate-300 hover:bg-slate-800 hover:text-white hover:border-emerald-500/30'
+                        ? 'bg-emerald-600/20 border-emerald-500/40 text-emerald-100 shadow-md scale-105'
+                        : 'bg-slate-800/80 border-slate-700/60 text-slate-300 hover:bg-slate-700 hover:text-white hover:border-emerald-500/30 hover:scale-105'
+                    ].join(' ')}
+                    title={option.description}
+                  >
+                    <OptionIcon className={`w-4 h-4 ${isActive ? 'text-emerald-400' : 'text-slate-400 group-hover:text-emerald-400'}`} />
+                    <span className="text-sm font-medium">{option.label}</span>
+                  </button>
+                )
+              })}
+
+              {/* Central Brain Trigger */}
+              <div className="relative group mx-4 hidden md:block">
+                <div className="absolute inset-0 bg-emerald-500/20 rounded-full blur-xl group-hover:bg-emerald-500/30 transition-all duration-500"></div>
+                <button
+                  type="button"
+                  className="relative w-16 h-16 rounded-full bg-gradient-to-b from-emerald-500 to-emerald-700 flex items-center justify-center shadow-lg shadow-emerald-500/20 border border-emerald-400/20 hover:scale-110 hover:-translate-y-1 transition-all duration-300 z-10"
+                >
+                  <Brain className="w-8 h-8 text-white drop-shadow-md" />
+                </button>
+              </div>
+
+              {/* Right Side Options */}
+              {sectionNavOptions.slice(Math.ceil(sectionNavOptions.length / 2)).map(option => {
+                const OptionIcon = option.icon
+                const isActive = resolvedSection === option.id
+                return (
+                  <button
+                    key={option.id}
+                    type="button"
+                    onClick={() => goToSection(option.id)}
+                    className={[
+                      'group flex items-center justify-center gap-2 px-4 py-3 rounded-full border transition-all duration-300',
+                      isActive
+                        ? 'bg-emerald-600/20 border-emerald-500/40 text-emerald-100 shadow-md scale-105'
+                        : 'bg-slate-800/80 border-slate-700/60 text-slate-300 hover:bg-slate-700 hover:text-white hover:border-emerald-500/30 hover:scale-105'
                     ].join(' ')}
                     title={option.description}
                   >
