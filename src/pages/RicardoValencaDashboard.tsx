@@ -146,6 +146,8 @@ type SectionId =
   | 'ferramentas-pedagogicas'
   | 'financeiro'
   | 'terminal-clinico'
+  | 'novo-paciente'
+  | 'prescricao-rapida'
 
 type SectionOption = {
   id: SectionId
