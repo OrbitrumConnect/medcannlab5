@@ -225,7 +225,7 @@ const NoaConversationalInterface: React.FC<NoaConversationalInterfaceProps> = ({
 }) => {
   const { isOpen: contextIsOpen, pendingMessage, clearPendingMessage, closeChat } = useNoaPlatform()
   const navigate = useNavigate()
-  const [isOpen, setIsOpen] = useState(hideButton || contextIsOpen)
+  const [isOpen, setIsOpen] = useState((hideButton && position === 'inline') || contextIsOpen)
   const [isExpanded, setIsExpanded] = useState(false)
   const [inputValue, setInputValue] = useState('')
   const [isListening, setIsListening] = useState(false)
@@ -328,12 +328,12 @@ const NoaConversationalInterface: React.FC<NoaConversationalInterfaceProps> = ({
   }, [messages])
 
   useEffect(() => {
-    // Se hideButton é true, sempre abrir (sem botão)
-    // Se contextIsOpen é true, abrir o chat
-    const shouldBeOpen = hideButton || contextIsOpen
-    console.log('🔍 NoaConversationalInterface - Atualizando isOpen:', { shouldBeOpen, hideButton, contextIsOpen })
+    // Se hideButton é true E position é inline, sempre abrir (sem botão e sem controle externo)
+    // Se contextIsOpen é true, abrir o chat (permite botões customizados controlarem via context)
+    const shouldBeOpen = (hideButton && position === 'inline') || contextIsOpen
+    console.log('🔍 NoaConversationalInterface - Atualizando isOpen:', { shouldBeOpen, hideButton, contextIsOpen, position })
     setIsOpen(shouldBeOpen)
-  }, [contextIsOpen, hideButton])
+  }, [contextIsOpen, hideButton, position])
 
   useEffect(() => {
     if (pendingMessage) {
