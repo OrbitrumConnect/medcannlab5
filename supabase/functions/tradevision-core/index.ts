@@ -2,6 +2,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2"
 import OpenAI from "https://esm.sh/openai@4"
+import { COS, COS_Context } from "./cos_engine.ts"
 
 const corsHeaders = {
     'Access-Control-Allow-Origin': '*',
@@ -41,18 +42,27 @@ serve(async (req: Request) => {
 
         const aiMode = config?.value?.mode || 'FULL'
 
-        if (aiMode === 'OFF') {
-            return new Response(JSON.stringify({
-                text: 'Doutrina CCOS: Sistema em modo OFF por segurança ou manutenção.',
-                metadata: { mode: 'OFF', emergency: true }
-            }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
-        }
-
+        // Parse do Body (Necessário para o contexto do COS)
         const body = await req.json()
         const { message, conversationHistory, patientData, assessmentPhase, nextQuestionHint, action, assessmentData, appointmentData } = body
+        const professionalId = appointmentData?.professional_id || patientData?.professional_id || 'system-global'
 
-        // --- 🛡️ GOVERNANÇA: CONSULTA DE POLÍTICA COGNITIVA (CCOS v2.0) ---
-        // Determinar contexto preventivamente para os handlers
+        // --- 🌑 COS v1.0: CAMADA IV - PROTOCOLO DE TRAUMA (SOBREVIVÊNCIA) ---
+        const { data: trauma } = await supabaseClient
+            .from('institutional_trauma_log')
+            .select('*')
+            .eq('restricted_mode_active', true)
+            .gt('recovery_estimated_at', new Date().toISOString())
+            .maybeSingle()
+
+        // --- 🩸 COS v1.0: CAMADA III - METABOLISMO COGNITIVO (REGULAÇÃO) ---
+        const { data: metabolism } = await supabaseClient
+            .from('cognitive_metabolism')
+            .select('*')
+            .eq('professional_id', professionalId)
+            .maybeSingle()
+
+        // --- 🛡️ GOVERNANÇA: DETERMINAÇÃO DE INTENÇÃO ---
         let currentIntent = patientData?.intent || 'CLÍNICA';
         const msgLower = (message || "").toLowerCase();
         const msgNormalized = msgLower.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
@@ -72,12 +82,42 @@ serve(async (req: Request) => {
             .limit(1)
             .single()
 
-        // Se o modo for READ_ONLY, bloquear ações de escrita
-        if (aiMode === 'READ_ONLY' && action) {
+        // --- 🛡️ COS v1.0: VEREDITO DO KERNEL (EXTRAÇÃO 1) ---
+        const cosContext: COS_Context = {
+            intent: currentIntent === 'TESTE_NIVELAMENTO' ? 'ENSINO' : (currentIntent === 'APPOINTMENT_CREATE' ? 'ADMIN' : 'CLINICA'),
+            action: action,
+            mode: aiMode,
+            policy: policy ? {
+                autonomy_level: policy.autonomy_level,
+                forbidden_actions: policy.forbidden_actions
+            } : undefined,
+            metabolism: metabolism ? {
+                decision_count_today: metabolism.decision_count_today,
+                daily_limit: metabolism.decision_limit_daily
+            } : undefined,
+            trauma: trauma ? {
+                active: trauma.restricted_mode_active,
+                reason: trauma.reason
+            } : undefined
+        }
+
+        const cosDecision = COS.evaluate(cosContext)
+
+        if (!cosDecision.allowed) {
+            console.error(`🚫 [COS BLOCK] ${cosDecision.reason}`)
             return new Response(JSON.stringify({
-                text: 'Doutrina CCOS: Sistema em modo READ_ONLY. Ações de escrita suspensas.',
-                metadata: { mode: 'READ_ONLY' }
-            }), { headers: corsHeaders })
+                text: cosDecision.reason,
+                metadata: {
+                    mode: cosDecision.mode,
+                    flags: cosDecision.flags,
+                    cos_blocked: true
+                }
+            }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+        }
+
+        // Se o veredito for READ_ONLY (but allowed for read), avisar no log
+        if (cosDecision.mode === 'READ_ONLY') {
+            console.log('👁️ [COS] Operando em modo de leitura (Audit Only).')
         }
 
         // --- HANDLER DE FINALIZAÇÃO DE AVALIAÇÃO (SERVER-SIDE) ---
@@ -213,7 +253,36 @@ serve(async (req: Request) => {
             Use tags como: 'high_no_show_history', 'new_patient', 'friday_afternoon', 'reliable_patient'.
             `
 
-            // 4. Chamada OpenAI (Low Temperature for consistency)
+            // 5. COS v1.0: Gerar Átomo de Decisão (PRE-AI)
+            const { data: decData, error: decError } = await supabaseClient
+                .from('cognitive_decisions')
+                .insert({
+                    decision_type: 'scheduling',
+                    recommendation: { status: 'calculating' },
+                    justification: 'Cálculo de risco iniciado pelo Kernel COS.',
+                    confidence: 0,
+                    autonomy_level: cosDecision.autonomy_level,
+                    requires_human_confirmation: true,
+                    policy_snapshot: {
+                        intent: 'ADMIN',
+                        version: policy?.version || 1,
+                        autonomy_level: policy?.autonomy_level || 1,
+                        frozen_at: new Date().toISOString()
+                    },
+                    model_version: MODEL_NAME,
+                    metadata: { appointment_id: appointmentId }
+                })
+                .select()
+                .single()
+
+            if (decError) {
+                console.error('❌ Erro ao criar Átomo de Decisão PRE-AI:', decError)
+                throw decError
+            }
+
+            console.log('⚛️ [COS] Átomo de Decisão criado:', decData.id)
+
+            // 6. Chamada OpenAI (Low Temperature for consistency)
             const completion = await openai.chat.completions.create({
                 model: MODEL_NAME,
                 messages: [{ role: "system", content: RISK_PROMPT }],
@@ -233,7 +302,7 @@ serve(async (req: Request) => {
 
             console.log('🤖 [AI PREDICTION]', analysis)
 
-            // 5. Salvar Predição no Banco (Source of Truth)
+            // 7. Salvar Predição no Banco e Atualizar Átomo (POST-AI)
             const { data: predData, error: saveError } = await supabaseClient
                 .from('ai_scheduling_predictions')
                 .insert({
@@ -248,32 +317,28 @@ serve(async (req: Request) => {
                 .single()
 
             if (saveError) {
-                console.error('❌ Erro ao salvar predição:', saveError)
+                console.error('❌ Erro ao salvar predição técnica:', saveError)
                 throw saveError
             }
 
-            // 6. CCOS v2.0: Gerar Átomo de Decisão (Decision Object)
-            await supabaseClient.from('cognitive_decisions').insert({
-                decision_type: 'scheduling',
-                recommendation: analysis,
-                justification: `Análise de risco baseada em histórico de ${totalAppointments} consultas e taxa de no-show de ${noShowRate}%.`,
-                confidence: 0.85, // Estimativa baseada no modelo
-                autonomy_level: policy?.autonomy_level || 1,
-                requires_human_confirmation: true,
-                policy_snapshot: {
-                    intent: 'ADMIN',
-                    version: policy?.version || 1,
-                    autonomy_level: policy?.autonomy_level || 1,
-                    frozen_at: new Date().toISOString()
-                },
-                model_version: MODEL_NAME,
-                metadata: { appointment_id: appointmentId, prediction_id: predData?.id }
-            })
+            // 8. CCOS v2.0: Preencher Átomo de Decisão (Filiação)
+            await supabaseClient.from('cognitive_decisions')
+                .update({
+                    recommendation: analysis,
+                    justification: `Análise de risco concluída. Histórico de ${totalAppointments} consultas, taxa no-show ${noShowRate}%.`,
+                    confidence: 0.85,
+                    metadata: { ...decData.metadata, prediction_id: predData?.id }
+                })
+                .eq('id', decData.id)
+
+            // 9. COS v1.0: Atualizar Metabolismo (Consumo Energético)
+            await supabaseClient.rpc('increment_metabolism', { p_id: professionalId })
 
             return new Response(JSON.stringify({
                 success: true,
                 prediction: analysis,
-                message: 'Risco calculado e Átomo de Decisão gerado.'
+                decision_id: decData.id,
+                message: 'Risco calculado e Átomo de Decisão preenchido.'
             }), {
                 headers: { ...corsHeaders, 'Content-Type': 'application/json' }
             })
@@ -449,38 +514,48 @@ AGORA: Analise o contexto. Se pedir Sistema Renal/Urinário, atue como LÚCIA ou
             triggerKeyword: isTeachingMode && !['TESTE_NIVELAMENTO', 'EDUCACIONAL', 'SIMULACAO_ALUNO'].includes(patientData?.intent)
         });
 
-        // --- HANDLER: CALCULAR PRIORIDADE CLÍNICA (PHASE 2) ---
         if (action === 'calculate_priority') {
             console.log('🏥 [ACTION] Calculating Clinical Priority...')
 
-            // Simulação de lógica de priorização (será expandida com RAG e histórico)
-            const priorityLevel = (patientData?.risk_level === 'high' || patientData?.urgency === 'immediate') ? 1 : 2
-            const justification = `Prioridade nível ${priorityLevel} atribuída com base no nível de risco ${patientData?.risk_level || 'não informado'}.`
-
-            const decision: any = {
-                decision_type: 'priority',
-                recommendation: { priority_level: priorityLevel, clinical_context: patientData },
-                justification,
-                alternatives: [{ priority_level: priorityLevel + 1, reason: 'Aguardar exames complementares' }],
-                confidence: 0.9,
-                autonomy_level: policy?.autonomy_level || 1,
-                requires_human_confirmation: true,
-                policy_snapshot: {
-                    intent: 'CLINICA',
-                    version: policy?.version || 1,
-                    autonomy_level: policy?.autonomy_level || 1,
-                    frozen_at: new Date().toISOString()
-                },
-                model_version: CHAT_MODEL
-            }
-
+            // 1. COS v1.0: Gerar Átomo de Decisão (PRE-AI/Logic)
             const { data: decData, error: decError } = await supabaseClient
                 .from('cognitive_decisions')
-                .insert(decision)
+                .insert({
+                    decision_type: 'priority',
+                    recommendation: { status: 'calculating' },
+                    justification: 'Cálculo de prioridade clínica iniciado.',
+                    confidence: 0,
+                    autonomy_level: cosDecision.autonomy_level,
+                    requires_human_confirmation: true,
+                    policy_snapshot: {
+                        intent: 'CLINICA',
+                        version: policy?.version || 1,
+                        autonomy_level: policy?.autonomy_level || 1,
+                        frozen_at: new Date().toISOString()
+                    },
+                    model_version: CHAT_MODEL
+                })
                 .select()
                 .single()
 
             if (decError) throw decError
+
+            // 2. Lógica de Priorização (Core Logic)
+            const priorityLevel = (patientData?.risk_level === 'high' || patientData?.urgency === 'immediate') ? 1 : 2
+            const justification = `Prioridade nível ${priorityLevel} atribuída com base no nível de risco ${patientData?.risk_level || 'não informado'}.`
+
+            // 3. Atualizar Átomo de Decisão (Post-Logic)
+            await supabaseClient.from('cognitive_decisions')
+                .update({
+                    recommendation: { priority_level: priorityLevel, clinical_context: patientData },
+                    justification,
+                    alternatives: [{ priority_level: priorityLevel + 1, reason: 'Aguardar exames complementares' }],
+                    confidence: 0.9
+                })
+                .eq('id', decData.id)
+
+            // 4. COS v1.0: Atualizar Metabolismo
+            await supabaseClient.rpc('increment_metabolism', { p_id: professionalId })
 
             return new Response(JSON.stringify({
                 success: true,
