@@ -28,10 +28,21 @@ serve(async (req: Request) => {
         const supabaseClient = createClient(supabaseUrl, supabaseServiceKey)
         const openai = new OpenAI({ apiKey: openaiApiKey })
 
-        // 3. Autenticação do Usuário (Opcional: Pode validar via JWT se necessário)
-        // const authHeader = req.headers.get('Authorization')
-        // const token = authHeader?.replace('Bearer ', '')
-        // const { data: { user }, error: authError } = await supabaseClient.auth.getUser(token)
+        // 3. Autenticação e Verificação de Kill Switch (CCOS Governança)
+        const { data: config } = await supabaseClient
+            .from('system_config')
+            .select('value')
+            .eq('key', 'ai_mode')
+            .single()
+
+        const aiMode = config?.value?.mode || 'FULL'
+
+        if (aiMode === 'OFF') {
+            return new Response(JSON.stringify({
+                text: 'Doutrina CCOS: Sistema em modo OFF por segurança ou manutenção.',
+                metadata: { mode: 'OFF', emergency: true }
+            }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+        }
 
         // 4. Extrair e Validar Dados da Requisição (Parse Body ONCE)
         const body = await req.json()
@@ -200,10 +211,8 @@ serve(async (req: Request) => {
                     no_show_probability: analysis.no_show_probability || 0.1,
                     expected_duration_minutes: analysis.expected_duration_minutes || 60,
                     recommended_action: analysis.recommended_action || 'NONE',
-                    model_version: 'gpt-4o-v1',
-                    // reasoning_tags (se tivermos coluna JSONB ou array no schema futuro, por enquanto vai no metadata se precisar, 
-                    // mas o schema atual V3 não tem tags explicito na tabela, vamos manter simples ou adicionar se der)
-                    // Schema V3 tem colunas fixas. Vamos focar no que tem.
+                    model_version: MODEL_NAME,
+                    reasoning_tags: analysis.reasoning_tags || []
                 })
 
             if (saveError) {
@@ -232,7 +241,6 @@ serve(async (req: Request) => {
 
         if (!message) throw new Error('Mensagem não fornecida.')
 
-        // Instrução dinâmica de fase (controle de fluxo)
         // Instrução dinâmica de fase (controle de fluxo)
         let phaseInstruction = assessmentPhase
             ? `\n\n🚨 FASE ATUAL DO PROTOCOLO (ESTADO ATIVO): "${assessmentPhase}".\nATENÇÃO: Você DEVE conduzir o diálogo focado EXCLUSIVAMENTE nesta fase. Não pule para a próxima até que esta esteja concluída.`
@@ -300,7 +308,7 @@ DIRETRIZES DE SEGURANÇA E ADMINISTRAÇÃO:
 Você é um ATOR DE MÉTODO interpretando um paciente para treinar um estudante de medicina.
 Sua escolha de personagem depende do contexto enviado:
 
-A) SE HOUVER UM "SISTEMA ALVO" (ex: Urinário, Respiratório) NO CONTEXTO:
+A) SE HOUVER UN "SISTEMA ALVO" (ex: Urinário, Respiratório) NO CONTEXTO:
    -> Escolha OBRIGATORIAMENTE um personagem cuja queixa corresponda a esse sistema.
 
 B) SE NÃO HOUVER SISTEMA ALVO (Teste Geral):
@@ -399,8 +407,32 @@ AGORA: Analise o contexto. Se pedir Sistema Renal/Urinário, atue como LÚCIA ou
             triggerKeyword: isTeachingMode && !['TESTE_NIVELAMENTO', 'EDUCACIONAL', 'SIMULACAO_ALUNO'].includes(patientData?.intent)
         });
 
-        // 6. CONTEXTO DE CONHECIMENTO (ADAPTATIVO)
-        // Se estivermos em modo ensino, injetar regras de pontuação se disponíveis no contexto
+        // 🛡️ ENFORCEMENT: CONSULTA DE POLÍTICA COGNITIVA (CCOS v2.0)
+        const { data: policy } = await supabaseClient
+            .from('cognitive_policies')
+            .select('*')
+            .eq('intent', currentIntent === 'TESTE_NIVELAMENTO' ? 'ENSINO' : (currentIntent === 'APPOINTMENT_CREATE' ? 'ADMIN' : 'CLINICA'))
+            .eq('active', true)
+            .order('version', { ascending: false })
+            .limit(1)
+            .single()
+
+        // Se o modo for READ_ONLY, bloquear ações de escrita (finalize, predict)
+        if (aiMode === 'READ_ONLY' && action) {
+            return new Response(JSON.stringify({
+                text: 'Doutrina CCOS: Sistema em modo READ_ONLY. Ações de escrita suspensas.',
+                metadata: { mode: 'READ_ONLY' }
+            }), { headers: corsHeaders })
+        }
+
+        // Bloqueio por política explícita ( forbidden_actions )
+        if (policy?.forbidden_actions?.includes(action)) {
+            console.warn(`🚫 [POLICY BLOCK] Ação "${action}" proibida para intenção "${currentIntent}"`)
+            return new Response(JSON.stringify({
+                text: 'Esta ação não é permitida pelas políticas cognitivas atuais.',
+                metadata: { policy_blocked: true, intent: currentIntent }
+            }), { headers: corsHeaders })
+        }
 
         const CONTEXT_BLOCK = `
 CONTEXTO DO USUÁRIO:
@@ -467,12 +499,6 @@ ${JSON.stringify(patientData, null, 2)}
                 intent: currentIntent,
                 simbologia
             })
-
-            // 🚨 GATILHO ANTIGO (REMOVIDO PARA SEGURANÇA)
-            // O fluxo agora é 100% via 'finalize_assessment' action.
-            if (false) {
-                // Bloco deletado para evitar conflitos de restrição (generated_by_check)
-            }
         }
 
         // 8. Retorno da Resposta
