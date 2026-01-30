@@ -802,8 +802,6 @@ const PatientsManagement: React.FC = () => {
                 <ArrowLeft className="w-5 h-5 text-white" />
               </button>
               <div>
-                <h1 className="text-3xl font-bold text-white mb-2">Prontuário Eletrônico</h1>
-                <p className="text-slate-400">Gestão de Pacientes e Atendimentos</p>
               </div>
             </div>
             <div className="relative new-patient-menu-container">
