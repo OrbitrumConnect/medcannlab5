@@ -52,6 +52,7 @@ import WearableMonitoring from '../components/WearableMonitoring'
 import ProfessionalChatSystem from '../components/ProfessionalChatSystem'
 import IntegratedDocuments from '../components/IntegratedDocuments'
 import ClinicalTerminal from '../components/ClinicalTerminal'
+import { DecisionFeedbackLoop } from '../components/ClinicalGovernance/DecisionFeedbackLoop'
 
 interface Patient {
   id: string
@@ -313,6 +314,9 @@ const EduardoFaveretDashboard: React.FC = () => {
   const renderDashboard = () => {
     return (
       <div className="space-y-8">
+        {/* 🧬 CCOS v2.0: Decision Feedback Loop (Calibration Queue) */}
+        <DecisionFeedbackLoop />
+
         {/* 📊 TRÊS CAMADAS DE KPIs */}
         <div className="space-y-6">
           <h2 className="text-2xl font-bold text-white mb-4">📊 Três Camadas de KPIs</h2>

@@ -13,6 +13,7 @@ import IntegrativePrescriptions from '../components/IntegrativePrescriptions'
 import RenalFunctionModule from '../components/RenalFunctionModule'
 import IntegratedWorkstation from '../components/IntegratedWorkstation'
 import ClinicalTerminal from '../components/ClinicalTerminal'
+import { DecisionFeedbackLoop } from '../components/ClinicalGovernance/DecisionFeedbackLoop'
 import {
   Brain,
   Users,
@@ -1169,6 +1170,9 @@ const RicardoValencaDashboard: React.FC = () => {
 
   const renderDashboard = () => (
     <>
+      {/* 🧬 CCOS v2.0: Decision Feedback Loop (Calibration Queue) */}
+      <DecisionFeedbackLoop />
+
       {/* Navegação por Eixos */}
       <div className="space-y-4 md:space-y-6 lg:space-y-8 mb-4 md:mb-6 lg:mb-8">
         {/* 🔧 FUNCIONALIDADES ADMINISTRATIVAS - PRIMEIRO PARA ADMIN */}

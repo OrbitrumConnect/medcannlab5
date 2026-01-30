@@ -24,6 +24,10 @@ serve(async (req: Request) => {
             throw new Error('Variáveis de ambiente (SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, OPENAI_API_KEY) não configuradas.')
         }
 
+        // Variáveis de Modelo Globais (CCOS Feature Flag)
+        const MODEL_NAME = Deno.env.get('AI_MODEL_NAME_RISK') || "gpt-4o"
+        const CHAT_MODEL = Deno.env.get('AI_MODEL_NAME_CHAT') || "gpt-4o"
+
         // 2. Inicializar Clientes
         const supabaseClient = createClient(supabaseUrl, supabaseServiceKey)
         const openai = new OpenAI({ apiKey: openaiApiKey })
@@ -44,9 +48,37 @@ serve(async (req: Request) => {
             }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
         }
 
-        // 4. Extrair e Validar Dados da Requisição (Parse Body ONCE)
         const body = await req.json()
         const { message, conversationHistory, patientData, assessmentPhase, nextQuestionHint, action, assessmentData, appointmentData } = body
+
+        // --- 🛡️ GOVERNANÇA: CONSULTA DE POLÍTICA COGNITIVA (CCOS v2.0) ---
+        // Determinar contexto preventivamente para os handlers
+        let currentIntent = patientData?.intent || 'CLÍNICA';
+        const msgLower = (message || "").toLowerCase();
+        const msgNormalized = msgLower.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+
+        if (msgLower.includes('nivelamento') || msgLower.includes('prova') || msgLower.includes('simulação')) {
+            currentIntent = 'TESTE_NIVELAMENTO';
+        } else if (msgNormalized.includes('agendar') || msgNormalized.includes('marcar') || action?.includes('scheduling')) {
+            currentIntent = 'APPOINTMENT_CREATE';
+        }
+
+        const { data: policy } = await supabaseClient
+            .from('cognitive_policies')
+            .select('*')
+            .eq('intent', currentIntent === 'TESTE_NIVELAMENTO' ? 'ENSINO' : (currentIntent === 'APPOINTMENT_CREATE' ? 'ADMIN' : 'CLINICA'))
+            .eq('active', true)
+            .order('version', { ascending: false })
+            .limit(1)
+            .single()
+
+        // Se o modo for READ_ONLY, bloquear ações de escrita
+        if (aiMode === 'READ_ONLY' && action) {
+            return new Response(JSON.stringify({
+                text: 'Doutrina CCOS: Sistema em modo READ_ONLY. Ações de escrita suspensas.',
+                metadata: { mode: 'READ_ONLY' }
+            }), { headers: corsHeaders })
+        }
 
         // --- HANDLER DE FINALIZAÇÃO DE AVALIAÇÃO (SERVER-SIDE) ---
         if (action === 'finalize_assessment') {
@@ -182,8 +214,6 @@ serve(async (req: Request) => {
             `
 
             // 4. Chamada OpenAI (Low Temperature for consistency)
-            const MODEL_NAME = Deno.env.get('AI_MODEL_NAME_RISK') || "gpt-4o"
-
             const completion = await openai.chat.completions.create({
                 model: MODEL_NAME,
                 messages: [{ role: "system", content: RISK_PROMPT }],
@@ -204,7 +234,7 @@ serve(async (req: Request) => {
             console.log('🤖 [AI PREDICTION]', analysis)
 
             // 5. Salvar Predição no Banco (Source of Truth)
-            const { error: saveError } = await supabaseClient
+            const { data: predData, error: saveError } = await supabaseClient
                 .from('ai_scheduling_predictions')
                 .insert({
                     appointment_id: appointmentId,
@@ -214,16 +244,36 @@ serve(async (req: Request) => {
                     model_version: MODEL_NAME,
                     reasoning_tags: analysis.reasoning_tags || []
                 })
+                .select()
+                .single()
 
             if (saveError) {
                 console.error('❌ Erro ao salvar predição:', saveError)
                 throw saveError
             }
 
+            // 6. CCOS v2.0: Gerar Átomo de Decisão (Decision Object)
+            await supabaseClient.from('cognitive_decisions').insert({
+                decision_type: 'scheduling',
+                recommendation: analysis,
+                justification: `Análise de risco baseada em histórico de ${totalAppointments} consultas e taxa de no-show de ${noShowRate}%.`,
+                confidence: 0.85, // Estimativa baseada no modelo
+                autonomy_level: policy?.autonomy_level || 1,
+                requires_human_confirmation: true,
+                policy_snapshot: {
+                    intent: 'ADMIN',
+                    version: policy?.version || 1,
+                    autonomy_level: policy?.autonomy_level || 1,
+                    frozen_at: new Date().toISOString()
+                },
+                model_version: MODEL_NAME,
+                metadata: { appointment_id: appointmentId, prediction_id: predData?.id }
+            })
+
             return new Response(JSON.stringify({
                 success: true,
                 prediction: analysis,
-                message: 'Risco calculado e salvo.'
+                message: 'Risco calculado e Átomo de Decisão gerado.'
             }), {
                 headers: { ...corsHeaders, 'Content-Type': 'application/json' }
             })
@@ -358,21 +408,13 @@ ${phaseInstruction}
 
 AGORA: Analise o contexto. Se pedir Sistema Renal/Urinário, atue como LÚCIA ou CLÁUDIA. Se Cardio, LUCAS ou RICARDO. Se livre, sorteie um e COMECE.`;
 
-        // Seleção Dinâmica de Agente (Persona Swapping)
-        let currentIntent = patientData?.intent || 'CLÍNICA';
-
-        // 🛡️ FAILSAFE (Gatilho de Palavra-Chave):
-        // Garante que o Admin consiga ativar o teste digitando, mesmo se o frontend enviar intent 'CLINICA'
-        const msgLower = message.toLowerCase();
+        // 🛡️ FAILSAFE (Gatilho de Palavra-Chave) - Redundante com Governança mas mantido para lógica de prompt
         if (msgLower.includes('nivelamento') || msgLower.includes('prova') || msgLower.includes('simulação') || msgLower.includes('começar teste')) {
             console.log('⚡ [TRIGGER] Palavra-chave de teste detectada. Forçando modo ENSINO.');
             currentIntent = 'TESTE_NIVELAMENTO';
         }
 
         // 🗓️ GATILHO DE AGENDAMENTO (SMART WIDGET TRIGGER) - V3 ROBUST
-        // Normalização para remover acentos e facilitar match
-        const msgNormalized = msgLower.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-
         if (
             msgNormalized.includes('agendar') ||
             msgNormalized.includes('marcar') ||
@@ -407,21 +449,44 @@ AGORA: Analise o contexto. Se pedir Sistema Renal/Urinário, atue como LÚCIA ou
             triggerKeyword: isTeachingMode && !['TESTE_NIVELAMENTO', 'EDUCACIONAL', 'SIMULACAO_ALUNO'].includes(patientData?.intent)
         });
 
-        // 🛡️ ENFORCEMENT: CONSULTA DE POLÍTICA COGNITIVA (CCOS v2.0)
-        const { data: policy } = await supabaseClient
-            .from('cognitive_policies')
-            .select('*')
-            .eq('intent', currentIntent === 'TESTE_NIVELAMENTO' ? 'ENSINO' : (currentIntent === 'APPOINTMENT_CREATE' ? 'ADMIN' : 'CLINICA'))
-            .eq('active', true)
-            .order('version', { ascending: false })
-            .limit(1)
-            .single()
+        // --- HANDLER: CALCULAR PRIORIDADE CLÍNICA (PHASE 2) ---
+        if (action === 'calculate_priority') {
+            console.log('🏥 [ACTION] Calculating Clinical Priority...')
 
-        // Se o modo for READ_ONLY, bloquear ações de escrita (finalize, predict)
-        if (aiMode === 'READ_ONLY' && action) {
+            // Simulação de lógica de priorização (será expandida com RAG e histórico)
+            const priorityLevel = (patientData?.risk_level === 'high' || patientData?.urgency === 'immediate') ? 1 : 2
+            const justification = `Prioridade nível ${priorityLevel} atribuída com base no nível de risco ${patientData?.risk_level || 'não informado'}.`
+
+            const decision: any = {
+                decision_type: 'priority',
+                recommendation: { priority_level: priorityLevel, clinical_context: patientData },
+                justification,
+                alternatives: [{ priority_level: priorityLevel + 1, reason: 'Aguardar exames complementares' }],
+                confidence: 0.9,
+                autonomy_level: policy?.autonomy_level || 1,
+                requires_human_confirmation: true,
+                policy_snapshot: {
+                    intent: 'CLINICA',
+                    version: policy?.version || 1,
+                    autonomy_level: policy?.autonomy_level || 1,
+                    frozen_at: new Date().toISOString()
+                },
+                model_version: CHAT_MODEL
+            }
+
+            const { data: decData, error: decError } = await supabaseClient
+                .from('cognitive_decisions')
+                .insert(decision)
+                .select()
+                .single()
+
+            if (decError) throw decError
+
             return new Response(JSON.stringify({
-                text: 'Doutrina CCOS: Sistema em modo READ_ONLY. Ações de escrita suspensas.',
-                metadata: { mode: 'READ_ONLY' }
+                success: true,
+                decision_id: decData.id,
+                priority: priorityLevel,
+                justification
             }), { headers: corsHeaders })
         }
 
@@ -454,8 +519,6 @@ ${JSON.stringify(patientData, null, 2)}
         messages.push({ role: "user", content: message })
 
         // 7. Chamada à OpenAI (GPT-4o)
-        const CHAT_MODEL = Deno.env.get('AI_MODEL_NAME_CHAT') || "gpt-4o"
-
         const completion = await openai.chat.completions.create({
             model: CHAT_MODEL,
             messages,
