@@ -4666,7 +4666,7 @@ const RicardoValencaDashboard: React.FC = () => {
                 </h2>
               </div>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+            <div className="flex flex-wrap gap-2">
               {sectionNavOptions.map(option => {
                 const OptionIcon = option.icon
                 const isActive = resolvedSection === option.id
@@ -4676,40 +4676,15 @@ const RicardoValencaDashboard: React.FC = () => {
                     type="button"
                     onClick={() => goToSection(option.id)}
                     className={[
-                      'group text-left rounded-xl border transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400',
+                      'group flex items-center gap-2 px-3 py-2 rounded-lg border transition-all duration-200',
                       isActive
-                        ? 'bg-emerald-600/20 border-emerald-500/40 shadow-lg shadow-emerald-900/30'
-                        : 'bg-slate-900/60 border-slate-700/60 hover:border-emerald-400/40 hover:bg-slate-900/80'
+                        ? 'bg-emerald-600/20 border-emerald-500/40 text-emerald-100 shadow-sm'
+                        : 'bg-slate-900/60 border-slate-700/60 text-slate-300 hover:bg-slate-800 hover:text-white hover:border-emerald-500/30'
                     ].join(' ')}
+                    title={option.description}
                   >
-                    <div className="p-4 flex items-start gap-3">
-                      <div
-                        className={[
-                          'w-10 h-10 rounded-lg flex items-center justify-center transition-colors',
-                          isActive
-                            ? 'bg-emerald-500/20 text-emerald-200'
-                            : 'bg-slate-800/80 text-slate-300 group-hover:text-emerald-300'
-                        ].join(' ')}
-                      >
-                        <OptionIcon className="w-5 h-5" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p
-                          className={[
-                            'text-sm font-semibold truncate transition-colors',
-                            isActive ? 'text-white' : 'text-slate-200 group-hover:text-emerald-100'
-                          ].join(' ')}
-                        >
-                          {option.label}
-                        </p>
-                        <p className="text-xs text-slate-400/90 leading-relaxed mt-1 line-clamp-2">
-                          {option.description}
-                        </p>
-                      </div>
-                    </div>
-                    {isActive && (
-                      <div className="h-1 rounded-b-xl bg-gradient-to-r from-emerald-400 via-emerald-500 to-teal-400" />
-                    )}
+                    <OptionIcon className={`w-4 h-4 ${isActive ? 'text-emerald-400' : 'text-slate-400 group-hover:text-emerald-400'}`} />
+                    <span className="text-sm font-medium">{option.label}</span>
                   </button>
                 )
               })}
