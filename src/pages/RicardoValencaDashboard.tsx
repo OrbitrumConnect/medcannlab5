@@ -4686,88 +4686,92 @@ const RicardoValencaDashboard: React.FC = () => {
         )}
 
         {sectionNavOptions && sectionNavOptions.length > 0 && (
-          <div className="fixed bottom-6 left-0 right-0 z-40 px-4 pointer-events-none">
-            <div className="max-w-7xl mx-auto flex items-end justify-center pointer-events-auto">
-              {/* Container de Navegação "Rolon" */}
-              <div className="flex items-center gap-2 bg-slate-900/90 backdrop-blur-xl p-2 rounded-full border border-slate-700/50 shadow-2xl">
+          <div className="mt-8 mb-12 relative z-10">
+            <div className="max-w-7xl mx-auto flex items-center justify-center">
+              {/* Container de Navegação "Rolon" integrado */}
+              <div className="w-full flex items-center justify-center gap-4">
 
-                {/* Lado Esquerdo - Scrollável */}
-                <div className="flex items-center gap-2 overflow-x-auto max-w-[160px] sm:max-w-[200px] md:max-w-[300px] no-scrollbar px-2" style={{ scrollbarWidth: 'none', direction: 'rtl' }}>
-                  {sectionNavOptions.slice(0, Math.ceil(sectionNavOptions.length / 2)).reverse().map(option => {
-                    const OptionIcon = option.icon
-                    const isActive = resolvedSection === option.id
-                    return (
-                      <button
-                        key={option.id}
-                        type="button"
-                        style={{ direction: 'ltr' }}
-                        onClick={() => {
-                          if (option.id === 'novo-paciente') {
-                            setShowCreatePatientModal(true)
-                          } else if (option.id === 'prescricao-rapida') {
-                            handleVoiceShowPrescription()
-                          } else {
-                            goToSection(option.id)
-                          }
-                        }}
-                        className={[
-                          'group flex-shrink-0 flex items-center justify-center gap-2 px-4 py-2.5 rounded-full border transition-all duration-300 whitespace-nowrap',
-                          isActive
-                            ? 'bg-emerald-500/20 border-emerald-500/50 text-emerald-100 shadow-[0_0_15px_rgba(16,185,129,0.3)]'
-                            : 'bg-slate-800/50 border-slate-700/50 text-slate-400 hover:bg-slate-700 hover:text-white hover:border-slate-500'
-                        ].join(' ')}
-                        title={option.description}
-                      >
-                        <OptionIcon className={`w-4 h-4 ${isActive ? 'text-emerald-400' : 'text-slate-500 group-hover:text-emerald-400'}`} />
-                        <span className="text-xs font-semibold">{option.label}</span>
-                      </button>
-                    )
-                  })}
+                {/* Lado Esquerdo - Scrollável (Direção RTL para crescer do centro) */}
+                <div className="flex-1 flex justify-end overflow-hidden">
+                  <div className="flex items-center gap-3 overflow-x-auto no-scrollbar px-4 py-2 mask-linear-fade-left" style={{ direction: 'rtl', scrollbarWidth: 'none' }}>
+                    {sectionNavOptions.slice(0, Math.ceil(sectionNavOptions.length / 2)).reverse().map(option => {
+                      const OptionIcon = option.icon
+                      const isActive = resolvedSection === option.id
+                      return (
+                        <button
+                          key={option.id}
+                          type="button"
+                          style={{ direction: 'ltr' }}
+                          onClick={() => {
+                            if (option.id === 'novo-paciente') {
+                              setShowCreatePatientModal(true)
+                            } else if (option.id === 'prescricao-rapida') {
+                              handleVoiceShowPrescription()
+                            } else {
+                              goToSection(option.id)
+                            }
+                          }}
+                          className={[
+                            'group flex-shrink-0 flex items-center justify-center gap-2 px-5 py-3 rounded-full border transition-all duration-300 whitespace-nowrap',
+                            isActive
+                              ? 'bg-emerald-600/20 border-emerald-500/40 text-emerald-100 shadow-md scale-105'
+                              : 'bg-slate-800/80 border-slate-700/60 text-slate-300 hover:bg-slate-700 hover:text-white hover:border-emerald-500/30 hover:scale-105'
+                          ].join(' ')}
+                          title={option.description}
+                        >
+                          <OptionIcon className={`w-5 h-5 ${isActive ? 'text-emerald-400' : 'text-slate-400 group-hover:text-emerald-400'}`} />
+                          <span className="text-sm font-medium">{option.label}</span>
+                        </button>
+                      )
+                    })}
+                  </div>
                 </div>
 
-                {/* Cérebro Central - Fixo */}
-                <div className="relative group flex-shrink-0 mx-1">
-                  <div className="absolute inset-0 bg-emerald-500/20 rounded-full blur-xl group-hover:bg-emerald-500/40 transition-all duration-500 animate-pulse"></div>
+                {/* Cérebro Central - Fixo e Grande */}
+                <div className="relative group flex-shrink-0 z-20">
+                  <div className="absolute inset-0 bg-emerald-500/20 rounded-full blur-2xl group-hover:bg-emerald-500/30 transition-all duration-500"></div>
                   <button
                     type="button"
                     onClick={openNoaChat}
-                    className="relative w-14 h-14 rounded-full bg-gradient-to-br from-emerald-500 to-emerald-700 flex items-center justify-center shadow-[0_0_20px_rgba(16,185,129,0.4)] border border-emerald-400/30 hover:scale-110 hover:-translate-y-1 transition-all duration-300 z-10"
+                    className="relative w-20 h-20 rounded-full bg-gradient-to-b from-emerald-500 to-emerald-700 flex items-center justify-center shadow-lg shadow-emerald-500/20 border border-emerald-400/20 hover:scale-110 hover:-translate-y-1 transition-all duration-300"
                   >
-                    <Brain className="w-7 h-7 text-white drop-shadow-md" />
+                    <Brain className="w-9 h-9 text-white drop-shadow-md" />
                   </button>
                 </div>
 
                 {/* Lado Direito - Scrollável */}
-                <div className="flex items-center gap-2 overflow-x-auto max-w-[160px] sm:max-w-[200px] md:max-w-[300px] no-scrollbar px-2" style={{ scrollbarWidth: 'none' }}>
-                  {sectionNavOptions.slice(Math.ceil(sectionNavOptions.length / 2)).map(option => {
-                    const OptionIcon = option.icon
-                    const isActive = resolvedSection === option.id
-                    return (
-                      <button
-                        key={option.id}
-                        type="button"
-                        onClick={() => {
-                          if (option.id === 'novo-paciente') {
-                            setShowCreatePatientModal(true)
-                          } else if (option.id === 'prescricao-rapida') {
-                            handleVoiceShowPrescription()
-                          } else {
-                            goToSection(option.id)
-                          }
-                        }}
-                        className={[
-                          'group flex-shrink-0 flex items-center justify-center gap-2 px-4 py-2.5 rounded-full border transition-all duration-300 whitespace-nowrap',
-                          isActive
-                            ? 'bg-emerald-500/20 border-emerald-500/50 text-emerald-100 shadow-[0_0_15px_rgba(16,185,129,0.3)]'
-                            : 'bg-slate-800/50 border-slate-700/50 text-slate-400 hover:bg-slate-700 hover:text-white hover:border-slate-500'
-                        ].join(' ')}
-                        title={option.description}
-                      >
-                        <OptionIcon className={`w-4 h-4 ${isActive ? 'text-emerald-400' : 'text-slate-500 group-hover:text-emerald-400'}`} />
-                        <span className="text-xs font-semibold">{option.label}</span>
-                      </button>
-                    )
-                  })}
+                <div className="flex-1 flex justify-start overflow-hidden">
+                  <div className="flex items-center gap-3 overflow-x-auto no-scrollbar px-4 py-2 mask-linear-fade-right" style={{ scrollbarWidth: 'none' }}>
+                    {sectionNavOptions.slice(Math.ceil(sectionNavOptions.length / 2)).map(option => {
+                      const OptionIcon = option.icon
+                      const isActive = resolvedSection === option.id
+                      return (
+                        <button
+                          key={option.id}
+                          type="button"
+                          onClick={() => {
+                            if (option.id === 'novo-paciente') {
+                              setShowCreatePatientModal(true)
+                            } else if (option.id === 'prescricao-rapida') {
+                              handleVoiceShowPrescription()
+                            } else {
+                              goToSection(option.id)
+                            }
+                          }}
+                          className={[
+                            'group flex-shrink-0 flex items-center justify-center gap-2 px-5 py-3 rounded-full border transition-all duration-300 whitespace-nowrap',
+                            isActive
+                              ? 'bg-emerald-600/20 border-emerald-500/40 text-emerald-100 shadow-md scale-105'
+                              : 'bg-slate-800/80 border-slate-700/60 text-slate-300 hover:bg-slate-700 hover:text-white hover:border-emerald-500/30 hover:scale-105'
+                          ].join(' ')}
+                          title={option.description}
+                        >
+                          <OptionIcon className={`w-5 h-5 ${isActive ? 'text-emerald-400' : 'text-slate-400 group-hover:text-emerald-400'}`} />
+                          <span className="text-sm font-medium">{option.label}</span>
+                        </button>
+                      )
+                    })}
+                  </div>
                 </div>
 
               </div>
