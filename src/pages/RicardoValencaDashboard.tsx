@@ -351,9 +351,21 @@ const RicardoValencaDashboard: React.FC = () => {
         icon: Calendar
       },
       {
+        id: 'prescricao-rapida',
+        label: 'Prescrever',
+        description: 'Nova prescrição rápida',
+        icon: FileText
+      },
+      {
+        id: 'novo-paciente',
+        label: 'Novo Paciente',
+        description: 'Cadastrar novo paciente',
+        icon: UserPlus
+      },
+      {
         id: 'chat-profissionais',
-        label: 'Equipe Clínica',
-        description: 'Comunicação interna entre profissionais',
+        label: 'Equipe',
+        description: 'Comunicação interna',
         icon: MessageCircle
       }
     ]
@@ -4674,65 +4686,91 @@ const RicardoValencaDashboard: React.FC = () => {
         )}
 
         {sectionNavOptions && sectionNavOptions.length > 0 && (
-          <div className="mt-8 mb-8">
-            <div className="flex flex-wrap items-center justify-center gap-4">
-              {/* Left Side Options */}
-              {sectionNavOptions.slice(0, Math.ceil(sectionNavOptions.length / 2)).map(option => {
-                const OptionIcon = option.icon
-                const isActive = resolvedSection === option.id
-                return (
-                  <button
-                    key={option.id}
-                    type="button"
-                    onClick={() => goToSection(option.id)}
-                    className={[
-                      'group flex items-center justify-center gap-2 px-4 py-3 rounded-full border transition-all duration-300',
-                      isActive
-                        ? 'bg-emerald-600/20 border-emerald-500/40 text-emerald-100 shadow-md scale-105'
-                        : 'bg-slate-800/80 border-slate-700/60 text-slate-300 hover:bg-slate-700 hover:text-white hover:border-emerald-500/30 hover:scale-105'
-                    ].join(' ')}
-                    title={option.description}
-                  >
-                    <OptionIcon className={`w-4 h-4 ${isActive ? 'text-emerald-400' : 'text-slate-400 group-hover:text-emerald-400'}`} />
-                    <span className="text-sm font-medium">{option.label}</span>
-                  </button>
-                )
-              })}
+          <div className="fixed bottom-6 left-0 right-0 z-40 px-4 pointer-events-none">
+            <div className="max-w-7xl mx-auto flex items-end justify-center pointer-events-auto">
+              {/* Container de Navegação "Rolon" */}
+              <div className="flex items-center gap-2 bg-slate-900/90 backdrop-blur-xl p-2 rounded-full border border-slate-700/50 shadow-2xl">
 
-              {/* Central Brain Trigger */}
-              <div className="relative group mx-4 hidden md:block">
-                <div className="absolute inset-0 bg-emerald-500/20 rounded-full blur-xl group-hover:bg-emerald-500/30 transition-all duration-500"></div>
-                <button
-                  type="button"
-                  onClick={openNoaChat}
-                  className="relative w-16 h-16 rounded-full bg-gradient-to-b from-emerald-500 to-emerald-700 flex items-center justify-center shadow-lg shadow-emerald-500/20 border border-emerald-400/20 hover:scale-110 hover:-translate-y-1 transition-all duration-300 z-10"
-                >
-                  <Brain className="w-8 h-8 text-white drop-shadow-md" />
-                </button>
+                {/* Lado Esquerdo - Scrollável */}
+                <div className="flex items-center gap-2 overflow-x-auto max-w-[160px] sm:max-w-[200px] md:max-w-[300px] no-scrollbar px-2" style={{ scrollbarWidth: 'none', direction: 'rtl' }}>
+                  {sectionNavOptions.slice(0, Math.ceil(sectionNavOptions.length / 2)).reverse().map(option => {
+                    const OptionIcon = option.icon
+                    const isActive = resolvedSection === option.id
+                    return (
+                      <button
+                        key={option.id}
+                        type="button"
+                        style={{ direction: 'ltr' }}
+                        onClick={() => {
+                          if (option.id === 'novo-paciente') {
+                            setShowCreatePatientModal(true)
+                          } else if (option.id === 'prescricao-rapida') {
+                            handleVoiceShowPrescription()
+                          } else {
+                            goToSection(option.id)
+                          }
+                        }}
+                        className={[
+                          'group flex-shrink-0 flex items-center justify-center gap-2 px-4 py-2.5 rounded-full border transition-all duration-300 whitespace-nowrap',
+                          isActive
+                            ? 'bg-emerald-500/20 border-emerald-500/50 text-emerald-100 shadow-[0_0_15px_rgba(16,185,129,0.3)]'
+                            : 'bg-slate-800/50 border-slate-700/50 text-slate-400 hover:bg-slate-700 hover:text-white hover:border-slate-500'
+                        ].join(' ')}
+                        title={option.description}
+                      >
+                        <OptionIcon className={`w-4 h-4 ${isActive ? 'text-emerald-400' : 'text-slate-500 group-hover:text-emerald-400'}`} />
+                        <span className="text-xs font-semibold">{option.label}</span>
+                      </button>
+                    )
+                  })}
+                </div>
+
+                {/* Cérebro Central - Fixo */}
+                <div className="relative group flex-shrink-0 mx-1">
+                  <div className="absolute inset-0 bg-emerald-500/20 rounded-full blur-xl group-hover:bg-emerald-500/40 transition-all duration-500 animate-pulse"></div>
+                  <button
+                    type="button"
+                    onClick={openNoaChat}
+                    className="relative w-14 h-14 rounded-full bg-gradient-to-br from-emerald-500 to-emerald-700 flex items-center justify-center shadow-[0_0_20px_rgba(16,185,129,0.4)] border border-emerald-400/30 hover:scale-110 hover:-translate-y-1 transition-all duration-300 z-10"
+                  >
+                    <Brain className="w-7 h-7 text-white drop-shadow-md" />
+                  </button>
+                </div>
+
+                {/* Lado Direito - Scrollável */}
+                <div className="flex items-center gap-2 overflow-x-auto max-w-[160px] sm:max-w-[200px] md:max-w-[300px] no-scrollbar px-2" style={{ scrollbarWidth: 'none' }}>
+                  {sectionNavOptions.slice(Math.ceil(sectionNavOptions.length / 2)).map(option => {
+                    const OptionIcon = option.icon
+                    const isActive = resolvedSection === option.id
+                    return (
+                      <button
+                        key={option.id}
+                        type="button"
+                        onClick={() => {
+                          if (option.id === 'novo-paciente') {
+                            setShowCreatePatientModal(true)
+                          } else if (option.id === 'prescricao-rapida') {
+                            handleVoiceShowPrescription()
+                          } else {
+                            goToSection(option.id)
+                          }
+                        }}
+                        className={[
+                          'group flex-shrink-0 flex items-center justify-center gap-2 px-4 py-2.5 rounded-full border transition-all duration-300 whitespace-nowrap',
+                          isActive
+                            ? 'bg-emerald-500/20 border-emerald-500/50 text-emerald-100 shadow-[0_0_15px_rgba(16,185,129,0.3)]'
+                            : 'bg-slate-800/50 border-slate-700/50 text-slate-400 hover:bg-slate-700 hover:text-white hover:border-slate-500'
+                        ].join(' ')}
+                        title={option.description}
+                      >
+                        <OptionIcon className={`w-4 h-4 ${isActive ? 'text-emerald-400' : 'text-slate-500 group-hover:text-emerald-400'}`} />
+                        <span className="text-xs font-semibold">{option.label}</span>
+                      </button>
+                    )
+                  })}
+                </div>
+
               </div>
-
-              {/* Right Side Options */}
-              {sectionNavOptions.slice(Math.ceil(sectionNavOptions.length / 2)).map(option => {
-                const OptionIcon = option.icon
-                const isActive = resolvedSection === option.id
-                return (
-                  <button
-                    key={option.id}
-                    type="button"
-                    onClick={() => goToSection(option.id)}
-                    className={[
-                      'group flex items-center justify-center gap-2 px-4 py-3 rounded-full border transition-all duration-300',
-                      isActive
-                        ? 'bg-emerald-600/20 border-emerald-500/40 text-emerald-100 shadow-md scale-105'
-                        : 'bg-slate-800/80 border-slate-700/60 text-slate-300 hover:bg-slate-700 hover:text-white hover:border-emerald-500/30 hover:scale-105'
-                    ].join(' ')}
-                    title={option.description}
-                  >
-                    <OptionIcon className={`w-4 h-4 ${isActive ? 'text-emerald-400' : 'text-slate-400 group-hover:text-emerald-400'}`} />
-                    <span className="text-sm font-medium">{option.label}</span>
-                  </button>
-                )
-              })}
             </div>
           </div>
         )}
