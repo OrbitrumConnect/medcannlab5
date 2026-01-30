@@ -1198,19 +1198,22 @@ const PatientsManagement: React.FC<PatientsManagementProps> = ({ embedded = fals
                         )}
                       </div>
                       <div>
-                        <h2 className="text-2xl font-bold text-white">{selectedPatient.name}</h2>
-                        <div className="flex items-center space-x-4 mt-2 text-sm text-slate-400">
+                        <h2 className="text-3xl font-black text-white tracking-tight">{selectedPatient.name}</h2>
+                        <div className="flex items-center space-x-4 mt-2 text-base font-bold text-slate-400">
                           <span>{selectedPatient.age}a, {selectedPatient.months}m, {selectedPatient.days}d</span>
-                          <span>•</span>
-                          <span>{selectedPatient.code}</span>
+                          <span className="opacity-30">•</span>
+                          <span className="text-emerald-400">#{selectedPatient.code}</span>
                         </div>
-                        <div className="flex items-center space-x-4 mt-2 text-sm text-slate-400">
-                          <div className="flex items-center space-x-1">
-                            <Phone className="w-4 h-4" />
+                        <div className="flex items-center space-x-4 mt-1.5 text-base font-medium text-slate-300">
+                          <div className="flex items-center space-x-1.5">
+                            <Phone className="w-4 h-4 text-emerald-500" />
                             <span>{selectedPatient.phone}</span>
                           </div>
-                          <span>•</span>
-                          <span>{selectedPatient.cpf}</span>
+                          <span className="opacity-30">•</span>
+                          <div className="flex items-center space-x-1.5">
+                            <span className="text-slate-500 font-bold uppercase text-[11px] tracking-widest">CPF:</span>
+                            <span>{selectedPatient.cpf}</span>
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -1239,17 +1242,17 @@ const PatientsManagement: React.FC<PatientsManagementProps> = ({ embedded = fals
 
                   {/* Stats */}
                   <div className="grid grid-cols-3 gap-4 mt-6">
-                    <div className="bg-slate-700/50 rounded-lg p-4 text-center">
-                      <p className="text-2xl font-bold text-white">{selectedPatient.appointmentsCount}</p>
-                      <p className="text-sm text-slate-400">Atendimentos</p>
+                    <div className="bg-slate-700/30 rounded-xl p-5 text-center border border-slate-700/50">
+                      <p className="text-3xl font-black text-white mb-1">{selectedPatient.appointmentsCount}</p>
+                      <p className="text-xs font-black text-slate-500 uppercase tracking-[0.2em]">Atendimentos</p>
                     </div>
-                    <div className="bg-slate-700/50 rounded-lg p-4 text-center">
-                      <p className="text-2xl font-bold text-white">{selectedPatient.absences}</p>
-                      <p className="text-sm text-slate-400">Faltas</p>
+                    <div className="bg-slate-700/30 rounded-xl p-5 text-center border border-slate-700/50">
+                      <p className="text-3xl font-black text-white mb-1">{selectedPatient.absences}</p>
+                      <p className="text-xs font-black text-slate-500 uppercase tracking-[0.2em]">Faltas</p>
                     </div>
-                    <div className="bg-slate-700/50 rounded-lg p-4 text-center">
-                      <p className="text-2xl font-bold text-white">{selectedPatient.servicesCount}</p>
-                      <p className="text-sm text-slate-400">Serviços</p>
+                    <div className="bg-slate-700/30 rounded-xl p-5 text-center border border-slate-700/50">
+                      <p className="text-3xl font-black text-white mb-1">{selectedPatient.servicesCount}</p>
+                      <p className="text-xs font-black text-slate-500 uppercase tracking-[0.2em]">Serviços</p>
                     </div>
                   </div>
                 </div>
@@ -1273,9 +1276,9 @@ const PatientsManagement: React.FC<PatientsManagementProps> = ({ embedded = fals
                             <button
                               key={tab.id}
                               onClick={() => setActiveTab(tab.id as any)}
-                              className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors ${activeTab === tab.id
-                                ? 'bg-blue-500 text-white'
-                                : 'text-slate-400 hover:text-white hover:bg-slate-700'
+                              className={`flex items-center space-x-2 px-5 py-2.5 rounded-xl transition-all font-bold text-[15px] ${activeTab === tab.id
+                                ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-900/20'
+                                : 'text-slate-400 hover:text-white hover:bg-slate-700/50'
                                 }`}
                             >
                               <Icon className="w-4 h-4" />
@@ -1296,21 +1299,21 @@ const PatientsManagement: React.FC<PatientsManagementProps> = ({ embedded = fals
                           </div>
 
                           <div className="grid grid-cols-2 gap-4">
-                            <div className="bg-slate-700/50 rounded-lg p-4">
-                              <p className="text-sm text-slate-400 mb-1">Especialidade</p>
-                              <p className="font-semibold text-white">{selectedPatient.specialty}</p>
+                            <div className="bg-slate-700/30 rounded-xl p-5 border border-slate-700/50">
+                              <p className="text-xs font-black text-slate-500 mb-2 uppercase tracking-[0.2em]">Especialidade</p>
+                              <p className="text-xl font-black text-white leading-tight">{selectedPatient.specialty}</p>
                             </div>
-                            <div className="bg-slate-700/50 rounded-lg p-4">
-                              <p className="text-sm text-slate-400 mb-1">Unidade</p>
-                              <p className="font-semibold text-white">{selectedPatient.clinic}</p>
+                            <div className="bg-slate-700/30 rounded-xl p-5 border border-slate-700/50">
+                              <p className="text-xs font-black text-slate-500 mb-2 uppercase tracking-[0.2em]">Unidade</p>
+                              <p className="text-xl font-black text-white leading-tight">{selectedPatient.clinic}</p>
                             </div>
-                            <div className="bg-slate-700/50 rounded-lg p-4">
-                              <p className="text-sm text-slate-400 mb-1">Sala</p>
-                              <p className="font-semibold text-white">{selectedPatient.room}</p>
+                            <div className="bg-slate-700/30 rounded-xl p-5 border border-slate-700/50">
+                              <p className="text-xs font-black text-slate-500 mb-2 uppercase tracking-[0.2em]">Sala</p>
+                              <p className="text-xl font-black text-white leading-tight">{selectedPatient.room}</p>
                             </div>
-                            <div className="bg-slate-700/50 rounded-lg p-4">
-                              <p className="text-sm text-slate-400 mb-1">Encaminhador</p>
-                              <p className="font-semibold text-white">{selectedPatient.referringDoctor || 'Não informado'}</p>
+                            <div className="bg-slate-700/30 rounded-xl p-5 border border-slate-700/50">
+                              <p className="text-xs font-black text-slate-500 mb-2 uppercase tracking-[0.2em]">Encaminhador</p>
+                              <p className="text-xl font-black text-white leading-tight">{selectedPatient.referringDoctor || 'Não informado'}</p>
                             </div>
                           </div>
                           <div className="bg-slate-700/50 rounded-lg p-4">
@@ -1325,18 +1328,18 @@ const PatientsManagement: React.FC<PatientsManagementProps> = ({ embedded = fals
                             ) : (
                               <div className="space-y-2 max-h-60 overflow-y-auto">
                                 {evolutions.slice(0, 5).map(evolution => (
-                                  <div key={evolution.id} className="bg-slate-600/50 rounded p-2 border border-slate-500/50">
-                                    <div className="flex items-start justify-between mb-1">
-                                      <p className="text-xs text-slate-300 font-medium">{evolution.date} • {evolution.time}</p>
-                                      <span className={`px-2 py-0.5 rounded text-xs ${evolution.type === 'current'
-                                        ? 'bg-green-500/20 text-green-400'
-                                        : 'bg-blue-500/20 text-blue-400'
+                                  <div key={evolution.id} className="bg-slate-700/30 rounded-xl p-3 border border-slate-600/50">
+                                    <div className="flex items-start justify-between mb-2">
+                                      <p className="text-[13px] text-slate-200 font-bold">{evolution.date} • {evolution.time}</p>
+                                      <span className={`px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider ${evolution.type === 'current'
+                                        ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
+                                        : 'bg-blue-500/20 text-blue-400 border border-blue-500/30'
                                         }`}>
                                         {evolution.type === 'current' ? 'Atual' : 'Histórico'}
                                       </span>
                                     </div>
-                                    <p className="text-xs text-slate-400 line-clamp-2">{evolution.content}</p>
-                                    <p className="text-xs text-slate-500 mt-1">{evolution.professional}</p>
+                                    <p className="text-sm text-slate-300 line-clamp-2 leading-relaxed mb-1.5">{evolution.content}</p>
+                                    <p className="text-[11px] text-slate-500 font-bold uppercase tracking-tight">{evolution.professional}</p>
                                   </div>
                                 ))}
                                 {evolutions.length > 5 && (

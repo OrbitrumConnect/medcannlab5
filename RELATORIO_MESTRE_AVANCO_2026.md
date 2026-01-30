@@ -27,9 +27,10 @@ Este documento narra a cronologia recente das inovações, o estado atual da arq
 ### Fase 3: Refinamento Visual e Navegação (Contextual UI)
 *A experiência "Rolon" e Glassmorphism.*
 - **Navegação "Rolon" (Infinite Scroll)**: Implementamos uma navegação revolucionária, inspirada em apps mobile modernos. Ao invés de menus estáticos, criamos containers laterais deslizantes que "abraçam" o Cérebro Central. Isso permite acesso rápido a n-funcionalidades (Novo Paciente, Prescrever, Agenda) sem poluir a visão central.
-- **Estética Uber/Premium**: Adotamos o *Glassmorphism* (efeito de vidro fosco) e gradientes "Emerald" profundos. O tamanho dos elementos foi ajustado para passar imponência e facilidade de toque (touch-friendly), abandonando o visual de "admin panel" genérico.
-- **Feedback Visual**: Botões agora reagem (hover, scale, glow), dando vida à aplicação. O sistema não parece mais estático; ele parece um organismo vivo.
-- **Micro-Otimizações Mobile**: Integração do botão "Sair" diretamente na Sidebar, remoção de cabeçalhos redundantes, e **redução de escala (15%)** nos elementos de navegação central ("Rolon") para harmonia visual perfeita.
+- **Estética Uber/Premium & Personalização**: Adotamos o *Glassmorphism* (efeito de vidro fosco), gradientes "Emerald" profundos e, agora, uma **identidade visual exclusiva no Chat** (Doodle patterns de Cannabis/Rins/Cérebro). O sistema não apenas funciona; ele transmite autoridade e cuidado.
+- **Micro-Otimizações Mobile & Terminal Ultra-Slim**: Integração do botão "Sair" na Sidebar e a **eliminação total de redundâncias (títulos e descrições)** nos cabeçalhos dos módulos. O Terminal agora é 100% focado no conteúdo, ganhando ~15% de área útil vertical.
+- **Tipografia Clínica Máxima**: Upscaling de fontes para o Prontuário e ACDSS. Criticalidades agora são lidas sem esforço, com pesos e tamanhos (até 30px) otimizados para a rotina intensa do Dr. Ricardo.
+- **Arquitetura de Agendamento Dual-Pane**: O calendário evoluiu de uma visualização simples para um centro de controle. Implementamos uma **sidebar de funções vitais** integrada à agenda, permitindo gestão de status, KPIs de hoje e ações rápidas em uma visualização única e equilibrada.
 
 ---
 

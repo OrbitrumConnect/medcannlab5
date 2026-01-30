@@ -86,8 +86,10 @@ export function ContextAnalysisCard({ analysis, loading }: ContextAnalysisCardPr
             {/* Header */}
             <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-3">
-                    <Brain className="w-6 h-6 text-purple-400" />
-                    <h3 className="text-lg font-bold text-white">Análise Contextual (ACDSS)</h3>
+                    <div className="p-2 bg-purple-500/10 rounded-lg border border-purple-500/20">
+                        <Brain className="w-6 h-6 text-purple-400" />
+                    </div>
+                    <h3 className="text-xl font-black text-white tracking-tight">Análise Contextual (ACDSS)</h3>
                 </div>
                 {analysis.shouldAlert && (
                     <AlertTriangle className="w-5 h-5 text-orange-400 animate-pulse" />
@@ -97,10 +99,10 @@ export function ContextAnalysisCard({ analysis, loading }: ContextAnalysisCardPr
             {/* Estado e Confiança */}
             <div className="grid grid-cols-2 gap-4 mb-4">
                 <div>
-                    <p className="text-xs text-gray-400 mb-1">Estado</p>
+                    <p className="text-[11px] font-black text-slate-500 mb-1.5 uppercase tracking-widest">Estado</p>
                     <div className="flex items-center gap-2">
                         <StateIcon />
-                        <span className={`text-sm font-semibold ${colors.text}`}>
+                        <span className={`text-xl font-black ${colors.text} tracking-tight`}>
                             {analysis.state === PatientState.STABLE && 'Estável'}
                             {analysis.state === PatientState.IMPROVING && 'Melhorando'}
                             {analysis.state === PatientState.DETERIORATING && 'Deteriorando'}
@@ -111,15 +113,15 @@ export function ContextAnalysisCard({ analysis, loading }: ContextAnalysisCardPr
                 </div>
 
                 <div>
-                    <p className="text-xs text-gray-400 mb-1">Confiança</p>
+                    <p className="text-[11px] font-black text-slate-500 mb-1.5 uppercase tracking-widest">Confiança</p>
                     <div className="flex items-center gap-2">
-                        <div className="flex-1 bg-gray-700/30 rounded-full h-2">
+                        <div className="flex-1 bg-slate-700/30 rounded-full h-2.5 overflow-hidden border border-slate-700/50">
                             <div
-                                className={`h-2 rounded-full ${colors.bg}`}
+                                className={`h-full rounded-full bg-gradient-to-r from-emerald-500 to-emerald-400`}
                                 style={{ width: `${Math.min(analysis.confidence, 100)}%` }}
                             />
                         </div>
-                        <span className="text-sm font-semibold text-white">
+                        <span className="text-xl font-black text-white tracking-tighter">
                             {Math.round(analysis.confidence)}%
                         </span>
                     </div>
@@ -127,14 +129,22 @@ export function ContextAnalysisCard({ analysis, loading }: ContextAnalysisCardPr
             </div>
 
             {/* Recomendação */}
-            <div className="mb-4">
-                <p className="text-xs text-gray-400 mb-1">Recomendação</p>
-                <p className="text-sm font-semibold text-white">
-                    {analysis.recommendation === RecommendationType.MAINTAIN && '✅ Manter protocolo atual'}
-                    {analysis.recommendation === RecommendationType.MONITOR_CLOSELY && '👁️ Monitorar de perto'}
-                    {analysis.recommendation === RecommendationType.CONSIDER_CHANGE && '⚠️ Considerar mudança'}
-                    {analysis.recommendation === RecommendationType.URGENT_INTERVENTION && '🚨 Intervenção urgente'}
-                </p>
+            <div className="mb-6 p-4 bg-slate-900/40 rounded-xl border border-slate-700/50">
+                <p className="text-[11px] font-black text-slate-500 mb-2 uppercase tracking-widest">Recomendação</p>
+                <div className="flex items-center gap-2">
+                    <p className="text-xl font-black text-white tracking-tight leading-tight">
+                        {analysis.recommendation === RecommendationType.MAINTAIN && 'Manter protocolo atual'}
+                        {analysis.recommendation === RecommendationType.MONITOR_CLOSELY && 'Monitorar de perto'}
+                        {analysis.recommendation === RecommendationType.CONSIDER_CHANGE && 'Considerar mudança'}
+                        {analysis.recommendation === RecommendationType.URGENT_INTERVENTION && 'Intervenção urgente'}
+                    </p>
+                    <span className="text-2xl">
+                        {analysis.recommendation === RecommendationType.MAINTAIN && '✅'}
+                        {analysis.recommendation === RecommendationType.MONITOR_CLOSELY && '👁️'}
+                        {analysis.recommendation === RecommendationType.CONSIDER_CHANGE && '⚠️'}
+                        {analysis.recommendation === RecommendationType.URGENT_INTERVENTION && '🚨'}
+                    </span>
+                </div>
             </div>
 
             {/* Confluências */}
@@ -154,16 +164,16 @@ export function ContextAnalysisCard({ analysis, loading }: ContextAnalysisCardPr
             )}
 
             {/* Insight contextual */}
-            <div className="pt-4 border-t border-gray-700/30">
-                <p className="text-xs text-gray-400 italic">
-                    {analysis.contextualInsight}
+            <div className="pt-4 border-t border-slate-700/50">
+                <p className="text-sm italic font-medium text-slate-400 leading-relaxed text-center px-4">
+                    "{analysis.contextualInsight}"
                 </p>
             </div>
 
             {/* Footer - Próxima ação */}
-            <div className="mt-4 pt-4 border-t border-gray-700/30">
-                <p className="text-xs text-gray-500">
-                    Próxima avaliação sugerida em: <span className="text-white font-semibold">{analysis.suggestedActionWindow} dias</span>
+            <div className="mt-4 pt-4 border-t border-slate-700/50 flex justify-center">
+                <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">
+                    Próxima avaliação sugerida em: <span className="text-emerald-400 font-black ml-1">{analysis.suggestedActionWindow} dias</span>
                 </p>
             </div>
         </div>

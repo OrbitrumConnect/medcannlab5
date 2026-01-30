@@ -128,22 +128,13 @@ const ProfessionalChatSystem: React.FC<ProfessionalChatSystemProps> = ({ classNa
     <div className={`bg-slate-800/80 rounded-lg border border-slate-700 flex flex-col h-full ${className}`}>
       {/* Optimized Centered Header - Compact Version */}
       <div className="flex flex-col items-center text-center space-y-4 py-3 border-b border-slate-700/50">
-        <div className="space-y-0.5">
-          <div className="flex items-center justify-center gap-2 mb-0.5">
-            <div className="p-1.5 bg-emerald-500/10 rounded-lg border border-emerald-500/20">
-              <MessageCircle className="w-5 h-5 text-emerald-400" />
-            </div>
-            <h2 className="text-xl font-bold text-white tracking-tight">
-              Comunicação Clínica
-            </h2>
-            <span
-              className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] uppercase font-bold tracking-wider ${isOnline ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-orange-500/20 text-orange-400 border border-orange-500/30'
-                }`}
-            >
+        <div className="flex items-center justify-center gap-3">
+          <div className="flex items-center gap-2 px-3 py-1.5 bg-emerald-500/5 rounded-xl border border-emerald-500/20 shadow-sm shadow-emerald-500/5">
+            <MessageCircle className="w-4 h-4 text-emerald-400" />
+            <span className="text-[10px] font-black text-emerald-400 uppercase tracking-widest">
               {isOnline ? 'Online' : 'Offline'}
             </span>
           </div>
-
         </div>
 
         <div className="flex flex-col md:flex-row items-center justify-center gap-3 w-full">

@@ -284,16 +284,8 @@ const EduardoScheduling: React.FC<EduardoSchedulingProps> = ({ className = '', p
       {/* Header */}
       {/* Optimized Centered Header - Compact Version */}
       <div className="flex flex-col items-center text-center space-y-4 py-2 border-b border-slate-700/50 mb-2">
-        <div className="space-y-0.5">
-          <div className="flex items-center justify-center gap-2 mb-0.5">
-            <div className="p-1.5 bg-emerald-500/10 rounded-lg border border-emerald-500/20">
-              <Calendar className="w-5 h-5 text-emerald-400" />
-            </div>
-            <h2 className="text-xl font-bold text-white tracking-tight">
-              Sistema de Agendamento
-            </h2>
-          </div>
-
+        <div className="flex items-center justify-center py-2">
+          <div className="w-10 h-1 bg-slate-700/30 rounded-full mx-auto"></div>
         </div>
 
         <div className="flex flex-col md:flex-row items-center justify-center gap-3 w-full">
@@ -334,73 +326,149 @@ const EduardoScheduling: React.FC<EduardoSchedulingProps> = ({ className = '', p
 
       {/* CALENDAR VIEW */}
       {activeTab === 'calendar' && (
-        <div className="bg-slate-800 border border-slate-700 rounded-lg p-6">
-          {/* Calendar Header */}
-          <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center gap-4">
-              <h3 className="text-white text-xl font-bold capitalize">
-                {monthNames[month]} {year}
-              </h3>
-              <div className="flex bg-slate-700 rounded-lg p-1">
-                <button onClick={() => navigateMonth(-1)} className="p-1 hover:bg-slate-600 rounded text-slate-300"><ChevronLeft className="w-5 h-5" /></button>
-                <button onClick={() => navigateMonth(1)} className="p-1 hover:bg-slate-600 rounded text-slate-300"><ChevronRight className="w-5 h-5" /></button>
+        <div className="flex flex-col lg:flex-row gap-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+          {/* Main Calendar Area */}
+          <div className="flex-1 bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 rounded-2xl p-6 shadow-xl">
+            {/* Calendar Header */}
+            <div className="flex items-center justify-between mb-8">
+              <div className="flex items-center gap-6">
+                <div className="flex flex-col">
+                  <span className="text-slate-500 text-[10px] font-black uppercase tracking-[0.2em] mb-1">Mês de Referência</span>
+                  <h3 className="text-white text-3xl font-black capitalize tracking-tight">
+                    {monthNames[month]} <span className="text-emerald-500/50">{year}</span>
+                  </h3>
+                </div>
+                <div className="flex bg-slate-900/50 rounded-xl p-1.5 border border-slate-700/50">
+                  <button onClick={() => navigateMonth(-1)} className="p-2 hover:bg-slate-800 rounded-lg text-slate-400 hover:text-white transition-all"><ChevronLeft className="w-5 h-5" /></button>
+                  <button onClick={() => navigateMonth(1)} className="p-2 hover:bg-slate-800 rounded-lg text-slate-400 hover:text-white transition-all"><ChevronRight className="w-5 h-5" /></button>
+                </div>
               </div>
+              <button
+                onClick={() => setCurrentDate(new Date())}
+                className="px-4 py-2 bg-slate-900/50 hover:bg-slate-800 border border-slate-700/50 rounded-xl text-xs font-black text-emerald-400 hover:text-emerald-300 uppercase tracking-widest transition-all"
+              >
+                Voltar para Hoje
+              </button>
             </div>
-            <button onClick={() => setCurrentDate(new Date())} className="text-sm text-green-400 hover:text-green-300 font-medium">
-              Hoje
-            </button>
+
+            {/* Calendar Grid */}
+            <div className="grid grid-cols-7 gap-px bg-slate-700/30 border border-slate-700/50 rounded-2xl overflow-hidden shadow-inner">
+              {/* Days Header */}
+              {['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'].map((day) => (
+                <div key={day} className="bg-slate-900/40 text-center text-slate-500 text-[11px] font-black py-4 uppercase tracking-widest border-b border-slate-700/50">
+                  {day}
+                </div>
+              ))}
+
+              {/* Empty Days */}
+              {Array.from({ length: firstDay }).map((_, i) => (
+                <div key={`empty-${i}`} className="bg-slate-800/20 min-h-[140px]"></div>
+              ))}
+
+              {/* Actual Days */}
+              {Array.from({ length: days }).map((_, i) => {
+                const day = i + 1
+                const dayAppointments = getAppointmentsForDay(day)
+                const isToday = new Date().toDateString() === new Date(year, month, day).toDateString()
+
+                return (
+                  <div key={day} className={`bg-slate-800/40 min-h-[140px] p-2.5 hover:bg-slate-700/30 transition-all border-t border-slate-700/50 relative group ${isToday ? 'bg-emerald-500/5' : ''}`}>
+                    {isToday && <div className="absolute top-0 left-0 w-full h-1 bg-emerald-500"></div>}
+                    <div className="flex justify-end mb-3">
+                      <span className={`text-sm font-black ${isToday ? 'bg-emerald-500 text-slate-950 w-7 h-7 rounded-lg shadow-lg shadow-emerald-500/20 flex items-center justify-center' : 'text-slate-500 group-hover:text-slate-300'}`}>
+                        {day}
+                      </span>
+                    </div>
+                    <div className="space-y-1.5">
+                      {dayAppointments.slice(0, 3).map(app => (
+                        <button
+                          key={app.id}
+                          onClick={() => {
+                            setSelectedAppointment(app)
+                            setIsDetailsModalOpen(true)
+                          }}
+                          className="w-full text-left text-[10px] bg-slate-900/60 border border-slate-700/50 hover:border-emerald-500/50 rounded-lg px-2 py-2 truncate transition-all group/item hover:shadow-lg hover:-translate-y-0.5"
+                        >
+                          <div className="flex items-center justify-between mb-1">
+                            <span className="text-white font-black opacity-80">{app.time}</span>
+                            <div className={`w-2 h-2 rounded-full ${app.status === 'scheduled' ? 'bg-emerald-500' : 'bg-slate-500'}`}></div>
+                          </div>
+                          <div className="text-slate-400 truncate group-hover/item:text-white font-medium capitalize">
+                            {app.patientName.toLowerCase()}
+                          </div>
+                        </button>
+                      ))}
+                      {dayAppointments.length > 3 && (
+                        <div className="text-[9px] font-black text-slate-500 text-center uppercase tracking-wider pt-1">
+                          + {dayAppointments.length - 3} mais
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
           </div>
 
-          {/* Calendar Grid */}
-          <div className="grid grid-cols-7 gap-px bg-slate-700 border border-slate-700 rounded-lg overflow-hidden">
-            {/* Days Header */}
-            {['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'].map((day) => (
-              <div key={day} className="bg-slate-800 text-center text-slate-400 text-sm font-medium py-3">
-                {day}
-              </div>
-            ))}
-
-            {/* Empty Days */}
-            {Array.from({ length: firstDay }).map((_, i) => (
-              <div key={`empty-${i}`} className="bg-slate-800/50 min-h-[120px]"></div>
-            ))}
-
-            {/* Actual Days */}
-            {Array.from({ length: days }).map((_, i) => {
-              const day = i + 1
-              const dayAppointments = getAppointmentsForDay(day)
-              const isToday = new Date().toDateString() === new Date(year, month, day).toDateString()
-
-              return (
-                <div key={day} className={`bg-slate-800 min-h-[120px] p-2 hover:bg-slate-700/50 transition-colors border-t border-slate-700 ${isToday ? 'bg-slate-700/30 ring-1 ring-inset ring-green-500' : ''}`}>
-                  <div className="text-right mb-2">
-                    <span className={`text-sm font-medium ${isToday ? 'bg-green-600 text-white w-6 h-6 rounded-full inline-flex items-center justify-center' : 'text-slate-400'}`}>
-                      {day}
-                    </span>
-                  </div>
-                  <div className="space-y-1">
-                    {dayAppointments.map(app => (
-                      <button
-                        key={app.id}
-                        onClick={() => {
-                          setSelectedAppointment(app)
-                          setIsDetailsModalOpen(true)
-                        }}
-                        className="w-full text-left text-xs bg-slate-700 border border-slate-600 hover:border-green-500 rounded px-2 py-1.5 truncate transition-all group"
-                      >
-                        <div className="flex items-center justify-between">
-                          <span className="text-white font-medium">{app.time}</span>
-                          {app.status === 'scheduled' && <div className="w-1.5 h-1.5 rounded-full bg-green-500"></div>}
-                        </div>
-                        <div className="text-slate-300 truncate group-hover:text-green-200">
-                          {app.patientName.split(' ')[0]}
-                        </div>
-                      </button>
-                    ))}
-                  </div>
+          {/* Right Sidebar - Vital Functions */}
+          <div className="w-full lg:w-80 space-y-6">
+            {/* Status Legend */}
+            <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 rounded-2xl p-6 shadow-xl">
+              <h4 className="text-[11px] font-black text-slate-500 uppercase tracking-[0.2em] mb-4 flex items-center gap-2">
+                <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></div>
+                Legenda de Status
+              </h4>
+              <div className="space-y-3">
+                <div className="flex items-center gap-3">
+                  <div className="w-3 h-3 rounded bg-emerald-500"></div>
+                  <span className="text-xs font-bold text-slate-300">Confirmado</span>
                 </div>
-              )
-            })}
+                <div className="flex items-center gap-3">
+                  <div className="w-3 h-3 rounded bg-blue-500"></div>
+                  <span className="text-xs font-bold text-slate-300">Em Atendimento</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="w-3 h-3 rounded bg-slate-500"></div>
+                  <span className="text-xs font-bold text-slate-300">Pendente</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="w-3 h-3 rounded bg-red-500"></div>
+                  <span className="text-xs font-bold text-slate-300">Cancelado</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Quick Stats */}
+            <div className="bg-emerald-600/10 border border-emerald-500/20 rounded-2xl p-6 shadow-xl relative overflow-hidden group">
+              <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:scale-110 transition-transform">
+                <Clock className="w-12 h-12 text-emerald-500" />
+              </div>
+              <h4 className="text-[11px] font-black text-emerald-500/70 uppercase tracking-[0.2em] mb-4">Agenda de Hoje</h4>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <p className="text-2xl font-black text-white">12</p>
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">Total</p>
+                </div>
+                <div>
+                  <p className="text-2xl font-black text-emerald-400">08</p>
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">Confirmados</p>
+                </div>
+              </div>
+              <button className="w-full mt-6 py-3 bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-xs font-black uppercase tracking-widest rounded-xl transition-all shadow-lg shadow-emerald-500/20">
+                Imprimir Agenda
+              </button>
+            </div>
+
+            {/* Next Milestone / Tip */}
+            <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 rounded-2xl p-6 shadow-xl">
+              <h4 className="text-[11px] font-black text-slate-500 uppercase tracking-[0.2em] mb-4 flex items-center gap-2">
+                <Star className="w-3 h-3 text-yellow-500" />
+                Dica Produtiva
+              </h4>
+              <p className="text-xs font-medium text-slate-400 leading-relaxed">
+                Configure notificações automáticas via WhatsApp para reduzir em até 30% a taxa de ausência dos seus pacientes.
+              </p>
+            </div>
           </div>
         </div>
       )}
