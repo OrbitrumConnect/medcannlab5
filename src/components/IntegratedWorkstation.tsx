@@ -57,7 +57,7 @@ const IntegratedWorkstation: React.FC<IntegratedWorkstationProps> = ({ initialTa
 
     // Configuração de Abas
     const tabs = [
-        { id: 'patients' as TabId, label: 'Pacientes', icon: Users, color: 'text-blue-400' },
+        { id: 'patients' as TabId, label: 'Prontuário', icon: Users, color: 'text-blue-400' },
         { id: 'chat' as TabId, label: 'Chat Clínico', icon: MessageSquare, color: 'text-green-400' },
         ...(user?.type === 'admin' ? [{ id: 'governance' as any, label: 'Governança (ACDSS)', icon: Activity, color: 'text-purple-400' }] : []),
         { id: 'renal' as TabId, label: 'Saúde Renal', icon: Activity, color: 'text-orange-400' },
