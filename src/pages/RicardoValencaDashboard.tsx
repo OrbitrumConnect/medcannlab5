@@ -4649,7 +4649,7 @@ const RicardoValencaDashboard: React.FC = () => {
         )}
 
         {sectionNavOptions && sectionNavOptions.length > 0 && (
-          <div className="space-y-3 mt-12">
+          <div className="space-y-3 mt-6">
             <div className="flex items-center justify-between flex-wrap gap-3">
               <div>
                 <p className="text-[11px] uppercase tracking-[0.3em] text-slate-500">
