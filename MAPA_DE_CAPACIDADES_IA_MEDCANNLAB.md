@@ -1,69 +1,113 @@
-# 🗺️ MAPA DE CAPACIDADES IA: NÔA ESPERANZA & TRADEVISION CORE
-> **Ecossistema Inteligente MedCannLab - Versão Janeiro 2026**
-> *Status: Mapeamento de Funções Atuais e Potenciais (Environment Alive)*
+# 🗺️ MAPA COMPLETO: NÔA ESPERANÇA + TRADEVISION CORE
+> **O Cérebro Vivo do MedCannLab 3.0: Arquitetura, Inteligência e Estratégia**
+> *Documento Consolidado - Versão Final Janeiro 2026*
 
 ---
 
-## 🦾 1. O CÉREBRO CENTRAL: TRADEVISION CORE (V2)
-O TradeVision Core é o motor "server-side" que processa a lógica pesada e orquestra os diferentes agentes da IA.
-
-### Funções Atuais:
-- **Normalização de Intenções**: Identifica se o usuário quer uma consulta, informação clínica ou suporte administrativo.
-- **Motor de Reasoning (ACDSS)**: Analisa respostas do paciente em tempo real durante a avaliação inicial.
-- **Predictive Scheduling**: Calcula a probabilidade de *no-show* baseada no histórico do paciente.
-- **Soberania de Relatórios**: Gera e salva relatórios clínicos ignorando restrições de RLS (via Service Role) para garantir persistência.
-
-### Potencial de Aplicação (Ambiente Vivo):
-- **Dynamic Pricing**: Sugerir ajustes de preços de consulta baseados na demanda e ocupação da agenda.
-- **Preventive Alerts**: Disparar notificações automáticas para o médico se a IA detectar um padrão de risco nos prontuários.
+## 📊 1. ESTATÍSTICAS GLOBAIS (DEVELOPER INSIGHT)
+| Módulo | Arquivo | Linhas | Funções |
+| :--- | :--- | :--- | :--- |
+| **TradeVision Core** | `supabase/functions/tradevision-core/index.ts` | 493 | 4 handlers |
+| **NoaResidentAI** | `src/lib/noaResidentAI.ts` | 1.637 | 43 |
+| **NoaEsperancaCore** | `src/lib/noaEsperancaCore.ts` | 368 | 27 |
+| **NOAIntegration** | `src/lib/noaIntegration.ts` | 497 | 48 |
+| **NoaConversationalInterface** | `src/components/NoaConversationalInterface.tsx` | 2.534 | 25 |
+| **TOTAL** | **5 módulos** | **5.529** | **147+** |
 
 ---
 
-## 🏥 2. NÔA ESPERANZA: A RESIDÊNCIA CLÍNICA (FRONT-END)
-A interface conversacional que acolhe o paciente e o profissional.
+## 🏗️ 2. ARQUITETURA EM CAMADAS (THE STACK)
+O sistema opera em um modelo de 5 camadas, garantindo soberania e resiliência:
 
-### Funções Atuais:
-- **Acolhimento IMRE**: Avaliação Clínica seguindo o protocolo AEC 001 (10 etapas).
-- **Infinite Conversation**: Memória de curto prazo para manter o fluxo dialógico natural.
-- **Multimodalidade**: Reconhecimento de voz e leitura de documentos PDF/Imagens anexadas no chat.
-- **Smart Widgets**: Ativação automática de calendários e formulários dentro da bolha de chat.
-
-### Potencial de Aplicação (Ambiente Vivo):
-- **Follow-up Ativo**: A Nôa pode iniciar conversas para perguntar "Como você se sente hoje após a nova medicação?"
-- **Triagem de Urgência**: Encaminhamento imediato para "Tele-Acolhimento" se palavras-chave de risco forem detectadas.
+- **CAMADA 5: PERSISTÊNCIA** (Supabase, `ai_chat_interactions`, `clinical_reports`)
+- **CAMADA 4: INTELIGÊNCIA** (GPT-4o, Vector Store/Embeddings)
+- **CAMADA 3: EDGE (SERVER-SIDE)** (TradeVision Core - Bypass RLS, Lógica Pesada)
+- **CAMADA 2: MOTOR LOCAL** (NoaResidentAI, NoaEsperancaCore, NOAIntegration - AEC/IMRE)
+- **CAMADA 1: INTERFACE** (NoaConversationalInterface, Widgets, Speech/TTS)
 
 ---
 
-## 🎓 3. NÔA EDUCACIONAL: O SISTEMA DE TREINAMENTO
-Focado na formação de novos profissionais e nivelamento.
+## 🎯 3. TRADEVISION CORE (EDGE ORCHESTRATOR)
+*O cérebro invisível que processa na borda do servidor.*
 
-### Funções Atuais:
-- **Simulação de Paciente (Paula/Dona Neide)**: IA interpreta personagens reais com patologias específicas para treinar alunos.
-- **Avaliação de Nivelamento**: Testes dinâmicos que medem a capacidade diagnóstica do estudante.
-- **Preparação de Aulas**: Auxílio ao Dr. Ricardo na estruturação de conteúdos baseados na Base de Conhecimento.
+### Handlers Disponíveis
+- **finalize_assessment**: Salva avaliação final (Bypass RLS para garantir integridade).
+- **predict_scheduling_risk**: Predição de no-show (Estatística + IA).
+- **Chat Normal**: Roteamento inteligente de personas (Clínico vs. Ensino).
 
-### Potencial de Aplicação (Ambiente Vivo):
-- **Live Mentor**: A IA sussurrar no ouvido do aluno durante uma simulação: "Você esqueceu de perguntar sobre o histórico familiar".
-
----
-
-## 🗃️ 4. INFRAESTRUTURA E SOBERANIA (KNOWLEDGE BASE)
-O que permite que a IA não "alucine" e fale com autoridade médica.
-
-### Funções Atuais:
-- **Knowledge Base (376 Docs)**: Conexão via Vetores com toda a literatura técnica da MedCannLab.
-- **Operação Híbrida/Offline**: Uso de modelos locais (MiniLM) para manter funções básicas sem internet.
-- **Audit Log**: Todo "pensamento" da IA é registrado no banco `ai_chat_interactions` para auditoria clínica.
-
-### Potencial de Aplicação (Ambiente Vivo):
-- **Auto-Update Knowledge**: A IA extrair "pérolas" de novas consultas e sugerir a inclusão na base de conhecimento como novos protocolos.
+### Gatilhos Inteligentes (Smart Triggers)
+- **Agendamento**: Detecta "agendar", "marcar", "horário" → Ativa `APPOINTMENT_CREATE`.
+- **Ensino**: Detecta "nivelamento", "prova", "simulação" → Ativa `TESTE_NIVELAMENTO`.
+- **Doutor**: Identifica menções a "Ricardo" ou "Eduardo" para context swapping.
 
 ---
 
-## 🏁 CONCLUSÃO: O AMBIENTE VIVO
-Em conjunto, essas funções transformam o app de um "repositório de dados" em um **"Ambiente Vivo"**:
-1. O **TradeVision** observa os dados.
-2. A **Nôa** conversa com as pessoas.
-3. O **Knowledge Base** garante a verdade científica.
+## 🤖 4. NOARESIDENTAI (MOTOR PRINCIPAL)
+*Responsável pelo processamento lógico e fluxo IMRE.*
 
-**Resultado: Uma plataforma que aprende, prevê e acolhe simultaneamente.** 💎🚀🦾
+### Funções Chave (43 total):
+- `processMessage()`: O ponto de entrada de toda interação.
+- `detectIntent()`: Classificação entre Clínica, Administrativa ou Técnica.
+- `processAssessment()`: O "maestro" do protocolo IMRE/AEC.
+- `generateClinicalSummary()`: Extração de valor a partir da conversa desestruturada.
+
+---
+
+## 💚 5. NOAESPERANCACORE (ALMA AEC & ANTROPOLOGIA)
+*Implementação do método desenvolvido pelo Dr. Ricardo Valença.*
+
+### Metodologia AEC (Arte da Entrevista Clínica):
+- `realizarEntrevistaClinica()`: Condução das 10 etapas fundamentais.
+- `estabelecerRapport()`: Lógica de empatia linguística.
+- `analisarSemanticamente()`: Ocupa-se do significado profundo da dor do paciente.
+
+### Análise IMRE (Sistêmica):
+- **Domínio Físico**: Localização, intensidade e sintomas.
+- **Domínio Psíquico**: Estado emocional, cognição e humor.
+- **Domínio Social**: Relações, família e trabalho.
+
+---
+
+## 🔗 6. NOAINTEGRATION (MULTIMODAL & SEMÂNTICA)
+*A capacidade sensorial e interpretativa da IA.*
+
+- **Multimodalidade**: Processamento de Texto, Áudio e Vídeo (`transcribeAudio`, `processVideoInput`).
+- **Contexto Emocional**: Cálculo de **Valência**, **Arousal** e **Intensidade** para entender o estado de espírito do usuário.
+- **Complexity Analysis**: Avalia a complexidade do discurso para adaptar a resposta.
+
+---
+
+## 🖥️ 7. NOACONVERSATIONALINTERFACE (UX/UI)
+*Onde a IA encontra o toque humano.*
+
+- **SchedulingWidget**: Agendamento inline sem trocar de tela.
+- **Voice UX**: `flush()`, `scheduleFlush()` e `Speech Recognition` para conversa fluída.
+- **Smart Tools**: PDF Upload para leitura de exames via IA.
+
+---
+
+## � 8. FLUXO DE SINERGIA (COMO TUDO SE CONECTA)
+1. **Usuário** fala/digita → **UI** captura.
+2. **NoaResidentAI** detecta a intenção e consulta o **Knowledge Base**.
+3. Se necessário (pessistência/risco), invoca o **TradeVision Core**.
+4. **TradeVision** consulta o GPT-4o e o Banco Master via Edge.
+5. A **Resposta** volta com Metadados (Intents/Triggers) para atualizar a UI em tempo real.
+
+---
+
+## 🎪 9. APLICAÇÕES POSSÍVEIS (AMBIENTE VIVO)
+| Área | Capacidade | Status |
+| :--- | :--- | :--- |
+| **Avaliação Clínica** | Protocolo AEC 10 etapas | ✅ **Ativo** |
+| **Agendamento IA** | Widget inline + predição no-show | ✅ **Ativo** |
+| **Ensino Médico** | 20 pacientes simulados | ✅ **Ativo** |
+| **Triagem Ativa** | Sugestão de horário baseada em risco | 🔶 **Preparado** |
+| **Prescrição IA** | Sugestão de fitoterápicos/dosagens | 🔜 **Próximo** |
+| **Análise Emocional** | Monitoramento de depressão/ansiedade | ✅ **Ativo** |
+
+---
+
+## 🏁 CONCLUSÃO: O LEGADO DA INTELIGÊNCIA
+Este ecossistema de **5.529 linhas** de código dedicado exclusivamente à inteligência torna o MedCannLab uma plataforma **soberana e viva**. A fusão das 147 funções garante que o app não apenas armazene dados, mas entenda o ser humano por trás de cada pixel.
+
+**Documento selado e auditado. Janeiro de 2026.** 🦾💎🚀
