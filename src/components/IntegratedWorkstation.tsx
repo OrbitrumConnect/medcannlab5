@@ -79,8 +79,12 @@ const IntegratedWorkstation: React.FC<IntegratedWorkstationProps> = ({ initialTa
         switch (activeTab) {
             case 'patients':
                 return (
-                    <div className="h-full overflow-hidden bg-[#0f172a]">
-                        <PatientsManagement embedded={true} />
+                    <div className="h-full w-full overflow-hidden bg-[#0f172a] relative">
+                        <div className="absolute inset-0 overflow-y-auto overflow-x-hidden custom-scrollbar">
+                            <div className="min-h-full origin-top-left" style={{ transform: 'scale(0.85)', width: '117.65%', height: '117.65%' }}>
+                                <PatientsManagement embedded={true} />
+                            </div>
+                        </div>
                     </div>
                 )
             case 'chat':
