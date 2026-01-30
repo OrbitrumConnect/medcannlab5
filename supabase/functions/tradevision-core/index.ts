@@ -33,10 +33,11 @@ serve(async (req: Request) => {
         // const token = authHeader?.replace('Bearer ', '')
         // const { data: { user }, error: authError } = await supabaseClient.auth.getUser(token)
 
-        // 4. Extrair Dados da Requisição
-        const { message, conversationHistory, patientData, assessmentPhase, nextQuestionHint, action, assessmentData } = await req.json()
+        // 4. Extrair e Validar Dados da Requisição (Parse Body ONCE)
+        const body = await req.json()
+        const { message, conversationHistory, patientData, assessmentPhase, nextQuestionHint, action, assessmentData, appointmentData } = body
 
-        // --- NOVO: Handler de Finalização de Avaliação (Server-Side) ---
+        // --- HANDLER DE FINALIZAÇÃO DE AVALIAÇÃO (SERVER-SIDE) ---
         if (action === 'finalize_assessment') {
             console.log('🏁 [ACTION] Finalizando avaliação via Server-Side (Bypassing RLS)...')
 
@@ -102,7 +103,6 @@ serve(async (req: Request) => {
         if (action === 'predict_scheduling_risk') {
             console.log('🔮 [ACTION] Predicting Scheduling Risk...')
 
-            const { appointmentData } = await req.json()
             if (!appointmentData || !appointmentData.patient_id || !appointmentData.appointment_id) {
                 throw new Error('Dados do agendamento incompletos (patient_id, appointment_id required).')
             }
@@ -171,15 +171,24 @@ serve(async (req: Request) => {
             `
 
             // 4. Chamada OpenAI (Low Temperature for consistency)
+            const MODEL_NAME = Deno.env.get('AI_MODEL_NAME_RISK') || "gpt-4o"
+
             const completion = await openai.chat.completions.create({
-                model: "gpt-4o",
+                model: MODEL_NAME,
                 messages: [{ role: "system", content: RISK_PROMPT }],
                 temperature: 0.1,
                 response_format: { type: "json_object" }
             })
 
             const analysisRaw = completion.choices[0].message.content
-            const analysis = JSON.parse(analysisRaw || '{}')
+
+            let analysis: any = {}
+            try {
+                analysis = JSON.parse(analysisRaw || '{}')
+            } catch (pErr) {
+                console.error('❌ Falha ao parsear JSON da AI:', pErr, analysisRaw)
+                analysis = { no_show_probability: 0.5, reasoning_tags: ['parse_error'] }
+            }
 
             console.log('🤖 [AI PREDICTION]', analysis)
 
@@ -413,8 +422,10 @@ ${JSON.stringify(patientData, null, 2)}
         messages.push({ role: "user", content: message })
 
         // 7. Chamada à OpenAI (GPT-4o)
+        const CHAT_MODEL = Deno.env.get('AI_MODEL_NAME_CHAT') || "gpt-4o"
+
         const completion = await openai.chat.completions.create({
-            model: "gpt-4o",
+            model: CHAT_MODEL,
             messages,
             temperature: isTeachingMode ? 0.7 : 0.2, // Ensino = 0.7 para atuação mais natural da Paula
             max_tokens: 1500
