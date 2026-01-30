@@ -3,7 +3,7 @@ import { Outlet, useLocation } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import ProtectedRoute from './ProtectedRoute'
 import Header from './Header'
-import Footer from './Footer'
+
 import Sidebar from './Sidebar'
 import NoaConversationalInterface from './NoaConversationalInterface'
 import Breadcrumbs from './Breadcrumbs'
@@ -181,11 +181,7 @@ const Layout: React.FC = () => {
             </main>
           </div>
 
-          {/* Footer - Fora do container principal para ficar colado ao sidebar */}
-          <Footer
-            marginLeft={hasOwnSidebar ? '0' : (isMobile ? '0' : isSidebarCollapsed ? '112px' : '256px')}
-            width={hasOwnSidebar ? '100%' : (isMobile ? '100%' : `calc(100% - ${isSidebarCollapsed ? '112px' : '256px'})`)}
-          />
+
 
           {/* Interface Conversacional Nôa Esperança */}
           {!isGlobalChatHidden && (
