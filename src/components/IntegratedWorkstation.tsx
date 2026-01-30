@@ -13,8 +13,7 @@ import {
     Brain,
     MessageCircle,
     LayoutDashboard,
-    Stethoscope,
-    //    UserPlus
+    Stethoscope
 } from 'lucide-react'
 import { CreatePatientModal } from '../components/CreatePatientModal'
 import { supabase } from '../lib/supabase'
@@ -143,15 +142,20 @@ const IntegratedWorkstation: React.FC<IntegratedWorkstationProps> = ({ initialTa
                                 )
                             })}
                         </div>
+
                     </nav>
+
+                    {/* Botão Sair */}
+                    <div className="flex items-center shrink-0 ml-2">
+                    </div>
                 </div>
-            </header>
+            </header >
 
             <main className="flex-1 overflow-hidden relative bg-[#0f172a] w-full">
                 {renderContent()}
             </main>
 
-        </div>
+        </div >
     )
 }
 

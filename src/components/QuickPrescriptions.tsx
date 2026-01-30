@@ -246,35 +246,36 @@ const QuickPrescriptions: React.FC<QuickPrescriptionsProps> = ({ className = '',
   return (
     <div className={`space-y-6 ${className}`}>
       {/* Header */}
-      <div className="bg-gradient-to-r from-blue-900 to-indigo-900 rounded-lg p-6">
-        <div className="flex items-center justify-between mb-4">
+      {/* Header Styled for Premium Feel */}
+      <div className="space-y-4">
+        <div className="flex items-center justify-between mb-2">
           <div>
-            <h2 className="text-2xl font-bold text-white mb-2 flex items-center space-x-2">
-              <FileText className="w-6 h-6" />
+            <h2 className="text-xl font-bold text-white flex items-center gap-2">
+              <FileText className="w-5 h-5 text-emerald-400" />
               <span>Prescrições Rápidas</span>
             </h2>
-            <p className="text-blue-200">
+            <p className="text-slate-400 text-sm">
               Gerencie modelos e crie prescrições com agilidade
             </p>
           </div>
           <button
             onClick={() => setIsModalOpen(true)}
-            className="flex items-center space-x-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md transition-colors shadow-lg"
+            className="flex items-center space-x-2 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-sm rounded-lg transition-colors shadow-lg shadow-emerald-900/20"
           >
             <Plus className="w-4 h-4" />
-            <span>Nova Prescrição</span>
+            <span>Nova</span>
           </button>
         </div>
 
-        {/* Categories */}
+        {/* Categories - Clean Scrollable List */}
         <div className="flex space-x-2 overflow-x-auto pb-2 custom-scrollbar">
           {categories.map((category) => (
             <button
               key={category.id}
               onClick={() => setSelectedCategory(category.id)}
-              className={`px-4 py-2 rounded-md whitespace-nowrap transition-colors ${selectedCategory === category.id
-                  ? 'bg-white/20 text-white'
-                  : 'bg-transparent text-blue-200 hover:bg-white/10'
+              className={`px-3 py-1.5 text-sm rounded-full whitespace-nowrap transition-all border ${selectedCategory === category.id
+                ? 'bg-emerald-500/10 border-emerald-500/50 text-emerald-400'
+                : 'bg-slate-800/50 border-slate-700 text-slate-400 hover:bg-slate-700 hover:text-white'
                 }`}
             >
               {category.label}
@@ -310,8 +311,8 @@ const QuickPrescriptions: React.FC<QuickPrescriptionsProps> = ({ className = '',
           >
             <div className="flex justify-between items-start mb-4">
               <div className={`p-2 rounded-lg ${template.category === 'cannabis' ? 'bg-green-500/20 text-green-400' :
-                  template.category === 'nefrologia' ? 'bg-orange-500/20 text-orange-400' :
-                    'bg-blue-500/20 text-blue-400'
+                template.category === 'nefrologia' ? 'bg-orange-500/20 text-orange-400' :
+                  'bg-blue-500/20 text-blue-400'
                 }`}>
                 {template.category === 'cannabis' ? <Droplets className="w-5 h-5" /> : <Pill className="w-5 h-5" />}
               </div>

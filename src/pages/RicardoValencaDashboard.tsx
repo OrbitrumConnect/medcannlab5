@@ -4598,11 +4598,13 @@ const RicardoValencaDashboard: React.FC = () => {
 
   return (
     <div
-      className="min-h-screen overflow-x-hidden w-full"
+      className="min-h-screen overflow-x-hidden w-full relative"
       style={{ background: backgroundGradient }}
       data-page="ricardo-valenca-dashboard"
     >
-      <div className="w-full max-w-full mx-auto px-2 md:px-4 lg:px-6 py-4 md:py-6 lg:py-8 overflow-x-hidden">
+
+
+      <div className="w-full max-w-full mx-auto px-2 md:px-4 lg:px-6 py-4 md:py-6 lg:py-8 overflow-x-hidden pb-32">
         {/* Barra de Contexto do Paciente - Navegação Integrada */}
         {selectedPatient && selectedPatientData && (
           <div className="mb-6 bg-gradient-to-r from-slate-800/90 to-slate-900/90 rounded-xl border border-emerald-500/30 p-4 shadow-lg">
@@ -4688,7 +4690,7 @@ const RicardoValencaDashboard: React.FC = () => {
         )}
 
         {sectionNavOptions && sectionNavOptions.length > 0 && (
-          <div className="mt-8 mb-12 relative z-10">
+          <div className="mt-12 mb-12 relative z-10">
             <div className="max-w-7xl mx-auto flex items-center justify-center">
               {/* Container de Navegação "Rolon" integrado */}
               <div className="w-full flex items-center justify-center gap-4">
@@ -4714,7 +4716,7 @@ const RicardoValencaDashboard: React.FC = () => {
                             }
                           }}
                           className={[
-                            'group flex-shrink-0 flex items-center justify-center gap-2 px-5 py-3 rounded-full border transition-all duration-300 whitespace-nowrap',
+                            'group flex-shrink-0 flex items-center justify-center gap-2 px-4 py-2.5 rounded-full border transition-all duration-300 whitespace-nowrap',
                             isActive
                               ? 'bg-emerald-600/20 border-emerald-500/40 text-emerald-100 shadow-md scale-105'
                               : 'bg-slate-800/80 border-slate-700/60 text-slate-300 hover:bg-slate-700 hover:text-white hover:border-emerald-500/30 hover:scale-105'
@@ -4735,9 +4737,9 @@ const RicardoValencaDashboard: React.FC = () => {
                   <button
                     type="button"
                     onClick={openNoaChat}
-                    className="relative w-20 h-20 rounded-full bg-gradient-to-b from-emerald-500 to-emerald-700 flex items-center justify-center shadow-lg shadow-emerald-500/20 border border-emerald-400/20 hover:scale-110 hover:-translate-y-1 transition-all duration-300"
+                    className="relative w-16 h-16 rounded-full bg-gradient-to-b from-emerald-500 to-emerald-700 flex items-center justify-center shadow-lg shadow-emerald-500/20 border border-emerald-400/20 hover:scale-110 hover:-translate-y-1 transition-all duration-300"
                   >
-                    <Brain className="w-9 h-9 text-white drop-shadow-md" />
+                    <Brain className="w-7 h-7 text-white drop-shadow-md" />
                   </button>
                 </div>
 
@@ -4761,7 +4763,7 @@ const RicardoValencaDashboard: React.FC = () => {
                             }
                           }}
                           className={[
-                            'group flex-shrink-0 flex items-center justify-center gap-2 px-5 py-3 rounded-full border transition-all duration-300 whitespace-nowrap',
+                            'group flex-shrink-0 flex items-center justify-center gap-2 px-4 py-2.5 rounded-full border transition-all duration-300 whitespace-nowrap',
                             isActive
                               ? 'bg-emerald-600/20 border-emerald-500/40 text-emerald-100 shadow-md scale-105'
                               : 'bg-slate-800/80 border-slate-700/60 text-slate-300 hover:bg-slate-700 hover:text-white hover:border-emerald-500/30 hover:scale-105'

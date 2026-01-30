@@ -26,8 +26,10 @@ import {
   CheckCircle,
   ChevronLeft,
   ChevronRight,
-  Terminal as TerminalIcon
+  Terminal as TerminalIcon,
+  LogOut
 } from 'lucide-react'
+import { useAuth } from '../contexts/AuthContext'
 import { normalizeUserType, UserType } from '../lib/userTypes'
 import {
   backgroundGradient,
@@ -58,6 +60,7 @@ const Sidebar: React.FC<SidebarProps> = ({
   onClose,
   onCollapseChange
 }) => {
+  const { logout } = useAuth()
   const [isCollapsed, setIsCollapsed] = useState(false)
   const [isMobileOpen, setIsMobileOpen] = useState(false)
   const location = useLocation()
@@ -1013,6 +1016,30 @@ const Sidebar: React.FC<SidebarProps> = ({
           `}</style>
           </div>
         )}
+
+        {/* Botão Sair - Acima do Reduzir */}
+        <div className="px-3 pb-2">
+          <button
+            onClick={logout}
+            className={`w-full flex items-center ${isCollapsed ? 'justify-center' : 'gap-3'} px-3 py-2.5 rounded-lg transition-all group`}
+            style={{
+              background: 'rgba(239, 68, 68, 0.1)', // Red tint background
+              border: '1px solid rgba(239, 68, 68, 0.2)'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = 'rgba(239, 68, 68, 0.2)'
+              e.currentTarget.style.borderColor = 'rgba(239, 68, 68, 0.3)'
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = 'rgba(239, 68, 68, 0.1)'
+              e.currentTarget.style.borderColor = 'rgba(239, 68, 68, 0.2)'
+            }}
+            title={isCollapsed ? 'Sair do Sistema' : ''}
+          >
+            <LogOut className="w-5 h-5 text-red-400 flex-shrink-0 group-hover:text-red-300" />
+            {!isCollapsed && <span className="text-sm font-medium text-red-400 group-hover:text-red-300 flex-1 text-left">Sair</span>}
+          </button>
+        </div>
 
         {/* Botão para colapsar/expandir - Estilo do PatientSidebar */}
         <div className="p-3 border-t" style={{ borderColor: 'rgba(0,193,106,0.18)' }}>
