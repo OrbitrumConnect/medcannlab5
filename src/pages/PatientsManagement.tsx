@@ -60,7 +60,11 @@ interface Evolution {
   professional: string
 }
 
-const PatientsManagement: React.FC = () => {
+interface PatientsManagementProps {
+  embedded?: boolean
+}
+
+const PatientsManagement: React.FC<PatientsManagementProps> = ({ embedded = false }) => {
   const navigate = useNavigate()
   const location = useLocation()
   const [searchParams] = useSearchParams()
@@ -789,10 +793,85 @@ const PatientsManagement: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
-      {/* Header */}
+    <div className={`${embedded ? 'h-full w-full' : 'min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900'}`}>
+      {/* Header - Only show if not embedded */}
+      {!embedded && (
+        <div className="bg-slate-800/50 border-b border-slate-700/50 backdrop-blur-sm sticky top-0 z-50">
+          <div className="w-full max-w-[98%] mx-auto px-4 py-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-4">
+                <button
+                  onClick={handleBack}
+                  className="p-2 hover:bg-slate-700 rounded-lg transition-colors"
+                >
+                  <ArrowLeft className="w-5 h-5 text-white" />
+                </button>
+                <div>
+                </div>
+              </div>
+              <div className="relative new-patient-menu-container">
+                <button
+                  onClick={() => setShowNewPatientMenu(!showNewPatientMenu)}
+                  className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-blue-500 to-cyan-500 text-white rounded-lg hover:from-blue-600 hover:to-cyan-600 transition-colors"
+                >
+                  <UserPlus className="w-5 h-5" />
+                  <span>Novo Paciente</span>
+                </button>
 
-
+                {showNewPatientMenu && (
+                  <div
+                    className="fixed top-24 right-6 w-64 bg-slate-800 border border-slate-700 rounded-lg shadow-2xl z-[9999] new-patient-menu-container"
+                    style={{ marginTop: '0px' }}
+                  >
+                    <div className="p-2">
+                      <button
+                        onClick={() => {
+                          setShowNewPatientMenu(false)
+                          navigate('/app/new-patient?mode=manual')
+                        }}
+                        className="w-full text-left px-4 py-2 rounded-lg hover:bg-slate-700 transition-colors text-white flex items-center space-x-2"
+                      >
+                        <UserPlus className="w-4 h-4" />
+                        <span>Cadastro Manual</span>
+                      </button>
+                      <button
+                        onClick={() => {
+                          setShowNewPatientMenu(false)
+                          navigate('/app/new-patient?mode=csv')
+                        }}
+                        className="w-full text-left px-4 py-2 rounded-lg hover:bg-slate-700 transition-colors text-white flex items-center space-x-2"
+                      >
+                        <FileText className="w-4 h-4" />
+                        <span>Importar CSV</span>
+                      </button>
+                      <button
+                        onClick={() => {
+                          setShowNewPatientMenu(false)
+                          navigate('/app/new-patient?mode=database')
+                        }}
+                        className="w-full text-left px-4 py-2 rounded-lg hover:bg-slate-700 transition-colors text-white flex items-center space-x-2"
+                      >
+                        <Archive className="w-4 h-4" />
+                        <span>Importar do Banco</span>
+                      </button>
+                      <button
+                        onClick={() => {
+                          setShowNewPatientMenu(false)
+                          navigate('/app/new-patient?mode=drag-drop')
+                        }}
+                        className="w-full text-left px-4 py-2 rounded-lg hover:bg-slate-700 transition-colors text-white flex items-center space-x-2"
+                      >
+                        <Upload className="w-4 h-4" />
+                        <span>Arrastar Arquivos</span>
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
       <div className="w-full max-w-[98%] mx-auto px-4 py-6">
         {/* Filters Bar */}
         <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl p-6 mb-8 border border-slate-700/50">
