@@ -872,9 +872,9 @@ const PatientsManagement: React.FC<PatientsManagementProps> = ({ embedded = fals
           </div>
         </div>
       )}
-      <div className="w-full max-w-[98%] mx-auto px-4 py-6">
+      <div className="w-full max-w-full mx-auto px-1 md:px-2 py-2">
         {/* Filters Bar */}
-        <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl p-6 mb-8 border border-slate-700/50">
+        <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl p-6 mb-4 border border-slate-700/50">
           <div className="flex flex-col md:flex-row md:items-center justify-between mb-4 gap-4">
             <div className="flex items-center gap-4">
               <button
@@ -996,7 +996,7 @@ const PatientsManagement: React.FC<PatientsManagementProps> = ({ embedded = fals
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
           {/* Patients List - Left Sidebar */}
           <div className="lg:col-span-1">
             <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl border border-slate-700/50">
@@ -1020,23 +1020,32 @@ const PatientsManagement: React.FC<PatientsManagementProps> = ({ embedded = fals
                     <button
                       key={patient.id}
                       onClick={() => handleSelectPatient(patient)}
-                      className={`w-full p-4 text-left border-b border-slate-700 hover:bg-slate-700/50 transition-colors ${selectedPatient?.id === patient.id ? 'bg-slate-700' : ''
+                      className={`w-full p-3 text-left border-b border-slate-700 transition-colors ${selectedPatient?.id === patient.id
+                        ? 'bg-emerald-500/10 border-l-4 border-l-emerald-500'
+                        : 'hover:bg-slate-700/50'
                         }`}
                     >
                       <div className="flex items-center space-x-3">
-                        <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-full flex items-center justify-center">
+                        <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${selectedPatient?.id === patient.id ? 'bg-emerald-500' : 'bg-slate-700'}`}>
                           {patient.photo ? (
-                            <img src={patient.photo} alt={patient.name} className="w-12 h-12 rounded-full" />
+                            <img src={patient.photo} alt={patient.name} className="w-10 h-10 rounded-full" />
                           ) : (
-                            <User className="w-6 h-6 text-white" />
+                            <User className={`w-5 h-5 ${selectedPatient?.id === patient.id ? 'text-slate-950' : 'text-slate-400'}`} />
                           )}
                         </div>
-                        <div className="flex-1">
-                          <p className="font-semibold text-white">{patient.name}</p>
-                          <p className="text-xs text-slate-400">{patient.code} • {patient.cpf}</p>
-                          <p className="text-xs text-slate-400">
-                            {patient.appointmentsCount} atendimentos • {patient.absences} faltas
-                          </p>
+                        <div className="flex-1 min-w-0">
+                          <p className={`font-bold text-base truncate ${selectedPatient?.id === patient.id ? 'text-emerald-400' : 'text-white'}`}>{patient.name}</p>
+                          <p className="text-xs text-slate-500 truncate">#{patient.code} • {patient.cpf}</p>
+                          <div className="flex items-center gap-2 mt-0.5">
+                            <span className="text-xs text-slate-500 bg-slate-900 px-1.5 py-0.5 rounded uppercase font-bold tracking-wider">
+                              {patient.appointmentsCount} atend.
+                            </span>
+                            {patient.absences > 0 && (
+                              <span className="text-xs text-red-400 bg-red-500/10 px-1.5 py-0.5 rounded uppercase font-bold tracking-wider">
+                                {patient.absences} faltas
+                              </span>
+                            )}
+                          </div>
                         </div>
                       </div>
                     </button>
@@ -1047,7 +1056,7 @@ const PatientsManagement: React.FC<PatientsManagementProps> = ({ embedded = fals
           </div>
 
           {/* Patient Details - Main Content */}
-          <div className="lg:col-span-2">
+          <div className="lg:col-span-3">
             {/* Se a aba de agendamentos está ativa, mostrar agendamentos mesmo sem paciente selecionado */}
             {activeTab === 'appointments' && !selectedPatient ? (
               <div className="space-y-6">

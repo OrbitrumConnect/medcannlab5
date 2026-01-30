@@ -109,25 +109,43 @@ const RenalFunctionModule: React.FC<RenalFunctionModuleProps> = ({ patientId, pa
 
     if (!patientId) {
         return (
-            <div className="bg-slate-800 rounded-xl shadow-lg border border-slate-700 p-12 text-center">
-                <Activity className="w-16 h-16 text-slate-600 mx-auto mb-4" />
-                <h3 className="text-xl font-medium text-slate-300">Módulo de Função Renal</h3>
-                <p className="text-slate-400 mt-2">Selecione um paciente na lista para visualizar o histórico de exames e calcular a TFG.</p>
+            <div className="bg-[#0f172a] rounded-xl border border-slate-700/50 p-20 text-center flex flex-col items-center justify-center min-h-[400px]">
+                <div className="w-20 h-20 bg-emerald-500/10 rounded-2xl flex items-center justify-center mb-6 border border-emerald-500/20 shadow-lg shadow-emerald-500/5">
+                    <Activity className="w-10 h-10 text-emerald-400 opacity-60" />
+                </div>
+                <h3 className="text-2xl font-bold text-white tracking-tight mb-2">Módulo de Função Renal</h3>
+                <p className="text-slate-400 text-base max-w-sm mx-auto leading-relaxed opacity-70">
+                    Selecione um paciente na lista lateral para visualizar o histórico de exames e calcular a Taxa de Filtração Glomerular (TFG).
+                </p>
             </div>
         );
     }
 
     return (
         <div className="bg-slate-800 rounded-xl shadow-lg border border-slate-700 overflow-hidden">
-            {/* Header */}
-            <div className="p-4 border-b border-slate-700 bg-slate-900/50 flex justify-between items-center">
-                <h3 className="font-bold text-white flex items-center gap-2">
-                    <Activity className="w-5 h-5 text-indigo-400" />
-                    Módulo de Função Renal
-                </h3>
-                <span className="text-xs text-slate-400 bg-slate-800 px-2 py-1 rounded border border-slate-600">
-                    Protocolo CKD-EPI 2021
-                </span>
+            {/* Optimized Centered Header - Compact Version */}
+            <div className="flex flex-col items-center text-center space-y-4 py-3 border-b border-slate-700/50 mb-2">
+                <div className="space-y-0.5">
+                    <div className="flex items-center justify-center gap-2 mb-0.5">
+                        <div className="p-1.5 bg-emerald-500/10 rounded-lg border border-emerald-500/20">
+                            <Activity className="w-5 h-5 text-emerald-400" />
+                        </div>
+                        <h2 className="text-xl font-bold text-white tracking-tight">
+                            Módulo de Função Renal
+                        </h2>
+                    </div>
+                    <p className="text-slate-400 text-xs max-w-md mx-auto leading-relaxed">
+                        Cálculo de TFG e monitoramento de função renal com protocolo CKD-EPI 2021.
+                    </p>
+                </div>
+
+                <div className="flex flex-col md:flex-row items-center justify-center gap-3 w-full">
+                    <div className="flex items-center p-0.5 bg-slate-900/50 rounded-full border border-slate-700 backdrop-blur-md">
+                        <span className="px-4 py-1.5 text-[10px] uppercase font-bold tracking-wider text-emerald-400 whitespace-nowrap">
+                            Protocolo CKD-EPI 2021
+                        </span>
+                    </div>
+                </div>
             </div>
 
             <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-8">

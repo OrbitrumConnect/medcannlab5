@@ -175,7 +175,7 @@ const Layout: React.FC = () => {
             <Header onOpenSidebar={() => setIsSidebarOpen(true)} />
             {/* NavegacaoIndividualizada removida - botões dos eixos já estão na sidebar */}
             <main
-              className={`flex-1 ${isMobile ? 'px-2 py-2' : 'px-4 py-4'}`}
+              className="flex-1"
             >
               <Outlet />
             </main>

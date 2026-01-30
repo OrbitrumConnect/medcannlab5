@@ -60,10 +60,14 @@ export default function IntegratedGovernanceView({ patientId }: IntegratedGovern
 
     if (!patientId) {
         return (
-            <div className="flex flex-col items-center justify-center h-full text-slate-500 p-8">
-                <Brain className="w-16 h-16 mb-4 opacity-20" />
-                <h3 className="text-lg font-semibold">Aguardando Paciente</h3>
-                <p className="text-sm">Selecione um paciente para ver a análise de governança clínica (ACDSS).</p>
+            <div className="flex flex-col items-center justify-center min-h-[450px] text-center p-20 bg-[#0b1120]">
+                <div className="w-20 h-20 bg-purple-500/10 rounded-2xl flex items-center justify-center mb-6 border border-purple-500/20 shadow-lg shadow-purple-500/5">
+                    <Brain className="w-10 h-10 text-purple-400 opacity-60" />
+                </div>
+                <h3 className="text-2xl font-bold text-white tracking-tight mb-2">Clinical Governance Engine</h3>
+                <p className="text-slate-400 text-base max-w-sm mx-auto leading-relaxed opacity-70">
+                    Selecione um paciente na lista lateral para gerar a análise de governança clínica (ACDSS) e apoio à decisão.
+                </p>
             </div>
         )
     }
@@ -86,46 +90,63 @@ export default function IntegratedGovernanceView({ patientId }: IntegratedGovern
     }
 
     return (
-        <div className="p-6 max-w-4xl mx-auto space-y-6">
-            <div className="flex items-center gap-3 mb-6">
-                <Brain className="w-10 h-10 text-purple-400" />
-                <div>
-                    <h2 className="text-2xl font-bold text-white">Clinical Governance Engine</h2>
-                    <p className="text-slate-400 text-sm">Análise Cognitiva e Apoio à Decisão Clínica (ACDSS)</p>
+        <div className="flex flex-col h-full bg-[#0b1120]">
+            {/* Optimized Centered Header - Compact Version */}
+            <div className="flex flex-col items-center text-center space-y-4 py-4 border-b border-slate-700/50 mb-4 px-6">
+                <div className="space-y-0.5">
+                    <div className="flex items-center justify-center gap-2 mb-0.5">
+                        <div className="p-1.5 bg-purple-500/10 rounded-lg border border-purple-500/20">
+                            <Brain className="w-5 h-5 text-purple-400" />
+                        </div>
+                        <h2 className="text-xl font-bold text-white tracking-tight">
+                            Clinical Governance Engine
+                        </h2>
+                    </div>
+                    <p className="text-slate-400 text-xs max-w-md mx-auto leading-relaxed">
+                        Análise Cognitiva e Apoio à Decisão Clínica (ACDSS) baseada em evidências.
+                    </p>
+                </div>
+
+                <div className="flex items-center p-0.5 bg-slate-900/50 rounded-full border border-slate-700 backdrop-blur-md">
+                    <span className="px-4 py-1.5 text-[10px] uppercase font-bold tracking-wider text-purple-400 whitespace-nowrap">
+                        Protocolo IA Regulatória
+                    </span>
                 </div>
             </div>
 
-            <ContextAnalysisCard analysis={analysis} loading={analysisLoading} />
+            <div className="flex-1 overflow-y-auto p-6 max-w-4xl mx-auto space-y-6 custom-scrollbar w-full">
+                <ContextAnalysisCard analysis={analysis} loading={analysisLoading} />
 
-            {analysis && (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-4">
-                        <h4 className="text-sm font-semibold text-slate-300 mb-2 flex items-center gap-2">
-                            <Activity className="w-4 h-4 text-emerald-400" />
-                            Status de Exaustão
-                        </h4>
-                        <div className="text-2xl font-bold text-white uppercase">
-                            {analysis.exhaustionLevel}
+                {analysis && (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-4">
+                            <h4 className="text-sm font-semibold text-slate-300 mb-2 flex items-center gap-2">
+                                <Activity className="w-4 h-4 text-emerald-400" />
+                                Status de Exaustão
+                            </h4>
+                            <div className="text-2xl font-bold text-white uppercase">
+                                {analysis.exhaustionLevel}
+                            </div>
+                        </div>
+
+                        <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-4">
+                            <h4 className="text-sm font-semibold text-slate-300 mb-2 flex items-center gap-2">
+                                <AlertCircle className="w-4 h-4 text-orange-400" />
+                                Risco Identificado
+                            </h4>
+                            <div className="text-2xl font-bold text-white uppercase">
+                                {analysis.urgencyLevel}
+                            </div>
                         </div>
                     </div>
+                )}
 
-                    <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-4">
-                        <h4 className="text-sm font-semibold text-slate-300 mb-2 flex items-center gap-2">
-                            <AlertCircle className="w-4 h-4 text-orange-400" />
-                            Risco Identificado
-                        </h4>
-                        <div className="text-2xl font-bold text-white uppercase">
-                            {analysis.urgencyLevel}
-                        </div>
+                {!analysis && !analysisLoading && (
+                    <div className="bg-slate-900/50 border border-slate-700/30 rounded-xl p-8 text-center">
+                        <p className="text-slate-400">Nenhum dado clínico suficiente para gerar análise ACDSS para este paciente.</p>
                     </div>
-                </div>
-            )}
-
-            {!analysis && !analysisLoading && (
-                <div className="bg-slate-900/50 border border-slate-700/30 rounded-xl p-8 text-center">
-                    <p className="text-slate-400">Nenhum dado clínico suficiente para gerar análise ACDSS para este paciente.</p>
-                </div>
-            )}
+                )}
+            </div>
         </div>
     )
 }

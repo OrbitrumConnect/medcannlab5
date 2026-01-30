@@ -125,65 +125,49 @@ const ProfessionalChatSystem: React.FC<ProfessionalChatSystemProps> = ({ classNa
   }
 
   return (
-    <div className={`bg-slate-800/80 rounded-lg border border-slate-700 ${className}`}>
-      <header className="p-4 border-b border-slate-700 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <h2 className="text-xl font-semibold text-white flex items-center gap-2">
-            <MessageCircle className="w-6 h-6 text-blue-400" />
-            Chat Profissionais
-          </h2>
-          <span
-            className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs ${isOnline ? 'bg-green-100 text-green-800' : 'bg-orange-100 text-orange-800'
-              }`}
-          >
-            {isOnline ? <Activity className="w-3 h-3" /> : <X className="w-3 h-3" />}
-            {isOnline ? 'Online' : 'Offline'}
-          </span>
+    <div className={`bg-slate-800/80 rounded-lg border border-slate-700 flex flex-col h-full ${className}`}>
+      {/* Optimized Centered Header - Compact Version */}
+      <div className="flex flex-col items-center text-center space-y-4 py-3 border-b border-slate-700/50">
+        <div className="space-y-0.5">
+          <div className="flex items-center justify-center gap-2 mb-0.5">
+            <div className="p-1.5 bg-emerald-500/10 rounded-lg border border-emerald-500/20">
+              <MessageCircle className="w-5 h-5 text-emerald-400" />
+            </div>
+            <h2 className="text-xl font-bold text-white tracking-tight">
+              Comunicação Clínica
+            </h2>
+            <span
+              className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] uppercase font-bold tracking-wider ${isOnline ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-orange-500/20 text-orange-400 border border-orange-500/30'
+                }`}
+            >
+              {isOnline ? 'Online' : 'Offline'}
+            </span>
+          </div>
+
         </div>
 
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => setFilter('all')}
-            className={`px-3 py-1 rounded-lg text-sm transition-colors ${filter === 'all'
-              ? 'bg-blue-600 text-white'
-              : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
-              }`}
-          >
-            Todos
-          </button>
-          <button
-            onClick={() => setFilter('professional')}
-            className={`px-3 py-1 rounded-lg text-sm transition-colors ${filter === 'professional'
-              ? 'bg-blue-600 text-white'
-              : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
-              }`}
-          >
-            Profissionais
-          </button>
-          <button
-            onClick={() => setFilter('student')}
-            className={`px-3 py-1 rounded-lg text-sm transition-colors ${filter === 'student'
-              ? 'bg-blue-600 text-white'
-              : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
-              }`}
-          >
-            Estudantes
-          </button>
-          <button
-            onClick={() => setFilter('patient')}
-            className={`px-3 py-1 rounded-lg text-sm transition-colors ${filter === 'patient'
-              ? 'bg-blue-600 text-white'
-              : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
-              }`}
-          >
-            Pacientes
-          </button>
+        <div className="flex flex-col md:flex-row items-center justify-center gap-3 w-full">
+          {/* Filters Container - More Compact */}
+          <div className="flex items-center p-0.5 bg-slate-900/50 rounded-full border border-slate-700 backdrop-blur-md overflow-x-auto no-scrollbar max-w-full">
+            {(['all', 'professional', 'student', 'patient'] as RoomFilter[]).map((tabKey) => (
+              <button
+                key={tabKey}
+                onClick={() => setFilter(tabKey)}
+                className={`px-4 py-1.5 text-xs font-medium rounded-full transition-all whitespace-nowrap ${filter === tabKey
+                  ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-900/10'
+                  : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
+                  }`}
+              >
+                {tabKey === 'all' ? 'Todos' : tabKey === 'professional' ? 'Profissionais' : tabKey === 'student' ? 'Estudantes' : 'Pacientes'}
+              </button>
+            ))}
+          </div>
         </div>
-      </header>
+      </div>
 
-      <div className="flex h-[440px]">
-        <aside className="w-1/3 border-r border-slate-700 flex flex-col">
-          <div className="p-4 border-b border-slate-700">
+      <div className="flex flex-1 overflow-hidden">
+        <aside className="w-1/4 border-r border-slate-700 flex flex-col min-w-[200px]">
+          <div className="p-3 border-b border-slate-700">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" />
               <input
@@ -214,17 +198,17 @@ const ProfessionalChatSystem: React.FC<ProfessionalChatSystemProps> = ({ classNa
                 <button
                   key={room.id}
                   onClick={() => handleSelectRoom(room)}
-                  className={`w-full text-left p-4 border-b border-slate-700 transition-all ${isActive
-                    ? 'bg-blue-600 text-white shadow-md'
+                  className={`w-full text-left p-3 border-b border-slate-700 transition-all ${isActive
+                    ? 'bg-emerald-600 text-white shadow-md'
                     : room.unreadCount > 0
-                      ? 'bg-slate-700/60 text-slate-200 border-l-4 border-l-blue-500 pl-3'
+                      ? 'bg-emerald-500/10 text-emerald-400 border-l-4 border-l-emerald-500 pl-2'
                       : 'hover:bg-slate-700 text-slate-300'
                     }`}
                 >
-                  <div className="flex items-center justify-between">
-                    <span className="font-semibold truncate">{room.name ?? 'Sala sem nome'}</span>
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="font-bold text-base truncate">{room.name ?? 'Sala sem nome'}</span>
                     {room.unreadCount > 0 && (
-                      <span className="ml-2 inline-flex items-center justify-center rounded-full bg-red-500 px-2 py-0.5 text-xs font-semibold text-white">
+                      <span className="ml-2 inline-flex items-center justify-center rounded-full bg-emerald-500 px-2 py-0.5 text-[10px] font-black text-slate-950">
                         {room.unreadCount}
                       </span>
                     )}
@@ -232,7 +216,7 @@ const ProfessionalChatSystem: React.FC<ProfessionalChatSystemProps> = ({ classNa
                   <p className="text-xs opacity-70 mt-1">
                     Última atividade: {formatDateTime(room.lastMessageAt)}
                   </p>
-                  <p className="text-[11px] uppercase tracking-wide opacity-60 mt-2">
+                  <p className="text-xs uppercase font-black tracking-widest opacity-40 mt-1">
                     {room.type ?? 'sem classificação'}
                   </p>
                 </button>
@@ -262,14 +246,24 @@ const ProfessionalChatSystem: React.FC<ProfessionalChatSystemProps> = ({ classNa
                 </div>
               </div>
 
-              <div className="flex-1 overflow-y-auto p-4 space-y-4">
+              <div className="flex-1 overflow-y-auto p-4 space-y-4 relative">
+                {/* Background Doodle Pattern */}
+                <div
+                  className="absolute inset-0 opacity-[0.03] pointer-events-none"
+                  style={{
+                    backgroundImage: `url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 20c-5 0-10 5-10 10s5 10 10 10 10-5 10-10-5-10-10-10zm0 4c3.3 0 6 2.7 6 6s-2.7 6-6 6-6-2.7-6-6 2.7-6 6-6z' fill='%2310b981'/%3E%3Cpath d='M70 30c-5-5-15-5-20 0-5-5-15-5-20 0 5 15 20 30 20 30s15-15 20-30z' fill='%2310b981'/%3E%3Cpath d='M50 70c5 0 10-5 10-10s-5-10-10-10-10 5-10 10 5 10 10 10z' fill='%2310b981' opacity='0.5'/%3E%3Cpath d='M80 70c0-5.5-4.5-10-10-10s-10 4.5-10 10 4.5 10 10 10 10-4.5 10-10z' fill='%2310b981'/%3E%3C/svg%3E")`,
+                    backgroundSize: '120px 120px'
+                  }}
+                />
+
                 {messagesLoading && (
-                  <div className="text-sm text-slate-400">Carregando mensagens...</div>
+                  <div className="text-sm text-slate-400 relative z-10 text-center py-4">Carregando mensagens...</div>
                 )}
 
                 {!messagesLoading && messages.length === 0 && (
-                  <div className="text-sm text-slate-400">
-                    Nenhuma mensagem registrada nesta sala. Inicie uma conversa.
+                  <div className="text-sm text-slate-400 relative z-10 text-center py-10 opacity-60">
+                    <p className="mb-2">Nenhuma mensagem registrada nesta sala.</p>
+                    <p className="text-xs">Inicie uma conversa profissional e segura.</p>
                   </div>
                 )}
 
@@ -278,10 +272,12 @@ const ProfessionalChatSystem: React.FC<ProfessionalChatSystemProps> = ({ classNa
                   return (
                     <div
                       key={message.id}
-                      className={`flex ${isOwn ? 'justify-end' : 'justify-start'}`}
+                      className={`flex ${isOwn ? 'justify-end' : 'justify-start'} relative z-10`}
                     >
                       <div
-                        className={`max-w-xs rounded-lg px-3 py-2 text-sm ${isOwn ? 'bg-blue-600 text-white' : 'bg-slate-700 text-white'
+                        className={`max-w-[85%] rounded-2xl px-4 py-2.5 text-sm shadow-sm ${isOwn
+                          ? 'bg-emerald-600 text-white rounded-tr-none'
+                          : 'bg-slate-800 text-slate-200 border border-slate-700/50 rounded-tl-none'
                           }`}
                       >
                         <div className="mb-1 flex items-center justify-between gap-3">

@@ -89,11 +89,17 @@ const IntegratedWorkstation: React.FC<IntegratedWorkstationProps> = ({ initialTa
             case 'chat':
                 return <div className="h-full bg-[#0f172a]"><ProfessionalChatSystem selectedPatientId={selectedPatientId} /></div>
             case 'renal':
-                return <RenalFunctionModule
-                    patientId={selectedPatientId || undefined}
-                />
+                return (
+                    <div className="h-full overflow-y-auto bg-[#0f172a]">
+                        <RenalFunctionModule patientId={selectedPatientId || undefined} />
+                    </div>
+                )
             case 'prescriptions':
-                return <QuickPrescriptions patientId={selectedPatientId || ''} />
+                return (
+                    <div className="h-full overflow-y-auto bg-[#0f172a]">
+                        <QuickPrescriptions patientId={selectedPatientId || ''} />
+                    </div>
+                )
             case 'scheduling':
                 return <div className="h-full overflow-y-auto bg-[#0f172a]"><EduardoScheduling /></div>
             case 'governance':

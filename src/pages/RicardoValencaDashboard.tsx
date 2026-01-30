@@ -4604,10 +4604,10 @@ const RicardoValencaDashboard: React.FC = () => {
     >
 
 
-      <div className="w-full max-w-full mx-auto px-2 md:px-4 lg:px-6 py-4 md:py-6 lg:py-8 overflow-x-hidden pb-32">
+      <div className="w-full max-w-full mx-auto px-0 md:px-2 lg:px-2 py-0 md:py-2 lg:py-2 overflow-x-hidden pb-32">
         {/* Barra de Contexto do Paciente - Navegação Integrada */}
         {selectedPatient && selectedPatientData && (
-          <div className="mb-6 bg-gradient-to-r from-slate-800/90 to-slate-900/90 rounded-xl border border-emerald-500/30 p-4 shadow-lg">
+          <div className="mb-2 bg-gradient-to-r from-slate-800/90 to-slate-900/90 rounded-xl border border-emerald-500/30 p-4 shadow-lg">
             <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
               {/* Info do Paciente */}
               <div className="flex items-center gap-4">

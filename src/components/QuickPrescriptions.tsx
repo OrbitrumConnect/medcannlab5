@@ -246,41 +246,48 @@ const QuickPrescriptions: React.FC<QuickPrescriptionsProps> = ({ className = '',
   return (
     <div className={`space-y-6 ${className}`}>
       {/* Header */}
-      {/* Header Styled for Premium Feel */}
-      <div className="space-y-4">
-        <div className="flex items-center justify-between mb-2">
-          <div>
-            <h2 className="text-xl font-bold text-white flex items-center gap-2">
+      {/* Optimized Centered Header - Compact Version */}
+      <div className="flex flex-col items-center text-center space-y-4 py-2 border-b border-slate-700/50 mb-2">
+        <div className="space-y-0.5">
+          <div className="flex items-center justify-center gap-2 mb-0.5">
+            <div className="p-1.5 bg-emerald-500/10 rounded-lg border border-emerald-500/20">
               <FileText className="w-5 h-5 text-emerald-400" />
-              <span>Prescrições Rápidas</span>
+            </div>
+            <h2 className="text-xl font-bold text-white tracking-tight">
+              Prescrições Rápidas
             </h2>
-            <p className="text-slate-400 text-sm">
-              Gerencie modelos e crie prescrições com agilidade
-            </p>
           </div>
-          <button
-            onClick={() => setIsModalOpen(true)}
-            className="flex items-center space-x-2 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-sm rounded-lg transition-colors shadow-lg shadow-emerald-900/20"
-          >
-            <Plus className="w-4 h-4" />
-            <span>Nova</span>
-          </button>
+
         </div>
 
-        {/* Categories - Clean Scrollable List */}
-        <div className="flex space-x-2 overflow-x-auto pb-2 custom-scrollbar">
-          {categories.map((category) => (
-            <button
-              key={category.id}
-              onClick={() => setSelectedCategory(category.id)}
-              className={`px-3 py-1.5 text-sm rounded-full whitespace-nowrap transition-all border ${selectedCategory === category.id
-                ? 'bg-emerald-500/10 border-emerald-500/50 text-emerald-400'
-                : 'bg-slate-800/50 border-slate-700 text-slate-400 hover:bg-slate-700 hover:text-white'
-                }`}
-            >
-              {category.label}
-            </button>
-          ))}
+        <div className="flex flex-col md:flex-row items-center justify-center gap-3 w-full">
+          {/* Categories Container - More Compact */}
+          <div className="flex items-center p-0.5 bg-slate-900/50 rounded-full border border-slate-700 backdrop-blur-md overflow-x-auto no-scrollbar max-w-full">
+            {categories.map((category) => (
+              <button
+                key={category.id}
+                onClick={() => setSelectedCategory(category.id)}
+                className={`px-4 py-1.5 text-xs font-medium rounded-full transition-all whitespace-nowrap ${selectedCategory === category.id
+                  ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-900/10'
+                  : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
+                  }`}
+              >
+                {category.label}
+              </button>
+            ))}
+          </div>
+
+          {/* Action Divider */}
+          <div className="hidden md:block w-px h-6 bg-slate-700/50 mx-1"></div>
+
+          {/* Action Button - More Compact */}
+          <button
+            onClick={() => setIsModalOpen(true)}
+            className="flex items-center space-x-1.5 px-5 py-2 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs rounded-full transition-all shadow-lg shadow-emerald-500/10 hover:scale-105 active:scale-95"
+          >
+            <Plus className="w-3.5 h-3.5" />
+            <span>Nova Prescrição</span>
+          </button>
         </div>
       </div>
 
