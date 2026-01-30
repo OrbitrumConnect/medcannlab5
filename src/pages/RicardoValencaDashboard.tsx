@@ -4650,22 +4650,6 @@ const RicardoValencaDashboard: React.FC = () => {
 
         {sectionNavOptions && sectionNavOptions.length > 0 && (
           <div className="space-y-3 mt-6">
-            <div className="flex items-center justify-between flex-wrap gap-3">
-              <div>
-                <p className="text-[11px] uppercase tracking-[0.3em] text-slate-500">
-                  {normalizedEffectiveType === 'admin'
-                    ? 'Painel Administrativo • Navegação rápida'
-                    : currentEixo === 'ensino'
-                      ? 'Eixo Ensino • Navegação'
-                      : currentEixo === 'pesquisa'
-                        ? 'Eixo Pesquisa • Navegação'
-                        : 'Eixo Clínica • Navegação'}
-                </p>
-                <h2 className="text-lg md:text-xl font-semibold text-white">
-                  Acesse outras áreas especializadas
-                </h2>
-              </div>
-            </div>
             <div className="flex flex-wrap gap-2">
               {sectionNavOptions.map(option => {
                 const OptionIcon = option.icon
@@ -4692,339 +4676,348 @@ const RicardoValencaDashboard: React.FC = () => {
           </div>
         )}
 
+
         {/* Modal de Seleção de Dashboard Profissional */}
-        {showProfessionalModal && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 z-[100] flex items-center justify-center p-4">
-            <div className="bg-slate-800 rounded-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-              <div className="p-6 border-b border-slate-700">
-                <div className="flex items-center justify-between">
-                  <h2 className="text-2xl font-bold text-white flex items-center">
-                    <Stethoscope className="w-6 h-6 mr-2 text-blue-400" />
-                    <span>👨‍⚕️ Dashboards de Profissionais e Consultórios</span>
-                  </h2>
-                  <button
-                    onClick={() => setShowProfessionalModal(false)}
-                    className="text-slate-400 hover:text-white transition-colors"
-                  >
-                    <span className="text-2xl">×</span>
-                  </button>
-                </div>
-                <p className="text-slate-400 mt-2">Selecione um dashboard profissional ou consultório para acessar</p>
-              </div>
-
-              <div className="p-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {/* Consultório Dr. Ricardo Valença */}
-                  <button
-                    onClick={() => {
-                      // Não definir viewAsType para consultórios específicos
-                      setViewAsType(null)
-                      navigate('/app/ricardo-valenca-dashboard')
-                      setShowProfessionalModal(false)
-                    }}
-                    className="bg-gradient-to-r from-blue-600 to-cyan-500 rounded-xl p-6 text-white hover:shadow-lg hover:scale-105 transition-all text-left"
-                  >
-                    <div className="flex items-center justify-between mb-3">
-                      <h3 className="text-lg font-bold">🏥 Consultório Dr. Ricardo Valença</h3>
-                      <Stethoscope className="w-8 h-8 opacity-80" />
-                    </div>
-                    <p className="text-sm opacity-90 mb-2">Dashboard administrativo completo</p>
-                    <p className="text-xs opacity-75">Gestão de pacientes, agendamentos, relatórios e ferramentas administrativas</p>
-                  </button>
-
-                  {/* Consultório Dr. Eduardo Faveret */}
-                  <button
-                    onClick={() => {
-                      // Não definir viewAsType para consultórios específicos
-                      setViewAsType(null)
-                      navigate('/app/clinica/profissional/dashboard-eduardo')
-                      setShowProfessionalModal(false)
-                    }}
-                    className="bg-gradient-to-r from-emerald-600 to-teal-500 rounded-xl p-6 text-white hover:shadow-lg hover:scale-105 transition-all text-left"
-                  >
-                    <div className="flex items-center justify-between mb-3">
-                      <h3 className="text-lg font-bold">🏥 Consultório Dr. Eduardo Faveret</h3>
-                      <Stethoscope className="w-8 h-8 opacity-80" />
-                    </div>
-                    <p className="text-sm opacity-90 mb-2">Dashboard profissional clínico</p>
-                    <p className="text-xs opacity-75">Gestão de pacientes, agendamentos e relatórios clínicos</p>
-                  </button>
-
-                  {/* Dashboard Profissional Genérico */}
-                  <button
-                    onClick={() => {
-                      // Definir tipo visual como profissional para usar em todos os eixos
-                      setViewAsType('profissional')
-                      const eixo = currentEixo || 'clinica'
-                      navigate(`/app/${eixo}/profissional/dashboard`)
-                      setShowProfessionalModal(false)
-                    }}
-                    className="bg-gradient-to-r from-purple-600 to-pink-500 rounded-xl p-6 text-white hover:shadow-lg hover:scale-105 transition-all text-left"
-                  >
-                    <div className="flex items-center justify-between mb-3">
-                      <h3 className="text-lg font-bold">👨‍⚕️ Dashboard Profissional Genérico</h3>
-                      <User className="w-8 h-8 opacity-80" />
-                    </div>
-                    <p className="text-sm opacity-90 mb-2">Dashboard padrão para profissionais</p>
-                    <p className="text-xs opacity-75">
-                      Acesso às funcionalidades padrão do eixo {currentEixo || 'clínica'}
-                    </p>
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {showVoicePrescriptionModal && (
-          <div className="fixed inset-0 z-[90] flex items-center justify-center bg-slate-950/80 backdrop-blur-sm px-4">
-            <div className="w-full max-w-2xl bg-slate-900 rounded-2xl shadow-2xl p-6 relative">
-              <button
-                type="button"
-                onClick={handleCloseVoicePrescriptionModal}
-                className="absolute top-4 right-4 text-slate-400 hover:text-white transition-colors"
-                aria-label="Fechar visualização da prescrição"
-              >
-                <X className="w-6 h-6" />
-              </button>
-              <div className="mb-5 pr-10">
-                <p className="text-[11px] uppercase tracking-[0.4em] text-emerald-400">Comando de Voz • Prescrição</p>
-                <h3 className="text-2xl font-bold text-white mt-2">Última prescrição emitida</h3>
-                <p className="text-slate-300 text-sm mt-1">
-                  {voicePrescriptionPreview?.patientName || selectedPatientData?.name || 'Paciente selecionado no painel'}
-                </p>
-              </div>
-
-              {voicePrescriptionLoading ? (
-                <div className="flex flex-col items-center justify-center py-16 space-y-4">
-                  <Loader2 className="w-8 h-8 text-emerald-400 animate-spin" />
-                  <p className="text-slate-400 text-sm">Buscando a prescrição solicitada...</p>
-                </div>
-              ) : voicePrescriptionError ? (
-                <div className="py-10 text-center">
-                  <p className="text-slate-300">{voicePrescriptionError}</p>
-                </div>
-              ) : voicePrescriptionPreview ? (
-                <div className="space-y-6">
-                  <div className="flex flex-wrap items-center gap-3">
-                    <span className="px-3 py-1 rounded-full text-xs uppercase tracking-[0.3em] bg-emerald-500/10 text-emerald-200 border border-emerald-500/30">
-                      {voicePrescriptionPreview.status === 'active'
-                        ? 'Ativa'
-                        : voicePrescriptionPreview.status === 'completed'
-                          ? 'Concluída'
-                          : voicePrescriptionPreview.status === 'suspended'
-                            ? 'Suspensa'
-                            : voicePrescriptionPreview.status ?? 'Rascunho'}
-                    </span>
-                    {voicePrescriptionPreview.rationality && (
-                      <span className="text-sm text-slate-300">
-                        {VOICE_RATIONALITY_LABELS[voicePrescriptionPreview.rationality] ??
-                          voicePrescriptionPreview.rationality}
-                      </span>
-                    )}
-                    <span className="text-xs text-slate-500">
-                      Emitida em{' '}
-                      {new Date(voicePrescriptionPreview.issuedAt).toLocaleString('pt-BR', {
-                        day: '2-digit',
-                        month: 'short',
-                        year: 'numeric',
-                        hour: '2-digit',
-                        minute: '2-digit'
-                      })}
-                    </span>
-                  </div>
-
-                  <div>
-                    <h4 className="text-xl font-semibold text-white">{voicePrescriptionPreview.title}</h4>
-                    {voicePrescriptionPreview.summary && (
-                      <p className="text-sm text-slate-300 mt-2">{voicePrescriptionPreview.summary}</p>
-                    )}
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-slate-300">
-                    <div className="bg-slate-800/60 rounded-xl p-4 border border-slate-700/60">
-                      <p className="text-xs uppercase tracking-[0.35em] text-slate-500 mb-2">Dosagem</p>
-                      <p className="text-white">
-                        {voicePrescriptionPreview.dosage ?? 'Definida com a equipe clínica'}
-                      </p>
-                    </div>
-                    <div className="bg-slate-800/60 rounded-xl p-4 border border-slate-700/60">
-                      <p className="text-xs uppercase tracking-[0.35em] text-slate-500 mb-2">Frequência</p>
-                      <p className="text-white">
-                        {voicePrescriptionPreview.frequency ?? 'Frequência personalizada'}
-                      </p>
-                    </div>
-                    <div className="bg-slate-800/60 rounded-xl p-4 border border-slate-700/60">
-                      <p className="text-xs uppercase tracking-[0.35em] text-slate-500 mb-2">Duração</p>
-                      <p className="text-white">
-                        {voicePrescriptionPreview.duration ?? 'Definida no plano terapêutico'}
-                      </p>
-                    </div>
-                    <div className="bg-slate-800/60 rounded-xl p-4 border border-slate-700/60">
-                      <p className="text-xs uppercase tracking-[0.35em] text-slate-500 mb-2">Profissional</p>
-                      <p className="text-white">
-                        {voicePrescriptionPreview.professionalName ?? 'Equipe MedCannLab'}
-                      </p>
-                    </div>
-                  </div>
-
-                  {voicePrescriptionPreview.instructions && (
-                    <div className="bg-slate-800/60 rounded-xl p-4 border border-slate-700/60">
-                      <p className="text-xs uppercase tracking-[0.35em] text-slate-500 mb-2">Instruções</p>
-                      <p className="text-slate-200 whitespace-pre-wrap">{voicePrescriptionPreview.instructions}</p>
-                    </div>
-                  )}
-
-                  <div className="flex flex-wrap items-center justify-between gap-3 text-xs text-slate-400">
-                    <span>
-                      Modelo:{' '}
-                      <span className="text-slate-200">
-                        {voicePrescriptionPreview.templateName ?? 'Personalizado pela equipe'}
-                      </span>
-                    </span>
+        {
+          showProfessionalModal && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 z-[100] flex items-center justify-center p-4">
+              <div className="bg-slate-800 rounded-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+                <div className="p-6 border-b border-slate-700">
+                  <div className="flex items-center justify-between">
+                    <h2 className="text-2xl font-bold text-white flex items-center">
+                      <Stethoscope className="w-6 h-6 mr-2 text-blue-400" />
+                      <span>👨‍⚕️ Dashboards de Profissionais e Consultórios</span>
+                    </h2>
                     <button
-                      type="button"
-                      className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-emerald-600 text-white text-sm font-semibold hover:bg-emerald-500 transition-colors"
-                      onClick={() => {
-                        handleCloseVoicePrescriptionModal()
-                        goToSection('prescricoes')
-                      }}
+                      onClick={() => setShowProfessionalModal(false)}
+                      className="text-slate-400 hover:text-white transition-colors"
                     >
-                      <FileText className="w-4 h-4" />
-                      Abrir painel de prescrições
+                      <span className="text-2xl">×</span>
+                    </button>
+                  </div>
+                  <p className="text-slate-400 mt-2">Selecione um dashboard profissional ou consultório para acessar</p>
+                </div>
+
+                <div className="p-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {/* Consultório Dr. Ricardo Valença */}
+                    <button
+                      onClick={() => {
+                        // Não definir viewAsType para consultórios específicos
+                        setViewAsType(null)
+                        navigate('/app/ricardo-valenca-dashboard')
+                        setShowProfessionalModal(false)
+                      }}
+                      className="bg-gradient-to-r from-blue-600 to-cyan-500 rounded-xl p-6 text-white hover:shadow-lg hover:scale-105 transition-all text-left"
+                    >
+                      <div className="flex items-center justify-between mb-3">
+                        <h3 className="text-lg font-bold">🏥 Consultório Dr. Ricardo Valença</h3>
+                        <Stethoscope className="w-8 h-8 opacity-80" />
+                      </div>
+                      <p className="text-sm opacity-90 mb-2">Dashboard administrativo completo</p>
+                      <p className="text-xs opacity-75">Gestão de pacientes, agendamentos, relatórios e ferramentas administrativas</p>
+                    </button>
+
+                    {/* Consultório Dr. Eduardo Faveret */}
+                    <button
+                      onClick={() => {
+                        // Não definir viewAsType para consultórios específicos
+                        setViewAsType(null)
+                        navigate('/app/clinica/profissional/dashboard-eduardo')
+                        setShowProfessionalModal(false)
+                      }}
+                      className="bg-gradient-to-r from-emerald-600 to-teal-500 rounded-xl p-6 text-white hover:shadow-lg hover:scale-105 transition-all text-left"
+                    >
+                      <div className="flex items-center justify-between mb-3">
+                        <h3 className="text-lg font-bold">🏥 Consultório Dr. Eduardo Faveret</h3>
+                        <Stethoscope className="w-8 h-8 opacity-80" />
+                      </div>
+                      <p className="text-sm opacity-90 mb-2">Dashboard profissional clínico</p>
+                      <p className="text-xs opacity-75">Gestão de pacientes, agendamentos e relatórios clínicos</p>
+                    </button>
+
+                    {/* Dashboard Profissional Genérico */}
+                    <button
+                      onClick={() => {
+                        // Definir tipo visual como profissional para usar em todos os eixos
+                        setViewAsType('profissional')
+                        const eixo = currentEixo || 'clinica'
+                        navigate(`/app/${eixo}/profissional/dashboard`)
+                        setShowProfessionalModal(false)
+                      }}
+                      className="bg-gradient-to-r from-purple-600 to-pink-500 rounded-xl p-6 text-white hover:shadow-lg hover:scale-105 transition-all text-left"
+                    >
+                      <div className="flex items-center justify-between mb-3">
+                        <h3 className="text-lg font-bold">👨‍⚕️ Dashboard Profissional Genérico</h3>
+                        <User className="w-8 h-8 opacity-80" />
+                      </div>
+                      <p className="text-sm opacity-90 mb-2">Dashboard padrão para profissionais</p>
+                      <p className="text-xs opacity-75">
+                        Acesso às funcionalidades padrão do eixo {currentEixo || 'clínica'}
+                      </p>
                     </button>
                   </div>
                 </div>
-              ) : (
-                <div className="py-10 text-center">
-                  <p className="text-slate-300">Nenhuma prescrição encontrada.</p>
-                </div>
-              )}
+              </div>
             </div>
-          </div>
-        )}
+          )
+        }
 
-        {(resolvedSection as any) === 'perfil' && (
-          <div className="text-center py-12">
-            <User className="w-16 h-16 text-cyan-400 mx-auto mb-4" />
-            <h2 className="text-2xl font-bold text-white mb-2">👤 Meu Perfil</h2>
-            <p className="text-slate-300 mb-6">Acesse a página de perfil para gerenciar suas informações</p>
-            <button
-              onClick={() => navigate('/app/profile')}
-              className="px-6 py-3 bg-cyan-600 hover:bg-cyan-700 text-white rounded-lg font-semibold transition-colors inline-flex items-center space-x-2"
-            >
-              <User className="w-5 h-5" />
-              <span>Ir para Perfil</span>
-            </button>
-          </div>
-        )}
-      </div>
+        {
+          showVoicePrescriptionModal && (
+            <div className="fixed inset-0 z-[90] flex items-center justify-center bg-slate-950/80 backdrop-blur-sm px-4">
+              <div className="w-full max-w-2xl bg-slate-900 rounded-2xl shadow-2xl p-6 relative">
+                <button
+                  type="button"
+                  onClick={handleCloseVoicePrescriptionModal}
+                  className="absolute top-4 right-4 text-slate-400 hover:text-white transition-colors"
+                  aria-label="Fechar visualização da prescrição"
+                >
+                  <X className="w-6 h-6" />
+                </button>
+                <div className="mb-5 pr-10">
+                  <p className="text-[11px] uppercase tracking-[0.4em] text-emerald-400">Comando de Voz • Prescrição</p>
+                  <h3 className="text-2xl font-bold text-white mt-2">Última prescrição emitida</h3>
+                  <p className="text-slate-300 text-sm mt-1">
+                    {voicePrescriptionPreview?.patientName || selectedPatientData?.name || 'Paciente selecionado no painel'}
+                  </p>
+                </div>
+
+                {voicePrescriptionLoading ? (
+                  <div className="flex flex-col items-center justify-center py-16 space-y-4">
+                    <Loader2 className="w-8 h-8 text-emerald-400 animate-spin" />
+                    <p className="text-slate-400 text-sm">Buscando a prescrição solicitada...</p>
+                  </div>
+                ) : voicePrescriptionError ? (
+                  <div className="py-10 text-center">
+                    <p className="text-slate-300">{voicePrescriptionError}</p>
+                  </div>
+                ) : voicePrescriptionPreview ? (
+                  <div className="space-y-6">
+                    <div className="flex flex-wrap items-center gap-3">
+                      <span className="px-3 py-1 rounded-full text-xs uppercase tracking-[0.3em] bg-emerald-500/10 text-emerald-200 border border-emerald-500/30">
+                        {voicePrescriptionPreview.status === 'active'
+                          ? 'Ativa'
+                          : voicePrescriptionPreview.status === 'completed'
+                            ? 'Concluída'
+                            : voicePrescriptionPreview.status === 'suspended'
+                              ? 'Suspensa'
+                              : voicePrescriptionPreview.status ?? 'Rascunho'}
+                      </span>
+                      {voicePrescriptionPreview.rationality && (
+                        <span className="text-sm text-slate-300">
+                          {VOICE_RATIONALITY_LABELS[voicePrescriptionPreview.rationality] ??
+                            voicePrescriptionPreview.rationality}
+                        </span>
+                      )}
+                      <span className="text-xs text-slate-500">
+                        Emitida em{' '}
+                        {new Date(voicePrescriptionPreview.issuedAt).toLocaleString('pt-BR', {
+                          day: '2-digit',
+                          month: 'short',
+                          year: 'numeric',
+                          hour: '2-digit',
+                          minute: '2-digit'
+                        })}
+                      </span>
+                    </div>
+
+                    <div>
+                      <h4 className="text-xl font-semibold text-white">{voicePrescriptionPreview.title}</h4>
+                      {voicePrescriptionPreview.summary && (
+                        <p className="text-sm text-slate-300 mt-2">{voicePrescriptionPreview.summary}</p>
+                      )}
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-slate-300">
+                      <div className="bg-slate-800/60 rounded-xl p-4 border border-slate-700/60">
+                        <p className="text-xs uppercase tracking-[0.35em] text-slate-500 mb-2">Dosagem</p>
+                        <p className="text-white">
+                          {voicePrescriptionPreview.dosage ?? 'Definida com a equipe clínica'}
+                        </p>
+                      </div>
+                      <div className="bg-slate-800/60 rounded-xl p-4 border border-slate-700/60">
+                        <p className="text-xs uppercase tracking-[0.35em] text-slate-500 mb-2">Frequência</p>
+                        <p className="text-white">
+                          {voicePrescriptionPreview.frequency ?? 'Frequência personalizada'}
+                        </p>
+                      </div>
+                      <div className="bg-slate-800/60 rounded-xl p-4 border border-slate-700/60">
+                        <p className="text-xs uppercase tracking-[0.35em] text-slate-500 mb-2">Duração</p>
+                        <p className="text-white">
+                          {voicePrescriptionPreview.duration ?? 'Definida no plano terapêutico'}
+                        </p>
+                      </div>
+                      <div className="bg-slate-800/60 rounded-xl p-4 border border-slate-700/60">
+                        <p className="text-xs uppercase tracking-[0.35em] text-slate-500 mb-2">Profissional</p>
+                        <p className="text-white">
+                          {voicePrescriptionPreview.professionalName ?? 'Equipe MedCannLab'}
+                        </p>
+                      </div>
+                    </div>
+
+                    {voicePrescriptionPreview.instructions && (
+                      <div className="bg-slate-800/60 rounded-xl p-4 border border-slate-700/60">
+                        <p className="text-xs uppercase tracking-[0.35em] text-slate-500 mb-2">Instruções</p>
+                        <p className="text-slate-200 whitespace-pre-wrap">{voicePrescriptionPreview.instructions}</p>
+                      </div>
+                    )}
+
+                    <div className="flex flex-wrap items-center justify-between gap-3 text-xs text-slate-400">
+                      <span>
+                        Modelo:{' '}
+                        <span className="text-slate-200">
+                          {voicePrescriptionPreview.templateName ?? 'Personalizado pela equipe'}
+                        </span>
+                      </span>
+                      <button
+                        type="button"
+                        className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-emerald-600 text-white text-sm font-semibold hover:bg-emerald-500 transition-colors"
+                        onClick={() => {
+                          handleCloseVoicePrescriptionModal()
+                          goToSection('prescricoes')
+                        }}
+                      >
+                        <FileText className="w-4 h-4" />
+                        Abrir painel de prescrições
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="py-10 text-center">
+                    <p className="text-slate-300">Nenhuma prescrição encontrada.</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          )
+        }
+
+        {
+          (resolvedSection as any) === 'perfil' && (
+            <div className="text-center py-12">
+              <User className="w-16 h-16 text-cyan-400 mx-auto mb-4" />
+              <h2 className="text-2xl font-bold text-white mb-2">👤 Meu Perfil</h2>
+              <p className="text-slate-300 mb-6">Acesse a página de perfil para gerenciar suas informações</p>
+              <button
+                onClick={() => navigate('/app/profile')}
+                className="px-6 py-3 bg-cyan-600 hover:bg-cyan-700 text-white rounded-lg font-semibold transition-colors inline-flex items-center space-x-2"
+              >
+                <User className="w-5 h-5" />
+                <span>Ir para Perfil</span>
+              </button>
+            </div>
+          )
+        }
+      </div >
 
       {/* Video/Audio Call Component */}
-      <VideoCall
+      < VideoCall
         isOpen={isVideoCallOpen}
         onClose={() => setIsVideoCallOpen(false)}
         patientId={selectedPatient || undefined}
         isAudioOnly={callType === 'audio'}
       />
 
-      {knowledgeSelectedDocument && (
-        <div className="fixed inset-0 bg-black/70 z-[120] flex items-center justify-center p-4">
-          <div className="bg-slate-900 rounded-2xl border border-slate-700 shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col">
-            <div className="flex items-center justify-between p-4 border-b border-slate-700">
-              <div>
-                <p className="text-xs text-emerald-200/70 uppercase tracking-widest flex items-center gap-2">
-                  <span>{knowledgeSelectedDocument.category || 'Sem categoria'}</span>
-                  {knowledgeSelectedDocument.isLinkedToAI && (
-                    <span className="text-[10px] px-2 py-0.5 bg-emerald-500/20 border border-emerald-400/30 rounded-full">IA</span>
-                  )}
-                </p>
-                <h3 className="text-xl font-semibold text-white mt-1">{knowledgeSelectedDocument.title}</h3>
-                <p className="text-xs text-slate-400 mt-1">
-                  {formatKnowledgeRelativeTime(knowledgeSelectedDocument.updated_at)} • IA Score {(knowledgeSelectedDocument.aiRelevance ?? 0).toFixed(2)}
-                </p>
+      {
+        knowledgeSelectedDocument && (
+          <div className="fixed inset-0 bg-black/70 z-[120] flex items-center justify-center p-4">
+            <div className="bg-slate-900 rounded-2xl border border-slate-700 shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col">
+              <div className="flex items-center justify-between p-4 border-b border-slate-700">
+                <div>
+                  <p className="text-xs text-emerald-200/70 uppercase tracking-widest flex items-center gap-2">
+                    <span>{knowledgeSelectedDocument.category || 'Sem categoria'}</span>
+                    {knowledgeSelectedDocument.isLinkedToAI && (
+                      <span className="text-[10px] px-2 py-0.5 bg-emerald-500/20 border border-emerald-400/30 rounded-full">IA</span>
+                    )}
+                  </p>
+                  <h3 className="text-xl font-semibold text-white mt-1">{knowledgeSelectedDocument.title}</h3>
+                  <p className="text-xs text-slate-400 mt-1">
+                    {formatKnowledgeRelativeTime(knowledgeSelectedDocument.updated_at)} • IA Score {(knowledgeSelectedDocument.aiRelevance ?? 0).toFixed(2)}
+                  </p>
+                </div>
+                <button
+                  onClick={closeKnowledgeDocument}
+                  className="text-slate-400 hover:text-white transition-colors"
+                >
+                  ×
+                </button>
               </div>
-              <button
-                onClick={closeKnowledgeDocument}
-                className="text-slate-400 hover:text-white transition-colors"
-              >
-                ×
-              </button>
-            </div>
 
-            {(knowledgeSelectedDocument as any).file_url && (
-              <div className="flex items-center justify-between px-4 py-2 border-b border-slate-800 bg-slate-900/70">
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => setKnowledgeViewerMode('preview')}
-                    className={`px-3 py-1 rounded-lg text-sm ${knowledgeViewerMode === 'preview' ? 'bg-emerald-500/20 text-emerald-200 border border-emerald-500/40' : 'bg-slate-800 text-slate-400 hover:bg-slate-750'}`}
-                  >
-                    Visualização
-                  </button>
-                  <button
-                    onClick={() => setKnowledgeViewerMode('raw')}
-                    className={`px-3 py-1 rounded-lg text-sm ${knowledgeViewerMode === 'raw' ? 'bg-emerald-500/20 text-emerald-200 border border-emerald-500/40' : 'bg-slate-800 text-slate-400 hover:bg-slate-750'}`}
-                  >
-                    Texto bruto
-                  </button>
-                </div>
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => {
-                      const fileUrl = (knowledgeSelectedDocument as any).file_url
-                      if (fileUrl) {
-                        const link = document.createElement('a')
-                        link.href = fileUrl
-                        link.download = knowledgeSelectedDocument.title || 'documento'
-                        link.rel = 'noopener noreferrer'
-                        document.body.appendChild(link)
-                        link.click()
-                        document.body.removeChild(link)
-                      }
-                    }}
-                    className="px-3 py-1 rounded-lg text-sm bg-slate-800 text-slate-300 hover:bg-slate-750"
-                  >
-                    Baixar
-                  </button>
-                  <button
-                    onClick={() => {
-                      const fileUrl = (knowledgeSelectedDocument as any).file_url
-                      if (fileUrl) {
-                        window.open(fileUrl, '_blank', 'noopener,noreferrer')
-                      }
-                    }}
-                    className="px-3 py-1 rounded-lg text-sm bg-emerald-500 text-white hover:bg-emerald-400"
-                  >
-                    Abrir em nova aba
-                  </button>
-                </div>
-              </div>
-            )}
-
-            <div className="flex-1 overflow-y-auto px-4 py-6 bg-slate-950/80">
-              {knowledgeDocumentLoading ? (
-                <div className="flex items-center justify-center text-slate-400 gap-2">
-                  <Loader2 className="w-5 h-5 animate-spin" /> Carregando conteúdo...
-                </div>
-              ) : knowledgeDocumentContent ? (
-                knowledgeViewerMode === 'preview' ? (
-                  <div className="prose prose-invert max-w-none">
-                    <pre className="whitespace-pre-wrap text-sm">{knowledgeDocumentContent}</pre>
+              {(knowledgeSelectedDocument as any).file_url && (
+                <div className="flex items-center justify-between px-4 py-2 border-b border-slate-800 bg-slate-900/70">
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => setKnowledgeViewerMode('preview')}
+                      className={`px-3 py-1 rounded-lg text-sm ${knowledgeViewerMode === 'preview' ? 'bg-emerald-500/20 text-emerald-200 border border-emerald-500/40' : 'bg-slate-800 text-slate-400 hover:bg-slate-750'}`}
+                    >
+                      Visualização
+                    </button>
+                    <button
+                      onClick={() => setKnowledgeViewerMode('raw')}
+                      className={`px-3 py-1 rounded-lg text-sm ${knowledgeViewerMode === 'raw' ? 'bg-emerald-500/20 text-emerald-200 border border-emerald-500/40' : 'bg-slate-800 text-slate-400 hover:bg-slate-750'}`}
+                    >
+                      Texto bruto
+                    </button>
                   </div>
-                ) : (
-                  <pre className="whitespace-pre-wrap text-xs bg-slate-900/90 p-4 rounded-lg border border-slate-800 overflow-x-auto">
-                    {knowledgeDocumentContent}
-                  </pre>
-                )
-              ) : (
-                <div className="text-slate-400 text-sm text-center">
-                  {knowledgeSelectedDocument.summary || 'Sem conteúdo disponível para visualização.'}
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => {
+                        const fileUrl = (knowledgeSelectedDocument as any).file_url
+                        if (fileUrl) {
+                          const link = document.createElement('a')
+                          link.href = fileUrl
+                          link.download = knowledgeSelectedDocument.title || 'documento'
+                          link.rel = 'noopener noreferrer'
+                          document.body.appendChild(link)
+                          link.click()
+                          document.body.removeChild(link)
+                        }
+                      }}
+                      className="px-3 py-1 rounded-lg text-sm bg-slate-800 text-slate-300 hover:bg-slate-750"
+                    >
+                      Baixar
+                    </button>
+                    <button
+                      onClick={() => {
+                        const fileUrl = (knowledgeSelectedDocument as any).file_url
+                        if (fileUrl) {
+                          window.open(fileUrl, '_blank', 'noopener,noreferrer')
+                        }
+                      }}
+                      className="px-3 py-1 rounded-lg text-sm bg-emerald-500 text-white hover:bg-emerald-400"
+                    >
+                      Abrir em nova aba
+                    </button>
+                  </div>
                 </div>
               )}
+
+              <div className="flex-1 overflow-y-auto px-4 py-6 bg-slate-950/80">
+                {knowledgeDocumentLoading ? (
+                  <div className="flex items-center justify-center text-slate-400 gap-2">
+                    <Loader2 className="w-5 h-5 animate-spin" /> Carregando conteúdo...
+                  </div>
+                ) : knowledgeDocumentContent ? (
+                  knowledgeViewerMode === 'preview' ? (
+                    <div className="prose prose-invert max-w-none">
+                      <pre className="whitespace-pre-wrap text-sm">{knowledgeDocumentContent}</pre>
+                    </div>
+                  ) : (
+                    <pre className="whitespace-pre-wrap text-xs bg-slate-900/90 p-4 rounded-lg border border-slate-800 overflow-x-auto">
+                      {knowledgeDocumentContent}
+                    </pre>
+                  )
+                ) : (
+                  <div className="text-slate-400 text-sm text-center">
+                    {knowledgeSelectedDocument.summary || 'Sem conteúdo disponível para visualização.'}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )
+      }
       <CreatePatientModal
         isOpen={showCreatePatientModal}
         onClose={() => setShowCreatePatientModal(false)}
@@ -5033,7 +5026,7 @@ const RicardoValencaDashboard: React.FC = () => {
           alert('Paciente adicionado com sucesso!')
         }}
       />
-    </div>
+    </div >
   )
 }
 
