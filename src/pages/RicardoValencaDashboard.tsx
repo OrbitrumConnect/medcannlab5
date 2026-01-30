@@ -10,6 +10,7 @@ import ClinicalReports from '../components/ClinicalReports'
 import IntegrativePrescriptions from '../components/IntegrativePrescriptions'
 import RenalFunctionModule from '../components/RenalFunctionModule'
 import IntegratedWorkstation from '../components/IntegratedWorkstation'
+import ClinicalTerminal from '../components/ClinicalTerminal'
 import {
   Brain,
   Users,
@@ -142,6 +143,7 @@ type SectionId =
   | 'newsletter'
   | 'ferramentas-pedagogicas'
   | 'financeiro'
+  | 'terminal-clinico'
 
 type SectionOption = {
   id: SectionId
@@ -1309,6 +1311,18 @@ const RicardoValencaDashboard: React.FC = () => {
               </button>
 
               <button
+                onClick={() => goToSection('terminal-clinico')}
+                className="rounded-xl p-4 md:p-6 text-white hover:shadow-lg hover:scale-105 transition-all text-left overflow-hidden cursor-pointer"
+                style={cardStyle}
+              >
+                <div className="flex items-center justify-between mb-2 gap-2">
+                  <h3 className="text-xs md:text-sm font-medium text-white break-words flex-1 min-w-0">💻 Terminal Clínico</h3>
+                  <Activity className="w-5 h-5 md:w-6 md:h-6 flex-shrink-0 text-[#4FE0C1]" />
+                </div>
+                <p className="text-xs text-[rgba(200,214,229,0.75)] mt-1 break-words">Command & Governance Center</p>
+              </button>
+
+              <button
                 onClick={() => navigate('/app/library')}
                 className="bg-gradient-to-r from-teal-500 to-cyan-400 rounded-xl p-4 md:p-6 text-white hover:shadow-lg hover:scale-105 transition-all text-left overflow-hidden cursor-pointer"
               >
@@ -1766,6 +1780,7 @@ const RicardoValencaDashboard: React.FC = () => {
           </div>
         </div>
       </div>
+
 
       <div className="bg-gradient-to-br from-emerald-900/30 via-slate-900/60 to-slate-950/80 border border-emerald-500/20 rounded-2xl shadow-lg shadow-emerald-900/30 overflow-hidden">
         <div className="p-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
@@ -4175,6 +4190,8 @@ const RicardoValencaDashboard: React.FC = () => {
         return renderNewsletter()
       case 'ferramentas-pedagogicas':
         return renderFerramentasPedagogicas()
+      case 'terminal-clinico':
+        return <ClinicalTerminal />
       default:
         if (normalizedEffectiveType === 'admin') {
           return renderKPIsAdmin()

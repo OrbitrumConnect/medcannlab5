@@ -25,7 +25,8 @@ import {
   Upload,
   CheckCircle,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  Terminal as TerminalIcon
 } from 'lucide-react'
 import { normalizeUserType, UserType } from '../lib/userTypes'
 import {
@@ -228,6 +229,13 @@ const Sidebar: React.FC<SidebarProps> = ({
       label: 'Clinical Governance (ACDSS)',
       description: 'Sistema de governança cognitiva e apoio à decisão clínica',
       icon: Brain,
+      href: '/app/clinical-governance-demo'
+    },
+    {
+      id: 'mission-control',
+      label: 'Mission Control',
+      description: 'Painel administrativo e métricas da plataforma',
+      icon: Activity,
       href: '/app/admin/clinical-governance'
     },
     {
@@ -236,24 +244,17 @@ const Sidebar: React.FC<SidebarProps> = ({
       description: 'Protocolos, manuais e arquivos estratégicos',
       icon: BookOpen,
       href: '/app/library'
+    },
+    {
+      id: 'terminal-clinico',
+      label: 'Terminal Clínico',
+      description: 'Gestão Administrativa e Governança Superior',
+      icon: TerminalIcon,
+      href: '/app/clinica/profissional/dashboard?section=terminal-clinico'
     }
   ]
 
   const clinicaSections: AxisSection[] = [
-    {
-      id: 'prontuario-eletronico',
-      label: 'Prontuário Eletrônico',
-      description: 'Gestão completa de prontuários e pacientes',
-      icon: FileText,
-      href: '/app/clinica/profissional/pacientes'
-    },
-    {
-      id: 'agendamento-consultas',
-      label: 'Agendamento de Consultas',
-      description: 'Consulte nossos profissionais e agende sua consulta online',
-      icon: Calendar,
-      href: '/app/clinica/profissional/agendamentos'
-    },
     {
       id: 'atendimento',
       label: 'Terminal de Atendimento',
@@ -262,16 +263,11 @@ const Sidebar: React.FC<SidebarProps> = ({
       href: '/app/clinica/profissional/dashboard?section=atendimento'
     },
     {
-      id: 'relatorios-clinicos',
-      label: 'Relatórios',
-      description: 'Documentos e insights gerados pela IA',
-      icon: BarChart3
-    },
-    {
-      id: 'chat-profissionais',
-      label: 'Equipe Clínica',
-      description: 'Discussões entre profissionais da plataforma',
-      icon: MessageCircle
+      id: 'terminal-clinico',
+      label: 'Terminal Clínico',
+      description: 'Gestão Administrativa e Governança Superior',
+      icon: TerminalIcon,
+      href: '/app/clinica/profissional/dashboard?section=terminal-clinico'
     }
   ]
 

@@ -77,7 +77,7 @@ export function mapPatientToContext(patient: any): PatientContext {
     const prescriptionHistory: Prescription[] = (patient.prescriptions || []).map((presc: any) => ({
         id: presc.id,
         medications: presc.medications || {},
-        protocolType: presc.protocol_type || 'general',
+        protocolType: presc.prescription_type || 'general',
         createdAt: new Date(presc.created_at)
     }))
 

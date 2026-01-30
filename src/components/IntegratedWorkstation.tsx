@@ -26,7 +26,7 @@ import RenalFunctionModule from './RenalFunctionModule'
 import QuickPrescriptions from './QuickPrescriptions'
 import ProfessionalChatSystem from './ProfessionalChatSystem'
 import VideoCall from './VideoCall'
-import ClinicalGovernanceAdmin from '../pages/ClinicalGovernanceAdmin'
+import IntegratedGovernanceView from './ClinicalGovernance/IntegratedGovernanceView'
 import EduardoScheduling from './EduardoScheduling'
 
 // Interfaces
@@ -295,7 +295,7 @@ const IntegratedWorkstation: React.FC<IntegratedWorkstationProps> = ({ initialTa
             case 'scheduling':
                 return <div className="h-full overflow-y-auto bg-[#0f172a]"><EduardoScheduling /></div>
             case 'governance':
-                return <div className="h-full overflow-y-auto bg-[#0f172a]"><ClinicalGovernanceAdmin /></div>
+                return <div className="h-full overflow-y-auto bg-[#0f172a]"><IntegratedGovernanceView patientId={selectedPatientId} /></div>
             default:
                 return null
         }

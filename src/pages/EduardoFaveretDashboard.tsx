@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import {
   backgroundGradient,
   surfaceStyle,
@@ -35,7 +35,7 @@ import {
   Brain,
   Activity,
   Stethoscope,
-
+  Terminal,
 } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { ClinicalAssessmentService } from '../lib/clinicalAssessmentService'
@@ -51,6 +51,7 @@ import NeurologiaPediatrica from '../components/NeurologiaPediatrica'
 import WearableMonitoring from '../components/WearableMonitoring'
 import ProfessionalChatSystem from '../components/ProfessionalChatSystem'
 import IntegratedDocuments from '../components/IntegratedDocuments'
+import ClinicalTerminal from '../components/ClinicalTerminal'
 
 interface Patient {
   id: string
@@ -74,7 +75,16 @@ const EduardoFaveretDashboard: React.FC = () => {
   const [isVideoCallOpen, setIsVideoCallOpen] = useState(false)
   const [isAudioCallOpen, setIsAudioCallOpen] = useState(false)
   const [callType, setCallType] = useState<'video' | 'audio'>('video')
-  const [activeSection, setActiveSection] = useState<'dashboard' | 'kpis' | 'newsletter' | 'prescriptions' | 'research' | 'teaching' | 'scheduling' | 'coordenacao' | 'cursos' | 'neurologia' | 'wearables' | 'kpis-personalizados' | 'chat-profissionais' | 'chat-pacientes'>('dashboard')
+  const [searchParams] = useSearchParams()
+  const [activeSection, setActiveSection] = useState<'dashboard' | 'kpis' | 'newsletter' | 'prescriptions' | 'research' | 'teaching' | 'scheduling' | 'coordenacao' | 'cursos' | 'neurologia' | 'wearables' | 'kpis-personalizados' | 'chat-profissionais' | 'chat-pacientes' | 'terminal-clinico'>('dashboard')
+
+  // Listener para parâmetros de busca (deep linking da sidebar)
+  useEffect(() => {
+    const section = searchParams.get('section')
+    if (section === 'terminal-clinico') {
+      setActiveSection('terminal-clinico')
+    }
+  }, [searchParams])
 
   // KPIs das 3 camadas da plataforma
   const [kpis, setKpis] = useState({
@@ -519,6 +529,18 @@ const EduardoFaveretDashboard: React.FC = () => {
               </div>
               <h4 className="text-lg font-bold text-white mb-1">Dr. Ricardo Valença</h4>
               <p className="text-xs text-blue-100 opacity-90 mt-1">Comunicação entre consultórios</p>
+            </button>
+
+            <button
+              onClick={() => setActiveSection('terminal-clinico')}
+              className="bg-gradient-to-br from-cyan-600 to-emerald-600 rounded-xl p-6 text-white hover:shadow-lg hover:scale-105 transition-all text-left border border-white/20 shadow-lg shadow-emerald-900/40 col-span-1 md:col-span-2 lg:col-span-1"
+            >
+              <div className="flex items-center justify-between mb-2">
+                <h3 className="text-sm font-bold text-white uppercase tracking-wider">💻 Gestão</h3>
+                <Terminal className="w-6 h-6 text-emerald-200" />
+              </div>
+              <h4 className="text-lg font-bold text-white mb-1">Terminal Clínico</h4>
+              <p className="text-xs text-emerald-100 opacity-90 mt-1">Mission Control, Prontuários e Relatórios</p>
             </button>
           </div>
         </div>
@@ -1322,16 +1344,19 @@ const EduardoFaveretDashboard: React.FC = () => {
           </div>
         )}
 
+        {/* Seção Terminal Clínico */}
+        {activeSection === 'terminal-clinico' && (
+          <ClinicalTerminal />
+        )}
       </div>
 
-      {/* Video/Audio Call Component */}
       <VideoCall
         isOpen={isVideoCallOpen}
         onClose={() => setIsVideoCallOpen(false)}
         patientId={selectedPatient || undefined}
         isAudioOnly={callType === 'audio'}
       />
-    </div>
+    </div >
   )
 }
 
