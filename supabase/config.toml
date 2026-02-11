@@ -1,0 +1,6 @@
+# Configuração do Supabase (Edge Functions)
+# CORS: com verify_jwt ativo, o gateway responde 401 ao OPTIONS antes da função rodar.
+# Por isso esta função deve ter verify_jwt = false (auth é feita no body/session no front).
+
+[functions.video-call-request-notification]
+verify_jwt = false
