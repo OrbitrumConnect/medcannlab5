@@ -807,7 +807,7 @@ const PatientDashboard: React.FC = () => {
         const { data: professionals } = await supabase
           .from('users_compatible')
           .select('id')
-          .in('type', ['profissional', 'professional', 'admin'])
+          .in('type', ['profissional', 'admin'])
           .limit(1)
 
         const professionalId = professionals?.[0]?.id

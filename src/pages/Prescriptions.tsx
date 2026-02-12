@@ -481,13 +481,24 @@ const Prescriptions: React.FC = () => {
           
           /* Watermark */
           .watermark {
-            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-45deg);
-            font-size: 120px; color: rgba(0,0,0,0.03); z-index: -1; white-space: nowrap; pointer-events: none;
+            position: absolute; 
+            top: 50%; 
+            left: 50%; 
+            transform: translate(-50%, -50%);
+            width: 500px;
+            height: 500px;
+            background-image: url('${window.location.origin}/brain.png');
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            opacity: 0.08; 
+            z-index: -1; 
+            pointer-events: none;
           }
         </style>
       </head>
       <body>
-        <div class="watermark">MEDCANN LAB</div>
+        <div class="watermark"></div>
         
         <div class="header">
           <h1 style="color: #00C16A; margin:0;">MEDCANN LAB</h1>

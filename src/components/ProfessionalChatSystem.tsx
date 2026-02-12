@@ -254,11 +254,15 @@ const ProfessionalChatSystem: React.FC<ProfessionalChatSystemProps> = ({ classNa
 
               <div className="flex-1 overflow-y-auto p-4 space-y-4 relative">
                 {/* Background Doodle Pattern */}
+                {/* Background Brand Watermark */}
                 <div
-                  className="absolute inset-0 opacity-[0.03] pointer-events-none"
+                  className="absolute inset-0 opacity-[0.05] pointer-events-none"
                   style={{
-                    backgroundImage: `url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 20c-5 0-10 5-10 10s5 10 10 10 10-5 10-10-5-10-10-10zm0 4c3.3 0 6 2.7 6 6s-2.7 6-6 6-6-2.7-6-6 2.7-6 6-6z' fill='%2310b981'/%3E%3Cpath d='M70 30c-5-5-15-5-20 0-5-5-15-5-20 0 5 15 20 30 20 30s15-15 20-30z' fill='%2310b981'/%3E%3Cpath d='M50 70c5 0 10-5 10-10s-5-10-10-10-10 5-10 10 5 10 10 10z' fill='%2310b981' opacity='0.5'/%3E%3Cpath d='M80 70c0-5.5-4.5-10-10-10s-10 4.5-10 10 4.5 10 10 10 10-4.5 10-10z' fill='%2310b981'/%3E%3C/svg%3E")`,
-                    backgroundSize: '120px 120px'
+                    backgroundImage: `url("/brain.png")`,
+                    backgroundSize: '300px',
+                    backgroundPosition: 'center',
+                    backgroundRepeat: 'no-repeat',
+                    filter: 'grayscale(100%)'
                   }}
                 />
 

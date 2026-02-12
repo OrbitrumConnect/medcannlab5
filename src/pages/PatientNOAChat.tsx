@@ -114,7 +114,7 @@ const PatientNOAChat: React.FC = () => {
   // Modo normal (Clean Layout)
   return (
     <div
-      className="bg-slate-950 w-full h-[calc(100dvh-7rem)] flex flex-col relative overflow-hidden"
+      className="bg-slate-950 w-full h-[100dvh] flex flex-col relative overflow-hidden"
       onMouseMove={handleMouseMove}
     >
       <style>{`
@@ -205,16 +205,14 @@ const PatientNOAChat: React.FC = () => {
       </div>
 
       {/* ── Main Chat Area ── */}
-      <div className="flex-1 w-full min-h-0 relative z-10 flex flex-col">
-        <div className="flex-1 bg-transparent relative flex flex-col">
-          <NoaConversationalInterface
-            userName={user?.name || 'Paciente'}
-            userCode={user?.id || 'PATIENT-001'}
-            position="inline"
-            hideButton={true}
-            variant="clean"
-          />
-        </div>
+      <div className="flex-1 w-full min-h-0 relative z-10 flex flex-col overflow-hidden">
+        <NoaConversationalInterface
+          userName={user?.name || 'Paciente'}
+          userCode={user?.id || 'PATIENT-001'}
+          position="inline"
+          hideButton={true}
+          variant="clean"
+        />
       </div>
     </div>
   )

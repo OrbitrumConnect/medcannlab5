@@ -110,7 +110,7 @@ const Header: React.FC<HeaderProps> = ({ onOpenSidebar }) => {
       handleScrollPointerUp()
       document.removeEventListener('mousemove', onMove)
       document.removeEventListener('mouseup', onUp)
-      document.removeEventListener('touchmove', onMove, { passive: false })
+      document.removeEventListener('touchmove', onMove)
       document.removeEventListener('touchend', onUp)
     }
     const onDown = (e: MouseEvent) => {

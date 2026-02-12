@@ -66,11 +66,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     let userName = 'Usuário'
     let paymentStatus: 'pending' | 'paid' | 'exempt' = 'pending' // Default para pending
     const email = authUser.email || ''
-    const isAdminEmail = ['ricardo.valenca@medcannlab.com.br', 'admin@medcannlab.com.br', 'phpg69@gmail.com', 'phpg69@hotmail.com'].includes(email.toLowerCase())
-    const isProfessionalEmail = ['eduardo.faveret@medcannlab.com.br'].includes(email.toLowerCase())
+    const isAdminEmail = ['ricardo.valenca@medcannlab.com.br', 'admin@medcannlab.com.br', 'phpg69@gmail.com', 'phpg69@hotmail.com', 'rrvalenca@gmail.com'].includes(email.toLowerCase())
+    const isProfessionalEmail = [
+      'eduardo.faveret@medcannlab.com.br',
+      'iaianoaesperanza@gmail.com',
+      'eduardo.faveret@hotmail.com', // Added based on request
+      'ricardo.test@medcannlab.com',
+      'eduardo.test@medcannlab.com'
+    ].includes(email.toLowerCase())
     const isPatientEmail = ['paciente@medcannlab.com.br'].includes(email.toLowerCase())
 
-    if (isAdminEmail) userType = 'admin'
+    if (isAdminEmail) {
+      userType = 'admin'
+      console.log('🔒 Email de Admin detectado - Forçando papel ADMIN')
+    }
     else if (isProfessionalEmail) userType = 'profissional'
 
     // Detectar nome baseado no email ou metadados
@@ -242,6 +251,38 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
       return false
     }
+
+    // --- MOCK AUTH FOR SMOKE TESTING ---
+    const mockEmail = localStorage.getItem('MOCK_USER_EMAIL');
+    const mockRole = localStorage.getItem('MOCK_USER_ROLE');
+
+    if (mockEmail) {
+      console.log("⚠️ USING MOCK AUTH ⚠️", mockEmail, mockRole);
+      const mockAuthUser = {
+        id: 'mock-user-id',
+        aud: 'authenticated',
+        role: 'authenticated',
+        email: mockEmail,
+        email_confirmed_at: new Date().toISOString(),
+        phone: '',
+        confirmed_at: new Date().toISOString(),
+        last_sign_in_at: new Date().toISOString(),
+        app_metadata: { provider: 'email', providers: ['email'] },
+        user_metadata: {
+          name: 'Mock User',
+          role: mockRole || 'profissional', // Pass mockRole as a hint
+          type: mockRole || 'profissional' // Pass mockRole as a hint
+        },
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      };
+
+      // Use the existing loadUser function to process the mock user
+      loadUser(mockAuthUser);
+      // No need to call setUser or setIsLoading here, loadUser already does it.
+      return;
+    }
+    // -----------------------------------
 
     // Verificar sessão inicial
     supabase.auth.getSession()

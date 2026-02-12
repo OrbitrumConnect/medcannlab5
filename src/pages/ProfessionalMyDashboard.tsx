@@ -27,11 +27,13 @@ import {
   X,
   ChevronDown,
   Terminal,
-  GraduationCap
+  GraduationCap,
+  ArrowLeft
 } from 'lucide-react'
 import { backgroundGradient, accentGradient, secondaryGradient, secondarySurfaceStyle, cardStyle } from '../constants/designSystem'
 import { useNoaPlatform } from '../contexts/NoaPlatformContext'
 import { useDashboardTriggers } from '../contexts/DashboardTriggersContext'
+import IntegratedWorkstation from '../components/IntegratedWorkstation'
 
 const ProfessionalMyDashboard: React.FC = () => {
   const { user } = useAuth()
@@ -204,16 +206,16 @@ const ProfessionalMyDashboard: React.FC = () => {
             .select('patient_id, created_at, data')
             .order('created_at', { ascending: false })
           const seen = new Set<string>()
-          ;(assessments || []).forEach((a: any) => {
-            if (a.patient_id && a.patient_id !== user?.id && !seen.has(a.patient_id)) {
-              seen.add(a.patient_id)
-              patientsData.push({
-                id: a.patient_id,
-                name: (a.data && a.data.name) || 'Paciente',
-                status: null
-              })
-            }
-          })
+            ; (assessments || []).forEach((a: any) => {
+              if (a.patient_id && a.patient_id !== user?.id && !seen.has(a.patient_id)) {
+                seen.add(a.patient_id)
+                patientsData.push({
+                  id: a.patient_id,
+                  name: (a.data && a.data.name) || 'Paciente',
+                  status: null
+                })
+              }
+            })
         }
 
         patientIds = patientsData.map((p: any) => p.id)
@@ -339,7 +341,7 @@ const ProfessionalMyDashboard: React.FC = () => {
       const { data: userRow } = await supabase.from('users').select('avatar_url, user_metadata').eq('id', selectedPatientForAnalysis.id).maybeSingle()
       const url = (userRow as any)?.avatar_url ?? (userRow as any)?.user_metadata?.avatar_url ?? null
       if (url) setScanningPatientAvatarUrl(url)
-    } catch (_) {}
+    } catch (_) { }
     setAnalysisScanning(true)
     setAnalysisPanelOpen(false)
     setAnalysisData(null)
@@ -359,14 +361,22 @@ const ProfessionalMyDashboard: React.FC = () => {
       if (appointmentsRes.error) {
         appointmentsRes = await supabase.from('appointments').select('id, appointment_date, status, notes').eq('patient_id', patientId).eq('doctor_id', user?.id).order('appointment_date', { ascending: true })
       }
-      const prescriptionsRes = await supabase.from('v_patient_prescriptions').select('*').eq('patient_id', patientId).limit(20).order('issued_at', { ascending: false }).then(r => r).catch(() => ({ data: [] as any[] }))
-      const reportsRes = await supabase.from('clinical_reports').select('id, created_at, status, content, report_type').eq('patient_id', patientId).order('created_at', { ascending: false }).limit(15).then(r => r).catch(() => ({ data: [] as any[] }))
+      let prescriptionsRes: any = { data: [] }
+      try {
+        prescriptionsRes = await supabase.from('v_patient_prescriptions').select('*').eq('patient_id', patientId).limit(20).order('issued_at', { ascending: false })
+      } catch (err) { console.warn('Pular prescricoes', err) }
+
+      let reportsRes: any = { data: [] }
+      try {
+        reportsRes = await supabase.from('clinical_reports').select('id, created_at, status, content, report_type').eq('patient_id', patientId).order('created_at', { ascending: false }).limit(15)
+      } catch (err) { console.warn('Pular relatorios', err) }
+
       const assessmentsRes = await assessmentsPromise
       let patientAvatarUrl: string | null = null
       try {
         const { data: userRow } = await supabase.from('users').select('avatar_url, user_metadata').eq('id', patientId).maybeSingle()
         patientAvatarUrl = (userRow as any)?.avatar_url ?? (userRow as any)?.user_metadata?.avatar_url ?? null
-      } catch (_) {}
+      } catch (_) { }
       const now = new Date()
       const appointments = (appointmentsRes?.data || []) as any[]
       const pastAppointments = appointments.filter((a: any) => new Date(a.appointment_date) < now)
@@ -466,6 +476,32 @@ const ProfessionalMyDashboard: React.FC = () => {
       description: 'Últimos 30 dias'
     }
   ]
+
+  // Renderização baseada em Query param (section)
+  const query = new URLSearchParams(location.search)
+  const section = query.get('section')
+
+  if (section === 'terminal-clinico') {
+    return (
+      <div className="h-screen w-full bg-[#0f172a] flex flex-col">
+        {/* Header simplificado para o Terminal */}
+        <header className="h-14 border-b border-slate-700/50 bg-slate-800/50 flex items-center justify-between px-4">
+          <div className="flex items-center gap-3">
+            <button onClick={() => navigate('/app/clinica/profissional/dashboard')} className="p-2 hover:bg-slate-700/50 rounded-lg text-slate-400 hover:text-white transition-colors">
+              <ArrowLeft className="w-5 h-5" />
+            </button>
+            <div className="flex items-center gap-2">
+              <Terminal className="w-5 h-5 text-emerald-400" />
+              <h1 className="text-sm font-bold text-white uppercase tracking-wider">Terminal Clínico Integrado</h1>
+            </div>
+          </div>
+        </header>
+        <div className="flex-1 overflow-hidden">
+          <IntegratedWorkstation initialTab="patients" />
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen text-white" style={{ background: backgroundGradient }}>
@@ -615,7 +651,7 @@ const ProfessionalMyDashboard: React.FC = () => {
                 </button>
               </>
             )}
-        </section>
+          </section>
         </div>
 
         {/* Overlay Scanner verde (Matrix) — paciente “scaneado” no centro (avatar ou inicial) */}

@@ -4,6 +4,12 @@ export interface TimeSlot {
     slot: string // ISO Timestamp
 }
 
+// Known professional slug → email mapping (reliable resolution)
+const KNOWN_PROFESSIONAL_EMAILS: Record<string, string> = {
+    'ricardo-valenca': 'rrvalenca@gmail.com',
+    'eduardo-faveret': 'eduardoscfaveret@gmail.com'
+}
+
 // Helper to resolve Professional ID (UUID vs Slug)
 async function resolveProfessionalId(idOrSlug: string): Promise<string> {
     const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
@@ -12,19 +18,36 @@ async function resolveProfessionalId(idOrSlug: string): Promise<string> {
     console.log(`[Scheduling] Resolving slug '${idOrSlug}' to UUID...`)
 
     try {
-        // Try 'doctors' view/table first (most likely for professionals)
-        // Note: This relies on public access or proper RLS on doctors table/view
-        const { data: doc } = await supabase.from('doctors').select('id').or(`name.ilike.%${idOrSlug.replace(/-/g, ' ')}%`).maybeSingle()
-        if (doc?.id) return doc.id
+        // 1. Try known slug → email mapping (most reliable)
+        const knownEmail = KNOWN_PROFESSIONAL_EMAILS[idOrSlug.toLowerCase()]
+        if (knownEmail) {
+            const { data: userByEmail } = await supabase
+                .from('users')
+                .select('id')
+                .eq('email', knownEmail)
+                .maybeSingle()
+            if (userByEmail?.id) {
+                console.log(`[Scheduling] ✅ Resolved '${idOrSlug}' → UUID: ${userByEmail.id}`)
+                return userByEmail.id
+            }
+        }
 
-        // Try 'users' table as fallback
-        const { data: user } = await supabase.from('users').select('id').or(`name.ilike.%${idOrSlug.replace(/-/g, ' ')}%`).maybeSingle()
-        if (user?.id) return user.id
+        // 2. Fallback: Try 'users' table by name
+        const { data: user } = await supabase
+            .from('users')
+            .select('id')
+            .or(`name.ilike.%${idOrSlug.replace(/-/g, ' ')}%`)
+            .maybeSingle()
+        if (user?.id) {
+            console.log(`[Scheduling] ✅ Resolved '${idOrSlug}' by name → UUID: ${user.id}`)
+            return user.id
+        }
     } catch (err) {
         console.warn('[Scheduling] Resolution failed', err)
     }
 
     // Fallback: Return original (will likely fail RPC but we tried)
+    console.warn(`[Scheduling] ⚠️ Could not resolve '${idOrSlug}' to UUID`)
     return idOrSlug
 }
 

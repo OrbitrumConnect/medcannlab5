@@ -87,6 +87,8 @@ import ClinicalGovernanceDemo from './pages/ClinicalGovernanceDemo'
 import ClinicalGovernanceAdmin from './pages/ClinicalGovernanceAdmin'
 import InvitePatient from './pages/InvitePatient' // IMPORT AT TOP
 import AssessmentAnalytics from './pages/AssessmentAnalytics'
+import ProfessionalDashboardRouter from './components/ProfessionalDashboardRouter'
+
 
 function App() {
   return (
@@ -124,18 +126,18 @@ function App() {
                           <Route path="home" element={<SmartDashboardRedirect />} />
                           <Route path="test" element={<TestPage />} />
                           <Route path="clinical-governance-demo" element={<ClinicalGovernanceDemo />} />
-                          <Route path="eduardo-faveret-dashboard" element={<RicardoValencaDashboard />} />
+                          <Route path="eduardo-faveret-dashboard" element={<EduardoFaveretDashboard />} />
                           <Route path="ricardo-valenca-dashboard" element={<RicardoValencaDashboard />} />
                           <Route path="patient-management-advanced" element={<PatientManagementAdvanced />} />
 
                           {/* Rotas Individualizadas por Eixo e Tipo */}
                           {/* EIXO CLÍNICA */}
-                          <Route path="clinica/profissional/dashboard" element={<ProtectedRoute requiredRole="profissional"><RicardoValencaDashboard /></ProtectedRoute>} />
+                          <Route path="clinica/profissional/dashboard" element={<ProtectedRoute requiredRole="profissional"><ProfessionalDashboardRouter /></ProtectedRoute>} />
                           <Route
                             path="clinica/profissional/dashboard-eduardo"
                             element={
                               <ProtectedRoute requiredRole="profissional">
-                                <ProfessionalMyDashboard />
+                                <EduardoFaveretDashboard />
                               </ProtectedRoute>
                             }
                           />
@@ -154,6 +156,7 @@ function App() {
                           <Route path="clinica/paciente/chat-profissional" element={<PatientDoctorChat />} />
                           <Route path="clinica/paciente/chat-profissional/:patientId" element={<PatientDoctorChat />} />
                           <Route path="clinica/paciente/chat-noa" element={<PatientNOAChat />} />
+
 
 
                           {/* EIXO ENSINO */}

@@ -91,7 +91,7 @@ const PatientChat: React.FC = () => {
         const { data, error } = await supabase
           .from('users')
           .select('id, name, email, type')
-          .in('type', ['profissional', 'professional', 'admin'])
+          .in('type', ['profissional', 'admin'])
 
         if (!error && data) {
           setProfessionals(data)
@@ -319,7 +319,7 @@ const PatientChat: React.FC = () => {
   const hasMessages = messages.length > 0
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 relative overflow-hidden">
+    <div className="h-[100dvh] bg-slate-950 text-slate-100 relative overflow-hidden flex flex-col">
       {/* ── Injected keyframes ── */}
       <style>{orbitalStyles}</style>
 
@@ -347,7 +347,7 @@ const PatientChat: React.FC = () => {
         ))}
       </div>
 
-      <div className="relative z-10 w-full max-w-4xl mx-auto px-4 md:px-6 flex flex-col" style={{ height: 'calc(100vh - 4rem)' }}>
+      <div className="relative z-10 w-full max-w-4xl mx-auto px-4 md:px-6 flex flex-col flex-1 h-full min-h-0">
 
         {/* ── Minimal Top Bar ── */}
         <div className="flex items-center justify-between py-4">
@@ -559,8 +559,8 @@ const PatientChat: React.FC = () => {
                     </div>
                   )}
                   <div className={`max-w-[75%] xl:max-w-[60%] rounded-2xl px-4 py-3 transition-all ${msg.isDoctor
-                      ? 'bg-slate-800/40 backdrop-blur-sm text-slate-100 border border-slate-700/30 rounded-bl-md'
-                      : 'bg-gradient-to-br from-emerald-600/90 to-emerald-700/90 text-white rounded-br-md shadow-lg shadow-emerald-900/20'
+                    ? 'bg-slate-800/40 backdrop-blur-sm text-slate-100 border border-slate-700/30 rounded-bl-md'
+                    : 'bg-gradient-to-br from-emerald-600/90 to-emerald-700/90 text-white rounded-br-md shadow-lg shadow-emerald-900/20'
                     }`}>
                     <div className="flex items-center justify-between gap-4 mb-1">
                       <span className={`text-[10px] font-semibold ${msg.isDoctor ? 'text-emerald-400/80' : 'text-emerald-100/80'}`}>
@@ -597,8 +597,8 @@ const PatientChat: React.FC = () => {
               <button
                 onClick={startRecording}
                 className={`p-1.5 transition-colors ${isRecording
-                    ? 'text-red-400 bg-red-500/10 rounded-lg'
-                    : 'text-slate-500 hover:text-slate-300'
+                  ? 'text-red-400 bg-red-500/10 rounded-lg'
+                  : 'text-slate-500 hover:text-slate-300'
                   }`}
               >
                 {isRecording ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}

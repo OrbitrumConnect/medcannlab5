@@ -189,39 +189,27 @@ A narrativa cobre desde a refundação da experiência do paciente no final de 2
 
 # LIVRO MAGNO DIÁRIO UNIFICADO - MEDCANNLAB 2026
 
-#### **11/02/2026: Polimento Tier B — Comunicação, Colaboração e Resiliência Clínica**
-**Foco:** Elevar a plataforma para o padrão "Clinical Grade", garantindo que a tecnologia atue como um sistema de suporte à vida ininterrupto.
+#### **11/02/2026: Migração Oficial, Tier B Clinical Grade e Limpeza Experimental**
+**Foco:** Consolidar repositório oficial (`OFICIALMEDCANNLAB2026`); elevar plataforma para padrão Clinical Grade; experimentar e descartar feature orbital.
 
-1.  **Comunicação e Engajamento (B1.3):**
-    - Implementação de gatilhos automáticos de e-mail pós-agendamento. Agora, a jornada do paciente é reforçada por notificações em tempo real, eliminando o "limbo" de informação entre a marcação e o atendimento.
+**Fase 1 — Migração e Clinical Grade:**
+1.  **Repositório oficial:** Projeto migrado e consolidado em `OFICIALMEDCANNLAB2026`. Comparação de repositórios confirmou versão local como fonte da verdade (centenas de docs e componentes a mais que o remoto).
+2.  **Email pós-agendamento (B1.3):** Gatilhos automáticos de notificação eliminam o "limbo" entre marcação e atendimento.
+3.  **ACDSS no Prontuário (B1.4):** Motor de decisão `IntegratedGovernanceView` embutido na aba Overview — inteligência clínica no momento do cuidado.
+4.  **Chat Profissional refinado (B1.5):** Interface de interconsulta fluida, estados dinâmicos, filtros de equipe.
+5.  **Video Call Watchdog (B2.1–B2.4):** Monitor de telemetria em tempo real; self-healing (ICE Restarts automáticos); métricas persistidas para auditoria.
+6.  **Paginação de Relatórios (B2.5):** Transição de lista infinita para navegação paginada e performática.
 
-2.  **Governança Clínica no Prontuário (B1.4):**
-    - Integração nativa do motor de decisão **ACDSS** (`IntegratedGovernanceView`) na aba Overview do prontuário.
-    - **Filosofia:** A "inteligência" não é mais um dashboard isolado; ela agora é o tecido que reveste o prontuário, permitindo que o profissional veja riscos e exaustão clínica no momento do cuidado.
+**Fase 2 — Experimento Orbital (descartado):**
+- Desenvolvimento completo de UI orbital para diretório de profissionais (Nôa no centro, profissionais em mini-cards orbitantes, 200 partículas neon cyan, zoom-in overlay).
+- **Resultado:** NÃO aprovado; funcionalidade duplicava o Agendamento. `ProfessionalsDirectory.tsx` deletado; rota e sidebar removidos.
 
-3.  **Expansão Colaborativa (B1.5):**
-    - Refinamento do `ProfessionalChat.tsx`. A colaboração entre colegas agora conta com uma interface de interconsulta fluida, estados visuais dinâmicos e filtros de equipe, fortalecendo a rede de cuidado compartilhado.
+**Correções do dia:** Fix TypeScript no Header; fix NoaConversationalInterface; fix ProfessionalChatSystem; fix PatientDoctorChat; correção de roles em `scheduling.ts`; scripts SQL (CORRIGIR_PAYMENT_STATUS, UPDATE_RPC_AND_FIX_TYPES, LIBERAR_PACIENTE_SMOKE_TEST_V2).
 
-4.  **A Redoma de Proteção: Video Call Watchdog (B2.1-B2.4):**
-    - **Avanço Técnico Crítico:** Desenvolvimento de um monitor de telemetria em tempo real para videochamadas.
-    - **Self-Healing:** O sistema agora detecta degradação de sinal (bitrate/packet loss) e executa **ICE Restarts automáticos**.
-    - **Autodocumentação:** Todas as métricas de qualidade são persistidas para auditoria clínica, garantindo a transparência em caso de disputas ou falhas técnicas.
+**Estado:** Plataforma transicionou de "funcional" para "resiliente e clinical grade". Watchdog marca início da vigilância ativa de qualidade de serviço.
 
-5.  **Escalabilidade Administrativa (B2.5):**
-    - Implementação de paginação robusta no terminal de Relatórios Clínicos.
-    - **Educação Visual:** Transição de uma lista infinita para uma navegação paginada e performática, preparando a fundação para o crescimento do volume de dados da clínica.
+**Termos para a linha do tempo (11/02):** Migração OFICIALMEDCANNLAB2026; Tier B clinical grade (email, ACDSS, chat, watchdog, paginação); ProfessionalsDirectory orbital rejeitado e removido; fonte da verdade confirmada; scripts SQL de correção; selagem do dia.
 
-**Estado Atual:** A plataforma transicionou de "funcional" para "resiliente". O lançamento do Watchdog marca o início da Fase 4 (Noa Clinical Intelligence), onde o sistema não apenas obedece, mas vigia a qualidade do serviço.
-
----
-
-#### **11/02/2026 - INÍCIO DA COMPARAÇÃO DE REPOSITÓRIOS**
-- Iniciando análise comparativa entre o projeto local `Medcannlabfinal2026pro` e o repositório remoto `medcannlab5`.
-- Objetivo: Identificar discrepâncias, atualizações pendentes e diferenças estruturais.
-- **Resultado:** A versão LOCAL (`Medcannlabfinal2026pro`) é significativamente mais avançada.
-  - A versão remota (`medcannlab5`) representa um estado anterior (Legado), com menus de pesquisa ainda fragmentados e sem a refatoração para "Terminal de Pesquisa".
-  - A versão local possui centenas de arquivos de documentação a mais e componentes novos (`ResearchWorkstation`, `ui/Toast`).
-  - **Ação:** Manter o Local como fonte da verdade. O diretório temporário de comparação será removido.
 
 **Termos para a linha do tempo (09/02):** Plano real do produto; mapa tabela→view→RPC→tela→edge; smoke-test clínico; checklist feito vs pendente; confirmação cruzada com diários; correções admin/prontuário/nomes/RLS/sino no Header.
 

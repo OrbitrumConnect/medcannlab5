@@ -151,11 +151,13 @@ type SectionId =
   | 'novo-paciente'
   | 'prescricao-rapida'
 
+import { LucideIcon } from 'lucide-react'
+
 type SectionOption = {
   id: SectionId
   label: string
   description: string
-  icon: React.ComponentType<{ className?: string }>
+  icon: LucideIcon
 }
 
 interface NoaCommandDetail {
@@ -243,7 +245,12 @@ const RicardoValencaDashboard: React.FC = () => {
       }
 
       // Não redirecionar se o admin já está num dashboard profissional (acesso ao terminal clínico / Dr. Ricardo / Dr. Eduardo)
-      const isOnProfessionalDashboard = location.pathname.includes('/clinica/profissional/dashboard') || location.pathname.includes('dashboard-eduardo')
+      const isOnProfessionalDashboard =
+        location.pathname.includes('/clinica/profissional/dashboard') ||
+        location.pathname.includes('dashboard-eduardo') ||
+        location.pathname.includes('ricardo-valenca-dashboard') ||
+        location.pathname.includes('eduardo-faveret-dashboard')
+
       if (viewAsType === 'paciente' && isOnProfessionalDashboard) {
         // Deixar admin ver o dashboard clínico mesmo com "visualizar como paciente"
         return
@@ -710,7 +717,7 @@ const RicardoValencaDashboard: React.FC = () => {
       setDashboardTriggers({
         options: sectionNavOptions.map(o => ({ id: o.id, label: o.label, icon: o.icon, description: o.description })),
         activeId: resolvedSection,
-        onChange: goToSection,
+        onChange: (id) => goToSection(id as SectionId),
         onBrainClick: () => { if (isNoaOpen) closeChat(); else openNoaChat(); },
         onPrescricaoRapida: handleVoiceShowPrescription,
         onNovoPaciente: () => setShowCreatePatientModal(true)

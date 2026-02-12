@@ -281,9 +281,10 @@ const NoaConversationalInterface: React.FC<NoaConversationalInterfaceProps> = ({
   userName = 'Dr. Ricardo Valença',
   position = 'bottom-right',
   hideButton = false,
-  variant = 'default' as 'default' | 'clean'
+  variant,
 }) => {
   const { isOpen: contextIsOpen, pendingMessage, clearPendingMessage, closeChat } = useNoaPlatform()
+  const resolvedVariant = variant || 'default'
   const navigate = useNavigate()
   const [isOpen, setIsOpen] = useState((hideButton && position === 'inline') || contextIsOpen)
   const [isExpanded, setIsExpanded] = useState(false)
@@ -2158,11 +2159,14 @@ const NoaConversationalInterface: React.FC<NoaConversationalInterfaceProps> = ({
             overflow: 'hidden',
             display: 'flex',
             flexDirection: 'column',
-            height: '100%',
-            maxHeight: '100%'
+            height: position === 'inline' ? '100%' : undefined, // Altura 100% apenas se inline/relativo
+            maxHeight: '100%',
+            // Garantir que não "desça" indevidamente
+            top: position !== 'inline' && !isExpanded && position.includes('top') ? '1rem' : undefined,
+            bottom: position !== 'inline' && !isExpanded && position.includes('bottom') ? '1rem' : undefined,
           }}
         >
-          {variant !== 'clean' && (
+          {resolvedVariant !== 'clean' && (
             <div
               className="px-5 py-2 sm:py-3 flex items-center justify-between flex-shrink-0"
               style={{ background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f3a3a 100%)' }}
@@ -2170,10 +2174,10 @@ const NoaConversationalInterface: React.FC<NoaConversationalInterfaceProps> = ({
               <div className="flex items-center space-x-2 sm:space-x-3">
                 <NoaAnimatedAvatar size={isExpanded ? "lg" : "sm"} isListening={isListening} isSpeaking={isSpeaking} />
                 <div>
-                  <p className={clsx("text-xs sm:text-sm", variant === 'clean' ? "text-slate-200 font-medium" : "text-emerald-100")}>
+                  <p className={clsx("text-xs sm:text-sm", resolvedVariant === 'clean' ? "text-slate-200 font-medium" : "text-emerald-100")}>
                     Nôa Esperança • IA Residente
                   </p>
-                  <p className={clsx("text-[10px] sm:text-xs truncate max-w-[150px] sm:max-w-none", variant === 'clean' ? "text-slate-400" : "text-emerald-50/80")}>
+                  <p className={clsx("text-[10px] sm:text-xs truncate max-w-[150px] sm:max-w-none", resolvedVariant === 'clean' ? "text-slate-400" : "text-emerald-50/80")}>
                     {userName} • {userCode.slice(0, 8)}
                   </p>
                 </div>
@@ -2204,7 +2208,7 @@ const NoaConversationalInterface: React.FC<NoaConversationalInterfaceProps> = ({
             </div>
           )}
 
-          {variant !== 'clean' && (
+          {resolvedVariant !== 'clean' && (
             <div className="border-b border-slate-800 bg-slate-900/80 px-3 sm:px-5 py-1 sm:py-2 flex items-center justify-between text-[10px] sm:text-xs text-slate-400 flex-shrink-0">
               <span className="flex items-center gap-1 truncate"><Activity className="w-2.5 h-2.5 sm:w-3 sm:h-3" /> <span className="hidden sm:inline">Último fluxo:</span> {lastIntent ?? 'Exploração'}</span>
               <span className="flex items-center gap-1 text-slate-400 flex-shrink-0">{messages.length} interações</span>
@@ -2251,7 +2255,7 @@ const NoaConversationalInterface: React.FC<NoaConversationalInterfaceProps> = ({
           )}
 
           {/* Controles de Gravação de Consulta (apenas para profissionais e NÃO no modo clean) */}
-          {user && (normalizeUserType(user.type) === 'profissional' || normalizeUserType(user.type) === 'admin') && !showPatientSelector && variant !== 'clean' && (
+          {user && (normalizeUserType(user.type) === 'profissional' || normalizeUserType(user.type) === 'admin') && !showPatientSelector && resolvedVariant !== 'clean' && (
             <div className="border-b border-slate-800 bg-slate-900/80 px-5 py-3">
               {!isRecordingConsultation ? (
                 <button
@@ -2294,7 +2298,7 @@ const NoaConversationalInterface: React.FC<NoaConversationalInterfaceProps> = ({
           >
             {/* Mensagem inicial da Nôa quando não há histórico */}
             {messages.length === 0 && (
-              variant === 'clean' ? (
+              resolvedVariant === 'clean' ? (
                 <div className="h-full flex flex-col items-center justify-center relative min-h-[50vh] animate-in fade-in duration-1000">
                   {/* ... Orbital Avatar Design ... */}
                   <div className="relative w-40 h-40 mb-8 transform transition-transform duration-[4000ms] hover:scale-105">
@@ -2536,8 +2540,8 @@ const NoaConversationalInterface: React.FC<NoaConversationalInterfaceProps> = ({
               minHeight: '70px',
               display: 'flex',
               flexDirection: 'column',
-              backgroundColor: variant === 'clean' ? 'transparent' : 'rgb(15 23 42 / 0.95)',
-              backdropFilter: variant === 'clean' ? 'none' : 'blur(8px)'
+              backgroundColor: resolvedVariant === 'clean' ? 'transparent' : 'rgb(15 23 42 / 0.95)',
+              backdropFilter: resolvedVariant === 'clean' ? 'none' : 'blur(8px)',
             }}
           >
             {error && (

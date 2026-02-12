@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useCallback, useRef, useState } from 'react'
+// Layout fixed: 100dvh
 import { useLocation, useNavigate } from 'react-router-dom'
 import { ArrowLeft, ChevronRight, Loader2, MessageCircle, Send, Users, FileText, Video, Phone, X } from 'lucide-react'
 
@@ -910,7 +911,7 @@ const PatientDoctorChat: React.FC = () => {
   }, [])
 
   return (
-    <div className="min-h-[calc(100vh-6rem)] bg-slate-950 text-slate-100 relative overflow-hidden">
+    <div className="h-[100dvh] bg-slate-950 text-slate-100 relative overflow-hidden flex flex-col">
       {/* Brain watermark moved inside chat section */}
       {/* ── Ambient Particles ── */}
       <div className="absolute inset-0 pointer-events-none z-0">
@@ -934,17 +935,17 @@ const PatientDoctorChat: React.FC = () => {
       <div className="absolute top-0 left-1/4 w-96 h-96 bg-primary-500/5 rounded-full blur-[120px] pointer-events-none" />
       <div className="absolute bottom-0 right-1/4 w-80 h-80 bg-emerald-500/5 rounded-full blur-[100px] pointer-events-none" />
 
-      <div className="relative z-10 w-full max-w-[1600px] mx-auto px-4 md:px-6 lg:px-8 py-5">
-        <div className="flex flex-col gap-5">
+      <div className="relative z-10 w-full max-w-[1600px] mx-auto px-4 md:px-6 lg:px-8 py-5 flex-1 flex flex-col min-h-0">
+        <div className="flex flex-col gap-5 flex-1 min-h-0">
           <button
             onClick={() => navigate(-1)}
-            className="inline-flex items-center gap-2 text-slate-400 hover:text-white transition-colors group w-fit"
+            className="inline-flex items-center gap-2 text-slate-400 hover:text-white transition-colors group w-fit shrink-0"
           >
             <ArrowLeft className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" />
             <span className="text-sm">Voltar</span>
           </button>
 
-          <header className="relative overflow-hidden bg-slate-900/60 backdrop-blur-xl border border-slate-700/40 rounded-2xl p-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <header className="relative overflow-hidden bg-slate-900/60 backdrop-blur-xl border border-slate-700/40 rounded-2xl p-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4 shrink-0">
             {/* Header glow */}
             <div className="absolute top-0 right-0 w-64 h-64 bg-primary-500/8 rounded-full blur-3xl -mr-20 -mt-20 pointer-events-none" />
             <div className="absolute bottom-0 left-0 w-48 h-48 bg-emerald-500/6 rounded-full blur-3xl -ml-16 -mb-16 pointer-events-none" />

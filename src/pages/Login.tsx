@@ -137,6 +137,7 @@ const Login: React.FC = () => {
                     onChange={handleInputChange}
                     className="input-field"
                     placeholder="Seu nome completo"
+                    autoComplete="name"
                   />
                 </div>
 
@@ -148,11 +149,10 @@ const Login: React.FC = () => {
                     {userTypes.map((type) => (
                       <label
                         key={type.value}
-                        className={`flex items-center p-3 border rounded-lg cursor-pointer transition-colors duration-200 ${
-                          formData.userType === type.value
-                            ? 'border-blue-500 bg-blue-900/30'
-                            : 'border-slate-600 bg-slate-800/50 hover:border-slate-500'
-                        }`}
+                        className={`flex items-center p-3 border rounded-lg cursor-pointer transition-colors duration-200 ${formData.userType === type.value
+                          ? 'border-blue-500 bg-blue-900/30'
+                          : 'border-slate-600 bg-slate-800/50 hover:border-slate-500'
+                          }`}
                       >
                         <input
                           type="radio"
@@ -290,6 +290,7 @@ const Login: React.FC = () => {
                   onChange={handleInputChange}
                   className="input-field pl-10"
                   placeholder="seu@email.com"
+                  autoComplete="email"
                 />
               </div>
             </div>
@@ -311,6 +312,7 @@ const Login: React.FC = () => {
                   onChange={handleInputChange}
                   className="input-field pl-10 pr-10"
                   placeholder="Sua senha"
+                  autoComplete="current-password"
                 />
                 <button
                   type="button"

@@ -83,6 +83,8 @@ const EduardoFaveretDashboard: React.FC = () => {
   const { openChat: openNoaChat, closeChat, isOpen: isNoaOpen, hideGlobalChat, showGlobalChat } = useNoaPlatform()
   const { setDashboardTriggers } = useDashboardTriggers()
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
+  const [activeSection, setActiveSection] = useState<'dashboard' | 'kpis' | 'newsletter' | 'prescriptions' | 'research' | 'teaching' | 'scheduling' | 'coordenacao' | 'cursos' | 'neurologia' | 'wearables' | 'kpis-personalizados' | 'chat-profissionais' | 'chat-pacientes' | 'terminal-clinico'>('dashboard')
 
   // Gerenciar visibilidade do chat global
   useEffect(() => {
@@ -100,6 +102,7 @@ const EduardoFaveretDashboard: React.FC = () => {
     })
     return () => setDashboardTriggers(null)
   }, [activeSection, openNoaChat, closeChat, isNoaOpen, setDashboardTriggers])
+
   const [patientSearch, setPatientSearch] = useState('')
   const [clinicalNotes, setClinicalNotes] = useState('')
   const [selectedPatient, setSelectedPatient] = useState<string | null>(null)
@@ -108,8 +111,7 @@ const EduardoFaveretDashboard: React.FC = () => {
   const [isVideoCallOpen, setIsVideoCallOpen] = useState(false)
   const [isAudioCallOpen, setIsAudioCallOpen] = useState(false)
   const [callType, setCallType] = useState<'video' | 'audio'>('video')
-  const [searchParams] = useSearchParams()
-  const [activeSection, setActiveSection] = useState<'dashboard' | 'kpis' | 'newsletter' | 'prescriptions' | 'research' | 'teaching' | 'scheduling' | 'coordenacao' | 'cursos' | 'neurologia' | 'wearables' | 'kpis-personalizados' | 'chat-profissionais' | 'chat-pacientes' | 'terminal-clinico'>('dashboard')
+
 
   // Listener para parâmetros de busca (deep linking da sidebar)
   useEffect(() => {

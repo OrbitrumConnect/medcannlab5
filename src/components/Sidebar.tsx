@@ -91,7 +91,19 @@ const Sidebar: React.FC<SidebarProps> = ({
   }
   const [expandedAxis, setExpandedAxis] = useState<string | null>(() => getAxisFromPath())
   const prevAxisRef = useRef<string | null>(expandedAxis)
-  const normalizedType = userType ? normalizeUserType(userType) : 'paciente'
+  const normalizedType = (() => {
+    const type = userType ? normalizeUserType(userType) : 'paciente'
+    // Se for admin, mas estiver navegando em rotas de profissional (ou dashboards legados), mostrar sidebar de profissional
+    if (type === 'admin' && (
+      location.pathname.includes('/profissional/') ||
+      location.pathname.includes('professional') ||
+      location.pathname.includes('ricardo-valenca-dashboard') ||
+      location.pathname.includes('eduardo-faveret-dashboard')
+    )) {
+      return 'profissional'
+    }
+    return type
+  })()
 
   // Notificar Layout quando sidebar colapsar/expandir
   useEffect(() => {
@@ -116,6 +128,13 @@ const Sidebar: React.FC<SidebarProps> = ({
         icon: TerminalIcon,
         section: 'other',
         color: 'bg-indigo-600'
+      },
+      {
+        name: 'Terminal de Atendimento',
+        href: '/app/clinica/profissional/dashboard?section=terminal-clinico',
+        icon: Stethoscope,
+        section: 'other',
+        color: 'bg-emerald-600'
       },
       {
         name: 'Base de Conhecimento',
@@ -272,7 +291,7 @@ const Sidebar: React.FC<SidebarProps> = ({
       label: 'Terminal de Atendimento',
       description: 'Estação de trabalho clínica integrada',
       icon: Stethoscope,
-      href: '/app/clinica/profissional/dashboard?section=atendimento'
+      href: '/app/clinica/profissional/dashboard?section=terminal-clinico'
     }
   ]
 
@@ -282,7 +301,7 @@ const Sidebar: React.FC<SidebarProps> = ({
       label: 'Terminal de Atendimento',
       description: 'Prontuário, Paciente em foco, Chat, Prescrições, Agendamentos, Governança e mais',
       icon: Stethoscope,
-      href: '/app/clinica/profissional/dashboard?section=atendimento'
+      href: '/app/clinica/profissional/dashboard?section=terminal-clinico'
     }
   ]
 
