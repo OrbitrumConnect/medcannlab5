@@ -82,9 +82,9 @@ export async function bookAppointment(
     const { data, error } = await supabase.rpc('book_appointment_atomic' as any, {
         p_patient_id: patientId,
         p_professional_id: targetProfId,
-        p_slot_time: slotTime,
-        p_appointment_type: type, // V3 changed param name
-        p_notes: reason          // V3 changed param name
+        p_start_time: slotTime,
+        p_type: type,
+        p_notes: reason
     })
 
     if (error) {
@@ -97,6 +97,37 @@ export async function bookAppointment(
             throw new Error('O profissional bloqueou este horário recentemente.')
         }
         throw error
+    }
+
+    if (data) {
+        // Trigger Background Notification
+        (async () => {
+            try {
+                const { notificationService } = await import('./notificationService')
+
+                // Fetch emails and names
+                const [{ data: patient }, { data: professional }] = await Promise.all([
+                    supabase.from('users').select('email, name').eq('id', patientId).single(),
+                    supabase.from('users').select('email, name').eq('id', targetProfId).single()
+                ])
+
+                if (patient?.email && professional?.email) {
+                    const dateObj = new Date(slotTime)
+                    await notificationService.notifyAppointmentConfirmation(
+                        patient.email,
+                        professional.email,
+                        {
+                            date: dateObj.toLocaleDateString('pt-BR'),
+                            time: dateObj.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
+                            professionalName: professional.name || 'Médico',
+                            patientName: patient.name || 'Paciente'
+                        }
+                    )
+                }
+            } catch (notifyError) {
+                console.error('Non-blocking notification error:', notifyError)
+            }
+        })()
     }
 
     return data // Returns the UUID of the new appointment

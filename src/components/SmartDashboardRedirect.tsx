@@ -13,6 +13,12 @@ const SmartDashboardRedirect: React.FC = () => {
   }
 
   const userType = normalizeUserType(user.type)
+  const email = user.email?.toLowerCase()
+
+  // EXCEÇÃO EXECUTIVA: Dr. Ricardo Valença (Sempre cai no dashboard customizado)
+  if (email === 'rrvalenca@gmail.com') {
+    return <Navigate to="/app/ricardo-valenca-dashboard" replace />
+  }
 
   // Admin visualizando como outro perfil → redirecionar para dashboard desse perfil
   if (userType === 'admin' && viewAsType) {

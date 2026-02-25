@@ -43,11 +43,11 @@ interface SharedReport {
     assessment: string
     plan: string
     rationalities: {
-      biomedical: any
-      traditionalChinese: any
-      ayurvedic: any
-      homeopathic: any
-      integrative: any
+      biomedical?: any
+      traditionalChinese?: any
+      ayurvedic?: any
+      homeopathic?: any
+      integrative?: any
     }
   }
   doctorNotes?: string
@@ -86,7 +86,7 @@ const ClinicalReports: React.FC<ClinicalReportsProps> = ({ className = '' }) => 
   const loadSharedReports = async () => {
     try {
       setLoading(true)
-      
+
       if (!user?.id) {
         console.warn('⚠️ Usuário não autenticado')
         setReports([])
@@ -135,7 +135,7 @@ const ClinicalReports: React.FC<ClinicalReportsProps> = ({ className = '' }) => 
 
       // Fallback: buscar manualmente se RPC não funcionar
       console.warn('⚠️ RPC não disponível, usando busca manual:', rpcError)
-      
+
       const { data: allReports, error: fetchError } = await supabase
         .from('clinical_reports')
         .select(`
@@ -156,11 +156,11 @@ const ClinicalReports: React.FC<ClinicalReportsProps> = ({ className = '' }) => 
       const sharedReports = allReports?.filter(report => {
         const sharedWith = report.shared_with || []
         if (!Array.isArray(sharedWith) || sharedWith.length === 0) return false
-        
+
         // Converter ambos para string para comparação segura
         const userIdStr = user.id.toString()
         const isShared = sharedWith.some((id: any) => id?.toString() === userIdStr)
-        
+
         if (isShared) {
           console.log('✅ Relatório compartilhado encontrado:', {
             reportId: report.id,
@@ -169,7 +169,7 @@ const ClinicalReports: React.FC<ClinicalReportsProps> = ({ className = '' }) => 
             userId: user.id
           })
         }
-        
+
         return isShared
       }) || []
 
@@ -279,7 +279,7 @@ const ClinicalReports: React.FC<ClinicalReportsProps> = ({ className = '' }) => 
 
       // Atualizar selectedReport com a nova análise
       const updatedRationalities = {
-        ...selectedReport.content.rationalities,
+        ...(selectedReport.content?.rationalities || {}),
         [rationality === 'traditional_chinese' ? 'traditionalChinese' : rationality]: analysis
       }
       setSelectedReport({
@@ -337,7 +337,7 @@ const ClinicalReports: React.FC<ClinicalReportsProps> = ({ className = '' }) => 
   return (
     <div className={`space-y-6 ${className}`}>
       {/* Header */}
-      <div 
+      <div
         className="rounded-xl p-6 shadow-lg border"
         style={{
           background: 'rgba(7, 22, 41, 0.88)',
@@ -395,15 +395,15 @@ const ClinicalReports: React.FC<ClinicalReportsProps> = ({ className = '' }) => 
               style={
                 filterStatus === key
                   ? {
-                      background: 'linear-gradient(135deg, #00C16A 0%, #13794f 100%)',
-                      color: '#FFFFFF',
-                      boxShadow: '0 4px 12px rgba(0, 193, 106, 0.3)'
-                    }
+                    background: 'linear-gradient(135deg, #00C16A 0%, #13794f 100%)',
+                    color: '#FFFFFF',
+                    boxShadow: '0 4px 12px rgba(0, 193, 106, 0.3)'
+                  }
                   : {
-                      background: 'rgba(15, 36, 60, 0.7)',
-                      color: '#C8D6E5',
-                      border: '1px solid rgba(0, 193, 106, 0.12)'
-                    }
+                    background: 'rgba(15, 36, 60, 0.7)',
+                    color: '#C8D6E5',
+                    border: '1px solid rgba(0, 193, 106, 0.12)'
+                  }
               }
               onMouseEnter={(e) => {
                 if (filterStatus !== key) {
@@ -482,15 +482,14 @@ const ClinicalReports: React.FC<ClinicalReportsProps> = ({ className = '' }) => 
               <div className="mb-4">
                 <h4 className="font-semibold text-slate-800 mb-2">Racionalidades Médicas:</h4>
                 <div className="flex flex-wrap gap-2">
-                  {Object.entries(report.content.rationalities).map(([key, value]: [string, any]) => {
+                  {Object.entries(report.content?.rationalities || {}).map(([key, value]: [string, any]) => {
                     const hasAnalysis = value && (value.assessment || value.recommendations)
                     const rationalityKey = key === 'traditionalChinese' ? 'traditional_chinese' : key
                     return (
-                      <div 
-                        key={key} 
-                        className={`flex items-center space-x-1 px-2 py-1 rounded text-xs ${
-                          hasAnalysis ? 'bg-green-100 text-green-800' : 'bg-slate-100 text-slate-600'
-                        }`}
+                      <div
+                        key={key}
+                        className={`flex items-center space-x-1 px-2 py-1 rounded text-xs ${hasAnalysis ? 'bg-green-100 text-green-800' : 'bg-slate-100 text-slate-600'
+                          }`}
                       >
                         {getRationalityIcon(key)}
                         <span className="capitalize">{key.replace(/([A-Z])/g, ' $1')}</span>
@@ -563,7 +562,7 @@ const ClinicalReports: React.FC<ClinicalReportsProps> = ({ className = '' }) => 
                 ✕
               </button>
             </div>
-            
+
             <div className="space-y-4">
               {/* Conteúdo do Relatório */}
               <div className="bg-slate-50 rounded-lg p-4">
@@ -576,7 +575,7 @@ const ClinicalReports: React.FC<ClinicalReportsProps> = ({ className = '' }) => 
                   <div><strong>Plano:</strong> {selectedReport.content.plan}</div>
                 </div>
               </div>
-              
+
               {/* Aplicar Racionalidades Médicas */}
               <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
                 <h4 className="font-semibold text-slate-800 mb-3">Aplicar Racionalidades Médicas</h4>
@@ -597,13 +596,12 @@ const ClinicalReports: React.FC<ClinicalReportsProps> = ({ className = '' }) => 
                         key={key}
                         onClick={() => handleApplyRationality(key)}
                         disabled={isGeneratingAnalysis || hasAnalysis}
-                        className={`flex items-center space-x-2 px-3 py-2 rounded-lg text-sm transition-colors ${
-                          hasAnalysis
-                            ? 'bg-green-100 text-green-800 border border-green-300 cursor-default'
-                            : isGeneratingAnalysis
+                        className={`flex items-center space-x-2 px-3 py-2 rounded-lg text-sm transition-colors ${hasAnalysis
+                          ? 'bg-green-100 text-green-800 border border-green-300 cursor-default'
+                          : isGeneratingAnalysis
                             ? 'bg-slate-200 text-slate-400 cursor-not-allowed'
                             : 'bg-white border border-slate-300 text-slate-700 hover:bg-blue-50 hover:border-blue-300'
-                        }`}
+                          }`}
                       >
                         {icon}
                         <span>{label}</span>
@@ -627,11 +625,11 @@ const ClinicalReports: React.FC<ClinicalReportsProps> = ({ className = '' }) => 
                   <div className="space-y-4">
                     {Object.entries(selectedReport.content.rationalities || {}).map(([key, value]: [string, any]) => {
                       if (!value || !value.assessment) return null
-                      const rationalityLabel = key === 'traditionalChinese' ? 'Medicina Tradicional Chinesa' : 
-                                             key === 'biomedical' ? 'Biomédica' :
-                                             key === 'ayurvedic' ? 'Ayurvédica' :
-                                             key === 'homeopathic' ? 'Homeopática' :
-                                             key === 'integrative' ? 'Integrativa' : key
+                      const rationalityLabel = key === 'traditionalChinese' ? 'Medicina Tradicional Chinesa' :
+                        key === 'biomedical' ? 'Biomédica' :
+                          key === 'ayurvedic' ? 'Ayurvédica' :
+                            key === 'homeopathic' ? 'Homeopática' :
+                              key === 'integrative' ? 'Integrativa' : key
                       return (
                         <div key={key} className="border-l-4 border-blue-500 pl-4">
                           <div className="flex items-center space-x-2 mb-2">
@@ -680,7 +678,7 @@ const ClinicalReports: React.FC<ClinicalReportsProps> = ({ className = '' }) => 
                 />
               </div>
             </div>
-            
+
             <div className="flex space-x-3 mt-6">
               <button
                 onClick={() => setShowReportModal(false)}

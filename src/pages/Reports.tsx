@@ -56,12 +56,7 @@ const Reports: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1)
   const itemsPerPage = 8
 
-  // Redirecionar pacientes para seu dashboard
-  useEffect(() => {
-    if (user?.type === 'paciente') {
-      navigate('/app/clinica/paciente/dashboard')
-    }
-  }, [user, navigate])
+  // Removido redirecionamento para permitir que pacientes acessem a visualização de relatórios integrada
 
   // Carregar relatórios
   useEffect(() => {

@@ -44,7 +44,7 @@ export class ClinicalReportService {
     assessmentData: any
   ): Promise<ClinicalReport> {
     const reportId = `report_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
-    
+
     const report: ClinicalReport = {
       id: reportId,
       patient_id: patientId,
@@ -75,13 +75,13 @@ export class ClinicalReportService {
 
     // Salvar no banco de dados
     await this.saveReport(report)
-    
+
     // Adicionar à lista local
     this.reports.push(report)
-    
+
     // Notificar profissionais e admin
     await this.notifyNewReport(report)
-    
+
     return report
   }
 
@@ -203,7 +203,7 @@ export class ClinicalReportService {
           generated_at: report.generated_at
         },
         created_at: new Date().toISOString(),
-        read: false
+        is_read: false
       }
 
       // Salvar notificação no banco

@@ -97,21 +97,29 @@ const QuickPrescriptions: React.FC<QuickPrescriptionsProps> = ({ className = '',
 
     setSaving(true)
     try {
-      // Tenta salvar na tabela 'prescriptions' (ou fallback para log se nao existir)
-      const { error } = await supabase.from('prescriptions').insert({
+      // Tenta salvar na tabela 'cfm_prescriptions' (canonical)
+      const { error } = await supabase.from('cfm_prescriptions').insert({
+        prescription_type: 'simple', // Padrão para QuickPrescriptions
         patient_id: selectedPatient,
+        patient_name: patientsList.find(p => p.id === selectedPatient)?.name || 'Paciente',
         professional_id: user?.id,
-        medication: prescriptionForm.medication,
-        dosage: prescriptionForm.dosage,
-        frequency: prescriptionForm.frequency,
-        duration: prescriptionForm.duration,
+        professional_name: user?.name || 'Profissional',
+        professional_crm: (user as any)?.crm || '',
+        medications: [{
+          name: prescriptionForm.medication,
+          dosage: prescriptionForm.dosage,
+          frequency: prescriptionForm.frequency,
+          duration: prescriptionForm.duration,
+          quantity: '1' // Default
+        }],
+        status: 'draft',
         notes: prescriptionForm.notes,
         created_at: new Date().toISOString()
       })
 
       if (error) {
         console.error('Erro ao salvar prescrição:', error)
-        throw new Error('Falha ao salvar no banco de dados. Verifique se a tabela prescriptions existe.')
+        throw new Error('Falha ao salvar no banco de dados. Verifique a tabela cfm_prescriptions.')
       }
 
       // SUCESSO ELEGANTE

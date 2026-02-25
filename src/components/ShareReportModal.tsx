@@ -4,6 +4,7 @@ import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
 
 interface ShareReportModalProps {
+  isOpen: boolean
   reportId: string
   patientId: string
   reportName: string
@@ -19,6 +20,7 @@ interface Doctor {
 }
 
 const ShareReportModal: React.FC<ShareReportModalProps> = ({
+  isOpen,
   reportId,
   patientId,
   reportName,
@@ -36,11 +38,11 @@ const ShareReportModal: React.FC<ShareReportModalProps> = ({
   useEffect(() => {
     const loadDoctors = async () => {
       try {
-        const { data, error } = await (supabase as any)
-          .from('users')
-          .select('id, name, email, user_type')
-          .in('user_type', ['professional', 'admin'])
-          .in('email', ['rrvalenca@gmail.com', 'ricardo.valenca@medcannlab.com', 'eduardoscfaveret@gmail.com', 'phpg69@gmail.com'])
+        const { data, error } = await supabase
+          .from('users_compatible')
+          .select('id, name, email, type')
+          .filter('type', 'in', '("professional","admin")')
+          .filter('email', 'in', '("rrvalenca@gmail.com","iaianoaesperanza@gmail.com","eduardoscfaveret@gmail.com","eduardo.faveret@hotmail.com")')
           .order('name')
 
         if (error) {
@@ -114,6 +116,8 @@ const ShareReportModal: React.FC<ShareReportModalProps> = ({
       setLoading(false)
     }
   }
+
+  if (!isOpen) return null
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">

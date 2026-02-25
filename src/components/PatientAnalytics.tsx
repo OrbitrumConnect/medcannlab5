@@ -79,27 +79,27 @@ const PatientAnalytics: React.FC<PatientAnalyticsProps> = ({ reports, loading, u
     React.useEffect(() => {
         const fetchDoctors = async () => {
             try {
-                // Buscando usuários que são profissionais ou admins
-                const { data, error } = await supabase.from('users').select('*')
+                const { data, error } = await supabase
+                    .from('users_compatible')
+                    .select('id, name, email, type')
+                    .filter('type', 'in', '("professional","admin")')
+                    .filter('email', 'in', '("rrvalenca@gmail.com","iaianoaesperanza@gmail.com","eduardoscfaveret@gmail.com","eduardo.faveret@hotmail.com")')
+                    .order('name')
+
+                if (error) {
+                    console.error('Erro ao buscar médicos:', error)
+                    return
+                }
 
                 if (data) {
-                    const professionals = data.filter((u: any) => {
-                        const meta = u.raw_user_meta_data || {}
-                        const type = meta.type || meta.user_type || meta.type_pt
-                        // Filtra por tipo profissional ou e-mails específicos de interesse (Dr. Eduardo e Ricardo)
-                        return (
-                            ['professional', 'profissional', 'admin', 'master'].includes(type) ||
-                            ['eduardoscfaveret@gmail.com', 'rrvalenca@gmail.com'].includes(u.email)
-                        )
-                    }).map((u: any) => ({
-                        id: u.id,
-                        name: u.raw_user_meta_data?.name || u.email,
-                        email: u.email,
-                        specialty: u.raw_user_meta_data?.specialty || 'Especialista',
-                        crm: u.raw_user_meta_data?.crm,
-                        avatar_url: u.raw_user_meta_data?.avatar_url
+                    const mappedDoctors = data.map((d: any) => ({
+                        id: d.id,
+                        name: d.name,
+                        email: d.email,
+                        specialty: 'Especialista',
+                        type: d.type
                     }))
-                    setDoctors(professionals)
+                    setDoctors(mappedDoctors)
                 }
             } catch (err) {
                 console.error('Erro ao buscar médicos:', err)
@@ -127,7 +127,7 @@ const PatientAnalytics: React.FC<PatientAnalyticsProps> = ({ reports, loading, u
 
             const { error } = await supabase.rpc('share_report_with_doctors', {
                 p_report_id: latestReport.id,
-                p_patient_id: user.id || supabase.auth.getUser().then(u => u.data.user?.id),
+                p_patient_id: user?.id || (await supabase.auth.getUser()).data.user?.id,
                 p_doctor_ids: selectedDoctors
             })
 
@@ -136,10 +136,9 @@ const PatientAnalytics: React.FC<PatientAnalyticsProps> = ({ reports, loading, u
             alert('Relatório compartilhado com sucesso!')
             setShowDoctorSelect(false)
             setSelectedDoctors([])
-        } catch (err) {
+        } catch (err: any) {
             console.error('Erro ao compartilhar:', err)
-            // Fallback UI
-            alert('Relatório enviado com sucesso! (Modo Simulação)')
+            alert(err.message || 'Erro ao compartilhar relatório. Por favor, tente novamente.')
             setShowDoctorSelect(false)
             setSelectedDoctors([])
         } finally {
