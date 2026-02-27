@@ -12,6 +12,7 @@ export type NotificationType =
     | 'video_call_scheduled'
     | 'video_call_request'
     | 'info'
+    | 'exam_request'
 
 export interface Notification {
     id: string

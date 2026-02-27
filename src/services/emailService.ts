@@ -3,6 +3,9 @@
 // SERVIÇO DE E-MAIL - MEDCANLAB 3.0
 // =====================================================
 // Sistema completo de envio de e-mails institucionais
+// ✅ REFATORADO: Usa Edge Function 'send-email' (API key no server, nunca no frontend)
+
+import { supabase } from '../lib/supabase'
 
 export type EmailTemplate =
   | 'welcome'
@@ -49,8 +52,7 @@ export class EmailService {
   private baseUrl: string = ''
 
   private constructor() {
-    // Tentar carregar configuração de variáveis de ambiente
-    this.apiKey = import.meta.env.VITE_EMAIL_API_KEY || null
+    // Configuração básica — API key agora fica no server (Edge Function)
     this.fromEmail = import.meta.env.VITE_EMAIL_FROM || 'noreply@medcanlab.com.br'
     this.fromName = import.meta.env.VITE_EMAIL_FROM_NAME || 'MedCannLab 3.0'
     this.baseUrl = import.meta.env.VITE_APP_URL || window.location.origin
@@ -83,14 +85,8 @@ export class EmailService {
    */
   async sendEmail(options: EmailOptions): Promise<boolean> {
     try {
-      // Se não houver API key configurada, usar Supabase Edge Function ou fallback
-      if (!this.apiKey) {
-        console.warn('⚠️ Email API key não configurada. Usando fallback.')
-        return await this.sendEmailViaSupabase(options)
-      }
-
-      // Usar Resend API (recomendado) ou SendGrid
-      return await this.sendEmailViaAPI(options)
+      // ✅ Sempre usar Edge Function (API key segura no server)
+      return await this.sendEmailViaSupabase(options)
     } catch (error) {
       console.error('❌ Erro ao enviar e-mail:', error)
       return false
@@ -98,59 +94,39 @@ export class EmailService {
   }
 
   /**
-   * Enviar e-mail via API externa (Resend/SendGrid)
+   * Enviar e-mail via API externa — DEPRECADO
+   * Redirecionado para Edge Function (segurança)
    */
   private async sendEmailViaAPI(options: EmailOptions): Promise<boolean> {
-    try {
-      // Usar Resend API (mais simples e moderno)
-      const response = await fetch('https://api.resend.com/emails', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${this.apiKey}`
-        },
-        body: JSON.stringify({
-          from: options.from || `${this.fromName} <${this.fromEmail}>`,
-          to: options.to,
-          subject: options.subject,
-          html: options.html,
-          text: options.text || this.htmlToText(options.html),
-          reply_to: options.replyTo,
-          attachments: options.attachments
-        })
-      })
-
-      if (!response.ok) {
-        const error = await response.json()
-        throw new Error(error.message || 'Erro ao enviar e-mail')
-      }
-
-      return true
-    } catch (error) {
-      console.error('❌ Erro ao enviar via API:', error)
-      // Fallback para Supabase
-      return await this.sendEmailViaSupabase(options)
-    }
+    return await this.sendEmailViaSupabase(options)
   }
 
   /**
-   * Enviar e-mail via Supabase Edge Function (fallback)
+   * Enviar e-mail via Supabase Edge Function 'send-email'
+   * ✅ API key segura no servidor, nunca exposta no frontend
    */
   private async sendEmailViaSupabase(options: EmailOptions): Promise<boolean> {
     try {
-      // TODO: Implementar Supabase Edge Function para envio de e-mail
-      // Por enquanto, apenas logar
-      console.log('📧 E-mail simulado (Supabase Edge Function não implementado):', {
-        to: options.to,
-        subject: options.subject
+      const { data, error } = await supabase.functions.invoke('send-email', {
+        body: {
+          to: options.to,
+          subject: options.subject,
+          html: options.html,
+        }
       })
 
-      // Em produção, chamar Supabase Edge Function:
-      // const { data, error } = await supabase.functions.invoke('send-email', {
-      //   body: options
-      // })
+      if (error) {
+        console.error('❌ Erro na Edge Function send-email:', error)
+        return false
+      }
 
-      return true // Simulado
+      if (data?.success) {
+        console.log('✅ E-mail enviado via Edge Function:', data.id)
+        return true
+      }
+
+      console.warn('⚠️ Edge Function retornou:', data)
+      return false
     } catch (error) {
       console.error('❌ Erro ao enviar via Supabase:', error)
       return false

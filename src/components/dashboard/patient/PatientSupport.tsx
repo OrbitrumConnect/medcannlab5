@@ -36,7 +36,7 @@ export const PatientSupport: React.FC<PatientSupportProps> = ({ onSuccess }) => 
             }
 
             if (roomId) {
-                await supabase.from('chat_messages').insert({ room_id: roomId, user_id: user.id, content: message.trim(), message_type: 'text' })
+                await supabase.from('chat_messages').insert({ room_id: roomId, sender_id: user.id, message: message.trim(), message_type: 'text' })
                 setSent(true)
                 setMessage('')
                 if (onSuccess) onSuccess()

@@ -4,7 +4,7 @@
 // Componente para exibir e gerenciar notificações
 
 import React, { useState, useEffect, useCallback } from 'react'
-import { Bell, X, Check, CheckCheck, AlertCircle, Info, CheckCircle, AlertTriangle, FileText, Calendar, MessageSquare, Stethoscope, Video } from 'lucide-react'
+import { Bell, X, Check, CheckCheck, AlertCircle, Info, CheckCircle, AlertTriangle, FileText, Calendar, MessageSquare, Stethoscope, Video, FlaskConical } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
 import { notificationService, Notification, NotificationType } from '../services/notificationService'
 
@@ -32,6 +32,8 @@ const getNotificationIcon = (type: NotificationType) => {
       return <MessageSquare className="w-5 h-5 text-pink-500" />
     case 'video_call_scheduled':
       return <Video className="w-5 h-5 text-blue-500" />
+    case 'exam_request':
+      return <FlaskConical className="w-5 h-5 text-cyan-500" />
     default:
       return <Info className="w-5 h-5 text-blue-500" />
   }
@@ -57,6 +59,8 @@ const getNotificationColor = (type: NotificationType) => {
       return 'bg-pink-500/10 border-pink-500/20'
     case 'video_call_scheduled':
       return 'bg-blue-500/10 border-blue-500/20'
+    case 'exam_request':
+      return 'bg-cyan-500/10 border-cyan-500/20'
     default:
       return 'bg-slate-500/10 border-slate-500/20'
   }
@@ -221,9 +225,8 @@ const NotificationCenter: React.FC<NotificationCenterProps> = ({ className = '' 
                   {notifications.map((notification) => (
                     <div
                       key={notification.id}
-                      className={`p-4 hover:bg-slate-800/50 transition-colors ${
-                        !notification.is_read ? 'bg-slate-800/30' : ''
-                      }`}
+                      className={`p-4 hover:bg-slate-800/50 transition-colors ${!notification.is_read ? 'bg-slate-800/30' : ''
+                        }`}
                     >
                       <div className="flex items-start gap-3">
                         <div className="flex-shrink-0 mt-0.5">

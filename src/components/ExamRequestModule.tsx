@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { FileText, Plus, Printer, X, Save, Search, Settings, AlertCircle, Check, Send, Loader2 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
+import { notificationService } from '../services/notificationService';
 
 // Tipos 
 type ExamTemplate = {
@@ -124,6 +125,19 @@ export const ExamRequestModule: React.FC<ExamRequestModuleProps> = ({
             });
 
             if (error) throw error;
+
+            // Enviar notificação para o paciente (sininho)
+            try {
+                await notificationService.createNotification({
+                    user_id: patientId,
+                    title: 'Nova Solicitação de Exame',
+                    message: `Seu médico solicitou novos exames. Acesse sua área de Evolução para ver os detalhes.`,
+                    type: 'clinical',
+                    is_read: false,
+                });
+            } catch (notifErr) {
+                console.warn('Não foi possível enviar notificação ao paciente:', notifErr);
+            }
 
             setFeedback({ type: 'success', message: 'Pedido salvo com sucesso!' });
             setTimeout(() => {

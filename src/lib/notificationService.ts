@@ -1,54 +1,49 @@
-import { Resend } from 'resend'
-
-const RESEND_API_KEY = import.meta.env.VITE_RESEND_API_KEY
-
-let resend: Resend | null = null
-if (RESEND_API_KEY) {
-    resend = new Resend(RESEND_API_KEY)
-}
+// ✅ REFATORADO: Usa Edge Function 'send-email' (API key segura no server)
+import { supabase } from './supabase'
 
 export interface EmailData {
-    to: string | string[]
-    subject: string
-    html: string
+  to: string | string[]
+  subject: string
+  html: string
 }
 
 export const notificationService = {
-    async sendEmail({ to, subject, html }: EmailData) {
-        if (!resend) {
-            console.warn('⚠️ Resend API Key not found. Email not sent, logging to console instead.')
-            console.log('--- MOCKED EMAIL ---')
-            console.log(`To: ${to}`)
-            console.log(`Subject: ${subject}`)
-            console.log(`HTML: ${html}`)
-            console.log('--------------------')
-            return { success: true, mocked: true }
+  async sendEmail({ to, subject, html }: EmailData) {
+    try {
+      const { data, error } = await supabase.functions.invoke('send-email', {
+        body: {
+          to: Array.isArray(to) ? to[0] : to,
+          subject,
+          html,
         }
+      })
 
-        try {
-            const { data, error } = await resend.emails.send({
-                from: 'MedCann Hub <notificacoes@medcannlab.com.br>',
-                to: Array.isArray(to) ? to : [to],
-                subject,
-                html,
-            })
+      if (error) {
+        console.error('❌ Edge Function send-email error:', error)
+        return { success: false, error }
+      }
 
-            if (error) throw error
-            return { success: true, data }
-        } catch (error) {
-            console.error('❌ Error sending email via Resend:', error)
-            return { success: false, error }
-        }
-    },
+      if (data?.success) {
+        console.log('✅ Email sent via Edge Function:', data.id)
+        return { success: true, data }
+      }
 
-    async notifyAppointmentConfirmation(patientEmail: string, professionalEmail: string, appointmentDetails: any) {
-        const { date, time, professionalName, patientName } = appointmentDetails
+      console.warn('⚠️ Edge Function returned:', data)
+      return { success: false, error: data?.error }
+    } catch (error) {
+      console.error('❌ Error sending email:', error)
+      return { success: false, error }
+    }
+  },
 
-        // Notify Patient
-        await this.sendEmail({
-            to: patientEmail,
-            subject: '✅ Consulta Confirmada - MedCann Hub',
-            html: `
+  async notifyAppointmentConfirmation(patientEmail: string, professionalEmail: string, appointmentDetails: any) {
+    const { date, time, professionalName, patientName } = appointmentDetails
+
+    // Notify Patient
+    await this.sendEmail({
+      to: patientEmail,
+      subject: '✅ Consulta Confirmada - MedCann Hub',
+      html: `
         <div style="font-family: sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #eee; border-radius: 10px;">
           <h2 style="color: #0ea5e9;">Consulta Confirmada!</h2>
           <p>Olá, <strong>${patientName}</strong>,</p>
@@ -62,13 +57,13 @@ export const notificationService = {
           <p style="font-size: 12px; color: #64748b;">MedCann Hub - Tecnologia para Medicina Canabinoide</p>
         </div>
       `
-        })
+    })
 
-        // Notify Professional
-        await this.sendEmail({
-            to: professionalEmail,
-            subject: '📅 Novo Agendamento - MedCann Hub',
-            html: `
+    // Notify Professional
+    await this.sendEmail({
+      to: professionalEmail,
+      subject: '📅 Novo Agendamento - MedCann Hub',
+      html: `
         <div style="font-family: sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #eee; border-radius: 10px;">
           <h2 style="color: #0ea5e9;">Novo Paciente Agendado</h2>
           <p>Olá, <strong>Dr(a). ${professionalName}</strong>,</p>
@@ -82,6 +77,6 @@ export const notificationService = {
           <p style="font-size: 12px; color: #64748b;">MedCann Hub - Gestão Clínica Inteligente</p>
         </div>
       `
-        })
-    }
+    })
+  }
 }

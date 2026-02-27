@@ -83,7 +83,10 @@ const IntegratedWorkstation: React.FC<IntegratedWorkstationProps> = ({ initialTa
             case 'renal':
                 return (
                     <div className="h-full overflow-y-auto bg-[#0f172a]">
-                        <RenalFunctionModule patientId={activePatientId || undefined} />
+                        <RenalFunctionModule
+                            patientId={activePatientId || undefined}
+                            onPatientSelect={(id) => setActivePatientId(id || null)}
+                        />
                     </div>
                 )
             case 'prescriptions':
