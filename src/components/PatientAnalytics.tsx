@@ -870,199 +870,280 @@ const PatientAnalytics: React.FC<PatientAnalyticsProps> = ({ reports, loading, u
                         </div>
                     </div>
 
-                    {/* Quick Stats Mini Cards */}
-                    <div className="grid grid-cols-2 gap-4">
-                        <div className="rounded-xl border border-slate-700/50 bg-slate-800/30 backdrop-blur-sm p-4 text-center">
-                            <div className="mx-auto w-10 h-10 rounded-lg bg-emerald-500/10 flex items-center justify-center mb-2">
-                                <Brain className="w-5 h-5 text-emerald-400" />
-                            </div>
-                            <p className="text-2xl font-bold text-white">{reports.length}</p>
-                            <p className="text-xs text-slate-400">Avaliações Totais</p>
-                        </div>
-                        <div className="rounded-xl border border-slate-700/50 bg-slate-800/30 backdrop-blur-sm p-4 text-center">
-                            <div className="mx-auto w-10 h-10 rounded-lg bg-blue-500/10 flex items-center justify-center mb-2">
-                                <AlertCircle className="w-5 h-5 text-blue-400" />
-                            </div>
-                            <p className="text-2xl font-bold text-white">4</p>
-                            <p className="text-xs text-slate-400">Pendências</p>
-                        </div>
-                    </div>
+                    {/* ─── Resumo Clínico — Enhanced Card ─── */}
+                    <div className="rounded-xl border border-slate-700/50 bg-slate-800/30 backdrop-blur-sm overflow-hidden relative">
+                        <div className="absolute top-0 left-0 w-32 h-32 bg-emerald-500/5 rounded-full blur-3xl -ml-16 -mt-16 pointer-events-none" />
 
-                    {/* Details (no new backend data) */}
-                    <div className="rounded-xl border border-slate-700/50 bg-slate-800/30 backdrop-blur-sm p-4">
-                        <div className="flex items-center justify-between mb-3">
-                            <div className="flex items-center gap-2">
-                                <Clock className="w-4 h-4 text-slate-300" />
-                                <h4 className="text-sm font-semibold text-white">Detalhes rápidos</h4>
+                        {/* Header */}
+                        <div className="px-5 py-4 border-b border-slate-700/50 flex items-center justify-between relative z-10">
+                            <div className="flex items-center gap-3">
+                                <div className="p-2 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
+                                    <Clock className="w-5 h-5 text-emerald-400" />
+                                </div>
+                                <div>
+                                    <h4 className="text-base font-semibold text-white">Resumo Clínico</h4>
+                                    <p className="text-[11px] text-slate-400">Visão geral do seu acompanhamento</p>
+                                </div>
                             </div>
-                            <div className={`flex items-center gap-2 text-xs ${overallStatus.color}`}>
+                            <div className={`flex items-center gap-2 text-xs px-2.5 py-1 rounded-full border ${overallStatus.color} border-current/20`}>
                                 <span className={`w-2 h-2 rounded-full ${overallStatus.dot}`}></span>
                                 <span className="font-medium">{overallStatus.label}</span>
                             </div>
                         </div>
 
-                        <div className="space-y-2 text-sm">
-                            <div className="flex items-center justify-between text-slate-300">
-                                <span className="text-slate-400">Dias desde a última</span>
-                                <span className="font-medium text-slate-200">{daysSinceLast} dias</span>
-                            </div>
-                            <div className="flex items-center justify-between text-slate-300">
-                                <span className="text-slate-400">Reavaliação sugerida</span>
-                                <span className="font-medium text-slate-200">{nextSuggestedDate.toLocaleDateString()}</span>
-                            </div>
-                            <div className="flex items-center justify-between text-slate-300">
-                                <span className="text-slate-400">Variação (score clínico)</span>
-                                <span className="font-medium text-slate-200">
-                                    {typeof previousReport?.content?.scores?.clinical_score === 'number'
-                                        ? `${(latestReport.content?.scores?.clinical_score ?? 0) - (previousReport.content?.scores?.clinical_score ?? 0)} pts`
-                                        : '—'}
-                                </span>
-                            </div>
-                        </div>
-
-                        <div className="mt-3 pt-3 border-t border-slate-700/50 grid grid-cols-2 gap-2">
-                            {monitorSignals.map(sig => {
-                                const style = trendToStyle(sig.trend)
-                                const tag =
-                                    sig.trend === 'up' ? '↑' : sig.trend === 'down' ? '↓' : sig.trend === 'flat' ? '•' : '—'
-                                return (
-                                    <div key={`mini-${sig.id}`} className="rounded-lg border border-slate-700/40 bg-slate-900/30 px-3 py-2">
-                                        <div className="flex items-center justify-between gap-2">
-                                            <span className="text-[11px] text-slate-400 truncate">{sig.label}</span>
-                                            <span className={`text-[11px] ${style.text}`}>{tag}</span>
-                                        </div>
-                                        <div className="mt-1 flex items-center justify-between">
-                                            <span className="text-xs text-slate-200 font-semibold">{sig.value}</span>
-                                            <span className={`w-2 h-2 rounded-full ${style.dot}`} style={{ boxShadow: `0 0 10px ${style.glow}` }} />
-                                        </div>
+                        <div className="p-5 space-y-5 relative z-10">
+                            {/* Stats row */}
+                            <div className="grid grid-cols-3 gap-3">
+                                <div className="rounded-lg border border-slate-700/40 bg-slate-900/30 p-3 text-center">
+                                    <div className="mx-auto w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center mb-1.5">
+                                        <Brain className="w-4 h-4 text-emerald-400" />
                                     </div>
-                                )
-                            })}
-                        </div>
-                    </div>
-
-                    {/* Consultas (conectado ao calendário / agendamentos existentes) */}
-                    <div className="rounded-xl border border-slate-700/50 bg-slate-800/30 backdrop-blur-sm p-4">
-                        <div className="flex items-center justify-between mb-3">
-                            <div className="flex items-center gap-2">
-                                <Calendar className="w-4 h-4 text-blue-300" />
-                                <h4 className="text-sm font-semibold text-white">Consultas</h4>
+                                    <p className="text-xl font-bold text-white">{reports.length}</p>
+                                    <p className="text-[10px] text-slate-400 mt-0.5">Avaliações</p>
+                                </div>
+                                <div className="rounded-lg border border-slate-700/40 bg-slate-900/30 p-3 text-center">
+                                    <div className="mx-auto w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center mb-1.5">
+                                        <AlertCircle className="w-4 h-4 text-blue-400" />
+                                    </div>
+                                    <p className="text-xl font-bold text-white">{examRequests.length}</p>
+                                    <p className="text-[10px] text-slate-400 mt-0.5">Exames</p>
+                                </div>
+                                <div className="rounded-lg border border-slate-700/40 bg-slate-900/30 p-3 text-center">
+                                    <div className="mx-auto w-8 h-8 rounded-lg bg-purple-500/10 flex items-center justify-center mb-1.5">
+                                        <Calendar className="w-4 h-4 text-purple-400" />
+                                    </div>
+                                    <p className="text-xl font-bold text-white">{upcomingAppointments.length}</p>
+                                    <p className="text-[10px] text-slate-400 mt-0.5">Consultas</p>
+                                </div>
                             </div>
-                            <button
-                                type="button"
-                                className="text-xs text-blue-300 hover:text-blue-200 underline underline-offset-2"
-                                onClick={() => navigate('/app/clinica/paciente/agendamentos')}
-                            >
-                                Ver calendário
-                            </button>
-                        </div>
 
-                        {upcomingAppointments.length > 0 ? (
-                            <div className="space-y-2">
-                                {upcomingAppointments.slice(0, 2).map((apt: any) => (
-                                    <div key={apt.id} className="rounded-lg border border-slate-700/40 bg-slate-900/30 px-3 py-2">
-                                        <div className="flex items-center justify-between gap-3">
-                                            <div className="min-w-0">
-                                                <p className="text-xs text-slate-400">Próxima</p>
-                                                <p className="text-sm text-slate-200 font-semibold truncate">{apt.professional}</p>
-                                                <p className="text-xs text-slate-400">
-                                                    {new Date(apt.date).toLocaleDateString('pt-BR')} • {apt.time} • {apt.type}
-                                                </p>
+                            {/* Data rows */}
+                            <div className="space-y-2.5">
+                                <div className="flex items-center justify-between text-sm">
+                                    <span className="text-slate-400 flex items-center gap-2">
+                                        <span className="w-1.5 h-1.5 rounded-full bg-cyan-400"></span>
+                                        Dias desde última avaliação
+                                    </span>
+                                    <span className="font-semibold text-slate-200">{daysSinceLast} dias</span>
+                                </div>
+                                <div className="flex items-center justify-between text-sm">
+                                    <span className="text-slate-400 flex items-center gap-2">
+                                        <span className="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
+                                        Próxima reavaliação
+                                    </span>
+                                    <span className="font-semibold text-slate-200">{nextSuggestedDate.toLocaleDateString('pt-BR')}</span>
+                                </div>
+                                <div className="flex items-center justify-between text-sm">
+                                    <span className="text-slate-400 flex items-center gap-2">
+                                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+                                        Variação score clínico
+                                    </span>
+                                    <span className="font-semibold text-slate-200">
+                                        {typeof previousReport?.content?.scores?.clinical_score === 'number'
+                                            ? (() => {
+                                                const diff = (latestReport.content?.scores?.clinical_score ?? 0) - (previousReport.content?.scores?.clinical_score ?? 0)
+                                                return <span className={diff > 0 ? 'text-emerald-400' : diff < 0 ? 'text-red-400' : ''}>{diff > 0 ? '+' : ''}{diff} pts</span>
+                                            })()
+                                            : '—'}
+                                    </span>
+                                </div>
+                                <div className="flex items-center justify-between text-sm">
+                                    <span className="text-slate-400 flex items-center gap-2">
+                                        <span className="w-1.5 h-1.5 rounded-full bg-blue-400"></span>
+                                        Score atual
+                                    </span>
+                                    <span className="font-semibold text-slate-200">
+                                        {latestReport?.content?.scores?.clinical_score ?? '—'}
+                                    </span>
+                                </div>
+                                <div className="flex items-center justify-between text-sm">
+                                    <span className="text-slate-400 flex items-center gap-2">
+                                        <span className="w-1.5 h-1.5 rounded-full bg-purple-400"></span>
+                                        Última avaliação
+                                    </span>
+                                    <span className="font-semibold text-slate-200">
+                                        {lastAssessmentDate.toLocaleDateString('pt-BR')}
+                                    </span>
+                                </div>
+                            </div>
+
+                            {/* Assessment cycle progress */}
+                            <div className="rounded-lg border border-slate-700/40 bg-slate-900/30 p-3">
+                                <div className="flex items-center justify-between mb-2">
+                                    <span className="text-xs text-slate-400 font-medium">Ciclo de reavaliação</span>
+                                    <span className="text-xs font-semibold text-emerald-400">{Math.min(100, Math.round(nextProgressPct))}%</span>
+                                </div>
+                                <div className="w-full h-2 bg-slate-700/50 rounded-full overflow-hidden">
+                                    <div
+                                        className="h-full rounded-full transition-all duration-700"
+                                        style={{
+                                            width: `${Math.min(100, nextProgressPct)}%`,
+                                            background: nextProgressPct > 80 ? 'linear-gradient(90deg, #f59e0b, #ef4444)' : 'linear-gradient(90deg, #10b981, #06b6d4)'
+                                        }}
+                                    />
+                                </div>
+                                <div className="mt-1.5 flex items-center justify-between text-[10px] text-slate-500">
+                                    <span>{lastAssessmentDate.toLocaleDateString('pt-BR')}</span>
+                                    <span>{daysUntilNext <= 0 ? '⚠️ Atrasada' : `${daysUntilNext}d restantes`}</span>
+                                    <span>{nextSuggestedDate.toLocaleDateString('pt-BR')}</span>
+                                </div>
+                            </div>
+
+                            {/* Monitor signals */}
+                            <div>
+                                <p className="text-xs text-slate-400 font-medium mb-2">Indicadores clínicos</p>
+                                <div className="grid grid-cols-2 gap-2">
+                                    {monitorSignals.map(sig => {
+                                        const style = trendToStyle(sig.trend)
+                                        const tag =
+                                            sig.trend === 'up' ? '↑' : sig.trend === 'down' ? '↓' : sig.trend === 'flat' ? '•' : '—'
+                                        return (
+                                            <div key={`mini-${sig.id}`} className="rounded-lg border border-slate-700/40 bg-slate-900/30 px-3 py-2.5">
+                                                <div className="flex items-center justify-between gap-2">
+                                                    <span className="text-[11px] text-slate-400 truncate">{sig.label}</span>
+                                                    <span className={`text-xs font-bold ${style.text}`}>{tag}</span>
+                                                </div>
+                                                <div className="mt-1 flex items-center justify-between">
+                                                    <span className="text-sm text-slate-200 font-bold">{sig.value}</span>
+                                                    <span className={`w-2.5 h-2.5 rounded-full ${style.dot}`} style={{ boxShadow: `0 0 12px ${style.glow}` }} />
+                                                </div>
                                             </div>
-                                            <span className="text-[10px] px-2 py-1 rounded-full border border-blue-500/20 bg-blue-500/10 text-blue-200">
-                                                agendada
-                                            </span>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        ) : (
-                            <div className="rounded-lg border border-slate-700/40 bg-slate-900/30 px-3 py-3 text-sm text-slate-300">
-                                <p className="text-slate-300">Nenhuma consulta futura encontrada.</p>
-                                {lastCompletedAppointment && (
-                                    <p className="text-xs text-slate-500 mt-1">
-                                        Última concluída: {new Date(lastCompletedAppointment.date).toLocaleDateString('pt-BR')} • {lastCompletedAppointment.professional}
-                                    </p>
-                                )}
-                            </div>
-                        )}
-
-                        {!isProfessionalView && (
-                            <div className="mt-3 flex gap-2">
-                                <button
-                                    type="button"
-                                    className="flex-1 px-3 py-2 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-sm font-semibold transition-colors"
-                                    onClick={() => navigate('/app/clinica/paciente/agendamentos', { state: { openNew: true } })}
-                                >
-                                    Nova consulta rápida
-                                </button>
-                                <button
-                                    type="button"
-                                    className="px-3 py-2 rounded-lg border border-slate-700/60 bg-slate-900/40 text-slate-200 text-sm hover:bg-slate-800/50 transition-colors"
-                                    onClick={() => navigate('/app/clinica/paciente/chat-profissional')}
-                                >
-                                    Falar com médico
-                                </button>
-                            </div>
-                        )}
-                    </div>
-
-                    {/* Prescrição (status + atalho de renovação) */}
-                    <div className="rounded-xl border border-slate-700/50 bg-slate-800/30 backdrop-blur-sm p-4">
-                        <div className="flex items-center justify-between mb-3">
-                            <div className="flex items-center gap-2">
-                                <Heart className="w-4 h-4 text-emerald-300" />
-                                <h4 className="text-sm font-semibold text-white">Prescrição</h4>
-                            </div>
-                            <div className={`flex items-center gap-2 text-xs ${prescriptionStatus.color}`}>
-                                <span className={`w-2 h-2 rounded-full ${prescriptionStatus.dot}`}></span>
-                                <span className="font-medium">{prescriptionStatus.label}</span>
+                                        )
+                                    })}
+                                </div>
                             </div>
                         </div>
-
-                        {patientPrescriptionsLoading ? (
-                            <div className="text-sm text-slate-300">Carregando prescrições…</div>
-                        ) : latestPrescription ? (
-                            <div className="rounded-lg border border-slate-700/40 bg-slate-900/30 px-3 py-3">
-                                <p className="text-sm text-slate-200 font-semibold">{latestPrescription.title}</p>
-                                <p className="text-xs text-slate-400 mt-1">
-                                    {latestPrescription.professionalName ? `Profissional: ${latestPrescription.professionalName}` : 'Profissional: equipe clínica'}
-                                </p>
-                                <p className="text-xs text-slate-400">
-                                    {latestPrescription.endsAt
-                                        ? `Validade: até ${new Date(latestPrescription.endsAt).toLocaleDateString('pt-BR')}`
-                                        : 'Validade: a definir na consulta'}
-                                </p>
-                            </div>
-                        ) : (
-                            <div className="rounded-lg border border-slate-700/40 bg-slate-900/30 px-3 py-3 text-sm text-slate-300">
-                                Nenhuma prescrição registrada ainda.
-                            </div>
-                        )}
-
-                        {!isProfessionalView && (
-                            <div className="mt-3 flex gap-2">
-                                <button
-                                    type="button"
-                                    className="flex-1 px-3 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                                    disabled={!latestPrescription}
-                                    onClick={() => navigate('/app/clinica/paciente/chat-profissional', { state: { topic: 'prescricao', action: 'renew', prescriptionId: latestPrescription?.id } })}
-                                >
-                                    Renovar / ajustar
-                                </button>
-                                <button
-                                    type="button"
-                                    className="px-3 py-2 rounded-lg border border-slate-700/60 bg-slate-900/40 text-slate-200 text-sm hover:bg-slate-800/50 transition-colors"
-                                    onClick={() => navigate('/app/clinica/paciente/agendamentos', { state: { openNew: true, reason: 'prescription' } })}
-                                >
-                                    Marcar consulta
-                                </button>
-                            </div>
-                        )}
                     </div>
 
                 </div>
 
+            </div>
+
+            {/* ─── Consultas + Prescrição — 2-column row ─── */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Consultas */}
+                <div className="rounded-xl border border-slate-700/50 bg-slate-800/30 backdrop-blur-sm p-5">
+                    <div className="flex items-center justify-between mb-4">
+                        <div className="flex items-center gap-2">
+                            <div className="p-2 rounded-lg bg-blue-500/10 border border-blue-500/20">
+                                <Calendar className="w-4 h-4 text-blue-400" />
+                            </div>
+                            <h4 className="text-base font-semibold text-white">Consultas</h4>
+                        </div>
+                        <button
+                            type="button"
+                            className="text-xs text-blue-300 hover:text-blue-200 underline underline-offset-2"
+                            onClick={() => navigate('/app/clinica/paciente/agendamentos')}
+                        >
+                            Ver calendário
+                        </button>
+                    </div>
+
+                    {upcomingAppointments.length > 0 ? (
+                        <div className="space-y-2">
+                            {upcomingAppointments.slice(0, 2).map((apt: any) => (
+                                <div key={apt.id} className="rounded-lg border border-slate-700/40 bg-slate-900/30 px-3 py-2.5">
+                                    <div className="flex items-center justify-between gap-3">
+                                        <div className="min-w-0">
+                                            <p className="text-xs text-slate-400">Próxima</p>
+                                            <p className="text-sm text-slate-200 font-semibold truncate">{apt.professional}</p>
+                                            <p className="text-xs text-slate-400">
+                                                {new Date(apt.date).toLocaleDateString('pt-BR')} • {apt.time} • {apt.type}
+                                            </p>
+                                        </div>
+                                        <span className="text-[10px] px-2 py-1 rounded-full border border-blue-500/20 bg-blue-500/10 text-blue-200">
+                                            agendada
+                                        </span>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    ) : (
+                        <div className="rounded-lg border border-slate-700/40 bg-slate-900/30 px-3 py-3 text-sm text-slate-300">
+                            <p>Nenhuma consulta futura encontrada.</p>
+                            {lastCompletedAppointment && (
+                                <p className="text-xs text-slate-500 mt-1">
+                                    Última concluída: {new Date(lastCompletedAppointment.date).toLocaleDateString('pt-BR')} • {lastCompletedAppointment.professional}
+                                </p>
+                            )}
+                        </div>
+                    )}
+
+                    {!isProfessionalView && (
+                        <div className="mt-4 flex gap-2">
+                            <button
+                                type="button"
+                                className="flex-1 px-3 py-2 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-sm font-semibold transition-colors"
+                                onClick={() => navigate('/app/clinica/paciente/agendamentos', { state: { openNew: true } })}
+                            >
+                                Nova consulta rápida
+                            </button>
+                            <button
+                                type="button"
+                                className="px-3 py-2 rounded-lg border border-slate-700/60 bg-slate-900/40 text-slate-200 text-sm hover:bg-slate-800/50 transition-colors"
+                                onClick={() => navigate('/app/clinica/paciente/chat-profissional')}
+                            >
+                                Falar com médico
+                            </button>
+                        </div>
+                    )}
+                </div>
+
+                {/* Prescrição */}
+                <div className="rounded-xl border border-slate-700/50 bg-slate-800/30 backdrop-blur-sm p-5">
+                    <div className="flex items-center justify-between mb-4">
+                        <div className="flex items-center gap-2">
+                            <div className="p-2 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
+                                <Heart className="w-4 h-4 text-emerald-400" />
+                            </div>
+                            <h4 className="text-base font-semibold text-white">Prescrição</h4>
+                        </div>
+                        <div className={`flex items-center gap-2 text-xs ${prescriptionStatus.color}`}>
+                            <span className={`w-2 h-2 rounded-full ${prescriptionStatus.dot}`}></span>
+                            <span className="font-medium">{prescriptionStatus.label}</span>
+                        </div>
+                    </div>
+
+                    {patientPrescriptionsLoading ? (
+                        <div className="text-sm text-slate-300">Carregando prescrições…</div>
+                    ) : latestPrescription ? (
+                        <div className="rounded-lg border border-slate-700/40 bg-slate-900/30 px-3 py-3">
+                            <p className="text-sm text-slate-200 font-semibold">{latestPrescription.title}</p>
+                            <p className="text-xs text-slate-400 mt-1">
+                                {latestPrescription.professionalName ? `Profissional: ${latestPrescription.professionalName}` : 'Profissional: equipe clínica'}
+                            </p>
+                            <p className="text-xs text-slate-400">
+                                {latestPrescription.endsAt
+                                    ? `Validade: até ${new Date(latestPrescription.endsAt).toLocaleDateString('pt-BR')}`
+                                    : 'Validade: a definir na consulta'}
+                            </p>
+                        </div>
+                    ) : (
+                        <div className="rounded-lg border border-slate-700/40 bg-slate-900/30 px-3 py-3 text-sm text-slate-300">
+                            Nenhuma prescrição registrada ainda.
+                        </div>
+                    )}
+
+                    {!isProfessionalView && (
+                        <div className="mt-4 flex gap-2">
+                            <button
+                                type="button"
+                                className="flex-1 px-3 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                disabled={!latestPrescription}
+                                onClick={() => navigate('/app/clinica/paciente/chat-profissional', { state: { topic: 'prescricao', action: 'renew', prescriptionId: latestPrescription?.id } })}
+                            >
+                                Renovar / ajustar
+                            </button>
+                            <button
+                                type="button"
+                                className="px-3 py-2 rounded-lg border border-slate-700/60 bg-slate-900/40 text-slate-200 text-sm hover:bg-slate-800/50 transition-colors"
+                                onClick={() => navigate('/app/clinica/paciente/agendamentos', { state: { openNew: true, reason: 'prescription' } })}
+                            >
+                                Marcar consulta
+                            </button>
+                        </div>
+                    )}
+                </div>
             </div>
 
             {/* ─── Exames Solicitados — Compact Full-Width ─── */}

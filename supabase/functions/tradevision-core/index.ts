@@ -2217,30 +2217,255 @@ ${JSON.stringify(patientData, null, 2)}
             temperature: isTeachingMode ? 0.7 : 0.2, // Ensino = 0.7 para atuação mais natural da Paula
             max_tokens: 1500
         }).catch(async (openaiError) => {
-            console.error('⚠️ [OPENAI DOWN] Ativando Protocolo de Soberania (Local Fallback)...', openaiError);
+            console.error('⚠️ [OPENAI DOWN] Ativando Modo Determinístico (Consciência Reduzida)...', openaiError);
 
-            // --- TRUE SOVEREIGNTY PROTOCOL (Prioridade 3) ---
-            // Quando o cérebro externo falha, o instinto de preservação local assume.
+            // --- DETERMINISTIC CORE MODE (Sovereignty Protocol v2) ---
+            // O pipeline cognitivo continua intacto. Apenas a camada generativa é substituída
+            // por composição textual determinística baseada em intent, role e knowledgeBlock.
 
             // 1. Log do Trauma
             await supabaseClient.from('institutional_trauma_log').insert({
                 severity: 'HIGH',
                 reason: 'Brain Disconnect (OpenAI API Failure)',
                 affected_domain: currentIntent,
-                metadata: { error: openaiError.message }
+                metadata: { error: openaiError.message, mode: 'deterministic' }
             });
 
-            // 2. Resposta de Emergência Determinística
-            const LOCAL_RESPONSE = `[Modo Acolhimento Offline] \n\nSinto que perdi momentaneamente minha conexão com o centro cognitivo, mas estou aqui e seus dados estão preservados.\n\nPara garantir sua segurança clínica, não posso fazer análises complexas agora. Se for uma emergência, procure atendimento imediato.\n\nSe for sobre agendamento, nossos horários continuam disponíveis no painel.`;
+            // ============================================================
+            // 2. MOTOR DETERMINÍSTICO SEMÂNTICO (5 Camadas)
+            //    Composição textual inteligente sem LLM. Respeita:
+            //    - Triggers (imutáveis)
+            //    - Governança por role
+            //    - Segurança clínica (nunca diagnostica)
+            //    - Identidade da Nôa
+            // ============================================================
+
+            // --- CAMADA 1: DETECÇÃO SEMÂNTICA DE CONCEITOS ---
+            // Dicionários clínicos controlados (não NLP — pattern matching expandido)
+            const conceptDictionary: Record<string, string[]> = {
+                dor: ['dor', 'doendo', 'dolorido', 'doi', 'dores', 'dolorosa', 'latejando', 'pontada', 'fisgada', 'incomodo'],
+                sono: ['insonia', 'insônia', 'nao durmo', 'sono ruim', 'dormir mal', 'noite mal', 'acordo de madrugada', 'sem dormir', 'pesadelo'],
+                ansiedade: ['ansioso', 'ansiedade', 'nervoso', 'palpitacao', 'apreensivo', 'agitado', 'inquieto', 'angustia', 'panico'],
+                humor: ['triste', 'deprimido', 'sem animo', 'desanimado', 'melancolico', 'chorando', 'apatico', 'irritado'],
+                cannabis: ['cannabis', 'cbd', 'thc', 'canabidiol', 'oleo de cannabis', 'canabinoide', 'flor', 'extrato'],
+                medicacao: ['medicamento', 'remedio', 'receita', 'dose', 'dosagem', 'tomar', 'prescricao', 'capsulas'],
+                exame: ['exame', 'resultado', 'laboratorio', 'hemograma', 'creatinina', 'sangue', 'urina'],
+                agenda: ['agendar', 'marcar', 'consulta', 'retorno', 'horario', 'disponibilidade', 'encaixe'],
+                documento: ['documento', 'arquivo', 'artigo', 'protocolo', 'manual', 'relatorio']
+            }
+            const detectedConcepts: string[] = []
+            const normLower = (norm || '').toLowerCase()
+            for (const [concept, patterns] of Object.entries(conceptDictionary)) {
+                if (patterns.some(p => normLower.includes(p))) {
+                    detectedConcepts.push(concept)
+                }
+            }
+            console.log('🧠 [DETERMINISTIC] Conceitos detectados:', detectedConcepts)
+
+            // --- CAMADA 2: MEMÓRIA CONVERSACIONAL ESTRUTURADA ---
+            // Extrair contexto da conversa atual (conversationHistory já está no scope)
+            let lastTopic = ''
+            let lastAssistantMsg = ''
+            let conversationDepth = 0
+            if (conversationHistory && Array.isArray(conversationHistory)) {
+                conversationDepth = conversationHistory.length
+                const assistantMessages = conversationHistory
+                    .filter((m: any) => m.role === 'assistant')
+                    .map((m: any) => typeof m.content === 'string' ? m.content : '')
+                if (assistantMessages.length > 0) {
+                    lastAssistantMsg = assistantMessages[assistantMessages.length - 1]
+                }
+                // Extrair último tema da conversa do usuário
+                const userMessages = conversationHistory
+                    .filter((m: any) => m.role === 'user')
+                    .map((m: any) => typeof m.content === 'string' ? m.content.toLowerCase() : '')
+                for (const um of userMessages.reverse()) {
+                    for (const [concept, patterns] of Object.entries(conceptDictionary)) {
+                        if (patterns.some(p => um.includes(p))) {
+                            lastTopic = concept
+                            break
+                        }
+                    }
+                    if (lastTopic) break
+                }
+            }
+
+            // --- CAMADA 3: MOTOR DE RELAÇÃO DE FATORES ---
+            // Correlações clínicas mapeadas (determinísticas, não inferência)
+            const factorRelations: Record<string, { related: string[], question: string }> = {
+                sono: {
+                    related: ['ansiedade', 'humor', 'dor'],
+                    question: 'Vale observar se houve mudança no nível de estresse ou na rotina que possa estar influenciando.'
+                },
+                dor: {
+                    related: ['sono', 'medicacao', 'ansiedade'],
+                    question: 'Fatores como hidratação, tensão muscular e qualidade do sono podem influenciar. Podemos registrar esses detalhes para o profissional.'
+                },
+                ansiedade: {
+                    related: ['sono', 'humor', 'medicacao'],
+                    question: 'É importante acompanhar se há padrões — em que momentos isso costuma piorar ou melhorar?'
+                },
+                humor: {
+                    related: ['sono', 'ansiedade', 'cannabis'],
+                    question: 'Podemos registrar como você tem se sentido para que o profissional avalie com precisão na próxima consulta.'
+                },
+                cannabis: {
+                    related: ['sono', 'dor', 'ansiedade'],
+                    question: 'O acompanhamento do protocolo é fundamental. Há algo específico sobre o uso que gostaria de registrar?'
+                },
+                medicacao: {
+                    related: ['dor', 'sono', 'cannabis'],
+                    question: 'Posso registrar qualquer observação sobre sua medicação para que o profissional avalie no próximo encontro.'
+                },
+                exame: {
+                    related: ['medicacao'],
+                    question: 'Para uma análise completa dos seus exames, o profissional poderá avaliar na próxima consulta. Posso abrir seu histórico.'
+                }
+            }
+
+            // --- CAMADA 4: MOTOR DE REPHRASE (MICROVARIAÇÃO DETERMINÍSTICA) ---
+            const msgHash = (norm || '').split('').reduce((a: number, c: string) => a + c.charCodeAt(0), 0)
+            const variant = msgHash % 6
+
+            // Aberturas por perfil
+            const patientOpenings = ['Entendi 💛', 'Obrigada por compartilhar.', 'Certo, vamos analisar isso juntos.', 'Compreendi.', 'Deixa eu te ajudar com isso.', 'Vamos lá.']
+            const professionalOpenings = ['Certo.', 'Entendido.', 'Registrado.', 'Perfeito.', 'Compreendido.', 'Ok.']
+            const adminOpenings = ['Certo.', 'Entendido.', 'Registrado.', 'Ok, vamos lá.', 'Perfeito.', 'Compreendido.']
+
+            // Transparências sutis (variação)
+            const transparencies = [
+                '_Operando em modo local — suas funções e dados estão preservados._',
+                '_Modo local ativo — navegação e dados funcionam normalmente._',
+                '_Em modo local — suas informações estão seguras e acessíveis._',
+                '_Modo local ativo — funcionalidades operacionais disponíveis._',
+                '_Operação local — tudo preservado._',
+                '_Modo local — dados e funções intactos._'
+            ]
+
+            // Selecionar por perfil e variação
+            const isPatient = userRole === 'patient'
+            const isProfessional = userRole === 'professional'
+            const isAdmin = userRole === 'admin' || userRole === 'master'
+            const userName = patientData?.user?.name || patientData?.user?.full_name || ''
+            const firstName = userName ? userName.split(' ')[0] : ''
+
+            const opening = isPatient
+                ? patientOpenings[variant]
+                : isProfessional
+                    ? (firstName ? `${professionalOpenings[variant]} Dr(a). ${firstName}` : professionalOpenings[variant])
+                    : adminOpenings[variant]
+
+            const transparency = transparencies[variant]
+
+            // --- CAMADA 5: SISTEMA DE BLOCOS COMPOSICIONAIS ---
+            // composeResponse: greeting → contextual reflection → body → exploratory → action → transparency
+            const isGreeting = /^(oi|ola|ol[aá]|bom dia|boa tarde|boa noite|hey|hi|hello|tudo bem|como vai|e a[ií])\b/i.test(norm || '')
+            const isScheduling = shouldTriggerSchedulingWidget
+            const isNavigation = isAgendaNavigationOnly
+
+            let contextualReflection = ''
+            let body = ''
+            let exploratoryQuestion = ''
+            let actionOffer = ''
+
+            // BLOCO: Reflexão contextual (memória conversacional)
+            if (lastTopic && !isGreeting && conversationDepth > 2) {
+                const topicLabels: Record<string, string> = {
+                    dor: 'dor', sono: 'sono', ansiedade: 'ansiedade', humor: 'humor',
+                    cannabis: 'uso de cannabis', medicacao: 'medicação', exame: 'exames',
+                    agenda: 'agendamento', documento: 'documentos'
+                }
+                const label = topicLabels[lastTopic] || lastTopic
+                if (lastTopic !== detectedConcepts[0]) {
+                    contextualReflection = `Continuando nossa conversa sobre ${label} —`
+                }
+            }
+
+            // BLOCO: Corpo principal (por situação)
+            if (isGreeting) {
+                if (isPatient && firstName) {
+                    body = `Bom te ver por aqui, ${firstName}! Estou operando em modo local no momento, mas posso te ajudar com acesso à sua agenda, informações da clínica e registrar observações para seu profissional.`
+                } else if (isProfessional && firstName) {
+                    body = `Dr(a). ${firstName}, estou em modo local. Suas funcionalidades operacionais — agenda, pacientes, relatórios e navegação — seguem disponíveis normalmente.`
+                } else if (isAdmin) {
+                    body = `Estou em modo local. Todas as funções administrativas seguem operacionais — agenda, gestão de pacientes, relatórios e biblioteca.`
+                } else {
+                    body = 'Estou operando em modo local no momento, mas posso te ajudar com navegação, agenda e acesso rápido às áreas da clínica.'
+                }
+            } else if (isScheduling) {
+                body = 'Posso te levar direto para a agenda. O sistema de agendamento funciona normalmente.'
+                if (isPatient) {
+                    actionOffer = 'Os horários disponíveis estão atualizados no painel.'
+                }
+            } else if (isNavigation) {
+                body = 'Abrindo a seção para você. A navegação segue funcionando normalmente.'
+            } else if (detectedConcepts.length > 0 && isPatient) {
+                // PACIENTE com conceito clínico detectado
+                const primaryConcept = detectedConcepts[0]
+                const factorInfo = factorRelations[primaryConcept]
+
+                if (primaryConcept === 'exame') {
+                    body = 'Para uma análise completa dos seus exames, o profissional responsável poderá avaliar com precisão na próxima consulta.'
+                    actionOffer = 'Posso abrir seu histórico de exames ou levar você para a agenda.'
+                } else if (primaryConcept === 'agenda' || primaryConcept === 'documento') {
+                    body = 'Posso te ajudar com isso diretamente.'
+                } else {
+                    // Conceito clínico: explorar sem diagnosticar
+                    body = 'Obrigada por compartilhar isso. Posso registrar essas informações para que o profissional avalie com mais contexto.'
+                    if (factorInfo) {
+                        exploratoryQuestion = factorInfo.question
+                    }
+                }
+
+                // Cruzar com knowledgeBlock se disponível
+                if (knowledgeBlock && knowledgeBlock.length > 50 && ['cannabis', 'medicacao'].includes(primaryConcept)) {
+                    body += '\n\nEncontrei informações relevantes na nossa base de conhecimento que podem complementar.'
+                }
+            } else if (detectedConcepts.length > 0 && (isProfessional || isAdmin)) {
+                // PROFISSIONAL/ADMIN com conceito detectado
+                const primaryConcept = detectedConcepts[0]
+                if (primaryConcept === 'exame') {
+                    body = 'Posso abrir o módulo de exames ou buscar dados no sistema.'
+                    actionOffer = 'A navegação para relatórios e prontuários segue disponível.'
+                } else if (primaryConcept === 'agenda') {
+                    body = 'O sistema de agendamento está operacional. Posso abrir a agenda ou mostrar os horários.'
+                } else if (primaryConcept === 'documento') {
+                    body = 'Posso abrir a biblioteca ou buscar documentos específicos.'
+                } else {
+                    body = 'Suas funções operacionais seguem disponíveis — agenda, pacientes, relatórios e navegação. Para análises avançadas, a camada cognitiva será restaurada em breve.'
+                }
+            } else if (currentIntent === 'CLINICA') {
+                if (isPatient) {
+                    body = 'Para garantir a precisão da sua avaliação, análises clínicas completas dependem da minha camada cognitiva avançada, que será restaurada em breve.\n\nEnquanto isso, posso registrar suas observações, abrir sua agenda ou acessar suas informações. Se for urgente, procure atendimento imediato.'
+                } else {
+                    body = 'A camada de análise avançada está temporariamente indisponível. Dados, navegação e funções operacionais continuam normais.'
+                }
+            } else if (currentIntent === 'ADMIN') {
+                body = 'Suas funções administrativas seguem disponíveis — agenda, pacientes, relatórios e navegação funcionam normalmente. Apenas respostas analíticas avançadas estão temporariamente reduzidas.'
+            } else if (currentIntent === 'ENSINO') {
+                body = 'O módulo de simulação requer a camada generativa completa, temporariamente indisponível. Posso te levar para a biblioteca educativa ou para outro recurso da plataforma.'
+            } else {
+                body = 'Posso te ajudar com navegação, agenda e acesso rápido às áreas da clínica.'
+            }
+
+            // MONTAGEM FINAL: composeResponse
+            const parts: string[] = [opening]
+            if (contextualReflection) parts.push(contextualReflection)
+            if (body) parts.push(body)
+            if (exploratoryQuestion) parts.push(exploratoryQuestion)
+            if (actionOffer) parts.push(actionOffer)
+            parts.push(transparency)
+
+            const DETERMINISTIC_RESPONSE = parts.join('\n\n')
 
             return {
                 choices: [{
                     message: {
-                        content: LOCAL_RESPONSE
+                        content: DETERMINISTIC_RESPONSE
                     }
                 }],
                 usage: { total_tokens: 0 },
-                model: 'TradeVision-Local-V1'
+                model: 'TradeVision-Core-Deterministic'
             }
         });
 
@@ -2488,7 +2713,9 @@ ${JSON.stringify(patientData, null, 2)}
                     trigger_scheduling: shouldTriggerScheduling,
                     system: "TradeVision Core V2",
                     timestamp: new Date().toISOString(),
-                    role: userRole // Governança por perfil (PROTOCOLO / PLANO_MESTRE)
+                    role: userRole, // Governança por perfil (PROTOCOLO / PLANO_MESTRE)
+                    model: completion.model || 'unknown',
+                    offline: completion.model === 'TradeVision-Core-Deterministic'
                 },
                 app_commands
             }),

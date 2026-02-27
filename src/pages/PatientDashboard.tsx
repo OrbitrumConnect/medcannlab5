@@ -214,15 +214,118 @@ const PatientDashboard: React.FC = () => {
         </div>
       )}
 
-      {/* Outras abas (simplificadas ou placeholders conforme necessário) */}
-      {(['plano', 'perfil'].includes(activeTab)) && (
-        <div className="py-20 text-center space-y-4">
-          <div className="w-20 h-20 bg-primary-500/10 rounded-full flex items-center justify-center mx-auto border border-primary-500/20">
-            <Zap className="w-10 h-10 text-primary-400" />
+      {/* Acompanhamento do Plano Terapêutico */}
+      {activeTab === 'plano' && (
+        <div className="space-y-6">
+          <div className="flex items-center justify-between">
+            <h2 className="text-2xl font-bold text-white flex items-center gap-2">
+              <Target className="w-6 h-6 text-emerald-400" />
+              Acompanhamento do Plano
+            </h2>
+            <button onClick={() => setActiveTab('analytics')} className="px-4 py-2 bg-white/5 border border-white/10 rounded-xl hover:bg-white/10 transition-all text-sm">Voltar</button>
           </div>
-          <h2 className="text-2xl font-bold">Funcionalidade em Expansão</h2>
-          <p className="text-slate-400 max-w-md mx-auto">Estamos otimizando esta seção para oferecer a melhor experiência clínica. Em breve disponível.</p>
-          <button onClick={() => setActiveTab('analytics')} className="px-6 py-2 bg-white/5 border border-white/10 rounded-xl hover:bg-white/10 transition-all">Voltar ao Início</button>
+
+          {therapeuticPlan ? (
+            <div className="space-y-6">
+              {/* Plan Overview */}
+              <div className="bg-slate-900/40 rounded-2xl border border-white/5 p-6">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="p-2 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
+                    <Activity className="w-5 h-5 text-emerald-400" />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="text-lg font-semibold text-white">{therapeuticPlan.title}</h3>
+                    <p className="text-xs text-slate-400">Próxima revisão: {therapeuticPlan.nextReview}</p>
+                  </div>
+                </div>
+
+                {/* Progress */}
+                <div className="mb-6">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm text-slate-400 font-medium">Progresso do plano</span>
+                    <span className="text-sm font-bold text-emerald-400">{therapeuticPlan.progress}%</span>
+                  </div>
+                  <div className="w-full h-3 bg-slate-700/50 rounded-full overflow-hidden">
+                    <div
+                      className="h-full rounded-full transition-all duration-700"
+                      style={{
+                        width: `${therapeuticPlan.progress}%`,
+                        background: 'linear-gradient(90deg, #10b981, #06b6d4)'
+                      }}
+                    />
+                  </div>
+                </div>
+
+                {/* Medications */}
+                <div>
+                  <h4 className="text-sm font-semibold text-slate-300 mb-3 flex items-center gap-2">
+                    <Shield className="w-4 h-4 text-emerald-400" />
+                    Medicações / Protocolo
+                  </h4>
+                  <div className="space-y-2">
+                    {therapeuticPlan.medications.map((med, idx) => (
+                      <div key={idx} className="flex items-center gap-3 p-3 rounded-lg bg-slate-800/40 border border-slate-700/30">
+                        <span className="w-6 h-6 rounded-full bg-emerald-500/10 flex items-center justify-center text-emerald-400 text-xs font-bold flex-shrink-0 border border-emerald-500/20">{idx + 1}</span>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm text-slate-200 font-semibold">{med.name}</p>
+                          <p className="text-xs text-slate-400">{med.dosage} • {med.frequency}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Quick actions */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <button onClick={() => setActiveTab('chat-noa')} className="p-4 rounded-xl bg-slate-800/30 border border-slate-700/50 hover:border-emerald-500/30 transition-all text-left group">
+                  <Brain className="w-6 h-6 text-emerald-400 mb-2" />
+                  <p className="text-sm font-semibold text-white">Falar com Nôa</p>
+                  <p className="text-xs text-slate-400">Tirar dúvidas sobre seu plano</p>
+                </button>
+                <button onClick={() => navigate('/app/clinica/paciente/agendamentos')} className="p-4 rounded-xl bg-slate-800/30 border border-slate-700/50 hover:border-blue-500/30 transition-all text-left group">
+                  <Calendar className="w-6 h-6 text-blue-400 mb-2" />
+                  <p className="text-sm font-semibold text-white">Agendar Consulta</p>
+                  <p className="text-xs text-slate-400">Marcar reavaliação</p>
+                </button>
+                <button onClick={() => navigate('/app/clinica/paciente/chat-profissional')} className="p-4 rounded-xl bg-slate-800/30 border border-slate-700/50 hover:border-purple-500/30 transition-all text-left group">
+                  <MessageCircle className="w-6 h-6 text-purple-400 mb-2" />
+                  <p className="text-sm font-semibold text-white">Falar com Médico</p>
+                  <p className="text-xs text-slate-400">Discutir ajustes no plano</p>
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="bg-slate-900/40 rounded-2xl border border-white/5 p-8 text-center">
+              <div className="w-16 h-16 bg-emerald-500/10 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-emerald-500/15">
+                <Target className="w-8 h-8 text-emerald-400 opacity-50" />
+              </div>
+              <h3 className="text-lg font-semibold text-white mb-2">Plano em construção</h3>
+              <p className="text-sm text-slate-400 max-w-md mx-auto mb-6">Seu plano terapêutico será gerado automaticamente após sua primeira avaliação com a Nôa.</p>
+              <button onClick={handleStartAssessment} className="px-6 py-2.5 bg-gradient-to-r from-emerald-500 to-cyan-600 text-white rounded-xl font-semibold shadow-lg shadow-emerald-500/20 hover:scale-105 transition-all">
+                Iniciar Avaliação
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Perfil — redireciona para página de perfil */}
+      {activeTab === 'perfil' && (
+        <div className="space-y-6">
+          <div className="flex items-center justify-between">
+            <h2 className="text-2xl font-bold text-white flex items-center gap-2">
+              <Zap className="w-6 h-6 text-primary-400" />
+              Meu Perfil
+            </h2>
+            <button onClick={() => setActiveTab('analytics')} className="px-4 py-2 bg-white/5 border border-white/10 rounded-xl hover:bg-white/10 transition-all text-sm">Voltar</button>
+          </div>
+          <div className="bg-slate-900/40 rounded-2xl border border-white/5 p-8 text-center">
+            <p className="text-slate-400 mb-6">Acesse sua página de perfil para atualizar suas informações, foto e preferências.</p>
+            <button onClick={() => navigate('/app/profile')} className="px-8 py-3 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-2xl font-bold shadow-lg shadow-blue-500/20 hover:scale-105 transition-all">
+              Ir para Meu Perfil
+            </button>
+          </div>
         </div>
       )}
 

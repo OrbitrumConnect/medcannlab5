@@ -180,6 +180,7 @@ export const useMedCannLabConversation = (options?: { documentContext?: Document
   const [lastIntent, setLastIntent] = useState<ConversationalIntent | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [usedEndpoints, setUsedEndpoints] = useState<string[]>([])
+  const [isOffline, setIsOffline] = useState(false)
 
   // Inicializar IA apenas quando houver um usuário logado
   useEffect(() => {
@@ -1048,13 +1049,29 @@ export const useMedCannLabConversation = (options?: { documentContext?: Document
           usedEndpoints: ['resident-ai'],
           // Core: expor no topo para a UI (widget de agendamento e botões)
           trigger_scheduling: response.metadata?.trigger_scheduling === true,
-          professionalId: response.metadata?.professionalId
+          professionalId: response.metadata?.professionalId,
+          // Modo Determinístico Offline
+          offline: response.metadata?.offline === true ||
+            (typeof response.metadata?.model === 'string' && response.metadata.model.includes('Deterministic'))
         }
       }
 
       setMessages(prev => [...prev, assistantMessage])
       setLastIntent(intent)
       setUsedEndpoints(prev => [...prev, 'resident-ai'])
+
+      // Detectar modo offline e atualizar estado
+      const responseIsOffline = response.metadata?.offline === true ||
+        (typeof response.metadata?.model === 'string' && String(response.metadata.model).includes('Deterministic'))
+      setIsOffline(responseIsOffline)
+      if (responseIsOffline) {
+        console.log('🟡 [OFFLINE] Nôa operando em Modo Determinístico (Consciência Reduzida)')
+      } else if (isOffline) {
+        // Saiu do offline → reconectou
+        console.log('✅ [RECONNECTED] Nôa reconectada ao centro cognitivo')
+        setIsOffline(false)
+      }
+
       console.log('💬 Mensagem da IA adicionada ao chat. Total de mensagens:', messages.length + 2)
       console.log('🔍 Metadata recebida:', response.metadata) // Debug log
 
@@ -1239,6 +1256,7 @@ export const useMedCannLabConversation = (options?: { documentContext?: Document
     error,
     usedEndpoints,
     isSpeaking,
+    isOffline,
     sendMessage,
     triggerQuickCommand,
     resetConversation

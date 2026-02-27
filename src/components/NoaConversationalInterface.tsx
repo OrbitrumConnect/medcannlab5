@@ -352,7 +352,8 @@ const NoaConversationalInterface: React.FC<NoaConversationalInterfaceProps> = ({
     isSpeaking,
     error,
     usedEndpoints,
-    lastIntent
+    lastIntent,
+    isOffline
   } = useMedCannLabConversation({
     documentContext: inlineDoc ? { id: inlineDoc.id, title: inlineDoc.title, summary: inlineDoc.summary ?? undefined, content: inlineDoc.content ?? undefined } : null
   })
@@ -2242,6 +2243,14 @@ const NoaConversationalInterface: React.FC<NoaConversationalInterfaceProps> = ({
                   Gravando consulta...
                 </span>
               )}
+            </div>
+          )}
+
+          {/* 💛 Banner sutil de Modo Local (Determinístico) — não alarmar */}
+          {isOffline && (
+            <div className="border-b border-yellow-900/30 bg-yellow-950/30 px-3 sm:px-5 py-1.5 flex items-center gap-2 text-[10px] sm:text-xs text-yellow-400/90 flex-shrink-0" style={{ animation: 'fadeIn 0.5s ease-in' }}>
+              <div className="w-1.5 h-1.5 rounded-full bg-yellow-400 flex-shrink-0" style={{ animation: 'pulse 2s infinite' }} />
+              <span>💛 Modo local ativo — funções operacionais disponíveis</span>
             </div>
           )}
 
