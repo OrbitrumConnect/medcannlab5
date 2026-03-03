@@ -34,27 +34,96 @@ const WISECARE_BASE_URL = Deno.env.get('WISECARE_BASE_URL') || 'https://session-
 const WISECARE_DOMAIN = Deno.env.get('WISECARE_DOMAIN') || 'conf.homolog.v4h.cloud';
 const WISECARE_ORG = Deno.env.get('WISECARE_ORG') || 'MedicannLab';
 
-// Helper: chamada à WiseCare API com timeout
+// Cache do Bearer token (reutilizar enquanto a function estiver quente)
+let cachedBearerToken: string | null = null;
+let tokenExpiresAt = 0;
+
+// Helper: obter Bearer token via login
+async function getWisecareToken(): Promise<string> {
+    // Se tem token em cache e não expirou, reutilizar
+    if (cachedBearerToken && Date.now() < tokenExpiresAt) {
+        return cachedBearerToken;
+    }
+
+    console.log(`[WiseCare Auth] Attempting login... (login: ${WISECARE_LOGIN ? WISECARE_LOGIN.substring(0, 8) + '...' : 'EMPTY!'})`);
+
+    // Tentar login via POST /auth/login (padrão WiseCare)
+    const loginEndpoints = ['/auth/login', '/auth', '/login'];
+
+    for (const loginPath of loginEndpoints) {
+        try {
+            const response = await fetch(`${WISECARE_BASE_URL}${loginPath}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    login: WISECARE_LOGIN,
+                    password: WISECARE_PASSWORD,
+                    type: 'ORG',
+                }),
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                const token = data.token || data.access_token || data.accessToken || data.jwt;
+                if (token) {
+                    cachedBearerToken = token;
+                    tokenExpiresAt = Date.now() + 55 * 60 * 1000; // 55 min cache
+                    console.log(`[WiseCare Auth] Login OK via ${loginPath}, token obtained`);
+                    return token;
+                }
+                console.log(`[WiseCare Auth] ${loginPath} returned 200 but no token in response:`, JSON.stringify(data).substring(0, 200));
+            } else {
+                const errText = await response.text();
+                console.log(`[WiseCare Auth] ${loginPath} → ${response.status}: ${errText.substring(0, 200)}`);
+            }
+        } catch (err) {
+            console.log(`[WiseCare Auth] ${loginPath} failed:`, err instanceof Error ? err.message : err);
+        }
+    }
+
+    // Fallback: se login não funcionar, usar o próprio login UUID como Bearer token
+    console.log('[WiseCare Auth] Login endpoints failed, using login UUID as Bearer token');
+    cachedBearerToken = WISECARE_LOGIN;
+    tokenExpiresAt = Date.now() + 55 * 60 * 1000;
+    return WISECARE_LOGIN;
+}
+
+// Helper: chamada à WiseCare API com timeout e auth automática
 async function wisecareRequest(
     method: string,
     endpoint: string,
     body?: Record<string, unknown>
 ): Promise<Record<string, unknown>> {
-    const credentials = btoa(`${WISECARE_LOGIN}:${WISECARE_PASSWORD}`);
+    const token = await getWisecareToken();
 
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 15000); // 15s timeout
+    const timeout = setTimeout(() => controller.abort(), 15000);
 
     try {
-        const response = await fetch(`${WISECARE_BASE_URL}${endpoint}`, {
+        // Tentar com Bearer token
+        let response = await fetch(`${WISECARE_BASE_URL}${endpoint}`, {
             method,
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Basic ${credentials}`,
+                'Authorization': `Bearer ${token}`,
             },
             body: body ? JSON.stringify(body) : undefined,
             signal: controller.signal,
         });
+
+        // Se Bearer falhar com 401, tentar Basic Auth como fallback
+        if (response.status === 401) {
+            console.log(`[WiseCare API] Bearer token rejected for ${endpoint}, trying Basic Auth...`);
+            const credentials = btoa(`${WISECARE_LOGIN}:${WISECARE_PASSWORD}`);
+            response = await fetch(`${WISECARE_BASE_URL}${endpoint}`, {
+                method,
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Basic ${credentials}`,
+                },
+                body: body ? JSON.stringify(body) : undefined,
+            });
+        }
 
         if (!response.ok) {
             const errorText = await response.text();
