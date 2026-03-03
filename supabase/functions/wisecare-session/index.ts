@@ -64,11 +64,14 @@ async function getWisecareToken(): Promise<string> {
 
             if (response.ok) {
                 const data = await response.json();
-                const token = data.token || data.access_token || data.accessToken || data.jwt;
+                // WiseCare retorna: { access: { token: "...", expires: 120 }, refresh: { ... } }
+                const token = data.access?.token || data.token || data.access_token || data.accessToken || data.jwt;
                 if (token) {
                     cachedBearerToken = token;
-                    tokenExpiresAt = Date.now() + 55 * 60 * 1000; // 55 min cache
-                    console.log(`[WiseCare Auth] Login OK via ${loginPath}, token obtained`);
+                    // Usar expires da resposta (em minutos) ou default 55 min
+                    const expiresMinutes = data.access?.expires || 55;
+                    tokenExpiresAt = Date.now() + (expiresMinutes - 5) * 60 * 1000; // 5 min margem
+                    console.log(`[WiseCare Auth] Login OK via ${loginPath}, token obtained (expires in ${expiresMinutes}min)`);
                     return token;
                 }
                 console.log(`[WiseCare Auth] ${loginPath} returned 200 but no token in response:`, JSON.stringify(data).substring(0, 200));
