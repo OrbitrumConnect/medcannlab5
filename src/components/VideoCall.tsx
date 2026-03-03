@@ -1,8 +1,9 @@
-import React, { useRef, useEffect, useState } from 'react'
-import { X, Mic, MicOff, Video, VideoOff, Volume2, VolumeX, Settings, Maximize2, Minimize2, Circle, Square } from 'lucide-react'
+import React, { useRef, useEffect, useState, useCallback } from 'react'
+import { X, Mic, MicOff, Video, VideoOff, Volume2, VolumeX, Settings, Maximize2, Minimize2, Circle, Square, Wifi, WifiOff } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
 import { useWebRTCRoom } from '../hooks/useWebRTCRoom'
+import { useWiseCareRoom } from '../hooks/useWiseCareRoom'
 
 interface VideoCallProps {
   isOpen: boolean
@@ -13,6 +14,8 @@ interface VideoCallProps {
   signalingRoomId?: string
   /** Quem iniciou a chamada (envia o offer). O outro participante é o callee (envia o answer). */
   isInitiator?: boolean
+  /** ID do appointment para vincular à sessão WiseCare */
+  appointmentId?: string
 }
 
 // Política de consentimento para videochamada
@@ -45,7 +48,10 @@ type RecordingConsentSnapshot = {
   description?: string
 }
 
-const VideoCall: React.FC<VideoCallProps> = ({ isOpen, onClose, patientId, isAudioOnly = false, signalingRoomId, isInitiator = false }) => {
+// Tipo de provider ativo
+type ActiveProvider = 'wisecare' | 'webrtc' | 'none'
+
+const VideoCall: React.FC<VideoCallProps> = ({ isOpen, onClose, patientId, isAudioOnly = false, signalingRoomId, isInitiator = false, appointmentId }) => {
   const { user } = useAuth()
   const localVideoRef = useRef<HTMLVideoElement>(null)
   const remoteVideoRef = useRef<HTMLVideoElement>(null)
@@ -54,7 +60,7 @@ const VideoCall: React.FC<VideoCallProps> = ({ isOpen, onClose, patientId, isAud
   const [localStreamForWebRTC, setLocalStreamForWebRTC] = useState<MediaStream | null>(null)
   const mediaRecorderRef = useRef<MediaRecorder | null>(null)
   const recordingChunksRef = useRef<Blob[]>([])
-  
+
   const [isMuted, setIsMuted] = useState(false)
   const [isVideoOff, setIsVideoOff] = useState(false)
   const [isRemoteMuted, setIsRemoteMuted] = useState(false)
@@ -63,25 +69,30 @@ const VideoCall: React.FC<VideoCallProps> = ({ isOpen, onClose, patientId, isAud
   const [isSpeakerOn, setIsSpeakerOn] = useState(true)
   const [cameraOnDuringAudioCall, setCameraOnDuringAudioCall] = useState(false)
   const [cameraStreamDuringAudio, setCameraStreamDuringAudio] = useState<MediaStream | null>(null)
-  
+
   // Estados de consentimento e sessão
   const [showConsentModal, setShowConsentModal] = useState(false)
   const [consentGiven, setConsentGiven] = useState(false)
   const [consentSnapshot, setConsentSnapshot] = useState<RecordingConsentSnapshot | null>(null)
   const [sessionStartTime, setSessionStartTime] = useState<Date | null>(null)
   const [sessionId, setSessionId] = useState<string | null>(null)
-  
+
   // Estados de gravação clínica
   const [isRecording, setIsRecording] = useState(false)
   const [recordingDuration, setRecordingDuration] = useState(0)
   const [recordingStartTime, setRecordingStartTime] = useState<Date | null>(null)
-  
+
   // Estado para solicitação de gravação (profissional solicita, paciente aceita)
   const [recordingRequested, setRecordingRequested] = useState(false)
   const [showPatientConsentNotification, setShowPatientConsentNotification] = useState(false)
-  
+
   // Verificar se usuário é profissional/admin
   const isProfessional = user?.type === 'profissional' || user?.type === 'admin'
+
+  // ─── Provider state: WiseCare como primário, WebRTC como fallback ───
+  const [activeProvider, setActiveProvider] = useState<ActiveProvider>('none')
+  const [wisecareAttempted, setWisecareAttempted] = useState(false)
+  const [providerError, setProviderError] = useState<string | null>(null)
 
   // Gerar session_id único
   const generateSessionId = () => {
@@ -182,25 +193,70 @@ const VideoCall: React.FC<VideoCallProps> = ({ isOpen, onClose, patientId, isAud
     }
   }, [isAudioOnly, localStreamForWebRTC, cameraOnDuringAudioCall, cameraStreamDuringAudio])
 
-  // WebRTC: sinalização e stream remoto (quando signalingRoomId está definido)
+  // ─── WiseCare: provider primário (telemedicina profissional) ───
+  const {
+    isConnected: wisecareConnected,
+    isConnecting: wisecareConnecting,
+    error: wisecareError,
+    session: wisecareSession,
+    createAndJoin: wisecareCreateAndJoin,
+    endCall: wisecareEndCall,
+  } = useWiseCareRoom({
+    containerId: 'wisecare-container',
+    appointmentId,
+    startWithAudioMuted: false,
+    startWithVideoMuted: isAudioOnly,
+    onConnect: () => {
+      console.log('[VideoCall] WiseCare connected')
+      setActiveProvider('wisecare')
+      setProviderError(null)
+    },
+    onDisconnect: () => {
+      console.log('[VideoCall] WiseCare disconnected')
+      if (activeProvider === 'wisecare') {
+        setActiveProvider('none')
+      }
+    },
+    onError: (err) => {
+      console.warn('[VideoCall] WiseCare error, falling back to WebRTC:', err.message)
+      setProviderError(`WiseCare: ${err.message}`)
+      setActiveProvider('webrtc') // Auto-fallback
+    },
+  })
+
+  // ─── WebRTC: fallback P2P (ativa se WiseCare falha ou não está disponível) ───
+  const useWebRTCFallback = activeProvider === 'webrtc' && !!signalingRoomId
   const { remoteStream, connectionState: webrtcState, error: webrtcError } = useWebRTCRoom({
     roomId: signalingRoomId,
     isInitiator,
     localStream: localStreamForWebRTC,
-    enabled: isOpen && consentGiven && !!signalingRoomId && !!user?.id,
+    enabled: isOpen && consentGiven && useWebRTCFallback && !!user?.id,
     userId: user?.id ?? ''
   })
+
+  // ─── Auto-iniciar WiseCare após consentimento ───
+  useEffect(() => {
+    if (isOpen && consentGiven && !wisecareAttempted && !wisecareConnected && user?.id) {
+      setWisecareAttempted(true)
+      setActiveProvider('wisecare') // Otimista
+      wisecareCreateAndJoin({ appointmentId }).catch((err) => {
+        console.warn('[VideoCall] WiseCare failed, falling back to WebRTC P2P:', err)
+        setActiveProvider('webrtc')
+        setProviderError(`Telemedicina indisponível: ${err.message}. Usando conexão direta.`)
+      })
+    }
+  }, [isOpen, consentGiven, wisecareAttempted, wisecareConnected, user?.id, appointmentId, wisecareCreateAndJoin])
 
   // Atribuir stream remoto aos elementos de mídia (ouvir/ver o outro participante)
   useEffect(() => {
     if (remoteStream) {
       if (remoteAudioRef.current) {
         remoteAudioRef.current.srcObject = remoteStream
-        remoteAudioRef.current.play().catch(() => {})
+        remoteAudioRef.current.play().catch(() => { })
       }
       if (remoteVideoRef.current) {
         remoteVideoRef.current.srcObject = remoteStream
-        remoteVideoRef.current.play().catch(() => {})
+        remoteVideoRef.current.play().catch(() => { })
       }
     } else {
       if (remoteAudioRef.current) remoteAudioRef.current.srcObject = null
@@ -215,7 +271,7 @@ const VideoCall: React.FC<VideoCallProps> = ({ isOpen, onClose, patientId, isAud
     if (isSpeakerOn) {
       (el as HTMLMediaElement & { setSinkId?: (id: string) => Promise<void> })
         .setSinkId?.('')
-        .catch(() => {})
+        .catch(() => { })
     }
   }, [isSpeakerOn])
 
@@ -233,6 +289,9 @@ const VideoCall: React.FC<VideoCallProps> = ({ isOpen, onClose, patientId, isAud
       setCameraOnDuringAudioCall(false)
       setCameraStreamDuringAudio(null)
       setLocalStreamForWebRTC(null)
+      setActiveProvider('none')
+      setWisecareAttempted(false)
+      setProviderError(null)
       const stream = localStreamRef.current
       if (stream) {
         stream.getTracks().forEach((t) => t.stop())
@@ -352,7 +411,7 @@ const VideoCall: React.FC<VideoCallProps> = ({ isOpen, onClose, patientId, isAud
       console.warn('⚠️ Não foi possível salvar trecho: dados incompletos (sessionId, recordingStartTime, user.id ou consentSnapshot faltando)')
       return
     }
-    
+
     // Se não há patientId, ainda salvar o trecho (pode ser gravação geral)
     if (!patientId) {
       console.warn('⚠️ Salvando trecho sem patientId (pode ser gravação geral)')
@@ -395,7 +454,7 @@ const VideoCall: React.FC<VideoCallProps> = ({ isOpen, onClose, patientId, isAud
     }
 
     const stream = localVideoRef.current.srcObject as MediaStream
-    
+
     try {
       const mediaRecorder = new MediaRecorder(stream, {
         mimeType: 'video/webm;codecs=vp8,opus'
@@ -480,6 +539,11 @@ const VideoCall: React.FC<VideoCallProps> = ({ isOpen, onClose, patientId, isAud
       stopRecording()
     }
 
+    // Encerrar WiseCare se ativo
+    if (activeProvider === 'wisecare') {
+      await wisecareEndCall().catch(console.error)
+    }
+
     // Salvar sessão no banco
     await saveSession()
 
@@ -488,7 +552,7 @@ const VideoCall: React.FC<VideoCallProps> = ({ isOpen, onClose, patientId, isAud
       const stream = localVideoRef.current.srcObject as MediaStream
       stream.getTracks().forEach((track) => track.stop())
     }
-    
+
     onClose()
   }
 
@@ -572,7 +636,7 @@ const VideoCall: React.FC<VideoCallProps> = ({ isOpen, onClose, patientId, isAud
                       <p className="text-slate-400 text-xs mt-1">A gravação será curta e pontual</p>
                     </div>
                   </div>
-                  
+
                   <div className="flex items-start gap-3">
                     <div className="w-6 h-6 rounded-full bg-primary-500/20 flex items-center justify-center flex-shrink-0 mt-0.5">
                       <span className="text-primary-400 text-xs font-bold">2</span>
@@ -582,7 +646,7 @@ const VideoCall: React.FC<VideoCallProps> = ({ isOpen, onClose, patientId, isAud
                       <p className="text-slate-400 text-xs mt-1">Exclusivamente para seu prontuário médico</p>
                     </div>
                   </div>
-                  
+
                   <div className="flex items-start gap-3">
                     <div className="w-6 h-6 rounded-full bg-primary-500/20 flex items-center justify-center flex-shrink-0 mt-0.5">
                       <span className="text-primary-400 text-xs font-bold">3</span>
@@ -622,212 +686,252 @@ const VideoCall: React.FC<VideoCallProps> = ({ isOpen, onClose, patientId, isAud
 
       {/* Componente de Videochamada */}
       <div className="fixed inset-0 z-50 bg-black">
-      {/* Áudio remoto (viva-voz): elemento para quando WebRTC enviar o stream; setSinkId usa isso */}
-      <audio ref={remoteAudioRef} autoPlay playsInline className="hidden" />
-      {/* Remote Video — imagem do outro participante (tela principal) */}
-      <div className="relative w-full h-full bg-slate-900">
-        {!isAudioOnly && (
-          <>
-            <video
-              ref={remoteVideoRef}
-              autoPlay
-              playsInline
-              muted
-              className="w-full h-full object-cover"
-            />
-            {webrtcState === 'connecting' && (
-              <div className="absolute inset-0 flex items-center justify-center bg-slate-900/80">
-                <p className="text-slate-400">Conectando vídeo...</p>
-              </div>
-            )}
-          </>
-        )}
-        
-        {isAudioOnly && !cameraOnDuringAudioCall && (
-          <div className="flex items-center justify-center h-full">
-            <div className="text-center">
-              <div className="w-32 h-32 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-4">
-                <span className="text-4xl font-bold text-white">P</span>
-              </div>
-              <p className="text-white text-xl">Chamada de Áudio</p>
-              <p className="text-slate-400 mt-2">
-                {patientId ? `Paciente ID: ${patientId}` : 'Conectando...'}
-              </p>
-              <p className="text-slate-500 text-sm mt-4">Use &quot;Viva-voz&quot; para ouvir pelo alto-falante</p>
-              {signalingRoomId && (
-                <p className="text-slate-400 text-xs mt-2">
-                  {webrtcState === 'connecting' && 'Conectando áudio...'}
-                  {webrtcState === 'connected' && 'Conectado'}
-                  {webrtcError && <span className="text-amber-400">{webrtcError}</span>}
-                </p>
-              )}
-            </div>
+        {/* Áudio remoto (viva-voz): elemento para quando WebRTC enviar o stream; setSinkId usa isso */}
+        <audio ref={remoteAudioRef} autoPlay playsInline className="hidden" />
+
+        {/* Provider Status Badge */}
+        <div className="absolute top-4 left-4 z-10 flex items-center gap-2">
+          <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium backdrop-blur-md ${activeProvider === 'wisecare' ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' :
+              activeProvider === 'webrtc' ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30' :
+                'bg-slate-500/20 text-slate-400 border border-slate-500/30'
+            }`}>
+            {activeProvider === 'wisecare' ? <Wifi className="w-3 h-3" /> : <WifiOff className="w-3 h-3" />}
+            {activeProvider === 'wisecare' ? 'WiseCare' : activeProvider === 'webrtc' ? 'P2P Direto' : 'Conectando...'}
           </div>
-        )}
-
-        {/* Local Video (Picture-in-Picture) — stream atribuído via useEffect acima */}
-        {(!isAudioOnly || cameraOnDuringAudioCall) && (
-          <div className="absolute bottom-20 right-4 w-48 h-36 bg-slate-800 rounded-lg overflow-hidden border border-white/20 shadow-xl">
-            <video
-              ref={localVideoRef}
-              autoPlay
-              playsInline
-              muted
-              className="w-full h-full object-cover"
-            />
-          </div>
-        )}
-
-        {/* Call Controls */}
-        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black to-transparent p-6">
-          <div className="max-w-md mx-auto">
-            {/* Call Duration */}
-            <div className="text-center mb-4">
-              <span className="text-white font-mono text-lg">
-                {formatDuration(callDuration)}
-              </span>
+          {providerError && (
+            <div className="px-3 py-1.5 rounded-full text-xs bg-amber-500/10 text-amber-400 border border-amber-500/20 backdrop-blur-md max-w-xs truncate">
+              {providerError}
             </div>
-
-            {/* Control Buttons - Estilo Zoom */}
-            <div className="flex items-center justify-center space-x-3 flex-wrap gap-2">
-              <button
-                onClick={toggleMute}
-                className={`p-3.5 rounded-full transition-all ${
-                  isMuted
-                    ? 'bg-red-500 hover:bg-red-600 text-white'
-                    : 'bg-white/10 hover:bg-white/20 text-white backdrop-blur-sm'
-                }`}
-                title={isMuted ? 'Ativar microfone' : 'Desativar microfone'}
-              >
-                {isMuted ? <MicOff className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
-              </button>
-
-              {/* Viva-voz: áudio pelo alto-falante (importante no mobile) */}
-              <button
-                onClick={toggleSpeaker}
-                className={`p-3.5 rounded-full transition-all ${
-                  isSpeakerOn
-                    ? 'bg-primary-500 hover:bg-primary-600 text-white'
-                    : 'bg-white/10 hover:bg-white/20 text-white backdrop-blur-sm'
-                }`}
-                title={isSpeakerOn ? 'Viva-voz ligado' : 'Ligar viva-voz (alto-falante)'}
-              >
-                {isSpeakerOn ? <Volume2 className="w-5 h-5" /> : <VolumeX className="w-5 h-5" />}
-              </button>
-
-              {/* Ligar câmera durante chamada de áudio */}
-              {isAudioOnly && !cameraOnDuringAudioCall && (
-                <button
-                  onClick={enableCameraDuringCall}
-                  className="p-3.5 rounded-full bg-white/10 hover:bg-white/20 text-white backdrop-blur-sm transition-all"
-                  title="Ligar câmera"
-                >
-                  <Video className="w-5 h-5" />
-                </button>
-              )}
-
-              {(!isAudioOnly || cameraOnDuringAudioCall) && (
-                <button
-                  onClick={toggleVideo}
-                  className={`p-3.5 rounded-full transition-all ${
-                    isVideoOff
-                      ? 'bg-red-500 hover:bg-red-600 text-white'
-                      : 'bg-white/10 hover:bg-white/20 text-white backdrop-blur-sm'
-                  }`}
-                  title={isVideoOff ? 'Ligar câmera' : 'Desligar câmera'}
-                >
-                  {isVideoOff ? <VideoOff className="w-5 h-5" /> : <Video className="w-5 h-5" />}
-                </button>
-              )}
-
-              {/* Botão Solicitar Gravação (apenas para profissional, modo vídeo) */}
-              {!isAudioOnly && consentGiven && isProfessional && !isRecording && (
-                <button
-                  onClick={() => {
-                    if (!recordingRequested) {
-                      handleRequestRecording()
-                    }
-                  }}
-                  disabled={recordingRequested}
-                  className={`p-3.5 rounded-full transition-all ${
-                    recordingRequested
-                      ? 'bg-yellow-500/50 text-white cursor-wait animate-pulse'
-                      : 'bg-white/10 hover:bg-white/20 text-white backdrop-blur-sm'
-                  }`}
-                  title={recordingRequested ? 'Aguardando consentimento do paciente...' : 'Solicitar gravação clínica ao paciente'}
-                >
-                  <Circle className="w-5 h-5" />
-                </button>
-              )}
-
-              {/* Botão Parar Gravação (quando está gravando) */}
-              {isRecording && (
-                <button
-                  onClick={stopRecording}
-                  className="p-3.5 rounded-full bg-red-500 hover:bg-red-600 text-white animate-pulse transition-all"
-                  title="Parar gravação"
-                >
-                  <Square className="w-5 h-5" />
-                </button>
-              )}
-
-              <button
-                onClick={handleEndCall}
-                className="p-3.5 rounded-full bg-red-500 hover:bg-red-600 text-white transition-all"
-                title="Encerrar chamada"
-              >
-                <X className="w-5 h-5" />
-              </button>
-
-              <button
-                onClick={toggleFullscreen}
-                className="p-3.5 rounded-full bg-white/10 hover:bg-white/20 text-white backdrop-blur-sm transition-all"
-                title={isFullscreen ? 'Sair do modo tela cheia' : 'Tela cheia'}
-              >
-                {isFullscreen ? <Minimize2 className="w-5 h-5" /> : <Maximize2 className="w-5 h-5" />}
-              </button>
-            </div>
-
-            {/* Call Info */}
-            <div className="mt-4 text-center text-sm text-slate-400 space-y-1">
-              {!isSpeakerOn && (
-                <p className="text-amber-400 flex items-center justify-center space-x-2">
-                  <VolumeX className="w-4 h-4" />
-                  <span>Viva-voz desligado — toque no ícone para ouvir pelo alto-falante</span>
-                </p>
-              )}
-              {isMuted && (
-                <p className="text-yellow-400 flex items-center justify-center space-x-2">
-                  <MicOff className="w-4 h-4" />
-                  <span>Você está sem som</span>
-                </p>
-              )}
-              {isVideoOff && (!isAudioOnly || cameraOnDuringAudioCall) && (
-                <p className="text-yellow-400 flex items-center justify-center space-x-2">
-                  <VideoOff className="w-4 h-4" />
-                  <span>Sua câmera está desligada</span>
-                </p>
-              )}
-              {isRecording && (
-                <p className="text-red-400 flex items-center justify-center space-x-2">
-                  <Circle className="w-4 h-4 animate-pulse" />
-                  <span>Gravando: {formatDuration(recordingDuration)} / 5:00</span>
-                </p>
-              )}
-            </div>
-          </div>
+          )}
         </div>
 
-        {/* Close Button */}
-        <button
-          onClick={handleEndCall}
-          className="absolute top-4 right-4 p-2 bg-black/50 hover:bg-black/70 text-white rounded-full transition-colors"
-          title="Fechar"
-        >
-          <X className="w-5 h-5" />
-        </button>
+        {/* Remote Video — imagem do outro participante (tela principal) */}
+        <div className="relative w-full h-full bg-slate-900">
+
+          {/* ─── WiseCare: iframe renderizado pelo SDK ─── */}
+          {activeProvider === 'wisecare' && (
+            <div
+              id="wisecare-container"
+              className="w-full h-full"
+              style={{ minHeight: '100vh' }}
+            />
+          )}
+
+          {/* ─── WiseCare: loading ─── */}
+          {activeProvider === 'wisecare' && wisecareConnecting && (
+            <div className="absolute inset-0 flex items-center justify-center bg-slate-900/80 z-10">
+              <div className="text-center">
+                <div className="w-12 h-12 border-4 border-emerald-500/30 border-t-emerald-500 rounded-full animate-spin mx-auto mb-4" />
+                <p className="text-slate-300">Conectando via WiseCare...</p>
+                <p className="text-slate-500 text-xs mt-2">Telemedicina segura</p>
+              </div>
+            </div>
+          )}
+
+          {/* ─── WebRTC Fallback: vídeo P2P direto ─── */}
+          {activeProvider === 'webrtc' && !isAudioOnly && (
+            <>
+              <video
+                ref={remoteVideoRef}
+                autoPlay
+                playsInline
+                muted
+                className="w-full h-full object-cover"
+              />
+              {webrtcState === 'connecting' && (
+                <div className="absolute inset-0 flex items-center justify-center bg-slate-900/80">
+                  <p className="text-slate-400">Conectando vídeo (P2P)...</p>
+                </div>
+              )}
+            </>
+          )}
+
+          {isAudioOnly && !cameraOnDuringAudioCall && (
+            <div className="flex items-center justify-center h-full">
+              <div className="text-center">
+                <div className="w-32 h-32 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <span className="text-4xl font-bold text-white">P</span>
+                </div>
+                <p className="text-white text-xl">Chamada de Áudio</p>
+                <p className="text-slate-400 mt-2">
+                  {patientId ? `Paciente ID: ${patientId}` : 'Conectando...'}
+                </p>
+                <p className="text-slate-500 text-sm mt-4">Use &quot;Viva-voz&quot; para ouvir pelo alto-falante</p>
+                {activeProvider === 'webrtc' && signalingRoomId && (
+                  <p className="text-slate-400 text-xs mt-2">
+                    {webrtcState === 'connecting' && 'Conectando áudio (P2P)...'}
+                    {webrtcState === 'connected' && 'Conectado (P2P)'}
+                    {webrtcError && <span className="text-amber-400">{webrtcError}</span>}
+                  </p>
+                )}
+                {activeProvider === 'wisecare' && (
+                  <p className="text-emerald-400 text-xs mt-2">
+                    {wisecareConnecting ? 'Conectando via WiseCare...' : 'Conectado via WiseCare'}
+                  </p>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Local Video (Picture-in-Picture) — stream atribuído via useEffect acima */}
+          {(!isAudioOnly || cameraOnDuringAudioCall) && (
+            <div className="absolute bottom-20 right-4 w-48 h-36 bg-slate-800 rounded-lg overflow-hidden border border-white/20 shadow-xl">
+              <video
+                ref={localVideoRef}
+                autoPlay
+                playsInline
+                muted
+                className="w-full h-full object-cover"
+              />
+            </div>
+          )}
+
+          {/* Call Controls */}
+          <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black to-transparent p-6">
+            <div className="max-w-md mx-auto">
+              {/* Call Duration */}
+              <div className="text-center mb-4">
+                <span className="text-white font-mono text-lg">
+                  {formatDuration(callDuration)}
+                </span>
+              </div>
+
+              {/* Control Buttons - Estilo Zoom */}
+              <div className="flex items-center justify-center space-x-3 flex-wrap gap-2">
+                <button
+                  onClick={toggleMute}
+                  className={`p-3.5 rounded-full transition-all ${isMuted
+                      ? 'bg-red-500 hover:bg-red-600 text-white'
+                      : 'bg-white/10 hover:bg-white/20 text-white backdrop-blur-sm'
+                    }`}
+                  title={isMuted ? 'Ativar microfone' : 'Desativar microfone'}
+                >
+                  {isMuted ? <MicOff className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
+                </button>
+
+                {/* Viva-voz: áudio pelo alto-falante (importante no mobile) */}
+                <button
+                  onClick={toggleSpeaker}
+                  className={`p-3.5 rounded-full transition-all ${isSpeakerOn
+                      ? 'bg-primary-500 hover:bg-primary-600 text-white'
+                      : 'bg-white/10 hover:bg-white/20 text-white backdrop-blur-sm'
+                    }`}
+                  title={isSpeakerOn ? 'Viva-voz ligado' : 'Ligar viva-voz (alto-falante)'}
+                >
+                  {isSpeakerOn ? <Volume2 className="w-5 h-5" /> : <VolumeX className="w-5 h-5" />}
+                </button>
+
+                {/* Ligar câmera durante chamada de áudio */}
+                {isAudioOnly && !cameraOnDuringAudioCall && (
+                  <button
+                    onClick={enableCameraDuringCall}
+                    className="p-3.5 rounded-full bg-white/10 hover:bg-white/20 text-white backdrop-blur-sm transition-all"
+                    title="Ligar câmera"
+                  >
+                    <Video className="w-5 h-5" />
+                  </button>
+                )}
+
+                {(!isAudioOnly || cameraOnDuringAudioCall) && (
+                  <button
+                    onClick={toggleVideo}
+                    className={`p-3.5 rounded-full transition-all ${isVideoOff
+                        ? 'bg-red-500 hover:bg-red-600 text-white'
+                        : 'bg-white/10 hover:bg-white/20 text-white backdrop-blur-sm'
+                      }`}
+                    title={isVideoOff ? 'Ligar câmera' : 'Desligar câmera'}
+                  >
+                    {isVideoOff ? <VideoOff className="w-5 h-5" /> : <Video className="w-5 h-5" />}
+                  </button>
+                )}
+
+                {/* Botão Solicitar Gravação (apenas para profissional, modo vídeo) */}
+                {!isAudioOnly && consentGiven && isProfessional && !isRecording && (
+                  <button
+                    onClick={() => {
+                      if (!recordingRequested) {
+                        handleRequestRecording()
+                      }
+                    }}
+                    disabled={recordingRequested}
+                    className={`p-3.5 rounded-full transition-all ${recordingRequested
+                        ? 'bg-yellow-500/50 text-white cursor-wait animate-pulse'
+                        : 'bg-white/10 hover:bg-white/20 text-white backdrop-blur-sm'
+                      }`}
+                    title={recordingRequested ? 'Aguardando consentimento do paciente...' : 'Solicitar gravação clínica ao paciente'}
+                  >
+                    <Circle className="w-5 h-5" />
+                  </button>
+                )}
+
+                {/* Botão Parar Gravação (quando está gravando) */}
+                {isRecording && (
+                  <button
+                    onClick={stopRecording}
+                    className="p-3.5 rounded-full bg-red-500 hover:bg-red-600 text-white animate-pulse transition-all"
+                    title="Parar gravação"
+                  >
+                    <Square className="w-5 h-5" />
+                  </button>
+                )}
+
+                <button
+                  onClick={handleEndCall}
+                  className="p-3.5 rounded-full bg-red-500 hover:bg-red-600 text-white transition-all"
+                  title="Encerrar chamada"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+
+                <button
+                  onClick={toggleFullscreen}
+                  className="p-3.5 rounded-full bg-white/10 hover:bg-white/20 text-white backdrop-blur-sm transition-all"
+                  title={isFullscreen ? 'Sair do modo tela cheia' : 'Tela cheia'}
+                >
+                  {isFullscreen ? <Minimize2 className="w-5 h-5" /> : <Maximize2 className="w-5 h-5" />}
+                </button>
+              </div>
+
+              {/* Call Info */}
+              <div className="mt-4 text-center text-sm text-slate-400 space-y-1">
+                {!isSpeakerOn && (
+                  <p className="text-amber-400 flex items-center justify-center space-x-2">
+                    <VolumeX className="w-4 h-4" />
+                    <span>Viva-voz desligado — toque no ícone para ouvir pelo alto-falante</span>
+                  </p>
+                )}
+                {isMuted && (
+                  <p className="text-yellow-400 flex items-center justify-center space-x-2">
+                    <MicOff className="w-4 h-4" />
+                    <span>Você está sem som</span>
+                  </p>
+                )}
+                {isVideoOff && (!isAudioOnly || cameraOnDuringAudioCall) && (
+                  <p className="text-yellow-400 flex items-center justify-center space-x-2">
+                    <VideoOff className="w-4 h-4" />
+                    <span>Sua câmera está desligada</span>
+                  </p>
+                )}
+                {isRecording && (
+                  <p className="text-red-400 flex items-center justify-center space-x-2">
+                    <Circle className="w-4 h-4 animate-pulse" />
+                    <span>Gravando: {formatDuration(recordingDuration)} / 5:00</span>
+                  </p>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Close Button */}
+          <button
+            onClick={handleEndCall}
+            className="absolute top-4 right-4 p-2 bg-black/50 hover:bg-black/70 text-white rounded-full transition-colors"
+            title="Fechar"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
       </div>
-    </div>
     </>
   )
 }
