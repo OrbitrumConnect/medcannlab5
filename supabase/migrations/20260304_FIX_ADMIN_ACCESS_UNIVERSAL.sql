@@ -33,11 +33,11 @@ BEGIN
     RETURN QUERY
     SELECT 
         u.id as user_id,
-        u.name,
+        u.name::text,
         au.email::text,
-        u.type,
-        COALESCE(to_jsonb(u)->>'status', 'active') as status,
-        COALESCE(to_jsonb(u)->>'payment_status', 'pending') as payment_status,
+        u.type::text,
+        COALESCE(to_jsonb(u)->>'status', 'active')::text as status,
+        COALESCE(to_jsonb(u)->>'payment_status', 'pending')::text as payment_status,
         u.owner_id,
         au.last_sign_in_at,
         u.created_at,
