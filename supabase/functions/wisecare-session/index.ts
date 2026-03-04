@@ -47,47 +47,51 @@ async function getWisecareToken(): Promise<string> {
 
     console.log(`[WiseCare Auth] Attempting login... (login: ${WISECARE_LOGIN ? WISECARE_LOGIN.substring(0, 8) + '...' : 'EMPTY!'})`);
 
-    // Tentar login via POST /auth/login (padrão WiseCare)
-    const loginEndpoints = ['/auth/login', '/auth', '/login'];
+    // Endpoint confirmado por Leonardo (co-CTO WiseCare):
+    // POST https://session-manager.homolog.v4h.cloud/api/auth/org/
+    // NOTA: auth usa /api/auth/org/ (sem /v1/), diferente da API que usa /api/v1/
+    const baseHost = WISECARE_BASE_URL.replace(/\/api\/v1\/?$/, '');
+    const authUrl = `${baseHost}/api/auth/org/`;
 
-    for (const loginPath of loginEndpoints) {
-        try {
-            const response = await fetch(`${WISECARE_BASE_URL}${loginPath}`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    login: WISECARE_LOGIN,
-                    password: WISECARE_PASSWORD,
-                    type: 'ORG',
-                }),
-            });
+    console.log(`[WiseCare Auth] POST ${authUrl}`);
 
-            if (response.ok) {
-                const data = await response.json();
-                // WiseCare retorna: { access: { token: "...", expires: 120 }, refresh: { ... } }
-                const token = data.access?.token || data.token || data.access_token || data.accessToken || data.jwt;
-                if (token) {
-                    cachedBearerToken = token;
-                    // Usar expires da resposta (em minutos) ou default 55 min
-                    const expiresMinutes = data.access?.expires || 55;
-                    tokenExpiresAt = Date.now() + (expiresMinutes - 5) * 60 * 1000; // 5 min margem
-                    console.log(`[WiseCare Auth] Login OK via ${loginPath}, token obtained (expires in ${expiresMinutes}min)`);
-                    return token;
-                }
-                console.log(`[WiseCare Auth] ${loginPath} returned 200 but no token in response:`, JSON.stringify(data).substring(0, 200));
-            } else {
-                const errText = await response.text();
-                console.log(`[WiseCare Auth] ${loginPath} → ${response.status}: ${errText.substring(0, 200)}`);
+    try {
+        const response = await fetch(authUrl, {
+            method: 'POST',
+            headers: {
+                'accept': 'application/json',
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                login: WISECARE_LOGIN,
+                password: WISECARE_PASSWORD,
+            }),
+        });
+
+        if (response.ok) {
+            const data = await response.json();
+            // WiseCare retorna: { access: { token: "...", expires: 120 }, refresh: { ... } }
+            const token = data.access?.token || data.token || data.access_token;
+            if (token) {
+                cachedBearerToken = token;
+                const expiresMinutes = data.access?.expires || 55;
+                tokenExpiresAt = Date.now() + (expiresMinutes - 5) * 60 * 1000;
+                console.log(`[WiseCare Auth] ✅ Login OK, token obtained (expires in ${expiresMinutes}min)`);
+                return token;
             }
-        } catch (err) {
-            console.log(`[WiseCare Auth] ${loginPath} failed:`, err instanceof Error ? err.message : err);
+            console.error(`[WiseCare Auth] ❌ 200 but no token in response:`, JSON.stringify(data).substring(0, 300));
+        } else {
+            const errText = await response.text();
+            console.error(`[WiseCare Auth] ❌ ${response.status}: ${errText.substring(0, 300)}`);
         }
+    } catch (err) {
+        console.error(`[WiseCare Auth] ❌ Request failed:`, err instanceof Error ? err.message : err);
     }
 
     // Fallback: se login não funcionar, usar o próprio login UUID como Bearer token
-    console.log('[WiseCare Auth] Login endpoints failed, using login UUID as Bearer token');
+    console.warn('[WiseCare Auth] Login failed, using login UUID as Bearer token (may not work)');
     cachedBearerToken = WISECARE_LOGIN;
-    tokenExpiresAt = Date.now() + 55 * 60 * 1000;
+    tokenExpiresAt = Date.now() + 5 * 60 * 1000; // Só 5 min para retry rápido
     return WISECARE_LOGIN;
 }
 
