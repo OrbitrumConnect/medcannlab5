@@ -15,7 +15,7 @@ import ConfirmModal from '../components/ConfirmModal'
 // Lista de emails dos admins autorizados
 const ADMIN_EMAILS = [
   'phpg69@gmail.com',
-  'rrvalenca@gmail.com',
+  'iaianoaesperanza@gmail.com',
   'eduardoscfaveret@gmail.com',
   'cbdrcpremium@gmail.com'
 ]
@@ -43,17 +43,17 @@ const AdminChat: React.FC = () => {
   const [adminsLoading, setAdminsLoading] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false)
-  
+
   // Estados para videochamada
   const [isVideoCallOpen, setIsVideoCallOpen] = useState(false)
   const [callType, setCallType] = useState<'video' | 'audio'>('video')
   const [videoCallRoomId, setVideoCallRoomId] = useState<string | null>(null)
   const [videoCallInitiator, setVideoCallInitiator] = useState(false)
-  
+
   // Estados para solicitação de videochamada
   const [pendingCallRequest, setPendingCallRequest] = useState<string | null>(null)
   const [timeRemaining, setTimeRemaining] = useState<number | null>(null)
-  
+
   // Estados para modal de confirmação
   const [confirmModal, setConfirmModal] = useState<{
     isOpen: boolean
@@ -65,10 +65,10 @@ const AdminChat: React.FC = () => {
     isOpen: false,
     title: '',
     message: '',
-    onConfirm: () => {},
+    onConfirm: () => { },
     type: 'warning'
   })
-  
+
   const toast = useToast()
 
   // Hook para gerenciar solicitações de videochamada (caller abre a chamada quando o outro aceita)
@@ -127,7 +127,7 @@ const AdminChat: React.FC = () => {
   useEffect(() => {
     const loadAdmins = async () => {
       if (!user) return
-      
+
       setAdminsLoading(true)
       try {
         // Buscar admins pelos emails autorizados (independente do campo type)
@@ -313,7 +313,7 @@ const AdminChat: React.FC = () => {
     }
 
     const request = pendingRequests.find(r => r.request_id === pendingCallRequest)
-    
+
     if (!request || !request.expires_at) {
       setTimeRemaining(null)
       return
@@ -324,16 +324,16 @@ const AdminChat: React.FC = () => {
       const expires = new Date(request.expires_at).getTime()
       const remaining = Math.max(0, Math.floor((expires - now) / 1000))
       setTimeRemaining(remaining)
-      
+
       if (remaining === 0) {
         setPendingCallRequest(null)
         setTimeRemaining(null)
       }
     }
-    
+
     updateTimer()
     const interval = setInterval(updateTimer, 1000)
-    
+
     return () => clearInterval(interval)
   }, [pendingCallRequest, pendingRequests])
 
@@ -350,7 +350,7 @@ const AdminChat: React.FC = () => {
 
       // Buscar participantes de cada sala para verificar se já existe sala entre os dois
       let existingRoomId: string | null = null
-      
+
       if (existingRooms) {
         for (const room of existingRooms) {
           const { data: roomParticipants } = await supabase
@@ -434,7 +434,7 @@ const AdminChat: React.FC = () => {
   // Admin selecionado para chamada - MELHORADO para garantir que sempre encontre
   const adminIdForCall = useMemo(() => {
     if (!activeRoomId || !user?.id) return null
-    
+
     // Prioridade 1: Usar otherParticipants (já filtrado)
     if (otherParticipants.length > 0) {
       const recipientId = otherParticipants[0]?.id
@@ -442,7 +442,7 @@ const AdminChat: React.FC = () => {
         return recipientId
       }
     }
-    
+
     // Prioridade 2: Buscar diretamente da lista de participantes (fallback)
     if (participants.length > 0) {
       const recipient = participants.find(p => p.id !== user.id)
@@ -450,7 +450,7 @@ const AdminChat: React.FC = () => {
         return recipient.id
       }
     }
-    
+
     // Prioridade 3: Buscar da lista de admins autorizados (último recurso)
     if (allAdmins.length > 0) {
       const recipient = allAdmins.find(admin => admin.id !== user.id)
@@ -458,7 +458,7 @@ const AdminChat: React.FC = () => {
         return recipient.id
       }
     }
-    
+
     // (Aviso removido: gerava ruído no console mesmo quando participantes carregavam em seguida)
     return null
   }, [otherParticipants, participants, activeRoomId, user?.id, allAdmins, participantsLoading])
@@ -489,17 +489,15 @@ const AdminChat: React.FC = () => {
         role="button"
         tabIndex={0}
         aria-label="Fechar lista"
-        className={`fixed inset-0 z-30 bg-black/50 md:hidden transition-opacity duration-200 ${
-          activeRoomId && mobileSidebarOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
-        }`}
+        className={`fixed inset-0 z-30 bg-black/50 md:hidden transition-opacity duration-200 ${activeRoomId && mobileSidebarOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
+          }`}
         onClick={() => setMobileSidebarOpen(false)}
         onKeyDown={(e) => e.key === 'Escape' && setMobileSidebarOpen(false)}
       />
       {/* Sidebar: Lista de Admins — no mobile vira drawer (escondido quando chat ativo) */}
       <div
-        className={`fixed md:relative inset-y-0 left-0 z-40 w-[280px] max-w-[85vw] md:w-80 md:max-w-none flex flex-col bg-slate-900 border-r border-slate-800 transition-transform duration-200 ease-out ${
-          activeRoomId && !mobileSidebarOpen ? '-translate-x-full md:translate-x-0' : 'translate-x-0'
-        }`}
+        className={`fixed md:relative inset-y-0 left-0 z-40 w-[280px] max-w-[85vw] md:w-80 md:max-w-none flex flex-col bg-slate-900 border-r border-slate-800 transition-transform duration-200 ease-out ${activeRoomId && !mobileSidebarOpen ? '-translate-x-full md:translate-x-0' : 'translate-x-0'
+          }`}
       >
         <div className="p-3 md:p-4 border-b border-slate-800 flex items-center justify-between gap-2">
           <h2 className="text-base md:text-lg font-semibold text-white flex items-center gap-2 truncate">
@@ -547,7 +545,7 @@ const AdminChat: React.FC = () => {
                 const room = adminRooms.find(r => {
                   const roomWithParticipants = r as typeof r & { participants?: { id: string }[] }
                   return roomWithParticipants.participants?.some((p) => p.id === admin.id) &&
-                         roomWithParticipants.participants?.some((p) => p.id === user.id)
+                    roomWithParticipants.participants?.some((p) => p.id === user.id)
                 })
                 const isActive = activeRoomId === room?.id
 
@@ -564,11 +562,10 @@ const AdminChat: React.FC = () => {
                         setMobileSidebarOpen(false)
                       }
                     }}
-                    className={`w-full p-3 rounded-lg text-left transition-colors ${
-                      isActive
+                    className={`w-full p-3 rounded-lg text-left transition-colors ${isActive
                         ? 'bg-primary-600 text-white'
                         : 'bg-slate-800/50 hover:bg-slate-800 text-slate-200'
-                    }`}
+                      }`}
                   >
                     <div className="flex items-center justify-between">
                       <div className="flex-1 min-w-0">
@@ -579,9 +576,9 @@ const AdminChat: React.FC = () => {
                         <span className="text-xs opacity-50">
                           {room.lastMessageAt
                             ? new Date(room.lastMessageAt).toLocaleDateString('pt-BR', {
-                                day: '2-digit',
-                                month: '2-digit'
-                              })
+                              day: '2-digit',
+                              month: '2-digit'
+                            })
                             : 'Novo'
                           }
                         </span>
@@ -631,7 +628,7 @@ const AdminChat: React.FC = () => {
                         onClick={async () => {
                           // Tentar encontrar o destinatário de várias formas
                           let recipientId = adminIdForCall
-                          
+
                           // Fallback: buscar da lista de participantes
                           if (!recipientId && participants.length > 0) {
                             const recipient = participants.find(p => p.id !== user?.id)
@@ -640,15 +637,15 @@ const AdminChat: React.FC = () => {
                               console.log('📞 Usando fallback para destinatário:', recipient.name || recipient.email)
                             }
                           }
-                          
+
                           if (!recipientId) {
                             toast.error('Erro', 'Não foi possível identificar o destinatário da chamada. Verifique se há um admin na conversa.')
                             console.error('❌ Não foi possível identificar destinatário:', { participants, adminIdForCall, user })
                             return
                           }
-                          
+
                           const timeoutSeconds = 1800 // 30 minutos para admins
-                          
+
                           try {
                             const request = await createRequest({
                               recipientId,
@@ -659,12 +656,12 @@ const AdminChat: React.FC = () => {
                                 isAdminChat: true
                               }
                             })
-                            
+
                             if (request) {
                               setPendingCallRequest(request.request_id)
                               setCallType('video')
                               toast.success('Solicitação enviada', 'A solicitação de videochamada foi enviada com sucesso!')
-                              
+
                               // Verificar se a solicitação foi realmente criada após um pequeno delay
                               // Se houver erro na notificação, a solicitação ainda foi criada, então não cancelar
                               setTimeout(async () => {
@@ -674,7 +671,7 @@ const AdminChat: React.FC = () => {
                                   .select('status')
                                   .eq('request_id', request.request_id)
                                   .single()
-                                
+
                                 if (checkRequest && checkRequest.status !== 'pending') {
                                   // Solicitação foi respondida ou cancelada
                                   setPendingCallRequest(null)
@@ -691,13 +688,13 @@ const AdminChat: React.FC = () => {
                         }}
                         className="p-2 bg-blue-500/20 text-blue-400 rounded-lg hover:bg-blue-500/30 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                         title={
-                          participantsLoading 
-                            ? "Aguardando carregamento dos participantes..." 
-                            : !adminIdForCall 
-                            ? "Selecione um admin para iniciar a chamada" 
-                            : pendingCallRequest
-                            ? "Aguardando resposta..."
-                            : "Solicitar videochamada"
+                          participantsLoading
+                            ? "Aguardando carregamento dos participantes..."
+                            : !adminIdForCall
+                              ? "Selecione um admin para iniciar a chamada"
+                              : pendingCallRequest
+                                ? "Aguardando resposta..."
+                                : "Solicitar videochamada"
                         }
                         disabled={!!pendingCallRequest || participantsLoading}
                       >
@@ -707,7 +704,7 @@ const AdminChat: React.FC = () => {
                         onClick={async () => {
                           // Tentar encontrar o destinatário de várias formas
                           let recipientId = adminIdForCall
-                          
+
                           // Fallback: buscar da lista de participantes
                           if (!recipientId && participants.length > 0) {
                             const recipient = participants.find(p => p.id !== user?.id)
@@ -716,15 +713,15 @@ const AdminChat: React.FC = () => {
                               console.log('📞 Usando fallback para destinatário:', recipient.name || recipient.email)
                             }
                           }
-                          
+
                           if (!recipientId) {
                             toast.error('Erro', 'Não foi possível identificar o destinatário da chamada. Verifique se há um admin na conversa.')
                             console.error('❌ Não foi possível identificar destinatário:', { participants, adminIdForCall, user })
                             return
                           }
-                          
+
                           const timeoutSeconds = 1800 // 30 minutos para admins
-                          
+
                           try {
                             const request = await createRequest({
                               recipientId,
@@ -735,12 +732,12 @@ const AdminChat: React.FC = () => {
                                 isAdminChat: true
                               }
                             })
-                            
+
                             if (request) {
                               setPendingCallRequest(request.request_id)
                               setCallType('audio')
                               toast.success('Solicitação enviada', 'A solicitação de chamada de áudio foi enviada com sucesso!')
-                              
+
                               // Verificar se a solicitação foi realmente criada após um pequeno delay
                               setTimeout(async () => {
                                 const { data: checkRequest } = await supabase
@@ -748,7 +745,7 @@ const AdminChat: React.FC = () => {
                                   .select('status')
                                   .eq('request_id', request.request_id)
                                   .single()
-                                
+
                                 if (checkRequest && checkRequest.status !== 'pending') {
                                   setPendingCallRequest(null)
                                 }
@@ -764,13 +761,13 @@ const AdminChat: React.FC = () => {
                         }}
                         className="p-2 bg-green-500/20 text-green-400 rounded-lg hover:bg-green-500/30 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                         title={
-                          participantsLoading 
-                            ? "Aguardando carregamento dos participantes..." 
-                            : !adminIdForCall 
-                            ? "Selecione um admin para iniciar a chamada" 
-                            : pendingCallRequest
-                            ? "Aguardando resposta..."
-                            : "Solicitar chamada de áudio"
+                          participantsLoading
+                            ? "Aguardando carregamento dos participantes..."
+                            : !adminIdForCall
+                              ? "Selecione um admin para iniciar a chamada"
+                              : pendingCallRequest
+                                ? "Aguardando resposta..."
+                                : "Solicitar chamada de áudio"
                         }
                         disabled={!!pendingCallRequest || participantsLoading}
                       >
@@ -810,15 +807,14 @@ const AdminChat: React.FC = () => {
                       console.warn('Erro ao formatar data:', e, msg.createdAt)
                     }
                   }
-                  
+
                   return (
                     <div key={msg.id} className={`flex ${isOwn ? 'justify-end' : 'justify-start'}`}>
                       <div
-                        className={`max-w-lg rounded-2xl px-4 py-3 shadow transition-colors ${
-                          isOwn
+                        className={`max-w-lg rounded-2xl px-4 py-3 shadow transition-colors ${isOwn
                             ? 'bg-primary-600 text-white'
                             : 'bg-slate-800 text-slate-100'
-                        }`}
+                          }`}
                       >
                         <p className="text-sm">{msg.message ?? ''}</p>
                         <p className={`text-xs mt-1 ${isOwn ? 'text-primary-200' : 'text-slate-400'}`}>
@@ -907,7 +903,7 @@ const AdminChat: React.FC = () => {
                 <div className="flex items-center gap-2 mt-2">
                   <span className="text-[10px] text-blue-200/80">⏰ Tempo restante:</span>
                   <span className="text-xs font-mono font-semibold text-white">
-                    {timeRemaining > 0 
+                    {timeRemaining > 0
                       ? `${Math.floor(timeRemaining / 60)}:${String(Math.floor(timeRemaining % 60)).padStart(2, '0')}`
                       : 'Expirado'
                     }
