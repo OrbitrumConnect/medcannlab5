@@ -13,6 +13,7 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 const ALLOWED_ORIGINS = [
     'https://app.medcannlab.com',
     'https://medcannlab.com',
+    'https://medcannlab.vercel.app',
     'http://localhost:8080',   // Dev only
     'http://localhost:3000',   // Dev only
 ];
