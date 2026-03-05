@@ -9,7 +9,7 @@ import * as pdfjsLib from 'pdfjs-dist'
 if (typeof window !== 'undefined') {
   try {
     // Tentar usar worker local primeiro, depois CDN como fallback
-    pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`
+    pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js`
   } catch (err) {
     console.warn('Erro ao configurar PDF.js worker:', err)
   }

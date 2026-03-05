@@ -35,7 +35,7 @@ import * as pdfjsLib from 'pdfjs-dist'
 
 // Configurar PDF.js worker
 try {
-  pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`
+  pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js`
 } catch (err) {
   console.warn('Erro ao configurar PDF.js worker na Biblioteca:', err)
 }
@@ -1288,255 +1288,255 @@ const Library: React.FC = () => {
               )}
               {((doc.tags?.length > 0) || (doc.keywords?.length > 0)) && (
                 <div className="flex flex-wrap gap-1 mb-2 flex-shrink-0">
-                      {[...(doc.tags || []), ...(doc.keywords || [])].slice(0, 3).map((tag: string, index: number) => (
-                        <span
-                          key={index}
-                          className="px-1.5 py-0.5 text-slate-400 text-[9px] rounded bg-slate-800/50"
-                        >
-                          {tag}
-                        </span>
-                      ))}
-                      {([...(doc.tags || []), ...(doc.keywords || [])].length > 3) && (
-                        <span className="px-1.5 py-0.5 text-slate-500 text-[9px] rounded bg-slate-800/50">
-                          +{([...(doc.tags || []), ...(doc.keywords || [])].length - 3)}
-                        </span>
-                      )}
-                    </div>
+                  {[...(doc.tags || []), ...(doc.keywords || [])].slice(0, 3).map((tag: string, index: number) => (
+                    <span
+                      key={index}
+                      className="px-1.5 py-0.5 text-slate-400 text-[9px] rounded bg-slate-800/50"
+                    >
+                      {tag}
+                    </span>
+                  ))}
+                  {([...(doc.tags || []), ...(doc.keywords || [])].length > 3) && (
+                    <span className="px-1.5 py-0.5 text-slate-500 text-[9px] rounded bg-slate-800/50">
+                      +{([...(doc.tags || []), ...(doc.keywords || [])].length - 3)}
+                    </span>
                   )}
+                </div>
+              )}
 
-                  <div className="flex items-center gap-1.5 pt-3 mt-auto border-t border-slate-700/30">
-                    <span className="text-[10px] text-slate-500 mr-auto">⬇{doc.downloads ?? 0}</span>
-                    {doc.aiRelevance !== undefined && doc.aiRelevance > 0 && (
-                      <span className="text-[9px] text-slate-500">Rel {doc.aiRelevance}</span>
-                    )}
-                    <div className="flex items-center gap-1 flex-wrap">
-                      <button
-                        onClick={() => void handleViewDocument(doc)}
-                        title="Ver documento"
-                        className="inline-flex items-center gap-1 h-6 min-w-0 px-2 rounded border border-slate-600/50 bg-slate-800/60 text-slate-200 text-[9px] font-medium leading-none transition-all hover:bg-slate-700/70 hover:border-slate-500/50"
-                      >
-                        <Eye className="w-2.5 h-2.5 shrink-0 opacity-90" />
-                        Ver
-                      </button>
-                      <button
-                        title="Baixar"
-                        onClick={async () => {
-                          try {
-                            let downloadUrl = doc.file_url
+              <div className="flex items-center gap-1.5 pt-3 mt-auto border-t border-slate-700/30">
+                <span className="text-[10px] text-slate-500 mr-auto">⬇{doc.downloads ?? 0}</span>
+                {doc.aiRelevance !== undefined && doc.aiRelevance > 0 && (
+                  <span className="text-[9px] text-slate-500">Rel {doc.aiRelevance}</span>
+                )}
+                <div className="flex items-center gap-1 flex-wrap">
+                  <button
+                    onClick={() => void handleViewDocument(doc)}
+                    title="Ver documento"
+                    className="inline-flex items-center gap-1 h-6 min-w-0 px-2 rounded border border-slate-600/50 bg-slate-800/60 text-slate-200 text-[9px] font-medium leading-none transition-all hover:bg-slate-700/70 hover:border-slate-500/50"
+                  >
+                    <Eye className="w-2.5 h-2.5 shrink-0 opacity-90" />
+                    Ver
+                  </button>
+                  <button
+                    title="Baixar"
+                    onClick={async () => {
+                      try {
+                        let downloadUrl = doc.file_url
 
-                            // Se não tiver URL ou URL não funcionar, criar signed URL
-                            if (!downloadUrl || downloadUrl.includes('Bucket not found') || downloadUrl.includes('404')) {
-                              // Tentar encontrar o arquivo no Storage
-                              const fileName = doc.title || ''
-                              const { data: files } = await supabase.storage
+                        // Se não tiver URL ou URL não funcionar, criar signed URL
+                        if (!downloadUrl || downloadUrl.includes('Bucket not found') || downloadUrl.includes('404')) {
+                          // Tentar encontrar o arquivo no Storage
+                          const fileName = doc.title || ''
+                          const { data: files } = await supabase.storage
+                            .from('documents')
+                            .list('', { limit: 100 })
+
+                          if (files) {
+                            const file = files.find(f =>
+                              f.name.toLowerCase().includes(fileName.toLowerCase().split('.')[0]) ||
+                              fileName.toLowerCase().includes(f.name.toLowerCase().split('.')[0])
+                            )
+
+                            if (file) {
+                              const { data: signedData, error: signedError } = await supabase.storage
                                 .from('documents')
-                                .list('', { limit: 100 })
+                                .createSignedUrl(file.name, 3600)
 
-                              if (files) {
-                                const file = files.find(f =>
-                                  f.name.toLowerCase().includes(fileName.toLowerCase().split('.')[0]) ||
-                                  fileName.toLowerCase().includes(f.name.toLowerCase().split('.')[0])
-                                )
-
-                                if (file) {
-                                  const { data: signedData, error: signedError } = await supabase.storage
-                                    .from('documents')
-                                    .createSignedUrl(file.name, 3600)
-
-                                  if (!signedError && signedData) {
-                                    downloadUrl = signedData.signedUrl
-                                  }
-                                }
-                              }
-                            } else if (downloadUrl.includes('supabase.co/storage')) {
-                              // Tentar criar signed URL se necessário
-                              const pathMatch = downloadUrl.match(/\/storage\/v1\/object\/[^\/]+\/(.+)$/)
-                              if (pathMatch) {
-                                const filePath = decodeURIComponent(pathMatch[1])
-                                const { data: signedData } = await supabase.storage
-                                  .from('documents')
-                                  .createSignedUrl(filePath, 3600)
-
-                                if (signedData) {
-                                  downloadUrl = signedData.signedUrl
-                                }
+                              if (!signedError && signedData) {
+                                downloadUrl = signedData.signedUrl
                               }
                             }
-
-                            if (downloadUrl) {
-                              // Incrementar contador de downloads
-                              await supabase
-                                .from('documents')
-                                .update({ downloads: (doc.downloads || 0) + 1 })
-                                .eq('id', doc.id)
-
-                              // Fazer download
-                              const link = document.createElement('a')
-                              link.href = downloadUrl
-                              link.download = doc.title
-                              link.target = '_blank'
-                              link.click()
-
-                              // Atualizar contador local
-                              setRealDocuments(prev => prev.map(d =>
-                                d.id === doc.id ? { ...d, downloads: (d.downloads || 0) + 1 } : d
-                              ))
-                            } else {
-                              alert('Não foi possível fazer download. Verifique se o arquivo existe no Storage.')
-                            }
-                          } catch (error) {
-                            console.error('Erro no download:', error)
-                            alert('Erro ao fazer download do arquivo')
                           }
-                        }}
-                        className="inline-flex items-center gap-1 h-6 min-w-0 px-2 rounded border border-emerald-600/40 bg-emerald-900/40 text-emerald-200 text-[9px] font-medium leading-none transition-all hover:bg-emerald-800/50 hover:border-emerald-500/50"
-                      >
-                        <Download className="w-2 h-2 shrink-0 opacity-90" />
-                        Baixar
-                      </button>
-                      {doc.isLinkedToAI ? (
-                        <button
-                          onClick={async () => {
-                            if (!confirm(`Tem certeza que deseja desvincular o documento "${doc.title}" da IA residente?`)) {
-                              return
-                            }
-
-                            try {
-                              const success = await KnowledgeBaseIntegration.unlinkDocumentFromAI(doc.id)
-
-                              if (success) {
-                                // Atualizar estado local
-                                setRealDocuments(prev => prev.map(d =>
-                                  d.id === doc.id ? { ...d, isLinkedToAI: false, aiRelevance: 0 } : d
-                                ))
-
-                                // Recarregar estatísticas
-                                const stats = await KnowledgeBaseIntegration.getKnowledgeStats()
-                                setKnowledgeStats(stats)
-
-                                alert('Documento desvinculado da IA residente com sucesso!')
-                              } else {
-                                alert('Erro ao desvincular documento da IA.')
-                              }
-                            } catch (error) {
-                              console.error('Erro ao desvincular documento:', error)
-                              alert('Erro ao desvincular documento da IA.')
-                            }
-                          }}
-                          className="inline-flex items-center gap-0.5 h-5 min-w-0 px-1.5 rounded-sm border border-sky-600/40 bg-sky-900/40 text-sky-200 text-[8px] font-medium leading-none transition-all hover:bg-sky-800/50 hover:border-sky-500/50"
-                          title="Desvincular da IA residente"
-                        >
-                          <XCircle className="w-2 h-2 shrink-0 opacity-90" />
-                          Desvinc.
-                        </button>
-                      ) : (
-                        <button
-                          onClick={async () => {
-                            try {
-                              const success = await KnowledgeBaseIntegration.linkDocumentToAI(doc.id, 5)
-
-                              if (success) {
-                                // Atualizar estado local
-                                setRealDocuments(prev => prev.map(d =>
-                                  d.id === doc.id ? { ...d, isLinkedToAI: true, aiRelevance: 5 } : d
-                                ))
-
-                                // Recarregar estatísticas
-                                const stats = await KnowledgeBaseIntegration.getKnowledgeStats()
-                                setKnowledgeStats(stats)
-
-                                alert('Documento vinculado à IA residente com sucesso!')
-                              } else {
-                                alert('Erro ao vincular documento à IA.')
-                              }
-                            } catch (error) {
-                              console.error('Erro ao vincular documento:', error)
-                              alert('Erro ao vincular documento à IA.')
-                            }
-                          }}
-                          className="inline-flex items-center gap-1 h-6 min-w-0 px-2 rounded border border-emerald-600/40 bg-emerald-900/40 text-emerald-200 text-[9px] font-medium leading-none transition-all hover:bg-emerald-800/50 hover:border-emerald-500/50"
-                          title="Vincular à IA residente"
-                        >
-                          <LinkIcon className="w-2 h-2 shrink-0 opacity-90" />
-                          Vincular
-                        </button>
-                      )}
-                      <button
-                        onClick={async () => {
-                          if (!confirm(`Tem certeza que deseja excluir o documento "${doc.title}"? Esta ação não pode ser desfeita.`)) {
-                            return
-                          }
-
-                          try {
-                            // Extrair nome do arquivo da URL ou título
-                            let fileName: string | null = null
-
-                            if (doc.file_url) {
-                              const pathMatch = doc.file_url.match(/\/storage\/v1\/object\/[^\/]+\/(.+)$/)
-                              if (pathMatch) {
-                                fileName = decodeURIComponent(pathMatch[1])
-                              }
-                            }
-
-                            // Se não encontrou na URL, tentar encontrar no Storage
-                            if (!fileName) {
-                              const { data: files } = await supabase.storage
-                                .from('documents')
-                                .list('', { limit: 100 })
-
-                              if (files) {
-                                const file = files.find(f =>
-                                  f.name.toLowerCase().includes(doc.title.toLowerCase().split('.')[0]) ||
-                                  doc.title.toLowerCase().includes(f.name.toLowerCase().split('.')[0])
-                                )
-
-                                if (file) {
-                                  fileName = file.name
-                                }
-                              }
-                            }
-
-                            // Deletar do Storage se encontrou o arquivo
-                            if (fileName) {
-                              const { error: storageError } = await supabase.storage
-                                .from('documents')
-                                .remove([fileName])
-
-                              if (storageError) {
-                                console.warn('Erro ao deletar arquivo do Storage (pode não existir):', storageError)
-                              } else {
-                                console.log('✅ Arquivo deletado do Storage:', fileName)
-                              }
-                            }
-
-                            // Deletar do banco de dados
-                            const { error: dbError } = await supabase
+                        } else if (downloadUrl.includes('supabase.co/storage')) {
+                          // Tentar criar signed URL se necessário
+                          const pathMatch = downloadUrl.match(/\/storage\/v1\/object\/[^\/]+\/(.+)$/)
+                          if (pathMatch) {
+                            const filePath = decodeURIComponent(pathMatch[1])
+                            const { data: signedData } = await supabase.storage
                               .from('documents')
-                              .delete()
-                              .eq('id', doc.id)
+                              .createSignedUrl(filePath, 3600)
 
-                            if (dbError) {
-                              throw dbError
+                            if (signedData) {
+                              downloadUrl = signedData.signedUrl
                             }
-
-                            // Remover da lista local
-                            setRealDocuments(prev => prev.filter(d => d.id !== doc.id))
-                            setTotalDocs(prev => Math.max(0, prev - 1))
-
-                            alert('Documento excluído com sucesso!')
-                          } catch (error) {
-                            console.error('Erro ao excluir documento:', error)
-                            alert('Erro ao excluir documento. Verifique as permissões.')
                           }
-                        }}
-                        className="inline-flex items-center gap-1 h-6 min-w-0 px-2 rounded border border-red-500/40 bg-red-900/30 text-red-200 text-[9px] font-medium leading-none transition-all hover:bg-red-800/40 hover:border-red-400/50"
-                        title="Excluir documento"
-                      >
-                        <Trash2 className="w-2 h-2 shrink-0 opacity-90" />
-                        Excluir
-                      </button>
-                    </div>
-                  </div>
+                        }
+
+                        if (downloadUrl) {
+                          // Incrementar contador de downloads
+                          await supabase
+                            .from('documents')
+                            .update({ downloads: (doc.downloads || 0) + 1 })
+                            .eq('id', doc.id)
+
+                          // Fazer download
+                          const link = document.createElement('a')
+                          link.href = downloadUrl
+                          link.download = doc.title
+                          link.target = '_blank'
+                          link.click()
+
+                          // Atualizar contador local
+                          setRealDocuments(prev => prev.map(d =>
+                            d.id === doc.id ? { ...d, downloads: (d.downloads || 0) + 1 } : d
+                          ))
+                        } else {
+                          alert('Não foi possível fazer download. Verifique se o arquivo existe no Storage.')
+                        }
+                      } catch (error) {
+                        console.error('Erro no download:', error)
+                        alert('Erro ao fazer download do arquivo')
+                      }
+                    }}
+                    className="inline-flex items-center gap-1 h-6 min-w-0 px-2 rounded border border-emerald-600/40 bg-emerald-900/40 text-emerald-200 text-[9px] font-medium leading-none transition-all hover:bg-emerald-800/50 hover:border-emerald-500/50"
+                  >
+                    <Download className="w-2 h-2 shrink-0 opacity-90" />
+                    Baixar
+                  </button>
+                  {doc.isLinkedToAI ? (
+                    <button
+                      onClick={async () => {
+                        if (!confirm(`Tem certeza que deseja desvincular o documento "${doc.title}" da IA residente?`)) {
+                          return
+                        }
+
+                        try {
+                          const success = await KnowledgeBaseIntegration.unlinkDocumentFromAI(doc.id)
+
+                          if (success) {
+                            // Atualizar estado local
+                            setRealDocuments(prev => prev.map(d =>
+                              d.id === doc.id ? { ...d, isLinkedToAI: false, aiRelevance: 0 } : d
+                            ))
+
+                            // Recarregar estatísticas
+                            const stats = await KnowledgeBaseIntegration.getKnowledgeStats()
+                            setKnowledgeStats(stats)
+
+                            alert('Documento desvinculado da IA residente com sucesso!')
+                          } else {
+                            alert('Erro ao desvincular documento da IA.')
+                          }
+                        } catch (error) {
+                          console.error('Erro ao desvincular documento:', error)
+                          alert('Erro ao desvincular documento da IA.')
+                        }
+                      }}
+                      className="inline-flex items-center gap-0.5 h-5 min-w-0 px-1.5 rounded-sm border border-sky-600/40 bg-sky-900/40 text-sky-200 text-[8px] font-medium leading-none transition-all hover:bg-sky-800/50 hover:border-sky-500/50"
+                      title="Desvincular da IA residente"
+                    >
+                      <XCircle className="w-2 h-2 shrink-0 opacity-90" />
+                      Desvinc.
+                    </button>
+                  ) : (
+                    <button
+                      onClick={async () => {
+                        try {
+                          const success = await KnowledgeBaseIntegration.linkDocumentToAI(doc.id, 5)
+
+                          if (success) {
+                            // Atualizar estado local
+                            setRealDocuments(prev => prev.map(d =>
+                              d.id === doc.id ? { ...d, isLinkedToAI: true, aiRelevance: 5 } : d
+                            ))
+
+                            // Recarregar estatísticas
+                            const stats = await KnowledgeBaseIntegration.getKnowledgeStats()
+                            setKnowledgeStats(stats)
+
+                            alert('Documento vinculado à IA residente com sucesso!')
+                          } else {
+                            alert('Erro ao vincular documento à IA.')
+                          }
+                        } catch (error) {
+                          console.error('Erro ao vincular documento:', error)
+                          alert('Erro ao vincular documento à IA.')
+                        }
+                      }}
+                      className="inline-flex items-center gap-1 h-6 min-w-0 px-2 rounded border border-emerald-600/40 bg-emerald-900/40 text-emerald-200 text-[9px] font-medium leading-none transition-all hover:bg-emerald-800/50 hover:border-emerald-500/50"
+                      title="Vincular à IA residente"
+                    >
+                      <LinkIcon className="w-2 h-2 shrink-0 opacity-90" />
+                      Vincular
+                    </button>
+                  )}
+                  <button
+                    onClick={async () => {
+                      if (!confirm(`Tem certeza que deseja excluir o documento "${doc.title}"? Esta ação não pode ser desfeita.`)) {
+                        return
+                      }
+
+                      try {
+                        // Extrair nome do arquivo da URL ou título
+                        let fileName: string | null = null
+
+                        if (doc.file_url) {
+                          const pathMatch = doc.file_url.match(/\/storage\/v1\/object\/[^\/]+\/(.+)$/)
+                          if (pathMatch) {
+                            fileName = decodeURIComponent(pathMatch[1])
+                          }
+                        }
+
+                        // Se não encontrou na URL, tentar encontrar no Storage
+                        if (!fileName) {
+                          const { data: files } = await supabase.storage
+                            .from('documents')
+                            .list('', { limit: 100 })
+
+                          if (files) {
+                            const file = files.find(f =>
+                              f.name.toLowerCase().includes(doc.title.toLowerCase().split('.')[0]) ||
+                              doc.title.toLowerCase().includes(f.name.toLowerCase().split('.')[0])
+                            )
+
+                            if (file) {
+                              fileName = file.name
+                            }
+                          }
+                        }
+
+                        // Deletar do Storage se encontrou o arquivo
+                        if (fileName) {
+                          const { error: storageError } = await supabase.storage
+                            .from('documents')
+                            .remove([fileName])
+
+                          if (storageError) {
+                            console.warn('Erro ao deletar arquivo do Storage (pode não existir):', storageError)
+                          } else {
+                            console.log('✅ Arquivo deletado do Storage:', fileName)
+                          }
+                        }
+
+                        // Deletar do banco de dados
+                        const { error: dbError } = await supabase
+                          .from('documents')
+                          .delete()
+                          .eq('id', doc.id)
+
+                        if (dbError) {
+                          throw dbError
+                        }
+
+                        // Remover da lista local
+                        setRealDocuments(prev => prev.filter(d => d.id !== doc.id))
+                        setTotalDocs(prev => Math.max(0, prev - 1))
+
+                        alert('Documento excluído com sucesso!')
+                      } catch (error) {
+                        console.error('Erro ao excluir documento:', error)
+                        alert('Erro ao excluir documento. Verifique as permissões.')
+                      }
+                    }}
+                    className="inline-flex items-center gap-1 h-6 min-w-0 px-2 rounded border border-red-500/40 bg-red-900/30 text-red-200 text-[9px] font-medium leading-none transition-all hover:bg-red-800/40 hover:border-red-400/50"
+                    title="Excluir documento"
+                  >
+                    <Trash2 className="w-2 h-2 shrink-0 opacity-90" />
+                    Excluir
+                  </button>
+                </div>
+              </div>
             </div>
           ))}
         </div>

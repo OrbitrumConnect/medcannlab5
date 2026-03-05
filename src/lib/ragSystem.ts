@@ -268,7 +268,7 @@ export class RAGSystem {
         const pdfjsLib = await import('pdfjs-dist')
 
         // Configurar o worker (importante para pdf.js)
-        pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`
+        pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js`
 
         const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise
         let fullText = ''

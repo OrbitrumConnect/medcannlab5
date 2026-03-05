@@ -2,10 +2,10 @@ import React, { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import * as pdfjsLib from 'pdfjs-dist'
-import { 
-  BookOpen, 
+import {
+  BookOpen,
   Clock,
-  CheckCircle, 
+  CheckCircle,
   Star,
   Users,
   Award,
@@ -25,7 +25,7 @@ import {
 
 // Configurar worker do pdfjs usando CDN (mais confiável)
 if (typeof window !== 'undefined') {
-  pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`
+  pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js`
 }
 
 interface Module {
@@ -121,7 +121,7 @@ const ArteEntrevistaClinica: React.FC = () => {
                 const { data: signedData, error: signedError } = await supabase.storage
                   .from('documents')
                   .createSignedUrl(filePath, 3600)
-                
+
                 if (!signedError && signedData) {
                   const signedResponse = await fetch(signedData.signedUrl)
                   if (signedResponse.ok) {
@@ -156,7 +156,7 @@ const ArteEntrevistaClinica: React.FC = () => {
           const { data: signedData, error: signedError } = await supabase.storage
             .from('documents')
             .createSignedUrl(pdfUrlOrPath, 3600)
-          
+
           if (!signedError && signedData) {
             const signedResponse = await fetch(signedData.signedUrl)
             if (signedResponse.ok) {
@@ -179,9 +179,9 @@ const ArteEntrevistaClinica: React.FC = () => {
       }
 
       const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise
-      
+
       let fullText = ''
-      
+
       // Extrair texto de todas as páginas
       for (let i = 1; i <= pdf.numPages; i++) {
         const page = await pdf.getPage(i)
@@ -191,7 +191,7 @@ const ArteEntrevistaClinica: React.FC = () => {
           .join(' ')
         fullText += pageText + '\n'
       }
-      
+
       return fullText
     } catch (error) {
       console.error('Erro ao extrair texto do PDF:', error)
@@ -205,10 +205,10 @@ const ArteEntrevistaClinica: React.FC = () => {
     const experiencia: string[] = []
     const publicacoes: string[] = []
     const areas: string[] = []
-    
+
     // Preservar estrutura original do texto para melhor parsing
     const originalText = text
-    
+
     // Extrair formação acadêmica - buscar seções do Lattes
     const formacaoSection = originalText.match(/FORMAÇÃO\s*ACADÊMICA[\s\S]*?(?=FORMAÇÃO\s*COMPLEMENTAR|ATUAÇÃO|PRODUÇÃO|$)/i)
     if (formacaoSection) {
@@ -225,7 +225,7 @@ const ArteEntrevistaClinica: React.FC = () => {
         }
       })
     }
-    
+
     // Extrair experiência profissional - buscar seção de ATUAÇÃO PROFISSIONAL
     let experienciaSection = originalText.match(/ATUAÇÃO\s*PROFISSIONAL[\s\S]*?(?=PRODUÇÃO|PUBLICAÇÕES|ORIENTAÇÕES|$)/i)
     if (!experienciaSection) {
@@ -235,7 +235,7 @@ const ArteEntrevistaClinica: React.FC = () => {
         experienciaSection = expAlt
       }
     }
-    
+
     if (experienciaSection && experienciaSection[0]) {
       const expText = experienciaSection[0]
       // Buscar todas as experiências (separadas por linhas ou períodos)
@@ -247,7 +247,7 @@ const ArteEntrevistaClinica: React.FC = () => {
         }
       })
     }
-    
+
     // Extrair áreas de atuação - buscar seção específica ou palavras-chave
     const areasSection = originalText.match(/ÁREA\s*DE\s*ATUAÇÃO[\s\S]*?(?=\n\n|PRODUÇÃO|PUBLICAÇÕES|$)/i)
     if (areasSection) {
@@ -258,7 +258,7 @@ const ArteEntrevistaClinica: React.FC = () => {
         areas.push(...Array.from(new Set(areasMatches.map(a => a.trim()))))
       }
     }
-    
+
     // Extrair publicações - buscar seção de PRODUÇÃO BIBLIOGRÁFICA
     const publicacoesSection = originalText.match(/PRODUÇÃO\s*BIBLIOGRÁFICA[\s\S]*?(?=ORIENTAÇÕES|FORMAÇÃO|ATUAÇÃO|$)/i)
     if (publicacoesSection) {
@@ -274,7 +274,7 @@ const ArteEntrevistaClinica: React.FC = () => {
         })
       }
     }
-    
+
     // Se não encontrou seções específicas, tentar extrair do texto completo de forma mais genérica
     if (formacao.length === 0 && experiencia.length === 0) {
       // Tentar extrair qualquer informação estruturada
@@ -282,20 +282,20 @@ const ArteEntrevistaClinica: React.FC = () => {
       lines.forEach(line => {
         const lowerLine = line.toLowerCase()
         // Formação
-        if ((lowerLine.includes('graduação') || lowerLine.includes('mestrado') || 
-             lowerLine.includes('doutorado') || lowerLine.includes('especialização')) &&
-            !formacao.includes(line.trim())) {
+        if ((lowerLine.includes('graduação') || lowerLine.includes('mestrado') ||
+          lowerLine.includes('doutorado') || lowerLine.includes('especialização')) &&
+          !formacao.includes(line.trim())) {
           formacao.push(line.trim().substring(0, 250))
         }
         // Experiência
-        if ((lowerLine.includes('professor') || lowerLine.includes('médico') || 
-             lowerLine.includes('coordenador') || lowerLine.includes('diretor')) &&
-            !experiencia.includes(line.trim()) && line.trim().length > 40) {
+        if ((lowerLine.includes('professor') || lowerLine.includes('médico') ||
+          lowerLine.includes('coordenador') || lowerLine.includes('diretor')) &&
+          !experiencia.includes(line.trim()) && line.trim().length > 40) {
           experiencia.push(line.trim().substring(0, 250))
         }
       })
     }
-    
+
     return {
       content: text.substring(0, 5000), // Limitar para exibição
       formacao: formacao.length > 0 ? formacao.slice(0, 8) : undefined,
@@ -343,8 +343,8 @@ const ArteEntrevistaClinica: React.FC = () => {
           .limit(10)
 
         if (aiDocs) {
-          doc = aiDocs.find(d => 
-            d.title?.toLowerCase().includes('lattes') || 
+          doc = aiDocs.find(d =>
+            d.title?.toLowerCase().includes('lattes') ||
             d.title?.toLowerCase().includes('ricardo') ||
             d.title?.toLowerCase().includes('currículo')
           )
@@ -353,19 +353,19 @@ const ArteEntrevistaClinica: React.FC = () => {
 
       if (doc) {
         let content = doc.content || ''
-        
+
         // Verificar se o conteúdo é apenas metadata (não é conteúdo real extraído)
-        const isMetadataOnly = content.includes('Documento:') && 
-                               content.includes('Tipo:') && 
-                               content.includes('Tamanho:')
-        
+        const isMetadataOnly = content.includes('Documento:') &&
+          content.includes('Tipo:') &&
+          content.includes('Tamanho:')
+
         // Se for apenas metadata ou não tiver conteúdo, extrair do PDF
         if ((!content || isMetadataOnly) && doc.file_type === 'pdf') {
           try {
             console.log('📄 Extraindo conteúdo real do PDF...')
-            
+
             let extractedContent = ''
-            
+
             // Estratégia 1: Tentar usar file_url se existir e for válido
             if (doc.file_url && !doc.file_url.includes('Bucket not found') && !doc.file_url.includes('404')) {
               try {
@@ -375,7 +375,7 @@ const ArteEntrevistaClinica: React.FC = () => {
                 console.warn('Erro ao extrair da URL, tentando buscar arquivo no Storage...', urlError)
               }
             }
-            
+
             // Estratégia 2: Se falhou, tentar listar arquivos no Storage e encontrar pelo nome
             if (!extractedContent || extractedContent.length < 100) {
               try {
@@ -386,35 +386,35 @@ const ArteEntrevistaClinica: React.FC = () => {
                     limit: 100,
                     sortBy: { column: 'created_at', order: 'desc' }
                   })
-                
+
                 if (!listError && files && files.length > 0) {
                   console.log('📁 Arquivos encontrados no Storage:', files.length, 'Arquivos:', files.map(f => f.name))
-                  
+
                   // Procurar arquivo que contenha "lattes" ou "ricardo" no nome
                   const lattesFile = files.find(file => {
                     const name = file.name.toLowerCase()
                     return name.includes('lattes') ||
-                           name.includes('ricardo') ||
-                           name.includes('currículo') ||
-                           name.includes('curriculo') ||
-                           name.includes('valença') ||
-                           name.includes('valenca') ||
-                           (name.includes('curriculo') && name.includes('pdf')) ||
-                           (name.includes('ricardo') && name.includes('pdf'))
+                      name.includes('ricardo') ||
+                      name.includes('currículo') ||
+                      name.includes('curriculo') ||
+                      name.includes('valença') ||
+                      name.includes('valenca') ||
+                      (name.includes('curriculo') && name.includes('pdf')) ||
+                      (name.includes('ricardo') && name.includes('pdf'))
                   })
-                  
+
                   if (lattesFile) {
                     console.log('📁 Arquivo encontrado no Storage:', lattesFile.name)
                     try {
                       // Primeiro tentar download direto
                       extractedContent = await extractTextFromPDF(lattesFile.name)
                       console.log('✅ Extraído via busca no Storage, tamanho:', extractedContent.length)
-                      
+
                       // Atualizar file_url no documento usando signed URL (válida por 24 horas)
                       const { data: signedUrlData, error: signedError } = await supabase.storage
                         .from('documents')
                         .createSignedUrl(lattesFile.name, 86400) // 24 horas
-                      
+
                       if (!signedError && signedUrlData) {
                         await supabase
                           .from('documents')
@@ -431,7 +431,7 @@ const ArteEntrevistaClinica: React.FC = () => {
                         const { data: signedData } = await supabase.storage
                           .from('documents')
                           .createSignedUrl(lattesFile.name, 3600)
-                        
+
                         if (signedData) {
                           extractedContent = await extractTextFromPDF(signedData.signedUrl)
                           console.log('✅ Extraído usando signed URL, tamanho:', extractedContent.length)
@@ -452,7 +452,7 @@ const ArteEntrevistaClinica: React.FC = () => {
                 console.error('Erro ao buscar no Storage:', storageError)
               }
             }
-            
+
             // Se ainda não conseguiu, tentar buscar pelo título (assumindo formato de nome)
             if (!extractedContent || extractedContent.length < 100) {
               try {
@@ -460,20 +460,20 @@ const ArteEntrevistaClinica: React.FC = () => {
                 const { data: allFiles } = await supabase.storage
                   .from('documents')
                   .list('', { limit: 200 })
-                
+
                 if (allFiles && allFiles.length > 0) {
                   // Procurar arquivo mais similar ao título
                   const similarFile = allFiles.find(f => {
                     const fileName = f.name.toLowerCase()
                     const docTitle = doc.title.toLowerCase()
-                    return fileName.includes('lattes') || 
-                           fileName.includes('ricardo') ||
-                           fileName.includes('curriculo') ||
-                           fileName.includes('currículo') ||
-                           docTitle.includes(fileName.split('.')[0]) ||
-                           fileName.includes(docTitle.split('.')[0])
+                    return fileName.includes('lattes') ||
+                      fileName.includes('ricardo') ||
+                      fileName.includes('curriculo') ||
+                      fileName.includes('currículo') ||
+                      docTitle.includes(fileName.split('.')[0]) ||
+                      fileName.includes(docTitle.split('.')[0])
                   })
-                  
+
                   if (similarFile) {
                     console.log('📁 Tentando extrair arquivo similar encontrado:', similarFile.name)
                     try {
@@ -481,7 +481,7 @@ const ArteEntrevistaClinica: React.FC = () => {
                       const { data: signedData } = await supabase.storage
                         .from('documents')
                         .createSignedUrl(similarFile.name, 3600)
-                      
+
                       if (signedData) {
                         extractedContent = await extractTextFromPDF(signedData.signedUrl)
                         console.log('✅ Extraído via arquivo similar com signed URL, tamanho:', extractedContent.length)
@@ -498,7 +498,7 @@ const ArteEntrevistaClinica: React.FC = () => {
                 console.error('Erro ao tentar buscar arquivos similares:', error)
               }
             }
-            
+
             if (extractedContent && extractedContent.length > 100) {
               content = extractedContent
               console.log('✅ Texto extraído com sucesso!', {
@@ -506,7 +506,7 @@ const ArteEntrevistaClinica: React.FC = () => {
                 preview: content.substring(0, 200),
                 primeirasLinhas: content.split('\n').slice(0, 5)
               })
-              
+
               // Parsear informações antes de salvar
               const parsedData = parseCurriculumData(content)
               console.log('📊 Dados parseados:', {
@@ -515,18 +515,18 @@ const ArteEntrevistaClinica: React.FC = () => {
                 publicacoes: parsedData.publicacoes?.length || 0,
                 areas: parsedData.areas?.length || 0
               })
-              
+
               // Atualizar documento no banco com conteúdo extraído
               const { error: updateError } = await supabase
                 .from('documents')
-                .update({ 
+                .update({
                   content: content,
                   summary: `Currículo Lattes de ${doc.author || 'Dr. Ricardo Valença'}`,
                   keywords: parsedData.areas || doc.keywords || [],
                   tags: [...(doc.tags || []), ...(parsedData.areas?.map(a => a.toLowerCase()) || [])]
                 })
                 .eq('id', doc.id)
-              
+
               if (updateError) {
                 console.error('Erro ao atualizar documento:', updateError)
               } else {
@@ -544,7 +544,7 @@ const ArteEntrevistaClinica: React.FC = () => {
         if (content && !isMetadataOnly && content.length > 100) {
           console.log('📄 Conteúdo disponível para parsing, tamanho:', content.length)
           const parsedData = parseCurriculumData(content)
-          
+
           console.log('📊 Resultado do parsing:', {
             formacao: parsedData.formacao?.length || 0,
             experiencia: parsedData.experiencia?.length || 0,
@@ -555,7 +555,7 @@ const ArteEntrevistaClinica: React.FC = () => {
             temPublicacoes: !!parsedData.publicacoes?.length,
             temAreas: !!parsedData.areas?.length
           })
-          
+
           // Mesmo se não conseguiu parsear bem, mostrar o conteúdo extraído
           setCurriculumData({
             title: doc.title,
@@ -565,7 +565,7 @@ const ArteEntrevistaClinica: React.FC = () => {
             content: content.substring(0, 10000), // Manter conteúdo completo para exibição
             ...parsedData // Incluir dados parseados (pode estar vazio)
           })
-          
+
           console.log('✅ CurriculumData definido:', {
             title: doc.title,
             formacao: parsedData.formacao?.length || 0,
@@ -933,10 +933,10 @@ const ArteEntrevistaClinica: React.FC = () => {
               </div>
               <h1 className="text-3xl font-bold text-white mb-4">
                 {courseInfo.title}
-          </h1>
+              </h1>
               <p className="text-gray-300 mb-6">
-                Curso cuidadosamente elaborado pelo Dr. Ricardo Valença, médico e professor de semiologia médica, 
-                para aprimorar habilidades de comunicação e entrevista clínica, fundamentais para uma prática médica 
+                Curso cuidadosamente elaborado pelo Dr. Ricardo Valença, médico e professor de semiologia médica,
+                para aprimorar habilidades de comunicação e entrevista clínica, fundamentais para uma prática médica
                 eficaz e humanizada. Destinado a estudantes de medicina e médicos recém-formados.
               </p>
               <div className="bg-emerald-900/30 border border-emerald-700/50 rounded-lg p-4 mb-4">
@@ -980,8 +980,8 @@ const ArteEntrevistaClinica: React.FC = () => {
                     <div
                       className="bg-blue-600 h-3 rounded-full transition-all duration-300"
                       style={{ width: `${totalProgress}%` }}
-            />
-          </div>
+                    />
+                  </div>
                 </div>
                 <div className="space-y-2 text-sm text-gray-300">
                   <div className="flex justify-between">
@@ -1193,17 +1193,16 @@ const ArteEntrevistaClinica: React.FC = () => {
                   {modules.map((module) => (
                     <div
                       key={module.id}
-                      className={`p-4 border rounded-lg cursor-pointer transition-colors duration-200 ${
-                        activeModule === module.id
+                      className={`p-4 border rounded-lg cursor-pointer transition-colors duration-200 ${activeModule === module.id
                           ? 'border-emerald-500 bg-blue-900/20'
                           : 'border-slate-700 hover:border-slate-600'
-                      }`}
+                        }`}
                       onClick={() => setActiveModule(activeModule === module.id ? null : module.id)}
                     >
                       <div className="flex items-center justify-between mb-2">
                         <h3 className="font-semibold text-white">
                           {module.title}
-              </h3>
+                        </h3>
                         <div className="flex items-center space-x-2">
                           {module.isCompleted && (
                             <CheckCircle className="w-5 h-5 text-green-500" />
@@ -1236,13 +1235,12 @@ const ArteEntrevistaClinica: React.FC = () => {
                             {module.lessons.map((lesson) => (
                               <div
                                 key={lesson.id}
-                                className={`flex items-center justify-between p-3 rounded-lg ${
-                                  lesson.isCompleted
+                                className={`flex items-center justify-between p-3 rounded-lg ${lesson.isCompleted
                                     ? 'bg-green-900/20'
                                     : lesson.isLocked
-                                    ? 'bg-slate-700 opacity-60'
-                                    : 'bg-slate-700 hover:bg-slate-600'
-                                }`}
+                                      ? 'bg-slate-700 opacity-60'
+                                      : 'bg-slate-700 hover:bg-slate-600'
+                                  }`}
                               >
                                 <div className="flex items-center space-x-3 flex-1">
                                   <div className={getLessonColor(lesson.type)}>
@@ -1264,8 +1262,8 @@ const ArteEntrevistaClinica: React.FC = () => {
                                           Liberação: {lesson.releaseDate}
                                         </span>
                                       )}
-                      </div>
-                    </div>
+                                    </div>
+                                  </div>
                                 </div>
                                 <div className="flex items-center space-x-2">
                                   {lesson.isCompleted && (
@@ -1310,11 +1308,11 @@ const ArteEntrevistaClinica: React.FC = () => {
                         </div>
                         <button className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm transition-colors">
                           {assignment.isSubmitted ? 'Ver Feedback' : 'Entregar'}
-                  </button>
+                        </button>
                       </div>
                     </div>
-                ))}
-              </div>
+                  ))}
+                </div>
               )}
             </div>
           </div>
@@ -1344,8 +1342,8 @@ const ArteEntrevistaClinica: React.FC = () => {
                   <span className="text-sm font-medium text-white">#--</span>
                 </div>
               </div>
-                </div>
-                
+            </div>
+
             {/* Resources */}
             <div className="bg-slate-800 rounded-xl p-6">
               <h3 className="text-lg font-semibold text-white mb-4">
@@ -1369,13 +1367,13 @@ const ArteEntrevistaClinica: React.FC = () => {
                   <span className="text-sm text-white">Certificado</span>
                 </button>
               </div>
-              </div>
+            </div>
 
             {/* Instructor */}
             <div className="bg-slate-800 rounded-xl p-6">
               <h3 className="text-lg font-semibold text-white mb-4">
                 Instrutor
-                </h3>
+              </h3>
               <div className="flex items-center space-x-3 mb-4">
                 <div className="w-12 h-12 bg-blue-900 rounded-full flex items-center justify-center">
                   <User className="w-6 h-6 text-blue-400" />
@@ -1390,10 +1388,10 @@ const ArteEntrevistaClinica: React.FC = () => {
                 </div>
               </div>
               <p className="text-sm text-gray-300 mb-4">
-                Criador da metodologia Arte da Entrevista Clínica (AEC), especialista em 
+                Criador da metodologia Arte da Entrevista Clínica (AEC), especialista em
                 comunicação empática e entrevista clínica humanizada.
               </p>
-              <button 
+              <button
                 onClick={() => setShowProfileModal(true)}
                 className="w-full px-4 py-2 bg-slate-700 text-white rounded-lg hover:bg-slate-600 text-sm transition-colors"
               >
@@ -1416,11 +1414,11 @@ const ArteEntrevistaClinica: React.FC = () => {
                 <p>
                   <strong className="text-white">Recomendação:</strong> Leia o texto "O que se diz do que se vê" disponível na aula 1
                 </p>
-                        </div>
-                      </div>
-                    </div>
-                </div>
               </div>
+            </div>
+          </div>
+        </div>
+      </div>
 
       {/* Modal de Perfil do Dr. Ricardo Valença */}
       {showProfileModal && (
@@ -1455,7 +1453,7 @@ const ArteEntrevistaClinica: React.FC = () => {
               ) : (
                 <>
                   {/* Formação */}
-                      <div>
+                  <div>
                     <h3 className="text-lg font-semibold text-white mb-3 flex items-center gap-2">
                       <Award className="w-5 h-5 text-blue-400" />
                       Formação e Credenciais
@@ -1466,7 +1464,7 @@ const ArteEntrevistaClinica: React.FC = () => {
                           {curriculumData.formacao.map((formacao, idx) => (
                             <div key={idx} className="pb-2 border-b border-slate-600 last:border-b-0">
                               <p className="text-sm leading-relaxed text-gray-300">{formacao}</p>
-                      </div>
+                            </div>
                           ))}
                         </div>
                       ) : curriculumData?.content && curriculumData.content.length > 100 && !curriculumData.content.includes('Documento:') ? (
@@ -1504,12 +1502,12 @@ const ArteEntrevistaClinica: React.FC = () => {
                         </div>
                       )}
                     </div>
-                      </div>
-                    </>
-                  )}
-                  
+                  </div>
+                </>
+              )}
+
               {/* Especialização */}
-                      <div>
+              <div>
                 <h3 className="text-lg font-semibold text-white mb-3 flex items-center gap-2">
                   <BookOpen className="w-5 h-5 text-purple-400" />
                   Especialização
@@ -1551,30 +1549,30 @@ const ArteEntrevistaClinica: React.FC = () => {
               </div>
 
               {/* Metodologia AEC - Removido dados mockados. Será preenchido apenas com dados reais do currículo Lattes */}
-              {curriculumData?.experiencia && curriculumData.experiencia.some(exp => 
-                exp.toLowerCase().includes('aec') || 
+              {curriculumData?.experiencia && curriculumData.experiencia.some(exp =>
+                exp.toLowerCase().includes('aec') ||
                 exp.toLowerCase().includes('entrevista clínica') ||
                 exp.toLowerCase().includes('metodologia')
               ) && (
-                      <div>
-                  <h3 className="text-lg font-semibold text-white mb-3 flex items-center gap-2">
-                    <Star className="w-5 h-5 text-yellow-400" />
-                    Metodologia Arte da Entrevista Clínica (AEC)
-                  </h3>
-                  <div className="bg-slate-700 rounded-lg p-4 space-y-2 text-sm text-gray-300">
-                    {curriculumData.experiencia
-                      .filter(exp => 
-                        exp.toLowerCase().includes('aec') || 
-                        exp.toLowerCase().includes('entrevista clínica') ||
-                        exp.toLowerCase().includes('metodologia') ||
-                        exp.toLowerCase().includes('anamnese')
-                      )
-                      .map((exp, idx) => (
-                        <p key={idx} className="text-sm">• {exp.substring(0, 200)}</p>
-                      ))}
-                      </div>
-                </div>
-              )}
+                  <div>
+                    <h3 className="text-lg font-semibold text-white mb-3 flex items-center gap-2">
+                      <Star className="w-5 h-5 text-yellow-400" />
+                      Metodologia Arte da Entrevista Clínica (AEC)
+                    </h3>
+                    <div className="bg-slate-700 rounded-lg p-4 space-y-2 text-sm text-gray-300">
+                      {curriculumData.experiencia
+                        .filter(exp =>
+                          exp.toLowerCase().includes('aec') ||
+                          exp.toLowerCase().includes('entrevista clínica') ||
+                          exp.toLowerCase().includes('metodologia') ||
+                          exp.toLowerCase().includes('anamnese')
+                        )
+                        .map((exp, idx) => (
+                          <p key={idx} className="text-sm">• {exp.substring(0, 200)}</p>
+                        ))}
+                    </div>
+                  </div>
+                )}
 
               {/* Contribuições */}
               <div>
@@ -1589,9 +1587,9 @@ const ArteEntrevistaClinica: React.FC = () => {
                       {curriculumData.publicacoes.map((pub, idx) => (
                         <div key={idx} className="pb-2 border-b border-slate-600 last:border-b-0">
                           <p className="text-sm leading-relaxed text-gray-300">{pub}</p>
-                      </div>
+                        </div>
                       ))}
-                      </div>
+                    </div>
                   ) : curriculumData?.content && curriculumData.content.length > 100 ? (
                     <div className="space-y-3">
                       <p className="text-sm text-slate-400 mb-2">Conteúdo extraído do currículo:</p>
@@ -1599,7 +1597,7 @@ const ArteEntrevistaClinica: React.FC = () => {
                         {curriculumData.content.substring(0, 1000)}
                         {curriculumData.content.length > 1000 && '...'}
                       </p>
-                      </div>
+                    </div>
                   ) : (
                     <div className="text-center py-4">
                       <p className="text-sm text-gray-400">Processando contribuições do currículo Lattes...</p>
@@ -1629,15 +1627,15 @@ const ArteEntrevistaClinica: React.FC = () => {
             </div>
 
             <div className="mt-6 flex justify-end">
-                <button
+              <button
                 onClick={() => setShowProfileModal(false)}
                 className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold transition-colors"
-                >
+              >
                 Fechar
-                </button>
-              </div>
+              </button>
             </div>
           </div>
+        </div>
       )}
     </div>
   )
