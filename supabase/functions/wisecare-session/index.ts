@@ -203,45 +203,55 @@ serve(async (req) => {
                     orgUnit: WISECARE_ORG,
                 });
 
-                if (!room?.id) {
-                    throw new Error('WiseCare returned room without id');
+                // Debug: log full response to identify correct field name
+                console.log(`[WiseCare] Room response keys: ${JSON.stringify(Object.keys(room || {}))}`);
+                console.log(`[WiseCare] Room response: ${JSON.stringify(room).substring(0, 500)}`);
+
+                // WiseCare API pode retornar o ID em diferentes campos
+                const roomId = room?.id || room?.roomId || room?.room_id || room?.uuid || room?._id;
+                if (!roomId) {
+                    throw new Error(`WiseCare returned room without id. Response: ${JSON.stringify(room).substring(0, 300)}`);
                 }
 
                 // 2. Criar session dentro da room
                 const session = await wisecareRequest('POST', '/sessions', {
-                    roomId: room.id,
+                    roomId: roomId,
                     enableRecording: params.enableRecording ?? false,
                 });
 
-                if (!session?.id) {
-                    throw new Error('WiseCare returned session without id');
+                console.log(`[WiseCare] Session response keys: ${JSON.stringify(Object.keys(session || {}))}`);
+                console.log(`[WiseCare] Session response: ${JSON.stringify(session).substring(0, 500)}`);
+
+                const sessionId = session?.id || session?.sessionId || session?.session_id || session?.uuid || session?._id;
+                if (!sessionId) {
+                    throw new Error(`WiseCare returned session without id. Response: ${JSON.stringify(session).substring(0, 300)}`);
                 }
 
                 // 3. Construir joinUrl para iframe (sem credenciais)
                 // O iframe apontará para o domínio WiseCare com o sessionId
-                const joinUrl = `https://${WISECARE_DOMAIN}/${session.id}`;
+                const joinUrl = `https://${WISECARE_DOMAIN}/${sessionId}`;
 
                 // 4. Registrar no banco de dados MedCannLab
                 await supabaseClient.from('video_call_quality_logs').insert({
-                    session_id: String(session.id),
+                    session_id: String(sessionId),
                     provider: 'wisecare',
-                    room_id: String(room.id),
+                    room_id: String(roomId),
                     appointment_id: params.appointmentId || null,
                     user_id: user.id,
                     status: 'created',
                     metadata: {
                         callType: params.callType || 'video',
-                        wisecareSessionId: session.id,
-                        wisecareRoomId: room.id,
+                        wisecareSessionId: sessionId,
+                        wisecareRoomId: roomId,
                     },
                 });
 
-                console.log(`[WiseCare] Session ${session.id} (Room: ${room.id}) created for user ${user.id}`);
+                console.log(`[WiseCare] Session ${sessionId} (Room: ${roomId}) created for user ${user.id}`);
 
                 // Retorna APENAS sessionId + joinUrl — ZERO credenciais
                 return jsonResponse({
-                    sessionId: session.id,
-                    roomId: room.id,
+                    sessionId: sessionId,
+                    roomId: roomId,
                     joinUrl,
                 }, 200, corsHeaders);
             }
