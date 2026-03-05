@@ -217,6 +217,8 @@ serve(async (req) => {
                 // 2. Criar session dentro da room
                 const session = await wisecareRequest('POST', '/sessions', {
                     roomId: roomId,
+                    org: WISECARE_ORG,
+                    orgUnit: WISECARE_ORG,
                     enableRecording: params.enableRecording ?? false,
                 });
 
