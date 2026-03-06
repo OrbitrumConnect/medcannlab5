@@ -25,6 +25,7 @@ import {
   Check
 } from 'lucide-react'
 import { supabase } from '../lib/supabase'
+import { getAllPatients } from '../lib/adminPermissions'
 import { useAuth } from '../contexts/AuthContext'
 
 interface EduardoSchedulingProps {
@@ -104,14 +105,17 @@ const EduardoScheduling: React.FC<EduardoSchedulingProps> = ({ className = '', p
 
   const loadPatientsList = async () => {
     try {
-      const { data, error } = await supabase
-        .from('users')
-        .select('id, name')
-        .eq('type', 'patient')
-        .order('name')
-
-      if (data) {
-        setPatientsList(data)
+      const patients = await getAllPatients(user)
+      if (patients && patients.length > 0) {
+        setPatientsList(patients.map(p => ({ id: p.id, name: p.name })))
+      } else {
+        // Fallback: query direta
+        const { data } = await supabase
+          .from('users')
+          .select('id, name')
+          .in('type', ['patient', 'paciente'])
+          .order('name')
+        if (data) setPatientsList(data)
       }
     } catch (err) {
       console.error("Erro ao carregar lista de pacientes", err)
@@ -296,7 +300,7 @@ const EduardoScheduling: React.FC<EduardoSchedulingProps> = ({ className = '', p
                 </div>
                 <h2 className="text-lg font-bold text-white tracking-tight">Agenda "Cidade Amiga dos Rins"</h2>
               </div>
-              
+
             </div>
             <button
               onClick={() => setIsNewAppointmentModalOpen(true)}
@@ -634,8 +638,8 @@ const EduardoScheduling: React.FC<EduardoSchedulingProps> = ({ className = '', p
         const dayLabel = dayDate.toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' })
 
         // Horários de trabalho (08:00-18:00, intervalos de 1h)
-        const workSlots = ['08:00','09:00','10:00','11:00','12:00','13:00','14:00','15:00','16:00','17:00','18:00']
-        const occupiedTimes = new Set(dayAppts.map(a => a.time.slice(0,5)))
+        const workSlots = ['08:00', '09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00']
+        const occupiedTimes = new Set(dayAppts.map(a => a.time.slice(0, 5)))
         const freeSlots = workSlots.filter(s => !occupiedTimes.has(s))
 
         const statusLabel: Record<string, string> = {
@@ -690,7 +694,7 @@ const EduardoScheduling: React.FC<EduardoSchedulingProps> = ({ className = '', p
                           className="flex items-center gap-3 p-3 bg-slate-800/60 border border-slate-700/50 rounded-xl hover:border-emerald-500/30 hover:bg-slate-800 cursor-pointer transition-all group"
                         >
                           <div className="w-14 text-center flex-shrink-0">
-                            <span className="text-emerald-400 font-bold text-sm">{apt.time.slice(0,5)}</span>
+                            <span className="text-emerald-400 font-bold text-sm">{apt.time.slice(0, 5)}</span>
                           </div>
                           <div className="w-px h-8 bg-slate-700 flex-shrink-0" />
                           <div className="flex-1 min-w-0">

@@ -26,6 +26,7 @@ import {
     Activity
 } from 'lucide-react'
 import { supabase } from '../lib/supabase'
+import { getAllPatients } from '../lib/adminPermissions'
 import { useAuth } from '../contexts/AuthContext'
 
 interface RicardoSchedulingProps {
@@ -101,14 +102,17 @@ const RicardoScheduling: React.FC<RicardoSchedulingProps> = ({ className = '', p
 
     const loadPatientsList = async () => {
         try {
-            const { data, error } = await supabase
-                .from('users')
-                .select('id, name')
-                .eq('type', 'patient')
-                .order('name')
-
-            if (data) {
-                setPatientsList(data)
+            const patients = await getAllPatients(user)
+            if (patients && patients.length > 0) {
+                setPatientsList(patients.map(p => ({ id: p.id, name: p.name })))
+            } else {
+                // Fallback: query direta
+                const { data } = await supabase
+                    .from('users')
+                    .select('id, name')
+                    .in('type', ['patient', 'paciente'])
+                    .order('name')
+                if (data) setPatientsList(data)
             }
         } catch (err) {
             console.error("Erro ao carregar lista de pacientes", err)

@@ -47,6 +47,7 @@ import {
   isSchedulingWorkingDay
 } from '../lib/schedulingConfig'
 import { emailService } from '../services/emailService'
+import { getAllPatients } from '../lib/adminPermissions'
 import { backgroundGradient, cardStyle, secondarySurfaceStyle } from '../constants/designSystem'
 
 const ProfessionalScheduling: React.FC = () => {
@@ -137,16 +138,9 @@ const ProfessionalScheduling: React.FC = () => {
         return
       }
 
-      // Buscar pacientes disponíveis (todos pacientes cadastrados)
-      const { data: patientsData, error: patientsError } = await supabase
-        .from('users')
-        .select('id, name, email, phone')
-        .eq('type', 'patient')
-        .order('name', { ascending: true })
-
-      if (patientsError) {
-        console.error('Erro ao carregar pacientes:', patientsError)
-      }
+      // Buscar pacientes disponíveis (admin vê todos, profissional vê vinculados)
+      const allPatients = await getAllPatients(user)
+      const patientsData = allPatients.map(p => ({ id: p.id, name: p.name, email: p.email || '', phone: p.phone || '' }))
 
       // Transformar agendamentos
       const formattedAppointments = (appointmentsData || []).map((apt: any) => {
