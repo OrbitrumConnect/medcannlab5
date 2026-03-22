@@ -1,0 +1,41 @@
+=== TIER 0 FULL DIAGNOSTIC ===
+Date: 2026-02-27T01:16:13.167Z
+
+1. USERS: 35 - By type: {"admin":5,"aluno":1,"paciente":21,"profissional":8}
+
+2. USER_ROLES: 37 records
+   Users WITHOUT roles: 0
+
+3. CHAT_MESSAGES: 1 | CHAT_ROOMS: 75
+   chat_messages_legacy: 15 messages
+
+4. PROFESSIONALS:
+   - Eduardo de Sá Campello Faveret | pay: exempt [5a9ada8b]
+   - Ricardo Valença | pay: exempt [99286e6f]
+   - Inoã Mota Gonçalves Viana | pay: exempt [e629f8f6]
+   - cristina gottlieb | pay: exempt [e3bab7fd]
+   - Ricardo Valença | pay: exempt [3f241baa]
+   - João Eduardo Vidal | pay: exempt [b4340e71]
+   - Lucas Fernandes de Bulhões Braga | pay: exempt [7f151870]
+   - Tércio Ribeiro de Sousa | pay: exempt [92b0fed9]
+
+5. ADMINS:
+   - Dr. Ricardo Valença | pay: exempt [2135f0c0]
+   - Dr. Eduardo Faveret | pay: exempt [f4a62265]
+   - Admin Test | pay: exempt [e4114d0a]
+   - Joao Eduardo Vidal  | pay: exempt [f62c3f62]
+   - Pedro | pay: exempt [17345b36]
+
+6. APPOINTMENTS: 47 | By status: {"cancelled":17,"scheduled":30}
+
+7. UNIQUE DOCTOR_IDS: 4
+   OK: Dr. Ricardo Valença [2135f0c0]
+   OK: Dr. Eduardo Faveret [f4a62265]
+   OK: Ricardo Valença [99286e6f]
+   OK: Ricardo Valença [3f241baa]
+
+8. TRANSACTIONS: 0
+
+9. CLINICAL_REPORTS: 55
+
+10. SUBSCRIPTION_PLANS:
