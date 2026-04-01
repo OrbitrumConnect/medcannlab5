@@ -1,0 +1,9 @@
+=== SECURITY INVOKER MIGRATION ===
+Date: 2026-02-25T23:54:30.740Z
+Views to migrate: 30
+
+Using Management API to execute DDL...
+All views migrated in batch!
+Response: []
+
+=== RESULTS: 30 success, 0 failed ===

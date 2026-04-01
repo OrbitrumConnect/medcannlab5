@@ -1,0 +1,220 @@
+// Follow this setup guide to integrate the Deno language server with your editor:
+// https://deno.land/manual/getting_started/setup_your_environment
+// This enables autocomplete, go to definition, etc.
+
+// Setup type definitions for built-in Supabase Runtime APIs
+import "jsr:@supabase/functions-js/edge-runtime.d.ts"
+
+const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY')
+const FROM_EMAIL = Deno.env.get('RESEND_FROM_EMAIL') || 'MedCannLab <onboarding@resend.dev>'
+
+const corsHeaders = {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+}
+
+// ========================================
+// Email Templates
+// ========================================
+
+const baseTemplate = (content: string, title: string) => `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>${title}</title>
+  <style>
+    body { margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #0f172a; color: #e2e8f0; }
+    .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+    .header { text-align: center; padding: 30px 0; }
+    .logo { font-size: 28px; font-weight: bold; background: linear-gradient(135deg, #8b5cf6, #ec4899); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .content { background: #1e293b; border-radius: 16px; padding: 32px; border: 1px solid #334155; }
+    .btn { display: inline-block; padding: 14px 32px; background: linear-gradient(135deg, #8b5cf6, #ec4899); color: white !important; text-decoration: none; border-radius: 12px; font-weight: 600; font-size: 16px; margin: 16px 0; }
+    .footer { text-align: center; padding: 20px 0; color: #64748b; font-size: 12px; }
+    h2 { color: #f1f5f9; margin-top: 0; }
+    p { color: #cbd5e1; line-height: 1.6; }
+    .highlight { color: #a78bfa; font-weight: 600; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="logo">🏥 MedCannLab</div>
+      <p style="color: #94a3b8; font-size: 14px;">Plataforma de Cannabis Medicinal</p>
+    </div>
+    <div class="content">
+      ${content}
+    </div>
+    <div class="footer">
+      <p>© ${new Date().getFullYear()} MedCannLab. Todos os direitos reservados.</p>
+      <p>Este é um e-mail automático. Por favor, não responda diretamente.</p>
+    </div>
+  </div>
+</body>
+</html>
+`
+
+const templates: Record<string, (data: Record<string, string>) => { subject: string; html: string }> = {
+    welcome: (data) => ({
+        subject: '🏥 Bem-vindo ao MedCannLab!',
+        html: baseTemplate(`
+      <h2>Olá, ${data.name || 'Paciente'}! 👋</h2>
+      <p>Seja muito bem-vindo(a) ao <span class="highlight">MedCannLab</span> — sua plataforma de acompanhamento em Cannabis Medicinal.</p>
+      <p>Aqui você pode:</p>
+      <ul style="color: #cbd5e1;">
+        <li>💬 Conversar com seu médico em tempo real</li>
+        <li>📋 Receber relatórios clínicos personalizados</li>
+        <li>🤖 Consultar a Nôa, nossa IA assistente</li>
+        <li>📅 Agendar e gerenciar suas consultas</li>
+      </ul>
+      <center><a href="${data.appUrl || 'https://medcanlab.com.br'}" class="btn">Acessar Plataforma</a></center>
+    `, 'Bem-vindo ao MedCannLab')
+    }),
+
+    appointment_confirmation: (data) => ({
+        subject: `📅 Consulta Confirmada — ${data.date || ''}`,
+        html: baseTemplate(`
+      <h2>Consulta Confirmada! ✅</h2>
+      <p>Olá, <span class="highlight">${data.patientName || 'Paciente'}</span>!</p>
+      <p>Sua consulta foi agendada com sucesso:</p>
+      <div style="background: #0f172a; padding: 16px; border-radius: 12px; margin: 16px 0;">
+        <p>📅 <strong>Data:</strong> ${data.date || 'A confirmar'}</p>
+        <p>⏰ <strong>Horário:</strong> ${data.time || 'A confirmar'}</p>
+        <p>👨‍⚕️ <strong>Profissional:</strong> Dr(a). ${data.doctorName || ''}</p>
+        <p>📍 <strong>Tipo:</strong> ${data.type || 'Teleconsulta'}</p>
+      </div>
+      <center><a href="${data.appUrl || 'https://medcanlab.com.br'}" class="btn">Ver Detalhes</a></center>
+    `, 'Consulta Confirmada')
+    }),
+
+    report_shared: (data) => ({
+        subject: `📋 Novo Relatório Compartilhado`,
+        html: baseTemplate(`
+      <h2>Relatório Compartilhado 📋</h2>
+      <p>Olá, <span class="highlight">Dr(a). ${data.doctorName || ''}</span>!</p>
+      <p>O paciente <strong>${data.patientName || ''}</strong> compartilhou um relatório clínico com você:</p>
+      <div style="background: #0f172a; padding: 16px; border-radius: 12px; margin: 16px 0;">
+        <p>📄 <strong>Relatório:</strong> ${data.reportName || 'Relatório Clínico'}</p>
+        <p>📅 <strong>Data:</strong> ${data.date || new Date().toLocaleDateString('pt-BR')}</p>
+      </div>
+      <center><a href="${data.appUrl || 'https://medcanlab.com.br'}" class="btn">Ver Relatório</a></center>
+    `, 'Relatório Compartilhado')
+    }),
+
+    prescription_ready: (data) => ({
+        subject: `💊 Sua Prescrição está Pronta`,
+        html: baseTemplate(`
+      <h2>Prescrição Disponível 💊</h2>
+      <p>Olá, <span class="highlight">${data.patientName || 'Paciente'}</span>!</p>
+      <p>Sua prescrição foi emitida por <strong>Dr(a). ${data.doctorName || ''}</strong> e está pronta para acesso.</p>
+      <div style="background: #0f172a; padding: 16px; border-radius: 12px; margin: 16px 0;">
+        <p>📋 <strong>Tipo:</strong> ${data.prescriptionType || 'Cannabis Medicinal'}</p>
+        <p>📅 <strong>Data:</strong> ${data.date || new Date().toLocaleDateString('pt-BR')}</p>
+      </div>
+      <center><a href="${data.appUrl || 'https://medcanlab.com.br'}" class="btn">Ver Prescrição</a></center>
+    `, 'Prescrição Pronta')
+    }),
+
+    invite_patient: (data) => ({
+        subject: `🏥 Convite para MedCannLab — Dr(a). ${data.doctorName || ''}`,
+        html: baseTemplate(`
+      <h2>Você foi convidado! 🎉</h2>
+      <p>Olá!</p>
+      <p>O(a) <span class="highlight">Dr(a). ${data.doctorName || ''}</span> convidou você para se conectar no MedCannLab.</p>
+      <p>Com o MedCannLab, você terá acesso a acompanhamento clínico personalizado, chat direto com seu médico, e relatórios de evolução.</p>
+      <center><a href="${data.inviteUrl || 'https://medcanlab.com.br'}" class="btn">Aceitar Convite</a></center>
+    `, 'Convite MedCannLab')
+    }),
+
+    payment_confirmation: (data) => ({
+        subject: `✅ Pagamento Confirmado — MedCannLab`,
+        html: baseTemplate(`
+      <h2>Pagamento Confirmado! ✅</h2>
+      <p>Olá, <span class="highlight">${data.patientName || 'Paciente'}</span>!</p>
+      <p>Seu pagamento foi processado com sucesso:</p>
+      <div style="background: #0f172a; padding: 16px; border-radius: 12px; margin: 16px 0;">
+        <p>💳 <strong>Plano:</strong> ${data.planName || 'Premium'}</p>
+        <p>💰 <strong>Valor:</strong> R$ ${data.amount || '0,00'}</p>
+        <p>📅 <strong>Data:</strong> ${data.date || new Date().toLocaleDateString('pt-BR')}</p>
+      </div>
+      <center><a href="${data.appUrl || 'https://medcanlab.com.br'}" class="btn">Acessar Plataforma</a></center>
+    `, 'Pagamento Confirmado')
+    }),
+}
+
+// ========================================
+// Main Handler
+// ========================================
+
+Deno.serve(async (req) => {
+    // Handle CORS preflight
+    if (req.method === 'OPTIONS') {
+        return new Response('ok', { headers: corsHeaders })
+    }
+
+    try {
+        if (!RESEND_API_KEY) {
+            throw new Error('RESEND_API_KEY not configured in Edge Function secrets')
+        }
+
+        const body = await req.json()
+        const { to, subject, html, template, data } = body
+
+        if (!to) {
+            throw new Error('Missing required field: to')
+        }
+
+        let emailSubject = subject
+        let emailHtml = html
+
+        // If a template is specified, use it
+        if (template && templates[template]) {
+            const result = templates[template](data || {})
+            emailSubject = emailSubject || result.subject
+            emailHtml = emailHtml || result.html
+        }
+
+        if (!emailSubject || !emailHtml) {
+            throw new Error('Missing subject or html. Provide them directly or use a template.')
+        }
+
+        // Send via Resend API
+        const res = await fetch('https://api.resend.com/emails', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${RESEND_API_KEY}`,
+            },
+            body: JSON.stringify({
+                from: FROM_EMAIL,
+                to: Array.isArray(to) ? to : [to],
+                subject: emailSubject,
+                html: emailHtml,
+            }),
+        })
+
+        const resData = await res.json()
+
+        if (!res.ok) {
+            console.error('Resend API error:', resData)
+            return new Response(
+                JSON.stringify({ success: false, error: resData }),
+                { status: res.status, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+            )
+        }
+
+        console.log('✅ Email sent successfully:', resData)
+        return new Response(
+            JSON.stringify({ success: true, id: resData.id }),
+            { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        )
+
+    } catch (error) {
+        console.error('Edge Function error:', error.message)
+        return new Response(
+            JSON.stringify({ success: false, error: error.message }),
+            { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        )
+    }
+})

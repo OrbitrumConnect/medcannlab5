@@ -1,0 +1,51 @@
+=== TIER 0 FIX EXECUTION ===
+Date: 2026-02-25T23:30:11.063Z
+
+--- FIX 1: SYNC USER ROLES ---
+Found 14 users without roles. Inserting...
+  ✅ joao eduardo vidal (paciente) → role: paciente
+  ✅ Ricardo Vasconcelos (paciente) → role: paciente
+  ✅ patient (paciente) → role: paciente
+  ✅ João Vidal (paciente) → role: paciente
+  ✅ Paciente Recuperado (ca3d4a5c) (paciente) → role: paciente
+  ✅ Erivane Mateus de Lima Kashinawa Mukani (paciente) → role: paciente
+  ✅ Màrio Padilha (paciente) → role: paciente
+  ✅ Isabel Kutner de Souza (paciente) → role: paciente
+  ✅ Gabriel da Silva (paciente) → role: paciente
+  ✅ João Eduardo Vidal (paciente) → role: paciente
+  ✅ Carlo Panunzio (paciente) → role: paciente
+  ✅ Athanir Gusmão (paciente) → role: paciente
+  ✅ Isabel Kutner de Souza (paciente) → role: paciente
+  ✅ Professor Vasconcelos (aluno) → role: aluno
+
+--- FIX 2: EXEMPT PROFESSIONALS FROM PAYMENT ---
+Found 8 professionals to exempt.
+  ✅ cristina gottlieb: pending → exempt
+  ✅ João Eduardo Vidal: pending → exempt
+  ✅ Inoã Mota Gonçalves Viana: pending → exempt
+  ✅ Eduardo de Sá Campello Faveret: pending → exempt
+  ✅ Ricardo Valença: pending → exempt
+  ✅ Lucas Fernandes de Bulhões Braga: pending → exempt
+  ✅ Tércio Ribeiro de Sousa: pending → exempt
+  ✅ Ricardo Valença: paid → exempt
+
+--- FIX 3: GHOST DOCTOR_ID ---
+Found 10 assessments with ghost doctor_id.
+  ⚠️ Dr. Ricardo admin ID not found - need full ID
+  Found: Dr. Ricardo Valença [2135f0c0-eb5a-43b1-bc00-5f8dfea13561]
+  ✅ Reassigned 10 assessments to Dr. Ricardo Valença
+
+--- INVESTIGATION: CHAT MESSAGES ---
+  chat_messages table exists, 0 rows.
+  chat_messages_legacy ERROR: column chat_messages_legacy.room_id does not exist
+
+  CONCLUSION: Frontend likely writes to chat_messages but
+  RLS might block INSERT or the table was recreated empty.
+  Legacy table has 15 messages from before migration.
+
+--- VERIFICATION ---
+User roles: 37 (was 23)
+Professionals still pending: 0
+Assessments with ghost doctor: 0
+
+=== TIER 0 FIXES COMPLETE ===

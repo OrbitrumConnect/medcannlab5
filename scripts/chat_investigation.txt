@@ -1,0 +1,47 @@
+=== CHAT INVESTIGATION ===
+
+1. CHAT_PARTICIPANTS: 81 records
+   Columns: room_id, user_id, role, last_seen_at, joined_at
+   room: e59d27f7 | user: 17345b36 | role: patient | joined: 2026-01-29
+   room: e59d27f7 | user: f4a62265 | role: professional | joined: 2026-01-29
+   room: c795ac0a | user: 64d6a3e5 | role: patient | joined: 2026-02-06
+   room: 5b11490d | user: 99286e6f | role: professional | joined: 2026-02-11
+   room: 92305811 | user: 2135f0c0 | role: professional | joined: 2026-02-06
+   room: 515b143e | user: e629f8f6 | role: professional | joined: 2025-12-23
+   room: 72a228fd | user: 17345b36 | role: professional | joined: 2026-02-19
+   room: e787ff27 | user: f62c3f62 | role: professional | joined: 2026-01-12
+   room: 895bd979 | user: 17345b36 | role: professional | joined: 2026-02-19
+   room: 81a93af3 | user: 17345b36 | role: admin | joined: 2026-02-06
+
+2. SAMPLE ROOMS:
+   Room: bb6f67bf | name: Chat: jvbiocann@gmail.com - Dr. Ricardo | type: patient | by: 99286e6f
+   Participants: 2
+     - user: 99286e6f | role: professional
+     - user: c68fb133 | role: patient
+   Room: 47cad62f | name: Chat: graca11souza62@gmail.com - Dr. Ricardo | type: patient | by: 99286e6f
+   Participants: 2
+     - user: 99286e6f | role: professional
+     - user: af59920c | role: patient
+   Room: 056fa79c | name: Chat: graca11souza@gmail.com - Dr. Ricardo | type: patient | by: 99286e6f
+   Participants: 2
+     - user: 99286e6f | role: professional
+     - user: 43f53f57 | role: patient
+
+3. TESTING is_chat_room_member():
+   Testing with room: e59d27f7, user: 17345b36
+   RPC error: Could not find the function public.is_chat_room_member(p_room_id, p_user_id) in the schema cache
+   Hint: Perhaps you meant to call the function public.is_chat_room_member(_room_id, _user_id)
+   Code: PGRST202
+
+4. CHAT_MESSAGES SCHEMA:
+   Columns: id (number), room_id, sender_id, message, message_type, file_url, created_at, read_at
+   NOTE: PatientSupport.tsx uses user_id (WRONG) instead of sender_id
+
+5. TEST INSERT (service role):
+   ✅ INSERT SUCCEEDED! ID: 180
+   THE TABLE WORKS. Problem is RLS blocking authenticated users.
+
+6. FRONTEND INSERT PATTERNS:
+   useChatSystem.ts: { room_id, sender_id, message, message_type } ✅ CORRECT
+   PatientSupport.tsx: { room_id, user_id, content, message_type } ❌ WRONG COLUMNS
+   ChatGlobal.tsx: needs manual verification
