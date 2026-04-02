@@ -43,6 +43,8 @@ Use este bloco quando for **debugar ou recomendar correções**. Prioridade: **v
 | **WebRTC** / vídeo P2P não conecta | `useWebRTCRoom.ts` (signaling Supabase Realtime, `iceServers`); hoje só **STUN** público — redes restritas podem falhar **sem TURN**. Testar **fallback** WiseCare em `WiseCareProvider.ts` / `VideoCall.tsx`. |
 | **WiseCare** / callee sem sessão / log faltando | Edge `wisecare-session`; RLS em `video_call_quality_logs`; JWT + **service role** onde o doc §8 indica. |
 | **AEC** / avaliação genérica ou encerra cedo | `noaResidentAI.ts` (intent, word boundary “erro”); `clinicalAssessmentFlow.ts`; sync com intent **CLÍNICA** durante fluxo ativo. |
+| **Relatórios** com blocos RAG na queixa / modal vazio no histórico | `stripPlatformInjectionNoise` + `ClinicalReports.tsx`; modal `PatientAnalytics` → `getAecReportModalPayload` (chaves AEC em PT). Ver `docs/guides/AEC_UI_RELATORIOS_ANALYTICS_01_04_2026.md`. |
+| **Analytics** “+NN%” enganoso | `PatientAnalytics.tsx` — selos em **pts** + ícone ℹ (01/04/2026). |
 | **406 / UPDATE + RLS** em chamadas | Padrão documentado em `videoCallRequestService.ts` (evitar `RETURNING` onde RLS bloqueia). |
 | **RLS** / “dados sumiram” | Policy vs `user_id` vs role; não assumir admin vê tudo. Conferir migrações atuais; **§8** e diário 19/03 como baseline — **revalidar** após mudanças. |
 | **Pagamentos** | Código + doc falam em **Connect/split**; diários indicam **mock** até CNPJ/gateway — não tratar como fluxo financeiro validado em prod. |
@@ -114,7 +116,7 @@ Use este bloco quando for **debugar ou recomendar correções**. Prioridade: **v
 `DIARIO_22_03_2026.md`, `DIARIO_23_03_2026.md`, `DIARIO_CONSOLIDADO_22_25_MARCO_2026.md`, `DIARIO_CONSOLIDADO_22_27_MARCO_2026.md`, `DIARIO_27_03_2026_ANTIGRAVITY.md`, `docs/DIARIO_27_MARCO_2026.md`, `docs/DIARIO_28_MARCO_2026.md`, `DIARIO_30_03_2026.md`, **31** *(opcional)*.
 
 **Abril/2026:**  
-`DIARIO_01_04_2026.md` — selamento + mapa fundador + delimitação do que “completo” significa.
+`DIARIO_01_04_2026.md` — selamento + mapa fundador + delimitação do que “completo” significa; **sessão técnica** AEC/UI (botões duplicados, strip RAG em relatórios, KPI em **pts**, modal histórico AEC) — guia `docs/guides/AEC_UI_RELATORIOS_ANALYTICS_01_04_2026.md`.
 
 ---
 
@@ -132,7 +134,7 @@ Use este bloco quando for **debugar ou recomendar correções**. Prioridade: **v
 | 20–21/03 | Dashboard único, auditoria, CNPJ/Stripe | Livro 20/23 + `DIARIO_21_03` |
 | 22–25/03 | PWA, pricing, fundação doc | `DIARIO_22_03`, consolidados |
 | 27–30/03 | Intelligence layer, Titan, equipes, agenda | Diários 27–30 |
-| 01/04 | Selo institucional; quarteto; runbook go-live na §9 | `DIARIO_01_04_2026.md` + este arquivo v2.4 |
+| 01/04 | Selo institucional; quarteto; runbook §9; **patch** AEC/relatórios/analytics (UI alinhada ao JSON AEC) | `DIARIO_01_04_2026.md` + `docs/guides/AEC_UI_RELATORIOS_ANALYTICS_01_04_2026.md` + v2.4 |
 
 ---
 
@@ -225,8 +227,9 @@ Este bloco **formaliza no índice operacional** o que já aparece na narrativa d
 - **Filosófico:** sistema **operacionaliza** escuta (AEC) em artefatos analíticos sem substituir o médico.
 
 ### 6.8 Abril/2026 (repo)
-- **Técnico:** correção AEC (`ASSESSMENT_START` + `clinicalAssessmentFlow` no path TradeVision); `includes('erro')` → word boundary; WiseCare Edge com **service role** para cross-user em `video_call_quality_logs`; primeira linha do RPC array `get_or_create_video_session`.  
-- **Filosófico:** **robustez** = eliminar falsos positivos linguísticos e RLS que “mentem” para um dos participantes na vídeo.
+- **Técnico (início abril, branch anterior):** correção AEC (`ASSESSMENT_START` + `clinicalAssessmentFlow` no path TradeVision); `includes('erro')` → word boundary; WiseCare Edge com **service role** para cross-user em `video_call_quality_logs`; primeira linha do RPC array `get_or_create_video_session`.  
+- **Técnico (01/04/2026, sessão Cursor):** `NoaConversationalInterface` — fim da duplicação `app_commands`/`buttonCommands`; `noaResidentAI` — `else if` concluído vs interrompido; `clinicalAssessmentFlow` — `INTERRUPTED`, consentimento + `[ASSESSMENT_COMPLETED]`, `stripPlatformInjectionNoise` reforçado; `ClinicalReports` — strip em todo o pipeline de exibição/download; `PatientAnalytics` — KPI em **pts**, ícone ℹ, `getAecReportModalPayload` para modal do histórico. Guia: `docs/guides/AEC_UI_RELATORIOS_ANALYTICS_01_04_2026.md`.  
+- **Filosófico:** **robustez** = falsos positivos linguísticos e RLS honestos na vídeo; **honestidade de superfície** = o que o doente lê (relatório, gráfico, modal) não contradiz o contrato de dados (`content` AEC vs labels enganosos).
 
 ---
 
@@ -266,7 +269,7 @@ Este bloco **formaliza no índice operacional** o que já aparece na narrativa d
 
 **Mar 30:** equipes clínicas, agenda configurável, link auth↔usuário pré-existente, consentimento LGPD no schema, Nôa reconhece **todos** os profissionais cadastrados.
 
-**01 abr:** **`DIARIO_01_04_2026.md`** — selamento; mapa **Ricardo (AEC)**, **Pedro (arquitetura)**, **Eduardo Faveret (ciência/clínica ensino)**, **João Eduardo Vidal (institucional)**; delimitação do que “completo” significa (índice vs. diários espalhados).
+**01 abr:** **`DIARIO_01_04_2026.md`** — selamento institucional + **§6 sessão técnica** (AEC UI, relatórios, analytics); mapa quarteto; guia **`AEC_UI_RELATORIOS_ANALYTICS_01_04_2026.md`** (antes/depois/problema/solução).
 
 ### 7.1 Leituras cruzadas *(expandir só quando necessário)*
 
@@ -515,7 +518,8 @@ Reservar entrada: fechar o mês com estado de deploy, decisões societárias e q
 ### 10.1 Patches pós-documento (abril/2026, branch)
 
 - `src/lib/noaResidentAI.ts` — flow AEC + intent.  
-- `supabase/functions/wisecare-session/index.ts` — `supabaseDb` com service role; guard RPC array.
+- `supabase/functions/wisecare-session/index.ts` — `supabaseDb` com service role; guard RPC array.  
+- **01/04/2026:** `NoaConversationalInterface.tsx`, `clinicalAssessmentFlow.ts`, `ClinicalReports.tsx`, `PatientAnalytics.tsx` — ver §6.8 e `docs/guides/AEC_UI_RELATORIOS_ANALYTICS_01_04_2026.md`.
 
 ---
 

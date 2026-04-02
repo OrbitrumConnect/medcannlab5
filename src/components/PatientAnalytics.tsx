@@ -22,12 +22,130 @@ import {
     FlaskConical,
     Printer,
     Send,
-    ChevronDown
+    ChevronDown,
+    Info
 } from 'lucide-react'
 import { ClinicalReport } from '../lib/clinicalReportService'
 import { cardStyle, surfaceStyle, accentGradient, secondarySurfaceStyle } from '../constants/designSystem'
 import { supabase } from '../lib/supabase'
 import { enrichReportWithScores } from '../lib/clinicalScoreCalculator'
+import { stripPlatformInjectionNoise } from '../lib/clinicalAssessmentFlow'
+
+function stripReportText(s: unknown): string {
+    return stripPlatformInjectionNoise(String(s ?? ''))
+}
+
+/** Campos legados (mainComplaint, history) + estrutura AEC em PT (queixa_principal, lista_indiciaria, …). */
+function getAecReportModalPayload(content: Record<string, any> | null | undefined): {
+    mainComplaint: string
+    historyText: string
+    investigationItems: string[]
+} {
+    if (!content || typeof content !== 'object') {
+        return { mainComplaint: '', historyText: '', investigationItems: [] }
+    }
+
+    const qp = stripReportText(
+        content.queixa_principal ||
+            content.chief_complaint ||
+            content.mainComplaint ||
+            content.chiefComplaint ||
+            ''
+    )
+    const listaRaw = content.lista_indiciaria || []
+    const listaLabels: string[] = Array.isArray(listaRaw)
+        ? listaRaw
+              .map((item: any) => {
+                  const raw =
+                      item && typeof item === 'object' && item.label != null ? item.label : item
+                  return stripReportText(raw)
+              })
+              .filter(Boolean)
+        : []
+
+    const dev = content.desenvolvimento_queixa || {}
+    const hpp = Array.isArray(content.historia_patologica_pregressa)
+        ? content.historia_patologica_pregressa
+        : []
+    const fam = content.historia_familiar || {}
+    const mat = Array.isArray(fam.lado_materno) ? fam.lado_materno : []
+    const pat = Array.isArray(fam.lado_paterno) ? fam.lado_paterno : []
+    const habitos = Array.isArray(content.habitos_vida) ? content.habitos_vida : []
+
+    const historyParts: string[] = []
+    const legacyHist = stripReportText(content.history)
+    if (legacyHist) historyParts.push(legacyHist)
+    if (dev.descricao) historyParts.push(`Descrição da queixa: ${stripReportText(dev.descricao)}`)
+    if (dev.localizacao) historyParts.push(`Localização: ${stripReportText(dev.localizacao)}`)
+    if (dev.inicio) historyParts.push(`Início: ${stripReportText(dev.inicio)}`)
+    const sint = Array.isArray(dev.sintomas_associados)
+        ? dev.sintomas_associados.map((x: any) => stripReportText(x)).filter(Boolean)
+        : []
+    if (sint.length) historyParts.push(`Sintomas associados: ${sint.join(', ')}`)
+    const melhora = Array.isArray(dev.fatores_melhora)
+        ? dev.fatores_melhora.map((x: any) => stripReportText(x)).filter(Boolean)
+        : []
+    const piora = Array.isArray(dev.fatores_piora)
+        ? dev.fatores_piora.map((x: any) => stripReportText(x)).filter(Boolean)
+        : []
+    if (melhora.length) historyParts.push(`Fatores de melhora: ${melhora.join(', ')}`)
+    if (piora.length) historyParts.push(`Fatores de piora: ${piora.join(', ')}`)
+    const hppS = hpp.map((x: any) => stripReportText(x)).filter(Boolean)
+    if (hppS.length) historyParts.push(`História patológica pregressa: ${hppS.join('; ')}`)
+    const matS = mat.map((x: any) => stripReportText(x)).filter(Boolean)
+    const patS = pat.map((x: any) => stripReportText(x)).filter(Boolean)
+    if (matS.length) historyParts.push(`História familiar (materno): ${matS.join('; ')}`)
+    if (patS.length) historyParts.push(`História familiar (paterno): ${patS.join('; ')}`)
+    const habS = habitos.map((x: any) => stripReportText(x)).filter(Boolean)
+    if (habS.length) historyParts.push(`Hábitos de vida: ${habS.join('; ')}`)
+
+    const investigationItems: string[] = []
+    if (listaLabels.length) {
+        investigationItems.push(
+            `Lista indiciária (${listaLabels.length}): ${listaLabels.join(' • ')}`
+        )
+    }
+    const po = content.perguntas_objetivas
+    if (po && typeof po === 'object') {
+        Object.entries(po).forEach(([k, v]) => {
+            if (v != null && String(v).trim()) {
+                investigationItems.push(
+                    `${k.replace(/_/g, ' ')}: ${stripReportText(v)}`
+                )
+            }
+        })
+    }
+    const consenso = content.consenso
+    if (consenso && typeof consenso === 'object') {
+        investigationItems.push(
+            `Consenso: ${consenso.aceito ? 'aceito pelo paciente' : 'pendente'}${
+                typeof consenso.revisoes_realizadas === 'number'
+                    ? ` • ${consenso.revisoes_realizadas} revisão(ões)`
+                    : ''
+            }`
+        )
+    }
+    const legacyRec = Array.isArray(content.recommendations) ? content.recommendations : []
+    legacyRec.forEach((r: any) => {
+        const t = stripReportText(r)
+        if (t) investigationItems.push(t)
+    })
+    ;['investigation', 'methodology', 'result'].forEach((key) => {
+        const t = stripReportText(content[key])
+        if (t) investigationItems.push(`${key}: ${t}`)
+    })
+
+    const mainComplaint =
+        qp ||
+        (listaLabels.length ? listaLabels.slice(0, 3).join(', ') : '') ||
+        stripReportText(content.identificacao?.apresentacao || '').slice(0, 200)
+
+    return {
+        mainComplaint,
+        historyText: historyParts.join('\n\n'),
+        investigationItems
+    }
+}
 
 interface Doctor {
     id: string
@@ -141,7 +259,12 @@ const PatientAnalytics: React.FC<PatientAnalyticsProps> = ({ reports, loading, u
     }, [user?.id])
 
     const handleCopyReport = (content: any) => {
-        const textToCopy = `RELATÓRIO CLÍNICO MEDCANN\nData: ${new Date().toLocaleDateString()}\n\nQUEIXA PRINCIPAL:\n${content.mainComplaint}\n\nHISTÓRICO:\n${content.history}\n\nRECOMENDAÇÕES:\n${(content.recommendations || []).map((r: string) => `- ${r}`).join('\n')}`
+        const { mainComplaint, historyText, investigationItems } = getAecReportModalPayload(content)
+        const invBlock =
+            investigationItems.length > 0
+                ? investigationItems.map((line, i) => `${i + 1}. ${line}`).join('\n')
+                : '—'
+        const textToCopy = `RELATÓRIO CLÍNICO MEDCANN\nData: ${new Date().toLocaleDateString()}\n\nQUEIXA PRINCIPAL:\n${mainComplaint || 'Não especificada'}\n\nHISTÓRICO:\n${historyText || 'Nenhum histórico registrado.'}\n\nINVESTIGAÇÃO / DADOS:\n${invBlock}`
 
         navigator.clipboard.writeText(textToCopy)
         setCopied(true)
@@ -323,12 +446,13 @@ const PatientAnalytics: React.FC<PatientAnalyticsProps> = ({ reports, loading, u
         return { label: 'Em revisão', color: 'text-amber-300', dot: 'bg-amber-400' }
     }, [latestPrescription])
 
+    /** Diferença em pontos (0–100) vs relatório anterior — não é variação percentual. */
     const getScoreChange = (current: number, previous?: number) => {
-        if (!previous) return null as any
+        if (typeof previous !== 'number' || typeof current !== 'number') return null as any
         const diff = current - previous
-        if (diff > 0) return { icon: ArrowUp, color: 'text-emerald-400', label: `+${diff}%` }
-        if (diff < 0) return { icon: ArrowDown, color: 'text-rose-400', label: `${diff}%` }
-        return { icon: Minus, color: 'text-slate-400', label: '0%' }
+        if (diff > 0) return { icon: ArrowUp, color: 'text-emerald-400', label: `+${diff} pts` }
+        if (diff < 0) return { icon: ArrowDown, color: 'text-rose-400', label: `${diff} pts` }
+        return { icon: Minus, color: 'text-slate-400', label: '0 pts' }
     }
 
     // Estatísticas atuais
@@ -523,7 +647,17 @@ const PatientAnalytics: React.FC<PatientAnalyticsProps> = ({ reports, loading, u
             {/* Header Title (Legacy) */}
             <div className={`flex flex-col md:flex-row md:items-center justify-between ${sectionGap} ${mtSection}`}>
                 <div>
-                    <h2 className={`${titleSize} font-bold text-white mb-1`}>Indicadores de Saúde</h2>
+                    <div className="flex items-center gap-2 mb-1">
+                        <h2 className={`${titleSize} font-bold text-white`}>Indicadores de Saúde</h2>
+                        <button
+                            type="button"
+                            className="shrink-0 rounded-full p-0.5 text-slate-500 hover:text-sky-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-500/50 cursor-help transition-colors"
+                            title="Cada card mostra uma pontuação de 0 a 100 (índice da avaliação registrada no relatório, não um exame laboratorial). O selo ao lado, por exemplo +12 pts, é quantos pontos a mais ou a menos em relação ao seu relatório clínico anterior — não é porcentagem de melhora ou piora da sua saúde."
+                            aria-label="Como interpretar os indicadores e o selo de pontos em relação ao relatório anterior"
+                        >
+                            <Info className="w-4 h-4" strokeWidth={2} aria-hidden />
+                        </button>
+                    </div>
                     <p className="text-slate-400 text-sm">Acompanhe sua evolução clínica</p>
                 </div>
                 {!isProfessionalView && (
@@ -575,7 +709,10 @@ const PatientAnalytics: React.FC<PatientAnalyticsProps> = ({ reports, loading, u
                                     <stat.icon className={`w-5 h-5 ${stat.color}`} />
                                 </div>
                                 {change && (
-                                    <div className={`flex items-center gap-1 text-xs font-medium ${change.color} bg-slate-900/40 px-2 py-1 rounded-full`}>
+                                    <div
+                                        className={`flex items-center gap-1 text-xs font-medium ${change.color} bg-slate-900/40 px-2 py-1 rounded-full`}
+                                        title="Diferença em pontos (0–100) vs relatório anterior — veja o ícone ℹ ao título Indicadores de Saúde."
+                                    >
                                         <ChangeIcon className="w-3 h-3" />
                                         {change.label}
                                     </div>
@@ -676,7 +813,8 @@ const PatientAnalytics: React.FC<PatientAnalyticsProps> = ({ reports, loading, u
                                             </div>
                                             <div>
                                                 <p className="text-sm font-medium text-white flex items-center gap-2">
-                                                    {(report.content as any).mainComplaint || 'Avaliação Clínica'}
+                                                    {getAecReportModalPayload(report.content as any).mainComplaint ||
+                                                        'Avaliação Clínica'}
                                                     {report.status === 'completed' && (
                                                         <span className="text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/20">
                                                             Completa
@@ -1357,7 +1495,9 @@ const PatientAnalytics: React.FC<PatientAnalyticsProps> = ({ reports, loading, u
 
 
             {/* Report Details Modal */}
-            {selectedReport && (
+            {selectedReport && (() => {
+                const modalPayload = getAecReportModalPayload(selectedReport.content as any)
+                return (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" onClick={() => setSelectedReport(null)}>
                     <div className="w-full max-w-2xl bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl overflow-hidden max-h-[85vh] flex flex-col animate-in fade-in zoom-in-95 duration-200" onClick={e => e.stopPropagation()}>
                         {/* Header */}
@@ -1383,26 +1523,32 @@ const PatientAnalytics: React.FC<PatientAnalyticsProps> = ({ reports, loading, u
                             <div className="space-y-2">
                                 <h4 className="text-sm font-medium text-emerald-400 uppercase tracking-wider">Queixa Principal</h4>
                                 <p className="text-white bg-slate-800/50 p-3 rounded-lg border border-slate-700/50 leading-relaxed">
-                                    {(selectedReport.content as any).mainComplaint || 'Não especificada'}
+                                    {modalPayload.mainComplaint || 'Não especificada'}
                                 </p>
                             </div>
 
                             <div className="space-y-2">
                                 <h4 className="text-sm font-medium text-blue-400 uppercase tracking-wider">Histórico Clínico</h4>
                                 <p className="text-slate-300 bg-slate-800/30 p-3 rounded-lg border border-slate-700/30 leading-relaxed text-sm whitespace-pre-wrap">
-                                    {(selectedReport.content as any).history || 'Nenhum histórico registrado.'}
+                                    {modalPayload.historyText || 'Nenhum histórico registrado.'}
                                 </p>
                             </div>
 
                             <div className="space-y-3">
                                 <h4 className="text-sm font-medium text-amber-400 uppercase tracking-wider">Investigação detalhada</h4>
                                 <div className="grid gap-2">
-                                    {((selectedReport.content as any).recommendations || []).map((rec: string, idx: number) => (
+                                    {modalPayload.investigationItems.length === 0 ? (
+                                        <p className="text-sm text-slate-500 bg-slate-800/20 p-3 rounded-lg border border-slate-700/20">
+                                            Nenhum bloco adicional (lista indiciária, perguntas objetivas ou recomendações) neste relatório.
+                                        </p>
+                                    ) : (
+                                        modalPayload.investigationItems.map((rec, idx) => (
                                         <div key={idx} className="flex gap-3 items-start p-3 rounded-lg bg-amber-500/5 border border-amber-500/10">
                                             <span className="text-xs font-bold text-amber-500 mt-0.5">{idx + 1}</span>
-                                            <p className="text-sm text-slate-300">{rec}</p>
+                                            <p className="text-sm text-slate-300 whitespace-pre-wrap break-words">{rec}</p>
                                         </div>
-                                    ))}
+                                        ))
+                                    )}
                                 </div>
                             </div>
                         </div>
@@ -1422,7 +1568,8 @@ const PatientAnalytics: React.FC<PatientAnalyticsProps> = ({ reports, loading, u
                         </div>
                     </div>
                 </div>
-            )}
+                )
+            })()}
         </div>
     )
 }

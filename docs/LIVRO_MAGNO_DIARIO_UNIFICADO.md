@@ -1,8 +1,9 @@
 # LIVRO MAGNO: Diário Unificado do MedCannLab
 
-**Versão:** 1.0.9
-**Última Atualização:** 20 de Março de 2026
-**Responsável:** Antigravity (IA Assistente) & Dr. Ricardo Valença
+**Versão:** 1.0.10  
+**Última Atualização:** 1 de Abril de 2026  
+**Responsável:** Antigravity (IA Assistente) & Dr. Ricardo Valença *(entrada 01/04: sessão Cursor — AEC/relatórios/analytics)*  
+**Índice operacional:** `docs/TIMELINE_LIVRO_MAGNO_DIARIOS_CONSOLIDADO.md`
 
 ---
 
@@ -14,6 +15,25 @@ A narrativa cobre desde a refundação da experiência do paciente no final de 2
 ---
 
 ## ⏳ Linha do Tempo Unificada
+
+### 📅 01/04/2026: Honestidade da superfície — AEC, relatórios e analytics *(sessão Cursor)*
+
+**Contexto:** O protocolo AEC já gravava estrutura rica em `clinical_reports.content`, mas partes da UI ainda liam **campos legados** (`mainComplaint`, `history`) ou **duplicavam comandos** no chat; relatórios antigos exibiam **injeção RAG** persistida; os KPI do painel mostravam **diferença de pontos** com rótulo **`%`**, gerando interpretação falsa de “melhora clínica”.
+
+**Técnico (síntese):**
+
+| Tema | Mudança |
+|------|---------|
+| Chat Nôa | Dedupe / fonte única para `app_commands` vs `buttonCommands`; `else if` entre conclusão e interrupção em `noaResidentAI` |
+| Fluxo AEC | `clinicalAssessmentFlow`: fase `INTERRUPTED`, consentimento com `[ASSESSMENT_COMPLETED]`, strip RAG iterado |
+| Relatórios | `ClinicalReports.tsx`: limpeza em card, modal, download, conversa |
+| Analytics | `PatientAnalytics.tsx`: **pts** em vez de falso `%`, ícone ℹ explicativo; modal do histórico via `getAecReportModalPayload` |
+
+**Documentação:** `DIARIO_01_04_2026.md` §6; `docs/guides/AEC_UI_RELATORIOS_ANALYTICS_01_04_2026.md`; timeline §6.8.
+
+**Filosófico:** A **verdade percebida** pelo paciente deve ser **compatível** com o contrato de dados — não basta o JSON estar “tecnicamente” no banco se a interface **mentir** por omissão (modal vazio) ou por **metáfora errada** (porcentagem vs pontos).
+
+---
 
 ### 📅 Dezembro 2025: Fundação da Experiência do Paciente
 

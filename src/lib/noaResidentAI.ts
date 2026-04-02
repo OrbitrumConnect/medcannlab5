@@ -1768,9 +1768,8 @@ Gere apenas a próxima pergunta sobre hábitos de vida.`
             }
           }
         )
-      }
-      // Interrupção confirmada: mesmo padrão de navegação (dados em aec_assessment_state; relatório formal só após fluxo completo + consentimento)
-      if (aecInterruptedThisTurn) {
+      } else if (aecInterruptedThisTurn) {
+        // Interrupção: não empilhar com botões de conclusão no mesmo turno
         postAecCommands.push(
           {
             kind: 'noa_command',

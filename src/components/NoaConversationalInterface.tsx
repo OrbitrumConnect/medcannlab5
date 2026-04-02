@@ -2529,12 +2529,21 @@ const NoaConversationalInterface = React.forwardRef<HTMLDivElement, NoaConversat
               // Renderização Padrão: texto limpo (triggers NUNCA aparecem) + botões "Abrir [aba]" quando há app_commands de navegação
               const meta = message.metadata as Record<string, unknown> | undefined
               const appCommands = (meta?.metadata as Record<string, unknown> | undefined)?.app_commands as Array<{ kind?: string; command?: { type: string; target?: string; label?: string; fallbackRoute?: string } }> | undefined
-              // Incluir buttonCommands (pós-AEC, autoExecute: false) que o hook injeta no topo do metadata
+              // buttonCommands = subset de app_commands no hook (mesmos itens). Não concatenar — duplicava cada botão.
               const buttonCommands = meta?.buttonCommands as typeof appCommands | undefined
-              const allNavSources = [...(appCommands ?? []), ...(buttonCommands ?? [])]
+              const allNavSources = (buttonCommands?.length ? buttonCommands : appCommands) ?? []
               const navCommands = allNavSources.filter(
                 (c) => c?.kind === 'noa_command' && c?.command && (c.command.type === 'navigate-section' || c.command.type === 'navigate-route')
               )
+              const navKey = (c: (typeof navCommands)[number]) =>
+                `${c.command?.type ?? ''}:${(c.command?.target ?? '').split('?')[0]}`
+              const seenNav = new Set<string>()
+              const dedupedNav = navCommands.filter((c) => {
+                const k = navKey(c)
+                if (!k || seenNav.has(k)) return false
+                seenNav.add(k)
+                return true
+              })
 
               return (
                 <div key={message.id} className={clsx('flex flex-col', message.role === 'user' ? 'items-end' : 'items-start')}>
@@ -2552,9 +2561,9 @@ const NoaConversationalInterface = React.forwardRef<HTMLDivElement, NoaConversat
                     <span className="block text-[9px] sm:text-[10px] mt-1.5 sm:mt-2 text-slate-400">{message.timestamp.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</span>
                   </div>
                   {/* Botões "Abrir [aba]" quando a resposta trouxe navegação: direciona ao clicar se a navegação automática não ocorreu */}
-                  {message.role === 'noa' && navCommands.length > 0 && (
+                  {message.role === 'noa' && dedupedNav.length > 0 && (
                     <div className="mt-1.5 flex flex-wrap gap-1.5 max-w-[85%] sm:max-w-[80%]">
-                      {navCommands.map((entry, idx) => {
+                      {dedupedNav.map((entry, idx) => {
                         const cmd = entry?.command
                         if (!cmd) return null
                         const label = (typeof cmd.label === 'string' ? cmd.label : cmd.target) || 'Abrir'

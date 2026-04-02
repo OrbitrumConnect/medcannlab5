@@ -24,6 +24,23 @@ import {
   ChevronUp
 } from 'lucide-react'
 import { supabase } from '../lib/supabase'
+import { stripPlatformInjectionNoise } from '../lib/clinicalAssessmentFlow'
+
+function stripClinical(s: unknown): string {
+  return stripPlatformInjectionNoise(String(s ?? ''))
+}
+
+function stripClinicalList(arr: unknown): string[] {
+  if (!Array.isArray(arr)) return []
+  return arr.map((x) => stripClinical(x)).filter((t) => t.length > 0)
+}
+
+function stripListaIndiciariaItem(item: unknown): string {
+  if (item && typeof item === 'object' && 'label' in item && (item as { label?: unknown }).label != null) {
+    return stripClinical((item as { label: unknown }).label)
+  }
+  return stripClinical(typeof item === 'object' ? JSON.stringify(item) : item)
+}
 import { useAuth } from '../contexts/AuthContext'
 import { useUserView } from '../contexts/UserViewContext'
 import { rationalityAnalysisService, type Rationality } from '../services/rationalityAnalysisService'
@@ -277,25 +294,45 @@ const ClinicalReports: React.FC<ClinicalReportsProps> = ({ className = '', onSha
         const habitosVida = Array.isArray(content.habitos_vida) ? content.habitos_vida : []
         const historiaFamiliar = content.historia_familiar || {}
         const hppList = Array.isArray(content.historia_patologica_pregressa) ? content.historia_patologica_pregressa : []
-        const queixaPrincipal = content.queixa_principal || content.chief_complaint || ''
+        const queixaPrincipal = stripClinical(String(content.queixa_principal || content.chief_complaint || ''))
 
         // Build readable content from AEC structure
-        const chiefComplaint = queixaPrincipal || (listaIndiciaria.length > 0 ? listaIndiciaria.join(', ') : apresentacao.substring(0, 200))
+        const chiefComplaint = stripClinical(
+          queixaPrincipal ||
+            (listaIndiciaria.length > 0
+              ? stripClinicalList(listaIndiciaria).join(', ')
+              : apresentacao.substring(0, 200))
+        )
         
         const historyParts: string[] = []
-        if (desenvolvimentoQueixa.sintomas_associados?.length) historyParts.push(`Sintomas: ${desenvolvimentoQueixa.sintomas_associados.join(', ')}`)
-        if (desenvolvimentoQueixa.fatores_piora?.length) historyParts.push(`Piora: ${desenvolvimentoQueixa.fatores_piora.join(', ')}`)
-        if (desenvolvimentoQueixa.fatores_melhora?.length) historyParts.push(`Melhora: ${desenvolvimentoQueixa.fatores_melhora.join(', ')}`)
-        if (hppList.length) historyParts.push(`HPP: ${hppList.join(', ')}`)
-        const history = content.history || historyParts.join(' | ') || ''
+        const sint = stripClinicalList(desenvolvimentoQueixa.sintomas_associados)
+        const fp = stripClinicalList(desenvolvimentoQueixa.fatores_piora)
+        const fm = stripClinicalList(desenvolvimentoQueixa.fatores_melhora)
+        const hppStripped = stripClinicalList(hppList)
+        if (sint.length) historyParts.push(`Sintomas: ${sint.join(', ')}`)
+        if (fp.length) historyParts.push(`Piora: ${fp.join(', ')}`)
+        if (fm.length) historyParts.push(`Melhora: ${fm.join(', ')}`)
+        if (hppStripped.length) historyParts.push(`HPP: ${hppStripped.join(', ')}`)
+        const history = stripClinical(content.history || historyParts.join(' | ') || '')
 
         const familyParts: string[] = []
-        if (historiaFamiliar.lado_materno?.length) familyParts.push(`Materno: ${historiaFamiliar.lado_materno.join(', ')}`)
-        if (historiaFamiliar.lado_paterno?.length) familyParts.push(`Paterno: ${historiaFamiliar.lado_paterno.join(', ')}`)
-        const physicalExam = content.physical_exam || (familyParts.length ? `História Familiar: ${familyParts.join(' | ')}` : '')
+        const mat = stripClinicalList(historiaFamiliar.lado_materno)
+        const pat = stripClinicalList(historiaFamiliar.lado_paterno)
+        if (mat.length) familyParts.push(`Materno: ${mat.join(', ')}`)
+        if (pat.length) familyParts.push(`Paterno: ${pat.join(', ')}`)
+        const physicalExam = stripClinical(
+          content.physical_exam || (familyParts.length ? `História Familiar: ${familyParts.join(' | ')}` : '')
+        )
 
-        const assessment = content.assessment || (content.consenso ? `Consenso: ${content.consenso.aceito ? 'Aceito' : 'Pendente'} • Revisões: ${content.consenso.revisoes_realizadas || 0}` : '')
-        const plan = content.plan || (habitosVida.length ? `Hábitos: ${habitosVida.join(', ')}` : content.evolution || '')
+        const assessment =
+          stripClinical(content.assessment) ||
+          (content.consenso
+            ? `Consenso: ${content.consenso.aceito ? 'Aceito' : 'Pendente'} • Revisões: ${content.consenso.revisoes_realizadas || 0}`
+            : '')
+        const plan = stripClinical(
+          content.plan ||
+            (habitosVida.length ? `Hábitos: ${stripClinicalList(habitosVida).join(', ')}` : content.evolution || '')
+        )
 
         return {
           id: report.id,
@@ -323,7 +360,7 @@ const ClinicalReports: React.FC<ClinicalReportsProps> = ({ className = '', onSha
               integrative: {}
             }
           },
-          doctorNotes: content.doctor_notes as string | undefined,
+          doctorNotes: stripClinical(content.doctor_notes) || undefined,
           reviewStatus: (content.review_status as SharedReport['reviewStatus']) || 'pending',
           rawContent: content
         }
@@ -382,22 +419,27 @@ const ClinicalReports: React.FC<ClinicalReportsProps> = ({ className = '', onSha
       if (raw.lista_indiciaria && Array.isArray(raw.lista_indiciaria) && raw.lista_indiciaria.length > 0) {
         lines.push('', `▸ LISTA INDICIÁRIA (${raw.lista_indiciaria.length} queixas):`)
         raw.lista_indiciaria.forEach((item: any, i: number) => {
-          const label = typeof item === 'object' ? (item.label || JSON.stringify(item)) : String(item)
-          lines.push(`  ${i + 1}. ${label}`)
-          if (typeof item === 'object' && item.intensity) lines.push(`     Intensidade: ${item.intensity}`)
-          if (typeof item === 'object' && item.frequency) lines.push(`     Frequência: ${item.frequency}`)
+          lines.push(`  ${i + 1}. ${stripListaIndiciariaItem(item)}`)
+          if (typeof item === 'object' && item.intensity) lines.push(`     Intensidade: ${stripClinical(item.intensity)}`)
+          if (typeof item === 'object' && item.frequency) lines.push(`     Frequência: ${stripClinical(item.frequency)}`)
         })
       }
 
       if (raw.desenvolvimento_queixa) {
         const dq = raw.desenvolvimento_queixa
         lines.push('', '▸ DESENVOLVIMENTO DA QUEIXA:')
-        if (dq.descricao) lines.push(`  Descrição: ${dq.descricao}`)
-        if (dq.localizacao) lines.push(`  Localização: ${dq.localizacao}`)
-        if (dq.inicio) lines.push(`  Início: ${dq.inicio}`)
-        if (Array.isArray(dq.sintomas_associados) && dq.sintomas_associados.length) lines.push(`  Sintomas Associados: ${dq.sintomas_associados.join(', ')}`)
-        if (Array.isArray(dq.fatores_melhora) && dq.fatores_melhora.length) lines.push(`  Fatores de Melhora: ${dq.fatores_melhora.join(', ')}`)
-        if (Array.isArray(dq.fatores_piora) && dq.fatores_piora.length) lines.push(`  Fatores de Piora: ${dq.fatores_piora.join(', ')}`)
+        if (dq.descricao) lines.push(`  Descrição: ${stripClinical(dq.descricao)}`)
+        if (dq.localizacao) lines.push(`  Localização: ${stripClinical(dq.localizacao)}`)
+        if (dq.inicio) lines.push(`  Início: ${stripClinical(dq.inicio)}`)
+        if (Array.isArray(dq.sintomas_associados) && dq.sintomas_associados.length) {
+          lines.push(`  Sintomas Associados: ${stripClinicalList(dq.sintomas_associados).join(', ')}`)
+        }
+        if (Array.isArray(dq.fatores_melhora) && dq.fatores_melhora.length) {
+          lines.push(`  Fatores de Melhora: ${stripClinicalList(dq.fatores_melhora).join(', ')}`)
+        }
+        if (Array.isArray(dq.fatores_piora) && dq.fatores_piora.length) {
+          lines.push(`  Fatores de Piora: ${stripClinicalList(dq.fatores_piora).join(', ')}`)
+        }
       }
 
       if (report.content.history) {
@@ -405,26 +447,26 @@ const ClinicalReports: React.FC<ClinicalReportsProps> = ({ className = '', onSha
       }
 
       if (raw.historia_patologica_pregressa && Array.isArray(raw.historia_patologica_pregressa) && raw.historia_patologica_pregressa.length) {
-        lines.push('', '▸ HISTÓRIA PATOLÓGICA PREGRESSA:', `  ${raw.historia_patologica_pregressa.join(', ')}`)
+        lines.push('', '▸ HISTÓRIA PATOLÓGICA PREGRESSA:', `  ${stripClinicalList(raw.historia_patologica_pregressa).join(', ')}`)
       }
 
       if (raw.historia_familiar) {
         const hf = raw.historia_familiar
         if ((hf.lado_materno?.length) || (hf.lado_paterno?.length)) {
           lines.push('', '▸ HISTÓRIA FAMILIAR:')
-          if (hf.lado_materno?.length) lines.push(`  Materno: ${hf.lado_materno.join(', ')}`)
-          if (hf.lado_paterno?.length) lines.push(`  Paterno: ${hf.lado_paterno.join(', ')}`)
+          if (hf.lado_materno?.length) lines.push(`  Materno: ${stripClinicalList(hf.lado_materno).join(', ')}`)
+          if (hf.lado_paterno?.length) lines.push(`  Paterno: ${stripClinicalList(hf.lado_paterno).join(', ')}`)
         }
       }
 
       if (raw.habitos_vida && Array.isArray(raw.habitos_vida) && raw.habitos_vida.length) {
-        lines.push('', '▸ HÁBITOS DE VIDA:', `  ${raw.habitos_vida.join(', ')}`)
+        lines.push('', '▸ HÁBITOS DE VIDA:', `  ${stripClinicalList(raw.habitos_vida).join(', ')}`)
       }
 
       if (raw.perguntas_objetivas && typeof raw.perguntas_objetivas === 'object' && Object.keys(raw.perguntas_objetivas).length) {
         lines.push('', '▸ PERGUNTAS OBJETIVAS:')
         Object.entries(raw.perguntas_objetivas).forEach(([k, v]: [string, any]) => {
-          if (v) lines.push(`  ${k.replace(/_/g, ' ')}: ${v}`)
+          if (v) lines.push(`  ${k.replace(/_/g, ' ')}: ${stripClinical(v)}`)
         })
       }
 
@@ -433,10 +475,10 @@ const ClinicalReports: React.FC<ClinicalReportsProps> = ({ className = '', onSha
       }
 
       // Legacy IMRE fields
-      if (raw.investigation) lines.push('', '▸ INVESTIGAÇÃO (IMRE):', raw.investigation)
-      if (raw.methodology) lines.push('', '▸ METODOLOGIA (IMRE):', raw.methodology)
-      if (raw.result) lines.push('', '▸ RESULTADO (IMRE):', raw.result)
-      if (raw.evolution) lines.push('', '▸ EVOLUÇÃO (IMRE):', raw.evolution)
+      if (raw.investigation) lines.push('', '▸ INVESTIGAÇÃO (IMRE):', stripClinical(raw.investigation))
+      if (raw.methodology) lines.push('', '▸ METODOLOGIA (IMRE):', stripClinical(raw.methodology))
+      if (raw.result) lines.push('', '▸ RESULTADO (IMRE):', stripClinical(raw.result))
+      if (raw.evolution) lines.push('', '▸ EVOLUÇÃO (IMRE):', stripClinical(raw.evolution))
 
       if (report.content.assessment) lines.push('', '▸ AVALIAÇÃO:', report.content.assessment)
       if (report.content.plan) lines.push('', '▸ PLANO TERAPÊUTICO:', report.content.plan)
@@ -452,17 +494,17 @@ const ClinicalReports: React.FC<ClinicalReportsProps> = ({ className = '', onSha
       lines.push('', '═══════════════════════════════════════', '', '▸ RACIONALIDADES MÉDICAS APLICADAS:')
       Object.entries(report.content.rationalities || {}).forEach(([key, value]: [string, any]) => {
         if (value?.assessment) {
-          lines.push(`  • ${key}: ${value.assessment}`)
-          if (value.recommendations) lines.push(`    Recomendações: ${value.recommendations}`)
+          lines.push(`  • ${key}: ${stripClinical(value.assessment)}`)
+          if (value.recommendations) lines.push(`    Recomendações: ${stripClinical(value.recommendations)}`)
         }
       })
 
       // Conversa AEC completa
       if (conversationHistory.length > 0) {
         lines.push('', '═══════════════════════════════════════', '', '▸ CONVERSA AEC COMPLETA:', '')
-        conversationHistory.forEach((msg, i) => {
-          const cleanMsg = (msg.user_message || '').split('\n[CONTEXTO')[0].split('\n[Contexto')[0].trim()
-          const cleanResp = (msg.ai_response || '').split('[ASSESSMENT_COMPLETED]')[0].trim()
+        conversationHistory.forEach((msg) => {
+          const cleanMsg = stripClinical(msg.user_message || '')
+          const cleanResp = stripClinical((msg.ai_response || '').split('[ASSESSMENT_COMPLETED]')[0])
           if (cleanMsg) lines.push(`PACIENTE: ${cleanMsg}`)
           if (cleanResp) lines.push(`NÔA: ${cleanResp}`)
           lines.push('---')
@@ -976,9 +1018,11 @@ const ClinicalReports: React.FC<ClinicalReportsProps> = ({ className = '', onSha
                           {selectedReport.rawContent.lista_indiciaria.map((item: any, i: number) => (
                             <li key={i} className="flex items-start space-x-2">
                               <span className="text-blue-400 mt-0.5">•</span>
-                              <span>{typeof item === 'object' ? (item.label || JSON.stringify(item)) : String(item)}</span>
+                              <span>{stripListaIndiciariaItem(item)}</span>
                               {typeof item === 'object' && item.intensity && (
-                                <span className="text-xs bg-blue-500/20 text-blue-300 px-2 py-0.5 rounded">{item.intensity}</span>
+                                <span className="text-xs bg-blue-500/20 text-blue-300 px-2 py-0.5 rounded">
+                                  {stripClinical(item.intensity)}
+                                </span>
                               )}
                             </li>
                           ))}
@@ -992,22 +1036,43 @@ const ClinicalReports: React.FC<ClinicalReportsProps> = ({ className = '', onSha
                         <strong className="text-purple-400 text-xs uppercase tracking-wider">Desenvolvimento da Queixa</strong>
                         <div className="mt-1 space-y-1">
                           {selectedReport.rawContent.desenvolvimento_queixa.descricao && (
-                            <p><span className="text-slate-400">Descrição:</span> {selectedReport.rawContent.desenvolvimento_queixa.descricao}</p>
+                            <p>
+                              <span className="text-slate-400">Descrição:</span>{' '}
+                              {stripClinical(selectedReport.rawContent.desenvolvimento_queixa.descricao)}
+                            </p>
                           )}
                           {selectedReport.rawContent.desenvolvimento_queixa.localizacao && (
-                            <p><span className="text-slate-400">Localização:</span> {selectedReport.rawContent.desenvolvimento_queixa.localizacao}</p>
+                            <p>
+                              <span className="text-slate-400">Localização:</span>{' '}
+                              {stripClinical(selectedReport.rawContent.desenvolvimento_queixa.localizacao)}
+                            </p>
                           )}
                           {selectedReport.rawContent.desenvolvimento_queixa.inicio && (
-                            <p><span className="text-slate-400">Início:</span> {selectedReport.rawContent.desenvolvimento_queixa.inicio}</p>
+                            <p>
+                              <span className="text-slate-400">Início:</span>{' '}
+                              {stripClinical(selectedReport.rawContent.desenvolvimento_queixa.inicio)}
+                            </p>
                           )}
-                          {Array.isArray(selectedReport.rawContent.desenvolvimento_queixa.sintomas_associados) && selectedReport.rawContent.desenvolvimento_queixa.sintomas_associados.length > 0 && (
-                            <p><span className="text-slate-400">Sintomas Associados:</span> {selectedReport.rawContent.desenvolvimento_queixa.sintomas_associados.join(', ')}</p>
+                          {Array.isArray(selectedReport.rawContent.desenvolvimento_queixa.sintomas_associados) &&
+                            selectedReport.rawContent.desenvolvimento_queixa.sintomas_associados.length > 0 && (
+                            <p>
+                              <span className="text-slate-400">Sintomas Associados:</span>{' '}
+                              {stripClinicalList(selectedReport.rawContent.desenvolvimento_queixa.sintomas_associados).join(', ')}
+                            </p>
                           )}
-                          {Array.isArray(selectedReport.rawContent.desenvolvimento_queixa.fatores_melhora) && selectedReport.rawContent.desenvolvimento_queixa.fatores_melhora.length > 0 && (
-                            <p><span className="text-green-400">▲ Melhora:</span> {selectedReport.rawContent.desenvolvimento_queixa.fatores_melhora.join(', ')}</p>
+                          {Array.isArray(selectedReport.rawContent.desenvolvimento_queixa.fatores_melhora) &&
+                            selectedReport.rawContent.desenvolvimento_queixa.fatores_melhora.length > 0 && (
+                            <p>
+                              <span className="text-green-400">▲ Melhora:</span>{' '}
+                              {stripClinicalList(selectedReport.rawContent.desenvolvimento_queixa.fatores_melhora).join(', ')}
+                            </p>
                           )}
-                          {Array.isArray(selectedReport.rawContent.desenvolvimento_queixa.fatores_piora) && selectedReport.rawContent.desenvolvimento_queixa.fatores_piora.length > 0 && (
-                            <p><span className="text-red-400">▼ Piora:</span> {selectedReport.rawContent.desenvolvimento_queixa.fatores_piora.join(', ')}</p>
+                          {Array.isArray(selectedReport.rawContent.desenvolvimento_queixa.fatores_piora) &&
+                            selectedReport.rawContent.desenvolvimento_queixa.fatores_piora.length > 0 && (
+                            <p>
+                              <span className="text-red-400">▼ Piora:</span>{' '}
+                              {stripClinicalList(selectedReport.rawContent.desenvolvimento_queixa.fatores_piora).join(', ')}
+                            </p>
                           )}
                         </div>
                       </div>
@@ -1025,7 +1090,9 @@ const ClinicalReports: React.FC<ClinicalReportsProps> = ({ className = '', onSha
                     {selectedReport.rawContent?.historia_patologica_pregressa && Array.isArray(selectedReport.rawContent.historia_patologica_pregressa) && selectedReport.rawContent.historia_patologica_pregressa.length > 0 && (
                       <div className="border-l-2 border-orange-500/50 pl-3">
                         <strong className="text-orange-400 text-xs uppercase tracking-wider">História Patológica Pregressa</strong>
-                        <p className="mt-1">{selectedReport.rawContent.historia_patologica_pregressa.join(', ')}</p>
+                        <p className="mt-1">
+                          {stripClinicalList(selectedReport.rawContent.historia_patologica_pregressa).join(', ')}
+                        </p>
                       </div>
                     )}
 
@@ -1038,10 +1105,16 @@ const ClinicalReports: React.FC<ClinicalReportsProps> = ({ className = '', onSha
                         <strong className="text-pink-400 text-xs uppercase tracking-wider">História Familiar</strong>
                         <div className="mt-1 space-y-1">
                           {selectedReport.rawContent.historia_familiar.lado_materno?.length > 0 && (
-                            <p><span className="text-slate-400">Materno:</span> {selectedReport.rawContent.historia_familiar.lado_materno.join(', ')}</p>
+                            <p>
+                              <span className="text-slate-400">Materno:</span>{' '}
+                              {stripClinicalList(selectedReport.rawContent.historia_familiar.lado_materno).join(', ')}
+                            </p>
                           )}
                           {selectedReport.rawContent.historia_familiar.lado_paterno?.length > 0 && (
-                            <p><span className="text-slate-400">Paterno:</span> {selectedReport.rawContent.historia_familiar.lado_paterno.join(', ')}</p>
+                            <p>
+                              <span className="text-slate-400">Paterno:</span>{' '}
+                              {stripClinicalList(selectedReport.rawContent.historia_familiar.lado_paterno).join(', ')}
+                            </p>
                           )}
                         </div>
                       </div>
@@ -1051,7 +1124,7 @@ const ClinicalReports: React.FC<ClinicalReportsProps> = ({ className = '', onSha
                     {selectedReport.rawContent?.habitos_vida && Array.isArray(selectedReport.rawContent.habitos_vida) && selectedReport.rawContent.habitos_vida.length > 0 && (
                       <div className="border-l-2 border-teal-500/50 pl-3">
                         <strong className="text-teal-400 text-xs uppercase tracking-wider">Hábitos de Vida</strong>
-                        <p className="mt-1">{selectedReport.rawContent.habitos_vida.join(', ')}</p>
+                        <p className="mt-1">{stripClinicalList(selectedReport.rawContent.habitos_vida).join(', ')}</p>
                       </div>
                     )}
 
@@ -1061,7 +1134,11 @@ const ClinicalReports: React.FC<ClinicalReportsProps> = ({ className = '', onSha
                         <strong className="text-cyan-400 text-xs uppercase tracking-wider">Perguntas Objetivas</strong>
                         <div className="mt-1 space-y-1">
                           {Object.entries(selectedReport.rawContent.perguntas_objetivas).map(([key, val]: [string, any]) => (
-                            val && <p key={key}><span className="text-slate-400">{key.replace(/_/g, ' ')}:</span> {String(val)}</p>
+                            val && (
+                              <p key={key}>
+                                <span className="text-slate-400">{key.replace(/_/g, ' ')}:</span> {stripClinical(val)}
+                              </p>
+                            )
                           ))}
                         </div>
                       </div>
@@ -1082,25 +1159,25 @@ const ClinicalReports: React.FC<ClinicalReportsProps> = ({ className = '', onSha
                     {selectedReport.rawContent?.investigation && (
                       <div className="border-l-2 border-slate-500/50 pl-3">
                         <strong className="text-slate-400 text-xs uppercase tracking-wider">Investigação (IMRE)</strong>
-                        <p className="mt-1">{selectedReport.rawContent.investigation}</p>
+                        <p className="mt-1">{stripClinical(selectedReport.rawContent.investigation)}</p>
                       </div>
                     )}
                     {selectedReport.rawContent?.methodology && (
                       <div className="border-l-2 border-slate-500/50 pl-3">
                         <strong className="text-slate-400 text-xs uppercase tracking-wider">Metodologia (IMRE)</strong>
-                        <p className="mt-1">{selectedReport.rawContent.methodology}</p>
+                        <p className="mt-1">{stripClinical(selectedReport.rawContent.methodology)}</p>
                       </div>
                     )}
                     {selectedReport.rawContent?.result && (
                       <div className="border-l-2 border-slate-500/50 pl-3">
                         <strong className="text-slate-400 text-xs uppercase tracking-wider">Resultado (IMRE)</strong>
-                        <p className="mt-1">{selectedReport.rawContent.result}</p>
+                        <p className="mt-1">{stripClinical(selectedReport.rawContent.result)}</p>
                       </div>
                     )}
                     {selectedReport.rawContent?.evolution && (
                       <div className="border-l-2 border-slate-500/50 pl-3">
                         <strong className="text-slate-400 text-xs uppercase tracking-wider">Evolução (IMRE)</strong>
-                        <p className="mt-1">{selectedReport.rawContent.evolution}</p>
+                        <p className="mt-1">{stripClinical(selectedReport.rawContent.evolution)}</p>
                       </div>
                     )}
 
@@ -1166,7 +1243,7 @@ const ClinicalReports: React.FC<ClinicalReportsProps> = ({ className = '', onSha
                             <div className="flex justify-end">
                               <div className="bg-sky-900/30 border border-sky-700/30 rounded-lg px-3 py-2 max-w-[80%]">
                                 <span className="text-xs text-sky-400 font-medium">Paciente</span>
-                                <p className="text-sm text-slate-200 mt-0.5">{msg.user_message.split('\n[CONTEXTO')[0].split('\n[Contexto')[0].trim()}</p>
+                                <p className="text-sm text-slate-200 mt-0.5">{stripClinical(msg.user_message)}</p>
                               </div>
                             </div>
                           )}
@@ -1174,7 +1251,9 @@ const ClinicalReports: React.FC<ClinicalReportsProps> = ({ className = '', onSha
                             <div className="flex justify-start">
                               <div className="bg-emerald-900/20 border border-emerald-700/30 rounded-lg px-3 py-2 max-w-[80%]">
                                 <span className="text-xs text-emerald-400 font-medium">Nôa</span>
-                                <p className="text-sm text-slate-200 mt-0.5">{msg.ai_response.split('[ASSESSMENT_COMPLETED]')[0].trim()}</p>
+                                <p className="text-sm text-slate-200 mt-0.5">
+                                  {stripClinical((msg.ai_response || '').split('[ASSESSMENT_COMPLETED]')[0])}
+                                </p>
                               </div>
                             </div>
                           )}
@@ -1250,14 +1329,14 @@ const ClinicalReports: React.FC<ClinicalReportsProps> = ({ className = '', onSha
                           <div className="text-sm text-slate-300 space-y-2">
                             <div>
                               <strong className="text-slate-200">Avaliação:</strong>
-                              <p className="mt-1">{value.assessment}</p>
+                              <p className="mt-1">{stripClinical(value.assessment)}</p>
                             </div>
                             {value.recommendations && value.recommendations.length > 0 && (
                               <div>
                                 <strong className="text-slate-200">Recomendações:</strong>
                                 <ul className="mt-1 list-disc list-inside">
                                   {value.recommendations.map((rec: string, idx: number) => (
-                                    <li key={idx}>{rec}</li>
+                                    <li key={idx}>{stripClinical(rec)}</li>
                                   ))}
                                 </ul>
                               </div>
@@ -1265,7 +1344,7 @@ const ClinicalReports: React.FC<ClinicalReportsProps> = ({ className = '', onSha
                             {value.considerations && (
                               <div>
                                 <strong className="text-slate-200">Considerações:</strong>
-                                <p className="mt-1">{value.considerations}</p>
+                                <p className="mt-1">{stripClinical(value.considerations)}</p>
                               </div>
                             )}
                           </div>

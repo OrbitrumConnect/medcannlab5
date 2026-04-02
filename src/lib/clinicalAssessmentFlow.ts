@@ -14,11 +14,21 @@ import { supabase } from './supabase'
 /** Trechos RAG/documento injetados no chat não devem entrar nas respostas clínicas persistidas no AEC. */
 export function stripPlatformInjectionNoise(raw: string): string {
   if (!raw || typeof raw !== 'string') return ''
-  return raw
-    .replace(/\[CONTEXTO CRÍTICO DE DOCUMENTOS[\s\S]*?\[FIM DO CONTEXTO\]/gi, '')
-    .replace(/\[CONTEXTO CRITICO DE DOCUMENTOS[\s\S]*?\[FIM DO CONTEXTO\]/gi, '')
-    .replace(/\n{3,}/g, '\n\n')
-    .trim()
+  const blocks = [
+    /\[CONTEXTO CRÍTICO DE DOCUMENTOS[\s\S]*?\[FIM DO CONTEXTO\]/gi,
+    /\[CONTEXTO CRITICO DE DOCUMENTOS[\s\S]*?\[FIM DO CONTEXTO\]/gi,
+  ]
+  let s = raw
+  let prev = ''
+  while (s !== prev) {
+    prev = s
+    for (const re of blocks) {
+      s = s.replace(re, '')
+    }
+  }
+  // Persistência antiga / truncada sem tag de fechamento
+  s = s.replace(/\[CONTEXTO CR[ÍI]TICO DE DOCUMENTOS[\s\S]*$/i, '')
+  return s.replace(/\n{3,}/g, '\n\n').trim()
 }
 
 export type AssessmentPhase =
@@ -326,7 +336,6 @@ export class ClinicalAssessmentFlow {
       restartSignals &&
       state.phase !== 'CONFIRMING_EXIT' &&
       state.phase !== 'COMPLETED' &&
-      state.phase !== 'INTERRUPTED' &&
       state.phase !== 'INITIAL_GREETING'
 
     if (wantsRestart) {
@@ -602,7 +611,10 @@ export class ClinicalAssessmentFlow {
               '**Próximos passos:**\n' +
               '• Acesse seu **Relatório Clínico** para revisar os achados\n' +
               '• **Agende uma consulta** com o Dr. Ricardo Valença para dar continuidade ao seu cuidado\n\n' +
-              'Use os botões abaixo para navegar rapidamente 👇',
+              'Use os botões abaixo para navegar rapidamente 👇\n\n' +
+              'Essa é uma avaliação inicial de acordo com o método desenvolvido pelo Dr. Ricardo Valença, com o objetivo de aperfeiçoar o seu atendimento. ' +
+              'Apresente sua avaliação durante a consulta com Dr. Ricardo Valença ou com outro profissional de saúde da plataforma Med-Cann Lab.\n\n' +
+              '[ASSESSMENT_COMPLETED]',
             phase: 'FINAL_RECOMMENDATION',
             isComplete: false
           }
@@ -631,6 +643,31 @@ export class ClinicalAssessmentFlow {
           phase: 'COMPLETED',
           isComplete: true
         }
+
+      case 'INTERRUPTED': {
+        const norm = lowerResponse.normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+        if (
+          (/\bretom(ar|e)\b/.test(norm) && norm.includes('avaliac')) ||
+          /\bcontinuar\s+(a\s+)?avaliac/.test(norm) ||
+          /\bvoltar\s+(a\s+)?avaliac/.test(norm)
+        ) {
+          const resumed = this.resumeAssessment(userId)
+          if (resumed) {
+            void this.persist(userId)
+            return {
+              nextQuestion: resumed.nextQuestion,
+              phase: resumed.phase,
+              isComplete: false
+            }
+          }
+        }
+        return {
+          nextQuestion:
+            'Sua avaliação foi pausada e os dados foram guardados. Diga **retomar avaliação** para continuar, ou **nova avaliação** para recomeçar do zero. O relatório formal na plataforma é gerado quando o fluxo chega ao consentimento e à mensagem final com encerramento.',
+          phase: 'INTERRUPTED',
+          isComplete: false
+        }
+      }
 
       default:
         return {
