@@ -1497,6 +1497,7 @@ Gere apenas a próxima pergunta sobre hábitos de vida.`
       // Obter fase do ClinicalAssessmentFlow (AEC 001) para controle de estado
       let currentPhase = undefined
       let nextQuestionHint = undefined
+      let aecInterruptedThisTurn = false
 
       // ASSESSMENT_START na 1ª mensagem deve iniciar o AEC local; antes "NONE" só bloqueava o fluxo.
       const platformAllowsAec =
@@ -1526,20 +1527,30 @@ Gere apenas a próxima pergunta sobre hábitos de vida.`
           try {
             // Não tratar "iniciar avaliação" como resposta clínica só na abertura — evita includes('iniciar') que quebrava o estado no meio do AEC.
             const normStart = userMessage.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
-            const looksLikeSelfIntro = /(me chamo|sou (o|a)|meu nome|chamo-me|eu sou)\b/.test(normStart)
+            const looksLikeSelfIntro =
+              /(me chamo|sou (o|a)|meu nome|chamo-me|eu sou)\b/.test(normStart) ||
+              /\b[a-záàãâéêíóôõúç]{2,}\s+aqui\b/.test(normStart)
             const explicitAssessmentStart =
               /\b(iniciar|comecar|come[cç]ar|start)\s+(a\s+)?(avaliacao|imre)\b/.test(normStart) ||
               /\b(avaliacao|imre)\s+clinic(a)?\b/.test(normStart) ||
               /\b(protocolo\s+imre|avaliacao\s+clinica\s+inicial)\b/.test(normStart)
+            const pedidoAvaliacaoNaMesmaMsg =
+              /(gostaria|quero|preciso|desejo|pedir|fazer)\b[\s\S]{0,80}\b(avaliac(ao|ão)|imre)\b/.test(normStart)
             const skipProcessBecauseStartCmd =
               explicitAssessmentStart &&
               flowState.phase === 'INITIAL_GREETING' &&
-              !looksLikeSelfIntro
+              !looksLikeSelfIntro &&
+              !pedidoAvaliacaoNaMesmaMsg &&
+              normStart.length < 96
 
             if (!skipProcessBecauseStartCmd) {
               const stepResult = clinicalAssessmentFlow.processResponse(platformData.user.id, userMessage)
               console.log(`✅ Fluxo AEC avançou para: ${stepResult.phase}`)
               nextQuestionHint = stepResult.nextQuestion
+
+              if (stepResult.phase === 'INTERRUPTED' && stepResult.isComplete) {
+                aecInterruptedThisTurn = true
+              }
 
               // Se a avaliação foi concluída, gerar relatório automaticamente
               if (stepResult.phase === 'COMPLETED' && stepResult.isComplete) {
@@ -1758,6 +1769,38 @@ Gere apenas a próxima pergunta sobre hábitos de vida.`
           }
         )
       }
+      // Interrupção confirmada: mesmo padrão de navegação (dados em aec_assessment_state; relatório formal só após fluxo completo + consentimento)
+      if (aecInterruptedThisTurn) {
+        postAecCommands.push(
+          {
+            kind: 'noa_command',
+            autoExecute: false,
+            command: {
+              type: 'navigate-route',
+              target: '/app/clinica/paciente/dashboard?section=relatorio',
+              label: '📋 Ver relatório / dados da avaliação'
+            }
+          },
+          {
+            kind: 'noa_command',
+            autoExecute: false,
+            command: {
+              type: 'navigate-route',
+              target: '/app/clinica/paciente/dashboard?section=analytics',
+              label: '🏠 Painel do paciente'
+            }
+          },
+          {
+            kind: 'noa_command',
+            autoExecute: false,
+            command: {
+              type: 'navigate-route',
+              target: '/app/clinica/paciente/agendamentos',
+              label: '📅 Agendamentos'
+            }
+          }
+        )
+      }
 
       const mergedAppCommands = [
         ...(appCommandsFromCore.length > 0 ? appCommandsFromCore : (data.app_commands ?? [])),
@@ -1774,6 +1817,7 @@ Gere apenas a próxima pergunta sobre hábitos de vida.`
         metadata: {
           ...data.metadata,
           assessmentCompleted: isCompleted,
+          assessmentInterrupted: aecInterruptedThisTurn,
           intent: data.metadata?.intent || intent,
           professionalId: data.metadata?.professionalId,
           audited: data.metadata?.audited,

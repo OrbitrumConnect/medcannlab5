@@ -1915,17 +1915,62 @@ Responda SOMENTE com o JSON válido, sem markdown.`
         // Detecção de urgência (para permitir múltiplas perguntas em casos urgentes)
         const isUrgent = /(urgente|emergência|emergencia|socorro|urgência|preciso urgente|agora|imediato|dor forte|muito mal|preciso ajuda|preciso de ajuda)/i.test(message)
 
+        /** Fases em que o servidor manda nextQuestionHint — GPT não pode parafrasear nem “explicar o protocolo” no lugar da pergunta (coração do AEC determinístico). */
+        const AEC_VERBATIM_LOCK_PHASES = new Set([
+            'INITIAL_GREETING',
+            'IDENTIFICATION',
+            'COMPLAINT_LIST',
+            'MAIN_COMPLAINT',
+            'COMPLAINT_DETAILS',
+            'MEDICAL_HISTORY',
+            'FAMILY_HISTORY_MOTHER',
+            'FAMILY_HISTORY_FATHER',
+            'LIFESTYLE_HABITS',
+            'OBJECTIVE_QUESTIONS',
+            'CONSENSUS_REVIEW',
+            'CONSENSUS_REPORT',
+            'CONSENT_COLLECTION',
+            'CONSENSUS_CONFIRMATION',
+            'FINAL_RECOMMENDATION',
+            'CONFIRMING_EXIT',
+            'CONFIRMING_RESTART'
+        ])
+
+        const aecVerbatimLock =
+            !!nextQuestionHint &&
+            userRole === 'patient' &&
+            !!assessmentPhase &&
+            AEC_VERBATIM_LOCK_PHASES.has(assessmentPhase)
+
+        const allowUrgentMultiQuestion = isUrgent && assessmentPhase === 'COMPLAINT_DETAILS'
+
         // Instrução dinâmica de fase (controle de fluxo)
         let phaseInstruction = assessmentPhase
             ? `\n\n🚨 FASE ATUAL DO PROTOCOLO (ESTADO ATIVO): "${assessmentPhase}".\nATENÇÃO: Você DEVE conduzir o diálogo focado EXCLUSIVAMENTE nesta fase. Não pule para a próxima até que esta esteja concluída.`
             : ''
 
         if (nextQuestionHint) {
-            // Se for urgente, permitir múltiplas perguntas essenciais
-            if (isUrgent && assessmentPhase === 'COMPLAINT_DETAILS') {
-                phaseInstruction += `\n\n🚨 MODO URGÊNCIA DETECTADO - PRÓXIMA PERGUNTA: "${nextQuestionHint}"\n\nVocê detectou urgência na mensagem do usuário. Para acelerar a avaliação, você pode fazer múltiplas perguntas essenciais de uma vez, focando nas informações críticas. Mas se preferir, pode fazer uma por vez também.`
+            if (aecVerbatimLock && !allowUrgentMultiQuestion) {
+                console.log(`🔒 [AEC] Roteiro selado (verbatim): fase=${assessmentPhase}`)
+                phaseInstruction += `
+
+🔒 **MODO ROTEIRO SELADO — NÃO NEGOCIÁVEL**
+O **TradeVision Core** e o **ClinicalAssessmentFlow** já determinaram a única pergunta válida neste turno. Isto prevalece sobre o histórico do chat, sobre inferências do modelo e sobre qualquer outro trecho deste prompt que sugira liberdade de redação.
+
+**Regras (todas obrigatórias):**
+1) O **corpo principal** da sua resposta ao paciente deve ser **exatamente** o texto entre as linhas AEC_LOCK_START e AEC_LOCK_END abaixo — **cópia literal**, sem parafrasear. Permitido apenas: corrigir espaços óbvios ou pontuação mínima; **proibido** mudar palavras, ordem das ideias ou acrescentar frases.
+2) **Proibido neste turno:** explicar em que etapa do protocolo estão, resumir o método AEC, elogiar hábitos ou respostas, dar opinião clínica, fazer segunda pergunta, antecipar a próxima etapa, falar de documentos/diário/plataforma (salvo se o texto obrigatório citar).
+3) Se o paciente fizer **uma** pergunta pontual de esclarecimento: no máximo **duas frases curtas** de resposta; em seguida **repetir literalmente** o mesmo bloco AEC_LOCK (não substituir por sinónimos).
+4) Se o texto obrigatório contiver tag de sistema (ex.: \`[ASSESSMENT_COMPLETED]\`), preserve-a **caractere a caractere** no sítio indicado.
+
+AEC_LOCK_START
+${nextQuestionHint}
+AEC_LOCK_END
+`
+            } else if (allowUrgentMultiQuestion) {
+                phaseInstruction += `\n\n🚨 MODO URGÊNCIA DETECTADO — PRÓXIMA PERGUNTA (referência): "${nextQuestionHint}"\n\nUrgência explícita: pode condensar até 3 perguntas essenciais num único turno, ou seguir uma a uma. Não desvie para temas fora da queixa urgente. Oriente atendimento presencial se houver risco imediato.`
             } else {
-                phaseInstruction += `\n\n🚨 PRÓXIMA PERGUNTA OBRIGATÓRIA DO PROTOCOLO: "${nextQuestionHint}"\n\nVOCÊ DEVE FAZER APENAS ESTA PERGUNTA (pode parafrasear mantendo o mesmo sentido clínico). NÃO faça múltiplas perguntas. NÃO repita perguntas cujo conteúdo o paciente JÁ deu no histórico recente (ex.: local, início). Se o paciente reclamar de repetição, peça desculpas em uma linha e faça SÓ a pergunta obrigatória acima — sem aulas de anatomia nem tópicos fora do AEC 001.`
+                phaseInstruction += `\n\n🚨 PRÓXIMA PERGUNTA OBRIGATÓRIA: "${nextQuestionHint}"\n\nFaça esta pergunta com prioridade. Uma pergunta por turno salvo contexto de urgência.`
             }
         }
 
@@ -1984,7 +2029,7 @@ Você deve seguir RIGOROSAMENTE as 10 etapas abaixo, sem pular blocos, sem infer
 7. HÁBITOS DE VIDA: "Que outros hábitos você acha importante mencionar?"
 8. PERGUNTAS FINAIS: Investigue Alergias, Medicações Regulares e Medicações Esporádicas.
 9. FECHAMENTO CONSENSUAL: "Vamos revisar a sua história rapidamente para garantir que não perdemos nenhum detalhe importante." -> Resuma de forma descritiva e neutra. Pergunte: "Você concorda com meu entendimento? Há mais alguma coisa que gostaria de adicionar?"
-10. ENCERRAMENTO: "Essa é uma avaliação inicial de acordo com o método desenvolvido pelo Dr. Ricardo Valença, com o objetivo de aperfeiçoar o seu atendimento. Apresente sua avaliação durante a consulta com Dr. Ricardo Valença ou com outro profissional de saúde da plataforma Med-Cann Lab."\n\n     IMPORTANTE: AO FINAL DESTA FALA DO PASSO 10, VOCÊ DEVE INCLUIR A TAG: [ASSESSMENT_COMPLETED]
+10. ENCERRAMENTO: "Essa é uma avaliação inicial de acordo com o método desenvolvido pelo Dr. Ricardo Valença, com o objetivo de aperfeiçoar o seu atendimento. Apresente sua avaliação durante a consulta com Dr. Ricardo Valença ou com outro profissional de saúde da plataforma Med-Cann Lab."\n\n     🚨 **O PASSO 10 NÃO PODE SER OMITIDO** quando a avaliação chegou ao encerramento formal: a mensagem de encerramento acima deve ser dita na íntegra e, **na mesma resposta**, deve aparecer a tag **exatamente** assim: [ASSESSMENT_COMPLETED]\n\n     Sem essa tag, o sistema **não** finaliza o relatório nem dispara o fluxo pós-avaliação (agenda, prontuário). Não substitua por outra formulação nem deixe a tag para o "próximo turno".
 
 # PERFIS DE PROFISSIONAIS E AGENDAMENTO (SECRETARIA MASTER)
 Você é a secretária master da MedCannLab e deve orientar o usuário sobre os médicos disponíveis:
@@ -2572,9 +2617,9 @@ ${contentExcerpt || '(Texto não disponível para este documento. O conteúdo ai
                 'FAMILY_HISTORY_MOTHER': '🔒 PHASE LOCK: Etapa 6 — história familiar (lado materno). Use "O que mais?" até encerrar este lado.',
                 'FAMILY_HISTORY_FATHER': '🔒 PHASE LOCK: Etapa 6 — história familiar (lado paterno). Use "O que mais?" até encerrar.',
                 'LIFESTYLE': '🔒 PHASE LOCK: Você está em HÁBITOS DE VIDA (Etapa 7). Pergunte sobre hábitos. NÃO encerre.',
-                'LIFESTYLE_HABITS': '🔒 PHASE LOCK: Etapa 7 — hábitos de vida. Pergunte conforme protocolo; use "O que mais?" quando aplicável.',
+                'LIFESTYLE_HABITS': '🔒 PHASE LOCK: Etapa 7 — hábitos de vida. Use APENAS o texto da "PRÓXIMA PERGUNTA OBRIGATÓRIA" ou do protocolo, sem elogiar hábitos (nada de "ótimo", "excelente", "parabéns"). Sem opiniões sobre saúde fora do roteiro. "O que mais?" só quando o protocolo pedir lista.',
                 'FINAL_QUESTIONS': '🔒 PHASE LOCK: Você está nas PERGUNTAS FINAIS (Etapa 8). Investigue alergias, medicações regulares e esporádicas. NÃO encerre.',
-                'OBJECTIVE_QUESTIONS': '🔒 PHASE LOCK: Etapa 8 — perguntas objetivas (alergias, medicações). Uma de cada vez conforme o fluxo.',
+                'OBJECTIVE_QUESTIONS': '🔒 PHASE LOCK: Etapa 8 — perguntas objetivas. Copie literalmente a pergunta indicada (alergias, medicações). Proibido alongar, exemplificar além do protocolo ou opinar. Uma pergunta por turno.',
                 'CONSENSUS': '🔒 PHASE LOCK: Você está no FECHAMENTO CONSENSUAL (Etapa 9). Resuma a história e peça confirmação. NÃO encerre sem consenso.',
                 'CONSENSUS_REVIEW': '🔒 PHASE LOCK: Etapa 9 — revisão consensual. Respeite o texto do protocolo.',
                 'CONSENSUS_REPORT': '🔒 PHASE LOCK: Etapa 9 — apresente o entendimento e peça concordância do paciente.',
@@ -2583,6 +2628,7 @@ ${contentExcerpt || '(Texto não disponível para este documento. O conteúdo ai
                 'FINAL_RECOMMENDATION': '🔒 PHASE LOCK: Recomendação final antes do encerramento formal.',
                 'CLOSING': '🔒 PHASE LOCK: Você está no ENCERRAMENTO (Etapa 10). Diga a frase de encerramento e inclua [ASSESSMENT_COMPLETED].',
                 'CONFIRMING_EXIT': '🔒 PHASE LOCK: O paciente pediu para interromper. Você está na confirmação (sim/não). NÃO continue a anamnese até ele responder. Se confirmar saída, aceite com empatia e encerre sem forçar novas perguntas clínicas.',
+                'CONFIRMING_RESTART': '🔒 PHASE LOCK: O sistema perguntou se o paciente quer REINICIAR a avaliação do zero. Responda só em função de sim/não — não continue anamnese nem mude de assunto até ele esclarecer.',
                 'INTERRUPTED': '🔒 PHASE LOCK: Avaliação interrompida pelo paciente. Não retome perguntas clínicas a menos que ele peça para continuar a avaliação.',
                 'FOLLOW_UP': '🔒 PHASE LOCK: Avaliação em andamento. Continue de onde parou. NÃO encerre prematuramente.'
             }

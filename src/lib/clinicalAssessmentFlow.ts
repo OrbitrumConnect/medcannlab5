@@ -1,11 +1,26 @@
 /**
  * Sistema de Fluxo de Avaliação Clínica Inicial
  * Implementa o roteiro completo conforme instruções do Dr. Ricardo Valença
- * 
+ *
+ * Par com tradevision-core: cada `nextQuestionHint` emitido aqui ativa no Core o
+ * MODO ROTEIRO SELADO (pergunta literal) para o paciente — o GPT não deve parafrasear
+ * nem substituir este roteiro por explicações aleatórias.
+ *
  * S3/C1 FIX: Estado agora persistido em Supabase (aec_assessment_state)
  * em vez de localStorage. Dados clínicos sensíveis nunca ficam no browser.
  */
 import { supabase } from './supabase'
+
+/** Trechos RAG/documento injetados no chat não devem entrar nas respostas clínicas persistidas no AEC. */
+export function stripPlatformInjectionNoise(raw: string): string {
+  if (!raw || typeof raw !== 'string') return ''
+  return raw
+    .replace(/\[CONTEXTO CRÍTICO DE DOCUMENTOS[\s\S]*?\[FIM DO CONTEXTO\]/gi, '')
+    .replace(/\[CONTEXTO CRITICO DE DOCUMENTOS[\s\S]*?\[FIM DO CONTEXTO\]/gi, '')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim()
+}
+
 export type AssessmentPhase =
   | 'INITIAL_GREETING'
   | 'IDENTIFICATION'
@@ -23,6 +38,7 @@ export type AssessmentPhase =
   | 'CONSENSUS_CONFIRMATION'
   | 'FINAL_RECOMMENDATION'
   | 'CONFIRMING_EXIT'
+  | 'CONFIRMING_RESTART'
   | 'INTERRUPTED'
   | 'COMPLETED'
 
@@ -129,6 +145,20 @@ export class ClinicalAssessmentFlow {
     }
   }
 
+  /** Resposta indica fim de lista / nada a acrescentar (evita loop em "nenhum", "so isso", etc.) */
+  private meansNoMore(raw: string): boolean {
+    const lower = raw.toLowerCase().trim()
+    const t = lower.normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    if (!t) return true
+    if (/\bnenhum(a)?\b/.test(t)) return true
+    if (/\bnada mais\b/.test(t) || lower.includes('nada mais')) return true
+    if (/(^|\s)(so isso|e so isso|apenas isso|somente isso|e isso)(\s|!|$)/.test(t)) return true
+    if (lower.includes('é só isso') || lower.includes('só isso') || lower.includes('só isso')) return true
+    if (/\b(so|só)\s+prosseguir\b/.test(t)) return true
+    if (lower.includes('não') || /\bnao\b/.test(t)) return true
+    return false
+  }
+
   public async persist(userId?: string) {
     // Persistir no Supabase em vez de localStorage
     const entries = userId ? [[userId, this.states.get(userId)]] : Array.from(this.states.entries())
@@ -213,7 +243,9 @@ export class ClinicalAssessmentFlow {
       throw new Error('Avaliação não encontrada. Por favor, inicie uma nova avaliação.')
     }
 
-    const lowerResponse = userResponse.toLowerCase().trim()
+    const userTurn =
+      stripPlatformInjectionNoise(userResponse).trim() || userResponse.trim()
+    const lowerResponse = userTurn.toLowerCase().trim()
 
     // ========== DETECÇÃO DE SAÍDA VOLUNTÁRIA ==========
     const exitKeywords = [
@@ -226,10 +258,89 @@ export class ClinicalAssessmentFlow {
       'vamos encerrar', 'encerrar por aqui', 'encerrar a conversa', 'encerrar conversa',
       'quero encerrar', 'pode encerrar', 'chega', 'cansei', 'parar por aqui',
       'amigo vamos encerrar', 'vamos parar', 'terminar aqui', 'quero terminar',
-      'enviar trigger de encerramento', 'trigger de encerramento'
+      'enviar trigger de encerramento', 'trigger de encerramento',
+      'encerrar ela', 'encerrar essa', 'gostaria de encerrar', 'quero encerrar a',
+      'encerramos', 'ok encerramos', 'podemos encerrar', 'encerrar esta avaliacao',
+      'encerrar esta avaliação'
     ]
 
     const wantsToExit = exitKeywords.some(kw => lowerResponse.includes(kw))
+
+    // ========== CONFIRMAÇÃO DE REINÍCIO (nova avaliação do zero) ==========
+    if (state.phase === 'CONFIRMING_RESTART') {
+      const normAns = lowerResponse.normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+      const yesRestart = /\bsim\b/.test(normAns) || /\breiniciar\b/.test(normAns) || /\bconfirmo\b/.test(normAns)
+      const noRestart = /\bnao\b/.test(normAns) || normAns.includes('continuar') || normAns.includes('voltar')
+
+      if (noRestart && !yesRestart) {
+        state.phase = state.interruptedFromPhase || 'INITIAL_GREETING'
+        state.interruptedFromPhase = undefined
+        state.lastUpdate = new Date()
+        this.persist()
+        return {
+          nextQuestion: '👍 Continuamos então. ' + this.getPhaseResumePrompt(state.phase, state),
+          phase: state.phase,
+          isComplete: false
+        }
+      }
+      if (yesRestart) {
+        const savedName = state.data.patientName
+        this.resetAssessment(userId)
+        this.startAssessment(userId, savedName)
+        void this.persist(userId)
+        return {
+          nextQuestion:
+            'Olá! Eu sou Nôa Esperanza. Por favor, apresente-se também e vamos iniciar a sua avaliação inicial para consultas com Dr. Ricardo Valença.',
+          phase: 'INITIAL_GREETING',
+          isComplete: false
+        }
+      }
+      return {
+        nextQuestion:
+          'Responda **sim** para reiniciar a avaliação do zero (os dados desta sessão serão apagados) ou **não** para seguir de onde estávamos.',
+        phase: 'CONFIRMING_RESTART',
+        isComplete: false
+      }
+    }
+
+    // ========== PEDIDO DE REINÍCIO ==========
+    const normLow = lowerResponse.normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    const restartSignals =
+      lowerResponse.includes('nova avaliacao') ||
+      lowerResponse.includes('nova avaliação') ||
+      lowerResponse.includes('outra avaliacao') ||
+      lowerResponse.includes('outra avaliação') ||
+      normLow.includes('comecar uma nova') ||
+      normLow.includes('comecar do zero') ||
+      lowerResponse.includes('reiniciar') ||
+      lowerResponse.includes('recomeçar') ||
+      lowerResponse.includes('recomecar') ||
+      lowerResponse.includes('zerar') ||
+      lowerResponse.includes('contaminad') ||
+      lowerResponse.includes('fluxo errado') ||
+      normLow.includes('comecar do inicio') ||
+      normLow.includes('comecar ela do inicio') ||
+      /\b(uma\s+nova|nova\s+sessao|nova\s+rodada)\b/.test(normLow)
+
+    const wantsRestart =
+      restartSignals &&
+      state.phase !== 'CONFIRMING_EXIT' &&
+      state.phase !== 'COMPLETED' &&
+      state.phase !== 'INTERRUPTED' &&
+      state.phase !== 'INITIAL_GREETING'
+
+    if (wantsRestart) {
+      state.interruptedFromPhase = state.phase
+      state.phase = 'CONFIRMING_RESTART'
+      state.lastUpdate = new Date()
+      this.persist()
+      return {
+        nextQuestion:
+          'Deseja **reiniciar** a avaliação do zero? O que já foi respondido nesta sessão será apagado. Responda **sim** para reiniciar ou **não** para continuar.',
+        phase: 'CONFIRMING_RESTART',
+        isComplete: false
+      }
+    }
 
     // Se quer sair e NÃO está já confirmando saída, entrar no fluxo de confirmação
     if (wantsToExit && state.phase !== 'CONFIRMING_EXIT' && state.phase !== 'COMPLETED' && state.phase !== 'INTERRUPTED') {
@@ -271,18 +382,13 @@ export class ClinicalAssessmentFlow {
       }
     }
 
-    const hasMore = !lowerResponse.includes('não') &&
-      !lowerResponse.includes('nao') &&
-      !lowerResponse.includes('nada mais') &&
-      !lowerResponse.includes('é só isso') &&
-      !lowerResponse.includes('e só isso') &&
-      !lowerResponse.includes('só isso')
+    const hasMore = !this.meansNoMore(userTurn)
 
     // Processar resposta baseado na fase atual
     switch (state.phase) {
       case 'INITIAL_GREETING':
         // Usuário se apresentou, avançar para identificação
-        state.data.patientPresentation = userResponse
+        state.data.patientPresentation = userTurn
         state.phase = 'IDENTIFICATION'
         state.lastUpdate = new Date()
         return {
@@ -293,8 +399,8 @@ export class ClinicalAssessmentFlow {
 
       case 'IDENTIFICATION':
         // Primeira queixa adicionada à lista
-        if (userResponse.trim()) {
-          state.data.complaintList.push(userResponse.trim())
+        if (userTurn.trim()) {
+          state.data.complaintList.push(userTurn.trim())
         }
         state.phase = 'COMPLAINT_LIST'
         state.waitingForMore = true
@@ -306,9 +412,9 @@ export class ClinicalAssessmentFlow {
         }
 
       case 'COMPLAINT_LIST':
-        if (hasMore && userResponse.trim()) {
+        if (hasMore && userTurn.trim()) {
           // Adicionar mais queixa à lista
-          state.data.complaintList.push(userResponse.trim())
+          state.data.complaintList.push(userTurn.trim())
           state.lastUpdate = new Date()
           return {
             nextQuestion: 'O que mais?',
@@ -328,7 +434,7 @@ export class ClinicalAssessmentFlow {
         }
 
       case 'MAIN_COMPLAINT':
-        state.data.mainComplaint = userResponse.trim()
+        state.data.mainComplaint = userTurn.trim()
         state.phase = 'COMPLAINT_DETAILS'
         state.currentQuestionIndex = 0
         state.lastUpdate = new Date()
@@ -339,11 +445,11 @@ export class ClinicalAssessmentFlow {
         }
 
       case 'COMPLAINT_DETAILS':
-        return this.processComplaintDetails(state, userResponse)
+        return this.processComplaintDetails(state, userTurn)
 
       case 'MEDICAL_HISTORY':
-        if (hasMore && userResponse.trim()) {
-          state.data.medicalHistory.push(userResponse.trim())
+        if (hasMore && userTurn.trim()) {
+          state.data.medicalHistory.push(userTurn.trim())
           state.lastUpdate = new Date()
           return {
             nextQuestion: 'O que mais?',
@@ -362,8 +468,8 @@ export class ClinicalAssessmentFlow {
         }
 
       case 'FAMILY_HISTORY_MOTHER':
-        if (hasMore && userResponse.trim()) {
-          state.data.familyHistoryMother.push(userResponse.trim())
+        if (hasMore && userTurn.trim()) {
+          state.data.familyHistoryMother.push(userTurn.trim())
           state.lastUpdate = new Date()
           return {
             nextQuestion: 'O que mais?',
@@ -382,8 +488,8 @@ export class ClinicalAssessmentFlow {
         }
 
       case 'FAMILY_HISTORY_FATHER':
-        if (hasMore && userResponse.trim()) {
-          state.data.familyHistoryFather.push(userResponse.trim())
+        if (hasMore && userTurn.trim()) {
+          state.data.familyHistoryFather.push(userTurn.trim())
           state.lastUpdate = new Date()
           return {
             nextQuestion: 'O que mais?',
@@ -402,8 +508,8 @@ export class ClinicalAssessmentFlow {
         }
 
       case 'LIFESTYLE_HABITS':
-        if (hasMore && userResponse.trim()) {
-          state.data.lifestyleHabits.push(userResponse.trim())
+        if (hasMore && userTurn.trim()) {
+          state.data.lifestyleHabits.push(userTurn.trim())
           state.lastUpdate = new Date()
           return {
             nextQuestion: 'O que mais?',
@@ -423,7 +529,7 @@ export class ClinicalAssessmentFlow {
         }
 
       case 'OBJECTIVE_QUESTIONS':
-        return this.processObjectiveQuestions(state, userResponse)
+        return this.processObjectiveQuestions(state, userTurn)
 
       case 'CONSENSUS_REVIEW':
         state.phase = 'CONSENSUS_REPORT'
@@ -434,11 +540,27 @@ export class ClinicalAssessmentFlow {
           isComplete: false
         }
 
-      case 'CONSENSUS_REPORT':
-        if (lowerResponse.includes('sim') ||
-          lowerResponse.includes('concordo') ||
-          lowerResponse.includes('está correto') ||
-          lowerResponse.includes('correto')) {
+      case 'CONSENSUS_REPORT': {
+        const lr = lowerResponse.trim()
+        const explicitDisagree =
+          /\b(nao|não)\s+concordo\b/.test(lowerResponse) ||
+          /\bdiscordo\b/.test(lowerResponse) ||
+          /\b(esta|está)\s+(errad|incorret)/.test(lowerResponse) ||
+          (/\bpreciso\s+corrigir\b/.test(lowerResponse) &&
+            !/\b(nao|não)\s+preciso\s+corrigir\b/.test(lowerResponse))
+        const consensusAffirm =
+          !explicitDisagree &&
+          (lowerResponse.includes('concordo') ||
+            /\bestá\s+correto\b/.test(lowerResponse) ||
+            /\besta\s+correto\b/.test(lowerResponse) ||
+            (/\bcorreto\b/.test(lowerResponse) && !/incorreto/.test(lowerResponse)) ||
+            /^(ok|ta|tá)\b/i.test(lr) ||
+            /^(apenas\s+)?prosseguir\b/i.test(lr) ||
+            /\bnao\s+precisa\s+corrigir|nada\s+a\s+corrigir|nada\s+para\s+corrigir\b/i.test(lowerResponse) ||
+            (/\bsim\b/.test(lowerResponse) &&
+              !/\bnao\b/.test(lowerResponse.normalize('NFD').replace(/[\u0300-\u036f]/g, '')) &&
+              !lowerResponse.includes('não')))
+        if (consensusAffirm) {
           state.data.consensusAgreed = true
           state.phase = 'CONSENT_COLLECTION'
           state.lastUpdate = new Date()
@@ -452,17 +574,17 @@ export class ClinicalAssessmentFlow {
             phase: 'CONSENT_COLLECTION',
             isComplete: false
           }
-        } else {
-          // Não concordou, fazer revisão
-          state.data.consensusRevisions++
-          state.phase = 'CONSENSUS_REVIEW'
-          state.lastUpdate = new Date()
-          return {
-            nextQuestion: `Entendi. Vamos revisar. ${userResponse}. Por favor, me diga o que precisa ser corrigido ou adicionado para que eu possa apresentar novamente meu entendimento.`,
-            phase: 'CONSENSUS_REVIEW',
-            isComplete: false
-          }
         }
+        // Não concordou ou resposta ambígua: pedir correções
+        state.data.consensusRevisions++
+        state.phase = 'CONSENSUS_REVIEW'
+        state.lastUpdate = new Date()
+        return {
+          nextQuestion: `Entendi. Vamos revisar. ${userTurn}. Por favor, me diga o que precisa ser corrigido ou adicionado para que eu possa apresentar novamente meu entendimento.`,
+          phase: 'CONSENSUS_REVIEW',
+          isComplete: false
+        }
+      }
 
       case 'CONSENT_COLLECTION':
         if (lowerResponse.includes('sim') ||
@@ -553,10 +675,7 @@ export class ClinicalAssessmentFlow {
 
     // Salvar resposta
     if (currentQ.isList) {
-      const lowerResponse = userResponse.toLowerCase().trim()
-      const hasMore = !lowerResponse.includes('não') &&
-        !lowerResponse.includes('nao') &&
-        !lowerResponse.includes('nada mais')
+      const hasMore = !this.meansNoMore(userResponse)
 
       if (hasMore && userResponse.trim()) {
         const field = currentQ.field as keyof AssessmentData
@@ -668,64 +787,68 @@ export class ClinicalAssessmentFlow {
    */
   private generateConsensusReport(state: AssessmentState): string {
     const data = state.data
+    const clean = (x?: string) => (x ? stripPlatformInjectionNoise(x) : '')
+    const cleanJoin = (arr: string[], sep: string) =>
+      arr.map((x) => stripPlatformInjectionNoise(x)).filter(Boolean).join(sep)
+
     let report = 'Vamos revisar a sua história para garantir que não perdemos nenhum detalhe importante.\n\n'
 
     report += '**MEU ENTENDIMENTO SOBRE SUA AVALIAÇÃO:**\n\n'
 
     // Identificação
     if (data.patientPresentation) {
-      report += `**Apresentação:** ${data.patientPresentation}\n\n`
+      report += `**Apresentação:** ${clean(data.patientPresentation)}\n\n`
     }
 
     // Lista de Queixas
     if (data.complaintList.length > 0) {
-      report += `**Queixas Identificadas:** ${data.complaintList.join(', ')}\n\n`
+      report += `**Queixas Identificadas:** ${cleanJoin(data.complaintList, ', ')}\n\n`
     }
 
     // Queixa Principal e Detalhes
     if (data.mainComplaint) {
-      report += `**Queixa Principal:** ${data.mainComplaint}\n`
-      if (data.complaintLocation) report += `- Onde: ${data.complaintLocation}\n`
-      if (data.complaintOnset) report += `- Quando começou: ${data.complaintOnset}\n`
-      if (data.complaintDescription) report += `- Como é: ${data.complaintDescription}\n`
+      report += `**Queixa Principal:** ${clean(data.mainComplaint)}\n`
+      if (data.complaintLocation) report += `- Onde: ${clean(data.complaintLocation)}\n`
+      if (data.complaintOnset) report += `- Quando começou: ${clean(data.complaintOnset)}\n`
+      if (data.complaintDescription) report += `- Como é: ${clean(data.complaintDescription)}\n`
       if (data.complaintAssociatedSymptoms && data.complaintAssociatedSymptoms.length > 0) {
-        report += `- Sintomas associados: ${data.complaintAssociatedSymptoms.join(', ')}\n`
+        report += `- Sintomas associados: ${cleanJoin(data.complaintAssociatedSymptoms, ', ')}\n`
       }
       if (data.complaintImprovements && data.complaintImprovements.length > 0) {
-        report += `- O que melhora: ${data.complaintImprovements.join(', ')}\n`
+        report += `- O que melhora: ${cleanJoin(data.complaintImprovements, ', ')}\n`
       }
       if (data.complaintWorsening && data.complaintWorsening.length > 0) {
-        report += `- O que piora: ${data.complaintWorsening.join(', ')}\n`
+        report += `- O que piora: ${cleanJoin(data.complaintWorsening, ', ')}\n`
       }
       report += '\n'
     }
 
     // História Patológica Pregressa
     if (data.medicalHistory.length > 0) {
-      report += `**História Patológica Pregressa:** ${data.medicalHistory.join('; ')}\n\n`
+      report += `**História Patológica Pregressa:** ${cleanJoin(data.medicalHistory, '; ')}\n\n`
     }
 
     // História Familiar
     if (data.familyHistoryMother.length > 0 || data.familyHistoryFather.length > 0) {
       report += '**História Familiar:**\n'
       if (data.familyHistoryMother.length > 0) {
-        report += `- Lado materno: ${data.familyHistoryMother.join('; ')}\n`
+        report += `- Lado materno: ${cleanJoin(data.familyHistoryMother, '; ')}\n`
       }
       if (data.familyHistoryFather.length > 0) {
-        report += `- Lado paterno: ${data.familyHistoryFather.join('; ')}\n`
+        report += `- Lado paterno: ${cleanJoin(data.familyHistoryFather, '; ')}\n`
       }
       report += '\n'
     }
 
     // Hábitos de Vida
     if (data.lifestyleHabits.length > 0) {
-      report += `**Hábitos de Vida:** ${data.lifestyleHabits.join('; ')}\n\n`
+      report += `**Hábitos de Vida:** ${cleanJoin(data.lifestyleHabits, '; ')}\n\n`
     }
 
     // Perguntas Objetivas
-    if (data.allergies) report += `**Alergias:** ${data.allergies}\n`
-    if (data.regularMedications) report += `**Medicações Regulares:** ${data.regularMedications}\n`
-    if (data.sporadicMedications) report += `**Medicações Esporádicas:** ${data.sporadicMedications}\n`
+    if (data.allergies) report += `**Alergias:** ${clean(data.allergies)}\n`
+    if (data.regularMedications) report += `**Medicações Regulares:** ${clean(data.regularMedications)}\n`
+    if (data.sporadicMedications) report += `**Medicações Esporádicas:** ${clean(data.sporadicMedications)}\n`
 
     report += '\n**Você concorda com esse entendimento?**'
 
