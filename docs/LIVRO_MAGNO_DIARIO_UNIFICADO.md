@@ -29,7 +29,9 @@ A narrativa cobre desde a refundação da experiência do paciente no final de 2
 | Relatórios | `ClinicalReports.tsx`: limpeza em card, modal, download, conversa |
 | Analytics | `PatientAnalytics.tsx`: **pts** em vez de falso `%`, ícone ℹ explicativo; modal do histórico via `getAecReportModalPayload` |
 
-**Documentação:** `DIARIO_01_04_2026.md` §6; `docs/guides/AEC_UI_RELATORIOS_ANALYTICS_01_04_2026.md`; timeline §6.8.
+**Pós-push (mesmo dia):** `tradevision-core` `finalize_assessment` — se o JSON enviado pelo cliente tem queixa/lista mas **corpo clínico vazio**, o Core volta a extrair de `ai_chat_interactions` (até 120 msgs), alinhando relatório à conversa; ver `DIARIO_01_04_2026.md` §6.5 e guia §1.1.
+
+**Documentação:** `DIARIO_01_04_2026.md` §6; `docs/guides/AEC_UI_RELATORIOS_ANALYTICS_01_04_2026.md`; timeline §6.8 / §10.1.
 
 **Filosófico:** A **verdade percebida** pelo paciente deve ser **compatível** com o contrato de dados — não basta o JSON estar “tecnicamente” no banco se a interface **mentir** por omissão (modal vazio) ou por **metáfora errada** (porcentagem vs pontos).
 
