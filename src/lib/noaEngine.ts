@@ -59,6 +59,12 @@ class TradeVisionClient {
       const SUPABASE_PROJECT_ID = import.meta.env.VITE_SUPABASE_PROJECT_ID || 'itdjkfubfzmvmuxxjoae'
       const edgeFunctionUrl = `https://${SUPABASE_PROJECT_ID}.supabase.co/functions/v1/tradevision-core`
 
+      // Mesmo contrato que NoaResidentAI → tradevision-core (history/context eram ignorados; fases AEC não avançavam).
+      const history = this.sessionContext.map(m => ({
+        role: m.isUser ? 'user' : 'assistant',
+        content: m.text
+      }))
+      const ctx = patientData && typeof patientData === 'object' ? patientData : {}
       const response = await fetch(edgeFunctionUrl, {
         method: 'POST',
         headers: {
@@ -67,12 +73,16 @@ class TradeVisionClient {
         },
         body: JSON.stringify({
           message: text,
-          context: patientData || {}, // Contexto clínico (exames, etc)
-          history: this.sessionContext.map(m => ({
-            role: m.isUser ? 'user' : 'assistant',
-            content: m.text
-          })),
-          userId: session.user.id
+          conversationHistory: history,
+          patientData: {
+            ...ctx,
+            user: {
+              ...(ctx as any).user,
+              id: session.user.id,
+              type: (ctx as any).user?.type ?? 'paciente',
+              user_type: (ctx as any).user?.user_type ?? 'patient'
+            }
+          }
         })
       })
 

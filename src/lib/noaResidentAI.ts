@@ -1524,10 +1524,19 @@ Gere apenas a próxima pergunta sobre hábitos de vida.`
         // Se existe fluxo ativo, processar a resposta do usuário para avançar
         if (flowState) {
           try {
-            // Só processa se não for o comando de iniciar (que já foi tratado no processAssessment)
-            const isStartCommand = userMessage.toLowerCase().includes('iniciar') || userMessage.toLowerCase().includes('avaliação')
+            // Não tratar "iniciar avaliação" como resposta clínica só na abertura — evita includes('iniciar') que quebrava o estado no meio do AEC.
+            const normStart = userMessage.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+            const looksLikeSelfIntro = /(me chamo|sou (o|a)|meu nome|chamo-me|eu sou)\b/.test(normStart)
+            const explicitAssessmentStart =
+              /\b(iniciar|comecar|come[cç]ar|start)\s+(a\s+)?(avaliacao|imre)\b/.test(normStart) ||
+              /\b(avaliacao|imre)\s+clinic(a)?\b/.test(normStart) ||
+              /\b(protocolo\s+imre|avaliacao\s+clinica\s+inicial)\b/.test(normStart)
+            const skipProcessBecauseStartCmd =
+              explicitAssessmentStart &&
+              flowState.phase === 'INITIAL_GREETING' &&
+              !looksLikeSelfIntro
 
-            if (!isStartCommand) {
+            if (!skipProcessBecauseStartCmd) {
               const stepResult = clinicalAssessmentFlow.processResponse(platformData.user.id, userMessage)
               console.log(`✅ Fluxo AEC avançou para: ${stepResult.phase}`)
               nextQuestionHint = stepResult.nextQuestion

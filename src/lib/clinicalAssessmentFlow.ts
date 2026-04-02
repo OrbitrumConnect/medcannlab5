@@ -222,7 +222,11 @@ export class ClinicalAssessmentFlow {
       'parar avaliacao', 'encerrar avaliacao', 'cancelar avaliacao',
       'não quero continuar', 'nao quero continuar', 'vou parar',
       'tenho que ir', 'deixa pra depois', 'outra hora', 'agora não posso',
-      'agora nao posso', 'volto depois'
+      'agora nao posso', 'volto depois',
+      'vamos encerrar', 'encerrar por aqui', 'encerrar a conversa', 'encerrar conversa',
+      'quero encerrar', 'pode encerrar', 'chega', 'cansei', 'parar por aqui',
+      'amigo vamos encerrar', 'vamos parar', 'terminar aqui', 'quero terminar',
+      'enviar trigger de encerramento', 'trigger de encerramento'
     ]
 
     const wantsToExit = exitKeywords.some(kw => lowerResponse.includes(kw))

@@ -800,7 +800,20 @@ Deno.serve(async (req: Request) => {
 
         // Parse do Body (Necessário para o contexto do COS)
         const body = await req.json()
-        const { message, conversationHistory, patientData, assessmentPhase, nextQuestionHint, action, assessmentData, appointmentData, ui_context } = body
+        const {
+            message,
+            conversationHistory: convFromBody,
+            patientData: patFromBody,
+            assessmentPhase,
+            nextQuestionHint,
+            action,
+            assessmentData,
+            appointmentData,
+            ui_context
+        } = body
+        // Compat: noaEngine e clientes antigos enviam `history` e `context`
+        const conversationHistory = convFromBody ?? body.history ?? []
+        const patientData = patFromBody ?? body.context ?? {}
         const professionalId = appointmentData?.professional_id || patientData?.professional_id || 'system-global'
 
         // ── S4 FIX: Amarrar identidade JWT ao userId operado ──────────
@@ -1669,14 +1682,22 @@ Responda SOMENTE com o JSON válido, sem markdown.`
 
             // 2. Inserir Scores (Se houver)
             if (assessmentData.scores) {
+                const scores = assessmentData.scores
+                const scoreRow: Record<string, unknown> = {
+                    assessment_id: report.id,
+                    patient_id: assessmentData.patient_id,
+                    completed: true,
+                    metadata: {
+                        domain_scores: scores,
+                        risk_level: assessmentData.risk_level || 'low'
+                    }
+                }
+                if (typeof scores === 'number' && !Number.isNaN(scores)) {
+                    scoreRow.score = scores
+                }
                 const { error: scoresError } = await supabaseClient
                     .from('ai_assessment_scores')
-                    .insert({
-                        assessment_id: report.id,
-                        patient_id: assessmentData.patient_id,
-                        domain_scores: assessmentData.scores,
-                        risk_level: assessmentData.risk_level || 'low'
-                    })
+                    .insert(scoreRow)
 
                 if (scoresError) console.error('⚠️ Erro ao salvar scores:', scoresError)
             }
@@ -1904,7 +1925,7 @@ Responda SOMENTE com o JSON válido, sem markdown.`
             if (isUrgent && assessmentPhase === 'COMPLAINT_DETAILS') {
                 phaseInstruction += `\n\n🚨 MODO URGÊNCIA DETECTADO - PRÓXIMA PERGUNTA: "${nextQuestionHint}"\n\nVocê detectou urgência na mensagem do usuário. Para acelerar a avaliação, você pode fazer múltiplas perguntas essenciais de uma vez, focando nas informações críticas. Mas se preferir, pode fazer uma por vez também.`
             } else {
-                phaseInstruction += `\n\n🚨 PRÓXIMA PERGUNTA OBRIGATÓRIA DO PROTOCOLO: "${nextQuestionHint}"\n\nVOCÊ DEVE FAZER APENAS ESTA PERGUNTA. NÃO faça múltiplas perguntas. NÃO adicione outras perguntas. Faça SOMENTE esta pergunta e aguarde a resposta do usuário antes de continuar.`
+                phaseInstruction += `\n\n🚨 PRÓXIMA PERGUNTA OBRIGATÓRIA DO PROTOCOLO: "${nextQuestionHint}"\n\nVOCÊ DEVE FAZER APENAS ESTA PERGUNTA (pode parafrasear mantendo o mesmo sentido clínico). NÃO faça múltiplas perguntas. NÃO repita perguntas cujo conteúdo o paciente JÁ deu no histórico recente (ex.: local, início). Se o paciente reclamar de repetição, peça desculpas em uma linha e faça SÓ a pergunta obrigatória acima — sem aulas de anatomia nem tópicos fora do AEC 001.`
             }
         }
 
@@ -2537,17 +2558,32 @@ ${contentExcerpt || '(Texto não disponível para este documento. O conteúdo ai
         // Isso impede que o GPT abandone o protocolo AEC quando o paciente dá respostas curtas ou ambíguas.
         const phaseReinforcementMessages: Array<{role: string, content: string}> = []
         if (assessmentPhase && userRole === 'patient') {
+            // clinicalAssessmentFlow.ts usa INITIAL_GREETING, IDENTIFICATION, etc. — mapear para trilhos do Core (antes só OPENING/COMPLAINT_* alinhavam).
             const phaseMap: Record<string, string> = {
                 'OPENING': '🔒 PHASE LOCK: Você está na ABERTURA do protocolo AEC 001. Apresente-se com a frase exata do protocolo. NÃO encerre a conversa.',
+                'INITIAL_GREETING': '🔒 PHASE LOCK: Etapa 1 — ABERTURA. Se ainda não usou, diga EXATAMENTE a frase de abertura do AEC 001. Depois aguarde apresentação do paciente. NÃO pule para "quando começou" nem desenvolvimento de queixa.',
+                'IDENTIFICATION': '🔒 PHASE LOCK: Etapa 2 (início da lista indiciária). Pergunte EXATAMENTE: "O que trouxe você à nossa avaliação hoje?" — NÃO pergunte "quando começou", localização ou queixa principal antes disso.',
                 'COMPLAINT_LIST': '🔒 PHASE LOCK: Você está na LISTA INDICIÁRIA (Etapa 2). Você DEVE perguntar "O que mais?" após CADA resposta do paciente. NÃO avance para a Queixa Principal. NÃO encerre a conversa. NÃO diga "Se precisar de algo". O paciente está em avaliação ativa. Pergunte "O que mais?" AGORA.',
                 'MAIN_COMPLAINT': '🔒 PHASE LOCK: Você está na QUEIXA PRINCIPAL (Etapa 3). Pergunte EXATAMENTE: "De todas essas questões, qual mais o(a) incomoda?" NÃO encerre. NÃO diga "estou aqui para ajudar". Continue a avaliação.',
-                'COMPLAINT_DETAILS': '🔒 PHASE LOCK: Você está no DESENVOLVIMENTO DA QUEIXA (Etapa 4). Faça UMA pergunta de cada vez sobre a queixa principal (localização, início, intensidade, fatores de melhora/piora). NÃO encerre. NÃO diga "Se precisar". Continue explorando.',
+                'COMPLAINT_DETAILS': '🔒 PHASE LOCK: Etapa 4 — DESENVOLVIMENTO DA QUEIXA. Faça SOMENTE a pergunta indicada em "PRÓXIMA PERGUNTA OBRIGATÓRIA" neste turno. Leia o histórico: se o paciente já disse ONDE e QUANDO, NÃO repita essas perguntas — avance para a próxima do roteiro (como é, o que melhora/piora, etc.). NÃO dê aula de anatomia no lugar da pergunta do protocolo. NÃO diga "Se precisar".',
                 'PAST_HISTORY': '🔒 PHASE LOCK: Você está na HISTÓRIA PREGRESSA (Etapa 5). Pergunte sobre questões de saúde desde o nascimento. Use "O que mais?" até encerrar. NÃO encerre a avaliação.',
+                'MEDICAL_HISTORY': '🔒 PHASE LOCK: Você está na HISTÓRIA PREGRESSA (Etapa 5). Pergunte sobre questões de saúde desde o nascimento. Use "O que mais?" até encerrar.',
                 'FAMILY_HISTORY': '🔒 PHASE LOCK: Você está na HISTÓRIA FAMILIAR (Etapa 6). Investigue lado materno e paterno. NÃO encerre.',
+                'FAMILY_HISTORY_MOTHER': '🔒 PHASE LOCK: Etapa 6 — história familiar (lado materno). Use "O que mais?" até encerrar este lado.',
+                'FAMILY_HISTORY_FATHER': '🔒 PHASE LOCK: Etapa 6 — história familiar (lado paterno). Use "O que mais?" até encerrar.',
                 'LIFESTYLE': '🔒 PHASE LOCK: Você está em HÁBITOS DE VIDA (Etapa 7). Pergunte sobre hábitos. NÃO encerre.',
+                'LIFESTYLE_HABITS': '🔒 PHASE LOCK: Etapa 7 — hábitos de vida. Pergunte conforme protocolo; use "O que mais?" quando aplicável.',
                 'FINAL_QUESTIONS': '🔒 PHASE LOCK: Você está nas PERGUNTAS FINAIS (Etapa 8). Investigue alergias, medicações regulares e esporádicas. NÃO encerre.',
+                'OBJECTIVE_QUESTIONS': '🔒 PHASE LOCK: Etapa 8 — perguntas objetivas (alergias, medicações). Uma de cada vez conforme o fluxo.',
                 'CONSENSUS': '🔒 PHASE LOCK: Você está no FECHAMENTO CONSENSUAL (Etapa 9). Resuma a história e peça confirmação. NÃO encerre sem consenso.',
+                'CONSENSUS_REVIEW': '🔒 PHASE LOCK: Etapa 9 — revisão consensual. Respeite o texto do protocolo.',
+                'CONSENSUS_REPORT': '🔒 PHASE LOCK: Etapa 9 — apresente o entendimento e peça concordância do paciente.',
+                'CONSENT_COLLECTION': '🔒 PHASE LOCK: Coleta de consentimento informado. Siga o roteiro aprovado; não desvie para anamnese.',
+                'CONSENSUS_CONFIRMATION': '🔒 PHASE LOCK: Confirmação de consenso. Seja clara e objetiva.',
+                'FINAL_RECOMMENDATION': '🔒 PHASE LOCK: Recomendação final antes do encerramento formal.',
                 'CLOSING': '🔒 PHASE LOCK: Você está no ENCERRAMENTO (Etapa 10). Diga a frase de encerramento e inclua [ASSESSMENT_COMPLETED].',
+                'CONFIRMING_EXIT': '🔒 PHASE LOCK: O paciente pediu para interromper. Você está na confirmação (sim/não). NÃO continue a anamnese até ele responder. Se confirmar saída, aceite com empatia e encerre sem forçar novas perguntas clínicas.',
+                'INTERRUPTED': '🔒 PHASE LOCK: Avaliação interrompida pelo paciente. Não retome perguntas clínicas a menos que ele peça para continuar a avaliação.',
                 'FOLLOW_UP': '🔒 PHASE LOCK: Avaliação em andamento. Continue de onde parou. NÃO encerre prematuramente.'
             }
             const lockMsg = phaseMap[assessmentPhase]
@@ -2929,10 +2965,9 @@ ${contentExcerpt || '(Texto não disponível para este documento. O conteúdo ai
             if (isTeachingMode) simbologia = ' Simulação de Paciente';
             else if (currentIntent === 'ADMIN') simbologia = '🔵 Escuta Institucional';
 
-            const logPayload = {
+            // Colunas reais: user_id, appointment_id, interaction_type, payload (jsonb)
+            const payload = {
                 interaction_id,
-                user_id: patientData.user.id,
-                appointment_id: appointmentData?.id || null,
                 input: message,
                 output: aiResponse,
                 model: completion.model,
@@ -2956,7 +2991,12 @@ ${contentExcerpt || '(Texto não disponível para este documento. O conteúdo ai
                 try {
                     const { error: saveError } = await supabaseClient
                         .from('noa_logs')
-                        .insert(logPayload);
+                        .insert({
+                            user_id: patientData.user.id,
+                            appointment_id: appointmentData?.id || null,
+                            interaction_type: 'chat_turn',
+                            payload
+                        });
 
                     if (!saveError) {
                         saved = true;
