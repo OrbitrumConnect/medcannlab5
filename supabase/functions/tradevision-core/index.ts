@@ -1491,15 +1491,37 @@ ${one.summary ? `Resumo rápido: ${one.summary}` : ''}`
             // ========================================================
             let finalContent = assessmentData.content
 
-            // Se o content veio vazio/pobre do cliente, extrair via GPT
-            // FIX: Check more thoroughly - structured-but-empty payloads must trigger extraction
+            // Se o content veio vazio/pobre do cliente, extrair via GPT a partir de ai_chat_interactions.
+            // Problema real: o chat (Core/LLM) pode estar correto enquanto o estado AEC persistido no browser
+            // chega "fino" (só queixa ou lista) — antes só disparávamos extração quando faltava queixa E lista,
+            // e aí o relatório nascia pendente com conversa cheia no modal.
             const hasRealQueixa = finalContent?.queixa_principal && String(finalContent.queixa_principal).trim().length > 3
             const hasRealLista = Array.isArray(finalContent?.lista_indiciaria) && finalContent.lista_indiciaria.length > 0 &&
                 (typeof finalContent.lista_indiciaria[0] === 'string' ? finalContent.lista_indiciaria[0].length > 0 : !!finalContent.lista_indiciaria[0]?.label)
             const contentIsEmpty = !finalContent || (!hasRealQueixa && !hasRealLista)
 
-            if (contentIsEmpty) {
-                console.log('🧠 [GPT EXTRACTION] Content vazio/pobre detectado. Extraindo da conversa via GPT...')
+            const dev = finalContent?.desenvolvimento_queixa
+            const devRich = !!dev && (
+                String(dev.descricao || '').trim().length > 2 ||
+                String(dev.localizacao || '').trim().length > 2 ||
+                String(dev.inicio || '').trim().length > 2 ||
+                (Array.isArray(dev.sintomas_associados) && dev.sintomas_associados.length > 0) ||
+                (Array.isArray(dev.fatores_melhora) && dev.fatores_melhora.length > 0) ||
+                (Array.isArray(dev.fatores_piora) && dev.fatores_piora.length > 0)
+            )
+            const hppRich = Array.isArray(finalContent?.historia_patologica_pregressa) && finalContent.historia_patologica_pregressa.length > 0 &&
+                String(finalContent.historia_patologica_pregressa[0] || '').trim().length > 1
+            const bodyRich = devRich || hppRich
+            const pergRich = !!finalContent?.perguntas_objetivas &&
+                Object.values(finalContent.perguntas_objetivas as Record<string, unknown>).some(
+                    (v) => v != null && String(v).trim().length > 0
+                )
+            // Há queixa/lista no JSON mas corpo clínico (HDA/HPP/perguntas) não acompanhou → enriquecer pela conversa
+            const contentStructurallyThin = (hasRealQueixa || hasRealLista) && !bodyRich && !pergRich
+            const shouldExtractFromChat = contentIsEmpty || contentStructurallyThin
+
+            if (shouldExtractFromChat) {
+                console.log('🧠 [GPT EXTRACTION] Disparado:', { contentIsEmpty, contentStructurallyThin, hasRealQueixa, hasRealLista })
 
                 try {
                     // Buscar histórico completo da conversa AEC
@@ -1508,7 +1530,7 @@ ${one.summary ? `Resumo rápido: ${one.summary}` : ''}`
                         .select('user_message, ai_response, created_at')
                         .eq('user_id', assessmentData.patient_id)
                         .order('created_at', { ascending: true })
-                        .limit(50)
+                        .limit(120)
 
                     if (!histError && chatHistory && chatHistory.length >= 3) {
                         const conversationText = chatHistory.map((h: any) =>

@@ -519,7 +519,8 @@ Reservar entrada: fechar o mês com estado de deploy, decisões societárias e q
 
 - `src/lib/noaResidentAI.ts` — flow AEC + intent.  
 - `supabase/functions/wisecare-session/index.ts` — `supabaseDb` com service role; guard RPC array.  
-- **01/04/2026:** `NoaConversationalInterface.tsx`, `clinicalAssessmentFlow.ts`, `ClinicalReports.tsx`, `PatientAnalytics.tsx` — ver §6.8 e `docs/guides/AEC_UI_RELATORIOS_ANALYTICS_01_04_2026.md`.
+- **01/04/2026:** `NoaConversationalInterface.tsx`, `clinicalAssessmentFlow.ts`, `ClinicalReports.tsx`, `PatientAnalytics.tsx` — ver §6.8 e `docs/guides/AEC_UI_RELATORIOS_ANALYTICS_01_04_2026.md`.  
+- **01/04/2026 (Edge):** `tradevision-core` — `finalize_assessment` extrai da conversa também quando JSON AEC está **estruturalmente fino** (evita relatório pendente com chat completo); deploy da função obrigatório para efeito em prod.
 
 ---
 

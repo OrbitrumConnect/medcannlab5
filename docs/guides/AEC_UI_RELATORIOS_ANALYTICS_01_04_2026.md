@@ -15,6 +15,16 @@
 | Relatórios UI | Texto RAG `[CONTEXTO CRÍTICO…]` nos campos persistidos | `stripPlatformInjectionNoise` reforçado + aplicação em **todo** o pipeline de exibição/download em `ClinicalReports.tsx` |
 | Analytics KPI | “+62%” parecia ganho clínico; era só `atual − anterior` | Rótulo **pts**; tooltip; ícone **ℹ** no título “Indicadores de Saúde” |
 | Modal histórico | “Não especificada” com JSON AEC cheio | `getAecReportModalPayload()` mapeia `queixa_principal`, lista indiciária, desenvolvimento, HPP, etc. |
+| **Finalize / relatório vazio com conversa cheia** | Core só extraía da conversa se faltasse queixa **e** lista; JSON “fino” saltava extração → consenso pendente com 21 msgs no modal | `tradevision-core` `finalize_assessment`: também extrai quando há queixa/lista mas **sem** corpo clínico (HDA/HPP) **e** sem perguntas objetivas preenchidas (`contentStructurallyThin`); histórico até **120** interações |
+
+---
+
+## 1.1 Segurança e limites (finalize + extração GPT)
+
+- **Isolamento:** o histórico vem de `ai_chat_interactions` com `.eq('user_id', assessmentData.patient_id)` — não cruza pacientes.
+- **Quando corre:** só se `contentIsEmpty` **ou** `contentStructurallyThin` (definição no código: sem desenvolvimento/HPP úteis **e** sem `perguntas_objetivas` com valores). Relatórios já bem preenchidos no JSON **não** são substituídos por este gatilho.
+- **Risco residual:** como qualquer extração por LLM, erros ou omissões são possíveis; o prompt exige não inventar dados. **Relatórios já gravados antes do deploy** não são atualizados sozinhos — só **novas** finalizações após deploy da Edge.
+- **Operação:** após alterar `tradevision-core`, é necessário **`supabase functions deploy tradevision-core`** (ou pipeline equivalente) para produção.
 
 ---
 
@@ -27,6 +37,7 @@
 | `src/lib/clinicalAssessmentFlow.ts` | Consentimento (sim): encerramento + tag; `INTERRUPTED` com retomar vs orientação; `wantsRestart` sem bloquear fase pausada; precedência `&&`/`||` em deteção “retomar avaliação”; `stripPlatformInjectionNoise` com múltiplas passagens + bloco sem `[FIM DO CONTEXTO]` |
 | `src/components/ClinicalReports.tsx` | Helpers `stripClinical` / listas; mapagem de relatórios, modal, download e conversa com limpeza; lista indiciária item a item |
 | `src/components/PatientAnalytics.tsx` | `getScoreChange` → **pts** e `typeof previous === 'number'`; botão Info + `title`; `getAecReportModalPayload` + modal e cópia e linha do histórico |
+| `supabase/functions/tradevision-core/index.ts` | `finalize_assessment`: `shouldExtractFromChat = contentIsEmpty \|\| contentStructurallyThin`; limite de mensagens para extração **120** |
 
 ---
 
