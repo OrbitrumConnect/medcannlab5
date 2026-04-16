@@ -3639,16 +3639,20 @@ ${contentExcerpt || '(Texto não disponível para este documento. O conteúdo ai
             if (orchestratorPatientId) {
                 console.log('📝 [ORCHESTRATOR] Detectado fechamento clínico. Disparando Pipeline...', { orchestratorPatientId });
                 
-                // Dispatcher assíncrono (Fire and Forget)
-                handleFinalizeAssessment({
-                    supabaseClient,
-                    openai,
-                    interaction_id,
-                    assessmentData: { ...assessmentData, patient_id: orchestratorPatientId },
-                    patientData,
-                    professionalId,
-                    fallbackUserId: effectiveUserId
-                });
+                // [FIX 16/04] AWAIT obrigatório — fire-and-forget causava corte do pipeline antes de completar
+                try {
+                    await handleFinalizeAssessment({
+                        supabaseClient,
+                        openai,
+                        interaction_id,
+                        assessmentData: { ...assessmentData, patient_id: orchestratorPatientId },
+                        patientData,
+                        professionalId,
+                        fallbackUserId: effectiveUserId
+                    });
+                } catch (orchErr) {
+                    console.error('❌ [ORCHESTRATOR] Erro no pipeline de finalização:', orchErr);
+                }
             } else {
                 console.error('❌ [ORCHESTRATOR] Fechamento clínico detectado mas patient_id não resolvido!');
             }
@@ -3699,7 +3703,7 @@ ${contentExcerpt || '(Texto não disponível para este documento. O conteúdo ai
                     } else {
                         console.error(`⚠️ [Audit Retry ${retries + 1}] Falha ao salvar log:`, saveError.message);
                         retries++;
-                        if (retries < maxRetries) await new Promise(r => setTimeout(r, 50 * retries)); // Exponential backoff
+                        if (retries < maxRetries) await new Promise(r => setTimeout(r, 50 * retries));
                     }
                 } catch (e) {
                     console.error(`❌ [Audit Exception ${retries + 1}]:`, e);
@@ -3709,7 +3713,28 @@ ${contentExcerpt || '(Texto não disponível para este documento. O conteúdo ai
 
             if (!saved) {
                 console.error(`🚨 [FATAL AUDIT FAILURE] interaction_id: ${interaction_id}. Registro de evidência clínica falhou.`);
-                // Em um sistema real, poderíamos lançar erro aqui: throw new Error("Audit log mandatory for clinical safety");
+            }
+
+            // [FIX 16/04] DUAL-WRITE: Salvar TAMBÉM em ai_chat_interactions para manter o pipeline GPT Extraction v2 funcional
+            try {
+                await supabaseClient
+                    .from('ai_chat_interactions')
+                    .insert({
+                        user_id: patientData.user.id,
+                        user_message: message || '',
+                        ai_response: aiResponse || '',
+                        intent: currentIntent || null,
+                        session_id: interaction_id,
+                        patient_id: patientData.user.id,
+                        metadata: {
+                            system: 'TradeVision Core V2',
+                            simbologia,
+                            model: completion.model,
+                            tokens: completion.usage?.total_tokens || 0
+                        }
+                    });
+            } catch (dualWriteErr) {
+                console.warn('⚠️ [DUAL-WRITE] Falha ao gravar em ai_chat_interactions (não-bloqueante):', dualWriteErr);
             }
         }
 
