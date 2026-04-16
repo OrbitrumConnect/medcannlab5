@@ -1176,16 +1176,20 @@ Deno.serve(async (req: Request) => {
 
         if (isFinalizeRequest) {
             console.log('🚀 [GATEWAY] Disparando Orquestrador de Finalização ClinicalMaster (Mode: Active)...');
-            // Dispatcher (Fire and Forget) — effectiveUserId garante patient_id mesmo sem assessmentData
-            handleFinalizeAssessment({
-                supabaseClient,
-                openai,
-                interaction_id,
-                assessmentData: assessmentData || body.assessment_data || {},
-                patientData,
-                professionalId,
-                fallbackUserId: effectiveUserId
-            });
+            // [FIX 16/04] AWAIT obrigatório — fire-and-forget causava pipeline incompleto
+            try {
+                await handleFinalizeAssessment({
+                    supabaseClient,
+                    openai,
+                    interaction_id,
+                    assessmentData: assessmentData || body.assessment_data || {},
+                    patientData,
+                    professionalId,
+                    fallbackUserId: effectiveUserId
+                });
+            } catch (finalizeErr) {
+                console.error('❌ [GATEWAY] Erro na finalização:', finalizeErr);
+            }
             
             if (action === 'finalize_assessment') {
                 const finalResponse = { 
