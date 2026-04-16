@@ -1176,16 +1176,20 @@ Deno.serve(async (req: Request) => {
 
         if (isFinalizeRequest) {
             console.log('🚀 [GATEWAY] Disparando Orquestrador de Finalização ClinicalMaster (Mode: Active)...');
-            // Dispatcher (Fire and Forget) — effectiveUserId garante patient_id mesmo sem assessmentData
-            handleFinalizeAssessment({
-                supabaseClient,
-                openai,
-                interaction_id,
-                assessmentData: assessmentData || body.assessment_data || {},
-                patientData,
-                professionalId,
-                fallbackUserId: effectiveUserId
-            });
+            // [FIX 16/04] AWAIT obrigatório — fire-and-forget causava pipeline incompleto
+            try {
+                await handleFinalizeAssessment({
+                    supabaseClient,
+                    openai,
+                    interaction_id,
+                    assessmentData: assessmentData || body.assessment_data || {},
+                    patientData,
+                    professionalId,
+                    fallbackUserId: effectiveUserId
+                });
+            } catch (finalizeErr) {
+                console.error('❌ [GATEWAY] Erro na finalização:', finalizeErr);
+            }
             
             if (action === 'finalize_assessment') {
                 const finalResponse = { 
@@ -2063,14 +2067,38 @@ ${one.summary ? `Resumo rápido: ${one.summary}` : ''}`
             if (shouldExtractFromChat) {
                 console.log('[GPT EXTRACTION v2] Disparado — Reconstituindo prontuário a partir da conversa...')
                 try {
-                    const { data: chatHistory, error: histError } = await supabaseClient
+                    // [FIX 16/04] Tentar ai_chat_interactions primeiro, fallback para noa_logs
+                    let chatHistory: any[] = [];
+                    const { data: chatData, error: histError } = await supabaseClient
                         .from('ai_chat_interactions')
                         .select('user_message, ai_response, created_at')
                         .eq('user_id', assessmentData.patient_id)
                         .order('created_at', { ascending: true })
                         .limit(120)
 
-                    if (!histError && chatHistory && chatHistory.length >= 3) {
+                    if (!histError && chatData && chatData.length >= 3) {
+                        chatHistory = chatData;
+                    } else {
+                        // Fallback: reconstruir a partir de noa_logs
+                        console.log('[GPT EXTRACTION v2] Fallback para noa_logs...');
+                        const { data: noaData } = await supabaseClient
+                            .from('noa_logs')
+                            .select('payload, created_at')
+                            .eq('user_id', assessmentData.patient_id)
+                            .eq('interaction_type', 'chat_turn')
+                            .order('created_at', { ascending: true })
+                            .limit(120);
+                        
+                        if (noaData && noaData.length >= 3) {
+                            chatHistory = noaData.map((n: any) => ({
+                                user_message: n.payload?.input || '',
+                                ai_response: n.payload?.output || '',
+                                created_at: n.created_at
+                            }));
+                        }
+                    }
+
+                    if (chatHistory.length >= 3) {
                         const conversationText = chatHistory.map((h: any) =>
                             `PACIENTE: ${h.user_message}\nNÔA: ${h.ai_response}`
                         ).join('\n---\n')
@@ -3639,16 +3667,20 @@ ${contentExcerpt || '(Texto não disponível para este documento. O conteúdo ai
             if (orchestratorPatientId) {
                 console.log('📝 [ORCHESTRATOR] Detectado fechamento clínico. Disparando Pipeline...', { orchestratorPatientId });
                 
-                // Dispatcher assíncrono (Fire and Forget)
-                handleFinalizeAssessment({
-                    supabaseClient,
-                    openai,
-                    interaction_id,
-                    assessmentData: { ...assessmentData, patient_id: orchestratorPatientId },
-                    patientData,
-                    professionalId,
-                    fallbackUserId: effectiveUserId
-                });
+                // [FIX 16/04] AWAIT obrigatório — fire-and-forget causava corte do pipeline antes de completar
+                try {
+                    await handleFinalizeAssessment({
+                        supabaseClient,
+                        openai,
+                        interaction_id,
+                        assessmentData: { ...assessmentData, patient_id: orchestratorPatientId },
+                        patientData,
+                        professionalId,
+                        fallbackUserId: effectiveUserId
+                    });
+                } catch (orchErr) {
+                    console.error('❌ [ORCHESTRATOR] Erro no pipeline de finalização:', orchErr);
+                }
             } else {
                 console.error('❌ [ORCHESTRATOR] Fechamento clínico detectado mas patient_id não resolvido!');
             }
@@ -3699,7 +3731,7 @@ ${contentExcerpt || '(Texto não disponível para este documento. O conteúdo ai
                     } else {
                         console.error(`⚠️ [Audit Retry ${retries + 1}] Falha ao salvar log:`, saveError.message);
                         retries++;
-                        if (retries < maxRetries) await new Promise(r => setTimeout(r, 50 * retries)); // Exponential backoff
+                        if (retries < maxRetries) await new Promise(r => setTimeout(r, 50 * retries));
                     }
                 } catch (e) {
                     console.error(`❌ [Audit Exception ${retries + 1}]:`, e);
@@ -3709,7 +3741,28 @@ ${contentExcerpt || '(Texto não disponível para este documento. O conteúdo ai
 
             if (!saved) {
                 console.error(`🚨 [FATAL AUDIT FAILURE] interaction_id: ${interaction_id}. Registro de evidência clínica falhou.`);
-                // Em um sistema real, poderíamos lançar erro aqui: throw new Error("Audit log mandatory for clinical safety");
+            }
+
+            // [FIX 16/04] DUAL-WRITE: Salvar TAMBÉM em ai_chat_interactions para manter o pipeline GPT Extraction v2 funcional
+            try {
+                await supabaseClient
+                    .from('ai_chat_interactions')
+                    .insert({
+                        user_id: patientData.user.id,
+                        user_message: message || '',
+                        ai_response: aiResponse || '',
+                        intent: currentIntent || null,
+                        session_id: interaction_id,
+                        patient_id: patientData.user.id,
+                        metadata: {
+                            system: 'TradeVision Core V2',
+                            simbologia,
+                            model: completion.model,
+                            tokens: completion.usage?.total_tokens || 0
+                        }
+                    });
+            } catch (dualWriteErr) {
+                console.warn('⚠️ [DUAL-WRITE] Falha ao gravar em ai_chat_interactions (não-bloqueante):', dualWriteErr);
             }
         }
 
