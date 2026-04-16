@@ -2063,14 +2063,38 @@ ${one.summary ? `Resumo rápido: ${one.summary}` : ''}`
             if (shouldExtractFromChat) {
                 console.log('[GPT EXTRACTION v2] Disparado — Reconstituindo prontuário a partir da conversa...')
                 try {
-                    const { data: chatHistory, error: histError } = await supabaseClient
+                    // [FIX 16/04] Tentar ai_chat_interactions primeiro, fallback para noa_logs
+                    let chatHistory: any[] = [];
+                    const { data: chatData, error: histError } = await supabaseClient
                         .from('ai_chat_interactions')
                         .select('user_message, ai_response, created_at')
                         .eq('user_id', assessmentData.patient_id)
                         .order('created_at', { ascending: true })
                         .limit(120)
 
-                    if (!histError && chatHistory && chatHistory.length >= 3) {
+                    if (!histError && chatData && chatData.length >= 3) {
+                        chatHistory = chatData;
+                    } else {
+                        // Fallback: reconstruir a partir de noa_logs
+                        console.log('[GPT EXTRACTION v2] Fallback para noa_logs...');
+                        const { data: noaData } = await supabaseClient
+                            .from('noa_logs')
+                            .select('payload, created_at')
+                            .eq('user_id', assessmentData.patient_id)
+                            .eq('interaction_type', 'chat_turn')
+                            .order('created_at', { ascending: true })
+                            .limit(120);
+                        
+                        if (noaData && noaData.length >= 3) {
+                            chatHistory = noaData.map((n: any) => ({
+                                user_message: n.payload?.input || '',
+                                ai_response: n.payload?.output || '',
+                                created_at: n.created_at
+                            }));
+                        }
+                    }
+
+                    if (chatHistory.length >= 3) {
                         const conversationText = chatHistory.map((h: any) =>
                             `PACIENTE: ${h.user_message}\nNÔA: ${h.ai_response}`
                         ).join('\n---\n')
