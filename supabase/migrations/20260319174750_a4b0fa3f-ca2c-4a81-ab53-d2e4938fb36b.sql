@@ -1,0 +1,37 @@
+
+-- Remaining search_path fixes (batch 2 - final corrected)
+ALTER FUNCTION public.admin_get_users_status() SET search_path = public;
+ALTER FUNCTION public.book_appointment_atomic(uuid, uuid, timestamptz, text, text) SET search_path = public;
+ALTER FUNCTION public.calculate_subscription_discount(uuid, numeric) SET search_path = public;
+ALTER FUNCTION public.cleanup_duplicate_rooms() SET search_path = public;
+ALTER FUNCTION public.clinic_can_access_assessment(uuid, uuid) SET search_path = public;
+ALTER FUNCTION public.count_multirational_analyses() SET search_path = public;
+ALTER FUNCTION public.count_preserved_narratives() SET search_path = public;
+ALTER FUNCTION public.current_user_email() SET search_path = public, auth;
+ALTER FUNCTION public.expire_video_call_requests() SET search_path = public;
+ALTER FUNCTION public.generate_forum_post_slug(text) SET search_path = public;
+ALTER FUNCTION public.get_ac_dss_stats() SET search_path = public;
+ALTER FUNCTION public.get_ac_dss_stats(text) SET search_path = public;
+ALTER FUNCTION public.get_active_certificate(uuid) SET search_path = public;
+ALTER FUNCTION public.get_auth_email(uuid) SET search_path = public, auth;
+ALTER FUNCTION public.get_available_slots_v3(uuid, date, date) SET search_path = public;
+ALTER FUNCTION public.get_current_user_email() SET search_path = public;
+ALTER FUNCTION public.get_platform_statistics() SET search_path = public;
+ALTER FUNCTION public.get_recent_audit_logs(integer) SET search_path = public;
+ALTER FUNCTION public.get_shared_reports_for_doctor(uuid) SET search_path = public;
+ALTER FUNCTION public.get_user_statistics(uuid) SET search_path = public;
+ALTER FUNCTION public.get_user_type_compatible(text) SET search_path = public;
+ALTER FUNCTION public.grant_benefits_rewards(date) SET search_path = public;
+ALTER FUNCTION public.handle_new_auth_user() SET search_path = public, auth;
+ALTER FUNCTION public.mark_room_read(uuid) SET search_path = public;
+ALTER FUNCTION public.populate_initial_forum_posts() SET search_path = public;
+ALTER FUNCTION public.process_monthly_closing() SET search_path = public;
+ALTER FUNCTION public.search_patient_by_name(text) SET search_path = public;
+ALTER FUNCTION public.share_report_with_doctors(text, uuid, uuid[]) SET search_path = public;
+ALTER FUNCTION public.sync_admin_participant() SET search_path = public;
+ALTER FUNCTION public.trigger_ai_scheduling_risk() SET search_path = public;
+ALTER FUNCTION public.update_clinical_assessments_updated_at() SET search_path = public;
+ALTER FUNCTION public.update_educational_resources_updated_at() SET search_path = public;
+ALTER FUNCTION public.update_forum_posts_updated_at() SET search_path = public;
+ALTER FUNCTION public.update_lesson_content_updated_at() SET search_path = public;
+ALTER FUNCTION public.update_medical_certificates_updated_at() SET search_path = public;

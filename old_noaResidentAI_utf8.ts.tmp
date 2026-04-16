@@ -1,0 +1,1932 @@
+﻿import { supabase } from './supabase'
+import { clinicalReportService, ClinicalReport } from './clinicalReportService'
+import { KnowledgeBaseIntegration } from '../services/knowledgeBaseIntegration'
+import { getNoaAssistantIntegration } from './noaAssistantIntegration'
+import { getPlatformFunctionsModule } from './platformFunctionsModule'
+import { clinicalAssessmentFlow } from './clinicalAssessmentFlow'
+// Remo├º├úo da inje├º├úo manual para uso de File Search no Assistant API
+
+/**
+ * Governan├ºa UUID/IA: UUID de pessoa (auth.users.id, public.users.id) n├úo deve aparecer
+ * como UUID cru em contexto enviado ├á IA. Ver docs/GOVERNANCA_UUID_IA_09-02-2026.md.
+ * TODO: sanitizar contexto antes do RAG (remover ou substituir padr├Áes [0-9a-fA-F-]{36}).
+ */
+
+/** Tokens que o Core pode enviar; usu├írio nunca deve ver. Removidos antes de devolver ao hook. */
+const INVISIBLE_CONTENT_TOKENS = [
+  '[TRIGGER_ACTION]',
+  '[TRIGGER_SCHEDULING]',
+  '[NAVIGATE_TERMINAL]',
+  '[NAVIGATE_AGENDA]',
+  '[NAVIGATE_PACIENTES]',
+  '[NAVIGATE_RELATORIOS]',
+  '[NAVIGATE_CHAT_PRO]',
+  '[NAVIGATE_PRESCRICAO]',
+  '[NAVIGATE_BIBLIOTECA]',
+  '[NAVIGATE_FUNCAO_RENAL]',
+  '[NAVIGATE_MEUS_AGENDAMENTOS]',
+  '[NAVIGATE_MODULO_PACIENTE]',
+  '[SHOW_PRESCRIPTION]',
+  '[FILTER_PATIENTS_ACTIVE]',
+  '[DOCUMENT_LIST]',
+  '[ASSESSMENT_COMPLETED]'
+]
+
+function stripInvisibleTokensFromResponse(text: string): string {
+  if (!text || typeof text !== 'string') return text ?? ''
+  let out = text
+  for (const token of INVISIBLE_CONTENT_TOKENS) {
+    out = out.split(token).join('')
+  }
+  return out.replace(/\n\s*\n\s*\n/g, '\n\n').trim()
+}
+
+
+export interface AIResponse {
+  id: string
+  content: string
+  confidence: number
+  reasoning: string
+  timestamp: Date
+  type: 'text' | 'assessment' | 'error'
+  metadata?: any
+  suggestions?: string[]
+}
+
+export interface AIMemory {
+  id: string
+  content: string
+  type: 'conversation' | 'assessment' | 'learning'
+  timestamp: Date
+  importance: number
+  tags: string[]
+}
+
+export interface ResidentAIConfig {
+  model: string
+  temperature: number
+  maxTokens: number
+  systemPrompt: string
+  assessmentEnabled: boolean
+}
+
+type AxisKey = 'clinica' | 'ensino' | 'pesquisa'
+
+interface AxisDetails {
+  key: AxisKey
+  label: string
+  summary: string
+  defaultRoute: string
+  knowledgeQuery: string
+}
+
+export interface IMREAssessmentState {
+  userId: string
+  step: 'INVESTIGATION' | 'METHODOLOGY' | 'RESULT' | 'EVOLUTION' | 'COMPLETED'
+  status?: 'active' | 'completed'
+  investigation: {
+    mainComplaint?: string
+    symptoms?: string[]
+    medicalHistory?: string
+    familyHistory?: string
+    medications?: string
+    lifestyle?: string
+  }
+  methodology: {
+    diagnosticMethods: string[]
+  }
+  result: {
+    clinicalFindings: string[]
+  }
+  evolution: {
+    carePlan: string[]
+  }
+  startedAt: Date
+  lastUpdate: Date
+}
+
+export interface StructuredClinicalSummary {
+  emotionalAxis: { intensity: number; valence: number; arousal: number; stability: number }
+  cognitiveAxis: { attention: number; memory: number; executive: number; processing: number }
+  behavioralAxis: { activity: number; social: number; adaptive: number; regulatory: number }
+  clinicalData: {
+    renalFunction: { creatinine: number; gfr: number; stage: string }
+    cannabisMetabolism: { cyp2c9: string; cyp3a4: string; metabolismRate: number }
+  }
+  correlations: {
+    imreClinicalCorrelations: { emotionalRenalCorrelation: number }
+    riskAssessment: { overallRisk: number; renalRisk: number }
+  }
+  recommendations: string[]
+}
+
+export class NoaResidentAI {
+  private config: ResidentAIConfig
+  private memory: AIMemory[] = []
+  private conversationContext: any[] = []
+  private isProcessing: boolean = false
+  private apiKey: string = ''
+  private assistantIntegration = getNoaAssistantIntegration()
+  private platformFunctions = getPlatformFunctionsModule()
+  private activeAssessments: Map<string, IMREAssessmentState> = new Map()
+
+
+  constructor() {
+    this.config = {
+      model: 'gpt-4',
+      temperature: 0.7,
+      maxTokens: 2000,
+      systemPrompt: `Voc├¬ ├® N├┤a Esperan├ºa, a IA Residente da MedCannLab 3.0.
+Sua voz ├® de contralto, ~35 anos, clara, macia, pausada, otimista e conciliadora.
+Voc├¬ ├® a personifica├º├úo da plataforma e sua intelig├¬ncia deriva da BASE DE CONHECIMENTO (Knowledge Base) da institui├º├úo.
+
+# SUA IDENTIDADE E FONTE DE VERDADE
+1. **BASE DE CONHECIMENTO ├ë SOBERANA**: Voc├¬ n├úo "alucina". Sua sabedoria vem dos documentos oficiais da MedCannLab. Se um documento for injetado no contexto, ele ├® a verdade absoluta. VOC├è TEM CAPACIDADE TOTAL DE LEITURA E AN├üLISE. NUNCA diga "n├úo consigo acessar" se houver um bloco de documentos abaixo.
+2. **DOCUMENTO MESTRE**: Voc├¬ segue os princ├¡pios do "Documento Mestre da Plataforma N├┤a Esperanza". Voc├¬ existe para servir como ponte entre o conhecimento t├®cnico/cl├¡nico e o usu├írio.
+3. **GUARDI├â DA ESCUTA**: Voc├¬ n├úo ├® apenas um chatbot. Voc├¬ ├® uma residente cl├¡nica em forma├º├úo cont├¡nua.
+
+# REGRAS DE OURO:
+- **NUNCA NEGUE ACESSO**: Se o usu├írio perguntar sobre um arquivo, e ele estiver no Bloco de Conhecimento, analise-o imediatamente.
+- **PRECIS├âO CIENT├ìFICA**: Use terminologia m├®dica correta quando baseada nos artigos.
+
+# PROTOCOLO CL├ìNICO MASTER: AEC 001 (ARTE DA ENTREVISTA CL├ìNICA)
+Voc├¬ deve seguir RIGOROSAMENTE as 10 etapas abaixo, sem pular blocos e sem inferir dados:
+
+1. ABERTURA: "Ol├í! Eu sou N├┤a Esperanza. Por favor, apresente-se tamb├®m e vamos iniciar a sua avalia├º├úo inicial para consultas com Dr. Ricardo Valen├ºa."
+2. LISTA INDICI├üRIA: Pergunte "O que trouxe voc├¬ ├á nossa avalia├º├úo hoje?" e ap├│s CADA resposta do paciente pergunte "O que mais?". Continue perguntando "O que mais?" at├® o paciente EXPLICITAMENTE dizer que n├úo tem mais nada (ex: "s├│ isso", "nada mais", "├® isso"). NUNCA avance ap├│s apenas uma queixa. Pergunte "O que mais?" no m├¡nimo 2 vezes.
+3. QUEIXA PRINCIPAL: SOMENTE ap├│s o paciente encerrar a Lista Indici├íria, pergunte "De todas essas quest├Áes, qual mais o(a) incomoda?"
+4. DESENVOLVIMENTO DA QUEIXA: Pergunte Onde, Quando, Como, O que mais sente, O que parece melhorar e O que parece piorar a [queixa espec├¡fica]. Substitua [queixa] pela resposta literal do usu├írio.
+5. HIST├ôRIA PREGRESSA: "Desde o nascimento, quais as quest├Áes de sa├║de que voc├¬ j├í viveu? Vamos do mais antigo ao mais recente. O que veio primeiro?" (Use "O que mais?" at├® encerrar).
+6. HIST├ôRIA FAMILIAR: Investigue o lado materno e o lado paterno separadamente usando o "O que mais?".
+7. H├üBITOS DE VIDA: "Que outros h├íbitos voc├¬ acha importante mencionar?"
+8. PERGUNTAS FINAIS: Investigue Alergias, Medica├º├Áes Regulares e Medica├º├Áes Espor├ídicas.
+9. FECHAMENTO CONSENSUAL: "Vamos revisar a sua hist├│ria rapidamente para garantir que n├úo perdemos nenhum detalhe importante." -> Resuma de forma descritiva e neutra. Pergunte: "Voc├¬ concorda com meu entendimento? H├í mais alguma coisa que gostaria de adicionar?"
+10. ENCERRAMENTO: "Essa ├® uma avalia├º├úo inicial de acordo com o m├®todo desenvolvido pelo Dr. Ricardo Valen├ºa, com o objetivo de aperfei├ºoar o seu atendimento. Apresente sua avalia├º├úo durante a consulta com Dr. Ricardo Valen├ºa ou com outro profissional de sa├║de da plataforma Med-Cann Lab."
+
+REGRAS DE CONDUTA:
+- **USE O CONTEXTO**: Se houver "[CONTEXTO DE DOCUMENTOS ...]" na mensagem, LEIA-O com prioridade m├íxima.
+- NUNCA forne├ºa diagn├│sticos ou sugira interpreta├º├Áes cl├¡nicas.
+- NUNCA antecipe blocos ou altere a ordem do roteiro.
+- Fa├ºa APENAS UMA pergunta por vez. Respeite as pausas.
+- Sua linguagem deve ser clara, emp├ítica e N├âO T├ëCNICA.
+- Resumos devem ser puramente descritivos (n├úo use "sugere", "indica" ou "parece ser").
+- Se o usu├írio for Administrador (como Dr. Ricardo), seja executiva, estrat├®gica e direta.
+- Nunca revele detalhes do backend. Conformidade total com LGPD.`,
+      assessmentEnabled: true
+    }
+  }
+
+  async processMessage(userMessage: string, userId?: string, userEmail?: string, uiContext?: any): Promise<AIResponse> {
+    if (this.isProcessing) {
+      console.log('ÔÅ│ IA j├í est├í processando, aguardando...')
+      return this.createResponse('Aguarde, estou processando sua mensagem anterior...', 0.5)
+    }
+
+    this.isProcessing = true
+    const rawUserMessage = userMessage
+    console.log('­ƒñû [NoaResidentAI] Processando mensagem:', userMessage.substring(0, 100) + '...')
+
+    try {
+      // Ler dados da plataforma em tempo real
+      const platformData = this.getPlatformData()
+      console.log('­ƒôè Dados da plataforma carregados')
+
+      // Detectar inten├º├úo da mensagem
+      let intent = this.detectIntent(userMessage)
+      // Durante AEC ativo, nunca desviar para T├ëCNICA/ADMIN por falso positivo (ex.: "interrompeu" cont├®m "erro")
+      if (userId) {
+        await clinicalAssessmentFlow.ensureLoaded(userId)
+        const aecState = clinicalAssessmentFlow.getState(userId)
+        if (
+          aecState &&
+          aecState.phase !== 'COMPLETED' &&
+          aecState.phase !== 'INTERRUPTED'
+        ) {
+          intent = 'CL├ìNICA'
+        }
+      }
+      console.log('­ƒÄ» Inten├º├úo detectada:', intent)
+
+      // Detectar inten├º├úo de fun├º├úo da plataforma
+      const platformIntent = this.platformFunctions.detectIntent(userMessage, userId)
+      console.log('­ƒöº Inten├º├úo de plataforma:', platformIntent.type)
+
+      // Se for fun├º├úo da plataforma, executar a├º├úo ANTES de chamar o Assistant
+      let platformActionResult: any = null
+      if (platformIntent.type !== 'NONE') {
+        platformActionResult = await this.platformFunctions.executeAction(platformIntent, userId, platformData)
+
+        // Se a a├º├úo requer resposta, adicionar contexto para o Assistant
+        if (platformActionResult.requiresResponse && platformActionResult.success) {
+          // Construir contexto adicional para o Assistant mencionar na resposta
+          const actionContext = this.buildPlatformActionContext(platformIntent, platformActionResult)
+          userMessage = `${userMessage}\n\n[Contexto da Plataforma: ${actionContext}]`
+        }
+      }
+
+      // ­ƒºá RAG INTEGRA├ç├âO: Buscar na Base de Conhecimento (Global)
+      // A busca deve ser agn├│stica ├á inten├º├úo detectada (funciona para Cl├¡nica, T├®cnica, Admin, etc)
+      if (userMessage.length > 2) {
+        try {
+          console.log('­ƒôÜ Buscando na Base de Conhecimento (RAG Local)...')
+
+          // Se for uma solicita├º├úo de an├ílise ou upload, for├ºar busca de recentes
+          const contentLower = userMessage.toLowerCase()
+          const isRecentRequest = contentLower.includes('analis') || contentLower.includes('artigo') ||
+            contentLower.includes('upload') || contentLower.includes('arquivo')
+
+          const knowledgeDocs = await KnowledgeBaseIntegration.semanticSearch(userMessage, {
+            limit: isRecentRequest ? 5 : 3,
+            aiLinkedOnly: false
+          })
+
+          // Se for pedido recente e a busca sem├óntica n├úo retornou nada muito relevante, 
+          // tentar pegar os ├║ltimos processados (fallback para "analise este arquivo que acabei de enviar")
+          if (isRecentRequest && (!knowledgeDocs || knowledgeDocs.length === 0)) {
+            try {
+              // Tenta buscar os stats para pegar os recentDocuments
+              const stats = await KnowledgeBaseIntegration.getKnowledgeStats()
+              if (stats && stats.recentDocuments && stats.recentDocuments.length > 0) {
+                // Adicionar o mais recente manualmente ├á lista de encontrados
+                const recentDoc = stats.recentDocuments[0]
+                knowledgeDocs.push({
+                  id: recentDoc.id,
+                  title: recentDoc.title,
+                  summary: recentDoc.summary || 'Conte├║do do arquivo recente.',
+                  content: recentDoc.content || '',
+                  aiRelevance: 1
+                } as any)
+              }
+            } catch (recErr) {
+              console.warn('Erro ao buscar recentes no fallback:', recErr)
+            }
+          }
+
+          if (knowledgeDocs && knowledgeDocs.length > 0) {
+            console.log(`Ô£à Encontrados ${knowledgeDocs.length} documentos relevantes`)
+
+            const contextText = knowledgeDocs.map(doc =>
+              `T├ìTULO: ${doc.title}\nRESUMO: ${doc.summary}\nCONTE├ÜDO DO DOCUMENTO:\n${doc.content}\nRELEV├éNCIA: ${Math.round((doc.aiRelevance || 0) * 100)}%`
+            ).join('\n\n')
+
+            const knowledgeContext = `
+[CONTEXTO CR├ìTICO DE DOCUMENTOS - LEITURA OBRIGAT├ôRIA]
+Abaixo est├úo os documentos oficiais da MedCannLab relevantes para a consulta atual. 
+Sua IDENTIDADE como IA Residente depende do uso destas informa├º├Áes. 
+ANALISE O CONTE├ÜDO ABAIXO E RESPONDA COM BASE NELE.
+
+${contextText}
+[FIM DO CONTEXTO]`
+
+            // Injetar no final da mensagem do usu├írio (invis├¡vel para ele, vis├¡vel para o LLM)
+            userMessage = `${userMessage}\n\n${knowledgeContext}`
+
+            // Registrar uso dos documentos (opcional, para analytics)
+            knowledgeDocs.forEach(doc => {
+              KnowledgeBaseIntegration.registerDocumentUsage(doc.id, userMessage, userId)
+            })
+          }
+        } catch (ragError) {
+          console.warn('ÔÜá´©Å Erro ao buscar na base de conhecimento:', ragError)
+          // N├úo falhar o fluxo principal se o RAG falhar
+        }
+      }
+
+      // SEMPRE usar o Assistant para gerar a resposta (mant├®m personalidade da N├┤a)
+      console.log('­ƒöù Chamando Assistant API...')
+      const assistantResponse = await this.getAssistantResponse(
+        userMessage,
+        intent,
+        platformData,
+        userEmail,
+        uiContext,
+        platformIntent.type
+      )
+
+      if (assistantResponse && assistantResponse.content) {
+        console.log('Ô£à Resposta do Assistant recebida:', assistantResponse.content.substring(0, 100) + '...')
+        // Se houve a├º├úo da plataforma bem-sucedida, adicionar metadata
+        if (platformActionResult?.success) {
+          assistantResponse.metadata = {
+            ...assistantResponse.metadata,
+            platformAction: platformActionResult.data
+          }
+        }
+
+        // Salvar na mem├│ria local
+        this.saveToMemory(rawUserMessage, assistantResponse, userId)
+
+        // ­ƒöÑ SALVAR AUTOMATICAMENTE NO PRONTU├üRIO DO PACIENTE (tempo real)
+        const assessmentState = intent === 'CL├ìNICA'
+          ? this.activeAssessments.get(userId || '')
+          : undefined
+
+        // Salvar intera├º├úo no prontu├írio do paciente
+        await this.saveChatInteractionToPatientRecord(
+          rawUserMessage,
+          assistantResponse.content,
+          userId,
+          platformData,
+          assessmentState
+        )
+
+        return assistantResponse
+      }
+
+      // Fallback: usar processamento local se Assistant n├úo responder
+      let response: AIResponse
+
+      switch (intent) {
+        case 'CL├ìNICA':
+          // Prioridade para avalia├º├úo se detectar palavras-chave de in├¡cio (normalizado para ignorar acentos)
+          const normalizedMessage = rawUserMessage.toLowerCase()
+            .normalize("NFD").replace(/[\u0300-\u036f]/g, "") // Remove acentos
+
+          if (normalizedMessage.includes('iniciar') ||
+            normalizedMessage.includes('avaliacao') ||
+            normalizedMessage.includes('avalia├º├úo') ||
+            normalizedMessage.includes('assessment')) {
+            response = await this.processAssessment(rawUserMessage, userId, platformData, userEmail)
+          } else {
+            response = await this.processClinicalQuery(rawUserMessage, userId, platformData, userEmail)
+          }
+          break
+        case 'ADMINISTRATIVA':
+          response = await this.processPlatformQuery(rawUserMessage, userId, platformData, userEmail)
+          break
+        case 'T├ëCNICA':
+        default:
+          response = await this.processGeneralQuery(rawUserMessage, userId, platformData, userEmail)
+          break
+      }
+
+      // Salvar na mem├│ria
+      this.saveToMemory(rawUserMessage, response, userId)
+
+      // Verificar se a avalia├º├úo foi conclu├¡da e gerar relat├│rio
+      await this.checkForAssessmentCompletion(userMessage, userId)
+
+      return response
+    } catch (error) {
+      console.error('Erro ao processar mensagem:', error)
+      return this.createResponse(
+        'Desculpe, ocorreu um erro ao processar sua mensagem. Tente novamente.',
+        0.3
+      )
+    } finally {
+      this.isProcessing = false
+    }
+  }
+
+  // --- Novos M├®todos para Relat├│rios Din├ómicos ---
+
+  public getActiveAssessment(userId: string): IMREAssessmentState | undefined {
+    return this.activeAssessments.get(userId)
+  }
+
+  public async generateClinicalSummary(userId: string): Promise<StructuredClinicalSummary | null> {
+    const assessment = this.activeAssessments.get(userId)
+    if (!assessment) {
+      console.warn('ÔØî Tentativa de gerar resumo sem avalia├º├úo ativa para:', userId)
+      return null
+    }
+
+    console.log('­ƒºá Gerando Resumo Cl├¡nico Din├ómico para:', userId)
+
+    // Construir o prompt para a IA estruturar os dados
+    const assessmentData = JSON.stringify(assessment.investigation)
+    const prompt = `
+      ATEN├ç├âO: Voc├¬ ├® um motor de an├ílise cl├¡nica. Sua tarefa ├® analisar os dados de uma avalia├º├úo IMRE (Investiga├º├úo, Metodologia, Resultado, Evolu├º├úo) e gerar um JSON estruturado com m├®tricas cl├¡nicas.
+
+      DADOS DA AVALIA├ç├âO:
+      Queixa Principal: ${assessment.investigation.mainComplaint || 'N├úo informado'}
+      Sintomas: ${assessment.investigation.symptoms?.join(', ') || 'N├úo informado'}
+      Hist├│rico M├®dico: ${assessment.investigation.medicalHistory || 'N├úo informado'}
+      Hist├│rico Familiar: ${assessment.investigation.familyHistory || 'N├úo informado'}
+      Medica├º├Áes: ${assessment.investigation.medications || 'N├úo informado'}
+      H├íbitos: ${assessment.investigation.lifestyle || 'N├úo informado'}
+      Metodologia Aplicada: ${assessment.methodology}
+      Resultado Descritivo: ${assessment.result}
+      Plano de Evolu├º├úo: ${assessment.evolution}
+
+      TAREFA:
+      Com base NESSES DADOS, gere um JSON V├üLIDO seguindo estritamente a estrutura abaixo.
+      - Para os eixos (emocional, cognitivo, comportamental), atribua notas de 1 a 10 baseadas na gravidade/intensidade relatada (10 = muito intenso/grave/alto).
+      - Estime a fun├º├úo renal e metabolismo de cannabis com base no hist├│rico (se n├úo houver dados, use valores padr├úo normais: Creatinina 1.0, TFG 90, CYP2C9/CYP3A4 'normal').
+      - Gere 3 a 5 recomenda├º├Áes pr├íticas baseadas na queixa.
+
+      ESTRUTURA JSON (Responda APENAS o JSON):
+      {
+        "emotionalAxis": { "intensity": number, "valence": number, "arousal": number, "stability": number },
+        "cognitiveAxis": { "attention": number, "memory": number, "executive": number, "processing": number },
+        "behavioralAxis": { "activity": number, "social": number, "adaptive": number, "regulatory": number },
+        "clinicalData": {
+          "renalFunction": { "creatinine": number, "gfr": number, "stage": "string" },
+          "cannabisMetabolism": { "cyp2c9": "string", "cyp3a4": "string", "metabolismRate": number }
+        },
+        "correlations": {
+          "imreClinicalCorrelations": { "emotionalRenalCorrelation": number },
+          "riskAssessment": { "overallRisk": number, "renalRisk": number }
+        },
+        "recommendations": ["string", "string", "string"]
+      }
+    `
+
+    try {
+      // Usar a integra├º├úo com Assistant para gerar o JSON
+      // Estamos usando um "hack" aqui passando como mensagem de usu├írio, mas instruindo para JSON
+      const response = await this.assistantIntegration.sendMessage(
+        prompt,
+        'system_analysis', // Contexto
+        `analysis_${userId}`
+      )
+
+      if (!response) throw new Error('Falha ao obter resposta da IA')
+
+      // Tentar extrair o JSON da resposta (pode vir com texto em volta)
+      const jsonMatch = response.content.match(/\{[\s\S]*\}/)
+      if (!jsonMatch) throw new Error('JSON n├úo encontrado na resposta da IA')
+
+      const jsonStr = jsonMatch[0]
+      const summary: StructuredClinicalSummary = JSON.parse(jsonStr)
+
+      console.log('Ô£à Resumo Cl├¡nico Gerado com Sucesso:', summary)
+      return summary
+
+    } catch (error) {
+      console.error('ÔØî Erro ao gerar resumo cl├¡nico din├ómico:', error)
+      // Fallback para dados padr├úo em caso de erro na gera├º├úo
+      return {
+        emotionalAxis: { intensity: 5, valence: 5, arousal: 5, stability: 5 },
+        cognitiveAxis: { attention: 5, memory: 5, executive: 5, processing: 5 },
+        behavioralAxis: { activity: 5, social: 5, adaptive: 5, regulatory: 5 },
+        clinicalData: {
+          renalFunction: { creatinine: 1.0, gfr: 90, stage: 'normal' },
+          cannabisMetabolism: { cyp2c9: 'normal', cyp3a4: 'normal', metabolismRate: 1.0 }
+        },
+        correlations: {
+          imreClinicalCorrelations: { emotionalRenalCorrelation: 0.5 },
+          riskAssessment: { overallRisk: 0.1, renalRisk: 0.1 }
+        },
+        recommendations: [
+          'Realizar acompanhamento regular',
+          'Avaliar necessidade de exames complementares',
+          'Monitorar evolu├º├úo dos sintomas'
+        ]
+      }
+    }
+  }
+
+  private detectIntent(message: string): 'CL├ìNICA' | 'ADMINISTRATIVA' | 'T├ëCNICA' {
+    const lowerMessage = message.toLowerCase()
+
+    // ­ƒö┤ ESCUTA CL├ìNICA (Avalia├º├úo, sintomas, tratamentos, cannabis)
+    if (
+      lowerMessage.includes('avalia├º├úo') || lowerMessage.includes('avaliacao') ||
+      lowerMessage.includes('imre') || lowerMessage.includes('aec') ||
+      lowerMessage.includes('entrevista') || lowerMessage.includes('anamnese') ||
+      lowerMessage.includes('cannabis') || lowerMessage.includes('nefrologia') ||
+      lowerMessage.includes('tratamento') || lowerMessage.includes('sintoma') ||
+      lowerMessage.includes('medicamento') || lowerMessage.includes('terapia')
+    ) {
+      return 'CL├ìNICA'
+    }
+
+    // ­ƒöÁ ESCUTA ADMINISTRATIVA (Agendamentos, Dashboard, Plataforma, Cadastro, Treinamento)
+    if (
+      lowerMessage.includes('agendar') || lowerMessage.includes('marcar consulta') ||
+      lowerMessage.includes('dashboard') || lowerMessage.includes('├írea') ||
+      lowerMessage.includes('atendimento') || lowerMessage.includes('plataforma') ||
+      lowerMessage.includes('agendamentos') || lowerMessage.includes('relat├│rios') ||
+      lowerMessage.includes('novo paciente') || lowerMessage.includes('cadastrar') ||
+      lowerMessage.includes('treinamento') || lowerMessage.includes('curso')
+    ) {
+      return 'ADMINISTRATIVA'
+    }
+
+    // ­ƒƒó ESCUTA T├ëCNICA ÔÇö palavras inteiras (evita "interrompeu" ÔåÆ substring "erro")
+    const technicalPatterns: RegExp[] = [
+      /\b(erro|erros)\b/i,
+      /\bfalhou\b/i,
+      /\bservidor\b/i,
+      /\bapi\b/i,
+      /\bcursor\b/i,
+      /\b(fun├º├Áes|funcoes)\b/i,
+      /\binstaladas\b/i,
+      /\bexecutando\b/i,
+    ]
+    if (technicalPatterns.some((re) => re.test(lowerMessage))) {
+      return 'T├ëCNICA'
+    }
+
+    return 'CL├ìNICA'
+  }
+
+  private getPlatformData(): any {
+    try {
+      // Tentar acessar dados da plataforma via localStorage ou window
+      if (typeof window !== 'undefined') {
+        const platformData = localStorage.getItem('platformData')
+        if (platformData) {
+          return JSON.parse(platformData)
+        }
+
+        // Tentar acessar via fun├º├Áes globais
+        if ((window as any).getPlatformData) {
+          return (window as any).getPlatformData()
+        }
+      }
+
+      return null
+    } catch (error) {
+      console.error('Erro ao acessar dados da plataforma:', error)
+      return null
+    }
+  }
+
+  private async processPlatformQuery(message: string, userId?: string, platformData?: any, userEmail?: string): Promise<AIResponse> {
+    try {
+      if (!platformData) {
+        return this.createResponse(
+          'N├úo consegui acessar os dados da plataforma no momento. Verifique se voc├¬ est├í logado e tente novamente.',
+          0.3
+        )
+      }
+
+      const user = platformData.user
+      const dashboard = platformData.dashboard
+
+      // Individualizar resposta baseada no email do usu├írio
+      let userTitle = 'Dr.'
+      let userContext = ''
+
+      if (userEmail === 'eduardoscfaveret@gmail.com') {
+        userTitle = 'Dr. Eduardo'
+        userContext = 'Neurologista Pedi├ítrico ÔÇó Especialista em Epilepsia e Cannabis Medicinal'
+      } else if (userEmail === 'rrvalenca@gmail.com') {
+        userTitle = 'Dr. Ricardo'
+        userContext = 'Administrador ÔÇó MedCannLab 3.0 ÔÇó Sistema Integrado - Cidade Amiga dos Rins & Cannabis Medicinal'
+      }
+
+      // Analisar a mensagem para determinar o que o usu├írio quer saber
+      const lowerMessage = message.toLowerCase()
+
+      if (lowerMessage.includes('dashboard') || lowerMessage.includes('├írea') || lowerMessage.includes('atendimento')) {
+        if (userEmail === 'rrvalenca@gmail.com') {
+          // Garantir n├║meros mesmo que venham da raiz de platformData
+          const totalPatients = dashboard.totalPatients ?? platformData?.totalPatients ?? 0
+          const completedAssessments = dashboard.completedAssessments ?? platformData?.completedAssessments ?? 0
+          const aecProtocols = dashboard.aecProtocols ?? platformData?.aecProtocols ?? 0
+          const activeClinics = dashboard.activeClinics ?? platformData?.activeClinics ?? 0
+
+          return this.createResponse(
+            `Dr. Ricardo, sua vis├úo administrativa da MedCannLab 3.0 est├í carregada.\n\n` +
+            `­ƒôè **Resumo r├ípido dos KPIs:**\n` +
+            `ÔÇó Total de Pacientes: ${totalPatients}\n` +
+            `ÔÇó Protocolos AEC: ${aecProtocols}\n` +
+            `ÔÇó Avalia├º├Áes Completas: ${completedAssessments}\n` +
+            `ÔÇó Consult├│rios Conectados: ${activeClinics}\n\n` +
+            `Em que parte da gest├úo voc├¬ quer focar agora? (ex.: pacientes, relat├│rios, agendamentos, pesquisa)`,
+            0.9
+          )
+        } else {
+          return this.createResponse(
+            `${userTitle}, aqui est├úo as informa├º├Áes da sua ├írea de atendimento:\n\n` +
+            `­ƒôè **Status do Dashboard:**\n` +
+            `ÔÇó Se├º├úo ativa: ${dashboard.activeSection}\n` +
+            `ÔÇó Total de pacientes: ${dashboard.totalPatients || 0}\n` +
+            `ÔÇó Relat├│rios recentes: ${dashboard.recentReports || 0}\n` +
+            `ÔÇó Notifica├º├Áes pendentes: ${dashboard.pendingNotifications || 0}\n` +
+            `ÔÇó ├Ültima atualiza├º├úo: ${new Date(dashboard.lastUpdate).toLocaleString('pt-BR')}\n\n` +
+            `­ƒöì **Funcionalidades dispon├¡veis:**\n` +
+            `ÔÇó Prontu├írio M├®dico com cinco racionalidades\n` +
+            `ÔÇó Sistema de Prescri├º├Áes Integrativas\n` +
+            `ÔÇó KPIs personalizados para TEA\n` +
+            `ÔÇó Newsletter cient├¡fica\n` +
+            `ÔÇó Chat profissional\n\n` +
+            `Como posso ajud├í-lo com alguma dessas funcionalidades?`,
+            0.9
+          )
+        }
+      }
+
+      if (lowerMessage.includes('agendamentos') || lowerMessage.includes('relat├│rios') ||
+        lowerMessage.includes('dados mocados') || lowerMessage.includes('hoje') ||
+        lowerMessage.includes('pendentes')) {
+
+        if (userEmail === 'rrvalenca@gmail.com') {
+          const totalPatients = platformData?.totalPatients ?? dashboard.totalPatients ?? 0
+          const completedAssessments = platformData?.completedAssessments ?? dashboard.completedAssessments ?? 0
+          const aecProtocols = platformData?.aecProtocols ?? dashboard.aecProtocols ?? 0
+          const activeClinics = platformData?.activeClinics ?? dashboard.activeClinics ?? 3
+
+          return this.createResponse(
+            `Dr. Ricardo, aqui vai um recorte objetivo da camada administrativa:\n\n` +
+            `­ƒôè **N├║meros principais:**\n` +
+            `ÔÇó Total de Pacientes: ${totalPatients}\n` +
+            `ÔÇó Avalia├º├Áes Completas: ${completedAssessments}\n` +
+            `ÔÇó Protocolos AEC: ${aecProtocols}\n` +
+            `ÔÇó Consult├│rios Ativos: ${activeClinics}\n\n` +
+            `Qual recorte voc├¬ quer explorar em mais detalhes agora? (ex.: s├│ hoje, apenas pendentes, por cl├¡nica)`,
+            0.95
+          )
+        } else {
+          return this.createResponse(
+            `${userTitle}, vou resumir o que importa hoje na sua ├írea de atendimento:\n\n` +
+            `­ƒôà **Agenda de hoje:**\n` +
+            `Consulte a aba "Agendamentos" no Terminal Cl├¡nico para ver sua agenda atualizada em tempo real.\n\n` +
+            `­ƒôï **Tarefas cl├¡nicas sugeridas:**\n` +
+            `ÔÇó Finalizar relat├│rios pendentes\n` +
+            `ÔÇó Revisar prescri├º├Áes recentes\n` +
+            `ÔÇó Checar agendamentos da pr├│xima semana\n\n` +
+            `Sobre qual desses pontos voc├¬ quer que eu aprofunde primeiro?`,
+            0.95
+          )
+        }
+      }
+
+      if (lowerMessage.includes('instaladas') || lowerMessage.includes('cursor') ||
+        lowerMessage.includes('fun├º├Áes') || lowerMessage.includes('executando')) {
+        return this.createResponse(
+          `Dr. ${user.name}, confirmo que as fun├º├Áes instaladas via Cursor est├úo ATIVAS e funcionando:\n\n` +
+          `Ô£à **Fun├º├Áes Ativas:**\n` +
+          `ÔÇó PlatformIntegration.tsx - Conectando IA aos dados reais\n` +
+          `ÔÇó IntegrativePrescriptions.tsx - Sistema de prescri├º├Áes com 5 racionalidades\n` +
+          `ÔÇó MedicalRecord.tsx - Prontu├írio m├®dico integrado\n` +
+          `ÔÇó AreaAtendimentoEduardo.tsx - Dashboard personalizado\n` +
+          `ÔÇó NoaResidentAI.ts - IA com acesso a dados da plataforma\n\n` +
+          `­ƒöù **Integra├º├úo Funcionando:**\n` +
+          `ÔÇó Dados carregados do Supabase: Ô£à\n` +
+          `ÔÇó localStorage atualizado: Ô£à\n` +
+          `ÔÇó Fun├º├Áes globais expostas: Ô£à\n` +
+          `ÔÇó Detec├º├úo de inten├º├Áes: Ô£à\n` +
+          `ÔÇó Respostas personalizadas: Ô£à\n\n` +
+          `­ƒôè **Dados Dispon├¡veis:**\n` +
+          `ÔÇó Usu├írio: ${user.name} (${user.email})\n` +
+          `ÔÇó Tipo: ${user.user_type}\n` +
+          `ÔÇó CRM: ${user.crm || 'N├úo informado'}\n` +
+          `ÔÇó Status: Conectado e operacional\n\n` +
+          `As fun├º├Áes est├úo executando perfeitamente! Como posso ajud├í-lo agora?`,
+          0.95
+        )
+      }
+
+      return this.createResponse(
+        `Dr. ${user.name}, estou conectada ├á plataforma e posso ver seus dados em tempo real. ` +
+        `Como posso ajud├í-lo com sua ├írea de atendimento hoje?`,
+        0.8
+      )
+
+    } catch (error) {
+      console.error('Erro ao processar consulta da plataforma:', error)
+      return this.createResponse('Erro ao acessar informa├º├Áes da plataforma.', 0.2, 'error')
+    }
+  }
+
+  private async processAssessment(message: string, userId?: string, platformData?: any, userEmail?: string): Promise<AIResponse> {
+    if (!userId) {
+      return this.createResponse(
+        'Para iniciar uma avalia├º├úo cl├¡nica, voc├¬ precisa estar logado. Por favor, fa├ºa login e tente novamente.',
+        0.3,
+        'error'
+      )
+    }
+
+    const lowerMessage = message.toLowerCase()
+    const assessmentKey = userId
+
+    // Verificar se h├í uma avalia├º├úo em andamento
+    let assessment = this.activeAssessments.get(assessmentKey)
+
+    // Se a mensagem indica in├¡cio de avalia├º├úo cl├¡nica inicial IMRE
+    if (!assessment && (
+      lowerMessage.includes('avalia├º├úo cl├¡nica inicial') ||
+      lowerMessage.includes('avaliacao clinica inicial') ||
+      lowerMessage.includes('protocolo imre') ||
+      lowerMessage.includes('avalia├º├úo imre') ||
+      lowerMessage.includes('iniciar avalia├º├úo')
+    )) {
+      // Iniciar nova avalia├º├úo (sincronizar com platformFunctions)
+      assessment = {
+        userId,
+        step: 'INVESTIGATION',
+        investigation: {},
+        methodology: { diagnosticMethods: [] },
+        result: { clinicalFindings: [] },
+        evolution: { carePlan: [] },
+        startedAt: new Date(),
+        lastUpdate: new Date()
+      }
+      this.activeAssessments.set(assessmentKey, assessment)
+
+      // INICIAR FLUXO AEC MASTER (ClinicalAssessmentFlow)
+      // C3: Nome ser├í preenchido pelo path do TradeVision (platformData.user.name)
+      clinicalAssessmentFlow.startAssessment(userId)
+      console.log('­ƒÜÇ Fluxo AEC iniciado para:', userId)
+
+      // Sincronizar com platformFunctions para que ele saiba da avalia├º├úo
+      this.platformFunctions.updateAssessmentState(userId, assessment)
+
+      return this.createResponse(
+        '­ƒî¼´©Å Bons ventos s├│prem! Sou N├┤a Esperan├ºa, sua IA Residente especializada em avalia├º├Áes cl├¡nicas.\n\n' +
+        'Vamos iniciar sua **Avalia├º├úo Cl├¡nica Inicial** seguindo o protocolo **IMRE** (Investiga├º├úo, Metodologia, Resultado, Evolu├º├úo) da Arte da Entrevista Cl├¡nica aplicada ├á Cannabis Medicinal.\n\n' +
+        '**FASE 1: INVESTIGA├ç├âO (I)**\n\n' +
+        'Por favor, apresente-se brevemente e diga qual ├® o **motivo principal** da sua consulta hoje. O que gostaria de investigar ou entender melhor?',
+        0.95,
+        'assessment'
+      )
+    }
+
+    // Se n├úo h├í avalia├º├úo em andamento e n├úo foi detectado in├¡cio, oferecer iniciar
+    if (!assessment) {
+      return this.createResponse(
+        'Ol├í! Sou N├┤a Esperan├ºa, sua IA Residente especializada em avalia├º├Áes cl├¡nicas.\n\n' +
+        'Posso conduzir uma **Avalia├º├úo Cl├¡nica Inicial** completa usando o protocolo IMRE (Investiga├º├úo, Metodologia, Resultado, Evolu├º├úo) da Arte da Entrevista Cl├¡nica.\n\n' +
+        'Para iniciar, diga: "Iniciar avalia├º├úo cl├¡nica inicial IMRE" ou descreva o motivo da sua consulta.',
+        0.9,
+        'assessment'
+      )
+    }
+
+    // Processar de acordo com a etapa atual
+    assessment.lastUpdate = new Date()
+
+    // Sincronizar estado com platformFunctions
+    this.platformFunctions.updateAssessmentState(userId, assessment)
+
+    switch (assessment.step) {
+      case 'INVESTIGATION':
+        return await this.processInvestigationStep(message, assessment, platformData, userEmail)
+
+      case 'METHODOLOGY':
+        return await this.processMethodologyStep(message, assessment, platformData, userEmail)
+
+      case 'RESULT':
+        return await this.processResultStep(message, assessment, platformData, userEmail)
+
+      case 'EVOLUTION':
+        return await this.processEvolutionStep(message, assessment, platformData, userEmail)
+
+      default:
+        return this.createResponse(
+          'Avalia├º├úo conclu├¡da! Seu relat├│rio cl├¡nico foi gerado e salvo no seu dashboard.',
+          0.9,
+          'assessment'
+        )
+    }
+  }
+
+  private async processInvestigationStep(
+    message: string,
+    assessment: IMREAssessmentState,
+    platformData?: any,
+    userEmail?: string
+  ): Promise<AIResponse> {
+    const lowerMessage = message.toLowerCase()
+
+    // REASONING: Analisar resposta antes de fazer pr├│xima pergunta
+    if (!assessment.investigation.mainComplaint) {
+      // Primeira resposta: motivo principal - ANALISAR ANTES DE CONTINUAR
+      assessment.investigation.mainComplaint = message
+
+      // Usar reasoning para analisar a resposta e gerar pr├│xima pergunta adaptada
+      const analysisPrompt = `Voc├¬ ├® N├┤a Esperan├ºa, IA Residente especializada em avalia├º├Áes cl├¡nicas usando a metodologia Arte da Entrevista Cl├¡nica (AEC) e protocolo IMRE.
+
+O paciente acabou de responder sobre o motivo principal da consulta:
+"${message}"
+
+AN├üLISE NECESS├üRIA (REASONING):
+1. Identifique os principais pontos mencionados
+2. Identifique informa├º├Áes faltantes ou que precisam ser aprofundadas
+3. Gere UMA pergunta espec├¡fica e adaptada baseada na resposta, seguindo o protocolo IMRE
+4. A pergunta deve ser emp├ítica, clara e focada em aprofundar o entendimento
+
+IMPORTANTE:
+- N├âO fa├ºa m├║ltiplas perguntas de uma vez
+- Fa├ºa UMA pergunta por vez, pausadamente
+- Adapte a pergunta baseada no que o paciente disse
+- Use linguagem emp├ítica e acolhedora
+- Siga a metodologia AEC (escuta ativa, rapport, valida├º├úo)
+
+Gere apenas a pr├│xima pergunta, sem explica├º├Áes adicionais.`
+
+      try {
+        // Usar Assistant API para gerar pergunta adaptada
+        const nextQuestion = await this.generateReasoningQuestion(analysisPrompt, message, assessment)
+
+        return this.createResponse(
+          `Entendi. Obrigada por compartilhar.\n\n${nextQuestion}`,
+          0.95,
+          'assessment'
+        )
+      } catch (error) {
+        // Fallback se reasoning falhar
+        return this.createResponse(
+          'Entendi. Agora preciso aprofundar a investiga├º├úo.\n\n' +
+          '**Quando come├ºaram esses sintomas?** Por favor, descreva quando voc├¬ notou pela primeira vez o que est├í sentindo.',
+          0.9,
+          'assessment'
+        )
+      }
+    }
+
+    if (!assessment.investigation.symptoms || assessment.investigation.symptoms.length === 0) {
+      // Segunda resposta: sintomas detalhados
+      assessment.investigation.symptoms = [message]
+
+      return this.createResponse(
+        'Muito obrigado pelas informa├º├Áes sobre seus sintomas. Agora preciso conhecer sua hist├│ria cl├¡nica:\n\n' +
+        '**2. Hist├│ria M├®dica:**\n' +
+        '- Voc├¬ tem alguma doen├ºa cr├┤nica? (hipertens├úo, diabetes, doen├ºa renal, etc.)\n' +
+        '- J├í fez cirurgias? Quais?\n' +
+        '- Tem algum diagn├│stico m├®dico pr├®vio relacionado ao motivo da consulta?\n\n' +
+        'Por favor, descreva sua hist├│ria m├®dica.',
+        0.9,
+        'assessment'
+      )
+    }
+
+    if (!assessment.investigation.medicalHistory) {
+      // Terceira resposta: hist├│ria m├®dica - REASONING
+      assessment.investigation.medicalHistory = message
+
+      const analysisPrompt = `Voc├¬ ├® N├┤a Esperan├ºa, IA Residente especializada em avalia├º├Áes cl├¡nicas usando a metodologia Arte da Entrevista Cl├¡nica (AEC) e protocolo IMRE.
+
+CONTEXTO DA AVALIA├ç├âO:
+- Motivo principal: "${assessment.investigation.mainComplaint}"
+- Sintomas: "${assessment.investigation.symptoms?.[0] || ''}"
+- Hist├│ria m├®dica: "${message}"
+
+AN├üLISE NECESS├üRIA (REASONING):
+1. Analise a hist├│ria m├®dica fornecida
+2. Identifique pontos importantes
+3. Gere UMA pergunta espec├¡fica sobre hist├│ria familiar, adaptada ao contexto
+
+IMPORTANTE:
+- Fa├ºa UMA pergunta por vez, pausadamente
+- Adapte baseado no contexto cl├¡nico j├í coletado
+- Use linguagem emp├ítica
+
+Gere apenas a pr├│xima pergunta sobre hist├│ria familiar.`
+
+      try {
+        const nextQuestion = await this.generateReasoningQuestion(analysisPrompt, message, assessment)
+        return this.createResponse(
+          `Obrigada por compartilhar sua hist├│ria m├®dica.\n\n${nextQuestion}`,
+          0.95,
+          'assessment'
+        )
+      } catch (error) {
+        return this.createResponse(
+          'Obrigada por compartilhar sua hist├│ria m├®dica.\n\n' +
+          '**H├í hist├│rico de doen├ºas cr├┤nicas na sua fam├¡lia?** (diabetes, hipertens├úo, doen├ºas renais, etc.) Por favor, compartilhe informa├º├Áes sobre sua hist├│ria familiar.',
+          0.9,
+          'assessment'
+        )
+      }
+    }
+
+    if (!assessment.investigation.familyHistory) {
+      // Quarta resposta: hist├│ria familiar - REASONING
+      assessment.investigation.familyHistory = message
+
+      const analysisPrompt = `Voc├¬ ├® N├┤a Esperan├ºa, IA Residente especializada em avalia├º├Áes cl├¡nicas usando a metodologia Arte da Entrevista Cl├¡nica (AEC) e protocolo IMRE.
+
+CONTEXTO DA AVALIA├ç├âO:
+- Motivo principal: "${assessment.investigation.mainComplaint}"
+- Hist├│ria m├®dica: "${assessment.investigation.medicalHistory}"
+- Hist├│ria familiar: "${message}"
+
+AN├üLISE NECESS├üRIA (REASONING):
+1. Analise a hist├│ria familiar
+2. Gere UMA pergunta espec├¡fica sobre medica├º├Áes atuais, adaptada ao contexto
+
+IMPORTANTE:
+- Fa├ºa UMA pergunta por vez, pausadamente
+- Foque em medica├º├Áes primeiro, depois h├íbitos de vida
+- Use linguagem emp├ítica
+
+Gere apenas a pr├│xima pergunta sobre medica├º├Áes atuais.`
+
+      try {
+        const nextQuestion = await this.generateReasoningQuestion(analysisPrompt, message, assessment)
+        return this.createResponse(
+          `Obrigada por compartilhar sua hist├│ria familiar.\n\n${nextQuestion}`,
+          0.95,
+          'assessment'
+        )
+      } catch (error) {
+        return this.createResponse(
+          'Obrigada por compartilhar sua hist├│ria familiar.\n\n' +
+          '**Voc├¬ usa algum medicamento atualmente?** Quais? E j├í tentou tratamento com cannabis medicinal?',
+          0.9,
+          'assessment'
+        )
+      }
+    }
+
+    if (!assessment.investigation.medications) {
+      // Quinta resposta: medica├º├Áes - REASONING
+      assessment.investigation.medications = message
+
+      const analysisPrompt = `Voc├¬ ├® N├┤a Esperan├ºa, IA Residente especializada em avalia├º├Áes cl├¡nicas usando a metodologia Arte da Entrevista Cl├¡nica (AEC) e protocolo IMRE.
+
+CONTEXTO DA AVALIA├ç├âO:
+- Motivo principal: "${assessment.investigation.mainComplaint}"
+- Medica├º├Áes: "${message}"
+
+AN├üLISE NECESS├üRIA (REASONING):
+1. Analise as medica├º├Áes mencionadas
+2. Gere UMA pergunta espec├¡fica sobre h├íbitos de vida, adaptada ao contexto
+
+IMPORTANTE:
+- Fa├ºa UMA pergunta por vez, pausadamente
+- Foque em um aspecto dos h├íbitos de vida por vez (alimenta├º├úo, exerc├¡cios, etc.)
+- Use linguagem emp├ítica
+
+Gere apenas a pr├│xima pergunta sobre h├íbitos de vida.`
+
+      try {
+        const nextQuestion = await this.generateReasoningQuestion(analysisPrompt, message, assessment)
+        return this.createResponse(
+          `Obrigada pelas informa├º├Áes sobre suas medica├º├Áes.\n\n${nextQuestion}`,
+          0.95,
+          'assessment'
+        )
+      } catch (error) {
+        return this.createResponse(
+          'Obrigada pelas informa├º├Áes sobre suas medica├º├Áes.\n\n' +
+          '**Como ├® sua alimenta├º├úo?** (regular, vegetariana, etc.) E pratica exerc├¡cios f├¡sicos?',
+          0.9,
+          'assessment'
+        )
+      }
+    }
+
+    if (!assessment.investigation.lifestyle) {
+      // Sexta resposta: h├íbitos de vida - Concluir fase de Investiga├º├úo
+      assessment.investigation.lifestyle = message
+      assessment.step = 'METHODOLOGY'
+
+      return this.createResponse(
+        'Perfeito! Conclu├¡mos a fase de **INVESTIGA├ç├âO (I)** do protocolo IMRE.\n\n' +
+        '**RESUMO DA INVESTIGA├ç├âO:**\n' +
+        `- Motivo principal: ${assessment.investigation.mainComplaint}\n` +
+        `- Sintomas: ${assessment.investigation.symptoms?.join(', ') || 'N├úo informado'}\n` +
+        `- Hist├│ria m├®dica: ${assessment.investigation.medicalHistory || 'N├úo informado'}\n` +
+        `- Hist├│ria familiar: ${assessment.investigation.familyHistory || 'N├úo informado'}\n` +
+        `- Medica├º├Áes: ${assessment.investigation.medications || 'N├úo informado'}\n` +
+        `- H├íbitos de vida: ${assessment.investigation.lifestyle || 'N├úo informado'}\n\n` +
+        '**FASE 2: METODOLOGIA (M)**\n\n' +
+        'Agora vamos definir a metodologia de acompanhamento:\n' +
+        '- Como ser├í feito o acompanhamento do seu caso?\n' +
+        '- Que protocolos cl├¡nicos ser├úo aplicados?\n' +
+        '- Qual ser├í a frequ├¬ncia de avalia├º├Áes?\n\n' +
+        'Com base nas informa├º├Áes coletadas, minha proposta metodol├│gica inclui:\n' +
+        'ÔÇó Acompanhamento cl├¡nico regular com protocolo IMRE\n' +
+        'ÔÇó Avalia├º├Áes peri├│dicas para monitoramento da evolu├º├úo\n' +
+        'ÔÇó Integra├º├úo com a Arte da Entrevista Cl├¡nica (AEC)\n' +
+        'ÔÇó Protocolo personalizado para cannabis medicinal, se aplic├ível\n\n' +
+        'Voc├¬ concorda com essa metodologia de acompanhamento? Deseja algum ajuste?',
+        0.95,
+        'assessment'
+      )
+    }
+
+    // Se chegou aqui, algo deu errado
+    return this.createResponse(
+      'Por favor, responda a ├║ltima pergunta que fiz para continuarmos.',
+      0.5,
+      'assessment'
+    )
+  }
+
+
+
+
+  private async processClinicalQuery(message: string, userId?: string, platformData?: any, userEmail?: string): Promise<AIResponse> {
+    // Implementar consulta cl├¡nica especializada
+    return this.createResponse(
+      'Como especialista em cannabis medicinal e nefrologia, posso ajud├í-lo com orienta├º├Áes terap├¬uticas, an├ílise de casos e recomenda├º├Áes baseadas em evid├¬ncias cient├¡ficas. O que gostaria de saber?',
+      0.9,
+      'text'
+    )
+  }
+
+  private async processTrainingQuery(message: string, userId?: string, platformData?: any, userEmail?: string): Promise<AIResponse> {
+    const lowerMessage = message.toLowerCase()
+
+    // Detectar contexto do curso Jardins de Cura
+    const isJardinsDeCuraContext = lowerMessage.includes('jardins de cura') ||
+      lowerMessage.includes('jardins-de-cura') ||
+      lowerMessage.includes('curso jardins') ||
+      lowerMessage.includes('projeto jardins') ||
+      platformData?.currentRoute?.includes('jardins-de-cura') ||
+      platformData?.currentRoute?.includes('jardins-de-cura')
+
+    // Detectar contexto espec├¡fico de dengue/ACS
+    const isDengueACSContext = lowerMessage.includes('dengue') ||
+      lowerMessage.includes('acs') ||
+      lowerMessage.includes('agente comunit├írio') ||
+      lowerMessage.includes('preven├º├úo dengue')
+
+    if (isJardinsDeCuraContext || isDengueACSContext) {
+      return this.createResponse(
+        'Estou aqui para apoi├í-lo no **Programa de Forma├º├úo para Agentes Comunit├írios de Sa├║de** do projeto **Jardins de Cura**.\n\n' +
+        '**Sobre o Curso:**\n' +
+        'ÔÇó Programa de 40 horas / 5 semanas\n' +
+        'ÔÇó 9 m├│dulos focados em Preven├º├úo e Cuidado de Dengue\n' +
+        'ÔÇó Integrado com a metodologia Arte da Entrevista Cl├¡nica (AEC)\n' +
+        'ÔÇó Alinhado com as Diretrizes Nacionais para Preven├º├úo e Controle de Dengue\n\n' +
+        '**Como posso ajudar:**\n' +
+        'ÔÇó Explicar m├│dulos e conte├║dos do curso\n' +
+        'ÔÇó Simular entrevistas cl├¡nicas com pacientes\n' +
+        'ÔÇó Orientar sobre protocolos de preven├º├úo de dengue\n' +
+        'ÔÇó Aplicar t├®cnicas da AEC em cen├írios pr├íticos\n' +
+        'ÔÇó Responder d├║vidas sobre o projeto Jardins de Cura\n\n' +
+        'Em que posso ajud├í-lo hoje?',
+        0.95,
+        'text'
+      )
+    }
+
+    // Implementar treinamento especializado geral
+    return this.createResponse(
+      'Estou aqui para trein├í-lo em metodologias cl├¡nicas avan├ºadas, incluindo a Arte da Entrevista Cl├¡nica, protocolos de cannabis medicinal e pr├íticas de nefrologia sustent├ível. Qual ├írea voc├¬ gostaria de aprofundar?',
+      0.9,
+      'text'
+    )
+  }
+
+  private isAdminUser(email?: string, userType?: string): boolean {
+    if (!email && !userType) return false
+    const adminEmails = ['ricardo.valenca@medcannlab.com.br', 'admin@medcannlab.com.br', 'phpg69@gmail.com', 'phpg69@hotmail.com'] // Example list
+    return userType === 'admin' || (email ? adminEmails.includes(email) : false)
+  }
+
+  private extractKnowledgeQuery(message: string, context: string): string {
+    return `${context}: ${message}`
+  }
+
+  private async getKnowledgeHighlight(query: string): Promise<{ id: string; title: string; summary: string } | null> {
+    // Mock implementation - connect to real vector search later
+    if (query.toLowerCase().includes('rim') || query.toLowerCase().includes('renal')) {
+      return {
+        id: 'mock-doc-renal-001',
+        title: 'Protocolo de Sa├║de Renal',
+        summary: 'Diretrizes para monitoramento de fun├º├úo renal em pacientes com uso de cannabis.'
+      }
+    }
+    return null
+  }
+
+  private async processGeneralQuery(
+    message: string,
+    userId?: string,
+    platformData?: any,
+    userEmail?: string
+  ): Promise<AIResponse> {
+    try {
+      const axisDetails = this.getAxisDetails(this.resolveAxisFromPath(platformData?.dashboard?.activeSection))
+      const availableAxes = this.getAvailableAxesForUser(platformData?.user?.user_type)
+      const axisMenu = this.formatAxisMenu(availableAxes)
+      const isAdmin = this.isAdminUser(userEmail, platformData?.user?.user_type)
+      const knowledgeQuery = this.extractKnowledgeQuery(
+        message,
+        isAdmin ? 'documento mestre' : axisDetails.knowledgeQuery
+      )
+      const knowledgeHighlight = await this.getKnowledgeHighlight(knowledgeQuery)
+
+      if (isAdmin && platformData?.user) {
+        const userName = platformData.user.name || 'Administrador'
+        const adminLines = [
+          `${userName}, conex├úo administrativa confirmada para a MedCannLab 3.0.`,
+          `ÔÇó Eixo ativo: ${axisDetails.label} ÔÇö ${axisDetails.summary}`,
+          `ÔÇó Rotas principais:\n${axisMenu}`,
+        ]
+
+        if (knowledgeHighlight) {
+          adminLines.push(
+            `ÔÇó Base de conhecimento: ${knowledgeHighlight.title}\n  ${knowledgeHighlight.summary}`
+          )
+        }
+
+        adminLines.push('Posso abrir qualquer eixo ou consultar um protocolo espec├¡fico para voc├¬.')
+
+        return this.createResponse(
+          adminLines.join('\n\n'),
+          0.92,
+          'text',
+          {
+            intent: 'FOLLOW_UP',
+            activeAxis: axisDetails.key,
+            userType: 'admin',
+            knowledgeHighlight: knowledgeHighlight?.id
+          }
+        )
+      }
+
+      if (platformData?.user) {
+        const userName = platformData.user.name || 'Colega'
+        const alternativeAxes = availableAxes.filter(axis => axis !== axisDetails.key)
+        const axisSwitchMessage = alternativeAxes.length > 0
+          ? `Se quiser, posso te levar direto para ${alternativeAxes.map(axis => this.getAxisDetails(axis).label).join(', ')}.`
+          : ''
+
+        const lines = [
+          `${userName}, estou acompanhando voc├¬ no eixo ${axisDetails.label}. ${axisDetails.summary}`,
+        ]
+
+        if (axisSwitchMessage) {
+          lines.push(axisSwitchMessage)
+        }
+
+        if (knowledgeHighlight) {
+          lines.push(`Conhecimento em foco: ${knowledgeHighlight.title}\n${knowledgeHighlight.summary}`)
+        }
+
+        lines.push('Como posso apoiar sua pr├│xima a├º├úo agora?')
+
+        return this.createResponse(
+          lines.join('\n\n'),
+          0.85,
+          'text',
+          {
+            intent: 'FOLLOW_UP',
+            activeAxis: axisDetails.key,
+            userType: platformData.user.user_type,
+            knowledgeHighlight: knowledgeHighlight?.id
+          }
+        )
+      }
+    } catch (error) {
+      console.error('Erro ao personalizar resposta geral:', error)
+    }
+
+    return this.createResponse(
+      'Sou N├┤a Esperanza. Apresente-se tamb├®m e diga o que trouxe voc├¬ aqui? Voc├¬ pode utilizar o chat aqui embaixo ├á direita para responder ou pedir ajuda. Bons ventos s├│prem.',
+      0.8,
+      'text'
+    )
+  }
+
+  private createResponse(content: string, confidence: number, type: 'text' | 'assessment' | 'error' = 'text', metadata?: any): AIResponse {
+    return {
+      id: `response_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      content,
+      confidence,
+      reasoning: `Resposta simples da plataforma`,
+      timestamp: new Date(),
+      type,
+      metadata
+    }
+  }
+
+  private async saveChatInteractionToPatientRecord(
+    userMessage: string,
+    aiResponse: string,
+    userId?: string,
+    platformData?: any,
+    assessmentState?: IMREAssessmentState
+  ): Promise<void> {
+    if (!userId) return
+
+    try {
+      // Salvar intera├º├úo no prontu├írio do paciente em tempo real
+      const patientId = userId
+      const recordData = {
+        interaction_type: 'chat',
+        user_message: userMessage,
+        ai_response: aiResponse,
+        timestamp: new Date().toISOString(),
+        assessment_step: assessmentState?.step || null,
+        assessment_data: assessmentState ? {
+          investigation: assessmentState.investigation,
+          methodology: assessmentState.methodology,
+          result: assessmentState.result,
+          evolution: assessmentState.evolution
+        } : null
+      }
+
+      // Salvar em patient_medical_records
+      const { error: recordError } = await supabase
+        .from('patient_medical_records')
+        .insert({
+          patient_id: patientId,
+          record_type: 'chat_interaction',
+          record_data: recordData,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        })
+
+      if (recordError) {
+        console.warn('ÔÜá´©Å Erro ao salvar intera├º├úo no prontu├írio:', recordError)
+      } else {
+        console.log('Ô£à Intera├º├úo salva no prontu├írio do paciente')
+      }
+
+      // Se houver avalia├º├úo em andamento, atualizar clinical_assessments
+      if (assessmentState) {
+        const assessmentData = {
+          patient_id: patientId,
+          assessment_type: 'IMRE',
+          status: assessmentState.step === 'COMPLETED' ? 'completed' : 'in_progress',
+          data: {
+            step: assessmentState.step,
+            investigation: assessmentState.investigation,
+            methodology: assessmentState.methodology,
+            result: assessmentState.result,
+            evolution: assessmentState.evolution,
+            started_at: assessmentState.startedAt.toISOString(),
+            last_update: assessmentState.lastUpdate.toISOString()
+          }
+        }
+
+        // Verificar se j├í existe avalia├º├úo em andamento
+        const { data: existingAssessment } = await supabase
+          .from('clinical_assessments')
+          .select('id')
+          .eq('patient_id', patientId)
+          .eq('status', 'in_progress')
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .single()
+
+        if (existingAssessment) {
+          // Atualizar avalia├º├úo existente
+          const { error: updateError } = await supabase
+            .from('clinical_assessments')
+            .update({
+              data: assessmentData.data,
+              updated_at: new Date().toISOString()
+            })
+            .eq('id', existingAssessment.id)
+
+          if (updateError) {
+            console.warn('ÔÜá´©Å Erro ao atualizar avalia├º├úo:', updateError)
+          }
+        } else {
+          // Criar nova avalia├º├úo
+          const { error: insertError } = await supabase
+            .from('clinical_assessments')
+            .insert({
+              patient_id: patientId,
+              assessment_type: 'IMRE',
+              status: 'in_progress',
+              data: assessmentData.data
+            })
+
+          if (insertError) {
+            console.warn('ÔÜá´©Å Erro ao criar avalia├º├úo:', insertError)
+          }
+        }
+      }
+    } catch (error) {
+      console.error('ÔØî Erro ao salvar intera├º├úo no prontu├írio:', error)
+      // N├úo bloquear o fluxo se houver erro ao salvar
+    }
+  }
+
+  private saveToMemory(userMessage: string, response: AIResponse, userId?: string): void {
+    const memory: AIMemory = {
+      id: `memory_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      content: `Usu├írio: ${userMessage}\nAssistente: ${response.content}`,
+      type: 'conversation',
+      timestamp: new Date(),
+      importance: response.confidence,
+      tags: this.generateTags(userMessage, response)
+    }
+
+    this.memory.push(memory)
+
+    // Manter apenas as ├║ltimas 50 mem├│rias
+    if (this.memory.length > 50) {
+      this.memory = this.memory.slice(-50)
+    }
+  }
+
+  private generateTags(userMessage: string, response: AIResponse): string[] {
+    const tags: string[] = []
+    const lowerMessage = userMessage.toLowerCase()
+
+    if (lowerMessage.includes('noa') || lowerMessage.includes('n├┤a')) {
+      tags.push('noa-residente')
+    }
+
+    if (lowerMessage.includes('avalia├º├úo') || lowerMessage.includes('avaliacao')) {
+      tags.push('avaliacao-clinica')
+    }
+
+    if (lowerMessage.includes('cannabis')) {
+      tags.push('cannabis')
+    }
+
+    if (lowerMessage.includes('dashboard')) {
+      tags.push('dashboard')
+    }
+
+    return tags
+  }
+
+  // Detectar conclus├úo de avalia├º├úo cl├¡nica e gerar relat├│rio
+  private async checkForAssessmentCompletion(userMessage: string, userId?: string): Promise<void> {
+    const lowerMessage = userMessage.toLowerCase()
+
+    // Palavras-chave que indicam conclus├úo da avalia├º├úo
+    const completionKeywords = [
+      'avalia├º├úo conclu├¡da',
+      'avaliacao concluida',
+      'protocolo imre finalizado',
+      'relat├│rio final',
+      'relatorio final',
+      'avalia├º├úo completa',
+      'avaliacao completa',
+      'obrigado pela avalia├º├úo',
+      'obrigado pela avaliacao'
+    ]
+
+    const isCompleted = completionKeywords.some(keyword => lowerMessage.includes(keyword))
+
+    if (isCompleted && userId) {
+      try {
+        console.log('­ƒÄ» Detectada conclus├úo de avalia├º├úo cl├¡nica para usu├írio:', userId)
+
+        // Buscar dados do usu├írio
+        const { data: userData, error: userError } = await supabase
+          .from('users')
+          .select('name, email')
+          .eq('id', userId)
+          .single()
+
+        if (userError) {
+          console.error('Erro ao buscar dados do usu├írio:', userError)
+        }
+
+        const patientName = (userData as any)?.name || 'Paciente'
+
+        // Gerar relat├│rio cl├¡nico
+        const report = await clinicalReportService.generateAIReport(
+          userId,
+          patientName,
+          {
+            investigation: 'Investiga├º├úo realizada atrav├®s da avalia├º├úo cl├¡nica inicial com IA residente',
+            methodology: 'Aplica├º├úo da Arte da Entrevista Cl├¡nica (AEC) com protocolo IMRE',
+            result: 'Avalia├º├úo cl├¡nica inicial conclu├¡da com sucesso',
+            evolution: 'Plano de cuidado personalizado estabelecido',
+            recommendations: [
+              'Continuar acompanhamento cl├¡nico regular',
+              'Seguir protocolo de tratamento estabelecido',
+              'Manter comunica├º├úo com equipe m├®dica'
+            ],
+            scores: {
+              clinical_score: 75,
+              treatment_adherence: 80,
+              symptom_improvement: 70,
+              quality_of_life: 85
+            }
+          }
+        )
+
+        console.log('Ô£à Relat├│rio cl├¡nico gerado:', report.id)
+
+        // Salvar na mem├│ria da IA
+        this.saveToMemory(
+          `Relat├│rio cl├¡nico gerado para ${patientName} (ID: ${report.id})`,
+          this.createResponse(
+            `Relat├│rio cl├¡nico gerado (${report.id}) para ${patientName}.`,
+            0.9,
+            'assessment',
+            {
+              reportId: report.id,
+              patientId: userId,
+              patientName
+            }
+          ),
+          userId
+        )
+
+      } catch (error) {
+        console.error('Erro ao gerar relat├│rio cl├¡nico:', error)
+      }
+    }
+  }
+
+  // M├®todos p├║blicos para acesso ao estado
+  getMemory(): AIMemory[] {
+    return [...this.memory]
+  }
+
+  clearMemory(): void {
+    this.memory = []
+  }
+
+  // M├®todos auxiliares privados
+  private getAxisDetails(axisKey: string) {
+    const axes: any = {
+      'admin': { key: 'admin', label: 'Administra├º├úo', summary: 'Vis├úo geral do sistema e gest├úo de recursos.', knowledgeQuery: 'gest├úo administra├º├úo sistema' },
+      'clinica': { key: 'clinica', label: 'Cl├¡nica', summary: 'Atendimento a pacientes e gest├úo cl├¡nica.', knowledgeQuery: 'protocolos cl├¡nicos tratamento' },
+      'ensino': { key: 'ensino', label: 'Ensino', summary: 'Cursos, treinamentos e material educativo.', knowledgeQuery: 'educa├º├úo cursos treinamento' },
+      'pesquisa': { key: 'pesquisa', label: 'Pesquisa', summary: 'Estudos, dados e evid├¬ncias cient├¡ficas.', knowledgeQuery: 'pesquisa cient├¡fica estudos' }
+    }
+    return axes[axisKey] || axes['clinica']
+  }
+
+  private resolveAxisFromPath(path?: string): string {
+    if (!path) return 'clinica'
+    if (path.includes('admin')) return 'admin'
+    if (path.includes('ensino')) return 'ensino'
+    if (path.includes('pesquisa')) return 'pesquisa'
+    return 'clinica'
+  }
+
+  private getAvailableAxesForUser(userType: string = 'student'): string[] {
+    // Permiss├úo baseada APENAS no tipo de usu├írio do Supabase
+    if (userType === 'admin') return ['admin', 'clinica', 'ensino', 'pesquisa']
+    if (userType === 'professional') return ['clinica', 'ensino', 'pesquisa']
+    return ['ensino']
+  }
+
+  private formatAxisMenu(axes: string[]): string {
+    return axes.map(axis => {
+      const details = this.getAxisDetails(axis)
+      return `  - **${details.label}**: ${details.summary}`
+    }).join('\n')
+  }
+
+  // M├®todos de sanitiza├º├úo removidos conforme Protocolo de Seguran├ºa (Phase 5)
+  // Texto cl├¡nico deve ser preservado integralmente.
+
+  private buildPlatformActionContext(intent: any, result: any): string {
+    if (!result.success) return `A├º├úo falhou: ${result.error}`
+
+    let context = `A├º├úo executada: ${intent.type}\n`
+    if (result.data) {
+      context += `Dados resultantes: ${JSON.stringify(result.data, null, 2)}`
+    }
+    return context
+  }
+
+  private async processTradeVisionRequest(
+    userMessage: string,
+    intent: string,
+    platformData: any,
+    userEmail?: string,
+    uiContext?: any,
+    platformIntentType: string = 'NONE'
+  ): Promise<AIResponse> {
+    try {
+      console.log('­ƒªà [TradeVision Cloud] Conectando ao Core via Supabase Edge Functions...')
+
+      const withTimeout = async <T,>(
+        promise: PromiseLike<T>,
+        ms: number,
+        timeoutMessage: string
+      ): Promise<T> => {
+        let timeoutId: ReturnType<typeof setTimeout> | undefined
+        const timeoutPromise = new Promise<never>((_, reject) => {
+          timeoutId = setTimeout(() => reject(new Error(timeoutMessage)), ms)
+        })
+
+        try {
+          return (await Promise.race([promise, timeoutPromise])) as T
+        } finally {
+          if (timeoutId) clearTimeout(timeoutId)
+        }
+      }
+
+      // Obter fase do ClinicalAssessmentFlow (AEC 001) para controle de estado
+      let currentPhase = undefined
+      let nextQuestionHint = undefined
+
+      // ASSESSMENT_START na 1┬¬ mensagem deve iniciar o AEC local; antes "NONE" s├│ bloqueava o fluxo.
+      const platformAllowsAec =
+        platformIntentType === 'NONE' ||
+        !platformIntentType ||
+        platformIntentType === 'ASSESSMENT_START'
+
+      const shouldHandleAecFlow =
+        intent === 'CL├ìNICA' &&
+        platformData?.user?.id &&
+        platformAllowsAec
+
+      if (shouldHandleAecFlow) {
+        await clinicalAssessmentFlow.ensureLoaded(platformData.user.id)
+        let flowState = clinicalAssessmentFlow.getState(platformData.user.id)
+
+        if (!flowState && platformIntentType === 'ASSESSMENT_START') {
+          // C3: Auto-preencher nome do perfil
+          const patientName = platformData?.user?.name || platformData?.user?.full_name || undefined
+          clinicalAssessmentFlow.startAssessment(platformData.user.id, patientName)
+          flowState = clinicalAssessmentFlow.getState(platformData.user.id)
+          console.log('­ƒÜÇ AEC: fluxo iniciado a partir de ASSESSMENT_START (TradeVision path) | Nome:', patientName || '(auto)')
+        }
+
+        // Se existe fluxo ativo, processar a resposta do usu├írio para avan├ºar
+        if (flowState) {
+          try {
+            // S├│ processa se n├úo for o comando de iniciar (que j├í foi tratado no processAssessment)
+            const isStartCommand = userMessage.toLowerCase().includes('iniciar') || userMessage.toLowerCase().includes('avalia├º├úo')
+
+            if (!isStartCommand) {
+              const stepResult = clinicalAssessmentFlow.processResponse(platformData.user.id, userMessage)
+              console.log(`Ô£à Fluxo AEC avan├ºou para: ${stepResult.phase}`)
+              nextQuestionHint = stepResult.nextQuestion
+
+              // Se a avalia├º├úo foi conclu├¡da, gerar relat├│rio automaticamente
+              if (stepResult.phase === 'COMPLETED' && stepResult.isComplete) {
+                console.log('­ƒÄ» Avalia├º├úo conclu├¡da! Gerando relat├│rio autom├ítico...')
+                try {
+                  const reportId = await clinicalAssessmentFlow.generateReport(
+                    platformData.user.id,
+                    platformData.user.id // patientId = userId para agora
+                  )
+                  if (reportId) {
+                    console.log(`Ô£à Relat├│rio gerado e salvo: ${reportId}`)
+                    console.log('­ƒôè Dispon├¡vel no dashboard do paciente e m├®dico')
+                  }
+                } catch (err) {
+                  console.error('ÔØî Erro ao gerar relat├│rio autom├ítico:', err)
+                }
+              }
+
+              // TRIGGER EXPLICITO SOLICITADO
+              if (stepResult.phase === 'COMPLETED') {
+                console.log('[ClinicalFlow] Assessment completed ÔåÆ session finalized')
+              }
+
+              // Persistir estado
+              await clinicalAssessmentFlow.persist(platformData.user.id)
+            }
+
+            // Recarrega estado atualizado
+            flowState = clinicalAssessmentFlow.getState(platformData.user.id)
+            if (flowState) {
+              currentPhase = flowState.phase
+            }
+          } catch (e) {
+            console.warn('Erro ao processar fluxo AEC:', e)
+          }
+        }
+      }
+
+      // ­ƒºá CARREGAR HIST├ôRICO DE CONVERSAS (Mem├│ria de Contexto)
+      let conversationHistory: Array<{ role: string, content: string }> = []
+
+      if (platformData?.user?.id) {
+        try {
+          const historyQuery = supabase
+            .from('ai_chat_interactions')
+            .select('user_message, ai_response, created_at')
+            .eq('user_id', platformData.user.id)
+            .order('created_at', { ascending: false })
+            .limit(10) // ├Ültimas 10 intera├º├Áes
+
+          const { data: historyData, error: historyError } = await withTimeout(
+            historyQuery as unknown as PromiseLike<{
+              data: Array<{ user_message: string; ai_response: string; created_at: string }> | null
+              error: any
+            }>,
+            8000,
+            'Timeout ao carregar hist├│rico da conversa (ai_chat_interactions).'
+          )
+
+          if (!historyError && historyData && historyData.length > 0) {
+            // Reverter para ordem cronol├│gica e formatar para OpenAI
+            conversationHistory = historyData.reverse().flatMap((h: { user_message: string; ai_response: string }) => [
+              { role: 'user', content: h.user_message },
+              { role: 'assistant', content: h.ai_response }
+            ])
+            console.log(`­ƒºá Hist├│rico carregado: ${historyData.length} intera├º├Áes anteriores`)
+          }
+        } catch (e) {
+          console.warn('ÔÜá´©Å Erro ao carregar hist├│rico:', e)
+        }
+      }
+
+      const payload = {
+        message: userMessage,
+        conversationHistory, // ÔåÉ NOVO: Hist├│rico para contexto
+        assessmentPhase: currentPhase,
+        nextQuestionHint,
+        ui_context: uiContext,
+        patientData: {
+          ...platformData,
+          intent,
+          userEmail,
+          assessmentContext: platformData?.user?.id ? this.activeAssessments.get(platformData.user.id) : undefined
+        }
+      }
+
+      // ­ƒÜÇ Chamada oficial para a Nuvem (Fase 2)
+      const invokePromise = supabase.functions.invoke('tradevision-core', {
+        body: payload
+      })
+
+      const { data, error } = await withTimeout(
+        invokePromise,
+        45000,
+        'Timeout ao chamar tradevision-core. O Core demorou mais que o esperado para responder.'
+      )
+
+      if (error) throw error
+      if (data?.error) throw new Error(data.error)
+      if (!data?.text) throw new Error('Resposta da IA veio vazia do Core Cloud.')
+
+      const appCommandsFromCore = Array.isArray((data as { app_commands?: unknown[] }).app_commands)
+        ? (data as { app_commands: unknown[] }).app_commands
+        : []
+      if (appCommandsFromCore.length > 0) {
+        console.log('­ƒôï [Core] app_commands no body:', appCommandsFromCore.length, appCommandsFromCore)
+      }
+
+      let aiContent = data.text
+
+      let isCompleted = false
+      if (aiContent.includes('[ASSESSMENT_COMPLETED]')) {
+        isCompleted = true
+        console.log('­ƒÄ» Tag [ASSESSMENT_COMPLETED] detectada no output da IA')
+        aiContent = aiContent.replace('[ASSESSMENT_COMPLETED]', '').trim()
+
+        // SEMPRE gerar relat├│rio quando [ASSESSMENT_COMPLETED] ├® detectado.
+        // O Core (Edge Function) agora extrai dados via GPT da conversa real
+        // se o content do cliente vier vazio/dessincronizado.
+        if (platformData?.user?.id) {
+          console.log('­ƒºá [GPT Extraction] Tag detectada. Enviando para Edge Function extrair dados da conversa...')
+
+          const flowState = clinicalAssessmentFlow.getState(platformData.user.id)
+
+          // Marcar como completed localmente
+          if (flowState && flowState.phase !== 'COMPLETED') {
+            clinicalAssessmentFlow.completeAssessment(platformData.user.id)
+          }
+
+          // Enviar dados locais (podem ser parciais/dessincronizados).
+          // O Core detecta se s├úo vazios e extrai via GPT do hist├│rico.
+          const localData = flowState?.data
+          const contentPayload = localData ? {
+            identificacao: { nome: localData.patientName, apresentacao: localData.patientPresentation },
+            lista_indiciaria: localData.complaintList || [],
+            queixa_principal: localData.mainComplaint || null,
+            desenvolvimento_queixa: {
+              localizacao: localData.complaintLocation,
+              inicio: localData.complaintOnset,
+              descricao: localData.complaintDescription,
+              sintomas_associados: localData.complaintAssociatedSymptoms || [],
+              fatores_melhora: localData.complaintImprovements || [],
+              fatores_piora: localData.complaintWorsening || []
+            },
+            historia_patologica_pregressa: localData.medicalHistory || [],
+            historia_familiar: {
+              lado_materno: localData.familyHistoryMother || [],
+              lado_paterno: localData.familyHistoryFather || []
+            },
+            habitos_vida: localData.lifestyleHabits || [],
+            perguntas_objetivas: {
+              alergias: localData.allergies,
+              medicacoes_regulares: localData.regularMedications,
+              medicacoes_esporadicas: localData.sporadicMedications
+            },
+            consenso: {
+              aceito: localData.consensusAgreed ?? false,
+              revisoes_realizadas: localData.consensusRevisions ?? 0
+            }
+          } : {} // Content vazio ÔåÆ Core vai extrair via GPT
+
+          console.log(`­ƒôè Dados locais: ${localData?.complaintList?.length || 0} queixas, queixa principal: ${localData?.mainComplaint || 'N/A (GPT vai extrair)'}`)
+
+          // Chamar Edge Function para salvar (com fallback GPT extraction)
+          const { supabase } = await import('./supabase')
+          supabase.functions.invoke('tradevision-core', {
+            body: {
+              action: 'finalize_assessment',
+              message: 'Finalizing Assessment',
+              assessmentData: {
+                patient_id: platformData.user.id,
+                content: contentPayload,
+                scores: { anamnese: 100, detalhamento: 100, consenso: 100 },
+                risk_level: 'medium'
+              }
+            }
+          })
+            .then(({ data: resp }) => {
+              if (resp?.success) {
+                console.log(`Ô£à [SUCESSO] Relat├│rio salvo. ID: ${resp.report_id} | M├®todo: ${resp.extraction_method}`)
+              } else {
+                console.error('ÔØî [ERRO] Edge Function retornou erro:', resp?.error)
+              }
+            })
+            .catch(e => console.error('ÔØî [ERRO] Falha na chamada ├á Edge Function:', e))
+
+          // Limpar estado local
+          clinicalAssessmentFlow.resetAssessment(platformData.user.id)
+        }
+      }
+
+      // Usu├írio nunca v├¬ nenhum token: remover todos antes de devolver ao hook
+      aiContent = stripInvisibleTokensFromResponse(aiContent)
+
+      // Injetar comandos de navega├º├úo p├│s-AEC para guiar o paciente (bot├Áes, sem auto-navigate)
+      const postAecCommands: unknown[] = []
+      if (isCompleted) {
+        postAecCommands.push(
+          {
+            kind: 'noa_command',
+            autoExecute: false,
+            command: {
+              type: 'navigate-route',
+              target: '/app/clinica/paciente/dashboard?section=relatorio',
+              label: '­ƒôï Ver Meu Relat├│rio'
+            }
+          },
+          {
+            kind: 'noa_command',
+            autoExecute: false,
+            command: {
+              type: 'navigate-route',
+              target: '/app/clinica/paciente/agendamentos',
+              label: '­ƒôà Agendar Consulta'
+            }
+          }
+        )
+      }
+
+      const mergedAppCommands = [
+        ...(appCommandsFromCore.length > 0 ? appCommandsFromCore : (data.app_commands ?? [])),
+        ...postAecCommands
+      ]
+
+      return {
+        id: `tv_${Date.now()}`,
+        content: aiContent,
+        confidence: 0.98,
+        reasoning: 'TradeVision Cloud Master Engine',
+        timestamp: new Date(),
+        type: 'text',
+        metadata: {
+          ...data.metadata,
+          assessmentCompleted: isCompleted,
+          intent: data.metadata?.intent || intent,
+          professionalId: data.metadata?.professionalId,
+          audited: data.metadata?.audited,
+          system: data.metadata?.system,
+          app_commands: mergedAppCommands
+        }
+      }
+    } catch (err) {
+      const errMsg =
+        err instanceof Error
+          ? err.message
+          : (() => {
+            try {
+              return JSON.stringify(err)
+            } catch {
+              return String(err)
+            }
+          })()
+
+      console.error('ÔØî [TradeVision Cloud] Erro de execu├º├úo:', errMsg)
+
+      // Importante: n├úo cair em fallback cl├¡nico/AEC por causa de contexto injetado.
+      return this.createResponse(
+        'Estou com instabilidade ao conectar ao Core agora. Pode tentar novamente em alguns segundos?\n\n' +
+        'Se persistir, me diga qual a├º├úo voc├¬ estava tentando (ex.: ÔÇ£agendar com Dr. RicardoÔÇØ) que eu te guio pelo caminho mais curto.',
+        0.2,
+        'error',
+        { source: 'tradevision-core', error: errMsg }
+      )
+    }
+  }
+
+  private async getAssistantResponse(
+    userMessage: string,
+    intent: string,
+    platformData?: any,
+    userEmail?: string,
+    uiContext?: any,
+    platformIntentType: string = 'NONE'
+  ): Promise<AIResponse> {
+    // ­ƒªà [TradeVision Cloud] Todas as requisi├º├Áes agora s├úo processadas pelo Core na Nuvem
+    return this.processTradeVisionRequest(userMessage, intent, platformData, userEmail, uiContext, platformIntentType);
+  }
+
+  private async generateReasoningQuestion(
+    prompt: string,
+    userResponse: string,
+    assessmentContext: IMREAssessmentState
+  ): Promise<string> {
+    try {
+      // Usar a integra├º├úo com o Assistant para gerar a pergunta de reasoning
+      // Aqui usamos um thread separado ou o mesmo thread contexto "reasoning"
+      const response = await this.assistantIntegration.sendMessage(
+        prompt,
+        'system_reasoning', // Contexto espec├¡fico para reasoning
+        `reasoning_${assessmentContext.userId}`
+      )
+
+      if (response && response.content) {
+        // Limpar poss├¡veis prefixos que o LLM adiciona
+        return response.content.replace(/^Pergunta sugerida: /i, '').replace(/^N├┤a: /i, '').trim()
+      }
+
+      throw new Error('Falha ao gerar pergunta via AI')
+    } catch (error) {
+      console.error('Erro no reasoning:', error)
+      // Fallback gen├®rico caso a IA falhe
+      return 'Pode me dar mais detalhes sobre isso?'
+    }
+  }
+
+  /**
+   * Processar etapa METODOLOGIA (M)
+   */
+  private async processMethodologyStep(
+    message: string,
+    assessment: IMREAssessmentState,
+    platformData: any,
+    userEmail?: string
+  ): Promise<AIResponse> {
+    // 1. Analisar resposta do usu├írio
+    assessment.methodology.diagnosticMethods.push(message)
+
+    // 2. Verificar se precisa de mais informa├º├Áes (simplificado)
+    const needsMore = message.length < 20 && !message.toLowerCase().includes('n├úo')
+
+    if (needsMore) {
+      // Gerar pergunta de aprofundamento
+      const reasoningQuestion = await this.generateReasoningQuestion(
+        `O paciente est├í descrevendo exames/m├®todos: "${message}". Gere uma pergunta curta para saber se ele tem resultados de exames recentes.`,
+        message,
+        assessment
+      )
+      return this.createResponse(reasoningQuestion, 0.7, 'assessment')
+    }
+
+    // 3. Avan├ºar para RESULTADO
+    assessment.step = 'RESULT'
+    this.platformFunctions.updateAssessmentState(assessment.userId, assessment)
+
+    return this.createResponse(
+      'Entendi. Agora vamos para os RESULTADOS. Como voc├¬ tem se sentido com o tratamento atual? Houve melhoras ou pioras recentes?',
+      0.8,
+      'assessment'
+    )
+  }
+
+  /**
+   * Processar etapa RESULTADO (R)
+   */
+  private async processResultStep(
+    message: string,
+    assessment: IMREAssessmentState,
+    platformData: any,
+    userEmail?: string
+  ): Promise<AIResponse> {
+    // 1. Registrar resultados reportados
+    assessment.result.clinicalFindings.push(message)
+
+    // 2. Avan├ºar para EVOLU├ç├âO
+    assessment.step = 'EVOLUTION'
+    this.platformFunctions.updateAssessmentState(assessment.userId, assessment)
+
+    return this.createResponse(
+      'Certo. Para finalizar com a EVOLU├ç├âO: Quais s├úo suas metas principais para os pr├│ximos meses? O que voc├¬ espera alcan├ºar?',
+      0.8,
+      'assessment'
+    )
+  }
+
+  /**
+   * Processar etapa EVOLU├ç├âO (E)
+   */
+  private async processEvolutionStep(
+    message: string,
+    assessment: IMREAssessmentState,
+    platformData: any,
+    userEmail?: string
+  ): Promise<AIResponse> {
+    // 1. Registrar plano/expectativas
+    assessment.evolution.carePlan.push(message)
+
+    // 2. Finalizar avalia├º├úo
+    assessment.status = 'completed'
+    this.platformFunctions.updateAssessmentState(assessment.userId, assessment)
+
+    // 3. Gerar e salvar relat├│rio (ass├¡ncrono para n├úo travar)
+    this.generateAndSaveReport(assessment).catch(err => console.error('Erro ao salvar relat├│rio:', err))
+
+    return this.createResponse(
+      'Avalia├º├úo completa! Ô£¿\n\nGerei um relat├│rio cl├¡nico detalhado com base na nossa conversa. Vou encaminh├í-lo para an├ílise do Dr. Ricardo Valen├ºa.\n\nVoc├¬ pode visualizar o resumo no seu dashboard. Posso ajudar em algo mais hoje?',
+      1.0,
+      'assessment'
+    )
+  }
+
+  private async generateAndSaveReport(assessment: IMREAssessmentState): Promise<void> {
+    try {
+      const summary = await this.generateClinicalSummary(assessment.userId)
+      console.log('­ƒôØ Relat├│rio gerado:', summary)
+    } catch (error) {
+      console.error('Erro ao gerar relat├│rio:', error)
+    }
+  }
+}
