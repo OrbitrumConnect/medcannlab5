@@ -88,6 +88,7 @@ const REPORTS_PER_PAGE = 5
 
 const ClinicalReports: React.FC<ClinicalReportsProps> = ({ className = '', onShareReport }) => {
   const { user } = useAuth()
+  const navigate = useNavigate()
   const { getEffectiveUserType, isAdminViewingAs } = useUserView()
   const [reports, setReports] = useState<SharedReport[]>([])
   const [loading, setLoading] = useState(true)
