@@ -1502,6 +1502,35 @@ const ClinicalReports: React.FC<ClinicalReportsProps> = ({ className = '', onSha
                                 <p className="mt-1">{stripClinical(value.considerations)}</p>
                               </div>
                             )}
+                            {/* Ações por análise: baixar, compartilhar, NFT */}
+                            {!isPatient && (
+                              <div className="flex flex-wrap gap-2 pt-2 border-t border-slate-700/40 mt-2">
+                                <button
+                                  onClick={() => handleDownloadRationality(key, value)}
+                                  className="flex items-center space-x-1 px-2 py-1 text-xs rounded bg-indigo-500/10 border border-indigo-500/30 text-indigo-300 hover:bg-indigo-500/20 transition-colors"
+                                  title="Baixar esta análise (.txt)"
+                                >
+                                  <Download className="w-3 h-3" />
+                                  <span>Baixar</span>
+                                </button>
+                                <button
+                                  onClick={() => handleShareRationality(key, value)}
+                                  className="flex items-center space-x-1 px-2 py-1 text-xs rounded bg-sky-500/10 border border-sky-500/30 text-sky-300 hover:bg-sky-500/20 transition-colors"
+                                  title="Compartilhar esta análise"
+                                >
+                                  <Share2 className="w-3 h-3" />
+                                  <span>Compartilhar</span>
+                                </button>
+                                <button
+                                  onClick={() => selectedReport && handleGenerateNFT(selectedReport)}
+                                  className="flex items-center space-x-1 px-2 py-1 text-xs rounded bg-amber-500/10 border border-amber-500/30 text-amber-300 hover:bg-amber-500/20 transition-colors"
+                                  title="Registrar como NFT (blockchain)"
+                                >
+                                  <QrCode className="w-3 h-3" />
+                                  <span>Gerar NFT</span>
+                                </button>
+                              </div>
+                            )}
                           </div>
                         </div>
                       )
