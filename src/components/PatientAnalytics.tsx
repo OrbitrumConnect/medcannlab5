@@ -727,8 +727,8 @@ const PatientAnalytics: React.FC<PatientAnalyticsProps> = ({ reports, loading, u
                                         <span className="text-slate-500 text-sm mb-1">/ 100</span>
                                     </div>
                                 ) : (
-                                    <div className="flex items-center gap-2 mt-1">
-                                        <span className="text-sm font-medium text-amber-400/80">Aguardando dados</span>
+                                    <div className="flex items-center gap-2 mt-1" title="Os índices aparecem após sua próxima avaliação clínica completa com a Nôa. Clique em 'Agendar Consulta' ou inicie uma avaliação para gerar dados.">
+                                        <span className="text-sm font-medium text-amber-400/80 cursor-help underline decoration-dotted decoration-amber-400/40 underline-offset-2">Aguardando dados</span>
                                     </div>
                                 )}
                             </div>
