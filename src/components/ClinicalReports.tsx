@@ -319,8 +319,16 @@ const ClinicalReports: React.FC<ClinicalReportsProps> = ({ className = '', onSha
       console.log(`📊 Relatórios carregados: ${allReports.length} (role: ${effectiveType})`)
 
       const formattedReports: SharedReport[] = allReports.map((report: any) => {
-        const content = (report.content as Record<string, any>) || {}
-        
+        const rawDb = (report.content as Record<string, any>) || {}
+        // Pipeline Master encapsula em { raw: { content: {...} }, structured: "...", metadata: {...} }
+        // Suporta ambos formatos: legado (campos no topo) e novo (aninhado em raw.content)
+        const nested = (rawDb.raw && typeof rawDb.raw === 'object' && rawDb.raw.content && typeof rawDb.raw.content === 'object')
+          ? rawDb.raw.content
+          : null
+        const content: Record<string, any> = nested
+          ? { ...nested, structured: rawDb.structured, scores: nested.scores || rawDb.raw?.scores, risk_level: rawDb.raw?.risk_level }
+          : rawDb
+
         // Map AEC protocol fields to display fields
         const identificacao = content.identificacao || {}
         const apresentacao = typeof identificacao === 'object' ? (identificacao.apresentacao || '') : String(identificacao || '')
