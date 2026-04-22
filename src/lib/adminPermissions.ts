@@ -20,12 +20,29 @@ export const isAdmin = (user: { email?: string; type?: string } | null): boolean
 
 /**
  * Buscar todos os pacientes (admin tem acesso completo)
+ *
+ * @param user        Usuário autenticado
+ * @param effectiveType Tipo efetivo (respeita "Ver como" do admin). Se omitido,
+ *                    usa o tipo real do usuário (comportamento legado).
+ *                    Quando admin está vendo como 'profissional', a função
+ *                    retorna apenas os pacientes vinculados ao próprio user.id,
+ *                    simulando fielmente a visão de um profissional comum.
  */
-export const getAllPatients = async (user: { id: string; type?: string; email?: string } | null) => {
+export const getAllPatients = async (
+  user: { id: string; type?: string; email?: string } | null,
+  effectiveType?: string
+) => {
   if (!user) return []
 
   try {
-    const isUserAdmin = isAdmin(user)
+    // Se o admin está em modo "Ver como", respeita o tipo efetivo:
+    // só é tratado como admin (acesso global) quando NÃO há simulação ativa.
+    const normalizedEffective = effectiveType
+      ? normalizeUserType(effectiveType)
+      : null
+    const isUserAdmin = isAdmin(user) && (
+      normalizedEffective === null || normalizedEffective === 'admin'
+    )
 
     if (isUserAdmin) {
       // ADMIN: Busca direta na tabela de usuários para obter nomes reais
