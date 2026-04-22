@@ -9272,6 +9272,7 @@ export type Database = {
         Args: { p_appointment_id: string; p_notes?: string }
         Returns: boolean
       }
+      compute_aec_scores: { Args: { content: Json }; Returns: Json }
       count_identified_correlations: { Args: never; Returns: number }
       count_multirational_analyses: { Args: never; Returns: number }
       count_preserved_narratives: { Args: never; Returns: number }
