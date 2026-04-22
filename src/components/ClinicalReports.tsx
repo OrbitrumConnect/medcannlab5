@@ -1482,14 +1482,27 @@ const ClinicalReports: React.FC<ClinicalReportsProps> = ({ className = '', onSha
                       return (
                         <button
                           key={key}
-                          onClick={() => handleApplyRationality(key)}
-                          disabled={isGeneratingAnalysis || hasAnalysis}
+                          onClick={() => {
+                            if (hasAnalysis) {
+                              // Já existe → scroll até o card de análises
+                              const el = document.getElementById('rationalities-results-card')
+                              if (el) {
+                                el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+                                el.classList.add('ring-2', 'ring-emerald-400/60')
+                                setTimeout(() => el.classList.remove('ring-2', 'ring-emerald-400/60'), 1800)
+                              }
+                            } else {
+                              handleApplyRationality(key)
+                            }
+                          }}
+                          disabled={isGeneratingAnalysis}
                           className={`flex items-center space-x-2 px-3 py-2 rounded-lg text-sm transition-colors ${hasAnalysis
-                            ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 cursor-default'
+                            ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500/20 cursor-pointer'
                             : isGeneratingAnalysis
                               ? 'bg-slate-700/50 text-slate-500 cursor-not-allowed'
                               : 'bg-slate-800/50 border border-slate-600/30 text-slate-300 hover:bg-blue-900/20 hover:border-blue-500/30'
                             }`}
+                          title={hasAnalysis ? 'Análise já gerada — clique para ver abaixo' : `Gerar análise ${label}`}
                         >
                           {icon}
                           <span>{label}</span>
