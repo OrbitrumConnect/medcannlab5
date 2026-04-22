@@ -3018,8 +3018,40 @@ const NoaConversationalInterface = React.forwardRef<
                 </div>
               )}
 
-            <div
-              ref={scrollContainerRef}
+            {/* 🧬 Barra de Progresso AEC — sticky, sempre visível durante avaliação */}
+            {(() => {
+              // Procura a fase mais recente (últimas 5 mensagens da Nôa)
+              let phase: string | undefined;
+              for (let i = messages.length - 1; i >= Math.max(0, messages.length - 5); i--) {
+                const m = messages[i] as any;
+                const meta = m?.metadata?.metadata ?? m?.metadata;
+                const p = meta?.assessmentPhase || meta?._aec_layers?.phase;
+                if (p) { phase = p; break; }
+              }
+              const progress = phase ? (PHASE_PROGRESS[phase] ?? 0) : 0;
+              if (progress <= 0) return null;
+              const label = phase ? (PHASE_LABEL[phase] ?? phase) : '';
+              const isDone = progress >= 100;
+              return (
+                <div className="border-b border-slate-800 bg-slate-900/90 backdrop-blur-sm px-4 py-2">
+                  <div className="flex items-center justify-between mb-1.5">
+                    <span className="text-[10px] font-semibold uppercase tracking-wider text-emerald-400">
+                      {isDone ? '✓ AEC Concluída' : `AEC · ${label}`}
+                    </span>
+                    <span className="text-[10px] font-mono text-slate-400">{progress}%</span>
+                  </div>
+                  <div className="h-1.5 w-full bg-slate-800 rounded-full overflow-hidden border border-slate-700/50">
+                    <motion.div
+                      initial={{ width: 0 }}
+                      animate={{ width: `${progress}%` }}
+                      transition={{ type: 'spring', stiffness: 60, damping: 18 }}
+                      className={`h-full ${isDone ? 'bg-gradient-to-r from-emerald-500 to-emerald-400' : 'bg-gradient-to-r from-emerald-500 via-cyan-400 to-emerald-500'} shadow-[0_0_8px_rgba(52,211,153,0.4)]`}
+                    />
+                  </div>
+                </div>
+              );
+            })()}
+
               className="flex-1 overflow-y-auto px-2 sm:px-5 py-2 sm:py-4 space-y-3 sm:space-y-4 overflow-x-hidden"
               style={{
                 flex: "1 1 auto",
