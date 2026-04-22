@@ -7448,6 +7448,45 @@ export type Database = {
         }
         Relationships: []
       }
+      user_lifecycle_logs: {
+        Row: {
+          action: string
+          created_at: string
+          had_appointments: boolean | null
+          had_chats: boolean | null
+          had_clinical_reports: boolean | null
+          id: string
+          metadata: Json | null
+          reason: string | null
+          triggered_by: string | null
+          user_id: string
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          had_appointments?: boolean | null
+          had_chats?: boolean | null
+          had_clinical_reports?: boolean | null
+          id?: string
+          metadata?: Json | null
+          reason?: string | null
+          triggered_by?: string | null
+          user_id: string
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          had_appointments?: boolean | null
+          had_chats?: boolean | null
+          had_clinical_reports?: boolean | null
+          id?: string
+          metadata?: Json | null
+          reason?: string | null
+          triggered_by?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_mutes: {
         Row: {
           created_at: string | null
@@ -7747,6 +7786,7 @@ export type Database = {
           gender: string | null
           id: string
           invited_by: string | null
+          is_anonymized: boolean
           is_official: boolean | null
           medications: string | null
           metadata: Json | null
@@ -7786,6 +7826,7 @@ export type Database = {
           gender?: string | null
           id?: string
           invited_by?: string | null
+          is_anonymized?: boolean
           is_official?: boolean | null
           medications?: string | null
           metadata?: Json | null
@@ -7825,6 +7866,7 @@ export type Database = {
           gender?: string | null
           id?: string
           invited_by?: string | null
+          is_anonymized?: boolean
           is_official?: boolean | null
           medications?: string | null
           metadata?: Json | null
@@ -9404,6 +9446,10 @@ export type Database = {
           user_id: string
         }[]
       }
+      anonymize_user_safely: {
+        Args: { _reason?: string; _triggered_by?: string; _user_id: string }
+        Returns: boolean
+      }
       award_gamification_points: {
         Args: {
           p_category?: string
@@ -9532,6 +9578,10 @@ export type Database = {
       }
       current_user_email: { Args: never; Returns: string }
       current_user_role: { Args: never; Returns: string }
+      delete_user_completely: {
+        Args: { _reason?: string; _triggered_by?: string; _user_id: string }
+        Returns: string
+      }
       ensure_user_profile: { Args: { target_user_id: string }; Returns: string }
       ensure_wallet: { Args: { p_user_id: string }; Returns: string }
       expire_video_call_requests: { Args: never; Returns: undefined }
@@ -9785,6 +9835,10 @@ export type Database = {
       }
       populate_initial_forum_posts: { Args: never; Returns: undefined }
       process_monthly_closing: { Args: never; Returns: string }
+      process_user_lifecycle: {
+        Args: { _reason?: string; _triggered_by?: string; _user_id: string }
+        Returns: string
+      }
       refresh_user_statistics: {
         Args: { p_user_id: string }
         Returns: undefined
