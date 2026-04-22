@@ -38,9 +38,11 @@ const Profile: React.FC = () => {
     name: '',
     email: '',
     phone: '',
+    cep: '',
     location: '',
     bio: ''
   })
+  const [isLookingUpCep, setIsLookingUpCep] = useState(false)
 
   const [passwordData, setPasswordData] = useState({
     currentPassword: '',
@@ -71,18 +73,55 @@ const Profile: React.FC = () => {
     }
   }, [])
 
-  // Carregar dados do usuário
+  // Carregar dados do usuário (location pode conter "CEP — Cidade, UF")
   useEffect(() => {
     if (user) {
+      const rawLoc = (user as any).location || ''
+      const cepMatch = rawLoc.match(/\b(\d{5}-?\d{3})\b/)
+      const cep = cepMatch ? cepMatch[1] : ''
+      const locationOnly = rawLoc.replace(/\b\d{5}-?\d{3}\b\s*[—\-–|·,]?\s*/, '').trim()
       setFormData({
         name: user.name || '',
         email: user.email || '',
-        phone: user.phone || '',
-        location: user.location || '',
-        bio: user.bio || ''
+        phone: (user as any).phone || '',
+        cep,
+        location: locationOnly,
+        bio: (user as any).bio || ''
       })
     }
   }, [user])
+
+  // ViaCEP lookup automático ao completar 8 dígitos
+  const lookupCep = async (rawCep: string) => {
+    const cleaned = rawCep.replace(/\D/g, '')
+    if (cleaned.length !== 8) return
+    setIsLookingUpCep(true)
+    try {
+      const res = await fetch(`https://viacep.com.br/ws/${cleaned}/json/`)
+      const data = await res.json()
+      if (data?.erro) {
+        showError('CEP não encontrado.')
+        return
+      }
+      const parts = [data.bairro, data.localidade, data.uf].filter(Boolean)
+      const formatted = parts.length >= 2
+        ? `${data.localidade}, ${data.uf}`
+        : parts.join(', ')
+      setFormData(prev => ({
+        ...prev,
+        cep: `${cleaned.slice(0, 5)}-${cleaned.slice(5)}`,
+        // só sobrescreve location se estiver vazia ou for o resultado de outro CEP
+        location: prev.location && prev.location.trim().length > 0 && !prev.location.includes(',')
+          ? prev.location
+          : formatted
+      }))
+      success(`Endereço preenchido: ${formatted}`)
+    } catch (err) {
+      showError('Falha ao consultar ViaCEP.')
+    } finally {
+      setIsLookingUpCep(false)
+    }
+  }
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target
