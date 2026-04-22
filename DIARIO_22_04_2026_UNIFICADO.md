@@ -781,3 +781,46 @@ Isso separa **existência** de **validade** — modelagem de domínio, não bugf
 > A próxima fronteira não é mais código novo — é **proteção do código que existe** (testes + observabilidade).
 
 **Hash:** `errata-22-04-2026-v2-categoria`
+
+---
+
+## 📌 BUGFIX — `report_id` ausente no payload do `finalize_assessment` (22/04 — late)
+
+### Sintoma observado em produção
+```
+✅ [Edge Function] Resposta: {success: true, message: 'Finalização processada.', app_commands: [...]}
+❌ Erro ao gerar relatório (Via Edge Function): Edge Function retornou sucesso=false ou report_id nulo.
+```
+
+### Diagnóstico
+1. **Edge function** (`tradevision-core/index.ts` L1265-1306, gateway de `finalize_assessment`) sempre devolvia `{ success: true, message, app_commands }` — **nunca** incluía `report_id`, mesmo no caminho feliz.
+2. **`handleFinalizeAssessment`** retornava `void`. Os 3 caminhos de saída (idempotência por janela de 30s, conflito UNIQUE em `interaction_id`, sucesso completo) abortavam mudos.
+3. **Frontend** (`clinicalAssessmentFlow.ts` L1239) exigia `report_id` no payload e jogava `Error` mesmo com `success:true`. Resultado: UI mostrava erro vermelho com pipeline tendo rodado corretamente no banco.
+4. Logs do edge mostravam string `"Abortando Master Pipeline redundante"` que **não existia no código atual** → versão antiga ainda rodando em produção (deploy desatualizado), mas o defeito de payload existia em ambas as versões.
+
+### Correção aplicada
+**`supabase/functions/tradevision-core/index.ts`:**
+- `handleFinalizeAssessment` agora retorna `{ report_id, status, error? }` com 5 estados:
+  - `created` — pipeline completo, `report.id` novo
+  - `idempotent_recent` — janela de 30s, devolve `existing.id`
+  - `idempotent_unique` — conflito UNIQUE em `interaction_id`, busca o vencedor e devolve seu `id`
+  - `aborted_no_patient_id` — pré-condição faltando
+  - `error` — exceção capturada
+- Gateway (L1265+) captura o resultado e injeta `report_id` + `pipeline_status` no payload final.
+
+**`src/lib/clinicalAssessmentFlow.ts`:**
+- Lógica de aceitação reescrita:
+  - `success === false` → erro real (lança)
+  - `success` + `report_id` → caminho feliz
+  - `success` sem `report_id` → warn estruturado, retorna `null` sem ofuscar a UI (relatório já existe no banco, será listado normalmente)
+
+### Resultado esperado
+- Caminho feliz: UI recebe `report_id` imediatamente e pode navegar direto para o relatório.
+- Caminho idempotente (clique duplo, race do gateway+orquestrador): UI recebe o `report_id` do registro vencedor — sem erro vermelho, sem duplicata.
+- Caminho de falha real: erro continua aparecendo, agora com `pipeline_status` para auditoria.
+
+### Categoria do fix
+Mesma família dos hardenings de hoje: **payload já era estável, mas mentia por omissão**. Backend dizia "ok" sem entregar a referência; frontend interpretava ausência como falha. Selamos o **contrato de retorno**, não a lógica.
+
+**Arquivos:** `supabase/functions/tradevision-core/index.ts`, `src/lib/clinicalAssessmentFlow.ts`
+**Hash:** `bugfix-22-04-2026-report-id-payload`

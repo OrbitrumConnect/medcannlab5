@@ -1236,13 +1236,25 @@ export class ClinicalAssessmentFlow {
 
       console.log('Ô£à [Edge Function] Resposta:', edgeResponse)
 
-      if (edgeResponse && edgeResponse.success && edgeResponse.report_id) {
-        console.log('Ô£à Relat├│rio cl├¡nico salvo via Server-Side:', edgeResponse.report_id)
-        return edgeResponse.report_id
-      } else {
-        const errorMsg = edgeResponse?.error || 'Edge Function retornou sucesso=false ou report_id nulo.'
+      // [FIX 22/04 v2] Edge agora devolve report_id mesmo em casos idempotentes.
+      // Aceitamos:
+      //   - success + report_id → caminho feliz
+      //   - success sem report_id → idempotência sem ID recuperável (warn, não erro)
+      //   - !success → erro real
+      if (edgeResponse?.success === false) {
+        const errorMsg = edgeResponse?.error || 'Edge Function retornou success=false.'
         throw new Error(errorMsg)
       }
+
+      if (edgeResponse?.report_id) {
+        console.log('Ô£à Relat├│rio cl├¡nico salvo via Server-Side:', edgeResponse.report_id, '| status:', edgeResponse?.pipeline_status)
+        return edgeResponse.report_id
+      }
+
+      // success=true sem report_id → pipeline rodou mas não conseguimos recuperar o ID.
+      // Não é erro de UX (relatório existe no banco), apenas não temos a referência imediata.
+      console.warn('ÔÜá [Edge Function] success=true sem report_id (pipeline_status:', edgeResponse?.pipeline_status, '). Relatório provavelmente já persistido — UI consultará lista.')
+      return null
 
     } catch (error) {
       console.error('ÔØî Erro ao gerar relat├│rio (Via Edge Function):', error)

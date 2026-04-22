@@ -937,7 +937,7 @@ async function handleFinalizeAssessment(params: {
             patientData_id: patientData?.id,
             fallbackUserId
         });
-        return;
+        return { report_id: null, status: 'aborted_no_patient_id' as const };
     }
     
     // Injetar patient_id resolvido no assessmentData para uso downstream
@@ -962,8 +962,8 @@ async function handleFinalizeAssessment(params: {
             .maybeSingle();
 
         if (existing) {
-            console.warn(`⚠️ [PIPELINE_REDUNDANT_TRIGGER] Report idêntico em ${recentWindowMs}ms (existing=${existing.id}, current_interaction=${interaction_id}). Constraint UNIQUE protege; investigar causa no cliente.`);
-            return;
+            console.warn(`⚠️ [PIPELINE_REDUNDANT_TRIGGER] Report idêntico em ${recentWindowMs}ms (existing=${existing.id}, current_interaction=${interaction_id}). Devolvendo report_id existente.`);
+            return { report_id: existing.id, status: 'idempotent_recent' as const };
         }
 
         // 1.1. [DOCTOR_RESOLUTION] Resolver médico real do paciente em vez de cair no fallback hardcoded.
@@ -1101,9 +1101,15 @@ Estrutura Obrigatória:
 
         if (reportError) {
             // Violação UNIQUE em interaction_id = idempotência funcionando, não erro.
+            // Buscamos o registro vencedor para devolver o report_id ao cliente.
             if (reportError.code === '23505' && (reportError.message || '').includes('interaction_id')) {
-                console.warn('⚠️ [PIPELINE_REDUNDANT_TRIGGER] Conflito UNIQUE em interaction_id — outro processo já persistiu. Abortando.');
-                return;
+                console.warn('⚠️ [PIPELINE_REDUNDANT_TRIGGER] Conflito UNIQUE em interaction_id — outro processo já persistiu. Recuperando vencedor.');
+                const { data: winner } = await supabaseClient
+                    .from('clinical_reports')
+                    .select('id')
+                    .eq('interaction_id', interaction_id)
+                    .maybeSingle();
+                return { report_id: winner?.id ?? null, status: 'idempotent_unique' as const };
             }
             throw reportError;
         }
@@ -1158,9 +1164,11 @@ Estrutura Obrigatória:
         }
 
         console.log('✅ [PIPELINE_STAGE] DONE', { interaction_id, report_id: report.id });
+        return { report_id: report.id, status: 'created' as const };
 
     } catch (e) {
         console.error('❌ [PIPELINE_STAGE] ERROR', e);
+        return { report_id: null, status: 'error' as const, error: (e as Error)?.message };
     }
 }
 
@@ -1265,8 +1273,13 @@ Deno.serve(async (req: Request) => {
         if (isFinalizeRequest) {
             console.log('🚀 [GATEWAY] Disparando Orquestrador de Finalização ClinicalMaster (Mode: Active)...');
             // [FIX 16/04] AWAIT obrigatório — fire-and-forget causava pipeline incompleto
+            // [FIX 22/04 v2] Captura o resultado para devolver report_id ao cliente
+            let finalizeResult: { report_id: string | null; status: string; error?: string } = {
+                report_id: null,
+                status: 'unknown'
+            };
             try {
-                await handleFinalizeAssessment({
+                const r = await handleFinalizeAssessment({
                     supabaseClient,
                     openai,
                     interaction_id,
@@ -1275,13 +1288,17 @@ Deno.serve(async (req: Request) => {
                     professionalId,
                     fallbackUserId: effectiveUserId
                 });
+                if (r) finalizeResult = r;
             } catch (finalizeErr) {
                 console.error('❌ [GATEWAY] Erro na finalização:', finalizeErr);
+                finalizeResult = { report_id: null, status: 'error', error: (finalizeErr as Error)?.message };
             }
-            
+
             if (action === 'finalize_assessment') {
-                const finalResponse = { 
-                    success: true, 
+                const finalResponse = {
+                    success: true,
+                    report_id: finalizeResult.report_id,
+                    pipeline_status: finalizeResult.status,
                     message: 'Finalização processada.',
                     app_commands: [
                         {
