@@ -3294,12 +3294,13 @@ const NoaConversationalInterface = React.forwardRef<
                                 `✅ Agendamento confirmado! ID: ${appointmentId}`,
                                 {
                                   preferVoice: false,
+                                  role: "system",
                                   type: "action_card",
                                   action: {
                                     label: "Ver Meus Agendamentos",
                                     actionId: "view_schedule",
                                   },
-                                },
+                                } as any,
                               );
                             }}
                             onCancel={() => {
