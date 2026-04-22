@@ -1273,8 +1273,13 @@ Deno.serve(async (req: Request) => {
         if (isFinalizeRequest) {
             console.log('🚀 [GATEWAY] Disparando Orquestrador de Finalização ClinicalMaster (Mode: Active)...');
             // [FIX 16/04] AWAIT obrigatório — fire-and-forget causava pipeline incompleto
+            // [FIX 22/04 v2] Captura o resultado para devolver report_id ao cliente
+            let finalizeResult: { report_id: string | null; status: string; error?: string } = {
+                report_id: null,
+                status: 'unknown'
+            };
             try {
-                await handleFinalizeAssessment({
+                const r = await handleFinalizeAssessment({
                     supabaseClient,
                     openai,
                     interaction_id,
@@ -1283,13 +1288,17 @@ Deno.serve(async (req: Request) => {
                     professionalId,
                     fallbackUserId: effectiveUserId
                 });
+                if (r) finalizeResult = r;
             } catch (finalizeErr) {
                 console.error('❌ [GATEWAY] Erro na finalização:', finalizeErr);
+                finalizeResult = { report_id: null, status: 'error', error: (finalizeErr as Error)?.message };
             }
-            
+
             if (action === 'finalize_assessment') {
-                const finalResponse = { 
-                    success: true, 
+                const finalResponse = {
+                    success: true,
+                    report_id: finalizeResult.report_id,
+                    pipeline_status: finalizeResult.status,
                     message: 'Finalização processada.',
                     app_commands: [
                         {
