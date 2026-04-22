@@ -23,7 +23,10 @@ import {
     Printer,
     Send,
     ChevronDown,
-    Info
+    Info,
+    Download,
+    MessageCircle,
+    UserPlus
 } from 'lucide-react'
 import { ClinicalReport } from '../lib/clinicalReportService'
 import { cardStyle, surfaceStyle, accentGradient, secondarySurfaceStyle } from '../constants/designSystem'
