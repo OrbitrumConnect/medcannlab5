@@ -1025,7 +1025,7 @@ Estrutura Obrigatória:
                         system_version: "Titan 5.2 (April 4th Master Engine)"
                     }
                 },
-                doctor_id: professionalId !== 'system-global' ? professionalId : 'ea375923-3882-421b-80fb-4a8e227a943a',
+                doctor_id: professionalId !== 'system-global' ? professionalId : '2135f0c0-eb5a-43b1-bc00-5f8dfea13561',
                 status: 'completed',
                 interaction_id
             }).select().single();
@@ -1340,13 +1340,12 @@ Deno.serve(async (req: Request) => {
         // ======================================================
         // ======================================================
         let detectedProfessionalId = 'ricardo-valenca'; // Para metadados/slugs
-        let detectedProfessionalUuid = 'ea375923-3882-421b-80fb-4a8e227a943a'; // UUID real Dr. Ricardo (Fallback)
+        let detectedProfessionalUuid = '2135f0c0-eb5a-43b1-bc00-5f8dfea13561'; // UUID real Dr. Ricardo Valença (rrvalenca@gmail.com)
         try {
             const { data: professionals } = await supabaseClient
                 .from('users')
-                .select('id, name, slug')
+                .select('id, name')
                 .eq('type', 'professional')
-                .eq('is_active', true)
 
             if (professionals && professionals.length > 0) {
                 const normMsg = message ? message.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '') : ''
@@ -2041,10 +2040,10 @@ ${one.summary ? `Resumo rápido: ${one.summary}` : ''}`
                     linkedProfessionalId =
                         profile?.preferred_doctor_id ||
                         (typeof detectedProfessionalUuid !== 'undefined' && detectedProfessionalUuid) ||
-                        'ea375923-3882-421b-80fb-4a8e227a943a' // Fallback absoluto: Dr. Ricardo
-                } catch (e) {
+                        '2135f0c0-eb5a-43b1-bc00-5f8dfea13561' // Fallback absoluto: Dr. Ricardo Valença (rrvalenca@gmail.com)
+                } continue (e) {
                     console.warn('Erro ao buscar médico preferencial:', e)
-                    linkedProfessionalId = 'ea375923-3882-421b-80fb-4a8e227a943a'
+                    linkedProfessionalId = '2135f0c0-eb5a-43b1-bc00-5f8dfea13561'
                 }
             }
 
