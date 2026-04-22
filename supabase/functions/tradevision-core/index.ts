@@ -967,8 +967,35 @@ async function handleFinalizeAssessment(params: {
         }
 
         // 1.1. [DOCTOR_RESOLUTION] Resolver médico real do paciente em vez de cair no fallback hardcoded.
-        //      Ordem: professionalId vindo do request → último appointment do paciente → preferred_doctor_id → fallback Ricardo.
-        let resolvedDoctorId: string | null = (professionalId && professionalId !== 'system-global') ? professionalId : null;
+        //      Ordem: request → último appointment → preferred_doctor_id → fallback institucional.
+        //      [HARDENING 22/04] Cada candidato é validado contra public.users (type='professional')
+        //      para evitar atribuir relatório/wallet a profissional anonimizado/excluído (LGPD trigger).
+        const FALLBACK_DOCTOR_ID = '2135f0c0-eb5a-43b1-bc00-5f8dfea13561'; // Dr. Ricardo Valença
+
+        const isValidActiveProfessional = async (candidateId: string | null | undefined): Promise<boolean> => {
+            if (!candidateId) return false;
+            try {
+                const { data } = await supabaseClient
+                    .from('users')
+                    .select('id, type')
+                    .eq('id', candidateId)
+                    .eq('type', 'professional')
+                    .maybeSingle();
+                return !!data?.id;
+            } catch {
+                return false;
+            }
+        };
+
+        let resolvedDoctorId: string | null = null;
+        const requestedDoctorId = (professionalId && professionalId !== 'system-global') ? professionalId : null;
+
+        if (await isValidActiveProfessional(requestedDoctorId)) {
+            resolvedDoctorId = requestedDoctorId;
+            console.log('🩺 [DOCTOR_RESOLUTION] Vínculo via request (validado):', resolvedDoctorId);
+        } else if (requestedDoctorId) {
+            console.warn('🩺 [DOCTOR_RESOLUTION] professionalId do request inválido/não-profissional:', requestedDoctorId);
+        }
 
         if (!resolvedDoctorId) {
             try {
@@ -978,11 +1005,13 @@ async function handleFinalizeAssessment(params: {
                     .eq('patient_id', resolvedPatientId)
                     .not('professional_id', 'is', null)
                     .order('created_at', { ascending: false })
-                    .limit(1)
-                    .maybeSingle();
-                if (lastAppt?.professional_id) {
-                    resolvedDoctorId = lastAppt.professional_id;
-                    console.log('🩺 [DOCTOR_RESOLUTION] Vínculo via appointments:', resolvedDoctorId);
+                    .limit(5);
+                for (const appt of (lastAppt || [])) {
+                    if (await isValidActiveProfessional(appt.professional_id)) {
+                        resolvedDoctorId = appt.professional_id;
+                        console.log('🩺 [DOCTOR_RESOLUTION] Vínculo via appointments (validado):', resolvedDoctorId);
+                        break;
+                    }
                 }
             } catch (e) {
                 console.warn('[DOCTOR_RESOLUTION] Falha ao consultar appointments:', e);
@@ -996,9 +1025,9 @@ async function handleFinalizeAssessment(params: {
                     .select('preferred_doctor_id')
                     .eq('id', resolvedPatientId)
                     .maybeSingle();
-                if (profile?.preferred_doctor_id) {
-                    resolvedDoctorId = profile.preferred_doctor_id;
-                    console.log('🩺 [DOCTOR_RESOLUTION] Vínculo via preferred_doctor_id:', resolvedDoctorId);
+                if (await isValidActiveProfessional(profile?.preferred_doctor_id)) {
+                    resolvedDoctorId = profile!.preferred_doctor_id;
+                    console.log('🩺 [DOCTOR_RESOLUTION] Vínculo via preferred_doctor_id (validado):', resolvedDoctorId);
                 }
             } catch (e) {
                 console.warn('[DOCTOR_RESOLUTION] Falha ao consultar profiles:', e);
@@ -1006,8 +1035,8 @@ async function handleFinalizeAssessment(params: {
         }
 
         if (!resolvedDoctorId) {
-            resolvedDoctorId = '2135f0c0-eb5a-43b1-bc00-5f8dfea13561'; // Fallback institucional: Dr. Ricardo Valença
-            console.warn('🩺 [DOCTOR_RESOLUTION] Sem vínculo encontrado — fallback institucional Dr. Ricardo aplicado.');
+            resolvedDoctorId = FALLBACK_DOCTOR_ID;
+            console.warn('🩺 [DOCTOR_RESOLUTION] Sem vínculo válido — fallback institucional Dr. Ricardo aplicado.');
         }
 
         // 2.0 [GOLDEN FIX] Buscar nome do paciente se patientData estiver vazio

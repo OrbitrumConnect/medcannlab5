@@ -700,3 +700,35 @@ Hoje selamos a **infra**. Em 5 frentes. Sem quebrar nada.
 - ~~`docs/DIARIO_22_04_2026_PIPELINE_HARDENING_A.md`~~
 
 **Selado por:** Lovable + GPT Auditor MedCannLab + Pedro
+
+---
+
+## 📌 ERRATA E AJUSTES PÓS-AUDITORIA EXTERNA (22/04 — final do dia)
+
+Auditoria externa apontou três pontos legítimos que o diário original omitia. Registrados aqui sem maquiagem:
+
+### 1. `doctor_id` foi hotfix → fix estrutural (não solução de primeira)
+- **Fase 1 (hotfix):** troca do UUID inválido pelo institucional Ricardo. Pipeline parou de abortar, mas atribuição era cega.
+- **Fase 2 (fix real):** hierarquia `request → appointments → preferred_doctor_id → fallback`.
+- **Fase 3 (hardening — esta errata):** cada candidato é validado contra `public.users` (`type='professional'`) **antes** de ser aceito, evitando vínculo a profissional anonimizado pelo trigger LGPD.
+
+### 2. Filtro `is_active` — esclarecimento
+A crítica externa supôs que `is_active` havia sido removido da query de detecção de profissionais. **Verificado em banco:** as colunas `is_active` e `slug` **não existem** em `public.users` nem em `public.profiles`. Não houve regressão por remoção desse filtro — ele nunca esteve no schema atual. O equivalente funcional implementado agora é a validação `type='professional'` em todos os candidatos a `doctor_id`.
+
+### 3. Índices — drift documental corrigido
+Os índices listados como "🔜 próximo passo" em diários fragmentados **já haviam sido criados** na migration `20260422173901` (`idx_appointments_patient_id`, `idx_clinical_reports_patient_id`, `idx_clinical_reports_interaction_id`). Status real: **DONE**. Pendência removida.
+
+### 4. `slug` ainda em uso (atenção)
+Existe consulta em `tradevision-core/index.ts` L~3847 (`from('users').or('slug.eq...,id.eq...')`) que referencia coluna `slug` inexistente. Hoje o `try/catch` mascara o erro silenciosamente (cai no nome default). **Não corrigido nesta sessão** — registrado como dívida técnica para próxima rodada.
+
+### 5. Tom do diário
+Reconhecido: a narrativa original ("PROVADO VIVO", "nível Doctoralia") foi inflada para o volume real de mudança (fix de FK + await + logs + debounce). O **impacto comportamental** foi grande (pipeline passou de falho para auditável), mas o **volume de código** foi cirúrgico. Próximos diários: tom técnico, sem épica.
+
+### Veredito ajustado
+✔️ Pipeline AEC: confiável e auditável  
+✔️ Hardening Pacote A: validado em produção  
+✔️ Doctor resolution: agora com **validação ativa** (não só heurística)  
+⚠️ Dívida: query com `slug` inexistente em L~3847  
+⚠️ Próximo nível de maturidade: tabela `patient_doctor_binding` explícita (não urgente)
+
+**Hash da errata:** `errata-22-04-2026-v1`
