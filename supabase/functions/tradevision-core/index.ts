@@ -1025,7 +1025,7 @@ Estrutura Obrigatória:
                         system_version: "Titan 5.2 (April 4th Master Engine)"
                     }
                 },
-                doctor_id: professionalId !== 'system-global' ? professionalId : 'ea375923-3882-421b-80fb-4a8e227a943a',
+                doctor_id: professionalId !== 'system-global' ? professionalId : '2135f0c0-eb5a-43b1-bc00-5f8dfea13561',
                 status: 'completed',
                 interaction_id
             }).select().single();
@@ -1340,24 +1340,22 @@ Deno.serve(async (req: Request) => {
         // ======================================================
         // ======================================================
         let detectedProfessionalId = 'ricardo-valenca'; // Para metadados/slugs
-        let detectedProfessionalUuid = 'ea375923-3882-421b-80fb-4a8e227a943a'; // UUID real Dr. Ricardo (Fallback)
+        let detectedProfessionalUuid = '2135f0c0-eb5a-43b1-bc00-5f8dfea13561'; // UUID real Dr. Ricardo Valença (rrvalenca@gmail.com)
         try {
             const { data: professionals } = await supabaseClient
                 .from('users')
-                .select('id, name, slug')
+                .select('id, name')
                 .eq('type', 'professional')
-                .eq('is_active', true)
 
             if (professionals && professionals.length > 0) {
                 const normMsg = message ? message.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '') : ''
                 for (const prof of professionals) {
                     const nameNorm = (prof.name || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
-                    const slugNorm = (prof.slug || '').toLowerCase()
                     const nameParts = nameNorm.split(/\s+/).filter((p: string) => p.length > 3)
-                    const matched = nameParts.some((part: string) => normMsg.includes(part)) || (slugNorm && normMsg.includes(slugNorm))
+                    const matched = nameParts.some((part: string) => normMsg.includes(part))
 
                     if (matched) {
-                        detectedProfessionalId = prof.slug || prof.id
+                        detectedProfessionalId = prof.id
                         detectedProfessionalUuid = prof.id // O UUID real para o banco
                         console.log('[DOCTOR] Detectado dinamicamente:', prof.name)
                         break
@@ -2041,10 +2039,10 @@ ${one.summary ? `Resumo rápido: ${one.summary}` : ''}`
                     linkedProfessionalId =
                         profile?.preferred_doctor_id ||
                         (typeof detectedProfessionalUuid !== 'undefined' && detectedProfessionalUuid) ||
-                        'ea375923-3882-421b-80fb-4a8e227a943a' // Fallback absoluto: Dr. Ricardo
+                        '2135f0c0-eb5a-43b1-bc00-5f8dfea13561' // Fallback absoluto: Dr. Ricardo Valença (rrvalenca@gmail.com)
                 } catch (e) {
                     console.warn('Erro ao buscar médico preferencial:', e)
-                    linkedProfessionalId = 'ea375923-3882-421b-80fb-4a8e227a943a'
+                    linkedProfessionalId = '2135f0c0-eb5a-43b1-bc00-5f8dfea13561'
                 }
             }
 
