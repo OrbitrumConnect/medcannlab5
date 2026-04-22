@@ -33,6 +33,45 @@ import { getAvailableSlots, bookAppointment } from "../lib/scheduling";
 import { Calendar as CalendarIcon, Clock, CheckCircle } from "lucide-react";
 import * as pdfjsLib from "pdfjs-dist";
 
+// Mapa de progresso AEC (fases reais usadas em src/lib/clinicalAssessmentFlow.ts)
+const PHASE_PROGRESS: Record<string, number> = {
+  INITIAL_GREETING: 5,
+  IDENTIFICATION: 10,
+  COMPLAINT_LIST: 20,
+  MAIN_COMPLAINT: 30,
+  COMPLAINT_DETAILS: 45,
+  MEDICAL_HISTORY: 55,
+  FAMILY_HISTORY_MOTHER: 65,
+  FAMILY_HISTORY_FATHER: 70,
+  LIFESTYLE_HABITS: 80,
+  OBJECTIVE_QUESTIONS: 90,
+  CONSENSUS_REVIEW: 94,
+  CONSENSUS_REPORT: 96,
+  CONSENT_COLLECTION: 98,
+  CONSENSUS_CONFIRMATION: 99,
+  FINAL_RECOMMENDATION: 100,
+  COMPLETED: 100,
+};
+
+const PHASE_LABEL: Record<string, string> = {
+  INITIAL_GREETING: 'Saudação',
+  IDENTIFICATION: 'Identificação',
+  COMPLAINT_LIST: 'Lista Indiciária',
+  MAIN_COMPLAINT: 'Queixa Principal',
+  COMPLAINT_DETAILS: 'Desenvolvimento da Queixa',
+  MEDICAL_HISTORY: 'História Patológica',
+  FAMILY_HISTORY_MOTHER: 'História Familiar (Materna)',
+  FAMILY_HISTORY_FATHER: 'História Familiar (Paterna)',
+  LIFESTYLE_HABITS: 'Hábitos de Vida',
+  OBJECTIVE_QUESTIONS: 'Revisão de Sistemas',
+  CONSENSUS_REVIEW: 'Revisão Final',
+  CONSENSUS_REPORT: 'Síntese',
+  CONSENT_COLLECTION: 'Consentimento',
+  CONSENSUS_CONFIRMATION: 'Confirmação',
+  FINAL_RECOMMENDATION: 'Concluída',
+  COMPLETED: 'Concluída',
+};
+
 // Contrato institucional (IMUTÁVEL): token base de agendamento
 const TRIGGER_SCHEDULING_TOKEN = "[TRIGGER_SCHEDULING]";
 // Token universal de ação (app_commands) — exibição oculta; execução é via metadata/app_commands
@@ -2979,6 +3018,40 @@ const NoaConversationalInterface = React.forwardRef<
                 </div>
               )}
 
+            {/* 🧬 Barra de Progresso AEC — sticky, sempre visível durante avaliação */}
+            {(() => {
+              // Procura a fase mais recente (últimas 5 mensagens da Nôa)
+              let phase: string | undefined;
+              for (let i = messages.length - 1; i >= Math.max(0, messages.length - 5); i--) {
+                const m = messages[i] as any;
+                const meta = m?.metadata?.metadata ?? m?.metadata;
+                const p = meta?.assessmentPhase || meta?._aec_layers?.phase;
+                if (p) { phase = p; break; }
+              }
+              const progress = phase ? (PHASE_PROGRESS[phase] ?? 0) : 0;
+              if (progress <= 0) return null;
+              const label = phase ? (PHASE_LABEL[phase] ?? phase) : '';
+              const isDone = progress >= 100;
+              return (
+                <div className="border-b border-slate-800 bg-slate-900/90 backdrop-blur-sm px-4 py-2">
+                  <div className="flex items-center justify-between mb-1.5">
+                    <span className="text-[10px] font-semibold uppercase tracking-wider text-emerald-400">
+                      {isDone ? '✓ AEC Concluída' : `AEC · ${label}`}
+                    </span>
+                    <span className="text-[10px] font-mono text-slate-400">{progress}%</span>
+                  </div>
+                  <div className="h-1.5 w-full bg-slate-800 rounded-full overflow-hidden border border-slate-700/50">
+                    <motion.div
+                      initial={{ width: 0 }}
+                      animate={{ width: `${progress}%` }}
+                      transition={{ type: 'spring', stiffness: 60, damping: 18 }}
+                      className={`h-full ${isDone ? 'bg-gradient-to-r from-emerald-500 to-emerald-400' : 'bg-gradient-to-r from-emerald-500 via-cyan-400 to-emerald-500'} shadow-[0_0_8px_rgba(52,211,153,0.4)]`}
+                    />
+                  </div>
+                </div>
+              );
+            })()}
+
             <div
               ref={scrollContainerRef}
               className="flex-1 overflow-y-auto px-2 sm:px-5 py-2 sm:py-4 space-y-3 sm:space-y-4 overflow-x-hidden"
@@ -3862,19 +3935,6 @@ const NoaConversationalInterface = React.forwardRef<
 );
 
 NoaConversationalInterface.displayName = "NoaConversationalInterface";
-
-const PHASE_PROGRESS: Record<string, number> = {
-    IDENTIFICATION: 10,
-    MAIN_COMPLAINT: 25,
-    INDICATIVE_LIST: 35,
-    COMPLAINT_DETAILS: 50,
-    PAST_HISTORY: 65,
-    FAMILY_HISTORY: 75,
-    LIFESTYLE: 85,
-    OBJECTIVE_QUESTIONS: 95,
-    CONSENSUS: 98,
-    COMPLETED: 100
-};
 
 // Inside the component, calculate currentProgress:
 // const latestMessage = messages[messages.length - 1];
