@@ -321,11 +321,47 @@ const Sidebar: React.FC<SidebarProps> = ({
     { name: 'Relatórios', href: '/app/reports', icon: FileText, color: 'bg-orange-500' },
   ]
 
-  const systemStats = [
-    { label: 'Sistema Online', value: '99.9%', color: 'text-green-500' },
-    { label: 'Usuários Ativos', value: '1,234', color: 'text-blue-500' },
-    { label: 'Avaliações Hoje', value: '156', color: 'text-purple-500' },
-  ]
+  // 📊 Stats reais do banco (sem mocks) — atualizados a cada 60s
+  const [systemStats, setSystemStats] = useState<Array<{label:string; value:string; color:string}>>([
+    { label: 'Sistema Online', value: '—', color: 'text-slate-400' },
+    { label: 'Usuários Ativos', value: '—', color: 'text-slate-400' },
+    { label: 'Avaliações Hoje', value: '—', color: 'text-slate-400' },
+  ])
+
+  useEffect(() => {
+    let cancelled = false
+    const fetchStats = async () => {
+      try {
+        const { supabase } = await import('../integrations/supabase/client')
+        const startOfDayISO = new Date(new Date().setHours(0,0,0,0)).toISOString()
+        const [usersRes, reportsRes, pingRes] = await Promise.all([
+          supabase.from('users').select('id', { count: 'exact', head: true }),
+          supabase.from('clinical_reports').select('id', { count: 'exact', head: true }).gte('generated_at', startOfDayISO),
+          supabase.from('users').select('id', { count: 'exact', head: true }).limit(1),
+        ])
+        if (cancelled) return
+        const online = !pingRes.error
+        const users = typeof usersRes.count === 'number' ? usersRes.count : 0
+        const reports = typeof reportsRes.count === 'number' ? reportsRes.count : 0
+        setSystemStats([
+          { label: 'Sistema Online', value: online ? 'OK' : 'Offline', color: online ? 'text-emerald-400' : 'text-red-400' },
+          { label: 'Usuários', value: users.toLocaleString('pt-BR'), color: 'text-blue-400' },
+          { label: 'Avaliações Hoje', value: reports.toLocaleString('pt-BR'), color: 'text-purple-400' },
+        ])
+      } catch {
+        if (cancelled) return
+        setSystemStats([
+          { label: 'Sistema Online', value: 'Offline', color: 'text-red-400' },
+          { label: 'Usuários', value: '0', color: 'text-slate-400' },
+          { label: 'Avaliações Hoje', value: '0', color: 'text-slate-400' },
+        ])
+      }
+    }
+    fetchStats()
+    const t = setInterval(fetchStats, 60000)
+    return () => { cancelled = true; clearInterval(t) }
+  }, [])
+
 
   const navigationItems = getNavigationItems()
   const currentSection =
