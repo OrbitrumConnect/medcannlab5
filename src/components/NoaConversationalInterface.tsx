@@ -33,6 +33,45 @@ import { getAvailableSlots, bookAppointment } from "../lib/scheduling";
 import { Calendar as CalendarIcon, Clock, CheckCircle } from "lucide-react";
 import * as pdfjsLib from "pdfjs-dist";
 
+// Mapa de progresso AEC (fases reais usadas em src/lib/clinicalAssessmentFlow.ts)
+const PHASE_PROGRESS: Record<string, number> = {
+  INITIAL_GREETING: 5,
+  IDENTIFICATION: 10,
+  COMPLAINT_LIST: 20,
+  MAIN_COMPLAINT: 30,
+  COMPLAINT_DETAILS: 45,
+  MEDICAL_HISTORY: 55,
+  FAMILY_HISTORY_MOTHER: 65,
+  FAMILY_HISTORY_FATHER: 70,
+  LIFESTYLE_HABITS: 80,
+  OBJECTIVE_QUESTIONS: 90,
+  CONSENSUS_REVIEW: 94,
+  CONSENSUS_REPORT: 96,
+  CONSENT_COLLECTION: 98,
+  CONSENSUS_CONFIRMATION: 99,
+  FINAL_RECOMMENDATION: 100,
+  COMPLETED: 100,
+};
+
+const PHASE_LABEL: Record<string, string> = {
+  INITIAL_GREETING: 'Saudação',
+  IDENTIFICATION: 'Identificação',
+  COMPLAINT_LIST: 'Lista Indiciária',
+  MAIN_COMPLAINT: 'Queixa Principal',
+  COMPLAINT_DETAILS: 'Desenvolvimento da Queixa',
+  MEDICAL_HISTORY: 'História Patológica',
+  FAMILY_HISTORY_MOTHER: 'História Familiar (Materna)',
+  FAMILY_HISTORY_FATHER: 'História Familiar (Paterna)',
+  LIFESTYLE_HABITS: 'Hábitos de Vida',
+  OBJECTIVE_QUESTIONS: 'Revisão de Sistemas',
+  CONSENSUS_REVIEW: 'Revisão Final',
+  CONSENSUS_REPORT: 'Síntese',
+  CONSENT_COLLECTION: 'Consentimento',
+  CONSENSUS_CONFIRMATION: 'Confirmação',
+  FINAL_RECOMMENDATION: 'Concluída',
+  COMPLETED: 'Concluída',
+};
+
 // Contrato institucional (IMUTÁVEL): token base de agendamento
 const TRIGGER_SCHEDULING_TOKEN = "[TRIGGER_SCHEDULING]";
 // Token universal de ação (app_commands) — exibição oculta; execução é via metadata/app_commands
