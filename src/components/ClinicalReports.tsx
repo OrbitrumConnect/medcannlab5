@@ -319,8 +319,16 @@ const ClinicalReports: React.FC<ClinicalReportsProps> = ({ className = '', onSha
       console.log(`📊 Relatórios carregados: ${allReports.length} (role: ${effectiveType})`)
 
       const formattedReports: SharedReport[] = allReports.map((report: any) => {
-        const content = (report.content as Record<string, any>) || {}
-        
+        const rawDb = (report.content as Record<string, any>) || {}
+        // Pipeline Master encapsula em { raw: { content: {...} }, structured: "...", metadata: {...} }
+        // Suporta ambos formatos: legado (campos no topo) e novo (aninhado em raw.content)
+        const nested = (rawDb.raw && typeof rawDb.raw === 'object' && rawDb.raw.content && typeof rawDb.raw.content === 'object')
+          ? rawDb.raw.content
+          : null
+        const content: Record<string, any> = nested
+          ? { ...nested, structured: rawDb.structured, scores: nested.scores || rawDb.raw?.scores, risk_level: rawDb.raw?.risk_level }
+          : rawDb
+
         // Map AEC protocol fields to display fields
         const identificacao = content.identificacao || {}
         const apresentacao = typeof identificacao === 'object' ? (identificacao.apresentacao || '') : String(identificacao || '')
@@ -1022,6 +1030,15 @@ const ClinicalReports: React.FC<ClinicalReportsProps> = ({ className = '', onSha
               {/* Conteúdo Completo do Relatório AEC */}
               <div className="bg-slate-800/50 rounded-lg p-4 border border-slate-700/50">
                 <h4 className="font-semibold text-slate-200 mb-3">Conteúdo do Relatório:</h4>
+
+                {/* Markdown estruturado vindo do Pipeline Master (quando disponível) */}
+                {selectedReport.rawContent?.structured && typeof selectedReport.rawContent.structured === 'string' && (
+                  <div className="mb-4 bg-slate-900/40 rounded-lg p-4 border border-emerald-500/20">
+                    <pre className="whitespace-pre-wrap font-sans text-sm text-slate-200 leading-relaxed">
+                      {stripClinical(selectedReport.rawContent.structured)}
+                    </pre>
+                  </div>
+                )}
                 
                 {/* Verificar se tem conteúdo */}
                 {(!selectedReport.rawContent || Object.keys(selectedReport.rawContent).length === 0 || 
