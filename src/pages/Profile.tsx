@@ -708,14 +708,27 @@ const Profile: React.FC = () => {
               </div>
               <div className="flex justify-between items-center pt-1.5 border-t border-slate-600">
                 <span className="text-slate-400 flex items-center gap-1"><Award className="w-3.5 h-3.5 text-emerald-400" /> Ranking</span>
-                <span className="font-semibold text-white">#{ranking}</span>
+                <span className="font-semibold text-white">
+                  {ranking !== null ? `#${ranking}` : '—'}
+                </span>
               </div>
               <div className="flex justify-between items-center pt-1.5">
                 <span className="text-slate-400 flex items-center gap-1"><Star className="w-3.5 h-3.5 text-amber-400" /> Estrelas</span>
-                {renderStars(averageRatingStars)}
+                {averageRatingStars !== null ? (
+                  <span className="flex items-center gap-1.5">
+                    {renderStars(averageRatingStars)}
+                    <span className="text-[10px] text-slate-400 tabular-nums">({ratingsCount})</span>
+                  </span>
+                ) : (
+                  <span className="text-[11px] text-slate-500">Sem avaliações</span>
+                )}
               </div>
             </div>
-            <p className="text-[10px] text-slate-500 mt-2">Média das avaliações (0–5) que entram no rank. Regras no dashboard.</p>
+            <p className="text-[10px] text-slate-500 mt-2">
+              {ranking !== null
+                ? 'Ranking calculado por XP (user_profiles.points). Estrelas: média real das avaliações.'
+                : 'Ranking disponível para profissionais. Estrelas: média real das avaliações.'}
+            </p>
           </div>
 
           {/* Account Stats */}
