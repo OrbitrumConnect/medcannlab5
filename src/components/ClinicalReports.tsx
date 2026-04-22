@@ -1536,8 +1536,20 @@ const ClinicalReports: React.FC<ClinicalReportsProps> = ({ className = '', onSha
 
               {/* Racionalidades Aplicadas */}
               {selectedReport && Object.entries(selectedReport.content.rationalities || {}).some(([_, value]: [string, any]) => value && value.assessment) && (
-                <div className="bg-slate-800/50 rounded-lg p-4 border border-slate-700/50">
-                  <h4 className="font-semibold text-slate-200 mb-3">Análises por Racionalidade:</h4>
+                <div id="rationalities-results-card" className="bg-slate-800/50 rounded-lg p-4 border border-slate-700/50 transition-all duration-500">
+                  <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
+                    <h4 className="font-semibold text-slate-200">Análises por Racionalidade:</h4>
+                    {!isPatient && Object.values(selectedReport.content.rationalities || {}).filter((v: any) => v?.assessment).length > 1 && (
+                      <button
+                        onClick={handleDownloadAllRationalities}
+                        className="flex items-center space-x-1 px-3 py-1.5 text-xs rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 hover:bg-emerald-500/20 transition-colors"
+                        title="Baixar todas as análises em um único arquivo"
+                      >
+                        <Download className="w-3 h-3" />
+                        <span>Baixar Todas (Comparativo)</span>
+                      </button>
+                    )}
+                  </div>
                   <div className="space-y-4">
                     {Object.entries(selectedReport.content.rationalities || {}).map(([key, value]: [string, any]) => {
                       if (!value || !value.assessment) return null
