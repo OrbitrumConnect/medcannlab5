@@ -30,6 +30,7 @@ import { cardStyle, surfaceStyle, accentGradient, secondarySurfaceStyle } from '
 import { supabase } from '../lib/supabase'
 import { enrichReportWithScores } from '../lib/clinicalScoreCalculator'
 import { stripPlatformInjectionNoise } from '../lib/clinicalAssessmentFlow'
+import RichClinicalReportView from './RichClinicalReportView'
 
 function stripReportText(s: unknown): string {
     return stripPlatformInjectionNoise(String(s ?? ''))
