@@ -1498,12 +1498,52 @@ const PatientAnalytics: React.FC<PatientAnalyticsProps> = ({ reports, loading, u
             )}
 
 
-            {/* Report Details Modal */}
+            {/* Report Details Modal — Renderer SOBERANO E IMUTÁVEL (RichClinicalReportView) */}
             {selectedReport && (() => {
-                const modalPayload = getAecReportModalPayload(selectedReport.content as any)
+                const rawContent = (selectedReport.content as any) || {}
+                const assessmentText = stripReportText(rawContent.assessment)
+                const planText = stripReportText(rawContent.plan)
+                const { mainComplaint, historyText, investigationItems } = getAecReportModalPayload(rawContent)
+
+                const buildPlainText = () => {
+                    const invBlock = investigationItems.length > 0
+                        ? investigationItems.map((line, i) => `${i + 1}. ${line}`).join('\n')
+                        : '—'
+                    return `RELATÓRIO CLÍNICO MEDCANN
+Paciente: ${user?.name || user?.email || '—'}
+Data: ${new Date(selectedReport.generated_at).toLocaleString()}
+
+▸ QUEIXA PRINCIPAL
+${mainComplaint || 'Não especificada'}
+
+▸ HISTÓRICO CLÍNICO
+${historyText || 'Nenhum histórico registrado.'}
+
+▸ INVESTIGAÇÃO DETALHADA
+${invBlock}
+${assessmentText ? `\n▸ AVALIAÇÃO\n${assessmentText}\n` : ''}${planText ? `\n▸ PLANO\n${planText}\n` : ''}`
+                }
+
+                const handleDownload = () => {
+                    const blob = new Blob([buildPlainText()], { type: 'text/plain;charset=utf-8' })
+                    const url = URL.createObjectURL(blob)
+                    const a = document.createElement('a')
+                    a.href = url
+                    a.download = `relatorio-clinico-${new Date(selectedReport.generated_at).toISOString().slice(0, 10)}.txt`
+                    document.body.appendChild(a)
+                    a.click()
+                    document.body.removeChild(a)
+                    URL.revokeObjectURL(url)
+                }
+
+                const handleWhatsApp = () => {
+                    const text = encodeURIComponent(buildPlainText())
+                    window.open(`https://wa.me/?text=${text}`, '_blank', 'noopener,noreferrer')
+                }
+
                 return (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" onClick={() => setSelectedReport(null)}>
-                    <div className="w-full max-w-2xl bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl overflow-hidden max-h-[85vh] flex flex-col animate-in fade-in zoom-in-95 duration-200" onClick={e => e.stopPropagation()}>
+                    <div className="w-full max-w-3xl bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl overflow-hidden max-h-[88vh] flex flex-col animate-in fade-in zoom-in-95 duration-200" onClick={e => e.stopPropagation()}>
                         {/* Header */}
                         <div className="p-5 border-b border-slate-700 flex justify-between items-center bg-slate-800/50">
                             <div className="flex items-center gap-3">
@@ -1522,50 +1562,53 @@ const PatientAnalytics: React.FC<PatientAnalyticsProps> = ({ reports, loading, u
                             </button>
                         </div>
 
-                        {/* Content Scrollable */}
-                        <div className="p-6 overflow-y-auto space-y-6 custom-scrollbar flex-1">
-                            <div className="space-y-2">
-                                <h4 className="text-sm font-medium text-emerald-400 uppercase tracking-wider">Queixa Principal</h4>
-                                <p className="text-white bg-slate-800/50 p-3 rounded-lg border border-slate-700/50 leading-relaxed">
-                                    {modalPayload.mainComplaint || 'Não especificada'}
-                                </p>
-                            </div>
-
-                            <div className="space-y-2">
-                                <h4 className="text-sm font-medium text-blue-400 uppercase tracking-wider">Histórico Clínico</h4>
-                                <p className="text-slate-300 bg-slate-800/30 p-3 rounded-lg border border-slate-700/30 leading-relaxed text-sm whitespace-pre-wrap">
-                                    {modalPayload.historyText || 'Nenhum histórico registrado.'}
-                                </p>
-                            </div>
-
-                            <div className="space-y-3">
-                                <h4 className="text-sm font-medium text-amber-400 uppercase tracking-wider">Investigação detalhada</h4>
-                                <div className="grid gap-2">
-                                    {modalPayload.investigationItems.length === 0 ? (
-                                        <p className="text-sm text-slate-500 bg-slate-800/20 p-3 rounded-lg border border-slate-700/20">
-                                            Nenhum bloco adicional (lista indiciária, perguntas objetivas ou recomendações) neste relatório.
-                                        </p>
-                                    ) : (
-                                        modalPayload.investigationItems.map((rec, idx) => (
-                                        <div key={idx} className="flex gap-3 items-start p-3 rounded-lg bg-amber-500/5 border border-amber-500/10">
-                                            <span className="text-xs font-bold text-amber-500 mt-0.5">{idx + 1}</span>
-                                            <p className="text-sm text-slate-300 whitespace-pre-wrap break-words">{rec}</p>
-                                        </div>
-                                        ))
-                                    )}
-                                </div>
-                            </div>
+                        {/* Content Scrollable — Renderer Rico */}
+                        <div className="p-6 overflow-y-auto custom-scrollbar flex-1">
+                            <RichClinicalReportView
+                                content={rawContent}
+                                assessment={assessmentText}
+                                plan={planText}
+                            />
                         </div>
 
                         {/* Footer Actions */}
-                        <div className="p-4 border-t border-slate-700 bg-slate-800/50 flex justify-end gap-3">
+                        <div className="p-4 border-t border-slate-700 bg-slate-800/50 flex flex-wrap justify-end gap-2">
                             <button
                                 onClick={() => handleCopyReport(selectedReport.content)}
-                                className="flex items-center gap-2 px-4 py-2 rounded-lg bg-slate-700 hover:bg-slate-600 text-white font-medium transition-colors text-sm"
+                                className="flex items-center gap-2 px-3 py-2 rounded-lg bg-slate-700 hover:bg-slate-600 text-white font-medium transition-colors text-sm"
+                                title="Copiar texto do relatório"
                             >
                                 {copied ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
-                                {copied ? 'Copiado!' : 'Copiar Texto'}
+                                {copied ? 'Copiado!' : 'Copiar'}
                             </button>
+                            <button
+                                onClick={handleDownload}
+                                className="flex items-center gap-2 px-3 py-2 rounded-lg bg-slate-700 hover:bg-slate-600 text-white font-medium transition-colors text-sm"
+                                title="Baixar como arquivo .txt"
+                            >
+                                <Download className="w-4 h-4" />
+                                Baixar
+                            </button>
+                            {!isProfessionalView && (
+                                <>
+                                    <button
+                                        onClick={handleWhatsApp}
+                                        className="flex items-center gap-2 px-3 py-2 rounded-lg bg-emerald-700 hover:bg-emerald-600 text-white font-medium transition-colors text-sm"
+                                        title="Compartilhar via WhatsApp"
+                                    >
+                                        <MessageCircle className="w-4 h-4" />
+                                        WhatsApp
+                                    </button>
+                                    <button
+                                        onClick={() => { setSelectedReport(null); setShowDoctorSelect(true) }}
+                                        className="flex items-center gap-2 px-3 py-2 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-medium transition-colors text-sm"
+                                        title="Enviar para um médico vinculado"
+                                    >
+                                        <UserPlus className="w-4 h-4" />
+                                        Enviar para Médico
+                                    </button>
+                                </>
+                            )}
                             <button onClick={() => setSelectedReport(null)} className="px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-medium transition-colors text-sm">
                                 Fechar
                             </button>
