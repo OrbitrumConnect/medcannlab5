@@ -689,20 +689,26 @@ const ClinicalReports: React.FC<ClinicalReportsProps> = ({ className = '', onSha
     lines.push(`Data: ${new Date().toLocaleString('pt-BR')}`, '')
 
     Object.entries(rats).forEach(([key, value]: [string, any]) => {
-      if (!value?.assessment) return
+      if (!value) return
+      const text = value.assessment || value.summary || value.content || value.analysis || ''
+      const recs = value.recommendations || []
+      const cons = value.considerations || ''
+      if (!text && !recs.length && !cons) return
       lines.push('───────────────────────────────────────')
       lines.push(`▸ ${labelMap[key] || key}`)
       lines.push('───────────────────────────────────────')
-      lines.push('Avaliação:')
-      lines.push(stripClinical(value.assessment), '')
-      if (value.recommendations?.length) {
+      if (text) {
+        lines.push('Avaliação:')
+        lines.push(stripClinical(text), '')
+      }
+      if (recs.length) {
         lines.push('Recomendações:')
-        value.recommendations.forEach((r: string) => lines.push(`  • ${stripClinical(r)}`))
+        recs.forEach((r: string) => lines.push(`  • ${stripClinical(r)}`))
         lines.push('')
       }
-      if (value.considerations) {
+      if (cons) {
         lines.push('Considerações:')
-        lines.push(stripClinical(value.considerations), '')
+        lines.push(stripClinical(cons), '')
       }
     })
 
@@ -1534,63 +1540,104 @@ const ClinicalReports: React.FC<ClinicalReportsProps> = ({ className = '', onSha
                 </div>
               )}
 
-              {/* Racionalidades Aplicadas */}
-              {selectedReport && Object.entries(selectedReport.content.rationalities || {}).some(([_, value]: [string, any]) => value && value.assessment) && (
-                <div id="rationalities-results-card" className="bg-slate-800/50 rounded-lg p-4 border border-slate-700/50 transition-all duration-500">
-                  <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
-                    <h4 className="font-semibold text-slate-200">Análises por Racionalidade:</h4>
-                    {!isPatient && Object.values(selectedReport.content.rationalities || {}).filter((v: any) => v?.assessment).length > 1 && (
-                      <button
-                        onClick={handleDownloadAllRationalities}
-                        className="flex items-center space-x-1 px-3 py-1.5 text-xs rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 hover:bg-emerald-500/20 transition-colors"
-                        title="Baixar todas as análises em um único arquivo"
-                      >
-                        <Download className="w-3 h-3" />
-                        <span>Baixar Todas (Comparativo)</span>
-                      </button>
-                    )}
+              {/* Racionalidades Aplicadas — Card visual rico estilo app */}
+              {selectedReport && Object.entries(selectedReport.content.rationalities || {}).some(([_, value]: [string, any]) => {
+                if (!value) return false
+                return value.assessment || value.recommendations?.length || value.considerations || value.summary || value.content || value.analysis
+              }) && (
+                <div
+                  id="rationalities-results-card"
+                  className="relative overflow-hidden rounded-2xl border border-emerald-500/20 bg-gradient-to-br from-slate-900/80 via-slate-900/60 to-emerald-950/30 backdrop-blur-xl shadow-[0_8px_32px_rgba(0,193,106,0.15)] transition-all duration-500"
+                >
+                  {/* Header com gradiente */}
+                  <div className="px-5 py-4 border-b border-emerald-500/20 bg-gradient-to-r from-emerald-600/10 via-teal-600/10 to-cyan-600/10 backdrop-blur-sm">
+                    <div className="flex items-center justify-between flex-wrap gap-3">
+                      <div className="flex items-center gap-2.5">
+                        <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-500/20 to-teal-500/20 border border-emerald-400/30 flex items-center justify-center">
+                          <Brain className="w-4.5 h-4.5 text-emerald-300" />
+                        </div>
+                        <div>
+                          <h4 className="font-bold text-white tracking-tight">Análises por Racionalidade</h4>
+                          <p className="text-[11px] text-emerald-300/70 font-medium">
+                            {Object.values(selectedReport.content.rationalities || {}).filter((v: any) => v && (v.assessment || v.recommendations?.length || v.considerations || v.summary || v.content || v.analysis)).length} de 5 racionalidades aplicadas
+                          </p>
+                        </div>
+                      </div>
+                      {!isPatient && Object.values(selectedReport.content.rationalities || {}).filter((v: any) => v?.assessment || v?.recommendations?.length).length > 1 && (
+                        <button
+                          onClick={handleDownloadAllRationalities}
+                          className="group flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold rounded-xl bg-gradient-to-r from-emerald-500/20 to-teal-500/20 border border-emerald-400/40 text-emerald-200 hover:from-emerald-500/30 hover:to-teal-500/30 hover:border-emerald-300/60 transition-all hover:scale-[1.02] active:scale-[0.98]"
+                          title="Baixar todas as análises em um único arquivo comparativo"
+                        >
+                          <Download className="w-3.5 h-3.5 group-hover:-translate-y-0.5 transition-transform" />
+                          <span>Baixar Comparativo</span>
+                        </button>
+                      )}
+                    </div>
                   </div>
-                  <div className="space-y-4">
+
+                  {/* Grid de cards de análise */}
+                  <div className="p-5 space-y-4">
                     {Object.entries(selectedReport.content.rationalities || {}).map(([key, value]: [string, any]) => {
-                      if (!value || !value.assessment) return null
-                      const rationalityLabel = key === 'traditionalChinese' ? 'Medicina Tradicional Chinesa' :
-                        key === 'biomedical' ? 'Biomédica' :
-                          key === 'ayurvedic' ? 'Ayurvédica' :
-                            key === 'homeopathic' ? 'Homeopática' :
-                              key === 'integrative' ? 'Integrativa' : key
+                      if (!value) return null
+                      const text = value.assessment || value.summary || value.content || value.analysis || ''
+                      const recs = value.recommendations || []
+                      const cons = value.considerations || ''
+                      if (!text && !recs.length && !cons) return null
+
+                      const meta: Record<string, { label: string; color: string; bg: string; border: string; ring: string }> = {
+                        biomedical: { label: 'Biomédica', color: 'text-blue-300', bg: 'from-blue-500/10 to-cyan-500/5', border: 'border-blue-400/30', ring: 'ring-blue-400/20' },
+                        traditionalChinese: { label: 'Medicina Tradicional Chinesa', color: 'text-amber-300', bg: 'from-amber-500/10 to-orange-500/5', border: 'border-amber-400/30', ring: 'ring-amber-400/20' },
+                        ayurvedic: { label: 'Ayurvédica', color: 'text-fuchsia-300', bg: 'from-fuchsia-500/10 to-pink-500/5', border: 'border-fuchsia-400/30', ring: 'ring-fuchsia-400/20' },
+                        homeopathic: { label: 'Homeopática', color: 'text-violet-300', bg: 'from-violet-500/10 to-purple-500/5', border: 'border-violet-400/30', ring: 'ring-violet-400/20' },
+                        integrative: { label: 'Integrativa', color: 'text-emerald-300', bg: 'from-emerald-500/10 to-teal-500/5', border: 'border-emerald-400/30', ring: 'ring-emerald-400/20' },
+                      }
+                      const m = meta[key] || { label: key, color: 'text-slate-300', bg: 'from-slate-500/10 to-slate-500/5', border: 'border-slate-500/30', ring: 'ring-slate-400/20' }
+
                       return (
-                        <div key={key} className="border-l-4 border-[#00C16A] pl-4">
-                          <div className="flex items-center space-x-2 mb-2">
-                            {getRationalityIcon(key)}
-                            <h5 className="font-semibold text-slate-200">{rationalityLabel}</h5>
-                          </div>
-                          <div className="text-sm text-slate-300 space-y-2">
-                            <div>
-                              <strong className="text-slate-200">Avaliação:</strong>
-                              <p className="mt-1">{stripClinical(value.assessment)}</p>
+                        <div
+                          key={key}
+                          className={`rounded-xl border ${m.border} bg-gradient-to-br ${m.bg} p-4 transition-all hover:ring-2 hover:${m.ring}`}
+                        >
+                          <div className="flex items-center gap-2 mb-3">
+                            <div className={`w-7 h-7 rounded-lg bg-slate-900/50 border ${m.border} flex items-center justify-center ${m.color}`}>
+                              {getRationalityIcon(key)}
                             </div>
-                            {value.recommendations && value.recommendations.length > 0 && (
+                            <h5 className={`font-bold text-sm ${m.color} tracking-tight`}>{m.label}</h5>
+                          </div>
+
+                          <div className="space-y-3 text-sm">
+                            {text && (
                               <div>
-                                <strong className="text-slate-200">Recomendações:</strong>
-                                <ul className="mt-1 list-disc list-inside">
-                                  {value.recommendations.map((rec: string, idx: number) => (
-                                    <li key={idx}>{stripClinical(rec)}</li>
+                                <div className="text-[10px] uppercase tracking-wider font-bold text-slate-400 mb-1">Avaliação</div>
+                                <p className="text-slate-200 leading-relaxed">{stripClinical(text)}</p>
+                              </div>
+                            )}
+                            {recs.length > 0 && (
+                              <div>
+                                <div className="text-[10px] uppercase tracking-wider font-bold text-slate-400 mb-1">Recomendações</div>
+                                <ul className="space-y-1">
+                                  {recs.map((rec: string, idx: number) => (
+                                    <li key={idx} className="flex gap-2 text-slate-200 leading-relaxed">
+                                      <span className={`${m.color} mt-0.5`}>▸</span>
+                                      <span>{stripClinical(rec)}</span>
+                                    </li>
                                   ))}
                                 </ul>
                               </div>
                             )}
-                            {value.considerations && (
+                            {cons && (
                               <div>
-                                <strong className="text-slate-200">Considerações:</strong>
-                                <p className="mt-1">{stripClinical(value.considerations)}</p>
+                                <div className="text-[10px] uppercase tracking-wider font-bold text-slate-400 mb-1">Considerações</div>
+                                <p className="text-slate-200 leading-relaxed">{stripClinical(cons)}</p>
                               </div>
                             )}
-                            {/* Ações por análise: baixar, compartilhar, NFT */}
+
                             {!isPatient && (
-                              <div className="flex flex-wrap gap-2 pt-2 border-t border-slate-700/40 mt-2">
+                              <div className="flex flex-wrap gap-1.5 pt-3 border-t border-slate-700/40">
                                 <button
                                   onClick={() => handleDownloadRationality(key, value)}
-                                  className="flex items-center space-x-1 px-2 py-1 text-xs rounded bg-indigo-500/10 border border-indigo-500/30 text-indigo-300 hover:bg-indigo-500/20 transition-colors"
+                                  className="flex items-center gap-1 px-2.5 py-1 text-[11px] font-medium rounded-lg bg-slate-800/60 border border-slate-600/40 text-slate-300 hover:bg-indigo-500/20 hover:border-indigo-400/40 hover:text-indigo-200 transition-all"
                                   title="Baixar esta análise (.txt)"
                                 >
                                   <Download className="w-3 h-3" />
@@ -1598,7 +1645,7 @@ const ClinicalReports: React.FC<ClinicalReportsProps> = ({ className = '', onSha
                                 </button>
                                 <button
                                   onClick={() => handleShareRationality(key, value)}
-                                  className="flex items-center space-x-1 px-2 py-1 text-xs rounded bg-sky-500/10 border border-sky-500/30 text-sky-300 hover:bg-sky-500/20 transition-colors"
+                                  className="flex items-center gap-1 px-2.5 py-1 text-[11px] font-medium rounded-lg bg-slate-800/60 border border-slate-600/40 text-slate-300 hover:bg-sky-500/20 hover:border-sky-400/40 hover:text-sky-200 transition-all"
                                   title="Compartilhar esta análise"
                                 >
                                   <Share2 className="w-3 h-3" />
@@ -1606,11 +1653,11 @@ const ClinicalReports: React.FC<ClinicalReportsProps> = ({ className = '', onSha
                                 </button>
                                 <button
                                   onClick={() => selectedReport && handleGenerateNFT(selectedReport)}
-                                  className="flex items-center space-x-1 px-2 py-1 text-xs rounded bg-amber-500/10 border border-amber-500/30 text-amber-300 hover:bg-amber-500/20 transition-colors"
-                                  title="Registrar como NFT (blockchain)"
+                                  className="flex items-center gap-1 px-2.5 py-1 text-[11px] font-medium rounded-lg bg-slate-800/60 border border-slate-600/40 text-slate-300 hover:bg-amber-500/20 hover:border-amber-400/40 hover:text-amber-200 transition-all"
+                                  title="Registrar como NFT"
                                 >
                                   <QrCode className="w-3 h-3" />
-                                  <span>Gerar NFT</span>
+                                  <span>NFT</span>
                                 </button>
                               </div>
                             )}
