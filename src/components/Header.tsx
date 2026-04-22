@@ -3,7 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { useUserView } from '../contexts/UserViewContext'
 import { useDashboardTriggersOptional } from '../contexts/DashboardTriggersContext'
-import { Menu, X, User, LogOut, Settings, Stethoscope, GraduationCap, Shield, ChevronDown, Brain } from 'lucide-react'
+import { Menu, X, User, LogOut, Settings, Stethoscope, GraduationCap, Shield, ChevronDown, Brain, HelpCircle } from 'lucide-react'
 import NotificationCenter from './NotificationCenter'
 import { normalizeUserType, getDefaultRouteByType, UserType } from '../lib/userTypes'
 import { useTranslation } from 'react-i18next'
@@ -425,6 +425,18 @@ const Header: React.FC<HeaderProps> = ({ onOpenSidebar }) => {
                 {i18n.language === 'en' ? '🇺🇸' : '🇧🇷'}
               </span>
             </button>
+
+            {/* Botão de Ajuda — reabre o tutorial guiado */}
+            {user && (
+              <button
+                onClick={() => window.dispatchEvent(new CustomEvent('replayOnboardingTutorial'))}
+                className="hidden md:flex items-center justify-center p-2 rounded-lg hover:bg-[#1b314e] transition-colors text-slate-300 hover:text-emerald-400"
+                title="Tutorial guiado — clique para rever como usar a plataforma"
+                aria-label="Ajuda — abrir tutorial"
+              >
+                <HelpCircle className="w-5 h-5" />
+              </button>
+            )}
 
             {/* Sino de notificações (ao lado do idioma) */}
             {user && <NotificationCenter className="flex items-center" />}
