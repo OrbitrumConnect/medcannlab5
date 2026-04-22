@@ -1828,29 +1828,39 @@ export class NoaResidentAI {
           console.log('[Noa] Dados locais:', localData?.complaintList?.length || 0, 'queixas')
 
           // Chamar Edge Function para salvar (com fallback GPT extraction)
+          // [FIX 22/04] Adicionado AWAIT — sem isso a Promise era abandonada (fire-and-forget)
+          // e o componente desmontava antes da Edge persistir o relatório (regressão pós 05/04).
           const { supabase } = await import('./supabase')
-          supabase.functions.invoke('tradevision-core', {
-            body: {
-              action: 'finalize_assessment',
-              message: 'Finalizing Assessment',
-              assessmentData: {
-                patient_id: platformData.user.id,
-                content: contentPayload,
-                scores: { anamnese: 100, detalhamento: 100, consenso: 100 },
-                risk_level: 'medium'
-              }
+          try {
+            const { data: resp, error: invokeErr } = await withTimeout(
+              supabase.functions.invoke('tradevision-core', {
+                body: {
+                  action: 'finalize_assessment',
+                  message: 'Finalizing Assessment',
+                  assessmentData: {
+                    patient_id: platformData.user.id,
+                    content: contentPayload,
+                    scores: { anamnese: 100, detalhamento: 100, consenso: 100 },
+                    risk_level: 'medium'
+                  }
+                }
+              }),
+              60000,
+              'Timeout ao salvar relatório clínico (finalize_assessment).'
+            ) as any
+
+            if (invokeErr) {
+              console.error('[FINALIZE] Erro de invocação na Edge:', invokeErr)
+            } else if (resp?.success) {
+              console.log("SUCESSO Relatorio salvo. ID: " + resp.report_id + " | Metodo: " + resp.extraction_method)
+              // Limpar estado local apenas mediante sucesso
+              clinicalAssessmentFlow.resetAssessment(platformData.user.id)
+            } else {
+              console.error('[FINALIZE] Edge Function retornou erro:', resp?.error || resp)
             }
-          })
-            .then(({ data: resp }) => {
-              if (resp?.success) {
-                console.log("SUCESSO Relatorio salvo. ID: " + resp.report_id + " | Metodo: " + resp.extraction_method)
-                // Limpar estado local apenas mediante sucesso
-                clinicalAssessmentFlow.resetAssessment(platformData.user.id)
-              } else {
-                console.error('ERRO Edge Function retornou erro:', resp?.error)
-              }
-            })
-            .catch(e => console.error('ERRO Falha na chamada a Edge Function:', e))
+          } catch (e) {
+            console.error('[FINALIZE] Falha crítica ao salvar relatório:', e)
+          }
         }
       }
 
