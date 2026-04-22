@@ -389,6 +389,16 @@ export class ClinicalAssessmentFlow {
       stripPlatformInjectionNoise(userResponse).trim() || userResponse.trim()
     const lowerResponse = userTurn.toLowerCase().trim()
 
+    // [DEBOUNCE] Evita que "ok ok ok" pulando rapidamente avance múltiplas fases.
+    // Repete a pergunta atual sem mudar de fase quando o mesmo turno curto chega 2x em <2s.
+    if (this.shouldDebounceAdvance(userId, state.phase, userTurn)) {
+      return {
+        nextQuestion: this.getPhaseResumePrompt(state.phase, state),
+        phase: state.phase,
+        isComplete: false,
+      }
+    }
+
     // ========== DETECCAO DE SAIDA VOLUNTARIA ==========
     // IMPORTANTE: usar frases intencionais (não palavras isoladas tipo "sair", "parar", "fim")
     // para evitar falso positivo em "sair de casa", "fim de semana", "para tudo passar", etc.
