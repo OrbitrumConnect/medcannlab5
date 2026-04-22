@@ -587,7 +587,8 @@ const PatientsManagement: React.FC<PatientsManagementProps> = ({ embedded = fals
       // Assim o profissional (ex.: Dr. Ricardo) vê seus pacientes vinculados COM NOME
       let usersData: any[] = []
       try {
-        const fromGetAll = await getAllPatients(user)
+        // Passa effectiveType: admin "vendo como profissional" recebe só vinculados
+        const fromGetAll = await getAllPatients(user, effectiveType ?? undefined)
         if (fromGetAll && fromGetAll.length > 0) {
           usersData = fromGetAll.map(p => {
             let created_at: string | null = null
@@ -604,7 +605,12 @@ const PatientsManagement: React.FC<PatientsManagementProps> = ({ embedded = fals
               created_at
             }
           })
-          console.log('✅ Pacientes carregados (getAllPatients):', usersData.length, isAdmin(user) ? '(admin)' : '(profissional)')
+          const adminViewingAs = isAdmin(user) && effectiveType && effectiveType !== 'admin'
+          console.log(
+            '✅ Pacientes carregados (getAllPatients):',
+            usersData.length,
+            adminViewingAs ? `(admin vendo como ${effectiveType})` : isAdmin(user) ? '(admin)' : '(profissional)'
+          )
         }
       } catch (e) {
         console.warn('getAllPatients falhou, usando fallback direto:', e)

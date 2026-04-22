@@ -37,8 +37,10 @@ export function useProfessionalDashboard() {
         try {
             setLoading(true)
 
-            if (userIsAdmin) {
-                const allPatients = await getAllPatients(user)
+            // Admin REAL sem simulação OU "vendo como admin" → todos os pacientes.
+            // Admin "vendo como profissional" → cai no else e vê só seus vinculados.
+            if (userIsAdmin && (effectiveType === 'admin' || !effectiveType)) {
+                const allPatients = await getAllPatients(user, effectiveType)
                 const mappedPatients: Patient[] = allPatients.map(p => ({
                     ...p,
                     status: 'active' as const,
