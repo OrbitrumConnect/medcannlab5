@@ -38,9 +38,11 @@ const Profile: React.FC = () => {
     name: '',
     email: '',
     phone: '',
+    cep: '',
     location: '',
     bio: ''
   })
+  const [isLookingUpCep, setIsLookingUpCep] = useState(false)
 
   const [passwordData, setPasswordData] = useState({
     currentPassword: '',
@@ -71,21 +73,67 @@ const Profile: React.FC = () => {
     }
   }, [])
 
-  // Carregar dados do usuário
+  // Carregar dados do usuário (location pode conter "CEP — Cidade, UF")
   useEffect(() => {
     if (user) {
+      const rawLoc = (user as any).location || ''
+      const cepMatch = rawLoc.match(/\b(\d{5}-?\d{3})\b/)
+      const cep = cepMatch ? cepMatch[1] : ''
+      const locationOnly = rawLoc.replace(/\b\d{5}-?\d{3}\b\s*[—\-–|·,]?\s*/, '').trim()
       setFormData({
         name: user.name || '',
         email: user.email || '',
-        phone: user.phone || '',
-        location: user.location || '',
-        bio: user.bio || ''
+        phone: (user as any).phone || '',
+        cep,
+        location: locationOnly,
+        bio: (user as any).bio || ''
       })
     }
   }, [user])
 
+  // ViaCEP lookup automático ao completar 8 dígitos
+  const lookupCep = async (rawCep: string) => {
+    const cleaned = rawCep.replace(/\D/g, '')
+    if (cleaned.length !== 8) return
+    setIsLookingUpCep(true)
+    try {
+      const res = await fetch(`https://viacep.com.br/ws/${cleaned}/json/`)
+      const data = await res.json()
+      if (data?.erro) {
+        showError('CEP não encontrado.')
+        return
+      }
+      const parts = [data.bairro, data.localidade, data.uf].filter(Boolean)
+      const formatted = parts.length >= 2
+        ? `${data.localidade}, ${data.uf}`
+        : parts.join(', ')
+      setFormData(prev => ({
+        ...prev,
+        cep: `${cleaned.slice(0, 5)}-${cleaned.slice(5)}`,
+        // só sobrescreve location se estiver vazia ou for o resultado de outro CEP
+        location: prev.location && prev.location.trim().length > 0 && !prev.location.includes(',')
+          ? prev.location
+          : formatted
+      }))
+      success(`Endereço preenchido: ${formatted}`)
+    } catch (err) {
+      showError('Falha ao consultar ViaCEP.')
+    } finally {
+      setIsLookingUpCep(false)
+    }
+  }
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target
+    if (name === 'cep') {
+      const digits = value.replace(/\D/g, '').slice(0, 8)
+      const masked = digits.length > 5 ? `${digits.slice(0, 5)}-${digits.slice(5)}` : digits
+      setFormData(prev => ({ ...prev, cep: masked }))
+      if (digits.length === 8) {
+        void lookupCep(digits)
+      }
+      return
+    }
     setFormData(prev => ({
       ...prev,
       [name]: value
@@ -105,14 +153,18 @@ const Profile: React.FC = () => {
 
     setIsLoading(true)
     try {
-      // Atualizar perfil no Supabase
+      // Concatena CEP + Localização para persistir num único campo (compatível com schema atual)
+      const composedLocation = formData.cep
+        ? `${formData.cep}${formData.location ? ` — ${formData.location}` : ''}`
+        : formData.location
+
       const { error } = await supabase
         .from('profiles')
         .upsert({
           id: user.id,
           name: formData.name,
           phone: formData.phone,
-          location: formData.location,
+          location: composedLocation,
           bio: formData.bio,
           updated_at: new Date().toISOString()
         })
@@ -124,7 +176,7 @@ const Profile: React.FC = () => {
         data: {
           name: formData.name,
           phone: formData.phone,
-          location: formData.location,
+          location: composedLocation,
           bio: formData.bio
         }
       })
@@ -211,6 +263,7 @@ const Profile: React.FC = () => {
         name: user.name || '',
         email: user.email || '',
         phone: '',
+        cep: '',
         location: '',
         bio: ''
       })
@@ -268,9 +321,51 @@ const Profile: React.FC = () => {
   const stats = getAccountStats()
 
   const walletCredits = 0
-  const ranking = 42
-  // Média de estrelas (0–5) das avaliações que entram no cálculo do rank (a cada 50 consultas/avaliações). Em produção viria do banco.
-  const averageRatingStars = 4.2
+  const [ranking, setRanking] = useState<number | null>(null)
+  const [averageRatingStars, setAverageRatingStars] = useState<number | null>(null)
+  const [ratingsCount, setRatingsCount] = useState<number>(0)
+
+  // Buscar ranking real (posição por user_profiles.points entre profissionais) e média de estrelas
+  useEffect(() => {
+    if (!user?.id) return
+    let cancelled = false
+    ;(async () => {
+      try {
+        // Ranking: posição por points entre profissionais
+        const isProfessional = (user as any)?.type === 'profissional' || (user as any)?.type === 'admin'
+        if (isProfessional) {
+          const { data: meProfile } = await supabase
+            .from('user_profiles')
+            .select('points')
+            .eq('user_id', user.id)
+            .maybeSingle()
+          const myPoints = meProfile?.points ?? 0
+          const { count } = await supabase
+            .from('user_profiles')
+            .select('user_id', { count: 'exact', head: true })
+            .gt('points', myPoints)
+          if (!cancelled) setRanking((count ?? 0) + 1)
+        } else {
+          if (!cancelled) setRanking(null)
+        }
+
+        // Estrelas: média de conversation_ratings (como profissional ou paciente)
+        const column = isProfessional ? 'professional_id' : 'patient_id'
+        const { data: ratings } = await supabase
+          .from('conversation_ratings')
+          .select('rating')
+          .eq(column, user.id)
+        if (!cancelled && ratings && ratings.length > 0) {
+          const avg = ratings.reduce((s, r: any) => s + (r.rating || 0), 0) / ratings.length
+          setAverageRatingStars(avg)
+          setRatingsCount(ratings.length)
+        }
+      } catch (err) {
+        console.warn('[Profile] ranking/estrelas:', err)
+      }
+    })()
+    return () => { cancelled = true }
+  }, [user?.id])
   const renderStars = (value: number) => {
     const v = Math.min(5, Math.max(0, value))
     const full = Math.floor(v)
@@ -434,6 +529,23 @@ const Profile: React.FC = () => {
                   />
                 </div>
                 <div>
+                  <label className="text-xs font-medium text-slate-400 mb-1 flex items-center gap-1.5">
+                    CEP
+                    {isLookingUpCep && <span className="text-[10px] text-emerald-400">buscando…</span>}
+                  </label>
+                  <input
+                    type="text"
+                    name="cep"
+                    value={formData.cep}
+                    onChange={handleInputChange}
+                    disabled={!isEditing}
+                    placeholder="00000-000"
+                    inputMode="numeric"
+                    maxLength={9}
+                    className="w-full px-3 py-2 text-sm bg-slate-700 border border-slate-600 rounded text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                  />
+                </div>
+                <div>
                   <label className="block text-xs font-medium text-slate-400 mb-1">Localização</label>
                   <input
                     type="text"
@@ -441,7 +553,7 @@ const Profile: React.FC = () => {
                     value={formData.location}
                     onChange={handleInputChange}
                     disabled={!isEditing}
-                    placeholder="São Paulo, SP"
+                    placeholder="Bairro, Cidade, UF"
                     className="w-full px-3 py-2 text-sm bg-slate-700 border border-slate-600 rounded text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
                   />
                 </div>
@@ -596,14 +708,27 @@ const Profile: React.FC = () => {
               </div>
               <div className="flex justify-between items-center pt-1.5 border-t border-slate-600">
                 <span className="text-slate-400 flex items-center gap-1"><Award className="w-3.5 h-3.5 text-emerald-400" /> Ranking</span>
-                <span className="font-semibold text-white">#{ranking}</span>
+                <span className="font-semibold text-white">
+                  {ranking !== null ? `#${ranking}` : '—'}
+                </span>
               </div>
               <div className="flex justify-between items-center pt-1.5">
                 <span className="text-slate-400 flex items-center gap-1"><Star className="w-3.5 h-3.5 text-amber-400" /> Estrelas</span>
-                {renderStars(averageRatingStars)}
+                {averageRatingStars !== null ? (
+                  <span className="flex items-center gap-1.5">
+                    {renderStars(averageRatingStars)}
+                    <span className="text-[10px] text-slate-400 tabular-nums">({ratingsCount})</span>
+                  </span>
+                ) : (
+                  <span className="text-[11px] text-slate-500">Sem avaliações</span>
+                )}
               </div>
             </div>
-            <p className="text-[10px] text-slate-500 mt-2">Média das avaliações (0–5) que entram no rank. Regras no dashboard.</p>
+            <p className="text-[10px] text-slate-500 mt-2">
+              {ranking !== null
+                ? 'Ranking calculado por XP (user_profiles.points). Estrelas: média real das avaliações.'
+                : 'Ranking disponível para profissionais. Estrelas: média real das avaliações.'}
+            </p>
           </div>
 
           {/* Account Stats */}
