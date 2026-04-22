@@ -3,6 +3,7 @@ import React, { useState, useEffect, useCallback } from 'react'
 import { useNavigate, useSearchParams, useLocation } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
+import { useUserView } from '../hooks/useUserView'
 import { useToast } from '../contexts/ToastContext'
 import IntegrativePrescriptions from '../components/IntegrativePrescriptions'
 import { ExamRequestModule } from '../components/ExamRequestModule'
@@ -189,6 +190,8 @@ const PatientsManagement: React.FC<PatientsManagementProps> = ({ embedded = fals
   const location = useLocation()
   const [searchParams] = useSearchParams()
   const { user } = useAuth()
+  const { getEffectiveUserType } = useUserView()
+  const effectiveType = getEffectiveUserType(user?.type)
   const toast = useToast()
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedSpecialty, setSelectedSpecialty] = useState<string>('all')
@@ -587,7 +590,8 @@ const PatientsManagement: React.FC<PatientsManagementProps> = ({ embedded = fals
       // Assim o profissional (ex.: Dr. Ricardo) vê seus pacientes vinculados COM NOME
       let usersData: any[] = []
       try {
-        const fromGetAll = await getAllPatients(user)
+        // Passa effectiveType: admin "vendo como profissional" recebe só vinculados
+        const fromGetAll = await getAllPatients(user, effectiveType ?? undefined)
         if (fromGetAll && fromGetAll.length > 0) {
           usersData = fromGetAll.map(p => {
             let created_at: string | null = null
@@ -604,7 +608,12 @@ const PatientsManagement: React.FC<PatientsManagementProps> = ({ embedded = fals
               created_at
             }
           })
-          console.log('✅ Pacientes carregados (getAllPatients):', usersData.length, isAdmin(user) ? '(admin)' : '(profissional)')
+          const adminViewingAs = isAdmin(user) && effectiveType && effectiveType !== 'admin'
+          console.log(
+            '✅ Pacientes carregados (getAllPatients):',
+            usersData.length,
+            adminViewingAs ? `(admin vendo como ${effectiveType})` : isAdmin(user) ? '(admin)' : '(profissional)'
+          )
         }
       } catch (e) {
         console.warn('getAllPatients falhou, usando fallback direto:', e)
