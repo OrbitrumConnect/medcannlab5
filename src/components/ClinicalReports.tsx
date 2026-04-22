@@ -650,13 +650,71 @@ const ClinicalReports: React.FC<ClinicalReportsProps> = ({ className = '', onSha
       return !(selectedReport.content.rationalities as any)?.[key]
     })
     if (pending.length === 0) {
-      alert('Todas as racionalidades já foram aplicadas a este relatório.')
+      // Todas já existem → fazer scroll até o card de análises para visualizar
+      const el = document.getElementById('rationalities-results-card')
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+        el.classList.add('ring-2', 'ring-emerald-400/60')
+        setTimeout(() => el.classList.remove('ring-2', 'ring-emerald-400/60'), 1800)
+      }
       return
     }
     for (const rat of pending) {
       // eslint-disable-next-line no-await-in-loop
       await handleApplyRationality(rat)
     }
+    // Após gerar tudo, scroll até o resultado
+    setTimeout(() => {
+      document.getElementById('rationalities-results-card')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }, 300)
+  }
+
+  // 📥 Baixar TODAS as racionalidades aplicadas em um único arquivo .txt
+  const handleDownloadAllRationalities = () => {
+    if (!selectedReport) return
+    const rats = selectedReport.content.rationalities || {}
+    const labelMap: Record<string, string> = {
+      biomedical: 'Biomédica',
+      traditionalChinese: 'Medicina Tradicional Chinesa',
+      ayurvedic: 'Ayurvédica',
+      homeopathic: 'Homeopática',
+      integrative: 'Integrativa',
+    }
+    const lines: string[] = []
+    lines.push('═══════════════════════════════════════')
+    lines.push('  ANÁLISES MULTI-RACIONALIDADE — VISÃO COMPARATIVA')
+    lines.push('═══════════════════════════════════════', '')
+    lines.push(`Paciente: ${selectedReport.patientName}`)
+    lines.push(`Relatório: ${selectedReport.id}`)
+    lines.push(`Data: ${new Date().toLocaleString('pt-BR')}`, '')
+
+    Object.entries(rats).forEach(([key, value]: [string, any]) => {
+      if (!value?.assessment) return
+      lines.push('───────────────────────────────────────')
+      lines.push(`▸ ${labelMap[key] || key}`)
+      lines.push('───────────────────────────────────────')
+      lines.push('Avaliação:')
+      lines.push(stripClinical(value.assessment), '')
+      if (value.recommendations?.length) {
+        lines.push('Recomendações:')
+        value.recommendations.forEach((r: string) => lines.push(`  • ${stripClinical(r)}`))
+        lines.push('')
+      }
+      if (value.considerations) {
+        lines.push('Considerações:')
+        lines.push(stripClinical(value.considerations), '')
+      }
+    })
+
+    const blob = new Blob([lines.join('\n')], { type: 'text/plain;charset=utf-8' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `racionalidades_comparativo_${selectedReport.patientName}_${Date.now()}.txt`
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+    URL.revokeObjectURL(url)
   }
 
   // 📄 Baixar análise individual de UMA racionalidade
