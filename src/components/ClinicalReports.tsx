@@ -689,20 +689,26 @@ const ClinicalReports: React.FC<ClinicalReportsProps> = ({ className = '', onSha
     lines.push(`Data: ${new Date().toLocaleString('pt-BR')}`, '')
 
     Object.entries(rats).forEach(([key, value]: [string, any]) => {
-      if (!value?.assessment) return
+      if (!value) return
+      const text = value.assessment || value.summary || value.content || value.analysis || ''
+      const recs = value.recommendations || []
+      const cons = value.considerations || ''
+      if (!text && !recs.length && !cons) return
       lines.push('───────────────────────────────────────')
       lines.push(`▸ ${labelMap[key] || key}`)
       lines.push('───────────────────────────────────────')
-      lines.push('Avaliação:')
-      lines.push(stripClinical(value.assessment), '')
-      if (value.recommendations?.length) {
+      if (text) {
+        lines.push('Avaliação:')
+        lines.push(stripClinical(text), '')
+      }
+      if (recs.length) {
         lines.push('Recomendações:')
-        value.recommendations.forEach((r: string) => lines.push(`  • ${stripClinical(r)}`))
+        recs.forEach((r: string) => lines.push(`  • ${stripClinical(r)}`))
         lines.push('')
       }
-      if (value.considerations) {
+      if (cons) {
         lines.push('Considerações:')
-        lines.push(stripClinical(value.considerations), '')
+        lines.push(stripClinical(cons), '')
       }
     })
 
