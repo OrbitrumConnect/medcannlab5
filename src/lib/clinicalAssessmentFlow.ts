@@ -372,22 +372,25 @@ export class ClinicalAssessmentFlow {
     const lowerResponse = userTurn.toLowerCase().trim()
 
     // ========== DETECCAO DE SAIDA VOLUNTARIA ==========
-    const exitKeywords = [
-      'sair', 'parar', 'encerar', 'encerrar', 'cancelar', 'interromper', 'terminar', 'finalizar', 'fim', 'chega', 'vlw', 'flw', 'xau', 'tchau', 'fui',
-      'quero parar', 'quero sair', 'preciso ir', 'preciso sair', 'cansei', 'parar por aqui', 'depois a gente termina', 'continuar depois', 'fazer depois',
-      'parar avaliação', 'encerrar avaliação', 'cancelar avaliação', 'encerrar por aqui', 'encerrar a conversa',
-      'parar avaliacao', 'encerrar avaliacao', 'cancelar avaliacao', 'terminar aqui', 'quero terminar',
-      'não quero continuar', 'nao quero continuar', 'vou parar', 'pode parar', 'para tudo',
-      'tenho que ir', 'deixa pra depois', 'outra hora', 'agora não posso', 'agora nao posso', 'volto depois',
-      'vamos encerrar', 'fechar avaliacao', 'fechar a avaliacao', 'concluir depois',
-      'quero encerrar', 'pode encerrar', 'amigo vamos encerrar', 'vamos parar',
-      'enviar trigger de encerramento', 'trigger de encerramento',
-      'encerramos', 'ok encerramos', 'podemos encerrar', 'encerrar esta avaliacao',
-      'encerrar esta avaliação', 'encerar a avaliacao', 'encerar avaliacao',
-      'encerrar essa', 'gostaria de encerrar', 'quero encerrar a'
+    // IMPORTANTE: usar frases intencionais (não palavras isoladas tipo "sair", "parar", "fim")
+    // para evitar falso positivo em "sair de casa", "fim de semana", "para tudo passar", etc.
+    const normExit = lowerResponse.normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    const exitPatterns: RegExp[] = [
+      // Pedidos diretos com verbo de intenção + ação de encerrar
+      /\b(quero|gostaria de|preciso|posso|vamos|pode|vou)\s+(sair|parar|encerrar|cancelar|interromper|terminar|finalizar|encerar)\b/,
+      /\b(parar|encerrar|cancelar|interromper|terminar|finalizar|encerar)\s+(a\s+)?(avaliacao|avaliação|consulta|conversa|por\s+aqui|aqui|tudo)\b/,
+      /\b(fechar|concluir)\s+(a\s+)?(avaliacao|avaliação|conversa)\b/,
+      /\bpara\s+tudo\b/, /\bchega\s+por\s+(hoje|aqui)\b/, /\bcansei\b/,
+      /\bdeixa\s+(pra|para)\s+depois\b/, /\bcontinuar\s+depois\b/, /\bfazer\s+depois\b/,
+      /\bvolto\s+depois\b/, /\boutra\s+hora\b/, /\bagora\s+nao\s+posso\b/,
+      /\b(tenho|preciso)\s+que\s+ir\b/, /\bpreciso\s+ir\b/,
+      /\b(nao|não)\s+quero\s+continuar\b/,
+      /\b(podemos|vamos|amigo\s+vamos|ok)\s+encerr(ar|amos)\b/,
+      /\btrigger\s+de\s+encerramento\b/,
+      // Despedidas explícitas isoladas (curtas, sem outro conteúdo)
+      /^(tchau|xau|fui|flw|vlw|chega|fim)\s*[!.?]?$/,
     ]
-
-    const wantsToExit = exitKeywords.some(kw => lowerResponse.includes(kw))
+    const wantsToExit = exitPatterns.some(rx => rx.test(normExit))
 
     // ========== CONFIRMAÇÃO DE REINÍCIO (nova avaliação do zero) ==========
     if (state.phase === 'CONFIRMING_RESTART') {
