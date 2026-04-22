@@ -1137,6 +1137,36 @@ const Sidebar: React.FC<SidebarProps> = ({
           </div>
         )}
 
+        {/* Trigger Admin Chat - Apenas para admins (chat entre admins) */}
+        {normalizedType === 'admin' && (
+          <div className="px-3 pb-2">
+            <Link
+              to="/app/admin-chat"
+              className={`w-full flex items-center ${isCollapsed ? 'justify-center' : 'gap-3'} px-3 py-2.5 rounded-lg transition-all group`}
+              style={{
+                background: 'rgba(0, 193, 106, 0.08)',
+                border: '1px solid rgba(0, 193, 106, 0.2)'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = 'rgba(0, 193, 106, 0.15)'
+                e.currentTarget.style.borderColor = 'rgba(0, 193, 106, 0.4)'
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = 'rgba(0, 193, 106, 0.08)'
+                e.currentTarget.style.borderColor = 'rgba(0, 193, 106, 0.2)'
+              }}
+              title={isCollapsed ? 'Chat entre Admins' : ''}
+            >
+              <MessageCircle className="w-5 h-5 text-emerald-400 flex-shrink-0 group-hover:text-emerald-300" />
+              {!isCollapsed && (
+                <span className="text-sm font-medium text-emerald-400 group-hover:text-emerald-300 flex-1 text-left">
+                  Chat Admin
+                </span>
+              )}
+            </Link>
+          </div>
+        )}
+
         {/* Botão Sair - Acima do Reduzir */}
         <div className="px-3 pb-2">
           <button
