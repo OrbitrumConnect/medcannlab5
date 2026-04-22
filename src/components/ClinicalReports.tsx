@@ -1440,6 +1440,20 @@ const ClinicalReports: React.FC<ClinicalReportsProps> = ({ className = '', onSha
                       )
                     })}
                   </div>
+                  {/* Modo Comparativo: aplica todas as racionalidades em sequência */}
+                  <button
+                    onClick={handleApplyAllRationalities}
+                    disabled={isGeneratingAnalysis}
+                    className={`w-full mb-2 flex items-center justify-center space-x-2 px-3 py-2 rounded-lg text-sm font-medium transition-all ${
+                      isGeneratingAnalysis
+                        ? 'bg-slate-700/50 text-slate-500 cursor-not-allowed'
+                        : 'bg-gradient-to-r from-emerald-600/20 to-teal-600/20 border border-emerald-500/30 text-emerald-300 hover:from-emerald-600/30 hover:to-teal-600/30'
+                    }`}
+                    title="Aplica as 5 racionalidades em sequência (visão integrativa completa)"
+                  >
+                    <Brain className="w-4 h-4" />
+                    <span>Modo Comparativo — Aplicar Todas</span>
+                  </button>
                   {isGeneratingAnalysis && (
                     <div className="flex items-center space-x-2 text-blue-400 text-sm">
                       <Loader2 className="w-4 h-4 animate-spin" />
