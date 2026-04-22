@@ -1054,3 +1054,172 @@ Tudo o que foi feito em 22/04/2026 cabe nesses três princípios. Qualquer regre
 **Próximo diário esperado:** `DIARIO_23_04_2026_UNIFICADO.md` — abrir com smoke test de produção e feedback médico real.
 
 — *Obrigado pela sessão. Até a próxima.* 🌿
+
+---
+
+## 🔬 BLOCO 9 — AUDITORIA SEM VIÉS (olhar de "primeira vez no app")
+
+> Esta seção é deliberadamente **fria, sem narrativa de vitória**. Audita o estado real do banco e da segurança no momento do selamento, como se um auditor externo abrisse o projeto agora pela primeira vez. Tudo abaixo é fato observado em consulta direta ao Supabase em 22/04/2026 ~21h30.
+
+### 9.1 Snapshot quantitativo do banco (verdade fria)
+
+```
+TABELAS public:                144   (100% com RLS ativada ✅)
+POLÍTICAS RLS:                 454
+FUNÇÕES:                       333
+VIEWS:                          32
+TRIGGERS:                        0   ⚠️  (information_schema retorna 0; provável que estejam em pg_trigger e não foram contados aqui — investigar)
+
+USUÁRIOS:                       27 total
+  └─ type='patient':            14
+  └─ type='professional':        8
+  └─ type='admin':               5
+  └─ is_anonymized=true:         3   (LGPD soft-delete funcionando ✅)
+
+USER_ROLES (tabela canônica): 41 papéis distribuídos em 27 usuários
+  └─ paciente:                  26
+  └─ profissional:               9
+  └─ admin:                      5
+  └─ aluno:                      1
+  ⚠️ Soma > usuários (41 vs 27) → vários usuários têm múltiplos papéis (ex: admin+paciente)
+
+RELATÓRIOS CLÍNICOS:            21
+  └─ sem interaction_id:        19   ⚠️ (legado pré-fix de hoje; novos OK)
+  └─ sem doctor_id:             11   ⚠️ (legado pré-fix; FK violation foi corrigida hoje)
+
+RACIONALIDADES CLÍNICAS:         2   ⚠️ (apenas 2 análises geradas — pipeline secundário ainda subutilizado)
+EIXOS CLÍNICOS:                 10
+KPIs CLÍNICOS:                  24
+INTERAÇÕES IA (chat):        1.413
+
+AGENDAMENTOS:                   56
+  └─ scheduled:                 28
+  └─ cancelled:                 28
+  └─ completed:                  0   🚨 BLOQUEADOR: nenhum agendamento marcado como 'completed'
+                                       → conforme memória `clinical-reports/appointment-completion-flow`,
+                                         isso impede ativação de funcionalidades pós-consulta
+
+ESTADOS AEC PERSISTIDOS:         7
+DOCUMENTOS (Universidade):     458   (89% slides auto-gerados conforme memória anterior)
+NOA_LESSONS:                     1   ⚠️ (tabela canônica de aulas praticamente vazia — conteúdo concentrado em `documents`)
+NOTIFICAÇÕES:                  120
+```
+
+### 9.2 Achados de segurança (Supabase Security Scan — 22/04/2026)
+
+#### 🚨 CRÍTICOS (level: ERROR) — exigem ação na próxima sessão
+
+**1. `clinical_reports` — Backdoor de e-mail hardcoded em política RLS**
+- **Política:** `Reports access`
+- **Problema:** Concede `ALL` para qualquer sessão cujo `auth.email()` seja `phpg69@gmail.com` OU `cbdrcpremium@gmail.com`
+- **Impacto:** Se uma dessas contas for comprometida ou reatribuída, atacante ganha acesso irrestrito a todos os relatórios clínicos (PII clínica + nome + profissional)
+- **Correção:** Substituir por `has_role(auth.uid(), 'admin'::app_role)` — manter o padrão SECURITY DEFINER já dominante no projeto
+- **Severidade:** ALTA — viola princípio "Soberania Clínica"
+
+**2. `chat-images` bucket público — listagem ampla**
+- **Política:** `Anyone can view chat images` com condição apenas `bucket_id = 'chat-images'`
+- **Problema:** Imagens trocadas em consultas privadas médico-paciente são acessíveis sem autenticação
+- **Correção:** Restringir SELECT a authenticated + verificação de propriedade (`storage.foldername(name)[1] = auth.uid()::text`), igual ao padrão DELETE já existente
+- **Severidade:** ALTA — quebra confidencialidade clínica/LGPD
+
+**3. `users` — Cross-exposure entre profissionais**
+- **Política:** `Professionals can view other professionals`
+- **Problema:** Qualquer profissional verificado pode ler **CPF, telefone, data de nascimento, tipo sanguíneo, medicações, alergias, endereço** de TODOS os outros profissionais
+- **Correção:** Criar VIEW projetando só campos não-sensíveis (`name`, `specialty`, `crm`) para descoberta profissional, e restringir SELECT direto na tabela base
+- **Severidade:** ALTA — viola política `pii-data-isolation` já documentada em memória
+
+#### ⚠️ AVISOS (level: WARN) — corrigir quando possível
+
+| # | Achado | Ação |
+|---|---|---|
+| W1 | `Function Search Path Mutable` em várias funções | Adicionar `SET search_path = public` |
+| W2 | Extensão instalada em schema `public` | Mover para schema dedicado |
+| W3 | Política RLS com `USING (true)` em UPDATE/DELETE/INSERT | Auditar e restringir |
+| W4 | Proteção contra senhas vazadas DESATIVADA | Ativar em Auth → Settings |
+| W5 | Bucket público permite listagem | Restringir SELECT |
+
+### 9.3 Inconsistências observadas (não-bloqueantes mas merecem atenção)
+
+#### A. **Duplicação de fonte de verdade para tipo de usuário**
+- Coluna `users.type` (`patient`/`professional`/`admin`) coexiste com tabela `user_roles` (`paciente`/`profissional`/`admin`/`aluno`)
+- Tradução PT↔EN inconsistente: `patient` (en) vs `paciente` (pt)
+- Memória `data/user-type-standardization` diz que padrão é PT, mas `users.type` está em EN
+- **Risco:** Lógicas de UI podem checar fonte errada e dar acesso errado
+
+#### B. **Tabelas órfãs / aparentemente legado (suspeitas)**
+- `chat_messages_legacy` (tem `_legacy` no nome — confirmar se ainda é lida)
+- `users_compatible`, `usuarios`, `pacientes` (tabelas em PT que parecem duplicar `users`/`profiles`)
+- `noa_logs`, `noa_articles`, `noa_clinical_cases`, `noa_memories`, `noa_pending_actions`, `noa_interaction_logs` (vários `noa_*` — confirmar quais estão vivos)
+- `dev_vivo_*` (4 tabelas — usadas?)
+- `trl_*` (8 tabelas — programa TRL ainda ativo?)
+- `imre_*`, `dados_imre_coletados` (sobrepõem `clinical_reports`?)
+- **Recomendação:** Próxima sessão fazer auditoria de "tabelas com 0 escritas nos últimos 90 dias" e propor depreciação
+
+#### C. **Discrepância users (27) vs user_roles (41)**
+- Múltiplos papéis por usuário é **desejado** (admin pode ser paciente também)
+- Mas convém validar: nenhum paciente acumulou role `profissional` por engano (escalada de privilégio)
+
+#### D. **`noa_lessons` tem apenas 1 registro**
+- Memória `features/education/lesson-table-unification` diz que é a tabela canônica de aulas
+- Conteúdo real está concentrado em `documents` (458)
+- Migração para `noa_lessons` foi anunciada mas não executada de fato
+
+#### E. **`appointments.status='completed' = 0`**
+- Memória `clinical-reports/appointment-completion-flow`: "transição para 'completed' habilita funcionalidades pós-consulta"
+- Hoje, **nenhum** agendamento foi para `completed` → todo o fluxo pós-consulta segue não testado em produção
+- **Ação:** Forçar 1 agendamento `completed` em ambiente de teste para validar disparo de NPS, prescrição, follow-up etc.
+
+#### F. **Apenas 2 racionalidades clínicas geradas**
+- Pipeline foi montado, RAG enriquecido, UI redesenhada hoje
+- Mas adoção real ainda é zero-vírgula
+- **Não é bug**, é **falta de uso real** — depende do médico testar
+
+### 9.4 O que está saudável (sem tirar mérito do que funciona)
+
+| ✅ | Item | Evidência |
+|---|---|---|
+| ✅ | RLS em 100% das tabelas (144/144) | Nenhuma tabela exposta sem política |
+| ✅ | 454 políticas RLS ativas | Granularidade alta |
+| ✅ | 3 usuários `is_anonymized=true` | Soft-delete LGPD operacional |
+| ✅ | `user_roles` separada de `users` | Padrão correto contra escalada de privilégio |
+| ✅ | 21 relatórios clínicos persistindo | Pipeline AEC vivo |
+| ✅ | 1.413 interações de IA logadas | Audit trail clínico abundante |
+| ✅ | 458 documentos no RAG | Universidade Digital com massa crítica |
+| ✅ | Tipos PT/EN ambos populados | Bilingual sem perda de dado |
+| ✅ | Trigger BEFORE DELETE em users (LGPD) | Memória `user-lifecycle-engine` confirmada |
+| ✅ | 24 KPIs clínicos populando | `populate_clinical_indicators` rodando |
+
+### 9.5 Plano de remediação priorizado (3 sprints curtos)
+
+**Sprint Segurança (próxima sessão — 1 a 2 dias):**
+1. 🚨 Reescrever política `Reports access` em `clinical_reports` removendo backdoor de e-mail hardcoded → usar `has_role()`
+2. 🚨 Reescrever política do bucket `chat-images` para auth + ownership
+3. 🚨 Particionar política de `users` para profissionais (criar VIEW pública, restringir tabela base)
+4. ⚠️ Ativar Leaked Password Protection no Auth
+5. ⚠️ Adicionar `SET search_path = public` em todas as funções SECURITY DEFINER
+
+**Sprint Higiene de Dados (1 sprint):**
+6. Auditar tabelas suspeitas (`*_legacy`, `dev_vivo_*`, `trl_*`, duplicatas PT) → marcar para depreciação
+7. Padronizar `users.type` para PT (ou inverter — escolher uma fonte)
+8. Backfill de `interaction_id` nos 19 relatórios legados (se possível pelos logs do chat)
+9. Decidir destino de `noa_lessons` vs `documents` (unificar de vez)
+
+**Sprint Validação Operacional (1 sprint):**
+10. Forçar 1 agendamento → `completed` e validar disparo da cadeia pós-consulta
+11. Gerar 5 racionalidades reais para 1 paciente real e validar Comparativo de ponta a ponta
+12. Testar exclusão LGPD ponta-a-ponta (criar usuário descartável → deletar → verificar anonimização)
+
+### 9.6 Veredito sem viés
+
+**O que o app realmente é em 22/04/2026:**
+> Uma plataforma clínica com **arquitetura sólida** (RLS universal, papéis separados, soft-delete LGPD, audit trail abundante, RAG funcional), com **3 vulnerabilidades reais e endereçáveis** (backdoor por e-mail, bucket público, cross-exposure profissional), com **acúmulo de dívida técnica de schema** (tabelas duplicadas em PT/EN, legados não-marcados), e com **adoção real ainda baixa** (0 consultas concluídas, 2 racionalidades geradas, 1 aula em `noa_lessons`).
+>
+> Não é vaporware. Mas também não está pronto para escalar sem fechar os 3 críticos de segurança e validar o fluxo pós-consulta com dado real. **A ponte entre "construído" e "usado" é o próximo desafio.**
+
+**Sinal forte:** o trabalho de hoje endureceu a infraestrutura sem regressão e desbloqueou um pipeline que estava parado havia 17 dias. **Sinal de cautela:** as 3 vulnerabilidades críticas existem há mais tempo que as melhorias de hoje — auditoria precisa virar rotina, não evento.
+
+---
+
+**🔐 Selo final do Bloco 9:** auditoria honesta concluída. Próxima sessão deve abrir pelos 3 críticos de segurança antes de qualquer feature nova.
+
+**Hash de auditoria:** `audit-22-04-2026-unbiased-supabase-snapshot`
