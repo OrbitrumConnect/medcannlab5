@@ -532,7 +532,9 @@ const ClinicalReports: React.FC<ClinicalReportsProps> = ({ className = '', onSha
       if (raw.scores) {
         lines.push('', '▸ SCORES:')
         Object.entries(raw.scores).forEach(([k, v]: [string, any]) => {
-          lines.push(`  ${k.replace(/_/g, ' ')}: ${v}%`)
+          if (typeof v === 'number' || typeof v === 'string' || typeof v === 'boolean') {
+            lines.push(`  ${k.replace(/_/g, ' ')}: ${typeof v === 'number' ? `${v}%` : String(v)}`)
+          }
         })
       }
 
