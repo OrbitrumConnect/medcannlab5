@@ -937,7 +937,7 @@ async function handleFinalizeAssessment(params: {
             patientData_id: patientData?.id,
             fallbackUserId
         });
-        return;
+        return { report_id: null, status: 'aborted_no_patient_id' as const };
     }
     
     // Injetar patient_id resolvido no assessmentData para uso downstream
@@ -962,8 +962,8 @@ async function handleFinalizeAssessment(params: {
             .maybeSingle();
 
         if (existing) {
-            console.warn(`⚠️ [PIPELINE_REDUNDANT_TRIGGER] Report idêntico em ${recentWindowMs}ms (existing=${existing.id}, current_interaction=${interaction_id}). Constraint UNIQUE protege; investigar causa no cliente.`);
-            return;
+            console.warn(`⚠️ [PIPELINE_REDUNDANT_TRIGGER] Report idêntico em ${recentWindowMs}ms (existing=${existing.id}, current_interaction=${interaction_id}). Devolvendo report_id existente.`);
+            return { report_id: existing.id, status: 'idempotent_recent' as const };
         }
 
         // 1.1. [DOCTOR_RESOLUTION] Resolver médico real do paciente em vez de cair no fallback hardcoded.
@@ -1101,9 +1101,15 @@ Estrutura Obrigatória:
 
         if (reportError) {
             // Violação UNIQUE em interaction_id = idempotência funcionando, não erro.
+            // Buscamos o registro vencedor para devolver o report_id ao cliente.
             if (reportError.code === '23505' && (reportError.message || '').includes('interaction_id')) {
-                console.warn('⚠️ [PIPELINE_REDUNDANT_TRIGGER] Conflito UNIQUE em interaction_id — outro processo já persistiu. Abortando.');
-                return;
+                console.warn('⚠️ [PIPELINE_REDUNDANT_TRIGGER] Conflito UNIQUE em interaction_id — outro processo já persistiu. Recuperando vencedor.');
+                const { data: winner } = await supabaseClient
+                    .from('clinical_reports')
+                    .select('id')
+                    .eq('interaction_id', interaction_id)
+                    .maybeSingle();
+                return { report_id: winner?.id ?? null, status: 'idempotent_unique' as const };
             }
             throw reportError;
         }
@@ -1158,9 +1164,11 @@ Estrutura Obrigatória:
         }
 
         console.log('✅ [PIPELINE_STAGE] DONE', { interaction_id, report_id: report.id });
+        return { report_id: report.id, status: 'created' as const };
 
     } catch (e) {
         console.error('❌ [PIPELINE_STAGE] ERROR', e);
+        return { report_id: null, status: 'error' as const, error: (e as Error)?.message };
     }
 }
 
