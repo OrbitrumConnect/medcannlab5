@@ -732,3 +732,52 @@ Reconhecido: a narrativa original ("PROVADO VIVO", "nível Doctoralia") foi infl
 ⚠️ Próximo nível de maturidade: tabela `patient_doctor_binding` explícita (não urgente)
 
 **Hash da errata:** `errata-22-04-2026-v1`
+
+---
+
+## 📌 LEITURA DE CATEGORIA — fim do dia (auditoria externa #2)
+
+A segunda rodada de auditoria nomeou com precisão o que a primeira chamou só de "melhoria". Registrado aqui sem inflar:
+
+### O que mudou de **categoria** (não só de qualidade)
+
+A correção do `doctor_id` não foi um fix de bug — foi uma mudança de **classe de risco**.
+
+| Eixo | Antes | Agora |
+|---|---|---|
+| Aceitação de UUID | UUID existe → aceita | UUID existe **E** é `type='professional'` → aceita |
+| Resolução | Cega, primeiro disponível | Hierarquia explícita: `request → 5 últimos appointments → preferred → fallback` |
+| Erro silencioso | "Deu certo" mesmo errado | `[DOCTOR_RESOLUTION] via X (validado)` em log estruturado |
+| Categoria | "Não quebra mesmo com dados errados" | "Não quebra **e não mente** (dentro das regras atuais)" |
+
+Isso separa **existência** de **validade** — modelagem de domínio, não bugfix.
+
+### O que **ainda** não está resolvido (nomeado, não escondido)
+
+🟡 **Profissional válido mas errado** — sem `is_active`/`status` no schema, o sistema aceita médico suspenso/inativo. Não quebra banco, mas pode quebrar negócio.
+🟡 **Heurística ainda manda** — `appointments[0..4]` + `preferred_doctor_id` são fallback, não fonte de verdade. Falta tabela `patient_doctor_binding` explícita.
+🟡 **N+1 queries** — a validação custa até 7 SELECTs por finalização. Irrelevante hoje, radar para amanhã.
+
+### Onde está a real distância para 5⭐ (não é feature)
+
+🔴 **Cobertura de teste E2E praticamente zero** — sem teste, regressão é descoberta tarde.
+🔴 **Sem monitoramento ativo (Sentry)** — erro em produção hoje = ninguém vê em tempo real.
+🔴 **`tradevision-core` monolítico (~4000 linhas)** — alto risco de regressão silenciosa em qualquer mudança.
+
+### O que **foi feito nesta sessão** sobre isso
+
+✅ Criado `tests/e2e/aec_e2e.spec.ts` — smoke ponta-a-ponta cobrindo:
+   1. Login paciente
+   2. Rota `/app/paciente/avaliacao/imre` carrega sem 500/redirect
+   3. Persistência: existe `clinical_report` recente do paciente com `doctor_id` não-null (prova que a FK não voltou a quebrar)
+   - Skipa silenciosamente sem credenciais (`E2E_PATIENT_EMAIL/PASSWORD`, `E2E_SUPABASE_URL/ANON_KEY`) — não trava clones sem secrets.
+
+⏸️ Sentry e remoção da query legada de `slug` (L~3847): **decisão consciente de adiar** nesta rodada.
+
+### Frase de fechamento (sem marketing)
+
+> Antes o sistema não quebrava — mas podia mentir.
+> Agora ele não quebra e não mente mais (dentro das regras atuais).
+> A próxima fronteira não é mais código novo — é **proteção do código que existe** (testes + observabilidade).
+
+**Hash:** `errata-22-04-2026-v2-categoria`
