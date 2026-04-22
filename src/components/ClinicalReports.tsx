@@ -24,6 +24,7 @@ import {
   ChevronUp
 } from 'lucide-react'
 import { supabase } from '../lib/supabase'
+import { useNavigate } from 'react-router-dom'
 import { stripPlatformInjectionNoise } from '../lib/clinicalAssessmentFlow'
 
 const MEDICAL_RECORD_SESSION_LOOKBACK_MS = 90 * 60 * 1000
@@ -87,6 +88,7 @@ const REPORTS_PER_PAGE = 5
 
 const ClinicalReports: React.FC<ClinicalReportsProps> = ({ className = '', onShareReport }) => {
   const { user } = useAuth()
+  const navigate = useNavigate()
   const { getEffectiveUserType, isAdminViewingAs } = useUserView()
   const [reports, setReports] = useState<SharedReport[]>([])
   const [loading, setLoading] = useState(true)
@@ -1439,6 +1441,45 @@ const ClinicalReports: React.FC<ClinicalReportsProps> = ({ className = '', onSha
                 <Download className="w-4 h-4" />
                 <span>Baixar</span>
               </button>
+
+              {/* Ações rápidas (atalhos para fluxos já existentes na plataforma) */}
+              {isPatient && (
+                <button
+                  onClick={() => {
+                    setShowReportModal(false)
+                    navigate('/app/clinica/paciente/agendamentos', {
+                      state: { openNew: true, reason: 'post_assessment' }
+                    })
+                  }}
+                  className="flex-1 min-w-[140px] px-4 py-2 text-white rounded-lg transition-colors flex items-center justify-center space-x-2"
+                  style={{ background: 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)' }}
+                  title="Abrir tela de agendamento de consulta"
+                >
+                  <Calendar className="w-4 h-4" />
+                  <span>Agendar consulta</span>
+                </button>
+              )}
+              {isPatient && onShareReport && (
+                <button
+                  onClick={() => onShareReport(selectedReport.id)}
+                  className="flex-1 min-w-[140px] px-4 py-2 text-white rounded-lg transition-colors flex items-center justify-center space-x-2"
+                  style={{ background: 'linear-gradient(135deg, #00C16A 0%, #13794f 100%)' }}
+                  title="Compartilhar este relatório com seu médico"
+                >
+                  <Share2 className="w-4 h-4" />
+                  <span>Compartilhar</span>
+                </button>
+              )}
+              <button
+                onClick={() => handleGenerateNFT(selectedReport)}
+                className="flex-1 min-w-[140px] px-4 py-2 text-white rounded-lg transition-colors flex items-center justify-center space-x-2"
+                style={{ background: 'linear-gradient(135deg, #9333ea 0%, #7c3aed 100%)' }}
+                title="Gerar certificado NFT de autenticidade do relatório"
+              >
+                <QrCode className="w-4 h-4" />
+                <span>Gerar NFT</span>
+              </button>
+
               {!isPatient && (
                 <>
                   <button
