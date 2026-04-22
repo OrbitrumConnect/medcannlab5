@@ -32,7 +32,9 @@ const INVISIBLE_CONTENT_TOKENS = [
   '[SHOW_PRESCRIPTION]',
   '[FILTER_PATIENTS_ACTIVE]',
   '[DOCUMENT_LIST]',
-  '[ASSESSMENT_COMPLETED]'
+  '[ASSESSMENT_COMPLETED]',
+  '[ASSESSMENT_FINALIZED]',
+  '[FINALIZE_SESSION]'
 ]
 
 function stripInvisibleTokensForStorage(text: string): string {

@@ -95,6 +95,8 @@ const INVISIBLE_DISPLAY_TOKENS = [
   "[FILTER_PATIENTS_ACTIVE]",
   "[DOCUMENT_LIST]",
   "[ASSESSMENT_COMPLETED]",
+  "[ASSESSMENT_FINALIZED]",
+  "[FINALIZE_SESSION]",
 ];
 
 /** Remove todos os tokens invisíveis do texto exibido (usuário nunca vê triggers; ações são automáticas). */
@@ -3201,16 +3203,18 @@ const NoaConversationalInterface = React.forwardRef<
                           <div className="bg-emerald-950/30 p-3 sm:p-4 border-t border-emerald-500/20 flex justify-end">
                             <button
                               onClick={() => {
-                                if (
-                                  action.actionId === "view_schedule" &&
-                                  onViewSchedule
-                                ) {
-                                  onViewSchedule();
+                                if (action.actionId === "view_schedule") {
+                                  if (onViewSchedule) {
+                                    onViewSchedule();
+                                  } else {
+                                    navigate(
+                                      "/app/clinica/paciente/agendamentos",
+                                    );
+                                  }
                                   setIsOpen(false);
                                   return;
                                 }
 
-                                // Navegar para o dashboard com card "Avalie a conversa" (estrelas)
                                 navigate(
                                   `/app/clinica/paciente/dashboard?section=analytics&rate_conversation=1`,
                                 );
@@ -3292,12 +3296,13 @@ const NoaConversationalInterface = React.forwardRef<
                                 `✅ Agendamento confirmado! ID: ${appointmentId}`,
                                 {
                                   preferVoice: false,
+                                  role: "system",
                                   type: "action_card",
                                   action: {
                                     label: "Ver Meus Agendamentos",
                                     actionId: "view_schedule",
                                   },
-                                },
+                                } as any,
                               );
                             }}
                             onCancel={() => {
