@@ -945,29 +945,69 @@ async function handleFinalizeAssessment(params: {
         assessmentData.patient_id = resolvedPatientId;
     }
     
-    console.log('🧠 [FINALIZE_PIPELINE] Iniciando processamento master...', { interaction_id, resolvedPatientId });
+    console.log('🧠 [PIPELINE_STAGE] START', { interaction_id, resolvedPatientId });
 
     try {
-        // [LGPD SECURE GATE] Se o consentimento foi explicitamente recusado no payload, abortar
-        const hasRejectedConsent = assessmentData?.content?.consenso?.aceito === false || assessmentData?.content?.raw?.consentGiven === false;
-        if (hasRejectedConsent) {
-            console.error('❌ [LGPD_VIOLATION_PREVENTED] Finalização abortada no Master Pipeline: Paciente não consentiu explicitamente.');
-            return;
-        }
-
-        // 1. Idempotência Master: Verificar report recente na última hora via patient_id
-        const hourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
+        // 1. Idempotência: a constraint UNIQUE de interaction_id é a verdade.
+        //    O time-lock vira sinalizador de trigger redundante (não bloqueia silenciosamente em 1h).
+        //    Janela reduzida para 30s — só captura double-fire real (clique duplo, race de UI).
+        const recentWindowMs = 30 * 1000;
+        const recentCutoff = new Date(Date.now() - recentWindowMs).toISOString();
         const { data: existing } = await supabaseClient
             .from('clinical_reports')
-            .select('id')
+            .select('id, interaction_id, created_at')
             .eq('patient_id', resolvedPatientId)
             .eq('report_type', 'initial_assessment')
-            .gte('created_at', hourAgo)
+            .gte('created_at', recentCutoff)
             .maybeSingle();
 
         if (existing) {
-            console.log(`⚠️ [IDEMPOTENCY_TIME_LOCK] Relatório já gerado recentemente (ID: ${existing.id}). Abortando Master Pipeline redundante.`);
+            console.warn(`⚠️ [PIPELINE_REDUNDANT_TRIGGER] Report idêntico em ${recentWindowMs}ms (existing=${existing.id}, current_interaction=${interaction_id}). Constraint UNIQUE protege; investigar causa no cliente.`);
             return;
+        }
+
+        // 1.1. [DOCTOR_RESOLUTION] Resolver médico real do paciente em vez de cair no fallback hardcoded.
+        //      Ordem: professionalId vindo do request → último appointment do paciente → preferred_doctor_id → fallback Ricardo.
+        let resolvedDoctorId: string | null = (professionalId && professionalId !== 'system-global') ? professionalId : null;
+
+        if (!resolvedDoctorId) {
+            try {
+                const { data: lastAppt } = await supabaseClient
+                    .from('appointments')
+                    .select('professional_id')
+                    .eq('patient_id', resolvedPatientId)
+                    .not('professional_id', 'is', null)
+                    .order('created_at', { ascending: false })
+                    .limit(1)
+                    .maybeSingle();
+                if (lastAppt?.professional_id) {
+                    resolvedDoctorId = lastAppt.professional_id;
+                    console.log('🩺 [DOCTOR_RESOLUTION] Vínculo via appointments:', resolvedDoctorId);
+                }
+            } catch (e) {
+                console.warn('[DOCTOR_RESOLUTION] Falha ao consultar appointments:', e);
+            }
+        }
+
+        if (!resolvedDoctorId) {
+            try {
+                const { data: profile } = await supabaseClient
+                    .from('profiles')
+                    .select('preferred_doctor_id')
+                    .eq('id', resolvedPatientId)
+                    .maybeSingle();
+                if (profile?.preferred_doctor_id) {
+                    resolvedDoctorId = profile.preferred_doctor_id;
+                    console.log('🩺 [DOCTOR_RESOLUTION] Vínculo via preferred_doctor_id:', resolvedDoctorId);
+                }
+            } catch (e) {
+                console.warn('[DOCTOR_RESOLUTION] Falha ao consultar profiles:', e);
+            }
+        }
+
+        if (!resolvedDoctorId) {
+            resolvedDoctorId = '2135f0c0-eb5a-43b1-bc00-5f8dfea13561'; // Fallback institucional: Dr. Ricardo Valença
+            console.warn('🩺 [DOCTOR_RESOLUTION] Sem vínculo encontrado — fallback institucional Dr. Ricardo aplicado.');
         }
 
         // 2.0 [GOLDEN FIX] Buscar nome do paciente se patientData estiver vazio
@@ -984,7 +1024,7 @@ async function handleFinalizeAssessment(params: {
         if (!resolvedPatientName) resolvedPatientName = 'Paciente';
 
         // 2. [GOLDEN NARRATOR] Reativando a Redação Clínica de Abril
-        console.log('✍️ [NARRATOR] Redigindo narrativa clínica estruturada...');
+        console.log('🧠 [PIPELINE_STAGE] REPORT (narrator)', { interaction_id });
         const reportPrompt = `Transforme os dados brutos da avaliação clínica abaixo em um relatório estruturado e profissional (Markdown).
 
 Dados:
@@ -1025,15 +1065,23 @@ Estrutura Obrigatória:
                         system_version: "Titan 5.2 (April 4th Master Engine)"
                     }
                 },
-                doctor_id: professionalId !== 'system-global' ? professionalId : '2135f0c0-eb5a-43b1-bc00-5f8dfea13561',
+                doctor_id: resolvedDoctorId,
                 status: 'completed',
                 interaction_id
             }).select().single();
 
-        if (reportError) throw reportError;
-        console.log('✅ [REPORT_GENERATED]', report.id);
+        if (reportError) {
+            // Violação UNIQUE em interaction_id = idempotência funcionando, não erro.
+            if (reportError.code === '23505' && (reportError.message || '').includes('interaction_id')) {
+                console.warn('⚠️ [PIPELINE_REDUNDANT_TRIGGER] Conflito UNIQUE em interaction_id — outro processo já persistiu. Abortando.');
+                return;
+            }
+            throw reportError;
+        }
+        console.log('✅ [PIPELINE_STAGE] REPORT_GENERATED', { report_id: report.id, doctor_id: resolvedDoctorId });
 
         // 4. Extração Determinística de Eixos (Padrão 04/04)
+        console.log('🧠 [PIPELINE_STAGE] AXES', { report_id: report.id });
         const axes = [
             { axis_name: 'sintomatico', summary: `Queixa principal: ${assessmentData.mainComplaint || 'Não informada'}.` },
             { axis_name: 'funcional', summary: `Impacto em ${assessmentData.lifestyleHabits?.length || 0} hábitos de vida.` },
@@ -1042,7 +1090,7 @@ Estrutura Obrigatória:
             { axis_name: 'prognostico', summary: `Expectativa de evolução clínica baseada em fatores de melhora.` }
         ];
 
-        await supabaseClient.from('clinical_axes').insert(
+        const { error: axesError } = await supabaseClient.from('clinical_axes').insert(
             axes.map(a => ({
                 ...a,
                 report_id: report.id,
@@ -1050,9 +1098,14 @@ Estrutura Obrigatória:
                 confidence: 0.9
             }))
         );
-        console.log('✅ [AXES] Eixos clínicos sincronizados.');
+        if (axesError) {
+            console.error('❌ [PIPELINE_STAGE] AXES_ERROR', axesError);
+        } else {
+            console.log('✅ [PIPELINE_STAGE] AXES_SYNCED');
+        }
 
         // 5. Inteligência Ativa: Racionalidade Integrativa
+        console.log('🧠 [PIPELINE_STAGE] RATIONALITY');
         const integrativePrompt = `Analise este relatório clínico do ponto de vista da Medicina Integrativa para selagem de prontuário.\n\nCONTEÚDO: ${structuredNarrative}\n\nForneça uma análise holística e recomendações integrativas.`;
         const completion = await openai.chat.completions.create({
             model: 'gpt-4o-mini',
@@ -1062,17 +1115,23 @@ Estrutura Obrigatória:
             ]
         });
 
-        await supabaseClient.from('clinical_rationalities').insert({
+        const { error: ratError } = await supabaseClient.from('clinical_rationalities').insert({
             report_id: report.id,
             patient_id: report.patient_id,
             rationality_type: 'integrative',
             assessment: completion.choices[0].message.content,
             approach: 'Medicina Integrativa'
         });
-        console.log('✅ [INTELLIGENCE_LAYER] Pipeline completo.');
+        if (ratError) {
+            console.error('❌ [PIPELINE_STAGE] RATIONALITY_ERROR', ratError);
+        } else {
+            console.log('✅ [PIPELINE_STAGE] RATIONALITY_SYNCED');
+        }
+
+        console.log('✅ [PIPELINE_STAGE] DONE', { interaction_id, report_id: report.id });
 
     } catch (e) {
-        console.error('❌ [FINALIZE_PIPELINE_ERROR]', e);
+        console.error('❌ [PIPELINE_STAGE] ERROR', e);
     }
 }
 

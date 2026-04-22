@@ -112,9 +112,27 @@ export interface AssessmentState {
 export class ClinicalAssessmentFlow {
   private states: Map<string, AssessmentState> = new Map()
   private readonly STORAGE_KEY = 'medcannlab_aec_states_v1'
+  /** Debounce de avanço de fase: ignora mesmo userTurn curto repetido em <2s na mesma fase */
+  private lastAdvance: Map<string, { phase: string; turn: string; at: number }> = new Map()
+  private readonly ADVANCE_DEBOUNCE_MS = 2000
 
   constructor() {
     // Estado e carregado sob demanda via loadState() -- sem localStorage
+  }
+
+  /** Retorna true se este turno deve ser ignorado por debounce de avanço (evita "ok ok ok ok" pular fases) */
+  private shouldDebounceAdvance(userId: string, phase: string, userTurn: string): boolean {
+    const normalized = (userTurn || '').toLowerCase().trim()
+    // Só debounce de respostas muito curtas tipo "ok", "sim", "só isso"
+    if (normalized.length === 0 || normalized.length > 16) return false
+    const last = this.lastAdvance.get(userId)
+    const now = Date.now()
+    if (last && last.phase === phase && last.turn === normalized && (now - last.at) < this.ADVANCE_DEBOUNCE_MS) {
+      console.warn('[AEC_DEBOUNCE] Avanço ignorado (turno curto repetido):', { userId, phase, turn: normalized, deltaMs: now - last.at })
+      return true
+    }
+    this.lastAdvance.set(userId, { phase, turn: normalized, at: now })
+    return false
   }
 
   /**
@@ -370,6 +388,16 @@ export class ClinicalAssessmentFlow {
     const userTurn =
       stripPlatformInjectionNoise(userResponse).trim() || userResponse.trim()
     const lowerResponse = userTurn.toLowerCase().trim()
+
+    // [DEBOUNCE] Evita que "ok ok ok" pulando rapidamente avance múltiplas fases.
+    // Repete a pergunta atual sem mudar de fase quando o mesmo turno curto chega 2x em <2s.
+    if (this.shouldDebounceAdvance(userId, state.phase, userTurn)) {
+      return {
+        nextQuestion: this.getPhaseResumePrompt(state.phase, state),
+        phase: state.phase,
+        isComplete: false,
+      }
+    }
 
     // ========== DETECCAO DE SAIDA VOLUNTARIA ==========
     // IMPORTANTE: usar frases intencionais (não palavras isoladas tipo "sair", "parar", "fim")
