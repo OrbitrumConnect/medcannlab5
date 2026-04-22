@@ -125,6 +125,15 @@ const Profile: React.FC = () => {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target
+    if (name === 'cep') {
+      const digits = value.replace(/\D/g, '').slice(0, 8)
+      const masked = digits.length > 5 ? `${digits.slice(0, 5)}-${digits.slice(5)}` : digits
+      setFormData(prev => ({ ...prev, cep: masked }))
+      if (digits.length === 8) {
+        void lookupCep(digits)
+      }
+      return
+    }
     setFormData(prev => ({
       ...prev,
       [name]: value
@@ -144,14 +153,18 @@ const Profile: React.FC = () => {
 
     setIsLoading(true)
     try {
-      // Atualizar perfil no Supabase
+      // Concatena CEP + Localização para persistir num único campo (compatível com schema atual)
+      const composedLocation = formData.cep
+        ? `${formData.cep}${formData.location ? ` — ${formData.location}` : ''}`
+        : formData.location
+
       const { error } = await supabase
         .from('profiles')
         .upsert({
           id: user.id,
           name: formData.name,
           phone: formData.phone,
-          location: formData.location,
+          location: composedLocation,
           bio: formData.bio,
           updated_at: new Date().toISOString()
         })
@@ -163,7 +176,7 @@ const Profile: React.FC = () => {
         data: {
           name: formData.name,
           phone: formData.phone,
-          location: formData.location,
+          location: composedLocation,
           bio: formData.bio
         }
       })
@@ -250,6 +263,7 @@ const Profile: React.FC = () => {
         name: user.name || '',
         email: user.email || '',
         phone: '',
+        cep: '',
         location: '',
         bio: ''
       })
