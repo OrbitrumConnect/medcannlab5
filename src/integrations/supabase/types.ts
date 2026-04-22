@@ -559,6 +559,8 @@ export type Database = {
           patient_id: string | null
           professional_id: string | null
           professional_name: string | null
+          slot_end: string | null
+          slot_start: string | null
           specialty: string | null
           status: string | null
           title: string
@@ -581,6 +583,8 @@ export type Database = {
           patient_id?: string | null
           professional_id?: string | null
           professional_name?: string | null
+          slot_end?: string | null
+          slot_start?: string | null
           specialty?: string | null
           status?: string | null
           title?: string
@@ -603,6 +607,8 @@ export type Database = {
           patient_id?: string | null
           professional_id?: string | null
           professional_name?: string | null
+          slot_end?: string | null
+          slot_start?: string | null
           specialty?: string | null
           status?: string | null
           title?: string
