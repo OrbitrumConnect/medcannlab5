@@ -190,6 +190,8 @@ const PatientsManagement: React.FC<PatientsManagementProps> = ({ embedded = fals
   const location = useLocation()
   const [searchParams] = useSearchParams()
   const { user } = useAuth()
+  const { getEffectiveUserType } = useUserView()
+  const effectiveType = getEffectiveUserType(user?.type)
   const toast = useToast()
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedSpecialty, setSelectedSpecialty] = useState<string>('all')
