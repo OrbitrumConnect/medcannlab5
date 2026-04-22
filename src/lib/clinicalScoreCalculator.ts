@@ -213,6 +213,26 @@ function deriveSymptomImprovement(content: any, clinicalScore: number): number {
 }
 
 /**
+ * Unwrap the AEC payload from possibly nested shapes:
+ *  - Legacy: { identificacao, queixa_principal, ... } at top level
+ *  - Pipeline Master v2: { raw: { content: { identificacao, ... } }, structured, metadata }
+ *  - Variant: { raw: { identificacao, ... } }
+ */
+function unwrapAecContent(content: any): any {
+  if (!content || typeof content !== 'object') return content
+  // If AEC keys are already at top level, return as-is
+  const AEC_KEYS = ['identificacao', 'queixa_principal', 'desenvolvimento_queixa', 'lista_indiciaria', 'historia_familiar', 'habitos_vida', 'historia_patologica_pregressa', 'perguntas_objetivas']
+  const hasTopLevel = AEC_KEYS.some(k => content[k] && typeof content[k] === 'object')
+  if (hasTopLevel) return content
+  // Try nested shapes
+  const nestedDeep = content?.raw?.content
+  if (nestedDeep && typeof nestedDeep === 'object' && AEC_KEYS.some(k => nestedDeep[k])) return nestedDeep
+  const nestedShallow = content?.raw
+  if (nestedShallow && typeof nestedShallow === 'object' && AEC_KEYS.some(k => nestedShallow[k])) return nestedShallow
+  return content
+}
+
+/**
  * Enrich a report's content with calculated scores
  * Used when displaying reports that don't have scores yet
  */
@@ -225,8 +245,11 @@ export function enrichReportWithScores(report: any): any {
     return { ...report, content: { ...content, scores: { ...content.scores, calculated: true } } }
   }
 
+  // Unwrap nested AEC payload (Pipeline Master v2 saves under content.raw.content)
+  const aecContent = unwrapAecContent(content)
+
   // Calculate scores from AEC data
-  const calculatedScores = calculateScoresFromContent(content)
+  const calculatedScores = calculateScoresFromContent(aecContent)
 
   return {
     ...report,
