@@ -1030,6 +1030,15 @@ const ClinicalReports: React.FC<ClinicalReportsProps> = ({ className = '', onSha
               {/* Conteúdo Completo do Relatório AEC */}
               <div className="bg-slate-800/50 rounded-lg p-4 border border-slate-700/50">
                 <h4 className="font-semibold text-slate-200 mb-3">Conteúdo do Relatório:</h4>
+
+                {/* Markdown estruturado vindo do Pipeline Master (quando disponível) */}
+                {selectedReport.rawContent?.structured && typeof selectedReport.rawContent.structured === 'string' && (
+                  <div className="mb-4 bg-slate-900/40 rounded-lg p-4 border border-emerald-500/20">
+                    <pre className="whitespace-pre-wrap font-sans text-sm text-slate-200 leading-relaxed">
+                      {stripClinical(selectedReport.rawContent.structured)}
+                    </pre>
+                  </div>
+                )}
                 
                 {/* Verificar se tem conteúdo */}
                 {(!selectedReport.rawContent || Object.keys(selectedReport.rawContent).length === 0 || 
