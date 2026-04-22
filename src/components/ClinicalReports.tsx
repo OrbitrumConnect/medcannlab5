@@ -532,7 +532,9 @@ const ClinicalReports: React.FC<ClinicalReportsProps> = ({ className = '', onSha
       if (raw.scores) {
         lines.push('', '▸ SCORES:')
         Object.entries(raw.scores).forEach(([k, v]: [string, any]) => {
-          lines.push(`  ${k.replace(/_/g, ' ')}: ${v}%`)
+          if (typeof v === 'number' || typeof v === 'string' || typeof v === 'boolean') {
+            lines.push(`  ${k.replace(/_/g, ' ')}: ${typeof v === 'number' ? `${v}%` : String(v)}`)
+          }
         })
       }
 
@@ -1235,17 +1237,21 @@ const ClinicalReports: React.FC<ClinicalReportsProps> = ({ className = '', onSha
                       </div>
                     )}
 
-                    {/* Scores se existirem */}
+                    {/* Scores se existirem (renderiza só métricas escalares — ignora arrays como `signals`) */}
                     {selectedReport.rawContent?.scores && (
                       <div className="border-l-2 border-emerald-500/50 pl-3">
                         <strong className="text-emerald-400 text-xs uppercase tracking-wider">Scores Calculados</strong>
                         <div className="mt-1 grid grid-cols-2 gap-2">
-                          {Object.entries(selectedReport.rawContent.scores).map(([key, val]: [string, any]) => (
-                            <div key={key} className="bg-slate-900/50 rounded px-2 py-1">
-                              <span className="text-slate-400 text-xs">{key.replace(/_/g, ' ')}:</span>
-                              <span className="text-emerald-300 ml-1 font-semibold">{val}%</span>
-                            </div>
-                          ))}
+                          {Object.entries(selectedReport.rawContent.scores)
+                            .filter(([_, val]) => typeof val === 'number' || typeof val === 'string' || typeof val === 'boolean')
+                            .map(([key, val]: [string, any]) => (
+                              <div key={key} className="bg-slate-900/50 rounded px-2 py-1">
+                                <span className="text-slate-400 text-xs">{key.replace(/_/g, ' ')}:</span>
+                                <span className="text-emerald-300 ml-1 font-semibold">
+                                  {typeof val === 'number' ? `${val}%` : String(val)}
+                                </span>
+                              </div>
+                            ))}
                         </div>
                       </div>
                     )}
