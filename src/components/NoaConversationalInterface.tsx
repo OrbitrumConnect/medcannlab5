@@ -3052,6 +3052,8 @@ const NoaConversationalInterface = React.forwardRef<
               );
             })()}
 
+            <div
+              ref={scrollContainerRef}
               className="flex-1 overflow-y-auto px-2 sm:px-5 py-2 sm:py-4 space-y-3 sm:space-y-4 overflow-x-hidden"
               style={{
                 flex: "1 1 auto",
