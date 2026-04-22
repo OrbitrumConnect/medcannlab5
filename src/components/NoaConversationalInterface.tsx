@@ -3863,19 +3863,6 @@ const NoaConversationalInterface = React.forwardRef<
 
 NoaConversationalInterface.displayName = "NoaConversationalInterface";
 
-const PHASE_PROGRESS: Record<string, number> = {
-    IDENTIFICATION: 10,
-    MAIN_COMPLAINT: 25,
-    INDICATIVE_LIST: 35,
-    COMPLAINT_DETAILS: 50,
-    PAST_HISTORY: 65,
-    FAMILY_HISTORY: 75,
-    LIFESTYLE: 85,
-    OBJECTIVE_QUESTIONS: 95,
-    CONSENSUS: 98,
-    COMPLETED: 100
-};
-
 // Inside the component, calculate currentProgress:
 // const latestMessage = messages[messages.length - 1];
 // const currentProgress = latestMessage?.assessmentPhase ? PHASE_PROGRESS[latestMessage.assessmentPhase] || 0 : 0;
