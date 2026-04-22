@@ -2948,9 +2948,13 @@ AGORA: Analise o contexto. Se pedir Sistema Renal/Urinário, atue como LÚCIA ou
         const wordCount = (norm.match(/\S+/g) || []).length
         // Palavras que indicam contexto técnico/debug — NÃO são confirmação de agendamento
         const isTechnicalContext = /(\bbug\b|\bsistema\b|\baplicativo\b|\bquebr|\berro\b|\bteste\b|\bdebug\b|\bcodigo\b|\bcódigo\b|\bfuncao\b|\bfunção\b|\bbanco\b|\brpc\b|\bcors\b)/i.test(norm.trim())
+        // Só conta como continuação de agendamento se for uma resposta AFIRMATIVA curta
+        // a uma oferta explícita do assistente (não qualquer mensagem curta).
+        const isAffirmativeShort = /^(sim|ok|claro|pode|pode ser|por favor|quero|quero sim|isso|isso mesmo|abrir|abre|mostra|mostrar|manda|envia|vamos|bora)\s*\.?\!?$/i.test(norm.trim())
         const isShortMessageInSchedulingContext =
-            wordCount <= 10 &&
+            wordCount <= 6 &&
             lastWasSchedulingOffer &&
+            isAffirmativeShort &&
             !isAgendaPlacePhrase &&
             !isTechnicalContext &&
             !/(\bn[aã]o\b|nunca|cancelar|cancela|cancel)/i.test(norm.trim())
