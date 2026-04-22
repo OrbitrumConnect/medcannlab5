@@ -218,7 +218,7 @@ function deriveSymptomImprovement(content: any, clinicalScore: number): number {
  *  - Pipeline Master v2: { raw: { content: { identificacao, ... } }, structured, metadata }
  *  - Variant: { raw: { identificacao, ... } }
  */
-function unwrapAecContent(content: any): any {
+export function unwrapAecContent(content: any): any {
   if (!content || typeof content !== 'object') return content
   // If AEC keys are already at top level, return as-is
   const AEC_KEYS = ['identificacao', 'queixa_principal', 'desenvolvimento_queixa', 'lista_indiciaria', 'historia_familiar', 'habitos_vida', 'historia_patologica_pregressa', 'perguntas_objetivas']
