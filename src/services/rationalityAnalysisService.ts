@@ -82,7 +82,8 @@ export class RationalityAnalysisService {
     reportContent: any,
     rationality: Rationality,
     userId?: string,
-    userEmail?: string
+    userEmail?: string,
+    patientId?: string
   ): Promise<RationalityAnalysis> {
     try {
       // Construir contexto do relatório
@@ -96,11 +97,89 @@ Avaliação: ${reportContent.assessment || 'Não informado'}
 Plano: ${reportContent.plan || 'Não informado'}
       `.trim()
 
+      // 🧠 RAG: buscar histórico clínico do paciente (outras avaliações + racionalidades anteriores)
+      let patientHistoryContext = ''
+      if (patientId) {
+        try {
+          const { data: pastReports } = await (supabase as any)
+            .from('clinical_reports')
+            .select('id, created_at, content')
+            .eq('patient_id', patientId)
+            .order('created_at', { ascending: false })
+            .limit(5)
+
+          if (pastReports && pastReports.length > 1) {
+            const summaries = pastReports
+              .filter((r: any) => r.content)
+              .slice(0, 3)
+              .map((r: any) => {
+                const c = r.content || {}
+                const date = new Date(r.created_at).toLocaleDateString('pt-BR')
+                const queixa = c.chiefComplaint || c.queixa_principal || '—'
+                const aval = c.assessment || c.avaliacao || '—'
+                return `• [${date}] Queixa: ${String(queixa).substring(0, 200)} | Avaliação: ${String(aval).substring(0, 200)}`
+              }).join('\n')
+            if (summaries) {
+              patientHistoryContext = `\n\nHISTÓRICO CLÍNICO PRÉVIO DO PACIENTE (últimas avaliações):\n${summaries}`
+            }
+          }
+
+          // Racionalidades já aplicadas anteriormente (visão integrativa)
+          const { data: pastRationalities } = await (supabase as any)
+            .from('clinical_rationalities')
+            .select('rationality_type, assessment, created_at')
+            .eq('patient_id', patientId)
+            .neq('rationality_type', rationality)
+            .order('created_at', { ascending: false })
+            .limit(4)
+
+          if (pastRationalities && pastRationalities.length > 0) {
+            const ratSummary = pastRationalities
+              .map((r: any) => `• ${r.rationality_type}: ${String(r.assessment || '').substring(0, 250)}`)
+              .join('\n')
+            patientHistoryContext += `\n\nOUTRAS RACIONALIDADES JÁ APLICADAS A ESTE PACIENTE:\n${ratSummary}`
+          }
+        } catch (ragError) {
+          console.warn('⚠️ RAG do paciente falhou (seguindo sem enriquecimento):', ragError)
+        }
+      }
+
+      // 📚 RAG: buscar documentos da Universidade Digital relacionados à racionalidade
+      let knowledgeBaseContext = ''
+      try {
+        const rationalityKeywords: Record<Rationality, string[]> = {
+          biomedical: ['biomedicina', 'farmacologia', 'evidência', 'clínica'],
+          traditional_chinese: ['mtc', 'medicina chinesa', 'acupuntura', 'meridiano', 'qi'],
+          ayurvedic: ['ayurveda', 'dosha', 'vata', 'pitta', 'kapha'],
+          homeopathic: ['homeopatia', 'similitude', 'miasma', 'hahnemann'],
+          integrative: ['integrativa', 'holística', 'complementar']
+        }
+        const keywords = rationalityKeywords[rationality] || []
+
+        if (keywords.length > 0) {
+          const orFilter = keywords.map(k => `title.ilike.%${k}%,content.ilike.%${k}%`).join(',')
+          const { data: docs } = await (supabase as any)
+            .from('documents')
+            .select('title, content')
+            .or(orFilter)
+            .limit(3)
+
+          if (docs && docs.length > 0) {
+            const docSummary = docs
+              .map((d: any) => `• ${d.title}: ${String(d.content || '').substring(0, 400)}`)
+              .join('\n')
+            knowledgeBaseContext = `\n\nBASE DE CONHECIMENTO (Universidade Digital):\n${docSummary}`
+          }
+        }
+      } catch (kbError) {
+        console.warn('⚠️ RAG da base de conhecimento falhou:', kbError)
+      }
+
       // Prompt específico da racionalidade
       const rationalityPrompt = RATIONALITY_PROMPTS[rationality]
 
-      // Mensagem completa para a IA
-      const fullMessage = `${rationalityPrompt}\n\n${reportContext}\n\nPor favor, forneça uma análise detalhada segundo esta racionalidade médica.`
+      // Mensagem completa para a IA (com RAG)
+      const fullMessage = `${rationalityPrompt}\n\n${reportContext}${patientHistoryContext}${knowledgeBaseContext}\n\nCom base no relatório, no histórico do paciente e nas referências acima, forneça uma análise detalhada e personalizada segundo esta racionalidade médica.`
 
       // Processar com Nôa
       const response = await this.noaAI.processMessage(

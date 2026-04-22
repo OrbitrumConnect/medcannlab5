@@ -601,19 +601,21 @@ const ClinicalReports: React.FC<ClinicalReportsProps> = ({ className = '', onSha
       setIsGeneratingAnalysis(true)
       setSelectedRationality(rationality)
 
-      // Gerar análise
+      // Gerar análise (com RAG do paciente + base de conhecimento)
       const analysis = await rationalityAnalysisService.generateAnalysis(
         selectedReport.content,
         rationality,
         user.id,
-        user.email
+        user.email,
+        selectedReport.patientId
       )
 
       // Salvar no relatório
       await rationalityAnalysisService.saveAnalysisToReport(
         selectedReport.id,
         rationality,
-        analysis
+        analysis,
+        selectedReport.patientId
       )
 
       // Recarregar relatórios para atualizar a UI
@@ -631,13 +633,92 @@ const ClinicalReports: React.FC<ClinicalReportsProps> = ({ className = '', onSha
           rationalities: updatedRationalities
         }
       })
-
-      // Success - UI already updated
     } catch (error) {
       console.error('Erro ao aplicar racionalidade:', error)
     } finally {
       setIsGeneratingAnalysis(false)
       setSelectedRationality(null)
+    }
+  }
+
+  // 🔬 Aplica TODAS as racionalidades em sequência (modo comparativo)
+  const handleApplyAllRationalities = async () => {
+    if (!selectedReport || !user) return
+    const all: Rationality[] = ['biomedical', 'traditional_chinese', 'ayurvedic', 'homeopathic', 'integrative']
+    const pending = all.filter((r) => {
+      const key = r === 'traditional_chinese' ? 'traditionalChinese' : r
+      return !(selectedReport.content.rationalities as any)?.[key]
+    })
+    if (pending.length === 0) {
+      alert('Todas as racionalidades já foram aplicadas a este relatório.')
+      return
+    }
+    for (const rat of pending) {
+      // eslint-disable-next-line no-await-in-loop
+      await handleApplyRationality(rat)
+    }
+  }
+
+  // 📄 Baixar análise individual de UMA racionalidade
+  const handleDownloadRationality = (rationalityKey: string, value: any) => {
+    if (!selectedReport || !value) return
+    const labelMap: Record<string, string> = {
+      biomedical: 'Biomédica',
+      traditionalChinese: 'Medicina Tradicional Chinesa',
+      ayurvedic: 'Ayurvédica',
+      homeopathic: 'Homeopática',
+      integrative: 'Integrativa'
+    }
+    const label = labelMap[rationalityKey] || rationalityKey
+    const lines: string[] = [
+      `ANÁLISE — RACIONALIDADE ${label.toUpperCase()}`,
+      `Paciente: ${selectedReport.patientName}`,
+      `Relatório: ${new Date(selectedReport.date).toLocaleDateString('pt-BR')}`,
+      '═══════════════════════════════════════', '',
+      '▸ AVALIAÇÃO:', stripClinical(value.assessment || ''), ''
+    ]
+    if (Array.isArray(value.recommendations) && value.recommendations.length) {
+      lines.push('▸ RECOMENDAÇÕES:')
+      value.recommendations.forEach((r: string, i: number) => lines.push(`  ${i + 1}. ${stripClinical(r)}`))
+      lines.push('')
+    }
+    if (value.considerations) lines.push('▸ CONSIDERAÇÕES:', stripClinical(value.considerations), '')
+    if (value.approach) lines.push('▸ ABORDAGEM:', stripClinical(value.approach), '')
+    lines.push('═══════════════════════════════════════')
+    lines.push(`Gerado em ${new Date().toLocaleString('pt-BR')} • MedCannLab — Nôa Esperanza`)
+
+    const blob = new Blob([lines.join('\n')], { type: 'text/plain;charset=utf-8' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `analise_${rationalityKey}_${selectedReport.patientName.replace(/\s+/g, '_')}.txt`
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+    URL.revokeObjectURL(url)
+  }
+
+  // 📤 Compartilhar análise individual
+  const handleShareRationality = async (rationalityKey: string, value: any) => {
+    if (!selectedReport || !value) return
+    const labelMap: Record<string, string> = {
+      biomedical: 'Biomédica',
+      traditionalChinese: 'Medicina Tradicional Chinesa',
+      ayurvedic: 'Ayurvédica',
+      homeopathic: 'Homeopática',
+      integrative: 'Integrativa'
+    }
+    const label = labelMap[rationalityKey] || rationalityKey
+    const text = `Análise ${label} — ${selectedReport.patientName}\n\n${stripClinical(value.assessment || '')}`
+    try {
+      if (navigator.share) {
+        await navigator.share({ title: `Análise ${label}`, text })
+      } else {
+        await navigator.clipboard.writeText(text)
+        alert('✅ Análise copiada para a área de transferência!')
+      }
+    } catch (err) {
+      console.warn('Share cancelado/erro:', err)
     }
   }
 
@@ -1359,6 +1440,20 @@ const ClinicalReports: React.FC<ClinicalReportsProps> = ({ className = '', onSha
                       )
                     })}
                   </div>
+                  {/* Modo Comparativo: aplica todas as racionalidades em sequência */}
+                  <button
+                    onClick={handleApplyAllRationalities}
+                    disabled={isGeneratingAnalysis}
+                    className={`w-full mb-2 flex items-center justify-center space-x-2 px-3 py-2 rounded-lg text-sm font-medium transition-all ${
+                      isGeneratingAnalysis
+                        ? 'bg-slate-700/50 text-slate-500 cursor-not-allowed'
+                        : 'bg-gradient-to-r from-emerald-600/20 to-teal-600/20 border border-emerald-500/30 text-emerald-300 hover:from-emerald-600/30 hover:to-teal-600/30'
+                    }`}
+                    title="Aplica as 5 racionalidades em sequência (visão integrativa completa)"
+                  >
+                    <Brain className="w-4 h-4" />
+                    <span>Modo Comparativo — Aplicar Todas</span>
+                  </button>
                   {isGeneratingAnalysis && (
                     <div className="flex items-center space-x-2 text-blue-400 text-sm">
                       <Loader2 className="w-4 h-4 animate-spin" />
@@ -1405,6 +1500,35 @@ const ClinicalReports: React.FC<ClinicalReportsProps> = ({ className = '', onSha
                               <div>
                                 <strong className="text-slate-200">Considerações:</strong>
                                 <p className="mt-1">{stripClinical(value.considerations)}</p>
+                              </div>
+                            )}
+                            {/* Ações por análise: baixar, compartilhar, NFT */}
+                            {!isPatient && (
+                              <div className="flex flex-wrap gap-2 pt-2 border-t border-slate-700/40 mt-2">
+                                <button
+                                  onClick={() => handleDownloadRationality(key, value)}
+                                  className="flex items-center space-x-1 px-2 py-1 text-xs rounded bg-indigo-500/10 border border-indigo-500/30 text-indigo-300 hover:bg-indigo-500/20 transition-colors"
+                                  title="Baixar esta análise (.txt)"
+                                >
+                                  <Download className="w-3 h-3" />
+                                  <span>Baixar</span>
+                                </button>
+                                <button
+                                  onClick={() => handleShareRationality(key, value)}
+                                  className="flex items-center space-x-1 px-2 py-1 text-xs rounded bg-sky-500/10 border border-sky-500/30 text-sky-300 hover:bg-sky-500/20 transition-colors"
+                                  title="Compartilhar esta análise"
+                                >
+                                  <Share2 className="w-3 h-3" />
+                                  <span>Compartilhar</span>
+                                </button>
+                                <button
+                                  onClick={() => selectedReport && handleGenerateNFT(selectedReport)}
+                                  className="flex items-center space-x-1 px-2 py-1 text-xs rounded bg-amber-500/10 border border-amber-500/30 text-amber-300 hover:bg-amber-500/20 transition-colors"
+                                  title="Registrar como NFT (blockchain)"
+                                >
+                                  <QrCode className="w-3 h-3" />
+                                  <span>Gerar NFT</span>
+                                </button>
                               </div>
                             )}
                           </div>
