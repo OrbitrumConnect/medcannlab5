@@ -557,6 +557,7 @@ export type Database = {
           meeting_url: string | null
           notes: string | null
           patient_id: string | null
+          price: number | null
           professional_id: string | null
           professional_name: string | null
           slot_end: string | null
@@ -581,6 +582,7 @@ export type Database = {
           meeting_url?: string | null
           notes?: string | null
           patient_id?: string | null
+          price?: number | null
           professional_id?: string | null
           professional_name?: string | null
           slot_end?: string | null
@@ -605,6 +607,7 @@ export type Database = {
           meeting_url?: string | null
           notes?: string | null
           patient_id?: string | null
+          price?: number | null
           professional_id?: string | null
           professional_name?: string | null
           slot_end?: string | null
@@ -5580,6 +5583,59 @@ export type Database = {
           },
         ]
       }
+      payouts: {
+        Row: {
+          amount: number
+          created_at: string
+          external_id: string | null
+          failure_reason: string | null
+          id: string
+          method: string
+          processed_at: string | null
+          requested_at: string
+          status: string
+          updated_at: string
+          user_id: string
+          wallet_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          external_id?: string | null
+          failure_reason?: string | null
+          id?: string
+          method?: string
+          processed_at?: string | null
+          requested_at?: string
+          status?: string
+          updated_at?: string
+          user_id: string
+          wallet_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          external_id?: string | null
+          failure_reason?: string | null
+          id?: string
+          method?: string
+          processed_at?: string | null
+          requested_at?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+          wallet_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payouts_wallet_id_fkey"
+            columns: ["wallet_id"]
+            isOneToOne: false
+            referencedRelation: "wallets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       permissoes_compartilhamento: {
         Row: {
           consultas: boolean | null
@@ -8150,6 +8206,119 @@ export type Database = {
           },
         ]
       }
+      wallet_transactions: {
+        Row: {
+          amount: number
+          appointment_id: string | null
+          confirmed_at: string | null
+          created_at: string
+          description: string | null
+          external_id: string | null
+          id: string
+          metadata: Json | null
+          patient_id: string | null
+          payment_method: string | null
+          platform_fee: number
+          platform_fee_pct: number
+          professional_amount: number
+          professional_id: string
+          status: string
+          type: string
+          updated_at: string
+          wallet_id: string | null
+        }
+        Insert: {
+          amount: number
+          appointment_id?: string | null
+          confirmed_at?: string | null
+          created_at?: string
+          description?: string | null
+          external_id?: string | null
+          id?: string
+          metadata?: Json | null
+          patient_id?: string | null
+          payment_method?: string | null
+          platform_fee?: number
+          platform_fee_pct?: number
+          professional_amount?: number
+          professional_id: string
+          status?: string
+          type: string
+          updated_at?: string
+          wallet_id?: string | null
+        }
+        Update: {
+          amount?: number
+          appointment_id?: string | null
+          confirmed_at?: string | null
+          created_at?: string
+          description?: string | null
+          external_id?: string | null
+          id?: string
+          metadata?: Json | null
+          patient_id?: string | null
+          payment_method?: string | null
+          platform_fee?: number
+          platform_fee_pct?: number
+          professional_amount?: number
+          professional_id?: string
+          status?: string
+          type?: string
+          updated_at?: string
+          wallet_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "wallet_transactions_wallet_id_fkey"
+            columns: ["wallet_id"]
+            isOneToOne: false
+            referencedRelation: "wallets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      wallets: {
+        Row: {
+          balance_available: number
+          balance_pending: number
+          created_at: string
+          currency: string
+          id: string
+          stripe_account_id: string | null
+          stripe_onboarding_completed: boolean | null
+          total_earned: number
+          total_withdrawn: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          balance_available?: number
+          balance_pending?: number
+          created_at?: string
+          currency?: string
+          id?: string
+          stripe_account_id?: string | null
+          stripe_onboarding_completed?: boolean | null
+          total_earned?: number
+          total_withdrawn?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          balance_available?: number
+          balance_pending?: number
+          created_at?: string
+          currency?: string
+          id?: string
+          stripe_account_id?: string | null
+          stripe_onboarding_completed?: boolean | null
+          total_earned?: number
+          total_withdrawn?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       wearable_data: {
         Row: {
           created_at: string | null
@@ -9095,6 +9264,39 @@ export type Database = {
           },
         ]
       }
+      v_professional_financial_summary: {
+        Row: {
+          balance_available: number | null
+          balance_pending: number | null
+          revenue_last_month: number | null
+          revenue_this_month: number | null
+          total_earned: number | null
+          total_withdrawn: number | null
+          transactions_this_month: number | null
+          user_id: string | null
+        }
+        Insert: {
+          balance_available?: number | null
+          balance_pending?: number | null
+          revenue_last_month?: never
+          revenue_this_month?: never
+          total_earned?: number | null
+          total_withdrawn?: number | null
+          transactions_this_month?: never
+          user_id?: string | null
+        }
+        Update: {
+          balance_available?: number | null
+          balance_pending?: number | null
+          revenue_last_month?: never
+          revenue_this_month?: never
+          total_earned?: number | null
+          total_withdrawn?: number | null
+          transactions_this_month?: never
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       v_renal_monitoring_kpis: {
         Row: {
           avg_acr_global: number | null
@@ -9331,6 +9533,7 @@ export type Database = {
       current_user_email: { Args: never; Returns: string }
       current_user_role: { Args: never; Returns: string }
       ensure_user_profile: { Args: { target_user_id: string }; Returns: string }
+      ensure_wallet: { Args: { p_user_id: string }; Returns: string }
       expire_video_call_requests: { Args: never; Returns: undefined }
       generate_change_signature: {
         Args: { p_content: string; p_timestamp: string; p_user_id: string }
@@ -9597,6 +9800,7 @@ export type Database = {
         }
         Returns: string
       }
+      request_payout: { Args: { p_amount: number }; Returns: string }
       resolve_professional_by_slug: {
         Args: { p_slug: string }
         Returns: string
