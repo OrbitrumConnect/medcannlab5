@@ -824,3 +824,104 @@ Mesma família dos hardenings de hoje: **payload já era estável, mas mentia po
 
 **Arquivos:** `supabase/functions/tradevision-core/index.ts`, `src/lib/clinicalAssessmentFlow.ts`
 **Hash:** `bugfix-22-04-2026-report-id-payload`
+
+
+---
+
+## 🧬 SESSÃO TARDE — Racionalidades Médicas: RAG + Comparativo + UX revisada (22/04 — noite)
+
+### Contexto do produto
+A camada de Inteligência Clínica (`clinical_rationalities` + `clinical_reports.content.rationalities`) já existia, mas estava **subutilizada na UI**: o médico clicava em uma racionalidade, gerava a análise, e — quando reabria o relatório — não conseguia mais visualizar nem rebaixar o que tinha sido gerado. Botão ficava `disabled` e o card de resultados não aparecia destacado.
+
+### O que foi entregue nesta sessão
+**1. Enriquecimento real do prompt com RAG (`src/services/rationalityAnalysisService.ts`)**
+- `generateAnalysis()` agora aceita `patientId` e, antes de chamar o GPT, busca:
+  - **Histórico clínico do paciente**: últimos 5 relatórios + racionalidades anteriores aplicadas
+  - **Documentos da Universidade Digital**: filtragem por palavras-chave da queixa
+- O prompt enviado ao gateway (`tradevision-core`) é montado com 3 blocos: `[CONTEXTO_PACIENTE] + [DOCUMENTOS_RAG] + [PROMPT_RACIONALIDADE]`
+- Resultado: análise da Biomédica de Pedro hoje considera que ele já foi avaliado para dor lombar antes, que a mãe doou rim, que ele usa cannabis in natura — em vez de tratar cada análise como caso novo
+
+**2. Modo Comparativo — Aplicar Todas (`ClinicalReports.tsx`)**
+- `handleApplyAllRationalities()` itera as 5 racionalidades pendentes em sequência
+- Loading visual mostra qual está sendo gerada
+- Quando todas já existem, **não bloqueia mais com alert** — faz scroll suave até o card de resultados e pisca borda esmeralda (UX corrigida hoje após feedback do usuário "Pedro não vejo nada ainda")
+
+**3. Botões de racionalidade reativos**
+- Antes: clicar em botão verde (já gerada) ficava desabilitado, sem feedback
+- Agora: clica e **rola até a análise correspondente** com highlight temporário (`ring-emerald-400/60` por 1.8s)
+- Mantém affordance visual (✅ verde) mas reativa o clique para navegação
+
+**4. Card "Análises por Racionalidade"**
+- Já renderizava por análise, mas ganhou novo botão no topo: **"Baixar Todas (Comparativo)"**
+- Gera 1 arquivo `.txt` formatado com as 5 análises lado a lado, cabeçalho com nome do paciente + ID do relatório + timestamp
+- Cada análise individual mantém botões: 📥 Baixar | 📤 Compartilhar (Web Share API ou clipboard) | 🔗 Gerar NFT
+
+**5. Trigger de "envio rápido" no card do paciente (sessão anterior do dia)**
+- Adicionado o gatilho `enviar NFT` direto no card do paciente em `ClinicalReports.tsx`, paralelo ao que já existia no fluxo do chat — tempo de operação reduzido para casos onde o médico já está olhando o prontuário.
+
+### Matriz de acesso (validada hoje)
+
+| Ação | Paciente | Profissional | Admin |
+|---|---|---|---|
+| Ver relatório AEC próprio | ✅ | — | — |
+| Ver relatórios de pacientes vinculados | ❌ | ✅ | ✅ (todos) |
+| Gerar racionalidade individual | ❌ | ✅ | ✅ |
+| Modo Comparativo | ❌ | ✅ | ✅ |
+| Baixar análise individual `.txt` | ❌ | ✅ | ✅ |
+| Baixar Comparativo (5 em 1) `.txt` | ❌ | ✅ | ✅ |
+| Compartilhar com paciente | ❌ | ✅ | ✅ |
+| Gerar NFT da análise | ❌ | ✅ | ✅ |
+
+Todas as ações de geração/exportação estão envoltas em `{!isPatient && (...)}` no JSX. RLS no banco bloqueia escrita em `clinical_rationalities` para `user_type = 'paciente'`.
+
+### Por que isso importa — para cada stakeholder
+
+**Para o médico:**
+- Decisão multi-paradigma sem precisar consultar 5 fontes manualmente
+- Comparativo lado a lado vira material de discussão de caso, segunda opinião, ensino residente
+- Download em `.txt` integra com prontuário físico, e-mail, WhatsApp do paciente
+- NFT é prova imutável (compliance CFM, defesa em processo ético)
+
+**Para o paciente:**
+- Recebe análise via "Compartilhar" — vê o cuidado integrativo aplicado (aumenta adesão)
+- Não tem acesso aos botões de geração: preserva soberania clínica do médico (separação de papéis)
+
+**Para o app/negócio:**
+- **Diferencial competitivo**: nenhum prontuário do mercado entrega 5 racionalidades cruzadas com RAG do próprio paciente
+- **Lock-in de dados**: cada análise gerada alimenta `clinical_kpis` e `clinical_axes` (camada de governança/insights)
+- **Compliance pronto**: NFT + audit log = LGPD/CFM-friendly
+- **Monetização futura**: racionalidade extra ou modo comparativo como feature premium
+
+### Arquivos tocados nesta sessão
+- `src/services/rationalityAnalysisService.ts` — RAG + histórico no prompt
+- `src/components/ClinicalReports.tsx` — Modo Comparativo, scroll-to-anchor, botão "Baixar Todas", trigger NFT no card, fix de filtro de `signals` na exportação (crash de React child resolvido mais cedo no dia)
+
+### Bugs paralelos resolvidos hoje
+1. **"Objects are not valid as a React child"** no modal de relatório — causado pelo array `signals` dentro de `scores` sendo renderizado direto. Filtrado para `typeof === 'number' | 'string' | 'boolean'`.
+2. **Warning `Function components cannot be given refs`** em `ClinicalReports` — identificado, não corrigido (não-bloqueante, decisão consciente para evitar refactor de assinatura).
+3. **`manifest.json 401`** no preview — comportamento esperado do Lovable preview (autenticação ativa); some em produção.
+
+### Estado dos logs ao final da sessão
+```
+✅ IA Residente inicializada para: phpg69@gmail.com
+✅ Role carregada (user_roles): admin
+📊 Relatórios carregados: 21 (role: admin)
+```
+Nenhum erro real. Sistema operacional.
+
+**Hash:** `feature-22-04-2026-rationalities-rag-comparativo-ux`
+
+---
+
+## 🗂️ ÍNDICE CONSOLIDADO DO DIA 22/04/2026
+
+| # | Tema | Arquivos principais |
+|---|---|---|
+| 1 | Hardening do pipeline AEC (idempotência por UNIQUE) | `tradevision-core/index.ts`, `clinicalAssessmentFlow.ts` |
+| 2 | Renderer rico de relatórios (▲▼ Melhora/Piora, ordem AEC) | `ClinicalReports.tsx` |
+| 3 | Bugfix `report_id` ausente no payload de finalize | `tradevision-core/index.ts`, `clinicalAssessmentFlow.ts` |
+| 4 | Racionalidades: RAG + Modo Comparativo + UX revisada | `rationalityAnalysisService.ts`, `ClinicalReports.tsx` |
+| 5 | Trigger "Gerar NFT" no card do paciente | `ClinicalReports.tsx` |
+| 6 | Fix crash React child (signals array) | `ClinicalReports.tsx` |
+
+**Tema unificador do dia:** *Selar contratos de retorno e devolver visibilidade ao que já estava salvo no banco.* Todos os fixes seguem o mesmo padrão — o dado/cálculo já existia, mas a camada de apresentação ou o payload mentiam por omissão. Hoje passamos a entregar tudo o que prometemos.
