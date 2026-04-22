@@ -95,6 +95,8 @@ const INVISIBLE_DISPLAY_TOKENS = [
   "[FILTER_PATIENTS_ACTIVE]",
   "[DOCUMENT_LIST]",
   "[ASSESSMENT_COMPLETED]",
+  "[ASSESSMENT_FINALIZED]",
+  "[FINALIZE_SESSION]",
 ];
 
 /** Remove todos os tokens invisíveis do texto exibido (usuário nunca vê triggers; ações são automáticas). */
