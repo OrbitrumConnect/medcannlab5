@@ -650,13 +650,71 @@ const ClinicalReports: React.FC<ClinicalReportsProps> = ({ className = '', onSha
       return !(selectedReport.content.rationalities as any)?.[key]
     })
     if (pending.length === 0) {
-      alert('Todas as racionalidades já foram aplicadas a este relatório.')
+      // Todas já existem → fazer scroll até o card de análises para visualizar
+      const el = document.getElementById('rationalities-results-card')
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+        el.classList.add('ring-2', 'ring-emerald-400/60')
+        setTimeout(() => el.classList.remove('ring-2', 'ring-emerald-400/60'), 1800)
+      }
       return
     }
     for (const rat of pending) {
       // eslint-disable-next-line no-await-in-loop
       await handleApplyRationality(rat)
     }
+    // Após gerar tudo, scroll até o resultado
+    setTimeout(() => {
+      document.getElementById('rationalities-results-card')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }, 300)
+  }
+
+  // 📥 Baixar TODAS as racionalidades aplicadas em um único arquivo .txt
+  const handleDownloadAllRationalities = () => {
+    if (!selectedReport) return
+    const rats = selectedReport.content.rationalities || {}
+    const labelMap: Record<string, string> = {
+      biomedical: 'Biomédica',
+      traditionalChinese: 'Medicina Tradicional Chinesa',
+      ayurvedic: 'Ayurvédica',
+      homeopathic: 'Homeopática',
+      integrative: 'Integrativa',
+    }
+    const lines: string[] = []
+    lines.push('═══════════════════════════════════════')
+    lines.push('  ANÁLISES MULTI-RACIONALIDADE — VISÃO COMPARATIVA')
+    lines.push('═══════════════════════════════════════', '')
+    lines.push(`Paciente: ${selectedReport.patientName}`)
+    lines.push(`Relatório: ${selectedReport.id}`)
+    lines.push(`Data: ${new Date().toLocaleString('pt-BR')}`, '')
+
+    Object.entries(rats).forEach(([key, value]: [string, any]) => {
+      if (!value?.assessment) return
+      lines.push('───────────────────────────────────────')
+      lines.push(`▸ ${labelMap[key] || key}`)
+      lines.push('───────────────────────────────────────')
+      lines.push('Avaliação:')
+      lines.push(stripClinical(value.assessment), '')
+      if (value.recommendations?.length) {
+        lines.push('Recomendações:')
+        value.recommendations.forEach((r: string) => lines.push(`  • ${stripClinical(r)}`))
+        lines.push('')
+      }
+      if (value.considerations) {
+        lines.push('Considerações:')
+        lines.push(stripClinical(value.considerations), '')
+      }
+    })
+
+    const blob = new Blob([lines.join('\n')], { type: 'text/plain;charset=utf-8' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `racionalidades_comparativo_${selectedReport.patientName}_${Date.now()}.txt`
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+    URL.revokeObjectURL(url)
   }
 
   // 📄 Baixar análise individual de UMA racionalidade
@@ -1424,14 +1482,27 @@ const ClinicalReports: React.FC<ClinicalReportsProps> = ({ className = '', onSha
                       return (
                         <button
                           key={key}
-                          onClick={() => handleApplyRationality(key)}
-                          disabled={isGeneratingAnalysis || hasAnalysis}
+                          onClick={() => {
+                            if (hasAnalysis) {
+                              // Já existe → scroll até o card de análises
+                              const el = document.getElementById('rationalities-results-card')
+                              if (el) {
+                                el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+                                el.classList.add('ring-2', 'ring-emerald-400/60')
+                                setTimeout(() => el.classList.remove('ring-2', 'ring-emerald-400/60'), 1800)
+                              }
+                            } else {
+                              handleApplyRationality(key)
+                            }
+                          }}
+                          disabled={isGeneratingAnalysis}
                           className={`flex items-center space-x-2 px-3 py-2 rounded-lg text-sm transition-colors ${hasAnalysis
-                            ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 cursor-default'
+                            ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500/20 cursor-pointer'
                             : isGeneratingAnalysis
                               ? 'bg-slate-700/50 text-slate-500 cursor-not-allowed'
                               : 'bg-slate-800/50 border border-slate-600/30 text-slate-300 hover:bg-blue-900/20 hover:border-blue-500/30'
                             }`}
+                          title={hasAnalysis ? 'Análise já gerada — clique para ver abaixo' : `Gerar análise ${label}`}
                         >
                           {icon}
                           <span>{label}</span>
@@ -1465,8 +1536,20 @@ const ClinicalReports: React.FC<ClinicalReportsProps> = ({ className = '', onSha
 
               {/* Racionalidades Aplicadas */}
               {selectedReport && Object.entries(selectedReport.content.rationalities || {}).some(([_, value]: [string, any]) => value && value.assessment) && (
-                <div className="bg-slate-800/50 rounded-lg p-4 border border-slate-700/50">
-                  <h4 className="font-semibold text-slate-200 mb-3">Análises por Racionalidade:</h4>
+                <div id="rationalities-results-card" className="bg-slate-800/50 rounded-lg p-4 border border-slate-700/50 transition-all duration-500">
+                  <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
+                    <h4 className="font-semibold text-slate-200">Análises por Racionalidade:</h4>
+                    {!isPatient && Object.values(selectedReport.content.rationalities || {}).filter((v: any) => v?.assessment).length > 1 && (
+                      <button
+                        onClick={handleDownloadAllRationalities}
+                        className="flex items-center space-x-1 px-3 py-1.5 text-xs rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 hover:bg-emerald-500/20 transition-colors"
+                        title="Baixar todas as análises em um único arquivo"
+                      >
+                        <Download className="w-3 h-3" />
+                        <span>Baixar Todas (Comparativo)</span>
+                      </button>
+                    )}
+                  </div>
                   <div className="space-y-4">
                     {Object.entries(selectedReport.content.rationalities || {}).map(([key, value]: [string, any]) => {
                       if (!value || !value.assessment) return null
