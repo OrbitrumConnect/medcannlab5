@@ -321,9 +321,51 @@ const Profile: React.FC = () => {
   const stats = getAccountStats()
 
   const walletCredits = 0
-  const ranking = 42
-  // Média de estrelas (0–5) das avaliações que entram no cálculo do rank (a cada 50 consultas/avaliações). Em produção viria do banco.
-  const averageRatingStars = 4.2
+  const [ranking, setRanking] = useState<number | null>(null)
+  const [averageRatingStars, setAverageRatingStars] = useState<number | null>(null)
+  const [ratingsCount, setRatingsCount] = useState<number>(0)
+
+  // Buscar ranking real (posição por user_profiles.points entre profissionais) e média de estrelas
+  useEffect(() => {
+    if (!user?.id) return
+    let cancelled = false
+    ;(async () => {
+      try {
+        // Ranking: posição por points entre profissionais
+        const isProfessional = (user as any)?.type === 'profissional' || (user as any)?.type === 'admin'
+        if (isProfessional) {
+          const { data: meProfile } = await supabase
+            .from('user_profiles')
+            .select('points')
+            .eq('user_id', user.id)
+            .maybeSingle()
+          const myPoints = meProfile?.points ?? 0
+          const { count } = await supabase
+            .from('user_profiles')
+            .select('user_id', { count: 'exact', head: true })
+            .gt('points', myPoints)
+          if (!cancelled) setRanking((count ?? 0) + 1)
+        } else {
+          if (!cancelled) setRanking(null)
+        }
+
+        // Estrelas: média de conversation_ratings (como profissional ou paciente)
+        const column = isProfessional ? 'professional_id' : 'patient_id'
+        const { data: ratings } = await supabase
+          .from('conversation_ratings')
+          .select('rating')
+          .eq(column, user.id)
+        if (!cancelled && ratings && ratings.length > 0) {
+          const avg = ratings.reduce((s, r: any) => s + (r.rating || 0), 0) / ratings.length
+          setAverageRatingStars(avg)
+          setRatingsCount(ratings.length)
+        }
+      } catch (err) {
+        console.warn('[Profile] ranking/estrelas:', err)
+      }
+    })()
+    return () => { cancelled = true }
+  }, [user?.id])
   const renderStars = (value: number) => {
     const v = Math.min(5, Math.max(0, value))
     const full = Math.floor(v)
