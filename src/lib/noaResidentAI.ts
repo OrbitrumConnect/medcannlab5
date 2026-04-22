@@ -252,9 +252,13 @@ export class NoaResidentAI {
 
       // Durante AEC ativo, nunca desviar para TECNICA/ADMIN por falso positivo (ex.: "interrompeu" contem "erro")
       // EXCECAO TITAN 5.2.1: Se a intencao for SAIR/EXIT, quebra o bloqueio para permitir encerramento consciente
+      // FIX: usar frases intencionais e palavras isoladas — evitar match em "sair de casa", "fim de semana", etc.
       const platformIntentForLock = this.platformFunctions.detectIntent(userMessage, userId)
-      const isExitIntent = (platformIntentForLock.type as string) === 'EXIT' || 
-                          /(encerar|encerrar|parar|sair|cancelar|terminar|finalizar)/i.test(userMessage)
+      const _normExitMsg = userMessage.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+      const isExitIntent = (platformIntentForLock.type as string) === 'EXIT' ||
+        /\b(quero|gostaria de|preciso|vou|pode|vamos)\s+(sair|parar|encerrar|cancelar|interromper|terminar|finalizar)\b/i.test(_normExitMsg) ||
+        /\b(parar|encerrar|cancelar|interromper|terminar|finalizar)\s+(a\s+)?(avaliacao|consulta|conversa|por\s+aqui|aqui|tudo)\b/i.test(_normExitMsg) ||
+        /^(tchau|xau|fui|flw|vlw|chega|fim)\s*[!.?]?$/i.test(_normExitMsg.trim())
 
       if (userId) {
         await clinicalAssessmentFlow.ensureLoaded(userId)
