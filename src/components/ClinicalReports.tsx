@@ -24,6 +24,7 @@ import {
   ChevronUp
 } from 'lucide-react'
 import { supabase } from '../lib/supabase'
+import { useNavigate } from 'react-router-dom'
 import { stripPlatformInjectionNoise } from '../lib/clinicalAssessmentFlow'
 
 const MEDICAL_RECORD_SESSION_LOOKBACK_MS = 90 * 60 * 1000
