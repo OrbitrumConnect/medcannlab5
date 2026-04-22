@@ -1,5 +1,6 @@
-/** @type {import('tailwindcss').Config} */
-export default {
+import type { Config } from "tailwindcss";
+
+const config: Config = {
   darkMode: ["class"],
   content: [
     "./index.html",
@@ -7,12 +8,12 @@ export default {
   ],
   theme: {
     screens: {
-      'xs': '360px',   // Celulares pequenos
-      'sm': '480px',   // Celulares
-      'md': '768px',   // Tablets
-      'lg': '1024px', // Desktop pequeno
-      'xl': '1280px', // Desktop grande
-      '2xl': '1536px', // Desktop extra grande
+      'xs': '360px',
+      'sm': '480px',
+      'md': '768px',
+      'lg': '1024px',
+      'xl': '1280px',
+      '2xl': '1536px',
     },
     extend: {
       colors: {
@@ -32,10 +33,6 @@ export default {
         muted: {
           DEFAULT: "#f1f5f9",
           foreground: "#64748b",
-        },
-        accent: {
-          DEFAULT: "#f1f5f9",
-          foreground: "#0f172a",
         },
         popover: {
           DEFAULT: "#ffffff",
@@ -58,8 +55,10 @@ export default {
           800: '#166534',
           900: '#14532d',
         },
-        // Cores accent do MedCannLab - Amarelo (20%)
+        // Cores accent do MedCannLab - Amarelo (20%) — fonte única (duplicação removida)
         accent: {
+          DEFAULT: '#f59e0b',
+          foreground: '#0f172a',
           50: '#fffbeb',
           100: '#fef3c7',
           200: '#fde68a',
@@ -71,7 +70,6 @@ export default {
           800: '#92400e',
           900: '#78350f',
         },
-        // Cores customizadas do MedCannLab
         success: {
           50: '#f0fdf4',
           100: '#dcfce7',
@@ -107,7 +105,7 @@ export default {
           700: '#b91c1c',
           800: '#991b1b',
           900: '#7f1d1d',
-        }
+        },
       },
       fontFamily: {
         sans: ['Inter', 'system-ui', 'sans-serif'],
@@ -121,7 +119,6 @@ export default {
         'scale-in': 'scaleIn 0.2s ease-out',
         'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
         'bounce-slow': 'bounce 2s infinite',
-        // Animações mobile-friendly (mais rápidas e menos intensas)
         'fade-in-fast': 'fadeIn 0.2s ease-in-out',
         'slide-up-fast': 'slideUp 0.2s ease-out',
         'scale-touch': 'scaleTouch 0.15s ease-out',
@@ -156,4 +153,6 @@ export default {
     },
   },
   plugins: [],
-}
+};
+
+export default config;
