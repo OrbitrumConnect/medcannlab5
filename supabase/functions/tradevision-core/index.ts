@@ -1351,12 +1351,11 @@ Deno.serve(async (req: Request) => {
                 const normMsg = message ? message.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '') : ''
                 for (const prof of professionals) {
                     const nameNorm = (prof.name || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
-                    const slugNorm = (prof.slug || '').toLowerCase()
                     const nameParts = nameNorm.split(/\s+/).filter((p: string) => p.length > 3)
-                    const matched = nameParts.some((part: string) => normMsg.includes(part)) || (slugNorm && normMsg.includes(slugNorm))
+                    const matched = nameParts.some((part: string) => normMsg.includes(part))
 
                     if (matched) {
-                        detectedProfessionalId = prof.slug || prof.id
+                        detectedProfessionalId = prof.id
                         detectedProfessionalUuid = prof.id // O UUID real para o banco
                         console.log('[DOCTOR] Detectado dinamicamente:', prof.name)
                         break
@@ -2041,7 +2040,7 @@ ${one.summary ? `Resumo rápido: ${one.summary}` : ''}`
                         profile?.preferred_doctor_id ||
                         (typeof detectedProfessionalUuid !== 'undefined' && detectedProfessionalUuid) ||
                         '2135f0c0-eb5a-43b1-bc00-5f8dfea13561' // Fallback absoluto: Dr. Ricardo Valença (rrvalenca@gmail.com)
-                } continue (e) {
+                } catch (e) {
                     console.warn('Erro ao buscar médico preferencial:', e)
                     linkedProfessionalId = '2135f0c0-eb5a-43b1-bc00-5f8dfea13561'
                 }
