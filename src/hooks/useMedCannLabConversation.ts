@@ -198,13 +198,34 @@ export const useMedCannLabConversation = (options?: {
         console.log('✅ IA Residente inicializada para:', user.email)
 
         // [V1.8.10] Pré-carregamento silencioso do estado AEC, SEM injetar mensagem inicial.
-        // A Nôa só deve falar depois do primeiro turno do paciente — saudação unsolicited
-        // foi removida por decisão de UX. Se houver AEC pendente, o backend detecta via
-        // assessmentPhase e o social guard oferece restauração quando o paciente cumprimentar.
+        // A Nôa só deve falar depois do primeiro turno do paciente.
+        //
+        // [V1.9.4] Auto-pause: toda vez que o hook monta (F5, novo login, fechar/reabrir aba),
+        // se o estado persistido está numa fase ativa (COMPLAINT_DETAILS, MEDICAL_HISTORY, etc.),
+        // migramos automaticamente para INTERRUPTED e guardamos a fase original em
+        // interruptedFromPhase. Assim o paciente NÃO é jogado de volta no meio da avaliação
+        // sem consentir — o primeiro turno dele aciona o social guard e a Nôa pergunta
+        // explicitamente "continuar ou nova?". Respeito ao tempo do paciente + LGPD de consent
+        // contínuo. Ele pode:
+        //   • Pedir "continuar" → resumeAssessment volta pra fase exata (COMPLAINT_DETAILS etc)
+        //   • Pedir "nova" → restart
+        //   • Dizer "não quero continuar" / perguntar algo casual → V1.9.3 libera chat livre
         if (!hasShownWelcome) {
-          void clinicalAssessmentFlow.ensureLoaded(user.id).finally(() => {
-            setHasShownWelcome(true)
-          })
+          void clinicalAssessmentFlow
+            .ensureLoaded(user.id)
+            .then(() => {
+              const state = clinicalAssessmentFlow.getState(user.id)
+              if (state && state.phase !== 'INTERRUPTED' && state.phase !== 'COMPLETED') {
+                state.interruptedFromPhase = state.phase
+                state.phase = 'INTERRUPTED'
+                state.lastUpdate = new Date()
+                void clinicalAssessmentFlow.persist(user.id)
+                console.log('[AEC] Auto-pause: sessão migrada para INTERRUPTED no mount (fase original preservada em interruptedFromPhase)')
+              }
+            })
+            .finally(() => {
+              setHasShownWelcome(true)
+            })
         }
       } catch (error) {
         console.error('❌ Erro ao inicializar IA Residente:', error)
