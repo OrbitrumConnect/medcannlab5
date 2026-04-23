@@ -999,6 +999,26 @@ export class ClinicalAssessmentFlow {
 
       case 'INTERRUPTED': {
         const norm = lowerResponse.normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+        // [V1.9.3] Recusa SEMPRE checada PRIMEIRO — antes de qualquer match positivo.
+        // "não quero continuar" contém "continuar" literal; se isContinuing rodar antes,
+        // o paciente é retomado contra a vontade (bug real 23/04 — casualmusic2021).
+        const isRefusing =
+          /\b(n[aã]o)\s+(quero|queria|vou|vamos|preciso|posso|desejo|pretendo)\b/.test(norm) ||
+          /\b(n[aã]o)\s+(continuar|conversar|falar|fazer|avaliar|retomar|seguir|prosseguir|voltar)\b/.test(norm) ||
+          /\b(deixa\s+(pra|para)\s+l[aá]|outra\s+hora|depois\s+conversamos|esquece|por\s+agora\s+n[aã]o|agora\s+n[aã]o|mais\s+tarde)\b/.test(norm) ||
+          /\b(vamos\s+(s[oó]|somente|apenas)\s+conversar|vamos\s+conversar\s+apenas|quero\s+(s[oó]|somente|apenas)\s+conversar)\b/.test(norm)
+
+        if (isRefusing) {
+          this.states.delete(userId)
+          void supabase.from('aec_assessment_state').delete().eq('user_id', userId)
+          return {
+            nextQuestion:
+              'Tudo bem, podemos conversar. Se quiser retomar sua avaliação depois, basta me pedir "retomar avaliação".',
+            phase: 'COMPLETED',
+            isComplete: true
+          }
+        }
+
         const isContinuing = /\b(continuar|retomar|voltar|segue|prosseguir)\b/i.test(norm)
         const isStartingNew = /\b(nova|recomecar|reiniciar|zerar|do zero)\b/i.test(norm)
 
@@ -1025,28 +1045,6 @@ export class ClinicalAssessmentFlow {
             nextQuestion: '✨ Iniciando nova avaliação. ' + this.standardAecOpeningPhrase(fresh),
             phase: fresh.phase,
             isComplete: false
-          }
-        }
-
-        // [V1.9.2] Recusa explícita — paciente NÃO quer nem continuar nem iniciar nova.
-        // Sem este tratamento, o verbatim lock da V1.8.9 prende o paciente em loop
-        // com a frase "Sua avaliação foi pausada..." independentemente do que escreva.
-        // Ao detectar recusa, o state local é limpo (dados ficam no BD preservados;
-        // podem ser retomados com "retomar avaliação" depois) e o chat fica livre.
-        const isRefusing =
-          /\b(n[aã]o)\s+(quero|queria|vou|vamos|preciso|posso)\b/.test(norm) ||
-          /\b(n[aã]o)\s+(continuar|conversar|falar|fazer|avaliar|retomar)\b/.test(norm) ||
-          /\b(deixa\s+(pra|para)\s+l[aá]|outra\s+hora|depois\s+conversamos|esquece|por\s+agora\s+n[aã]o|agora\s+n[aã]o)\b/.test(norm) ||
-          /\b(vamos\s+(s[oó]|somente|apenas)\s+conversar|vamos\s+conversar\s+apenas|quero\s+(s[oó]|somente|apenas)\s+conversar)\b/.test(norm)
-
-        if (isRefusing) {
-          this.states.delete(userId)
-          void supabase.from('aec_assessment_state').delete().eq('user_id', userId)
-          return {
-            nextQuestion:
-              'Tudo bem, podemos conversar. Se quiser retomar sua avaliação depois, basta me pedir "retomar avaliação".',
-            phase: 'COMPLETED',
-            isComplete: true
           }
         }
 
