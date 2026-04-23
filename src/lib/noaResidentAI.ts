@@ -333,29 +333,30 @@ export class NoaResidentAI {
             }
           }
 
-          if (knowledgeDocs && knowledgeDocs.length > 0) {
-            console.log('[Noa] Encontrados documentos relevantes')
+            let injectedContext: string | undefined = undefined
+            if (knowledgeDocs && knowledgeDocs.length > 0) {
+              console.log('[Noa] Encontrados documentos relevantes')
 
-            const contextText = knowledgeDocs.map(doc =>
-              "TITULO: " + doc.title + "\nRESUMO: " + doc.summary + "\nCONTEUDO DO DOCUMENTO:\n" + doc.content + "\nRELEVANCIA: " + Math.round((doc.aiRelevance || 0) * 100) + "%"
-            ).join('\n\n')
+              const contextText = knowledgeDocs.map(doc =>
+                "TITULO: " + doc.title + "\nRESUMO: " + doc.summary + "\nCONTEUDO DO DOCUMENTO:\n" + doc.content + "\nRELEVANCIA: " + Math.round((doc.aiRelevance || 0) * 100) + "%"
+              ).join('\n\n')
 
-            const knowledgeContext = "\n" +
-              "[CONTEXTO CRITICO DE DOCUMENTOS - LEITURA OBRIGATORIA]\n" +
-              "Abaixo estao os documentos oficiais da MedCannLab relevantes para a consulta atual.\n" +
-              "Sua IDENTIDADE como IA Residente depende do uso destas informacoes.\n" +
-              "ANALISE O CONTEUDO ABAIXO E RESPONDA COM BASE NELE.\n\n" +
-              contextText + "\n" +
-              "[FIM DO CONTEXTO]"
+              const knowledgeContext = "\n" +
+                "[CONTEXTO CRITICO DE DOCUMENTOS - LEITURA OBRIGATORIA]\n" +
+                "Abaixo estao os documentos oficiais da MedCannLab relevantes para a consulta atual.\n" +
+                "Sua IDENTIDADE como IA Residente depende do uso destas informacoes.\n" +
+                "ANALISE O CONTEUDO ABAIXO E RESPONDA COM BASE NELE.\n\n" +
+                contextText + "\n" +
+                "[FIM DO CONTEXTO]"
 
-            // Injetar no final da mensagem do usuario (invisivel para ele, visivel para o LLM)
-            userMessage = userMessage + "\n\n" + knowledgeContext
+              // 🛡️ [HOSPITAL-GRADE] ISOLAMENTO: Contexto RAG agora é separado, não polui mais o userMessage clínico.
+              injectedContext = knowledgeContext
 
-            // Registrar uso dos documentos (opcional, para analytics)
-            knowledgeDocs.forEach(doc => {
-              KnowledgeBaseIntegration.registerDocumentUsage(doc.id, userMessage, userId)
-            })
-          }
+              // Registrar uso dos documentos (opcional, para analytics)
+              knowledgeDocs.forEach(doc => {
+                KnowledgeBaseIntegration.registerDocumentUsage(doc.id, userMessage, userId)
+              })
+            }
         } catch (ragError) {
           console.warn('Erro ao buscar na base de conhecimento:', ragError)
           // Não falhar o fluxo principal se o RAG falhar
@@ -370,7 +371,8 @@ export class NoaResidentAI {
         platformData,
         userEmail,
         uiContext,
-        platformIntent.type
+        platformIntent.type,
+        injectedContext // 🆕 [V1.6.2] Contexto isolado
       )
 
       if (assistantResponse && assistantResponse.content) {
@@ -1514,7 +1516,8 @@ export class NoaResidentAI {
     platformData: any,
     userEmail?: string,
     uiContext?: any,
-    platformIntentType: string = 'NONE'
+    platformIntentType: string = 'NONE',
+    injectedContext?: string // 🆕 [V1.6.2]
   ): Promise<AIResponse> {
     try {
       console.log('[Core] Conectando ao Core via Supabase Edge Functions...')
@@ -1795,6 +1798,7 @@ export class NoaResidentAI {
 
       const payload = {
         message: userMessage,
+        injected_context: injectedContext, // 🧪 [HOSPITAL-GRADE] O RAG viaja aqui, nunca na message.
         conversationHistory,
         assessmentPhase: currentPhase,
         nextQuestionHint,
@@ -1907,9 +1911,10 @@ export class NoaResidentAI {
     platformData?: any,
     userEmail?: string,
     uiContext?: any,
-    platformIntentType: string = 'NONE'
+    platformIntentType: string = 'NONE',
+    injectedContext?: string
   ): Promise<AIResponse> {
-    return this.processTradeVisionRequest(userMessage, intent, platformData, userEmail, uiContext, platformIntentType);
+    return this.processTradeVisionRequest(userMessage, intent, platformData, userEmail, uiContext, platformIntentType, injectedContext);
   }
 
   private async generateReasoningQuestion(

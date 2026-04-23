@@ -1241,16 +1241,25 @@ Deno.serve(async (req: Request) => {
             }
         }
 
-        // IDEMPOTÊNCIA E EXTRAÇÃO DE DADOS
-        const body = await req.json()
-        const message = body.message || ''
-        const normalizedMessage = message.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase()
+        // 📥 [HOSPITAL-GRADE] INGESTÃO E SEPARAÇÃO ONTOLÓGICA (V1.6.2)
+        const rawBody = await req.json()
+        
+        // 🧪 Legacy Bridge: Se receber formato antigo, estrair a verdade humana
+        const rawInputMessage = rawBody.message || ''
+        const cleanHumanMessage = stripInjectedContext(rawInputMessage).trim()
+        const injectedContext = rawBody.injected_context || rawBody.context?.rag || null
+        
+        if (rawInputMessage.includes('[CONTEXTO')) {
+             console.log('⚠️ [LEGACY_INGESTION] Detectado payload contaminado. Aplicando ponte de sanitização.')
+        }
+
+        const normalizedMessage = cleanHumanMessage.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase()
 
         // S3 CONTEXT [PATIENT]: Carregar dados do paciente
         const { data: patFromBody } = await supabaseClient
             .from('profiles')
             .select('*, user:id(*)')
-            .eq('id', body.context?.patient_id || body.patient_id)
+            .eq('id', rawBody.context?.patient_id || rawBody.patient_id)
             .single()
 
         const {
@@ -1262,12 +1271,12 @@ Deno.serve(async (req: Request) => {
             assessmentData,
             appointmentData,
             ui_context
-        } = body
+        } = rawBody
         
         let assessmentPhase = assessmentPhaseFromBody || null
         let nextQuestionHint = nextQuestionHintFromBody || '' // Restaurando a variável faltante
-        const conversationHistory = convFromBody ?? body.history ?? []
-        const patientData = patFromBody ?? body.context ?? {}
+        const conversationHistory = convFromBody ?? rawBody.history ?? []
+        const patientData = patFromBody ?? rawBody.context ?? {}
         const professionalId = appointmentData?.professional_id || patientData?.professional_id || 'system-global'
         const jwtUserIdFromToken = jwtUserId // do JWT
         const effectiveUserId = jwtUserIdFromToken || patientData?.user?.id
@@ -2213,8 +2222,9 @@ ${one.summary ? `Resumo rápido: ${one.summary}` : ''}`
                     }
 
                     if (chatHistory.length >= 3) {
+                        // 🛡️ [HOSPITAL-GRADE] Sanitização forçada no replay para evitar "memória falsa" de dados legados sujos
                         const conversationText = chatHistory.map((h: any) =>
-                            `PACIENTE: ${h.user_message}\nNÔA: ${h.ai_response}`
+                            `PACIENTE: ${stripInjectedContext(h.user_message || '')}\nNÔA: ${stripInjectedContext(h.ai_response || '')}`
                         ).join('\n---\n')
 
                         const extractionPrompt = `Analise a conversa clínica abaixo (protocolo AEC 001) e extraia os dados estruturados em JSON.
@@ -3426,12 +3436,16 @@ ${contentExcerpt || '(Texto não disponível para este documento. O conteúdo ai
             profileInstruction = 'PACIENTE — seguir AEC 001 se aplicável'
         }
 
+        // 🧠 [HOSPITAL-GRADE] PROMPT BUILDER (EFÊMERO)
+        // O prompt é construído unindo a fala humana ao contexto RAG, mas essa união NUNCA toca o banco.
+        const effectiveReasoningContext = injectedContext ? `[RAG CONTEXT - EXECUTION ONLY]\n${injectedContext}` : (knowledgeBlock + documentBlock)
+        
         const messages = [
-            { role: "system", content: systemPrompt + knowledgeBlock + phaseInstruction + interactionStyleInstruction + `\nPERFIL DO USUÁRIO: ${userRole} (${profileInstruction})\nCONTEXTO:\n${JSON.stringify(patientData)}` + documentBlock },
+            { role: "system", content: systemPrompt + effectiveReasoningContext + phaseInstruction + interactionStyleInstruction + `\nPERFIL DO USUÁRIO: ${userRole} (${profileInstruction})\nCONTEXTO:\n${JSON.stringify(patientData)}` },
             ...systemInjection,
             ...trimmedHistory,
             ...phaseReinforcementMessages,
-            { role: "user", content: cleanMessage }
+            { role: "user", content: cleanHumanMessage }
         ]
 
         console.log(`🧠 Contexto histórico de ${conversationHistory?.length || 0} mensagens adicionado`)
@@ -3927,20 +3941,22 @@ ${contentExcerpt || '(Texto não disponível para este documento. O conteúdo ai
 
             // [FIX 16/04] DUAL-WRITE: Salvar TAMBÉM em ai_chat_interactions para manter o pipeline GPT Extraction v2 funcional
             try {
+                // 🛡️ [HOSPITAL-GRADE] PERSISTÊNCIA PURA: Apenas linguagem humana entra aqui.
                 await supabaseClient
                     .from('ai_chat_interactions')
                     .insert({
                         user_id: patientData.user.id,
-                        user_message: message || '',
+                        user_message: cleanHumanMessage || '',
                         ai_response: aiResponse || '',
                         intent: currentIntent || null,
                         session_id: interaction_id,
                         patient_id: patientData.user.id,
                         metadata: {
-                            system: 'TradeVision Core V2',
+                            system: 'TradeVision Core V2 (Hospital Grade)',
                             simbologia,
                             model: completion.model,
-                            tokens: completion.usage?.total_tokens || 0
+                            tokens: completion.usage?.total_tokens || 0,
+                            sanitized: rawInputMessage !== cleanHumanMessage
                         }
                     });
             } catch (dualWriteErr) {
