@@ -3759,10 +3759,10 @@ ${contentExcerpt || '(Texto não disponível para este documento. O conteúdo ai
         // 🔒 [AEC VERBATIM LOCK]: Soberania Seletiva do Roteiro.
         // Aplicamos a trava absoluta APENAS em fases de lista repetitiva ou perguntas binárias.
         // Em COMPLAINT_DETAILS, permitimos que a Noa use a sugestão mas mantenha a fluidez do detalhamento (onde, quando, como).
-        const isVerbatimPhase = ['IDENTIFICATION', 'COMPLAINT_LIST', 'MAIN_COMPLAINT', 'MEDICAL_HISTORY', 'LIFESTYLE_HABITS', 'OBJECTIVE_QUESTIONS', 'CONSENT', 'FINAL_NOTES'].includes(assessmentPhase || '');
+        const isVerbatimPhase = !!assessmentPhase && AEC_VERBATIM_LOCK_PHASES.has(assessmentPhase);
 
         if (nextQuestionHint && aecVerbatimLock && isVerbatimPhase && !allowUrgentMultiQuestion) {
-            const isSocialGreeting = /^(oi|ola|olá|bom dia|boa tarde|boa noite|tudo bem|como vai)\s*[!.?]?$/i.test(normalizedMessage.trim());
+            const isSocialGreeting = /^(oi|ol[aá]|hey|hi|hello|bom dia|boa tarde|boa noite|tudo bem|tudo bom|como vai|como voce esta|como vc esta)([\s,.!?]*(noa|n[oó]a)?)?[\s,.!?]*$/i.test(normalizedMessage.trim());
             if (!isSocialGreeting) {
                 console.log(`[AEC] Roteiro Selado (${assessmentPhase}): Forçando frase literal.`);
                 aiResponse = nextQuestionHint;
