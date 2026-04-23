@@ -1030,14 +1030,66 @@ const ClinicalReports: React.FC<ClinicalReportsProps> = ({ className = '', onSha
               {/* Ações */}
               <div className="flex items-center space-x-3">
                 <button
-                  onClick={() => {
-                    setSelectedReport(report)
-                    setDoctorNotes(report.doctorNotes || '')
+                  onClick={async () => {
+                    let reportToOpen = report
+                    // 🔧 FALLBACK: se rawContent não tem dados AEC ricos, tentar hidratar
+                    // a partir do snapshot mais recente em aec_assessment_state do paciente.
+                    const hasAecData = report.rawContent && (
+                      report.rawContent.queixa_principal ||
+                      (Array.isArray(report.rawContent.lista_indiciaria) && report.rawContent.lista_indiciaria.length > 0) ||
+                      report.rawContent.desenvolvimento_queixa
+                    )
+                    if (!hasAecData && report.patientId) {
+                      try {
+                        const { data: aecState } = await (supabase as any)
+                          .from('aec_assessment_state')
+                          .select('data, last_update')
+                          .eq('user_id', report.patientId)
+                          .order('last_update', { ascending: false })
+                          .limit(1)
+                          .maybeSingle()
+                        if (aecState?.data) {
+                          const d = aecState.data as Record<string, any>
+                          // Mapear campos do estado AEC (camelCase) para o shape esperado pelo renderer (snake_case)
+                          const hydrated: Record<string, any> = {
+                            ...(report.rawContent || {}),
+                            queixa_principal: d.complaintList && Array.isArray(d.complaintList) && d.complaintList.length > 0
+                              ? String(d.complaintList[0])
+                              : (report.rawContent?.queixa_principal || ''),
+                            lista_indiciaria: Array.isArray(d.complaintList) ? d.complaintList : [],
+                            desenvolvimento_queixa: {
+                              descricao: d.complaintWorsening || '',
+                              localizacao: d.complaintImprovements || '',
+                              inicio: d.complaintAssociatedSymptoms || '',
+                              sintomas_associados: Array.isArray(d.complaintAssociatedSymptoms) ? d.complaintAssociatedSymptoms : [],
+                              fatores_melhora: Array.isArray(d.complaintImprovements) ? d.complaintImprovements : [],
+                              fatores_piora: Array.isArray(d.complaintWorsening) ? d.complaintWorsening : []
+                            },
+                            historia_familiar: {
+                              lado_materno: d.familyHistoryMother ? [d.familyHistoryMother] : [],
+                              lado_paterno: d.familyHistoryFather ? [d.familyHistoryFather] : []
+                            },
+                            habitos_vida: Array.isArray(d.lifestyleHabits) ? d.lifestyleHabits : [],
+                            historia_patologica_pregressa: Array.isArray(d.medicalHistory) ? d.medicalHistory : [],
+                            consenso: {
+                              aceito: !!d.consensusAgreed,
+                              revisoes_realizadas: d.consensusRevisions || 0
+                            },
+                            _hydrated_from_aec_state: true
+                          }
+                          reportToOpen = { ...report, rawContent: hydrated }
+                        }
+                      } catch (hydrateErr) {
+                        console.warn('Hidratação AEC falhou (seguindo com dados originais):', hydrateErr)
+                      }
+                    }
+                    setSelectedReport(reportToOpen)
+                    setDoctorNotes(reportToOpen.doctorNotes || '')
                     setShowReportModal(true)
                     setShowConversation(false)
-                    fetchConversation(report.patientId, report.date)
+                    fetchConversation(reportToOpen.patientId, reportToOpen.date)
                     const applied = new Set<Rationality>()
-                    Object.entries(report.content.rationalities || {}).forEach(([key, value]: [string, any]) => {
+                    Object.entries(reportToOpen.content.rationalities || {}).forEach(([key, value]: [string, any]) => {
                       if (value && value.assessment) {
                         const rationalityKey = key === 'traditionalChinese' ? 'traditional_chinese' : key
                         applied.add(rationalityKey as Rationality)
