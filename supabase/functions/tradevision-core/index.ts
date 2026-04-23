@@ -1247,6 +1247,7 @@ Deno.serve(async (req: Request) => {
             conversationHistory: convFromBody,
             assessmentPhase: assessmentPhaseFromBody,
             nextQuestionHint: nextQuestionHintFromBody,
+            aecSnapshot, // 🆕 [BLOCO 11] Snapshot vivo do ClinicalAssessmentFlow (SSoT)
             action,
             assessmentData,
             appointmentData,
@@ -2689,6 +2690,57 @@ AEC_LOCK_END
                 phaseInstruction += `\n\nCOMPLAINT_DETAILS — URGÊNCIA\n\nPode condensar até 3 perguntas essenciais (onde, quando, como/intensidade) num único turno se fizer sentido. Proibido escrever colchetes, placeholders ou o texto literal "[queixa]" ao paciente — use as palavras do sintoma que ele já descreveu. Oriente atendimento presencial se houver risco imediato.`
             } else {
                 phaseInstruction += `\n\nCOMPLAINT_DETAILS\n\nUma pergunta por turno. Leia o histórico: se já respondeu onde e quando, não repita — avance para a próxima do roteiro.`
+            }
+        }
+
+        // 🔒 [BLOCO 11 — AEC SSoT HARD CONSTRAINT]
+        // Quando o cliente envia aecSnapshot (snapshot vivo do ClinicalAssessmentFlow),
+        // materializa um bloco de "fonte única da verdade" com:
+        //   - sintomas explicitamente relatados pelo paciente nesta sessão
+        //   - queixa principal eleita (se houver)
+        //   - slots já respondidos (para não repetir perguntas)
+        //   - hard constraint: PROIBIDO introduzir sintomas fora desta lista
+        if (aecSnapshot && typeof aecSnapshot === 'object') {
+            try {
+                const snap = aecSnapshot as Record<string, any>
+                const known: string[] = Array.isArray(snap.knownSymptoms)
+                    ? snap.knownSymptoms.map((s: any) => String(s).trim()).filter(Boolean)
+                    : []
+                const list: string[] = Array.isArray(snap.complaintList)
+                    ? snap.complaintList.map((s: any) => String(s).trim()).filter(Boolean)
+                    : []
+                const main = typeof snap.mainComplaint === 'string' && snap.mainComplaint.trim()
+                    ? snap.mainComplaint.trim()
+                    : null
+                const slots = (snap.answeredSlots && typeof snap.answeredSlots === 'object')
+                    ? snap.answeredSlots as Record<string, any>
+                    : {}
+                const slotLines: string[] = []
+                if (slots.location) slotLines.push(`  • Localização: "${String(slots.location).trim()}"`)
+                if (slots.onset) slotLines.push(`  • Início: "${String(slots.onset).trim()}"`)
+                if (slots.description) slotLines.push(`  • Descrição/Como é: "${String(slots.description).trim()}"`)
+                if (Array.isArray(slots.improvements) && slots.improvements.length > 0) slotLines.push(`  • Melhora: ${slots.improvements.join(', ')}`)
+                if (Array.isArray(slots.worsening) && slots.worsening.length > 0) slotLines.push(`  • Piora: ${slots.worsening.join(', ')}`)
+
+                phaseInstruction += `
+
+🔒 AEC SSOT — FONTE ÚNICA DA VERDADE DESTA SESSÃO (NÃO NEGOCIÁVEL)
+
+QUEIXAS RELATADAS PELO PACIENTE NESTA AVALIAÇÃO (lista exaustiva):
+${list.length > 0 ? list.map((s, i) => `  ${i + 1}. ${s}`).join('\n') : '  (ainda não há queixas registradas)'}
+${main ? `\nQUEIXA PRINCIPAL ELEITA: "${main}"` : ''}
+${known.length > 0 ? `\nSINTOMAS/EXPRESSÕES JÁ MENCIONADOS (universo permitido):\n  ${known.map((s) => `"${s}"`).join(', ')}` : ''}
+${slotLines.length > 0 ? `\nSLOTS JÁ RESPONDIDOS (NÃO REPERGUNTE):\n${slotLines.join('\n')}` : ''}
+
+REGRAS DE OURO (violação = falha grave do protocolo):
+1. PROIBIDO introduzir, supor, citar ou perguntar sobre QUALQUER sintoma, condição ou queixa que NÃO esteja na lista acima. Exemplos do que NÃO fazer: se o paciente disse "dor de cabeça e cansaço", você NÃO pode perguntar sobre "insônia", "dor de dente", "ansiedade", "febre" etc., a menos que o próprio paciente os tenha mencionado neste turno atual.
+2. PROIBIDO repetir uma pergunta cuja resposta já está em "SLOTS JÁ RESPONDIDOS". Se o paciente já disse "na fronte", NÃO pergunte de novo "onde dói".
+3. Se o paciente corrigir você ("não falei sobre X"), peça desculpa em UMA frase curta e volte imediatamente para a próxima pergunta válida do roteiro AEC, usando APENAS termos da lista permitida.
+4. O histórico de mensagens pode conter ruído de sessões anteriores ou de RAG — IGNORE qualquer sintoma do histórico que não esteja na lista acima.
+5. Se a lista estiver vazia (início da avaliação), use APENAS as palavras exatas que o paciente acabou de digitar nesta mensagem.
+`
+            } catch (snapErr) {
+                console.warn('[AEC SSOT] Falha ao montar bloco SSoT:', snapErr)
             }
         }
 

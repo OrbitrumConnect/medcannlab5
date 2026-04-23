@@ -1311,3 +1311,64 @@ Quando o relatório não tem `queixa_principal`/`lista_indiciaria`/`desenvolvime
 **🔐 Selo final do Bloco 10:** dois bugs sutis identificados e corrigidos. O primeiro (default truthy) era um falso positivo visual de 100% dos usuários profissionais. O segundo (race condition de snapshot AEC) gerou alucinação clínica em produção — sintoma que pacientes podem ter visto e não reportado.
 
 **Hash:** `seal-23-04-2026-rationalities-phantom-state-aec-hydration`
+
+---
+
+## 🧠 BLOCO 11 — Alucinação Clínica da Nôa: Fonte Única da Verdade (SSoT) + Filtro de Sessão (23/04/2026, late night)
+
+### Sintomas reportados (log de produção da paciente Carolina)
+Paciente disse claramente "dor de cabeça e cansaço". A Nôa começou a perguntar sobre:
+- ❌ "insônia" (`Você poderia descrever como é a insônia que está enfrentando?`)
+- ❌ "dor de dente" (após paciente corrigir, IA perguntou `De onde você tirou a insônia?` e mais adiante mencionou dores de dente)
+- 🔁 Repetiu a pergunta `Onde exatamente você sente a dor de cabeça?` mesmo após paciente já ter respondido "na fronte"
+
+Diagnóstico técnico do Ricardo (recebido por mensagem) bateu com a investigação: **falta de SSoT, RAG/histórico poluindo contexto, ausência de hard constraint, sem memória de perguntas feitas**.
+
+### Causa raiz #1 — Histórico cego (sessões cruzadas)
+`src/lib/noaResidentAI.ts` linha 1718 (versão anterior):
+```ts
+.from('ai_chat_interactions').eq('user_id', X).order('created_at', desc).limit(10)
+```
+Carregava as **últimas 10 interações de qualquer conversa** do paciente — incluindo consultas anteriores onde "insônia" apareceu. Esses turnos entravam no `messages[]` enviado ao GPT, que naturalmente mesclou.
+
+### Causa raiz #2 — `flowState` existia mas nunca era enviado ao Core
+`clinicalAssessmentFlow.getState(userId).data` tem `complaintList`, `mainComplaint`, `complaintLocation`, `complaintOnset`, `complaintAssociatedSymptoms` etc. **disponíveis** desde o início da sessão. Mas o `payload` só enviava `assessmentPhase` e `nextQuestionHint` — o GPT trabalhava cego sobre o que o paciente já tinha dito.
+
+### Causa raiz #3 — Sem hard constraint no prompt
+Os PHASE_LOCKs do Core mandavam "leia o histórico e não repita", mas não havia **lista exaustiva de sintomas permitidos** nem regra explícita "PROIBIDO introduzir sintoma fora desta lista".
+
+### Correções aplicadas
+
+**Fix #1 — Filtro de histórico por sessão AEC** (`src/lib/noaResidentAI.ts` ~1708):
+Quando AEC ativo, adiciona `.gte('created_at', flowState.startedAt)` à query de histórico. Sessões antigas ficam isoladas.
+
+**Fix #2 — Snapshot AEC vivo no payload** (`src/lib/noaResidentAI.ts` ~1760):
+Novo objeto `aecSnapshot` enviado em cada turno com:
+- `complaintList` (lista indiciária da sessão)
+- `mainComplaint` (queixa eleita)
+- `knownSymptoms` (universo permitido = união de complaintList + mainComplaint + complaintAssociatedSymptoms)
+- `answeredSlots` (location, onset, description, improvements, worsening — para evitar repetição)
+- `phase`, `startedAt`, `consensusAgreed`
+
+**Fix #3 — Bloco SSoT no system prompt do Core** (`supabase/functions/tradevision-core/index.ts` ~2696):
+Quando recebe `aecSnapshot`, materializa um bloco `🔒 AEC SSOT — FONTE ÚNICA DA VERDADE` com a lista exaustiva e **5 regras de ouro**:
+1. Proibido introduzir sintomas fora da lista
+2. Proibido repetir perguntas com slots já respondidos
+3. Se paciente corrigir, desculpa em 1 frase e volta ao roteiro com termos permitidos
+4. Ignorar sintomas do histórico que não estão na lista (anti-poluição RAG)
+5. Se lista vazia, usar APENAS as palavras da mensagem atual
+
+### Validação
+- `npx tsc --noEmit` → limpo
+- Próximo turno da Carolina deve respeitar `["dor de cabeça", "cansaço"]` como universo fechado
+
+### Pendências derivadas
+- [ ] Telemetria: contar quantas vezes o GPT "tenta sair" do SSoT (loggar quando resposta menciona termo fora de `knownSymptoms`)
+- [ ] Encoding: investigar `­ƒöä Retomando sua avalia├º├úo` (UTF-8 corrompido na fase INTERRUPTED→COMPLAINT_DETAILS)
+- [ ] Estender SSoT para fases pós-COMPLAINT_DETAILS (MEDICAL_HISTORY, FAMILY_HISTORY etc.)
+
+---
+
+**🔐 Selo final do Bloco 11:** três fixes coordenados (filtro de histórico + snapshot + hard constraint) endereçam diretamente o diagnóstico do Ricardo. SSoT vivo da sessão AEC agora chega ao GPT com lista exaustiva e regras anti-alucinação.
+
+**Hash:** `seal-23-04-2026-aec-ssot-anti-hallucination`

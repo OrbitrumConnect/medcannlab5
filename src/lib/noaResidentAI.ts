@@ -1706,16 +1706,34 @@ export class NoaResidentAI {
       }
 
       // CARREGAR HISTORICO DE CONVERSAS (Memória de Contexto)
+      // 🔒 [BLOCO 11 — FIX SSoT] Quando AEC está ativo, filtrar histórico apenas para a
+      // sessão de avaliação corrente (>= flowState.startedAt). Isso evita que turnos
+      // de conversas/consultas anteriores poluam o contexto e o GPT comece a perguntar
+      // sobre sintomas (ex.: "insônia", "dor de dente") que vieram de outra sessão.
       let conversationHistory: Array<{ role: string, content: string }> = []
 
       if (platformData?.user?.id) {
         try {
-          const historyQuery = supabase
+          const aecStateForHistory = clinicalAssessmentFlow.getState(platformData.user.id)
+          const aecActiveForHistory =
+            !!aecStateForHistory &&
+            aecStateForHistory.phase !== 'COMPLETED' &&
+            aecStateForHistory.phase !== 'INTERRUPTED'
+          const sessionStartIso = aecActiveForHistory && aecStateForHistory?.startedAt
+            ? new Date(aecStateForHistory.startedAt).toISOString()
+            : null
+
+          let historyQuery = supabase
             .from('ai_chat_interactions')
             .select('user_message, ai_response, created_at')
             .eq('user_id', platformData.user.id)
             .order('created_at', { ascending: false })
             .limit(10)
+
+          if (sessionStartIso) {
+            // Limita drasticamente o "vazamento" de contexto entre sessões clínicas distintas
+            historyQuery = historyQuery.gte('created_at', sessionStartIso)
+          }
 
           const { data: historyData, error: historyError } = await withTimeout(
             historyQuery as unknown as PromiseLike<{
@@ -1732,10 +1750,47 @@ export class NoaResidentAI {
               { role: 'user', content: h.user_message },
               { role: 'assistant', content: h.ai_response }
             ])
-            console.log('[Core] Historico carregado:', historyData.length)
+            console.log('[Core] Historico carregado:', historyData.length, sessionStartIso ? '(filtrado por sessão AEC)' : '(sem filtro de sessão)')
           }
         } catch (e) {
           console.warn('Erro ao carregar historico:', e)
+        }
+      }
+
+      // 🧠 [BLOCO 11 — AEC SSoT] Snapshot vivo da sessão de avaliação para servir de
+      // fonte única da verdade no prompt do Core. Sem isso, o GPT trabalha cego e
+      // começa a inventar sintomas. O Core vai materializar isso num bloco
+      // [AEC SSOT] com hard constraint "NÃO introduza sintomas fora desta lista".
+      let aecSnapshot: Record<string, any> | null = null
+      if (platformData?.user?.id) {
+        const liveState = clinicalAssessmentFlow.getState(platformData.user.id)
+        if (liveState && liveState.phase !== 'COMPLETED' && liveState.phase !== 'INTERRUPTED') {
+          const d: any = liveState.data || {}
+          // Lista de tudo que o paciente JÁ relatou nesta sessão.
+          // Usado pelo Core para bloquear introdução de sintomas alheios.
+          const knownSymptoms: string[] = [
+            ...(Array.isArray(d.complaintList) ? d.complaintList.filter(Boolean) : []),
+            ...(d.mainComplaint ? [d.mainComplaint] : []),
+            ...(Array.isArray(d.complaintAssociatedSymptoms) ? d.complaintAssociatedSymptoms.filter(Boolean) : [])
+          ]
+          // Slots já respondidos (para o Core não repetir perguntas)
+          const answeredSlots: Record<string, string | string[] | undefined> = {
+            location: d.complaintLocation,
+            onset: d.complaintOnset,
+            description: d.complaintDescription,
+            improvements: d.complaintImprovements,
+            worsening: d.complaintWorsening
+          }
+          aecSnapshot = {
+            phase: liveState.phase,
+            startedAt: liveState.startedAt,
+            patientName: d.patientName,
+            complaintList: Array.isArray(d.complaintList) ? d.complaintList.filter(Boolean) : [],
+            mainComplaint: d.mainComplaint || null,
+            knownSymptoms: Array.from(new Set(knownSymptoms.map((s) => String(s).trim()).filter(Boolean))),
+            answeredSlots,
+            consensusAgreed: !!d.consensusAgreed
+          }
         }
       }
 
@@ -1751,6 +1806,7 @@ export class NoaResidentAI {
         conversationHistory,
         assessmentPhase: currentPhase,
         nextQuestionHint,
+        aecSnapshot, // 🆕 Bloco 11 — fonte única da verdade da sessão AEC
         ui_context: uiContext,
         patientData: {
           ...platformData,
