@@ -632,6 +632,11 @@ const NoaConversationalInterface = React.forwardRef<
               navigate("/app/clinica/profissional/agendamentos");
             } else if (target === "agenda") {
               navigate("/app/clinica/paciente/agendamentos");
+            } else if (target === "meu-relatorio" || target === "dados-parciais") {
+              // Intenções Paciente: Navegar para o relatório no dashboard
+              navigate("/app/clinica/paciente/dashboard?section=relatorio");
+            } else if (target === "painel-paciente") {
+              navigate("/app/clinica/paciente/dashboard?section=analytics");
             } else if (detail.fallbackRoute) {
               navigate(detail.fallbackRoute);
             }

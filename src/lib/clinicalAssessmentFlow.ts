@@ -120,19 +120,37 @@ export class ClinicalAssessmentFlow {
     // Estado e carregado sob demanda via loadState() -- sem localStorage
   }
 
-  /** Retorna true se este turno deve ser ignorado por debounce de avanço (evita "ok ok ok ok" pular fases) */
-  private shouldDebounceAdvance(userId: string, phase: string, userTurn: string): boolean {
+  /** 
+   * [V1.6.1] FSM Domain Governance
+   * Avalia centralmente se o input é clinicamente ou estruturalmente válido para avançar de fase.
+   * Filtra ruídos, repetições de spam e respostas sem conteúdo para fases específicas.
+   */
+  private evaluateInputAcceptance(userId: string, phase: AssessmentPhase, userTurn: string): boolean {
     const normalized = (userTurn || '').toLowerCase().trim()
-    // Só debounce de respostas muito curtas tipo "ok", "sim", "só isso"
-    if (normalized.length === 0 || normalized.length > 16) return false
-    const last = this.lastAdvance.get(userId)
-    const now = Date.now()
-    if (last && last.phase === phase && last.turn === normalized && (now - last.at) < this.ADVANCE_DEBOUNCE_MS) {
-      console.warn('[AEC_DEBOUNCE] Avanço ignorado (turno curto repetido):', { userId, phase, turn: normalized, deltaMs: now - last.at })
-      return true
+    if (normalized.length === 0) return false
+
+    // 1. Filtro de Spam (Debounce Temporal para mesma fase/resposta)
+    if (normalized.length <= 16) {
+      const last = this.lastAdvance.get(userId)
+      const now = Date.now()
+      if (last && last.phase === phase && last.turn === normalized && (now - last.at) < this.ADVANCE_DEBOUNCE_MS) {
+        console.warn('[AEC FSM] Input rejeitado (Repetição Rápida / Spam):', normalized)
+        return false // rejeitado
+      }
+      this.lastAdvance.set(userId, { phase, turn: normalized, at: now })
     }
-    this.lastAdvance.set(userId, { phase, turn: normalized, at: now })
-    return false
+
+    // 2. Filtro de Intenção Semântica para Fases Descritivas
+    const isDescriptivePhase = ['COMPLAINT_DETAILS', 'MAIN_COMPLAINT', 'MEDICAL_HISTORY', 'LIFESTYLE_HABITS', 'OBJECTIVE_QUESTIONS', 'FAMILY_HISTORY_MOTHER', 'FAMILY_HISTORY_FATHER', 'COMPLAINT_LIST'].includes(phase)
+    const isMicroPhrase = normalized.length < 20
+    const hasSemanticFlag = /sim|n[ãa]o|ok|isso|apenas isso|dor|d[óo]i|ard|inch|sang|latej|ruim/i.test(normalized)
+
+    if (isDescriptivePhase && isMicroPhrase && !hasSemanticFlag) {
+        console.log(`[AEC FSM] Input rejeitado (Micro-frase sem relevância clínica na fase ${phase}):`, normalized)
+        return false // rejeitado
+    }
+
+    return true // input válido para processamento
   }
 
   /**
@@ -389,9 +407,8 @@ export class ClinicalAssessmentFlow {
       stripPlatformInjectionNoise(userResponse).trim() || userResponse.trim()
     const lowerResponse = userTurn.toLowerCase().trim()
 
-    // [DEBOUNCE] Evita que "ok ok ok" pulando rapidamente avance múltiplas fases.
-    // Repete a pergunta atual sem mudar de fase quando o mesmo turno curto chega 2x em <2s.
-    if (this.shouldDebounceAdvance(userId, state.phase, userTurn)) {
+    // [V1.6.1] Avaliação Soberana de Input (A FSM decide a validade de transição)
+    if (!this.evaluateInputAcceptance(userId, state.phase, userTurn)) {
       return {
         nextQuestion: this.getPhaseResumePrompt(state.phase, state),
         phase: state.phase,

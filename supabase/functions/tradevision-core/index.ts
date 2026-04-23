@@ -3728,13 +3728,20 @@ ${contentExcerpt || '(Texto não disponível para este documento. O conteúdo ai
         const isCurrentlyInAecFinalPhase = aiResponse?.includes('[FINALIZE_SESSION]') || aiResponse?.includes('Consentimento Informado') || aiResponse?.includes('Voce autoriza o registro')
         const isAecCompletedNow = aiResponse?.includes('[ASSESSMENT_COMPLETED]')
         
-        // Se estamos no meio do consentimento, BLOQUEIA o agendamento para não poluir a UI
-        if (isCurrentlyInAecFinalPhase && !isAecCompletedNow) {
-            shouldTriggerScheduling = false
-            console.log('⏳ [AEC GATE] Agendamento retido: Aguardando consentimento final.')
+        // 🔒 Estado Soberano: Gatilho de Agendamento Contextual (V1.5)
+        // Bypass contextual: permite override se o paciente exigir agenda ('agendar', intent ADMIN) explicitamente.
+        // Caso contrário, a máquina de estados não abre espaço para agendamento.
+        const isAecActive = !!assessmentPhase && assessmentPhase !== 'COMPLETED' && assessmentPhase !== 'INTERRUPTED';
+        const isUserForcingAction = (currentIntent === 'ADMIN' && (isCurrentlyInAecFinalPhase || hasScheduleVerb));
+        const overrideAllowedContext = isUserForcingAction;
+
+        if (isAecActive && !overrideAllowedContext) {
+            shouldTriggerScheduling = false;
+            shouldTriggerSchedulingWidget = false;
+            console.log('⏳ [AEC GATE V1.5] Agendamento retido: Fluxo clínico ativo tem soberania.');
         }
 
-        if (aiResponse?.includes(TRIGGER_SCHEDULING_TOKEN) && !isCurrentlyInAecFinalPhase) {
+        if (aiResponse?.includes(TRIGGER_SCHEDULING_TOKEN) && (!isAecActive || overrideAllowedContext)) {
             shouldTriggerScheduling = true;
         }
 
@@ -4035,6 +4042,51 @@ ${contentExcerpt || '(Texto não disponível para este documento. O conteúdo ai
         }
 
         let app_commands = filterAppCommandsByRole(rawCommands, userRole)
+        
+        // 🔘 UI Contract V1.5: Botões Determinísticos State-Driven (Não fossilizados)
+        if (assessmentPhase === 'CONSENT_COLLECTION') {
+             app_commands.push({
+                 type: 'show_buttons',
+                 data: {
+                     ui_contract_version: "v1.5",
+                     buttons: [
+                         { label: "Sim, autorizo e concordo", action: "send_message", value: "sim concordo" },
+                         { label: "Não concordo", action: "send_message", value: "não concordo" }
+                     ]
+                 }
+             });
+         }
+        
+        // 🧭 [V1.6.1] UI Contract em Intenção Pura: O Core dita a ação, o Frontend resolve a Rota.
+        const isAecCompletedNowEvent = aiResponse?.includes('[ASSESSMENT_COMPLETED]') || assessmentPhase === 'COMPLETED';
+        if (isAecCompletedNowEvent) {
+            app_commands.push(
+              {
+                kind: 'noa_command',
+                autoExecute: false,
+                command: { type: 'navigate-section', target: 'meu-relatorio', label: 'Ver Relatório Clínico' }
+              },
+              {
+                kind: 'noa_command',
+                autoExecute: false,
+                command: { type: 'navigate-section', target: 'agenda', label: 'Agendar Consulta' }
+              }
+            );
+        } else if (assessmentPhase === 'INTERRUPTED') {
+            app_commands.push(
+              {
+                kind: 'noa_command',
+                autoExecute: false,
+                command: { type: 'navigate-section', target: 'dados-parciais', label: 'Ver Relatório Parcial' }
+              },
+              {
+                kind: 'noa_command',
+                autoExecute: false,
+                command: { type: 'navigate-section', target: 'agenda', label: 'Agendamentos' }
+              }
+            );
+        }
+        
         // Quando abrimos o CARD de agendamento no chat, não navegar para a aba Agendamentos (paciente fica no chat e vê horário/valor)
         if (shouldTriggerScheduling && app_commands.length > 0) {
             app_commands = app_commands.filter(

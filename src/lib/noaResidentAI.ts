@@ -1662,19 +1662,11 @@ export class NoaResidentAI {
                 }
               }
 
-              // Se a avaliação foi concluída, garantir o gatilho master para o Core
+              // Se a avaliação foi concluída, a FSM já cuidou do estado e emitirá seu tag/log apropriadamente no momento certo.
               if (stepResult.phase === 'COMPLETED' && stepResult.isComplete) {
-                const isConsentGiven = flowState?.data?.consentGiven === true;
-                
-                if (isConsentGiven) {
-                  MedCannLabAuditLogger.audit('ASSESSMENT_COMPLETED', { userId: platformData.user.id });
-                  if (!nextQuestionHint.includes(META_TAGS.ASSESSMENT_COMPLETED)) {
-                    nextQuestionHint += `\n\n${META_TAGS.ASSESSMENT_COMPLETED}`;
-                  }
-                } else {
-                  MedCannLabAuditLogger.warn('LGPD_CONSENT_REJECTED', { userId: platformData.user.id, reason: 'Paciente não forneceu consentimento' });
-                }
-                
+                // Apenas logar. Consentimento já foi decidido na FSM.
+                MedCannLabAuditLogger.audit('ASSESSMENT_COMPLETED', { userId: platformData.user.id });
+
                 // Manter o fallback local por segurança (compatibilidade com UI antiga)
                 try {
                   await clinicalAssessmentFlow.generateReport(
@@ -1863,65 +1855,9 @@ export class NoaResidentAI {
       // Usuário nunca vê nenhum token: remover todos antes de devolver ao hook
       aiContent = stripInvisibleTokensFromResponse(aiContent)
 
-      // Injetar comandos de navegação pós-AEC para guiar o paciente (botões, sem auto-navigate)
-      const postAecCommands: unknown[] = []
-      if (isCompleted) {
-        postAecCommands.push(
-          {
-            kind: 'noa_command',
-            autoExecute: false,
-            command: {
-              type: 'navigate-route',
-              target: '/app/clinica/paciente/dashboard?section=relatorio',
-              label: 'Ver Meu Relatorio'
-            }
-          },
-          {
-            kind: 'noa_command',
-            autoExecute: false,
-            command: {
-              type: 'navigate-route',
-              target: '/app/clinica/paciente/agendamentos',
-              label: 'Agendar Consulta'
-            }
-          }
-        )
-      } else if (aecInterruptedThisTurn) {
-        postAecCommands.push(
-          {
-            kind: 'noa_command',
-            autoExecute: false,
-            command: {
-              type: 'navigate-route',
-              target: '/app/clinica/paciente/dashboard?section=relatorio',
-              label: 'Ver relatorio / dados da avaliacao'
-            }
-          },
-          {
-            kind: 'noa_command',
-            autoExecute: false,
-            command: {
-              type: 'navigate-route',
-              target: '/app/clinica/paciente/dashboard?section=analytics',
-              label: 'Painel do paciente'
-            }
-          },
-          {
-            kind: 'noa_command',
-            autoExecute: false,
-            command: {
-              type: 'navigate-route',
-              target: '/app/clinica/paciente/agendamentos',
-              label: 'Agendamentos'
-            }
-          }
-        )
-      }
-
-      const mergedAppCommands = [
-        ...(appCommandsFromCore.length > 0 ? appCommandsFromCore : (data.app_commands ?? [])),
-        ...postAecCommands
-      ]
+      // [V1.6] UI Contract Puro: O Frontend não adiciona botões post-AEC.
+      // O Core dita 100% da navegação e botões em 'app_commands'.
+      const finalAppCommands = appCommandsFromCore.length > 0 ? appCommandsFromCore : (data.app_commands ?? [])
 
       return {
         id: "tv_" + Date.now(),
@@ -1938,7 +1874,7 @@ export class NoaResidentAI {
           professionalId: data.metadata?.professionalId,
           audited: data.metadata?.audited,
           system: data.metadata?.system,
-          app_commands: mergedAppCommands
+          app_commands: finalAppCommands
         }
       }
     } catch (err) {
