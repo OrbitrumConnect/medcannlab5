@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useAuth } from '../contexts/AuthContext'
 import { NoaResidentAI, type AIResponse } from '../lib/noaResidentAI'
 import { ConversationalIntent } from '../lib/medcannlab/types'
+import { clinicalAssessmentFlow } from '../lib/clinicalAssessmentFlow'
 
 const sanitizeForSpeech = (text: string): string => {
   return text
