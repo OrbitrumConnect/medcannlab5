@@ -1248,7 +1248,6 @@ Deno.serve(async (req: Request) => {
         const rawInputMessage = body.message || ''
         const cleanHumanMessage = stripInjectedContext(rawInputMessage).trim()
         const injectedContext = body.injected_context || body.context?.rag || null
-        
         // 🏥 [VERDADE CLÍNICA]: 'message' é agora o alias soberano para o restante do sistema
         const message = cleanHumanMessage 
         
@@ -1274,12 +1273,12 @@ Deno.serve(async (req: Request) => {
             assessmentData,
             appointmentData,
             ui_context
-        } = rawBody
+        } = body
         
         let assessmentPhase = assessmentPhaseFromBody || null
         let nextQuestionHint = nextQuestionHintFromBody || '' // Restaurando a variável faltante
-        const conversationHistory = convFromBody ?? rawBody.history ?? []
-        const patientData = patFromBody ?? rawBody.context ?? {}
+        const conversationHistory = convFromBody ?? body.history ?? []
+        const patientData = patFromBody ?? body.context ?? {}
         const professionalId = appointmentData?.professional_id || patientData?.professional_id || 'system-global'
         const jwtUserIdFromToken = jwtUserId // do JWT
         const effectiveUserId = jwtUserIdFromToken || patientData?.user?.id
