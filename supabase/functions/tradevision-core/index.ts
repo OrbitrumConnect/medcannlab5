@@ -2610,7 +2610,7 @@ Responda SOMENTE com o JSON válido, sem markdown.`
         // Detecção de urgência (para permitir múltiplas perguntas em casos urgentes)
         const isUrgent = /(urgente|emergência|emergencia|socorro|urgência|preciso urgente|agora|imediato|dor forte|muito mal|preciso ajuda|preciso de ajuda)/i.test(message)
 
-        /** Fases em que o servidor manda nextQuestionHint — GPT não pode parafrasear nem “explicar o protocolo” no lugar da pergunta (coração do AEC determinístico). */
+        /** Fases em que o servidor manda nextQuestionHint — GPT não pode parafrasear nem "explicar o protocolo" no lugar da pergunta (coração do AEC determinístico). */
         const AEC_VERBATIM_LOCK_PHASES = new Set([
             'INITIAL_GREETING',
             'IDENTIFICATION',
@@ -2628,7 +2628,10 @@ Responda SOMENTE com o JSON válido, sem markdown.`
             'CONSENSUS_CONFIRMATION',
             'FINAL_RECOMMENDATION',
             'CONFIRMING_EXIT',
-            'CONFIRMING_RESTART'
+            'CONFIRMING_RESTART',
+            // [V1.8.8] INTERRUPTED também é verbatim: a FSM retorna "continuar / nova?" como texto literal
+            // e o GPT não pode parafrasear em resposta genérica como "Olá, como posso ajudar?".
+            'INTERRUPTED'
         ])
 
         /** Lock verbatim: paciente OU perfil não normalizado no body mas AEC ativo com hint (evita que o modelo copie rótulos internos para o utente). */
@@ -2687,6 +2690,11 @@ Responda SOMENTE com o JSON válido, sem markdown.`
                 }
                 case 'CONSENT_COLLECTION': {
                     nextQuestionHint = nextQuestionHint || 'Antes de finalizarmos, preciso do seu consentimento para registrar esta avaliação no seu prontuário digital e compartilhar com o médico responsável. Você autoriza?'
+                    break
+                }
+                case 'INTERRUPTED': {
+                    // [V1.8.8] Fallback: se a FSM não enviou hint explícito, oferece a decisão binária canônica.
+                    nextQuestionHint = 'Olá! Vejo que você tem uma avaliação clínica em andamento. Gostaria de continuar de onde paramos ou prefere iniciar uma nova do zero?'
                     break
                 }
                 default:
@@ -4126,6 +4134,13 @@ ${contentExcerpt || '(Texto não disponível para este documento. O conteúdo ai
          }
         
         // 🧭 [V1.6.1] UI Contract em Intenção Pura: O Core dita a ação, o Frontend resolve a Rota.
+        // [V1.8.8] Botões contextuais (INTERRUPTED / greeting) só aparecem em SAUDAÇÕES PURAS,
+        // não em toda resposta — evita spam de "Ver Relatório Parcial / Agendamentos / Continuar Avaliação"
+        // em TODO turno enquanto a FSM está em INTERRUPTED.
+        const normalizedForGreet = normalizePt(message || '')
+        // Regex de saudação PURA e curta: só bate quando a mensagem inteira é uma saudação.
+        const isPureGreeting = /^(oi|ol[aá]|hey|hi|hello|bom dia|boa tarde|boa noite|tudo bem|tudo bom|como vai|como voce esta|como vc esta)([\s,.!?]*(noa|n[oó]a)?)?[\s,.!?]*$/i.test(normalizedForGreet.trim())
+
         const isAecCompletedNowEvent = aiResponse?.includes('[ASSESSMENT_COMPLETED]') || assessmentPhase === 'COMPLETED';
         if (isAecCompletedNowEvent) {
             app_commands.push(
@@ -4138,7 +4153,8 @@ ${contentExcerpt || '(Texto não disponível para este documento. O conteúdo ai
                 command: { type: 'navigate-section', target: 'agenda', label: 'Agendar Consulta' }
               }
             );
-        } else if (assessmentPhase === 'INTERRUPTED') {
+        } else if (assessmentPhase === 'INTERRUPTED' && isPureGreeting && userRole === 'patient') {
+            // Só emite os atalhos contextuais quando o paciente está iniciando a conversa com saudação.
             app_commands.push(
               {
                 kind: 'noa_command',
@@ -4150,12 +4166,11 @@ ${contentExcerpt || '(Texto não disponível para este documento. O conteúdo ai
               }
             );
         }
-        
-        // 🧬 [V1.6.9] Sugestão Proativa de Avaliação (Greeting UX para Pacientes)
-        const isGreetingTrigger = /^(oi|ola|olá|bom dia|boa tarde|boa noite|hey|hi|hello|tudo bem)/i.test(normalizePt(message || ''))
+
+        // 🧬 [V1.6.9 / V1.8.8] Sugestão proativa de Avaliação — só em saudação PURA.
         const hasAssessmentCmd = app_commands.some((c: any) => c.command?.label?.includes('Avaliação'))
-        
-        if (isGreetingTrigger && userRole === 'patient' && !hasAssessmentCmd) {
+
+        if (isPureGreeting && userRole === 'patient' && !hasAssessmentCmd) {
             if (assessmentPhase === 'IDLE') {
                 app_commands.push({
                     kind: 'noa_command',

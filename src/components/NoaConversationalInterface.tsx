@@ -645,7 +645,24 @@ const NoaConversationalInterface = React.forwardRef<
 
           case "navigate-route": {
             if (detail.target) {
-              navigate(detail.target);
+              // [V1.8.8] Se o usuário já está na mesma URL (ex: paciente clica em "Continuar Avaliação"
+              // estando no dashboard?section=avaliacao), o React Router ignora a navegação. Duas medidas:
+              // 1) Adiciona um timestamp ao query pra forçar re-mount do componente que lê useSearchParams.
+              // 2) Dispara um CustomEvent 'noa-open-section' que páginas específicas podem escutar pra
+              //    "reabrir" o card/fluxo sem depender de navegação.
+              const currentUrl = window.location.pathname + window.location.search;
+              const targetIsCurrent = currentUrl === detail.target;
+              const targetWithTs = targetIsCurrent
+                ? `${detail.target}${detail.target.includes("?") ? "&" : "?"}_t=${Date.now()}`
+                : detail.target;
+              navigate(targetWithTs);
+              if (targetIsCurrent) {
+                window.dispatchEvent(
+                  new CustomEvent("noa-open-section", {
+                    detail: { target: detail.target, label: detail.label },
+                  }),
+                );
+              }
             } else if (detail.fallbackRoute) {
               navigate(detail.fallbackRoute);
             }
