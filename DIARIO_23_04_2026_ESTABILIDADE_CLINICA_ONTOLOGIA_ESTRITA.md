@@ -525,6 +525,149 @@ Um trigger criado no lugar errado pode **parecer funcional** mas **sempre falhar
 
 ---
 
+#### V1.9.3 — Refusal-First Ordering Fix 🔄
+**Status:** Ordem de checks corrigida • Recusa vence positivo correspondente
+
+### 🐛 O bug que V1.9.2 não resolveu (descoberto em teste real):
+
+Após deploy do V1.9.2, Pedro testou o cenário e enviou log detalhado. Resultado:
+
+| Input do paciente | Esperado (V1.9.2) | Observado |
+|---|---|---|
+| `"nao nao quero continuar"` | `isRefusing` ativa → estado limpo → chat livre | `[AEC] Fluxo AEC avancou para: COMPLAINT_DETAILS` — paciente **retomado contra a vontade** |
+| `"perfeito! voce esta bem hoje?"` | Conversa livre | `"O que mais?"` (verbatim lock de COMPLAINT_DETAILS) |
+| `"mais nada ! so perguntei se voce esta bem?"` | Conversa livre | `"O que parece melhorar a dor?"` |
+
+### 🔍 Raiz do bug:
+
+No V1.9.2 eu posicionei o bloco `isRefusing` **depois** de `isContinuing` e `isStartingNew`. O regex de `isContinuing` é `/\b(continuar|retomar|voltar|segue|prosseguir)\b/i` — que **matcha literalmente a palavra "continuar"** mesmo quando antecedida de "não". Então `"nao nao quero continuar"` → match em `continuar` → `isContinuing = true` → `resumeAssessment` → paciente puxado de volta à fase exata (COMPLAINT_DETAILS).
+
+A lógica de recusa estava correta. A **ordem** estava errada. Erro clássico de reasoning — não simulei mentalmente a entrada específica antes de commitar.
+
+### 🛠 Fix V1.9.3:
+
+Três mudanças em [clinicalAssessmentFlow.ts:1000-1060](src/lib/clinicalAssessmentFlow.ts#L1000):
+
+1. **Move o bloco `isRefusing` para o TOPO do `case 'INTERRUPTED'`** — antes de qualquer positivo. Negação sempre vence a palavra correspondente.
+2. **Expande o regex de recusa** para cobrir mais variantes: `|seguir|prosseguir|voltar` e `|desejo|pretendo|mais tarde`.
+3. **Mantém semântica intacta** — a V1.9.2 já tinha escrito o código certo do `isRefusing`, só nunca rodava. Agora roda primeiro.
+
+### 🎯 Comportamento pós-fix:
+
+| Input | Match | Ação |
+|---|---|---|
+| `"continuar"` | `isRefusing=false → isContinuing=true` | retoma fase anterior ✅ |
+| `"não quero continuar"` | `isRefusing=true` (negação primeiro) | estado limpo, chat livre ✅ |
+| `"vamos só conversar"` | `isRefusing=true` | estado limpo, chat livre ✅ |
+| `"nova"` | `isRefusing=false → isStartingNew=true` | nova sessão ✅ |
+
+### 📝 Auto-crítica registrada:
+
+Erro de execução, não de desenho. Lição: **sempre rodar mentalmente a entrada real do paciente** (que está no log) contra os regex — na ordem em que aparecem no código — antes de declarar fix pronto. Feito agora.
+
+---
+**Selo da Sessão:** 23/04/2026 — V1.9.3  
+**Hash:** `refusal-first-ordering-fix`  
+**Responsáveis:** Claude Code (Opus 4.7) & Pedro (CTO)
+
+---
+
+#### V1.9.4 — Auto-Pause on F5 / Relogin / Tab Reopen 🌙
+**Status:** Break = Pause • Retorno = decisão consciente • Consent contínuo estrutural
+
+### 🎯 Intenção do produto articulada por Pedro:
+
+> *"Quando usuário dá F5 ou desloga ou fecha aba, o sistema já automaticamente salva e sai da avaliação. Quando volta, só avisa, mas fica solta. Se quer voltar, volta tranquilo. LGPD/compliance OK, mas não precisa ser tão rígido. Paciente pode pedir número de avaliações, consultas, conversar normal — foco continua sendo avaliação mas sem sequestrar."*
+
+### 🐛 Comportamento anterior (antes desse fix):
+
+1. Paciente está em `COMPLAINT_DETAILS` (fase ativa)
+2. F5 acidental / fechar aba / logout-login
+3. State persiste no banco em `COMPLAINT_DETAILS`
+4. Paciente volta → Core vê phase=COMPLAINT_DETAILS → verbatim lock dispara em TUDO
+5. Qualquer pergunta casual/administrativa → resposta virava "O que mais?" ou pergunta literal da fase
+6. Paciente sentia que estava sendo **mantido refém da avaliação** por acidente
+
+### 🛠 Fix V1.9.4:
+
+No hook [`useMedCannLabConversation`](src/hooks/useMedCannLabConversation.ts), dentro do effect de mount do componente (que roda em cada F5, novo login, ou primeira abertura da aba):
+
+```ts
+void clinicalAssessmentFlow.ensureLoaded(user.id).then(() => {
+  const state = clinicalAssessmentFlow.getState(user.id)
+  if (state && state.phase !== 'INTERRUPTED' && state.phase !== 'COMPLETED') {
+    state.interruptedFromPhase = state.phase  // preserva pra retomada exata
+    state.phase = 'INTERRUPTED'
+    state.lastUpdate = new Date()
+    void clinicalAssessmentFlow.persist(user.id)
+  }
+})
+```
+
+### 🎯 Fluxo resultante:
+
+```
+┌────────────────────────────────────────┐
+│ Paciente em COMPLAINT_DETAILS          │
+│ (ou qualquer fase ativa)               │
+└────────────────────────────────────────┘
+                  ↓
+   [F5 / logout / fechar aba / etc]
+                  ↓
+┌────────────────────────────────────────┐
+│ state persiste no banco                │
+│ (já fazia — V1.9.0)                    │
+└────────────────────────────────────────┘
+                  ↓
+      [paciente volta ao app]
+                  ↓
+┌────────────────────────────────────────┐
+│ mount do hook → ensureLoaded          │
+│ AUTO-MIGRA para INTERRUPTED           │ ← novo em V1.9.4
+│ (interruptedFromPhase guarda original)│
+└────────────────────────────────────────┘
+                  ↓
+      [paciente digita "oi noa"]
+                  ↓
+┌────────────────────────────────────────┐
+│ social guard vê phase=INTERRUPTED      │
+│ → "Vi que tem avaliação em andamento. │
+│    Gostaria de continuar ou nova?"    │
+└────────────────────────────────────────┘
+                  ↓
+┌─────────────┬─────────────┬─────────────┐
+│ "continuar" │ "não quero" │ "tudo bem?" │
+│     ↓       │     ↓       │     ↓       │
+│ resume exato│ chat livre  │ conversa    │
+│ (V1.9.3 OK) │ (V1.9.3)    │ casual OK   │
+└─────────────┴─────────────┴─────────────┘
+```
+
+### 📋 Combinação V1.9.3 + V1.9.4:
+
+| Saída da AEC | Como funciona agora |
+|---|---|
+| **Voluntária explícita** (`encerrar avaliacao`) | CONFIRMING_EXIT → INTERRUPTED (já funcionava) |
+| **Recusa no prompt de retomada** (`não quero continuar`) | V1.9.3 — estado limpo, chat livre |
+| **Break passivo** (F5, logout, fechar aba) | V1.9.4 — auto-pause na volta, primeira msg aciona social guard |
+
+Todas as três saídas convergem para: **paciente sempre tem controle consciente** sobre quando está na avaliação vs. fora dela. LGPD + UX humanizada.
+
+### 🧪 Testes esperados pós-deploy:
+
+1. **Paciente em COMPLAINT_DETAILS → F5 → volta e diz "oi"** → social guard pergunta continuar/nova, **não** pergunta da fase
+2. **Paciente diz "quantas consultas eu tenho?"** → responde contextualmente (V1.9.4 libera + Core não força AEC)
+3. **Paciente diz "continuar"** → volta exato para COMPLAINT_DETAILS (via `interruptedFromPhase`)
+4. **Paciente diz "não quero continuar"** → estado limpo, chat livre (V1.9.3)
+5. **Paciente diz "retomar avaliação"** depois de estar em chat livre → nova AEC pode ser iniciada normalmente
+
+---
+**Selo da Sessão:** 23/04/2026 — V1.9.4  
+**Hash:** `auto-pause-on-break`  
+**Responsáveis:** Claude Code (Opus 4.7) & Pedro (CTO)
+
+---
+
 ## 📊 Fechamento do Dia 23/04/2026
 
 ### 🏆 Versões entregues e deployadas:
@@ -543,6 +686,8 @@ Um trigger criado no lugar errado pode **parecer funcional** mas **sempre falhar
 | **V1.9.1-db** | **Banco** | **phase_iteration_count column (débito V1.8.4-H corrigido)** |
 | **V1.9.2** | **Frontend** | **INTERRUPTED loop escape + placeholder removal** |
 | **V1.9.2-db** | **Banco** | **Drop trigger fantasma (Bug B de 02/02 selado)** |
+| **V1.9.3** | **Frontend** | **Refusal-first ordering (negação vence antes do positivo matching)** |
+| **V1.9.4** | **Frontend** | **Auto-pause on F5/relogin/tab-reopen — retomada sempre consciente** |
 
 ### 🎯 Estado final do sistema:
 
