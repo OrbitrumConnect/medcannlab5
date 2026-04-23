@@ -397,13 +397,19 @@ const ClinicalReports: React.FC<ClinicalReportsProps> = ({ className = '', onSha
             physicalExam,
             assessment,
             plan,
-            rationalities: (content.rationalities as SharedReport['content']['rationalities']) || {
-              biomedical: {},
-              traditionalChinese: {},
-              ayurvedic: {},
-              homeopathic: {},
-              integrative: {}
-            }
+            // 🔧 FIX: NÃO criar chaves vazias por padrão. Chave vazia faz `hasAnalysis`
+            // virar truthy e marca todos os botões como "já aplicados", impedindo a geração.
+            // Só preserva chaves que tenham `assessment` real preenchido.
+            rationalities: (() => {
+              const src = (content.rationalities as Record<string, any>) || {}
+              const out: Record<string, any> = {}
+              for (const [k, v] of Object.entries(src)) {
+                if (v && typeof v === 'object' && typeof (v as any).assessment === 'string' && (v as any).assessment.trim().length > 0) {
+                  out[k] = v
+                }
+              }
+              return out as SharedReport['content']['rationalities']
+            })()
           },
           doctorNotes: stripClinical(content.doctor_notes) || undefined,
           reviewStatus: (content.review_status as SharedReport['reviewStatus']) || 'pending',
