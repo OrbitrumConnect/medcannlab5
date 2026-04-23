@@ -616,18 +616,28 @@ const ClinicalReports: React.FC<ClinicalReportsProps> = ({ className = '', onSha
         selectedReport.patientId
       )
 
-      // Salvar no relatório
-      await rationalityAnalysisService.saveAnalysisToReport(
-        selectedReport.id,
-        rationality,
-        analysis,
-        selectedReport.patientId
-      )
+      // Salvar no relatório (saveAnalysisToReport faz UPDATE em clinical_reports
+      // E upsert em clinical_rationalities — falhas de RLS no UPDATE não devem
+      // mascarar a persistência estruturada)
+      try {
+        await rationalityAnalysisService.saveAnalysisToReport(
+          selectedReport.id,
+          rationality,
+          analysis,
+          selectedReport.patientId
+        )
+      } catch (saveErr) {
+        console.error('⚠️ Persistência parcial — análise gerada mas falhou ao salvar:', saveErr)
+        alert(
+          `Análise ${rationality} gerada com sucesso, mas houve um problema ao salvar permanentemente.\n` +
+          `Verifique permissões (RLS). A análise está disponível nesta sessão.`
+        )
+      }
 
       // Recarregar relatórios para atualizar a UI
       await loadSharedReports()
 
-      // Atualizar selectedReport com a nova análise
+      // Atualizar selectedReport com a nova análise (mesmo se save falhou parcialmente)
       const updatedRationalities = {
         ...(selectedReport.content?.rationalities || {}),
         [rationality === 'traditional_chinese' ? 'traditionalChinese' : rationality]: analysis
@@ -639,8 +649,18 @@ const ClinicalReports: React.FC<ClinicalReportsProps> = ({ className = '', onSha
           rationalities: updatedRationalities
         }
       })
+
+      // Scroll até o card de resultados para o usuário ver a análise gerada
+      setTimeout(() => {
+        document.getElementById('rationalities-results-card')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      }, 250)
     } catch (error) {
       console.error('Erro ao aplicar racionalidade:', error)
+      alert(
+        `Não foi possível gerar a análise ${rationality}.\n` +
+        `Detalhes: ${error instanceof Error ? error.message : 'erro desconhecido'}\n\n` +
+        `Verifique sua conexão e tente novamente.`
+      )
     } finally {
       setIsGeneratingAnalysis(false)
       setSelectedRationality(null)
