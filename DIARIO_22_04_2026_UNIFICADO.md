@@ -1223,3 +1223,91 @@ NOTIFICAÇÕES:                  120
 **🔐 Selo final do Bloco 9:** auditoria honesta concluída. Próxima sessão deve abrir pelos 3 críticos de segurança antes de qualquer feature nova.
 
 **Hash de auditoria:** `audit-22-04-2026-unbiased-supabase-snapshot`
+
+---
+
+## 🧩 BLOCO 10 — Diagnóstico de Regressão "Carolina vs João" + Bug Estado-Phantom de Racionalidades (23/04/2026)
+
+### Sintomas reportados pelo usuário
+1. **Relatório da paciente Carolina** abria no modal mostrando **apenas o markdown genérico** ("# Relatório Clínico... dor lombar..."), enquanto o relatório do paciente João renderizava a **estrutura AEC rica** (Queixa Principal, Lista Indiciária com 3 queixas, Desenvolvimento da Queixa, Perguntas Objetivas, Consenso ✅, Scores 100%, Avaliação).
+2. Botão **"Biomédica"** (e os outros 4 individuais) não respondiam ao clique. Todos apareciam **com check verde** ✅ como se já tivessem sido aplicados, mesmo sendo a primeira tentativa do usuário profissional.
+
+### Investigação (snapshots SQL no banco)
+
+**Comparação de schemas em `clinical_reports.content`:**
+
+| Relatório | `raw.content` (chaves AEC) | `content.rationalities` no BD |
+|-----------|---------------------------|-------------------------------|
+| João (`a2227b97...`) | 9 chaves: `queixa_principal`, `lista_indiciaria`, `desenvolvimento_queixa`, `perguntas_objetivas`, `historia_familiar`, `historia_patologica_pregressa`, `habitos_vida`, `consenso`, `identificacao` | `null` |
+| Carolina (`b7e5fe1d...`) | **1 chave apenas**: `patient_id` | `null` |
+
+**Snapshot AEC do paciente Carolina** (`aec_assessment_state.data`, atualizado às `03:07:32`, ou seja **18 minutos APÓS** a geração do relatório `02:49:39`):
+- `complaintList: ["Boa noite", "Antes quero uma avaliação", "Sim dormimdo pouco"]`
+- `complaintWorsening: "So isso"`, `complaintImprovements: "Ok obrigado por agora"`, `complaintAssociatedSymptoms: "Quando eu como muito"`
+- `consensusAgreed: true`, `consensusRevisions: 0`
+- `medicalHistory: ["Poderia finalizar o atendimento", "Gostei", "Não"]`
+
+**Tabela `clinical_rationalities`:** 3 linhas para Carolina, **todas do tipo `integrative`** (geradas em sessões anteriores via "Aplicar Todas"). **Nenhuma `biomedical`, `traditional_chinese`, `ayurvedic`, `homeopathic`** — confirmando que o usuário **NUNCA conseguiu disparar** as racionalidades individuais isoladamente.
+
+### Causa raiz #1 — Pipeline gerou relatório sem snapshot AEC
+O relatório da Carolina foi disparado **antes** do AEC ter dados completos (race condition na `last_update`). O pipeline empacotou apenas `{patient_id}` em `raw.content`. O renderer (que depende de `content.queixa_principal`, `content.lista_indiciaria`, etc.) caiu no fallback de "campos vazios" e mostrou só o `structured` (markdown narrativo gerado por GPT a partir de prompts genéricos, que inventou "dor lombar há 3 semanas" — **alucinação clínica perigosa**, não corresponde aos dados reais da paciente).
+
+### Causa raiz #2 — Default truthy em `rationalities` mascarando estado vazio
+Em `ClinicalReports.tsx` linha 400 (versão anterior):
+
+```ts
+rationalities: (content.rationalities as ...) || {
+  biomedical: {},          // 👈 objeto vazio é TRUTHY
+  traditionalChinese: {},  // 👈 todos os 5 viram "aplicados"
+  ayurvedic: {},
+  homeopathic: {},
+  integrative: {}
+}
+```
+
+E o botão (linha 1487) checava:
+```ts
+const hasAnalysis = selectedReport?.content.rationalities?.[key === 'traditional_chinese' ? 'traditionalChinese' : key]
+// → {} é truthy → hasAnalysis === true → botão entra no branch "scroll only"
+```
+
+**Consequência**: clicar em "Biomédica" jamais chamava `handleApplyRationality` — só fazia scroll para um card de resultados que tinha apenas a `integrative` antiga. O usuário ficava preso em um falso positivo visual permanente.
+
+### Causa raiz #3 — Falhas silenciosas em `saveAnalysisToReport`
+O `handleApplyRationality` original tinha um único `try/catch` envolvendo geração + persistência, e o `catch` apenas fazia `console.error`. Se o `UPDATE clinical_reports.content` falhasse por RLS (ou qualquer erro), o usuário não via nada — nem alerta, nem toast, nem indicação de progresso.
+
+### Correções aplicadas (`src/components/ClinicalReports.tsx`)
+
+**Fix #1 — Defaulting honesto de `rationalities`** (linha ~394):
+Removido o objeto pré-populado com chaves vazias. Agora o map filtra apenas chaves cujo `value.assessment` seja string não-vazia, garantindo que `hasAnalysis` seja `true` apenas quando há análise real persistida.
+
+**Fix #2 — Hidratação on-demand do `rawContent` no clique de "Revisar"** (linha ~1026):
+Quando o relatório não tem `queixa_principal`/`lista_indiciaria`/`desenvolvimento_queixa`, busca o snapshot mais recente em `aec_assessment_state` do mesmo `patient_id` e mapeia camelCase → snake_case (queixaPrincipal, lista_indiciaria, desenvolvimento_queixa, historia_familiar, habitos_vida, consenso). Marcado com `_hydrated_from_aec_state: true` para auditoria. Falha de hidratação não bloqueia abertura do modal.
+
+**Fix #3 — Endurecimento de `handleApplyRationality`**:
+- Try/catch separados para `generateAnalysis` (erro fatal de IA → alerta) e `saveAnalysisToReport` (erro de persistência → alerta de "persistência parcial" + análise mantida em sessão).
+- Scroll automático para o card de resultados após geração bem-sucedida.
+- Mensagem de erro inclui detalhes do `error.message` para debug rápido pelo usuário.
+
+### Validação
+- `npx tsc --noEmit` passou sem erros.
+- Lógica preserva retrocompatibilidade com relatórios antigos que tenham `content.rationalities` populado corretamente.
+
+### Lições para a Verdade Atômica
+1. **Defaulting com objetos vazios é um anti-padrão de UI** — qualquer check `if (obj.field)` vira `if ({})` que é sempre truthy. Use `null`/`undefined` ou checagem semântica explícita (`field?.assessment?.length > 0`).
+2. **Pipeline de relatório depende de race condition** — gerar relatório antes do snapshot AEC estar fechado produz output alucinado. **Próximo sprint deve adicionar guard**: bloquear `clinical_reports.insert` se `aec_assessment_state.phase !== 'COMPLETED'` para o mesmo paciente nas últimas 30 minutos.
+3. **Falhas silenciosas matam confiança** — todo `catch` em fluxo crítico precisa ter feedback ao usuário. `console.error` sozinho é invisível em produção mobile.
+4. **Hidratação por fallback é band-aid, não cura** — o fix da Carolina está mostrando dados reais agora, mas o relatório markdown salvo no BD ainda contém a alucinação ("dor lombar há 3 semanas"). **Próximo sprint deve ter botão "Regenerar relatório com snapshot atual"** que reescreve o `structured` consistentemente com o `raw.content` atualizado.
+
+### Pendências derivadas
+- [ ] **Guard de race condition** no pipeline de geração: aguardar `phase=COMPLETED` em `aec_assessment_state` antes de invocar GPT.
+- [ ] **Botão "Regenerar relatório"** no modal de revisão (admin/profissional).
+- [ ] **Migrar `alert()` para sistema de toast** (`useToast` já existe no projeto) — UX mais consistente.
+- [ ] **Auditar todos os defaults `|| { }` no codebase** com `grep -rn "|| {[[:space:]]*}" src/` — caçar mais bugs do mesmo padrão.
+- [ ] **Telemetria de "racionalidade aplicada com sucesso"** — quantas tentativas falham silenciosamente em produção?
+
+---
+
+**🔐 Selo final do Bloco 10:** dois bugs sutis identificados e corrigidos. O primeiro (default truthy) era um falso positivo visual de 100% dos usuários profissionais. O segundo (race condition de snapshot AEC) gerou alucinação clínica em produção — sintoma que pacientes podem ter visto e não reportado.
+
+**Hash:** `seal-23-04-2026-rationalities-phantom-state-aec-hydration`
