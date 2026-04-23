@@ -211,21 +211,32 @@ export const useMedCannLabConversation = (options?: {
         //   • Pedir "nova" → restart
         //   • Dizer "não quero continuar" / perguntar algo casual → V1.9.3 libera chat livre
         if (!hasShownWelcome) {
-          void clinicalAssessmentFlow
-            .ensureLoaded(user.id)
-            .then(() => {
-              const state = clinicalAssessmentFlow.getState(user.id)
-              if (state && state.phase !== 'INTERRUPTED' && state.phase !== 'COMPLETED') {
-                state.interruptedFromPhase = state.phase
-                state.phase = 'INTERRUPTED'
-                state.lastUpdate = new Date()
-                void clinicalAssessmentFlow.persist(user.id)
-                console.log('[AEC] Auto-pause: sessão migrada para INTERRUPTED no mount (fase original preservada em interruptedFromPhase)')
-              }
-            })
-            .finally(() => {
-              setHasShownWelcome(true)
-            })
+          // [V1.9.10] Auto-pause SOMENTE para role=paciente.
+          // Admin/profissional/aluno não têm AEC próprio — se rodar pra eles, o hook
+          // cria estado AEC fantasma que quebra simulação/teaching mode (admin acaba
+          // recebendo "sua avaliação foi pausada" em vez do TEACHING_PROMPT).
+          const userType = (user as any).type || (user as any).user_type
+          const isPatient = userType === 'paciente' || userType === 'patient'
+
+          if (isPatient) {
+            void clinicalAssessmentFlow
+              .ensureLoaded(user.id)
+              .then(() => {
+                const state = clinicalAssessmentFlow.getState(user.id)
+                if (state && state.phase !== 'INTERRUPTED' && state.phase !== 'COMPLETED') {
+                  state.interruptedFromPhase = state.phase
+                  state.phase = 'INTERRUPTED'
+                  state.lastUpdate = new Date()
+                  void clinicalAssessmentFlow.persist(user.id)
+                  console.log('[AEC] Auto-pause: sessão migrada para INTERRUPTED no mount (fase original preservada em interruptedFromPhase)')
+                }
+              })
+              .finally(() => {
+                setHasShownWelcome(true)
+              })
+          } else {
+            setHasShownWelcome(true)
+          }
         }
       } catch (error) {
         console.error('❌ Erro ao inicializar IA Residente:', error)

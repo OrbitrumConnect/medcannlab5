@@ -3282,8 +3282,13 @@ AGORA: Analise o contexto. Se pedir Sistema Renal/Urinário, atue como LÚCIA ou
 
         let isTeachingMode = currentIntent === 'ENSINO';
 
-        // Bloqueio de Ensino: Admins só entram em Ensino se pedirem explicitamente "simular" ou "treinar"
-        if (isAdmin && !/simular|treinar|caso clinico|teste/.test(norm)) {
+        // Bloqueio de Ensino: Admins só entram em Ensino se pedirem explicitamente.
+        // [V1.9.10] Regex expandida: "simular" não casava em "simulação" (forma
+        // substantiva que o frontend envia ao clicar no botão "Iniciar Simulação").
+        // Agora cobre: simula(r/ção/cao), treina(r/mento), caso clínico, teste,
+        // nivelamento, entrevista clínica — todas as formas que o AlunoDashboard
+        // e EnsinoDashboard disparam no sendInitialMessage.
+        if (isAdmin && !/\b(simula|treina|caso\s+cl[ií]nic|teste|nivelamento|entrevista\s+cl[ií]nica|paciente\s+simula)/i.test(norm)) {
             isTeachingMode = false
         }
 
