@@ -3747,6 +3747,19 @@ ${contentExcerpt || '(Texto não disponível para este documento. O conteúdo ai
 
         // Garantir que aiResponse sempre está definido (FORÇA CÓPIA PRIMITIVA PARA EVITAR MUTATION EM CONST NO BUNDLE)
         let aiResponse: string = String(completion?.choices?.[0]?.message?.content || '')
+
+        // 🔒 [AEC VERBATIM LOCK]: Soberania Absoluta do Roteiro do Dr. Ricardo.
+        // Se estamos em uma fase clínica travada e temos a pergunta oficial, descartamos a 'criatividade' da IA.
+        // Isso elimina frases inventadas como "Interessante", "Entendi" ou "Como posso ajudar?".
+        if (nextQuestionHint && aecVerbatimLock && !allowUrgentMultiQuestion) {
+            const isSocialGreeting = /^(oi|ola|olá|bom dia|boa tarde|boa noite|tudo bem|como vai)\s*[!.?]?$/i.test(normalizedMessage.trim());
+            // Se NÃO for uma saudação social (onde permitimos a Noa ser educada antes), forçamos o script.
+            if (!isSocialGreeting) {
+                console.log('[AEC] Roteiro Selado: Forçando frase literal do Dr. Ricardo.');
+                aiResponse = nextQuestionHint;
+            }
+        }
+
         let shouldTriggerScheduling = false; // Declarado aqui para garantir escopo limpo antes do processamento
 
         // Se não houver resposta válida, usar fallback
@@ -3772,16 +3785,19 @@ ${contentExcerpt || '(Texto não disponível para este documento. O conteúdo ai
         const isCurrentlyInAecFinalPhase = aiResponse?.includes('[FINALIZE_SESSION]') || aiResponse?.includes('Consentimento Informado') || aiResponse?.includes('Voce autoriza o registro')
         const isAecCompletedNow = aiResponse?.includes('[ASSESSMENT_COMPLETED]')
         
-        // 🔒 Estado Soberano: Gatilho de Agendamento Contextual (V1.5)
+        // 🔒 Estado Soberano: Gatilho de Agendamento Contextual (V1.8.2)
         // Bypass contextual: permite override se o paciente exigir agenda ('agendar', intent ADMIN) explicitamente.
         // Caso contrário, a máquina de estados não abre espaço para agendamento.
         const isUserForcingAction = (currentIntent === 'ADMIN' && (isCurrentlyInAecFinalPhase || hasScheduleVerb));
         const overrideAllowedContext = isUserForcingAction;
+        
+        // 🧬 [DYNAMIC LOCK]: Recalcular estado ativo usando a fase atualizada pelo ClinicalAssessmentFlow
+        const isAecStillActive = !!assessmentPhase && assessmentPhase !== 'COMPLETED' && assessmentPhase !== 'INTERRUPTED';
 
-        if (isAecActive && !overrideAllowedContext) {
+        if (isAecStillActive && !overrideAllowedContext) {
             shouldTriggerScheduling = false;
             shouldTriggerSchedulingWidget = false;
-            console.log('⏳ [AEC GATE V1.5] Agendamento retido: Fluxo clínico ativo tem soberania.');
+            console.log(`⏳ [AEC GATE V1.5] Agendamento retido: Fluxo clínico ativo (${assessmentPhase}) tem soberania.`);
         }
 
         if (aiResponse?.includes(TRIGGER_SCHEDULING_TOKEN) && (!isAecActive || overrideAllowedContext)) {
