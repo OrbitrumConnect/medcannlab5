@@ -3171,11 +3171,6 @@ const NoaConversationalInterface = React.forwardRef<
                         desenvolvida com propósito humanitário, treinada para
                         respeitar sua forma de trabalhar e aprender apenas com
                         os conceitos que você escolhe ensinar.
-                        {"\n\n"}
-                        Como posso te ajudar agora?
-                        {"\n"}• Iniciar uma avaliação clínica IMRE triaxial
-                        {"\n"}• Estudar um caso com você{"\n"}• Revisar
-                        relatórios e prontuário
                       </p>
                       <span className="block text-[10px] mt-2 text-slate-400">
                         {new Date().toLocaleTimeString("pt-BR", {

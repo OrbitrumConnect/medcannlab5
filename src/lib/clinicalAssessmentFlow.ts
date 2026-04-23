@@ -1028,6 +1028,28 @@ export class ClinicalAssessmentFlow {
           }
         }
 
+        // [V1.9.2] Recusa explícita — paciente NÃO quer nem continuar nem iniciar nova.
+        // Sem este tratamento, o verbatim lock da V1.8.9 prende o paciente em loop
+        // com a frase "Sua avaliação foi pausada..." independentemente do que escreva.
+        // Ao detectar recusa, o state local é limpo (dados ficam no BD preservados;
+        // podem ser retomados com "retomar avaliação" depois) e o chat fica livre.
+        const isRefusing =
+          /\b(n[aã]o)\s+(quero|queria|vou|vamos|preciso|posso)\b/.test(norm) ||
+          /\b(n[aã]o)\s+(continuar|conversar|falar|fazer|avaliar|retomar)\b/.test(norm) ||
+          /\b(deixa\s+(pra|para)\s+l[aá]|outra\s+hora|depois\s+conversamos|esquece|por\s+agora\s+n[aã]o|agora\s+n[aã]o)\b/.test(norm) ||
+          /\b(vamos\s+(s[oó]|somente|apenas)\s+conversar|vamos\s+conversar\s+apenas|quero\s+(s[oó]|somente|apenas)\s+conversar)\b/.test(norm)
+
+        if (isRefusing) {
+          this.states.delete(userId)
+          void supabase.from('aec_assessment_state').delete().eq('user_id', userId)
+          return {
+            nextQuestion:
+              'Tudo bem, podemos conversar. Se quiser retomar sua avaliação depois, basta me pedir "retomar avaliação".',
+            phase: 'COMPLETED',
+            isComplete: true
+          }
+        }
+
         return {
           nextQuestion:
             'Sua avaliação foi pausada. Gostaria de **continuar** de onde paramos ou prefere iniciar uma **nova** avaliação do zero?',
