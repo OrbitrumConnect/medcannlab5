@@ -2873,13 +2873,29 @@ REGRAS DE OURO (violação = falha grave do protocolo):
             }
         }
 
-        // 🆕 [V1.9.8 — USER CONTEXT FACTUAL]
+        // 🆕 [V1.9.8 — USER CONTEXT FACTUAL] + [V1.9.9 — PHASE GATE]
         // Quando o cliente envia userContext (role=paciente, via buildPatientContext),
         // injeta dados concretos (dias no app, avaliações, próxima consulta, trial)
         // para a Nôa responder factualmente em vez de dizer "não tenho acesso".
-        // Zero impacto em fluxo AEC — é só contexto adicional; se ausente, comportamento
-        // idêntico ao anterior.
-        if (userContext && typeof userContext === 'object' && (userContext as any).role === 'paciente') {
+        //
+        // [V1.9.9] Gate por fase: contexto operacional só é injetado em fases
+        // NÃO-CLÍNICAS. Durante COMPLAINT_DETAILS / CONSENSUS_REVIEW / etc. o prompt
+        // deve permanecer 100% focado no protocolo AEC — misturar dados operacionais
+        // pode induzir drift clínico sutil que a regra textual "NÃO substitui AEC"
+        // não consegue garantir com 100% de confiabilidade.
+        const OPERATIONAL_CONTEXT_PHASES = new Set([
+            'INITIAL_GREETING',
+            'INTERRUPTED',
+            'COMPLETED',
+            'FINAL_RECOMMENDATION'
+        ])
+        const phaseAllowsOperationalContext =
+            !assessmentPhase || OPERATIONAL_CONTEXT_PHASES.has(assessmentPhase as string)
+
+        if (
+            phaseAllowsOperationalContext &&
+            userContext && typeof userContext === 'object' && (userContext as any).role === 'paciente'
+        ) {
             try {
                 const uc = userContext as any
                 const lines: string[] = []
@@ -2918,14 +2934,15 @@ REGRAS DE OURO (violação = falha grave do protocolo):
                 if (lines.length > 0) {
                     phaseInstruction = phaseInstruction + `
 
-📊 CONTEXTO DO PACIENTE (dados factuais da plataforma, autorizados via RLS):
+📊 CONTEXTO OPERACIONAL DO PACIENTE (NÃO-CLÍNICO — NÃO USAR PARA INFERÊNCIA MÉDICA):
 ${lines.join('\n')}
 
 INSTRUÇÃO DE USO (NÃO NEGOCIÁVEL):
 1. Se o paciente perguntar sobre qualquer dado acima (dias no app, avaliações, próxima consulta, trial), responda DIRETAMENTE com base nesta lista.
 2. NÃO diga "não tenho acesso" para esses campos — eles estão aqui.
 3. Para dados AUSENTES desta lista (ex.: médico online em tempo real, pagamentos/faturas, dados de outro paciente), admita honestamente: "não consigo verificar isso agora" ou oriente a navegar até a seção correspondente.
-4. Este contexto NÃO substitui o protocolo AEC — se houver avaliação em andamento (INTERRUPTED), as regras da fase clínica continuam prevalecendo.
+4. NÃO invente valores. Se um campo não está acima, ele NÃO existe neste contexto — jamais estime, aproxime ou deduza números.
+5. Estes são dados ADMINISTRATIVOS/OPERACIONAIS. NÃO misture com raciocínio clínico. Eles NÃO substituem o protocolo AEC nem orientam diagnósticos.
 `
                 }
             } catch (ucErr) {
