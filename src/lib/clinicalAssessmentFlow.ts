@@ -144,9 +144,10 @@ export class ClinicalAssessmentFlow {
     // 2. Filtro de Intenção Semântica para Fases Descritivas
     const isDescriptivePhase = ['COMPLAINT_DETAILS', 'MAIN_COMPLAINT', 'MEDICAL_HISTORY', 'LIFESTYLE_HABITS', 'OBJECTIVE_QUESTIONS', 'FAMILY_HISTORY_MOTHER', 'FAMILY_HISTORY_FATHER', 'COMPLAINT_LIST'].includes(phase)
     const isMicroPhrase = normalized.length < 20
+    const isSocial = this.isSocialGreeting(normalized)
     const hasSemanticFlag = /sim|n[ãa]o|ok|isso|apenas|s[oó]|nada|nenhum|tudo bem|tudo ok|dor|d[óo]i|ard|inch|sang|latej|ruim/i.test(normalized)
 
-    if (isDescriptivePhase && isMicroPhrase && !hasSemanticFlag) {
+    if (isDescriptivePhase && isMicroPhrase && !hasSemanticFlag && !isSocial) {
         console.log(`[AEC FSM] Input rejeitado (Micro-frase sem relevância clínica na fase ${phase}):`, normalized)
         return false // rejeitado
     }
@@ -244,6 +245,13 @@ export class ClinicalAssessmentFlow {
     // Frustracao + fecho ("ja falei ... mais nada") -- nao empurrar como mais um item de lista
     if (/\b(já|ja)\s+falei\b/.test(t) && (/\bmais\s+nada\b/.test(t) || /\bnada\b/.test(t))) return true
     return false
+  }
+
+  /** [V1.8.5] Detecta saudações sociais para evitar poluição ontológica na ficha clínica */
+  private isSocialGreeting(raw: string): boolean {
+    const t = (raw || '').toLowerCase().trim().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    if (!t) return false
+    return /^(oi|ola|olá|tudo bem|bom dia|boa tarde|boa noite|como vai)(\s+(noa|nôa))?\s*[!.?]?$/i.test(t)
   }
 
   public async persist(userId?: string) {
@@ -412,6 +420,26 @@ export class ClinicalAssessmentFlow {
     const userTurn =
       stripPlatformInjectionNoise(userResponse).trim() || userResponse.trim()
     const lowerResponse = userTurn.toLowerCase().trim()
+
+    // 🛡️ [SOCIAL GUARD V1.8.5/6]: Se for apenas saudação e tivermos AEC pendente, oferecer restauração ou continuidade.
+    if (this.isSocialGreeting(userTurn)) {
+      if (state.phase !== 'INITIAL_GREETING' && state.phase !== 'IDENTIFICATION' && state.phase !== 'COMPLETED') {
+        state.interruptedFromPhase = state.phase
+        state.phase = 'INTERRUPTED'
+        state.lastUpdate = new Date()
+        this.persist()
+        return {
+          nextQuestion: 'Olá! Vejo que você tem uma avaliação clínica em andamento. Gostaria de **continuar** de onde paramos ou prefere iniciar uma **nova** do zero?',
+          phase: 'INTERRUPTED',
+          isComplete: false,
+        }
+      }
+      return {
+        nextQuestion: this.getPhaseResumePrompt(state.phase, state),
+        phase: state.phase,
+        isComplete: false,
+      }
+    }
 
     // [V1.8.4] Controle de Iteracao: se mudou de fase OU de questao, reseta o contador
     if (state.phase !== oldPhase || state.currentQuestionIndex !== oldQuestionIndex) {
@@ -922,27 +950,38 @@ export class ClinicalAssessmentFlow {
 
       case 'INTERRUPTED': {
         const norm = lowerResponse.normalize('NFD').replace(/[\u0300-\u036f]/g, '')
-        if (
-          (/\bretom(ar|e)\b/.test(norm) && norm.includes('avaliac')) ||
-          /\bcontinuar\s+(a\s+)?avaliac/.test(norm) ||
-          /\bvoltar\s+(a\s+)?avaliac/.test(norm) ||
-          /\biniciar\s+(uma\s+)?(nova\s+)?avaliac/.test(norm) ||
-          /\bfazer\s+(uma\s+)?(nova\s+)?avaliac/.test(norm) ||
-          /\bcomecar\s+(uma\s+)?(nova\s+)?avaliac/.test(norm)
-        ) {
+        const isContinuing = /\b(continuar|retomar|voltar|segue|prosseguir)\b/i.test(norm)
+        const isStartingNew = /\b(nova|recomecar|reiniciar|zerar|do zero)\b/i.test(norm)
+
+        if (isContinuing) {
           const resumed = this.resumeAssessment(userId)
           if (resumed) {
             void this.persist(userId)
             return {
-              nextQuestion: resumed.nextQuestion,
+              nextQuestion: '✅ Retomando: ' + resumed.nextQuestion,
               phase: resumed.phase,
               isComplete: false
             }
           }
         }
+
+        if (isStartingNew) {
+          const savedName = state.data.patientName
+          const savedDoc = state.data.aecTargetPhysicianDisplayName
+          this.resetAssessment(userId)
+          this.startAssessment(userId, savedName, savedDoc)
+          void this.persist(userId)
+          const fresh = this.states.get(userId)!
+          return {
+            nextQuestion: '✨ Iniciando nova avaliação. ' + this.standardAecOpeningPhrase(fresh),
+            phase: fresh.phase,
+            isComplete: false
+          }
+        }
+
         return {
           nextQuestion:
-            'Sua avaliação foi pausada e os dados foram guardados. Diga **retomar avaliação** para continuar, ou **nova avaliação** para recomeçar do zero. O relatório formal na plataforma é gerado quando o fluxo chega ao consentimento e ├á mensagem final com encerramento.',
+            'Sua avaliação foi pausada. Gostaria de **continuar** de onde paramos ou prefere iniciar uma **nova** avaliação do zero?',
           phase: 'INTERRUPTED',
           isComplete: false
         }
