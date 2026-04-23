@@ -143,7 +143,7 @@ export class ClinicalAssessmentFlow {
     // 2. Filtro de Intenção Semântica para Fases Descritivas
     const isDescriptivePhase = ['COMPLAINT_DETAILS', 'MAIN_COMPLAINT', 'MEDICAL_HISTORY', 'LIFESTYLE_HABITS', 'OBJECTIVE_QUESTIONS', 'FAMILY_HISTORY_MOTHER', 'FAMILY_HISTORY_FATHER', 'COMPLAINT_LIST'].includes(phase)
     const isMicroPhrase = normalized.length < 20
-    const hasSemanticFlag = /sim|n[ãa]o|ok|isso|apenas isso|dor|d[óo]i|ard|inch|sang|latej|ruim/i.test(normalized)
+    const hasSemanticFlag = /sim|n[ãa]o|ok|isso|apenas|s[oó]|nada|nenhum|tudo bem|tudo ok|dor|d[óo]i|ard|inch|sang|latej|ruim/i.test(normalized)
 
     if (isDescriptivePhase && isMicroPhrase && !hasSemanticFlag) {
         console.log(`[AEC FSM] Input rejeitado (Micro-frase sem relevância clínica na fase ${phase}):`, normalized)
@@ -602,15 +602,22 @@ export class ClinicalAssessmentFlow {
         }
 
       case 'IDENTIFICATION':
-        if (this.looksLikeRedundantPresentation(userTurn, state.data.patientPresentation)) {
+        // 🛡️ [GREETING GUARD]: Se a mensagem do usuário for puramente social/saudação, NÃO tratar como sintoma.
+        const msgNorm = lowerResponse.normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+        const isPureGreeting = /^(oi|ola|olá|tudo bem|bom dia|boa tarde|boa noite|como vai)\s*[!.?]?$/i.test(msgNorm.trim())
+        const isRedundantIntro = this.looksLikeRedundantPresentation(userTurn, state.data.patientPresentation)
+
+        // Se o usuário está repetindo o nome ("sou pedro") ou apenas cumprimentando, não avançar para COMPLAINT_LIST ainda.
+        if (isPureGreeting || isRedundantIntro) {
           state.lastUpdate = new Date()
           return {
-            nextQuestion: 'O que trouxe voce a nossa avaliacao hoje?',
+            nextQuestion: 'O que trouxe você à nossa avaliação hoje?',
             phase: 'IDENTIFICATION',
             isComplete: false
           }
         }
-        // Primeira queixa adicionada a lista
+
+        // Se chegou aqui, a mensagem NÃO é uma apresentação/saudação, então é a primeira queixa!
         if (userTurn.trim()) {
           state.data.complaintList.push(userTurn.trim())
         }

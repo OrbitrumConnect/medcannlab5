@@ -1257,11 +1257,22 @@ Deno.serve(async (req: Request) => {
         // 📥 [HOSPITAL-GRADE] INGESTÃO E SEPARAÇÃO ONTOLÓGICA (V1.6.2)
         const body = await req.json()
         
-        // 🧪 Legacy Bridge: Se receber formato antigo, estrair a verdade humana
+        // 🛡️ [ECCHO SHIELD] Deduplicação por Mensagem + User (Previne Triple Trigger)
         const rawInputMessage = body.message || ''
+        const idempotencyUserId = body.context?.patient_id || body.patient_id || jwtUserId || 'anon'
+        const idempotencyKey = `msg_${idempotencyUserId}_${rawInputMessage.substring(0, 50).replace(/\s+/g, '_')}`
+        
+        const now = Date.now()
+        const cached = requestCache.get(idempotencyKey)
+        if (cached && (now - cached.timestamp) < 2000) {
+            console.log(`⚠️ [ECCHO SHIELD] Ignorando trigger redundante para ${idempotencyKey}`)
+            return new Response(JSON.stringify(cached.response), {
+                headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+            })
+        }
+        
         const cleanHumanMessage = stripInjectedContext(rawInputMessage).trim()
         const injectedContext = body.injected_context || body.context?.rag || null
-        // 🏥 [VERDADE CLÍNICA]: 'message' é agora o alias soberano para o restante do sistema
         const message = cleanHumanMessage 
         
         if (rawInputMessage.includes('[CONTEXTO')) {
@@ -1297,13 +1308,11 @@ Deno.serve(async (req: Request) => {
         const effectiveUserId = jwtUserIdFromToken || patientData?.user?.id
 
         // 🧬 [TITAN 5.2.1] GATILHO MASTER CONSCIENTE (Pipeline Auditável)
+        // O gatilho de finalização agora é soberano e não se baseia em "ecos" do próximo passo (nextQuestionHint)
+        // que o frontend pode enviar de volta. Baseia-se apenas no comando direto ou tags no corpo da mensagem.
         const isFinalizeRequest = action === 'finalize_assessment' || 
                                  message.includes('[ASSESSMENT_COMPLETED]') || 
-                                 message.includes('[ASSESSMENT_FINALIZED]') ||
-                                 (body.nextQuestionHint && typeof body.nextQuestionHint === 'string' && (
-                                     body.nextQuestionHint.includes('[ASSESSMENT_COMPLETED]') ||
-                                     body.nextQuestionHint.includes('[ASSESSMENT_FINALIZED]')
-                                 ));
+                                 message.includes('[ASSESSMENT_FINALIZED]');
 
         if (isFinalizeRequest) {
             console.log('🚀 [GATEWAY] Disparando Orquestrador de Finalização ClinicalMaster (Mode: Active)...');
@@ -2589,8 +2598,8 @@ Responda SOMENTE com o JSON válido, sem markdown.`
 
         console.log('📥 [REQUEST]', {
             messageLength: message?.length || 0,
-            userId: patientData?.user?.id?.substring(0, 8) || 'unknown',
-            intent: patientData?.intent || 'none',
+            userId: String(effectiveUserId || 'unknown').substring(0, 8),
+            intent: currentIntent || 'none',
             assessmentPhase: assessmentPhase || 'none',
             hasNextQuestion: !!nextQuestionHint,
             historyLength: conversationHistory?.length || 0
@@ -4183,24 +4192,35 @@ ${contentExcerpt || '(Texto não disponível para este documento. O conteúdo ai
 
         // 9. Retorno da Resposta (texto sem triggers GPT; token [TRIGGER_ACTION] só se houver app_commands)
         const finalText = textWithActionToken(textForUser, app_commands)
-        return new Response(
-            JSON.stringify({
-                text: finalText,
-                metadata: {
-                    audited: true,
-                    intent: currentIntent,
-                    professionalId: detectedProfessionalId,
-                    trigger_scheduling: shouldTriggerScheduling,
-                    system: "TradeVision Core V2",
-                    timestamp: new Date().toISOString(),
-                    role: userRole, // Governança por perfil (PROTOCOLO / PLANO_MESTRE)
-                    model: completion.model || 'unknown',
-                    offline: completion.model === 'TradeVision-Core-Deterministic',
-                    command_count: app_commands.length,
-                    raw_triggers_count: fromGPT.length
-                },
-                app_commands
-            }),
+        const finalResponsePayload = {
+            text: finalText,
+            metadata: {
+                audited: true,
+                intent: currentIntent,
+                assessmentPhase: assessmentPhase,
+                nextQuestionHint: nextQuestionHint,
+                professionalId: detectedProfessionalId,
+                trigger_scheduling: shouldTriggerScheduling,
+                system: "TradeVision Core V2.1 (Sync)",
+                timestamp: new Date().toISOString(),
+                role: userRole,
+                model: completion.model || 'unknown',
+                offline: completion.model === 'TradeVision-Core-Deterministic',
+                command_count: app_commands.length,
+                raw_triggers_count: fromGPT.length
+            },
+            app_commands
+        }
+
+        // 🛡️ [ECCHO SHIELD] Registrar no cache ANTES de retornar
+        if (typeof idempotencyKey !== 'undefined') {
+            requestCache.set(idempotencyKey, {
+                timestamp: Date.now(),
+                response: finalResponsePayload
+            })
+        }
+
+        return new Response(JSON.stringify(finalResponsePayload),
             { headers: { ...getCorsHeaders(req.headers.get('Origin')), 'Content-Type': 'application/json' } }
         )
 
