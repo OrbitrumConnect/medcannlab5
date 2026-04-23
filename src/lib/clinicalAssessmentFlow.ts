@@ -459,7 +459,7 @@ export class ClinicalAssessmentFlow {
         state.lastUpdate = new Date()
         this.persist()
         return {
-          nextQuestion: 'Olá! Vejo que você tem uma avaliação clínica em andamento. Gostaria de **continuar** de onde paramos ou prefere iniciar uma **nova** do zero?',
+          nextQuestion: 'Olá! Vejo que você tem uma avaliação clínica em andamento. Gostaria de **continuar** de onde paramos, iniciar uma **nova** do zero, ou **apenas conversar** por agora?',
           phase: 'INTERRUPTED',
           isComplete: false,
         }
@@ -1006,7 +1006,11 @@ export class ClinicalAssessmentFlow {
           /\b(n[aã]o)\s+(quero|queria|vou|vamos|preciso|posso|desejo|pretendo)\b/.test(norm) ||
           /\b(n[aã]o)\s+(continuar|conversar|falar|fazer|avaliar|retomar|seguir|prosseguir|voltar)\b/.test(norm) ||
           /\b(deixa\s+(pra|para)\s+l[aá]|outra\s+hora|depois\s+conversamos|esquece|por\s+agora\s+n[aã]o|agora\s+n[aã]o|mais\s+tarde)\b/.test(norm) ||
-          /\b(vamos\s+(s[oó]|somente|apenas)\s+conversar|vamos\s+conversar\s+apenas|quero\s+(s[oó]|somente|apenas)\s+conversar)\b/.test(norm)
+          /\b(vamos\s+(s[oó]|somente|apenas)\s+conversar|vamos\s+conversar\s+apenas|quero\s+(s[oó]|somente|apenas)\s+conversar)\b/.test(norm) ||
+          // [V1.9.6] Respostas curtas diretas ao prompt "ou apenas conversar": aceita "apenas conversar",
+          // "so conversar", "somente conversar", "conversar apenas" e apenas "conversar" como resposta única.
+          /^(s[oó]|somente|apenas)?\s*conversar(\s+(apenas|s[oó]|somente|por\s+agora))?\s*[!.?]?$/.test(norm) ||
+          /^(apenas|s[oó]|somente)\s+conversar\s*[!.?]?$/.test(norm)
 
         if (isRefusing) {
           this.states.delete(userId)
@@ -1050,7 +1054,7 @@ export class ClinicalAssessmentFlow {
 
         return {
           nextQuestion:
-            'Sua avaliação foi pausada. Gostaria de **continuar** de onde paramos ou prefere iniciar uma **nova** avaliação do zero?',
+            'Sua avaliação foi pausada. Gostaria de **continuar** de onde paramos, iniciar uma **nova** avaliação do zero, ou **apenas conversar** por agora?',
           phase: 'INTERRUPTED',
           isComplete: false
         }

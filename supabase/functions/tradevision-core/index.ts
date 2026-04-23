@@ -2769,7 +2769,7 @@ Responda SOMENTE com o JSON válido, sem markdown.`
                 }
                 case 'INTERRUPTED': {
                     // [V1.8.8] Fallback: se a FSM não enviou hint explícito, oferece a decisão binária canônica.
-                    nextQuestionHint = 'Olá! Vejo que você tem uma avaliação clínica em andamento. Gostaria de continuar de onde paramos ou prefere iniciar uma nova do zero?'
+                    nextQuestionHint = 'Olá! Vejo que você tem uma avaliação clínica em andamento. Gostaria de continuar de onde paramos, iniciar uma nova do zero, ou apenas conversar por agora?'
                     break
                 }
                 default:
