@@ -390,11 +390,11 @@ export class ClinicalAssessmentFlow {
     const norm = t.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
     if (/(me chamo|sou (o|a)\s|meu nome|chamo-me|eu sou)\b/.test(norm)) return true
     if (/\b[a-zááãâéêíóôõúç]{2,22}\s+aqui\b/.test(norm)) return true
-    if (
-      /^[a-zááãâéêíóôõúç]{2,22}$/i.test(t) &&
-      !/^(sim|nao|não|ok|ta|tá|oi|ola|olá)$/i.test(t)
-    )
-      return true
+    // [V1.8.11] REMOVIDO: regra que marcava qualquer palavra curta isolada como
+    // redundant causava loop em IDENTIFICATION — paciente respondia "Carolina" e
+    // Noa ficava repetindo "Apresente-se..." sem nunca avançar para COMPLAINT_LIST.
+    // O check por match com patientName conhecido (abaixo) já cobre o caso real
+    // de eco do nome; nome isolado desconhecido deve passar e ser tratado pela FSM.
     const kn = knownPresentation?.trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
     if (kn && kn.length >= 2) {
       const tn = norm

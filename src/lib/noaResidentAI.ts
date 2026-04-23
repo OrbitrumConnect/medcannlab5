@@ -1718,10 +1718,15 @@ export class NoaResidentAI {
       if (platformData?.user?.id) {
         try {
           const aecStateForHistory = clinicalAssessmentFlow.getState(platformData.user.id)
+          // [V1.8.11] Filtro de sessão aplica-se também em INTERRUPTED:
+          // a sessão ainda é a mesma logicamente (dados preservados, aguardando retomada),
+          // e sem filtro o histórico vaza sintomas de sessões antigas ("insônia",
+          // "dor de dente") contaminando as próximas respostas do GPT.
+          // Apenas COMPLETED libera o filtro, pois sessão concluída não deve referenciar
+          // dados anteriores ao próximo ASSESSMENT_START.
           const aecActiveForHistory =
             !!aecStateForHistory &&
-            aecStateForHistory.phase !== 'COMPLETED' &&
-            aecStateForHistory.phase !== 'INTERRUPTED'
+            aecStateForHistory.phase !== 'COMPLETED'
           const sessionStartIso = aecActiveForHistory && aecStateForHistory?.startedAt
             ? new Date(aecStateForHistory.startedAt).toISOString()
             : null
@@ -1767,7 +1772,10 @@ export class NoaResidentAI {
       let aecSnapshot: Record<string, any> | null = null
       if (platformData?.user?.id) {
         const liveState = clinicalAssessmentFlow.getState(platformData.user.id)
-        if (liveState && liveState.phase !== 'COMPLETED' && liveState.phase !== 'INTERRUPTED') {
+        // [V1.8.11] Snapshot também em INTERRUPTED: a sessão está pausada mas os dados
+        // relatados até aqui são a única fonte legítima de sintomas. Sem isso, o GPT
+        // inventa ("insônia", "dor de dente") quando a paciente volta e pergunta algo.
+        if (liveState && liveState.phase !== 'COMPLETED') {
           const d: any = liveState.data || {}
           // Lista de tudo que o paciente JÁ relatou nesta sessão.
           // Usado pelo Core para bloquear introdução de sintomas alheios.
