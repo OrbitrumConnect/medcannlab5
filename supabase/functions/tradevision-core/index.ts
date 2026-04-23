@@ -1249,6 +1249,9 @@ Deno.serve(async (req: Request) => {
         const cleanHumanMessage = stripInjectedContext(rawInputMessage).trim()
         const injectedContext = rawBody.injected_context || rawBody.context?.rag || null
         
+        // 🏥 [VERDADE CLÍNICA]: 'message' é agora o alias soberano para o restante do sistema
+        const message = cleanHumanMessage 
+        
         if (rawInputMessage.includes('[CONTEXTO')) {
              console.log('⚠️ [LEGACY_INGESTION] Detectado payload contaminado. Aplicando ponte de sanitização.')
         }
@@ -1591,6 +1594,7 @@ Deno.serve(async (req: Request) => {
         }
 
         // STATE-FIRST: Identificar se estamos em um fluxo prioritário (AEC Ativo)
+        // [V1.6.2] Centralizado: Evitar SyntaxError por redeclaração no bundle
         const isAecActive = !!assessmentPhase && assessmentPhase !== 'COMPLETED' && assessmentPhase !== 'INTERRUPTED';
 
 
