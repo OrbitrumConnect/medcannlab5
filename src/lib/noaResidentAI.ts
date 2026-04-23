@@ -4,6 +4,7 @@ import { KnowledgeBaseIntegration } from '../services/knowledgeBaseIntegration'
 import { getNoaAssistantIntegration } from './noaAssistantIntegration'
 import { getPlatformFunctionsModule } from './platformFunctionsModule'
 import { clinicalAssessmentFlow, stripPlatformInjectionNoise } from './clinicalAssessmentFlow'
+import { buildPatientContext } from './buildPatientContext'
 // Remocao da injecao manual para uso de File Search no Assistant API
 import MedCannLabAuditLogger from './MedCannLabAuditLogger'
 import { META_TAGS, stripClinicalTags } from '../constants/metaTags'
@@ -1812,6 +1813,18 @@ export class NoaResidentAI {
           ? rawUser
           : { ...rawUser, type: 'paciente', user_type: 'paciente' })
 
+      // [V1.9.8] Contexto factual do paciente (role=paciente) — fail-open, RLS-safe.
+      // Permite que a Nôa responda "quantos dias no app", "próxima consulta", etc.
+      // Se a query falhar ou o user não for paciente, patientContext = null e o Core
+      // responde como antes (sem enrichment).
+      let patientContext: Awaited<ReturnType<typeof buildPatientContext>> = null
+      const isPatientRole =
+        (rawUser?.type === 'paciente' || rawUser?.type === 'patient') ||
+        (rawUser?.user_type === 'paciente' || rawUser?.user_type === 'patient')
+      if (platformData?.user?.id && isPatientRole) {
+        patientContext = await buildPatientContext(platformData.user.id)
+      }
+
       const payload = {
         message: userMessage,
         injected_context: injectedContext, // 🧪 [HOSPITAL-GRADE] O RAG viaja aqui, nunca na message.
@@ -1819,6 +1832,7 @@ export class NoaResidentAI {
         assessmentPhase: currentPhase,
         nextQuestionHint,
         aecSnapshot, // 🆕 Bloco 11 — fonte única da verdade da sessão AEC
+        userContext: patientContext, // [V1.9.8] dados factuais role=paciente (ou null)
         ui_context: uiContext,
         patientData: {
           ...platformData,

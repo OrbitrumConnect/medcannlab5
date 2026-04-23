@@ -1319,6 +1319,7 @@ Deno.serve(async (req: Request) => {
             assessmentPhase: assessmentPhaseFromBody,
             nextQuestionHint: nextQuestionHintFromBody,
             aecSnapshot, // 🆕 [BLOCO 11] Snapshot vivo do ClinicalAssessmentFlow (SSoT)
+            userContext, // 🆕 [V1.9.8] Contexto factual do paciente (dias, avaliações, próx. consulta, trial)
             action,
             assessmentData,
             appointmentData,
@@ -2869,6 +2870,66 @@ REGRAS DE OURO (violação = falha grave do protocolo):
 `
             } catch (snapErr) {
                 console.warn('[AEC SSOT] Falha ao montar bloco SSoT:', snapErr)
+            }
+        }
+
+        // 🆕 [V1.9.8 — USER CONTEXT FACTUAL]
+        // Quando o cliente envia userContext (role=paciente, via buildPatientContext),
+        // injeta dados concretos (dias no app, avaliações, próxima consulta, trial)
+        // para a Nôa responder factualmente em vez de dizer "não tenho acesso".
+        // Zero impacto em fluxo AEC — é só contexto adicional; se ausente, comportamento
+        // idêntico ao anterior.
+        if (userContext && typeof userContext === 'object' && (userContext as any).role === 'paciente') {
+            try {
+                const uc = userContext as any
+                const lines: string[] = []
+                if (typeof uc.daysOnPlatform === 'number') {
+                    lines.push(`• Dias na plataforma MedCannLab: ${uc.daysOnPlatform}`)
+                }
+                if (typeof uc.assessmentsCount === 'number') {
+                    lines.push(`• Avaliações clínicas realizadas: ${uc.assessmentsCount}`)
+                }
+                if (uc.lastAssessmentAt) {
+                    const d = new Date(uc.lastAssessmentAt)
+                    if (!isNaN(d.getTime())) {
+                        lines.push(`• Última avaliação: ${d.toLocaleDateString('pt-BR')}`)
+                    }
+                }
+                if (uc.nextAppointment?.date) {
+                    const d = new Date(uc.nextAppointment.date)
+                    if (!isNaN(d.getTime())) {
+                        const dateStr = d.toLocaleDateString('pt-BR')
+                        const timeStr = d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
+                        const doc = uc.nextAppointment.doctorName ? ` com ${uc.nextAppointment.doctorName}` : ''
+                        const status = uc.nextAppointment.status ? ` (status: ${uc.nextAppointment.status})` : ''
+                        lines.push(`• Próxima consulta: ${dateStr} às ${timeStr}${doc}${status}`)
+                    }
+                } else {
+                    lines.push(`• Próxima consulta: nenhuma agendada`)
+                }
+                if (uc.trial && uc.trial.endsAt) {
+                    if (uc.trial.active) {
+                        lines.push(`• Período de trial ATIVO — termina em ${new Date(uc.trial.endsAt).toLocaleDateString('pt-BR')} (${uc.trial.daysLeft} dias restantes)`)
+                    } else {
+                        lines.push(`• Período de trial encerrado`)
+                    }
+                }
+
+                if (lines.length > 0) {
+                    phaseInstruction = phaseInstruction + `
+
+📊 CONTEXTO DO PACIENTE (dados factuais da plataforma, autorizados via RLS):
+${lines.join('\n')}
+
+INSTRUÇÃO DE USO (NÃO NEGOCIÁVEL):
+1. Se o paciente perguntar sobre qualquer dado acima (dias no app, avaliações, próxima consulta, trial), responda DIRETAMENTE com base nesta lista.
+2. NÃO diga "não tenho acesso" para esses campos — eles estão aqui.
+3. Para dados AUSENTES desta lista (ex.: médico online em tempo real, pagamentos/faturas, dados de outro paciente), admita honestamente: "não consigo verificar isso agora" ou oriente a navegar até a seção correspondente.
+4. Este contexto NÃO substitui o protocolo AEC — se houver avaliação em andamento (INTERRUPTED), as regras da fase clínica continuam prevalecendo.
+`
+                }
+            } catch (ucErr) {
+                console.warn('[USER CONTEXT] Falha ao montar bloco de contexto:', ucErr)
             }
         }
 
