@@ -3748,14 +3748,15 @@ ${contentExcerpt || '(Texto não disponível para este documento. O conteúdo ai
         // Garantir que aiResponse sempre está definido (FORÇA CÓPIA PRIMITIVA PARA EVITAR MUTATION EM CONST NO BUNDLE)
         let aiResponse: string = String(completion?.choices?.[0]?.message?.content || '')
 
-        // 🔒 [AEC VERBATIM LOCK]: Soberania Absoluta do Roteiro do Dr. Ricardo.
-        // Se estamos em uma fase clínica travada e temos a pergunta oficial, descartamos a 'criatividade' da IA.
-        // Isso elimina frases inventadas como "Interessante", "Entendi" ou "Como posso ajudar?".
-        if (nextQuestionHint && aecVerbatimLock && !allowUrgentMultiQuestion) {
+        // 🔒 [AEC VERBATIM LOCK]: Soberania Seletiva do Roteiro.
+        // Aplicamos a trava absoluta APENAS em fases de lista repetitiva ou perguntas binárias.
+        // Em COMPLAINT_DETAILS, permitimos que a Noa use a sugestão mas mantenha a fluidez do detalhamento (onde, quando, como).
+        const isVerbatimPhase = ['IDENTIFICATION', 'COMPLAINT_LIST', 'MAIN_COMPLAINT', 'MEDICAL_HISTORY', 'LIFESTYLE_HABITS', 'OBJECTIVE_QUESTIONS', 'CONSENT', 'FINAL_NOTES'].includes(assessmentPhase || '');
+
+        if (nextQuestionHint && aecVerbatimLock && isVerbatimPhase && !allowUrgentMultiQuestion) {
             const isSocialGreeting = /^(oi|ola|olá|bom dia|boa tarde|boa noite|tudo bem|como vai)\s*[!.?]?$/i.test(normalizedMessage.trim());
-            // Se NÃO for uma saudação social (onde permitimos a Noa ser educada antes), forçamos o script.
             if (!isSocialGreeting) {
-                console.log('[AEC] Roteiro Selado: Forçando frase literal do Dr. Ricardo.');
+                console.log(`[AEC] Roteiro Selado (${assessmentPhase}): Forçando frase literal.`);
                 aiResponse = nextQuestionHint;
             }
         }

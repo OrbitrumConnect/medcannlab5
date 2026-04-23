@@ -104,6 +104,7 @@ export interface AssessmentState {
   data: AssessmentData
   currentQuestionIndex: number
   waitingForMore: boolean // Se esta esperando mais itens na lista
+  phaseIterationCount: number // [V1.8.3] Contador de repeticoes na mesma fase (ex.: "O que mais?")
   startedAt: Date
   lastUpdate: Date
   interruptedFromPhase?: AssessmentPhase // Fase de onde saiu (para retomada)
@@ -314,6 +315,7 @@ export class ClinicalAssessmentFlow {
       },
       currentQuestionIndex: 0,
       waitingForMore: false,
+      phaseIterationCount: 0,
       startedAt: new Date(),
       lastUpdate: new Date()
     }
@@ -403,9 +405,15 @@ export class ClinicalAssessmentFlow {
       throw new Error('Avaliação não encontrada. Por favor, inicie uma nova avaliação.')
     }
 
+    const oldPhase = state.phase
     const userTurn =
       stripPlatformInjectionNoise(userResponse).trim() || userResponse.trim()
     const lowerResponse = userTurn.toLowerCase().trim()
+
+    // [V1.8.3] Controle de Iteracao: se mudou de fase, reseta o contador
+    if (state.phase !== oldPhase) {
+      state.phaseIterationCount = 0
+    }
 
     // [V1.6.1] Avaliação Soberana de Input (A FSM decide a validade de transição)
     if (!this.evaluateInputAcceptance(userId, state.phase, userTurn)) {
@@ -633,10 +641,12 @@ export class ClinicalAssessmentFlow {
       case 'COMPLAINT_LIST':
         const terminatorRegex = /\b(nada|apenas|s[oó]|chega|pronto|pare|fim|encerrar|mais nada|so isso|só isso)\b/i
         const isUserStopping = terminatorRegex.test(lowerResponse)
+        const REACHED_LIMIT = state.phaseIterationCount >= 2 // (0 -> 1 -> 2 -> avança)
 
-        if (hasMore && userTurn.trim() && !isUserStopping) {
+        if (hasMore && userTurn.trim() && !isUserStopping && !REACHED_LIMIT) {
           // Adicionar mais queixa à lista
           state.data.complaintList.push(userTurn.trim())
+          state.phaseIterationCount++
           state.lastUpdate = new Date()
           return {
             nextQuestion: 'O que mais?',
@@ -687,9 +697,11 @@ export class ClinicalAssessmentFlow {
       case 'MEDICAL_HISTORY':
         const histTerminatorRegex = /\b(nada|apenas|s[oó]|chega|pronto|pare|fim|encerrar|mais nada|so isso|só isso)\b/i
         const isHistStopping = histTerminatorRegex.test(lowerResponse)
+        const HIST_REACHED_LIMIT = state.phaseIterationCount >= 2
 
-        if (hasMore && userTurn.trim() && !isHistStopping) {
+        if (hasMore && userTurn.trim() && !isHistStopping && !HIST_REACHED_LIMIT) {
           state.data.medicalHistory.push(userTurn.trim())
+          state.phaseIterationCount++
           state.lastUpdate = new Date()
           return {
             nextQuestion: 'O que mais?',
@@ -710,9 +722,11 @@ export class ClinicalAssessmentFlow {
       case 'FAMILY_HISTORY_MOTHER':
         const momTerminatorRegex = /\b(nada|apenas|s[oó]|chega|pronto|pare|fim|encerrar|mais nada|so isso|só isso)\b/i
         const isMomStopping = momTerminatorRegex.test(lowerResponse)
+        const MOM_REACHED_LIMIT = state.phaseIterationCount >= 2
 
-        if (hasMore && userTurn.trim() && !isMomStopping) {
+        if (hasMore && userTurn.trim() && !isMomStopping && !MOM_REACHED_LIMIT) {
           state.data.familyHistoryMother.push(userTurn.trim())
+          state.phaseIterationCount++
           state.lastUpdate = new Date()
           return {
             nextQuestion: 'O que mais?',
@@ -733,9 +747,11 @@ export class ClinicalAssessmentFlow {
       case 'FAMILY_HISTORY_FATHER':
         const dadTerminatorRegex = /\b(nada|apenas|s[oó]|chega|pronto|pare|fim|encerrar|mais nada|so isso|só isso)\b/i
         const isDadStopping = dadTerminatorRegex.test(lowerResponse)
+        const DAD_REACHED_LIMIT = state.phaseIterationCount >= 2
 
-        if (hasMore && userTurn.trim() && !isDadStopping) {
+        if (hasMore && userTurn.trim() && !isDadStopping && !DAD_REACHED_LIMIT) {
           state.data.familyHistoryFather.push(userTurn.trim())
+          state.phaseIterationCount++
           state.lastUpdate = new Date()
           return {
             nextQuestion: 'O que mais?',
@@ -756,9 +772,11 @@ export class ClinicalAssessmentFlow {
       case 'LIFESTYLE_HABITS':
         const lifeTerminatorRegex = /\b(nada|apenas|s[oó]|chega|pronto|pare|fim|encerrar|mais nada|so isso|só isso)\b/i
         const isLifeStopping = lifeTerminatorRegex.test(lowerResponse)
+        const LIFE_REACHED_LIMIT = state.phaseIterationCount >= 2
 
-        if (hasMore && userTurn.trim() && !isLifeStopping) {
+        if (hasMore && userTurn.trim() && !isLifeStopping && !LIFE_REACHED_LIMIT) {
           state.data.lifestyleHabits.push(userTurn.trim())
+          state.phaseIterationCount++
           state.lastUpdate = new Date()
           return {
             nextQuestion: 'O que mais?',
