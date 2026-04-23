@@ -176,6 +176,7 @@ export class ClinicalAssessmentFlow {
           data: (data.data || {}) as unknown as AssessmentData,
           currentQuestionIndex: data.current_question_index || 0,
           waitingForMore: data.waiting_for_more || false,
+          phaseIterationCount: (data as any).phase_iteration_count || 0,
           startedAt: new Date(data.started_at),
           lastUpdate: new Date(data.last_update),
           interruptedFromPhase: data.interrupted_from_phase as AssessmentPhase | undefined
@@ -260,9 +261,10 @@ export class ClinicalAssessmentFlow {
             data: JSON.parse(JSON.stringify((state as AssessmentState).data)),
             current_question_index: (state as AssessmentState).currentQuestionIndex,
             waiting_for_more: (state as AssessmentState).waitingForMore,
+            phase_iteration_count: (state as AssessmentState).phaseIterationCount,
             interrupted_from_phase: (state as AssessmentState).interruptedFromPhase || null,
             started_at: (state as AssessmentState).startedAt.toISOString(),
-          }], { onConflict: 'user_id' })
+          } as any], { onConflict: 'user_id' })
 
         if (error) {
           console.warn('[AEC] Erro ao persistir estado no BD:', error.message)
@@ -406,12 +408,13 @@ export class ClinicalAssessmentFlow {
     }
 
     const oldPhase = state.phase
+    const oldQuestionIndex = state.currentQuestionIndex
     const userTurn =
       stripPlatformInjectionNoise(userResponse).trim() || userResponse.trim()
     const lowerResponse = userTurn.toLowerCase().trim()
 
-    // [V1.8.3] Controle de Iteracao: se mudou de fase, reseta o contador
-    if (state.phase !== oldPhase) {
+    // [V1.8.4] Controle de Iteracao: se mudou de fase OU de questao, reseta o contador
+    if (state.phase !== oldPhase || state.currentQuestionIndex !== oldQuestionIndex) {
       state.phaseIterationCount = 0
     }
 
@@ -644,7 +647,7 @@ export class ClinicalAssessmentFlow {
         const REACHED_LIMIT = state.phaseIterationCount >= 2 // (0 -> 1 -> 2 -> avança)
 
         if (hasMore && userTurn.trim() && !isUserStopping && !REACHED_LIMIT) {
-          // Adicionar mais queixa à lista
+          // Adicionar mais queixa à lista e continuar perguntando
           state.data.complaintList.push(userTurn.trim())
           state.phaseIterationCount++
           state.lastUpdate = new Date()
@@ -654,16 +657,14 @@ export class ClinicalAssessmentFlow {
             isComplete: false
           }
         } else {
-          // Se o usuário quer parar OU chegamos no fim sugerido pela IA
+          // [V1.8.4] Grava o último conteúdo relatado antes de avançar (se não for comando de parada)
+          if (userTurn.trim() && !isUserStopping) {
+            state.data.complaintList.push(userTurn.trim())
+          }
           state.waitingForMore = false
           state.phase = 'MAIN_COMPLAINT'
           state.lastUpdate = new Date()
           
-          // Fallback se a lista estiver vazia (não deveria acontecer se passou pela IDENTIFICATION)
-          if (state.data.complaintList.length === 0 && userTurn.trim() && !isUserStopping) {
-            state.data.complaintList.push(userTurn.trim())
-          }
-
           const complaints = state.data.complaintList.length > 0 
             ? state.data.complaintList.join(', ')
             : 'estes sintomas'
@@ -709,6 +710,9 @@ export class ClinicalAssessmentFlow {
             isComplete: false
           }
         } else {
+          if (userTurn.trim() && !isHistStopping) {
+            state.data.medicalHistory.push(userTurn.trim())
+          }
           state.waitingForMore = false
           state.phase = 'FAMILY_HISTORY_MOTHER'
           state.lastUpdate = new Date()
@@ -734,6 +738,9 @@ export class ClinicalAssessmentFlow {
             isComplete: false
           }
         } else {
+          if (userTurn.trim() && !isMomStopping) {
+            state.data.familyHistoryMother.push(userTurn.trim())
+          }
           state.waitingForMore = false
           state.phase = 'FAMILY_HISTORY_FATHER'
           state.lastUpdate = new Date()
@@ -759,6 +766,9 @@ export class ClinicalAssessmentFlow {
             isComplete: false
           }
         } else {
+          if (userTurn.trim() && !isDadStopping) {
+            state.data.familyHistoryFather.push(userTurn.trim())
+          }
           state.waitingForMore = false
           state.phase = 'LIFESTYLE_HABITS'
           state.lastUpdate = new Date()
@@ -784,6 +794,9 @@ export class ClinicalAssessmentFlow {
             isComplete: false
           }
         } else {
+          if (userTurn.trim() && !isLifeStopping) {
+            state.data.lifestyleHabits.push(userTurn.trim())
+          }
           state.waitingForMore = false
           state.phase = 'OBJECTIVE_QUESTIONS'
           state.currentQuestionIndex = 0
@@ -983,14 +996,16 @@ export class ClinicalAssessmentFlow {
 
     // Salvar resposta
     if (currentQ.isList) {
-      const hasMore = !this.meansNoMore(userResponse)
+      const isUserStopping = this.meansNoMore(userResponse)
+      const REACHED_LIMIT = state.phaseIterationCount >= 2
 
-      if (hasMore && userResponse.trim()) {
+      if (!isUserStopping && userResponse.trim() && !REACHED_LIMIT) {
         const field = currentQ.field as keyof AssessmentData
         const currentList = state.data[field] as string[]
         if (Array.isArray(currentList)) {
           currentList.push(userResponse.trim())
         }
+        state.phaseIterationCount++
         state.lastUpdate = new Date()
         return {
           nextQuestion: 'O que mais?',
@@ -998,6 +1013,14 @@ export class ClinicalAssessmentFlow {
           isComplete: false
         }
       } else {
+        // [V1.8.4] Grava o último conteúdo relatado antes de avançar (se não for comando de parada)
+        if (userResponse.trim() && !isUserStopping) {
+          const field = currentQ.field as keyof AssessmentData
+          const currentList = state.data[field] as string[]
+          if (Array.isArray(currentList)) {
+            currentList.push(userResponse.trim())
+          }
+        }
         // Próxima pergunta
         state.currentQuestionIndex++
         state.lastUpdate = new Date()
