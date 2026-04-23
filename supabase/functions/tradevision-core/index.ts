@@ -2634,6 +2634,40 @@ Responda SOMENTE com o JSON válido, sem markdown.`
             'INTERRUPTED'
         ])
 
+        /**
+         * [V1.8.9] HARD LOCK — Subconjunto de fases onde o aiResponse é SUBSTITUÍDO literalmente
+         * pelo nextQuestionHint (não apenas instruído via prompt).
+         *
+         * Por que um subconjunto separado? Porque COMPLAINT_DETAILS (detalhamento da queixa —
+         * "onde dói? quando começou? como é a dor?") foi EXPLICITAMENTE excluído da trava forte
+         * em V1.8.3-D para preservar fluidez clínica: a Nôa precisa acolher a resposta do
+         * paciente com naturalidade, não repetir pergunta robótica. O SOFT lock acima já
+         * instrui o GPT a seguir o roteiro, e para COMPLAINT_DETAILS basta isso.
+         *
+         * Fases incluídas aqui: identificação, listas binárias, consentimento e decisões binárias
+         * (INTERRUPTED / CONFIRMING_*) — onde texto literal é desejado, não regressão.
+         */
+        const AEC_VERBATIM_HARD_LOCK_PHASES = new Set([
+            'INITIAL_GREETING',
+            'IDENTIFICATION',
+            'COMPLAINT_LIST',
+            'MAIN_COMPLAINT',
+            'MEDICAL_HISTORY',
+            'FAMILY_HISTORY_MOTHER',
+            'FAMILY_HISTORY_FATHER',
+            'LIFESTYLE_HABITS',
+            'OBJECTIVE_QUESTIONS',
+            'CONSENSUS_REVIEW',
+            'CONSENSUS_REPORT',
+            'CONSENT_COLLECTION',
+            'CONSENSUS_CONFIRMATION',
+            'FINAL_RECOMMENDATION',
+            'CONFIRMING_EXIT',
+            'CONFIRMING_RESTART',
+            'INTERRUPTED'
+            // NOTA: COMPLAINT_DETAILS propositalmente fora — preserva fluidez do detalhamento (V1.8.3-D).
+        ])
+
         /** Lock verbatim: paciente OU perfil não normalizado no body mas AEC ativo com hint (evita que o modelo copie rótulos internos para o utente). */
         const aecActorEligible =
             userRole === 'patient' ||
@@ -3757,9 +3791,13 @@ ${contentExcerpt || '(Texto não disponível para este documento. O conteúdo ai
         let aiResponse: string = String(completion?.choices?.[0]?.message?.content || '')
 
         // 🔒 [AEC VERBATIM LOCK]: Soberania Seletiva do Roteiro.
-        // Aplicamos a trava absoluta APENAS em fases de lista repetitiva ou perguntas binárias.
-        // Em COMPLAINT_DETAILS, permitimos que a Noa use a sugestão mas mantenha a fluidez do detalhamento (onde, quando, como).
-        const isVerbatimPhase = !!assessmentPhase && AEC_VERBATIM_LOCK_PHASES.has(assessmentPhase);
+        // Aplicamos a trava ABSOLUTA (substituição literal) apenas em fases de lista repetitiva,
+        // perguntas binárias e decisões de continuidade (INTERRUPTED / CONFIRMING_*).
+        // Em COMPLAINT_DETAILS permanecemos em SOFT lock (prompt) para preservar fluidez do
+        // detalhamento (onde, quando, como) — decisão clínica V1.8.3-D.
+        // [V1.8.9] Usa o subconjunto AEC_VERBATIM_HARD_LOCK_PHASES em vez do Set global, pois
+        // o Set global inclui COMPLAINT_DETAILS (que deve ficar em soft lock).
+        const isVerbatimPhase = !!assessmentPhase && AEC_VERBATIM_HARD_LOCK_PHASES.has(assessmentPhase);
 
         if (nextQuestionHint && aecVerbatimLock && isVerbatimPhase && !allowUrgentMultiQuestion) {
             const isSocialGreeting = /^(oi|ol[aá]|hey|hi|hello|bom dia|boa tarde|boa noite|tudo bem|tudo bom|como vai|como voce esta|como vc esta)([\s,.!?]*(noa|n[oó]a)?)?[\s,.!?]*$/i.test(normalizedMessage.trim());
