@@ -3605,7 +3605,6 @@ ${contentExcerpt || '(Texto não disponível para este documento. O conteúdo ai
             const isGreeting = /^(oi|ola|ol[aá]|bom dia|boa tarde|boa noite|hey|hi|hello|tudo bem|como vai|e a[ií])\b/i.test(norm || '')
             const isScheduling = shouldTriggerSchedulingWidget
             const isNavigation = isAgendaNavigationOnly
-            const conversationDepth = (conversationHistory?.length || 0)
 
             var determinContext = ''
             var determinBody = ''
