@@ -1085,7 +1085,7 @@ Estrutura Obrigatória:
             temperature: 0.1
         });
 
-        const structuredNarrative = reportCompletion.choices[0].message.content;
+        const structuredNarrative = reportCompletion?.choices?.[0]?.message?.content || "Não foi possível gerar a narrativa do relatório.";
 
         // 3. Persistência do Relatório (Status Completed ativa os KPIs no DB)
         const { data: report, error: reportError } = await supabaseClient
@@ -1164,7 +1164,7 @@ Estrutura Obrigatória:
             report_id: report.id,
             patient_id: report.patient_id,
             rationality_type: 'integrative',
-            assessment: completion.choices[0].message.content,
+            assessment: completion?.choices?.[0]?.message?.content || "Falha na geração do diagnóstico.",
             approach: 'Medicina Integrativa'
         });
         if (ratError) {
