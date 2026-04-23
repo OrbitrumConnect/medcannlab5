@@ -197,31 +197,14 @@ export const useMedCannLabConversation = (options?: {
         residentRef.current = new NoaResidentAI()
         console.log('✅ IA Residente inicializada para:', user.email)
 
-        // Adicionar mensagem de boas-vindas apenas uma vez
-        if (!hasShownWelcome && messages.length === 0) {
-          const loadAndGreet = async () => {
-            await clinicalAssessmentFlow.ensureLoaded(user.id)
-            const state = clinicalAssessmentFlow.getState(user.id)
-            
-            let welcomeText = 'Sou Nôa Esperanza. Apresente-se também e diga o que trouxe você aqui? Você pode utilizar o chat aqui embaixo à direita para responder ou pedir ajuda. Bons ventos sóprem.'
-            
-            if (state && state.phase !== 'COMPLETED' && state.phase !== 'INTERRUPTED') {
-              const greetName = state.data.patientName ? `, ${state.data.patientName}` : ''
-              welcomeText = `Bem-vindo(a) de volta${greetName}. Percebi que temos uma avaliação clínica em andamento. Gostaria de continuar de onde paramos ou quer recomeçar?`
-            }
-
-            const welcomeMessage: ConversationMessage = {
-              id: 'welcome',
-              role: 'noa',
-              content: welcomeText,
-              timestamp: new Date(),
-              intent: 'HELP'
-            }
-            setMessages([welcomeMessage])
+        // [V1.8.10] Pré-carregamento silencioso do estado AEC, SEM injetar mensagem inicial.
+        // A Nôa só deve falar depois do primeiro turno do paciente — saudação unsolicited
+        // foi removida por decisão de UX. Se houver AEC pendente, o backend detecta via
+        // assessmentPhase e o social guard oferece restauração quando o paciente cumprimentar.
+        if (!hasShownWelcome) {
+          void clinicalAssessmentFlow.ensureLoaded(user.id).finally(() => {
             setHasShownWelcome(true)
-          }
-          
-          void loadAndGreet()
+          })
         }
       } catch (error) {
         console.error('❌ Erro ao inicializar IA Residente:', error)

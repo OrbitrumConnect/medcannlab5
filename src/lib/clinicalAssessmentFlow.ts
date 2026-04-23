@@ -141,8 +141,16 @@ export class ClinicalAssessmentFlow {
       this.lastAdvance.set(userId, { phase, turn: normalized, at: now })
     }
 
-    // 2. Filtro de Intenção Semântica para Fases Descritivas
-    const isDescriptivePhase = ['COMPLAINT_DETAILS', 'MAIN_COMPLAINT', 'MEDICAL_HISTORY', 'LIFESTYLE_HABITS', 'OBJECTIVE_QUESTIONS', 'FAMILY_HISTORY_MOTHER', 'FAMILY_HISTORY_FATHER', 'COMPLAINT_LIST'].includes(phase)
+    // 2. Filtro de Intenção Semântica para Fases Descritivas (listas abertas).
+    //
+    // [V1.8.10] COMPLAINT_DETAILS removido da lista: suas perguntas são OBJETIVAS
+    // ("onde dói?", "quando começou?", "como é a sensação?") e admitem respostas
+    // curtas e precisas ("na boca", "ontem", "queima") que não têm as palavras-chave
+    // do regex abaixo. Rejeitá-las dispara fallback "Continuando sobre sua queixa
+    // principal..." sem lógica clínica — o paciente responde certo e leva um "não
+    // entendi" em troca. Para fases de detalhamento, aceitamos qualquer input
+    // não-vazio; a FSM decide no switch-case se o conteúdo é aproveitável.
+    const isDescriptivePhase = ['MAIN_COMPLAINT', 'MEDICAL_HISTORY', 'LIFESTYLE_HABITS', 'OBJECTIVE_QUESTIONS', 'FAMILY_HISTORY_MOTHER', 'FAMILY_HISTORY_FATHER', 'COMPLAINT_LIST'].includes(phase)
     const isMicroPhrase = normalized.length < 20
     const isSocial = this.isSocialGreeting(normalized)
     const hasSemanticFlag = /sim|n[ãa]o|ok|isso|apenas|s[oó]|nada|nenhum|tudo bem|tudo ok|dor|d[óo]i|ard|inch|sang|latej|ruim/i.test(normalized)
@@ -228,7 +236,7 @@ export class ClinicalAssessmentFlow {
     if (/\b(s[oó]|so)\s+o\s+que\s+falei\b/.test(t)) return true
     // "sou surfista... e só" / frase termina em " e so"
     if (/\b(e\s+)?s[oó]\s*!?\s*$/i.test(lower)) return true
-    // História familiar / negação curta ("tudo bem também", "não tem nada") ÔÇö só se a mensagem for essencialmente só isso
+    // História familiar / negação curta ("tudo bem também", "não tem nada") — só se a mensagem for essencialmente só isso
     if (
       t.length <= 52 &&
       /^(tudo\s+bem|ta\s+tudo\s+bem|tudo\s+ok)(\s+tamb[eé]m)?!?\s*$/i.test(t.trim())
@@ -295,7 +303,7 @@ export class ClinicalAssessmentFlow {
 
   private standardAecOpeningPhrase(state: AssessmentState): string {
     const doc = this.physicianDisplay(state)
-    return `Olá! Eu sou N├┤a Esperanza. Por favor, apresente-se também e vamos iniciar a sua avaliação inicial para consultas com ${doc}.`
+    return `Olá! Eu sou Nôa Esperanza. Por favor, apresente-se também e vamos iniciar a sua avaliação inicial para consultas com ${doc}.`
   }
 
   /**
@@ -1014,7 +1022,7 @@ export class ClinicalAssessmentFlow {
     const label = this.hdaLabel(state)
     const questions = [
       { field: 'complaintLocation', question: `Onde você sente ${label}?` },
-      { field: 'complaintOnset', question: `Quando essa dor ou inc├┤modo em ${label} começou?` },
+      { field: 'complaintOnset', question: `Quando essa dor ou incômodo em ${label} começou?` },
       { field: 'complaintDescription', question: `Como é essa sensação (em ${label})?` },
       {
         field: 'complaintAssociatedSymptoms',
@@ -1171,7 +1179,7 @@ export class ClinicalAssessmentFlow {
       }
     }
 
-    // ├Ültima pergunta respondida
+    // Última pergunta respondida
     state.phase = 'CONSENSUS_REVIEW'
     state.lastUpdate = new Date()
     return {
@@ -1193,7 +1201,7 @@ export class ClinicalAssessmentFlow {
     // Introdução curta já foi enviada na fase CONSENSUS_REVIEW; evitar duplicar no mesmo fio.
     let report = ''
 
-    report += '**MEU ENTENDIMENTO SOBRE SUA AVALIAÇ├âO:**\n\n'
+    report += '**MEU ENTENDIMENTO SOBRE SUA AVALIAÇÃO:**\n\n'
 
     // Identificação
     if (data.patientPresentation) {
@@ -1213,7 +1221,7 @@ export class ClinicalAssessmentFlow {
         anchor &&
         anchor.toLowerCase() !== clean(data.mainComplaint).toLowerCase()
       ) {
-        report += `*(Roteiro de perguntas abaixo focado em **${clean(anchor)}**, alinhado ├á lista indiciária.)*\n`
+        report += `*(Roteiro de perguntas abaixo focado em **${clean(anchor)}**, alinhado à lista indiciária.)*\n`
       }
       if (data.complaintLocation) report += `- Onde: ${clean(data.complaintLocation)}\n`
       if (data.complaintOnset) report += `- Quando começou: ${clean(data.complaintOnset)}\n`
@@ -1292,7 +1300,7 @@ export class ClinicalAssessmentFlow {
 
     // S6: Bloquear geração de relatório sem consentimento
     if (!state.data.consentGiven) {
-      console.warn('[AEC] ⚠️´©Å Relatório N├âO gerado ÔÇö paciente recusou consentimento.')
+      console.warn('[AEC] ⚠️ Relatório NÃO gerado — paciente recusou consentimento.')
       return null
     }
 
@@ -1347,7 +1355,7 @@ export class ClinicalAssessmentFlow {
 
       console.log('🚀 [ClinicalFlow] Enviando dados para Edge Function (Server-Side Save)...')
 
-      // CHAMADA ├Ç EDGE FUNCTION (Bypassing RLS)
+      // CHAMADA À EDGE FUNCTION (Bypassing RLS)
       const { data: edgeResponse, error: edgeError } = await supabase.functions.invoke('tradevision-core', {
         body: {
           action: 'finalize_assessment',
@@ -1406,7 +1414,7 @@ export class ClinicalAssessmentFlow {
   private getPhaseResumePrompt(phase: AssessmentPhase, state: AssessmentState): string {
     switch (phase) {
       case 'INITIAL_GREETING': return 'Pode se apresentar quando estiver pronto(a).'
-      case 'IDENTIFICATION': return 'O que trouxe você ├á nossa avaliação hoje?'
+      case 'IDENTIFICATION': return 'O que trouxe você à nossa avaliação hoje?'
       case 'COMPLAINT_LIST': return 'O que mais você gostaria de relatar?'
       case 'MAIN_COMPLAINT': return `Das queixas relatadas (${state.data.complaintList.join(', ')}), qual considera a principal?`
       case 'COMPLAINT_DETAILS': return 'Continuando sobre sua queixa principal...'
