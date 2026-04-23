@@ -3606,10 +3606,13 @@ ${contentExcerpt || '(Texto não disponível para este documento. O conteúdo ai
             const isScheduling = shouldTriggerSchedulingWidget
             const isNavigation = isAgendaNavigationOnly
 
-            var determinContext = ''
-            var determinBody = ''
-            var determinExploratory = ''
-            var determinAction = ''
+            // 🛡️ [STATE ISOLATION] Evita TypeError: Assignment to constant variable via Object Mutation
+            const dState = {
+                context: '',
+                body: '',
+                exploratory: '',
+                action: ''
+            }
 
             // BLOCO: Reflexão contextual (memória conversacional)
             if (lastTopic && !isGreeting && conversationDepth > 2) {
@@ -3620,75 +3623,75 @@ ${contentExcerpt || '(Texto não disponível para este documento. O conteúdo ai
                 }
                 const label = topicLabels[lastTopic] || lastTopic
                 if (lastTopic !== detectedConcepts[0]) {
-                    determinContext = `Continuando nossa conversa sobre ${label} —`
+                    dState.context = `Continuando nossa conversa sobre ${label} —`
                 }
             }
 
             // BLOCO: Corpo principal (por situação)
             if (isGreeting) {
                 if (isPatient && firstName) {
-                    determinBody = `Bom te ver por aqui, ${firstName}! Estou operando em modo local no momento, mas posso te ajudar com acesso à sua agenda, informações da clínica e registrar observações para seu profissional.`
+                    dState.body = `Bom te ver por aqui, ${firstName}! Estou operando em modo local no momento, mas posso te ajudar com acesso à sua agenda, informações da clínica e registrar observações para seu profissional.`
                 } else if (isProfessional && firstName) {
-                    determinBody = `Dr(a). ${firstName}, estou em modo local. Suas funcionalidades operacionais — agenda, pacientes, relatórios e navegação — seguem disponíveis normalmente.`
+                    dState.body = `Dr(a). ${firstName}, estou em modo local. Suas funcionalidades operacionais — agenda, pacientes, relatórios e navegação — seguem disponíveis normalmente.`
                 } else if (isAdmin) {
-                    determinBody = `Estou em modo local. Todas as funções administrativas seguem operacionais — agenda, gestão de pacientes, relatórios e biblioteca.`
+                    dState.body = `Estou em modo local. Todas as funções administrativas seguem operacionais — agenda, gestão de pacientes, relatórios e biblioteca.`
                 } else {
-                    determinBody = 'Estou operando em modo local no momento, mas posso te ajudar com navegação, agenda e acesso rápido às áreas da clínica.'
+                    dState.body = 'Estou operando em modo local no momento, mas posso te ajudar com navegação, agenda e acesso rápido às áreas da clínica.'
                 }
             } else if (isScheduling) {
-                determinBody = 'Posso te levar direto para a agenda. O sistema de agendamento funciona normalmente.'
+                dState.body = 'Posso te levar direto para a agenda. O sistema de agendamento funciona normalmente.'
                 if (isPatient) {
-                    determinAction = 'Os horários disponíveis estão atualizados no painel.'
+                    dState.action = 'Os horários disponíveis estão atualizados no painel.'
                 }
             } else if (isNavigation) {
-                determinBody = 'Abrindo a seção para você. A navegação segue funcionando normalmente.'
+                dState.body = 'Abrindo a seção para você. A navegação segue funcionando normalmente.'
             } else if (detectedConcepts.length > 0 && isPatient) {
                 // PACIENTE com conceito clínico detectado
                 const primaryConcept = detectedConcepts[0]
                 const factorInfo = factorRelations[primaryConcept]
 
                 if (primaryConcept === 'exame') {
-                    determinBody = 'Para uma análise completa dos seus exames, o profissional responsável poderá avaliar com precisão na próxima consulta.'
-                    determinAction = 'Posso abrir seu histórico de exames ou levar você para a agenda.'
+                    dState.body = 'Para uma análise completa dos seus exames, o profissional responsável poderá avaliar com precisão na próxima consulta.'
+                    dState.action = 'Posso abrir seu histórico de exames ou levar você para a agenda.'
                 } else if (primaryConcept === 'agenda' || primaryConcept === 'documento') {
-                    determinBody = 'Posso te ajudar com isso diretamente.'
+                    dState.body = 'Posso te ajudar com isso diretamente.'
                 } else {
                     // Conceito clínico: explorar sem diagnosticar
-                    determinBody = 'Obrigada por compartilhar isso. Posso registrar essas informações para que o profissional avalie com mais contexto.'
+                    dState.body = 'Obrigada por compartilhar isso. Posso registrar essas informações para que o profissional avalie com mais contexto.'
                     if (factorInfo) {
-                        determinExploratory = factorInfo.question
+                        dState.exploratory = factorInfo.question
                     }
                 }
 
                 // Cruzar com knowledgeBlock se disponível
                 if (knowledgeBlock && knowledgeBlock.length > 50 && ['cannabis', 'medicacao'].includes(primaryConcept)) {
-                    determinBody += '\n\nEncontrei informações relevantes na nossa base de conhecimento que podem complementar.'
+                    dState.body += '\n\nEncontrei informações relevantes na nossa base de conhecimento que podem complementar.'
                 }
             } else if (detectedConcepts.length > 0 && (isProfessional || isAdmin)) {
                 // PROFISSIONAL/ADMIN com conceito detectado
                 const primaryConcept = detectedConcepts[0]
                 if (primaryConcept === 'exame') {
-                    determinBody = 'Posso abrir o módulo de exames ou buscar dados no sistema.'
-                    determinAction = 'A navegação para relatórios e prontuários segue disponível.'
+                    dState.body = 'Posso abrir o módulo de exames ou buscar dados no sistema.'
+                    dState.action = 'A navegação para relatórios e prontuários segue disponível.'
                 } else if (primaryConcept === 'agenda') {
-                    determinBody = 'O sistema de agendamento está operacional. Posso abrir a agenda ou mostrar os horários.'
+                    dState.body = 'O sistema de agendamento está operacional. Posso abrir a agenda ou mostrar os horários.'
                 } else if (primaryConcept === 'documento') {
-                    determinBody = 'Posso abrir a biblioteca ou buscar documentos específicos.'
+                    dState.body = 'Posso abrir a biblioteca ou buscar documentos específicos.'
                 } else {
-                    determinBody = 'Suas funções operacionais seguem disponíveis — agenda, pacientes, relatórios e navegação. Para análises avançadas, a camada cognitiva será restaurada em breve.'
+                    dState.body = 'Suas funções operacionais seguem disponíveis — agenda, pacientes, relatórios e navegação. Para análises avançadas, a camada cognitiva será restaurada em breve.'
                 }
             } else if (currentIntent === 'CLINICA') {
                 if (isPatient) {
-                    determinBody = 'Para garantir a precisão da sua avaliação, análises clínicas completas dependem da minha camada cognitiva avançada, que será restaurada em breve.\n\nEnquanto isso, posso registrar suas observações, abrir sua agenda ou acessar suas informações. Se for urgente, procure atendimento imediato.'
+                    dState.body = 'Para garantir a precisão da sua avaliação, análises clínicas completas dependem da minha camada cognitiva avançada, que será restaurada em breve.\n\nEnquanto isso, posso registrar suas observações, abrir sua agenda ou acessar suas informações. Se for urgente, procure atendimento imediato.'
                 } else {
-                    determinBody = 'A camada de análise avançada está temporariamente indisponível. Dados, navegação e funções operacionais continuam normais.'
+                    dState.body = 'A camada de análise avançada está temporariamente indisponível. Dados, navegação e funções operacionais continuam normais.'
                 }
             } else if (currentIntent === 'ADMIN') {
-                determinBody = 'Suas funções administrativas seguem disponíveis — agenda, pacientes, relatórios e navegação funcionam normalmente. Apenas respostas analíticas avançadas estão temporariamente reduzidas.'
+                dState.body = 'Suas funções administrativas seguem disponíveis — agenda, pacientes, relatórios e navegação funcionam normalmente. Apenas respostas analíticas avançadas estão temporariamente reduzidas.'
             } else if (currentIntent === 'ENSINO') {
-                determinBody = 'O módulo de simulação requer a camada generativa completa, temporariamente indisponível. Posso te levar para a biblioteca educativa ou para outro recurso da plataforma.'
+                dState.body = 'O módulo de simulação requer a camada generativa completa, temporariamente indisponível. Posso te levar para a biblioteca educativa ou para outro recurso da plataforma.'
             } else {
-                determinBody = 'Posso te ajudar com navegação, agenda e acesso rápido às áreas da clínica.'
+                dState.body = 'Posso te ajudar com navegação, agenda e acesso rápido às áreas da clínica.'
             }
 
             // MONTAGEM FINAL: composeResponse
