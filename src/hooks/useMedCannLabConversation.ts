@@ -206,7 +206,8 @@ export const useMedCannLabConversation = (options?: {
             let welcomeText = 'Sou Nôa Esperanza. Apresente-se também e diga o que trouxe você aqui? Você pode utilizar o chat aqui embaixo à direita para responder ou pedir ajuda. Bons ventos sóprem.'
             
             if (state && state.phase !== 'COMPLETED' && state.phase !== 'INTERRUPTED') {
-              welcomeText = `Bem-vindo(a) de volta, ${state.data.patientName || 'Pedro'}. Percebi que temos uma avaliação clínica em andamento. Gostaria de continuar de onde paramos ou quer recomeçar?`
+              const greetName = state.data.patientName ? `, ${state.data.patientName}` : ''
+              welcomeText = `Bem-vindo(a) de volta${greetName}. Percebi que temos uma avaliação clínica em andamento. Gostaria de continuar de onde paramos ou quer recomeçar?`
             }
 
             const welcomeMessage: ConversationMessage = {

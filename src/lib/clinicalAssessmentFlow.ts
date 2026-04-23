@@ -441,10 +441,10 @@ export class ClinicalAssessmentFlow {
       }
     }
 
-    // [V1.8.4] Controle de Iteracao: se mudou de fase OU de questao, reseta o contador
-    if (state.phase !== oldPhase || state.currentQuestionIndex !== oldQuestionIndex) {
-      state.phaseIterationCount = 0
-    }
+    // [V1.8.7] Controle de Iteracao: reset explícito em cada transição de fase/questão
+    // (o reset condicional aqui NÃO dispara porque oldPhase/oldQuestionIndex são capturados
+    // antes do switch que modifica state.phase — o reset real está embutido em cada transição abaixo)
+    void oldPhase; void oldQuestionIndex;
 
     // [V1.6.1] Avaliação Soberana de Input (A FSM decide a validade de transição)
     if (!this.evaluateInputAcceptance(userId, state.phase, userTurn)) {
@@ -662,6 +662,7 @@ export class ClinicalAssessmentFlow {
         }
         state.phase = 'COMPLAINT_LIST'
         state.waitingForMore = true
+        state.phaseIterationCount = 0
         state.lastUpdate = new Date()
         return {
           nextQuestion: 'O que mais?',
@@ -691,9 +692,10 @@ export class ClinicalAssessmentFlow {
           }
           state.waitingForMore = false
           state.phase = 'MAIN_COMPLAINT'
+          state.phaseIterationCount = 0
           state.lastUpdate = new Date()
-          
-          const complaints = state.data.complaintList.length > 0 
+
+          const complaints = state.data.complaintList.length > 0
             ? state.data.complaintList.join(', ')
             : 'estes sintomas'
 
@@ -712,6 +714,7 @@ export class ClinicalAssessmentFlow {
         )
         state.phase = 'COMPLAINT_DETAILS'
         state.currentQuestionIndex = 0
+        state.phaseIterationCount = 0
         state.lastUpdate = new Date()
         const anchor = this.hdaLabel(state)
         return {
@@ -743,6 +746,7 @@ export class ClinicalAssessmentFlow {
           }
           state.waitingForMore = false
           state.phase = 'FAMILY_HISTORY_MOTHER'
+          state.phaseIterationCount = 0
           state.lastUpdate = new Date()
           return {
             nextQuestion: 'E na sua família? Começando pela parte de sua mãe, quais as questões de saúde dela e desse lado da família?',
@@ -771,6 +775,7 @@ export class ClinicalAssessmentFlow {
           }
           state.waitingForMore = false
           state.phase = 'FAMILY_HISTORY_FATHER'
+          state.phaseIterationCount = 0
           state.lastUpdate = new Date()
           return {
             nextQuestion: 'E por parte de seu pai?',
@@ -799,6 +804,7 @@ export class ClinicalAssessmentFlow {
           }
           state.waitingForMore = false
           state.phase = 'LIFESTYLE_HABITS'
+          state.phaseIterationCount = 0
           state.lastUpdate = new Date()
           return {
             nextQuestion: 'Além dos habitos de vida que ja verificamos em nossa conversa, que outros habitos voce acha importante mencionar?',
@@ -828,6 +834,7 @@ export class ClinicalAssessmentFlow {
           state.waitingForMore = false
           state.phase = 'OBJECTIVE_QUESTIONS'
           state.currentQuestionIndex = 0
+          state.phaseIterationCount = 0
           state.lastUpdate = new Date()
           return {
             nextQuestion: 'Voce tem alguma alergia (mudanca de tempo, medicacao, poeira...)?',
@@ -1025,6 +1032,7 @@ export class ClinicalAssessmentFlow {
       state.phase = 'MEDICAL_HISTORY'
       state.waitingForMore = true
       state.currentQuestionIndex = 0
+      state.phaseIterationCount = 0
       state.lastUpdate = new Date()
       return {
         nextQuestion: 'E agora, sobre o restante sua vida até aqui, desde seu nascimento, quais as questões de saúde que você já viveu? Vamos ordenar do mais antigo para o mais recente, o que veio primeiro?',
@@ -1060,8 +1068,9 @@ export class ClinicalAssessmentFlow {
             currentList.push(userResponse.trim())
           }
         }
-        // Próxima pergunta
+        // Próxima pergunta — [V1.8.7] zera contador para cada sub-pergunta de lista começar do zero
         state.currentQuestionIndex++
+        state.phaseIterationCount = 0
         state.lastUpdate = new Date()
         const nextQ = questions[state.currentQuestionIndex]
         if (nextQ) {
@@ -1438,18 +1447,12 @@ export class ClinicalAssessmentFlow {
   }
 
   /**
-   * Reseta uma avaliação (local + BD)
+   * Reseta uma avaliação localmente. [V1.8.7] Removido o DELETE explícito no BD que
+   * causava race condition com o persist() subsequente: como persist usa upsert com
+   * onConflict:'user_id', o próximo persist sobrescreve o registro do BD naturalmente.
    */
   resetAssessment(userId: string): void {
     this.states.delete(userId)
-    // Deletar do BD de forma assíncrona (fire-and-forget)
-    supabase
-      .from('aec_assessment_state')
-      .delete()
-      .eq('user_id', userId)
-      .then(({ error }) => {
-        if (error) console.warn('[AEC] Erro ao deletar estado do BD:', error.message)
-      })
   }
 }
 
