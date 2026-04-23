@@ -3745,7 +3745,6 @@ ${contentExcerpt || '(Texto não disponível para este documento. O conteúdo ai
         // 🔒 Estado Soberano: Gatilho de Agendamento Contextual (V1.5)
         // Bypass contextual: permite override se o paciente exigir agenda ('agendar', intent ADMIN) explicitamente.
         // Caso contrário, a máquina de estados não abre espaço para agendamento.
-        const isAecActive = !!assessmentPhase && assessmentPhase !== 'COMPLETED' && assessmentPhase !== 'INTERRUPTED';
         const isUserForcingAction = (currentIntent === 'ADMIN' && (isCurrentlyInAecFinalPhase || hasScheduleVerb));
         const overrideAllowedContext = isUserForcingAction;
 
