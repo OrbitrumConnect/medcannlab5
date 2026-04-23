@@ -1013,8 +1013,14 @@ export class ClinicalAssessmentFlow {
           /^(apenas|s[oó]|somente)\s+conversar\s*[!.?]?$/.test(norm)
 
         if (isRefusing) {
-          this.states.delete(userId)
-          void supabase.from('aec_assessment_state').delete().eq('user_id', userId)
+          // [V1.9.7] Em vez de DELETE (race com ensureLoaded do próximo turno
+          // antes do fire-and-forget propagar), marcamos COMPLETED e persistimos.
+          // upsert substitui a row; state local já está sync com COMPLETED; próxima
+          // msg encontra state existente (phase=COMPLETED), não recarrega, e o
+          // switch default retorna hint vazio → Core não ativa verbatim lock.
+          state.phase = 'COMPLETED'
+          state.lastUpdate = new Date()
+          void this.persist(userId)
           return {
             nextQuestion:
               'Tudo bem, podemos conversar. Se quiser retomar sua avaliação depois, basta me pedir "retomar avaliação".',
@@ -1061,8 +1067,11 @@ export class ClinicalAssessmentFlow {
       }
 
       default:
+        // [V1.9.7] nextQuestion vazio: COMPLETED e outras fases terminais NÃO
+        // emitem hint — sem hint, o Core não ativa verbatim lock em chat livre
+        // pós-recusa ("apenas conversar"). GPT responde contextualmente.
         return {
-          nextQuestion: 'Avaliação concluída.',
+          nextQuestion: '',
           phase: state.phase,
           isComplete: true
         }
