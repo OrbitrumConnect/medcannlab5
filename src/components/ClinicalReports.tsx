@@ -397,13 +397,19 @@ const ClinicalReports: React.FC<ClinicalReportsProps> = ({ className = '', onSha
             physicalExam,
             assessment,
             plan,
-            rationalities: (content.rationalities as SharedReport['content']['rationalities']) || {
-              biomedical: {},
-              traditionalChinese: {},
-              ayurvedic: {},
-              homeopathic: {},
-              integrative: {}
-            }
+            // 🔧 FIX: NÃO criar chaves vazias por padrão. Chave vazia faz `hasAnalysis`
+            // virar truthy e marca todos os botões como "já aplicados", impedindo a geração.
+            // Só preserva chaves que tenham `assessment` real preenchido.
+            rationalities: (() => {
+              const src = (content.rationalities as Record<string, any>) || {}
+              const out: Record<string, any> = {}
+              for (const [k, v] of Object.entries(src)) {
+                if (v && typeof v === 'object' && typeof (v as any).assessment === 'string' && (v as any).assessment.trim().length > 0) {
+                  out[k] = v
+                }
+              }
+              return out as SharedReport['content']['rationalities']
+            })()
           },
           doctorNotes: stripClinical(content.doctor_notes) || undefined,
           reviewStatus: (content.review_status as SharedReport['reviewStatus']) || 'pending',
@@ -610,18 +616,28 @@ const ClinicalReports: React.FC<ClinicalReportsProps> = ({ className = '', onSha
         selectedReport.patientId
       )
 
-      // Salvar no relatório
-      await rationalityAnalysisService.saveAnalysisToReport(
-        selectedReport.id,
-        rationality,
-        analysis,
-        selectedReport.patientId
-      )
+      // Salvar no relatório (saveAnalysisToReport faz UPDATE em clinical_reports
+      // E upsert em clinical_rationalities — falhas de RLS no UPDATE não devem
+      // mascarar a persistência estruturada)
+      try {
+        await rationalityAnalysisService.saveAnalysisToReport(
+          selectedReport.id,
+          rationality,
+          analysis,
+          selectedReport.patientId
+        )
+      } catch (saveErr) {
+        console.error('⚠️ Persistência parcial — análise gerada mas falhou ao salvar:', saveErr)
+        alert(
+          `Análise ${rationality} gerada com sucesso, mas houve um problema ao salvar permanentemente.\n` +
+          `Verifique permissões (RLS). A análise está disponível nesta sessão.`
+        )
+      }
 
       // Recarregar relatórios para atualizar a UI
       await loadSharedReports()
 
-      // Atualizar selectedReport com a nova análise
+      // Atualizar selectedReport com a nova análise (mesmo se save falhou parcialmente)
       const updatedRationalities = {
         ...(selectedReport.content?.rationalities || {}),
         [rationality === 'traditional_chinese' ? 'traditionalChinese' : rationality]: analysis
@@ -633,8 +649,18 @@ const ClinicalReports: React.FC<ClinicalReportsProps> = ({ className = '', onSha
           rationalities: updatedRationalities
         }
       })
+
+      // Scroll até o card de resultados para o usuário ver a análise gerada
+      setTimeout(() => {
+        document.getElementById('rationalities-results-card')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      }, 250)
     } catch (error) {
       console.error('Erro ao aplicar racionalidade:', error)
+      alert(
+        `Não foi possível gerar a análise ${rationality}.\n` +
+        `Detalhes: ${error instanceof Error ? error.message : 'erro desconhecido'}\n\n` +
+        `Verifique sua conexão e tente novamente.`
+      )
     } finally {
       setIsGeneratingAnalysis(false)
       setSelectedRationality(null)
@@ -1024,14 +1050,66 @@ const ClinicalReports: React.FC<ClinicalReportsProps> = ({ className = '', onSha
               {/* Ações */}
               <div className="flex items-center space-x-3">
                 <button
-                  onClick={() => {
-                    setSelectedReport(report)
-                    setDoctorNotes(report.doctorNotes || '')
+                  onClick={async () => {
+                    let reportToOpen = report
+                    // 🔧 FALLBACK: se rawContent não tem dados AEC ricos, tentar hidratar
+                    // a partir do snapshot mais recente em aec_assessment_state do paciente.
+                    const hasAecData = report.rawContent && (
+                      report.rawContent.queixa_principal ||
+                      (Array.isArray(report.rawContent.lista_indiciaria) && report.rawContent.lista_indiciaria.length > 0) ||
+                      report.rawContent.desenvolvimento_queixa
+                    )
+                    if (!hasAecData && report.patientId) {
+                      try {
+                        const { data: aecState } = await (supabase as any)
+                          .from('aec_assessment_state')
+                          .select('data, last_update')
+                          .eq('user_id', report.patientId)
+                          .order('last_update', { ascending: false })
+                          .limit(1)
+                          .maybeSingle()
+                        if (aecState?.data) {
+                          const d = aecState.data as Record<string, any>
+                          // Mapear campos do estado AEC (camelCase) para o shape esperado pelo renderer (snake_case)
+                          const hydrated: Record<string, any> = {
+                            ...(report.rawContent || {}),
+                            queixa_principal: d.complaintList && Array.isArray(d.complaintList) && d.complaintList.length > 0
+                              ? String(d.complaintList[0])
+                              : (report.rawContent?.queixa_principal || ''),
+                            lista_indiciaria: Array.isArray(d.complaintList) ? d.complaintList : [],
+                            desenvolvimento_queixa: {
+                              descricao: d.complaintWorsening || '',
+                              localizacao: d.complaintImprovements || '',
+                              inicio: d.complaintAssociatedSymptoms || '',
+                              sintomas_associados: Array.isArray(d.complaintAssociatedSymptoms) ? d.complaintAssociatedSymptoms : [],
+                              fatores_melhora: Array.isArray(d.complaintImprovements) ? d.complaintImprovements : [],
+                              fatores_piora: Array.isArray(d.complaintWorsening) ? d.complaintWorsening : []
+                            },
+                            historia_familiar: {
+                              lado_materno: d.familyHistoryMother ? [d.familyHistoryMother] : [],
+                              lado_paterno: d.familyHistoryFather ? [d.familyHistoryFather] : []
+                            },
+                            habitos_vida: Array.isArray(d.lifestyleHabits) ? d.lifestyleHabits : [],
+                            historia_patologica_pregressa: Array.isArray(d.medicalHistory) ? d.medicalHistory : [],
+                            consenso: {
+                              aceito: !!d.consensusAgreed,
+                              revisoes_realizadas: d.consensusRevisions || 0
+                            },
+                            _hydrated_from_aec_state: true
+                          }
+                          reportToOpen = { ...report, rawContent: hydrated }
+                        }
+                      } catch (hydrateErr) {
+                        console.warn('Hidratação AEC falhou (seguindo com dados originais):', hydrateErr)
+                      }
+                    }
+                    setSelectedReport(reportToOpen)
+                    setDoctorNotes(reportToOpen.doctorNotes || '')
                     setShowReportModal(true)
                     setShowConversation(false)
-                    fetchConversation(report.patientId, report.date)
+                    fetchConversation(reportToOpen.patientId, reportToOpen.date)
                     const applied = new Set<Rationality>()
-                    Object.entries(report.content.rationalities || {}).forEach(([key, value]: [string, any]) => {
+                    Object.entries(reportToOpen.content.rationalities || {}).forEach(([key, value]: [string, any]) => {
                       if (value && value.assessment) {
                         const rationalityKey = key === 'traditionalChinese' ? 'traditional_chinese' : key
                         applied.add(rationalityKey as Rationality)
