@@ -1247,6 +1247,7 @@ Deno.serve(async (req: Request) => {
             conversationHistory: convFromBody,
             assessmentPhase: assessmentPhaseFromBody,
             nextQuestionHint: nextQuestionHintFromBody,
+            aecSnapshot, // 🆕 [BLOCO 11] Snapshot vivo do ClinicalAssessmentFlow (SSoT)
             action,
             assessmentData,
             appointmentData,
