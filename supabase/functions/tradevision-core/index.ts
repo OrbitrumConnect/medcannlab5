@@ -3056,7 +3056,7 @@ AGORA: Analise o contexto. Se pedir Sistema Renal/Urinário, atue como LÚCIA ou
             norm.includes('vagas') ||
             (norm.includes('agenda') && (norm.includes('mandar') || norm.includes('enviar') || norm.includes('mostrar') || norm.includes('ver horario')))
 
-        const shouldTriggerSchedulingWidget =
+        let shouldTriggerSchedulingWidget =
             !isAgendaNavigationOnly && !shouldBypassInterceptors && (hasScheduleVerb || hasSlotsIntent || hasConsultIntent || isShortSchedulingConfirmation || isShortMessageInSchedulingContext)
 
         // 🗓️ GATILHO DE AGENDAMENTO (SMART WIDGET TRIGGER) - V3 ROBUST
@@ -3472,7 +3472,7 @@ ${contentExcerpt || '(Texto não disponível para este documento. O conteúdo ai
             messages,
             temperature: isTeachingMode ? 0.7 : 0.2, // Ensino = 0.7 para atuação mais natural da Paula
             max_tokens: 1500
-        }).catch(async (openaiError) => {
+        }).catch(async (openaiError: any) => {
             console.error('⚠️ [OPENAI DOWN] Ativando Modo Determinístico (Consciência Reduzida)...', openaiError);
 
             // --- DETERMINISTIC CORE MODE (Sovereignty Protocol v2) ---
@@ -4082,14 +4082,20 @@ ${contentExcerpt || '(Texto não disponível para este documento. O conteúdo ai
         // 🔘 UI Contract V1.5: Botões Determinísticos State-Driven (Não fossilizados)
         if (assessmentPhase === 'CONSENT_COLLECTION') {
              app_commands.push({
-                 type: 'show_buttons',
-                 data: {
-                     ui_contract_version: "v1.5",
-                     buttons: [
-                         { label: "Sim, autorizo e concordo", action: "send_message", value: "sim concordo" },
-                         { label: "Não concordo", action: "send_message", value: "não concordo" }
-                     ]
-                 }
+                 kind: 'noa_command',
+                 command: {
+                     type: 'navigate-route',
+                     target: '/app/clinica/paciente/consentimento',
+                     label: 'Autorizar Registro Clínico',
+                     payload: {
+                         ui_contract_version: "v1.5",
+                         buttons: [
+                             { label: "Sim, autorizo e concordo", action: "send_message", value: "sim concordo" },
+                             { label: "Não concordo", action: "send_message", value: "não concordo" }
+                         ]
+                     }
+                 },
+                 reason: 'consent_collection_ui_trigger'
              });
          }
         
@@ -4099,12 +4105,10 @@ ${contentExcerpt || '(Texto não disponível para este documento. O conteúdo ai
             app_commands.push(
               {
                 kind: 'noa_command',
-                autoExecute: false,
                 command: { type: 'navigate-section', target: 'meu-relatorio', label: 'Ver Relatório Clínico' }
               },
               {
                 kind: 'noa_command',
-                autoExecute: false,
                 command: { type: 'navigate-section', target: 'agenda', label: 'Agendar Consulta' }
               }
             );
@@ -4112,12 +4116,10 @@ ${contentExcerpt || '(Texto não disponível para este documento. O conteúdo ai
             app_commands.push(
               {
                 kind: 'noa_command',
-                autoExecute: false,
                 command: { type: 'navigate-section', target: 'dados-parciais', label: 'Ver Relatório Parcial' }
               },
               {
                 kind: 'noa_command',
-                autoExecute: false,
                 command: { type: 'navigate-section', target: 'agenda', label: 'Agendamentos' }
               }
             );
