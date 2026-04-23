@@ -1052,6 +1052,16 @@ async function handleFinalizeAssessment(params: {
         }
         if (!resolvedPatientName) resolvedPatientName = 'Paciente';
 
+        // 2.1 [SINGLE-ORCHESTRATOR ENFORCEMENT] Ownership Backend de Risk e Scores Clínicos
+        // Retiramos a subordinação ao Frontend. O Orchestrator define/extrai riscos isolado do cliente.
+        // TODO(A.I Extractor): Conectar dinamicamente ao modelo se necessário. Hardcoded baseline momentâneo para compatibilidade.
+        if (!assessmentData.scores) {
+            assessmentData.scores = { anamnese: 100, detalhamento: 100, consenso: 100 };
+        }
+        if (!assessmentData.risk_level) {
+            assessmentData.risk_level = 'medium';
+        }
+
         // 2. [GOLDEN NARRATOR] Reativando a Redação Clínica de Abril
         console.log('🧠 [PIPELINE_STAGE] REPORT (narrator)', { interaction_id });
         const reportPrompt = `Transforme os dados brutos da avaliação clínica abaixo em um relatório estruturado e profissional (Markdown).
@@ -3740,10 +3750,11 @@ ${contentExcerpt || '(Texto não disponível para este documento. O conteúdo ai
             'Essa é uma avaliação inicial de acordo'
         ]
         const isFormalClosingMsg = closingKeywords.some(key => aiResponse.includes(key))
-        const needsCompletionTag = (assessmentPhase === 'FINAL_RECOMMENDATION' || assessmentPhase === 'CLOSING' || assessmentPhase === 'CONSENT_COLLECTION' || assessmentPhase === 'COMPLETED' || isFormalClosingMsg) && !aiResponse.includes('[ASSESSMENT_COMPLETED]')
+        const isAlreadyCompleted = assessmentPhase === 'COMPLETED'
+        const needsCompletionTag = !isAlreadyCompleted && (assessmentPhase === 'FINAL_RECOMMENDATION' || assessmentPhase === 'CLOSING' || assessmentPhase === 'CONSENT_COLLECTION' || isFormalClosingMsg) && !aiResponse.includes('[ASSESSMENT_COMPLETED]')
 
         if (needsCompletionTag) {
-            const isConfirmation = norm.includes('sim') || norm.includes('autorizo') || norm.includes('concordo') || norm.includes('pode') || assessmentPhase === 'COMPLETED' || isFormalClosingMsg
+            const isConfirmation = norm.includes('sim') || norm.includes('autorizo') || norm.includes('concordo') || norm.includes('pode') || isFormalClosingMsg
             if (isConfirmation) {
                 console.log('🧬 [FORCE] Injetando tags de conclusão, agendamento e fechamento de sessão.');
                 const schedulingTag = aiResponse.includes('[TRIGGER_SCHEDULING]') ? '' : ' [TRIGGER_SCHEDULING]'
@@ -3827,13 +3838,17 @@ ${contentExcerpt || '(Texto não disponível para este documento. O conteúdo ai
             if (orchestratorPatientId) {
                 console.log('📝 [ORCHESTRATOR] Detectado fechamento clínico. Disparando Pipeline...', { orchestratorPatientId });
                 
+                // Extração Lossless: Usa aecSnapshot (estado completo) se o assessmentData estiver vazio
+                const isAssessmentDataEmpty = !assessmentData || Object.keys(assessmentData).length <= 1;
+                const sourceData = isAssessmentDataEmpty ? (aecSnapshot || {}) : assessmentData;
+
                 // [FIX 16/04] AWAIT obrigatório — fire-and-forget causava corte do pipeline antes de completar
                 try {
                     await handleFinalizeAssessment({
                         supabaseClient,
                         openai,
                         interaction_id,
-                        assessmentData: { ...assessmentData, patient_id: orchestratorPatientId },
+                        assessmentData: { ...sourceData, patient_id: orchestratorPatientId },
                         patientData,
                         professionalId,
                         fallbackUserId: effectiveUserId

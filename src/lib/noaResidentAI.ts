@@ -1845,83 +1845,17 @@ export class NoaResidentAI {
       let isCompleted = false
       if (aiContent.includes(META_TAGS.ASSESSMENT_COMPLETED)) {
         isCompleted = true
-        MedCannLabAuditLogger.audit('GPT_EXTRACTION_TRIGGERED', { userId: platformData.user.id });
+        MedCannLabAuditLogger.audit('AEC_COMPLETION_ACKNOWLEDGED', { userId: platformData.user.id });
         aiContent = aiContent.replace(META_TAGS.ASSESSMENT_COMPLETED, '').trim()
 
         if (platformData?.user?.id) {
-          console.log('GPT Extraction Tag detectada. Enviando para Edge Function extrair dados da conversa...')
+          console.log('🏁 [AEC READ-ONLY] Tag de conclusão detectada. O Backend (Master Orchestrator) assumiu a geração e persistência de relatórios e riscos clínicos.');
 
           const flowState = clinicalAssessmentFlow.getState(platformData.user.id)
 
           if (flowState && flowState.phase !== 'COMPLETED') {
             clinicalAssessmentFlow.completeAssessment(platformData.user.id)
-          }
-
-          const localData = flowState?.data
-          const contentPayload = localData ? {
-            identificacao: { nome: localData.patientName, apresentacao: localData.patientPresentation },
-            lista_indiciaria: localData.complaintList || [],
-            queixa_principal: localData.mainComplaint || null,
-            desenvolvimento_queixa: {
-              localizacao: localData.complaintLocation,
-              inicio: localData.complaintOnset,
-              descricao: localData.complaintDescription,
-              sintomas_associados: localData.complaintAssociatedSymptoms || [],
-              fatores_melhora: localData.complaintImprovements || [],
-              fatores_piora: localData.complaintWorsening || []
-            },
-            historia_patologica_pregressa: localData.medicalHistory || [],
-            historia_familiar: {
-              lado_materno: localData.familyHistoryMother || [],
-              lado_paterno: localData.familyHistoryFather || []
-            },
-            habitos_vida: localData.lifestyleHabits || [],
-            perguntas_objetivas: {
-              alergias: localData.allergies,
-              medicacoes_regulares: localData.regularMedications,
-              medicacoes_esporadicas: localData.sporadicMedications
-            },
-            consenso: {
-              aceito: localData.consensusAgreed ?? false,
-              revisoes_realizadas: localData.consensusRevisions ?? 0
-            }
-          } : {}
-
-          console.log('[Noa] Dados locais:', localData?.complaintList?.length || 0, 'queixas')
-
-          // Chamar Edge Function para salvar (com fallback GPT extraction)
-          // [FIX 22/04] Adicionado AWAIT — sem isso a Promise era abandonada (fire-and-forget)
-          // e o componente desmontava antes da Edge persistir o relatório (regressão pós 05/04).
-          const { supabase } = await import('./supabase')
-          try {
-            const { data: resp, error: invokeErr } = await withTimeout(
-              supabase.functions.invoke('tradevision-core', {
-                body: {
-                  action: 'finalize_assessment',
-                  message: 'Finalizing Assessment',
-                  assessmentData: {
-                    patient_id: platformData.user.id,
-                    content: contentPayload,
-                    scores: { anamnese: 100, detalhamento: 100, consenso: 100 },
-                    risk_level: 'medium'
-                  }
-                }
-              }),
-              60000,
-              'Timeout ao salvar relatório clínico (finalize_assessment).'
-            ) as any
-
-            if (invokeErr) {
-              console.error('[FINALIZE] Erro de invocação na Edge:', invokeErr)
-            } else if (resp?.success) {
-              console.log("SUCESSO Relatorio salvo. ID: " + resp.report_id + " | Metodo: " + resp.extraction_method)
-              // Limpar estado local apenas mediante sucesso
-              clinicalAssessmentFlow.resetAssessment(platformData.user.id)
-            } else {
-              console.error('[FINALIZE] Edge Function retornou erro:', resp?.error || resp)
-            }
-          } catch (e) {
-            console.error('[FINALIZE] Falha crítica ao salvar relatório:', e)
+            // A UI reage ao estado do flow local e mostra "Análise completa"
           }
         }
       }
