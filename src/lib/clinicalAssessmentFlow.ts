@@ -52,16 +52,16 @@ export type AssessmentPhase =
   | 'COMPLETED'
 
 export interface AssessmentData {
-  // Identifica├º├úo
+  // Identificação
   patientName?: string
   patientPresentation?: string
 
-  // Lista Indici├íria
+  // Lista Indiciária
   complaintList: string[]
 
   // Queixa Principal
   mainComplaint?: string
-  /** R├│tulo curto para HDA (ex.: dor nas costas) quando a escolha "o que mais incomoda" ├® funcional/longeva */
+  /** Rótulo curto para HDA (ex.: dor nas costas) quando a escolha "o que mais incomoda" é funcional/longeva */
   complaintHdaAnchor?: string
 
   // Detalhes da Queixa Principal
@@ -72,14 +72,14 @@ export interface AssessmentData {
   complaintImprovements?: string[]
   complaintWorsening?: string[]
 
-  // Hist├│ria Patol├│gica Pregressa
+  // História Patológica Pregressa
   medicalHistory: string[]
 
-  // Hist├│ria Familiar
+  // História Familiar
   familyHistoryMother: string[]
   familyHistoryFather: string[]
 
-  // H├íbitos de Vida
+  // Hábitos de Vida
   lifestyleHabits: string[]
 
   // Perguntas Objetivas
@@ -95,7 +95,7 @@ export interface AssessmentData {
   consentGiven: boolean
   consentTimestamp?: string
 
-  /** M├®dico/profissional com quem o paciente pretende agendar (vitrine); personaliza abertura/consentimento/encerramento AEC */
+  /** Médico/profissional com quem o paciente pretende agendar (vitrine); personaliza abertura/consentimento/encerramento AEC */
   aecTargetPhysicianDisplayName?: string
 }
 
@@ -136,7 +136,7 @@ export class ClinicalAssessmentFlow {
   }
 
   /**
-   * Carrega estado do Supabase para um userId espec├¡fico
+   * Carrega estado do Supabase para um userId específico
    */
   private async loadStateFromDB(userId: string): Promise<void> {
     try {
@@ -182,7 +182,7 @@ export class ClinicalAssessmentFlow {
     const lower = raw.toLowerCase().trim()
     const t = lower.normalize('NFD').replace(/[\u0300-\u036f]/g, '')
     if (!t) return true
-    // Palavras isoladas que o protocolo AEC 001 cita como fecho (evitar "apenas" ignorado / "s├│" ignorado)
+    // Palavras isoladas que o protocolo AEC 001 cita como fecho (evitar "apenas" ignorado / "só" ignorado)
     if (/^(apenas|somente)$/i.test(t.trim())) return true
     if (/^(s[oó]|so)$/i.test(t.trim())) return true
     // "so esses sintomas", "só esses", "é só esses" -- fechos comuns na lista indiciaria
@@ -198,8 +198,8 @@ export class ClinicalAssessmentFlow {
     if (/(^|\s)(so isso|e so isso|apenas isso|somente isso|e isso)(\s|!|$)/.test(t)) return true
     if (lower.includes('é só isso') || lower.includes('só isso')) return true
     if (/\bso\s+isso\s+mesmo\b/.test(t)) return true
-    if (/\b(so|s├│)\s+prosseguir\b/.test(t)) return true
-    if (/\b(isso\s+mesmo|e\s+isso|s[o├│]\s+isso)\b/.test(t)) return true
+    if (/\b(so|só)\s+prosseguir\b/.test(t)) return true
+    if (/\b(isso\s+mesmo|e\s+isso|s[oó]\s+isso)\b/.test(t)) return true
     // Confirma que ja listou (historia pregressa / familia) -- nao e novo evento clinico
     if (/\bforam\s+ess(as?|e)\s+(que\s+)?falei\b/.test(t)) return true
     if (/\b(s[oó]|so)\s+ess(as?|e)\s+que\s+falei\b/.test(t)) return true
@@ -207,10 +207,10 @@ export class ClinicalAssessmentFlow {
     if (/\b(s[oó]|so)\s+o\s+que\s+falei\b/.test(t)) return true
     // "sou surfista... e só" / frase termina em " e so"
     if (/\b(e\s+)?s[oó]\s*!?\s*$/i.test(lower)) return true
-    // Hist├│ria familiar / nega├º├úo curta ("tudo bem tamb├®m", "n├úo tem nada") ÔÇö s├│ se a mensagem for essencialmente s├│ isso
+    // História familiar / negação curta ("tudo bem também", "não tem nada") ÔÇö só se a mensagem for essencialmente só isso
     if (
       t.length <= 52 &&
-      /^(tudo\s+bem|ta\s+tudo\s+bem|tudo\s+ok)(\s+tamb[e├®]m)?!?\s*$/i.test(t.trim())
+      /^(tudo\s+bem|ta\s+tudo\s+bem|tudo\s+ok)(\s+tamb[eé]m)?!?\s*$/i.test(t.trim())
     ) {
       return true
     }
@@ -259,18 +259,18 @@ export class ClinicalAssessmentFlow {
     }
   }
 
-  /** Nome exibido nas c├│pias AEC onde o protocolo citava o m├®dico da consulta (default: Dr. Ricardo Valen├ºa). */
+  /** Nome exibido nas cópias AEC onde o protocolo citava o médico da consulta (default: Dr. Ricardo Valença). */
   private physicianDisplay(state: AssessmentState): string {
-    return state.data.aecTargetPhysicianDisplayName?.trim() || 'Dr. Ricardo Valen├ºa'
+    return state.data.aecTargetPhysicianDisplayName?.trim() || 'Dr. Ricardo Valença'
   }
 
   private standardAecOpeningPhrase(state: AssessmentState): string {
     const doc = this.physicianDisplay(state)
-    return `Ol├í! Eu sou N├┤a Esperanza. Por favor, apresente-se tamb├®m e vamos iniciar a sua avalia├º├úo inicial para consultas com ${doc}.`
+    return `Olá! Eu sou N├┤a Esperanza. Por favor, apresente-se também e vamos iniciar a sua avaliação inicial para consultas com ${doc}.`
   }
 
   /**
-   * Inicia uma nova avalia├º├úo cl├¡nica inicial
+   * Inicia uma nova avaliação clínica inicial
    */
   startAssessment(userId: string, patientName?: string, aecTargetPhysicianDisplayName?: string): AssessmentState {
     const trimmedName = patientName?.trim()
@@ -305,7 +305,7 @@ export class ClinicalAssessmentFlow {
     return state
   }
 
-  /** Para perguntas de localiza├º├úo/caracter├¡sticas: usar sintoma corporal da lista se a "principal" for impacto/sono/frase longa. */
+  /** Para perguntas de localização/características: usar sintoma corporal da lista se a "principal" for impacto/sono/frase longa. */
   private deriveComplaintHdaAnchor(mainComplaint: string, complaintList: string[]): string {
     const main = mainComplaint.trim()
     const mainLow = main.toLowerCase()
@@ -345,7 +345,7 @@ export class ClinicalAssessmentFlow {
     return a || m || 'sua queixa'
   }
 
-  /** Evita que "Pedro aqui" ou nome isolado vire primeira queixa quando o perfil j├í trouxe o nome. */
+  /** Evita que "Pedro aqui" ou nome isolado vire primeira queixa quando o perfil já trouxe o nome. */
   private looksLikeRedundantPresentation(userTurn: string, knownPresentation?: string): boolean {
     const t = userTurn.trim()
     if (!t || t.length > 72) return false
@@ -366,14 +366,14 @@ export class ClinicalAssessmentFlow {
   }
 
   /**
-   * Obt├®m o estado atual da avalia├º├úo
+   * Obtém o estado atual da avaliação
    */
   getState(userId: string): AssessmentState | null {
     return this.states.get(userId) || null
   }
 
   /**
-   * Processa a resposta do usu├írio e retorna a pr├│xima pergunta
+   * Processa a resposta do usuário e retorna a próxima pergunta
    */
   processResponse(userId: string, userResponse: string): {
     nextQuestion: string
@@ -743,23 +743,23 @@ export class ClinicalAssessmentFlow {
       case 'CONSENSUS_REPORT': {
         const lr = lowerResponse.trim()
         const explicitDisagree =
-          /\b(nao|n├úo)\s+concordo\b/.test(lowerResponse) ||
+          /\b(nao|não)\s+concordo\b/.test(lowerResponse) ||
           /\bdiscordo\b/.test(lowerResponse) ||
-          /\b(esta|est├í)\s+(errad|incorret)/.test(lowerResponse) ||
+          /\b(esta|está)\s+(errad|incorret)/.test(lowerResponse) ||
           (/\bpreciso\s+corrigir\b/.test(lowerResponse) &&
-            !/\b(nao|n├úo)\s+preciso\s+corrigir\b/.test(lowerResponse))
+            !/\b(nao|não)\s+preciso\s+corrigir\b/.test(lowerResponse))
         const consensusAffirm =
           !explicitDisagree &&
           (lowerResponse.includes('concordo') ||
-            /\best├í\s+correto\b/.test(lowerResponse) ||
+            /\bestá\s+correto\b/.test(lowerResponse) ||
             /\besta\s+correto\b/.test(lowerResponse) ||
             (/\bcorreto\b/.test(lowerResponse) && !/incorreto/.test(lowerResponse)) ||
-            /^(ok|ta|t├í)\b/i.test(lr) ||
+            /^(ok|ta|tá)\b/i.test(lr) ||
             /^(apenas\s+)?prosseguir\b/i.test(lr) ||
             /\bnao\s+precisa\s+corrigir|nada\s+a\s+corrigir|nada\s+para\s+corrigir\b/i.test(lowerResponse) ||
             (/\bsim\b/.test(lowerResponse) &&
               !/\bnao\b/.test(lowerResponse.normalize('NFD').replace(/[\u0300-\u036f]/g, '')) &&
-              !lowerResponse.includes('n├úo')))
+              !lowerResponse.includes('não')))
         if (consensusAffirm) {
           state.data.consensusAgreed = true
           state.phase = 'CONSENT_COLLECTION'
@@ -776,7 +776,7 @@ export class ClinicalAssessmentFlow {
             isComplete: false
           }
         }
-        // N├úo concordou ou resposta amb├¡gua: pedir corre├º├Áes
+        // Não concordou ou resposta ambígua: pedir correções
         state.data.consensusRevisions++
         state.phase = 'CONSENSUS_REVIEW'
         state.lastUpdate = new Date()
@@ -798,15 +798,15 @@ export class ClinicalAssessmentFlow {
           state.lastUpdate = new Date()
           const doc = this.physicianDisplay(state)
           return {
-            nextQuestion: 'Ô£à Consentimento registrado. Obrigada!\n\n' +
-              'Sua avalia├º├úo inicial foi conclu├¡da com sucesso. ' +
-              'O relat├│rio cl├¡nico j├í est├í dispon├¡vel no seu painel.\n\n' +
-              '**Pr├│ximos passos:**\n' +
-              'ÔÇó Acesse seu **Relat├│rio Cl├¡nico** para revisar os achados\n' +
-              `ÔÇó **Agende uma consulta** com ${doc} para dar continuidade ao seu cuidado\n\n` +
-              'Use os bot├Áes abaixo para navegar rapidamente ­ƒæç\n\n' +
-              'Essa ├® uma avalia├º├úo inicial de acordo com o m├®todo desenvolvido pelo Dr. Ricardo Valen├ºa, com o objetivo de aperfei├ºoar o seu atendimento. ' +
-              `Apresente sua avalia├º├úo durante a consulta com ${doc} ou com outro profissional de sa├║de da plataforma Med-Cann Lab.\n\n` +
+            nextQuestion: '✅ Consentimento registrado. Obrigada!\n\n' +
+              'Sua avaliação inicial foi concluída com sucesso. ' +
+              'O relatório clínico já está disponível no seu painel.\n\n' +
+              '**Próximos passos:**\n' +
+              '• Acesse seu **Relatório Clínico** para revisar os achados\n' +
+              `• **Agende uma consulta** com ${doc} para dar continuidade ao seu cuidado\n\n` +
+              'Use os botões abaixo para navegar rapidamente 👇\n\n' +
+              'Essa é uma avaliação inicial de acordo com o método desenvolvido pelo Dr. Ricardo Valença, com o objetivo de aperfeiçoar o seu atendimento. ' +
+              `Apresente sua avaliação durante a consulta com ${doc} ou com outro profissional de saúde da plataforma Med-Cann Lab.\n\n` +
               '[ASSESSMENT_COMPLETED]',
             phase: 'FINAL_RECOMMENDATION',
             isComplete: false
@@ -825,7 +825,7 @@ export class ClinicalAssessmentFlow {
           }
         } else {
           return {
-            nextQuestion: 'Por favor, responda **sim** para autorizar o registro ou **n├úo** para recusar.',
+            nextQuestion: 'Por favor, responda **sim** para autorizar o registro ou **não** para recusar.',
             phase: 'CONSENT_COLLECTION',
             isComplete: false
           }
@@ -862,7 +862,7 @@ export class ClinicalAssessmentFlow {
         }
         return {
           nextQuestion:
-            'Sua avalia├º├úo foi pausada e os dados foram guardados. Diga **retomar avalia├º├úo** para continuar, ou **nova avalia├º├úo** para recome├ºar do zero. O relat├│rio formal na plataforma ├® gerado quando o fluxo chega ao consentimento e ├á mensagem final com encerramento.',
+            'Sua avaliação foi pausada e os dados foram guardados. Diga **retomar avaliação** para continuar, ou **nova avaliação** para recomeçar do zero. O relatório formal na plataforma é gerado quando o fluxo chega ao consentimento e ├á mensagem final com encerramento.',
           phase: 'INTERRUPTED',
           isComplete: false
         }
@@ -870,7 +870,7 @@ export class ClinicalAssessmentFlow {
 
       default:
         return {
-          nextQuestion: 'Avalia├º├úo conclu├¡da.',
+          nextQuestion: 'Avaliação concluída.',
           phase: state.phase,
           isComplete: true
         }
@@ -887,12 +887,12 @@ export class ClinicalAssessmentFlow {
   } {
     const label = this.hdaLabel(state)
     const questions = [
-      { field: 'complaintLocation', question: `Onde voc├¬ sente ${label}?` },
-      { field: 'complaintOnset', question: `Quando essa dor ou inc├┤modo em ${label} come├ºou?` },
-      { field: 'complaintDescription', question: `Como ├® essa sensa├º├úo (em ${label})?` },
+      { field: 'complaintLocation', question: `Onde você sente ${label}?` },
+      { field: 'complaintOnset', question: `Quando essa dor ou inc├┤modo em ${label} começou?` },
+      { field: 'complaintDescription', question: `Como é essa sensação (em ${label})?` },
       {
         field: 'complaintAssociatedSymptoms',
-        question: `O que mais voc├¬ sente junto com ${label}?`,
+        question: `O que mais você sente junto com ${label}?`,
         isList: true
       },
       { field: 'complaintImprovements', question: `O que parece melhorar ${label}?`, isList: true },
@@ -908,7 +908,7 @@ export class ClinicalAssessmentFlow {
       state.currentQuestionIndex = 0
       state.lastUpdate = new Date()
       return {
-        nextQuestion: 'E agora, sobre o restante sua vida at├® aqui, desde seu nascimento, quais as quest├Áes de sa├║de que voc├¬ j├í viveu? Vamos ordenar do mais antigo para o mais recente, o que veio primeiro?',
+        nextQuestion: 'E agora, sobre o restante sua vida até aqui, desde seu nascimento, quais as questões de saúde que você já viveu? Vamos ordenar do mais antigo para o mais recente, o que veio primeiro?',
         phase: 'MEDICAL_HISTORY',
         isComplete: false
       }
@@ -931,7 +931,7 @@ export class ClinicalAssessmentFlow {
           isComplete: false
         }
       } else {
-        // Pr├│xima pergunta
+        // Próxima pergunta
         state.currentQuestionIndex++
         state.lastUpdate = new Date()
         const nextQ = questions[state.currentQuestionIndex]
@@ -948,7 +948,7 @@ export class ClinicalAssessmentFlow {
       const prevVal = (state.data as any)[field] as string | undefined
       const trimmed = userResponse.trim()
       const userFrustratedRepeat =
-        /\b(j[a├í]\s+falei|j[a├í]\s+disse|repetindo|de novo|falei\s+antes|voc[e├¬]\s+deveria)\b/i.test(
+        /\b(j[aá]\s+falei|j[aá]\s+disse|repetindo|de novo|falei\s+antes|voc[eê]\s+deveria)\b/i.test(
           trimmed
         )
       const duplicateShortAnswer =
@@ -985,7 +985,7 @@ export class ClinicalAssessmentFlow {
     state.currentQuestionIndex = 0
     state.lastUpdate = new Date()
     return {
-      nextQuestion: 'E agora, sobre o restante sua vida at├® aqui, desde seu nascimento, quais as quest├Áes de sa├║de que voc├¬ j├í viveu? Vamos ordenar do mais antigo para o mais recente, o que veio primeiro?',
+      nextQuestion: 'E agora, sobre o restante sua vida até aqui, desde seu nascimento, quais as questões de saúde que você já viveu? Vamos ordenar do mais antigo para o mais recente, o que veio primeiro?',
       phase: 'MEDICAL_HISTORY',
       isComplete: false
     }
@@ -1000,9 +1000,9 @@ export class ClinicalAssessmentFlow {
     isComplete: boolean
   } {
     const questions = [
-      { field: 'allergies', question: 'Voc├¬ tem alguma alergia (mudan├ºa de tempo, medica├º├úo, poeira...)?' },
-      { field: 'regularMedications', question: 'Quais as medica├º├Áes que voc├¬ utiliza regularmente?' },
-      { field: 'sporadicMedications', question: 'Quais as medica├º├Áes voc├¬ utiliza esporadicamente (de vez em quando) e porque utiliza?' }
+      { field: 'allergies', question: 'Você tem alguma alergia (mudança de tempo, medicação, poeira...)?' },
+      { field: 'regularMedications', question: 'Quais as medicações que você utiliza regularmente?' },
+      { field: 'sporadicMedications', question: 'Quais as medicações você utiliza esporadicamente (de vez em quando) e porque utiliza?' }
     ]
 
     const currentQ = questions[state.currentQuestionIndex]
@@ -1012,7 +1012,7 @@ export class ClinicalAssessmentFlow {
       state.phase = 'CONSENSUS_REVIEW'
       state.lastUpdate = new Date()
       return {
-        nextQuestion: 'Vamos revisar a sua hist├│ria para garantir que n├úo perdemos nenhum detalhe importante.',
+        nextQuestion: 'Vamos revisar a sua história para garantir que não perdemos nenhum detalhe importante.',
         phase: 'CONSENSUS_REVIEW',
         isComplete: false
       }
@@ -1037,14 +1037,14 @@ export class ClinicalAssessmentFlow {
     state.phase = 'CONSENSUS_REVIEW'
     state.lastUpdate = new Date()
     return {
-      nextQuestion: 'Vamos revisar a sua hist├│ria para garantir que n├úo perdemos nenhum detalhe importante.',
+      nextQuestion: 'Vamos revisar a sua história para garantir que não perdemos nenhum detalhe importante.',
       phase: 'CONSENSUS_REVIEW',
       isComplete: false
     }
   }
 
   /**
-   * Gera o relat├│rio consensual
+   * Gera o relatório consensual
    */
   private generateConsensusReport(state: AssessmentState): string {
     const data = state.data
@@ -1052,14 +1052,14 @@ export class ClinicalAssessmentFlow {
     const cleanJoin = (arr: string[], sep: string) =>
       arr.map((x) => stripPlatformInjectionNoise(x)).filter(Boolean).join(sep)
 
-    // Introdu├º├úo curta j├í foi enviada na fase CONSENSUS_REVIEW; evitar duplicar no mesmo fio.
+    // Introdução curta já foi enviada na fase CONSENSUS_REVIEW; evitar duplicar no mesmo fio.
     let report = ''
 
-    report += '**MEU ENTENDIMENTO SOBRE SUA AVALIA├ç├âO:**\n\n'
+    report += '**MEU ENTENDIMENTO SOBRE SUA AVALIAÇ├âO:**\n\n'
 
-    // Identifica├º├úo
+    // Identificação
     if (data.patientPresentation) {
-      report += `**Apresenta├º├úo:** ${clean(data.patientPresentation)}\n\n`
+      report += `**Apresentação:** ${clean(data.patientPresentation)}\n\n`
     }
 
     // Lista de Queixas
@@ -1075,11 +1075,11 @@ export class ClinicalAssessmentFlow {
         anchor &&
         anchor.toLowerCase() !== clean(data.mainComplaint).toLowerCase()
       ) {
-        report += `*(Roteiro de perguntas abaixo focado em **${clean(anchor)}**, alinhado ├á lista indici├íria.)*\n`
+        report += `*(Roteiro de perguntas abaixo focado em **${clean(anchor)}**, alinhado ├á lista indiciária.)*\n`
       }
       if (data.complaintLocation) report += `- Onde: ${clean(data.complaintLocation)}\n`
-      if (data.complaintOnset) report += `- Quando come├ºou: ${clean(data.complaintOnset)}\n`
-      if (data.complaintDescription) report += `- Como ├®: ${clean(data.complaintDescription)}\n`
+      if (data.complaintOnset) report += `- Quando começou: ${clean(data.complaintOnset)}\n`
+      if (data.complaintDescription) report += `- Como é: ${clean(data.complaintDescription)}\n`
       if (data.complaintAssociatedSymptoms && data.complaintAssociatedSymptoms.length > 0) {
         report += `- Sintomas associados: ${cleanJoin(data.complaintAssociatedSymptoms, ', ')}\n`
       }
@@ -1092,14 +1092,14 @@ export class ClinicalAssessmentFlow {
       report += '\n'
     }
 
-    // Hist├│ria Patol├│gica Pregressa
+    // História Patológica Pregressa
     if (data.medicalHistory.length > 0) {
-      report += `**Hist├│ria Patol├│gica Pregressa:** ${cleanJoin(data.medicalHistory, '; ')}\n\n`
+      report += `**História Patológica Pregressa:** ${cleanJoin(data.medicalHistory, '; ')}\n\n`
     }
 
-    // Hist├│ria Familiar
+    // História Familiar
     if (data.familyHistoryMother.length > 0 || data.familyHistoryFather.length > 0) {
-      report += '**Hist├│ria Familiar:**\n'
+      report += '**História Familiar:**\n'
       if (data.familyHistoryMother.length > 0) {
         report += `- Lado materno: ${cleanJoin(data.familyHistoryMother, '; ')}\n`
       }
@@ -1109,23 +1109,23 @@ export class ClinicalAssessmentFlow {
       report += '\n'
     }
 
-    // H├íbitos de Vida
+    // Hábitos de Vida
     if (data.lifestyleHabits.length > 0) {
-      report += `**H├íbitos de Vida:** ${cleanJoin(data.lifestyleHabits, '; ')}\n\n`
+      report += `**Hábitos de Vida:** ${cleanJoin(data.lifestyleHabits, '; ')}\n\n`
     }
 
     // Perguntas Objetivas
     if (data.allergies) report += `**Alergias:** ${clean(data.allergies)}\n`
-    if (data.regularMedications) report += `**Medica├º├Áes Regulares:** ${clean(data.regularMedications)}\n`
-    if (data.sporadicMedications) report += `**Medica├º├Áes Espor├ídicas:** ${clean(data.sporadicMedications)}\n`
+    if (data.regularMedications) report += `**Medicações Regulares:** ${clean(data.regularMedications)}\n`
+    if (data.sporadicMedications) report += `**Medicações Esporádicas:** ${clean(data.sporadicMedications)}\n`
 
-    report += '\n**Voc├¬ concorda com esse entendimento?**'
+    report += '\n**Você concorda com esse entendimento?**'
 
     return report
   }
 
   /**
-   * Obt├®m os dados completos da avalia├º├úo para gerar relat├│rio final
+   * Obtém os dados completos da avaliação para gerar relatório final
    */
   getAssessmentData(userId: string): AssessmentData | null {
     const state = this.states.get(userId)
@@ -1133,7 +1133,7 @@ export class ClinicalAssessmentFlow {
   }
 
   /**
-   * Finaliza a avalia├º├úo
+   * Finaliza a avaliação
    */
   completeAssessment(userId: string): AssessmentData | null {
     const state = this.states.get(userId)
@@ -1146,25 +1146,25 @@ export class ClinicalAssessmentFlow {
   }
 
   /**
-   * Gera relat├│rio estruturado da avalia├º├úo completa
+   * Gera relatório estruturado da avaliação completa
    */
   async generateReport(userId: string, patientId: string): Promise<string | null> {
     const state = this.states.get(userId)
     if (!state || state.phase !== 'COMPLETED') return null
 
-    // S6: Bloquear gera├º├úo de relat├│rio sem consentimento
+    // S6: Bloquear geração de relatório sem consentimento
     if (!state.data.consentGiven) {
-      console.warn('[AEC] ÔÜá´©Å Relat├│rio N├âO gerado ÔÇö paciente recusou consentimento.')
+      console.warn('[AEC] ⚠️´©Å Relatório N├âO gerado ÔÇö paciente recusou consentimento.')
       return null
     }
 
     const data = state.data
 
-    // Gerar relat├│rio estruturado
+    // Gerar relatório estruturado
     const report = {
       id: `aec-${Date.now()}-${userId.substring(0, 8)}`,
       patient_id: patientId,
-      patient_name: data.patientName || 'N├úo informado',
+      patient_name: data.patientName || 'Não informado',
       report_type: 'initial_assessment',
       protocol: 'AEC',
       generated_by: 'ai_resident',
@@ -1207,18 +1207,18 @@ export class ClinicalAssessmentFlow {
       // Importar supabase do caminho correto
       const { supabase } = await import('./supabase')
 
-      console.log('­ƒªà [ClinicalFlow] Enviando dados para Edge Function (Server-Side Save)...')
+      console.log('🚀 [ClinicalFlow] Enviando dados para Edge Function (Server-Side Save)...')
 
       // CHAMADA ├Ç EDGE FUNCTION (Bypassing RLS)
       const { data: edgeResponse, error: edgeError } = await supabase.functions.invoke('tradevision-core', {
         body: {
           action: 'finalize_assessment',
-          message: 'Finalizing Assessment', // Campo obrigat├│rio para passar na valida├º├úo inicial
+          message: 'Finalizing Assessment', // Campo obrigatório para passar na validação inicial
           assessmentData: {
             patient_id: patientId,
             content: report.content,
             doctor_id: null,
-            // C├ílculo de Scores Simplificado para este contexto
+            // Cálculo de Scores Simplificado para este contexto
             scores: {
               anamnese: 100,
               detalhamento: 100,
@@ -1230,11 +1230,11 @@ export class ClinicalAssessmentFlow {
       })
 
       if (edgeError) {
-        console.error('ÔØî [Edge Function] Falha na chamada:', edgeError)
+        console.error('❌ [Edge Function] Falha na chamada:', edgeError)
         throw edgeError
       }
 
-      console.log('Ô£à [Edge Function] Resposta:', edgeResponse)
+      console.log('✅ [Edge Function] Resposta:', edgeResponse)
 
       // [FIX 22/04 v2] Edge agora devolve report_id mesmo em casos idempotentes.
       // Aceitamos:
@@ -1247,43 +1247,43 @@ export class ClinicalAssessmentFlow {
       }
 
       if (edgeResponse?.report_id) {
-        console.log('Ô£à Relat├│rio cl├¡nico salvo via Server-Side:', edgeResponse.report_id, '| status:', edgeResponse?.pipeline_status)
+        console.log('✅ Relatório clínico salvo via Server-Side:', edgeResponse.report_id, '| status:', edgeResponse?.pipeline_status)
         return edgeResponse.report_id
       }
 
       // success=true sem report_id → pipeline rodou mas não conseguimos recuperar o ID.
       // Não é erro de UX (relatório existe no banco), apenas não temos a referência imediata.
-      console.warn('ÔÜá [Edge Function] success=true sem report_id (pipeline_status:', edgeResponse?.pipeline_status, '). Relatório provavelmente já persistido — UI consultará lista.')
+      console.warn('⚠️ [Edge Function] success=true sem report_id (pipeline_status:', edgeResponse?.pipeline_status, '). Relatório provavelmente já persistido — UI consultará lista.')
       return null
 
     } catch (error) {
-      console.error('ÔØî Erro ao gerar relat├│rio (Via Edge Function):', error)
+      console.error('❌ Erro ao gerar relatório (Via Edge Function):', error)
       return null
     }
   }
 
   /**
-   * Retorna o prompt adequado para retomar uma fase espec├¡fica
+   * Retorna o prompt adequado para retomar uma fase específica
    */
   private getPhaseResumePrompt(phase: AssessmentPhase, state: AssessmentState): string {
     switch (phase) {
       case 'INITIAL_GREETING': return 'Pode se apresentar quando estiver pronto(a).'
-      case 'IDENTIFICATION': return 'O que trouxe voc├¬ ├á nossa avalia├º├úo hoje?'
-      case 'COMPLAINT_LIST': return 'O que mais voc├¬ gostaria de relatar?'
+      case 'IDENTIFICATION': return 'O que trouxe você ├á nossa avaliação hoje?'
+      case 'COMPLAINT_LIST': return 'O que mais você gostaria de relatar?'
       case 'MAIN_COMPLAINT': return `Das queixas relatadas (${state.data.complaintList.join(', ')}), qual considera a principal?`
       case 'COMPLAINT_DETAILS': return 'Continuando sobre sua queixa principal...'
-      case 'MEDICAL_HISTORY': return 'Tem algum hist├│rico de doen├ºas ou condi├º├Áes anteriores?'
-      case 'FAMILY_HISTORY_MOTHER': return 'Sobre a sa├║de da sua fam├¡lia materna, h├í algo a relatar?'
-      case 'FAMILY_HISTORY_FATHER': return 'E sobre a sa├║de da fam├¡lia paterna?'
-      case 'LIFESTYLE_HABITS': return 'Sobre seus h├íbitos de vida (exerc├¡cios, alimenta├º├úo, sono)...'
+      case 'MEDICAL_HISTORY': return 'Tem algum histórico de doenças ou condições anteriores?'
+      case 'FAMILY_HISTORY_MOTHER': return 'Sobre a saúde da sua família materna, há algo a relatar?'
+      case 'FAMILY_HISTORY_FATHER': return 'E sobre a saúde da família paterna?'
+      case 'LIFESTYLE_HABITS': return 'Sobre seus hábitos de vida (exercícios, alimentação, sono)...'
       case 'OBJECTIVE_QUESTIONS': return 'Vamos continuar com as perguntas objetivas.'
-      case 'CONSENSUS_REVIEW': return 'Vamos revisar o resumo da sua avalia├º├úo.'
+      case 'CONSENSUS_REVIEW': return 'Vamos revisar o resumo da sua avaliação.'
       default: return 'Vamos continuar de onde paramos.'
     }
   }
 
   /**
-   * Verifica se um usu├írio tem uma avalia├º├úo interrompida que pode ser retomada
+   * Verifica se um usuário tem uma avaliação interrompida que pode ser retomada
    */
   hasInterruptedAssessment(userId: string): boolean {
     const state = this.states.get(userId)
@@ -1291,7 +1291,7 @@ export class ClinicalAssessmentFlow {
   }
 
   /**
-   * Retoma uma avalia├º├úo interrompida
+   * Retoma uma avaliação interrompida
    */
   resumeAssessment(userId: string): { nextQuestion: string; phase: AssessmentPhase } | null {
     const state = this.states.get(userId)
@@ -1303,17 +1303,17 @@ export class ClinicalAssessmentFlow {
     this.persist()
 
     return {
-      nextQuestion: `­ƒöä Retomando sua avalia├º├úo de onde paramos. ${this.getPhaseResumePrompt(state.phase, state)}`,
+      nextQuestion: `🔄 Retomando sua avaliação de onde paramos. ${this.getPhaseResumePrompt(state.phase, state)}`,
       phase: state.phase
     }
   }
 
   /**
-   * Reseta uma avalia├º├úo (local + BD)
+   * Reseta uma avaliação (local + BD)
    */
   resetAssessment(userId: string): void {
     this.states.delete(userId)
-    // Deletar do BD de forma ass├¡ncrona (fire-and-forget)
+    // Deletar do BD de forma assíncrona (fire-and-forget)
     supabase
       .from('aec_assessment_state')
       .delete()
@@ -1324,7 +1324,7 @@ export class ClinicalAssessmentFlow {
   }
 }
 
-// Inst├óncia singleton
+// Instância singleton
 export const clinicalAssessmentFlow = new ClinicalAssessmentFlow()
 
 

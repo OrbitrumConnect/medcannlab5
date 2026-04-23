@@ -480,7 +480,7 @@ export class NoaResidentAI {
 
       // Tentar extrair o JSON da resposta (pode vir com texto em volta)
       const jsonMatch = response.content.match(/\{[\s\S]*\}/)
-      if (!jsonMatch) throw new Error('JSON n├úo encontrado na resposta da IA')
+      if (!jsonMatch) throw new Error('JSON não encontrado na resposta da IA')
 
       const jsonStr = jsonMatch[0]
       const summary: StructuredClinicalSummary = JSON.parse(jsonStr)
@@ -490,7 +490,7 @@ export class NoaResidentAI {
 
     } catch (error) {
       console.error('Erro ao gerar resumo clinico dinamico:', error)
-      // Fallback para dados padr├úo em caso de erro na gera├º├úo
+      // Fallback para dados padrão em caso de erro na geração
       return {
         emotionalAxis: { intensity: 5, valence: 5, arousal: 5, stability: 5 },
         cognitiveAxis: { attention: 5, memory: 5, executive: 5, processing: 5 },
@@ -506,7 +506,7 @@ export class NoaResidentAI {
         recommendations: [
           'Realizar acompanhamento regular',
           'Avaliar necessidade de exames complementares',
-          'Monitorar evolu├º├úo dos sintomas'
+          'Monitorar evolução dos sintomas'
         ]
       }
     }
