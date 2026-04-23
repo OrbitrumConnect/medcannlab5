@@ -909,6 +909,19 @@ const deriveAppCommandsV1 = (message: string, ui_context?: any, userRole?: strin
         })
     }
 
+    // 🧬 [V1.6.9] Gatilho de Avaliação Clínica Inicial (AEC 001)
+    if (/(avaliacao|avaliação|anamnese|entrevista|inicial|comecar|iniciar)/.test(norm)) {
+        commands.push({
+            kind: 'noa_command',
+            command: {
+                type: 'navigate-route',
+                target: '/app/clinica/paciente/dashboard?section=avaliacao',
+                label: '📋 Iniciar Avaliação Clínica'
+            },
+            reason: 'user_requested_clinical_assessment'
+        })
+    }
+
     return commands
 }
 
@@ -2685,7 +2698,7 @@ Responda SOMENTE com o JSON válido, sem markdown.`
         if (nextQuestionHint) {
             if (aecVerbatimLock && !allowUrgentMultiQuestion) {
                 console.log('[AEC] Roteiro selado (verbatim): fase=', assessmentPhase)
-                phaseInstruction += `
+                phaseInstruction = phaseInstruction + `
 
 MODO ROTEIRO SELADO — NÃO NEGOCIÁVEL
 O TradeVision Core e o ClinicalAssessmentFlow já determinaram a única pergunta válida neste turno. Isto prevalece sobre o histórico do chat, sobre inferências do modelo e sobre qualquer outro trecho deste prompt que sugira liberdade de redação.
@@ -2701,18 +2714,18 @@ ${nextQuestionHint}
 AEC_LOCK_END
 `
             } else if (allowUrgentMultiQuestion) {
-                phaseInstruction += `\n\nMODO URGÊNCIA DETECTADO — PRÓXIMA PERGUNTA (referência): "${nextQuestionHint}"\n\nUrgência explícita: pode condensar até 3 perguntas essenciais num único turno, ou seguir uma a uma. Não desvie para temas fora da queixa urgente. Oriente atendimento presencial se houver risco imediato.`
+                phaseInstruction = phaseInstruction + `\n\nMODO URGÊNCIA DETECTADO — PRÓXIMA PERGUNTA (referência): "${nextQuestionHint}"\n\nUrgência explícita: pode condensar até 3 perguntas essenciais num único turno, ou seguir uma a uma. Não desvie para temas fora da queixa urgente. Oriente atendimento presencial se houver risco imediato.`
             } else {
-                phaseInstruction += `\n\nRECOMENDAÇÃO AEC: "${nextQuestionHint}"\n\nConduza a conversa para obter esta informação de forma natural.`
+                phaseInstruction = phaseInstruction + `\n\nRECOMENDAÇÃO AEC: "${nextQuestionHint}"\n\nConduza a conversa para obter esta informação de forma natural.`
             }
         }
 
         // Instrução específica para fase de desenvolvimento da queixa (nunca sugerir "[queixa]" ao modelo — ele copiava literal)
         if (assessmentPhase === 'COMPLAINT_DETAILS') {
             if (allowUrgentMultiQuestion) {
-                phaseInstruction += `\n\nCOMPLAINT_DETAILS — URGÊNCIA\n\nPode condensar até 3 perguntas essenciais (onde, quando, como/intensidade) num único turno se fizer sentido. Proibido escrever colchetes, placeholders ou o texto literal "[queixa]" ao paciente — use as palavras do sintoma que ele já descreveu. Oriente atendimento presencial se houver risco imediato.`
+                phaseInstruction = phaseInstruction + `\n\nCOMPLAINT_DETAILS — URGÊNCIA\n\nPode condensar até 3 perguntas essenciais (onde, quando, como/intensidade) num único turno se fizer sentido. Proibido escrever colchetes, placeholders ou o texto literal "[queixa]" ao paciente — use as palavras do sintoma que ele já descreveu. Oriente atendimento presencial se houver risco imediato.`
             } else {
-                phaseInstruction += `\n\nCOMPLAINT_DETAILS\n\nUma pergunta por turno. Leia o histórico: se já respondeu onde e quando, não repita — avance para a próxima do roteiro.`
+                phaseInstruction = phaseInstruction + `\n\nCOMPLAINT_DETAILS\n\nUma pergunta por turno. Leia o histórico: se já respondeu onde e quando, não repita — avance para a próxima do roteiro.`
             }
         }
 
@@ -2745,7 +2758,7 @@ AEC_LOCK_END
                 if (Array.isArray(slots.improvements) && slots.improvements.length > 0) slotLines.push(`  • Melhora: ${slots.improvements.join(', ')}`)
                 if (Array.isArray(slots.worsening) && slots.worsening.length > 0) slotLines.push(`  • Piora: ${slots.worsening.join(', ')}`)
 
-                phaseInstruction += `
+                phaseInstruction = phaseInstruction + `
 
 🔒 AEC SSOT — FONTE ÚNICA DA VERDADE DESTA SESSÃO (NÃO NEGOCIÁVEL)
 
@@ -2772,7 +2785,7 @@ REGRAS DE OURO (violação = falha grave do protocolo):
                 ? String(patientData.aecConsultationPhysicianName).trim()
                 : ''
         if (aecChosenPhysician && userRole === 'patient') {
-            phaseInstruction += `
+            phaseInstruction = phaseInstruction + `
 
 PROFISSIONAL DE DESTINO (AEC): O paciente escolheu agendar com ${aecChosenPhysician}. Onde o protocolo AEC 001 citar o médico da consulta (abertura, consentimento, encerramento, próximos passos), use esse nome no lugar de "Dr. Ricardo Valença". Não altere as menções ao método IMRE como desenvolvido pelo Dr. Ricardo Valença. Se existir bloco AEC_LOCK com texto já personalizado, copie-o literalmente.`
         }
@@ -3665,7 +3678,7 @@ ${contentExcerpt || '(Texto não disponível para este documento. O conteúdo ai
 
                 // Cruzar com knowledgeBlock se disponível
                 if (knowledgeBlock && knowledgeBlock.length > 50 && ['cannabis', 'medicacao'].includes(primaryConcept)) {
-                    dState.body += '\n\nEncontrei informações relevantes na nossa base de conhecimento que podem complementar.'
+                    dState.body = dState.body + '\n\nEncontrei informações relevantes na nossa base de conhecimento que podem complementar.'
                 }
             } else if (detectedConcepts.length > 0 && (isProfessional || isAdmin)) {
                 // PROFISSIONAL/ADMIN com conceito detectado
@@ -3694,13 +3707,15 @@ ${contentExcerpt || '(Texto não disponível para este documento. O conteúdo ai
                 dState.body = 'Posso te ajudar com navegação, agenda e acesso rápido às áreas da clínica.'
             }
 
-            // MONTAGEM FINAL: composeResponse
-            const parts: string[] = [opening]
-            if (determinContext) parts.push(determinContext)
-            if (determinBody) parts.push(determinBody)
-            if (determinExploratory) parts.push(determinExploratory)
-            if (determinAction) parts.push(determinAction)
-            parts.push(transparency)
+            // MONTAGEM FINAL: composeResponse (Unified dState Architecture)
+            const parts: string[] = [
+                opening,
+                dState.context,
+                dState.body,
+                dState.exploratory,
+                dState.action,
+                transparency
+            ].filter(Boolean)
 
             const DETERMINISTIC_RESPONSE = parts.join('\n\n')
 
@@ -3721,8 +3736,8 @@ ${contentExcerpt || '(Texto não disponível para este documento. O conteúdo ai
             throw new Error('Resposta da IA inválida: completion não contém choices válidos')
         }
 
-        // Garantir que aiResponse sempre está definido
-        let aiResponse: string = completion?.choices?.[0]?.message?.content || ''
+        // Garantir que aiResponse sempre está definido (FORÇA CÓPIA PRIMITIVA PARA EVITAR MUTATION EM CONST NO BUNDLE)
+        let aiResponse: string = String(completion?.choices?.[0]?.message?.content || '')
         let shouldTriggerScheduling = false; // Declarado aqui para garantir escopo limpo antes do processamento
 
         // Se não houver resposta válida, usar fallback
@@ -3784,7 +3799,7 @@ ${contentExcerpt || '(Texto não disponível para este documento. O conteúdo ai
             if (isConfirmation) {
                 console.log('🧬 [FORCE] Injetando tags de conclusão, agendamento e fechamento de sessão.');
                 const schedulingTag = aiResponse.includes('[TRIGGER_SCHEDULING]') ? '' : ' [TRIGGER_SCHEDULING]'
-                aiResponse += ` [ASSESSMENT_COMPLETED][FINALIZE_SESSION]${schedulingTag}`
+                aiResponse = aiResponse + ` [ASSESSMENT_COMPLETED][FINALIZE_SESSION]${schedulingTag}`
             }
         }
 
@@ -4108,6 +4123,34 @@ ${contentExcerpt || '(Texto não disponível para este documento. O conteúdo ai
             );
         }
         
+        // 🧬 [V1.6.9] Sugestão Proativa de Avaliação (Greeting UX para Pacientes)
+        const isGreetingTrigger = /^(oi|ola|olá|bom dia|boa tarde|boa noite|hey|hi|hello|tudo bem)/i.test(normalizePt(message || ''))
+        const hasAssessmentCmd = app_commands.some((c: any) => c.command?.label?.includes('Avaliação'))
+        
+        if (isGreetingTrigger && userRole === 'patient' && !hasAssessmentCmd) {
+            if (assessmentPhase === 'IDLE') {
+                app_commands.push({
+                    kind: 'noa_command',
+                    command: {
+                        type: 'navigate-route',
+                        target: '/app/clinica/paciente/dashboard?section=avaliacao',
+                        label: '📋 Iniciar Avaliação Clínica'
+                    },
+                    reason: 'proactive_greeting_assessment_suggestion'
+                })
+            } else if (assessmentPhase === 'IN_PROGRESS' || assessmentPhase === 'INTERRUPTED') {
+                app_commands.push({
+                    kind: 'noa_command',
+                    command: {
+                        type: 'navigate-route',
+                        target: '/app/clinica/paciente/dashboard?section=avaliacao',
+                        label: '📋 Continuar Avaliação Clínica'
+                    },
+                    reason: 'proactive_greeting_resume_assessment'
+                })
+            }
+        }
+
         // Quando abrimos o CARD de agendamento no chat, não navegar para a aba Agendamentos (paciente fica no chat e vê horário/valor)
         if (shouldTriggerScheduling && app_commands.length > 0) {
             app_commands = app_commands.filter(

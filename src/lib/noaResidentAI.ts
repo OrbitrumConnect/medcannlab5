@@ -248,6 +248,7 @@ export class NoaResidentAI {
       // Ler dados da plataforma em tempo real
       const platformData = this.getPlatformData()
       let currentPhase: any = null
+      let injectedContext: string | undefined = undefined
 
       // Detectar intencao da mensagem
       let intent = this.detectIntent(userMessage)
@@ -333,7 +334,7 @@ export class NoaResidentAI {
             }
           }
 
-            let injectedContext: string | undefined = undefined
+            injectedContext = undefined
             if (knowledgeDocs && knowledgeDocs.length > 0) {
               console.log('[Noa] Encontrados documentos relevantes')
 
