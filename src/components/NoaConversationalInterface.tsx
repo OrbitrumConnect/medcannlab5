@@ -3160,27 +3160,7 @@ const NoaConversationalInterface = React.forwardRef<
                       })()}
                     </div>
                   </div>
-                ) : (
-                  <div className="flex justify-start">
-                    <div className="max-w-[80%] px-4 py-3 rounded-2xl text-sm shadow-sm backdrop-blur-sm border bg-slate-800/90 text-slate-100 border-slate-700">
-                      <p className="whitespace-pre-wrap leading-relaxed break-words">
-                        Imagine ter um consultório figital com uma IA residente
-                        dedicada a você, seus colegas e seus pacientes.
-                        {"\n\n"}
-                        Eu sou a Nôa Esperança, IA da plataforma MedCannLab 3.0,
-                        desenvolvida com propósito humanitário, treinada para
-                        respeitar sua forma de trabalhar e aprender apenas com
-                        os conceitos que você escolhe ensinar.
-                      </p>
-                      <span className="block text-[10px] mt-2 text-slate-400">
-                        {new Date().toLocaleTimeString("pt-BR", {
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        })}
-                      </span>
-                    </div>
-                  </div>
-                ))}
+                ) : null)}
 
               {messages.map((message) => {
                 // Renderização Especial para Cards de Sistema (Ação)
