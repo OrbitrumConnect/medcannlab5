@@ -198,15 +198,28 @@ export const useMedCannLabConversation = (options?: {
 
         // Adicionar mensagem de boas-vindas apenas uma vez
         if (!hasShownWelcome && messages.length === 0) {
-          const welcomeMessage: ConversationMessage = {
-            id: 'welcome',
-            role: 'noa',
-            content: 'Sou Nôa Esperanza. Apresente-se também e diga o que trouxe você aqui? Você pode utilizar o chat aqui embaixo à direita para responder ou pedir ajuda. Bons ventos sóprem.',
-            timestamp: new Date(),
-            intent: 'HELP'
+          const loadAndGreet = async () => {
+            await clinicalAssessmentFlow.ensureLoaded(user.id)
+            const state = clinicalAssessmentFlow.getState(user.id)
+            
+            let welcomeText = 'Sou Nôa Esperanza. Apresente-se também e diga o que trouxe você aqui? Você pode utilizar o chat aqui embaixo à direita para responder ou pedir ajuda. Bons ventos sóprem.'
+            
+            if (state && state.phase !== 'COMPLETED' && state.phase !== 'INTERRUPTED') {
+              welcomeText = `Bem-vindo(a) de volta, ${state.data.patientName || 'Pedro'}. Percebi que temos uma avaliação clínica em andamento. Gostaria de continuar de onde paramos ou quer recomeçar?`
+            }
+
+            const welcomeMessage: ConversationMessage = {
+              id: 'welcome',
+              role: 'noa',
+              content: welcomeText,
+              timestamp: new Date(),
+              intent: 'HELP'
+            }
+            setMessages([welcomeMessage])
+            setHasShownWelcome(true)
           }
-          setMessages([welcomeMessage])
-          setHasShownWelcome(true)
+          
+          void loadAndGreet()
         }
       } catch (error) {
         console.error('❌ Erro ao inicializar IA Residente:', error)

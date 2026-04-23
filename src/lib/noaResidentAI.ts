@@ -266,11 +266,18 @@ export class NoaResidentAI {
       if (userId) {
         await clinicalAssessmentFlow.ensureLoaded(userId)
         const aecState = clinicalAssessmentFlow.getState(userId)
+        
+        // 🛡️ [SMART LOCK]: Se existe AEC ativo, travar em CLINICA, EXCETO se for saudação pura ou intenção de saída.
+        // Isso permite que o usuário dê um "oi" inicial após refresh sem ser "sequestrado" pelo motor clínico.
+        const msgNorm = userMessage.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+        const isPureGreeting = /^(oi|ola|olá|tudo bem|bom dia|boa tarde|boa noite|como vai)\s*[!.?]?$/i.test(msgNorm.trim())
+
         if (
           aecState &&
           aecState.phase !== 'COMPLETED' &&
           aecState.phase !== 'INTERRUPTED' &&
-          !isExitIntent
+          !isExitIntent &&
+          !isPureGreeting
         ) {
           intent = 'CLINICA'
         }
