@@ -1765,7 +1765,7 @@ export class NoaResidentAI {
       if (platformData?.user?.id) {
         const liveState = clinicalAssessmentFlow.getState(platformData.user.id)
         if (liveState && liveState.phase !== 'COMPLETED' && liveState.phase !== 'INTERRUPTED') {
-          const d = liveState.data || {}
+          const d: any = liveState.data || {}
           // Lista de tudo que o paciente JÁ relatou nesta sessão.
           // Usado pelo Core para bloquear introdução de sintomas alheios.
           const knownSymptoms: string[] = [
