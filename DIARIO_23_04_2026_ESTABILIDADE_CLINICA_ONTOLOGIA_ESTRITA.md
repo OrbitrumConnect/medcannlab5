@@ -66,4 +66,56 @@ Esta atualização marca a maturidade do motor clínico (AEC), resolvendo os úl
 ---
 **Selo da Sessão:** 23/04/2026 — V1.8.6  
 **Hash:** `sovereign-script-v1-8-6`  
-**Responsáveis:** Antigravity & Pedro (CTO)
+
+---
+
+#### V1.8.8-Final — The Polished Resilience 💎
+**Status:** UX Refinada • Bugs de Navegação Extintos • Verbatim Unificado
+
+Esta versão consolida a estabilização clínica definitiva através de refinamentos co-autorados pelo Claude Code (Opus 4.7) e Antigravity.
+
+### 📝 Resumo de Correções Críticas:
+
+1. **Combate ao Spam de Botões (Greeting Guard)**:
+   - A Noa agora diferencia "Oi Noa" (saudação pura) de "Oi Noa, sinto dor no ombro" (mensagem clínica).
+   - Botões de navegação contextuais (`INTERRUPTED`) só aparecem em saudações puras, evitando poluição visual durante o diálogo médico.
+
+2. **Unificação de Travas AEC (Verbatim Set)**:
+   - Refatoração da lógica de trava literal no Backend para usar um `Set` global (`AEC_VERBATIM_LOCK_PHASES`).
+   - Inclusão definitiva das fases `INTERRUPTED` e `FINAL_RECOMMENDATION` no lock, garantindo que o GPT não parafraseie ordens do protocolo.
+
+3. **Correção de "Navegação Morta" no Frontend**:
+   - Implementado o uso de *Timestamps* e *CustomEvents* no `NoaConversationalInterface` para forçar o re-mount de componentes quando o usuário clica em botões de atalho vinculados à mesma rota atual.
+   - Isso garante que clicar em "Continuar Avaliação" abra o card na hora, sem depender do comportamento padrão do React Router.
+
+4. **Limpeza de Contexto no Welcome**:
+   - Removido o hardcode "Olá Pedro" do hook de conversação. Agora a Noa é agnóstica até que a identificação seja formalmente processada pela FSM.
+
+---
+**Selo da Sessão:** 23/04/2026 — V1.8.8-Final  
+**Hash:** `clinical-stability-master-seal`  
+
+---
+
+#### V1.8.10 — Polimento de Produção & Sanidade UTF-8 🧼
+**Status:** Encoding Corrigido • UX Silenciosa • Fluidez Aprimorada
+
+A V1.8.10 resolve ruídos visuais e funcionais detectados em ambiente de testes reais.
+
+### ✅ Refinamentos Implementados:
+
+1. **Remoção do Auto-Welcome Intrusivo**:
+   - A Noa agora inicia em silêncio e só se manifesta após a primeira interação do paciente.
+   - Isso evita o "sobressalto" de áudio ao abrir o chat e permite que o sistema carregue o estado AEC em background de forma transparente.
+
+2. **Sanitização Universal UTF-8**:
+   - Corrigidas 9 strings corrompidas no arquivo `clinicalAssessmentFlow.ts` resultantes de conflitos de encoding (ex: `Nôa`, `incômodo`, `À`, `AVALIAÇÃO`). O sistema agora exibe acentuação perfeita.
+
+3. **Liberação de Respostas Curtas (COMPLAINT_DETAILS)**:
+   - Removido o filtro de "micro-frases" para a fase de detalhamento da queixa.
+   - Respostas precisas como "na boca", "ontem" ou "queimação" agora são aceitas de imediato, sem disparar o fallback de retomada de contexto.
+
+---
+**Selo da Sessão:** 23/04/2026 — V1.8.10  
+**Hash:** `clinical-utf8-sanitation-v1-8-10`  
+**Responsáveis:** Antigravity, Claude Code & Pedro (CTO)
