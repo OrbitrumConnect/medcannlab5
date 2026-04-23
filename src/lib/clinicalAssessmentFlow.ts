@@ -631,7 +631,10 @@ export class ClinicalAssessmentFlow {
         }
 
       case 'COMPLAINT_LIST':
-        if (hasMore && userTurn.trim()) {
+        const terminatorRegex = /\b(nada|apenas|s[oó]|chega|pronto|pare|fim|encerrar|mais nada|so isso|só isso)\b/i
+        const isUserStopping = terminatorRegex.test(lowerResponse)
+
+        if (hasMore && userTurn.trim() && !isUserStopping) {
           // Adicionar mais queixa à lista
           state.data.complaintList.push(userTurn.trim())
           state.lastUpdate = new Date()
@@ -641,12 +644,22 @@ export class ClinicalAssessmentFlow {
             isComplete: false
           }
         } else {
-          // Não há mais queixas, identificar a principal
+          // Se o usuário quer parar OU chegamos no fim sugerido pela IA
           state.waitingForMore = false
           state.phase = 'MAIN_COMPLAINT'
           state.lastUpdate = new Date()
+          
+          // Fallback se a lista estiver vazia (não deveria acontecer se passou pela IDENTIFICATION)
+          if (state.data.complaintList.length === 0 && userTurn.trim() && !isUserStopping) {
+            state.data.complaintList.push(userTurn.trim())
+          }
+
+          const complaints = state.data.complaintList.length > 0 
+            ? state.data.complaintList.join(', ')
+            : 'estes sintomas'
+
           return {
-            nextQuestion: `De todas essas questões (${state.data.complaintList.join(', ')}), qual mais o(a) incomoda?`,
+            nextQuestion: `De todas essas questões (${complaints}), qual mais o(a) incomoda?`,
             phase: 'MAIN_COMPLAINT',
             isComplete: false
           }
@@ -672,7 +685,10 @@ export class ClinicalAssessmentFlow {
         return this.processComplaintDetails(state, userTurn)
 
       case 'MEDICAL_HISTORY':
-        if (hasMore && userTurn.trim()) {
+        const histTerminatorRegex = /\b(nada|apenas|s[oó]|chega|pronto|pare|fim|encerrar|mais nada|so isso|só isso)\b/i
+        const isHistStopping = histTerminatorRegex.test(lowerResponse)
+
+        if (hasMore && userTurn.trim() && !isHistStopping) {
           state.data.medicalHistory.push(userTurn.trim())
           state.lastUpdate = new Date()
           return {
@@ -692,7 +708,10 @@ export class ClinicalAssessmentFlow {
         }
 
       case 'FAMILY_HISTORY_MOTHER':
-        if (hasMore && userTurn.trim()) {
+        const momTerminatorRegex = /\b(nada|apenas|s[oó]|chega|pronto|pare|fim|encerrar|mais nada|so isso|só isso)\b/i
+        const isMomStopping = momTerminatorRegex.test(lowerResponse)
+
+        if (hasMore && userTurn.trim() && !isMomStopping) {
           state.data.familyHistoryMother.push(userTurn.trim())
           state.lastUpdate = new Date()
           return {
@@ -712,7 +731,10 @@ export class ClinicalAssessmentFlow {
         }
 
       case 'FAMILY_HISTORY_FATHER':
-        if (hasMore && userTurn.trim()) {
+        const dadTerminatorRegex = /\b(nada|apenas|s[oó]|chega|pronto|pare|fim|encerrar|mais nada|so isso|só isso)\b/i
+        const isDadStopping = dadTerminatorRegex.test(lowerResponse)
+
+        if (hasMore && userTurn.trim() && !isDadStopping) {
           state.data.familyHistoryFather.push(userTurn.trim())
           state.lastUpdate = new Date()
           return {
@@ -732,7 +754,10 @@ export class ClinicalAssessmentFlow {
         }
 
       case 'LIFESTYLE_HABITS':
-        if (hasMore && userTurn.trim()) {
+        const lifeTerminatorRegex = /\b(nada|apenas|s[oó]|chega|pronto|pare|fim|encerrar|mais nada|so isso|só isso)\b/i
+        const isLifeStopping = lifeTerminatorRegex.test(lowerResponse)
+
+        if (hasMore && userTurn.trim() && !isLifeStopping) {
           state.data.lifestyleHabits.push(userTurn.trim())
           state.lastUpdate = new Date()
           return {
