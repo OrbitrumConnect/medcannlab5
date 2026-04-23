@@ -108,6 +108,8 @@ export interface AssessmentState {
   startedAt: Date
   lastUpdate: Date
   interruptedFromPhase?: AssessmentPhase // Fase de onde saiu (para retomada)
+  completedPhases?: string[] // [V1.9.1] Fases já percorridas. Persistido em aec_assessment_state.completed_phases.
+                              // É base da coluna GENERATED is_complete (completed_phases @> required_phases).
 }
 
 export class ClinicalAssessmentFlow {
@@ -188,7 +190,10 @@ export class ClinicalAssessmentFlow {
           phaseIterationCount: (data as any).phase_iteration_count || 0,
           startedAt: new Date(data.started_at),
           lastUpdate: new Date(data.last_update),
-          interruptedFromPhase: data.interrupted_from_phase as AssessmentPhase | undefined
+          interruptedFromPhase: data.interrupted_from_phase as AssessmentPhase | undefined,
+          completedPhases: Array.isArray((data as any).completed_phases)
+            ? ((data as any).completed_phases as string[])
+            : []
         }
         this.states.set(userId, state)
       }
@@ -280,6 +285,9 @@ export class ClinicalAssessmentFlow {
             phase_iteration_count: (state as AssessmentState).phaseIterationCount,
             interrupted_from_phase: (state as AssessmentState).interruptedFromPhase || null,
             started_at: (state as AssessmentState).startedAt.toISOString(),
+            // [V1.9.1] completed_phases — acompanha as fases percorridas.
+            // A coluna is_complete (GENERATED) do banco deriva de completed_phases @> required_phases.
+            completed_phases: (state as AssessmentState).completedPhases || [],
           } as any], { onConflict: 'user_id' })
 
         if (error) {
@@ -335,7 +343,8 @@ export class ClinicalAssessmentFlow {
       waitingForMore: false,
       phaseIterationCount: 0,
       startedAt: new Date(),
-      lastUpdate: new Date()
+      lastUpdate: new Date(),
+      completedPhases: [] // [V1.9.1] Inicia vazio, preenchido a cada transição válida de fase.
     }
 
     this.states.set(userId, state)
@@ -381,6 +390,19 @@ export class ClinicalAssessmentFlow {
     const a = state.data.complaintHdaAnchor?.trim()
     const m = state.data.mainComplaint?.trim()
     return a || m || 'sua queixa'
+  }
+
+  /**
+   * [V1.9.1] Marca uma fase como completa no array completedPhases do state.
+   * Idempotente (não duplica). Base para a coluna GENERATED is_complete no banco.
+   * Chamar ANTES de trocar state.phase para a próxima fase (marca a fase que o paciente
+   * está saindo, não a que está entrando).
+   */
+  private markPhaseCompleted(state: AssessmentState, phase: AssessmentPhase): void {
+    if (!state.completedPhases) state.completedPhases = []
+    if (!state.completedPhases.includes(phase)) {
+      state.completedPhases.push(phase)
+    }
   }
 
   /** Evita que "Pedro aqui" ou nome isolado vire primeira queixa quando o perfil já trouxe o nome. */
@@ -640,6 +662,7 @@ export class ClinicalAssessmentFlow {
       case 'INITIAL_GREETING':
         // Usuário se apresentou, avançar para identificação
         state.data.patientPresentation = userTurn
+        this.markPhaseCompleted(state, 'INITIAL_GREETING')
         state.phase = 'IDENTIFICATION'
         state.lastUpdate = new Date()
         return {
@@ -668,6 +691,7 @@ export class ClinicalAssessmentFlow {
         if (userTurn.trim()) {
           state.data.complaintList.push(userTurn.trim())
         }
+        this.markPhaseCompleted(state, 'IDENTIFICATION')
         state.phase = 'COMPLAINT_LIST'
         state.waitingForMore = true
         state.phaseIterationCount = 0
@@ -699,6 +723,7 @@ export class ClinicalAssessmentFlow {
             state.data.complaintList.push(userTurn.trim())
           }
           state.waitingForMore = false
+          this.markPhaseCompleted(state, 'COMPLAINT_LIST')
           state.phase = 'MAIN_COMPLAINT'
           state.phaseIterationCount = 0
           state.lastUpdate = new Date()
@@ -720,6 +745,7 @@ export class ClinicalAssessmentFlow {
           userTurn.trim(),
           state.data.complaintList
         )
+        this.markPhaseCompleted(state, 'MAIN_COMPLAINT')
         state.phase = 'COMPLAINT_DETAILS'
         state.currentQuestionIndex = 0
         state.phaseIterationCount = 0
@@ -753,6 +779,7 @@ export class ClinicalAssessmentFlow {
             state.data.medicalHistory.push(userTurn.trim())
           }
           state.waitingForMore = false
+          this.markPhaseCompleted(state, 'MEDICAL_HISTORY')
           state.phase = 'FAMILY_HISTORY_MOTHER'
           state.phaseIterationCount = 0
           state.lastUpdate = new Date()
@@ -782,6 +809,7 @@ export class ClinicalAssessmentFlow {
             state.data.familyHistoryMother.push(userTurn.trim())
           }
           state.waitingForMore = false
+          this.markPhaseCompleted(state, 'FAMILY_HISTORY_MOTHER')
           state.phase = 'FAMILY_HISTORY_FATHER'
           state.phaseIterationCount = 0
           state.lastUpdate = new Date()
@@ -811,6 +839,7 @@ export class ClinicalAssessmentFlow {
             state.data.familyHistoryFather.push(userTurn.trim())
           }
           state.waitingForMore = false
+          this.markPhaseCompleted(state, 'FAMILY_HISTORY_FATHER')
           state.phase = 'LIFESTYLE_HABITS'
           state.phaseIterationCount = 0
           state.lastUpdate = new Date()
@@ -840,6 +869,7 @@ export class ClinicalAssessmentFlow {
             state.data.lifestyleHabits.push(userTurn.trim())
           }
           state.waitingForMore = false
+          this.markPhaseCompleted(state, 'LIFESTYLE_HABITS')
           state.phase = 'OBJECTIVE_QUESTIONS'
           state.currentQuestionIndex = 0
           state.phaseIterationCount = 0
@@ -855,6 +885,7 @@ export class ClinicalAssessmentFlow {
         return this.processObjectiveQuestions(state, userTurn)
 
       case 'CONSENSUS_REVIEW':
+        this.markPhaseCompleted(state, 'CONSENSUS_REVIEW')
         state.phase = 'CONSENSUS_REPORT'
         state.lastUpdate = new Date()
         return {
@@ -885,6 +916,7 @@ export class ClinicalAssessmentFlow {
               !lowerResponse.includes('não')))
         if (consensusAffirm) {
           state.data.consensusAgreed = true
+          this.markPhaseCompleted(state, 'CONSENSUS_REPORT')
           state.phase = 'CONSENT_COLLECTION'
           state.lastUpdate = new Date()
           const doc = this.physicianDisplay(state)
@@ -917,6 +949,7 @@ export class ClinicalAssessmentFlow {
           lowerResponse.includes('aceito')) {
           state.data.consentGiven = true
           state.data.consentTimestamp = new Date().toISOString()
+          this.markPhaseCompleted(state, 'CONSENT_COLLECTION')
           state.phase = 'FINAL_RECOMMENDATION'
           state.lastUpdate = new Date()
           const doc = this.physicianDisplay(state)
@@ -955,6 +988,7 @@ export class ClinicalAssessmentFlow {
         }
 
       case 'FINAL_RECOMMENDATION':
+        this.markPhaseCompleted(state, 'FINAL_RECOMMENDATION')
         state.phase = 'COMPLETED'
         state.lastUpdate = new Date()
         return {
@@ -1037,6 +1071,7 @@ export class ClinicalAssessmentFlow {
 
     if (!currentQ) {
       // Todas as perguntas sobre queixa foram respondidas
+      this.markPhaseCompleted(state, 'COMPLAINT_DETAILS')
       state.phase = 'MEDICAL_HISTORY'
       state.waitingForMore = true
       state.currentQuestionIndex = 0
@@ -1155,6 +1190,7 @@ export class ClinicalAssessmentFlow {
 
     if (!currentQ) {
       // Todas as perguntas objetivas foram respondidas
+      this.markPhaseCompleted(state, 'OBJECTIVE_QUESTIONS')
       state.phase = 'CONSENSUS_REVIEW'
       state.lastUpdate = new Date()
       return {

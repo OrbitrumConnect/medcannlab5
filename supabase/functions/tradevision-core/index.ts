@@ -1065,6 +1065,29 @@ async function handleFinalizeAssessment(params: {
         }
         if (!resolvedPatientName) resolvedPatientName = 'Paciente';
 
+        // [V1.9.1] CONSENT GATE (server-side, pre-persistence)
+        // Regra: nenhum clinical_report pode existir sem consentimento afirmativo.
+        // Verifica em múltiplas fontes possíveis; default falso (fail-closed).
+        const consentGivenAffirmative =
+            assessmentData?.content?.consenso?.aceito === true ||
+            assessmentData?.content?.raw?.consentGiven === true ||
+            assessmentData?.consent_given === true ||
+            assessmentData?.data?.consentGiven === true;
+
+        if (!consentGivenAffirmative) {
+            console.error('❌ [CONSENT_GATE] Relatório bloqueado: consentimento não afirmado', {
+                interaction_id,
+                patient_id: resolvedPatientId
+            });
+            return {
+                report_id: null,
+                status: 'aborted_no_consent' as const,
+                error: 'CONSENT_REQUIRED'
+            };
+        }
+
+        const consentAtIso = new Date().toISOString();
+
         // 2.1 [SINGLE-ORCHESTRATOR ENFORCEMENT] Ownership Backend de Risk e Scores Clínicos
         // Retiramos a subordinação ao Frontend. O Orchestrator define/extrai riscos isolado do cliente.
         // TODO(A.I Extractor): Conectar dinamicamente ao modelo se necessário. Hardcoded baseline momentâneo para compatibilidade.
@@ -1119,7 +1142,10 @@ Estrutura Obrigatória:
                 },
                 doctor_id: resolvedDoctorId,
                 status: 'completed',
-                interaction_id
+                interaction_id,
+                // [V1.9.1] Persiste consent como colunas dedicadas (não apenas no jsonb)
+                consent_given: true,
+                consent_at: consentAtIso
             }).select().single();
 
         if (reportError) {
@@ -2343,15 +2369,27 @@ Responda SOMENTE com o JSON válido, sem markdown.`
                 }
             }
 
-            // [LGPD SECURE GATE] Se o consentimento foi explicitamente recusado, abortar 
-            const isConsentRejected = finalContent?.consenso?.aceito === false || assessmentData?.content?.raw?.consentGiven === false;
-            if (isConsentRejected) {
-                console.error('❌ [LGPD_VIOLATION_PREVENTED] Geração bloqueada: Paciente recusou o consentimento.');
+            // [V1.9.1 LGPD GATE] Fail-closed: exige consentimento AFIRMATIVO (não apenas "não recusado").
+            // Substitui a verificação anterior de "isConsentRejected" que só bloqueava rejeição explícita
+            // e deixava passar ausência (undefined/null), gap apontado em auditoria.
+            const isConsentAffirmative =
+                finalContent?.consenso?.aceito === true ||
+                assessmentData?.content?.raw?.consentGiven === true ||
+                assessmentData?.content?.consenso?.aceito === true;
+
+            if (!isConsentAffirmative) {
+                console.error('❌ [CONSENT_GATE] Geração bloqueada: consentimento não afirmado (fail-closed).', {
+                    interaction_id,
+                    patient_id: assessmentData.patient_id
+                });
                 return new Response(JSON.stringify({
                     success: false,
-                    error: 'Patient declined consent. Data processing aborted.',
+                    error: 'CONSENT_REQUIRED',
+                    message: 'Consent must be affirmatively granted before report generation.'
                 }), { headers: { ...getCorsHeaders(req.headers.get('Origin')), 'Content-Type': 'application/json' } })
             }
+
+            const consentAtIsoGolden = new Date().toISOString();
 
             // [IDEMPOTENCY] TIME-LOCK: Evitar geração de múltiplos relatórios para a mesma sessão/paciente
             const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
@@ -2401,7 +2439,10 @@ Responda SOMENTE com o JSON válido, sem markdown.`
                     shared_with: linkedProfessionalId ? [linkedProfessionalId] : [],
                     status: 'completed',
                     review_status: 'draft',
-                    interaction_id: interaction_id
+                    interaction_id: interaction_id,
+                    // [V1.9.1] Persiste consent como colunas dedicadas (não apenas no jsonb content)
+                    consent_given: true,
+                    consent_at: consentAtIsoGolden
                 }).select().single()
 
             if (reportError) throw reportError
