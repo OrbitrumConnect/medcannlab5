@@ -1409,10 +1409,25 @@ export class NoaResidentAI {
       // 🛡️ [GATILHO DE SEGURANÇA - LGPD] Bloquear fallback se não houve consentimento
       const flowState = clinicalAssessmentFlow.getState(userId);
       if (!flowState?.data?.consentGiven) {
-        MedCannLabAuditLogger.security('LGPD_VIOLATION_PREVENTED', { 
-          userId, 
-          action: 'checkForAssessmentCompletion', 
-          reason: 'Paciente não consentiu ou fluxo incompleto' 
+        MedCannLabAuditLogger.security('LGPD_VIOLATION_PREVENTED', {
+          userId,
+          action: 'checkForAssessmentCompletion',
+          reason: 'Paciente não consentiu ou fluxo incompleto'
+        });
+        return;
+      }
+
+      // [V1.9.25] Gate de idempotência — reutiliza a flag em memória do V1.9.23.
+      // Se o pipeline moderno (Edge Function handleFinalizeAssessment) já gerou
+      // report nesta sessão via clinicalAssessmentFlow.generateReport, este
+      // caminho legado (clinicalReportService → INSERT direto) não tem razão
+      // de rodar. Função preservada (não removida) — apenas evita duplicata
+      // silenciosa em paths paralelos que ainda não foram unificados.
+      if (clinicalAssessmentFlow.isReportDispatched(userId)) {
+        MedCannLabAuditLogger.audit('LEGACY_REPORT_SKIP', {
+          userId,
+          action: 'checkForAssessmentCompletion',
+          reason: 'Report já dispatched via pipeline moderno'
         });
         return;
       }
