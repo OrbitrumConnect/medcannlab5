@@ -1143,8 +1143,13 @@ export class ClinicalAssessmentFlow {
       state.currentQuestionIndex = 0
       state.phaseIterationCount = 0
       state.lastUpdate = new Date()
+      // [V1.9.31] Transição metodológica explícita: fecha a etapa da queixa
+      // principal e abre a de antecedentes. Antes o salto era abrupto ("E agora,
+      // sobre o restante sua vida até aqui...") — paciente perdia a noção de
+      // onde estava no protocolo. GPT apontou falta de transição clara
+      // como 1 dos 4 problemas da sessão 24/04 da Carolina.
       return {
-        nextQuestion: 'E agora, sobre o restante sua vida até aqui, desde seu nascimento, quais as questões de saúde que você já viveu? Vamos ordenar do mais antigo para o mais recente, o que veio primeiro?',
+        nextQuestion: 'Obrigada por detalhar a sua queixa principal. Agora vamos olhar para o restante da sua história. Desde o seu nascimento, quais as questões de saúde que você já viveu? Vamos ordenar do mais antigo para o mais recente — o que veio primeiro?',
         phase: 'MEDICAL_HISTORY',
         isComplete: false
       }
