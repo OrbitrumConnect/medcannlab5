@@ -117,5 +117,5 @@ describe.skipIf(!hasIntegrationCreds)('AEC FINALIZE — schema contract V1.9.20 
 
     // V1.9.1: consent_given como coluna dedicada
     expect(r.consent_given).toBe(true)
-  })
+  }, 30_000)
 })

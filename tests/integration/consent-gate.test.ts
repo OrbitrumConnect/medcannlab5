@@ -68,7 +68,7 @@ describe.skipIf(!hasIntegrationCreds)('CONSENT_GATE — fail-closed', () => {
 
     expect(result.report_id, 'report deve ser criado').toBeTruthy()
     if (result.report_id) createdReportIds.push(result.report_id)
-  })
+  }, 30_000)
 
   it('2) rejeita quando consenso ausente (fail-closed)', async () => {
     const result = await invokeFinalize({
@@ -86,7 +86,7 @@ describe.skipIf(!hasIntegrationCreds)('CONSENT_GATE — fail-closed', () => {
       result.pipeline_status || result.error,
       'status deve indicar bloqueio por consent',
     ).toMatch(/consent|aborted/i)
-  })
+  }, 30_000)
 
   it('3) rejeita quando consenso.aceito === false', async () => {
     const result = await invokeFinalize({
@@ -104,7 +104,7 @@ describe.skipIf(!hasIntegrationCreds)('CONSENT_GATE — fail-closed', () => {
       result.pipeline_status || result.error,
       'status deve indicar bloqueio por consent',
     ).toMatch(/consent|aborted/i)
-  })
+  }, 30_000)
 
   it('4) confirma que os tentativas bloqueadas não deixaram rastro', async () => {
     // Busca qualquer report com title de teste recente que NÃO esteja no array de criados
