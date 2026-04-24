@@ -787,7 +787,7 @@ const PatientsManagement: React.FC<PatientsManagementProps> = ({ embedded = fals
               content: typeof report.content === 'string'
                 ? report.content
                 : (report.content as any)?.investigation || (report.content as any)?.result || 'Relatório clínico gerado',
-              professional: (report as any).professional_name || report.generated_by === 'ai_resident' ? 'IA Residente' : 'Profissional'
+              professional: (report as any).professional_name || (report.generated_by === 'noa_ai' ? 'IA Residente' : 'Profissional')
             })
           }
         })

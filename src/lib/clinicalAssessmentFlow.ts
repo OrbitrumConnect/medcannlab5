@@ -1434,7 +1434,7 @@ export class ClinicalAssessmentFlow {
       patient_name: data.patientName || 'Não informado',
       report_type: 'initial_assessment',
       protocol: 'AEC',
-      generated_by: 'ai_resident',
+      generated_by: 'noa_ai',
       generated_at: new Date().toISOString(),
       status: 'completed',
       content: {

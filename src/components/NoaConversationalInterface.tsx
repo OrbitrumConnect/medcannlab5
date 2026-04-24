@@ -2153,7 +2153,7 @@ const NoaConversationalInterface = React.forwardRef<
             professional_id: user.id,
             assessment_id: assessment.id,
             patient_name: selectedPatientId || "Paciente",
-            generated_by: user.id,
+            generated_by: 'professional',
             protocol: "CONSULTA",
             report_type: "consultation",
             content: {

@@ -126,7 +126,7 @@ const Reports: React.FC = () => {
     const completed = reports.filter(r => r.status === 'completed').length
     const reviewed = reports.filter(r => r.status === 'reviewed').length
     const drafts = reports.filter(r => r.status === 'draft').length
-    const aiGenerated = reports.filter(r => r.generated_by === 'ai_resident').length
+    const aiGenerated = reports.filter(r => r.generated_by === 'noa_ai').length
     const avgClinicalScore = reports.length > 0
       ? Math.round(reports.reduce((acc, r) => acc + (r.content?.scores?.clinical_score || 0), 0) / reports.length)
       : 0
@@ -439,7 +439,7 @@ const Reports: React.FC = () => {
                             </span>
                           </div>
                           <p className="text-slate-500 text-xs mt-0.5">
-                            {formatDate(report.generated_at)} • {report.generated_by === 'ai_resident' ? '🤖 IA Nôa' : '👨‍⚕️ Profissional'}
+                            {formatDate(report.generated_at)} • {report.generated_by === 'noa_ai' ? '🤖 IA Nôa' : '👨‍⚕️ Profissional'}
                           </p>
                         </div>
                       </div>

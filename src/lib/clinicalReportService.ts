@@ -19,7 +19,7 @@ export interface ClinicalReport {
       quality_of_life: number
     }
   }
-  generated_by: 'ai_resident' | 'professional'
+  generated_by: 'noa_ai' | 'professional' | 'system'
   generated_at: string
   status: 'draft' | 'completed' | 'reviewed'
   professional_id?: string
@@ -68,7 +68,7 @@ export class ClinicalReportService {
           quality_of_life: assessmentData.scores?.quality_of_life || 0
         }
       },
-      generated_by: 'ai_resident',
+      generated_by: 'noa_ai',
       generated_at: new Date().toISOString(),
       status: 'completed'
     }
@@ -172,17 +172,17 @@ export class ClinicalReportService {
       const { count, error } = await supabase
         .from('clinical_reports')
         .select('*', { count: 'exact', head: true })
-        .eq('generated_by', 'ai_resident')
+        .eq('generated_by', 'noa_ai')
 
       if (error) {
         console.error('Erro ao contar relatórios da IA:', error)
-        return this.reports.filter(r => r.generated_by === 'ai_resident').length
+        return this.reports.filter(r => r.generated_by === 'noa_ai').length
       }
 
       return count || 0
     } catch (error) {
       console.error('Erro ao contar relatórios da IA:', error)
-      return this.reports.filter(r => r.generated_by === 'ai_resident').length
+      return this.reports.filter(r => r.generated_by === 'noa_ai').length
     }
   }
 
