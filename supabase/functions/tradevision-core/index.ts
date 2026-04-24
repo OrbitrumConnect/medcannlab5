@@ -446,6 +446,7 @@ async function runDocumentListFlowFromTrigger(
         let baseQuery = supabaseClient
             .from('documents')
             .select('id, title, summary, category, target_audience, is_published, aiRelevance, file_url, file_type, created_at, updated_at')
+            .neq('category', 'slides')
             .limit(200)
 
         if (!searchTerm.trim()) {
@@ -1683,7 +1684,7 @@ Deno.serve(async (req: Request) => {
         // 0) Total de documentos na base (ex.: "quantos documentos temos?")
         if (isDocCountRequest && !isClinicalAssessmentStart) {
             try {
-                let countQuery = supabaseClient.from('documents').select('*', { count: 'exact', head: true })
+                let countQuery = supabaseClient.from('documents').select('*', { count: 'exact', head: true }).neq('category', 'slides')
                 if (realUserRole === 'patient' || realUserRole === 'student') {
                     countQuery = countQuery.eq('is_published', true)
                 }
@@ -1720,6 +1721,7 @@ Deno.serve(async (req: Request) => {
                     let baseQuery = supabaseClient
                         .from('documents')
                         .select('id, title, summary, category, target_audience, is_published, aiRelevance, file_url, file_type, created_at, updated_at')
+                        .neq('category', 'slides')
                         .limit(500)
                     if (!term) {
                         baseQuery = baseQuery.order('created_at', { ascending: false }).order('aiRelevance', { ascending: false })
@@ -1969,6 +1971,7 @@ ${chosen.summary ? `Resumo rápido: ${chosen.summary}` : ''}`
                 let baseQuery = supabaseClient
                     .from('documents')
                     .select('id, title, summary, category, target_audience, is_published, aiRelevance, file_url, file_type, created_at, updated_at')
+                    .neq('category', 'slides')
                     .limit(200)
 
                 // Se for listagem, ordenar por recência e relevância; se for busca, filtrar por termo.
