@@ -110,6 +110,10 @@ export interface AssessmentState {
   interruptedFromPhase?: AssessmentPhase // Fase de onde saiu (para retomada)
   completedPhases?: string[] // [V1.9.1] Fases já percorridas. Persistido em aec_assessment_state.completed_phases.
                               // É base da coluna GENERATED is_complete (completed_phases @> required_phases).
+  reportDispatchedAt?: Date // [V1.9.23] Flag de idempotência em memória: marca quando
+                             // o generateReport local foi chamado nesta sessão. Sem isso,
+                             // cada turno subsequente em phase=COMPLETED disparava novo
+                             // report (14 reports/Carolina, 23 reports/casualmusic).
 }
 
 export class ClinicalAssessmentFlow {
@@ -1358,6 +1362,20 @@ export class ClinicalAssessmentFlow {
     state.lastUpdate = new Date()
 
     return state.data
+  }
+
+  /**
+   * [V1.9.23] Guards de idempotência do report. Evita que turnos subsequentes
+   * em phase=COMPLETED disparem generateReport múltiplas vezes. O preservar do
+   * fallback local (comentário em noaResidentAI) fica mas só roda 1x por sessão.
+   */
+  isReportDispatched(userId: string): boolean {
+    return !!this.states.get(userId)?.reportDispatchedAt
+  }
+
+  markReportDispatched(userId: string): void {
+    const state = this.states.get(userId)
+    if (state) state.reportDispatchedAt = new Date()
   }
 
   /**

@@ -1707,14 +1707,20 @@ export class NoaResidentAI {
                 // Apenas logar. Consentimento já foi decidido na FSM.
                 MedCannLabAuditLogger.audit('ASSESSMENT_COMPLETED', { userId: platformData.user.id });
 
-                // Manter o fallback local por segurança (compatibilidade com UI antiga)
-                try {
-                  await clinicalAssessmentFlow.generateReport(
-                    platformData.user.id,
-                    platformData.user.id
-                  )
-                } catch (err) {
-                  console.error('Erro no fallback de relatorio local:', err)
+                // [V1.9.23] Gate de idempotência em memória. Preserva o fallback
+                // local (por compat com UI antiga) mas só roda 1x por sessão.
+                // Antes, cada turno subsequente em phase=COMPLETED disparava novo
+                // generateReport → 14 reports/Carolina, 23 reports/casualmusic.
+                if (!clinicalAssessmentFlow.isReportDispatched(platformData.user.id)) {
+                  clinicalAssessmentFlow.markReportDispatched(platformData.user.id)
+                  try {
+                    await clinicalAssessmentFlow.generateReport(
+                      platformData.user.id,
+                      platformData.user.id
+                    )
+                  } catch (err) {
+                    console.error('Erro no fallback de relatorio local:', err)
+                  }
                 }
               }
 

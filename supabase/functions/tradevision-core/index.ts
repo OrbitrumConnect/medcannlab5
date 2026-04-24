@@ -969,10 +969,17 @@ async function handleFinalizeAssessment(params: {
     console.log('🧠 [PIPELINE_STAGE] START', { interaction_id, resolvedPatientId });
 
     try {
-        // 1. Idempotência: a constraint UNIQUE de interaction_id é a verdade.
-        //    O time-lock vira sinalizador de trigger redundante (não bloqueia silenciosamente em 1h).
-        //    Janela reduzida para 30s — só captura double-fire real (clique duplo, race de UI).
-        const recentWindowMs = 30 * 1000;
+        // [V1.9.23] Idempotência endurecida:
+        //    Antes, janela de 30s pegava só double-click. Mas o frontend tinha
+        //    dual-path (generateReport a cada turno em phase=COMPLETED) gerando
+        //    N reports a intervalo de ~50-80s por sessão — casualmusic2021
+        //    acumulou 23 reports, Carolina 14. Janela de 10min captura a
+        //    sessão AEC inteira como 1 report (mesmo paciente, mesmo
+        //    report_type = initial_assessment).
+        //    Frontend já tem gate em memória (V1.9.23 clinicalAssessmentFlow.
+        //    reportDispatchedAt); este é defesa em profundidade para cobrir
+        //    reloads do frontend, multi-aba, ou outros caminhos.
+        const recentWindowMs = 10 * 60 * 1000; // 10 minutos
         const recentCutoff = new Date(Date.now() - recentWindowMs).toISOString();
         const { data: existing } = await supabaseClient
             .from('clinical_reports')
@@ -980,10 +987,12 @@ async function handleFinalizeAssessment(params: {
             .eq('patient_id', resolvedPatientId)
             .eq('report_type', 'initial_assessment')
             .gte('created_at', recentCutoff)
+            .order('created_at', { ascending: false })
+            .limit(1)
             .maybeSingle();
 
         if (existing) {
-            console.warn(`⚠️ [PIPELINE_REDUNDANT_TRIGGER] Report idêntico em ${recentWindowMs}ms (existing=${existing.id}, current_interaction=${interaction_id}). Devolvendo report_id existente.`);
+            console.warn(`⚠️ [PIPELINE_REDUNDANT_TRIGGER] Report recente (${Math.round((Date.now() - new Date(existing.created_at).getTime()) / 1000)}s atrás, existing=${existing.id}, current_interaction=${interaction_id}). Devolvendo report_id existente.`);
             return { report_id: existing.id, status: 'idempotent_recent' as const };
         }
 
