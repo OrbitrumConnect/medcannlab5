@@ -389,9 +389,12 @@ const detectDocumentListRequest = (norm: string): boolean => {
 
 /** Pedido de total/quantidade de documentos na base (ex.: "quantos documentos temos", "listagem do total") */
 const detectDocumentCountRequest = (norm: string): boolean => {
+    // [V1.9.18] O 2º predicado exige menção explícita a "documento(s)" / "docs" / "biblioteca".
+    // Palavras genéricas como "temos" ou "tem na base" foram removidas — elas causaram falso
+    // positivo em "quantos usuários temos no app?" → respondia contagem de documentos.
     return (
         /\b(quantos|quanto|total|totais|listagem\s+do\s+total|quantidade)\b/.test(norm) &&
-        /\b(documentos|documento|docs|doc|temos|tem\s+na\s+base)\b/.test(norm)
+        /\b(documentos|documento|docs|doc|biblioteca|arquivos)\b/.test(norm)
     )
 }
 
