@@ -3034,6 +3034,73 @@ INSTRUÇÃO DE USO (NÃO NEGOCIÁVEL):
             }
         }
 
+        // 🆕 [V1.9.16 — ADMIN CONTEXT FACTUAL]
+        // Métricas da plataforma pra admin logado. Dados agregados: usuários por
+        // role, appointments 30d, monetização pendente, biblioteca, atividade 24h.
+        if (
+            phaseAllowsOperationalContext &&
+            userContext && typeof userContext === 'object' && (userContext as any).role === 'admin'
+        ) {
+            try {
+                const uc = userContext as any
+                const lines: string[] = []
+
+                if (uc.users && typeof uc.users.total === 'number') {
+                    const breakdown = uc.users.byRole
+                        ? Object.entries(uc.users.byRole)
+                              .map(([role, n]) => `${role}=${n}`)
+                              .join(', ')
+                        : ''
+                    lines.push(`• Usuários cadastrados: ${uc.users.total}${breakdown ? ` (${breakdown})` : ''}`)
+                }
+
+                if (uc.appointmentsLast30d) {
+                    const a = uc.appointmentsLast30d
+                    lines.push(
+                        `• Consultas últimos 30d: ${a.total ?? 0} ` +
+                        `(concluídas=${a.completed ?? 0}, agendadas=${a.scheduled ?? 0}, canceladas=${a.cancelled ?? 0})`
+                    )
+                }
+
+                if (uc.monetization) {
+                    const m = uc.monetization
+                    const pendAmount = Number(m.pendingAmountTotal ?? 0).toFixed(2)
+                    lines.push(
+                        `• Monetização: ${m.pendingTxCount ?? 0} transação(ões) pendente(s) ` +
+                        `totalizando R$ ${pendAmount} | ${m.walletsCount ?? 0} carteira(s) criada(s)`
+                    )
+                }
+
+                if (uc.library) {
+                    lines.push(
+                        `• Biblioteca: ${uc.library.publishedCount ?? 0} documentos publicados ` +
+                        `de ${uc.library.totalCount ?? 0} totais`
+                    )
+                }
+
+                if (uc.activityLast24h && typeof uc.activityLast24h.cognitiveEvents === 'number') {
+                    lines.push(`• Atividade nas últimas 24h: ${uc.activityLast24h.cognitiveEvents} eventos cognitivos registrados`)
+                }
+
+                if (lines.length > 0) {
+                    phaseInstruction = phaseInstruction + `
+
+📊 MÉTRICAS DA PLATAFORMA MEDCANNLAB (dados factuais para o admin logado):
+${lines.join('\n')}
+
+INSTRUÇÃO DE USO (NÃO NEGOCIÁVEL):
+1. Se o admin perguntar sobre métricas da plataforma (total de usuários, consultas do mês, valores pendentes, biblioteca, atividade), responda DIRETAMENTE usando esta lista.
+2. NÃO diga "não tenho acesso" para esses campos — eles estão aqui.
+3. NÃO invente valores. Se um campo não está acima, ele NÃO existe neste contexto — jamais estime.
+4. Para detalhes granulares (ex.: "quem cancelou consulta X", "log específico de evento Y"), oriente a consultar a seção de relatórios do admin.
+5. Estes são dados AGREGADOS. Nunca exponha PII de usuários específicos nem especule sobre comportamento individual a partir destes números.
+`
+                }
+            } catch (ucErr) {
+                console.warn('[ADMIN CONTEXT] Falha ao montar bloco de contexto:', ucErr)
+            }
+        }
+
         const aecChosenPhysician =
             typeof patientData?.aecConsultationPhysicianName === 'string'
                 ? String(patientData.aecConsultationPhysicianName).trim()

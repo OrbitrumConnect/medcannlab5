@@ -6,6 +6,7 @@ import { getPlatformFunctionsModule } from './platformFunctionsModule'
 import { clinicalAssessmentFlow, stripPlatformInjectionNoise } from './clinicalAssessmentFlow'
 import { buildPatientContext } from './buildPatientContext'
 import { buildProfessionalContext } from './buildProfessionalContext'
+import { buildAdminContext } from './buildAdminContext'
 // Remocao da injecao manual para uso de File Search no Assistant API
 import MedCannLabAuditLogger from './MedCannLabAuditLogger'
 import { META_TAGS, stripClinicalTags } from '../constants/metaTags'
@@ -1824,11 +1825,14 @@ export class NoaResidentAI {
       const roleRaw = (rawUser?.type || rawUser?.user_type || '').toString().toLowerCase()
       const isPatientRole = roleRaw === 'paciente' || roleRaw === 'patient'
       const isProfessionalRole = roleRaw === 'profissional' || roleRaw === 'professional'
+      const isAdminRole = roleRaw === 'admin' || roleRaw === 'master'
       if (platformData?.user?.id) {
         if (isPatientRole) {
           userContextPayload = await buildPatientContext(platformData.user.id)
         } else if (isProfessionalRole) {
           userContextPayload = await buildProfessionalContext(platformData.user.id)
+        } else if (isAdminRole) {
+          userContextPayload = await buildAdminContext(platformData.user.id)
         }
       }
 
