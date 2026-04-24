@@ -1781,17 +1781,24 @@ export class NoaResidentAI {
             ? new Date(aecStateForHistory.startedAt).toISOString()
             : null
 
+          // [V1.9.26] Defesa contra cross-session contamination TEMPORAL.
+          // Quando não há aec_state ativo (admin/pro/aluno sempre; paciente entre
+          // sessões), o filtro anterior caía silenciosamente e puxava as últimas 10
+          // interações sem limite de tempo. Em 24/04 o Dr. Ricardo voltou após 27
+          // dias e o GPT retomou uma AEC de 28/03 ("sonolência", "peso nos olhos")
+          // como se fosse queixa atual. Com este floor temporal, history > 4h é
+          // ignorado quando não há sessão AEC explícita.
+          const DEFAULT_SESSION_WINDOW_MS = 4 * 60 * 60 * 1000 // 4 horas
+          const defaultMaxAgeIso = new Date(Date.now() - DEFAULT_SESSION_WINDOW_MS).toISOString()
+          const historyMinCreatedAt = sessionStartIso || defaultMaxAgeIso
+
           let historyQuery = supabase
             .from('ai_chat_interactions')
             .select('user_message, ai_response, created_at')
             .eq('user_id', platformData.user.id)
+            .gte('created_at', historyMinCreatedAt)
             .order('created_at', { ascending: false })
             .limit(10)
-
-          if (sessionStartIso) {
-            // Limita drasticamente o "vazamento" de contexto entre sessões clínicas distintas
-            historyQuery = historyQuery.gte('created_at', sessionStartIso)
-          }
 
           const { data: historyData, error: historyError } = await withTimeout(
             historyQuery as unknown as PromiseLike<{
