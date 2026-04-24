@@ -773,7 +773,14 @@ const PatientAnalytics: React.FC<PatientAnalyticsProps> = ({ reports, loading, u
                             </div>
 
                             {/* Bars */}
-                            {[...reports].reverse().map((report, idx) => {
+                            {/* [V1.9.32] Usa sortedReports (enriquecido com scores) em vez de
+                                reports cru. Sem isso, reports pós-refactor 7a7e33a (22-24/04)
+                                que não têm content.scores.clinical_score pré-calculado apareciam
+                                como barras mínimas (5% altura), poluindo o gráfico com 24/30
+                                barras vazias no dashboard do Pedro Paciente. sortedReports aplica
+                                enrichReportWithScores (calculateScoresFromContent fallback),
+                                garantindo score derivado on-the-fly dos dados clínicos existentes. */}
+                            {[...sortedReports].reverse().map((report, idx) => {
                                 const score = report.content.scores?.clinical_score || 0
                                 return (
                                     <div key={report.id} className="flex flex-col items-center gap-2 group relative z-10 w-full">
