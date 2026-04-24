@@ -198,12 +198,19 @@ Frase-tese (validada com GPT em revisão externa):
 
 **Decisão pendente:** Ricardo + Eduardo — (a) plano de reativação com roadmap? Ou (b) formalmente depreca com cerimônia em `docs/archived/imre_v1_2026/`?
 
-### 8.3 Governança — 2 contas do Ricardo
-- `iaianoaesperanza@gmail.com` — `users.type=admin`, `user_profiles.role=professional` (divergente)
-- `rrvalenca@gmail.com` — `users.type=professional`, `user_profiles.role=admin` (divergente invertido)
-- Eduardo e João também com divergência do mesmo tipo
+### 8.3 Governança — 2 contas por fundador ✅ DECIDIDO (design confirmado)
 
-**Decisão pendente:** Ricardo — é intencional ter 2 contas (uma admin, uma profissional que prescreve)? Se sim, sincronizar `user_profiles.role` com `users.type` via migration.
+**Decisão Pedro 24/04/2026 noite:** *"1 ele é adm outro ele é profissional não tem discussão, Eduardo também"*.
+
+Cada fundador tem 2 contas intencionais:
+- **Dr. Ricardo Valença**: `iaianoaesperanza` (admin) + `rrvalenca` (profissional)
+- **Dr. Eduardo Faveret**: `eduardoscfaveret` (admin) + `eduardo.faveret@hotmail` (profissional)
+- **João Eduardo Vidal** e **Pedro**: 1 conta cada (só admin)
+- **Vicente Caetano Pimenta**: conta `type=patient` — filho do Dr. Eduardo, cadastrado para teste familiar
+
+Separação protege auditoria LGPD/CFM — prescrição assinada pela conta profissional, governança pela admin.
+
+Divergência `user_profiles.role` (detectada na investigação) é **histórico de cadastro, não bug**. Código-do-app lê `users.type` que está correto em todas as contas. **NÃO corrigir via migration.**
 
 ### 8.4 Produto — plugar infra financeira externa
 Wallet + split 70/30 + referral + transactions tudo pronto; nada sai pro mundo externo porque Stripe Connect / Mercado Pago ainda não escolhido/plugado.

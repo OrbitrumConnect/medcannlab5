@@ -1,4 +1,12 @@
 // =====================================================
+// ⚠️  IMRE MODULE — NOT IN PRODUCTION (arquivo dormente)
+// =====================================================
+// Status: "Script pronto mas não executado" (docs/guides/PROBLEMAS_IDENTIFICADOS.md:63)
+// Importado apenas por unifiedAssessment.ts + noaIntegration.ts (também dormentes)
+// Decisão pendente: Ricardo + Eduardo — revive ou formaliza deprecação
+// Ver: memory/project_strategic_posture.md
+// NÃO DELETAR sem autorização explícita.
+// =====================================================
 // MEDCANLAB 3.0 → 5.0 UNIFICATION: IMRE MIGRATION
 // =====================================================
 // Preservando a "alma" semântica durante a transição

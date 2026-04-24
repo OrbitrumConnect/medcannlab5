@@ -1,4 +1,13 @@
 // =====================================================
+// ⚠️  IMRE MODULE — NOT IN PRODUCTION (arquivo dormente)
+// =====================================================
+// Status: "Implementado mas não testado" (docs/guides/PROBLEMAS_IDENTIFICADOS.md:51)
+// Importado apenas por unifiedAssessment.ts (também dormente)
+// NÃO é o mesmo que src/lib/noaResidentAI.ts (esse SIM é produção)
+// Decisão pendente: Ricardo + Eduardo — revive ou formaliza deprecação
+// Ver: memory/project_strategic_posture.md
+// NÃO DELETAR sem autorização explícita.
+// =====================================================
 // MEDCANLAB 3.0 → 5.0 UNIFICATION: NOA INTEGRATION
 // =====================================================
 // Conectando NOA Multimodal ao banco real

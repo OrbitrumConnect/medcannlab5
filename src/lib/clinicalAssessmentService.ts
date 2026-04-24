@@ -1,3 +1,14 @@
+// =====================================================
+// ⚠️  IMRE SERVICE — NOT IN PRODUCTION (arquivo dormente)
+// =====================================================
+// Status: zero callers externos em prod (confirmado 24/04/2026)
+// Tenta gravar em imre_assessments com fallback para clinical_assessments
+// (docs/INVENTARIO_FASE1_02_04_2026.md:98)
+// Duplicação documentada com clinicalReportService — gap C4
+// Decisão pendente: Ricardo — unifica OR formaliza deprecação
+// Ver: memory/project_4_clinical_engines_map_24_04.md
+// NÃO DELETAR sem autorização explícita.
+// =====================================================
 import { supabase } from './supabase'
 
 export interface ClinicalReport {

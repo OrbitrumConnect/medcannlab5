@@ -1,4 +1,17 @@
 // =====================================================
+// ⚠️  IMRE MODULE — NOT IN PRODUCTION (arquivo dormente)
+// =====================================================
+// Status: PLANEJADO / IMPLEMENTADO MAS NUNCA INTEGRADO
+// Callers externos: ZERO em prod (confirmado 24/04/2026)
+// Decisão pendente: Ricardo + Eduardo — revive ou formaliza deprecação
+// Referências:
+//   - docs/guides/PROBLEMAS_IDENTIFICADOS.md:51 ("Implementado mas não testado")
+//   - docs/INVENTARIO_FASE1_02_04_2026.md:131 (listado como C4 — dívida conhecida)
+//   - memory/project_4_clinical_engines_map_24_04.md (mapa atual)
+//   - memory/project_strategic_posture.md ("IMRE só faz sentido depois que AEC provar que o produto vive")
+// NÃO DELETAR sem autorização explícita do time.
+// NÃO ATIVAR sem plano de UI + validação clínica + dados reais.
+// =====================================================
 // MEDCANLAB 3.0 → 5.0 UNIFICATION: UNIFIED ASSESSMENT
 // =====================================================
 // Unificando avaliação IMRE com monitoramento renal
