@@ -86,16 +86,91 @@ export class RationalityAnalysisService {
     patientId?: string
   ): Promise<RationalityAnalysis> {
     try {
-      // Construir contexto do relatório
+      // [V1.9.40] Build do contexto com schema PT (como o backend grava desde
+      // V1.9.20) + fallback EN para retrocompat. Antes o código lia só chaves
+      // EN (chiefComplaint, history, physicalExam, assessment, plan) que nunca
+      // existiam no jsonb do banco — a IA recebia "Não informado" em tudo e
+      // gerava boilerplate médico genérico. Bug detectado em 24/04/2026 noite
+      // ao testar "Aplicar Racionalidade Integrativa" num report com queixa
+      // "na boca!" e a IA responder com diagnósticos de pele (celulite,
+      // tromboflebite) ignorando a localização.
+      //
+      // Também aceita `reportContent` como SharedReport wrapper (com .content
+      // ou .rawContent aninhados) — alguns callers passam assim.
+      const rc: any = reportContent?.rawContent
+        ?? reportContent?.content
+        ?? reportContent
+        ?? {}
+
+      const list = (v?: any): string => {
+        if (!Array.isArray(v) || v.length === 0) return 'Não informado'
+        return v
+          .map((item: any) => {
+            if (typeof item === 'string') return item
+            if (item && typeof item === 'object') return item.label ?? JSON.stringify(item)
+            return String(item)
+          })
+          .filter(Boolean)
+          .join(', ')
+      }
+
+      const dev = rc.desenvolvimento_queixa ?? rc.complaintDevelopment ?? {}
+      const hist = rc.historia_familiar ?? rc.familyHistory ?? {}
+      const perg = rc.perguntas_objetivas ?? rc.objectiveQuestions ?? {}
+      const identif = rc.identificacao ?? {}
+
       const reportContext = `
 RELATÓRIO CLÍNICO PARA ANÁLISE:
 
-Queixa Principal: ${reportContent.chiefComplaint || 'Não informado'}
-História: ${reportContent.history || 'Não informado'}
-Exame Físico: ${reportContent.physicalExam || 'Não informado'}
-Avaliação: ${reportContent.assessment || 'Não informado'}
-Plano: ${reportContent.plan || 'Não informado'}
+Paciente: ${identif.nome ?? reportContent?.patient_name ?? 'Não informado'}
+
+Queixa Principal: ${rc.queixa_principal ?? rc.chiefComplaint ?? 'Não informado'}
+
+Lista Indiciária: ${list(rc.lista_indiciaria ?? rc.lista_indiciaria_flat ?? rc.indicativeList)}
+
+Desenvolvimento da Queixa:
+- Localização: ${dev.localizacao ?? 'Não informado'}
+- Início: ${dev.inicio ?? 'Não informado'}
+- Descrição: ${dev.descricao ?? 'Não informado'}
+- Fatores de piora: ${list(dev.fatores_piora ?? dev.worseningFactors)}
+- Fatores de melhora: ${list(dev.fatores_melhora ?? dev.improvingFactors)}
+- Sintomas associados: ${list(dev.sintomas_associados ?? dev.associatedSymptoms)}
+
+História Patológica Pregressa: ${list(rc.historia_patologica_pregressa ?? rc.pastMedicalHistory)}
+História Familiar: materno=${list(hist.lado_materno ?? hist.maternal)} | paterno=${list(hist.lado_paterno ?? hist.paternal)}
+Hábitos de Vida: ${list(rc.habitos_vida ?? rc.lifestyle)}
+
+Perguntas Objetivas:
+- Alergias: ${perg.alergias ?? 'Não informado'}
+- Medicações regulares: ${perg.medicacoes_regulares ?? 'Não informado'}
+- Medicações esporádicas: ${perg.medicacoes_esporadicas ?? 'Não informado'}
+
+Consenso do Paciente: ${rc.consenso?.aceito ? 'Aceito' : 'Não informado'}
       `.trim()
+
+      // [V1.9.40] Gate de densidade mínima — evita gerar "análise" com base
+      // em "Não informado" em todo lugar. Se AEC não tem queixa + lista +
+      // localização, retorna struct com mensagem clara em vez de chamar GPT.
+      const hasMinimumData = Boolean(
+        (rc.queixa_principal || rc.chiefComplaint) &&
+        (
+          (Array.isArray(rc.lista_indiciaria) && rc.lista_indiciaria.length > 0) ||
+          (Array.isArray(rc.lista_indiciaria_flat) && rc.lista_indiciaria_flat.length > 0)
+        )
+      )
+
+      if (!hasMinimumData) {
+        console.warn('[rationality] Densidade insuficiente — AEC sem queixa+lista. Retornando fallback estruturado.', {
+          tem_queixa: Boolean(rc.queixa_principal || rc.chiefComplaint),
+          n_lista: (rc.lista_indiciaria?.length ?? rc.lista_indiciaria_flat?.length) ?? 0
+        })
+        return {
+          assessment: '⚠️ Relatório sem densidade clínica suficiente para análise por racionalidade. Avaliação AEC incompleta — falta queixa principal ou lista indiciária.',
+          recommendations: ['Completar a AEC (Arte da Entrevista Clínica) do paciente antes de aplicar racionalidades médicas.'],
+          considerations: 'Racionalidades médicas precisam de dado estruturado para gerar hipóteses específicas. Sem queixa e lista indiciária, qualquer análise seria genérica.',
+          approach: ''
+        }
+      }
 
       // 🧠 RAG: buscar histórico clínico do paciente (outras avaliações + racionalidades anteriores)
       let patientHistoryContext = ''
@@ -115,9 +190,12 @@ Plano: ${reportContent.plan || 'Não informado'}
               .map((r: any) => {
                 const c = r.content || {}
                 const date = new Date(r.created_at).toLocaleDateString('pt-BR')
-                const queixa = c.chiefComplaint || c.queixa_principal || '—'
-                const aval = c.assessment || c.avaliacao || '—'
-                return `• [${date}] Queixa: ${String(queixa).substring(0, 200)} | Avaliação: ${String(aval).substring(0, 200)}`
+                // [V1.9.40] Schema PT first (queixa_principal), EN fallback.
+                // `c.avaliacao` nunca existiu no banco — substituído por structured
+                // (markdown narrativo do backend) truncado.
+                const queixa = c.queixa_principal || c.chiefComplaint || '—'
+                const narr = c.structured || c.assessment || '—'
+                return `• [${date}] Queixa: ${String(queixa).substring(0, 200)} | Narrativa: ${String(narr).substring(0, 300)}`
               }).join('\n')
             if (summaries) {
               patientHistoryContext = `\n\nHISTÓRICO CLÍNICO PRÉVIO DO PACIENTE (últimas avaliações):\n${summaries}`
@@ -178,8 +256,29 @@ Plano: ${reportContent.plan || 'Não informado'}
       // Prompt específico da racionalidade
       const rationalityPrompt = RATIONALITY_PROMPTS[rationality]
 
-      // Mensagem completa para a IA (com RAG)
-      const fullMessage = `${rationalityPrompt}\n\n${reportContext}${patientHistoryContext}${knowledgeBaseContext}\n\nCom base no relatório, no histórico do paciente e nas referências acima, forneça uma análise detalhada e personalizada segundo esta racionalidade médica.`
+      // [V1.9.40] Diretrizes obrigatórias — matam o "boilerplate elegante"
+      // forçando uso dos dados do caso em vez de listas genéricas.
+      const analysisRequirements = `
+DIRETRIZES OBRIGATÓRIAS DE RESPOSTA:
+- Comece com uma síntese clínica de 1 frase usando os dados específicos DESTE paciente (nome, queixa, localização).
+- Considere EXPLICITAMENTE a localização anatômica informada ao propor diagnósticos e exames.
+- Liste no máximo 3 diagnósticos diferenciais, ordenados por probabilidade clínica para este caso.
+- Justifique a hipótese principal referenciando dados específicos do relatório acima.
+- Defina conduta concreta: o que fazer agora, o que observar, quando investigar mais.
+- Considere medicações/exposições relatadas (ex: cannabis, AINEs) ao propor tratamento.
+- Evite listas genéricas — cada item deve referenciar um dado do caso.
+- Se um campo estiver "Não informado", mencione-o como lacuna a preencher, não invente.`
+
+      // Mensagem completa para a IA (com RAG + diretrizes)
+      const fullMessage = `${rationalityPrompt}\n\n${reportContext}${patientHistoryContext}${knowledgeBaseContext}\n${analysisRequirements}\n\nCom base no relatório, no histórico do paciente e nas referências acima, forneça uma análise detalhada e personalizada segundo esta racionalidade médica, seguindo ESTRITAMENTE as diretrizes obrigatórias.`
+
+      // [V1.9.40] Log do payload — salva horas de debug se saída vier estranha.
+      // Só os primeiros 1200 chars, evita poluir console com muito RAG.
+      console.log('[rationality][payload]', rationality, {
+        reportContext_head: reportContext.slice(0, 1200),
+        has_patient_history: Boolean(patientHistoryContext),
+        has_kb: Boolean(knowledgeBaseContext)
+      })
 
       // Processar com Nôa
       const response = await this.noaAI.processMessage(
