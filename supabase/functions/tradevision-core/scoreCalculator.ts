@@ -5,10 +5,12 @@
  * clinical_reports.content. These scores measure COMPLETENESS and richness
  * of the assessment — NOT direct health outcomes.
  *
- * Mirror of src/lib/clinicalScoreCalculator.ts (frontend). Kept in _shared
- * so that handleFinalizeAssessment populates scores nativamente no banco
- * (antes dependia do frontend calcular via enrichReportWithScores no
- * momento de ler). Ver V1.9.33.
+ * Mirror of src/lib/clinicalScoreCalculator.ts (frontend). Colocado dentro
+ * de tradevision-core/ (em vez de _shared/) porque o bundler do Supabase
+ * Edge Function não empacotava arquivos de ../_shared/ via alguns métodos
+ * de deploy (dashboard upload / V1.9.33 falhou "Module not found"). Com
+ * arquivo local ao diretório da função, qualquer deploy funciona.
+ * V1.9.34 (correção do deploy de V1.9.33).
  *
  * IMPORTANTE: o algoritmo DEVE permanecer equivalente ao do frontend.
  * Se for evoluir, atualize os dois lados. Idealmente extrair como módulo
