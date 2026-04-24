@@ -3101,6 +3101,73 @@ INSTRUÇÃO DE USO (NÃO NEGOCIÁVEL):
             }
         }
 
+        // 🆕 [V1.9.17 — STUDENT CONTEXT FACTUAL]
+        // Contexto do aluno logado. Hoje a base tem 0 students e 0 lessons, mas
+        // o contrato permite Nôa admitir ("você ainda não começou aulas") em vez
+        // de inventar progresso inexistente.
+        if (
+            phaseAllowsOperationalContext &&
+            userContext && typeof userContext === 'object' && (userContext as any).role === 'student'
+        ) {
+            try {
+                const uc = userContext as any
+                const lines: string[] = []
+
+                if (typeof uc.daysOnPlatform === 'number') {
+                    lines.push(`• Dias na plataforma MedCannLab: ${uc.daysOnPlatform}`)
+                }
+
+                if (uc.progress) {
+                    const p = uc.progress
+                    lines.push(`• Progresso: nível ${p.level ?? 1}, ${p.points ?? 0} pontos`)
+                    if (typeof p.totalSessions === 'number') {
+                        lines.push(`• Sessões totais na plataforma: ${p.totalSessions}`)
+                    }
+                    if (typeof p.totalTimeSpentMinutes === 'number') {
+                        lines.push(`• Tempo total de estudo: ${p.totalTimeSpentMinutes} minutos`)
+                    }
+                    if (p.lastActivityAt) {
+                        const d = new Date(p.lastActivityAt)
+                        if (!isNaN(d.getTime())) {
+                            lines.push(`• Última atividade: ${d.toLocaleDateString('pt-BR')}`)
+                        }
+                    }
+                }
+
+                if (uc.courses) {
+                    const c = uc.courses
+                    lines.push(
+                        `• Cursos: ${c.enrolledCount ?? 0} matriculado(s) ` +
+                        `(${c.completedCount ?? 0} concluído(s), ${c.inProgressCount ?? 0} em andamento)`
+                    )
+                }
+
+                if (uc.content) {
+                    lines.push(
+                        `• Conteúdo disponível: ${uc.content.lessonsPublishedCount ?? 0} aula(s) publicada(s), ` +
+                        `${uc.content.availableDocsCount ?? 0} documento(s) de pesquisa`
+                    )
+                }
+
+                if (lines.length > 0) {
+                    phaseInstruction = phaseInstruction + `
+
+📊 CONTEXTO DO ALUNO (dados factuais do aluno logado):
+${lines.join('\n')}
+
+INSTRUÇÃO DE USO (NÃO NEGOCIÁVEL):
+1. Se o aluno perguntar sobre seu progresso, cursos, aulas, pontos ou conteúdo disponível, responda DIRETAMENTE usando esta lista.
+2. NÃO diga "não tenho acesso" para esses campos — eles estão aqui.
+3. NÃO invente valores. Se um campo mostra 0 (ex.: 0 aulas publicadas, 0 cursos matriculados), admita honestamente ("você ainda não começou nenhuma aula"); jamais fabrique progresso.
+4. Para detalhes de uma aula específica ou conteúdo, oriente o aluno a abrir a seção de Cursos/Biblioteca.
+5. Se um campo não está acima, ele NÃO existe neste contexto — jamais estime.
+`
+                }
+            } catch (ucErr) {
+                console.warn('[STUDENT CONTEXT] Falha ao montar bloco de contexto:', ucErr)
+            }
+        }
+
         const aecChosenPhysician =
             typeof patientData?.aecConsultationPhysicianName === 'string'
                 ? String(patientData.aecConsultationPhysicianName).trim()
