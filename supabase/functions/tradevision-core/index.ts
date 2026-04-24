@@ -909,8 +909,12 @@ const deriveAppCommandsV1 = (message: string, ui_context?: any, userRole?: strin
         })
     }
 
-    // 🧬 [V1.6.9] Gatilho de Avaliação Clínica Inicial (AEC 001)
-    if (/(avaliacao|avaliação|anamnese|entrevista|inicial|comecar|iniciar)/.test(norm)) {
+    // 🧬 [V1.6.9 / V1.9.11] Gatilho de Avaliação Clínica Inicial (AEC 001)
+    // V1.9.11: regex precisa (verbo + alvo) + role guard. Admin bypass em filterAppCommandsByRole
+    // deixava este botão vazar quando admin simulava ("Faça a entrevista clínica...") — agora só dispara
+    // para paciente e exige intenção explícita de iniciar avaliação/anamnese.
+    if (userRole === 'patient' &&
+        /\b(iniciar|come[cç]ar|fazer|quero|queria|vamos|realizar)\s+(?:uma\s+|a\s+|minha\s+|novamente\s+)*(avalia[cç][ãa]o|anamnese)\b/i.test(norm)) {
         commands.push({
             kind: 'noa_command',
             command: {
