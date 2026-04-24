@@ -704,6 +704,86 @@ Todas as três saídas convergem para: **paciente sempre tem controle consciente
 4. Testes E2E automatizados de (a) fluxo AEC completo e (b) cadastro de paciente — dívida de hardening
 
 ---
-**Selo do Dia:** 23/04/2026  
-**Hash:** `full-day-clinical-stability-final-v1-9-2`  
-**Responsáveis:** Antigravity, Claude Code (Opus 4.7, 1M context) & Pedro (CTO)
+
+#### V1.9.5 — UX Cleanup: Placeholder Removal 🧹
+**Status:** UI limpa • Placeholder institucional removido • Foco total no chat
+
+Removido o parágrafo de "Imagine ter um consultório figital..." que aparecia em estados vazios, garantindo uma interface mais profissional e direta para o usuário.
+
+---
+
+#### V1.9.6 — O Direito de "Apenas Conversar" 💬
+**Status:** Flexibilidade de Retomada • Terceira Via no Prompt de Interrupção
+
+- Expandido o prompt de `INTERRUPTED` para oferecer a opção de "apenas conversar".
+- Paciente não é mais forçado a escolher entre "Continuar" ou "Nova" se quiser apenas tirar uma dúvida rápida fora do protocolo.
+
+---
+
+#### V1.9.7 — Fim da Race Condition de Recusa 🏁
+**Status:** Bug Crítico de Estado Selado
+
+- Corrigida a corrida (race condition) entre o `DELETE` do estado de recusa (`isRefusing`) e o `ensureLoaded` do próximo turno.
+- Garante que quando o paciente recusa a retomada, o sistema limpa o estado de forma atômica antes do próximo carregamento.
+
+---
+
+#### V1.9.8 — User Context Factual (A Noa Ganha Memória) 🧠
+**Status:** Integração de Dados Operacionais • Fim do "Não tenho acesso"
+
+- Injetado `userContext` no prompt da Noa (via `buildPatientContext`).
+- A Noa agora responde factualmente sobre: dias na plataforma, contagem de avaliações, data da próxima consulta e status do período de trial.
+
+---
+
+#### V1.9.9 — Phase Gate & Anti-Hallucination Guard 🛡️
+**Status:** Separação entre Administrativo e Clínico • Sandbox para Dados Factuais
+
+- Criada a trava `OPERATIONAL_CONTEXT_PHASES` para garantir que o contexto de dados (trial, consulta) só seja injetado em fases não-clínicas (`INITIAL_GREETING`, `INTERRUPTED`, `COMPLETED`).
+- Impede que dados operacionais introduzam ruído ou "clinical drift" durante as fases de anamnese profunda.
+
+---
+
+#### V1.9.10 — Simulação Master & Auto-Pause 🎭
+**Status:** Modo Ensino Robusto • Estabilidade de Sessão para Pacientes
+
+- Expandido o regex de detecção de Ensino para cobrir todas as variantes do frontend (`simulação`, `nivelamento`, `entrevista clínica`).
+- Implementado auto-pause imediato no mount do hook para transformar qualquer queda/F5 em `INTERRUPTED`, impedindo "sequestro" de turno clínico.
+
+---
+
+#### V1.9.11 — Role Guard & Refined Clinical Trigger 🚦
+**Status:** Fim do Gatilho Órfão • Segurança por Papel
+
+- Adicionado `userRole === 'patient'` como requisito obrigatório para o gatilho de AEC 001.
+- Refinado o regex de abertura para exigir intenção explícita (verbo + alvo), evitando que a Noa ofereça avaliações para Administradores ou em conversas casuais sobre o tema.
+
+---
+
+#### V1.9.12 — Library Filter: Slides Exclusion 🎥
+**Status:** Higiene da Base de Conhecimento
+
+- Implementado filtro no componente de Biblioteca para ignorar a categoria `'slides'`.
+- Limpa visualmente a lista de documentos, focando apenas em protocolos e materiais técnicos de leitura.
+
+---
+
+#### V1.9.13 — Monetization Flow Unblocked 💸
+**Status:** Recuperação de Checkout
+
+- Corrigido travamento silencioso no componente de pagamento que impedia o avanço do usuário em fluxos de upgrade/assinatura sob certas condições de estado.
+
+---
+
+#### V1.9.14 — Block A Polishing Pass 💎
+**Status:** Acessibilidade Estudantil • Segurança de E-mail • Backfill de Perfis
+
+- **Estudante Livre**: Documentos com `target_audience` 'student' ou 'all' agora abrem corretamente para alunos (anteriormente bloqueados).
+- **Download em Chat**: Botão de download adicionado ao visualizador inline do chat, com URLs assinadas (TTL 1h).
+- **Hardening E-mail**: A função `send-email` agora exige JWT válido, bloqueando envios não autenticados.
+- **User Profiles SSoT**: Backfill massivo de e-mails, nomes e roles na tabela `user_profiles` a partir do `auth.users`. Identificado conflito de triggers (V1.10.0-audit pendente).
+
+---
+**Selo Final do Dia:** 23/04/2026 — V1.9.14  
+**Hash:** `clinical-stability-complete-seal-ff36f77`  
+**Responsáveis:** Antigravity, Claude Code (Opus 4.7) & Pedro (CTO)
