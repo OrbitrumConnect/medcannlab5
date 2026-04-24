@@ -1132,6 +1132,15 @@ Estrutura Obrigatória:
         const structuredNarrative = reportCompletion?.choices?.[0]?.message?.content || "Não foi possível gerar a narrativa do relatório.";
 
         // 3. Persistência do Relatório (Status Completed ativa os KPIs no DB)
+        // [V1.9.20] Estrutura: spread do content estruturado no topo (restaura esquema
+        // pré-refactor 7a7e33a — reports de 02-05/04 tinham lista_indiciaria/identificacao
+        // DIRETO em content.*). Mantém content.raw e content.structured pra
+        // retrocompat do código que já desembrulha via .raw.
+        // Também popula professional_id (coluna moderna) junto com doctor_id legado —
+        // reports de 02-05/04 tinham os dois; pós-refactor só doctor_id foi preenchido.
+        const structuredTop = (assessmentData && typeof assessmentData === 'object' && assessmentData.content && typeof assessmentData.content === 'object')
+            ? assessmentData.content
+            : {};
         const { data: report, error: reportError } = await supabaseClient
             .from('clinical_reports')
             .insert({
@@ -1140,15 +1149,20 @@ Estrutura Obrigatória:
                 report_type: 'initial_assessment',
                 generated_by: 'noa_ai',
                 content: {
-                    raw: assessmentData,
+                    // Campos estruturados no topo (V1.9.20 — restaura esquema 02-05/04)
+                    ...structuredTop,
+                    // Narrativa GPT (mantido)
                     structured: structuredNarrative,
+                    // Raw pra retrocompat de quem desembrulha via .raw
+                    raw: assessmentData,
                     metadata: {
                         interaction_id,
                         generated_at: new Date().toISOString(),
-                        system_version: "Titan 5.2 (April 4th Master Engine)"
+                        system_version: "V1.9.20 (April 4th Master Engine restored)"
                     }
                 },
                 doctor_id: resolvedDoctorId,
+                professional_id: resolvedDoctorId, // [V1.9.20] popular coluna moderna também
                 status: 'completed',
                 interaction_id,
                 // [V1.9.1] Persiste consent como colunas dedicadas (não apenas no jsonb)

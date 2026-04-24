@@ -1834,6 +1834,60 @@ export class NoaResidentAI {
         }
       }
 
+      // [V1.9.20] assessmentData estruturado para finalização — restaura qualidade
+      // pré-refactor 7a7e33a (23/04). Antes, frontend invocava finalize_assessment
+      // separadamente com o contentPayload. Agora viaja no mesmo request; backend usa
+      // em handleFinalizeAssessment quando [ASSESSMENT_COMPLETED] aparece. Sem isso,
+      // clinical_reports nascem sem lista_indiciaria/identificacao estruturadas
+      // (era o que Pedro sentia como regressão).
+      let aecFinalizationData: Record<string, any> | null = null
+      if (platformData?.user?.id) {
+        const finalizeState = clinicalAssessmentFlow.getState(platformData.user.id)
+        const FINAL_PHASES = new Set([
+          'CLOSING',
+          'FINAL_RECOMMENDATION',
+          'CONSENT_COLLECTION',
+          'COMPLETED'
+        ])
+        if (finalizeState && FINAL_PHASES.has(finalizeState.phase as string)) {
+          const d: any = finalizeState.data || {}
+          aecFinalizationData = {
+            patient_id: platformData.user.id,
+            content: {
+              identificacao: {
+                nome: d.patientName ?? null,
+                apresentacao: d.patientPresentation ?? null
+              },
+              lista_indiciaria: Array.isArray(d.complaintList) ? d.complaintList.filter(Boolean) : [],
+              queixa_principal: d.mainComplaint ?? null,
+              desenvolvimento_queixa: {
+                localizacao: d.complaintLocation ?? null,
+                inicio: d.complaintOnset ?? null,
+                descricao: d.complaintDescription ?? null,
+                sintomas_associados: Array.isArray(d.complaintAssociatedSymptoms) ? d.complaintAssociatedSymptoms.filter(Boolean) : [],
+                fatores_melhora: Array.isArray(d.complaintImprovements) ? d.complaintImprovements.filter(Boolean) : [],
+                fatores_piora: Array.isArray(d.complaintWorsening) ? d.complaintWorsening.filter(Boolean) : []
+              },
+              historia_patologica_pregressa: Array.isArray(d.medicalHistory) ? d.medicalHistory.filter(Boolean) : [],
+              historia_familiar: {
+                lado_materno: Array.isArray(d.familyHistoryMother) ? d.familyHistoryMother.filter(Boolean) : [],
+                lado_paterno: Array.isArray(d.familyHistoryFather) ? d.familyHistoryFather.filter(Boolean) : []
+              },
+              habitos_vida: Array.isArray(d.lifestyleHabits) ? d.lifestyleHabits.filter(Boolean) : [],
+              perguntas_objetivas: {
+                alergias: d.allergies ?? null,
+                medicacoes_regulares: d.regularMedications ?? null,
+                medicacoes_esporadicas: d.sporadicMedications ?? null
+              },
+              consenso: {
+                aceito: !!d.consensusAgreed,
+                revisoes_realizadas: d.consensusRevisions ?? 0
+              }
+            }
+          }
+        }
+      }
+
       const rawUser = platformData?.user
       const userForCore =
         rawUser &&
@@ -1872,6 +1926,7 @@ export class NoaResidentAI {
         assessmentPhase: currentPhase,
         nextQuestionHint,
         aecSnapshot, // 🆕 Bloco 11 — fonte única da verdade da sessão AEC
+        ...(aecFinalizationData ? { assessmentData: aecFinalizationData } : {}), // [V1.9.20] dados estruturados pra handleFinalizeAssessment
         userContext: userContextPayload, // [V1.9.8+V1.9.15] dados factuais por role (paciente/professional) ou null
         ui_context: uiContext,
         patientData: {
