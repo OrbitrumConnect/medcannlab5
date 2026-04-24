@@ -1872,8 +1872,13 @@ Deno.serve(async (req: Request) => {
                         }), { headers: { ...getCorsHeaders(req.headers.get('Origin')), 'Content-Type': 'application/json' } })
                     }
 
-                    // Governança por perfil (mínimo, conservador) — PLANO_MESTRE: só pro/admin abrem doc literal
-                    const canOpenLiteral = userRole === 'admin' || userRole === 'master' || userRole === 'professional'
+                    // Governança por perfil — admin/pro sempre; student só se o próprio target_audience do doc inclui 'student'
+                    const chosenAudience = Array.isArray(chosen.audience) ? chosen.audience : []
+                    const canOpenLiteral =
+                        userRole === 'admin' ||
+                        userRole === 'master' ||
+                        userRole === 'professional' ||
+                        (userRole === 'student' && (chosenAudience.includes('student') || chosenAudience.includes('all')))
                     if (!canOpenLiteral) {
                         await supabaseClient
                             .from('noa_pending_actions')

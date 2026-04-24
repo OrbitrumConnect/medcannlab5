@@ -2774,6 +2774,66 @@ const NoaConversationalInterface = React.forwardRef<
                         </button>
                       )}
                       <button
+                        title="Baixar arquivo para enviar/compartilhar"
+                        onClick={async () => {
+                          try {
+                            let downloadUrl = inlineDoc.file_url as string | null;
+                            const title = inlineDoc.title || "documento";
+
+                            if (!downloadUrl) {
+                              const { data: { user: dlUser } } = await supabase.auth.getUser();
+                              const dlFolder = dlUser?.id || "";
+                              const { data: files } = await supabase.storage
+                                .from("documents")
+                                .list(dlFolder, { limit: 100 });
+                              if (files && files.length > 0) {
+                                const baseTitle = title.toLowerCase().split(".")[0];
+                                const file = files.find((f) =>
+                                  f.name.toLowerCase().includes(baseTitle) ||
+                                  title.toLowerCase().includes(f.name.toLowerCase().split(".")[0]),
+                                );
+                                if (file) {
+                                  const { data: signedData } = await supabase.storage
+                                    .from("documents")
+                                    .createSignedUrl(`${dlFolder}/${file.name}`, 3600);
+                                  if (signedData) downloadUrl = signedData.signedUrl;
+                                }
+                              }
+                            } else if (downloadUrl.includes("supabase.co/storage")) {
+                              const pathMatch = downloadUrl.match(
+                                /\/storage\/v1\/object\/[^\/]+\/(.+)$/,
+                              );
+                              if (pathMatch) {
+                                const filePath = decodeURIComponent(pathMatch[1]);
+                                const { data: signedData } = await supabase.storage
+                                  .from("documents")
+                                  .createSignedUrl(filePath, 3600);
+                                if (signedData) downloadUrl = signedData.signedUrl;
+                              }
+                            }
+
+                            if (!downloadUrl) {
+                              alert(
+                                "Este documento não tem arquivo anexado (só conteúdo textual). Use 'Enviar para Nôa' ou 'Abrir na Biblioteca'.",
+                              );
+                              return;
+                            }
+
+                            const link = document.createElement("a");
+                            link.href = downloadUrl;
+                            link.download = title;
+                            link.target = "_blank";
+                            link.click();
+                          } catch (e) {
+                            console.error("Erro no download:", e);
+                            alert("Não foi possível baixar o arquivo agora.");
+                          }
+                        }}
+                        className="px-3 py-2 rounded-lg bg-emerald-900/40 hover:bg-emerald-800/50 text-emerald-200 text-sm font-semibold border border-emerald-600/40"
+                      >
+                        Baixar
+                      </button>
+                      <button
                         onClick={() =>
                           navigate("/app/library", {
                             state: { openDocumentId: inlineDoc.id },
