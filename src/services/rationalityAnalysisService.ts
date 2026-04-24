@@ -148,9 +148,19 @@ Perguntas Objetivas:
 Consenso do Paciente: ${rc.consenso?.aceito ? 'Aceito' : 'Não informado'}
       `.trim()
 
-      // [V1.9.40] Gate de densidade mínima — evita gerar "análise" com base
-      // em "Não informado" em todo lugar. Se AEC não tem queixa + lista +
-      // localização, retorna struct com mensagem clara em vez de chamar GPT.
+      // [V1.9.43] RETRATAÇÃO DO GATE V1.9.40.
+      //
+      // V1.9.40 bloqueava análise se "dado fosse pouco" — violava o princípio
+      // AEC de escuta ativa ("tudo que o paciente fala é ouro"). O fix correto
+      // não é bloquear, é modular a análise para sempre ser útil respeitando
+      // restrições CRM/LGPD.
+      //
+      // Decisão de 24/04/2026 (Pedro): "o que NÃO é pra ser genérico é a
+      // resposta, pois temos docs no app para serem usados, potencial da
+      // OpenAI, com restrição CRM e LGPD para não tomarmos processo".
+      //
+      // Logo: analisar sempre, mas com restrições fortalecidas no prompt
+      // (ver analysisRequirements abaixo).
       const hasMinimumData = Boolean(
         (rc.queixa_principal || rc.chiefComplaint) &&
         (
@@ -158,18 +168,12 @@ Consenso do Paciente: ${rc.consenso?.aceito ? 'Aceito' : 'Não informado'}
           (Array.isArray(rc.lista_indiciaria_flat) && rc.lista_indiciaria_flat.length > 0)
         )
       )
-
+      // Só loga se dado é escasso — não bloqueia mais. A IA vai adaptar o tom.
       if (!hasMinimumData) {
-        console.warn('[rationality] Densidade insuficiente — AEC sem queixa+lista. Retornando fallback estruturado.', {
+        console.info('[rationality] Dado escasso — IA fará análise educacional contextualizada com RAG.', {
           tem_queixa: Boolean(rc.queixa_principal || rc.chiefComplaint),
           n_lista: (rc.lista_indiciaria?.length ?? rc.lista_indiciaria_flat?.length) ?? 0
         })
-        return {
-          assessment: '⚠️ Relatório sem densidade clínica suficiente para análise por racionalidade. Avaliação AEC incompleta — falta queixa principal ou lista indiciária.',
-          recommendations: ['Completar a AEC (Arte da Entrevista Clínica) do paciente antes de aplicar racionalidades médicas.'],
-          considerations: 'Racionalidades médicas precisam de dado estruturado para gerar hipóteses específicas. Sem queixa e lista indiciária, qualquer análise seria genérica.',
-          approach: ''
-        }
       }
 
       // 🧠 RAG: buscar histórico clínico do paciente (outras avaliações + racionalidades anteriores)
@@ -256,22 +260,37 @@ Consenso do Paciente: ${rc.consenso?.aceito ? 'Aceito' : 'Não informado'}
       // Prompt específico da racionalidade
       const rationalityPrompt = RATIONALITY_PROMPTS[rationality]
 
-      // [V1.9.40] Diretrizes obrigatórias — matam o "boilerplate elegante"
-      // forçando uso dos dados do caso em vez de listas genéricas.
-      // [V1.9.41] Refinado: nome explícito, raciocínio diferencial (justifica
-      // exclusão das hipóteses menos prováveis), parcimônia em exames.
+      // [V1.9.40/41/43] Diretrizes obrigatórias — forçam uso dos dados do caso
+      // + raciocínio diferencial + parcimônia em exames + restrições CRM/LGPD.
+      //
+      // [V1.9.43] Adicionado princípio de escuta ativa + restrições CRM/LGPD
+      // fortalecidas. A IA deve SEMPRE analisar (mesmo dado escasso) usando
+      // RAG da base de conhecimento, mas nunca violar limites profissionais.
       const analysisRequirements = `
 DIRETRIZES OBRIGATÓRIAS DE RESPOSTA:
 - Cite explicitamente o NOME do paciente na primeira frase e faça uma síntese clínica de 1 frase usando queixa + localização desse caso específico.
-- Considere EXPLICITAMENTE a localização anatômica informada ao propor diagnósticos e exames (evite hipóteses anatomicamente incompatíveis).
+- Considere EXPLICITAMENTE a localização anatômica informada ao propor hipóteses e exames (evite incompatibilidades anatômicas).
 - Liste no máximo 3 diagnósticos diferenciais, ordenados por probabilidade clínica para este caso.
 - Justifique a hipótese principal referenciando dados específicos do relatório acima.
 - Explique por que as hipóteses menos prováveis são menos compatíveis com os dados — raciocínio diferencial, não apenas ranking.
-- Só proponha exames complementares se eles puderem MUDAR a conduta clínica. Evite "pedir tudo por pedir".
+- Só proponha exames complementares se puderem MUDAR a conduta clínica. Evite "pedir tudo por pedir".
 - Defina conduta concreta em 3 tempos: o que fazer agora, o que observar, quando investigar mais / escalar.
 - Considere medicações/exposições relatadas (ex: cannabis, AINEs, alérgenos) ao propor tratamento.
 - Evite listas genéricas — cada item deve referenciar um dado do caso.
-- Se um campo estiver "Não informado", mencione-o como lacuna a preencher, não invente.`
+
+DADOS ESCASSOS (princípio AEC de escuta ativa):
+- Qualquer informação do paciente, por menor que seja, é ponto de partida válido para análise.
+- Quando dados forem escassos, APROFUNDE usando a base de conhecimento (RAG injetado acima): referencie literatura, protocolos, estudos relevantes à queixa.
+- NÃO diga que "falta dado"; em vez disso, use o dado que EXISTE + contexto da racionalidade escolhida para oferecer reflexão clínica educacional.
+- Se um campo específico estiver "Não informado", cite-o como ponto a explorar em próxima consulta — nunca invente.
+
+RESTRIÇÕES PROFISSIONAIS OBRIGATÓRIAS (CRM/LGPD):
+- Você é apoio à decisão clínica, NÃO médico. Use verbos como "sugere considerar", "vale investigar", "a literatura aponta" — NUNCA "diagnóstico é", "prescrevo", "o paciente tem".
+- NÃO prescreva doses, posologias ou nomes comerciais de medicamentos específicos. Pode discutir classes terapêuticas à luz da literatura.
+- NÃO inclua a frase "Procure um médico" de forma mecânica; o relatório JÁ É de um paciente com médico responsável no sistema.
+- NÃO infira dados sensíveis não mencionados pelo paciente (LGPD). Ex: não deduza orientação sexual, crenças religiosas, estado mental grave sem base textual.
+- A análise é **educacional + reflexiva para apoio do profissional**, não diagnóstico autônomo.
+- Fecha a análise com uma linha: "Esta análise é apoio à decisão clínica e deve ser validada pelo profissional responsável antes de qualquer conduta."`
 
       // Mensagem completa para a IA (com RAG + diretrizes)
       const fullMessage = `${rationalityPrompt}\n\n${reportContext}${patientHistoryContext}${knowledgeBaseContext}\n${analysisRequirements}\n\nCom base no relatório, no histórico do paciente e nas referências acima, forneça uma análise detalhada e personalizada segundo esta racionalidade médica, seguindo ESTRITAMENTE as diretrizes obrigatórias.`
