@@ -5,6 +5,7 @@ import { getNoaAssistantIntegration } from './noaAssistantIntegration'
 import { getPlatformFunctionsModule } from './platformFunctionsModule'
 import { clinicalAssessmentFlow, stripPlatformInjectionNoise } from './clinicalAssessmentFlow'
 import { buildPatientContext } from './buildPatientContext'
+import { buildProfessionalContext } from './buildProfessionalContext'
 // Remocao da injecao manual para uso de File Search no Assistant API
 import MedCannLabAuditLogger from './MedCannLabAuditLogger'
 import { META_TAGS, stripClinicalTags } from '../constants/metaTags'
@@ -1813,16 +1814,22 @@ export class NoaResidentAI {
           ? rawUser
           : { ...rawUser, type: 'paciente', user_type: 'paciente' })
 
-      // [V1.9.8] Contexto factual do paciente (role=paciente) — fail-open, RLS-safe.
-      // Permite que a Nôa responda "quantos dias no app", "próxima consulta", etc.
-      // Se a query falhar ou o user não for paciente, patientContext = null e o Core
+      // [V1.9.8 + V1.9.15] Contexto factual por role — fail-open, RLS-safe.
+      // Permite que a Nôa responda com dados reais em vez de "não tenho acesso":
+      //   - paciente: dias no app, próxima consulta, trial (V1.9.8)
+      //   - professional: agenda do dia, pacientes ativos, prescrições, wallet (V1.9.15)
+      // Se a query falhar ou role for desconhecida, userContext = null e o Core
       // responde como antes (sem enrichment).
-      let patientContext: Awaited<ReturnType<typeof buildPatientContext>> = null
-      const isPatientRole =
-        (rawUser?.type === 'paciente' || rawUser?.type === 'patient') ||
-        (rawUser?.user_type === 'paciente' || rawUser?.user_type === 'patient')
-      if (platformData?.user?.id && isPatientRole) {
-        patientContext = await buildPatientContext(platformData.user.id)
+      let userContextPayload: unknown = null
+      const roleRaw = (rawUser?.type || rawUser?.user_type || '').toString().toLowerCase()
+      const isPatientRole = roleRaw === 'paciente' || roleRaw === 'patient'
+      const isProfessionalRole = roleRaw === 'profissional' || roleRaw === 'professional'
+      if (platformData?.user?.id) {
+        if (isPatientRole) {
+          userContextPayload = await buildPatientContext(platformData.user.id)
+        } else if (isProfessionalRole) {
+          userContextPayload = await buildProfessionalContext(platformData.user.id)
+        }
       }
 
       const payload = {
@@ -1832,7 +1839,7 @@ export class NoaResidentAI {
         assessmentPhase: currentPhase,
         nextQuestionHint,
         aecSnapshot, // 🆕 Bloco 11 — fonte única da verdade da sessão AEC
-        userContext: patientContext, // [V1.9.8] dados factuais role=paciente (ou null)
+        userContext: userContextPayload, // [V1.9.8+V1.9.15] dados factuais por role (paciente/professional) ou null
         ui_context: uiContext,
         patientData: {
           ...platformData,

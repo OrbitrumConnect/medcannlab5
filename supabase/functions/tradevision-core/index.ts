@@ -2962,6 +2962,78 @@ INSTRUÇÃO DE USO (NÃO NEGOCIÁVEL):
             }
         }
 
+        // 🆕 [V1.9.15 — PROFESSIONAL CONTEXT FACTUAL]
+        // Análogo ao bloco acima, para role=professional. Dados de agenda, pacientes
+        // ativos, prescrições, wallet. Nôa passa a responder "quantos pacientes tenho
+        // hoje", "qual minha próxima consulta", "saldo pendente" com dados reais.
+        if (
+            phaseAllowsOperationalContext &&
+            userContext && typeof userContext === 'object' && (userContext as any).role === 'professional'
+        ) {
+            try {
+                const uc = userContext as any
+                const lines: string[] = []
+                if (typeof uc.activePatientsCount === 'number') {
+                    lines.push(`• Pacientes ativos (últimos 30d, não-cancelados): ${uc.activePatientsCount}`)
+                }
+                if (typeof uc.todayAppointmentsCount === 'number') {
+                    lines.push(`• Consultas hoje: ${uc.todayAppointmentsCount}`)
+                }
+                if (Array.isArray(uc.todayAppointments) && uc.todayAppointments.length > 0) {
+                    const items = uc.todayAppointments.slice(0, 5).map((a: any) => {
+                        const d = a?.date ? new Date(a.date) : null
+                        const timeStr = d && !isNaN(d.getTime())
+                            ? d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
+                            : '??:??'
+                        const who = a?.patientName ? a.patientName : 'paciente'
+                        const st = a?.status ? ` [${a.status}]` : ''
+                        return `  - ${timeStr} — ${who}${st}`
+                    }).join('\n')
+                    lines.push(`• Agenda de hoje:\n${items}`)
+                }
+                if (uc.nextAppointment?.date) {
+                    const d = new Date(uc.nextAppointment.date)
+                    if (!isNaN(d.getTime())) {
+                        const dateStr = d.toLocaleDateString('pt-BR')
+                        const timeStr = d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
+                        const who = uc.nextAppointment.patientName ? ` — ${uc.nextAppointment.patientName}` : ''
+                        const st = uc.nextAppointment.status ? ` (${uc.nextAppointment.status})` : ''
+                        lines.push(`• Próxima consulta: ${dateStr} às ${timeStr}${who}${st}`)
+                    }
+                } else {
+                    lines.push(`• Próxima consulta: nenhuma agendada`)
+                }
+                if (typeof uc.prescriptionsLast30d === 'number') {
+                    lines.push(`• Prescrições emitidas (últimos 30d): ${uc.prescriptionsLast30d}`)
+                }
+                if (typeof uc.reportsLast30d === 'number') {
+                    lines.push(`• Relatórios clínicos (últimos 30d): ${uc.reportsLast30d}`)
+                }
+                if (uc.wallet) {
+                    const avail = Number(uc.wallet.balanceAvailable ?? 0).toFixed(2)
+                    const pend = Number(uc.wallet.balancePending ?? 0).toFixed(2)
+                    lines.push(`• Carteira: R$ ${avail} disponível / R$ ${pend} pendente`)
+                }
+
+                if (lines.length > 0) {
+                    phaseInstruction = phaseInstruction + `
+
+📊 CONTEXTO OPERACIONAL DO PROFISSIONAL (dados factuais do médico logado):
+${lines.join('\n')}
+
+INSTRUÇÃO DE USO (NÃO NEGOCIÁVEL):
+1. Se o profissional perguntar sobre agenda, pacientes ativos, próxima consulta, prescrições, relatórios ou saldo da carteira, responda DIRETAMENTE usando esta lista.
+2. NÃO diga "não tenho acesso" para esses campos — eles estão aqui.
+3. NÃO invente valores. Se um campo não está acima, ele NÃO existe neste contexto — jamais estime.
+4. Para dados AUSENTES desta lista (ex.: prontuário completo de um paciente específico, detalhes de prescrição, evolução clínica), oriente a navegar até a seção correspondente no dashboard.
+5. Estes são dados ADMINISTRATIVOS. NÃO misture com raciocínio clínico sobre pacientes específicos — para isso, o profissional deve abrir o prontuário do paciente.
+`
+                }
+            } catch (ucErr) {
+                console.warn('[PROFESSIONAL CONTEXT] Falha ao montar bloco de contexto:', ucErr)
+            }
+        }
+
         const aecChosenPhysician =
             typeof patientData?.aecConsultationPhysicianName === 'string'
                 ? String(patientData.aecConsultationPhysicianName).trim()
