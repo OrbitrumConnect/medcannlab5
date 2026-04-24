@@ -258,14 +258,18 @@ Consenso do Paciente: ${rc.consenso?.aceito ? 'Aceito' : 'Não informado'}
 
       // [V1.9.40] Diretrizes obrigatórias — matam o "boilerplate elegante"
       // forçando uso dos dados do caso em vez de listas genéricas.
+      // [V1.9.41] Refinado: nome explícito, raciocínio diferencial (justifica
+      // exclusão das hipóteses menos prováveis), parcimônia em exames.
       const analysisRequirements = `
 DIRETRIZES OBRIGATÓRIAS DE RESPOSTA:
-- Comece com uma síntese clínica de 1 frase usando os dados específicos DESTE paciente (nome, queixa, localização).
-- Considere EXPLICITAMENTE a localização anatômica informada ao propor diagnósticos e exames.
+- Cite explicitamente o NOME do paciente na primeira frase e faça uma síntese clínica de 1 frase usando queixa + localização desse caso específico.
+- Considere EXPLICITAMENTE a localização anatômica informada ao propor diagnósticos e exames (evite hipóteses anatomicamente incompatíveis).
 - Liste no máximo 3 diagnósticos diferenciais, ordenados por probabilidade clínica para este caso.
 - Justifique a hipótese principal referenciando dados específicos do relatório acima.
-- Defina conduta concreta: o que fazer agora, o que observar, quando investigar mais.
-- Considere medicações/exposições relatadas (ex: cannabis, AINEs) ao propor tratamento.
+- Explique por que as hipóteses menos prováveis são menos compatíveis com os dados — raciocínio diferencial, não apenas ranking.
+- Só proponha exames complementares se eles puderem MUDAR a conduta clínica. Evite "pedir tudo por pedir".
+- Defina conduta concreta em 3 tempos: o que fazer agora, o que observar, quando investigar mais / escalar.
+- Considere medicações/exposições relatadas (ex: cannabis, AINEs, alérgenos) ao propor tratamento.
 - Evite listas genéricas — cada item deve referenciar um dado do caso.
 - Se um campo estiver "Não informado", mencione-o como lacuna a preencher, não invente.`
 
@@ -274,10 +278,16 @@ DIRETRIZES OBRIGATÓRIAS DE RESPOSTA:
 
       // [V1.9.40] Log do payload — salva horas de debug se saída vier estranha.
       // Só os primeiros 1200 chars, evita poluir console com muito RAG.
+      // [V1.9.41] Flags determinísticas pra diagnosticar "não recebeu vs ignorou":
+      // se has_location=true mas output não menciona local, é prompt ignorando; se false, é dado faltando.
       console.log('[rationality][payload]', rationality, {
         reportContext_head: reportContext.slice(0, 1200),
         has_patient_history: Boolean(patientHistoryContext),
-        has_kb: Boolean(knowledgeBaseContext)
+        has_kb: Boolean(knowledgeBaseContext),
+        has_location: Boolean(dev.localizacao),
+        has_queixa: Boolean(rc.queixa_principal || rc.chiefComplaint),
+        has_meds_esp: Boolean(perg.medicacoes_esporadicas),
+        n_lista_indiciaria: Array.isArray(rc.lista_indiciaria) ? rc.lista_indiciaria.length : 0
       })
 
       // Processar com Nôa
