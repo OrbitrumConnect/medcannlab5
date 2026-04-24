@@ -3,6 +3,7 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2"
 import OpenAI from "https://esm.sh/openai@4"
 import { COS, COS_Context } from "./cos_kernel.ts"
+import { calculateScoresFromContent, unwrapAecContent } from "../_shared/scoreCalculator.ts"
 
 const corsHeaders = {
     'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
@@ -1150,6 +1151,18 @@ Estrutura Obrigatória:
         const structuredTop = (assessmentData && typeof assessmentData === 'object' && assessmentData.content && typeof assessmentData.content === 'object')
             ? assessmentData.content
             : {};
+
+        // [V1.9.33] Calcula scores estruturais no momento do INSERT.
+        // Antes do refactor 7a7e33a, o frontend calculava antes de salvar.
+        // Pós-refactor, nada calculava → 24/30 reports de Pedro Paciente
+        // tinham scores.clinical_score = 0, poluindo dashboards. V1.9.32 fez
+        // fallback on-the-fly no frontend; este commit coloca scores natos no
+        // banco, eliminando a dependência do enrich por consumidor.
+        const scoreContent = unwrapAecContent(structuredTop);
+        const calculatedScores = calculateScoresFromContent(scoreContent);
+        console.log('🧮 [SCORES] calculated=%s clinical_score=%d confidence=%s',
+            calculatedScores.calculated, calculatedScores.clinical_score, calculatedScores.score_confidence);
+
         const { data: report, error: reportError } = await supabaseClient
             .from('clinical_reports')
             .insert({
@@ -1160,6 +1173,8 @@ Estrutura Obrigatória:
                 content: {
                     // Campos estruturados no topo (V1.9.20 — restaura esquema 02-05/04)
                     ...structuredTop,
+                    // [V1.9.33] Scores calculados no backend (antes: frontend-only)
+                    scores: calculatedScores,
                     // Narrativa GPT (mantido)
                     structured: structuredNarrative,
                     // Raw pra retrocompat de quem desembrulha via .raw
@@ -1167,7 +1182,7 @@ Estrutura Obrigatória:
                     metadata: {
                         interaction_id,
                         generated_at: new Date().toISOString(),
-                        system_version: "V1.9.20 (April 4th Master Engine restored)"
+                        system_version: "V1.9.33 (scores nativos no banco)"
                     }
                 },
                 doctor_id: resolvedDoctorId,
