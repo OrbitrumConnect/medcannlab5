@@ -729,7 +729,10 @@ export class ClinicalAssessmentFlow {
         }
 
       case 'COMPLAINT_LIST':
-        const terminatorRegex = /\b(nada|apenas|s[oó]|chega|pronto|pare|fim|encerrar|mais nada|so isso|só isso)\b/i
+        // [V1.9.29] Regex expandido: antes "somente isso" passava porque "so" em
+        // "somente" não tem word-boundary (vem "m" depois). Adicionadas variações
+        // reais observadas (somente, tudo bem, ja falei, acabei, nao tem mais, etc).
+        const terminatorRegex = /\b(nada|apenas|somente|s[oó]|chega|pronto|pare|fim|encerrar|mais nada|so isso|só isso|somente isso|tudo certo|tudo bem|acabou|acabei|ja falei|já falei|nao tem mais|não tem mais|sem mais nada|isso e tudo|isso é tudo)\b/i
         const isUserStopping = terminatorRegex.test(lowerResponse)
         const REACHED_LIMIT = state.phaseIterationCount >= 2 // (0 -> 1 -> 2 -> avança)
 
@@ -787,7 +790,8 @@ export class ClinicalAssessmentFlow {
         return this.processComplaintDetails(state, userTurn)
 
       case 'MEDICAL_HISTORY':
-        const histTerminatorRegex = /\b(nada|apenas|s[oó]|chega|pronto|pare|fim|encerrar|mais nada|so isso|só isso)\b/i
+        // [V1.9.29] Regex expandido (ver COMPLAINT_LIST pra contexto).
+        const histTerminatorRegex = /\b(nada|apenas|somente|s[oó]|chega|pronto|pare|fim|encerrar|mais nada|so isso|só isso|somente isso|tudo certo|tudo bem|acabou|acabei|ja falei|já falei|nao tem mais|não tem mais|sem mais nada|isso e tudo|isso é tudo)\b/i
         const isHistStopping = histTerminatorRegex.test(lowerResponse)
         const HIST_REACHED_LIMIT = state.phaseIterationCount >= 2
 
@@ -817,7 +821,8 @@ export class ClinicalAssessmentFlow {
         }
 
       case 'FAMILY_HISTORY_MOTHER':
-        const momTerminatorRegex = /\b(nada|apenas|s[oó]|chega|pronto|pare|fim|encerrar|mais nada|so isso|só isso)\b/i
+        // [V1.9.29] Regex expandido (ver COMPLAINT_LIST pra contexto).
+        const momTerminatorRegex = /\b(nada|apenas|somente|s[oó]|chega|pronto|pare|fim|encerrar|mais nada|so isso|só isso|somente isso|tudo certo|tudo bem|acabou|acabei|ja falei|já falei|nao tem mais|não tem mais|sem mais nada|isso e tudo|isso é tudo)\b/i
         const isMomStopping = momTerminatorRegex.test(lowerResponse)
         const MOM_REACHED_LIMIT = state.phaseIterationCount >= 2
 
@@ -847,7 +852,8 @@ export class ClinicalAssessmentFlow {
         }
 
       case 'FAMILY_HISTORY_FATHER':
-        const dadTerminatorRegex = /\b(nada|apenas|s[oó]|chega|pronto|pare|fim|encerrar|mais nada|so isso|só isso)\b/i
+        // [V1.9.29] Regex expandido (ver COMPLAINT_LIST pra contexto).
+        const dadTerminatorRegex = /\b(nada|apenas|somente|s[oó]|chega|pronto|pare|fim|encerrar|mais nada|so isso|só isso|somente isso|tudo certo|tudo bem|acabou|acabei|ja falei|já falei|nao tem mais|não tem mais|sem mais nada|isso e tudo|isso é tudo)\b/i
         const isDadStopping = dadTerminatorRegex.test(lowerResponse)
         const DAD_REACHED_LIMIT = state.phaseIterationCount >= 2
 
@@ -877,7 +883,8 @@ export class ClinicalAssessmentFlow {
         }
 
       case 'LIFESTYLE_HABITS':
-        const lifeTerminatorRegex = /\b(nada|apenas|s[oó]|chega|pronto|pare|fim|encerrar|mais nada|so isso|só isso)\b/i
+        // [V1.9.29] Regex expandido (ver COMPLAINT_LIST pra contexto).
+        const lifeTerminatorRegex = /\b(nada|apenas|somente|s[oó]|chega|pronto|pare|fim|encerrar|mais nada|so isso|só isso|somente isso|tudo certo|tudo bem|acabou|acabei|ja falei|já falei|nao tem mais|não tem mais|sem mais nada|isso e tudo|isso é tudo)\b/i
         const isLifeStopping = lifeTerminatorRegex.test(lowerResponse)
         const LIFE_REACHED_LIMIT = state.phaseIterationCount >= 2
 
