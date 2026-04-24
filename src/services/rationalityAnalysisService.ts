@@ -289,8 +289,18 @@ RESTRIÇÕES PROFISSIONAIS OBRIGATÓRIAS (CRM/LGPD):
 - NÃO prescreva doses, posologias ou nomes comerciais de medicamentos específicos. Pode discutir classes terapêuticas à luz da literatura.
 - NÃO inclua a frase "Procure um médico" de forma mecânica; o relatório JÁ É de um paciente com médico responsável no sistema.
 - NÃO infira dados sensíveis não mencionados pelo paciente (LGPD). Ex: não deduza orientação sexual, crenças religiosas, estado mental grave sem base textual.
-- A análise é **educacional + reflexiva para apoio do profissional**, não diagnóstico autônomo.
-- Fecha a análise com uma linha: "Esta análise é apoio à decisão clínica e deve ser validada pelo profissional responsável antes de qualquer conduta."`
+- A análise é educacional + reflexiva para apoio do profissional, não diagnóstico autônomo.
+- Fecha a análise com uma linha: "Esta análise é apoio à decisão clínica e deve ser validada pelo profissional responsável antes de qualquer conduta."
+
+FORMATAÇÃO (IMPORTANTE — UI não renderiza markdown):
+- NÃO use asteriscos duplos (**negrito**) — o texto aparece com os asteriscos visíveis na tela.
+- NÃO use asteriscos simples (*italico*) pelo mesmo motivo.
+- Use títulos de seção em MAIÚSCULAS seguidos de dois-pontos e quebra de linha, ex:
+    DIAGNÓSTICOS DIFERENCIAIS:
+    1. Enxaqueca — ...
+    2. Cefaleia tensional — ...
+- Para ênfase dentro de parágrafo, use aspas ou apenas estruture melhor a frase.
+- Para listas, use números (1. 2. 3.) ou traços (- item).`
 
       // Mensagem completa para a IA (com RAG + diretrizes)
       const fullMessage = `${rationalityPrompt}\n\n${reportContext}${patientHistoryContext}${knowledgeBaseContext}\n${analysisRequirements}\n\nCom base no relatório, no histórico do paciente e nas referências acima, forneça uma análise detalhada e personalizada segundo esta racionalidade médica, seguindo ESTRITAMENTE as diretrizes obrigatórias.`
