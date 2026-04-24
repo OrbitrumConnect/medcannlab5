@@ -1138,6 +1138,29 @@ async function handleFinalizeAssessment(params: {
     console.log('🧠 [PIPELINE_STAGE] START', { interaction_id, resolvedPatientId });
 
     try {
+        // [V1.9.38 LGPD] CONSENT GATE precisa vir ANTES de qualquer retorno de
+        // dados pessoais. Ordem anterior (idempotency primeiro) permitia que
+        // request sem consent recebesse report_id de sessão anterior do mesmo
+        // paciente via idempotent_recent — vazamento detectado por integration
+        // test consent-gate #2.
+        const consentGivenAffirmative =
+            assessmentData?.content?.consenso?.aceito === true ||
+            assessmentData?.content?.raw?.consentGiven === true ||
+            assessmentData?.consent_given === true ||
+            assessmentData?.data?.consentGiven === true;
+
+        if (!consentGivenAffirmative) {
+            console.error('❌ [CONSENT_GATE] Relatório bloqueado: consentimento não afirmado', {
+                interaction_id,
+                patient_id: resolvedPatientId
+            });
+            return {
+                report_id: null,
+                status: 'aborted_no_consent' as const,
+                error: 'CONSENT_REQUIRED'
+            };
+        }
+
         // [V1.9.23] Idempotência endurecida:
         //    Antes, janela de 30s pegava só double-click. Mas o frontend tinha
         //    dual-path (generateReport a cada turno em phase=COMPLETED) gerando
@@ -1251,27 +1274,7 @@ async function handleFinalizeAssessment(params: {
         }
         if (!resolvedPatientName) resolvedPatientName = 'Paciente';
 
-        // [V1.9.1] CONSENT GATE (server-side, pre-persistence)
-        // Regra: nenhum clinical_report pode existir sem consentimento afirmativo.
-        // Verifica em múltiplas fontes possíveis; default falso (fail-closed).
-        const consentGivenAffirmative =
-            assessmentData?.content?.consenso?.aceito === true ||
-            assessmentData?.content?.raw?.consentGiven === true ||
-            assessmentData?.consent_given === true ||
-            assessmentData?.data?.consentGiven === true;
-
-        if (!consentGivenAffirmative) {
-            console.error('❌ [CONSENT_GATE] Relatório bloqueado: consentimento não afirmado', {
-                interaction_id,
-                patient_id: resolvedPatientId
-            });
-            return {
-                report_id: null,
-                status: 'aborted_no_consent' as const,
-                error: 'CONSENT_REQUIRED'
-            };
-        }
-
+        // Gate já validado no topo da função (V1.9.38). Aqui só timestamp.
         const consentAtIso = new Date().toISOString();
 
         // 2.1 [SINGLE-ORCHESTRATOR ENFORCEMENT] Ownership Backend de Risk e Scores Clínicos
