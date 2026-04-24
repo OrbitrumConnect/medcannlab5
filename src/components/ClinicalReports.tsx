@@ -608,8 +608,17 @@ const ClinicalReports: React.FC<ClinicalReportsProps> = ({ className = '', onSha
       setSelectedRationality(rationality)
 
       // Gerar análise (com RAG do paciente + base de conhecimento)
+      // [V1.9.42] Passa o report inteiro (não apenas .content) — V1.9.40 já
+      // prioriza rawContent (schema PT) sobre content (schema EN mapeado).
+      // Antes passávamos só `selectedReport.content` (EN) → gate de densidade
+      // disparava falso positivo porque lista_indiciaria não existe no schema EN.
+      // Inclui patient_name pra o prompt identificar o paciente por nome.
       const analysis = await rationalityAnalysisService.generateAnalysis(
-        selectedReport.content,
+        {
+          rawContent: selectedReport.rawContent,
+          content: selectedReport.content,
+          patient_name: selectedReport.patientName,
+        },
         rationality,
         user.id,
         user.email,
