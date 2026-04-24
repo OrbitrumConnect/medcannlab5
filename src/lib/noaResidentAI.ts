@@ -254,6 +254,17 @@ export class NoaResidentAI {
       let currentPhase: any = null
       let injectedContext: string | undefined = undefined
 
+      // [V1.9.19] Role guard do AEC flow — admin/profissional/aluno NÃO devem
+      // entrar no FSM clínico mesmo que aec_assessment_state exista (resíduo de
+      // testes antigos). Só paciente dispara AEC. Admin pode simular AEC via
+      // TEACHING mode no Core (não persiste state).
+      const roleForAec = (
+        (platformData?.user as any)?.type ||
+        (platformData?.user as any)?.user_type ||
+        ''
+      ).toString().toLowerCase()
+      const isPatientForAec = roleForAec === 'paciente' || roleForAec === 'patient'
+
       // Detectar intencao da mensagem
       let intent = this.detectIntent(userMessage)
 
@@ -267,7 +278,9 @@ export class NoaResidentAI {
         /\b(parar|encerrar|cancelar|interromper|terminar|finalizar)\s+(a\s+)?(avaliacao|consulta|conversa|por\s+aqui|aqui|tudo)\b/i.test(_normExitMsg) ||
         /^(tchau|xau|fui|flw|vlw|chega|fim)\s*[!.?]?$/i.test(_normExitMsg.trim())
 
-      if (userId) {
+      // [V1.9.19] Só paciente dispara carregamento de aec_state e smart-lock.
+      // Admin/pro/aluno com state residual não podem ter intent='CLINICA' forçado.
+      if (userId && isPatientForAec) {
         await clinicalAssessmentFlow.ensureLoaded(userId)
         const aecState = clinicalAssessmentFlow.getState(userId)
         
@@ -1562,10 +1575,22 @@ export class NoaResidentAI {
         !platformIntentType ||
         platformIntentType === 'ASSESSMENT_START'
 
+      // [V1.9.19] AEC flow só roda pra paciente. Admin/pro/aluno que mandem
+      // mensagens são processados pelo Core sem FSM (Nôa responde como
+      // assistente geral, não como entrevistadora clínica). Derivamos a role
+      // aqui porque este método é chamado por processMessage com platformData.
+      const roleForAecFlow = (
+        (platformData?.user as any)?.type ||
+        (platformData?.user as any)?.user_type ||
+        ''
+      ).toString().toLowerCase()
+      const isPatientForAecFlow = roleForAecFlow === 'paciente' || roleForAecFlow === 'patient'
+
       const shouldHandleAecFlow =
         intent === 'CLINICA' &&
         platformData?.user?.id &&
-        platformAllowsAec
+        platformAllowsAec &&
+        isPatientForAecFlow
 
       const aecPhysicianName =
         (typeof uiContext?.aecTargetProfessional?.name === 'string' &&
