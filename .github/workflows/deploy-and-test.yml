@@ -1,0 +1,77 @@
+name: Deploy Edge Functions & Run Integration Tests
+
+# Motivação: até 24/04/2026 o deploy da Edge Function tradevision-core era
+# manual — cada fix precisava ser deployado à mão no dashboard Supabase, o que
+# fez vários commits ficarem "em prod" só no repo, não no runtime. Este workflow
+# automatiza:
+#   1) Deploy da Edge Function tradevision-core em cada push a main/master
+#   2) Execução dos 3 testes de integração críticos após o deploy
+#      (consent gate, monetization e2e, aec finalize schema)
+#
+# Segredos necessários em Settings → Secrets:
+#   SUPABASE_ACCESS_TOKEN         — PAT pessoal (sbp_...)
+#   SUPABASE_PROJECT_REF          — itdjkfubfzmvmuxxjoae (pode ser var também)
+#   SUPABASE_URL                  — https://itdjkfubfzmvmuxxjoae.supabase.co
+#   SUPABASE_SERVICE_ROLE_KEY     — service_role key (só pros testes)
+
+on:
+  push:
+    branches: [main, master]
+    paths:
+      - 'supabase/functions/tradevision-core/**'
+      - 'supabase/functions/_shared/**'
+      - 'tests/integration/**'
+      - '.github/workflows/deploy-and-test.yml'
+  workflow_dispatch: # permite deploy manual sob demanda pela UI do GitHub
+
+concurrency:
+  group: deploy-${{ github.ref }}
+  cancel-in-progress: false # fila — não cancelar mid-deploy, pode deixar staging quebrado
+
+jobs:
+  deploy:
+    name: Deploy tradevision-core
+    runs-on: ubuntu-latest
+    outputs:
+      deploy_success: ${{ steps.deploy.outcome == 'success' }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Supabase CLI
+        uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Deploy Edge Function
+        id: deploy
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+        run: |
+          supabase functions deploy tradevision-core \
+            --project-ref ${{ secrets.SUPABASE_PROJECT_REF }} \
+            --no-verify-jwt
+
+  integration-tests:
+    name: Integration tests (consent, monetization, schema)
+    runs-on: ubuntu-latest
+    needs: deploy
+    if: needs.deploy.outputs.deploy_success == 'true'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install
+        run: npm ci
+
+      - name: Run integration tests
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: npm run test:integration
