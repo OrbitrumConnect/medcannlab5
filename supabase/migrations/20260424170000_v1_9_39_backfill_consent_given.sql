@@ -55,6 +55,14 @@ FROM clinical_reports
 WHERE consent_given = false
   AND LOWER(content -> 'consenso' ->> 'aceito') = 'true';
 
+-- [Hardening Supabase] Enable RLS sem policies = tabela fica acessível
+-- apenas via service_role (bypass RLS). Nenhum role público (anon,
+-- authenticated) consegue ler via PostgREST. Tabela é para auditoria
+-- interna de migration, não exposição.
+ALTER TABLE clinical_reports_consent_backup_v1_9_39 ENABLE ROW LEVEL SECURITY;
+COMMENT ON TABLE clinical_reports_consent_backup_v1_9_39 IS
+  'Snapshot V1.9.39 — 27 reports antes do backfill consent_given. RLS enabled sem policies: acesso restrito a service_role. Pode ser droppado manualmente após validação (>30 dias).';
+
 -- Verificação pré-execução (esperado: 27 conforme auditoria + eventuais variantes)
 DO $$
 DECLARE
