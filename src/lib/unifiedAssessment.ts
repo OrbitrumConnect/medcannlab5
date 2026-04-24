@@ -1,16 +1,23 @@
 // =====================================================
-// ⚠️  IMRE MODULE — NOT IN PRODUCTION (arquivo dormente)
+// ⚠️  UNIFIED CLINICAL DASHBOARD — NOT IN PRODUCTION (arquivo dormente)
 // =====================================================
+// RETRATAÇÃO 24/04/2026 NOITE FINAL: este arquivo foi anteriormente marcado
+// como "IMRE Module". Segundo o Dr. Ricardo Valença (criador do método AEC):
+//
+//   IMRE = Incentivator Minimal of Exponential
+//   É o MOTOR DE PERGUNTAS da AEC, implementado em clinicalAssessmentFlow.ts.
+//   IMRE NÃO é módulo interpretativo, NÃO tem eixos triaxiais, NÃO é dashboard.
+//
+// Este arquivo implementa algo diferente: um DASHBOARD CLÍNICO INTEGRADO com
+// eixos emocional/cognitivo/comportamental + função renal + farmacogenética +
+// correlações cross-domain. É produto válido como "observação longitudinal
+// pós-consulta", mas NÃO SE CHAMA IMRE.
+//
 // Status: PLANEJADO / IMPLEMENTADO MAS NUNCA INTEGRADO
 // Callers externos: ZERO em prod (confirmado 24/04/2026)
-// Decisão pendente: Ricardo + Eduardo — revive ou formaliza deprecação
-// Referências:
-//   - docs/guides/PROBLEMAS_IDENTIFICADOS.md:51 ("Implementado mas não testado")
-//   - docs/INVENTARIO_FASE1_02_04_2026.md:131 (listado como C4 — dívida conhecida)
-//   - memory/project_4_clinical_engines_map_24_04.md (mapa atual)
-//   - memory/project_strategic_posture.md ("IMRE só faz sentido depois que AEC provar que o produto vive")
+// Decisão pendente: Ricardo + Eduardo — revive (com outro nome) ou deprecar
+// Ver: memory/project_imre_clarification_24_04.md
 // NÃO DELETAR sem autorização explícita do time.
-// NÃO ATIVAR sem plano de UI + validação clínica + dados reais.
 // =====================================================
 // MEDCANLAB 3.0 → 5.0 UNIFICATION: UNIFIED ASSESSMENT
 // =====================================================

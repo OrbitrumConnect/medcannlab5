@@ -1,12 +1,15 @@
 // =====================================================
-// ⚠️  IMRE SERVICE — NOT IN PRODUCTION (arquivo dormente)
+// ⚠️  DASHBOARD ASSESSMENT SERVICE (mal nomeado) — NOT IN PRODUCTION
 // =====================================================
+// RETRATAÇÃO 24/04/2026: este arquivo grava em `imre_assessments` (tabela que
+// nem existe no banco) com fallback para `clinical_assessments`. O uso do nome
+// "IMRE" aqui é equivocado — IMRE é motor de perguntas da AEC
+// (clinicalAssessmentFlow.ts), não um serviço de persistência.
+//
 // Status: zero callers externos em prod (confirmado 24/04/2026)
-// Tenta gravar em imre_assessments com fallback para clinical_assessments
-// (docs/INVENTARIO_FASE1_02_04_2026.md:98)
 // Duplicação documentada com clinicalReportService — gap C4
-// Decisão pendente: Ricardo — unifica OR formaliza deprecação
-// Ver: memory/project_4_clinical_engines_map_24_04.md
+// Decisão pendente: Ricardo — unifica OR deprecar (e renomear se reviver)
+// Ver: memory/project_imre_clarification_24_04.md
 // NÃO DELETAR sem autorização explícita.
 // =====================================================
 import { supabase } from './supabase'

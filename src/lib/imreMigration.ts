@@ -1,10 +1,19 @@
 // =====================================================
-// ⚠️  IMRE MODULE — NOT IN PRODUCTION (arquivo dormente)
+// ⚠️  DASHBOARD MIGRATOR (mal nomeado como "IMRE") — NOT IN PRODUCTION
 // =====================================================
+// RETRATAÇÃO 24/04/2026: o nome "IMRE Migration" neste arquivo usa o acrônimo
+// IMRE erradamente. IMRE (Incentivator Minimal of Exponential) é o motor de
+// perguntas da AEC em clinicalAssessmentFlow.ts, NÃO um sistema de migração
+// de dados triaxiais.
+//
+// Este arquivo migra dados do "MedCanLab 3.0" (IndexedDB/browser) para Supabase
+// com schema triaxial emocional/cognitivo/comportamental — isso é Dashboard
+// Clínico Integrado, não IMRE.
+//
 // Status: "Script pronto mas não executado" (docs/guides/PROBLEMAS_IDENTIFICADOS.md:63)
 // Importado apenas por unifiedAssessment.ts + noaIntegration.ts (também dormentes)
-// Decisão pendente: Ricardo + Eduardo — revive ou formaliza deprecação
-// Ver: memory/project_strategic_posture.md
+// Decisão pendente: Ricardo + Eduardo — revive ou deprecar (e renomear se reviver)
+// Ver: memory/project_imre_clarification_24_04.md
 // NÃO DELETAR sem autorização explícita.
 // =====================================================
 // MEDCANLAB 3.0 → 5.0 UNIFICATION: IMRE MIGRATION

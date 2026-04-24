@@ -1,11 +1,20 @@
 // =====================================================
-// ⚠️  IMRE MODULE — NOT IN PRODUCTION (arquivo dormente)
+// ⚠️  NOA MULTIMODAL (dashboard clínico) — NOT IN PRODUCTION
 // =====================================================
+// RETRATAÇÃO 24/04/2026: anteriormente marcado como "IMRE Module". Segundo o
+// Dr. Ricardo Valença, IMRE é o motor de perguntas da AEC em
+// clinicalAssessmentFlow.ts, não este arquivo.
+//
+// Este arquivo implementa uma "Nôa Multimodal" planejada com detecção de
+// estado emocional + carga cognitiva + memória semântica estruturada — é
+// complemento do Dashboard Clínico Integrado (unifiedAssessment.ts).
+//
+// NÃO é o mesmo que src/lib/noaResidentAI.ts (a Nôa de PRODUÇÃO atual).
+//
 // Status: "Implementado mas não testado" (docs/guides/PROBLEMAS_IDENTIFICADOS.md:51)
 // Importado apenas por unifiedAssessment.ts (também dormente)
-// NÃO é o mesmo que src/lib/noaResidentAI.ts (esse SIM é produção)
-// Decisão pendente: Ricardo + Eduardo — revive ou formaliza deprecação
-// Ver: memory/project_strategic_posture.md
+// Decisão pendente: Ricardo + Eduardo
+// Ver: memory/project_imre_clarification_24_04.md
 // NÃO DELETAR sem autorização explícita.
 // =====================================================
 // MEDCANLAB 3.0 → 5.0 UNIFICATION: NOA INTEGRATION
