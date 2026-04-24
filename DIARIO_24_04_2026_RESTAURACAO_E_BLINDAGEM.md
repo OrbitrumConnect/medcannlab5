@@ -17,7 +17,9 @@ Princípio reafirmado: **"polir e melhorar, não reinventar"** — registrado em
 
 ---
 
-## 2. Timeline do Dia (V1.9.11 → V1.9.21)
+## 2. Timeline do Dia (V1.9.11 → V1.9.25)
+
+**Manhã (V1.9.11 → V1.9.21) — Restauração**
 
 | Versão | Título | Impacto |
 |---|---|---|
@@ -33,6 +35,15 @@ Princípio reafirmado: **"polir e melhorar, não reinventar"** — registrado em
 | **V1.9.19** | Role guard no FSM | Admin/pro/aluno não ficam trancados por `aec_state` residual |
 | **V1.9.20** | Dual-write inteligente — restaura schema de reports | `lista_indiciaria`, `identificacao`, `consenso` voltam direto em `content.*` (como 02-05/04); `professional_id` populado |
 | **V1.9.21** | Sync trigger `doctor_id ↔ professional_id` + backfill | 60 appointments + 56 reports + 24 kpis normalizados; divergência futura impossível |
+
+**Tarde (V1.9.22 → V1.9.25) — Rede de Segurança + Blindagem**
+
+| Versão | Título | Impacto |
+|---|---|---|
+| **V1.9.22** | 3 testes integração + GitHub Actions auto-deploy | `tests/integration/` com consent-gate, monetization-e2e, aec-finalize-schema; workflow `deploy-and-test.yml` deploya e testa em cada push (aguarda 4 secrets) |
+| **V1.9.23** | Fix idempotência reports (23→1 por sessão) | Bug sistêmico: casualmusic 23 reports em 20h, Carolina 14 em 18h. Causa: dual-path (frontend `generateReport` cada turno COMPLETED + backend `handleFinalizeAssessment` auto). Fix: gate `reportDispatchedAt` in-memory (V1.9.23 FSM) + janela idempotência backend 30s → 10min |
+| **V1.9.24** | `handle_new_auth_user` DO UPDATE COALESCE | P1 #4 cirúrgico: `ON CONFLICT DO NOTHING` → `DO UPDATE` com COALESCE preservativo. Preserva os 5 triggers sem consolidar. Próximo signup nasce com email/full_name/role natos |
+| **V1.9.25** | Gate legacy path + backfill 33 reports aninhados | Gate `isReportDispatched` em `checkForAssessmentCompletion` (path `clinicalReportService` → INSERT direto). Backfill: desaninhar `content.raw.content.*` → `content.*` direto nos 33 reports de 22-23/04. Resultado: 16→49 reports com `lista_indiciaria` no topo. Backup em `clinical_reports_content_backup_24_04` |
 
 ---
 
@@ -72,7 +83,34 @@ Admin/pro que testaram AEC como paciente deixaram state em INTERRUPTED/IDENTIFIC
 
 **Proposta de consolidação** documentada em `docs/ANALISE_TRIGGERS_AUTH_USERS_24_04_2026.md` — aguarda decisão (signup é crítico, precisa testes antes).
 
-### 3.6 Sync-gcal é feature intencional, não lixo
+### 3.6-bis Bug de idempotência sistêmico (tarde)
+Investigação profunda revelou que **14 reports/Carolina e 23 reports/casualmusic2021** vieram de dois caminhos paralelos de finalização:
+
+1. **Frontend** (`noaResidentAI.ts:1706`) — `clinicalAssessmentFlow.generateReport()` em cada turno com `phase='COMPLETED'`. Comentário dizia "fallback de segurança, compatibilidade com UI antiga" — resíduo do refactor 7a7e33a.
+2. **Backend** (`handleFinalizeAssessment` linha 4317) — detecta `[ASSESSMENT_COMPLETED]` na resposta GPT e finaliza automaticamente.
+
+A cada mensagem do user após COMPLETED (ex.: "obrigada"), ambos disparavam. Intervalo 48-82s, cada um com `interaction_id` diferente, janela de 30s não pegava.
+
+**Fix V1.9.23:**
+- Frontend: flag `reportDispatchedAt` na `AssessmentState`, gate em `noaResidentAI.ts` só roda 1x por sessão
+- Backend: janela 30s → 10 minutos (mesmo `patient_id` + `report_type` nos últimos 10min retorna report existente)
+
+### 3.7 Quarto caminho de duplicação — `clinicalReportService`
+Mapa completo de criação de `clinical_reports` revelou 4 caminhos:
+
+| # | Caminho | Coberto? |
+|---|---|---|
+| 1 | `noaResidentAI` → `clinicalAssessmentFlow.generateReport` → Edge Function | ✅ V1.9.23 |
+| 2 | Backend `handleFinalizeAssessment` auto (aiResponse tem tag) | ✅ V1.9.23 janela 10min |
+| 3 | `checkForAssessmentCompletion` → `clinicalReportService.generateAIReport` → INSERT direto | ⚠️ **gated em V1.9.25** |
+| 4 | Intent `REPORT_GENERATE` → mesmo INSERT direto | Dormente (0 em prod) |
+
+Caminho 3 disparava quando user escrevia "obrigado pela avaliação" — palavra-chave em `completionKeywords`. Hoje em prod: 0 reports via `ai_resident`, mas o código estava armado. V1.9.25 adicionou gate `isReportDispatched` respeitando o pipeline moderno. Função **não foi removida** (diretriz de preservação).
+
+### 3.8 13 reports "outros" sem estrutura clínica
+Backfill V1.9.25 tratou 33 reports aninhados. Ficaram 13 que não tinham dado estruturado algum (`content.raw` só com `patient_id/scores/risk_level`, sem `content.raw.content`). Narrativa markdown existe em `content.structured` — não perdida. Mas campos estruturados nunca chegaram ao banco por causa de payload vazio pré-V1.9.20. **Não recuperáveis via SQL — dado nunca existiu**. Decisão: preservar como estão (registros históricos legítimos).
+
+### 3.9 Sync-gcal é feature intencional, não lixo
 Infra completa codificada:
 - `sync-gcal` Edge Function (cron com exponential backoff)
 - `google-auth` Edge Function (fluxo OAuth)
@@ -215,10 +253,21 @@ Não é monólito. Camadas no frontend:
 
 ## 9. Fecho
 
-Uma semana atrás o sistema me identificava como "Usuário" genérico. Hoje ele respondeu "Pedro Henrique Passos Galluf, conexão administrativa confirmada". Entre um e outro: 3 bugs visíveis identificados, 11 versões entregues, 1 migração versionada, 1 princípio reafirmado.
+Uma semana atrás o sistema me identificava como "Usuário" genérico. Hoje ele respondeu "Pedro Henrique Passos Galluf, conexão administrativa confirmada". Entre um e outro: 3 bugs visíveis identificados, **15 versões entregues** (V1.9.11 → V1.9.25), **4 migrations versionadas**, princípio "polir, não reinventar" reafirmado e registrado em memória.
 
-O coração da arquitetura continua o mesmo — Core + FSM AEC + RLS + triggers de monetização. O que mudou hoje foi a camada em volta: regex precisos, role guards, context enrichment, schema de reports restaurado, colunas legadas blindadas.
+**Manhã (V1.9.11 → V1.9.21):** restauração — bugs de UX, monetização destravada, schema de reports pré-refactor, sync trigger doctor_id/professional_id.
 
-**Amanhã:** a escolha será entre atacar a rede de segurança (testes E2E) ou seguir polindo camadas (idempotência, features dormentes, UI gcal). O coração aguenta ambos.
+**Tarde (V1.9.22 → V1.9.25):** rede de segurança — 3 testes de integração, GitHub Actions auto-deploy (código pronto, aguarda 4 secrets), fix de idempotência que eliminou duplicação sistêmica de reports (23/sessão → 1/sessão), upsert preservativo em `handle_new_auth_user`, backfill de 33 reports aninhados.
+
+O coração da arquitetura continua o mesmo — Core + FSM AEC + RLS + triggers de monetização. O que mudou hoje foi a camada em volta: regex precisos, role guards, context enrichment, schema de reports restaurado, colunas legadas blindadas, idempotência defensiva em 2 camadas, conflict-on-nothing virando conflict-on-update-preservativo.
+
+**Dados normalizados em prod:**
+- 60 appointments + 56 clinical_reports + 24 clinical_kpis com `doctor_id == professional_id` garantido
+- 27 `user_profiles` com email/full_name/role preenchidos (vs 0/27 com full_name antes)
+- 49/64 reports com estrutura clínica direta em `content.*` (vs 16/64 no começo do dia)
+- 15 reports legacy preservados intactos (intenção de produto futura)
+- 412 slides arquivados em `generated_slides_archive`, biblioteca com 46 docs reais
+
+**Amanhã ou sessão futura:** com a rede de segurança no lugar, próximos refactors maiores ficam possíveis. Stripe Connect / Mercado Pago (monetização externa), UI "Conectar Google Calendar" (feature pronta no backend), unificação da detecção de intenção (P2, refactor estrutural).
 
 — Registro gerado a 4 mãos: Pedro (CTO) e IA assistente (Claude Opus 4.7, sessão 24/04/2026).
