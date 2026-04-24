@@ -156,15 +156,20 @@ export class ClinicalAssessmentFlow {
     // principal..." sem lógica clínica — o paciente responde certo e leva um "não
     // entendi" em troca. Para fases de detalhamento, aceitamos qualquer input
     // não-vazio; a FSM decide no switch-case se o conteúdo é aproveitável.
-    const isDescriptivePhase = ['MAIN_COMPLAINT', 'MEDICAL_HISTORY', 'LIFESTYLE_HABITS', 'OBJECTIVE_QUESTIONS', 'FAMILY_HISTORY_MOTHER', 'FAMILY_HISTORY_FATHER', 'COMPLAINT_LIST'].includes(phase)
-    const isMicroPhrase = normalized.length < 20
-    const isSocial = this.isSocialGreeting(normalized)
-    const hasSemanticFlag = /sim|n[ãa]o|ok|isso|apenas|s[oó]|nada|nenhum|tudo bem|tudo ok|dor|d[óo]i|ard|inch|sang|latej|ruim/i.test(normalized)
-
-    if (isDescriptivePhase && isMicroPhrase && !hasSemanticFlag && !isSocial) {
-        console.log(`[AEC FSM] Input rejeitado (Micro-frase sem relevância clínica na fase ${phase}):`, normalized)
-        return false // rejeitado
-    }
+    // [V1.9.27] PRINCÍPIO DA AEC — Arte da Entrevista Clínica = escuta ativa.
+    // O filtro anterior rejeitava inputs curtos sem "flag semântica" (lista chumbada)
+    // em fases descritivas, chamando-os de "micro-frase sem relevância clínica".
+    // Isso quebrava o protocolo: "umidade" (alergia ambiental), "bolha" (sintoma),
+    // "cannabis in natura" (medicação) — todos rejeitados. Nôa respondia genérico
+    // ("Vamos continuar com as perguntas objetivas") em vez de avançar.
+    //
+    // Na AEC, TUDO que o paciente fala é dado clínico relevante. Até silêncio,
+    // "ok", ou mudança de assunto são sinais. Cabe ao FSM (switch-case por fase)
+    // decidir como aproveitar; não ao filtro bloquear respostas legítimas.
+    //
+    // Filtro de micro-frase removido. Debounce de spam (V1.8.3 acima) continua
+    // ativo para proteger contra duplicação por clique/tecla travada — isso é
+    // UX, não julgamento de conteúdo.
 
     return true // input válido para processamento
   }
