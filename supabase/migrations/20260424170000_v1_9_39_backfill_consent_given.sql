@@ -25,6 +25,27 @@
 
 BEGIN;
 
+-- Sanity check prévio: existem variantes de case ('True', 'TRUE') que a
+-- auditoria com `= 'true'` literal não teria pegado? Reporta antes de
+-- qualquer mutação — se existir, aparece no log do executor e a migration
+-- segue em frente capturando-as (graças ao LOWER() abaixo).
+DO $$
+DECLARE
+  variant_count INTEGER;
+BEGIN
+  SELECT COUNT(*) INTO variant_count
+  FROM clinical_reports
+  WHERE consent_given = false
+    AND LOWER(content -> 'consenso' ->> 'aceito') = 'true'
+    AND (content -> 'consenso' ->> 'aceito') IS DISTINCT FROM 'true';
+
+  IF variant_count > 0 THEN
+    RAISE NOTICE '[V1.9.39][sanity] Detectadas % linhas com variante de case (True/TRUE) — serão capturadas pelo LOWER()', variant_count;
+  ELSE
+    RAISE NOTICE '[V1.9.39][sanity] Nenhuma variante de case encontrada — só consent_aceito="true" literal';
+  END IF;
+END $$;
+
 -- Snapshot defensivo (drop se já existir para permitir re-execução)
 DROP TABLE IF EXISTS clinical_reports_consent_backup_v1_9_39;
 
@@ -32,9 +53,9 @@ CREATE TABLE clinical_reports_consent_backup_v1_9_39 AS
 SELECT id, consent_given, consent_at, created_at
 FROM clinical_reports
 WHERE consent_given = false
-  AND content -> 'consenso' ->> 'aceito' = 'true';
+  AND LOWER(content -> 'consenso' ->> 'aceito') = 'true';
 
--- Verificação pré-execução (deve retornar 27 conforme auditoria)
+-- Verificação pré-execução (esperado: 27 conforme auditoria + eventuais variantes)
 DO $$
 DECLARE
   target_count INTEGER;
@@ -47,16 +68,16 @@ BEGIN
   END IF;
 END $$;
 
--- Backfill propriamente dito
+-- Backfill propriamente dito (LOWER() cobre 'true', 'True', 'TRUE', boolean nativo)
 UPDATE clinical_reports
 SET
   consent_given = true,
   consent_at    = COALESCE(consent_at, created_at)
 WHERE
   consent_given = false
-  AND content -> 'consenso' ->> 'aceito' = 'true';
+  AND LOWER(content -> 'consenso' ->> 'aceito') = 'true';
 
--- Verificação pós-execução
+-- Verificação pós-execução (mesma condição relaxada para case — consistente com o UPDATE)
 DO $$
 DECLARE
   remaining_inconsistent INTEGER;
@@ -64,11 +85,13 @@ DECLARE
 BEGIN
   SELECT COUNT(*) INTO remaining_inconsistent
   FROM clinical_reports
-  WHERE consent_given = false AND content -> 'consenso' ->> 'aceito' = 'true';
+  WHERE consent_given = false
+    AND LOWER(content -> 'consenso' ->> 'aceito') = 'true';
 
   SELECT COUNT(*) INTO now_consistent
   FROM clinical_reports
-  WHERE consent_given = true AND content -> 'consenso' ->> 'aceito' = 'true';
+  WHERE consent_given = true
+    AND LOWER(content -> 'consenso' ->> 'aceito') = 'true';
 
   RAISE NOTICE '[V1.9.39] Pós-backfill — inconsistentes restantes: % (esperado 0), total coerente true/true: %',
     remaining_inconsistent, now_consistent;
