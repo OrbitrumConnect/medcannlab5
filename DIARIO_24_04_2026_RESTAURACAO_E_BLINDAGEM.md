@@ -380,3 +380,39 @@ O coração da arquitetura continua o mesmo — Core + FSM AEC + RLS + triggers 
 Amanhã (ou na próxima sessão) começa com a inversão já em vigor. Qualquer fix que tocar o Core passa automaticamente pela rede. Qualquer teste novo que Pedro adicionar amplia a rede. A arquitetura passa a ter uma propriedade que não tinha às 9h da manhã: **cada melhoria mantida é permanente**.
 
 — Registro gerado a 4 mãos: Pedro (CTO) e IA assistente (Claude Opus 4.7, sessão 24/04/2026, ~18h de trabalho contínuo).
+
+---
+
+## 🔒 SELO 24/04/2026 — 23h
+
+> **Estado do sistema: SELADO PARA TESTES E FEEDBACK**
+
+Após 29 versões deployadas em um dia (V1.9.11 → V1.9.39), auditoria LGPD fechada com `37 coerentes / 30 históricos`, pipeline de CI/CD ativo com 10 testes pass e deploy automático funcionando — **Pedro decide parar e aguardar feedback**.
+
+**Motivo:** qualquer mudança adicional hoje é risco acumulado sem ganho proporcional. O produto precisa de:
+1. **Tempo de observação em prod** — cada um dos 29 commits pode ter efeito secundário que só aparece em uso real (minutos, horas, dias).
+2. **Feedback do time médico** — Dr. Ricardo Valença (fundador médico), Dr. Eduardo Faveret (fundador ensino), João Eduardo (sócio admin). O método AEC é IP do Ricardo — mudanças no FSM e na escuta ativa precisam da leitura dele antes de consolidar.
+3. **Respiro cognitivo do CTO** — 18h contínuas, 28 versões encadeadas, 1 rotação de credencial, 1 auditoria completa, 1 ativação de CI, 1 fix LGPD descoberto pelo próprio CI. Dia denso. Parar é parte da engenharia.
+
+**O que continua rodando autonomamente:**
+- **Vercel** auto-deploya frontend a cada push em `main`.
+- **GitHub Actions** auto-deploya Edge Function + valida 10 testes a cada push em `supabase/functions/tradevision-core/**` ou `tests/integration/**`.
+- **Supabase triggers** seguem processando appointments, wallets, notifications, consent gates — sem intervenção humana necessária.
+- **Memórias do assistente** foram atualizadas refletindo este estado final (`project_ci_pipeline.md` criado, `project_architecture_map.md` + `project_real_state_23_04.md` atualizados, `project_selo_24_04.md` criado).
+
+**Quando retomar:**
+- Após Pedro trazer feedback do time (pode ser horas, pode ser dias).
+- Próximos candidatos naturais: UI "Conectar Google Calendar" (infra pronta desde 16/04), integração com Memed (prescrição formal), decisão Stripe vs Mercado Pago.
+- Nada desses é urgente. Prioridade agora é **ouvir antes de agir**.
+
+**Pendências operacionais mínimas (3 cliques cada, sem urgência):**
+- Desabilitar GitHub Actions no repo `amigo-connect-hub` (evita runs vermelhas por falta de secrets).
+- Validar que Vercel pegou a build do V1.9.39 (deve estar automático).
+- Conferir em algumas horas/dias que o CI continua verde após a atividade do time.
+
+> **Selado por:** Pedro Henrique Passos Galluf, CTO MedCannLab
+> **Data:** 24/04/2026, ~23h00 BRT
+> **Próxima retomada:** aguarda feedback
+
+---
+
