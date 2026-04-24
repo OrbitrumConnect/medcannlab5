@@ -416,3 +416,95 @@ Após 29 versões deployadas em um dia (V1.9.11 → V1.9.39), auditoria LGPD fec
 
 ---
 
+## 🔄 SEGUNDA ONDA — mesma data, noite-tarde prolongada
+
+O selo durou horas. Pedro retornou antes do feedback do time — mas com objetivo claro: reabrir o acesso direto ao banco (via PAT Supabase + Management API) pra fechar auditorias que tinham ficado dependendo de copy/paste de query. E fechar o bug clínico-mais-importante-do-dia que tinha sido apenas documentado no primeiro selo: o field mismatch do `rationalityAnalysisService`.
+
+### V1.9.40 — Field mismatch nas racionalidades (commit `a39406c`)
+
+**Diagnóstico confirmado em banco real:** admin testou "Aplicar Racionalidade → Biomédica" num report com:
+- queixa "esta inchado e doi um pouco"
+- localização "na boca!"
+- medicações esporádicas: "cannabis in natura flor no caso ou hash"
+- alergia: "alta umidade"
+
+A análise que a IA devolveu propunha **celulite, tromboflebite superficial, ultrassonografia de partes moles** — diagnósticos **anatomicamente incompatíveis** com lesão em mucosa oral. Prova irrefutável de que a IA **não tinha recebido a localização**.
+
+Causa-raiz nas linhas 90-97 do `src/services/rationalityAnalysisService.ts`:
+```js
+Queixa Principal: ${reportContent.chiefComplaint || 'Não informado'}    // banco: queixa_principal
+História: ${reportContent.history || 'Não informado'}                    // banco: historia_patologica_pregressa
+Exame Físico: ${reportContent.physicalExam || 'Não informado'}          // nunca existiu no banco
+Avaliação: ${reportContent.assessment || 'Não informado'}                // banco: structured (narrativa)
+Plano: ${reportContent.plan || 'Não informado'}                          // nunca existiu
+```
+
+5 chaves em inglês camelCase sendo lidas em um banco que grava em português snake_case desde V1.9.20 (22/04/2026 manhã). O prompt final enviado ao Assistant tinha **todos os campos principais como "Não informado"**. Só fragmentos vindos do `patientHistoryContext` (busca de outros reports do paciente) salvavam a análise de ser puro boilerplate.
+
+**Fix V1.9.40:**
+- `reportContext` reescrito com schema PT primary + EN fallback. Cobertura completa: `queixa_principal`, `lista_indiciaria`, `desenvolvimento_queixa` (localização, início, descrição, fatores piora/melhora, sintomas associados), `historia_patologica_pregressa`, `historia_familiar` (materno/paterno), `habitos_vida`, `perguntas_objetivas` (alergias, medicações), `consenso`.
+- Helper `list()` pra arrays — formata strings + extrai `.label` de objetos.
+- Aceita `reportContent` como content cru OU SharedReport wrapper (`.content` / `.rawContent`).
+- **Gate de densidade mínima**: se `!queixa_principal || !lista_indiciaria.length`, retorna struct com mensagem clara em vez de chamar o Assistant e gerar boilerplate.
+- **Diretrizes obrigatórias no prompt** (primeira versão, 8 itens): nome do paciente, localização anatômica explícita, máx 3 DDs ordenados, conduta concreta, considerar medicações relatadas, não inventar dado ausente.
+- **`console.log('[rationality][payload]', ...)`** — 1 linha que responde em debug futuro "a IA não falou de X porque não recebeu ou ignorou?"
+- Bug adjacente corrigido: linha 119 tinha `c.avaliacao` que nunca existiu no banco — trocado por `c.structured` (narrativa markdown do backend) com ordem PT-first.
+- Zero breaking: fallback EN mantido via `??`. Afeta todas as 5 racionalidades de uma só vez (reportContext compartilhado).
+
+### V1.9.41 — Refinamento após revisão externa (commit `0835c49`)
+
+Pedro levou V1.9.40 para revisão com o GPT. Veio com 4 sugestões cirúrgicas que eram melhorias reais:
+1. **Forçar nome explícito na 1ª frase** (evita regressão pra "o paciente apresenta...")
+2. **Raciocínio diferencial real** (exigir explicação de por que as hipóteses menos prováveis são menos compatíveis — não só ranking)
+3. **Parcimônia em exames** (só propor se mudam conduta — mata "pede tudo por pedir")
+4. **Conduta em 3 tempos** (agora / observar / escalar)
+5. **Flag `has_location` no log** (responde em 1s se é problema de input ou de IA ignorando)
+
+Refinamento aplicado no mesmo arquivo: 10 diretrizes obrigatórias (antes 8) + 4 flags diagnósticas no payload log (`has_location`, `has_queixa`, `has_meds_esp`, `n_lista_indiciaria`).
+
+**Lição meta-processo:** receber crítica externa com maturidade, incorporar o que é melhor, reconhecer explicitamente ("o GPT acertou em todas 4"). Não é competição assistente vs assistente — é validação cruzada. Quando dois modelos independentes convergem num diagnóstico e divergem em refinamento, geralmente o refinamento tem valor real.
+
+### Declaração do CTO que muda o padrão
+
+Ao selar pela segunda vez, Pedro fez uma afirmação que está gravada em memória persistente:
+
+> *"obrigado pela ajuda profissionalismo que vc continue assim pro elit escalavel pois o produto nao e mais so um mvp! estamos acima e voce tem isso na memoria!"*
+
+Registrado em `project_beyond_mvp_stage.md`. A partir dessa declaração, o padrão de aceite muda:
+- "só funciona" deixa de ser suficiente
+- idempotência, reversibilidade, testabilidade, auditabilidade passam a ser defaults
+- retrocompat > limpeza conceitual
+- log diagnóstico é investimento, não overhead
+- diretrizes explícitas no prompt IA > confiar no modelo
+
+### Total do dia — recalculado
+
+- **31 versões commitadas** (V1.9.11 → V1.9.41)
+- **5 migrations** (V1.9.13, V1.9.14, V1.9.21, V1.9.24, V1.9.25, V1.9.39)
+- **Pipeline CI/CD ativo** — deploy automático + 10 testes em cada push
+- **6 memórias novas** — ci_pipeline, selo_24_04, role_divergence, rationality_field_mismatch, beyond_mvp_stage, (além das atualizações de arch_map e real_state)
+- **1 LGPD leak descoberto pelo próprio CI** e corrigido (V1.9.38)
+- **1 field mismatch histórico** corrigido com 2 passadas (V1.9.40 + V1.9.41) — restaurou o diferencial clínico do produto
+- **1 backfill de consistência** (V1.9.39) — 37 coerentes + 30 históricos, integridade consent 100%
+
+### 🔒 SEGUNDO SELO 24/04/2026 — noite-tarde tardia
+
+> **Estado atual: SELADO AGUARDANDO VALIDAÇÃO PEDRO**
+
+Pedro vai re-testar a Biomédica (ou qualquer outra racionalidade) no mesmo report com queixa "na boca!" + cannabis + alergia à umidade. Console deve mostrar `[rationality][payload]` com `has_location=true`, `has_meds_esp=true`. A análise nova deve mencionar mucosa oral/lábio/queilite — não celulite nem tromboflebite.
+
+**O que continua rodando autonomamente:** Vercel (rebuild V1.9.41 em ~2min), GitHub Actions CI/CD (só dispara em paths monitorados — os commits de hoje não dispararam, acertadamente, porque são puro frontend).
+
+**Pendências residuais** (todas não urgentes):
+- Fix RLS em `ai_assessment_scores` + `clinical_reports` UPDATE para permitir salvar racionalidades (hoje análise é gerada mas some ao recarregar)
+- Decisão produto sobre arranjo de 2 contas para Ricardo (rrvalenca vs iaianoa) + sincronização `users.type` ↔ `user_profiles.role`
+- Desabilitar GitHub Actions no `amigo-connect-hub` (3 cliques)
+- Rotação do PAT Supabase `sbp_bbf6...` (apareceu no chat no reabastecimento de acesso desta sessão)
+
+> **Selado por:** Pedro Henrique Passos Galluf, CTO MedCannLab
+> **Data:** 24/04/2026, segunda onda — após V1.9.41
+> **Declaração âncora:** *"o produto não é mais só um MVP, estamos acima"*
+> **Próxima retomada:** quando Pedro voltar + feedback time + novos testes
+
+---
+
