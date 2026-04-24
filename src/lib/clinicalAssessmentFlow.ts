@@ -686,6 +686,23 @@ export class ClinicalAssessmentFlow {
         const isPureGreeting = /^(oi|ola|olá|tudo bem|bom dia|boa tarde|boa noite|como vai)\s*[!.?]?$/i.test(msgNorm.trim())
         const isRedundantIntro = this.looksLikeRedundantPresentation(userTurn, state.data.patientPresentation)
 
+        // [V1.9.28] Se ainda não coletamos o nome do paciente, QUALQUER resposta
+        // não-social é o nome — não queixa. Sem esse gate, typos ou nomes curtos
+        // ("Crolina", "Ana") passavam pela detecção de "redundant-intro" e iam
+        // direto pra COMPLAINT_LIST, pulando a pergunta "O que trouxe você?".
+        // Observado 24/04 com Carolina ("Crolina" → pulou pergunta de queixa).
+        const hasPatientName = !!(state.data.patientName && state.data.patientName.trim())
+        if (!hasPatientName && !isPureGreeting) {
+          state.data.patientName = userTurn.trim()
+          state.data.patientPresentation = userTurn.trim()
+          state.lastUpdate = new Date()
+          return {
+            nextQuestion: 'O que trouxe você à nossa avaliação hoje?',
+            phase: 'IDENTIFICATION',
+            isComplete: false
+          }
+        }
+
         // Se o usuário está repetindo o nome ("sou pedro") ou apenas cumprimentando, não avançar para COMPLAINT_LIST ainda.
         if (isPureGreeting || isRedundantIntro) {
           state.lastUpdate = new Date()
@@ -696,7 +713,7 @@ export class ClinicalAssessmentFlow {
           }
         }
 
-        // Se chegou aqui, a mensagem NÃO é uma apresentação/saudação, então é a primeira queixa!
+        // Se chegou aqui, já temos o nome E a mensagem não é saudação/intro — é a primeira queixa!
         if (userTurn.trim()) {
           state.data.complaintList.push(userTurn.trim())
         }
