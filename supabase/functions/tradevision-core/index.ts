@@ -537,7 +537,7 @@ const detectDocumentRequest = (norm: string): boolean => {
 }
 
 const detectDocumentListRequest = (norm: string): boolean => {
-    // Pedidos de listagem/visão geral — ainda é “etapa 1” (lista curta + confirmação)
+    // Pedidos de listagem/visão geral — ainda é "etapa 1" (lista curta + confirmação)
     // Conservador: deve conter a palavra "documento" ou "protocolo" explícita
     const mentionsDoc = /\b(documento|documentos|doc|docs|protocolo|diretriz|guideline|manual|biblioteca)\b/.test(norm)
     const wantsList = /\b(listar|lista|mostrar|mostra|quais|que|trazer|traga|ver|tem)\b/.test(norm)
@@ -545,6 +545,18 @@ const detectDocumentListRequest = (norm: string): boolean => {
     // Evitar que "oi tudo bem" ou "quais as novidades" vire listagem de documento
     if (norm.length < 10) return false
     if (norm.includes("tudo bem") || norm.includes("viva") || norm.includes("bom dia") || norm.includes("boa tarde") || norm.includes("boa noite")) return false
+
+    // [V1.9.56] Bug D fix — guard de NEGAÇÃO. "não conversei sobre documentos" disparava
+    // listagem porque mentionsDoc=true. Negação semântica ANTES de detectar intent.
+    // Padrão: "nao/não" seguido de verbo de fala/intenção em até 2-3 palavras.
+    const hasNegation = /\b(nao|não)\s+(\w+\s+){0,2}(falei|conversei|pedi|quero|preciso|disse|mencionei|comentei|estou|to|tô)\b/.test(norm)
+    if (hasNegation) return false
+
+    // [V1.9.56] Bug D fix — social/elogio NÃO é pedido de doc, mesmo se contém "documento"
+    // por acidente. "vejo que está mais inteligente" + "documento" no turno anterior pode
+    // disparar falso positivo. Lista de social signals.
+    const isSocialContext = /\b(rsrs|rsrsrs|hehe|kkk|kkkk|vejo que|achei|gostei|legal|maneiro|obrigad[oa]|valeu)\b/.test(norm)
+    if (isSocialContext && norm.length < 80) return false
 
     const asksList = wantsList && mentionsDoc
     const asksWhatYouSee = mentionsDoc && /\b(voce|você)\b/.test(norm) && /\b(ve|vê|tem|consegue)\b/.test(norm)
@@ -4220,15 +4232,11 @@ ${contentExcerpt || '(Texto não disponível para este documento. O conteúdo ai
             const professionalOpenings = ['Certo.', 'Entendido.', 'Registrado.', 'Perfeito.', 'Compreendido.', 'Ok.']
             const adminOpenings = ['Certo.', 'Entendido.', 'Registrado.', 'Ok, vamos lá.', 'Perfeito.', 'Compreendido.']
 
-            // Transparências sutis (variação)
-            const transparencies = [
-                '_Operando em modo local — suas funções e dados estão preservados._',
-                '_Modo local ativo — navegação e dados funcionam normalmente._',
-                '_Em modo local — suas informações estão seguras e acessíveis._',
-                '_Modo local ativo — funcionalidades operacionais disponíveis._',
-                '_Operação local — tudo preservado._',
-                '_Modo local — dados e funções intactos._'
-            ]
+            // [V1.9.56] Bug C fix — suprimir transparências que vazam estado interno.
+            // Antes: "_Modo local ativo — navegação e dados funcionam normalmente._" assustava
+            // paciente ("por que entrou em modo local?"). Estado interno do sistema NÃO deve
+            // aparecer em UX clínica. Mantém array para preservar variant index, mas vazio.
+            const transparencies = ['', '', '', '', '', '']
 
             // Selecionar por perfil e variação
             const isPatient = userRole === 'patient'
@@ -4273,15 +4281,17 @@ ${contentExcerpt || '(Texto não disponível para este documento. O conteúdo ai
             }
 
             // BLOCO: Corpo principal (por situação)
+            // [V1.9.56] Bug C fix — bodies neutros sem revelar "modo local" / "camada cognitiva".
+            // Estado interno do sistema é assunto de operações, não de paciente.
             if (isGreeting) {
                 if (isPatient && firstName) {
-                    dState.body = `Bom te ver por aqui, ${firstName}! Estou operando em modo local no momento, mas posso te ajudar com acesso à sua agenda, informações da clínica e registrar observações para seu profissional.`
+                    dState.body = `Bom te ver por aqui, ${firstName}! Posso te ajudar com sua agenda, suas avaliações e informações da clínica.`
                 } else if (isProfessional && firstName) {
-                    dState.body = `Dr(a). ${firstName}, estou em modo local. Suas funcionalidades operacionais — agenda, pacientes, relatórios e navegação — seguem disponíveis normalmente.`
+                    dState.body = `Dr(a). ${firstName}, estou aqui. Suas funcionalidades — agenda, pacientes, relatórios e navegação — estão disponíveis.`
                 } else if (isAdmin) {
-                    dState.body = `Estou em modo local. Todas as funções administrativas seguem operacionais — agenda, gestão de pacientes, relatórios e biblioteca.`
+                    dState.body = `Olá. Funções administrativas disponíveis — agenda, gestão de pacientes, relatórios e biblioteca.`
                 } else {
-                    dState.body = 'Estou operando em modo local no momento, mas posso te ajudar com navegação, agenda e acesso rápido às áreas da clínica.'
+                    dState.body = 'Posso te ajudar com navegação, agenda e acesso rápido às áreas da clínica.'
                 }
             } else if (isScheduling) {
                 dState.body = 'Posso te levar direto para a agenda. O sistema de agendamento funciona normalmente.'
@@ -4323,18 +4333,20 @@ ${contentExcerpt || '(Texto não disponível para este documento. O conteúdo ai
                 } else if (primaryConcept === 'documento') {
                     dState.body = 'Posso abrir a biblioteca ou buscar documentos específicos.'
                 } else {
-                    dState.body = 'Suas funções operacionais seguem disponíveis — agenda, pacientes, relatórios e navegação. Para análises avançadas, a camada cognitiva será restaurada em breve.'
+                    // [V1.9.56] sem mencionar "camada cognitiva"
+                    dState.body = 'Posso te ajudar com agenda, pacientes, relatórios ou navegação.'
                 }
             } else if (currentIntent === 'CLINICA') {
+                // [V1.9.56] mensagens sem revelar estado interno do sistema
                 if (isPatient) {
-                    dState.body = 'Para garantir a precisão da sua avaliação, análises clínicas completas dependem da minha camada cognitiva avançada, que será restaurada em breve.\n\nEnquanto isso, posso registrar suas observações, abrir sua agenda ou acessar suas informações. Se for urgente, procure atendimento imediato.'
+                    dState.body = 'Posso registrar suas observações, abrir sua agenda ou acessar suas informações. Se for urgente, procure atendimento imediato.'
                 } else {
-                    dState.body = 'A camada de análise avançada está temporariamente indisponível. Dados, navegação e funções operacionais continuam normais.'
+                    dState.body = 'Posso ajudar com dados, navegação e funções operacionais.'
                 }
             } else if (currentIntent === 'ADMIN') {
-                dState.body = 'Suas funções administrativas seguem disponíveis — agenda, pacientes, relatórios e navegação funcionam normalmente. Apenas respostas analíticas avançadas estão temporariamente reduzidas.'
+                dState.body = 'Funções administrativas disponíveis — agenda, pacientes, relatórios e navegação.'
             } else if (currentIntent === 'ENSINO') {
-                dState.body = 'O módulo de simulação requer a camada generativa completa, temporariamente indisponível. Posso te levar para a biblioteca educativa ou para outro recurso da plataforma.'
+                dState.body = 'Posso te levar para a biblioteca educativa ou para outro recurso da plataforma.'
             } else {
                 dState.body = 'Posso te ajudar com navegação, agenda e acesso rápido às áreas da clínica.'
             }
@@ -4760,7 +4772,12 @@ ${contentExcerpt || '(Texto não disponível para este documento. O conteúdo ai
         // Regex de saudação PURA e curta: só bate quando a mensagem inteira é uma saudação.
         const isPureGreeting = /^(oi|ol[aá]|hey|hi|hello|bom dia|boa tarde|boa noite|tudo bem|tudo bom|como vai|como voce esta|como vc esta)([\s,.!?]*(noa|n[oó]a)?)?[\s,.!?]*$/i.test(normalizedForGreet.trim())
 
-        const isAecCompletedNowEvent = aiResponse?.includes('[ASSESSMENT_COMPLETED]') || assessmentPhase === 'COMPLETED';
+        // [V1.9.56] Bug B fix — usar APENAS o trigger explícito do GPT, não o estado
+        // persistente `assessmentPhase === 'COMPLETED'`. Antes, qualquer turno após
+        // conclusão (state residual) injetava "Ver Relatório" + "Agendar" em TODA
+        // resposta da Nôa, mesmo em turnos sociais ("oi", "obrigado", "boa noite").
+        // Mesmo padrão que V1.8.8 fixou para INTERRUPTED — agora aplicado a COMPLETED.
+        const isAecCompletedNowEvent = aiResponse?.includes('[ASSESSMENT_COMPLETED]');
         if (isAecCompletedNowEvent) {
             app_commands.push(
               {
