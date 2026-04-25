@@ -3,6 +3,16 @@
 > **Marco:** Lovable rodou auditoria 360º read-only após V1.9.69 (selo do dia). Pedro pediu validação ponto-a-ponto. Este documento é o cross-check, separando achados confirmados, refutados e pendentes.
 >
 > **Princípio aplicado:** *"Toda afirmação técnica precisa ser reproduzível localmente. Achado não validado é hipótese, não fato."* (Mesma regra que pegou o falso positivo das 26 views em 25/04 manhã.)
+>
+> ## ⚠️ ATUALIZAÇÃO PÓS-PUBLICAÇÃO (após rebase)
+>
+> Após primeira versão deste documento, Lovable fez merge no remote `amigo` regenerando `src/integrations/supabase/types.ts` (-1484 linhas, +340) contra o banco real. **Após pull:**
+> - `tsc --noEmit` que antes passava com 0 erros agora retorna **43 linhas de erros** em 4 arquivos legacy IMRE
+> - 4 tabelas IMRE (`imre_assessments`, `imre_semantic_blocks`, `imre_semantic_context`, `clinical_integration`) **não existem mais nos tipos atualizados**
+>
+> **Conclusão:** Lovable estava CERTO sobre o cluster IMRE. Eu validei contra um `types.ts` STALE no repo. Seção 3.1 ("Cluster IMRE quebra build — REFUTADO") foi RETRATADA — está agora na Seção 2.5 (CONFIRMADO) abaixo.
+>
+> **Lição:** validação local só vale se `types.ts` estiver sincronizado com o banco. Lovable regenera tipos como parte do workflow dele; nosso repo deixou stale.
 
 ---
 
@@ -14,9 +24,14 @@ Lovable produziu auditoria extensa misturando 3 categorias de qualidade desigual
 |---|---|---|
 | **Volumetria de código** | Alta | Cruza com `wc -l` real (5040 linhas tradevision-core, 1395 useMedCannLabConversation) |
 | **Insights operacionais** | Provavelmente alta | Não validei localmente — depende de queries SQL no Supabase |
-| **Erros de build / TypeScript** | **Baixa** | 3 dos 3 P0 reportados foram refutados por tsc/vite local |
+| **Erros de build / TypeScript** | **Alta** (após retratação) | 2 dos 3 P0 confirmados por tsc após rebase do types.ts atualizado |
 
-**Veredito:** Lovable é útil como segundo olhar arquitetural e detector de gargalos operacionais (review_status, is_complete, cancellation rate). Não é confiável como validador de build — provavelmente seu ambiente IDE tem cache de tipos divergente do repo.
+**Veredito (revisado):** Lovable é confiável como segundo olhar arquitetural E como validador de build, **DESDE QUE** seu ambiente esteja sincronizado com banco real. No nosso caso, ele foi mais rigoroso que eu — regenerou tipos contra banco e expôs `types.ts` STALE no repo. Lição: validação local sem `types.ts` atualizado é validação parcial.
+
+**Score corrigido (após retratação):**
+- Achados confirmados: 5 (incluindo cluster IMRE)
+- Achados refutados: 2 (npm:openai fantasma, edge functions=10)
+- Achados pendentes: insights operacionais (queries SQL na Seção 5)
 
 ---
 
@@ -57,26 +72,44 @@ Lovable cruzou com diários e memórias. Estado V1.9.69 confirmado (V1.9.59 trus
 ### 2.4 Camada cognitiva ativa
 5 tabelas `cognitive_*` listadas (decisions, events, interaction_state, metabolism, policies) — confirmado em `migrations/`.
 
+### 2.5 Cluster IMRE quebra type-check — CONFIRMADO (após rebase)
+
+**Lovable afirmou (e estava certo):**
+> "5 arquivos no frontend ainda referenciam tabelas que não existem mais no banco (`imre_assessments`, `imre_semantic_blocks`, `imre_semantic_context`, `clinical_integration`). O TypeScript do Supabase rejeita essas chamadas e quebra o type-check."
+
+**Validação após rebase do types.ts atualizado (Lovable regenerou contra banco real):**
+
+```
+$ npx tsc --noEmit 2>&1 | wc -l
+43
+```
+
+**Erros distribuídos em:**
+| Arquivo | Erros TS | Tabelas referenciadas |
+|---|---|---|
+| `src/lib/clinicalAssessmentService.ts` | ~6 | `imre_assessments` |
+| `src/lib/imreMigration.ts` | ~12 | `imre_assessments`, `imre_semantic_blocks`, `imre_semantic_context` |
+| `src/lib/noaIntegration.ts` | ~4 | `imre_semantic_context`, `imre_assessments` |
+| `src/lib/unifiedAssessment.ts` | ~10 | `imre_assessments`, `clinical_integration` |
+
+**Tipos de erro:**
+- `TS2769`: tabela não existe na overload do `from()`
+- `TS2589`: instanciação de tipo profunda (sintoma de tipo ausente)
+- `TS2345`: argumentos `'patient_id'`, `'user_id'`, etc. com `type 'never'` (chain de tipo quebrada)
+- `TS2339`: properties não existem em `SelectQueryError`
+
+**Decisão recomendada:** deletar/arquivar 4 arquivos legacy. Cabeçalho de `clinicalAssessmentService.ts:1-14` já admitia "NOT IN PRODUCTION · zero callers · gap C4 · decisão pendente". Lovable validou.
+
 ---
 
 ## 3. Achados REFUTADOS (Lovable errou)
 
-### 3.1 "Cluster IMRE quebra o build" — REFUTADO
-**Lovable afirmou:**
-> "5 arquivos no frontend ainda referenciam tabelas que não existem mais no banco (`imre_assessments`, `imre_semantic_blocks`, `imre_semantic_context`, `clinical_integration`). O TypeScript do Supabase rejeita essas chamadas e quebra o type-check."
+### 3.1 ~~"Cluster IMRE quebra o build" — REFUTADO~~ — RETRATADO
+**Status:** primeira versão deste cross-check refutou Lovable baseado em validação contra `types.ts` STALE no repo. Após rebase com `types.ts` atualizado pelo Lovable (regenerado contra banco real), tsc retornou 43 erros.
 
-**Validação local:**
-- `npx tsc --noEmit` → **ZERO erros**
-- `npx vite build` → **passou em 31.65s** (só warnings de dynamic/static import e chunk size — não erros)
-- [src/integrations/supabase/types.ts](src/integrations/supabase/types.ts) tem todas as 4 tabelas definidas:
-  - linha 1471: `clinical_integration: { ... }`
-  - linha 3625: `imre_assessments: { ... }`
-  - linha 3700: `imre_semantic_blocks: { ... }`
-  - linha 3757: `imre_semantic_context: { ... }`
+**Achado movido para Seção 2.5 como CONFIRMADO.**
 
-**Conclusão:** o `types.ts` no repo tem as tabelas; tsc passa; build passa. Lovable provavelmente rodou contra um `types.ts` regenerado no ambiente dele a partir de schema atual do banco (que pode ter dropado as tabelas), divergindo do commit.
-
-**Pergunta aberta (Seção 5, query #1-2):** as tabelas IMRE *existem* no banco hoje? Se não, regenerar `types.ts` localmente vai expor o problema que Lovable viu. Se sim, Lovable estava errado em ambas as pontas (tabelas existem E build não quebra).
+**Lição registrada:** auditoria externa (Lovable) que regenera tipos contra banco real é mais autoritativa do que validação local contra repo. types.ts é fonte de verdade momentânea — pode estar stale no commit sem ninguém notar até regenerar.
 
 ### 3.2 "Referência fantasma `npm:openai@^4.52.5`" — REFUTADO
 **Lovable afirmou:**
@@ -223,12 +256,7 @@ WHERE cr.patient_id IS NOT NULL
 
 ### P0 imediato (validados localmente)
 1. **`"raw"` → `"deflate-raw"`** em [extract-document-text:295](supabase/functions/extract-document-text/index.ts#L295) — 1 caractere, zero risco
-
-### P0 condicional (depende de query SQL)
-2. **Se Q1 mostra que tabelas IMRE foram dropadas:**
-   - Regenerar `types.ts` localmente
-   - Tsc vai quebrar, daí valida Lovable parcialmente
-   - Decidir: limpar 5 arquivos legacy ou recriar tabelas
+2. **Deletar/arquivar 4 arquivos legacy IMRE** — `clinicalAssessmentService.ts`, `imreMigration.ts`, `noaIntegration.ts`, `unifiedAssessment.ts`. Confirmado: tabelas dropadas, tsc quebra com 43 erros, código documentado como "NOT IN PRODUCTION". Risco: precisa confirmar zero callers ativos antes de deletar.
 
 ### P1 hardening (depende de Q5-Q7)
 3. **4 tabelas RLS sem policy** — decidir policy ou DROP RLS
@@ -250,11 +278,12 @@ WHERE cr.patient_id IS NOT NULL
 
 ## 7. Lições registradas
 
-1. **Auditoria externa precisa ser cruzada com ambiente local.** Lovable rodou no servidor dele com cache/snapshot que pode divergir do repo committed.
-2. **Build green não significa código limpo.** `tsc` e `vite build` passaram com `imreMigration.ts`, `unifiedAssessment.ts` e `clinicalAssessmentService.ts` no repo. Eles podem estar mortos, mas não bloqueiam build.
-3. **Métricas operacionais valem mais que erros de build inventados.** Os insights `reports_approved=0`, `aec_completed=0`, 50% cancellation rate são onde Lovable agregou valor real.
-4. **`types.ts` é stale potencial.** Toda vez que schema do banco muda, regenerar `types.ts` é parte do workflow. Pode ter divergência silenciosa.
-5. **Princípio "antes de afirmar, reproduzir" se aplica também a auditorias externas.** Mesma lição das 26 views (manhã 25/04).
+1. **Auditoria externa pode ser MAIS rigorosa que validação local.** Lovable regenerou `types.ts` contra banco real; eu validei contra repo stale. Lovable estava certo.
+2. **`types.ts` é stale potencial — sempre.** Schema do banco muda; `types.ts` no repo só atualiza por intervenção manual. Toda regeneração contra banco real pode expor divergência silenciosa.
+3. **Build green não significa código limpo.** `tsc` e `vite build` passaram inicialmente com 4 arquivos legacy referenciando tabelas dropadas. Tipos antigos no repo escondiam o problema.
+4. **Métricas operacionais valem mais que erros de build.** Os insights `reports_approved=0`, `aec_completed=0`, 50% cancellation rate são onde Lovable agregou valor único e ainda não validados.
+5. **Princípio "antes de afirmar, reproduzir" se aplica em mão dupla.** Não só pra checar Lovable — também pra checar a si mesmo. Eu refutei Lovable na primeira passada baseado em tsc local; rebase + re-tsc me retratou.
+6. **Workflow CI deveria regenerar `types.ts` automaticamente.** Sem isso, divergência banco↔repo fica oculta. Item P3 pra próximo CI sprint: `npx supabase gen types typescript --linked` no workflow.
 
 ---
 
