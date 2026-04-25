@@ -22,7 +22,9 @@ import {
   User,
 } from "lucide-react";
 import clsx from "clsx";
+import { HelpCircle } from "lucide-react";
 import NoaAnimatedAvatar from "./NoaAnimatedAvatar";
+import NoaChatHelpModal, { NoaHelpRole } from "./NoaChatHelpModal";
 import { useNoaPlatform } from "../contexts/NoaPlatformContext";
 import { useMedCannLabConversation } from "../hooks/useMedCannLabConversation";
 import { useAuth } from "../contexts/AuthContext";
@@ -458,6 +460,7 @@ const NoaConversationalInterface = React.forwardRef<
       (hideButton && position === "inline") || contextIsOpen,
     );
     const [isExpanded, setIsExpanded] = useState(false);
+    const [helpOpen, setHelpOpen] = useState(false); // [V1.9.54] modal "como usar a Nôa" por perfil
     const [inputValue, setInputValue] = useState("");
     const [isListening, setIsListening] = useState(false);
     const [shouldAutoResume, setShouldAutoResume] = useState(false);
@@ -2956,6 +2959,15 @@ const NoaConversationalInterface = React.forwardRef<
                   </div>
                 </div>
                 <div className="flex items-center space-x-2">
+                  {/* [V1.9.54] Botão "?" — abre tutorial específico do perfil ativo */}
+                  <button
+                    onClick={() => setHelpOpen(true)}
+                    className="p-2 rounded-full text-white/80 hover:bg-white/10 transition"
+                    title="Como usar a Nôa"
+                    aria-label="Ajuda do chat"
+                  >
+                    <HelpCircle className="w-5 h-5" />
+                  </button>
                   <button
                     onClick={() => setIsExpanded(!isExpanded)}
                     className="p-2 rounded-full text-white/80 hover:bg-white/10 transition"
@@ -3991,6 +4003,21 @@ const NoaConversationalInterface = React.forwardRef<
             </div>
           </div>
         )}
+
+        {/* [V1.9.54] Tutorial do chat — abre via botão "?" no header.
+            Mostra apenas a aba do perfil ativo. */}
+        <NoaChatHelpModal
+          isOpen={helpOpen}
+          onClose={() => setHelpOpen(false)}
+          role={(() => {
+            const t = normalizeUserType(user?.type);
+            if (t === 'paciente') return 'patient' as NoaHelpRole;
+            if (t === 'profissional') return 'professional' as NoaHelpRole;
+            if (t === 'admin' || t === 'master') return 'admin' as NoaHelpRole;
+            if (t === 'aluno') return 'student' as NoaHelpRole;
+            return 'unknown' as NoaHelpRole;
+          })()}
+        />
       </>
     );
   },
