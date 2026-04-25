@@ -173,6 +173,7 @@ const PatientNOAChat: React.FC = () => {
               hideButton={true}
               variant="clean"
               aecTargetProfessional={aecTargetProfessional}
+              hideEmptyStateAvatar={true}
             />
           </div>
         </div>

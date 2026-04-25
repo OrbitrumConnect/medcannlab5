@@ -132,6 +132,13 @@ interface NoaConversationalInterfaceProps {
   onViewSchedule?: () => void;
   /** Profissional escolhido na vitrine (ex.: antes da AEC) — personaliza texto do protocolo */
   aecTargetProfessional?: { name: string; specialty?: string } | null;
+  /**
+   * [V1.9.63] Esconde o orbital avatar do empty state (variant=clean).
+   * Usar quando a página parent JÁ renderiza um avatar grande da Nôa de fundo
+   * (ex: PatientNOAChat com AvatarsEstatico.png 350x350) — evita duplicação visual.
+   * Mantém o texto "Nôa Esperança · IA Residente" e progress bar.
+   */
+  hideEmptyStateAvatar?: boolean;
 }
 
 type NoaCommandDetail = {
@@ -445,6 +452,7 @@ const NoaConversationalInterface = React.forwardRef<
       variant,
       onViewSchedule,
       aecTargetProfessional = null,
+      hideEmptyStateAvatar = false,
     },
     _ref,
   ) => {
@@ -3178,7 +3186,12 @@ const NoaConversationalInterface = React.forwardRef<
               {messages.length === 0 &&
                 (resolvedVariant === "clean" ? (
                   <div className="h-full flex flex-col items-center justify-center relative min-h-[50vh] animate-in fade-in duration-1000">
-                    {/* ... Orbital Avatar Design ... */}
+                    {/*
+                      [V1.9.63] Orbital Avatar Design — só renderiza se hideEmptyStateAvatar=false.
+                      Quando a página parent já tem avatar grande de fundo (ex: PatientNOAChat com
+                      AvatarsEstatico.png 350x350 + glows + particles próprios), evita duplicação visual.
+                    */}
+                    {!hideEmptyStateAvatar && (
                     <div className="relative w-40 h-40 mb-8 transform transition-transform duration-[4000ms] hover:scale-105">
                       {/* Glows */}
                       <div className="absolute inset-[-20px] bg-emerald-500/10 rounded-full blur-xl animate-pulse" />
@@ -3205,6 +3218,7 @@ const NoaConversationalInterface = React.forwardRef<
                         style={{ animationDuration: "3s" }}
                       />
                     </div>
+                    )}
 
                     <div className="text-center space-y-3 z-10">
                       <h2 className="text-2xl font-light text-white tracking-wide">
