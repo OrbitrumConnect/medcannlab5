@@ -3962,28 +3962,48 @@ ${JSON.stringify(patientData, null, 2)}
                         })
                     }
                 } else {
-                    // NÃO tem médico: Oferecer Oficiais vs Parceiros
-                    const { data: officials } = await supabaseClient.from("doctors").select("name").eq("is_official", true).limit(5)
-                    const { data: partners } = await supabaseClient.from("doctors").select("name").eq("is_official", false).limit(5)
+                    // NÃO tem médico: Oferecer profissionais credenciados (V1.9.62 fix Bug FF)
+                    //
+                    // ANTES: query em tabela "doctors" que NÃO EXISTE no banco. Falhava silenciosamente
+                    // → fallback hardcoded "Dr. João, Dra. Maria" (médicos inventados que nunca existiram).
+                    // Sintoma reportado: paciente real (Pedro Paciente) recebeu mensagem oficial da Nôa
+                    // citando "Dr. João e Dra. Maria como Parceiros" — risco regulatório/UX.
+                    //
+                    // AGORA: query em users.type='professional' (fonte real). Sem dicotomia oficial/parceiro
+                    // até existir coluna explícita no schema. Médicos oficiais ancorados em emails conhecidos
+                    // (Dr. Ricardo Valença + Dr. Eduardo Faveret); demais profissionais aparecem como
+                    // "outros credenciados" sem nome inventado.
+                    //
+                    // Memória: project_admin_identities (rrvalenca, faveret, iaianoa, cbdrc são founders)
+                    const officialEmails = ['rrvalenca@gmail.com', 'eduardo.faveret@hotmail.com', 'eduardoscfaveret@gmail.com']
+                    const { data: allPros } = await supabaseClient
+                        .from('users')
+                        .select('name, email')
+                        .in('type', ['professional', 'profissional'])
+                        .limit(20)
 
-                    const officialList = officials?.map((d: any) => d.name).join(", ") || "Dr. Ricardo Valença, Dr. Eduardo Faveret"
-                    const partnerList = partners?.map((d: any) => d.name).join(", ") || "Dr. João, Dra. Maria"
+                    const officials = (allPros || []).filter((p: any) => officialEmails.includes((p.email || '').toLowerCase()))
+                    const partnersCount = (allPros || []).length - officials.length
+
+                    const officialList = officials.length > 0
+                        ? officials.map((d: any) => d.name).join(', ')
+                        : 'Dr. Ricardo Valença, Dr. Eduardo Faveret'
+                    const partnersClause = partnersCount > 0
+                        ? `Outros ${partnersCount} profissionais credenciados também disponíveis no agendamento.`
+                        : ''
 
                     systemInjection.push({
                         role: "system",
                         content: `[SYSTEM_TRIGGER]: O paciente finalizou a avaliação mas NÃO tem médico vinculado.
-                        VOCÊ DEVE PERGUNTAR: "Para prosseguirmos com seu tratamento, você prefere ser atendido por um dos nossos Médicos Oficiais do App ou por um Profissional Parceiro?"
-                        
-                        OPÇÕES:
-                        - Médicos Oficiais (Alta Especialização - Método IMRE): ${officialList}
-                        - Parceiros (Rede Credenciada): ${partnerList}
-                        
+                        VOCÊ DEVE PERGUNTAR: "Para prosseguirmos com seu tratamento, posso abrir o agendamento com um dos nossos médicos especialistas no Método IMRE: ${officialList}. ${partnersClause}"
+
                         AGUARDE A ESCOLHA DO USUÁRIO PARA MOSTRAR A AGENDA.
-                        
+
                         CRÍTICO: Se o usuário aceitar ou escolher um médico, VOCÊ DEVE ADICIONAR A TAG [TRIGGER_SCHEDULING] AO FINAL DA SUA RESPOSTA.
                         Isso abrirá o WIDGET de agendamento no chat.
-                        
-                        NÃO LISTE HORÁRIOS EM TEXTO (NÃO INVENTE DATAS). APENAS ABRA O WIDGET.`
+
+                        NÃO LISTE HORÁRIOS EM TEXTO (NÃO INVENTE DATAS). APENAS ABRA O WIDGET.
+                        NUNCA INVENTE NOMES DE MÉDICOS. Use apenas os nomes listados acima.`
                     })
                 }
             } else if (currentIntent === "ADMIN") {
