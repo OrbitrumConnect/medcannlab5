@@ -1118,14 +1118,17 @@ export class ClinicalAssessmentFlow {
           /^(apenas|s[oó]|somente)\s+conversar\s*[!.?]?$/.test(norm)
 
         if (isRefusing) {
-          // [V1.9.7] Em vez de DELETE (race com ensureLoaded do próximo turno
-          // antes do fire-and-forget propagar), marcamos COMPLETED e persistimos.
-          // upsert substitui a row; state local já está sync com COMPLETED; próxima
-          // msg encontra state existente (phase=COMPLETED), não recarrega, e o
-          // switch default retorna hint vazio → Core não ativa verbatim lock.
-          state.phase = 'COMPLETED'
-          state.lastUpdate = new Date()
-          void this.persist(userId)
+          // [V1.9.67] Em vez de mentir state.phase = 'COMPLETED' (que dispara
+          // trigger anomaly_logger V1.9.57: phase=COMPLETED + is_complete=false),
+          // invalidamos honestamente. Snapshot preservado em noa_logs, DB
+          // marca invalidated_at. Próxima sessão começa limpa via cold start
+          // guard (loadStateFromDB filtra invalidated_at IS NULL).
+          //
+          // Histórico:
+          //   V1.9.7: trocou DELETE por phase=COMPLETED — bom (sem race), mas
+          //           gerou is_complete=false e poluiu métricas finalização real.
+          //   V1.9.67: invalidate explícito — sem race, sem mentira, sem trigger.
+          void this.invalidateAssessment(userId, 'user_refused_resume_after_interrupted')
           return {
             nextQuestion:
               'Tudo bem, podemos conversar. Se quiser retomar sua avaliação depois, basta me pedir "retomar avaliação".',
@@ -1459,15 +1462,82 @@ export class ClinicalAssessmentFlow {
 
   /**
    * Finaliza a avaliação
+   *
+   * [V1.9.67] Audit invariant: se state chegou aqui sem 'FINAL_RECOMMENDATION'
+   * marcado em completedPhases, é sintoma de FSM pulando fases. Loga warning
+   * (não bloqueia — o caller pode estar legitimamente forçando completed via
+   * tag [ASSESSMENT_COMPLETED] do Core).
    */
   completeAssessment(userId: string): AssessmentData | null {
     const state = this.states.get(userId)
     if (!state) return null
 
+    const finalMarked = state.completedPhases?.includes('FINAL_RECOMMENDATION') ?? false
+    if (!finalMarked) {
+      console.warn('[AEC V1.9.67 audit] completeAssessment sem FINAL_RECOMMENDATION marcado — possível FSM pulando fase', {
+        userId,
+        prevPhase: state.phase,
+        completedPhases: state.completedPhases,
+      })
+    }
+
     state.phase = 'COMPLETED'
     state.lastUpdate = new Date()
 
     return state.data
+  }
+
+  /**
+   * [V1.9.67] Invalida uma sessão AEC sem mentir sobre fases concluídas.
+   * Princípio "invalidate ≠ DELETE" (V1.9.57): preserva snapshot, marca como
+   * arquivado na DB, remove do state in-memory. FSM ignora ao recarregar
+   * (loadStateFromDB filtra invalidated_at IS NULL desde V1.9.57).
+   *
+   * Use quando o caller SABE que a AEC está sendo encerrada sem completar
+   * (paciente recusou retomar, admin forçou reset, etc). Evita o anti-pattern
+   * `state.phase = 'COMPLETED'` que dispara trigger anomaly (phase=COMPLETED
+   * + is_complete=false) e polui métricas de finalização real.
+   */
+  async invalidateAssessment(userId: string, reason: string): Promise<void> {
+    // Captura snapshot do state local ANTES do delete (preserva fields pro audit log)
+    const snapshot = this.states.get(userId)
+    const phase_at_invalidation = snapshot?.phase ?? null
+    const completed_phases = snapshot?.completedPhases ?? null
+
+    // [V1.9.67] Delete síncrono antes dos awaits — evita race com próximo turno
+    // que poderia ler state ainda com phase antiga enquanto DB update está in-flight.
+    this.states.delete(userId)
+
+    // Snapshot pra audit trail (mesmo se state local não existe — pode existir na DB)
+    try {
+      await (supabase as any).from('noa_logs').insert({
+        user_id: userId,
+        interaction_type: 'aec_state_invalidated_explicit',
+        payload: {
+          reason,
+          phase_at_invalidation,
+          completed_phases,
+          source: 'invalidateAssessment_v1_9_67',
+          invalidated_at: new Date().toISOString(),
+        },
+      })
+    } catch (snapErr) {
+      console.warn('[AEC V1.9.67] Falha ao gravar snapshot (não bloqueia):', snapErr)
+    }
+
+    // Marca state como inválido na DB (V1.9.57 schema)
+    try {
+      await supabase
+        .from('aec_assessment_state')
+        .update({
+          invalidated_at: new Date().toISOString(),
+          invalidation_reason: `V1.9.67: ${reason}`,
+        } as any)
+        .eq('user_id', userId)
+        .is('invalidated_at', null)
+    } catch (updateErr) {
+      console.warn('[AEC V1.9.67] Falha ao marcar invalidação na DB:', updateErr)
+    }
   }
 
   /**
