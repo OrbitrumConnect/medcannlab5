@@ -1718,9 +1718,27 @@ Deno.serve(async (req: Request) => {
         const userEmailFromData = (patientData?.user?.email || patientData?.email || '').toLowerCase().trim()
         const effectiveEmail = jwtEmail || userEmailFromData
 
-        if (founders.includes(effectiveEmail)) {
+        // [V1.9.58 quick-fix defensivo S4] Founder elevation ANCORADA em jwtEmail apenas.
+        //
+        // ANTES: `if (founders.includes(effectiveEmail))` — effectiveEmail caía em
+        // userEmailFromData (do body) quando JWT vazio. Atacante mandando POST sem
+        // Authorization header com `email: 'phpg69@gmail.com'` no body conseguia
+        // elevation pra role 'master'. Vetor: IDOR + trust boundary leak híbrido =
+        // privilege inference bug.
+        //
+        // AGORA: só dispara se JWT validado e jwtEmail é founder. Email do body
+        // NUNCA infere privilégio. Body só pode carregar action data.
+        //
+        // NOTA: este é fix DEFENSIVO. Mudanças 1 (remover --no-verify-jwt no CI) e 2
+        // (identidade APENAS via JWT em todos os fallbacks) ficam para V1.9.59 sessão
+        // dedicada com cabeça fresca + testes manuais 4 cenários críticos.
+        // Memória: project_s4_jwt_mapping_25_04
+        if (jwtEmail && founders.includes(jwtEmail)) {
             userRole = 'master'
-            console.log(`[AUTH] Founder detected: ${effectiveEmail}. Elevating to role: master`)
+            console.log(`[AUTH] Founder detected via JWT: ${jwtEmail}. Elevating to role: master`)
+        } else if (founders.includes(effectiveEmail) && !jwtEmail) {
+            // Tentativa de elevation sem JWT → log de segurança, NÃO eleva
+            console.warn(`[SECURITY] Tentativa de founder elevation sem JWT — ignorada. effectiveEmail=${effectiveEmail}, body=${userEmailFromData}`)
         }
 
         // [VIP TRIGGER] Padrão Agendamento para o Terminal
