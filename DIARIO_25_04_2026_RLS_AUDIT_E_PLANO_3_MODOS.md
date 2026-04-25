@@ -8,18 +8,30 @@
 
 ## 1. Resumo Executivo
 
-O dia começou com Pedro pedindo "voltamos aonde paramos? verificar o possível" — pergunta de retomada após o dia de 24/04 ter fechado com 29 versões deployadas, CI ativo e auditoria LGPD declarada coerente. Ao longo do dia:
+O dia começou com Pedro pedindo "voltamos aonde paramos? verificar o possível" — pergunta de retomada após o dia de 24/04 ter fechado com 29 versões deployadas, CI ativo e auditoria LGPD declarada coerente.
 
-- **Pegamos e retratamos um falso positivo nosso** ("26 views sem RLS" — query errada perpetuada de docs antigos).
-- **Aplicamos V1.9.47** via Management API: policy `clinical_reports` unificada (`is_admin()` + 4 UUIDs de sócios fundadores como break-glass + vínculos clínicos preservados).
-- **Aplicamos V1.9.48** via Management API: ENABLE RLS em 3 tabelas backup desprotegidas (`clinical_reports_content_backup_24_04`, `documents_backup_23_04_2026`, `generated_slides_archive`).
-- **Construímos o plano dos 3 Modos da Nôa** após esclarecimento do Dr. Ricardo sobre IMRE (memória `project_imre_clarification_24_04`) e exploração profunda do `tradevision-core` (~4300 linhas).
-- **Mapeamos 8 riscos** do plano, em particular o risco de quebrar Simulador + Teste de Nivelamento se Fix #1 (narrador escriba) for aplicado sem gate pedagógico.
-- **Atualizamos memórias** para sessões futuras não repetirem o erro de auditoria de RLS (`project_lessons_learned_rls_audit.md`).
+**Total do dia: 23 versões deployadas (V1.9.47 → V1.9.69)** — dia mais produtivo da história do projeto.
 
-Princípio reafirmado hoje: **"antes de afirmar leak, reproduzir com query bruta. Antes de propor fix, verificar terminologia. Antes de aplicar, ter rollback documentado."**
+**Eixos principais:**
+- **Manhã** — Pegamos e retratamos um falso positivo nosso ("26 views sem RLS"); aplicamos V1.9.47-48 via Management API (policy `clinical_reports` unificada + RLS em 3 backups).
+- **Tarde** — Plano dos 3 Modos da Nôa, racionalidades blindadas (V1.9.49), CI gate (V1.9.50), tutorial chat por perfil (V1.9.54), fix crítico patientData ignorado pelo Core (V1.9.55).
+- **Tarde-noite** — V1.9.56 limpou "Modo local"; V1.9.57 instalou invalidate pattern (Camadas 1+2); V1.9.58-59 fecharam **S4 Trust Boundary** (refactor: body NUNCA participa de identidade).
+- **Noite** — Bugs paralelos descobertos no teste como paciente (V1.9.60-64); **V1.9.65 Identity Unification** (4 builders); **V1.9.66 ISM Fase 1** (camada arquitetural fundacional inicia); **V1.9.67 Bug A persistente RESOLVIDO** (Camada 3 Prevention — causa real era refusal path, não as 3 fases que resumo prévio dizia); **V1.9.68 Reports UI** consolidado; **V1.9.69** padronização visual admin.
 
-Princípio emergente: **"polimento cirúrgico não é confiança cega — é cirurgia com checklist e snapshot defensivo."**
+**Princípio reafirmado hoje:** *"antes de afirmar leak, reproduzir com query bruta. Antes de propor fix, verificar terminologia. Antes de aplicar, ter rollback documentado."*
+
+**Princípios emergentes consolidados ao longo do dia:**
+- *"Polimento cirúrgico não é confiança cega — é cirurgia com checklist e snapshot defensivo."*
+- *"Body NUNCA participa de identidade — só payload funcional."*
+- *"Não inventar, consolidar."*
+- *"Telemetria antes de comportamento."*
+- *"Invalidate ≠ DELETE — estende além de DB pra state in-memory."*
+- *"Dead code > deleção precoce — preserva reversibilidade até validação real."*
+- *"Ler todos os call sites antes de declarar fix completo."*
+- *"Verificar logs antes de culpar infra."*
+- *"Quando resumo prévio diverge do código, código é a verdade."*
+
+**Mudança qualitativa do dia:** sistema saiu de *"clínico com IA + risco crítico de privilege escalation + identidade fragmentada"* para *"sistema clínico com governança automatizada + trust boundary fechado + identidade unificada + ISM Fase 1 + UX consolidada"*. Não é mais sobre fechar vulnerabilidade — é sobre construir camadas arquiteturais que previnem **classes inteiras** de bugs.
 
 ---
 
@@ -78,6 +90,18 @@ Princípio emergente: **"polimento cirúrgico não é confiança cega — é cir
 - 10:30: descoberta dos 4 admins (Pedro CTO, João, Ricardo iaianoa, Eduardo) e necessidade de unificar policy `Reports access` que tinha hardcode de 2 emails.
 - 11:00: **V1.9.47 aplicada via Management API** — policy unificada (is_admin + 4 UUIDs break-glass + vínculos clínicos preservados).
 - 11:30: GPT review valida arquitetura, sugere logging de telemetria.
+- (resto da timeline 11:30 → 19:00 detalhado nas seções 4-23)
+
+**Noite (25/04) — V1.9.60 → V1.9.69**
+- 20:00-22:00: Pedro testa em prod como paciente — descobre 5 bugs preexistentes (AA-EE) + bug FF (médicos inventados). Maioria categorizada como manifestação de ISM ausente.
+- V1.9.60-61: dState.context removido então restaurado com gate cirúrgico + hard cap context overflow (root cause real do "OpenAI instável" foi context_length_exceeded interno).
+- V1.9.62: Bug FF — query `doctors` (tabela inexistente) → `users.type='professional'`.
+- V1.9.63-64: avatar duplicado em `/chat-noa` — fix em 2 etapas (V1.9.63 só pegou 1 invoke; V1.9.64 fechou o segundo).
+- V1.9.65: **Identity Unification** — 4 builders unificados, regra "use identity.name" promovida a UNIVERSAL no prompt do Core (cumpre promessa V1.9.59).
+- V1.9.66: **ISM Fase 1** — schema + observabilidade puramente aditiva. `body.conversation_state` consolidado, log em `noa_logs.interaction_type='ism_state_observed'`. Comportamento intacto, telemetria viva pra Fase 2.
+- V1.9.67: **Bug A persistente RESOLVIDO** — causa real era refusal path linha 1126 (não as 3 fases que resumo prévio dizia). Novo método `invalidateAssessment` com delete síncrono in-memory antes dos awaits + audit invariant em `completeAssessment`.
+- V1.9.68: **Reports UI consolidado** — aba "Lista" removida, Clínico vira default. Dead code preservado pra rollback.
+- V1.9.69: padronização visual `bg-[#050914]` → `bg-slate-950` em ClinicalGovernanceAdmin.
 - 12:00: auditoria de RLS — afirmei "26 views sem RLS, leak LGPD ativo, fix P0".
 - 12:15: **falso positivo detectado** ao reproduzir o suposto leak. Causa raiz: query usava `pg_class.relrowsecurity` (flag de tabela) em vez de `pg_class.reloptions[security_invoker]` (flag de view). Todas as 26 views já estavam protegidas via `security_invoker=on`.
 - 12:30: **retratação pública** + criação de `project_lessons_learned_rls_audit.md` com checklist anti-falso-positivo.
@@ -966,5 +990,211 @@ Mudança de **categoria** de risco (não mais vazamento clínico aberto), agora 
 
 ### Princípio operacional final
 > **"S4 fechado. Sistema sensível em auth boundary. Não voltar a mexer em auth hoje. Próximo passo NÃO é mais segurança — é Identity unification + ISM (V1.9.6x)."**
+
+---
+
+## 25. Noite 25/04 — Bugs paralelos, ISM Fase 1, Identity Unification, UI consolidation (V1.9.60 → V1.9.69)
+
+Após V1.9.59 fechar S4 trust boundary, Pedro testou em prod como paciente e descobriu **5 bugs preexistentes** (não regressão de V1.9.59) + novas demandas de UX. A noite virou execução do que era backlog desde manhã: ISM, Identity unification, Bug A persistente. Mais correções pequenas de UI ao longo do caminho.
+
+### V1.9.60 — Remover dState.context (commit anterior à sessão atual)
+Linha 4319 do Core gerava `dState.context = "Continuando nossa conversa sobre ${label} —"` no fallback determinístico. V1.9.56 limpou `transparencies` mas esqueceu este. Em sessões com OpenAI oscilando, vazava template administrativo no fluxo paciente.
+
+**Fix V1.9.60 — agressivo:** removida a linha inteira.
+**Problema descoberto pós-deploy:** o bloco "reflexão contextual ao sair" usa essa info pra outras áreas. Pedro perguntou *"o bloco reflexão contextual ao sair prejudica outra área avaliou?"* — resposta foi sim.
+
+### V1.9.61 — Restaurar dState.context com gate cirúrgico + hard cap context overflow
+2 mudanças:
+1. **dState.context restaurado** com gate `isPatient && currentIntent === 'CLINICA'` — só preenche em fluxo clínico paciente, nunca em contexto admin/profissional.
+2. **Hard cap 60k chars no `safeReasoningContext`** antes do prompt build. Logs revelaram que perceived "OpenAI instável" era na verdade `context_length_exceeded` (140k tokens > 128k limit GPT-4o). Originalmente categorizei como infra issue — logs provaram que era overflow interno.
+
+**Lição registrada em memória:** *"infra instável" pode ser context overflow. Sempre verificar logs antes de culpar OpenAI.*
+
+### V1.9.62 — Bug FF: médicos parceiros inventados
+Sintoma: chat fora-AEC dizia "Dr. João, Dra. Maria" como médicos da plataforma. Causa: query no Core procurava tabela `doctors` (não existe) e o fallback hardcoded. Fix: trocar pra `users.type='professional'` com identificação por email oficial (Ricardo, Eduardo, etc.). Zero invenção — só dados reais do banco.
+
+### V1.9.63 / V1.9.64 — Avatar duplicado em /chat-noa
+**V1.9.63:** Pedro reportou 2 imagens da Nôa em `/app/clinica/paciente/chat-noa`. Investigação mapeou:
+1. Avatar grande de fundo do `PatientNOAChat.tsx:213` (350x350 com hover) — *correto, "o de trás"*.
+2. Avatar orbital pequeno do `NoaConversationalInterface.tsx:3179` (empty state).
+
+V1.9.63 adicionou prop `hideEmptyStateAvatar` ao `NoaConversationalInterface` e setou `true` no invoke do **modo embed** ([PatientNOAChat:175](src/pages/PatientNOAChat.tsx#L175)).
+
+**V1.9.64 — fix incompleto:** Pedro recarregou e ainda viu duplicação. Descoberta: V1.9.63 só passou prop no embed, **deixou o invoke do modo normal** ([PatientNOAChat:280-287](src/pages/PatientNOAChat.tsx#L280)) sem a flag. V1.9.64 = 1 linha (`hideEmptyStateAvatar={true}` no segundo invoke). Lição: ler **todos** os call sites antes de declarar fix completo.
+
+### V1.9.65 — Identity Unification (cumprindo promessa de V1.9.59)
+
+Memória `project_identity_gap_25_04` documentava que V1.9.52 fechou identity só em admin. Profissional/paciente/aluno ainda recebiam resposta genérica "está logado como X" mesmo após "me identifique".
+
+**Mudanças:**
+- `buildPatientContext.ts`: select expandido (created_at, trial_ends_at) → +name/email/type. Zero query nova.
+- `buildProfessionalContext.ts`: +1 query users em `Promise.all` (já era paralelo).
+- `buildStudentContext.ts`: select expandido. Zero query nova.
+- `buildAdminContext.ts`: já tinha desde V1.9.52, intacto.
+- Core 3563-3571: regra "use userContext.identity.name" promovida de admin-specific para **regra UNIVERSAL na linha 0** das DIRETRIZES, com saudação por role:
+  - Paciente: "Olá [Nome], que bom te ver por aqui."
+  - Profissional: "Olá Dr(a). [Nome], como posso ajudar?"
+  - Admin: "Olá [Nome], sua sessão administrativa está ativa."
+  - Aluno: "Olá [Nome], pronto para mais um passo no aprendizado?"
+
+**Decisão arquitetural:** criei `src/lib/buildIdentity.ts` como helper, mas removi por não estar sendo usado. CLAUDE.md instrui *"Don't introduce abstractions beyond what the task requires"*. **Shape `{name, email, type}` consistente é o contrato — não um helper file.**
+
+Memória `project_identity_gap_25_04` marcada **RESOLVIDO V1.9.65**.
+
+### V1.9.66 — Interaction State Model (ISM) Fase 1
+
+Cumprimento parcial da camada arquitetural fundacional formalizada por GPT (memória `project_interaction_state_model_camada_fundacional`). Bugs CC, GG, HH, "vamos no 4", CONSENT_PENDING_BLOCKED, entity resolution Ricardo são manifestações da MESMA classe — estado conversacional não modelado no payload.
+
+**Fase 1 = puramente aditiva (zero comportamento novo):**
+- `src/lib/conversationState.ts` (NOVO): tipo `ConversationState` v1 + builder fail-safe
+- `noaResidentAI.ts:1950`: payload do invoke ganha `conversation_state` consolidado:
+  ```ts
+  {
+    schema_version: 1,
+    phase: AecPhase,
+    consent_status: 'pending'|'given'|'declined'|'unknown',
+    physician_viewing_as: string | null,
+    viewing_as_role: ... | null,        // reservado pra Fase 2 (CC fix)
+    real_role: ...,
+    active_slot: string | null          // reservado pra Fase 3 (HH fix)
+  }
+  ```
+- `tradevision-core/index.ts:1605-1626`: lê `body.conversation_state` e loga em `noa_logs.interaction_type='ism_state_observed'` antes da divergência finalize/chat. Fail-open.
+
+**Fases 2-3 dependem de 24-48h de telemetria pra validar distribuição real.**
+
+### V1.9.67 — Bug A persistente RESOLVIDO (Camada 3 Prevention)
+
+Investigação contradisse o resumo prévio que dizia "3 fases (INITIAL_GREETING, OBJECTIVE_QUESTIONS, COMPLAINT_DETAILS) não chamavam markPhaseCompleted". Verificação de código mostrou que **essas fases TÊM as chamadas** (linhas 746, 1212, 1336).
+
+**Causa real (descoberta hoje):**
+[clinicalAssessmentFlow.ts:1126](src/lib/clinicalAssessmentFlow.ts#L1126) — refusal path pós-INTERRUPTED fazia `state.phase = 'COMPLETED'` SEM marcar fases pendentes. Resultado: `is_complete=false` na DB (GENERATED column compara `completed_phases @> required_phases`). Carolina (25/04 manhã) caiu nesse caminho ao recusar retomar AEC.
+
+**Fix V1.9.67:**
+- Novo método `invalidateAssessment(userId, reason)` em `clinicalAssessmentFlow.ts:1485-1521`:
+  - Snapshot in-memory captado ANTES do delete (audit trail)
+  - **Delete síncrono in-memory ANTES dos awaits** (evita race com turn seguinte)
+  - Insert em `noa_logs.interaction_type='aec_state_invalidated_explicit'`
+  - Update DB: `invalidated_at + invalidation_reason` (V1.9.57 schema)
+  - Princípio reusado: invalidate ≠ DELETE
+- Substituição na refusal path: `state.phase = 'COMPLETED'` → `invalidateAssessment(userId, 'user_refused_resume_after_interrupted')`
+- Audit invariant em `completeAssessment`: warning se chegar sem `FINAL_RECOMMENDATION` marcado
+
+Memória `project_aec_residual_state_25_04` marcada **RESOLVIDO V1.9.67**.
+
+### V1.9.68 — Relatórios Clínicos: unificação Clínico + Analytics, remoção da Lista
+
+Pedro reportou: aba "Lista" pobre (só busca + 2 filtros) competindo com "Clínico" (componente rico de 1300 linhas que Ricardo prefere) e "Analytics" (gráficos complementares). Auditoria pré-aplicação confirmou:
+- Pacientes: imunes — `Reports.tsx:203` retorna `null` para `type=paciente`
+- Links externos `?view=list`: zero matches no codebase
+- `?patient=ID` de Patients.tsx: ignorado (Reports.tsx não usa `useSearchParams`)
+- Sidebar: 3 links sem state
+
+**Fix mínimo, postura conservadora:**
+- [Reports.tsx:47](src/pages/Reports.tsx#L47): default `'list'` → `'component'` (Clínico)
+- [Reports.tsx:235](src/pages/Reports.tsx#L235): removida entry `{ mode: 'list', label: 'Lista' }` do toggle
+- Código do modo `'list'` (~358-460) **preservado como dead code** pra rollback trivial
+
+**Validação honesta com Pedro:** unificação foi parcial — Lista some, Clínico vira default, mas Analytics continua aba separada (não fundida inline). Fase 2 (Analytics inline + drill-down) fica pendente até feedback Ricardo.
+
+### V1.9.69 — Padronização visual Terminal Administrativo
+
+Pedro reportou: `/app/admin` ([ClinicalGovernanceAdmin.tsx](src/pages/ClinicalGovernanceAdmin.tsx)) com tom escuro destoante do resto da app. Investigação: linha 148 usava hex hardcoded `bg-[#050914]` enquanto Landing/PatientNOAChat/AlunoDashboard usam `bg-slate-950` (#020617).
+
+Fix: 1 caractere — `bg-[#050914]` → `bg-slate-950`. Risco zero, padronização visual.
+
+---
+
+## 26. Bugs paralelos no Pedro Paciente (descobertos no caminho, NÃO bloqueantes)
+
+Memória `project_modo_visualizacao_e_fallback_25_04` cataloga 5 bugs descobertos em teste pós-V1.9.59, todos **preexistentes** (não regressão):
+
+| Bug | Descrição | Classe | Status |
+|---|---|---|---|
+| AA | OpenAI oscilando ativava fallback determinístico | Context overflow | ✅ V1.9.61 |
+| BB | `dState.context` vazava "Continuando nossa conversa" | V1.9.56 incompleto | ✅ V1.9.60+61 |
+| CC | `tipoVisual` (modo visualização aluno) não chega ao Core | ISM ausente | ⏳ Fase 2 ISM |
+| DD | Mensagens duplicadas (race em useMedCannLabConversation) | Race condition client | Não atacado |
+| EE | UI auto-injection chega como `role: user` | ISM ausente | ⏳ Fase 2 ISM |
+| FF | Médicos parceiros inventados (Dr. João/Dra. Maria) | Tabela `doctors` inexistente | ✅ V1.9.62 |
+| GG | Card de agendamento abre antes do consent | ISM ausente | ⏳ Fase 2 ISM |
+| HH | Mapeamento literal de respostas pro slot errado | FSM + ISM | ⏳ Fase 3 ISM |
+
+3 bugs (CC, GG, HH) explicitamente subsumidos pela **camada ISM** — confirmando a tese arquitetural de GPT.
+
+---
+
+## 27. Princípios cristalizados V1.9.6x (noite)
+
+1. **"Não inventar coisas novas, consolidar o que existe"** — V1.9.68 reusa 100% do que já estava no codebase. Eliminar redundância > criar feature.
+2. **"Ler todos os call sites antes de declarar fix completo"** — V1.9.63 → V1.9.64 ensinou: 2 invokes do mesmo componente, fix em só 1 = bug visível.
+3. **"Telemetria antes de comportamento"** — ISM Fase 1 é puramente aditiva. 24-48h de log antes de Fase 2 mudar Core.
+4. **"Quando resumo prévio diverge do código, código é a verdade"** — Bug A: causa real era refusal path 1126, não as 3 fases que o resumo dizia. Investigar > confiar em memória stale.
+5. **"Verificar logs antes de culpar infra"** — Bug Z (context overflow) parecia "OpenAI instável". Logs provaram que era interno.
+6. **"Postura conservadora: dead code > deletado"** — V1.9.68 mantém modo `'list'` como dead code pra rollback. Limpeza vem só após validação Ricardo.
+7. **"Princípio invalidate ≠ DELETE estende além de DB"** — V1.9.67 aplicou em FSM client (in-memory state). Sistema clínico nunca destrói, sempre arquiva.
+
+---
+
+## 28. Selo Final REAL 25/04/2026
+
+**Versões deployadas hoje:** **23 commits, 23 versões** (V1.9.47 → V1.9.69) — dia mais produtivo da história do projeto.
+
+| Bloco | Versões | Foco |
+|---|---|---|
+| Manhã | V1.9.47 → V1.9.48 | RLS unificada + 3 backups fechados |
+| Tarde inicial | V1.9.49 → V1.9.55 | Racionalidades gate, CI gate, identity admin, fix patientData |
+| Tarde-Noite | V1.9.56 → V1.9.59 | "Modo local" removido, S4 Trust Boundary fechado |
+| Noite | V1.9.60 → V1.9.69 | Bugs paralelos, ISM Fase 1, Identity completo, UI consolidation |
+
+**Hash do dia:** `trust-boundary-closed-ism-foundation-laid-identity-unified`
+
+**Encadeamento histórico:**
+- 22-23/04: trust boundary clínico
+- 24/04: restauração + CI ativo + LGPD detectado
+- **25/04 (hoje): governança + identidade + ISM Fase 1 + UI consolidation**
+
+**Estado por domínio (fim REAL do dia 25/04):**
+
+| Domínio | Início 25/04 | Fim 25/04 |
+|---|---|---|
+| **Trust Boundary (auth)** | 🔴 `--no-verify-jwt` | ✅ V1.9.59 trust boundary fechado |
+| **Identidade (4 roles)** | 🟡 só admin (V1.9.52) | ✅ V1.9.65 todos 4 builders unificados |
+| **FSM clínico (AEC)** | 🟡 inconsistência refusal | ✅ V1.9.67 invalidate path |
+| **ISM (interaction state)** | 🔴 ausente | 🟡 Fase 1 (schema + log) |
+| **RLS / segurança schema** | 🟢 alto | ✅ V1.9.47+48 reforço |
+| **UX Reports** | 🟡 3 abas competindo | ✅ V1.9.68 consolidado |
+| **UX Admin visual** | 🟡 hex divergente | ✅ V1.9.69 padronizado |
+| **Recovery clínico** | 🔴 inexistente | ✅ V1.9.57+67 invalidate pattern |
+| **Bugs paciente preexistentes** | 8 abertos | 4 fechados (AA/BB/FF/64) + 4 pendentes |
+| **Test coverage** | 30% | Inalterado (próximo bloco) |
+
+**Tradução de fase (sem romantizar):**
+- **Antes hoje:** *"sistema clínico com IA + risco crítico de privilege escalation + identidade fragmentada"*
+- **Fim hoje:** *"sistema clínico com governança automatizada + trust boundary fechado + identidade unificada + ISM Fase 1 entregue + UX consolidada"*
+
+Mudança qualitativa: **não é mais sobre fechar vulnerabilidade**, é sobre **construir camadas arquiteturais que previnem classes inteiras de bugs**. Padrão "elite escalável" assumido conscientemente em vez de patch-and-deploy.
+
+**Princípios operacionais consolidados (acumulados ao longo do dia):**
+1. Antes de afirmar leak, reproduzir com query bruta.
+2. Polimento cirúrgico = checklist + snapshot defensivo.
+3. Defesa em profundidade vence detecção única.
+4. CI converte "cuidado pra não errar" em "impossível errar sem pipeline gritar".
+5. Não remover, transformar. Compatibilidade > ruptura.
+6. Identidade é camada, não detalhe.
+7. Body NUNCA participa de identidade.
+8. Auth boundary precisa de window dedicada.
+9. Telemetria antes de comportamento — ISM Fase 1 = aditiva 24-48h antes de Fase 2.
+10. Não inventar, consolidar.
+11. Invalidate ≠ DELETE — princípio clínico estende a state in-memory.
+12. Dead code > deleção precoce — preservar reversibilidade até validação real.
+13. Ler **todos** os call sites antes de declarar fix completo.
+14. Verificar logs antes de culpar infra.
+
+**Próximo dia provável:**
+- ISM Fase 2 (Core respeita `consent_status` + `viewing_as_role`) após 24-48h de telemetria
+- Reports Fase 2 (Analytics inline + drill-down) após feedback Ricardo
+- Bugs DD/CC/EE/GG/HH paciente — todos via Fase 2-3 do ISM
+- Test coverage expansion — único domínio que não evoluiu hoje
 
 Próxima sessão acorda com plano executável em `project_estado_e_backlog_25_04_manha`.
