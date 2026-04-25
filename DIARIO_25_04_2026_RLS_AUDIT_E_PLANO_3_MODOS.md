@@ -889,3 +889,82 @@ GPT rodou avaliação após o push e trouxe 5 pontos:
 > "App com backend" → "Sistema clínico com governança automatizada e identidade administrativa coerente."
 
 **Próximo dia provável:** unificar identity em professional/patient/student (fechar gap remanescente) **OU** começar Fix #1 (narrador escriba) caso Dr. Ricardo dê OK no texto V2.
+
+---
+
+## 23. Tarde 25/04 — S4 Trust Boundary FECHADO (V1.9.58 + V1.9.59)
+
+### Investigação preliminar S4 (read-only)
+Mapeamento revelou: 9 Edge Functions, 5 invocadas pelo client, `tradevision-core` único deployado com `--no-verify-jwt` no CI, founder hardcode em `tradevision-core:1708`, body fallbacks em 4 linhas críticas (1517, 1543, 1584, 1719) + IDOR estrutural em profile lookup.
+
+**Reframing GPT:** não é "fix de auth" — é **refactor de trust boundary**. Classe correta: IDOR + privilege inference + trust boundary leak híbrido. Princípio cristalizado: *"Body NUNCA participa de identidade — só payload funcional"*.
+
+### V1.9.58 — Quick-fix defensivo (commit `b354466`)
+1 mudança isolada: founder elevation ancorada em `jwtEmail`. Vetor mais grave (~80%) fechado. Validado em prod: logs mostram `[AUTH] Founder detected via JWT: phpg69@gmail.com` — JWT como source.
+
+### V1.9.59 — Trust Boundary Refactor completo (commit `5ddad2e`)
+
+**5+ mudanças em 1 commit atômico:**
+1. Workflow CI: removido `--no-verify-jwt` (gateway Supabase valida JWT)
+2. `DEPLOY_NOA.bat`: removido `--no-verify-jwt` (sem split-brain CI vs manual)
+3. Core 1517: `idempotencyUserId = jwtUserId || 'anon'`
+4. Core 1543: `.eq('id', jwtUserId)` (IDOR fechado — service_role bypassa RLS)
+5. Core 1593: `effectiveUserId = jwtUserIdFromToken` + 401 hard fail
+6. Core 1741: `effectiveEmail = jwtEmail` (sem fallback body)
+7. Core 1761: branch redundante removido
+
+GPT validou todas mudanças como "consistência do mesmo problema raiz" — não escopo creep.
+
+### Bugs paralelos descobertos no teste (NÃO bloqueantes)
+
+| Bug | Causa real | Classe |
+|---|---|---|
+| Y1 — loop "analise documento" | Estado `document_opened` não existe no Core | ISM ausente |
+| Y2 — `show-document-inline` em todo turno | Event sourcing por heurística de linguagem | Falta de gating |
+| Z — ~80k tokens/request | History 20 + RAG sempre ativo + prompt extenso | Performance |
+
+GPT separou maturidade arquitetural:
+- S4 = Segurança (CRÍTICO) — fechado
+- Y1/Y2 = Estado conversacional (UX) — V1.9.6x
+- Z = Performance — V1.9.7x
+
+**Não tratar tudo como "bug genérico"** = maturidade arquitetural.
+
+### Princípios cristalizados V1.9.59
+
+1. **Body NUNCA participa de identidade** — só payload funcional
+2. **Identity + data access não podem ser separadas** em sistema clínico
+3. **Auth boundary precisa de window dedicada** (não madrugada, não impulso)
+4. **Reframing > expansão de escopo** — "fix JWT" virou "trust boundary refactor" sem virar refactor maior
+5. **Não voltar a mexer em auth no mesmo dia** — qualquer tweak = risco alto de regressão
+
+## 24. Selo final 25/04 — Trust Boundary Estabilizado
+
+**Selo:** 25/04/2026 — V1.9.59 Trust Boundary Refactor
+**Hash:** `state-invalidate-pattern-ism-formalization-and-trust-boundary-closed`
+**Versões deployadas hoje:** **14 (V1.9.47 → V1.9.59)**
+
+### Estado por domínio (fim do dia)
+
+| Domínio | Antes hoje | Fim 25/04 |
+|---|---|---|
+| **Trust Boundary (auth)** | 🔴 Baixo (--no-verify-jwt) | ✅ **Alto (V1.9.59)** |
+| FSM clínico (AEC) | Alto | Alto + invalidate pattern |
+| RLS / segurança schema | Alto | Inalterado |
+| Persistência conversa | Alto | Inalterado |
+| Identidade administrativa | Médio | Inalterado |
+| Recovery clínico | Inexistente | ✅ Médio (V1.9.57 view) |
+| Identidade pro/patient/student | Baixa | Inalterado (V1.9.6x) |
+| ISM (interaction state) | Ausente | Identificado, não implementado |
+| Test coverage | 30% | Inalterado |
+
+### Tradução de fase (sem romantizar)
+**Antes hoje:** *"sistema clínico com IA + risco crítico de privilege escalation"*
+**Fim hoje:** *"sistema clínico com governança automatizada + trust boundary estabilizado + ISM como próxima camada"*
+
+Mudança de **categoria** de risco (não mais vazamento clínico aberto), agora em categoria de **dívida de UX/state model**. Mudança de natureza, não só de grau.
+
+### Princípio operacional final
+> **"S4 fechado. Sistema sensível em auth boundary. Não voltar a mexer em auth hoje. Próximo passo NÃO é mais segurança — é Identity unification + ISM (V1.9.6x)."**
+
+Próxima sessão acorda com plano executável em `project_estado_e_backlog_25_04_manha`.
