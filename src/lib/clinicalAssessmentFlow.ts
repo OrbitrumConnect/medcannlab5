@@ -176,6 +176,16 @@ export class ClinicalAssessmentFlow {
 
   /**
    * Carrega estado do Supabase para um userId específico
+   *
+   * [V1.9.57] Cold start guard contra state residual inconsistente.
+   * Princípio "invalidate + preserve snapshot + restart controlado" (NÃO DELETE):
+   *   1. Filtra states ativos: invalidated_at IS NULL
+   *   2. Se state ATIVO está inconsistente (phase=COMPLETED + is_complete=false + idade>6h),
+   *      faz snapshot em noa_logs + marca invalidated_at + NÃO carrega em this.states.
+   *   3. Resultado: próximo turno cria nova sessão limpa, dado parcial preservado.
+   *
+   * Por que 6h: AEC real não dura mais que 30-45min. State em COMPLETED inconsistente
+   * mais antigo que 6h é com certeza órfão de finalização interrompida.
    */
   private async loadStateFromDB(userId: string): Promise<void> {
     try {
@@ -183,6 +193,7 @@ export class ClinicalAssessmentFlow {
         .from('aec_assessment_state')
         .select('*')
         .eq('user_id', userId)
+        .is('invalidated_at', null) // [V1.9.57] só carrega state ativo
         .maybeSingle()
 
       if (error) {
@@ -191,6 +202,61 @@ export class ClinicalAssessmentFlow {
       }
 
       if (data) {
+        // [V1.9.57] Cold start guard runtime — segunda linha de defesa contra state
+        // inconsistente que escapou do trigger/migration retroativa (race conditions
+        // ou bugs novos que pulem markPhaseCompleted em algum branch do FSM).
+        const isCompletedButIncomplete = data.phase === 'COMPLETED' && (data as any).is_complete === false
+        const lastUpdateMs = new Date(data.last_update).getTime()
+        const ageMs = Date.now() - lastUpdateMs
+        const SIX_HOURS_MS = 6 * 60 * 60 * 1000
+
+        if (isCompletedButIncomplete && ageMs > SIX_HOURS_MS) {
+          console.warn('[AEC V1.9.57] State inconsistente detectado em runtime. Invalidando e arquivando snapshot.', {
+            userId,
+            phase: data.phase,
+            ageHours: Math.round(ageMs / 3600000),
+          })
+
+          // Snapshot em noa_logs (preserva dado clínico parcial)
+          try {
+            await (supabase as any).from('noa_logs').insert({
+              user_id: userId,
+              interaction_type: 'aec_state_invalidated_runtime',
+              payload: {
+                state_id: data.id,
+                phase: data.phase,
+                is_complete: (data as any).is_complete,
+                data: data.data,
+                completed_phases: (data as any).completed_phases,
+                required_phases: (data as any).required_phases,
+                started_at: data.started_at,
+                last_update: data.last_update,
+                age_hours: Math.round(ageMs / 3600000),
+                source: 'cold_start_guard_v1_9_57',
+                invalidated_at_runtime: new Date().toISOString(),
+              },
+            })
+          } catch (snapErr) {
+            console.warn('[AEC V1.9.57] Falha ao gravar snapshot em noa_logs (não bloqueia):', snapErr)
+          }
+
+          // Marca state como inválido no banco
+          try {
+            await supabase
+              .from('aec_assessment_state')
+              .update({
+                invalidated_at: new Date().toISOString(),
+                invalidation_reason: `V1.9.57 runtime guard: phase=COMPLETED mas is_complete=false após ${Math.round(ageMs / 3600000)}h. Snapshot em noa_logs.`,
+              } as any)
+              .eq('id', data.id)
+          } catch (updateErr) {
+            console.warn('[AEC V1.9.57] Falha ao marcar state como invalidado:', updateErr)
+          }
+
+          // NÃO carrega em this.states — força nova sessão no próximo processResponse
+          return
+        }
+
         const state: AssessmentState = {
           phase: data.phase as AssessmentPhase,
           data: (data.data || {}) as unknown as AssessmentData,
