@@ -1514,7 +1514,10 @@ Deno.serve(async (req: Request) => {
         
         // 🛡️ [ECCHO SHIELD] Deduplicação por Mensagem + User (Previne Triple Trigger)
         const rawInputMessage = body.message || ''
-        const idempotencyUserId = body.context?.patient_id || body.patient_id || jwtUserId || 'anon'
+        // [V1.9.59 S4 cirúrgico] Identidade APENAS via JWT — body NUNCA é fonte.
+        // Antes: fallback `body.context?.patient_id || body.patient_id` permitia
+        // atacante mandar UUID arbitrário e causar deduplicação cruzada entre users.
+        const idempotencyUserId = jwtUserId || 'anon'
         const idempotencyKey = `msg_${idempotencyUserId}_${rawInputMessage.substring(0, 50).replace(/\s+/g, '_')}`
         
         const now = Date.now()
@@ -1537,11 +1540,17 @@ Deno.serve(async (req: Request) => {
         const normalizedMessage = cleanHumanMessage.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase()
 
         // S3 CONTEXT [PATIENT]: Carregar dados do paciente
-        const { data: patFromBody } = await supabaseClient
-            .from('profiles')
-            .select('*, user:id(*)')
-            .eq('id', body.context?.patient_id || body.patient_id)
-            .single()
+        // [V1.9.59 S4 cirúrgico] Query usa jwtUserId (não body) — Core usa
+        // service_role key que bypassa RLS, então `body.patient_id` permitiria
+        // atacante carregar profile de qualquer paciente. JWT como source of truth.
+        const profileLookupId = jwtUserId
+        const { data: patFromBody } = profileLookupId
+            ? await supabaseClient
+                .from('profiles')
+                .select('*, user:id(*)')
+                .eq('id', profileLookupId)
+                .single()
+            : { data: null }
 
         const {
             conversationHistory: convFromBody,
@@ -1581,7 +1590,17 @@ Deno.serve(async (req: Request) => {
         const patientData = body.patientData ?? patFromBody ?? body.context ?? {}
         const professionalId = appointmentData?.professional_id || patientData?.professional_id || 'system-global'
         const jwtUserIdFromToken = jwtUserId // do JWT
-        const effectiveUserId = jwtUserIdFromToken || patientData?.user?.id
+        // [V1.9.59 S4 cirúrgico] effectiveUserId APENAS do JWT — body NUNCA é
+        // fonte de identidade. Sem JWT válido = 401, ponto final. Antes: fallback
+        // `patientData?.user?.id` permitia atacante mandar UUID arbitrário.
+        const effectiveUserId = jwtUserIdFromToken
+        if (!effectiveUserId) {
+            console.warn('[SECURITY V1.9.59] Request sem JWT válido — rejeitando')
+            return new Response(
+                JSON.stringify({ error: 'Unauthorized', message: 'JWT válido obrigatório' }),
+                { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+            )
+        }
 
         // 🧬 [TITAN 5.2.1] GATILHO MASTER CONSCIENTE (Pipeline Auditável)
         // O gatilho de finalização agora é soberano e não se baseia em "ecos" do próximo passo (nextQuestionHint)
@@ -1715,8 +1734,11 @@ Deno.serve(async (req: Request) => {
             'jeduardo@gmail.com'
         ]
 
+        // [V1.9.59 S4 cirúrgico] effectiveEmail APENAS do JWT.
+        // userEmailFromData (do body) NÃO entra em decisões de identidade nem
+        // privilégio. Mantida apenas computação para logs/display, nunca security.
         const userEmailFromData = (patientData?.user?.email || patientData?.email || '').toLowerCase().trim()
-        const effectiveEmail = jwtEmail || userEmailFromData
+        const effectiveEmail = jwtEmail  // SOMENTE JWT — body não influencia identidade
 
         // [V1.9.58 quick-fix defensivo S4] Founder elevation ANCORADA em jwtEmail apenas.
         //
@@ -1736,10 +1758,10 @@ Deno.serve(async (req: Request) => {
         if (jwtEmail && founders.includes(jwtEmail)) {
             userRole = 'master'
             console.log(`[AUTH] Founder detected via JWT: ${jwtEmail}. Elevating to role: master`)
-        } else if (founders.includes(effectiveEmail) && !jwtEmail) {
-            // Tentativa de elevation sem JWT → log de segurança, NÃO eleva
-            console.warn(`[SECURITY] Tentativa de founder elevation sem JWT — ignorada. effectiveEmail=${effectiveEmail}, body=${userEmailFromData}`)
         }
+        // [V1.9.59 S4 cirúrgico] Branch "tentativa via body sem JWT" removido.
+        // Mudança 2 retorna 401 antes desse ponto se !effectiveUserId,
+        // então jwtUserId/jwtEmail estão sempre presentes ao chegar aqui.
 
         // [VIP TRIGGER] Padrão Agendamento para o Terminal
         // Determinístico, Imutável, Fora da Governança de Role para Fundadores/Admins

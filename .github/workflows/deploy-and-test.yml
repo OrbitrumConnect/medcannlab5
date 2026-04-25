@@ -76,10 +76,13 @@ jobs:
       - name: Deploy Edge Function
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+        # [V1.9.59 S4 cirúrgico] Removido --no-verify-jwt. Supabase gateway agora
+        # valida JWT antes da request chegar ao Edge Function. Requests sem
+        # Authorization válido recebem 401 do gateway, não chegam ao código.
+        # Trust boundary fechado.
         run: |
           supabase functions deploy tradevision-core \
-            --project-ref ${{ secrets.SUPABASE_PROJECT_REF }} \
-            --no-verify-jwt
+            --project-ref ${{ secrets.SUPABASE_PROJECT_REF }}
 
   integration-tests:
     name: Integration tests (consent, monetization, schema)

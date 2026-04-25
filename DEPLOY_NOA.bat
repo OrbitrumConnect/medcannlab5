@@ -7,9 +7,10 @@ echo Iniciando deploy da Edge Function com as novas regras (System Prompt ReforÃ
 echo Este processo vai atualizar a IA para parar de falar sobre assuntos aleatorios
 echo e permitir testes de avaliacao por administradores.
 echo.
-echo Executando: npx supabase functions deploy tradevision-core --no-verify-jwt
+echo [V1.9.59] Deploy COM verify_jwt â€” auth boundary fechado.
+echo Executando: npx supabase functions deploy tradevision-core
 echo.
-call npx supabase functions deploy tradevision-core --no-verify-jwt
+call npx supabase functions deploy tradevision-core
 echo.
 if %errorlevel% neq 0 (
     echo [ERRO] O deploy falhou. 
