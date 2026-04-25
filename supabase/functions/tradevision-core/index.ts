@@ -4307,18 +4307,21 @@ ${contentExcerpt || '(Texto não disponível para este documento. O conteúdo ai
                 action: ''
             }
 
-            // BLOCO: Reflexão contextual (memória conversacional)
-            if (lastTopic && !isGreeting && conversationDepth > 2) {
-                const topicLabels: Record<string, string> = {
-                    dor: 'dor', sono: 'sono', ansiedade: 'ansiedade', humor: 'humor',
-                    cannabis: 'uso de cannabis', medicacao: 'medicação', exame: 'exames',
-                    agenda: 'agendamento', documento: 'documentos'
-                }
-                const label = topicLabels[lastTopic] || lastTopic
-                if (lastTopic !== detectedConcepts[0]) {
-                    dState.context = `Continuando nossa conversa sobre ${label} —`
-                }
-            }
+            // [V1.9.60 Bug BB fix] Bloco de reflexão contextual REMOVIDO do fallback.
+            // ANTES: `dState.context = "Continuando nossa conversa sobre ${label} —"`
+            // disparava em fallback determinístico mesmo quando paciente/aluno NÃO
+            // estavam falando do tópico (lastTopic vinha de heurística sobre history).
+            //
+            // Sintoma reportado: aluno em simulação Lúcia, OpenAI cai 1 turno,
+            // fallback responde "Continuando nossa conversa sobre documentos —"
+            // mesmo sem nunca ter falado de documento. Quebra contexto pedagógico.
+            //
+            // Como `lastTopic` é heurística probabilística, qualquer match falso
+            // vaza para o paciente. Remover do fallback é mais seguro que tentar
+            // refinar a heurística — fallback é último recurso, deve ser neutro.
+            //
+            // dState.context fica vazio em fallback. Body assume responsabilidade
+            // de oferecer ação útil (linhas seguintes).
 
             // BLOCO: Corpo principal (por situação)
             // [V1.9.56] Bug C fix — bodies neutros sem revelar "modo local" / "camada cognitiva".

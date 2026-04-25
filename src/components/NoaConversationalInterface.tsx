@@ -802,20 +802,36 @@ const NoaConversationalInterface = React.forwardRef<
     }, [contextIsOpen, hideButton, position]);
 
     useEffect(() => {
-      if (pendingMessage) {
-        console.log(
-          "📨 Processando mensagem pendente:",
-          pendingMessage.substring(0, 100),
-        );
-        setInputValue(pendingMessage);
-        // Aguardar um pouco para garantir que o chat esteja totalmente pronto
-        setTimeout(() => {
-          sendMessage(pendingMessage);
-          clearPendingMessage();
-          // Limpar o input após enviar a mensagem pendente
-          setInputValue("");
-        }, 500);
-      }
+      if (!pendingMessage) return;
+
+      // [V1.9.60 Bug DD fix] Evita duplicação de mensagens pendentes.
+      // ANTES: clearPendingMessage() era chamado DENTRO do setTimeout(500ms).
+      // Durante esses 500ms, qualquer re-render que mudasse referência de
+      // sendMessage/clearPendingMessage causava re-disparo do effect com o
+      // mesmo pendingMessage ainda no state → mensagem processada 2x.
+      //
+      // Sintoma: aluno em fluxo "Iniciar Teste de Nivelamento" via 2 logs
+      //   "📨 Processando mensagem pendente: Vou iniciar o teste..." (2x)
+      // e mensagens duplicadas no chat.
+      //
+      // Fix: capturar valor + limpar IMEDIATAMENTE (não no setTimeout).
+      // Se effect re-roda, pendingMessage já é null → return early.
+      // Cleanup cancela timer pendente em caso de unmount.
+      const message = pendingMessage;
+      clearPendingMessage();
+
+      console.log(
+        "📨 Processando mensagem pendente:",
+        message.substring(0, 100),
+      );
+      setInputValue(message);
+
+      const timer = setTimeout(() => {
+        sendMessage(message);
+        setInputValue("");
+      }, 500);
+
+      return () => clearTimeout(timer);
     }, [pendingMessage, sendMessage, clearPendingMessage]);
 
     useEffect(() => {
