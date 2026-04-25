@@ -76,6 +76,89 @@ export class RationalityAnalysisService {
   }
 
   /**
+   * [V1.9.49] Gate fail-closed para racionalidades médicas.
+   *
+   * Verifica role do user (`users.type`) e libera apenas para professional/admin.
+   * Toda tentativa (granted ou negada) é registrada em `noa_logs` com payload_hash
+   * (SHA256 de queixa + lista_indiciaria) — LGPD-safe, não armazena conteúdo bruto.
+   *
+   * Hash dos campos clínicos (não do report inteiro) é estável: mesmo caso clínico
+   * sempre gera mesmo hash, permitindo identificar tentativas repetidas sobre o
+   * mesmo paciente sem expor o conteúdo.
+   */
+  private async enforceRoleGate(
+    userId: string | undefined,
+    rationality: Rationality,
+    reportContent: any
+  ): Promise<{ granted: boolean; reason?: string }> {
+    const allowedRoles = ['professional', 'profissional', 'admin']
+    let role: string = 'unknown'
+    let granted = false
+    let reason: string | undefined
+
+    try {
+      if (!userId) {
+        reason = 'NO_USER_ID'
+      } else {
+        const { data: userRow, error } = await supabase
+          .from('users')
+          .select('type')
+          .eq('id', userId)
+          .single()
+
+        if (error || !userRow) {
+          reason = 'USER_LOOKUP_FAILED'
+        } else {
+          role = String((userRow as any).type ?? '').toLowerCase()
+          granted = allowedRoles.includes(role)
+          if (!granted) reason = 'FORBIDDEN_ROLE'
+        }
+      }
+    } catch (e) {
+      reason = 'GATE_EXCEPTION'
+    }
+
+    // Audit log — LGPD-safe (hash dos campos clínicos, não conteúdo)
+    try {
+      const rc: any = reportContent?.rawContent ?? reportContent?.content ?? reportContent ?? {}
+      const queixa = String(rc.queixa_principal ?? rc.chiefComplaint ?? '')
+      const listaArr = rc.lista_indiciaria ?? rc.lista_indiciaria_flat ?? rc.indicativeList ?? []
+      const lista = Array.isArray(listaArr)
+        ? listaArr.map((i: any) => (typeof i === 'string' ? i : (i?.label ?? JSON.stringify(i)))).join('|')
+        : ''
+      const payloadHash = await this.sha256(`${queixa}::${lista}`)
+
+      await (supabase as any).from('noa_logs').insert({
+        user_id: userId ?? null,
+        interaction_type: 'rationality_attempt',
+        payload: {
+          role,
+          granted,
+          rationality_type: rationality,
+          payload_hash: payloadHash,
+          reason_denied: granted ? null : reason,
+          timestamp: new Date().toISOString()
+        }
+      })
+    } catch (logErr) {
+      console.warn('[V1.9.49] Audit log de rationality_attempt falhou (não bloqueia):', logErr)
+    }
+
+    return { granted, reason }
+  }
+
+  /** SHA256 hex via Web Crypto API (disponível no browser e em edge runtimes). */
+  private async sha256(input: string): Promise<string> {
+    try {
+      const enc = new TextEncoder().encode(input)
+      const hashBuf = await crypto.subtle.digest('SHA-256', enc)
+      return Array.from(new Uint8Array(hashBuf)).map(b => b.toString(16).padStart(2, '0')).join('')
+    } catch {
+      return 'hash_unavailable'
+    }
+  }
+
+  /**
    * Gera análise de um relatório clínico segundo uma racionalidade médica específica
    */
   async generateAnalysis(
@@ -86,6 +169,19 @@ export class RationalityAnalysisService {
     patientId?: string
   ): Promise<RationalityAnalysis> {
     try {
+      // [V1.9.49] GATE FAIL-CLOSED — Racionalidades médicas são restritas a
+      // profissionais e administradores. Paciente patchando bundle JS para
+      // chamar este service direto via devtools recebe erro claro + tentativa
+      // é registrada em noa_logs com payload_hash (LGPD-safe).
+      //
+      // Defesa em profundidade: este gate é a primeira camada. RLS no banco
+      // (migration V1.9.49) é a segunda. Mesmo que paciente burle isto,
+      // INSERT em clinical_rationalities falha por policy.
+      const gateResult = await this.enforceRoleGate(userId, rationality, reportContent)
+      if (!gateResult.granted) {
+        throw new Error(`FORBIDDEN_ROLE: ${gateResult.reason ?? 'Racionalidades médicas são restritas a profissionais e administradores.'}`)
+      }
+
       // [V1.9.40] Build do contexto com schema PT (como o backend grava desde
       // V1.9.20) + fallback EN para retrocompat. Antes o código lia só chaves
       // EN (chiefComplaint, history, physicalExam, assessment, plan) que nunca
