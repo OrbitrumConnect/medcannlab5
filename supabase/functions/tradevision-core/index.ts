@@ -4139,9 +4139,27 @@ ${contentExcerpt || '(Texto não disponível para este documento. O conteúdo ai
         // 🧠 [HOSPITAL-GRADE] PROMPT BUILDER (EFÊMERO)
         // O prompt é construído unindo a fala humana ao contexto RAG, mas essa união NUNCA toca o banco.
         const effectiveReasoningContext = injectedContext ? `[RAG CONTEXT - EXECUTION ONLY]\n${injectedContext}` : (knowledgeBlock + documentBlock)
-        
+
+        // [V1.9.61 Bug Z fix] Hard cap no RAG context para evitar context_length_exceeded.
+        // ANTES: injectedContext (RAG do client) podia ter 100k+ chars, sistema mandava
+        // 140k tokens → GPT-4o limite 128k → 400 error → fallback determinístico ativava
+        // a CADA turno. Sintoma: simulação aluno quebrando após turno 2-3, vazando
+        // templates "Continuando nossa conversa" e "Funções administrativas disponíveis".
+        // Logs mostraram: "context_length_exceeded ... 140438 tokens".
+        //
+        // Cap em 60k chars (~15k tokens) deixa folga: 4k system + 15k RAG + 10k history
+        // + 5k phase instructions + 5k user/profile = ~39k tokens, bem dentro do limite.
+        const MAX_RAG_CONTEXT_CHARS = 60000
+        let safeReasoningContext = effectiveReasoningContext
+        if (safeReasoningContext && safeReasoningContext.length > MAX_RAG_CONTEXT_CHARS) {
+            const originalLength = safeReasoningContext.length
+            safeReasoningContext = safeReasoningContext.substring(0, MAX_RAG_CONTEXT_CHARS) +
+                '\n\n[CONTEXTO TRUNCADO — texto adicional disponível mas omitido para caber no limite de tokens do modelo]'
+            console.warn(`⚠️ [TOKEN MGMT V1.9.61] RAG context truncado: ${originalLength} → ${safeReasoningContext.length} chars`)
+        }
+
         const messages = [
-            { role: "system", content: systemPrompt + effectiveReasoningContext + phaseInstruction + interactionStyleInstruction + `\nPERFIL DO USUÁRIO: ${userRole} (${profileInstruction})\nCONTEXTO:\n${JSON.stringify(patientData)}` },
+            { role: "system", content: systemPrompt + safeReasoningContext + phaseInstruction + interactionStyleInstruction + `\nPERFIL DO USUÁRIO: ${userRole} (${profileInstruction})\nCONTEXTO:\n${JSON.stringify(patientData)}` },
             ...systemInjection,
             ...trimmedHistory,
             ...phaseReinforcementMessages,
@@ -4307,21 +4325,32 @@ ${contentExcerpt || '(Texto não disponível para este documento. O conteúdo ai
                 action: ''
             }
 
-            // [V1.9.60 Bug BB fix] Bloco de reflexão contextual REMOVIDO do fallback.
-            // ANTES: `dState.context = "Continuando nossa conversa sobre ${label} —"`
-            // disparava em fallback determinístico mesmo quando paciente/aluno NÃO
-            // estavam falando do tópico (lastTopic vinha de heurística sobre history).
+            // [V1.9.61 Bug BB fix — gate cirúrgico opção B] Bloco de reflexão contextual
+            // restaurado MAS gateado por (isPatient && currentIntent === 'CLINICA').
             //
-            // Sintoma reportado: aluno em simulação Lúcia, OpenAI cai 1 turno,
-            // fallback responde "Continuando nossa conversa sobre documentos —"
-            // mesmo sem nunca ter falado de documento. Quebra contexto pedagógico.
+            // V1.9.60 removeu este bloco completamente. Pedro perguntou se a remoção
+            // prejudicava outras áreas — sim, perde continuidade narrativa em fallback
+            // pra paciente clínico real. Trade-off: paciente em conversa longa de fallback
+            // recebia conector "Continuando nossa conversa sobre ${tópico} —" que ajudava UX.
             //
-            // Como `lastTopic` é heurística probabilística, qualquer match falso
-            // vaza para o paciente. Remover do fallback é mais seguro que tentar
-            // refinar a heurística — fallback é último recurso, deve ser neutro.
+            // V1.9.61 restaura COM gate: dispara APENAS para paciente em fluxo clínico.
+            // - aluno em simulação (intent=ENSINO): NÃO dispara (era o vazamento principal)
+            // - admin/professional em conversa: NÃO dispara (template admin já tem outro fluxo)
+            // - paciente em chat livre (intent=CLINICA): dispara (uso pretendido)
             //
-            // dState.context fica vazio em fallback. Body assume responsabilidade
-            // de oferecer ação útil (linhas seguintes).
+            // lastTopic continua sendo heurística probabilística, mas com gate por role+intent
+            // o domínio onde ela atua é restrito ao caso de uso original.
+            if (lastTopic && !isGreeting && conversationDepth > 2 && isPatient && currentIntent === 'CLINICA') {
+                const topicLabels: Record<string, string> = {
+                    dor: 'dor', sono: 'sono', ansiedade: 'ansiedade', humor: 'humor',
+                    cannabis: 'uso de cannabis', medicacao: 'medicação', exame: 'exames',
+                    agenda: 'agendamento', documento: 'documentos'
+                }
+                const label = topicLabels[lastTopic] || lastTopic
+                if (lastTopic !== detectedConcepts[0]) {
+                    dState.context = `Continuando nossa conversa sobre ${label} —`
+                }
+            }
 
             // BLOCO: Corpo principal (por situação)
             // [V1.9.56] Bug C fix — bodies neutros sem revelar "modo local" / "camada cognitiva".
