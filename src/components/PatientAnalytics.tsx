@@ -784,12 +784,19 @@ const PatientAnalytics: React.FC<PatientAnalyticsProps> = ({ reports, loading, u
                                 const score = report.content.scores?.clinical_score || 0
                                 return (
                                     <div key={report.id} className="flex flex-col items-center gap-2 group relative z-10 w-full">
-                                        <div
-                                            className="w-full max-w-[40px] bg-emerald-500/80 rounded-t-sm hover:bg-emerald-400 transition-all duration-300 relative group-hover:shadow-[0_0_15px_rgba(52,211,153,0.3)]"
-                                            style={{ height: `${Math.max(score, 5)}%` }}
-                                        >
-                                            <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-slate-900 text-emerald-400 text-xs font-bold py-1 px-2 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap border border-emerald-500/20">
-                                                {score} pts
+                                        {/* [V1.9.51] Wrapper com altura fixa para que `height: %` da barra
+                                            funcione (CSS height percentual exige parent com altura explícita).
+                                            Sem este wrapper, em PatientAnalytics o flex parent geral tinha h-64
+                                            mas o item filho não — barras colapsavam para altura zero. Padrão
+                                            espelhado do Reports.tsx "Relatórios por Mês" que sempre funcionou. */}
+                                        <div className={`w-full max-w-[40px] flex items-end relative ${compact ? 'h-36' : 'h-48'}`}>
+                                            <div
+                                                className="w-full bg-emerald-500/80 rounded-t-sm hover:bg-emerald-400 transition-all duration-300 relative group-hover:shadow-[0_0_15px_rgba(52,211,153,0.3)]"
+                                                style={{ height: `${Math.max(score, 5)}%` }}
+                                            >
+                                                <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-slate-900 text-emerald-400 text-xs font-bold py-1 px-2 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap border border-emerald-500/20">
+                                                    {score} pts
+                                                </div>
                                             </div>
                                         </div>
                                         <span className="text-[10px] text-slate-400 whitespace-nowrap text-center" style={{ minWidth: '3rem' }}>
