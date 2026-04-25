@@ -18,6 +18,12 @@ import { supabase } from './supabase'
 
 export interface ProfessionalContext {
   role: 'professional'
+  // [V1.9.65] Identity unification
+  identity: {
+    name: string | null
+    email: string | null
+    type: string | null
+  }
   activePatientsCount: number
   todayAppointmentsCount: number
   todayAppointments: Array<{
@@ -52,6 +58,7 @@ export async function buildProfessionalContext(
 
     // Queries em paralelo (todas read-only, RLS-safe)
     const [
+      identityRes,
       activePatientsRes,
       todayAppointmentsRes,
       nextAppointmentRes,
@@ -59,6 +66,9 @@ export async function buildProfessionalContext(
       reportsRes,
       walletRes,
     ] = await Promise.all([
+      // 0. [V1.9.65] Identity do profissional logado
+      supabase.from('users').select('name, email, type').eq('id', professionalId).maybeSingle(),
+
       // 1. Pacientes ativos: distintos patient_id com appointments futuros não cancelados
       supabase
         .from('appointments')
@@ -156,8 +166,15 @@ export async function buildProfessionalContext(
         }
       : null
 
+    const identityRow = (identityRes.data ?? null) as { name: string | null; email: string | null; type: string | null } | null
+
     const ctx: ProfessionalContext = {
       role: 'professional',
+      identity: {
+        name: identityRow?.name ?? null,
+        email: identityRow?.email ?? null,
+        type: identityRow?.type ?? null,
+      },
       activePatientsCount: activePatientIds.size,
       todayAppointmentsCount: todayRows.length,
       todayAppointments: todayRows.slice(0, 5).map((r) => ({

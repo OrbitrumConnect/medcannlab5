@@ -20,6 +20,13 @@ import { supabase } from './supabase'
 
 export interface PatientContext {
   role: 'paciente'
+  // [V1.9.65] Identity unification — antes só admin tinha. Sem isso, paciente
+  // perguntando "sabe meu nome?" recebia resposta genérica.
+  identity: {
+    name: string | null
+    email: string | null
+    type: string | null
+  }
   daysOnPlatform: number | null
   assessmentsCount: number
   lastAssessmentAt: string | null // ISO date
@@ -39,10 +46,10 @@ export async function buildPatientContext(userId: string): Promise<PatientContex
   if (!userId) return null
 
   try {
-    // 1. Dados do próprio user (created_at + trial_ends_at)
+    // 1. Dados do próprio user (created_at + trial_ends_at + identity V1.9.65)
     const { data: userData } = await supabase
       .from('users')
-      .select('created_at, trial_ends_at')
+      .select('created_at, trial_ends_at, name, email, type')
       .eq('id', userId)
       .maybeSingle()
 
@@ -84,6 +91,11 @@ export async function buildPatientContext(userId: string): Promise<PatientContex
 
     const ctx: PatientContext = {
       role: 'paciente',
+      identity: {
+        name: (userData as any)?.name ?? null,
+        email: (userData as any)?.email ?? null,
+        type: (userData as any)?.type ?? null,
+      },
       daysOnPlatform,
       assessmentsCount: reports?.length ?? 0,
       lastAssessmentAt: reports?.[0]?.created_at ?? null,

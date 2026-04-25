@@ -21,6 +21,12 @@ import { supabase } from './supabase'
 
 export interface StudentContext {
   role: 'student'
+  // [V1.9.65] Identity unification
+  identity: {
+    name: string | null
+    email: string | null
+    type: string | null
+  }
   daysOnPlatform: number | null
   progress: {
     points: number
@@ -45,8 +51,8 @@ export async function buildStudentContext(userId: string): Promise<StudentContex
 
   try {
     const [userRes, profileRes, enrollmentsRes, lessonsRes, docsRes] = await Promise.all([
-      // 1. created_at do user (dias na plataforma)
-      supabase.from('users').select('created_at').eq('id', userId).maybeSingle(),
+      // 1. created_at do user + identity (V1.9.65)
+      supabase.from('users').select('created_at, name, email, type').eq('id', userId).maybeSingle(),
 
       // 2. Profile com progresso
       supabase
@@ -115,6 +121,11 @@ export async function buildStudentContext(userId: string): Promise<StudentContex
 
     const ctx: StudentContext = {
       role: 'student',
+      identity: {
+        name: (userRes.data as any)?.name ?? null,
+        email: (userRes.data as any)?.email ?? null,
+        type: (userRes.data as any)?.type ?? null,
+      },
       daysOnPlatform,
       progress,
       courses: {
