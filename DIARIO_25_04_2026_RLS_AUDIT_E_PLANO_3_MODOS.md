@@ -420,6 +420,204 @@ Resposta registrada para sessões futuras:
 
 ---
 
+# CONTINUAÇÃO MANHÃ 25/04 — V1.9.57 + DESCOBERTA ARQUITETURAL ISM
+
+## 18. V1.9.57 — AEC State Invalidate Pattern (3 camadas)
+
+Caso real: Carolina Campello (paciente Dr. Ricardo Valença) testou AEC ontem 24/04. Reportou hoje via Dr. Ricardo: Nôa fez 5 perguntas em um único turno violando phase lock V1.9.30.
+
+**Investigação revelou state inconsistente em `aec_assessment_state`:**
+```
+phase: 'COMPLETED'
+is_complete: false  ← GENERATED column = (completed_phases @> required_phases)
+missing: ['INITIAL_GREETING', 'OBJECTIVE_QUESTIONS', 'COMPLAINT_DETAILS']
+```
+
+**Cadeia de bug:**
+1. FSM não chamou `markPhaseCompleted()` para 3 fases
+2. `is_complete=false` PRA SEMPRE (até completed_phases ser corrigido)
+3. State residual nunca descartado
+4. Cada turno enviava `assessmentPhase: "COMPLETED"` ao Core
+5. Phase lock V1.9.30 (específico de COMPLAINT_DETAILS) JAMAIS aplicava
+6. GPT em modo livre → 5 perguntas agrupadas
+
+Os 4 sintomas reportados pelo GPT (perguntas múltiplas, sim/não, drift, perda pós-erro) são manifestações do MESMO bug arquitetural.
+
+### Princípio aplicado: "invalidate ≠ DELETE"
+
+Inicialmente propus DELETE do state como já tinha feito com Pedro Paciente ontem. **Erro arquitetural** — Carolina respondeu várias perguntas, dado clínico parcial estava em `data` jsonb. DELETE perderia tudo.
+
+GPT corrigiu: *"invalidate + preserve snapshot + restart controlado"*. Em sistema clínico, dado parcial tem valor — NUNCA destruir mesmo inconsistente.
+
+Memória `feedback_principio_clinico_destrutivo` salva. Memória `feedback_no_aggressive_removal` (já existia) reforçada.
+
+### 3 camadas implementadas (mitigate → detect → prevent)
+
+**Camada 1 — Recovery (cold start guard runtime):**
+- `clinicalAssessmentFlow.ts` `loadStateFromDB`: filtra `invalidated_at IS NULL` ao buscar state ativo
+- Detecta state com `phase=COMPLETED + is_complete=false + idade > 30min` (ajustado de 6h após Pedro confirmar AEC real é ~20min)
+- Snapshot completo em `noa_logs` antes de invalidar
+- UPDATE `invalidated_at + invalidation_reason` no banco
+- NÃO carrega state inválido → próximo turno cria nova sessão
+
+**Camada 2 — Observability (trigger SQL anomaly logger):**
+- Trigger `aec_state_anomaly_logger AFTER INSERT/UPDATE` em `aec_assessment_state`
+- Detecta `phase=COMPLETED + is_complete=false + invalidated_at=NULL`
+- Loga em `noa_logs` com `interaction_type='aec_state_anomaly'`
+- NÃO rejeita (preserva fluxo normal), apenas grita
+- **Permite Camada 3 ter telemetria viva** — saber quais branches do FSM precisam fix
+
+**Camada 3 — Prevention (FSM markPhaseCompleted audit):**
+- Pendente para V1.9.58 sessão dedicada
+- Com telemetria de C2 ativa, vira cirúrgico (não auditar 1500 linhas no escuro)
+- 3 fixes esperados: COMPLAINT_DETAILS, OBJECTIVE_QUESTIONS, INITIAL_GREETING
+
+### Migration retroativa Carolina
+
+Snapshot completo dos dados (queixa de cefaleia bem documentada — pulsátil na fronte, 2 dias, pior com luminosidade, melhora dormindo, dipirona esporádica para dor) preservado em `noa_logs`. State marcado `invalidated_at=now()`. **Próxima conexão dela inicia AEC limpa.**
+
+### View `v_aec_invalidated_recoverable`
+
+Permite Dr. Ricardo (ou qualquer profissional autorizado por RLS) visualizar TODAS as avaliações invalidadas com dado clínico parcial. Decisão clínica de formalizar como `clinical_report` ou retomar AEC fica com o médico.
+
+`security_invoker=on` — RLS audit gate (V1.9.50) confirmou 0 FAIL.
+
+### Versões deployadas (manhã 25/04)
+- V1.9.57 (commit `a6cbe7b`): cold start guard + trigger + retroativo
+- Tune (commit `5a4facb`): threshold 6h → 30min
+- View recoverable (commit `e6c911d`): v_aec_invalidated_recoverable
+
+## 19. Reframing arquitetural — GPT 25/04 manhã
+
+GPT trouxe formulação que mudou como pensamos sobre o backlog:
+
+> **Sistema NÃO está "incompleto".**
+> **Sistema é heterogêneo em maturidade por domínio.**
+> **Estratégia correta = nivelar domínios críticos, não "melhorar sistema inteiro".**
+
+**Frase-âncora:** *"sistema avançado com superfícies críticas ainda não unificadas"*.
+
+### Implicação operacional: horizontal antes de vertical
+
+Reordenação validada: **Identity unification (horizontal) antes de FSM C3 (vertical em AEC)**. Por quê:
+- Identity afeta TODOS os 4 buildXContext + ramificações de role + prompt builders
+- FSM C3 limitado à AEC, telemetria já coletando
+- Fix horizontal antes de vertical reduz retrabalho
+
+**Backlog priorizado registrado** em `project_estado_e_backlog_25_04_manha`:
+1. S4 JWT (segurança boundary)
+2. Identity unification (helper buildIdentity)
+3. FSM C3 (markPhaseCompleted com telemetria viva)
+4. ISM (camada arquitetural — ver próximo)
+5. Tests
+
+## 20. Bug X1 + descoberta arquitetural ISM (Interaction State Model)
+
+Teste 25/04 11:06: Pedro listou 40 documentos em blocos de 5, pediu o item 4 dizendo *"vamos no 4"* — Nôa interpretou como **fase 4 do FSM AEC** (COMPLAINT_DETAILS) em vez de **documento 4 da lista**.
+
+**Causa raiz arquitetural:** o estado conversacional "selecting_document" não existe no Core. Frontend renderiza lista numerada, mas o estado não chega ao Core como dado estruturado. GPT vê só "4" + history textual + system prompt extenso de AEC → escolhe match mais provável globalmente → fase do AEC vence.
+
+### GPT formalizou: ISM = camada arquitetural ausente
+
+> **Hoje o sistema tem FSM clínico, pipeline de relatório, consent gate — todos estruturados.**
+> **Mas NÃO tem FSM de interação conversacional não-clínica.**
+> **O Core decide significado por probabilidade GPT, não por estado determinístico.**
+
+### Os 5 bugs recentes são UMA classe única
+
+| Bug | Aparência | Realidade |
+|---|---|---|
+| Carolina state | "FSM AEC pulou markPhaseCompleted" | FSM clínico incompleto |
+| CONSENT mismatch | "UX mostra botões, backend bloqueou" | Estado intermediário ausente |
+| "vamos no 4" | "Bug de NLP" | **ISM ausente** |
+| DOC_DETECT fraco | "Regex permissiva" | Intent sem state context |
+| Scheduling Ricardo | "Entity resolution" | Estado sem context |
+
+**Não são 5 bugs separados. São 5 sintomas de 1 lacuna arquitetural.**
+
+### Salto arquitetural
+
+```
+ANTES: UI → text → GPT → interpretação probabilística
+DEPOIS: UI → structured interaction state → Core → constrained interpretation
+```
+
+Tradução: **transformar prompt engineering em state machine determinística**. Sai de "IA interpretativa" para "IA guiada por estado".
+
+### Estrutura proposta do payload
+
+```ts
+{
+  message: string,
+  conversation_state: {  // NOVO
+    mode: 'free_chat' | 'selecting_document' | 'awaiting_schedule'
+        | 'picking_professional' | 'consent_pending_block'
+        | 'aec_active' | ...,
+    context: { ... },
+    transitioned_at: string
+  },
+  // resto: assessmentPhase, conversationHistory, userContext
+}
+```
+
+### Princípio crítico (registrado)
+
+> **Se não implementar ISM, cada nova feature de UI vai gerar mais drift como Bug X1.**
+> **Sistema atual escala ambiguidade, não estrutura.**
+
+ISM **não é item 4 do backlog** — é **camada acima** que subsume itens 4 (CONSENT) e 6 (entity resolution) do antigo. Backlog encolhe de 8 → 6 itens efetivos.
+
+Memória `project_interaction_state_model_camada_fundacional` salva — pauta decisões futuras.
+
+## 21. Estado consolidado fim manhã 25/04
+
+### Versões deployadas no dia (12 commits)
+V1.9.47 → V1.9.48 → V1.9.49 → V1.9.50 → V1.9.51 → V1.9.52+53 → V1.9.54 → V1.9.55 → V1.9.56 → V1.9.57 (3 commits relacionados)
+
+### Memórias estruturantes criadas hoje
+1. `project_lessons_learned_rls_audit` — anti-falso-positivo RLS
+2. `project_identity_gap_25_04` — buildIdentity helper
+3. `feedback_postura_quebras_e_evolucao` — regressões trazem experiência
+4. `project_estados_intermediarios_25_04` — CONSENT_PENDING_BLOCKED
+5. `project_aec_residual_state_25_04` — 4 bugs paciente + V1.9.58
+6. `feedback_principio_clinico_destrutivo` — invalidate ≠ DELETE
+7. `project_estado_e_backlog_25_04_manha` — 8 vetores priorizados
+8. `project_context_drift_25_04_manha` — Bug X1
+9. **`project_interaction_state_model_camada_fundacional`** — ISM como camada arquitetural
+
+### Maturidade por domínio (auto-avaliação honesta)
+
+| Domínio | Maturidade | Justificativa |
+|---|---|---|
+| FSM clínico (AEC) | Alta | V1.9.30 phase lock + V1.9.57 invalidate pattern + telemetria ativa |
+| Pipeline de relatório | Alta | V1.9.23 idempotência + V1.9.38 consent gate + dual-write |
+| RLS / segurança schema | Alta | V1.9.47/48 unified + V1.9.50 audit gate no CI |
+| Persistência conversa | Alta | V1.9.55 patientData fix |
+| Observability | Média-alta | Trigger anomaly + noa_logs + payload_hash |
+| Identidade administrativa | Média | V1.9.52 admin OK; pro/patient/student sem identity |
+| **Segurança boundary (JWT)** | **Baixa** | `--no-verify-jwt` ainda em prod, founder hardcode salva |
+| **Interaction state (ISM)** | **Ausente** | Camada arquitetural não existe |
+| Test coverage | Baixa-média | 3 fluxos cobertos de ~20+ |
+
+**Tradução:** sistema avançado em domínios clínicos centrais, com 2 superfícies críticas (segurança boundary + interaction state) ainda não unificadas. Conforme princípio GPT: **heterogêneo em maturidade**.
+
+## 22. Selo manhã 25/04
+
+**Selo:** 25/04/2026 — V1.9.57 + ISM identification
+**Hash:** `state-invalidate-pattern-and-ism-formalization`
+**Versões deployadas no dia:** **12 (V1.9.47 → V1.9.57)**
+
+**Princípios reafirmados/emergentes manhã 25/04:**
+1. **Invalidate ≠ DELETE** em sistema clínico (dado parcial tem valor)
+2. **Sistema heterogêneo em maturidade** (não "incompleto" — formulação importa)
+3. **Horizontal antes de vertical** (Identity unifica antes de FSM C3 cirurgar)
+4. **Sistema atual escala ambiguidade, não estrutura** (princípio ISM)
+5. **5 bugs recentes = 1 classe arquitetural** (ISM ausente)
+
+**Tradução final:** sistema saiu de *"AEC quebra silenciosa"* (manhã pré-V1.9.57) para **"AEC quebra → trigger grita → invalidate preserva → médico recupera"** (defesa em profundidade ativa). E **ISM identificada como próxima camada fundacional** quando S4/Identity/FSM C3 estiverem fechados.
+
+---
+
 ## 13. Pós-script — Refinamento pós-GPT review (25/04 noite)
 
 Após o plano e o diário ficarem prontos, GPT trouxe 7 críticas substantivas. Todas aceitas. Esta seção é a memória das mudanças que ajustam o plano e a próxima sessão.
