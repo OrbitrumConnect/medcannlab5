@@ -1602,6 +1602,29 @@ Deno.serve(async (req: Request) => {
             )
         }
 
+        // [V1.9.66 ISM Fase 1] Observabilidade do ConversationState. Schema
+        // explícito chega via body.conversation_state; logamos pra validar em
+        // prod 24-48h antes de Fase 2 (Core respeitar estados críticos).
+        // Fail-open: erro não bloqueia o turno.
+        const ismState = body.conversation_state ?? null
+        if (ismState && typeof ismState === 'object') {
+            try {
+                await supabaseClient.from('noa_logs').insert({
+                    user_id: effectiveUserId,
+                    interaction_type: 'ism_state_observed',
+                    payload: {
+                        interaction_id,
+                        state: ismState,
+                        // metadata útil pra cruzar com bugs reportados
+                        message_preview: typeof message === 'string' ? message.slice(0, 80) : null,
+                        action: action ?? null,
+                    }
+                })
+            } catch (e) {
+                console.warn('[ISM Fase 1] Falha ao logar conversation_state (não bloqueia):', e)
+            }
+        }
+
         // 🧬 [TITAN 5.2.1] GATILHO MASTER CONSCIENTE (Pipeline Auditável)
         // O gatilho de finalização agora é soberano e não se baseia em "ecos" do próximo passo (nextQuestionHint)
         // que o frontend pode enviar de volta. Baseia-se apenas no comando direto ou tags no corpo da mensagem.

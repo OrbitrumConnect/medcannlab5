@@ -8,6 +8,7 @@ import { buildPatientContext } from './buildPatientContext'
 import { buildProfessionalContext } from './buildProfessionalContext'
 import { buildAdminContext } from './buildAdminContext'
 import { buildStudentContext } from './buildStudentContext'
+import { buildConversationState } from './conversationState'
 // Remocao da injecao manual para uso de File Search no Assistant API
 import MedCannLabAuditLogger from './MedCannLabAuditLogger'
 import { META_TAGS, stripClinicalTags } from '../constants/metaTags'
@@ -1947,6 +1948,20 @@ export class NoaResidentAI {
         }
       }
 
+      // [V1.9.66 ISM Fase 1] ConversationState — schema explícito do estado
+      // conversacional. Aditivo: campos já existem espalhados (assessmentPhase,
+      // aecSnapshot.consensusAgreed, aecPhysicianName), aqui consolidamos no
+      // formato contratual. Fase 1 = só observabilidade; comportamento do Core
+      // não muda.
+      const conversation_state = buildConversationState({
+        realRole: rawUser?.type || rawUser?.user_type,
+        aecPhase: currentPhase,
+        consensusAgreed: aecSnapshot?.consensusAgreed ?? null,
+        physicianViewingAs: aecPhysicianName ?? null,
+        viewingAsRole: null, // reservado pra Fase 2 (CC fix tipoVisual)
+        activeSlot: null,    // reservado pra Fase 3 (HH fix slot mapping)
+      })
+
       const payload = {
         message: userMessage,
         injected_context: injectedContext, // 🧪 [HOSPITAL-GRADE] O RAG viaja aqui, nunca na message.
@@ -1957,6 +1972,7 @@ export class NoaResidentAI {
         ...(aecFinalizationData ? { assessmentData: aecFinalizationData } : {}), // [V1.9.20] dados estruturados pra handleFinalizeAssessment
         userContext: userContextPayload, // [V1.9.8+V1.9.15] dados factuais por role (paciente/professional) ou null
         ui_context: uiContext,
+        conversation_state, // [V1.9.66 ISM Fase 1] schema explícito do estado conversacional
         patientData: {
           ...platformData,
           ...(userForCore ? { user: userForCore } : {}),
