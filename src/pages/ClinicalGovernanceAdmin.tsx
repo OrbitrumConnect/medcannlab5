@@ -145,7 +145,7 @@ export default function ClinicalGovernanceAdmin() {
     useEffect(() => { setCurrentPage(1) }, [search])
 
     return (
-        <div className="min-h-screen bg-[#050914] p-6 lg:p-10 font-sans text-slate-300">
+        <div className="min-h-screen bg-slate-950 p-6 lg:p-10 font-sans text-slate-300">
 
             {/* 1. Header Premium */}
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-12">
