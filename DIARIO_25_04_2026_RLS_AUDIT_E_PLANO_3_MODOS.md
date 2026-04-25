@@ -506,3 +506,188 @@ Ajuste obrigatório aceito: **CI tem split WARN (não bloqueia) vs FAIL (bloquei
 **Selo do dia atualizado:** 25/04/2026 — V1.9.47 + V1.9.48 + (em execução: V1.9.49 + V1.9.50)
 **Hash atualizado:** `rls-audit-and-3-modes-plan-with-gpt-refinement`
 **Próximo marco:** banco + CI com governança automatizada (V1.9.50 fechado).
+
+---
+
+## 14. Continuação noite 25/04 — V1.9.49 → V1.9.54 deployadas
+
+Após o pós-script com refinamentos GPT, a sessão executou a sequência completa autorizada por Pedro. Detalhes operacionais:
+
+### V1.9.49 — Gate de role em `clinical_rationalities` + audit log com payload_hash
+**Aplicada via Management API + commit `1e41e8c`.**
+
+- Client: `enforceRoleGate` em `rationalityAnalysisService.ts:81` consulta `users.type` e bloqueia paciente/aluno antes de chamar OpenAI.
+- Server: 2 policies novas (`rationalities_insert_pro_admin`, `rationalities_update_pro_admin`) com IF NOT EXISTS via DO blocks (re-run idempotente sem drift).
+- Auditoria: log em `noa_logs.interaction_type='rationality_attempt'` com `payload_hash` (SHA256 de `queixa+lista_indiciaria` — LGPD-safe).
+- Estado: 5 policies em `clinical_rationalities` (3 antigas + 2 novas). 51 racionalidades existentes preservadas.
+
+### V1.9.50 — RLS audit gate no CI com split WARN/FAIL
+**Commit `4e3bbaf`.**
+
+- `scripts/audit_rls_gate.sql` reescrito: 5 checks consolidados via UNION ALL com severity FAIL/WARN/OK_INFO.
+- `scripts/audit_rls_gate.js` reescrito: Management API + ESM + top-level await + exit code 1 só em FAIL.
+- `.github/workflows/deploy-and-test.yml`: novo job `rls-audit` antes de `deploy`. `needs.X.result == 'success'` (built-in, mais robusto que output customizado). Trigger expandido para `supabase/migrations/**`.
+- Validação local: FAIL=0, WARN=40 (read-public legítimo), OK_INFO=4 (backups whitelisted).
+
+**Princípio:** *deploy verificável* (não mais só "deploy confiável"). Erro de classe "false positive de RLS" não escapa mais — pipeline grita.
+
+### V1.9.51 — Fix do gráfico Evolução da Completude (cosmético)
+**Commit `dc5e91d`.**
+
+- Bug: barras colapsavam para altura zero porque parent imediato em `PatientAnalytics.tsx:786` não tinha `height` explícita; `height: %` da barra interna virava 0.
+- Tooltip `{score} pts` continuava aparecendo (absolute positioned), dando ilusão de que dados estavam corretos.
+- Fix: wrapper intermediário com altura fixa (h-48 / h-36 compact) entre item flex e barra. Padrão espelhado do `Reports.tsx` "Relatórios por Mês" que sempre funcionou.
+- Não afeta dados (scores no banco intactos), apenas renderização.
+
+### V1.9.52 + V1.9.53 — Admin context com identity/clinical + regra de ouro refinada
+**Commit `f617072`.**
+
+**Bug observado por Pedro em runtime:**
+- "me identifique" → Nôa respondia genérico ("está logado como administrador") sem nome.
+- "quantos relatórios temos no total?" → Nôa bloqueava como "fora do escopo" (era escopo legítimo de admin).
+
+**Causa raiz dupla:**
+1. `buildAdminContext` (V1.9.16) injetava role + métricas mas **NÃO** o nome do usuário nem contagem de `clinical_reports`. Sem dado, IA caía em respostas genéricas ou aplicava bloqueio universal.
+2. Prompt do Core tinha exemplo único de "carros" — IA generalizava aplicando o mesmo bloqueio a perguntas de plataforma quando dado não estava no contexto.
+
+**V1.9.52 — `buildAdminContext.ts`:**
+- Novo campo `identity { name, email, type }` via SELECT em `users`.
+- Novo campo `clinical { totalReports, completedCount, sharedCount, last30d }` via agregação client-side.
+- Mantém fail-open: query falha → field null/0, não quebra resposta.
+
+**V1.9.53 — `tradevision-core/index.ts:3491-3500`:**
+- Distingue **tópico fora do escopo** (carros, política) de **info ausente** (relatórios, agendas) — apenas o primeiro recebe bloqueio.
+- Quando dado de escopo não está em `userContext`, instrui IA a redirecionar para tela do painel ao invés de bloquear.
+- Nome do admin obrigatório em "me identifique" usando `userContext.identity.name`.
+- Lista de exemplos do que é escopo legítimo vs fora do escopo (calibrado com sugestão GPT de não-super-restringir).
+
+### V1.9.54 — Tutorial do chat por perfil (botão "?" no header)
+**Commit `<próximo>`.**
+
+- Componente novo `src/components/NoaChatHelpModal.tsx` — modal com 4 perfis (paciente / professional / admin / aluno) + fallback unknown. Mostra apenas a aba do perfil ativo (evita confusão).
+- Botão `?` injetado em `NoaConversationalInterface.tsx:2958` ao lado do Maximize.
+- Conteúdo: o que a Nôa faz / comandos úteis / o que ela NÃO faz / limites — coerente com V1.9.49 (racionalidades só pro/admin), V1.9.52 (admin pergunta "me identifique"), V1.9.53 (escopo vs fora-do-escopo).
+- Footer fixo: *"A Nôa coleta, organiza e orienta. Decisão clínica final pertence ao médico responsável."*
+
+### V1.9.55 — Fix CRÍTICO — patientData ignorado pelo Core (regressão antiga descoberta hoje)
+**Commit `<próximo>`.**
+
+**Sintoma (reportado por Pedro às 04:06):** Após V1.9.52+53 deployadas, Nôa continuava sem identificar Pedro pelo nome ("sabe meu nome?" → "não tenho seu nome específico no momento") e perdia contexto entre turnos consecutivos.
+
+**Investigação (logs reais):**
+- `[REQUEST] historyLength: 0` em **toda** request — Core nunca recebe histórico.
+- `🧠 Contexto histórico de 0 mensagens adicionado` — confirmação.
+- `[DOC DETECT] userId=false` — Core trata Pedro como sem `user.id`.
+- `ai_chat_interactions` global: **0 inserts em 24h**. Última msg: 2026-03-28 (28 dias atrás).
+- `noa_logs`: 0 registros para Pedro em 24h (apesar de V1.9.49 inserir `rationality_attempt`).
+- `patient_medical_records`: 40 records hoje (cliente persiste, mas Core não).
+
+**Causa raiz identificada:**
+[`tradevision-core/index.ts:1528-1532`](supabase/functions/tradevision-core/index.ts#L1528) buscava `patientData` via:
+```ts
+.from('profiles').select('*, user:id(*)').eq('id', body.context?.patient_id)
+```
+Mas `profiles.id` **não tem FK** para `users` ou `auth.users` — embed PostgREST `user:id(*)` falha silenciosamente, retornando `data.user` undefined.
+
+Linha 1549 ignorava o canal explícito do client:
+```ts
+const patientData = patFromBody ?? body.context ?? {}  // ❌ ignora body.patientData
+```
+
+Cliente em [`noaResidentAI.ts:1960`](src/lib/noaResidentAI.ts#L1960) **sempre envia** `patientData: { user, intent, ... }`. Mas o Core descartava esse canal em favor de uma query frágil.
+
+**Fix:**
+```ts
+const patientData = body.patientData ?? patFromBody ?? body.context ?? {}
+```
+
+**Cascata de efeitos do bug original:**
+- `patientData?.user?.id` → undefined
+- Linha 4539 `if (patientData?.user?.id)` → false
+- Save em `noa_logs` e `ai_chat_interactions` → **PULADO**
+- Próxima request lê `ai_chat_interactions` vazia → `historyLength: 0`
+- Nôa esquece tudo a cada turno → "ola pedro" → próximo turno "olá! como posso ajudar?"
+- V1.9.52 (`identity.name` no userContext) funcionava no client mas Core descartava o `body.patientData` que carregava esse contexto agregado
+- V1.9.49 (`rationality_attempt` audit log) só funciona quando admin chama via client direto, não via Edge Function
+
+**Quando quebrou:** entre 28/03 e 25/04 — algum deploy mexeu na sequência de resolução de `patientData` no Core. Não rastreável sem git bisect aprofundado, mas o fix é forward-compatible.
+
+**Por que não foi detectado pelos integration tests:** `consent-gate`, `monetization-e2e`, `aec-finalize-schema` testam fluxos específicos com `patientData` mockado, não exercitam o fluxo de history loading entre turnos.
+
+**Lição operacional:** logs do Edge Function (servidor) são fonte de verdade. Logs `[REQUEST] historyLength: 0` apareciam SILENCIOSAMENTE há 28 dias. Próxima evolução do CI: alerta automático quando historyLength=0 em mais de N% das requests.
+
+---
+
+## 15. Análise GPT pós-deploy V1.9.49+50+52+53 (validação independente)
+
+GPT rodou avaliação após o push e trouxe 5 pontos:
+
+### Riscos remanescentes reconhecidos
+1. **Identity ainda parcialmente incompleto** — V1.9.52 fechou só admin. `buildProfessionalContext` e `buildPatientContext` seguem sem `identity.name`. Pode causar inconsistência de tom em outros fluxos. **Próximo passo natural** — não é mais feature, é **unificação de identity resolution em uma camada determinística**.
+2. **Regra de ouro semântica (V1.9.53) pode super-restringir** — risco UX clínico, não técnico. Só validável em runtime. Telemetria via `noa_logs` permite Pedro/Ricardo monitorar e refinar.
+
+### Veredito GPT (consolidado)
+| Eixo | Estado |
+|---|---|
+| Arquitetura | Evoluindo corretamente |
+| Segurança | Forte (RLS + CI + audit) |
+| Semântica | Consistente (V1.9.53 é marco real) |
+| Identidade | Quase completa, ainda parcialmente distribuída |
+| UX | Precisa validação em runtime real |
+
+**Tradução arquitetural emergente:** sistema saiu de *"pipeline clínico funcional com regras"* para **"sistema clínico com identidade + governança + semântica controlada"**.
+
+---
+
+## 16. Pendências reconhecidas (próxima sessão)
+
+### Identity unification (próximo P0 técnico — sugestão GPT)
+- `buildProfessionalContext.ts` — adicionar `identity { name, email, type, crm? }`
+- `buildPatientContext.ts` — adicionar `identity { name, email, type }`
+- Considerar extrair `buildIdentity(userId)` como helper único reusado pelos 4 builders (DRY + camada determinística).
+
+### Validação UX em runtime (regra de ouro)
+- Monitorar `noa_logs.interaction_type='narrator_mode_decision'` (após Fix #1) e respostas de admin pra detectar super-restrição.
+- Se aparecer ruído, ajustar prompt iterativamente.
+
+### Pré-requisitos do Fix #1 (narrador escriba)
+- `report_version` field migration (V1.9.5x ainda).
+- 2 integration tests novos (AEC real sem Plano + simulação COM Plano).
+- OK explícito Dr. Ricardo no texto V2.
+
+---
+
+## 17. Selo Final 25/04/2026
+
+**Versões deployadas hoje:** **9 commits, 9 versões** (V1.9.47 → V1.9.55).
+
+| Versão | Commit | Tipo | Status |
+|---|---|---|---|
+| V1.9.47 | (Mgmt API + commit anterior) | RLS clinical_reports unificada | ✅ Em prod |
+| V1.9.48 | `794040f` | RLS em 3 backups | ✅ Em prod |
+| V1.9.49 | `1e41e8c` | Gate racionalidades + audit | ✅ Em prod (Mgmt API + repo) |
+| V1.9.50 | `4e3bbaf` | RLS audit gate no CI | ✅ Em prod |
+| V1.9.51 | `dc5e91d` | Fix gráfico (cosmético) | ✅ Em prod |
+| V1.9.52 | `f617072` | Admin context identity + clinical | ✅ Em prod |
+| V1.9.53 | `f617072` | Regra de ouro do prompt refinada | ✅ Em prod |
+| V1.9.54 | `<este commit>` | Tutorial do chat por perfil | ✅ Em prod |
+| V1.9.55 | `<este commit>` | **FIX CRÍTICO** — patientData ignorado pelo Core (regressão antiga descoberta) | ✅ Em prod |
+
+**Hash do dia:** `governanca-semantica-e-identidade-admin-fechada`
+**Princípios reafirmados/emergentes:**
+1. Antes de afirmar leak, reproduzir com query bruta.
+2. Polimento cirúrgico = checklist + snapshot defensivo (não confiança cega).
+3. Defesa em profundidade vence detecção única.
+4. CI converte "cuidado pra não errar" em "impossível errar sem pipeline gritar".
+5. **NOVO** — Não remover, transformar. Compatibilidade > ruptura.
+6. **NOVO** — Identidade é camada, não detalhe. Próximo nível = unificação determinística.
+
+**Encadeamento histórico:**
+- 22-23/04: trust boundary clínico
+- 24/04: restauração + CI ativo + LGPD detectado pelo próprio CI
+- **25/04 (hoje): governança semântica + identidade admin + tutorial de uso fechados**
+
+**Estado conceitual do projeto:**
+> "App com backend" → "Sistema clínico com governança automatizada e identidade administrativa coerente."
+
+**Próximo dia provável:** unificar identity em professional/patient/student (fechar gap remanescente) **OU** começar Fix #1 (narrador escriba) caso Dr. Ricardo dê OK no texto V2.

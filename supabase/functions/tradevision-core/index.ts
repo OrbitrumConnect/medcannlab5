@@ -1546,7 +1546,27 @@ Deno.serve(async (req: Request) => {
         let assessmentPhase = assessmentPhaseFromBody || null
         let nextQuestionHint = nextQuestionHintFromBody || '' // Restaurando a variável faltante
         const conversationHistory = convFromBody ?? body.history ?? []
-        const patientData = patFromBody ?? body.context ?? {}
+        // [V1.9.55] FIX REGRESSÃO 25/04 — `patientData` precisa vir PRIMEIRO de
+        // `body.patientData` (canal explícito que o client preenche em
+        // noaResidentAI.ts:1960 com {user, intent, ...}).
+        //
+        // Antes: `patFromBody ?? body.context ?? {}` — `patFromBody` vinha de
+        // SELECT em profiles com embed `user:id(*)`. Mas `profiles.id` não tem
+        // FK pra users/auth.users, então o embed PostgREST falha e
+        // `patientData.user` chega undefined. Resultado: linha 4539
+        // `if (patientData?.user?.id)` = falsy → save em noa_logs e
+        // ai_chat_interactions PULADO → history sempre vazia → Nôa esquece
+        // contexto a cada turno.
+        //
+        // Fix: priorizar `body.patientData` (que o client SEMPRE envia
+        // estruturado). Manter fallback no `patFromBody` (caso paciente
+        // anônimo) e `body.context` para retrocompat.
+        //
+        // Sintoma corrigido: Pedro pergunta "sabe meu nome?" → Nôa responde
+        // com nome via userContext.identity.name (V1.9.52). AEC não esquece
+        // mais turnos anteriores. Prontuário em ai_chat_interactions volta a
+        // popular.
+        const patientData = body.patientData ?? patFromBody ?? body.context ?? {}
         const professionalId = appointmentData?.professional_id || patientData?.professional_id || 'system-global'
         const jwtUserIdFromToken = jwtUserId // do JWT
         const effectiveUserId = jwtUserIdFromToken || patientData?.user?.id
