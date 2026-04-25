@@ -14,104 +14,63 @@ export type Database = {
   }
   public: {
     Tables: {
-      abertura_exponencial: {
-        Row: {
-          contexto_emocional: string | null
-          expectativas: string | null
-          id: number
-          identificacao: string | null
-          motivo_consulta: string | null
-          paciente_id: string | null
-          queixa_principal: string | null
-          queixas: Json | null
-          timestamp: string | null
-        }
-        Insert: {
-          contexto_emocional?: string | null
-          expectativas?: string | null
-          id?: number
-          identificacao?: string | null
-          motivo_consulta?: string | null
-          paciente_id?: string | null
-          queixa_principal?: string | null
-          queixas?: Json | null
-          timestamp?: string | null
-        }
-        Update: {
-          contexto_emocional?: string | null
-          expectativas?: string | null
-          id?: number
-          identificacao?: string | null
-          motivo_consulta?: string | null
-          paciente_id?: string | null
-          queixa_principal?: string | null
-          queixas?: Json | null
-          timestamp?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "abertura_exponencial_paciente_id_fkey"
-            columns: ["paciente_id"]
-            isOneToOne: false
-            referencedRelation: "pacientes"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "abertura_exponencial_paciente_id_fkey"
-            columns: ["paciente_id"]
-            isOneToOne: false
-            referencedRelation: "v_contexto_longitudinal"
-            referencedColumns: ["paciente_id"]
-          },
-          {
-            foreignKeyName: "abertura_exponencial_paciente_id_fkey"
-            columns: ["paciente_id"]
-            isOneToOne: false
-            referencedRelation: "v_interacoes_recentes"
-            referencedColumns: ["paciente_id"]
-          },
-          {
-            foreignKeyName: "abertura_exponencial_paciente_id_fkey"
-            columns: ["paciente_id"]
-            isOneToOne: false
-            referencedRelation: "v_paciente_completo"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       aec_assessment_state: {
         Row: {
+          completed_phases: string[]
+          consent_at: string | null
+          consent_given: boolean
           created_at: string
           current_question_index: number
           data: Json
           id: string
           interrupted_from_phase: string | null
+          invalidated_at: string | null
+          invalidation_reason: string | null
+          is_complete: boolean | null
           last_update: string
           phase: string
+          phase_iteration_count: number
+          required_phases: string[]
           started_at: string
           user_id: string
           waiting_for_more: boolean
         }
         Insert: {
+          completed_phases?: string[]
+          consent_at?: string | null
+          consent_given?: boolean
           created_at?: string
           current_question_index?: number
           data?: Json
           id?: string
           interrupted_from_phase?: string | null
+          invalidated_at?: string | null
+          invalidation_reason?: string | null
+          is_complete?: boolean | null
           last_update?: string
           phase?: string
+          phase_iteration_count?: number
+          required_phases?: string[]
           started_at?: string
           user_id: string
           waiting_for_more?: boolean
         }
         Update: {
+          completed_phases?: string[]
+          consent_at?: string | null
+          consent_given?: boolean
           created_at?: string
           current_question_index?: number
           data?: Json
           id?: string
           interrupted_from_phase?: string | null
+          invalidated_at?: string | null
+          invalidation_reason?: string | null
+          is_complete?: boolean | null
           last_update?: string
           phase?: string
+          phase_iteration_count?: number
+          required_phases?: string[]
           started_at?: string
           user_id?: string
           waiting_for_more?: boolean
@@ -619,171 +578,6 @@ export type Database = {
           updated_at?: string | null
         }
         Relationships: []
-      }
-      assessment_sharing: {
-        Row: {
-          assessment_id: string | null
-          consent_date: string | null
-          consent_expiry_date: string | null
-          created_at: string | null
-          id: string
-          notes: string | null
-          patient_consent: boolean | null
-          patient_id: string | null
-          shared_at: string | null
-          shared_by: string | null
-          shared_with_eduardo_faveret: boolean | null
-          shared_with_ricardo_valenca: boolean | null
-          updated_at: string | null
-        }
-        Insert: {
-          assessment_id?: string | null
-          consent_date?: string | null
-          consent_expiry_date?: string | null
-          created_at?: string | null
-          id?: string
-          notes?: string | null
-          patient_consent?: boolean | null
-          patient_id?: string | null
-          shared_at?: string | null
-          shared_by?: string | null
-          shared_with_eduardo_faveret?: boolean | null
-          shared_with_ricardo_valenca?: boolean | null
-          updated_at?: string | null
-        }
-        Update: {
-          assessment_id?: string | null
-          consent_date?: string | null
-          consent_expiry_date?: string | null
-          created_at?: string | null
-          id?: string
-          notes?: string | null
-          patient_consent?: boolean | null
-          patient_id?: string | null
-          shared_at?: string | null
-          shared_by?: string | null
-          shared_with_eduardo_faveret?: boolean | null
-          shared_with_ricardo_valenca?: boolean | null
-          updated_at?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "assessment_sharing_assessment_id_fkey"
-            columns: ["assessment_id"]
-            isOneToOne: false
-            referencedRelation: "imre_assessments"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "assessment_sharing_assessment_id_fkey"
-            columns: ["assessment_id"]
-            isOneToOne: false
-            referencedRelation: "patient_assessments"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "assessment_sharing_patient_id_fkey"
-            columns: ["patient_id"]
-            isOneToOne: false
-            referencedRelation: "v_auth_activity"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "assessment_sharing_patient_id_fkey"
-            columns: ["patient_id"]
-            isOneToOne: false
-            referencedRelation: "v_user_points_balance"
-            referencedColumns: ["user_id"]
-          },
-          {
-            foreignKeyName: "assessment_sharing_shared_by_fkey"
-            columns: ["shared_by"]
-            isOneToOne: false
-            referencedRelation: "v_auth_activity"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "assessment_sharing_shared_by_fkey"
-            columns: ["shared_by"]
-            isOneToOne: false
-            referencedRelation: "v_user_points_balance"
-            referencedColumns: ["user_id"]
-          },
-        ]
-      }
-      avaliacoes_renais: {
-        Row: {
-          acido_urico: number | null
-          acr: number | null
-          creatinina: number | null
-          egfr: number | null
-          eletrolitos: Json | null
-          glicose: number | null
-          id: number
-          paciente_id: string | null
-          risco_drc: string | null
-          timestamp: string | null
-          ultrassom_renal: string | null
-          ureia: number | null
-        }
-        Insert: {
-          acido_urico?: number | null
-          acr?: number | null
-          creatinina?: number | null
-          egfr?: number | null
-          eletrolitos?: Json | null
-          glicose?: number | null
-          id?: number
-          paciente_id?: string | null
-          risco_drc?: string | null
-          timestamp?: string | null
-          ultrassom_renal?: string | null
-          ureia?: number | null
-        }
-        Update: {
-          acido_urico?: number | null
-          acr?: number | null
-          creatinina?: number | null
-          egfr?: number | null
-          eletrolitos?: Json | null
-          glicose?: number | null
-          id?: number
-          paciente_id?: string | null
-          risco_drc?: string | null
-          timestamp?: string | null
-          ultrassom_renal?: string | null
-          ureia?: number | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "avaliacoes_renais_paciente_id_fkey"
-            columns: ["paciente_id"]
-            isOneToOne: false
-            referencedRelation: "pacientes"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "avaliacoes_renais_paciente_id_fkey"
-            columns: ["paciente_id"]
-            isOneToOne: false
-            referencedRelation: "v_contexto_longitudinal"
-            referencedColumns: ["paciente_id"]
-          },
-          {
-            foreignKeyName: "avaliacoes_renais_paciente_id_fkey"
-            columns: ["paciente_id"]
-            isOneToOne: false
-            referencedRelation: "v_interacoes_recentes"
-            referencedColumns: ["paciente_id"]
-          },
-          {
-            foreignKeyName: "avaliacoes_renais_paciente_id_fkey"
-            columns: ["paciente_id"]
-            isOneToOne: false
-            referencedRelation: "v_paciente_completo"
-            referencedColumns: ["id"]
-          },
-        ]
       }
       base_conhecimento: {
         Row: {
@@ -1468,74 +1262,6 @@ export type Database = {
           },
         ]
       }
-      clinical_integration: {
-        Row: {
-          assessment_id: string | null
-          clinical_data: Json
-          clinician_notes: string | null
-          follow_up_plan: Json | null
-          id: string
-          integration_date: string | null
-          risk_assessment: Json | null
-          status: string | null
-          therapeutic_recommendations: Json | null
-          user_id: string | null
-        }
-        Insert: {
-          assessment_id?: string | null
-          clinical_data: Json
-          clinician_notes?: string | null
-          follow_up_plan?: Json | null
-          id?: string
-          integration_date?: string | null
-          risk_assessment?: Json | null
-          status?: string | null
-          therapeutic_recommendations?: Json | null
-          user_id?: string | null
-        }
-        Update: {
-          assessment_id?: string | null
-          clinical_data?: Json
-          clinician_notes?: string | null
-          follow_up_plan?: Json | null
-          id?: string
-          integration_date?: string | null
-          risk_assessment?: Json | null
-          status?: string | null
-          therapeutic_recommendations?: Json | null
-          user_id?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "clinical_integration_assessment_id_fkey"
-            columns: ["assessment_id"]
-            isOneToOne: false
-            referencedRelation: "imre_assessments"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "clinical_integration_assessment_id_fkey"
-            columns: ["assessment_id"]
-            isOneToOne: false
-            referencedRelation: "patient_assessments"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "clinical_integration_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "v_auth_activity"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "clinical_integration_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "v_user_points_balance"
-            referencedColumns: ["user_id"]
-          },
-        ]
-      }
       clinical_kpis: {
         Row: {
           assessment_date: string
@@ -1732,6 +1458,8 @@ export type Database = {
       clinical_reports: {
         Row: {
           assessment_id: string | null
+          consent_at: string | null
+          consent_given: boolean
           content: Json
           created_at: string | null
           doctor_id: string | null
@@ -1756,6 +1484,8 @@ export type Database = {
         }
         Insert: {
           assessment_id?: string | null
+          consent_at?: string | null
+          consent_given?: boolean
           content: Json
           created_at?: string | null
           doctor_id?: string | null
@@ -1780,6 +1510,8 @@ export type Database = {
         }
         Update: {
           assessment_id?: string | null
+          consent_at?: string | null
+          consent_given?: boolean
           content?: Json
           created_at?: string | null
           doctor_id?: string | null
@@ -1839,6 +1571,45 @@ export type Database = {
             referencedColumns: ["user_id"]
           },
         ]
+      }
+      clinical_reports_consent_backup_v1_9_39: {
+        Row: {
+          consent_at: string | null
+          consent_given: boolean | null
+          created_at: string | null
+          id: string | null
+        }
+        Insert: {
+          consent_at?: string | null
+          consent_given?: boolean | null
+          created_at?: string | null
+          id?: string | null
+        }
+        Update: {
+          consent_at?: string | null
+          consent_given?: boolean | null
+          created_at?: string | null
+          id?: string | null
+        }
+        Relationships: []
+      }
+      clinical_reports_content_backup_24_04: {
+        Row: {
+          backed_up_at: string | null
+          content_before: Json | null
+          id: string | null
+        }
+        Insert: {
+          backed_up_at?: string | null
+          content_before?: Json | null
+          id?: string | null
+        }
+        Update: {
+          backed_up_at?: string | null
+          content_before?: Json | null
+          id?: string | null
+        }
+        Relationships: []
       }
       clinics: {
         Row: {
@@ -2070,65 +1841,6 @@ export type Database = {
           version?: number | null
         }
         Relationships: []
-      }
-      contexto_longitudinal: {
-        Row: {
-          consultas_profissionais: Json | null
-          evolucao_exames: Json | null
-          evolucao_medicamentos: Json | null
-          evolucao_sintomas: Json | null
-          id: number
-          paciente_id: string | null
-          timestamp: string | null
-        }
-        Insert: {
-          consultas_profissionais?: Json | null
-          evolucao_exames?: Json | null
-          evolucao_medicamentos?: Json | null
-          evolucao_sintomas?: Json | null
-          id?: number
-          paciente_id?: string | null
-          timestamp?: string | null
-        }
-        Update: {
-          consultas_profissionais?: Json | null
-          evolucao_exames?: Json | null
-          evolucao_medicamentos?: Json | null
-          evolucao_sintomas?: Json | null
-          id?: number
-          paciente_id?: string | null
-          timestamp?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "contexto_longitudinal_paciente_id_fkey"
-            columns: ["paciente_id"]
-            isOneToOne: false
-            referencedRelation: "pacientes"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "contexto_longitudinal_paciente_id_fkey"
-            columns: ["paciente_id"]
-            isOneToOne: false
-            referencedRelation: "v_contexto_longitudinal"
-            referencedColumns: ["paciente_id"]
-          },
-          {
-            foreignKeyName: "contexto_longitudinal_paciente_id_fkey"
-            columns: ["paciente_id"]
-            isOneToOne: false
-            referencedRelation: "v_interacoes_recentes"
-            referencedColumns: ["paciente_id"]
-          },
-          {
-            foreignKeyName: "contexto_longitudinal_paciente_id_fkey"
-            columns: ["paciente_id"]
-            isOneToOne: false
-            referencedRelation: "v_paciente_completo"
-            referencedColumns: ["id"]
-          },
-        ]
       }
       conversation_ratings: {
         Row: {
@@ -2404,62 +2116,6 @@ export type Database = {
         }
         Relationships: []
       }
-      dados_imre_coletados: {
-        Row: {
-          bloco_id: number
-          id: number
-          paciente_id: string | null
-          pergunta: string
-          resposta: string
-          timestamp: string | null
-        }
-        Insert: {
-          bloco_id: number
-          id?: number
-          paciente_id?: string | null
-          pergunta: string
-          resposta: string
-          timestamp?: string | null
-        }
-        Update: {
-          bloco_id?: number
-          id?: number
-          paciente_id?: string | null
-          pergunta?: string
-          resposta?: string
-          timestamp?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "dados_imre_coletados_paciente_id_fkey"
-            columns: ["paciente_id"]
-            isOneToOne: false
-            referencedRelation: "pacientes"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "dados_imre_coletados_paciente_id_fkey"
-            columns: ["paciente_id"]
-            isOneToOne: false
-            referencedRelation: "v_contexto_longitudinal"
-            referencedColumns: ["paciente_id"]
-          },
-          {
-            foreignKeyName: "dados_imre_coletados_paciente_id_fkey"
-            columns: ["paciente_id"]
-            isOneToOne: false
-            referencedRelation: "v_interacoes_recentes"
-            referencedColumns: ["paciente_id"]
-          },
-          {
-            foreignKeyName: "dados_imre_coletados_paciente_id_fkey"
-            columns: ["paciente_id"]
-            isOneToOne: false
-            referencedRelation: "v_paciente_completo"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       debates: {
         Row: {
           author_id: string | null
@@ -2513,375 +2169,6 @@ export type Database = {
           votes?: Json | null
         }
         Relationships: []
-      }
-      desenvolvimento_indiciario: {
-        Row: {
-          alergias_alimentos: Json | null
-          alergias_medicamentos: Json | null
-          alergias_outras: Json | null
-          habitos_alimentacao: string | null
-          habitos_contexto_social: string | null
-          habitos_exercicios: string | null
-          habitos_sono: string | null
-          habitos_trabalho: string | null
-          hda_caracteristicas: string | null
-          hda_evolucao: string | null
-          hda_fatores_moduladores: string | null
-          hda_impacto_funcional: string | null
-          hda_inicio: string | null
-          hda_tratamentos_anteriores: Json | null
-          historia_cirurgias: Json | null
-          historia_doencas_previas: Json | null
-          historia_familiar_doencas: Json | null
-          historia_familiar_padroes: Json | null
-          historia_hospitalizacoes: Json | null
-          id: number
-          medicamentos_anteriores: Json | null
-          medicamentos_atuais: Json | null
-          medicamentos_suplementos: Json | null
-          paciente_id: string | null
-          timestamp: string | null
-        }
-        Insert: {
-          alergias_alimentos?: Json | null
-          alergias_medicamentos?: Json | null
-          alergias_outras?: Json | null
-          habitos_alimentacao?: string | null
-          habitos_contexto_social?: string | null
-          habitos_exercicios?: string | null
-          habitos_sono?: string | null
-          habitos_trabalho?: string | null
-          hda_caracteristicas?: string | null
-          hda_evolucao?: string | null
-          hda_fatores_moduladores?: string | null
-          hda_impacto_funcional?: string | null
-          hda_inicio?: string | null
-          hda_tratamentos_anteriores?: Json | null
-          historia_cirurgias?: Json | null
-          historia_doencas_previas?: Json | null
-          historia_familiar_doencas?: Json | null
-          historia_familiar_padroes?: Json | null
-          historia_hospitalizacoes?: Json | null
-          id?: number
-          medicamentos_anteriores?: Json | null
-          medicamentos_atuais?: Json | null
-          medicamentos_suplementos?: Json | null
-          paciente_id?: string | null
-          timestamp?: string | null
-        }
-        Update: {
-          alergias_alimentos?: Json | null
-          alergias_medicamentos?: Json | null
-          alergias_outras?: Json | null
-          habitos_alimentacao?: string | null
-          habitos_contexto_social?: string | null
-          habitos_exercicios?: string | null
-          habitos_sono?: string | null
-          habitos_trabalho?: string | null
-          hda_caracteristicas?: string | null
-          hda_evolucao?: string | null
-          hda_fatores_moduladores?: string | null
-          hda_impacto_funcional?: string | null
-          hda_inicio?: string | null
-          hda_tratamentos_anteriores?: Json | null
-          historia_cirurgias?: Json | null
-          historia_doencas_previas?: Json | null
-          historia_familiar_doencas?: Json | null
-          historia_familiar_padroes?: Json | null
-          historia_hospitalizacoes?: Json | null
-          id?: number
-          medicamentos_anteriores?: Json | null
-          medicamentos_atuais?: Json | null
-          medicamentos_suplementos?: Json | null
-          paciente_id?: string | null
-          timestamp?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "desenvolvimento_indiciario_paciente_id_fkey"
-            columns: ["paciente_id"]
-            isOneToOne: false
-            referencedRelation: "pacientes"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "desenvolvimento_indiciario_paciente_id_fkey"
-            columns: ["paciente_id"]
-            isOneToOne: false
-            referencedRelation: "v_contexto_longitudinal"
-            referencedColumns: ["paciente_id"]
-          },
-          {
-            foreignKeyName: "desenvolvimento_indiciario_paciente_id_fkey"
-            columns: ["paciente_id"]
-            isOneToOne: false
-            referencedRelation: "v_interacoes_recentes"
-            referencedColumns: ["paciente_id"]
-          },
-          {
-            foreignKeyName: "desenvolvimento_indiciario_paciente_id_fkey"
-            columns: ["paciente_id"]
-            isOneToOne: false
-            referencedRelation: "v_paciente_completo"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      dev_vivo_audit: {
-        Row: {
-          action: string
-          change_id: string | null
-          created_at: string | null
-          data_type: string | null
-          id: string
-          ip_address: unknown
-          request_body: Json | null
-          response_status: number | null
-          user_agent: string | null
-          user_id: string | null
-        }
-        Insert: {
-          action: string
-          change_id?: string | null
-          created_at?: string | null
-          data_type?: string | null
-          id?: string
-          ip_address?: unknown
-          request_body?: Json | null
-          response_status?: number | null
-          user_agent?: string | null
-          user_id?: string | null
-        }
-        Update: {
-          action?: string
-          change_id?: string | null
-          created_at?: string | null
-          data_type?: string | null
-          id?: string
-          ip_address?: unknown
-          request_body?: Json | null
-          response_status?: number | null
-          user_agent?: string | null
-          user_id?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "dev_vivo_audit_change_id_fkey"
-            columns: ["change_id"]
-            isOneToOne: false
-            referencedRelation: "dev_vivo_changes"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "dev_vivo_audit_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "v_auth_activity"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "dev_vivo_audit_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "v_user_points_balance"
-            referencedColumns: ["user_id"]
-          },
-        ]
-      }
-      dev_vivo_changes: {
-        Row: {
-          applied_at: string | null
-          change_type: string
-          created_at: string | null
-          error_message: string | null
-          file_path: string
-          id: string
-          new_content: string | null
-          old_content: string | null
-          reason: string | null
-          rollback_reason: string | null
-          rolled_back_at: string | null
-          session_id: string
-          signature: string | null
-          status: string | null
-          updated_at: string | null
-          user_id: string
-        }
-        Insert: {
-          applied_at?: string | null
-          change_type: string
-          created_at?: string | null
-          error_message?: string | null
-          file_path: string
-          id?: string
-          new_content?: string | null
-          old_content?: string | null
-          reason?: string | null
-          rollback_reason?: string | null
-          rolled_back_at?: string | null
-          session_id: string
-          signature?: string | null
-          status?: string | null
-          updated_at?: string | null
-          user_id: string
-        }
-        Update: {
-          applied_at?: string | null
-          change_type?: string
-          created_at?: string | null
-          error_message?: string | null
-          file_path?: string
-          id?: string
-          new_content?: string | null
-          old_content?: string | null
-          reason?: string | null
-          rollback_reason?: string | null
-          rolled_back_at?: string | null
-          session_id?: string
-          signature?: string | null
-          status?: string | null
-          updated_at?: string | null
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "dev_vivo_changes_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "v_auth_activity"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "dev_vivo_changes_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "v_user_points_balance"
-            referencedColumns: ["user_id"]
-          },
-        ]
-      }
-      dev_vivo_diagnostics: {
-        Row: {
-          api_calls: Json | null
-          component_props: Json | null
-          component_state: Json | null
-          created_at: string | null
-          current_component: string | null
-          current_route: string | null
-          id: string
-          memory_usage: number | null
-          network_latency: number | null
-          query_params: Json | null
-          realtime_subscriptions: Json | null
-          recent_errors: Json | null
-          recent_warnings: Json | null
-          render_time: number | null
-          route_params: Json | null
-          session_id: string
-          supabase_connections: Json | null
-        }
-        Insert: {
-          api_calls?: Json | null
-          component_props?: Json | null
-          component_state?: Json | null
-          created_at?: string | null
-          current_component?: string | null
-          current_route?: string | null
-          id?: string
-          memory_usage?: number | null
-          network_latency?: number | null
-          query_params?: Json | null
-          realtime_subscriptions?: Json | null
-          recent_errors?: Json | null
-          recent_warnings?: Json | null
-          render_time?: number | null
-          route_params?: Json | null
-          session_id: string
-          supabase_connections?: Json | null
-        }
-        Update: {
-          api_calls?: Json | null
-          component_props?: Json | null
-          component_state?: Json | null
-          created_at?: string | null
-          current_component?: string | null
-          current_route?: string | null
-          id?: string
-          memory_usage?: number | null
-          network_latency?: number | null
-          query_params?: Json | null
-          realtime_subscriptions?: Json | null
-          recent_errors?: Json | null
-          recent_warnings?: Json | null
-          render_time?: number | null
-          route_params?: Json | null
-          session_id?: string
-          supabase_connections?: Json | null
-        }
-        Relationships: []
-      }
-      dev_vivo_sessions: {
-        Row: {
-          can_access_real_data: boolean | null
-          can_modify_code: boolean | null
-          can_modify_database: boolean | null
-          created_at: string | null
-          current_component: string | null
-          current_route: string | null
-          expires_at: string
-          flag_admin: boolean | null
-          id: string
-          is_active: boolean | null
-          supabase_token: string
-          updated_at: string | null
-          user_id: string
-        }
-        Insert: {
-          can_access_real_data?: boolean | null
-          can_modify_code?: boolean | null
-          can_modify_database?: boolean | null
-          created_at?: string | null
-          current_component?: string | null
-          current_route?: string | null
-          expires_at: string
-          flag_admin?: boolean | null
-          id: string
-          is_active?: boolean | null
-          supabase_token: string
-          updated_at?: string | null
-          user_id: string
-        }
-        Update: {
-          can_access_real_data?: boolean | null
-          can_modify_code?: boolean | null
-          can_modify_database?: boolean | null
-          created_at?: string | null
-          current_component?: string | null
-          current_route?: string | null
-          expires_at?: string
-          flag_admin?: boolean | null
-          id?: string
-          is_active?: boolean | null
-          supabase_token?: string
-          updated_at?: string | null
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "dev_vivo_sessions_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "v_auth_activity"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "dev_vivo_sessions_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "v_user_points_balance"
-            referencedColumns: ["user_id"]
-          },
-        ]
       }
       document_snapshots: {
         Row: {
@@ -2999,6 +2286,87 @@ export type Database = {
           tags?: string[] | null
           target_audience?: string[] | null
           title?: string
+          type?: string | null
+          updated_at?: string | null
+          uploaded_by?: string | null
+        }
+        Relationships: []
+      }
+      documents_backup_23_04_2026: {
+        Row: {
+          aiRelevance: number | null
+          author: string | null
+          category: string | null
+          content: string | null
+          created_at: string | null
+          downloads: number | null
+          embeddings: Json | null
+          file_size: number | null
+          file_type: string | null
+          file_url: string | null
+          id: string | null
+          is_curated: boolean | null
+          is_featured: boolean | null
+          is_published: boolean | null
+          isLinkedToAI: boolean | null
+          keywords: string[] | null
+          medical_terms: string[] | null
+          summary: string | null
+          tags: string[] | null
+          target_audience: string[] | null
+          title: string | null
+          type: string | null
+          updated_at: string | null
+          uploaded_by: string | null
+        }
+        Insert: {
+          aiRelevance?: number | null
+          author?: string | null
+          category?: string | null
+          content?: string | null
+          created_at?: string | null
+          downloads?: number | null
+          embeddings?: Json | null
+          file_size?: number | null
+          file_type?: string | null
+          file_url?: string | null
+          id?: string | null
+          is_curated?: boolean | null
+          is_featured?: boolean | null
+          is_published?: boolean | null
+          isLinkedToAI?: boolean | null
+          keywords?: string[] | null
+          medical_terms?: string[] | null
+          summary?: string | null
+          tags?: string[] | null
+          target_audience?: string[] | null
+          title?: string | null
+          type?: string | null
+          updated_at?: string | null
+          uploaded_by?: string | null
+        }
+        Update: {
+          aiRelevance?: number | null
+          author?: string | null
+          category?: string | null
+          content?: string | null
+          created_at?: string | null
+          downloads?: number | null
+          embeddings?: Json | null
+          file_size?: number | null
+          file_type?: string | null
+          file_url?: string | null
+          id?: string | null
+          is_curated?: boolean | null
+          is_featured?: boolean | null
+          is_published?: boolean | null
+          isLinkedToAI?: boolean | null
+          keywords?: string[] | null
+          medical_terms?: string[] | null
+          summary?: string | null
+          tags?: string[] | null
+          target_audience?: string[] | null
+          title?: string | null
           type?: string | null
           updated_at?: string | null
           uploaded_by?: string | null
@@ -3190,68 +2558,6 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
-      }
-      fechamento_consensual: {
-        Row: {
-          complementacoes: Json | null
-          exames_solicitados: Json | null
-          id: number
-          observacoes: string | null
-          paciente_id: string | null
-          proximos_passos: string | null
-          revisao_narrativa: string | null
-          timestamp: string | null
-        }
-        Insert: {
-          complementacoes?: Json | null
-          exames_solicitados?: Json | null
-          id?: number
-          observacoes?: string | null
-          paciente_id?: string | null
-          proximos_passos?: string | null
-          revisao_narrativa?: string | null
-          timestamp?: string | null
-        }
-        Update: {
-          complementacoes?: Json | null
-          exames_solicitados?: Json | null
-          id?: number
-          observacoes?: string | null
-          paciente_id?: string | null
-          proximos_passos?: string | null
-          revisao_narrativa?: string | null
-          timestamp?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "fechamento_consensual_paciente_id_fkey"
-            columns: ["paciente_id"]
-            isOneToOne: false
-            referencedRelation: "pacientes"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "fechamento_consensual_paciente_id_fkey"
-            columns: ["paciente_id"]
-            isOneToOne: false
-            referencedRelation: "v_contexto_longitudinal"
-            referencedColumns: ["paciente_id"]
-          },
-          {
-            foreignKeyName: "fechamento_consensual_paciente_id_fkey"
-            columns: ["paciente_id"]
-            isOneToOne: false
-            referencedRelation: "v_interacoes_recentes"
-            referencedColumns: ["paciente_id"]
-          },
-          {
-            foreignKeyName: "fechamento_consensual_paciente_id_fkey"
-            columns: ["paciente_id"]
-            isOneToOne: false
-            referencedRelation: "v_paciente_completo"
-            referencedColumns: ["id"]
-          },
-        ]
       }
       forum_comments: {
         Row: {
@@ -3574,6 +2880,90 @@ export type Database = {
           },
         ]
       }
+      generated_slides_archive: {
+        Row: {
+          aiRelevance: number | null
+          archived_at: string | null
+          author: string | null
+          category: string | null
+          content: string | null
+          created_at: string | null
+          downloads: number | null
+          embeddings: Json | null
+          file_size: number | null
+          file_type: string | null
+          file_url: string | null
+          id: string | null
+          is_curated: boolean | null
+          is_featured: boolean | null
+          is_published: boolean | null
+          isLinkedToAI: boolean | null
+          keywords: string[] | null
+          medical_terms: string[] | null
+          summary: string | null
+          tags: string[] | null
+          target_audience: string[] | null
+          title: string | null
+          type: string | null
+          updated_at: string | null
+          uploaded_by: string | null
+        }
+        Insert: {
+          aiRelevance?: number | null
+          archived_at?: string | null
+          author?: string | null
+          category?: string | null
+          content?: string | null
+          created_at?: string | null
+          downloads?: number | null
+          embeddings?: Json | null
+          file_size?: number | null
+          file_type?: string | null
+          file_url?: string | null
+          id?: string | null
+          is_curated?: boolean | null
+          is_featured?: boolean | null
+          is_published?: boolean | null
+          isLinkedToAI?: boolean | null
+          keywords?: string[] | null
+          medical_terms?: string[] | null
+          summary?: string | null
+          tags?: string[] | null
+          target_audience?: string[] | null
+          title?: string | null
+          type?: string | null
+          updated_at?: string | null
+          uploaded_by?: string | null
+        }
+        Update: {
+          aiRelevance?: number | null
+          archived_at?: string | null
+          author?: string | null
+          category?: string | null
+          content?: string | null
+          created_at?: string | null
+          downloads?: number | null
+          embeddings?: Json | null
+          file_size?: number | null
+          file_type?: string | null
+          file_url?: string | null
+          id?: string | null
+          is_curated?: boolean | null
+          is_featured?: boolean | null
+          is_published?: boolean | null
+          isLinkedToAI?: boolean | null
+          keywords?: string[] | null
+          medical_terms?: string[] | null
+          summary?: string | null
+          tags?: string[] | null
+          target_audience?: string[] | null
+          title?: string | null
+          type?: string | null
+          updated_at?: string | null
+          uploaded_by?: string | null
+        }
+        Relationships: []
+      }
       global_chat_messages: {
         Row: {
           channel: string
@@ -3621,206 +3011,6 @@ export type Database = {
           user_name?: string
         }
         Relationships: []
-      }
-      imre_assessments: {
-        Row: {
-          assessment_date: string | null
-          assessment_type: string
-          behavioral_markers: Json | null
-          clinical_notes: string | null
-          cognitive_patterns: Json | null
-          completion_status: string | null
-          created_at: string | null
-          emotional_indicators: Json | null
-          id: string
-          patient_id: string | null
-          risk_factors: Json | null
-          semantic_context: Json
-          session_duration: number | null
-          therapeutic_goals: Json | null
-          triaxial_data: Json
-          updated_at: string | null
-          user_id: string | null
-        }
-        Insert: {
-          assessment_date?: string | null
-          assessment_type?: string
-          behavioral_markers?: Json | null
-          clinical_notes?: string | null
-          cognitive_patterns?: Json | null
-          completion_status?: string | null
-          created_at?: string | null
-          emotional_indicators?: Json | null
-          id?: string
-          patient_id?: string | null
-          risk_factors?: Json | null
-          semantic_context?: Json
-          session_duration?: number | null
-          therapeutic_goals?: Json | null
-          triaxial_data?: Json
-          updated_at?: string | null
-          user_id?: string | null
-        }
-        Update: {
-          assessment_date?: string | null
-          assessment_type?: string
-          behavioral_markers?: Json | null
-          clinical_notes?: string | null
-          cognitive_patterns?: Json | null
-          completion_status?: string | null
-          created_at?: string | null
-          emotional_indicators?: Json | null
-          id?: string
-          patient_id?: string | null
-          risk_factors?: Json | null
-          semantic_context?: Json
-          session_duration?: number | null
-          therapeutic_goals?: Json | null
-          triaxial_data?: Json
-          updated_at?: string | null
-          user_id?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "imre_assessments_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "v_auth_activity"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "imre_assessments_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "v_user_points_balance"
-            referencedColumns: ["user_id"]
-          },
-        ]
-      }
-      imre_semantic_blocks: {
-        Row: {
-          assessment_id: string | null
-          behavioral_impact: number | null
-          block_number: number
-          block_type: string
-          cognitive_complexity: number | null
-          confidence_score: number | null
-          emotional_weight: number | null
-          id: string
-          processing_time: number | null
-          semantic_content: Json
-          timestamp: string | null
-        }
-        Insert: {
-          assessment_id?: string | null
-          behavioral_impact?: number | null
-          block_number: number
-          block_type: string
-          cognitive_complexity?: number | null
-          confidence_score?: number | null
-          emotional_weight?: number | null
-          id?: string
-          processing_time?: number | null
-          semantic_content: Json
-          timestamp?: string | null
-        }
-        Update: {
-          assessment_id?: string | null
-          behavioral_impact?: number | null
-          block_number?: number
-          block_type?: string
-          cognitive_complexity?: number | null
-          confidence_score?: number | null
-          emotional_weight?: number | null
-          id?: string
-          processing_time?: number | null
-          semantic_content?: Json
-          timestamp?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "imre_semantic_blocks_assessment_id_fkey"
-            columns: ["assessment_id"]
-            isOneToOne: false
-            referencedRelation: "imre_assessments"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "imre_semantic_blocks_assessment_id_fkey"
-            columns: ["assessment_id"]
-            isOneToOne: false
-            referencedRelation: "patient_assessments"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      imre_semantic_context: {
-        Row: {
-          assessment_id: string | null
-          behavioral_trends: Json | null
-          cognitive_patterns: Json | null
-          context_version: number | null
-          created_at: string | null
-          emotional_history: Json | null
-          id: string
-          last_updated: string | null
-          semantic_memory: Json
-          user_id: string | null
-        }
-        Insert: {
-          assessment_id?: string | null
-          behavioral_trends?: Json | null
-          cognitive_patterns?: Json | null
-          context_version?: number | null
-          created_at?: string | null
-          emotional_history?: Json | null
-          id?: string
-          last_updated?: string | null
-          semantic_memory: Json
-          user_id?: string | null
-        }
-        Update: {
-          assessment_id?: string | null
-          behavioral_trends?: Json | null
-          cognitive_patterns?: Json | null
-          context_version?: number | null
-          created_at?: string | null
-          emotional_history?: Json | null
-          id?: string
-          last_updated?: string | null
-          semantic_memory?: Json
-          user_id?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "imre_semantic_context_assessment_id_fkey"
-            columns: ["assessment_id"]
-            isOneToOne: false
-            referencedRelation: "imre_assessments"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "imre_semantic_context_assessment_id_fkey"
-            columns: ["assessment_id"]
-            isOneToOne: false
-            referencedRelation: "patient_assessments"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "imre_semantic_context_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "v_auth_activity"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "imre_semantic_context_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "v_user_points_balance"
-            referencedColumns: ["user_id"]
-          },
-        ]
       }
       institutional_trauma_log: {
         Row: {
@@ -3936,68 +3126,6 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "v_user_points_balance"
             referencedColumns: ["user_id"]
-          },
-        ]
-      }
-      interacoes_ia: {
-        Row: {
-          contexto_utilizado: string | null
-          data: string | null
-          id: number
-          paciente_id: string | null
-          pergunta: string
-          resposta: string
-          satisfacao: number | null
-          timestamp: string | null
-        }
-        Insert: {
-          contexto_utilizado?: string | null
-          data?: string | null
-          id?: number
-          paciente_id?: string | null
-          pergunta: string
-          resposta: string
-          satisfacao?: number | null
-          timestamp?: string | null
-        }
-        Update: {
-          contexto_utilizado?: string | null
-          data?: string | null
-          id?: number
-          paciente_id?: string | null
-          pergunta?: string
-          resposta?: string
-          satisfacao?: number | null
-          timestamp?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "interacoes_ia_paciente_id_fkey"
-            columns: ["paciente_id"]
-            isOneToOne: false
-            referencedRelation: "pacientes"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "interacoes_ia_paciente_id_fkey"
-            columns: ["paciente_id"]
-            isOneToOne: false
-            referencedRelation: "v_contexto_longitudinal"
-            referencedColumns: ["paciente_id"]
-          },
-          {
-            foreignKeyName: "interacoes_ia_paciente_id_fkey"
-            columns: ["paciente_id"]
-            isOneToOne: false
-            referencedRelation: "v_interacoes_recentes"
-            referencedColumns: ["paciente_id"]
-          },
-          {
-            foreignKeyName: "interacoes_ia_paciente_id_fkey"
-            columns: ["paciente_id"]
-            isOneToOne: false
-            referencedRelation: "v_paciente_completo"
-            referencedColumns: ["id"]
           },
         ]
       }
@@ -4176,36 +3304,6 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
-      }
-      medcannlab_audit_logs: {
-        Row: {
-          action: string
-          created_at: string
-          endpoint: string | null
-          id: number
-          ip: unknown
-          payload: Json | null
-          user_id: string | null
-        }
-        Insert: {
-          action: string
-          created_at?: string
-          endpoint?: string | null
-          id?: number
-          ip?: unknown
-          payload?: Json | null
-          user_id?: string | null
-        }
-        Update: {
-          action?: string
-          created_at?: string
-          endpoint?: string | null
-          id?: number
-          ip?: unknown
-          payload?: Json | null
-          user_id?: string | null
-        }
-        Relationships: []
       }
       medical_certificates: {
         Row: {
@@ -4980,7 +4078,7 @@ export type Database = {
         Insert: {
           created_at?: string | null
           data?: Json | null
-          id: string
+          id?: string
           is_read?: boolean
           message: string
           metadata?: Json | null
@@ -5000,39 +4098,6 @@ export type Database = {
           type?: string
           user_id?: string | null
           user_type?: string | null
-        }
-        Relationships: []
-      }
-      pacientes: {
-        Row: {
-          ativo: boolean | null
-          contato: string | null
-          data_cadastro: string | null
-          genero: string
-          id: string
-          idade: number
-          nome: string
-          ultima_atualizacao: string | null
-        }
-        Insert: {
-          ativo?: boolean | null
-          contato?: string | null
-          data_cadastro?: string | null
-          genero: string
-          id: string
-          idade: number
-          nome: string
-          ultima_atualizacao?: string | null
-        }
-        Update: {
-          ativo?: boolean | null
-          contato?: string | null
-          data_cadastro?: string | null
-          genero?: string
-          id?: string
-          idade?: number
-          nome?: string
-          ultima_atualizacao?: string | null
         }
         Relationships: []
       }
@@ -5676,36 +4741,7 @@ export type Database = {
           timestamp?: string | null
           validade?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "permissoes_compartilhamento_paciente_id_fkey"
-            columns: ["paciente_id"]
-            isOneToOne: false
-            referencedRelation: "pacientes"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "permissoes_compartilhamento_paciente_id_fkey"
-            columns: ["paciente_id"]
-            isOneToOne: false
-            referencedRelation: "v_contexto_longitudinal"
-            referencedColumns: ["paciente_id"]
-          },
-          {
-            foreignKeyName: "permissoes_compartilhamento_paciente_id_fkey"
-            columns: ["paciente_id"]
-            isOneToOne: false
-            referencedRelation: "v_interacoes_recentes"
-            referencedColumns: ["paciente_id"]
-          },
-          {
-            foreignKeyName: "permissoes_compartilhamento_paciente_id_fkey"
-            columns: ["paciente_id"]
-            isOneToOne: false
-            referencedRelation: "v_paciente_completo"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       pki_transactions: {
         Row: {
@@ -8506,113 +7542,6 @@ export type Database = {
           },
         ]
       }
-      eduardo_shared_assessments: {
-        Row: {
-          assessment_date: string | null
-          assessment_id: string | null
-          clinical_notes: string | null
-          completion_status: string | null
-          consent_date: string | null
-          consent_expiry_date: string | null
-          created_at: string | null
-          id: string | null
-          notes: string | null
-          patient_consent: boolean | null
-          patient_id: string | null
-          shared_at: string | null
-          shared_by: string | null
-          shared_with_eduardo_faveret: boolean | null
-          shared_with_ricardo_valenca: boolean | null
-          triaxial_data: Json | null
-          updated_at: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "assessment_sharing_assessment_id_fkey"
-            columns: ["assessment_id"]
-            isOneToOne: false
-            referencedRelation: "imre_assessments"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "assessment_sharing_assessment_id_fkey"
-            columns: ["assessment_id"]
-            isOneToOne: false
-            referencedRelation: "patient_assessments"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "assessment_sharing_patient_id_fkey"
-            columns: ["patient_id"]
-            isOneToOne: false
-            referencedRelation: "v_auth_activity"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "assessment_sharing_patient_id_fkey"
-            columns: ["patient_id"]
-            isOneToOne: false
-            referencedRelation: "v_user_points_balance"
-            referencedColumns: ["user_id"]
-          },
-          {
-            foreignKeyName: "assessment_sharing_shared_by_fkey"
-            columns: ["shared_by"]
-            isOneToOne: false
-            referencedRelation: "v_auth_activity"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "assessment_sharing_shared_by_fkey"
-            columns: ["shared_by"]
-            isOneToOne: false
-            referencedRelation: "v_user_points_balance"
-            referencedColumns: ["user_id"]
-          },
-        ]
-      }
-      patient_assessments: {
-        Row: {
-          assessment_date: string | null
-          assessment_type: string | null
-          behavioral_markers: Json | null
-          clinical_notes: string | null
-          cognitive_patterns: Json | null
-          completion_status: string | null
-          consent_date: string | null
-          consent_expiry_date: string | null
-          created_at: string | null
-          emotional_indicators: Json | null
-          id: string | null
-          patient_consent: boolean | null
-          patient_id: string | null
-          risk_factors: Json | null
-          semantic_context: Json | null
-          session_duration: number | null
-          shared_with_eduardo_faveret: boolean | null
-          shared_with_ricardo_valenca: boolean | null
-          therapeutic_goals: Json | null
-          triaxial_data: Json | null
-          updated_at: string | null
-          user_id: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "imre_assessments_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "v_auth_activity"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "imre_assessments_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "v_user_points_balance"
-            referencedColumns: ["user_id"]
-          },
-        ]
-      }
       patient_doctors: {
         Row: {
           doctor_id: string | null
@@ -8624,71 +7553,6 @@ export type Database = {
           total_appointments: number | null
         }
         Relationships: []
-      }
-      ricardo_shared_assessments: {
-        Row: {
-          assessment_date: string | null
-          assessment_id: string | null
-          clinical_notes: string | null
-          completion_status: string | null
-          consent_date: string | null
-          consent_expiry_date: string | null
-          created_at: string | null
-          id: string | null
-          notes: string | null
-          patient_consent: boolean | null
-          patient_id: string | null
-          shared_at: string | null
-          shared_by: string | null
-          shared_with_eduardo_faveret: boolean | null
-          shared_with_ricardo_valenca: boolean | null
-          triaxial_data: Json | null
-          updated_at: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "assessment_sharing_assessment_id_fkey"
-            columns: ["assessment_id"]
-            isOneToOne: false
-            referencedRelation: "imre_assessments"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "assessment_sharing_assessment_id_fkey"
-            columns: ["assessment_id"]
-            isOneToOne: false
-            referencedRelation: "patient_assessments"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "assessment_sharing_patient_id_fkey"
-            columns: ["patient_id"]
-            isOneToOne: false
-            referencedRelation: "v_auth_activity"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "assessment_sharing_patient_id_fkey"
-            columns: ["patient_id"]
-            isOneToOne: false
-            referencedRelation: "v_user_points_balance"
-            referencedColumns: ["user_id"]
-          },
-          {
-            foreignKeyName: "assessment_sharing_shared_by_fkey"
-            columns: ["shared_by"]
-            isOneToOne: false
-            referencedRelation: "v_auth_activity"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "assessment_sharing_shared_by_fkey"
-            columns: ["shared_by"]
-            isOneToOne: false
-            referencedRelation: "v_user_points_balance"
-            referencedColumns: ["user_id"]
-          },
-        ]
       }
       users_compatible: {
         Row: {
@@ -8752,6 +7616,53 @@ export type Database = {
           updated_at?: string | null
         }
         Relationships: []
+      }
+      v_aec_invalidated_recoverable: {
+        Row: {
+          allergies: string | null
+          associated_symptoms: Json | null
+          complaint_description: string | null
+          complaint_list: Json | null
+          complaint_location: string | null
+          complaint_onset: string | null
+          consent_given: boolean | null
+          consent_timestamp: string | null
+          family_father: Json | null
+          family_mother: Json | null
+          full_snapshot: Json | null
+          improvements: Json | null
+          invalidated_at: string | null
+          invalidation_reason: string | null
+          last_update: string | null
+          lifestyle_habits: Json | null
+          main_complaint: string | null
+          medical_history: Json | null
+          missing_phases: string[] | null
+          patient_email: string | null
+          patient_name: string | null
+          regular_medications: string | null
+          sporadic_medications: string | null
+          started_at: string | null
+          state_id: string | null
+          user_id: string | null
+          worsening: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "aec_assessment_state_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "v_auth_activity"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "aec_assessment_state_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "v_user_points_balance"
+            referencedColumns: ["user_id"]
+          },
+        ]
       }
       v_ai_quality_metrics: {
         Row: {
@@ -9043,19 +7954,6 @@ export type Database = {
           },
         ]
       }
-      v_contexto_longitudinal: {
-        Row: {
-          consultas_profissionais: Json | null
-          evolucao_exames: Json | null
-          evolucao_medicamentos: Json | null
-          evolucao_sintomas: Json | null
-          nome: string | null
-          paciente_id: string | null
-          total_interacoes: number | null
-          ultima_interacao: string | null
-        }
-        Relationships: []
-      }
       v_dashboard_advanced_kpis: {
         Row: {
           active_wearables: number | null
@@ -9078,17 +7976,6 @@ export type Database = {
           unread_messages: number | null
           upcoming: number | null
           waiting_room_today: number | null
-        }
-        Relationships: []
-      }
-      v_interacoes_recentes: {
-        Row: {
-          data: string | null
-          nome: string | null
-          paciente_id: string | null
-          pergunta: string | null
-          resposta: string | null
-          satisfacao: number | null
         }
         Relationships: []
       }
@@ -9117,37 +8004,6 @@ export type Database = {
           status_norm: string | null
           title: string | null
           type: string | null
-        }
-        Relationships: []
-      }
-      v_paciente_completo: {
-        Row: {
-          alergias_medicamentos: Json | null
-          ativo: boolean | null
-          consultas: boolean | null
-          contato: string | null
-          data_cadastro: string | null
-          evolucao: boolean | null
-          exames: boolean | null
-          exames_solicitados: Json | null
-          expectativas: string | null
-          genero: string | null
-          hda_caracteristicas: string | null
-          hda_evolucao: string | null
-          hda_inicio: string | null
-          id: string | null
-          idade: number | null
-          identificacao: string | null
-          medicamentos: boolean | null
-          medicamentos_atuais: Json | null
-          motivo_consulta: string | null
-          nome: string | null
-          proximos_passos: string | null
-          queixa_principal: string | null
-          queixas: Json | null
-          revisao_narrativa: string | null
-          sintomas: boolean | null
-          ultima_atualizacao: string | null
         }
         Relationships: []
       }
