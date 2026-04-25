@@ -184,8 +184,12 @@ export class ClinicalAssessmentFlow {
    *      faz snapshot em noa_logs + marca invalidated_at + NÃO carrega em this.states.
    *   3. Resultado: próximo turno cria nova sessão limpa, dado parcial preservado.
    *
-   * Por que 6h: AEC real não dura mais que 30-45min. State em COMPLETED inconsistente
-   * mais antigo que 6h é com certeza órfão de finalização interrompida.
+   * Por que 30min: AEC real é rápida (~20min do início ao consenso). State em
+   * phase=COMPLETED só faz sentido após FSM ter finalizado — qualquer state
+   * COMPLETED inconsistente parado por mais de 30min é claramente órfão de
+   * finalização interrompida. AEC EM CURSO tem phase=COMPLAINT_DETAILS,
+   * MEDICAL_HISTORY, etc., NÃO COMPLETED — então não há risco de invalidar
+   * sessão ativa pausada por paciente que voltou depois.
    */
   private async loadStateFromDB(userId: string): Promise<void> {
     try {
@@ -208,9 +212,11 @@ export class ClinicalAssessmentFlow {
         const isCompletedButIncomplete = data.phase === 'COMPLETED' && (data as any).is_complete === false
         const lastUpdateMs = new Date(data.last_update).getTime()
         const ageMs = Date.now() - lastUpdateMs
-        const SIX_HOURS_MS = 6 * 60 * 60 * 1000
+        // [V1.9.57] AEC real ~20min. 30min = 1.5x tempo médio. State COMPLETED
+        // inconsistente parado mais que isso é órfão de finalização interrompida.
+        const STALE_COMPLETED_THRESHOLD_MS = 30 * 60 * 1000
 
-        if (isCompletedButIncomplete && ageMs > SIX_HOURS_MS) {
+        if (isCompletedButIncomplete && ageMs > STALE_COMPLETED_THRESHOLD_MS) {
           console.warn('[AEC V1.9.57] State inconsistente detectado em runtime. Invalidando e arquivando snapshot.', {
             userId,
             phase: data.phase,
@@ -246,7 +252,7 @@ export class ClinicalAssessmentFlow {
               .from('aec_assessment_state')
               .update({
                 invalidated_at: new Date().toISOString(),
-                invalidation_reason: `V1.9.57 runtime guard: phase=COMPLETED mas is_complete=false após ${Math.round(ageMs / 3600000)}h. Snapshot em noa_logs.`,
+                invalidation_reason: `V1.9.57 runtime guard: phase=COMPLETED mas is_complete=false após ${Math.round(ageMs / 60000)}min (threshold 30min). Snapshot em noa_logs.`,
               } as any)
               .eq('id', data.id)
           } catch (updateErr) {
