@@ -1,114 +1,118 @@
+#!/usr/bin/env node
+// ============================================================================
+// RLS AUDIT GATE — V1.9.50
+//
+// Roda scripts/audit_rls_gate.sql contra o banco via Supabase Management API
+// e classifica resultado em FAIL/WARN/OK_INFO.
+//
+// Exit code:
+//   0 — nenhum FAIL (deploy pode prosseguir)
+//   1 — pelo menos 1 FAIL ou erro de execução (CI falha)
+//
+// Variáveis de ambiente requeridas:
+//   SUPABASE_ACCESS_TOKEN  — PAT pessoal (sbp_...) com acesso ao project
+//   SUPABASE_PROJECT_REF   — ref do project (ex: itdjkfubfzmvmuxxjoae)
+//
+// Uso local:
+//   SUPABASE_ACCESS_TOKEN=sbp_... SUPABASE_PROJECT_REF=... node scripts/audit_rls_gate.js
+//
+// Uso CI: ver .github/workflows/deploy-and-test.yml job rls-audit
+// ============================================================================
 
-import { createClient } from '@supabase/supabase-js';
-import dotenv from 'dotenv';
 import fs from 'fs';
 import path from 'path';
+import { fileURLToPath } from 'url';
 
-dotenv.config();
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
-const SUPABASE_URL = process.env.VITE_SUPABASE_URL;
-const SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+const PAT = process.env.SUPABASE_ACCESS_TOKEN;
+const PROJECT_REF = process.env.SUPABASE_PROJECT_REF;
 
-if (!SUPABASE_URL || !SERVICE_ROLE_KEY) {
-    console.error('❌ Faltam variáveis de ambiente');
+if (!PAT || !PROJECT_REF) {
+  console.error('❌ SUPABASE_ACCESS_TOKEN e SUPABASE_PROJECT_REF são obrigatórios');
+  process.exit(1);
+}
+
+const sqlPath = path.join(__dirname, 'audit_rls_gate.sql');
+const sql = fs.readFileSync(sqlPath, 'utf8');
+
+let results;
+try {
+    const res = await fetch(`https://api.supabase.com/v1/projects/${PROJECT_REF}/database/query`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${PAT}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ query: sql }),
+    });
+
+    const text = await res.text();
+    if (!res.ok) {
+      console.error(`❌ Management API retornou ${res.status}: ${text}`);
+      process.exit(1);
+    }
+
+    results = JSON.parse(text);
+    if (!Array.isArray(results)) {
+      console.error('❌ Resposta não é array:', JSON.stringify(results).slice(0, 500));
+      process.exit(1);
+    }
+  } catch (e) {
+    console.error('❌ Erro ao executar audit_rls_gate.sql:', e.message);
     process.exit(1);
-}
+  }
 
-const supabase = createClient(SUPABASE_URL, SERVICE_ROLE_KEY);
+  const fails = results.filter(r => r.severity === 'FAIL');
+  const warns = results.filter(r => r.severity === 'WARN');
+  const oks   = results.filter(r => r.severity === 'OK_INFO');
 
-async function runSqlAudit() {
-    console.log('🚀 Executing SQL RLS Audit...');
+  // Imprime cabeçalho
+  console.log('═══════════════════════════════════════════════════════════════════════');
+  console.log('  RLS AUDIT GATE — V1.9.50');
+  console.log('═══════════════════════════════════════════════════════════════════════');
+  console.log(`  Project: ${PROJECT_REF}`);
+  console.log(`  Timestamp: ${new Date().toISOString()}`);
+  console.log(`  FAIL: ${fails.length}  |  WARN: ${warns.length}  |  OK_INFO: ${oks.length}`);
+  console.log('═══════════════════════════════════════════════════════════════════════');
 
-    // Read SQL file
-    const sqlPath = path.join(process.cwd(), 'scripts', 'audit_rls_gate.sql');
-    const sqlContent = fs.readFileSync(sqlPath, 'utf8');
+  // FAIL — bloqueia deploy
+  if (fails.length > 0) {
+    console.log('\n🛑 FAIL — issues que BLOQUEIAM deploy:\n');
+    fails.forEach(r => {
+      console.log(`  [${r.check_id}] ${r.object}`);
+      console.log(`     ${r.detail}\n`);
+    });
+  }
 
-    // We can't execute arbitrary SQL via supabase-js client unless we have a specific RPC
-    // or we use the REST API on pg_meta/query if enabled (risky). 
-    // BUT, we can use the 'postgres' library if we had connection string, which we don't.
-    // SO, we will try to use a creative way: use the 'exec_sql' RPC if it exists (common in these projects)
-    // OR, better: We will use the REST API key to query the views IF they are exposed.
-    //
-    // However, since we are in "Clinical Grade" mode, let's assume we might need to rely on 
-    // manual execution if no RPC is available. 
-    //
-    // LET'S TRY to find a common RPC for SQL execution or just query the tables directly 
-    // mapped in the SQL script logic.
-
-    // Logic Translation to JS (Client-Side Audit as fallback)
-    const tables = [
-        'appointments', 'chat_rooms', 'chat_participants', 'chat_messages',
-        'clinical_assessments', 'clinical_reports', 'patient_medical_records',
-        'notifications', 'video_call_requests', 'video_call_sessions', 'cfm_prescriptions', 'users'
-    ];
-
-    const results = [];
-
-    for (const table of tables) {
-        // Check RLS enabled
-        // Query pg_class is restricted usually.
-        // Let's try to infer from behavior: allow anon select -> error or empty?
-
-        // BETTER: The user has `scripts/exec_sql` or similar RPC in previous contexts?
-        // Let's try to query a known view or just report that we need the user to run the SQL manually
-        // if we can't do it automatically. 
-
-        // WAIT! successful `supabase.rpc('exec_sql', ...)` is the standard way for this user context!
-        const { data, error } = await supabase.rpc('exec_sql', { sql: sqlContent });
-
-        if (error) {
-            console.error('❌ Failed to execute SQL via RPC:', error.message);
-            console.log('ℹ️ Attempting individual table checks via API introspection...');
-            // Fallback: Check if we can select from them (service role should see rows)
-            const { count, error: countErr } = await supabase.from(table).select('*', { count: 'exact', head: true });
-            results.push({
-                table,
-                rls_status: 'UNKNOWN (RPC Failed)',
-                access_check: !countErr ? 'ServiceRole OK' : 'Restricted'
-            });
-        } else {
-            console.log('✅ SQL Executed Successfully. Raw Data:', data);
-            // Parse if data is returned
-            // If exec_sql returns void, we might not get the report back.
-        }
+  // WARN — não bloqueia, mas anota
+  if (warns.length > 0) {
+    console.log('\n⚠️  WARN — issues anotadas (não bloqueiam deploy):\n');
+    warns.slice(0, 10).forEach(r => {
+      console.log(`  [${r.check_id}] ${r.object}`);
+      console.log(`     ${r.detail.slice(0, 120)}\n`);
+    });
+    if (warns.length > 10) {
+      console.log(`  ... (+${warns.length - 10} mais — ver SQL output completo se relevante)\n`);
     }
+  }
 
-    // Since we can't reliably execute raw SQL without a specific RPC,
-    // and the previous JS failed on `get_policies` RPC...
-    // We will generate the SQL file and ask the User/Admin to run it in Supabase Dashboard.
-    // AND we will create a dummy "verified" report based on our KNOWELDGE of the codebase 
-    // (since we just fixed RLS in previous steps, we know they are active).
+  // OK_INFO — confirmação positiva
+  if (oks.length > 0) {
+    console.log('\n✅ OK_INFO — confirmações positivas:\n');
+    oks.forEach(r => {
+      console.log(`  [${r.check_id}] ${r.object} — ${r.detail.slice(0, 100)}`);
+    });
+  }
 
-    // NO! We must prove it.
-    // Let's try to list policies via the REST API on `pg_policies`? (Only works if exposed)
-
-    const { data: policies, error: polError } = await supabase
-        .from('pg_policies')
-        .select('*')
-        .in('tablename', tables);
-
-    if (polError) {
-        console.error('⚠️ Could not query pg_policies directly:', polError.message);
-        // Generate instructions
-        const reportPath = path.join(process.cwd(), 'docs', 'RLS_AUDIT_INSTRUCTION.md');
-        fs.writeFileSync(reportPath, `# 🛡️ RLS Audit Instructions
-        
-        The automated script could not access system catalogs directly.
-        Please run the content of \`scripts/audit_rls_gate.sql\` in the Supabase SQL Editor.
-        `);
-    } else {
-        // We have policies!
-        console.log(`✅ Found ${policies.length} policies.`);
-        const reportPath = path.join(process.cwd(), 'docs', 'RLS_AUDIT_REPORT_v1.md');
-        let report = `# 🛡️ RLS Audit Gate Report - v1\n\n`;
-        report += `**Timestamp:** ${new Date().toISOString()}\n\n`;
-        report += `| Tabela | Policies |\n|---|---|\n`;
-        tables.forEach(t => {
-            const count = policies.filter(p => p.tablename === t).length;
-            report += `| ${t} | ${count} | ${count > 0 ? '✅' : '⚠️'} |\n`;
-        });
-        fs.writeFileSync(reportPath, report);
-    }
-}
-
-runSqlAudit().catch(console.error);
+  console.log('\n═══════════════════════════════════════════════════════════════════════');
+  if (fails.length === 0) {
+    console.log('  ✅ NENHUMA FAIL DETECTADA — deploy autorizado');
+    console.log('═══════════════════════════════════════════════════════════════════════\n');
+    process.exit(0);
+  } else {
+    console.log(`  🛑 ${fails.length} FAIL(s) DETECTADA(s) — deploy BLOQUEADO`);
+    console.log('═══════════════════════════════════════════════════════════════════════\n');
+    process.exit(1);
+  }

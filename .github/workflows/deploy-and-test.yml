@@ -20,7 +20,9 @@ on:
     paths:
       - 'supabase/functions/tradevision-core/**'
       - 'supabase/functions/_shared/**'
+      - 'supabase/migrations/**'              # V1.9.50: RLS audit roda em mudanças de schema
       - 'tests/integration/**'
+      - 'scripts/audit_rls_gate.*'            # V1.9.50: roda quando o próprio audit muda
       - '.github/workflows/deploy-and-test.yml'
   workflow_dispatch: # permite deploy manual sob demanda pela UI do GitHub
 
@@ -29,11 +31,39 @@ concurrency:
   cancel-in-progress: false # fila — não cancelar mid-deploy, pode deixar staging quebrado
 
 jobs:
+  rls-audit:
+    # V1.9.50 — RLS Audit Gate. Roda scripts/audit_rls_gate.sql via Management API
+    # antes do deploy. Contrato de exit do script:
+    #   - FAIL > 0 → process.exit(1) → job falha → deploy NÃO roda
+    #   - WARN qualquer quantidade → process.exit(0) → não bloqueia
+    #   - OK_INFO → silencioso estruturado, não influencia pipeline
+    # Falso positivo de 25/04 (afirmamos "26 views sem RLS" baseado em query
+    # errada) gerou esta classe de garantia automatizada.
+    name: RLS audit gate
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Run RLS audit
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
+        run: node scripts/audit_rls_gate.js
+
   deploy:
     name: Deploy tradevision-core
     runs-on: ubuntu-latest
-    outputs:
-      deploy_success: ${{ steps.deploy.outcome == 'success' }}
+    needs: rls-audit
+    # Hard guarantee: deploy só roda se rls-audit completou com sucesso.
+    # `needs.X.result` é variável built-in do GitHub Actions (sempre populada
+    # corretamente quando job termina). Mais robusto que output customizado.
+    if: needs.rls-audit.result == 'success'
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -44,7 +74,6 @@ jobs:
           version: latest
 
       - name: Deploy Edge Function
-        id: deploy
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
         run: |
@@ -56,7 +85,8 @@ jobs:
     name: Integration tests (consent, monetization, schema)
     runs-on: ubuntu-latest
     needs: deploy
-    if: needs.deploy.outputs.deploy_success == 'true'
+    # Hard guarantee: integration tests só rodam se deploy completou com sucesso.
+    if: needs.deploy.result == 'success'
     steps:
       - name: Checkout
         uses: actions/checkout@v4
