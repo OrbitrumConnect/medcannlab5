@@ -44,7 +44,11 @@ const Reports: React.FC = () => {
   // State
   const [reports, setReports] = useState<ClinicalReport[]>([])
   const [loading, setLoading] = useState(true)
-  const [viewMode, setViewMode] = useState<ViewMode>('list')
+  // [V1.9.68] Default = 'component' (Clínico) — Ricardo prefere essa view e
+  // a "Lista" pura é redundante (Clínico já lista melhor, com viewer rico).
+  // Modo 'list' mantido como código morto pra rollback trivial caso surja
+  // necessidade. Próxima fase (V1.9.69+) = Analytics inline + drill-down.
+  const [viewMode, setViewMode] = useState<ViewMode>('component')
   const [searchTerm, setSearchTerm] = useState('')
   const [filterStatus, setFilterStatus] = useState<FilterStatus>('all')
   const [filterType, setFilterType] = useState<FilterType>('all')
@@ -229,12 +233,13 @@ const Reports: React.FC = () => {
         </div>
 
         <div className="flex items-center gap-2">
-          {/* View Mode Toggle */}
+          {/* View Mode Toggle — [V1.9.68] "Lista" removida do toggle (redundante
+              com Clínico que já lista com viewer rico). Código do modo 'list'
+              mantido abaixo como dead code pra rollback trivial. */}
           <div className="flex bg-slate-800/60 rounded-lg border border-slate-700/50 p-0.5">
             {([
-              { mode: 'list' as ViewMode, icon: FileText, label: 'Lista' },
-              { mode: 'analytics' as ViewMode, icon: BarChart3, label: 'Analytics' },
-              { mode: 'component' as ViewMode, icon: Stethoscope, label: 'Clínico' }
+              { mode: 'component' as ViewMode, icon: Stethoscope, label: 'Clínico' },
+              { mode: 'analytics' as ViewMode, icon: BarChart3, label: 'Analytics' }
             ]).map(({ mode, icon: Icon, label }) => (
               <button
                 key={mode}
