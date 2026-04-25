@@ -1096,6 +1096,13 @@ export class ClinicalAssessmentFlow {
         this.markPhaseCompleted(state, 'FINAL_RECOMMENDATION')
         state.phase = 'COMPLETED'
         state.lastUpdate = new Date()
+        // [V1.9.70] Fecha o ciclo de persistência no estado terminal. Antes,
+        // state in-memory chegava em COMPLETED + completedPhases full mas DB
+        // ficava desatualizado (último persist em fase intermediária). Isso
+        // produzia 0 registros com is_complete=true em aec_assessment_state
+        // mesmo com 75 reports gerados. Princípio FSM: todo estado terminal
+        // precisa ser persistido explicitamente.
+        void this.persist(userId)
         return {
           nextQuestion: '',
           phase: 'COMPLETED',
@@ -1484,6 +1491,11 @@ export class ClinicalAssessmentFlow {
     state.phase = 'COMPLETED'
     state.lastUpdate = new Date()
 
+    // [V1.9.70] Fecha o ciclo de persistência também no caminho de finalização
+    // disparada pelo Core via [ASSESSMENT_COMPLETED] (noaResidentAI:2022).
+    // Sem isso, state in-memory ficava COMPLETED mas DB nunca recebia o sinal.
+    void this.persist(userId)
+
     return state.data
   }
 
@@ -1687,6 +1699,10 @@ export class ClinicalAssessmentFlow {
       case 'LIFESTYLE_HABITS': return 'Sobre seus hábitos de vida (exercícios, alimentação, sono)...'
       case 'OBJECTIVE_QUESTIONS': return 'Vamos continuar com as perguntas objetivas.'
       case 'CONSENSUS_REVIEW': return 'Vamos revisar o resumo da sua avaliação.'
+      // [V1.9.70] Após V1.9.70 fechar persistência terminal, paciente que volta
+      // após AEC concluída encontra phase=COMPLETED no DB. Mensagem coerente
+      // (não "Vamos continuar de onde paramos" — estava errado pra terminal).
+      case 'COMPLETED': return 'Sua avaliação clínica anterior já está concluída. Posso ajudar com algo mais?'
       default: return 'Vamos continuar de onde paramos.'
     }
   }
