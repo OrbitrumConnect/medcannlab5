@@ -1197,4 +1197,92 @@ Mudança qualitativa: **não é mais sobre fechar vulnerabilidade**, é sobre **
 - Bugs DD/CC/EE/GG/HH paciente — todos via Fase 2-3 do ISM
 - Test coverage expansion — único domínio que não evoluiu hoje
 
+---
+
+## 29. Auditoria Lovable cruzada + V1.9.70-71 + cleanup operacional (25/04 noite tardia)
+
+Após "selo final" da Seção 28, sessão continuou com auditoria externa do Lovable e descobertas críticas que reformularam o roadmap.
+
+### 29.1 Cross-check da auditoria Lovable
+Lovable rodou auditoria 360º read-only via [auditoria mestra completa](AUDITORIA_LOVABLE_CROSS_CHECK_25_04_2026.md). Pedro pediu validação ponto-a-ponto.
+
+**Achados confirmados (Lovable acertou):**
+- DecompressionStream("raw") inválido em [extract-document-text:295](supabase/functions/extract-document-text/index.ts#L295)
+- Volumetria batendo (5040 linhas tradevision-core, 1395 useMedCannLabConversation)
+- **Cluster IMRE quebra type-check** (após rebase de `types.ts` — 102 erros tsc)
+- 0 reports `review_status='approved'` em 75 (gargalo de revisão)
+- 50% cancellation rate em agendamentos
+- 0 estados `aec_assessment_state.is_complete=true` (motor não fechava ciclo)
+
+**Achados refutados:**
+- Referência fantasma `npm:openai@^4.52.5` — único import é `esm.sh/openai@4`, sem `deno.lock` no projeto
+- "10 edge functions" — são 9 (Lovable contou `_shared`)
+
+**Lição registrada (memória `project_lovable_cross_check`):** auditoria externa pode ser MAIS rigorosa que validação local. Lovable regenerou `types.ts` contra banco real; eu validei contra repo stale e refutei equivocadamente. **Retratei publicamente** (commit `e328edf`). Mesma lição das 26 views (manhã).
+
+### 29.2 V1.9.70 — Fechar ciclo FSM terminal
+GPT consolidou: *"sistema com duas verdades divergentes — clinical_reports diz que terminou, aec_assessment_state diz que nunca terminou. Não é simplificação, é dívida técnica silenciosa."*
+
+Investigação encontrou que estado terminal `phase=COMPLETED` era setado in-memory mas **nunca persistido** em DB:
+- [clinicalAssessmentFlow.ts:1098](src/lib/clinicalAssessmentFlow.ts#L1098) (case FINAL_RECOMMENDATION → COMPLETED via switch)
+- [clinicalAssessmentFlow.ts:1487](src/lib/clinicalAssessmentFlow.ts#L1487) (`completeAssessment` chamado por `noaResidentAI:2022` quando Core devolve `[ASSESSMENT_COMPLETED]`)
+
+**Fix V1.9.70 — 3 mudanças coordenadas:**
+1. `void this.persist(userId)` em FINAL_RECOMMENDATION case
+2. `void this.persist(userId)` em `completeAssessment`
+3. `case 'COMPLETED'` em `getPhaseResumePrompt`: "Sua avaliação clínica anterior já está concluída" (antes caía em default "Vamos continuar de onde paramos" — incoerente para terminal)
+
+**Princípio FSM:** todo estado terminal precisa ser persistido explicitamente.
+
+### 29.3 V1.9.71 — Fix DecompressionStream
+[extract-document-text/index.ts:295](supabase/functions/extract-document-text/index.ts#L295): `"raw"` não é valor válido em `CompressionFormat` (spec aceita `'gzip' | 'deflate' | 'deflate-raw'`). DOCX/ZIP usam DEFLATE puro sem header zlib. Fix: `"raw"` → `"deflate-raw"` (3 caracteres).
+
+### 29.4 Cleanup operacional — 3 AEC pendentes invalidadas
+Validação SQL via Management API revelou 3 estados em `aec_assessment_state`:
+
+| User | Phase | Status |
+|---|---|---|
+| `casualmusic2021@gmail.com` (Pedro Paciente) | COMPLETED | Invalidado runtime guard 15:54 |
+| `carolinacampellovalenca@gmail.com` (paciente real Ricardo) | COMPLETED | Invalidado retroativo 13:41 (V1.9.57) |
+| `mariorvalenca@outlook.com` | INTERRUPTED 3 semanas | **Invalidado nesta sessão** com snapshot em `noa_logs` |
+
+Estado final: **0 AEC ativas no banco** (todas com snapshot preservado em audit trail).
+
+### 29.5 ESCALADO — Cluster IMRE legacy não pôde ser deletado
+Lovable sugeriu deletar 4 arquivos legacy IMRE pra zerar tsc. Investigação revelou:
+1. `clinicalAssessmentService.ts:13` tem cabeçalho explícito: **"NÃO DELETAR sem autorização explícita"** (gap C4 documentado)
+2. `ClinicalAssessment.tsx` está em rota ativa (`/clinica/paciente/avaliacao-clinica`) e **usa `imre_assessments` + `clinical_integration` diretamente** (linhas 217-251)
+3. Página provavelmente quebrada em prod (insert em tabela inexistente falha silenciosamente), mas não bloqueia ninguém — fluxo real de AEC vai por `/chat-noa`
+
+Decisão: **escalado pra Ricardo**. 3 caminhos pendentes (deprecar feature / recriar tabelas IMRE / refatorar `ClinicalAssessment.tsx` pra usar `clinical_reports`). Memória `project_imre_cluster_escalado_25_04` arquiva.
+
+### 29.6 Achado arquitetural mais valioso do dia
+Pedro rodou AEC end-to-end e finalizou. Validação SQL revelou que **gerou pelo fluxo legado em memória**, não pelo motor V1.9.57+ DB-backed. Frase do GPT validada empiricamente:
+> *"Estamos protegendo um caminho que ninguém percorreu"*
+
+V1.9.70 corrigiu isso — próxima AEC finalizada gera primeiro `is_complete=true` da história do projeto.
+
+### 29.7 Selo REAL FINAL 25/04 (atualizado)
+
+**Versões deployadas hoje:** **25 commits, 25 versões** (V1.9.47 → V1.9.71) — recorde absoluto.
+
+**Hash final do dia:** `trust-boundary-closed-ism-foundation-laid-identity-unified-fsm-cycle-closed`
+
+**Mudança qualitativa REAL:** sistema deixou de ter "duas verdades divergentes" sobre AEC concluída. Era a dívida silenciosa que GPT apontou. V1.9.70 fechou o ciclo FSM. Próxima AEC vai gerar consistência real entre `clinical_reports` e `aec_assessment_state`.
+
+**Princípio adicional cristalizado (V1.9.70):**
+> *"Auditoria externa pode ser MAIS rigorosa que validação local — quando o ambiente externo regenera tipos contra schema atual e o repo deixou stale."*
+
+**Memórias adicionadas nesta extensão:**
+- `project_imre_cluster_escalado_25_04` — escalation pra Ricardo
+- Atualizado `project_aec_residual_state_25_04` — resolvido V1.9.67
+- Atualizado `project_interaction_state_model_camada_fundacional` — Fase 1 entregue V1.9.66
+- `project_leitura_estrategica_25_04_noite` — reframe GPT 4 saltos + ordem refinada Fase 2 ISM
+
+**Próximo dia provável (atualizado):**
+- Investigação: Ricardo decide caminho IMRE (A/B/C) — escalation
+- ISM Fase 2 (consent enforcement = invariant lógico, não depende de telemetria)
+- Observability dashboard — radar de produção (6 métricas mínimas)
+- Bug operacional crítico: `review_status='draft'` em 100% reports — fluxo de revisão profissional não exercitado
+
 Próxima sessão acorda com plano executável em `project_estado_e_backlog_25_04_manha`.

@@ -292,7 +292,10 @@ async function findFileInZipDeflate(zipBytes: Uint8Array, targetPath: string): P
         const compressed = zipBytes.slice(dataStart, dataStart + compressedSize);
 
         try {
-          const ds = new DecompressionStream("raw");
+          // [V1.9.71] "raw" não é valor válido em CompressionFormat (spec Web
+          // Streams aceita 'gzip' | 'deflate' | 'deflate-raw'). DOCX/ZIP usam
+          // DEFLATE puro sem header zlib, daí 'deflate-raw' é o correto.
+          const ds = new DecompressionStream("deflate-raw");
           const writer = ds.writable.getWriter();
           writer.write(compressed);
           writer.close();
