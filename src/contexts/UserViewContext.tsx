@@ -1,5 +1,5 @@
 // Contexto para permitir que admins vejam como outros tipos de usuário
-import React, { createContext, useContext, useState, useEffect } from 'react'
+import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react'
 import { UserType, normalizeUserType } from '../lib/userTypes'
 import { useAuth } from './AuthContext'
 
@@ -52,7 +52,7 @@ export const UserViewProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     }
   }, [user])
 
-  const setViewAsType = (type: UserType | null) => {
+  const setViewAsType = useCallback((type: UserType | null) => {
     setViewAsTypeState(type)
     if (type) {
       localStorage.setItem('viewAsUserType', type)
@@ -61,9 +61,9 @@ export const UserViewProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       localStorage.removeItem('viewAsUserType')
       console.log('✅ Tipo visual removido')
     }
-  }
+  }, [])
 
-  const getEffectiveUserType = (userType?: string): UserType => {
+  const getEffectiveUserType = useCallback((userType?: string): UserType => {
     const normalizedUserType = normalizeUserType(userType || user?.type)
     const isAdmin = normalizedUserType === 'admin'
 
@@ -74,12 +74,20 @@ export const UserViewProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
     // Caso contrário, retornar o tipo real
     return normalizedUserType
-  }
+  }, [viewAsType, user?.type])
 
-  const isAdminViewingAs = normalizeUserType(user?.type) === 'admin' && viewAsType !== null
+  const isAdminViewingAs = useMemo(
+    () => normalizeUserType(user?.type) === 'admin' && viewAsType !== null,
+    [user?.type, viewAsType]
+  )
+
+  const value = useMemo(
+    () => ({ viewAsType, setViewAsType, getEffectiveUserType, isAdminViewingAs }),
+    [viewAsType, setViewAsType, getEffectiveUserType, isAdminViewingAs]
+  )
 
   return (
-    <UserViewContext.Provider value={{ viewAsType, setViewAsType, getEffectiveUserType, isAdminViewingAs }}>
+    <UserViewContext.Provider value={value}>
       {children}
     </UserViewContext.Provider>
   )
