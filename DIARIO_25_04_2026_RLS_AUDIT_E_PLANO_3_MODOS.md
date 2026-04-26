@@ -1285,4 +1285,234 @@ V1.9.70 corrigiu isso — próxima AEC finalizada gera primeiro `is_complete=tru
 - Observability dashboard — radar de produção (6 métricas mínimas)
 - Bug operacional crítico: `review_status='draft'` em 100% reports — fluxo de revisão profissional não exercitado
 
+---
+
+## 30. Madrugada 26/04 — V1.9.72 (cap patientData) + investigação OpenAI quota + arquitetura 3 camadas
+
+Após Selo da Seção 28-29, sessão continuou madrugada adentro com 3 frentes coordenadas.
+
+### 30.1 Descoberta operacional — OpenAI quota esgotada
+Pedro testou Nôa em prod e viu `🟡 [OFFLINE] Modo Determinístico` em 3 turnos seguidos. Inicial diagnóstico meu errado: "bug de label, OpenAI funciona". Pedro corrigiu apontando histórico ("único momento que offline acontece foi quando não pagamos OpenAI").
+
+Validação SQL via Management API confirmou Pedro 100%:
+```
+9 falhas Brain Disconnect entre 00:45-00:48 UTC do 26/04.
+Erro literal: "429 You exceeded your current quota, please check
+your plan and billing details. type: insufficient_quota"
+```
+
+**Lição registrada (REGRA #5 ENGINEERING_RULES.md):** antes de chutar bug, consultar `institutional_trauma_log` últimas 6h. 30s de SQL teria poupado 1h de teoria errada.
+
+### 30.2 Causa raiz da exaustão da quota — regressão de payload V1.9.55→V1.9.71
+
+Investigação histórica revelou:
+- 16-24/04: **9 dias SEM Brain Disconnect** (V1.9.55 ainda não tinha restaurado patientData; payload pequeno)
+- 25/04: 8 falhas com **TODAS context_overflow** (140k-153k tokens)
+- 26/04: 9 falhas com TODAS quota_429 (efeito acumulado)
+
+**Sequência arquitetural da regressão:**
+1. V1.9.55 (25/04 manhã): restaurou `patientData` que estava sendo descartado há 28 dias (FIX necessário)
+2. **MAS sem cap** — payload inflou de ~10k pra ~30-80k tokens por chamada
+3. V1.9.61 capou só `safeReasoningContext` (1 camada) — `patientData` ficou livre
+4. 121 chamadas no dia 25/04 (3 users testando) consumiram ~5M tokens
+5. Quota mensal/plano OpenAI esgotou no dia 26/04 madrugada
+
+**Mea culpa:** V1.9.55 era fix necessário, mas eu não medi impacto em tokens depois.
+
+### 30.3 V1.9.72 — Cap patientData via whitelist por fase
+
+Implementado e deployado em [tradevision-core/index.ts:4210-4317](supabase/functions/tradevision-core/index.ts#L4210):
+
+```ts
+const safePatientData = {
+  user: { id, name, email, type },
+  intent, userEmail, aecConsultationPhysicianName,
+  aec: aec ? {
+    phase, queixa_principal, top_sintomas (top 5), consent,
+    // + campos específicos por fase:
+    ...(phase === 'COMPLAINT_DETAILS' && { complaintLocation, complaintOnset, complaintDescription, ... }),
+    ...(phase === 'MEDICAL_HISTORY' && { medicalHistory: top 10 }),
+    ...(phase === 'FAMILY_HISTORY_*' && { familyHistory*: top 8 }),
+    ...(phase === 'LIFESTYLE_HABITS' && { lifestyleHabits: top 8 }),
+    ...(phase === 'OBJECTIVE_QUESTIONS' && { allergies, regularMedications, sporadicMedications })
+  } : null
+}
+```
+
+Substituiu `JSON.stringify(patientData)` por `JSON.stringify(safePatientData)` na linha do system message. Comportamento estrutural NÃO mudou — mesma chamada GPT, mesmo system prompt, só payload menor.
+
+**Telemetria adicionada:** `noa_logs.interaction_type='payload_size_v1_9_72'` registra system_base_chars, rag_chars, patient_data_chars, history_chars, total_chars, estimated_tokens, assessment_phase, role.
+
+### 30.4 V1.9.72 validada em produção (mesmo com OpenAI esgotada)
+
+Primeiro log real às 02:27:38 UTC:
+
+| Camada | Antes | **Pós-V1.9.72** | Redução |
+|---|---|---|---|
+| **patient_data_chars** | ~30.000 | **204** | **150x menor** |
+| total_chars | ~60.000-150.000 | **22.598** | |
+| **estimated_tokens** | 30k-80k | **7.533** | **4-10x menor** |
+
+Quota OpenAI ainda esgotada (429 às 02:27:42, 4s depois do log V1.9.72), mas pipeline confirmado: JWT → AEC FSM → safePatientData (204 chars!) → log gravado → tentativa OpenAI → fallback determinístico responde.
+
+**Quando Ricardo recarregar:** V1.9.72 já está ativa; primeira chamada GPT real vai com payload otimizado.
+
+### 30.5 Auditoria GPT (review final) — descoberta arquitetural
+
+GPT (Pedro consulta paralela) consolidou 3 insights cruciais:
+
+**1. Sistema é monolito GPT-first.** Tudo vai pra GPT, mesmo respostas que já existem verbatim no código. Log do Edge Function mostra:
+```
+[AEC] Roteiro Selado (verbatim): fase= COMPLAINT_DETAILS  ← sistema SABE a frase
+[AI RESPONSE] model: TradeVision-Core-Deterministic       ← MAS chama GPT mesmo assim
+```
+
+**2. Custo concentrado em CLINICA (92% dos turnos), AEC dominante dentro disso.**
+
+**3. Princípio fundacional:** *"Se a resposta já existe no sistema, chamar LLM é bug, não feature."*
+
+### 30.6 Arquitetura 3 camadas — destino validado
+
+```
+HOJE (monolito):                     DESTINO (validado):
+Cliente → Core → GPT (sempre)       Cliente → Router
+                                       ├─ Camada 1 (determinística) — 70-80%
+                                       ├─ Camada 2 (estruturada s/LLM) — 10-15%
+                                       └─ Camada 3 (LLM caro) — 10-15%
+              ↓ se falhar
+              Fallback determinístico
+```
+
+Memória `project_arquitetura_3_camadas` salva ferramentas dormentes que já podem virar Camada 1/2 (FSM, verbatim IMRE, motor V1.9.61, intent regex, 4 motores IMRE escalados).
+
+**Ordem de migração:**
+- ✅ V1.9.72 cap (entregue)
+- V1.9.73 Verbatim First (próxima sessão dedicada)
+- V1.9.74 Intent classifier client-side
+- V1.9.75 Router explícito
+- V1.9.8x Split final
+
+**Ganho cumulativo estimado:** 10-15x eficiência. Plano OpenAI passa de 1-2 dias pra 30-60 dias.
+
+### 30.7 ENGINEERING_RULES.md (NOVO no repo)
+
+Criado em `/ENGINEERING_RULES.md` — 5 regras de engenharia que sobrevivem ao projeto:
+- REGRA #1: LLM como último recurso (não primeiro)
+- REGRA #2: Whitelist > truncate em payload
+- REGRA #3: Fail-open em routing clínico (dúvida = LLM)
+- REGRA #4: Telemetria antes de comportamento
+- REGRA #5: `institutional_trauma_log` é fonte de verdade pra falha de IA
+
+Cada regra tem histórico do incidente que originou + exemplo de anti-pattern detectado.
+
+### 30.8 Princípio cristalizado da madrugada
+
+> *"Você não tem problema de infraestrutura — você tem problema de eficiência por request."* (GPT review final)
+
+> *"Reduzir tokens é defesa. Roteamento é escala."*
+
+> *"Mandar tudo pro GPT não é generosidade — é falta de curadoria. Whitelist com critério clínico é o caminho que produz tanto economia QUANTO qualidade."*
+
+---
+
+## 31. Selo Final REAL DEFINITIVO 25/04/2026 (pós-madrugada 26/04)
+
+**Versões deployadas hoje:** **26 commits, 26 versões** (V1.9.47 → V1.9.72) — recorde absoluto consolidado.
+
+**Hash final do dia:** `trust-boundary-closed-ism-foundation-laid-identity-unified-fsm-cycle-closed-payload-capped`
+
+**Encadeamento histórico:**
+- 22-23/04: trust boundary clínico
+- 24/04: restauração + CI ativo + LGPD detectado
+- **25/04 (hoje + madrugada 26): governança + identidade + ISM Fase 1 + UI consolidation + fix ciclo FSM + cap payload + 5 regras de engenharia gravadas no repo**
+
+**Estado por domínio (fim REAL do dia 25/04 + madrugada 26/04):**
+
+| Domínio | Início 25/04 | Fim madrugada 26/04 |
+|---|---|---|
+| **Trust Boundary (auth)** | 🔴 `--no-verify-jwt` | ✅ V1.9.59 trust boundary fechado |
+| **Identidade (4 roles)** | 🟡 só admin (V1.9.52) | ✅ V1.9.65 todos 4 builders unificados |
+| **FSM clínico (AEC)** | 🟡 inconsistência refusal | ✅ V1.9.67 invalidate path |
+| **Ciclo FSM terminal** | 🔴 phase=COMPLETED nunca persistido | ✅ V1.9.70 persist em FINAL_RECOMMENDATION + completeAssessment |
+| **ISM (interaction state)** | 🔴 ausente | 🟡 Fase 1 (schema + log) |
+| **RLS / segurança schema** | 🟢 alto | ✅ V1.9.47+48 reforço |
+| **UX Reports** | 🟡 3 abas competindo | ✅ V1.9.68 consolidado |
+| **UX Admin visual** | 🟡 hex divergente | ✅ V1.9.69 padronizado |
+| **Recovery clínico** | 🔴 inexistente | ✅ V1.9.57+67 invalidate pattern |
+| **Bug DecompressionStream** | 🔴 "raw" inválido | ✅ V1.9.71 deflate-raw |
+| **Payload OpenAI** | 🔴 30k-80k tokens/turno (V1.9.55 inflou sem cap) | ✅ V1.9.72 whitelist por fase (7.5k tokens validado) |
+| **Engineering rules** | 🔴 sem regras escritas | ✅ ENGINEERING_RULES.md (5 regras + histórico) |
+| **Arquitetura 3 camadas** | 🔴 monolito GPT-first sem direção | 🟡 destino validado + roadmap definido |
+| **OpenAI quota** | 🟢 disponível | 🔴 esgotada (Ricardo recarregar) |
+
+**Tradução de fase final:**
+- **Antes 25/04:** *"sistema clínico com IA + risco crítico de privilege escalation + identidade fragmentada"*
+- **Fim 25/04:** *"sistema clínico com governança automatizada + trust boundary fechado + identidade unificada + ISM Fase 1"*
+- **Pós-madrugada 26/04:** *"sistema clínico com ciclo FSM completo + payload otimizado + 5 regras de engenharia + roadmap arquitetural validado pra escala real"*
+
+**14 → 17 princípios operacionais consolidados (acumulado):**
+1-14. (anteriores na Seção 28)
+15. Antes de chutar "bug de UI/label", consultar `institutional_trauma_log` últimas 6h (REGRA #5)
+16. Whitelist > truncate — controle de estrutura, não só de tamanho (REGRA #2)
+17. Reduzir tokens é defesa, roteamento é escala — fazer ambos, em ordem
+
+---
+
+## 32. Estado pra próxima sessão (handoff — não perder a meada)
+
+### Aguardando ação externa
+- 🔴 **Ricardo recarregar OpenAI** em https://platform.openai.com/account/billing
+- Sistema operando em fallback determinístico até lá (responde, mas sem GPT real)
+
+### Pronto pra rodar (sem precisar de mais código)
+- ✅ V1.9.72 deployada em prod, validada com 1 log real (7.533 tokens vs 30-80k antes)
+- ✅ Identity unification, ISM Fase 1, invalidate pattern, ciclo FSM — tudo ativo
+- ✅ ENGINEERING_RULES.md no repo guiando próximas decisões
+
+### Próxima sessão começa com
+1. **Validar V1.9.72 em prod real** — após recarga OpenAI, rodar:
+```sql
+SELECT
+  ROUND(AVG((payload->>'estimated_tokens')::int)) AS media,
+  MAX((payload->>'estimated_tokens')::int) AS pico,
+  COUNT(*) AS calls,
+  COUNT(*) FILTER (WHERE (payload->>'estimated_tokens')::int < 15000) AS ideal,
+  COUNT(*) FILTER (WHERE (payload->>'estimated_tokens')::int > 30000) AS risco
+FROM noa_logs
+WHERE interaction_type = 'payload_size_v1_9_72'
+  AND created_at > now() - interval '24 hours';
+```
+   - Esperado: media < 15k, pico < 25k, risco = 0
+
+2. **Se métricas baterem** → começar V1.9.73 (Verbatim First) — interceptar respostas verbatim AEC antes do GPT (memória `project_arquitetura_3_camadas`)
+
+3. **Se métricas desviarem** → bisect entre fases AEC pra identificar qual whitelist precisa mais campos
+
+### Memórias críticas pra recarregar
+- `project_arquitetura_3_camadas` — destino arquitetural validado
+- `ENGINEERING_RULES.md` (no repo) — 5 regras
+- `project_imre_cluster_escalado_25_04` — IMRE aguarda Ricardo decidir
+- `project_interaction_state_model_camada_fundacional` — ISM Fase 1 entregue, Fase 2 aguarda 24-48h telemetria
+- `project_aec_residual_state_25_04` — Bug A resolvido V1.9.67
+- `project_identity_gap_25_04` — resolvido V1.9.65
+
+### Backlog ordenado pós-recarga
+| # | Item | Tempo | Bloqueio |
+|---|---|---|---|
+| 1 | Validar V1.9.72 (24h telemetria) | passivo | ✅ pronta |
+| 2 | V1.9.73 Verbatim First | 2-3h | depende de #1 OK |
+| 3 | ISM Fase 2 (consent enforcement) | 30min | invariant lógico, sem bloqueio |
+| 4 | Observability dashboard 6 métricas | 1h | independente |
+| 5 | Cluster IMRE | 1-2h | aguarda Ricardo decidir A/B/C |
+| 6 | Investigar `review_status=draft` em 100% | investigação | produto, não código |
+| 7 | V1.9.74-75 (Intent classifier + Router) | 2-3 sessões | depende de #2 |
+
+### NÃO esquecer
+- 🔐 **Rotacionar PAT Supabase** se tiver tempo (foi usado intensamente nesta sessão)
+- 🚨 V1.9.55 ensinou: **toda mudança que altera payload precisa medir tokens depois** (REGRA #4)
+- ⚠️ Bug A persistente fechado mas motor DB-backed só vai gerar primeiro `is_complete=true` quando paciente real fizer AEC completa pós-V1.9.70
+
+### Frase-âncora pra começar amanhã
+> *"Você não tem problema de infraestrutura — você tem problema de eficiência por request. V1.9.72 cortou 4-10x. V1.9.73 (Verbatim First) corta mais 50%. Rumo: 3 camadas com LLM como último recurso."*
+
 Próxima sessão acorda com plano executável em `project_estado_e_backlog_25_04_manha`.
