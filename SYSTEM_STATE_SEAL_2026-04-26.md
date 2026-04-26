@@ -174,7 +174,8 @@ ORDER BY created_at DESC LIMIT 5;
 - Elite escalável (10x usuários sem refactor): **~18-27 dias** total
 
 **Achados destacados além de Etapa 1:**
-- 17 vulns npm (4 critical, 4 high) — `@xenova/transformers`, `wise-api/axios`, `xlsx`
+- ~~17~~ **16 vulns npm** (4 critical, 3 high, 9 moderate) — restantes: `@xenova/transformers` + `onnx-proto` (4 critical, possivelmente removível se feature de IA local não usada), `axios <0.31` via `wise-api` (high — precisa npm `overrides` + teste WiseCare end-to-end)
+  - ✅ **`xlsx` resolvido** (26/04 madrugada): vendored via CDN oficial SheetJS (`xlsx@0.20.3` pinado, `npm` registry está unmaintained). Trade-off explícito: `npm audit`/Dependabot/Snyk não escaneiam tarballs externas — checar `sheetjs.com/changelog` mensalmente. Smoke test com `.xlsx` real ainda pendente (admin valida quando tiver planilha à mão).
 - `tsc` e `lint` NÃO rodam no CI (102 erros TS passariam direto)
 - Bundle 4.7MB monolítico (sem code splitting)
 - 6 singletons compartilhando estado entre sessões
