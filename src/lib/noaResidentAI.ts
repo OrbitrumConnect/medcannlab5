@@ -1689,21 +1689,6 @@ export class NoaResidentAI {
           )
         }
 
-        // [V1.9.79] Garantir patientName do perfil quando state estiver vazio.
-        // Bug 26/04: reset por bug "agora" zerou state e startAssessment foi chamado
-        // com savedName vazio (porque savedName vinha do estado anterior já zerado).
-        // Resultado: IDENTIFICATION aceitou "dor no labio" como nome do paciente.
-        // users.name é a fonte de verdade — injetar se patientName vazio.
-        if (flowState && !flowState.data.patientName?.trim()) {
-          const profileName = platformData?.user?.name || (platformData?.user as any)?.full_name
-          if (profileName?.trim()) {
-            flowState.data.patientName = profileName.trim()
-            flowState.data.patientPresentation = profileName.trim()
-            await clinicalAssessmentFlow.persist(platformData.user.id)
-            console.log('[AEC V1.9.79] patientName injetado do perfil:', profileName.trim())
-          }
-        }
-
         // Se existe fluxo ativo, processar a resposta do usuário para avançar
         if (flowState) {
           try {
