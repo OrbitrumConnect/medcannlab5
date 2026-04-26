@@ -1635,21 +1635,44 @@ export class NoaResidentAI {
         // Card/botão "Iniciar avaliação clínica" = nova sessão desde a etapa 1.
         // Sem isto, estado antigo (ex.: COMPLAINT_DETAILS) no Supabase faz a 1.ª mensagem “travar” no meio do protocolo.
         if (platformIntentType === 'ASSESSMENT_START' && platformData.user.id) {
-          const patientName = platformData?.user?.name || platformData?.user?.full_name || undefined
-          clinicalAssessmentFlow.resetAssessment(platformData.user.id)
-          clinicalAssessmentFlow.startAssessment(
-            platformData.user.id,
-            patientName,
-            aecPhysicianName || undefined
-          )
-          flowState = clinicalAssessmentFlow.getState(platformData.user.id)
-          await clinicalAssessmentFlow.persist(platformData.user.id)
-          console.log(
-            'AEC: ASSESSMENT_START - sessao reiniciada (estado anterior descartado) | Nome:',
-            patientName || '(—)',
-            '| Profissional AEC:',
-            aecPhysicianName || '(padrao Dr. Ricardo Valenca)'
-          )
+          // [V1.9.74] AEC GATE V1.5 estendido — protecao contra reinicio acidental.
+          // Bug 26/04 (Carolina): elogio "vc esta fazendo a avaliacao clinica de forma correta"
+          // disparou ASSESSMENT_START via regex e destruiu 7min de coleta clinica.
+          // Fix: se AEC ja esta em fase clinica ativa, IGNORAR pedido de start.
+          // Whitelist de fases onde reset e seguro (inicio/fim/explicito):
+          const PHASES_ALLOWING_RESET: ReadonlyArray<string> = [
+            'INITIAL_GREETING',
+            'IDENTIFICATION',
+            'COMPLETED',
+            'INTERRUPTED',
+            'CONFIRMING_EXIT',
+            'CONFIRMING_RESTART'
+          ]
+          const currentPhase = flowState?.phase as string | undefined
+          const canReset = !flowState || (currentPhase && PHASES_ALLOWING_RESET.includes(currentPhase))
+
+          if (!canReset) {
+            console.log(
+              `⏳ [AEC GATE V1.5 ext] ASSESSMENT_START retido: fluxo clinico ativo (${currentPhase}) tem soberania. Mensagem tratada como conteudo da AEC.`
+            )
+            // NAO resetar, NAO startar. Continua o fluxo AEC normal — a mensagem cai no processamento de fase abaixo.
+          } else {
+            const patientName = platformData?.user?.name || platformData?.user?.full_name || undefined
+            clinicalAssessmentFlow.resetAssessment(platformData.user.id)
+            clinicalAssessmentFlow.startAssessment(
+              platformData.user.id,
+              patientName,
+              aecPhysicianName || undefined
+            )
+            flowState = clinicalAssessmentFlow.getState(platformData.user.id)
+            await clinicalAssessmentFlow.persist(platformData.user.id)
+            console.log(
+              'AEC: ASSESSMENT_START - sessao reiniciada (estado anterior descartado) | Nome:',
+              patientName || '(—)',
+              '| Profissional AEC:',
+              aecPhysicianName || '(padrao Dr. Ricardo Valenca)'
+            )
+          }
         } else if (!flowState && clientWantsAecStart) {
           const patientName = platformData?.user?.name || platformData?.user?.full_name || undefined
           clinicalAssessmentFlow.startAssessment(
