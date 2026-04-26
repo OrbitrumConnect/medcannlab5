@@ -1,0 +1,5 @@
+# MedCannLab pre-commit hook
+# Modo WARN: logs vazamentos de secrets mas NAO bloqueia o commit.
+# Quando Fase 1 (seguranca P0) for executada e secrets rotacionados,
+# remover o "|| true" abaixo para virar modo BLOCK.
+npx lint-staged || true
