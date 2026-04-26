@@ -18,6 +18,7 @@ import EixoRotaRedirect from './components/EixoRotaRedirect'
 import Breadcrumbs from './components/Breadcrumbs'
 import EixoSelector from './components/EixoSelector'
 import PaymentGuard from './components/PaymentGuard'
+import ErrorBoundary from './components/ErrorBoundary'
 
 // Pages
 import Landing from './pages/Landing'
@@ -105,6 +106,7 @@ function App() {
                 <NoaPlatformProvider>
                   <RealtimeProvider>
                     <ClinicalGovernanceProvider>
+                      <ErrorBoundary>
                       <Routes>
                         <Route path="/" element={<Landing />} />
                         <Route path="/reset-password" element={<ResetPassword />} />
@@ -324,6 +326,7 @@ function App() {
 
                         <Route path="*" element={<NotFound />} />
                       </Routes>
+                      </ErrorBoundary>
                     </ClinicalGovernanceProvider>
                   </RealtimeProvider>
                 </NoaPlatformProvider>
