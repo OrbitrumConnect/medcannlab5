@@ -207,4 +207,49 @@ ORDER BY created_at DESC LIMIT 5;
 
 ---
 
-*Selo gerado em 2026-04-26 ~02:30 BRT. Cruzamento: queries Management API + 42 diários do último mês + memórias de auto-memory + auditoria 360°.*
+## 10. Princípio de timing arquitetural (anti-regressão)
+
+**Arquitetura NÃO é implementada por intuição — é implementada por validação empírica.**
+
+### Erro recente (25/04)
+- ISM Fase 2 iniciada sem telemetria suficiente
+- Resultado: esforço sem validação, risco de regressão evitado por marcha-ré
+
+### Aplicação atual (V1.9.72+)
+
+**NÃO implementar novas camadas** (router, cache semântico, intent classifier, Verbatim First) **antes de:**
+
+1. OpenAI funcional (quota recarregada)
+2. V1.9.72 validado com 24-48h de tráfego real
+3. Métricas dentro do esperado:
+   - média < 15k tokens
+   - pico < 25k tokens
+   - alta proporção de payloads ideais
+
+### Justificativa
+
+- Sem GPT ativo → não há baseline comparável
+- Sem telemetria → não há evidência de gargalo real
+- Sem evidência → arquitetura vira opinião
+
+### Regra operacional
+
+> *"Sem dado real, qualquer arquitetura nova é fé, não engenharia."*
+
+> *"Sem dado, não há mudança de arquitetura."*
+
+### Ordem obrigatória (reforço da Seção 6)
+
+1. Segurança P0
+2. Validar V1.9.72/73 (telemetria 24-48h)
+3. Só então evoluir arquitetura (V1.9.74+ → V1.9.75 Verbatim First → V1.9.76 Intent local → V1.9.77 Cache semântico com `patient_id` no key → V1.9.78 Router formal)
+
+**Quebrar essa ordem = decisão consciente de risco técnico** (com justificativa registrada e aceita por Pedro/Ricardo).
+
+### Por que essa trava existe
+
+O sistema já funciona. Melhorias estruturais ficam visíveis. Tentação de "otimizar arquitetura" aumenta. **É exatamente aí que surgem regressões invisíveis.** Esta seção é proteção contra empolgação na próxima sessão.
+
+---
+
+*Selo gerado em 2026-04-26 ~02:30 BRT. Cruzamento: queries Management API + 42 diários do último mês + memórias de auto-memory + auditoria 360°. Seção 10 adicionada após análise estratégica (Pedro + GPT review).*
