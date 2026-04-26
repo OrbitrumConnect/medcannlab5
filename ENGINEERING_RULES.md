@@ -3,6 +3,8 @@
 > Regras de engenharia que sobrevivem ao projeto. Sempre que houver dúvida arquitetural, consultar este arquivo.
 >
 > Origem: lições consolidadas em 25-26/04/2026 após esgotamento de quota OpenAI por payload inflado.
+>
+> **Estado atual do sistema:** ver [`SYSTEM_STATE_SEAL_2026-04-26.md`](./SYSTEM_STATE_SEAL_2026-04-26.md) — ponto de verdade com cruzamento banco/diários/memórias e ordem obrigatória pra próxima sessão.
 
 ---
 
