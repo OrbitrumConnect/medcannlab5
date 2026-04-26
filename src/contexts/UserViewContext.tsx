@@ -66,13 +66,12 @@ export const UserViewProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const getEffectiveUserType = (userType?: string): UserType => {
     const normalizedUserType = normalizeUserType(userType || user?.type)
     const isAdmin = normalizedUserType === 'admin'
-    
+
     // Se é admin e há um tipo visual definido, retornar o tipo visual
     if (isAdmin && viewAsType) {
-      console.log('👁️ Admin visualizando como:', viewAsType, '(tipo real:', normalizedUserType, ')')
       return viewAsType
     }
-    
+
     // Caso contrário, retornar o tipo real
     return normalizedUserType
   }
