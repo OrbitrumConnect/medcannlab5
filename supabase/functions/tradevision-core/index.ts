@@ -1393,6 +1393,41 @@ Estrutura Obrigatória:
         }
         console.log('✅ [PIPELINE_STAGE] REPORT_GENERATED', { report_id: report.id, doctor_id: resolvedDoctorId });
 
+        // [V1.9.73] Assinatura de integridade (content hashing) — não é NFT blockchain.
+        // Hash SHA-256 do payload clínico congelado: prova que `content` não foi adulterado
+        // após geração. NÃO inclui email/nome (mutáveis legítimos — renomeação não quebra).
+        // Server-side por princípio: assinatura no client é forjável via patch de bundle.
+        try {
+            const signedPayload = {
+                report_id: report.id,
+                patient_id: report.patient_id,
+                content: report.content,
+                created_at: report.created_at
+            };
+            const payloadJson = JSON.stringify(signedPayload);
+            const encoded = new TextEncoder().encode(payloadJson);
+            const hashBuffer = await crypto.subtle.digest('SHA-256', encoded);
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            const signatureHash = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+
+            const { error: signError } = await supabaseClient
+                .from('clinical_reports')
+                .update({
+                    signature_hash: signatureHash,
+                    signed_payload: signedPayload,
+                    signed_at: new Date().toISOString()
+                })
+                .eq('id', report.id);
+
+            if (signError) {
+                console.warn('⚠️ [SIGNATURE] Falha ao persistir hash:', signError.message);
+            } else {
+                console.log('🔏 [SIGNATURE] Report assinado:', report.id, 'hash=', signatureHash.substring(0, 16) + '...');
+            }
+        } catch (sigErr) {
+            console.warn('⚠️ [SIGNATURE] Erro inesperado:', (sigErr as Error)?.message);
+        }
+
         // 4. Extração Determinística de Eixos (Padrão 04/04)
         console.log('🧠 [PIPELINE_STAGE] AXES', { report_id: report.id });
         const axes = [
