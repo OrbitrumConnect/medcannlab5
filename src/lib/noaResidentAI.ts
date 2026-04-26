@@ -1624,13 +1624,20 @@ export class NoaResidentAI {
         let flowState = clinicalAssessmentFlow.getState(platformData.user.id)
 
         const normForStart = userMessage.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
-        // Paciente pede avaliação no texto mesmo quando o Core ainda não emitiu ASSESSMENT_START
+        // [V1.9.81] Detector tolerante de intencao AEC.
+        // Bug 26/04 (Pedro Paciente): "vamos fazer uma avalaicao?" (typo lai/lia) nao casava
+        // com regex rigido /avaliac(ao|ão)/ → FSM nao disparava → Assistant API improvisava
+        // AEC inteira sem persistencia (AEC fake silenciosa).
+        // Regra de produto (Pedro 26/04): se paciente PEDE avaliacao mesmo errado, ativa FSM.
+        // Conversa social ("ola noa") continua caindo no chat livre normal.
+        // Cobre: typos comuns (avalaicao, abaliacao, avliacao), sinonimos clinicos
+        // (consulta, triagem, atendimento), frases canonicas (protocolo IMRE).
+        const aecKeyword = /\b(aval[ai][a-z]{0,3}c?[aã]o|abaliac[aã]o|avliac[aã]o|imre|protocolo|triagem|primeira\s+consulta|nova\s+consulta|atendimento\s+clinic[ao]?)\b/
+        const intentVerb = /\b(quero|gostaria|preciso|desejo|vamos|fazer|comecar|come[cç]ar|iniciar|pedir|solicitar|bora|start)\b/
+        const aecCanonical = /\b(iniciar\s+(a\s+)?(avaliac|imre|protocolo)|protocolo\s+imre|avaliac[aã]o\s+clinic[ao]?\s+inicial|primeira\s+consulta)/
         const clientWantsAecStart =
           intent === 'CLINICA' &&
-          (/\b(quero|gostaria|preciso|desejo|vamos|fazer|pedir)\b[\s\S]{0,120}\b(avaliac(ao|ão)|imre)\b/.test(normForStart) ||
-            /\b(iniciar|comecar|come[cç]ar|start)\s+(a\s+)?(avaliacao|imre)\b/.test(normForStart) ||
-            /\b(avaliacao|imre)\s+clinic(a)?\b/.test(normForStart) ||
-            /\b(protocolo\s+imre|avaliacao\s+clinica\s+inicial)\b/.test(normForStart))
+          (aecCanonical.test(normForStart) || (aecKeyword.test(normForStart) && intentVerb.test(normForStart)))
 
         // Card/botão "Iniciar avaliação clínica" = nova sessão desde a etapa 1.
         // Sem isto, estado antigo (ex.: COMPLAINT_DETAILS) no Supabase faz a 1.ª mensagem “travar” no meio do protocolo.
