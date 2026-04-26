@@ -1689,6 +1689,21 @@ export class NoaResidentAI {
           )
         }
 
+        // [V1.9.80] Garantir patientName do perfil quando state estiver vazio.
+        // Defesa contra a janela onde o FSM (clinicalAssessmentFlow.ts:791) trata
+        // qualquer resposta como nome se patientName vazio. users.name e fonte de
+        // verdade — paciente esta logado, nao deve precisar redigitar nome.
+        // NOTA: nao toca cold guard, retomada, invalidated_at — apenas popula nome.
+        if (flowState && !flowState.data.patientName?.trim()) {
+          const profileName = platformData?.user?.name || (platformData?.user as any)?.full_name
+          if (profileName?.trim()) {
+            flowState.data.patientName = profileName.trim()
+            flowState.data.patientPresentation = profileName.trim()
+            await clinicalAssessmentFlow.persist(platformData.user.id)
+            console.log('[AEC V1.9.80] patientName injetado do perfil:', profileName.trim())
+          }
+        }
+
         // Se existe fluxo ativo, processar a resposta do usuário para avançar
         if (flowState) {
           try {
