@@ -1250,7 +1250,13 @@ export class ClinicalAssessmentFlow {
     // Salvar resposta
     if (currentQ.isList) {
       const isUserStopping = this.meansNoMore(userResponse)
-      const REACHED_LIMIT = state.phaseIterationCount >= 2
+      // [V1.9.76] Reduzido de >=2 para >=1 em processComplaintDetails (sintomas/melhora/piora).
+      // Bug 26/04 (Carolina trace 18:30): GPT no Core avança para próxima sub-pergunta após
+      // 1 resposta, mas FSM client ficava esperando 2 (REACHED_LIMIT antigo). Resultado: paciente
+      // respondia "O que piora?" mas FSM ainda em complaintImprovements -> resposta caía em melhora.
+      // Trace provou: melhora=3, piora=2, hpp=0, lifestyle=0 — todos os dados depois do 1o turno
+      // de melhora ficaram empilhados em campos errados. Alinhando ritmo com GPT.
+      const REACHED_LIMIT = state.phaseIterationCount >= 1
 
       if (!isUserStopping && userResponse.trim() && !REACHED_LIMIT) {
         const field = currentQ.field as keyof AssessmentData
