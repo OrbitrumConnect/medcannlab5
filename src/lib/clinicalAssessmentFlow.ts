@@ -1719,7 +1719,16 @@ export class ClinicalAssessmentFlow {
   private getPhaseResumePrompt(phase: AssessmentPhase, state: AssessmentState): string {
     switch (phase) {
       case 'INITIAL_GREETING': return 'Pode se apresentar quando estiver pronto(a).'
-      case 'IDENTIFICATION': return 'O que trouxe você à nossa avaliação hoje?'
+      // [V1.9.79] Bug 26/04 (Carolina/Pedro paciente): retomada em IDENTIFICATION
+      // mostrava "O que trouxe você?" — pergunta de QUEIXA. Mas o FSM (linha 791)
+      // ainda esperava NOME e salvava qualquer resposta como patientName. Resultado:
+      // "dor no labio" virou patientName e patientPresentation, e a sessao avancou
+      // pra COMPLAINT_LIST corrompida. Fix: ramificar pelo state — se ainda nao tem
+      // nome, pedir o nome; se ja tem, pedir a queixa (comportamento antigo).
+      case 'IDENTIFICATION':
+        return state.data.patientName?.trim()
+          ? 'O que trouxe você à nossa avaliação hoje?'
+          : 'Por favor, apresente-se para começarmos sua avaliação.'
       case 'COMPLAINT_LIST': return 'O que mais você gostaria de relatar?'
       case 'MAIN_COMPLAINT': return `Das queixas relatadas (${state.data.complaintList.join(', ')}), qual considera a principal?`
       case 'COMPLAINT_DETAILS': return 'Continuando sobre sua queixa principal...'
