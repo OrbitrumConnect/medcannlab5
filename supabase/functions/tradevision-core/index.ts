@@ -4207,13 +4207,117 @@ ${contentExcerpt || '(Texto não disponível para este documento. O conteúdo ai
             console.warn(`⚠️ [TOKEN MGMT V1.9.61] RAG context truncado: ${originalLength} → ${safeReasoningContext.length} chars`)
         }
 
+        // [V1.9.72] WHITELIST POR FASE — patientData enxuto vai pro system prompt.
+        //
+        // Ver ENGINEERING_RULES.md REGRA #2 — whitelist > truncate.
+        //
+        // Antes (V1.9.55→V1.9.71): JSON.stringify(patientData) inteiro inflava
+        // o system prompt em 30k-50k tokens. Combinado com history + RAG, payload
+        // total estourava o limite 128k do GPT-4o (8 overflow só em 25/04 com
+        // pico de 153.886 tokens). Quota OpenAI esgotou em 1 dia (26/04 madrugada).
+        //
+        // Agora: whitelist conservadora + campos específicos da fase atual.
+        // Conteúdo clínico relevante preservado. Identidade preservada.
+        // Comportamento estrutural NÃO muda (mesma chamada GPT, mesmo system
+        // prompt, só payload menor).
+        const safePatientData: Record<string, any> = {
+            user: patientData?.user ? {
+                id: patientData.user.id,
+                name: patientData.user.name,
+                email: patientData.user.email,
+                type: patientData.user.type || patientData.user.user_type,
+            } : null,
+            intent: patientData?.intent ?? null,
+            userEmail: patientData?.userEmail ?? null,
+            aecConsultationPhysicianName: patientData?.aecConsultationPhysicianName ?? null,
+        }
+
+        // Whitelist por fase do assessmentContext — só campos relevantes pra fase atual
+        const aec = patientData?.assessmentContext
+        if (aec && typeof aec === 'object') {
+            const aecBase: Record<string, any> = {
+                phase: aec.phase,
+                queixa_principal: aec.mainComplaint || aec.queixa_principal,
+                top_sintomas: Array.isArray(aec.complaintList)
+                    ? aec.complaintList.slice(0, 5)
+                    : Array.isArray(aec.knownSymptoms)
+                        ? aec.knownSymptoms.slice(0, 5)
+                        : [],
+                consent: aec.consensusAgreed ?? aec.consentGiven ?? null,
+            }
+            // Campos específicos por fase (preserva nuance onde precisa)
+            const phase = aec.phase
+            if (phase === 'COMPLAINT_DETAILS' || phase === 'MAIN_COMPLAINT') {
+                if (aec.complaintLocation) aecBase.complaintLocation = aec.complaintLocation
+                if (aec.complaintOnset) aecBase.complaintOnset = aec.complaintOnset
+                if (aec.complaintDescription) aecBase.complaintDescription = aec.complaintDescription
+                if (Array.isArray(aec.complaintAssociatedSymptoms) && aec.complaintAssociatedSymptoms.length > 0) {
+                    aecBase.complaintAssociatedSymptoms = aec.complaintAssociatedSymptoms.slice(0, 5)
+                }
+                if (Array.isArray(aec.complaintImprovements) && aec.complaintImprovements.length > 0) {
+                    aecBase.complaintImprovements = aec.complaintImprovements.slice(0, 5)
+                }
+                if (Array.isArray(aec.complaintWorsening) && aec.complaintWorsening.length > 0) {
+                    aecBase.complaintWorsening = aec.complaintWorsening.slice(0, 5)
+                }
+            }
+            if (phase === 'MEDICAL_HISTORY' && Array.isArray(aec.medicalHistory)) {
+                aecBase.medicalHistory = aec.medicalHistory.slice(0, 10)
+            }
+            if (phase === 'FAMILY_HISTORY_MOTHER' && Array.isArray(aec.familyHistoryMother)) {
+                aecBase.familyHistoryMother = aec.familyHistoryMother.slice(0, 8)
+            }
+            if (phase === 'FAMILY_HISTORY_FATHER' && Array.isArray(aec.familyHistoryFather)) {
+                aecBase.familyHistoryFather = aec.familyHistoryFather.slice(0, 8)
+            }
+            if (phase === 'LIFESTYLE_HABITS' && Array.isArray(aec.lifestyleHabits)) {
+                aecBase.lifestyleHabits = aec.lifestyleHabits.slice(0, 8)
+            }
+            if (phase === 'OBJECTIVE_QUESTIONS' || phase === 'CONSENSUS_REVIEW') {
+                if (aec.allergies) aecBase.allergies = aec.allergies
+                if (aec.regularMedications) aecBase.regularMedications = aec.regularMedications
+                if (aec.sporadicMedications) aecBase.sporadicMedications = aec.sporadicMedications
+            }
+            safePatientData.aec = aecBase
+        }
+
+        const safePatientDataStr = JSON.stringify(safePatientData)
+
         const messages = [
-            { role: "system", content: systemPrompt + safeReasoningContext + phaseInstruction + interactionStyleInstruction + `\nPERFIL DO USUÁRIO: ${userRole} (${profileInstruction})\nCONTEXTO:\n${JSON.stringify(patientData)}` },
+            { role: "system", content: systemPrompt + safeReasoningContext + phaseInstruction + interactionStyleInstruction + `\nPERFIL DO USUÁRIO: ${userRole} (${profileInstruction})\nCONTEXTO:\n${safePatientDataStr}` },
             ...systemInjection,
             ...trimmedHistory,
             ...phaseReinforcementMessages,
             { role: "user", content: cleanHumanMessage }
         ]
+
+        // [V1.9.72] TELEMETRIA — log de payload por camada antes de chamar OpenAI.
+        // Permite validar via SQL que o cap está funcionando em prod real.
+        // ENGINEERING_RULES.md REGRA #4: telemetria antes de comportamento.
+        try {
+            const totalChars = messages.reduce((acc, m) => acc + (typeof m.content === 'string' ? m.content.length : 0), 0)
+            await supabaseClient.from('noa_logs').insert({
+                user_id: effectiveUserId,
+                interaction_type: 'payload_size_v1_9_72',
+                payload: {
+                    interaction_id,
+                    system_base_chars: systemPrompt.length,
+                    rag_chars: safeReasoningContext?.length || 0,
+                    phase_instr_chars: phaseInstruction?.length || 0,
+                    interaction_style_chars: interactionStyleInstruction?.length || 0,
+                    patient_data_chars: safePatientDataStr.length,
+                    history_msgs: trimmedHistory.length,
+                    history_chars: trimmedHistory.reduce((acc: number, m: any) => acc + (typeof m.content === 'string' ? m.content.length : 0), 0),
+                    user_msg_chars: cleanHumanMessage.length,
+                    total_chars: totalChars,
+                    estimated_tokens: Math.ceil(totalChars / 3),
+                    assessment_phase: assessmentPhase,
+                    role: userRole,
+                }
+            })
+        } catch (logErr) {
+            console.warn('[V1.9.72] Falha ao logar payload_size (não bloqueia):', logErr)
+        }
 
         console.log(`🧠 Contexto histórico de ${conversationHistory?.length || 0} mensagens adicionado`)
 
