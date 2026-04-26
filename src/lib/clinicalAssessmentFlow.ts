@@ -666,7 +666,12 @@ export class ClinicalAssessmentFlow {
       lowerResponse.includes('fluxo errado') ||
       normLow.includes('comecar do inicio') ||
       normLow.includes('comecar ela do inicio') ||
-      /\b(uma\s+nova|nova\s+sessao|nova\s+rodada|triagem|agora|triagem)\b/.test(normLow) ||
+      // [V1.9.77] Removido "agora" do regex de reinicio. Bug 26/04 (paciente Carolina):
+      // descricao "comecou com bolha agora virou ferida" disparava resetAssessment()
+      // mid-COMPLAINT_DETAILS porque "agora" matchava como sinal de restart. "agora" e
+      // palavra extremamente comum em relato clinico ("dor agora", "agora piorou") e nao
+      // tem relacao semantica com pedir nova avaliacao. Tambem deduplicado "triagem".
+      /\b(uma\s+nova|nova\s+sessao|nova\s+rodada|triagem)\b/.test(normLow) ||
       // Entradas naturais (Titan 04/04)
       normLow.includes('iniciar avaliacao') ||
       normLow.includes('iniciar uma avaliacao') ||
