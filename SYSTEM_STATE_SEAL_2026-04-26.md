@@ -143,6 +143,22 @@ Banco prova que o sistema sobreviveu sem IA:
 6. Branch protection em `main` + status checks required
 7. Fechar S4 JWT (`tradevision-core --no-verify-jwt`)
 
+### Etapa 1.5 — 3 P0 descobertos via log real (26/04 manhã)
+
+Análise de log de produção revelou 3 problemas operacionais não cobertos na auditoria 360°:
+
+1. **Loop de render no `UserViewContext`** ([src/contexts/UserViewContext.tsx](./src/contexts/UserViewContext.tsx)) — `console.log` dentro de `getEffectiveUserType` disparava 80+ vezes por sessão (chamado por todo consumer em todo render). **Causa raiz mais profunda:** dual-source-of-truth entre `user.type` (Supabase `user_roles`) e `viewAsType` (localStorage), Provider sem `useMemo`/`useCallback`.
+   - **Fix de superfície aplicado em 26/04 (commit isolado):** remover `console.log` do getter (loga apenas em `setViewAsType`)
+   - **Fix estrutural pendente:** memoization completa + decisão de fonte única → fica pra Fase 4 #20 (singletons + Context refactor)
+
+2. **Signed URLs do Supabase Storage expirando silenciosamente** — [Library.tsx:613](./src/pages/Library.tsx#L613) e [NoaConversationalInterface.tsx:2317](./src/components/NoaConversationalInterface.tsx#L2317) geram URL com TTL=30 dias e persistem no banco; após 30d viram `400`. RAG quebra silenciosa.
+   - **Fix proposto:** regenerar on-demand quando RAG/UI precisa do conteúdo. Esforço M (~2h). Pendente.
+
+3. **Log `[Assistant] Resposta recebida` não distingue origem** — [noaResidentAI.ts:405](./src/lib/noaResidentAI.ts#L405). Hoje todas respostas vêm do fallback determinístico (OpenAI fora). Quando OpenAI voltar, distinção entre `[GPT]` vs `[FALLBACK]` será necessária pra debug.
+   - **Fix proposto:** prefixo dinâmico baseado em `metadata.offline`. Pendente até OpenAI voltar (Fase 2).
+
+**Princípio aplicado:** "reduzir ruído + estabilizar fluxo atual, não criar nova camada agora" (validado por GPT review). Arbitration Layer (proposta lateral) violaria Seção 10 — fica embutida na Fase 4.
+
 ### Etapa 2 — Validar V1.9.72 e V1.9.73 (quando Ricardo recarregar OpenAI)
 ```sql
 -- V1.9.72 (cap payload):
