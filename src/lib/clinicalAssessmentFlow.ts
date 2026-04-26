@@ -355,6 +355,9 @@ export class ClinicalAssessmentFlow {
     for (const [uid, state] of entries) {
       if (!state || !uid) continue
       try {
+        // [V1.9.75 TRACE] persist-snapshot: ver exatamente o que vai pro banco
+        const _s = state as AssessmentState
+        console.log(`[AEC TRACE] persist-snapshot | uid=${(uid as string).substring(0,8)} phase=${_s.phase} qIdx=${_s.currentQuestionIndex} iter=${_s.phaseIterationCount} sizes={lifestyle:${_s.data.lifestyleHabits?.length||0},fammat:${_s.data.familyHistoryMother?.length||0},famfat:${_s.data.familyHistoryFather?.length||0},hpp:${_s.data.medicalHistory?.length||0},melhora:${_s.data.complaintImprovements?.length||0},piora:${_s.data.complaintWorsening?.length||0}}`)
         const { error } = await supabase
           .from('aec_assessment_state')
           .upsert([{
@@ -480,6 +483,9 @@ export class ClinicalAssessmentFlow {
    * está saindo, não a que está entrando).
    */
   private markPhaseCompleted(state: AssessmentState, phase: AssessmentPhase): void {
+    // [V1.9.75 TRACE] mark-completed: ver quando fase é marcada e tamanhos dos arrays naquele momento.
+    // Permite detectar "fase marcada como completa SEM ter dado coletado" (fantasma) — bug 26/04 88ca1797.
+    console.log(`[AEC TRACE] mark-completed | phase=${phase} sizes={lifestyle:${state.data.lifestyleHabits?.length||0},fammat:${state.data.familyHistoryMother?.length||0},famfat:${state.data.familyHistoryFather?.length||0},hpp:${state.data.medicalHistory?.length||0},melhora:${state.data.complaintImprovements?.length||0},piora:${state.data.complaintWorsening?.length||0},lista:${state.data.complaintList?.length||0}}`)
     if (!state.completedPhases) state.completedPhases = []
     if (!state.completedPhases.includes(phase)) {
       state.completedPhases.push(phase)
@@ -737,6 +743,10 @@ export class ClinicalAssessmentFlow {
     }
 
     const hasMore = !this.meansNoMore(userTurn)
+
+    // [V1.9.75 TRACE] write-before: ver qual case do switch sera executado para este input.
+    // Combinado com mark-completed e persist-snapshot, permite reconstruir trajetoria exata do state.
+    console.log(`[AEC TRACE] write-before | phase=${state.phase} qIdx=${state.currentQuestionIndex} iter=${state.phaseIterationCount} hasMore=${hasMore} input="${userTurn.substring(0,50)}"`)
 
     // Processar resposta baseado na fase atual
     switch (state.phase) {
