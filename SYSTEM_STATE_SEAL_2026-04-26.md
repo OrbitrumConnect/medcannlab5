@@ -116,6 +116,20 @@ Banco prova que o sistema sobreviveu sem IA:
 - Remover não resolve — `ClinicalAssessment.tsx` usa tabelas direto, não importa desses arquivos
 - **Status: dormente / decisão Ricardo pendente**
 
+### `src/pages/AIDocumentChat.tsx` + cadeia RAG local (xenova)
+- Página em rota viva (`App.tsx:232` — `path="ai-documents"`)
+- Cadeia: `AIDocumentChat` → `RAGSystem` → `LocalLLM` → `@xenova/transformers` (4 arquivos)
+- **Investigação banco (26/04 manhã) — zero uso real:**
+  - 46 documentos na tabela `documents`, mas **zero têm embeddings**
+  - Tabela `ai_saved_documents`: vazia (0 rows)
+  - Tabela `document_chunks`: nem existe
+  - `noa_logs` últimos 90 dias: zero menções a AIDocumentChat/RAGSystem/LocalLLM
+  - Último upload em qualquer categoria: 13/03/2026 (~6 semanas atrás)
+- **Sem entry point pelo UI:** zero `<Link to>` ou `navigate()` apontando pra `/ai-documents` em sidebar/menu
+- **Custo de manter:** 4 vulns critical no `npm audit` (vêm de `onnxruntime-web`/`onnx-proto`) + bundle inflado (xenova arrasta ONNX runtime)
+- **Status: feature 100% morta na prática / decisão Ricardo pendente** (3 caminhos: deprecar / manter / refatorar pra `pgvector` + OpenAI embeddings)
+- **Tentativa de remoção em 26/04 madrugada falhou** — Grep inicial não pegou cadeia de imports, build quebrou, restaurado imediatamente. Lição: `npm run build` antes de `npm uninstall` é smoke test obrigatório.
+
 ---
 
 ## 6. Próxima sessão — ORDEM OBRIGATÓRIA
