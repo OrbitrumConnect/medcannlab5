@@ -165,6 +165,94 @@ ORDER BY created_at DESC LIMIT 10;
 - `timeout` → infra/network
 - `500 internal_server_error` → OpenAI side
 
+### Runbook — OpenAI Down (fluxo passo-a-passo)
+
+**Use quando o sistema estiver respondendo "🟡 [OFFLINE] Modo Determinístico" repetidamente.**
+
+#### Passo 1 — Detectar (1 minuto)
+Sintomas externos:
+- Console do browser mostra `🟡 [OFFLINE] Nôa operando em Modo Determinístico (Consciência Reduzida)` em todas as respostas
+- Respostas templateadas/genéricas (ex: "Posso ajudar com dados, navegação e funções operacionais")
+- Sem variação, sem nuance clínica
+
+Prova interna (banco):
+```sql
+SELECT created_at, severity, LEFT(metadata->>'error', 100) AS err
+FROM institutional_trauma_log
+WHERE reason ILIKE '%Brain Disconnect%'
+  AND created_at > now() - interval '6 hours'
+ORDER BY created_at DESC LIMIT 10;
+```
+
+Se aparece evento recente (< 1h) → confirma OpenAI down em produção real.
+
+#### Passo 2 — Diagnosticar (2 minutos)
+Identificar o tipo do erro pela mensagem em `metadata->>'error'`:
+
+| Padrão na mensagem | Diagnóstico | Camada do problema |
+|---|---|---|
+| `429 insufficient_quota` | Cota mensal OpenAI esgotada | **Billing** (precisa recarregar plano) |
+| `429 rate_limit_exceeded` | Rate limit do tier atual atingido | **Rate limit** (esperar reset ou subir tier) |
+| `400 maximum context length is 128000 tokens` | Payload excedeu 128k | **Código nosso** (regressão de cap V1.9.72) |
+| `timeout` ou `connect ECONNREFUSED` | Rede/infra | **Network** (Supabase ↔ OpenAI) |
+| `500 internal_server_error` | OpenAI lado | **Externo** (status.openai.com) |
+
+#### Passo 3 — Mitigar (curto prazo, ações imediatas)
+
+**Sistema já está mitigado automaticamente:**
+- Fallback determinístico V1.9.61 (5 camadas) ativo em `tradevision-core/index.ts:4366` (`[OPENAI DOWN] Ativando Modo Determinístico`)
+- Reports continuam sendo gerados com `mode: 'deterministic'` (validado: 12h de operação sem perda em 25-26/04)
+- Self-healing AEC V1.9.57 cura states inconsistentes automaticamente
+
+**Ação humana necessária:**
+- Comunicar usuários ativos (banner UI ou Slack interno) que respostas estão em modo simplificado
+- Se for billing: avisar Ricardo/financeiro pra recarregar
+- Se for context length: investigar regressão (ver `noa_logs.payload_size_v1_9_72` últimos 1h — algum pico > 100k?)
+
+#### Passo 4 — Recuperar (médio prazo, restaurar GPT)
+
+Por tipo de erro:
+
+| Tipo | Ação |
+|---|---|
+| `insufficient_quota` | Recarregar plano OpenAI (billing.openai.com). ~5min após pagamento já volta |
+| `rate_limit_exceeded` | Esperar janela de reset (1min ou 1h conforme tier) OU subir tier (Tier 1 → 2 → 3 etc) |
+| `maximum context length` | Investigar regressão de cap. Reverter commit que aumentou payload OU ajustar whitelist em `tradevision-core` |
+| `timeout` | Verificar status.openai.com + status.supabase.com. Se ambos OK, investigar Edge Function logs |
+| `500 internal_server_error` | Esperar (problema lado OpenAI). Monitorar status.openai.com |
+
+#### Passo 5 — Validar recuperação (5 minutos)
+
+Após restaurar:
+```sql
+-- 1. Confirmar que erros pararam de aparecer
+SELECT MAX(created_at) AS ultimo_erro
+FROM institutional_trauma_log
+WHERE reason ILIKE '%Brain Disconnect%';
+-- Esperado: timestamp > 30 minutos atrás
+
+-- 2. Confirmar que reports novos voltaram a usar GPT (mode != deterministic)
+SELECT id, content->'metadata'->>'system_version' AS versao,
+       content->'metadata'->>'mode' AS mode
+FROM clinical_reports
+WHERE created_at > now() - interval '1 hour'
+ORDER BY created_at DESC LIMIT 3;
+-- Esperado: mode IS NULL ou 'gpt' (não 'deterministic')
+
+-- 3. Confirmar que payload_size se mantém < 25k (V1.9.72 cap funcionando)
+SELECT ROUND(AVG((payload->>'estimated_tokens')::int)) AS media,
+       MAX((payload->>'estimated_tokens')::int) AS pico
+FROM noa_logs
+WHERE interaction_type = 'payload_size_v1_9_72'
+  AND created_at > now() - interval '1 hour';
+-- Esperado: media < 15k, pico < 25k
+```
+
+#### Quando escalar / pausar features
+
+- **Se billing demora mais de 4h** → considerar pausar features novas (V1.9.7x, novas migrations) até restaurar GPT, pra evitar mascarar regressões
+- **Se 400 context length recorrente** → bloquear merges que afetem `tradevision-core` até cap ser revisado
+
 ---
 
 ## Histórico de regras (lições registradas)
