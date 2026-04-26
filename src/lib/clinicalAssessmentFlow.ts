@@ -372,15 +372,6 @@ export class ClinicalAssessmentFlow {
             // [V1.9.1] completed_phases — acompanha as fases percorridas.
             // A coluna is_complete (GENERATED) do banco deriva de completed_phases @> required_phases.
             completed_phases: (state as AssessmentState).completedPhases || [],
-            // [V1.9.78] Limpar invalidated_at no upsert. Sem isso, sessão anterior
-            // invalidada (cold guard V1.9.57 ou refusal V1.9.67) deixava a row marcada
-            // como inválida; nova sessão sobrescrevia phase/data mas mantinha o stamp,
-            // fazendo loadStateFromDB() (que filtra invalidated_at IS NULL) ignorar o
-            // state atual ao recarregar. Resultado silencioso: paciente perdia sessão
-            // ao fechar/reabrir o app. Bug descoberto 26/04 inspecionando state da
-            // Carolina (started_at hoje, invalidated_at de ontem).
-            invalidated_at: null,
-            invalidation_reason: null,
           } as any], { onConflict: 'user_id' })
 
         if (error) {
