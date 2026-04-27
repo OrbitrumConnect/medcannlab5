@@ -4378,6 +4378,43 @@ ${contentExcerpt || '(Texto não disponível para este documento. O conteúdo ai
             });
 
             // ============================================================
+            // [V1.9.82] FAIL-SAFE CLINICO ORIENTADO POR PROTOCOLO
+            // Autorizacao: Dr. Ricardo Valenca 2026-04-26 noite
+            //
+            // Caso real (Carolina, 2026-04-26 21:11+): OpenAI down, fallback caiu
+            // em frase institucional ("Posso registrar suas observacoes...") durante
+            // AEC ativa em COMPLAINT_DETAILS. Quebra de contrato clinico.
+            //
+            // Principio: "Se a Noa cair, ela tem que cair para o metodo —
+            // nunca para o generico."
+            //
+            // Regra de soberania:
+            //   IF assessmentPhase ATIVA E nextQuestionHint DISPONIVEL:
+            //     resposta = nextQuestionHint VERBATIM (sem opening/body/transparency)
+            //
+            // Resolve P0 clinico mesmo offline. Parte da Onda 2b do plano
+            // arquitetura_3_camadas (Verbatim First).
+            // ============================================================
+            const isAecActiveOffline =
+                !!assessmentPhase &&
+                assessmentPhase !== 'COMPLETED' &&
+                assessmentPhase !== 'INTERRUPTED' &&
+                !!(nextQuestionHint && nextQuestionHint.trim());
+
+            if (isAecActiveOffline) {
+                console.log(`🛡️ [V1.9.82 FAIL-SAFE CLINICO] AEC ativa (${assessmentPhase}) + Roteiro Selado disponivel. Devolvendo verbatim no lugar do fallback institucional.`);
+                return {
+                    choices: [{
+                        message: {
+                            content: nextQuestionHint!.trim()
+                        }
+                    }],
+                    usage: { total_tokens: 0 },
+                    model: 'TradeVision-Core-AEC-Failsafe-v1.9.82'
+                } as any;
+            }
+
+            // ============================================================
             // 2. MOTOR DETERMINÍSTICO SEMÂNTICO (5 Camadas)
             //    Composição textual inteligente sem LLM. Respeita:
             //    - Triggers (imutáveis)
