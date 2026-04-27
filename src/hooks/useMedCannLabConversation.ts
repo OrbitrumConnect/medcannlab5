@@ -1019,6 +1019,15 @@ export const useMedCannLabConversation = (options?: {
 
     setMessages(prev => [...prev, userMessage])
 
+    // V1.9.95-B: mensagens de SISTEMA (action_cards locais como "✅ Agendamento confirmado!")
+    // sao apenas displays no chat — NAO devem ser enviadas ao Core como input do usuario.
+    // Sem este early return, o GPT-4o respondia ao "Agendamento confirmado!" oferecendo
+    // mais agendamento (TRIGGER_SCHEDULING no texto), abrindo widget duplicado pos-AEC.
+    if (options.role === 'system') {
+      console.log('🛈 [SYSTEM_MSG] Card de sistema adicionado ao chat (sem chamada ao Core).')
+      return
+    }
+
     try {
       console.log('📨 Processando mensagem para IA:', trimmed.substring(0, 50) + '...')
       const contextualizedMessage =

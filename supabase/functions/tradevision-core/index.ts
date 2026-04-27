@@ -4959,34 +4959,49 @@ ${contentExcerpt || '(Texto não disponível para este documento. O conteúdo ai
             }
         }
 
-        // 🧠 TRIGGER AUTOMÁTICO VIA LLM TAG (modelo selado: GPT emite → Core confia, nunca ignora a tag)
-        // Se o LLM incluiu [TRIGGER_SCHEDULING], sempre abrir widget. Não sobrescrever a resposta nesse caso.
+        // 🧠 TRIGGER AUTOMÁTICO VIA LLM TAG
+        // V1.9.95: ANTES era "modelo selado: GPT emite → Core confia, nunca ignora a tag".
+        // Mas isso bypassava o AEC GATE V1.5 quando GPT emitia [TRIGGER_SCHEDULING] durante
+        // AEC ativa (ex: Pedro Paciente 27/04 18:54, fase=COMPLAINT_DETAILS qIdx=5 iter=1).
+        // Resultado: widget abria prematuramente no MEIO da AEC, e a mensagem ficava com
+        // trigger_scheduling=true para sempre — quando paciente terminava AEC e agendava
+        // pelo card final, a mensagem antiga ainda renderizava widget duplicado.
+        //
+        // V1.9.95 RESPEITA O GATE: se AEC ativa SEM override (paciente nao pediu agendar
+        // explicitamente), strippa o token da resposta e NAO liga o flag. REGRA HARD §1
+        // preservada: agendamento durante AEC so com pedido explicito do paciente.
         shouldTriggerScheduling = shouldTriggerScheduling || shouldTriggerSchedulingWidget;
         if (aiResponse?.includes(TRIGGER_SCHEDULING_TOKEN)) {
-            shouldTriggerScheduling = true;
-            console.log('⚡ [TRIGGER] Tag de agendamento detectada na resposta da IA. Abrindo widget.');
-            try {
-                await supabaseClient.from('cognitive_events').insert({
-                    intent: currentIntent,
-                    action: 'INTENT_CONFIRMATION',
-                    decision_result: 'SIGNAL',
-                    source: 'AI_RESPONSE_TAG',
-                    metadata: {
-                        trigger: 'TRIGGER_SCHEDULING',
-                        tag: 'TRIGGER_SCHEDULING',
-                        suggested_intent: 'ADMIN',
-                        origin: 'AI_RESPONSE_TAG',
-                        contract_token: TRIGGER_SCHEDULING_TOKEN,
-                        has_text_tag: true,
-                        derived_from: 'llm_text_tag',
-                        preconditions: {
-                            is_agenda_navigation_only: isAgendaNavigationOnly,
-                            should_trigger_widget_by_keywords: shouldTriggerSchedulingWidget
+            if (isAecStillActive && !overrideAllowedContext) {
+                // GPT emitiu durante AEC ativa sem override — REGRA HARD viola. Strippa.
+                aiResponse = aiResponse.split(TRIGGER_SCHEDULING_TOKEN).join('').trim();
+                console.warn(`⛔ [AEC GATE V1.5] GPT emitiu [TRIGGER_SCHEDULING] durante AEC ativa (phase=${assessmentPhase}) — token removido. REGRA HARD §1 preservada.`);
+            } else {
+                shouldTriggerScheduling = true;
+                console.log('⚡ [TRIGGER] Tag de agendamento detectada na resposta da IA. Abrindo widget.');
+                try {
+                    await supabaseClient.from('cognitive_events').insert({
+                        intent: currentIntent,
+                        action: 'INTENT_CONFIRMATION',
+                        decision_result: 'SIGNAL',
+                        source: 'AI_RESPONSE_TAG',
+                        metadata: {
+                            trigger: 'TRIGGER_SCHEDULING',
+                            tag: 'TRIGGER_SCHEDULING',
+                            suggested_intent: 'ADMIN',
+                            origin: 'AI_RESPONSE_TAG',
+                            contract_token: TRIGGER_SCHEDULING_TOKEN,
+                            has_text_tag: true,
+                            derived_from: 'llm_text_tag',
+                            preconditions: {
+                                is_agenda_navigation_only: isAgendaNavigationOnly,
+                                should_trigger_widget_by_keywords: shouldTriggerSchedulingWidget
+                            }
                         }
-                    }
-                });
-            } catch (e) {
-                console.warn('⚠️ [CEP NON-BLOCKING] Falha ao registrar TRIGGER_SCHEDULING:', e);
+                    });
+                } catch (e) {
+                    console.warn('⚠️ [CEP NON-BLOCKING] Falha ao registrar TRIGGER_SCHEDULING:', e);
+                }
             }
         }
 
