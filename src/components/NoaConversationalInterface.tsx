@@ -76,6 +76,14 @@ const PHASE_LABEL: Record<string, string> = {
 
 // Contrato institucional (IMUTÁVEL): token base de agendamento
 const TRIGGER_SCHEDULING_TOKEN = "[TRIGGER_SCHEDULING]";
+
+// V1.9.85 FIX D: validar UUID antes de renderizar SchedulingWidget.
+// Slugs ("ricardo-valenca", "eduardo-faveret") nunca devem chegar como
+// professionalId no widget — quebram silenciosamente a query de slots.
+// Anti-fallback-silencioso: se nao for UUID valido, nao renderiza widget.
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const isValidUuid = (s: unknown): s is string =>
+  typeof s === "string" && UUID_RE.test(s);
 // Token universal de ação (app_commands) — exibição oculta; execução é via metadata/app_commands
 const TRIGGER_ACTION_TOKEN = "[TRIGGER_ACTION]";
 
@@ -3377,39 +3385,63 @@ const NoaConversationalInterface = React.forwardRef<
                         </div>
                       </div>
 
-                      {/* Renderizar Widget UNIFICADO para todos */}
-                      <div className="flex justify-start">
-                        <div className="w-full max-w-sm">
-                          <SchedulingWidget
-                            patientId={user?.id || ""} // Se for profissional, pacienteId pode vir vazio ou do contexto
-                            professionalId={
-                              professionalIdFromMeta ||
-                              (normalizeUserType(user?.type) ===
-                                "profissional" ||
-                              normalizeUserType(user?.type) === "admin"
-                                ? user?.id
-                                : "ricardo-valenca")
-                            }
-                            onSuccess={(appointmentId) => {
-                              sendMessage(
-                                `✅ Agendamento confirmado! ID: ${appointmentId}`,
-                                {
-                                  preferVoice: false,
-                                  role: "system",
-                                  type: "action_card",
-                                  action: {
-                                    label: "Ver Meus Agendamentos",
-                                    actionId: "view_schedule",
-                                  },
-                                } as any,
-                              );
-                            }}
-                            onCancel={() => {
-                              // Opcional
-                            }}
-                          />
-                        </div>
-                      </div>
+                      {/* V1.9.85 FIX D: resolver professionalId final e validar UUID antes de renderizar widget */}
+                      {(() => {
+                        // Ordem de precedencia: metadata do Core > id do proprio profissional logado > null
+                        const isSelfProfessional =
+                          normalizeUserType(user?.type) === "profissional" ||
+                          normalizeUserType(user?.type) === "admin";
+                        const resolvedProfessionalId =
+                          professionalIdFromMeta ??
+                          (isSelfProfessional ? user?.id : null);
+
+                        // Anti-fallback-silencioso: slug ou null nao renderizam widget quebrado
+                        if (!isValidUuid(resolvedProfessionalId)) {
+                          return (
+                            <div className="flex justify-start">
+                              <div className="w-full max-w-sm bg-amber-900/30 border border-amber-500/30 rounded-xl p-3 text-amber-100 text-sm">
+                                <p className="font-medium mb-1">
+                                  Aguardando vínculo médico
+                                </p>
+                                <p className="text-amber-200/80 text-xs">
+                                  Não foi possível identificar um profissional
+                                  vinculado para abrir a agenda automaticamente.
+                                  Use a aba <strong>Agendamentos</strong> para
+                                  marcar sua consulta.
+                                </p>
+                              </div>
+                            </div>
+                          );
+                        }
+
+                        return (
+                          <div className="flex justify-start">
+                            <div className="w-full max-w-sm">
+                              <SchedulingWidget
+                                patientId={user?.id || ""}
+                                professionalId={resolvedProfessionalId}
+                                onSuccess={(appointmentId) => {
+                                  sendMessage(
+                                    `✅ Agendamento confirmado! ID: ${appointmentId}`,
+                                    {
+                                      preferVoice: false,
+                                      role: "system",
+                                      type: "action_card",
+                                      action: {
+                                        label: "Ver Meus Agendamentos",
+                                        actionId: "view_schedule",
+                                      },
+                                    } as any,
+                                  );
+                                }}
+                                onCancel={() => {
+                                  // Opcional
+                                }}
+                              />
+                            </div>
+                          </div>
+                        );
+                      })()}
                     </div>
                   );
                 }
