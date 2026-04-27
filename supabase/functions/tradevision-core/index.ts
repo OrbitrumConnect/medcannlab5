@@ -4836,10 +4836,23 @@ ${contentExcerpt || '(Texto não disponível para este documento. O conteúdo ai
         ]
         const isFormalClosingMsg = closingKeywords.some(key => aiResponse.includes(key))
         const isAlreadyCompleted = assessmentPhase === 'COMPLETED'
-        // V1.9.85 FIX A: removido 'CONSENT_COLLECTION' do gatilho.
-        // Razão: CONSENT_COLLECTION é fase de revisão da AEC; "concordo/sim/autorizo" ali
-        // é confirmação do consentimento clínico, não autorização para agendar.
-        // Trigger de agendamento agora só dispara em FINAL_RECOMMENDATION/CLOSING ou via clique explícito.
+        // V1.9.85 FIX A — REGRA HARD: consentimento NUNCA dispara agendamento.
+        //
+        // CONSENT_COLLECTION e fases de revisão da AEC são fluxo CLÍNICO
+        // (concordância com o relatório, autorização do escriba, validação
+        // do paciente sobre o que foi escutado). NÃO são fluxo OPERACIONAL
+        // (intenção de marcar consulta).
+        //
+        // Misturar os dois — interpretar "concordo" como pedido de agendamento —
+        // viola a separação semântica fundamental do sistema. Esta regra é dura:
+        // se um dia alguém quiser reabrir CONSENT_COLLECTION ou outra fase de
+        // revisão como gatilho de agendamento, exige nova versão do Livro Magno
+        // (anti-kevlar §1: muda quem decide o quê → muda a constituição antes do código).
+        //
+        // Agendamento dispara apenas:
+        //   1. Em FINAL_RECOMMENDATION ou CLOSING (fim formal da AEC)
+        //   2. Por isFormalClosingMsg (frase do roteiro selado)
+        //   3. Por clique explícito do paciente no card "Avaliação Concluída" (Fix C)
         const needsCompletionTag = !isAlreadyCompleted && (assessmentPhase === 'FINAL_RECOMMENDATION' || assessmentPhase === 'CLOSING' || isFormalClosingMsg) && !aiResponse.includes('[ASSESSMENT_COMPLETED]')
 
         if (needsCompletionTag) {

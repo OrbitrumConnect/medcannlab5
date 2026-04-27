@@ -3422,8 +3422,20 @@ const NoaConversationalInterface = React.forwardRef<
                           professionalIdFromMeta ??
                           (isSelfProfessional ? user?.id : null);
 
-                        // Anti-fallback-silencioso: slug ou null nao renderizam widget quebrado
+                        // Anti-fallback-silencioso: slug ou null nao renderizam widget quebrado.
+                        // V1.9.85 reforco: log explicito de ausencia de doctor_id valido
+                        // para auditabilidade — falhar visivel > falhar silencioso.
                         if (!isValidUuid(resolvedProfessionalId)) {
+                          console.warn(
+                            "[SCHEDULING_GUARD] Widget de agendamento bloqueado — professionalId invalido ou ausente.",
+                            {
+                              received: resolvedProfessionalId,
+                              fromMeta: professionalIdFromMeta,
+                              userType: user?.type,
+                              messageId: message.id,
+                              hint: "Core nao enviou UUID resolvido. Verifique resolvedDoctorId em DOCTOR_RESOLUTION ou metadata.professionalId no payload.",
+                            },
+                          );
                           return (
                             <div className="flex justify-start">
                               <div className="w-full max-w-sm bg-amber-900/30 border border-amber-500/30 rounded-xl p-3 text-amber-100 text-sm">
