@@ -5221,25 +5221,25 @@ ${contentExcerpt || '(Texto não disponível para este documento. O conteúdo ai
 
         let app_commands = filterAppCommandsByRole(rawCommands, userRole)
         
-        // 🔘 UI Contract V1.5: Botões Determinísticos State-Driven (Não fossilizados)
-        if (assessmentPhase === 'CONSENT_COLLECTION') {
-             app_commands.push({
-                 kind: 'noa_command',
-                 command: {
-                     type: 'navigate-route',
-                     target: '/app/clinica/paciente/consentimento',
-                     label: 'Autorizar Registro Clínico',
-                     payload: {
-                         ui_contract_version: "v1.5",
-                         buttons: [
-                             { label: "Sim, autorizo e concordo", action: "send_message", value: "sim concordo" },
-                             { label: "Não concordo", action: "send_message", value: "não concordo" }
-                         ]
-                     }
-                 },
-                 reason: 'consent_collection_ui_trigger'
-             });
-         }
+        // V1.9.92: REMOVIDO o app_command 'consent_collection_ui_trigger'.
+        //
+        // Causa raiz do 404 da Carolina (27/04 ~15:14 BRT, validado em
+        // git log -S '/clinica/paciente/consentimento' = commit 88d2281 pre-existente):
+        //   - O app_command tinha type='navigate-route' com target='/app/clinica/paciente/consentimento'
+        //   - Essa rota NUNCA foi definida em src/App.tsx (rota fantasma)
+        //   - O front executava navigate(target) puramente -> caia no NotFound (404)
+        //   - O payload.buttons (UI Contract V1.5) nunca foi implementado no front
+        //     (busca em src/: 0 hits para 'payload.buttons' ou 'ui_contract_version')
+        //
+        // Remocao confirmada segura: o paciente confirma consentimento pela fala/texto
+        // ('sim autorizo!' / 'concordo') e o fluxo prossegue normalmente. Pedro validou
+        // empiricamente em sessao Pedro Paciente 27/04 16:43-16:45 BRT (AEC end-to-end OK).
+        //
+        // Nao ha regressao: dead code do contrato V1.5 que so causava 404 ao ser clicado.
+        // Princ. 8 (polir, nao inventar): apenas removemos codigo morto.
+        //
+        // Pendente para sprint dedicada (V1.9.93+): implementar contrato V1.5 corretamente
+        // SE houver demanda real de botoes inline no chat (hoje paciente responde por fala).
         
         // 🧭 [V1.6.1] UI Contract em Intenção Pura: O Core dita a ação, o Frontend resolve a Rota.
         // [V1.8.8] Botões contextuais (INTERRUPTED / greeting) só aparecem em SAUDAÇÕES PURAS,
