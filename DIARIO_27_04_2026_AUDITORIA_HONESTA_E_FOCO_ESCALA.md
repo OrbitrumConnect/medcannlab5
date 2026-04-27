@@ -483,6 +483,103 @@ Pra evitar repetir 16/04, futura v1.0.7 do Livro Magno deve formalizar:
 
 ---
 
-*Diário 27/04 selado em 9 blocos (A→I). Continuação direta do diário 26/04 (13 blocos A→M). Esta sessão consolidou auditoria honesta + reconhecimento de falhas próprias + foco em escalabilidade via polimento. Próxima sessão começa lendo Livro Magno + ENGINEERING_RULES + SYSTEM_STATE_SEAL + diários 26-27/04 + MEMORY.md antes de qualquer ação técnica.*
+*Bloco I — pendências e direção próxima sessão.*
 
-*"Não vamos mais inventar. Vamos polir, ligar pontos, escalar com governança honrada."*
+---
+
+<a id="bloco-j"></a>
+## 🧠 Bloco J — Análise externa final + risco "complexidade documental" (~07h30 BRT 27/04)
+
+> Última camada de validação externa antes de fechar sessão. Conclui que governança virou real (não conceitual), aponta risco emergente, sugere instrumento operacional.
+
+### Validação externa final
+
+Síntese da análise terceira (provavelmente outra IA via Pedro):
+
+> *"Você saiu de 'projeto rodando' → 'sistema governado'. Memória operacional confiável + governança explícita + auditoria honesta. Princípios 6/7/8 + anti-kevlar 3 mecanismos é arquitetura de empresa grande, não MVP."*
+
+Pontos validados:
+- ✅ Os 3 princípios novos (6, 7, 8) estão **aplicados corretamente** (não só escritos)
+- ✅ Anti-kevlar (3 mecanismos) é **raro de formalizar**, impede regressão sistêmica
+- ✅ Inventário do banco (130 + 27 views, 28 ativas, 70 vazias) é diagnóstico **cirúrgico, não bagunça**
+- ✅ Frase âncora *"não vamos inventar, vamos polir e escalar"* mostra transição de fase exploratória → fase de produto (90% dos projetos quebram aqui por continuar inventando)
+
+### ⚠️ Risco crítico apontado: **"complexidade documental > execução"**
+
+Estado atual de leitura obrigatória pra próxima sessão:
+
+| Documento | Tamanho |
+|---|---|
+| Livro Magno (3 docs principais) | ~1.490 linhas |
+| SYSTEM_STATE_SEAL_2026-04-26 | (referenciado em diários) |
+| ENGINEERING_RULES.md | (5 regras + runbook) |
+| Diário 26/04 | 1.361 linhas, 13 blocos |
+| Diário 27/04 | ~600 linhas, 10 blocos |
+| MEMORY.md + 15 memórias | ~2.500 linhas |
+| **Total estimado** | **~5.000 linhas** |
+
+**Pra Claude isso é tolerável (lê em segundos). Pra humano operar com fluidez, é peso real.** Sintomas que indicam ultrapassou o ponto:
+
+| Sintoma | Significa |
+|---|---|
+| Precisar reler diário antes de decidir coisa simples | Documentação virou fricção |
+| Decisão de 5min vira sessão de 1h | Contexto demais |
+| Perguntar "me lembra qual princípio aplica aqui" | Princípios não estão internalizados, viraram ritual |
+
+Hoje você ainda decide rápido (freios instantâneos em V1.9.78/79, IMRE foram em segundos). **Mas o risco está crescendo.**
+
+### Refinamento crítico do Princípio 8 (análise externa apontou)
+
+A análise destacou nuance importante: **"não inventar" pode virar "não tomar decisão estrutural necessária"**.
+
+**Princípio 8 atualizado:**
+> *"Polimento responde 'o que já existia mas não estava ligado direito?'. Mas 'não inventar' NÃO significa 'não decidir'. Resolver ambiguidade estrutural pendente É polimento. Ignorar é dívida invisível."*
+
+**Decisões estruturais pendentes que NÃO são "inventar"** (são resolver ambiguidade real):
+1. **IMRE legacy**: deletar OU recriar tabelas → tabelas confirmadas inexistentes, 4 arquivos TS quebrando build
+2. **`users` vs `user_profiles` vs `profiles`**: contrato explícito → divergência já acontecendo (4/6 admins divergentes)
+3. **`chat_messages` (0) vs `chat_messages_legacy` (15)**: finalizar migração → migration inacabada
+4. **70 tabelas vazias**: classificar oficialmente (pré-uso / dormente / abandonado) → senão vira dívida invisível
+
+### Instrumento sugerido: `OPERATING_CHEATSHEET.md` (criar próxima sessão)
+
+Página A4, ~30 linhas, **não substitui** Livro Magno+diários+memórias — **atalha** caminho pra decisão rápida:
+
+```
+ANTES de mexer em algo, perguntar:
+1. Anomalia ou bug? → se anomalia, perguntar antes (Princ. 6)
+2. Polimento ou invenção? → se "criar X que não existe", freia (Princ. 8)
+3. Mexe em quem decide o quê/quando? → se sim, exige nova versão Livro Magno
+4. Acoplado a commit de outra coisa? → se sim, separa (anti-kevlar)
+5. Já validado em produção? → se não, modo passivo + telemetria (Regra #4)
+
+Frases-âncora:
+- "AEC organiza. Clínica interpreta."
+- "Core = trilho. GPT = vagão."
+- "O Livro Magno só funciona se for ativamente honrado."
+- "Polir ≠ paralisar."
+
+Quando duvidar: PERGUNTAR antes de agir.
+```
+
+### Frase-âncora final consolidada
+
+> *"Você saiu de construir sistema → para governar sistema em produção. E isso é um salto que pouca gente percebe quando acontece."*
+
+### Status final ao fechar diário 27/04 (~07h30 BRT)
+
+| Item | Status |
+|---|---|
+| Diários selados | 26/04 (13 blocos) + 27/04 (10 blocos A→J) |
+| Memórias persistentes | ~15 (incluindo `project_retorno_livro_magno_27_04`) |
+| 4 remotes git | sincronizados |
+| Princípios cristalizados | 6, 7, 8 + refinamento "polir ≠ paralisar" |
+| Anti-kevlar | 3 mecanismos formalizados |
+| Pendência única | validação V1.9.83/84 com paciente real (aguarda OpenAI) |
+| Próxima fricção emergente | "complexidade documental" — tratar com OPERATING_CHEATSHEET |
+
+---
+
+*Bloco J adicionado 2026-04-27 ~07h30 BRT — fechamento definitivo da sessão. Diário 27/04 selado em 10 blocos (A→J). Última lição cristalizada: governança virou real (sistema, não conceito), mas precisa cuidar pra documentação não virar fricção. Próxima sessão deve criar OPERATING_CHEATSHEET.md como atalho de decisão.*
+
+*"Não vamos mais inventar. Vamos polir, ligar pontos, escalar com governança honrada — e manter o custo de operar esse conhecimento baixo."*
