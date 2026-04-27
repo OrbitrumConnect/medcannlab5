@@ -5277,6 +5277,14 @@ ${contentExcerpt || '(Texto não disponível para este documento. O conteúdo ai
             if (!aiResponse?.includes('[TRIGGER_SCHEDULING]')) {
               aiResponse = aiResponse + ' [TRIGGER_SCHEDULING]'
             }
+            // V1.9.93 Fix A: o front strippa [TRIGGER_SCHEDULING] de message.content
+            // (useMedCannLabConversation:1148 stripInvisibleTokensForStorage), entao o
+            // widget so renderiza via metadata.trigger_scheduling=true. AEC GATE V1.5
+            // (linha 4883-4887) zerou shouldTriggerScheduling enquanto a phase era
+            // CONSENT_COLLECTION. Aqui ja passamos esse gate (isAecCompletedNowEvent=true,
+            // ou seja, AEC fechou logicamente neste turno) — entao re-ligamos o flag
+            // pra que o front receba trigger_scheduling=true no metadata.
+            shouldTriggerScheduling = true;
         } else if (assessmentPhase === 'INTERRUPTED' && isPureGreeting && userRole === 'patient') {
             // Só emite os atalhos contextuais quando o paciente está iniciando a conversa com saudação.
             app_commands.push(
