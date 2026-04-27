@@ -251,10 +251,13 @@ const SchedulingWidget = ({
     let active = true;
     const loadProfessionals = async () => {
       try {
+        // V1.9.93-C: incluir 'professional' (en) — eh o type real de 8/13 medicos no banco
+        // (Dr. Ricardo Valenca, Eduardo Faveret, Cristina, Dayana, etc). Sem isso o
+        // dropdown so listava os 5 admins (sem Dr. Ricardo!).
         const { data, error } = await supabase
           .from("users")
           .select("id, name, email, type")
-          .in("type", ["profissional", "admin"])
+          .in("type", ["profissional", "professional", "admin"])
           .order("name", { ascending: true });
 
         if (!active) return;
