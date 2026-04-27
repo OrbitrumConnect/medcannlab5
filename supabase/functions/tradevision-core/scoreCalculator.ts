@@ -54,8 +54,14 @@ export function calculateScoresFromContent(content: any): ClinicalScores {
   const signals: ScoreSignal[] = []
 
   // Signal 1: Queixa Principal
+  // V1.9.87 FIX: threshold antigo `> 10` rejeitava queixas legitimas curtas
+  // ("O cansaço" = 10 chars exatos, "tontura" = 7, "fadiga" = 6, "ansiedade" = 9,
+  // "tosse" = 5, "dor" = 3). Caso real Carolina 27/04 (report 12e4a201) marcou 0/15
+  // com queixa_principal = "O cansaço" preenchida. Novo threshold: trim().length >= 3
+  // (rejeita "ok"/"sim" mas aceita queixas medicas curtas validas).
   const queixa = content.queixa_principal || content.chiefComplaint || content.mainComplaint
-  if (queixa && typeof queixa === 'string' && queixa.length > 10) {
+  const queixaTrim = typeof queixa === 'string' ? queixa.trim() : ''
+  if (queixaTrim.length >= 3) {
     totalSignals += 15
     totalWeight += 15
     signals.push({ signal_name: 'queixa_principal', signal_value: 15, weight: 15, aec_stage: 'Etapa 3: Queixa Principal' })
