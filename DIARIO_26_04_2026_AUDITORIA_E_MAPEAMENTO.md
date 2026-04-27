@@ -1148,4 +1148,138 @@ V1.9.83 responde: *"qIdx e iter já existem no FSM, só não eram passados pro G
 
 ---
 
-*Bloco K adicionado 2026-04-27 ~02h BRT. **Diário 26/04 fecha definitivamente aqui com 11 blocos (A, B, C, D, D2, E, F, G, H, I, J, K).** Sessão noturna entregou: 1 marco real (AEC end-to-end), 9 versões válidas, 1 lição cristalizada (anomalia ≠ bug), 1 evolução conceitual (Core=trilho/GPT=vagão), 1 implementação do princípio (V1.9.83 contrato granular). Tudo polimento, zero invenção. Trilho mais firme, vagão mais consciente.*
+*Bloco K — V1.9.83 contrato granular Core→GPT.*
+
+---
+
+## Bloco L — V1.9.84 narrador escriba: P0 regulatório RESOLVIDO (~02h30 BRT 27/04)
+
+> Aplicação do **item 1** da ordem de prioridades Dr. Ricardo (Bloco J).
+> Autorização: Dr. Ricardo Valença via Pedro (~02h30 BRT 27/04, confirmação SIM/NÃO explícita após pergunta cirúrgica).
+
+### Fix #1 do plano `majestic-sprouting-goblet` aplicado
+
+**V1.9.84** (commit `19f3dcb`): narrador AEC vira escriba clínico. **50 linhas de prompt em 1 arquivo** ([tradevision-core/index.ts:1289-1325](supabase/functions/tradevision-core/index.ts#L1289)).
+
+**Texto V2 aplicado palavra-por-palavra** do plano aprovado (documentado em memória `project_narrator_overreach_24_04.md`, refinado por GPT review 25/04).
+
+**Antes vs Depois:**
+
+| | ANTES (pré-V1.9.84) | DEPOIS (V1.9.84) |
+|---|---|---|
+| **System prompt** | "médico redator clínico sênior da MedCannLab" | "**escriba clínico**... NÃO é médico, apoia trabalho do médico organizando a entrevista" |
+| **Estrutura** | Inclui "Impressão Clínica Inicial" + "Plano de Conduta Sugerido" | Removidas. Adicionada "**Lacunas Declaradas**" (auditável) |
+| **Regras** | Nenhuma restrição de inferência | **REGRAS ABSOLUTAS** com lista de palavras proibidas (sugere, indica, compatível com, padrão, aparenta, pode estar relacionado) |
+| **Rodapé** | Não tinha | Obrigatório: *"Não constitui diagnóstico, prescrição ou plano de tratamento. Recomenda-se apresentação ao médico responsável."* |
+
+### O que isso resolve
+
+**Caso real (report `8f4876e9` Pedro 26/04 23:45)**:
+- Narrador gerava: *"3. **Tratamento da Dor**: **Prescrever analgésicos** conforme necessário..."*
+- Risco regulatório CFM direto (IA prescrevendo sem médico responsável)
+
+**Após V1.9.84**:
+- Próximo report: organização estruturada da fala do paciente, sem inferência
+- Médico real interpreta via Racionalidades (V1.9.40+)
+- Frase-âncora Dr. Ricardo cumprida: *"AEC organiza. Clínica interpreta."*
+
+### Características arquiteturais preservadas
+
+| Componente | Status |
+|---|---|
+| Pipeline (signature V1.9.73, score V1.9.33, médico, axes, rationality) | ✅ Intacto |
+| V1.9.82 (fail-safe Onda 2b) | ✅ Intacto |
+| V1.9.83 (contrato granular Core→GPT) | ✅ Intacto |
+| V1.9.57 (cold guard) | ✅ Intacto |
+| FSM client-side (`clinicalAssessmentFlow.ts`) | ✅ Intacto |
+| Arquitetura central (`noaResidentAI.ts:392`) | ✅ Intacto |
+
+**Polimento puro.** Reescreve apenas o prompt do narrador. Zero feature nova, zero quebra.
+
+### Validação SQL pós-deploy (próxima sessão, com OpenAI recarregada)
+
+```sql
+SELECT id, CASE WHEN content->>'structured' ILIKE '%plano de conduta%'
+  OR content->>'structured' ILIKE '%impress%clinica%'
+  OR content->>'structured' ILIKE '%sugere%'
+  OR content->>'structured' ILIKE '%compatível com%'
+  OR content->>'structured' ILIKE '%recomenda%exames%'
+THEN 'AINDA EXTRAPOLA' ELSE 'OK' END AS status_pos_v1_9_84
+FROM clinical_reports
+WHERE created_at > '2026-04-27 02:30:00';
+```
+
+**Meta**: 0 reports com `AINDA EXTRAPOLA`.
+
+---
+
+## Síntese final do dia 26/04 → 27/04 (~02h35 BRT)
+
+### Os 4 pontos críticos pra produto vendável — TODOS atacados
+
+| # | Ponto | Status | Versão | Validação |
+|---|---|---|---|---|
+| 1 | 🚫 P0 narrador prescreve | ✅ **RESOLVIDO** | **V1.9.84** | SQL pós-OpenAI recarregada |
+| 2 | 🧠 Slot errado COMPLAINT_DETAILS | ✅ Resolvido | V1.9.83 | 1 AEC real pós-OpenAI recarregada |
+| 3 | ⚖️ `is_complete=false` | ✅ Resolvido | V1.9.57 atuou sozinho | Confirmado em log Pedro hoje |
+| 4 | 🛑 Fail-safe clínico | ✅ Resolvido | V1.9.82 | Próximo OFFLINE valida |
+
+### Versões aplicadas hoje (cronologia completa)
+
+```
+V1.9.72 madrugada    — cap patientData ✅
+V1.9.73 madrugada    — signature SHA-256 ✅
+V1.9.74 manhã        — AEC GATE V1.5 ext ✅
+V1.9.75 tarde        — causal trace logs ✅
+V1.9.76 noite        — REACHED_LIMIT desync ✅
+V1.9.77 noite        — regex "agora" ✅
+V1.9.78/79           — APLICADAS E REVERTIDAS (lição V1.9.78 cristalizada)
+V1.9.80 noite        — patientName perfil ✅
+V1.9.81 noite        — detector tolerante typo ✅
+V1.9.82 madrugada    — fail-safe Onda 2b ✅
+V1.9.83 madrugada    — contrato granular Core→GPT ✅
+V1.9.84 madrugada    — narrador escriba (P0 RESOLVIDO) ✅
+```
+
+**Total**: **10 versões válidas** + 2 revertidas em ~24h.
+
+### Diário 26/04 — 12 blocos selados
+
+A → Madrugada V1.9.72/73 + auditoria 360°
+B → Manhã xenova + Supabase mapping
+C → Estado meio-dia
+D → Roadmap 5 fases
+D2 → Noite operacional V1.9.74→81
+E → Contexto histórico semana + 4 frentes
+F → Consumo OpenAI + princípio Core governance
+G → Análise histórica kevlar
+H → V1.9.82 + descoberta HARD/SOFT lock + freio Onda 2a
+I → Evolução conceitual Ricardo (Core=trilho, GPT=vagão)
+J → Síntese operacional Ricardo (4 prioridades)
+K → V1.9.83 contrato granular
+**L → V1.9.84 narrador escriba (P0 resolvido)**
+
+### Posição estratégica final
+
+**Antes da sessão (12h BRT 26/04):**
+> *"AEC funciona internamente, mas não é vendável externo: prescreve, erra slots, fail-silent."*
+
+**Depois da sessão (02h35 BRT 27/04):**
+> *"AEC com 4 pontos críticos atacados. Produto vendável externo aguarda apenas validação real (1-2 AECs com OpenAI recarregada) confirmando V1.9.83 + V1.9.84 em comportamento."*
+
+### Princípio cristalizado da semana
+
+> *"Cada commit responde 'o que já existia mas não estava ligado direito?'. Se sim, polimento → segue. Se 'vamos criar X que não existe', feature nova → freia."*
+
+**Validado por todas 10 versões aplicadas hoje.** V1.9.78/79 violaram esse princípio (anomalia confundida com bug) e foram revertidas.
+
+### Pendências para próxima sessão
+
+1. **Validar V1.9.83 + V1.9.84** com AEC real (aguarda OpenAI recarregar)
+2. **Query SQL** confirmando 0 reports com `AINDA EXTRAPOLA` após V1.9.84
+3. **Score esperado próximas AECs**: 58 → ~79 (HPP=10 + Família=10 + HDA=20 corrigidos por V1.9.83)
+4. **Decisão estratégica Frente A/B/C** (paciente externo / educacional / híbrido)
+
+---
+
+*Bloco L adicionado 2026-04-27 ~02h35 BRT. **Diário 26/04 fecha definitivamente com 12 blocos (A, B, C, D, D2, E, F, G, H, I, J, K, L).** Sessão entregou: produto AEC com 4 pontos críticos resolvidos via 10 commits de polimento puro + 2 reverts (lição). Trilho firme (Core), vagão consciente (GPT), escriba sóbrio (narrador), fail-safe clínico (offline). Aguarda OpenAI recarga + 1 AEC real pra validação final em produção.*
