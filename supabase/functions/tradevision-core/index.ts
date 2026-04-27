@@ -5256,16 +5256,27 @@ ${contentExcerpt || '(Texto não disponível para este documento. O conteúdo ai
         // Mesmo padrão que V1.8.8 fixou para INTERRUPTED — agora aplicado a COMPLETED.
         const isAecCompletedNowEvent = aiResponse?.includes('[ASSESSMENT_COMPLETED]');
         if (isAecCompletedNowEvent) {
+            // V1.9.91: ao final da AEC, "Agendar Consulta" deve abrir card INLINE no chat,
+            // nao navegar pra /clinica/paciente/agendamentos. Por isso:
+            //   1. Mantemos apenas o app_command de "Ver Relatorio Clinico" (continua sendo navigate)
+            //   2. Removemos o app_command de "Agendar Consulta" (que navegava)
+            //   3. Injetamos [TRIGGER_SCHEDULING] no texto da resposta — o front ja sabe
+            //      renderizar o SchedulingWidget inline ao detectar esse token
+            //      (V1.9.85 Fix D guard com isValidUuid continua protegendo contra slug)
+            //
+            // Nao regride V1.9.85 Fix B porque:
+            //   - Fix B parou de injetar [TRIGGER_SCHEDULING] AUTOMATICAMENTE em CONSENT_COLLECTION
+            //   - Aqui injetamos APENAS quando isAecCompletedNowEvent=true (= AEC ja fechou)
+            //   - Ponto deterministico, posterior ao [ASSESSMENT_COMPLETED]
             app_commands.push(
               {
                 kind: 'noa_command',
                 command: { type: 'navigate-section', target: 'meu-relatorio', label: 'Ver Relatório Clínico' }
-              },
-              {
-                kind: 'noa_command',
-                command: { type: 'navigate-section', target: 'agenda', label: 'Agendar Consulta' }
               }
             );
+            if (!aiResponse?.includes('[TRIGGER_SCHEDULING]')) {
+              aiResponse = aiResponse + ' [TRIGGER_SCHEDULING]'
+            }
         } else if (assessmentPhase === 'INTERRUPTED' && isPureGreeting && userRole === 'patient') {
             // Só emite os atalhos contextuais quando o paciente está iniciando a conversa com saudação.
             app_commands.push(

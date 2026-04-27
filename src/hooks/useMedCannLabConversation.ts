@@ -1190,32 +1190,28 @@ export const useMedCannLabConversation = (options?: {
       console.log('🔍 Metadata recebida:', response.metadata) // Debug log
 
       // 🎯 TRIGGER VISUAL: Se avaliação concluída, mostrar card de sucesso
-      // V1.9.85 FIX C: card final com 2 acoes explicitas (Ver Relatorio + Agendar Consulta).
-      // Agendamento agora dispara apenas por clique aqui, nao por inferencia automatica.
+      // V1.9.91: revertido Fix C (overreach). O fluxo nativo do projeto ja gera
+      // os 2 botoes pos-AEC via app_commands navigate-section no Core (linha 5257-5268).
+      // SchedulingWidget inline aparece via [TRIGGER_SCHEDULING] injetado pos-AEC (V1.9.91).
       if (response.metadata?.assessmentCompleted) {
         setTimeout(() => {
           const systemMsg: ConversationMessage = {
             id: `sys-${Date.now()}`,
             role: 'system',
-            content: `✅ **Avaliação Concluída com Sucesso!**\n\nSeu relatório clínico foi gerado e enviado ao profissional vinculado.\nEscolha o que deseja fazer agora:`,
+            content: `✅ **Avaliação Concluída com Sucesso!**\n\nSeu relatório clínico preliminar foi gerado.\nVocê pode visualizá-lo agora na aba **"Analytics e Evolução"** ou clicando no botão abaixo.`,
             timestamp: new Date(),
             metadata: {
               type: 'action_card',
-              actions: [
-                {
-                  label: 'Ver Relatório',
-                  actionId: 'view_report',
-                  command: 'reports-section'
-                },
-                {
-                  label: 'Agendar Consulta',
-                  actionId: 'request_scheduling',
-                  command: 'request-scheduling'
-                }
-              ]
+              action: {
+                label: 'Ver Relatório Clínico',
+                command: 'reports-section' // Mapeia para navegação
+              }
             }
           }
           setMessages(prev => [...prev, systemMsg])
+
+          // Tocar som de sucesso (se houver)
+          // playSuccessSound()
         }, 1000)
       }
 

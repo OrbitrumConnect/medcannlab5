@@ -3274,45 +3274,13 @@ const NoaConversationalInterface = React.forwardRef<
 
               {messages.map((message) => {
                 // Renderização Especial para Cards de Sistema (Ação)
-                // V1.9.85 FIX C: aceita `actions` (array, novo) ou `action` (singular, legado)
+                // V1.9.91: revertido Fix C (overreach). Voltou ao formato legado `action: {single}`.
+                // 2 botoes pos-AEC vem do fluxo NATIVO via app_commands no Core (linha 5257-5268).
                 if (
                   message.role === "system" &&
                   message.metadata?.type === "action_card"
                 ) {
-                  const cardMeta = message.metadata as any;
-                  const actionList: any[] = Array.isArray(cardMeta.actions)
-                    ? cardMeta.actions
-                    : cardMeta.action
-                      ? [cardMeta.action]
-                      : [];
-
-                  const handleActionClick = (act: any) => {
-                    // Agendar Consulta (Fix C): clique explicito → mensagem natural →
-                    // Core retorna [TRIGGER_SCHEDULING] + professionalId resolvido
-                    if (act.actionId === "request_scheduling") {
-                      sendMessage(
-                        "Quero agendar consulta com o profissional do meu relatório.",
-                        { preferVoice: false } as any,
-                      );
-                      return;
-                    }
-                    // Ir para tela de agendamentos (legado)
-                    if (act.actionId === "view_schedule") {
-                      if (onViewSchedule) {
-                        onViewSchedule();
-                      } else {
-                        navigate("/app/clinica/paciente/agendamentos");
-                      }
-                      setIsOpen(false);
-                      return;
-                    }
-                    // Ver Relatório (default + legado view_report)
-                    navigate(
-                      `/app/clinica/paciente/dashboard?section=analytics&rate_conversation=1`,
-                    );
-                    setIsOpen(false);
-                  };
-
+                  const action = message.metadata.action as any;
                   return (
                     <div
                       key={message.id}
@@ -3340,25 +3308,32 @@ const NoaConversationalInterface = React.forwardRef<
                           </div>
                         </div>
 
-                        {actionList.length > 0 && (
-                          <div className="bg-emerald-950/30 p-3 sm:p-4 border-t border-emerald-500/20 flex flex-wrap justify-end gap-2">
-                            {actionList.map((act, idx) => {
-                              const isPrimary =
-                                act.actionId === "request_scheduling";
-                              const btnClass = isPrimary
-                                ? "bg-emerald-500 hover:bg-emerald-600 text-white shadow-emerald-500/20"
-                                : "bg-slate-700/70 hover:bg-slate-600 text-slate-100 border border-slate-500/40";
-                              return (
-                                <button
-                                  key={`${act.actionId || "act"}-${idx}`}
-                                  onClick={() => handleActionClick(act)}
-                                  className={`${btnClass} px-5 py-2.5 rounded-xl text-sm font-medium transition-all shadow-lg flex items-center gap-2`}
-                                >
-                                  <Activity className="w-4 h-4" />
-                                  {act.label}
-                                </button>
-                              );
-                            })}
+                        {action && (
+                          <div className="bg-emerald-950/30 p-3 sm:p-4 border-t border-emerald-500/20 flex justify-end">
+                            <button
+                              onClick={() => {
+                                if (action.actionId === "view_schedule") {
+                                  if (onViewSchedule) {
+                                    onViewSchedule();
+                                  } else {
+                                    navigate(
+                                      "/app/clinica/paciente/agendamentos",
+                                    );
+                                  }
+                                  setIsOpen(false);
+                                  return;
+                                }
+
+                                navigate(
+                                  `/app/clinica/paciente/dashboard?section=analytics&rate_conversation=1`,
+                                );
+                                setIsOpen(false);
+                              }}
+                              className="bg-emerald-500 hover:bg-emerald-600 text-white px-6 py-2.5 rounded-xl text-sm font-medium transition-all shadow-lg hover:shadow-emerald-500/20 flex items-center gap-2"
+                            >
+                              <Activity className="w-4 h-4" />
+                              {action.label}
+                            </button>
                           </div>
                         )}
                       </div>
