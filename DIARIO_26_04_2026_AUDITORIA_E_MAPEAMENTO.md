@@ -1010,4 +1010,142 @@ Regra:
 
 ---
 
-*Bloco J adicionado 2026-04-27 ~01h45 BRT pra fechar sessão com ordem operacional clara do Dr. Ricardo. Diário 26/04 fecha definitivamente aqui com 10 blocos (A, B, C, D, D2, E, F, G, H, I, J). Frase-âncora: "Você não precisa de mais regras — você precisa que o GPT entenda exatamente em que ponto do fluxo ele está antes de falar." Próxima ação: P0 narrador (aguarda Ricardo) → contrato granular (aguarda OK Pedro) → is_complete (decisão Pedro) → Verbatim avançado (depois). Polimento sem invenção, evolução sem regressão.*
+*Bloco J — síntese operacional Ricardo, frase-âncora cristalizada.*
+
+---
+
+## Bloco K — V1.9.83 aplicada: contrato granular Core→GPT (~02h BRT 27/04)
+
+> Execução do **item 2** da ordem de prioridades do Dr. Ricardo (Bloco J).
+> Autorização Pedro: *"vamos prossiga"* (após leitura completa dos blocos A→J).
+
+### O que foi aplicado
+
+**V1.9.83** (commit `7167b06`): contrato granular Core→GPT em COMPLAINT_DETAILS. **47 linhas aditivas em 2 arquivos**:
+
+**1. Cliente** ([noaResidentAI.ts:1898-1908](src/lib/noaResidentAI.ts#L1898)):
+```ts
+aecSnapshot = {
+  phase: liveState.phase,
+  // [V1.9.83] Micro-estado granular pra contrato Core→GPT
+  currentQuestionIndex: liveState.currentQuestionIndex,  // ← NOVO
+  phaseIterationCount: liveState.phaseIterationCount,    // ← NOVO
+  startedAt: liveState.startedAt,
+  // ...resto inalterado
+}
+```
+
+**2. Edge Function** ([tradevision-core:3175+](supabase/functions/tradevision-core/index.ts#L3175)):
+Em COMPLAINT_DETAILS modo não-urgência, adiciona ao `phaseInstruction`:
+```
+MICRO-ESTADO GRANULAR (CONTRATO Core→GPT V1.9.83):
+- Sub-pergunta ATUAL: <label semântico> (qIdx=N)
+- Iteração desta sub-pergunta: M
+- Tipo: LISTA (aceita múltiplas respostas) ou única (1 resposta basta)
+
+REGRA DE AVANÇO (NÃO NEGOCIÁVEL):
+- O FSM controla quando avançar. Você (GPT) NÃO decide isso.
+- Toda resposta cai no slot da sub-pergunta atual.
+- Se você antecipar próxima sub-pergunta visualmente → dado vai pro slot ERRADO.
+- LISTA: pergunte "O que mais?" até paciente disser terminator.
+- Única: aguarde resposta, NÃO antecipe.
+- Foco EXCLUSIVO na sub-pergunta atual.
+```
+
+**Sub-pergunta labels semânticos** (qIdx 0-5):
+- `localização` (qIdx=0)
+- `início` (qIdx=1)
+- `descrição` (qIdx=2)
+- `sintomas associados` (qIdx=3) — LISTA
+- `fatores de melhora` (qIdx=4) — LISTA
+- `fatores de piora` (qIdx=5) — LISTA
+
+### Por que isso resolve o bug do Pedro hoje
+
+**Cenário 26/04 23:42 (report 8f4876e9, COMPLAINT_DETAILS qIdx=4):**
+- FSM: qIdx=4 (melhora), iter=1, REACHED_LIMIT=false (esperando 2ª iteração)
+- Pedro respondeu "quando eu durmo melhora"
+- GPT (sem contrato granular): viu resposta no histórico → decidiu avançar visualmente pra piora
+- Pedro respondeu "quando estou acordado" pensando em piora
+- FSM ainda em qIdx=4 → gravou em melhora (slot errado)
+
+**Com V1.9.83 ativo:**
+- GPT recebe explicitamente: "qIdx=4 melhora, iter=1, LISTA, NÃO antecipe piora"
+- GPT pergunta "O que mais?" (em vez de avançar visualmente)
+- Pedro responde "apenas isso" → terminator → FSM avança
+- GPT só então pergunta piora (qIdx=5)
+- Resposta de piora cai no slot certo
+
+### Características arquiteturais (princípios respeitados)
+
+| Princípio | Como respeitado |
+|---|---|
+| **Polir, não inventar** | Usa dado que FSM já calcula (qIdx, iter) |
+| **Aditivo, não substitutivo** | Não desliga SOFT lock V1.8.3-D |
+| **Não tocar HARD lock** | `AEC_VERBATIM_HARD_LOCK_PHASES` intacto |
+| **Não tocar arquitetura central** | `noaResidentAI.ts:392` (Assistant primário) intacto |
+| **Compatível com Ricardo (Core=trilho, GPT=vagão)** | Core comunica contrato granular, GPT executa dentro |
+| **Síntese Ricardo (Bloco J)** | "GPT entende exatamente em que ponto do fluxo está antes de falar" — implementado literalmente |
+
+### Validação esperada (próxima AEC real)
+
+**Logs Edge Function devem mostrar** (próxima sessão de teste):
+- Request com `aecSnapshot` contendo `currentQuestionIndex` e `phaseIterationCount`
+- `[AEC] Roteiro selado (verbatim): fase= COMPLAINT_DETAILS` (já existia)
+- Resposta do GPT focada na sub-pergunta atual, sem antecipação visual
+
+**No report final esperado**:
+- `complaintImprovements`: só fatores de melhora reais
+- `complaintWorsening`: só fatores de piora reais
+- `medicalHistory`: HPP no slot certo (não em piora)
+- Score esperado: 58 → ~79
+
+**No banco**:
+- `noa_logs` continuam mostrando `payload_size_v1_9_72` saudável (média < 15k)
+- Nenhum erro novo em `institutional_trauma_log`
+
+### Status técnico final do dia (~02h BRT 27/04)
+
+**Versões aplicadas hoje (sequência completa, ordem cronológica)**:
+1. V1.9.72 madrugada — cap patientData
+2. V1.9.73 madrugada — signature SHA-256
+3. V1.9.74 manhã (12:49) — AEC GATE V1.5 ext
+4. V1.9.75 tarde (15:56) — causal trace logs
+5. V1.9.76 noite (18:46) — REACHED_LIMIT desync
+6. V1.9.77 noite (19:21) — regex restart "agora"
+7. V1.9.78/79 noite (19:29-19:39) — APLICADAS E REVERTIDAS (lição)
+8. V1.9.80 noite (19:49) — patientName perfil
+9. V1.9.81 noite (~20:35) — detector tolerante typo
+10. V1.9.82 madrugada (~00:30) — fail-safe clínico Onda 2b
+11. **V1.9.83 madrugada (~02:00) — contrato granular Core→GPT (item 2 ordem Ricardo)**
+
+**Total**: 9 versões válidas + 2 revertidas + diário com 11 blocos (A→K) + ~12 memórias persistentes + 1 marco (report `8f4876e9` AEC end-to-end completa).
+
+### Decisões pendentes que NÃO foram tocadas (aguarda Dr. Ricardo)
+
+1. **P0 narrador escriba** — Fix #1 plano `majestic-sprouting-goblet` (texto V2 destrava produto externo)
+2. **`is_complete=false`** no state Pedro — corrigir manual ou deixar cold guard arquivar?
+3. **Granularidade hard lock COMPLAINT_DETAILS** — Ricardo confirmou que SOFT lock V1.8.3-D + V1.9.83 contrato granular pode ser suficiente
+4. **Por que kevlar inverteu Core→GPT** — pergunta histórica
+5. **Frente A/B/C estratégica**
+
+### Princípio operacional confirmado (cristalizado nesta sessão)
+
+**Cada commit deve responder**: *"o que já existia mas não estava ligado/usado/respeitado direito?"*
+
+Se sim → polimento → segue.
+Se a resposta começa com *"vamos criar X que ainda não existe"* → feature nova → freia.
+
+V1.9.83 responde: *"qIdx e iter já existem no FSM, só não eram passados pro GPT no contrato"* — polimento puro.
+
+### Próxima sessão (leitura obrigatória)
+
+1. `SYSTEM_STATE_SEAL_2026-04-26.md`
+2. `ENGINEERING_RULES.md` (5 regras + runbook OpenAI down)
+3. **Este diário (11 blocos: A, B, C, D, D2, E, F, G, H, I, J, K)**
+4. `MEMORY.md` (índice memórias)
+5. **Antes de qualquer ação técnica**: validar V1.9.83 com 1-2 AECs reais (paciente externo ou Pedro/Carolina) → se score subir de 58 pra ~79 e campos caírem nos slots certos, V1.9.83 está validado em produção.
+
+---
+
+*Bloco K adicionado 2026-04-27 ~02h BRT. **Diário 26/04 fecha definitivamente aqui com 11 blocos (A, B, C, D, D2, E, F, G, H, I, J, K).** Sessão noturna entregou: 1 marco real (AEC end-to-end), 9 versões válidas, 1 lição cristalizada (anomalia ≠ bug), 1 evolução conceitual (Core=trilho/GPT=vagão), 1 implementação do princípio (V1.9.83 contrato granular). Tudo polimento, zero invenção. Trilho mais firme, vagão mais consciente.*
