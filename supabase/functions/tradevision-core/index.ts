@@ -4930,7 +4930,21 @@ ${contentExcerpt || '(Texto não disponível para este documento. O conteúdo ai
         // Anti-kevlar §1: separacao clinico/operacional documentada em 4 camadas
         // (codigo + memoria project_regra_consentimento_nao_e_agendamento +
         // diario 27/04 Bloco L + descricao da PR V1.9.85).
-        const needsCompletionTag = !isAlreadyCompleted && (assessmentPhase === 'FINAL_RECOMMENDATION' || assessmentPhase === 'CLOSING' || assessmentPhase === 'CONSENT_COLLECTION' || isFormalClosingMsg) && !aiResponse.includes('[ASSESSMENT_COMPLETED]')
+        // V1.9.94 GUARD: se a Noa esta PEDINDO consentimento agora ("Consentimento
+        // Informado" / "Voce autoriza..."), nao fechar AEC mesmo que user diga
+        // "concordo|sim|autorizo|pode". Isso porque "concordo" da revisao final
+        // transita FINAL_RECOMMENDATION → CONSENT_COLLECTION e a resposta da Noa
+        // nesse turno eh a PROPRIA pergunta de consentimento. AEC so fecha no
+        // turno SEGUINTE, quando user responde a pergunta de consentimento e
+        // Noa confirma com "✅ Consentimento registrado".
+        // Sem esse guard: V1.9.93-A liga shouldTriggerScheduling no turno errado,
+        // card de agendamento abre prematuramente — REGRA HARD §1 violada.
+        const isAskingConsent = !!aiResponse && (
+            aiResponse.includes('Consentimento Informado') ||
+            aiResponse.includes('Voce autoriza o registro') ||
+            aiResponse.includes('Você autoriza o registro')
+        )
+        const needsCompletionTag = !isAlreadyCompleted && (assessmentPhase === 'FINAL_RECOMMENDATION' || assessmentPhase === 'CLOSING' || assessmentPhase === 'CONSENT_COLLECTION' || isFormalClosingMsg) && !aiResponse.includes('[ASSESSMENT_COMPLETED]') && !isAskingConsent
 
         if (needsCompletionTag) {
             const isConfirmation = norm.includes('sim') || norm.includes('autorizo') || norm.includes('concordo') || norm.includes('pode') || isFormalClosingMsg
