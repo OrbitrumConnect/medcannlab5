@@ -569,3 +569,68 @@ Os 5 campos no slot errado no relatório do Pedro (P2 do `project_aec_primeiro_c
 ---
 
 *Bloco F finaliza o diário 26/04. Custos do dia documentados ($15-17 USD), princípio arquitetural cristalizado (Core governance, GPT só texto), conexão com bugs do dia mapeada. Próxima sessão: decisão estratégica do Dr. Ricardo sobre Verbatim First + Fix #1 narrador escriba destrava produto AEC vendável.*
+
+---
+
+## Bloco G — Análise histórica: quando o GPT virou primário?
+
+> Pergunta do Pedro 26/04 ~23h50: *"uma semana atrás era IA first? Em algum momento Core veio primeiro, GPT só escrevia da forma que ele faz?"*
+>
+> Resposta requer análise de git history. Documentado aqui pra próxima sessão saber a origem da inversão arquitetural.
+
+### Investigação via git history
+
+**Comando-chave**: `git log -S"SEMPRE usar o Assistant" -- src/lib/noaResidentAI.ts`
+
+**Resultado**: a linha *"SEMPRE usar o Assistant para gerar a resposta"* aparece **APENAS no commit `a4c706c`** (16/04, *"Security Hardening, LGPD Compliance and Logger v3.0.1-kevlar"*). Nunca foi modificada nem removida.
+
+### Linha do tempo arquitetural inferida
+
+**Pré-16/04 (antes do kevlar)**: evidências sugerem **Core/FSM mais soberano**:
+- **V1.6.1** (`af2e014`): *"FSM Domain Sovereignty and Clinical Engine Hardening"* — FSM tinha "soberania de domínio"
+- **V1.6.2** (`9a5f866`): *"trust boundary and ontological data separation"*
+- **V1.7.x** (`08608ff`): *"clinical_lock for session starts"* — sugere lock clínico forte
+- **V1.8.x** (`12ff5c5`): *"end IDENTIFICATION loop + stop cross-session symptom bleed"*
+- **V1.8.6-C** (`0b60e8d`): *"implement restoration offer on greeting and simplify recovery flow"*
+
+Os nomes desses commits sugerem que ANTES de kevlar, o **Clinical Engine (Core)** era o componente protagonista. "Domain Sovereignty" é vocabulário de quem tem decisão final.
+
+**16/04 — Inversão (commit `a4c706c` "kevlar")**:
+- Reescrita grande de segurança/LGPD
+- `src/lib/noaResidentAI.ts` **CRIADO nesse commit** (não existia antes)
+- Linha `// SEMPRE usar o Assistant para gerar a resposta` introduzida
+- Assistant API vira **primária**, Core vira **fallback**
+
+**16/04 → 26/04 (10 dias até hoje)**:
+- 4 commits modificaram `noaResidentAI.ts` (`17839c9`, `45da134`, `819c6a3`, depois V1.9.x série)
+- **Nenhum tocou na linha 392** (Assistant primário)
+- Toda a evolução V1.9.x foi **dentro** dessa arquitetura, sem questioná-la
+- Memória `project_arquitetura_3_camadas` (criada 25/04) é o primeiro reconhecimento explícito de que essa arquitetura é o problema
+
+### Resposta direta à pergunta
+
+**"Uma semana atrás era IA first?"** — SIM. Há 10 dias (desde kevlar 16/04) a arquitetura é Assistant primário sem alteração.
+
+**"Algum momento o Core veio primeiro, GPT só escrevia?"** — Provavelmente **antes de 16/04 (V1.6.x → V1.8.x)**, baseado em nomenclatura dos commits. Mas não confirmado palavra-por-palavra (mensagens de commit curtas).
+
+**A inversão (Core→Assistant primário) aconteceu no kevlar (16/04)**, não na última semana.
+
+### Implicação pra próxima sessão
+
+A pergunta do Pedro indica intuição correta: **o kevlar (16/04) trocou arquitetura**. Possíveis razões pelas quais foi feito:
+- Hardening de segurança/LGPD priorizado sobre disciplina clínica
+- Necessidade de respostas mais "naturais" (Assistant é mais conversacional que Core+GPT)
+- Decisão consciente OU side-effect não percebido
+
+**Pra reverter (Verbatim First do plano `arquitetura_3_camadas`)** = restaurar protagonismo do Core sem regredir os ganhos de segurança/LGPD do kevlar. Isso significa:
+- Não mexer no `Security Hardening` (kevlar trouxe coisas necessárias)
+- Mas **mudar a regra do `noaResidentAI.ts:392`**: Core decide, Assistant só renderiza
+- Risco: regressão funcional se feito sem cuidado (kevlar também trouxe `MedCannLabAuditLogger`, `META_TAGS`, etc.)
+
+### Recomendação pra Dr. Ricardo
+
+**Antes de qualquer fix Verbatim First, vale Pedro perguntar ao Ricardo:** *"você lembra por que o V3.0.1-kevlar (16/04) mudou a arquitetura pra Assistant primário?"*. Se foi decisão consciente (ex: queria respostas mais naturais), aí Verbatim First precisa preservar isso. Se foi side-effect, fica fácil reverter.
+
+---
+
+*Bloco G adicionado 2026-04-26 ~23h55 BRT pra documentar análise histórica. Diário 26/04 fecha aqui com 7 blocos. Próxima sessão tem contexto pra entender por que a arquitetura está assim antes de decidir como reverter.*
