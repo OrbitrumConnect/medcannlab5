@@ -1299,24 +1299,65 @@ async function handleFinalizeAssessment(params: {
             assessmentData.risk_level = 'medium';
         }
 
-        // 2. [GOLDEN NARRATOR] Reativando a Redação Clínica de Abril
-        console.log('🧠 [PIPELINE_STAGE] REPORT (narrator)', { interaction_id });
-        const reportPrompt = `Transforme os dados brutos da avaliação clínica abaixo em um relatório estruturado e profissional (Markdown).
+        // [V1.9.84] NARRADOR ESCRIBA — Fix #1 do plano `majestic-sprouting-goblet`
+        // Autorizacao: Dr. Ricardo Valenca, 2026-04-27 ~02h30 BRT (Pedro confirmou OK).
+        // Texto V2 documentado em memoria `project_narrator_overreach_24_04.md` (refinado GPT 25/04).
+        //
+        // Bug pre-V1.9.84 (visto no report 8f4876e9 do Pedro hoje 26/04):
+        // Narrador gerava "Impressao Clinica Inicial" + "Plano de Conduta Sugerido" com
+        // "Prescrever analgesicos conforme necessario". Risco regulatorio CFM direto.
+        //
+        // Frase-ancora Dr. Ricardo:
+        // "AEC organiza. Clinica interpreta."
+        //
+        // Mudanca cirurgica (palavra-por-palavra do plano aprovado):
+        // - System prompt: "medico redator senior" -> "escriba clinico"
+        // - Estrutura obrigatoria: removidas "Impressao Clinica Inicial" + "Plano de Conduta Sugerido"
+        // - Adicionada "Lacunas Declaradas" (auditavel)
+        // - REGRAS ABSOLUTAS proibindo inferencia clinica + lista de palavras vetadas
+        // - Rodape regulatorio obrigatorio
+        //
+        // Polimento puro: nao cria estrutura nova, nao toca pipeline (signature, score,
+        // medico, axes, rationality intactos). Apenas reescreve o prompt que decide
+        // CONTEUDO do narrative output. AEC volta a ser ESCRIBA, nao DECISORA.
+        console.log('🧠 [PIPELINE_STAGE] REPORT (narrator V1.9.84 escriba)', { interaction_id });
+        const reportPrompt = `Organize os dados brutos da avaliação clínica abaixo num relatório estruturado fiel (Markdown).
+
+Objetivo: ORGANIZAR as informações fornecidas pelo paciente, sem inferir diagnóstico, sem prescrever conduta, sem atribuir risco clínico, sem propor exames.
 
 Dados:
 ${JSON.stringify(assessmentData)}
 
 Estrutura Obrigatória:
-- Queixa Principal (em destaque)
-- História da Doença Atual (narrativa fluida)
-- Hábitos de Vida e Antecedentes
-- Impressão Clínica Inicial
-- Plano de Conduta Sugerido`;
+- Identificação (nome do paciente)
+- Queixa Principal (textual, em destaque)
+- Lista Indiciária (sintomas mencionados pelo paciente)
+- Desenvolvimento da Queixa (localização, início, descrição, fatores de melhora/piora, sintomas associados)
+- História Patológica Pregressa
+- História Familiar (lado materno e paterno)
+- Hábitos de Vida
+- Perguntas Objetivas (alergias, medicações regulares e esporádicas)
+- Consenso (se aceito pelo paciente)
+- Lacunas Declaradas (campos não explorados nesta avaliação)
+
+REGRAS ABSOLUTAS:
+- NÃO gerar "Impressão Clínica" ou hipótese diagnóstica
+- NÃO gerar "Plano de Conduta" nem sugestão de exames ou tratamento
+- NÃO atribuir risco clínico (médio/alto/baixo)
+- NÃO agrupar, correlacionar ou reinterpretar sintomas além do que foi explicitamente dito
+- NÃO usar linguagem que implique inferência clínica como "sugere", "indica", "compatível com", "padrão", "aparenta", "pode estar relacionado"
+- Linguagem descritiva, não interpretativa
+- Se um campo não foi explorado, registrar como "não explorado nesta avaliação"
+- Não inferir nada que o paciente não disse
+- Citar literal o que o paciente disse quando aplicável
+
+Finalizar SEMPRE com:
+"Este documento representa a organização estruturada das informações fornecidas pelo paciente durante a avaliação clínica inicial assistida pela Nôa Esperanza. Não constitui diagnóstico, prescrição ou plano de tratamento. Recomenda-se apresentação ao médico responsável para análise clínica."`;
 
         const reportCompletion = await openai.chat.completions.create({
             model: 'gpt-4o-mini',
             messages: [
-                { role: 'system', content: 'Você é um médico redator clínico sênior da MedCannLab.' },
+                { role: 'system', content: 'Você atua como um escriba clínico da plataforma Nôa Esperanza. Sua função é transcrever e organizar a fala do paciente com fidelidade estrutural, sem qualquer interpretação, síntese clínica ou inferência. Você NÃO é médico — apoia o trabalho do médico organizando a entrevista.' },
                 { role: 'user', content: reportPrompt }
             ],
             temperature: 0.1
