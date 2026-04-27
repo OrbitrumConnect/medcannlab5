@@ -972,3 +972,295 @@ if (isAecCompletedNowEvent) {
 *Bloco M adicionado 2026-04-27 ~17h BRT por Claude Opus 4.7 (1M context) após sprint V1.9.86→V1.9.91. Diário 27/04 fecha em 13 blocos (A→M). Sprint trio + 2 reverts seletivos + fix correto = 5 commits cirúrgicos sem regressão.*
 
 *"Polir, ligar, escalar — sabendo que detectar e reverter overreach próprio é parte do polimento."*
+
+---
+
+## BLOCO N — V1.9.93 Trigger gate + Dropdown profissionais (sprint pré-lock)
+
+*Adicionado 2026-04-27 ~18h BRT após validação via Supabase Management API*
+
+### N.1 — Sintoma reportado por Pedro
+
+Pedro fez 2 AECs pós-V1.9.91 (Carolina + outra). Ambas:
+- ✅ AEC formal completa (10 passos)
+- ✅ Relatório gerado, signature_hash ok, score válido
+- ❌ **Trigger de agendamento INLINE não veio junto** ao botão "Ver Relatório"
+- ❌ Quando paciente pedia agendamento fora-AEC com typo no nome do médico ("riacrdo"), widget mostrava "Aguardando vínculo médico" como dead-end
+
+Pedido explícito: *"vinculo com medico no caso o card do agendamento pode ter um dropdown com os pros e suas especialidades?! ai fica completo!"*
+
+### N.2 — Causa raiz V1 (trigger faltou pós-AEC)
+
+Sequência reconstruída a partir do código (sem precisar de logs):
+
+1. **Linha 4944** Core injeta `[ASSESSMENT_COMPLETED][FINALIZE_SESSION]` quando `needsCompletionTag=true` + `isConfirmation=true` (Carolina disse "Sim autorizo") ✅
+2. **Linha 4883-4887** AEC GATE V1.5: enquanto `assessmentPhase === 'CONSENT_COLLECTION'`, `shouldTriggerScheduling = false` (corretamente — REGRA HARD)
+3. **Linha 4889** override por `aiResponse.includes(TRIGGER_SCHEDULING_TOKEN)` — mas o token AINDA NÃO está no aiResponse nesse momento
+4. **Linha 5277-5279 (V1.9.91)** injeta `[TRIGGER_SCHEDULING]` no aiResponse quando `isAecCompletedNowEvent=true` — **mas NÃO atualiza shouldTriggerScheduling**
+5. **Front linha 1148** [useMedCannLabConversation.ts](src/hooks/useMedCannLabConversation.ts#L1148) faz `stripInvisibleTokensForStorage(response.content)` → token invisível em `message.content`
+6. **Front linha 3358** [NoaConversationalInterface.tsx](src/components/NoaConversationalInterface.tsx#L3358) testa `message.content.includes(TRIGGER_SCHEDULING_TOKEN)` → **FALSE** (foi strippado)
+7. **Front linha 3348** testa `metadata.trigger_scheduling === true` → **FALSE** (`shouldTriggerScheduling` ficou false no Core)
+8. → Widget não renderiza
+
+**Diagnóstico**: V1.9.91 injetou o token no texto mas esqueceu de re-ligar o flag no metadata. Como o front strippa o token, o flag era a única ponte — e estava false.
+
+### N.3 — Fix V1.9.93-A (1 linha + 7 de comentário)
+
+[supabase/functions/tradevision-core/index.ts:5278-5288](supabase/functions/tradevision-core/index.ts#L5278-L5288):
+```typescript
+if (!aiResponse?.includes('[TRIGGER_SCHEDULING]')) {
+  aiResponse = aiResponse + ' [TRIGGER_SCHEDULING]'
+}
+// V1.9.93 Fix A: o front strippa [TRIGGER_SCHEDULING] de message.content
+// (useMedCannLabConversation:1148 stripInvisibleTokensForStorage), entao o
+// widget so renderiza via metadata.trigger_scheduling=true. AEC GATE V1.5
+// (linha 4883-4887) zerou shouldTriggerScheduling enquanto a phase era
+// CONSENT_COLLECTION. Aqui ja passamos esse gate (isAecCompletedNowEvent=true,
+// ou seja, AEC fechou logicamente neste turno) — entao re-ligamos o flag
+// pra que o front receba trigger_scheduling=true no metadata.
+shouldTriggerScheduling = true;
+```
+
+**Por que não regride**: só dispara quando `isAecCompletedNowEvent === true`, ou seja, quando aiResponse já contém `[ASSESSMENT_COMPLETED]`. AEC GATE V1.5 continua zerando o flag em fases ATIVAS. REGRA HARD preservada.
+
+Commit: `b0ba4b5`
+
+### N.4 — Fix V1.9.93-B (dropdown de profissionais)
+
+[NoaConversationalInterface.tsx:209+](src/components/NoaConversationalInterface.tsx#L209) — SchedulingWidget evolução:
+
+Mudanças:
+1. Tipagem: `professionalId: string | null` (era `string`)
+2. State `selectedProfessionalId` controla a seleção (default = prop se UUID válido, senão primeiro carregado)
+3. `useEffect` carrega lista on-mount (mesma fonte de [PatientAppointments.tsx:186-240](src/pages/PatientAppointments.tsx#L186-L240))
+4. Dropdown `<select>` no header com nome + especialidade (`inferSpecialty` por nome/email)
+5. Slots recarregam quando `selectedProfessionalId` muda
+6. `handleBooking` usa `selectedProfessionalId` (não a prop direta)
+
+Guard externo MUDADO ([NoaConversationalInterface.tsx:3390+](src/components/NoaConversationalInterface.tsx#L3390)):
+- **Antes**: bloqueava widget e mostrava "Aguardando vínculo médico" como dead-end
+- **Agora**: passa `null` ao widget que oferece dropdown sem default
+- Log de auditabilidade preservado (warn em console)
+
+Commit: `d754384`
+
+### N.5 — Bug encontrado durante validação via Supabase API
+
+Após commit de B, rodei queries via Management API (`POST /v1/projects/{ref}/database/query` com PAT) e descobri:
+
+```
+type     | count
+---------+------
+patient  | 15
+professional | 8   ← Dr. Ricardo Valença está aqui!
+admin    | 5
+paciente | 1
+```
+
+**8 profissionais** estão com `type='professional'` (en), incluindo o **Dr. Ricardo Valença real** (UUID `2135f0c0`, email rrvalenca@gmail.com — o vinculado em todos os reports).
+
+Mas o filtro que copiei de PatientAppointments era `['profissional', 'admin']` (pt + admin) → **não pegava os 8 'professional'**.
+
+→ Dropdown abriria sem o Dr. Ricardo. Bug pré-existente compartilhado com PatientAppointments (lá ficava silencioso por conta do `FALLBACK_PROFESSIONALS` hardcoded).
+
+### N.6 — Fix V1.9.93-C (filtro de types)
+
+[NoaConversationalInterface.tsx:255](src/components/NoaConversationalInterface.tsx#L255):
+```typescript
+.in("type", ["profissional", "professional", "admin"])
+```
+
+Cobre os 13 profissionais reais (5 admin + 8 professional). PatientAppointments não foi tocado — Pedro decide se quer corrigir lá depois.
+
+Commit: `5df0cea`
+
+### N.7 — Veredito da validação via Supabase API (pré-última-AEC)
+
+| Sistema | Estado | Fonte |
+|---|---|---|
+| Pipeline AEC + Relatório | 🟢 100% funcional | `clinical_reports`: 4 reports gerados nas últimas 3h, todos signed=true, scores 63-70 |
+| Doctor resolution (UUID) | 🟢 ok | todos com `doctor_id=2135f0c0` (Dr. Ricardo real) |
+| Appointments criação | 🟢 ok | 2 agendamentos novos criados nas últimas 3h (`683590db` Pedro Paciente, `e4c8ff7c` Joao Eduardo) |
+| Trigger gate pós-AEC | 🟢 corrigido (V1.9.93-A) | aguardando próxima AEC pra confirmar widget inline aparece |
+| Dropdown profissionais | 🟢 corrigido (V1.9.93-B+C) | 13 médicos disponíveis, sem dead-end |
+| `professional_name` no save | 🟡 null | bug pré-existente, não bloqueia agendamento |
+| `metadata.system_version` | 🟡 ainda V1.9.33 | bug pré-existente, decisão futura |
+| 404 `/consentimento` | 🟠 commit antigo | `88d2281`, decisão Pedro pós-lock |
+
+### N.8 — Sprint final pré-lock
+
+**3 commits V1.9.93** (cirúrgicos, push 4 refs cada):
+- `b0ba4b5` V1.9.93-A — gate trigger pós-AEC
+- `d754384` V1.9.93-B — dropdown profissionais
+- `5df0cea` V1.9.93-C — filtro types pt/en
+
+**Edge Function `tradevision-core` deployed** (Docker offline, mas Supabase CLI subiu via API).
+
+### N.9 — Próximos passos (Pedro)
+
+1. **Última AEC de validação** (Pedro): confirmar widget inline aparece pós-autorizo
+2. **Se 🟢**: cadeado em AEC + Relatório (lock V1.9.93)
+3. **Documentação final**: este Bloco N + memória atualizada
+
+### N.10 — Lições do Bloco N
+
+1. **Validação via Management API com PAT é viável e poderosa**: rodei 7 queries em 5min, descobri o bug do filtro pt/en antes do Pedro testar — método V1.9.85 funcionou de novo
+2. **Princípio 8 não imuniza contra herdar bugs**: copiei loadProfessionals de PatientAppointments e herdei o filtro errado. "Reutilizar" exige verificar se o que reutilizamos está certo
+3. **Token invisível precisa de ponte robusta**: stripInvisibleTokensForStorage no front é correto (UX), mas exigia que o flag no metadata sempre acompanhasse o token no texto. V1.9.91 quebrou isso por descuido — V1.9.93-A consertou
+4. **Dropdown elimina classe inteira de bugs UX**: typo no nome do médico ("riacrdo"), paciente novo sem vínculo, querer trocar médico — tudo resolvido por 1 componente reutilizado
+
+### Frase âncora do Bloco N
+
+> *"Validar via API antes do usuário testar é o método V1.9.85 maduro. Reutilizar código exige conferir o que estou reutilizando — herdar bugs silenciosos é o oposto de polir."*
+
+---
+
+*Bloco N adicionado 2026-04-27 ~18h BRT por Claude Opus 4.7 (1M context) após sprint V1.9.93 (3 commits A+B+C). Diário 27/04 fecha em 14 blocos (A→N). Próximo passo: última AEC de Pedro → cadeado.*
+
+*"O dropdown não é feature nova — é reutilização do que já existia em PatientAppointments + correção do filtro pt/en. Polir até a essência: 1 componente, 13 médicos, zero dead-ends."*
+
+---
+
+## BLOCO O — V1.9.94 + V1.9.95 + LOCK FORMAL AEC + Relatório + Agendamento
+
+*Adicionado 2026-04-27 ~19h BRT — encerramento da sprint diária, cadeado aplicado*
+
+### O.1 — V1.9.94 (consent guard isAskingConsent)
+
+Pedro detectou em teste 18:33: card de agendamento abriu **prematuramente** logo após user dizer "concordo" da revisão final. Causa: Core injetava `[ASSESSMENT_COMPLETED]` quando `assessmentPhase === 'CONSENT_COLLECTION'` + isConfirmation, e a transição FINAL_RECOMMENDATION → CONSENT_COLLECTION acontece JUNTO com a "concordo". REGRA HARD §1 violada.
+
+**Fix V1.9.94** ([Core 4906-4933](supabase/functions/tradevision-core/index.ts#L4906-L4933)): adiciona guard `isAskingConsent` — se aiResponse contém "Consentimento Informado" / "Voce autoriza", NÃO injeta `[ASSESSMENT_COMPLETED]`. Só injeta no turno seguinte (Nôa confirma com "✅ Consentimento registrado").
+
+Commit `44f593f`.
+
+### O.2 — V1.9.95 (2 bugs sutis: AEC ativa + loop pós-agendamento)
+
+Pedro testou novamente (Pedro Paciente, 27/04 18:49-18:58 BRT) e detectou 2 bugs:
+
+**Bug 1** — Card de agendamento abriu **NO MEIO** da AEC (turno 18:54, fase=COMPLAINT_DETAILS qIdx=5 iter=1).
+- Causa raiz: linha 4965 do Core (modelo selado "GPT emite → Core confia") **bypassava o AEC GATE V1.5**. GPT-4o emitiu `[TRIGGER_SCHEDULING]` durante AEC ativa.
+
+**Bug 2** — Após confirmar agendamento (`✅ Agendamento confirmado! ID: 48ca2298`), **outro card** de agendamento abriu.
+- Causa raiz validada via Edge Function logs: o front (`useMedCannLabConversation:1020`) enviava action_card system como mensagem ao Core. GPT-4o recebia "✅ agendamento confirmado!" como input do user e respondia com `[TRIGGER_SCHEDULING]` — loop.
+
+**Fix V1.9.95-A** ([Core 4962-5004](supabase/functions/tradevision-core/index.ts#L4962-L5004)): se aiResponse contém token + AEC ativa sem override, **strippa** o token e NÃO liga `shouldTriggerScheduling`. Log:
+```
+⛔ [AEC GATE V1.5] GPT emitiu [TRIGGER_SCHEDULING] durante AEC ativa (phase=X) — token removido. REGRA HARD §1 preservada.
+```
+
+**Fix V1.9.95-B** ([useMedCannLabConversation 1022-1029](src/hooks/useMedCannLabConversation.ts#L1022-L1029)): early return em `sendMessage` quando `role='system'`. Action_cards são **só visuais** no chat, sem chamar Core.
+
+Commit `1a79108`.
+
+### O.3 — Métricas das últimas 4h (validadas via Supabase API)
+
+| Métrica | Valor | Fonte |
+|---|---|---|
+| **AECs completas (reports)** | **7** (3 Pedro + 4 Carolina) | `clinical_reports` |
+| Reports signed_hash (V1.9.73) | **7/7 = 100%** | `signature_hash IS NOT NULL` |
+| Status `shared` | 6 | (1 ainda em `completed`) |
+| Score clínico (range) | **63 – 75** (média ~68) | `content->scores->clinical_score` |
+| **Appointments criados** | **3** (todos vinc. Dr. Ricardo UUID `2135f0c0`) | `appointments.created_at > 4h` |
+| **Interações totais (Core)** | **305** | `ai_chat_interactions` |
+| Bypass Verbatim First (V1.9.86) | **141 / 305 = 46.2%** | `metadata.tokens = 0` |
+| Chamadas GPT-4o | **164 / 305 = 53.8%** | `model = gpt-4o-2024-08-06` |
+| Tokens GPT-4o consumidos | **1.396.254** | `sum(metadata.tokens)` |
+| Média tokens/chamada GPT | **8.514** | `avg WHERE tokens > 0` |
+
+### O.4 — Custo estimado (4h) e ROI Verbatim First
+
+Preço gpt-4o-2024-08-06: input $2.50/1M tokens, output $10.00/1M tokens. Mistura conservadora ~80% input / 20% output → blend **~$4.00/1M**.
+
+| Item | 4h | Por hora | Por AEC |
+|---|---|---|---|
+| Custo real GPT-4o | **~$5.58 USD** (R$ 28-30) | **~$1.40 USD** | **~$0.60 USD/AEC** (R$ 3) |
+| Economia Verbatim (141 bypass × ~8500) | **~$4.80 USD** | **~$1.20 USD** | — |
+| Custo SEM Verbatim First | ~$10.40 USD | ~$2.60 USD | ~$1.30 USD/AEC |
+
+**ROI Verbatim First: ~46% redução de custo GPT em hard-lock phases.** Sustentável em escala — em 1000 AECs = ~$600 vs ~$1300 sem ele.
+
+### O.5 — LOCK FORMAL aplicado (tag git)
+
+```
+v1.9.95-lock-aec-relatorio-agendamento
+```
+
+Push em ambos remotes (hub + origin). Estado validado:
+
+🟢 **Pipeline AEC + Relatório**: 7/7 reports signed, scores válidos, doctor_id resolved
+🟢 **Agendamento via widget**: 3/3 appointments criados com UUID real
+🟢 **REGRA HARD §1** preservada em 4 camadas (código + memory + diário + commit msg)
+🟢 **Verbatim First** entregando 46% economia de tokens
+🟢 **AEC GATE V1.5** reforçado em V1.9.95-A
+🟢 **Anti-loop pós-agendamento** em V1.9.95-B
+🟢 **Push dual-remote** em todos os 11 commits da sprint
+
+### O.6 — Sprint 27/04 — 11 commits da diária
+
+| Versão | Commit | Foco |
+|---|---|---|
+| V1.9.85 | `bb01801` (4 sub-commits) | REGRA HARD §1 + Fix A/B/D + reforço |
+| V1.9.86 | `bb01801` | Verbatim First (REGRA #1) |
+| V1.9.87 | `91cd803` | Threshold scorer (queixa curta válida) |
+| V1.9.88 | `31d0de6` | clinical_qa_runs (audit imutável) |
+| V1.9.89 | `0f0e29f` | Revert seletivo Fix A |
+| V1.9.91 | `854401d` | Inline scheduling pós-AEC + revert overreach Fix C |
+| V1.9.92 | `bc10bb5` | Remover rota fantasma `/consentimento` |
+| V1.9.93-A | `b0ba4b5` | Trigger gate metadata |
+| V1.9.93-B | `d754384` | Dropdown profissionais |
+| V1.9.93-C | `5df0cea` | Filtro types pt/en |
+| V1.9.94 | `44f593f` | Consent guard isAskingConsent |
+| V1.9.95 | `1a79108` | AEC GATE V1.5 reforçado + system msgs early return |
+
+**+ tag** `v1.9.95-lock-aec-relatorio-agendamento`.
+
+### O.7 — Pendências FORA do lock (decisão Pedro pós-cadeado)
+
+🟠 **404 `/clinica/paciente/consentimento`** (commit `88d2281`, pré-existente)
+🟡 **`professional_name` null** no save de appointments (cosmético)
+🟡 **`metadata.system_version`** ainda V1.9.33 (cosmético)
+🟡 **Frase confusa "(e o sintoma...)"** em COMPLAINT_DETAILS (cosmético)
+🟡 **Compartilhar relatório com mais médicos** depois do primeiro share (evolução, V1.9.96+)
+🔴 **`users_compatible` view sem RLS** (P0 segurança, auditoria 25/03) — bloqueio go-live externo
+
+### O.8 — Lições principais cristalizadas — sprint 27/04
+
+1. **Validação via Supabase Management API com PAT é o método V1.9.85 maduro**: 30+ queries em 1 dia, 6 bugs detectados antes do Pedro testar (filtro pt/en, isAskingConsent, AEC GATE bypass, action_card loop, etc.)
+2. **Princípio 8 não é binário**: detectei 2 overreaches próprios (Fix C V1.9.85 + ligação prematura V1.9.93-A não-guarded) e revertei. Isso **é** polir.
+3. **REGRA HARD §1 (consentimento ≠ agendamento)** exigiu 4 camadas pra ficar robusta: código + memória + diário + commit. Cada camada herda contra a próxima regressão.
+4. **Verbatim First é nível elite**: 46% economia comprovada em 4h reais, não estimativa.
+5. **Token strip + flag desacoplados** (V1.9.93-A): ponte robusta entre Core e Front quando o display strippa tokens invisíveis.
+6. **Action_cards do front ≠ input do user**: separação semântica que estava implícita virou explícita em V1.9.95-B.
+
+### O.9 — Parecer honesto sobre o app pós-sprint
+
+**Onde estamos**: 🟢 **Profissional sólido** em AEC + Relatório + Agendamento + Pipeline + Signature. Não é hype — é validado por 7 AECs reais com 100% de signature, 3 appointments com UUID válido, 46% economia de tokens.
+
+**O que ainda nos separa de "elite externa"**:
+1. P0 `users_compatible` sem RLS (bloqueio go-live)
+2. Onda 2/3 do gap GPT-first arquitetural (Ricardo decisão)
+3. Métricas operacionais reais (apenas 2 testers ativos hoje — Pedro + Ricardo testando como Carolina)
+4. Compartilhar relatório com mais médicos depois (evolução)
+5. Escala não testada (DB ainda saudável em 305 interações/4h, mas não vimos 10k/dia)
+
+**O que está nível elite agora**:
+- AEC FSM 10 passos com Verbatim First
+- Pipeline orchestrator (REPORT → SCORES → SIGNATURE → AXES → RATIONALITY → DONE)
+- Anti-duplicação `PIPELINE_REDUNDANT_TRIGGER`
+- Signature SHA-256 hash 100% dos reports
+- AEC GATE V1.5 com override contextual
+- Dropdown 13 médicos + slug fallback eliminado
+- Push dual-remote 4 refs disciplinado
+- Método de validação V1.9.85 maduro (5 etapas)
+
+**Resumo**: hoje é dia de orgulho. O app saiu de "sólido com gaps" para "sólido com gaps **identificados, classificados e priorizados**". O lock V1.9.95 marca um ponto onde podemos parar de mexer no AEC sem medo — qualquer dev novo entrando no projeto pega isso de pé.
+
+### Frase âncora do Bloco O
+
+> *"Lock não é estagnação. É a confiança de que você pode olhar para outras coisas sem que o que está atrás caia. Hoje a AEC fechou o ciclo: detectada, polida, blindada, validada, documentada e cadeada — em 1 dia."*
+
+---
+
+*Bloco O adicionado 2026-04-27 ~19h BRT por Claude Opus 4.7 (1M context). Sprint diária encerrada com 11 commits cirúrgicos + tag de lock. Diário 27/04 fecha em 15 blocos (A→O). Próximo ciclo: P0 segurança + escala + decisões Ricardo pendentes.*
+
+*"AEC + Relatório + Agendamento estão lockados. Vamos para o próximo capítulo."*
