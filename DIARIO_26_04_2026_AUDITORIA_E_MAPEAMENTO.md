@@ -476,3 +476,96 @@ duracao: ~8 minutos
 ---
 
 *Bloco E adicionado 2026-04-26 ~23h30 BRT pra contextualizar AEC dentro do produto inteiro. Próxima sessão começa lendo este diário (5 blocos) + SYSTEM_STATE_SEAL + ENGINEERING_RULES + MEMORY.md antes de qualquer ação técnica. Polimento incremental funcionou esta semana — princípio "evoluir sem quebrar" validado em 30 commits sem regressão de produção.*
+
+---
+
+## Bloco F — Consumo de tokens 26/04 + princípio arquitetural (Core governance, GPT só texto)
+
+> Acrescentado 2026-04-26 ~23h45 BRT.
+
+### Consumo OpenAI hoje (volume + custo)
+
+| Métrica | Valor |
+|---|---|
+| Turnos contados (cap V1.9.72) | **301** |
+| Tokens **input** total | **~3 milhões** (2.986.224) |
+| Média/turno | 9.921 (meta < 15k ✅) |
+| Pico/turno | 30.898 (apenas 2 turnos > 30k) |
+| Reports completos | 4 (todos assinados) |
+| **Custo estimado GPT-4o** | **~$15-17 USD** (~R$80-90) |
+
+**Distribuição por hora BRT** (concentração):
+- 02h: 1 turno (madrugada)
+- 10h-15h: 144 turnos (~1.4M tokens) — manhã/tarde
+- 16h: 69 turnos (712k tokens) — pico
+- 18h-20h: 86 turnos (~846k tokens) — sessão testes AEC
+- 23h: 1 turno
+
+**Top consumidores (94% do uso)**:
+1. Carolina (`5c98c123`): 152 turnos, 1.47M tokens
+2. Pedro Paciente (`d5e01ead`): 131 turnos, 1.33M tokens
+3. Outro (`17345b36`): 18 turnos, 180k tokens
+
+**Erros hoje: 16 quota_exceeded** em 3 janelas:
+- 02:13 (1) — madrugada
+- 10:17-18 (3) — manhã pré-recarregamento OpenAI
+- 21:45-23:27 (12) — noite, testes simultâneos Carolina + Pedro
+
+### Análise — esse volume é normal?
+
+**Não é uso de produção, é uso de QA intensivo:**
+- 2 testers humanos batendo AEC seguidamente
+- Cada AEC completa = ~30-40 turnos × 9.9k = ~350k tokens
+- 4 reports completos = 4 ciclos full
+
+**Em produção real estimado** (27 usuários × 2 AECs/mês):
+- 54 reports/mês × ~350k tokens = ~19M tokens/mês
+- Custo estimado: ~$50-100/mês
+- Sustentável pelo plano OpenAI atual
+
+**Hoje gastou ~$15 em ~10h de QA. Em prod normal, esse volume seria 2-3 semanas.**
+
+Cap V1.9.72 está funcionando (média baixa). Os 16 erros são por VOLUME total no dia, não por payload individual.
+
+### Princípio arquitetural (declarado por Pedro 26/04 ~23h45)
+
+**Pergunta original**: *"o motor antes era o core, agora virou GPT? Core é governance? GPT deve ser só pra texto, não decisão final, ainda está assim?"*
+
+**Resposta confirmada**: SIM, ainda está assim.
+
+| Componente | Hoje (errado) | Deveria ser (Pedro 26/04) |
+|---|---|---|
+| **Core** (FSM, Roteiro Selado, motor V1.9.61) | Acionado, mas resposta é descartada | **Governance** — decide fase, próxima pergunta, slot do dado, persistência |
+| **GPT (Assistant API)** | Decide tudo (`noaResidentAI.ts:392`: `// SEMPRE usar Assistant`) | Só **renderiza texto natural** — formato amigável da frase, sem mudar conteúdo nem ordem nem decisão |
+| **Decisão de avançar fase** | GPT (improvisa) | Core |
+| **Decisão de qual pergunta** | GPT (Roteiro Selado é hint, não regra) | Core (verbatim) |
+| **Decisão de qual slot recebe resposta** | FSM tenta mas Assistant atropela | Core |
+| **Persistência de state** | Core ✅ | Core (continua) |
+| **Texto final exibido** | Assistant (improviso) | Core dita + GPT formata (ou apenas Core verbatim) |
+
+**Conclusão**: o **Verbatim First** do plano `arquitetura_3_camadas` é exatamente a inversão dessa relação. Core vira governance, GPT vira renderizador. Fix arquitetural pendente.
+
+### Conexão com bugs do dia
+
+Os 5 campos no slot errado no relatório do Pedro (P2 do `project_aec_primeiro_ciclo_completo_26_04`) são **manifestação direta** dessa inversão:
+- Core diz "qIdx=4 ainda em melhora, espera mais resposta"
+- GPT diz "vou perguntar piora agora" (improvisa)
+- Paciente vê pergunta de piora, responde sobre piora
+- Core anota em melhora (qIdx=4 ainda ativo)
+- Resultado: campo errado
+
+**Sem inversão Core/GPT, esse padrão se repete.** Cada AEC nova vai ter algum campo no slot errado por essa razão. Nenhum patch local resolve enquanto a arquitetura mantém GPT como decisor.
+
+### Consequência de produto
+
+**Pra paciente externo pagante (curso AEC R$300, médico real validando):**
+- Não dá pra entregar relatório com 5 campos errados
+- Não dá pra confiar que "Plano de Conduta" gerado é válido
+- Médico precisa revisar e corrigir manualmente cada AEC → custo operacional alto
+- Confiabilidade percebida cai
+
+**Por isso Verbatim First sai de "polimento" e vira "pré-requisito de produto vendável".**
+
+---
+
+*Bloco F finaliza o diário 26/04. Custos do dia documentados ($15-17 USD), princípio arquitetural cristalizado (Core governance, GPT só texto), conexão com bugs do dia mapeada. Próxima sessão: decisão estratégica do Dr. Ricardo sobre Verbatim First + Fix #1 narrador escriba destrava produto AEC vendável.*
