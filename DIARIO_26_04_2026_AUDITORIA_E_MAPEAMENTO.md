@@ -245,7 +245,9 @@ TOTAL: ~6-8 semanas focadas pra produção escala elite pro.
 
 ---
 
-## Bloco D — Noite (~15h-20h45 BRT)
+## Bloco D2 — Noite operacional (~15h-20h45 BRT)
+
+> Nome ajustado pra evitar colisão com Bloco D (roadmap) acima. Conteúdo: sessão prática de fixes V1.9.74→81.
 
 ### Sessão de bugs AEC com Pedro como paciente teste
 
@@ -633,4 +635,270 @@ A pergunta do Pedro indica intuição correta: **o kevlar (16/04) trocou arquite
 
 ---
 
-*Bloco G adicionado 2026-04-26 ~23h55 BRT pra documentar análise histórica. Diário 26/04 fecha aqui com 7 blocos. Próxima sessão tem contexto pra entender por que a arquitetura está assim antes de decidir como reverter.*
+*Bloco G adicionado 2026-04-26 ~23h55 BRT pra documentar análise histórica. Próxima sessão tem contexto pra entender por que a arquitetura está assim antes de decidir como reverter.*
+
+---
+
+## Bloco H — Sessão de fechamento técnico (~00h-01h BRT 27/04)
+
+> Continuação direta do Bloco G. Bloco final do dia: aplicação de V1.9.82, descoberta de estrutura HARD/SOFT lock pré-existente, freio na Onda 2a (lição importante), análise score breakdown e catalogação ACDSS.
+
+### V1.9.82 — Onda 2b aplicada (autorização explícita Dr. Ricardo)
+
+Após Bloco G mapear conexão Verbatim First / kevlar, Pedro consultou Dr. Ricardo sobre aplicar a vertente 2b (fail-safe clínico).
+
+**Resposta Ricardo (verbatim)**:
+> *"Aplicar a vertente 2b AGORA. Sem esperar. Se a Nôa cair, ela tem que cair para o método — nunca para o genérico."*
+
+**V1.9.82 aplicada** (commit `0f72b38`, ~37 linhas em `tradevision-core/index.ts:4378-4414`):
+- Localização: dentro do bloco de fallback determinístico, após `institutional_trauma_log.insert`
+- Comportamento: se `assessmentPhase` ativa + `nextQuestionHint` disponível → retorna **verbatim** (sem opening/body/transparency)
+- Modelo retornado: `TradeVision-Core-AEC-Failsafe-v1.9.82`
+- Edge Function deployada: tradevision-core **v266** (validado via Management API)
+
+**Resolve caso real** (Carolina 26/04 21:11+):
+- OpenAI down → fallback determinístico ativava
+- Antes: devolvia *"Posso registrar suas observações, abrir sua agenda..."* (frase institucional violava AEC)
+- Depois: devolve frase verbatim do Roteiro Selado (ex: *"O que parece piorar X?"*) — disciplina clínica preservada mesmo offline
+
+### Descoberta crítica: estrutura HARD/SOFT lock JÁ EXISTE
+
+Investigando para aplicar Onda 2a (bypass Assistant durante AEC ativa), descoberto em [tradevision-core:3010-3063](supabase/functions/tradevision-core/index.ts#L3010):
+
+**Dois Sets de fases já implementados:**
+- `AEC_VERBATIM_LOCK_PHASES` (Set global, 18 fases) — usado para SOFT lock (instrução verbatim no prompt do GPT)
+- `AEC_VERBATIM_HARD_LOCK_PHASES` (subconjunto, 17 fases) — usado para HARD lock (substituição literal de `aiResponse` por `nextQuestionHint`)
+
+**Diferença crítica**: `COMPLAINT_DETAILS` está deliberadamente **FORA** do hard lock, com nota:
+
+> *"NOTA: COMPLAINT_DETAILS propositalmente fora — preserva fluidez do detalhamento (V1.8.3-D)."*
+
+**V1.8.3-D = decisão clínica anterior ao kevlar** (16/04). Tirou COMPLAINT_DETAILS do hard lock por motivo legítimo: 6 sub-perguntas (location, onset, description, sintomas, melhora, piora) precisam fluidez narrativa, não rigidez verbatim.
+
+**Implicação direta**: o bug do Pedro hoje (5 campos slot errado em COMPLAINT_DETAILS) acontece **EXATAMENTE na fase deliberadamente excluída do hard lock**. Não é regressão — é resíduo da decisão V1.8.3-D que precisa ser revisada **com Dr. Ricardo** (decisão clínica, não técnica).
+
+### Freio do Dr. Ricardo na Onda 2a (lição-marco da sessão)
+
+Eu (Claude) estava prestes a aplicar Onda 2a (substituir content da resposta GPT pelo Roteiro Selado em todas fases AEC). Ricardo freou:
+
+**Argumento Ricardo**:
+> *"Você ainda não comprovou que Verbatim First resolve tudo. Você provou que Assistant atrapalha, mas não que Core sozinho resolve sem efeitos colaterais. Risco real de aplicar Onda 2a direto:*
+> *1. Rigidez excessiva — pergunta sempre verbatim, perde adaptação contextual*
+> *2. Quebra de fluxos fora da AEC — saudações, desvios naturais, inputs fora do roteiro*
+> *3. Novo tipo de bug (mais difícil) — hoje é 'slot errado' visível; depois pode virar 'fluxo travado / pergunta incoerente' invisível*
+>
+> *A pergunta certa não é 'Verbatim é melhor?', mas 'Quando Verbatim deve ter prioridade sobre o Assistant?'"*
+
+**Confirmação técnica do Claude**: ao descobrir o V1.8.3-D, ficou claro que aplicar Onda 2a "completa" mexeria em decisão clínica anterior sem consulta. Ricardo estava certo em frear.
+
+**Lição cristalizada**:
+> *"Cada commit deve responder 'o que já existia mas não estava conectado direito?'. Se a resposta começa com 'vamos criar X que ainda não existe', é feature nova → freia. Se é 'X existe e não está sendo usado/ligado/respeitado direito', é polimento → segue."*
+
+**Onda 2a NÃO aplicada.** Aguarda decisão clínica de Pedro+Ricardo sobre granularidade do hard lock dentro de COMPLAINT_DETAILS (talvez sub-perguntas tipo lista — qIdx 3, 4, 5 — entrem em hard lock; sub-perguntas narrativas — qIdx 0, 1, 2 — ficam em soft).
+
+### Análise granular do score 58/100 — quantificação dos bugs
+
+Score breakdown extraído de `clinical_reports.content.scores` (report `8f4876e9`):
+
+| Etapa AEC | Sinal | Peso | Valor | Status |
+|---|---|---|---|---|
+| 2 — Lista Indiciária | `lista_indiciaria` | 20 | 4 | 🔴 20% (só "dor na cabeça!") |
+| 3 — Queixa Principal | `queixa_principal` | 15 | 15 | ✅ 100% |
+| 4 — HDA | `desenvolvimento_queixa` | 20 | 14 | 🟡 70% (5 campos, 1 errado) |
+| 5 — HPP | `historia_patologica` | 10 | **0** | 🔴 0% (pneumonia foi pra slot piora) |
+| 5 — Família | `historia_familiar` | 10 | 5 | 🟡 50% (paterno sumiu) |
+| 6 — Perguntas Objetivas | `perguntas_objetivas` | 10 | 6 | 🟡 60% |
+| 7 — Estilo de Vida | `habitos_vida` | 15 | 9 | 🟡 60% (3 itens, 1 lixo) |
+| 9 — Consenso | `consenso_paciente` | 5 | 5 | ✅ 100% |
+| **TOTAL** | | **100** | **58** | |
+
+**Custo direto da arquitetura GPT-first**: -21 pontos.
+- HPP=0 → -10 pts (pneumonia/amigdalites foram pra `complaintWorsening`)
+- Família=5 → -5 pts (paterno vazio)
+- HDA=14 → -6 pts (campos errados)
+
+**Sem os bugs Assistant↔FSM** (Onda 2a + granularidade COMPLAINT_DETAILS resolvidas): score teórico ≈ 79.
+
+**Quality of life**: 68. **Symptom improvement**: 58. **Treatment adherence**: 64. **Score confidence**: high.
+
+**Insight**: o sistema **conhece sua própria fragilidade** (score 58 com confidence high) — sabe quanto coletou e calibra adequadamente. Não está mentindo pro médico; está sub-entregando porque a coleta corrompeu.
+
+### ACDSS catalogado — Adaptive Clinical Decision Support System
+
+Pedro pediu pra investigar antes das ondas. Resultado em `src/lib/clinicalGovernance/`:
+
+- **14 arquivos** (criados 15/04, **um dia antes do kevlar**)
+- **Descrição literal no código**: *"Adaptive Clinical Decision Support System (ACDSS) - Baseado em TradeVision, adaptado para governança clínica"*
+- **Estrutura**:
+  - `core/`: `analyzePatientContext`, `stateClassifier`, `exhaustionDetector`, `confluenceCalculator`
+  - `learning/`: `learningGuard`
+  - `utils/`: `cacheManager`, `logger`, `patientMapper`, `specialtyConfigs`, `thresholds`
+- **Integração**: `<ClinicalGovernanceProvider>` envolve TODO o app (`App.tsx:108-330`)
+- **Páginas**: `/clinical-governance-demo`, `/admin/clinical-governance`
+- **Tabela banco**: `trl_learning_evidence` (1 — resto é client-side)
+
+**Implicação pra ondas**:
+- ACDSS **não interfere** (caminhos separados)
+- ACDSS **se beneficia** (consome `clinical_reports` — Verbatim First melhora qualidade dos dados)
+- Princípio: tratar ACDSS como black-box. Não tocar `src/lib/clinicalGovernance/` durante ondas
+
+### Princípio operacional confirmado por Pedro
+
+Pedro perguntou: *"isso não é feature, não é add coisas novas inventar nem criar — só polir, ligar pontos e melhorar o app. Correto?"*
+
+**Confirmação técnica via commits do dia**:
+
+| Commit | Tipo |
+|---|---|
+| V1.9.77 (regex "agora") | **POLIU** regex existente — só removeu palavra problemática |
+| V1.9.80 (patientName perfil) | **LIGOU PONTO** — `users.name` já existia, FSM não usava |
+| V1.9.81 (regex tolerante) | **POLIU** gatilho existente — expandiu cobertura |
+| V1.9.82 (fail-safe Onda 2b) | **LIGOU PONTO** — `nextQuestionHint` já existia, fallback não usava |
+| Onda 2a (FREADA) | seria **CRIAR REGRA NOVA** sobre HARD lock em COMPLAINT_DETAILS — por isso freou |
+
+**Princípio cristalizado**:
+> *"Cada commit deve responder 'o que já existia mas não estava conectado/ligado/usado direito?'. Se sim, é polimento → segue. Se a resposta começa com 'vamos criar X que ainda não existe', é feature nova → freia."*
+
+### Estado final do dia (~01h BRT 27/04)
+
+**Commits aplicados na noite (Bloco H)**:
+- `0f72b38` V1.9.82 fail-safe clínico (Onda 2b)
+- 4 remotes sincronizados
+
+**Memórias adicionadas hoje (8 totais)**:
+- `project_aec_primeiro_ciclo_completo_26_04`
+- `feedback_anomalia_nao_e_bug`
+- `project_aec_restart_regex_landmine_26_04`
+- (próximas: `project_acdss_clinical_governance`, `project_v183d_complaint_details_soft_lock`, `feedback_freio_ricardo_onda_2a`)
+
+**Decisões pendentes Dr. Ricardo (ordem de impacto)**:
+1. **Texto V2 narrador escriba** (Fix #1 plano `majestic-sprouting-goblet`) — destrava P0 CFM
+2. **Granularidade hard lock COMPLAINT_DETAILS** — sub-perguntas tipo lista (qIdx 3,4,5) entram em hard? Decisão clínica
+3. **Por que kevlar inverteu Core→Assistant** — orienta Verbatim First sem regredir
+4. **Onda 2a princípio** — só após decisão sobre granularidade COMPLAINT_DETAILS
+5. **Frente A/B/C estratégica** (paciente externo / educacional / híbrido)
+
+### Próxima sessão — leitura obrigatória
+
+1. `SYSTEM_STATE_SEAL_2026-04-26.md`
+2. `ENGINEERING_RULES.md` (5 regras + runbook OpenAI down)
+3. **Este diário (8 blocos: A, B, C, D, D2, E, F, G, H)**
+4. `MEMORY.md` (índice das memórias)
+5. **Ouvir Dr. Ricardo** sobre as 5 decisões acima antes de qualquer ação técnica
+
+---
+
+*Bloco H — V1.9.82 + descoberta HARD/SOFT lock + freio Onda 2a + score breakdown + ACDSS.*
+
+---
+
+## Bloco I — Evolução conceitual Ricardo (~01h30 BRT 27/04)
+
+> Refinamento crítico do Dr. Ricardo após Bloco H. Muda o entendimento da arquitetura ideal — não é "voltar", é **evoluir** pra versão mais sofisticada.
+
+### A linha do tempo real (palavras Ricardo, verbatim)
+
+**1. Estado original (correto)** — pré-kevlar (V1.6.x → V1.8.x):
+> *"Core decide → GPT executa. FSM controla fluxo. GPT só formata linguagem. Sistema é determinístico. Arquitetura sólida."*
+
+**2. Mudança (kevlar 16/04)**:
+> *"GPT começa a decidir também. GPT interpreta contexto. GPT antecipa próxima pergunta. FSM continua existindo… mas perde autoridade. Aqui nasce o problema."*
+
+**3. Estado atual (bugado)**:
+> *"Core e GPT competem. FSM acha que está em 'melhora'. GPT já está perguntando 'piora'. Usuário responde → dado cai no lugar errado. Não é nem um nem outro mandando. É concorrência."*
+
+### Por que aconteceu (Ricardo identificou motivo legítimo)
+
+> *"Provavelmente por um motivo legítimo: tentar ganhar fluidez conversacional. GPT adapta melhor linguagem, evita robô engessado, melhora UX no curto prazo. Só que isso veio com custo oculto: perda de controle estrutural."*
+
+### O que estamos REALMENTE construindo (não é voltar — é evoluir)
+
+**Versão original**: Core manda, GPT obedece (rígido)
+
+**Versão correta e MAIS MADURA que a original**:
+
+```
+🔒 Core = autoridade estrutural
+   - ordem das perguntas
+   - estado atual
+   - slot de destino
+
+🗣️ GPT = camada de linguagem
+   - como perguntar
+   - adaptação de tom
+   - naturalidade
+```
+
+**Diferença sutil mas fundamental**:
+- **Antes (V1.6.x)**: GPT executava
+- **Agora (proposta)**: GPT executa **dentro de um contrato**
+
+### O erro que eu (Claude) quase repetiu
+
+Quando propus Onda 2a "completa" (substituir resposta GPT pelo verbatim em todas fases AEC), estava indo pra:
+- *"Core manda + GPT praticamente some"* — também ruim, perde fluidez
+
+Ricardo freou na hora exata. Por isso a Onda 2a "completa" ficou congelada.
+
+### Estado ideal (o que estamos construindo)
+
+> *"Core define o **o quê** e **quando**. GPT define o **como**."*
+
+**Analogia Ricardo**:
+> *"Core = trilho do trem. GPT = conforto do vagão. Se o vagão começa a escolher o caminho → descarrila. Se só tem trilho sem vagão → ninguém quer usar."*
+
+### Conexão técnica com o que JÁ EXISTE no código
+
+Análise pós-Bloco H confirma que o sistema **já tem** essa arquitetura parcialmente implementada:
+
+| Mecanismo | Onde | O que faz | Mapeia pra Ricardo? |
+|---|---|---|---|
+| `AEC_VERBATIM_HARD_LOCK_PHASES` | `tradevision-core:3046` | Substitui resposta GPT por frase literal do Core | "Core manda + GPT some" → **rígido demais** |
+| `AEC_VERBATIM_LOCK_PHASES` (SOFT) | `tradevision-core:3010` | Instrui GPT no prompt a respeitar verbatim mas formato adaptável | **"Core define quê/quando, GPT define como"** ✅ |
+| V1.8.3-D (COMPLAINT_DETAILS em SOFT) | `tradevision-core:3064` | Decisão clínica de manter fluidez no detalhamento | Coerente com Ricardo |
+
+**Conclusão técnica**: o **SOFT lock já é a arquitetura ideal Ricardo**. Ele já existe e está aplicado em COMPLAINT_DETAILS por V1.8.3-D.
+
+### Reformulação do bug do Pedro
+
+Se SOFT lock está certo (Ricardo confirma), por que 5 campos foram pro slot errado em COMPLAINT_DETAILS?
+
+**Hipótese revisada (mais precisa que antes)**:
+- SOFT lock instrui GPT a seguir o roteiro
+- MAS o GPT não recebe state **granular** suficiente: ele sabe a fase (`COMPLAINT_DETAILS`), mas não sabe o **micro-estado** (`qIdx=4 iter=1, REACHED_LIMIT=false, ainda esperando 2ª resposta de melhora`)
+- GPT, por raciocínio próprio, decide avançar visualmente pra próxima sub-pergunta
+- FSM ainda não avançou → resposta cai no slot anterior
+
+**Não é falha do SOFT lock — é falha de comunicação granular do contrato Core→GPT.**
+
+### Implicação prática
+
+**Onda 2a NÃO precisa ser "bypass Assistant"** (rígido demais, desce o vagão do trilho). Precisa ser:
+
+> *"**Enriquecer o contrato** que o Core passa pro GPT em COMPLAINT_DETAILS — incluir micro-estado: qIdx atual, iter atual, REACHED_LIMIT, próxima sub-pergunta SE/QUANDO avançar."*
+
+Isso é polimento, não invenção. O contrato já existe (`phaseInstruction` no prompt, linha 3142). Falta granularidade dentro de COMPLAINT_DETAILS.
+
+### Resposta direta a uma pergunta de Pedro
+
+**Pergunta**: *"mudou por quê então estamos voltando para isso?"*
+
+**Ricardo responde**:
+> *"Mudou porque tentaram melhorar fluidez com GPT. E estão 'voltando' porque perderam controle estrutural. Mas na verdade o que vocês estão fazendo agora é evoluir para uma versão mais correta e explícita da arquitetura original."*
+
+### Status final atualizado
+
+**O caminho não é Verbatim First (Core manda, GPT some).**
+
+**O caminho é Contract-Based Communication**: Core comunica contrato granular, GPT respeita contrato e adapta linguagem.
+
+**Próxima ação concreta** (quando Ricardo OK):
+- **Não mexer em HARD/SOFT lock** (já estão certos)
+- **Enriquecer `phaseInstruction`** em `tradevision-core:3142` com micro-estado da fase (especialmente COMPLAINT_DETAILS)
+- Cada turno: GPT recebe `"Você está em COMPLAINT_DETAILS, sub-pergunta atual = melhora (qIdx=4), iter=1, ainda há 1 iteração pendente. NÃO avance pra piora ainda. Pergunte 'O que mais?' ou aceite 'apenas/nada mais'."`
+
+Isso é polimento puro — usa contrato existente + adiciona dado granular que o FSM já calcula.
+
+---
+
+*Bloco I adicionado 2026-04-27 ~01h30 BRT pra registrar evolução conceitual Ricardo. Diário 26/04 fecha aqui com 9 blocos (A, B, C, D, D2, E, F, G, H, I). Síntese: arquitetura ideal não é "Core puro" nem "GPT puro" — é **GPT executando dentro de contrato granular do Core**. SOFT lock já é a base correta; falta enriquecer micro-estado dentro de COMPLAINT_DETAILS. Polimento, não invenção.*
