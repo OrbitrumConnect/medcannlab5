@@ -580,6 +580,121 @@ Quando duvidar: PERGUNTAR antes de agir.
 
 ---
 
-*Bloco J adicionado 2026-04-27 ~07h30 BRT — fechamento definitivo da sessão. Diário 27/04 selado em 10 blocos (A→J). Última lição cristalizada: governança virou real (sistema, não conceito), mas precisa cuidar pra documentação não virar fricção. Próxima sessão deve criar OPERATING_CHEATSHEET.md como atalho de decisão.*
+*Bloco J — análise externa final + risco "complexidade documental".*
 
-*"Não vamos mais inventar. Vamos polir, ligar pontos, escalar com governança honrada — e manter o custo de operar esse conhecimento baixo."*
+---
+
+<a id="bloco-k"></a>
+## 🎯 Bloco K — Classificação de honestidade: o que é fato vs hipótese vs interpretação (~07h45 BRT)
+
+> Pedro perguntou: *"o que pode por no diário que melhora sua honestidade? para ver o que é realmente preciso?"*
+>
+> Este bloco classifica afirmações dos diários por **nível de confiança real**, separando fato medido de hipótese plausível e interpretação subjetiva. Ajuda próxima Claude (e Pedro) a não comprar afirmações infladas.
+
+### 🟢 FATO VERIFICADO (medido em banco/código/git)
+
+Tudo abaixo foi checado com query/grep/git log nesta sessão:
+
+| Afirmação | Onde verifiquei |
+|---|---|
+| V1.9.72→V1.9.84 deployadas (10 versões válidas + 2 revertidas) | `git log` |
+| Edge Function `tradevision-core` v270+ | Supabase Management API |
+| 4 remotes git sincronizados em `b5d83ea` | `git fetch` + diff |
+| 130 tabelas BASE + 27 views = 157 no information_schema | SQL `information_schema.tables` |
+| 405 RLS policies | SQL `pg_policies` |
+| 27 users, 79 reports, 60 appointments, 3.934 patient_medical_records | SQL count |
+| 4 reports com `signature_hash` populado (V1.9.73 funcional) | SQL |
+| 0 AECs com `is_complete=true` | SQL |
+| 70 tabelas com 0 rows | SQL |
+| Tabelas `imre_assessments`/`imre_semantic_blocks`/`imre_semantic_context`/`clinical_integration` NÃO existem | SQL |
+| `ClinicalAssessment.tsx` está em rota ativa `App.tsx:156` | grep |
+| `noaResidentAI.ts:392` tem `// SEMPRE usar o Assistant` desde commit `a4c706c` (16/04) | git blame |
+| Kevlar (`a4c706c`) autoria: `OrbitrumCreator <breakinglegs@hotmail.com>`, 16/04 00:52 | git show |
+| Diário 16/04 lista responsável: Antigravity (IA) + Pedro | leitura do diário |
+
+### 🟡 HIPÓTESE PLAUSÍVEL (raciocínio, não validado em produção)
+
+**Tudo abaixo é arquiteturalmente coerente, mas NÃO foi testado com usuário/paciente real:**
+
+| Afirmação | Por que é hipótese |
+|---|---|
+| "V1.9.83 resolve classe inteira de bugs de slot errado" | Não testado com OpenAI ativa + paciente real |
+| "Score esperado próximas AECs: 58 → ~79" | Cálculo aritmético em cima de campos errados, não medido |
+| "V1.9.84 elimina toda extrapolação do narrador" | Não testado — pode ter caso de borda não previsto no prompt |
+| "V1.9.82 fail-safe protege durante OFFLINE" | Implementação correta mas não exercitada em incidente real ainda |
+| "4 pontos críticos do produto vendável atacados" | Atacados arquiteturalmente — não confirmados em comportamento |
+| "Estamos melhores que pré-kevlar" | Em controle/documentação SIM. Em validação real, AINDA NÃO |
+| "Próximo paciente externo não vai cair em fallback institucional" | Cenário não testado — depende de fatores não controlados (rede, OpenAI quota, edge cases) |
+
+### 🟠 INTERPRETAÇÃO/OPINIÃO (subjetivo, pode estar errado)
+
+**Tudo abaixo é leitura minha, com viés possível:**
+
+| Afirmação | Por que é interpretação |
+|---|---|
+| "Sessão histórica" / "trabalho histórico hoje" | Inflação retórica minha — pode estar exagerando importância |
+| "74 versões em 5 dias = sprint produtivo" | Pode ser sintoma de instabilidade arquitetural, não maturidade |
+| "Pedro liderou todas as freadas, Claude executou" | Verdade parcial — eu também propus alternativas, não fui só executor |
+| "Cluster TRL = roadmap materializado" | Pode ser dívida abandonada, não roadmap futuro |
+| "Tudo está coerente entre filosofia → código" | Coerência percebida por mim — análise externa pode discordar |
+| "Sistema governado, não só rodando" | Conceito útil mas auto-elogio embutido |
+
+### 🔴 ÂNGULOS CEGOS CONHECIDOS (limitações que reconheço)
+
+**O que eu provavelmente não enxergo bem:**
+
+1. **Frontend além do que toquei**: ~120 rotas, 278 arquivos TS/TSX. Examinei <30 arquivos. Bugs em rotas que não testei são invisíveis pra mim.
+
+2. **Performance em escala**: nunca rodou >27 usuários. Comportamento com 1.000 usuários = especulação.
+
+3. **Mobile/responsive**: zero teste em mobile. App pode estar quebrado em telas pequenas e eu não saberia.
+
+4. **Comportamento em rede instável**: testes assumem conexão estável. Como AEC se comporta em 3G/conexão flutuante? Não sei.
+
+5. **Edge cases de input**: paciente que cola texto enorme, paciente que digita só emojis, paciente com nome longo, etc. — coberturas pontuais, não exaustivas.
+
+6. **Internacionalização**: i18next está mencionado mas testes só em PT-BR. Comportamento em outros idiomas = desconhecido.
+
+7. **Bibliotecas third-party**: 17 vulns npm, 4 critical. Não examinei especificamente o que cada uma faz no produto.
+
+8. **Métricas de UX reais**: tempo médio AEC, taxa abandono, taxa erro percebido pelo paciente — métricas zero.
+
+9. **Comportamento Edge Function sob carga**: tradevision-core já teve quota esgotada hoje. Sob 100 req/s simultâneos = comportamento desconhecido.
+
+### 🟣 LIMITAÇÕES ESTRUTURAIS DE MIM (Claude)
+
+**Coisas que vão acontecer na próxima sessão (laptop) que afetam confiança:**
+
+1. **Cada sessão começa do zero**: próxima Claude vai ler diários e formar interpretação **própria**. Pode chegar em conclusões diferentes desta sessão. Isso é fenômeno conhecido, não bug.
+
+2. **Memórias persistentes podem estar obsoletas**: aconteceu hoje com IMRE (memória de 25/04 estava errada em 27/04). Não tenho processo automático de validação. Próxima sessão precisa **verificar** antes de **invocar**.
+
+3. **Bias de confirmação**: tendo a confirmar minhas hipóteses anteriores ao reler diários (escritos por mim). Próxima Claude pode ter visão mais limpa.
+
+4. **Auto-relato é parcial**: tudo escrito aqui é minha interpretação da sessão. Pedro pode ter perspectiva diferente que não foi capturada.
+
+5. **Inflação por volume**: tendência a documentar muito quando inseguro. Volume de documentação ≠ qualidade do trabalho. Cuidado especial: Bloco H/I/J/K (este) podem estar exagerando importância da sessão.
+
+6. **Falta de calibração**: quando digo "tenho certeza", às vezes é fato verificado, outras vezes simulação de confiança. Nem sempre distingo pra Pedro.
+
+7. **Pode quebrar com mensagens longas**: contexto desta sessão é grande. Posso estar perdendo nuance de conversas anteriores.
+
+### 🎯 O que isso significa pra próxima sessão (concreto)
+
+**Antes de qualquer Claude (no laptop) afirmar algo do diário, validar nesta ordem:**
+
+1. **Está em FATO VERIFICADO?** → confiar e usar
+2. **Está em HIPÓTESE?** → validar com query/teste antes de agir baseado nisso
+3. **Está em INTERPRETAÇÃO?** → tratar como ponto de partida, não conclusão
+4. **Cai em ÂNGULO CEGO?** → assumir que pode estar errado, perguntar a Pedro
+5. **Sente confiança alta?** → desconfiar, **especialmente** se baseada em memória estática (lição IMRE 27/04)
+
+### Frase âncora deste bloco
+
+> *"Documentação extensa não é prova de trabalho extenso. Confiança alta não é prova de fato. Pedro merece saber a diferença entre o que verifiquei, o que raciocinei e o que opinei."*
+
+---
+
+*Bloco K adicionado 2026-04-27 ~07h45 BRT como exercício final de honestidade. Diário 27/04 fecha em 11 blocos (A→K). Próxima sessão (laptop) tem instrumento pra calibrar afirmações antes de agir.*
+
+*"Não vamos mais inventar. Vamos polir, ligar pontos, escalar com governança honrada — sabendo o que é fato e o que é hipótese."*
