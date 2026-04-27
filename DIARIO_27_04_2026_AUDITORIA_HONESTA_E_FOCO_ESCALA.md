@@ -1528,3 +1528,87 @@ eebcd42  V1.9.97   3 fixes verdes (booking + slot passado + RLS prescriptions)
 *Bloco Q adicionado 2026-04-27 ~20h45 BRT por Claude Opus 4.7 (1M context). Diário 27/04 fecha em 17 blocos (A→Q). 12 commits + 1 tag + smoke tests empíricos. Próximo: Pedro testa via UI pra confirmar end-to-end. Pendentes claros pra próxima sessão (chat-images RLS, timezone, users leak).*
 
 *"O dia mais produtivo é o que termina com lock real, não com lock declarado."*
+
+---
+
+## BLOCO R — 2 achados de UX/grounding (final do dia, registrado pra próxima sprint)
+
+*Adicionado 2026-04-27 ~21h05 BRT*
+
+Pedro testou a UI pós-deploy e detectou 2 dissonâncias entre dashboard e chat:
+
+### R.1 — Banco real (verdade verificada via Supabase API)
+
+```
+dias_no_app:    87
+total_reports:  38
+total_consultas: 9
+```
+
+### R.2 — Comparação fonte vs verdade
+
+| Fonte | Dias | Reports | Veredito |
+|---|---|---|---|
+| Banco | 87 ✅ | 38 ✅ | verdade |
+| **Dashboard UI** | **67 ❌** | 38 ✅ | bug cálculo dias |
+| **Nôa chat livre** | 87 ✅ | **20 ❌** | alucinação GPT |
+
+### R.3 — Bug Dashboard: cálculo errado de "Dias na Plataforma"
+
+[`src/components/dashboard/patient/PatientStats.tsx:23-26`](src/components/dashboard/patient/PatientStats.tsx#L23-L26):
+
+```typescript
+const primeiroAcesso = reports.length > 0
+    ? new Date(reports[reports.length - 1].generated_at || Date.now())  // bug
+    : new Date()
+const diasNoPlataforma = Math.max(0, Math.floor((Date.now() - primeiroAcesso.getTime()) / (1000 * 3600 * 24)))
+```
+
+Usa `reports[reports.length - 1]` como "primeiro acesso" — mas é última posição do array (depende de ordem ASC/DESC). Deveria usar `user.created_at` (verdade absoluta).
+
+**Fix V1.9.98** (5 min, zero risco): trocar pra `user.created_at`.
+
+🟡 Severidade: cosmético — confunde paciente, não afeta clínica.
+
+### R.4 — Gap arquitetural: Nôa alucina dados factuais em chat livre
+
+Pedro perguntou no chat: *"quantos dias tenho no app?! e quantas avaliacoes ja fiz?"*
+
+Logs confirmam: `[Assistant] Chamando Assistant API...` → GPT-4o respondeu **direto sem function call ao banco**. GPT chutou "87 dias" (acertou) e "20 avaliações" (errou — verdade: 38).
+
+**Causa raiz arquitetural**: chat livre fora-AEC depende 100% do GPT. Há AEC FSM, COS, Verbatim, Pipeline — mas **nenhum mecanismo de grounding factual**. Quando paciente pergunta sobre próprios dados, GPT chuta.
+
+🔴 Severidade: importante — em healthtech regulada, IA respondendo número factual errado sobre paciente é problema de credibilidade. Não-clínico ainda, mas degrada confiança.
+
+**V1.9.99 proposta** (30-60 min, próxima sessão):
+- Function call no Core pra perguntas factuais ("quantos reports", "quando foi última consulta", "minha próxima consulta", "qual meu score AEC")
+- Lista de queries permitidas (whitelist) pré-resolvidas em RPCs
+- Quando intent detectado = "FACT_QUERY", Core consulta banco antes de chamar GPT, injeta dado verdadeiro no contexto
+- GPT recebe valor real e formula resposta natural
+
+Esse é gap arquitetural maior que os cosméticos. Vale entrar como princípio:
+
+> **Princípio de Grounding**: GPT NUNCA deve responder número factual sobre o paciente sem fonte autoritativa do banco no contexto.
+
+### R.5 — Backlog atualizado (priorização)
+
+```
+🔴 P0  →  RLS users_compatible audit completo (revisado, agora 5-6 itens em vez de 1)
+🔴 P0  →  RLS chat-images (decisão arquitetural getPublicUrl)
+🟡 P1  →  V1.9.97-B timezone na agenda
+🟡 P1  →  V1.9.98 fix "dias na plataforma" no dashboard
+🟡 P1  →  V1.9.99 grounding factual da Nôa  ← gap arquitetural
+🟢 P2  →  4 cosméticos (system_version, frase, professional_name, refs)
+🟢 P2  →  V1.9.96 guardrail tiered (spec pronta)
+🟢 P3  →  Modular cleanup + scaling
+```
+
+### Frase âncora do Bloco R
+
+> *"Achar 2 bugs no chat livre e no dashboard 30 minutos depois do lock virou rotina saudável de validação. Bug detectado é bug que não escala silenciosamente."*
+
+---
+
+*Bloco R adicionado 2026-04-27 ~21h05 BRT por Claude Opus 4.7 (1M context). Diário 27/04 fecha definitivamente em 18 blocos (A→R). Não implementado nada após V1.9.97 — apenas registrado pra próxima sprint.*
+
+*"Lock real é o que aguenta o teste do dia seguinte. Hoje aguentou. Amanhã refina."*
