@@ -4836,7 +4836,11 @@ ${contentExcerpt || '(Texto não disponível para este documento. O conteúdo ai
         ]
         const isFormalClosingMsg = closingKeywords.some(key => aiResponse.includes(key))
         const isAlreadyCompleted = assessmentPhase === 'COMPLETED'
-        const needsCompletionTag = !isAlreadyCompleted && (assessmentPhase === 'FINAL_RECOMMENDATION' || assessmentPhase === 'CLOSING' || assessmentPhase === 'CONSENT_COLLECTION' || isFormalClosingMsg) && !aiResponse.includes('[ASSESSMENT_COMPLETED]')
+        // V1.9.85 FIX A: removido 'CONSENT_COLLECTION' do gatilho.
+        // Razão: CONSENT_COLLECTION é fase de revisão da AEC; "concordo/sim/autorizo" ali
+        // é confirmação do consentimento clínico, não autorização para agendar.
+        // Trigger de agendamento agora só dispara em FINAL_RECOMMENDATION/CLOSING ou via clique explícito.
+        const needsCompletionTag = !isAlreadyCompleted && (assessmentPhase === 'FINAL_RECOMMENDATION' || assessmentPhase === 'CLOSING' || isFormalClosingMsg) && !aiResponse.includes('[ASSESSMENT_COMPLETED]')
 
         if (needsCompletionTag) {
             const isConfirmation = norm.includes('sim') || norm.includes('autorizo') || norm.includes('concordo') || norm.includes('pode') || isFormalClosingMsg
