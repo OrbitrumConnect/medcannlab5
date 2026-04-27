@@ -206,6 +206,23 @@ type RecognitionHandle = {
 };
 
 // Widget de Agendamento Inteligente para o Chat
+// V1.9.93 Fix B: lista de profissionais para dropdown inline.
+// Reutiliza a mesma fonte de PatientAppointments (users + type IN profissional/admin).
+type WidgetProfessional = {
+  id: string;
+  name: string;
+  specialty: string;
+};
+
+// Mapeamento simples nome→especialidade (sincroniza com FALLBACK_PROFESSIONALS de PatientAppointments)
+function inferSpecialty(name: string | null | undefined, email: string | null | undefined): string {
+  const n = (name || '').toLowerCase();
+  const e = (email || '').toLowerCase();
+  if (n.includes('ricardo') || e.includes('ricardo')) return 'Nefrologia';
+  if (n.includes('eduardo') || e.includes('eduardo') || n.includes('faveret')) return 'Neurologia';
+  return 'Clínica Geral';
+}
+
 const SchedulingWidget = ({
   patientId,
   professionalId,
@@ -213,7 +230,7 @@ const SchedulingWidget = ({
   onCancel,
 }: {
   patientId: string;
-  professionalId: string;
+  professionalId: string | null;
   onSuccess: (appointmentId: string) => void;
   onCancel: () => void;
 }) => {
@@ -223,74 +240,75 @@ const SchedulingWidget = ({
   const [loading, setLoading] = useState(false);
   const [bookingLoading, setBookingLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [professionalName, setProfessionalName] = useState<string | null>(null);
+  // V1.9.93 Fix B: dropdown de profissionais
+  const [professionals, setProfessionals] = useState<WidgetProfessional[]>([]);
+  const [selectedProfessionalId, setSelectedProfessionalId] = useState<string | null>(
+    isValidUuid(professionalId) ? professionalId : null,
+  );
 
-  // Buscar nome do profissional
+  // Carregar lista de profissionais (mesma fonte de PatientAppointments)
   useEffect(() => {
-    if (!professionalId) return;
-    const fetchName = async () => {
-      // Avoid 400 Bad Request by checking if ID is a valid UUID before querying by 'id'
-      const uuidRegex =
-        /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-      if (!uuidRegex.test(professionalId)) {
-        console.log(
-          "[Noa] Professional ID is slug, skipping direct fetch by ID",
-        );
-        return;
-      }
-
+    let active = true;
+    const loadProfessionals = async () => {
       try {
-        const { data } = await supabase
+        const { data, error } = await supabase
           .from("users")
-          .select("name")
-          .eq("id", professionalId)
-          .maybeSingle();
-        if (data?.name) setProfessionalName(data.name);
-      } catch {
-        /* silent */
+          .select("id, name, email, type")
+          .in("type", ["profissional", "admin"])
+          .order("name", { ascending: true });
+
+        if (!active) return;
+        if (error || !data || data.length === 0) {
+          console.log("[Noa] Profissionais nao retornados do banco — widget sem dropdown");
+          return;
+        }
+
+        const mapped: WidgetProfessional[] = data
+          .filter((p: any) => isValidUuid(p.id))
+          .map((p: any) => ({
+            id: p.id,
+            name: p.name || "Profissional",
+            specialty: inferSpecialty(p.name, p.email),
+          }));
+
+        setProfessionals(mapped);
+
+        // Se nao havia default valido (caso Carolina typo), seleciona o primeiro
+        if (!isValidUuid(selectedProfessionalId) && mapped.length > 0) {
+          setSelectedProfessionalId(mapped[0].id);
+        }
+      } catch (err) {
+        console.error("[Noa] Erro ao carregar profissionais:", err);
       }
     };
-    fetchName();
-  }, [professionalId]);
+    loadProfessionals();
+    return () => {
+      active = false;
+    };
+  }, []);
 
-  // Carregar slots ao mudar a data
+  // Carregar slots ao mudar a data ou trocar de profissional
   useEffect(() => {
+    if (!isValidUuid(selectedProfessionalId)) {
+      setAvailableSlots([]);
+      return;
+    }
     let active = true;
 
     const loadSlots = async () => {
-      if (loading) return; // Evita chamadas duplicadas
+      if (loading) return;
 
       setLoading(true);
       try {
-        // Validation before calling API
-        const uuidRegex =
-          /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-        if (
-          !uuidRegex.test(professionalId) &&
-          professionalId !== "ricardo-valenca" &&
-          professionalId !== "eduardo-faveret"
-        ) {
-          // Allow known slugs to proceed to backend resolution, but block random strings
-          console.warn(
-            "Professional ID format invalid awaiting resolution:",
-            professionalId,
-          );
-        }
-
         const slots = await getAvailableSlots(
-          professionalId,
+          selectedProfessionalId as string,
           selectedDate,
           selectedDate,
         );
         if (active) setAvailableSlots(slots);
       } catch (err: any) {
         console.error("Erro ao buscar slots:", err);
-        if (active) setAvailableSlots([]); // Clear slots on error
-
-        // Se for erro de profissional não encontrado, não adianta tentar de novo
-        if (err.message && err.message.includes("Professional not found")) {
-          console.warn("Aborting slot retry - Invalid Professional");
-        }
+        if (active) setAvailableSlots([]);
       } finally {
         if (active) setLoading(false);
       }
@@ -300,22 +318,21 @@ const SchedulingWidget = ({
     return () => {
       active = false;
     };
-  }, [professionalId, selectedDate]);
+  }, [selectedProfessionalId, selectedDate]);
 
   const handleBooking = async () => {
-    if (!selectedSlot) return;
+    if (!selectedSlot || !isValidUuid(selectedProfessionalId)) return;
 
     setBookingLoading(true);
     setError(null);
     try {
-      // Construir data completa
       const [hours, minutes] = selectedSlot.split(":");
       const appointmentDate = new Date(selectedDate);
       appointmentDate.setHours(parseInt(hours), parseInt(minutes), 0, 0);
 
       const appointmentId = await bookAppointment(
         patientId,
-        professionalId,
+        selectedProfessionalId as string,
         appointmentDate.toISOString(),
         "consultation",
         "Agendamento via Chat IA",
@@ -332,21 +349,42 @@ const SchedulingWidget = ({
   return (
     <div className="bg-slate-800/80 rounded-lg p-4 mb-4 border border-slate-700 w-full animate-in fade-in zoom-in duration-300">
       <div className="flex items-center justify-between mb-3 border-b border-slate-700 pb-2">
-        <div>
+        <div className="flex-1 min-w-0">
           <h4 className="text-white font-semibold flex items-center">
             <CalendarIcon className="w-4 h-4 mr-2 text-blue-400" />
             Agendar Consulta
           </h4>
-          {professionalName && (
-            <p className="text-xs text-emerald-400 mt-0.5 ml-6">
-              com {professionalName}
-            </p>
-          )}
         </div>
-        <button onClick={onCancel} className="text-slate-400 hover:text-white">
+        <button onClick={onCancel} className="text-slate-400 hover:text-white ml-2">
           <X className="w-4 h-4" />
         </button>
       </div>
+
+      {/* V1.9.93 Fix B: dropdown de profissionais (sempre visivel quando ha lista carregada) */}
+      {professionals.length > 0 && (
+        <div className="mb-3">
+          <label className="block text-xs text-slate-400 mb-1">
+            Profissional
+          </label>
+          <select
+            value={selectedProfessionalId ?? ""}
+            onChange={(e) => {
+              setSelectedProfessionalId(e.target.value || null);
+              setSelectedSlot(null);
+            }}
+            className="w-full bg-slate-900/60 border border-slate-700 rounded-md px-2 py-1.5 text-sm text-slate-100 focus:outline-none focus:border-blue-500"
+          >
+            {!isValidUuid(selectedProfessionalId) && (
+              <option value="">Selecione um profissional</option>
+            )}
+            {professionals.map((p) => (
+              <option key={p.id} value={p.id}>
+                {p.name} — {p.specialty}
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
 
       {/* Seletor de Data Simplificado */}
       <div className="flex justify-between items-center mb-4">
@@ -3387,9 +3425,11 @@ const NoaConversationalInterface = React.forwardRef<
                         </div>
                       </div>
 
-                      {/* V1.9.85 FIX D: resolver professionalId final e validar UUID antes de renderizar widget */}
+                      {/* V1.9.85 Fix D + V1.9.93 Fix B: resolve UUID, mas se invalido, passa null
+                          ao widget (que oferece dropdown de profissionais). Antes (V1.9.85)
+                          bloqueavamos com "Aguardando vinculo medico" — agora deixamos o
+                          paciente escolher inline. */}
                       {(() => {
-                        // Ordem de precedencia: metadata do Core > id do proprio profissional logado > null
                         const isSelfProfessional =
                           normalizeUserType(user?.type) === "profissional" ||
                           normalizeUserType(user?.type) === "admin";
@@ -3397,43 +3437,30 @@ const NoaConversationalInterface = React.forwardRef<
                           professionalIdFromMeta ??
                           (isSelfProfessional ? user?.id : null);
 
-                        // Anti-fallback-silencioso: slug ou null nao renderizam widget quebrado.
-                        // V1.9.85 reforco: log explicito de ausencia de doctor_id valido
-                        // para auditabilidade — falhar visivel > falhar silencioso.
+                        // Log de auditabilidade quando UUID invalido (mantem visibilidade
+                        // do problema, mas widget nao trava — V1.9.93 dropdown resolve UX).
                         if (!isValidUuid(resolvedProfessionalId)) {
                           console.warn(
-                            "[SCHEDULING_GUARD] Widget de agendamento bloqueado — professionalId invalido ou ausente.",
+                            "[SCHEDULING_GUARD] professionalId invalido — widget abrira com dropdown.",
                             {
                               received: resolvedProfessionalId,
                               fromMeta: professionalIdFromMeta,
                               userType: user?.type,
                               messageId: message.id,
-                              hint: "Core nao enviou UUID resolvido. Verifique resolvedDoctorId em DOCTOR_RESOLUTION ou metadata.professionalId no payload.",
                             },
                           );
-                          return (
-                            <div className="flex justify-start">
-                              <div className="w-full max-w-sm bg-amber-900/30 border border-amber-500/30 rounded-xl p-3 text-amber-100 text-sm">
-                                <p className="font-medium mb-1">
-                                  Aguardando vínculo médico
-                                </p>
-                                <p className="text-amber-200/80 text-xs">
-                                  Não foi possível identificar um profissional
-                                  vinculado para abrir a agenda automaticamente.
-                                  Use a aba <strong>Agendamentos</strong> para
-                                  marcar sua consulta.
-                                </p>
-                              </div>
-                            </div>
-                          );
                         }
+
+                        const propProfessionalId = isValidUuid(resolvedProfessionalId)
+                          ? (resolvedProfessionalId as string)
+                          : null;
 
                         return (
                           <div className="flex justify-start">
                             <div className="w-full max-w-sm">
                               <SchedulingWidget
                                 patientId={user?.id || ""}
-                                professionalId={resolvedProfessionalId}
+                                professionalId={propProfessionalId}
                                 onSuccess={(appointmentId) => {
                                   sendMessage(
                                     `✅ Agendamento confirmado! ID: ${appointmentId}`,
