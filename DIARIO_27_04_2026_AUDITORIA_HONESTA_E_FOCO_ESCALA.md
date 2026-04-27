@@ -1264,3 +1264,112 @@ Push em ambos remotes (hub + origin). Estado validado:
 *Bloco O adicionado 2026-04-27 ~19h BRT por Claude Opus 4.7 (1M context). Sprint diária encerrada com 11 commits cirúrgicos + tag de lock. Diário 27/04 fecha em 15 blocos (A→O). Próximo ciclo: P0 segurança + escala + decisões Ricardo pendentes.*
 
 *"AEC + Relatório + Agendamento estão lockados. Vamos para o próximo capítulo."*
+
+---
+
+## BLOCO P — Arquitetura de Governança Cognitiva (registro pré-validação final)
+
+*Adicionado 2026-04-27 ~19h30 BRT, antes de Pedro rodar AECs adicionais pra validar o lock V1.9.95*
+
+### P.1 — Resposta à dúvida "ainda somos COS 5? GPT-first governado?"
+
+**Sim em ambos**. Documentado abaixo com referências de código real, não narrativa.
+
+### P.2 — Pirâmide de governança (de cima pra baixo)
+
+```
+0. REGRA HARD §1 (Constitucional)         ← anti-kevlar, anula tudo
+1. COS KERNEL v1.0 (cos_engine.ts)        ← "posso pensar?"
+2. AEC FSM (clinicalAssessmentFlow.ts)    ← "o que perguntar?"
+3. VERBATIM FIRST (V1.9.86)               ← "já tenho a resposta?"
+4. AEC GATE V1.5 (V1.9.95-A)              ← "posso disparar trigger?"
+5. GPT-4o (gpt-4o-2024-08-06)             ← "gere texto livre"
+6. PÓS-PROCESSAMENTO (V1.9.95-A + V1.9.93-A + V1.9.85 Fix D)
+7. PIPELINE ORCHESTRATOR (REPORT→SCORES→SIGNATURE→AXES→RATIONALITY→DONE)
+```
+
+### P.3 — COS v1.0 — as 5 portas (continuamos com elas)
+
+[`cos_engine.ts`](supabase/functions/tradevision-core/cos_engine.ts) — pure logic, zero dependências externas:
+
+| # | Porta | Trigger |
+|---|---|---|
+| 🔴 1 | KILL SWITCH | `mode === 'OFF'` |
+| 🟠 2 | TRAUMA INSTITUCIONAL | `institutional_trauma_log` ativa |
+| 🟡 3 | METABOLISMO COGNITIVO | `decision_count_today >= daily_limit` |
+| 🔵 4 | READ_ONLY MODE | `mode === 'READ_ONLY'` + ação |
+| 🚫 5 | POLICY ENFORCEMENT | `policy.forbidden_actions` contém ação |
+| ✅ + | AUTORIZADO A PENSAR | nenhuma das anteriores |
+
+**Camadas ATIVAS hoje** ([index.ts:1892-1905](supabase/functions/tradevision-core/index.ts#L1892-L1905)):
+- Camada IV (Trauma) — lida do banco a cada turno
+- Camada III (Metabolismo) — lida do banco a cada turno
+- Veredito do Kernel (linha 2549) — `COS.evaluate()` chamado
+
+Camadas I, II, V passam direto em modo `FULL` (operação normal), mas existem armadas.
+
+### P.4 — Quem decide o quê (resposta direta: GPT NÃO decide)
+
+| Decisão | Quem decide | Tecnologia |
+|---|---|---|
+| Sistema autorizado a pensar? | **COS Kernel** | Pure logic |
+| Qual fase clínica? | **AEC FSM** | Finite State Machine |
+| Próxima pergunta? | **AEC FSM (template)** | nextQuestion no estado |
+| Vai chamar GPT ou template? | **Verbatim First** | AEC_VERBATIM_LOCK_PHASES |
+| Pode abrir agendamento? | **AEC GATE V1.5** | isAecStillActive + override |
+| Qual médico vincular? | **DOCTOR_RESOLUTION** | Query appointments + reports |
+| Gerar e assinar relatório? | **Pipeline Orchestrator** | SHA-256 |
+| **Gerar texto livre** | **GPT-4o** ← só aqui | gpt-4o-2024-08-06 |
+| Token TRIGGER_SCHEDULING vale? | **V1.9.95-A** | Strippa se AEC ativa |
+| role='system' chama Core? | **V1.9.95-B** | Não, early return |
+
+### P.5 — "GPT-first governado" — termo refinado
+
+Mais preciso seria **"GPT-last governado"**:
+
+- **46% das interações nem chamam GPT** (Verbatim — V1.9.86, validado em 4h reais hoje)
+- Quando chama, GPT recebe **input fortemente injetado**: PHASE LOCK, REGRA HARD, persona selada
+- Quando GPT responde, **output é validado**: tokens strippados se ilegais (V1.9.95-A), UUIDs validados (V1.9.85 Fix D), GATE re-aplicado
+- GPT NÃO decide fluxo clínico nem agendamento — apenas gera linguagem natural
+- Modelo é trocável (gpt-4o → mini → claude) sem mexer no fluxo
+
+### P.6 — O que a sprint 27/04 mudou em termos de governança
+
+Antes da sprint, o GPT tinha **2 brechas** pra driblar a governança:
+
+1. **Brecha A** (linha 4965 antiga do Core): "modelo selado: GPT emite token → Core confia". Bypassava o AEC GATE V1.5 quando GPT emitia `[TRIGGER_SCHEDULING]` durante AEC ativa.
+2. **Brecha B** (sendMessage do front): action_cards `role='system'` eram enviados ao Core como input do user → GPT entrava em loop oferecendo agendamento.
+
+**V1.9.95-A** fechou A — token strippado se AEC ativa sem override.
+**V1.9.95-B** fechou B — early return em sendMessage system.
+
+Resultado: as **2 últimas formas do GPT driblar a governança institucional foram fechadas**. Hoje GPT é puramente um motor de linguagem — não toma decisão arquitetural.
+
+### P.7 — TL;DR da arquitetura
+
+> **MedCannLab é um sistema cognitivo onde o GPT é o último a falar e o primeiro a ser checado.**
+>
+> COS (5 portas) → AEC FSM (10 passos) → Verbatim First (46% bypass) → AEC GATE V1.5 → GPT-4o → Pós-processamento → Pipeline Orchestrator → Report assinado.
+>
+> REGRA HARD §1 é o teto constitucional acima de tudo.
+
+### P.8 — Status pré-validação final
+
+Pedro vai rodar mais AECs pós-V1.9.95 pra validar o lock empiricamente. Esperado:
+1. ✅ Card de agendamento NÃO aparece durante AEC ativa
+2. ✅ Após "concordo" → Nôa pede consentimento sem trigger
+3. ✅ Após "sim/autorizo" → 1 widget agendamento + 1 botão Ver Relatório
+4. ✅ Confirmar agendamento → action_card local, sem novo widget
+
+Se ✅ → lock V1.9.95 confirmado empiricamente.
+Se 🔴 → V1.9.96 cirúrgica + nova validação.
+
+### Frase âncora do Bloco P
+
+> *"Governance pelo Core não é dogma — é desenho. GPT é a língua, Core é o cérebro, COS é a doutrina, REGRA HARD é a constituição."*
+
+---
+
+*Bloco P adicionado 2026-04-27 ~19h30 BRT por Claude Opus 4.7 (1M context). Diário 27/04 fecha em 16 blocos (A→P). Pedro vai validar empiricamente — diário fica em standby até resultado.*
+
+*"Falamos do mapa. Agora ele caminha pelo terreno."*
