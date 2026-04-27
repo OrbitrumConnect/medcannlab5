@@ -354,3 +354,125 @@ duracao: ~8 minutos
 ---
 
 *Diário consolidado em 2026-04-26 ~23h BRT (Bloco D acrescentado em sessão noturna). Marco do dia: AEC saiu de 0% (fake silenciosa por gatilho frágil) pra 70% funcional (caso real persistido + assinado + score). Os 30% restantes são todos do mesmo problema arquitetural mapeado (GPT-first vs FSM disciplinado) — não são bugs novos, são resíduo conhecido aguardando decisão estratégica.*
+
+---
+
+## Bloco E — Contexto histórico e visão de produto (anti-desalinhamento)
+
+> Adicionado em 2026-04-26 ~23h30 BRT pra fechar com contexto.
+>
+> **Princípio de leitura**: AEC é **uma das frentes** do produto. Não é o produto inteiro. O polimento de hoje toca essa frente; outras frentes (educacional, profissional, admin) têm maturidade própria.
+
+### Linha do tempo da semana (22-26/04/2026)
+
+| Dia | Foco | Versões | Marco |
+|---|---|---|---|
+| **22/04** | UNIFICADO (consolidação) | (pre-V1.9.x) | Diário consolidado prévio |
+| **23/04** | Estabilidade clínica + ontologia estrita | V1.9.10-V1.9.12 | Filter slides da biblioteca |
+| **24/04 manhã** | Restauração qualidade clínica | V1.9.11-V1.9.39 | 3 testes integration P0, schema clinical_reports restaurado, consent gate, backfill 33 reports |
+| **24/04 noite** | Racionalidades + IMRE clarification | V1.9.40-V1.9.46 | Schema PT, gate densidade, retratação nomenclatura IMRE pelo Dr. Ricardo |
+| **25/04 manhã** | RLS audit + AEC self-healing | V1.9.47-V1.9.57 | Cold guard V1.9.57, view recuperação AEC, RLS unified |
+| **25/04 noite** | Trust boundary + descoberta arquitetural | V1.9.58-V1.9.69 | JWT como única fonte de identidade (S4 fechado), ISM Fase 1, plano 3 camadas mapeado |
+| **26/04 madrugada** | Auditoria 360° + selo | V1.9.70-V1.9.73 | SYSTEM_STATE_SEAL, ENGINEERING_RULES, signature SHA-256 |
+| **26/04 manhã** | Polimento + AEC GATE V1.5 ext | V1.9.74 | Husky/secretlint, ErrorBoundary global, runbook OpenAI |
+| **26/04 noite** | AEC end-to-end + V1.9.75-81 | V1.9.75-V1.9.81 | **MARCO**: primeiro caso real completo (report `8f4876e9`) |
+
+**Total da semana**: ~70 versões V1.9.x, 3 diários selados (22/04, 24/04, 25/04), 2 selos âncora (24/04 + SYSTEM_STATE 26/04), 1 plano arquitetural escrito (`majestic-sprouting-goblet`), ENGINEERING_RULES.md cristalizado.
+
+### As 4 frentes do produto (estado real, NÃO só AEC)
+
+**Esta sessão polimentou AEC (frente clínica). As outras 3 têm vida própria:**
+
+| Frente | Onde está | Memória de referência |
+|---|---|---|
+| **🩺 Clínica (AEC + Reports + Racionalidades + Prescrições)** | 70% funcional após V1.9.81 (este diário) | `project_aec_primeiro_ciclo_completo_26_04` |
+| **🎓 Educacional (6 cursos + TRL + Simulador + Teste)** | Infraestrutura ~70%, **operação 5%** (zero alunos ativos, simulador não persiste) | `project_cluster_educacional_ativo_26_04` |
+| **👨‍⚕️ Profissional (Dashboard médico + agendamento + Racionalidades + GCal)** | Funcional, médicos parceiros podem usar | `project_4_clinical_engines_map_24_04`, `project_role_divergence_24_04` |
+| **🛡️ Admin (Métricas + auditoria + governança)** | Funcional, 4 admins ativos | `project_admin_identities` |
+
+**Base de usuários**: 27 cadastrados (5 admin + 8 profissionais + 14 pacientes), **TODOS internos** (admins/amigos/família). **Zero paciente externo pagante**. (`project_user_base_stage`, `project_supabase_real_state_26_04`)
+
+**Banco real**: 128 tabelas, 335 functions, 423 policies, 27 views, 79 MB / 8GB tier free (~1%) — sistema está bem dimensionado pra escalar.
+
+### Memórias críticas pra próxima sessão NÃO desalinhar
+
+> Princípio: cada memória cataloga uma decisão, padrão ou retratação que evita repetição de erro.
+
+**🏛️ Arquiteturais (decisões fundadoras)**
+- `project_arquitetura_3_camadas` — destino: LLM último recurso, não primeiro. Hoje monolito GPT-first
+- `project_4_clinical_engines_map_24_04` — 4 motores clínicos mapeados: 1 ativo + 1 gated + 4 dormentes (~1700 linhas IMRE)
+- `project_imre_clarification_24_04` — IMRE = motor de perguntas da AEC (já em produção em `clinicalAssessmentFlow.ts`). Frase-âncora Dr. Ricardo: *"IMRE pergunta. AEC escuta. O relatório organiza. A clínica interpreta."*
+- `project_modo_teacher_e_prompt_no_core` — TEACHING_PROMPT em `tradevision-core:3664`, NÃO é role no banco
+
+**📋 De produto/posição (anti-desalinhamento)**
+- `project_strategic_posture` — *"Você já tem o produto, só não terminou de estabilizar"*. Polir ativo > construir novo
+- `project_beyond_mvp_stage` — *"não é mais só um MVP, estamos acima"*
+- `project_user_base_stage` — 27 internos, 0 externos. Risco legal/financeiro externo = baixíssimo agora
+- `project_cluster_educacional_ativo_26_04` — 6 cursos (AEC R$300, IMRE Triaxial R$200, Cannabis Premium R$3000), TRL framework
+
+**🛑 De processo (lições cristalizadas — NÃO repetir)**
+- `feedback_anomalia_nao_e_bug` — anomalia no banco ≠ bug. Perguntar antes de "consertar". (V1.9.78/79 erro hoje)
+- `feedback_no_aggressive_removal` — antes de DROP/DELETE/rm, investigar intenção (migrations, git log). Recriar > remover
+- `feedback_uso_zero_nao_e_morto` — em produto nascendo, infra pré-uso parece morta se medida só por dados
+- `feedback_dep_removal_protocolo` — antes de remover dep: Grep amplo + `npm ls` + `npm run build` smoke
+- `feedback_postura_quebras_e_evolucao` — Pedro 25/04: regressões podem ser revertidas. Honestidade direta > cordialidade defensiva
+
+**🔧 Técnicas (estado real do código)**
+- `project_supabase_real_state_26_04` — 128/335/423/27 (corrige memórias antigas com 130/90/380)
+- `project_features_fantasma_reclassificadas_26_04` — 3 features podem ser código de cursos pagos (NÃO deletar sem Ricardo)
+- `project_aec_restart_regex_landmine_26_04` — V1.9.77, classe: regex de operação confunde relato com comando
+- `project_aec_primeiro_ciclo_completo_26_04` — caso real do dia (`8f4876e9`) + bugs P0-P3
+
+**📐 Regras de engenharia (sobrevivem a qualquer sessão)**
+- [`ENGINEERING_RULES.md`](./ENGINEERING_RULES.md) no repo — 5 regras + runbook OpenAI down
+  1. LLM como último recurso, não primeiro
+  2. Payload com cap explícito (whitelist > truncate)
+  3. Fail-open em routing clínico
+  4. Telemetria antes de comportamento
+  5. `institutional_trauma_log` é fonte de verdade pra falha de IA
+
+### Princípios cristalizados nesta semana (operacionais)
+
+1. **"Banco é a realidade. Auth define quem pode ver. Validação contra produto define o que vale existir."** (frase-âncora 26/04)
+2. **"Sem dado real, qualquer arquitetura nova é fé, não engenharia."** (Seção 10 do SYSTEM_STATE_SEAL)
+3. **"Sistema clínico NUNCA destrói dado, mesmo inconsistente. Snapshot + invalidate + restart controlado."** (`feedback_principio_clinico_destrutivo`)
+4. **"AEC é escuta ativa — tudo que paciente fala é ouro."** (`feedback_aec_escuta_ativa`)
+5. **"Anomalia ≠ bug — perguntar antes de mexer."** (lição V1.9.78/79 hoje)
+
+### O que esta sessão NÃO fez (intencionalmente, pra não desalinhar)
+
+- ❌ Não tocou Verbatim First (V1.9.81 maior do plano `arquitetura_3_camadas`) — mexe em Core central, exige decisão arquitetural
+- ❌ Não aplicou Fix #1 do plano `majestic-sprouting-goblet` (narrador escriba) — aguarda OK do Dr. Ricardo no texto V2 exato
+- ❌ Não removeu trace logs V1.9.75 (Pedro pediu manter pra observação)
+- ❌ Não tocou frentes educacional/profissional/admin (escopo da sessão era AEC)
+- ❌ Não decidiu sobre 3 features-fantasma (`ClinicalAssessment.tsx`, 4 IMRE legacy, AIDocumentChat) — decisão Dr. Ricardo
+- ❌ Não atacou os 30 achados P0-P3 da auditoria 360° (são da Etapa 1 segurança, escopo separado)
+- ❌ Não corrigiu `is_complete=false` no state do Pedro (cold guard V1.9.57 cuida disso intencionalmente)
+
+### O que sobra pro Dr. Ricardo decidir
+
+**Decisões em ordem de impacto:**
+
+1. **Texto V2 do narrador escriba** (Fix #1 plano `majestic-sprouting-goblet`) → 1 commit fecha P0 CFM (prescrição de medicamento pelo IA)
+2. **Verbatim First sim/não** → 1-2 commits fecham 5 bugs P2 de campos errados de uma vez
+3. **3 features-fantasma**: ativar (curso AEC R$300?) / refatorar / deletar
+4. **Strategic posture**: Frente A (pacientes externos pagantes ~2-3 sem) / Frente B (educacional vendável ~4-6 sem) / Híbrido
+
+### Direção da próxima sessão
+
+**Antes de qualquer ação técnica nova, ler nesta ordem:**
+1. `SYSTEM_STATE_SEAL_2026-04-26.md` — ainda âncora principal
+2. `ENGINEERING_RULES.md` — 5 regras
+3. Este diário — Blocos A, B, C, D, E
+4. `MEMORY.md` (auto-memory) — índice de todas as memórias
+5. **Ouvir o que Dr. Ricardo decidiu** sobre os 4 pontos acima
+
+**Não começar implementação sem essa leitura.** O custo de pular é repetir erros já catalogados (V1.9.78/79 é exemplo recente).
+
+### Frase-âncora consolidada da semana
+
+> *"Cada commit consertou um bug específico, mas a classe de bugs continua aberta enquanto a entrada da AEC depender de adivinhar intenção em texto livre. Patches viram trabalho infinito quando não atacam raiz arquitetural. Mas patches inteligentes (V1.9.77, V1.9.80, V1.9.81) destravam progresso real (AEC primeiro caso completo) sem esperar a refatoração final."*
+
+---
+
+*Bloco E adicionado 2026-04-26 ~23h30 BRT pra contextualizar AEC dentro do produto inteiro. Próxima sessão começa lendo este diário (5 blocos) + SYSTEM_STATE_SEAL + ENGINEERING_RULES + MEMORY.md antes de qualquer ação técnica. Polimento incremental funcionou esta semana — princípio "evoluir sem quebrar" validado em 30 commits sem regressão de produção.*
