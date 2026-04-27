@@ -1282,4 +1282,80 @@ K → V1.9.83 contrato granular
 
 ---
 
-*Bloco L adicionado 2026-04-27 ~02h35 BRT. **Diário 26/04 fecha definitivamente com 12 blocos (A, B, C, D, D2, E, F, G, H, I, J, K, L).** Sessão entregou: produto AEC com 4 pontos críticos resolvidos via 10 commits de polimento puro + 2 reverts (lição). Trilho firme (Core), vagão consciente (GPT), escriba sóbrio (narrador), fail-safe clínico (offline). Aguarda OpenAI recarga + 1 AEC real pra validação final em produção.*
+*Bloco L — V1.9.84 narrador escriba P0 resolvido + síntese 4 pontos críticos.*
+
+---
+
+## Bloco M — SELO: Retorno ao Livro Magno (~03h BRT 27/04)
+
+> Análise comparativa de 5+ meses do projeto vs filosofia fundadora (Livro Magno fev/2026).
+> Pedro pediu: ler livro magno + diários do mês passado + comparar.
+> Memória persistente: `project_retorno_livro_magno_27_04.md`.
+
+### Veredito honesto
+
+**SIM, saímos do foco entre 16/04 e 25/04 (~10 dias).** Kevlar (commit `a4c706c`) inverteu Core→Assistant primário **sem nova versão do Livro Magno** = violação direta da Política de Evolução (linha 105 do livro):
+
+> *"Não podem mudar sem nova versão do Livro Magno: Princípios de execução (fala ≠ ação)"*
+
+**HOJE retornamos ao foco.** V1.9.82/83/84 restauram literalmente os princípios fundadores:
+
+| Versão hoje | Restaura do Livro Magno |
+|---|---|
+| V1.9.84 (escriba) | Non-Goals + "AEC organiza. Clínica interpreta." |
+| V1.9.83 (contrato granular) | "fala ≠ ação" — Core decide |
+| V1.9.82 (fail-safe) | Não-Execução mesmo offline |
+| Reverts V1.9.78/79 | Auditoria Ontológica (anomalia ≠ bug) |
+
+### 3 Princípios novos cristalizados (pra Livro Magno v1.0.7)
+
+**Princípio 6 — Auditoria Ontológica reforçada**:
+> *"Anomalia ≠ bug. Antes de 'consertar', perguntar: bug ou intencional?"*
+
+**Princípio 7 — Contract-Based Communication**:
+> *"Core = trilho. GPT = vagão. Sistema híbrido com contrato explícito > Core puro OU GPT puro."*
+
+**Princípio 8 — Polimento responde 'o que já existia'**:
+> *"Cada commit responde 'o que já existia mas não estava ligado direito?'. Se sim → polimento. Se não → freia."*
+
+### Comparação tecnicamente: estamos MELHORES que pré-kevlar
+
+3 motivos objetivos:
+1. **Documentação superior** (12 blocos do diário 26/04 = mais densidade que qualquer doc desde Livro Magno fev/2026)
+2. **3 camadas de defesa explícitas que não existiam** (V1.9.82, V1.9.83, V1.9.84 + V1.9.57 cold guard + ENGINEERING_RULES.md)
+3. **3 princípios cristalizados** que enriquecem (não contradizem) o Livro Magno
+
+### Filosoficamente: mais alinhado que nunca
+
+Princípios fundadores honrados:
+- ✅ COS v5.0 (5 princípios) — todos preservados
+- ✅ "fala ≠ ação" — restaurado via V1.9.83/84
+- ✅ Non-Goals — restaurados via V1.9.84 (sem prescrição)
+- ✅ "AEC organiza. Clínica interpreta." — restaurada via V1.9.84
+- ✅ Política de Evolução — invocada pra parar Onda 2a quando ia violar
+
+### Recomendação pra próxima sessão (não aplicar agora)
+
+**Considerar selar Livro Magno v1.0.7** documentando:
+1. Desvio kevlar 16/04 → retorno V1.9.82/83/84 27/04
+2. 3 princípios novos (6, 7, 8) formalizados
+3. ENGINEERING_RULES.md como anexo formal
+4. SYSTEM_STATE_SEAL_2026-04-26 como referência
+5. Esta sessão como exemplo de "Política de Evolução honrada após violação detectada"
+
+### Frase-âncora cristalizada
+
+> *"O Livro Magno só funciona se for ativamente honrado. Não basta estar escrito — precisa ser invocado antes de qualquer mudança em princípio fundador."*
+
+### Ciclo fechado
+
+- **Fev/2026**: Livro Magno selado (princípios)
+- **16/04**: violação silenciosa (kevlar)
+- **17-25/04**: sintomas escalando
+- **26-27/04**: retorno consciente (V1.9.82/83/84) + cristalização (3 princípios novos) + documentação (12 blocos diário + memória persistente)
+
+**O ciclo fechou.** Trilho firme, vagão consciente, escriba sóbrio, fail-safe clínico, princípios honrados.
+
+---
+
+*Bloco M adicionado 2026-04-27 ~03h BRT. **Diário 26/04 fecha em 13 blocos (A, B, C, D, D2, E, F, G, H, I, J, K, L, M).** Selo do retorno ao Livro Magno após desvio kevlar de 10 dias. Próxima sessão começa lendo: Livro Magno + ENGINEERING_RULES + SYSTEM_STATE_SEAL + este diário + memória `project_retorno_livro_magno_27_04`. Pendência única: validar V1.9.83/84 com OpenAI recarregada. Considerar selar Livro Magno v1.0.7 com 3 princípios novos.*
