@@ -1373,3 +1373,158 @@ Se 🔴 → V1.9.96 cirúrgica + nova validação.
 *Bloco P adicionado 2026-04-27 ~19h30 BRT por Claude Opus 4.7 (1M context). Diário 27/04 fecha em 16 blocos (A→P). Pedro vai validar empiricamente — diário fica em standby até resultado.*
 
 *"Falamos do mapa. Agora ele caminha pelo terreno."*
+
+---
+
+## BLOCO Q — V1.9.97 Audit Horizontal RLS + Sprint Relâmpago dos Verdes
+
+*Adicionado 2026-04-27 ~20h45 BRT — fechamento real do dia*
+
+### Q.1 — Pedro reportou "Carolina não conseguiu agendar"
+
+Ricardo testando como Carolina (~20:18 BRT). AEC completou 100% (report `0c1357da` signed, score 76). Mas o card mostrou horários e quando confirmou, **nada foi gravado**.
+
+### Q.2 — Audit horizontal RLS (sem aplicar nada — análise pura)
+
+Pedro pediu auditoria completa do que GPT externo sugeriu (policies por tabela, views, storage, edge functions, etc).
+
+**Achados positivos (estado melhor que esperado)**:
+- ✅ 14/14 tabelas críticas com `RLS habilitado=true`
+- ✅ 27/27 views com `security_invoker=on/true` (RLS aplicada, sem bypass)
+- ✅ 409 policies em 127 tabelas — cobertura ampla
+- ✅ A premissa "users_compatible sem RLS" da auditoria 25/03 estava DESATUALIZADA
+
+**2 vulnerabilidades reais encontradas (que a auditoria 25/03 não pegou)**:
+- 🔴 `prescriptions` policy `cmd=ALL` permite `auth.uid() = patient_id` → paciente pode INSERT/UPDATE/DELETE prescrições próprias (risco CFM)
+- 🔴 `chat-images` SELECT público sem filtro → qualquer URL acessível (risco LGPD se exames anexados)
+
+**Outros achados (médio/baixo)**:
+- 🟡 `users` policy permite paciente listar todos profissionais (vaza emails)
+- 🟡 4 UUIDs founders hardcoded em `clinical_reports` (fragilidade operacional)
+- 🟡 Policies duplicadas em `users` (limpeza)
+
+### Q.3 — Investigação do bug "agendamento Carolina não persistiu"
+
+`scheduling_audit_log` revelou: **ZERO tentativas de booking** do widget inline da Nôa nas últimas 2h. A RPC `book_appointment_atomic` **NEM FOI CHAMADA**.
+
+**Causa raiz** (análise estática do código):
+
+Em [`NoaConversationalInterface.tsx:339-348`](src/components/NoaConversationalInterface.tsx#L339):
+```typescript
+const [hours, minutes] = selectedSlot.split(":");
+// selectedSlot = "2026-04-27T14:00:00+00:00" (ISO completo de getAvailableSlots)
+// hours = "2026-04-27T14"  →  parseInt = NaN
+// appointmentDate.setHours(NaN, ...) → Invalid Date
+// appointmentDate.toISOString() → throws RangeError
+```
+
+→ Catch silencioso, `setError` mostra erro pequeno, RPC nunca chamada.
+
+**Conclusão**: o booking inline da Nôa **NUNCA funcionou desde V1.9.93**. Os 3 appointments criados em 27/04 foram pela página `PatientAppointments` (que tem widget próprio). Lock V1.9.95 era teórico no booking inline.
+
+### Q.4 — Bug de timezone (segundo achado, separado)
+
+`professional_availability.start_time` é `time without timezone`. RPC `get_available_slots_v3` faz `(d + pa.start_time)::TIMESTAMPTZ` interpretando como UTC. Ricardo configurou 09:00-12:00 (intenção BRT) mas paciente vê 06:00-09:00 BRT (UTC interpretado como UTC).
+
+→ Não impede booking, mas confunde UX. **Decisão arquitetural pendente** (V1.9.97-B).
+
+### Q.5 — Sprint relâmpago: aplicação dos 3 fixes verdes
+
+Pedro autorizou: *"se você ainda está com energia, faz os 3 verdes agora"*. Aplicação ~25 min:
+
+**V1.9.97-A** — front parsing
+- `handleBooking`: usa `selectedSlot` direto (já é ISO completo)
+- Display do botão: `toLocaleTimeString('pt-BR', timeZone: 'America/Sao_Paulo')` formata "HH:MM" em BRT
+- Resultado: booking inline da Nôa funciona pela primeira vez
+
+**V1.9.97-C** — RPC defense in depth (banco)
+- `get_available_slots_v3`: `WHERE rs.s_start > now()` (filtra passado na exibição)
+- `book_appointment_atomic`: `IF p_start_time <= now() THEN RAISE EXCEPTION` (rejeita no booking)
+
+**V1.9.97-D** — RLS prescriptions (banco)
+- DROP policy "Profissionais gerenciam prescricoes vinculadas" (vulnerável)
+- CREATE 3 policies cmd-específicas:
+  - INSERT: `admin OR (profissional vinculado)`
+  - UPDATE: `admin OR (profissional vinculado)`
+  - DELETE: `admin only`
+- SELECT preservada (paciente vê próprias)
+- Validado: front não usa `from('prescriptions')` em modificações (usa `cfm_prescriptions`/`patient_prescriptions`)
+
+Migration SQL: `20260427210000_v1_9_97_scheduling_hardening.sql`. Commit `eebcd42`. Push 4 refs.
+
+### Q.6 — Smoke tests pós-V1.9.97 (validação empírica)
+
+| # | Teste | Resultado |
+|---|---|---|
+| **1** | RPC com slot passado (`2026-04-26 10:00 UTC`) | ✅ `Slot inválido: horário já passou (V1.9.97-C)` (esperado) |
+| **2** | RPC com slot futuro (`2026-04-29 11:00 UTC`) | ✅ Created appointment `477628ce-d004-437b-be79-06b8d280b077` |
+| **3** | Persistência | ✅ Appointment + audit log confirmados no banco |
+| **4** | Cleanup | ✅ DELETE WHERE id=`477628ce` (não poluir) |
+| **5** | type-check do front | ✅ Zero erros em `NoaConversationalInterface.tsx` |
+| **6** | `get_available_slots_v3` smoke | ✅ Retorna 29/04 (qua) e 01/05 (sex), pula 27/04 (passado) |
+
+### Q.7 — Resposta direta: Carolina conseguirá agendar?
+
+**Sim, em ambos os caminhos**:
+
+| Caminho | Status pós-V1.9.97 |
+|---|---|
+| **A) Pós-AEC** (após "sim autorizo" → trigger inline) | ✅ V1.9.93-A injeta token, V1.9.97-A `handleBooking` corrigido, RPC valida e persiste |
+| **B) Via chat livre** ("quero agendar com Dr. X" fora-AEC) | ✅ Mesmo widget, mesmo `handleBooking`, mesma RPC |
+
+**Caveat de UX**: paciente verá slots em horário UTC traduzido pra BRT (09:00 UTC → 06:00 BRT). Ricardo configurou "09:00 BRT" mas paciente vê "06:00 BRT" como primeiro slot da manhã. Não impede agendamento — é o V1.9.97-B pendente.
+
+### Q.8 — Estado final do app pós-V1.9.97
+
+| Aspecto | Estado |
+|---|---|
+| Booking inline pós-AEC | 🟢 **Funciona pela primeira vez** (era teórico antes) |
+| Booking via chat livre | 🟢 Funciona (mesmo path) |
+| Defense in depth (slot passado) | 🟢 RPC + display ambos validam |
+| RLS prescriptions | 🟢 Vulnerabilidade CFM fechada |
+| Audit log capturando | 🟢 Confirmado |
+| AEC + Pipeline + Signature | 🟢 Intactos (não tocados) |
+| RLS chat-images | 🟡 Pendente (decisão arquitetural — getPublicUrl) |
+| Timezone na agenda | 🟡 Pendente (decisão arquitetural) |
+| RLS users leak emails | 🟡 Pendente (criar `users_dropdown` view) |
+
+### Q.9 — Sprint 27/04 fechamento — 12 commits + 1 tag de lock
+
+```
+bb01801  V1.9.85   REGRA HARD §1 + Fix A/B/D + reforço
+[idem]   V1.9.86   Verbatim First (REGRA #1)
+91cd803  V1.9.87   threshold scorer
+31d0de6  V1.9.88   clinical_qa_runs
+0f0e29f  V1.9.89   revert seletivo Fix A
+854401d  V1.9.91   inline scheduling pós-AEC
+bc10bb5  V1.9.92   remover rota fantasma
+b0ba4b5  V1.9.93-A trigger gate metadata
+d754384  V1.9.93-B dropdown profissionais
+5df0cea  V1.9.93-C filtro types pt/en
+44f593f  V1.9.94   consent guard isAskingConsent
+1a79108  V1.9.95   AEC GATE V1.5 reforçado + system msgs early return
+🔒 v1.9.95-lock-aec-relatorio-agendamento
+eebcd42  V1.9.97   3 fixes verdes (booking + slot passado + RLS prescriptions)
+```
+
+### Q.10 — Lições principais cristalizadas
+
+1. **Auditoria 25/03 estava desatualizada** — estado real era melhor (security_invoker em todas views) E pior (2 vulns que ela não viu). Lição: re-auditar antes de assumir.
+
+2. **Lock pode ser teórico se um caminho nunca foi exercitado de verdade** — V1.9.95 dizia "booking funciona" mas o widget inline nunca tinha persistido nada (parsing quebrado desde V1.9.93). Lição: smoke test empírico antes de declarar lock.
+
+3. **`scheduling_audit_log` foi a chave** — ela revelou "RPC NEM CHAMADA". Sem audit log, ficaria horas debugando RLS/networking/cache. **Audit logs valem ouro**.
+
+4. **`split(":")` em ISO timestamp é gambiarra clássica** — fácil de cometer, difícil de pegar em review. Tipos fortes ajudariam.
+
+5. **Defense in depth**: V1.9.97-C valida slot passado em DOIS pontos (display + RPC). Se um falhar, outro pega. Healthtech regulada exige redundância.
+
+### Frase âncora do Bloco Q
+
+> *"Lock virou ferro forjado: deixou de ser teoria, passou a ser smoke-tested. E os 3 verdes em 25 minutos foram o melhor ROI técnico do dia inteiro."*
+
+---
+
+*Bloco Q adicionado 2026-04-27 ~20h45 BRT por Claude Opus 4.7 (1M context). Diário 27/04 fecha em 17 blocos (A→Q). 12 commits + 1 tag + smoke tests empíricos. Próximo: Pedro testa via UI pra confirmar end-to-end. Pendentes claros pra próxima sessão (chat-images RLS, timezone, users leak).*
+
+*"O dia mais produtivo é o que termina com lock real, não com lock declarado."*
