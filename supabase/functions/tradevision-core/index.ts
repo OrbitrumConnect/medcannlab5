@@ -4845,9 +4845,13 @@ ${contentExcerpt || '(Texto não disponível para este documento. O conteúdo ai
         if (needsCompletionTag) {
             const isConfirmation = norm.includes('sim') || norm.includes('autorizo') || norm.includes('concordo') || norm.includes('pode') || isFormalClosingMsg
             if (isConfirmation) {
-                console.log('🧬 [FORCE] Injetando tags de conclusão, agendamento e fechamento de sessão.');
-                const schedulingTag = aiResponse.includes('[TRIGGER_SCHEDULING]') ? '' : ' [TRIGGER_SCHEDULING]'
-                aiResponse = aiResponse + ` [ASSESSMENT_COMPLETED][FINALIZE_SESSION]${schedulingTag}`
+                // V1.9.85 FIX B: nao injetar [TRIGGER_SCHEDULING] automaticamente.
+                // Agendamento agora dispara apenas por clique explicito do paciente no
+                // card final "Avaliacao Concluida" (via Fix C). Aqui mantemos apenas as
+                // tags [ASSESSMENT_COMPLETED] e [FINALIZE_SESSION] que disparam a
+                // geracao do relatorio + UI do card de conclusao.
+                console.log('🧬 [FORCE] Injetando tags de conclusão e fechamento de sessão.');
+                aiResponse = aiResponse + ` [ASSESSMENT_COMPLETED][FINALIZE_SESSION]`
             }
         }
 
