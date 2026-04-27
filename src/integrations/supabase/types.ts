@@ -1479,6 +1479,9 @@ export type Database = {
           shared_at: string | null
           shared_by: string | null
           shared_with: string[] | null
+          signature_hash: string | null
+          signed_at: string | null
+          signed_payload: Json | null
           status: string
           updated_at: string | null
         }
@@ -1505,6 +1508,9 @@ export type Database = {
           shared_at?: string | null
           shared_by?: string | null
           shared_with?: string[] | null
+          signature_hash?: string | null
+          signed_at?: string | null
+          signed_payload?: Json | null
           status?: string
           updated_at?: string | null
         }
@@ -1531,6 +1537,9 @@ export type Database = {
           shared_at?: string | null
           shared_by?: string | null
           shared_with?: string[] | null
+          signature_hash?: string | null
+          signed_at?: string | null
+          signed_payload?: Json | null
           status?: string
           updated_at?: string | null
         }
