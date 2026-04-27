@@ -1897,6 +1897,12 @@ export class NoaResidentAI {
           }
           aecSnapshot = {
             phase: liveState.phase,
+            // [V1.9.83] Micro-estado granular pra contrato Core→GPT (Bloco I+J do diário 26/04).
+            // Causa raiz dos 5 campos slot errado do Pedro hoje: GPT recebia phase mas NAO
+            // recebia qIdx/iter, entao decidia avancar visualmente antes do FSM. Resposta
+            // caia no slot anterior. Polimento puro: passa dado que FSM ja calcula.
+            currentQuestionIndex: liveState.currentQuestionIndex,
+            phaseIterationCount: liveState.phaseIterationCount,
             startedAt: liveState.startedAt,
             patientName: d.patientName,
             complaintList: Array.isArray(d.complaintList) ? d.complaintList.filter(Boolean) : [],

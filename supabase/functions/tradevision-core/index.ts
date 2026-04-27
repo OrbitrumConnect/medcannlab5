@@ -3173,6 +3173,47 @@ AEC_LOCK_END
                 phaseInstruction = phaseInstruction + `\n\nCOMPLAINT_DETAILS — URGÊNCIA\n\nPode condensar até 3 perguntas essenciais (onde, quando, como/intensidade) num único turno se fizer sentido. Proibido escrever colchetes, placeholders ou o texto literal "[queixa]" ao paciente — use as palavras do sintoma que ele já descreveu. Oriente atendimento presencial se houver risco imediato.`
             } else {
                 phaseInstruction = phaseInstruction + `\n\nCOMPLAINT_DETAILS\n\nUma pergunta por turno. Leia o histórico: se já respondeu onde e quando, não repita — avance para a próxima do roteiro.`
+
+                // [V1.9.83] CONTRATO GRANULAR (Bloco I+J diario 26/04, autorizacao Pedro 27/04 ~02h)
+                // Causa raiz dos 5 campos slot errado: GPT decidia avancar visualmente antes do
+                // FSM avancar internamente. Polimento puro: passa qIdx/iter que FSM ja calcula
+                // e sao recebidos via aecSnapshot (V1.9.83 client side).
+                // NAO mexe em SOFT lock (V1.8.3-D preservado). Aditivo, nao substitutivo.
+                if (aecSnapshot && typeof aecSnapshot === 'object') {
+                    const snap = aecSnapshot as Record<string, any>
+                    const qIdx = typeof snap.currentQuestionIndex === 'number' ? snap.currentQuestionIndex : null
+                    const iter = typeof snap.phaseIterationCount === 'number' ? snap.phaseIterationCount : null
+
+                    if (qIdx !== null && iter !== null) {
+                        const subQuestionLabels = [
+                            'localização',
+                            'início',
+                            'descrição',
+                            'sintomas associados',
+                            'fatores de melhora',
+                            'fatores de piora'
+                        ]
+                        const currentSub = subQuestionLabels[qIdx] || 'detalhamento'
+                        const isListSubQuestion = qIdx >= 3 // sintomas associados, melhora, piora aceitam multiplas respostas
+
+                        phaseInstruction = phaseInstruction + `
+
+MICRO-ESTADO GRANULAR (CONTRATO Core→GPT V1.9.83):
+- Sub-pergunta ATUAL: ${currentSub} (qIdx=${qIdx})
+- Iteração desta sub-pergunta: ${iter}
+- Tipo: ${isListSubQuestion ? 'LISTA (aceita múltiplas respostas)' : 'única (1 resposta basta)'}
+
+REGRA DE AVANÇO (NÃO NEGOCIÁVEL):
+- O FSM controla quando avançar de sub-pergunta. Você (GPT) NÃO decide isso.
+- Toda resposta do paciente neste turno será gravada no slot da sub-pergunta atual (${currentSub}).
+- Se você visualmente perguntar a próxima sub-pergunta antes do FSM avançar, a resposta vai para o slot ERRADO. Isso é o bug que estamos prevenindo.
+- ${isListSubQuestion
+    ? `Sub-pergunta de LISTA (${currentSub}): após primeira resposta, pergunte "O que mais?" — NÃO mude para outra sub-pergunta. Só avance quando paciente disser "apenas/nada mais/só isso/somente" (terminator).`
+    : `Sub-pergunta única (${currentSub}): aguarde resposta do paciente. NÃO antecipe próxima sub-pergunta neste turno.`
+}
+- Sua resposta deve focar EXCLUSIVAMENTE em ${currentSub}. Não pule para próxima sub-pergunta.`
+                    }
+                }
             }
         }
 
