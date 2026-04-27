@@ -4903,24 +4903,34 @@ ${contentExcerpt || '(Texto não disponível para este documento. O conteúdo ai
         ]
         const isFormalClosingMsg = closingKeywords.some(key => aiResponse.includes(key))
         const isAlreadyCompleted = assessmentPhase === 'COMPLETED'
-        // V1.9.85 FIX A — REGRA HARD: consentimento NUNCA dispara agendamento.
+        // V1.9.89 — REGRA HARD refinada: consentimento dispara FECHAMENTO,
+        // NUNCA dispara AGENDAMENTO.
         //
-        // CONSENT_COLLECTION e fases de revisão da AEC são fluxo CLÍNICO
-        // (concordância com o relatório, autorização do escriba, validação
-        // do paciente sobre o que foi escutado). NÃO são fluxo OPERACIONAL
-        // (intenção de marcar consulta).
+        // Histórico: V1.9.85 Fix A removeu CONSENT_COLLECTION desta condição
+        // inteiramente (querendo evitar trigger prematuro de [TRIGGER_SCHEDULING]).
+        // Mas isso eliminou tambem a injecao de [ASSESSMENT_COMPLETED] +
+        // [FINALIZE_SESSION] — que SAO necessarias em CONSENT_COLLECTION para
+        // o pipeline orchestrator gerar o relatorio.
         //
-        // Misturar os dois — interpretar "concordo" como pedido de agendamento —
-        // viola a separação semântica fundamental do sistema. Esta regra é dura:
-        // se um dia alguém quiser reabrir CONSENT_COLLECTION ou outra fase de
-        // revisão como gatilho de agendamento, exige nova versão do Livro Magno
-        // (anti-kevlar §1: muda quem decide o quê → muda a constituição antes do código).
+        // Validado via logs Carolina 27/04 ~15:14 BRT (pos-deploy V1.9.85+86):
+        // paciente disse "concordo", AEC saiu em phase=INTERRUPTED, ZERO reports
+        // gerados. Bug de regressao detectado pelo metodo V1.9.85 + V1.9.88.
         //
-        // Agendamento dispara apenas:
-        //   1. Em FINAL_RECOMMENDATION ou CLOSING (fim formal da AEC)
-        //   2. Por isFormalClosingMsg (frase do roteiro selado)
-        //   3. Por clique explícito do paciente no card "Avaliação Concluída" (Fix C)
-        const needsCompletionTag = !isAlreadyCompleted && (assessmentPhase === 'FINAL_RECOMMENDATION' || assessmentPhase === 'CLOSING' || isFormalClosingMsg) && !aiResponse.includes('[ASSESSMENT_COMPLETED]')
+        // V1.9.89 RESTAURA CONSENT_COLLECTION na condicao. A separacao semantica
+        // entre fluxo clinico e operacional eh garantida pelo Fix B (V1.9.85)
+        // que ja excluiu [TRIGGER_SCHEDULING] das tags injetadas:
+        //
+        //   needsCompletionTag em CONSENT_COLLECTION + isConfirmation =>
+        //     INJETA: [ASSESSMENT_COMPLETED] [FINALIZE_SESSION]   (clinico, fechamento)
+        //     NAO INJETA: [TRIGGER_SCHEDULING]                    (operacional, agendamento)
+        //
+        // Agendamento dispara apenas por clique explicito do paciente no card
+        // "Avaliacao Concluida" (Fix C V1.9.85). REGRA HARD preservada.
+        //
+        // Anti-kevlar §1: separacao clinico/operacional documentada em 4 camadas
+        // (codigo + memoria project_regra_consentimento_nao_e_agendamento +
+        // diario 27/04 Bloco L + descricao da PR V1.9.85).
+        const needsCompletionTag = !isAlreadyCompleted && (assessmentPhase === 'FINAL_RECOMMENDATION' || assessmentPhase === 'CLOSING' || assessmentPhase === 'CONSENT_COLLECTION' || isFormalClosingMsg) && !aiResponse.includes('[ASSESSMENT_COMPLETED]')
 
         if (needsCompletionTag) {
             const isConfirmation = norm.includes('sim') || norm.includes('autorizo') || norm.includes('concordo') || norm.includes('pode') || isFormalClosingMsg
