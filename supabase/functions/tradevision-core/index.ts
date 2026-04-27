@@ -4438,8 +4438,69 @@ ${contentExcerpt || '(Texto não disponível para este documento. O conteúdo ai
 
         console.log(`🧠 Contexto histórico de ${conversationHistory?.length || 0} mensagens adicionado`)
 
+        // ============================================================
+        // V1.9.86 VERBATIM FIRST — REGRA #1 (ENGINEERING_RULES.md)
+        //
+        // "Nenhuma chamada ao LLM pode ocorrer se a resposta puder ser
+        //  determinada por estado + regras locais."
+        //
+        // Em fases AEC_VERBATIM_HARD_LOCK_PHASES, a resposta do GPT é
+        // SEMPRE substituida pelo nextQuestionHint literal (logica V1.8.9
+        // em ~427-451 do paths utilitarios). Logo, chamar GPT nessas fases
+        // e DEPOIS descartar a resposta era custo puro: ~7-8k tokens por
+        // turno + ~3-5s de latencia + variabilidade desnecessaria.
+        //
+        // V1.9.86 evita a chamada: monta um `completion` sintetico com a
+        // frase deterministica e segue o pipeline normal. Tudo downstream
+        // (sanitize, tag injection, pipeline orchestrator, signature, save)
+        // continua funcionando porque a estrutura do completion eh identica.
+        //
+        // Excecoes preservadas:
+        //  - urgencia clinica (isUrgent): GPT pode condensar perguntas
+        //  - COMPLAINT_DETAILS (NAO esta em HARD_LOCK_PHASES): preserva
+        //    fluidez do detalhamento (V1.8.3-D)
+        //  - fases fora do conjunto: comportamento atual intacto
+        //
+        // Validado conceitualmente em logs Carolina 27/04 13:01 BRT:
+        // 4 turnos verbatim consumiram ~31k tokens GPT que seriam descartados.
+        // ============================================================
+        const useVerbatimFirst =
+            !!nextQuestionHint?.trim() &&
+            aecActorEligible &&
+            !!assessmentPhase &&
+            AEC_VERBATIM_HARD_LOCK_PHASES.has(assessmentPhase) &&
+            !isUrgent;
+
+        let completion: any;
+
+        if (useVerbatimFirst) {
+            console.log(`🟢 [V1.9.86 VERBATIM-FIRST] Hard lock fase=${assessmentPhase} — bypass GPT (REGRA #1: resposta ja existe no estado).`);
+
+            // Telemetria: registrar economia para validacao 24-48h pos-deploy (REGRA #4)
+            try {
+                const totalCharsForLog = messages.reduce((acc, m) => acc + (typeof m.content === 'string' ? m.content.length : 0), 0);
+                await supabaseClient.from('noa_logs').insert({
+                    user_id: effectiveUserId,
+                    interaction_type: 'verbatim_first_v1_9_86',
+                    payload: {
+                        phase: assessmentPhase,
+                        hint_chars: nextQuestionHint!.length,
+                        estimated_tokens_saved: Math.ceil(totalCharsForLog / 3),
+                        interaction_id
+                    }
+                });
+            } catch (logErr) {
+                console.warn('[V1.9.86] Falha ao logar verbatim_first (nao bloqueia):', logErr);
+            }
+
+            completion = {
+                choices: [{ message: { content: nextQuestionHint!.trim() } }],
+                usage: { total_tokens: 0, prompt_tokens: 0, completion_tokens: 0 },
+                model: 'TradeVision-Core-Verbatim-V1.9.86'
+            } as any;
+        } else {
         // 7. Chamada à OpenAI (GPT-4o)
-        const completion = await openai.chat.completions.create({
+        completion = await openai.chat.completions.create({
             model: CHAT_MODEL,
             messages,
             temperature: isTeachingMode ? 0.7 : 0.2, // Ensino = 0.7 para atuação mais natural da Paula
@@ -4752,6 +4813,7 @@ ${contentExcerpt || '(Texto não disponível para este documento. O conteúdo ai
                 model: 'TradeVision-Core-Deterministic'
             }
         });
+        } // V1.9.86 — fecha o else do "if (useVerbatimFirst) ... else { /* chamada GPT real */ }"
 
         // CRÍTICO: Garantir que completion existe antes de acessar
         if (!completion || !completion.choices || !Array.isArray(completion.choices) || completion.choices.length === 0) {
