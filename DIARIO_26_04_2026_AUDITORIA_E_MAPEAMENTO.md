@@ -901,4 +901,113 @@ Isso é polimento puro — usa contrato existente + adiciona dado granular que o
 
 ---
 
-*Bloco I adicionado 2026-04-27 ~01h30 BRT pra registrar evolução conceitual Ricardo. Diário 26/04 fecha aqui com 9 blocos (A, B, C, D, D2, E, F, G, H, I). Síntese: arquitetura ideal não é "Core puro" nem "GPT puro" — é **GPT executando dentro de contrato granular do Core**. SOFT lock já é a base correta; falta enriquecer micro-estado dentro de COMPLAINT_DETAILS. Polimento, não invenção.*
+*Bloco I — evolução conceitual Ricardo (Core = trilho, GPT = vagão).*
+
+---
+
+## Bloco J — Síntese operacional Ricardo (~01h45 BRT 27/04)
+
+> Resposta final do Dr. Ricardo após análise de toda sessão. Define ordem de prioridades + frase-âncora que organiza tudo.
+
+### Frase-âncora (síntese real do dia)
+
+> *"O problema não é que o GPT decide — é que ele decide sem saber exatamente em que micro-estado o Core está."* — Dr. Ricardo Valença, 27/04 ~01h30 BRT
+
+Isso muda completamente a abordagem:
+- ❌ **NÃO é**: remover GPT / travar tudo em verbatim
+- ✅ **É**: aumentar a precisão do contexto que o GPT recebe
+
+### Ordem de prioridades (Ricardo definiu)
+
+| # | Item | Esforço | Impacto |
+|---|---|---|---|
+| **1** | **P0 regulatório — narrador escriba** | 1 commit | Gigante (destrava produto externo) |
+| **2** | **Contrato granular Core → GPT** | Polimento médio | Resolve classe inteira de bugs |
+| **3** | **Corrigir `is_complete=false`** | Consistência interna | Médio |
+| **4** | Verbatim/locks granulares | Só depois do contrato | Baixo isolado |
+
+**Inverter ordem = perder tempo.** Ricardo foi claro.
+
+### Riscos críticos catalogados
+
+**🔴 P0 regulatório aberto**:
+> *"Enquanto existir frase tipo 'prescrever analgésicos', você não tem produto externo. Ponto. Isso não é bug técnico — é risco legal direto."*
+
+**🔴 `is_complete=false` no final**:
+> *"Quebra lógica interna, ativa cold guard indevidamente, pode invalidar sessão válida. Inconsistência de estado — categoria perigosa."*
+
+**🔴 Dependência do GPT alta demais**:
+> *"Mesmo com SOFT lock: GPT ainda decide timing de avanço visual, Core não consegue impor granularidade. Falta micro-estado no contrato."*
+
+### Próximo passo técnico (sem inventar — só polir)
+
+**Localização exata**: [tradevision-core:3142](supabase/functions/tradevision-core/index.ts#L3142) — `phaseInstruction`
+
+**Hoje** (informa só fase):
+```ts
+phaseInstruction = `\n\nFASE ATUAL DO PROTOCOLO (ESTADO ATIVO): "${assessmentPhase}".\nATENÇÃO: Você DEVE conduzir o diálogo focado EXCLUSIVAMENTE nesta fase.`
+```
+
+**Precisa passar (proposta Ricardo, conceitual)**:
+```
+Fase: COMPLAINT_DETAILS
+Sub-pergunta atual: melhora (qIdx=4)
+Iteração atual: 1/2
+Estado: ainda aguardando mais exemplos
+
+Regra:
+- NÃO avançar para piora
+- Se resposta incompleta → pedir mais exemplos
+- Se usuário indicar final → avançar
+```
+
+**Características do polimento**:
+- ✅ Polimento puro (não cria estrutura nova)
+- ✅ Zero feature nova
+- ✅ Usa dado que FSM já calcula (qIdx, iter, REACHED_LIMIT)
+- ✅ Resolve classe inteira de bugs (5 campos slot errado do Pedro hoje)
+- ✅ Não mexe em decisão V1.8.3-D (SOFT lock continua)
+- ✅ Compatível com analogia trilho/vagão de Ricardo
+
+### Insight arquitetural final (Ricardo)
+
+> *"O que vocês descobriram não é pequeno. Você saiu de:*
+> *- FSM puro (rígido)*
+> *→ para*
+> *- GPT dominante (caótico)*
+> *→ e agora está chegando em:*
+> *- **Sistema híbrido com contrato explícito (governado)**.*
+>
+> *Isso é arquitetura de produto sério."*
+
+### Resumo em uma linha (pra próxima sessão não perder)
+
+> **"Você não precisa de mais regras — você precisa que o GPT entenda exatamente em que ponto do fluxo ele está antes de falar."**
+
+### Status final consolidado para próxima sessão
+
+**Aplicado hoje (sequência completa)**:
+- V1.9.74 — AEC GATE V1.5 ext
+- V1.9.75 — causal trace logs
+- V1.9.76 — REACHED_LIMIT desync
+- V1.9.77 — regex restart "agora"
+- V1.9.78/79 — APLICADAS E REVERTIDAS (lição)
+- V1.9.80 — patientName perfil
+- V1.9.81 — detector tolerante typo
+- **V1.9.82 — fail-safe clínico Onda 2b** ✅
+
+**Aguardando decisão Dr. Ricardo (prioridade 1)**:
+- **Texto V2 narrador escriba** (Fix #1 plano `majestic-sprouting-goblet`) — destrava P0 CFM imediato
+
+**Próximo polimento técnico autorizado (prioridade 2)**:
+- **Enriquecer `phaseInstruction`** com micro-estado granular (qIdx + iter + REACHED_LIMIT + regra de avanço)
+- Mexe em ~30-50 linhas em `tradevision-core/index.ts:3140-3170`
+- Resolve 5 bugs P2 do report do Pedro de uma vez
+- **Aguarda OK explícito Pedro pra aplicar** (lição V1.9.78)
+
+**Pendente decisão**:
+- `is_complete=false` no state Pedro: deixar cold guard arquivar OU corrigir manualmente?
+
+---
+
+*Bloco J adicionado 2026-04-27 ~01h45 BRT pra fechar sessão com ordem operacional clara do Dr. Ricardo. Diário 26/04 fecha definitivamente aqui com 10 blocos (A, B, C, D, D2, E, F, G, H, I, J). Frase-âncora: "Você não precisa de mais regras — você precisa que o GPT entenda exatamente em que ponto do fluxo ele está antes de falar." Próxima ação: P0 narrador (aguarda Ricardo) → contrato granular (aguarda OK Pedro) → is_complete (decisão Pedro) → Verbatim avançado (depois). Polimento sem invenção, evolução sem regressão.*
