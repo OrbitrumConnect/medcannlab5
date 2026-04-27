@@ -329,14 +329,21 @@ const SchedulingWidget = ({
     setBookingLoading(true);
     setError(null);
     try {
-      const [hours, minutes] = selectedSlot.split(":");
-      const appointmentDate = new Date(selectedDate);
-      appointmentDate.setHours(parseInt(hours), parseInt(minutes), 0, 0);
+      // V1.9.97-A: selectedSlot ja eh ISO timestamptz completo vindo de
+      // getAvailableSlots (RPC retorna slot_start como TIMESTAMPTZ). Antes
+      // tentavamos split(":") + setHours() esperando "HH:MM" — mas isso
+      // quebrava o ISO ("2026-04-27T14:00:00+00:00".split(":") nao da
+      // ["14","00"]) gerando NaN em parseInt e Invalid Date no toISOString,
+      // abortando a chamada da RPC book_appointment_atomic. Resultado:
+      // booking inline da Noa NUNCA foi efetivado (validado via
+      // scheduling_audit_log — zero tentativas do widget). Agora passamos
+      // o ISO direto, que eh o que a RPC espera.
+      const slotIso = selectedSlot;
 
       const appointmentId = await bookAppointment(
         patientId,
         selectedProfessionalId as string,
-        appointmentDate.toISOString(),
+        slotIso,
         "consultation",
         "Agendamento via Chat IA",
       );
@@ -433,20 +440,34 @@ const SchedulingWidget = ({
             Nenhum horário disponível
           </div>
         ) : (
-          availableSlots.map((slot) => (
-            <button
-              key={slot}
-              onClick={() => setSelectedSlot(slot)}
-              className={clsx(
-                "py-1.5 px-2 rounded text-xs transition-colors border",
-                selectedSlot === slot
-                  ? "bg-blue-600 border-blue-500 text-white"
-                  : "bg-slate-700/50 border-slate-600 text-slate-300 hover:bg-slate-700",
-              )}
-            >
-              {slot}
-            </button>
-          ))
+          availableSlots.map((slot) => {
+            // V1.9.97-A: slot eh ISO timestamptz; exibir HH:MM em BRT
+            const slotLabel = (() => {
+              try {
+                return new Date(slot).toLocaleTimeString("pt-BR", {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                  timeZone: "America/Sao_Paulo",
+                });
+              } catch {
+                return slot;
+              }
+            })();
+            return (
+              <button
+                key={slot}
+                onClick={() => setSelectedSlot(slot)}
+                className={clsx(
+                  "py-1.5 px-2 rounded text-xs transition-colors border",
+                  selectedSlot === slot
+                    ? "bg-blue-600 border-blue-500 text-white"
+                    : "bg-slate-700/50 border-slate-600 text-slate-300 hover:bg-slate-700",
+                )}
+              >
+                {slotLabel}
+              </button>
+            );
+          })
         )}
       </div>
 
