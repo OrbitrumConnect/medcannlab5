@@ -235,7 +235,122 @@ TOTAL: ~6-8 semanas focadas pra produção escala elite pro.
 - **V1.9.72** (26/04 madrugada): cap `patientData` via whitelist por fase + telemetria
 - **V1.9.73** (26/04 madrugada): assinatura SHA-256 server-side de relatórios
 - xlsx vendored via CDN SheetJS (parte do hardening de deps)
+- **V1.9.74** (26/04 ~12:49): AEC GATE V1.5 estendido (proteção contra reinício acidental — caso Carolina elogio)
+- **V1.9.75** (26/04 ~15:56): causal trace logs em 3 pontos do FSM (instrumentação)
+- **V1.9.76** (26/04 ~18:46): REACHED_LIMIT do `processComplaintDetails` >=2 → >=1 (FSM/GPT desync)
+- **V1.9.77** (26/04 ~19:21): regex `restartSignals` removeu "agora" (palavra comum em relato disparava reset)
+- **V1.9.78 + V1.9.79** (26/04 ~19:29-19:39): aplicadas e **REVERTIDAS** ~19:46 (lição: anomalia ≠ bug — ver `feedback_anomalia_nao_e_bug.md`)
+- **V1.9.80** (26/04 ~19:49): patientName injetado do perfil quando state vazio
+- **V1.9.81** (26/04 ~20:35): detector tolerante de intenção AEC (typos + sinônimos clínicos)
 
 ---
 
-*Diário gerado em 2026-04-26 ~12h BRT. Continuação direta do `DIARIO_25_04_2026_RLS_AUDIT_E_PLANO_3_MODOS.md`. Próxima sessão deve ler este + `SYSTEM_STATE_SEAL_2026-04-26.md` + `MAP_FULL_2026-04-26.md` antes de qualquer ação técnica.*
+## Bloco D — Noite (~15h-20h45 BRT)
+
+### Sessão de bugs AEC com Pedro como paciente teste
+
+Pedro (`d5e01ead-2f7e-4958-95e9-50dd66a7c5f9` / `casualmusic2021@gmail.com` / role=patient) testou AEC no terminal de paciente. 6 versões aplicadas (V1.9.75→V1.9.81) + 2 revertidas + 1 conquista marco.
+
+### Sequência cronológica
+
+| Hora | Evento |
+|---|---|
+| ~15:56 | **V1.9.75** instrumenta FSM com 3 trace logs (`persist-snapshot`, `mark-completed`, `write-before`) — preparação pra debugar bug REACHED_LIMIT |
+| ~17:00-18:30 | Pedro reporta AEC com perguntas juntas em COMPLAINT_DETAILS. Trace mostra desync FSM/GPT (FSM espera 2 turnos por sub-pergunta, GPT avança em 1) |
+| ~18:46 | **V1.9.76** corrige REACHED_LIMIT (>=2 → >=1) no caminho list de `processComplaintDetails` |
+| ~19:00 | Pedro testa de novo: bug "agora" descoberto — paciente Carolina (na verdade Pedro fingindo) responde *"começou com bolha **agora** virou ferida"* → `restartSignals` regex em `clinicalAssessmentFlow.ts:669` casa "agora" como sinal de restart → `wantsRestart=true` → `resetAssessment()` mid-COMPLAINT_DETAILS |
+| ~19:21 | **V1.9.77** remove "agora" do regex (latente desde commit inicial 16/04). Memória `project_aec_restart_regex_landmine_26_04` registra classe |
+| ~19:29 | **V1.9.78** (ERRO) aplicada: limpar `invalidated_at` no upsert. **Inventei o problema** — Pedro só tinha PERGUNTADO sobre dados de AECs anteriores, eu interpretei anomalia (started_at hoje + invalidated_at ontem) como bug |
+| ~19:39 | **V1.9.79** (ERRO) aplicada: tentativa de consertar caos da V1.9.78 (frase de retomada IDENTIFICATION + injecao patientName) |
+| ~19:46 | **REVERT V1.9.78 + V1.9.79** após Pedro apontar: *"era como estava quando pedi pra voltar dúvida"*. Cold guard V1.9.57 era intencional |
+| ~19:49 | **V1.9.80** aplicada (parte boa da V1.9.79 isolada): injeta `patientName` do perfil quando state vazio. Defesa positiva pura, não desativa nada |
+| ~20:00-20:30 | Diagnóstico arquitetural: descoberto que sistema é **GPT-first** (Assistant API primária, FSM secundário). `noaResidentAI.ts:392` `// SEMPRE usar Assistant`. Existe desde commit inicial. Não é regressão — é arquitetura |
+| ~20:30 | Pedro identifica: *"se o agora deu erro, qualquer typo poderia"*. Confirmado via Node test: regex de início rejeitava "avalaicao" (typo lai/lia) |
+| ~20:35 | **V1.9.81** aplicada: detector tolerante de intenção AEC (cobre typos comuns + sinônimos clínicos). Validado em 13/14 casos |
+| 20:37-20:46 | **MARCO**: Pedro completa primeira AEC end-to-end do dia |
+
+### V1.9.78/V1.9.79 reverso (lição registrada)
+
+Erro de processo cristalizado em memória `feedback_anomalia_nao_e_bug.md`:
+
+> Pedro perguntou *"o que aconteceu com os dados das AECs anteriores?"* — pergunta de **auditoria**.
+> Vi `started_at=hoje` + `invalidated_at=ontem` → interpretei como bug.
+> Apliquei V1.9.78 (limpar invalidated_at) + V1.9.79 (consertar consequência) → desativei cold guard V1.9.57 silenciosamente.
+> **A "anomalia" era comportamento intencional.**
+>
+> **Regra cristalizada**: anomalia de banco durante investigação não é convite pra mexer — é convite pra perguntar.
+
+### MARCO — Primeira AEC end-to-end completa do dia
+
+Após V1.9.77+V1.9.80+V1.9.81 deployadas, Pedro testou AEC com queixa simulada "dor de cabeça":
+
+**Estado final no banco** (`aec_assessment_state` user_id=d5e01ead):
+```
+phase: COMPLETED
+n_fases_completadas: 11/11 visualmente
+is_complete: false ⚠️ (anomalia — alguma required não marcada)
+started_at: 2026-04-26 23:38:42 UTC
+last_update: 2026-04-26 23:46:38 UTC
+duracao: ~8 minutos
+```
+
+**Pipeline executou inteiro** (`8f4876e9-2c20-48f1-8ab3-b800deab34b1`):
+- `🚀 GATEWAY → Orquestrador ClinicalMaster`
+- `🧮 SCORES → clinical_score=58, confidence=high`
+- `🔏 SIGNATURE → hash=e3cb22297fac7d21...` (V1.9.73 funcional)
+- `🩺 DOCTOR_RESOLUTION → vínculo via appointments` (Dr. Ricardo `2135f0c0-...`)
+- `✅ PIPELINE_STAGE: REPORT_GENERATED → AXES_SYNCED → RATIONALITY → RATIONALITY_SYNCED → DONE`
+- `⚠️ PIPELINE_REDUNDANT_TRIGGER` (idempotência V1.9.23 funcionou — bloqueou regeneração)
+- Roteiro Selado verbatim acionado nas fases finais (CONSENSUS_REVIEW, CONSENSUS_REPORT, CONSENT_COLLECTION, FINAL_RECOMMENDATION)
+
+### Bugs no relatório gerado (P0-P3, registrados em `project_aec_primeiro_ciclo_completo_26_04.md`)
+
+**P0 — Risco regulatório CFM**: Narrador gerou *"Plano de Conduta Sugerido: Prescrever analgésicos conforme necessário"*. Nôa não pode prescrever. **Fix #1 do plano `majestic-sprouting-goblet` (narrador escriba) ainda aguarda OK do Dr. Ricardo no texto V2**.
+
+**P1 — GPT inventou narrativa**: disse que pneumonia/amigdalites "precederam" a dor de cabeça (Pedro nunca disse isso). Se contradiz na própria narrativa.
+
+**P2 — 5 campos no slot errado** (causa: desincronia Assistant↔FSM):
+- `complaintImprovements` tem "quando estou acordado" (era resposta de piora)
+- `complaintWorsening` tem "pneumonia cedo... amigdalites" + "apenas esses que falei"
+- `medicalHistory: []` ❌ vazio
+- `familyHistoryFather: []` ❌ vazio
+- `lifestyleHabits` inclui "acho que e isso" (frase de fim virou hábito)
+
+**P3 — Score inflado**: tela mostra 100% anamnese/consenso/detalhamento mas há 5 erros + narrativa inventada + prescrição.
+
+**Bugs pré-existentes confirmados (não tocados pelos commits)**:
+- Frase de boas-vindas combina apresentação + queixa numa linha só ([noaResidentAI.ts:1722-1726](src/lib/noaResidentAI.ts#L1722))
+- Duplicação de pergunta HPP quando FSM avança via terminator regex e GPT refaz a pergunta para tentar recuperar
+- `looksLikeRedundantPresentation` engole frase inteira se contém "sou X" mesmo com conteúdo clínico depois
+
+### Verificação final (smoke test 23h BRT)
+
+| Item | Status |
+|---|---|
+| Edge function tradevision-core | v264 (V1.9.74 madrugada — V1.9.77/80/81 são frontend) |
+| 4 remotes git | sincronizados em `0ec95f5` (V1.9.81) |
+| Telemetria payload V1.9.72 (últimas 2h) | 68 turnos, média 10k tokens, pico 28.5k, **0 picos > 30k** ✅ |
+| Trauma log última 1h | **0 erros** (OpenAI estável) ✅ |
+| Report 8f4876e9 | shared, assinado, score 58, médico vinculado ✅ |
+| Anomalia: `is_complete=false` | Cold guard V1.9.57 vai arquivar em ~30min se não corrigida |
+
+### Próxima sessão deve ler (antes de qualquer ação)
+
+1. `SYSTEM_STATE_SEAL_2026-04-26.md` (ainda âncora)
+2. `ENGINEERING_RULES.md`
+3. **Memórias novas do dia 26/04 noite**:
+   - `project_aec_primeiro_ciclo_completo_26_04.md` (status real do produto)
+   - `feedback_anomalia_nao_e_bug.md` (regra de processo)
+   - `project_aec_restart_regex_landmine_26_04.md` (classe de bug)
+4. Este diário (Bloco D)
+
+### Pendências críticas que destravam próxima sessão
+
+1. **OK do Dr. Ricardo no texto V2 do narrador escriba** (Fix #1 do plano `majestic-sprouting-goblet`). 1 commit de ~15min resolve risco P0 CFM
+2. **Decisão sobre Verbatim First** (V1.9.81 maior — fecha 5 bugs P2 de campos errados de uma vez, mas mexe em tradevision-core central)
+3. **Decisão sobre 2 bugs pré-existentes** que Pedro classificou como "fica pro elite" (frase boas-vindas, duplicação HPP)
+4. **Caso clínico real preservado**: report `8f4876e9-2c20-48f1-8ab3-b800deab34b1` é primeiro caso end-to-end pra apresentar ao Ricardo
+
+---
+
+*Diário consolidado em 2026-04-26 ~23h BRT (Bloco D acrescentado em sessão noturna). Marco do dia: AEC saiu de 0% (fake silenciosa por gatilho frágil) pra 70% funcional (caso real persistido + assinado + score). Os 30% restantes são todos do mesmo problema arquitetural mapeado (GPT-first vs FSM disciplinado) — não são bugs novos, são resíduo conhecido aguardando decisão estratégica.*
