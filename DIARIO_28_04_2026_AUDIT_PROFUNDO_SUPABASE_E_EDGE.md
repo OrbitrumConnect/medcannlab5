@@ -824,3 +824,122 @@ Após dormir e voltar com cabeça fresca:
 *Bloco O+P+Q adicionados 2026-04-28 ~02h15 BRT por Claude Opus 4.7 (1M context). Diário 28/04 fecha em 17 blocos (A→Q), ~700 linhas. Fonte da verdade única: alguém lendo só o 28/04 entende o estado completo do app sem precisar caçar 25 memórias + 50 diários antigos.*
 
 *"Diário consolidado é como mapa: vale mais quem chega depois que quem fez."*
+
+---
+
+## BLOCO R — Sessão manhã 28/04 (~10h00 BRT, pós-pull dos 26 commits da reunião)
+
+Sessão de continuação após Pedro+Ricardo+João consolidarem trabalho V1.9.85→V1.9.97 na noite/madrugada anterior. Foco: investigar P0 do fluxo de cadastro paciente.
+
+### R.1 — Investigação fluxo cadastro paciente (3 pacientes sem auth)
+
+Ponto de partida: 3 pacientes (João Vidal `2a95fc8f`, Marne `db506f6e`, Milton `b67415b8`) cadastrados em `public.users` SEM `auth.users` correspondente. Estado descoberto na auditoria 28/04 madrugada.
+
+**Reclassificações em sequência (Princípio 6 reaplicado 2x):**
+
+| # | Eu (Claude) classifiquei | Pedro/Ricardo corrigiu | Reclassificação |
+|---|---|---|---|
+| 1 | "P0 falha de fluxo de cadastro acontecendo agora" | *"Ricardo pode cadastrar pacientes — envia link, tem configurado"* | P0 → fluxo intencional |
+| 2 | "P0 bug ativo no signup retroativo via link" | *"ele mesmo nem entrou. Eu criei pra fazer evolução"* | P0 → P1 latente (pacientes são shells operacionais, não esperam login) |
+| 3 | "P1 latente, esperar CNPJ" | *"existe cadastro c link normal usuario entra no app e via link saco?"* | P1 → P0 designed (caminho do produto vendável, só não exercitado) |
+
+→ **Lição operacional**: anomalia ≠ bug. E "fluxo desenhado" ≠ "fluxo exercitado". A diferença importa pra priorização. Princípio 6 precisa ser reaplicado mesmo em sessão dedicada — não é regra de uma vez.
+
+### R.2 — Bug confirmado em CAMADAS (validação ROLLBACK)
+
+Validei via simulação `BEGIN/UPDATE/ROLLBACK` no Milton (alvo seguro, não persiste). Bug é em **2 camadas**, não 1:
+
+| Camada | Trigger | Erro real | Fonte |
+|---|---|---|---|
+| 1 (dispara primeiro) | `handle_new_user` | `23505 unique_violation users_email_key` | INSERT email duplicado |
+| 2 (não chega a rodar) | `fn_on_auth_user_created_link_existing` | `23503 fk_violation patient_exam_requests_patient_id_fkey` | UPDATE id bloqueado por 15+ FKs NO ACTION |
+
+→ Bug é arquitetural: toda a stack assume `public.users.id == auth.users.id` em ~70 pontos. Quando paciente novo entrar via link, essa equação quebra simultaneamente em 4 camadas.
+
+### R.3 — Varredura completa de impacto (~70 pontos)
+
+Mapeamento (toda confirmada via SQL/grep):
+
+| Camada | Pontos a tocar | Detalhe |
+|---|---|---|
+| Banco — triggers | 2 reescrever | `handle_new_user` + `fn_on_auth_user_created_link_existing` |
+| Banco — coluna nova | 1 | `users.auth_user_id uuid FK auth.users` |
+| Banco — helper SQL | 1 | `current_users_id()` resolve via id OR auth_user_id |
+| Banco — RLS subquery | **49 policies** | `EXISTS (FROM users WHERE id = auth.uid())` |
+| Banco — RLS literal | 9 policies | `users.id = auth.uid()` direto |
+| Banco — SQL function | 1 | `get_authorized_professionals` |
+| Frontend — crítico | 1 arquivo | `AuthContext.tsx:98,147` |
+| Frontend — consumidores | 5 arquivos | OK automático (consomem `useAuth().user.id`) |
+| Edge `tradevision-core` | 8+ pontos | V1.9.59 hardening trata `auth.users.id` como verdade |
+| Edge `wisecare-session` | 2 pontos | `user_id` + `created_by` direto |
+| Trigger duplicado (colateral) | 1 | `trg_handle_new_auth_user` redundante com `trg_auth_users_to_user_profiles` |
+
+→ **Estimativa realista: 3-4h sprint dedicada.** Refactor atravessa banco + RLS + frontend + Edge Functions. **Não é cirúrgico.**
+
+### R.4 — Decisão: documentar como dívida P0, atacar quando CNPJ regularizar
+
+**Opções consideradas:**
+1. 🟢 Full fix hoje (3-4h)
+2. 🟡 Fix em 2 fases (migration + triggers hoje, RLS depois) — risco de quebra silenciosa entre fases
+3. 🟢 Documentar como dívida P0 + atacar em sprint dedicada quando CNPJ regularizar (pré-pagamento)
+
+**Pedro escolheu opção 3** após GPT confirmar reframe. Justificativa:
+- Pagamento ainda não integrado (CNPJ pendente) — não há urgência operacional
+- Refactor de 4 camadas em improviso de 4h = risco anti-kevlar
+- Outros P0 mais visíveis hoje (Edge half-impl, storage órfão, RLS chat-images)
+
+**Memória persistente criada**: `project_divida_auth_user_id_28_04.md` (mapa completo + migration arquitetural arquivada como spec).
+
+### R.5 — Info nova sobre WiseCare (fallback nativo)
+
+Pedro 28/04 ~10h: *"wisecare ja rodamos testamos funcionava algo caiu nao sei pq! e quando cai temos o nosso tbm video chamada e call! que e no chat que tem integracao com proficional e paciente ou time clinico e paciente!"*
+
+→ Stack dual confirmado:
+- **PRIMARY**: WiseCare V4H (`session-manager.homolog.v4h.cloud`) — homolog, `useWiseCareRoom.ts`
+- **FALLBACK**: WebRTC nativo no chat — `useWebRTCRoom.ts`, integração prof/time clínico ↔ paciente
+
+→ **Implicação prática**: WiseCare homolog **NÃO é show-stopper** pra paciente externo (fallback existe). Reclassificação: P1 polish (não P0 bloqueador).
+
+→ Memória persistente criada: `reference_video_call_stack_28_04.md`.
+
+### R.6 — GPT review do backlog ordenado (3 ajustes)
+
+Apresentei plano "TIER 1 → TIER 4" pra Pedro. GPT (consultor externo) trouxe 3 ajustes aceitos:
+
+1. **"Trivial" ≠ "seguro de deletar direto em produção"** — TIER 1 itens 2 e 3 (Edge legacy + trigger duplicado) precisam **verificação prévia** (logs, chamadas hardcoded, ordem de execução) antes de deletar. Princípio: fácil + reversível > fácil + crítico.
+
+2. **TIER 2 reordenado por prioridade**: segurança > dados > consistência. Ordem definitiva:
+   - RLS chat-images (segurança)
+   - 72 files órfãos (dados — Pedro confirmou conteúdo importante)
+   - 5 órfãos user_profiles (consistência)
+
+3. **`video-call-reminders` → desativar** (não criar tabela). WiseCare + WebRTC nativo já cobrem chamada; reminders pré-call não está sendo usado de fato. Pedro: *"de resto e isso se for isso"*.
+
+4. **Magno draft com filtro**: ENTRA princípios (P6/P7/P8) + REGRA HARD §1 + Anti-kevlar §1 + Pipeline Diário→Magno. NÃO entra bug técnico (FK violation), detalhes Supabase. Magno = lei, não log técnico.
+
+### R.7 — Princípio 6 reaplicado 2x no mesmo dia (lição estrutural)
+
+Princípio 6 foi cristalizado em 26/04 noite (V1.9.78/79 reverts). Eu disse na época: "anomalia ≠ bug, perguntar antes de propor fix".
+
+Hoje (28/04) reaplicou **2x na mesma sessão**:
+1. Manhã: classifiquei pacientes shell como "P0 falha de cadastro" → Pedro: "Ricardo cadastra com link, configurado"
+2. ~10h30: classifiquei "fluxo desenhado mas não exercitado" como P1 latente → Pedro: "existe cadastro c link normal", caminho real do produto vendável → reclassificação P0 designed
+
+→ **Princípio 6 não é regra de uma vez** — é disciplina contínua. Cada nova informação merece pergunta, não suposição. Especialmente quando intenção arquitetural não bate com uso real.
+
+### R.8 — Próxima ação (TIER 1 com disciplina GPT)
+
+Ordem ajustada após review GPT:
+
+1. ✅ **Diário 28/04 bloco R** (este texto) — fecha entendimento
+2. ⏳ **Verificar Edge legacy** `video-call-request-notification-` (logs + chamadas hardcoded)
+3. ⏳ **Verificar trigger duplicado** `trg_handle_new_auth_user` (ordem alfabética + condições + logs duplicados)
+4. ⏳ **Deletar Edge + trigger SE verificação confirmar segurança** — caso contrário, mover pro TIER 2
+
+### Frase-âncora R
+
+> *"Anomalia ≠ bug não é regra de uma vez. É disciplina contínua. Princípio 6 precisa ser reaplicado a cada nova informação, mesmo na mesma sessão. 'Fluxo desenhado' ≠ 'fluxo exercitado' ≠ 'fluxo bug-free'."*
+
+---
+
+*Bloco R adicionado 2026-04-28 ~10h45 BRT por Claude Opus 4.7 (1M context). Diário 28/04 cresceu de 17→18 blocos (A→R), ~830 linhas. Sessão manhã pós-pull. Próximo: TIER 1 com verificações antes de deletar.*

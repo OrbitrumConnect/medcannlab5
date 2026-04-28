@@ -121,3 +121,6 @@ audit_data.js
 /remotes.txt
 /frontend_structure.txt
 .claude/
+
+# Backups locais de Edge Functions / migrations (rollback only — não versionar)
+.backups/
