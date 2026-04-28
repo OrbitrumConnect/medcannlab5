@@ -29,8 +29,12 @@ interface Appointment {
   reminder_sent_30min: boolean
   reminder_sent_10min: boolean
   reminder_sent_1min: boolean
-  patient: { name: string; email: string } | null
-  professional: { name: string; email: string } | null
+}
+
+interface UserRef {
+  id: string
+  name: string | null
+  email: string | null
 }
 
 const REMINDER_WINDOWS = [
@@ -57,13 +61,7 @@ Deno.serve(async (req) => {
 
     const { data: appointments, error: queryError } = await supabase
       .from('appointments')
-      .select(`
-        id, patient_id, professional_id, doctor_id,
-        appointment_date, title, meeting_url,
-        reminder_sent_30min, reminder_sent_10min, reminder_sent_1min,
-        patient:patient_id(name, email),
-        professional:professional_id(name, email)
-      `)
+      .select('id, patient_id, professional_id, doctor_id, appointment_date, title, meeting_url, reminder_sent_30min, reminder_sent_10min, reminder_sent_1min')
       .eq('is_remote', true)
       .eq('status', 'scheduled')
       .gte('appointment_date', now.toISOString())
@@ -77,7 +75,23 @@ Deno.serve(async (req) => {
 
     stats.scanned = appointments?.length ?? 0
 
-    for (const apt of (appointments ?? []) as unknown as Appointment[]) {
+    // JOIN manual: appointments NÃO tem FKs formais com users — fetch separado
+    const userIds = new Set<string>()
+    for (const apt of (appointments ?? []) as Appointment[]) {
+      if (apt.patient_id) userIds.add(apt.patient_id)
+      if (apt.professional_id) userIds.add(apt.professional_id)
+    }
+
+    const usersMap = new Map<string, UserRef>()
+    if (userIds.size > 0) {
+      const { data: users } = await supabase
+        .from('users')
+        .select('id, name, email')
+        .in('id', Array.from(userIds))
+      for (const u of (users ?? []) as UserRef[]) usersMap.set(u.id, u)
+    }
+
+    for (const apt of (appointments ?? []) as Appointment[]) {
       const scheduledTime = new Date(apt.appointment_date)
       const minutesUntil = (scheduledTime.getTime() - now.getTime()) / (60 * 1000)
 
@@ -90,8 +104,8 @@ Deno.serve(async (req) => {
         const fullMessage = `${titleMessage} (${formattedTime}). ${apt.meeting_url ? `Link: ${apt.meeting_url}` : 'Link da chamada será disponibilizado.'}`
 
         const recipients = [
-          { id: apt.patient_id, contact: apt.patient, role: 'paciente' },
-          { id: apt.professional_id, contact: apt.professional, role: 'profissional' },
+          { id: apt.patient_id, contact: apt.patient_id ? usersMap.get(apt.patient_id) : null, role: 'paciente' },
+          { id: apt.professional_id, contact: apt.professional_id ? usersMap.get(apt.professional_id) : null, role: 'profissional' },
         ].filter((r) => r.id && r.contact)
 
         for (const r of recipients) {
