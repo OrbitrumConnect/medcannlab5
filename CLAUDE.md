@@ -109,18 +109,20 @@ HIPÓTESE → EXPERIMENTO → VALIDAÇÃO → CRISTALIZAÇÃO
 ## Quem é quem
 
 ```
-SÓCIOS
+SÓCIOS (4 — corrigido 28/04, antes tinha 3 + classificação errada do João)
   Pedro Henrique Passos Galluf    UUID 17345b36 (admin) + d5e01ead (paciente teste)
-                                  passosmir4@gmail.com — tech lead, designer de formação
-  Dr. Ricardo Valença             UUID 2135f0c0 (professional REAL, vinculado a todos reports)
-                                  + UUID 99286e6f (admin separado)
-                                  Especialidade: Nefrologia/CKD
+                                  passosmir4@gmail.com — tech lead, orquestrador COS
+  Dr. Ricardo Valença             UUID 2135f0c0 (professional REAL) + 99286e6f (admin)
+                                  Nefrologia/CKD — criador do método AEC
+                                  Camadas 0-2 da pirâmide (clínico)
   Eduardo Faveret                 admin coordenador eixo Ensino
-                                  Especialidade: Neurologia
+                                  Neurologia
+  João Eduardo Vidal              cbdrcpremium@gmail.com (admin) + jevyarok@gmail.com (teste)
+                                  Lado institucional / parcerias / governo / regulatório
+                                  Destrava CNPJ → gatilho de timing pra auth_user_id remap
 
 USUÁRIOS TESTE
   Carolina Campello   UUID 5c98c123 — conta teste do Ricardo, NÃO paciente real
-  Joao Eduardo Vidal  admin testador
 
 ROLES RBAC (4 enums em app_role)
   admin (5) | profissional (13) | paciente (30) | aluno (1)
