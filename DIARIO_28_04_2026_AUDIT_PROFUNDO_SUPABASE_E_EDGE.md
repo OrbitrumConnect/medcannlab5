@@ -1795,6 +1795,153 @@ FSM-first + deterministic-first + GPT-as-compiler
 
 ---
 
+## BLOCO AA — Cristalização P10 + reclassificação 🟠→🔴 (~18h15)
+
+GPT review #2 do bloco Z trouxe correção mais profunda: subestimei DOCTOR_RESOLUTION mesmo após reclassificar de 🟡→🟠. Severidade real é 🔴 + paralelo "kevlar clínico" cristalizou Princípio 10.
+
+### AA.1 — Reclassificação DOCTOR_RESOLUTION (3ª vez!)
+
+Trajetória da classificação:
+```
+~17h    🟡 P1 polish (warning observável)
+~17h45  🟠 risco regulatório controlado (após GPT review #1)
+~18h15  🔴 REGRA CONSTITUCIONAL PENDENTE (após GPT review #2)
+```
+
+**Por que cada vez subo**: cada review me força perguntar pergunta diferente:
+- 🟡 olhei como observabilidade
+- 🟠 olhei como impacto regulatório
+- 🔴 olhei como **decisão de responsabilidade** — camada 0 da pirâmide
+
+**Lição**: classificar warning sem perguntar "isto define responsabilidade clínica/regulatória?" é subestimar 80% das vezes.
+
+### AA.2 — Erro errado vs erro de fundo
+
+Errado (P1 polish): *"adicionar telemetria contador fallback + alerta send-email"*
+
+Correto (regra constitucional):
+```
+IF patient.is_external = true
+AND no explicit doctor-patient link
+THEN
+  BLOCK report generation
+  OR require explicit doctor assignment
+
+Fallback permitido SOMENTE se: is_internal_test = true
+```
+
+Telemetria vira CONSEQUÊNCIA da regra (registrar quando dispara), não SOLUÇÃO (pensar que monitorar resolve).
+
+### AA.3 — Princípio 10 cristalizado
+
+GPT review #2 trouxe paralelo brilhante:
+
+| Kevlar técnico (16/04) | Kevlar clínico (28/04) |
+|---|---|
+| GPT assumia controle silenciosamente | Sistema assume médico silenciosamente |
+| Inverteu Core/Assistant sem versão Magno | Atribui doctor_id sem vínculo formal |
+| Risco: regressão silenciosa em decisão | Risco: responsabilidade médica implícita |
+
+**Padrão idêntico**: substituição silenciosa de responsabilidade.
+
+→ **Kevlar não é instância — é padrão**. Toda vez que sistema decide responsabilidade sem sinalizar formalmente, é variante de kevlar.
+
+**Princípio 10 nasceu**:
+> *"Quando o sistema decide quem é o responsável sem dizer, não é fallback — é atribuição silenciosa. Kevlar não é instância de bug. É padrão de risco. P10 nomeia o padrão."*
+
+Memória persistente criada: `feedback_p10_substituicao_silenciosa_responsabilidade.md`
+
+**Família de princípios cristalizados em 28/04**:
+- P9 (manhã): "Não-uso ≠ não-precisa" — cuidado com DELETE
+- P10 (tarde): "Substituição silenciosa de responsabilidade" — cuidado com fallback
+
+### AA.4 — Risco COMBINADO (auditor cruza tópicos)
+
+GPT pegou cruzamento que eu havia colocado mas não com peso suficiente:
+
+```
+service_role JWT exposto (10 arquivos)        🔴
++ fallback médico institucional sem barreira  🔴 (era 🟠)
+─────────────────────────────────────────
+= privileged pathway to unauthorized clinical attribution
+```
+
+Tradução prática: alguém com posse do service_role pode:
+1. Bypassar TODAS as RLS
+2. Criar appointments/clinical_assessments via INSERT direto
+3. Disparar pipeline orchestrator
+4. Receber `doctor_id = Dr. Ricardo` automaticamente via fallback
+5. **Gerar relatórios clínicos atribuídos a Ricardo sem ele saber**
+
+**Severidade combinada**: 🔴🔴 (multiplica, não soma).
+
+**Mitigação obrigatória ANTES do 1º paciente externo (P0 simultâneos)**:
+1. Rotacionar service_role + remover hardcodes
+2. Bloquear fallback DOCTOR_RESOLUTION em paciente externo (regra constitucional)
+
+### AA.5 — Cenário E adicionado ao red team
+
+GPT propôs cenário extra:
+
+**Cenário E** — Teste sem fallback médico (validar nova regra constitucional)
+```
+Setup:    Paciente sem vínculo professional + flag is_external=true
+Input:    Iniciar AEC e tentar fechar
+Esperado: Sistema BLOQUEIA report generation com erro claro
+          (ClinicalGovernanceError: PRODUCTION_REQUIRES_VINCULO)
+Status:   ❌ NÃO TESTADO — valida a regra constitucional proposta
+          Após implementar regra, smoke test obrigatório.
+```
+
+5 cenários red team agora (era 4): A, B, C, D, E.
+
+### AA.6 — Pequenos ajustes de linguagem (precisão > certeza)
+
+GPT review apontou:
+- ❌ "Sistema clínico estável" (transmite confiança absoluta)
+- ✅ "Sistema clínico consistente dentro do escopo testado" (precisão honesta)
+
+Auditor externo elite valoriza precisão da linguagem. Aplicado em memória do pipeline.
+
+### AA.7 — Anti-kevlar §1 estendido (proposta v1.0.7)
+
+P10 é complemento operacional natural ao Anti-kevlar §1:
+
+```
+Anti-kevlar §1 (atual): "mudanças em quem decide o quê/quando
+                          exigem nova versão Livro Magno"
+
+P10 (complemento):       "toda função de fallback que escreve em
+                          campo de responsabilidade clínica/técnica/
+                          regulatória precisa:
+                          (a) sinalizar formalmente quando dispara
+                          (b) ter regra constitucional QUANDO é
+                              permitido disparar
+                          (c) BLOQUEAR fluxo se condições não
+                              atendidas em produção"
+```
+
+→ Pra próximo Magno v1.0.7: incluir P10 como complemento explícito de anti-kevlar §1.
+
+### AA.8 — O que GPT review #2 me ensinou
+
+**Nível 1**: corrigir classificação errada (🟡→🟠→🔴)
+**Nível 2**: cristalizar princípio (P10 emerge do paralelo)
+**Nível 3**: cruzar dimensões (fallback + service_role = risco multiplicativo)
+**Nível 4**: ajustar linguagem ("estável" → "consistente dentro do escopo")
+
+Auditoria boa não corrige só fatos — força reframe de premissas.
+
+### Frase-âncora AA
+
+> *"P9 cristalizou de erro real (delete prematuro v52). P10 cristalizou de erro de classificação (subestimar fallback). Princípios que valem nascem em ato, não em teoria. 28/04 produziu 2 princípios novos no mesmo dia — ambos protegendo contra padrões de substituição silenciosa (de feature plantada, de responsabilidade clínica)."*
+
+---
+
+*Bloco AA adicionado 2026-04-28 ~18h30 BRT por Claude Opus 4.7 (1M context). Diário 28/04 cresceu de 25→26 blocos (A→Z→AA), ~2200 linhas. Princípio 10 cristalizado vivo. Sistema mais um passo perto de auditável-por-terceiro elite. Pendência única remanescente: 5 cenários red team empíricos em sessão dedicada.*
+
+---
+
 ## BLOCO S — Aplicação TIER 1 + TIER 2 (~11h30 BRT)
 
 ### S.1 — TIER 1 cleanup aplicado (commit 1283598)
