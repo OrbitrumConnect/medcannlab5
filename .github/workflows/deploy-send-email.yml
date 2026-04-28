@@ -1,0 +1,45 @@
+name: Deploy send-email Edge Function
+
+# Deploy automático da Edge `send-email` (Resend) em push.
+# Padrão escalável (igual deploy-video-call-reminders.yml).
+#
+# Dispara em push que toque:
+#   - supabase/functions/send-email/**
+#   - supabase/functions/_shared/**
+#
+# Segredos (já presentes no repo):
+#   SUPABASE_ACCESS_TOKEN  — PAT pessoal
+#   SUPABASE_PROJECT_REF   — itdjkfubfzmvmuxxjoae
+
+on:
+  push:
+    branches: [main, master]
+    paths:
+      - 'supabase/functions/send-email/**'
+      - 'supabase/functions/_shared/**'
+      - '.github/workflows/deploy-send-email.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-send-email-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Deploy send-email
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Supabase CLI
+        uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Deploy Edge Function
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+        run: |
+          supabase functions deploy send-email \
+            --project-ref ${{ secrets.SUPABASE_PROJECT_REF }}
