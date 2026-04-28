@@ -215,11 +215,16 @@ type WidgetProfessional = {
 };
 
 // Mapeamento simples nome→especialidade (sincroniza com FALLBACK_PROFESSIONALS de PatientAppointments)
-function inferSpecialty(name: string | null | undefined, email: string | null | undefined): string {
+// V1.9.97-E: removido parametro email — least data exposure.
+// Antes inferiamos especialidade tambem via email (ex: e.includes('ricardo')),
+// mas isso forcava o dropdown a SELECT email do banco, vazando email de
+// todos os 13 profissionais pra qualquer paciente logado. Agora infere
+// apenas via nome (Ricardo/Eduardo/Faveret cobrem os 2 medicos principais;
+// outros caem no default 'Clínica Geral' — aceitável).
+function inferSpecialty(name: string | null | undefined): string {
   const n = (name || '').toLowerCase();
-  const e = (email || '').toLowerCase();
-  if (n.includes('ricardo') || e.includes('ricardo')) return 'Nefrologia';
-  if (n.includes('eduardo') || e.includes('eduardo') || n.includes('faveret')) return 'Neurologia';
+  if (n.includes('ricardo')) return 'Nefrologia';
+  if (n.includes('eduardo') || n.includes('faveret')) return 'Neurologia';
   return 'Clínica Geral';
 }
 
@@ -254,9 +259,12 @@ const SchedulingWidget = ({
         // V1.9.93-C: incluir 'professional' (en) — eh o type real de 8/13 medicos no banco
         // (Dr. Ricardo Valenca, Eduardo Faveret, Cristina, Dayana, etc). Sem isso o
         // dropdown so listava os 5 admins (sem Dr. Ricardo!).
+        // V1.9.97-E: removido 'email' do select — least data exposure (overexposed
+        // read surface fix). Email nao eh exibido nem usado pra agendamento; era
+        // apenas usado pra inferSpecialty fallback (agora so via nome).
         const { data, error } = await supabase
           .from("users")
-          .select("id, name, email, type")
+          .select("id, name, type")
           .in("type", ["profissional", "professional", "admin"])
           .order("name", { ascending: true });
 
@@ -271,7 +279,7 @@ const SchedulingWidget = ({
           .map((p: any) => ({
             id: p.id,
             name: p.name || "Profissional",
-            specialty: inferSpecialty(p.name, p.email),
+            specialty: inferSpecialty(p.name),
           }));
 
         setProfessionals(mapped);
