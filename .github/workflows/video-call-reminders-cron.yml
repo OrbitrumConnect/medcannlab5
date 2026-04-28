@@ -1,0 +1,50 @@
+name: Cron — video-call-reminders sweep
+
+# V1.9.99 (28/04/2026) — dispara sweep da Edge video-call-reminders a cada 5min.
+# A Edge consulta appointments remotos pendentes nos próximos 35min e envia
+# notificações in-app + email (Resend) quando entrar nas janelas 30/10/1min.
+# Idempotente via 3 colunas reminder_sent_30min/10min/1min em appointments.
+#
+# Segredos:
+#   SUPABASE_URL                — https://itdjkfubfzmvmuxxjoae.supabase.co
+#   SUPABASE_SERVICE_ROLE_KEY   — service_role (chamada server-side)
+
+on:
+  schedule:
+    # A cada 5 minutos. Cron do GitHub Actions tem latência de até ~15min em
+    # horários de pico — aceitável pro caso de uso (lembretes 30/10/1min com
+    # janelas de tolerância 25-35 / 5-15 / 0-3 absorvem o jitter).
+    - cron: '*/5 * * * *'
+  workflow_dispatch: # permite trigger manual pra testes
+
+concurrency:
+  group: video-call-reminders-cron
+  cancel-in-progress: false
+
+jobs:
+  sweep:
+    name: Invoke video-call-reminders Edge
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger sweep
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: |
+          set -e
+          echo "Invoking video-call-reminders sweep at $(date -u)"
+          response=$(curl -s -w "\n%{http_code}" -X POST "$SUPABASE_URL/functions/v1/video-call-reminders" \
+            -H "Authorization: Bearer $SUPABASE_SERVICE_ROLE_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{}')
+
+          body=$(echo "$response" | head -n -1)
+          status=$(echo "$response" | tail -n 1)
+
+          echo "Status: $status"
+          echo "Body: $body"
+
+          if [ "$status" -ne 200 ]; then
+            echo "::error::Sweep retornou status $status"
+            exit 1
+          fi

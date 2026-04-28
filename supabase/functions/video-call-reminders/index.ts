@@ -1,8 +1,15 @@
-// Edge Function: Lembretes Automáticos de Videochamadas
-// Envia notificações 30min, 10min e 1min antes da videochamada
-// Data: 06/02/2026
-
-// ✅ Usar Deno.serve() — API nativa do runtime (recomendado pela documentação Supabase)
+// Edge Function: Lembretes Automáticos de Videochamadas (V1.9.99 — sweep mode)
+//
+// Reescrita 28/04/2026 — antes era v52 modo "individual" (recebia schedule_id de
+// tabela video_call_schedules que NÃO existia). Reescrita pra modo SWEEP que:
+//   1) Lê appointments diretamente (P8: usa o que já existe)
+//   2) Filtra remotos pendentes nos próximos 35min
+//   3) Envia notificação in-app + email Resend pra paciente + profissional
+//   4) Idempotente via 3 colunas reminder_sent_30min/10min/1min
+//   5) Disparada por GitHub Actions cron a cada 5 minutos
+//
+// Polir não inventar: zero tabela nova, zero feature inventada, só liga
+// appointments existente + notifications existente + send-email existente.
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
 const corsHeaders = {
@@ -11,142 +18,138 @@ const corsHeaders = {
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
 }
 
-interface ReminderPayload {
-  schedule_id: string
-  scheduled_at: string
+interface Appointment {
+  id: string
+  patient_id: string | null
+  professional_id: string | null
+  doctor_id: string | null
+  appointment_date: string
+  title: string
+  meeting_url: string | null
+  reminder_sent_30min: boolean
+  reminder_sent_10min: boolean
+  reminder_sent_1min: boolean
+  patient: { name: string; email: string } | null
+  professional: { name: string; email: string } | null
 }
 
+const REMINDER_WINDOWS = [
+  { minutes: 30, sentField: 'reminder_sent_30min' as const, lowerBound: 25, upperBound: 35 },
+  { minutes: 10, sentField: 'reminder_sent_10min' as const, lowerBound: 5, upperBound: 15 },
+  { minutes: 1,  sentField: 'reminder_sent_1min'  as const, lowerBound: 0, upperBound: 3  },
+]
+
 Deno.serve(async (req) => {
-  // Handle CORS preflight
   if (req.method === 'OPTIONS') {
-    return new Response('ok', { 
-      status: 200,
-      headers: corsHeaders 
-    })
+    return new Response('ok', { status: 200, headers: corsHeaders })
   }
+
+  const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? ''
+  const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+  const supabase = createClient(supabaseUrl, serviceRoleKey)
+
+  const startedAt = Date.now()
+  const stats = { scanned: 0, reminders_sent: 0, emails_sent: 0, errors: 0 }
 
   try {
-    const { schedule_id, scheduled_at } = await req.json() as ReminderPayload
-
-    if (!schedule_id || !scheduled_at) {
-      return new Response(
-        JSON.stringify({ error: 'schedule_id e scheduled_at são obrigatórios' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
-    }
-
-    const supabaseClient = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-    )
-
-    // Buscar agendamento
-    const { data: schedule, error: scheduleError } = await supabaseClient
-      .from('video_call_schedules')
-      .select('*, professional:professional_id(id, name, email), patient:patient_id(id, name, email)')
-      .eq('id', schedule_id)
-      .single()
-
-    if (scheduleError || !schedule) {
-      return new Response(
-        JSON.stringify({ error: 'Agendamento não encontrado' }),
-        { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
-    }
-
-    const scheduledTime = new Date(scheduled_at)
     const now = new Date()
-    const timeUntilCall = scheduledTime.getTime() - now.getTime()
+    const sweepUpper = new Date(now.getTime() + 35 * 60 * 1000)
 
-    // Calcular tempos de lembretes
-    const reminder30min = scheduledTime.getTime() - (30 * 60 * 1000)
-    const reminder10min = scheduledTime.getTime() - (10 * 60 * 1000)
-    const reminder1min = scheduledTime.getTime() - (1 * 60 * 1000)
+    const { data: appointments, error: queryError } = await supabase
+      .from('appointments')
+      .select(`
+        id, patient_id, professional_id, doctor_id,
+        appointment_date, title, meeting_url,
+        reminder_sent_30min, reminder_sent_10min, reminder_sent_1min,
+        patient:patient_id(name, email),
+        professional:professional_id(name, email)
+      `)
+      .eq('is_remote', true)
+      .eq('status', 'scheduled')
+      .gte('appointment_date', now.toISOString())
+      .lte('appointment_date', sweepUpper.toISOString())
+      .or('reminder_sent_30min.eq.false,reminder_sent_10min.eq.false,reminder_sent_1min.eq.false')
 
-    const reminders = [
-      {
-        time: reminder30min,
-        minutes: 30,
-        sent: schedule.reminder_sent_30min
-      },
-      {
-        time: reminder10min,
-        minutes: 10,
-        sent: schedule.reminder_sent_10min
-      },
-      {
-        time: reminder1min,
-        minutes: 1,
-        sent: schedule.reminder_sent_1min
-      }
-    ]
+    if (queryError) {
+      console.error('[reminders] Query error:', queryError)
+      return jsonResponse({ ok: false, error: queryError.message, stats }, 500)
+    }
 
-    // Verificar se algum lembrete deve ser enviado agora
-    for (const reminder of reminders) {
-      const timeUntilReminder = reminder.time - now.getTime()
-      
-      // Se o lembrete deve ser enviado nos próximos 5 minutos e ainda não foi enviado
-      if (timeUntilReminder > 0 && timeUntilReminder <= 5 * 60 * 1000 && !reminder.sent) {
-        // Criar notificações para profissional e paciente
-        const notificationMessage = `Lembrete: Videochamada em ${reminder.minutes} minuto${reminder.minutes > 1 ? 's' : ''} (${new Date(scheduledTime).toLocaleString('pt-BR')})`
+    stats.scanned = appointments?.length ?? 0
 
-        // Notificação para profissional
-        await supabaseClient.from('notifications').insert({
-          user_id: schedule.professional_id,
-          type: 'video_call_scheduled',
-          title: `Lembrete: Videochamada em ${reminder.minutes} min`,
-          message: notificationMessage,
-          is_read: false,
-          metadata: {
-            schedule_id: schedule_id,
-            reminder_minutes: reminder.minutes
+    for (const apt of (appointments ?? []) as unknown as Appointment[]) {
+      const scheduledTime = new Date(apt.appointment_date)
+      const minutesUntil = (scheduledTime.getTime() - now.getTime()) / (60 * 1000)
+
+      for (const window of REMINDER_WINDOWS) {
+        if (apt[window.sentField]) continue
+        if (minutesUntil < window.lowerBound || minutesUntil > window.upperBound) continue
+
+        const formattedTime = scheduledTime.toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' })
+        const titleMessage = `Lembrete: Videochamada em ${window.minutes} ${window.minutes === 1 ? 'minuto' : 'minutos'}`
+        const fullMessage = `${titleMessage} (${formattedTime}). ${apt.meeting_url ? `Link: ${apt.meeting_url}` : 'Link da chamada será disponibilizado.'}`
+
+        const recipients = [
+          { id: apt.patient_id, contact: apt.patient, role: 'paciente' },
+          { id: apt.professional_id, contact: apt.professional, role: 'profissional' },
+        ].filter((r) => r.id && r.contact)
+
+        for (const r of recipients) {
+          try {
+            await supabase.from('notifications').insert({
+              user_id: r.id,
+              type: 'video_call_reminder',
+              title: titleMessage,
+              message: fullMessage,
+              is_read: false,
+              metadata: {
+                appointment_id: apt.id,
+                reminder_minutes: window.minutes,
+                meeting_url: apt.meeting_url ?? null,
+              },
+            })
+            stats.reminders_sent++
+
+            if (r.contact?.email) {
+              const emailRes = await supabase.functions.invoke('send-email', {
+                body: {
+                  to: r.contact.email,
+                  subject: titleMessage,
+                  html: `<p>Olá <strong>${r.contact.name ?? ''}</strong>,</p><p>${fullMessage}</p><p><em>MedCannLab — Plataforma Nôa Esperança</em></p>`,
+                },
+              })
+              if (!emailRes.error) stats.emails_sent++
+              else console.warn('[reminders] Email failed:', r.contact.email, emailRes.error)
+            }
+          } catch (err) {
+            stats.errors++
+            console.error(`[reminders] Erro notify ${r.role} apt ${apt.id}:`, err)
           }
-        })
+        }
 
-        // Notificação para paciente
-        await supabaseClient.from('notifications').insert({
-          user_id: schedule.patient_id,
-          type: 'video_call_scheduled',
-          title: `Lembrete: Videochamada em ${reminder.minutes} min`,
-          message: notificationMessage,
-          is_read: false,
-          metadata: {
-            schedule_id: schedule_id,
-            reminder_minutes: reminder.minutes
-          }
-        })
-
-        // Marcar como enviado no agendamento
-        const updateField = `reminder_sent_${reminder.minutes}min`
-        await supabaseClient
-          .from('video_call_schedules')
-          .update({ [updateField]: true })
-          .eq('id', schedule_id)
-
-        // TODO: Enviar email/WhatsApp aqui
-        // Por enquanto, apenas notificações in-app
+        await supabase
+          .from('appointments')
+          .update({ [window.sentField]: true, updated_at: now.toISOString() })
+          .eq('id', apt.id)
       }
     }
 
-    return new Response(
-      JSON.stringify({ 
-        success: true, 
-        message: 'Lembretes agendados com sucesso',
-        schedule_id 
-      }),
-      { 
-        status: 200, 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-      }
-    )
-  } catch (error) {
-    console.error('Erro ao processar lembretes:', error)
-    return new Response(
-      JSON.stringify({ error: error.message }),
-      { 
-        status: 500, 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-      }
-    )
+    const durationMs = Date.now() - startedAt
+    await supabase.from('noa_logs').insert({
+      interaction_type: 'video_call_reminders_sweep',
+      payload: { ...stats, duration_ms: durationMs, sweep_at: now.toISOString() },
+    }).then(() => null, (e) => console.warn('[reminders] log failed:', e))
+
+    return jsonResponse({ ok: true, stats, duration_ms: durationMs })
+  } catch (err) {
+    console.error('[reminders] Fatal:', err)
+    return jsonResponse({ ok: false, error: String(err), stats }, 500)
   }
 })
+
+function jsonResponse(body: Record<string, unknown>, status = 200): Response {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+  })
+}
