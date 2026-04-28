@@ -61,7 +61,7 @@ curl -X POST "https://api.supabase.com/v1/projects/itdjkfubfzmvmuxxjoae/database
 | Auth | Supabase Auth (email apenas — Google deployed mas não usado) |
 | IA Chat | OpenAI `gpt-4o-2024-08-06` |
 | IA Escriba (V1.9.84) | OpenAI `gpt-4o-mini` (temperature 0.1) |
-| Email | **Resend** (`RESEND_API_KEY`) |
+| Email | **Resend** (`RESEND_API_KEY` + `RESEND_FROM_EMAIL=noreply@medcannlab.com.br`) — domínio verified 28/04, envia pra externos OK |
 | Vídeo | **WiseCare V4H** (`session-manager.homolog.v4h.cloud` — ⚠️ HOMOLOG) |
 | Calendar | Google Calendar (sync via `sync-gcal` — ⚠️ half-impl) |
 | Origem histórica | App nasceu na **Lovable** (no-code), CORS de send-email permite `*.lovable.app` |

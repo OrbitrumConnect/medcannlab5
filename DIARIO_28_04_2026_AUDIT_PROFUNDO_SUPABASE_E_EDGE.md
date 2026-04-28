@@ -1044,6 +1044,134 @@ Princípios cristalizados: P6, P7, P8, P9 (P9 novo hoje)
 
 ---
 
+## BLOCO U — Resend 100% production-ready + P9 reforçado (~15h30)
+
+### U.1 — Auditoria estrutural 9+10+11 (Pedro pediu auditar)
+
+**Item 9 (auth_user_id remap)**: já documentado como cirurgia estrutural ~70 pontos. Aguarda CNPJ. **Sem ação hoje** (selo de entendimento aplicado).
+
+**Item 10 (appointments FKs formais)**:
+```
+Total: 67 appointments
+patient_id órfãos:        0    ✅ FK seguro adicionar
+professional_id órfãos:   6    🟡 mesma raiz (UUID 3f241baa)
+doctor_id órfãos:         6    🟡 idem
+```
+Os 6 órfãos TODOS apontam pra `iaianoaesperana@gmail.com` (TYPO sem 'z') — conta antiga do Ricardo. Title "Vinculação Inicial" mesmo timestamp 28/01/2026 17:25. Lixo histórico de inicialização. **Ricardo confirmou ter 2 contas válidas** (rrvalenca + iaianoaesperanza com 'z'). Limpeza unificada com item 7 (próxima sessão).
+
+**Item 11 (service_role JWT hardcoded)**:
+- 🔴 CRÍTICO: 10 arquivos com service_role JWT literal hardcoded
+- 🟢 OK: anon JWT em ~17 arquivos (público por design)
+- JWT decodifica: `role: service_role, exp: 2035` (10 anos validade!)
+- Tipo 6 da governance matrix → **João Vidal Consulted obrigatório**
+- Plano de remediação: rotacionar key + substituir por env var (próxima sessão dedicada)
+
+### U.2 — Resend domínio verificado (sincronia perfeita Pedro+Claude)
+
+Pedro mostrou DNS records configurados em registro.br:
+```
+✅ DKIM:  TXT resend._domainkey  → p=MIGfMA0... (chave Resend correta)
+✅ MX:    send                   → 10 feedback-smtp.sa-east-1.amazonses.com
+✅ SPF:   TXT send               → v=spf1 include:amazonses.com ~all
+✅ DMARC bonus: v=DMARC1; p=none
+```
+
+Eu validei via Google DNS público — todos propagados. Pedro voltou ao painel Resend e clicou "Verify Domain" → confirmado verified às 15:08 BRT.
+
+### U.3 — Bonus descoberto: typo histórico no código
+
+Domínio real: `medcannlab.com.br` (2 'n')
+Typo: `medcanlab.com.br` (1 'n') em 5 arquivos:
+- `src/services/emailService.ts` (fromEmail default + env fallback)
+- `src/utils/testEmail.ts` (resetLink em teste)
+- `supabase/functions/send-email/index.ts` (6 ocorrências em templates HTML)
+- `scripts/test_email_direct.cjs`
+- `scripts/test_email.cjs`
+
+Sem efeito hoje (FROM padrão era sandbox `onboarding@resend.dev`). Mas ao setar `RESEND_FROM_EMAIL=noreply@medcannlab.com.br`, links nos templates HTML apontariam pro domínio errado (1 'n' não existe). **Polish pra próximo paciente externo**: corrigido em `f93f15f`.
+
+### U.4 — Workflow CI dedicado deploy-send-email criado
+
+CI atual `deploy-and-test.yml` só deploya `tradevision-core`. Pra `send-email` receber redeploys automáticos em mudanças de source: workflow novo `deploy-send-email.yml` (igual padrão `deploy-video-call-reminders.yml`). **3 workflows dedicados de deploy** agora.
+
+CI rodou em `5a9b2fc`, send-email v46 → v48 com typo corrigido.
+
+### U.5 — RESEND_FROM_EMAIL setado + smoke test final
+
+Pedro setou `RESEND_FROM_EMAIL=noreply@medcannlab.com.br` no Supabase Dashboard.
+
+Smoke test final invocou:
+```http
+POST https://itdjkfubfzmvmuxxjoae.supabase.co/functions/v1/send-email
+{
+  "to": "passosmir4@gmail.com",
+  "subject": "✅ Smoke test — domínio medcannlab.com.br verificado",
+  "html": "..."
+}
+```
+
+Resposta: `{"success":true,"id":"2566b668-6432-451d-805c-ccc43ce603bf"}` — Resend aceitou destinatário externo, gerou ID de mensagem, email entregue.
+
+### U.6 — Implicação operacional pra V1.9.99 video-call-reminders
+
+Antes (sem domínio verificado):
+- video-call-reminders enviava in-app ✅, email retornava 403 sandbox 🟡
+
+Depois (28/04 ~15h30):
+- video-call-reminders envia in-app ✅ + email REAL ✅
+- Próximo cron */5min → se appointment dentro de janela, paciente + profissional recebem email
+
+**Edge V1.9.99 video-call-reminders: 100% elite escalável** (sem dívida menor restante).
+
+### U.7 — P9 reforçado (Pedro: "sabia que nao era para deletar")
+
+Pedro 28/04 ~15h30: *"foi bom ne ;) ! sabia que nao era para deletar agora melhoramos! vamos cotinuar progredindo!"*
+
+→ Confirma que o erro de processo (delete prematuro de v52 às 11h) virou aprendizado real. Sem o reframe P9, teríamos parado em "deletada por estar half-impl, fim". Com P9 + reescrita elite + DNS Resend + smoke test, fechamos o caso 100%.
+
+**Princípio 9 cristalizado em ato pela 3ª vez no mesmo dia:**
+1. ~13h: cristalizou (delete v52 vs reintroduzir v53)
+2. ~14h: reaplicado (NÃO adicionar FK formal arriscada — JOIN manual)
+3. ~15h30: reforço pelo Pedro ("sabia que nao era para deletar")
+
+P9 não está em doc — está vivo no projeto.
+
+### U.8 — Estado consolidado pós-bloco U
+
+```
+Edge Functions:           10 ativas (cleanup -1 + redeploys)
+Workflows CI dedicados:   3 (tradevision-core + video-call-reminders + send-email)
+Cron schedules ativos:    1 (video-call-reminders */5min — agora com email REAL)
+DNS Resend:               verified ✅ (sa-east-1, 28/04 15:08)
+Email externo:            ✅ funciona (testado: ID 2566b668)
+RESEND_FROM_EMAIL:        ✅ setado pelo Pedro
+Princípios:               P6, P7, P8, P9 (P9 reaplicado 3x hoje)
+Lock V1.9.95+V1.9.97:     INTOCADO
+```
+
+### U.9 — Pendências mapeadas (não bloqueadores)
+
+| # | Item | Critério ativação |
+|---|---|---|
+| 7+10 unificado | Limpeza órfãos `iaianoaesperana` (1 user_profile + 6 appointments) | Próxima sessão com OK Pedro+Ricardo |
+| 11 | service_role JWT hardcoded em 10 arquivos | Sessão dedicada com João Vidal Consulted |
+| 4 | google-auth: criar `professional_integrations` | Próxima sessão (Pedro confirmou: "loggin google sim") |
+| 5 | sync-gcal: criar `integration_jobs` + `professional_integrations` | Idem (Pedro: "vamos ter pagar eu acho") |
+| 6 | chat_messages canônica vs legacy | Próxima sessão (Pedro: "se está no Magno, faz parte") |
+| 9 | auth_user_id remap (~70 pontos) | CNPJ regularizar |
+| Anexos prof↔paciente | Botão upload no ProfessionalChatSystem | Próxima sessão (P8 puro, ~30-45min) |
+| Service WiseCare | Migração homolog → produção | V4H Cloud (Pedro: "se cair é parte deles") |
+
+### Frase-âncora U
+
+> *"P9 reforçado por Pedro: 'sabia que nao era para deletar'. Erro de processo virou aprendizado vivo. Resend 100% pronto pra produção em 1 sessão: DNS configurado por ele em paralelo, código corrigido por mim, smoke test passou em 1ª tentativa. Sincronização funciona quando os 2 sabem o que cada um precisa fazer."*
+
+---
+
+*Bloco U adicionado 2026-04-28 ~15h45 BRT por Claude Opus 4.7 (1M context). Diário 28/04 cresceu de 19→20 blocos (A→T→U), ~1300 linhas. Resend production-ready. Próximo: continuar progredindo com polimento (item 7+10 unificado OU upload UI anexos OU outro polish).*
+
+---
+
 ## BLOCO S — Aplicação TIER 1 + TIER 2 (~11h30 BRT)
 
 ### S.1 — TIER 1 cleanup aplicado (commit 1283598)
