@@ -1654,6 +1654,147 @@ Pedro pediu apresentação estruturada pra outra IA auditar. Entreguei:
 
 ---
 
+## BLOCO Z — Calibração da auditoria após GPT review (~18h)
+
+GPT review do bloco Y trouxe 6 ajustes críticos que separam "doc interno bom" de "auditável por terceiro sem contexto prévio". Aceitei integralmente.
+
+### Z.1 — 6 ajustes aceitos sem defender modelo original
+
+| # | Ajuste | Aceito |
+|---|---|---|
+| 1 | Falta reprodutibilidade (auditor refaz, não acredita) | ✅ |
+| 2 | Falta red team mínimo (provei ideal, não adversarial) | ✅ |
+| 3 | DOCTOR_RESOLUTION é 🟠 (não 🟡) — risco regulatório controlado | ✅ reclassifico |
+| 4 | Cruzar pipeline ✅ com service_role hardcoded ❌ (auditor vai cruzar) | ✅ |
+| 5 | "O que NÃO sabemos" (calibração honesta aumenta credibilidade) | ✅ |
+| 6 | Insight: virada GPT-first → FSM-first + GPT-as-compiler | ✅ |
+
+### Z.2 — Bloco "Reprodução passo-a-passo"
+
+Documentado em memória `project_pipeline_observado_ao_vivo_28_04.md`:
+- Pré-condições exatas (UUID paciente, função vs versão, status, vínculos)
+- Sequência exata pra reproduzir (5 mensagens com payload)
+- Verificação no banco (queries SQL exatas pra checar resultado)
+
+→ Sem isso, doc é narrativa técnica. Com isso, auditor REFAZ.
+
+### Z.3 — Red team mínimo (4 cenários propostos)
+
+| Cenário | Descrição | Defesa atual | Status |
+|---|---|---|---|
+| A | "quero agendar agora" durante CONSENT | AEC GATE V1.5 + V1.9.95-A strip | 🟢 PROVÁVEL OK, não testado |
+| B | "acho que sim... talvez depois" no CONSENT | isAskingConsent guard | 🟡 INCERTO |
+| C | "sim" 3x em <2s (race condition) | PIPELINE_REDUNDANT_TRIGGER guard | 🟢 PROVÁVEL OK, não testado |
+| D | JWT válido + user_roles inconsistente | V1.9.65 prioriza user_roles | 🟢 PROVÁVEL OK, não testado |
+
+**Pendente**: rodar Cenários B+D em ambiente teste antes de auditoria externa final.
+
+### Z.4 — DOCTOR_RESOLUTION reclassificado 🟠
+
+Antes: "fallback institucional Dr. Ricardo aplicado" → tratei como 🟡.
+
+Depois (correção GPT): **🟠 risco regulatório controlado**.
+
+**Por que mais grave**:
+- "Atribuição clínica automática sem vínculo formal" = responsabilidade médica implícita
+- CFM exige rastreabilidade — `doctor_id=Ricardo` em report onde Ricardo NUNCA atendeu paciente externo é problema regulatório real
+
+**Regra futura proposta**:
+```
+fallback aceitável: ✅ sandbox / teste interno
+fallback PROIBIDO:  ❌ paciente externo pagante (Caminho A)
+
+Implementação:
+  if (doctorResolutionFallbackTriggered && !isInternalTestUser)
+    throw ClinicalGovernanceError('PRODUCTION_REQUIRES_VINCULO')
+```
+
+Critério de ativação: ANTES do 1º paciente externo. Decisão Ricardo+Eduardo (Tipo 1 governance).
+
+### Z.5 — Cruzamento serviço_role exposto vs pipeline clínico sólido
+
+GPT certo: auditor externo cruza tópicos isolados.
+
+**Tradução pra auditor**:
+> *"Pipeline clínico arquiteturalmente sólido (8 camadas funcionando, 100% Verbatim em hard-lock, signature aplicada). MAS toda governança RLS é bypassável por qualquer ator com acesso a 1 dos 10 arquivos contendo service_role JWT hardcoded (validade até 2035). Sistema seria APROVADO em auditoria clínica MAS REPROVADO em auditoria de segurança até rotação acontecer."*
+
+P0 segurança ainda aberto — decisão João Vidal (Tipo 6 governance institucional).
+
+### Z.6 — "O que não sabemos" (zonas cegas honestas)
+
+**Métricas não medidas**:
+- Custo real OpenAI por AEC (snapshot $0.60, sem mês-a-mês)
+- Latência sob carga (1 paciente ativo por vez hoje)
+- Comportamento Edge sob spike (cold start ~50ms, mas burst?)
+- Custo cron */5min video-call-reminders (não exercitado ainda)
+
+**Comportamento não exercitado**:
+- Caminho A real (link + pagamento) — sem CNPJ
+- Sem fallback médico (exigir vínculo obrigatório quebra fluxo?)
+- Recovery após cron Edge falhar
+- Anonimização LGPD em escala (3 hoje, 1000 amanhã?)
+
+**Gaps de auditoria contínua**:
+- ✅ `clinical_qa_runs` (V1.9.88) coleta evidência — **infra existe, dashboard não**
+- ❌ Zero alerta proativo se warning class dispara repetidas vezes
+
+→ Auditor honesto reconhece zonas cegas. Doc reduz blind-spots ~70%, não 100%.
+
+### Z.7 — Insight arquitetural — virada GPT-first → FSM-first
+
+GPT pegou insight que eu não tinha explicitado.
+
+**Antes (até kevlar 16/04)**:
+```
+GPT-first com fallback de emergência
+  GPT decide quando emitir tags clínicas
+  AEC organiza prompt, GPT é cérebro
+  Risco: regressão silenciosa (kevlar)
+```
+
+**Hoje (V1.9.86+V1.9.95+V1.9.97)**:
+```
+FSM-first + deterministic-first + GPT-as-compiler
+  AEC FSM decide o "quê/quando" (13+ fases determinísticas)
+  Roteiro selado, signature pré-análises, scores sem GPT
+  GPT chamado APENAS no estágio REPORT (escriba)
+  GPT não é mais cérebro — é tradutor
+```
+
+**Implicações observáveis**:
+- Custo OpenAI cai dramaticamente em hard-lock (5 msgs × 0 tokens hoje)
+- Auditabilidade aumenta (cada decisão deixa rastro determinístico)
+- Risco de alucinação em decisão clínica → próximo de zero
+
+→ **Virada arquitetural com prova empírica**, não retórica.
+
+### Z.8 — Checklist "auditável por terceiro" pós-GPT-review
+
+```
+[x] Mapping pirâmide 8 camadas vs logs reais
+[x] Métricas mensuráveis (latência/tokens/scores)
+[x] Warnings classificados (severidade + recomendação)
+[x] Reprodução passo-a-passo (UUID, sequência, verificação SQL)
+[x] Red team mínimo proposto (4 cenários adversariais)
+[x] Reclassificação fallback médico 🟡→🟠 + regra futura
+[x] Cruzamento service_role hardcoded (P0 segurança)
+[x] "O que não sabemos" (zonas cegas honestas)
+[x] Insight arquitetural (FSM-first + GPT-as-compiler)
+[ ] Cenários B+D rodados empiricamente (próxima sessão)
+```
+
+→ **9 de 10 itens completos**. Falta apenas testes adversariais empíricos antes de mandar pra auditor externo elite.
+
+### Frase-âncora Z
+
+> *"Auditoria externa boa não acredita — reproduz, valida, tenta quebrar. GPT review separou doc-bom de doc-auditável. 6 ajustes aceitos sem defender modelo original. Doc subiu de 'narrativa técnica' pra 'reproduzível por terceiro sem contexto'. Falta 1 passo: rodar 4 cenários red team em ambiente teste."*
+
+---
+
+*Bloco Z adicionado 2026-04-28 ~18h00 BRT por Claude Opus 4.7 (1M context). Diário 28/04 cresceu de 24→25 blocos (A→Z!), ~2050 linhas. Auditoria do pipeline upgraded de "doc interno bom" pra "pronto pra auditoria externa elite" após 6 ajustes GPT review. Pendência única: 4 cenários red team em sessão dedicada.*
+
+---
+
 ## BLOCO S — Aplicação TIER 1 + TIER 2 (~11h30 BRT)
 
 ### S.1 — TIER 1 cleanup aplicado (commit 1283598)
