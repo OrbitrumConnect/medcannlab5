@@ -1540,6 +1540,120 @@ Criado `docs/CHAT_AUTH_MATRIX.md` formalizando:
 
 ---
 
+## BLOCO Y — Análise pipeline AO VIVO via logs jvbiocann (~17h30)
+
+### Y.1 — Contexto
+
+João Vidal (4º sócio institucional) testou AEC end-to-end como paciente após desbloqueio do consent loop hoje. Capturou logs reais da Edge `tradevision-core` durante 5 fases finais + pipeline orchestrator. Trouxe pra Pedro pedir auditoria externa elite. Pedro pediu eu estruturar antes de levar pra outra IA.
+
+### Y.2 — Pirâmide 8 camadas confirmada empiricamente
+
+**Pela primeira vez observamos cada camada deixando marca em log real**:
+
+```
+Camada 0 (REGRA HARD §1)   → ⏳ AEC GATE V1.5 retém agendamento (5x)
+Camada 1 (COS Kernel)      → STATE-FIRST + HYBRID BYPASS ativos
+Camada 2 (AEC FSM)         → 5 fases sequenciais sem regressão
+Camada 3 (Verbatim First)  → 100% bypass GPT em hard-lock 🎯
+Camada 4 (AEC GATE V1.5)   → soberania fluxo clínico mantida
+Camada 5 (GPT)             → chat=0 chamadas, escriba=1 (REPORT)
+Camada 6 (Pós-processamento)→ aiResponse validado
+Camada 7 (Pipeline)        → cascata START→DONE 8 stages, ~20s
+```
+
+**Sistema operando exatamente como o Livro Magno descreve.** Não é arquitetura de PowerPoint — é código rodando.
+
+### Y.3 — V1.9.86 entrega MAIS do que vende
+
+Doc 28/04 (audit anterior) registrou: *"V1.9.86 Verbatim First validado 46% (141/305 nas últimas 4h)"*.
+
+Empírico nesta sessão: **100% de bypass em hard-lock phases** (5/5 mensagens com `tokensUsed: 0`).
+
+**Reconciliação**: 46% é média geral incluindo fases livres (`MAIN_COMPLAINT`, etc.) onde GPT ainda fala. Hard-lock phases (`OBJECTIVE_QUESTIONS` em diante) são ~100% verbatim por design. **Padrão correto**: quanto mais perto do fechamento, MENOS GPT, MAIS determinístico.
+
+### Y.4 — Pipeline orchestrator end-to-end (~20s)
+
+```
+T+0     ORCHESTRATOR detecta fechamento clínico
+T+0     PIPELINE_STAGE START
+T+0.5   DOCTOR_RESOLUTION ⚠️ fallback institucional Dr. Ricardo
+T+0.7   PIPELINE_STAGE REPORT (gpt-4o-mini escriba V1.9.84)
+T+6.5   SCORES calculated=42 confidence=high
+T+6.7   REPORT_GENERATED (report_id: d3d987ae...)
+T+6.7   SIGNATURE hash=2dea39424756d446...
+T+6.8   PIPELINE_STAGE AXES + RATIONALITY (parallelos)
+T+19.9  AXES_SYNCED + RATIONALITY_SYNCED
+T+20.1  PIPELINE_STAGE DONE
+T+20.3  DB SAVED final
+```
+
+**Apenas 1 chamada GPT** (escriba). Demais stages determinísticos. Signature aplicada **antes** de análises derivadas (boa prática forense — imutabilidade do report).
+
+### Y.5 — Warning: DOCTOR_RESOLUTION fallback silencioso
+
+```
+🩺 [DOCTOR_RESOLUTION] Sem vínculo válido — fallback institucional Dr. Ricardo aplicado.
+```
+
+**Análise**:
+- ✅ Defensivo: sistema não falha sem médico vinculado
+- 🟡 jvbiocann é paciente teste (sem vínculo `patient↔professional` formal no banco)
+- 🟡 **Bandeira amarela em paciente externo pagante**: `doctor_id` "falso" pode virar problema regulatório CFM (rastreabilidade do médico responsável)
+
+**Recomendação**:
+- P1 polish: telemetria contador fallback em `noa_logs`
+- P0 antes do 1º paciente externo: alerta send-email em fallback ou exigir vínculo pré-AEC
+- Decisão Ricardo+Eduardo (Tipo 1 governance — clínico)
+
+### Y.6 — Métricas observadas
+
+| Métrica | Valor | Implicação |
+|---|---|---|
+| Mensagens hard-lock | 5/5 = 100% | Verbatim cobertura total |
+| `tokensUsed` em hard-lock | 0 | Zero custo OpenAI no fluxo principal |
+| Latência boot Edge | 42-56ms | Performante |
+| Latência mensagem | ~2s | UX clínica OK |
+| Latência pipeline pós-AEC | ~20s | 1 GPT + processamento, eficiente |
+| Histórico contexto | 20 msgs fixo | Window previsível |
+| `clinical_score` | 42 (high) | Scoring funcional |
+| Signature hash | OK aplicada | Imutabilidade pré-análise |
+
+### Y.7 — Comparação com auditorias anteriores
+
+Auditoria de 27-28/04 (sessão presencial Pedro+Ricardo+João) declarou: *"7 AECs completas / 141 Verbatim bypass (46.2%) / 38 reports signed_hash"*.
+
+Hoje (28/04 ~17h): **+1 AEC completa** (jvbiocann), com 100% verbatim observado em hard-lock + signature funcionando + pipeline orchestrator 8 stages sem erro.
+
+**Tendência confirmada**: V1.9.86+V1.9.95+V1.9.97 estão maduros. Sistema clínico estável.
+
+### Y.8 — Documento estruturado entregue ao Pedro pra IA externa
+
+Pedro pediu apresentação estruturada pra outra IA auditar. Entreguei:
+1. Cadeia 15 estágios por mensagem (com timestamps)
+2. Pipeline orchestrator pós-fechamento (8 stages com tempos)
+3. Mapping pirâmide 8 camadas vs logs reais
+4. Métricas mensuráveis
+5. Warnings classificados (severidade + recomendação)
+6. Veredito: sistema operando dentro do desenho, 1 warning conhecido (DOCTOR_RESOLUTION fallback)
+
+### Y.9 — Implicações arquiteturais consolidadas
+
+1. **AEC core sólido** — Lock V1.9.95+V1.9.97 justificado empiricamente
+2. **Pipeline pode escalar** — 20s end-to-end é eficiente pra produção
+3. **Custo OpenAI baixo no fluxo principal** — verbatim cobre hard-lock, escriba é gpt-4o-mini barato
+4. **Próxima dívida P0** mapeada: alertar fallback DOCTOR_RESOLUTION em paciente externo (Pedro decide quando)
+5. **Auditoria contínua existe**: tabela `clinical_qa_runs` (V1.9.88) coleta evidências automaticamente — usar pra detectar regressões
+
+### Frase-âncora Y
+
+> *"Log empírico vence narrativa. 5 fases observadas, 0 violação de princípio fundador, 1 warning conhecido. Sistema clínico funcionando exatamente como Magno descreve = raro em early-stage. Cuidar do que ainda falta sem mexer no que está funcionando — Princípio 8 puro."*
+
+---
+
+*Bloco Y adicionado 2026-04-28 ~17h45 BRT por Claude Opus 4.7 (1M context). Diário 28/04 cresceu de 23→24 blocos (A→Y), ~1900 linhas. Sessão histórica continua — pipeline AEC observado AO VIVO confirma maturidade clínica. Próximo: continuar polimento do backlog P8 (atalho sidebar prof / google-auth tabela / etc.).*
+
+---
+
 ## BLOCO S — Aplicação TIER 1 + TIER 2 (~11h30 BRT)
 
 ### S.1 — TIER 1 cleanup aplicado (commit 1283598)
