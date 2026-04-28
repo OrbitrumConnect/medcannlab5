@@ -47,13 +47,13 @@ export interface EmailTemplateData {
 export class EmailService {
   private static instance: EmailService
   private apiKey: string | null = null
-  private fromEmail: string = 'noreply@medcanlab.com.br'
+  private fromEmail: string = 'noreply@medcannlab.com.br'
   private fromName: string = 'MedCannLab 3.0'
   private baseUrl: string = ''
 
   private constructor() {
     // Configuração básica — API key agora fica no server (Edge Function)
-    this.fromEmail = import.meta.env.VITE_EMAIL_FROM || 'noreply@medcanlab.com.br'
+    this.fromEmail = import.meta.env.VITE_EMAIL_FROM || 'noreply@medcannlab.com.br'
     this.fromName = import.meta.env.VITE_EMAIL_FROM_NAME || 'MedCannLab 3.0'
     this.baseUrl = import.meta.env.VITE_APP_URL || window.location.origin
   }

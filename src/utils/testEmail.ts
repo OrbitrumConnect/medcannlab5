@@ -72,7 +72,7 @@ export async function testAllTemplates(testEmail: string) {
                 appointmentTime: '14:00',
                 prescriptionTitle: 'Prescrição de Teste',
                 assessmentId: 'test-assessment-123',
-                resetLink: 'https://medcanlab.com.br/reset-password?token=test',
+                resetLink: 'https://medcannlab.com.br/reset-password?token=test',
                 message: 'Esta é uma mensagem de teste'
             })
             results[template] = result

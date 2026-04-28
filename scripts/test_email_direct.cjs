@@ -14,7 +14,7 @@ async function test() {
         body: JSON.stringify({
             to: 'rrvalenca@gmail.com',
             template: 'welcome',
-            data: { name: 'Dr. Ricardo', appUrl: 'https://medcanlab.com.br' }
+            data: { name: 'Dr. Ricardo', appUrl: 'https://medcannlab.com.br' }
         })
     });
 

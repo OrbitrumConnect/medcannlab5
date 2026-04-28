@@ -92,7 +92,7 @@ const templates: Record<string, (data: Record<string, string>) => { subject: str
         <li>🤖 Consultar a Nôa, nossa IA assistente</li>
         <li>📅 Agendar e gerenciar suas consultas</li>
       </ul>
-      <center><a href="${data.appUrl || 'https://medcanlab.com.br'}" class="btn">Acessar Plataforma</a></center>
+      <center><a href="${data.appUrl || 'https://medcannlab.com.br'}" class="btn">Acessar Plataforma</a></center>
     `, 'Bem-vindo ao MedCannLab')
     }),
 
@@ -108,7 +108,7 @@ const templates: Record<string, (data: Record<string, string>) => { subject: str
         <p>👨‍⚕️ <strong>Profissional:</strong> Dr(a). ${data.doctorName || ''}</p>
         <p>📍 <strong>Tipo:</strong> ${data.type || 'Teleconsulta'}</p>
       </div>
-      <center><a href="${data.appUrl || 'https://medcanlab.com.br'}" class="btn">Ver Detalhes</a></center>
+      <center><a href="${data.appUrl || 'https://medcannlab.com.br'}" class="btn">Ver Detalhes</a></center>
     `, 'Consulta Confirmada')
     }),
 
@@ -122,7 +122,7 @@ const templates: Record<string, (data: Record<string, string>) => { subject: str
         <p>📄 <strong>Relatório:</strong> ${data.reportName || 'Relatório Clínico'}</p>
         <p>📅 <strong>Data:</strong> ${data.date || new Date().toLocaleDateString('pt-BR')}</p>
       </div>
-      <center><a href="${data.appUrl || 'https://medcanlab.com.br'}" class="btn">Ver Relatório</a></center>
+      <center><a href="${data.appUrl || 'https://medcannlab.com.br'}" class="btn">Ver Relatório</a></center>
     `, 'Relatório Compartilhado')
     }),
 
@@ -136,7 +136,7 @@ const templates: Record<string, (data: Record<string, string>) => { subject: str
         <p>📋 <strong>Tipo:</strong> ${data.prescriptionType || 'Cannabis Medicinal'}</p>
         <p>📅 <strong>Data:</strong> ${data.date || new Date().toLocaleDateString('pt-BR')}</p>
       </div>
-      <center><a href="${data.appUrl || 'https://medcanlab.com.br'}" class="btn">Ver Prescrição</a></center>
+      <center><a href="${data.appUrl || 'https://medcannlab.com.br'}" class="btn">Ver Prescrição</a></center>
     `, 'Prescrição Pronta')
     }),
 
@@ -147,7 +147,7 @@ const templates: Record<string, (data: Record<string, string>) => { subject: str
       <p>Olá!</p>
       <p>O(a) <span class="highlight">Dr(a). ${data.doctorName || ''}</span> convidou você para se conectar no MedCannLab.</p>
       <p>Com o MedCannLab, você terá acesso a acompanhamento clínico personalizado, chat direto com seu médico, e relatórios de evolução.</p>
-      <center><a href="${data.inviteUrl || 'https://medcanlab.com.br'}" class="btn">Aceitar Convite</a></center>
+      <center><a href="${data.inviteUrl || 'https://medcannlab.com.br'}" class="btn">Aceitar Convite</a></center>
     `, 'Convite MedCannLab')
     }),
 
@@ -162,7 +162,7 @@ const templates: Record<string, (data: Record<string, string>) => { subject: str
         <p>💰 <strong>Valor:</strong> R$ ${data.amount || '0,00'}</p>
         <p>📅 <strong>Data:</strong> ${data.date || new Date().toLocaleDateString('pt-BR')}</p>
       </div>
-      <center><a href="${data.appUrl || 'https://medcanlab.com.br'}" class="btn">Acessar Plataforma</a></center>
+      <center><a href="${data.appUrl || 'https://medcannlab.com.br'}" class="btn">Acessar Plataforma</a></center>
     `, 'Pagamento Confirmado')
     }),
 }

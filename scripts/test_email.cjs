@@ -17,7 +17,7 @@ async function test() {
             template: 'welcome',
             data: {
                 name: 'Dr. Ricardo',
-                appUrl: 'https://medcanlab.com.br'
+                appUrl: 'https://medcannlab.com.br'
             }
         }
     });
