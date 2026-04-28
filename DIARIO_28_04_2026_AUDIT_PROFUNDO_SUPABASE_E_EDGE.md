@@ -946,6 +946,104 @@ Ordem ajustada após review GPT:
 
 ---
 
+## BLOCO T — V1.9.99 video-call-reminders elite + P9 cristalizado (~14h30)
+
+### T.1 — Erro de processo (delete prematuro v52)
+
+Pedro decidiu reintroduzir `video-call-reminders` ~30min após eu ter deletado em TIER 1. O delete tinha "razão técnica" (half-impl, sem caller, WiseCare cobre) MAS faltou pergunta crítica: *"faz parte da lógica desejada do produto?"*.
+
+Pedro: *"era boa ferramenta se introduzisse direito ou nao precisa?"* — depois confirmou que sim, faz parte. Lembretes 30/10/1min antes de videoconsulta são UX padrão de telemedicina (Doctolib, Conexa Saúde).
+
+→ **Princípio 9 cristalizado**: *"Não-uso atual ≠ não-precisa-no-produto"*. Em pré-PMF, infraestrutura sem uso pode ser feature plantada pra futuro próximo. Antes de DELETE de half-impl/duplicata, perguntar "faz parte do desejado?". Memória persistente: `feedback_p9_nao_uso_nao_e_nao_precisa.md`.
+
+### T.2 — Reescrita elite V1.9.99 (P8 max, zero invenção)
+
+Reuso máximo do que já existia:
+
+| Recurso | Como usado |
+|---|---|
+| `appointments` (60 rows) | ALTER ADD 3 colunas `reminder_sent_30/10/1min` + index parcial |
+| `notifications` | INSERT `type='video_call_reminder'` |
+| `send-email` Edge (Resend) | invoke via supabase.functions.invoke |
+| `noa_logs` | INSERT estruturado `interaction_type='video_call_reminders_sweep'` |
+| GitHub Actions secrets | SUPABASE_URL + SERVICE_ROLE_KEY (já existentes) |
+
+**Tabelas novas: ZERO. Edge novas: ZERO.** Reescrita da existente em sweep mode cron-driven.
+
+### T.3 — Bug pego pelo smoke test 1 (P9 reaplicado)
+
+Smoke test 1 retornou: *"Could not find a relationship between 'appointments' and 'patient_id'"*. Causa: `appointments` **NÃO tem FKs formais** — PostgREST não inferiu JOIN.
+
+**P9 reaplicado**: NÃO adicionei FKs novas. Risco: appointments existentes podem ter `patient_id` apontando pra users deletados/anonimizados — adicionar FK quebraria. Em vez: refactor pra JOIN manual via `.in('id', userIds)` + Map em memória.
+
+### T.4 — 4 smoke tests sequenciais (disciplina GPT review)
+
+| # | Teste | Resultado |
+|---|---|---|
+| 1 | Edge v2 + appointment 28min futuro | ❌ FK error (smoke test cumpriu seu papel) |
+| 2 | Refactor JOIN manual + redeploy CI | ✅ Edge v3 deployada |
+| 3 | Edge v3 + appointment 30min (dentro janela) | ✅ 200 OK, scanned 1, **reminders_sent 2**, errors 0 |
+| 4 | Invocar de novo (idempotência) | ✅ scanned 1, **reminders_sent 0** |
+
+**Validações no banco:**
+- 2 notifications criadas com `metadata` correta (appointment_id + reminder_minutes + meeting_url)
+- `appointments.reminder_sent_30min = true` setado
+- 2 sweeps logados em `noa_logs` com payload estruturado
+
+### T.5 — Janelas de tolerância (absorvem jitter cron)
+
+```
+30min: lower 25, upper 35  ✅ ±5min cobre cron */5min
+10min: lower 5,  upper 15  ✅ ±5min cobre
+1min:  lower 0,  upper 3   ⚠️ apertada — pode pular se cron jitter +3min
+```
+
+Janela 1min é trade-off conhecido. Aceitável MVP. Pra cobertura total exigiria cron 1min (custo) ou pg_cron (não instalado).
+
+### T.6 — Dívida menor (não bloqueador)
+
+🟡 **Email Resend retorna 0** em smoke test. Provável `onboarding@resend.dev` (FROM default) só envia pra emails verificados Resend (sandbox). Notifications in-app funcionam 100%.
+
+**Critério de ativação para fix**: ANTES de 1º paciente externo via Caminho A, configurar:
+1. Domínio verificado no Resend (ex: medcanlab.com.br)
+2. `RESEND_FROM_EMAIL` env na Edge
+3. Smoke test email com paciente externo real
+
+**Quem decide** (governance matrix Tipo 6): João Vidal (institucional) + Pedro (tech).
+
+### T.7 — Cleanup atômico
+
+```sql
+WITH del_notif AS (DELETE FROM notifications WHERE metadata->>'appointment_id' = '...'),
+     del_apt   AS (DELETE FROM appointments WHERE id = '...')
+SELECT (SELECT COUNT(*) FROM del_notif) AS notifications_deleted, ...
+```
+
+Resultado: 2 notifications + 1 appointment removidos numa transação. Banco limpo.
+
+### T.8 — Estado do app pós-bloco T
+
+```
+Edge Functions:           10 ativas (era 11)
+   - video-call-reminders v3 funcional (cron auto-disparando */5min)
+   - 1 deletada (legacy duplicata + reminders v52 reintroduzida)
+   - 2 ainda half-impl (google-auth + sync-gcal)
+Triggers auth.users:      5 (era 6, duplicata removida)
+Bucket chat-images:       privado + RLS Opção B (V1.9.98)
+Lock V1.9.95+V1.9.97:     INTOCADO
+Princípios cristalizados: P6, P7, P8, P9 (P9 novo hoje)
+```
+
+### Frase-âncora T
+
+> *"P9 nasceu de erro real (delete prematuro v52). Cristalizou em 30min. Foi reaplicado 1h depois (não adicionar FK arriscada). Princípio que vale só vale se aparece em ação. P9 apareceu 2x na mesma tarde — está vivo no projeto, não em doc."*
+
+---
+
+*Bloco T adicionado 2026-04-28 ~14h45 BRT por Claude Opus 4.7 (1M context). Diário 28/04 cresceu de 18→19 blocos (A→S→T), ~1100 linhas. Próximo: aguardar cron auto-disparar próximas */5min, monitorar noa_logs sweeps, atacar próximo polimento.*
+
+---
+
 ## BLOCO S — Aplicação TIER 1 + TIER 2 (~11h30 BRT)
 
 ### S.1 — TIER 1 cleanup aplicado (commit 1283598)

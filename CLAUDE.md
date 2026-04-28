@@ -79,13 +79,16 @@ curl -X POST "https://api.supabase.com/v1/projects/itdjkfubfzmvmuxxjoae/database
   video-call-request-notification (v49)
   get_chat_history (v6)
 
+🟢 RESCATADA — V1.9.99 (28/04 ~14h30)
+  video-call-reminders (v3)       ← reescrita elite sweep mode + cron 5min + Resend
+                                    + idempotência via 3 colunas em appointments
+
 🔴 HALF-IMPLEMENTED — Edge Function deployed mas tabela ausente
-  video-call-reminders (v52)      ← falta video_call_schedules (decisão: desativar — WiseCare+WebRTC já cobrem)
   google-auth (v16)               ← falta professional_integrations
   sync-gcal (v16)                 ← faltam integration_jobs + professional_integrations
 ```
 
-*Cleanup 28/04 ~10h45*: Edge `video-call-request-notification-` (v23, duplicata com hífen) **deletada**. Backup em `.backups/`. Trigger duplicado `trg_handle_new_auth_user` em auth.users **dropado** (gêmeo `trg_auth_users_to_user_profiles` chama mesma função). Smoke tests passaram. Total: 10 Edge Functions ativas, 5 triggers em auth.users.
+*Cleanup 28/04 ~10h45*: Edge `video-call-request-notification-` (v23, duplicata com hífen) **deletada**. Backup em `.backups/`. Trigger duplicado `trg_handle_new_auth_user` em auth.users **dropado**. Edge `video-call-reminders` v52 deletada (P9 erro de processo) → reintroduzida elite v53/v3 às ~14h30 com sweep mode + cron + Resend (4 smoke tests passaram). Total: **10 Edge Functions ativas**, 5 triggers em auth.users.
 
 ## REGRA HARD §1 (constitucional, anti-kevlar)
 
