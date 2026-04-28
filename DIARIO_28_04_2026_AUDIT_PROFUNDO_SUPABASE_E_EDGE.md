@@ -1412,6 +1412,134 @@ Critério de ativação atualizado: **assim que CNPJ regularizar** (gate de Joã
 
 ---
 
+## BLOCO X — Upload anexos prof↔paciente (2 comp) + fix vazamento fórum (~17h)
+
+### X.1 — Upload UI anexos em 2 componentes (P8 puro)
+
+Pedro pediu polir caminho clínico chat. Audit revelou que existem **2 componentes** servindo diferentes lados:
+
+```
+Profissional (Chat Clínico geral, lista todas salas):
+  /app/clinica/profissional/dashboard?section=terminal-clinico
+  → IntegratedWorkstation tab "Chat Clínico"
+  → ProfessionalChatSystem.tsx
+  → COMMIT a6b35e7 (Paperclip ligado)
+
+Paciente + Profissional (chat 1:1):
+  /app/clinica/paciente/chat-profissional[?roomId=...]
+  → PatientDoctorChat.tsx (compartilhado entre 2 entradas)
+  → Paciente: sidebar "Chat com Meu Médico"
+  → Profissional: botão verde "Chat Clínico" no card do paciente (Terminal)
+  → COMMIT dd60d61 (Paperclip ligado)
+```
+
+**Reuso P8 máximo (zero invenção)**:
+- Bucket `chat-images` (V1.9.98 privado + RLS Opção B)
+- Signed URL TTL 1 ano
+- `sendMessage(roomId, sender, content, type, fileUrl)` JÁ aceita
+- Render `message.fileUrl` JÁ existia em ambos componentes
+- Mime types: imagens (jpeg/png/gif/webp) + application/pdf
+- Tamanho máx 10 MB
+- Suporte a colar (Ctrl+V) imagem ou PDF direto no input texto
+
+**Arquitetura confirmada**: ambos os lados (paciente E profissional) podem anexar via Paperclip nas suas respectivas UIs. Mensagem aparece com link "Abrir arquivo" (signed URL).
+
+### X.2 — Audit RLS chat (descoberta sobre matriz de autorização)
+
+Pedro questionou quem fala com quem. Audit empírico revelou:
+
+```
+RLS chat hoje = baseado em PARTICIPAÇÃO na sala, não em type
+  chat_rooms.SELECT       :  is_admin OR is_chat_room_member
+  chat_participants.SELECT:  is_admin OR is_chat_room_member
+  chat_messages.SELECT    :  is_admin OR is_chat_room_member
+  chat_rooms.INSERT       :  qualquer authenticated cria
+  chat_participants.INSERT:  self OR room_owner OR admin
+
+→ RLS não bloqueia paciente↔paciente, aluno↔paciente, etc.
+→ Convenção atual está alinhada (zero salas inválidas nas 20 atuais)
+→ MAS só por convenção da UI, não por constraint do banco
+```
+
+**Decisão GPT review**: NÃO mexer no chat agora. RLS permissiva por design (early-stage). Refactor pra ABAC semântico (`can_users_chat()`) é sprint dedicada do mesmo nível auth_user_id. Documentado em `docs/CHAT_AUTH_MATRIX.md` como spec arquitetural.
+
+### X.3 — Fix vazamento fórum (P0 real, broadcast escala)
+
+Audit das policies SELECT em `forum_posts` revelou **3 policies conflitantes**:
+
+```
+Policy 1: "read_forum_posts"                qual: TRUE       🚨 SEMPRE LIBERA
+Policy 2: "Anyone can view active forum posts" qual: is_active 🟡 ignora allowed_roles
+Policy 3: "Users can view posts based on allowed_roles" 🟢 única correta
+```
+
+Postgres aplica **OR** entre policies SELECT → Policy 1 (`TRUE`) **NEUTRALIZA** as outras → `allowed_roles` estava IGNORADO na prática.
+
+**Em forum_comments também**: `"Anyone can view forum comments"` com `qual: true` permitia visibility de comentários de posts restritos.
+
+**Diferença crítica vs chat (justificativa GPT pra atacar agora)**:
+- 🔴 Fórum = broadcast (1 post visto por muitos) → erro escala rápido
+- 🟢 Chat = 1:1 controlado pela UI → erro contido
+
+**Risco antes do fix**: paciente vê post marcado `allowed_roles=['professional']`. Bug clínico/regulatório real.
+
+### X.4 — Fix aplicado atomicamente (V1.9.99 forum_rls_hardening)
+
+```sql
+BEGIN;
+-- forum_posts: drop 3 policies vazadas
+DROP POLICY "read_forum_posts" ON public.forum_posts;
+DROP POLICY "Anyone can view active forum posts" ON public.forum_posts;
+DROP POLICY "Users can view posts based on allowed_roles" ON public.forum_posts;
+
+-- forum_posts: criar 1 unificada com is_active + allowed_roles
+CREATE POLICY "forum_posts_select_active_with_role_check" ...
+
+-- forum_comments: drop 1 vazada + criar 1 que herda visibilidade do post
+DROP POLICY "Anyone can view forum comments" ON public.forum_comments;
+CREATE POLICY "forum_comments_select_via_post" ...
+COMMIT;
+```
+
+**Smoke test**: forum_posts=1 SELECT policy, forum_comments=1 SELECT policy. Outras (INSERT/UPDATE/DELETE) intactas. forum_likes/forum_views mantidos públicos (telemetria sem dado clínico).
+
+**Estado antes**: 0 posts, 0 comments → **fix preventivo, zero regressão de dado**. Quando time criar 1º post `allowed_roles=['professional']`, paciente NÃO verá.
+
+### X.5 — Audit de impacto (5 arquivos frontend)
+
+Consumidores que leem `forum_posts/comments` via SELECT:
+- `src/pages/AlunoDashboard.tsx:295`
+- `src/pages/ChatGlobal.tsx:387, 1183`
+- `src/pages/DebateRoom.tsx:88, 99, 311`
+- `src/pages/ForumCasosClinicos.tsx:163, 181, 387`
+
+Todos passam pela RLS — após fix, respeitam `is_active + allowed_roles` automaticamente. Zero refactor de código necessário.
+
+### X.6 — CHAT_AUTH_MATRIX.md (doc arquitetural)
+
+Criado `docs/CHAT_AUTH_MATRIX.md` formalizando:
+- Estado atual (RBAC leve por participação)
+- Estado desejado (ABAC semântico)
+- Matriz proposta Pedro (paciente↔paciente bloqueia, aluno↔paciente bloqueia, etc.)
+- Plano Sprint A (fix fórum — APLICADO HOJE) + Sprint B (chat matrix — futuro)
+- Anti-kevlar §1 cita: chat matrix exige nova versão Livro Magno antes de aplicar
+
+### X.7 — Princípios reforçados nesta etapa
+
+**P9 reaplicado #5 hoje**: GPT segurou minha proposta de "consertar tudo de uma vez". Calibração: chat matrix é refactor estrutural (não polish), só fórum é P0 real. **Diferenciar broadcast de 1:1** virou novo critério mental.
+
+**Anti-kevlar §1**: doc arquitetural ANTES de código no caso da chat matrix. Migration arquivada como `.sql` no repo (consistência com outras migrations).
+
+### Frase-âncora X
+
+> *"Broadcast escala. 1:1 é contido. Diferença operacional simples — implicação prática gigante. Doc primeiro, smoke depois, código por último (e só onde a urgência justifica)."*
+
+---
+
+*Bloco X adicionado 2026-04-28 ~17h15 BRT por Claude Opus 4.7 (1M context). Diário 28/04 cresceu de 22→23 blocos (A→X), ~1700 linhas. Sessão histórica continua. Anexos prof↔paciente em 2 componentes + vazamento fórum fechado preventivamente.*
+
+---
+
 ## BLOCO S — Aplicação TIER 1 + TIER 2 (~11h30 BRT)
 
 ### S.1 — TIER 1 cleanup aplicado (commit 1283598)
