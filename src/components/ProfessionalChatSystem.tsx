@@ -1,5 +1,5 @@
-import React, { useEffect, useMemo, useState } from 'react'
-import { MessageCircle, Search, Send, Video, Phone, FileText, Activity, X, Plus, Loader2 } from 'lucide-react'
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { MessageCircle, Search, Send, Video, Phone, FileText, Activity, X, Plus, Loader2, Paperclip } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
 import { ChatRoomSummary, useChatSystem } from '../hooks/useChatSystem'
 import { useVideoCallRequests } from '../hooks/useVideoCallRequests'
@@ -45,6 +45,15 @@ const ProfessionalChatSystem: React.FC<ProfessionalChatSystemProps> = ({ classNa
   const [callType, setCallType] = useState<'video' | 'audio'>('video')
   const [pendingCallRequest, setPendingCallRequest] = useState<string | null>(null)
   const [timeRemaining, setTimeRemaining] = useState<number | null>(null)
+
+  // V1.9.99 — Upload de anexos (imagens + PDFs) prof↔paciente.
+  // Polir não inventar: reusa bucket `chat-images` (aceita qualquer mime),
+  // signed URL TTL 1 ano (igual padrão AdminChat após V1.9.98), RLS Opção B
+  // já cobre (owner OR participante mesma chat_room).
+  const [uploadingFile, setUploadingFile] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement | null>(null)
+  const ALLOWED_MIMES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'application/pdf']
+  const MAX_FILE_SIZE = 10 * 1024 * 1024 // 10 MB (limite do bucket chat-images)
 
   const toast = useToast()
 
@@ -142,6 +151,81 @@ const ProfessionalChatSystem: React.FC<ProfessionalChatSystemProps> = ({ classNa
     await sendMessage(activeRoomId, user.id, inputMessage)
     setInputMessage('')
     await markRoomAsRead(activeRoomId)
+  }
+
+  // V1.9.99 — Upload arquivo (imagem ou PDF) e enviar como mensagem
+  const uploadAttachment = useCallback(async (file: File): Promise<{ url: string; type: 'image' | 'file' } | null> => {
+    if (!user?.id) return null
+    const ext = file.name.split('.').pop() || 'bin'
+    const path = `${user.id}/${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`
+    const { error: uploadError } = await supabase.storage
+      .from('chat-images')
+      .upload(path, file, { contentType: file.type })
+    if (uploadError) {
+      console.error('Upload error:', uploadError)
+      return null
+    }
+    const { data: urlData, error: signedErr } = await supabase.storage
+      .from('chat-images')
+      .createSignedUrl(path, 60 * 60 * 24 * 365) // 1 ano
+    if (signedErr || !urlData?.signedUrl) {
+      console.error('Signed URL error:', signedErr)
+      return null
+    }
+    return {
+      url: urlData.signedUrl,
+      type: file.type.startsWith('image/') ? 'image' : 'file'
+    }
+  }, [user])
+
+  const handleFileUpload = useCallback(async (file: File) => {
+    if (!activeRoomId || !user?.id) return
+    if (!ALLOWED_MIMES.includes(file.type)) {
+      toast.error('Erro', 'Tipo de arquivo não suportado. Use imagens (jpg/png/gif/webp) ou PDF.')
+      return
+    }
+    if (file.size > MAX_FILE_SIZE) {
+      toast.error('Erro', 'Arquivo muito grande (máx 10 MB).')
+      return
+    }
+    setUploadingFile(true)
+    try {
+      const result = await uploadAttachment(file)
+      if (result) {
+        const label = result.type === 'image' ? '📷 Imagem' : `📎 ${file.name}`
+        await sendMessage(activeRoomId, user.id, label, result.type, result.url)
+        await markRoomAsRead(activeRoomId)
+        toast.success('Anexo enviado!', '')
+      } else {
+        toast.error('Erro', 'Não foi possível enviar o anexo.')
+      }
+    } catch (err) {
+      console.error('handleFileUpload error:', err)
+      toast.error('Erro', 'Falha ao enviar anexo.')
+    } finally {
+      setUploadingFile(false)
+      if (fileInputRef.current) fileInputRef.current.value = ''
+    }
+  }, [activeRoomId, user, uploadAttachment, sendMessage, markRoomAsRead, toast])
+
+  const handleFileInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    if (file) void handleFileUpload(file)
+  }
+
+  const handlePasteAttachment = (event: React.ClipboardEvent) => {
+    const items = event.clipboardData?.items
+    if (!items) return
+    for (let i = 0; i < items.length; i++) {
+      if (items[i].type.startsWith('image/') || items[i].type === 'application/pdf') {
+        const file = items[i].getAsFile()
+        if (file) {
+          event.preventDefault()
+          void handleFileUpload(file)
+          return
+        }
+      }
+    }
   }
 
   // Iniciar solicitação de videochamada
@@ -402,12 +486,33 @@ const ProfessionalChatSystem: React.FC<ProfessionalChatSystemProps> = ({ classNa
               <footer className="p-4 border-t border-slate-700">
                 <form className="flex items-center gap-2" onSubmit={handleSendMessage}>
                   <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/jpeg,image/png,image/gif,image/webp,application/pdf"
+                    className="hidden"
+                    onChange={handleFileInputChange}
+                  />
+                  <button
+                    type="button"
+                    title="Anexar imagem ou PDF (máx 10 MB)"
+                    disabled={!isOnline || uploadingFile || !activeRoomId}
+                    onClick={() => fileInputRef.current?.click()}
+                    className="bg-slate-700 hover:bg-slate-600 disabled:bg-slate-800 disabled:cursor-not-allowed text-slate-200 p-2 rounded-lg transition-colors flex items-center justify-center"
+                  >
+                    {uploadingFile ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <Paperclip className="w-4 h-4" />
+                    )}
+                  </button>
+                  <input
                     type="text"
                     value={inputMessage}
                     onChange={event => setInputMessage(event.target.value)}
+                    onPaste={handlePasteAttachment}
                     placeholder={
                       isOnline
-                        ? 'Digite sua mensagem...'
+                        ? 'Digite sua mensagem ou cole imagem/PDF...'
                         : 'Modo offline – mensagens serão enviadas quando reconectar'
                     }
                     className="flex-1 px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
