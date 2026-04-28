@@ -224,14 +224,18 @@ const AdminChat: React.FC = () => {
   }
 
   // Upload image to Supabase Storage
+  // V1.9.98 — bucket chat-images é privado, usa signed URL (TTL 1 ano) em vez de getPublicUrl
   const uploadImage = useCallback(async (file: File): Promise<string | null> => {
     if (!user) return null
     const ext = file.name.split('.').pop() || 'png'
     const path = `${user.id}/${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`
     const { error } = await supabase.storage.from('chat-images').upload(path, file, { contentType: file.type })
     if (error) { console.error('Upload error:', error); return null }
-    const { data: urlData } = supabase.storage.from('chat-images').getPublicUrl(path)
-    return urlData?.publicUrl ?? null
+    const { data: urlData, error: signedErr } = await supabase.storage
+      .from('chat-images')
+      .createSignedUrl(path, 60 * 60 * 24 * 365) // 1 ano
+    if (signedErr) { console.error('Signed URL error:', signedErr); return null }
+    return urlData?.signedUrl ?? null
   }, [user])
 
   // Handle image upload (from file input or paste)
