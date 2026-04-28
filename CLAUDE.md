@@ -169,7 +169,7 @@ PACIENTES EXTERNOS PAGANTES: ZERO (pré-PMF)
 - Build local quebra por `dompurify` (em `node_modules` vazio), Vercel passa porque tem em `package.json`.
 - 3 Edge Functions deployadas falham silenciosamente (tabelas ausentes — ver lista acima).
 - 72 files órfãos no bucket `documents` (~67 MB) de owners deletados — LGPD compliance pendente.
-- `chat-images` storage está PÚBLICO sem filtro (P0 segurança pendente).
+- `chat-images` storage **fechado em V1.9.98 (28/04)**: bucket `public=false`, 4 policies Opção B (owner OR participante de mesma chat_room via JOIN), AdminChat usa `createSignedUrl` TTL 1 ano. Imagem antiga (1 teste do Pedro) não carrega mais via URL pública direta — impacto zero.
 - Discrepância `users (30)` vs `user_profiles (35)` — 5 órfãos, investigar antes de deletar.
 
 ## Convenções específicas do projeto

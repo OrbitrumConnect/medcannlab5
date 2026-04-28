@@ -943,3 +943,101 @@ Ordem ajustada após review GPT:
 ---
 
 *Bloco R adicionado 2026-04-28 ~10h45 BRT por Claude Opus 4.7 (1M context). Diário 28/04 cresceu de 17→18 blocos (A→R), ~830 linhas. Sessão manhã pós-pull. Próximo: TIER 1 com verificações antes de deletar.*
+
+---
+
+## BLOCO S — Aplicação TIER 1 + TIER 2 (~11h30 BRT)
+
+### S.1 — TIER 1 cleanup aplicado (commit 1283598)
+
+**Disciplina sequencial GPT review** (não paralela):
+
+1. **DROP trigger `trg_handle_new_auth_user`** em auth.users
+   - Motivo: 100% duplicata de `trg_auth_users_to_user_profiles` (mesma função `handle_new_auth_user`, mesmo timing, mesmo orientation, sem condição WHEN diferente)
+   - Smoke test: 5 triggers em auth.users (era 6), função preservada, sibling ativo, signup simulado via `BEGIN/INSERT/ROLLBACK` mostrou `users_created: 1` + `profiles_created: 1` (cadeia completa funcionou sem duplicar)
+   - **Resultado**: zero regressão comportamental + I/O reduzido
+
+2. **DELETE Edge Function `video-call-request-notification-`** (slug com hífen, v23)
+   - Motivo: duplicata da v49 sem hífen (mesmo `name`, slug diferente)
+   - Backup ESZIP salvo em `.backups/` (rollback disponível)
+   - Verificação prévia: zero callers no codebase + zero callers no banco
+   - Smoke test: 10 Edge Functions ativas (era 11), v49 sem hífen preservada
+
+### S.2 — TIER 2 chat-images RLS aplicado (commit d684ff0 + SQL)
+
+**Bug original** (pré-V1.9.98):
+- `chat-images` bucket com `public=true`
+- SELECT policy: `bucket_id='chat-images'` (qualquer um logado vê QUALQUER imagem)
+- INSERT policy: idem (qualquer um upload em qualquer pasta)
+- URL pública gerada por `getPublicUrl` é eternamente acessível
+
+**Fix V1.9.98 (Opção B — owner OR participante chat_room):**
+
+```sql
+-- Drop policies antigas
+DROP POLICY "Anyone can view chat images" ...
+DROP POLICY "Authenticated users can upload chat images" ...
+DROP POLICY "Users can delete own chat images" ...
+
+-- Create 4 policies novas (owner OR participante)
+CREATE POLICY chat_images_select_owner_or_participant ON storage.objects
+  FOR SELECT USING (
+    bucket_id = 'chat-images' AND auth.uid() IS NOT NULL AND (
+      ((storage.foldername(name))[1])::uuid = auth.uid()
+      OR EXISTS (
+        SELECT 1 FROM public.chat_participants cp1
+        JOIN public.chat_participants cp2 ON cp1.room_id = cp2.room_id
+        WHERE cp1.user_id = ((storage.foldername(name))[1])::uuid
+          AND cp2.user_id = auth.uid()
+      )
+    )
+  );
+
+-- INSERT/UPDATE/DELETE: só owner (folder = auth.uid())
+
+-- Bucket privado
+UPDATE storage.buckets SET public = false WHERE id = 'chat-images';
+```
+
+**Frontend**: AdminChat.tsx muda `getPublicUrl` → `createSignedUrl(path, 1 ano)`. Frontend tolerante (signed URL funciona em bucket público OU privado), por isso commit aplicado **antes** de mudança no bucket.
+
+### S.3 — Smoke tests TIER 2 (validação empírica)
+
+| Teste | Esperado | Resultado |
+|---|---|---|
+| URL pública antiga: `/storage/v1/object/public/chat-images/{owner}/{file}` | HTTP 400 (bucket privado) | ✅ HTTP 400 |
+| 4 policies novas ativas, 0 antigas | Confirmado via `pg_policies` | ✅ |
+| Bucket `public` field | `false` | ✅ |
+| AdminChat upload nova imagem | Signed URL formato `/object/sign/chat-images/...?token=...` | ✅ confirmado por Pedro |
+
+### S.4 — Princípio 8 confirmado: anexos prof↔paciente é "plano não acabado"
+
+Pedro 28/04: *"nao vejo como feature nova vejo como plano nao acabado pdf!"*
+
+Verificado empiricamente:
+- ✅ `ProfessionalChatSystem.tsx:385-395` JÁ renderiza `message.fileUrl` com ícone FileText e link "Abrir arquivo"
+- ✅ `chat_messages` (canônica, 0 rows) já tem schema `message_type text` + `file_url text`
+- ✅ Bucket `chat-images` aceita qualquer MIME (`allowed_mime_types = null`)
+- ❌ **Falta apenas**: botão de upload no footer do `ProfessionalChatSystem` (~30min polish)
+
+→ Memória persistente criada: `project_anexos_prof_paciente_plano_nao_acabado.md`. Próxima sessão: ligar o botão.
+
+### S.5 — Estado consolidado pós-S
+
+```
+✅ 10 Edge Functions ativas (era 11)
+✅ 5 triggers em auth.users (era 6, duplicata removida)
+✅ chat-images bucket privado + RLS Opção B
+✅ AdminChat com signed URL TTL 1 ano
+✅ Zero regressão (smoke tests entre cada passo)
+✅ Lock V1.9.95+V1.9.97 INTACTO
+✅ AEC core / Pipeline / Signature / Verbatim / Gate / RACI sem mudança
+```
+
+### Frase-âncora S
+
+> *"Polir não inventar não é só princípio — é diagnóstico técnico: 'o que existe plantado mas não está ligado?'. ProfessionalChatSystem renderiza file_url. Schema canônico tem coluna. Bucket aceita PDF. Falta só ligar."*
+
+---
+
+*Bloco S adicionado 2026-04-28 ~11h45 BRT por Claude Opus 4.7 (1M context). Diário 28/04 fecha em 19 blocos (A→S), ~920 linhas. Sessão manhã/início tarde. P0 segurança chat-images resolvido. Próximo: TIER 2 itens 2-3 (storage órfão + user_profiles) ou TIER 3 (Edge half-impl).*
