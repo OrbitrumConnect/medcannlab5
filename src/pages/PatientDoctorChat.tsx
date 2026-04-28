@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useCallback, useRef, useState } from 'react'
 // Layout fixed: 100dvh
 import { useLocation, useNavigate } from 'react-router-dom'
-import { ArrowLeft, ChevronRight, Loader2, MessageCircle, Send, Users, FileText, Video, Phone, X } from 'lucide-react'
+import { ArrowLeft, ChevronRight, Loader2, MessageCircle, Send, Users, FileText, Video, Phone, X, Paperclip } from 'lucide-react'
 
 import { useAuth } from '../contexts/AuthContext'
 import { useChatSystem } from '../hooks/useChatSystem'
@@ -42,6 +42,14 @@ const PatientDoctorChat: React.FC = () => {
   const [participants, setParticipants] = useState<ParticipantSummary[]>([])
   const [participantsLoading, setParticipantsLoading] = useState(false)
   const [messageInput, setMessageInput] = useState('')
+
+  // V1.9.99 — Upload de anexos (imagens + PDFs) paciente→profissional.
+  // Mesmo padrão aplicado em ProfessionalChatSystem (commit a6b35e7).
+  // Bucket chat-images privado (V1.9.98) + RLS Opção B + signed URL TTL 1 ano.
+  const [uploadingFile, setUploadingFile] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement | null>(null)
+  const ALLOWED_MIMES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'application/pdf']
+  const MAX_FILE_SIZE = 10 * 1024 * 1024 // 10 MB
   const [allPatients, setAllPatients] = useState<Array<{ id: string; name: string | null; email: string | null }>>([])
   const [allProfessionals, setAllProfessionals] = useState<Array<{ id: string; name: string | null; email: string | null; specialty?: string }>>([])
   const [patientsLoading, setPatientsLoading] = useState(false)
@@ -768,6 +776,81 @@ const PatientDoctorChat: React.FC = () => {
     }
   }
 
+  // V1.9.99 — Upload arquivo (imagem ou PDF) paciente envia pro médico
+  const uploadAttachment = useCallback(async (file: File): Promise<{ url: string; type: 'image' | 'file' } | null> => {
+    if (!user?.id) return null
+    const ext = file.name.split('.').pop() || 'bin'
+    const path = `${user.id}/${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`
+    const { error: uploadError } = await supabase.storage
+      .from('chat-images')
+      .upload(path, file, { contentType: file.type })
+    if (uploadError) {
+      console.error('Upload error:', uploadError)
+      return null
+    }
+    const { data: urlData, error: signedErr } = await supabase.storage
+      .from('chat-images')
+      .createSignedUrl(path, 60 * 60 * 24 * 365) // 1 ano
+    if (signedErr || !urlData?.signedUrl) {
+      console.error('Signed URL error:', signedErr)
+      return null
+    }
+    return {
+      url: urlData.signedUrl,
+      type: file.type.startsWith('image/') ? 'image' : 'file'
+    }
+  }, [user])
+
+  const handleFileUpload = useCallback(async (file: File) => {
+    if (!activeRoomId || !user?.id) return
+    if (!ALLOWED_MIMES.includes(file.type)) {
+      toast.error('Erro', 'Tipo de arquivo não suportado. Use imagens (jpg/png/gif/webp) ou PDF.')
+      return
+    }
+    if (file.size > MAX_FILE_SIZE) {
+      toast.error('Erro', 'Arquivo muito grande (máx 10 MB).')
+      return
+    }
+    setUploadingFile(true)
+    try {
+      const result = await uploadAttachment(file)
+      if (result) {
+        const label = result.type === 'image' ? '📷 Imagem' : `📎 ${file.name}`
+        await sendMessage(activeRoomId, user.id, label, result.type, result.url)
+        await markRoomAsRead(activeRoomId)
+        toast.success('Anexo enviado!', '')
+      } else {
+        toast.error('Erro', 'Não foi possível enviar o anexo.')
+      }
+    } catch (err) {
+      console.error('handleFileUpload error:', err)
+      toast.error('Erro', 'Falha ao enviar anexo.')
+    } finally {
+      setUploadingFile(false)
+      if (fileInputRef.current) fileInputRef.current.value = ''
+    }
+  }, [activeRoomId, user, uploadAttachment, sendMessage, markRoomAsRead, toast])
+
+  const handleFileInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    if (file) void handleFileUpload(file)
+  }
+
+  const handlePasteAttachment = (event: React.ClipboardEvent) => {
+    const items = event.clipboardData?.items
+    if (!items) return
+    for (let i = 0; i < items.length; i++) {
+      if (items[i].type.startsWith('image/') || items[i].type === 'application/pdf') {
+        const file = items[i].getAsFile()
+        if (file) {
+          event.preventDefault()
+          void handleFileUpload(file)
+          return
+        }
+      }
+    }
+  }
+
   /**
    * Salva a conversa atual como evolução clínica no prontuário do paciente
    * Esta é uma das funcionalidades principais: registrar automaticamente
@@ -1324,10 +1407,31 @@ const PatientDoctorChat: React.FC = () => {
               <form onSubmit={handleSubmitMessage} className="relative z-10 border-t border-slate-700/40 px-5 py-4 bg-slate-900/30 backdrop-blur-sm">
                 <div className="flex items-center gap-3">
                   <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/jpeg,image/png,image/gif,image/webp,application/pdf"
+                    className="hidden"
+                    onChange={handleFileInputChange}
+                  />
+                  <button
+                    type="button"
+                    title="Anexar imagem ou PDF (máx 10 MB)"
+                    disabled={!activeRoomId || uploadingFile}
+                    onClick={() => fileInputRef.current?.click()}
+                    className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-slate-800/60 hover:bg-slate-700/80 border border-slate-700/40 text-slate-300 hover:text-white transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+                  >
+                    {uploadingFile ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <Paperclip className="w-4 h-4" />
+                    )}
+                  </button>
+                  <input
                     type="text"
                     value={messageInput}
                     onChange={event => setMessageInput(event.target.value)}
-                    placeholder={activeRoomId ? 'Escreva sua mensagem...' : 'Selecione um canal para enviar mensagens'}
+                    onPaste={handlePasteAttachment}
+                    placeholder={activeRoomId ? 'Escreva sua mensagem ou cole imagem/PDF...' : 'Selecione um canal para enviar mensagens'}
                     disabled={!activeRoomId}
                     className="flex-1 bg-slate-950/50 backdrop-blur-sm border border-slate-700/40 rounded-xl px-5 py-3.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500/30 transition-all"
                   />
