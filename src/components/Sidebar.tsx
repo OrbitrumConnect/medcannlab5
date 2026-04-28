@@ -226,6 +226,15 @@ const Sidebar: React.FC<SidebarProps> = ({
         color: 'bg-emerald-600'
       },
       {
+        // V1.9.99 — atalho direto pra aba Chat Clínico do Terminal Integrado
+        // Evita: clicar Terminal Atendimento → clicar aba Chat Clínico (2 cliques → 1)
+        name: 'Chat Clínico',
+        href: '/app/clinica/profissional/dashboard?section=terminal-clinico&tab=chat',
+        icon: MessageCircle,
+        section: 'quick',
+        color: 'bg-green-600'
+      },
+      {
         name: 'Terminal de Pesquisa',
         href: '/app/pesquisa/profissional/dashboard',
         icon: TerminalIcon,

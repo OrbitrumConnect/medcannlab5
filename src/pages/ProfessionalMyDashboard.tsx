@@ -556,11 +556,17 @@ const ProfessionalMyDashboard: React.FC = () => {
   )
 
   if (section === 'terminal-clinico') {
+    // V1.9.99 — atalhos diretos pra abas específicas via ?tab=X
+    // Ex: ?section=terminal-clinico&tab=chat → abre direto na aba Chat Clínico
+    const requestedTab = query.get('tab')
+    const initialTab = requestedTab && ['patients', 'patient-focus', 'chat', 'renal', 'prescriptions', 'scheduling', 'team', 'governance', 'reports', 'knowledge', 'forum'].includes(requestedTab)
+      ? requestedTab
+      : 'patients'
     return (
       <div className="h-screen w-full bg-[#0f172a] flex flex-col">
         <SectionHeader title="Terminal Clínico Integrado" icon={Terminal} />
         <div className="flex-1 overflow-hidden">
-          <IntegratedWorkstation initialTab="patients" />
+          <IntegratedWorkstation initialTab={initialTab} />
         </div>
       </div>
     )
