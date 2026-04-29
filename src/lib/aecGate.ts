@@ -194,6 +194,43 @@ function formatDoctorName(email?: string): string {
 }
 
 /**
+ * V1.9.100-P0b — Detecta menção de médico em mensagem do paciente.
+ *
+ * GPT-Ricardo review (29/04 ~20h): "Intenção do usuário deve ser resolvida
+ * ANTES da FSM, não dentro dela. FSM não deveria interpretar desejo, só
+ * executar estado."
+ *
+ * Caso de uso: paciente fala "quero fazer com Dr Eduardo" → override
+ * aecTargetPhysicianDisplayName ANTES de startAssessment ser chamado.
+ *
+ * Tolera exclusões: "Eduardo e nao Ricardo" → escolhe Eduardo.
+ * Em caso de ambiguidade real (sem exclusão), retorna null (mantém default).
+ */
+export function extractDoctorFromMessage(message: string | null | undefined): string | null {
+  if (!message) return null
+  const norm = message.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '')
+
+  // Detectar EXCLUSÕES ("nao ricardo", "exceto eduardo", "fora valenca")
+  const excludesRicardo = /\b(nao|exceto|menos|fora\s+(de\s+)?)\s*(o\s+)?(dr\.?\s*)?(ricardo|valenca)/.test(norm)
+  const excludesEduardo = /\b(nao|exceto|menos|fora\s+(de\s+)?)\s*(o\s+)?(dr\.?\s*)?(eduardo|faveret)/.test(norm)
+
+  // Detectar MENÇÕES (pode ser sem "Dr." prefix)
+  const mentionsRicardo = /\b(ricardo|valenca)\b/.test(norm)
+  const mentionsEduardo = /\b(eduardo|faveret)\b/.test(norm)
+
+  // Aplicar exclusões
+  const wantsRicardo = mentionsRicardo && !excludesRicardo
+  const wantsEduardo = mentionsEduardo && !excludesEduardo
+
+  // Decidir
+  if (wantsEduardo && !wantsRicardo) return 'Dr. Eduardo Faveret'
+  if (wantsRicardo && !wantsEduardo) return 'Dr. Ricardo Valença'
+
+  // Ambíguo (ambos mencionados sem exclusão) ou nenhum → não override
+  return null
+}
+
+/**
  * Mensagem amigável para mostrar ao paciente quando gate solicita escolha.
  */
 export function buildDoctorChoicePrompt(options: DoctorOption[]): string {

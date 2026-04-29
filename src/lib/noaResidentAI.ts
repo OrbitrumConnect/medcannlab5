@@ -4,7 +4,7 @@ import { KnowledgeBaseIntegration } from '../services/knowledgeBaseIntegration'
 import { getNoaAssistantIntegration } from './noaAssistantIntegration'
 import { getPlatformFunctionsModule } from './platformFunctionsModule'
 import { clinicalAssessmentFlow, stripPlatformInjectionNoise } from './clinicalAssessmentFlow'
-import { getOrPromptDoctorContext, buildDoctorChoicePrompt } from './aecGate'
+import { getOrPromptDoctorContext, buildDoctorChoicePrompt, extractDoctorFromMessage } from './aecGate'
 import { buildPatientContext } from './buildPatientContext'
 import { buildProfessionalContext } from './buildProfessionalContext'
 import { buildAdminContext } from './buildAdminContext'
@@ -812,12 +812,18 @@ export class NoaResidentAI {
       // INICIAR FLUXO AEC MASTER (ClinicalAssessmentFlow)
       // C3: Nome sera preenchido pelo path do TradeVision (platformData.user.name)
       const pn = platformData?.user?.name || platformData?.user?.full_name
-      // P0b GATE D': usa doctorName resolvido pelo gate (single source of truth)
-      // Se platformData.aecConsultationPhysicianName foi setado, prioriza-o; senão, usa gate.doctor
+      // V1.9.100-P0b GATE D' + intent override:
+      // Prioridade: (1) menção verbal explícita > (2) platformData manual > (3) gate.doctor (último appt)
+      // GPT-Ricardo review: "Intenção do usuário resolvida ANTES da FSM, não dentro dela."
+      const doctorFromMessage = extractDoctorFromMessage(message)
       const targetDoc =
+        doctorFromMessage ||
         (typeof platformData?.aecConsultationPhysicianName === 'string'
           ? platformData.aecConsultationPhysicianName.trim()
           : undefined) || gate.doctor.doctorName
+      if (doctorFromMessage) {
+        console.log(`[P0B_DOCTOR_OVERRIDE] Menção verbal detectada — override default: ${doctorFromMessage}`)
+      }
       clinicalAssessmentFlow.startAssessment(userId, pn, targetDoc)
       console.log('IA inicializada para:', userEmail)
 
@@ -1696,11 +1702,18 @@ export class NoaResidentAI {
             // NAO resetar, NAO startar. Continua o fluxo AEC normal — a mensagem cai no processamento de fase abaixo.
           } else {
             const patientName = platformData?.user?.name || platformData?.user?.full_name || undefined
+            // V1.9.100-P0b: detecta menção verbal de médico ANTES de startAssessment
+            // GPT-Ricardo review: "Intenção do usuário resolvida ANTES da FSM"
+            const doctorFromMessage = extractDoctorFromMessage(userMessage)
+            const targetDoc = doctorFromMessage || aecPhysicianName || undefined
+            if (doctorFromMessage) {
+              console.log(`[P0B_DOCTOR_OVERRIDE] (ASSESSMENT_START) Menção verbal: ${doctorFromMessage}`)
+            }
             clinicalAssessmentFlow.resetAssessment(platformData.user.id)
             clinicalAssessmentFlow.startAssessment(
               platformData.user.id,
               patientName,
-              aecPhysicianName || undefined
+              targetDoc
             )
             flowState = clinicalAssessmentFlow.getState(platformData.user.id)
             await clinicalAssessmentFlow.persist(platformData.user.id)
@@ -1708,22 +1721,29 @@ export class NoaResidentAI {
               'AEC: ASSESSMENT_START - sessao reiniciada (estado anterior descartado) | Nome:',
               patientName || '(—)',
               '| Profissional AEC:',
-              aecPhysicianName || '(padrao Dr. Ricardo Valenca)'
+              targetDoc || '(padrao Dr. Ricardo Valenca)'
             )
           }
         } else if (!flowState && clientWantsAecStart) {
           const patientName = platformData?.user?.name || platformData?.user?.full_name || undefined
+          // V1.9.100-P0b: detecta menção verbal de médico ANTES de startAssessment
+          // GPT-Ricardo review: "Intenção do usuário resolvida ANTES da FSM"
+          const doctorFromMessage = extractDoctorFromMessage(userMessage)
+          const targetDoc = doctorFromMessage || aecPhysicianName || undefined
+          if (doctorFromMessage) {
+            console.log(`[P0B_DOCTOR_OVERRIDE] (clientWantsAecStart) Menção verbal: ${doctorFromMessage}`)
+          }
           clinicalAssessmentFlow.startAssessment(
             platformData.user.id,
             patientName,
-            aecPhysicianName || undefined
+            targetDoc
           )
           flowState = clinicalAssessmentFlow.getState(platformData.user.id)
           console.log(
             'AEC: fluxo iniciado | trigger: pedido_no_chat | Nome perfil:',
             patientName || '(—)',
             '| Profissional AEC:',
-            aecPhysicianName || '(padrao Dr. Ricardo Valenca)'
+            targetDoc || '(padrao Dr. Ricardo Valenca)'
           )
         }
 
