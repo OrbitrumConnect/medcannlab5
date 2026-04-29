@@ -3,6 +3,7 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2"
 import OpenAI from "https://esm.sh/openai@4"
 import { COS, COS_Context } from "./cos_kernel.ts"
+import { assertPatientHasDoctorContext } from "../_shared/aec_gate.ts"
 
 // ============================================================================
 // [V1.9.35] Clinical Score Calculator — INLINE dentro do index.ts
@@ -1715,6 +1716,47 @@ Deno.serve(async (req: Request) => {
 
         if (isFinalizeRequest) {
             console.log('🚀 [GATEWAY] Disparando Orquestrador de Finalização ClinicalMaster (Mode: Active)...');
+
+            // ──────────────────────────────────────────────────────────────
+            // 🛡️ V1.9.100-P0b GATE D' (CAMADA B — backend caminho 1)
+            //
+            // Bloqueia finalização AEC se paciente NÃO tem appointment válido.
+            // Defesa em profundidade: mesmo se Camada A (frontend) falhar,
+            // backend ainda exige médico vinculado.
+            //
+            // Princípio: gate ANTES do pipeline. NÃO toca handleFinalizeAssessment.
+            // Lock V1.9.95+97+98+99-B preservado.
+            // ──────────────────────────────────────────────────────────────
+            const gateB = await assertPatientHasDoctorContext(supabaseClient, effectiveUserId);
+            if (gateB.ok === false) {
+                console.warn(`⛔ [P0B_GATE_B] Caminho 1 bloqueado — motivo: ${gateB.reason}`);
+                try {
+                    await supabaseClient.from('noa_logs').insert({
+                        user_id: effectiveUserId,
+                        interaction_type: 'p0b_gate_blocked',
+                        payload: {
+                            layer: 'B',
+                            reason: gateB.reason,
+                            interaction_id,
+                            path: 'caminho_1_finalize_request'
+                        }
+                    });
+                } catch (e) {
+                    console.warn('[P0B_GATE_B] Falha ao logar bloqueio (não bloqueia):', e);
+                }
+                return new Response(JSON.stringify({
+                    success: false,
+                    error_code: 'DOCTOR_REQUIRED',
+                    error_reason: gateB.reason,
+                    message: 'É necessário ter um médico vinculado antes de finalizar a avaliação. Por favor, agende uma consulta.',
+                    action: gateB.ux_action ?? 'SCHEDULE_APPOINTMENT'
+                }), {
+                    status: 409,
+                    headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+                });
+            }
+            console.log(`✅ [P0B_GATE_B] Caminho 1 autorizado — médico ${gateB.doctor_id}`);
+
             // [FIX 16/04] AWAIT obrigatório — fire-and-forget causava pipeline incompleto
             // [FIX 22/04 v2] Captura o resultado para devolver report_id ao cliente
             let finalizeResult: { report_id: string | null; status: string; error?: string } = {
@@ -2584,6 +2626,22 @@ ${one.summary ? `Resumo rápido: ${one.summary}` : ''}`
         }
 
         // --- HANDLER DE FINALIZAÇÃO DE AVALIAÇÃO (SERVER-SIDE) v2 (GOLDEN 03/04) ---
+        //
+        // ⚠️ TODO V1.9.100-P0b unify (29/04 ~15h):
+        // Este `if (action === 'finalize_assessment')` é DUPLICADO da linha
+        // ~1716 (caminho 1 do GATE V1.9.100-P0b). Em prática, linha ~1740
+        // (`if (action === 'finalize_assessment')` dentro do caminho 1) retorna
+        // response ANTES desta linha ser alcançada — provável dead code.
+        //
+        // Vulnerabilidade interna (NÃO ATIVA): tem fallback hardcoded próprio
+        // (linhas ~2660-2665) com mesmo UUID Ricardo. Se algum dia ficar
+        // acessível, viola gate D.
+        //
+        // AÇÃO FUTURA (sessão dedicada — não bloqueia batalha 3):
+        //   1. Validar via logs prod se este path dispara
+        //   2. Se nunca → DROP TABLE este bloco
+        //   3. Se sim → refatorar para chamar assertPatientHasDoctorContext
+        //              + remover fallback hardcoded
         if (action === 'finalize_assessment') {
             console.log(`[ACTION] Finalizando avaliação interaction_id=${interaction_id} via Server-Side...`)
 
@@ -5048,25 +5106,77 @@ ${contentExcerpt || '(Texto não disponível para este documento. O conteúdo ai
         if (aiResponse?.includes('[ASSESSMENT_COMPLETED]')) {
             const orchestratorPatientId = assessmentData?.patient_id || effectiveUserId;
             if (orchestratorPatientId) {
-                console.log('📝 [ORCHESTRATOR] Detectado fechamento clínico. Disparando Pipeline...', { orchestratorPatientId });
-                
-                // Extração Lossless: Usa aecSnapshot (estado completo) se o assessmentData estiver vazio
-                const isAssessmentDataEmpty = !assessmentData || Object.keys(assessmentData).length <= 1;
-                const sourceData = isAssessmentDataEmpty ? (aecSnapshot || {}) : assessmentData;
+                // ──────────────────────────────────────────────────────────────
+                // 🛡️ V1.9.100-P0b GATE D' (CAMADA C — backend caminho 2 DOMINANTE)
+                //
+                // Caminho 2 dispara automaticamente quando GPT emite a tag
+                // [ASSESSMENT_COMPLETED] (sistema injeta em FINAL_RECOMMENDATION/
+                // CLOSING/CONSENT_COLLECTION na linha 4947-4958). É o caminho
+                // mais frequente em produção real.
+                //
+                // Estratégia: se gate falhar, REMOVE a tag do aiResponse (pra
+                // frontend não interpretar como completed) + adiciona mensagem
+                // alertando + SKIP pipeline.
+                //
+                // Princípio: gate ANTES do pipeline. Pipeline INTOCADO.
+                // Lock V1.9.95+97+98+99-B preservado.
+                // ──────────────────────────────────────────────────────────────
+                const gateC = await assertPatientHasDoctorContext(supabaseClient, orchestratorPatientId);
+                if (gateC.ok === false) {
+                    console.warn(`⛔ [P0B_GATE_C] Caminho 2 bloqueado (tag automática) — motivo: ${gateC.reason}`);
+                    try {
+                        await supabaseClient.from('noa_logs').insert({
+                            user_id: orchestratorPatientId,
+                            interaction_type: 'p0b_gate_blocked',
+                            payload: {
+                                layer: 'C',
+                                reason: gateC.reason,
+                                interaction_id,
+                                path: 'caminho_2_auto_tag_assessment_completed',
+                                blocked: true,
+                                requires_doctor: true,
+                                pipeline_skipped: true
+                            }
+                        });
+                    } catch (e) {
+                        console.warn('[P0B_GATE_C] Falha ao logar bloqueio (não bloqueia):', e);
+                    }
+                    // [GPT review] usar variável separada — evita mutação ambígua de aiResponse
+                    const sanitizedResponse = aiResponse
+                        .replace(/\[ASSESSMENT_COMPLETED\]/g, '')
+                        .replace(/\[FINALIZE_SESSION\]/g, '')
+                        .trim();
+                    // [GPT review] UX com saída acionável — não trava o usuário
+                    aiResponse = sanitizedResponse +
+                        '\n\n⚠️ Para finalizar sua avaliação, é necessário ter um médico vinculado.\n\n' +
+                        'Você pode:\n' +
+                        '• Agendar uma consulta na aba de agendamento\n' +
+                        '• Ou escolher um médico diretamente aqui\n\n' +
+                        '(Com isso, sigo com você na avaliação)';
+                    // SKIP pipeline — sinalizado via noa_logs.payload.pipeline_skipped=true
+                    // Frontend pode inspecionar metadata na response final pra saber o estado real.
+                } else {
+                    console.log(`✅ [P0B_GATE_C] Caminho 2 autorizado — médico ${gateC.doctor_id}`);
+                    console.log('📝 [ORCHESTRATOR] Detectado fechamento clínico. Disparando Pipeline...', { orchestratorPatientId });
 
-                // [FIX 16/04] AWAIT obrigatório — fire-and-forget causava corte do pipeline antes de completar
-                try {
-                    await handleFinalizeAssessment({
-                        supabaseClient,
-                        openai,
-                        interaction_id,
-                        assessmentData: { ...sourceData, patient_id: orchestratorPatientId },
-                        patientData,
-                        professionalId,
-                        fallbackUserId: effectiveUserId
-                    });
-                } catch (orchErr) {
-                    console.error('❌ [ORCHESTRATOR] Erro no pipeline de finalização:', orchErr);
+                    // Extração Lossless: Usa aecSnapshot (estado completo) se o assessmentData estiver vazio
+                    const isAssessmentDataEmpty = !assessmentData || Object.keys(assessmentData).length <= 1;
+                    const sourceData = isAssessmentDataEmpty ? (aecSnapshot || {}) : assessmentData;
+
+                    // [FIX 16/04] AWAIT obrigatório — fire-and-forget causava corte do pipeline antes de completar
+                    try {
+                        await handleFinalizeAssessment({
+                            supabaseClient,
+                            openai,
+                            interaction_id,
+                            assessmentData: { ...sourceData, patient_id: orchestratorPatientId },
+                            patientData,
+                            professionalId,
+                            fallbackUserId: effectiveUserId
+                        });
+                    } catch (orchErr) {
+                        console.error('❌ [ORCHESTRATOR] Erro no pipeline de finalização:', orchErr);
+                    }
                 }
             } else {
                 console.error('❌ [ORCHESTRATOR] Fechamento clínico detectado mas patient_id não resolvido!');

@@ -2149,3 +2149,102 @@ Verificado empiricamente:
 ---
 
 *Bloco S adicionado 2026-04-28 ~11h45 BRT por Claude Opus 4.7 (1M context). Diário 28/04 fecha em 19 blocos (A→S), ~920 linhas. Sessão manhã/início tarde. P0 segurança chat-images resolvido. Próximo: TIER 2 itens 2-3 (storage órfão + user_profiles) ou TIER 3 (Edge half-impl).*
+
+---
+
+## CC — SELO FINAL DO DIA 28/04 (madrugada 29/04 ~01h30)
+
+### O que foi entregue empiricamente hoje
+
+**Engenharia (23 commits, 4 features estruturais):**
+- ✅ V1.9.98 — `chat-images` bucket privado + RLS Opção B + signed URL TTL 1 ano
+- ✅ V1.9.99 — `video-call-reminders` reescrita elite sweep mode + cron 5min + Resend
+- ✅ V1.9.99 — Resend production-ready (DNS verified, email externo confirmado às 15:14)
+- ✅ V1.9.99-B — `sync-gcal` Fase 1 cirúrgica (preservação total)
+- ✅ Cleanup atômico (typo Ricardo + edge duplicada + trigger duplicado)
+- ✅ Anexos prof↔paciente upload UI (2 componentes: Patient + Professional)
+- ✅ Vazamento fórum fechado preventivamente
+- ✅ Atalho sidebar profissional (P8 polish)
+
+**Audit (5 dimensões cruzadas):**
+- ✅ Audit A — 5 portas COS validadas em código (`cos_engine.ts:43-110`)
+- ✅ Audit A — `isAskingConsent` validado (`tradevision-core/index.ts:4942-4946`)
+- ✅ Audit A — AEC GATE V1.5 validado em 6 pontos do core
+- ✅ Audit B — IMRE 28 blocos cruzado em 12 fontes empíricas
+- ✅ Audit C — Educação infra-pronta (course_enrollments + RLS + 11 arquivos front + 4 cursos cadastrados; matrícula ativa = 0)
+- ✅ Audit dimensão método (jvbiocann pipeline AO VIVO + 100% Verbatim em hard-lock)
+- ✅ Audit autoria Core (TradeVision IA archive 10k+ linhas + cabeçalhos código + COS evolução v3.0→v5.0)
+
+**Princípios cristalizados (6):**
+- ✅ P9 — Não-uso ≠ não-precisa (cuidado com DELETE em pré-PMF)
+- ✅ P10 — Substituição silenciosa de responsabilidade (kevlar genérico)
+- ✅ Anti-subestimação severidade (3 perguntas obrigatórias)
+- ✅ Anti-superestimação (complemento — não inventar gravidade sem sinal)
+- ✅ Anti-over-claim endorsements (4 testes antes de afirmar validação externa)
+- ✅ IAs = suporte, nunca autoria (fronteira institucional)
+
+**Narrativa institucional (12 iterações v1→v12):**
+- ✅ Reframe central via Ricardo aceito ("method-native antes de AI-native")
+- ✅ Audit dimensão método empírico (50%→85%→92% confiança)
+- ✅ Investment memo iterado 5x com GPT
+- ✅ Acordo de quotistas analisado (4 sócios, IP cedido, non-compete)
+- ✅ Origem Core honestamente narrada (~500 herdadas + ~3500 AQUI)
+- ✅ Parágrafo institucional v12 PT/EN unificado (selado em 92% confiança)
+
+**Locks preservados (intocados):**
+- 🔒 V1.9.95 + V1.9.97 + V1.9.98 + V1.9.99-B
+- 🔒 AEC core / Pipeline / Signature / Verbatim / Gate / RACI
+
+**Memórias persistentes salvas (15+):**
+- project_origem_tradevision_core_pedro.md (com correção Antigravity)
+- project_paragrafo_institucional_v12_FINAL_29_04.md (canônico)
+- project_audit_metodo_dimensao_28_04.md
+- project_reframe_method_native_28_04.md
+- project_pipeline_observado_ao_vivo_28_04.md
+- project_video_call_reminders_v53_28_04.md
+- project_anexos_prof_paciente_plano_nao_acabado.md
+- project_lock_v1999_resend_prod_28_04.md
+- project_leitura_estrategica_3_batalhas_29_04.md
+- feedback_p9_nao_uso_nao_e_nao_precisa.md
+- feedback_p10_substituicao_silenciosa_responsabilidade.md
+- feedback_anti_subestimacao_severidade.md
+- feedback_anti_overclaim_endorsements.md
+- feedback_ias_sao_suporte_nao_autoria.md
+- feedback_dinamica_relacional_socios.md
+
+### Status das 3 batalhas (calibrado pós-GPT review)
+
+```
+🟢 BATALHA CONCEITUAL — GANHA
+🟡 BATALHA TÉCNICA — GANHANDO (com 5 gaps concretos)
+🔴 BATALHA DE MERCADO — NÃO INICIADA (0 paciente externo)
+```
+
+### O que falta para selar e voltar à produção (29/04+)
+
+```
+🔴 P0a — Rotação service_role (~3h)
+🔴 P0b — Bloquear DOCTOR_RESOLUTION fallback silencioso (~3h)
+🔴 P0c — Caminho A North Star instrumentação (1-2 dias)
+                    ↑
+   pré-requisitos da batalha 3 (paciente externo seguro + medível)
+
+🟡 V12 selado em memória — narrativa institucional pronta
+🟡 Janela 60-90 dias pós-CNPJ (João Vidal destrava)
+🟡 5-10 pacientes externos com retorno espontâneo + override 10-30%
+   = conversão $2-5M pré-PMF → $5-15M pós-tração
+```
+
+### Frase-âncora CC (selo do dia 28)
+
+> *"Hoje ganhamos a batalha de narrativa contra nós mesmos. Audit
+> trail completo no repositório. v12 unificado em 92% confiança.
+> 6 princípios cristalizados. 23 commits. 4 features estruturais.
+> Ainda não ganhamos a batalha de mercado — ela não começou. 3 P0s
+> técnicos (~10h) separam HOJE de batalha 3 segura. Janela 60-90
+> dias pós-CNPJ. Method-first, architecture-grounded, AI-last.
+> MedCannLab não substitui método — operacionaliza, preserva, escala."*
+
+---
+
+*Bloco CC adicionado 2026-04-29 ~01h30 BRT por Claude Opus 4.7 (1M context). SELO FINAL do diário 28/04. Diário fecha em 30 blocos (A→S→T→U→V→W→X→Y→Z→AA→BB→CC), ~2300+ linhas. Maior densidade institucional + técnica do projeto até hoje. Próximo: diário 29/04 com 3 P0s pré-batalha 3.*

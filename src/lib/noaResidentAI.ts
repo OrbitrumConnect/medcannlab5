@@ -4,6 +4,7 @@ import { KnowledgeBaseIntegration } from '../services/knowledgeBaseIntegration'
 import { getNoaAssistantIntegration } from './noaAssistantIntegration'
 import { getPlatformFunctionsModule } from './platformFunctionsModule'
 import { clinicalAssessmentFlow, stripPlatformInjectionNoise } from './clinicalAssessmentFlow'
+import { getOrPromptDoctorContext, buildDoctorChoicePrompt } from './aecGate'
 import { buildPatientContext } from './buildPatientContext'
 import { buildProfessionalContext } from './buildProfessionalContext'
 import { buildAdminContext } from './buildAdminContext'
@@ -767,6 +768,34 @@ export class NoaResidentAI {
       lowerMessage.includes('protocolo imre') ||
       lowerMessage.includes('iniciar avaliacao')
     )) {
+      // 🛡️ V1.9.100-P0b GATE D' (CAMADA A — frontend gate de ENTRADA da AEC)
+      //
+      // ANTES de iniciar AEC, verificar contexto médico do paciente:
+      //   - Tem appointment ativo? → segue, populando aecTargetPhysicianDisplayName
+      //   - Sem appointment? → apresenta opções de médicos INLINE no chat
+      //                        (paciente escolhe sem sair do chat)
+      //
+      // Princípio: gate ANTES do pipeline. NÃO toca AEC FSM/IMRE/Verbatim/COS.
+      // Lock V1.9.95+97+98+99-B preservado.
+      const gate = await getOrPromptDoctorContext(userId)
+
+      if (gate.hasContext === false) {
+        // Sem médico vinculado → apresenta escolha inline (não bloqueia, redireciona)
+        const reason = gate.reason
+        const options = gate.options || []
+        console.warn(`[P0B_GATE_A] AEC entrada bloqueada — motivo: ${reason}`)
+        const promptMsg = buildDoctorChoicePrompt(options)
+        return this.createResponse(promptMsg, 0.95, 'text', {
+          gate_blocked: true,
+          gate_reason: reason,
+          doctor_options: options,
+          action: 'AEC_REQUIRES_DOCTOR_CHOICE',
+        })
+      }
+
+      // ✅ Gate passou — paciente tem médico vinculado (gate.hasContext === true)
+      console.log(`[P0B_GATE_A] AEC autorizada para paciente ${userId} com médico ${gate.doctor.doctorName}`)
+
       // Iniciar nova avaliacao (sincronizar com platformFunctions)
       assessment = {
         userId,
@@ -783,10 +812,12 @@ export class NoaResidentAI {
       // INICIAR FLUXO AEC MASTER (ClinicalAssessmentFlow)
       // C3: Nome sera preenchido pelo path do TradeVision (platformData.user.name)
       const pn = platformData?.user?.name || platformData?.user?.full_name
+      // P0b GATE D': usa doctorName resolvido pelo gate (single source of truth)
+      // Se platformData.aecConsultationPhysicianName foi setado, prioriza-o; senão, usa gate.doctor
       const targetDoc =
-        typeof platformData?.aecConsultationPhysicianName === 'string'
+        (typeof platformData?.aecConsultationPhysicianName === 'string'
           ? platformData.aecConsultationPhysicianName.trim()
-          : undefined
+          : undefined) || gate.doctor.doctorName
       clinicalAssessmentFlow.startAssessment(userId, pn, targetDoc)
       console.log('IA inicializada para:', userEmail)
 
