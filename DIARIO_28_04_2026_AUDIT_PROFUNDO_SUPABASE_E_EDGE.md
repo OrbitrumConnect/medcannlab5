@@ -1942,6 +1942,118 @@ Auditoria boa não corrige só fatos — força reframe de premissas.
 
 ---
 
+## BLOCO BB — V1.9.99-B gcal infraestrutura BANCO ONLY (FASE 1, ~19h45)
+
+### BB.1 — Pedro pediu atacar 2 Edges half-impl restantes
+
+`google-auth` + `sync-gcal` foram identificadas no audit 28/04 madrugada como deployadas-mas-sem-tabelas. Pedro pediu "ver como está, analisar, auditar aquele esquema de sempre que sabemos como proceder pra não regredir".
+
+### BB.2 — Audit empírico (anti-subestimação)
+
+```
+✅ sprint_1_gcal_setup.sql NA RAIZ desde 16/04 — schema completo
+   Não foi aplicado por causa do desvio kevlar 16/04
+✅ Edges deployadas v17 (CLAUDE.md desatualizado dizia v16)
+✅ ZERO callers frontend (grep amplo: signInWithOAuth, Google Calendar, gcal)
+✅ Empírico Supabase confirma 100% que diário 16/04 está correto
+```
+
+### BB.3 — GPT review crítico — "corpo primeiro, ligar depois, endurecer borda"
+
+Eu inicialmente propus aplicar tudo: migration + verify_jwt + cron + OAuth UI.
+
+GPT freou: *"Hardening sem payload é falso senso de segurança. Hoje sistema está em 'infra não ativada'. Mexer em Edge agora aumenta superfície sem necessidade."*
+
+→ Reescopo para **FASE 1 mínima = só banco + guard**.
+
+### BB.4 — V1.9.99-B aplicada (migration arquivada)
+
+`supabase/migrations/20260428190000_v1_9_99_b_gcal_schema_only.sql`:
+
+- 2 tabelas novas: `professional_integrations` (cofre OAuth) + `integration_jobs` (outbox)
+- 4 colunas em `appointments`: gcal_event_id + meeting_url (já existia, IF NOT EXISTS) + gcal_last_sync_at + gcal_sync_status
+- Function `enqueue_gcal_job` **com GUARD** (refinamento crítico vs sprint_1.sql)
+- Trigger `trigger_enqueue_gcal` em appointments
+
+**Diferença vs sprint_1.sql 16/04**:
+```
+Original (16/04): trigger criava JOB pra TODO appointment
+                  → fila enchia de fail loops em médicos sem Google
+V1.9.99-B (28/04): GUARD EXISTS professional_integrations
+                   → só enfileira pra médicos COM Google conectado
+                   → fila limpa, zero fail loops
+```
+
+### BB.5 — Smoke tests universais (12/12 cobertos)
+
+**Smoke 1 — guard OFF (sem integração)**:
+```sql
+INSERT appointment fake (Ricardo) → 0 jobs ✅
+```
+
+**Smoke 2 — guard ON (com integração simulada)**:
+```sql
+INSERT integration fake + INSERT appointment → 1 job action='create_or_update' ✅
+ROLLBACK
+```
+
+**Smoke 3 — UNIVERSAL (Pedro pediu validar todos)**:
+```sql
+INSERT 1 appointment fake pra CADA UM dos 12 profissionais/admins
+→ 12 appointments inseridos
+→ 0 jobs criados (guard funcionou pra TODOS uniformemente)
+→ guard_universal_passou: true ✅
+```
+
+### BB.6 — Calibração identidades 13→12
+
+Pedro questionou "achei que tinha mais". Audit empírico revelou:
+- Memória `project_identidades_reais_28_04.md` dizia "5 admins + 8 professionals = 13"
+- Empírico: **4 admins + 8 professionals = 12**
+- Provável causa: contei Carolina (paciente teste) como admin por engano
+
+Memória atualizada com tabela detalhada dos 12. Princípio anti-subestimação reaplicado: re-validar números antigos em estado novo.
+
+### BB.7 — Estado consolidado pós-V1.9.99-B
+
+```
+Edge Functions:                      10 ativas (sem mudança hoje)
+Tabelas novas:                       +2 (prof_integrations + integration_jobs)
+Colunas appointments novas:          +3 (gcal_event_id/last_sync_at/sync_status)
+Functions novas:                     +1 (enqueue_gcal_job com guard)
+Triggers novos:                      +1 (trigger_enqueue_gcal)
+RLS policies novas:                  +2
+Indexes novos:                       +2
+Estado feature:                      "sistema invisível seguro"
+                                     (infra pronta, zero canal ativo)
+Lock V1.9.95+V1.9.97:                INTOCADO
+AEC core:                            INTOCADO
+```
+
+### BB.8 — FASE 2 mapeada (NÃO hoje)
+
+```
+1. Pedro setar ENCRYPTION_KEY (Supabase Dashboard)
+2. Pedro setar GOOGLE_CLIENT_ID + SECRET (Cloud Console + Supabase)
+3. Edge sync-gcal: ajustar JOIN manual (FK appointments_professional_id_fkey ausente — igual fix V1.9.99 video-call-reminders)
+4. Workflow CI sync-gcal-cron (*/10min)
+5. Frontend: botão "Conectar Google Calendar" no perfil profissional
+6. Page sucesso pós-OAuth callback
+7. UI status integração
+8. verify_jwt=true nas Edges (POR ÚLTIMO — endurecer borda)
+9. Smoke E2E médico-fluxo completo
+```
+
+### Frase-âncora BB
+
+> *"Audit empírico em vez de só diário. GPT freou impulso de hardening sem payload. Aplicar Fase 1 mínima cria 'sistema invisível seguro' — corpo pronto, zero canal ativo, 12/12 profissionais cobertos uniformemente. P8 puro: respeitar trabalho que existe (sprint_1.sql 16/04), refinar com lição aprendida (guard anti-fila-suja)."*
+
+---
+
+*Bloco BB adicionado 2026-04-28 ~19h45 BRT por Claude Opus 4.7 (1M context). Diário 28/04 cresceu de 27→28 blocos (A→AA→BB), ~2200+ linhas. V1.9.99-B aplicada cirurgicamente em transação atômica com smoke tests universais. Sessão fecha em alta histórica: 23 commits, 6 princípios cristalizados, 4 features estruturais aplicadas (chat-images V1.9.98 + video-call-reminders V1.9.99 + fórum hardening + gcal V1.9.99-B).*
+
+---
+
 ## BLOCO S — Aplicação TIER 1 + TIER 2 (~11h30 BRT)
 
 ### S.1 — TIER 1 cleanup aplicado (commit 1283598)
