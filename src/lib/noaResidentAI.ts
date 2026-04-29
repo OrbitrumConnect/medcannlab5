@@ -822,7 +822,13 @@ export class NoaResidentAI {
           ? platformData.aecConsultationPhysicianName.trim()
           : undefined) || gate.doctor.doctorName
       if (doctorFromMessage) {
-        console.log(`[P0B_DOCTOR_OVERRIDE] Menção verbal detectada — override default: ${doctorFromMessage}`)
+        console.log('[DOCTOR_OVERRIDE]', {
+          source: 'processAssessment',
+          detected: doctorFromMessage,
+          originalMessage: message,
+          fellbackTo: gate.doctor.doctorName,
+          finalChoice: targetDoc,
+        })
       }
       clinicalAssessmentFlow.startAssessment(userId, pn, targetDoc)
       console.log('IA inicializada para:', userEmail)
@@ -1707,7 +1713,13 @@ export class NoaResidentAI {
             const doctorFromMessage = extractDoctorFromMessage(userMessage)
             const targetDoc = doctorFromMessage || aecPhysicianName || undefined
             if (doctorFromMessage) {
-              console.log(`[P0B_DOCTOR_OVERRIDE] (ASSESSMENT_START) Menção verbal: ${doctorFromMessage}`)
+              console.log('[DOCTOR_OVERRIDE]', {
+                source: 'ASSESSMENT_START_app_command',
+                detected: doctorFromMessage,
+                originalMessage: userMessage,
+                fellbackTo: aecPhysicianName || '(default Ricardo)',
+                finalChoice: targetDoc,
+              })
             }
             clinicalAssessmentFlow.resetAssessment(platformData.user.id)
             clinicalAssessmentFlow.startAssessment(
@@ -1731,7 +1743,13 @@ export class NoaResidentAI {
           const doctorFromMessage = extractDoctorFromMessage(userMessage)
           const targetDoc = doctorFromMessage || aecPhysicianName || undefined
           if (doctorFromMessage) {
-            console.log(`[P0B_DOCTOR_OVERRIDE] (clientWantsAecStart) Menção verbal: ${doctorFromMessage}`)
+            console.log('[DOCTOR_OVERRIDE]', {
+              source: 'clientWantsAecStart',
+              detected: doctorFromMessage,
+              originalMessage: userMessage,
+              fellbackTo: aecPhysicianName || '(default Ricardo)',
+              finalChoice: targetDoc,
+            })
           }
           clinicalAssessmentFlow.startAssessment(
             platformData.user.id,
