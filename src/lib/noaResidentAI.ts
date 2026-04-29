@@ -1651,12 +1651,23 @@ export class NoaResidentAI {
         platformAllowsAec &&
         isPatientForAecFlow
 
+      // V1.9.100-P0b: cadeia de resolução do médico AEC.
+      // Prioridade: (1) UI explícita > (2) platformData manual > (3) menção verbal > (4) vazio
+      // Vai pro payload Edge Function (linha 2099) E pra frase de abertura (linha 1663).
       const aecPhysicianName =
         (typeof uiContext?.aecTargetProfessional?.name === 'string' &&
           uiContext.aecTargetProfessional.name.trim()) ||
         (typeof platformData?.aecConsultationPhysicianName === 'string' &&
           platformData.aecConsultationPhysicianName.trim()) ||
+        extractDoctorFromMessage(userMessage) ||
         ''
+      if (aecPhysicianName) {
+        console.log('[AEC_PHYSICIAN_RESOLVED]', {
+          name: aecPhysicianName,
+          fromMessage: !!extractDoctorFromMessage(userMessage),
+          willPropagateToEdge: true,
+        })
+      }
 
       const docForAecOpening = aecPhysicianName || 'Dr. Ricardo Valenca'
       const buildAecOpeningHint = () =>
