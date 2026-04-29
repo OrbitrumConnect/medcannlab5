@@ -334,23 +334,31 @@ const Landing: React.FC = () => {
             </div>
 
             <h1 className="text-4xl lg:text-6xl font-bold leading-tight mb-6 tracking-tight">
-              A Primeira IA Treinada na <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-teal-300">Arte da Escuta Clínica.</span>
+              Clínica, Ensino e Pesquisa em <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-teal-300">Cannabis Medicinal</span> baseados na Arte da Entrevista Clínica (AEC).
             </h1>
 
-            <p className="text-lg text-slate-400 mb-8 max-w-lg mx-auto lg:mx-0 leading-relaxed">
-              Estruture consultas, otimize decisões e recupere o tempo de cuidado. Onde a Neurociência encontra a Cannabis Medicinal numa plataforma de alta performance.
+            <p className="text-lg text-slate-300 mb-6 max-w-lg mx-auto lg:mx-0 leading-relaxed">
+              Avaliação clínica estruturada com método médico real, criado pelo <strong className="text-emerald-300">Dr. Ricardo Valença</strong> — já aplicado em prática clínica.
             </p>
+
+            <div className="flex flex-wrap items-center justify-center lg:justify-start gap-x-4 gap-y-2 mb-8 text-sm text-slate-400">
+              <span className="flex items-center gap-1.5"><CheckCircle2 className="w-4 h-4 text-emerald-400" />Método autoral validado</span>
+              <span className="flex items-center gap-1.5"><CheckCircle2 className="w-4 h-4 text-emerald-400" />Sem improviso clínico</span>
+              <span className="flex items-center gap-1.5"><CheckCircle2 className="w-4 h-4 text-emerald-400" />Governança auditável</span>
+            </div>
 
             <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4">
               <button onClick={() => setShowRegister(true)} className="w-full sm:w-auto px-8 py-4 bg-gradient-to-r from-green-600 to-emerald-600 rounded-2xl text-white font-semibold hover:shadow-lg hover:shadow-green-500/25 transition-all text-lg flex items-center justify-center space-x-2 group">
-                <span>Acessar Plataforma</span>
+                <span>Iniciar Avaliação Clínica</span>
                 <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
               </button>
               <button onClick={() => setShowLogin(true)} className="w-full sm:w-auto px-8 py-4 bg-slate-800/50 border border-emerald-500/40 rounded-2xl text-white font-semibold hover:bg-slate-800 hover:border-emerald-500/60 transition-all text-lg backdrop-blur-sm">
                 Já tenho conta — Entrar
               </button>
             </div>
-            <p className="text-center lg:text-left text-sm text-slate-500 mt-3">Novos usuários: 3 dias de acesso livre para ver como é.</p>
+            <p className="text-center lg:text-left text-sm text-slate-500 mt-3">
+              Novos usuários: 3 dias de acesso livre. <span className="text-emerald-400 font-medium">+90 avaliações clínicas já realizadas</span> com método AEC.
+            </p>
 
             <div className="mt-10 flex items-center justify-center lg:justify-start space-x-6 text-sm text-slate-500">
               <div className="flex items-center space-x-2">
@@ -595,6 +603,60 @@ const Landing: React.FC = () => {
               </h3>
               <p className="text-slate-400 text-sm leading-relaxed">
                 Quando você e o médico se conectam na videochamada, ele já leu seu mapa clínico completo. Os 20 minutos que seriam gastos fazendo perguntas repetitivas viram tempo real de olho no olho e prescrição cuidadosa.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* --- 3 Eixos Section (V1.9.100 SEO) — Clínica + Ensino + Pesquisa --- */}
+      <section id="eixos" className="py-20 bg-slate-950 relative border-t border-slate-900 overflow-hidden">
+        <div className="absolute inset-0 bg-emerald-900/5 -z-10" />
+        <div className="container mx-auto px-6 relative z-10">
+          <div className="text-center max-w-3xl mx-auto mb-12">
+            <div className="inline-flex items-center space-x-2 bg-slate-800/80 border border-slate-700/50 rounded-full px-4 py-1.5 mb-6">
+              <Brain className="w-4 h-4 text-emerald-400" />
+              <span className="text-xs font-bold tracking-widest text-emerald-300 uppercase">Os 3 Pilares</span>
+            </div>
+            <h2 className="text-3xl md:text-4xl font-bold mb-4 text-white leading-tight">
+              Clínica, Ensino e Pesquisa em Cannabis Medicinal
+            </h2>
+            <p className="text-slate-400 text-lg">
+              Três eixos integrados sobre o mesmo método autoral: a <strong className="text-emerald-300">Arte da Entrevista Clínica (AEC)</strong> do Dr. Ricardo Valença.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+            {/* Eixo 1 — Clínica */}
+            <div className="bg-slate-900/60 border border-slate-800 rounded-2xl p-7 hover:border-emerald-500/40 transition-colors">
+              <div className="w-12 h-12 bg-emerald-500/10 rounded-xl flex items-center justify-center mb-5 border border-emerald-500/20">
+                <Heart className="w-6 h-6 text-emerald-400" />
+              </div>
+              <h3 className="text-xl font-bold text-white mb-3">Clínica — Avaliação com Método AEC</h3>
+              <p className="text-slate-400 text-sm leading-relaxed">
+                Avaliação clínica estruturada conduzida por médicos especialistas. Escuta ativa, IMRE determinístico, relatórios assinados (ICP-Brasil). Cannabis medicinal, neurologia, nefrologia.
+              </p>
+            </div>
+
+            {/* Eixo 2 — Ensino */}
+            <div className="bg-slate-900/60 border border-slate-800 rounded-2xl p-7 hover:border-teal-500/40 transition-colors">
+              <div className="w-12 h-12 bg-teal-500/10 rounded-xl flex items-center justify-center mb-5 border border-teal-500/20">
+                <Users className="w-6 h-6 text-teal-400" />
+              </div>
+              <h3 className="text-xl font-bold text-white mb-3">Ensino — Formação Médica Estruturada</h3>
+              <p className="text-slate-400 text-sm leading-relaxed">
+                Cursos baseados no método AEC (R$ 299,90), Sistema IMRE Triaxial (R$ 199,90) e Pós-Graduação em Cannabis Medicinal. Simulador clínico com 20 personas-pacientes para prática.
+              </p>
+            </div>
+
+            {/* Eixo 3 — Pesquisa */}
+            <div className="bg-slate-900/60 border border-slate-800 rounded-2xl p-7 hover:border-green-500/40 transition-colors">
+              <div className="w-12 h-12 bg-green-500/10 rounded-xl flex items-center justify-center mb-5 border border-green-500/20">
+                <Database className="w-6 h-6 text-green-400" />
+              </div>
+              <h3 className="text-xl font-bold text-white mb-3">Pesquisa — Produção Científica</h3>
+              <p className="text-slate-400 text-sm leading-relaxed">
+                Dados estruturados das avaliações AEC alimentam protocolos rastreáveis e geração de evidência clínica. Pareria com Cidade Amiga dos Rins (CKD) e iniciativas em cannabis medicinal.
               </p>
             </div>
           </div>
