@@ -1286,6 +1286,113 @@ DEPOIS (sessão separada):
 
 ---
 
+## J — Selo Final Dia 29/04 (~22h45)
+
+### J.1 — Tudo aplicado HOJE em prod
+
+```
+COMMITS DEPLOYADOS HOJE (5):
+  ee97d01  V1.9.100 + Camadas A/B/C + helpers (gate base)
+  8b2c5bb  override doctor por menção verbal (3 callers startAssessment)
+  9be9139  log [DOCTOR_OVERRIDE] estruturado (observabilidade)
+  bebdc47  aecPhysicianName fallback verbal (propaga pro Edge)
+  c02e522  SEO meta tags + Schema.org + 3 eixos + microcopy ← LANDING
+
+PUSH 4 REFS em todos os commits ✅ (amigo+medcannlab5 × main+master)
+
+LOCK V1.9.95+97+98+99-B PRESERVADO INTEGRALMENTE em todos.
+```
+
+### J.2 — Estado do produto pós dia
+
+```
+🟢 BATALHA CONCEITUAL: GANHA
+   • Narrativa v15 selada (92% confiança)
+   • Autoria 100% humana cristalizada
+   • 4 pilares formalizados
+
+🟡 BATALHA TÉCNICA: GANHANDO+1
+   ✅ Pirâmide 8 camadas funcionando
+   ✅ V1.9.100-P0b deployed (Gate D' em 4 camadas)
+   ✅ extractDoctorFromMessage (override verbal)
+   ✅ aecPhysicianName fallback chain
+   ⚠️ P0c FASE 2 hooks pendente
+   ⚠️ P0a service_role rotation pendente
+   ⚠️ specialty/bio em users (P1 schema)
+
+🟡 BATALHA DE MERCADO: NÃO INICIADA mas PREPARADA
+   ✅ SEO institucional nível hospital (c02e522)
+   ✅ Schema.org com 4 founders + medicalSpecialty
+   ✅ Open Graph funcional (WhatsApp/LinkedIn share)
+   ✅ Stat real "+90 AECs" visível no hero
+   ⚠️ 0 paciente externo pagante
+   ⚠️ CNPJ pendente (João Vidal)
+```
+
+### J.3 — Sessão completa: 9 entregas
+
+```
+1. ✅ V1.9.100 migration aplicada
+2. ✅ Helpers aecGate.ts (frontend + Deno)
+3. ✅ Camadas A/B/C deployadas
+4. ✅ Override doctor por menção verbal
+5. ✅ Log estruturado [DOCTOR_OVERRIDE] + [AEC_PHYSICIAN_RESOLVED]
+6. ✅ aecPhysicianName fallback chain (4º caller)
+7. ✅ SEO Landing: meta tags + Schema.org + 3 eixos + microcopy
+8. ✅ Análise 360° cruzada com Magno + 7 diários (anti-superestimação)
+9. ✅ Diário 29 fechado em 10 blocos (A→J)
+
+Lock preservation: 5/5 commits ✅
+Princípio 8 aplicado: 95% do conteúdo já existia, só faltava elevar
+Anti-over-claim: 0 promessa vazia, 100% prova de realidade
+```
+
+### J.4 — Memórias persistentes salvas hoje
+
+```
+~/.claude/projects/.../memory/:
+  ✅ project_seo_landing_polish_29_04.md (SEO completo)
+  ✅ project_leitura_estrategica_3_batalhas_29_04.md (atualizada)
+  ✅ feedback_instrumentacao_antes_do_teste.md
+  ✅ feedback_push_remotes_corretos.md (anti hub/origin chute)
+  
++ MEMORY.md atualizado com 2 pointers novos
+```
+
+### J.5 — Próxima sessão (priorizada)
+
+```
+🔴 P0a — Rotação service_role (~3h)
+🔴 P0c FASE 2 — Hooks North Star no Core (~30min)
+🟡 P1 — Migration users.specialty + bio (~1h + editor perfil ~1-2h)
+🟡 P1 — Lookup banco médicos em vez de regex hardcoded
+🔵 P2 — Card visual desambiguação (sessão UX dedicada)
+🔵 SEO Etapa 5 — sitemap.xml + robots.txt + alt images (~30min)
+
+DEPENDENTE DE HUMANOS:
+  ⏳ João Vidal — CNPJ (destrava muito)
+  ⏳ Ricardo — OK final no texto landing institucional
+  ⏳ Eduardo — TRL framework
+  ⏳ Técnico Claro amanhã — internet estável
+```
+
+### J.6 — Frase âncora final do dia
+
+> *"Method-first, architecture-grounded, AI-last. Hoje 5 commits
+> cirúrgicos: P0b com 4 camadas de gate D' + SEO institucional.
+> Lock V1.9.95+97+98+99-B intocado em todos. 91 AECs históricas,
+> 0 paciente externo. Sistema empiricamente sólido + autoridade
+> Ricardo elevada + 3 eixos visíveis (Pesquisa preenchida).
+> Princípio 8: 95% já existia. Anti-over-claim: tensão honesta
+> sem hype ('já aplicado em prática real' = presente, não promessa).
+> Preparando terreno antes da batalha 3."*
+
+---
+
+*Bloco J SELO FINAL adicionado 2026-04-29 ~22h45 BRT por Claude Opus 4.7 (1M context). Diário 29/04 fecha em 10 blocos (A→J). 5 commits deployados, 0 regressão, lock preservado integralmente. Próxima sessão começa por: P0a service_role + P0c FASE 2 hooks + smoke E2E + médico real. SEO em standby aguardando OK Ricardo no texto final + sessão dedicada Etapa 5.*
+
+---
+
 ## D — Frase-âncora de abertura
 
 > *"Ontem ganhamos a narrativa. Hoje atacamos o que falta pra começar
