@@ -334,22 +334,36 @@ const Landing: React.FC = () => {
             </div>
 
             <h1 className="text-4xl lg:text-6xl font-bold leading-tight mb-6 tracking-tight">
-              Clínica, Ensino e Pesquisa em <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-teal-300">Cannabis Medicinal</span> baseados na Arte da Entrevista Clínica (AEC).
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-teal-300">Cannabis Medicinal</span> com Método AEC.
             </h1>
 
-            <p className="text-lg text-slate-300 mb-6 max-w-lg mx-auto lg:mx-0 leading-relaxed">
-              Avaliação clínica estruturada com método médico real, criado pelo <strong className="text-emerald-300">Dr. Ricardo Valença</strong> — já aplicado em prática clínica.
+            <p className="text-lg text-slate-300 mb-4 max-w-lg mx-auto lg:mx-0 leading-relaxed">
+              Avaliação clínica estruturada pela <strong className="text-emerald-300">Arte da Entrevista Clínica</strong> do Dr. Ricardo Valença — já aplicada em mais de 90 atendimentos.
             </p>
 
-            <div className="flex flex-wrap items-center justify-center lg:justify-start gap-x-4 gap-y-2 mb-8 text-sm text-slate-400">
-              <span className="flex items-center gap-1.5"><CheckCircle2 className="w-4 h-4 text-emerald-400" />Método autoral validado</span>
-              <span className="flex items-center gap-1.5"><CheckCircle2 className="w-4 h-4 text-emerald-400" />Sem improviso clínico</span>
-              <span className="flex items-center gap-1.5"><CheckCircle2 className="w-4 h-4 text-emerald-400" />Governança auditável</span>
+            <p className="text-base text-emerald-200/90 mb-6 max-w-lg mx-auto lg:mx-0 italic">
+              Sem improviso. Com método. Com responsabilidade clínica.
+            </p>
+
+            {/* Counter visual — prova social tangível */}
+            <div className="grid grid-cols-3 gap-3 mb-8 max-w-lg mx-auto lg:mx-0">
+              <div className="bg-slate-900/60 border border-emerald-500/20 rounded-xl px-3 py-3 text-center">
+                <div className="text-2xl lg:text-3xl font-extrabold text-emerald-400">+90</div>
+                <div className="text-[10px] uppercase tracking-wider text-slate-400 mt-1">Avaliações<br />estruturadas</div>
+              </div>
+              <div className="bg-slate-900/60 border border-teal-500/20 rounded-xl px-3 py-3 text-center">
+                <div className="text-2xl lg:text-3xl font-extrabold text-teal-400">9</div>
+                <div className="text-[10px] uppercase tracking-wider text-slate-400 mt-1">Profissionais<br />especialistas</div>
+              </div>
+              <div className="bg-slate-900/60 border border-green-500/20 rounded-xl px-3 py-3 text-center">
+                <div className="text-2xl lg:text-3xl font-extrabold text-green-400">3</div>
+                <div className="text-[10px] uppercase tracking-wider text-slate-400 mt-1">Eixos<br />integrados</div>
+              </div>
             </div>
 
             <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4">
               <button onClick={() => setShowRegister(true)} className="w-full sm:w-auto px-8 py-4 bg-gradient-to-r from-green-600 to-emerald-600 rounded-2xl text-white font-semibold hover:shadow-lg hover:shadow-green-500/25 transition-all text-lg flex items-center justify-center space-x-2 group">
-                <span>Iniciar Avaliação Clínica</span>
+                <span>Iniciar Avaliação com Método AEC</span>
                 <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
               </button>
               <button onClick={() => setShowLogin(true)} className="w-full sm:w-auto px-8 py-4 bg-slate-800/50 border border-emerald-500/40 rounded-2xl text-white font-semibold hover:bg-slate-800 hover:border-emerald-500/60 transition-all text-lg backdrop-blur-sm">
@@ -421,7 +435,8 @@ const Landing: React.FC = () => {
         <div className="container mx-auto px-6">
           <div className="text-center max-w-3xl mx-auto mb-16">
             <h2 className="text-3xl md:text-4xl font-bold mb-4">A Medicina Moderna enfrenta um colapso de atenção.</h2>
-            <p className="text-slate-400">O excesso de dados e a burocracia estão drenando a capacidade humana de escutar.</p>
+            <p className="text-slate-400 mb-3">O excesso de dados e a burocracia estão drenando a capacidade humana de escutar.</p>
+            <p className="text-emerald-300 text-base font-medium">A MedCannLab nasce para resolver exatamente esse colapso — estruturando a escuta clínica com método e tecnologia.</p>
           </div>
 
           <div className="grid md:grid-cols-3 gap-8">
@@ -489,7 +504,7 @@ const Landing: React.FC = () => {
                 <StepCard
                   number="02"
                   title="Escuta Estruturada (Protocolo IMRE)"
-                  description="Nossa IA conduz entrevistas preliminares seguindo rigorosos protocolos clínicos de anamnese."
+                  description="A Nôa conduz entrevistas preliminares seguindo o protocolo clínico AEC (motor IMRE), estruturando a escuta médica com rigor."
                 />
                 <StepCard
                   number="03"
@@ -656,7 +671,7 @@ const Landing: React.FC = () => {
               </div>
               <h3 className="text-xl font-bold text-white mb-3">Pesquisa — Produção Científica</h3>
               <p className="text-slate-400 text-sm leading-relaxed">
-                Dados estruturados das avaliações AEC alimentam protocolos rastreáveis e geração de evidência clínica. Pareria com Cidade Amiga dos Rins (CKD) e iniciativas em cannabis medicinal.
+                As avaliações estruturadas pelo método AEC geram dados clínicos organizados e rastreáveis, base para evidência real em cannabis medicinal. <strong className="text-green-300">Mais de 90 casos já estruturados</strong> formam a base inicial. Parceria com Cidade Amiga dos Rins (CKD).
               </p>
             </div>
           </div>
