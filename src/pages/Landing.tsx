@@ -96,6 +96,7 @@ const Landing: React.FC = () => {
   const { success, error } = useToast()
 
   const noaAvatarSrc = `${import.meta.env.BASE_URL}noa-avatar.png`
+  const noaPhotoSrc = `${import.meta.env.BASE_URL}AvatarsEstatico.png`
   const logoBrainSrc = `${import.meta.env.BASE_URL}brain.png`
 
   // Subtle neural pulse rings (professional, medical aesthetic)
@@ -318,14 +319,13 @@ const Landing: React.FC = () => {
                 title="Nôa Esperanza"
               >
                 <img
-                  src={noaAvatarSrc}
+                  src={noaPhotoSrc}
                   alt="Nôa Esperanza"
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-cover object-top"
                   draggable={false}
                   loading="eager"
                   onError={(e) => {
-                    // Fallback seguro caso o avatar não seja servido (base path/caching)
-                    e.currentTarget.src = logoBrainSrc
+                    e.currentTarget.src = noaAvatarSrc
                   }}
                 />
               </div>
@@ -478,18 +478,18 @@ const Landing: React.FC = () => {
             <div className="flex-1">
               <div className="flex items-start gap-4 mb-6">
                 <div
-                  className="w-12 h-12 rounded-2xl overflow-hidden border border-green-500/30 bg-slate-950/60 flex-shrink-0"
+                  className="w-12 h-12 rounded-full overflow-hidden border border-green-500/30 bg-slate-950/60 flex-shrink-0"
                   style={{ boxShadow: '0 0 18px rgba(0, 193, 106, 0.22)' }}
                   title="Nôa Esperanza"
                 >
                   <img
-                    src={noaAvatarSrc}
+                    src={noaPhotoSrc}
                     alt="Nôa Esperanza"
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-cover object-top"
                     draggable={false}
                     loading="eager"
                     onError={(e) => {
-                      e.currentTarget.src = logoBrainSrc
+                      e.currentTarget.src = noaAvatarSrc
                     }}
                   />
                 </div>
@@ -539,13 +539,13 @@ const Landing: React.FC = () => {
                       title="Nôa Esperanza"
                     >
                       <img
-                        src={noaAvatarSrc}
+                        src={noaPhotoSrc}
                         alt="Nôa Esperanza — IA Residente da MedCannLab"
-                        className="w-full h-full object-cover"
+                        className="w-full h-full object-cover object-top"
                         draggable={false}
                         loading="lazy"
                         onError={(e) => {
-                          e.currentTarget.src = logoBrainSrc
+                          e.currentTarget.src = noaAvatarSrc
                         }}
                       />
                       {/* Pulse leve indicando atividade */}
@@ -564,13 +564,13 @@ const Landing: React.FC = () => {
                       style={{ boxShadow: '0 0 10px rgba(0, 193, 106, 0.25)' }}
                     >
                       <img
-                        src={noaAvatarSrc}
+                        src={noaPhotoSrc}
                         alt=""
-                        className="w-full h-full object-cover"
+                        className="w-full h-full object-cover object-top"
                         draggable={false}
                         loading="lazy"
                         onError={(e) => {
-                          e.currentTarget.src = logoBrainSrc
+                          e.currentTarget.src = noaAvatarSrc
                         }}
                       />
                     </div>
