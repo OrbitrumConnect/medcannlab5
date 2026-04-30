@@ -2071,7 +2071,19 @@ Finalizar SEMPRE com:
                 // ──────────────────────────────────────────────────────────────
                 let draftId: string | null = null;
                 try {
-                    const draftContent = assessmentData?.content || assessmentData || body.assessment_data || {};
+                    // V1.9.103-G FIX: desaninhar content se body.assessment_data
+                    // veio como { content: {...}, patient_id: ... } (caso Pedro 30/04).
+                    // Sem desaninhamento, unwrapAecContent() não acha campos AEC e
+                    // calculateScoresFromContent() retorna score=0.
+                    const rawAssessment = assessmentData || body.assessment_data || {};
+                    let draftContent: any = rawAssessment?.content || rawAssessment;
+                    // Se ainda está aninhado (content.content existe e tem campos AEC), desce 1 nível
+                    if (draftContent && typeof draftContent === 'object' && draftContent.content && typeof draftContent.content === 'object') {
+                        const AEC_KEYS = ['identificacao', 'queixa_principal', 'desenvolvimento_queixa', 'lista_indiciaria', 'historia_familiar', 'habitos_vida', 'historia_patologica_pregressa', 'perguntas_objetivas'];
+                        if (AEC_KEYS.some(k => draftContent.content[k])) {
+                            draftContent = draftContent.content;
+                        }
+                    }
                     const draftPatientName = patientData?.user?.name || patientData?.user?.email || 'Paciente';
                     draftId = `aec_draft_${effectiveUserId}_${Date.now()}`;
                     await supabaseClient.from('clinical_reports').insert({
@@ -5502,8 +5514,16 @@ ${contentExcerpt || '(Texto não disponível para este documento. O conteúdo ai
                     // ──────────────────────────────────────────────────────────────
                     let draftIdC: string | null = null;
                     try {
+                        // V1.9.103-G FIX: desaninhar content (mesma lógica Camada B)
                         const isAssessmentDataEmptyForDraft = !assessmentData || Object.keys(assessmentData).length <= 1;
-                        const draftContentC = isAssessmentDataEmptyForDraft ? (aecSnapshot || {}) : assessmentData;
+                        let draftContentC: any = isAssessmentDataEmptyForDraft ? (aecSnapshot || {}) : assessmentData;
+                        // Desaninhar se content.content existe com campos AEC
+                        if (draftContentC && typeof draftContentC === 'object' && draftContentC.content && typeof draftContentC.content === 'object') {
+                            const AEC_KEYS = ['identificacao', 'queixa_principal', 'desenvolvimento_queixa', 'lista_indiciaria', 'historia_familiar', 'habitos_vida', 'historia_patologica_pregressa', 'perguntas_objetivas'];
+                            if (AEC_KEYS.some(k => draftContentC.content[k])) {
+                                draftContentC = draftContentC.content;
+                            }
+                        }
                         const draftPatientNameC = patientData?.user?.name || patientData?.user?.email || 'Paciente';
                         draftIdC = `aec_draft_${orchestratorPatientId}_${Date.now()}`;
                         await supabaseClient.from('clinical_reports').insert({
