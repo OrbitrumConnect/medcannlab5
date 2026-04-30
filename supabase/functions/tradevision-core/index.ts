@@ -2353,7 +2353,10 @@ Finalizar SEMPRE com:
             console.warn('Fallback para detecção de profissional:', profErr)
             if (message?.toLowerCase().includes('faveret') || message?.toLowerCase().includes('eduardo')) {
                 detectedProfessionalId = 'eduardo-faveret';
-                detectedProfessionalUuid = '1a6f8bca-4e2d-4f1a-93e1-2c9d4a6b8c2e'; // Exemplo de UUID Eduardo
+                // V1.9.108: NÃO sobrescrever detectedProfessionalUuid com placeholder fake.
+                // Mantém UUID Ricardo default (linha 2330) — fail-safe.
+                // UUID inválido no metadata.professionalId fazia widget cair em dropdown alfabético
+                // mostrando 1ª opção (Ana Ventorini), gerando incoerência clínica clássica P10.
             }
         }
         // ======================================================
@@ -5923,7 +5926,14 @@ ${contentExcerpt || '(Texto não disponível para este documento. O conteúdo ai
                 intent: currentIntent,
                 assessmentPhase: assessmentPhase,
                 nextQuestionHint: nextQuestionHint,
-                professionalId: detectedProfessionalId,
+                // V1.9.108: enviar UUID real (não slug semântico) pro widget de agendamento.
+                // Antes: 'ricardo-valenca' (slug) → isValidUuid() false → widget caía em
+                // dropdown alfabético mostrando Ana Ventorini (1ª opção) em vez do médico
+                // resolvido. Coerente com 1ª fonte (DB doctor_id via DOCTOR_RESOLUTION).
+                // Slug detectedProfessionalId continua disponível pra logs/debug — mas UI
+                // só consome UUID. Próxima evolução pós-PMF: ICL (Identity Canonicalization
+                // Layer) com clinical_reports.doctor_id como single source of truth.
+                professionalId: detectedProfessionalUuid,
                 trigger_scheduling: shouldTriggerScheduling,
                 system: "TradeVision Core V2.1 (Sync)",
                 timestamp: new Date().toISOString(),
