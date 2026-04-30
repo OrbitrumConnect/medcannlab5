@@ -1006,6 +1006,11 @@ export const useMedCannLabConversation = (options?: {
       console.warn('⚠️ Erro ao processar comando de navegação local:', commandError)
     }
 
+    // [V1.9.105] Captura última msg da Nôa ANTES do setMessages — usada pelo
+    // detector contextual de ASSESSMENT_START (noaInvited && userAffirmed).
+    const lastNoaMsg = [...messages].reverse().find(m => m.role === 'noa')
+    const lastAssistantMessage = typeof lastNoaMsg?.content === 'string' ? lastNoaMsg.content : undefined
+
     const userMessage: ConversationMessage = {
       id: `user-${Date.now()}`,
       role: options.role || 'user',
@@ -1042,6 +1047,8 @@ export const useMedCannLabConversation = (options?: {
             : undefined,
         source: 'noa-chat',
         timestamp: new Date().toISOString(),
+        // [V1.9.105] última msg da Nôa pra detector contextual ASSESSMENT_START
+        ...(lastAssistantMessage ? { lastAssistantMessage } : {}),
         ...(aecTargetProfessional?.name
           ? { aecTargetProfessional: { name: aecTargetProfessional.name, specialty: aecTargetProfessional.specialty } }
           : {}),

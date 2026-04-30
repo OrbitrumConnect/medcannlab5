@@ -33,11 +33,22 @@ export class PlatformFunctionsModule {
 
   /**
    * Detectar intenção relacionada a funções da plataforma
+   *
+   * V1.9.105 — adiciona detector contextual ASSESSMENT_START.
+   * conversationContext (opcional, backward compat):
+   *   - lastAssistantMessage: última msg da Nôa (pra detectar convite explícito)
+   *   - aecStateExists: se já existe AEC ativa (filtro de prioridade — assimétrico:
+   *     bloqueia contextual mas NÃO bloqueia strict, e libera contextual via override)
    */
-  detectIntent(message: string, userId?: string): PlatformIntent {
+  detectIntent(
+    message: string,
+    userId?: string,
+    conversationContext?: { lastAssistantMessage?: string; aecStateExists?: boolean }
+  ): PlatformIntent {
     const lowerMessage = message.toLowerCase()
 
-    // Detectar início de avaliação clínica inicial
+    // 1) STRICT — sempre roda primeiro, mesmo com aec_state ativa.
+    // Sinal explícito do user > qualquer guard.
     if (lowerMessage.includes('avaliação clínica inicial') ||
         lowerMessage.includes('avaliacao clinica inicial') ||
         lowerMessage.includes('protocolo imre') ||
@@ -46,6 +57,43 @@ export class PlatformFunctionsModule {
         type: 'ASSESSMENT_START',
         confidence: 0.95,
         metadata: { userId }
+      }
+    }
+
+    // 2) CONTEXTUAL (V1.9.105) — só quando Nôa convidou explicitamente E user afirmou.
+    // Override: "quero recomeçar" / "nova avaliação" passa mesmo com aec_state ativa.
+    const wantsRestart = /\b(reiniciar|recome[cç]ar|nova\s+avalia[cç][aã]o|come[cç]ar\s+de\s+novo|outra\s+avalia[cç][aã]o)\b/i.test(lowerMessage)
+    const aecActive = !!conversationContext?.aecStateExists
+
+    if (!aecActive || wantsRestart) {
+      const lastNoa = (conversationContext?.lastAssistantMessage || '').toLowerCase()
+      const noaInvited =
+        lastNoa.includes('iniciar') && (
+          lastNoa.includes('avaliação') || lastNoa.includes('avaliacao') ||
+          lastNoa.includes('aec') || lastNoa.includes('protocolo')
+        )
+
+      // Afirmação que COMEÇA com termo afirmativo (não precisa ser msg pura).
+      // Aceita: "sim pode ser", "ok vamos lá então", "vamos fazer"
+      const affirmationStart = /^(sim|ok|claro|vamos|perfeito|pode|bora|isso|certo|fechou|combinado|t[aá]\s+bem|com\s+certeza|tudo\s+bem)\b/i
+
+      // Anti-falso-positivo: rejeita se contém negação/adiamento.
+      // Bloqueia: "sim, mas não agora", "ok depois", "talvez amanhã"
+      const hasNegation = /\b(n[aã]o|nem|nunca|jamais|depois|amanh[aã]|outro\s+dia|talvez)\b/i
+
+      const userAffirmed = affirmationStart.test(message.trim()) && !hasNegation.test(message)
+
+      if (noaInvited && userAffirmed) {
+        return {
+          type: 'ASSESSMENT_START',
+          confidence: 0.85,
+          metadata: {
+            userId,
+            contextual: true,
+            override_restart: wantsRestart,
+            lastNoa: lastNoa.substring(0, 80)
+          }
+        }
       }
     }
 

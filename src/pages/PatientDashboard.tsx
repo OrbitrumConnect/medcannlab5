@@ -36,7 +36,7 @@ const PatientDashboard: React.FC = () => {
   const navigate = useNavigate()
   const location = useLocation()
   const { getEffectiveUserType, isAdminViewingAs } = useUserView()
-  const { openChat: openNoaChat, closeChat, isOpen: isNoaOpen, hideGlobalChat, showGlobalChat } = useNoaPlatform()
+  const { openChat: openNoaChat, closeChat, isOpen: isNoaOpen, hideGlobalChat, showGlobalChat, sendInitialMessage } = useNoaPlatform()
   const { setDashboardTriggers } = useDashboardTriggers()
 
   const {
@@ -117,7 +117,7 @@ const PatientDashboard: React.FC = () => {
   }, [activeTab, isNoaOpen, setActiveTab, setDashboardTriggers, openNoaChat, closeChat])
 
   const handleStartAssessment = () => {
-    openNoaChat()
+    sendInitialMessage('iniciar avaliação clínica inicial')
   }
 
   const handleOpenChat = () => {

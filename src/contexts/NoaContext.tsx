@@ -113,9 +113,10 @@ export const NoaProvider: React.FC<NoaProviderProps> = ({ children }) => {
   }, [user])
 
   // Função interna para processar a resposta da IA de forma segura com Cancelamento Lógico (taskId)
-  const processAIReply = async (content: string, userId: string, userEmail: string, taskId: number) => {
+  // [V1.9.105] uiContext.lastAssistantMessage permite detector contextual de ASSESSMENT_START
+  const processAIReply = async (content: string, userId: string, userEmail: string, taskId: number, lastAssistantMessage?: string) => {
     setPendingCount(prev => prev + 1)
-    
+
     try {
       if (!residentAIRef.current) return
 
@@ -128,7 +129,8 @@ export const NoaProvider: React.FC<NoaProviderProps> = ({ children }) => {
       const aiResponse = await residentAIRef.current.processMessage(
         content,
         userId,
-        userEmail
+        userEmail,
+        lastAssistantMessage ? { lastAssistantMessage } : undefined
       )
 
       // 🧠 CANCELAMENTO LÓGICO (DEPOIS): Evita renderizar se ficou obsoleto durante o fetch
@@ -169,6 +171,11 @@ export const NoaProvider: React.FC<NoaProviderProps> = ({ children }) => {
     // 🏆 Incrementa o ID de tarefa global
     const taskId = ++currentTaskIdRef.current
 
+    // [V1.9.105] Captura última msg da Nôa ANTES do setMessages — usada pelo
+    // detector contextual de ASSESSMENT_START (noaInvited && userAffirmed).
+    const lastNoaMsg = [...messages].reverse().find(m => m.type === 'noa')
+    const lastAssistantMessage = lastNoaMsg?.content
+
     const userMessage: NoaMessage = {
       id: crypto.randomUUID(),
       type: 'user',
@@ -179,8 +186,8 @@ export const NoaProvider: React.FC<NoaProviderProps> = ({ children }) => {
     setMessages(prev => [...prev, userMessage])
 
     // SISTEMA DE FILA ROBUSCO: Enfileira a execução, mas permite cancelamento via taskId
-    queueRef.current = queueRef.current.then(() => 
-      processAIReply(content, user.id, user.email, taskId)
+    queueRef.current = queueRef.current.then(() =>
+      processAIReply(content, user.id, user.email, taskId, lastAssistantMessage)
     )
   }
 

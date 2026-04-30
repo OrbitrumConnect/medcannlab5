@@ -270,10 +270,27 @@ export class NoaResidentAI {
       // Detectar intencao da mensagem
       let intent = this.detectIntent(userMessage)
 
+      // [V1.9.105] Garante state AEC carregado ANTES de qualquer detectIntent contextual.
+      // Sem isso, paciente com state em DB mas não em memória teria peek=null →
+      // contextual disparaa erroneamente em mid-AEC.
+      if (userId && isPatientForAec) {
+        await clinicalAssessmentFlow.ensureLoaded(userId)
+      }
+      const _aecStatePeek = userId ? clinicalAssessmentFlow.getState(userId) : null
+      const _aecStateExists = !!_aecStatePeek &&
+        _aecStatePeek.phase !== 'COMPLETED' &&
+        _aecStatePeek.phase !== 'INTERRUPTED'
+      const _conversationContext = {
+        lastAssistantMessage: typeof uiContext?.lastAssistantMessage === 'string'
+          ? uiContext.lastAssistantMessage
+          : undefined,
+        aecStateExists: _aecStateExists
+      }
+
       // Durante AEC ativo, nunca desviar para TECNICA/ADMIN por falso positivo (ex.: "interrompeu" contem "erro")
       // EXCECAO TITAN 5.2.1: Se a intencao for SAIR/EXIT, quebra o bloqueio para permitir encerramento consciente
       // FIX: usar frases intencionais e palavras isoladas — evitar match em "sair de casa", "fim de semana", etc.
-      const platformIntentForLock = this.platformFunctions.detectIntent(userMessage, userId)
+      const platformIntentForLock = this.platformFunctions.detectIntent(userMessage, userId, _conversationContext)
       const _normExitMsg = userMessage.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
       const isExitIntent = (platformIntentForLock.type as string) === 'EXIT' ||
         /\b(quero|gostaria de|preciso|vou|pode|vamos)\s+(sair|parar|encerrar|cancelar|interromper|terminar|finalizar)\b/i.test(_normExitMsg) ||
@@ -304,8 +321,9 @@ export class NoaResidentAI {
       console.log('[Noa] Intencao detectada:', intent)
 
       // Detectar intencao de funcao da plataforma para uso no Assistant
-      const platformIntent = this.platformFunctions.detectIntent(userMessage, userId)
-      console.log('[Noa] Intencao de plataforma:', platformIntent.type)
+      // [V1.9.105] Reusa _conversationContext construído acima pra detector contextual
+      const platformIntent = this.platformFunctions.detectIntent(userMessage, userId, _conversationContext)
+      console.log('[Noa] Intencao de plataforma:', platformIntent.type, platformIntent.metadata?.contextual ? '(contextual)' : '(strict)')
 
       // Se for funcao da plataforma, executar acao ANTES de chamar o Assistant
       let platformActionResult: any = null
