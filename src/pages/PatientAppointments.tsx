@@ -455,7 +455,11 @@ const PatientAppointments: React.FC = () => {
       const hay = `${p.name} ${p.role} ${p.specialty} ${(p.tags || []).join(' ')}`.toLowerCase()
       return hay.includes(q)
     })
-  }, [professionalQuery, professionalSpecialtyFilter])
+    // V1.9.110: AVAILABLE_PROFESSIONALS adicionado como dep — antes ficava
+    // travado em FALLBACK porque loadProfessionals do Supabase chega depois
+    // e não invalidava o memo. Resultado: paciente só via Ricardo + Eduardo
+    // mesmo com 11+ outros médicos cadastrados.
+  }, [professionalQuery, professionalSpecialtyFilter, AVAILABLE_PROFESSIONALS])
 
   const specialtyConsultorioMap: Record<string, string[]> = {
     Neurologia: ['Consultório Escola Eduardo Faveret'],
