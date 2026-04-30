@@ -1687,6 +1687,94 @@ DB timezone: UTC consistente (zero mismatch).
 
 ---
 
+## M — Bridge para diário 30/04 (regressão Gate D' P0b detectada)
+
+### M.1 — Diagnóstico tardio (30/04 ~04h BRT)
+
+Pedro fez smoke E2E real como paciente (UUID `df6cee2d`) à 04h. AEC completou
+16 fases mas Edge Function retornou erro silencioso. Investigação:
+
+```
+[P0B_GATE_B] Caminho 1 bloqueado — motivo: NO_APPOINTMENT
+[P0B_GATE_C] Caminho 2 bloqueado (tag automática) — motivo: NO_APPOINTMENT
+```
+
+Gate D' P0b deployado 29/04 ~14h (commits ee97d01..bebdc47) bloqueava
+`handleFinalizeAssessment` quando paciente sem appointment ativo. Resultado:
+**ZERO reports criados** entre 29/04 04:33 e 30/04 04h. Trabalho cognitivo
+do paciente perdido.
+
+### M.2 — Decisão de Pedro (30/04 ~04h)
+
+> *"estamos evoluindo nao tirando oq ja tinha"*
+> *"relatorio faz parte do aec ja era para estar com cadeado desde o momento
+>  que botamos cadeado no aec"*
+> *"se ele nao acontece pq pulou ou por que nao fez direito"*
+
+Resolver fechou regressão: V1.9.102 (save draft) + V1.9.103 (RPC promove draft) +
+V1.9.103-D (pipeline post-share). Aplicado madrugada com smoke test inline.
+
+### M.3 — Loop fechado em V1.9.103-F (30/04 ~14h BRT)
+
+Pedro 30/04 ~12h identificou empiricamente novo gap: dashboard paciente mostrava
+"Aguardando dados" em todos indicadores. Comparação com Carolina (caminho normal,
+clinical_score=73, narrative completo) confirmou: faltavam scores+structured+
+signature_hash em reports promovidos.
+
+V1.9.103-E (handler enrichment completo) + V1.9.103-F (frontend invoca SEMPRE)
+fecharam paridade funcional 100%.
+
+### M.4 — Cronologia dos 6 PRs
+
+```
+30/04 04h05  V1.9.102    f18abbc  Save draft pre-Gate D'
+30/04 05h10  V1.9.103    18f7572  Gate ampliado + RPC promove draft
+30/04 05h35  V1.9.103-D  4537f2e  Pipeline post-share (axes+rationality)
+30/04 13h05  V1.9.103-E  9e412ee  Enrichment completo (scores+structured+signature)
+30/04 13h35  V1.9.103-F  d30dd28  ShareReportModal invoca SEMPRE pós-share
+```
+
+### M.5 — Status final (30/04 ~14h)
+
+```
+✅ AEC com appointment:     pipeline completo (intacto, lock preservado)
+✅ AEC sem appointment:     Gate bloqueia → draft → share → enrichment completo
+✅ Paridade funcional:      14 campos verificados (status, signed_at,
+                            professional_id, shared_with, scores,
+                            structured, signature_hash, signed_payload,
+                            consent, content estruturado, axes×5,
+                            rationalities×1, ns_events trigger)
+✅ Lock V1.9.95+97+98+99-B: intacto em 100% dos 6 PRs
+```
+
+### M.6 — Memórias cristalizadas para futuras sessões
+
+```
+project_v1_9_102_a_F_anti_regressao_cycle.md   Cronologia completa dos 6 PRs
+feedback_paridade_funcional_completa.md         14 campos checklist antes
+                                                de declarar "paridade"
+feedback_idempotencia_granular.md               Skip baseado em 1 sinal
+                                                mascara N-1 gaps
+```
+
+### M.7 — Frase âncora M
+
+> *"Regressão funcional pode ser invisível em sub-resultado mas total no
+>  artefato final. Gate D' P0b (29/04 14h) bloqueou AEC sem appointment.
+>  6 PRs em 16h (V1.9.102→F) restauraram fluxo: draft → share → enrichment
+>  completo, paridade total com caminho normal. Lock intocado. Pedro detectou
+>  empíricamente comparando com Carolina (referência caminho normal).
+>  Lição: validar paridade campo a campo, não só 'última cascata'."*
+
+---
+
+*Bloco M adicionado 2026-04-30 ~14h BRT por Claude Opus 4.7 (1M context). Diário
+29/04 agora fecha em 13 blocos (A→M). Bridge para diário 30/04. Total commits
+do "dia 29/04" estendido até 30/04 14h: 22 (17 originais + 5 do ciclo
+anti-regressão).*
+
+---
+
 ## D — Frase-âncora de abertura
 
 > *"Ontem ganhamos a narrativa. Hoje atacamos o que falta pra começar
