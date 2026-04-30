@@ -84,6 +84,11 @@ const ProfessionalMyDashboard: React.FC = () => {
     prescriptions: any[]
     patientReports?: any[]
     patientAvatarUrl?: string | null
+    // V1.9.112-A1: campos clínicos críticos no topo (alergias, medicações, idade)
+    patientAllergies?: string | null
+    patientMedications?: string | null
+    patientBirthDate?: string | null
+    patientGender?: string | null
   } | null>(null)
   const [analysisPanelCollapsed, setAnalysisPanelCollapsed] = useState<Record<string, boolean>>({ evolution: false })
   const [scanningPatientAvatarUrl, setScanningPatientAvatarUrl] = useState<string | null>(null)
@@ -431,10 +436,23 @@ const ProfessionalMyDashboard: React.FC = () => {
       } catch (err) { console.warn('Pular relatorios', err) }
 
       const assessmentsRes = await assessmentsPromise
+      // V1.9.112-A1: incluir campos clínicos críticos (alergias, medicações,
+      // birth_date, gender) que JÁ existem em users mas não eram lidos.
       let patientAvatarUrl: string | null = null
+      let patientAllergies: string | null = null
+      let patientMedications: string | null = null
+      let patientBirthDate: string | null = null
+      let patientGender: string | null = null
       try {
-        const { data: userRow } = await supabase.from('users').select('avatar_url, user_metadata').eq('id', patientId).maybeSingle()
+        const { data: userRow } = await supabase.from('users')
+          .select('avatar_url, user_metadata, allergies, medications, birth_date, gender')
+          .eq('id', patientId)
+          .maybeSingle()
         patientAvatarUrl = (userRow as any)?.avatar_url ?? (userRow as any)?.user_metadata?.avatar_url ?? null
+        patientAllergies = (userRow as any)?.allergies ?? null
+        patientMedications = (userRow as any)?.medications ?? null
+        patientBirthDate = (userRow as any)?.birth_date ?? null
+        patientGender = (userRow as any)?.gender ?? null
       } catch (_) { }
       const now = new Date()
       const appointments = (appointmentsRes?.data || []) as any[]
@@ -446,7 +464,11 @@ const ProfessionalMyDashboard: React.FC = () => {
         upcomingAppointments: upcomingAppointments.slice(0, 5),
         prescriptions: (prescriptionsRes as any).data || [],
         patientReports: (reportsRes as any).data || [],
-        patientAvatarUrl: patientAvatarUrl || undefined
+        patientAvatarUrl: patientAvatarUrl || undefined,
+        patientAllergies,
+        patientMedications,
+        patientBirthDate,
+        patientGender
       }
     }
 
@@ -808,6 +830,76 @@ const ProfessionalMyDashboard: React.FC = () => {
               </button>
             </div>
             <div className="flex-1 overflow-y-auto p-3 space-y-2.5 min-h-0">
+              {/* V1.9.112-A1: Resumo executivo + alergias/medicações no topo */}
+              {(() => {
+                const age = analysisData.patientBirthDate
+                  ? Math.floor((Date.now() - new Date(analysisData.patientBirthDate).getTime()) / (365.25 * 24 * 60 * 60 * 1000))
+                  : null
+                const lastReport = analysisData.patientReports?.[0]
+                const lastScore = lastReport?.content?.scores?.clinical_score ?? null
+                const totalAecs = analysisData.assessments.length
+                const lastApt = analysisData.pastAppointments[0]
+                const lastAptDate = lastApt ? new Date(lastApt.appointment_date).toLocaleDateString('pt-BR') : null
+                const hasAllergies = analysisData.patientAllergies && analysisData.patientAllergies.trim().length > 0
+                const hasMedications = analysisData.patientMedications && analysisData.patientMedications.trim().length > 0
+
+                return (
+                  <div className="rounded-lg border border-emerald-500/20 bg-gradient-to-br from-emerald-500/5 to-transparent p-3">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Activity className="w-3.5 h-3.5 text-emerald-400" />
+                      <span className="text-[10px] uppercase tracking-wider text-emerald-300 font-bold">
+                        Sinopse clínica
+                      </span>
+                    </div>
+                    <div className="space-y-1 text-xs text-slate-300">
+                      <p>
+                        <span className="text-slate-400">Idade:</span>{' '}
+                        {age !== null ? `${age} anos` : '—'}
+                        {analysisData.patientGender && <span className="ml-2 text-slate-500">• {analysisData.patientGender}</span>}
+                      </p>
+                      <p>
+                        <span className="text-slate-400">AECs:</span>{' '}
+                        <span className="text-white font-semibold">{totalAecs}</span>
+                        {lastScore !== null && (
+                          <span className="ml-2">
+                            <span className="text-slate-400">Último score:</span>{' '}
+                            <span className="text-emerald-300 font-semibold">{lastScore}/100</span>
+                          </span>
+                        )}
+                      </p>
+                      <p>
+                        <span className="text-slate-400">Última consulta:</span>{' '}
+                        <span className="text-white">{lastAptDate || '—'}</span>
+                      </p>
+                    </div>
+
+                    {/* Alergias e Medicações — destaque clínico crítico */}
+                    {(hasAllergies || hasMedications) && (
+                      <div className="mt-2.5 pt-2.5 border-t border-emerald-500/15 space-y-1.5">
+                        {hasAllergies && (
+                          <div className="flex items-start gap-1.5">
+                            <AlertCircle className="w-3.5 h-3.5 text-amber-400 shrink-0 mt-0.5" />
+                            <div className="flex-1 min-w-0">
+                              <p className="text-[10px] uppercase tracking-wider text-amber-300 font-bold">Alergias</p>
+                              <p className="text-xs text-slate-200">{analysisData.patientAllergies}</p>
+                            </div>
+                          </div>
+                        )}
+                        {hasMedications && (
+                          <div className="flex items-start gap-1.5">
+                            <Heart className="w-3.5 h-3.5 text-rose-400 shrink-0 mt-0.5" />
+                            <div className="flex-1 min-w-0">
+                              <p className="text-[10px] uppercase tracking-wider text-rose-300 font-bold">Medicações em uso</p>
+                              <p className="text-xs text-slate-200">{analysisData.patientMedications}</p>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                )
+              })()}
+
               {/* Avaliação clínica */}
               <div className="rounded-lg border border-white/10 bg-white/[0.03] overflow-hidden">
                 <button
