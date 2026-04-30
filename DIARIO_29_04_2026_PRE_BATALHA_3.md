@@ -1393,6 +1393,124 @@ DEPENDENTE DE HUMANOS:
 
 ---
 
+## K — Sessão Landing Polish v15 institucional (29/04 ~23h–01h)
+
+### K.1 — Contexto
+
+Após o selo do bloco J, Ricardo via Pedro pediu: usar o **v15
+institucional selado 29/04 ~02h45** como texto da landing. Sessão
+entrou em fase de iteração GPT-Ricardo muito rápida — **12 commits
+cirúrgicos em ~2h**, todos sem tocar Core/FSM/pipeline.
+
+### K.2 — Os 12 commits (sequência)
+
+```
+5bf7a10  feat: aplica v15 institucional — hero híbrido + seção dedicada
+e532ab3  feat: refinamentos Ricardo+Pedro — frase 3 camadas + foto Nôa hero + Consultório-Escola Exponencial
+e41221e  revert: volta imagem hero direito para /brain.png (Pedro pediu)
+587d13b  feat: seção institucional vira collapse + nav header com 5 links
+1564e02  fix: troca avatares Nôa de logo brain → foto real (AvatarsEstatico.png)
+646860e  fix: remove cap table % + reforça Eduardo Faveret (equilíbrio fundadores)
+03897b3  style: foto Nôa centralizada no header chat + 20% maior (12x12)
+5d84eda  feat: adiciona Eduardo Faveret no hero + aumenta área texto 10% (max-w-lg → max-w-xl)
+829d594  polish: ajustes GPT-Ricardo no bloco Consultório-Escola Exponencial
+ea58d7a  style: foto Nôa +20% (12x12 → 14x14) — final size
+```
+
+### K.3 — Decisões estruturais
+
+```
+1. Hero híbrido (conversion + autoridade Ricardo + Eduardo)
+   - H1 "Clínica, Ensino e Pesquisa pelo Método AEC" mantido
+   - Frase Ricardo "modelo clínico orientado pela Escuta (AEC),
+     operacionalizado por infraestrutura digital, acessado via
+     aplicação tecnológica"
+   - Eduardo Faveret integrado ao parágrafo (Direção médica e
+     científica — Neurologia)
+   - Counter 3x preservado, foto rim+cannabis intocada
+
+2. Arquitetura 3 camadas
+   🔝 Hero curto (paciente-coded, autoridade)
+   📜 Seção institucional v15 COMPLETO (collapse)
+   🔮 Página /metodo (FASE 2 pós-CNPJ, NÃO construída agora)
+
+3. Seção institucional vira COLLAPSE expansível
+   Default: header + 1 parágrafo síntese + botão "Ler tese completa"
+   Expandido (AnimatePresence): 4 fases macro + IMRE + Core +
+     Pirâmide 8 camadas + Formação + Time + Frase âncora
+
+4. Cap table SENSÍVEL removido
+   - "20% × 4 sócios + 20% tesouraria + pré-CNPJ" REMOVIDO
+   - Substituído por descrição funcional sem %
+
+5. Bloco "Consultório-Escola Exponencial" NOVO
+   - 2 cards (Ricardo Heart emerald + Eduardo Brain teal)
+   - 3 mini-dimensões (Atendimento real / Aprendizado / Escala)
+   - Frase âncora: "clínica, ensino e pesquisa acontecem juntos —
+     no mesmo atendimento, no mesmo método"
+
+6. Foto Nôa REAL aplicada (descoberta crítica)
+   - noa-avatar.png ≠ AvatarsEstatico.png
+   - Logo brain estilizado vs foto da mulher real do chat paciente
+   - Substituído em 4 lugares na Landing.tsx
+
+7. Nav header: 5 links reais (eram 3, 2 quebrados)
+   Solução / Sobre / Consultório-Escola / 3 Pilares / Planos
+```
+
+### K.4 — Anti-superestimação aplicada (5 propostas GPT recusadas)
+
+```
+❌ "modelo clínico orientado pela Escuta estruturada" → paciente-first
+   sem autoria — RECUSADO (perderia "Escuta" do Ricardo)
+❌ Trilhas separadas paciente/médico/aluno no hero — RECUSADO (overhead
+   pré-PMF, 0 paciente externo)
+❌ "Consultório-Escola Exponencial" → "Rede Clínica Integrada" — RECUSADO
+   (terminologia autoral Ricardo preservada)
+❌ Construir /metodo agora — adiado fase 2
+❌ Seção captação médico parceiro — adiado pós-1º paciente externo
+```
+
+### K.5 — Lock preservado integralmente
+
+```
+12 commits consecutivos:
+  ✅ NÃO toca clinicalAssessmentFlow / handleFinalizeAssessment
+  ✅ NÃO toca tradevision-core / Pipeline / Signature
+  ✅ NÃO toca Verbatim First / AEC Gate / COS Kernel
+  ✅ NÃO toca migrations / DB / Edge Functions
+
+Toca apenas:
+  ✅ src/pages/Landing.tsx (12 edits)
+
+Foto rim+cannabis (brain.png) preservada em 100%.
+Lock V1.9.95+97+98+99-B intocado.
+```
+
+### K.6 — Pedro fechou explicitamente
+
+> *"ai vamos documentar por em memoria e no diario e fhcar esta parte
+>  e voltar a parte que relamente e mais pesada e delicada que era
+>  polimento ligar pontos e finalizacao!"*
+
+Sessão landing fechada. Próxima sessão = P0 técnico real (P0a service_role
++ P0c FASE 2 hooks North Star + smoke E2E + médico real).
+
+### K.7 — Frase âncora do bloco K
+
+> *"12 commits cirúrgicos. Lock V1.9.95+97+98+99-B intocado.
+>  Hero híbrido conversion+autoridade. Seção institucional v15 collapse.
+>  Cap table sensível removido. Eduardo Faveret elevado pra peso real.
+>  Foto Nôa correta em 4 lugares. Consultório-Escola Exponencial como
+>  manifestação concreta do método. Anti-superestimação: 5 propostas
+>  GPT recusadas. Landing fechada. De volta ao P0 técnico real."*
+
+---
+
+*Bloco K adicionado 2026-04-30 ~01h00 BRT por Claude Opus 4.7 (1M context). Diário 29/04 agora fecha em 11 blocos (A→K). Total commits do dia: 15 (5 P0b/SEO base + 10 landing polish). Memória persistente: project_landing_polish_fechado_29_04.md.*
+
+---
+
 ## D — Frase-âncora de abertura
 
 > *"Ontem ganhamos a narrativa. Hoje atacamos o que falta pra começar
