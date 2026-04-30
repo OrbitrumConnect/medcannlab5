@@ -158,6 +158,7 @@ const PatientDashboard: React.FC = () => {
               appointments={appointments}
               patientPrescriptions={patientPrescriptions}
               onScheduleClick={() => navigate('/app/clinica/paciente/agendamentos')}
+              onStartAssessment={handleStartAssessment}
             />
 
             {/* Ações Rápidas movidas para o final conforme solicitado pelo usuário */}

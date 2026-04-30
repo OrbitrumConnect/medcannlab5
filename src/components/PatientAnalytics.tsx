@@ -190,9 +190,11 @@ interface PatientAnalyticsProps {
     onScheduleClick?: () => void
     /** Callback para ver agenda completa */
     onViewSchedule?: () => void
+    /** [V1.9.105] Callback para botão "Iniciar Avaliação" (dispara AEC via sendInitialMessage). Opcional — botão só renderiza se passado. */
+    onStartAssessment?: () => void
 }
 
-const PatientAnalytics: React.FC<PatientAnalyticsProps> = ({ reports, loading, user, appointments = [], patientPrescriptions = [], patientPrescriptionsLoading = false, isProfessionalView = false, compact = false, onScheduleClick, onViewSchedule }) => {
+const PatientAnalytics: React.FC<PatientAnalyticsProps> = ({ reports, loading, user, appointments = [], patientPrescriptions = [], patientPrescriptionsLoading = false, isProfessionalView = false, compact = false, onScheduleClick, onViewSchedule, onStartAssessment }) => {
     const navigate = useNavigate()
     const [selectedReport, setSelectedReport] = useState<ClinicalReport | null>(null)
     const [copied, setCopied] = useState(false)
@@ -665,20 +667,8 @@ const PatientAnalytics: React.FC<PatientAnalyticsProps> = ({ reports, loading, u
                     <p className="text-slate-400 text-sm">Acompanhe a completude e riqueza das suas avaliações</p>
                 </div>
                 {!isProfessionalView && (
-                    <div className="flex gap-2">
-                        <button
-                            onClick={() => {
-                                const text = `Olá! Sou paciente do MedCannLab.\n\nCompletude da Avaliação: ${latestReport?.content.scores?.clinical_score ?? 0}/100.\nAvaliação: ${latestReport?.generated_at ? new Date(latestReport.generated_at).toLocaleDateString('pt-BR') : 'data indisponível'}.\n\nGostaria de agendar uma consulta.`
-                                const encoded = encodeURIComponent(text)
-                                // wa.me sem número abre o seletor de contatos no celular
-                                // No desktop, abre WhatsApp Web pedindo para escolher contato
-                                window.open(`https://wa.me/?text=${encoded}`, '_blank')
-                            }}
-                            className="flex items-center gap-2 px-4 py-2 bg-[#25D366]/10 text-[#25D366] hover:bg-[#25D366]/20 border border-[#25D366]/20 rounded-lg text-sm font-medium transition-colors"
-                        >
-                            <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>
-                            WhatsApp
-                        </button>
+                    <div className="flex flex-wrap gap-2">
+                        {/* [V1.9.105] Ordem alfabética PT: Agendar / Enviar / Iniciar / Vincular / WhatsApp */}
                         <button
                             onClick={onScheduleClick}
                             className="flex items-center gap-2 px-4 py-2 bg-blue-500/10 text-blue-400 hover:bg-blue-500/20 border border-blue-500/20 rounded-lg text-sm font-medium transition-all shadow-[0_0_15px_rgba(59,130,246,0.3)] hover:shadow-[0_0_20px_rgba(59,130,246,0.5)] animate-pulse"
@@ -692,6 +682,35 @@ const PatientAnalytics: React.FC<PatientAnalyticsProps> = ({ reports, loading, u
                         >
                             <FileText className="w-4 h-4" />
                             Enviar para Médico
+                        </button>
+                        {onStartAssessment && (
+                            <button
+                                onClick={onStartAssessment}
+                                className="flex items-center gap-2 px-4 py-2 bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 border border-emerald-500/30 rounded-lg text-sm font-medium transition-colors"
+                            >
+                                <Brain className="w-4 h-4" />
+                                Iniciar Avaliação
+                            </button>
+                        )}
+                        <button
+                            onClick={() => navigate('/app/clinica/paciente/agendamentos')}
+                            className="flex items-center gap-2 px-4 py-2 bg-indigo-500/10 text-indigo-400 hover:bg-indigo-500/20 border border-indigo-500/20 rounded-lg text-sm font-medium transition-colors"
+                        >
+                            <UserPlus className="w-4 h-4" />
+                            Vincular Médico
+                        </button>
+                        <button
+                            onClick={() => {
+                                const text = `Olá! Sou paciente do MedCannLab.\n\nCompletude da Avaliação: ${latestReport?.content.scores?.clinical_score ?? 0}/100.\nAvaliação: ${latestReport?.generated_at ? new Date(latestReport.generated_at).toLocaleDateString('pt-BR') : 'data indisponível'}.\n\nGostaria de agendar uma consulta.`
+                                const encoded = encodeURIComponent(text)
+                                // wa.me sem número abre o seletor de contatos no celular
+                                // No desktop, abre WhatsApp Web pedindo para escolher contato
+                                window.open(`https://wa.me/?text=${encoded}`, '_blank')
+                            }}
+                            className="flex items-center gap-2 px-4 py-2 bg-[#25D366]/10 text-[#25D366] hover:bg-[#25D366]/20 border border-[#25D366]/20 rounded-lg text-sm font-medium transition-colors"
+                        >
+                            <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>
+                            WhatsApp
                         </button>
                     </div>
                 )}
