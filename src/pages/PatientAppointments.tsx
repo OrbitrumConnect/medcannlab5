@@ -185,11 +185,18 @@ const PatientAppointments: React.FC = () => {
   useEffect(() => {
     const loadProfessionals = async () => {
       try {
-        // Buscar profissionais via users + user_roles (fonte da verdade RBAC)
+        // V1.9.110-A: filtrar profissionais cobrindo divergência PT/EN.
+        // Antes: .in(['profissional', 'admin']) fazia admins (Pedro, Admin Test)
+        // aparecerem como cards — eles não são médicos clínicos.
+        // [P0f memória 29/04] users.type tem 2 grafias historicamente:
+        // 'profissional' (PT) vs 'professional' (EN). Ana Ventorini e outros
+        // estão em EN — fix .in(['profissional', 'professional']) cobre ambos
+        // sem incluir admins. Ricardo tem 2 UUIDs separados (profissional
+        // REAL + admin); filtro captura o UUID clínico correto.
         const { data, error } = await supabase
           .from('users')
           .select('id, name, email, type')
-          .in('type', ['profissional', 'admin'])
+          .in('type', ['profissional', 'professional'])
           .order('name', { ascending: true })
 
         if (error || !data || data.length === 0) {
