@@ -139,6 +139,7 @@ const Landing: React.FC = () => {
   const [showForgotPassword, setShowForgotPassword] = useState(false)
   const [forgotPasswordEmail, setForgotPasswordEmail] = useState('')
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [showFullInstitutional, setShowFullInstitutional] = useState(false)
 
   // Form States
   const [loginData, setLoginData] = useState({ email: '', password: '' })
@@ -277,10 +278,12 @@ const Landing: React.FC = () => {
             </div>
           </div>
 
-          <div className="hidden md:flex items-center space-x-8">
+          <div className="hidden md:flex items-center space-x-6">
             <a href="#solucao" className="text-sm text-slate-400 hover:text-white transition-colors">Solução</a>
-            <a href="#como-funciona" className="text-sm text-slate-400 hover:text-white transition-colors">Como Funciona</a>
-            <a href="#filosofia" className="text-sm text-slate-400 hover:text-white transition-colors">Filosofia</a>
+            <a href="#sobre" className="text-sm text-slate-400 hover:text-white transition-colors">Sobre</a>
+            <a href="#consultorio-escola" className="text-sm text-slate-400 hover:text-white transition-colors">Consultório-Escola</a>
+            <a href="#eixos" className="text-sm text-slate-400 hover:text-white transition-colors">3 Pilares</a>
+            <a href="#planos" className="text-sm text-slate-400 hover:text-white transition-colors">Planos</a>
           </div>
 
           <div className="hidden md:flex items-center space-x-4">
@@ -690,88 +693,116 @@ const Landing: React.FC = () => {
             </p>
           </div>
 
-          {/* Parágrafo institucional v15 — em blocos legíveis */}
-          <div className="prose prose-invert max-w-3xl mx-auto space-y-6 text-slate-300 leading-relaxed">
+          {/* Resumo curto (sempre visível) */}
+          <div className="prose prose-invert max-w-3xl mx-auto text-slate-300 leading-relaxed mb-8">
             <p className="text-base md:text-lg">
-              <strong className="text-white">MedCannLab</strong> é uma <strong className="text-emerald-300">Infraestrutura Cognitiva Clínica orientada pela Escuta</strong>, fundada na <strong className="text-emerald-300">Arte da Entrevista Clínica (AEC — Avaliação Clínica Estruturada)</strong> — método <strong className="text-white">integralmente autoral do Dr. Ricardo Valença</strong> (criação clínica e dissertação de mestrado), construído sobre o princípio de que <em className="text-emerald-200">toda fala do paciente é dado clínico relevante</em>.
-            </p>
-
-            <p className="text-base md:text-lg">
-              O método se materializa em <strong className="text-emerald-300">4 fases macro</strong> (Abertura Exponencial, Desenvolvimento Indiciário, Anamnese Triaxial, Fechamento Consensual), operando sob o <strong className="text-emerald-300">motor IMRE</strong> (Incentivator Minimal of Exponential — lógica de perguntas exponenciais), em fluxo determinístico estruturado e <strong className="text-emerald-300">28 blocos modulares</strong> (preservando 37 blocos legacy), formando um sistema completo de escuta estruturada e raciocínio diagnóstico.
-            </p>
-
-            <p className="text-base md:text-lg">
-              A tradução desse método em sistema executável é a contribuição arquitetural original de <strong className="text-white">Pedro Henrique Passos Galluf</strong> (CTO): o <strong className="text-emerald-300">TradeVision Core</strong> — núcleo originado em sua plataforma anterior e amplamente desenvolvido no MedCannLab — codifica a metodologia clínica autoral em <strong className="text-emerald-300">infraestrutura cognitiva auditável</strong>, com FSM determinístico, Verbatim First, AEC Gate, Pipeline Orchestrator e COS Kernel construídos diretamente sobre a AEC para executar o método sob condições auditáveis. A integração entre método e arquitetura foi orquestrada por Pedro em colaboração técnica com Ricardo.
+              <strong className="text-white">MedCannLab</strong> é uma <strong className="text-emerald-300">Infraestrutura Cognitiva Clínica orientada pela Escuta</strong>, fundada na <strong className="text-emerald-300">Arte da Entrevista Clínica (AEC)</strong> — método autoral do <strong className="text-white">Dr. Ricardo Valença</strong> e operacionalizado por arquitetura cognitiva auditável.
             </p>
           </div>
 
-          {/* Pirâmide de 8 camadas — visual */}
-          <div className="mt-12 max-w-4xl mx-auto">
-            <div className="bg-slate-900/60 border border-slate-800 rounded-2xl p-8">
-              <div className="flex items-center gap-3 mb-6">
-                <Lock className="w-5 h-5 text-emerald-400" />
-                <h3 className="text-lg font-bold text-white tracking-tight">Pirâmide de Governança — 8 camadas</h3>
-              </div>
-              <p className="text-sm text-slate-400 mb-6 leading-relaxed">
-                A plataforma opera sob uma pirâmide formal de governança, onde <strong className="text-emerald-300">GPT é o último a falar e o primeiro a ser checado</strong> — com 46% das interações em hard-lock bypassando o LLM.
-              </p>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
-                <div className="bg-slate-950/60 border border-emerald-500/20 rounded-lg px-3 py-2.5 text-center">
-                  <div className="text-emerald-400 font-bold mb-1">0</div>
-                  <div className="text-slate-300">Constituição §1</div>
-                </div>
-                <div className="bg-slate-950/60 border border-emerald-500/20 rounded-lg px-3 py-2.5 text-center">
-                  <div className="text-emerald-400 font-bold mb-1">1</div>
-                  <div className="text-slate-300">COS Kernel v5.0</div>
-                </div>
-                <div className="bg-slate-950/60 border border-teal-500/20 rounded-lg px-3 py-2.5 text-center">
-                  <div className="text-teal-400 font-bold mb-1">2</div>
-                  <div className="text-slate-300">AEC FSM</div>
-                </div>
-                <div className="bg-slate-950/60 border border-teal-500/20 rounded-lg px-3 py-2.5 text-center">
-                  <div className="text-teal-400 font-bold mb-1">3</div>
-                  <div className="text-slate-300">Verbatim First</div>
-                </div>
-                <div className="bg-slate-950/60 border border-green-500/20 rounded-lg px-3 py-2.5 text-center">
-                  <div className="text-green-400 font-bold mb-1">4</div>
-                  <div className="text-slate-300">AEC Gate</div>
-                </div>
-                <div className="bg-slate-950/60 border border-slate-700/50 rounded-lg px-3 py-2.5 text-center">
-                  <div className="text-slate-400 font-bold mb-1">5</div>
-                  <div className="text-slate-300">GPT</div>
-                </div>
-                <div className="bg-slate-950/60 border border-green-500/20 rounded-lg px-3 py-2.5 text-center">
-                  <div className="text-green-400 font-bold mb-1">6</div>
-                  <div className="text-slate-300">Pós-processamento</div>
-                </div>
-                <div className="bg-slate-950/60 border border-emerald-500/20 rounded-lg px-3 py-2.5 text-center">
-                  <div className="text-emerald-400 font-bold mb-1">7</div>
-                  <div className="text-slate-300">Pipeline Orchestrator</div>
-                </div>
-              </div>
-            </div>
+          {/* Botão expandir/recolher */}
+          <div className="text-center mb-2">
+            <button
+              onClick={() => setShowFullInstitutional(!showFullInstitutional)}
+              className="inline-flex items-center gap-2 px-5 py-2.5 bg-slate-800/60 hover:bg-slate-800 border border-emerald-500/30 hover:border-emerald-500/50 rounded-full text-sm font-medium text-emerald-300 transition-all"
+            >
+              {showFullInstitutional ? 'Recolher tese completa' : 'Ler tese completa'}
+              <ArrowRight className={`w-4 h-4 transition-transform ${showFullInstitutional ? 'rotate-90' : 'rotate-0'}`} />
+            </button>
           </div>
 
-          {/* Formação + Constituição */}
-          <div className="prose prose-invert max-w-3xl mx-auto space-y-6 text-slate-300 leading-relaxed mt-12">
-            <p className="text-base md:text-lg">
-              <strong className="text-emerald-300">Formação clínica é pilar:</strong> cursos AEC (R$ 299,90), IMRE Triaxial (R$ 199,90) e Cannabis Medicinal (R$ 2.999,90), Simulador com 20 personas-pacientes, parceria <em>Cidade Amiga dos Rins</em>.
-            </p>
+          {/* Conteúdo expansível */}
+          <AnimatePresence initial={false}>
+            {showFullInstitutional && (
+              <motion.div
+                key="institutional-full"
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                transition={{ duration: 0.4, ease: 'easeInOut' }}
+                className="overflow-hidden"
+              >
+                {/* Parágrafo institucional v15 — em blocos legíveis */}
+                <div className="prose prose-invert max-w-3xl mx-auto space-y-6 text-slate-300 leading-relaxed mt-8">
+                  <p className="text-base md:text-lg">
+                    O método se materializa em <strong className="text-emerald-300">4 fases macro</strong> (Abertura Exponencial, Desenvolvimento Indiciário, Anamnese Triaxial, Fechamento Consensual), operando sob o <strong className="text-emerald-300">motor IMRE</strong> (Incentivator Minimal of Exponential — lógica de perguntas exponenciais), em fluxo determinístico estruturado e <strong className="text-emerald-300">28 blocos modulares</strong> (preservando 37 blocos legacy), formando um sistema completo de escuta estruturada e raciocínio diagnóstico.
+                  </p>
 
-            <p className="text-base md:text-lg">
-              Constituída como <strong className="text-white">MedCannLab Tecnologia em Saúde LTDA</strong> (pré-CNPJ), com <strong className="text-emerald-300">4 sócios fundadores</strong> equilibrados em 20% cada — clínica (Ricardo), técnica (Pedro), comercial-institucional (João Eduardo Vidal), científica (Eduardo Faveret) — e 20% em tesouraria.
-            </p>
-          </div>
+                  <p className="text-base md:text-lg">
+                    A tradução desse método em sistema executável é a contribuição arquitetural original de <strong className="text-white">Pedro Henrique Passos Galluf</strong> (CTO): o <strong className="text-emerald-300">TradeVision Core</strong> — núcleo originado em sua plataforma anterior e amplamente desenvolvido no MedCannLab — codifica a metodologia clínica autoral em <strong className="text-emerald-300">infraestrutura cognitiva auditável</strong>, com FSM determinístico, Verbatim First, AEC Gate, Pipeline Orchestrator e COS Kernel construídos diretamente sobre a AEC para executar o método sob condições auditáveis. A integração entre método e arquitetura foi orquestrada por Pedro em colaboração técnica com Ricardo.
+                  </p>
+                </div>
 
-          {/* Frase âncora final */}
-          <div className="mt-12 max-w-3xl mx-auto text-center border-t border-slate-800 pt-10">
-            <p className="text-lg md:text-xl text-white font-semibold leading-relaxed mb-4">
-              MedCannLab não substitui o método clínico — <span className="text-emerald-300">operacionaliza, preserva e escala o método</span> em condições auditáveis.
-            </p>
-            <p className="text-sm text-slate-500 italic tracking-wide">
-              Method-first, architecture-grounded, AI-last.
-            </p>
-          </div>
+                {/* Pirâmide de 8 camadas — visual */}
+                <div className="mt-12 max-w-4xl mx-auto">
+                  <div className="bg-slate-900/60 border border-slate-800 rounded-2xl p-8">
+                    <div className="flex items-center gap-3 mb-6">
+                      <Lock className="w-5 h-5 text-emerald-400" />
+                      <h3 className="text-lg font-bold text-white tracking-tight">Pirâmide de Governança — 8 camadas</h3>
+                    </div>
+                    <p className="text-sm text-slate-400 mb-6 leading-relaxed">
+                      A plataforma opera sob uma pirâmide formal de governança, onde <strong className="text-emerald-300">GPT é o último a falar e o primeiro a ser checado</strong> — com 46% das interações em hard-lock bypassando o LLM.
+                    </p>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
+                      <div className="bg-slate-950/60 border border-emerald-500/20 rounded-lg px-3 py-2.5 text-center">
+                        <div className="text-emerald-400 font-bold mb-1">0</div>
+                        <div className="text-slate-300">Constituição §1</div>
+                      </div>
+                      <div className="bg-slate-950/60 border border-emerald-500/20 rounded-lg px-3 py-2.5 text-center">
+                        <div className="text-emerald-400 font-bold mb-1">1</div>
+                        <div className="text-slate-300">COS Kernel v5.0</div>
+                      </div>
+                      <div className="bg-slate-950/60 border border-teal-500/20 rounded-lg px-3 py-2.5 text-center">
+                        <div className="text-teal-400 font-bold mb-1">2</div>
+                        <div className="text-slate-300">AEC FSM</div>
+                      </div>
+                      <div className="bg-slate-950/60 border border-teal-500/20 rounded-lg px-3 py-2.5 text-center">
+                        <div className="text-teal-400 font-bold mb-1">3</div>
+                        <div className="text-slate-300">Verbatim First</div>
+                      </div>
+                      <div className="bg-slate-950/60 border border-green-500/20 rounded-lg px-3 py-2.5 text-center">
+                        <div className="text-green-400 font-bold mb-1">4</div>
+                        <div className="text-slate-300">AEC Gate</div>
+                      </div>
+                      <div className="bg-slate-950/60 border border-slate-700/50 rounded-lg px-3 py-2.5 text-center">
+                        <div className="text-slate-400 font-bold mb-1">5</div>
+                        <div className="text-slate-300">GPT</div>
+                      </div>
+                      <div className="bg-slate-950/60 border border-green-500/20 rounded-lg px-3 py-2.5 text-center">
+                        <div className="text-green-400 font-bold mb-1">6</div>
+                        <div className="text-slate-300">Pós-processamento</div>
+                      </div>
+                      <div className="bg-slate-950/60 border border-emerald-500/20 rounded-lg px-3 py-2.5 text-center">
+                        <div className="text-emerald-400 font-bold mb-1">7</div>
+                        <div className="text-slate-300">Pipeline Orchestrator</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Formação + Constituição */}
+                <div className="prose prose-invert max-w-3xl mx-auto space-y-6 text-slate-300 leading-relaxed mt-12">
+                  <p className="text-base md:text-lg">
+                    <strong className="text-emerald-300">Formação clínica é pilar:</strong> cursos AEC (R$ 299,90), IMRE Triaxial (R$ 199,90) e Cannabis Medicinal (R$ 2.999,90), Simulador com 20 personas-pacientes, parceria <em>Cidade Amiga dos Rins</em>.
+                  </p>
+
+                  <p className="text-base md:text-lg">
+                    Constituída como <strong className="text-white">MedCannLab Tecnologia em Saúde LTDA</strong> (pré-CNPJ), com <strong className="text-emerald-300">4 sócios fundadores</strong> equilibrados em 20% cada — clínica (Ricardo), técnica (Pedro), comercial-institucional (João Eduardo Vidal), científica (Eduardo Faveret) — e 20% em tesouraria.
+                  </p>
+                </div>
+
+                {/* Frase âncora final */}
+                <div className="mt-12 max-w-3xl mx-auto text-center border-t border-slate-800 pt-10">
+                  <p className="text-lg md:text-xl text-white font-semibold leading-relaxed mb-4">
+                    MedCannLab não substitui o método clínico — <span className="text-emerald-300">operacionaliza, preserva e escala o método</span> em condições auditáveis.
+                  </p>
+                  <p className="text-sm text-slate-500 italic tracking-wide">
+                    Method-first, architecture-grounded, AI-last.
+                  </p>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </section>
 
