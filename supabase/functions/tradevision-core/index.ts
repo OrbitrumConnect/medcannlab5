@@ -1730,6 +1730,46 @@ Deno.serve(async (req: Request) => {
             const gateB = await assertPatientHasDoctorContext(supabaseClient, effectiveUserId);
             if (gateB.ok === false) {
                 console.warn(`⛔ [P0B_GATE_B] Caminho 1 bloqueado — motivo: ${gateB.reason}`);
+
+                // ──────────────────────────────────────────────────────────────
+                // 🩹 V1.9.102 — SAVE DRAFT antes do 409 (anti-regressão)
+                //
+                // Pedro identificou regressão: relatório faz parte do AEC, deve
+                // existir sempre que AEC for completada. Antes do P0b (até
+                // 29/04 04:33), pipeline rodava com fallback Ricardo. P0b
+                // adicionou bloqueio regulatório mas comeu a feature.
+                //
+                // Solução: salvar rascunho ANTES de bloquear.
+                //   - signed_at = NULL → trigger V1.9.101 NÃO dispara (correto)
+                //   - status = 'draft' → paciente visualiza, não compartilha
+                //   - Quando paciente agendar, sistema promove para completed
+                //
+                // Lock V1.9.95+97+98+99-B preservado: pipeline NÃO roda,
+                // handleFinalizeAssessment NÃO é chamado, signature NÃO é gerada.
+                // ──────────────────────────────────────────────────────────────
+                let draftId: string | null = null;
+                try {
+                    const draftContent = assessmentData?.content || assessmentData || body.assessment_data || {};
+                    const draftPatientName = patientData?.user?.name || patientData?.user?.email || 'Paciente';
+                    draftId = `aec_draft_${effectiveUserId}_${Date.now()}`;
+                    await supabaseClient.from('clinical_reports').insert({
+                        id: draftId,
+                        patient_id: effectiveUserId,
+                        patient_name: draftPatientName,
+                        status: 'draft',
+                        report_type: 'initial_assessment',
+                        protocol: 'IMRE',
+                        generated_by: 'professional',
+                        content: draftContent,
+                        interaction_id,
+                        consent_given: true,
+                        consent_at: new Date().toISOString()
+                    });
+                    console.log(`📝 [DRAFT_SAVED_GATE_B] Rascunho preservado: ${draftId}`);
+                } catch (saveErr) {
+                    console.warn('[DRAFT_SAVE_GATE_B] Falha (não bloqueia gate):', saveErr);
+                }
+
                 try {
                     await supabaseClient.from('noa_logs').insert({
                         user_id: effectiveUserId,
@@ -1738,7 +1778,8 @@ Deno.serve(async (req: Request) => {
                             layer: 'B',
                             reason: gateB.reason,
                             interaction_id,
-                            path: 'caminho_1_finalize_request'
+                            path: 'caminho_1_finalize_request',
+                            draft_report_id: draftId
                         }
                     });
                 } catch (e) {
@@ -1748,8 +1789,9 @@ Deno.serve(async (req: Request) => {
                     success: false,
                     error_code: 'DOCTOR_REQUIRED',
                     error_reason: gateB.reason,
-                    message: 'É necessário ter um médico vinculado antes de finalizar a avaliação. Por favor, agende uma consulta.',
-                    action: gateB.ux_action ?? 'SCHEDULE_APPOINTMENT'
+                    message: 'É necessário ter um médico vinculado antes de finalizar a avaliação. Sua avaliação foi salva como rascunho. Por favor, agende uma consulta.',
+                    action: gateB.ux_action ?? 'SCHEDULE_APPOINTMENT',
+                    draft_report_id: draftId
                 }), {
                     status: 409,
                     headers: { ...corsHeaders, 'Content-Type': 'application/json' }
@@ -5124,6 +5166,42 @@ ${contentExcerpt || '(Texto não disponível para este documento. O conteúdo ai
                 const gateC = await assertPatientHasDoctorContext(supabaseClient, orchestratorPatientId);
                 if (gateC.ok === false) {
                     console.warn(`⛔ [P0B_GATE_C] Caminho 2 bloqueado (tag automática) — motivo: ${gateC.reason}`);
+
+                    // ──────────────────────────────────────────────────────────────
+                    // 🩹 V1.9.102 — SAVE DRAFT antes de skipar pipeline (anti-regressão)
+                    //
+                    // Mesma lógica do Patch B (linha ~1730). Caminho 2 é DOMINANTE
+                    // em produção (tag automática [ASSESSMENT_COMPLETED] injetada
+                    // pelo Verbatim First). Sem save aqui, qualquer AEC sem
+                    // appointment perde trabalho do paciente.
+                    //
+                    // signed_at=NULL não dispara V1.9.101 trigger.
+                    // Lock pipeline preservado (handleFinalizeAssessment NÃO chamado).
+                    // ──────────────────────────────────────────────────────────────
+                    let draftIdC: string | null = null;
+                    try {
+                        const isAssessmentDataEmptyForDraft = !assessmentData || Object.keys(assessmentData).length <= 1;
+                        const draftContentC = isAssessmentDataEmptyForDraft ? (aecSnapshot || {}) : assessmentData;
+                        const draftPatientNameC = patientData?.user?.name || patientData?.user?.email || 'Paciente';
+                        draftIdC = `aec_draft_${orchestratorPatientId}_${Date.now()}`;
+                        await supabaseClient.from('clinical_reports').insert({
+                            id: draftIdC,
+                            patient_id: orchestratorPatientId,
+                            patient_name: draftPatientNameC,
+                            status: 'draft',
+                            report_type: 'initial_assessment',
+                            protocol: 'IMRE',
+                            generated_by: 'professional',
+                            content: draftContentC,
+                            interaction_id,
+                            consent_given: true,
+                            consent_at: new Date().toISOString()
+                        });
+                        console.log(`📝 [DRAFT_SAVED_GATE_C] Rascunho preservado: ${draftIdC}`);
+                    } catch (saveErr) {
+                        console.warn('[DRAFT_SAVE_GATE_C] Falha (não bloqueia gate):', saveErr);
+                    }
+
                     try {
                         await supabaseClient.from('noa_logs').insert({
                             user_id: orchestratorPatientId,
@@ -5135,7 +5213,8 @@ ${contentExcerpt || '(Texto não disponível para este documento. O conteúdo ai
                                 path: 'caminho_2_auto_tag_assessment_completed',
                                 blocked: true,
                                 requires_doctor: true,
-                                pipeline_skipped: true
+                                pipeline_skipped: true,
+                                draft_report_id: draftIdC
                             }
                         });
                     } catch (e) {
@@ -5148,11 +5227,11 @@ ${contentExcerpt || '(Texto não disponível para este documento. O conteúdo ai
                         .trim();
                     // [GPT review] UX com saída acionável — não trava o usuário
                     aiResponse = sanitizedResponse +
-                        '\n\n⚠️ Para finalizar sua avaliação, é necessário ter um médico vinculado.\n\n' +
+                        '\n\n⚠️ Sua avaliação foi salva como rascunho. Para finalizar e gerar o relatório completo, é necessário vincular um médico.\n\n' +
                         'Você pode:\n' +
                         '• Agendar uma consulta na aba de agendamento\n' +
                         '• Ou escolher um médico diretamente aqui\n\n' +
-                        '(Com isso, sigo com você na avaliação)';
+                        '(Após o vínculo, retomamos sua avaliação)';
                     // SKIP pipeline — sinalizado via noa_logs.payload.pipeline_skipped=true
                     // Frontend pode inspecionar metadata na response final pra saber o estado real.
                 } else {
