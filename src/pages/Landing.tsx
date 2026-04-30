@@ -787,7 +787,7 @@ const Landing: React.FC = () => {
                   </p>
 
                   <p className="text-base md:text-lg">
-                    Constituída como <strong className="text-white">MedCannLab Tecnologia em Saúde LTDA</strong> (pré-CNPJ), com <strong className="text-emerald-300">4 sócios fundadores</strong> equilibrados em 20% cada — clínica (Ricardo), técnica (Pedro), comercial-institucional (João Eduardo Vidal), científica (Eduardo Faveret) — e 20% em tesouraria.
+                    <strong className="text-emerald-300">Time fundador:</strong> Dr. Ricardo Valença (Nefrologia — criador da AEC), Dr. Eduardo Faveret (Neurologia — direção médica e científica), Pedro Henrique Passos Galluf (CTO — arquitetura cognitiva e TradeVision Core), João Eduardo Vidal (institucional e parcerias).
                   </p>
                 </div>
 
@@ -854,7 +854,7 @@ const Landing: React.FC = () => {
                 </div>
               </div>
               <p className="text-sm text-slate-400 leading-relaxed">
-                Direção médica em neurologia com foco em escuta estruturada. Aplicação do método AEC à prática neurológica e à formação clínica continuada.
+                <strong className="text-teal-200">Direção médica e científica</strong> do MedCannLab. Especialista em <strong className="text-teal-200">neurologia clínica</strong> com foco em escuta estruturada e raciocínio diagnóstico. Responsável pela aplicação do método AEC à prática neurológica, à formação médica continuada e à produção de evidência clínica em parceria com a coordenação científica do método.
               </p>
             </div>
           </div>
