@@ -1772,76 +1772,238 @@ Deno.serve(async (req: Request) => {
                     });
                 }
 
-                // Idempotência: já tem axes? skip
+                // V1.9.103-E: Idempotência granular — pular APENAS se TUDO já enriquecido.
+                // Antes (V1.9.103-D): pular se axes count > 0 → mascarava reports com
+                // axes mas SEM scores/structured/signature (regressão Pedro 30/04 ~12h).
                 const { count: axesCount } = await supabaseClient
                     .from('clinical_axes')
                     .select('*', { count: 'exact', head: true })
                     .eq('report_id', reportId);
 
-                if ((axesCount || 0) > 0) {
-                    console.log('🔁 [PIPELINE_PROMOTION] Report já tem axes, skip:', reportId);
+                const { count: ratCount } = await supabaseClient
+                    .from('clinical_rationalities')
+                    .select('*', { count: 'exact', head: true })
+                    .eq('report_id', reportId);
+
+                const existingContent = (existingReport.content || {}) as any;
+                const isContentEnriched = (
+                    existingContent?.scores?.calculated === true &&
+                    typeof existingContent?.structured === 'string' &&
+                    existingContent.structured.length > 50
+                );
+                const isFullyEnriched = (
+                    (axesCount || 0) > 0 &&
+                    (ratCount || 0) > 0 &&
+                    isContentEnriched &&
+                    !!existingReport.signature_hash
+                );
+
+                if (isFullyEnriched) {
+                    console.log('🔁 [PIPELINE_PROMOTION] Report já totalmente enriquecido, skip:', reportId);
                     return new Response(JSON.stringify({
                         ok: true,
                         status: 'already_complete',
                         report_id: reportId,
-                        axes_count: axesCount
+                        axes_count: axesCount,
+                        rationalities_count: ratCount,
+                        content_enriched: isContentEnriched
                     }), {
                         status: 200,
                         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
                     });
                 }
+                console.log('🔄 [PIPELINE_PROMOTION] Enrichment necessário', {
+                    has_axes: (axesCount || 0) > 0,
+                    has_rationality: (ratCount || 0) > 0,
+                    content_enriched: isContentEnriched,
+                    has_signature: !!existingReport.signature_hash
+                });
 
-                // Reconstruir assessmentData do content
+                // ──────────────────────────────────────────────────────────────
+                // V1.9.103-E — ENRICHMENT do content (paridade com fluxo normal)
+                //
+                // Pedro 30/04 ~12h identificou regressão funcional: dashboard
+                // mostrava "Aguardando dados" / "em cálculo" porque V1.9.102
+                // salvou content cru, sem scores/structured/signature_hash.
+                //
+                // Aqui regeneramos os 3 campos faltantes ANTES de axes/rationality:
+                //   1. structuredTop espalhado no topo (lista_indiciaria, queixa,
+                //      hpp, fammat, famfat, habitos, perguntas, consenso)
+                //   2. content.scores via calculateScoresFromContent (V1.9.33)
+                //   3. content.structured via GPT-4o-mini escriba V1.9.84
+                //   4. signature_hash + signed_payload via SHA-256 (V1.9.73)
+                //
+                // Lock preservation: usa MESMOS helpers que handleFinalizeAssessment,
+                // não toca o pipeline original. Apenas replica enrichment em report
+                // já existente.
+                // ──────────────────────────────────────────────────────────────
                 const content = existingReport.content || {};
                 const assessmentDataReconstructed = content.raw || content;
-                const structuredNarrative = content.structured || '';
+                const structuredTopFromContent = unwrapAecContent(content);
 
-                // ── Pipeline downstream: AXES (igual handleFinalizeAssessment 1480-1500)
-                console.log('🧠 [PIPELINE_PROMOTION] AXES', { report_id: reportId });
-                const axes = [
-                    { axis_name: 'sintomatico', summary: `Queixa principal: ${assessmentDataReconstructed.mainComplaint || 'Não informada'}.` },
-                    { axis_name: 'funcional', summary: `Impacto em ${assessmentDataReconstructed.lifestyleHabits?.length || 0} hábitos de vida.` },
-                    { axis_name: 'etiologico', summary: `Histórico patológico e familiar analisado.` },
-                    { axis_name: 'terapeutico', summary: `Adesão e medicações atuais: ${assessmentDataReconstructed.regularMedications || 'não informadas'}.` },
-                    { axis_name: 'prognostico', summary: `Expectativa de evolução clínica baseada em fatores de melhora.` }
-                ];
+                // ── Recalcular scores
+                console.log('🧮 [PIPELINE_PROMOTION] SCORES', { report_id: reportId });
+                const enrichmentScores = calculateScoresFromContent(structuredTopFromContent);
 
-                const { error: axesError } = await supabaseClient.from('clinical_axes').insert(
-                    axes.map(a => ({
-                        ...a,
-                        report_id: reportId,
-                        patient_id: existingReport.patient_id,
-                        confidence: 0.9
-                    }))
-                );
-                if (axesError) {
-                    console.error('❌ [PIPELINE_PROMOTION] AXES_ERROR', axesError);
-                } else {
-                    console.log('✅ [PIPELINE_PROMOTION] AXES_SYNCED');
-                }
+                // ── Regenerar narrativa structured via escriba V1.9.84
+                console.log('🧠 [PIPELINE_PROMOTION] NARRATIVE (escriba V1.9.84)', { report_id: reportId });
+                const reportPromptEnrich = `Organize os dados brutos da avaliação clínica abaixo num relatório estruturado fiel (Markdown).
 
-                // ── Pipeline downstream: RATIONALITY (igual handleFinalizeAssessment 1503-1524)
-                console.log('🧠 [PIPELINE_PROMOTION] RATIONALITY');
-                const integrativePrompt = `Analise este relatório clínico do ponto de vista da Medicina Integrativa para selagem de prontuário.\n\nCONTEÚDO: ${structuredNarrative}\n\nForneça uma análise holística e recomendações integrativas.`;
-                const ratCompletion = await openai.chat.completions.create({
+Objetivo: ORGANIZAR as informações fornecidas pelo paciente, sem inferir diagnóstico, sem prescrever conduta, sem atribuir risco clínico, sem propor exames.
+
+Dados:
+${JSON.stringify(structuredTopFromContent)}
+
+Estrutura Obrigatória:
+- Identificação (nome do paciente)
+- Queixa Principal (textual, em destaque)
+- Lista Indiciária (sintomas mencionados pelo paciente)
+- Desenvolvimento da Queixa (localização, início, descrição, fatores de melhora/piora, sintomas associados)
+- História Patológica Pregressa
+- História Familiar (lado materno e paterno)
+- Hábitos de Vida
+- Perguntas Objetivas (alergias, medicações regulares e esporádicas)
+- Consenso (se aceito pelo paciente)
+- Lacunas Declaradas (campos não explorados nesta avaliação)
+
+REGRAS ABSOLUTAS:
+- NÃO gerar "Impressão Clínica" ou hipótese diagnóstica
+- NÃO gerar "Plano de Conduta" nem sugestão de exames ou tratamento
+- NÃO atribuir risco clínico (médio/alto/baixo)
+- NÃO agrupar, correlacionar ou reinterpretar sintomas além do que foi explicitamente dito
+- NÃO usar linguagem que implique inferência clínica como "sugere", "indica", "compatível com", "padrão", "aparenta", "pode estar relacionado"
+- Linguagem descritiva, não interpretativa
+- Se um campo não foi explorado, registrar como "não explorado nesta avaliação"
+- Não inferir nada que o paciente não disse
+- Citar literal o que o paciente disse quando aplicável
+
+Finalizar SEMPRE com:
+"Este documento representa a organização estruturada das informações fornecidas pelo paciente durante a avaliação clínica inicial assistida pela Nôa Esperanza. Não constitui diagnóstico, prescrição ou plano de tratamento. Recomenda-se apresentação ao médico responsável para análise clínica."`;
+
+                const enrichmentReportCompletion = await openai.chat.completions.create({
                     model: 'gpt-4o-mini',
                     messages: [
-                        { role: 'system', content: 'Você é o motor de racionalidade clínica da MedCannLab.' },
-                        { role: 'user', content: integrativePrompt }
-                    ]
+                        { role: 'system', content: 'Você atua como um escriba clínico da plataforma Nôa Esperanza. Sua função é transcrever e organizar a fala do paciente com fidelidade estrutural, sem qualquer interpretação, síntese clínica ou inferência. Você NÃO é médico — apoia o trabalho do médico organizando a entrevista.' },
+                        { role: 'user', content: reportPromptEnrich }
+                    ],
+                    temperature: 0.1
                 });
 
-                const { error: ratError } = await supabaseClient.from('clinical_rationalities').insert({
-                    report_id: reportId,
-                    patient_id: existingReport.patient_id,
-                    rationality_type: 'integrative',
-                    assessment: ratCompletion?.choices?.[0]?.message?.content || 'Falha na geração da análise.',
-                    approach: 'Medicina Integrativa'
-                });
-                if (ratError) {
-                    console.error('❌ [PIPELINE_PROMOTION] RATIONALITY_ERROR', ratError);
+                const structuredNarrative = enrichmentReportCompletion?.choices?.[0]?.message?.content || 'Não foi possível gerar a narrativa do relatório.';
+
+                // ── Construir content enriquecido (paridade com handleFinalizeAssessment 1404-1416)
+                const enrichedContent = {
+                    ...structuredTopFromContent,
+                    scores: enrichmentScores,
+                    structured: structuredNarrative,
+                    raw: assessmentDataReconstructed,
+                    metadata: {
+                        interaction_id: content.metadata?.interaction_id || reportId,
+                        generated_at: new Date().toISOString(),
+                        enriched_at: new Date().toISOString(),
+                        system_version: 'V1.9.103-E (enriched via complete_promoted_draft)'
+                    }
+                };
+
+                // ── Calcular signature_hash (V1.9.73 — paridade)
+                let enrichmentSigHash: string | null = null;
+                let enrichmentSignedPayload: any = null;
+                try {
+                    const signedPayloadEnrich = {
+                        report_id: reportId,
+                        patient_id: existingReport.patient_id,
+                        content: enrichedContent,
+                        created_at: new Date().toISOString()
+                    };
+                    enrichmentSignedPayload = signedPayloadEnrich;
+                    const payloadJson = JSON.stringify(signedPayloadEnrich);
+                    const encoded = new TextEncoder().encode(payloadJson);
+                    const hashBuffer = await crypto.subtle.digest('SHA-256', encoded);
+                    const hashArray = Array.from(new Uint8Array(hashBuffer));
+                    enrichmentSigHash = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+                } catch (sigErr) {
+                    console.warn('⚠️ [PIPELINE_PROMOTION] Erro ao calcular signature_hash:', (sigErr as Error)?.message);
+                }
+
+                // ── UPDATE clinical_reports com content enriquecido + signature
+                const { error: enrichUpdateErr } = await supabaseClient
+                    .from('clinical_reports')
+                    .update({
+                        content: enrichedContent,
+                        signature_hash: enrichmentSigHash,
+                        signed_payload: enrichmentSignedPayload,
+                        updated_at: new Date().toISOString()
+                    })
+                    .eq('id', reportId);
+
+                if (enrichUpdateErr) {
+                    console.warn('⚠️ [PIPELINE_PROMOTION] Erro ao salvar enrichment:', enrichUpdateErr);
                 } else {
-                    console.log('✅ [PIPELINE_PROMOTION] RATIONALITY_SYNCED');
+                    console.log('✅ [PIPELINE_PROMOTION] CONTENT_ENRICHED', {
+                        clinical_score: enrichmentScores.clinical_score,
+                        confidence: enrichmentScores.score_confidence,
+                        sig_hash_set: !!enrichmentSigHash
+                    });
+                }
+
+                // ── Pipeline downstream: AXES (CONDICIONAL — não duplicar)
+                let axesError: any = null;
+                if ((axesCount || 0) === 0) {
+                    console.log('🧠 [PIPELINE_PROMOTION] AXES', { report_id: reportId });
+                    const axes = [
+                        { axis_name: 'sintomatico', summary: `Queixa principal: ${assessmentDataReconstructed.mainComplaint || structuredTopFromContent?.queixa_principal || 'Não informada'}.` },
+                        { axis_name: 'funcional', summary: `Impacto em ${assessmentDataReconstructed.lifestyleHabits?.length || (Array.isArray(structuredTopFromContent?.habitos_vida) ? structuredTopFromContent.habitos_vida.length : 0)} hábitos de vida.` },
+                        { axis_name: 'etiologico', summary: `Histórico patológico e familiar analisado.` },
+                        { axis_name: 'terapeutico', summary: `Adesão e medicações atuais: ${assessmentDataReconstructed.regularMedications || structuredTopFromContent?.perguntas_objetivas?.medicacoes_regulares || 'não informadas'}.` },
+                        { axis_name: 'prognostico', summary: `Expectativa de evolução clínica baseada em fatores de melhora.` }
+                    ];
+
+                    const insertAxesResult = await supabaseClient.from('clinical_axes').insert(
+                        axes.map(a => ({
+                            ...a,
+                            report_id: reportId,
+                            patient_id: existingReport.patient_id,
+                            confidence: 0.9
+                        }))
+                    );
+                    axesError = insertAxesResult.error;
+                    if (axesError) {
+                        console.error('❌ [PIPELINE_PROMOTION] AXES_ERROR', axesError);
+                    } else {
+                        console.log('✅ [PIPELINE_PROMOTION] AXES_SYNCED');
+                    }
+                } else {
+                    console.log('🔁 [PIPELINE_PROMOTION] AXES_SKIP (já existem)', { count: axesCount });
+                }
+
+                // ── Pipeline downstream: RATIONALITY (CONDICIONAL — não duplicar)
+                let ratError: any = null;
+                if ((ratCount || 0) === 0) {
+                    console.log('🧠 [PIPELINE_PROMOTION] RATIONALITY');
+                    const integrativePrompt = `Analise este relatório clínico do ponto de vista da Medicina Integrativa para selagem de prontuário.\n\nCONTEÚDO: ${structuredNarrative}\n\nForneça uma análise holística e recomendações integrativas.`;
+                    const ratCompletion = await openai.chat.completions.create({
+                        model: 'gpt-4o-mini',
+                        messages: [
+                            { role: 'system', content: 'Você é o motor de racionalidade clínica da MedCannLab.' },
+                            { role: 'user', content: integrativePrompt }
+                        ]
+                    });
+
+                    const insertRatResult = await supabaseClient.from('clinical_rationalities').insert({
+                        report_id: reportId,
+                        patient_id: existingReport.patient_id,
+                        rationality_type: 'integrative',
+                        assessment: ratCompletion?.choices?.[0]?.message?.content || 'Falha na geração da análise.',
+                        approach: 'Medicina Integrativa'
+                    });
+                    ratError = insertRatResult.error;
+                    if (ratError) {
+                        console.error('❌ [PIPELINE_PROMOTION] RATIONALITY_ERROR', ratError);
+                    } else {
+                        console.log('✅ [PIPELINE_PROMOTION] RATIONALITY_SYNCED');
+                    }
+                } else {
+                    console.log('🔁 [PIPELINE_PROMOTION] RATIONALITY_SKIP (já existe)', { count: ratCount });
                 }
 
                 console.log('✅ [PIPELINE_PROMOTION] DONE', { report_id: reportId });
