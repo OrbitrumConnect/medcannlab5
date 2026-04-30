@@ -531,11 +531,11 @@ const Landing: React.FC = () => {
                     <div className="w-3 h-3 rounded-full bg-yellow-500/50"></div>
                     <div className="w-3 h-3 rounded-full bg-green-500/50"></div>
                   </div>
-                  {/* Avatar Nôa + nome — centralizado, 20% maior */}
+                  {/* Avatar Nôa + nome — centralizado, ~20% maior cada iteração */}
                   <div className="flex items-center gap-3">
                     <div
-                      className="relative w-12 h-12 rounded-full overflow-hidden border-2 border-emerald-500/60 bg-slate-950/60 flex-shrink-0"
-                      style={{ boxShadow: '0 0 18px rgba(0, 193, 106, 0.5)' }}
+                      className="relative w-14 h-14 rounded-full overflow-hidden border-2 border-emerald-500/60 bg-slate-950/60 flex-shrink-0"
+                      style={{ boxShadow: '0 0 22px rgba(0, 193, 106, 0.55)' }}
                       title="Nôa Esperanza"
                     >
                       <img
