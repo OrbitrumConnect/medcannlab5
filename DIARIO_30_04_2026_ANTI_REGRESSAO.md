@@ -595,3 +595,287 @@ SUFICIENTE pra próximo update Magno (já agora):
 Diário 30/04 fecha em 10 blocos (A→J). Mapeamento gap Magno × diários
 14 dias completo. Próximo: Pedro debater assunto específico pendente +
 V1.9.105 decay + PR 2.C + Magno v2.0 quando 9 módulos prontos.*
+
+---
+
+## Bloco K — Sessão noite 30/04 (~17h45-19h): UX trilogia paciente + cleanup AEC + identidade médica
+
+**Contexto:** Após cristalizar princípio "auditar 100% antes" (Bloco I) e fechar V1.9.103-G+V1.9.104+V1.9.104-A, sessão da noite atacou trilogia UX paciente em sequência cirúrgica fiel ao "1 a 1 na calma". 10 PRs commitados em ~3h, todos preservando Lock V1.9.95+97+98+99-B.
+
+### K.1 — V1.9.105 + V1.9.105-A: Detector contextual + 5 botões alfabéticos
+
+**Bug**: paciente clica "Iniciar Avaliação" → handler só abre chat (não dispara FSM). Paciente diz "vamos lá" depois Nôa convidar → não dispara AEC (detector strict só captura "iniciar avaliação clínica inicial").
+
+**V1.9.105** — detector contextual aditivo em `platformFunctionsModule.ts`:
+- `noaInvited` (lastNoa contém "iniciar" + "avaliação/aec/protocolo")
+- `userAffirmed` (regex `^afirmação\b` aceita "sim pode ser", "ok vamos lá")
+- Anti-negação (`não/depois/talvez/amanhã`)
+- Filtro `aecStateExists` assimétrico (bloqueia contextual mas não strict)
+- Override `wantsRestart` libera contextual mesmo com aec ativa
+- `lastAssistantMessage` propagado via `NoaContext` + `useMedCannLabConversation`
+
+**V1.9.105-A** — botão acessível em `PatientAnalytics`:
+- Card "Iniciar Avaliação" estava só no branch `else` (sem plano) → Pedro com 1 relatório nunca via
+- 5 botões alfabéticos PT: Agendar / Enviar / Iniciar / Vincular / WhatsApp
+- Renderização condicional `onStartAssessment && (...)` — outros consumidores intactos
+
+**Smoke**: 9 cenários testados (clique, strict, contextual ✓, sem convite NONE, "vou sair de casa" NONE, AEC ativa smart-lock, "sim pode ser" ✓, "sim mas depois" NONE, override "quero recomeçar").
+
+**Commits**: `b72af3b` + `e4a2e81`.
+
+### K.2 — V1.9.106: Fix shadowing currentPhase (barra AEC volta a aparecer)
+
+**Bug pré-existente exposto via log Pedro**: barra de progresso AEC sticky em `NoaConversationalInterface:3219-3251` NUNCA renderizava porque `metadata.assessmentPhase` chegava sempre null no client.
+
+**Causa-raiz**: shadowing de variável em `noaResidentAI.ts`:
+- Linha 256 (escopo `processMessage`): `let currentPhase: any = null` — esse vai pra metadata
+- Linha 1645 (escopo `processAssistant`): `let currentPhase = undefined` — populado em 1897 mas escopo isolado
+
+**Fix (~3 linhas)**: lê direto do `clinicalAssessmentFlow.getState()` como fallback antes de injetar metadata. Single source of truth do FSM client.
+
+**Commit**: `6029be0`.
+
+### K.3 — V1.9.107: Linguagem neutra Ricardo (P10 cleanup)
+
+**Bug confirmado empíricamente em log Pedro**: 3 fontes desalinhadas mostrando "Ricardo" por mecanismos diferentes (P10 silencioso clássico):
+
+1. `doctor_id` no DB = 2135f0c0 ✓ correto via DOCTOR_RESOLUTION (appointments validados)
+2. Frase chat hardcoded em `physicianDisplay()` fallback
+3. Card agendamento mostrava Ana Ventorini (dropdown alfabético quando UUID inválido)
+
+Coincidência batem em "Ricardo" hoje (Pedro só tem appt com ele). Bug latente: paciente com appt com Ana → 3 nomes diferentes.
+
+**Fix null-safe centralizado** em `clinicalAssessmentFlow.ts:392`:
+- `physicianDisplay()` retorna `string | null`
+- 4 callers adaptam (abertura, consent, fechamento scheduleTarget+presentTarget, recusa)
+- "método desenvolvido pelo Dr. Ricardo Valença" MANTIDO (autoria factual)
+- Idem `noaResidentAI.ts:1699` (duplicata `buildAecOpeningHint`)
+
+Quando feature P0e entrar futuramente, frases voltam a citar nome real automaticamente.
+
+**Commit**: `bf62acb`.
+
+### K.4 — V1.9.108: metadata.professionalId UUID (alinha 3ª fonte)
+
+**Bug latente descoberto durante audit**: `tradevision-core/index.ts:2329` declarava 2 vars:
+- `detectedProfessionalId = 'ricardo-valenca'` (slug, default) → IA exposto pro frontend
+- `detectedProfessionalUuid = '2135f0c0-...'` (UUID Ricardo real, NÃO usado!)
+
+Linha 5926 expunha o **slug**. Frontend `isValidUuid()` → false → widget caía em dropdown alfabético (Ana 1ª).
+
+**Fix (2 linhas)**:
+1. `professionalId: detectedProfessionalUuid` (UUID real)
+2. Removido placeholder fake `'1a6f8bca-...'` Eduardo do catch fallback
+
+**ICL como roadmap pós-PMF documentado em memória** após review GPT — single source of truth = `clinical_reports.doctor_id`.
+
+**Commit**: `6b48213`.
+
+### K.5 — V1.9.109 + V1.9.109-A: Cleanup pass anti-transbordamento HPP↔PIORA
+
+**Bug C confirmado empíricamente em log + relatório passosmir4 30/04 ~17h**:
+
+```
+17:07 Nôa: "O que parece piorar a dor nas costas?"
+17:07 Pedro: "piora quando corro..."
+       → write COMPLAINT_DETAILS qIdx=5 iter=0 → piora=1 ✓
+
+17:07 Nôa avança: "Desde o nascimento, quais questões de saúde..."
+17:07 Pedro: "desde cedo tive pneumonia... pedra nos rins..."
+       → write COMPLAINT_DETAILS qIdx=5 iter=1 → piora=2 ❌ ERRADO
+       → DEPOIS avançou pra MEDICAL_HISTORY hpp=0
+```
+
+**Causa**: FSM AEC tem 1 turno de atraso na transição entre fases — último iter da phase X aceita input que conceitualmente é da phase Y.
+
+**Resultado clínico GRAVE**: médico abria relatório e via "Piora: pneumonia, internado, pedra nos rins" — podia interpretar condições ATIVAS piorando agora. HPP empobrecida ("falei a cima!") porque Nôa repetiu pergunta (Bug D efeito cascata). Score 79 inflado.
+
+**Fix V1.9.109 (~110 linhas, stage NOVO entre risk_level seedling e V1.9.84 escriba)**:
+
+GPT-4o-mini classifier semântico (mesma infra escriba V1.9.84), temperature 0 + JSON mode + regras absolutas. Detecta strings em slots errados e remaneja LITERAL. Registra em `_v109_relocations: [{from, to, text}]`.
+
+FAIL-SAFE em 4 camadas:
+1. Try/catch global → fallback original
+2. Validação patient_id (estrutura preservada)
+3. Validação anti-alucinação: TODA string original >5 chars deve aparecer (collectAllStrings + set comparison)
+4. Default cleanedAssessmentData = assessmentData (zero risk de início)
+
+**V1.9.109-A — Reforços pós review GPT**:
+
+GPT calibrou honestamente: *"V1.9.109 é normalização probabilística com auditoria, não verdade clínica determinística"*. Aceitei.
+
+A1 (anti-causal — apenas TEXTO no prompt):
+> Se string contém termos causais ("desde", "desde que", "por causa de", "depois de", "após", "quando tive", "de tanto"), MANTER NO SLOT ORIGINAL — relação causal é informação clínica que se perde com remanejamento.
+
+Caso real: *"dor lombar DESDE pneumonia criança"*. Sem A1 perde "desde". Com A1 detecta e não move.
+
+A2 (telemetria empírica em `noa_logs`):
+- Quando cleanup faz ≥1 relocation → `interaction_type='v109_cleanup_relocations'`
+- Tabela já existente desde V1.9.66 ISM
+- Fire-and-forget (try/catch)
+- Pedro/Ricardo auditam empíricamente
+
+**Commits**: `64c71a1` (V1.9.109) + `c0c9426` (V1.9.109-A).
+
+**Memórias novas**:
+- `project_aec_hpp_transbordamento_30_04.md` — Bug C+D + 3 abordagens B1/B2/B3
+- `project_icl_identity_canonicalization_layer.md` — roadmap pós-PMF GPT review
+
+### K.6 — V1.9.110 + V1.9.110-A: PatientAppointments — fix memo + filtro PT/EN
+
+**Bug 1 — Memo deps incompletas (clássico React)**:
+`PatientAppointments.tsx:449-458` — `useMemo` filtrava `AVAILABLE_PROFESSIONALS` mas NÃO tinha essa variável nas deps. Travado em FALLBACK_PROFESSIONALS (Ricardo + Eduardo) mesmo após `loadProfessionals()` trazer 11+ outros médicos.
+
+**Fix V1.9.110 (1 linha)**: `AVAILABLE_PROFESSIONALS` adicionado nas deps.
+
+Pedro testou → apareceram mais cards. **MAS** veio admins (Pedro + Admin Test) que não são médicos.
+
+**Bug 2 — Admins entrando como profissionais + P0f PT/EN**:
+- Linha 192: `.in('type', ['profissional', 'admin'])` trazia admins
+- Pedro buscou "ana ventorini" → nada encontrado
+- Memória 29/04 P0f explicou: `users.type` tem 2 grafias historicamente — `'profissional'` (PT) vs `'professional'` (EN)
+
+**Fix V1.9.110-A (1 linha)**:
+```diff
+- .in('type', ['profissional', 'admin'])
++ .in('type', ['profissional', 'professional'])
+```
+
+Cobre PT + EN. Exclui admins por design. Ricardo tem 2 UUIDs separados, filtro captura UUID clínico.
+
+**Commits**: `bf19ea3` (V1.9.110) + `d9da0d7` (V1.9.110-A).
+
+Roadmap V1.9.110-B (futuro): migration normaliza `users.type` pra single grafia.
+
+### K.7 — V1.9.111: Redesign Tiered + paginação animada + calendar maior
+
+**Visão articulada por Pedro durante a sessão**:
+*"3 camadas de elite escalável: Equipe Oficial MedCannLab (Ricardo+Eduardo) + Profissionais Parceiros (B2B/SaaS individual) + Equipes DO médico (parceiro cria sua subequipe). Sistema já tem infra (`professional_teams`, `clinics`, `subscription_plans`)."*
+
+**Refactor UX implementado**:
+
+1. **Tier classification** (Princípio 8 — reusa structure):
+   - Tier 1 — Equipe Oficial (Ricardo + Eduardo): topo, gradient amber + badge "Oficial"
+   - Tier 2 — Parceiros: paginação 6/page, grid responsivo
+
+2. **Paginação animada** (framer-motion):
+   - Slide horizontal (x: 40 → 0 → -40, duration 0.25s)
+   - Dots indicators com active pill (w-6 highlighted)
+   - Prev/next + counter "1 / N"
+   - Auto-reset quando busca/filtro mudam
+
+3. **Layout reorganizado**:
+   ```
+   ANTES: grid lg:grid-cols-[460px_1fr]
+          (calendar esprimido esquerda, cards direita 2 cols)
+
+   DEPOIS: space-y-6
+     • Cards full-width topo (Tier 1 + Tier 2 paginated)
+     • Grid lg:grid-cols-3:
+       - Calendar lg:col-span-2 (2/3 — maior pra paciente)
+       - Próximas Consultas lg:col-span-1 (1/3 — compacta)
+     • Plano de Cuidado full-width abaixo
+   ```
+
+4. **Helper `renderProfessionalCard`** extraído como const inline:
+   - Reuso entre Tier 1 e Tier 2 (DRY)
+   - Param `isOfficial?: boolean` adiciona badge + gradient
+   - `whileHover` scale 1.02 + y -2 + shadow glow
+   - Lógica de agendamento INTACTA (UUID resolver, modal, etc)
+
+**Commit**: `599726a`.
+
+### K.8 — Princípios reaplicados (10 PRs em ~3h)
+
+```
+✓ AUDITAR 100% antes (META — cristalizado bloco I)
+  Aplicado em V1.9.108, V1.9.109, V1.9.111 antes de codar
+
+✓ Princípio 8 (polir não inventar)
+  V1.9.105 reusou sendInitialMessage (NoaPlatformContext)
+  V1.9.108 reusou detectedProfessionalUuid já declarado
+  V1.9.109 reusou OpenAI client + pattern V1.9.84 escriba
+  V1.9.111 reusou getAvailableSlots + estrutura cards existente
+
+✓ 1 a 1 na calma
+  Cada PR commitado + push + smoke empírico antes do próximo
+  Diálogo iterativo Pedro × GPT × Claude refinou cada passo
+
+✓ Honestidade direta > cordialidade defensiva
+  Discordei do GPT em ICL completo (over-engineering pré-PMF)
+  Aceitei calibração GPT V1.9.109 ("normalização probabilística")
+  Reconheci erro empírico no V1.9.105-A (botão estava só em else)
+
+✓ FAIL-SAFE em camadas
+  V1.9.109 cleanup tem 4 caminhos pra fallback transparente
+  V1.9.109-A2 telemetria fire-and-forget
+  V1.9.107 null-safe (frase omite vs hardcode errado)
+
+✓ Calibração honesta de severidade
+  Bug C qualidade clínica = 🟠 alta (médico vê dado errado)
+  V1.9.108 = 🟡 média UX
+  V1.9.110-A bugs duplos = 🟡 média (admins + EN)
+```
+
+### K.9 — Commits da sessão
+
+```
+b72af3b  V1.9.105    detector contextual ASSESSMENT_START
+e4a2e81  V1.9.105-A  5 botões alfabéticos PatientAnalytics
+6029be0  V1.9.106    fix shadowing currentPhase (barra AEC)
+bf62acb  V1.9.107    linguagem neutra Ricardo (P10 cleanup)
+6b48213  V1.9.108    metadata.professionalId UUID
+64c71a1  V1.9.109    cleanup pass HPP transbordamento
+c0c9426  V1.9.109-A  reforços anti-causal + telemetria
+bf19ea3  V1.9.110    fix memo filteredProfessionals
+d9da0d7  V1.9.110-A  filtro PT/EN exclui admins
+599726a  V1.9.111    redesign Tiered + paginação + calendar maior
+```
+
+Lock V1.9.95+97+98+99-B preservado integralmente em TODOS os 10 PRs.
+FSM, Pipeline orchestrator, Verbatim First, AEC Gate V1.5, REGRA HARD §1 intactos.
+
+### K.10 — Backlog próxima sessão (priorizado)
+
+```
+P0 (próximas batalhas)
+  V1.9.112  Fluxo guiado escolha→horários livres→AEC vinculada
+            (visão Pedro: "ver horários livres, escolher dia ideal,
+            fazer AEC sabendo")
+  V1.9.113  preferred_doctor_id (P0e original) + checkbox vinculação
+            permanente — opcional após V1.9.112
+
+P1 (validação empírica)
+  Pedro testar V1.9.111 redesign Tiered visualmente
+  Pedro testar V1.9.110-A: buscar "ana" deve aparecer
+  Pedro testar V1.9.109/A: AEC com sintoma+histórico cruzado
+  Confirmar console mostra cleanup relocations + noa_logs telemetria
+  Refresh barra AEC durante AEC ativa (V1.9.106)
+
+P2 (memórias)
+  MEMORY.md atualizar V1.9.105+ no índice
+  project_aec_hpp_transbordamento_30_04 (criada ✓)
+  project_icl_identity_canonicalization_layer (criada ✓)
+
+P3 (fora desta sessão)
+  V1.9.110-B normalizar users.type single grafia (migration DB)
+  Magno v2.0 quando 9 módulos prontos
+```
+
+### K.11 — Frase âncora K
+
+> *"10 PRs em ~3h cumprindo 'auditar 100% antes' + 'polir não inventar' +
+>  '1 a 1 na calma'. Lock V1.9.95+97+98+99-B preservado integralmente.
+>  Bugs latentes empíricos descobertos durante audit (memo deps + PT/EN +
+>  shadowing currentPhase + slug professionalId + HPP transbordamento +
+>  hardcoded Ricardo P10) — todos com fix cirúrgico + fail-safe.
+>  ICL como roadmap pós-PMF, não over-engineering pré-PMF agora.
+>  Sessão validou empíricamente o pipeline diário→memória→princípio
+>  cristalizado: cada PR ensinou algo que entrou em memória pra
+>  próxima sessão não repetir."*
+
+---
+
+*Bloco K adicionado 2026-04-30 ~19h BRT por Claude Opus 4.7 (1M context).
+10 commits cirúrgicos (V1.9.105 → V1.9.111) em ~3h. 2 memórias novas.
+Próximo: smoke empírico Pedro + V1.9.112 fluxo guiado.*
