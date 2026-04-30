@@ -339,10 +339,10 @@ const Landing: React.FC = () => {
             </h1>
 
             <p className="text-base text-slate-300 mb-3 max-w-lg mx-auto lg:mx-0 leading-relaxed">
-              MedCannLab é um <strong className="text-emerald-300">modelo clínico orientado pela Escuta estruturada</strong> — fundado na <strong className="text-emerald-300">Arte da Entrevista Clínica (AEC)</strong>, método autoral do <strong className="text-emerald-300">Dr. Ricardo Valença</strong> (nefrologista há mais de 40 anos, 2.000+ avaliações conduzidas).
+              MedCannLab é um <strong className="text-emerald-300">modelo clínico orientado pela Escuta (AEC)</strong>, operacionalizado por uma <strong className="text-emerald-300">infraestrutura digital</strong> e acessado através de uma <strong className="text-emerald-300">aplicação tecnológica</strong>.
             </p>
             <p className="text-sm text-slate-400 mb-4 max-w-lg mx-auto lg:mx-0 leading-relaxed">
-              Desenvolvido em <span className="text-emerald-300/90">neurologia e cannabis medicinal</span> e aplicável a qualquer especialidade médica. Prática conduzida por protocolos clínicos auditáveis e estrutura padronizada de avaliação.
+              Método autoral do <strong className="text-emerald-200">Dr. Ricardo Valença</strong> — nefrologista há mais de <strong className="text-emerald-200">40 anos</strong>, com <strong className="text-emerald-200">2.000+ avaliações</strong> conduzidas. Desenvolvido em <span className="text-emerald-300/90">neurologia e cannabis medicinal</span>, aplicável a qualquer especialidade médica.
             </p>
 
             <p className="text-base text-emerald-200/90 mb-6 max-w-lg mx-auto lg:mx-0 italic">
@@ -421,12 +421,21 @@ const Landing: React.FC = () => {
                 ))}
               </div>
 
-              <img
-                src="/brain.png"
-                alt="AI Core"
-                className="relative z-10 w-full h-full max-w-lg object-contain hover:scale-105 transition-transform duration-700 drop-shadow-2xl"
-                style={{ filter: 'drop-shadow(0 0 30px rgba(16, 185, 129, 0.2))' }}
-              />
+              <div
+                className="relative z-10 w-full h-full max-w-lg rounded-full overflow-hidden border-4 border-emerald-500/30 hover:scale-105 transition-transform duration-700 drop-shadow-2xl bg-slate-950/40"
+                style={{ filter: 'drop-shadow(0 0 30px rgba(16, 185, 129, 0.25))' }}
+              >
+                <img
+                  src={noaAvatarSrc}
+                  alt="Nôa Esperanza — IA Residente da MedCannLab"
+                  className="w-full h-full object-cover"
+                  draggable={false}
+                  loading="eager"
+                  onError={(e) => {
+                    e.currentTarget.src = logoBrainSrc
+                  }}
+                />
+              </div>
             </div>
           </motion.div>
         </div>
@@ -772,6 +781,90 @@ const Landing: React.FC = () => {
               Method-first, architecture-grounded, AI-last.
             </p>
           </div>
+        </div>
+      </section>
+
+      {/* --- Consultório-Escola Exponencial (Ricardo + Eduardo Faveret) --- */}
+      <section id="consultorio-escola" className="py-20 bg-gradient-to-br from-slate-900 via-emerald-950/30 to-slate-900 relative border-t border-slate-900 overflow-hidden">
+        {/* Glow sutil */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-emerald-500/5 rounded-full blur-3xl pointer-events-none" />
+
+        <div className="container mx-auto px-6 relative z-10">
+          <div className="text-center max-w-3xl mx-auto mb-12">
+            <div className="inline-flex items-center space-x-2 bg-slate-800/80 border border-emerald-500/30 rounded-full px-4 py-1.5 mb-6">
+              <Stethoscope className="w-4 h-4 text-emerald-400" />
+              <span className="text-xs font-bold tracking-widest text-emerald-300 uppercase">Consultório-Escola Exponencial</span>
+            </div>
+            <h2 className="text-3xl md:text-5xl font-bold mb-6 text-white leading-tight">
+              Dois consultórios, um método.<br />
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-teal-300">Escala que ensina.</span>
+            </h2>
+            <p className="text-lg text-slate-300 leading-relaxed">
+              A junção da prática clínica do <strong className="text-emerald-300">Dr. Ricardo Valença</strong> (Nefrologia) e do <strong className="text-emerald-300">Dr. Eduardo Faveret</strong> (Neurologia) — operacionalizada pelo método AEC e amplificada pela infraestrutura digital MedCannLab.
+            </p>
+          </div>
+
+          {/* 2 médicos como cards */}
+          <div className="grid md:grid-cols-2 gap-6 max-w-4xl mx-auto mb-10">
+            <div className="bg-slate-900/70 border border-emerald-500/20 rounded-2xl p-7 hover:border-emerald-500/40 transition-colors">
+              <div className="flex items-start gap-4 mb-4">
+                <div className="w-14 h-14 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center flex-shrink-0">
+                  <Heart className="w-7 h-7 text-emerald-400" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold text-white">Dr. Ricardo Valença</h3>
+                  <p className="text-sm text-emerald-300 font-medium">Nefrologia · Coordenador Científico</p>
+                </div>
+              </div>
+              <p className="text-sm text-slate-400 leading-relaxed">
+                Criador do método AEC. <strong className="text-emerald-200">40+ anos</strong> de prática clínica, <strong className="text-emerald-200">2.000+ avaliações</strong> conduzidas. Mestrado defendido sobre o método. Cidade Amiga dos Rins (CKD).
+              </p>
+            </div>
+
+            <div className="bg-slate-900/70 border border-teal-500/20 rounded-2xl p-7 hover:border-teal-500/40 transition-colors">
+              <div className="flex items-start gap-4 mb-4">
+                <div className="w-14 h-14 rounded-2xl bg-teal-500/10 border border-teal-500/30 flex items-center justify-center flex-shrink-0">
+                  <Brain className="w-7 h-7 text-teal-400" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold text-white">Dr. Eduardo Faveret</h3>
+                  <p className="text-sm text-teal-300 font-medium">Neurologia · Diretor Médico</p>
+                </div>
+              </div>
+              <p className="text-sm text-slate-400 leading-relaxed">
+                Direção médica em neurologia com foco em escuta estruturada. Aplicação do método AEC à prática neurológica e à formação clínica continuada.
+              </p>
+            </div>
+          </div>
+
+          {/* 3 dimensões do consultório-escola */}
+          <div className="grid md:grid-cols-3 gap-5 max-w-5xl mx-auto">
+            <div className="bg-slate-950/60 border border-slate-800 rounded-xl p-5 text-center">
+              <Stethoscope className="w-6 h-6 text-emerald-400 mx-auto mb-3" />
+              <h4 className="text-white font-semibold mb-2">Atendimento real</h4>
+              <p className="text-xs text-slate-400 leading-relaxed">
+                Cada consulta é prática clínica de verdade — pacientes reais, escuta real, decisão real.
+              </p>
+            </div>
+            <div className="bg-slate-950/60 border border-slate-800 rounded-xl p-5 text-center">
+              <Users className="w-6 h-6 text-teal-400 mx-auto mb-3" />
+              <h4 className="text-white font-semibold mb-2">Aprendizado contínuo</h4>
+              <p className="text-xs text-slate-400 leading-relaxed">
+                Cada caso clínico estruturado vira material formativo para residentes, alunos e médicos parceiros.
+              </p>
+            </div>
+            <div className="bg-slate-950/60 border border-slate-800 rounded-xl p-5 text-center">
+              <Zap className="w-6 h-6 text-green-400 mx-auto mb-3" />
+              <h4 className="text-white font-semibold mb-2">Escala metódica</h4>
+              <p className="text-xs text-slate-400 leading-relaxed">
+                A infraestrutura digital permite reproduzir o método sem diluir a qualidade clínica.
+              </p>
+            </div>
+          </div>
+
+          <p className="text-center text-sm text-slate-500 italic mt-10 max-w-2xl mx-auto">
+            Um modelo onde clínica, ensino e pesquisa não estão separados — <span className="text-emerald-300/80">acontecem ao mesmo tempo, no mesmo método</span>.
+          </p>
         </div>
       </section>
 
