@@ -333,31 +333,36 @@ const Landing: React.FC = () => {
               <span className="text-xs font-semibold tracking-wide text-green-400 uppercase">NOA Esperanza 3.0 Live</span>
             </div>
 
-            <h1 className="text-4xl lg:text-6xl font-bold leading-tight mb-6 tracking-tight">
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-teal-300">Cannabis Medicinal</span> com Método AEC.
+            <h1 className="text-4xl lg:text-6xl font-bold leading-tight mb-3 tracking-tight">
+              Clínica, Ensino e Pesquisa pelo<br />
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-teal-300">Método AEC.</span>
             </h1>
 
+            <p className="text-base text-slate-400 mb-5 max-w-lg mx-auto lg:mx-0 leading-relaxed italic">
+              Arte da Entrevista Clínica — método autoral em prática clínica.
+            </p>
+
             <p className="text-lg text-slate-300 mb-4 max-w-lg mx-auto lg:mx-0 leading-relaxed">
-              Avaliação clínica estruturada pela <strong className="text-emerald-300">Arte da Entrevista Clínica</strong> do Dr. Ricardo Valença — já aplicada em mais de 90 atendimentos.
+              Criado pelo <strong className="text-emerald-300">Dr. Ricardo Valença</strong> — nefrologista há mais de <strong className="text-emerald-300">40 anos</strong>, com <strong className="text-emerald-300">2.000+ avaliações clínicas</strong> conduzidas. Aplicado em cannabis medicinal, neurologia e doença renal.
             </p>
 
             <p className="text-base text-emerald-200/90 mb-6 max-w-lg mx-auto lg:mx-0 italic">
               Sem improviso. Com método. Com responsabilidade clínica.
             </p>
 
-            {/* Counter visual — prova social tangível */}
+            {/* Counter visual — 3 dimensões: autoridade histórica + sistema + time */}
             <div className="grid grid-cols-3 gap-3 mb-8 max-w-lg mx-auto lg:mx-0">
               <div className="bg-slate-900/60 border border-emerald-500/20 rounded-xl px-3 py-3 text-center">
-                <div className="text-2xl lg:text-3xl font-extrabold text-emerald-400">+90</div>
-                <div className="text-[10px] uppercase tracking-wider text-slate-400 mt-1">Avaliações<br />estruturadas</div>
+                <div className="text-2xl lg:text-3xl font-extrabold text-emerald-400">40+</div>
+                <div className="text-[10px] uppercase tracking-wider text-slate-400 mt-1">Anos do método<br />em prática</div>
               </div>
               <div className="bg-slate-900/60 border border-teal-500/20 rounded-xl px-3 py-3 text-center">
-                <div className="text-2xl lg:text-3xl font-extrabold text-teal-400">9</div>
-                <div className="text-[10px] uppercase tracking-wider text-slate-400 mt-1">Profissionais<br />especialistas</div>
+                <div className="text-2xl lg:text-3xl font-extrabold text-teal-400">+90</div>
+                <div className="text-[10px] uppercase tracking-wider text-slate-400 mt-1">Avaliações<br />no sistema</div>
               </div>
               <div className="bg-slate-900/60 border border-green-500/20 rounded-xl px-3 py-3 text-center">
-                <div className="text-2xl lg:text-3xl font-extrabold text-green-400">3</div>
-                <div className="text-[10px] uppercase tracking-wider text-slate-400 mt-1">Eixos<br />integrados</div>
+                <div className="text-2xl lg:text-3xl font-extrabold text-green-400">9</div>
+                <div className="text-[10px] uppercase tracking-wider text-slate-400 mt-1">Profissionais<br />especialistas</div>
               </div>
             </div>
 
