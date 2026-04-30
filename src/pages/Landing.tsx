@@ -342,8 +342,11 @@ const Landing: React.FC = () => {
               Arte da Entrevista Clínica — método autoral em prática clínica.
             </p>
 
-            <p className="text-lg text-slate-300 mb-4 max-w-lg mx-auto lg:mx-0 leading-relaxed">
-              Criado pelo <strong className="text-emerald-300">Dr. Ricardo Valença</strong> — nefrologista há mais de <strong className="text-emerald-300">40 anos</strong>, com <strong className="text-emerald-300">2.000+ avaliações clínicas</strong> conduzidas. Aplicado em cannabis medicinal, neurologia e doença renal.
+            <p className="text-base text-slate-300 mb-2 max-w-lg mx-auto lg:mx-0 leading-relaxed">
+              Criado pelo <strong className="text-emerald-300">Dr. Ricardo Valença</strong> — nefrologista há mais de <strong className="text-emerald-300">40 anos</strong>, com <strong className="text-emerald-300">2.000+ avaliações clínicas</strong> conduzidas.
+            </p>
+            <p className="text-sm text-slate-400 mb-4 max-w-lg mx-auto lg:mx-0 leading-relaxed">
+              Método universal de escuta clínica — aplicável a qualquer especialidade. Hoje em uso na MedCannLab em <span className="text-emerald-300/90">cannabis medicinal, nefrologia e neurologia</span>.
             </p>
 
             <p className="text-base text-emerald-200/90 mb-6 max-w-lg mx-auto lg:mx-0 italic">
