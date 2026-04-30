@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { useToast } from '../contexts/ToastContext'
@@ -467,6 +468,31 @@ const PatientAppointments: React.FC = () => {
     // e não invalidava o memo. Resultado: paciente só via Ricardo + Eduardo
     // mesmo com 11+ outros médicos cadastrados.
   }, [professionalQuery, professionalSpecialtyFilter, AVAILABLE_PROFESSIONALS])
+
+  // V1.9.111: Tier classification — Equipe Oficial vs Parceiros
+  // Tier 1: Ricardo + Eduardo (Equipe Oficial MedCannLab)
+  // Tier 2: demais profissionais (Parceiros) com paginação 6/page
+  const PARTNERS_PER_PAGE = 6
+  const [partnersPage, setPartnersPage] = useState(0)
+
+  const { tier1Professionals, tier2Professionals } = useMemo(() => {
+    const isOfficial = (p: ProfessionalCard) =>
+      /ricardo|eduardo/i.test(p.name || '') ||
+      /ricardo|eduardo/i.test(p.id || '')
+    return {
+      tier1Professionals: filteredProfessionals.filter(isOfficial),
+      tier2Professionals: filteredProfessionals.filter(p => !isOfficial(p))
+    }
+  }, [filteredProfessionals])
+
+  const totalPartnersPages = Math.max(1, Math.ceil(tier2Professionals.length / PARTNERS_PER_PAGE))
+  const paginatedPartners = useMemo(() => {
+    const start = partnersPage * PARTNERS_PER_PAGE
+    return tier2Professionals.slice(start, start + PARTNERS_PER_PAGE)
+  }, [tier2Professionals, partnersPage])
+
+  // Reset página quando busca/filtro mudam
+  useEffect(() => { setPartnersPage(0) }, [professionalQuery, professionalSpecialtyFilter])
 
   const specialtyConsultorioMap: Record<string, string[]> = {
     Neurologia: ['Consultório Escola Eduardo Faveret'],
@@ -950,6 +976,74 @@ const PatientAppointments: React.FC = () => {
     )
   }
 
+  // V1.9.111: helper unificado de card profissional (reuso Tier 1 + Tier 2)
+  const renderProfessionalCard = (professional: ProfessionalCard, isOfficial: boolean = false) => (
+    <motion.div
+      key={professional.id}
+      whileHover={{ scale: 1.02, y: -2 }}
+      transition={{ duration: 0.2 }}
+      className={`rounded-xl border ${isOfficial ? 'border-amber-500/40 bg-gradient-to-br from-slate-900/80 to-amber-950/20' : 'border-slate-700 bg-slate-900/50'} p-4 flex flex-col justify-between gap-4 transition-all hover:border-primary-500/40 hover:shadow-lg hover:shadow-primary-500/10`}
+    >
+      <div className="flex items-start gap-3.5">
+        <div className={`w-12 h-12 rounded-xl flex items-center justify-center border border-slate-800/60 ${professional.accentClasses} shrink-0`}>
+          <Stethoscope className="w-5 h-5" />
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 flex-wrap">
+            <h4 className="text-white text-base md:text-lg font-semibold">{professional.name}</h4>
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-slate-800 border border-slate-700 text-xs text-slate-300">
+              <Star className="w-3 h-3 text-amber-300 fill-amber-300" />
+              {professional.rating}
+            </span>
+            {isOfficial && (
+              <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-amber-500/15 border border-amber-500/30 text-[10px] font-bold text-amber-300 uppercase tracking-wider">
+                Oficial
+              </span>
+            )}
+          </div>
+          <p className="text-sm text-slate-400 mt-1">{professional.role}</p>
+          <p className="text-sm text-slate-300 mt-2 line-clamp-2">{professional.excerpt}</p>
+        </div>
+      </div>
+      <div className="grid grid-cols-2 gap-2">
+        <button
+          type="button"
+          onClick={() => setProfileProfessional(professional)}
+          className="w-full inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold text-slate-100 bg-slate-700/60 hover:bg-slate-700 transition-colors"
+        >
+          Ver perfil
+        </button>
+        <button
+          type="button"
+          onClick={() => {
+            const SPECIALTY_PROF_IDS: Record<string, string> = {
+              'Neurologia': 'f4a62265-8982-44db-8282-78129c4d014a',
+              'Nefrologia': '2135f0c0-eb5a-43b1-bc00-5f8dfea13561',
+              'Homeopatia': '2135f0c0-eb5a-43b1-bc00-5f8dfea13561',
+            }
+            const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+            const resolvedProfId = uuidRegex.test(professional.id)
+              ? professional.id
+              : SPECIALTY_PROF_IDS[professional.specialty] || '2135f0c0-eb5a-43b1-bc00-5f8dfea13561'
+            setSelectedProfessionalId(resolvedProfId)
+
+            if (!carePlan?.id) {
+              setSelectedProfessional({ name: professional.name, specialty: professional.specialty })
+              setShowAssessmentModal(true)
+            } else {
+              setAppointmentData(prev => ({ ...prev, specialty: professional.specialty }))
+              setShowAppointmentModal(true)
+            }
+          }}
+          className={`w-full inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold text-white transition-all ${professional.buttonClasses} hover:scale-[1.02]`}
+        >
+          Agendar
+          <ArrowRight className="w-4 h-4" />
+        </button>
+      </div>
+    </motion.div>
+  )
+
   return (
     <div className="min-h-screen bg-slate-900">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-4 md:py-6">
@@ -1244,15 +1338,11 @@ const PatientAppointments: React.FC = () => {
           </div>
         )}
 
-        {/* Layout principal (modo calendário): calendário à esquerda, cards à direita */}
+        {/* V1.9.111: Layout reorganizado — Cards Tier 1+2 no topo full-width,
+            Calendar embaixo em grid 2/3 + Próximas Consultas 1/3.
+            Calendar maior pra visibilidade do paciente, Próximas compacta. */}
         {viewMode === 'calendar' && (
-          <div className="grid grid-cols-1 lg:grid-cols-[460px_1fr] gap-6 items-start">
-            {/* Coluna do calendário: fica visível no desktop sem “sumir” abaixo dos cards */}
-            <div className="space-y-6 lg:sticky lg:top-6">
-              {renderCalendar()}
-              {selectedDate && renderTimeSlots()}
-            </div>
-
+          <div className="space-y-6">
             <div className="space-y-4 md:space-y-6">
               {/* Profissionais Disponíveis - Unificado */}
               <div className="bg-slate-800 rounded-xl p-4 md:p-6">
@@ -1303,82 +1393,82 @@ const PatientAppointments: React.FC = () => {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {filteredProfessionals.map(professional => (
-                    <div
-                      key={professional.id}
-                      className="rounded-xl border border-slate-700 bg-slate-900/50 p-4 flex flex-col justify-between gap-4 transition-colors hover:border-primary-500/40"
-                    >
-                      <div className="flex items-start gap-3.5">
-                        <div className={`w-12 h-12 rounded-xl flex items-center justify-center border border-slate-800/60 ${professional.accentClasses} shrink-0`}>
-                          <Stethoscope className="w-5 h-5" />
-                        </div>
-                        <div>
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <h4 className="text-white text-base md:text-lg font-semibold">{professional.name}</h4>
-                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-slate-800 border border-slate-700 text-xs text-slate-300">
-                              <Star className="w-3 h-3 text-amber-300 fill-amber-300" />
-                              {professional.rating}
-                            </span>
-                            <button
-                              type="button"
-                              onClick={() => setProfileProfessional(professional)}
-                              className="ml-auto inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold border border-slate-700 bg-slate-800/60 text-slate-200 hover:text-white hover:border-primary-500/50 transition-colors"
-                              title="Ver perfil"
-                            >
-                              Ver perfil
-                            </button>
-                          </div>
-                          <p className="text-sm text-slate-400 mt-1">{professional.role}</p>
-                          <p className="text-sm text-slate-300 mt-2 line-clamp-2">{professional.excerpt}</p>
-                        </div>
-                      </div>
-                      <div className="grid grid-cols-2 gap-2">
-                        <button
-                          type="button"
-                          onClick={() => setProfileProfessional(professional)}
-                          className="w-full inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold text-slate-100 bg-slate-700/60 hover:bg-slate-700 transition-colors"
-                        >
-                          Ver perfil
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            // Mapear ID real do profissional selecionado
-                            const REAL_PROF_IDS: Record<string, string> = {
-                              'rrvalenca@gmail.com': '2135f0c0-eb5a-43b1-bc00-5f8dfea13561',
-                              'eduardoscfaveret@gmail.com': 'f4a62265-8982-44db-8282-78129c4d014a',
-                            }
-                            const SPECIALTY_PROF_IDS: Record<string, string> = {
-                              'Neurologia': 'f4a62265-8982-44db-8282-78129c4d014a',
-                              'Nefrologia': '2135f0c0-eb5a-43b1-bc00-5f8dfea13561',
-                              'Homeopatia': '2135f0c0-eb5a-43b1-bc00-5f8dfea13561',
-                            }
-                            // Resolver ID: usar UUID direto se disponível, senão mapear por especialidade
-                            const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
-                            const resolvedProfId = uuidRegex.test(professional.id)
-                              ? professional.id
-                              : SPECIALTY_PROF_IDS[professional.specialty] || '2135f0c0-eb5a-43b1-bc00-5f8dfea13561'
-                            setSelectedProfessionalId(resolvedProfId)
-
-                            // Verificar se usuário tem avaliação
-                            if (!carePlan?.id) {
-                              setSelectedProfessional({ name: professional.name, specialty: professional.specialty })
-                              setShowAssessmentModal(true)
-                            } else {
-                              setAppointmentData(prev => ({ ...prev, specialty: professional.specialty }))
-                              setShowAppointmentModal(true)
-                            }
-                          }}
-                          className={`w-full inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold text-white transition-colors ${professional.buttonClasses}`}
-                        >
-                          Agendar
-                          <ArrowRight className="w-4 h-4" />
-                        </button>
-                      </div>
+                {/* V1.9.111: Tier 1 — Equipe Oficial MedCannLab (Ricardo + Eduardo) */}
+                {tier1Professionals.length > 0 && (
+                  <div className="mb-6">
+                    <h4 className="text-xs uppercase tracking-widest text-amber-400 font-bold mb-3 flex items-center gap-2">
+                      <Star className="w-3.5 h-3.5 fill-amber-400" />
+                      Equipe Oficial MedCannLab
+                    </h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {tier1Professionals.map(p => renderProfessionalCard(p, true))}
                     </div>
-                  ))}
-                </div>
+                  </div>
+                )}
+
+                {/* V1.9.111: Tier 2 — Profissionais Parceiros (paginated 6/page com slide animation) */}
+                {tier2Professionals.length > 0 && (
+                  <div>
+                    <h4 className="text-xs uppercase tracking-widest text-cyan-400 font-bold mb-3 flex items-center gap-2">
+                      <Users className="w-3.5 h-3.5" />
+                      Profissionais Parceiros ({tier2Professionals.length})
+                    </h4>
+                    <AnimatePresence mode="wait">
+                      <motion.div
+                        key={partnersPage}
+                        initial={{ x: 40, opacity: 0 }}
+                        animate={{ x: 0, opacity: 1 }}
+                        exit={{ x: -40, opacity: 0 }}
+                        transition={{ duration: 0.25 }}
+                        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
+                      >
+                        {paginatedPartners.map(p => renderProfessionalCard(p, false))}
+                      </motion.div>
+                    </AnimatePresence>
+
+                    {/* Paginação animada (apenas se >1 página) */}
+                    {totalPartnersPages > 1 && (
+                      <div className="flex items-center justify-center gap-3 mt-5">
+                        <button
+                          type="button"
+                          onClick={() => setPartnersPage(p => Math.max(0, p - 1))}
+                          disabled={partnersPage === 0}
+                          className="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                          aria-label="Página anterior"
+                        >
+                          <ChevronLeft className="w-4 h-4" />
+                        </button>
+                        <div className="flex items-center gap-1.5">
+                          {Array.from({ length: totalPartnersPages }).map((_, i) => (
+                            <button
+                              key={i}
+                              type="button"
+                              onClick={() => setPartnersPage(i)}
+                              className={`w-2 h-2 rounded-full transition-all ${
+                                i === partnersPage
+                                  ? 'bg-cyan-400 w-6'
+                                  : 'bg-slate-600 hover:bg-slate-500'
+                              }`}
+                              aria-label={`Ir para página ${i + 1}`}
+                            />
+                          ))}
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => setPartnersPage(p => Math.min(totalPartnersPages - 1, p + 1))}
+                          disabled={partnersPage === totalPartnersPages - 1}
+                          className="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                          aria-label="Próxima página"
+                        >
+                          <ChevronRight className="w-4 h-4" />
+                        </button>
+                        <span className="text-xs text-slate-500 ml-2">
+                          {partnersPage + 1} / {totalPartnersPages}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                )}
 
                 {filteredProfessionals.length === 0 && (
                   <div className="mt-4 rounded-lg border border-slate-700/60 bg-slate-900/30 px-4 py-4 text-sm text-slate-300">
@@ -1387,6 +1477,14 @@ const PatientAppointments: React.FC = () => {
                 )}
               </div>
 
+              {/* V1.9.111: Calendar 2/3 + Próximas 1/3 — calendar maior pra
+                  visibilidade do paciente, próximas compacta. */}
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div className="lg:col-span-2 space-y-6">
+                  {renderCalendar()}
+                  {selectedDate && renderTimeSlots()}
+                </div>
+                <div className="lg:col-span-1">
               {/* Card Próximas Consultas - Integrado ao Plano de Cuidado */}
               <div className="bg-slate-800 rounded-xl p-4 md:p-6">
                 <div className="flex items-center justify-between mb-3 md:mb-4 gap-3">
@@ -1486,6 +1584,8 @@ const PatientAppointments: React.FC = () => {
                     </button>
                   </div>
                 )}
+              </div>
+                </div>
               </div>
 
               {/* Informações do Plano de Cuidado */}
