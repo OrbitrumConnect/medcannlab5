@@ -85,8 +85,8 @@ const FALLBACK_PROFESSIONALS: ProfessionalCard[] = [
     specialty: 'Neurologia',
     rating: '4.9',
     excerpt: 'Especialista em Epilepsia e Cannabis Medicinal. Atendimento personalizado com metodologia AEC.',
-    accentClasses: 'bg-emerald-500/20 text-emerald-300',
-    buttonClasses: 'bg-emerald-500 hover:bg-emerald-400',
+    accentClasses: 'bg-emerald-500/15 text-emerald-300',
+    buttonClasses: 'bg-emerald-600/90 hover:bg-emerald-500',
     bio: 'Atendimento focado em neurologia clínica, com abordagem estruturada e acompanhamento contínuo.',
     tags: ['Epilepsia', 'Sono', 'Ansiedade', 'Acompanhamento'],
     languages: ['Português'],
@@ -101,8 +101,8 @@ const FALLBACK_PROFESSIONALS: ProfessionalCard[] = [
     specialty: 'Nefrologia',
     rating: '5.0',
     excerpt: 'Coordenador científico. Especialista em Arte da Entrevista Clínica e metodologia IMRE.',
-    accentClasses: 'bg-primary-500/20 text-primary-300',
-    buttonClasses: 'bg-primary-500 hover:bg-primary-400',
+    accentClasses: 'bg-primary-500/15 text-primary-300',
+    buttonClasses: 'bg-primary-600/90 hover:bg-primary-500',
     bio: 'Coordenação científica e consulta clínica com método IMRE, focado em segurança e rastreabilidade.',
     tags: ['Nefrologia', 'Dor', 'Inflamação', 'IMRE'],
     languages: ['Português'],
@@ -1361,7 +1361,7 @@ const PatientAppointments: React.FC = () => {
                   </div>
                   <button
                     onClick={() => setShowAppointmentModal(true)}
-                    className="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-sm font-semibold transition-colors"
+                    className="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg bg-blue-600/85 hover:bg-blue-500/90 text-white text-sm font-semibold transition-colors"
                   >
                     <Plus className="w-4 h-4" />
                     Novo Agendamento
