@@ -421,21 +421,12 @@ const Landing: React.FC = () => {
                 ))}
               </div>
 
-              <div
-                className="relative z-10 w-full h-full max-w-lg rounded-full overflow-hidden border-4 border-emerald-500/30 hover:scale-105 transition-transform duration-700 drop-shadow-2xl bg-slate-950/40"
-                style={{ filter: 'drop-shadow(0 0 30px rgba(16, 185, 129, 0.25))' }}
-              >
-                <img
-                  src={noaAvatarSrc}
-                  alt="Nôa Esperanza — IA Residente da MedCannLab"
-                  className="w-full h-full object-cover"
-                  draggable={false}
-                  loading="eager"
-                  onError={(e) => {
-                    e.currentTarget.src = logoBrainSrc
-                  }}
-                />
-              </div>
+              <img
+                src="/brain.png"
+                alt="AI Core"
+                className="relative z-10 w-full h-full max-w-lg object-contain hover:scale-105 transition-transform duration-700 drop-shadow-2xl"
+                style={{ filter: 'drop-shadow(0 0 30px rgba(16, 185, 129, 0.2))' }}
+              />
             </div>
           </motion.div>
         </div>
