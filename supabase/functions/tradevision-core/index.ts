@@ -1361,6 +1361,11 @@ REGRAS ABSOLUTAS:
 - NÃO inventar conteúdo NOVO
 - NÃO interpretar, NÃO inferir, NÃO sumarizar, NÃO paraphrasear
 - Cada string original DEVE aparecer LITERAL em ALGUM slot do output
+- [V1.9.109-A1] PRESERVAÇÃO DE CAUSALIDADE: se string contém termos de relação
+  causal/temporal explícita ("desde", "desde que", "por causa de", "depois de",
+  "após", "quando tive", "quando comecei", "de tanto", "por conta"), MANTER
+  NO SLOT ORIGINAL — relação causal é informação clínica que se PERDE com
+  remanejamento e o médico precisa ver. NÃO MOVER essas strings.
 - Se string em "fatores_piora" descreve histórico patológico anterior (pneumonia prévia, internação prévia, cirurgia, fratura, refluxo, pedra nos rins, etc), MOVER pra "historia_patologica_pregressa" (ou campo equivalente "hpp")
 - Se string em "fatores_melhora"/"fatores_piora" descreve sintoma atual da queixa principal, MANTER no slot original
 - Se string em "historia_patologica_pregressa" descreve fator atual de piora/melhora da queixa, MOVER pro slot certo
@@ -1408,6 +1413,29 @@ Input: ${JSON.stringify(assessmentData)}`
             console.warn('🧹 [V1.9.109] Cleanup falhou — usando assessmentData original (FAIL-SAFE):',
                 (cleanupErr as Error).message);
             // cleanedAssessmentData continua = assessmentData (default seguro)
+        }
+
+        // [V1.9.109-A2] Telemetria estruturada em noa_logs (auditoria empírica).
+        // Permite Pedro/Ricardo abrir noa_logs e ver histórico de TODAS relocations
+        // — base pra avaliar precisão do cleanup em casos reais e refinar prompt
+        // se aparecer relocation clinicamente errada. Fire-and-forget: try/catch
+        // absorve qualquer erro (RLS, schema, timeout) sem bloquear pipeline.
+        if (v109Relocations.length > 0) {
+            try {
+                await supabaseClient.from('noa_logs').insert({
+                    interaction_type: 'v109_cleanup_relocations',
+                    user_id: resolvedPatientId,
+                    payload: {
+                        interaction_id,
+                        relocations: v109Relocations,
+                        relocations_count: v109Relocations.length,
+                        timestamp: new Date().toISOString()
+                    }
+                });
+            } catch (logErr) {
+                console.warn('🧹 [V1.9.109-A2] Telemetria falhou (não bloqueia pipeline):',
+                    (logErr as Error).message);
+            }
         }
 
         // [V1.9.84] NARRADOR ESCRIBA — Fix #1 do plano `majestic-sprouting-goblet`
