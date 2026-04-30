@@ -1305,6 +1305,111 @@ async function handleFinalizeAssessment(params: {
             assessmentData.risk_level = 'medium';
         }
 
+        // ================================================================
+        // [V1.9.109] CLEANUP PASS — anti-transbordamento entre slots AEC
+        // ================================================================
+        // Bug C confirmado empíricamente 30/04 (paciente passosmir4):
+        // FSM AEC tem 1 turno de atraso na transição entre fases — último
+        // iter da phase X aceita input que conceitualmente é da phase Y.
+        // Resultado: respostas de HPP capturadas como PIORA da queixa,
+        // médico vê "Piora: pneumonia, internado, pedra nos rins" (errado).
+        //
+        // Fix B2 do plano: GPT-4o-mini classifier semântico remaneja strings
+        // entre slots SEM inferir/inventar/remover. Apenas MOVE quando detecta
+        // desvio claro (HPP-like em piora, etc).
+        //
+        // FAIL-SAFE em camadas:
+        // 1. Try/catch global → fallback pra original em qualquer erro
+        // 2. Validação patient_id (estrutura preservada)
+        // 3. Validação anti-alucinação (toda string original >5 chars deve aparecer)
+        // 4. Default cleanedAssessmentData = assessmentData (zero risk)
+        //
+        // Lock V1.9.95+97+98+99-B preservado: FSM client intacto, Pipeline
+        // orchestrator stages intactos, Verbatim First intacto, Gate V1.5
+        // intacto. Apenas pré-processa input do escriba V1.9.84 (linha abaixo).
+        console.log('🧹 [PIPELINE_STAGE] CLEANUP_PASS V1.9.109', { interaction_id });
+
+        // Helper: coleta TODAS strings >5 chars recursivamente (validação anti-alucinação)
+        const collectAllStrings = (obj: any, acc: Set<string> = new Set<string>()): Set<string> => {
+            if (typeof obj === 'string') {
+                const trimmed = obj.trim();
+                if (trimmed.length > 5) acc.add(trimmed);
+            } else if (Array.isArray(obj)) {
+                obj.forEach((item: any) => collectAllStrings(item, acc));
+            } else if (obj && typeof obj === 'object') {
+                Object.values(obj).forEach((val: any) => collectAllStrings(val, acc));
+            }
+            return acc;
+        };
+
+        let cleanedAssessmentData: any = assessmentData;  // FAIL-SAFE default
+        const v109Relocations: Array<{ from: string; to: string; text: string }> = [];
+
+        try {
+            const cleanupCompletion = await openai.chat.completions.create({
+                model: 'gpt-4o-mini',
+                messages: [
+                    {
+                        role: 'system',
+                        content: 'Você é um classificador semântico clínico. Sua função é detectar conteúdo cuja semântica não bate com o slot atual em uma anamnese AEC e remanejá-lo para o slot correto. NUNCA inventar conteúdo. NUNCA paraphrasear. NUNCA remover. APENAS REMANEJAR strings inteiras quando claramente estão no slot errado.'
+                    },
+                    {
+                        role: 'user',
+                        content: `Receba este assessmentData de uma AEC e devolva JSON com a MESMA estrutura, mas remanejando strings desviantes.
+
+REGRAS ABSOLUTAS:
+- NÃO inventar conteúdo NOVO
+- NÃO interpretar, NÃO inferir, NÃO sumarizar, NÃO paraphrasear
+- Cada string original DEVE aparecer LITERAL em ALGUM slot do output
+- Se string em "fatores_piora" descreve histórico patológico anterior (pneumonia prévia, internação prévia, cirurgia, fratura, refluxo, pedra nos rins, etc), MOVER pra "historia_patologica_pregressa" (ou campo equivalente "hpp")
+- Se string em "fatores_melhora"/"fatores_piora" descreve sintoma atual da queixa principal, MANTER no slot original
+- Se string em "historia_patologica_pregressa" descreve fator atual de piora/melhora da queixa, MOVER pro slot certo
+- Se um slot NÃO tem conteúdo desviante: MANTER intacto
+- Se NADA precisa ser movido: devolver IDÊNTICO ao input com "_v109_relocations": []
+
+CADA REMANEJAMENTO em "_v109_relocations": [{from: "path.original", to: "path.destino", text: "string remanejada literal"}]
+
+Output: SOMENTE JSON válido. Estrutura preservada exatamente como recebida.
+
+Input: ${JSON.stringify(assessmentData)}`
+                    }
+                ],
+                temperature: 0,
+                response_format: { type: 'json_object' }
+            });
+
+            const rawCleanup = cleanupCompletion?.choices?.[0]?.message?.content;
+            if (rawCleanup) {
+                const parsed = JSON.parse(rawCleanup);
+
+                // Validação 1: estrutura preservada (patient_id bate)
+                if (!parsed || typeof parsed !== 'object' || parsed.patient_id !== assessmentData.patient_id) {
+                    throw new Error('estrutura inválida (patient_id divergente ou objeto malformado)');
+                }
+
+                // Validação 2: TODA string original >5 chars aparece (anti-remoção/substituição)
+                const originalStrings = collectAllStrings(assessmentData);
+                const cleanedStrings = collectAllStrings(parsed);
+                const missing: string[] = [];
+                originalStrings.forEach(s => { if (!cleanedStrings.has(s)) missing.push(s); });
+
+                if (missing.length > 0) {
+                    throw new Error(`${missing.length} string(s) original(is) sumiram após cleanup`);
+                }
+
+                // Validações OK → adotar cleaned
+                cleanedAssessmentData = parsed;
+                const relocations = Array.isArray(parsed._v109_relocations) ? parsed._v109_relocations : [];
+                v109Relocations.push(...relocations);
+                console.log(`🧹 [V1.9.109] Cleanup OK. ${relocations.length} relocations.`,
+                    relocations.map((r: any) => `${r.from} → ${r.to}`));
+            }
+        } catch (cleanupErr) {
+            console.warn('🧹 [V1.9.109] Cleanup falhou — usando assessmentData original (FAIL-SAFE):',
+                (cleanupErr as Error).message);
+            // cleanedAssessmentData continua = assessmentData (default seguro)
+        }
+
         // [V1.9.84] NARRADOR ESCRIBA — Fix #1 do plano `majestic-sprouting-goblet`
         // Autorizacao: Dr. Ricardo Valenca, 2026-04-27 ~02h30 BRT (Pedro confirmou OK).
         // Texto V2 documentado em memoria `project_narrator_overreach_24_04.md` (refinado GPT 25/04).
@@ -1332,7 +1437,7 @@ async function handleFinalizeAssessment(params: {
 Objetivo: ORGANIZAR as informações fornecidas pelo paciente, sem inferir diagnóstico, sem prescrever conduta, sem atribuir risco clínico, sem propor exames.
 
 Dados:
-${JSON.stringify(assessmentData)}
+${JSON.stringify(cleanedAssessmentData)}
 
 Estrutura Obrigatória:
 - Identificação (nome do paciente)
@@ -1378,8 +1483,9 @@ Finalizar SEMPRE com:
         // retrocompat do código que já desembrulha via .raw.
         // Também popula professional_id (coluna moderna) junto com doctor_id legado —
         // reports de 02-05/04 tinham os dois; pós-refactor só doctor_id foi preenchido.
-        const structuredTop = (assessmentData && typeof assessmentData === 'object' && assessmentData.content && typeof assessmentData.content === 'object')
-            ? assessmentData.content
+        // V1.9.109: usa cleanedAssessmentData (igual ao original se cleanup falhou — fail-safe)
+        const structuredTop = (cleanedAssessmentData && typeof cleanedAssessmentData === 'object' && cleanedAssessmentData.content && typeof cleanedAssessmentData.content === 'object')
+            ? cleanedAssessmentData.content
             : {};
 
         // [V1.9.33] Calcula scores estruturais no momento do INSERT.
@@ -1402,17 +1508,25 @@ Finalizar SEMPRE com:
                 generated_by: 'noa_ai',
                 content: {
                     // Campos estruturados no topo (V1.9.20 — restaura esquema 02-05/04)
+                    // V1.9.109: structuredTop deriva de cleanedAssessmentData (slot correto)
                     ...structuredTop,
                     // [V1.9.33] Scores calculados no backend (antes: frontend-only)
+                    // V1.9.109: scores calculados de cleanedAssessmentData (slot correto)
                     scores: calculatedScores,
                     // Narrativa GPT (mantido)
                     structured: structuredNarrative,
                     // Raw pra retrocompat de quem desembrulha via .raw
-                    raw: assessmentData,
+                    // V1.9.109: usa cleanedAssessmentData (= original se cleanup falhou — fail-safe)
+                    raw: cleanedAssessmentData,
+                    // V1.9.109: assessmentData ORIGINAL preservado pra audit trail
+                    raw_original_v109: assessmentData,
                     metadata: {
                         interaction_id,
                         generated_at: new Date().toISOString(),
-                        system_version: "V1.9.33 (scores nativos no banco)"
+                        system_version: "V1.9.109 (cleanup pass + scores nativos)",
+                        // V1.9.109: registra remanejamentos detectados (auditável pelo médico)
+                        v109_relocations: v109Relocations,
+                        v109_cleanup_applied: cleanedAssessmentData !== assessmentData
                     }
                 },
                 doctor_id: resolvedDoctorId,
