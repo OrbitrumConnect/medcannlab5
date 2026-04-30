@@ -1511,6 +1511,182 @@ Sessão landing fechada. Próxima sessão = P0 técnico real (P0a service_role
 
 ---
 
+## L — Sessão P0c FASE 2 + CEMS v1 (30/04 ~01h–03h)
+
+### L.1 — Contexto
+
+Após bloco K (landing fechada), Pedro pediu voltar ao P0 técnico real.
+Caminho escolhido: P0c FASE 2 (hooks North Star). Razão: princípio
+"Instrumentação ANTES do teste" — sem hooks ativos, 1º paciente
+externo NÃO ENSINA NADA (aprendizado cego).
+
+### L.2 — V1.9.101 aplicada — 2 hooks fundacionais via TRIGGERS SQL
+
+```
+Estratégia: triggers SQL em vez de hooks JS no Core.
+Razão: lock V1.9.95+97+98+99-B exige NÃO TOCAR Core/FSM/pipeline.
+Triggers entregam mesmo hook ao nível DB sem alterar código JS.
+
+Migration: 20260430000000_v1_9_101_north_star_phase2_triggers.sql
+
+Hooks instrumentados:
+  ✅ aec_finalized — 2 triggers em clinical_reports
+     - AFTER INSERT WHEN signed_at IS NOT NULL
+     - AFTER UPDATE OF signed_at WHEN OLD IS DISTINCT FROM NEW
+  ✅ patient_followup_scheduled — 1 trigger em appointments
+     - AFTER INSERT (todos os agendamentos)
+
+Functions:
+  - SECURITY DEFINER (bypass RLS pra inserir em ns_events)
+  - Fail-safe: EXCEPTION WHEN OTHERS apenas LOGA (telemetria nunca
+    bloqueia operação clínica)
+  - search_path = public, pg_temp (segurança)
+
+Smoke test inline: 2/2 cenários passaram.
+```
+
+### L.3 — 3 retrabalhos durante aplicação (anti-subestimação)
+
+Migration tentou aplicar 3 vezes — cada falha trouxe descoberta:
+
+```
+Tentativa 1: ERRO patient_name NOT NULL (sem default)
+  → Adicionei "SMOKE TEST V1.9.101" no insert do smoke
+
+Tentativa 2: ERRO 23514 generated_by_check
+  → 2 CHECK constraints conflitantes em generated_by
+  → Interseção válida: 'professional' (única em ambas arrays)
+  → 3 outros CHECKs também: report_type='initial_assessment',
+    status='completed' (interseção das 2 constraints)
+
+Tentativa 3: ERRO 23503 FK ai_assessment_scores_assessment_id_fkey
+  → INSERT em clinical_reports disparou pipeline cascata
+  → ai_assessment_scores foi populado automaticamente
+  → 6 tabelas têm FK pra clinical_reports
+  → Cleanup robusto: DELETE de patient_medical_records,
+    clinical_qa_runs, ai_assessment_scores, clinical_axes,
+    clinical_rationalities ANTES do clinical_reports
+
+Tentativa 3 OK: smoke 2/2 passou + cleanup completo + 0 leftover
+```
+
+### L.4 — GPT-Ricardo bloqueou FASE 2.3+2.4 (decisão correta)
+
+GPT-Ricardo diagnosticou via Pedro:
+> "Você não está mais em fase de implementação.
+>  Está em fase de event semantics design (camada clínica do sistema).
+>  Se seguir pra FASE 2.3 agora, vai instrumentar UX antes de
+>  definir o que UX significa clinicamente."
+
+Risco: physician_review_started/ended tem 5 interpretações válidas.
+Codar 1 sem validar com Ricardo = retrabalho garantido.
+
+Decisão: **OPÇÃO C híbrida**:
+- ✅ M1 (return_30d) ATIVA em prod (V1.9.101)
+- ✅ time_to_followup ATIVA em prod (V1.9.101)
+- ⏸️ M2 (physician_time_delta) PAUSADA aguardando CEMS
+- ⏸️ M3 (override_rate) PAUSADA aguardando CEMS
+- ⏸️ patient_returned_spontaneous PAUSADA aguardando CEMS
+
+### L.5 — CEMS v1 criado (decisão clínica explícita)
+
+Documento: [docs/CEMS_V1_NORTH_STAR_SEMANTICS.md](docs/CEMS_V1_NORTH_STAR_SEMANTICS.md)
+
+Formato decisório (não whitepaper):
+- 2 eventos JÁ implementados (V1.9.101) com semântica documentada
+- 4 eventos pendentes com 5 opções A-E cada (Ricardo escolhe)
+- Tabela de campos críticos do override (Ricardo decide)
+- Janela temporal patient_returned (7d/14d/30d/60d, corridos/úteis)
+- Recomendações preliminares Claude (não vinculantes)
+- Critério explícito de "CEMS validado" antes de FASE 2.3+2.4
+
+Próximo passo Pedro: encaminhar CEMS v1 ao Ricardo.
+
+### L.6 — Validação video-call-reminders cron (já em prod)
+
+Memória `project_video_call_reminders_v53_28_04.md` confirma reescrita
+elite V1.9.99 28/04. Validei empiricamente em 30/04:
+
+```
+Workflow: .github/workflows/video-call-reminders-cron.yml
+Schedule: */5 * * * * (a cada 5min via GitHub Actions)
+
+Logs em noa_logs (interaction_type='video_call_reminders_sweep'):
+  29/04 23:27 → scanned=0 reminders_sent=0 errors=0 duration=462ms
+  29/04 23:51 → scanned=0 reminders_sent=0 errors=0 duration=456ms
+  30/04 00:12 → scanned=0 reminders_sent=0 errors=0 duration=665ms
+  30/04 01:10 → scanned=0 reminders_sent=0 errors=0 duration=1439ms
+  30/04 01:57 → scanned=0 reminders_sent=0 errors=0 duration=1121ms
+
+Cadência real: 20-58min entre sweeps (não 5min).
+Causa: GitHub Actions free tier com fila em horários de pico.
+Impacto: latência aceitável (janelas 25-35/5-15/0-3 absorvem jitter).
+
+DB timezone: UTC consistente (zero mismatch).
+```
+
+### L.7 — Estado consolidado pós-sessão
+
+```
+✅ ATIVO EM PROD:
+  - V1.9.100 tabela clinical_north_star_events
+  - V1.9.101 triggers SQL (aec_finalized + patient_followup_scheduled)
+  - M1 return_30d (esperando 1º paciente real)
+  - time_to_followup (idem)
+  - Cron video-call-reminders (logs confirmam vivo)
+
+⏸️ AGUARDANDO RICARDO:
+  - CEMS v1 (4 eventos pendentes + lista campos críticos + janela)
+
+🔮 PRÓXIMA SESSÃO TÉCNICA:
+  - Smoke E2E real (Pedro como paciente, browser)
+  - Aplicar FASE 2.3 (physician_review_*) com CEMS validado
+  - Aplicar FASE 2.4 (patient_returned cron) com CEMS validado
+  - Validar email Resend chega em paciente real
+```
+
+### L.8 — Princípios operacionalizados
+
+```
+✅ Instrumentação ANTES do teste (feedback_instrumentacao_antes_do_teste.md)
+   - Aplicado: V1.9.101 antes de smoke E2E real
+   - Aplicado: bloqueio FASE 2.3+2.4 sem CEMS
+
+✅ Anti-superestimação (P10 substituição silenciosa)
+   - Recusado "ZERO risco AEC" → "risco operacional mínimo"
+   - GPT-Ricardo pegou 4 ressalvas válidas (timezone, email, métricas, cron)
+
+✅ Anti-subestimação (feedback_anti_subestimacao_severidade.md)
+   - 3 retrabalhos da migration: cada erro = descoberta de constraint real
+   - Não tratei "tabelas sem dados" como "tabelas ausentes"
+
+✅ Anti-duplicação (feedback Pedro 30/04 ~02h)
+   - "cuidado com duplicadas — estamos polindo, vc viu nao da mole"
+   - Decidido NÃO criar appointment fictício pra testar cron
+   - Decidido NÃO deletar 2 ns_events leftover de ontem
+   - Apenas validar com dados existentes
+
+✅ Lock V1.9.95+97+98+99-B preservado integralmente
+   - Migration aditiva pura (functions + triggers + smoke inline)
+   - Reversível com DROP TRIGGER + DROP FUNCTION
+```
+
+### L.9 — Frase âncora L
+
+> *"P0c FASE 2.1+2.2 aplicada via triggers SQL — zero toque em Core,
+>  fail-safe, smoke 2/2 inline. CEMS v1 pronto pra Ricardo
+>  (4 eventos × 5 opções cada). Cron video-call-reminders validado
+>  vivo. M1 + time_to_followup ATIVAS aguardando 1º uso real.
+>  Lock V1.9.95+97+98+99-B intocado. Anti-aprendizado-cego e
+>  anti-duplicação aplicados. Próximo: smoke E2E real OU Ricardo
+>  validar CEMS."*
+
+---
+
+*Bloco L adicionado 2026-04-30 ~03h00 BRT por Claude Opus 4.7 (1M context). Diário 29/04 fecha em 12 blocos (A→L). 17 commits do dia (5 P0b/SEO base + 10 landing polish + 2 P0c north star). Memórias: project_landing_polish_fechado_29_04.md (landing) + project_north_star_p0c_fase1_2_aplicada.md (esta sessão).*
+
+---
+
 ## D — Frase-âncora de abertura
 
 > *"Ontem ganhamos a narrativa. Hoje atacamos o que falta pra começar
