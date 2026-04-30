@@ -818,12 +818,15 @@ const Landing: React.FC = () => {
               <Stethoscope className="w-4 h-4 text-emerald-400" />
               <span className="text-xs font-bold tracking-widest text-emerald-300 uppercase">Consultório-Escola Exponencial</span>
             </div>
-            <h2 className="text-3xl md:text-5xl font-bold mb-6 text-white leading-tight">
+            <h2 className="text-3xl md:text-5xl font-bold mb-4 text-white leading-tight">
               Dois consultórios, um método.<br />
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-teal-300">Escala que ensina.</span>
             </h2>
+            <p className="text-base text-emerald-200/90 mb-6 max-w-2xl mx-auto leading-relaxed">
+              Cada atendimento gera <strong className="text-white">cuidado real</strong>, <strong className="text-white">aprendizado contínuo</strong> e <strong className="text-white">base científica</strong>.
+            </p>
             <p className="text-lg text-slate-300 leading-relaxed">
-              A junção da prática clínica do <strong className="text-emerald-300">Dr. Ricardo Valença</strong> (Nefrologia) e do <strong className="text-emerald-300">Dr. Eduardo Faveret</strong> (Neurologia) — operacionalizada pelo método AEC e amplificada pela infraestrutura digital MedCannLab.
+              A junção da prática clínica do <strong className="text-emerald-300">Dr. Ricardo Valença</strong> (Nefrologia) e do <strong className="text-teal-300">Dr. Eduardo Faveret</strong> (Neurologia) — operacionalizada pelo método AEC e amplificada pela infraestrutura digital MedCannLab.
             </p>
           </div>
 
@@ -855,7 +858,7 @@ const Landing: React.FC = () => {
                 </div>
               </div>
               <p className="text-sm text-slate-400 leading-relaxed">
-                <strong className="text-teal-200">Direção médica e científica</strong> do MedCannLab. Especialista em <strong className="text-teal-200">neurologia clínica</strong> com foco em escuta estruturada e raciocínio diagnóstico. Responsável pela aplicação do método AEC à prática neurológica, à formação médica continuada e à produção de evidência clínica em parceria com a coordenação científica do método.
+                <strong className="text-teal-200">Direção médica e científica</strong> do MedCannLab. Atuação clínica em <strong className="text-teal-200">neurologia com foco em cannabis medicinal</strong> e escuta estruturada. Integra o método AEC à prática neurológica e à formação clínica continuada dentro do modelo MedCannLab.
               </p>
             </div>
           </div>
@@ -886,7 +889,7 @@ const Landing: React.FC = () => {
           </div>
 
           <p className="text-center text-sm text-slate-500 italic mt-10 max-w-2xl mx-auto">
-            Um modelo onde clínica, ensino e pesquisa não estão separados — <span className="text-emerald-300/80">acontecem ao mesmo tempo, no mesmo método</span>.
+            Um modelo onde clínica, ensino e pesquisa <span className="text-emerald-300/80">acontecem juntos — no mesmo atendimento, no mesmo método</span>.
           </p>
         </div>
       </section>
