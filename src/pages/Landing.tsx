@@ -338,15 +338,11 @@ const Landing: React.FC = () => {
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-teal-300">Método AEC.</span>
             </h1>
 
-            <p className="text-base text-slate-400 mb-5 max-w-lg mx-auto lg:mx-0 leading-relaxed italic">
-              Arte da Entrevista Clínica — método autoral em prática clínica.
-            </p>
-
-            <p className="text-base text-slate-300 mb-2 max-w-lg mx-auto lg:mx-0 leading-relaxed">
-              Criado pelo <strong className="text-emerald-300">Dr. Ricardo Valença</strong> — nefrologista há mais de <strong className="text-emerald-300">40 anos</strong>, com <strong className="text-emerald-300">2.000+ avaliações clínicas</strong> conduzidas.
+            <p className="text-base text-slate-300 mb-3 max-w-lg mx-auto lg:mx-0 leading-relaxed">
+              MedCannLab é um <strong className="text-emerald-300">modelo clínico orientado pela Escuta estruturada</strong> — fundado na <strong className="text-emerald-300">Arte da Entrevista Clínica (AEC)</strong>, método autoral do <strong className="text-emerald-300">Dr. Ricardo Valença</strong> (nefrologista há mais de 40 anos, 2.000+ avaliações conduzidas).
             </p>
             <p className="text-sm text-slate-400 mb-4 max-w-lg mx-auto lg:mx-0 leading-relaxed">
-              Método universal de escuta clínica — aplicável a qualquer especialidade. Hoje em uso na MedCannLab em <span className="text-emerald-300/90">cannabis medicinal, nefrologia e neurologia</span>.
+              Desenvolvido em <span className="text-emerald-300/90">neurologia e cannabis medicinal</span> e aplicável a qualquer especialidade médica. Prática conduzida por protocolos clínicos auditáveis e estrutura padronizada de avaliação.
             </p>
 
             <p className="text-base text-emerald-200/90 mb-6 max-w-lg mx-auto lg:mx-0 italic">
@@ -670,6 +666,111 @@ const Landing: React.FC = () => {
                 Quando você e o médico se conectam na videochamada, ele já leu seu mapa clínico completo. Os 20 minutos que seriam gastos fazendo perguntas repetitivas viram tempo real de olho no olho e prescrição cuidadosa.
               </p>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* --- Seção Institucional (v15 selado 29/04) — Tese & Arquitetura --- */}
+      <section id="sobre" className="py-24 bg-slate-950 relative border-t border-slate-900 overflow-hidden">
+        {/* Gradient sutil de fundo */}
+        <div className="absolute top-0 left-0 w-1/3 h-full bg-gradient-to-r from-emerald-900/10 to-transparent pointer-events-none -z-10" />
+        <div className="absolute bottom-0 right-0 w-1/3 h-full bg-gradient-to-l from-teal-900/10 to-transparent pointer-events-none -z-10" />
+
+        <div className="container mx-auto px-6 relative z-10 max-w-5xl">
+          <div className="text-center mb-12">
+            <div className="inline-flex items-center space-x-2 bg-slate-800/80 border border-slate-700/50 rounded-full px-4 py-1.5 mb-6">
+              <Microscope className="w-4 h-4 text-emerald-400" />
+              <span className="text-xs font-bold tracking-widest text-emerald-300 uppercase">Sobre a MedCannLab</span>
+            </div>
+            <h2 className="text-3xl md:text-5xl font-bold mb-6 text-white leading-tight">
+              Tese & Arquitetura
+            </h2>
+            <p className="text-lg text-emerald-200/90 italic max-w-2xl mx-auto">
+              "Transformamos a escuta clínica em cuidado estruturado e auditável."
+            </p>
+          </div>
+
+          {/* Parágrafo institucional v15 — em blocos legíveis */}
+          <div className="prose prose-invert max-w-3xl mx-auto space-y-6 text-slate-300 leading-relaxed">
+            <p className="text-base md:text-lg">
+              <strong className="text-white">MedCannLab</strong> é uma <strong className="text-emerald-300">Infraestrutura Cognitiva Clínica orientada pela Escuta</strong>, fundada na <strong className="text-emerald-300">Arte da Entrevista Clínica (AEC — Avaliação Clínica Estruturada)</strong> — método <strong className="text-white">integralmente autoral do Dr. Ricardo Valença</strong> (criação clínica e dissertação de mestrado), construído sobre o princípio de que <em className="text-emerald-200">toda fala do paciente é dado clínico relevante</em>.
+            </p>
+
+            <p className="text-base md:text-lg">
+              O método se materializa em <strong className="text-emerald-300">4 fases macro</strong> (Abertura Exponencial, Desenvolvimento Indiciário, Anamnese Triaxial, Fechamento Consensual), operando sob o <strong className="text-emerald-300">motor IMRE</strong> (Incentivator Minimal of Exponential — lógica de perguntas exponenciais), em fluxo determinístico estruturado e <strong className="text-emerald-300">28 blocos modulares</strong> (preservando 37 blocos legacy), formando um sistema completo de escuta estruturada e raciocínio diagnóstico.
+            </p>
+
+            <p className="text-base md:text-lg">
+              A tradução desse método em sistema executável é a contribuição arquitetural original de <strong className="text-white">Pedro Henrique Passos Galluf</strong> (CTO): o <strong className="text-emerald-300">TradeVision Core</strong> — núcleo originado em sua plataforma anterior e amplamente desenvolvido no MedCannLab — codifica a metodologia clínica autoral em <strong className="text-emerald-300">infraestrutura cognitiva auditável</strong>, com FSM determinístico, Verbatim First, AEC Gate, Pipeline Orchestrator e COS Kernel construídos diretamente sobre a AEC para executar o método sob condições auditáveis. A integração entre método e arquitetura foi orquestrada por Pedro em colaboração técnica com Ricardo.
+            </p>
+          </div>
+
+          {/* Pirâmide de 8 camadas — visual */}
+          <div className="mt-12 max-w-4xl mx-auto">
+            <div className="bg-slate-900/60 border border-slate-800 rounded-2xl p-8">
+              <div className="flex items-center gap-3 mb-6">
+                <Lock className="w-5 h-5 text-emerald-400" />
+                <h3 className="text-lg font-bold text-white tracking-tight">Pirâmide de Governança — 8 camadas</h3>
+              </div>
+              <p className="text-sm text-slate-400 mb-6 leading-relaxed">
+                A plataforma opera sob uma pirâmide formal de governança, onde <strong className="text-emerald-300">GPT é o último a falar e o primeiro a ser checado</strong> — com 46% das interações em hard-lock bypassando o LLM.
+              </p>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
+                <div className="bg-slate-950/60 border border-emerald-500/20 rounded-lg px-3 py-2.5 text-center">
+                  <div className="text-emerald-400 font-bold mb-1">0</div>
+                  <div className="text-slate-300">Constituição §1</div>
+                </div>
+                <div className="bg-slate-950/60 border border-emerald-500/20 rounded-lg px-3 py-2.5 text-center">
+                  <div className="text-emerald-400 font-bold mb-1">1</div>
+                  <div className="text-slate-300">COS Kernel v5.0</div>
+                </div>
+                <div className="bg-slate-950/60 border border-teal-500/20 rounded-lg px-3 py-2.5 text-center">
+                  <div className="text-teal-400 font-bold mb-1">2</div>
+                  <div className="text-slate-300">AEC FSM</div>
+                </div>
+                <div className="bg-slate-950/60 border border-teal-500/20 rounded-lg px-3 py-2.5 text-center">
+                  <div className="text-teal-400 font-bold mb-1">3</div>
+                  <div className="text-slate-300">Verbatim First</div>
+                </div>
+                <div className="bg-slate-950/60 border border-green-500/20 rounded-lg px-3 py-2.5 text-center">
+                  <div className="text-green-400 font-bold mb-1">4</div>
+                  <div className="text-slate-300">AEC Gate</div>
+                </div>
+                <div className="bg-slate-950/60 border border-slate-700/50 rounded-lg px-3 py-2.5 text-center">
+                  <div className="text-slate-400 font-bold mb-1">5</div>
+                  <div className="text-slate-300">GPT</div>
+                </div>
+                <div className="bg-slate-950/60 border border-green-500/20 rounded-lg px-3 py-2.5 text-center">
+                  <div className="text-green-400 font-bold mb-1">6</div>
+                  <div className="text-slate-300">Pós-processamento</div>
+                </div>
+                <div className="bg-slate-950/60 border border-emerald-500/20 rounded-lg px-3 py-2.5 text-center">
+                  <div className="text-emerald-400 font-bold mb-1">7</div>
+                  <div className="text-slate-300">Pipeline Orchestrator</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Formação + Constituição */}
+          <div className="prose prose-invert max-w-3xl mx-auto space-y-6 text-slate-300 leading-relaxed mt-12">
+            <p className="text-base md:text-lg">
+              <strong className="text-emerald-300">Formação clínica é pilar:</strong> cursos AEC (R$ 299,90), IMRE Triaxial (R$ 199,90) e Cannabis Medicinal (R$ 2.999,90), Simulador com 20 personas-pacientes, parceria <em>Cidade Amiga dos Rins</em>.
+            </p>
+
+            <p className="text-base md:text-lg">
+              Constituída como <strong className="text-white">MedCannLab Tecnologia em Saúde LTDA</strong> (pré-CNPJ), com <strong className="text-emerald-300">4 sócios fundadores</strong> equilibrados em 20% cada — clínica (Ricardo), técnica (Pedro), comercial-institucional (João Eduardo Vidal), científica (Eduardo Faveret) — e 20% em tesouraria.
+            </p>
+          </div>
+
+          {/* Frase âncora final */}
+          <div className="mt-12 max-w-3xl mx-auto text-center border-t border-slate-800 pt-10">
+            <p className="text-lg md:text-xl text-white font-semibold leading-relaxed mb-4">
+              MedCannLab não substitui o método clínico — <span className="text-emerald-300">operacionaliza, preserva e escala o método</span> em condições auditáveis.
+            </p>
+            <p className="text-sm text-slate-500 italic tracking-wide">
+              Method-first, architecture-grounded, AI-last.
+            </p>
           </div>
         </div>
       </section>
