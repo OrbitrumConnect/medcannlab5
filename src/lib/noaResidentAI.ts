@@ -422,12 +422,21 @@ export class NoaResidentAI {
 
       if (assistantResponse && assistantResponse.content) {
         console.log('[Assistant] Resposta recebida:', assistantResponse.content.substring(0, 50) + '...')
+        // [V1.9.106] Fix shadowing: currentPhase top-level (linha 256) nunca era populado
+        // porque a populagem ocorria em processAssistant em outra `let currentPhase`
+        // de escopo isolado. Resultado: metadata.assessmentPhase chegava sempre null
+        // no client → barra de progresso AEC nunca renderizava (PHASE_PROGRESS[null]=0).
+        // Fix: ler direto do clinicalAssessmentFlow (única fonte de verdade do state AEC)
+        // como fallback. Não toca FSM/Core/Pipeline — só popula campo já esperado.
+        const _phaseForMeta = userId ? clinicalAssessmentFlow.getState(userId)?.phase : undefined
+        const _finalPhase = currentPhase || _phaseForMeta || null
+
         // Se houve acao da plataforma bem-sucedida, adicionar metadata
-        if (platformActionResult?.success || currentPhase) {
+        if (platformActionResult?.success || _finalPhase) {
           assistantResponse.metadata = {
             ...assistantResponse.metadata,
             platformAction: platformActionResult?.data,
-            assessmentPhase: currentPhase // 🧬 Injetando fase para o hook e barra de progresso
+            assessmentPhase: _finalPhase // 🧬 Injetando fase para o hook e barra de progresso
           }
         }
 
