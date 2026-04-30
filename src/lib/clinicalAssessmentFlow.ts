@@ -388,14 +388,22 @@ export class ClinicalAssessmentFlow {
     }
   }
 
-  /** Nome exibido nas cópias AEC onde o protocolo citava o médico da consulta (default: Dr. Ricardo Valença). */
-  private physicianDisplay(state: AssessmentState): string {
-    return state.data.aecTargetPhysicianDisplayName?.trim() || 'Dr. Ricardo Valença'
+  /**
+   * [V1.9.107] Nome do médico AEC. NULL-SAFE: retorna null quando paciente
+   * não pré-selecionou médico (caso comum hoje, sem feature P0e ativa).
+   * Antes: fallback hardcoded 'Dr. Ricardo Valença' criava P10 silencioso —
+   * frase do chat citava Ricardo mesmo quando backend resolveu outro médico
+   * via appointments e card de agendamento mostrava 3ª opção (dropdown
+   * alfabético). Agora callers adaptam com linguagem neutra quando null.
+   */
+  private physicianDisplay(state: AssessmentState): string | null {
+    return state.data.aecTargetPhysicianDisplayName?.trim() || null
   }
 
   private standardAecOpeningPhrase(state: AssessmentState): string {
     const doc = this.physicianDisplay(state)
-    return `Olá! Eu sou Nôa Esperanza. Por favor, apresente-se também e vamos iniciar a sua avaliação inicial para consultas com ${doc}.`
+    const docPhrase = doc ? ` para consultas com ${doc}` : ''
+    return `Olá! Eu sou Nôa Esperanza. Por favor, apresente-se também e vamos iniciar a sua avaliação inicial${docPhrase}.`
   }
 
   /**
@@ -1040,10 +1048,11 @@ export class ClinicalAssessmentFlow {
           state.phase = 'CONSENT_COLLECTION'
           state.lastUpdate = new Date()
           const doc = this.physicianDisplay(state)
+          const docTarget = doc || 'o profissional responsável'
           return {
             nextQuestion: '📋 **Consentimento Informado**\n\nAntes de finalizarmos, preciso do seu consentimento:\n\n' +
               '• Os dados desta avaliacao serao registrados no seu prontuario digital.\n' +
-              `• O relatorio gerado sera compartilhado com ${doc} para analise clinica.\n` +
+              `• O relatorio gerado sera compartilhado com ${docTarget} para analise clinica.\n` +
               '• Nenhum dado sera compartilhado com terceiros sem sua autorizacao previa.\n' +
               '• Este relatorio e uma avaliacao inicial assistida por IA e **não substitui** a consulta médica presencial.\n\n' +
               'Voce autoriza o registro e compartilhamento destes dados? (sim/não)',
@@ -1073,16 +1082,18 @@ export class ClinicalAssessmentFlow {
           state.phase = 'FINAL_RECOMMENDATION'
           state.lastUpdate = new Date()
           const doc = this.physicianDisplay(state)
+          const scheduleTarget = doc || 'o profissional disponível na plataforma'
+          const presentTarget = doc || 'o profissional escolhido'
           return {
             nextQuestion: '✅ Consentimento registrado. Obrigada!\n\n' +
               'Sua avaliação inicial foi concluída com sucesso. ' +
               'O relatório clínico já está disponível no seu painel.\n\n' +
               '**Próximos passos:**\n' +
               '• Acesse seu **Relatório Clínico** para revisar os achados\n' +
-              `• **Agende uma consulta** com ${doc} para dar continuidade ao seu cuidado\n\n` +
+              `• **Agende uma consulta** com ${scheduleTarget} para dar continuidade ao seu cuidado\n\n` +
               'Use os botões abaixo para navegar rapidamente 👇\n\n' +
               'Essa é uma avaliação inicial de acordo com o método desenvolvido pelo Dr. Ricardo Valença, com o objetivo de aperfeiçoar o seu atendimento. ' +
-              `Apresente sua avaliação durante a consulta com ${doc} ou com outro profissional de saúde da plataforma Med-Cann Lab.\n\n` +
+              `Apresente sua avaliação durante a consulta com ${presentTarget} na plataforma Med-Cann Lab.\n\n` +
               '[ASSESSMENT_COMPLETED]',
             phase: 'FINAL_RECOMMENDATION',
             isComplete: false
@@ -1092,10 +1103,11 @@ export class ClinicalAssessmentFlow {
           state.phase = 'FINAL_RECOMMENDATION'
           state.lastUpdate = new Date()
           const doc = this.physicianDisplay(state)
+          const recommendTarget = doc || 'um profissional da plataforma'
           return {
             nextQuestion:
               '⚠️ Entendido. Sem o consentimento, o relatorio **não sera gerado nem compartilhado** com o medico. Seus dados desta conversa serao descartados.\n\n' +
-              `Recomendo a marcacao de uma consulta presencial com ${doc} pelo site para prosseguir com a avaliacao.`,
+              `Recomendo a marcacao de uma consulta presencial com ${recommendTarget} pelo site para prosseguir com a avaliacao.`,
             phase: 'FINAL_RECOMMENDATION',
             isComplete: false
           }

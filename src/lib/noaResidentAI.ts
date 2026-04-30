@@ -1696,9 +1696,13 @@ export class NoaResidentAI {
         })
       }
 
-      const docForAecOpening = aecPhysicianName || 'Dr. Ricardo Valenca'
-      const buildAecOpeningHint = () =>
-        "Ola! Eu sou Noa Esperanza. Por favor, apresente-se tambem e vamos iniciar a sua avaliacao inicial para consultas com " + docForAecOpening + "."
+      // [V1.9.107] Null-safe: omite citação quando médico não foi pré-selecionado.
+      // Antes: fallback hardcoded 'Dr. Ricardo Valenca' criava P10 silencioso.
+      const docForAecOpening = aecPhysicianName || null
+      const buildAecOpeningHint = () => {
+        const docPhrase = docForAecOpening ? ` para consultas com ${docForAecOpening}` : ''
+        return `Ola! Eu sou Noa Esperanza. Por favor, apresente-se tambem e vamos iniciar a sua avaliacao inicial${docPhrase}.`
+      }
 
       if (shouldHandleAecFlow) {
         await clinicalAssessmentFlow.ensureLoaded(platformData.user.id)
