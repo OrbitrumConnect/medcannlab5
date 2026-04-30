@@ -96,29 +96,35 @@ const ShareReportModal: React.FC<ShareReportModalProps> = ({
         return
       }
 
-      // V1.9.103-D — Se RPC promoveu draft → shared, rodar pipeline downstream
-      // (axes + rationality) que a RPC SQL não conseguiu fazer.
-      // Garante paridade funcional com reports gerados via fluxo normal.
-      const promotedFromDraft = (data && typeof data === 'object' && (data as any).promoted_from_draft === true)
-      if (promotedFromDraft) {
-        console.log('📋 [PIPELINE_PROMOTION] Draft promovido, completando pipeline downstream...')
-        try {
-          const { error: pipelineError } = await supabase.functions.invoke('tradevision-core', {
-            body: {
-              action: 'complete_promoted_draft',
-              report_id: reportId
-            }
-          })
-          if (pipelineError) {
-            console.warn('[PIPELINE_PROMOTION] Pipeline post-share falhou (não bloqueia compartilhamento):', pipelineError)
-            // Não bloqueia o sucesso do share — relatório está visível, axes podem ser
-            // gerados depois manualmente pelo médico se necessário.
-          } else {
-            console.log('✅ [PIPELINE_PROMOTION] Pipeline downstream completo')
+      // V1.9.103-E — SEMPRE invocar complete_promoted_draft após share success.
+      //
+      // Handler é IDEMPOTENTE (V1.9.103-E): verifica internamente se report
+      // já está totalmente enriquecido (axes + rationality + scores +
+      // structured + signature_hash). Se já está, retorna 'already_complete'.
+      // Se falta algo, regenera apenas o que falta.
+      //
+      // Cobre 3 casos:
+      //   1. promoted_from_draft=true (V1.9.103 acabou de promover) → roda tudo
+      //   2. re-share de report já compartilhado com enrichment INCOMPLETO
+      //      (ex: report criado entre V1.9.102/103/103-D, antes de V1.9.103-E)
+      //      → handler detecta gaps e regenera scores+structured+signature
+      //   3. re-share totalmente enriquecido → handler retorna already_complete
+      console.log('📋 [PIPELINE_PROMOTION] Verificando enrichment pós-share...')
+      try {
+        const { data: pipelineData, error: pipelineError } = await supabase.functions.invoke('tradevision-core', {
+          body: {
+            action: 'complete_promoted_draft',
+            report_id: reportId
           }
-        } catch (pipelineErr) {
-          console.warn('[PIPELINE_PROMOTION] Erro inesperado (não bloqueia):', pipelineErr)
+        })
+        if (pipelineError) {
+          console.warn('[PIPELINE_PROMOTION] Pipeline post-share falhou (não bloqueia compartilhamento):', pipelineError)
+          // Não bloqueia o sucesso do share — relatório está visível.
+        } else {
+          console.log('✅ [PIPELINE_PROMOTION] Resultado:', (pipelineData as any)?.status || 'completed')
         }
+      } catch (pipelineErr) {
+        console.warn('[PIPELINE_PROMOTION] Erro inesperado (não bloqueia):', pipelineErr)
       }
 
       setSuccess(true)
