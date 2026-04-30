@@ -524,7 +524,28 @@ const Landing: React.FC = () => {
                 </div>
                 <div className="p-8 space-y-4">
                   <div className="flex space-x-3 flex-row-reverse">
-                    <div className="w-8 h-8 rounded-full bg-emerald-600/20 flex-shrink-0"></div>
+                    {/* Avatar Nôa Esperanza — animação leve com glow */}
+                    <div
+                      className="relative w-10 h-10 rounded-full overflow-hidden border border-emerald-500/40 bg-slate-950/60 flex-shrink-0"
+                      style={{ boxShadow: '0 0 18px rgba(0, 193, 106, 0.35)' }}
+                      title="Nôa Esperanza"
+                    >
+                      <img
+                        src={noaAvatarSrc}
+                        alt="Nôa Esperanza — IA Residente da MedCannLab"
+                        className="w-full h-full object-cover"
+                        draggable={false}
+                        loading="lazy"
+                        onError={(e) => {
+                          e.currentTarget.src = logoBrainSrc
+                        }}
+                      />
+                      {/* Pulse leve verde indicando atividade */}
+                      <span className="absolute -bottom-0.5 -right-0.5 flex h-3 w-3">
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                        <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-500 border-2 border-slate-900"></span>
+                      </span>
+                    </div>
                     <div className="bg-emerald-600/10 border border-emerald-500/20 p-3 rounded-l-xl rounded-br-xl w-3/4">
                       <p className="text-xs text-emerald-200 mb-2">Analisando padrão de sono e ansiedade...</p>
                       <div className="h-2 w-full bg-emerald-500/30 rounded"></div>
