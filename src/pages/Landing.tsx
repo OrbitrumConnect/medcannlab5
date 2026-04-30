@@ -341,19 +341,19 @@ const Landing: React.FC = () => {
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-teal-300">Método AEC.</span>
             </h1>
 
-            <p className="text-base text-slate-300 mb-3 max-w-lg mx-auto lg:mx-0 leading-relaxed">
+            <p className="text-base text-slate-300 mb-3 max-w-xl mx-auto lg:mx-0 leading-relaxed">
               MedCannLab é um <strong className="text-emerald-300">modelo clínico orientado pela Escuta (AEC)</strong>, operacionalizado por uma <strong className="text-emerald-300">infraestrutura digital</strong> e acessado através de uma <strong className="text-emerald-300">aplicação tecnológica</strong>.
             </p>
-            <p className="text-sm text-slate-400 mb-4 max-w-lg mx-auto lg:mx-0 leading-relaxed">
-              Método autoral do <strong className="text-emerald-200">Dr. Ricardo Valença</strong> — nefrologista há mais de <strong className="text-emerald-200">40 anos</strong>, com <strong className="text-emerald-200">2.000+ avaliações</strong> conduzidas. Desenvolvido em <span className="text-emerald-300/90">neurologia e cannabis medicinal</span>, aplicável a qualquer especialidade médica.
+            <p className="text-sm text-slate-400 mb-4 max-w-xl mx-auto lg:mx-0 leading-relaxed">
+              Método autoral do <strong className="text-emerald-200">Dr. Ricardo Valença</strong> — nefrologista há mais de <strong className="text-emerald-200">40 anos</strong>, com <strong className="text-emerald-200">2.000+ avaliações</strong> conduzidas. Direção médica e científica do <strong className="text-teal-200">Dr. Eduardo Faveret</strong> (Neurologia). Desenvolvido em <span className="text-emerald-300/90">neurologia e cannabis medicinal</span>, aplicável a qualquer especialidade médica.
             </p>
 
-            <p className="text-base text-emerald-200/90 mb-6 max-w-lg mx-auto lg:mx-0 italic">
+            <p className="text-base text-emerald-200/90 mb-6 max-w-xl mx-auto lg:mx-0 italic">
               Sem improviso. Com método. Com responsabilidade clínica.
             </p>
 
             {/* Counter visual — 3 dimensões: autoridade histórica + sistema + time */}
-            <div className="grid grid-cols-3 gap-3 mb-8 max-w-lg mx-auto lg:mx-0">
+            <div className="grid grid-cols-3 gap-3 mb-8 max-w-xl mx-auto lg:mx-0">
               <div className="bg-slate-900/60 border border-emerald-500/20 rounded-xl px-3 py-3 text-center">
                 <div className="text-2xl lg:text-3xl font-extrabold text-emerald-400">40+</div>
                 <div className="text-[10px] uppercase tracking-wider text-slate-400 mt-1">Anos do método<br />em prática</div>
