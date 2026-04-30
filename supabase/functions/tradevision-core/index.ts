@@ -1707,11 +1707,171 @@ Deno.serve(async (req: Request) => {
             }
         }
 
+        // ──────────────────────────────────────────────────────────────────
+        // 🧬 V1.9.103-D — Handler complete_promoted_draft
+        //
+        // CONTEXTO:
+        //   V1.9.102 cria draft quando Gate D' bloqueia (sem appointment).
+        //   V1.9.103 RPC share_report_with_doctors promove draft→shared
+        //   (status, signed_at, professional_id). Trigger V1.9.101 dispara.
+        //   MAS pipeline downstream (axes + rationality) NÃO roda — RPC SQL
+        //   não chama OpenAI.
+        //
+        // ESTE HANDLER:
+        //   Frontend (ShareReportModal) chama esta action depois da RPC
+        //   share retornar promoted_from_draft=true. Roda APENAS axes +
+        //   rationality (skip save+signature, já feitos pela RPC).
+        //
+        // IDEMPOTÊNCIA:
+        //   Se report já tem axes (count > 0), retorna 200 sem refazer.
+        //
+        // LOCK PRESERVATION:
+        //   ❌ NÃO toca handleFinalizeAssessment (pipeline original intacto)
+        //   ❌ NÃO toca clinicalAssessmentFlow.ts (FSM)
+        //   ❌ NÃO toca Verbatim First / AEC Gate / COS Kernel / Signature
+        //   ✅ Reusa MESMA lógica de axes/rationality (linhas 1480-1524)
+        //   ✅ Operação idempotente, fail-safe
+        // ──────────────────────────────────────────────────────────────────
+        if (action === 'complete_promoted_draft') {
+            const reportId = body.report_id;
+            if (!reportId) {
+                return new Response(JSON.stringify({
+                    error: 'report_id_required'
+                }), {
+                    status: 400,
+                    headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+                });
+            }
+
+            try {
+                const { data: existingReport } = await supabaseClient
+                    .from('clinical_reports')
+                    .select('id, patient_id, patient_name, status, signed_at, content, professional_id')
+                    .eq('id', reportId)
+                    .maybeSingle();
+
+                if (!existingReport) {
+                    return new Response(JSON.stringify({
+                        error: 'report_not_found',
+                        report_id: reportId
+                    }), {
+                        status: 404,
+                        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+                    });
+                }
+
+                // Validação ownership: paciente só pode completar próprio report
+                if (existingReport.patient_id !== effectiveUserId) {
+                    console.warn(`⚠️ [PIPELINE_PROMOTION] Tentativa de completar report alheio. effectiveUserId=${effectiveUserId} report.patient_id=${existingReport.patient_id}`);
+                    return new Response(JSON.stringify({
+                        error: 'forbidden',
+                        message: 'Sem permissão para completar este relatório'
+                    }), {
+                        status: 403,
+                        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+                    });
+                }
+
+                // Idempotência: já tem axes? skip
+                const { count: axesCount } = await supabaseClient
+                    .from('clinical_axes')
+                    .select('*', { count: 'exact', head: true })
+                    .eq('report_id', reportId);
+
+                if ((axesCount || 0) > 0) {
+                    console.log('🔁 [PIPELINE_PROMOTION] Report já tem axes, skip:', reportId);
+                    return new Response(JSON.stringify({
+                        ok: true,
+                        status: 'already_complete',
+                        report_id: reportId,
+                        axes_count: axesCount
+                    }), {
+                        status: 200,
+                        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+                    });
+                }
+
+                // Reconstruir assessmentData do content
+                const content = existingReport.content || {};
+                const assessmentDataReconstructed = content.raw || content;
+                const structuredNarrative = content.structured || '';
+
+                // ── Pipeline downstream: AXES (igual handleFinalizeAssessment 1480-1500)
+                console.log('🧠 [PIPELINE_PROMOTION] AXES', { report_id: reportId });
+                const axes = [
+                    { axis_name: 'sintomatico', summary: `Queixa principal: ${assessmentDataReconstructed.mainComplaint || 'Não informada'}.` },
+                    { axis_name: 'funcional', summary: `Impacto em ${assessmentDataReconstructed.lifestyleHabits?.length || 0} hábitos de vida.` },
+                    { axis_name: 'etiologico', summary: `Histórico patológico e familiar analisado.` },
+                    { axis_name: 'terapeutico', summary: `Adesão e medicações atuais: ${assessmentDataReconstructed.regularMedications || 'não informadas'}.` },
+                    { axis_name: 'prognostico', summary: `Expectativa de evolução clínica baseada em fatores de melhora.` }
+                ];
+
+                const { error: axesError } = await supabaseClient.from('clinical_axes').insert(
+                    axes.map(a => ({
+                        ...a,
+                        report_id: reportId,
+                        patient_id: existingReport.patient_id,
+                        confidence: 0.9
+                    }))
+                );
+                if (axesError) {
+                    console.error('❌ [PIPELINE_PROMOTION] AXES_ERROR', axesError);
+                } else {
+                    console.log('✅ [PIPELINE_PROMOTION] AXES_SYNCED');
+                }
+
+                // ── Pipeline downstream: RATIONALITY (igual handleFinalizeAssessment 1503-1524)
+                console.log('🧠 [PIPELINE_PROMOTION] RATIONALITY');
+                const integrativePrompt = `Analise este relatório clínico do ponto de vista da Medicina Integrativa para selagem de prontuário.\n\nCONTEÚDO: ${structuredNarrative}\n\nForneça uma análise holística e recomendações integrativas.`;
+                const ratCompletion = await openai.chat.completions.create({
+                    model: 'gpt-4o-mini',
+                    messages: [
+                        { role: 'system', content: 'Você é o motor de racionalidade clínica da MedCannLab.' },
+                        { role: 'user', content: integrativePrompt }
+                    ]
+                });
+
+                const { error: ratError } = await supabaseClient.from('clinical_rationalities').insert({
+                    report_id: reportId,
+                    patient_id: existingReport.patient_id,
+                    rationality_type: 'integrative',
+                    assessment: ratCompletion?.choices?.[0]?.message?.content || 'Falha na geração da análise.',
+                    approach: 'Medicina Integrativa'
+                });
+                if (ratError) {
+                    console.error('❌ [PIPELINE_PROMOTION] RATIONALITY_ERROR', ratError);
+                } else {
+                    console.log('✅ [PIPELINE_PROMOTION] RATIONALITY_SYNCED');
+                }
+
+                console.log('✅ [PIPELINE_PROMOTION] DONE', { report_id: reportId });
+                return new Response(JSON.stringify({
+                    ok: true,
+                    status: 'completed',
+                    report_id: reportId,
+                    axes_inserted: !axesError,
+                    rationality_inserted: !ratError
+                }), {
+                    status: 200,
+                    headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+                });
+            } catch (e) {
+                console.error('❌ [PIPELINE_PROMOTION] ERROR', e);
+                return new Response(JSON.stringify({
+                    error: 'pipeline_promotion_failed',
+                    message: (e as Error)?.message
+                }), {
+                    status: 500,
+                    headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+                });
+            }
+        }
+
         // 🧬 [TITAN 5.2.1] GATILHO MASTER CONSCIENTE (Pipeline Auditável)
         // O gatilho de finalização agora é soberano e não se baseia em "ecos" do próximo passo (nextQuestionHint)
         // que o frontend pode enviar de volta. Baseia-se apenas no comando direto ou tags no corpo da mensagem.
-        const isFinalizeRequest = action === 'finalize_assessment' || 
-                                 message.includes('[ASSESSMENT_COMPLETED]') || 
+        const isFinalizeRequest = action === 'finalize_assessment' ||
+                                 message.includes('[ASSESSMENT_COMPLETED]') ||
                                  message.includes('[ASSESSMENT_FINALIZED]');
 
         if (isFinalizeRequest) {

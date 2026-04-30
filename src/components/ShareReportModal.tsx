@@ -83,7 +83,7 @@ const ShareReportModal: React.FC<ShareReportModalProps> = ({
     setError(null)
 
     try {
-      // Chamar função SQL para compartilhar relatório
+      // Chamar função SQL para compartilhar relatório (V1.9.103 — pode promover draft)
       const { data, error } = await supabase.rpc('share_report_with_doctors', {
         p_report_id: reportId,
         p_patient_id: patientId,
@@ -94,6 +94,31 @@ const ShareReportModal: React.FC<ShareReportModalProps> = ({
         console.error('Erro ao compartilhar relatório:', error)
         setError(error.message || 'Erro ao compartilhar relatório')
         return
+      }
+
+      // V1.9.103-D — Se RPC promoveu draft → shared, rodar pipeline downstream
+      // (axes + rationality) que a RPC SQL não conseguiu fazer.
+      // Garante paridade funcional com reports gerados via fluxo normal.
+      const promotedFromDraft = (data && typeof data === 'object' && (data as any).promoted_from_draft === true)
+      if (promotedFromDraft) {
+        console.log('📋 [PIPELINE_PROMOTION] Draft promovido, completando pipeline downstream...')
+        try {
+          const { error: pipelineError } = await supabase.functions.invoke('tradevision-core', {
+            body: {
+              action: 'complete_promoted_draft',
+              report_id: reportId
+            }
+          })
+          if (pipelineError) {
+            console.warn('[PIPELINE_PROMOTION] Pipeline post-share falhou (não bloqueia compartilhamento):', pipelineError)
+            // Não bloqueia o sucesso do share — relatório está visível, axes podem ser
+            // gerados depois manualmente pelo médico se necessário.
+          } else {
+            console.log('✅ [PIPELINE_PROMOTION] Pipeline downstream completo')
+          }
+        } catch (pipelineErr) {
+          console.warn('[PIPELINE_PROMOTION] Erro inesperado (não bloqueia):', pipelineErr)
+        }
       }
 
       setSuccess(true)
