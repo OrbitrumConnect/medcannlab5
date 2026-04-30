@@ -524,18 +524,18 @@ const Landing: React.FC = () => {
             <div className="flex-1 relative">
               <div className="relative rounded-2xl overflow-hidden border border-slate-700 shadow-2xl bg-slate-900">
                 {/* Header da janela com avatar Nôa em destaque */}
-                <div className="p-4 border-b border-slate-800 flex items-center justify-between gap-3">
-                  <div className="flex items-center space-x-2 flex-shrink-0">
+                <div className="p-4 border-b border-slate-800 relative flex items-center justify-center">
+                  {/* Bolinhas window controls — absolute left */}
+                  <div className="absolute left-4 flex items-center space-x-2">
                     <div className="w-3 h-3 rounded-full bg-red-500/50"></div>
                     <div className="w-3 h-3 rounded-full bg-yellow-500/50"></div>
                     <div className="w-3 h-3 rounded-full bg-green-500/50"></div>
                   </div>
-                  {/* Avatar Nôa + nome — destaque no header */}
-                  <div className="flex items-center gap-2.5">
-                    <span className="text-sm font-semibold text-emerald-200">Nôa Esperanza</span>
+                  {/* Avatar Nôa + nome — centralizado, 20% maior */}
+                  <div className="flex items-center gap-3">
                     <div
-                      className="relative w-10 h-10 rounded-full overflow-hidden border border-emerald-500/50 bg-slate-950/60 flex-shrink-0"
-                      style={{ boxShadow: '0 0 16px rgba(0, 193, 106, 0.45)' }}
+                      className="relative w-12 h-12 rounded-full overflow-hidden border-2 border-emerald-500/60 bg-slate-950/60 flex-shrink-0"
+                      style={{ boxShadow: '0 0 18px rgba(0, 193, 106, 0.5)' }}
                       title="Nôa Esperanza"
                     >
                       <img
@@ -554,6 +554,7 @@ const Landing: React.FC = () => {
                         <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-500 border-2 border-slate-900"></span>
                       </span>
                     </div>
+                    <span className="text-sm font-semibold text-emerald-200">Nôa Esperanza</span>
                   </div>
                 </div>
                 {/* Chat body — avatar à esquerda (padrão de chat) */}
