@@ -436,7 +436,12 @@ export class ClinicalAssessmentFlow {
       phaseIterationCount: 0,
       startedAt: new Date(),
       lastUpdate: new Date(),
-      completedPhases: [] // [V1.9.1] Inicia vazio, preenchido a cada transição válida de fase.
+      // [V1.9.113] Fix is_complete=false: se paciente tem nome, INITIAL_GREETING
+      // é PULADA (skipGreetingWithProfile=true). Antes ela nunca aparecia em
+      // completedPhases, mantendo is_complete=false mesmo após AEC concluída.
+      // Marcar como completed quando skipped — é a semântica correta (fase
+      // satisfeita por contexto pré-existente, não bug).
+      completedPhases: skipGreetingWithProfile ? ['INITIAL_GREETING'] : []
     }
 
     this.states.set(userId, state)
@@ -1347,6 +1352,12 @@ export class ClinicalAssessmentFlow {
     }
 
     // Se chegou aqui, todas as perguntas foram respondidas
+    // [V1.9.113] Fix is_complete=false: este caminho de saída tinha sido
+    // esquecido. Antes só linha 1249 (if !currentQ) marcava completed.
+    // Confirmado via audit empírico SQL 01/05: paciente Pedro completou AEC mas
+    // is_complete continuou false porque COMPLAINT_DETAILS nunca chegava em
+    // completed_phases. required_phases tem 13 entradas, completed só 10.
+    this.markPhaseCompleted(state, 'COMPLAINT_DETAILS')
     state.phase = 'MEDICAL_HISTORY'
     state.waitingForMore = true
     state.currentQuestionIndex = 0
@@ -1402,6 +1413,11 @@ export class ClinicalAssessmentFlow {
     }
 
     // Última pergunta respondida
+    // [V1.9.113] Fix is_complete=false: este caminho de saída tinha sido
+    // esquecido. Antes só linha 1379 (if !currentQ) marcava completed.
+    // Mesma classe de bug do processComplaintDetails (3ª pergunta sporadicMedications
+    // saía por aqui sem marcar OBJECTIVE_QUESTIONS).
+    this.markPhaseCompleted(state, 'OBJECTIVE_QUESTIONS')
     state.phase = 'CONSENSUS_REVIEW'
     state.lastUpdate = new Date()
     return {
