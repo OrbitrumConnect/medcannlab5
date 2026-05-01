@@ -1263,3 +1263,243 @@ externo = dívida cognitiva"*. CNPJ destrava TODOS de uma vez.
 *Bloco M adicionado 2026-04-30 ~21h45 BRT por Claude Opus 4.7 (1M context).
 Análise técnica de proposta despachante + texto pronto enviado.
 Próximo: monitorar resposta Paulo + decidir após esclarecimentos.*
+
+---
+
+## Bloco N — Audit empírico Supabase + 4 features dormentes + monetização ICP (01/05 ~01h)
+
+**Contexto:** Pós-V1.9.112-A1 (Sinopse clínica), Pedro pediu validação real do banco via PAT (que ele tinha passado dias antes mas não tava em uso ativo nesta sessão). Calibrei números defasados de memória + analisei 4 features dormentes + modelo de monetização ICP-Brasil.
+
+### N.1 — Calibração empírica via PAT (sbp_5b10cf6d...)
+
+**Memória vs realidade (após query SQL real)**:
+
+| Métrica | Memória eu disse | Real banco | Δ |
+|---|---|---|---|
+| Usuários totais | 27 | **34** | +7 |
+| Tabelas schema public | 128 | **161** | +33 |
+| RLS policies | 423 | **413** | -10 |
+| Reports total | 70 | **93** | +23 |
+| Reports signed | 38 | **18** | **-20 ⚠️** |
+| Appointments | 3 | **68** | +65 |
+| `noa_logs` (audit trail) | — | **4028** | rico |
+| AEC states | — | **6** (todas `is_complete=false`) | bug latente |
+
+**Distribuição users por type (P0f confirmado)**:
+- 5 admin
+- 18 patient (EN)
+- 2 paciente (PT)
+- 9 professional (todos EN)
+
+V1.9.110-A `.in(['profissional', 'professional'])` certeiro empíricamente.
+
+### N.2 — V1.9.111-C parte 1 aplicada (migration + backfill)
+
+Aplicada via Management API após audit confirmar ausência da coluna:
+
+```sql
+ALTER TABLE public.users ADD COLUMN specialty TEXT;
+-- Backfill:
+-- Ricardo Valença → Nefrologia
+-- Eduardo Faveret (admin + professional, 2 contas) → Neurologia
+-- 7 Parceiros → Clínica Geral default
+```
+
+10 médicos com specialty preenchida (1 Nefro + 2 Neuro + 7 Clínica Geral).
+
+Migration arquivada em `supabase/migrations/20260501010000_v1_9_111_c_users_specialty.sql`.
+
+**Test data populado** (Pedro + Carolina) pra validar V1.9.112-A1 visualmente:
+- Pedro (df6cee2d): Penicilina + Losartana 50mg + 1985-03-22
+- Carolina (5c98c123): Dipirona + Vit D + 1990-07-15
+- gender NÃO populado (bug histórico: 2 check constraints conflitantes em `users.gender` — interseção = NULL apenas)
+
+### N.3 — Bugs latentes descobertos durante audit
+
+**V1.9.113 (próximo)** — `is_complete=false` sempre:
+- Coluna GENERATED ALWAYS AS `(completed_phases @> required_phases)`
+- 3 phases nunca são marcadas como completed:
+  - INITIAL_GREETING (skipped quando paciente tem name)
+  - COMPLAINT_DETAILS (transição não chama `markPhaseCompleted`)
+  - OBJECTIVE_QUESTIONS (idem)
+- required_phases tem 13, completed_phases sempre 10
+- Resultado: 0 AECs com is_complete=true mesmo concluídas
+
+**V1.9.114 (futuro)** — `users.gender` 2 check constraints conflitantes:
+- Constraint 1: `['male', 'female', 'other', 'prefer_not_to_say']`
+- Constraint 2: `['M', 'F', 'Outro']`
+- Interseção = SOMENTE NULL
+
+**V1.9.115 (futuro)** — Reports não-signed:
+- 93 reports todos com `review_status='draft'` (nunca atualiza)
+- 18/93 signed (~19%) — 75 reports completos sem signature
+
+### N.4 — Schema 161 tabelas vs 30 do Magno (esclarecimento)
+
+Pedro perguntou: *"das 29 de 30 tabelas existentes pq o schema é muito maior?"*
+
+Resposta empírica:
+- ~30 mencionadas no Magno (scope MVP funcional)
+- ~64 ATIVAS REAIS (Magno + audit logs/scores não-mencionadas)
+- 4 backups
+- ~70 estrutura pronta dormente (TRL, forum, wearables, PKI, smart sched, etc)
+- ~23 sistema/auxiliares
+- **Total: 161**
+
+**Tradução**: o sistema tem infra modelada pra 3-4 expansions de produto além do MVP. Magno é vista sintetizada.
+
+### N.5 — 4 features dormentes auditadas
+
+Pedro perguntou se vale atacar agora:
+- ICP-Brasil PKI completo
+- Smart Scheduling com IA
+- Wearables
+- Forum comunidade
+
+**Veredito empírico**:
+
+| Feature | Frontend? | Vale agora? | Razão |
+|---|---|---|---|
+| **ICP-Brasil PKI** | ✅ `CertificateManagement.tsx` (503 lin) routed `/clinica/profissional/certificados` | ❌ NÃO | SHA-256 V1.9.73 já cobre CFM-safe. ICP real = R$300+/médico/ano + custo recorrente. Ativar pós-CNPJ. |
+| **Smart Scheduling** | ✅ Tabelas modeladas (smart_slot_rules, ai_scheduling_predictions, time_blocks) | ❌ NÃO | IA precisa 200+ appointments pra aprender. Hoje 68 totais. Esperar 3-6 meses pós-PMF. |
+| **Wearables** | ✅ `WearableMonitoring.tsx` (513 lin) embed em NeurologiaPediatrica | ❌ NÃO | SDK Apple HealthKit exige app nativo iOS + entitlement. ROI só com pacientes crônicos pagantes. |
+| **Forum** | ✅ `ForumCasosClinicos.tsx` (**1143 lin**!) + `DebateRoom.tsx` (700 lin) routed `/forum`, `/debate/:id` | 🟡 NÃO atacar features, **PODE seed conteúdo** | Implementação grande pronta, schemas robustos (forum_posts 22 cols), mas 0 rows. Forum vazio é pior que desativado. Pós-CNPJ + 5+ pacientes externos, time interno semeia 20-30 casos. |
+
+**Pré-requisito comum**: paciente externo real pagante (CNPJ destrava).
+
+### N.6 — Modelo de negócio ICP-Brasil PKI (4 cenários)
+
+Pedro perguntou: *"nos pagamos ou eles pagam"*?
+
+**A — Cada médico paga seu certificado** (padrão do mercado brasileiro):
+- A1 arquivo: R$200-400/ano
+- A3 token: R$300-600/3 anos
+- A1 Cloud (Bird ID Soluti): R$300-500/ano
+- **MedCannLab ganha**: R$0 direto, só posicionamento competitivo
+
+**B — Plataforma fornece como benefit**:
+- Custo: R$300-500/médico/ano
+- 9 médicos hoje × R$400 = R$3.600/ano
+- 50 escala = R$20.000/ano
+- 🚩 Custo recorrente proporcional ao crescimento
+
+**C ⭐ — Plano Premium com assinatura embutida (RECOMENDADO)**:
+Modelo Memed:
+```
+PLANO BÁSICO          R$ 150/mês  (sem ICP)
+PLANO PROFISSIONAL    R$ 250/mês  (ICP + 50 docs/mês)
+PLANO PREMIUM         R$ 450/mês  (ICP ilimitado + equipe + analytics)
+```
+- Custo MedCannLab por Premium: ~R$10/mês
+- Receita extra: R$200-300/mês
+- **Margem: ~95%** (R$2.000-2.500/médico/ano)
+- Modelo Memed comprovado (R$50M+ fatura/ano)
+
+**D — Pay-per-use microbilling** (Conexa, iClinic):
+- R$1-2 por documento assinado
+- Custo MedCannLab: R$0,30 (volume enterprise)
+- Margem 80% por assinatura
+- 🟡 Fricção UX (médico calcula custo antes de assinar)
+
+**Receita projetada Cenário C (6 meses pós-CNPJ)**:
+- 20 médicos: 60% Básico + 30% Profissional + 10% Premium
+- R$4.200/mês = **R$50.400/ano**
+- Margem líquida: **~R$48.000/ano**
+
+**Veredito**: Cenário C é melhor (95% margem, receita previsível, modelo comprovado).
+
+**Stack pra ativar Cenário C** (quando momento certo):
+- CNPJ ativo (P0 atual)
+- Stripe/MP Connect (split automático)
+- Contrato enterprise com 1 AC: **Soluti Bird ID** recomendada (cloud, sem token)
+- Dev: ~50h (webhook AC + frontend upgrade tier + Stripe webhook)
+
+### N.7 — Estado real RPCs Magno × banco
+
+**11 de 12 RPCs mencionadas existem**:
+- ✓ admin_get_users_status
+- ✓ award_gamification_points
+- ✓ book_appointment_atomic
+- ✓ compute_aec_level (V1.9.104)
+- ✓ create_chat_room_for_patient_uuid
+- ✓ create_video_call_notification
+- ✓ get_available_slots_v3
+- ✓ get_shared_reports_for_doctor
+- ✓ is_admin_user
+- ✓ is_professional_patient_link
+- ✓ share_report_with_doctors
+- ✗ `publish_clinical_report` — **AUSENTE** (revisar se ainda é usada)
+
+### N.8 — 10 Edge Functions ACTIVE (Magno listou 6, todas existem)
+
+```
+1. tradevision-core      v323  ← Core Nôa (V1.9.108+109 deployadas)
+2. get_chat_history      v7    (não no Magno mas operacional)
+3. digital-signature     v53   ← ICP-Brasil/CFM simulação
+4. video-call-request-notification v50
+5. extract-document-text v50   (não no Magno mas operacional)
+6. send-email            v49   ← Resend
+7. wisecare-session      v69   ← Vídeo V4H homolog
+8. google-auth           v17   ⚠️ half-implemented
+9. sync-gcal             v17   ⚠️ half-implemented
+10. video-call-reminders v4    (V1.9.99 reescrita elite 28/04)
+```
+
+### N.9 — Veredito Magno × Banco
+
+```
+✅ 29/30 tabelas Magno EXISTEM
+   (1 removida: `pacientes` legacy = dualidade resolvida)
+✅ 11/12 RPCs existem (1 ausente: publish_clinical_report)
+✅ 10 Edge Functions ACTIVE (6/6 do Magno + 4 evoluções pós-09/02)
+✅ Lock V1.9.95+97+98+99-B preservado em 25+ commits
+✅ Princípios COS v5.0 respeitados (verbatim, fail-closed, fala≠ação)
+✅ 4 features dormentes (PKI, Smart Sched, Wearables, Forum) tem
+   implementação parcial pronta esperando ativação pós-CNPJ
+```
+
+**Magno × realidade**: 95% alinhado. Sistema estruturalmente PRONTO. Falta validação de mercado real.
+
+### N.10 — Roadmap atualizado pós-audit
+
+```
+P0 OPERACIONAL (desbloqueador único)
+  ⏳ Aguardar resposta contador (CNPJ — bloco M)
+
+P0 TÉCNICO (próximo cirúrgico, ~30 min cada)
+  • V1.9.111-C parte 2: frontend loadProfessionals usa specialty real
+  • V1.9.112-A2: notas privadas médico (escolher A/B/C)
+  • V1.9.113: fix is_complete=false (3 phases sem markCompleted)
+
+P0 PRODUTO (visão Pedro articulada hoje)
+  • V1.9.112: fluxo guiado escolha→horários→AEC vinculada
+
+P1 (depois validação 1º paciente externo)
+  • V1.9.114: consolidar 2 check constraints users.gender
+  • V1.9.115: investigar reports não-signed (75/93)
+  • Decidir Cenário C (Plano Premium ICP)
+
+P2 (luxo pré-PMF — esperar)
+  • ICP-Brasil PKI completo (Cenário C subscription)
+  • Smart Scheduling IA (esperar 200+ appointments)
+  • Wearables (esperar pacientes crônicos pagantes)
+  • Forum seed conteúdo (esperar 5+ externos ativos)
+```
+
+### N.11 — Frase âncora N
+
+> *"Audit empírico via PAT mostrou: memória defasada (27→34 users, 70→93 reports),
+>  P0f PT/EN confirmado, V1.9.111-C parte 1 DB aplicada com 10 médicos backfilled,
+>  4 features dormentes (PKI/Smart Sched/Wearables/Forum) têm implementação
+>  parcial pronta esperando paciente externo pagante. Cenário C (Plano Premium
+>  subscription Memed-style) é o ouro: ~95% margem, R$48k/ano em 6 meses pós-CNPJ.
+>  Hoje atacar nada disso vale — ROI = 0 sem CNPJ + sem pagantes externos.
+>  Voltar aos cirúrgicos: V1.9.111-C parte 2 (frontend) + V1.9.113 (is_complete)
+>  + V1.9.112 (fluxo guiado)."*
+
+---
+
+*Bloco N adicionado 2026-05-01 ~01h30 BRT por Claude Opus 4.7 (1M context).
+Audit Supabase real via PAT + análise 4 features dormentes + modelo monetização ICP.
+2 migrations aplicadas (V1.9.111-C parte 1 + test data Pedro/Carolina).
+Próximo: V1.9.111-C parte 2 frontend (cirúrgico, ~15 min).*
