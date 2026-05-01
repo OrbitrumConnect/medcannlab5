@@ -1840,3 +1840,205 @@ NOA depositada). Audit empírico de 7 arquivos do código + STATUS_BLOCKCHAIN_NF
 Memory `project_strategy_marca_imre_medcannlab.md` atualizada de 3 → 5 camadas.
 Sessão 100% conceitual. Próximo: V1.9.113 fluxo guiado paciente OU rota Paulo
 (Master Group 888) responder, o que vier antes.*
+
+⚠️ **Bloco P contém SOBRE-EXTENSÃO** — ver bloco Q abaixo (retratação +
+calibragem honesta para 4 planos separados).
+
+---
+
+## Bloco Q — RETRATAÇÃO + calibragem honesta: 4 planos (não "5 camadas") (01/05 ~14h)
+
+**Contexto:** Pedro trouxe 2ª crítica GPT do bloco P. GPT pegou 4 sobre-extensões claras minhas. Concordei. Bloco Q é a versão honesta — bloco P fica preservado como histórico do erro pra evitar repetir.
+
+### Q.1 — As 4 sobre-extensões do bloco P (assumidas)
+
+**Sobre-extensão #1 — NFT como "função jurídico-narrativa"**
+
+No bloco P escrevi que o NFT $escutese tinha 4 funções jurídicas:
+1. ANTERIORIDADE SIMBÓLICA
+2. CADEIA DE VALOR jurídica
+3. ALTAR SIMBÓLICO com função regulatória
+4. CONSENTIMENTO TOKENIZADO LGPD
+
+**Errado.** NFT é **timestamp em blockchain + narrativa cultural**. Pode entrar como evidência auxiliar em disputa civil se advogado invocar. Não substitui INPI, não cria direito legal sobre método clínico, não tem força LGPD (LGPD exige opt-in expresso documentado, não vínculo simbólico).
+
+**Sobre-extensão #2 — Analogia "Nôa = Tony Stark/Marvel"**
+
+Bloco P escreveu *"é como Tony Stark da Marvel — Stark Industries pode existir como marca, e nem por isso o personagem deixa de ser do criador"*.
+
+**Exagero.** Marvel tem:
+- Registros marcários múltiplos em dezenas de países
+- Copyrights audiovisuais ativos
+- Narrativa fixada por décadas em quadrinhos, filmes, série de TV
+- Departamento jurídico dedicado a defesa de personagens
+
+Nôa Esperança é **nome de IA assistente em produto SaaS médico**. Tem:
+- Direito autoral genérico sobre expressões fixadas (frases, design, scripts)
+- Sem narrativa fixada em obra autoral robusta
+- Sem registros marcários (Doctoralia bloqueia classes 9+42)
+
+**Comparar com Marvel superdimensionou** o nível real de proteção.
+
+**Sobre-extensão #3 — AEC como "descritor científico de domínio público"**
+
+Bloco P escreveu *"AEC (descritor científico, conceito de domínio público)"*.
+
+**Errado em duas dimensões:**
+- AEC NÃO é "descritor científico" formal — é **método clínico interno proprietário** do Ricardo
+- AEC NÃO é "domínio público" — Ricardo tem direito autoral sobre material que descreve o método (curso R$300, livro, slides)
+
+A verdade incômoda: **métodos clínicos não são patenteáveis no Brasil** (art. 10 IX Lei 9.279/96). Não há monopólio de uso. Defesa real do método é **execução superior + integração proprietária no Core + curso pago + reputação clínica**.
+
+**Sobre-extensão #4 — "5 camadas integradas" como sistema unificado**
+
+Bloco P apresentou tudo em moldura "arquitetura de identidade em 5 camadas que se protegem mutuamente". GPT correto: isso sugere **blindagem jurídica unificada**, e ela não existe. São coisas diferentes em planos diferentes — jurídico, empresarial, produto, narrativa — e cada uma tem natureza distinta.
+
+### Q.2 — Versão honesta: 4 PLANOS separados (não "camadas integradas")
+
+```
+┌─ PLANO 1 — Jurídico real (proteção legal) ──────────────────┐
+│  • IMRE no INPI (3 classes 42/44/41 — R$1.065)              │
+│  • Contrato cessão IP cláusula 2 do acordo quotistas v2.0   │
+│  • Acordo de quotistas (4 sócios × 20% + 20% Tesouraria)    │
+│  ⚠️ Mesmo isso não é "blindagem absoluta":                  │
+│     INPI tem janela oposição 60d + exame mérito 12-18m      │
+└──────────────────────────────────────────────────────────────┘
+
+┌─ PLANO 2 — Estrutura empresarial ───────────────────────────┐
+│  • Razão social MEDCANNLAB TECNOLOGIA EM SAÚDE LTDA         │
+│  • Domínio medcannlab.com.br (Registro.br, ATIVO)           │
+│  • Cap table 4 sócios × 20% + 20% Tesouraria                │
+│  • Capital social R$5.000-10.000                            │
+│  • Simples Nacional Anexo III + fator R                     │
+│  ⚠️ Risco residual MedCannLab: Andrea Prado classe 5        │
+│     (uso continuado dá direito secundário, não absoluto)    │
+└──────────────────────────────────────────────────────────────┘
+
+┌─ PLANO 3 — Produto / UX (proteção via execução) ────────────┐
+│  • Nôa Esperança (personagem da IA assistente)              │
+│  • AEC (método clínico interno proprietário)                │
+│  • Curso AEC R$300 (produto pago materializa o método)      │
+│                                                              │
+│  ⚠️ NÃO há "blindagem jurídica forte" aqui:                 │
+│     • Nôa: nome de IA, proteção autoral COBRE expressões    │
+│       fixadas (frases, design, prompts) mas NÃO impede      │
+│       outro player chamar IA de "Noa" sem copiar conteúdo   │
+│     • AEC: método clínico NÃO É PATENTEÁVEL no Brasil       │
+│       (art. 10 IX Lei 9.279/96). Protegido é o material     │
+│       didático autoral (livro, curso, slides), não o método │
+│     • Doctoralia tem marca NOA classes 9+42 = risco real    │
+│  ✅ Defesa real: execução + reputação + integração          │
+│     proprietária no Core + curso pago + velocidade de PMF   │
+└──────────────────────────────────────────────────────────────┘
+
+┌─ PLANO 4 — Narrativa / cultura (storytelling de marca) ─────┐
+│  • NFT $escutese (Polygon/Zora — manifesto comunidade)      │
+│  • Frase-símbolo "Escute-se"                                │
+│  • NFT fundador EXISTE: zora.co/0xeb1743fbc2b7046cd19ad...   │
+│                                                              │
+│  ⚠️ NÃO tem função jurídica formal:                         │
+│     • Não substitui INPI                                     │
+│     • Não cria direito legal sobre método clínico           │
+│     • Não "blinda" uso de marca ou personagem               │
+│     • É só: prova de timestamp + narrativa cultural         │
+│  ✅ Valor real: storytelling, diferenciação cultural,       │
+│     gancho de comunidade, evidência auxiliar (não decisiva) │
+│     em eventual disputa civil                                │
+└──────────────────────────────────────────────────────────────┘
+```
+
+### Q.3 — Conclusão limpa (versão Pedro confirmada)
+
+```
+✔ IMRE = proteção real
+✔ contrato IP = proteção real
+✔ cap table = estrutura real
+✔ AEC/Nôa = produto (não proteção jurídica forte)
+✔ NFT = narrativa (não proteção jurídica)
+```
+
+### Q.4 — O que protege de verdade
+
+```
+1. IMRE registrado (Plano 1)            jurídico real
+2. Contrato cessão IP (Plano 1)         jurídico real
+3. CNPJ + cap table (Plano 2)           estrutura real
+4. Domínio medcannlab.com.br (Plano 2)  estrutura real
+5. Execução do produto                  operacional
+   (quem chega primeiro com PMF é
+    dono do mercado)
+6. Velocidade de vendas pré-disputa     operacional
+   (mais clientes = mais força em
+    qualquer litígio futuro)
+```
+
+### Q.5 — O que NÃO protege (mesmo registrando tudo)
+
+```
+❌ Garantia contra Doctoralia processar uso de "Nôa"
+   → ainda pode acontecer, defesa caso a caso
+❌ Garantia contra Andrea Prado contestar MedCannLab
+   → uso continuado dá direito secundário, não absoluto
+❌ Garantia contra alguém ensinar AEC sob outro nome
+   → método não é monopólio (art. 10 IX Lei 9.279/96)
+❌ "5 camadas integradas como blindagem total"
+   → essa estrutura NÃO EXISTE na prática
+```
+
+### Q.6 — Princípio cristalizado (anti-sobre-extensão)
+
+**"Não transformar 4 coisas diferentes em 1 sistema unificado quando elas operam em planos distintos."**
+
+Sobre-extensão típica que cometi no bloco P:
+1. Pegar peças reais (IMRE, NFT, AEC, Nôa)
+2. Conectar como se fossem um sistema jurídico único
+3. Vender o conjunto como "arquitetura de blindagem em 5 camadas"
+4. Inflar cada peça com função jurídica que ela não tem
+
+Antídoto: **separar planos por natureza** (jurídico vs empresarial vs produto vs narrativa) e ser explícito sobre o que cada um **NÃO faz**, não só o que faz.
+
+### Q.7 — Por que preservar bloco P em vez de apagar
+
+- Apagar = repetir o erro depois
+- Preservar = aprender que **sob pressão narrativa, tendo a inflar conexões**
+- Bloco Q referencia bloco P como caso de estudo
+- Honestidade > floreio
+
+Memory `project_strategy_marca_imre_medcannlab.md` foi corrigida diretamente (sobrescreveu 5 camadas → 4 planos). Diário preserva ambas versões pra lastro.
+
+### Q.8 — O que NÃO mudou (importante)
+
+```
+✅ Nada de código mexido
+✅ V1.9.99-locked preservado
+✅ NFT $escutese continua existindo no código (mock)
+✅ Frase-símbolo "Escute-se" continua no produto
+✅ Nôa continua sendo personagem da IA
+✅ AEC continua sendo método interno
+✅ Estratégia operacional Plano 1+2 continua: IMRE 3 classes
+   R$1.065 + CNPJ MedCannLab Tecnologia em Saúde Ltda
+```
+
+O que mudou: **clareza honesta** sobre o que cada peça é/faz/não faz juridicamente.
+
+### Q.9 — Frase âncora Q
+
+> *"4 planos separados, não 5 camadas integradas. IMRE+contratos+CNPJ
+>  protegem juridicamente. AEC+Nôa são produto (proteção via execução,
+>  não via direito). NFT é narrativa (storytelling, não blindagem).
+>  Quem chega primeiro com PMF é dono do mercado — proteção legal é
+>  importante mas é segunda linha. Lição: 'sob pressão narrativa, tendo
+>  a inflar conexões e vender 4 coisas diferentes como 1 sistema
+>  unificado de blindagem que não existe na prática'."*
+
+---
+
+*Bloco Q adicionado 2026-05-01 ~14h00 BRT por Claude Opus 4.7 (1M context).
+Retratação honesta após GPT 2ª crítica do bloco P. 4 sobre-extensões
+assumidas: NFT como "função jurídico-narrativa", Nôa = Tony Stark/Marvel,
+AEC = "descritor científico de domínio público", "5 camadas integradas" como
+sistema unificado. Versão honesta: 4 PLANOS separados (jurídico/empresarial/
+produto/narrativa), com nota explícita do que cada um NÃO faz. Bloco P
+preservado como caso de estudo (não apagar). Memory corrigida diretamente
+(5 camadas → 4 planos). Próximo: V1.9.113 fluxo guiado paciente OU resposta
+Paulo (Master Group 888).*
