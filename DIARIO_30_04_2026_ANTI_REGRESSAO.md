@@ -1084,3 +1084,182 @@ P3 (fora desta sessão)
 3 commits noite-2 (V1.9.111-A+B, V1.9.111-D, V1.9.112-A1) em ~1h.
 1 memória nova: project_analisar_paciente_feature_mapeada.md.
 Próximo: smoke Pedro + V1.9.112-A2 (notas) ou V1.9.111-C (specialty DB).*
+
+---
+
+## Bloco M — Negociação contador / abertura CNPJ (30/04 ~21h30)
+
+**Contexto:** Em paralelo aos PRs técnicos da noite, Pedro abriu negociação com despachante documentalista pra abertura do CNPJ. Crítico desbloqueador operacional (memória investment_memo_28_04 já flagrava como P0 não-técnico).
+
+### M.1 — Proposta recebida
+
+**Empresa**: Master Group 888 Assessoria Empresarial
+**Contato**: Paulo Goulart — paulogoulart@mastergroup888.com.br — (21) 97279-7069
+**Endereço**: Rua Santa Clara 245/603, Copacabana, RJ
+**Validade**: 15/05/2026
+
+**Escopo proposto**:
+- Constituição de Sociedade Empresária Limitada
+- Regime: Simples Nacional
+- Sede: Rio de Janeiro (a definir)
+
+**CNAEs propostos** (incompleto — ver M.3):
+- 6204-0/00 — Consultoria em TI
+- 6319-4/00 — Portais, provedores de conteúdo internet
+- 6209-1/00 — Suporte técnico TI
+- 7490-1/04 — Atividades de intermediação e agenciamento
+- 8599-6/04 — Treinamento profissional
+- 8599-6/99 — Outras atividades de ensino
+
+**Custos propostos**:
+| Item | Valor |
+|---|---|
+| Honorários despachante | R$ 1.400 (50/50 split antes/depois) |
+| Custas estimadas | R$ 2.000 |
+| Total inicial | **~R$ 3.400** one-shot |
+| Mensalidade contábil | **NÃO INCLUSA** (proposta separada) |
+
+**Prazo**: 15 dias úteis após assinatura do contrato social.
+
+### M.2 — Análise técnica (Claude review)
+
+**3 problemas identificados antes de aceitar**:
+
+#### 🚨 PROBLEMA CRÍTICO — CNAE médico ausente
+
+Lista é **só TI + Educação genérica**. **Falta CNAE 8630-5/03 (Atividade médica ambulatorial restrita a consultas)**.
+
+Sem 8630-5/03:
+- ✅ Pode operar como **plataforma intermediadora** (7490-1/04 cobre): médico tem CNPJ próprio, MedCannLab pega só fee
+- ❌ **NÃO pode** faturar consulta médica diretamente
+- ❌ Telemedicina cai em zona cinza
+
+**Contexto do modelo de negócio (3 camadas)**:
+- Tier 1: Equipe Oficial Ricardo+Eduardo (vinculados — provavelmente prestadores)
+- Tier 2: Profissionais Parceiros (cada um com CNPJ próprio)
+- Tier 3: Equipes DO médico parceiro
+
+Modelo híbrido C → **PRECISA do CNAE médico** pra Equipe Oficial.
+
+#### ⚠️ ATENÇÃO — Simples Nacional Anexo III vs V
+
+Com CNAE médico, pode cair em **Anexo V (15,5% inicial)** vs Anexo III (6% inicial). Diferença gigante.
+
+Pra ficar Anexo III com médico = precisa **fator R** (folha + pro-labore ≥28% receita).
+
+Cálculo Pedro (receita estimada R$ 60-120k ano 1):
+- Pro-labore mínimo R$ 1.412/mês cobre R$ 60k receita
+- Pro-labore mínimo R$ 2.800/mês cobre R$ 120k receita
+
+#### ⚠️ ATENÇÃO — Mensalidade contábil pendente
+
+Proposta atual = só abertura. Falta proposta separada com:
+- Mensalidade Simples (mercado RJ R$ 350-600)
+- DAS, DCTFWeb, eSocial inclusos?
+- Folha pro-labore?
+
+### M.3 — Mensagem enviada ao contador (~21h30)
+
+Pedro mandou via WhatsApp/email texto pré-elaborado com 3 perguntas:
+
+```
+1. CNAE médico 8630-5/03 — preciso adicionar?
+2. Anexo III vs V — como manter Anexo III via fator R?
+3. Mensalidade contábil — proposta separada (DAS, DCTFWeb, eSocial,
+   pro-labore, sem CLT)
+```
+
+Tom: profissional, mostra que estudou a proposta, sinaliza intenção
+de fechar ("pretendo seguir com vocês"), mantém porta aberta.
+
+### M.4 — Sinais a monitorar na resposta dele
+
+| Resposta | Veredito |
+|---|---|
+| "Sim adiciono CNAE + explico Anexo + mando mensalidade hoje" | 🟢 contador BOM — fechar |
+| "Vamos ver depois" / "não precisa disso" | 🚩 amador — segunda opinião |
+| "Cobro a parte cada esclarecimento" | 🚩 fugir |
+| Demora >48h pra resposta simples | 🟡 ponderar |
+
+### M.5 — Pendências SUAS (Pedro) antes de assinar
+
+```
+☐ 3 nomes de empresa pra escolher
+   Sugestões: "MedCannLab Tecnologia", "MedCannLab Saúde Digital",
+              "MedCannLab Plataforma"
+☐ Endereço sede RJ
+   Pode ser coworking (Cubo, WeWork) se aceita CNPJ
+☐ Capital social
+   Sugestão: R$ 5.000-10.000 inicial
+☐ Estado civil + regime
+   Se casado em comunhão universal e sócio for esposa = vedado
+☐ Sócios definir
+   Só você ou Ricardo/Eduardo/João entram?
+```
+
+### M.6 — Estado atual do acordo (snapshot 30/04 21h30)
+
+```
+Status: NÃO ASSINADO — aguardando esclarecimentos
+Próximo passo: resposta do Paulo às 3 perguntas
+ETA realista: 24-48h (se contador competente)
+
+Decisões pendentes:
+  - Definir nomes empresa (Pedro)
+  - Definir endereço sede (Pedro)
+  - Definir capital social (Pedro)
+  - Decidir se sócios incluem Ricardo/Eduardo/João (Pedro × eles)
+  - Aceitar/recusar proposta após resposta contador
+
+Custos previstos (até abertura completa):
+  - Despachante: R$ 1.400
+  - Custas (JUCERJA + alvará + e-CNPJ): ~R$ 2.000
+  - Total one-shot: ~R$ 3.400
+  - Mensalidade contábil (estimada): R$ 350-450/mês
+  - DAS Simples (estimada 6% Anexo III): R$ 300-720/mês conforme
+    receita real
+
+Risco/oportunidade:
+  - Se contador resolver bem CNAE médico → fecha em até 15 dias úteis
+  - Sem CNPJ ativo → MedCannLab não fatura externos legalmente
+  - João Vidal destrava esse passo (lado institucional, mencionado em
+    project_estado_28_04_2026_pos_lock_v1997)
+```
+
+### M.7 — Ligação com roadmap MedCannLab
+
+**Por que abertura CNPJ é P0 desbloqueador**:
+
+```
+ANTES CNPJ ativo:
+  ❌ Não pode faturar consultas externas
+  ❌ Resend domínio pode estar limitado
+  ❌ Pix Mercado Pago / Stripe travados
+  ❌ Auth_user_id remap (P0 técnico) sem urgência operacional
+  ❌ Subscription_plans cadastrados zerados (Med Cann 150/250/350)
+
+DEPOIS CNPJ ativo:
+  ✅ Pode atender 1º paciente externo pagante
+  ✅ Subscription_plans ativam
+  ✅ Split 90/10 começa a funcionar (platform_fee_pct = 0.10)
+  ✅ Validação produto-mercado real começa
+  ✅ Toda dívida técnica P0 ganha urgência REAL
+```
+
+Memória investment_memo_28_04: *"commits que não destravam paciente
+externo = dívida cognitiva"*. CNPJ destrava TODOS de uma vez.
+
+### M.8 — Frase âncora M
+
+> *"Proposta R$ 3.400 one-shot do Master Group 888 está 75% boa.
+>  Faltam 3 esclarecimentos críticos: CNAE médico, Anexo III vs V,
+>  mensalidade. Mensagem enviada com 3 perguntas técnicas que vão
+>  filtrar contador bom × amador. Estado: aguardando resposta.
+>  Quando CNPJ ativar, todos os P0 técnicos ganham urgência real
+>  e produto encontra mercado pela 1ª vez."*
+
+---
+
+*Bloco M adicionado 2026-04-30 ~21h45 BRT por Claude Opus 4.7 (1M context).
+Análise técnica de proposta despachante + texto pronto enviado.
+Próximo: monitorar resposta Paulo + decidir após esclarecimentos.*
