@@ -90,8 +90,13 @@ const ProfessionalMyDashboard: React.FC = () => {
     patientBirthDate?: string | null
     patientGender?: string | null
   } | null>(null)
-  const [analysisPanelCollapsed, setAnalysisPanelCollapsed] = useState<Record<string, boolean>>({ evolution: false })
+  const [analysisPanelCollapsed, setAnalysisPanelCollapsed] = useState<Record<string, boolean>>({ evolution: false, privateNotes: false })
   const [scanningPatientAvatarUrl, setScanningPatientAvatarUrl] = useState<string | null>(null)
+
+  // V1.9.112-A2: notas privadas do médico (state local + debounced save)
+  const [privateNotesDraft, setPrivateNotesDraft] = useState<string>('')
+  const [privateNotesSaving, setPrivateNotesSaving] = useState<boolean>(false)
+  const [privateNotesLastSaved, setPrivateNotesLastSaved] = useState<string | null>(null)
 
   // KPIs unificados (3 camadas — mesmo do Dr. Eduardo / dashboard unificado)
   const [kpisUnified, setKpisUnified] = useState({
@@ -420,7 +425,8 @@ const ProfessionalMyDashboard: React.FC = () => {
     const minScanTime = 1500
 
     const fetchData = async () => {
-      const assessmentsPromise = supabase.from('clinical_assessments').select('id, created_at, data, status').eq('patient_id', patientId).eq('doctor_id', user?.id).order('created_at', { ascending: false }).limit(10)
+      // V1.9.112-A2: SELECT incluindo doctor_private_notes (notas privadas do médico)
+      const assessmentsPromise = supabase.from('clinical_assessments').select('id, created_at, data, status, doctor_private_notes, doctor_private_notes_updated_at, doctor_private_notes_updated_by').eq('patient_id', patientId).eq('doctor_id', user?.id).order('created_at', { ascending: false }).limit(10)
       let appointmentsRes = await supabase.from('appointments').select('id, appointment_date, status, notes').eq('patient_id', patientId).eq('professional_id', user?.id).order('appointment_date', { ascending: true })
       if (appointmentsRes.error) {
         appointmentsRes = await supabase.from('appointments').select('id, appointment_date, status, notes').eq('patient_id', patientId).eq('doctor_id', user?.id).order('appointment_date', { ascending: true })
@@ -477,10 +483,59 @@ const ProfessionalMyDashboard: React.FC = () => {
     const data = await Promise.all([dataPromise, timerPromise]).then(([d]) => d)
     clearInterval(messageInterval)
     setAnalysisData(data)
+    // V1.9.112-A2: inicializa draft de notas privadas com texto da última AEC (se houver)
+    const lastAssessment = (data.assessments || [])[0]
+    setPrivateNotesDraft((lastAssessment as any)?.doctor_private_notes || '')
+    setPrivateNotesLastSaved((lastAssessment as any)?.doctor_private_notes_updated_at || null)
     setAnalysisScanning(false)
     setScanningPatientAvatarUrl(null)
     setAnalysisPanelOpen(true)
   }
+
+  // V1.9.112-A2: salva notas privadas com debounce 1.5s + auditoria leve
+  const savePrivateNotes = async (notes: string) => {
+    if (!analysisData?.assessments?.[0]?.id || !user?.id) return
+    const assessmentId = (analysisData.assessments[0] as any).id
+    setPrivateNotesSaving(true)
+    try {
+      const nowIso = new Date().toISOString()
+      // V1.9.112-A2: cast pra any porque types.ts ainda não inclui colunas
+      // novas do Supabase (3 colunas adicionadas via Management API hoje).
+      // Próximo type sync regenera. RLS protege via doctor_id no banco.
+      const { error } = await supabase
+        .from('clinical_assessments')
+        .update({
+          doctor_private_notes: notes || null,
+          doctor_private_notes_updated_at: nowIso,
+          doctor_private_notes_updated_by: user.id
+        } as any)
+        .eq('id', assessmentId)
+        .eq('doctor_id', user.id) // RLS reforço client-side
+      if (error) {
+        console.warn('[V1.9.112-A2] Erro ao salvar notas privadas:', error.message)
+      } else {
+        setPrivateNotesLastSaved(nowIso)
+      }
+    } catch (e) {
+      console.warn('[V1.9.112-A2] Exceção ao salvar notas:', (e as Error).message)
+    } finally {
+      setPrivateNotesSaving(false)
+    }
+  }
+
+  // V1.9.112-A2: debounce 1.5s pra autosave
+  useEffect(() => {
+    if (!analysisPanelOpen || !selectedPatientForAnalysis) return
+    const handler = setTimeout(() => {
+      const lastAssessment = analysisData?.assessments?.[0]
+      const currentValue = (lastAssessment as any)?.doctor_private_notes || ''
+      if (privateNotesDraft !== currentValue) {
+        savePrivateNotes(privateNotesDraft)
+      }
+    }, 1500)
+    return () => clearTimeout(handler)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [privateNotesDraft])
 
   // Silhueta humanóide (estilo Analytics e Evolução do dashboard do paciente) com avatar/inicial na cabeça
   const HumanoidAvatar = ({ avatarUrl, initial, size = 'md' }: { avatarUrl?: string | null; initial: string; size?: 'xs' | 'sm' | 'md' }) => {
@@ -899,6 +954,43 @@ const ProfessionalMyDashboard: React.FC = () => {
                   </div>
                 )
               })()}
+
+              {/* V1.9.112-A2: Notas privadas do médico (collapsible, autosave 1.5s) */}
+              {analysisData.assessments && analysisData.assessments.length > 0 && (
+                <div className="rounded-lg border border-purple-500/20 bg-gradient-to-br from-purple-500/5 to-transparent overflow-hidden">
+                  <button
+                    type="button"
+                    onClick={() => setAnalysisPanelCollapsed(prev => ({ ...prev, privateNotes: !prev.privateNotes }))}
+                    className="w-full px-3 py-2 flex items-center justify-between text-left"
+                  >
+                    <span className="text-xs font-medium text-white flex items-center gap-2">
+                      <Pencil className="w-3.5 h-3.5 text-purple-400" />
+                      Notas privadas do médico
+                      {privateNotesSaving && <span className="text-[9px] text-purple-300">salvando...</span>}
+                      {!privateNotesSaving && privateNotesDraft && privateNotesLastSaved && (
+                        <span className="text-[9px] text-slate-500">
+                          salvo {new Date(privateNotesLastSaved).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                        </span>
+                      )}
+                    </span>
+                    <ChevronDown className={`w-3.5 h-3.5 text-slate-400 transition-transform ${analysisPanelCollapsed.privateNotes ? '' : 'rotate-180'}`} />
+                  </button>
+                  {!analysisPanelCollapsed.privateNotes && (
+                    <div className="px-3 pb-3">
+                      <textarea
+                        value={privateNotesDraft}
+                        onChange={(e) => setPrivateNotesDraft(e.target.value)}
+                        placeholder="Anotações pessoais sobre o paciente (visível apenas pra você)..."
+                        rows={4}
+                        className="w-full bg-slate-900/60 border border-purple-500/20 rounded-md px-2.5 py-2 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-purple-500/40 resize-none"
+                      />
+                      <p className="text-[9px] text-slate-500 mt-1">
+                        Salvamento automático após 1.5s. Visível apenas pelo médico responsável (RLS).
+                      </p>
+                    </div>
+                  )}
+                </div>
+              )}
 
               {/* Avaliação clínica */}
               <div className="rounded-lg border border-white/10 bg-white/[0.03] overflow-hidden">
