@@ -193,9 +193,11 @@ const PatientAppointments: React.FC = () => {
         // estão em EN — fix .in(['profissional', 'professional']) cobre ambos
         // sem incluir admins. Ricardo tem 2 UUIDs separados (profissional
         // REAL + admin); filtro captura o UUID clínico correto.
+        // V1.9.111-C parte 2: SELECT specialty (coluna criada na parte 1)
+        // pra dropdown de especialidades populando real do banco
         const { data, error } = await supabase
           .from('users')
-          .select('id, name, email, type')
+          .select('id, name, email, type, specialty')
           .in('type', ['profissional', 'professional'])
           .order('name', { ascending: true })
 
@@ -205,25 +207,31 @@ const PatientAppointments: React.FC = () => {
         }
 
         // Mapear dados do banco para ProfessionalCard
-        const mapped: ProfessionalCard[] = data.map((prof: any, index: number) => {
+        const mapped: ProfessionalCard[] = data.map((prof: any) => {
           const isRicardo = prof.email?.includes('ricardo') || prof.name?.toLowerCase().includes('ricardo')
           const isEduardo = prof.email?.includes('eduardo') || prof.name?.toLowerCase().includes('eduardo')
 
           if (isRicardo) {
             const fallback = FALLBACK_PROFESSIONALS.find(f => f.id === 'ricardo-valenca')
-            if (fallback) return { ...fallback, id: prof.id }
+            if (fallback) {
+              // V1.9.111-C: prefere specialty do banco se preenchida
+              return { ...fallback, id: prof.id, specialty: prof.specialty || fallback.specialty }
+            }
           }
           if (isEduardo) {
             const fallback = FALLBACK_PROFESSIONALS.find(f => f.id === 'eduardo-faveret')
-            if (fallback) return { ...fallback, id: prof.id }
+            if (fallback) {
+              return { ...fallback, id: prof.id, specialty: prof.specialty || fallback.specialty }
+            }
           }
 
-          // V1.9.111-A: usa PARTNER_ACCENT único (não cycling) pra padronizar visual
+          // V1.9.111-A: usa PARTNER_ACCENT único pra padronizar visual.
+          // V1.9.111-C parte 2: usa prof.specialty real do banco (fallback Clínica Geral).
           return {
             id: prof.id,
             name: prof.name || 'Profissional',
-            role: 'Especialista',
-            specialty: 'Clínica Geral',
+            role: prof.specialty || 'Especialista',
+            specialty: prof.specialty || 'Clínica Geral',
             rating: '4.8',
             excerpt: 'Profissional disponível para consultas na plataforma MedCannLab.',
             accentClasses: PARTNER_ACCENT.accentClasses,
