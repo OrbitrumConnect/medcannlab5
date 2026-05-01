@@ -1646,3 +1646,197 @@ PRÓXIMO MÊS:
 Estratégia jurídica calibrada após GPT crítica + acordo quotistas v2.0
 real localizado. Sessão 100% conceitual. Próximo: V1.9.113 (fix
 is_complete=false) — bug latente do audit empírico bloco N.*
+
+---
+
+## Bloco P — Reintegração NFT $escutese: arquitetura final 5 camadas (01/05 ~13h)
+
+**Contexto:** Após bloco O fechar estratégia jurídica em 3 camadas, Ricardo trouxe dúvida via GPT (estava abalado com Doctoralia ter "NOA" depositada no INPI). Audit empírico do repo + cruzamento com noa-original-backup revelou que **a arquitetura completa de identidade tem 5 camadas, não 3** — e o NFT $escutese já existe como ativo simbólico no projeto desde antes.
+
+### P.1 — Por que 3 camadas viraram 5
+
+A versão GPT-calibrada do bloco O simplificou pra **3 camadas operacionais**:
+1. CNPJ (jurídico)
+2. Marca INPI IMRE (proteção)
+3. Brand público MedCannLab (mercado)
+
+Mas omitiu **2 camadas que já existem empiricamente no projeto**:
+- **Personagem Nôa Esperança** (criação Ricardo, lógica autoral ≠ marcária)
+- **NFT $escutese** (ativo simbólico já mintado em Polygon)
+
+Essas 2 camadas não competem com IMRE/MedCannLab — são paralelas e não-marcárias. Não precisam de registro INPI, mas precisam estar **explícitas na arquitetura** pra evitar confusão futura (que foi exatamente o que aconteceu com Ricardo achando que perdeu Nôa pra Doctoralia).
+
+### P.2 — Arquitetura final consolidada
+
+```
+┌──────────────────────────────────────────────────────────────────┐
+│ 5 CAMADAS DE IDENTIDADE — MedCannLab/IMRE                         │
+├──────────────────────────────────────────────────────────────────┤
+│                                                                   │
+│ Camada 1 — Marca REGISTRADA INPI:        IMRE                    │
+│            • 3 classes (42/44/41)                                 │
+│            • R$ 1.065 + agente PI R$ 500-1.000                    │
+│            • Titular: CNPJ MedCannLab                             │
+│            • Status: a depositar pós-CNPJ ativo                   │
+│                                                                   │
+│ Camada 2 — Marca PÚBLICA / domínio:       MedCannLab             │
+│            • medcannlab.com.br (Registro.br, ATIVO)               │
+│            • Uso continuado dá direito secundário                 │
+│            • Razão social: MEDCANNLAB TECNOLOGIA EM SAÚDE LTDA   │
+│            • Risco residual: Andrea Prado classe 5 (controlado)  │
+│                                                                   │
+│ Camada 3 — PERSONAGEM:                    Nôa Esperança          │
+│            • Criação Dr. Ricardo Valença (autoral)                │
+│            • NÃO registrável INPI (Doctoralia depositou NOA)      │
+│            • Direito autoral cobre (lei 9.610/98)                 │
+│            • Equivalente narrativo a Tony Stark/Marvel            │
+│            • Uso continuado garantido na plataforma               │
+│                                                                   │
+│ Camada 4 — MÉTODO clínico:                AEC                    │
+│            • Arte da Entrevista Clínica (autoral Ricardo)         │
+│            • NÃO registrável (A&C/Assoc. Empregados RJ ocupam)   │
+│            • Descritor científico, conceito de domínio público   │
+│            • Curso pago AEC R$300 já cadastrado                   │
+│                                                                   │
+│ Camada 5 — MANIFESTO cultural / NFT:      $escutese              │
+│            • Polygon (Zora) — NFT fundador EXISTE                 │
+│            • zora.co/0xeb1743fbc2b7046cd19ad66ecb9d6ff892d9d8c8   │
+│            • Anterioridade simbólica em blockchain                │
+│            • Manifesto comunidade fundadora                       │
+│            • NÃO precisa registro INPI (já é registro público)   │
+│                                                                   │
+└──────────────────────────────────────────────────────────────────┘
+```
+
+### P.3 — Status empírico do NFT $escutese no código (auditado 01/05 ~13h)
+
+**Implementações ATIVAS (V1.9.99-locked snapshot):**
+
+| Arquivo | Linhas | Função | Status |
+|---|---|---|---|
+| `src/components/ClinicalReports.tsx` | 589-598, 1014-1018, 1140-1152, 1819-1827, 1853-1889 | Botão "Gerar NFT" + modal + token+hash no relatório | 🟡 Mock (NFT-${Date.now()}) |
+| `src/components/JourneyManualModal.tsx` | 130-133 | Vínculo "Consentimento Informado & NFT Escute-se" no agendamento | 🟢 Texto ativo |
+| `src/pages/Gamificacao.tsx` | 204-211 | NFT Escute-se #001 como fundador da comunidade | 🟢 Catálogo populado |
+| `src/pages/CidadeAmigaDosRins.tsx` | 70-71, 1013-1015 | "Escute-se Points" como recompensa | 🟢 Catálogo populado |
+| `src/lib/noaCommandSystem.ts` | 168-198 | Comando `generateNFT(reportId)` com Polygon | 🟡 Wrapper mock |
+| `src/lib/patientDashboardAPI.ts` | 28-30, 186-191 | Interface blockchain `polygon` no NFTHash | 🟡 Tipo definido |
+| `docs/guides/STATUS_BLOCKCHAIN_NFT.md` | doc completa | Roadmap FASE 1/2/3 implementação | 📄 Plano |
+
+**NFT fundador real:**
+- URL: https://zora.co/0xeb1743fbc2b7046cd19ad66ecb9d6ff892d9d8c8
+- Blockchain: Polygon
+- Status: ATIVO no Zora (mintado, público, verificável)
+- Backup: `noa-original-backup/docs/LOGIN_NFT_ESCUTESE_IMPLEMENTADO.md`
+
+**Frase-símbolo oficial:**
+
+> *"Escute algo em você que fale sobre essa sensação de ser escutado.
+>  Este NFT é um gesto de confiança na cadeia de valor que construiu
+>  essa plataforma."*
+
+### P.4 — Por que o NFT $escutese é ativo estratégico (mesmo pré-PMF)
+
+| Função | Valor concreto |
+|---|---|
+| **Anterioridade simbólica** | Timestamp imutável em Polygon comprova "escute-se" como manifesto da comunidade ANTES de qualquer disputa marcária futura |
+| **Cadeia de valor** | Registro de pertencimento dos founders (Ricardo + colaboradores fundadores) — gesto de confiança, não especulação |
+| **Altar simbólico** | Alinha com método AEC (escutar é o ato fundador) — consistência narrativa entre tech (NFT) + clínica (AEC) + IA (Nôa) |
+| **Consentimento tokenizado** | Patient onboarding já cita NFT como camada de governança (`JourneyManualModal:130-133`) — gancho LGPD futuro |
+| **Diferenciação cultural** | MedCannLab não é só "mais um SaaS médico" — tem ativo simbólico-cultural que VC tech não consegue copiar trivialmente |
+
+### P.5 — O que NÃO mudar agora (decisão pré-PMF)
+
+```
+✅ MANTER NFT $escutese como ativo simbólico (já existe no Zora)
+✅ MANTER referências no código (V1.9.99-locked não regride)
+✅ MANTER frase-símbolo no doc oficial
+✅ MANTER vínculo "Consentimento + NFT" no JourneyManualModal
+
+❌ NÃO mintar novos NFTs (Polygon integration real fica FASE 2)
+❌ NÃO trocar mock "Gerar NFT" por blockchain real (não justifica pré-PMF)
+❌ NÃO registrar $escutese no INPI (NFT já é registro público)
+❌ NÃO criar produto pago $escutese ainda (especulação prematura)
+❌ NÃO mexer no NFT fundador no Zora (anterioridade preservada)
+```
+
+### P.6 — Roadmap pós-PMF (quando NFT real fizer sentido)
+
+```
+GATILHOS pra ativar FASE 2 do NFT (blockchain real):
+  • 50+ pacientes externos pagantes (PMF parcial)
+  • Demanda de comunidade fundadora explícita
+  • Recurso pra integração Web3 (~R$15-30k dev + auditoria)
+  • Decisão sócios em assembleia (cláusula governança)
+
+FASE 2 (futuro):
+  • Mint individual por paciente pagante
+  • Wallet connection (MetaMask)
+  • Verificação de posse pra benefícios
+  • Sistema "Escute-se Points" virando token utilitário
+
+FASE 3 (Série A+):
+  • Governança participativa pela comunidade
+  • DAO leve com NFT como prova de pertencimento
+  • Trocas de pontos por benefícios reais (consultas grátis, cursos)
+```
+
+### P.7 — Mensagem pra Ricardo (resposta ao GPT dele)
+
+Ricardo estava preocupado: *"perdemos Nôa pra Doctoralia?"*
+
+**Resposta calibrada:**
+
+```
+Não. Nôa Esperança continua sendo sua, sempre.
+
+O que mudou foi o ENTENDIMENTO técnico-jurídico:
+
+1. NÔA NÃO É MARCA (e nunca precisou ser):
+   É PERSONAGEM. Direito autoral, não marcário.
+   Doctoralia depositou "NOA" pra serviços médicos genéricos
+   (classe 9+42). Isso impede VOCÊ de registrar "Nôa" como
+   marca, mas NÃO impede a Nôa Esperança continuar sendo
+   personagem da plataforma.
+
+   Equivalente: Stark Industries é marca da Marvel, mas
+   Tony Stark continua sendo personagem do criador.
+   Aqui é igual.
+
+2. AEC NÃO PRECISA SER MARCA:
+   É descritor científico. A&C Centro Contatos tem AEC em
+   classe 42. Tudo bem — método clínico sob descritor é
+   propriedade intelectual sua autoral, não marcária.
+
+3. IMRE É O QUE VAI PRO INPI:
+   Como nome único, livre, escalável. R$1.065 cobre tudo
+   (3 classes), titular é o CNPJ MedCannLab.
+
+4. $ESCUTESE CONTINUA NO ZORA:
+   Anterioridade simbólica em blockchain protege o
+   manifesto cultural. Não precisa INPI.
+
+Conclusão: nada se perdeu. Reorganizamos as 5 camadas
+de identidade da plataforma. O que era 3 (jurídico)
+virou 5 (jurídico + autoral + simbólico) e ficou
+mais robusto.
+```
+
+### P.8 — Frase âncora P
+
+> *"5 camadas de identidade MedCannLab: IMRE registra (INPI),
+>  MedCannLab opera (mercado), Nôa Esperança encarna (personagem
+>  autoral Ricardo), AEC ensina (descritor método), $escutese
+>  manifesta (NFT cultural Polygon). Ricardo não perdeu nada
+>  pra Doctoralia — só descobrimos que a arquitetura sempre teve
+>  5 camadas, e cada uma protege o outro de forma diferente.
+>  Nada de novo no código, só clareza institucional explícita."*
+
+---
+
+*Bloco P adicionado 2026-05-01 ~13h15 BRT por Claude Opus 4.7 (1M context).
+Reintegração do NFT $escutese após Ricardo trazer dúvida via GPT (Doctoralia
+NOA depositada). Audit empírico de 7 arquivos do código + STATUS_BLOCKCHAIN_NFT.md
++ noa-original-backup confirmou ativo simbólico já existe no Zora desde antes.
+Memory `project_strategy_marca_imre_medcannlab.md` atualizada de 3 → 5 camadas.
+Sessão 100% conceitual. Próximo: V1.9.113 fluxo guiado paciente OU rota Paulo
+(Master Group 888) responder, o que vier antes.*
