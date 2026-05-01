@@ -879,3 +879,208 @@ P3 (fora desta sessão)
 *Bloco K adicionado 2026-04-30 ~19h BRT por Claude Opus 4.7 (1M context).
 10 commits cirúrgicos (V1.9.105 → V1.9.111) em ~3h. 2 memórias novas.
 Próximo: smoke empírico Pedro + V1.9.112 fluxo guiado.*
+
+---
+
+## Bloco L — Sessão noite-2 30/04 (~20h-21h): polish UX + Analisar Paciente
+
+**Contexto:** Pedro voltou após pausa, fez smoke empírico do redesign V1.9.111. Pediu polish fino (cores menos vibrantes) e em paralelo levantou feature pra ser auditada: "Analisar Paciente" no ProfessionalMyDashboard.
+
+### L.1 — V1.9.111-A: Polish UX cards Tier 1+2
+
+Pedro feedback após ver V1.9.111 redesign: *"diminuida em tudo um pouco para dar leve borda e vejo tudo muito colorido! melhor deixar um padrao apenas"*.
+
+5 cards parceiros estavam com 5 cores ciclando (cyan/violet/rose/amber/teal) — visual "discoteca".
+
+**Mudanças (renderProfessionalCard helper)**:
+- `ACCENT_PALETTE` cycling → `PARTNER_ACCENT` único (cyan suave) pra Tier 2
+- Tier 1 (Equipe Oficial) mantém amber distinto
+- Cards menores: `p-4 → p-3.5`, `gap-4 → gap-3`
+- Avatar: `w-12 h-12 rounded-xl` → `w-10 h-10 rounded-lg`
+- Border: `/40 opacity` (mais sutil)
+- Tipografia compacta: `text-base md:text-lg → text-base`, badges `[9-11px]`, botões `text-xs`
+- Motion: `whileHover scale 1.02 → 1.015`
+
+**Commit**: `666d8f2`.
+
+### L.2 — V1.9.111-B: Fix memo availableSpecialties
+
+**Mesma classe de bug do V1.9.110** (memo deps incompletas):
+
+```ts
+// ANTES
+useMemo(() => {
+  return Array.from(new Set(AVAILABLE_PROFESSIONALS.map(p => p.specialty)))
+}, [])  // ← deps vazias
+
+// DEPOIS
+}, [AVAILABLE_PROFESSIONALS])
+```
+
+Pedro reportou: *"todas as especialidaes aparecem 2 apenas ali"*. Causa: dropdown ficava travado em FALLBACK (Nefrologia + Neurologia) mesmo após Supabase trazer parceiros.
+
+**Commit**: `666d8f2` (junto V1.9.111-A).
+
+### L.3 — V1.9.111-D: Ajuste tom emerald + blue
+
+Pedro: *"diminuir potência do tom da cor verde do trigger e do azul"*.
+
+- Eduardo accent: `emerald-500/20 → /15`, button `emerald-500 → emerald-600/90`
+- Ricardo accent: `primary-500/20 → /15`, button `primary-500 → primary-600/90`
+- Novo Agendamento: `blue-600 → blue-600/85`
+
+Cores mais maduras/sóbrias, menos vibrantes.
+
+**Commit**: `888bdcd`.
+
+### L.4 — Roadmap V1.9.111-C (NÃO aplicado): specialty real DB
+
+Pedro: *"lembra na landing page tem o card de cadastro lá precisa por no proficional qndo se cadastra qual e a sua especialidade"*.
+
+**Audit empírico**: tabela `users` **NÃO tem coluna `specialty`** ([types.ts:6813-6852](src/integrations/supabase/types.ts#L6813)). Apenas `crm`, `cro`, `council_*`. Por isso `loadProfessionals` hardcoda `'Clínica Geral'` pra todos os parceiros.
+
+**V1.9.111-C exige (~45-60 min, próxima sessão)**:
+1. Migration: `ALTER TABLE users ADD COLUMN specialty TEXT`
+2. Backfill especialidades existentes (Ricardo=Nefro, Eduardo=Neuro, +7 parceiros)
+3. Frontend `loadProfessionals` SELECT specialty
+4. Landing cadastro profissional: campo `<select>` Especialidade
+
+Decisão: postpone até próxima sessão (precisa decidir lista de especialidades válidas + risco médio DB schema).
+
+### L.5 — V1.9.112-A1: Analisar Paciente — sinopse + alergias + medicações
+
+**Audit da feature "Analisar Paciente"** ([ProfessionalMyDashboard.tsx:681-1013](src/pages/ProfessionalMyDashboard.tsx#L681-L1013)):
+
+✅ JÁ TEM (estado bom, ~80% caminho):
+- Search dropdown busca por nome
+- Lista pacientes vinculados ao médico
+- Avatar do paciente buscado do banco
+- Overlay scan animado Matrix-style (UX charme — Pedro elogiou: *"animacao leve de scanear paciente ehehe! gera engajamento"*)
+- Painel lateral analítico colapsável
+- 5 seções: Avaliação clínica + Consultas anteriores + Próximas + Prescrições + Evolução/gráficos
+
+🟡 GAPS críticos identificados:
+1. **Alergias + Medicações regulares NÃO mostradas** — `users.allergies` e `users.medications` JÁ existem mas não são lidas. Risco clínico (médico prescreve sem ver alergia).
+2. **Resumo executivo ausente** — médico precisa expandir 5 seções pra ver dados básicos (idade, AECs, último score).
+3. **Notas privadas do médico** — não há campo pra anotar observações próprias.
+
+**Fix V1.9.112-A1 (top 3 críticos parcial — só 1 e 2)**:
+
+Princípio 8 aplicado: tabela JÁ tem campos, query JÁ busca user, só faltava expandir SELECT + render. **Zero migration, zero RLS, zero infra nova.**
+
+```diff
+- .select('avatar_url, user_metadata')
++ .select('avatar_url, user_metadata, allergies, medications, birth_date, gender')
+```
+
+Tipo `analysisData` ganha 4 campos opcionais (`?:`) — backward compat absoluto.
+
+**Novo bloco JSX no TOPO do painel** "Sinopse clínica":
+- Idade calculada de `birth_date` + Gênero
+- Total AECs + Último score (do último relatório)
+- Última consulta (data formatada PT-BR)
+- Alergias destacadas (AlertCircle amber) — só renderiza se `hasAllergies`
+- Medicações em uso destacadas (Heart rose) — só renderiza se `hasMedications`
+
+**Commit**: `fb23811`.
+
+### L.6 — V1.9.112-A2 (NÃO aplicado): Notas privadas do médico
+
+Decisão arquitetural pendente — 3 opções com tradeoffs:
+
+| Opção | Onde salvar | Custo | Risco |
+|---|---|---|---|
+| A | Tabela nova `professional_patient_notes` + RLS | +30 min | 🟡 médio |
+| B | `clinical_assessments.metadata` JSONB | 15 min | 🟢 baixo (mistura conceitos) |
+| C | localStorage (não persiste) | 5 min | 🟢 zero (mas inútil) |
+
+Pedro vai decidir após usar V1.9.112-A1 em prática.
+
+### L.7 — Outros gaps mapeados (audit Analisar Paciente)
+
+Memória `project_analisar_paciente_feature_mapeada.md` registra todos:
+- Comparativo entre AECs (mini-gráfico evolução scores se ≥2 AECs)
+- Última atividade Nôa (engajamento)
+- Ações rápidas (Agendar/Mensagem/Prescrever no topo)
+- Plano de Cuidado integrado
+- North Star events timeline
+- CFM prescriptions oficiais (vs view genérica atual)
+
+Não-prioritários hoje. Documentados pra próxima sessão.
+
+### L.8 — Princípios reaplicados nesta noite-2
+
+```
+✓ AUDITAR 100% antes
+  - V1.9.111-B descoberto auditando V1.9.111-A (memo stale similar 110)
+  - V1.9.111-C audit confirmou ausência da coluna specialty antes de propor
+  - V1.9.112-A1 audit confirmou allergies/medications já existem
+
+✓ Princípio 8 (polir não inventar)
+  - V1.9.112-A1 reusou query existente, só expandiu SELECT
+  - V1.9.111-A reusou helper renderProfessionalCard
+
+✓ 1 a 1 na calma
+  - V1.9.111-A → smoke → V1.9.111-D → V1.9.112-A1
+  - Cada PR commit + push antes do próximo
+
+✓ Honestidade direta
+  - Confirmei "não cria nada novo" empiricamente quando Pedro perguntou
+  - V1.9.111-C postponed honestamente (DB schema = risco médio)
+
+✓ Calibração de severidade
+  - Alergias ausentes = 🔴 crítico clínico (médico prescreve sem ver)
+  - Cores vibrantes = 🟡 polish UX
+  - Notas privadas = 🟡 importante mas não urgente
+```
+
+### L.9 — Commits da sessão noite-2
+
+```
+666d8f2  V1.9.111-A+B  polish + fix memo specialties
+888bdcd  V1.9.111-D    ajuste tons emerald + blue
+fb23811  V1.9.112-A1   Analisar Paciente sinopse + alergias + medicações
+```
+
+3 commits + diário. Lock V1.9.95+97+98+99-B preservado integralmente.
+
+### L.10 — Backlog atualizado pós-noite-2
+
+```
+P0 (próxima sessão)
+  V1.9.111-C  specialty real (migration + backfill + frontend +
+              landing cadastro) — decidir lista válida primeiro
+  V1.9.112-A2 notas privadas do médico — decidir A/B/C
+  V1.9.112    fluxo guiado escolha→horários→AEC vinculada (visão Pedro)
+
+P1 (validação empírica)
+  Pedro testar V1.9.111-A polish (cores padronizadas)
+  Pedro testar V1.9.112-A1 sinopse (clica Analisar com paciente
+    que tem alergias preenchidas)
+
+P2 (gaps Analisar Paciente — não prioritários)
+  Comparativo entre AECs (mini-gráfico se ≥2 AECs)
+  Última atividade Nôa
+  Ações rápidas (Agendar/Mensagem/Prescrever)
+  Plano de Cuidado integrado
+
+P3 (fora desta sessão)
+  V1.9.110-B normalizar users.type single grafia (migration)
+  Magno v2.0 quando 9 módulos prontos
+```
+
+### L.11 — Frase âncora L
+
+> *"Polish refinado + feature Analisar Paciente reforçada com info clínica
+>  crítica (alergias, medicações, sinopse executiva) reusando colunas
+>  que JÁ existiam no DB sem tocar schema. Princípio 8 (polir não inventar)
+>  aplicado 4×. Lock V1.9.95+97+98+99-B preservado integralmente em 3
+>  commits noite-2. Audit pré-codar continua pegando bugs latentes (memo
+>  stale availableSpecialties, ausência coluna specialty)."*
+
+---
+
+*Bloco L adicionado 2026-04-30 ~21h BRT por Claude Opus 4.7 (1M context).
+3 commits noite-2 (V1.9.111-A+B, V1.9.111-D, V1.9.112-A1) em ~1h.
+1 memória nova: project_analisar_paciente_feature_mapeada.md.
+Próximo: smoke Pedro + V1.9.112-A2 (notas) ou V1.9.111-C (specialty DB).*
