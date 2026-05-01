@@ -1503,3 +1503,146 @@ P2 (luxo pré-PMF — esperar)
 Audit Supabase real via PAT + análise 4 features dormentes + modelo monetização ICP.
 2 migrations aplicadas (V1.9.111-C parte 1 + test data Pedro/Carolina).
 Próximo: V1.9.111-C parte 2 frontend (cirúrgico, ~15 min).*
+
+---
+
+## Bloco O — Estratégia jurídica de marca (calibrada final, 01/05 ~12h)
+
+**Contexto:** Após análise INPI + cruzamento com acordo de quotistas v2.0 + revisão GPT crítica, estratégia jurídica calibrada e enxuta. **Sessão 100% conceitual sem código.**
+
+### O.1 — Pesquisa INPI realizada (3 buscas empíricas)
+
+```
+Busca "MEDCANN":   5 processos
+  • Andrea Prado: REGISTRADA classe 5 (farmacêutico) — risco residual JUCERJA
+  • Robson Luiz: indeferido classe 44 (precedente)
+
+Busca "NOA":       38 processos
+  • DOCPLANNER (Doctoralia): depositada classes 9+42 em 18/02/2025
+    Status: aguarda exame de mérito (sem oposição) — alta probabilidade deferir
+  • CONCLUSÃO: NOA / Nôa Esperança INVIÁVEL como marca
+
+Busca "AEC":       24 processos
+  • A&C Centro Contatos: REGISTRADA classe 42 (software) + 9, 35, 37, 40, 38
+  • Associação Empregados Comércio RJ: REGISTRADA classe 41 (educação) desde 1978
+  • CONCLUSÃO: AEC sozinho INVIÁVEL nas classes principais
+
+Busca "IMRE":      1 processo
+  • Cypress Bioscience 1992 — EXTINTO
+  • CONCLUSÃO: IMRE LIVRE em todas as classes ✅
+```
+
+### O.2 — Estratégia FINAL (calibrada após GPT crítica)
+
+GPT identificou minha versão anterior como "over-planning jurídico vs under-execution técnico — startup seed com mentalidade litigando Série A". Aceito.
+
+**Estratégia enxuta final (~R$1.565-2.065 total)**:
+
+```
+1. CNPJ:           MEDCANNLAB TECNOLOGIA EM SAÚDE LTDA
+                   (já decidido em acordo de quotistas v2.0)
+
+2. Cap Table:      4 sócios × 20% + 20% Tesouraria
+                   • Pedro Galluf (CTO/Tecnologia)
+                   • Ricardo Valença (Clínico/Produto)
+                   • João Vidal (Comercial/B2B)
+                   • Eduardo Faveret (Conselheiro Científico)
+                   Tesouraria: 10% ESOP + 10% Growth Pool
+
+3. Marca INPI:     IMRE em 3 classes
+                   • 42 (software/SaaS):    R$ 355
+                   • 44 (serviços médicos): R$ 355
+                   • 41 (educação):         R$ 355
+                                            ─────
+                                            R$ 1.065
+
+4. Agente PI:      R$ 500-1.000
+
+5. Domínio:        medcannlab.com.br (MANTIDO)
+
+6. Marca pública:  MedCannLab (uso continuado, risco controlado)
+
+7. Cessão IP:      cláusula 2 do acordo
+                   Pedro cede: TradeVision Core, Edge, React, Domínios, DB
+                   Ricardo cede: AEC + IMRE + Simulador Educacional
+                   Titular marca IMRE no INPI: CNPJ MedCannLab Ltda
+```
+
+### O.3 — O que SAI da pauta (calibragem GPT)
+
+```
+❌ Classes 9 + 35 INPI (revisitar pós-PMF)
+❌ MEDCANLLAB tentativa classe 42 (opcional barato, não essencial)
+❌ Domínio imre.com.br reserva (não urgente)
+❌ Madrid Protocol (2027+, expansão internacional)
+❌ Múltiplos cenários probabilísticos hipotéticos
+❌ Plano B JUCERJA (resolver SE acontecer, não preventivo)
+❌ Conversão LTDA → S.A. (só se Série A real)
+```
+
+### O.4 — Princípio reaplicado
+
+```
+Pré-PMF (0 pacientes externos pagantes):
+  ✅ Proteção MÍNIMA VIÁVEL (3 classes + cessão IP)
+  ❌ Defesa preventiva contra cenários hipotéticos
+  ❌ Cobertura defensiva total
+  ❌ Múltiplos planos B antes de problema real
+```
+
+Memória [feedback_p9_nao_uso_nao_e_nao_precisa] alerta sobre under-classification.
+Versão inversa: **over-classification preventiva também é viés** quando aplicada
+sem dados empíricos.
+
+### O.5 — Modelo operacional confirmado (cobre 92%+ alinhamento)
+
+| Item | Cobertura |
+|---|---|
+| SaaS intermediação (cláusula 6) | 100% |
+| Take Rate 90/10 (`platform_fee_pct=0.10`) | 100% |
+| 3 camadas (Tier Oficial + Parceiros + Equipes) | 100% |
+| Plano Premium futuro (Cenário C ICP) | 100% |
+| Cursos pagos (AEC R$300, IMRE Triaxial R$200) | 100% |
+| ESOP futuro pra devs/médicos âncora | 100% |
+| Drag/Tag-along + Vesting + Cliff | 100% |
+| Internacionalização (LATAM 2027+) | Adicionar Madrid quando precisar |
+
+### O.6 — Próximas ações operacionais
+
+```
+HOJE:
+  ☐ Pedro envia mensagem ajustada ao Paulo (Master Group 888)
+    perguntando: parceiro PI? + busca colidência razão social JUCERJA?
+
+ESTA SEMANA:
+  ☐ Decidir capital social (sugestão R$ 5.000-10.000)
+  ☐ 4 sócios preencherem dados pessoais no acordo
+    (linhas 6-9: nacionalidade, estado civil, profissão, CPF, endereço)
+  ☐ Endereço sede RJ (coworking ou apartamento sócio)
+  ☐ Aguardar resposta Paulo
+
+PRÓXIMA SEMANA:
+  ☐ Assinatura contrato CNPJ
+  ☐ Contratar agente PI (próprio Master Group ou independente)
+
+PRÓXIMO MÊS:
+  ☐ Depositar IMRE no INPI (3 classes)
+  ☐ INPI publica em 30-60 dias
+  ☐ Janela oposição 60 dias
+  ☐ Exame mérito 12-18 meses
+```
+
+### O.7 — Frase âncora O
+
+> *"Estratégia jurídica final em 4 linhas: CNPJ MedCannLab Tecnologia em
+>  Saúde Ltda, marca IMRE em 3 classes (R$1.065), domínio medcannlab.com.br
+>  mantido, cessão de IP via cláusula 2 do acordo. Tudo o resto é pós-PMF.
+>  Lição: 'startup seed precisa execução, não defesa antecipada'. Voltar
+>  ao código."*
+
+---
+
+*Bloco O adicionado 2026-05-01 ~12h BRT por Claude Opus 4.7 (1M context).
+Estratégia jurídica calibrada após GPT crítica + acordo quotistas v2.0
+real localizado. Sessão 100% conceitual. Próximo: V1.9.113 (fix
+is_complete=false) — bug latente do audit empírico bloco N.*
