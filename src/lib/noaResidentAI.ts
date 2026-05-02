@@ -1854,9 +1854,13 @@ export class NoaResidentAI {
                 console.log('AEC: pedido de inicio tratado como meta-mensagem; fase permanece INITIAL_GREETING')
               } else {
                 const pn = flowState.data?.patientName?.trim()
+                // V1.9.118: null/undefined/empty/whitespace safe (mesmo padrao V1.9.107 buildAecOpeningHint)
+                // Antes: interpolacao direta gerava "consultas com null" quando paciente sem preferred_doctor
+                const doctorNameSafe = docForAecOpening?.trim()
+                const docPhrase = doctorNameSafe ? ` para consultas com ${doctorNameSafe}` : ''
                 nextQuestionHint = pn
-                  ? "Ola, " + pn + "! Eu sou Noa Esperanza. Vamos iniciar sua avaliacao inicial para consultas com " + docForAecOpening + ". O que trouxe voce a nossa avaliacao hoje?"
-                  : "Ola! Eu sou Noa Esperanza. Vamos iniciar sua avaliacao inicial para consultas com " + docForAecOpening + ". O que trouxe voce a nossa avaliacao hoje?"
+                  ? `Ola, ${pn}! Eu sou Noa Esperanza. Vamos iniciar sua avaliacao inicial${docPhrase}. O que trouxe voce a nossa avaliacao hoje?`
+                  : `Ola! Eu sou Noa Esperanza. Vamos iniciar sua avaliacao inicial${docPhrase}. O que trouxe voce a nossa avaliacao hoje?`
                 console.log('AEC: pedido de inicio em IDENTIFICATION tratado como meta-mensagem; lista indiciaria ainda nao iniciada')
               }
             }
