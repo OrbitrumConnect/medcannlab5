@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **MedCannLab 3.0** — HealthTech/EdTech de Cannabis Medicinal com IA Nôa Esperança. Arquitetura por 3 eixos: **Clínica** (AEC + Relatório + Agendamento), **Ensino** (cursos + TRL), **Pesquisa** (forum + casos clínicos). Sistema cognitivo de 8 camadas onde **GPT é o último a falar e o primeiro a ser checado**.
 
-**Estado atual** (28/04/2026): **Lock V1.9.95+V1.9.97** em AEC + Pipeline + Agendamento. Tag git: `v1.9.95-lock-aec-relatorio-agendamento`. Pré-PMF (zero pacientes externos pagantes; testes internos com Pedro/Dr. Ricardo/Carolina).
+**Estado atual** (02/05/2026): **Lock V1.9.95+V1.9.97+V1.9.98+V1.9.99-B** em AEC + Pipeline + Agendamento + Resend prod + Storage RLS. Tag git mais recente: `v1.9.113-locked` (selo AEC + Pipeline + Analisar Paciente estável). Tag anterior: `v1.9.99-resend-prod-locked`. Pré-PMF (zero pacientes externos pagantes; testes internos com Pedro/Dr. Ricardo/Carolina).
 
 ## Common commands
 
