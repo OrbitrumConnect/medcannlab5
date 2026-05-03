@@ -451,6 +451,60 @@ const IntegrativePrescriptions: React.FC<IntegrativePrescriptionsProps> = ({
         {/* --- LIBRARY TAB --- */}
         {activeTab === 'library' && (
           <div className="space-y-6 animate-in fade-in zoom-in-95 duration-300">
+            {/* V1.9.119-B: Tipos de Receituario CFM (acesso direto, sem precisar abrir modal "Nova Prescricao") */}
+            <div className="bg-slate-900/60 border border-slate-800 rounded-2xl p-5 space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-sm font-semibold text-white flex items-center gap-2">
+                    <Lock className="w-4 h-4 text-primary-300" />
+                    Tipos de Receituário CFM
+                  </h3>
+                  <p className="text-xs text-slate-400 mt-1">Forma legal/regulatória do documento — escolha o tipo de receita conforme a categoria do medicamento.</p>
+                </div>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                <button
+                  onClick={() => navigate('/app/prescriptions?type=simple')}
+                  className="p-4 rounded-xl border border-slate-800 bg-slate-950/60 text-left space-y-1.5 hover:border-primary-500/40 hover:bg-slate-900/80 transition-all"
+                >
+                  <FileText className="w-6 h-6 text-primary-300" />
+                  <p className="text-white font-semibold text-sm">Receituário Simples</p>
+                  <p className="text-[11px] text-slate-400 leading-snug">Medicamentos sem controle especial.</p>
+                </button>
+                <button
+                  onClick={() => navigate('/app/prescriptions?type=special')}
+                  className="p-4 rounded-xl border border-slate-800 bg-slate-950/60 text-left space-y-1.5 hover:border-sky-500/40 hover:bg-slate-900/80 transition-all"
+                >
+                  <Lock className="w-6 h-6 text-sky-300" />
+                  <p className="text-white font-semibold text-sm">Controle Especial (Branca)</p>
+                  <p className="text-[11px] text-slate-400 leading-snug">Lista C2 — ANVISA Portaria 344/98 (2 vias).</p>
+                </button>
+                <button
+                  onClick={() => navigate('/app/prescriptions?type=blue')}
+                  className="p-4 rounded-xl border border-slate-800 bg-slate-950/60 text-left space-y-1.5 hover:border-blue-500/40 hover:bg-slate-900/80 transition-all"
+                >
+                  <Lock className="w-6 h-6 text-blue-300" />
+                  <p className="text-white font-semibold text-sm">Receita Azul (B1/B2)</p>
+                  <p className="text-[11px] text-slate-400 leading-snug">Entorpecentes/psicotrópicos com QR Code.</p>
+                </button>
+                <button
+                  onClick={() => navigate('/app/prescriptions?type=yellow')}
+                  className="p-4 rounded-xl border border-slate-800 bg-slate-950/60 text-left space-y-1.5 hover:border-amber-500/40 hover:bg-slate-900/80 transition-all"
+                >
+                  <Lock className="w-6 h-6 text-amber-300" />
+                  <p className="text-white font-semibold text-sm">Receita Amarela (A1/A2/A3)</p>
+                  <p className="text-[11px] text-slate-400 leading-snug">Restrito — integração Portal ITI.</p>
+                </button>
+              </div>
+            </div>
+
+            {/* V1.9.119-B: titulo separador para Protocolos Terapeuticos (mantém grid existente abaixo intocado) */}
+            <div className="flex items-center gap-3 pt-2">
+              <div className="h-px flex-1 bg-slate-800"></div>
+              <span className="text-xs uppercase tracking-[0.25em] text-slate-500 font-medium">Protocolos Terapêuticos</span>
+              <div className="h-px flex-1 bg-slate-800"></div>
+            </div>
+
             {/* Filters */}
             <div className="bg-slate-900/60 border border-slate-800 rounded-2xl p-4 flex flex-col md:flex-row gap-4 items-center justify-between">
               <div className="relative w-full md:w-96">
