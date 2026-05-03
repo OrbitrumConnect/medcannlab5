@@ -1215,28 +1215,28 @@ const PatientsManagement: React.FC<PatientsManagementProps> = ({ embedded = fals
         </div>
       )}
       <div className="w-full max-w-full mx-auto px-1 md:px-2 py-2">
-        {/* Filters Bar - oculto no modo detailOnly (ex.: Paciente em foco) */}
+        {/* V1.9.119-G: Filters Bar compactado (era p-6 mb-4 → p-3 mb-3) */}
         {!detailOnly && (
-          <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl p-6 mb-4 border border-slate-700/50">
-            <div className="flex flex-col md:flex-row md:items-center justify-between mb-4 gap-4">
-              <div className="flex items-center gap-4">
+          <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl p-3 mb-3 border border-slate-700/50">
+            <div className="flex flex-col md:flex-row md:items-center justify-between mb-3 gap-3">
+              <div className="flex items-center gap-3">
                 <button
                   onClick={handleBack}
-                  className="p-2 hover:bg-slate-700 rounded-lg transition-colors"
+                  className="p-1.5 hover:bg-slate-700 rounded-lg transition-all hover:scale-105"
                   title="Voltar"
                 >
-                  <ArrowLeft className="w-5 h-5 text-white" />
+                  <ArrowLeft className="w-4 h-4 text-white" />
                 </button>
-                <h2 className="text-xl font-bold text-white">Filtros de Busca</h2>
+                <h2 className="text-base font-semibold text-white">Filtros de Busca</h2>
               </div>
 
               <div className="relative new-patient-menu-container">
                 <button
                   onClick={() => setShowNewPatientMenu(!showNewPatientMenu)}
-                  className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-blue-500 to-cyan-500 text-white rounded-lg hover:from-blue-600 hover:to-cyan-600 transition-colors"
+                  className="flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-blue-500 to-cyan-500 text-white rounded-lg hover:from-blue-600 hover:to-cyan-600 transition-all hover:scale-[1.02] text-sm font-medium shadow-md shadow-blue-900/20"
                   title="Cadastrar novo paciente"
                 >
-                  <UserPlus className="w-5 h-5" />
+                  <UserPlus className="w-4 h-4" />
                   <span>Novo Paciente</span>
                 </button>
 
@@ -1290,16 +1290,17 @@ const PatientsManagement: React.FC<PatientsManagementProps> = ({ embedded = fals
                 )}
               </div>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            {/* V1.9.119-G: filtros mais compactos (gap-4 py-2 → gap-2 py-1.5) */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-2">
               {/* Search */}
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-5 h-5" />
+                <Search className="absolute left-2.5 top-1/2 transform -translate-y-1/2 text-slate-400 w-4 h-4" />
                 <input
                   type="text"
                   placeholder="Buscar por nome, CPF ou código..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:border-blue-500"
+                  className="w-full pl-9 pr-3 py-1.5 bg-slate-700 border border-slate-600 rounded-lg text-white text-sm placeholder-slate-400 focus:outline-none focus:border-blue-500 transition-colors"
                 />
               </div>
 
@@ -1307,7 +1308,7 @@ const PatientsManagement: React.FC<PatientsManagementProps> = ({ embedded = fals
               <select
                 value={selectedSpecialty}
                 onChange={(e) => setSelectedSpecialty(e.target.value)}
-                className="px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:border-blue-500"
+                className="px-3 py-1.5 bg-slate-700 border border-slate-600 rounded-lg text-white text-sm focus:outline-none focus:border-blue-500 transition-colors"
               >
                 <option value="all">Todas as Especialidades</option>
                 {specialties.map(spec => (
@@ -1319,7 +1320,7 @@ const PatientsManagement: React.FC<PatientsManagementProps> = ({ embedded = fals
               <select
                 value={selectedClinic}
                 onChange={(e) => setSelectedClinic(e.target.value)}
-                className="px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:border-blue-500"
+                className="px-3 py-1.5 bg-slate-700 border border-slate-600 rounded-lg text-white text-sm focus:outline-none focus:border-blue-500 transition-colors"
               >
                 {clinics.map(clinic => (
                   <option key={clinic.id} value={clinic.id}>{clinic.name}</option>
@@ -1330,7 +1331,7 @@ const PatientsManagement: React.FC<PatientsManagementProps> = ({ embedded = fals
               <select
                 value={selectedRoom}
                 onChange={(e) => setSelectedRoom(e.target.value)}
-                className="px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:border-blue-500"
+                className="px-3 py-1.5 bg-slate-700 border border-slate-600 rounded-lg text-white text-sm focus:outline-none focus:border-blue-500 transition-colors"
               >
                 {rooms.map(room => (
                   <option key={room.id} value={room.id}>{room.name}</option>
@@ -1345,48 +1346,52 @@ const PatientsManagement: React.FC<PatientsManagementProps> = ({ embedded = fals
           {!detailOnly && (
             <div className="lg:col-span-1">
               <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl border border-slate-700/50">
-                <div className="p-4 border-b border-slate-700">
-                  <h3 className="text-lg font-bold text-white">Pacientes Ativos</h3>
-                  <p className="text-sm text-slate-400">Total: {filteredPatients.length}</p>
+                {/* V1.9.119-G: header compacto + contador inline (era 2 linhas) */}
+                <div className="p-3 border-b border-slate-700 flex items-center justify-between">
+                  <h3 className="text-sm font-semibold text-white">Pacientes Ativos</h3>
+                  <span className="text-xs text-slate-400 bg-slate-900/60 px-2 py-0.5 rounded-md font-mono">
+                    {filteredPatients.length}/{patients.length}
+                  </span>
                 </div>
                 <div className="max-h-[calc(100vh-300px)] overflow-y-auto">
                   {loading ? (
                     <div className="p-4 text-center text-slate-400">
-                      <Clock className="w-8 h-8 mx-auto mb-2 animate-spin" />
-                      <p>Carregando pacientes...</p>
+                      <Clock className="w-7 h-7 mx-auto mb-2 animate-spin" />
+                      <p className="text-xs">Carregando pacientes...</p>
                     </div>
                   ) : filteredPatients.length === 0 ? (
                     <div className="p-4 text-center text-slate-400">
-                      <User className="w-8 h-8 mx-auto mb-2 text-slate-600" />
-                      <p>Nenhum paciente encontrado</p>
+                      <User className="w-7 h-7 mx-auto mb-2 text-slate-600" />
+                      <p className="text-xs">Nenhum paciente encontrado</p>
+                      <p className="text-[10px] text-slate-500 mt-1">Use o filtro acima pra refinar</p>
                     </div>
                   ) : (
                     filteredPatients.map(patient => (
                       <button
                         key={patient.id}
                         onClick={() => handleSelectPatient(patient)}
-                        className={`w-full p-3 text-left border-b border-slate-700 transition-colors ${selectedPatient?.id === patient.id
-                          ? 'bg-emerald-500/10 border-l-4 border-l-emerald-500'
-                          : 'hover:bg-slate-700/50'
+                        className={`w-full p-2.5 text-left border-b border-slate-700/60 transition-all duration-150 ${selectedPatient?.id === patient.id
+                          ? 'bg-emerald-500/10 border-l-2 border-l-emerald-500'
+                          : 'hover:bg-slate-700/40 hover:border-l-2 hover:border-l-slate-600'
                           }`}
                       >
-                        <div className="flex items-center space-x-3">
-                          <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${selectedPatient?.id === patient.id ? 'bg-emerald-500' : 'bg-slate-700'}`}>
+                        <div className="flex items-center gap-2.5">
+                          <div className={`w-9 h-9 rounded-full flex items-center justify-center shrink-0 transition-all ${selectedPatient?.id === patient.id ? 'bg-emerald-500 ring-2 ring-emerald-500/30' : 'bg-slate-700'}`}>
                             {patient.photo ? (
-                              <img src={patient.photo} alt={patient.name} className="w-10 h-10 rounded-full" />
+                              <img src={patient.photo} alt={patient.name} className="w-9 h-9 rounded-full" />
                             ) : (
-                              <User className={`w-5 h-5 ${selectedPatient?.id === patient.id ? 'text-slate-950' : 'text-slate-400'}`} />
+                              <User className={`w-4 h-4 ${selectedPatient?.id === patient.id ? 'text-slate-950' : 'text-slate-400'}`} />
                             )}
                           </div>
                           <div className="flex-1 min-w-0">
-                            <p className={`font-bold text-base truncate ${selectedPatient?.id === patient.id ? 'text-emerald-400' : 'text-white'}`}>{patient.name}</p>
-                            <p className="text-xs text-slate-500 truncate">#{patient.code} • {patient.cpf}</p>
-                            <div className="flex items-center gap-2 mt-0.5">
-                              <span className="text-xs text-slate-500 bg-slate-900 px-1.5 py-0.5 rounded uppercase font-bold tracking-wider">
+                            <p className={`font-semibold text-sm truncate ${selectedPatient?.id === patient.id ? 'text-emerald-300' : 'text-white'}`}>{patient.name}</p>
+                            <p className="text-[10px] text-slate-500 truncate font-mono">#{patient.code}</p>
+                            <div className="flex items-center gap-1.5 mt-0.5">
+                              <span className="text-[10px] text-slate-400 bg-slate-900 px-1.5 py-0.5 rounded uppercase font-semibold tracking-wide">
                                 {patient.appointmentsCount} atend.
                               </span>
                               {patient.absences > 0 && (
-                                <span className="text-xs text-red-400 bg-red-500/10 px-1.5 py-0.5 rounded uppercase font-bold tracking-wider">
+                                <span className="text-[10px] text-red-400 bg-red-500/10 px-1.5 py-0.5 rounded uppercase font-semibold tracking-wide">
                                   {patient.absences} faltas
                                 </span>
                               )}
