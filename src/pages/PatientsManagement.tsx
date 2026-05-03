@@ -1603,11 +1603,11 @@ const PatientsManagement: React.FC<PatientsManagementProps> = ({ embedded = fals
                       <div className="flex overflow-x-auto gap-1 p-2 md:p-2.5 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-slate-700" style={{ WebkitOverflowScrolling: 'touch' }}>
                         {[
                           { id: 'overview', label: 'Visão Geral', icon: Activity },
-                          { id: 'analytics', label: 'Evolução e Analytics', icon: BarChart3 },
+                          { id: 'analytics', label: 'Analytics', icon: BarChart3 },
                           { id: 'evolution', label: 'Evolução', icon: FileText },
-                          { id: 'prescription', label: 'Prescrição Médica', icon: Edit },
-                          { id: 'exams', label: 'Solicitação de Exames', icon: FileText },
-                          { id: 'appointments', label: 'Agendamentos', icon: Calendar },
+                          { id: 'prescription', label: 'Prescrição', icon: Edit },
+                          { id: 'exams', label: 'Exames', icon: FileText },
+                          { id: 'appointments', label: 'Agenda', icon: Calendar },
                           { id: 'files', label: 'Arquivos', icon: Archive },
                           { id: 'receipts', label: 'Recebimentos', icon: Download },
                           { id: 'charts', label: 'Gráficos', icon: TrendingUp }
