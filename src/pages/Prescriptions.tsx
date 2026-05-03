@@ -109,6 +109,18 @@ const Prescriptions: React.FC = () => {
   })
   const [notes, setNotes] = useState('')
 
+  // V1.9.119: Dados do Comprador (legalmente obrigatorio em Receita Controle Especial - ANVISA Portaria 344/98)
+  // Pode ser o proprio paciente OU representante (cuidador, familiar) que vai retirar na farmacia.
+  // Salvo em metadata.buyer_data (jsonb existente, sem migration).
+  const [buyerData, setBuyerData] = useState({
+    name: '',
+    id: '',
+    id_org: '',
+    address: '',
+    city: '',
+    uf: ''
+  })
+
   // Tipos de prescrição do CFM
   const prescriptionTypes = [
     {
@@ -324,7 +336,9 @@ const Prescriptions: React.FC = () => {
         })),
         status: 'draft',
         notes: notes || null,
-        metadata: {}
+        // V1.9.119: salvar buyer_data em metadata.buyer_data quando Receita Controle Especial
+        // Outros tipos (simple/blue/yellow) mantem metadata vazio (comportamento original preservado)
+        metadata: selectedType === 'special' ? { buyer_data: buyerData } : {}
       }
 
       const { data, error: insertError } = await supabase
@@ -440,7 +454,169 @@ const Prescriptions: React.FC = () => {
     }
   }
 
+  // V1.9.119: Layout ANVISA Portaria 344/98 para Receita Controle Especial (2 vias + Comprador + Fornecedor)
+  // Renderiza HTML diferenciado quando prescription.prescription_type === 'special'.
+  // Outros tipos (simple/blue/yellow) seguem para o layout original (intocado abaixo).
+  const handlePrintAnvisaSpecial = (prescription: Prescription) => {
+    const printWindow = window.open('', '_blank')
+    if (!printWindow) {
+      toast.warning('Pop-ups bloqueado', 'Por favor, permita pop-ups para visualizar a prescrição.')
+      return
+    }
+
+    // Buyer data vem de metadata.buyer_data (V1.9.119)
+    const buyer = ((prescription as any).metadata?.buyer_data) || { name: '', id: '', id_org: '', address: '', city: '', uf: '' }
+    const date = new Date(prescription.created_at).toLocaleDateString('pt-BR')
+    const idShort = prescription.id.slice(0, 8).toUpperCase()
+
+    // Renderiza UMA via (paciente OU farmácia). Imprime a página duas vezes via CSS @media print.
+    const viaContent = (viaLabel: string) => `
+      <div class="receita-via">
+        <div class="via-label">${viaLabel}</div>
+        <div class="header-anvisa">
+          <h1 class="titulo">RECEITUÁRIO DE CONTROLE ESPECIAL</h1>
+          <div class="vias-info">
+            1ª Via - (Branca) RETENÇÃO DA FARMÁCIA OU DROGARIA<br>
+            2ª Via - (Amarela) ORIENTAÇÃO / PACIENTE
+          </div>
+        </div>
+        <div class="bloco-emitente">
+          <div class="bloco-titulo">IDENTIFICAÇÃO DO EMITENTE</div>
+          <div class="emitente-content">
+            <strong>Dr(a). ${prescription.professional_name}</strong><br>
+            CRM: ${prescription.professional_crm || '___________________'}<br>
+            ${prescription.professional_specialty ? prescription.professional_specialty + '<br>' : ''}
+            <em class="aviso-pj">Emitido em nome do profissional — cadastro PJ MedCannLab em implantação</em>
+          </div>
+        </div>
+        <div class="bloco-numero">
+          <strong>Nº:</strong> ______________________
+          <div class="legenda-numero">(Preenchimento manual conforme talonário físico do profissional)</div>
+        </div>
+        <div class="bloco-paciente">
+          <div><strong>Paciente:</strong> ${prescription.patient_name}</div>
+          <div><strong>Endereço:</strong> _________________________________________________________________</div>
+        </div>
+        <div class="bloco-prescricao">
+          <div class="bloco-titulo-inline">Prescrição:</div>
+          ${prescription.medications.map((med, i) => `
+            <div class="med-line">
+              ${i + 1}. <strong>${med.name}</strong> — ${med.dosage} • ${med.quantity} unid<br>
+              <span class="med-uso">Uso: ${med.frequency} por ${med.duration}</span>
+            </div>
+          `).join('')}
+          ${notes || (prescription as any).notes ? `<div class="obs">Obs: ${(prescription as any).notes || notes}</div>` : ''}
+        </div>
+        <div class="bloco-data">Data: ${date}</div>
+        <div class="bloco-comprador">
+          <div class="bloco-titulo">IDENTIFICAÇÃO DO COMPRADOR</div>
+          <div class="campo"><strong>Nome:</strong> ${buyer.name || '_______________________________________________'}</div>
+          <div class="campo-row">
+            <span><strong>Ident.:</strong> ${buyer.id || '____________________'}</span>
+            <span><strong>Órg. Emissor:</strong> ${buyer.id_org || '________________'}</span>
+          </div>
+          <div class="campo"><strong>Endereço:</strong> ${buyer.address || '_______________________________________________'}</div>
+          <div class="campo-row">
+            <span><strong>Cidade:</strong> ${buyer.city || '____________________'}</span>
+            <span><strong>UF:</strong> ${buyer.uf || '____'}</span>
+          </div>
+        </div>
+        <div class="bloco-fornecedor">
+          <div class="bloco-titulo">IDENTIFICAÇÃO DO FORNECEDOR</div>
+          <div class="assinatura-line">
+            <div class="assinatura-spot">Assinatura do farmacêutico</div>
+            <div class="data-spot">Data: ___/___/______</div>
+          </div>
+        </div>
+        <div class="assinatura-medico">
+          <div class="linha-assinatura">_______________________________________________</div>
+          <div class="legenda-assinatura">CARIMBO E ASSINATURA DO MÉDICO</div>
+        </div>
+        <div class="rodape-anvisa">
+          Documento emitido em ${date} • ID: ${idShort} • Gerado por MedCannLab (em implantação)<br>
+          Este modelo deve ser impresso e assinado MANUALMENTE para validade legal completa.
+        </div>
+      </div>
+    `
+
+    const htmlContent = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>Receituário de Controle Especial - ${prescription.patient_name}</title>
+        <style>
+          @page { size: A4; margin: 1.5cm; }
+          * { box-sizing: border-box; }
+          body { font-family: 'Arial', sans-serif; font-size: 11px; color: #000; margin: 0; padding: 0; line-height: 1.4; position: relative; }
+          .watermark { position: fixed; top: 40%; left: 18%; transform: rotate(-30deg); font-size: 90px; font-weight: bold; color: rgba(0,0,0,0.05); letter-spacing: 8px; pointer-events: none; z-index: 0; user-select: none; }
+          .receita-via { position: relative; z-index: 1; padding: 8px; page-break-after: always; }
+          .receita-via:last-child { page-break-after: auto; }
+          .via-label { position: absolute; top: 0; right: 0; font-size: 10px; font-weight: bold; color: #555; padding: 4px 8px; border: 1px solid #999; }
+          .header-anvisa { text-align: center; border-bottom: 2px solid #000; padding-bottom: 8px; margin-bottom: 12px; }
+          .titulo { font-size: 16px; font-weight: bold; margin: 0 0 6px 0; letter-spacing: 1px; }
+          .vias-info { font-size: 10px; text-align: left; }
+          .bloco-titulo { font-weight: bold; text-align: center; background: #eee; padding: 3px; border: 1px solid #999; font-size: 11px; }
+          .bloco-titulo-inline { font-weight: bold; margin-bottom: 4px; }
+          .bloco-emitente { border: 1px solid #999; padding: 6px; margin-bottom: 12px; }
+          .emitente-content { padding-top: 6px; font-size: 11px; }
+          .aviso-pj { font-size: 9px; color: #666; display: block; margin-top: 4px; }
+          .bloco-numero { margin-bottom: 12px; padding: 6px; border: 1px dashed #999; }
+          .legenda-numero { font-size: 9px; color: #666; margin-top: 2px; font-style: italic; }
+          .bloco-paciente { margin-bottom: 12px; padding: 6px; border-bottom: 1px solid #ccc; }
+          .bloco-paciente div { margin-bottom: 6px; }
+          .bloco-prescricao { min-height: 200px; padding: 8px; border: 1px solid #ccc; margin-bottom: 12px; }
+          .med-line { margin-bottom: 8px; padding-bottom: 4px; border-bottom: 1px dashed #ccc; }
+          .med-uso { font-size: 10px; color: #444; }
+          .obs { margin-top: 8px; padding: 4px; background: #f8f8f8; font-size: 10px; }
+          .bloco-data { margin: 12px 0; }
+          .bloco-comprador, .bloco-fornecedor { border: 1px solid #999; padding: 6px; margin-bottom: 8px; }
+          .bloco-comprador .campo, .bloco-comprador .campo-row { padding: 4px 0; font-size: 11px; }
+          .bloco-comprador .campo-row { display: flex; gap: 16px; }
+          .bloco-comprador .campo-row span { flex: 1; }
+          .assinatura-line { display: flex; justify-content: space-between; padding: 12px 0; }
+          .assinatura-spot { font-size: 9px; color: #444; border-top: 1px solid #000; padding-top: 4px; min-width: 200px; text-align: center; }
+          .data-spot { font-size: 9px; color: #444; padding-top: 4px; }
+          .assinatura-medico { margin-top: 16px; text-align: center; }
+          .linha-assinatura { margin: 0 auto 4px; max-width: 80%; }
+          .legenda-assinatura { font-size: 10px; color: #444; }
+          .rodape-anvisa { margin-top: 16px; padding-top: 8px; border-top: 1px solid #ccc; font-size: 9px; color: #666; text-align: center; line-height: 1.6; }
+          @media print {
+            body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+          }
+        </style>
+      </head>
+      <body>
+        <div class="watermark">MEDCANNLAB</div>
+        ${viaContent('1ª Via — RETENÇÃO FARMÁCIA')}
+        ${viaContent('2ª Via — PACIENTE')}
+      </body>
+      </html>
+    `
+
+    printWindow.document.write(htmlContent)
+    printWindow.document.close()
+    printWindow.focus()
+    setTimeout(() => {
+      printWindow.print()
+    }, 500)
+  }
+
   const handlePrintPrescription = (prescription: Prescription) => {
+    // V1.9.119: Receita Controle Especial usa layout ANVISA dedicado (com mini-alerta educativo)
+    if (prescription.prescription_type === 'special') {
+      const proceed = window.confirm(
+        'Receituário de Controle Especial:\n\n' +
+        '• Este modelo deve ser IMPRESSO e ASSINADO MANUALMENTE para validade legal completa.\n' +
+        '• A NUMERAÇÃO deve ser preenchida à mão conforme talonário físico do profissional (ANVISA Portaria 344/98).\n' +
+        '• Cadastro PJ MedCannLab + ICP-Brasil em implantação.\n\n' +
+        'Continuar com a impressão?'
+      )
+      if (!proceed) return
+      handlePrintAnvisaSpecial(prescription)
+      return
+    }
+
+    // Layout ORIGINAL (simple/blue/yellow) - intocado abaixo
     const printWindow = window.open('', '_blank')
     if (!printWindow) {
       toast.warning('Pop-ups bloqueado', 'Por favor, permita pop-ups para visualizar a prescrição.')
@@ -989,6 +1165,89 @@ const Prescriptions: React.FC = () => {
                   </div>
                 </div>
               </div>
+
+              {/* V1.9.119: Dados do Comprador - obrigatorio apenas em Receita Controle Especial (ANVISA Portaria 344/98) */}
+              {selectedType === 'special' && (
+                <div className="space-y-4 mb-6 border-t border-slate-700/50 pt-6">
+                  <div>
+                    <h3 className="text-lg font-semibold text-white">
+                      Dados do Comprador
+                      <span className="ml-2 text-amber-400 text-sm font-normal">(ANVISA Portaria 344/98 — obrigatório)</span>
+                    </h3>
+                    <p className="text-xs text-slate-400 mt-1">
+                      Pode ser o próprio paciente OU representante (cuidador, familiar) que vai retirar o medicamento na farmácia.
+                    </p>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="md:col-span-2">
+                      <label className="block text-sm font-medium text-slate-300 mb-2">Nome do Comprador</label>
+                      <input
+                        type="text"
+                        value={buyerData.name}
+                        onChange={(e) => setBuyerData({ ...buyerData, name: e.target.value })}
+                        className="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:border-blue-500"
+                        placeholder="Nome completo de quem vai retirar"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-slate-300 mb-2">Documento (RG/CPF)</label>
+                      <input
+                        type="text"
+                        value={buyerData.id}
+                        onChange={(e) => setBuyerData({ ...buyerData, id: e.target.value })}
+                        className="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:border-blue-500"
+                        placeholder="Número do documento"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-slate-300 mb-2">Órgão Emissor</label>
+                      <input
+                        type="text"
+                        value={buyerData.id_org}
+                        onChange={(e) => setBuyerData({ ...buyerData, id_org: e.target.value })}
+                        className="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:border-blue-500"
+                        placeholder="Ex: SSP-RJ, Detran-SP"
+                      />
+                    </div>
+                    <div className="md:col-span-2">
+                      <label className="block text-sm font-medium text-slate-300 mb-2">Endereço</label>
+                      <input
+                        type="text"
+                        value={buyerData.address}
+                        onChange={(e) => setBuyerData({ ...buyerData, address: e.target.value })}
+                        className="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:border-blue-500"
+                        placeholder="Rua, número, complemento, bairro"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-slate-300 mb-2">Cidade</label>
+                      <input
+                        type="text"
+                        value={buyerData.city}
+                        onChange={(e) => setBuyerData({ ...buyerData, city: e.target.value })}
+                        className="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:border-blue-500"
+                        placeholder="Município"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-slate-300 mb-2">UF</label>
+                      <input
+                        type="text"
+                        maxLength={2}
+                        value={buyerData.uf}
+                        onChange={(e) => setBuyerData({ ...buyerData, uf: e.target.value.toUpperCase() })}
+                        className="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:border-blue-500"
+                        placeholder="RJ"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg p-3 text-xs text-amber-200">
+                    <p><strong>Atenção:</strong> Receita de Controle Especial exige preenchimento manual da numeração do talonário e assinatura física do médico para validade legal completa. Cadastro PJ MedCannLab Ltda + ICP-Brasil em implantação.</p>
+                  </div>
+                </div>
+              )}
 
               {/* Medicamentos */}
               <div className="mb-6">
