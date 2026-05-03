@@ -80,6 +80,10 @@ const Prescriptions: React.FC = () => {
   const [error, setError] = useState<string | null>(null)
   const [patientSearch, setPatientSearch] = useState('')
   const [patientResults, setPatientResults] = useState<any[]>([])
+  // V1.9.119-C: distinguir entre "lista de recentes pre-carregada" e "resultados de busca ativa"
+  // Resolve UX onde Ricardo (60a) abria tela e via input vazio - achava que nao tinha pacientes.
+  const [patientListMode, setPatientListMode] = useState<'recent' | 'search'>('recent')
+  const [patientListLoading, setPatientListLoading] = useState(false)
   const [selectedPatient, setSelectedPatient] = useState<any | null>(null)
   const [currentPrescriptionId, setCurrentPrescriptionId] = useState<string | null>(null)
 
@@ -232,12 +236,53 @@ const Prescriptions: React.FC = () => {
     }
   }
 
+  // V1.9.119-C: Carregar pacientes recentes do medico (pre-popular dropdown ao abrir tela)
+  // Resolve UX: Ricardo (60a) abria form vazio e nao sabia que precisava digitar pra buscar.
+  // Mostra 10 mais recentes ao abrir, mantém busca ativa pra escala (500+ pacientes futuros).
+  const loadRecentPatients = async () => {
+    if (!user?.id) return
+
+    setPatientListLoading(true)
+    setPatientListMode('recent')
+    try {
+      // Tentar users_compatible primeiro
+      const { data: compatibleData, error: compatibleError } = await supabase
+        .from('users_compatible')
+        .select('id, name, email, cpf, phone, type')
+        .in('type', ['patient', 'paciente'])
+        .order('created_at', { ascending: false })
+        .limit(10)
+
+      let usersData = null
+      if (!compatibleError && compatibleData) {
+        usersData = compatibleData
+      } else {
+        // Fallback: buscar em users
+        const { data: usersDataFallback } = await supabase
+          .from('users')
+          .select('id, name, email, cpf, phone, type')
+          .in('type', ['patient', 'paciente'])
+          .order('created_at', { ascending: false })
+          .limit(10)
+        usersData = usersDataFallback
+      }
+
+      setPatientResults(usersData || [])
+    } catch (err) {
+      console.error('Erro ao carregar pacientes recentes:', err)
+    } finally {
+      setPatientListLoading(false)
+    }
+  }
+
   // Buscar pacientes
   const searchPatients = async (searchTerm: string) => {
     if (!searchTerm || searchTerm.length < 2) {
-      setPatientResults([])
+      // V1.9.119-C: quando busca vazia, voltar para lista de recentes (nao limpar)
+      loadRecentPatients()
       return
     }
+    setPatientListMode('search')
 
     try {
       // Buscar pacientes - tentar users_compatible primeiro, depois users
@@ -250,7 +295,7 @@ const Prescriptions: React.FC = () => {
         .select('id, name, email, cpf, phone, type')
         .or(`name.ilike.*${searchTerm}*,cpf.ilike.*${searchTerm}*,email.ilike.*${searchTerm}*`)
         .in('type', ['patient', 'paciente'])
-        .limit(10)
+        .limit(50)
 
       if (!compatibleError && compatibleData) {
         usersData = compatibleData
@@ -283,12 +328,22 @@ const Prescriptions: React.FC = () => {
       if (patientSearch) {
         searchPatients(patientSearch)
       } else {
-        setPatientResults([])
+        // V1.9.119-C: ao limpar busca, voltar para lista de recentes (não esvaziar)
+        loadRecentPatients()
       }
     }, 300)
 
     return () => clearTimeout(timeoutId)
   }, [patientSearch])
+
+  // V1.9.119-C: pré-carregar lista de pacientes recentes ao abrir o formulário de prescrição
+  // Resolve UX: médico vê dropdown imediato com últimos pacientes, sem precisar adivinhar
+  // que tem que digitar pra buscar.
+  useEffect(() => {
+    if (showForm && user?.id && patientResults.length === 0 && !selectedPatient) {
+      loadRecentPatients()
+    }
+  }, [showForm, user?.id])
 
   const handleSelectPatient = (patient: any) => {
     setSelectedPatient(patient)
@@ -1074,7 +1129,7 @@ const Prescriptions: React.FC = () => {
                       value={patientSearch}
                       onChange={(e) => setPatientSearch(e.target.value)}
                       className="w-full pl-10 pr-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:border-blue-500"
-                      placeholder="Digite nome, CPF ou email do paciente"
+                      placeholder="Digite nome, CPF ou email — ou veja seus pacientes recentes abaixo"
                     />
                     {selectedPatient && (
                       <button
@@ -1085,6 +1140,8 @@ const Prescriptions: React.FC = () => {
                           setPatientEmail('')
                           setPatientPhone('')
                           setPatientId(null)
+                          // V1.9.119-C: ao limpar paciente, recarrega lista de recentes
+                          loadRecentPatients()
                         }}
                         className="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-white"
                       >
@@ -1093,22 +1150,51 @@ const Prescriptions: React.FC = () => {
                     )}
                   </div>
 
-                  {/* Resultados da Busca */}
-                  {patientResults.length > 0 && !selectedPatient && (
-                    <div className="absolute z-10 w-full mt-1 bg-slate-800 border border-slate-600 rounded-lg shadow-lg max-h-60 overflow-y-auto">
-                      {patientResults.map((patient) => (
-                        <button
-                          key={patient.id}
-                          onClick={() => handleSelectPatient(patient)}
-                          className="w-full px-4 py-3 text-left hover:bg-slate-700 transition-colors border-b border-slate-700 last:border-b-0"
-                        >
-                          <p className="text-white font-medium">{patient.name}</p>
-                          <p className="text-sm text-slate-400">
-                            {patient.cpf && `CPF: ${patient.cpf} • `}
-                            {patient.email && `Email: ${patient.email}`}
-                          </p>
-                        </button>
-                      ))}
+                  {/* V1.9.119-C: Lista de pacientes — recentes ou resultados de busca */}
+                  {!selectedPatient && (
+                    <div className="mt-2 bg-slate-800 border border-slate-600 rounded-lg shadow-lg max-h-72 overflow-y-auto">
+                      {/* Badge contextual */}
+                      <div className="sticky top-0 px-4 py-2 bg-slate-900/95 border-b border-slate-700 flex items-center justify-between text-xs">
+                        <span className="text-slate-400 font-medium">
+                          {patientListLoading ? (
+                            <>⏳ Carregando pacientes...</>
+                          ) : patientListMode === 'search' ? (
+                            <>🔍 Resultados da busca por "{patientSearch}"</>
+                          ) : (
+                            <>📋 Pacientes recentes (digite para buscar entre todos)</>
+                          )}
+                        </span>
+                        <span className="text-slate-500">
+                          {patientResults.length} {patientResults.length === 1 ? 'paciente' : 'pacientes'}
+                        </span>
+                      </div>
+
+                      {/* Lista */}
+                      {patientResults.length > 0 ? (
+                        patientResults.map((patient) => (
+                          <button
+                            key={patient.id}
+                            onClick={() => handleSelectPatient(patient)}
+                            className="w-full px-4 py-3 text-left hover:bg-slate-700 transition-colors border-b border-slate-700 last:border-b-0"
+                          >
+                            <p className="text-white font-medium">{patient.name}</p>
+                            <p className="text-sm text-slate-400">
+                              {patient.cpf && `CPF: ${patient.cpf} • `}
+                              {patient.email && `Email: ${patient.email}`}
+                            </p>
+                          </button>
+                        ))
+                      ) : !patientListLoading ? (
+                        <div className="px-4 py-6 text-center text-sm text-slate-400">
+                          {patientListMode === 'search' ? (
+                            <>Nenhum paciente encontrado com "{patientSearch}".<br/>
+                            <span className="text-xs text-slate-500">Verifique a grafia ou tente CPF/email.</span></>
+                          ) : (
+                            <>Nenhum paciente cadastrado ainda.<br/>
+                            <span className="text-xs text-slate-500">Você pode digitar os dados manualmente abaixo.</span></>
+                          )}
+                        </div>
+                      ) : null}
                     </div>
                   )}
                 </div>
