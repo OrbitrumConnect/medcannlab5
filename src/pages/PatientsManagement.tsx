@@ -1242,17 +1242,18 @@ const PatientsManagement: React.FC<PatientsManagementProps> = ({ embedded = fals
 
                 {showNewPatientMenu && (
                   <div
-                    className="absolute top-12 right-0 w-64 bg-slate-800 border border-slate-700 rounded-lg shadow-2xl z-[9999] new-patient-menu-container"
+                    className="absolute right-0 mt-2 w-60 bg-slate-800 border border-slate-700 rounded-lg shadow-2xl z-[9999] new-patient-menu-container"
+                    style={{ top: '100%' }}
                   >
-                    <div className="p-2">
+                    <div className="p-1.5">
                       <button
                         onClick={() => {
                           setShowNewPatientMenu(false)
                           navigate('/app/new-patient?mode=manual')
                         }}
-                        className="w-full text-left px-4 py-2 rounded-lg hover:bg-slate-700 transition-colors text-white flex items-center space-x-2"
+                        className="w-full text-left px-3 py-2 rounded-md hover:bg-slate-700 transition-colors text-white flex items-center gap-2 text-sm"
                       >
-                        <UserPlus className="w-4 h-4" />
+                        <UserPlus className="w-4 h-4 text-emerald-400" />
                         <span>Cadastro Manual</span>
                       </button>
                       <button
@@ -1260,9 +1261,9 @@ const PatientsManagement: React.FC<PatientsManagementProps> = ({ embedded = fals
                           setShowNewPatientMenu(false)
                           navigate('/app/new-patient?mode=csv')
                         }}
-                        className="w-full text-left px-4 py-2 rounded-lg hover:bg-slate-700 transition-colors text-white flex items-center space-x-2"
+                        className="w-full text-left px-3 py-2 rounded-md hover:bg-slate-700 transition-colors text-white flex items-center gap-2 text-sm"
                       >
-                        <FileText className="w-4 h-4" />
+                        <FileText className="w-4 h-4 text-blue-400" />
                         <span>Importar CSV</span>
                       </button>
                       <button
@@ -1270,9 +1271,9 @@ const PatientsManagement: React.FC<PatientsManagementProps> = ({ embedded = fals
                           setShowNewPatientMenu(false)
                           navigate('/app/new-patient?mode=database')
                         }}
-                        className="w-full text-left px-4 py-2 rounded-lg hover:bg-slate-700 transition-colors text-white flex items-center space-x-2"
+                        className="w-full text-left px-3 py-2 rounded-md hover:bg-slate-700 transition-colors text-white flex items-center gap-2 text-sm"
                       >
-                        <Archive className="w-4 h-4" />
+                        <Archive className="w-4 h-4 text-amber-400" />
                         <span>Importar do Banco</span>
                       </button>
                       <button
@@ -1280,9 +1281,9 @@ const PatientsManagement: React.FC<PatientsManagementProps> = ({ embedded = fals
                           setShowNewPatientMenu(false)
                           navigate('/app/new-patient?mode=drag-drop')
                         }}
-                        className="w-full text-left px-4 py-2 rounded-lg hover:bg-slate-700 transition-colors text-white flex items-center space-x-2"
+                        className="w-full text-left px-3 py-2 rounded-md hover:bg-slate-700 transition-colors text-white flex items-center gap-2 text-sm"
                       >
-                        <Upload className="w-4 h-4" />
+                        <Upload className="w-4 h-4 text-purple-400" />
                         <span>Arrastar Arquivos</span>
                       </button>
                     </div>
@@ -1597,8 +1598,9 @@ const PatientsManagement: React.FC<PatientsManagementProps> = ({ embedded = fals
                 {/* Tabs - Apenas quando há paciente selecionado */}
                 {selectedPatient && (
                   <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl border border-slate-700/50">
-                    <div className="border-b border-slate-700">
-                      <div className="flex overflow-x-auto gap-1 p-3 md:p-4 scrollbar-hide" style={{ WebkitOverflowScrolling: 'touch' }}>
+                    {/* V1.9.119-I: tabs compactas + scroll visivel + gradiente fade direito indicando mais conteudo */}
+                    <div className="border-b border-slate-700 relative">
+                      <div className="flex overflow-x-auto gap-1 p-2 md:p-2.5 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-slate-700" style={{ WebkitOverflowScrolling: 'touch' }}>
                         {[
                           { id: 'overview', label: 'Visão Geral', icon: Activity },
                           { id: 'analytics', label: 'Evolução e Analytics', icon: BarChart3 },
@@ -1615,17 +1617,19 @@ const PatientsManagement: React.FC<PatientsManagementProps> = ({ embedded = fals
                             <button
                               key={tab.id}
                               onClick={() => setActiveTab(tab.id as any)}
-                              className={`flex items-center gap-1.5 px-3 md:px-5 py-2 md:py-2.5 rounded-xl transition-all font-bold text-xs md:text-[15px] whitespace-nowrap shrink-0 ${activeTab === tab.id
-                                ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-900/20'
-                                : 'text-slate-400 hover:text-white hover:bg-slate-700/50'
+                              className={`flex items-center gap-1.5 px-2.5 md:px-3.5 py-1.5 md:py-2 rounded-lg transition-all font-medium text-xs md:text-sm whitespace-nowrap shrink-0 ${activeTab === tab.id
+                                ? 'bg-emerald-500/15 text-emerald-300 border border-emerald-500/30'
+                                : 'text-slate-400 hover:text-white hover:bg-slate-700/50 border border-transparent'
                                 }`}
                             >
-                              <Icon className="w-4 h-4" />
+                              <Icon className="w-3.5 h-3.5" />
                               <span>{tab.label}</span>
                             </button>
                           )
                         })}
                       </div>
+                      {/* Gradiente fade direito indicando que tem mais tabs (scroll horizontal) */}
+                      <div className="absolute right-0 top-0 bottom-0 w-12 bg-gradient-to-l from-slate-800/70 to-transparent pointer-events-none rounded-tr-xl" />
                     </div>
 
                     {/* Tab Content */}
