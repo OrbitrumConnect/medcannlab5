@@ -4,6 +4,7 @@ import { useAuth } from '../contexts/AuthContext'
 import { useToast } from '../contexts/ToastContext'
 import { supabase } from '../lib/supabase'
 import LoginDebugPanel from '../components/LoginDebugPanel'
+import { PerfilSwitcher } from '../components/landing/PerfilSwitcher'
 import { normalizeUserType, getDefaultRouteByType } from '../lib/userTypes'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
@@ -300,8 +301,13 @@ const Landing: React.FC = () => {
         </div>
       </nav>
 
+      {/* --- Perfil Switcher (V1.9.120 SEO 3 perfis) --- */}
+      <div className="pt-16">
+        <PerfilSwitcher />
+      </div>
+
       {/* --- Hero Section 2026 --- */}
-      <section className="relative pt-32 pb-20 overflow-hidden">
+      <section className="relative pt-12 pb-20 overflow-hidden">
         {/* Background Gradients */}
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-[600px] bg-gradient-to-b from-blue-900/20 via-green-900/10 to-transparent blur-3xl -z-10" />
 

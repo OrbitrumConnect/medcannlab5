@@ -22,6 +22,9 @@ import ErrorBoundary from './components/ErrorBoundary'
 
 // Pages
 import Landing from './pages/Landing'
+import LandingPaciente from './pages/LandingPaciente'
+import LandingMedico from './pages/LandingMedico'
+import LandingAluno from './pages/LandingAluno'
 import Dashboard from './pages/Dashboard'
 import Courses from './pages/Courses'
 import StudyArea from './pages/StudyArea'
@@ -109,6 +112,9 @@ function App() {
                       <ErrorBoundary>
                       <Routes>
                         <Route path="/" element={<Landing />} />
+                        <Route path="/paciente" element={<LandingPaciente />} />
+                        <Route path="/medico" element={<LandingMedico />} />
+                        <Route path="/aluno" element={<LandingAluno />} />
                         <Route path="/reset-password" element={<ResetPassword />} />
                         <Route path="/invite" element={<InvitePatient />} /> {/* NEW ROUTE */}
                         <Route path="/termos-lgpd" element={<TermosLGPD />} />
