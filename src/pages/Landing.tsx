@@ -342,7 +342,7 @@ const Landing: React.FC = () => {
             </h1>
 
             <p className="text-base text-slate-300 mb-3 max-w-xl mx-auto lg:mx-0 leading-relaxed">
-              MedCannLab é um <strong className="text-emerald-300">modelo clínico orientado pela Escuta (AEC)</strong>, operacionalizado por uma <strong className="text-emerald-300">infraestrutura digital</strong> e acessado através de uma <strong className="text-emerald-300">aplicação tecnológica</strong>.
+              MedCannLab é um <strong className="text-emerald-300">modelo clínico orientado pela escuta</strong>, fundado na <strong className="text-emerald-300">Arte da Entrevista Clínica (AEC)</strong>, operacionalizado por uma <strong className="text-emerald-300">infraestrutura digital</strong> e acessado através de uma <strong className="text-emerald-300">aplicação tecnológica</strong>.
             </p>
             <p className="text-sm text-slate-400 mb-4 max-w-xl mx-auto lg:mx-0 leading-relaxed">
               Método autoral do <strong className="text-emerald-200">Dr. Ricardo Valença</strong> — nefrologista há mais de <strong className="text-emerald-200">40 anos</strong>, com <strong className="text-emerald-200">2.000+ avaliações</strong> conduzidas. Direção médica e científica do <strong className="text-teal-200">Dr. Eduardo Faveret</strong> (Neurologia). Desenvolvido em <span className="text-emerald-300/90">neurologia e cannabis medicinal</span>, aplicável a qualquer especialidade médica.
