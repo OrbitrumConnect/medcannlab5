@@ -576,9 +576,29 @@ const PatientAnalytics: React.FC<PatientAnalyticsProps> = ({ reports, loading, u
                         <Activity className="w-8 h-8 text-slate-400" />
                     </div>
                     <h3 className="text-xl font-bold text-slate-200">Nenhuma avaliação encontrada</h3>
-                    <p className="text-slate-400 max-w-md">
+                    <p className="text-slate-400 max-w-md text-center">
                         Complete sua primeira avaliação clínica inicial com a Nôa para gerar seus indicadores de saúde e acompanhar seu progresso.
                     </p>
+
+                    {/* V1.9.122 — CTAs no estado vazio (antes só apareciam apos relatorio) */}
+                    <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
+                        {onStartAssessment && (
+                            <button
+                                onClick={onStartAssessment}
+                                className="flex items-center gap-2 px-5 py-2.5 bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 border border-emerald-500/30 rounded-lg text-sm font-semibold transition-colors"
+                            >
+                                <Brain className="w-4 h-4" />
+                                Fazer Primeira Avaliação
+                            </button>
+                        )}
+                        <button
+                            onClick={() => navigate('/app/clinica/paciente/agendamentos')}
+                            className="flex items-center gap-2 px-5 py-2.5 bg-indigo-500/10 text-indigo-400 hover:bg-indigo-500/20 border border-indigo-500/20 rounded-lg text-sm font-semibold transition-colors"
+                        >
+                            <UserPlus className="w-4 h-4" />
+                            Vincular ao Profissional
+                        </button>
+                    </div>
                 </div>
             </div>
         )
