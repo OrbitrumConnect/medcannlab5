@@ -386,51 +386,52 @@ const IntegrativePrescriptions: React.FC<IntegrativePrescriptionsProps> = ({
                 Gestão de Prescrições
               </h2>
             </div>
-            {/* Tabs */}
-            <div className="flex items-center gap-2 bg-slate-950/50 p-1 rounded-xl border border-slate-800/50">
+            {/* V1.9.119-H: Tabs muted (era bg-primary-500 sólido — verde competia com outros CTAs) */}
+            <div className="flex items-center gap-1 bg-slate-950/50 p-1 rounded-xl border border-slate-800/50">
               <button
                 onClick={() => setActiveTab('library')}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${activeTab === 'library'
-                    ? 'bg-primary-500 text-white shadow-lg shadow-primary-500/20'
-                    : 'text-slate-400 hover:text-white hover:bg-slate-800'
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${activeTab === 'library'
+                    ? 'bg-emerald-500/15 text-emerald-300 border border-emerald-500/30'
+                    : 'text-slate-400 hover:text-white hover:bg-slate-800/60 border border-transparent'
                   }`}
               >
-                <LayoutGrid className="w-4 h-4" />
+                <LayoutGrid className="w-3.5 h-3.5" />
                 Biblioteca
               </button>
               <button
                 onClick={() => setActiveTab('history')}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${activeTab === 'history'
-                    ? 'bg-primary-500 text-white shadow-lg shadow-primary-500/20'
-                    : 'text-slate-400 hover:text-white hover:bg-slate-800'
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${activeTab === 'history'
+                    ? 'bg-emerald-500/15 text-emerald-300 border border-emerald-500/30'
+                    : 'text-slate-400 hover:text-white hover:bg-slate-800/60 border border-transparent'
                   }`}
               >
-                <History className="w-4 h-4" />
+                <History className="w-3.5 h-3.5" />
                 Histórico
               </button>
             </div>
           </div>
 
           {/* Subheader Actions */}
-          <div className="flex items-center justify-between border-t border-slate-800 pt-6">
-            <div className="flex items-center gap-2 text-sm text-slate-400">
+          <div className="flex items-center justify-between border-t border-slate-800 pt-4">
+            <div className="flex items-center gap-2 text-xs text-slate-400">
               {activeTab === 'library' ? (
                 <>
-                  <BookOpen className="w-4 h-4 text-primary-400" />
+                  <BookOpen className="w-3.5 h-3.5 text-primary-400" />
                   <span>Selecione um protocolo para iniciar a prescrição</span>
                 </>
               ) : (
                 <>
-                  <List className="w-4 h-4 text-primary-400" />
+                  <List className="w-3.5 h-3.5 text-primary-400" />
                   <span>Histórico de prescrições emitidas para o paciente</span>
                 </>
               )}
             </div>
+            {/* V1.9.119-H: Botao "Nova Prescricao CFM" continua emerald (CTA primario) mas mais sobrio */}
             <button
               onClick={() => setShowCFMModal(true)}
-              className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-medium transition-colors shadow-lg shadow-emerald-900/20"
+              className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-600/90 hover:bg-emerald-500 text-white text-xs font-medium transition-all hover:scale-[1.02] shadow-md shadow-emerald-900/20"
             >
-              <Plus className="w-4 h-4" />
+              <Plus className="w-3.5 h-3.5" />
               Nova Prescrição CFM
             </button>
           </div>
