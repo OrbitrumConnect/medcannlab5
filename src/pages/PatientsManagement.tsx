@@ -152,6 +152,12 @@ interface Patient {
   appointmentsCount: number
   absences: number
   servicesCount: number
+  // V1.9.119-F: dados clinicos relevantes pra Visao Geral
+  birthDate?: string | null
+  allergies?: string | null
+  medications?: string | null
+  bloodType?: string | null
+  email?: string
 }
 
 interface Evolution {
@@ -623,7 +629,7 @@ const PatientsManagement: React.FC<PatientsManagementProps> = ({ embedded = fals
       if (usersData.length === 0) {
         const { data: usersDataFromUsers, error: usersError } = await supabase
           .from('users')
-          .select('id, name, email, type, created_at')
+          .select('id, name, email, type, created_at, birth_date, allergies, medications, blood_type, phone, cpf')
           .in('type', ['paciente', 'patient'])
           .order('created_at', { ascending: false })
 
@@ -633,12 +639,31 @@ const PatientsManagement: React.FC<PatientsManagementProps> = ({ embedded = fals
         } else if (usersError) {
           const { data: usersDataFromCompatible, error: compatibleError } = await supabase
             .from('users_compatible')
-            .select('id, name, email, phone, type, created_at')
+            .select('id, name, email, phone, type, created_at, birth_date, allergies, medications, blood_type, cpf')
             .in('type', ['paciente', 'patient'])
             .order('created_at', { ascending: false })
           if (!compatibleError && usersDataFromCompatible) {
             usersData = usersDataFromCompatible.filter(u => u.id !== user?.id)
             console.log('✅ Pacientes encontrados na tabela users_compatible:', usersData.length)
+          }
+        }
+      }
+
+      // V1.9.119-F: enriquecer com dados clinicos do banco (alergias, medicacoes, birth_date)
+      // mesmo quando getAllPatients retornou primeiro (que so traz id, name, email, phone)
+      if (usersData.length > 0) {
+        const ids = usersData.map(u => u.id).filter(Boolean)
+        if (ids.length > 0) {
+          const { data: clinicalData } = await supabase
+            .from('users')
+            .select('id, birth_date, allergies, medications, blood_type, cpf')
+            .in('id', ids)
+          if (clinicalData) {
+            const clinicalMap = new Map(clinicalData.map(c => [c.id, c]))
+            usersData = usersData.map(u => {
+              const extra = clinicalMap.get(u.id)
+              return extra ? { ...u, ...extra } : u
+            })
           }
         }
       }
@@ -712,14 +737,41 @@ const PatientsManagement: React.FC<PatientsManagementProps> = ({ embedded = fals
         const patientIdStr = u.id?.toString().replace(/-/g, '') || ''
         const patientCode = `#PAT${patientIdStr.substring(0, 8).toUpperCase() || '0001'}`
 
+        // V1.9.119-F: calcular idade REAL a partir de birth_date (preferencial sobre patientAge da AEC)
+        let computedAge = patientAge
+        let computedMonths = 0
+        let computedDays = 0
+        if (u.birth_date) {
+          try {
+            const birth = new Date(u.birth_date)
+            const now = new Date()
+            if (!Number.isNaN(birth.getTime())) {
+              let years = now.getFullYear() - birth.getFullYear()
+              let months = now.getMonth() - birth.getMonth()
+              let days = now.getDate() - birth.getDate()
+              if (days < 0) { months--; days += 30 }
+              if (months < 0) { years--; months += 12 }
+              computedAge = years
+              computedMonths = months
+              computedDays = days
+            }
+          } catch (_) {
+            // mantem patientAge se birth_date invalido
+          }
+        }
+
+        // V1.9.119-F: usar CPF/phone do banco se AEC nao trouxe
+        const finalCpf = patientCpf || u.cpf || ''
+        const finalPhone = patientPhone || u.phone || ''
+
         patientsMap.set(u.id, {
           id: u.id,
           name: patientName,
-          age: patientAge,
-          months: 0,
-          days: 0,
-          phone: patientPhone || 'Não informado',
-          cpf: patientCpf,
+          age: computedAge,
+          months: computedMonths,
+          days: computedDays,
+          phone: finalPhone || 'Não informado',
+          cpf: finalCpf,
           code: patientCode,
           photo: '',
           specialty: patientData.specialty || 'Cannabis Medicinal',
@@ -729,7 +781,13 @@ const PatientsManagement: React.FC<PatientsManagementProps> = ({ embedded = fals
           status: 'active',
           appointmentsCount,
           absences: 0,
-          servicesCount: patientAssessments.filter(a => a.status === 'completed').length
+          servicesCount: patientAssessments.filter(a => a.status === 'completed').length,
+          // V1.9.119-F: dados clinicos enriquecidos
+          birthDate: u.birth_date || null,
+          allergies: u.allergies || null,
+          medications: u.medications || null,
+          bloodType: u.blood_type || null,
+          email: u.email || ''
         })
       })
 
@@ -1413,80 +1471,120 @@ const PatientsManagement: React.FC<PatientsManagementProps> = ({ embedded = fals
                     </button>
                   </div>
                 )}
-                {/* Patient Header */}
-                <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl p-6 border border-slate-700/50">
-                  <div className="flex items-start justify-between">
-                    <div className="flex items-center space-x-4">
-                      <div className="w-20 h-20 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-full flex items-center justify-center">
+                {/* V1.9.119-F: Patient Header redesign — compacto + dados clinicos relevantes + metricas inline */}
+                <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl p-4 border border-slate-700/50">
+                  <div className="flex items-start justify-between gap-4 flex-wrap">
+                    <div className="flex items-center gap-3 min-w-0 flex-1">
+                      <div className="w-14 h-14 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-full flex items-center justify-center shrink-0">
                         {selectedPatient.photo ? (
-                          <img src={selectedPatient.photo} alt={selectedPatient.name} className="w-20 h-20 rounded-full" />
+                          <img src={selectedPatient.photo} alt={selectedPatient.name} className="w-14 h-14 rounded-full" />
                         ) : (
-                          <User className="w-10 h-10 text-white" />
+                          <User className="w-7 h-7 text-white" />
                         )}
                       </div>
-                      <div>
-                        <h2 className="text-3xl font-black text-white tracking-tight">{selectedPatient.name}</h2>
-                        <div className="flex items-center space-x-4 mt-2 text-base font-bold text-slate-400">
-                          <span>{selectedPatient.age}a, {selectedPatient.months}m, {selectedPatient.days}d</span>
+                      <div className="min-w-0 flex-1">
+                        <h2 className="text-xl font-bold text-white tracking-tight truncate">{selectedPatient.name}</h2>
+                        <div className="flex items-center gap-2 mt-0.5 text-sm font-medium text-slate-400 flex-wrap">
+                          {selectedPatient.birthDate ? (
+                            <span className="text-slate-300">{selectedPatient.age} anos</span>
+                          ) : (
+                            <span className="text-slate-500 italic">Idade não informada</span>
+                          )}
                           <span className="opacity-30">•</span>
-                          <span className="text-emerald-400">#{selectedPatient.code}</span>
-                        </div>
-                        <div className="flex items-center space-x-4 mt-1.5 text-base font-medium text-slate-300">
-                          <div className="flex items-center space-x-1.5">
-                            <Phone className="w-4 h-4 text-emerald-500" />
-                            <span>{selectedPatient.phone}</span>
-                          </div>
-                          <span className="opacity-30">•</span>
-                          <div className="flex items-center space-x-1.5">
-                            <span className="text-slate-500 font-bold uppercase text-[11px] tracking-widest">CPF:</span>
-                            <span>{selectedPatient.cpf}</span>
-                          </div>
+                          <span className="text-emerald-400 font-mono text-xs">#{selectedPatient.code}</span>
+                          {selectedPatient.cpf && (
+                            <>
+                              <span className="opacity-30">•</span>
+                              <span className="text-slate-400 text-xs">CPF: {selectedPatient.cpf}</span>
+                            </>
+                          )}
+                          {selectedPatient.phone && selectedPatient.phone !== 'Não informado' && (
+                            <>
+                              <span className="opacity-30">•</span>
+                              <span className="text-slate-400 text-xs flex items-center gap-1">
+                                <Phone className="w-3 h-3 text-emerald-500" />
+                                {selectedPatient.phone}
+                              </span>
+                            </>
+                          )}
                         </div>
                       </div>
                     </div>
-                    <div className="flex flex-wrap items-center gap-2">
+                    <div className="flex flex-wrap items-center gap-2 shrink-0">
                       <button
                         onClick={() => setActiveTab('analytics')}
-                        className="px-4 py-2 bg-amber-500/20 text-amber-300 border border-amber-500/40 rounded-lg hover:bg-amber-500/30 transition-colors flex items-center gap-2"
+                        className="px-3 py-1.5 bg-amber-500/20 text-amber-300 border border-amber-500/40 rounded-lg hover:bg-amber-500/30 transition-colors flex items-center gap-1.5 text-xs font-medium"
                       >
-                        <BarChart3 className="w-4 h-4" />
-                        Evolução e Analytics
+                        <BarChart3 className="w-3.5 h-3.5" />
+                        Analytics
                       </button>
                       <button
                         onClick={() => {
                           setActiveTab('evolution')
                           setShowNewEvolution(true)
                         }}
-                        className="px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-lg hover:from-green-600 hover:to-emerald-600 transition-colors"
+                        className="px-3 py-1.5 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-lg hover:from-green-600 hover:to-emerald-600 transition-colors text-xs font-medium"
                       >
-                        Nova Evolução
+                        + Nova Evolução
                       </button>
                       <button
                         onClick={handleOpenPatientChat}
                         disabled={openingChat}
-                        className={`px-4 py-2 rounded-lg transition-colors ${openingChat
+                        className={`px-3 py-1.5 rounded-lg transition-colors text-xs font-medium ${openingChat
                           ? 'bg-primary-500/60 text-white cursor-wait'
                           : 'bg-primary-500 text-white hover:bg-primary-400'
                           }`}
                       >
-                        {openingChat ? 'Abrindo chat...' : 'Chat Clínico'}
+                        {openingChat ? 'Abrindo...' : '💬 Chat'}
                       </button>
                     </div>
                   </div>
 
-                  {/* Stats */}
-                  <div className="grid grid-cols-3 gap-4 mt-6">
-                    <div className="bg-slate-700/30 rounded-xl p-5 text-center border border-slate-700/50">
-                      <p className="text-3xl font-black text-white mb-1">{selectedPatient.appointmentsCount}</p>
-                      <p className="text-xs font-black text-slate-500 uppercase tracking-[0.2em]">Atendimentos</p>
+                  {/* V1.9.119-F: Bloco ATENCOES — alergias + medicacoes (so renderiza se tem dado) */}
+                  {(selectedPatient.allergies || selectedPatient.medications || selectedPatient.bloodType) && (
+                    <div className="mt-3 pt-3 border-t border-slate-700/50 space-y-1.5 text-xs">
+                      {selectedPatient.allergies && (
+                        <div className="flex items-start gap-2">
+                          <span className="text-amber-400 font-semibold shrink-0">⚠️ Alergias:</span>
+                          <span className="text-slate-300">{selectedPatient.allergies}</span>
+                        </div>
+                      )}
+                      {selectedPatient.medications && (
+                        <div className="flex items-start gap-2">
+                          <span className="text-blue-400 font-semibold shrink-0">💊 Medicações em curso:</span>
+                          <span className="text-slate-300">{selectedPatient.medications}</span>
+                        </div>
+                      )}
+                      {selectedPatient.bloodType && (
+                        <div className="flex items-start gap-2">
+                          <span className="text-rose-400 font-semibold shrink-0">🩸 Tipo sanguíneo:</span>
+                          <span className="text-slate-300">{selectedPatient.bloodType}</span>
+                        </div>
+                      )}
                     </div>
-                    <div className="bg-slate-700/30 rounded-xl p-5 text-center border border-slate-700/50">
-                      <p className="text-3xl font-black text-white mb-1">{selectedPatient.absences}</p>
-                      <p className="text-xs font-black text-slate-500 uppercase tracking-[0.2em]">Faltas</p>
+                  )}
+                  {!selectedPatient.allergies && !selectedPatient.medications && !selectedPatient.bloodType && (
+                    <div className="mt-3 pt-3 border-t border-slate-700/50 text-xs text-slate-500 italic">
+                      Nenhum dado clínico cadastrado (alergias, medicações, tipo sanguíneo).
+                      Você pode adicionar via aba Evolução.
                     </div>
-                    <div className="bg-slate-700/30 rounded-xl p-5 text-center border border-slate-700/50">
-                      <p className="text-3xl font-black text-white mb-1">{selectedPatient.servicesCount}</p>
-                      <p className="text-xs font-black text-slate-500 uppercase tracking-[0.2em]">Serviços</p>
+                  )}
+
+                  {/* V1.9.119-F: Métricas compactas em LINHA (era 3 cards grandes — agora inline) */}
+                  <div className="mt-3 pt-3 border-t border-slate-700/50 flex items-center gap-4 text-xs flex-wrap">
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-slate-500 uppercase tracking-wider font-semibold">Atendimentos</span>
+                      <span className="text-white font-bold text-base">{selectedPatient.appointmentsCount}</span>
+                    </div>
+                    <span className="text-slate-700">|</span>
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-slate-500 uppercase tracking-wider font-semibold">Faltas</span>
+                      <span className="text-white font-bold text-base">{selectedPatient.absences}</span>
+                    </div>
+                    <span className="text-slate-700">|</span>
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-slate-500 uppercase tracking-wider font-semibold">Serviços</span>
+                      <span className="text-white font-bold text-base">{selectedPatient.servicesCount}</span>
                     </div>
                   </div>
                 </div>
@@ -1541,30 +1639,41 @@ const PatientsManagement: React.FC<PatientsManagementProps> = ({ embedded = fals
                         </div>
                       )}
                       {activeTab === 'overview' && (
-                        <div className="space-y-4">
-                          {/* Integrated Clinical Governance Engine (ACDSS) */}
-                          <div className="mb-6">
-                            <IntegratedGovernanceView patientId={selectedPatient.id} />
+                        <div className="space-y-3">
+                          {/* V1.9.119-F: Grid compacto Especialidade/Unidade/Sala/Encaminhador (era cards grandes) */}
+                          <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                            <div className="bg-slate-700/30 rounded-lg p-3 border border-slate-700/50">
+                              <p className="text-[10px] font-bold text-slate-500 mb-0.5 uppercase tracking-wider">Especialidade</p>
+                              <p className="text-sm font-semibold text-white truncate">{selectedPatient.specialty}</p>
+                            </div>
+                            <div className="bg-slate-700/30 rounded-lg p-3 border border-slate-700/50">
+                              <p className="text-[10px] font-bold text-slate-500 mb-0.5 uppercase tracking-wider">Unidade</p>
+                              <p className="text-sm font-semibold text-white truncate">{selectedPatient.clinic}</p>
+                            </div>
+                            <div className="bg-slate-700/30 rounded-lg p-3 border border-slate-700/50">
+                              <p className="text-[10px] font-bold text-slate-500 mb-0.5 uppercase tracking-wider">Sala</p>
+                              <p className="text-sm font-semibold text-white truncate">{selectedPatient.room}</p>
+                            </div>
+                            <div className="bg-slate-700/30 rounded-lg p-3 border border-slate-700/50">
+                              <p className="text-[10px] font-bold text-slate-500 mb-0.5 uppercase tracking-wider">Encaminhador</p>
+                              <p className="text-sm font-semibold text-white truncate">{selectedPatient.referringDoctor || 'Não informado'}</p>
+                            </div>
                           </div>
 
-                          <div className="grid grid-cols-2 gap-4">
-                            <div className="bg-slate-700/30 rounded-xl p-5 border border-slate-700/50">
-                              <p className="text-xs font-black text-slate-500 mb-2 uppercase tracking-[0.2em]">Especialidade</p>
-                              <p className="text-xl font-black text-white leading-tight">{selectedPatient.specialty}</p>
+                          {/* V1.9.119-F: ACDSS COLAPSADO (era card gigante dominando topo) */}
+                          {/* Honra heranca TradeVision Core mas nao polui Visao Geral default */}
+                          <details className="bg-slate-800/40 border border-slate-700/50 rounded-xl group">
+                            <summary className="cursor-pointer px-4 py-2.5 text-xs font-semibold text-slate-300 hover:text-white flex items-center justify-between transition-colors list-none">
+                              <span className="flex items-center gap-2">
+                                <span className="text-purple-400">🧠</span>
+                                Análise Cognitiva (ACDSS) — clique para expandir
+                              </span>
+                              <span className="text-slate-500 group-open:rotate-180 transition-transform">▾</span>
+                            </summary>
+                            <div className="px-4 pb-4 pt-2 border-t border-slate-700/50">
+                              <IntegratedGovernanceView patientId={selectedPatient.id} />
                             </div>
-                            <div className="bg-slate-700/30 rounded-xl p-5 border border-slate-700/50">
-                              <p className="text-xs font-black text-slate-500 mb-2 uppercase tracking-[0.2em]">Unidade</p>
-                              <p className="text-xl font-black text-white leading-tight">{selectedPatient.clinic}</p>
-                            </div>
-                            <div className="bg-slate-700/30 rounded-xl p-5 border border-slate-700/50">
-                              <p className="text-xs font-black text-slate-500 mb-2 uppercase tracking-[0.2em]">Sala</p>
-                              <p className="text-xl font-black text-white leading-tight">{selectedPatient.room}</p>
-                            </div>
-                            <div className="bg-slate-700/30 rounded-xl p-5 border border-slate-700/50">
-                              <p className="text-xs font-black text-slate-500 mb-2 uppercase tracking-[0.2em]">Encaminhador</p>
-                              <p className="text-xl font-black text-white leading-tight">{selectedPatient.referringDoctor || 'Não informado'}</p>
-                            </div>
-                          </div>
+                          </details>
                           <div className="bg-slate-700/50 rounded-lg p-4">
                             <p className="text-sm text-slate-400 mb-2">Histórico</p>
                             {loadingEvolutions ? (
