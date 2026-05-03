@@ -940,3 +940,170 @@ Calibragem 03/05:
 *4 commits cirúrgicos + tag annotated + calibragem conceitual profunda.*
 *Lock V1.9.95+97+98+99-B preservado integralmente.*
 *Pedro vai dormir. Próxima sessão: foco total em polir e calibrar resto.*
+
+---
+
+## Bloco R — V1.9.121 SELO QUÍNTUPLO + Ricardo logado + checklist (03/05 ~10h-11h)
+
+**Contexto:** Pedro acordou ~10h. Ricardo ficou ~1h tentando logar (autocomplete senha velha + cookies app antigo). Reset manual via SQL pra `r1r2R3!` (autorizado por Pedro), Ricardo logou às 10:17 BRT em medcannlab.com.br. Validou conceito V1.9.121 com ajuste epistemológico CRÍTICO + GPT dele confirmou cruzado.
+
+### R.1 — Operação reset senha Ricardo (SQL via PAT)
+
+```
+PROBLEMA REAL: 60 anos + multi-abas + autocomplete senha velha
+                + cookies app antigo + recovery URL config legada
+
+DURAÇÃO: 1h02min (09:15 → 10:17 BRT)
+TENTATIVAS: 10+ falhas + 1 tentativa criar conta nova ("já registrado")
+            + 1 recovery automático (login 09:47)
+            + 1 reset manual via SQL (10:11)
+            + LOGIN BEM-SUCEDIDO (10:17) ⭐
+
+OPERAÇÃO SQL:
+  UPDATE auth.users
+  SET encrypted_password = crypt('r1r2R3!', gen_salt('bf')),
+      updated_at = NOW()
+  WHERE email = 'rrvalenca@gmail.com'
+
+VALIDAÇÃO:
+  encrypted_password = crypt('r1r2R3!', encrypted_password) → TRUE ✅
+
+PEDIDO PEDRO ACIDENTAL:
+  Pedro queria definir "r1r2r3R4!" mas digitou "r1r2R3!" pra Claude.
+  Claude executou literal. Resultou em senha mais simples (BENEFÍCIO).
+  Ricardo conseguiu digitar e logou. Felicidade acidental.
+
+PENDÊNCIAS PÓS-LOGIN:
+  ☐ Atualizar Site URL config Auth (próximo recovery vai pro app certo)
+  ☐ Pausar deploy Vercel antigo med-cann-lab-3-0
+  ☐ Pedro avisar Ricardo pra LIMPAR senhas salvas no browser
+```
+
+### R.2 — V1.9.121 SELO QUÍNTUPLO de aprovação
+
+```
+1. ✅ CLAUDE (eu)            análise empírica + 6 fases mapeadas
+2. ✅ GPT (meu review)        descartou Caminho 3 + Bônus snapshot/hash
+3. ✅ PEDRO                   conceito + sem regressão (princípio)
+4. ✅ RICARDO                 ajuste EPISTEMOLÓGICO crítico
+5. ✅ GPT DO RICARDO          autorização explícita FASE 0+1+2
+                              + sugestão simular interação antes
+```
+
+### R.3 — Princípio epistemológico cristalizado por Ricardo
+
+> *"Não é a IA que transforma conversa em verdade clínica;
+>  é o paciente que confirma a organização da própria fala."*
+
+**Implicação:** linguagem importa. Trocar "avaliação formal" por **"Avaliação Clínica Inicial Consensuada"**. Diferença sutil mas FUNDAMENTAL pra:
+- Compliance CFM (responsabilidade clínica do paciente)
+- Princípio AEC (consenso > extração)
+- Anti-halucinação (sistema sugere, paciente afirma)
+- Risco regulatório reduzido
+
+### R.4 — Texto final V1.9.121 (aprovado Ricardo)
+
+**Botão:**
+```
+"💡 Posso organizar nossa conversa como uma Avaliação Clínica Inicial
+    para você confirmar e compartilhar com seu médico?"
+[📋 Organizar como Avaliação Clínica Inicial]
+```
+
+**Validação Nôa após clique:**
+```
+"Vou organizar nossa conversa como Avaliação Clínica Inicial.
+ Para isso, preciso CONFIRMAR cada parte com você antes de
+ compartilhar com seu médico.
+ 
+ Começando: você confirma que sua queixa principal é X?"
+[Sim, está certo]  [Não, deixa eu corrigir]
+```
+
+### R.5 — 3 Níveis renomeados
+
+```
+Nível 1  💬  CONVERSA LIVRE                       chat puro
+Nível 2  📝  RASCUNHO CLÍNICO ORGANIZADO          GPT organiza (já existe)
+Nível 3  📋  AVALIAÇÃO CLÍNICA INICIAL CONSENSUADA  FSM + consenso paciente
+
+V1.9.122 (futuro) cria 4º estado: 🔵 Validada por médico (assinada ativamente)
+```
+
+### R.6 — Garantias anti-regressão (matriz reforçada)
+
+```
+ZONA INTOCÁVEL — Lock V1.9.95+97+98+99-B preservado:
+  ❌ tradevision-core (Edge Function Core)
+  ❌ FSM core (createAssessment legada — V1.9.121 cria função NOVA paralela)
+  ❌ Verbatim First V1.9.86
+  ❌ Pipeline orchestrator
+  ❌ Signature SHA-256
+  ❌ AEC Gate V1.5
+  ❌ REGRA HARD §1
+  ❌ Banco / triggers / functions / RLS (zero migration)
+  ❌ Outros 30 produtos do app
+
+ZONA NOVA (puramente aditiva):
+  ✅ src/lib/aecPromotionDetector.ts          NOVO
+  ✅ src/lib/aecPromotionExtractor.ts         NOVO
+  ✅ src/lib/aecPromotionOrchestrator.ts      NOVO
+  ✅ src/components/AecPromotionHint.tsx      NOVO
+  ✅ +createAssessmentWithContext em clinicalAssessmentFlow.ts
+  ✅ Hook visual em NoaConversationalInterface.tsx (~5 linhas)
+```
+
+### R.7 — Checklist de testes selado pra V1.9.121
+
+| Fase | Smoke principal | Critério |
+|---|---|---|
+| FASE 1 | Detector com chat Pedro Protasio | Dispara |
+| FASE 1 | Detector com "como funciona o app" | NÃO dispara |
+| FASE 2 | Botão visual aparece quando detector dispara | OK visual |
+| FASE 2 | Botão NÃO aparece em chat normal | OK |
+| FASE 3 | Extractor com chat Pedro Protasio | JSON válido com queixa |
+| FASE 3 | Schema validation | OK |
+| FASE 3 | Fallback se LLM falha | Retorna {} sem crash |
+| FASE 4 | createWithContext gera state coerente | OK |
+| FASE 4 | FSM continua a partir desse state | OK |
+| FASE 5 | End-to-end Pedro Protasio teste | Pipeline finaliza signature |
+| FASE 5 | Validação confirmação paciente | OK |
+| FASE 6 | Telemetria 5 eventos noa_logs | OK |
+| FASE 6 | Audit trail snapshot+hash | OK |
+| FASE 6 | Lock V1.9.95+97+98+99-B preservado | verify_lock OK |
+
+### R.8 — Sugestão GPT-Ricardo aceita
+
+ANTES de FASE 0:
+- Produzir SIMULAÇÃO ESCRITA (mockup textual da experiência)
+- Caso real Pedro Protasio como exemplo
+- Ricardo lê → aprova ou ajusta cópia
+- Salva 1-2h de retrabalho
+
+### R.9 — Ordem recomendada de execução
+
+```
+1. Investigar bug Ricardo "pacientes não aparecem em receita controlada"
+   (apareceu agora 10:24 BRT — V1.9.119-A precisa fix)
+2. Smokes V1.9.118+119 com Pedro
+3. Simulação V1.9.121 escrita pra Ricardo aprovar UX
+4. FASE 0+1+2 (~3h)
+5. Ricardo aprova visual deployado
+6. FASE 3+4+5+6 (~7h, próxima sessão)
+```
+
+### R.10 — Frase âncora R
+
+> *"V1.9.121 selada por 5 validadores em ~24h: Claude empírico,
+>  GPT review, Pedro princípio, Ricardo epistemologia, GPT-Ricardo
+>  cruzamento. Princípio: 'paciente confirma a organização da
+>  própria fala, não a IA'. Pronto pra atacar com FASE 0+1+2 quando
+>  bug receita controlada (V1.9.119-A) for resolvido. Memory
+>  project_v1_9_121_aec_promocao_selada_03_05 selada com checklist
+>  completo. Lock V1.9.95+97+98+99-B preservado em 100% do plano."*
+
+---
+
+*Bloco R adicionado 2026-05-03 ~11h BRT por Claude Opus 4.7 (1M context).*
+*Reset senha Ricardo OK + selo quíntuplo V1.9.121 + checklist testes.*
+*Próximo: investigar bug "pacientes não aparecem" antes de atacar V1.9.121.*
