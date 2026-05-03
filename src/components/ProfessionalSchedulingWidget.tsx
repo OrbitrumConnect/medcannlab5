@@ -425,26 +425,27 @@ const ProfessionalSchedulingWidget: React.FC<ProfessionalSchedulingWidgetProps> 
       </div>
 
       {/* CALENDAR VIEW */}
+      {/* V1.9.119-E: padding lateral mx-auto + max-width pra respirar do sidebar + celulas 25% menores */}
       {activeTab === 'calendar' && (
-        <div className="flex flex-col lg:flex-row gap-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
-          {/* Área principal do calendário — mais compacta e refinada */}
-          <div className="flex-1 bg-slate-800/40 backdrop-blur-sm border border-slate-600/40 rounded-xl p-4 shadow-lg">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-4">
+        <div className="flex flex-col lg:flex-row gap-3 animate-in fade-in slide-in-from-bottom-2 duration-300 px-2">
+          {/* Área principal do calendário — V1.9.119-E: mais compacto */}
+          <div className="flex-1 bg-slate-800/40 backdrop-blur-sm border border-slate-600/40 rounded-xl p-3 shadow-lg">
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-3">
                 <div className="flex flex-col">
                   <span className="text-slate-500 text-[9px] font-semibold uppercase tracking-widest mb-0.5">Mês</span>
-                  <h3 className="text-white text-xl font-bold capitalize tracking-tight">
+                  <h3 className="text-white text-lg font-bold capitalize tracking-tight">
                     {monthNames[month]} <span className="text-emerald-400/80 font-medium">{year}</span>
                   </h3>
                 </div>
-                <div className="flex bg-slate-900/60 rounded-lg p-1 border border-slate-600/50">
-                  <button onClick={() => navigateMonth(-1)} className="p-1.5 hover:bg-slate-700 rounded-md text-slate-400 hover:text-white transition-all"><ChevronLeft className="w-4 h-4" /></button>
-                  <button onClick={() => navigateMonth(1)} className="p-1.5 hover:bg-slate-700 rounded-md text-slate-400 hover:text-white transition-all"><ChevronRight className="w-4 h-4" /></button>
+                <div className="flex bg-slate-900/60 rounded-lg p-0.5 border border-slate-600/50">
+                  <button onClick={() => navigateMonth(-1)} className="p-1 hover:bg-slate-700 rounded-md text-slate-400 hover:text-white transition-all"><ChevronLeft className="w-3.5 h-3.5" /></button>
+                  <button onClick={() => navigateMonth(1)} className="p-1 hover:bg-slate-700 rounded-md text-slate-400 hover:text-white transition-all"><ChevronRight className="w-3.5 h-3.5" /></button>
                 </div>
               </div>
               <button
                 onClick={() => setCurrentDate(new Date())}
-                className="px-3 py-1.5 bg-slate-800/80 hover:bg-slate-700 border border-slate-600/50 rounded-lg text-[10px] font-bold text-emerald-400 hover:text-emerald-300 uppercase tracking-wider transition-all"
+                className="px-2.5 py-1 bg-slate-800/80 hover:bg-slate-700 border border-slate-600/50 rounded-lg text-[10px] font-bold text-emerald-400 hover:text-emerald-300 uppercase tracking-wider transition-all"
               >
                 Voltar para Hoje
               </button>
@@ -452,12 +453,12 @@ const ProfessionalSchedulingWidget: React.FC<ProfessionalSchedulingWidgetProps> 
 
             <div className="grid grid-cols-7 gap-px bg-slate-700/20 border border-slate-600/40 rounded-xl overflow-hidden">
               {['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'].map((day) => (
-                <div key={day} className="bg-slate-900/50 text-center text-slate-500 text-[10px] font-bold py-2 uppercase tracking-wider border-b border-slate-600/40">
+                <div key={day} className="bg-slate-900/50 text-center text-slate-500 text-[10px] font-bold py-1.5 uppercase tracking-wider border-b border-slate-600/40">
                   {day}
                 </div>
               ))}
               {Array.from({ length: firstDay }).map((_, i) => (
-                <div key={`empty-${i}`} className="bg-slate-800/30 min-h-[96px]" />
+                <div key={`empty-${i}`} className="bg-slate-800/30 min-h-[72px]" />
               ))}
               {Array.from({ length: days }).map((_, i) => {
                 const day = i + 1
@@ -472,19 +473,19 @@ const ProfessionalSchedulingWidget: React.FC<ProfessionalSchedulingWidgetProps> 
                       setSelectedDay({ day, dateStr })
                       setIsDayModalOpen(true)
                     }}
-                    className={`bg-slate-800/50 min-h-[96px] p-1.5 hover:bg-slate-700/40 transition-all border-t border-slate-600/40 relative group cursor-pointer ${isToday ? 'ring-1 ring-emerald-500/30 bg-emerald-500/5' : 'hover:ring-1 hover:ring-slate-500/30'}`}
+                    className={`bg-slate-800/50 min-h-[72px] p-1 hover:bg-slate-700/40 transition-all border-t border-slate-600/40 relative group cursor-pointer ${isToday ? 'ring-1 ring-emerald-500/30 bg-emerald-500/5' : 'hover:ring-1 hover:ring-slate-500/30'}`}
                   >
                     {isToday && <div className="absolute top-0 left-0 w-full h-0.5 bg-emerald-500 rounded-b" />}
-                    <div className="flex justify-end mb-1">
-                      <span className={`text-xs font-bold ${isToday ? 'bg-emerald-500 text-slate-950 w-6 h-6 rounded-md flex items-center justify-center shadow-sm' : 'text-slate-500 group-hover:text-slate-300'}`}>
+                    <div className="flex justify-end mb-0.5">
+                      <span className={`text-[11px] font-bold ${isToday ? 'bg-emerald-500 text-slate-950 w-5 h-5 rounded-md flex items-center justify-center shadow-sm' : 'text-slate-500 group-hover:text-slate-300'}`}>
                         {day}
                       </span>
                     </div>
-                    <div className="space-y-1">
+                    <div className="space-y-0.5">
                       {dayAppointments.slice(0, 2).map(app => (
                         <div
                           key={app.id}
-                          className="w-full text-left text-[9px] bg-slate-900/70 border border-slate-600/50 rounded-md px-1.5 py-1 truncate"
+                          className="w-full text-left text-[9px] bg-slate-900/70 border border-slate-600/50 rounded-md px-1 py-0.5 truncate"
                         >
                           <span className="text-slate-300 font-medium">{app.time}</span>
                           <span className="block truncate text-slate-500 capitalize">{app.patientName.toLowerCase()}</span>
@@ -494,7 +495,7 @@ const ProfessionalSchedulingWidget: React.FC<ProfessionalSchedulingWidgetProps> 
                         <div className="text-[8px] font-semibold text-emerald-500/70 text-center pt-0.5">+{dayAppointments.length - 2}</div>
                       )}
                       {dayAppointments.length === 0 && (
-                        <div className="opacity-0 group-hover:opacity-100 transition-opacity text-[8px] text-slate-600 text-center pt-2">Ver dia</div>
+                        <div className="opacity-0 group-hover:opacity-100 transition-opacity text-[8px] text-slate-600 text-center pt-1">Ver dia</div>
                       )}
                     </div>
                   </div>
