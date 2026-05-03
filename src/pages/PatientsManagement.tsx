@@ -1342,7 +1342,7 @@ const PatientsManagement: React.FC<PatientsManagementProps> = ({ embedded = fals
           </div>
         )}
 
-        <div className={`grid grid-cols-1 gap-4 ${detailOnly ? 'lg:grid-cols-1' : 'lg:grid-cols-4'}`}>
+        <div className={`grid grid-cols-1 gap-4 ${detailOnly ? 'lg:grid-cols-1' : 'lg:grid-cols-5'}`}>
           {/* Patients List - oculto no modo detailOnly */}
           {!detailOnly && (
             <div className="lg:col-span-1">
@@ -1408,7 +1408,7 @@ const PatientsManagement: React.FC<PatientsManagementProps> = ({ embedded = fals
           )}
 
           {/* Patient Details - Main Content (ou única coluna no detailOnly) */}
-          <div className={detailOnly ? 'w-full' : 'lg:col-span-3'}>
+          <div className={detailOnly ? 'w-full' : 'lg:col-span-4'}>
             {/* detailOnly: loading até o paciente ser carregado; senão mesma lógica de abas */}
             {detailOnly && preselectedPatientId && !selectedPatient ? (
               <div className="flex items-center justify-center py-20">
