@@ -1,13 +1,21 @@
 import { useNavigate } from 'react-router-dom'
-import { LandingHeader } from '@/components/landing/LandingHeader'
-import { PerfilSwitcher } from '@/components/landing/PerfilSwitcher'
-import { HeroSection } from '@/components/landing/HeroSection'
-import { ProofBlock } from '@/components/landing/ProofBlock'
-import { PricingBlock } from '@/components/landing/PricingBlock'
-import { CTABlock } from '@/components/landing/CTABlock'
+import { useSEO } from '../hooks/useSEO'
+import { LandingHeader } from '../components/landing/LandingHeader'
+import { PerfilSwitcher } from '../components/landing/PerfilSwitcher'
+import { HeroSection } from '../components/landing/HeroSection'
+import { ProofBlock } from '../components/landing/ProofBlock'
+import { PricingBlock } from '../components/landing/PricingBlock'
+import { CTABlock } from '../components/landing/CTABlock'
 
 const LandingPaciente = () => {
   const navigate = useNavigate()
+
+  useSEO({
+    title: 'Avaliação Clínica Cannabis Medicinal | Método AEC — MedCannLab',
+    description: 'Organize sua história clínica antes da consulta. Avaliação grátis com a Nôa Esperanza, método AEC do Dr. Ricardo Valença (40 anos de prática). Relatório estruturado pronto pro seu médico.',
+    keywords: 'cannabis medicinal, avaliação clínica online, dor crônica, AEC, método clínico, Dr. Ricardo Valença, prontuário paciente',
+    canonical: 'https://medcannlab.com.br/paciente',
+  })
 
   const goToRegister = () => navigate('/?cadastro=paciente')
   const goToLogin = () => navigate('/?login=1')

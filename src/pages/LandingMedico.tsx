@@ -1,13 +1,21 @@
 import { useNavigate } from 'react-router-dom'
-import { LandingHeader } from '@/components/landing/LandingHeader'
-import { PerfilSwitcher } from '@/components/landing/PerfilSwitcher'
-import { HeroSection } from '@/components/landing/HeroSection'
-import { ProofBlock } from '@/components/landing/ProofBlock'
-import { PricingBlock } from '@/components/landing/PricingBlock'
-import { CTABlock } from '@/components/landing/CTABlock'
+import { useSEO } from '../hooks/useSEO'
+import { LandingHeader } from '../components/landing/LandingHeader'
+import { PerfilSwitcher } from '../components/landing/PerfilSwitcher'
+import { HeroSection } from '../components/landing/HeroSection'
+import { ProofBlock } from '../components/landing/ProofBlock'
+import { PricingBlock } from '../components/landing/PricingBlock'
+import { CTABlock } from '../components/landing/CTABlock'
 
 const LandingMedico = () => {
   const navigate = useNavigate()
+
+  useSEO({
+    title: 'Plataforma para Médicos Cannabis Medicinal | MedCannLab Pro',
+    description: 'Atenda pacientes pré-organizados pelo método AEC. Receita CFM digital ICP-Brasil, teleconsulta CFM 2.314 compliant, split automático 70/30. Sua consulta começa onde a entrevista terminou.',
+    keywords: 'médico cannabis medicinal, prescrição CFM digital, teleconsulta médica, telemedicina, ICP-Brasil receita, prontuário médico',
+    canonical: 'https://medcannlab.com.br/medico',
+  })
 
   const goToRegister = () => navigate('/?cadastro=profissional')
   const goToLogin = () => navigate('/?login=1')

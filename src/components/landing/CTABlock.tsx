@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion'
 import { ArrowRight } from 'lucide-react'
-import { cn } from '@/lib/utils'
+import { cn } from '../../lib/utils'
 import { PERFIL_THEME, type PerfilLanding } from './landingTheme'
 
 interface CTABlockProps {

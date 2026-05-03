@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom'
-import { cn } from '@/lib/utils'
+import { cn } from '../../lib/utils'
 import { PERFIL_ROUTES, PERFIL_THEME, type PerfilLanding } from './landingTheme'
 
 const PERFIS: PerfilLanding[] = ['paciente', 'medico', 'aluno']

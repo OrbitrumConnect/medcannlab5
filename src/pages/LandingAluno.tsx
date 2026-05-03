@@ -1,13 +1,21 @@
 import { useNavigate } from 'react-router-dom'
-import { LandingHeader } from '@/components/landing/LandingHeader'
-import { PerfilSwitcher } from '@/components/landing/PerfilSwitcher'
-import { HeroSection } from '@/components/landing/HeroSection'
-import { ProofBlock } from '@/components/landing/ProofBlock'
-import { PricingBlock } from '@/components/landing/PricingBlock'
-import { CTABlock } from '@/components/landing/CTABlock'
+import { useSEO } from '../hooks/useSEO'
+import { LandingHeader } from '../components/landing/LandingHeader'
+import { PerfilSwitcher } from '../components/landing/PerfilSwitcher'
+import { HeroSection } from '../components/landing/HeroSection'
+import { ProofBlock } from '../components/landing/ProofBlock'
+import { PricingBlock } from '../components/landing/PricingBlock'
+import { CTABlock } from '../components/landing/CTABlock'
 
 const LandingAluno = () => {
   const navigate = useNavigate()
+
+  useSEO({
+    title: 'Simulador Clínico Médico Grátis | 20 Personas-Pacientes — MedCannLab',
+    description: 'Treine entrevista clínica gratuitamente com 20 personas-pacientes. Método AEC do Dr. Ricardo Valença, 40 anos de prática. Validação por matrícula universitária.',
+    keywords: 'simulador clínico, simulador médico online, anamnese, entrevista clínica, método AEC, estudante medicina, treino médico',
+    canonical: 'https://medcannlab.com.br/aluno',
+  })
 
   const goToRegister = () => navigate('/?cadastro=aluno')
   const goToLogin = () => navigate('/?login=1')
