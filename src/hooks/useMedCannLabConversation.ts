@@ -3,6 +3,7 @@ import { useAuth } from '../contexts/AuthContext'
 import { NoaResidentAI, type AIResponse } from '../lib/noaResidentAI'
 import { ConversationalIntent } from '../lib/medcannlab/types'
 import { clinicalAssessmentFlow } from '../lib/clinicalAssessmentFlow'
+import { detectAecPromotion, AEC_PROMOTION_TRIGGER_TEXT } from '../lib/aecPromotionDetector'
 
 const sanitizeForSpeech = (text: string): string => {
   return text
@@ -189,6 +190,7 @@ export const useMedCannLabConversation = (options?: {
   const [error, setError] = useState<string | null>(null)
   const [usedEndpoints, setUsedEndpoints] = useState<string[]>([])
   const [isOffline, setIsOffline] = useState(false)
+  const [lastAecHintShownAt, setLastAecHintShownAt] = useState<number | undefined>(undefined)
 
   // Inicializar IA apenas quando houver um usuário logado
   useEffect(() => {
@@ -1204,6 +1206,47 @@ export const useMedCannLabConversation = (options?: {
 
       console.log('💬 Mensagem da IA adicionada ao chat. Total de mensagens:', messages.length + 2)
       console.log('🔍 Metadata recebida:', response.metadata) // Debug log
+
+      // V1.9.121 FASE 0+1+2 — AEC Promotion Detector
+      // Resolve caso João (04/05): conversa que parece AEC sem FSM real.
+      // Detecta padrão clínico em chat livre, oferece botão consciente
+      // pra ASSESSMENT_START (P8 reuso do mecanismo existente).
+      try {
+        if (user?.id) {
+          const activeAecState = clinicalAssessmentFlow.getState(user.id)
+          const hasActiveAec = !!(activeAecState && activeAecState.phase !== 'COMPLETED')
+          const detectorMessages = [...messages, assistantMessage].map(m => ({
+            role: m.role,
+            content: typeof m.content === 'string' ? m.content : '',
+            intent: typeof m.intent === 'string' ? m.intent : undefined
+          }))
+          const result = detectAecPromotion(detectorMessages, {
+            userType: (user as any).type,
+            hasActiveAec,
+            hasRecentAec24h: false,
+            lastHintShownAt: lastAecHintShownAt
+          })
+          if (result.shouldShowHint) {
+            console.log('💡 [V1.9.121] AEC Promotion Hint disparado', result.signals)
+            setLastAecHintShownAt(Date.now())
+            setTimeout(() => {
+              const hintMsg: ConversationMessage = {
+                id: `aec-hint-${Date.now()}`,
+                role: 'system',
+                content: 'Posso organizar nossa conversa como uma Avaliação Clínica Inicial?',
+                timestamp: new Date(),
+                metadata: {
+                  type: 'aec_promotion_hint',
+                  triggerText: AEC_PROMOTION_TRIGGER_TEXT
+                }
+              }
+              setMessages(prev => [...prev, hintMsg])
+            }, 600)
+          }
+        }
+      } catch (detectorError) {
+        console.warn('⚠️ [V1.9.121] Detector falhou (não bloqueia fluxo):', detectorError)
+      }
 
       // 🎯 TRIGGER VISUAL: Se avaliação concluída, mostrar card de sucesso
       // V1.9.91: revertido Fix C (overreach). O fluxo nativo do projeto ja gera

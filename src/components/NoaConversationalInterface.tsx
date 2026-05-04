@@ -34,6 +34,7 @@ import { normalizeUserType } from "../lib/userTypes";
 import { getAvailableSlots, bookAppointment } from "../lib/scheduling";
 import { Calendar as CalendarIcon, Clock, CheckCircle } from "lucide-react";
 import * as pdfjsLib from "pdfjs-dist";
+import { AecPromotionHint } from "./AecPromotionHint";
 
 // Mapa de progresso AEC (fases reais usadas em src/lib/clinicalAssessmentFlow.ts)
 const PHASE_PROGRESS: Record<string, number> = {
@@ -3343,6 +3344,24 @@ const NoaConversationalInterface = React.forwardRef<
                 ) : null)}
 
               {messages.map((message) => {
+                // V1.9.121 — AEC Promotion Hint (FASE 1+2)
+                // Click envia texto canônico que dispara ASSESSMENT_START via
+                // mecanismo P8 existente (regex aecCanonical no Core).
+                if (
+                  message.role === "system" &&
+                  (message.metadata as any)?.type === "aec_promotion_hint"
+                ) {
+                  const triggerText =
+                    (message.metadata as any)?.triggerText ||
+                    "Quero iniciar a avaliação clínica inicial";
+                  return (
+                    <AecPromotionHint
+                      key={message.id}
+                      onAccept={() => sendMessage(triggerText)}
+                    />
+                  );
+                }
+
                 // Renderização Especial para Cards de Sistema (Ação)
                 // V1.9.91: revertido Fix C (overreach). Voltou ao formato legado `action: {single}`.
                 // 2 botoes pos-AEC vem do fluxo NATIVO via app_commands no Core (linha 5257-5268).
