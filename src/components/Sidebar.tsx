@@ -30,7 +30,8 @@ import {
   LayoutDashboard,
   Terminal as TerminalIcon,
   LogOut,
-  Shield
+  Shield,
+  Pill
 } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
 import { useToast } from '../contexts/ToastContext'
@@ -203,6 +204,7 @@ const Sidebar: React.FC<SidebarProps> = ({
       // UX: Analytics é entrada primária; “Dashboard” (resumo antigo) fica acessível apenas por link secundário.
       { name: 'Dashboard do Paciente', href: '/app/clinica/paciente/dashboard?section=analytics', icon: TrendingUp, section: 'main' },
       { name: 'Acompanhamento do Plano', href: '/app/clinica/paciente/dashboard?section=plano', icon: Activity, section: 'main' },
+      { name: 'Minhas Prescrições', href: '/app/clinica/paciente/dashboard?section=minhas-prescricoes', icon: Pill, section: 'main' },
       { name: 'Biblioteca Personalizada', href: '/app/library', icon: BookOpen, section: 'main' },
       { name: 'Chat NOA', href: '/app/clinica/paciente/chat-noa', icon: Brain, section: 'quick' },
       { name: 'Agendamentos', href: '/app/clinica/paciente/agendamentos', icon: Clock, section: 'quick' },
