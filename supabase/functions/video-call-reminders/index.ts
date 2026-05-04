@@ -1,11 +1,15 @@
 // Edge Function: Lembretes Automáticos de Videochamadas (V1.9.99 — sweep mode)
 //
+// V1.9.123-A (04/05/2026) — adicionadas janelas 24h e 1h antes da consulta.
+// Antes: só 30/10/1 min — "pé na porta", paciente já cancelou. 0/69 enviados.
+// Agora: 24h (lembrete dia anterior) + 1h (preparação) + 30/10/1 min (fail-safe).
+//
 // Reescrita 28/04/2026 — antes era v52 modo "individual" (recebia schedule_id de
 // tabela video_call_schedules que NÃO existia). Reescrita pra modo SWEEP que:
 //   1) Lê appointments diretamente (P8: usa o que já existe)
-//   2) Filtra remotos pendentes nos próximos 35min
+//   2) Filtra remotos pendentes nos próximos 25h (era 35min — V1.9.123-A ampliou)
 //   3) Envia notificação in-app + email Resend pra paciente + profissional
-//   4) Idempotente via 3 colunas reminder_sent_30min/10min/1min
+//   4) Idempotente via 5 colunas reminder_sent_24h/1h/30min/10min/1min
 //   5) Disparada por GitHub Actions cron a cada 5 minutos
 //
 // Polir não inventar: zero tabela nova, zero feature inventada, só liga
@@ -26,6 +30,8 @@ interface Appointment {
   appointment_date: string
   title: string
   meeting_url: string | null
+  reminder_sent_24h: boolean
+  reminder_sent_1h: boolean
   reminder_sent_30min: boolean
   reminder_sent_10min: boolean
   reminder_sent_1min: boolean
@@ -38,10 +44,25 @@ interface UserRef {
 }
 
 const REMINDER_WINDOWS = [
-  { minutes: 30, sentField: 'reminder_sent_30min' as const, lowerBound: 25, upperBound: 35 },
-  { minutes: 10, sentField: 'reminder_sent_10min' as const, lowerBound: 5, upperBound: 15 },
-  { minutes: 1,  sentField: 'reminder_sent_1min'  as const, lowerBound: 0, upperBound: 3  },
+  // V1.9.123-A: lembretes preventivos (paciente ainda pode reagendar/cancelar com aviso)
+  { minutes: 1440, sentField: 'reminder_sent_24h' as const,   lowerBound: 1380, upperBound: 1500 }, // ~23-25h
+  { minutes: 60,   sentField: 'reminder_sent_1h' as const,    lowerBound: 55,   upperBound: 65   }, // ~55-65min
+  // Fail-safe (pé na porta — não evita cancelamento, mas confirma presença)
+  { minutes: 30,   sentField: 'reminder_sent_30min' as const, lowerBound: 25,   upperBound: 35   },
+  { minutes: 10,   sentField: 'reminder_sent_10min' as const, lowerBound: 5,    upperBound: 15   },
+  { minutes: 1,    sentField: 'reminder_sent_1min'  as const, lowerBound: 0,    upperBound: 3    },
 ]
+
+// V1.9.123-A: humaniza o título do lembrete por janela.
+function formatReminderTitle(minutes: number, scheduledTime: Date): string {
+  if (minutes >= 1440) {
+    const horario = scheduledTime.toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo', hour: '2-digit', minute: '2-digit' })
+    return `Lembrete: sua consulta é amanhã às ${horario}`
+  }
+  if (minutes === 60) return `Lembrete: sua consulta começa em 1 hora`
+  if (minutes === 1)  return `Sua consulta começa em 1 minuto`
+  return `Sua consulta começa em ${minutes} minutos`
+}
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -57,16 +78,17 @@ Deno.serve(async (req) => {
 
   try {
     const now = new Date()
-    const sweepUpper = new Date(now.getTime() + 35 * 60 * 1000)
+    // V1.9.123-A: janela de scan ampliada de 35min pra 25h (pra pegar lembrete 24h antes)
+    const sweepUpper = new Date(now.getTime() + 1500 * 60 * 1000)
 
     const { data: appointments, error: queryError } = await supabase
       .from('appointments')
-      .select('id, patient_id, professional_id, doctor_id, appointment_date, title, meeting_url, reminder_sent_30min, reminder_sent_10min, reminder_sent_1min')
+      .select('id, patient_id, professional_id, doctor_id, appointment_date, title, meeting_url, reminder_sent_24h, reminder_sent_1h, reminder_sent_30min, reminder_sent_10min, reminder_sent_1min')
       .eq('is_remote', true)
       .eq('status', 'scheduled')
       .gte('appointment_date', now.toISOString())
       .lte('appointment_date', sweepUpper.toISOString())
-      .or('reminder_sent_30min.eq.false,reminder_sent_10min.eq.false,reminder_sent_1min.eq.false')
+      .or('reminder_sent_24h.eq.false,reminder_sent_1h.eq.false,reminder_sent_30min.eq.false,reminder_sent_10min.eq.false,reminder_sent_1min.eq.false')
 
     if (queryError) {
       console.error('[reminders] Query error:', queryError)
@@ -100,7 +122,7 @@ Deno.serve(async (req) => {
         if (minutesUntil < window.lowerBound || minutesUntil > window.upperBound) continue
 
         const formattedTime = scheduledTime.toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' })
-        const titleMessage = `Lembrete: Videochamada em ${window.minutes} ${window.minutes === 1 ? 'minuto' : 'minutos'}`
+        const titleMessage = formatReminderTitle(window.minutes, scheduledTime)
         const fullMessage = `${titleMessage} (${formattedTime}). ${apt.meeting_url ? `Link: ${apt.meeting_url}` : 'Link da chamada será disponibilizado.'}`
 
         const recipients = [
