@@ -60,92 +60,106 @@ Tesouraria         20%  (10% ESOP + 10% Growth Pool)
 
 ---
 
-## 2. ESTRUTURA EMPRESARIAL — DECISÃO CNAE MÉDICO
+## 2. ESTRUTURA EMPRESARIAL — SEPARAÇÃO CLARA (ATUALIZADO 04/05 16h)
 
-### 2.1 Por que CNAE médico é necessário
+### 2.0 ⚠️ RECALIBRAÇÃO CRÍTICA
 
-**Cidade Amiga dos Rins (CAR) já está implementada e é diferencial central.** Para contratar com Secretaria de Saúde + edital SES, MedCannLab precisa **8630-5/03 (atividade médica ambulatorial)** + alvará sanitário.
+**Erro estrutural anterior corrigido:**
 
-### 2.2 3 Caminhos possíveis — todos preservam REGRA DE OURO
+```
+❌ Premissa incorreta antes:
+   "CAR é da MedCannLab → MedCannLab precisa CNAE médico"
 
-#### Caminho A — Usar PJ existente do Ricardo + MedCannLab Tech
+✅ Premissa real:
+   CAR (Cidade Amiga dos Rins) é do RICARDO (prática clínica autoral dele)
+   MedCannLab é empresa nova dos 4 sócios — independente do CAR
+   CAR pode virar parceria intercompany futura, NÃO base estrutural da empresa
+```
+
+**Decorrências práticas:**
+- ✅ MedCannLab NÃO precisa CNAE médico inicialmente
+- ✅ MedCannLab NÃO precisa AFE
+- ✅ MedCannLab NÃO precisa alvará sanitário
+- ✅ MedCannLab pode ser 1 CNPJ simples (Caminho B simplificado)
+- ✅ Se CAR vier, entra como contrato fornecedor-cliente entre PJs (Clínica Ricardo ↔ MedCannLab Tech)
+
+### 2.1 CNAE médico — quando adicionar (não é P0)
+
+CNAE médico (8630-5/03) só vira necessário SE/QUANDO MedCannLab:
+- Atender pacientes diretamente (não via médico parceiro com CRM próprio)
+- Concorrer edital público de saúde como CONTRATANTE PRINCIPAL
+- Vender serviço médico em nome próprio
+
+**Pré-PMF (hoje):** Modelo broker + SaaS + cursos NÃO precisa de CNAE médico.
+
+### 2.2 ✅ DECISÃO FINAL — Caminho B simplificado
+
+**Caminhos A e C foram descartados por unanimidade (Pedro + João + GPT do Ricardo confirmaram em 04/05 16h):**
+
+```
+Premissa que descarta A e C:
+  "CAR não é contrato, não é receita, não é urgência. É só uma ideia do Ricardo."
+  (GPT do Ricardo, 04/05/2026)
+
+Decorrência:
+  ❌ Não há justificativa pra usar PJ Ricardo (Caminho A)
+  ❌ Não há urgência pra incluir 4 sócios na PJ dele (Caminho C)
+  ❌ Não há necessidade de CNAE médico inicialmente
+  ❌ Não há necessidade de Clínica Saúde adicional
+  ✅ MedCannLab Tecnologia é o que precisamos — 1 CNPJ simples
+```
+
+### Caminho B SIMPLIFICADO — selado
 
 ```
 ESTRUTURA:
-  MedCannLab Tecnologia (Tech) ─────── 4×20% + 20% tesouraria
-  PJ Clínica do Ricardo  ─────────────── 100% Ricardo (ou outros sócios pré-existentes)
+  MEDCANNLAB TECNOLOGIA EM SAÚDE LTDA — 1 CNPJ ÚNICO
 
-REGRA DE OURO PRESERVADA VIA:
-  • Fee 25-30% Clínica → MedCannLab Tech (fair market value)
-  • Cláusula partes relacionadas no acordo de quotistas v2.0
-  • Ata formal 4 sócios aprovando + Ricardo abstém-se de votar
-  • Auditoria anual independente
+  Cap table (Regra de Ouro preservada naturalmente):
+    Pedro Galluf       20%
+    Ricardo Valença    20%
+    João Vidal         20%
+    Eduardo Faveret    20%
+    Tesouraria         20%  (10% ESOP + 10% Growth Pool)
+
+  CNAEs (sem médico inicialmente):
+    • 6204-0/00  Consultoria TI (principal)
+    • 6209-1/00  Suporte técnico TI
+    • 7490-1/04  Intermediação comercial (broker classe 35)
+    • 8599-6/04  Treinamento profissional (cursos)
 
 VELOCIDADE: 15-30 dias
-CUSTO:      R$ 13-25k + DD da PJ Ricardo R$ 1-3k
+CUSTO:      R$ 8-13k (despachante) + R$ 1.065-2.065 INPI IMRE
+TOTAL ATIVAÇÃO: ~R$ 10-15k
 
-QUANDO ESCOLHER:
-  ✅ Se contrato CAR/SES está fechado/quase-fechado em 60 dias
-  ✅ Se PJ do Ricardo tem track record real (alvará, AFE, atestados)
-  ⚠️ Pré-requisito: Ricardo enviar 5 dados (item 9.3)
+QUANDO ADICIONAR CNAE MÉDICO (no futuro, não agora):
+  • Quando MedCannLab atender pacientes em nome próprio
+  • Quando concorrer edital público próprio (não CAR do Ricardo)
+  • Quando vender serviço médico direto
+
+⚠️ CAR (Cidade Amiga dos Rins) NÃO é parte da empresa hoje:
+  • Se Ricardo desenvolver CAR e quiser usar MedCannLab, vira contrato
+    fornecedor-cliente entre PJs separadas (Clínica Ricardo ↔ MedCannLab)
+  • Cláusula partes relacionadas + fee fair market documentado
+  • MedCannLab existe e opera independente do CAR
 ```
 
-#### Caminho B — Criar Clínica MedCannLab Saúde do zero
+### 2.3 Frase âncora desta decisão
+
+> **"A gente não estrutura empresa em cima de ideia — só em cima de realidade."**
+> *(GPT do Ricardo, 04/05/2026)*
+
+### 2.4 Migração futura pós-PMF (não agora)
 
 ```
-ESTRUTURA:
-  MedCannLab Tecnologia (Tech) ─────── 4×20% + 20% tesouraria
-  Clínica MedCannLab Saúde   ─────── 4×20% + 20% tesouraria
+QUANDO migrar pra 2 camadas (Tech + Clínica):
+  ✅ 50+ pacientes externos pagantes
+  ✅ Receita mensal recorrente comprovada
+  ✅ Decisão clara de entrar em editais públicos
+  ✅ Demanda clínica real (não hipotética)
+  ✅ Capital de giro suficiente
 
-REGRA DE OURO PRESERVADA NATURALMENTE (cap table simétrico nas 2)
-
-VELOCIDADE: 45-90 dias
-CUSTO:      R$ 21-37k
-
-QUANDO ESCOLHER:
-  ✅ Se CAR é hipótese sem prazo definido
-  ✅ Se Pedro/João/Eduardo querem estrutura limpa desde início
-  ✅ Se visibilidade pra Series A futura é importante
-```
-
-#### Caminho C — Incluir 4 sócios na PJ existente do Ricardo
-
-```
-ESTRUTURA:
-  MedCannLab Tecnologia (Tech) ─────── 4×20% + 20% tesouraria
-  PJ Ricardo (com cap table renegociado): 4×20% + 20% tesouraria
-    OU 4×25% + Ricardo 25% + sócios atuais negociados
-
-REGRA DE OURO PRESERVADA VIA:
-  • Renegociação formal do cap table existente
-  • Aumento de capital com aporte de ativos MedCannLab Tech
-    (código, plataforma, IMRE, domínios) entrando como capital
-  • Pagamento ao Ricardo pelo legado SE PJ tiver track record real
-  • Cláusula partes relacionadas
-
-VELOCIDADE: 30-60 dias (se PJ leve) OU 100-165 dias (se PJ robusta)
-CUSTO:      R$ 14-30k + valuation negociado
-
-QUANDO ESCOLHER:
-  ✅ Se PJ do Ricardo tem 17 anos reais de track record (Lattes 2009)
-  ✅ Se Ricardo aceita ceder controle exclusivo
-  ✅ Se DD não revelar passivos
-```
-
-### 2.3 Empresa única vs 2 camadas — decisão estratégica
-
-**Recomendação calibrada:**
-
-```
-PRÉ-PMF (hoje):
-  → Caminho B com 1 CNPJ + CNAE médico unificado
-    (SE Ricardo aceita estrutura simétrica)
-  → OU Caminho A SE CAR fechado em 60 dias
-    (com fee + ata + cláusula PR)
-
-PÓS-PMF (50+ pacientes pagantes):
-  → Migrar pra 2 camadas (Tech + Clínica formais)
-    (modelo Memed/Cuide.me)
+ATÉ LÁ: 1 CNPJ MedCannLab Tecnologia faz tudo.
 ```
 
 ---
@@ -272,33 +286,32 @@ PENDÊNCIA: ata formal 4 sócios aprovando + lista produtos com nº ANVISA
 
 ---
 
-## 6. INVESTIMENTO TOTAL — Ativação completa
+## 6. INVESTIMENTO TOTAL — Ativação Caminho B Simplificado (selado)
 
 ```
-Caminho B (recomendado pré-PMF se CAR é hipótese):
-  CNPJ MedCannLab Tecnologia:        R$ 8-13k
-  CNPJ Clínica MedCannLab Saúde:     R$ 8-13k
-  Alvará sanitário Clínica:          R$ 2-5k
-  Acordo quotistas v2.0:             R$ 3-5k
-  INPI IMRE 3 classes:               R$ 1.065
-  Agente PI:                         R$ 500-1.000
-  ──────────────────────────────────
-  TOTAL:                             R$ 23-38k
+Caminho B SIMPLIFICADO (1 CNPJ, sem CNAE médico inicial):
+  CNPJ MedCannLab Tecnologia (Paulo): R$ 8-13k
+  Acordo quotistas v2.0 (advogado):   R$ 3-5k
+  INPI IMRE 3 classes:                R$ 1.065
+  Agente PI:                          R$ 500-1.000
+  ────────────────────────────────────
+  TOTAL ATIVAÇÃO COMPLETA:            R$ 12.5-20k
 
-  Tempo: 45-90 dias
+  Tempo:    15-30 dias até CNPJ ativo
+  Resultado: empresa operacional, marca registrada, contratos prontos
+```
 
-Caminho A (se CAR fechado <60 dias):
-  CNPJ MedCannLab Tecnologia:        R$ 8-13k
-  Adaptação PJ Ricardo:              R$ 0-2k
-  Contrato intercompany:             R$ 1-3k
-  Cláusula PR + ata:                 R$ 1-2k
-  DD da PJ Ricardo:                  R$ 1-3k
-  INPI IMRE 3 classes:               R$ 1.065
-  Agente PI:                         R$ 500-1.000
-  ──────────────────────────────────
-  TOTAL:                             R$ 14-25k
+**Investimento opcional (futuro, NÃO precisa agora):**
 
-  Tempo: 15-30 dias
+```
+Adicionar CNAE médico quando precisar:
+  • Atualização contrato social JUCERJA: R$ 500-1.500
+  • Inscrição CRM da PJ:                R$ 0-500
+  • Alvará sanitário (se atendimento presencial): R$ 2-5k
+  ────────────────────────────────────
+  Custo adicional futuro:              R$ 2.5-7k
+
+Quando ativar: pós-PMF se for entrar em editais públicos próprios.
 ```
 
 ---
@@ -410,29 +423,16 @@ Resto fica pra pós-PMF.
 - [ ] Lista de produtos 1Pure com nº ANVISA
 - [ ] Estrutura societária 1Pure (se aplicável)
 
-### 9.3 🔴 Ricardo envia (CRÍTICO — define caminho A vs B vs C)
+### 9.3 ✅ Ricardo — não precisa enviar dados Consultório do Valença
 
-```
-☐ Razão social do "Consultório do Valença" (CNPJ se PJ formal)
-☐ Tipo da PJ (LTDA, MEI, EIRELI, sociedade simples)
-☐ Tempo de operação ininterrupto
-☐ Cap table atual (Ricardo único? cônjuge? outros?)
-☐ Capital social
-☐ Faturamento médio anual últimos 3 anos
-☐ Regime tributário (Simples Anexo III/V, Lucro Presumido, Real)
-☐ Alvará sanitário vigente?
-☐ AFE ANVISA (se aplicável)?
-☐ Inscrição CRM da PJ?
-☐ Atestados de capacidade técnica acumulados (contratos públicos antigos)?
-☐ Certidão negativa fiscal/jurídica
-☐ Lista de processos judiciais (se houver)
-☐ Funcionários atuais (CLT, médicos credenciados)
-☐ Site/domínio/SEO existente
-☐ Base de pacientes históricos (estimativa)
-☐ Contratos vigentes com convênios/SES/prefeituras
-```
+**Decisão 04/05 16h:** com Caminho B simplificado selado, dados do Consultório do Valença não são mais bloqueador.
 
-**Sem esses dados, recomendação Caminho A/B/C é especulação.**
+Consultório do Valença permanece como ativo pessoal/profissional do Ricardo, separado da MedCannLab. Pode virar:
+- Parceiro fornecedor-cliente futuro (intercompany)
+- Origem de receita Ricardo via prática clínica privada
+- Base de pacientes próprios do Ricardo
+
+Nada precisa ser enviado/auditado pra MedCannLab existir.
 
 ### 9.4 4 sócios todos (próxima reunião)
 
