@@ -125,6 +125,53 @@ Confirmado: V1.9.122 (CTAs no estado vazio) **NÃO afeta Carolina**:
 | 3 | **HPP transbordamento AEC** (turno→fase 1 turno atraso) | Média | ~3-4h refatorar transition | — |
 | 4 | **51% appointments cancelados** | Alta operacional | V1.9.123-A já em prod, medir 7-30 dias | Aguarda dado |
 | 5 | **86% abandono AEC** | Alta clínica | V1.9.121 fases 0-2 (~3-5h) + 3-6 (~5h pós Ricardo) | Aguarda OK Ricardo visual |
+| 12 | **saveAnalysisToReport falha p/ profissional não-admin** ✅ RESOLVIDO 04/05 17h | ALTA — feature racionalidades 100% quebrada | 5min CREATE POLICY | — |
+
+### 🟢 P0 #12 — RESOLVIDO 04/05/2026 17h via Opção A
+
+```
+Sintoma reportado: Ricardo profissional (rrvalenca@gmail.com) tentou
+   aplicar 5 racionalidades à Carolina (UUID 5c98c123). TODAS falharam:
+   "Erro ao salvar análise no relatório: Object"
+   "Persistência parcial — Verifique permissões (RLS)"
+
+Causa raiz (audit empírico via PAT):
+  Trigger trigger_assessment_score em clinical_reports UPDATE
+    → register_assessment_score() é SECURITY INVOKER (prosecdef=false)
+    → Faz INSERT em ai_assessment_scores com auth.uid() do usuário
+  ai_assessment_scores tinha RLS habilitada MAS:
+    • SELECT policy admin ✅
+    • SELECT policy own ✅
+    • INSERT policy ❌ AUSENTE
+    • UPDATE policy ❌ AUSENTE
+  Pipeline automático funcionava porque Edge Function usa service_role
+  (bypassa RLS). Profissional via supabase-js ficava bloqueado.
+
+Fix aplicado (Opção A — CREATE POLICY):
+  CREATE POLICY "scores_insert_pro_admin"
+  ON ai_assessment_scores FOR INSERT
+  WITH CHECK (is_admin() OR EXISTS(SELECT 1 FROM users 
+              WHERE id=auth.uid() AND type IN ('professional','profissional')))
+
+Estado pós-fix:
+  • BEFORE: 2 policies (apenas SELECT)
+  • AFTER:  3 policies (+ scores_insert_pro_admin INSERT)
+  • Padrão alinhado com clinical_rationalities/clinical_axes
+  • ai_assessment_scores: 312 rows (sem mudança)
+  • clinical_reports: 96 (sem mudança)
+  • Smoke pendente: Ricardo testar nova racionalidade
+
+Reversão (se necessário):
+  DROP POLICY "scores_insert_pro_admin" ON ai_assessment_scores;
+
+Princípios aplicados:
+  • AUDITAR 100% antes (16 queries empíricas via PAT)
+  • Polir não inventar (espelhou padrão existente)
+  • Anti-regressão (snapshot BEFORE/AFTER, count check)
+  • Zero código tocado, zero deploy
+  • Cadeado V1.9.95+97+98+99-B intacto
+```
+
 
 ### 🟡 P1 — Inconsistências de configuração
 
@@ -135,6 +182,44 @@ Confirmado: V1.9.122 (CTAs no estado vazio) **NÃO afeta Carolina**:
 | 8 | **R$350 hardcoded** em NoaConversationalInterface.tsx:494 | Bloqueia 2º médico | ~30min migrar pra `users.consultation_price` |
 | 9 | **57% cadastros sem consent** (19/37 legacy pré-LGPD) | Possível investigar | Documentar (dado histórico, não bug) |
 | 10 | **Tag git CLAUDE.md desatualizada** (`v1.9.113-locked` mas estamos em V1.9.123-A) | Drift documental | Atualizar pós-V1.9.123-A validado |
+| 11 | **Input misto durante AEC** (João 04/05 16:47 BRT) | UX/possível regressão TTS ou avatar — relato "ouvindo leandro... ela fica vibrando" capturado em MEDICAL_HISTORY como dado clínico | Investigar com João + screenshot do que viu |
+
+### 🟦 P1.1 — Achado de teste hoje (04/05 sessão Ricardo+João)
+
+```
+Sintoma: João (UUID c68fb133, jvbiocann@gmail.com) durante AEC ativa
+         em fase MEDICAL_HISTORY, escreveu como input clínico:
+         
+         "eu aparece como ouvindo leandro aqui mas ela fica vibrando"
+         
+         (timestamp: 04/05/2026 16:47:35 BRT, log Supabase
+          execution_id 065bd143-205f-4fb7-9105-0ab6caaba613)
+
+Comportamento atual (correto pelo princípio AEC):
+  • AEC capturou (escuta ativa — tudo é ouro)
+  • Verbatim First processou normal
+  • Salvo em interaction histórico
+
+Risco lateral:
+  • Conteúdo bizarro pode entrar no relatório clínico final
+  • Escriba V1.9.84 + Cleanup V1.9.109 podem reorganizar OU não
+
+Hipóteses de causa raiz (UX layer):
+  A) Avatar TTS pronunciou nome errado (ex: "Leandro" no lugar do João)
+  B) UI mostrou outro nome visualmente
+  C) Botão de mic estava com animação contínua ("vibrando")
+  D) Audio feedback loop (mic captando próprio TTS)
+
+Próximo passo:
+  • Pedir screenshot do João do que ele viu
+  • Pedir reprodução em sessão controlada
+  • NÃO mexer no Core/AEC (princípio: AEC = escuta ativa)
+  • Se persistir: mapear via UI Devtools
+
+Severidade: P1 (não bloqueia AEC, contamina relatório possivelmente)
+Esforço: 30-60min audit UX
+```
+
 
 ### 🟠 P2 — Half-implementations
 

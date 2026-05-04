@@ -217,6 +217,178 @@ INVESTIMENTO ATIVAÇÃO:
 
 ---
 
+## BLOCO I — Stress test real OpenAI 429 (15:25-16:00 BRT)
+
+**Causa:** Saldo créditos OpenAI da org "Nôa Esperanza" (key user-SjuGx...) zerou. 5 incidentes 429 `insufficient_quota` em 31 minutos via Cloudflare api.openai.com.
+
+**Comportamento defensivo:**
+- ⚠️ tradevision-core/index.ts:5092-5093 ativou `Modo Determinístico (Consciência Reduzida)` automaticamente
+- ✅ AEC continuou via Verbatim First (~46% bypass histórico mantido)
+- ✅ Pipeline orchestrator intacto durante toda crise
+- ✅ DB SAVED em 100% das interações
+- ✅ Logs Supabase mantidos (RAG + Auth + Realtime OK)
+
+**Recuperação (~16:00 BRT):**
+- Ricardo recarregou créditos OpenAI
+- Sistema voltou automaticamente ao `gpt-4o-2024-08-06` em ~30s
+- Zero deploy, zero restart, zero ação manual de produto
+
+**Validação Sovereignty Protocol v2:**
+- Cadeado V1.9.95+97+98+99-B PROVADO em produção real
+- Camadas 0-4 e 6-7 da pirâmide operaram sem GPT
+- Apenas camada 5 (camada generativa) ficou indisponível
+- Real-world stress test passado com sucesso
+
+---
+
+## BLOCO J — Sessão dupla teste pós-recarga (16:00-17:30 BRT)
+
+**Setup:** Ricardo testou como Carolina (UUID 5c98c123) + João como paciente (UUID c68fb133, jvbiocann@).
+
+**Resultado Carolina (Pipeline FULL):**
+- AEC completou: IDENTIFICATION → MEDICAL_HISTORY → CONSENT_COLLECTION ("sim concordo") → FINAL_RECOMMENDATION ("autorizo")
+- Pipeline orchestrator: 7 estágios em ~28s
+  - REPORT (V1.9.84 escriba) → CLEANUP V1.9.109 → SCORES (70 high) → REPORT_GENERATED → AXES_SYNCED → SIGNATURE (hash ad6d7191) → RATIONALITY_SYNCED → DONE
+- report_id: `6fc75ce8-0cd5-43bd-b0b9-2be9dc461b47`
+- doctor_id: `2135f0c0` (Ricardo via DOCTOR_RESOLUTION Caminho 2 P0B)
+
+**Resultado João (parou em MEDICAL_HISTORY):**
+- AEC iniciou COMPLAINT_DETAILS → MEDICAL_HISTORY
+- Não fechou (não chegou em CONSENT_COLLECTION)
+- ⚠️ Achado lateral: input misto durante AEC ("eu aparece como ouvindo leandro aqui mas ela fica vibrando") — possível bug UX (TTS/avatar/mic) capturado como dado clínico → P1 #11 no MAPA_BUGS
+
+**Métricas da sessão:**
+- Verbatim bypass: ~80% (acima média histórica 46%)
+- AEC GATE V1.5 reteve agendamento 5+ vezes corretamente
+- 0 erros 5xx, 0 erros DB, 0 falhas Pipeline
+
+---
+
+## BLOCO K — Análise pipeline paciente (Vincular ≠ AEC ≠ Agendar)
+
+**Insight Pedro:** vínculo, AEC e agendamento estão MISTURADOS hoje no fluxo paciente. Card de agendamento cria vínculo como efeito colateral. Correto seria 3 atos sequenciais separados.
+
+**Proposta 3 camadas:**
+- 🟢 VINCULADOS (longitudinal, VBHC): Vincular → AEC → Agendar
+- 🟡 POOL (avulso/urgência): Agendar → AEC → opcional vincular pós-fato
+- 🟠 ESTAGIÁRIOS (futuro pós-PMF): role + workflow supervisão
+
+**Audit empírico (10 queries via PAT):**
+- `patient_doctors` é VIEW derivada de appointments (não tabela formal)
+- `aec_assessment_state` SEM `professional_id` — AEC roda cega de médico
+- 13 profissionais cadastrados, apenas 2 com availability (Ricardo + Eduardo)
+- DOCTOR_RESOLUTION resolve pós-AEC (default Ricardo)
+
+**Bug latente descoberto no Core (linha 4674):**
+- tradevision-core lê `patient_doctors.is_official` que NÃO EXISTE na VIEW
+- Sempre retorna undefined → distinção oficial/parceiro silenciosa pré-existente
+- Nenhuma memória prévia tinha registrado
+
+---
+
+## BLOCO L — Peer review crítico (outra Claude) + 5 gates
+
+**3 pontos críticos NÃO levantados na minha análise técnica inicial:**
+
+1. **Cap table impact** (REGRA DE OURO selada hoje no LIVRO MESTRE)
+   - Bond formal Ricardo + CAR pode quebrar simetria 4×20%
+   - Cenário CAR R$300k/ano: assimetria 12.6x se mal estruturado
+
+2. **CFM 1.974/2011 + 2.314/2022**
+   - Vínculo unilateral viola dever de continuidade médica
+   - Precisa fluxo 2 etapas: paciente solicita → médico aceita
+
+3. **LGPD art. 11 dado sensível saúde**
+   - Bond = dado clínico relacional, exige consent específico
+   - Schema atual sem `consent_id` apontando pra consents
+
+**Aprendizado cristalizado:**
+> AUDITAR 100% inclui CAMADAS NÃO-TÉCNICAS (societária + regulatória + jurídica). Spec técnica sem peer review jurídico = incompleta. Anti-subestimação severidade vale pra propostas de feature também.
+
+**Spec patient_doctor_bonds BLOQUEADA até 5 gates:**
+- ☐ CNPJ MedCannLab Tec ativo
+- ☐ Acordo quotistas v2.0 assinado
+- ☐ Termo LGPD revisado por advogado
+- ☐ CFM 2 etapas validado Ricardo + Eduardo
+- ☐ Cap table impact aprovado em ata 4 sócios
+
+---
+
+## BLOCO M — Bug Carolina state CONFIRMADO ATIVO + João UX P1 #11
+
+**Bug Carolina state ressuscitado (audit empírico HOJE):**
+```
+Row abce92b0-5f75-44f3-9484-5f107808ef1d:
+  invalidated_at: 2026-04-25 13:41 (V1.9.57 retroativo)
+  started_at:     2026-05-04 18:26 (Ricardo iniciou hoje)
+  last_update:    2026-05-04 19:27 (FSM atualizou hoje)
+  is_complete:    true
+  phase:          FINAL_RECOMMENDATION
+```
+- ⚠️ FSM atualizou row INVALIDADA sem limpar `invalidated_at`
+- ✅ AEC rodou (Pipeline gerou report 6fc75ce8 com hash + score 70)
+- 🔴 UI volta a mostrar "Iniciar Avaliação" pós-completion
+- Fix #1 SQL (5min) AGUARDA AUTORIZAÇÃO Pedro
+- Maria Helena (golden case 05/05) PODE estar afetada
+
+**João UX bug anotado em MAPA_BUGS P1 #11:**
+- Input "eu aparece como ouvindo leandro aqui mas ela fica vibrando"
+- Capturado em MEDICAL_HISTORY (AEC = escuta ativa, correto)
+- Hipóteses: TTS nome errado / UI / mic vibrando / audio loop
+- Próximo passo: pedir screenshot ao João
+
+---
+
+## BLOCO N — Fix P0 #12 saveAnalysisToReport (17h, autorizado Pedro)
+
+**Sintoma reportado por Ricardo profissional:**
+- Logs 16:34-16:36 BRT mostraram 5 análises de racionalidade (biomedical, traditional_chinese, ayurvedic, homeopathic, integrative) aplicadas à Carolina
+- TODAS geraram análise via GPT-4o (Assistant API + Core OK)
+- TODAS falharam ao persistir: `"Erro ao salvar análise no relatório: Object"` + `"Persistência parcial — Verifique permissões (RLS)"`
+
+**Causa raiz (16 queries empíricas via PAT):**
+- Trigger `trigger_assessment_score` em `clinical_reports` UPDATE/INSERT dispara `register_assessment_score()`
+- Função tem `prosecdef=false` (SECURITY INVOKER) — roda com auth.uid() do usuário
+- Insert em `ai_assessment_scores` falha por RLS:
+  - 2 SELECT policies (admin + own) ✅
+  - 0 INSERT policies ❌ AUSENTE
+  - 0 UPDATE policies ❌ AUSENTE
+- Pipeline automático funcionava (Edge Function usa service_role bypass RLS)
+- Profissional via supabase-js ficava bloqueado pelo trigger
+
+**Fix aplicado (Opção A — CREATE POLICY):**
+```sql
+CREATE POLICY "scores_insert_pro_admin"
+ON public.ai_assessment_scores FOR INSERT
+WITH CHECK (
+  is_admin() OR EXISTS (
+    SELECT 1 FROM public.users
+    WHERE users.id = auth.uid()
+      AND lower(COALESCE(users.type, ''::varchar)::text)
+          = ANY (ARRAY['professional'::text, 'profissional'::text])
+  )
+);
+```
+
+**Padrão espelhado:** with_check idêntico ao `rationalities_insert_pro_admin` (princípio "polir não inventar").
+
+**Validação anti-regressão:**
+- BEFORE: 2 policies — total 312 rows / 96 unique reports
+- AFTER:  3 policies — total 312 rows / 96 unique reports (sem mudança)
+- Outras tabelas inalteradas (clinical_reports 96, clinical_rationalities 75, clinical_axes 375)
+- Cadeado V1.9.95+97+98+99-B intacto
+- Tag v1.9.113-locked preservada
+- Zero código tocado, zero deploy
+
+**Smoke pendente:** Ricardo testar nova racionalidade pra confirmar fim do bug.
+
+**Reversão (se necessário):**
+```sql
+DROP POLICY "scores_insert_pro_admin" ON ai_assessment_scores;
+```
+
+---
+
 ## MÉTRICAS DA SESSÃO 04/05/2026
 
 ### Commits cirúrgicos (8)
