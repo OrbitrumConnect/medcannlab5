@@ -4,6 +4,47 @@ import { NoaResidentAI, type AIResponse } from '../lib/noaResidentAI'
 import { ConversationalIntent } from '../lib/medcannlab/types'
 import { clinicalAssessmentFlow } from '../lib/clinicalAssessmentFlow'
 import { detectAecPromotion, AEC_PROMOTION_TRIGGER_TEXT } from '../lib/aecPromotionDetector'
+import { supabase } from '../lib/supabase'
+
+const AEC_RECENT_24H_CACHE_KEY = 'aec_recent_24h_check'
+const AEC_RECENT_24H_CACHE_TTL_MS = 60 * 60 * 1000
+
+async function checkRecentAec24h(userId: string): Promise<boolean> {
+  try {
+    const cacheKey = `${AEC_RECENT_24H_CACHE_KEY}_${userId}`
+    const cached = typeof window !== 'undefined' ? window.sessionStorage.getItem(cacheKey) : null
+    if (cached) {
+      const parsed = JSON.parse(cached) as { value: boolean; exp: number }
+      if (parsed.exp > Date.now()) return parsed.value
+    }
+  } catch {}
+
+  try {
+    const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
+    const { data } = await supabase
+      .from('aec_assessment_state')
+      .select('id')
+      .eq('user_id', userId)
+      .eq('is_complete', true)
+      .gte('last_update', since)
+      .is('invalidated_at', null)
+      .limit(1)
+      .maybeSingle()
+
+    const result = !!data
+    try {
+      if (typeof window !== 'undefined') {
+        window.sessionStorage.setItem(
+          `${AEC_RECENT_24H_CACHE_KEY}_${userId}`,
+          JSON.stringify({ value: result, exp: Date.now() + AEC_RECENT_24H_CACHE_TTL_MS })
+        )
+      }
+    } catch {}
+    return result
+  } catch {
+    return false
+  }
+}
 
 const sanitizeForSpeech = (text: string): string => {
   return text
@@ -458,6 +499,16 @@ export const useMedCannLabConversation = (options?: {
       })
       return changed ? next : prev
     })
+  }, [setMessages])
+
+  const dismissMessage = useCallback((messageId: string) => {
+    setMessages(prev =>
+      prev.map(message =>
+        message.id === messageId
+          ? { ...message, metadata: { ...(message.metadata || {}), dismissed: true } }
+          : message
+      )
+    )
   }, [setMessages])
 
   const stopSpeech = useCallback(() => {
@@ -1207,14 +1258,15 @@ export const useMedCannLabConversation = (options?: {
       console.log('💬 Mensagem da IA adicionada ao chat. Total de mensagens:', messages.length + 2)
       console.log('🔍 Metadata recebida:', response.metadata) // Debug log
 
-      // V1.9.121 FASE 0+1+2 — AEC Promotion Detector
-      // Resolve caso João (04/05): conversa que parece AEC sem FSM real.
-      // Detecta padrão clínico em chat livre, oferece botão consciente
-      // pra ASSESSMENT_START (P8 reuso do mecanismo existente).
+      // V1.9.121-C — AEC Promotion Detector com hasRecentAec24h funcional
+      // Resolve caso João (04/05). Detecta padrão clínico em chat livre,
+      // oferece botão consciente pra ASSESSMENT_START (P8 reuso).
+      // V1.9.121-C: cross-session cooldown via Supabase + cache sessionStorage 1h.
       try {
         if (user?.id) {
           const activeAecState = clinicalAssessmentFlow.getState(user.id)
           const hasActiveAec = !!(activeAecState && activeAecState.phase !== 'COMPLETED')
+          const hasRecentAec24h = await checkRecentAec24h(user.id)
           const detectorMessages = [...messages, assistantMessage].map(m => ({
             role: m.role,
             content: typeof m.content === 'string' ? m.content : '',
@@ -1223,7 +1275,7 @@ export const useMedCannLabConversation = (options?: {
           const result = detectAecPromotion(detectorMessages, {
             userType: (user as any).type,
             hasActiveAec,
-            hasRecentAec24h: false,
+            hasRecentAec24h,
             lastHintShownAt: lastAecHintShownAt
           })
           if (result.shouldShowHint) {
@@ -1451,7 +1503,8 @@ export const useMedCannLabConversation = (options?: {
     isOffline,
     sendMessage,
     triggerQuickCommand,
-    resetConversation
+    resetConversation,
+    dismissMessage
   }
 }
 

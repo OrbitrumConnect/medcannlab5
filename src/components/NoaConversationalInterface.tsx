@@ -603,6 +603,7 @@ const NoaConversationalInterface = React.forwardRef<
       usedEndpoints,
       lastIntent,
       isOffline,
+      dismissMessage,
     } = useMedCannLabConversation({
       documentContext: inlineDoc
         ? {
@@ -3344,13 +3345,15 @@ const NoaConversationalInterface = React.forwardRef<
                 ) : null)}
 
               {messages.map((message) => {
-                // V1.9.121 — AEC Promotion Hint (FASE 1+2)
-                // Click envia texto canônico que dispara ASSESSMENT_START via
-                // mecanismo P8 existente (regex aecCanonical no Core).
+                // V1.9.121-C — AEC Promotion Hint com dismiss visual
+                // Click "Reiniciar" → ASSESSMENT_START via P8 reuso.
+                // Click "Agora não" → marca dismissed=true (esconde card,
+                // cooldown 60min do detector continua protegendo spam).
                 if (
                   message.role === "system" &&
                   (message.metadata as any)?.type === "aec_promotion_hint"
                 ) {
+                  if ((message.metadata as any)?.dismissed === true) return null;
                   const triggerText =
                     (message.metadata as any)?.triggerText ||
                     "Quero iniciar a avaliação clínica inicial";
@@ -3358,6 +3361,7 @@ const NoaConversationalInterface = React.forwardRef<
                     <AecPromotionHint
                       key={message.id}
                       onAccept={() => sendMessage(triggerText)}
+                      onDismiss={() => dismissMessage(message.id)}
                     />
                   );
                 }
