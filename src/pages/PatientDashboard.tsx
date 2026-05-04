@@ -211,7 +211,13 @@ const PatientDashboard: React.FC = () => {
       {activeTab === 'reportar-problema' && <PatientSupport />}
 
       {activeTab === 'minhas-prescricoes' && (
-        <PatientPrescriptions onBack={() => setActiveTab('analytics')} />
+        <PatientPrescriptions
+          onBack={() => setActiveTab('analytics')}
+          onRequestNew={() => {
+            sendInitialMessage('Gostaria de solicitar uma nova receita ao meu médico. Pode me ajudar?')
+            openNoaChat()
+          }}
+        />
       )}
 
 
