@@ -13,7 +13,8 @@ import {
   Zap,
   Loader2,
   Menu,
-  X
+  X,
+  Pill
 } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
 import { useUserView } from '../contexts/UserViewContext'
@@ -24,6 +25,7 @@ import { usePatientDashboard, PatientTab } from '../hooks/dashboard/usePatientDa
 import ShareReportModal from '../components/ShareReportModal'
 import NoaConversationalInterface from '../components/NoaConversationalInterface'
 import PatientAnalytics from '../components/PatientAnalytics'
+import PatientPrescriptions from '../components/PatientPrescriptions'
 
 import { PatientStats } from '../components/dashboard/patient/PatientStats'
 import { PatientAppointments } from '../components/dashboard/patient/PatientAppointments'
@@ -71,7 +73,7 @@ const PatientDashboard: React.FC = () => {
           openNoaChat()
           return
         }
-        const validTabs: PatientTab[] = ['analytics', 'meus-agendamentos', 'plano', 'reportar-problema']
+        const validTabs: PatientTab[] = ['analytics', 'meus-agendamentos', 'plano', 'reportar-problema', 'minhas-prescricoes']
         if (validTabs.includes(section as PatientTab)) {
           setActiveTab(section as PatientTab)
         }
@@ -95,6 +97,7 @@ const PatientDashboard: React.FC = () => {
     const tabs: Array<{ id: PatientTab; label: string; icon: any }> = [
       { id: 'analytics', label: 'Dashboard', icon: BarChart3 },
       { id: 'meus-agendamentos', label: 'Agenda', icon: Calendar },
+      { id: 'minhas-prescricoes', label: 'Prescrições', icon: Pill },
       { id: 'chat-noa', label: 'Chat NOA', icon: Brain },
       { id: 'perfil', label: 'Meu Perfil', icon: Zap }
     ]
@@ -206,6 +209,10 @@ const PatientDashboard: React.FC = () => {
       )}
 
       {activeTab === 'reportar-problema' && <PatientSupport />}
+
+      {activeTab === 'minhas-prescricoes' && (
+        <PatientPrescriptions onBack={() => setActiveTab('analytics')} />
+      )}
 
 
 

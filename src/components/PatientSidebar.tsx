@@ -18,7 +18,8 @@ import {
   ChevronLeft,
   ChevronRight,
   BarChart3,
-  Activity
+  Activity,
+  Pill
 } from 'lucide-react'
 import {
   backgroundGradient,
@@ -50,6 +51,7 @@ interface PatientSidebarProps {
   onStartAssessment?: () => void
   onViewProfile?: () => void
   onReportProblem?: () => void
+  onViewPrescriptions?: () => void
 }
 
 const PatientSidebar: React.FC<PatientSidebarProps> = ({
@@ -73,7 +75,8 @@ const PatientSidebar: React.FC<PatientSidebarProps> = ({
   onShareReport,
   onStartAssessment,
   onViewProfile,
-  onReportProblem
+  onReportProblem,
+  onViewPrescriptions
 }) => {
   const getReportStatusLabel = (status: string) => {
     switch (status) {
@@ -130,6 +133,18 @@ const PatientSidebar: React.FC<PatientSidebarProps> = ({
       },
       progress: therapeuticPlan?.progress,
       accent: 'primary'
+    },
+    {
+      id: 'minhas-prescricoes',
+      title: 'Minhas Prescrições',
+      subtitle: 'Receitas oficiais e plano',
+      description: 'Visualize suas prescrições oficiais (CFM, ICP-Brasil) e seu plano terapêutico integrado emitidos pela equipe clínica.',
+      icon: Pill,
+      onClick: () => {
+        onCardClick('minhas-prescricoes')
+        if (onViewPrescriptions) onViewPrescriptions()
+      },
+      accent: 'amber'
     },
     {
       id: 'conteudo-educacional',
