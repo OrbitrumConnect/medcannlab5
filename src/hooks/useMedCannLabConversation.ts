@@ -1233,7 +1233,7 @@ export const useMedCannLabConversation = (options?: {
               const hintMsg: ConversationMessage = {
                 id: `aec-hint-${Date.now()}`,
                 role: 'system',
-                content: 'Posso organizar nossa conversa como uma Avaliação Clínica Inicial?',
+                content: 'Estamos em chat livre. Posso reiniciar como Avaliação Clínica Inicial estruturada?',
                 timestamp: new Date(),
                 metadata: {
                   type: 'aec_promotion_hint',

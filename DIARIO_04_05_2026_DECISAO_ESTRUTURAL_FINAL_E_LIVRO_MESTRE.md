@@ -389,6 +389,46 @@ DROP POLICY "scores_insert_pro_admin" ON ai_assessment_scores;
 
 ---
 
+## BLOCO O — V1.9.121-B Polish texto pós-feedback Ricardo (18:30 BRT)
+
+**Smoke real fases 0+1+2 (commit 9d23a30):** Pedro Paciente clicou hint → AEC FSM real criada → encerramento gracioso CONFIRMING_EXIT → INTERRUPTED. ✅ Funcional empíricamente.
+
+**Feedback empírico Ricardo (testando como Carolina):**
+- ⏱️ Latência GPT-4o ~5-10s percebida (22k tokens RAG, característica pré-existente, não V1.9.121)
+- 🔁 "Voltou muito" — AEC reinicia do zero perdendo contexto chat livre (gap real das fases 3+4+5+6)
+- 💬 Texto não deixa claro que vai REINICIAR (não TRANSFORMAR)
+
+**V1.9.121-B aplicado (~10 min, zero risco):**
+- src/components/AecPromotionHint.tsx: 2 parágrafos
+  - Primeiro: "Estamos em **chat livre** — esta conversa *não fica registrada*"
+  - Segundo: "Posso **reiniciar** como Avaliação Clínica Inicial estruturada? Você confirma cada parte e ela fica salva oficialmente"
+- Botão: "🔄 Reiniciar como Avaliação Clínica Inicial" (ícone RefreshCw em vez de Sparkles)
+- src/hooks/useMedCannLabConversation.ts: content sync ("Estamos em chat livre. Posso reiniciar...")
+
+**Princípios aplicados:**
+- ✅ P10 anti-substituição-silenciosa: paciente sabe que vai REINICIAR
+- ✅ Princípio Ricardo: "paciente confirma a organização da própria fala"
+- ✅ Camadas 0-2 da pirâmide INTOCÁVEIS — só edita texto/UI
+- ✅ Selo quíntuplo respeitado: fases 3+4+5+6 só após Ricardo aprovar visual deployado das 0+1+2
+
+**Anti-regressão validado:**
+- Type-check: 33 erros totais (33 baseline = zero regressão)
+- Zero erros nos 4 arquivos V1.9.121
+- Lock V1.9.95+97+98+99-B preservado
+- ASSESSMENT_START via P8 reuso (mesmo mecanismo)
+
+**Próxima sessão técnica (pós-OK Ricardo do texto):**
+- FASE 3: aecPromotionExtractor.ts (LLM extrai JSON da conversa) ~1h
+- FASE 4: createAssessmentWithContext (FSM função paralela) ~1.5h
+- FASE 5: Integração end-to-end ~1h
+- FASE 6: Telemetria 5 eventos noa_logs ~30min
+- TOTAL: ~4h pra eliminar "voltou muito" — preserva contexto chat livre
+
+**Frase âncora bloco O:**
+> *"V1.9.121 funciona empíricamente; texto agora é HONESTO sobre reiniciar. Próximo polish (fases 3-6) elimina 'voltou muito' preservando contexto da conversa livre — mas só após Ricardo aprovar visual atual em prod."*
+
+---
+
 ## MÉTRICAS DA SESSÃO 04/05/2026
 
 ### Commits cirúrgicos (8)

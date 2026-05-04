@@ -1,13 +1,15 @@
 /**
- * V1.9.121 — AEC Promotion Hint (FASE 1+2)
+ * V1.9.121-B — AEC Promotion Hint (FASE 1+2 polish)
  *
  * Card sugestão azul informativo. Aparece quando aecPromotionDetector
- * dispara. Click chama onAccept que envia texto canônico ASSESSMENT_START
- * (mecanismo P8 existente — não inventa rota nova).
+ * dispara. Click envia texto canônico ASSESSMENT_START (P8 reuso).
  *
- * Texto aprovado por Ricardo (selo quíntuplo 03/05/2026).
+ * V1.9.121-B: texto explicita "modo livre" (sem registro) e "reiniciar"
+ * (transparência) — feedback empírico Ricardo 04/05/2026 testando como
+ * Carolina. Princípio P10 anti-substituição-silenciosa: paciente sabe
+ * que vai reiniciar e que ficará salvo oficialmente.
  */
-import { Sparkles } from 'lucide-react'
+import { RefreshCw, Sparkles } from 'lucide-react'
 
 interface Props {
   onAccept: () => void
@@ -31,7 +33,10 @@ export function AecPromotionHint({ onAccept, onDismiss }: Props) {
                 Sugestão da Nôa
               </h3>
               <p className="text-blue-200/90 text-sm leading-relaxed">
-                Posso organizar nossa conversa como uma <strong>Avaliação Clínica Inicial</strong> para você confirmar e compartilhar com seu médico?
+                Estamos em <strong>chat livre</strong> — esta conversa <em>não fica registrada</em> como avaliação clínica.
+              </p>
+              <p className="text-blue-200/90 text-sm leading-relaxed">
+                Posso <strong>reiniciar</strong> como uma <strong>Avaliação Clínica Inicial</strong> estruturada? Você confirma cada parte e ela fica salva oficialmente para compartilhar com seu médico.
               </p>
             </div>
           </div>
@@ -49,8 +54,8 @@ export function AecPromotionHint({ onAccept, onDismiss }: Props) {
             onClick={onAccept}
             className="bg-blue-500/30 hover:bg-blue-500/50 text-blue-100 border border-blue-400/40 px-4 py-2 rounded-xl text-sm font-medium transition-all flex items-center gap-2"
           >
-            <Sparkles className="w-4 h-4" />
-            Organizar como Avaliação Clínica Inicial
+            <RefreshCw className="w-4 h-4" />
+            Reiniciar como Avaliação Clínica Inicial
           </button>
         </div>
       </div>
