@@ -172,6 +172,30 @@ const Landing: React.FC = () => {
     }
   }, [user, authLoading, navigate])
 
+  // [V1.9.128-A] Lê ?cadastro=paciente|profissional|aluno + ?login=1 vindos das landings SEO
+  // (LandingPaciente/Medico/Aluno passam role correto via URL ao clicar "Inscreva-se Agora")
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    const params = new URLSearchParams(window.location.search)
+    const cadastroParam = params.get('cadastro')
+    const loginParam = params.get('login')
+
+    if (cadastroParam) {
+      const validTypes = ['paciente', 'profissional', 'aluno']
+      const userType = validTypes.includes(cadastroParam) ? cadastroParam : 'paciente'
+      setRegisterData((prev) => ({ ...prev, userType }))
+      setShowRegister(true)
+    } else if (loginParam === '1') {
+      setShowLogin(true)
+    }
+    // Limpar params da URL pra evitar reabertura ao fechar modal
+    if (cadastroParam || loginParam) {
+      const cleanUrl = window.location.pathname + (window.location.hash || '')
+      window.history.replaceState({}, '', cleanUrl)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
   const handleLogin = async () => {
     if (!loginData.email || !loginData.password) return error('Preencha todos os campos')
     setIsLoading(true)
@@ -291,7 +315,7 @@ const Landing: React.FC = () => {
           <div className="hidden md:flex items-center space-x-4">
             <button onClick={() => setShowLogin(true)} className="text-sm font-medium text-slate-300 hover:text-white transition-colors">Entrar</button>
             <button onClick={() => setShowRegister(true)} className="text-sm font-medium px-5 py-2.5 bg-white text-slate-950 rounded-lg hover:bg-slate-200 transition-colors shadow-lg hover:shadow-white/10">
-              Começar Agora
+              Inscreva-se Agora
             </button>
           </div>
 
@@ -347,11 +371,9 @@ const Landing: React.FC = () => {
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-teal-300">Método AEC.</span>
             </h1>
 
-            <p className="text-base text-slate-300 mb-3 max-w-xl mx-auto lg:mx-0 leading-relaxed">
-              MedCannLab é um <strong className="text-emerald-300">modelo clínico orientado pela escuta</strong>, fundado na <strong className="text-emerald-300">Arte da Entrevista Clínica (AEC)</strong>, operacionalizado por uma <strong className="text-emerald-300">infraestrutura digital</strong> e acessado através de uma <strong className="text-emerald-300">aplicação tecnológica</strong>.
-            </p>
-            <p className="text-sm text-slate-400 mb-4 max-w-xl mx-auto lg:mx-0 leading-relaxed">
-              Método autoral do <strong className="text-emerald-200">Dr. Ricardo Valença</strong> — nefrologista há mais de <strong className="text-emerald-200">40 anos</strong>, com <strong className="text-emerald-200">2.000+ avaliações</strong> conduzidas. Direção médica e científica do <strong className="text-teal-200">Dr. Eduardo Faveret</strong> (Neurologia). Desenvolvido em <span className="text-emerald-300/90">neurologia e cannabis medicinal</span>, aplicável a qualquer especialidade médica.
+            {/* [V1.9.128-C] Hero compactado: 3 parágrafos → 1 enxuto + tagline. Mantém todos elementos-chave. */}
+            <p className="text-base text-slate-300 mb-4 max-w-xl mx-auto lg:mx-0 leading-relaxed">
+              Modelo clínico <strong className="text-emerald-300">orientado pela escuta</strong>, fundado na <strong className="text-emerald-300">Arte da Entrevista Clínica (AEC)</strong> — método autoral do <strong className="text-emerald-200">Dr. Ricardo Valença</strong> (Nefrologia, <strong className="text-emerald-200">40 anos</strong> e <strong className="text-emerald-200">2.000+ avaliações</strong>) com direção científica do <strong className="text-teal-200">Dr. Eduardo Faveret</strong> (Neurologia). Aplicável a qualquer especialidade.
             </p>
 
             <p className="text-base text-emerald-200/90 mb-6 max-w-xl mx-auto lg:mx-0 italic">
