@@ -8,6 +8,7 @@ import { supabase } from '../lib/supabase'
 // VideoCall agora é global no Layout.tsx
 import { useVideoCallRequests } from '../hooks/useVideoCallRequests'
 import { videoCallRequestService } from '../services/videoCallRequestService'
+import { createClickDebouncer } from '../lib/clickDebouncer'
 import VideoCallRequestNotification from '../components/VideoCallRequestNotification'
 import { useToast } from '../contexts/ToastContext'
 import ConfirmModal from '../components/ConfirmModal'
@@ -281,7 +282,13 @@ const AdminChat: React.FC = () => {
   }
 
   // Call handler
+  // [V1.9.140-C] Debounce estritamente local — anti clique-duplo
+  const callDebouncerRef = useRef(createClickDebouncer(2000))
   const handleCall = async (type: 'video' | 'audio') => {
+    if (!callDebouncerRef.current()) {
+      console.warn('[V1.9.140-C] Click ignored — too fast')
+      return
+    }
     let recipientId = adminIdForCall
     if (!recipientId && participants.length > 0) {
       recipientId = participants.find(p => p.id !== user?.id)?.id ?? null

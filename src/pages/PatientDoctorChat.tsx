@@ -10,6 +10,7 @@ import { ChatEvolutionService, ChatSession } from '../services/chatEvolutionServ
 // VideoCall agora é global no Layout.tsx
 import { useVideoCallRequests } from '../hooks/useVideoCallRequests'
 import { videoCallRequestService } from '../services/videoCallRequestService'
+import { createClickDebouncer } from '../lib/clickDebouncer'
 import { useToast } from '../contexts/ToastContext'
 import ConfirmModal from '../components/ConfirmModal'
 
@@ -63,6 +64,9 @@ const PatientDoctorChat: React.FC = () => {
   // Estados para solicitação de videochamada
   const [pendingCallRequest, setPendingCallRequest] = useState<string | null>(null) // request_id da solicitação pendente
   const [timeRemaining, setTimeRemaining] = useState<number | null>(null) // Tempo restante em segundos
+
+  // [V1.9.140-C] Debounce estritamente local — anti clique-duplo nos 2 botões video/audio
+  const callDebouncerRef = useRef(createClickDebouncer(2000))
 
   // Estados para modal de confirmação
   const [confirmModal, setConfirmModal] = useState<{
@@ -1174,6 +1178,11 @@ const PatientDoctorChat: React.FC = () => {
                     <>
                       <button
                         onClick={async () => {
+                          // [V1.9.140-C] Debounce anti clique-duplo
+                          if (!callDebouncerRef.current()) {
+                            console.warn('[V1.9.140-C] Click ignored — too fast')
+                            return
+                          }
                           // Buscar recipientId: primeiro de otherParticipants, depois de patientIdForCall, depois buscar da sala
                           let recipientId = otherParticipants[0]?.id || patientIdForCall
 
@@ -1249,6 +1258,11 @@ const PatientDoctorChat: React.FC = () => {
                       </button>
                       <button
                         onClick={async () => {
+                          // [V1.9.140-C] Debounce anti clique-duplo
+                          if (!callDebouncerRef.current()) {
+                            console.warn('[V1.9.140-C] Click ignored — too fast')
+                            return
+                          }
                           // Buscar recipientId: primeiro de otherParticipants, depois de patientIdForCall, depois buscar da sala
                           let recipientId = otherParticipants[0]?.id || patientIdForCall
 
