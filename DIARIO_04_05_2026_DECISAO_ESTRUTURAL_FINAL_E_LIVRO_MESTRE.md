@@ -562,6 +562,46 @@ Médico mencionado: Dr. Eduardo Faveret (detectado dinamicamente V1.9.100-P0b)
 
 ---
 
+## BLOCO W — UX dashboard 50+ (V1.9.125 + V1.9.126 + V1.9.127-A/B) (22h-22h56 BRT)
+
+**Contexto Pedro:** "ajustes no terminal — paciente e médico ficam o mesmo tamanho mas muito próximo no laptop/desktop, mal vê as coisas". Iteração de UX pra padding terminal e reorganização de dashboards (acessibilidade pacientes/médicos 50+).
+
+**V1.9.125 — Padding terminal responsivo (commit `0ed358a`)**
+- ClinicalTerminal.tsx:231 — `p-4 md:p-6` → `p-3 md:p-6 lg:p-8 xl:p-10`
+- Mobile compacto, laptop/desktop respira
+
+**V1.9.126 — Ações principais no topo paciente (commit `936a633`)**
+- Novo `PatientHeaderActions.tsx` (componente extraído)
+- 5 botões grandes (px-5 py-3 text-base, ícone w-5 h-5) abaixo de "Olá, Pedro":
+  Agendar / Enviar Médico / Iniciar Avaliação / Vincular / WhatsApp
+- Card destacado "O que você quer fazer agora?" como bússola visual
+- animate-pulse no Agendar preservado
+- RPC `share_report_with_doctors` reaproveitada (princípio P8 polir)
+
+**V1.9.127-A — Ações rápidas profissional (commit `692dc83`)**
+- Card idêntico ao paciente no ProfessionalMyDashboard
+- 6 botões: Ver Agenda (badge "X hoje") / Relatórios (badge "X pendentes") /
+  Nova Prescrição / Chat Equipe / Meus Pacientes (badge total) / Cann Matrix
+- Reusa stats já carregados, navegação existente
+
+**V1.9.127-B — Triple-A profissional (commit `98b5dc9`, -82 linhas líquidas)**
+- DELETE 4 stat cards duplicados (badges no topo já mostram)
+- DELETE 5 cards Eixo Clínica que duplicavam (Gestão Pacientes / Agendamentos /
+  Relatórios / Chat / Prescrições) + card "Gestão Terminal Clínico"
+- KPIs "Três Camadas" (12 cards com 9 "Aguardando dados") → "Indicadores Ativos":
+  filtro inteligente + mini-bars + footer "+N quando houver dados"
+- Charts Consultas/Avaliações: altura -30%, padding reduzido
+- Tooltips + aria-label em todos 6 botões (acessibilidade leitor de tela)
+- Limpeza: statCards definition + imports não-usados removidos
+
+**Resultado mensurável:**
+- Dashboard profissional: ~5 telas de scroll → ~2 telas
+- Tudo crítico acima da dobra (header → ações → carteira/analisar → indicadores)
+- Lock V1.9.95+97+98+99-B 100% intocado
+- Zero backend, zero RPC nova, zero migration
+
+---
+
 ## BLOCO V — Analytics empírico share profissional → paciente
 
 **Audit empírico via PAT (clinical_reports + cfm_prescriptions):**
@@ -599,9 +639,10 @@ cfm_prescriptions:
 
 ## MÉTRICAS DA SESSÃO 04/05/2026
 
-### Commits cirúrgicos (8)
+### Commits cirúrgicos (24 — sessão dupla manhã laptop + noite desktop)
 
 ```
+LAPTOP/MANHÃ — DOCS + DECISÕES ESTRUTURAIS
 8daa2e9  V1.9.123-A reminders 24h+1h
 8901356  ESTRATEGIA_MARCA_CNPJ_FINAL.md
 19c13d5  PARTNERSHIP_FRAMEWORK.md
@@ -610,7 +651,26 @@ b6cb0aa  MAPA_BUGS_E_AJUSTES
 b0c1afc  LIVRO_MESTRE v1.0 inicial
 57db998  LIVRO_MESTRE atualizado decisão final
 6f14016  REALIDADE_vs_LIVRO_MESTRE cruzamento empírico
-[hoje]   DIARIO + BRIEFING próxima sessão
+1c120e4  DIARIO + BRIEFING próxima sessão
+83dc5b3  HANDOFF 35+ memórias críticas
+
+DESKTOP/TARDE-NOITE — V1.9.121 + V1.9.124 + UX 50+
+9d23a30  V1.9.121 fases 0+1+2 detector + hint
+9c886b8  diário blocos I-N
+062f562  V1.9.121-B polish texto pós-Ricardo
+19dfec9  V1.9.121-C polish elite (hasRecentAec24h + onDismiss)
+15806b5  V1.9.124 aba Minhas Prescrições
+17e0011  V1.9.124-A sidebar lateral
+a7bad4f  V1.9.124-B cards compactos + paginação
+3f01041  V1.9.124-C interativa (modais + solicitar)
+15a2d43  diário blocos P-V
+
+NOITE/UX 50+ TRIPLE-A
+0ed358a  V1.9.125 padding terminal responsivo
+936a633  V1.9.126 ações topo paciente (PatientHeaderActions)
+692dc83  V1.9.127-A ações rápidas profissional
+98b5dc9  V1.9.127-B triple-A profissional (-82 linhas)
+[hoje]   selo final diário bloco W
 ```
 
 ### Push 4 refs em todos
@@ -683,6 +743,45 @@ b0c1afc  LIVRO_MESTRE v1.0 inicial
   ☐ Dados pessoais
   ☐ Ata reunião + assinatura
 ```
+
+---
+
+## AVALIAÇÃO HONESTA DA SESSÃO (Claude — 22h56 BRT)
+
+**Pergunta Pedro:** *"Polimento e melhorias avançaram pra melhor produto ou não? Estamos no caminho?"*
+
+### 🟢 O que GENUINAMENTE avançou
+1. **Decisão estrutural fechada** — Caminho B simplificado é decisão real, não especulação. Liberta sócios pra avançar com advogado/Paulo. Era P0 humano, **destravou**.
+2. **V1.9.121 AEC promotion** — selo quíntuplo (Pedro+Ricardo+Claude+GPT+GPT-Ricardo). Resolve caso João empíricamente observado. Anti-kevlar §1 reforçado, não substituído.
+3. **V1.9.123-A reminders 24h+1h** — em prod cron rodando. Mede 51% cancelamento. **Métrica real será produzida** (Maria Helena 06/05 + João Vidal 06/05).
+4. **V1.9.124 prescrições paciente** — feature elite (cards + modais + paginação + solicitar). Paciente AGORA vê suas prescrições na sidebar. Era gap funcional real.
+5. **V1.9.126/127 UX 50+** — *triple-A genuíno*: deduplicou 9 cards repetidos, transformou KPIs "Aguardando dados" em algo elegante, dashboard caiu de 5 telas pra 2. Acessibilidade real (aria-label, tooltips, botões maiores).
+
+### 🟡 O que avançou mas com ressalva
+1. **34 prescrições CFM em DRAFT (94.4%)** descoberto no Bloco V — gargalo UX real do médico não identificado antes. **Não foi resolvido hoje**, mas agora é visível e priorizável.
+2. **27 reports compartilhados, 100% interno** — infra de share funciona, mas zero adoção externa. Reflexo do estágio pré-PMF (4 sócios + amigos + Carolina + Thiago).
+3. **Bug Carolina state inconsistente** — confirmado ATIVO (BLOCO M), Fix #1 cirúrgico desenhado mas **NÃO autorizado/aplicado**. Aguarda janela.
+4. **V1.9.121 fases 3-6** (extractor + handler + telemetria) — desenhadas mas pausadas até Ricardo aprovar visual deployado. **Correto pausar**, mas é dívida.
+
+### 🔴 O que NÃO avançou (transparência)
+1. **AEC FANTASMA caso João** — só MITIGADO via CONSENT_GATE backstop. V1.9.121 fases 0+1+2 são **prevenção futura**, não cura do bug. Bug ainda existe se detector falhar.
+2. **CNPJ formal** — sem ele, Lead_free anônimo (~21-26h codado) fica congelado. Bloqueio externo.
+3. **Pacientes externos pagantes: ZERO** — depois de tudo isso. **Pré-PMF continua sendo pré-PMF**. Polish acelera adoção, **não cria demanda**.
+
+### 📊 Veredito honesto
+
+**Sim, avançamos pra melhor produto.** Mas o salto real do dia não foi técnico — foi **estrutural** (Livro Mestre + Caminho B). Os 17 commits frontend são polimento de **boa qualidade arquitetural** (não inventou, deduplicou, reusou RPC existente, preservou lock V1.9.95+97+98+99-B em 100% dos commits).
+
+**Estamos no caminho?** Sim, mas com clareza: **caminho não é "mais features"**. Caminho é:
+1. ✅ Estrutura empresarial decidida (HOJE)
+2. ⏳ Reunião casa Ricardo + ata + advogado + CNPJ (próximas 2-4 semanas)
+3. ⏳ Smoke V1.9.121 com Thiago + smoke V1.9.123-A 06/05 → métricas reais
+4. ⏳ Atacar gargalo 34 prescrições DRAFT (UX médico real)
+5. ⏳ Pós-CNPJ: Lead_free anônimo (R$0 → R$60 funil)
+
+**Risco principal**: continuar polindo no vazio se métricas externas não aparecerem. Mas hoje não foi vazio — Thiago é 8º paciente externo real. Sinal pequeno mas real.
+
+**Confiança calibrada:** estamos na fase certa fazendo as coisas certas. Falta só deixar o tempo (não código) maturar a estrutura.
 
 ---
 
