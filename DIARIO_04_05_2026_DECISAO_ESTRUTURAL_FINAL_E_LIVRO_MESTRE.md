@@ -429,6 +429,174 @@ DROP POLICY "scores_insert_pro_admin" ON ai_assessment_scores;
 
 ---
 
+## BLOCO P — V1.9.121-C polish elite (18:48 BRT)
+
+**Audit cruzada do Claude laptop** identificou 2 polishments legítimos pós-V1.9.121-B:
+1. `hasRecentAec24h: false` hardcoded (cross-session anti-redundância não funcional)
+2. `onDismiss` desconectado (botão "Agora não" não renderizava)
+
+**V1.9.121-C aplicado (commit 19dfec9, ~20 min, zero risco):**
+
+- Helper `checkRecentAec24h()` em useMedCannLabConversation.ts
+  - Query supabase.aec_assessment_state (24h, complete, valid)
+  - Cache sessionStorage 1h (1 query/sessão)
+  - Triple try/catch fail-safe
+- Hook expõe `dismissMessage(messageId)` via API limpa (não setMessages cru)
+- NoaConversationalInterface: `onDismiss={() => dismissMessage(message.id)}`
+- Render condicional: `dismissed=true` → `return null`
+
+Type-check: 33 erros (= baseline). Lock V1.9.95+97+98+99-B preservado.
+
+---
+
+## BLOCO Q — V1.9.124 Aba Minhas Prescrições (20:03 BRT)
+
+**Audit empírico** identificou gap UX no sidebar paciente: nenhuma aba dedicada pra ver prescrições oficiais (cfm_prescriptions com 36 rows totais — Pedro tem 1, Carolina tem 5) ou plano terapêutico estruturado.
+
+**V1.9.124 aplicado (commit 15806b5, 4 arquivos, +443 linhas):**
+
+- `src/components/PatientPrescriptions.tsx` NOVO (308 linhas)
+  - 2 secções: Receitas Oficiais CFM (amber, ICP-Brasil) + Plano Terapêutico Integrado (blue)
+  - Cards mostram: tipo, médico+CRM, medicação, status, ITI URL, expiração
+  - Loading/error/empty states elite
+- `src/components/PatientSidebar.tsx`: +card "Minhas Prescrições" (+Pill icon)
+- `src/hooks/dashboard/usePatientDashboard.ts`: PatientTab type estendido
+- `src/pages/PatientDashboard.tsx`:
+  - +Pill icon import
+  - +tab "Prescrições" no setDashboardTriggers
+  - +render condicional + URL routing (?section=minhas-prescricoes)
+
+Reuso 100% (P8): cfm_prescriptions schema existente, RLS já permite paciente ver suas próprias, pattern visual alinhado com ClinicalReports.
+
+---
+
+## BLOCO R — V1.9.124-A Sidebar lateral completo (20:12 BRT)
+
+**Pedro screenshot empírico**: V1.9.124 funcionou no header horizontal mas NÃO apareceu no sidebar lateral esquerdo (componente Sidebar.tsx separado de setDashboardTriggers).
+
+**Fix V1.9.124-A (commit 17e0011, 1 arquivo, +3 linhas):**
+
+```
+src/components/Sidebar.tsx — patientItems array (linha 204-211)
+  +import Pill (lucide-react)
+  +item "Minhas Prescrições" entre Acompanhamento do Plano e Biblioteca
+   href: /app/clinica/paciente/dashboard?section=minhas-prescricoes
+```
+
+Sidebar paciente final (8 itens):
+- Dashboard do Paciente · Acompanhamento do Plano · **Minhas Prescrições** · Biblioteca · Chat NOA · Agendamentos · Chat com Médico · Relatório Clínico · Gestão Financeira
+
+---
+
+## BLOCO S — V1.9.124-B cards compactos + paginação (20:19 BRT)
+
+**Pedro feedback empírico (screenshot)**: cards estavam como "barra grande", ocupando muito espaço vertical.
+
+**V1.9.124-B aplicado (commit a7bad4f, 1 arquivo, +168/-131):**
+
+- Cards 60% menores (~120px → ~50px altura):
+  - `p-4 sm:p-5` → `px-3 py-2.5`
+  - `rounded-2xl` → `rounded-xl`
+  - Layout vertical (header+box+footer) → horizontal single-row
+  - "ICP-Brasil" → "ICP" (compacto)
+  - Box separado de medicação → inline ("Medicação: X · dosagem")
+- Paginação 5/pg independente (CFM + Plano):
+  - Previous/Next com ChevronLeft/Right
+  - "Página X de Y · N item(ns)"
+  - Reset pra página 1 ao recarregar
+
+---
+
+## BLOCO T — V1.9.124-C interativa COMPLETA (20:29 BRT)
+
+**Pedro feedback empírico (screenshot V1.9.124-B)**: cards eram só leitura, sem ação possível. Pediu analytics na própria página + clicabilidade + baixar/imprimir + solicitar nova receita.
+
+**V1.9.124-C aplicado (commit 3f01041, 2 arquivos, +382/-35):**
+
+- Mini-stats topo (4 boxes coloridos):
+  - Total / Ativas (não expiradas) / Enviadas-ICP / Última (data)
+- Cards clicáveis (hover + "ver detalhes →")
+- `CfmDetailModal` (amber):
+  - Status badges (Rascunho/ICP/EXPIRADA)
+  - Grid Médico (CRM/especialidade) + Datas
+  - Lista TODAS medicações
+  - Notas completas + QR Code ITI
+  - Footer: Validar ITI / Imprimir / Fechar
+- `PlanDetailModal` (blue):
+  - Status + rationality
+  - Médico + período
+  - Resumo + grid dosage/freq/duration
+  - Instruções + Footer: Imprimir / Fechar
+- Botão "Solicitar receita":
+  - Header da aba + empty state CTA
+  - Click → `sendInitialMessage('Gostaria de solicitar uma nova receita ao meu médico...')` + `openNoaChat()`
+
+---
+
+## BLOCO U — Audit Thiago (8º paciente externo real)
+
+**Logs Supabase identificaram NOVO paciente cadastrado HOJE 19:11 BRT:**
+
+```
+Thiago Mansur Lopes da Rocha
+UUID 842ffe73-25c8-467c-b51a-ff3af6433bf4
+Email: thiago.mansur.ads@gmail.com
+Cadastro: 22:11 UTC = 19:11 BRT (HOJE)
+Pagamento: R$ 63 pago (trial 3 dias)
+Quadro: controle epilepsia
+Médico mencionado: Dr. Eduardo Faveret (detectado dinamicamente V1.9.100-P0b)
+```
+
+**Sessão AEC do Thiago (~6 min):**
+- 19:26 iniciou AEC
+- 19:32 parou em MAIN_COMPLAINT
+- 3 fases completas (INITIAL_GREETING + IDENTIFICATION + COMPLAINT_LIST)
+- ⚠️ **invalidated_at: NULL** (state SAUDÁVEL, sem bug Carolina)
+- 0 reports / 0 appointments
+
+**Gap empírico descoberto: cadastro NÃO persiste "indicado por médico":**
+- `users.invited_by = NULL` (apesar de Thiago dizer "Dr. Eduardo me indicou")
+- DOCTOR_RESOLUTION dinâmico capturou via fala mas não persistiu vínculo
+- 0 appointments com Eduardo
+- Próxima sessão: investigar form de cadastro + persistir invited_by
+
+---
+
+## BLOCO V — Analytics empírico share profissional → paciente
+
+**Audit empírico via PAT (clinical_reports + cfm_prescriptions):**
+
+```
+clinical_reports:
+  Total:                 98
+  Compartilhados:        27 (27.5%)
+  Assinados ICP:         19 (19.4%)
+  Última semana:          6
+  Último mês:            20
+
+Top compartilhadores (interno):
+  1. Pedro Paciente      11 (conta TESTE Pedro admin)
+  2. Carolina            9 (conta TESTE Ricardo)
+  3. passosmir4          2 (admin)
+  4. João Eduardo        1 (admin)
+
+cfm_prescriptions:
+  Total:                 36
+  Draft:                 34 (94.4%) 🚨 GARGALO
+  Signed:                 1
+  Sent:                   1
+  Assinadas ICP-Brasil:   2
+  Com ITI QR:             2
+```
+
+**Insights:**
+- 🟢 Infra de share funciona (V1.9.124 expõe pra paciente)
+- 🟡 100% adoção INTERNA (zero pacientes externos recebendo)
+- 🔴 **34 prescrições CFM em DRAFT** (94.4%) — profissionais criam mas não assinam/enviam (gargalo UX a investigar)
+- 🟡 Apenas 2 ICP-Brasil reais (token médico necessário)
+
+---
+
 ## MÉTRICAS DA SESSÃO 04/05/2026
 
 ### Commits cirúrgicos (8)
