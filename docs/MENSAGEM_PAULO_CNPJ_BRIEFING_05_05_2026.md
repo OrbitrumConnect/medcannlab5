@@ -12,9 +12,11 @@
 
 Paulo, oi! Tudo bem?
 
-Vamos finalmente formalizar a **MedCannLab Tecnologia em Saúde Ltda**. Te mandei isso já bem mastigado pra você ler com tempo, comentar, sugerir e a gente bater cabeça depois. **Não estou pedindo orçamento agora** — primeiro quero te alinhar com tudo que decidimos internamente entre os 4 sócios e ouvir tua leitura técnica.
+Vamos finalmente formalizar a **MedCannLab Tecnologia em Saúde Ltda**. Separei abaixo os pontos onde tua visão **contábil/fiscal** é essencial (CNAEs, regime tributário, capital social, endereço, estrutura inicial do CNPJ). Alguns itens de **governança societária mais profunda** (veto, ESOP, acordo de quotistas, marca INPI) ainda vamos validar com advogado depois — mas quis te dar o contexto completo da estrutura que estamos pensando, pra você não responder no escuro.
 
-A ideia é: você lê, marca o que faz sentido, o que não faz, o que muda, e na próxima semana a gente conversa com calma pra fechar o que vai pra cartório/JUCERJA.
+**Importante:** estamos em fase **pré-receita / pré-PMF**, com foco em estruturação e validação de modelo. Preferência por estrutura **simples e flexível** neste estágio, evitando complexidade jurídica antecipada sem necessidade operacional.
+
+A ideia é: você lê, marca o que faz sentido, o que não faz, o que muda, e na próxima semana a gente conversa com calma pra fechar o que vai pra JUCERJA. **Não estou pedindo orçamento agora** — primeiro alinhamento, depois proposta.
 
 ---
 
@@ -24,7 +26,7 @@ A ideia é: você lê, marca o que faz sentido, o que não faz, o que muda, e na
 
 | Eixo | O que faz |
 |---|---|
-| **Clínica** | Sistema de prontuário eletrônico + IA (Nôa Esperanza) que estrutura entrevistas clínicas (método AEC) + emissão de prescrições CFM com assinatura digital ICP-Brasil |
+| **Clínica** | Sistema de prontuário eletrônico + IA (Nôa Esperanza) que estrutura entrevistas clínicas (método AEC) + emissão de prescrições CFM com previsão de assinatura digital ICP-Brasil (em desenvolvimento) |
 | **Ensino** | Cursos de pós-graduação cannabis medicinal + Arte da Entrevista Clínica + simuladores clínicos |
 | **Pesquisa** | Fórum colaborativo entre profissionais + base de conhecimento + projeto Cidade Amiga dos Rins |
 
@@ -65,18 +67,25 @@ Dr. Ricardo Valença ──  20%
 Dr. Eduardo Faveret ──  20%
 João Eduardo Vidal  ──  20%
 ─────────────────────────
-Subtotal sócios     ──  80%
+Subtotal sócios     ──  80% (cotas integralizadas na constituição)
 
-Tesouraria/ESOP     ──  20%  (reserva pra futuros funcionários, growth pool, parceiros estratégicos)
+Reserva ESOP        ──  20%  (destinada a plano de incentivo futuro)
 ─────────────────────────
 TOTAL               ── 100%
 ```
 
-### Por que 4×20% + 20% tesouraria
+### Por que 4×20% + reserva 20% pra ESOP
 
 - **Simetria entre sócios** — ninguém domina (ninguém quer dominar)
-- **Tesouraria** permite emitir cotas pra incentivos sem diluir os 4 (ESOP simulado em Ltda via cláusula de quotas preferenciais OU regulamento de plano de incentivo, como você indicar)
+- **Reserva 20% destinada a plano de incentivo (ESOP)**, a ser estruturado via acordo de quotistas ou instrumento específico (vesting/phantom shares/contrato de opção), conforme orientação jurídica posterior
 - Princípio: "Decisão coletiva, ninguém dilui silenciosamente"
+
+**⚠️ Pergunta pra você Paulo:** sei que "ações em tesouraria" é coisa de S/A, não Ltda. Como você sugere registrar essa reserva de 20% no contrato social inicial? Algumas alternativas que cogitamos:
+- a) Não registrar agora — apenas mencionar como intenção, formalizar via acordo de quotistas separado quando contratar primeiro funcionário
+- b) Registrar como cotas não integralizadas em nome de sócio fiduciário (Pedro?)
+- c) Outra estrutura que você ache mais limpa fiscalmente
+
+Pode ser que essa peça seja melhor com advogado societário depois — só queria sua leitura inicial.
 
 ### Quórum proposto (a confirmar com você)
 - **Decisões ordinárias**: maioria simples (>50%)
@@ -97,23 +106,33 @@ TOTAL               ── 100%
 
 ---
 
-## 6. CNAEs propostos (Paulo confirma/sugere)
+## 6. CNAEs propostos (Paulo confirma/sugere — esse ponto é teu)
 
-**Princípio aplicado:** CNAE de tecnologia, NÃO médico inicialmente. Razão: sócios médicos (Ricardo, Eduardo) atendem em consultórios próprios. MedCannLab é a infraestrutura SaaS — não presta serviço médico direto. Reduz fiscalização ANVISA + CFM no CNPJ inicial.
+**Princípio aplicado:** CNAE de **tecnologia limpo**, sem médico/farmacêutico inicialmente. Razões:
+- Sócios médicos (Ricardo, Eduardo) atendem em consultórios próprios. MedCannLab é a **infraestrutura SaaS** — não presta serviço médico direto
+- CNAE médico (86.50) puxa CRM PJ + fiscalização + responsabilidade direta — complica sem necessidade pré-PMF
+- CNAE farmacêutico (47.71) puxa vigilância sanitária + AFE ANVISA + farmacêutico responsável — desnecessário enquanto não comercializamos diretamente
 
-| CNAE | Descrição | Função | Status |
-|---|---|---|---|
-| **62.04-0-00** | Consultoria em tecnologia da informação | **Principal sugerido** — atividade principal SaaS | A confirmar |
-| **62.09-1-00** | Suporte técnico em tecnologia da informação | Secundário — suporte operacional clientes | A confirmar |
-| **86.50-0-04** | Atividades de profissionais da saúde NCC | **A AVALIAR com você** — só se necessário pra emissão de NF de serviço médico futura | Pedro pediu sua opinião |
-| **85.99-6-04** | Treinamento em desenvolvimento profissional e gerencial | Secundário — eixo Ensino (cursos pagos pós-graduação) | A confirmar |
-| **47.71-7-01** | Comércio varejista de produtos farmacêuticos sem manipulação | **A AVALIAR com você** — só se MedCannLab vier a comercializar produtos cannabis (caso 1Pure) | Pedro pediu sua opinião |
+### CNAEs sugeridos pra incluir
 
-**Pergunta pra você sobre 86.50-0-04 e 47.71-7-01:**
-- Adicionar agora preventivamente (mesmo sem usar) pra evitar alteração contratual depois? Ou deixar fora e adicionar quando precisar?
-- Implicação fiscal de cada um? Algum deles puxa MEI/Simples diferente?
+| CNAE | Descrição | Função |
+|---|---|---|
+| **62.04-0-00** | Consultoria em tecnologia da informação | **Principal sugerido** — atividade principal SaaS |
+| **62.09-1-00** | Suporte técnico em tecnologia da informação | Secundário — suporte operacional clientes |
+| **85.99-6-04** | Treinamento em desenvolvimento profissional e gerencial | Secundário — eixo Ensino (cursos pagos pós-graduação) |
 
-**Regime tributário pretendido:** Simples Nacional (Anexo III ou V, conforme você analisar) ou Lucro Presumido — depende do faturamento projetado e da divisão entre os anexos.
+### CNAEs que preferimos **NÃO incluir agora**
+
+| CNAE | Por quê |
+|---|---|
+| **86.50-0-04** Atividades profissionais saúde | Puxa CRM PJ + fiscalização. Adicionar via alteração contratual depois se necessário |
+| **47.71-7-01** Comércio varejista farmacêutico | Puxa vigilância sanitária + AFE + farmacêutico responsável. Sem necessidade operacional pré-PMF |
+
+**Perguntas pra você Paulo:**
+1. Os 3 CNAEs sugeridos (62.04 + 62.09 + 85.99) cobrem juridicamente as 3 atividades (SaaS, suporte, cursos)? Falta algum essencial?
+2. **Regime tributário recomendado**: Simples Nacional (Anexo III vs V) ou Lucro Presumido? Considerando pré-receita + projeção conservadora primeiros 12 meses
+3. Algum CNAE que você sugira preventivamente que esquecemos?
+4. Concorda em deixar 86.50 e 47.71 **fora** agora? Ou tem motivo fiscal pra incluir já?
 
 ---
 
@@ -147,29 +166,33 @@ Status: a executar após CNPJ
 - "MedCann" pode ter conflito com outra titular (Andreia — em apuração)
 - IMRE = "Motor Incentivador Mínimo do Relato Espontâneo" — conceito autoral Ricardo, único, registrável
 
-**MedCannLab continuaria como nome operacional** (denominação social mantida), sem registro de marca por enquanto. **Pendência:** verificar com você se há conflito direto com registro existente que poderia bloquear uso.
+**MedCannLab continuaria como nome operacional** (denominação social mantida), sem registro de marca por enquanto. **Pendência:** descobrir se há conflito direto com registro existente que poderia bloquear o uso.
 
-**Pergunta:** você consegue rodar busca formal INPI da situação atual de "MedCann" + "MedCannLab" pra a gente saber se há risco real de oposição/cancelamento? Antes de gastar com IMRE, quero confirmar se MedCannLab pode operar tranquilo ou se precisaríamos eventualmente fazer rebranding.
+**Pergunta:** você tem indicação de **parceiro especializado em propriedade intelectual** (advogado/escritório de marcas) pra análise aprofundada de conflito marcário INPI? Sei que isso geralmente foge do escopo contábil — só queria saber se você costuma trabalhar com alguém pra esse tipo de demanda. Se não, vou buscar separado.
 
 ---
 
-## 9. Cláusulas especiais que pediríamos no contrato social + acordo de quotistas
+## 9. Cláusulas especiais previstas (essas a gente fecha com advogado depois — só pra contexto)
 
-(Lista pra você analisar e sugerir formato — algumas talvez não caibam no contrato social e sim no acordo de quotistas separado)
+⚠️ **Esta seção foge do escopo contábil/fiscal.** Vou validar com advogado societário pra peças mais robustas (acordo de quotistas v2.0). Mas quis te dar visibilidade do que estamos pensando, pra você não ser surpreendido depois.
+
+**Pergunta inicial pra você:** você recomenda **centralizar tudo no contrato social** (mais simples, conservador) ou **estruturar acordo de quotistas separado desde o início** (mais flexível pra evoluir sem alteração contratual cara)?
+
+### Cláusulas previstas (a finalizar com advogado)
 
 1. **Cláusula de partes relacionadas** — caso atual: João Vidal é sócio + representante 1Pure (importadora cannabis). Quando MedCannLab fechar parceria com 1Pure, João precisa: declarar interesse, abster-se de voto, transação a fair market value, auditoria anual da operação. Padrão preventivo pra outros casos similares no futuro.
 
-2. **Veto clínico individual do Ricardo** — método AEC é autoria dele. Decisões que afetem o método (alteração de prompts da IA Nôa Esperanza, mudança de fluxos AEC, lançamento de feature clínica) precisam aprovação explícita Ricardo, mesmo com 75% dos outros sócios votando favor.
+2. **Direito de veto técnico em matérias estritamente AEC** — método AEC é autoria do Dr. Ricardo Valença. Decisões que afetem o método (alteração de prompts da IA Nôa Esperanza, mudança de fluxos clínicos, lançamento de feature clínica) seriam delimitadas com precisão pra não afetar a governança geral da sociedade. Forma exata da cláusula a ser desenhada com advogado pra evitar assimetria de poder estrutural.
 
 3. **Lock-up de 3 anos** — sócios não podem vender quotas pra terceiros nos primeiros 3 anos sem unanimidade. Pra evitar diluição estrangeira em momento frágil pré-PMF.
 
 4. **Direito de preferência (right of first refusal)** — se um sócio quiser sair, oferta primeiro aos outros 3 antes de terceiros.
 
-5. **Tag-along** — se sócio majoritário (não há, mas hipoteticamente >40%) vender, minoritários têm direito de vender nas mesmas condições.
+5. **Tag-along** — proteção minoritários em caso de venda de participação relevante.
 
-6. **ESOP/Growth Pool** — regulamento separado pras 20% em tesouraria, com vesting padrão mercado tech (4 anos com 1 ano cliff). A definir critérios de outorga.
+6. **ESOP/Growth Pool** — regulamento separado pras 20% reservadas, com vesting padrão mercado tech (4 anos com 1 ano cliff). Estrutura via acordo de quotistas / phantom shares / contrato de opção, conforme orientação jurídica.
 
-7. **Cláusula de dissolução amigável** — fórmula clara de cálculo de saída de sócio (valuation com base em métrica X — receita anual, EBITDA, ativo líquido — você sugere).
+7. **Cláusula de dissolução amigável** — fórmula clara de cálculo de saída de sócio.
 
 ---
 
@@ -201,15 +224,25 @@ Status: a executar após CNPJ
 
 ## 11. Pontos abertos pra debater contigo
 
-Lista enxuta dos "tá decidido mas pode mudar com tua opinião":
+### 🟢 Contábil / fiscal — onde tua palavra é a definitiva
 
-1. **Caminho B Simplificado** (1 CNPJ Tecnologia em Saúde) vs alternativas — você concorda que essa é a estrutura mais limpa pré-PMF?
-2. **Cap table 4×20% + 20% tesouraria** — formato faz sentido juridicamente em Ltda? Tem risco fiscal de cotas em tesouraria?
-3. **Sem CNAE médico inicial** — você concorda? Ou preventivamente colocar 86.50?
-4. **Capital R$ 5k vs R$ 10k** — sua leitura técnica
-5. **Sede** — qual endereço dos 4 cogitados é mais limpo fiscalmente?
-6. **Acordo de quotistas v2.0** — você assume essa peça também ou sugere especialista parceiro?
-7. **Honorários** — quando estivermos alinhados, você me passa proposta. Hoje só quero entender o escopo + sua leitura técnica.
+1. **Regime tributário recomendado** — Simples Nacional (Anexo III vs V) ou Lucro Presumido? Qual faz mais sentido pré-receita com projeção conservadora primeiros 12 meses?
+2. **CNAEs sugeridos** — os 3 (62.04 + 62.09 + 85.99) cobrem juridicamente as atividades? Algum essencial faltando?
+3. **Confirmar deixar 86.50 e 47.71 fora** — concorda? Ou tem motivo fiscal pra incluir?
+4. **Capital social R$ 5k vs R$ 10k** — tua leitura prática (banco / credibilidade / fiscal)
+5. **Sede / endereço** — qual dos 4 cogitados é mais limpo fiscalmente? Algum CNAE exige inspeção física?
+6. **Caminho B Simplificado** (1 CNPJ Tecnologia em Saúde Ltda) — você concorda que essa é a estrutura mais limpa pré-PMF?
+
+### 🟡 Societário / jurídico — pra mapear depois com advogado (mas se você tiver visão, manda)
+
+7. **Reserva 20% ESOP** — registrar no contrato social inicial ou só formalizar via acordo de quotistas posterior?
+8. **Acordo de quotistas v2.0** — centralizar tudo no contrato social (conservador) ou estruturar em acordo separado (flexível)?
+9. **Indicação de parceiro PI** — você trabalha com algum advogado de marcas pra busca formal INPI MedCann?
+10. **Indicação de advogado societário** — caso você não cubra essa parte, tem alguém de confiança pra recomendar?
+
+### 💬 Operacional
+
+11. **Honorários** — quando estivermos alinhados, você me passa proposta. Hoje só quero alinhamento técnico, sem orçamento.
 
 ---
 
@@ -227,7 +260,7 @@ Me avisa o que quiser que eu mande.
 
 ## Frase âncora
 
-> *"Não somos uma startup correndo. Somos 4 sócios construindo uma infraestrutura cognitiva clínica de longo prazo. A estrutura jurídica precisa refletir isso: simétrica, sólida, simples. Você lê, sugere, a gente conversa, fecha junto."*
+> *"Não somos uma startup correndo. Somos 4 sócios construindo uma infraestrutura cognitiva clínica de longo prazo. A estrutura jurídica precisa refletir isso: simétrica, sólida, simples. Tu resolve **como a empresa nasce** (CNPJ + CNAE + regime + capital). Advogado depois resolve **como os sócios não brigam**. Vamos por partes, sem overkill pré-PMF."*
 
 Abraço, Paulo.
 **Pedro**
