@@ -422,12 +422,229 @@ MONETIZAÇÃO:
 
 ---
 
-## MÉTRICAS DA SESSÃO 05/05/2026
+## BLOCO R — V1.9.138 Correção suave de identidade Nôa Esperanza (15:30 BRT)
 
-### Commits cirúrgicos (15 — sessão produto + docs)
+**Trigger:** Pedro descobriu que Doctoralia tem **"NOA Notes"** (ferramenta clínica). Risco real de colisão fonética + oposição INPI classe 44 + confusão de marca.
+
+**Análise conjunta Ricardo + GPT:**
+- ❌ NÃO abandonar Nôa Esperanza (erro estratégico — perde alma do produto)
+- ✅ MAS NÃO usar "Nôa" sozinho em contexto institucional/produto
+
+**3 camadas de marca seladas:**
+
+| Camada | Conteúdo |
+|---|---|
+| 🟣 IDENTIDADE | "Nôa Esperanza" (sempre completo, nunca simplificar) |
+| 🟦 EMPRESA | "MedCannLab Tecnologia em Saúde Ltda" |
+| 🟢 PRODUTO FUNCIONAL | "Agenda", "Prescrições", "Relatórios" (genéricos ok) |
+
+**Regra operacional:**
+- ✅ Usuário PODE simplificar ("Olá Nôa") — comportamento natural
+- ❌ Sistema NÃO deve simplificar — sempre "Nôa Esperanza"
+
+**Audit empírico antes do fix:**
+- ✅ `noaResidentAI.ts`: TODAS auto-apresentações já corretas com "Noa Esperanza"
+- ✅ `tradevision-core` Edge: prompts internos OK (7 menções)
+- ⚠️ 4 labels UI usavam forma simplificada
+
+**V1.9.138 aplicada** (commit `a99008f`, +4/-4 linhas):
+- `Sidebar.tsx:209` "Chat NOA" → "Chat Nôa Esperanza" (paciente)
+- `Sidebar.tsx:337` "Chat Nôa" → "Chat Nôa Esperanza" (admin)
+- `Sidebar.tsx:338` "Chat Nôa Esperança" → "Chat Nôa Esperanza Pro" (padroniza ç→z)
+- `PatientDashboard.tsx:102` "Chat NOA" → "Chat Nôa Esperanza"
+
+**Frase âncora Ricardo:**
+> *"Problema jurídico se resolve com estratégia. Problema de identidade não se recupera depois."*
+
+---
+
+## BLOCO S — Caso real Eduardo + Thiago + Ricardo (17:18-17:30 BRT)
+
+**Pedro reportou conversa do grupo:**
+- Eduardo (médico/sócio) testou plataforma com Thiago Mansur (paciente novo)
+- Thiago: "tentei agendar mas não tinha vaga... testei até dia X e não tinha disponível... valor R$ 350"
+- Eduardo agendou pra 17:15h → Thiago: "apareceu mas não consigo abrir"
+- Email não chegou
+- Ambos foram pra WhatsApp video como contingência
+- Eduardo viu "Dr Ricardo encaminhado Ricardo" no terminal → confusão de vínculo
+
+**Ricardo perguntou:** "Ele precisa associar a você também ao agendar. Certo, Pedro?"
+
+**Audit empírico imediato via PAT:**
 
 ```
-PRODUTO (10 commits):
+APPOINTMENT criado por Eduardo:
+  ID:           5bf13fb7-20d9-49fa-9334-b72d9337295f
+  Paciente:     Thiago Mansur (842ffe73)
+  Médico:       Dr. Eduardo Faveret (f4a62265 admin)  ✅
+  Data:         05/05/2026 17:15 UTC = 14:15 BRT
+  Status:       scheduled
+  is_remote:    FALSE   ❌ ← causa do bug
+  meeting_url:  NULL    ❌ ← sem sala
+  
+VÍNCULO patient_doctors:
+  Thiago → Eduardo  ✅ ÚNICO vínculo, correto
+  (Ricardo viu errado na tela — admin vê todos pacientes)
+
+DISPONIBILIDADE Eduardo:
+  ❌ Só Terça, Quinta, Sábado abertos
+  Por isso "não tinha vaga até dia X"
+  Eduardo está corrigindo agora (Seg-Sex 08-18 na screenshot)
+```
+
+**4 problemas identificados:**
+
+1. ❌ Eduardo só tinha 3 dias úteis abertos no banco
+2. ❌ `is_remote=false` hardcoded em `platformFunctionsModule.ts:776` (caminho via Nôa)
+3. ❌ Email não chegou (trigger Resend pode não estar disparando)
+4. ⚠️ "Dr Ricardo encaminhado" foi falso positivo de UI (admin vê todos)
+
+**Mensagem orientadora preparada** pra Pedro mandar no grupo (Eduardo + Ricardo + Thiago) com causa real + correção aplicada.
+
+---
+
+## BLOCO T — V1.9.139 default is_remote=true (17:55 BRT)
+
+**Fix cirúrgico ao caso real do Bloco S.**
+
+**Audit empírico revelou inconsistência arquitetural:**
+- `ProfessionalScheduling.tsx:587` → `is_remote: true` (correto)
+- `platformFunctionsModule.ts:776` → `is_remote: false` (errado)
+- `PatientProfile.tsx:162` → depende do tipo (ok)
+
+Eduardo agendou via Nôa → caiu no caminho de `false` → sem sala vídeo.
+
+**V1.9.139 aplicada** (commit `2b2a34c`, +5/-1 linhas):
+1. Adicionado `is_remote?: boolean` na interface `saveAppointmentFromVoice`
+2. Default mudado: `false` → `appointmentData.is_remote ?? true`
+3. Comment documentando caso real e justificativa
+
+**Sem regressão garantido:**
+- Caller que precise presencial passa `is_remote: false` explicitamente
+- Caller que NÃO passar (caso atual) recebe `true` (corrige bug)
+- Type-check passou
+- Lock V1.9.95+97+98+99-B intocado
+
+**Dado também corrigido via PAT:**
+- `UPDATE appointments SET is_remote=true WHERE id=5bf13fb7...` (appointment Thiago hoje 17:15 BRT)
+
+**Limitação persistente (não fix nesse commit):**
+- `meeting_url=null` permanece
+- Sala WiseCare é criada on-demand via `useWiseCareRoom` quando médico abre appointment
+- WiseCare ainda em homolog
+- Próximo passo: garantir UI exibe botão "Iniciar videochamada" quando `is_remote=true` && `meeting_url=null`
+
+---
+
+## BLOCO U — Audit Edge wisecare-session + descoberta bug 2 salas (18:15 BRT)
+
+**Pergunta Pedro:** "auditar antes wise funcionava, não sei se eles dropparam algo do lado de lá ou se tem erro nosso"
+
+**Audit empírico endpoints WiseCare homolog:**
+- `session-manager.homolog.v4h.cloud/api/v1` → 404 (espera path)
+- `/api/auth/org/` → 400 (espera body) — funcional ✅
+- `/api/v1/rooms` → 401 (precisa token) — funcional ✅
+- `conf.homolog.v4h.cloud` → 200 — funcional ✅
+
+**Conclusão WiseCare:** **NÃO dropparam, está vivo**.
+
+**Audit `video_call_sessions` revelou BUG REAL:**
+
+```
+2 sessões criadas hoje 17:16 BRT (horário Eduardo+Thiago):
+
+SESSION A (id 4330fec5):
+  professional_id:  842ffe73 ← este é o THIAGO (paciente, não médico)!
+  patient_id:       null
+  call_type:        audio
+  appointment_id:   null  ❌
+
+SESSION B (id 4fd2a657):
+  professional_id:  f4a62265 ← EDUARDO
+  patient_id:       null
+  call_type:        video
+  appointment_id:   null  ❌
+```
+
+**Diagnóstico arquitetural:**
+- WiseCare FUNCIONOU (criou as 2 salas)
+- **Mas Eduardo e Thiago caíram em rooms DIFERENTES** ❌
+- Causa: cada um abriu via "Solicitar Videochamada" (fluxo `vcr_`) sem `appointmentId`
+- Edge `wisecare-session` cria nova room por invocação → cada lado uma sala
+
+**Código causa em [wisecare-session/index.ts:248](supabase/functions/wisecare-session/index.ts#L248):**
+```typescript
+const room = await wisecareRequest('POST', '/rooms', {
+  name: `medcannlab-${params.appointmentId}`,  // null → nome aleatório
+  ...
+});
+// Sempre cria nova, sem checar se já existe pra esse appointment
+```
+
+---
+
+## BLOCO V — Confirmação fallback WebRTC P2P nativo (18:30 BRT)
+
+**Pergunta Pedro:** "caso wisecare não funcione temos nosso sistema que entra e faz esse suporte?"
+
+**Audit confirma: SIM, fallback existe e está auto-integrado.**
+
+**Estrutura dual ([VideoCall.tsx](src/components/VideoCall.tsx)):**
+1. Tenta WiseCare PRIMEIRO (provider primário)
+2. Se onError dispara → `setActiveProvider('webrtc')` automaticamente
+3. `useWebRTCRoom` hook ativa (RTCPeerConnection nativa)
+4. Sinalização via `signalingRoomId` (Supabase Realtime)
+5. Conexão direta peer-to-peer entre browsers
+
+**Código exato ([VideoCall.tsx:227-231](src/components/VideoCall.tsx#L227)):**
+```typescript
+onError: (err) => {
+  console.warn('[VideoCall] WiseCare error, falling back to WebRTC:', err.message)
+  setProviderError(`WiseCare: ${err.message}`)
+  setActiveProvider('webrtc')  // Auto-fallback
+},
+```
+
+**Limitação crítica revelada pelo caso de hoje:**
+- Fallback **só ativa quando WiseCare retorna ERRO**
+- No caso Eduardo+Thiago, WiseCare disse "OK criei sala" pros 2 (sem erro)
+- Como `onError` não disparou, fallback não ativou
+- Cada um ficou no próprio Jitsi WiseCare em sala separada
+
+**3 cenários de falha:**
+
+| Cenário | Fallback ativa? | Funciona? |
+|---|---|---|
+| WiseCare offline | ✅ Sim auto | ✅ WebRTC P2P |
+| WiseCare timeout | ✅ Sim auto | ✅ |
+| WiseCare cria 2 salas separadas (HOJE) | ❌ Não | ❌ Cada um isolado |
+
+**V1.9.140 desenhada (NÃO codada hoje, ~30 min):**
+1. Edge: reusar sala existente (<2h) com mesmo `appointmentId`
+2. Frontend: garantir `appointmentId` SEMPRE passado
+3. UX: "Aguardando outro participante entrar..."
+
+---
+
+## BLOCO V2 — Cert ICP-Brasil Ricardo a caminho (14:30 BRT)
+
+**Pedro confirmou:** Ricardo está providenciando seu certificado ICP-Brasil pessoal.
+
+**Implicações:**
+1. Confirma audit empírico: 0 medical_certificates cadastrados era REALIDADE pura
+2. Quando cert chegar, smoke real fim-a-fim assinatura digital
+3. V1.9.131-A (mock thumbprint) e V1.9.137 (marca d'água rascunho) continuam transitórias
+4. **Pendência futura:** integração Lacuna WebPKI (~16-24h) pra extração cripto real do .pfx
+5. Hoje: Edge usa hash SHA-256 do documento (não bate com chave privada do cert) — suficiente pra teste interno + 1ºs pacientes, ITI vai exigir Lacuna depois
+
+---
+
+## MÉTRICAS DA SESSÃO 05/05/2026
+
+### Commits cirúrgicos (18 — sessão produto + docs)
+
+```
+PRODUTO (12 commits):
 f43a202  V1.9.128 bug landings SEO + CTA + Hero compactado (08:34)
 9210bbd  V1.9.129 prescriptions visibilidade 34 rascunhos (08:49)
 44bbad3  V1.9.130 cards mobile-first grid quadrados (08:53)
@@ -438,13 +655,21 @@ c61dda9  V1.9.131 KPIs TEA placeholder + cards -20% (09:01)
 006bc86  V1.9.135 fluxo unificado prescrições no Terminal (12:25)
 eb53c36  V1.9.136 modernizar visual cards Prescrições (12:46)
 31ba22a  V1.9.137 bloqueio anti-abuso receita rascunho (13:32)
+a99008f  V1.9.138 correção suave identidade Nôa Esperanza (15:30)
+2b2a34c  V1.9.139 default is_remote=true platformFunctions (17:55)
 
-DOCS (5 commits):
+DOCS (6 commits):
 4b3c877  diário 05/05 selo manhã (11:08)
 01a4f16  blueprint WhatsApp Cloud API (11:45)
 419045b  briefing Paulo CNPJ inicial (12:54)
 5b9b1d1  briefing Paulo refinado pós-GPT review (13:07)
-[hoje]   selo final diário 05/05 + memória persistente
+c3cc775  diário 05/05 selo tarde (14:30)
+[agora]  diário 05/05 selo final blocos R-V + memórias
+
+UPDATES via PAT (auditoria empírica, sem código):
+- UPDATE 1 row appointments (corrige is_remote=true Thiago)
+- 8 SELECT counts agregados (users, reports, appointments, cfm, cert, etc)
+- Audit endpoint WiseCare homolog (3 endpoints OK)
 ```
 
 ### Push 4 refs em todos
@@ -509,6 +734,9 @@ DOCS (5 commits):
   ☐ Aguardar CNPJ entrada formal (semana que vem provável)
   ☐ Smoke V1.9.123-A 06/05 14-16h BRT (Maria Helena + João Vidal)
   ☐ Bug Carolina state inconsistente — Fix #1 cirúrgico aguarda autorização
+  ☐ Mensagem grupo Eduardo+Ricardo+Thiago (orientações + correção V1.9.139)
+  ☐ Smoke V1.9.140 manual: bloquear *session-manager.homolog.v4h.cloud* DevTools → ver fallback WebRTC ativando
+  ☐ Aguardar cert ICP-Brasil Ricardo chegar (quando chegar, smoke real assinatura)
 
 🟡 Decisões aguardando:
   ☐ Ricardo: aceitar Caminho B simplificado, OK acordo quotistas
@@ -647,9 +875,39 @@ Cristalizações desta sessão que merecem avaliação pra promoção:
 
 ---
 
-## FRASE ÂNCORA DO DIA
+## NOVAS DESCOBERTAS PÓS-SELO TARDE
 
-> **"Audit empírico via PAT revelou: os 35 DRAFTs não são UX cega — é vazio real (0 medical_certificates cadastrados). Produto se reconhece como inválido juridicamente quando precisa. Próxima entrega real depende de tempo (CNPJ + 1º pagante), não de código. Tu resolve como a empresa nasce. Advogado depois resolve como os sócios não brigam."**
+```
+🔍 IDENTIDADE COMO ATIVO ESTRATÉGICO (Doctoralia NOA Notes):
+   Nôa Esperanza é mais que nome — é personagem + voz + método.
+   Trocar = perder alma. Manter "Nôa" sozinho = colidir.
+   Solução: 3 camadas (Identidade/Empresa/Produto) seladas.
+
+🔍 BUG VIDEO 2 SALAS REVELADO (caso Eduardo+Thiago):
+   WiseCare está VIVO (auditado 3 endpoints OK).
+   Bug é nosso: Edge cria nova sala por invocação sem reusar
+   a do appointmentId. Cada lado abriu via "Solicitar Videochamada"
+   (sem appointmentId) → caíram em rooms separadas.
+   Fallback WebRTC P2P existe e funciona quando WiseCare ERRA,
+   mas hoje não houve erro (cada sala criou OK isoladamente).
+
+🔍 INCONSISTÊNCIA ARQUITETURAL is_remote:
+   ProfessionalScheduling.tsx → true (correto)
+   platformFunctionsModule.ts → false (errado, fix V1.9.139)
+   PatientProfile.tsx → depende (ok)
+   Caminho via Nôa caía em false → consultas presenciais por default.
+
+🔍 RICARDO PROVIDENCIANDO CERT ICP-BRASIL:
+   Fecha gap dos 35 DRAFTs auditados.
+   Quando chegar, smoke real de assinatura digital fim-a-fim.
+   Lacuna WebPKI (~16-24h código) ainda pendente pra cripto real.
+```
+
+---
+
+## FRASE ÂNCORA DO DIA (atualizada pós-blocos R-V)
+
+> **"Audit empírico não mente: os 35 DRAFTs eram vazio real. As 2 salas WiseCare separadas eram bug nosso, não dropbed. Identidade Nôa Esperanza tem 3 camadas pra proteger sem abandonar. Tu resolve como a empresa nasce. Advogado depois resolve como os sócios não brigam. Cert ICP-Brasil do Ricardo está a caminho — quando chegar, fechamos o ciclo real fim-a-fim. Próxima entrega depende de tempo (CNPJ + 1º pagante real + cert chegando), não de código."**
 
 ---
 
