@@ -278,8 +278,22 @@ function CfmDetailModal({ rx, onClose }: { rx: CfmPrescription; onClose: () => v
   const meds = Array.isArray(rx.medications) ? rx.medications : []
   const isSigned = !!rx.signature_timestamp
   const isExpired = rx.expires_at ? new Date(rx.expires_at) < new Date() : false
+  // [V1.9.137] Receita SÓ tem valor legal CFM se status=signed/sent/validated + ITI presente (qr ou url)
+  const hasLegalValue =
+    (rx.status === 'signed' || rx.status === 'sent' || rx.status === 'validated') &&
+    (!!rx.iti_qr_code || !!rx.iti_validation_url)
 
-  const handlePrint = () => window.print()
+  const handlePrint = () => {
+    if (!hasLegalValue) {
+      const ok = window.confirm(
+        '⚠️ ATENÇÃO\n\nEsta receita está em RASCUNHO (sem assinatura digital ICP-Brasil).\n\n' +
+        'Farmácias NÃO aceitam receitas em rascunho — não terá valor legal CFM 2.314/2022.\n\n' +
+        'Imprimir somente para arquivo pessoal/conferência?'
+      )
+      if (!ok) return
+    }
+    window.print()
+  }
 
   return (
     <div
@@ -319,6 +333,43 @@ function CfmDetailModal({ rx, onClose }: { rx: CfmPrescription; onClose: () => v
             <X className="w-4 h-4" />
           </button>
         </div>
+
+        {/* [V1.9.137] Banner aviso quando rascunho/sem valor legal */}
+        {!hasLegalValue && (
+          <div className="mx-5 mt-5 rounded-lg border border-yellow-500/40 bg-yellow-500/[0.08] p-3 flex items-start gap-3 print:hidden">
+            <AlertCircle className="w-5 h-5 text-yellow-400 shrink-0 mt-0.5" />
+            <div className="text-xs">
+              <p className="text-yellow-200 font-semibold mb-1">Receita em rascunho — sem valor legal</p>
+              <p className="text-slate-300 leading-relaxed">
+                Esta receita ainda não foi assinada digitalmente com certificado ICP-Brasil.
+                <strong className="text-white"> Farmácias não aceitam rascunhos</strong> — aguarde o médico concluir a assinatura
+                para uso oficial (CFM 2.314/2022).
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* [V1.9.137] Marca d'água "RASCUNHO" visível na impressão se sem valor legal */}
+        {!hasLegalValue && (
+          <style>{`
+            @media print {
+              body::before {
+                content: "RASCUNHO — SEM VALOR LEGAL CFM";
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%) rotate(-30deg);
+                font-size: 80px;
+                color: rgba(220, 38, 38, 0.18);
+                font-weight: 900;
+                z-index: 9999;
+                pointer-events: none;
+                white-space: nowrap;
+                letter-spacing: 4px;
+              }
+            }
+          `}</style>
+        )}
 
         <div className="p-5 space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -396,11 +447,18 @@ function CfmDetailModal({ rx, onClose }: { rx: CfmPrescription; onClose: () => v
               <ExternalLink className="w-3 h-3" /> Validar no ITI
             </a>
           )}
+          {/* [V1.9.137] Botão Imprimir com texto contextual + warn em rascunho */}
           <button
             onClick={handlePrint}
-            className="px-3 py-1.5 bg-white/5 hover:bg-white/10 border border-white/10 text-slate-200 text-xs rounded-lg transition-all flex items-center gap-1.5"
+            title={hasLegalValue ? 'Imprimir receita oficial (válida em farmácia)' : 'Imprimir como rascunho (sem valor legal)'}
+            className={`px-3 py-1.5 border text-xs rounded-lg transition-all flex items-center gap-1.5 ${
+              hasLegalValue
+                ? 'bg-emerald-500/15 hover:bg-emerald-500/25 border-emerald-500/30 text-emerald-200'
+                : 'bg-yellow-500/10 hover:bg-yellow-500/20 border-yellow-500/30 text-yellow-200'
+            }`}
           >
-            <Printer className="w-3 h-3" /> Imprimir
+            <Printer className="w-3 h-3" />
+            {hasLegalValue ? 'Imprimir receita' : 'Imprimir rascunho'}
           </button>
           <button
             onClick={onClose}
