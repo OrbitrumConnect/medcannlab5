@@ -741,6 +741,7 @@ export class PlatformFunctionsModule {
     type?: string
     notes?: string
     doctor_id?: string
+    is_remote?: boolean  // [V1.9.139] opcional — default true (telemedicina norma)
   }): Promise<PlatformActionResult> {
     try {
       // Buscar ID do paciente pelo nome
@@ -766,6 +767,9 @@ export class PlatformFunctionsModule {
       // Usar professional_id se doctor_id não estiver disponível (compatibilidade)
       const professionalId = appointmentData.doctor_id || null
       
+      // [V1.9.139] Default is_remote=true (telemedicina) — corrige caso Eduardo+Thiago 05/05/2026
+      // ProfessionalScheduling.tsx:587 já usa true. Médico pode override passando is_remote=false.
+      // Sem default true: paciente recebia appointment sem sala WiseCare e sem video.
       const insertData: any = {
         patient_id: patientData.id,
         title: appointmentData.type || 'Consulta Médica',
@@ -773,7 +777,7 @@ export class PlatformFunctionsModule {
         duration: 60,
         status: 'scheduled',
         type: appointmentData.type || 'consultation',
-        is_remote: false,
+        is_remote: appointmentData.is_remote ?? true,
         notes: appointmentData.notes || ''
       }
       
