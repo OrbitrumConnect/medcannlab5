@@ -206,7 +206,7 @@ const Sidebar: React.FC<SidebarProps> = ({
       { name: 'Acompanhamento do Plano', href: '/app/clinica/paciente/dashboard?section=plano', icon: Activity, section: 'main' },
       { name: 'Minhas Prescrições', href: '/app/clinica/paciente/dashboard?section=minhas-prescricoes', icon: Pill, section: 'main' },
       { name: 'Biblioteca Personalizada', href: '/app/library', icon: BookOpen, section: 'main' },
-      { name: 'Chat NOA', href: '/app/clinica/paciente/chat-noa', icon: Brain, section: 'quick' },
+      { name: 'Chat Nôa Esperanza', href: '/app/clinica/paciente/chat-noa', icon: Brain, section: 'quick' },
       { name: 'Agendamentos', href: '/app/clinica/paciente/agendamentos', icon: Clock, section: 'quick' },
       { name: 'Chat com Meu Médico', href: '/app/clinica/paciente/chat-profissional', icon: Users, section: 'quick' },
       { name: 'Relatório Clínico', href: '/app/clinica/paciente/dashboard?section=relatorio', icon: Shield, section: 'main' },
@@ -334,8 +334,8 @@ const Sidebar: React.FC<SidebarProps> = ({
 
   const quickActions = [
     { name: 'Arte da Entrevista', href: '/app/arte-entrevista-clinica', icon: Heart, color: 'bg-pink-500' },
-    { name: 'Chat Nôa', href: '/app/chat', icon: Brain, color: 'bg-purple-500' },
-    { name: 'Chat Nôa Esperança', href: '/app/chat-noa-esperanca', icon: MessageCircle, color: 'bg-purple-600' },
+    { name: 'Chat Nôa Esperanza', href: '/app/chat', icon: Brain, color: 'bg-purple-500' },
+    { name: 'Chat Nôa Esperanza Pro', href: '/app/chat-noa-esperanca', icon: MessageCircle, color: 'bg-purple-600' },
     { name: 'Dashboard Paciente', href: '/app/clinica/paciente/dashboard', icon: BarChart3, color: 'bg-indigo-500' },
     { name: 'Conhecimento IA', href: '/app/library', icon: BookOpen, color: 'bg-green-500' },
     { name: 'Relatórios', href: '/app/reports', icon: FileText, color: 'bg-orange-500' },

@@ -99,7 +99,7 @@ const PatientDashboard: React.FC = () => {
       { id: 'analytics', label: 'Dashboard', icon: BarChart3 },
       { id: 'meus-agendamentos', label: 'Agenda', icon: Calendar },
       { id: 'minhas-prescricoes', label: 'Prescrições', icon: Pill },
-      { id: 'chat-noa', label: 'Chat NOA', icon: Brain },
+      { id: 'chat-noa', label: 'Chat Nôa Esperanza', icon: Brain },
       { id: 'perfil', label: 'Meu Perfil', icon: Zap }
     ]
 
