@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
   FileText,
@@ -18,7 +18,8 @@ import {
   Trash2,
   Loader2,
   Check,
-  ListChecks
+  ListChecks,
+  Lock
 } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
@@ -69,10 +70,44 @@ const QuickPrescriptions: React.FC<QuickPrescriptionsProps> = ({ className = '',
     notes: ''
   })
 
+  // [V1.9.134] Stats topo + banner ICP — carrega prescrições do médico logado
+  const [myPrescriptions, setMyPrescriptions] = useState<Array<{ status: string }>>([])
+  const [showCertHelpModal, setShowCertHelpModal] = useState(false)
+
+  const prescriptionStats = useMemo(() => {
+    const draft = myPrescriptions.filter(p => p.status === 'draft').length
+    const signed = myPrescriptions.filter(p => p.status === 'signed').length
+    const sent = myPrescriptions.filter(p => p.status === 'sent' || p.status === 'validated').length
+    return { total: myPrescriptions.length, draft, signed, sent }
+  }, [myPrescriptions])
+
+  const loadMyPrescriptions = async () => {
+    if (!user?.id) return
+    try {
+      const { data, error } = await supabase
+        .from('cfm_prescriptions')
+        .select('status')
+        .eq('professional_id', user.id)
+      if (error) throw error
+      setMyPrescriptions(data || [])
+    } catch (err) {
+      console.error('[V1.9.134] erro ao carregar stats prescrições:', err)
+    }
+  }
+
   // Carregar lista de pacientes ao montar
   useEffect(() => {
     loadPatientsList()
+    loadMyPrescriptions()
   }, [])
+
+  // Recarregar stats após salvar prescrição (criação reflete em rascunhos)
+  useEffect(() => {
+    if (showSuccess) {
+      loadMyPrescriptions()
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [showSuccess])
 
   // Atualizar selectedPatient se a prop mudar
   useEffect(() => {
@@ -268,6 +303,60 @@ const QuickPrescriptions: React.FC<QuickPrescriptionsProps> = ({ className = '',
 
   return (
     <div className={`space-y-6 ${className}`}>
+      {/* [V1.9.134] Stats topo do médico — Total/Rascunhos/Assinadas/Enviadas */}
+      {prescriptionStats.total > 0 && (
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 px-4 pt-4">
+          <div className="rounded-xl p-4 border border-white/5 bg-white/[0.03]">
+            <div className="text-xs text-slate-400 uppercase tracking-wider">Total</div>
+            <div className="text-2xl font-bold text-white tabular-nums">{prescriptionStats.total}</div>
+          </div>
+          <div className="rounded-xl p-4 border border-yellow-500/15 bg-yellow-500/[0.04]">
+            <div className="text-xs text-yellow-400 uppercase tracking-wider">Rascunhos</div>
+            <div className="text-2xl font-bold text-yellow-300 tabular-nums">{prescriptionStats.draft}</div>
+          </div>
+          <div className="rounded-xl p-4 border border-blue-500/15 bg-blue-500/[0.04]">
+            <div className="text-xs text-blue-400 uppercase tracking-wider">Assinadas</div>
+            <div className="text-2xl font-bold text-blue-300 tabular-nums">{prescriptionStats.signed}</div>
+          </div>
+          <div className="rounded-xl p-4 border border-emerald-500/15 bg-emerald-500/[0.04]">
+            <div className="text-xs text-emerald-400 uppercase tracking-wider">Enviadas</div>
+            <div className="text-2xl font-bold text-emerald-300 tabular-nums">{prescriptionStats.sent}</div>
+          </div>
+        </div>
+      )}
+
+      {/* [V1.9.134] Banner pendência ≥5 rascunhos */}
+      {prescriptionStats.draft >= 5 && (
+        <div className="mx-4 rounded-xl border border-yellow-500/30 bg-gradient-to-br from-yellow-500/10 to-yellow-500/[0.03] p-5 flex items-start gap-4">
+          <AlertCircle className="w-6 h-6 text-yellow-400 shrink-0 mt-0.5" />
+          <div className="flex-1">
+            <h3 className="text-base font-semibold text-yellow-200 mb-1">
+              Você tem {prescriptionStats.draft} prescrições em rascunho
+            </h3>
+            <p className="text-sm text-slate-300 mb-3">
+              Para enviar ao paciente com validade legal CFM, é necessária <strong>assinatura digital ICP-Brasil</strong>.
+              Sem ela, o documento fica como rascunho (válido apenas para impressão local com carimbo manual).
+            </p>
+            <div className="flex flex-wrap gap-2">
+              <button
+                type="button"
+                onClick={() => navigate('/app/clinica/prescricoes')}
+                className="px-4 py-2 rounded-lg bg-yellow-500/20 text-yellow-200 hover:bg-yellow-500/30 border border-yellow-500/30 text-sm font-medium transition-colors"
+              >
+                Ver rascunhos
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowCertHelpModal(true)}
+                className="px-4 py-2 rounded-lg bg-white/5 text-white hover:bg-white/10 border border-white/10 text-sm font-medium transition-colors"
+              >
+                Como obter certificado ICP-Brasil
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Header */}
       <div className="flex flex-col items-center text-center space-y-4 py-2 border-b border-slate-700/50 mb-2">
         <div className="flex items-center justify-center py-2">
@@ -515,6 +604,88 @@ const QuickPrescriptions: React.FC<QuickPrescriptionsProps> = ({ className = '',
                 className="px-6 py-2.5 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium shadow-lg shadow-green-900/20 transition-all hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
               >
                 {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <><Save className="w-4 h-4" /> Salvar Prescrição</>}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* [V1.9.134] Modal educacional ICP-Brasil */}
+      {showCertHelpModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm" onClick={() => setShowCertHelpModal(false)}>
+          <div className="bg-slate-900 border border-white/10 rounded-2xl max-w-lg w-full p-6 max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-start justify-between mb-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center">
+                  <Lock className="w-5 h-5 text-emerald-400" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-white">Certificado ICP-Brasil</h3>
+                  <p className="text-xs text-slate-400">Como obter para assinar prescrições com validade legal</p>
+                </div>
+              </div>
+              <button onClick={() => setShowCertHelpModal(false)} className="text-slate-400 hover:text-white p-1">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="space-y-4 text-sm text-slate-300">
+              <div>
+                <h4 className="text-white font-semibold mb-1.5">Por que preciso?</h4>
+                <p className="text-slate-400 leading-relaxed">
+                  O CFM exige assinatura com certificado <strong className="text-white">ICP-Brasil</strong> para prescrições eletrônicas terem
+                  validade jurídica e poderem ser entregues digitalmente ao paciente. Sem ele, o documento serve só como rascunho local.
+                </p>
+              </div>
+
+              <div className="border-t border-white/5 pt-4">
+                <h4 className="text-white font-semibold mb-2">2 tipos de certificado</h4>
+                <div className="space-y-3">
+                  <div className="rounded-lg border border-blue-500/20 bg-blue-500/[0.05] p-3">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="text-xs font-bold text-blue-300 uppercase tracking-wider">A1</span>
+                      <span className="text-xs text-slate-400">arquivo digital (cloud)</span>
+                    </div>
+                    <p className="text-xs text-slate-300">Validade 1 ano · ~R$ 280-400 · Instalado no navegador, prático para uso diário</p>
+                  </div>
+                  <div className="rounded-lg border border-purple-500/20 bg-purple-500/[0.05] p-3">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="text-xs font-bold text-purple-300 uppercase tracking-wider">A3</span>
+                      <span className="text-xs text-slate-400">token físico ou cartão</span>
+                    </div>
+                    <p className="text-xs text-slate-300">Validade 3 anos · ~R$ 350-500 · Mais seguro, exige hardware (token USB)</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="border-t border-white/5 pt-4">
+                <h4 className="text-white font-semibold mb-2">Onde obter</h4>
+                <ul className="space-y-1.5 text-xs text-slate-400">
+                  <li>• <a href="https://www.gov.br/iti/pt-br/assuntos/icp-brasil/lista-de-acs-credenciadas" target="_blank" rel="noreferrer" className="text-emerald-400 hover:underline">ITI — Lista oficial de ACs credenciadas</a></li>
+                  <li>• Serasa Experian, Certisign, AC Soluti, Valid, Safeweb</li>
+                  <li>• Processo: agendar validação presencial (CPF + foto + comprovante) · entrega em 1-3 dias</li>
+                </ul>
+              </div>
+
+              <div className="border-t border-white/5 pt-4 rounded-lg bg-emerald-500/[0.04] border border-emerald-500/15 p-3">
+                <h4 className="text-emerald-300 font-semibold mb-1 flex items-center gap-2">
+                  <CheckCircle className="w-4 h-4" />
+                  Já tenho certificado
+                </h4>
+                <p className="text-xs text-slate-300">
+                  Cadastre em <strong className="text-white">Certificados Digitais</strong> no menu. Quando válido,
+                  o botão <strong className="text-white">"Assinar Digitalmente"</strong> ativa nas prescrições.
+                </p>
+              </div>
+            </div>
+
+            <div className="mt-5 pt-4 border-t border-white/10 flex justify-end">
+              <button
+                type="button"
+                onClick={() => setShowCertHelpModal(false)}
+                className="px-5 py-2.5 rounded-lg bg-white/5 text-white hover:bg-white/10 border border-white/10 text-sm font-medium transition-colors"
+              >
+                Entendi
               </button>
             </div>
           </div>
