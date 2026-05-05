@@ -320,32 +320,48 @@ const QuickPrescriptions: React.FC<QuickPrescriptionsProps> = ({ className = '',
   }
 
   return (
-    <div className={`space-y-6 ${className}`}>
-      {/* [V1.9.134] Stats topo do médico — Total/Rascunhos/Assinadas/Enviadas */}
+    <div className={`space-y-6 px-4 md:px-6 lg:px-8 py-4 md:py-6 ${className}`}>
+      {/* [V1.9.136] Stats topo modernizados com gradient + ícone */}
       {prescriptionStats.total > 0 && (
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 px-4 pt-4">
-          <div className="rounded-xl p-4 border border-white/5 bg-white/[0.03]">
-            <div className="text-xs text-slate-400 uppercase tracking-wider">Total</div>
-            <div className="text-2xl font-bold text-white tabular-nums">{prescriptionStats.total}</div>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <div className="relative rounded-xl p-4 border border-white/10 bg-gradient-to-br from-slate-800/60 to-slate-900/40 hover:from-slate-800/80 hover:border-white/20 transition-all overflow-hidden">
+            <div className="flex items-center justify-between mb-1">
+              <span className="text-[10px] text-slate-400 uppercase tracking-wider font-bold">Total</span>
+              <FileText className="w-4 h-4 text-slate-500" />
+            </div>
+            <div className="text-3xl font-bold text-white tabular-nums">{prescriptionStats.total}</div>
+            <div className="text-[10px] text-slate-500 mt-1">prescrições</div>
           </div>
-          <div className="rounded-xl p-4 border border-yellow-500/15 bg-yellow-500/[0.04]">
-            <div className="text-xs text-yellow-400 uppercase tracking-wider">Rascunhos</div>
-            <div className="text-2xl font-bold text-yellow-300 tabular-nums">{prescriptionStats.draft}</div>
+          <div className="relative rounded-xl p-4 border border-yellow-500/25 bg-gradient-to-br from-yellow-500/[0.10] to-yellow-600/[0.04] hover:border-yellow-500/40 transition-all overflow-hidden">
+            <div className="flex items-center justify-between mb-1">
+              <span className="text-[10px] text-yellow-400 uppercase tracking-wider font-bold">Rascunhos</span>
+              <AlertCircle className="w-4 h-4 text-yellow-500/70" />
+            </div>
+            <div className="text-3xl font-bold text-yellow-300 tabular-nums">{prescriptionStats.draft}</div>
+            <div className="text-[10px] text-yellow-500/70 mt-1">pendentes ICP</div>
           </div>
-          <div className="rounded-xl p-4 border border-blue-500/15 bg-blue-500/[0.04]">
-            <div className="text-xs text-blue-400 uppercase tracking-wider">Assinadas</div>
-            <div className="text-2xl font-bold text-blue-300 tabular-nums">{prescriptionStats.signed}</div>
+          <div className="relative rounded-xl p-4 border border-blue-500/25 bg-gradient-to-br from-blue-500/[0.10] to-blue-700/[0.04] hover:border-blue-500/40 transition-all overflow-hidden">
+            <div className="flex items-center justify-between mb-1">
+              <span className="text-[10px] text-blue-400 uppercase tracking-wider font-bold">Assinadas</span>
+              <Lock className="w-4 h-4 text-blue-500/70" />
+            </div>
+            <div className="text-3xl font-bold text-blue-300 tabular-nums">{prescriptionStats.signed}</div>
+            <div className="text-[10px] text-blue-500/70 mt-1">ICP-Brasil</div>
           </div>
-          <div className="rounded-xl p-4 border border-emerald-500/15 bg-emerald-500/[0.04]">
-            <div className="text-xs text-emerald-400 uppercase tracking-wider">Enviadas</div>
-            <div className="text-2xl font-bold text-emerald-300 tabular-nums">{prescriptionStats.sent}</div>
+          <div className="relative rounded-xl p-4 border border-emerald-500/25 bg-gradient-to-br from-emerald-500/[0.10] to-emerald-700/[0.04] hover:border-emerald-500/40 transition-all overflow-hidden">
+            <div className="flex items-center justify-between mb-1">
+              <span className="text-[10px] text-emerald-400 uppercase tracking-wider font-bold">Enviadas</span>
+              <CheckCircle className="w-4 h-4 text-emerald-500/70" />
+            </div>
+            <div className="text-3xl font-bold text-emerald-300 tabular-nums">{prescriptionStats.sent}</div>
+            <div className="text-[10px] text-emerald-500/70 mt-1">paciente</div>
           </div>
         </div>
       )}
 
       {/* [V1.9.134] Banner pendência ≥5 rascunhos */}
       {prescriptionStats.draft >= 5 && (
-        <div className="mx-4 rounded-xl border border-yellow-500/30 bg-gradient-to-br from-yellow-500/10 to-yellow-500/[0.03] p-5 flex items-start gap-4">
+        <div className="rounded-xl border border-yellow-500/30 bg-gradient-to-br from-yellow-500/10 to-yellow-500/[0.03] p-5 flex items-start gap-4">
           <AlertCircle className="w-6 h-6 text-yellow-400 shrink-0 mt-0.5" />
           <div className="flex-1">
             <h3 className="text-base font-semibold text-yellow-200 mb-1">
@@ -480,20 +496,25 @@ const QuickPrescriptions: React.FC<QuickPrescriptionsProps> = ({ className = '',
         ))}
       </div>
 
-      {/* [V1.9.135-B] Minhas Prescrições — lista cards reais do médico (analytics no terminal) */}
+      {/* [V1.9.136] Minhas Prescrições — cards modernizados com gradient + ícone tipo + hover */}
       {prescriptionStats.total > 0 && (
-        <div className="px-4 pb-6 space-y-3">
-          <div className="flex items-center justify-between flex-wrap gap-3 pt-4 border-t border-slate-700/50">
-            <h3 className="text-lg font-bold text-white flex items-center gap-2">
-              <FileText className="w-5 h-5 text-emerald-400" />
-              Minhas Prescrições
-              {statusFilter !== 'todas' && (
-                <span className="text-xs font-normal text-slate-400">
-                  · filtro: {statusFilter === 'draft' ? 'Rascunhos' : statusFilter === 'signed' ? 'Assinadas' : 'Enviadas'}
-                </span>
-              )}
-            </h3>
-            <div className="flex items-center gap-1.5 p-1 bg-slate-900/50 rounded-full border border-slate-700">
+        <div className="space-y-4 pt-6 border-t border-slate-700/50">
+          <div className="flex items-center justify-between flex-wrap gap-3">
+            <div>
+              <h3 className="text-lg font-bold text-white flex items-center gap-2">
+                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-500/20 to-emerald-600/10 border border-emerald-500/30 flex items-center justify-center">
+                  <FileText className="w-4 h-4 text-emerald-400" />
+                </div>
+                Minhas Prescrições
+                {statusFilter !== 'todas' && (
+                  <span className="text-xs font-normal text-slate-400">
+                    · filtro: {statusFilter === 'draft' ? 'Rascunhos' : statusFilter === 'signed' ? 'Assinadas' : 'Enviadas'}
+                  </span>
+                )}
+              </h3>
+              <p className="text-xs text-slate-500 mt-1 ml-10">Histórico completo das suas emissões</p>
+            </div>
+            <div className="flex items-center gap-1 p-1 bg-slate-900/60 rounded-full border border-slate-700/60 backdrop-blur-sm">
               {[
                 { id: 'todas', label: 'Todas' },
                 { id: 'draft', label: 'Rascunhos' },
@@ -504,10 +525,10 @@ const QuickPrescriptions: React.FC<QuickPrescriptionsProps> = ({ className = '',
                   key={opt.id}
                   type="button"
                   onClick={() => setStatusFilter(opt.id as any)}
-                  className={`px-3 py-1 text-[11px] font-medium rounded-full transition-all ${
+                  className={`px-3 py-1.5 text-[11px] font-medium rounded-full transition-all whitespace-nowrap ${
                     statusFilter === opt.id
-                      ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-900/10'
-                      : 'text-slate-400 hover:text-slate-200'
+                      ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-900/20'
+                      : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
                   }`}
                 >
                   {opt.label}
@@ -517,65 +538,105 @@ const QuickPrescriptions: React.FC<QuickPrescriptionsProps> = ({ className = '',
           </div>
 
           {filteredMyPrescriptions.length === 0 ? (
-            <div className="rounded-lg border border-white/5 bg-white/[0.02] p-6 text-center">
+            <div className="rounded-xl border border-white/5 bg-gradient-to-br from-slate-800/40 to-slate-900/20 p-8 text-center">
+              <FileText className="w-10 h-10 text-slate-600 mx-auto mb-3" />
               <p className="text-sm text-slate-400">
                 Nenhuma prescrição neste filtro.
                 {statusFilter !== 'todas' && ' Limpe o filtro para ver todas.'}
               </p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
               {filteredMyPrescriptions.slice(0, 12).map((p) => {
-                const statusColors: Record<string, string> = {
-                  draft: 'bg-yellow-500/15 text-yellow-300 border-yellow-500/30',
-                  signed: 'bg-blue-500/15 text-blue-300 border-blue-500/30',
-                  sent: 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30',
-                  validated: 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30',
-                  cancelled: 'bg-red-500/15 text-red-300 border-red-500/30',
+                const statusConfig: Record<string, { label: string; bg: string; text: string; border: string; dot: string }> = {
+                  draft:     { label: 'Rascunho',  bg: 'bg-yellow-500/15',  text: 'text-yellow-300',  border: 'border-yellow-500/30',  dot: 'bg-yellow-400' },
+                  signed:    { label: 'Assinada',  bg: 'bg-blue-500/15',    text: 'text-blue-300',    border: 'border-blue-500/30',    dot: 'bg-blue-400' },
+                  sent:      { label: 'Enviada',   bg: 'bg-emerald-500/15', text: 'text-emerald-300', border: 'border-emerald-500/30', dot: 'bg-emerald-400' },
+                  validated: { label: 'Validada',  bg: 'bg-emerald-500/15', text: 'text-emerald-300', border: 'border-emerald-500/30', dot: 'bg-emerald-400' },
+                  cancelled: { label: 'Cancelada', bg: 'bg-red-500/15',     text: 'text-red-300',     border: 'border-red-500/30',     dot: 'bg-red-400' },
                 }
-                const statusLabels: Record<string, string> = {
-                  draft: 'Rascunho',
-                  signed: 'Assinada',
-                  sent: 'Enviada',
-                  validated: 'Validada',
-                  cancelled: 'Cancelada',
+                const typeConfig: Record<string, { label: string; gradient: string; icon: any }> = {
+                  simple:  { label: 'Receituário Simples',     gradient: 'from-emerald-500/20 to-emerald-600/5',  icon: FileText },
+                  special: { label: 'Controle Especial (Branca)', gradient: 'from-slate-400/20 to-slate-500/5',  icon: Pill },
+                  blue:    { label: 'Receita Azul (B1/B2)',    gradient: 'from-blue-500/20 to-blue-600/5',        icon: Pill },
+                  yellow:  { label: 'Receita Amarela (A1/A2/A3)', gradient: 'from-yellow-500/20 to-yellow-600/5', icon: Pill },
                 }
+                const status = statusConfig[p.status] || statusConfig.draft
+                const type = typeConfig[p.prescription_type] || typeConfig.simple
+                const TypeIcon = type.icon
                 const meds = Array.isArray(p.medications) ? p.medications : []
                 const firstMed = meds[0] || null
+                const extraMeds = meds.length - 1
                 return (
                   <div
                     key={p.id}
-                    className="rounded-xl border border-white/5 bg-white/[0.03] p-4 hover:border-emerald-500/30 transition-colors"
+                    className="group relative rounded-xl border border-white/5 bg-gradient-to-br from-slate-800/40 to-slate-900/20 p-4 hover:border-emerald-500/40 hover:from-slate-800/60 hover:shadow-lg hover:shadow-emerald-500/5 transition-all overflow-hidden"
                   >
-                    <div className="flex items-start justify-between gap-3 mb-2">
-                      <div className="min-w-0">
-                        <h4 className="text-sm font-semibold text-white truncate">
-                          {p.patient_name || 'Paciente sem nome'}
-                        </h4>
-                        <p className="text-xs text-slate-500 truncate">
-                          {p.patient_cpf ? `CPF: ${p.patient_cpf}` : 'sem CPF'}
-                        </p>
+                    {/* Glow effect at top */}
+                    <div className={`absolute top-0 left-0 right-0 h-px bg-gradient-to-r ${type.gradient.replace('to-', 'via-').replace('/5', '/40')} opacity-50`} />
+
+                    {/* Header: ícone tipo + paciente + status */}
+                    <div className="flex items-start justify-between gap-2 mb-3">
+                      <div className="flex items-start gap-2.5 min-w-0 flex-1">
+                        <div className={`shrink-0 w-9 h-9 rounded-lg bg-gradient-to-br ${type.gradient} border border-white/10 flex items-center justify-center group-hover:scale-105 transition-transform`}>
+                          <TypeIcon className="w-4 h-4 text-white/90" />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <h4 className="text-sm font-semibold text-white truncate leading-tight">
+                            {p.patient_name || 'Paciente sem nome'}
+                          </h4>
+                          <p className="text-[10px] text-slate-500 truncate mt-0.5">
+                            {type.label}
+                          </p>
+                        </div>
                       </div>
-                      <span className={`shrink-0 text-[10px] font-bold px-2 py-1 rounded-full border uppercase tracking-wider ${statusColors[p.status] || statusColors.draft}`}>
-                        {statusLabels[p.status] || p.status}
+                      <span className={`shrink-0 inline-flex items-center gap-1 text-[9px] font-bold px-2 py-1 rounded-full border uppercase tracking-wider ${status.bg} ${status.text} ${status.border}`}>
+                        <span className={`w-1.5 h-1.5 rounded-full ${status.dot} animate-pulse`} />
+                        {status.label}
                       </span>
                     </div>
 
-                    {firstMed && (
-                      <div className="text-xs text-slate-400 mb-2">
-                        <span className="text-slate-300 font-medium">{firstMed.name || '—'}</span>
-                        {firstMed.dosage && <span className="ml-1">· {firstMed.dosage}</span>}
-                        {firstMed.frequency && <span className="ml-1">· {firstMed.frequency}</span>}
+                    {/* Medicação destaque */}
+                    {firstMed ? (
+                      <div className="rounded-lg bg-black/20 border border-white/5 p-2.5 mb-3">
+                        <div className="flex items-center gap-1.5 mb-1">
+                          <Pill className="w-3 h-3 text-emerald-400" />
+                          <span className="text-xs font-medium text-white truncate">{firstMed.name || '—'}</span>
+                        </div>
+                        <div className="flex flex-wrap items-center gap-1.5 text-[10px] text-slate-400">
+                          {firstMed.dosage && (
+                            <span className="px-1.5 py-0.5 rounded bg-white/5 border border-white/10">{firstMed.dosage}</span>
+                          )}
+                          {firstMed.frequency && (
+                            <span className="px-1.5 py-0.5 rounded bg-white/5 border border-white/10">{firstMed.frequency}</span>
+                          )}
+                          {firstMed.duration && (
+                            <span className="px-1.5 py-0.5 rounded bg-white/5 border border-white/10">{firstMed.duration}</span>
+                          )}
+                        </div>
+                        {extraMeds > 0 && (
+                          <div className="text-[10px] text-emerald-400 mt-1.5">+ {extraMeds} medicaç{extraMeds > 1 ? 'ões' : 'ão'}</div>
+                        )}
+                      </div>
+                    ) : (
+                      <div className="rounded-lg bg-black/10 border border-white/5 p-2.5 mb-3 text-[10px] text-slate-500 italic">
+                        Sem medicações registradas
                       </div>
                     )}
 
-                    <div className="flex items-center justify-between gap-2 mt-3 pt-2 border-t border-white/5">
-                      <span className="text-[11px] text-slate-500">
+                    {/* Footer: data + ITI */}
+                    <div className="flex items-center justify-between gap-2 pt-2 border-t border-white/5">
+                      <div className="flex items-center gap-1 text-[10px] text-slate-500">
+                        <Clock className="w-3 h-3" />
                         {new Date(p.created_at).toLocaleDateString('pt-BR')}
-                      </span>
-                      {p.iti_validation_code && (
-                        <span className="text-[10px] text-blue-400 font-mono">ITI: {p.iti_validation_code}</span>
-                      )}
+                      </div>
+                      {p.iti_validation_code ? (
+                        <span className="text-[9px] text-blue-400 font-mono bg-blue-500/10 px-1.5 py-0.5 rounded border border-blue-500/20">
+                          ITI: {p.iti_validation_code.slice(0, 8)}…
+                        </span>
+                      ) : p.patient_cpf ? (
+                        <span className="text-[10px] text-slate-500">CPF: {p.patient_cpf}</span>
+                      ) : null}
                     </div>
                   </div>
                 )
@@ -588,9 +649,10 @@ const QuickPrescriptions: React.FC<QuickPrescriptionsProps> = ({ className = '',
               <button
                 type="button"
                 onClick={() => navigate('/app/clinica/prescricoes')}
-                className="text-xs text-emerald-400 hover:text-emerald-300 font-medium"
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-slate-800/60 hover:bg-slate-700/60 border border-slate-700 hover:border-emerald-500/40 text-xs text-slate-300 hover:text-emerald-300 font-medium transition-all"
               >
-                Ver todas as {filteredMyPrescriptions.length} prescrições →
+                Ver todas as {filteredMyPrescriptions.length} prescrições
+                <span>→</span>
               </button>
             </div>
           )}
