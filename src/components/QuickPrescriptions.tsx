@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import {
   FileText,
   Plus,
@@ -16,7 +17,8 @@ import {
   Save,
   Trash2,
   Loader2,
-  Check
+  Check,
+  ListChecks
 } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
@@ -44,6 +46,7 @@ interface QuickPrescriptionsProps {
 
 const QuickPrescriptions: React.FC<QuickPrescriptionsProps> = ({ className = '', patientId }) => {
   const { user } = useAuth()
+  const navigate = useNavigate()
   const [selectedCategory, setSelectedCategory] = useState<string>('all')
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedTemplate, setSelectedTemplate] = useState<PrescriptionTemplate | null>(null)
@@ -296,6 +299,16 @@ const QuickPrescriptions: React.FC<QuickPrescriptionsProps> = ({ className = '',
           >
             <Plus className="w-3.5 h-3.5" />
             <span>Nova Prescrição</span>
+          </button>
+
+          {/* [V1.9.133-B] Atalho pra gestão completa: stats, rascunhos pendentes, ICP-Brasil */}
+          <button
+            onClick={() => navigate('/app/clinica/prescricoes')}
+            title="Ver todas as suas prescrições, rascunhos e gestão completa"
+            className="flex items-center space-x-1.5 px-5 py-2 bg-slate-800/50 hover:bg-slate-700/50 text-slate-200 font-bold text-xs rounded-full border border-slate-700 hover:border-emerald-500/50 transition-all hover:scale-105 active:scale-95"
+          >
+            <ListChecks className="w-3.5 h-3.5 text-emerald-400" />
+            <span>Ver todas / Rascunhos</span>
           </button>
         </div>
       </div>

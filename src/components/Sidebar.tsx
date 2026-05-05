@@ -237,6 +237,15 @@ const Sidebar: React.FC<SidebarProps> = ({
         color: 'bg-green-600'
       },
       {
+        // [V1.9.133-A] Acesso direto à página de Prescrições com gestão completa
+        // V1.9.129: stats topo + filtro + banner ICP-Brasil + modal educacional
+        name: 'Prescrições Médicas',
+        href: '/app/clinica/prescricoes',
+        icon: Pill,
+        section: 'main',
+        color: 'bg-blue-600'
+      },
+      {
         name: 'Terminal de Pesquisa',
         href: '/app/pesquisa/profissional/dashboard',
         icon: TerminalIcon,
