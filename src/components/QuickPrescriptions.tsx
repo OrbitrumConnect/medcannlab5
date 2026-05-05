@@ -70,9 +70,20 @@ const QuickPrescriptions: React.FC<QuickPrescriptionsProps> = ({ className = '',
     notes: ''
   })
 
-  // [V1.9.134] Stats topo + banner ICP — carrega prescrições do médico logado
-  const [myPrescriptions, setMyPrescriptions] = useState<Array<{ status: string }>>([])
+  // [V1.9.134/135] Stats + lista cards — carrega prescrições do médico logado
+  interface MyPrescription {
+    id: string
+    status: 'draft' | 'signed' | 'sent' | 'validated' | 'cancelled'
+    prescription_type: string
+    patient_name: string | null
+    patient_cpf: string | null
+    medications: any
+    created_at: string
+    iti_validation_code?: string | null
+  }
+  const [myPrescriptions, setMyPrescriptions] = useState<MyPrescription[]>([])
   const [showCertHelpModal, setShowCertHelpModal] = useState(false)
+  const [statusFilter, setStatusFilter] = useState<'todas' | 'draft' | 'signed' | 'sent'>('todas')
 
   const prescriptionStats = useMemo(() => {
     const draft = myPrescriptions.filter(p => p.status === 'draft').length
@@ -81,17 +92,24 @@ const QuickPrescriptions: React.FC<QuickPrescriptionsProps> = ({ className = '',
     return { total: myPrescriptions.length, draft, signed, sent }
   }, [myPrescriptions])
 
+  const filteredMyPrescriptions = useMemo(() => {
+    if (statusFilter === 'todas') return myPrescriptions
+    if (statusFilter === 'sent') return myPrescriptions.filter(p => p.status === 'sent' || p.status === 'validated')
+    return myPrescriptions.filter(p => p.status === statusFilter)
+  }, [myPrescriptions, statusFilter])
+
   const loadMyPrescriptions = async () => {
     if (!user?.id) return
     try {
       const { data, error } = await supabase
         .from('cfm_prescriptions')
-        .select('status')
+        .select('id, status, prescription_type, patient_name, patient_cpf, medications, created_at, iti_validation_code')
         .eq('professional_id', user.id)
+        .order('created_at', { ascending: false })
       if (error) throw error
-      setMyPrescriptions(data || [])
+      setMyPrescriptions((data || []) as MyPrescription[])
     } catch (err) {
-      console.error('[V1.9.134] erro ao carregar stats prescrições:', err)
+      console.error('[V1.9.135] erro ao carregar prescrições:', err)
     }
   }
 
@@ -461,6 +479,123 @@ const QuickPrescriptions: React.FC<QuickPrescriptionsProps> = ({ className = '',
           </div>
         ))}
       </div>
+
+      {/* [V1.9.135-B] Minhas Prescrições — lista cards reais do médico (analytics no terminal) */}
+      {prescriptionStats.total > 0 && (
+        <div className="px-4 pb-6 space-y-3">
+          <div className="flex items-center justify-between flex-wrap gap-3 pt-4 border-t border-slate-700/50">
+            <h3 className="text-lg font-bold text-white flex items-center gap-2">
+              <FileText className="w-5 h-5 text-emerald-400" />
+              Minhas Prescrições
+              {statusFilter !== 'todas' && (
+                <span className="text-xs font-normal text-slate-400">
+                  · filtro: {statusFilter === 'draft' ? 'Rascunhos' : statusFilter === 'signed' ? 'Assinadas' : 'Enviadas'}
+                </span>
+              )}
+            </h3>
+            <div className="flex items-center gap-1.5 p-1 bg-slate-900/50 rounded-full border border-slate-700">
+              {[
+                { id: 'todas', label: 'Todas' },
+                { id: 'draft', label: 'Rascunhos' },
+                { id: 'signed', label: 'Assinadas' },
+                { id: 'sent', label: 'Enviadas' },
+              ].map((opt) => (
+                <button
+                  key={opt.id}
+                  type="button"
+                  onClick={() => setStatusFilter(opt.id as any)}
+                  className={`px-3 py-1 text-[11px] font-medium rounded-full transition-all ${
+                    statusFilter === opt.id
+                      ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-900/10'
+                      : 'text-slate-400 hover:text-slate-200'
+                  }`}
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {filteredMyPrescriptions.length === 0 ? (
+            <div className="rounded-lg border border-white/5 bg-white/[0.02] p-6 text-center">
+              <p className="text-sm text-slate-400">
+                Nenhuma prescrição neste filtro.
+                {statusFilter !== 'todas' && ' Limpe o filtro para ver todas.'}
+              </p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              {filteredMyPrescriptions.slice(0, 12).map((p) => {
+                const statusColors: Record<string, string> = {
+                  draft: 'bg-yellow-500/15 text-yellow-300 border-yellow-500/30',
+                  signed: 'bg-blue-500/15 text-blue-300 border-blue-500/30',
+                  sent: 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30',
+                  validated: 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30',
+                  cancelled: 'bg-red-500/15 text-red-300 border-red-500/30',
+                }
+                const statusLabels: Record<string, string> = {
+                  draft: 'Rascunho',
+                  signed: 'Assinada',
+                  sent: 'Enviada',
+                  validated: 'Validada',
+                  cancelled: 'Cancelada',
+                }
+                const meds = Array.isArray(p.medications) ? p.medications : []
+                const firstMed = meds[0] || null
+                return (
+                  <div
+                    key={p.id}
+                    className="rounded-xl border border-white/5 bg-white/[0.03] p-4 hover:border-emerald-500/30 transition-colors"
+                  >
+                    <div className="flex items-start justify-between gap-3 mb-2">
+                      <div className="min-w-0">
+                        <h4 className="text-sm font-semibold text-white truncate">
+                          {p.patient_name || 'Paciente sem nome'}
+                        </h4>
+                        <p className="text-xs text-slate-500 truncate">
+                          {p.patient_cpf ? `CPF: ${p.patient_cpf}` : 'sem CPF'}
+                        </p>
+                      </div>
+                      <span className={`shrink-0 text-[10px] font-bold px-2 py-1 rounded-full border uppercase tracking-wider ${statusColors[p.status] || statusColors.draft}`}>
+                        {statusLabels[p.status] || p.status}
+                      </span>
+                    </div>
+
+                    {firstMed && (
+                      <div className="text-xs text-slate-400 mb-2">
+                        <span className="text-slate-300 font-medium">{firstMed.name || '—'}</span>
+                        {firstMed.dosage && <span className="ml-1">· {firstMed.dosage}</span>}
+                        {firstMed.frequency && <span className="ml-1">· {firstMed.frequency}</span>}
+                      </div>
+                    )}
+
+                    <div className="flex items-center justify-between gap-2 mt-3 pt-2 border-t border-white/5">
+                      <span className="text-[11px] text-slate-500">
+                        {new Date(p.created_at).toLocaleDateString('pt-BR')}
+                      </span>
+                      {p.iti_validation_code && (
+                        <span className="text-[10px] text-blue-400 font-mono">ITI: {p.iti_validation_code}</span>
+                      )}
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          )}
+
+          {filteredMyPrescriptions.length > 12 && (
+            <div className="text-center pt-2">
+              <button
+                type="button"
+                onClick={() => navigate('/app/clinica/prescricoes')}
+                className="text-xs text-emerald-400 hover:text-emerald-300 font-medium"
+              >
+                Ver todas as {filteredMyPrescriptions.length} prescrições →
+              </button>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* MODAL DE NOVA PRESCRIÇÃO */}
       {isModalOpen && (

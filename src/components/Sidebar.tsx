@@ -237,10 +237,10 @@ const Sidebar: React.FC<SidebarProps> = ({
         color: 'bg-green-600'
       },
       {
-        // [V1.9.133-A] Acesso direto à página de Prescrições com gestão completa
-        // V1.9.129: stats topo + filtro + banner ICP-Brasil + modal educacional
+        // [V1.9.135-A] Sidebar leva direto pra aba Prescrições do Terminal de Atendimento
+        // (não mais rota standalone /clinica/prescricoes — fluxo unificado dentro do Terminal)
         name: 'Prescrições Médicas',
-        href: '/app/clinica/prescricoes',
+        href: '/app/clinica/profissional/dashboard?section=terminal-clinico&tab=prescriptions',
         icon: Pill,
         section: 'main',
         color: 'bg-blue-600'
