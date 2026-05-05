@@ -694,7 +694,7 @@ const ProfessionalMyDashboard: React.FC = () => {
         </div>
 
         {/* [V1.9.127-A] Ações rápidas profissionais — acessibilidade 50+ */}
-        <div className="bg-slate-900/40 border border-white/5 rounded-2xl p-5 md:p-6 space-y-3 mb-6">
+        <div className="bg-slate-900/40 border border-white/5 rounded-2xl p-4 md:p-6 space-y-3 mb-6">
           <div className="space-y-0.5">
             <h2 className="text-lg md:text-xl font-semibold text-white">O que você quer fazer agora?</h2>
             <p className="text-slate-400 text-sm">Ações rápidas do seu dia clínico.</p>
@@ -705,9 +705,9 @@ const ProfessionalMyDashboard: React.FC = () => {
               onClick={() => navigate('/app/clinica/profissional/dashboard?section=atendimento')}
               title="Ver agenda completa e atendimentos do dia"
               aria-label="Ver agenda — atendimentos hoje"
-              className="relative flex flex-col items-center justify-center gap-1.5 aspect-square md:aspect-auto md:flex-row md:gap-2 md:px-5 md:py-3 bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 border border-emerald-500/30 rounded-xl text-[11px] leading-tight md:text-base font-medium transition-all shadow-[0_0_15px_rgba(16,185,129,0.25)] hover:shadow-[0_0_20px_rgba(16,185,129,0.45)] animate-pulse text-center md:text-left"
+              className="relative flex flex-col items-center justify-center gap-1 aspect-[5/4] md:aspect-auto md:flex-row md:gap-2 md:px-5 md:py-3 bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 border border-emerald-500/30 rounded-xl text-[11px] leading-tight md:text-base font-medium transition-all shadow-[0_0_15px_rgba(16,185,129,0.25)] hover:shadow-[0_0_20px_rgba(16,185,129,0.45)] animate-pulse text-center md:text-left"
             >
-              <Calendar className="w-6 h-6 md:w-5 md:h-5" />
+              <Calendar className="w-5 h-5" />
               <span>Ver Agenda</span>
               {stats.todayAppointments > 0 && (
                 <span className="absolute top-1 right-1 md:static md:ml-1 px-1.5 py-0.5 md:px-2 rounded-full bg-emerald-500/30 text-emerald-200 text-[10px] md:text-xs font-bold">
@@ -719,9 +719,9 @@ const ProfessionalMyDashboard: React.FC = () => {
               onClick={() => navigate('/app/clinica/profissional/relatorios')}
               title="Ver relatórios clínicos gerados pela Nôa"
               aria-label="Relatórios clínicos"
-              className="relative flex flex-col items-center justify-center gap-1.5 aspect-square md:aspect-auto md:flex-row md:gap-2 md:px-5 md:py-3 bg-purple-500/10 text-purple-400 hover:bg-purple-500/20 border border-purple-500/30 rounded-xl text-[11px] leading-tight md:text-base font-medium transition-colors text-center md:text-left"
+              className="relative flex flex-col items-center justify-center gap-1 aspect-[5/4] md:aspect-auto md:flex-row md:gap-2 md:px-5 md:py-3 bg-purple-500/10 text-purple-400 hover:bg-purple-500/20 border border-purple-500/30 rounded-xl text-[11px] leading-tight md:text-base font-medium transition-colors text-center md:text-left"
             >
-              <FileText className="w-6 h-6 md:w-5 md:h-5" />
+              <FileText className="w-5 h-5" />
               <span>Relatórios</span>
               {stats.pendingReports > 0 && (
                 <span className="absolute top-1 right-1 md:static md:ml-1 px-1.5 py-0.5 md:px-2 rounded-full bg-purple-500/30 text-purple-200 text-[10px] md:text-xs font-bold">
@@ -733,27 +733,27 @@ const ProfessionalMyDashboard: React.FC = () => {
               onClick={() => navigate('/app/clinica/profissional/dashboard?section=terminal-clinico&tab=prescriptions')}
               title="Emitir nova prescrição (5 racionalidades + assinatura ICP-Brasil)"
               aria-label="Nova prescrição"
-              className="flex flex-col items-center justify-center gap-1.5 aspect-square md:aspect-auto md:flex-row md:gap-2 md:px-5 md:py-3 bg-blue-500/10 text-blue-400 hover:bg-blue-500/20 border border-blue-500/30 rounded-xl text-[11px] leading-tight md:text-base font-medium transition-colors text-center md:text-left"
+              className="flex flex-col items-center justify-center gap-1 aspect-[5/4] md:aspect-auto md:flex-row md:gap-2 md:px-5 md:py-3 bg-blue-500/10 text-blue-400 hover:bg-blue-500/20 border border-blue-500/30 rounded-xl text-[11px] leading-tight md:text-base font-medium transition-colors text-center md:text-left"
             >
-              <Stethoscope className="w-6 h-6 md:w-5 md:h-5" />
+              <Stethoscope className="w-5 h-5" />
               <span>Nova<br className="md:hidden" /> Prescrição</span>
             </button>
             <button
               onClick={() => navigate('/app/clinica/profissional/dashboard?section=terminal-clinico&tab=chat')}
               title="Chat com equipe de profissionais"
               aria-label="Chat com equipe"
-              className="flex flex-col items-center justify-center gap-1.5 aspect-square md:aspect-auto md:flex-row md:gap-2 md:px-5 md:py-3 bg-cyan-500/10 text-cyan-400 hover:bg-cyan-500/20 border border-cyan-500/30 rounded-xl text-[11px] leading-tight md:text-base font-medium transition-colors text-center md:text-left"
+              className="flex flex-col items-center justify-center gap-1 aspect-[5/4] md:aspect-auto md:flex-row md:gap-2 md:px-5 md:py-3 bg-cyan-500/10 text-cyan-400 hover:bg-cyan-500/20 border border-cyan-500/30 rounded-xl text-[11px] leading-tight md:text-base font-medium transition-colors text-center md:text-left"
             >
-              <MessageCircle className="w-6 h-6 md:w-5 md:h-5" />
+              <MessageCircle className="w-5 h-5" />
               <span>Chat<br className="md:hidden" /> Equipe</span>
             </button>
             <button
               onClick={() => navigate('/app/clinica/profissional/dashboard?section=terminal-clinico&tab=patients')}
               title="Lista de pacientes vinculados"
               aria-label="Meus pacientes vinculados"
-              className="relative flex flex-col items-center justify-center gap-1.5 aspect-square md:aspect-auto md:flex-row md:gap-2 md:px-5 md:py-3 bg-indigo-500/10 text-indigo-400 hover:bg-indigo-500/20 border border-indigo-500/30 rounded-xl text-[11px] leading-tight md:text-base font-medium transition-colors text-center md:text-left"
+              className="relative flex flex-col items-center justify-center gap-1 aspect-[5/4] md:aspect-auto md:flex-row md:gap-2 md:px-5 md:py-3 bg-indigo-500/10 text-indigo-400 hover:bg-indigo-500/20 border border-indigo-500/30 rounded-xl text-[11px] leading-tight md:text-base font-medium transition-colors text-center md:text-left"
             >
-              <Users className="w-6 h-6 md:w-5 md:h-5" />
+              <Users className="w-5 h-5" />
               <span>Meus<br className="md:hidden" /> Pacientes</span>
               {stats.totalPatients > 0 && (
                 <span className="absolute top-1 right-1 md:static md:ml-1 px-1.5 py-0.5 md:px-2 rounded-full bg-indigo-500/30 text-indigo-200 text-[10px] md:text-xs font-bold">
@@ -765,9 +765,9 @@ const ProfessionalMyDashboard: React.FC = () => {
               onClick={() => navigate('/app/clinica/profissional/dashboard?section=terminal-clinico&tab=forum')}
               title="Cann Matrix — fórum clínico de discussão entre profissionais"
               aria-label="Fórum Cann Matrix"
-              className="flex flex-col items-center justify-center gap-1.5 aspect-square md:aspect-auto md:flex-row md:gap-2 md:px-5 md:py-3 bg-amber-500/10 text-amber-400 hover:bg-amber-500/20 border border-amber-500/30 rounded-xl text-[11px] leading-tight md:text-base font-medium transition-colors text-center md:text-left"
+              className="flex flex-col items-center justify-center gap-1 aspect-[5/4] md:aspect-auto md:flex-row md:gap-2 md:px-5 md:py-3 bg-amber-500/10 text-amber-400 hover:bg-amber-500/20 border border-amber-500/30 rounded-xl text-[11px] leading-tight md:text-base font-medium transition-colors text-center md:text-left"
             >
-              <Brain className="w-6 h-6 md:w-5 md:h-5" />
+              <Brain className="w-5 h-5" />
               <span>Cann<br className="md:hidden" /> Matrix</span>
             </button>
           </div>
@@ -1397,7 +1397,11 @@ const ProfessionalMyDashboard: React.FC = () => {
               </div>
               <p className="text-xs text-slate-400">Metodologia AEC — Dr. Ricardo Valença</p>
             </Link>
-            <Link to="/app/clinica/profissional/dashboard?section=atendimento" className="rounded-xl p-5 text-white hover:shadow-lg hover:scale-[1.02] transition-all text-left" style={cardStyle}>
+            {/* [V1.9.131-A] KPIs TEA aponta pra placeholder honesto (em desenvolvimento) */}
+            <Link to="/app/clinica/profissional/tea" className="rounded-xl p-5 text-white hover:shadow-lg hover:scale-[1.02] transition-all text-left relative" style={cardStyle}>
+              <span className="absolute top-2 right-2 px-2 py-0.5 rounded-full bg-yellow-500/15 text-yellow-400 text-[9px] font-bold uppercase tracking-wider border border-yellow-500/30">
+                Em breve
+              </span>
               <div className="flex items-center justify-between mb-2">
                 <h3 className="text-sm font-medium text-white">KPIs TEA</h3>
                 <Brain className="w-5 h-5 text-emerald-400" />

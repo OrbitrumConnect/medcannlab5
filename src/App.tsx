@@ -88,6 +88,7 @@ import DRCMonitoringSchedule from './pages/DRCMonitoringSchedule'
 import LessonDetail from './pages/LessonDetail'
 import NewsManagement from './pages/NewsManagement'
 import ProfessionalMyDashboard from './pages/ProfessionalMyDashboard'
+import KpisTea from './pages/KpisTea'
 import ClinicalGovernanceDemo from './pages/ClinicalGovernanceDemo'
 import ClinicalGovernanceAdmin from './pages/ClinicalGovernanceAdmin'
 import InvitePatient from './pages/InvitePatient' // IMPORT AT TOP
@@ -154,6 +155,7 @@ function App() {
                           <Route path="clinica/profissional/pacientes" element={<Navigate to="/app/clinica/profissional/dashboard?section=terminal-clinico" replace />} />
                           <Route path="clinica/profissional/agendamentos" element={<Navigate to="/app/clinica/profissional/dashboard?section=atendimento" replace />} />
                           <Route path="clinica/profissional/relatorios" element={<Reports />} />
+                          <Route path="clinica/profissional/tea" element={<ProtectedRoute requiredRole="profissional"><KpisTea /></ProtectedRoute>} />
                           <Route path="clinica/profissional/chat-profissionais" element={<ProfessionalChat />} />
                           <Route path="clinica/profissional/certificados" element={<ProtectedRoute requiredRole="profissional"><CertificateManagement /></ProtectedRoute>} />
                           <Route path="clinica/prescricoes" element={<Prescriptions />} />

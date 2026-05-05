@@ -103,7 +103,7 @@ const PatientHeaderActions: React.FC<PatientHeaderActionsProps> = ({
 
     return (
         <>
-            <div className="bg-slate-900/40 border border-white/5 rounded-2xl p-5 md:p-6 space-y-3">
+            <div className="bg-slate-900/40 border border-white/5 rounded-2xl p-4 md:p-6 space-y-3">
                 <div className="space-y-0.5">
                     <h2 className="text-lg md:text-xl font-semibold text-white">O que você quer fazer agora?</h2>
                     <p className="text-slate-400 text-sm">Ações rápidas para sua jornada clínica.</p>
@@ -114,18 +114,18 @@ const PatientHeaderActions: React.FC<PatientHeaderActionsProps> = ({
                     <button
                         onClick={onScheduleClick}
                         title="Agendar consulta"
-                        className="flex flex-col items-center justify-center gap-1.5 aspect-square md:aspect-auto md:flex-row md:gap-2 md:px-5 md:py-3 bg-blue-500/10 text-blue-400 hover:bg-blue-500/20 border border-blue-500/20 rounded-xl text-[11px] leading-tight md:text-base font-medium transition-all shadow-[0_0_15px_rgba(59,130,246,0.3)] hover:shadow-[0_0_20px_rgba(59,130,246,0.5)] animate-pulse text-center md:text-left"
+                        className="flex flex-col items-center justify-center gap-1 aspect-[5/4] md:aspect-auto md:flex-row md:gap-2 md:px-5 md:py-3 bg-blue-500/10 text-blue-400 hover:bg-blue-500/20 border border-blue-500/20 rounded-xl text-[11px] leading-tight md:text-base font-medium transition-all shadow-[0_0_15px_rgba(59,130,246,0.3)] hover:shadow-[0_0_20px_rgba(59,130,246,0.5)] animate-pulse text-center md:text-left"
                     >
-                        <Calendar className="w-6 h-6 md:w-5 md:h-5" />
+                        <Calendar className="w-5 h-5" />
                         <span>Agendar<br className="md:hidden" /> Consulta</span>
                     </button>
                     {/* Enviar para Médico */}
                     <button
                         onClick={handleOpenDoctorSelect}
                         title="Enviar relatório para médico"
-                        className="flex flex-col items-center justify-center gap-1.5 aspect-square md:aspect-auto md:flex-row md:gap-2 md:px-5 md:py-3 bg-blue-500/10 text-blue-400 hover:bg-blue-500/20 border border-blue-500/20 rounded-xl text-[11px] leading-tight md:text-base font-medium transition-colors text-center md:text-left"
+                        className="flex flex-col items-center justify-center gap-1 aspect-[5/4] md:aspect-auto md:flex-row md:gap-2 md:px-5 md:py-3 bg-blue-500/10 text-blue-400 hover:bg-blue-500/20 border border-blue-500/20 rounded-xl text-[11px] leading-tight md:text-base font-medium transition-colors text-center md:text-left"
                     >
-                        <FileText className="w-6 h-6 md:w-5 md:h-5" />
+                        <FileText className="w-5 h-5" />
                         <span>Enviar<br className="md:hidden" /> Médico</span>
                     </button>
                     {/* Iniciar Avaliação */}
@@ -133,9 +133,9 @@ const PatientHeaderActions: React.FC<PatientHeaderActionsProps> = ({
                         <button
                             onClick={onStartAssessment}
                             title="Iniciar avaliação clínica"
-                            className="flex flex-col items-center justify-center gap-1.5 aspect-square md:aspect-auto md:flex-row md:gap-2 md:px-5 md:py-3 bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 border border-emerald-500/30 rounded-xl text-[11px] leading-tight md:text-base font-medium transition-colors text-center md:text-left"
+                            className="flex flex-col items-center justify-center gap-1 aspect-[5/4] md:aspect-auto md:flex-row md:gap-2 md:px-5 md:py-3 bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 border border-emerald-500/30 rounded-xl text-[11px] leading-tight md:text-base font-medium transition-colors text-center md:text-left"
                         >
-                            <Brain className="w-6 h-6 md:w-5 md:h-5" />
+                            <Brain className="w-5 h-5" />
                             <span>Iniciar<br className="md:hidden" /> Avaliação</span>
                         </button>
                     )}
@@ -143,18 +143,18 @@ const PatientHeaderActions: React.FC<PatientHeaderActionsProps> = ({
                     <button
                         onClick={() => navigate('/app/clinica/paciente/agendamentos')}
                         title="Vincular-se a um médico"
-                        className="flex flex-col items-center justify-center gap-1.5 aspect-square md:aspect-auto md:flex-row md:gap-2 md:px-5 md:py-3 bg-indigo-500/10 text-indigo-400 hover:bg-indigo-500/20 border border-indigo-500/20 rounded-xl text-[11px] leading-tight md:text-base font-medium transition-colors text-center md:text-left"
+                        className="flex flex-col items-center justify-center gap-1 aspect-[5/4] md:aspect-auto md:flex-row md:gap-2 md:px-5 md:py-3 bg-indigo-500/10 text-indigo-400 hover:bg-indigo-500/20 border border-indigo-500/20 rounded-xl text-[11px] leading-tight md:text-base font-medium transition-colors text-center md:text-left"
                     >
-                        <UserPlus className="w-6 h-6 md:w-5 md:h-5" />
+                        <UserPlus className="w-5 h-5" />
                         <span>Vincular<br className="md:hidden" /> Médico</span>
                     </button>
                     {/* WhatsApp */}
                     <button
                         onClick={handleWhatsApp}
                         title="Compartilhar via WhatsApp"
-                        className="flex flex-col items-center justify-center gap-1.5 aspect-square md:aspect-auto md:flex-row md:gap-2 md:px-5 md:py-3 bg-[#25D366]/10 text-[#25D366] hover:bg-[#25D366]/20 border border-[#25D366]/20 rounded-xl text-[11px] leading-tight md:text-base font-medium transition-colors text-center md:text-left"
+                        className="flex flex-col items-center justify-center gap-1 aspect-[5/4] md:aspect-auto md:flex-row md:gap-2 md:px-5 md:py-3 bg-[#25D366]/10 text-[#25D366] hover:bg-[#25D366]/20 border border-[#25D366]/20 rounded-xl text-[11px] leading-tight md:text-base font-medium transition-colors text-center md:text-left"
                     >
-                        <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" className="md:w-5 md:h-5">
+                        <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round">
                             <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
                         </svg>
                         <span>WhatsApp</span>
