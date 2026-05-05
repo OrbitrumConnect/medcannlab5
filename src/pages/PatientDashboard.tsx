@@ -25,6 +25,7 @@ import { usePatientDashboard, PatientTab } from '../hooks/dashboard/usePatientDa
 import ShareReportModal from '../components/ShareReportModal'
 import NoaConversationalInterface from '../components/NoaConversationalInterface'
 import PatientAnalytics from '../components/PatientAnalytics'
+import PatientHeaderActions from '../components/PatientHeaderActions'
 import PatientPrescriptions from '../components/PatientPrescriptions'
 
 import { PatientStats } from '../components/dashboard/patient/PatientStats'
@@ -146,6 +147,13 @@ const PatientDashboard: React.FC = () => {
             <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-white to-slate-400 bg-clip-text text-transparent">Olá, {user?.name?.split(' ')[0]}</h1>
             <p className="text-slate-400 text-lg">Aqui está o resumo da sua jornada de cuidado.</p>
           </div>
+
+          {/* [V1.9.126] Ações principais movidas para o topo (acessibilidade 50+) */}
+          <PatientHeaderActions
+            reports={reports}
+            onScheduleClick={() => navigate('/app/clinica/paciente/agendamentos')}
+            onStartAssessment={handleStartAssessment}
+          />
 
           <PatientStats
             appointments={appointments}
