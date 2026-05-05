@@ -235,17 +235,216 @@
 
 ---
 
-## MÉTRICAS DA SESSÃO 05/05/2026
+## BLOCO J — V1.9.133 acesso direto Prescrições no sidebar pro + atalho Terminal Clínico (12:08 BRT)
 
-### Commits cirúrgicos (5)
+**Trigger empírico Pedro:** abriu /clinica/prescricoes via URL direta e percebeu que profissional **não tem caminho de menu** pra essa página. Commit `5dcd344`.
+
+**V1.9.133-A — Sidebar:** novo item "Prescrições Médicas" (ícone Pill) entre "Chat Clínico" e "Terminal de Pesquisa", apontando pra `/app/clinica/prescricoes`.
+
+**V1.9.133-B — Atalho QuickPrescriptions:** botão "Ver todas / Rascunhos" ao lado de "Nova Prescrição" no header do Terminal Clínico tab=prescriptions.
+
+**Triple-A escalável:** 3 caminhos pra mesma gestão (sidebar / atalho / URL direta + Nôa).
+
+---
+
+## BLOCO K — V1.9.134 Stats + banner ICP integrados no Terminal (12:17 BRT)
+
+**Pedro pediu Opção D anterior:** trazer stats + banner ICP do Prescriptions.tsx PRA DENTRO do QuickPrescriptions sem perder os templates atuais. Commit `5890aaa`, +173 linhas.
+
+**Adicionado no QuickPrescriptions:**
+- 4 stats cards topo (Total/Rascunhos/Assinadas/Enviadas)
+- Banner amarelo educacional condicional (≥5 rascunhos)
+- Modal rico ICP-Brasil (A1 vs A3, R$280-500, ACs credenciadas, link gov.br/iti)
+- Filtra por professional_id (stats individuais, não globais)
+- Recarrega após showSuccess=true (criação reflete)
+
+---
+
+## BLOCO L — V1.9.135 fluxo unificado: médico nunca sai do Terminal (12:25 BRT)
+
+**Pedro:** "tirar o trigger do sidebar [pra que] aba [vá] para o terminal e oq estiver no prescrição do terminal adaptar na aba nova só isso". Commit `006bc86`.
+
+**V1.9.135-A — Sidebar redirecionado:**
+- "Prescrições Médicas" no sidebar agora aponta direto pra `terminal-clinico&tab=prescriptions`
+- Antes ia pra rota standalone `/app/clinica/prescricoes` (separava o fluxo)
+
+**V1.9.135-B — Lista "Minhas Prescrições" integrada:**
+- Cards reais do médico abaixo dos templates terapêuticos
+- Filtro tabs: Todas / Rascunhos / Assinadas / Enviadas
+- Limite 12 cards + link "Ver todas N" se houver mais
+- Reusa `myPrescriptions` (V1.9.134) — apenas expandiu SELECT
+
+---
+
+## BLOCO M — V1.9.136 modernizar visual aba Prescrições (12:46 BRT)
+
+**Pedro:** "esta meio fraca cards colados no sidebar grande falta coisas, modernizar". Commit `eb53c36`.
+
+**V1.9.136 aplicada:**
+- Container com padding `px-4 md:px-6 lg:px-8 py-4 md:py-6` (resolve "colado no sidebar")
+- Stats cards com gradient lateral + ícone (FileText/AlertCircle/Lock/CheckCircle) + texto 3xl + sublabel
+- Cards "Minhas Prescrições" estética Prescriptions.tsx:
+  - Ícone tipo (Receituário Simples/Especial/Azul/Amarela) com gradient colorido
+  - Status badge com dot pulsante animado
+  - Glow line topo na cor do tipo
+  - Medicação em "card dentro do card" com pills coloridas (dose/frequência/duração)
+  - "+ N medicações" indicador
+  - Footer Clock + data + ITI badge azul truncado ou CPF fallback
+  - Hover: border emerald + scale ícone + shadow emerald
+
+---
+
+## BLOCO N — Briefing Paulo CNPJ (12:54 BRT) + refinamento pós-GPT review (13:07 BRT)
+
+**Pedro decidiu:** montar briefing completo pra Paulo (contábil/jurídico amigo). Sem orçamento ainda — primeiro alinhamento.
+
+**Commit `419045b` — versão inicial** (12 seções, 233 linhas):
+- Visão MedCannLab (3 eixos)
+- 4 sócios + cap table 4×20% + 20% tesouraria
+- Capital R$5k vs R$10k (Paulo opina)
+- 5 CNAEs propostos
+- 7 cláusulas especiais (partes relacionadas, veto Ricardo, lock-up, ROFR, tag-along, ESOP, dissolução)
+
+**GPT review trouxe 8 críticas certeiras:**
+1. Paulo é **contador**, não advogado — escopo errado
+2. Tesouraria 20% em Ltda → "reserva pra ESOP via acordo de quotistas/vesting/phantom"
+3. Veto Ricardo → "veto técnico delimitado AEC, sem afetar governança geral"
+4. CNAE 47.71 farmacêutico **REMOVER** (puxa AFE/ANVISA/farmacêutico responsável)
+5. CNAE 86.50 médico manter FORA
+6. Assinatura ICP-Brasil → "(em desenvolvimento)" — verdade técnica
+7. Marca INPI → pedir indicação especialista PI separado
+8. Reorganizar pontos abertos em 3 buckets (contábil/societário/operacional)
+
+**Commit `5b9b1d1` — refinamento aplicado:** documento mantém densidade + sofisticação, mas com escopo correto. Paulo recebe perguntas que ele PODE responder com autoridade.
+
+**Frase âncora final:** *"Tu resolve como a empresa nasce. Advogado depois resolve como os sócios não brigam."*
+
+---
+
+## BLOCO O — Blueprint WhatsApp Cloud API (11:45 BRT) — selo duplo Claude+GPT+Pedro
+
+**Trigger:** Pedro debatendo com GPT sobre integração Nôa via WhatsApp. Compartilhou número canônico `+55 21 97463 2738` (RJ) — pendente conexão Cloud API.
+
+**Análise crítica auditando ambiente real:**
+- ✅ `users.phone` existe + populado
+- ✅ Botões wa.me em frontend (PatientHeaderActions, ProfessionalSchedulingWidget, ShareAssessment, NewPatientForm)
+- ✅ Mock WhatsApp em Edge `video-call-request-notification:128-135` (só console.log)
+- ❌ Zero integração Meta Cloud API
+- ❌ Zero Edge `whatsapp-webhook` ou `whatsapp-send`
+- ❌ Zero sistema OTP
+
+**Blueprint completo selado** (`docs/WHATSAPP_INTEGRATION_BLUEPRINT_05_05_2026.md`, 451 linhas):
+
+**Decisões travadas (selo duplo):**
+1. WhatsApp = apoio. App = produto. Toda função pesada retorna ao app.
+2. **Modelo B (OTP visível só na sessão autenticada do app)** — superior a SMS, prova 3 coisas: acesso app + posse número + ato consciente
+3. **Limite por COMPORTAMENTO** (msgs/AECs), tokens são budget invisível com degradação graceful aos 80%
+4. AEC = evento (1/dia ou 3/sem), não cota diária
+5. **Edge unificado** — reusa tradevision-core com `channel='whatsapp'`. Pirâmide 8 camadas aplica idêntica
+6. **5 triggers automáticos redirect** ao app (sintomático, prescritivo, pedido relatório, agendamento, loop ≥5 msgs)
+7. gpt-4o-mini default no canal zap (10x mais barato)
+8. Debounce server-side 2.5s (~60% redução custo)
+9. Anti-flood 3/min independente do tier
+10. Tunabilidade via `feature_flags` existente (sem deploy)
+
+**Tier table:**
+| Tier | Chat zap/dia | AEC | Token budget/mês | Modelo |
+|---|---|---|---|---|
+| Trial | 5 | 1 lifetime | 50k | gpt-4o-mini |
+| R$ 60 Pacto | 30 | 3/sem | 500k | gpt-4o-mini |
+| R$ 149 Premium | 50 | ilimitado | 1M | gpt-4o (downgrade 80%) |
+| Médico/Aluno | 100 | N/A | 2M | gpt-4o |
+
+**Sequência implementação (pós-CNPJ):**
+- Sprint 1 (~12h): notificações WhatsApp (lembretes 24h/1h)
+- Sprint 2 (~16h): chat livre Nôa com gate consent + redirects
+- Sprint 3 (~10h): operação + observabilidade + comandos LGPD
+
+**NÃO codar agora**: pré-CNPJ + 0 paciente externo + 3 caminhos críticos não envolvem WhatsApp.
+
+---
+
+## BLOCO P — V1.9.137 bloqueio anti-abuso receita em rascunho (CFM 2.314/2022) (13:32 BRT)
+
+**Trigger empírico:** Pedro abriu print preview do paciente, viu receita em rascunho com botão "Imprimir" liberado, faltando QR code + nome paciente + CRM/UF + endereço. Perguntou "está triple-A?".
+
+**Audit empírico via PAT:**
+```
+35 prescrições draft (94.6%) — sem ITI, sem QR
+ 1 prescrição signed (com ITI + QR ✅)
+ 1 prescrição sent (com ITI + QR ✅)
+```
+
+**Risco real:** paciente imprime rascunho → leva à farmácia → farmácia recusa → percepção "produto quebrado". Mesmo com 0 paciente externo, qualquer teste interno reproduz.
+
+**V1.9.137 aplicada — proteção em 4 camadas** (commit `31ba22a`):
+
+1. **Helper `hasLegalValue`**: status IN (signed/sent/validated) AND (iti_qr_code OR iti_validation_url)
+2. **handlePrint guard**: `window.confirm` com aviso CFM 2.314/2022 quando rascunho
+3. **Banner amarelo modal**: "Receita em rascunho — sem valor legal" + explicação ICP-Brasil (oculto na print)
+4. **CSS @media print marca d'água**: "RASCUNHO — SEM VALOR LEGAL CFM" rotacionada 30°, vermelho translúcido 18%, z-index 9999. Aparece SOMENTE em impressão E somente quando rascunho. Garante: mesmo se paciente força Ctrl+P, farmácia vê marca.
+5. **Botão Imprimir contextual**: "Imprimir receita" verde se válida / "Imprimir rascunho" amarelo se draft
+
+**PlanDetailModal (plano terapêutico) NÃO toca** — não é receita CFM, sem risco regulatório.
+
+---
+
+## BLOCO Q — Audit empírico estado real do banco (13:35 BRT, via PAT)
 
 ```
-f43a202  V1.9.128 bug landings SEO + CTA + Hero compactado (08:51)
-9210bbd  V1.9.129 prescriptions visibilidade 34 rascunhos (10:30)
-44bbad3  V1.9.130 cards mobile-first grid quadrados (11:30)
-c61dda9  V1.9.131 KPIs TEA placeholder + cards -20% (11:55)
-0da19c9  V1.9.132 aluno triple-A consistente (13:30)
-[hoje]   selo final diário 05/05
+USUÁRIOS (39 total):
+  patient        22  (incluindo Thiago Mansur, Carolina, Pedro Paciente, Pedro Alberto, Maria Helena, Carlos Eduardo, Othon, Carlos Felipe, Badhia)
+  professional    9  (Ricardo + Eduardo + Ana Ventorini nova + 6 outros)
+  admin           5  (Pedro + iaianoa + cbdrc + faveret + admin.test)
+  paciente        3  (legacy PT — 3 anonimizados LGPD)
+
+ATIVIDADE (últimos 7 dias):
+  +8 novos users (5 pacientes externos potenciais!)
+  6 appointments criados
+  1.940 interações Core (uso real consistente)
+
+CLÍNICO:
+  98 reports clínicos (19 signed = 19.4%)
+  1 AEC completa total + 3 AECs INTERRUPTED não-invalidadas
+  73 appointments (35 cancelados = 47.9% — V1.9.123-A vai medir mudança)
+  4 appointments completed
+
+PRESCRIÇÕES:
+  37 cfm_prescriptions (35 draft 94.6%, 2 signed/sent)
+  0 medical_certificates cadastrados ❗ (NENHUM médico tem cert ICP-Brasil)
+  0 thumbprints mock — confirmado: gargalo é ausência REAL, não bug código
+
+MONETIZAÇÃO:
+  0 transactions (zero pagamentos — pré-PMF confirmado)
+```
+
+**Insight crítico revelado pelo audit:** os 35 DRAFTs **não são bug nem UX cega**. É realidade pura: **NENHUM médico cadastrou certificado ICP-Brasil**. V1.9.131 placeholder TEA + V1.9.137 marca d'água são respostas honestas a esse vazio. Os 2 SIGNED+SENT do banco devem ser testes manuais via SQL/Edge mock (visto que cert_total=0).
+
+---
+
+## MÉTRICAS DA SESSÃO 05/05/2026
+
+### Commits cirúrgicos (15 — sessão produto + docs)
+
+```
+PRODUTO (10 commits):
+f43a202  V1.9.128 bug landings SEO + CTA + Hero compactado (08:34)
+9210bbd  V1.9.129 prescriptions visibilidade 34 rascunhos (08:49)
+44bbad3  V1.9.130 cards mobile-first grid quadrados (08:53)
+c61dda9  V1.9.131 KPIs TEA placeholder + cards -20% (09:01)
+0da19c9  V1.9.132 aluno triple-A consistente (09:23)
+5dcd344  V1.9.133 acesso direto Prescrições sidebar (12:08)
+5890aaa  V1.9.134 Stats + banner ICP no Terminal (12:17)
+006bc86  V1.9.135 fluxo unificado prescrições no Terminal (12:25)
+eb53c36  V1.9.136 modernizar visual cards Prescrições (12:46)
+31ba22a  V1.9.137 bloqueio anti-abuso receita rascunho (13:32)
+
+DOCS (5 commits):
+4b3c877  diário 05/05 selo manhã (11:08)
+01a4f16  blueprint WhatsApp Cloud API (11:45)
+419045b  briefing Paulo CNPJ inicial (12:54)
+5b9b1d1  briefing Paulo refinado pós-GPT review (13:07)
+[hoje]   selo final diário 05/05 + memória persistente
 ```
 
 ### Push 4 refs em todos
@@ -364,9 +563,93 @@ c61dda9  V1.9.131 KPIs TEA placeholder + cards -20% (11:55)
 
 ---
 
+## O QUE PODERIA SUBIR PRO LIVRO MESTRE (Magno) v1.1
+
+Cristalizações desta sessão que merecem avaliação pra promoção:
+
+### 🟢 Fortes candidatas (validadas empíricamente hoje)
+
+1. **Princípio "Edge unificado por canal"**
+   - Reusar `tradevision-core` com `channel='whatsapp'` (Blueprint WhatsApp)
+   - Reusar componente único pra prescrições (Terminal Clínico = 1 lugar)
+   - "Não criar Edge novo se pode adicionar parâmetro ao existente"
+
+2. **REGRA HARD §1 expandida — produto não emite documento legal sem requisito real**
+   - V1.9.137 marca d'água "RASCUNHO — SEM VALOR LEGAL CFM" em CSS print
+   - V1.9.131 KPIs TEA placeholder "em desenvolvimento"
+   - Produto **se reconhece como inválido juridicamente** quando não tem certificado/dado/assinatura real
+   - Princípio: status visual ≠ valor jurídico, mas precisamos comunicar a diferença
+
+3. **Modelo B (OTP visível no app autenticado) > modelo SMS**
+   - Para vínculo de canal externo (WhatsApp futuro)
+   - Prova 3 coisas simultaneamente: acesso app + posse número + ato consciente
+   - Zero custo SMS
+
+4. **Limite por COMPORTAMENTO, tokens são budget invisível**
+   - Aplicável a IA-cost ops em qualquer canal
+   - Degradação graceful aos 80% (gpt-4o → gpt-4o-mini)
+   - Hard block aos 100%
+   - 4 buckets de mitigação custo: provider mais barato + budget + degradação + debounce
+
+### 🟡 Candidatas requerem mais ciclos (1-2 sessões a mais)
+
+5. **Triple-A consistência arquitetural pré-PMF**
+   - 3 perfis com mesma estrutura visual (paciente/profissional/aluno)
+   - Mas: ainda não validado em adoção real (0 aluno, 5+ pacientes externos novos)
+
+6. **"Tu resolve como a empresa nasce. Advogado depois resolve como os sócios não brigam."**
+   - Frase do briefing Paulo refinado pós-GPT
+   - Princípio operacional pra escolher parceiros corretos por escopo
+   - Boa candidata depois que CNPJ realmente sair
+
+### ⚫ NÃO subir agora (precisa mais validação)
+
+7. **Modelo de tier WhatsApp (5/30/50/100 msg/dia)** — selado mas não testado em uso real. Sub mas com flag "experimental"
+8. **Decisão de não-cadastro CNAEs médico+farma** — boa decisão, mas única até CNPJ vir
+9. **Bloqueio anti-abuso receita rascunho** — princípio bom, mas arquitetura de PDF servidor-side com Lacuna WebPKI ainda virá
+
+---
+
+## AVALIAÇÃO HONESTA EMPÍRICA (audit via PAT, 13:35 BRT)
+
+### 🟢 O que GENUINAMENTE avançou
+1. **Bug raiz landings SEO RESOLVIDO** — V1.9.128 corrige conversão real
+2. **3 perfis padronizados** — produto demo-ready pra pitch, mesmo pré-PMF
+3. **Fluxo prescrições unificado** — médico nunca sai do Terminal Clínico, 4 caminhos convergem
+4. **V1.9.137 anti-abuso CFM** — protege regulatório antes do primeiro paciente externo receber prescrição
+5. **Blueprint WhatsApp selado** — quando CNPJ vier, executa direto sem pensar de novo (~38h Sprint 1+2+3)
+6. **Briefing Paulo refinado** — pronto pra enviar, escopo correto contador vs advogado
+
+### 🟡 O que avançou mas com ressalva
+1. **AlunoDashboard triple-A** — visual ok mas ainda 0 aluno cadastrado (decisão de fazer mesmo assim foi recalibração legítima do Pedro: "produto pronto full")
+2. **V1.9.137 marca d'água** — protege rascunhos, mas problema RAIZ é 0 medical_certificates cadastrados (revelado por audit PAT)
+3. **AECs interrompidas** — 3 INTERRUPTED não-invalidadas refletindo bug Carolina + caso João V1.9.121
+
+### 🔴 O que NÃO avançou (transparência empírica)
+1. **0 transactions** — pré-PMF confirmado
+2. **0 medical_certificates** — gargalo dos 35 DRAFTs é VAZIO real, não bug
+3. **0 aluno cadastrado** — feature pronta sem demanda
+4. **47.9% appointments cancelados** — V1.9.123-A mediria amanhã, ainda sem dado
+5. **Andreia/MedCann INPI** — sem clareza, Paulo precisa investigar
+6. **Bug Carolina state** — Fix #1 SQL desenhado há 1 dia, sem autorização aplicar
+
+### 📊 Veredito honesto
+
+**Avançamos consistentemente pra produto demo-ready.** 15 commits hoje (10 produto + 5 docs) com lock V1.9.95+97+98+99-B intocado em 100%. **Princípio P8 polir aplicado em série**: V1.9.130 reusa V1.9.126, 131 reusa 130, 132 reusa 131, 134 reusa 129, 136 reusa 134. Sem código duplicado, sem invenção paralela.
+
+**Audit empírico via PAT revelou 2 verdades importantes:**
+1. **35 DRAFTs prescrições NÃO são UX cega** — é vazio real (0 certificates). V1.9.137 é honesto.
+2. **+8 users em 7 dias com 1 médica nova** — adoção orgânica modesta mas real. Não é só Pedro testando.
+
+**Estamos no caminho?** Sim. **Falta o que?** Tempo (não código): CNPJ, decisão MP/Stripe, primeiro pagante. **Risco principal?** Continuar polindo no vazio. **Mitigação?** Smoke V1.9.123-A 06/05 produzirá métrica real de redução cancelamento — primeiro KPI clínico empírico.
+
+**Próxima entrega real depende de TEMPO, não de código.**
+
+---
+
 ## FRASE ÂNCORA DO DIA
 
-> **"Polish que não inventa: V1.9.130 reusa V1.9.126, V1.9.131 reusa V1.9.130, V1.9.132 reusa V1.9.131. 3 perfis com mesma estrutura visual = produto demo-ready. Próxima entrega real depende de tempo (CNPJ + decisão MP/Stripe), não de código."**
+> **"Audit empírico via PAT revelou: os 35 DRAFTs não são UX cega — é vazio real (0 medical_certificates cadastrados). Produto se reconhece como inválido juridicamente quando precisa. Próxima entrega real depende de tempo (CNPJ + 1º pagante), não de código. Tu resolve como a empresa nasce. Advogado depois resolve como os sócios não brigam."**
 
 ---
 
