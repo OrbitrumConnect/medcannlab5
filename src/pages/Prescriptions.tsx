@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useMemo } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { useToast } from '../contexts/ToastContext'
@@ -86,6 +86,9 @@ const Prescriptions: React.FC = () => {
   const [patientListLoading, setPatientListLoading] = useState(false)
   const [selectedPatient, setSelectedPatient] = useState<any | null>(null)
   const [currentPrescriptionId, setCurrentPrescriptionId] = useState<string | null>(null)
+  // [V1.9.129] Filtro por status + modal educacional ICP-Brasil
+  const [statusFilter, setStatusFilter] = useState<'todas' | 'draft' | 'signed' | 'sent'>('todas')
+  const [showCertHelpModal, setShowCertHelpModal] = useState(false)
 
   // Ler tipo da URL e pré-selecionar
   useEffect(() => {
@@ -124,6 +127,20 @@ const Prescriptions: React.FC = () => {
     city: '',
     uf: ''
   })
+
+  // [V1.9.129] Stats e filtragem (zero query nova — derivados do array `prescriptions`)
+  const prescriptionStats = useMemo(() => {
+    const draft = prescriptions.filter(p => p.status === 'draft').length
+    const signed = prescriptions.filter(p => p.status === 'signed').length
+    const sent = prescriptions.filter(p => p.status === 'sent' || p.status === 'validated').length
+    return { total: prescriptions.length, draft, signed, sent }
+  }, [prescriptions])
+
+  const filteredPrescriptions = useMemo(() => {
+    if (statusFilter === 'todas') return prescriptions
+    if (statusFilter === 'sent') return prescriptions.filter(p => p.status === 'sent' || p.status === 'validated')
+    return prescriptions.filter(p => p.status === statusFilter)
+  }, [prescriptions, statusFilter])
 
   // Tipos de prescrição do CFM
   const prescriptionTypes = [
@@ -903,6 +920,76 @@ const Prescriptions: React.FC = () => {
       <div className="max-w-7xl mx-auto px-6 py-8">
         {!showForm ? (
           <>
+            {/* [V1.9.129-A] Stats no topo — visibilidade do funil draft→signed→sent */}
+            {prescriptions.length > 0 && (
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+                <button
+                  type="button"
+                  onClick={() => setStatusFilter('todas')}
+                  className={`rounded-xl p-4 border text-left transition-all ${statusFilter === 'todas' ? 'border-white/30 bg-white/[0.06]' : 'border-white/5 bg-white/[0.03] hover:border-white/15'}`}
+                >
+                  <div className="text-xs text-slate-400 uppercase tracking-wider">Total</div>
+                  <div className="text-2xl font-bold text-white tabular-nums">{prescriptionStats.total}</div>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setStatusFilter('draft')}
+                  className={`rounded-xl p-4 border text-left transition-all ${statusFilter === 'draft' ? 'border-yellow-500/40 bg-yellow-500/10' : 'border-yellow-500/15 bg-yellow-500/[0.04] hover:border-yellow-500/25'}`}
+                >
+                  <div className="text-xs text-yellow-400 uppercase tracking-wider">Rascunhos</div>
+                  <div className="text-2xl font-bold text-yellow-300 tabular-nums">{prescriptionStats.draft}</div>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setStatusFilter('signed')}
+                  className={`rounded-xl p-4 border text-left transition-all ${statusFilter === 'signed' ? 'border-blue-500/40 bg-blue-500/10' : 'border-blue-500/15 bg-blue-500/[0.04] hover:border-blue-500/25'}`}
+                >
+                  <div className="text-xs text-blue-400 uppercase tracking-wider">Assinadas</div>
+                  <div className="text-2xl font-bold text-blue-300 tabular-nums">{prescriptionStats.signed}</div>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setStatusFilter('sent')}
+                  className={`rounded-xl p-4 border text-left transition-all ${statusFilter === 'sent' ? 'border-emerald-500/40 bg-emerald-500/10' : 'border-emerald-500/15 bg-emerald-500/[0.04] hover:border-emerald-500/25'}`}
+                >
+                  <div className="text-xs text-emerald-400 uppercase tracking-wider">Enviadas</div>
+                  <div className="text-2xl font-bold text-emerald-300 tabular-nums">{prescriptionStats.sent}</div>
+                </button>
+              </div>
+            )}
+
+            {/* [V1.9.129-C] Banner pendência — só aparece se ≥5 rascunhos (threshold UX) */}
+            {prescriptionStats.draft >= 5 && (
+              <div className="mb-6 rounded-xl border border-yellow-500/30 bg-gradient-to-br from-yellow-500/10 to-yellow-500/[0.03] p-5 flex items-start gap-4">
+                <AlertCircle className="w-6 h-6 text-yellow-400 shrink-0 mt-0.5" />
+                <div className="flex-1">
+                  <h3 className="text-base font-semibold text-yellow-200 mb-1">
+                    Você tem {prescriptionStats.draft} prescrições em rascunho
+                  </h3>
+                  <p className="text-sm text-slate-300 mb-3">
+                    Para enviar ao paciente com validade legal CFM, é necessária <strong>assinatura digital ICP-Brasil</strong>.
+                    Sem ela, o documento fica como rascunho (válido apenas para impressão local com carimbo manual).
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setStatusFilter('draft')}
+                      className="px-4 py-2 rounded-lg bg-yellow-500/20 text-yellow-200 hover:bg-yellow-500/30 border border-yellow-500/30 text-sm font-medium transition-colors"
+                    >
+                      Ver rascunhos
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setShowCertHelpModal(true)}
+                      className="px-4 py-2 rounded-lg bg-white/5 text-white hover:bg-white/10 border border-white/10 text-sm font-medium transition-colors"
+                    >
+                      Como obter certificado ICP-Brasil
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* Tipo de Prescrição */}
             <div className="mb-8">
               <h2 className="text-2xl font-bold text-white mb-4">Selecione o Tipo de Receita</h2>
@@ -960,7 +1047,14 @@ const Prescriptions: React.FC = () => {
             {/* Prescrições Recentes */}
             <div>
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-2xl font-bold text-white">Prescrições Recentes</h2>
+                <h2 className="text-2xl font-bold text-white">
+                  Prescrições Recentes
+                  {statusFilter !== 'todas' && (
+                    <span className="ml-2 text-sm font-normal text-slate-400">
+                      · filtro: {statusFilter === 'draft' ? 'Rascunhos' : statusFilter === 'signed' ? 'Assinadas' : 'Enviadas'}
+                    </span>
+                  )}
+                </h2>
                 {loading && <Loader2 className="w-5 h-5 text-slate-400 animate-spin" />}
               </div>
 
@@ -968,13 +1062,28 @@ const Prescriptions: React.FC = () => {
                 <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl p-6 border border-slate-700/50">
                   <p className="text-slate-400 text-center py-8">Carregando prescrições...</p>
                 </div>
-              ) : prescriptions.length === 0 ? (
+              ) : filteredPrescriptions.length === 0 ? (
                 <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl p-6 border border-slate-700/50">
-                  <p className="text-slate-400 text-center py-8">Nenhuma prescrição encontrada</p>
+                  <p className="text-slate-400 text-center py-8">
+                    {prescriptions.length === 0
+                      ? 'Nenhuma prescrição encontrada'
+                      : `Nenhuma prescrição neste filtro. ${statusFilter !== 'todas' ? 'Limpe o filtro para ver todas.' : ''}`}
+                  </p>
+                  {statusFilter !== 'todas' && prescriptions.length > 0 && (
+                    <div className="text-center">
+                      <button
+                        type="button"
+                        onClick={() => setStatusFilter('todas')}
+                        className="px-4 py-2 rounded-lg bg-white/5 text-white hover:bg-white/10 border border-white/10 text-sm font-medium transition-colors"
+                      >
+                        Mostrar todas
+                      </button>
+                    </div>
+                  )}
                 </div>
               ) : (
                 <div className="space-y-4">
-                  {prescriptions.map((prescription) => {
+                  {filteredPrescriptions.map((prescription) => {
                     const typeInfo = prescriptionTypes.find(t => t.id === prescription.prescription_type)
                     const TypeIcon = typeInfo?.icon || FileText
                     const statusColors = {
@@ -1539,6 +1648,88 @@ const Prescriptions: React.FC = () => {
           </div>
         )}
       </div>
+
+      {/* [V1.9.129-C] Modal educacional ICP-Brasil */}
+      {showCertHelpModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm" onClick={() => setShowCertHelpModal(false)}>
+          <div className="bg-slate-900 border border-white/10 rounded-2xl max-w-lg w-full p-6 max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-start justify-between mb-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center">
+                  <Lock className="w-5 h-5 text-emerald-400" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-white">Certificado ICP-Brasil</h3>
+                  <p className="text-xs text-slate-400">Como obter para assinar prescrições com validade legal</p>
+                </div>
+              </div>
+              <button onClick={() => setShowCertHelpModal(false)} className="text-slate-400 hover:text-white p-1">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="space-y-4 text-sm text-slate-300">
+              <div>
+                <h4 className="text-white font-semibold mb-1.5">Por que preciso?</h4>
+                <p className="text-slate-400 leading-relaxed">
+                  O CFM exige assinatura com certificado <strong className="text-white">ICP-Brasil</strong> para prescrições eletrônicas terem
+                  validade jurídica e poderem ser entregues digitalmente ao paciente. Sem ele, o documento serve só como rascunho local.
+                </p>
+              </div>
+
+              <div className="border-t border-white/5 pt-4">
+                <h4 className="text-white font-semibold mb-2">2 tipos de certificado</h4>
+                <div className="space-y-3">
+                  <div className="rounded-lg border border-blue-500/20 bg-blue-500/[0.05] p-3">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="text-xs font-bold text-blue-300 uppercase tracking-wider">A1</span>
+                      <span className="text-xs text-slate-400">arquivo digital (cloud)</span>
+                    </div>
+                    <p className="text-xs text-slate-300">Validade 1 ano · ~R$ 280-400 · Instalado no navegador, prático para uso diário</p>
+                  </div>
+                  <div className="rounded-lg border border-purple-500/20 bg-purple-500/[0.05] p-3">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="text-xs font-bold text-purple-300 uppercase tracking-wider">A3</span>
+                      <span className="text-xs text-slate-400">token físico ou cartão</span>
+                    </div>
+                    <p className="text-xs text-slate-300">Validade 3 anos · ~R$ 350-500 · Mais seguro, exige hardware (token USB)</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="border-t border-white/5 pt-4">
+                <h4 className="text-white font-semibold mb-2">Onde obter</h4>
+                <ul className="space-y-1.5 text-xs text-slate-400">
+                  <li>• <a href="https://www.gov.br/iti/pt-br/assuntos/icp-brasil/lista-de-acs-credenciadas" target="_blank" rel="noreferrer" className="text-emerald-400 hover:underline">ITI — Lista oficial de ACs credenciadas</a></li>
+                  <li>• Serasa Experian, Certisign, AC Soluti, Valid, Safeweb</li>
+                  <li>• Processo: agendar validação presencial (CPF + foto + comprovante) · entrega em 1-3 dias</li>
+                </ul>
+              </div>
+
+              <div className="border-t border-white/5 pt-4 rounded-lg bg-emerald-500/[0.04] border border-emerald-500/15 p-3">
+                <h4 className="text-emerald-300 font-semibold mb-1 flex items-center gap-2">
+                  <CheckCircle className="w-4 h-4" />
+                  Já tenho certificado
+                </h4>
+                <p className="text-xs text-slate-300">
+                  O certificado é detectado automaticamente pelo navegador (A1) ou via leitor (A3). Quando válido,
+                  o botão <strong className="text-white">"Assinar Digitalmente"</strong> ativa.
+                </p>
+              </div>
+            </div>
+
+            <div className="mt-5 pt-4 border-t border-white/10 flex justify-end">
+              <button
+                type="button"
+                onClick={() => setShowCertHelpModal(false)}
+                className="px-5 py-2.5 rounded-lg bg-white/5 text-white hover:bg-white/10 border border-white/10 text-sm font-medium transition-colors"
+              >
+                Entendi
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
