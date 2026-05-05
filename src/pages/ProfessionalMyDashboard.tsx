@@ -30,7 +30,7 @@ import {
   GraduationCap,
   ArrowLeft
 } from 'lucide-react'
-import { backgroundGradient, accentGradient, secondaryGradient, secondarySurfaceStyle, cardStyle } from '../constants/designSystem'
+import { backgroundGradient, accentGradient, cardStyle } from '../constants/designSystem'
 import { useNoaPlatform } from '../contexts/NoaPlatformContext'
 import { useDashboardTriggers } from '../contexts/DashboardTriggersContext'
 import IntegratedWorkstation from '../components/IntegratedWorkstation'
@@ -578,44 +578,7 @@ const ProfessionalMyDashboard: React.FC = () => {
     ? linkedPatients.filter(p => p.name.toLowerCase().includes(analysisSearch.trim().toLowerCase()))
     : linkedPatients
 
-  const statCards = [
-    {
-      id: 'patients',
-      label: 'Total de Pacientes',
-      value: stats.totalPatients,
-      icon: Users,
-      gradient: 'from-blue-600 to-blue-500',
-      description: `${stats.activePatients} ativos`,
-      href: '/app/clinica/profissional/pacientes'
-    },
-    {
-      id: 'appointments',
-      label: 'Agendamentos',
-      value: stats.totalAppointments,
-      icon: Calendar,
-      gradient: 'from-emerald-600 to-emerald-500',
-      description: `${stats.todayAppointments} hoje`,
-      href: '/app/clinica/profissional/dashboard?section=atendimento'
-    },
-    {
-      id: 'reports',
-      label: 'Relatórios Clínicos',
-      value: stats.totalReports,
-      icon: FileText,
-      gradient: 'from-purple-600 to-purple-500',
-      description: `${stats.pendingReports} pendentes`,
-      href: '/app/clinica/profissional/relatorios'
-    },
-    {
-      id: 'activity',
-      label: 'Atividade',
-      value: 'Alta',
-      icon: Activity,
-      gradient: 'from-orange-600 to-orange-500',
-      description: 'Últimos 30 dias',
-      href: '/app/clinica/profissional/dashboard?section=terminal-clinico'
-    }
-  ]
+  // [V1.9.127-B] statCards removido — duplicava badges no card de Ações Rápidas (V1.9.127-A)
 
   // Renderização baseada em Query param (section)
   const query = new URLSearchParams(location.search)
@@ -739,6 +702,8 @@ const ProfessionalMyDashboard: React.FC = () => {
           <div className="flex flex-wrap gap-3">
             <button
               onClick={() => navigate('/app/clinica/profissional/dashboard?section=atendimento')}
+              title="Ver agenda completa e atendimentos do dia"
+              aria-label="Ver agenda — atendimentos hoje"
               className="flex items-center gap-2 px-5 py-3 bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 border border-emerald-500/30 rounded-xl text-base font-medium transition-all shadow-[0_0_15px_rgba(16,185,129,0.25)] hover:shadow-[0_0_20px_rgba(16,185,129,0.45)] animate-pulse"
             >
               <Calendar className="w-5 h-5" />
@@ -751,6 +716,8 @@ const ProfessionalMyDashboard: React.FC = () => {
             </button>
             <button
               onClick={() => navigate('/app/clinica/profissional/relatorios')}
+              title="Ver relatórios clínicos gerados pela Nôa"
+              aria-label="Relatórios clínicos"
               className="flex items-center gap-2 px-5 py-3 bg-purple-500/10 text-purple-400 hover:bg-purple-500/20 border border-purple-500/30 rounded-xl text-base font-medium transition-colors"
             >
               <FileText className="w-5 h-5" />
@@ -763,6 +730,8 @@ const ProfessionalMyDashboard: React.FC = () => {
             </button>
             <button
               onClick={() => navigate('/app/clinica/profissional/dashboard?section=terminal-clinico&tab=prescriptions')}
+              title="Emitir nova prescrição (5 racionalidades + assinatura ICP-Brasil)"
+              aria-label="Nova prescrição"
               className="flex items-center gap-2 px-5 py-3 bg-blue-500/10 text-blue-400 hover:bg-blue-500/20 border border-blue-500/30 rounded-xl text-base font-medium transition-colors"
             >
               <Stethoscope className="w-5 h-5" />
@@ -770,6 +739,8 @@ const ProfessionalMyDashboard: React.FC = () => {
             </button>
             <button
               onClick={() => navigate('/app/clinica/profissional/dashboard?section=terminal-clinico&tab=chat')}
+              title="Chat com equipe de profissionais"
+              aria-label="Chat com equipe"
               className="flex items-center gap-2 px-5 py-3 bg-cyan-500/10 text-cyan-400 hover:bg-cyan-500/20 border border-cyan-500/30 rounded-xl text-base font-medium transition-colors"
             >
               <MessageCircle className="w-5 h-5" />
@@ -777,6 +748,8 @@ const ProfessionalMyDashboard: React.FC = () => {
             </button>
             <button
               onClick={() => navigate('/app/clinica/profissional/dashboard?section=terminal-clinico&tab=patients')}
+              title="Lista de pacientes vinculados"
+              aria-label="Meus pacientes vinculados"
               className="flex items-center gap-2 px-5 py-3 bg-indigo-500/10 text-indigo-400 hover:bg-indigo-500/20 border border-indigo-500/30 rounded-xl text-base font-medium transition-colors"
             >
               <Users className="w-5 h-5" />
@@ -789,6 +762,8 @@ const ProfessionalMyDashboard: React.FC = () => {
             </button>
             <button
               onClick={() => navigate('/app/clinica/profissional/dashboard?section=terminal-clinico&tab=forum')}
+              title="Cann Matrix — fórum clínico de discussão entre profissionais"
+              aria-label="Fórum Cann Matrix"
               className="flex items-center gap-2 px-5 py-3 bg-amber-500/10 text-amber-400 hover:bg-amber-500/20 border border-amber-500/30 rounded-xl text-base font-medium transition-colors"
             >
               <Brain className="w-5 h-5" />
@@ -1263,41 +1238,18 @@ const ProfessionalMyDashboard: React.FC = () => {
           </div>
         )}
 
-        {/* KPIs — linha compacta, clicáveis */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
-          {statCards.map((card) => {
-            const Icon = card.icon
-            return (
-              <Link
-                key={card.id}
-                to={card.href}
-                className="rounded-lg px-4 py-3 border border-white/5 bg-white/[0.03] transition-all hover:bg-white/[0.08] hover:border-emerald-500/20 hover:scale-[1.02] cursor-pointer group"
-              >
-                <div className="flex items-center justify-between gap-2">
-                  <div className={`w-9 h-9 rounded-lg bg-gradient-to-r ${card.gradient} flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform`}>
-                    <Icon className="w-4 h-4 text-white" />
-                  </div>
-                  <div className="min-w-0 text-right">
-                    <p className="text-lg font-semibold text-white tabular-nums">{card.value}</p>
-                    <p className="text-xs text-slate-400 truncate">{card.label}</p>
-                  </div>
-                </div>
-                <p className="text-[11px] text-slate-500 mt-1.5">{card.description}</p>
-              </Link>
-            )
-          })}
-        </div>
+        {/* [V1.9.127-B] 4 stat cards REMOVIDOS — duplicavam badges em Ações Rápidas no topo */}
 
-        {/* Gráficos estatísticos — consultas feitas + avaliações dos pacientes vinculados (gamificado) */}
-        <section className="mb-6 rounded-xl border border-white/10 bg-gradient-to-br from-white/[0.06] to-transparent p-4 sm:p-5">
-          <h2 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-4 flex items-center gap-2">
+        {/* [V1.9.127-B] Gráficos compactados (altura -25%, padding reduzido) */}
+        <section className="mb-6 rounded-xl border border-white/10 bg-gradient-to-br from-white/[0.06] to-transparent p-3 sm:p-4">
+          <h2 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3 flex items-center gap-2">
             <BarChart3 className="w-4 h-4 text-emerald-400" />
             Estatísticas e evolução
           </h2>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             {/* Consultas feitas (últimas 6 semanas) */}
-            <div className="rounded-lg border border-white/5 bg-white/[0.03] p-4">
-              <div className="flex items-center justify-between mb-3">
+            <div className="rounded-lg border border-white/5 bg-white/[0.03] p-3">
+              <div className="flex items-center justify-between mb-2">
                 <span className="text-sm font-medium text-white flex items-center gap-1.5">
                   <Calendar className="w-4 h-4 text-emerald-400" />
                   Consultas feitas
@@ -1305,9 +1257,9 @@ const ProfessionalMyDashboard: React.FC = () => {
                 <span className="text-[10px] text-slate-500 uppercase tracking-wider">últimas 6 semanas</span>
               </div>
               {loading ? (
-                <div className="h-32 flex items-center justify-center text-slate-500 text-sm">Carregando...</div>
+                <div className="h-20 flex items-center justify-center text-slate-500 text-sm">Carregando...</div>
               ) : (
-                <div className="flex items-end justify-between gap-1 h-28">
+                <div className="flex items-end justify-between gap-1 h-20">
                   {chartData.consultationsByWeek.map((item, idx) => {
                     const max = Math.max(1, ...chartData.consultationsByWeek.map((x) => x.value))
                     const height = max ? Math.round((item.value / max) * 100) : 0
@@ -1327,8 +1279,8 @@ const ProfessionalMyDashboard: React.FC = () => {
             </div>
 
             {/* Avaliações feitas pelos pacientes vinculados */}
-            <div className="rounded-lg border border-white/5 bg-white/[0.03] p-4">
-              <div className="flex items-center justify-between mb-3">
+            <div className="rounded-lg border border-white/5 bg-white/[0.03] p-3">
+              <div className="flex items-center justify-between mb-2">
                 <span className="text-sm font-medium text-white flex items-center gap-1.5">
                   <Star className="w-4 h-4 text-amber-400" />
                   Avaliações dos meus pacientes
@@ -1336,14 +1288,14 @@ const ProfessionalMyDashboard: React.FC = () => {
                 <span className="text-[10px] text-slate-500 uppercase tracking-wider">0–5 estrelas no app</span>
               </div>
               {loading ? (
-                <div className="h-32 flex items-center justify-center text-slate-500 text-sm">Carregando...</div>
+                <div className="h-20 flex items-center justify-center text-slate-500 text-sm">Carregando...</div>
               ) : (
                 <>
-                  <div className="flex items-baseline gap-2 mb-3">
-                    <span className="text-3xl font-bold text-amber-400 tabular-nums">{chartData.patientEvaluationsTotal}</span>
+                  <div className="flex items-baseline gap-2 mb-2">
+                    <span className="text-2xl font-bold text-amber-400 tabular-nums">{chartData.patientEvaluationsTotal}</span>
                     <span className="text-sm text-slate-400">avaliações completas</span>
                   </div>
-                  <div className="flex items-end justify-between gap-1 h-20">
+                  <div className="flex items-end justify-between gap-1 h-14">
                     {chartData.patientEvaluationsByWeek.map((item, idx) => {
                       const max = Math.max(1, ...chartData.patientEvaluationsByWeek.map((x) => x.value))
                       const height = max ? Math.round((item.value / max) * 100) : 0
@@ -1365,89 +1317,84 @@ const ProfessionalMyDashboard: React.FC = () => {
           </div>
         </section>
 
-        {/* Dashboard unificado — Três Camadas de KPIs + Eixos (sem duplicar Ações Rápidas / Recursos) */}
-        <section className="mt-8 pt-8 border-t border-white/10">
-          <h2 className="text-lg font-bold text-white mb-4">Três Camadas de KPIs</h2>
-          <div className="space-y-5 mb-8">
-            <div>
-              <h3 className="text-sm font-semibold text-emerald-400 mb-2 flex items-center gap-2">Camada Administrativa</h3>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                {[
-                  { label: 'Total de Pacientes', value: kpisUnified.administrativos.totalPacientes, sub: 'Cadastrados na plataforma' },
-                  { label: 'Avaliações Completas', value: kpisUnified.administrativos.avaliacoesCompletas, sub: 'Finalizadas com sucesso' },
-                  { label: 'Protocolos IMRE', value: kpisUnified.administrativos.protocolosIMRE, sub: 'Avaliações IMRE iniciadas' },
-                  { label: 'Respondedores TEZ', value: kpisUnified.administrativos.respondedoresTEZ, sub: 'Pacientes com melhora' }
-                ].map((item, i) => (
-                  <div key={i} className="rounded-xl p-4 text-white" style={secondarySurfaceStyle}>
-                    <p className="text-xs text-slate-400 mb-1">{item.label}</p>
-                    <p className="text-xl font-bold text-white">{item.value || '—'}</p>
-                    <p className="text-xs text-slate-500 mt-1">{item.sub}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-            <div>
-              <h3 className="text-sm font-semibold text-purple-400 mb-2 flex items-center gap-2">Camada Semântica</h3>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                {[
-                  { label: 'Qualidade da Escuta', value: kpisUnified.semanticos.qualidadeEscuta, sub: 'Análise semântica' },
-                  { label: 'Engajamento', value: kpisUnified.semanticos.engajamentoPaciente, sub: 'Participação ativa' },
-                  { label: 'Satisfação Clínica', value: kpisUnified.semanticos.satisfacaoClinica, sub: 'Avaliação do paciente' },
-                  { label: 'Aderência ao Tratamento', value: kpisUnified.semanticos.aderenciaTratamento, sub: 'Compliance' }
-                ].map((item, i) => (
-                  <div key={i} className="rounded-xl p-4 text-white" style={secondarySurfaceStyle}>
-                    <p className="text-xs text-slate-400 mb-1">{item.label}</p>
-                    <p className="text-xl font-bold text-white">
-                      {item.value ? `${item.value}%` : <span className="text-sm text-slate-500 italic font-normal">Aguardando dados</span>}
-                    </p>
-                    <p className="text-xs text-slate-500 mt-1">{item.sub}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-            <div>
-              <h3 className="text-sm font-semibold text-blue-400 mb-2 flex items-center gap-2">Camada Clínica</h3>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                {[
-                  { label: 'Wearables Ativos', value: kpisUnified.clinicos.wearablesAtivos, sub: 'Dispositivos conectados', suffix: '' },
-                  { label: 'Monitoramento 24h', value: kpisUnified.clinicos.monitoramento24h, sub: 'Pacientes monitorados', suffix: '' },
-                  { label: 'Episódios Epilepsia', value: kpisUnified.clinicos.episodiosEpilepsia, sub: 'Últimos 30 dias', suffix: '' },
-                  { label: 'Equilíbrio dos Dados', value: kpisUnified.clinicos.melhoraSintomas, sub: 'Baseado em severidade', suffix: '%' }
-                ].map((item, i) => (
-                  <div key={i} className="rounded-xl p-4 text-white" style={secondarySurfaceStyle}>
-                    <p className="text-xs text-slate-400 mb-1">{item.label}</p>
-                    <p className="text-xl font-bold text-white">
-                      {item.value ? `${item.value}${item.suffix}` : <span className="text-sm text-slate-500 italic font-normal">Aguardando dados</span>}
-                    </p>
-                    <p className="text-xs text-slate-500 mt-1">{item.sub}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
+        {/* [V1.9.127-B] Três Camadas de KPIs refatorado: só mostra os com dados reais + mini-bars */}
+        <section className="mt-6 pt-6 border-t border-white/10">
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-lg font-bold text-white">Indicadores Ativos</h2>
+            <span className="text-[10px] uppercase tracking-wider text-slate-500">só com dados reais</span>
           </div>
+          {(() => {
+            const allKpis = [
+              { label: 'Total de Pacientes', value: kpisUnified.administrativos.totalPacientes, max: 100, color: 'emerald', layer: 'admin' },
+              { label: 'Avaliações Completas', value: kpisUnified.administrativos.avaliacoesCompletas, max: 50, color: 'emerald', layer: 'admin' },
+              { label: 'Protocolos IMRE', value: kpisUnified.administrativos.protocolosIMRE, max: 20, color: 'emerald', layer: 'admin' },
+              { label: 'Respondedores TEZ', value: kpisUnified.administrativos.respondedoresTEZ, max: 30, color: 'emerald', layer: 'admin' },
+              { label: 'Qualidade da Escuta', value: kpisUnified.semanticos.qualidadeEscuta, max: 100, color: 'purple', layer: 'sem', suffix: '%' },
+              { label: 'Engajamento', value: kpisUnified.semanticos.engajamentoPaciente, max: 100, color: 'purple', layer: 'sem', suffix: '%' },
+              { label: 'Satisfação Clínica', value: kpisUnified.semanticos.satisfacaoClinica, max: 100, color: 'purple', layer: 'sem', suffix: '%' },
+              { label: 'Aderência ao Tratamento', value: kpisUnified.semanticos.aderenciaTratamento, max: 100, color: 'purple', layer: 'sem', suffix: '%' },
+              { label: 'Wearables Ativos', value: kpisUnified.clinicos.wearablesAtivos, max: 50, color: 'blue', layer: 'clin' },
+              { label: 'Monitoramento 24h', value: kpisUnified.clinicos.monitoramento24h, max: 50, color: 'blue', layer: 'clin' },
+              { label: 'Episódios Epilepsia', value: kpisUnified.clinicos.episodiosEpilepsia, max: 50, color: 'blue', layer: 'clin' },
+              { label: 'Equilíbrio dos Dados', value: kpisUnified.clinicos.melhoraSintomas, max: 100, color: 'blue', layer: 'clin', suffix: '%' },
+            ]
+            const activeKpis = allKpis.filter(k => k.value && Number(k.value) > 0)
+            const inactiveCount = allKpis.length - activeKpis.length
+            const colorMap: Record<string, string> = {
+              emerald: 'from-emerald-600 to-emerald-400 text-emerald-300 border-emerald-500/20',
+              purple: 'from-purple-600 to-purple-400 text-purple-300 border-purple-500/20',
+              blue: 'from-blue-600 to-blue-400 text-blue-300 border-blue-500/20',
+            }
+            if (activeKpis.length === 0) {
+              return (
+                <div className="rounded-xl p-6 text-center border border-white/5 bg-white/[0.02] mb-6">
+                  <p className="text-sm text-slate-400">Indicadores aparecerão aqui assim que houver dados clínicos.</p>
+                </div>
+              )
+            }
+            return (
+              <>
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 mb-3">
+                  {activeKpis.map((k, i) => {
+                    const pct = Math.min(100, Math.round((Number(k.value) / k.max) * 100))
+                    const colorClasses = colorMap[k.color]
+                    return (
+                      <div key={i} className={`rounded-xl p-3 border ${colorClasses.split(' ').slice(2).join(' ')} bg-white/[0.03]`}>
+                        <div className="flex items-baseline justify-between mb-1.5">
+                          <span className="text-[11px] text-slate-400 truncate pr-1">{k.label}</span>
+                          <span className={`text-lg font-bold tabular-nums ${colorClasses.split(' ').slice(1, 2).join(' ')}`}>
+                            {k.value}{k.suffix || ''}
+                          </span>
+                        </div>
+                        <div className="h-1.5 rounded-full bg-white/5 overflow-hidden">
+                          <div
+                            className={`h-full rounded-full bg-gradient-to-r ${colorClasses.split(' ').slice(0, 2).join(' ')} transition-all duration-500`}
+                            style={{ width: `${pct}%` }}
+                          />
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+                {inactiveCount > 0 && (
+                  <p className="text-[11px] text-slate-500 italic mb-6">
+                    +{inactiveCount} indicadores aparecerão quando houver dados (wearables, semântica, monitoramento).
+                  </p>
+                )}
+              </>
+            )
+          })()}
 
-          <h2 className="text-lg font-bold text-white mb-4">Eixo Clínica</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 mb-8">
-            <Link to="/app/clinica/profissional/pacientes" className="rounded-xl p-5 text-white hover:shadow-lg hover:scale-[1.02] transition-all text-left" style={cardStyle}>
-              <div className="flex items-center justify-between mb-2">
-                <h3 className="text-sm font-medium text-white">Gestão de Pacientes</h3>
-                <Users className="w-5 h-5 text-emerald-400" />
-              </div>
-              <p className="text-xs text-slate-400">Prontuário eletrônico</p>
-            </Link>
-            <Link to="/app/clinica/profissional/dashboard?section=atendimento" className="rounded-xl p-5 text-white hover:shadow-lg hover:scale-[1.02] transition-all text-left" style={cardStyle}>
-              <div className="flex items-center justify-between mb-2">
-                <h3 className="text-sm font-medium text-white">Agendamentos</h3>
-                <Calendar className="w-5 h-5 text-emerald-400" />
-              </div>
-              <p className="text-xs text-slate-400">Agenda completa</p>
-            </Link>
+          {/* [V1.9.127-B] Eixo Clínica reduzido: 5 cards duplicavam Ações Rápidas no topo. */}
+          {/*               Mantém: Arte AEC (metodologia) + KPIs TEA (monitoramento) — únicos não-duplicados. */}
+          <h2 className="text-lg font-bold text-white mb-4">Eixo Clínica · Especialidades</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-8">
             <Link to="/app/ensino/profissional/arte-entrevista-clinica" className="rounded-xl p-5 text-white hover:shadow-lg hover:scale-[1.02] transition-all text-left border-2 border-emerald-500/30" style={cardStyle}>
               <div className="flex items-center justify-between mb-2">
                 <h3 className="text-sm font-medium text-white">Arte da Entrevista Clínica</h3>
                 <Heart className="w-5 h-5 text-emerald-400" />
               </div>
-              <p className="text-xs text-slate-400">Metodologia AEC</p>
+              <p className="text-xs text-slate-400">Metodologia AEC — Dr. Ricardo Valença</p>
             </Link>
             <Link to="/app/clinica/profissional/dashboard?section=atendimento" className="rounded-xl p-5 text-white hover:shadow-lg hover:scale-[1.02] transition-all text-left" style={cardStyle}>
               <div className="flex items-center justify-between mb-2">
@@ -1455,27 +1402,6 @@ const ProfessionalMyDashboard: React.FC = () => {
                 <Brain className="w-5 h-5 text-emerald-400" />
               </div>
               <p className="text-xs text-slate-400">Monitoramento neurológico</p>
-            </Link>
-            <Link to="/app/clinica/profissional/relatorios" className="rounded-xl p-5 text-white hover:shadow-lg hover:scale-[1.02] transition-all text-left" style={cardStyle}>
-              <div className="flex items-center justify-between mb-2">
-                <h3 className="text-sm font-medium text-white">Relatórios Clínicos</h3>
-                <FileText className="w-5 h-5 text-emerald-400" />
-              </div>
-              <p className="text-xs text-slate-400">Relatórios da IA</p>
-            </Link>
-            <Link to="/app/clinica/profissional/dashboard?section=chat-profissionais" className="rounded-xl p-5 text-white hover:shadow-lg hover:scale-[1.02] transition-all text-left" style={cardStyle}>
-              <div className="flex items-center justify-between mb-2">
-                <h3 className="text-sm font-medium text-white">Chat com Equipe</h3>
-                <MessageCircle className="w-5 h-5 text-emerald-400" />
-              </div>
-              <p className="text-xs text-slate-400">Comunicação entre profissionais</p>
-            </Link>
-            <Link to="/app/clinica/profissional/dashboard?section=prescricoes" className="rounded-xl p-5 text-white hover:shadow-lg hover:scale-[1.02] transition-all text-left" style={cardStyle}>
-              <div className="flex items-center justify-between mb-2">
-                <h3 className="text-sm font-medium text-white">Prescrições Integrativas</h3>
-                <Heart className="w-5 h-5 text-emerald-400" />
-              </div>
-              <p className="text-xs text-slate-400">5 racionalidades</p>
             </Link>
             {isEduardoDashboard && (
               <button type="button" onClick={() => navigate('/app/clinica/profissional/dashboard?section=atendimento')} className="rounded-xl p-5 text-white hover:shadow-lg hover:scale-[1.02] transition-all text-left bg-gradient-to-r from-blue-600 to-indigo-600 border border-white/10">
@@ -1487,14 +1413,6 @@ const ProfessionalMyDashboard: React.FC = () => {
                 <p className="text-xs text-blue-100/90">Comunicação entre consultórios</p>
               </button>
             )}
-            <Link to="/app/clinica/profissional/dashboard?section=terminal-clinico" className="rounded-xl p-5 text-white hover:shadow-lg hover:scale-[1.02] transition-all text-left bg-gradient-to-br from-cyan-600 to-emerald-600 border border-white/20">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-xs font-bold text-white uppercase tracking-wider">Gestão</span>
-                <Terminal className="w-5 h-5 text-emerald-200" />
-              </div>
-              <h4 className="text-sm font-bold text-white">Terminal Clínico</h4>
-              <p className="text-xs text-emerald-100/90">Governança, Relatórios, Conhecimento, Fórum e Paciente em foco</p>
-            </Link>
           </div>
 
           <h2 className="text-lg font-bold text-white mb-4">Eixo Ensino</h2>
