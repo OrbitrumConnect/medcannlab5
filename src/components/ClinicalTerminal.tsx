@@ -228,7 +228,7 @@ const ClinicalTerminal: React.FC = () => {
                 return <div className="h-full overflow-y-auto scrollbar-hide"><ForumCasosClinicos /></div>
             case 'patient-focus':
                 return (
-                    <div className="h-full overflow-y-auto scrollbar-hide p-4 md:p-6">
+                    <div className="h-full overflow-y-auto scrollbar-hide p-3 md:p-6 lg:p-8 xl:p-10">
                         <div className="w-full max-w-full min-w-0">
                             {showPatientAvatarView && selectedPatient ? (
                                 /* Unificado: Evolução e Analytics (avatar) + Prontuário em duas sub-abas */
