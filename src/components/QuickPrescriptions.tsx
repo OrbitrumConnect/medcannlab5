@@ -70,20 +70,37 @@ const QuickPrescriptions: React.FC<QuickPrescriptionsProps> = ({ className = '',
     notes: ''
   })
 
-  // [V1.9.134/135] Stats + lista cards — carrega prescrições do médico logado
+  // [V1.9.134/135 + V1.9.180-B] Stats + lista cards + view/edit interativos
   interface MyPrescription {
     id: string
     status: 'draft' | 'signed' | 'sent' | 'validated' | 'cancelled'
     prescription_type: string
+    patient_id: string | null
     patient_name: string | null
     patient_cpf: string | null
+    patient_email: string | null
+    patient_phone: string | null
+    professional_name: string | null
+    professional_crm: string | null
+    professional_specialty: string | null
     medications: any
+    notes: string | null
     created_at: string
-    iti_validation_code?: string | null
+    signature_timestamp: string | null
+    iti_validation_code: string | null
+    iti_validation_url: string | null
+    iti_qr_code: string | null
+    expires_at: string | null
+    document_level: string | null
   }
   const [myPrescriptions, setMyPrescriptions] = useState<MyPrescription[]>([])
   const [showCertHelpModal, setShowCertHelpModal] = useState(false)
   const [statusFilter, setStatusFilter] = useState<'todas' | 'draft' | 'signed' | 'sent'>('todas')
+
+  // V1.9.180-B — Edit / View / Overlay "Ver todas" inline (Triple-A unificado)
+  const [editingId, setEditingId] = useState<string | null>(null)
+  const [viewingPrescription, setViewingPrescription] = useState<MyPrescription | null>(null)
+  const [showAllOverlay, setShowAllOverlay] = useState(false)
 
   const prescriptionStats = useMemo(() => {
     const draft = myPrescriptions.filter(p => p.status === 'draft').length
@@ -103,13 +120,56 @@ const QuickPrescriptions: React.FC<QuickPrescriptionsProps> = ({ className = '',
     try {
       const { data, error } = await supabase
         .from('cfm_prescriptions')
-        .select('id, status, prescription_type, patient_name, patient_cpf, medications, created_at, iti_validation_code')
+        .select('id, status, prescription_type, patient_id, patient_name, patient_cpf, patient_email, patient_phone, professional_name, professional_crm, professional_specialty, medications, notes, created_at, signature_timestamp, iti_validation_code, iti_validation_url, iti_qr_code, expires_at, document_level')
         .eq('professional_id', user.id)
         .order('created_at', { ascending: false })
       if (error) throw error
       setMyPrescriptions((data || []) as MyPrescription[])
     } catch (err) {
       console.error('[V1.9.135] erro ao carregar prescrições:', err)
+    }
+  }
+
+  // V1.9.180-B — Click no card: draft → edição / signed/sent → visualização
+  const handleCardClick = (p: MyPrescription) => {
+    if (p.status === 'draft') {
+      // Pré-preenche o form de edição com dados do rascunho
+      const meds = Array.isArray(p.medications) ? p.medications : []
+      const firstMed = meds[0] || {}
+      setEditingId(p.id)
+      setSelectedPatient(p.patient_id || '')
+      setPrescriptionForm({
+        medication: firstMed.name || '',
+        dosage: firstMed.dosage || '',
+        frequency: firstMed.frequency || '',
+        duration: firstMed.duration || '',
+        notes: p.notes || ''
+      })
+      setIsModalOpen(true)
+    } else {
+      // Signed / sent / validated / cancelled → modal read-only
+      setViewingPrescription(p)
+    }
+  }
+
+  // V1.9.180-B — Reset form ao fechar modal (limpa estado de edição)
+  const handleCloseModal = () => {
+    setIsModalOpen(false)
+    setEditingId(null)
+    setPrescriptionForm({ medication: '', dosage: '', frequency: '', duration: '', notes: '' })
+    setSelectedPatient(patientId || '')
+  }
+
+  // V1.9.180-B — Excluir rascunho (com confirm)
+  const handleDeleteDraft = async (id: string) => {
+    if (!confirm('Excluir este rascunho? Esta ação não pode ser desfeita.')) return
+    try {
+      const { error } = await supabase.from('cfm_prescriptions').delete().eq('id', id)
+      if (error) throw error
+      handleCloseModal()
+      await loadMyPrescriptions()
+    } catch (err: any) {
+      alert(err?.message || 'Erro ao excluir rascunho')
     }
   }
 
@@ -147,48 +207,65 @@ const QuickPrescriptions: React.FC<QuickPrescriptionsProps> = ({ className = '',
 
   const handleSavePrescription = async () => {
     if (!selectedPatient || !prescriptionForm.medication) {
-      alert('Selecione um paciente e preencha a medicação.') // Esse alert de validação pode ficar ou mudar para toast depois
+      alert('Selecione um paciente e preencha a medicação.')
       return
     }
 
     setSaving(true)
     try {
-      // Tenta salvar na tabela 'cfm_prescriptions' (canonical)
-      const { error } = await supabase.from('cfm_prescriptions').insert({
-        prescription_type: 'simple', // Padrão para QuickPrescriptions
-        patient_id: selectedPatient,
-        patient_name: patientsList.find(p => p.id === selectedPatient)?.name || 'Paciente',
-        professional_id: user?.id,
-        professional_name: user?.name || 'Profissional',
-        professional_crm: (user as any)?.crm || '',
-        medications: [{
-          name: prescriptionForm.medication,
-          dosage: prescriptionForm.dosage,
-          frequency: prescriptionForm.frequency,
-          duration: prescriptionForm.duration,
-          quantity: '1' // Default
-        }],
-        status: 'draft',
-        notes: prescriptionForm.notes,
-        created_at: new Date().toISOString()
-      })
+      const medicationsPayload = [{
+        name: prescriptionForm.medication,
+        dosage: prescriptionForm.dosage,
+        frequency: prescriptionForm.frequency,
+        duration: prescriptionForm.duration,
+        quantity: '1'
+      }]
+
+      let error: any = null
+
+      if (editingId) {
+        // V1.9.180-B — UPDATE rascunho existente (trigger CFM bloqueia em
+        // status != draft; aqui o card só dispara edit quando status='draft')
+        const updateRes = await supabase
+          .from('cfm_prescriptions')
+          .update({
+            patient_id: selectedPatient,
+            patient_name: patientsList.find(p => p.id === selectedPatient)?.name || 'Paciente',
+            medications: medicationsPayload,
+            notes: prescriptionForm.notes,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', editingId)
+          .eq('status', 'draft')  // defense-in-depth: nunca toca prescrição assinada
+        error = updateRes.error
+      } else {
+        // INSERT novo rascunho (fluxo original V1.9.130)
+        const insertRes = await supabase.from('cfm_prescriptions').insert({
+          prescription_type: 'simple',
+          patient_id: selectedPatient,
+          patient_name: patientsList.find(p => p.id === selectedPatient)?.name || 'Paciente',
+          professional_id: user?.id,
+          professional_name: user?.name || 'Profissional',
+          professional_crm: (user as any)?.crm || '',
+          medications: medicationsPayload,
+          status: 'draft',
+          notes: prescriptionForm.notes,
+          created_at: new Date().toISOString()
+        })
+        error = insertRes.error
+      }
 
       if (error) {
         console.error('Erro ao salvar prescrição:', error)
-        throw new Error('Falha ao salvar no banco de dados. Verifique a tabela cfm_prescriptions.')
+        throw new Error(error.message || 'Falha ao salvar no banco de dados.')
       }
 
       // SUCESSO ELEGANTE
       setShowSuccess(true)
 
-      // Limpar form
-      setPrescriptionForm({
-        medication: '',
-        dosage: '',
-        frequency: '',
-        duration: '',
-        notes: ''
-      })
+      // Limpar form + estado de edição
+      setPrescriptionForm({ medication: '', dosage: '', frequency: '', duration: '', notes: '' })
+      setEditingId(null)
 
       // Fechar modal após 2 segundos
       setTimeout(() => {
@@ -197,7 +274,7 @@ const QuickPrescriptions: React.FC<QuickPrescriptionsProps> = ({ className = '',
       }, 2000)
 
     } catch (err: any) {
-      alert(err.message) // Erro mantém alert por enquanto para garantir leitura
+      alert(err.message)
     } finally {
       setSaving(false)
     }
@@ -424,9 +501,9 @@ const QuickPrescriptions: React.FC<QuickPrescriptionsProps> = ({ className = '',
             <span>Nova Prescrição</span>
           </button>
 
-          {/* [V1.9.133-B] Atalho pra gestão completa: stats, rascunhos pendentes, ICP-Brasil */}
+          {/* [V1.9.180-B] Abre overlay inline (Triple-A unificado, sem sair do Atendimento Integrado) */}
           <button
-            onClick={() => navigate('/app/clinica/prescricoes')}
+            onClick={() => setShowAllOverlay(true)}
             title="Ver todas as suas prescrições, rascunhos e gestão completa"
             className="flex items-center space-x-1.5 px-5 py-2 bg-slate-800/50 hover:bg-slate-700/50 text-slate-200 font-bold text-xs rounded-full border border-slate-700 hover:border-emerald-500/50 transition-all hover:scale-105 active:scale-95"
           >
@@ -568,9 +645,12 @@ const QuickPrescriptions: React.FC<QuickPrescriptionsProps> = ({ className = '',
                 const firstMed = meds[0] || null
                 const extraMeds = meds.length - 1
                 return (
-                  <div
+                  <button
+                    type="button"
                     key={p.id}
-                    className="group relative rounded-xl border border-white/5 bg-gradient-to-br from-slate-800/40 to-slate-900/20 p-4 hover:border-emerald-500/40 hover:from-slate-800/60 hover:shadow-lg hover:shadow-emerald-500/5 transition-all overflow-hidden"
+                    onClick={() => handleCardClick(p)}
+                    title={p.status === 'draft' ? 'Clique para editar este rascunho' : 'Clique para ver detalhes'}
+                    className="group relative rounded-xl border border-white/5 bg-gradient-to-br from-slate-800/40 to-slate-900/20 p-4 hover:border-emerald-500/40 hover:from-slate-800/60 hover:shadow-lg hover:shadow-emerald-500/5 transition-all overflow-hidden text-left w-full cursor-pointer focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
                   >
                     {/* Glow effect at top */}
                     <div className={`absolute top-0 left-0 right-0 h-px bg-gradient-to-r ${type.gradient.replace('to-', 'via-').replace('/5', '/40')} opacity-50`} />
@@ -638,7 +718,7 @@ const QuickPrescriptions: React.FC<QuickPrescriptionsProps> = ({ className = '',
                         <span className="text-[10px] text-slate-500">CPF: {p.patient_cpf}</span>
                       ) : null}
                     </div>
-                  </div>
+                  </button>
                 )
               })}
             </div>
@@ -648,7 +728,7 @@ const QuickPrescriptions: React.FC<QuickPrescriptionsProps> = ({ className = '',
             <div className="text-center pt-2">
               <button
                 type="button"
-                onClick={() => navigate('/app/clinica/prescricoes')}
+                onClick={() => setShowAllOverlay(true)}
                 className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-slate-800/60 hover:bg-slate-700/60 border border-slate-700 hover:border-emerald-500/40 text-xs text-slate-300 hover:text-emerald-300 font-medium transition-all"
               >
                 Ver todas as {filteredMyPrescriptions.length} prescrições
@@ -678,10 +758,10 @@ const QuickPrescriptions: React.FC<QuickPrescriptionsProps> = ({ className = '',
             <div className="flex items-center justify-between p-6 border-b border-slate-700 shrink-0">
               <h3 className="text-xl font-bold text-white flex items-center gap-2">
                 <FileText className="w-5 h-5 text-green-500" />
-                Nova Prescrição
+                {editingId ? 'Editar Rascunho' : 'Nova Prescrição'}
               </h3>
               <button
-                onClick={() => setIsModalOpen(false)}
+                onClick={handleCloseModal}
                 className="text-slate-400 hover:text-white transition-colors"
                 disabled={showSuccess}
               >
@@ -788,8 +868,20 @@ const QuickPrescriptions: React.FC<QuickPrescriptionsProps> = ({ className = '',
             </div>
 
             <div className="p-6 border-t border-slate-700 flex justify-end gap-3 shrink-0 bg-slate-800/50">
+              {editingId && (
+                <button
+                  type="button"
+                  onClick={() => handleDeleteDraft(editingId)}
+                  className="px-4 py-2.5 text-red-300 hover:text-white hover:bg-red-600/30 border border-red-500/30 hover:border-red-500/50 rounded-lg transition-colors font-medium flex items-center gap-2 mr-auto"
+                  disabled={showSuccess || saving}
+                  title="Excluir este rascunho permanentemente"
+                >
+                  <Trash2 className="w-4 h-4" />
+                  Excluir Rascunho
+                </button>
+              )}
               <button
-                onClick={() => setIsModalOpen(false)}
+                onClick={handleCloseModal}
                 className="px-6 py-2.5 text-slate-300 hover:text-white hover:bg-slate-700 rounded-lg transition-colors font-medium border border-transparent hover:border-slate-600"
                 disabled={showSuccess}
               >
@@ -800,7 +892,7 @@ const QuickPrescriptions: React.FC<QuickPrescriptionsProps> = ({ className = '',
                 disabled={saving || showSuccess}
                 className="px-6 py-2.5 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium shadow-lg shadow-green-900/20 transition-all hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
               >
-                {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <><Save className="w-4 h-4" /> Salvar Prescrição</>}
+                {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <><Save className="w-4 h-4" /> {editingId ? 'Salvar Alterações' : 'Salvar Prescrição'}</>}
               </button>
             </div>
           </div>
@@ -884,6 +976,225 @@ const QuickPrescriptions: React.FC<QuickPrescriptionsProps> = ({ className = '',
               >
                 Entendi
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* V1.9.180-B — Modal VIEW read-only (signed/sent/validated/cancelled) */}
+      {viewingPrescription && (() => {
+        const p = viewingPrescription
+        const meds = Array.isArray(p.medications) ? p.medications : []
+        const isSigned = p.status === 'signed' || p.status === 'sent' || p.status === 'validated'
+        const statusBadge: Record<string, { label: string; cls: string }> = {
+          draft:     { label: 'Rascunho',  cls: 'bg-yellow-500/15 text-yellow-300 border-yellow-500/30' },
+          signed:    { label: 'Assinada',  cls: 'bg-blue-500/15 text-blue-300 border-blue-500/30' },
+          sent:      { label: 'Enviada',   cls: 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30' },
+          validated: { label: 'Validada',  cls: 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30' },
+          cancelled: { label: 'Cancelada', cls: 'bg-red-500/15 text-red-300 border-red-500/30' },
+        }
+        const sb = statusBadge[p.status] || statusBadge.draft
+        return (
+          <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm" onClick={() => setViewingPrescription(null)}>
+            <div className="bg-slate-900 border border-emerald-500/30 rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl" onClick={(e) => e.stopPropagation()}>
+              <div className="sticky top-0 bg-slate-900 border-b border-emerald-500/20 px-5 py-3 flex items-center justify-between z-10">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-emerald-500/15 rounded-lg">
+                    <FileText className="w-5 h-5 text-emerald-300" />
+                  </div>
+                  <div>
+                    <h2 className="text-lg font-bold text-white">Receita {p.prescription_type === 'simple' ? 'Simples' : p.prescription_type}</h2>
+                    <div className="flex items-center gap-2 mt-0.5">
+                      <span className={`text-[10px] px-1.5 py-0.5 rounded font-medium border ${sb.cls}`}>{sb.label}</span>
+                      {isSigned && p.iti_validation_code && (
+                        <span className="text-[10px] px-1.5 py-0.5 bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 rounded font-medium">ICP-Brasil</span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+                <button onClick={() => setViewingPrescription(null)} className="p-1.5 text-slate-400 hover:text-white hover:bg-white/10 rounded-lg transition-all">
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              <div className="p-5 space-y-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="bg-slate-950/40 rounded-lg p-3 border border-white/5">
+                    <p className="text-[10px] text-slate-500 uppercase mb-1">Paciente</p>
+                    <p className="text-sm text-white font-medium">{p.patient_name || '—'}</p>
+                    {p.patient_cpf && <p className="text-xs text-slate-400">CPF: {p.patient_cpf}</p>}
+                  </div>
+                  <div className="bg-slate-950/40 rounded-lg p-3 border border-white/5">
+                    <p className="text-[10px] text-slate-500 uppercase mb-1">Datas</p>
+                    <p className="text-xs text-slate-300"><span className="text-slate-500">Criação:</span> {new Date(p.created_at).toLocaleDateString('pt-BR')}</p>
+                    {p.signature_timestamp && <p className="text-xs text-slate-300"><span className="text-slate-500">Assinatura:</span> {new Date(p.signature_timestamp).toLocaleDateString('pt-BR')}</p>}
+                    {p.expires_at && <p className="text-xs text-amber-300"><span className="text-slate-500">Validade:</span> {new Date(p.expires_at).toLocaleDateString('pt-BR')}</p>}
+                  </div>
+                </div>
+
+                <div>
+                  <p className="text-[10px] text-slate-500 uppercase mb-2">Medicações ({meds.length})</p>
+                  {meds.length === 0 ? (
+                    <p className="text-sm text-slate-400 italic">Nenhuma medicação</p>
+                  ) : (
+                    <div className="space-y-2">
+                      {meds.map((m: any, i: number) => (
+                        <div key={i} className="bg-slate-950/40 rounded-lg p-3 border border-white/5">
+                          <p className="text-sm text-white font-medium">{m.name || `Medicação ${i + 1}`}</p>
+                          {m.dosage && <p className="text-xs text-slate-400 mt-0.5">Dosagem: {m.dosage}</p>}
+                          {m.frequency && <p className="text-xs text-slate-400">Frequência: {m.frequency}</p>}
+                          {m.duration && <p className="text-xs text-slate-400">Duração: {m.duration}</p>}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {p.notes && (
+                  <div>
+                    <p className="text-[10px] text-slate-500 uppercase mb-2">Observações</p>
+                    <div className="bg-slate-950/40 rounded-lg p-3 border border-white/5">
+                      <p className="text-xs text-slate-300 whitespace-pre-wrap">{p.notes}</p>
+                    </div>
+                  </div>
+                )}
+
+                {isSigned && (p.iti_validation_code || p.iti_validation_url) && (
+                  <div className="bg-emerald-500/5 border border-emerald-500/20 rounded-lg p-3">
+                    <p className="text-[10px] text-emerald-400 uppercase mb-1.5 font-semibold">Assinatura Digital ICP-Brasil</p>
+                    {p.iti_validation_code && (
+                      <p className="text-xs text-slate-300 font-mono break-all">Código ITI: {p.iti_validation_code}</p>
+                    )}
+                    {p.iti_validation_url && (
+                      <a href={p.iti_validation_url} target="_blank" rel="noopener noreferrer" className="text-xs text-emerald-300 hover:text-emerald-200 underline mt-1 inline-block">
+                        Validar no portal ITI →
+                      </a>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              <div className="sticky bottom-0 bg-slate-900 border-t border-emerald-500/20 px-5 py-3 flex items-center justify-end gap-2">
+                <button onClick={() => window.print()} className="px-3 py-1.5 bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/30 text-emerald-200 text-xs rounded-lg transition-all flex items-center gap-1.5">
+                  <Printer className="w-3 h-3" /> Imprimir
+                </button>
+                <button onClick={() => setViewingPrescription(null)} className="px-3 py-1.5 bg-emerald-500/30 hover:bg-emerald-500/50 border border-emerald-400/40 text-emerald-100 text-xs rounded-lg transition-all">
+                  Fechar
+                </button>
+              </div>
+            </div>
+          </div>
+        )
+      })()}
+
+      {/* V1.9.180-B — Overlay "Ver todas / Rascunhos" inline (Triple-A unificado) */}
+      {showAllOverlay && (
+        <div className="fixed inset-0 z-50 bg-slate-950/90 backdrop-blur-md overflow-y-auto" onClick={() => setShowAllOverlay(false)}>
+          <div className="min-h-screen p-4 md:p-8" onClick={(e) => e.stopPropagation()}>
+            <div className="max-w-6xl mx-auto bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl">
+              {/* Header overlay */}
+              <div className="sticky top-0 bg-slate-900 border-b border-slate-700 px-6 py-4 flex items-center justify-between z-10 rounded-t-2xl">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-emerald-500/15 rounded-lg">
+                    <ListChecks className="w-5 h-5 text-emerald-300" />
+                  </div>
+                  <div>
+                    <h2 className="text-lg md:text-xl font-bold text-white">Minhas Prescrições — Lista Completa</h2>
+                    <p className="text-xs text-slate-400">CFM 2.314/2022 — Prescrição Eletrônica com Assinatura Digital ICP-Brasil</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => { setShowAllOverlay(false); setIsModalOpen(true) }}
+                    className="hidden md:flex items-center gap-1.5 px-4 py-2 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs rounded-full transition-all"
+                  >
+                    <Plus className="w-3.5 h-3.5" /> Nova Prescrição
+                  </button>
+                  <button onClick={() => setShowAllOverlay(false)} className="p-2 text-slate-400 hover:text-white hover:bg-white/10 rounded-lg transition-all" title="Fechar">
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+              </div>
+
+              <div className="p-6 space-y-6">
+                {/* Stats grandes */}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                  <button onClick={() => setStatusFilter('todas')} className={`rounded-xl p-4 border text-left transition-all ${statusFilter === 'todas' ? 'border-white/30 bg-white/[0.06]' : 'border-white/5 bg-white/[0.03] hover:border-white/15'}`}>
+                    <div className="text-xs text-slate-400 uppercase tracking-wider">Total</div>
+                    <div className="text-2xl font-bold text-white tabular-nums">{prescriptionStats.total}</div>
+                  </button>
+                  <button onClick={() => setStatusFilter('draft')} className={`rounded-xl p-4 border text-left transition-all ${statusFilter === 'draft' ? 'border-yellow-500/40 bg-yellow-500/10' : 'border-yellow-500/15 bg-yellow-500/[0.04] hover:border-yellow-500/25'}`}>
+                    <div className="text-xs text-yellow-400 uppercase tracking-wider">Rascunhos</div>
+                    <div className="text-2xl font-bold text-yellow-300 tabular-nums">{prescriptionStats.draft}</div>
+                  </button>
+                  <button onClick={() => setStatusFilter('signed')} className={`rounded-xl p-4 border text-left transition-all ${statusFilter === 'signed' ? 'border-blue-500/40 bg-blue-500/10' : 'border-blue-500/15 bg-blue-500/[0.04] hover:border-blue-500/25'}`}>
+                    <div className="text-xs text-blue-400 uppercase tracking-wider">Assinadas</div>
+                    <div className="text-2xl font-bold text-blue-300 tabular-nums">{prescriptionStats.signed}</div>
+                  </button>
+                  <button onClick={() => setStatusFilter('sent')} className={`rounded-xl p-4 border text-left transition-all ${statusFilter === 'sent' ? 'border-emerald-500/40 bg-emerald-500/10' : 'border-emerald-500/15 bg-emerald-500/[0.04] hover:border-emerald-500/25'}`}>
+                    <div className="text-xs text-emerald-400 uppercase tracking-wider">Enviadas</div>
+                    <div className="text-2xl font-bold text-emerald-300 tabular-nums">{prescriptionStats.sent}</div>
+                  </button>
+                </div>
+
+                {/* Lista expandida (todas as prescriptions, não só primeiras 12) */}
+                {filteredMyPrescriptions.length === 0 ? (
+                  <div className="rounded-xl border border-white/5 bg-gradient-to-br from-slate-800/40 to-slate-900/20 p-12 text-center">
+                    <FileText className="w-12 h-12 text-slate-600 mx-auto mb-3" />
+                    <p className="text-sm text-slate-400">
+                      {statusFilter === 'todas' ? 'Nenhuma prescrição registrada ainda.' : 'Nenhuma prescrição neste filtro.'}
+                    </p>
+                    <button onClick={() => { setShowAllOverlay(false); setIsModalOpen(true) }} className="mt-4 inline-flex items-center gap-1.5 px-4 py-2 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs rounded-full transition-all">
+                      <Plus className="w-3.5 h-3.5" /> Criar primeira prescrição
+                    </button>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                    {filteredMyPrescriptions.map((p) => {
+                      const meds = Array.isArray(p.medications) ? p.medications : []
+                      const firstMed = meds[0] || null
+                      const sBadge: Record<string, { label: string; cls: string }> = {
+                        draft:     { label: 'Rascunho',  cls: 'bg-yellow-500/15 text-yellow-300 border-yellow-500/30' },
+                        signed:    { label: 'Assinada',  cls: 'bg-blue-500/15 text-blue-300 border-blue-500/30' },
+                        sent:      { label: 'Enviada',   cls: 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30' },
+                        validated: { label: 'Validada',  cls: 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30' },
+                        cancelled: { label: 'Cancelada', cls: 'bg-red-500/15 text-red-300 border-red-500/30' },
+                      }
+                      const sb = sBadge[p.status] || sBadge.draft
+                      return (
+                        <button
+                          type="button"
+                          key={p.id}
+                          onClick={() => { setShowAllOverlay(false); handleCardClick(p) }}
+                          title={p.status === 'draft' ? 'Editar rascunho' : 'Ver detalhes'}
+                          className="group rounded-xl border border-white/5 bg-gradient-to-br from-slate-800/40 to-slate-900/20 p-4 hover:border-emerald-500/40 hover:from-slate-800/60 transition-all text-left cursor-pointer focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
+                        >
+                          <div className="flex items-start justify-between gap-2 mb-2">
+                            <h4 className="text-sm font-semibold text-white truncate flex-1">{p.patient_name || 'Paciente sem nome'}</h4>
+                            <span className={`shrink-0 text-[9px] font-bold px-2 py-0.5 rounded-full border uppercase tracking-wider ${sb.cls}`}>{sb.label}</span>
+                          </div>
+                          {firstMed && (
+                            <div className="rounded-lg bg-black/20 border border-white/5 p-2.5 mb-2">
+                              <div className="flex items-center gap-1.5 mb-1">
+                                <Pill className="w-3 h-3 text-emerald-400" />
+                                <span className="text-xs text-white truncate">{firstMed.name || '—'}</span>
+                              </div>
+                              <div className="flex flex-wrap gap-1.5 text-[10px] text-slate-400">
+                                {firstMed.dosage && <span className="px-1.5 py-0.5 rounded bg-white/5 border border-white/10">{firstMed.dosage}</span>}
+                                {firstMed.frequency && <span className="px-1.5 py-0.5 rounded bg-white/5 border border-white/10">{firstMed.frequency}</span>}
+                              </div>
+                            </div>
+                          )}
+                          <div className="flex items-center justify-between text-[10px] text-slate-500">
+                            <span className="flex items-center gap-1"><Clock className="w-3 h-3" />{new Date(p.created_at).toLocaleDateString('pt-BR')}</span>
+                            {p.iti_validation_code && <span className="text-blue-400 font-mono">ITI: {p.iti_validation_code.slice(0, 8)}…</span>}
+                          </div>
+                        </button>
+                      )
+                    })}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>
