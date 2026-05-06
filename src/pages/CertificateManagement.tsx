@@ -13,7 +13,8 @@ import {
   Key,
   Trash2,
   Loader2,
-  ArrowLeft
+  ArrowLeft,
+  Info
 } from 'lucide-react'
 
 interface Certificate {
@@ -407,11 +408,86 @@ const CertificateManagement: React.FC = () => {
                       value={certificatePassword}
                       onChange={(e) => setCertificatePassword(e.target.value)}
                       className="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
-                      placeholder="Digite a senha do certificado"
+                      placeholder="Digite a senha do arquivo .pfx"
                     />
+                    <p className="text-[11px] text-slate-400 mt-1.5 leading-relaxed">
+                      É a <strong className="text-slate-200">senha do próprio arquivo .pfx</strong> — a que você
+                      digitou no programa da AC (DigitalSign, Soluti, etc.) quando exportou o certificado.
+                      Não é a senha do MedCannLab nem a do seu email.
+                    </p>
                   </div>
                 )}
               </div>
+
+              {/* V1.9.179 — Painel de orientação leiga (qual senha + segurança) */}
+              {certificateType === 'A1' && (
+                <div className="mt-2 rounded-xl border border-blue-500/30 bg-blue-500/5 p-4 space-y-3">
+                  <div className="flex items-center gap-2">
+                    <Info className="w-4 h-4 text-blue-300 shrink-0" />
+                    <h4 className="text-sm font-semibold text-blue-200">Como funciona — passo a passo</h4>
+                  </div>
+                  <ol className="space-y-2 text-xs text-slate-300 leading-relaxed list-decimal list-inside ml-1">
+                    <li>
+                      Você emitiu o certificado <strong className="text-white">.pfx</strong> no programa da AC
+                      (DigitalSign A1, Soluti, etc.) e salvou em uma pasta no seu computador.
+                    </li>
+                    <li>
+                      Aqui você anexa esse arquivo <strong className="text-white">.pfx</strong> e digita a
+                      <strong className="text-white"> senha do próprio .pfx</strong> — a que o programa pediu pra você criar
+                      quando exportou. <em className="text-slate-400">Em geral é a "Senha de Emissão" que veio no seu
+                      email; mas se você criou outra ao exportar, use essa.</em>
+                    </li>
+                    <li>
+                      Ao clicar <strong className="text-white">"Adicionar Certificado"</strong> o app cifra a senha
+                      antes de salvar e envia o .pfx pro armazenamento privado e protegido.
+                    </li>
+                    <li>
+                      Pronto. Da próxima vez que você for assinar uma prescrição, o app abre o seu .pfx
+                      sozinho, assina com seu certificado real ICP-Brasil, e devolve a receita assinada
+                      em padrão CFM 2.314/2022.
+                    </li>
+                  </ol>
+
+                  <div className="border-t border-blue-500/20 pt-3 space-y-2">
+                    <div className="flex items-center gap-2">
+                      <Shield className="w-4 h-4 text-emerald-300 shrink-0" />
+                      <h4 className="text-sm font-semibold text-emerald-200">É seguro? Sim — veja por quê</h4>
+                    </div>
+                    <ul className="space-y-1.5 text-xs text-slate-300 leading-relaxed ml-1">
+                      <li>
+                        🔒 <strong className="text-white">Senha cifrada em trânsito e no banco</strong> — usamos
+                        AES-GCM (mesma criptografia de bancos digitais) com chave que fica só no servidor.
+                        Nem o admin do banco consegue ler sua senha.
+                      </li>
+                      <li>
+                        🔐 <strong className="text-white">Arquivo .pfx em armazenamento privado</strong> — só você
+                        (e o sistema, com sua autorização) pode baixá-lo. Política RLS por usuário no Supabase.
+                      </li>
+                      <li>
+                        ✅ <strong className="text-white">Você pode revogar a qualquer momento</strong> — basta
+                        desativar ou excluir o certificado nesta tela.
+                      </li>
+                      <li>
+                        ⚠️ <strong className="text-white">Nunca compartilhe seu .pfx ou senha</strong> com outra
+                        pessoa fora do app — é equivalente à sua assinatura física e CRM no papel.
+                      </li>
+                      <li>
+                        💾 <strong className="text-white">Faça backup do .pfx</strong> em pendrive ou cofre digital
+                        (1Password, Bitwarden) — se o computador estourar e você perder o arquivo, precisa
+                        comprar cert novo.
+                      </li>
+                    </ul>
+                  </div>
+
+                  <div className="border-t border-blue-500/20 pt-3">
+                    <p className="text-[11px] text-slate-400 leading-relaxed">
+                      💡 <strong className="text-slate-200">Errou a senha?</strong> Sem problema. Quando o app
+                      tentar assinar uma prescrição vai dar erro claro — você volta aqui, exclui este registro,
+                      e cadastra de novo com a senha correta. Não há dano.
+                    </p>
+                  </div>
+                </div>
+              )}
 
               <div className="flex gap-3 pt-4">
                 <button
