@@ -1720,23 +1720,30 @@ const PatientAppointments: React.FC = () => {
                   </div>
                 )}
 
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                  <div className="rounded-xl border border-slate-800 bg-slate-800/30 p-3">
-                    <p className="text-xs text-slate-400">Consultas na plataforma</p>
-                    <p className="text-white font-bold text-lg">{profileProfessional.consultCountApprox ?? '—'}</p>
-                    <p className="text-[11px] text-slate-500">MVP (aprox.)</p>
+                {/* V1.9.149: esconder grid inteira se profissional não tem nenhum dos 3 dados.
+                    UX honesta: 3 cards vazios sinalizavam app abandonado. Sem grid = "perfil enxuto"
+                    (parceiro novo). Quando 1+ dado existir, mostra grid; campos vazios viram "—" parcial. */}
+                {(profileProfessional.consultCountApprox != null ||
+                  profileProfessional.experienceYears != null ||
+                  profileProfessional.consultPriceBRL != null) && (
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div className="rounded-xl border border-slate-800 bg-slate-800/30 p-3">
+                      <p className="text-xs text-slate-400">Consultas na plataforma</p>
+                      <p className="text-white font-bold text-lg">{profileProfessional.consultCountApprox ?? '—'}</p>
+                      <p className="text-[11px] text-slate-500">MVP (aprox.)</p>
+                    </div>
+                    <div className="rounded-xl border border-slate-800 bg-slate-800/30 p-3">
+                      <p className="text-xs text-slate-400">Experiência</p>
+                      <p className="text-white font-bold text-lg">{profileProfessional.experienceYears ? `${profileProfessional.experienceYears} anos` : '—'}</p>
+                      <p className="text-[11px] text-slate-500">Informado pelo profissional</p>
+                    </div>
+                    <div className="rounded-xl border border-slate-800 bg-slate-800/30 p-3">
+                      <p className="text-xs text-slate-400">Valor</p>
+                      <p className="text-white font-bold text-lg">{profileProfessional.consultPriceBRL ? `R$ ${profileProfessional.consultPriceBRL.toFixed(0)}` : '—'}</p>
+                      <p className="text-[11px] text-slate-500">Consulta particular</p>
+                    </div>
                   </div>
-                  <div className="rounded-xl border border-slate-800 bg-slate-800/30 p-3">
-                    <p className="text-xs text-slate-400">Experiência</p>
-                    <p className="text-white font-bold text-lg">{profileProfessional.experienceYears ? `${profileProfessional.experienceYears} anos` : '—'}</p>
-                    <p className="text-[11px] text-slate-500">Informado pelo profissional</p>
-                  </div>
-                  <div className="rounded-xl border border-slate-800 bg-slate-800/30 p-3">
-                    <p className="text-xs text-slate-400">Valor</p>
-                    <p className="text-white font-bold text-lg">{profileProfessional.consultPriceBRL ? `R$ ${profileProfessional.consultPriceBRL.toFixed(0)}` : '—'}</p>
-                    <p className="text-[11px] text-slate-500">Consulta particular</p>
-                  </div>
-                </div>
+                )}
 
                 <div className="flex flex-col sm:flex-row gap-3">
                   <button
