@@ -171,6 +171,15 @@ const NotificationCenter: React.FC<NotificationCenterProps> = ({ className = '' 
     setUnreadCount(0)
   }
 
+  // V1.9.171 — auto-mark ao abrir o painel (700ms delay pra usuário ver
+  // o destaque visual antes de zerar). Reduz acúmulo de unread (115 em 06/05).
+  useEffect(() => {
+    if (!isOpen || unreadCount === 0 || !user?.id) return
+    const t = setTimeout(() => { handleMarkAllAsRead() }, 700)
+    return () => clearTimeout(t)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen])
+
   // Deletar notificação
   const handleDelete = async (notificationId: string) => {
     await notificationService.deleteNotification(notificationId)
