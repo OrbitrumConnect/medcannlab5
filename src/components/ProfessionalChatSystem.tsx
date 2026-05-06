@@ -334,7 +334,7 @@ const ProfessionalChatSystem: React.FC<ProfessionalChatSystemProps> = ({ classNa
       </div>
 
       <div className="flex flex-1 overflow-hidden">
-        <aside className="w-1/4 border-r border-slate-700 flex flex-col min-w-[200px]">
+        <aside className="w-72 lg:w-72 md:w-1/4 border-r border-slate-700 flex flex-col min-w-[220px] max-w-[320px]">
           <div className="p-3 border-b border-slate-700">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" />

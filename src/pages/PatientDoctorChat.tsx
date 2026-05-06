@@ -1040,7 +1040,7 @@ const PatientDoctorChat: React.FC = () => {
             </div>
           </header>
 
-          <div className="grid grid-cols-1 lg:grid-cols-[300px_1fr] gap-5 flex-1 min-h-0">
+          <div className="grid grid-cols-1 lg:grid-cols-[260px_1fr] gap-4 flex-1 min-h-0">
             <aside className={`bg-slate-900/40 backdrop-blur-xl border border-slate-700/40 rounded-2xl p-4 flex flex-col shadow-xl shadow-black/10 ${activeRoomId ? 'hidden lg:flex' : 'flex'}`}>
               <h2 className="text-sm font-semibold text-slate-200 mb-4 flex items-center gap-2">
                 <Users className="w-4 h-4 text-primary-400" />
