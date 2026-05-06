@@ -12,6 +12,7 @@ import {
   Send,
   CheckCircle,
   AlertCircle,
+  AlertTriangle,
   ArrowLeft,
   Lock,
   Calendar,
@@ -89,6 +90,35 @@ const Prescriptions: React.FC = () => {
   // [V1.9.129] Filtro por status + modal educacional ICP-Brasil
   const [statusFilter, setStatusFilter] = useState<'todas' | 'draft' | 'signed' | 'sent'>('todas')
   const [showCertHelpModal, setShowCertHelpModal] = useState(false)
+
+  // V1.9.178 — Status do cert ativo pra banner "modo validação"
+  // 'real_signing_ready' = .pfx upload OK → assinatura legalmente válida
+  // 'metadata_only' = cert cadastrado sem .pfx → simulação fallback (sem força legal)
+  // 'no_cert' / 'expired' / 'expiring_soon' = bloqueio ou alerta
+  type CertStatus = 'real_signing_ready' | 'metadata_only' | 'no_password' | 'expired' | 'expiring_soon' | 'no_cert' | 'loading'
+  const [certStatus, setCertStatus] = useState<CertStatus>('loading')
+
+  useEffect(() => {
+    if (!user?.id) return
+    let cancelled = false
+    ;(async () => {
+      const { data, error } = await supabase
+        .from('v_medical_certificates_status' as any)
+        .select('status_real')
+        .eq('professional_id', user.id)
+        .eq('is_active', true)
+        .order('expires_at', { ascending: false })
+        .limit(1)
+        .maybeSingle()
+      if (cancelled) return
+      if (error || !data) {
+        setCertStatus('no_cert')
+        return
+      }
+      setCertStatus((data as any).status_real as CertStatus)
+    })()
+    return () => { cancelled = true }
+  }, [user?.id])
 
   // Ler tipo da URL e pré-selecionar
   useEffect(() => {
@@ -510,11 +540,24 @@ const Prescriptions: React.FC = () => {
       // Atualizar lista de prescrições
       await loadPrescriptions()
 
-      // Exibir sucesso
-      toast.success(
-        'Prescrição assinada!',
-        `Código ITI: ${data.itiValidationCode || 'N/A'}${data.validationUrl ? ` • URL: ${data.validationUrl}` : ''}`
-      )
+      // V1.9.178 — Toast diferencia modo real ICP-Brasil de simulação fallback
+      const mode = (data as any).mode as 'real' | 'api_stub' | 'simulation' | undefined
+      if (mode === 'real') {
+        toast.success(
+          'Prescrição assinada com cert ICP-Brasil real',
+          `PKCS#7 SignedData • Código ITI: ${data.itiValidationCode || 'N/A'}`
+        )
+      } else if (mode === 'simulation') {
+        toast.warning(
+          'Prescrição assinada em MODO VALIDAÇÃO (simulação)',
+          `Sem força legal ICP-Brasil. Para ativar real, faça upload do .pfx em Certificados. ITI sim: ${data.itiValidationCode || 'N/A'}`
+        )
+      } else {
+        toast.success(
+          'Prescrição assinada!',
+          `Código ITI: ${data.itiValidationCode || 'N/A'}${data.validationUrl ? ` • URL: ${data.validationUrl}` : ''}`
+        )
+      }
 
     } catch (err: any) {
       console.error('❌ Erro ao assinar prescrição:', err)
@@ -918,6 +961,57 @@ const Prescriptions: React.FC = () => {
       </div>
 
       <div className="max-w-7xl mx-auto px-6 py-8">
+        {/* V1.9.178 — Banner status do cert ICP-Brasil (defesa anti-overclaim de validade legal) */}
+        {certStatus === 'metadata_only' && (
+          <div className="mb-6 rounded-xl border border-amber-500/30 bg-amber-500/10 p-4">
+            <div className="flex items-start gap-3">
+              <AlertTriangle className="w-5 h-5 text-amber-400 flex-shrink-0 mt-0.5" />
+              <div className="flex-1">
+                <p className="text-amber-300 font-semibold text-sm">Modo de Validação Técnica</p>
+                <p className="text-amber-200/80 text-xs mt-1 leading-relaxed">
+                  Você cadastrou o certificado em <strong>modo metadados-only</strong>. As assinaturas atuais são <strong>simulações estruturalmente válidas mas sem força legal ICP-Brasil</strong> —
+                  servem para smoke do fluxo, não para dispensação em farmácia oficial nem prescrição final a paciente externo pagante.
+                </p>
+                <button
+                  onClick={() => navigate('/app/clinica/profissional/certificados')}
+                  className="mt-2 text-xs text-amber-300 hover:text-amber-200 underline underline-offset-2"
+                >
+                  Fazer upload do .pfx para ativar modo real →
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+        {certStatus === 'expired' && (
+          <div className="mb-6 rounded-xl border border-red-500/40 bg-red-500/10 p-4">
+            <div className="flex items-start gap-3">
+              <AlertTriangle className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
+              <div className="flex-1">
+                <p className="text-red-300 font-semibold text-sm">Certificado Expirado</p>
+                <p className="text-red-200/80 text-xs mt-1">
+                  Seu certificado ICP-Brasil expirou. Renove para retomar assinaturas reais.
+                </p>
+                <button
+                  onClick={() => navigate('/app/clinica/profissional/certificados')}
+                  className="mt-2 text-xs text-red-300 hover:text-red-200 underline underline-offset-2"
+                >
+                  Gerenciar certificados →
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+        {certStatus === 'expiring_soon' && (
+          <div className="mb-6 rounded-xl border border-yellow-500/30 bg-yellow-500/10 p-3">
+            <p className="text-yellow-300 text-xs">
+              ⚠️ Seu certificado ICP-Brasil expira em menos de 30 dias.{' '}
+              <button onClick={() => navigate('/app/clinica/profissional/certificados')} className="underline">
+                Verificar →
+              </button>
+            </p>
+          </div>
+        )}
+
         {!showForm ? (
           <>
             {/* [V1.9.129-A] Stats no topo — visibilidade do funil draft→signed→sent */}
