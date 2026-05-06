@@ -1341,12 +1341,15 @@ const PatientDoctorChat: React.FC = () => {
                 </div>
               </div>
 
-              {/* V1.9.159: Banner sticky com instruções videoconsulta — sempre visível */}
+              {/* V1.9.159+162: Banner sticky com instruções videoconsulta — sempre visível */}
               {activeRoomId && (
-                <div className="relative z-10 mx-5 mt-3 p-3 rounded-xl bg-gradient-to-r from-emerald-900/20 to-primary-900/20 border border-emerald-500/20 text-xs text-slate-300">
-                  <p className="font-semibold text-emerald-300 mb-1">📞 Como funciona a videoconsulta</p>
+                <div className="relative z-10 mx-5 mt-3 p-3 rounded-xl bg-gradient-to-r from-emerald-900/20 to-primary-900/20 border border-emerald-500/20 text-xs text-slate-300 space-y-1.5">
+                  <p className="font-semibold text-emerald-300">📞 Como funciona a videoconsulta</p>
                   <p className="text-slate-400">
                     Conversem por texto primeiro · O <strong className="text-white">médico inicia</strong> a chamada (botão <Video className="inline w-3 h-3 text-blue-400" />) · O <strong className="text-white">paciente aceita</strong> quando a notificação aparecer · Se falhar, refaça — o sistema reconecta automaticamente.
+                  </p>
+                  <p className="text-amber-300/90 text-[11px] pt-1 border-t border-amber-500/10">
+                    💡 <strong>Para melhor experiência</strong>: use celular (WhatsApp-like) ou computador com <strong>câmera e microfone permitidos</strong>. Sem câmera/microfone, a consulta por <strong>conversa de texto</strong> aqui também é completa e registrada no prontuário.
                   </p>
                 </div>
               )}

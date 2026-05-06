@@ -774,6 +774,22 @@ const VideoCall: React.FC<VideoCallProps> = ({ isOpen, onClose, patientId, isAud
       await wisecareEndCall().catch(console.error)
     }
 
+    // V1.9.162: cancelar request pending se ninguém aceitou ainda
+    // (paciente não recebeu/não aceitou → médico fechando = cancelar limpo).
+    // Antes: handleEndCall fechava modal mas deixava request 'pending' no banco,
+    // travando próximos cliques no botão videocall (disabled while pendingCallRequest).
+    if (signalingRoomId) {
+      try {
+        await (supabase as any)
+          .from('video_call_requests')
+          .update({ status: 'cancelled', cancelled_at: new Date().toISOString() })
+          .eq('request_id', signalingRoomId)
+          .eq('status', 'pending')
+      } catch {
+        // silencioso — fechar modal é prioridade
+      }
+    }
+
     // Salvar sessão no banco
     await saveSession()
 
