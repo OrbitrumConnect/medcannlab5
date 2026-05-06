@@ -1,5 +1,5 @@
 import React, { useRef, useEffect, useState, useCallback } from 'react'
-import { X, Mic, MicOff, Video, VideoOff, Volume2, VolumeX, Settings, Maximize2, Minimize2, Circle, Square, Wifi, WifiOff } from 'lucide-react'
+import { X, Mic, MicOff, Video, VideoOff, Volume2, VolumeX, Settings, Maximize2, Minimize2, Circle, Square, Wifi, WifiOff, RefreshCw } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
 import { useWebRTCRoom } from '../hooks/useWebRTCRoom'
@@ -69,6 +69,9 @@ const VideoCall: React.FC<VideoCallProps> = ({ isOpen, onClose, patientId, isAud
   const [isSpeakerOn, setIsSpeakerOn] = useState(true)
   const [cameraOnDuringAudioCall, setCameraOnDuringAudioCall] = useState(false)
   const [cameraStreamDuringAudio, setCameraStreamDuringAudio] = useState<MediaStream | null>(null)
+  // V1.9.166 — flip câmera mobile (frontal ↔ traseira). Default 'user' (frontal).
+  const [facingMode, setFacingMode] = useState<'user' | 'environment'>('user')
+  const [isFlippingCamera, setIsFlippingCamera] = useState(false)
 
   // Estados de consentimento e sessão
   const [showConsentModal, setShowConsentModal] = useState(false)
@@ -119,9 +122,11 @@ const VideoCall: React.FC<VideoCallProps> = ({ isOpen, onClose, patientId, isAud
   // Captura de mídia APENAS para WebRTC fallback
   useEffect(() => {
     if (activeProvider !== 'webrtc' || !isOpen || !consentGiven || localStreamRef.current) return
-    
+
+    // V1.9.166 — usa facingMode no constraint pra suportar flip mobile
+    const videoConstraint = isAudioOnly ? false : { facingMode }
     navigator.mediaDevices
-      .getUserMedia({ video: !isAudioOnly, audio: true })
+      .getUserMedia({ video: videoConstraint, audio: true })
       .then((stream) => {
         localStreamRef.current = stream
         setLocalStreamForWebRTC(stream)
@@ -134,7 +139,41 @@ const VideoCall: React.FC<VideoCallProps> = ({ isOpen, onClose, patientId, isAud
         alert('Não foi possível acessar a câmera e o microfone. Verifique as permissões.')
         onClose()
       })
-  }, [activeProvider, isOpen, consentGiven, isAudioOnly, onClose])
+  }, [activeProvider, isOpen, consentGiven, isAudioOnly, onClose, facingMode])
+
+  // V1.9.166 — alterna entre câmera frontal e traseira (mobile)
+  // Estratégia: para tracks atuais → getUserMedia novo com facingMode oposto
+  // → atualiza localStreamRef + setLocalStreamForWebRTC.
+  // useWebRTCRoom.ts (L348-370) detecta mudança em localStream e faz
+  // sender.replaceTrack() automaticamente nos peer connections.
+  const flipCamera = useCallback(async () => {
+    if (isAudioOnly || isFlippingCamera) return
+    setIsFlippingCamera(true)
+    const nextFacing: 'user' | 'environment' = facingMode === 'user' ? 'environment' : 'user'
+    try {
+      const newStream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: nextFacing },
+        audio: true,
+      })
+      // Para tracks antigos APÓS conseguir o novo (evita gap visual)
+      const oldStream = localStreamRef.current
+      localStreamRef.current = newStream
+      setLocalStreamForWebRTC(newStream)
+      if (localVideoRef.current) {
+        localVideoRef.current.srcObject = newStream
+      }
+      setFacingMode(nextFacing)
+      // Cleanup do stream antigo (evita vazamento)
+      if (oldStream) {
+        oldStream.getTracks().forEach((t) => t.stop())
+      }
+    } catch (err) {
+      console.warn('[VideoCall] Flip câmera falhou (provavelmente sem câmera traseira):', err)
+      alert('Não foi possível trocar de câmera. Esta câmera pode não estar disponível neste dispositivo.')
+    } finally {
+      setIsFlippingCamera(false)
+    }
+  }, [facingMode, isAudioOnly, isFlippingCamera])
 
   // Timer de duração da chamada
   useEffect(() => {
@@ -1088,6 +1127,19 @@ const VideoCall: React.FC<VideoCallProps> = ({ isOpen, onClose, patientId, isAud
                     title={isVideoOff ? 'Ligar câmera' : 'Desligar câmera'}
                   >
                     {isVideoOff ? <VideoOff className="w-5 h-5" /> : <Video className="w-5 h-5" />}
+                  </button>
+                )}
+
+                {/* V1.9.166 — Flip câmera (mobile frontal ↔ traseira). Só renderiza em vídeo ativo. */}
+                {!isAudioOnly && !isVideoOff && (
+                  <button
+                    onClick={flipCamera}
+                    disabled={isFlippingCamera}
+                    className="p-3.5 rounded-full bg-white/10 hover:bg-white/20 text-white backdrop-blur-sm transition-all disabled:opacity-50 disabled:cursor-wait"
+                    title={`Trocar câmera (atual: ${facingMode === 'user' ? 'frontal' : 'traseira'})`}
+                    aria-label="Trocar câmera"
+                  >
+                    <RefreshCw className={`w-5 h-5 ${isFlippingCamera ? 'animate-spin' : ''}`} />
                   </button>
                 )}
 
