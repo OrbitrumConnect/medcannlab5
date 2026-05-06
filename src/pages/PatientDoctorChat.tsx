@@ -40,8 +40,12 @@ const PatientDoctorChat: React.FC = () => {
   const isPatient = user?.type === 'paciente' && !isImpersonatingPatient
 
   const [activeRoomId, setActiveRoomId] = useState<string | undefined>(roomIdParam ?? undefined)
-  // V1.9.168 — banner colapsável (default: expandido). Mobile pode colapsar pra ganhar viewport.
-  const [isBannerExpanded, setIsBannerExpanded] = useState(true)
+  // V1.9.168+169-B — banner colapsável. Default: COLAPSADO em mobile (poupa viewport),
+  // EXPANDIDO em desktop. Detecta via matchMedia no mount.
+  const [isBannerExpanded, setIsBannerExpanded] = useState(() => {
+    if (typeof window === 'undefined' || !window.matchMedia) return true
+    return window.matchMedia('(min-width: 1024px)').matches
+  })
   const [participants, setParticipants] = useState<ParticipantSummary[]>([])
   const [participantsLoading, setParticipantsLoading] = useState(false)
   const [messageInput, setMessageInput] = useState('')
@@ -1004,15 +1008,17 @@ const PatientDoctorChat: React.FC = () => {
 
       <div className="relative z-10 w-full max-w-[1600px] mx-auto px-4 md:px-6 lg:px-8 py-5 flex-1 flex flex-col min-h-0">
         <div className="flex flex-col gap-5 flex-1 min-h-0">
+          {/* V1.9.169-B — Voltar outer hide em mobile com sala ativa (usa "Voltar à lista" do section) */}
           <button
             onClick={() => navigate(-1)}
-            className="inline-flex items-center gap-2 text-slate-400 hover:text-white transition-colors group w-fit shrink-0"
+            className={`${activeRoomId ? 'hidden lg:inline-flex' : 'inline-flex'} items-center gap-2 text-slate-400 hover:text-white transition-colors group w-fit shrink-0`}
           >
             <ArrowLeft className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" />
             <span className="text-sm">Voltar</span>
           </button>
 
-          <header className="relative overflow-hidden bg-slate-900/60 backdrop-blur-xl border border-slate-700/40 rounded-2xl p-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4 shrink-0">
+          {/* V1.9.169-B — Header gigante hide em mobile com sala ativa (libera ~250px viewport) */}
+          <header className={`relative overflow-hidden bg-slate-900/60 backdrop-blur-xl border border-slate-700/40 rounded-2xl p-6 ${activeRoomId ? 'hidden lg:flex' : 'flex'} flex-col md:flex-row md:items-center md:justify-between gap-4 shrink-0`}>
             {/* Header glow */}
             <div className="absolute top-0 right-0 w-64 h-64 bg-primary-500/8 rounded-full blur-3xl -mr-20 -mt-20 pointer-events-none" />
             <div className="absolute bottom-0 left-0 w-48 h-48 bg-emerald-500/6 rounded-full blur-3xl -ml-16 -mb-16 pointer-events-none" />
