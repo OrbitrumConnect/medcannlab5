@@ -125,9 +125,14 @@ Deno.serve(async (req) => {
         const titleMessage = formatReminderTitle(window.minutes, scheduledTime)
         const fullMessage = `${titleMessage} (${formattedTime}). ${apt.meeting_url ? `Link: ${apt.meeting_url}` : 'Link da chamada será disponibilizado.'}`
 
+        // V1.9.163: enriquecer com nome do outro lado + link do Atendimento Integrado
+        const patientContact = apt.patient_id ? usersMap.get(apt.patient_id) : null
+        const professionalContact = apt.professional_id ? usersMap.get(apt.professional_id) : null
+        const APP_URL = Deno.env.get('APP_URL') || 'https://medcannlab.com.br'
+
         const recipients = [
-          { id: apt.patient_id, contact: apt.patient_id ? usersMap.get(apt.patient_id) : null, role: 'paciente' },
-          { id: apt.professional_id, contact: apt.professional_id ? usersMap.get(apt.professional_id) : null, role: 'profissional' },
+          { id: apt.patient_id, contact: patientContact, role: 'paciente' as const, otherName: professionalContact?.name ?? null, otherLabel: 'Profissional' },
+          { id: apt.professional_id, contact: professionalContact, role: 'profissional' as const, otherName: patientContact?.name ?? null, otherLabel: 'Paciente' },
         ].filter((r) => r.id && r.contact)
 
         for (const r of recipients) {
@@ -162,6 +167,14 @@ Deno.serve(async (req) => {
                 console.warn('[reminders] RESEND_API_KEY missing — email skipped:', r.contact.email)
               } else {
                 try {
+                  // V1.9.163: email enriquecido (nome do outro lado + link Atendimento Integrado)
+                  const otherLine = r.otherName
+                    ? `<p>👤 <strong>${r.otherLabel}:</strong> ${r.otherName}</p>`
+                    : ''
+                  const atendimentoPath = r.role === 'paciente'
+                    ? '/app/clinica/paciente/chat-profissional'
+                    : '/app/clinica/paciente/chat-profissional?origin=professional-dashboard'
+                  const atendimentoUrl = `${APP_URL}${atendimentoPath}`
                   const resendRes = await fetch('https://api.resend.com/emails', {
                     method: 'POST',
                     headers: {
@@ -172,7 +185,7 @@ Deno.serve(async (req) => {
                       from: RESEND_FROM,
                       to: r.contact.email,
                       subject: titleMessage,
-                      html: `<p>Olá <strong>${r.contact.name ?? ''}</strong>,</p><p>${fullMessage}</p><p><em>MedCannLab — Plataforma Nôa Esperança</em></p>`,
+                      html: `<p>Olá <strong>${r.contact.name ?? ''}</strong>,</p><p>${fullMessage}</p>${otherLine}<p>🔗 <a href="${atendimentoUrl}">Acessar Atendimento Integrado</a></p><p><em>MedCannLab — Plataforma Nôa Esperanza</em></p>`,
                     }),
                   })
                   if (resendRes.ok) {
