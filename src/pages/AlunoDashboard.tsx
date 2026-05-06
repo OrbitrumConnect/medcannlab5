@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react'
 import { useNavigate, useLocation, useSearchParams } from 'react-router-dom'
 import {
-  ArrowLeft,
   GraduationCap,
   BookOpen,
   Heart,
@@ -1012,26 +1011,12 @@ const AlunoDashboard: React.FC = () => {
             {/* Dashboard Principal (Workstation) */}
             {activeTab === 'dashboard' && (
               <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                {/* [V1.9.132-A] Header unificado estilo paciente/profissional */}
+                {/* [V1.9.143] Header limpo — removido Voltar (não voltava p/ contexto) + label "Terminal de Ensino" (redundante c/ badge ranking) */}
                 <div className="flex items-center gap-3 flex-wrap pb-3 border-b border-white/10">
-                  <button
-                    onClick={() => navigate('/app')}
-                    className="flex items-center gap-1.5 text-slate-400 hover:text-white transition-all text-xs font-bold uppercase tracking-wider group shrink-0"
-                  >
-                    <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
-                    Voltar
-                  </button>
-                  <div className="h-6 w-px bg-slate-800" />
                   <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <h1 className="text-xl md:text-2xl font-bold bg-gradient-to-r from-white to-slate-400 bg-clip-text text-transparent">
-                        Olá, {user?.name?.split(' ')[0] || 'Aluno'}
-                      </h1>
-                      <span className="text-slate-500">·</span>
-                      <span className="text-sm text-slate-400 truncate flex items-center gap-1">
-                        <span className="text-base">🕹️</span> Terminal de Ensino
-                      </span>
-                    </div>
+                    <h1 className="text-xl md:text-2xl font-bold bg-gradient-to-r from-white to-slate-400 bg-clip-text text-transparent">
+                      Olá, {user?.name?.split(' ')[0] || 'Aluno'}
+                    </h1>
                     <p className="text-xs text-slate-500 truncate mt-0.5">{user?.email}</p>
                   </div>
                   <div className="flex items-center gap-2 shrink-0">
