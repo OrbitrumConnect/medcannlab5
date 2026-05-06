@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Calendar, FileText, Brain, UserPlus, X, Send, Check } from 'lucide-react'
+import { Calendar, FileText, Brain, UserPlus, X, Send, Check, MessageCircle } from 'lucide-react'
 import { ClinicalReport } from '../lib/clinicalReportService'
 import { supabase } from '../lib/supabase'
 
@@ -139,6 +139,15 @@ const PatientHeaderActions: React.FC<PatientHeaderActionsProps> = ({
                             <span>Iniciar<br className="md:hidden" /> Avaliação</span>
                         </button>
                     )}
+                    {/* V1.9.170 — Canal de Atendimento (chat + videoconsulta) */}
+                    <button
+                        onClick={() => navigate('/app/clinica/paciente/chat-profissional')}
+                        title="Canal de Atendimento (chat + videoconsulta)"
+                        className="flex flex-col items-center justify-center gap-1 aspect-[5/4] md:aspect-auto md:flex-row md:gap-2 md:px-5 md:py-3 bg-purple-500/10 text-purple-400 hover:bg-purple-500/20 border border-purple-500/20 rounded-xl text-[11px] leading-tight md:text-base font-medium transition-colors text-center md:text-left"
+                    >
+                        <MessageCircle className="w-5 h-5" />
+                        <span>Canal<br className="md:hidden" /> Atendimento</span>
+                    </button>
                     {/* Vincular Médico */}
                     <button
                         onClick={() => navigate('/app/clinica/paciente/agendamentos')}
