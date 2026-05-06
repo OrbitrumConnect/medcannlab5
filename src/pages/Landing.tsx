@@ -154,7 +154,8 @@ const Landing: React.FC = () => {
     userType: 'profissional' as any,
     councilType: '',
     councilNumber: '',
-    councilState: ''
+    councilState: '',
+    specialty: '' // V1.9.147: especialidade do profissional (input texto livre)
   })
 
   // Effects & Handlers
@@ -239,7 +240,8 @@ const Landing: React.FC = () => {
         registerData.name,
         registerData.councilType,
         registerData.councilNumber,
-        registerData.councilState
+        registerData.councilState,
+        registerData.specialty // V1.9.147
       )
       success('Conta criada com sucesso!')
       navigate(getDefaultRouteByType(normalizeUserType(userTypeToRegister)))
@@ -1311,24 +1313,34 @@ const Landing: React.FC = () => {
 
           {/* Conditional Fields based on User Type */}
           {registerData.userType === 'profissional' && (
-            <div className="grid grid-cols-3 gap-2 animate-in fade-in slide-in-from-top-2 mt-2">
-              <select
-                value={registerData.councilType}
-                onChange={(e) => setRegisterData({ ...registerData, councilType: e.target.value })}
-                className="bg-slate-800 border border-slate-700 rounded-lg p-3 text-white outline-none"
-              >
-                <option value="">Conselho</option>
-                <option value="CRM">CRM</option>
-                <option value="CRO">CRO</option>
-                <option value="CRP">CRP</option>
-                <option value="CRF">CRF</option>
-              </select>
+            <div className="space-y-2 animate-in fade-in slide-in-from-top-2 mt-2">
+              <div className="grid grid-cols-3 gap-2">
+                <select
+                  value={registerData.councilType}
+                  onChange={(e) => setRegisterData({ ...registerData, councilType: e.target.value })}
+                  className="bg-slate-800 border border-slate-700 rounded-lg p-3 text-white outline-none"
+                >
+                  <option value="">Conselho</option>
+                  <option value="CRM">CRM</option>
+                  <option value="CRO">CRO</option>
+                  <option value="CRP">CRP</option>
+                  <option value="CRF">CRF</option>
+                </select>
+                <input
+                  type="text"
+                  placeholder="Número (UF)"
+                  value={registerData.councilNumber}
+                  onChange={(e) => setRegisterData({ ...registerData, councilNumber: e.target.value })}
+                  className="col-span-2 bg-slate-800 border border-slate-700 rounded-lg p-3 text-white outline-none"
+                />
+              </div>
+              {/* V1.9.147: especialidade — texto livre (admin pode editar depois) */}
               <input
                 type="text"
-                placeholder="Número (UF)"
-                value={registerData.councilNumber}
-                onChange={(e) => setRegisterData({ ...registerData, councilNumber: e.target.value })}
-                className="col-span-2 bg-slate-800 border border-slate-700 rounded-lg p-3 text-white outline-none"
+                placeholder="Especialidade (ex: Clínica Geral, Nefrologia, Cannabis Medicinal)"
+                value={registerData.specialty}
+                onChange={(e) => setRegisterData({ ...registerData, specialty: e.target.value })}
+                className="w-full bg-slate-800 border border-slate-700 rounded-lg p-3 text-white outline-none focus:border-green-500 placeholder:text-slate-500"
               />
             </div>
           )}

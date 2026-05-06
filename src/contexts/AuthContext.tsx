@@ -37,7 +37,8 @@ interface AuthContextType {
     name: string,
     councilType?: string,
     councilNumber?: string,
-    councilState?: string
+    councilState?: string,
+    specialty?: string
   ) => Promise<void>
 }
 
@@ -306,7 +307,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     name: string,
     councilType?: string,
     councilNumber?: string,
-    councilState?: string
+    councilState?: string,
+    specialty?: string
   ) => {
     try {
       setIsLoading(true)
@@ -331,7 +333,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             // Dados do conselho (opcionais)
             council_type: councilType,
             council_number: councilNumber,
-            council_state: councilState
+            council_state: councilState,
+            // V1.9.147: especialidade (consumida pelo trigger handle_new_user
+            // ao criar row em users.specialty)
+            specialty: specialty
           }
         }
       })
