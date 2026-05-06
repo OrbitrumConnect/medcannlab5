@@ -93,6 +93,34 @@ const Profile: React.FC = () => {
         bio: (user as any).bio || ''
       }))
 
+      // V1.9.155: AuthContext lê de USERS (canônica) mas Profile salva em PROFILES (legacy schema).
+      // Resultado pré-V1.9.155: salvar phone/bio/location funciona, mas após reload os campos
+      // sumiam porque user.{phone,bio,location} vem undefined. Fix cirúrgico: fetch direto
+      // de profiles para popular esses 3 campos. Não muda comportamento de salvamento.
+      ;(async () => {
+        try {
+          const { data, error } = await supabase
+            .from('profiles')
+            .select('phone, location, bio')
+            .eq('id', user.id)
+            .maybeSingle()
+          if (error || !data) return
+          const profLoc = data.location || ''
+          const profCepMatch = profLoc.match(/\b(\d{5}-?\d{3})\b/)
+          const profCep = profCepMatch ? profCepMatch[1] : ''
+          const profLocOnly = profLoc.replace(/\b\d{5}-?\d{3}\b\s*[—\-–|·,]?\s*/, '').trim()
+          setFormData(prev => ({
+            ...prev,
+            phone: data.phone || prev.phone,
+            cep: profCep || prev.cep,
+            location: profLocOnly || prev.location,
+            bio: data.bio || prev.bio
+          }))
+        } catch {
+          // Silencioso — fallback ao que já veio do AuthContext
+        }
+      })()
+
       // V1.9.150: carregar pricing/experiência (só faz sentido pra profissional)
       // Fallback gracioso se migration ainda não aplicada (colunas inexistentes).
       if ((user as any).type === 'profissional' || (user as any).type === 'professional') {
