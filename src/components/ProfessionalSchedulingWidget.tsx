@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import {
   Calendar,
   Clock,
@@ -69,6 +70,7 @@ interface AvailabilityRule {
 const DAY_NAMES = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado']
 
 const ProfessionalSchedulingWidget: React.FC<ProfessionalSchedulingWidgetProps> = ({ className = '', patientId }) => {
+  const navigate = useNavigate()
   const { user } = useAuth()
   const [activeTab, setActiveTab] = useState<'calendar' | 'list' | 'analytics' | 'config'>('calendar')
   const [appointments, setAppointments] = useState<Appointment[]>([])
@@ -813,6 +815,14 @@ const ProfessionalSchedulingWidget: React.FC<ProfessionalSchedulingWidgetProps> 
                   <span className="text-xs">WhatsApp</span>
                 </button>
                 <button
+                  onClick={() => {
+                    if (!selectedAppointment.patientId) return
+                    setIsDetailsModalOpen(false)
+                    // V1.9.158: abre Atendimento Integrado com sala do paciente
+                    // já selecionada (rota compartilhada — useEffect detecta patientIdParam).
+                    // "Clicou abriu" — médico vai pro chat texto + videocall sob demanda.
+                    navigate(`/app/clinica/paciente/chat-profissional?patientId=${selectedAppointment.patientId}&origin=appointment-card`)
+                  }}
                   className="flex flex-col items-center justify-center gap-1 p-3 rounded-lg bg-slate-700 hover:bg-slate-600 text-white transition-colors"
                 >
                   <MessageCircle className="w-5 h-5 text-blue-400" />
