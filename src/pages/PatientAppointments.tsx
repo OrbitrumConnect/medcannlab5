@@ -197,11 +197,32 @@ const PatientAppointments: React.FC = () => {
         // REAL + admin); filtro captura o UUID clínico correto.
         // V1.9.111-C parte 2: SELECT specialty (coluna criada na parte 1)
         // pra dropdown de especialidades populando real do banco
-        const { data, error } = await supabase
+        // V1.9.150: SELECT consultation_fee_default + years_experience com
+        // fallback gracioso. Se migration ainda não aplicada, supabase retorna
+        // erro de schema → tentamos novamente sem essas colunas (sem regressão).
+        let data: any[] | null = null
+        let error: any = null
+
+        const tryWithPricing = await (supabase as any)
           .from('users')
-          .select('id, name, email, type, specialty')
+          .select('id, name, email, type, specialty, consultation_fee_default, years_experience')
           .in('type', ['profissional', 'professional'])
           .order('name', { ascending: true })
+
+        if (tryWithPricing.error && tryWithPricing.error.message?.toLowerCase().includes('column')) {
+          // Migration V1.9.150 ainda não aplicada — fallback para shape pré-V1.9.150
+          console.log('ℹ️ V1.9.150 colunas pricing ainda não aplicadas — usando shape base')
+          const baseFetch = await supabase
+            .from('users')
+            .select('id, name, email, type, specialty')
+            .in('type', ['profissional', 'professional'])
+            .order('name', { ascending: true })
+          data = baseFetch.data
+          error = baseFetch.error
+        } else {
+          data = tryWithPricing.data
+          error = tryWithPricing.error
+        }
 
         if (error || !data || data.length === 0) {
           console.log('ℹ️ Usando profissionais fallback (banco não retornou dados)')
@@ -232,6 +253,9 @@ const PatientAppointments: React.FC = () => {
           // V1.9.144: removido rating/preço/experiência fake hardcoded — só
           // exibir dados quando forem REAIS. Paciente confiar em '4.8 estrelas
           // R$300 5 anos' fake é PIOR que não exibir nada (UX honesta > UX cheia).
+          // V1.9.150: consultPriceBRL/experienceYears agora vêm do banco quando
+          // profissional preencher via Profile.tsx. Pré-migration ou perfil vazio
+          // → undefined → grid 3 cards permanece oculta (V1.9.149 condicional).
           return {
             id: prof.id,
             name: prof.name || 'Profissional',
@@ -241,8 +265,12 @@ const PatientAppointments: React.FC = () => {
             buttonClasses: PARTNER_ACCENT.buttonClasses,
             tags: prof.specialty ? [prof.specialty] : ['Consulta'],
             languages: ['Português'],
-            // rating, excerpt, bio, consultPriceBRL, experienceYears, consultCountApprox
-            // ficam undefined — render condicional no card abaixo oculta.
+            consultPriceBRL: prof.consultation_fee_default != null
+              ? Number(prof.consultation_fee_default) : undefined,
+            experienceYears: prof.years_experience != null
+              ? Number(prof.years_experience) : undefined,
+            // rating, excerpt, bio, consultCountApprox ficam undefined.
+            // Rating é populado pela RPC calculate_professional_rating logo abaixo.
           }
         })
 

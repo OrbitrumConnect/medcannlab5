@@ -40,7 +40,10 @@ const Profile: React.FC = () => {
     phone: '',
     cep: '',
     location: '',
-    bio: ''
+    bio: '',
+    // V1.9.150: pricing por profissional (só editável quando user.type === 'profissional')
+    consultation_fee_default: '',
+    years_experience: ''
   })
   const [isLookingUpCep, setIsLookingUpCep] = useState(false)
 
@@ -80,14 +83,44 @@ const Profile: React.FC = () => {
       const cepMatch = rawLoc.match(/\b(\d{5}-?\d{3})\b/)
       const cep = cepMatch ? cepMatch[1] : ''
       const locationOnly = rawLoc.replace(/\b\d{5}-?\d{3}\b\s*[—\-–|·,]?\s*/, '').trim()
-      setFormData({
+      setFormData(prev => ({
+        ...prev,
         name: user.name || '',
         email: user.email || '',
         phone: (user as any).phone || '',
         cep,
         location: locationOnly,
         bio: (user as any).bio || ''
-      })
+      }))
+
+      // V1.9.150: carregar pricing/experiência (só faz sentido pra profissional)
+      // Fallback gracioso se migration ainda não aplicada (colunas inexistentes).
+      if ((user as any).type === 'profissional' || (user as any).type === 'professional') {
+        ;(async () => {
+          try {
+            const { data, error } = await (supabase as any)
+              .from('users')
+              .select('consultation_fee_default, years_experience')
+              .eq('id', user.id)
+              .maybeSingle()
+            if (error) {
+              // Migration V1.9.150 ainda não aplicada — silencioso, mantém vazio
+              return
+            }
+            if (data) {
+              setFormData(prev => ({
+                ...prev,
+                consultation_fee_default: data.consultation_fee_default != null
+                  ? String(data.consultation_fee_default) : '',
+                years_experience: data.years_experience != null
+                  ? String(data.years_experience) : ''
+              }))
+            }
+          } catch {
+            // Falha silenciosa — migration pendente
+          }
+        })()
+      }
     }
   }, [user])
 
@@ -185,6 +218,43 @@ const Profile: React.FC = () => {
 
       if (updateError) throw updateError
 
+      // V1.9.150: salvar pricing/experiência em users (canônica) só pra profissional.
+      // Fallback gracioso se migration ainda não aplicada — não bloqueia save geral.
+      if ((user as any).type === 'profissional' || (user as any).type === 'professional') {
+        const feeRaw = formData.consultation_fee_default.trim()
+        const yearsRaw = formData.years_experience.trim()
+        const feeNum = feeRaw === '' ? null : parseFloat(feeRaw.replace(',', '.'))
+        const yearsNum = yearsRaw === '' ? null : parseInt(yearsRaw, 10)
+
+        // Validação client-side (CHECK constraints replicadas)
+        if (feeNum != null && (Number.isNaN(feeNum) || feeNum < 350 || feeNum > 1300)) {
+          showError('Valor da consulta deve estar entre R$ 350 e R$ 1.300')
+          setIsLoading(false)
+          return
+        }
+        if (yearsNum != null && (Number.isNaN(yearsNum) || yearsNum < 0 || yearsNum > 80)) {
+          showError('Anos de experiência deve estar entre 0 e 80')
+          setIsLoading(false)
+          return
+        }
+
+        try {
+          const { error: usersError } = await (supabase as any)
+            .from('users')
+            .update({
+              consultation_fee_default: feeNum,
+              years_experience: yearsNum
+            })
+            .eq('id', user.id)
+          if (usersError && !usersError.message?.includes('column')) {
+            // Erro real (não é "migration pendente") — alerta mas não falha o save geral
+            console.warn('⚠️ V1.9.150 falha ao salvar pricing:', usersError.message)
+          }
+        } catch (e: any) {
+          console.warn('⚠️ V1.9.150 pricing não persistido:', e?.message)
+        }
+      }
+
       success('Perfil atualizado com sucesso!')
       setIsEditing(false)
     } catch (err: any) {
@@ -267,7 +337,9 @@ const Profile: React.FC = () => {
         phone: '',
         cep: '',
         location: '',
-        bio: ''
+        bio: '',
+        consultation_fee_default: '',
+        years_experience: ''
       })
     }
     setIsEditing(false)
@@ -599,6 +671,64 @@ const Profile: React.FC = () => {
                   className="w-full px-3 py-2 text-sm bg-slate-700 border border-slate-600 rounded text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
                 />
               </div>
+
+              {/* V1.9.150: campos profissionais (vitrine + cobrança).
+                  Aparecem só para type=profissional. Wallet existente já calcula split 70/30
+                  baseado em platform_fee_pct dinâmico (FASE B liga tier_label → 30/23/26/20%). */}
+              {((user as any)?.type === 'profissional' || (user as any)?.type === 'professional') && (
+                <div className="border-t border-slate-700 pt-4 space-y-3">
+                  <div className="flex items-center gap-2">
+                    <Wallet className="w-3.5 h-3.5 text-emerald-400" />
+                    <h3 className="text-xs font-semibold text-emerald-300 uppercase tracking-wider">
+                      Vitrine profissional
+                    </h3>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-xs font-medium text-slate-400 mb-1">
+                        Valor da consulta (R$)
+                        <span className="text-[10px] text-slate-500 ml-1">piso 350 · teto 1.300</span>
+                      </label>
+                      <input
+                        type="number"
+                        name="consultation_fee_default"
+                        value={formData.consultation_fee_default}
+                        onChange={handleInputChange}
+                        disabled={!isEditing}
+                        min={350}
+                        max={1300}
+                        step={10}
+                        placeholder="350"
+                        className="w-full px-3 py-2 text-sm bg-slate-700 border border-slate-600 rounded text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                      />
+                      {formData.consultation_fee_default && !Number.isNaN(parseFloat(formData.consultation_fee_default)) && (
+                        <p className="text-[11px] text-emerald-300 mt-1">
+                          Você recebe ~70%: R$ {(parseFloat(formData.consultation_fee_default) * 0.7).toFixed(2)}
+                          <span className="text-slate-500 ml-1">(STANDARD; ELITE = 80%)</span>
+                        </p>
+                      )}
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-slate-400 mb-1">
+                        Anos de experiência
+                        <span className="text-[10px] text-slate-500 ml-1">0-80</span>
+                      </label>
+                      <input
+                        type="number"
+                        name="years_experience"
+                        value={formData.years_experience}
+                        onChange={handleInputChange}
+                        disabled={!isEditing}
+                        min={0}
+                        max={80}
+                        step={1}
+                        placeholder="0"
+                        className="w-full px-3 py-2 text-sm bg-slate-700 border border-slate-600 rounded text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 
