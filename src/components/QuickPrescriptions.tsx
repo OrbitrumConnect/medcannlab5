@@ -23,6 +23,8 @@ import {
 } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
+import { useToast } from '../contexts/ToastContext'
+import { useConfirm } from '../contexts/ConfirmContext'
 import { getAllPatients } from '../lib/adminPermissions'
 
 interface PrescriptionTemplate {
@@ -48,6 +50,8 @@ interface QuickPrescriptionsProps {
 const QuickPrescriptions: React.FC<QuickPrescriptionsProps> = ({ className = '', patientId }) => {
   const { user } = useAuth()
   const navigate = useNavigate()
+  const toast = useToast()
+  const { confirm } = useConfirm()
   const [selectedCategory, setSelectedCategory] = useState<string>('all')
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedTemplate, setSelectedTemplate] = useState<PrescriptionTemplate | null>(null)
@@ -151,14 +155,19 @@ const QuickPrescriptions: React.FC<QuickPrescriptionsProps> = ({ className = '',
       })
       setIsModalOpen(true)
     } else {
-      // V1.9.180-C — Signed/sent/validated/cancelled: alerta orientativo.
-      // Pedro pediu "só editar rascunho" — pra ver receita assinada com PDF
-      // completo, médico usa rota /app/clinica/prescricoes (página completa).
-      alert(
-        `Esta prescrição está com status "${p.status}".\n\n` +
-        `Receitas assinadas/enviadas são imutáveis (CFM 2.314/2022).\n\n` +
-        `Para visualizar/imprimir, acesse "Prescrições Médicas" no menu lateral.`
-      )
+      // V1.9.181 — usa ConfirmContext (glassmorphism nativo do app)
+      const statusLabel: Record<string, string> = {
+        signed: 'Assinada', sent: 'Enviada', validated: 'Validada', cancelled: 'Cancelada'
+      }
+      void confirm({
+        title: `Prescrição ${statusLabel[p.status] || p.status}`,
+        message: `Receitas assinadas/enviadas são imutáveis (CFM 2.314/2022). Para visualizar ou imprimir esta receita, acesse "Prescrições Médicas" no menu lateral.`,
+        type: 'info',
+        confirmText: 'Ir para Prescrições',
+        cancelText: 'Fechar'
+      }).then(ok => {
+        if (ok) navigate('/app/clinica/prescricoes')
+      })
     }
   }
 
@@ -171,16 +180,24 @@ const QuickPrescriptions: React.FC<QuickPrescriptionsProps> = ({ className = '',
     setSelectedPrescriptionType('simple')
   }
 
-  // V1.9.180-B — Excluir rascunho (com confirm)
+  // V1.9.180-B / V1.9.181 — Excluir rascunho com ConfirmDialog do app
   const handleDeleteDraft = async (id: string) => {
-    if (!confirm('Excluir este rascunho? Esta ação não pode ser desfeita.')) return
+    const ok = await confirm({
+      title: 'Excluir rascunho?',
+      message: 'Esta ação não pode ser desfeita. O rascunho será removido permanentemente.',
+      type: 'danger',
+      confirmText: 'Excluir',
+      cancelText: 'Cancelar'
+    })
+    if (!ok) return
     try {
       const { error } = await supabase.from('cfm_prescriptions').delete().eq('id', id)
       if (error) throw error
       handleCloseModal()
       await loadMyPrescriptions()
+      toast.success('Rascunho excluído')
     } catch (err: any) {
-      alert(err?.message || 'Erro ao excluir rascunho')
+      toast.error('Erro ao excluir', err?.message || 'Não foi possível excluir o rascunho.')
     }
   }
 
@@ -218,7 +235,7 @@ const QuickPrescriptions: React.FC<QuickPrescriptionsProps> = ({ className = '',
 
   const handleSavePrescription = async () => {
     if (!selectedPatient || !prescriptionForm.medication) {
-      alert('Selecione um paciente e preencha a medicação.')
+      toast.warning('Campos obrigatórios', 'Selecione um paciente e preencha a medicação.')
       return
     }
 
@@ -285,7 +302,7 @@ const QuickPrescriptions: React.FC<QuickPrescriptionsProps> = ({ className = '',
       }, 2000)
 
     } catch (err: any) {
-      alert(err.message)
+      toast.error('Erro ao salvar', err?.message || 'Falha ao salvar prescrição.')
     } finally {
       setSaving(false)
     }
@@ -562,13 +579,15 @@ const QuickPrescriptions: React.FC<QuickPrescriptionsProps> = ({ className = '',
               <button
                 key={t.id}
                 type="button"
-                onClick={() => {
+                onClick={async () => {
                   if (t.warn) {
-                    const ok = confirm(
-                      `Receita "${t.name}" requer dados do COMPRADOR (ANVISA Portaria 344/98) que ainda não estão neste form rápido.\n\n` +
-                      `Você pode criar o rascunho aqui e completar os dados em "Prescrições Médicas" (menu lateral) antes de assinar.\n\n` +
-                      `Continuar com rascunho rápido?`
-                    )
+                    const ok = await confirm({
+                      title: `${t.name} — atenção`,
+                      message: `Esta receita requer dados do COMPRADOR (ANVISA Portaria 344/98) que ainda não estão neste form rápido. Você pode criar o rascunho aqui e completar os dados em "Prescrições Médicas" no menu lateral antes de assinar.`,
+                      type: 'warning',
+                      confirmText: 'Criar rascunho',
+                      cancelText: 'Cancelar'
+                    })
                     if (!ok) return
                   }
                   setSelectedPrescriptionType(t.id as any)
