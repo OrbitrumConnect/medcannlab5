@@ -28,6 +28,10 @@ interface Certificate {
   is_active: boolean
   created_at: string
   updated_at: string
+  // V1.9.175+ — modo real ICP-Brasil
+  certificate_file_path?: string | null
+  encrypted_password?: string | null
+  uploaded_at?: string | null
 }
 
 const CertificateManagement: React.FC = () => {
@@ -47,6 +51,7 @@ const CertificateManagement: React.FC = () => {
   const [certificatePassword, setCertificatePassword] = useState('')
 
   const AC_PROVIDERS = [
+    'DigitalSign',  // V1.9.177 — A1 RSA-SHA256, ICP-Brasil
     'Soluti',
     'Certisign',
     'Valid',
@@ -105,21 +110,71 @@ const CertificateManagement: React.FC = () => {
     setError(null)
 
     try {
-      // TODO: Em produção, aqui seria necessário:
-      // 1. Validar o certificado (A1: arquivo .pfx/.p12, A3: token físico, remote: API)
-      // 2. Extrair informações do certificado (thumbprint, serial, subject)
-      // 3. Verificar validade e expiração
-      
-      // Por enquanto, criamos um registro básico
+      // V1.9.177 — Upload REAL do .pfx pro bucket privado + cifrar senha via Edge
+      // (modo real pra ICP-Brasil). Se sem arquivo/senha → cadastro metadata-only
+      // (modo simulação fallback, igual ao comportamento V1.9.95).
+
+      let certificateFilePath: string | null = null
+      let encryptedPassword: string | null = null
+      let uploadedAt: string | null = null
+
+      // Caminho REAL — só ativa se A1 + arquivo + senha presentes
+      if (certificateType === 'A1' && certificateFile && certificatePassword) {
+        // Validações cliente
+        if (certificateFile.size > 10 * 1024 * 1024) {
+          throw new Error('Arquivo .pfx maior que 10 MB')
+        }
+        const allowedTypes = ['application/x-pkcs12', 'application/pkcs12', 'application/octet-stream']
+        const allowedExts = ['.pfx', '.p12']
+        const fname = certificateFile.name.toLowerCase()
+        const okExt = allowedExts.some(ext => fname.endsWith(ext))
+        const okType = allowedTypes.includes(certificateFile.type) || certificateFile.type === ''
+        if (!okExt && !okType) {
+          throw new Error('Arquivo deve ser .pfx ou .p12 (PKCS#12)')
+        }
+
+        // 1. Cifrar senha via Edge (NUNCA salvar plaintext)
+        const { data: encResp, error: encError } = await supabase.functions.invoke(
+          'cert-encrypt-password',
+          { body: { password: certificatePassword } }
+        )
+        if (encError) throw new Error(`Erro ao cifrar senha: ${encError.message}`)
+        if (!encResp?.success || !encResp.encrypted) {
+          throw new Error(encResp?.error || 'Edge cert-encrypt-password retornou inválido')
+        }
+        encryptedPassword = encResp.encrypted as string
+
+        // 2. Upload .pfx pro Storage (path: {professional_id}/{uuid}.pfx)
+        const certUuid = crypto.randomUUID()
+        const storagePath = `${user.id}/${certUuid}.pfx`
+        const { error: uploadError } = await supabase.storage
+          .from('certificates')
+          .upload(storagePath, certificateFile, {
+            cacheControl: '0',  // cert nunca em cache CDN
+            upsert: false,      // nunca sobrescrever (cada cert único)
+            contentType: 'application/x-pkcs12'
+          })
+        if (uploadError) throw new Error(`Erro no upload do .pfx: ${uploadError.message}`)
+        certificateFilePath = storagePath
+        uploadedAt = new Date().toISOString()
+      }
+
+      // 3. INSERT em medical_certificates (com ou sem .pfx)
       const certificateData = {
         professional_id: user.id,
         certificate_type: certificateType,
         ac_provider: acProvider,
-        certificate_thumbprint: certificateFile ? `THUMBPRINT-${Date.now()}` : null,
-        certificate_serial_number: null, // Seria extraído do certificado
-        certificate_subject: null, // Seria extraído do certificado
+        certificate_thumbprint: certificateFile
+          ? `${certificateType}-${acProvider}-${Date.now()}`
+          : null,
+        certificate_serial_number: null,
+        certificate_subject: null,
         expires_at: expiresAt,
-        is_active: true
+        is_active: true,
+        // V1.9.177 — modo real (only set se upload completou com sucesso)
+        certificate_file_path: certificateFilePath,
+        encrypted_password: encryptedPassword,
+        uploaded_at: uploadedAt
       }
 
       const { error: insertError } = await supabase
@@ -127,6 +182,10 @@ const CertificateManagement: React.FC = () => {
         .insert(certificateData)
 
       if (insertError) {
+        // Cleanup: se INSERT falhou mas .pfx foi uploaded, remover do Storage
+        if (certificateFilePath) {
+          await supabase.storage.from('certificates').remove([certificateFilePath])
+        }
         throw insertError
       }
 
@@ -141,7 +200,10 @@ const CertificateManagement: React.FC = () => {
       // Recarregar lista
       await loadCertificates()
 
-      alert('✅ Certificado adicionado com sucesso!')
+      const successMsg = certificateFilePath
+        ? '✅ Certificado adicionado com upload real (.pfx criptografado)!'
+        : '⚠️ Certificado adicionado em modo metadata-only (sem .pfx — assinatura usará simulação fallback).'
+      alert(successMsg)
     } catch (err: any) {
       console.error('Erro ao adicionar certificado:', err)
       setError(err.message || 'Erro ao adicionar certificado')
