@@ -1084,10 +1084,10 @@ const Prescriptions: React.FC = () => {
               </div>
             )}
 
-            {/* Tipo de Prescrição */}
-            <div className="mb-8">
-              <h2 className="text-2xl font-bold text-white mb-4">Selecione o Tipo de Receita</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* V1.9.182 — Cards compactos (mesmo tamanho dos templates QuickPrescriptions) */}
+            <div className="mb-6">
+              <h2 className="text-base md:text-lg font-bold text-white mb-3">Selecione o Tipo de Receita</h2>
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
                 {prescriptionTypes.map((type) => {
                   const Icon = type.icon
                   return (
@@ -1097,13 +1097,13 @@ const Prescriptions: React.FC = () => {
                         setSelectedType(type.id as any)
                         setShowForm(true)
                       }}
-                      className="group bg-slate-800/50 backdrop-blur-sm rounded-xl p-6 border border-slate-700/50 hover:border-slate-600 transition-all text-left"
+                      className="group bg-slate-800/50 backdrop-blur-sm rounded-xl p-3 md:p-4 border border-slate-700/50 hover:border-slate-600 transition-all text-left hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
                     >
-                      <div className={`inline-flex p-4 rounded-xl bg-gradient-to-br ${type.color} mb-4 group-hover:scale-110 transition-transform`}>
-                        <Icon className="w-8 h-8 text-white" />
+                      <div className={`inline-flex p-2 rounded-lg bg-gradient-to-br ${type.color} mb-2 group-hover:scale-110 transition-transform`}>
+                        <Icon className="w-4 h-4 md:w-5 md:h-5 text-white" />
                       </div>
-                      <h3 className="text-xl font-bold text-white mb-2">{type.name}</h3>
-                      <p className="text-sm text-slate-400">{type.description}</p>
+                      <h3 className="text-xs md:text-sm font-bold text-white leading-tight">{type.name}</h3>
+                      <p className="text-[10px] md:text-xs text-slate-400 mt-1 leading-snug">{type.description}</p>
                     </button>
                   )
                 })}

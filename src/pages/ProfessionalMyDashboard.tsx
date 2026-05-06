@@ -120,7 +120,10 @@ const ProfessionalMyDashboard: React.FC = () => {
       onChange: (id) => {
         if (id === 'meu-dashboard') return
         if (id === 'atendimento') navigate('/app/clinica/profissional/dashboard?section=atendimento')
-        else if (id === 'prescricoes') navigate('/app/clinica/profissional/dashboard?section=prescricoes')
+        // V1.9.183 — "Prescrições" no header agora unifica direto na aba do Terminal
+        // Clínico Integrado (não mais a página standalone /prescricoes que ficava em
+        // outra rota). Mesmo destino que a Sidebar "Prescrições Médicas" (V1.9.135-A).
+        else if (id === 'prescricoes') navigate('/app/clinica/profissional/dashboard?section=terminal-clinico&tab=prescriptions')
         else if (id === 'terminal-clinico') navigate('/app/clinica/profissional/dashboard?section=terminal-clinico')
         else if (id === 'chat-profissionais') navigate('/app/clinica/profissional/dashboard?section=chat-profissionais')
       },
