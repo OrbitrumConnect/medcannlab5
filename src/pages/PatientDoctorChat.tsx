@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useCallback, useRef, useState } from 'react'
 // Layout fixed: 100dvh
 import { useLocation, useNavigate } from 'react-router-dom'
-import { ArrowLeft, ChevronRight, Loader2, MessageCircle, Send, Users, FileText, Video, Phone, X, Paperclip } from 'lucide-react'
+import { ArrowLeft, ChevronRight, ChevronDown, ChevronUp, Loader2, MessageCircle, Send, Users, FileText, Video, Phone, X, Paperclip } from 'lucide-react'
 
 import { useAuth } from '../contexts/AuthContext'
 import { useChatSystem } from '../hooks/useChatSystem'
@@ -40,6 +40,8 @@ const PatientDoctorChat: React.FC = () => {
   const isPatient = user?.type === 'paciente' && !isImpersonatingPatient
 
   const [activeRoomId, setActiveRoomId] = useState<string | undefined>(roomIdParam ?? undefined)
+  // V1.9.168 — banner colapsável (default: expandido). Mobile pode colapsar pra ganhar viewport.
+  const [isBannerExpanded, setIsBannerExpanded] = useState(true)
   const [participants, setParticipants] = useState<ParticipantSummary[]>([])
   const [participantsLoading, setParticipantsLoading] = useState(false)
   const [messageInput, setMessageInput] = useState('')
@@ -1341,16 +1343,32 @@ const PatientDoctorChat: React.FC = () => {
                 </div>
               </div>
 
-              {/* V1.9.159+162: Banner sticky com instruções videoconsulta — sempre visível */}
+              {/* V1.9.159+162+168: Banner instruções videoconsulta — colapsável V1.9.168 */}
               {activeRoomId && (
-                <div className="relative z-10 mx-5 mt-3 p-3 rounded-xl bg-gradient-to-r from-emerald-900/20 to-primary-900/20 border border-emerald-500/20 text-xs text-slate-300 space-y-1.5">
-                  <p className="font-semibold text-emerald-300">📞 Como funciona a videoconsulta</p>
-                  <p className="text-slate-400">
-                    Conversem por texto primeiro · O <strong className="text-white">médico inicia</strong> a chamada (botão <Video className="inline w-3 h-3 text-blue-400" />) · O <strong className="text-white">paciente aceita</strong> quando a notificação aparecer · Se falhar, refaça — o sistema reconecta automaticamente.
-                  </p>
-                  <p className="text-amber-300/90 text-[11px] pt-1 border-t border-amber-500/10">
-                    💡 <strong>Para melhor experiência</strong>: use celular (WhatsApp-like) ou computador com <strong>câmera e microfone permitidos</strong>. Sem câmera/microfone, a consulta por <strong>conversa de texto</strong> aqui também é completa e registrada no prontuário.
-                  </p>
+                <div className="relative z-10 mx-5 mt-3 p-3 rounded-xl bg-gradient-to-r from-emerald-900/20 to-primary-900/20 border border-emerald-500/20 text-xs text-slate-300">
+                  <button
+                    onClick={() => setIsBannerExpanded(prev => !prev)}
+                    className="w-full flex items-center justify-between gap-2 text-left hover:opacity-90 transition-opacity"
+                    aria-expanded={isBannerExpanded}
+                    aria-label={isBannerExpanded ? 'Colapsar instruções' : 'Expandir instruções'}
+                  >
+                    <p className="font-semibold text-emerald-300">📞 Como funciona a videoconsulta</p>
+                    {isBannerExpanded ? (
+                      <ChevronUp className="w-4 h-4 text-emerald-300/80 flex-shrink-0" />
+                    ) : (
+                      <ChevronDown className="w-4 h-4 text-emerald-300/80 flex-shrink-0" />
+                    )}
+                  </button>
+                  {isBannerExpanded && (
+                    <div className="mt-1.5 space-y-1.5">
+                      <p className="text-slate-400">
+                        Conversem por texto primeiro · O <strong className="text-white">médico inicia</strong> a chamada (botão <Video className="inline w-3 h-3 text-blue-400" />) · O <strong className="text-white">paciente aceita</strong> quando a notificação aparecer · Se falhar, refaça — o sistema reconecta automaticamente.
+                      </p>
+                      <p className="text-amber-300/90 text-[11px] pt-1 border-t border-amber-500/10">
+                        💡 <strong>Para melhor experiência</strong>: use celular (WhatsApp-like) ou computador com <strong>câmera e microfone permitidos</strong>. Sem câmera/microfone, a consulta por <strong>conversa de texto</strong> aqui também é completa e registrada no prontuário.
+                      </p>
+                    </div>
+                  )}
                 </div>
               )}
 
