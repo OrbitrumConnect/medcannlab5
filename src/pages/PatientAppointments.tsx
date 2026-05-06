@@ -63,8 +63,10 @@ type ProfessionalCard = {
   name: string
   role: string
   specialty: string
-  rating: string
-  excerpt: string
+  // V1.9.144: rating + excerpt opcionais — não exibir dados fake hardcoded
+  // (parceiros não têm rating real, melhor ocultar do que mostrar 4.8 placeholder)
+  rating?: string
+  excerpt?: string
   accentClasses: string
   buttonClasses: string
   // MVP profile fields (podem virar dados reais depois)
@@ -227,21 +229,20 @@ const PatientAppointments: React.FC = () => {
 
           // V1.9.111-A: usa PARTNER_ACCENT único pra padronizar visual.
           // V1.9.111-C parte 2: usa prof.specialty real do banco (fallback Clínica Geral).
+          // V1.9.144: removido rating/preço/experiência fake hardcoded — só
+          // exibir dados quando forem REAIS. Paciente confiar em '4.8 estrelas
+          // R$300 5 anos' fake é PIOR que não exibir nada (UX honesta > UX cheia).
           return {
             id: prof.id,
             name: prof.name || 'Profissional',
             role: prof.specialty || 'Especialista',
             specialty: prof.specialty || 'Clínica Geral',
-            rating: '4.8',
-            excerpt: 'Profissional disponível para consultas na plataforma MedCannLab.',
             accentClasses: PARTNER_ACCENT.accentClasses,
             buttonClasses: PARTNER_ACCENT.buttonClasses,
-            bio: '',
-            tags: ['Consulta'],
+            tags: prof.specialty ? [prof.specialty] : ['Consulta'],
             languages: ['Português'],
-            consultPriceBRL: 300,
-            experienceYears: 5,
-            consultCountApprox: 50,
+            // rating, excerpt, bio, consultPriceBRL, experienceYears, consultCountApprox
+            // ficam undefined — render condicional no card abaixo oculta.
           }
         })
 
@@ -1002,10 +1003,13 @@ const PatientAppointments: React.FC = () => {
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-1.5 flex-wrap">
             <h4 className="text-white text-base font-semibold">{professional.name}</h4>
-            <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-slate-800 border border-slate-700/50 text-[11px] text-slate-300">
-              <Star className="w-3 h-3 text-amber-300 fill-amber-300" />
-              {professional.rating}
-            </span>
+            {/* V1.9.144: rating só se REAL (oficiais) — não exibir 4.8 placeholder pra parceiros */}
+            {professional.rating && (
+              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-slate-800 border border-slate-700/50 text-[11px] text-slate-300">
+                <Star className="w-3 h-3 text-amber-300 fill-amber-300" />
+                {professional.rating}
+              </span>
+            )}
             {isOfficial && (
               <span className="inline-flex items-center px-1.5 py-0.5 rounded-full bg-amber-500/15 border border-amber-500/30 text-[9px] font-bold text-amber-300 uppercase tracking-wider">
                 Oficial
@@ -1013,7 +1017,10 @@ const PatientAppointments: React.FC = () => {
             )}
           </div>
           <p className="text-xs text-slate-400 mt-0.5">{professional.role}</p>
-          <p className="text-xs text-slate-300 mt-1.5 line-clamp-2">{professional.excerpt}</p>
+          {/* V1.9.144: excerpt só se houver bio/descrição real — sem placeholder genérico */}
+          {professional.excerpt && (
+            <p className="text-xs text-slate-300 mt-1.5 line-clamp-2">{professional.excerpt}</p>
+          )}
         </div>
       </div>
       <div className="grid grid-cols-2 gap-2">
