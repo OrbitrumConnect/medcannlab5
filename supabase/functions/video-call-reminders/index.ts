@@ -147,15 +147,44 @@ Deno.serve(async (req) => {
             stats.reminders_sent++
 
             if (r.contact?.email) {
-              const emailRes = await supabase.functions.invoke('send-email', {
-                body: {
-                  to: r.contact.email,
-                  subject: titleMessage,
-                  html: `<p>Olá <strong>${r.contact.name ?? ''}</strong>,</p><p>${fullMessage}</p><p><em>MedCannLab — Plataforma Nôa Esperança</em></p>`,
-                },
-              })
-              if (!emailRes.error) stats.emails_sent++
-              else console.warn('[reminders] Email failed:', r.contact.email, emailRes.error)
+              // V1.9.141-C: Resend API direto, bypass gateway Supabase.
+              // Tentativas anteriores falharam:
+              //   V1.9.140-C: SDK invoke('send-email') → UNAUTHORIZED_INVALID_JWT_FORMAT (401)
+              //   V1.9.141 (Opção A): header Authorization explícito → mesmo erro (SDK sobrescreve)
+              //   V1.9.141-B (Opção B): fetch direto pra send-email → mesmo erro
+              // Causa raiz hipotética: SUPABASE_SERVICE_ROLE_KEY no env desta Edge mal-formatada
+              // (DB queries toleram, mas Gateway Supabase rigoroso valida JWT estrutura).
+              // Solução escalável: chamar Resend API direto (mesma chave RESEND_API_KEY que
+              // send-email Edge usa). Elimina hop entre Edges + dependência de secret quebrado.
+              const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY')
+              const RESEND_FROM = Deno.env.get('RESEND_FROM_EMAIL') || 'MedCannLab <noreply@medcannlab.com.br>'
+              if (!RESEND_API_KEY) {
+                console.warn('[reminders] RESEND_API_KEY missing — email skipped:', r.contact.email)
+              } else {
+                try {
+                  const resendRes = await fetch('https://api.resend.com/emails', {
+                    method: 'POST',
+                    headers: {
+                      'Authorization': `Bearer ${RESEND_API_KEY}`,
+                      'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                      from: RESEND_FROM,
+                      to: r.contact.email,
+                      subject: titleMessage,
+                      html: `<p>Olá <strong>${r.contact.name ?? ''}</strong>,</p><p>${fullMessage}</p><p><em>MedCannLab — Plataforma Nôa Esperança</em></p>`,
+                    }),
+                  })
+                  if (resendRes.ok) {
+                    stats.emails_sent++
+                  } else {
+                    const errBody = await resendRes.text().catch(() => '')
+                    console.warn('[reminders] Resend failed:', r.contact.email, resendRes.status, errBody)
+                  }
+                } catch (err) {
+                  console.warn('[reminders] Resend fetch error:', r.contact.email, String(err))
+                }
+              }
             }
           } catch (err) {
             stats.errors++
