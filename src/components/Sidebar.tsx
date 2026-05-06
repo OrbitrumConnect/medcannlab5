@@ -35,6 +35,7 @@ import {
 } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
 import { useToast } from '../contexts/ToastContext'
+import { useActiveCallNotification } from '../hooks/useActiveCallNotification'
 import { normalizeUserType, UserType } from '../lib/userTypes'
 import {
   backgroundGradient,
@@ -67,6 +68,8 @@ const Sidebar: React.FC<SidebarProps> = ({
 }) => {
   const { logout } = useAuth()
   const { confirm } = useToast()
+  // V1.9.161: badge pulsante em itens chat quando há chamada pendente pra mim
+  const { hasActiveCall, callType } = useActiveCallNotification()
   const [isCollapsed, setIsCollapsed] = useState(false)
   const [isMobileOpen, setIsMobileOpen] = useState(false)
 
@@ -645,11 +648,20 @@ const Sidebar: React.FC<SidebarProps> = ({
                     .map((item) => {
                       const Icon = item.icon
                       const itemIsActive = isActive(item.href)
+                      // V1.9.161: detecta items relacionados a chat/atendimento pra destacar
+                      // quando há chamada pendente. Cobre paciente (chat-profissional) e
+                      // médico (chat-clinico, terminal-clinico, terminal-atendimento).
+                      const isChatRelated =
+                        item.href.includes('chat-profissional') ||
+                        item.href.includes('chat-clinico') ||
+                        item.href.includes('terminal-clinico') ||
+                        item.href.includes('terminal-atendimento')
+                      const showCallBadge = hasActiveCall && isChatRelated
                       return (
                         <Link
                           key={item.href}
                           to={item.href}
-                          className={`flex items-center ${isCollapsed ? 'justify-center' : 'gap-3'} ${isCollapsed ? 'px-2 py-2.5' : 'px-3 py-2.5'} rounded-lg transition-all mb-1`}
+                          className={`relative flex items-center ${isCollapsed ? 'justify-center' : 'gap-3'} ${isCollapsed ? 'px-2 py-2.5' : 'px-3 py-2.5'} rounded-lg transition-all mb-1`}
                           style={{
                             ...(itemIsActive ? {
                               background: accentGradient,
@@ -688,8 +700,22 @@ const Sidebar: React.FC<SidebarProps> = ({
                           }}
                           onClick={() => isMobile && handleMobileToggle()}
                         >
-                          <Icon className={`w-6 h-6 flex-shrink-0 ${itemIsActive ? 'text-white' : 'text-[#C8D6E5]'}`} />
-                          {!isCollapsed && <span className={`text-sm font-medium flex-1 ${itemIsActive ? 'text-white' : 'text-[#C8D6E5]'}`}>{item.name}</span>}
+                          <div className="relative flex-shrink-0">
+                            <Icon className={`w-6 h-6 ${itemIsActive ? 'text-white' : 'text-[#C8D6E5]'} ${showCallBadge ? 'text-red-400' : ''}`} />
+                            {showCallBadge && (
+                              <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-red-500 border border-slate-900 animate-pulse" />
+                            )}
+                          </div>
+                          {!isCollapsed && (
+                            <span className={`text-sm font-medium flex-1 flex items-center gap-2 ${itemIsActive ? 'text-white' : 'text-[#C8D6E5]'}`}>
+                              {item.name}
+                              {showCallBadge && (
+                                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-red-500/90 text-white text-[10px] font-bold animate-pulse">
+                                  {callType === 'audio' ? '📞' : '📹'} chamada
+                                </span>
+                              )}
+                            </span>
+                          )}
                         </Link>
                       )
                     })}
