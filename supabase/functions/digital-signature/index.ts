@@ -4,9 +4,11 @@
 // Sistema de assinatura digital conforme CFM/ITI
 // Arquitetura: COS v5.0 + TradeVision Core
 // Data: 05/02/2026
+// V1.9.176 (06/05/2026): dual-mode REAL (PKCS#12 + PKCS#7 via node-forge) ↔ simulação fallback
 
-// ✅ Usar Deno.serve() — API nativa do runtime (recomendado pela documentação Supabase)
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2"
+import forge from "https://esm.sh/node-forge@1.3.1"
+import { decrypt as decryptPassword } from "../_shared/crypto.ts"
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -100,12 +102,145 @@ async function createSnapshot(
 }
 
 /**
- * Chama API da AC usando integração real (quando configurada) ou simulação
+ * V1.9.176 — Assinatura REAL via cert .pfx (PKCS#12) + PKCS#7 SignedData.
+ *
+ * Pré-condições:
+ *  - certificate.certificate_file_path: path do .pfx no bucket 'certificates'
+ *  - certificate.encrypted_password: senha cifrada via _shared/crypto.ts (AES-GCM)
+ *  - ENCRYPTION_KEY env var setada
+ *
+ * Fluxo:
+ *  1. Download .pfx do Storage privado
+ *  2. Decrypt senha do banco
+ *  3. Parse PKCS#12 via node-forge → extrai privateKey + cert + chain
+ *  4. Constrói PKCS#7 SignedData (CMS, RFC 3852) com hash do documento
+ *  5. Retorna assinatura base64 + chain + validationCode estável (hash do PKCS#7)
+ *
+ * Em qualquer erro: lança exception (caller decide fallback).
  */
-async function callACProvider(
+async function signWithRealCertificate(
+  supabase: any,
   certificate: any,
   documentHash: string
-): Promise<{ signature: string; validationUrl: string; validationCode: string }> {
+): Promise<{ signature: string; certInfo: any; validationCode: string; validationUrl: string }> {
+  // 1. Validações de pré-condição
+  if (!certificate.certificate_file_path || !certificate.encrypted_password) {
+    throw new Error('Cert sem file_path ou encrypted_password — modo real não disponível')
+  }
+
+  // 2. Download do .pfx
+  const { data: fileBlob, error: dlError } = await supabase
+    .storage
+    .from('certificates')
+    .download(certificate.certificate_file_path)
+
+  if (dlError || !fileBlob) {
+    throw new Error(`Falha ao baixar .pfx do Storage: ${dlError?.message || 'sem dados'}`)
+  }
+
+  const pfxBuffer = await fileBlob.arrayBuffer()
+  const pfxBytes = new Uint8Array(pfxBuffer)
+
+  // 3. Decrypt senha
+  const password = await decryptPassword(certificate.encrypted_password)
+  if (!password) throw new Error('Senha decifrada vazia')
+
+  // 4. Parse PKCS#12 via node-forge
+  // node-forge espera binary string (1 byte por char), converter de Uint8Array
+  let binaryStr = ''
+  for (let i = 0; i < pfxBytes.length; i++) binaryStr += String.fromCharCode(pfxBytes[i])
+
+  const p12Asn1 = forge.asn1.fromDer(binaryStr)
+  const p12 = forge.pkcs12.pkcs12FromAsn1(p12Asn1, password)
+
+  // 5. Extrair private key + cert
+  // PKCS#12 tem múltiplos safeBags; queremos pkcs8ShroudedKeyBag (private) + certBag
+  const keyBags = p12.getBags({ bagType: forge.pki.oids.pkcs8ShroudedKeyBag })
+  const certBags = p12.getBags({ bagType: forge.pki.oids.certBag })
+
+  const privateKeyBag = keyBags[forge.pki.oids.pkcs8ShroudedKeyBag]?.[0]
+  const certBag = certBags[forge.pki.oids.certBag]?.[0]
+
+  if (!privateKeyBag?.key) throw new Error('Private key não encontrada no .pfx')
+  if (!certBag?.cert) throw new Error('Certificado não encontrado no .pfx')
+
+  const privateKey = privateKeyBag.key
+  const cert = certBag.cert
+
+  // 6. Construir PKCS#7 SignedData (CMS, RFC 3852)
+  // documentHash já é SHA-256 hex; precisamos do conteúdo a assinar (binary)
+  // Para CMS attached: documento inteiro vai dentro. Para detached: só hash.
+  // Usamos detached (padrão ICP-Brasil pra prescrições) — só envelopa o hash.
+  const p7 = forge.pkcs7.createSignedData()
+  p7.content = forge.util.createBuffer(documentHash, 'utf8') // hash hex como string
+  p7.addCertificate(cert)
+  p7.addSigner({
+    key: privateKey,
+    certificate: cert,
+    digestAlgorithm: forge.pki.oids.sha256,
+    authenticatedAttributes: [
+      { type: forge.pki.oids.contentType, value: forge.pki.oids.data },
+      { type: forge.pki.oids.messageDigest /* auto */ },
+      { type: forge.pki.oids.signingTime, value: new Date() }
+    ]
+  })
+
+  p7.sign({ detached: true })
+
+  // 7. Serializar PKCS#7 → DER → base64
+  const p7Asn1 = p7.toAsn1()
+  const p7Der = forge.asn1.toDer(p7Asn1).getBytes()
+  let p7Base64 = ''
+  // btoa é seguro pra binary string em Deno
+  p7Base64 = btoa(p7Der)
+
+  // 8. validationCode: derivar do hash do PKCS#7 (estável e auditável)
+  const p7Hash = forge.md.sha256.create()
+  p7Hash.update(p7Der)
+  const p7HashHex = p7Hash.digest().toHex()
+  const validationCode = `ITI-${p7HashHex.substring(0, 16).toUpperCase()}`
+  const validationUrl = `https://www.gov.br/iti/pt-br/validacao?codigo=${validationCode}`
+
+  // 9. Cert info pra auditoria
+  const certInfo = {
+    subject: cert.subject.attributes.map((a: any) => `${a.shortName}=${a.value}`).join(','),
+    issuer: cert.issuer.attributes.map((a: any) => `${a.shortName}=${a.value}`).join(','),
+    serialNumber: cert.serialNumber,
+    validFrom: cert.validity.notBefore.toISOString(),
+    validTo: cert.validity.notAfter.toISOString(),
+    signatureAlgorithm: 'SHA256withRSA'
+  }
+
+  console.log('🔐 [REAL] Assinatura PKCS#7 gerada — subject:', certInfo.subject.substring(0, 80))
+
+  return { signature: p7Base64, certInfo, validationCode, validationUrl }
+}
+
+/**
+ * Chama AC: prioridade REAL (PKCS#12 .pfx) → API stub (Soluti/Certisign) → simulação.
+ */
+async function callACProvider(
+  supabase: any,
+  certificate: any,
+  documentHash: string
+): Promise<{ signature: string; validationUrl: string; validationCode: string; mode: 'real' | 'api_stub' | 'simulation' }> {
+  // V1.9.176 — Modo REAL via .pfx upload (preferencial pra ICP-Brasil)
+  if (certificate.certificate_file_path && certificate.encrypted_password) {
+    try {
+      const real = await signWithRealCertificate(supabase, certificate, documentHash)
+      return {
+        signature: real.signature,
+        validationUrl: real.validationUrl,
+        validationCode: real.validationCode,
+        mode: 'real'
+      }
+    } catch (err: any) {
+      console.error('❌ [REAL] Falha ao assinar com .pfx, NÃO caindo em simulação:', err?.message)
+      // Em produção real, NÃO cair em simulação — lançar erro pra usuário
+      throw new Error(`Erro ao assinar com certificado real: ${err?.message || err}`)
+    }
+  }
+
   // Tentar usar integração real se variáveis de ambiente estiverem configuradas
   const acProviderName = Deno.env.get('AC_PROVIDER')
   const acApiKey = Deno.env.get('AC_API_KEY')
@@ -168,28 +303,31 @@ async function callACProvider(
   }
 
   // SIMULAÇÃO (fallback ou quando AC não configurada)
-  const signature = `ICP-BR-SHA256-${documentHash.substring(0, 32)}-${certificate.ac_provider.toUpperCase()}`
-  const validationCode = `ITI-${Date.now()}-${documentHash.substring(0, 8).toUpperCase()}`
+  // V1.9.176: prefixo SIM- explicitamente identifica simulação (auditoria)
+  const signature = `SIM-ICP-BR-SHA256-${documentHash.substring(0, 32)}-${certificate.ac_provider.toUpperCase()}`
+  const validationCode = `SIM-ITI-${Date.now()}-${documentHash.substring(0, 8).toUpperCase()}`
   const validationUrl = `https://www.gov.br/iti/pt-br/validacao?codigo=${validationCode}`
 
-  console.log('⚠️ [Simulação] Assinatura gerada (modo desenvolvimento)')
+  console.log('⚠️ [Simulação] Assinatura gerada (modo desenvolvimento — sem força legal)')
 
   return {
     signature,
     validationUrl,
-    validationCode
+    validationCode,
+    mode: 'simulation'
   }
 }
 
 /**
- * Persiste auditoria da assinatura
+ * Persiste auditoria da assinatura. V1.9.176 — registra modo (real/api_stub/simulation).
  */
 async function persistAudit(
   supabase: any,
   documentId: string,
   certificate: any,
   signature: string,
-  validationCode: string
+  validationCode: string,
+  mode: 'real' | 'api_stub' | 'simulation' = 'simulation'
 ): Promise<void> {
   // Buscar CPF do profissional (se disponível)
   const { data: professional } = await supabase
@@ -200,10 +338,11 @@ async function persistAudit(
 
   await supabase.from('pki_transactions').insert({
     document_id: documentId,
-    signer_cpf: professional?.cpf || '000.000.000-00', // TODO: Buscar do certificado
+    signer_cpf: professional?.cpf || '000.000.000-00',
     signature_value: signature,
     certificate_thumbprint: certificate.certificate_thumbprint,
-    ac_provider: certificate.ac_provider
+    ac_provider: certificate.ac_provider,
+    metadata: { signing_mode: mode, validation_code: validationCode }
   })
 }
 
@@ -343,21 +482,22 @@ Deno.serve(async (req: Request) => {
       await createConfirmation(supabase, documentId, professionalId, documentHash)
     }
 
-    // 10. Chamar AC (real ou simulado)
-    const { signature, validationUrl, validationCode } = await callACProvider(certificate, documentHash)
+    // 10. Chamar AC (REAL .pfx → API stub → simulação fallback)
+    const { signature, validationUrl, validationCode, mode } = await callACProvider(supabase, certificate, documentHash)
 
-    // 11. Persistir auditoria
-    await persistAudit(supabase, documentId, certificate, signature, validationCode)
+    // 11. Persistir auditoria (com modo)
+    await persistAudit(supabase, documentId, certificate, signature, validationCode, mode)
 
     // 12. Atualizar documento
     await updateDocument(supabase, documentId, signature, validationCode, validationUrl)
 
-    // 13. Retornar resultado
-    const response: SignatureResponse = {
+    // 13. Retornar resultado (V1.9.176 — inclui modo pra frontend exibir aviso se simulação)
+    const response: SignatureResponse & { mode?: string } = {
       success: true,
       signature,
       validationUrl,
-      itiValidationCode: validationCode
+      itiValidationCode: validationCode,
+      mode
     }
 
     return new Response(JSON.stringify(response), {
