@@ -507,9 +507,11 @@ const Landing: React.FC = () => {
           <div className="flex flex-col lg:flex-row items-center gap-16 mb-20">
             <div className="flex-1">
               <div className="flex items-start gap-4 mb-6">
+                {/* V1.9.148: avatar Nôa Esperanza maior nesta seção (era w-12 h-12, pequeno
+                    em proporção ao h2 4xl ao lado). Mobile w-16, desktop w-24. */}
                 <div
-                  className="w-12 h-12 rounded-full overflow-hidden border border-green-500/30 bg-slate-950/60 flex-shrink-0"
-                  style={{ boxShadow: '0 0 18px rgba(0, 193, 106, 0.22)' }}
+                  className="w-16 h-16 md:w-24 md:h-24 rounded-full overflow-hidden border-2 border-green-500/40 bg-slate-950/60 flex-shrink-0"
+                  style={{ boxShadow: '0 0 24px rgba(0, 193, 106, 0.3)' }}
                   title="Nôa Esperanza"
                 >
                   <img
