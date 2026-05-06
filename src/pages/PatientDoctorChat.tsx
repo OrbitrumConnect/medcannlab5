@@ -1158,24 +1158,38 @@ const PatientDoctorChat: React.FC = () => {
                 draggable={false}
                 loading="eager"
               />
-              <div className="relative z-10 border-b border-slate-700/40 px-5 py-4 flex flex-col md:flex-row md:items-center md:justify-between gap-4 bg-slate-900/30">
-                <div>
-                  {/* Botão voltar à lista (mobile) */}
+              {/* V1.9.172 — Mini header mobile + ações: padding reduzido, botão Voltar
+                  proeminente (área de toque maior), nome do médico em destaque mobile.
+                  Recupera contexto perdido com V1.9.169-B (header gigante hide). */}
+              <div className="relative z-10 border-b border-slate-700/40 px-3 py-2.5 md:px-5 md:py-4 flex flex-col md:flex-row md:items-center md:justify-between gap-3 md:gap-4 bg-slate-900/50 md:bg-slate-900/30 sticky top-0 z-20 lg:relative">
+                <div className="flex items-center gap-3 lg:block">
+                  {/* Botão voltar à lista (mobile) — V1.9.172 mais clicável */}
                   <button
                     onClick={() => setActiveRoomId(undefined)}
-                    className="lg:hidden inline-flex items-center gap-1.5 text-slate-400 hover:text-white transition-colors mb-2 text-xs"
+                    className="lg:hidden inline-flex items-center gap-1.5 px-2 py-1.5 -ml-2 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800/60 active:bg-slate-800 transition-colors text-sm shrink-0"
+                    aria-label="Voltar à lista de conversas"
                   >
-                    <ArrowLeft className="w-3.5 h-3.5" />
-                    Voltar à lista
+                    <ArrowLeft className="w-4 h-4" />
+                    <span className="hidden sm:inline">Voltar</span>
                   </button>
-                  <h2 className="text-lg font-semibold text-white">
-                    {patientRooms.find(room => room.id === activeRoomId)?.name || 'Selecione um canal'}
-                  </h2>
-                  {!participantsLoading && otherParticipants.length > 0 && (
-                    <p className="text-xs text-slate-400 mt-1">
-                      {otherParticipants.map(participant => participant.name || participant.email || 'Profissional').join(' • ')}
-                    </p>
-                  )}
+                  <div className="min-w-0 flex-1 lg:block">
+                    {/* V1.9.172 — Mobile: nome do médico em destaque (contexto). Desktop: nome da sala. */}
+                    <h2 className="text-base md:text-lg font-semibold text-white truncate">
+                      <span className="lg:hidden">
+                        {!participantsLoading && otherParticipants.length > 0
+                          ? otherParticipants.map(p => p.name || p.email || 'Profissional').join(' • ')
+                          : (patientRooms.find(room => room.id === activeRoomId)?.name || 'Selecione um canal')}
+                      </span>
+                      <span className="hidden lg:inline">
+                        {patientRooms.find(room => room.id === activeRoomId)?.name || 'Selecione um canal'}
+                      </span>
+                    </h2>
+                    {!participantsLoading && otherParticipants.length > 0 && (
+                      <p className="hidden lg:block text-xs text-slate-400 mt-1">
+                        {otherParticipants.map(participant => participant.name || participant.email || 'Profissional').join(' • ')}
+                      </p>
+                    )}
+                  </div>
                 </div>
                 <div className="flex items-center gap-2">
                   {participantsLoading && <Loader2 className="w-4 h-4 animate-spin text-slate-400" />}
