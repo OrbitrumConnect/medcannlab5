@@ -3,13 +3,44 @@
 // =====================================================
 // Componente para exibir e gerenciar notificações
 
-import React, { useState, useEffect, useCallback } from 'react'
+import React, { useState, useEffect, useCallback, useRef } from 'react'
 import { Bell, X, Check, CheckCheck, AlertCircle, Info, CheckCircle, AlertTriangle, FileText, Calendar, MessageSquare, Stethoscope, Video, FlaskConical } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
 import { notificationService, Notification, NotificationType } from '../services/notificationService'
 
 interface NotificationCenterProps {
   className?: string
+}
+
+// V1.9.165 — beep curto via Web Audio API (zero dependência externa).
+// 2 tons agradáveis (880Hz → 660Hz, ~0.18s total). Try/catch graceful;
+// browsers podem bloquear sem user gesture inicial — falha silenciosamente.
+function playNotificationSound() {
+  try {
+    const Ctx = (window as any).AudioContext || (window as any).webkitAudioContext
+    if (!Ctx) return
+    const ctx = new Ctx()
+    const now = ctx.currentTime
+    const tones: Array<{ freq: number; start: number; dur: number }> = [
+      { freq: 880, start: 0,    dur: 0.09 },
+      { freq: 660, start: 0.09, dur: 0.09 },
+    ]
+    for (const t of tones) {
+      const osc = ctx.createOscillator()
+      const gain = ctx.createGain()
+      osc.type = 'sine'
+      osc.frequency.value = t.freq
+      gain.gain.setValueAtTime(0.0001, now + t.start)
+      gain.gain.exponentialRampToValueAtTime(0.18, now + t.start + 0.01)
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + t.start + t.dur)
+      osc.connect(gain).connect(ctx.destination)
+      osc.start(now + t.start)
+      osc.stop(now + t.start + t.dur + 0.02)
+    }
+    setTimeout(() => { try { ctx.close() } catch {} }, 600)
+  } catch {
+    // Audio bloqueado pelo browser ou contexto não disponível — sem som, sem erro.
+  }
 }
 
 const getNotificationIcon = (type: NotificationType) => {
@@ -72,6 +103,10 @@ const NotificationCenter: React.FC<NotificationCenterProps> = ({ className = '' 
   const [notifications, setNotifications] = useState<Notification[]>([])
   const [unreadCount, setUnreadCount] = useState(0)
   const [loading, setLoading] = useState(false)
+  // V1.9.165 — só toca som a partir da 2ª notificação recebida nesta sessão
+  // (evita beep ao montar componente carregando histórico). Realtime INSERT
+  // sempre toca após primeira interação.
+  const hasMountedRef = useRef(false)
 
   // Carregar notificações
   const loadNotifications = useCallback(async () => {
@@ -103,9 +138,17 @@ const NotificationCenter: React.FC<NotificationCenterProps> = ({ className = '' 
         if (!newNotification.is_read) {
           setUnreadCount(prev => prev + 1)
         }
+        // V1.9.165 — toca beep só pra notificações novas em runtime
+        // (não ao montar componente carregando histórico via REST)
+        if (hasMountedRef.current) {
+          playNotificationSound()
+        }
       })
+      // Marca montado após próximo tick (evita beep no histórico inicial)
+      const t = setTimeout(() => { hasMountedRef.current = true }, 1500)
 
       return () => {
+        clearTimeout(t)
         unsubscribe()
       }
     }
