@@ -1341,6 +1341,16 @@ const PatientDoctorChat: React.FC = () => {
                 </div>
               </div>
 
+              {/* V1.9.159: Banner sticky com instruções videoconsulta — sempre visível */}
+              {activeRoomId && (
+                <div className="relative z-10 mx-5 mt-3 p-3 rounded-xl bg-gradient-to-r from-emerald-900/20 to-primary-900/20 border border-emerald-500/20 text-xs text-slate-300">
+                  <p className="font-semibold text-emerald-300 mb-1">📞 Como funciona a videoconsulta</p>
+                  <p className="text-slate-400">
+                    Conversem por texto primeiro · O <strong className="text-white">médico inicia</strong> a chamada (botão <Video className="inline w-3 h-3 text-blue-400" />) · O <strong className="text-white">paciente aceita</strong> quando a notificação aparecer · Se falhar, refaça — o sistema reconecta automaticamente.
+                  </p>
+                </div>
+              )}
+
               <div className="relative z-10 flex-1 overflow-y-auto p-5 space-y-3 custom-scrollbar">
                 {activeRoomId ? (
                   messagesLoading ? (
