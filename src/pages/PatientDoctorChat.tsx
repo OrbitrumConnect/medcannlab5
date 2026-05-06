@@ -1138,7 +1138,7 @@ const PatientDoctorChat: React.FC = () => {
               )}
             </aside>
 
-            <section className={`bg-slate-900/40 backdrop-blur-xl border border-slate-700/40 rounded-2xl flex flex-col min-h-[560px] shadow-xl shadow-black/10 relative overflow-hidden ${!activeRoomId ? 'hidden lg:flex' : 'flex'}`}>
+            <section className={`bg-slate-900/40 backdrop-blur-xl border border-slate-700/40 rounded-2xl flex flex-col min-h-[320px] lg:min-h-[560px] shadow-xl shadow-black/10 relative overflow-hidden ${!activeRoomId ? 'hidden lg:flex' : 'flex'}`}>
               {/* Chat section glow */}
               <div className="absolute top-0 right-0 w-40 h-40 bg-primary-500/5 rounded-full blur-3xl pointer-events-none" />
               {/* ── Brain Watermark inside chat ── */}
@@ -1354,7 +1354,7 @@ const PatientDoctorChat: React.FC = () => {
                 </div>
               )}
 
-              <div className="relative z-10 flex-1 overflow-y-auto p-5 space-y-3 custom-scrollbar">
+              <div className="relative z-10 flex-1 overflow-y-auto overscroll-contain p-5 space-y-3 custom-scrollbar [-webkit-overflow-scrolling:touch]">
                 {activeRoomId ? (
                   messagesLoading ? (
                     <div className="flex items-center justify-center text-sm text-slate-400 h-full">
