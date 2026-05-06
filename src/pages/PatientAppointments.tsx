@@ -246,8 +246,30 @@ const PatientAppointments: React.FC = () => {
           }
         })
 
-        setAvailableProfessionals(mapped)
-        console.log(`✅ ${mapped.length} profissionais carregados do banco (users + RBAC)`)
+        // V1.9.145: enriquecer com rating REAL via RPC calculate_professional_rating.
+        // Sistema 4 fases (hidden 0-4 / onboarding 5-9 / active ≥10 / decay 90d Uber-style).
+        // Falha silenciosa: se RPC errar, profissional fica sem rating (UX honesta).
+        const enriched = await Promise.all(
+          mapped.map(async (card) => {
+            try {
+              const { data: ratingData, error: ratingErr } = await (supabase as any)
+                .rpc('calculate_professional_rating', { prof_id: card.id })
+              if (ratingErr || !ratingData) return card
+              const visibility = (ratingData as any).visibility as string
+              const ratingNum = (ratingData as any).rating as number | null
+              if (visibility === 'active' && ratingNum !== null) {
+                return { ...card, rating: String(ratingNum) }
+              }
+              // hidden / onboarding → não exibir rating (badge "Novo" gerenciado pela ausência)
+              return card
+            } catch {
+              return card
+            }
+          })
+        )
+
+        setAvailableProfessionals(enriched)
+        console.log(`✅ ${enriched.length} profissionais carregados (users + RBAC + ratings RPC)`)
       } catch (err) {
         console.error('Erro ao carregar profissionais:', err)
       }
@@ -1003,11 +1025,18 @@ const PatientAppointments: React.FC = () => {
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-1.5 flex-wrap">
             <h4 className="text-white text-base font-semibold">{professional.name}</h4>
-            {/* V1.9.144: rating só se REAL (oficiais) — não exibir 4.8 placeholder pra parceiros */}
+            {/* V1.9.144: rating só se REAL (RPC calculate_professional_rating retornou visibility='active') */}
             {professional.rating && (
               <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-slate-800 border border-slate-700/50 text-[11px] text-slate-300">
                 <Star className="w-3 h-3 text-amber-300 fill-amber-300" />
                 {professional.rating}
+              </span>
+            )}
+            {/* V1.9.145: badge "Novo" pra parceiros em FASE 1/2 (visibility hidden/onboarding).
+                Oficiais (Ricardo/Eduardo) sempre têm rating, então o else cobre só parceiros sem rating real. */}
+            {!professional.rating && !isOfficial && (
+              <span className="inline-flex items-center px-1.5 py-0.5 rounded-full bg-sky-500/15 border border-sky-500/30 text-[9px] font-bold text-sky-300 uppercase tracking-wider">
+                🆕 Novo
               </span>
             )}
             {isOfficial && (

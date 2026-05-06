@@ -24,6 +24,7 @@ import { usePatientDashboard, PatientTab } from '../hooks/dashboard/usePatientDa
 
 import ShareReportModal from '../components/ShareReportModal'
 import NoaConversationalInterface from '../components/NoaConversationalInterface'
+import PendingRatingsBanner from '../components/PendingRatingsBanner'
 import PatientAnalytics from '../components/PatientAnalytics'
 import PatientHeaderActions from '../components/PatientHeaderActions'
 import PatientPrescriptions from '../components/PatientPrescriptions'
@@ -143,6 +144,9 @@ const PatientDashboard: React.FC = () => {
     <div className="p-4 md:p-8 max-w-7xl mx-auto w-full space-y-8">
       {activeTab === 'analytics' && (
         <>
+          {/* V1.9.145: banner pending ratings (aparece só se há consulta concluída sem avaliação) */}
+          <PendingRatingsBanner />
+
           <div className="space-y-2">
             <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-white to-slate-400 bg-clip-text text-transparent">Olá, {user?.name?.split(' ')[0]}</h1>
             <p className="text-slate-400 text-lg">Aqui está o resumo da sua jornada de cuidado.</p>
