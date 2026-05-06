@@ -510,6 +510,9 @@ export type Database = {
           description: string | null
           doctor_id: string | null
           duration: number | null
+          gcal_event_id: string | null
+          gcal_last_sync_at: string | null
+          gcal_sync_status: string | null
           id: string
           is_remote: boolean | null
           location: string | null
@@ -519,6 +522,11 @@ export type Database = {
           price: number | null
           professional_id: string | null
           professional_name: string | null
+          reminder_sent_10min: boolean
+          reminder_sent_1h: boolean
+          reminder_sent_1min: boolean
+          reminder_sent_24h: boolean
+          reminder_sent_30min: boolean
           slot_end: string | null
           slot_start: string | null
           specialty: string | null
@@ -535,6 +543,9 @@ export type Database = {
           description?: string | null
           doctor_id?: string | null
           duration?: number | null
+          gcal_event_id?: string | null
+          gcal_last_sync_at?: string | null
+          gcal_sync_status?: string | null
           id?: string
           is_remote?: boolean | null
           location?: string | null
@@ -544,6 +555,11 @@ export type Database = {
           price?: number | null
           professional_id?: string | null
           professional_name?: string | null
+          reminder_sent_10min?: boolean
+          reminder_sent_1h?: boolean
+          reminder_sent_1min?: boolean
+          reminder_sent_24h?: boolean
+          reminder_sent_30min?: boolean
           slot_end?: string | null
           slot_start?: string | null
           specialty?: string | null
@@ -560,6 +576,9 @@ export type Database = {
           description?: string | null
           doctor_id?: string | null
           duration?: number | null
+          gcal_event_id?: string | null
+          gcal_last_sync_at?: string | null
+          gcal_sync_status?: string | null
           id?: string
           is_remote?: boolean | null
           location?: string | null
@@ -569,6 +588,11 @@ export type Database = {
           price?: number | null
           professional_id?: string | null
           professional_name?: string | null
+          reminder_sent_10min?: boolean
+          reminder_sent_1h?: boolean
+          reminder_sent_1min?: boolean
+          reminder_sent_24h?: boolean
+          reminder_sent_30min?: boolean
           slot_end?: string | null
           slot_start?: string | null
           specialty?: string | null
@@ -1092,6 +1116,9 @@ export type Database = {
           created_at: string | null
           data: Json | null
           doctor_id: string | null
+          doctor_private_notes: string | null
+          doctor_private_notes_updated_at: string | null
+          doctor_private_notes_updated_by: string | null
           id: string
           patient_id: string | null
           status: string | null
@@ -1104,6 +1131,9 @@ export type Database = {
           created_at?: string | null
           data?: Json | null
           doctor_id?: string | null
+          doctor_private_notes?: string | null
+          doctor_private_notes_updated_at?: string | null
+          doctor_private_notes_updated_by?: string | null
           id?: string
           patient_id?: string | null
           status?: string | null
@@ -1116,6 +1146,9 @@ export type Database = {
           created_at?: string | null
           data?: Json | null
           doctor_id?: string | null
+          doctor_private_notes?: string | null
+          doctor_private_notes_updated_at?: string | null
+          doctor_private_notes_updated_by?: string | null
           id?: string
           patient_id?: string | null
           status?: string | null
@@ -1367,6 +1400,230 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "clinical_rationalities"
             referencedColumns: ["id"]
+          },
+        ]
+      }
+      clinical_north_star_events: {
+        Row: {
+          appointment_id: string | null
+          event_type: string
+          id: string
+          metadata: Json
+          occurred_at: string
+          patient_id: string | null
+          professional_id: string | null
+          recorded_at: string
+          report_id: string | null
+        }
+        Insert: {
+          appointment_id?: string | null
+          event_type: string
+          id?: string
+          metadata?: Json
+          occurred_at?: string
+          patient_id?: string | null
+          professional_id?: string | null
+          recorded_at?: string
+          report_id?: string | null
+        }
+        Update: {
+          appointment_id?: string | null
+          event_type?: string
+          id?: string
+          metadata?: Json
+          occurred_at?: string
+          patient_id?: string | null
+          professional_id?: string | null
+          recorded_at?: string
+          report_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "clinical_north_star_events_appointment_id_fkey"
+            columns: ["appointment_id"]
+            isOneToOne: false
+            referencedRelation: "appointments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "clinical_north_star_events_appointment_id_fkey"
+            columns: ["appointment_id"]
+            isOneToOne: false
+            referencedRelation: "v_appointments_json"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "clinical_north_star_events_appointment_id_fkey"
+            columns: ["appointment_id"]
+            isOneToOne: false
+            referencedRelation: "v_appointments_unified"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "clinical_north_star_events_appointment_id_fkey"
+            columns: ["appointment_id"]
+            isOneToOne: false
+            referencedRelation: "v_next_appointments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "clinical_north_star_events_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "clinical_north_star_events_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "users_compatible"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "clinical_north_star_events_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "view_current_ranking_live"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "clinical_north_star_events_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "clinical_north_star_events_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "users_compatible"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "clinical_north_star_events_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "view_current_ranking_live"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "clinical_north_star_events_report_id_fkey"
+            columns: ["report_id"]
+            isOneToOne: false
+            referencedRelation: "clinical_reports"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "clinical_north_star_events_report_id_fkey"
+            columns: ["report_id"]
+            isOneToOne: false
+            referencedRelation: "v_clinical_reports"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "clinical_north_star_events_report_id_fkey"
+            columns: ["report_id"]
+            isOneToOne: false
+            referencedRelation: "v_prescriptions_queue"
+            referencedColumns: ["report_id"]
+          },
+        ]
+      }
+      clinical_qa_runs: {
+        Row: {
+          code_findings: Json | null
+          db_findings: Json | null
+          green_facts: Json | null
+          id: string
+          log_findings: Json | null
+          metadata: Json | null
+          notes: string | null
+          orange_interpretations: Json | null
+          ran_at: string
+          ran_by: string
+          red_blindspots: Json | null
+          report_id: string | null
+          system_version: string | null
+          user_id: string | null
+          verdict: string | null
+          verdict_score: number | null
+          yellow_hypotheses: Json | null
+        }
+        Insert: {
+          code_findings?: Json | null
+          db_findings?: Json | null
+          green_facts?: Json | null
+          id?: string
+          log_findings?: Json | null
+          metadata?: Json | null
+          notes?: string | null
+          orange_interpretations?: Json | null
+          ran_at?: string
+          ran_by?: string
+          red_blindspots?: Json | null
+          report_id?: string | null
+          system_version?: string | null
+          user_id?: string | null
+          verdict?: string | null
+          verdict_score?: number | null
+          yellow_hypotheses?: Json | null
+        }
+        Update: {
+          code_findings?: Json | null
+          db_findings?: Json | null
+          green_facts?: Json | null
+          id?: string
+          log_findings?: Json | null
+          metadata?: Json | null
+          notes?: string | null
+          orange_interpretations?: Json | null
+          ran_at?: string
+          ran_by?: string
+          red_blindspots?: Json | null
+          report_id?: string | null
+          system_version?: string | null
+          user_id?: string | null
+          verdict?: string | null
+          verdict_score?: number | null
+          yellow_hypotheses?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "clinical_qa_runs_report_id_fkey"
+            columns: ["report_id"]
+            isOneToOne: false
+            referencedRelation: "clinical_reports"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "clinical_qa_runs_report_id_fkey"
+            columns: ["report_id"]
+            isOneToOne: false
+            referencedRelation: "v_clinical_reports"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "clinical_qa_runs_report_id_fkey"
+            columns: ["report_id"]
+            isOneToOne: false
+            referencedRelation: "v_prescriptions_queue"
+            referencedColumns: ["report_id"]
+          },
+          {
+            foreignKeyName: "clinical_qa_runs_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "v_auth_activity"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "clinical_qa_runs_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "v_user_points_balance"
+            referencedColumns: ["user_id"]
           },
         ]
       }
@@ -3051,6 +3308,42 @@ export type Database = {
           recovery_estimated_at?: string | null
           restricted_mode_active?: boolean | null
           severity?: string | null
+        }
+        Relationships: []
+      }
+      integration_jobs: {
+        Row: {
+          created_at: string | null
+          id: string
+          last_error: string | null
+          next_run_at: string | null
+          payload: Json
+          retries: number | null
+          status: string | null
+          type: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          last_error?: string | null
+          next_run_at?: string | null
+          payload: Json
+          retries?: number | null
+          status?: string | null
+          type: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          last_error?: string | null
+          next_run_at?: string | null
+          payload?: Json
+          retries?: number | null
+          status?: string | null
+          type?: string
+          updated_at?: string | null
         }
         Relationships: []
       }
@@ -5019,6 +5312,61 @@ export type Database = {
           },
         ]
       }
+      professional_integrations: {
+        Row: {
+          access_token: string
+          created_at: string | null
+          expiry_date: string
+          id: string
+          professional_id: string
+          provider: string
+          refresh_token: string
+          updated_at: string | null
+        }
+        Insert: {
+          access_token: string
+          created_at?: string | null
+          expiry_date: string
+          id?: string
+          professional_id: string
+          provider?: string
+          refresh_token: string
+          updated_at?: string | null
+        }
+        Update: {
+          access_token?: string
+          created_at?: string | null
+          expiry_date?: string
+          id?: string
+          professional_id?: string
+          provider?: string
+          refresh_token?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "professional_integrations_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "professional_integrations_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "users_compatible"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "professional_integrations_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "view_current_ranking_live"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
       professional_teams: {
         Row: {
           created_at: string | null
@@ -6845,6 +7193,7 @@ export type Database = {
           referral_code: string | null
           referral_first_completed_at: string | null
           role: string | null
+          specialty: string | null
           status: string | null
           trial_ends_at: string | null
           type: string
@@ -6885,6 +7234,7 @@ export type Database = {
           referral_code?: string | null
           referral_first_completed_at?: string | null
           role?: string | null
+          specialty?: string | null
           status?: string | null
           trial_ends_at?: string | null
           type?: string
@@ -6925,6 +7275,7 @@ export type Database = {
           referral_code?: string | null
           referral_first_completed_at?: string | null
           role?: string | null
+          specialty?: string | null
           status?: string | null
           trial_ends_at?: string | null
           type?: string
@@ -8385,6 +8736,7 @@ export type Database = {
         Args: { p_appointment_id: string; p_notes?: string }
         Returns: boolean
       }
+      compute_aec_level: { Args: { p_xp: number }; Returns: string }
       compute_aec_scores: { Args: { content: Json }; Returns: Json }
       count_identified_correlations: { Args: never; Returns: number }
       count_multirational_analyses: { Args: never; Returns: number }
@@ -8702,6 +9054,18 @@ export type Database = {
       process_monthly_closing: { Args: never; Returns: string }
       process_user_lifecycle: {
         Args: { _reason?: string; _triggered_by?: string; _user_id: string }
+        Returns: string
+      }
+      record_north_star_event: {
+        Args: {
+          p_appointment_id?: string
+          p_event_type: string
+          p_metadata?: Json
+          p_occurred_at?: string
+          p_patient_id?: string
+          p_professional_id?: string
+          p_report_id?: string
+        }
         Returns: string
       }
       refresh_user_statistics: {
