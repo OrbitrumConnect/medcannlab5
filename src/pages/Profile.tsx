@@ -158,6 +158,9 @@ const Profile: React.FC = () => {
         ? `${formData.cep}${formData.location ? ` — ${formData.location}` : ''}`
         : formData.location
 
+      // V1.9.146: removido updated_at — coluna não existe em profiles (legacy schema).
+      // profiles tem só: id, user_id, name, email, type, avatar_url, created_at, slug,
+      // location, phone, bio. UPDATE em campo inexistente gera PGRST204.
       const { error } = await supabase
         .from('profiles')
         .upsert({
@@ -165,8 +168,7 @@ const Profile: React.FC = () => {
           name: formData.name,
           phone: formData.phone,
           location: composedLocation,
-          bio: formData.bio,
-          updated_at: new Date().toISOString()
+          bio: formData.bio
         })
 
       if (error) throw error
@@ -309,10 +311,36 @@ const Profile: React.FC = () => {
 
   const triggerFileInput = () => fileInputRef.current?.click()
 
+  // V1.9.146: memberSince real via users.created_at (era hardcoded "Janeiro 2024")
+  const [memberSince, setMemberSince] = useState<string>('—')
+
+  useEffect(() => {
+    if (!user?.id) return
+    let cancelled = false
+    ;(async () => {
+      try {
+        const { data: userRow } = await supabase
+          .from('users')
+          .select('created_at')
+          .eq('id', user.id)
+          .single()
+        if (cancelled || !userRow?.created_at) return
+        const d = new Date(userRow.created_at as string)
+        const month = d.toLocaleString('pt-BR', { month: 'long' })
+        const year = d.getFullYear()
+        setMemberSince(`${month.charAt(0).toUpperCase() + month.slice(1)} ${year}`)
+      } catch {
+        // mantém '—' em caso de erro
+      }
+    })()
+    return () => {
+      cancelled = true
+    }
+  }, [user?.id])
+
   const getAccountStats = () => {
-    // Mock data - em produção viria do banco
     return {
-      memberSince: 'Janeiro 2024',
+      memberSince,
       lastLogin: 'Hoje',
       accountType: user?.type || 'profissional'
     }
