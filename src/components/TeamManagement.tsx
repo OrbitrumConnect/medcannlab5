@@ -154,11 +154,12 @@ function CapacityBar({ member }: { member: TeamMember }) {
 }
 
 function TeamMemberCard({
-  member, isOnline,
+  member, isOnline, isTopPerformer,
   onWhatsApp, onChat, onCommand, onToggleBackup, onRemove
 }: {
   member: TeamMember
   isOnline: boolean
+  isTopPerformer: boolean
   onWhatsApp: () => void
   onChat: () => void
   onCommand: () => void
@@ -167,7 +168,6 @@ function TeamMemberCard({
 }) {
   const rel = RELATIONSHIP_LABELS[member.relationship_type] || RELATIONSHIP_LABELS.colleague
   const RelIcon = rel.icon
-  // Status efetivo: presence overrides DB calc (presence é mais recente)
   const effectiveStatus: PresenceStatus = isOnline ? 'online' : member.presence_status
   const presence = PRESENCE_LABELS[effectiveStatus]
   const isBackup = member.relationship_type === 'backup'
@@ -177,20 +177,22 @@ function TeamMemberCard({
                        : 'text-red-400'
 
   return (
-    <div className={`group relative bg-slate-800/40 backdrop-blur-md border rounded-xl p-4 transition-all
-      ${member.is_active ? 'border-slate-700/50 hover:border-slate-600' : 'border-slate-700/30 opacity-70'}
+    <div className={`group relative bg-slate-800/40 backdrop-blur-md border rounded-xl p-4 transition-all flex flex-col h-full
+      ${member.is_active ? 'border-slate-700/50 hover:border-slate-600 hover:shadow-xl hover:-translate-y-0.5' : 'border-slate-700/30 opacity-70'}
       ${isBackup ? 'ring-2 ring-yellow-400/30 shadow-lg shadow-yellow-500/10' : ''}
       ${effectiveStatus === 'online' ? `ring-2 ${presence.ringColor} shadow-lg shadow-emerald-500/10` : ''}
+      ${isTopPerformer ? 'border-emerald-400/40' : ''}
     `}>
       {/* Glow top accent */}
       <div className={`absolute top-0 left-0 right-0 h-px ${
         isBackup ? 'bg-gradient-to-r from-transparent via-yellow-400/60 to-transparent' :
+        isTopPerformer ? 'bg-gradient-to-r from-transparent via-emerald-400/80 to-transparent' :
         effectiveStatus === 'online' ? 'bg-gradient-to-r from-transparent via-emerald-500/60 to-transparent' :
         'bg-gradient-to-r from-transparent via-slate-600/30 to-transparent'
       }`} />
 
-      <div className="flex items-start gap-4">
-        {/* Avatar com presence dot */}
+      {/* TOP — Avatar + Nome + Tags */}
+      <div className="flex items-start gap-3">
         <div className="relative shrink-0">
           {member.member_avatar ? (
             <img src={member.member_avatar} alt={member.member_name} className="w-12 h-12 rounded-full object-cover" />
@@ -199,118 +201,149 @@ function TeamMemberCard({
               {getInitials(member.member_name)}
             </div>
           )}
-          {/* Presence dot */}
           <div className={`absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full ring-2 ring-slate-900 ${presence.dotColor} ${effectiveStatus === 'online' ? 'animate-pulse' : ''}`} />
-        </div>
-
-        {/* Main content */}
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 flex-wrap">
-            <button
-              onClick={onCommand}
-              className="text-white font-semibold truncate hover:text-emerald-300 transition-colors text-left"
-              title="Abrir Modo Comando"
-            >
-              {member.member_name}
-            </button>
-            <span className={`inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full border ${rel.color}`}>
-              <RelIcon className="w-2.5 h-2.5" />
-              {rel.label}
-            </span>
-            {member.member_is_official && (
-              <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full text-emerald-300 bg-emerald-500/15 border border-emerald-500/30">
-                OFICIAL
-              </span>
-            )}
-            {!member.is_active && (
-              <span className="text-[9px] font-semibold px-1.5 py-0.5 rounded-full text-red-400 bg-red-500/20 border border-red-500/30">
-                INATIVO
-              </span>
-            )}
-          </div>
-
-          {/* Subtitle: especialidade + status */}
-          <div className="flex items-center gap-2 mt-0.5 text-xs">
-            <span className="text-slate-400 truncate">{member.member_specialty}</span>
-            <span className="text-slate-600">·</span>
-            <span className="text-slate-500 inline-flex items-center gap-1">
-              <Activity className="w-3 h-3" />
-              {effectiveStatus === 'online' ? presence.label : `${presence.label} ${formatMinutes(member.minutes_since_seen)}`}
-            </span>
-          </div>
-
-          {/* Métricas inline (consome v_video_call_recipient_response) */}
-          {member.total_received > 0 && (
-            <div className="flex items-center gap-3 mt-2 text-xs">
-              <span className="inline-flex items-center gap-1 text-slate-400" title="Pacientes recebidos via videocall">
-                <Phone className="w-3 h-3" />
-                <span className="text-white tabular-nums">{member.total_received}</span>
-              </span>
-              <span className={`inline-flex items-center gap-1 ${acceptRateColor}`} title="Taxa de aceite">
-                <TrendingUp className="w-3 h-3" />
-                <span className="tabular-nums">{member.accept_rate_pct?.toFixed(0) ?? '—'}%</span>
-              </span>
-              {member.avg_accept_latency_min != null && (
-                <span className="inline-flex items-center gap-1 text-slate-400" title="Tempo médio de resposta">
-                  <Clock className="w-3 h-3" />
-                  <span className="tabular-nums">{member.avg_accept_latency_min.toFixed(1)}min</span>
-                </span>
-              )}
+          {isTopPerformer && (
+            <div className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center ring-2 ring-slate-900" title="Top Performer">
+              <Award className="w-3 h-3 text-white" />
             </div>
           )}
-
-          {/* Notes */}
-          {member.notes && (
-            <p className="text-[11px] text-slate-500 mt-1.5 italic truncate" title={member.notes}>
-              "{member.notes}"
-            </p>
-          )}
         </div>
 
-        {/* Quick actions vertical (slide-in on hover em mobile sempre visíveis) */}
-        <div className="flex flex-col gap-1.5 shrink-0">
-          {member.member_phone && (
-            <button
-              onClick={onWhatsApp}
-              className="p-2 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/25 border border-emerald-500/20 hover:border-emerald-500/50 text-emerald-400 transition-all"
-              title="Enviar WhatsApp com template de encaminhamento"
-            >
-              <Phone className="w-3.5 h-3.5" />
-            </button>
-          )}
-          <button
-            onClick={onChat}
-            className="p-2 rounded-lg bg-blue-500/10 hover:bg-blue-500/25 border border-blue-500/20 hover:border-blue-500/50 text-blue-400 transition-all"
-            title="Abrir chat interno"
-          >
-            <MessageCircle className="w-3.5 h-3.5" />
-          </button>
-          <button
-            onClick={onToggleBackup}
-            className={`p-2 rounded-lg border transition-all ${
-              isBackup
-                ? 'bg-yellow-400/20 border-yellow-400/50 text-yellow-300'
-                : 'bg-slate-700/30 border-slate-600/30 text-slate-400 hover:border-yellow-500/40 hover:text-yellow-400'
-            }`}
-            title={isBackup ? 'Desativar modo Backup' : 'Ativar modo Backup'}
-          >
-            <Shield className="w-3.5 h-3.5" />
-          </button>
+        <div className="flex-1 min-w-0">
           <button
             onClick={onCommand}
-            className="p-2 rounded-lg bg-purple-500/10 hover:bg-purple-500/25 border border-purple-500/20 hover:border-purple-500/50 text-purple-400 transition-all"
-            title="Modo Comando"
+            className="text-white font-semibold truncate hover:text-emerald-300 transition-colors text-left text-sm w-full"
+            title="Abrir Modo Comando"
           >
-            <Zap className="w-3.5 h-3.5" />
+            {member.member_name}
           </button>
-          <button
-            onClick={onRemove}
-            className="p-2 rounded-lg bg-red-500/10 hover:bg-red-500/25 border border-red-500/20 hover:border-red-500/50 text-red-400 transition-all"
-            title="Remover da equipe"
-          >
-            <X className="w-3.5 h-3.5" />
-          </button>
+          <p className="text-[11px] text-slate-400 truncate">{member.member_specialty}</p>
         </div>
+      </div>
+
+      {/* Tags row */}
+      <div className="flex items-center gap-1.5 flex-wrap mt-2">
+        <span className={`inline-flex items-center gap-1 text-[9px] font-semibold px-1.5 py-0.5 rounded-full border ${rel.color}`}>
+          <RelIcon className="w-2.5 h-2.5" />
+          {rel.label}
+        </span>
+        {member.member_is_official && (
+          <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full text-emerald-300 bg-emerald-500/15 border border-emerald-500/30">
+            OFICIAL
+          </span>
+        )}
+        {isTopPerformer && (
+          <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full text-emerald-300 bg-emerald-500/20 border border-emerald-400/40 inline-flex items-center gap-0.5">
+            🏆 TOP
+          </span>
+        )}
+        {!member.is_active && (
+          <span className="text-[9px] font-semibold px-1.5 py-0.5 rounded-full text-red-400 bg-red-500/20 border border-red-500/30">
+            INATIVO
+          </span>
+        )}
+      </div>
+
+      {/* Status line */}
+      <div className="flex items-center gap-1.5 mt-2 text-[11px] text-slate-500">
+        <Activity className="w-3 h-3" />
+        <span>
+          {effectiveStatus === 'online' ? presence.label : `${presence.label} ${formatMinutes(member.minutes_since_seen)}`}
+        </span>
+      </div>
+
+      {/* Métricas */}
+      {member.total_received > 0 ? (
+        <div className="flex items-center justify-between gap-2 mt-3 px-3 py-2 bg-slate-900/40 rounded-lg border border-slate-700/30">
+          <div className="text-center" title="Pacientes recebidos">
+            <div className="text-base font-bold text-white tabular-nums">{member.total_received}</div>
+            <div className="text-[9px] uppercase text-slate-500 tracking-wider">Recebidos</div>
+          </div>
+          <div className="w-px h-8 bg-slate-700/50" />
+          <div className="text-center" title="Taxa de aceite">
+            <div className={`text-base font-bold tabular-nums ${acceptRateColor}`}>
+              {member.accept_rate_pct?.toFixed(0) ?? '—'}<span className="text-xs">%</span>
+            </div>
+            <div className="text-[9px] uppercase text-slate-500 tracking-wider">Aceite</div>
+          </div>
+          {member.avg_accept_latency_min != null && (
+            <>
+              <div className="w-px h-8 bg-slate-700/50" />
+              <div className="text-center" title="Tempo médio de resposta">
+                <div className="text-base font-bold text-white tabular-nums">
+                  {member.avg_accept_latency_min.toFixed(1)}<span className="text-xs">min</span>
+                </div>
+                <div className="text-[9px] uppercase text-slate-500 tracking-wider">Latência</div>
+              </div>
+            </>
+          )}
+        </div>
+      ) : (
+        <div className="mt-3 px-3 py-2 bg-slate-900/30 rounded-lg border border-slate-700/20 text-center">
+          <p className="text-[10px] text-slate-500">Sem chamadas registradas</p>
+        </div>
+      )}
+
+      {/* Notes (truncated) */}
+      {member.notes && (
+        <p className="text-[10px] text-slate-500 mt-2 italic line-clamp-1" title={member.notes}>
+          "{member.notes}"
+        </p>
+      )}
+
+      {/* Quick actions horizontais com label (V1.9.187) */}
+      <div className="grid grid-cols-5 gap-1.5 mt-auto pt-3 border-t border-slate-700/30">
+        {member.member_phone ? (
+          <button
+            onClick={onWhatsApp}
+            className="flex flex-col items-center gap-0.5 px-1 py-1.5 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/25 border border-emerald-500/20 hover:border-emerald-500/50 text-emerald-400 transition-all"
+            title="WhatsApp · template CFM"
+          >
+            <Phone className="w-3.5 h-3.5" />
+            <span className="text-[8px] uppercase tracking-wider font-semibold">Zap</span>
+          </button>
+        ) : (
+          <div className="flex flex-col items-center gap-0.5 px-1 py-1.5 rounded-lg bg-slate-800/30 border border-slate-700/20 text-slate-600 cursor-not-allowed" title="Sem telefone cadastrado">
+            <Phone className="w-3.5 h-3.5" />
+            <span className="text-[8px] uppercase tracking-wider font-semibold">—</span>
+          </div>
+        )}
+        <button
+          onClick={onChat}
+          className="flex flex-col items-center gap-0.5 px-1 py-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/25 border border-blue-500/20 hover:border-blue-500/50 text-blue-400 transition-all"
+          title="Chat interno"
+        >
+          <MessageCircle className="w-3.5 h-3.5" />
+          <span className="text-[8px] uppercase tracking-wider font-semibold">Chat</span>
+        </button>
+        <button
+          onClick={onToggleBackup}
+          className={`flex flex-col items-center gap-0.5 px-1 py-1.5 rounded-lg border transition-all ${
+            isBackup
+              ? 'bg-yellow-400/20 border-yellow-400/50 text-yellow-300'
+              : 'bg-slate-700/30 border-slate-600/30 text-slate-400 hover:border-yellow-500/40 hover:text-yellow-400'
+          }`}
+          title={isBackup ? 'Desativar Backup' : 'Ativar Backup'}
+        >
+          <Shield className="w-3.5 h-3.5" />
+          <span className="text-[8px] uppercase tracking-wider font-semibold">Backup</span>
+        </button>
+        <button
+          onClick={onCommand}
+          className="flex flex-col items-center gap-0.5 px-1 py-1.5 rounded-lg bg-purple-500/10 hover:bg-purple-500/25 border border-purple-500/20 hover:border-purple-500/50 text-purple-400 transition-all"
+          title="Modo Comando · drawer detalhado"
+        >
+          <Zap className="w-3.5 h-3.5" />
+          <span className="text-[8px] uppercase tracking-wider font-semibold">Comando</span>
+        </button>
+        <button
+          onClick={onRemove}
+          className="flex flex-col items-center gap-0.5 px-1 py-1.5 rounded-lg bg-red-500/10 hover:bg-red-500/25 border border-red-500/20 hover:border-red-500/50 text-red-400 transition-all"
+          title="Remover da equipe"
+        >
+          <X className="w-3.5 h-3.5" />
+          <span className="text-[8px] uppercase tracking-wider font-semibold">Remover</span>
+        </button>
       </div>
     </div>
   )
@@ -558,6 +591,45 @@ const TeamManagement: React.FC = () => {
     return Math.round(acceptScore * 0.4 + onlineRatio * 100 * 0.3 + latencyScore * 0.3)
   }, [team, isOnline])
 
+  // V1.9.187 — Top Performer detection (accept_rate >= 80% E recebidos >= 5)
+  const topPerformerIds = useMemo(() => {
+    return new Set(
+      team
+        .filter(m => (m.accept_rate_pct ?? 0) >= 80 && m.total_received >= 5)
+        .map(m => m.team_member_id)
+    )
+  }, [team])
+
+  // V1.9.187 — Filter + pagination
+  const [filterMode, setFilterMode] = useState<'all' | 'online' | 'backup' | 'official'>('all')
+  const [page, setPage] = useState(1)
+  const PAGE_SIZE = 6  // 2x3 ou 3x2 grid responsivo
+
+  const filteredTeam = useMemo(() => {
+    let list = team
+    if (filterMode === 'online') {
+      list = team.filter(m =>
+        isOnline(m.team_member_id) ||
+        m.presence_status === 'online' ||
+        m.presence_status === 'recently'
+      )
+    } else if (filterMode === 'backup') {
+      list = team.filter(m => m.relationship_type === 'backup')
+    } else if (filterMode === 'official') {
+      list = team.filter(m => m.member_is_official)
+    }
+    return list
+  }, [team, filterMode, isOnline])
+
+  const totalPages = Math.max(1, Math.ceil(filteredTeam.length / PAGE_SIZE))
+  const pagedTeam = useMemo(() => {
+    const start = (page - 1) * PAGE_SIZE
+    return filteredTeam.slice(start, start + PAGE_SIZE)
+  }, [filteredTeam, page])
+
+  // Reset page quando filtro muda
+  useEffect(() => { setPage(1) }, [filterMode, team.length])
+
   const loadAvailableProfessionals = async () => {
     const { data } = await supabase
       .from('users')
@@ -731,28 +803,109 @@ const TeamManagement: React.FC = () => {
         </div>
       )}
 
-      {/* Team Cards */}
+      {/* V1.9.187 — Filtros + contador */}
+      {team.length > 0 && (
+        <div className="flex items-center justify-between gap-3 flex-wrap">
+          <div className="flex items-center gap-1.5 p-1 bg-slate-900/40 border border-slate-700/40 rounded-full">
+            {([
+              { id: 'all', label: 'Todos', count: team.length },
+              { id: 'online', label: 'Online', count: team.filter(m => isOnline(m.team_member_id) || m.presence_status === 'online' || m.presence_status === 'recently').length },
+              { id: 'backup', label: 'Backup', count: team.filter(m => m.relationship_type === 'backup').length },
+              { id: 'official', label: 'Oficial', count: team.filter(m => m.member_is_official).length },
+            ] as const).map(opt => (
+              <button
+                key={opt.id}
+                type="button"
+                onClick={() => setFilterMode(opt.id as any)}
+                className={`px-3 py-1 text-[11px] font-medium rounded-full transition-all whitespace-nowrap ${
+                  filterMode === opt.id
+                    ? 'bg-emerald-600 text-white shadow shadow-emerald-900/20'
+                    : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
+                }`}
+              >
+                {opt.label} <span className="opacity-70 tabular-nums">({opt.count})</span>
+              </button>
+            ))}
+          </div>
+          <p className="text-[11px] text-slate-500">
+            Mostrando {pagedTeam.length} de {filteredTeam.length}
+            {totalPages > 1 && ` · Página ${page}/${totalPages}`}
+          </p>
+        </div>
+      )}
+
+      {/* Team Cards — grid responsivo side-by-side V1.9.187 */}
       {team.length === 0 ? (
         <div className="text-center py-12 bg-slate-800/30 rounded-xl border border-slate-700/30">
           <Users className="w-12 h-12 text-slate-600 mx-auto mb-3" />
           <p className="text-slate-400">Nenhum membro na equipe ainda</p>
           <p className="text-slate-500 text-sm mt-1">Adicione profissionais para montar sua rede de referência</p>
         </div>
-      ) : (
-        <div className="grid gap-3">
-          {team.map((member) => (
-            <TeamMemberCard
-              key={member.id}
-              member={member}
-              isOnline={isOnline(member.team_member_id)}
-              onWhatsApp={() => handleWhatsApp(member)}
-              onChat={() => handleChat(member)}
-              onCommand={() => setDrawerMember(member)}
-              onToggleBackup={() => handleToggleBackup(member)}
-              onRemove={() => handleRemoveMember(member)}
-            />
-          ))}
+      ) : pagedTeam.length === 0 ? (
+        <div className="text-center py-8 bg-slate-800/30 rounded-xl border border-slate-700/30">
+          <p className="text-slate-400 text-sm">Nenhum membro neste filtro.</p>
+          <button onClick={() => setFilterMode('all')} className="mt-2 text-xs text-emerald-400 hover:text-emerald-300 underline">
+            Mostrar todos
+          </button>
         </div>
+      ) : (
+        <>
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
+            {pagedTeam.map((member) => (
+              <TeamMemberCard
+                key={member.id}
+                member={member}
+                isOnline={isOnline(member.team_member_id)}
+                isTopPerformer={topPerformerIds.has(member.team_member_id)}
+                onWhatsApp={() => handleWhatsApp(member)}
+                onChat={() => handleChat(member)}
+                onCommand={() => setDrawerMember(member)}
+                onToggleBackup={() => handleToggleBackup(member)}
+                onRemove={() => handleRemoveMember(member)}
+              />
+            ))}
+          </div>
+
+          {/* V1.9.187 — Paginação */}
+          {totalPages > 1 && (
+            <div className="flex items-center justify-center gap-2 pt-2">
+              <button
+                type="button"
+                onClick={() => setPage(Math.max(1, page - 1))}
+                disabled={page === 1}
+                className="p-2 text-slate-400 hover:text-white bg-slate-800/40 hover:bg-slate-700/60 border border-slate-700/40 rounded-lg disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                title="Página anterior"
+              >
+                <ChevronRight className="w-4 h-4 rotate-180" />
+              </button>
+              <div className="flex items-center gap-1">
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map(n => (
+                  <button
+                    key={n}
+                    type="button"
+                    onClick={() => setPage(n)}
+                    className={`w-8 h-8 text-xs font-medium rounded-lg transition-all tabular-nums ${
+                      page === n
+                        ? 'bg-emerald-600 text-white shadow shadow-emerald-900/20'
+                        : 'text-slate-400 hover:text-white bg-slate-800/40 hover:bg-slate-700/60 border border-slate-700/40'
+                    }`}
+                  >
+                    {n}
+                  </button>
+                ))}
+              </div>
+              <button
+                type="button"
+                onClick={() => setPage(Math.min(totalPages, page + 1))}
+                disabled={page === totalPages}
+                className="p-2 text-slate-400 hover:text-white bg-slate-800/40 hover:bg-slate-700/60 border border-slate-700/40 rounded-lg disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                title="Próxima página"
+              >
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
+          )}
+        </>
       )}
 
       {/* Modo Comando Drawer */}
