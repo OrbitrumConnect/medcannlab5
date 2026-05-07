@@ -110,6 +110,11 @@ const QuickPrescriptions: React.FC<QuickPrescriptionsProps> = ({ className = '',
   // V1.9.180-C — Ref pra scroll suave até a seção "Minhas Prescrições"
   const minhasPrescricoesRef = React.useRef<HTMLDivElement>(null)
 
+  // V1.9.184 — Buyer data (ANVISA Portaria 344/98) — só preenchido se receita controlada
+  const [buyerData, setBuyerData] = useState({ name: '', id: '', address: '', city: '', uf: '' })
+  // V1.9.184 — Flag pro fluxo "Salvar e Assinar ICP-Brasil" (cria draft + chama Edge digital-signature)
+  const [signing, setSigning] = useState(false)
+
   const prescriptionStats = useMemo(() => {
     const draft = myPrescriptions.filter(p => p.status === 'draft').length
     const signed = myPrescriptions.filter(p => p.status === 'signed').length
@@ -171,13 +176,14 @@ const QuickPrescriptions: React.FC<QuickPrescriptionsProps> = ({ className = '',
     }
   }
 
-  // V1.9.180-B/C — Reset form ao fechar modal (limpa estado de edição + tipo)
+  // V1.9.180-B/C/V1.9.184 — Reset form ao fechar modal (limpa edit + tipo + buyer_data)
   const handleCloseModal = () => {
     setIsModalOpen(false)
     setEditingId(null)
     setPrescriptionForm({ medication: '', dosage: '', frequency: '', duration: '', notes: '' })
     setSelectedPatient(patientId || '')
     setSelectedPrescriptionType('simple')
+    setBuyerData({ name: '', id: '', address: '', city: '', uf: '' })
   }
 
   // V1.9.180-B / V1.9.181 — Excluir rascunho com ConfirmDialog do app
@@ -233,42 +239,49 @@ const QuickPrescriptions: React.FC<QuickPrescriptionsProps> = ({ className = '',
     }
   }
 
-  const handleSavePrescription = async () => {
+  // V1.9.184 — savePrescription helper. Retorna o id criado/atualizado pra o
+  // fluxo "Salvar e Assinar" usar diretamente. handleSavePrescription = wrapper UI.
+  const savePrescriptionInternal = async (): Promise<string | null> => {
     if (!selectedPatient || !prescriptionForm.medication) {
       toast.warning('Campos obrigatórios', 'Selecione um paciente e preencha a medicação.')
-      return
+      return null
     }
 
-    setSaving(true)
-    try {
-      const medicationsPayload = [{
-        name: prescriptionForm.medication,
-        dosage: prescriptionForm.dosage,
-        frequency: prescriptionForm.frequency,
-        duration: prescriptionForm.duration,
-        quantity: '1'
-      }]
+    const medicationsPayload = [{
+      name: prescriptionForm.medication,
+      dosage: prescriptionForm.dosage,
+      frequency: prescriptionForm.frequency,
+      duration: prescriptionForm.duration,
+      quantity: '1'
+    }]
 
-      let error: any = null
+    // V1.9.184 — buyer_data ANVISA só pra receitas controladas (Branca/Azul/Amarela)
+    const isControlled = selectedPrescriptionType !== 'simple'
+    const metadata = isControlled && buyerData.name
+      ? { buyer_data: buyerData }
+      : null
 
-      if (editingId) {
-        // V1.9.180-B — UPDATE rascunho existente (trigger CFM bloqueia em
-        // status != draft; aqui o card só dispara edit quando status='draft')
-        const updateRes = await supabase
-          .from('cfm_prescriptions')
-          .update({
-            patient_id: selectedPatient,
-            patient_name: patientsList.find(p => p.id === selectedPatient)?.name || 'Paciente',
-            medications: medicationsPayload,
-            notes: prescriptionForm.notes,
-            updated_at: new Date().toISOString()
-          })
-          .eq('id', editingId)
-          .eq('status', 'draft')  // defense-in-depth: nunca toca prescrição assinada
-        error = updateRes.error
-      } else {
-        // INSERT novo rascunho (V1.9.180-C — usa selectedPrescriptionType da seção CFM)
-        const insertRes = await supabase.from('cfm_prescriptions').insert({
+    if (editingId) {
+      const updateRes = await supabase
+        .from('cfm_prescriptions')
+        .update({
+          patient_id: selectedPatient,
+          patient_name: patientsList.find(p => p.id === selectedPatient)?.name || 'Paciente',
+          medications: medicationsPayload,
+          notes: prescriptionForm.notes,
+          ...(metadata ? { metadata } : {}),
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', editingId)
+        .eq('status', 'draft')
+        .select('id')
+        .single()
+      if (updateRes.error) throw new Error(updateRes.error.message)
+      return updateRes.data?.id || editingId
+    } else {
+      const insertRes = await supabase
+        .from('cfm_prescriptions')
+        .insert({
           prescription_type: selectedPrescriptionType,
           patient_id: selectedPatient,
           patient_name: patientsList.find(p => p.id === selectedPatient)?.name || 'Paciente',
@@ -278,33 +291,91 @@ const QuickPrescriptions: React.FC<QuickPrescriptionsProps> = ({ className = '',
           medications: medicationsPayload,
           status: 'draft',
           notes: prescriptionForm.notes,
+          ...(metadata ? { metadata } : {}),
           created_at: new Date().toISOString()
         })
-        error = insertRes.error
-      }
+        .select('id')
+        .single()
+      if (insertRes.error) throw new Error(insertRes.error.message)
+      return insertRes.data?.id || null
+    }
+  }
 
-      if (error) {
-        console.error('Erro ao salvar prescrição:', error)
-        throw new Error(error.message || 'Falha ao salvar no banco de dados.')
-      }
-
-      // SUCESSO ELEGANTE
+  const handleSavePrescription = async () => {
+    setSaving(true)
+    try {
+      const id = await savePrescriptionInternal()
+      if (!id) return  // validação falhou (toast já exibido)
       setShowSuccess(true)
-
-      // Limpar form + estado de edição
       setPrescriptionForm({ medication: '', dosage: '', frequency: '', duration: '', notes: '' })
+      setBuyerData({ name: '', id: '', address: '', city: '', uf: '' })
       setEditingId(null)
-
-      // Fechar modal após 2 segundos
       setTimeout(() => {
         setShowSuccess(false)
         setIsModalOpen(false)
-      }, 2000)
-
+        loadMyPrescriptions()
+      }, 1600)
     } catch (err: any) {
       toast.error('Erro ao salvar', err?.message || 'Falha ao salvar prescrição.')
     } finally {
       setSaving(false)
+    }
+  }
+
+  // V1.9.184 — Salvar + Assinar ICP-Brasil em sequência (paridade com a rota
+  // Prontuário > Paciente > Prescrição). Cria/atualiza draft, depois invoca
+  // Edge digital-signature v60 que detecta cert real (.pfx upload V1.9.177)
+  // e gera PKCS#7 RFC 3852 OU cai em simulação fallback.
+  const handleSaveAndSign = async () => {
+    if (!user?.id) return
+    setSigning(true)
+    try {
+      const id = await savePrescriptionInternal()
+      if (!id) { setSigning(false); return }
+
+      const { data, error } = await supabase.functions.invoke('digital-signature', {
+        body: {
+          documentId: id,
+          documentLevel: 'level_3',
+          professionalId: user.id,
+          userConfirmed: true
+        }
+      })
+
+      if (error) {
+        if (error.message?.includes('Certificado') || (data as any)?.requiresRenewal) {
+          const goCert = await confirm({
+            title: 'Certificado ICP-Brasil necessário',
+            message: 'Não foi encontrado certificado ICP-Brasil ativo. Deseja cadastrar agora?',
+            type: 'info',
+            confirmText: 'Ir para Certificados',
+            cancelText: 'Cancelar'
+          })
+          if (goCert) navigate('/app/clinica/profissional/certificados')
+          return
+        }
+        throw error
+      }
+      if (!data?.success) throw new Error(data?.error || 'Falha na assinatura')
+
+      const mode = (data as any).mode as 'real' | 'api_stub' | 'simulation' | undefined
+      if (mode === 'real') {
+        toast.success('Prescrição assinada', 'PKCS#7 SignedData ICP-Brasil real • Código ITI: ' + (data.itiValidationCode || 'N/A'))
+      } else if (mode === 'simulation') {
+        toast.warning('Assinatura em modo VALIDAÇÃO', 'Sem força legal ICP-Brasil. Faça upload do .pfx em Certificados pra ativar real.')
+      } else {
+        toast.success('Prescrição assinada', 'Código ITI: ' + (data.itiValidationCode || 'N/A'))
+      }
+
+      setPrescriptionForm({ medication: '', dosage: '', frequency: '', duration: '', notes: '' })
+      setBuyerData({ name: '', id: '', address: '', city: '', uf: '' })
+      setEditingId(null)
+      setIsModalOpen(false)
+      loadMyPrescriptions()
+    } catch (err: any) {
+      toast.error('Erro ao assinar', err?.message || 'Falha na assinatura digital')
+    } finally {
+      setSigning(false)
     }
   }
 
@@ -941,6 +1012,73 @@ const QuickPrescriptions: React.FC<QuickPrescriptionsProps> = ({ className = '',
                   </div>
                 </div>
               </div>
+
+              {/* V1.9.184 — Campos extras ANVISA Portaria 344/98 (só Branca/Azul/Amarela) */}
+              {selectedPrescriptionType !== 'simple' && (
+                <div className="border-t border-amber-500/20 bg-amber-500/[0.03] px-6 py-4 -mx-6">
+                  <div className="flex items-center gap-2 mb-3">
+                    <AlertCircle className="w-4 h-4 text-amber-400" />
+                    <h4 className="text-sm font-semibold text-amber-200">Dados do Comprador (ANVISA Portaria 344/98)</h4>
+                  </div>
+                  <p className="text-[11px] text-slate-400 mb-3 leading-relaxed">
+                    Receitas controladas exigem identificação do comprador (paciente ou representante que retirará na farmácia).
+                    Estes campos podem ser deixados em branco no rascunho — preencha antes de assinar.
+                  </p>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-xs font-medium text-slate-300 mb-1">Nome do Comprador</label>
+                      <input
+                        type="text"
+                        className="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-500"
+                        placeholder="Ex: João Silva (paciente ou representante)"
+                        value={buyerData.name}
+                        onChange={(e) => setBuyerData({ ...buyerData, name: e.target.value })}
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-slate-300 mb-1">CPF/RG</label>
+                      <input
+                        type="text"
+                        className="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-500"
+                        placeholder="000.000.000-00"
+                        value={buyerData.id}
+                        onChange={(e) => setBuyerData({ ...buyerData, id: e.target.value })}
+                      />
+                    </div>
+                    <div className="md:col-span-2">
+                      <label className="block text-xs font-medium text-slate-300 mb-1">Endereço</label>
+                      <input
+                        type="text"
+                        className="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-500"
+                        placeholder="Rua, número, bairro"
+                        value={buyerData.address}
+                        onChange={(e) => setBuyerData({ ...buyerData, address: e.target.value })}
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-slate-300 mb-1">Cidade</label>
+                      <input
+                        type="text"
+                        className="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-500"
+                        placeholder="Rio de Janeiro"
+                        value={buyerData.city}
+                        onChange={(e) => setBuyerData({ ...buyerData, city: e.target.value })}
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-slate-300 mb-1">UF</label>
+                      <input
+                        type="text"
+                        maxLength={2}
+                        className="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-500 uppercase"
+                        placeholder="RJ"
+                        value={buyerData.uf}
+                        onChange={(e) => setBuyerData({ ...buyerData, uf: e.target.value.toUpperCase() })}
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
 
             <div className="p-6 border-t border-slate-700 flex justify-end gap-3 shrink-0 bg-slate-800/50">
@@ -965,10 +1103,20 @@ const QuickPrescriptions: React.FC<QuickPrescriptionsProps> = ({ className = '',
               </button>
               <button
                 onClick={handleSavePrescription}
-                disabled={saving || showSuccess}
-                className="px-6 py-2.5 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium shadow-lg shadow-green-900/20 transition-all hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                disabled={saving || signing || showSuccess}
+                className="px-5 py-2.5 bg-slate-700/80 hover:bg-slate-600/80 text-white rounded-lg font-medium border border-slate-600/50 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                title="Salvar como rascunho (pode editar depois antes de assinar)"
               >
-                {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <><Save className="w-4 h-4" /> {editingId ? 'Salvar Alterações' : 'Salvar Prescrição'}</>}
+                {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <><Save className="w-4 h-4" /> {editingId ? 'Salvar Alterações' : 'Salvar Rascunho'}</>}
+              </button>
+              {/* V1.9.184 — Botão "Salvar e Assinar ICP-Brasil" (paridade com rota Prontuário) */}
+              <button
+                onClick={handleSaveAndSign}
+                disabled={saving || signing || showSuccess}
+                className="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg font-medium shadow-lg shadow-emerald-900/30 transition-all hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                title="Salvar e assinar com certificado ICP-Brasil (PKCS#7 RFC 3852)"
+              >
+                {signing ? <><Loader2 className="w-4 h-4 animate-spin" /> Assinando...</> : <><Lock className="w-4 h-4" /> Salvar e Assinar ICP</>}
               </button>
             </div>
           </div>
