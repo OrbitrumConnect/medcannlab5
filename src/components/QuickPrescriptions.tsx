@@ -747,48 +747,42 @@ const QuickPrescriptions: React.FC<QuickPrescriptionsProps> = ({ className = '',
         </div>
       </div>
 
-      {/* Templates Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {/* V1.9.x — Templates "Receitas Frequentes" compactados pra paridade visual com
+          cards Tipo CFM acima (grid 5col, padding p-3/p-4, fonts xs/sm).
+          Rationale: hierarquia visual reflete hierarquia clínica — Tipo CFM são
+          decisão primária; templates são atalhos secundários, devem ser menores. */}
+      <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
         {filteredTemplates.map((template) => (
           <div
             key={template.id}
-            className="bg-slate-800 border border-slate-700 rounded-lg p-6 hover:border-blue-500 transition-colors group cursor-pointer"
+            className="bg-slate-800/50 border border-slate-700 rounded-xl p-3 md:p-4 hover:border-blue-500/60 transition-all hover:scale-[1.02] group cursor-pointer"
             onClick={() => {
               loadTemplateIntoForm(template.id);
               setIsModalOpen(true);
             }}
+            title={`${template.name} · ${template.dosage} · ${template.frequency}`}
           >
-            <div className="flex justify-between items-start mb-4">
-              <div className={`p-2 rounded-lg ${template.category === 'cannabis' ? 'bg-green-500/20 text-green-400' :
+            <div className="flex justify-between items-start mb-2">
+              <div className={`inline-flex p-1.5 rounded-lg ${template.category === 'cannabis' ? 'bg-green-500/20 text-green-400' :
                 template.category === 'nefrologia' ? 'bg-orange-500/20 text-orange-400' :
                   'bg-blue-500/20 text-blue-400'
-                }`}>
-                {template.category === 'cannabis' ? <Droplets className="w-5 h-5" /> : <Pill className="w-5 h-5" />}
+                } group-hover:scale-110 transition-transform`}>
+                {template.category === 'cannabis' ? <Droplets className="w-4 h-4" /> : <Pill className="w-4 h-4" />}
               </div>
-              <span className="text-xs text-slate-500 flex items-center">
-                <Clock className="w-3 h-3 mr-1" />
-                {template.lastUsed}
+              <span className="text-[9px] md:text-[10px] text-slate-500 flex items-center" title="Usado recentemente">
+                <User className="w-2.5 h-2.5 mr-0.5" />
+                {template.usageCount}x
               </span>
             </div>
 
-            <h3 className="text-lg font-bold text-white mb-2 group-hover:text-blue-400 transition-colors">
+            <h4 className="text-xs md:text-sm font-bold text-white leading-tight group-hover:text-blue-400 transition-colors line-clamp-2">
               {template.name}
-            </h3>
-            <p className="text-slate-400 text-sm mb-4 line-clamp-2">
-              {template.description}
+            </h4>
+            <p className="text-[10px] md:text-xs text-slate-400 mt-1 leading-snug">
+              <span className="text-slate-200 font-medium">{template.dosage}</span>
+              <span className="mx-1">·</span>
+              <span>{template.frequency}</span>
             </p>
-
-            <div className="flex items-center justify-between pt-4 border-t border-slate-700">
-              <div className="text-sm text-slate-400">
-                <span className="text-white font-medium">{template.dosage}</span>
-                <span className="mx-2">•</span>
-                <span>{template.frequency}</span>
-              </div>
-              <div className="text-xs text-slate-500 flex items-center" title="Usado recentemente">
-                <User className="w-3 h-3 mr-1" />
-                {template.usageCount}x
-              </div>
-            </div>
           </div>
         ))}
       </div>

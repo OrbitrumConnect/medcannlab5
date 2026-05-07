@@ -128,8 +128,9 @@ const Profile: React.FC = () => {
 
       // V1.9.150: carregar pricing/experiência (só faz sentido pra profissional)
       // V1.9.x: + specialty/council_state (users) + tags/languages (profiles)
+      // V1.9.x: admin também carrega/edita (QA + suporte interno; campos opcionais nullable)
       // Fallback gracioso se migration ainda não aplicada (colunas inexistentes).
-      if ((user as any).type === 'profissional' || (user as any).type === 'professional') {
+      if ((user as any).type === 'profissional' || (user as any).type === 'professional' || (user as any).type === 'admin') {
         ;(async () => {
           try {
             const { data, error } = await (supabase as any)
@@ -272,8 +273,10 @@ const Profile: React.FC = () => {
       if (updateError) throw updateError
 
       // V1.9.150: salvar pricing/experiência em users (canônica) só pra profissional.
+      // V1.9.x: admin também (consistência com load — campos opcionais nullable, sem efeito
+      // colateral em vitrine pública porque admin não está em FALLBACK_PROFESSIONALS).
       // Fallback gracioso se migration ainda não aplicada — não bloqueia save geral.
-      if ((user as any).type === 'profissional' || (user as any).type === 'professional') {
+      if ((user as any).type === 'profissional' || (user as any).type === 'professional' || (user as any).type === 'admin') {
         const feeRaw = formData.consultation_fee_default.trim()
         const yearsRaw = formData.years_experience.trim()
         const feeNum = feeRaw === '' ? null : parseFloat(feeRaw.replace(',', '.'))
@@ -755,9 +758,10 @@ const Profile: React.FC = () => {
               </div>
 
               {/* V1.9.150: campos profissionais (vitrine + cobrança).
-                  Aparecem só para type=profissional. Wallet existente já calcula split 70/30
-                  baseado em platform_fee_pct dinâmico (FASE B liga tier_label → 30/23/26/20%). */}
-              {((user as any)?.type === 'profissional' || (user as any)?.type === 'professional') && (
+                  V1.9.x: admin também vê/edita pra QA + suporte interno (campos opcionais).
+                  Wallet existente já calcula split 70/30 baseado em platform_fee_pct dinâmico
+                  (FASE B liga tier_label → 30/23/26/20%). */}
+              {((user as any)?.type === 'profissional' || (user as any)?.type === 'professional' || (user as any)?.type === 'admin') && (
                 <div className="border-t border-slate-700 pt-4 space-y-3">
                   <div className="flex items-center gap-2">
                     <Wallet className="w-3.5 h-3.5 text-emerald-400" />
