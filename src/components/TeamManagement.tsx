@@ -16,7 +16,7 @@ import {
   Users, Plus, X, UserPlus, Loader2, UserCheck, AlertTriangle,
   Phone, MessageCircle, Activity, Star, TrendingUp,
   Zap, Shield, Crown, Award, ChevronRight,
-  Clock, BarChart3, Heart
+  Clock, BarChart3, Heart, Mail, Check
 } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
@@ -37,6 +37,8 @@ interface TeamMember {
   relationship_type: string
   is_active: boolean
   notes: string | null
+  // V1.9.188 — accepted_at NULL = convite pendente
+  accepted_at: string | null
   // enriched users
   member_name: string
   member_email: string
@@ -53,6 +55,19 @@ interface TeamMember {
   expired: number
   accept_rate_pct: number | null
   avg_accept_latency_min: number | null
+}
+
+// V1.9.188 — convite pendente que o user atual recebeu
+interface PendingInvite {
+  id: string
+  inviter_id: string
+  relationship_type: string
+  notes: string | null
+  created_at: string
+  inviter_name: string | null
+  inviter_email: string | null
+  inviter_specialty: string | null
+  inviter_avatar: string | null
 }
 
 interface AvailableProfessional {
@@ -166,6 +181,8 @@ function TeamMemberCard({
   onToggleBackup: () => void
   onRemove: () => void
 }) {
+  // V1.9.188 — convite pendente (não aceito ainda pelo membro)
+  const isPending = member.accepted_at == null
   const rel = RELATIONSHIP_LABELS[member.relationship_type] || RELATIONSHIP_LABELS.colleague
   const RelIcon = rel.icon
   const effectiveStatus: PresenceStatus = isOnline ? 'online' : member.presence_status
@@ -237,9 +254,14 @@ function TeamMemberCard({
             🏆 TOP
           </span>
         )}
-        {!member.is_active && (
+        {!member.is_active && !isPending && (
           <span className="text-[9px] font-semibold px-1.5 py-0.5 rounded-full text-red-400 bg-red-500/20 border border-red-500/30">
             INATIVO
+          </span>
+        )}
+        {isPending && (
+          <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full text-amber-300 bg-amber-500/20 border border-amber-500/40 inline-flex items-center gap-0.5" title="Aguardando aceite do profissional">
+            ⏳ AGUARDANDO ACEITE
           </span>
         )}
       </div>
@@ -505,6 +527,66 @@ const TeamManagement: React.FC = () => {
   const [isSaving, setIsSaving] = useState(false)
   const [drawerMember, setDrawerMember] = useState<TeamMember | null>(null)
 
+  // V1.9.188 — convites pendentes que o user atual recebeu
+  const [pendingInvites, setPendingInvites] = useState<PendingInvite[]>([])
+  const [acceptingId, setAcceptingId] = useState<string | null>(null)
+
+  const loadPendingInvites = useCallback(async () => {
+    if (!user?.id) return
+    try {
+      const { data, error } = await (supabase as any)
+        .from('v_team_pending_invites_for_me')
+        .select('id, inviter_id, relationship_type, notes, created_at, inviter_name, inviter_email, inviter_specialty, inviter_avatar')
+      if (error) throw error
+      setPendingInvites((data || []) as PendingInvite[])
+    } catch (err: any) {
+      console.error('[V1.9.188] erro ao carregar convites pendentes:', err)
+    }
+  }, [user?.id])
+
+  const handleAcceptInvite = async (invite: PendingInvite) => {
+    setAcceptingId(invite.id)
+    try {
+      const { error } = await (supabase as any)
+        .from('professional_teams')
+        .update({ accepted_at: new Date().toISOString(), is_active: true })
+        .eq('id', invite.id)
+      if (error) {
+        // Trigger fn_team_member_limit retorna ERRCODE 'check_violation' se já em 2 equipes
+        if (error.message?.includes('Limite') || error.message?.includes('limite') || error.code === '23514') {
+          toast.warning('Limite atingido', 'Você já está em 2 equipes ativas. Saia de uma antes de aceitar nova.')
+          return
+        }
+        throw error
+      }
+      await Promise.all([loadPendingInvites(), loadTeam()])
+      toast.success('Convite aceito', `Você agora faz parte da equipe de ${invite.inviter_name || 'colega'}.`)
+    } catch (err: any) {
+      toast.error('Erro ao aceitar', err?.message || 'Falha desconhecida.')
+    } finally {
+      setAcceptingId(null)
+    }
+  }
+
+  const handleRejectInvite = async (invite: PendingInvite) => {
+    const ok = await confirm({
+      title: 'Recusar convite?',
+      message: `Você não fará parte da equipe de ${invite.inviter_name || 'este colega'}. Pode pedir pra ele convidar de novo depois.`,
+      type: 'warning',
+      confirmText: 'Recusar',
+      cancelText: 'Cancelar'
+    })
+    if (!ok) return
+    try {
+      const { error } = await supabase.from('professional_teams').delete().eq('id', invite.id)
+      if (error) throw error
+      await loadPendingInvites()
+      toast.success('Convite recusado', '')
+    } catch (err: any) {
+      toast.error('Erro', err?.message || 'Falha ao recusar')
+    }
+  }
+
   const loadTeam = useCallback(async () => {
     if (!user?.id) return
     setIsLoading(true)
@@ -512,7 +594,7 @@ const TeamManagement: React.FC = () => {
       // 1. base professional_teams
       const { data: links, error: linkErr } = await supabase
         .from('professional_teams')
-        .select('id, team_member_id, relationship_type, is_active, notes')
+        .select('id, team_member_id, relationship_type, is_active, notes, accepted_at')
         .eq('professional_id', user.id)
         .order('created_at', { ascending: true })
       if (linkErr) throw linkErr
@@ -550,6 +632,7 @@ const TeamManagement: React.FC = () => {
           relationship_type: d.relationship_type,
           is_active: d.is_active,
           notes: d.notes,
+          accepted_at: d.accepted_at || null,
           member_name: u.name || 'Profissional',
           member_email: u.email || '',
           member_specialty: u.specialty || 'Especialista',
@@ -575,8 +658,11 @@ const TeamManagement: React.FC = () => {
   }, [user?.id, toast])
 
   useEffect(() => {
-    if (user?.id) loadTeam()
-  }, [user?.id, loadTeam])
+    if (user?.id) {
+      loadTeam()
+      loadPendingInvites()
+    }
+  }, [user?.id, loadTeam, loadPendingInvites])
 
   // Team Health Score — só mostra se há membros
   const teamHealthScore = useMemo(() => {
@@ -653,18 +739,26 @@ const TeamManagement: React.FC = () => {
     if (!selectedProfId) return
     setIsSaving(true)
     try {
-      const { error } = await supabase
+      // V1.9.188 — INSERT cria CONVITE (accepted_at=NULL, is_active=false)
+      // Trigger fn_team_invite_notification dispara notification realtime no convidado.
+      // Convidado precisa aceitar pra entrar na equipe ativa (limite 2 ativas).
+      const { error } = await (supabase as any)
         .from('professional_teams')
         .insert({
           professional_id: user!.id,
           team_member_id: selectedProfId,
           relationship_type: selectedRelationship,
           notes: addNotes || null,
+          accepted_at: null,    // pendente até aceite
+          is_active: false      // ativa só após aceite
         })
       if (error) throw error
       setShowAddModal(false)
       await loadTeam()
-      toast.success('Adicionado à equipe', 'Profissional incluído.')
+      toast.success(
+        'Convite enviado',
+        'O profissional receberá uma notificação no app pra aceitar. Aparecerá na sua lista quando aceitar.'
+      )
     } catch (err: any) {
       toast.error('Erro ao adicionar', err?.message || 'Falha desconhecida.')
     } finally {
@@ -748,6 +842,76 @@ const TeamManagement: React.FC = () => {
 
   return (
     <div className="p-4 space-y-5 max-w-5xl mx-auto">
+      {/* V1.9.188 — Banner Convites Recebidos (sino + banner inline) */}
+      {pendingInvites.length > 0 && (
+        <div className="rounded-xl border border-purple-500/40 bg-gradient-to-br from-purple-500/10 to-indigo-600/10 backdrop-blur-md p-4 space-y-3">
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-lg bg-purple-500/20 flex items-center justify-center">
+              <Mail className="w-4 h-4 text-purple-300" />
+            </div>
+            <div>
+              <h3 className="text-sm font-bold text-white">
+                Convites Recebidos
+                <span className="ml-2 text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-purple-500/30 text-purple-200">
+                  {pendingInvites.length}
+                </span>
+              </h3>
+              <p className="text-[11px] text-slate-400">
+                Profissionais te convidaram pra equipe clínica deles. Aceite quando puder.
+              </p>
+            </div>
+          </div>
+          <div className="grid gap-2">
+            {pendingInvites.map((invite) => {
+              const rel = RELATIONSHIP_LABELS[invite.relationship_type] || RELATIONSHIP_LABELS.colleague
+              const RelIcon = rel.icon
+              return (
+                <div key={invite.id} className="flex items-center gap-3 bg-slate-900/40 border border-slate-700/40 rounded-lg p-3">
+                  {invite.inviter_avatar ? (
+                    <img src={invite.inviter_avatar} alt="" className="w-9 h-9 rounded-full object-cover" />
+                  ) : (
+                    <div className="w-9 h-9 rounded-full bg-gradient-to-br from-indigo-600 to-purple-600 flex items-center justify-center text-white font-bold text-xs">
+                      {getInitials(invite.inviter_name || '??')}
+                    </div>
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <span className="text-sm font-semibold text-white truncate">{invite.inviter_name || 'Profissional'}</span>
+                      <span className={`inline-flex items-center gap-1 text-[9px] font-semibold px-1.5 py-0.5 rounded-full border ${rel.color}`}>
+                        <RelIcon className="w-2.5 h-2.5" />
+                        {rel.label}
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-slate-400 truncate">
+                      {invite.inviter_specialty || 'Especialista'}
+                      {invite.notes && <span className="text-slate-500 italic"> · "{invite.notes}"</span>}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-1.5 shrink-0">
+                    <button
+                      onClick={() => handleAcceptInvite(invite)}
+                      disabled={acceptingId === invite.id}
+                      className="flex items-center gap-1 px-3 py-1.5 bg-emerald-500/20 hover:bg-emerald-500/35 border border-emerald-500/40 hover:border-emerald-500/60 text-emerald-300 rounded-lg text-xs font-medium transition-all disabled:opacity-50"
+                    >
+                      {acceptingId === invite.id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Check className="w-3.5 h-3.5" />}
+                      Aceitar
+                    </button>
+                    <button
+                      onClick={() => handleRejectInvite(invite)}
+                      disabled={acceptingId === invite.id}
+                      className="flex items-center gap-1 px-3 py-1.5 bg-red-500/15 hover:bg-red-500/30 border border-red-500/30 hover:border-red-500/50 text-red-300 rounded-lg text-xs font-medium transition-all disabled:opacity-50"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                      Recusar
+                    </button>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      )}
+
       {/* Header */}
       <div className="flex items-start justify-between gap-3 flex-wrap">
         <div className="flex items-center gap-3">

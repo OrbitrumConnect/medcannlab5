@@ -638,11 +638,13 @@ const ProfessionalMyDashboard: React.FC = () => {
   }
 
   if (section === 'chat-profissionais') {
+    // V1.9.188-A — passa peer query param pra abrir direto a sala com aquele user
+    const peerUserId = query.get('peer')
     return (
       <div className="h-screen w-full bg-[#0f172a] flex flex-col">
         <SectionHeader title="Chat Profissionais" icon={MessageCircle} />
         <div className="flex-1 overflow-hidden">
-          <ProfessionalChatSystem />
+          <ProfessionalChatSystem peerUserId={peerUserId} />
         </div>
       </div>
     )

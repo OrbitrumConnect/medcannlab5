@@ -13,6 +13,8 @@ interface ProfessionalChatSystemProps {
   className?: string
   interlocutor?: string
   selectedPatientId?: string | null
+  // V1.9.188-A — quando navegado de Equipe Clínica > botão Chat: abre direto a sala compartilhada com peer
+  peerUserId?: string | null
 }
 
 type RoomFilter = 'all' | 'professional' | 'student' | 'patient'
@@ -36,7 +38,7 @@ const formatTime = (isoDate: string) => {
   })
 }
 
-const ProfessionalChatSystem: React.FC<ProfessionalChatSystemProps> = ({ className = '', interlocutor, selectedPatientId }) => {
+const ProfessionalChatSystem: React.FC<ProfessionalChatSystemProps> = ({ className = '', interlocutor, selectedPatientId, peerUserId }) => {
   const { user } = useAuth()
   const [activeRoomId, setActiveRoomId] = useState<string | null>(null)
   const [filter, setFilter] = useState<RoomFilter>('all')
@@ -76,6 +78,46 @@ const ProfessionalChatSystem: React.FC<ProfessionalChatSystemProps> = ({ classNa
     sendMessage,
     markRoomAsRead
   } = useChatSystem(activeRoomId ?? undefined)
+
+  // V1.9.188-A — Quando peerUserId vem do query (?peer=) ao clicar Chat na Equipe Clínica:
+  // resolver via chat_participants pra encontrar room compartilhada. Se não houver,
+  // permanecer na inbox (fallback graceful — não criar room sem permissão explícita).
+  useEffect(() => {
+    if (!peerUserId || !user?.id) return
+    let cancelled = false
+    ;(async () => {
+      try {
+        // Buscar todas rooms onde o user atual participa
+        const { data: myRooms } = await supabase
+          .from('chat_participants')
+          .select('room_id')
+          .eq('user_id', user.id)
+        if (cancelled || !myRooms || myRooms.length === 0) return
+        const roomIds = myRooms.map((r: any) => r.room_id)
+
+        // Buscar entre essas rooms qual o peer também participa (sala 1:1)
+        const { data: shared } = await supabase
+          .from('chat_participants')
+          .select('room_id')
+          .eq('user_id', peerUserId)
+          .in('room_id', roomIds)
+        if (cancelled) return
+        if (shared && shared.length > 0) {
+          setActiveRoomId(shared[0].room_id)
+        } else {
+          // Sem sala compartilhada — fica na inbox; usuário pode criar nova manualmente
+          // (Triple-A: não cria room silenciosamente sem ação explícita)
+          if (typeof toast !== 'undefined') {
+            toast.info?.('Sem conversa anterior', 'Vocês ainda não têm chat. Use o botão de nova conversa pra iniciar.')
+          }
+        }
+      } catch (err) {
+        console.error('[ProfessionalChatSystem] erro resolvendo peerUserId:', err)
+      }
+    })()
+    return () => { cancelled = true }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [peerUserId, user?.id])
 
   useEffect(() => {
     if (activeRoomId) return
