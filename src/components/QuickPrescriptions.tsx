@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
   FileText,
+  FileCheck,
   Plus,
   Search,
   Filter,
@@ -106,7 +107,15 @@ const QuickPrescriptions: React.FC<QuickPrescriptionsProps> = ({ className = '',
   // regressão UX).
   const [editingId, setEditingId] = useState<string | null>(null)
   // V1.9.180-C — Tipo de receita selecionado ao clicar nos 4 cards de tipo
-  const [selectedPrescriptionType, setSelectedPrescriptionType] = useState<'simple' | 'special' | 'blue' | 'yellow'>('simple')
+  // V1.9.185 — Adicionado 'attestation' (atestado médico, document_level='level_2')
+  const [selectedPrescriptionType, setSelectedPrescriptionType] = useState<'simple' | 'special' | 'blue' | 'yellow' | 'attestation'>('simple')
+
+  // V1.9.185 — Form atestado (texto livre + dias + CID-10 opcional)
+  const [attestationForm, setAttestationForm] = useState({
+    diasAfastamento: '',
+    cid10: '',
+    motivo: ''  // texto principal: "Atesto que o paciente X esteve sob meus cuidados..."
+  })
   // V1.9.180-C — Ref pra scroll suave até a seção "Minhas Prescrições"
   const minhasPrescricoesRef = React.useRef<HTMLDivElement>(null)
 
@@ -143,21 +152,43 @@ const QuickPrescriptions: React.FC<QuickPrescriptionsProps> = ({ className = '',
     }
   }
 
-  // V1.9.180-B — Click no card: draft → edição / signed/sent → visualização
+  // V1.9.180-B/V1.9.185 — Click no card: draft → edição (prescrição OU atestado) / signed → view
   const handleCardClick = (p: MyPrescription) => {
     if (p.status === 'draft') {
-      // Pré-preenche o form de edição com dados do rascunho
       const meds = Array.isArray(p.medications) ? p.medications : []
       const firstMed = meds[0] || {}
+      const ptype = (p.prescription_type as any) || 'simple'
+      const isAttestation = ptype === 'attestation'
+      const md: any = (p as any).metadata || {}
       setEditingId(p.id)
       setSelectedPatient(p.patient_id || '')
-      setPrescriptionForm({
-        medication: firstMed.name || '',
-        dosage: firstMed.dosage || '',
-        frequency: firstMed.frequency || '',
-        duration: firstMed.duration || '',
-        notes: p.notes || ''
-      })
+      setSelectedPrescriptionType(ptype)
+      if (isAttestation) {
+        // V1.9.185 — pré-preenche form atestado a partir do metadata.attestation_data
+        setAttestationForm({
+          diasAfastamento: md.attestation_data?.dias_afastamento || '',
+          cid10: md.attestation_data?.cid10 || '',
+          motivo: p.notes || md.attestation_data?.motivo || ''
+        })
+      } else {
+        setPrescriptionForm({
+          medication: firstMed.name || '',
+          dosage: firstMed.dosage || '',
+          frequency: firstMed.frequency || '',
+          duration: firstMed.duration || '',
+          notes: p.notes || ''
+        })
+        // V1.9.184 — pré-preenche buyer_data se existir
+        if (md.buyer_data) {
+          setBuyerData({
+            name: md.buyer_data.name || '',
+            id: md.buyer_data.id || '',
+            address: md.buyer_data.address || '',
+            city: md.buyer_data.city || '',
+            uf: md.buyer_data.uf || ''
+          })
+        }
+      }
       setIsModalOpen(true)
     } else {
       // V1.9.181 — usa ConfirmContext (glassmorphism nativo do app)
@@ -176,7 +207,7 @@ const QuickPrescriptions: React.FC<QuickPrescriptionsProps> = ({ className = '',
     }
   }
 
-  // V1.9.180-B/C/V1.9.184 — Reset form ao fechar modal (limpa edit + tipo + buyer_data)
+  // V1.9.180-B/C/184/185 — Reset form ao fechar modal (limpa edit + tipo + buyer_data + attestationForm)
   const handleCloseModal = () => {
     setIsModalOpen(false)
     setEditingId(null)
@@ -184,6 +215,7 @@ const QuickPrescriptions: React.FC<QuickPrescriptionsProps> = ({ className = '',
     setSelectedPatient(patientId || '')
     setSelectedPrescriptionType('simple')
     setBuyerData({ name: '', id: '', address: '', city: '', uf: '' })
+    setAttestationForm({ diasAfastamento: '', cid10: '', motivo: '' })
   }
 
   // V1.9.180-B / V1.9.181 — Excluir rascunho com ConfirmDialog do app
@@ -239,15 +271,31 @@ const QuickPrescriptions: React.FC<QuickPrescriptionsProps> = ({ className = '',
     }
   }
 
-  // V1.9.184 — savePrescription helper. Retorna o id criado/atualizado pra o
-  // fluxo "Salvar e Assinar" usar diretamente. handleSavePrescription = wrapper UI.
+  // V1.9.184/185 — savePrescription helper. Retorna o id criado/atualizado pra o
+  // fluxo "Salvar e Assinar" usar diretamente. Aceita prescription E atestado.
   const savePrescriptionInternal = async (): Promise<string | null> => {
-    if (!selectedPatient || !prescriptionForm.medication) {
-      toast.warning('Campos obrigatórios', 'Selecione um paciente e preencha a medicação.')
+    const isAttestation = selectedPrescriptionType === 'attestation'
+
+    // Validações por tipo
+    if (!selectedPatient) {
+      toast.warning('Campo obrigatório', 'Selecione um paciente.')
       return null
     }
+    if (isAttestation) {
+      if (!attestationForm.motivo.trim()) {
+        toast.warning('Campo obrigatório', 'Preencha o motivo / atestado.')
+        return null
+      }
+    } else {
+      if (!prescriptionForm.medication) {
+        toast.warning('Campo obrigatório', 'Preencha a medicação.')
+        return null
+      }
+    }
 
-    const medicationsPayload = [{
+    // V1.9.185 — payload diferente: prescrição usa medications array,
+    // atestado usa medications=[] e o conteúdo vai em notes + metadata.attestation
+    const medicationsPayload = isAttestation ? [] : [{
       name: prescriptionForm.medication,
       dosage: prescriptionForm.dosage,
       frequency: prescriptionForm.frequency,
@@ -255,11 +303,25 @@ const QuickPrescriptions: React.FC<QuickPrescriptionsProps> = ({ className = '',
       quantity: '1'
     }]
 
-    // V1.9.184 — buyer_data ANVISA só pra receitas controladas (Branca/Azul/Amarela)
-    const isControlled = selectedPrescriptionType !== 'simple'
-    const metadata = isControlled && buyerData.name
-      ? { buyer_data: buyerData }
-      : null
+    // V1.9.184 — buyer_data ANVISA só pra receitas controladas (Branca/Azul/Amarela, NÃO atestado)
+    const isControlled = !isAttestation && selectedPrescriptionType !== 'simple'
+
+    // V1.9.185 — metadata é union: buyer_data (controlados) | attestation_data (atestado)
+    const metadata: Record<string, any> = {}
+    if (isControlled && buyerData.name) metadata.buyer_data = buyerData
+    if (isAttestation) {
+      metadata.attestation_data = {
+        dias_afastamento: attestationForm.diasAfastamento,
+        cid10: attestationForm.cid10,
+        motivo: attestationForm.motivo
+      }
+    }
+    const hasMetadata = Object.keys(metadata).length > 0
+
+    // V1.9.185 — atestado salva motivo em notes (texto principal); prescrição usa notes pra observações
+    const notesPayload = isAttestation ? attestationForm.motivo : prescriptionForm.notes
+    // V1.9.185 — atestado document_level=level_2; prescrição level_3
+    const docLevel = isAttestation ? 'level_2' : 'level_3'
 
     if (editingId) {
       const updateRes = await supabase
@@ -268,8 +330,8 @@ const QuickPrescriptions: React.FC<QuickPrescriptionsProps> = ({ className = '',
           patient_id: selectedPatient,
           patient_name: patientsList.find(p => p.id === selectedPatient)?.name || 'Paciente',
           medications: medicationsPayload,
-          notes: prescriptionForm.notes,
-          ...(metadata ? { metadata } : {}),
+          notes: notesPayload,
+          ...(hasMetadata ? { metadata } : {}),
           updated_at: new Date().toISOString()
         })
         .eq('id', editingId)
@@ -290,8 +352,9 @@ const QuickPrescriptions: React.FC<QuickPrescriptionsProps> = ({ className = '',
           professional_crm: (user as any)?.crm || '',
           medications: medicationsPayload,
           status: 'draft',
-          notes: prescriptionForm.notes,
-          ...(metadata ? { metadata } : {}),
+          notes: notesPayload,
+          document_level: docLevel,
+          ...(hasMetadata ? { metadata } : {}),
           created_at: new Date().toISOString()
         })
         .select('id')
@@ -309,6 +372,7 @@ const QuickPrescriptions: React.FC<QuickPrescriptionsProps> = ({ className = '',
       setShowSuccess(true)
       setPrescriptionForm({ medication: '', dosage: '', frequency: '', duration: '', notes: '' })
       setBuyerData({ name: '', id: '', address: '', city: '', uf: '' })
+      setAttestationForm({ diasAfastamento: '', cid10: '', motivo: '' })
       setEditingId(null)
       setTimeout(() => {
         setShowSuccess(false)
@@ -333,10 +397,12 @@ const QuickPrescriptions: React.FC<QuickPrescriptionsProps> = ({ className = '',
       const id = await savePrescriptionInternal()
       if (!id) { setSigning(false); return }
 
+      // V1.9.185 — atestado document_level=level_2 (Edge v61 aceita); prescrição level_3
+      const docLevel = selectedPrescriptionType === 'attestation' ? 'level_2' : 'level_3'
       const { data, error } = await supabase.functions.invoke('digital-signature', {
         body: {
           documentId: id,
-          documentLevel: 'level_3',
+          documentLevel: docLevel,
           professionalId: user.id,
           userConfirmed: true
         }
@@ -369,6 +435,7 @@ const QuickPrescriptions: React.FC<QuickPrescriptionsProps> = ({ className = '',
 
       setPrescriptionForm({ medication: '', dosage: '', frequency: '', duration: '', notes: '' })
       setBuyerData({ name: '', id: '', address: '', city: '', uf: '' })
+      setAttestationForm({ diasAfastamento: '', cid10: '', motivo: '' })
       setEditingId(null)
       setIsModalOpen(false)
       loadMyPrescriptions()
@@ -629,21 +696,22 @@ const QuickPrescriptions: React.FC<QuickPrescriptionsProps> = ({ className = '',
         </div>
       </div>
 
-      {/* V1.9.180-C — Tipos de Receita CFM (unificado da página /prescricoes).
-          Os 4 tipos oficiais ANVISA/CFM. Click define prescription_type e abre
-          o modal de Nova Prescrição. Pra Branca/Azul/Amarela (controlados),
-          usuário recebe aviso pra preencher buyer_data via página completa. */}
+      {/* V1.9.180-C/V1.9.185 — Tipos de Documento CFM (4 receitas + atestado).
+          Click define prescription_type e abre o modal adaptativo. Pra Branca/
+          Azul/Amarela (controlados), aviso ANVISA buyer_data. Atestado tem form
+          próprio (motivo + dias + CID-10). */}
       <div className="space-y-3 pt-2">
         <div>
-          <h3 className="text-base md:text-lg font-bold text-white">Tipo de Receita CFM</h3>
-          <p className="text-xs text-slate-400 mt-0.5">Selecione o tipo conforme a medicação prescrita (ANVISA Portaria 344/98 + CFM 2.314/2022)</p>
+          <h3 className="text-base md:text-lg font-bold text-white">Tipo de Documento CFM</h3>
+          <p className="text-xs text-slate-400 mt-0.5">Receituário ou Atestado — todos com assinatura digital ICP-Brasil (CFM 2.314/2022)</p>
         </div>
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
           {[
-            { id: 'simple',  name: 'Receituário Simples',           desc: 'Sem restrições',                  icon: FileText, color: 'from-emerald-500 to-emerald-600', border: 'border-emerald-500/30 hover:border-emerald-500/60', warn: false },
-            { id: 'special', name: 'Controle Especial (Branca)',    desc: 'Psicotrópicos, retinoides (C2)',  icon: Lock,     color: 'from-slate-500 to-slate-600',     border: 'border-slate-500/30 hover:border-slate-400/60', warn: true },
-            { id: 'blue',    name: 'Receita Azul (B1/B2)',          desc: 'Entorpecentes/psicotrópicos',     icon: Lock,     color: 'from-blue-600 to-blue-700',       border: 'border-blue-500/30 hover:border-blue-500/60', warn: true },
-            { id: 'yellow',  name: 'Receita Amarela (A1/A2/A3)',    desc: 'Entorpecentes específicos',       icon: Lock,     color: 'from-yellow-500 to-yellow-600',   border: 'border-yellow-500/30 hover:border-yellow-500/60', warn: true },
+            { id: 'simple',      name: 'Receituário Simples',           desc: 'Sem restrições',                  icon: FileText, color: 'from-emerald-500 to-emerald-600', border: 'border-emerald-500/30 hover:border-emerald-500/60', warn: false },
+            { id: 'special',     name: 'Controle Especial (Branca)',    desc: 'Psicotrópicos, retinoides (C2)',  icon: Lock,     color: 'from-slate-500 to-slate-600',     border: 'border-slate-500/30 hover:border-slate-400/60', warn: true },
+            { id: 'blue',        name: 'Receita Azul (B1/B2)',          desc: 'Entorpecentes/psicotrópicos',     icon: Lock,     color: 'from-blue-600 to-blue-700',       border: 'border-blue-500/30 hover:border-blue-500/60', warn: true },
+            { id: 'yellow',      name: 'Receita Amarela (A1/A2/A3)',    desc: 'Entorpecentes específicos',       icon: Lock,     color: 'from-yellow-500 to-yellow-600',   border: 'border-yellow-500/30 hover:border-yellow-500/60', warn: true },
+            { id: 'attestation', name: 'Atestado Médico',                desc: 'Afastamento, comparecimento',     icon: FileCheck, color: 'from-purple-500 to-indigo-600',  border: 'border-purple-500/30 hover:border-purple-500/60', warn: false },
           ].map((t) => {
             const Icon = t.icon
             return (
@@ -905,7 +973,9 @@ const QuickPrescriptions: React.FC<QuickPrescriptionsProps> = ({ className = '',
             <div className="flex items-center justify-between p-6 border-b border-slate-700 shrink-0">
               <h3 className="text-xl font-bold text-white flex items-center gap-2">
                 <FileText className="w-5 h-5 text-green-500" />
-                {editingId ? 'Editar Rascunho' : 'Nova Prescrição'}
+                {editingId
+                  ? (selectedPrescriptionType === 'attestation' ? 'Editar Atestado' : 'Editar Rascunho')
+                  : (selectedPrescriptionType === 'attestation' ? 'Novo Atestado' : 'Nova Prescrição')}
               </h3>
               <button
                 onClick={handleCloseModal}
@@ -935,21 +1005,25 @@ const QuickPrescriptions: React.FC<QuickPrescriptionsProps> = ({ className = '',
                 </div>
               </div>
 
-              {/* Seleção de Modelo (Template) */}
-              <div>
-                <label className="block text-sm font-medium text-slate-300 mb-1">Carregar Modelo (Opcional)</label>
-                <select
-                  className="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-blue-500"
-                  onChange={(e) => loadTemplateIntoForm(e.target.value)}
-                  defaultValue=""
-                >
-                  <option value="">Preencher Manualmente (Em Branco)</option>
-                  {prescriptionTemplates.map(t => (
-                    <option key={t.id} value={t.id}>{t.name} ({t.category})</option>
-                  ))}
-                </select>
-              </div>
+              {/* V1.9.185 — Modelo só pra prescrições (atestado tem fluxo próprio) */}
+              {selectedPrescriptionType !== 'attestation' && (
+                <div>
+                  <label className="block text-sm font-medium text-slate-300 mb-1">Carregar Modelo (Opcional)</label>
+                  <select
+                    className="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-blue-500"
+                    onChange={(e) => loadTemplateIntoForm(e.target.value)}
+                    defaultValue=""
+                  >
+                    <option value="">Preencher Manualmente (Em Branco)</option>
+                    {prescriptionTemplates.map(t => (
+                      <option key={t.id} value={t.id}>{t.name} ({t.category})</option>
+                    ))}
+                  </select>
+                </div>
+              )}
 
+              {/* V1.9.185 — Detalhes da Medicação só pra prescrições (atestado tem form próprio) */}
+              {selectedPrescriptionType !== 'attestation' && (
               <div className="border-t border-slate-700 pt-4 mt-2">
                 <h4 className="text-white font-medium mb-4 flex items-center gap-2">
                   <Pill className="w-4 h-4 text-blue-400" /> Detalhes da Medicação
@@ -1012,9 +1086,60 @@ const QuickPrescriptions: React.FC<QuickPrescriptionsProps> = ({ className = '',
                   </div>
                 </div>
               </div>
+              )}
 
-              {/* V1.9.184 — Campos extras ANVISA Portaria 344/98 (só Branca/Azul/Amarela) */}
-              {selectedPrescriptionType !== 'simple' && (
+              {/* V1.9.185 — Form Atestado Médico (purple/indigo, condicional) */}
+              {selectedPrescriptionType === 'attestation' && (
+                <div className="border-t border-purple-500/30 pt-4 mt-2">
+                  <h4 className="text-white font-medium mb-4 flex items-center gap-2">
+                    <FileCheck className="w-4 h-4 text-purple-400" /> Detalhes do Atestado
+                  </h4>
+
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-slate-300 mb-1">Dias de Afastamento</label>
+                        <input
+                          type="number"
+                          min="0"
+                          max="365"
+                          className="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-purple-500"
+                          placeholder="Ex: 3"
+                          value={attestationForm.diasAfastamento}
+                          onChange={(e) => setAttestationForm({ ...attestationForm, diasAfastamento: e.target.value })}
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-slate-300 mb-1">CID-10 (opcional)</label>
+                        <input
+                          type="text"
+                          maxLength={10}
+                          className="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-purple-500 uppercase"
+                          placeholder="Ex: J11"
+                          value={attestationForm.cid10}
+                          onChange={(e) => setAttestationForm({ ...attestationForm, cid10: e.target.value.toUpperCase() })}
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-slate-300 mb-1">Atestado / Motivo *</label>
+                      <textarea
+                        className="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-purple-500 min-h-[120px] resize-none"
+                        placeholder='Ex: "Atesto, para os devidos fins, que o(a) paciente esteve sob meus cuidados profissionais nesta data, necessitando de afastamento de suas atividades laborais por 3 dias a partir de hoje."'
+                        value={attestationForm.motivo}
+                        onChange={(e) => setAttestationForm({ ...attestationForm, motivo: e.target.value })}
+                      />
+                      <p className="text-[11px] text-slate-500 mt-1">
+                        Texto livre. Este atestado será assinado digitalmente com seu certificado ICP-Brasil (CFM 2.314/2022).
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* V1.9.184 — Campos extras ANVISA Portaria 344/98 (Branca/Azul/Amarela, NÃO atestado) */}
+              {selectedPrescriptionType !== 'simple' && selectedPrescriptionType !== 'attestation' && (
                 <div className="border-t border-amber-500/20 bg-amber-500/[0.03] px-6 py-4 -mx-6">
                   <div className="flex items-center gap-2 mb-3">
                     <AlertCircle className="w-4 h-4 text-amber-400" />

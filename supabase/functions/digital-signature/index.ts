@@ -354,8 +354,10 @@ async function updateDocument(
   documentId: string,
   signature: string,
   validationCode: string,
-  validationUrl: string
+  validationUrl: string,
+  documentLevel: 'level_1' | 'level_2' | 'level_3' = 'level_3'
 ): Promise<void> {
+  // V1.9.185 — documentLevel passado dinâmico (level_2 atestado, level_3 prescrição)
   await supabase
     .from('cfm_prescriptions')
     .update({
@@ -364,7 +366,7 @@ async function updateDocument(
       status: 'signed',
       iti_validation_code: validationCode,
       iti_validation_url: validationUrl,
-      document_level: 'level_3' // Prescrição = nível 3
+      document_level: documentLevel
     })
     .eq('id', documentId)
 }
@@ -419,10 +421,12 @@ Deno.serve(async (req: Request) => {
     }
 
     // 3. Validar nível do documento
-    if (documentLevel !== 'level_3') {
+    // V1.9.185 — aceitar level_1 (atestado simples), level_2 (atestado padrão),
+    // level_3 (prescrição). Antes era hardcoded só level_3 (prescription-only).
+    if (!['level_1', 'level_2', 'level_3'].includes(documentLevel)) {
       return new Response(JSON.stringify({
         success: false,
-        error: 'Apenas documentos nível 3 requerem assinatura ICP-Brasil'
+        error: 'documentLevel deve ser level_1, level_2 ou level_3'
       }), {
         status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
@@ -489,7 +493,7 @@ Deno.serve(async (req: Request) => {
     await persistAudit(supabase, documentId, certificate, signature, validationCode, mode)
 
     // 12. Atualizar documento
-    await updateDocument(supabase, documentId, signature, validationCode, validationUrl)
+    await updateDocument(supabase, documentId, signature, validationCode, validationUrl, documentLevel)
 
     // 13. Retornar resultado (V1.9.176 — inclui modo pra frontend exibir aviso se simulação)
     const response: SignatureResponse & { mode?: string } = {
