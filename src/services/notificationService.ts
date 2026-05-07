@@ -42,7 +42,13 @@ class NotificationService {
                 .limit(options.limit || 20)
 
             if (error) throw error
-            return (data as Notification[]) || []
+            // V1.9.188-C — fallback: se action_url não existe na coluna,
+            // ler de metadata.action_url (notifications schema só tem metadata jsonb).
+            const enriched = (data as any[] || []).map(n => ({
+                ...n,
+                action_url: n.action_url || n.metadata?.action_url || undefined
+            }))
+            return enriched as Notification[]
         } catch (error) {
             console.error('Error fetching notifications:', error)
             return []
@@ -79,7 +85,12 @@ class NotificationService {
                 table: 'notifications',
                 filter: `user_id=eq.${userId}`
             }, (payload) => {
-                callback(payload.new as Notification)
+                // V1.9.188-C — mesmo fallback metadata.action_url do getUserNotifications
+                const n: any = payload.new
+                callback({
+                    ...n,
+                    action_url: n.action_url || n.metadata?.action_url || undefined
+                } as Notification)
             })
             .subscribe()
 
