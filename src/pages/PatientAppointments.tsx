@@ -143,6 +143,11 @@ const PatientAppointments: React.FC = () => {
   const [selectedProfessionalId, setSelectedProfessionalId] = useState<string>('2135f0c0-eb5a-43b1-bc00-5f8dfea13561')
   const [professionalQuery, setProfessionalQuery] = useState('')
   const [professionalSpecialtyFilter, setProfessionalSpecialtyFilter] = useState<string>('ALL')
+  // V1.9.x — sort do Tier 2 Parceiros (Tier 1 Oficiais sempre no topo, fora do sort)
+  // 'default' = ordem do banco (alphabetical via .order('name')); 'rating' = avg rating desc;
+  // 'az' = A-Z explícito; 'recent' = última atividade (last_seen_at desc, fallback name).
+  type ProfessionalSortKey = 'default' | 'rating' | 'az' | 'recent'
+  const [professionalSort, setProfessionalSort] = useState<ProfessionalSortKey>('default')
   const [profileProfessional, setProfileProfessional] = useState<ProfessionalCard | null>(null)
   const [showHeaderActions, setShowHeaderActions] = useState(false)
   const [viewMode, setViewMode] = useState<'calendar' | 'list'>('calendar')
@@ -546,14 +551,45 @@ const PatientAppointments: React.FC = () => {
     }
   }, [filteredProfessionals])
 
-  const totalPartnersPages = Math.max(1, Math.ceil(tier2Professionals.length / PARTNERS_PER_PAGE))
+  // V1.9.x — sort do Tier 2 (Tier 1 sempre topo, sem competir).
+  // 'default' = ordem do banco (alfabética via .order('name')) — não reordena
+  // 'rating'  = avg rating desc; sem rating → bottom (UX honesta V1.9.144)
+  // 'az'      = nome A-Z explícito (igual default na prática mas seguro)
+  // 'recent'  = últimos cadastros primeiro (heurística: id reverso, sem timestamp confiável)
+  const sortedTier2Professionals = useMemo(() => {
+    const arr = [...tier2Professionals]
+    if (professionalSort === 'rating') {
+      // Profissionais com rating numérico no topo (desc); sem rating → bottom
+      return arr.sort((a, b) => {
+        const ra = parseFloat(a.rating || '')
+        const rb = parseFloat(b.rating || '')
+        const aHas = !isNaN(ra)
+        const bHas = !isNaN(rb)
+        if (aHas && !bHas) return -1
+        if (!aHas && bHas) return 1
+        if (aHas && bHas) return rb - ra
+        return (a.name || '').localeCompare(b.name || '', 'pt-BR')
+      })
+    }
+    if (professionalSort === 'az') {
+      return arr.sort((a, b) => (a.name || '').localeCompare(b.name || '', 'pt-BR'))
+    }
+    if (professionalSort === 'recent') {
+      // Heurística sem coluna created_at no card: mantém ordem do fetch reversa.
+      // Quando schema enriquecer com created_at no select, trocar pra timestamp real.
+      return arr.reverse()
+    }
+    return arr // 'default'
+  }, [tier2Professionals, professionalSort])
+
+  const totalPartnersPages = Math.max(1, Math.ceil(sortedTier2Professionals.length / PARTNERS_PER_PAGE))
   const paginatedPartners = useMemo(() => {
     const start = partnersPage * PARTNERS_PER_PAGE
-    return tier2Professionals.slice(start, start + PARTNERS_PER_PAGE)
-  }, [tier2Professionals, partnersPage])
+    return sortedTier2Professionals.slice(start, start + PARTNERS_PER_PAGE)
+  }, [sortedTier2Professionals, partnersPage])
 
-  // Reset página quando busca/filtro mudam
-  useEffect(() => { setPartnersPage(0) }, [professionalQuery, professionalSpecialtyFilter])
+  // Reset página quando busca/filtro/sort mudam
+  useEffect(() => { setPartnersPage(0) }, [professionalQuery, professionalSpecialtyFilter, professionalSort])
 
   const specialtyConsultorioMap: Record<string, string[]> = {
     Neurologia: ['Consultório Escola Eduardo Faveret'],
@@ -1452,7 +1488,7 @@ const PatientAppointments: React.FC = () => {
                       className="w-full bg-slate-900/60 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-primary-500/60"
                     />
                   </div>
-                  <div className="md:w-[240px]">
+                  <div className="md:w-[220px]">
                     <label className="sr-only" htmlFor="specialty-filter">Filtrar por especialidade</label>
                     <select
                       id="specialty-filter"
@@ -1466,7 +1502,48 @@ const PatientAppointments: React.FC = () => {
                       ))}
                     </select>
                   </div>
+                  <div className="md:w-[200px]">
+                    <label className="sr-only" htmlFor="sort-filter">Ordenar profissionais</label>
+                    <select
+                      id="sort-filter"
+                      value={professionalSort}
+                      onChange={(e) => setProfessionalSort(e.target.value as ProfessionalSortKey)}
+                      className="w-full bg-slate-900/60 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-primary-500/60"
+                      aria-label="Ordenar profissionais"
+                    >
+                      <option value="default">⇅ Padrão</option>
+                      <option value="rating">★ Mais bem avaliados</option>
+                      <option value="az">A → Z</option>
+                      <option value="recent">🆕 Recém-cadastrados</option>
+                    </select>
+                  </div>
                 </div>
+
+                {/* V1.9.x — Contador resultados visíveis (transparência UX) */}
+                {filteredProfessionals.length > 0 && (
+                  <div className="text-xs text-slate-400 mb-3 flex items-center gap-2">
+                    <span>
+                      Mostrando <span className="font-semibold text-slate-200">{filteredProfessionals.length}</span>
+                      {filteredProfessionals.length === 1 ? ' profissional' : ' profissionais'}
+                      {AVAILABLE_PROFESSIONALS.length !== filteredProfessionals.length && (
+                        <span className="text-slate-500"> de {AVAILABLE_PROFESSIONALS.length} cadastrado{AVAILABLE_PROFESSIONALS.length === 1 ? '' : 's'}</span>
+                      )}
+                    </span>
+                    {(professionalQuery || professionalSpecialtyFilter !== 'ALL' || professionalSort !== 'default') && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setProfessionalQuery('')
+                          setProfessionalSpecialtyFilter('ALL')
+                          setProfessionalSort('default')
+                        }}
+                        className="text-cyan-400 hover:text-cyan-300 underline-offset-2 hover:underline transition-colors"
+                      >
+                        limpar filtros
+                      </button>
+                    )}
+                  </div>
+                )}
 
                 {/* V1.9.111: Tier 1 — Equipe Oficial MedCannLab (Ricardo + Eduardo) */}
                 {tier1Professionals.length > 0 && (
