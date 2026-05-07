@@ -16,6 +16,7 @@ import { useNoaPlatform } from '../contexts/NoaPlatformContext'
 import { DashboardTriggersProvider } from '../contexts/DashboardTriggersContext'
 import { backgroundGradient, colors } from '../constants/designSystem'
 import { useVideoCallRequests } from '../hooks/useVideoCallRequests'
+import { useLastSeen } from '../hooks/useLastSeen'  // V1.9.186-B — presence ping throttled
 import VideoCallRequestNotification from './VideoCallRequestNotification'
 import VideoCall from './VideoCall'
 
@@ -32,6 +33,8 @@ type NoaCommandDetail = {
 
 const Layout: React.FC = () => {
   const { user, isLoading } = useAuth()
+  // V1.9.186-B — pinga users.last_seen_at (throttle 5min) pra Command Center
+  useLastSeen()
   const { getEffectiveUserType, viewAsType } = useUserView()
   const { isGlobalChatHidden } = useNoaPlatform()
   const [isMobile, setIsMobile] = useState(false)
