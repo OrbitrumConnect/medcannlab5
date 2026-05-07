@@ -1840,43 +1840,81 @@ const PatientAppointments: React.FC = () => {
         )}
 
         {/* Modal: Perfil do profissional/parceiro (MVP) */}
-        {profileProfessional && (
+        {profileProfessional && (() => {
+          // V1.9.x: helpers de derivação UX honesta — todos campos opcionais renderizam
+          // condicionalmente. Quando TODOS os enriquecimentos faltam, mostra mensagem
+          // informativa pro paciente ("perfil enxuto") em vez de simular dados.
+          const isOfficial = /ricardo|eduardo/i.test(profileProfessional.name || '') ||
+                              /ricardo|eduardo/i.test(profileProfessional.id || '')
+          const initials = (profileProfessional.name || 'P')
+            .split(' ').filter(Boolean).slice(0, 2)
+            .map(s => s.charAt(0).toUpperCase()).join('')
+          const bioText = profileProfessional.bio || profileProfessional.excerpt
+          // role e specialty são iguais quando parceiro (linha 263 do loadProfessionals)
+          // — evitar exibição redundante "Clínica Geral / Clínica Geral"
+          const showRoleAsSubtitle = profileProfessional.role &&
+            profileProfessional.role !== profileProfessional.specialty
+          const hasAnyEnrichment = !!(bioText ||
+            (profileProfessional.tags && profileProfessional.tags.length > 0) ||
+            (profileProfessional.languages && profileProfessional.languages.length > 0) ||
+            profileProfessional.location ||
+            profileProfessional.consultCountApprox != null ||
+            profileProfessional.experienceYears != null ||
+            profileProfessional.consultPriceBRL != null)
+          return (
           <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center px-4 py-6">
             <div className="w-full max-w-2xl rounded-2xl border border-slate-700 bg-slate-900 shadow-xl overflow-hidden">
               <div className="p-5 md:p-6 border-b border-slate-800 flex items-start justify-between gap-4">
-                <div className="flex items-start gap-4">
-                  <div className={`w-14 h-14 rounded-2xl flex items-center justify-center border border-slate-800/60 ${profileProfessional.accentClasses} shrink-0`}>
-                    <Stethoscope className="w-6 h-6" />
+                <div className="flex items-start gap-4 min-w-0">
+                  {/* V1.9.x: avatar com iniciais (fallback honesto sem foto). Stethoscope só
+                      se nome vazio (defensivo) — paciente reconhece pessoa pelas iniciais. */}
+                  <div className={`w-16 h-16 rounded-2xl flex items-center justify-center border border-slate-800/60 ${profileProfessional.accentClasses} shrink-0 font-bold text-lg`}>
+                    {initials || <Stethoscope className="w-6 h-6" />}
                   </div>
-                  <div className="min-w-0">
+                  <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2 flex-wrap">
                       <h3 className="text-white text-lg md:text-xl font-bold truncate">{profileProfessional.name}</h3>
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-slate-800 border border-slate-700 text-xs text-slate-300">
-                        <Star className="w-3 h-3 text-amber-300 fill-amber-300" />
-                        {profileProfessional.rating}
-                      </span>
-                      <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-slate-800/70 border border-slate-700 text-xs text-slate-300">
-                        {profileProfessional.specialty}
-                      </span>
+                      {isOfficial && (
+                        <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-amber-500/15 border border-amber-500/30 text-[10px] font-bold text-amber-300 uppercase tracking-wider">
+                          Oficial
+                        </span>
+                      )}
+                      {profileProfessional.rating && (
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-slate-800 border border-slate-700 text-xs text-slate-300">
+                          <Star className="w-3 h-3 text-amber-300 fill-amber-300" />
+                          {profileProfessional.rating}
+                        </span>
+                      )}
                     </div>
-                    <p className="text-slate-400 text-sm mt-1">{profileProfessional.role}</p>
+                    <p className="text-slate-300 text-sm mt-1 font-medium">{profileProfessional.specialty}</p>
+                    {showRoleAsSubtitle && (
+                      <p className="text-slate-400 text-xs mt-0.5">{profileProfessional.role}</p>
+                    )}
+                    {profileProfessional.location && (
+                      <p className="text-slate-400 text-xs mt-1.5 flex items-center gap-1">
+                        <span aria-hidden="true">📍</span>
+                        <span className="truncate">{profileProfessional.location}</span>
+                      </p>
+                    )}
                   </div>
                 </div>
                 <button
                   type="button"
                   onClick={() => setProfileProfessional(null)}
-                  className="text-slate-400 hover:text-white transition-colors text-sm font-semibold"
+                  className="text-slate-400 hover:text-white transition-colors text-sm font-semibold shrink-0"
+                  aria-label="Fechar"
                 >
                   Fechar
                 </button>
               </div>
 
               <div className="p-5 md:p-6 space-y-5">
-                <div>
-                  <p className="text-slate-200 text-sm leading-relaxed">
-                    {profileProfessional.bio || profileProfessional.excerpt}
-                  </p>
-                </div>
+                {/* V1.9.x: bio só renderiza se preenchida (sem placeholder genérico) */}
+                {bioText && (
+                  <div>
+                    <p className="text-slate-200 text-sm leading-relaxed">{bioText}</p>
+                  </div>
+                )}
 
                 {(profileProfessional.tags && profileProfessional.tags.length > 0) && (
                   <div className="flex flex-wrap gap-2">
@@ -1891,9 +1929,16 @@ const PatientAppointments: React.FC = () => {
                   </div>
                 )}
 
+                {/* V1.9.x: idiomas como linha discreta (só se preenchido) */}
+                {(profileProfessional.languages && profileProfessional.languages.length > 0) && (
+                  <p className="text-xs text-slate-400 flex items-center gap-1.5">
+                    <span aria-hidden="true">🌐</span>
+                    <span>Atende em: <span className="text-slate-200 font-medium">{profileProfessional.languages.join(', ')}</span></span>
+                  </p>
+                )}
+
                 {/* V1.9.149: esconder grid inteira se profissional não tem nenhum dos 3 dados.
-                    UX honesta: 3 cards vazios sinalizavam app abandonado. Sem grid = "perfil enxuto"
-                    (parceiro novo). Quando 1+ dado existir, mostra grid; campos vazios viram "—" parcial. */}
+                    UX honesta: 3 cards vazios sinalizavam app abandonado. */}
                 {(profileProfessional.consultCountApprox != null ||
                   profileProfessional.experienceYears != null ||
                   profileProfessional.consultPriceBRL != null) && (
@@ -1901,18 +1946,31 @@ const PatientAppointments: React.FC = () => {
                     <div className="rounded-xl border border-slate-800 bg-slate-800/30 p-3">
                       <p className="text-xs text-slate-400">Consultas na plataforma</p>
                       <p className="text-white font-bold text-lg">{profileProfessional.consultCountApprox ?? '—'}</p>
-                      <p className="text-[11px] text-slate-500">MVP (aprox.)</p>
+                      <p className="text-[11px] text-slate-500">aproximado</p>
                     </div>
                     <div className="rounded-xl border border-slate-800 bg-slate-800/30 p-3">
                       <p className="text-xs text-slate-400">Experiência</p>
                       <p className="text-white font-bold text-lg">{profileProfessional.experienceYears ? `${profileProfessional.experienceYears} anos` : '—'}</p>
-                      <p className="text-[11px] text-slate-500">Informado pelo profissional</p>
+                      <p className="text-[11px] text-slate-500">informado pelo profissional</p>
                     </div>
                     <div className="rounded-xl border border-slate-800 bg-slate-800/30 p-3">
                       <p className="text-xs text-slate-400">Valor</p>
                       <p className="text-white font-bold text-lg">{profileProfessional.consultPriceBRL ? `R$ ${profileProfessional.consultPriceBRL.toFixed(0)}` : '—'}</p>
-                      <p className="text-[11px] text-slate-500">Consulta particular</p>
+                      <p className="text-[11px] text-slate-500">consulta particular</p>
                     </div>
+                  </div>
+                )}
+
+                {/* V1.9.x: mensagem informativa quando perfil sem enriquecimento (só nome+spec).
+                    Não simular dados — sinalizar honestamente que profissional pode completar. */}
+                {!hasAnyEnrichment && (
+                  <div className="rounded-xl border border-slate-800 bg-slate-800/30 p-4 text-center">
+                    <p className="text-sm text-slate-400">
+                      Este profissional ainda não preencheu detalhes do perfil.
+                    </p>
+                    <p className="text-xs text-slate-500 mt-1">
+                      Você pode agendar normalmente — informações detalhadas chegam após o cadastro completo.
+                    </p>
                   </div>
                 )}
 
@@ -1946,7 +2004,8 @@ const PatientAppointments: React.FC = () => {
               </div>
             </div>
           </div>
-        )}
+          )
+        })()}
 
         {viewMode === 'list' && (
           <div className="bg-slate-800 rounded-xl p-6">
