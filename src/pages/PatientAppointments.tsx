@@ -309,28 +309,45 @@ const PatientAppointments: React.FC = () => {
           })
         )
 
-        // V1.9.x: enriquecer com location de profiles (FK profiles.user_id → users.id).
-        // Hoje 100% NULL — filtro só aparece se ≥1 profissional preencher (UX honesta).
-        // Falha silenciosa: erro/dado vazio mantém location undefined (não bloqueia card).
+        // V1.9.x: enriquecer com profiles (location + tags + languages).
+        // FK profiles.user_id → users.id. Falha silenciosa: erro mantém undefined.
+        // tags/languages vêm como TEXT comma-separated; frontend parseia em array
+        // (mais limpo do que jsonb pra UX de input single-line).
         try {
-          const { data: locations } = await (supabase as any)
+          const { data: profileRows } = await (supabase as any)
             .from('profiles')
-            .select('user_id, location')
+            .select('user_id, location, tags, languages')
             .in('user_id', enriched.map(p => p.id))
-          if (Array.isArray(locations)) {
-            const locByUserId: Record<string, string> = {}
-            for (const row of locations) {
-              if (row?.user_id && row?.location && typeof row.location === 'string') {
-                locByUserId[row.user_id] = row.location.trim()
+          if (Array.isArray(profileRows)) {
+            const byUserId: Record<string, { location?: string; tags?: string; languages?: string }> = {}
+            for (const row of profileRows) {
+              if (row?.user_id) {
+                byUserId[row.user_id] = {
+                  location: typeof row.location === 'string' && row.location.trim() ? row.location.trim() : undefined,
+                  tags: typeof row.tags === 'string' && row.tags.trim() ? row.tags.trim() : undefined,
+                  languages: typeof row.languages === 'string' && row.languages.trim() ? row.languages.trim() : undefined
+                }
               }
             }
+            const splitCsv = (s?: string): string[] | undefined => {
+              if (!s) return undefined
+              const arr = s.split(',').map(t => t.trim()).filter(Boolean)
+              return arr.length > 0 ? arr : undefined
+            }
             for (const card of enriched) {
-              const loc = locByUserId[card.id]
-              if (loc) card.location = loc
+              const row = byUserId[card.id]
+              if (!row) continue
+              if (row.location) card.location = row.location
+              // V1.9.x: profiles.tags sobrescreve tags hardcoded (pra Ricardo/Eduardo
+              // FALLBACK_PROFESSIONALS) só quando médico preencheu Profile.
+              const parsedTags = splitCsv(row.tags)
+              if (parsedTags) card.tags = parsedTags
+              const parsedLangs = splitCsv(row.languages)
+              if (parsedLangs) card.languages = parsedLangs
             }
           }
         } catch {
-          // Mantém enriched sem location — sem regressão
+          // Mantém enriched sem profiles enrichment — sem regressão
         }
 
         setAvailableProfessionals(enriched)

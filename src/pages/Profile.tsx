@@ -43,7 +43,12 @@ const Profile: React.FC = () => {
     bio: '',
     // V1.9.150: pricing por profissional (só editável quando user.type === 'profissional')
     consultation_fee_default: '',
-    years_experience: ''
+    years_experience: '',
+    // V1.9.x: vitrine profissional adicional — alimenta modal Ver Perfil em PatientAppointments
+    specialty: '',
+    council_state: '',
+    tags: '',         // comma-separated → ex: "Nefrologia, Dor, Inflamação"
+    languages: ''     // comma-separated → ex: "Português, Inglês"
   })
   const [isLookingUpCep, setIsLookingUpCep] = useState(false)
 
@@ -122,17 +127,17 @@ const Profile: React.FC = () => {
       })()
 
       // V1.9.150: carregar pricing/experiência (só faz sentido pra profissional)
+      // V1.9.x: + specialty/council_state (users) + tags/languages (profiles)
       // Fallback gracioso se migration ainda não aplicada (colunas inexistentes).
       if ((user as any).type === 'profissional' || (user as any).type === 'professional') {
         ;(async () => {
           try {
             const { data, error } = await (supabase as any)
               .from('users')
-              .select('consultation_fee_default, years_experience')
+              .select('consultation_fee_default, years_experience, specialty, council_state')
               .eq('id', user.id)
               .maybeSingle()
             if (error) {
-              // Migration V1.9.150 ainda não aplicada — silencioso, mantém vazio
               return
             }
             if (data) {
@@ -141,11 +146,31 @@ const Profile: React.FC = () => {
                 consultation_fee_default: data.consultation_fee_default != null
                   ? String(data.consultation_fee_default) : '',
                 years_experience: data.years_experience != null
-                  ? String(data.years_experience) : ''
+                  ? String(data.years_experience) : '',
+                specialty: data.specialty || '',
+                council_state: data.council_state || ''
               }))
             }
           } catch {
             // Falha silenciosa — migration pendente
+          }
+          // tags + languages vivem em profiles (V1.9.x migration)
+          try {
+            const { data, error } = await (supabase as any)
+              .from('profiles')
+              .select('tags, languages')
+              .eq('user_id', user.id)
+              .maybeSingle()
+            if (error) return
+            if (data) {
+              setFormData(prev => ({
+                ...prev,
+                tags: data.tags || '',
+                languages: data.languages || ''
+              }))
+            }
+          } catch {
+            // Migration profiles.tags/languages pendente
           }
         })()
       }
@@ -267,19 +292,44 @@ const Profile: React.FC = () => {
         }
 
         try {
+          // V1.9.x: salva pricing + specialty + CRM no users.
+          // Trim de specialty/council_state evita string vazia entrar no banco como ''
+          // (mantém NULL → modal Ver Perfil sabe esconder linha quando vazio).
+          const specialtyTrim = (formData.specialty || '').trim()
+          const crmTrim = (formData.council_state || '').trim()
           const { error: usersError } = await (supabase as any)
             .from('users')
             .update({
               consultation_fee_default: feeNum,
-              years_experience: yearsNum
+              years_experience: yearsNum,
+              specialty: specialtyTrim || null,
+              council_state: crmTrim || null
             })
             .eq('id', user.id)
           if (usersError && !usersError.message?.includes('column')) {
-            // Erro real (não é "migration pendente") — alerta mas não falha o save geral
-            console.warn('⚠️ V1.9.150 falha ao salvar pricing:', usersError.message)
+            console.warn('⚠️ V1.9.150 falha ao salvar pricing/specialty:', usersError.message)
           }
         } catch (e: any) {
           console.warn('⚠️ V1.9.150 pricing não persistido:', e?.message)
+        }
+
+        // V1.9.x: salvar tags + languages em profiles (migration ADD COLUMN aplicada).
+        // Falha silenciosa se profiles.tags/languages ainda não existirem em ambiente.
+        try {
+          const tagsTrim = (formData.tags || '').trim()
+          const langsTrim = (formData.languages || '').trim()
+          const { error: profilesError } = await (supabase as any)
+            .from('profiles')
+            .update({
+              tags: tagsTrim || null,
+              languages: langsTrim || null
+            })
+            .eq('user_id', user.id)
+          if (profilesError && !profilesError.message?.includes('column')) {
+            console.warn('⚠️ V1.9.x falha ao salvar tags/languages:', profilesError.message)
+          }
+        } catch (e: any) {
+          console.warn('⚠️ V1.9.x tags/languages não persistidos:', e?.message)
         }
       }
 
@@ -367,7 +417,11 @@ const Profile: React.FC = () => {
         location: '',
         bio: '',
         consultation_fee_default: '',
-        years_experience: ''
+        years_experience: '',
+        specialty: '',
+        council_state: '',
+        tags: '',
+        languages: ''
       })
     }
     setIsEditing(false)
@@ -714,6 +768,38 @@ const Profile: React.FC = () => {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                     <div>
                       <label className="block text-xs font-medium text-slate-400 mb-1">
+                        Especialidade
+                        <span className="text-[10px] text-slate-500 ml-1">aparece no card</span>
+                      </label>
+                      <input
+                        type="text"
+                        name="specialty"
+                        value={formData.specialty}
+                        onChange={handleInputChange}
+                        disabled={!isEditing}
+                        placeholder="Ex: Nefrologia / Neurologia / Clínica Geral"
+                        maxLength={80}
+                        className="w-full px-3 py-2 text-sm bg-slate-700 border border-slate-600 rounded text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-slate-400 mb-1">
+                        CRM / Conselho
+                        <span className="text-[10px] text-slate-500 ml-1">ex: 12345-RJ</span>
+                      </label>
+                      <input
+                        type="text"
+                        name="council_state"
+                        value={formData.council_state}
+                        onChange={handleInputChange}
+                        disabled={!isEditing}
+                        placeholder="Ex: 12345-RJ"
+                        maxLength={32}
+                        className="w-full px-3 py-2 text-sm bg-slate-700 border border-slate-600 rounded text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-slate-400 mb-1">
                         Valor da consulta (R$)
                         <span className="text-[10px] text-slate-500 ml-1">piso 350 · teto 1.300</span>
                       </label>
@@ -751,6 +837,41 @@ const Profile: React.FC = () => {
                         max={80}
                         step={1}
                         placeholder="0"
+                        className="w-full px-3 py-2 text-sm bg-slate-700 border border-slate-600 rounded text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                      />
+                    </div>
+                  </div>
+                  {/* V1.9.x: Tags + Idiomas em comma-separated (UX simples single-line) */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3">
+                    <div>
+                      <label className="block text-xs font-medium text-slate-400 mb-1">
+                        Áreas de atuação
+                        <span className="text-[10px] text-slate-500 ml-1">separe por vírgula</span>
+                      </label>
+                      <input
+                        type="text"
+                        name="tags"
+                        value={formData.tags}
+                        onChange={handleInputChange}
+                        disabled={!isEditing}
+                        placeholder="Ex: Nefrologia, Dor, Inflamação, IMRE"
+                        maxLength={200}
+                        className="w-full px-3 py-2 text-sm bg-slate-700 border border-slate-600 rounded text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-slate-400 mb-1">
+                        Idiomas atendidos
+                        <span className="text-[10px] text-slate-500 ml-1">separe por vírgula</span>
+                      </label>
+                      <input
+                        type="text"
+                        name="languages"
+                        value={formData.languages}
+                        onChange={handleInputChange}
+                        disabled={!isEditing}
+                        placeholder="Ex: Português, Inglês, Espanhol"
+                        maxLength={120}
                         className="w-full px-3 py-2 text-sm bg-slate-700 border border-slate-600 rounded text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed"
                       />
                     </div>
