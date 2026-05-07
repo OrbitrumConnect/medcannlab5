@@ -146,9 +146,11 @@ const PatientAppointments: React.FC = () => {
   const [selectedProfessionalId, setSelectedProfessionalId] = useState<string>('2135f0c0-eb5a-43b1-bc00-5f8dfea13561')
   const [professionalQuery, setProfessionalQuery] = useState('')
   const [professionalSpecialtyFilter, setProfessionalSpecialtyFilter] = useState<string>('ALL')
-  // V1.9.x — filtro localidade (dropdown só aparece se ≥1 profissional tem location preenchida).
-  // 'ALL' = todas; outras opções derivadas dinamicamente de profiles.location.
-  const [professionalLocationFilter, setProfessionalLocationFilter] = useState<string>('ALL')
+  // V1.9.x — busca por LOCALIDADE em input dedicado (texto livre).
+  // Substitui dropdown anterior (que só aparecia com dados). Agora paciente pode
+  // buscar "Rio", "São Paulo", "01234" (CEP) mesmo antes de médicos preencherem
+  // todos. Filtro vazio = todos os profissionais.
+  const [professionalLocationQuery, setProfessionalLocationQuery] = useState('')
   // V1.9.x — sort do Tier 2 Parceiros (Tier 1 Oficiais sempre no topo, fora do sort)
   // 'default' = ordem do banco (alphabetical via .order('name')); 'rating' = avg rating desc;
   // 'az' = A-Z explícito; 'recent' = última atividade (last_seen_at desc, fallback name).
@@ -550,39 +552,36 @@ const PatientAppointments: React.FC = () => {
     // trazer parceiros — mesma classe de bug do V1.9.110 (deps incompletas).
   }, [AVAILABLE_PROFESSIONALS])
 
-  // V1.9.x — localidades disponíveis (derivadas dinamicamente de profiles.location).
-  // Hoje 100% NULL — array vazio → dropdown não renderiza (UX honesta).
-  // Quando médicos preencherem Profile.location → dropdown aparece automático.
-  const availableLocations = useMemo(() => {
-    const unique = Array.from(new Set(
-      AVAILABLE_PROFESSIONALS
-        .map(p => (p.location || '').trim())
-        .filter(loc => loc.length > 0)
-    ))
-    return unique.sort((a, b) => a.localeCompare(b, 'pt-BR'))
-  }, [AVAILABLE_PROFESSIONALS])
-
   const filteredProfessionals = useMemo(() => {
-    const q = (professionalQuery || '').trim().toLowerCase()
+    // V1.9.x: 2 buscas independentes — profissional (nome/especialidade/tag)
+    // e localidade (cidade/estado/CEP). Filtros aplicam-se em conjunto (AND).
+    const qProf = (professionalQuery || '').trim().toLowerCase()
+    const qLoc = (professionalLocationQuery || '').trim().toLowerCase()
     return AVAILABLE_PROFESSIONALS.filter(p => {
       const okSpecialty = professionalSpecialtyFilter === 'ALL' ? true : p.specialty === professionalSpecialtyFilter
       if (!okSpecialty) return false
-      // V1.9.x: filtro localidade exato (case-insensitive) quando dropdown ativo
-      if (professionalLocationFilter !== 'ALL') {
-        const cardLoc = (p.location || '').trim().toLowerCase()
-        if (cardLoc !== professionalLocationFilter.toLowerCase()) return false
+
+      // Busca por profissional: name + role + specialty + tags
+      if (qProf) {
+        const hayProf = `${p.name} ${p.role} ${p.specialty} ${(p.tags || []).join(' ')}`.toLowerCase()
+        if (!hayProf.includes(qProf)) return false
       }
-      if (!q) return true
-      // V1.9.x: location adicionada ao haystack — paciente buscando "Rio" / "São Paulo"
-      // encontra o médico mesmo sem usar o dropdown (busca textual continua funcionando).
-      const hay = `${p.name} ${p.role} ${p.specialty} ${(p.tags || []).join(' ')} ${p.location || ''}`.toLowerCase()
-      return hay.includes(q)
+
+      // Busca por localidade: location do profissional (CEP — Cidade, UF)
+      // Vazio: passa todos (sem location preenchida não é exclusão).
+      // Com termo: exclui profissionais sem location OU com location que não bate.
+      if (qLoc) {
+        const cardLoc = (p.location || '').trim().toLowerCase()
+        if (!cardLoc || !cardLoc.includes(qLoc)) return false
+      }
+
+      return true
     })
     // V1.9.110: AVAILABLE_PROFESSIONALS adicionado como dep — antes ficava
     // travado em FALLBACK porque loadProfessionals do Supabase chega depois
     // e não invalidava o memo. Resultado: paciente só via Ricardo + Eduardo
     // mesmo com 11+ outros médicos cadastrados.
-  }, [professionalQuery, professionalSpecialtyFilter, professionalLocationFilter, AVAILABLE_PROFESSIONALS])
+  }, [professionalQuery, professionalLocationQuery, professionalSpecialtyFilter, AVAILABLE_PROFESSIONALS])
 
   // V1.9.111: Tier classification — Equipe Oficial vs Parceiros
   // Tier 1: Ricardo + Eduardo (Equipe Oficial MedCannLab)
@@ -638,7 +637,7 @@ const PatientAppointments: React.FC = () => {
   }, [sortedTier2Professionals, partnersPage])
 
   // Reset página quando busca/filtro/sort/localidade mudam
-  useEffect(() => { setPartnersPage(0) }, [professionalQuery, professionalSpecialtyFilter, professionalLocationFilter, professionalSort])
+  useEffect(() => { setPartnersPage(0) }, [professionalQuery, professionalLocationQuery, professionalSpecialtyFilter, professionalSort])
 
   const specialtyConsultorioMap: Record<string, string[]> = {
     Neurologia: ['Consultório Escola Eduardo Faveret'],
@@ -1159,6 +1158,13 @@ const PatientAppointments: React.FC = () => {
             )}
           </div>
           <p className="text-xs text-slate-400 mt-0.5">{professional.role}</p>
+          {/* V1.9.x: localidade visível no card só se médico preencheu Profile.location */}
+          {professional.location && (
+            <p className="text-[11px] text-slate-400 mt-0.5 flex items-center gap-1">
+              <span aria-hidden="true">📍</span>
+              <span className="truncate">{professional.location}</span>
+            </p>
+          )}
           {/* V1.9.144: excerpt só se houver bio/descrição real — sem placeholder genérico */}
           {professional.excerpt && (
             <p className="text-xs text-slate-300 mt-1.5 line-clamp-2">{professional.excerpt}</p>
@@ -1525,15 +1531,25 @@ const PatientAppointments: React.FC = () => {
                   </button>
                 </div>
 
-                {/* Busca e filtros (MVP) */}
+                {/* Busca e filtros — V1.9.x: 2 inputs dedicados (profissional × localidade) + dropdowns */}
                 <div className="flex flex-col md:flex-row gap-3 mb-4">
                   <div className="flex-1">
-                    <label className="sr-only" htmlFor="professional-search">Buscar médicos e parceiros</label>
+                    <label className="sr-only" htmlFor="professional-search">Buscar profissional</label>
                     <input
                       id="professional-search"
                       value={professionalQuery}
                       onChange={(e) => setProfessionalQuery(e.target.value)}
-                      placeholder="Buscar médico/parceiro (nome, especialidade, tag)…"
+                      placeholder="🔍 Buscar profissional (nome, especialidade, tag)…"
+                      className="w-full bg-slate-900/60 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-primary-500/60"
+                    />
+                  </div>
+                  <div className="flex-1">
+                    <label className="sr-only" htmlFor="location-search">Buscar por localidade</label>
+                    <input
+                      id="location-search"
+                      value={professionalLocationQuery}
+                      onChange={(e) => setProfessionalLocationQuery(e.target.value)}
+                      placeholder="📍 Localidade (cidade, estado, CEP)…"
                       className="w-full bg-slate-900/60 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-primary-500/60"
                     />
                   </div>
@@ -1551,23 +1567,6 @@ const PatientAppointments: React.FC = () => {
                       ))}
                     </select>
                   </div>
-                  {/* V1.9.x — Dropdown Localidade só renderiza se ≥1 profissional preencheu Profile.location */}
-                  {availableLocations.length > 0 && (
-                    <div className="md:w-[200px]">
-                      <label className="sr-only" htmlFor="location-filter">Filtrar por localidade</label>
-                      <select
-                        id="location-filter"
-                        value={professionalLocationFilter}
-                        onChange={(e) => setProfessionalLocationFilter(e.target.value)}
-                        className="w-full bg-slate-900/60 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-primary-500/60"
-                      >
-                        <option value="ALL">Todas localidades</option>
-                        {availableLocations.map(loc => (
-                          <option key={loc} value={loc}>{loc}</option>
-                        ))}
-                      </select>
-                    </div>
-                  )}
                   <div className="md:w-[180px]">
                     <label className="sr-only" htmlFor="sort-filter">Ordenar profissionais</label>
                     <select
@@ -1595,13 +1594,13 @@ const PatientAppointments: React.FC = () => {
                         <span className="text-slate-500"> de {AVAILABLE_PROFESSIONALS.length} cadastrado{AVAILABLE_PROFESSIONALS.length === 1 ? '' : 's'}</span>
                       )}
                     </span>
-                    {(professionalQuery || professionalSpecialtyFilter !== 'ALL' || professionalLocationFilter !== 'ALL' || professionalSort !== 'default') && (
+                    {(professionalQuery || professionalLocationQuery || professionalSpecialtyFilter !== 'ALL' || professionalSort !== 'default') && (
                       <button
                         type="button"
                         onClick={() => {
                           setProfessionalQuery('')
+                          setProfessionalLocationQuery('')
                           setProfessionalSpecialtyFilter('ALL')
-                          setProfessionalLocationFilter('ALL')
                           setProfessionalSort('default')
                         }}
                         className="text-cyan-400 hover:text-cyan-300 underline-offset-2 hover:underline transition-colors"
