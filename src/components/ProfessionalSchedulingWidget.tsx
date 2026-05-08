@@ -152,9 +152,6 @@ const ProfessionalSchedulingWidget: React.FC<ProfessionalSchedulingWidgetProps> 
     if (!user) return
     setSavingConfig(true)
     try {
-      // Delete existing rules
-      await supabase.from('professional_availability').delete().eq('professional_id', user.id)
-      // Insert new
       const rows = availabilityRules.map(r => ({
         professional_id: user.id,
         day_of_week: r.day_of_week,
@@ -163,8 +160,30 @@ const ProfessionalSchedulingWidget: React.FC<ProfessionalSchedulingWidgetProps> 
         slot_duration: r.slot_duration,
         is_active: r.is_active
       }))
-      const { error } = await supabase.from('professional_availability').insert(rows)
-      if (error) throw error
+
+      // V1.9.189 — UPSERT idempotente em UNIQUE(professional_id, day_of_week, start_time)
+      // resolve 409 em race condition (clique duplo, DELETE+INSERT não-atômico).
+      const { error: upsertError } = await supabase
+        .from('professional_availability')
+        .upsert(rows, { onConflict: 'professional_id,day_of_week,start_time' })
+      if (upsertError) throw upsertError
+
+      // Apaga regras antigas que não estão mais na lista atual (caso user
+      // removeu uma regra). Comparamos por (day_of_week, start_time) que é a
+      // chave lógica da regra.
+      const keepKeys = new Set(rows.map(r => `${r.day_of_week}_${r.start_time}`))
+      const { data: existing } = await supabase
+        .from('professional_availability')
+        .select('id, day_of_week, start_time')
+        .eq('professional_id', user.id)
+      if (existing) {
+        const toDelete = existing
+          .filter((e: any) => !keepKeys.has(`${e.day_of_week}_${e.start_time}`))
+          .map((e: any) => e.id)
+        if (toDelete.length > 0) {
+          await supabase.from('professional_availability').delete().in('id', toDelete)
+        }
+      }
       setShowSuccess(true)
       setTimeout(() => setShowSuccess(false), 2000)
     } catch (err: any) {
