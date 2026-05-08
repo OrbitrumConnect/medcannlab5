@@ -2,9 +2,11 @@ import { useState, useEffect } from 'react'
 import { Zap, AlertCircle, Lightbulb, Target, TrendingUp, TrendingDown, BarChart3 } from 'lucide-react'
 
 const SUBSCRIPTION_PLANS = [
-  { id: 'basic', name: 'MedCann Basic', price: 150, color: 'blue', slots: 20 },
-  { id: 'professional', name: 'MedCann Professional', price: 250, color: 'purple', slots: 40 },
-  { id: 'premium', name: 'MedCann Premium', price: 350, color: 'gold', slots: 60 },
+  // V1.9.x: nomes "MedCann" (sozinho) → "MedCannLab" (junto, marca registrada).
+  // Princípio: "MedCann" sozinho NUNCA — sempre "MedCannLab" (project_principio_identidade_noa_esperanza).
+  { id: 'basic', name: 'MedCannLab Basic', price: 150, color: 'blue', slots: 20 },
+  { id: 'professional', name: 'MedCannLab Professional', price: 250, color: 'purple', slots: 40 },
+  { id: 'premium', name: 'MedCannLab Premium', price: 350, color: 'gold', slots: 60 },
 ]
 
 const CLINICS = [

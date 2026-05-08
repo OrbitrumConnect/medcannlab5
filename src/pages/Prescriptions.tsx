@@ -861,7 +861,7 @@ const Prescriptions: React.FC = () => {
         `}
 
         <div class="footer">
-          Emissão: ${date} às ${time} • MedCann Lab Platform • ID: ${prescription.id}<br>
+          Emissão: ${date} às ${time} • MedCannLab Platform • ID: ${prescription.id}<br>
           Este documento foi gerado eletronicamente e sua validade jurídica é garantida pela MP 2.200-2/2001.
         </div>
       </body>

@@ -1387,7 +1387,7 @@ const ArteEntrevistaClinica: React.FC = () => {
                 </Link>
               </div>
 
-              {/* Projeto: MedCann Lab */}
+              {/* Projeto: MedCannLab */}
               <div className="bg-[#0F243C]/70 border border-emerald-500/20 rounded-xl p-5 flex flex-col justify-between">
                 <div>
                   <div className="flex items-center space-x-3 mb-4">
@@ -1396,11 +1396,11 @@ const ArteEntrevistaClinica: React.FC = () => {
                       boxShadow: '0 6px 16px rgba(0, 0, 0, 0.4)',
                       border: '1px solid rgba(0, 193, 106, 0.2)'
                     }}>
-                      <img src="/brain.png" alt="MedCann Lab" className="w-full h-full object-contain p-1" style={{
+                      <img src="/brain.png" alt="MedCannLab" className="w-full h-full object-contain p-1" style={{
                         filter: 'brightness(1.1) contrast(1.1) drop-shadow(0 0 6px rgba(0, 193, 106, 0.6))'
                       }} />
                     </div>
-                    <h4 className="text-lg font-semibold text-white">MedCann Lab</h4>
+                    <h4 className="text-lg font-semibold text-white">MedCannLab</h4>
                   </div>
                   <p className="text-sm text-[#9FB3C6] mb-4">
                     Integração Cannabis &amp; Nefrologia – avaliação contínua de biomarcadores com metodologia AEC, combinando dados clínicos, IA e dispositivos médicos conectados.

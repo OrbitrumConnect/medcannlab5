@@ -654,9 +654,37 @@ const PatientAnalytics: React.FC<PatientAnalyticsProps> = ({ reports, loading, u
                         )}
                         <span className="flex items-center gap-1.5">
                             <span className="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
-                            Paciente MedCann
+                            Paciente MedCannLab
                         </span>
                     </div>
+                    {/* V1.9.x: linha de continuidade fundida no card (era card separado).
+                        Pedro pediu: "seu acompanhamento pode ficar nesse card que estou comentando".
+                        Reusa lastAssessmentDate + daysSinceLast já calculados nos useMemo do componente. */}
+                    {sortedReports.length > 0 && (() => {
+                        const diffMs = Date.now() - lastAssessmentDate.getTime()
+                        const hours = Math.floor(diffMs / (1000 * 60 * 60))
+                        const d = daysSinceLast
+                        const formatTimeAgo = (): string => {
+                            if (hours < 1) return 'há poucos minutos'
+                            if (hours < 24) return hours === 1 ? 'há 1 hora' : `há ${hours} horas`
+                            if (d === 1) return 'ontem'
+                            if (d < 30) return `há ${d} dias`
+                            const months = Math.floor(d / 30)
+                            return months === 1 ? 'há 1 mês' : `há ${months} meses`
+                        }
+                        const dotColor = d <= 60 ? 'bg-emerald-400' : d <= 180 ? 'bg-amber-400' : 'bg-orange-400'
+                        const totalLabel = sortedReports.length === 1 ? '1 avaliação' : `${sortedReports.length} avaliações`
+                        return (
+                            <div className="mt-2 flex flex-wrap items-center gap-1.5 text-xs text-slate-400">
+                                <span className={`w-1.5 h-1.5 rounded-full ${dotColor}`}></span>
+                                <span className="text-slate-300 font-medium">Acompanhamento ativo</span>
+                                <span className="text-slate-500">·</span>
+                                <span>última atividade {formatTimeAgo()}</span>
+                                <span className="text-slate-500">·</span>
+                                <span>{totalLabel} no histórico</span>
+                            </div>
+                        )
+                    })()}
                 </div>
 
                 <div className="flex items-center gap-3 bg-slate-800/50 px-4 py-2 rounded-xl border border-slate-700/50 backdrop-blur-sm">

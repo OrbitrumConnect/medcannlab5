@@ -43,7 +43,7 @@ export const notificationService = {
     // Não usamos 'await' aqui para que o UI não trave esperando o e-mail
     this.sendEmail({
       to: patientEmail,
-      subject: '✅ Consulta Confirmada - MedCann Hub',
+      subject: '✅ Consulta Confirmada - MedCannLab',
       html: `
         <div style="font-family: sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #eee; border-radius: 10px;">
           <h2 style="color: #0ea5e9;">Consulta Confirmada!</h2>
@@ -55,14 +55,14 @@ export const notificationService = {
           </div>
           <p>Você pode acessar seu dashboard para visualizar o link da videochamada no horário marcado.</p>
           <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;" />
-          <p style="font-size: 12px; color: #64748b;">MedCann Hub - Tecnologia para Medicina Canabinoide</p>
+          <p style="font-size: 12px; color: #64748b;">MedCannLab - Tecnologia para Medicina Canabinoide</p>
         </div>
       `
     }).catch(err => console.error('⚠️ [Silent Fail] Patient Email:', err))
 
     this.sendEmail({
       to: professionalEmail,
-      subject: '📅 Novo Agendamento - MedCann Hub',
+      subject: '📅 Novo Agendamento - MedCannLab',
       html: `
         <div style="font-family: sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #eee; border-radius: 10px;">
           <h2 style="color: #0ea5e9;">Novo Paciente Agendado</h2>
@@ -74,7 +74,7 @@ export const notificationService = {
           </div>
           <p>O prontuário do paciente já está disponível no seu painel clínico.</p>
           <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;" />
-          <p style="font-size: 12px; color: #64748b;">MedCann Hub - Gestão Clínica Inteligente</p>
+          <p style="font-size: 12px; color: #64748b;">MedCannLab - Gestão Clínica Inteligente</p>
         </div>
       `
     }).catch(err => console.error('⚠️ [Silent Fail] Professional Email:', err))

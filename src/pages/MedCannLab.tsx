@@ -129,7 +129,7 @@ const MedCannLab: React.FC = () => {
             }}>
               <img
                 src="/brain.png"
-                alt="MedCann Lab Logo"
+                alt="MedCannLab Logo"
                 className="w-full h-full object-contain p-2"
                 style={{
                   filter: 'brightness(1.1) contrast(1.1) drop-shadow(0 0 6px rgba(0, 193, 106, 0.6))'
@@ -148,7 +148,7 @@ const MedCannLab: React.FC = () => {
             }}>
               <img
                 src="/brain.png"
-                alt="MedCann Lab Logo"
+                alt="MedCannLab Logo"
                 className="w-full h-full object-contain p-2"
                 style={{
                   filter: 'brightness(1.1) contrast(1.1) drop-shadow(0 0 6px rgba(0, 193, 106, 0.6))'
@@ -156,7 +156,7 @@ const MedCannLab: React.FC = () => {
               />
             </div>
             <div className="flex-1">
-              <h2 className="text-4xl font-bold text-white mb-4">MedCann Lab</h2>
+              <h2 className="text-4xl font-bold text-white mb-4">MedCannLab</h2>
               <p className="text-green-100 text-lg leading-relaxed mb-6">
                 Pesquisa pioneira da cannabis medicinal aplicada à nefrologia e neurologia, utilizando a metodologia AEC
                 para identificar benefícios terapêuticos e avaliar impactos na função renal.
@@ -235,7 +235,7 @@ const MedCannLab: React.FC = () => {
               <div className="space-y-2">
                 <h4 className="text-xl font-semibold text-white">Integração Cannabis & Nefrologia</h4>
                 <p className="text-sm text-slate-300 leading-relaxed">
-                  Núcleo principal do MedCann Lab. Protocolos de prescrição AEC combinam a avaliação clínica IMRE renal, bibliografia validada e o
+                  Núcleo principal do MedCannLab. Protocolos de prescrição AEC combinam a avaliação clínica IMRE renal, bibliografia validada e o
                   monitoramento contínuo da função renal para gerar planos terapêuticos individualizados.
                 </p>
               </div>
@@ -264,7 +264,7 @@ const MedCannLab: React.FC = () => {
                 <button
                   onClick={() =>
                     handleOpenIA(
-                      'Nôa, aplicar o protocolo MedCann Lab de integração cannabis e nefrologia e gerar o plano terapêutico individualizado correspondente.'
+                      'Nôa, aplicar o protocolo MedCannLab de integração cannabis e nefrologia e gerar o plano terapêutico individualizado correspondente.'
                     )
                   }
                   className="inline-flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-semibold text-green-100 border border-green-500/40 bg-green-500/10 hover:bg-green-500/20 transition-colors"
@@ -349,7 +349,7 @@ const MedCannLab: React.FC = () => {
             <div className="w-10 h-10 flex items-center justify-center">
               <img
                 src="/brain.png"
-                alt="MedCann Lab Logo"
+                alt="MedCannLab Logo"
                 className="w-full h-full object-contain"
                 style={{
                   filter: 'brightness(1.1) contrast(1.1) drop-shadow(0 0 6px rgba(0, 193, 106, 0.6))'
@@ -362,7 +362,7 @@ const MedCannLab: React.FC = () => {
           <div className="bg-green-900/20 rounded-lg p-6 mb-6 border border-green-500/20">
             <h4 className="text-lg font-semibold text-white mb-3">Objetivo Principal</h4>
             <p className="text-green-100 leading-relaxed">
-              O MedCann Lab é uma pesquisa inovadora que combina a metodologia Arte da Entrevista Clínica (AEC)
+              O MedCannLab é uma pesquisa inovadora que combina a metodologia Arte da Entrevista Clínica (AEC)
               com tecnologia de ponta para investigar os benefícios terapêuticos da cannabis medicinal na nefrologia
               e neurologia. Utilizando Deep Learning e análise de biomarcadores, o projeto busca avaliar o impacto
               na função renal e desenvolver protocolos personalizados baseados em evidências científicas.
@@ -646,7 +646,7 @@ const MedCannLab: React.FC = () => {
             <div>
               <h3 className="text-2xl font-bold text-white">🔬 Meus Estudos</h3>
               <p className="text-slate-300 text-sm md:text-base">
-                Acompanhe os estudos em andamento no MedCann Lab. Os achados retroalimentam os planos terapêuticos e a base de conhecimento da IA residente.
+                Acompanhe os estudos em andamento no MedCannLab. Os achados retroalimentam os planos terapêuticos e a base de conhecimento da IA residente.
               </p>
             </div>
             <button
@@ -709,9 +709,9 @@ const MedCannLab: React.FC = () => {
         <div className="bg-gradient-to-r from-blue-600/20 via-cyan-600/20 to-emerald-500/20 border border-blue-500/30 rounded-xl p-6 mb-8">
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
             <div>
-              <h3 className="text-2xl font-bold text-white mb-2">Cidade Amiga dos Rins & MedCann Lab</h3>
+              <h3 className="text-2xl font-bold text-white mb-2">Cidade Amiga dos Rins & MedCannLab</h3>
               <p className="text-slate-200 text-sm md:text-base max-w-3xl">
-                A integração entre a pesquisa MedCann Lab e o programa Cidade Amiga dos Rins conecta clínica, ensino e pesquisa em um ciclo contínuo de
+                A integração entre a pesquisa MedCannLab e o programa Cidade Amiga dos Rins conecta clínica, ensino e pesquisa em um ciclo contínuo de
                 aprendizado. Acesse o programa para acompanhar cronogramas, indicadores e debates sobre novos protocolos.
               </p>
             </div>

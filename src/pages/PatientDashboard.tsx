@@ -159,61 +159,9 @@ const PatientDashboard: React.FC = () => {
             onStartAssessment={handleStartAssessment}
           />
 
-          {/* V1.9.x — Linha humana de continuidade do cuidado (sem score técnico).
-              Fecha emocionalmente o produto: paciente sente acompanhamento ativo.
-              Mensagem dinâmica baseada em reports.length + idade do último report.
-              Princípio GPT 08/05: NÃO traduzir KPIs técnicos pra paciente
-              (regulatório-safe, não-gamificação de saúde). */}
-          {(() => {
-            const lastReport = reports?.[0] as any
-            const lastReportTs = lastReport?.generated_at ? new Date(lastReport.generated_at).getTime() : null
-            const hoursSinceLast = lastReportTs !== null
-              ? Math.floor((Date.now() - lastReportTs) / (1000 * 60 * 60))
-              : null
-            const daysSinceLast = hoursSinceLast !== null ? Math.floor(hoursSinceLast / 24) : null
-            const totalReports = reports?.length || 0
-
-            // V1.9.x: linguagem natural pra "quando foi" — evita ambiguidade de "0 dias"
-            // (paciente lê "0 dias" como "nenhuma avaliação", não como "hoje")
-            const formatTimeAgo = (h: number, d: number): string => {
-              if (h < 1) return 'há poucos minutos'
-              if (h < 24) return h === 1 ? 'há 1 hora' : `há ${h} horas`
-              if (d === 1) return 'ontem'
-              if (d < 30) return `há ${d} dias`
-              const months = Math.floor(d / 30)
-              return months === 1 ? 'há 1 mês' : `há ${months} meses`
-            }
-
-            let icon = '🌱'
-            let message = 'Sua jornada clínica está pronta para começar.'
-            let cta = 'Inicie sua primeira avaliação para que a equipe clínica possa acompanhar você.'
-            if (totalReports > 0 && hoursSinceLast !== null && daysSinceLast !== null) {
-              const timeAgo = formatTimeAgo(hoursSinceLast, daysSinceLast)
-              const totalLabel = totalReports === 1 ? '1 avaliação no histórico' : `${totalReports} avaliações no histórico`
-              if (daysSinceLast <= 60) {
-                icon = '🟢'
-                message = 'Seu acompanhamento clínico está ativo e atualizado.'
-                cta = `Última atividade ${timeAgo} · ${totalLabel}.`
-              } else if (daysSinceLast <= 180) {
-                icon = '🟡'
-                message = 'Seu histórico vem sendo mantido pela equipe clínica.'
-                cta = `Última atividade ${timeAgo} · ${totalLabel}. Considere uma reavaliação.`
-              } else {
-                icon = '🟠'
-                message = 'Bom momento para retomar seu acompanhamento clínico.'
-                cta = `Última atividade ${timeAgo} · ${totalLabel}. Uma nova consulta ajuda a equipe.`
-              }
-            }
-            return (
-              <div className="rounded-lg border border-emerald-500/15 bg-emerald-500/[0.03] px-3 py-2 flex items-center gap-2">
-                <span className="text-sm shrink-0" aria-hidden="true">{icon}</span>
-                <div className="flex-1 min-w-0 flex flex-col sm:flex-row sm:items-center sm:gap-2">
-                  <p className="text-xs font-medium text-slate-200 leading-tight">{message}</p>
-                  <p className="text-[11px] text-slate-500 leading-tight truncate">{cta}</p>
-                </div>
-              </div>
-            )
-          })()}
+          {/* V1.9.x — Linha de continuidade FUNDIDA no header do PatientAnalytics
+              (movida de standalone pra dentro do card "Pedro Paciente · email · Paciente MedCannLab"
+               conforme pedido do Pedro 08/05). Card standalone removido daqui. */}
 
           <PatientStats
             appointments={appointments}
@@ -392,7 +340,7 @@ const PatientDashboard: React.FC = () => {
         onClose={() => setShareModalOpen(false)}
         patientId={user?.id || ''}
         reportId={shareModalReportId || reports[0]?.id || ''}
-        reportName="Relatório Clínico MedCann"
+        reportName="Relatório Clínico MedCannLab"
       />
     </div>
   )

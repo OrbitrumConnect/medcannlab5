@@ -100,7 +100,7 @@ const ProfessionalDashboard: React.FC = () => {
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
           <div>
             <h1 className="text-3xl font-bold">Olá, Dr(a). {user?.user_metadata?.name?.split(' ')[0] || 'Profissional'}</h1>
-            <p className="text-slate-400">Gestão Clínica Inteligente • MedCann Hub</p>
+            <p className="text-slate-400">Gestão Clínica Inteligente • MedCannLab</p>
           </div>
           <div className="flex items-center gap-3 bg-white/5 border border-white/10 p-2 rounded-xl backdrop-blur-md">
             <div className="w-10 h-10 rounded-lg bg-primary-500/20 flex items-center justify-center border border-primary-500/30">

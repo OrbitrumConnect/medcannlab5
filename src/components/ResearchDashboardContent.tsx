@@ -118,7 +118,7 @@ const ResearchDashboardContent: React.FC = () => {
 
     return (
         <div className="max-w-7xl mx-auto w-full overflow-x-hidden p-4 md:p-6">
-            {/* Destaque MedCann Lab */}
+            {/* Destaque MedCannLab */}
             <div className="rounded-2xl border border-[#00C16A]/20 bg-gradient-to-br from-[#0A192F] via-[#102C45] to-[#1F4B38] p-6 md:p-8 shadow-xl mb-6 md:mb-8">
                 <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
                     <div className="flex items-start space-x-4">
@@ -129,13 +129,13 @@ const ResearchDashboardContent: React.FC = () => {
                         }}>
                             <img
                                 src="/brain.png"
-                                alt="MedCann Lab"
+                                alt="MedCannLab"
                                 className="w-10 h-10 object-contain"
                                 style={{ filter: 'brightness(1.1) contrast(1.1) drop-shadow(0 0 6px rgba(0, 193, 106, 0.6))' }}
                             />
                         </div>
                         <div>
-                            <p className="text-[11px] uppercase tracking-[0.35em] text-[#00C16A] mb-2">MedCann Lab</p>
+                            <p className="text-[11px] uppercase tracking-[0.35em] text-[#00C16A] mb-2">MedCannLab</p>
                             <h2 className="text-2xl md:text-3xl font-bold text-white">Integração Cannabis &amp; Nefrologia</h2>
                             <p className="text-sm md:text-base text-[#C8D6E5] mt-3 max-w-3xl">
                                 Pesquisa pioneira conectando ensino, clínica e pesquisa para mapear benefícios terapêuticos da cannabis medicinal,
