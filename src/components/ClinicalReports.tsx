@@ -588,27 +588,58 @@ const ClinicalReports: React.FC<ClinicalReportsProps> = ({ className = '', onSha
   }
 
   // V1.9.194 — geração real via Edge Function generate-nft-from-report
+  // V1.9.199 — UX: retry silencioso 1x + mensagens amigáveis + loading state robusto
   // Pipeline: report → Pollinations.ai FLUX → SHA-256 → Storage → patient_nfts
   // Idempotente: clicar 2x retorna o mesmo NFT existente.
-  // Substitui mock anterior (Math.random hash) por geração persistida real.
   const [nftLoading, setNftLoading] = useState(false)
+
+  const friendlyNftError = (raw: string): string => {
+    const msg = (raw || '').toLowerCase()
+    if (msg.includes('non-2xx') || msg.includes('functionshttperror') || msg.includes('502') || msg.includes('503') || msg.includes('504')) {
+      return 'Servidor de geração ocupado no momento. Muitas assinaturas sendo criadas — tente novamente em alguns segundos.'
+    }
+    if (msg.includes('timeout') || msg.includes('timed out')) {
+      return 'A geração demorou mais que o esperado. Tente novamente — costuma funcionar na 2ª tentativa.'
+    }
+    if (msg.includes('network') || msg.includes('fetch failed') || msg.includes('failed to fetch')) {
+      return 'Sem conexão estável com o servidor. Verifique sua internet e tente novamente.'
+    }
+    if (msg.includes('rate') || msg.includes('limit')) {
+      return 'Muitas tentativas em sequência. Aguarde um momento e tente novamente.'
+    }
+    return 'Não foi possível gerar a assinatura visual agora. Tente novamente em instantes.'
+  }
+
+  const invokeNftEdge = async (reportId: string) => {
+    return await supabase.functions.invoke('generate-nft-from-report', {
+      body: { report_id: reportId },
+    })
+  }
+
   const handleGenerateNFT = async (report: SharedReport) => {
     if (nftLoading) return
     setNftLoading(true)
     try {
-      const { data, error } = await supabase.functions.invoke('generate-nft-from-report', {
-        body: { report_id: report.id },
-      })
+      let { data, error } = await invokeNftEdge(report.id)
+
+      // Retry silencioso 1x após 2s se falhou (Pollinations às vezes está congestionado)
+      if (error || !data?.success) {
+        console.warn('NFT 1ª tentativa falhou, retry silencioso em 2s...', error || data?.error)
+        await new Promise(r => setTimeout(r, 2000))
+        const retry = await invokeNftEdge(report.id)
+        data = retry.data
+        error = retry.error
+      }
 
       if (error) {
-        console.error('Erro Edge Function generate-nft-from-report:', error)
-        alert(`Erro ao gerar assinatura visual: ${error.message || 'desconhecido'}`)
+        console.error('Erro Edge Function generate-nft-from-report (após retry):', error)
+        alert(friendlyNftError(error.message || ''))
         return
       }
 
       if (!data?.success) {
-        console.error('Resposta sem success:', data)
-        alert(`Falha ao gerar: ${data?.error || 'erro desconhecido'}`)
+        console.error('Resposta sem success (após retry):', data)
+        alert(friendlyNftError(data?.error || ''))
         return
       }
 
@@ -624,7 +655,7 @@ const ClinicalReports: React.FC<ClinicalReportsProps> = ({ className = '', onSha
       }
     } catch (error) {
       console.error('Erro ao gerar NFT:', error)
-      alert(`Erro inesperado: ${error instanceof Error ? error.message : String(error)}`)
+      alert(friendlyNftError(error instanceof Error ? error.message : String(error)))
     } finally {
       setNftLoading(false)
     }
@@ -1177,11 +1208,12 @@ const ClinicalReports: React.FC<ClinicalReportsProps> = ({ className = '', onSha
                 )}
                 <button
                   onClick={() => handleGenerateNFT(report)}
-                  className="flex items-center space-x-1 px-4 py-2 rounded-lg transition-colors text-white"
+                  disabled={nftLoading}
+                  className="flex items-center space-x-1 px-4 py-2 rounded-lg transition-colors text-white disabled:opacity-60 disabled:cursor-not-allowed"
                   style={{ background: 'linear-gradient(135deg, #9333ea 0%, #7c3aed 100%)' }}
                 >
-                  <QrCode className="w-4 h-4" />
-                  <span>Gerar NFT</span>
+                  {nftLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <QrCode className="w-4 h-4" />}
+                  <span>{nftLoading ? 'Gerando...' : 'Gerar NFT'}</span>
                 </button>
                 <button
                   onClick={() => handleDownloadReport(report)}
@@ -1773,11 +1805,12 @@ const ClinicalReports: React.FC<ClinicalReportsProps> = ({ className = '', onSha
                                 </button>
                                 <button
                                   onClick={() => selectedReport && handleGenerateNFT(selectedReport)}
-                                  className="flex items-center gap-1 px-2.5 py-1 text-[11px] font-medium rounded-lg bg-slate-800/60 border border-slate-600/40 text-slate-300 hover:bg-amber-500/20 hover:border-amber-400/40 hover:text-amber-200 transition-all"
+                                  disabled={nftLoading}
+                                  className="flex items-center gap-1 px-2.5 py-1 text-[11px] font-medium rounded-lg bg-slate-800/60 border border-slate-600/40 text-slate-300 hover:bg-amber-500/20 hover:border-amber-400/40 hover:text-amber-200 transition-all disabled:opacity-60 disabled:cursor-not-allowed"
                                   title="Registrar como NFT"
                                 >
-                                  <QrCode className="w-3 h-3" />
-                                  <span>NFT</span>
+                                  {nftLoading ? <Loader2 className="w-3 h-3 animate-spin" /> : <QrCode className="w-3 h-3" />}
+                                  <span>{nftLoading ? '...' : 'NFT'}</span>
                                 </button>
                               </div>
                             )}
@@ -1852,12 +1885,13 @@ const ClinicalReports: React.FC<ClinicalReportsProps> = ({ className = '', onSha
               )}
               <button
                 onClick={() => handleGenerateNFT(selectedReport)}
-                className="flex-1 min-w-[140px] px-4 py-2 text-white rounded-lg transition-colors flex items-center justify-center space-x-2"
+                disabled={nftLoading}
+                className="flex-1 min-w-[140px] px-4 py-2 text-white rounded-lg transition-colors flex items-center justify-center space-x-2 disabled:opacity-60 disabled:cursor-not-allowed"
                 style={{ background: 'linear-gradient(135deg, #9333ea 0%, #7c3aed 100%)' }}
-                title="Gerar certificado NFT de autenticidade do relatório"
+                title={nftLoading ? 'Gerando assinatura visual...' : 'Gerar certificado NFT de autenticidade do relatório'}
               >
-                <QrCode className="w-4 h-4" />
-                <span>Gerar NFT</span>
+                {nftLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <QrCode className="w-4 h-4" />}
+                <span>{nftLoading ? 'Gerando...' : 'Gerar NFT'}</span>
               </button>
 
               {!isPatient && (
