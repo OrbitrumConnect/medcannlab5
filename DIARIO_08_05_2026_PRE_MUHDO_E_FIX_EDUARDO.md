@@ -565,3 +565,161 @@ NOVO HOJE:
 ---
 
 *[BLOCOS I-J SELADOS 08/05 ~12:30 BRT. 9 commits desktop documentados. Diário 08/05 completo (A-J = 10 blocos, sessão laptop + desktop). HEAD 16f9098 push 4 refs ✓. Laptop pode pullar e ter contexto 100% empírico pré-reunião 14h.]*
+
+---
+
+## BLOCO K — Sessão arquitetural pré-Muhdo (08/05 ~13h BRT, T-1h reunião)
+
+### K.1 — Contexto
+
+Pedro trouxe conversa entre **2 GPTs externos diferentes + ele mesmo** sobre arquitetura institucional Nôa. Pedido explícito: "oq vc pensa". Resultado: validação externa massiva do caminho A.1 (~85% convergência) + 3 ressalvas técnicas que eu adicionei + 1 micro-ajuste final do GPT na frase pra Muhdo.
+
+### K.2 — Convergência (3 vozes independentes concordaram)
+
+| Ponto | Status |
+|---|---|
+| "Insuficiência de contexto institucional runtime" = síntese cirúrgica do drift | ✅ confirmado empiricamente (system prompt institucional ~50 palavras) |
+| NÃO usar RAG agora — problema é vocabulário ausente, não corpus ausente | ✅ catálogo estático 100x mais barato e auditável |
+| AEC ativa ≠ modo institucional — separação JÁ existe, só explicitar no prompt | ✅ pirâmide 8 camadas + Verbatim First V1.9.86 |
+| "Profundidade da escuta" > "Score" = decisão regulatoriamente correta | ✅ JÁ implementado hoje (commit b9c8163) |
+| "Infraestrutura de governança narrativa clínica" > "IA médica" | ✅ mais defensável + mais fiel ao sistema |
+
+### K.3 — 3 ressalvas técnicas que adicionei (validadas pelo 2º GPT)
+
+**Ressalva 1 — Catálogo morre sem dono explícito**
+- Risco: documento morto em 3 meses
+- Refinamento GPT: *"catálogo institucional não é prompt engineering; é governança operacional versionada"*
+- Solução: owner + cadência + CI fixture com 5 prompts canônicos
+
+**Ressalva 2 — PHASE_LOCK typed (não boolean)**
+- Risco: `if (mode === 'aec')` é frágil; bug = vazamento institucional pro Verbatim
+- Solução:
+  ```ts
+  type PromptPhase = 'AEC_ACTIVE' | 'INSTITUTIONAL' | 'TEACHING'
+  // AEC_ACTIVE: assert(institutional_context === undefined)
+  ```
+- Princípio: integridade epistemológica > UX (Princípio 4 CLAUDE.md)
+
+**Ressalva 3 — Cristalizar Constituição NO Edge Function É tocar CORE**
+- GPTs simplificaram dizendo "CORE já está correto"
+- Verdade: CORE clínico (FSM/Verbatim/Pipeline) está. Mas identidade institucional dispersa
+- Por isso anti-kevlar §1 manda — exige aprovação Ricardo via nova versão Magno antes de codar
+
+### K.4 — DECISÃO DE NAMING canonizada — RIM
+
+**Problema:** "Constituição institucional runtime" colide com **Constituição da Nôa** (anti-kevlar §1, Livro Magno). Em 6 meses ninguém saberia distinguir update operacional de mudança doutrinária.
+
+**Solução:**
+
+| Camada | Natureza | Cadência |
+|---|---|---|
+| **Constituição da Nôa / Livro Magno** | Normativa, fundacional, anti-kevlar §1 | Lenta (versão Magno) |
+| **RIM (Runtime Institutional Manifest)** | Operacional, derivado, versionável | Rápida (manifest_v2026_05.ts → manifest_v2026_06.ts) |
+
+**Por que "Manifest":**
+- Palavra honesta: declara o que existe operacionalmente AGORA
+- NÃO promete imutabilidade (diferente de "Constituição")
+- Padrão familiar (web manifest, package manifest)
+- Conversa com infraestrutura/deploy/runtime/CI validation
+
+### K.5 — Frase âncora calibrada Muhdo (versão FINAL pós-refino GPT)
+
+**Versão ANTERIOR (técnica fria):**
+> *"sistema operacional de governança narrativa clínica onde LLMs são componentes subordinados"*
+
+**Versão FINAL (calibrada pra audiência epigenética/biomarcadores):**
+> *"Não construímos um chatbot médico — construímos uma camada de governança narrativa longitudinal. O paciente fala, o método organiza e a IA entra apenas como último componente subordinado. É infraestrutura metodológica, não inteligência probabilística."*
+
+**Por que "entra apenas" e NÃO "assina":**
+- "Assina" colide com ICP-Brasil A1 (Ricardo literalmente assina prescrições via certificado digital)
+- Risco regulatório/compliance: "IA assina" pode ser interpretado como autonomia médica da IA
+- "Entra apenas" preserva hierarquia subordinada sem sobrecarga semântica
+
+**"Longitudinal" é palavra-ponte canônica** — conecta com universo Muhdo (biomarcadores, epigenética, coortes, temporalidade clínica).
+
+### K.6 — 4 itens executáveis pré-código A.1 (ordem canônica)
+
+```
+1. ⏳ Aprovação Ricardo em PARA_RICARDO_V16_APROVAR.md (anti-kevlar §1)
+   ENGATILHADO desde 07/05. Bloqueador absoluto.
+
+2. ⏳ PHASE_LOCK typed enum (não boolean)
+   AEC_ACTIVE / INSTITUTIONAL / TEACHING + assertions runtime
+
+3. ⏳ CI fixture com 5 prompts canônicos institucionais
+   Ex: "O que é Cidade Amiga dos Rins?" / "Como funciona AEC?" /
+       "Vocês usam IA para diagnosticar?" / "O que é Verbatim First?" /
+       "Como funciona ICP-Brasil aqui?"
+   Snapshot expected → drift diff → deploy gate → regression detection
+
+4. ⏳ Owner declarado pra catálogo + cadência de update
+   Sem owner+cadência: catálogo vira documento morto
+```
+
+### K.7 — Princípios cristalizados nesta sessão (35-37)
+
+**35. Naming separation entre fonte imutável e artefato derivado**
+- RIM (vivo) ≠ Constituição (imutável)
+- Confusão de naming = drift de governança em ~6 meses
+
+**36. Catálogo institucional é governança operacional versionada, não prompt engineering**
+- Sem owner+cadência+CI fixture → documento morto
+
+**37. "Diminuir superfície probabilística"**
+- Vocabulário canônico pra produto pós-chatbot
+- Vai contra mainstream AI mas alinhado com FSM+Verbatim+Pipeline+Signature
+
+### K.8 — Handoff Laptop (Pedro vai pra reunião Muhdo agora)
+
+**Estado atual quando Pedro pullar no laptop:**
+```
+HEAD = f47109d (após este commit do BLOCO K será +1)
+Branch = main
+Push 4 refs = ✓ amigo + medcannlab5 × main + master
+Lock V1.9.95+97+98+99-B = INTOCADO
+Diário 08/05 = COMPLETO (A-K = 11 blocos)
+Memória persistente = ATUALIZADA
+```
+
+**Comando pull no laptop:**
+```bash
+git pull amigo main
+# OU
+git pull medcannlab5 main
+```
+
+**O que ler primeiro no laptop:**
+1. `MEMORY.md` (índice, sempre primeiro)
+2. `feedback_regra_operacional_canonica_06_05.md` (regra topo)
+3. `project_a1_validacao_externa_naming_rim_08_05.md` (NOVO desta sessão)
+4. `DIARIO_08_05_2026_PRE_MUHDO_E_FIX_EDUARDO.md` BLOCO K (este bloco)
+5. `PARA_RICARDO_V16_APROVAR.md` (esperando OK Ricardo)
+
+**Próximos passos (ordem):**
+```
+HOJE (pós-Muhdo):
+  [ ] Voltar feedback empírico da reunião
+  [ ] Documentar BLOCO L: como Muhdo recebeu narrativa "infraestrutura metodológica"
+  [ ] Decidir 1 dos 3 caminhos baseado no feedback Muhdo:
+      (a) Acelerar A.1 se Muhdo demandar formalização institucional
+      (b) Pausar A.1 se prioridade vira parceria-first
+      (c) Manter ordem original (Ricardo OK → A.1)
+
+PRÓXIMA SESSÃO (laptop ou desktop):
+  [ ] Aguardar Ricardo aprovar PARA_RICARDO_V16_APROVAR.md
+  [ ] Quando aprovar: implementar A.1 com 4 itens da seção K.6
+  [ ] NUNCA codar A.1 antes de Ricardo aprovar (anti-kevlar §1)
+
+PARALELO (não bloqueado por Muhdo):
+  [ ] Continuar polish UX paciente baseado em feedback amigos teste
+  [ ] CNPJ formalização (alavanca 1 — bloqueia Stripe/Resend prod)
+  [ ] Decisão IMRE legacy (Caminho A — 30 min Pedro+Ricardo)
+```
+
+### K.9 — Frase âncora BLOCO K
+
+> *"Pré-Muhdo, sessão arquitetural validou A.1 externamente (2 GPTs + Pedro + eu = 4 vozes independentes convergentes). Nomenclatura canônica selada: RIM (Runtime Institutional Manifest) ≠ Constituição da Nôa. Frase Muhdo final calibrada com 'longitudinal' como palavra-ponte e 'entra apenas' substituindo 'assina' pra evitar colisão ICP-Brasil. 3 ressalvas técnicas (owner, PHASE_LOCK typed, anti-kevlar §1) blindadas. Anti-kevlar §1 ATIVO: nada se coda em A.1 antes de Ricardo aprovar V16. Próximo gate: feedback empírico pós-Muhdo decide aceleração ou pausa."*
+
+---
+
+*[BLOCO K SELADO 08/05 ~13:15 BRT. Sessão arquitetural T-1h pré-Muhdo concluída. Diário 08/05 final (A-K = 11 blocos). HEAD após este commit terá memória persistente sincronizada e handoff laptop limpo. Pedro: boa reunião. Até mais.]*
