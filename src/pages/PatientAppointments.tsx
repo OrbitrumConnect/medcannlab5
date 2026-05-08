@@ -1552,23 +1552,17 @@ const PatientAppointments: React.FC = () => {
             <div className="space-y-4 md:space-y-6">
               {/* Profissionais Disponíveis - Unificado */}
               <div className="bg-slate-800 rounded-xl p-4 md:p-6">
-                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-4 md:mb-5">
-                  <div>
-                    <h3 className="text-lg md:text-xl font-semibold text-white flex items-center gap-2">
-                      <Stethoscope className="w-5 h-5 md:w-6 md:h-6 text-primary-300" />
-                      Agendar com Especialista
-                    </h3>
-                    <p className="text-sm text-slate-400 mt-1">
-                      Escolha um especialista para iniciar seu acompanhamento ou agende sua consulta.
-                    </p>
-                  </div>
-                  <button
-                    onClick={() => setShowAppointmentModal(true)}
-                    className="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg bg-blue-600/85 hover:bg-blue-500/90 text-white text-sm font-semibold transition-colors"
-                  >
-                    <Plus className="w-4 h-4" />
-                    Novo Agendamento
-                  </button>
+                {/* V1.9.x: removido botão "Novo Agendamento" duplicado deste card.
+                    Pedro 08/05: redundante porque já existe trigger no header da aba +
+                    o fluxo canônico é via cards profissional (Ver perfil → Agendar). */}
+                <div className="mb-4 md:mb-5">
+                  <h3 className="text-lg md:text-xl font-semibold text-white flex items-center gap-2">
+                    <Stethoscope className="w-5 h-5 md:w-6 md:h-6 text-primary-300" />
+                    Agendar com Especialista
+                  </h3>
+                  <p className="text-sm text-slate-400 mt-1">
+                    Escolha um especialista para iniciar seu acompanhamento ou agende sua consulta.
+                  </p>
                 </div>
 
                 {/* Busca e filtros — V1.9.x: 2 inputs dedicados (profissional × localidade) + dropdowns */}

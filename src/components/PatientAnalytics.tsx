@@ -659,7 +659,9 @@ const PatientAnalytics: React.FC<PatientAnalyticsProps> = ({ reports, loading, u
                     </div>
                     {/* V1.9.x: linha de continuidade fundida no card (era card separado).
                         Pedro pediu: "seu acompanhamento pode ficar nesse card que estou comentando".
-                        Reusa lastAssessmentDate + daysSinceLast já calculados nos useMemo do componente. */}
+                        Refinos GPT 08/05: "atividade"→"avaliação" (mais clínico, menos plataforma);
+                        "🟠"→"🔵" (laranja parecia alerta de risco, azul é neutro).
+                        Reusa lastAssessmentDate + daysSinceLast já calculados nos useMemo. */}
                     {sortedReports.length > 0 && (() => {
                         const diffMs = Date.now() - lastAssessmentDate.getTime()
                         const hours = Math.floor(diffMs / (1000 * 60 * 60))
@@ -672,14 +674,16 @@ const PatientAnalytics: React.FC<PatientAnalyticsProps> = ({ reports, loading, u
                             const months = Math.floor(d / 30)
                             return months === 1 ? 'há 1 mês' : `há ${months} meses`
                         }
-                        const dotColor = d <= 60 ? 'bg-emerald-400' : d <= 180 ? 'bg-amber-400' : 'bg-orange-400'
+                        // V1.9.x: 🔵 substitui 🟠 — laranja pode parecer alerta clínico (risco).
+                        // Azul é neutro/informativo, alinhado com tese "não é score de saúde".
+                        const dotColor = d <= 60 ? 'bg-emerald-400' : d <= 180 ? 'bg-amber-400' : 'bg-blue-400'
                         const totalLabel = sortedReports.length === 1 ? '1 avaliação' : `${sortedReports.length} avaliações`
                         return (
                             <div className="mt-2 flex flex-wrap items-center gap-1.5 text-xs text-slate-400">
                                 <span className={`w-1.5 h-1.5 rounded-full ${dotColor}`}></span>
                                 <span className="text-slate-300 font-medium">Acompanhamento ativo</span>
                                 <span className="text-slate-500">·</span>
-                                <span>última atividade {formatTimeAgo()}</span>
+                                <span>última avaliação {formatTimeAgo()}</span>
                                 <span className="text-slate-500">·</span>
                                 <span>{totalLabel} no histórico</span>
                             </div>
@@ -801,45 +805,62 @@ const PatientAnalytics: React.FC<PatientAnalyticsProps> = ({ reports, loading, u
                                 enrichReportWithScores (calculateScoresFromContent fallback),
                                 garantindo score derivado on-the-fly dos dados clínicos existentes. */}
                             {(() => {
-                                const reversedReports = [...sortedReports].reverse()
-                                const totalReports = reversedReports.length
-                                // V1.9.x: deduplicação + decimação inteligente pra evitar sobreposição
-                                // de labels (ex: 13x "23/04" empilhados ilegíveis).
-                                // Estratégia: label aparece SÓ na primeira barra do dia + step adaptativo
-                                // quando há >15 barras (skip a cada N pra "respiro" visual).
-                                const labelStep = totalReports > 30 ? 4 : totalReports > 20 ? 3 : totalReports > 15 ? 2 : 1
-                                let lastShownDate = ''
-                                let lastShownIdx = -labelStep
-                                return reversedReports.map((report, idx) => {
+                                // V1.9.x: AGREGAÇÃO POR DIA — em vez de 1 barra/report (39 barras
+                                // amontoadas com 13× "23/04"), agora 1 barra/dia (média dos scores).
+                                // Resolve definitivamente sobreposição visual + dá leitura clínica
+                                // mais honesta (paciente vê evolução longitudinal, não 39 pontos
+                                // de uma reprocessamento de pipeline).
+                                interface DayBucket {
+                                    dateStr: string
+                                    dateKey: string  // ISO date pra sort
+                                    avg: number
+                                    min: number
+                                    max: number
+                                    count: number
+                                }
+                                const buckets: Record<string, DayBucket> = {}
+                                for (const report of sortedReports) {
+                                    const dt = new Date(report.generated_at)
+                                    const dateKey = dt.toISOString().slice(0, 10)
+                                    const dateStr = dt.toLocaleDateString(undefined, { day: '2-digit', month: '2-digit' })
                                     const score = report.content.scores?.clinical_score || 0
-                                    const dateStr = new Date(report.generated_at).toLocaleDateString(undefined, { day: '2-digit', month: '2-digit' })
-                                    // Mostra label se: data mudou desde a última exibida E passou step suficiente,
-                                    // OU é a primeira/última barra (sempre referência visual nas pontas)
-                                    const isFirstOrLast = idx === 0 || idx === totalReports - 1
-                                    const dateChanged = dateStr !== lastShownDate
-                                    const stepOk = idx - lastShownIdx >= labelStep
-                                    const showLabel = isFirstOrLast || (dateChanged && stepOk)
-                                    if (showLabel) {
-                                        lastShownDate = dateStr
-                                        lastShownIdx = idx
+                                    if (!buckets[dateKey]) {
+                                        buckets[dateKey] = { dateStr, dateKey, avg: score, min: score, max: score, count: 1 }
+                                    } else {
+                                        const b = buckets[dateKey]
+                                        b.avg = (b.avg * b.count + score) / (b.count + 1)
+                                        b.min = Math.min(b.min, score)
+                                        b.max = Math.max(b.max, score)
+                                        b.count += 1
                                     }
+                                }
+                                const days = Object.values(buckets).sort((a, b) => a.dateKey.localeCompare(b.dateKey))
+                                const totalDays = days.length
+                                // Decimação adaptativa de labels com tantos dias (mantém respiro):
+                                const labelStep = totalDays > 20 ? 3 : totalDays > 12 ? 2 : 1
+                                return days.map((bucket, idx) => {
+                                    const score = Math.round(bucket.avg)
+                                    const isFirstOrLast = idx === 0 || idx === totalDays - 1
+                                    const showLabel = isFirstOrLast || idx % labelStep === 0
+                                    const tooltipText = bucket.count === 1
+                                        ? `${bucket.dateStr} · ${score} pts`
+                                        : `${bucket.dateStr} · média ${score} pts (${bucket.count} avaliações, ${bucket.min}–${bucket.max})`
                                     return (
-                                        <div key={report.id} className="flex flex-col items-center gap-2 group relative z-10 w-full">
+                                        <div key={bucket.dateKey} className="flex flex-col items-center gap-2 group relative z-10 w-full">
                                             <div className={`w-full max-w-[40px] flex items-end relative ${compact ? 'h-36' : 'h-48'}`}>
                                                 <div
                                                     className="w-full bg-emerald-500/80 rounded-t-sm hover:bg-emerald-400 transition-all duration-300 relative group-hover:shadow-[0_0_15px_rgba(52,211,153,0.3)]"
                                                     style={{ height: `${Math.max(score, 5)}%` }}
-                                                    title={`${dateStr} · ${score} pts`}
+                                                    title={tooltipText}
                                                 >
-                                                    {/* Tooltip hover: data + score (sempre, em TODAS as barras — não depende de label visível) */}
-                                                    <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-slate-900 text-emerald-400 text-xs font-bold py-1 px-2 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap border border-emerald-500/20 pointer-events-none">
-                                                        {dateStr} · {score} pts
+                                                    {/* Tooltip hover: data + score médio + count (quando >1 avaliação no dia) */}
+                                                    <div className="absolute -top-9 left-1/2 -translate-x-1/2 bg-slate-900 text-emerald-400 text-xs font-bold py-1 px-2 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap border border-emerald-500/20 pointer-events-none">
+                                                        {tooltipText}
                                                     </div>
                                                 </div>
                                             </div>
-                                            {/* V1.9.x: span sempre renderizado pra preservar alinhamento; vazio quando ocultado */}
                                             <span className="text-[10px] text-slate-400 whitespace-nowrap text-center h-3.5 leading-none" style={{ minWidth: '3rem' }}>
-                                                {showLabel ? dateStr : ''}
+                                                {showLabel ? bucket.dateStr : ''}
                                             </span>
                                         </div>
                                     )
