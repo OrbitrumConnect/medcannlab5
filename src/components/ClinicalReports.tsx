@@ -586,14 +586,46 @@ const ClinicalReports: React.FC<ClinicalReportsProps> = ({ className = '', onSha
     }
   }
 
+  // V1.9.194 — geração real via Edge Function generate-nft-from-report
+  // Pipeline: report → Pollinations.ai FLUX → SHA-256 → Storage → patient_nfts
+  // Idempotente: clicar 2x retorna o mesmo NFT existente.
+  // Substitui mock anterior (Math.random hash) por geração persistida real.
+  const [nftLoading, setNftLoading] = useState(false)
   const handleGenerateNFT = async (report: SharedReport) => {
+    if (nftLoading) return
+    setNftLoading(true)
     try {
-      console.log('Gerando NFT para relatório:', report.id)
-      const token = `NFT-${Date.now()}`
-      const hash = `0x${Math.random().toString(16).substr(2, 8)}`
+      const { data, error } = await supabase.functions.invoke('generate-nft-from-report', {
+        body: { report_id: report.id },
+      })
+
+      if (error) {
+        console.error('Erro Edge Function generate-nft-from-report:', error)
+        alert(`Erro ao gerar assinatura visual: ${error.message || 'desconhecido'}`)
+        return
+      }
+
+      if (!data?.success) {
+        console.error('Resposta sem success:', data)
+        alert(`Falha ao gerar: ${data?.error || 'erro desconhecido'}`)
+        return
+      }
+
+      const nft = data.nft || {}
+      const token = `NFT-${(nft.id || '').slice(0, 8)}`
+      const hash = nft.image_hash ? `0x${nft.image_hash.slice(0, 12)}` : '—'
       setNftModal({ show: true, token, hash })
+
+      if (data.already_exists) {
+        console.log('NFT já existia para este relatório — retornando existente')
+      } else {
+        console.log('Nova assinatura visual gerada:', nft.id)
+      }
     } catch (error) {
       console.error('Erro ao gerar NFT:', error)
+      alert(`Erro inesperado: ${error instanceof Error ? error.message : String(error)}`)
+    } finally {
+      setNftLoading(false)
     }
   }
 
