@@ -1104,9 +1104,21 @@ const PatientAnalytics: React.FC<PatientAnalyticsProps> = ({ reports, loading, u
                                 <div className="flex items-center justify-between text-sm">
                                     <span className="text-slate-400 flex items-center gap-2">
                                         <span className="w-1.5 h-1.5 rounded-full bg-cyan-400"></span>
-                                        Dias desde última avaliação
+                                        Última avaliação
                                     </span>
-                                    <span className="font-semibold text-slate-200">{daysSinceLast} dias</span>
+                                    <span className="font-semibold text-slate-200">{(() => {
+                                        // V1.9.x: linguagem natural em vez de "0 dias" (ambíguo).
+                                        // Reusa msDay+lastAssessmentDate já calculados no useMemo acima.
+                                        const diffMs = Date.now() - lastAssessmentDate.getTime()
+                                        const hours = Math.floor(diffMs / (1000 * 60 * 60))
+                                        if (hours < 1) return 'há poucos minutos'
+                                        if (hours < 24) return hours === 1 ? 'há 1 hora' : `há ${hours} horas`
+                                        const d = daysSinceLast
+                                        if (d === 1) return 'ontem'
+                                        if (d < 30) return `há ${d} dias`
+                                        const months = Math.floor(d / 30)
+                                        return months === 1 ? 'há 1 mês' : `há ${months} meses`
+                                    })()}</span>
                                 </div>
                                 <div className="flex items-center justify-between text-sm">
                                     <span className="text-slate-400 flex items-center gap-2">
