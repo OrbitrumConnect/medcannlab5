@@ -180,7 +180,10 @@ const PatientDashboard: React.FC = () => {
               onStartAssessment={handleStartAssessment}
             />
 
-            {/* Ações Rápidas movidas para o final conforme solicitado pelo usuário */}
+            {/* V1.9.x: PatientQuickActions redesenhado — antes "Chat com Médico" e
+                "Nova Consulta" eram redundantes com PatientHeaderActions (Pedro 08/05).
+                Agora: Solicitar Receita + Compartilhar Relatório (não-redundantes) +
+                Plano Terapêutico + Biblioteca preservados. */}
             <PatientQuickActions
               therapeuticPlan={therapeuticPlan}
               patientPrescriptions={patientPrescriptions}
@@ -189,6 +192,10 @@ const PatientDashboard: React.FC = () => {
               onViewPlan={() => setActiveTab('plano')}
               onViewEducational={() => navigate('/app/library')}
               onShareReport={() => setActiveTab('report-detail')}
+              onRequestPrescription={() => {
+                sendInitialMessage('Gostaria de solicitar uma nova receita ao meu médico. Pode me ajudar?')
+                openNoaChat()
+              }}
             />
           </div>
         </>
