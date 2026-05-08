@@ -231,6 +231,94 @@ function buildImageUrl(prompt: string, seed: number): string {
 }
 
 // ──────────────────────────────────────────────────────────────────
+// V1.9.198 — LLM ENRICHMENT (Pollinations text endpoint)
+// ──────────────────────────────────────────────────────────────────
+// Recebe APENAS tokens abstratos extraídos via heurística (NUNCA o
+// texto bruto do paciente). LLM enriquece símbolos + paleta +
+// composição com vocabulário visual mais sofisticado que tabelas
+// hardcoded. ZERO PII vai pra LLM externo. LGPD-safe.
+// Fallback gracioso pra V1 hardcoded se LLM falhar/inválido JSON.
+
+interface LLMEnriched {
+  symbols: string[]
+  palette: string[]
+  composition: string
+  mood_modifier: string
+}
+
+async function enrichWithLLM(
+  emotion: string,
+  styleId: string,
+  intensity: string,
+  domains: string[],
+  seedHex: string,
+): Promise<LLMEnriched | null> {
+  // Variar instrução via seed pra diversidade entre reports do mesmo paciente
+  const variantSeed = parseInt(seedHex.slice(32, 40), 16) % 1000
+
+  const promptText = `You are an art director for a clinical visual signature system. You generate abstract, non-figurative, non-medical symbolism.
+
+Inputs (NO patient identifying info):
+- Emotional state: ${emotion}
+- Intensity: ${intensity}
+- Thematic domains: ${domains.join(', ') || 'none'}
+- Visual style base: ${styleId}
+- Variant seed: ${variantSeed}
+
+Generate JSON with EXACTLY this structure:
+{
+  "symbols": ["symbol1","symbol2","symbol3","symbol4"],
+  "palette": ["color1","color2","color3"],
+  "composition": "single composition phrase",
+  "mood_modifier": "single atmosphere descriptor"
+}
+
+Rules:
+- symbols: 4 ABSTRACT visual nouns (no human, no medical, no faces, no organs, no hospitals)
+- palette: 3 specific color names that evoke the emotional state
+- composition: 1 phrase (e.g., "spiral inward composition", "fragmented mosaic layout")
+- mood_modifier: 1 atmospheric word (e.g., "ethereal", "kinetic", "weighted")
+- Use variant seed to ensure diversity between calls
+- Return ONLY valid JSON, no prose, no markdown fences.`
+
+  try {
+    const url = `https://text.pollinations.ai/${encodeURIComponent(promptText)}?model=openai&json=true`
+    const controller = new AbortController()
+    const timeout = setTimeout(() => controller.abort(), 8000) // 8s timeout
+    const resp = await fetch(url, { signal: controller.signal })
+    clearTimeout(timeout)
+
+    if (!resp.ok) return null
+
+    const text = await resp.text()
+    if (!text || text.length < 20) return null
+
+    // Tenta extrair JSON do response (pode vir com prose ao redor)
+    const jsonMatch = text.match(/\{[\s\S]*\}/)
+    if (!jsonMatch) return null
+
+    const parsed = JSON.parse(jsonMatch[0])
+    if (
+      !Array.isArray(parsed.symbols) || parsed.symbols.length === 0 ||
+      !Array.isArray(parsed.palette) || parsed.palette.length === 0 ||
+      typeof parsed.composition !== 'string' ||
+      typeof parsed.mood_modifier !== 'string'
+    ) {
+      return null
+    }
+
+    return {
+      symbols: parsed.symbols.slice(0, 4).map((s: any) => String(s)),
+      palette: parsed.palette.slice(0, 3).map((s: any) => String(s)),
+      composition: String(parsed.composition).slice(0, 100),
+      mood_modifier: String(parsed.mood_modifier).slice(0, 50),
+    }
+  } catch (_err) {
+    return null
+  }
+}
+
+// ──────────────────────────────────────────────────────────────────
 // HANDLER
 // ──────────────────────────────────────────────────────────────────
 
@@ -338,32 +426,49 @@ Deno.serve(async (req) => {
     const seedHex = await sha256Hex(`${patientId}_${reportId}`)
     const seedNum = parseInt(seedHex.slice(0, 9), 16) % 999999999 // Pollinations aceita seed numérico
 
-    // 8. V1.9.196 — Variação visual modular dentro do estilo base
+    // 8. V1.9.196 — Variantes V1 (FALLBACK se LLM falhar)
     //    Cada slice do seedHex escolhe uma variante (pseudo-random determinístico)
-    //    → mesmo report sempre gera mesma escolha (idempotência)
-    //    → reports diferentes do mesmo paciente+emoção = variações visuais distintas
-
-    // Paleta: variante baseada na emoção (com fallback pra neutral)
     const palettesForEmotion = EMOTION_PALETTES[emotional_sig] || EMOTION_PALETTES.neutral
     const paletteIdx = parseInt(seedHex.slice(8, 16), 16) % palettesForEmotion.length
-    const dynamic_palette = palettesForEmotion[paletteIdx]
+    const fallback_palette = palettesForEmotion[paletteIdx]
 
-    // Símbolos: combina pool da emoção + symbols do estilo, escolhe subset via seed
     const symbolPoolForEmotion = EMOTION_SYMBOLS[emotional_sig] || EMOTION_SYMBOLS.neutral
     const combinedPool = [...new Set([...symbolPoolForEmotion, ...style.symbols, ...emotion_symbols])]
-    // Pseudo-shuffle determinístico: rotação baseada em seed slice
     const rotation = parseInt(seedHex.slice(16, 24), 16) % combinedPool.length
     const rotatedPool = [...combinedPool.slice(rotation), ...combinedPool.slice(0, rotation)]
-    const symbols = rotatedPool.slice(0, 4)
+    const fallback_symbols = rotatedPool.slice(0, 4)
 
-    // Composição: modificador determinístico via seed
     const compositionIdx = parseInt(seedHex.slice(24, 32), 16) % COMPOSITION_MODIFIERS.length
-    const composition = COMPOSITION_MODIFIERS[compositionIdx]
+    const fallback_composition = COMPOSITION_MODIFIERS[compositionIdx]
 
-    // Construir prompt enriquecido
+    // 9. V1.9.198 — Tentar enriquecer via LLM (Pollinations text)
+    //    LGPD-safe: SÓ tokens abstratos vão pro LLM (NUNCA texto bruto)
+    //    Fallback gracioso: se LLM falhar/timeout/JSON inválido, usa V1
+    //    Intensity heurística simples: contagem total de matches divide ranges
+    const totalMatches = (emotion_symbols.length || 0)
+    const intensity = totalMatches >= 4 ? 'high' : totalMatches >= 2 ? 'medium' : 'low'
+    const domains = emotion_symbols // top emoções secundárias como "domínios"
+
+    const llmResult = await enrichWithLLM(
+      emotional_sig,
+      style.id,
+      intensity,
+      domains,
+      seedHex,
+    )
+
+    // Decisão: usar LLM se válido, senão fallback V1
+    const used_llm = llmResult !== null
+    const dynamic_palette = used_llm ? llmResult!.palette : fallback_palette
+    const symbols = used_llm ? llmResult!.symbols : fallback_symbols
+    const composition = used_llm ? llmResult!.composition : fallback_composition
+    const mood_modifier = used_llm ? llmResult!.mood_modifier : ''
+
+    // Construir prompt enriquecido (com mood_modifier se LLM enriqueceu)
     const dynamic_palette_str = dynamic_palette.join(', ')
-    const symbols_str = symbols.map(s => s.replace(/_/g, ' ')).join(', ')
-    const prompt = `${style.base_prompt}, ${composition}, palette of ${dynamic_palette_str}, visual symbols: ${symbols_str}, emotional tone: ${emotional_sig.replace(/_/g, ' ')}, abstract therapeutic symbolism, 512x512 high quality digital art, no human faces, no medical iconography`
+    const symbols_str = symbols.map(s => String(s).replace(/_/g, ' ')).join(', ')
+    const moodPart = mood_modifier ? `${mood_modifier} atmosphere, ` : ''
+    const prompt = `${style.base_prompt}, ${composition}, ${moodPart}palette of ${dynamic_palette_str}, visual symbols: ${symbols_str}, emotional tone: ${emotional_sig.replace(/_/g, ' ')}, abstract therapeutic symbolism, 512x512 high quality digital art, no human faces, no medical iconography`
 
     // 9. Fetch Pollinations.ai
     const imageUrl = buildImageUrl(prompt, seedNum)
@@ -429,14 +534,19 @@ Deno.serve(async (req) => {
       seed: seedHex,
       prompt,
       model: 'pollinations-flux',
-      generation_version: 'v2_modular_palette_2026_05',
+      generation_version: used_llm ? 'v3_llm_enriched_pollinations_2026_05' : 'v2_modular_palette_2026_05_fallback',
       narrative_window: {},
       metadata: {
         provider: 'pollinations.ai',
         style_label: style.label,
-        composition_modifier: composition,  // V1.9.196 — rastreabilidade composição
-        palette_variant_idx: paletteIdx,
-        symbol_rotation: rotation,
+        composition_modifier: composition,
+        palette_variant_idx: used_llm ? null : paletteIdx,
+        symbol_rotation: used_llm ? null : rotation,
+        // V1.9.198 — rastreabilidade LLM enrichment
+        llm_used: used_llm,
+        llm_model: used_llm ? 'pollinations-text-openai' : null,
+        llm_intensity: intensity,
+        mood_modifier: mood_modifier || null,
         generated_at: new Date().toISOString(),
       },
     }
