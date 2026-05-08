@@ -92,6 +92,85 @@ const EMOTION_KEYWORDS = {
   overload: ['acelerado', 'rápido demais', 'mente', 'pensamento'],
 }
 
+// V1.9.196 — Paletas modulares por emoção (3-4 variantes cada)
+// Pseudo-random determinístico via slice do seed
+// Mesma chamada → mesma escolha. Mesma emoção em reports diferentes
+// = paletas diferentes (variação visual sem perder reprodutibilidade).
+const EMOTION_PALETTES: Record<string, string[][]> = {
+  exhaustion: [
+    ['ash gray', 'dim slate', 'faded teal'],
+    ['cold steel', 'muted indigo', 'pale grey'],
+    ['twilight gray', 'deep ocean', 'subdued cyan'],
+    ['weathered bronze', 'fog blue', 'silver mist'],
+  ],
+  pain: [
+    ['crimson', 'deep purple', 'ember orange'],
+    ['blood red', 'volcanic black', 'burnt sienna'],
+    ['intense magenta', 'midnight violet', 'molten gold'],
+  ],
+  anxiety: [
+    ['acid green', 'electric blue', 'fluorescent white'],
+    ['sharp lime', 'cyber yellow', 'glitch teal'],
+    ['unstable cyan', 'fragmented orange', 'restless violet'],
+  ],
+  sadness: [
+    ['indigo dusk', 'soft lavender', 'muted blue'],
+    ['rain gray', 'distant silver', 'pale rose'],
+    ['twilight purple', 'cool mauve', 'whispered cyan'],
+  ],
+  insomnia: [
+    ['midnight blue', 'silver moonlight', 'translucent white'],
+    ['nocturnal violet', 'pale lunar', 'shadow indigo'],
+    ['deep navy', 'ghostly cyan', 'starlit silver'],
+  ],
+  cognitive_fog: [
+    ['blurred gray', 'soft beige', 'faded pearl'],
+    ['watercolor mist', 'diffuse cream', 'translucent peach'],
+    ['hazy lilac', 'morning fog', 'subdued cyan'],
+  ],
+  reconnection: [
+    ['warm gold', 'amber', 'soft peach'],
+    ['sunrise coral', 'honey', 'champagne'],
+    ['rose gold', 'orange ember', 'warm cream'],
+    ['terracotta', 'turmeric', 'gentle ivory'],
+  ],
+  overload: [
+    ['neon magenta', 'electric violet', 'searing white'],
+    ['fractured cyan', 'plasma pink', 'shock yellow'],
+    ['intense orange', 'vivid teal', 'kinetic silver'],
+  ],
+  neutral: [
+    ['soft sage', 'warm taupe', 'muted ivory'],
+    ['gentle mint', 'sand', 'cloud white'],
+    ['subdued teal', 'cream', 'pale gold'],
+  ],
+}
+
+// Símbolos visuais por emoção (pool — escolhe 2-3 via seed slice)
+const EMOTION_SYMBOLS: Record<string, string[]> = {
+  exhaustion: ['dim_horizon', 'fading_light', 'gravitational_pull', 'sinking_threads', 'slowed_orbit', 'weighted_atmosphere'],
+  pain: ['fractured_glass', 'stormy_clouds', 'restless_currents', 'jagged_pulses', 'pressure_waves', 'broken_lattice'],
+  anxiety: ['scattered_particles', 'uncertain_geometries', 'rapid_oscillations', 'fragmented_mirrors', 'unstable_orbits'],
+  sadness: ['distant_warmth', 'falling_leaves', 'vanishing_paths', 'silent_ocean', 'dimmed_stars', 'still_water'],
+  insomnia: ['unblinking_eye', 'looping_mandala', 'watching_moon', 'restless_constellation', 'sleepless_corridor'],
+  cognitive_fog: ['blurred_outlines', 'soft_obscurity', 'indistinct_forms', 'vanishing_words', 'dissolving_shapes'],
+  reconnection: ['bridges', 'warm_threads', 'returning_paths', 'reaching_hands_metaphor', 'opening_doors', 'embracing_spirals'],
+  overload: ['swirling_vortex', 'electric_storm', 'collision_waves', 'rapid_nebula', 'fractal_explosion', 'overlapping_layers'],
+  neutral: ['steady_horizon', 'balanced_geometry', 'calm_sphere', 'centered_mandala'],
+}
+
+// Modificadores de composição (rando determinístico via seed)
+const COMPOSITION_MODIFIERS = [
+  'centered radial composition',
+  'asymmetric flowing composition',
+  'vertical ascending composition',
+  'spiral inward composition',
+  'horizontal stratified layers',
+  'diagonal dynamic flow',
+  'fragmented mosaic composition',
+  'concentric expanding rings',
+]
+
 function extractEmotionalSignature(reportContent: any): {
   emotional_sig: string
   symbols: string[]
@@ -254,14 +333,37 @@ Deno.serve(async (req) => {
     const styleIdx = parseInt(patientHashHex.slice(0, 8), 16) % STYLES.length
     const style = STYLES[styleIdx]
 
-    // 7. Construir prompt artístico
-    const symbols = [...new Set([...style.symbols, ...emotion_symbols])].slice(0, 6)
-    const palette_str = style.palette.join(', ')
-    const prompt = `${style.base_prompt}, palette of ${palette_str}, emotional signature: ${emotional_sig}, abstract therapeutic symbolism, 512x512 high quality digital art`
-
-    // 8. Seed determinístico = sha256(patient_id || report_id)
+    // 7. Seed determinístico = sha256(patient_id || report_id)
+    //    Usado pra gerar imagem FLUX E pra rando determinístico de variantes
     const seedHex = await sha256Hex(`${patientId}_${reportId}`)
     const seedNum = parseInt(seedHex.slice(0, 9), 16) % 999999999 // Pollinations aceita seed numérico
+
+    // 8. V1.9.196 — Variação visual modular dentro do estilo base
+    //    Cada slice do seedHex escolhe uma variante (pseudo-random determinístico)
+    //    → mesmo report sempre gera mesma escolha (idempotência)
+    //    → reports diferentes do mesmo paciente+emoção = variações visuais distintas
+
+    // Paleta: variante baseada na emoção (com fallback pra neutral)
+    const palettesForEmotion = EMOTION_PALETTES[emotional_sig] || EMOTION_PALETTES.neutral
+    const paletteIdx = parseInt(seedHex.slice(8, 16), 16) % palettesForEmotion.length
+    const dynamic_palette = palettesForEmotion[paletteIdx]
+
+    // Símbolos: combina pool da emoção + symbols do estilo, escolhe subset via seed
+    const symbolPoolForEmotion = EMOTION_SYMBOLS[emotional_sig] || EMOTION_SYMBOLS.neutral
+    const combinedPool = [...new Set([...symbolPoolForEmotion, ...style.symbols, ...emotion_symbols])]
+    // Pseudo-shuffle determinístico: rotação baseada em seed slice
+    const rotation = parseInt(seedHex.slice(16, 24), 16) % combinedPool.length
+    const rotatedPool = [...combinedPool.slice(rotation), ...combinedPool.slice(0, rotation)]
+    const symbols = rotatedPool.slice(0, 4)
+
+    // Composição: modificador determinístico via seed
+    const compositionIdx = parseInt(seedHex.slice(24, 32), 16) % COMPOSITION_MODIFIERS.length
+    const composition = COMPOSITION_MODIFIERS[compositionIdx]
+
+    // Construir prompt enriquecido
+    const dynamic_palette_str = dynamic_palette.join(', ')
+    const symbols_str = symbols.map(s => s.replace(/_/g, ' ')).join(', ')
+    const prompt = `${style.base_prompt}, ${composition}, palette of ${dynamic_palette_str}, visual symbols: ${symbols_str}, emotional tone: ${emotional_sig.replace(/_/g, ' ')}, abstract therapeutic symbolism, 512x512 high quality digital art, no human faces, no medical iconography`
 
     // 9. Fetch Pollinations.ai
     const imageUrl = buildImageUrl(prompt, seedNum)
@@ -322,16 +424,19 @@ Deno.serve(async (req) => {
       signature_hash: report.signature_hash || null,
       style: style.id,
       emotional_sig,
-      palette: style.palette,
-      symbols,
+      palette: dynamic_palette,           // V1.9.196 — paleta dinâmica por emoção
+      symbols,                             // V1.9.196 — subset rotacionado via seed
       seed: seedHex,
       prompt,
       model: 'pollinations-flux',
-      generation_version: 'v1_pollinations_2026_05',
+      generation_version: 'v2_modular_palette_2026_05',
       narrative_window: {},
       metadata: {
         provider: 'pollinations.ai',
         style_label: style.label,
+        composition_modifier: composition,  // V1.9.196 — rastreabilidade composição
+        palette_variant_idx: paletteIdx,
+        symbol_rotation: rotation,
         generated_at: new Date().toISOString(),
       },
     }
