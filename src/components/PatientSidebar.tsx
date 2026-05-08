@@ -19,7 +19,8 @@ import {
   ChevronRight,
   BarChart3,
   Activity,
-  Pill
+  Pill,
+  Sparkles
 } from 'lucide-react'
 import {
   backgroundGradient,
@@ -176,6 +177,17 @@ const PatientSidebar: React.FC<PatientSidebarProps> = ({
       badges: [
         { icon: Activity, label: 'Evolução' }
       ]
+    },
+    {
+      id: 'galeria',
+      title: 'Galeria',
+      subtitle: 'Assinaturas visuais',
+      description: 'Cada relatório clínico finalizado pode gerar uma assinatura visual única, ancorada criptograficamente ao seu histórico via ICP-Brasil. Sem blockchain externa.',
+      icon: Sparkles,
+      onClick: () => {
+        onCardClick('galeria')
+      },
+      accent: 'purple'
     },
     {
       id: 'relatorio-clinico',

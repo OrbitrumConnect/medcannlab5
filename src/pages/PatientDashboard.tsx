@@ -28,6 +28,7 @@ import PendingRatingsBanner from '../components/PendingRatingsBanner'
 import PatientAnalytics from '../components/PatientAnalytics'
 import PatientHeaderActions from '../components/PatientHeaderActions'
 import PatientPrescriptions from '../components/PatientPrescriptions'
+import PatientNFTGallery from '../components/PatientNFTGallery'
 
 import { PatientStats } from '../components/dashboard/patient/PatientStats'
 import { PatientAppointments } from '../components/dashboard/patient/PatientAppointments'
@@ -240,6 +241,13 @@ const PatientDashboard: React.FC = () => {
             sendInitialMessage('Gostaria de solicitar uma nova receita ao meu médico. Pode me ajudar?')
             openNoaChat()
           }}
+        />
+      )}
+
+      {/* V1.9.193 — Galeria de Assinaturas Visuais (NFT lógico clínico) */}
+      {activeTab === 'galeria' && (
+        <PatientNFTGallery
+          onCreateAssessment={handleStartAssessment}
         />
       )}
 
