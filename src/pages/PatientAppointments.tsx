@@ -250,14 +250,37 @@ const PatientAppointments: React.FC = () => {
           if (isRicardo) {
             const fallback = FALLBACK_PROFESSIONALS.find(f => f.id === 'ricardo-valenca')
             if (fallback) {
-              // V1.9.111-C: prefere specialty do banco se preenchida
-              return { ...fallback, id: prof.id, specialty: prof.specialty || fallback.specialty }
+              // V1.9.x: prefere specialty + fee + years do banco se preenchidos.
+              // Bug pré-fix: branch só pegava specialty, ignorava fee/years que
+              // Ricardo atualizou em users.consultation_fee_default + years_experience.
+              return {
+                ...fallback,
+                id: prof.id,
+                specialty: prof.specialty || fallback.specialty,
+                consultPriceBRL: prof.consultation_fee_default != null
+                  ? Number(prof.consultation_fee_default)
+                  : fallback.consultPriceBRL,
+                experienceYears: prof.years_experience != null
+                  ? Number(prof.years_experience)
+                  : fallback.experienceYears,
+              }
             }
           }
           if (isEduardo) {
             const fallback = FALLBACK_PROFESSIONALS.find(f => f.id === 'eduardo-faveret')
             if (fallback) {
-              return { ...fallback, id: prof.id, specialty: prof.specialty || fallback.specialty }
+              // V1.9.x: mesma correção — prefere fee + years do banco
+              return {
+                ...fallback,
+                id: prof.id,
+                specialty: prof.specialty || fallback.specialty,
+                consultPriceBRL: prof.consultation_fee_default != null
+                  ? Number(prof.consultation_fee_default)
+                  : fallback.consultPriceBRL,
+                experienceYears: prof.years_experience != null
+                  ? Number(prof.years_experience)
+                  : fallback.experienceYears,
+              }
             }
           }
 
