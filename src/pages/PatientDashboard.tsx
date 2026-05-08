@@ -76,7 +76,7 @@ const PatientDashboard: React.FC = () => {
           openNoaChat()
           return
         }
-        const validTabs: PatientTab[] = ['analytics', 'meus-agendamentos', 'plano', 'reportar-problema', 'minhas-prescricoes']
+        const validTabs: PatientTab[] = ['analytics', 'meus-agendamentos', 'plano', 'reportar-problema', 'minhas-prescricoes', 'galeria']
         if (validTabs.includes(section as PatientTab)) {
           setActiveTab(section as PatientTab)
         }

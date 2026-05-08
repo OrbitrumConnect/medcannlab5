@@ -31,7 +31,8 @@ import {
   Terminal as TerminalIcon,
   LogOut,
   Shield,
-  Pill
+  Pill,
+  Sparkles
 } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
 import { useToast } from '../contexts/ToastContext'
@@ -213,6 +214,7 @@ const Sidebar: React.FC<SidebarProps> = ({
       { name: 'Agendamentos', href: '/app/clinica/paciente/agendamentos', icon: Clock, section: 'quick' },
       { name: 'Chat com Meu Médico', href: '/app/clinica/paciente/chat-profissional', icon: Users, section: 'quick' },
       { name: 'Relatório Clínico', href: '/app/clinica/paciente/dashboard?section=relatorio', icon: Shield, section: 'main' },
+      { name: 'Galeria', href: '/app/clinica/paciente/dashboard?section=galeria', icon: Sparkles, section: 'main' },
       { name: 'Gestão Financeira', href: '/app/patient-financial', icon: BanknoteIcon, section: 'main' },
     ]
 
