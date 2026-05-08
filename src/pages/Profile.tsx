@@ -248,10 +248,14 @@ const Profile: React.FC = () => {
       // V1.9.146: removido updated_at — coluna não existe em profiles (legacy schema).
       // profiles tem só: id, user_id, name, email, type, avatar_url, created_at, slug,
       // location, phone, bio. UPDATE em campo inexistente gera PGRST204.
+      // V1.9.x FIX 07/05: adicionado user_id pra evitar profiles órfãs
+      // (Ricardo gerou row com id=user.id mas user_id=NULL → tags/languages
+      //  UPDATE com .eq('user_id', user.id) falhava silenciosamente).
       const { error } = await supabase
         .from('profiles')
         .upsert({
           id: user.id,
+          user_id: user.id,  // ← FK obrigatória pro JOIN funcionar
           name: formData.name,
           phone: formData.phone,
           location: composedLocation,
