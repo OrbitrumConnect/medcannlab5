@@ -7,7 +7,7 @@ export const PROFESSIONALS = {
     avatar: 'RV',
     online: true,
     consultorio: 'Consultório Escola Ricardo Valença',
-    email: 'ricardo@medcannlab.com',
+    email: 'rrvalenca@gmail.com',
     crm: 'CRM-RV'
   },
   EDUARDO_FAVERET: {
@@ -17,7 +17,7 @@ export const PROFESSIONALS = {
     avatar: 'EF',
     online: true,
     consultorio: 'Consultório Escola Eduardo Faveret',
-    email: 'eduardo@medcannlab.com',
+    email: 'eduardoscfaveret@gmail.com',
     crm: 'CRM-EF'
   }
 } as const

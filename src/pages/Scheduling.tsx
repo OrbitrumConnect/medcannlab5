@@ -77,7 +77,7 @@ const Scheduling: React.FC = () => {
           .from('users')
           .select('id, email, name, type')
           .in('type', ['profissional', 'admin'])
-          .eq('email', 'eduardo.faveret@medcannlab.com')
+          .eq('email', 'eduardoscfaveret@gmail.com')
           .limit(1)
 
         const professionalsList: Professional[] = []
@@ -156,7 +156,7 @@ const Scheduling: React.FC = () => {
           const { data: profData } = await supabase
             .from('users')
             .select('id')
-            .eq('email', selectedProfessional === 'ricardo-valenca' ? 'rrvalenca@gmail.com' : 'eduardo.faveret@medcannlab.com')
+            .eq('email', selectedProfessional === 'ricardo-valenca' ? 'rrvalenca@gmail.com' : 'eduardoscfaveret@gmail.com')
             .maybeSingle()
 
           if (profData?.id) {
@@ -340,7 +340,7 @@ const Scheduling: React.FC = () => {
       let professionalId = selectedProfessional
       if (!selectedProfessional.includes('-') || selectedProfessional.length < 30) {
         // É um ID hardcoded, buscar o real
-        const emailToSearch = selectedProfessional === 'ricardo-valenca' ? 'rrvalenca@gmail.com' : 'eduardo.faveret@medcannlab.com'
+        const emailToSearch = selectedProfessional === 'ricardo-valenca' ? 'rrvalenca@gmail.com' : 'eduardoscfaveret@gmail.com'
         console.log('🔍 Buscando profissional com email:', emailToSearch)
 
         const { data: profData, error: profError } = await supabase

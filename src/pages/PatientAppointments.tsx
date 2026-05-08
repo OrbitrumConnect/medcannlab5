@@ -686,9 +686,9 @@ const PatientAppointments: React.FC = () => {
   }
 
   const specialtyProfessionalEmailMap: Record<string, string> = {
-    Neurologia: 'eduardo.faveret@medcannlab.com',
-    Nefrologia: 'ricardo.valenca@medcannlab.com',
-    Homeopatia: 'ricardo.valenca@medcannlab.com'
+    Neurologia: 'eduardoscfaveret@gmail.com',
+    Nefrologia: 'rrvalenca@gmail.com',
+    Homeopatia: 'rrvalenca@gmail.com'
   }
 
   const rooms = useMemo(() => {

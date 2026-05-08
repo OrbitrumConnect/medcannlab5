@@ -117,7 +117,7 @@ async function loadDoctorOptions(): Promise<DoctorOption[]> {
       .from('users')
       .select('id, name, email, type')
       .in('type', ['professional', 'profissional'])
-      .in('email', ['rrvalenca@gmail.com', 'eduardo.faveret@medcannlab.com'])
+      .in('email', ['rrvalenca@gmail.com', 'eduardoscfaveret@gmail.com'])
 
     const options: DoctorOption[] = []
 
@@ -130,7 +130,7 @@ async function loadDoctorOptions(): Promise<DoctorOption[]> {
       })
     }
 
-    const eduardo = docs?.find((d) => d.email === 'eduardo.faveret@medcannlab.com')
+    const eduardo = docs?.find((d) => d.email === 'eduardoscfaveret@gmail.com')
     if (eduardo) {
       options.push({
         id: eduardo.id,
