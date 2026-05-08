@@ -159,6 +159,48 @@ const PatientDashboard: React.FC = () => {
             onStartAssessment={handleStartAssessment}
           />
 
+          {/* V1.9.x — Linha humana de continuidade do cuidado (sem score técnico).
+              Fecha emocionalmente o produto: paciente sente acompanhamento ativo.
+              Mensagem dinâmica baseada em reports.length + idade do último report.
+              Princípio GPT 08/05: NÃO traduzir KPIs técnicos pra paciente
+              (regulatório-safe, não-gamificação de saúde). */}
+          {(() => {
+            const lastReport = reports?.[0] as any
+            const daysSinceLast = lastReport?.generated_at
+              ? Math.floor((Date.now() - new Date(lastReport.generated_at).getTime()) / (1000 * 60 * 60 * 24))
+              : null
+            const totalReports = reports?.length || 0
+            let icon = '🌱'
+            let message = 'Sua jornada clínica está pronta para começar.'
+            let cta = 'Inicie sua primeira avaliação para que a equipe clínica possa acompanhar você.'
+            if (totalReports > 0 && daysSinceLast !== null) {
+              if (daysSinceLast <= 60) {
+                icon = '🟢'
+                message = 'Seu acompanhamento clínico está ativo e atualizado.'
+                cta = `Última avaliação há ${daysSinceLast} ${daysSinceLast === 1 ? 'dia' : 'dias'}. Equipe clínica está ciente do seu histórico.`
+              } else if (daysSinceLast <= 180) {
+                icon = '🟡'
+                message = 'Seu histórico vem sendo mantido pela equipe clínica.'
+                cta = `Última avaliação há ${Math.floor(daysSinceLast / 30)} ${Math.floor(daysSinceLast / 30) === 1 ? 'mês' : 'meses'}. Considere agendar uma reavaliação para manter o cuidado contínuo.`
+              } else {
+                icon = '🟠'
+                message = 'Bom momento para retomar seu acompanhamento clínico.'
+                cta = `Última avaliação há ${Math.floor(daysSinceLast / 30)} meses. Uma nova consulta ajuda a equipe a entender como você está agora.`
+              }
+            }
+            return (
+              <div className="rounded-2xl border border-emerald-500/15 bg-gradient-to-br from-emerald-500/5 via-slate-900/30 to-transparent p-4 md:p-5">
+                <div className="flex items-start gap-3">
+                  <div className="text-2xl shrink-0" aria-hidden="true">{icon}</div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm md:text-base font-medium text-white leading-snug">{message}</p>
+                    <p className="text-xs md:text-sm text-slate-400 mt-1 leading-relaxed">{cta}</p>
+                  </div>
+                </div>
+              </div>
+            )
+          })()}
+
           <PatientStats
             appointments={appointments}
             patientPrescriptions={patientPrescriptions}

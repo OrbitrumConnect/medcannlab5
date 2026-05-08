@@ -971,9 +971,12 @@ const ProfessionalMyDashboard: React.FC = () => {
                         <span className="text-slate-400">AECs:</span>{' '}
                         <span className="text-white font-semibold">{totalAecs}</span>
                         {lastScore !== null && (
-                          <span className="ml-2">
-                            <span className="text-slate-400">Último score:</span>{' '}
-                            <span className="text-emerald-300 font-semibold">{lastScore}/100</span>
+                          <span
+                            className="ml-2"
+                            title="Indicador da qualidade estrutural da entrevista clínica (completude, coerência e organização narrativa). NÃO representa gravidade clínica nem estado de saúde do paciente."
+                          >
+                            <span className="text-slate-400">Profundidade da escuta:</span>{' '}
+                            <span className="text-emerald-300 font-semibold cursor-help underline decoration-dotted decoration-emerald-500/40 underline-offset-2">{lastScore}/100</span>
                           </span>
                         )}
                       </p>
