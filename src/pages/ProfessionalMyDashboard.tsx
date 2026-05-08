@@ -677,8 +677,15 @@ const ProfessionalMyDashboard: React.FC = () => {
                 <h1 className="text-base font-semibold text-white tracking-tight">Meu Dashboard</h1>
                 <span className="text-slate-500">·</span>
                 <span className="text-sm text-slate-400 truncate">{user?.name || 'Profissional'}</span>
-                <Link to="/app/profile" className="text-[11px] text-emerald-400 hover:text-emerald-300 flex items-center gap-1 shrink-0">
-                  <Pencil className="w-3 h-3" /> Editar perfil
+                {/* V1.9.x: mini-bar soft pra "Editar perfil" — destaque sutil mas perceptível.
+                    bg+border emerald translucentes, hover scale leve. Substitui link inline puro. */}
+                <Link
+                  to="/app/profile"
+                  className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-emerald-500/10 hover:bg-emerald-500/15 border border-emerald-500/20 hover:border-emerald-500/40 text-[11px] font-medium text-emerald-300 hover:text-emerald-200 transition-all hover:scale-[1.02] shrink-0"
+                  title="Editar perfil profissional"
+                >
+                  <Pencil className="w-3 h-3" />
+                  <span>Editar perfil</span>
                 </Link>
               </div>
               <p className="text-xs text-slate-500 truncate mt-0.5">{user?.email}</p>
