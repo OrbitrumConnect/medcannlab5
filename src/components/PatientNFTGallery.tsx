@@ -14,6 +14,7 @@
  * confiança visível · empty state elegante.
  */
 import { useEffect, useState, useMemo } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
 import {
@@ -61,6 +62,7 @@ interface PatientNFTGalleryProps {
 
 export default function PatientNFTGallery({ onCreateAssessment }: PatientNFTGalleryProps) {
     const { user } = useAuth()
+    const navigate = useNavigate()
     const [nfts, setNfts] = useState<PatientNFT[]>([])
     const [totalCount, setTotalCount] = useState(0)
     const [page, setPage] = useState(0)
@@ -281,66 +283,69 @@ export default function PatientNFTGallery({ onCreateAssessment }: PatientNFTGall
                 </>
             )}
 
-            {/* MODAL EXPANDED */}
+            {/* MODAL EXPANDED — V1.9.197: layout 2-colunas (imagem | info), sem scroll em desktop ≥md */}
             {selectedNFT && (
                 <div
                     className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm"
                     onClick={() => setSelectedNFT(null)}
                 >
                     <div
-                        className="w-full max-w-3xl bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl overflow-hidden max-h-[90vh] flex flex-col animate-in fade-in zoom-in-95 duration-200"
+                        className="w-full max-w-5xl bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl overflow-hidden max-h-[90vh] flex flex-col animate-in fade-in zoom-in-95 duration-200"
                         onClick={e => e.stopPropagation()}
                     >
                         {/* Modal header */}
-                        <div className="px-5 py-4 border-b border-slate-700 flex items-center justify-between bg-slate-800/50">
-                            <div>
-                                <h3 className="text-base font-bold text-white">Assinatura Visual</h3>
-                                <p className="text-xs text-slate-400">
-                                    {formatDate(selectedNFT.created_at)}
-                                </p>
+                        <div className="px-5 py-3 border-b border-slate-700 flex items-center justify-between bg-slate-800/50 flex-shrink-0">
+                            <div className="flex items-center gap-2">
+                                <Sparkles className="w-4 h-4 text-emerald-400" />
+                                <div>
+                                    <h3 className="text-sm font-bold text-white">Assinatura Visual</h3>
+                                    <p className="text-[11px] text-slate-400">
+                                        {formatDate(selectedNFT.created_at)}
+                                    </p>
+                                </div>
                             </div>
                             <button
                                 onClick={() => setSelectedNFT(null)}
-                                className="p-2 hover:bg-slate-700 rounded-full text-slate-400 hover:text-white transition-colors"
+                                className="p-1.5 hover:bg-slate-700 rounded-full text-slate-400 hover:text-white transition-colors"
                             >
-                                <X className="w-5 h-5" />
+                                <X className="w-4 h-4" />
                             </button>
                         </div>
 
-                        {/* Modal scroll content */}
-                        <div className="flex-1 overflow-y-auto custom-scrollbar">
-                            {/* Imagem grande */}
-                            <div className="aspect-square w-full bg-gradient-to-br from-slate-800 to-slate-900 flex items-center justify-center">
+                        {/* Modal body — 2 cols em desktop, 1 col mobile */}
+                        <div className="flex-1 grid grid-cols-1 md:grid-cols-2 overflow-y-auto md:overflow-hidden custom-scrollbar">
+                            {/* IMAGEM (col esquerda em desktop, topo em mobile) */}
+                            <div className="bg-gradient-to-br from-slate-800 to-slate-900 flex items-center justify-center p-4 md:p-6 md:overflow-hidden">
                                 {selectedNFT.image_url ? (
                                     <img
                                         src={selectedNFT.image_url}
                                         alt="Assinatura visual"
-                                        className="max-w-full max-h-full object-contain"
+                                        className="w-full max-w-md object-contain rounded-lg shadow-2xl"
                                     />
                                 ) : (
                                     <ImageIcon className="w-16 h-16 text-slate-600" />
                                 )}
                             </div>
 
-                            {/* Info */}
-                            <div className="p-5 space-y-4">
+                            {/* INFO (col direita em desktop, abaixo em mobile) */}
+                            <div className="p-4 md:p-5 md:overflow-y-auto custom-scrollbar space-y-3">
                                 {/* Estilo + emoção */}
-                                <div className="grid grid-cols-2 gap-3">
-                                    <div className="flex items-start gap-2">
-                                        <Palette className="w-4 h-4 text-emerald-400 flex-shrink-0 mt-0.5" />
-                                        <div>
-                                            <div className="text-[10px] text-slate-500 uppercase tracking-wide">Estilo</div>
-                                            <div className="text-sm text-white font-medium">
+                                <div className="grid grid-cols-2 gap-2.5">
+                                    <div className="flex items-start gap-1.5">
+                                        <Palette className="w-3.5 h-3.5 text-emerald-400 flex-shrink-0 mt-0.5" />
+                                        <div className="min-w-0">
+                                            <div className="text-[9px] text-slate-500 uppercase tracking-wide">Estilo</div>
+                                            <div className="text-xs text-white font-medium truncate">
                                                 {(STYLE_LABELS[selectedNFT.style] || STYLE_LABELS[selectedNFT.generation_version])?.label || selectedNFT.style}
                                             </div>
                                         </div>
                                     </div>
                                     {selectedNFT.emotional_sig && (
-                                        <div className="flex items-start gap-2">
-                                            <Sparkles className="w-4 h-4 text-purple-400 flex-shrink-0 mt-0.5" />
-                                            <div>
-                                                <div className="text-[10px] text-slate-500 uppercase tracking-wide">Emoção</div>
-                                                <div className="text-sm text-white font-medium capitalize">
+                                        <div className="flex items-start gap-1.5">
+                                            <Sparkles className="w-3.5 h-3.5 text-purple-400 flex-shrink-0 mt-0.5" />
+                                            <div className="min-w-0">
+                                                <div className="text-[9px] text-slate-500 uppercase tracking-wide">Emoção</div>
+                                                <div className="text-xs text-white font-medium capitalize truncate">
                                                     {selectedNFT.emotional_sig}
                                                 </div>
                                             </div>
@@ -351,10 +356,10 @@ export default function PatientNFTGallery({ onCreateAssessment }: PatientNFTGall
                                 {/* Paleta */}
                                 {selectedNFT.palette && selectedNFT.palette.length > 0 && (
                                     <div>
-                                        <div className="text-[10px] text-slate-500 uppercase tracking-wide mb-1.5">Paleta</div>
-                                        <div className="flex flex-wrap gap-1.5">
+                                        <div className="text-[9px] text-slate-500 uppercase tracking-wide mb-1">Paleta</div>
+                                        <div className="flex flex-wrap gap-1">
                                             {selectedNFT.palette.map((color, i) => (
-                                                <span key={i} className="px-2 py-0.5 rounded-md bg-slate-800 border border-slate-700 text-xs text-slate-300 capitalize">
+                                                <span key={i} className="px-1.5 py-0.5 rounded bg-slate-800 border border-slate-700 text-[10px] text-slate-300 capitalize">
                                                     {color}
                                                 </span>
                                             ))}
@@ -365,10 +370,10 @@ export default function PatientNFTGallery({ onCreateAssessment }: PatientNFTGall
                                 {/* Símbolos */}
                                 {selectedNFT.symbols && selectedNFT.symbols.length > 0 && (
                                     <div>
-                                        <div className="text-[10px] text-slate-500 uppercase tracking-wide mb-1.5">Símbolos</div>
-                                        <div className="flex flex-wrap gap-1.5">
+                                        <div className="text-[9px] text-slate-500 uppercase tracking-wide mb-1">Símbolos</div>
+                                        <div className="flex flex-wrap gap-1">
                                             {selectedNFT.symbols.map((sym, i) => (
-                                                <span key={i} className="px-2 py-0.5 rounded-md bg-purple-500/10 border border-purple-500/20 text-xs text-purple-300">
+                                                <span key={i} className="px-1.5 py-0.5 rounded bg-purple-500/10 border border-purple-500/20 text-[10px] text-purple-300">
                                                     {sym.replace(/_/g, ' ')}
                                                 </span>
                                             ))}
@@ -377,42 +382,42 @@ export default function PatientNFTGallery({ onCreateAssessment }: PatientNFTGall
                                 )}
 
                                 {/* Cadeia de confiança */}
-                                <div className="bg-emerald-500/5 border border-emerald-500/20 rounded-lg p-3 space-y-2">
-                                    <div className="flex items-center gap-2 text-emerald-300 text-xs font-semibold">
-                                        <Shield className="w-3.5 h-3.5" />
+                                <div className="bg-emerald-500/5 border border-emerald-500/20 rounded-lg p-2.5 space-y-1.5">
+                                    <div className="flex items-center gap-1.5 text-emerald-300 text-[11px] font-semibold">
+                                        <Shield className="w-3 h-3" />
                                         Cadeia de Confiança
                                     </div>
-                                    <div className="space-y-1.5 text-xs">
-                                        <div className="flex items-start gap-2">
-                                            <Hash className="w-3.5 h-3.5 text-slate-500 flex-shrink-0 mt-0.5" />
+                                    <div className="space-y-1 text-[10px]">
+                                        <div className="flex items-start gap-1.5">
+                                            <Hash className="w-3 h-3 text-slate-500 flex-shrink-0 mt-0.5" />
                                             <div className="min-w-0 flex-1">
-                                                <span className="text-slate-500">Hash imagem:</span>{' '}
-                                                <code className="text-slate-300 font-mono text-[10px] break-all">
-                                                    {formatHash(selectedNFT.image_hash, 16)}
+                                                <span className="text-slate-500">Hash:</span>{' '}
+                                                <code className="text-slate-300 font-mono text-[9px] break-all">
+                                                    {formatHash(selectedNFT.image_hash, 12)}
                                                 </code>
                                             </div>
                                         </div>
                                         {selectedNFT.signature_hash && (
-                                            <div className="flex items-start gap-2">
-                                                <FileCheck className="w-3.5 h-3.5 text-emerald-400 flex-shrink-0 mt-0.5" />
+                                            <div className="flex items-start gap-1.5">
+                                                <FileCheck className="w-3 h-3 text-emerald-400 flex-shrink-0 mt-0.5" />
                                                 <div className="min-w-0 flex-1">
-                                                    <span className="text-slate-500">Validado via ICP-Brasil:</span>{' '}
-                                                    <code className="text-emerald-300 font-mono text-[10px] break-all">
-                                                        {formatHash(selectedNFT.signature_hash, 16)}
+                                                    <span className="text-slate-500">ICP-Brasil:</span>{' '}
+                                                    <code className="text-emerald-300 font-mono text-[9px] break-all">
+                                                        {formatHash(selectedNFT.signature_hash, 12)}
                                                     </code>
                                                 </div>
                                             </div>
                                         )}
-                                        <div className="flex items-start gap-2">
-                                            <Calendar className="w-3.5 h-3.5 text-slate-500 flex-shrink-0 mt-0.5" />
+                                        <div className="flex items-start gap-1.5">
+                                            <Calendar className="w-3 h-3 text-slate-500 flex-shrink-0 mt-0.5" />
                                             <div className="min-w-0 flex-1">
-                                                <span className="text-slate-500">Criado em:</span>{' '}
+                                                <span className="text-slate-500">Criado:</span>{' '}
                                                 <span className="text-slate-300">
-                                                    {new Date(selectedNFT.created_at).toLocaleString('pt-BR')}
+                                                    {new Date(selectedNFT.created_at).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit' })}
                                                 </span>
                                             </div>
                                         </div>
-                                        <div className="text-[10px] text-slate-500 italic pt-1">
+                                        <div className="text-[9px] text-slate-500 italic pt-0.5">
                                             Soulbound · não-transferível · LGPD-compliant
                                         </div>
                                     </div>
@@ -420,9 +425,9 @@ export default function PatientNFTGallery({ onCreateAssessment }: PatientNFTGall
 
                                 {/* Janela peri-event (se existe) */}
                                 {selectedNFT.narrative_window && Object.keys(selectedNFT.narrative_window).length > 0 && (
-                                    <div className="bg-cyan-500/5 border border-cyan-500/20 rounded-lg p-3">
-                                        <div className="text-[10px] text-cyan-300 uppercase tracking-wide mb-1.5 font-semibold">Janela Peri-Event</div>
-                                        <div className="text-xs text-slate-300 font-mono">
+                                    <div className="bg-cyan-500/5 border border-cyan-500/20 rounded-lg p-2.5">
+                                        <div className="text-[9px] text-cyan-300 uppercase tracking-wide mb-1 font-semibold">Janela Peri-Event</div>
+                                        <div className="text-[10px] text-slate-300 font-mono">
                                             {selectedNFT.narrative_window.t0_event && (
                                                 <div>Evento: {selectedNFT.narrative_window.t0_event.replace(/_/g, ' ')}</div>
                                             )}
@@ -436,24 +441,28 @@ export default function PatientNFTGallery({ onCreateAssessment }: PatientNFTGall
                         </div>
 
                         {/* Modal footer actions */}
-                        <div className="px-5 py-3 border-t border-slate-700 bg-slate-800/30 flex items-center justify-end gap-2">
+                        <div className="px-4 py-2.5 border-t border-slate-700 bg-slate-800/30 flex items-center justify-end gap-2 flex-shrink-0">
                             <button
                                 onClick={() => setSelectedNFT(null)}
-                                className="px-3 py-1.5 rounded-lg text-sm text-slate-400 hover:text-white transition-colors"
+                                className="px-2.5 py-1 rounded-lg text-xs text-slate-400 hover:text-white transition-colors"
                             >
                                 Fechar
                             </button>
                             {selectedNFT.report_id && (
                                 <button
-                                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm bg-slate-700 hover:bg-slate-600 text-white transition-colors"
+                                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs bg-emerald-600 hover:bg-emerald-500 text-white font-medium transition-colors shadow-lg shadow-emerald-500/20"
                                     onClick={() => {
-                                        // Próximo passo: navegar pro report origem
+                                        // V1.9.197: navegar de fato pro report origem
+                                        // Usa query string ?section=relatorio que PatientDashboard
+                                        // detecta e abre report-detail tab
+                                        const reportId = selectedNFT.report_id
                                         setSelectedNFT(null)
+                                        navigate(`/app/clinica/paciente/dashboard?section=relatorio&report=${reportId}`)
                                     }}
                                 >
-                                    <Eye className="w-4 h-4" />
+                                    <Eye className="w-3.5 h-3.5" />
                                     Ver relatório origem
-                                    <ArrowUpRight className="w-3.5 h-3.5" />
+                                    <ArrowUpRight className="w-3 h-3" />
                                 </button>
                             )}
                         </div>

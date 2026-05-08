@@ -21,7 +21,8 @@ import {
   Loader2,
   MessageSquare,
   ChevronDown,
-  ChevronUp
+  ChevronUp,
+  Sparkles
 } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { useNavigate } from 'react-router-dom'
@@ -1882,11 +1883,11 @@ const ClinicalReports: React.FC<ClinicalReportsProps> = ({ className = '', onSha
         </div>
       )}
 
-      {/* Modal NFT */}
+      {/* Modal NFT — V1.9.197: copy correto (sem "blockchain"), CTA Ver na Galeria */}
       {nftModal.show && (
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div
-            className="rounded-2xl p-8 max-w-md w-full mx-4 border text-center"
+            className="rounded-2xl p-7 max-w-md w-full border text-center animate-in fade-in zoom-in-95 duration-200"
             style={{
               background: 'rgba(7, 22, 41, 0.95)',
               borderColor: 'rgba(147, 51, 234, 0.3)',
@@ -1894,30 +1895,46 @@ const ClinicalReports: React.FC<ClinicalReportsProps> = ({ className = '', onSha
             }}
           >
             <div className="w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center"
-              style={{ background: 'linear-gradient(135deg, #9333ea 0%, #7c3aed 100%)' }}>
-              <QrCode className="w-8 h-8 text-white" />
+              style={{ background: 'linear-gradient(135deg, #10b981 0%, #9333ea 100%)' }}>
+              <Sparkles className="w-8 h-8 text-white" />
             </div>
-            <h3 className="text-xl font-bold text-white mb-2">NFT Gerado com Sucesso!</h3>
-            <p className="text-slate-400 text-sm mb-6">Certificado de autenticidade do relatório clínico registrado em blockchain.</p>
-            <div className="space-y-3 mb-6">
-              <div className="flex items-center justify-between px-4 py-3 rounded-lg"
+            <h3 className="text-xl font-bold text-white mb-2">Assinatura Visual Gerada</h3>
+            <p className="text-slate-400 text-sm mb-6 leading-relaxed">
+              Sua assinatura simbólica única foi gerada e ancorada criptograficamente
+              ao relatório clínico de origem.
+            </p>
+            <div className="space-y-2 mb-6">
+              <div className="flex items-center justify-between px-4 py-2.5 rounded-lg"
                 style={{ background: 'rgba(15, 36, 60, 0.7)', border: '1px solid rgba(147, 51, 234, 0.15)' }}>
-                <span className="text-slate-400 text-sm">Token</span>
-                <span className="text-purple-400 font-mono text-sm font-semibold">{nftModal.token}</span>
+                <span className="text-slate-400 text-xs">Identificador</span>
+                <span className="text-purple-400 font-mono text-xs font-semibold">{nftModal.token}</span>
               </div>
-              <div className="flex items-center justify-between px-4 py-3 rounded-lg"
-                style={{ background: 'rgba(15, 36, 60, 0.7)', border: '1px solid rgba(147, 51, 234, 0.15)' }}>
-                <span className="text-slate-400 text-sm">Hash</span>
-                <span className="text-purple-400 font-mono text-sm font-semibold">{nftModal.hash}</span>
+              <div className="flex items-center justify-between px-4 py-2.5 rounded-lg"
+                style={{ background: 'rgba(15, 36, 60, 0.7)', border: '1px solid rgba(16, 185, 129, 0.15)' }}>
+                <span className="text-slate-400 text-xs">Hash imagem</span>
+                <span className="text-emerald-400 font-mono text-xs font-semibold">{nftModal.hash}</span>
               </div>
             </div>
-            <button
-              onClick={() => setNftModal({ show: false, token: '', hash: '' })}
-              className="w-full px-4 py-3 rounded-xl text-white font-medium transition-all"
-              style={{ background: 'linear-gradient(135deg, #9333ea 0%, #7c3aed 100%)' }}
-            >
-              Entendido
-            </button>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setNftModal({ show: false, token: '', hash: '' })}
+                className="flex-1 px-4 py-2.5 rounded-xl text-slate-300 font-medium transition-all hover:bg-slate-800"
+                style={{ background: 'rgba(15, 36, 60, 0.7)', border: '1px solid rgba(255, 255, 255, 0.08)' }}
+              >
+                Fechar
+              </button>
+              <button
+                onClick={() => {
+                  setNftModal({ show: false, token: '', hash: '' })
+                  navigate('/app/clinica/paciente/dashboard?section=galeria')
+                }}
+                className="flex-1 flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl text-white font-semibold transition-all"
+                style={{ background: 'linear-gradient(135deg, #10b981 0%, #9333ea 100%)' }}
+              >
+                <Sparkles className="w-4 h-4" />
+                Ver na Galeria
+              </button>
+            </div>
           </div>
         </div>
       )}
