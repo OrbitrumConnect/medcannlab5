@@ -1045,7 +1045,9 @@ export const useMedCannLabConversation = (options?: {
       }
     }
 
-    setIsProcessing(true)
+    // V1.9.x — ANTES de tocar isProcessing/error/stopSpeech, capturamos info
+    // mas o setIsProcessing(true) é movido pra DEPOIS do system-msg check
+    // (system msg = card local, não chama Core, não deve ligar loading state).
     setError(null)
     stopSpeech()
 
@@ -1079,12 +1081,16 @@ export const useMedCannLabConversation = (options?: {
 
     // V1.9.95-B: mensagens de SISTEMA (action_cards locais como "✅ Agendamento confirmado!")
     // sao apenas displays no chat — NAO devem ser enviadas ao Core como input do usuario.
-    // Sem este early return, o GPT-4o respondia ao "Agendamento confirmado!" oferecendo
-    // mais agendamento (TRIGGER_SCHEDULING no texto), abrindo widget duplicado pos-AEC.
+    // V1.9.x FIX (07/05): este early return ESTAVA depois de setIsProcessing(true),
+    // travando a UI em "Elaborando resposta clínica..." quando card local era adicionado
+    // pós-AEC. Agora o setIsProcessing(true) ficou movido pra DEPOIS deste guard.
     if (options.role === 'system') {
       console.log('🛈 [SYSTEM_MSG] Card de sistema adicionado ao chat (sem chamada ao Core).')
       return
     }
+
+    // V1.9.x — Loading state liga só DEPOIS do system-msg guard (acima)
+    setIsProcessing(true)
 
     try {
       console.log('📨 Processando mensagem para IA:', trimmed.substring(0, 50) + '...')

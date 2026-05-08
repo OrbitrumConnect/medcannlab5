@@ -1,8 +1,14 @@
+// V1.9.x (07/05) — range ampliado pra cobrir professional_availability real:
+//   Ricardo configurou Quinta 08:00→00:00 (meia-noite); outros dias 09:00→20:00
+//   Eduardo configurou 08:00→12:00 + 13:00→17:00
+// Pra evento de demonstração amanhã, paciente precisa ver TODO o range possível.
+// Solução elite (engatilhada V1.9.190): consumir professional_availability dinâmico
+// quando médico é selecionado. Quick fix aqui amplia o range até 23:00.
 export const SCHEDULING_CONFIG = {
   startDateISO: '2025-11-10T00:00:00-03:00',
-  workingDays: ['Terça', 'Quarta', 'Quinta'] as const,
-  startTime: '14:00',
-  endTime: '20:00',
+  workingDays: ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta'] as const,
+  startTime: '08:00',
+  endTime: '23:00',
   appointmentDurationMinutes: 60,
   bufferMinutes: 15
 }
