@@ -792,7 +792,7 @@ const Prescriptions: React.FC = () => {
         <div class="watermark"></div>
         
         <div class="header">
-          <h1 style="color: #00C16A; margin:0;">MEDCANN LAB</h1>
+          <h1 style="color: #00C16A; margin:0;">MEDCANNLAB</h1>
           <div class="doctor-info">
             <strong>Dr(a). ${prescription.professional_name}</strong><br>
             CRM: ${prescription.professional_crm} ${prescription.professional_specialty ? `• ${prescription.professional_specialty}` : ''}

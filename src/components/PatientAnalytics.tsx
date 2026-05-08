@@ -270,7 +270,7 @@ const PatientAnalytics: React.FC<PatientAnalyticsProps> = ({ reports, loading, u
             investigationItems.length > 0
                 ? investigationItems.map((line, i) => `${i + 1}. ${line}`).join('\n')
                 : '—'
-        const textToCopy = `RELATÓRIO CLÍNICO MEDCANN\nData: ${new Date().toLocaleDateString()}\n\nQUEIXA PRINCIPAL:\n${mainComplaint || 'Não especificada'}\n\nHISTÓRICO:\n${historyText || 'Nenhum histórico registrado.'}\n\nINVESTIGAÇÃO / DADOS:\n${invBlock}`
+        const textToCopy = `RELATÓRIO CLÍNICO MEDCANNLAB\nData: ${new Date().toLocaleDateString()}\n\nQUEIXA PRINCIPAL:\n${mainComplaint || 'Não especificada'}\n\nHISTÓRICO:\n${historyText || 'Nenhum histórico registrado.'}\n\nINVESTIGAÇÃO / DADOS:\n${invBlock}`
 
         navigator.clipboard.writeText(textToCopy)
         setCopied(true)
@@ -1596,7 +1596,7 @@ const PatientAnalytics: React.FC<PatientAnalyticsProps> = ({ reports, loading, u
                     const invBlock = investigationItems.length > 0
                         ? investigationItems.map((line, i) => `${i + 1}. ${line}`).join('\n')
                         : '—'
-                    return `RELATÓRIO CLÍNICO MEDCANN
+                    return `RELATÓRIO CLÍNICO MEDCANNLAB
 Paciente: ${user?.name || user?.email || '—'}
 Data: ${new Date(selectedReport.generated_at).toLocaleString()}
 
@@ -1611,16 +1611,267 @@ ${invBlock}
 ${assessmentText ? `\n▸ AVALIAÇÃO\n${assessmentText}\n` : ''}${planText ? `\n▸ PLANO\n${planText}\n` : ''}`
                 }
 
+                // V1.9.192 — Download como PDF profissional via window.print()
+                // Triple-A escalável: zero deps, web standard, semantic tags nativas,
+                // reusável (Rx + Atestado), mesma stack que Prescriptions.tsx.
+                // User clica "Salvar como PDF" no diálogo de impressão do navegador.
                 const handleDownload = () => {
-                    const blob = new Blob([buildPlainText()], { type: 'text/plain;charset=utf-8' })
-                    const url = URL.createObjectURL(blob)
-                    const a = document.createElement('a')
-                    a.href = url
-                    a.download = `relatorio-clinico-${new Date(selectedReport.generated_at).toISOString().slice(0, 10)}.txt`
-                    document.body.appendChild(a)
-                    a.click()
-                    document.body.removeChild(a)
-                    URL.revokeObjectURL(url)
+                    const reportDate = new Date(selectedReport.generated_at)
+                    const dateStr = reportDate.toLocaleDateString('pt-BR')
+                    const timeStr = reportDate.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
+                    const isoDate = reportDate.toISOString().slice(0, 10)
+                    const patientName = user?.name || user?.email || '—'
+                    const reportContent = (selectedReport.content as any) || {}
+                    const signatureHash = (selectedReport as any).signature_hash || null
+                    const signedAt = (selectedReport as any).signed_at || null
+                    const reportType = reportContent.report_type || 'Avaliação Clínica Estruturada'
+                    const protocol = reportContent.protocol || 'IMRE'
+                    const professionalName = reportContent.professional_name || (selectedReport as any).professional_name || '—'
+
+                    const escapeHtml = (s: string) =>
+                        String(s ?? '').replace(/[&<>"']/g, c => ({
+                            '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+                        } as any)[c])
+
+                    const renderInvestigation = () => {
+                        if (investigationItems.length === 0) return '<p class="empty">—</p>'
+                        return '<ul class="num-list">' +
+                            investigationItems.map(line => `<li>${escapeHtml(line)}</li>`).join('') +
+                            '</ul>'
+                    }
+
+                    const signatureBlock = signatureHash ? `
+                        <div class="signature-block">
+                            <div class="sig-header">
+                                <span class="sig-icon">✓</span>
+                                <strong>Documento assinado digitalmente</strong>
+                            </div>
+                            <div class="sig-body">
+                                <div><strong>Padrão:</strong> ICP-Brasil PKCS#7 RFC 3852</div>
+                                <div><strong>Hash:</strong> <code>${escapeHtml(String(signatureHash).slice(0, 64))}...</code></div>
+                                ${signedAt ? `<div><strong>Assinado em:</strong> ${new Date(signedAt).toLocaleString('pt-BR')} BRT</div>` : ''}
+                                <div class="sig-footer">Juridicamente válido sob CFM 2.314/2022</div>
+                            </div>
+                        </div>` : `
+                        <div class="signature-block unsigned">
+                            <div class="sig-header"><strong>Documento não assinado digitalmente</strong></div>
+                            <div class="sig-body sig-footer">Pendente de revisão e assinatura pelo profissional responsável.</div>
+                        </div>`
+
+                    const html = `<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Relatório Clínico — ${escapeHtml(patientName)} — ${dateStr}</title>
+<style>
+@page { size: A4; margin: 18mm 16mm; }
+* { box-sizing: border-box; }
+body {
+    font-family: 'Inter', 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+    color: #1a1a1a;
+    line-height: 1.5;
+    margin: 0;
+    padding: 0;
+    -webkit-font-smoothing: antialiased;
+}
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    border-bottom: 3px solid #00C16A;
+    padding-bottom: 12px;
+    margin-bottom: 18px;
+}
+.brand { display: flex; align-items: center; gap: 12px; }
+.brand-mark {
+    width: 44px; height: 44px;
+    background: linear-gradient(135deg, #00C16A 0%, #008f4f 100%);
+    color: white;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 800; font-size: 22px;
+    border-radius: 8px;
+    letter-spacing: -1px;
+}
+.brand-text h1 { margin: 0; font-size: 22px; color: #00C16A; letter-spacing: -0.5px; }
+.brand-text p { margin: 2px 0 0 0; font-size: 9.5px; color: #666; letter-spacing: 0.3px; text-transform: uppercase; }
+.doc-meta { text-align: right; font-size: 10px; color: #555; }
+.doc-meta .doc-id { font-family: 'Courier New', monospace; color: #333; font-size: 11px; }
+h2.report-title {
+    font-size: 17px;
+    color: #1a1a1a;
+    margin: 0 0 14px 0;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 700;
+}
+.metadata {
+    background: #f7f9fa;
+    border-left: 3px solid #00C16A;
+    padding: 10px 14px;
+    margin-bottom: 18px;
+    font-size: 11px;
+    border-radius: 0 4px 4px 0;
+}
+.metadata table { border-collapse: collapse; width: 100%; }
+.metadata td { padding: 3px 0; vertical-align: top; }
+.metadata td:first-child { font-weight: 600; color: #555; width: 130px; }
+.metadata td:last-child { color: #1a1a1a; }
+.section { margin-bottom: 14px; page-break-inside: avoid; }
+.section-title {
+    font-size: 11px;
+    font-weight: 700;
+    color: #00C16A;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    margin: 0 0 6px 0;
+    padding-bottom: 3px;
+    border-bottom: 1px solid #e0e0e0;
+}
+.section-body {
+    font-size: 11.5px;
+    color: #2a2a2a;
+    margin: 0;
+    padding: 0;
+}
+.section-body p { margin: 0 0 6px 0; }
+.section-body strong { color: #1a1a1a; }
+.empty { color: #999; font-style: italic; margin: 0; }
+.num-list { margin: 0; padding-left: 22px; }
+.num-list li { margin: 2px 0; }
+.signature-block {
+    margin-top: 22px;
+    padding: 12px 14px;
+    border: 2px solid #00C16A;
+    border-radius: 6px;
+    background: #f0fbf5;
+    page-break-inside: avoid;
+}
+.signature-block.unsigned { border-color: #d4a017; background: #fdf8e8; }
+.sig-header { font-size: 12px; color: #008f4f; margin-bottom: 6px; }
+.signature-block.unsigned .sig-header { color: #8a6a14; }
+.sig-icon { display: inline-block; margin-right: 6px; }
+.sig-body { font-size: 10px; color: #333; }
+.sig-body div { margin: 2px 0; }
+.sig-body code { background: white; padding: 1px 4px; border-radius: 2px; font-size: 9.5px; word-break: break-all; }
+.sig-footer { margin-top: 6px; font-size: 9.5px; color: #666; font-style: italic; }
+.footer {
+    margin-top: 22px;
+    padding-top: 10px;
+    border-top: 1px solid #e0e0e0;
+    text-align: center;
+    font-size: 9px;
+    color: #888;
+    letter-spacing: 0.3px;
+}
+.footer strong { color: #00C16A; }
+@media print {
+    body { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+    .no-print { display: none !important; }
+}
+.no-print {
+    position: fixed;
+    top: 12px; right: 12px;
+    background: #00C16A; color: white;
+    padding: 8px 14px;
+    border-radius: 6px;
+    font-size: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    z-index: 1000;
+}
+</style>
+</head>
+<body>
+    <div class="no-print">📄 Use Ctrl+P (ou Cmd+P) → "Salvar como PDF"</div>
+
+    <div class="header">
+        <div class="brand">
+            <div class="brand-mark">M</div>
+            <div class="brand-text">
+                <h1>MEDCANNLAB</h1>
+                <p>Listening-Oriented Clinical Cognitive Infrastructure</p>
+            </div>
+        </div>
+        <div class="doc-meta">
+            <div>Documento Nº</div>
+            <div class="doc-id">${escapeHtml(String(selectedReport.id || '').slice(0, 12))}</div>
+            <div style="margin-top: 4px;">Emitido em</div>
+            <div>${dateStr} · ${timeStr}</div>
+        </div>
+    </div>
+
+    <h2 class="report-title">Relatório Clínico — ${escapeHtml(reportType)}</h2>
+
+    <div class="metadata">
+        <table>
+            <tr><td>Paciente:</td><td>${escapeHtml(patientName)}</td></tr>
+            <tr><td>Data emissão:</td><td>${dateStr} às ${timeStr}</td></tr>
+            <tr><td>Tipo:</td><td>${escapeHtml(reportType)}</td></tr>
+            <tr><td>Protocolo:</td><td>${escapeHtml(protocol)}</td></tr>
+            <tr><td>Profissional:</td><td>${escapeHtml(professionalName)}</td></tr>
+            <tr><td>Status:</td><td>${signatureHash ? '✓ Assinado digitalmente' : 'Em revisão'}</td></tr>
+        </table>
+    </div>
+
+    <div class="section">
+        <h3 class="section-title">▸ Queixa Principal</h3>
+        <div class="section-body">${mainComplaint ? escapeHtml(mainComplaint) : '<p class="empty">Não especificada</p>'}</div>
+    </div>
+
+    <div class="section">
+        <h3 class="section-title">▸ Histórico Clínico</h3>
+        <div class="section-body">${historyText ? `<p>${escapeHtml(historyText)}</p>` : '<p class="empty">Nenhum histórico registrado.</p>'}</div>
+    </div>
+
+    <div class="section">
+        <h3 class="section-title">▸ Investigação Detalhada</h3>
+        <div class="section-body">${renderInvestigation()}</div>
+    </div>
+
+    ${assessmentText ? `
+    <div class="section">
+        <h3 class="section-title">▸ Avaliação</h3>
+        <div class="section-body"><p>${escapeHtml(assessmentText)}</p></div>
+    </div>` : ''}
+
+    ${planText ? `
+    <div class="section">
+        <h3 class="section-title">▸ Plano Terapêutico</h3>
+        <div class="section-body"><p>${escapeHtml(planText)}</p></div>
+    </div>` : ''}
+
+    ${signatureBlock}
+
+    <div class="footer">
+        <strong>MedCannLab Platform</strong> · www.medcannlab.com.br<br>
+        Rio de Janeiro · Lisboa · Londres<br>
+        Documento gerado eletronicamente — não rasurar
+    </div>
+
+    <script>
+        window.addEventListener('load', () => {
+            setTimeout(() => { try { window.print(); } catch(e) {} }, 350);
+        });
+    </script>
+</body>
+</html>`
+
+                    const printWindow = window.open('', '_blank', 'width=900,height=1200')
+                    if (printWindow) {
+                        printWindow.document.open()
+                        printWindow.document.write(html)
+                        printWindow.document.close()
+                    } else {
+                        // Fallback se popup bloqueado: blob + download HTML (user pode abrir e imprimir)
+                        const blob = new Blob([html], { type: 'text/html;charset=utf-8' })
+                        const url = URL.createObjectURL(blob)
+                        const a = document.createElement('a')
+                        a.href = url
+                        a.download = `relatorio-clinico-${isoDate}.html`
+                        document.body.appendChild(a)
+                        a.click()
+                        document.body.removeChild(a)
+                        URL.revokeObjectURL(url)
+                    }
                 }
 
                 const handleWhatsApp = () => {
