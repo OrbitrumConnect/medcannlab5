@@ -189,13 +189,11 @@ const PatientDashboard: React.FC = () => {
               }
             }
             return (
-              <div className="rounded-2xl border border-emerald-500/15 bg-gradient-to-br from-emerald-500/5 via-slate-900/30 to-transparent p-4 md:p-5">
-                <div className="flex items-start gap-3">
-                  <div className="text-2xl shrink-0" aria-hidden="true">{icon}</div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm md:text-base font-medium text-white leading-snug">{message}</p>
-                    <p className="text-xs md:text-sm text-slate-400 mt-1 leading-relaxed">{cta}</p>
-                  </div>
+              <div className="rounded-lg border border-emerald-500/15 bg-emerald-500/[0.03] px-3 py-2 flex items-center gap-2">
+                <span className="text-sm shrink-0" aria-hidden="true">{icon}</span>
+                <div className="flex-1 min-w-0 flex flex-col sm:flex-row sm:items-center sm:gap-2">
+                  <p className="text-xs font-medium text-slate-200 leading-tight">{message}</p>
+                  <p className="text-[11px] text-slate-500 leading-tight truncate">{cta}</p>
                 </div>
               </div>
             )
