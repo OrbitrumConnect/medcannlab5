@@ -166,26 +166,42 @@ const PatientDashboard: React.FC = () => {
               (regulatório-safe, não-gamificação de saúde). */}
           {(() => {
             const lastReport = reports?.[0] as any
-            const daysSinceLast = lastReport?.generated_at
-              ? Math.floor((Date.now() - new Date(lastReport.generated_at).getTime()) / (1000 * 60 * 60 * 24))
+            const lastReportTs = lastReport?.generated_at ? new Date(lastReport.generated_at).getTime() : null
+            const hoursSinceLast = lastReportTs !== null
+              ? Math.floor((Date.now() - lastReportTs) / (1000 * 60 * 60))
               : null
+            const daysSinceLast = hoursSinceLast !== null ? Math.floor(hoursSinceLast / 24) : null
             const totalReports = reports?.length || 0
+
+            // V1.9.x: linguagem natural pra "quando foi" — evita ambiguidade de "0 dias"
+            // (paciente lê "0 dias" como "nenhuma avaliação", não como "hoje")
+            const formatTimeAgo = (h: number, d: number): string => {
+              if (h < 1) return 'há poucos minutos'
+              if (h < 24) return h === 1 ? 'há 1 hora' : `há ${h} horas`
+              if (d === 1) return 'ontem'
+              if (d < 30) return `há ${d} dias`
+              const months = Math.floor(d / 30)
+              return months === 1 ? 'há 1 mês' : `há ${months} meses`
+            }
+
             let icon = '🌱'
             let message = 'Sua jornada clínica está pronta para começar.'
             let cta = 'Inicie sua primeira avaliação para que a equipe clínica possa acompanhar você.'
-            if (totalReports > 0 && daysSinceLast !== null) {
+            if (totalReports > 0 && hoursSinceLast !== null && daysSinceLast !== null) {
+              const timeAgo = formatTimeAgo(hoursSinceLast, daysSinceLast)
+              const totalLabel = totalReports === 1 ? '1 avaliação no histórico' : `${totalReports} avaliações no histórico`
               if (daysSinceLast <= 60) {
                 icon = '🟢'
                 message = 'Seu acompanhamento clínico está ativo e atualizado.'
-                cta = `Última avaliação há ${daysSinceLast} ${daysSinceLast === 1 ? 'dia' : 'dias'}. Equipe clínica está ciente do seu histórico.`
+                cta = `Última atividade ${timeAgo} · ${totalLabel}.`
               } else if (daysSinceLast <= 180) {
                 icon = '🟡'
                 message = 'Seu histórico vem sendo mantido pela equipe clínica.'
-                cta = `Última avaliação há ${Math.floor(daysSinceLast / 30)} ${Math.floor(daysSinceLast / 30) === 1 ? 'mês' : 'meses'}. Considere agendar uma reavaliação para manter o cuidado contínuo.`
+                cta = `Última atividade ${timeAgo} · ${totalLabel}. Considere uma reavaliação.`
               } else {
                 icon = '🟠'
                 message = 'Bom momento para retomar seu acompanhamento clínico.'
-                cta = `Última avaliação há ${Math.floor(daysSinceLast / 30)} meses. Uma nova consulta ajuda a equipe a entender como você está agora.`
+                cta = `Última atividade ${timeAgo} · ${totalLabel}. Uma nova consulta ajuda a equipe.`
               }
             }
             return (
