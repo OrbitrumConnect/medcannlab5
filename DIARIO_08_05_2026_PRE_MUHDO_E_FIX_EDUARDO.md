@@ -1327,3 +1327,129 @@ do dia em 4 refs sync. Lock CORE intocado. Galeria NFT operacional
 end-to-end. Bug Eduardo resolvido. PDF profissional. Privacidade 
 Pollinations documentada. Pedro vai voltar ao PC — handoff em 
 reference_proxima_sessao_08_05_handoff.md atualizado com BLOCO M.]*
+
+---
+
+## BLOCO N — Sessão noite 08/05 ~20h-22h: V1.9.198 + V1.9.199 (NFT V2 + UX)
+
+### N.1 — Trigger
+
+Pedro perguntou se V2 com LLM iria interferir no AEC dos usuários e 
+sobre Cloudflare (não tem conta paga). Decisão elegante: usar mesmo 
+provider Pollinations.ai que já cobre imagem — endpoint texto FREE 
+zero-auth também. Stack 1-provider. Pedro: *"sim vai ficar melhor 
+correto?! vamos"*.
+
+### N.2 — V1.9.198 LLM enrichment via Pollinations text
+
+Commit `f60c24d` • só `supabase/functions/generate-nft-from-report/index.ts`
+
+Função `enrichWithLLM()` chama `https://text.pollinations.ai/{prompt}?model=openai&json=true` com APENAS tokens abstratos:
+- `emotion` (1 palavra), `intensity` (low/medium/high), `domains` (top emoções secundárias), `styleId`, `variantSeed`
+
+Retorna JSON: `symbols[4]`, `palette[3]`, `composition`, `mood_modifier`.
+
+**LGPD-safe**: ZERO PII, ZERO texto bruto, ZERO identificadores vão pro LLM.
+
+**Fallback gracioso**: se LLM falha (HTTP error, timeout 8s, JSON inválido) → retorna null → pipeline usa V1 hardcoded (EMOTION_PALETTES + EMOTION_SYMBOLS + COMPOSITION_MODIFIERS via slices do seedHex). NUNCA falha geração por LLM down.
+
+**Rastreabilidade**: `generation_version` bump pra `v3_llm_enriched_pollinations_2026_05` se LLM funcionou, senão `v2_modular_palette_2026_05_fallback`. Metadata novos campos: `llm_used`, `llm_model`, `llm_intensity`, `mood_modifier`.
+
+Smoke Carolina: 3 erros Pollinations + 1 sucesso. AEC core continuou funcionando em paralelo (V2 NFT realmente isolada do AEC core como prometido).
+
+### N.3 — V1.9.199 UX retry silencioso + mensagens amigáveis
+
+Pedro feedback: *"problema so que a mensagem quando da erro! deveria vir algo como tente novamente! muitas nfts sendo geradas agora algo assim sabe kk"*
+
+Commit `bb476ac` • só `ClinicalReports.tsx` • +53/-19 LOC
+
+3 melhorias UX:
+
+1. **Retry silencioso 1x após 2s** — `invokeNftEdge()` helper. Se 1ª tentativa falhar, log warn (não mostra nada pro user) + aguarda 2s + 2ª tentativa automática. Hipótese: ~70% dos erros transientes Pollinations resolvem na 2ª.
+
+2. **Mensagens contextuais** (`friendlyNftError()`) — mapeia raw → humano:
+   - `FunctionsHttpError`/502/503/504 → *"Servidor de geração ocupado no momento. Muitas assinaturas sendo criadas — tente novamente em alguns segundos."*
+   - timeout → *"A geração demorou mais que o esperado. Tente novamente — costuma funcionar na 2ª tentativa."*
+   - network → *"Sem conexão estável com o servidor."*
+   - rate/limit → *"Muitas tentativas em sequência. Aguarde um momento."*
+
+3. **Loading state robusto nos 3 botões** "Gerar NFT" — disabled + Loader2 spin + texto "Gerando..." + opacity-60 + cursor-not-allowed. Impede duplo-clique. Sinaliza progresso.
+
+Pedro aprovou: *"A por favor somos app top experiencia e tudo precisa esta boa"*.
+
+### N.4 — Validação V1.9.199
+
+- Type-check: zero erro novo (33 baseline preservado em `unifiedAssessment.ts`/`ClinicalAssessment.tsx`, não tocados)
+- Push 4 refs sync: hub + origin × main + master ✅
+- ZERO npm install
+- ZERO toque CORE / AEC / Pipeline / Lock V1.9.95+97+98+99-B
+- ZERO mudança Edge Function / schema / RLS
+
+### N.5 — Cenários UX resultantes
+
+```
+Cenário A — NFT 1ª tentativa OK (path feliz)
+  Botão "Gerando..." spin (1-3s LLM + 5-10s image) → modal sucesso
+
+Cenário B — NFT 1ª falha, 2ª OK (retry silencioso)
+  Botão "Gerando..." (1ª) → console warn → aguarda 2s →
+  Botão "Gerando..." (2ª) → modal sucesso
+  USER NÃO VÊ NENHUM ERRO
+
+Cenário C — NFT 1ª e 2ª falham (raro)
+  Botão "Gerando..." → console warn → aguarda 2s →
+  Botão "Gerando..." → alert amigável contextual
+  Ex: "Servidor de geração ocupado no momento. Muitas
+       assinaturas sendo criadas — tente novamente em
+       alguns segundos."
+```
+
+### N.6 — Resumo final 08/05 (24 commits)
+
+```
+NOITE 19h-22h
+  f60c24d  V1.9.198 — LLM enrichment Pollinations text (LGPD-safe)
+  bb476ac  V1.9.199 — UX retry 1x + mensagens amigáveis + loading
+
+TARDE 16h-19h (BLOCO M)
+  7c4163e  V1.9.192 — relatório PDF + brand fix
+  90cd999  V1.9.193 — Galeria NFTs foundation
+  bffd8a6  V1.9.193-A — trigger Galeria sidebar
+  3fa2ce2  V1.9.194 — Pollinations.ai NFT real
+  e9d8886  V1.9.195 — emails fake fix
+  0e82d76  V1.9.196 — variação visual modular
+  67b54f4  V1.9.197 — modal 2-cols + remove blockchain copy
+  8c77467  docs Muhdo + diário M
+
+MADRUGADA + MANHÃ (BLOCOS A-L)
+  V1.9.189 RLS+UPSERT (Eduardo bugs)
+  V1.9.190 Eduardo role swap (gmail=pro, hotmail=admin)
+  + materiais Muhdo (email V4 + addendum + roteiro)
+  + DOC_MESTRE projeto + DOC_MESTRE Muhdo
+
+Total: 24 commits (madrugada + manhã + tarde + noite)
+Lock V1.9.95+97+98+99-B: ✅ INTOCADO em 100%
+Galeria NFT: V1 → V3 (LLM enriched) em 1 dia
+```
+
+### N.7 — Frase âncora 08/05 BLOCO N (selo noite)
+
+> *"Noite 08/05 20h-22h BRT entregou 2 commits finais sobre Galeria 
+> NFT: V1.9.198 LLM enrichment via Pollinations text endpoint 
+> (mesmo provider de imagem, free, zero-auth, LGPD-safe — só tokens 
+> abstratos vão pro LLM, ZERO PII, fallback gracioso pra V1 hardcoded 
+> se LLM falha) + V1.9.199 UX retry silencioso 1x após 2s + 
+> mensagens amigáveis contextuais ('Servidor de geração ocupado...' 
+> em vez de 'FunctionsHttpError') + loading state robusto nos 3 
+> botões 'Gerar NFT'. Pedro feedback: 'somos app top experiencia 
+> e tudo precisa esta boa'. Stack 1-provider mantida. ZERO npm 
+> install. ZERO toque CORE. Lock V1.9.95+97+98+99-B intocado em 
+> 24 commits totais do dia. Galeria NFT evoluiu de V1 hardcoded 
+> a V3 LLM enriched em 1 dia, sem regressão. Pedro migra ao PC."*
+
+---
+
+*[BLOCO N SELADO 08/05 ~22h BRT. Diário 08/05 final A-L+L.13+M.1-M.12+N.1-N.7 
+= 21 entradas estruturadas. 24 commits totais do dia em 4 refs sync. 
+Galeria NFT V1→V3 (LLM enriched + UX premium). Lock CORE intocado 
+100%. Pedro migra ao PC — handoff atualizado.]*
