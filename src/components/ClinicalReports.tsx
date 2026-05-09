@@ -1126,6 +1126,31 @@ const ClinicalReports: React.FC<ClinicalReportsProps> = ({ className = '', onSha
                 </div>
               </div>
 
+              {/* V1.9.202 — Selo visual quando relatório teve devolução clínica completa */}
+              {report.reviewStatus === 'approved' && report.doctorNotes && (
+                <div
+                  className="mb-4 rounded-lg p-3 border flex items-start gap-3"
+                  style={{
+                    background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.08) 0%, rgba(6, 182, 212, 0.05) 100%)',
+                    borderColor: 'rgba(16, 185, 129, 0.25)'
+                  }}
+                  aria-label="Relatório revisado pelo médico com devolução clínica"
+                >
+                  <Stethoscope className="w-4 h-4 text-emerald-400 mt-0.5 flex-shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <div className="text-[10px] font-semibold text-emerald-300 uppercase tracking-wide mb-1 flex items-center gap-2">
+                      Devolução do médico
+                      <span className="text-emerald-400/70 normal-case tracking-normal text-[10px] font-normal">
+                        ·  recebida
+                      </span>
+                    </div>
+                    <p className="text-sm text-slate-200/90 line-clamp-2 leading-relaxed">
+                      {report.doctorNotes}
+                    </p>
+                  </div>
+                </div>
+              )}
+
               {/* Resumo do Relatório */}
               <div className="mb-4">
                 <h4 className="font-semibold text-slate-300 mb-2">Resumo da Avaliação:</h4>
@@ -1377,6 +1402,31 @@ const ClinicalReports: React.FC<ClinicalReportsProps> = ({ className = '', onSha
                 ✕
               </button>
             </div>
+
+            {/* V1.9.202 — Faixa de devolução clínica visível ao abrir relatório aprovado */}
+            {selectedReport.reviewStatus === 'approved' && selectedReport.doctorNotes && (
+              <div
+                className="mb-4 rounded-lg p-4 border"
+                style={{
+                  background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.10) 0%, rgba(6, 182, 212, 0.06) 100%)',
+                  borderColor: 'rgba(16, 185, 129, 0.30)'
+                }}
+              >
+                <div className="flex items-start gap-3">
+                  <div className="w-9 h-9 rounded-full bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center flex-shrink-0">
+                    <Stethoscope className="w-4 h-4 text-emerald-300" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="text-xs font-semibold text-emerald-300 uppercase tracking-wide mb-1">
+                      Devolução clínica do médico
+                    </div>
+                    <p className="text-sm text-slate-100 leading-relaxed whitespace-pre-wrap">
+                      {selectedReport.doctorNotes}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
 
             <div className="space-y-4">
               {/* Conteúdo Completo do Relatório AEC */}

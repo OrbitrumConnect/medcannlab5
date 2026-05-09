@@ -40,7 +40,28 @@ Em caso de exceção: registrar abaixo na seção "Exceções acionadas" antes d
 
 ## Parking Lot — Ideias capturadas (entre 09/05 e 16/05)
 
-> _(Vazio por enquanto — adicionar conforme aparecerem)_
+- [09/05] — **Galeria de NFTs do médico** (tab nova em ProfessionalMyDashboard).
+  Volume real: ~1h. **ZERO schema novo**, ZERO service novo, ZERO tabela nft_shares.
+  Reuso 100%: RLS de `patient_nfts` JÁ permite profissional ver via JOIN
+  `clinical_reports.doctor_id` (validado via PAT). Reusar `PatientNFTGallery.tsx`
+  com prop `mode='professional'` + filtro WHERE pacientes do médico.
+  Vínculo paciente↔médico já vem grátis do schema — NÃO precisa "compartilhar"
+  como ação explícita. Médico vê NFTs dos pacientes que ele atende.
+  Avaliar pós-Sprint 1 medido + sinal Ricardo/Eduardo demandar contexto visual.
+  Origem: Pedro 09/05
+  Conexão: estágio 4 LONGITUDINAL (camada simbólica) — polish do fluxo já existente
+
+- [09/05] — **NFT da revisão clínica + compartilhamento explícito paciente→médico**
+  (versão completa, NÃO recomendada agora).
+  Stack: 2 cols em `patient_nfts` (`nft_type`, `triggered_by_review_id`) + tabela
+  `nft_shares (nft_id, professional_id, shared_at, revoked_at)` + UI revoke +
+  Edge `generate-nft-from-report` aceitar `?type=revision&review_id=X`.
+  Volume: ~6-8h. Risco: 2 NFTs do mesmo evento clínico podem confundir paciente.
+  Gates pra reabrir: ≥5 devoluções reais + paciente espontaneamente gerar NFT
+  pós-devolução + médico mencionar querer "coleção visual de pacientes revisados".
+  Se 2 dos 3 acontecerem → V1.9.21x. Senão → parked permanente.
+  Origem: Claude (proposta) + Pedro (curadoria) 09/05
+  Conexão: estágio 4 LONGITUDINAL — feature nova, NÃO polish
 
 <!-- TEMPLATE para futuras entradas:
 - [DD/MM HH:MM] — [Ideia em 1 linha]. Avaliar pós-Sprint 1 medido.
