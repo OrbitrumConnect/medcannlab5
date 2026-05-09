@@ -63,6 +63,33 @@ Em caso de exceção: registrar abaixo na seção "Exceções acionadas" antes d
   Origem: Claude (proposta) + Pedro (curadoria) 09/05
   Conexão: estágio 4 LONGITUDINAL — feature nova, NÃO polish
 
+- [09/05] — **IA na página renal coletando exames laboratoriais** (sugestão Ricardo 05/05).
+  Nôa pede ao paciente: creatinina, EAS + cultura urinária, US vias urinárias.
+  Volume estimado: ~6-8h. Anti-kevlar §2 OK porque Ricardo dita os exames
+  específicos (não IA inventa). Bloqueador empírico: 0 exames renais cadastrados
+  hoje. Gates pra reabrir: ≥1 paciente real cadastrar 1º exame manualmente +
+  Sprint 1 medido. Pós-isso, IA solicitar próximos vira polish.
+  Origem: Ricardo Valença 05/05/2026 (mensagem WhatsApp)
+  Conexão: estágio 1 INTAKE — Saúde Renal / Cidade Amiga dos Rins
+
+- [09/05] — **Dashboard KPI Cidade Amiga dos Rins (DRC estágios I-V)**.
+  Material existe parcialmente: `renal_exams.drc_stage TEXT` + view `v_renal_trend`
+  (validados via PAT). Pergunta Ricardo: "quantos pacientes em estágio I, II, III, IV, V?".
+  Stack: 1 view nova (`v_drc_stage_distribution`) + 1 card no dashboard admin.
+  Volume: ~3h total. Bloqueador empírico: 0 exames renais cadastrados → KPI vazio.
+  Gates pra reabrir: ≥10 exames cadastrados (volume estatístico mínimo).
+  Origem: Ricardo Valença 05/05/2026
+  Conexão: estágio 5 FORMAL_ACT + observabilidade Cidade Amiga
+
+- [09/05] — **Avaliador de Risco DRC** (blueprint pré-kevlar, nunca codado).
+  Texto técnico Ricardo menciona "machine learning + alertas precoces".
+  Anti-kevlar §2 FORTE: se for codar, Ricardo dita regras manualmente
+  (creatinina/eGFR/proteinúria thresholds + intervalos), NÃO ML auto-aprendiz.
+  Volume incerto pré-protocolo Ricardo. Parking permanente até decisão clínica
+  formal sobre regras de risco.
+  Origem: documento pré-kevlar trazido por Ricardo 05/05
+  Conexão: estágio 2 STRUCTURING — análise de risco DRC
+
 <!-- TEMPLATE para futuras entradas:
 - [DD/MM HH:MM] — [Ideia em 1 linha]. Avaliar pós-Sprint 1 medido.
   Origem: [autor]
@@ -73,9 +100,25 @@ Em caso de exceção: registrar abaixo na seção "Exceções acionadas" antes d
 
 ## Exceções acionadas (registro auditável)
 
-> _(Vazio — preencher SE freeze for legitimamente quebrado)_
+- [09/05 ~18h] — **Exceção #5 (Pedro decide explicit + Exceção #1 cobertura risco)**
+  
+  **Motivo:** Bug funcional reportado pelo Dr. Ricardo Valença em 05/05/2026 via WhatsApp:
+  filtro de busca de paciente em `RenalFunctionModule.tsx` não retorna todos pacientes
+  (Carolina Campello invisível). Filtro original usa apenas `clinical_assessments.doctor_id`,
+  ignora pacientes vinculados via `clinical_reports.doctor_id`. Bloqueia workflow do
+  nefrologista chefe do programa Cidade Amiga dos Rins.
+  
+  **Justificativa:** Ricardo é stakeholder clínico crítico. Bug bloqueia uso real do
+  módulo Saúde Renal. Não é feature nova nem análise estrutural — é fix funcional sobre
+  código vivo. Princípio "polir não inventar" aplicado.
+  
+  **Ação tomada:**
+  - Fix em RenalFunctionModule.tsx (V1.9.204): UNION queries clinical_assessments OR
+    clinical_reports + dedupe via Set + Promise.all paralelo
+  - ZERO mudança schema/RLS/CORE/AEC
+  - 3 entradas correlatas adicionadas ao parking (IA renal, KPI DRC, Avaliador Risco)
 
-<!-- TEMPLATE para exceções:
+<!-- TEMPLATE para futuras exceções:
 - [DD/MM HH:MM] — Exceção #[N]: [motivo]
   Justificativa: [qual das 5 exceções legítimas]
   Ação tomada: [o que foi feito além de adicionar ao parking]

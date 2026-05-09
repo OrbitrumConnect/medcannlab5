@@ -76,16 +76,32 @@ const RenalFunctionModule: React.FC<RenalFunctionModuleProps> = ({ patientId, pa
                         .order('name', { ascending: true });
                     if (data) list = data.map((u: any) => ({ id: u.id, name: u.name || 'Sem nome' }));
                 } else {
-                    const { data: assessments } = await supabase
-                        .from('clinical_assessments')
-                        .select('patient_id')
-                        .eq('doctor_id', user.id);
-                    const ids = Array.from(new Set((assessments || []).map(a => a.patient_id).filter((id): id is string => id !== null)));
+                    // V1.9.204 — bug Carolina (Ricardo 05/05): filtro estreito perdia
+                    // pacientes sem clinical_assessment com este médico (ex.: Carolina
+                    // tem clinical_reports mas não AEC formal). Fix: UNION de fontes
+                    // (clinical_assessments OR clinical_reports) com dedupe via Set.
+                    // Princípio "polir não inventar": query OR aditiva, ZERO mudança schema.
+                    const [assessmentsRes, reportsRes] = await Promise.all([
+                        supabase
+                            .from('clinical_assessments')
+                            .select('patient_id')
+                            .eq('doctor_id', user.id),
+                        supabase
+                            .from('clinical_reports')
+                            .select('patient_id')
+                            .eq('doctor_id', user.id)
+                    ]);
+                    const allIds = [
+                        ...(assessmentsRes.data || []).map(a => (a as any).patient_id),
+                        ...(reportsRes.data || []).map(r => (r as any).patient_id)
+                    ].filter((id): id is string => Boolean(id));
+                    const ids = Array.from(new Set(allIds));
                     if (ids.length > 0) {
                         const { data } = await supabase
                             .from('users')
                             .select('id, name')
-                            .in('id', ids);
+                            .in('id', ids)
+                            .order('name', { ascending: true });
                         if (data) list = data.map((u: any) => ({ id: u.id, name: u.name || 'Sem nome' }));
                     }
                 }
