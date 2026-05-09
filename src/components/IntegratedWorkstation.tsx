@@ -39,16 +39,24 @@ type TabId = 'patients' | 'patient-focus' | 'chat' | 'renal' | 'prescriptions' |
 const IntegratedWorkstation: React.FC<IntegratedWorkstationProps> = ({ initialTab, defaultPatientId }) => {
     const { user } = useAuth()
 
+    // V1.9.203 — ACDSS (tab Governança) é proto-core histórico (kevlar 16/04 com mock-data).
+    // Em produção, esconder pra profissional para evitar risco regulatório de mock parecer real.
+    // Em dev/local OU pra admin: mantém visível pra arqueologia/inspeção.
+    // Memória: project_acdss_arqueologia_proto_core_historico_09_05.md
+    const isDevOrAdmin = import.meta.env.DEV || user?.type === 'admin'
+
     /** Fonte única da verdade: paciente ativo no workstation. Abas consomem via props; PatientFocusView emite onPatientChange. */
     const [activePatientId, setActivePatientId] = useState<string | null>(defaultPatientId || null)
     const [activeTab, setActiveTab] = useState<TabId>(() => {
         const t = (initialTab as TabId)
         const valid: TabId[] = ['patients', 'patient-focus', 'chat', 'renal', 'prescriptions', 'scheduling', 'team', 'governance', 'reports', 'knowledge', 'forum']
+        // Fallback: se URL forçou ?initialTab=governance e não é dev/admin → volta pra default
+        if (t === 'governance' && !isDevOrAdmin) return 'patients'
         return t && valid.includes(t) ? t : 'patients'
     })
 
     // Abas com group para agrupamento futuro (lista plana em V1)
-    const tabs: { id: TabId; label: string; icon: typeof Users; color: string; group: TabGroup }[] = [
+    const allTabs: { id: TabId; label: string; icon: typeof Users; color: string; group: TabGroup }[] = [
         { id: 'patients', label: 'Prontuário', icon: Users, color: 'text-blue-400', group: 'atendimento' },
         { id: 'patient-focus', label: 'Paciente em foco', icon: User, color: 'text-amber-400', group: 'atendimento' },
         { id: 'chat', label: 'Chat Clínico', icon: MessageSquare, color: 'text-green-400', group: 'atendimento' },
@@ -61,6 +69,7 @@ const IntegratedWorkstation: React.FC<IntegratedWorkstationProps> = ({ initialTa
         { id: 'knowledge', label: 'Conhecimento', icon: BookOpen, color: 'text-emerald-400', group: 'governanca' },
         { id: 'forum', label: 'Fórum', icon: MessageCircle, color: 'text-cyan-400', group: 'governanca' }
     ]
+    const tabs = allTabs.filter(tab => tab.id !== 'governance' || isDevOrAdmin)
 
     const renderContent = () => {
         switch (activeTab) {
