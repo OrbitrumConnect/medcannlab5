@@ -40,6 +40,8 @@ import { PatientAppointments } from '../components/dashboard/patient/PatientAppo
 import { PatientQuickActions } from '../components/dashboard/patient/PatientQuickActions'
 import { PatientSupport } from '../components/dashboard/patient/PatientSupport'
 import { DashboardSectionSkeleton } from '../components/ui/DashboardSectionSkeleton'
+import { FeatureErrorFallback } from '../components/ui/FeatureErrorFallback'
+import ErrorBoundary from '../components/ErrorBoundary'
 
 const PatientDashboard: React.FC = () => {
   const { user } = useAuth()
@@ -178,16 +180,18 @@ const PatientDashboard: React.FC = () => {
           />
 
           <div className="space-y-8">
-            <Suspense fallback={<DashboardSectionSkeleton variant="analytics" />}>
-              <PatientAnalytics
-                reports={reports}
-                user={user}
-                appointments={appointments}
-                patientPrescriptions={patientPrescriptions}
-                onScheduleClick={() => navigate('/app/clinica/paciente/agendamentos')}
-                onStartAssessment={handleStartAssessment}
-              />
-            </Suspense>
+            <ErrorBoundary fallback={<FeatureErrorFallback name="Análises" />}>
+              <Suspense fallback={<DashboardSectionSkeleton variant="analytics" />}>
+                <PatientAnalytics
+                  reports={reports}
+                  user={user}
+                  appointments={appointments}
+                  patientPrescriptions={patientPrescriptions}
+                  onScheduleClick={() => navigate('/app/clinica/paciente/agendamentos')}
+                  onStartAssessment={handleStartAssessment}
+                />
+              </Suspense>
+            </ErrorBoundary>
 
             {/* V1.9.x: PatientQuickActions redesenhado — antes "Chat com Médico" e
                 "Nova Consulta" eram redundantes com PatientHeaderActions (Pedro 08/05).
@@ -220,15 +224,17 @@ const PatientDashboard: React.FC = () => {
             <button onClick={() => setActiveTab('analytics')} className="px-4 py-2 bg-white/5 border border-white/10 rounded-xl hover:bg-white/10 transition-all text-sm">Voltar</button>
           </div>
           <div className="bg-slate-900/40 rounded-3xl border border-white/5 p-6 md:p-8">
-            <Suspense fallback={<DashboardSectionSkeleton variant="reports" />}>
-              <ClinicalReports
-                className="w-full"
-                onShareReport={(reportId) => {
-                  setShareModalReportId(reportId)
-                  setShareModalOpen(true)
-                }}
-              />
-            </Suspense>
+            <ErrorBoundary fallback={<FeatureErrorFallback name="Relatórios Clínicos" />}>
+              <Suspense fallback={<DashboardSectionSkeleton variant="reports" />}>
+                <ClinicalReports
+                  className="w-full"
+                  onShareReport={(reportId) => {
+                    setShareModalReportId(reportId)
+                    setShareModalOpen(true)
+                  }}
+                />
+              </Suspense>
+            </ErrorBoundary>
           </div>
         </div>
       )}
@@ -256,11 +262,13 @@ const PatientDashboard: React.FC = () => {
 
       {/* V1.9.193 — Galeria de Assinaturas Visuais (NFT lógico clínico) */}
       {activeTab === 'galeria' && (
-        <Suspense fallback={<DashboardSectionSkeleton variant="gallery" />}>
-          <PatientNFTGallery
-            onCreateAssessment={handleStartAssessment}
-          />
-        </Suspense>
+        <ErrorBoundary fallback={<FeatureErrorFallback name="Galeria" />}>
+          <Suspense fallback={<DashboardSectionSkeleton variant="gallery" />}>
+            <PatientNFTGallery
+              onCreateAssessment={handleStartAssessment}
+            />
+          </Suspense>
+        </ErrorBoundary>
       )}
 
 
