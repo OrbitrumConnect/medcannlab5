@@ -5,6 +5,7 @@ export type NotificationType =
     | 'warning'
     | 'error'
     | 'clinical'
+    | 'clinical_devolution'
     | 'prescription'
     | 'report'
     | 'appointment'

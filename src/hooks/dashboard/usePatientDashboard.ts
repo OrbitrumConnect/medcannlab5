@@ -2,6 +2,17 @@ import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../contexts/AuthContext'
 import { clinicalReportService, ClinicalReport } from '../../lib/clinicalReportService'
+import { clinicalDevolutionService } from '../../services/clinicalDevolutionService'
+
+export interface ClinicalDevolution {
+    reportId: string
+    generatedAt: string | null
+    reviewedAt: string | null
+    reviewerId: string | null
+    reviewerName: string | null
+    doctorNotes: string
+    doctorNotesAt: string | null
+}
 
 export interface Appointment {
     id: string
@@ -45,6 +56,7 @@ export function usePatientDashboard() {
     const [therapeuticPlan, setTherapeuticPlan] = useState<TherapeuticPlan | null>(null)
     const [activeTab, setActiveTab] = useState<PatientTab>('analytics')
     const [patientPrescriptions, setPatientPrescriptions] = useState<PatientPrescriptionSummary[]>([])
+    const [clinicalDevolutions, setClinicalDevolutions] = useState<ClinicalDevolution[]>([])
 
     const loadPatientData = useCallback(async () => {
         if (!user?.id) return
@@ -181,6 +193,12 @@ export function usePatientDashboard() {
                 planTitle: row.plan_title ?? null
             })) || [])
 
+            // 6. Clinical Devolutions (Sprint 1 — médico → paciente)
+            try {
+                const devolutions = await clinicalDevolutionService.getPatientDevolutions(patientId, 10)
+                setClinicalDevolutions(devolutions)
+            } catch (e) { console.warn('Devolutions load failed:', e); setClinicalDevolutions([]) }
+
         } catch (err) {
             console.error('Patient dashboard hook error:', err)
         } finally {
@@ -200,6 +218,7 @@ export function usePatientDashboard() {
         activeTab,
         setActiveTab,
         patientPrescriptions,
+        clinicalDevolutions,
         refresh: loadPatientData
     }
 }

@@ -48,6 +48,7 @@ function stripListaIndiciariaItem(item: unknown): string {
 import { useAuth } from '../contexts/AuthContext'
 import { useUserView } from '../contexts/UserViewContext'
 import { rationalityAnalysisService, type Rationality } from '../services/rationalityAnalysisService'
+import { clinicalDevolutionService } from '../services/clinicalDevolutionService'
 
 interface SharedReport {
   id: string
@@ -426,27 +427,62 @@ const ClinicalReports: React.FC<ClinicalReportsProps> = ({ className = '', onSha
     }
   }
 
-  const handleReviewReport = async (reportId: string, status: 'reviewed' | 'approved') => {
-    try {
-      const { error } = await supabase
-        .from('clinical_reports')
-        .update({
-          status: status,
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', reportId)
+  // Sprint 1 Devolution V1 — corrige bug latente (atualizava 'status' do FSM em vez de 'review_status')
+  // Reusa schema existente (review_status / reviewed_by / reviewed_at) + clinicalDevolutionService.
+  const [isApprovingReport, setIsApprovingReport] = useState(false)
 
-      if (error) {
-        console.error('❌ Erro ao revisar relatório:', error)
-        return
+  const handleReviewReport = async (reportId: string, action: 'reviewed' | 'approved') => {
+    if (!user?.id) {
+      alert('Sessão inválida. Faça login novamente.')
+      return
+    }
+
+    setIsApprovingReport(true)
+    try {
+      if (action === 'reviewed') {
+        const res = await clinicalDevolutionService.markAsReviewed(reportId, user.id)
+        if (!res.ok) {
+          alert(res.error || 'Não foi possível marcar como revisado.')
+          return
+        }
+      } else {
+        // 'approved' = devolução clínica completa (com nota obrigatória pro paciente)
+        const report = reports.find(r => r.id === reportId)
+        if (!report) {
+          alert('Relatório não encontrado.')
+          return
+        }
+        const trimmed = (doctorNotes || '').trim()
+        if (trimmed.length < 3) {
+          alert('Para aprovar e devolver, escreva ao menos uma nota clínica curta para o paciente.')
+          return
+        }
+
+        const res = await clinicalDevolutionService.approveAndDeliver({
+          reportId,
+          reviewerId: user.id,
+          reviewerName: user.name || undefined,
+          patientId: report.patientId,
+          patientName: report.patientName,
+          doctorNotes: trimmed,
+          signWithIcp: false, // V1: opcional, default false (Princípio 42)
+          sendEmail: false    // V1: notification in-app primeiro; email vira opt-in V2
+        })
+
+        if (!res.ok) {
+          alert(res.error || 'Não foi possível aprovar e devolver.')
+          return
+        }
       }
 
-      console.log('✅ Relatório revisado com sucesso')
-      loadSharedReports() // Recarregar dados
+      loadSharedReports()
       setShowReportModal(false)
       setDoctorNotes('')
-    } catch (error) {
-      console.error('❌ Erro ao revisar relatório:', error)
+    } catch (error: any) {
+      console.error('❌ Erro ao revisar/aprovar relatório:', error)
+      alert(error?.message || 'Erro inesperado ao processar revisão.')
+    } finally {
+      setIsApprovingReport(false)
     }
   }
 
@@ -1898,17 +1934,26 @@ const ClinicalReports: React.FC<ClinicalReportsProps> = ({ className = '', onSha
                 <>
                   <button
                     onClick={() => handleReviewReport(selectedReport.id, 'reviewed')}
-                    className="flex-1 min-w-[120px] px-4 py-2 text-white rounded-lg transition-colors"
+                    disabled={isApprovingReport}
+                    className="flex-1 min-w-[120px] px-4 py-2 text-white rounded-lg transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
                     style={{ background: 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)' }}
+                    title="Marcar relatório como visto (sem devolver ao paciente ainda)"
                   >
-                    Revisado
+                    {isApprovingReport ? 'Salvando...' : 'Marcar revisado'}
                   </button>
                   <button
                     onClick={() => handleReviewReport(selectedReport.id, 'approved')}
-                    className="flex-1 min-w-[120px] px-4 py-2 text-white rounded-lg transition-colors"
+                    disabled={isApprovingReport || (doctorNotes || '').trim().length < 3}
+                    className="flex-1 min-w-[160px] px-4 py-2 text-white rounded-lg transition-colors flex items-center justify-center space-x-2 disabled:opacity-60 disabled:cursor-not-allowed"
                     style={{ background: 'linear-gradient(135deg, #00C16A 0%, #13794f 100%)' }}
+                    title={
+                      (doctorNotes || '').trim().length < 3
+                        ? 'Escreva uma nota clínica para o paciente antes de aprovar'
+                        : 'Aprovar e devolver ao paciente — registra revisão clínica e notifica o paciente'
+                    }
                   >
-                    Aprovar
+                    {isApprovingReport ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle className="w-4 h-4" />}
+                    <span>{isApprovingReport ? 'Devolvendo...' : 'Aprovar e devolver'}</span>
                   </button>
                 </>
               )}
