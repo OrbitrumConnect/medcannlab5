@@ -46,6 +46,24 @@ interface PatientNFT {
 
 const PAGE_SIZE = 10
 
+/**
+ * Converte URL Pollinations.ai para versão thumbnail (320px) reduzindo tráfego do grid.
+ * Tier A perf optimization: imagem cheia 512×512 vira 320×320 no grid; modal expanded
+ * mantém URL original via getFullUrl(). Para URLs não-Pollinations devolve original.
+ */
+function getThumbnailUrl(url: string | null | undefined): string | null {
+    if (!url) return null
+    if (!url.includes('image.pollinations.ai')) return url
+    try {
+        const u = new URL(url)
+        u.searchParams.set('width', '320')
+        u.searchParams.set('height', '320')
+        return u.toString()
+    } catch {
+        return url
+    }
+}
+
 const STYLE_LABELS: Record<string, { label: string; color: string }> = {
     'neuro-organic': { label: 'Neuro-Organic', color: 'text-emerald-300' },
     'healing-fractals': { label: 'Healing Fractals', color: 'text-cyan-300' },
@@ -219,9 +237,10 @@ export default function PatientNFTGallery({ onCreateAssessment }: PatientNFTGall
                                 >
                                     {nft.thumbnail_url || nft.image_url ? (
                                         <img
-                                            src={nft.thumbnail_url || nft.image_url}
+                                            src={getThumbnailUrl(nft.thumbnail_url || nft.image_url) || (nft.thumbnail_url || nft.image_url)}
                                             alt={`Assinatura visual ${formatDate(nft.created_at)}`}
                                             loading="lazy"
+                                            decoding="async"
                                             className="w-full h-full object-cover"
                                             onError={(e) => {
                                                 ;(e.target as HTMLImageElement).style.display = 'none'
@@ -288,6 +307,10 @@ export default function PatientNFTGallery({ onCreateAssessment }: PatientNFTGall
                 <div
                     className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm"
                     onClick={() => setSelectedNFT(null)}
+                    role="dialog"
+                    aria-modal="true"
+                    aria-labelledby="nft-gallery-modal-title"
+                    onKeyDown={(e) => { if (e.key === 'Escape') setSelectedNFT(null) }}
                 >
                     <div
                         className="w-full max-w-5xl bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl overflow-hidden max-h-[90vh] flex flex-col animate-in fade-in zoom-in-95 duration-200"
@@ -298,7 +321,7 @@ export default function PatientNFTGallery({ onCreateAssessment }: PatientNFTGall
                             <div className="flex items-center gap-2">
                                 <Sparkles className="w-4 h-4 text-emerald-400" />
                                 <div>
-                                    <h3 className="text-sm font-bold text-white">Assinatura Visual</h3>
+                                    <h3 id="nft-gallery-modal-title" className="text-sm font-bold text-white">Assinatura Visual</h3>
                                     <p className="text-[11px] text-slate-400">
                                         {formatDate(selectedNFT.created_at)}
                                     </p>
@@ -307,6 +330,8 @@ export default function PatientNFTGallery({ onCreateAssessment }: PatientNFTGall
                             <button
                                 onClick={() => setSelectedNFT(null)}
                                 className="p-1.5 hover:bg-slate-700 rounded-full text-slate-400 hover:text-white transition-colors"
+                                aria-label="Fechar assinatura visual"
+                                title="Fechar"
                             >
                                 <X className="w-4 h-4" />
                             </button>

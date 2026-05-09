@@ -49,6 +49,7 @@ import { useAuth } from '../contexts/AuthContext'
 import { useUserView } from '../contexts/UserViewContext'
 import { rationalityAnalysisService, type Rationality } from '../services/rationalityAnalysisService'
 import { clinicalDevolutionService } from '../services/clinicalDevolutionService'
+import { useToast } from '../contexts/ToastContext'
 
 interface SharedReport {
   id: string
@@ -99,6 +100,8 @@ const ClinicalReports: React.FC<ClinicalReportsProps> = ({ className = '', onSha
   const [doctorNotes, setDoctorNotes] = useState('')
   const [filterStatus, setFilterStatus] = useState<'all' | 'shared' | 'reviewed' | 'validated'>('all')
   const [currentPage, setCurrentPage] = useState(1)
+
+  const { success: toastSuccess, error: toastError, warning: toastWarning } = useToast()
 
   const effectiveType = getEffectiveUserType(user?.type)
   const isUserAdmin = effectiveType === 'admin'
@@ -433,7 +436,7 @@ const ClinicalReports: React.FC<ClinicalReportsProps> = ({ className = '', onSha
 
   const handleReviewReport = async (reportId: string, action: 'reviewed' | 'approved') => {
     if (!user?.id) {
-      alert('Sessão inválida. Faça login novamente.')
+      toastError('Sessão inválida', 'Faça login novamente para continuar.')
       return
     }
 
@@ -442,19 +445,23 @@ const ClinicalReports: React.FC<ClinicalReportsProps> = ({ className = '', onSha
       if (action === 'reviewed') {
         const res = await clinicalDevolutionService.markAsReviewed(reportId, user.id)
         if (!res.ok) {
-          alert(res.error || 'Não foi possível marcar como revisado.')
+          toastError('Não foi possível marcar como revisado', res.error)
           return
         }
+        toastSuccess('Relatório marcado como revisado')
       } else {
         // 'approved' = devolução clínica completa (com nota obrigatória pro paciente)
         const report = reports.find(r => r.id === reportId)
         if (!report) {
-          alert('Relatório não encontrado.')
+          toastError('Relatório não encontrado')
           return
         }
         const trimmed = (doctorNotes || '').trim()
         if (trimmed.length < 3) {
-          alert('Para aprovar e devolver, escreva ao menos uma nota clínica curta para o paciente.')
+          toastWarning(
+            'Nota clínica vazia',
+            'Para aprovar e devolver, escreva ao menos uma frase para o paciente.'
+          )
           return
         }
 
@@ -470,9 +477,10 @@ const ClinicalReports: React.FC<ClinicalReportsProps> = ({ className = '', onSha
         })
 
         if (!res.ok) {
-          alert(res.error || 'Não foi possível aprovar e devolver.')
+          toastError('Falha ao devolver', res.error)
           return
         }
+        toastSuccess('Devolução enviada', `${report.patientName} foi notificado(a).`)
       }
 
       loadSharedReports()
@@ -480,7 +488,7 @@ const ClinicalReports: React.FC<ClinicalReportsProps> = ({ className = '', onSha
       setDoctorNotes('')
     } catch (error: any) {
       console.error('❌ Erro ao revisar/aprovar relatório:', error)
-      alert(error?.message || 'Erro inesperado ao processar revisão.')
+      toastError('Erro inesperado', error?.message || 'Falha ao processar revisão.')
     } finally {
       setIsApprovingReport(false)
     }
@@ -669,13 +677,13 @@ const ClinicalReports: React.FC<ClinicalReportsProps> = ({ className = '', onSha
 
       if (error) {
         console.error('Erro Edge Function generate-nft-from-report (após retry):', error)
-        alert(friendlyNftError(error.message || ''))
+        toastError('Não foi possível gerar', friendlyNftError(error.message || ''))
         return
       }
 
       if (!data?.success) {
         console.error('Resposta sem success (após retry):', data)
-        alert(friendlyNftError(data?.error || ''))
+        toastError('Falha na geração', friendlyNftError(data?.error || ''))
         return
       }
 
@@ -691,7 +699,7 @@ const ClinicalReports: React.FC<ClinicalReportsProps> = ({ className = '', onSha
       }
     } catch (error) {
       console.error('Erro ao gerar NFT:', error)
-      alert(friendlyNftError(error instanceof Error ? error.message : String(error)))
+      toastError('Erro ao gerar', friendlyNftError(error instanceof Error ? error.message : String(error)))
     } finally {
       setNftLoading(false)
     }
@@ -699,7 +707,7 @@ const ClinicalReports: React.FC<ClinicalReportsProps> = ({ className = '', onSha
 
   const handleApplyRationality = async (rationality: Rationality) => {
     if (!selectedReport || !user) {
-      alert('Erro: Relatório ou usuário não encontrado.')
+      toastError('Sessão inválida', 'Relatório ou usuário não encontrado.')
       return
     }
 
@@ -737,9 +745,9 @@ const ClinicalReports: React.FC<ClinicalReportsProps> = ({ className = '', onSha
         )
       } catch (saveErr) {
         console.error('⚠️ Persistência parcial — análise gerada mas falhou ao salvar:', saveErr)
-        alert(
-          `Análise ${rationality} gerada com sucesso, mas houve um problema ao salvar permanentemente.\n` +
-          `Verifique permissões (RLS). A análise está disponível nesta sessão.`
+        toastWarning(
+          'Análise gerada, persistência parcial',
+          `Análise ${rationality} gerada, mas falhou ao salvar permanentemente. Disponível nesta sessão.`
         )
       }
 
@@ -765,10 +773,9 @@ const ClinicalReports: React.FC<ClinicalReportsProps> = ({ className = '', onSha
       }, 250)
     } catch (error) {
       console.error('Erro ao aplicar racionalidade:', error)
-      alert(
-        `Não foi possível gerar a análise ${rationality}.\n` +
-        `Detalhes: ${error instanceof Error ? error.message : 'erro desconhecido'}\n\n` +
-        `Verifique sua conexão e tente novamente.`
+      toastError(
+        `Não foi possível gerar análise ${rationality}`,
+        error instanceof Error ? error.message : 'Verifique sua conexão e tente novamente.'
       )
     } finally {
       setIsGeneratingAnalysis(false)
@@ -914,7 +921,7 @@ const ClinicalReports: React.FC<ClinicalReportsProps> = ({ className = '', onSha
         await navigator.share({ title: `Análise ${label}`, text })
       } else {
         await navigator.clipboard.writeText(text)
-        alert('✅ Análise copiada para a área de transferência!')
+        toastSuccess('Análise copiada', 'Texto disponível na área de transferência.')
       }
     } catch (err) {
       console.warn('Share cancelado/erro:', err)
@@ -1342,7 +1349,13 @@ const ClinicalReports: React.FC<ClinicalReportsProps> = ({ className = '', onSha
 
       {/* Modal de Revisão */}
       {showReportModal && selectedReport && (
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50">
+        <div
+          className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="clinical-report-modal-title"
+          onKeyDown={(e) => { if (e.key === 'Escape') setShowReportModal(false) }}
+        >
           <div
             className="rounded-xl p-6 max-w-4xl w-full mx-4 max-h-[80vh] overflow-y-auto border"
             style={{
@@ -1352,12 +1365,14 @@ const ClinicalReports: React.FC<ClinicalReportsProps> = ({ className = '', onSha
             }}
           >
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-xl font-bold text-white">
+              <h3 id="clinical-report-modal-title" className="text-xl font-bold text-white">
                 Revisar Relatório - {selectedReport.patientName}
               </h3>
               <button
                 onClick={() => setShowReportModal(false)}
                 className="text-slate-400 hover:text-white transition-colors text-xl"
+                aria-label="Fechar relatório"
+                title="Fechar"
               >
                 ✕
               </button>
@@ -1964,7 +1979,13 @@ const ClinicalReports: React.FC<ClinicalReportsProps> = ({ className = '', onSha
 
       {/* Modal NFT — V1.9.197: copy correto (sem "blockchain"), CTA Ver na Galeria */}
       {nftModal.show && (
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+        <div
+          className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="nft-modal-title"
+          onKeyDown={(e) => { if (e.key === 'Escape') setNftModal({ show: false, token: '', hash: '' }) }}
+        >
           <div
             className="rounded-2xl p-7 max-w-md w-full border text-center animate-in fade-in zoom-in-95 duration-200"
             style={{
@@ -1977,7 +1998,7 @@ const ClinicalReports: React.FC<ClinicalReportsProps> = ({ className = '', onSha
               style={{ background: 'linear-gradient(135deg, #10b981 0%, #9333ea 100%)' }}>
               <Sparkles className="w-8 h-8 text-white" />
             </div>
-            <h3 className="text-xl font-bold text-white mb-2">Assinatura Visual Gerada</h3>
+            <h3 id="nft-modal-title" className="text-xl font-bold text-white mb-2">Assinatura Visual Gerada</h3>
             <p className="text-slate-400 text-sm mb-6 leading-relaxed">
               Sua assinatura simbólica única foi gerada e ancorada criptograficamente
               ao relatório clínico de origem.

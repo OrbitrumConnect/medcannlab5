@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, Suspense, lazy } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import {
   Calendar,
@@ -27,16 +27,19 @@ import { usePatientDashboard, PatientTab } from '../hooks/dashboard/usePatientDa
 import ShareReportModal from '../components/ShareReportModal'
 import NoaConversationalInterface from '../components/NoaConversationalInterface'
 import PendingRatingsBanner from '../components/PendingRatingsBanner'
-import PatientAnalytics from '../components/PatientAnalytics'
+// Lazy load — Tier A perf optimization (V1.9.x). Componentes pesados só carregam quando aba ativa.
+const PatientAnalytics = lazy(() => import('../components/PatientAnalytics'))
+const PatientNFTGallery = lazy(() => import('../components/PatientNFTGallery'))
+const ClinicalReports = lazy(() => import('../components/ClinicalReports'))
+
 import PatientHeaderActions from '../components/PatientHeaderActions'
 import PatientPrescriptions from '../components/PatientPrescriptions'
-import PatientNFTGallery from '../components/PatientNFTGallery'
 
 import { PatientStats } from '../components/dashboard/patient/PatientStats'
 import { PatientAppointments } from '../components/dashboard/patient/PatientAppointments'
 import { PatientQuickActions } from '../components/dashboard/patient/PatientQuickActions'
 import { PatientSupport } from '../components/dashboard/patient/PatientSupport'
-import ClinicalReports from '../components/ClinicalReports'
+import { DashboardSectionSkeleton } from '../components/ui/DashboardSectionSkeleton'
 
 const PatientDashboard: React.FC = () => {
   const { user } = useAuth()
@@ -175,14 +178,16 @@ const PatientDashboard: React.FC = () => {
           />
 
           <div className="space-y-8">
-            <PatientAnalytics
-              reports={reports}
-              user={user}
-              appointments={appointments}
-              patientPrescriptions={patientPrescriptions}
-              onScheduleClick={() => navigate('/app/clinica/paciente/agendamentos')}
-              onStartAssessment={handleStartAssessment}
-            />
+            <Suspense fallback={<DashboardSectionSkeleton variant="analytics" />}>
+              <PatientAnalytics
+                reports={reports}
+                user={user}
+                appointments={appointments}
+                patientPrescriptions={patientPrescriptions}
+                onScheduleClick={() => navigate('/app/clinica/paciente/agendamentos')}
+                onStartAssessment={handleStartAssessment}
+              />
+            </Suspense>
 
             {/* V1.9.x: PatientQuickActions redesenhado — antes "Chat com Médico" e
                 "Nova Consulta" eram redundantes com PatientHeaderActions (Pedro 08/05).
@@ -215,13 +220,15 @@ const PatientDashboard: React.FC = () => {
             <button onClick={() => setActiveTab('analytics')} className="px-4 py-2 bg-white/5 border border-white/10 rounded-xl hover:bg-white/10 transition-all text-sm">Voltar</button>
           </div>
           <div className="bg-slate-900/40 rounded-3xl border border-white/5 p-6 md:p-8">
-            <ClinicalReports
-              className="w-full"
-              onShareReport={(reportId) => {
-                setShareModalReportId(reportId)
-                setShareModalOpen(true)
-              }}
-            />
+            <Suspense fallback={<DashboardSectionSkeleton variant="reports" />}>
+              <ClinicalReports
+                className="w-full"
+                onShareReport={(reportId) => {
+                  setShareModalReportId(reportId)
+                  setShareModalOpen(true)
+                }}
+              />
+            </Suspense>
           </div>
         </div>
       )}
@@ -249,9 +256,11 @@ const PatientDashboard: React.FC = () => {
 
       {/* V1.9.193 — Galeria de Assinaturas Visuais (NFT lógico clínico) */}
       {activeTab === 'galeria' && (
-        <PatientNFTGallery
-          onCreateAssessment={handleStartAssessment}
-        />
+        <Suspense fallback={<DashboardSectionSkeleton variant="gallery" />}>
+          <PatientNFTGallery
+            onCreateAssessment={handleStartAssessment}
+          />
+        </Suspense>
       )}
 
 
