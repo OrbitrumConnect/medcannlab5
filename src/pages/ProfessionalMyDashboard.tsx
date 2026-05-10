@@ -428,41 +428,57 @@ const ProfessionalMyDashboard: React.FC = () => {
     const minScanTime = 1500
 
     const fetchData = async () => {
+      // V1.9.209 — paralelização Promise.all (antes 5 queries seriais).
+      // Mantém fallbacks (appointments tenta professional_id, depois doctor_id).
+      // Tempo: max(latency) em vez de soma. Reduz ~50-70% tempo de "Analisar Paciente".
       // V1.9.112-A2: SELECT incluindo doctor_private_notes (notas privadas do médico)
-      const assessmentsPromise = supabase.from('clinical_assessments').select('id, created_at, data, status, doctor_private_notes, doctor_private_notes_updated_at, doctor_private_notes_updated_by').eq('patient_id', patientId).eq('doctor_id', user?.id).order('created_at', { ascending: false }).limit(10)
-      let appointmentsRes = await supabase.from('appointments').select('id, appointment_date, status, notes').eq('patient_id', patientId).eq('professional_id', user?.id).order('appointment_date', { ascending: true })
-      if (appointmentsRes.error) {
-        appointmentsRes = await supabase.from('appointments').select('id, appointment_date, status, notes').eq('patient_id', patientId).eq('doctor_id', user?.id).order('appointment_date', { ascending: true })
-      }
-      let prescriptionsRes: any = { data: [] }
-      try {
-        prescriptionsRes = await supabase.from('v_patient_prescriptions').select('*').eq('patient_id', patientId).limit(20).order('issued_at', { ascending: false })
-      } catch (err) { console.warn('Pular prescricoes', err) }
+      const assessmentsPromise = supabase.from('clinical_assessments')
+        .select('id, created_at, data, status, doctor_private_notes, doctor_private_notes_updated_at, doctor_private_notes_updated_by')
+        .eq('patient_id', patientId).eq('doctor_id', user?.id)
+        .order('created_at', { ascending: false }).limit(10)
 
-      let reportsRes: any = { data: [] }
-      try {
-        reportsRes = await supabase.from('clinical_reports').select('id, created_at, status, content, report_type').eq('patient_id', patientId).order('created_at', { ascending: false }).limit(15)
-      } catch (err) { console.warn('Pular relatorios', err) }
+      const appointmentsPromise = (async () => {
+        let res = await supabase.from('appointments')
+          .select('id, appointment_date, status, notes')
+          .eq('patient_id', patientId).eq('professional_id', user?.id)
+          .order('appointment_date', { ascending: true })
+        if (res.error) {
+          res = await supabase.from('appointments')
+            .select('id, appointment_date, status, notes')
+            .eq('patient_id', patientId).eq('doctor_id', user?.id)
+            .order('appointment_date', { ascending: true })
+        }
+        return res
+      })()
 
-      const assessmentsRes = await assessmentsPromise
+      const prescriptionsPromise = supabase.from('v_patient_prescriptions')
+        .select('*').eq('patient_id', patientId).limit(20)
+        .order('issued_at', { ascending: false })
+        .then(r => r, (err) => { console.warn('Pular prescricoes', err); return { data: [] as any[] } })
+
+      const reportsPromise = supabase.from('clinical_reports')
+        .select('id, created_at, status, content, report_type')
+        .eq('patient_id', patientId)
+        .order('created_at', { ascending: false }).limit(15)
+        .then(r => r, (err) => { console.warn('Pular relatorios', err); return { data: [] as any[] } })
+
+      const userRowPromise = supabase.from('users')
+        .select('avatar_url, user_metadata, allergies, medications, birth_date, gender')
+        .eq('id', patientId).maybeSingle()
+        .then(r => r, () => ({ data: null as any }))
+
+      // Paraleliza as 5 queries — tempo total = max(latency), não soma
+      const [assessmentsRes, appointmentsRes, prescriptionsRes, reportsRes, userRowRes] =
+        await Promise.all([assessmentsPromise, appointmentsPromise, prescriptionsPromise, reportsPromise, userRowPromise])
+
       // V1.9.112-A1: incluir campos clínicos críticos (alergias, medicações,
       // birth_date, gender) que JÁ existem em users mas não eram lidos.
-      let patientAvatarUrl: string | null = null
-      let patientAllergies: string | null = null
-      let patientMedications: string | null = null
-      let patientBirthDate: string | null = null
-      let patientGender: string | null = null
-      try {
-        const { data: userRow } = await supabase.from('users')
-          .select('avatar_url, user_metadata, allergies, medications, birth_date, gender')
-          .eq('id', patientId)
-          .maybeSingle()
-        patientAvatarUrl = (userRow as any)?.avatar_url ?? (userRow as any)?.user_metadata?.avatar_url ?? null
-        patientAllergies = (userRow as any)?.allergies ?? null
-        patientMedications = (userRow as any)?.medications ?? null
-        patientBirthDate = (userRow as any)?.birth_date ?? null
-        patientGender = (userRow as any)?.gender ?? null
-      } catch (_) { }
+      const userRow = (userRowRes as any)?.data
+      const patientAvatarUrl: string | null = userRow?.avatar_url ?? userRow?.user_metadata?.avatar_url ?? null
+      const patientAllergies: string | null = userRow?.allergies ?? null
+      const patientMedications: string | null = userRow?.medications ?? null
+      const patientBirthDate: string | null = userRow?.birth_date ?? null
+      const patientGender: string | null = userRow?.gender ?? null
       const now = new Date()
       const appointments = (appointmentsRes?.data || []) as any[]
       const pastAppointments = appointments.filter((a: any) => new Date(a.appointment_date) < now)
