@@ -90,6 +90,69 @@ Em caso de exceção: registrar abaixo na seção "Exceções acionadas" antes d
   Origem: documento pré-kevlar trazido por Ricardo 05/05
   Conexão: estágio 2 STRUCTURING — análise de risco DRC
 
+---
+
+## Terminal de Pesquisa — terreno arado, falta plantar (auditoria 10/05)
+
+> **Frase âncora Pedro 10/05:** *"terreno ja foi arrumado, falta plantar"*
+>
+> Stack técnico das 4 tabs investigadas está PRONTO. Falta atividade real
+> (dados, eventos, alunos, posts). NÃO codar agora — esperar uso real OU
+> decisão clínica/curatorial humana.
+
+- [10/05] — **Avaliações (EnsinoDashboard `evaluationInstruments`)** — 🔴 mock
+  participantes hardcoded (Rubrica AEC 360º=128, Casos Clínicos=94, Portfolio=76).
+  Realidade: 0 alunos no banco. Mesma classe ACDSS / Mock Pesquisa.
+  Quando trocar: quando ≥1 aluno real fizer ≥1 avaliação OU esconder seção até
+  ter atividade. Volume ~30 min.
+  Origem: descoberta 10/05 audit Terminal de Pesquisa
+  Conexão: estágio 1 INTAKE — Ensino / Avaliação acadêmica
+
+- [10/05] — **Newsletter & Eventos (EnsinoDashboard `newsletterUpdates`)** — 🔴
+  3 itens hardcoded com datas PASSADAS (set-out/2025):
+    1. Seminário Internacional Cannabis & Nefrologia 20/09/2025
+    2. Bootcamp LabPEC 05/10/2025
+    3. ⚠️ "Publicação destacada na Revista Brasileira de Nefrologia (set/2025)"
+  ⚠️ Item 3 é claim material — confirmar com Ricardo/Pedro se a publicação
+  realmente aconteceu. Se NÃO houve publicação, remover urgente (mesma família
+  V1.9.203/206/207 risco regulatório).
+  Quando trocar: quando houver evento futuro real OU eliminar seção. Volume
+  ~20 min (substituir array por query ou esconder).
+  Origem: descoberta 10/05 audit Terminal de Pesquisa
+  Conexão: estágio 1 INTAKE — Newsletter / Eventos
+
+- [10/05] — **Mentoria (EnsinoDashboard `mentorshipPrograms`)** — 🟡 NÃO é
+  mock numérico, mas config estática. Hardcoded:
+    • Dr. Ricardo Valença — "Terça a Quinta • 14h às 20h"
+    • Dr. Eduardo Faveret — "Terças • 19h às 21h"
+    • IA Nôa Esperança — "Disponível 24h"
+  Mentores são reais. Click no card abre modal → INSERT em appointments
+  (funcional). Risco: disponibilidade hardcoded pode estar desatualizada.
+  Quando trocar: pós-CNPJ + médicos confirmarem horário oficial.
+  Volume ~20 min (substituir array por query em users.availability).
+  Origem: descoberta 10/05 audit Terminal de Pesquisa
+  Conexão: estágio 3 INTERPRETATION + Ensino
+
+- [10/05] — **Library (Base de Conhecimento)** — 🟢 NADA A FAZER
+  Validado empíricamente: 46 docs reais, 13 nos últimos 90d, 6 storage buckets.
+  Schema completo, queries supabase.from('documents') funcionando, upload ativo.
+  Sem mock-data. Tab funcional com conteúdo legítimo. Apenas registro.
+  Origem: audit 10/05 (incluído pra completude)
+
+### Critério de reabertura coletiva (3 entradas Avaliações/Newsletter/Mentoria):
+
+```
+Sprint 1 medindo (D+14 = 23/05)             — desbloqueia decisão
+Ricardo/Pedro confirmar publicação RBN       — urgência item Newsletter
+1º aluno real fazer 1ª avaliação             — desbloqueia Avaliações
+CNPJ formalizado                              — desbloqueia comercialização
+                                                onde essas seções ficam visíveis
+```
+
+Princípio aplicado: *"terreno arado, falta plantar"* — não destruir
+infraestrutura técnica que está pronta. Esperar uso real OU decisão humana
+sobre o que mostrar pré-uso.
+
 <!-- TEMPLATE para futuras entradas:
 - [DD/MM HH:MM] — [Ideia em 1 linha]. Avaliar pós-Sprint 1 medido.
   Origem: [autor]
