@@ -98,11 +98,16 @@ const ProfessionalMyDashboard: React.FC = () => {
   const [privateNotesSaving, setPrivateNotesSaving] = useState<boolean>(false)
   const [privateNotesLastSaved, setPrivateNotesLastSaved] = useState<string | null>(null)
 
-  // KPIs unificados (3 camadas — mesmo do Dr. Eduardo / dashboard unificado)
+  // V1.9.210 — KPIs unificados realinhados pra produto real (longitudinal-narrativo,
+  // não sensorial/IoT). Camada "clinicos" virou "longitudinais" com:
+  //   • icpAssinados      — reports com signature_hash (CFM 2.314)
+  //   • axesGerados       — clinical_axes (Pipeline AXES rodando)
+  //   • devolucoesEnviadas — review_status='approved' (Sprint 1 V1.9.200)
+  //   • episodiosEpilepsia — mantido (zero honesto se sem evento)
   const [kpisUnified, setKpisUnified] = useState({
     administrativos: { totalPacientes: 0, avaliacoesCompletas: 0, protocolosIMRE: 0, respondedoresTEZ: 0 },
     semanticos: { qualidadeEscuta: 0, engajamentoPaciente: 0, satisfacaoClinica: 0, aderenciaTratamento: 0 },
-    clinicos: { wearablesAtivos: 0, monitoramento24h: 0, episodiosEpilepsia: 0, melhoraSintomas: 0 }
+    longitudinais: { icpAssinados: 0, axesGerados: 0, devolucoesEnviadas: 0, episodiosEpilepsia: 0 }
   })
 
   // Header triggers (cards por usabilidade do perfil profissional “Meu Dashboard”) + cérebro Nôa
@@ -183,12 +188,22 @@ const ProfessionalMyDashboard: React.FC = () => {
         aderenciaTratamento = Number((semanticKPIs.find((k: any) => k.metric_name === 'aderencia_tratamento') as any)?.metric_value ?? 0)
       }
 
-      const { data: wearableDevices } = await supabase.from('wearable_devices').select('id').eq('connection_status', 'connected')
-      const wearablesAtivos = wearableDevices?.length ?? 0
-      const { data: epilepsyEvents } = await supabase.from('epilepsy_events').select('id, severity').gte('timestamp', new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString())
-      const episodiosEpilepsia = epilepsyEvents?.length ?? 0
-      const eventosLeves = epilepsyEvents?.filter((e: any) => e.severity === 'leve').length ?? 0
-      const melhoraSintomas = episodiosEpilepsia > 0 ? Math.round((eventosLeves / episodiosEpilepsia) * 100) : 0
+      // V1.9.210 — KPIs longitudinais (pipeline real, não sensorial)
+      // Paraleliza via Promise.all (mesmo padrão V1.9.209).
+      const [reportsSignedRes, axesRes, approvedRes, epilepsyRes] = await Promise.all([
+        supabase.from('clinical_reports').select('id', { count: 'exact', head: true })
+          .not('signature_hash', 'is', null),
+        supabase.from('clinical_axes').select('id', { count: 'exact', head: true }),
+        supabase.from('clinical_reports').select('id', { count: 'exact', head: true })
+          .eq('review_status', 'approved'),
+        supabase.from('epilepsy_events').select('id')
+          .gte('timestamp', new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString())
+          .then(r => r, () => ({ data: [] as any[] }))
+      ])
+      const icpAssinados = reportsSignedRes.count ?? 0
+      const axesGerados = axesRes.count ?? 0
+      const devolucoesEnviadas = approvedRes.count ?? 0
+      const episodiosEpilepsia = (epilepsyRes as any).data?.length ?? 0
 
       setKpisUnified({
         administrativos: { totalPacientes, avaliacoesCompletas, protocolosIMRE, respondedoresTEZ },
@@ -198,7 +213,7 @@ const ProfessionalMyDashboard: React.FC = () => {
           satisfacaoClinica: Math.round(satisfacaoClinica),
           aderenciaTratamento: Math.round(aderenciaTratamento)
         },
-        clinicos: { wearablesAtivos, monitoramento24h: wearablesAtivos, episodiosEpilepsia, melhoraSintomas }
+        longitudinais: { icpAssinados, axesGerados, devolucoesEnviadas, episodiosEpilepsia }
       })
     } catch (_) {
       // Tabelas opcionais; manter zeros
@@ -1356,6 +1371,12 @@ const ProfessionalMyDashboard: React.FC = () => {
             <span className="text-[10px] uppercase tracking-wider text-slate-500">só com dados reais</span>
           </div>
           {(() => {
+            // V1.9.210 — Realinhamento pra produto real (longitudinal-narrativo):
+            //   • Camada admin: volumes operacionais (4)
+            //   • Camada semântica: qualidade da escuta + adesão (4)
+            //   • Camada longitudinal: ICP + Axes + Devoluções (Pipeline + Sprint 1)
+            // KPIs zerados FICAM visíveis (mostrar 0 honestamente — Pedro 10/05).
+            // Sem frase "+N aparecerão (wearables/sensores)" — produto não é IoT.
             const allKpis = [
               { label: 'Total de Pacientes', value: kpisUnified.administrativos.totalPacientes, max: 100, color: 'emerald', layer: 'admin' },
               { label: 'Avaliações Completas', value: kpisUnified.administrativos.avaliacoesCompletas, max: 50, color: 'emerald', layer: 'admin' },
@@ -1365,55 +1386,46 @@ const ProfessionalMyDashboard: React.FC = () => {
               { label: 'Engajamento', value: kpisUnified.semanticos.engajamentoPaciente, max: 100, color: 'purple', layer: 'sem', suffix: '%' },
               { label: 'Satisfação Clínica', value: kpisUnified.semanticos.satisfacaoClinica, max: 100, color: 'purple', layer: 'sem', suffix: '%' },
               { label: 'Aderência ao Tratamento', value: kpisUnified.semanticos.aderenciaTratamento, max: 100, color: 'purple', layer: 'sem', suffix: '%' },
-              { label: 'Wearables Ativos', value: kpisUnified.clinicos.wearablesAtivos, max: 50, color: 'blue', layer: 'clin' },
-              { label: 'Monitoramento 24h', value: kpisUnified.clinicos.monitoramento24h, max: 50, color: 'blue', layer: 'clin' },
-              { label: 'Episódios Epilepsia', value: kpisUnified.clinicos.episodiosEpilepsia, max: 50, color: 'blue', layer: 'clin' },
-              { label: 'Equilíbrio dos Dados', value: kpisUnified.clinicos.melhoraSintomas, max: 100, color: 'blue', layer: 'clin', suffix: '%' },
+              // Camada longitudinal (V1.9.210) — substituiu sensorial/IoT
+              { label: 'Reports ICP Assinados', value: kpisUnified.longitudinais.icpAssinados, max: 200, color: 'blue', layer: 'long' },
+              { label: 'Axes Gerados (Pipeline)', value: kpisUnified.longitudinais.axesGerados, max: 500, color: 'blue', layer: 'long' },
+              { label: 'Devoluções Enviadas', value: kpisUnified.longitudinais.devolucoesEnviadas, max: 100, color: 'blue', layer: 'long' },
+              { label: 'Episódios Epilepsia (30d)', value: kpisUnified.longitudinais.episodiosEpilepsia, max: 50, color: 'blue', layer: 'long' },
             ]
-            const activeKpis = allKpis.filter(k => k.value && Number(k.value) > 0)
-            const inactiveCount = allKpis.length - activeKpis.length
             const colorMap: Record<string, string> = {
               emerald: 'from-emerald-600 to-emerald-400 text-emerald-300 border-emerald-500/20',
               purple: 'from-purple-600 to-purple-400 text-purple-300 border-purple-500/20',
               blue: 'from-blue-600 to-blue-400 text-blue-300 border-blue-500/20',
             }
-            if (activeKpis.length === 0) {
-              return (
-                <div className="rounded-xl p-6 text-center border border-white/5 bg-white/[0.02] mb-6">
-                  <p className="text-sm text-slate-400">Indicadores aparecerão aqui assim que houver dados clínicos.</p>
-                </div>
-              )
-            }
             return (
-              <>
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 mb-3">
-                  {activeKpis.map((k, i) => {
-                    const pct = Math.min(100, Math.round((Number(k.value) / k.max) * 100))
-                    const colorClasses = colorMap[k.color]
-                    return (
-                      <div key={i} className={`rounded-xl p-3 border ${colorClasses.split(' ').slice(2).join(' ')} bg-white/[0.03]`}>
-                        <div className="flex items-baseline justify-between mb-1.5">
-                          <span className="text-[11px] text-slate-400 truncate pr-1">{k.label}</span>
-                          <span className={`text-lg font-bold tabular-nums ${colorClasses.split(' ').slice(1, 2).join(' ')}`}>
-                            {k.value}{k.suffix || ''}
-                          </span>
-                        </div>
-                        <div className="h-1.5 rounded-full bg-white/5 overflow-hidden">
-                          <div
-                            className={`h-full rounded-full bg-gradient-to-r ${colorClasses.split(' ').slice(0, 2).join(' ')} transition-all duration-500`}
-                            style={{ width: `${pct}%` }}
-                          />
-                        </div>
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 mb-6">
+                {allKpis.map((k, i) => {
+                  const numericValue = Number(k.value) || 0
+                  const pct = Math.min(100, Math.round((numericValue / k.max) * 100))
+                  const colorClasses = colorMap[k.color]
+                  const isZero = numericValue === 0
+                  return (
+                    <div
+                      key={i}
+                      className={`rounded-xl p-3 border ${colorClasses.split(' ').slice(2).join(' ')} ${isZero ? 'bg-white/[0.015] opacity-70' : 'bg-white/[0.03]'}`}
+                      title={isZero ? 'Aguardando primeiro dado real' : undefined}
+                    >
+                      <div className="flex items-baseline justify-between mb-1.5">
+                        <span className="text-[11px] text-slate-400 truncate pr-1">{k.label}</span>
+                        <span className={`text-lg font-bold tabular-nums ${colorClasses.split(' ').slice(1, 2).join(' ')}`}>
+                          {k.value}{k.suffix || ''}
+                        </span>
                       </div>
-                    )
-                  })}
-                </div>
-                {inactiveCount > 0 && (
-                  <p className="text-[11px] text-slate-500 italic mb-6">
-                    +{inactiveCount} indicadores aparecerão quando houver dados (wearables, semântica, monitoramento).
-                  </p>
-                )}
-              </>
+                      <div className="h-1.5 rounded-full bg-white/5 overflow-hidden">
+                        <div
+                          className={`h-full rounded-full bg-gradient-to-r ${colorClasses.split(' ').slice(0, 2).join(' ')} transition-all duration-500`}
+                          style={{ width: `${pct}%` }}
+                        />
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
             )
           })()}
 
