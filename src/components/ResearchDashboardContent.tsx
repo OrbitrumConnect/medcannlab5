@@ -180,80 +180,64 @@ const ResearchDashboardContent: React.FC = () => {
                 </div>
             </div>
 
-            {/* Conexões entre Cursos e Dados Clínicos */}
+            {/* V1.9.206 — Programa Territorial de Pesquisa */}
+            {/* Substituiu bloco mock anterior (89 casos / 34 profs / 156 dados / 124 pacientes /
+                856 alunos / 3 estudos) que era hardcoded e enganoso (validado via PAT 10/05:
+                números reais 9-25/10/87/25/0/0). Mesma classe de risco regulatório resolvida em
+                V1.9.203 (ACDSS hide). Cursos têm config em /app/ensino/aluno/cursos (sidebar). */}
             <div className="bg-slate-800 rounded-xl p-6 mb-8">
                 <h3 className="text-xl font-semibold text-white mb-6 flex items-center space-x-2">
-                    <Link2 className="w-6 h-6 text-purple-400" />
-                    <span>Integrações e Conexões</span>
+                    <Link2 className="w-6 h-6 text-emerald-400" />
+                    <span>Programa Territorial de Pesquisa</span>
                 </h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full overflow-x-hidden">
-                    {/* Arte da Entrevista Clínica + Dados */}
-                    <div className="bg-gradient-to-br from-blue-900/30 to-cyan-900/30 rounded-lg p-4 md:p-6 border border-blue-500/20 overflow-hidden w-full max-w-full">
-                        <div className="flex items-center space-x-3 mb-4">
-                            <BookOpen className="w-8 h-8 text-blue-400" />
-                            <div>
-                                <h4 className="text-lg font-semibold text-white">AEC - Avaliação Clínica Inicial</h4>
-                                <p className="text-sm text-gray-400">Metodologia AEC aplicada</p>
-                            </div>
-                        </div>
-                        <div className="space-y-3">
-                            <div className="flex items-center justify-between text-sm">
-                                <span className="text-gray-300">Casos com AEC aplicada:</span>
-                                <span className="text-blue-400 font-semibold">89 casos</span>
-                            </div>
-                            <div className="flex items-center justify-between text-sm">
-                                <span className="text-gray-300">Profissionais certificados:</span>
-                                <span className="text-blue-400 font-semibold">34</span>
-                            </div>
-                            <div className="flex items-center justify-between text-sm">
-                                <span className="text-gray-300">Dados clínicos correlacionados:</span>
-                                <span className="text-blue-400 font-semibold">156</span>
-                            </div>
-                        </div>
-                        <button
-                            onClick={() => navigate('/app/ensino/profissional/arte-entrevista-clinica')}
-                            className="mt-4 w-full bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors text-sm font-semibold"
-                        >
-                            Acessar Curso
-                        </button>
-                    </div>
 
-                    {/* Cannabis Medicinal + Dados */}
-                    <div className="bg-gradient-to-br from-green-900/30 to-teal-900/30 rounded-lg p-6 border border-green-500/20">
-                        <div className="flex items-center space-x-3 mb-4">
-                            <GraduationCap className="w-8 h-8 text-green-400" />
-                            <div>
-                                <h4 className="text-lg font-semibold text-white">Pós-Graduação Cannabis Medicinal</h4>
-                                <p className="text-sm text-gray-400">Dr. Eduardo Faveret</p>
+                {/* Card destaque: Cidade Amiga dos Rins */}
+                <button
+                    onClick={() => navigate('/app/pesquisa/profissional/cidade-amiga-dos-rins')}
+                    className="w-full text-left rounded-2xl p-6 transition-all hover:scale-[1.005] active:scale-[0.995] border block group"
+                    style={{
+                        background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.08) 0%, rgba(6, 182, 212, 0.05) 100%)',
+                        borderColor: 'rgba(16, 185, 129, 0.30)'
+                    }}
+                >
+                    <div className="flex items-start gap-4">
+                        <div className="w-14 h-14 rounded-xl bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center flex-shrink-0">
+                            <FlaskConical className="w-7 h-7 text-emerald-300" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                            <div className="text-[11px] font-semibold text-emerald-300 uppercase tracking-[0.2em] mb-2">
+                                Programa Territorial · Pesquisa Aplicada
+                            </div>
+                            <h4 className="text-xl md:text-2xl font-bold text-white mb-2">
+                                Cidade Amiga dos Rins
+                            </h4>
+                            <p className="text-sm text-slate-200/85 leading-relaxed mb-3 max-w-3xl">
+                                Observatório longitudinal de saúde renal conectando avaliação clínica
+                                inicial (AEC), monitoramento de função renal, prescrições e biomarcadores.
+                                Coordenação clínica: Dr. Ricardo Valença (Nefrologia).
+                            </p>
+                            <div className="flex items-center gap-2 text-sm font-semibold text-emerald-300 group-hover:translate-x-1 transition-transform">
+                                <span>Explorar programa</span>
+                                <span aria-hidden="true">→</span>
                             </div>
                         </div>
-                        <div className="space-y-3">
-                            <div className="flex items-center justify-between text-sm">
-                                <span className="text-gray-300">Pacientes em protocolos:</span>
-                                <span className="text-green-400 font-semibold">124</span>
-                            </div>
-                            <div className="flex items-center justify-between text-sm">
-                                <span className="text-gray-300">Alunos aplicando conhecimento:</span>
-                                <span className="text-green-400 font-semibold">856</span>
-                            </div>
-                            <div className="flex items-center justify-between text-sm">
-                                <span className="text-gray-300">Estudos baseados no curso:</span>
-                                <span className="text-green-400 font-semibold">3 estudos</span>
-                            </div>
-                        </div>
-                        <button
-                            onClick={() => {
-                                if (courseIds.cannabis) {
-                                    navigate(`/app/ensino/aluno/dashboard?courseId=${courseIds.cannabis}`)
-                                } else {
-                                    navigate('/app/ensino/aluno/cursos')
-                                }
-                            }}
-                            className="mt-4 w-full bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors text-sm font-semibold"
-                        >
-                            Acessar Curso
-                        </button>
                     </div>
+                </button>
+
+                {/* Linha discreta: Catálogo de Cursos (atalho UX, sem mock numbers) */}
+                <div className="mt-4 flex items-center justify-between gap-3 px-4 py-3 rounded-lg bg-slate-900/40 border border-slate-700/30">
+                    <div className="flex items-center gap-3 min-w-0">
+                        <BookOpen className="w-4 h-4 text-slate-400 flex-shrink-0" />
+                        <span className="text-sm text-slate-300 truncate">
+                            Procura formação em AEC ou Cannabis Medicinal? Veja o catálogo de cursos.
+                        </span>
+                    </div>
+                    <button
+                        onClick={() => navigate('/app/ensino/aluno/cursos')}
+                        className="flex-shrink-0 text-sm text-emerald-300 hover:text-emerald-200 font-semibold whitespace-nowrap transition-colors"
+                    >
+                        Ver catálogo →
+                    </button>
                 </div>
             </div>
 

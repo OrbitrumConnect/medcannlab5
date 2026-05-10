@@ -118,6 +118,37 @@ Em caso de exceção: registrar abaixo na seção "Exceções acionadas" antes d
   - ZERO mudança schema/RLS/CORE/AEC
   - 3 entradas correlatas adicionadas ao parking (IA renal, KPI DRC, Avaliador Risco)
 
+- [10/05 ~01h] — **Exceção #1 (cobertura risco regulatório) + #5 (Pedro explicit)**
+
+  **Motivo:** Tela `Terminal de Pesquisa → Dashboard de Pesquisa` exibia bloco
+  "Integrações e Conexões" com 6 números mock hardcoded enganosos:
+  ```
+  Tela mostrava   vs   Real (PAT 10/05)
+  89 casos AEC         9-25 (3-4× inflado)
+  34 profissionais     10  (3.4× inflado)
+  156 dados clínicos   87  (1.8× inflado)
+  124 pacientes        25  (5× inflado)
+  856 alunos            0  (∞ inflado — ZERO alunos no banco)
+  3 estudos             0  (?× inflado)
+  ```
+  Mesma classe de risco regulatório resolvida em V1.9.203 (ACDSS hide).
+  Mock parece claim falso material pra Muhdo / parceiros / pacientes externos.
+
+  **Justificativa adicional:** botões "Acessar Curso" eram redundantes com Catálogo
+  de Cursos do sidebar (linhas 147-148, 268-269, 302). Esta aba é Terminal de PESQUISA,
+  não ENSINO — conteúdo desalinhado com o nome.
+
+  **Ação tomada:**
+  - V1.9.206: substituído bloco "Integrações e Conexões" em
+    `src/components/ResearchDashboardContent.tsx` por:
+    • Card destaque "Cidade Amiga dos Rins" → /app/pesquisa/profissional/cidade-amiga-dos-rins
+      (página JÁ EXISTE com 1.352 LOC)
+    • Linha discreta atalho "Catálogo de Cursos" (preserva UX sem mock numbers)
+  - ZERO mudança schema/RLS/Edge/CORE/AEC
+  - Volume real ~30 min, ZERO regressão técnica
+  - Páginas que navegam pra `/app/pesquisa/profissional/dashboard` (CidadeAmigaDosRins.tsx,
+    JardinsDeCura.tsx, MedCannLab.tsx) continuam funcionando — só conteúdo da aba muda
+
 <!-- TEMPLATE para futuras exceções:
 - [DD/MM HH:MM] — Exceção #[N]: [motivo]
   Justificativa: [qual das 5 exceções legítimas]
