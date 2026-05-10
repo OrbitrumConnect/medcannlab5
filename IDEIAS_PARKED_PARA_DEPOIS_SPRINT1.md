@@ -118,6 +118,39 @@ Em caso de exceção: registrar abaixo na seção "Exceções acionadas" antes d
   - ZERO mudança schema/RLS/CORE/AEC
   - 3 entradas correlatas adicionadas ao parking (IA renal, KPI DRC, Avaliador Risco)
 
+- [10/05 ~02h] — **Exceção #1 (cobertura risco regulatório CFM 2.314/2022) + #5 (Pedro explicit)**
+
+  **Motivo:** Validação empírica via PAT 10/05 revelou:
+  - 9/10 profissionais com `council_state` NULL no banco
+  - 9/10 profissionais com `consultation_fee_default` NULL
+  - 79/82 appointments com `price` NULL (96%)
+
+  Investigação Profile.tsx + Landing.tsx revelou causa raiz:
+  - Profile.tsx UI **JÁ TEM** os 4 campos profissional (não é falta de UI)
+  - Landing.tsx signup tinha só 1 campo "Número (UF)" combinado, sem UF separada
+  - `councilState` no signup ficava SEMPRE vazio porque não havia dropdown UF
+  - Resultado: novos cadastros nunca preenchiam UF → council_state NULL
+
+  Bloqueia prescrição CFM 2.314/2022 (exige identificação completa do prescritor:
+  conselho + número + UF). Mesma classe de risco regulatório resolvida em
+  V1.9.203 (ACDSS hide) e V1.9.206 (mock Pesquisa).
+
+  **Ação tomada V1.9.207:**
+  1. Profile.tsx: banner emerald "Complete seu cadastro" pra profissional
+     com campos faltantes (council_state OR consultation_fee OR specialty
+     vazios). Não bloqueia, só lembra. Botão "Editar agora" abre form.
+  2. Landing.tsx signup: separou campo "Número (UF)" em 3 inputs (grid 12-cols):
+     - Conselho dropdown (CRM/CRO/CRP/CRF/CREFITO/COREN)
+     - Número (text)
+     - UF dropdown 27 estados brasileiros
+  3. handleRegister: valida obrigatoriedade pra profissional antes de criar
+     conta. Mensagem: "Para profissionais, informe Conselho + Número + UF
+     (obrigatório CFM 2.314/2022)"
+  - ZERO mudança schema (campos já existem em users.council_*)
+  - Dado existente do Ricardo "5253203-7" em council_state mantido — fix
+    de dados é separado, decisão dele migrar manualmente pra council_number
+  - Pacientes / alunos / admin não afetados
+
 - [10/05 ~01h] — **Exceção #1 (cobertura risco regulatório) + #5 (Pedro explicit)**
 
   **Motivo:** Tela `Terminal de Pesquisa → Dashboard de Pesquisa` exibia bloco

@@ -229,10 +229,23 @@ const Landing: React.FC = () => {
     if (!registerData.name || !registerData.email || !registerData.password) return error('Campos obrigatórios faltando')
     if (registerData.password !== registerData.confirmPassword) return error('Senhas não conferem')
 
+    // V1.9.207 — Validação obrigatória CFM 2.314/2022 para profissionais
+    // Antes 9/10 médicos cadastravam sem council_state (campo UF não existia separado).
+    // Agora signup exige tipo + número + UF antes de criar conta.
+    const userTypeToRegister = registerData.userType || localStorage.getItem('selectedUserType') || 'paciente'
+    const isProf = userTypeToRegister === 'profissional' || userTypeToRegister === 'professional'
+    if (isProf) {
+      const ct = (registerData.councilType || '').trim()
+      const cn = (registerData.councilNumber || '').trim()
+      const cs = (registerData.councilState || '').trim()
+      if (!ct || !cn || !cs) {
+        return error('Para profissionais, informe Conselho + Número + UF (obrigatório CFM 2.314/2022)')
+      }
+    }
+
     setIsLoading(true)
     try {
       // Logic from original file
-      const userTypeToRegister = registerData.userType || localStorage.getItem('selectedUserType') || 'paciente'
       await register(
         registerData.email,
         registerData.password,
@@ -1314,28 +1327,74 @@ const Landing: React.FC = () => {
           </div>
 
           {/* Conditional Fields based on User Type */}
+          {/* V1.9.207 — UF separada em dropdown próprio (antes ficava embutida no campo
+              "Número (UF)" e nunca era persistida em users.council_state — daí 9/10
+              médicos com council_state NULL no banco). Campos profissional agora são
+              obrigatórios (validação em handleRegister). CFM 2.314/2022 compliance. */}
           {registerData.userType === 'profissional' && (
             <div className="space-y-2 animate-in fade-in slide-in-from-top-2 mt-2">
-              <div className="grid grid-cols-3 gap-2">
+              <div className="grid grid-cols-12 gap-2">
                 <select
                   value={registerData.councilType}
                   onChange={(e) => setRegisterData({ ...registerData, councilType: e.target.value })}
-                  className="bg-slate-800 border border-slate-700 rounded-lg p-3 text-white outline-none"
+                  className="col-span-3 bg-slate-800 border border-slate-700 rounded-lg p-3 text-white outline-none"
+                  aria-label="Tipo de conselho"
                 >
-                  <option value="">Conselho</option>
+                  <option value="">Conselho *</option>
                   <option value="CRM">CRM</option>
                   <option value="CRO">CRO</option>
                   <option value="CRP">CRP</option>
                   <option value="CRF">CRF</option>
+                  <option value="CREFITO">CREFITO</option>
+                  <option value="COREN">COREN</option>
                 </select>
                 <input
                   type="text"
-                  placeholder="Número (UF)"
+                  placeholder="Número *"
                   value={registerData.councilNumber}
                   onChange={(e) => setRegisterData({ ...registerData, councilNumber: e.target.value })}
-                  className="col-span-2 bg-slate-800 border border-slate-700 rounded-lg p-3 text-white outline-none"
+                  className="col-span-6 bg-slate-800 border border-slate-700 rounded-lg p-3 text-white outline-none"
+                  aria-label="Número do conselho"
                 />
+                <select
+                  value={registerData.councilState}
+                  onChange={(e) => setRegisterData({ ...registerData, councilState: e.target.value })}
+                  className="col-span-3 bg-slate-800 border border-slate-700 rounded-lg p-3 text-white outline-none"
+                  aria-label="UF do conselho"
+                >
+                  <option value="">UF *</option>
+                  <option value="AC">AC</option>
+                  <option value="AL">AL</option>
+                  <option value="AP">AP</option>
+                  <option value="AM">AM</option>
+                  <option value="BA">BA</option>
+                  <option value="CE">CE</option>
+                  <option value="DF">DF</option>
+                  <option value="ES">ES</option>
+                  <option value="GO">GO</option>
+                  <option value="MA">MA</option>
+                  <option value="MT">MT</option>
+                  <option value="MS">MS</option>
+                  <option value="MG">MG</option>
+                  <option value="PA">PA</option>
+                  <option value="PB">PB</option>
+                  <option value="PR">PR</option>
+                  <option value="PE">PE</option>
+                  <option value="PI">PI</option>
+                  <option value="RJ">RJ</option>
+                  <option value="RN">RN</option>
+                  <option value="RS">RS</option>
+                  <option value="RO">RO</option>
+                  <option value="RR">RR</option>
+                  <option value="SC">SC</option>
+                  <option value="SP">SP</option>
+                  <option value="SE">SE</option>
+                  <option value="TO">TO</option>
+                </select>
               </div>
+              <p className="text-[10px] text-slate-500 ml-1">
+                * Obrigatório para prescrição CFM 2.314/2022
+              </p>
               {/* V1.9.147: especialidade — texto livre (admin pode editar depois) */}
               <input
                 type="text"

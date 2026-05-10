@@ -22,7 +22,8 @@ import {
   Wallet,
   Award,
   Camera,
-  Star
+  Star,
+  AlertCircle
 } from 'lucide-react'
 
 const Profile: React.FC = () => {
@@ -594,6 +595,49 @@ const Profile: React.FC = () => {
           Informações pessoais e configurações
         </p>
       </div>
+
+      {/* V1.9.207 — Banner "Complete seu cadastro" pra profissional sem dados críticos.
+          Não bloqueia — só avisa. Critérios: sem CRM/Conselho cadastrado OU sem valor
+          de consulta. Risco regulatório CFM 2.314/2022 + bloqueio receita pós-CNPJ. */}
+      {((user as any)?.type === 'profissional' || (user as any)?.type === 'professional') && (() => {
+        const missingCouncil = !formData.council_state || formData.council_state.trim().length < 3
+        const missingFee = !formData.consultation_fee_default || formData.consultation_fee_default.trim() === ''
+        const missingSpecialty = !formData.specialty || formData.specialty.trim() === ''
+        const showBanner = !isEditing && (missingCouncil || missingFee || missingSpecialty)
+        if (!showBanner) return null
+        const missingFields: string[] = []
+        if (missingCouncil) missingFields.push('CRM/Conselho')
+        if (missingSpecialty) missingFields.push('Especialidade')
+        if (missingFee) missingFields.push('Valor da consulta')
+        return (
+          <div
+            className="rounded-lg p-4 border flex items-start gap-3"
+            style={{
+              background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.10) 0%, rgba(234, 88, 12, 0.06) 100%)',
+              borderColor: 'rgba(245, 158, 11, 0.30)'
+            }}
+            role="alert"
+            aria-label="Cadastro profissional incompleto"
+          >
+            <AlertCircle className="w-5 h-5 text-amber-400 mt-0.5 flex-shrink-0" />
+            <div className="flex-1 min-w-0">
+              <div className="text-sm font-semibold text-amber-300 mb-1">
+                Complete seu cadastro profissional
+              </div>
+              <p className="text-xs text-slate-300/85 leading-relaxed">
+                Para receber agendamentos e prescrever conforme CFM 2.314/2022,
+                seu cadastro precisa incluir: <strong className="text-amber-200">{missingFields.join(', ')}</strong>.
+              </p>
+            </div>
+            <button
+              onClick={() => setIsEditing(true)}
+              className="flex-shrink-0 px-3 py-1.5 rounded-lg text-xs font-semibold bg-amber-500/20 hover:bg-amber-500/30 text-amber-200 border border-amber-500/40 transition-colors"
+            >
+              Editar agora
+            </button>
+          </div>
+        )
+      })()}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         {/* Profile Info */}
