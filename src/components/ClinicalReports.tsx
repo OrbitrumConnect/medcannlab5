@@ -930,6 +930,14 @@ const ClinicalReports: React.FC<ClinicalReportsProps> = ({ className = '', onSha
 
   const filteredReports = reports.filter(report => {
     if (filterStatus === 'all') return true
+    // V1.9.225 — 'reviewed' é REVISÃO MÉDICA (review_status), NÃO status FSM AEC.
+    // Bug empírico 11/05: Ricardo marcou 6 reports como reviewed (clinicalDevolutionService
+    // .markAsReviewed → review_status='reviewed'), mas filterStatus comparava com
+    // report.status (FSM 'completed' | 'shared' | etc) → aba "Revisados" ficava vazia
+    // pro paciente. Schema correto já existe: review_status mapeado pra reviewStatus
+    // em ~linha 420 (V1.9.200 Sprint 1 Devolution). Só faltava o filtro usar.
+    // 'shared' e 'validated' continuam lendo status FSM (sem mudança de design).
+    if (filterStatus === 'reviewed') return report.reviewStatus === 'reviewed'
     return report.status === filterStatus
   })
 
@@ -1109,14 +1117,27 @@ const ClinicalReports: React.FC<ClinicalReportsProps> = ({ className = '', onSha
                   </div>
                 </div>
                 <div className="flex items-center space-x-2">
+                  {/* V1.9.225 — Badge prioriza reviewStatus quando há revisão médica.
+                      'reviewed' (revisão médica V1.9.200) é mais informativo pro paciente
+                      que 'shared' ou 'completed' do FSM AEC. Demais estados FSM mantidos
+                      como fallback (zero regressão pra reports sem reviewStatus definido,
+                      que já caem em 'pending' via linha 420 default). */}
                   <span className={`flex items-center space-x-1 px-2 py-1 rounded-full text-sm border ${
+                    report.reviewStatus === 'reviewed' ? 'bg-blue-500/10 text-blue-400 border-blue-500/20' :
                     report.status === 'shared' ? 'bg-orange-500/10 text-orange-400 border-orange-500/20' :
                     report.status === 'reviewed' ? 'bg-blue-500/10 text-blue-400 border-blue-500/20' :
                     report.status === 'validated' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' :
                     'bg-slate-500/10 text-slate-400 border-slate-500/20'
                   }`}>
                     {getStatusIcon(report.status)}
-                    <span className="capitalize">{report.status === 'shared' ? 'Compartilhado' : report.status === 'reviewed' ? 'Revisado' : report.status === 'validated' ? 'Validado' : report.status === 'completed' ? 'Completo' : report.status}</span>
+                    <span className="capitalize">{
+                      report.reviewStatus === 'reviewed' ? 'Revisado' :
+                      report.status === 'shared' ? 'Compartilhado' :
+                      report.status === 'reviewed' ? 'Revisado' :
+                      report.status === 'validated' ? 'Validado' :
+                      report.status === 'completed' ? 'Completo' :
+                      report.status
+                    }</span>
                   </span>
                   {report.nftToken && (
                     <span className="px-2 py-1 rounded-full text-xs font-semibold bg-purple-500/10 text-purple-400 border border-purple-500/20">
