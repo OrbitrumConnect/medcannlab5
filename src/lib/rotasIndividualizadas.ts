@@ -76,11 +76,13 @@ export const ROTAS_INDIVIDUALIZADAS: Record<string, UserRoute> = {
         icon: '🏠'
       },
       {
-        path: '/app/clinica/paciente/avaliacao-clinica',
-        component: () => import('../pages/ClinicalAssessment').then(m => m.default),
+        // V1.9.230: ClinicalAssessment.tsx fossil deletado. Catalogo agora aponta
+        // pra AEC viva (PatientNOAChat = chat-noa, alimenta clinical_assessments + clinical_reports).
+        path: '/app/clinica/paciente/chat-noa',
+        component: () => import('../pages/PatientNOAChat').then(m => m.default),
         requiredRole: 'patient',
         title: 'Avaliação Clínica Inicial',
-        description: 'Realizar avaliação com IA residente',
+        description: 'Realizar avaliação com Nôa Esperanza',
         icon: '🤖'
       },
       {

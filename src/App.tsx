@@ -71,7 +71,9 @@ import JardinsDeCura from './pages/JardinsDeCura'
 import AdminDashboard from './pages/AdminDashboard'
 import MedCannLabStructure from './pages/MedCannLabStructure'
 import NotFound from './pages/NotFound'
-import ClinicalAssessment from './pages/ClinicalAssessment'
+// V1.9.230: ClinicalAssessment.tsx + libs IMRE/unifiedAssessment/noaIntegration/clinicalAssessmentService
+// deletadas (codigo orfao fossil). Tabelas IMRE nunca existiram em prod. Rota substituida por
+// Navigate redirect abaixo (preserva URL antigo se houver link externo). AEC viva = /chat-noa.
 import PatientOnboarding from './pages/PatientOnboarding'
 import Scheduling from './pages/Scheduling'
 import Prescriptions from './pages/Prescriptions'
@@ -161,7 +163,8 @@ function App() {
                           <Route path="clinica/prescricoes" element={<Prescriptions />} />
 
                           <Route path="clinica/paciente/dashboard" element={<PatientDashboard />} />
-                          <Route path="clinica/paciente/avaliacao-clinica" element={<ClinicalAssessment />} />
+                          {/* V1.9.230: ClinicalAssessment.tsx fossil deletado. Redirect preserva URL antigo (zero hits historicos confirmados, mas safe) → AEC viva chat-noa. */}
+                          <Route path="clinica/paciente/avaliacao-clinica" element={<Navigate to="/app/clinica/paciente/chat-noa" replace />} />
                           <Route path="clinica/paciente/relatorios" element={<Reports />} />
                           <Route path="clinica/paciente/agendamentos" element={<PatientAppointments />} />
                           <Route path="clinica/paciente/agenda" element={<Navigate to="/app/clinica/paciente/agendamentos" replace />} />
