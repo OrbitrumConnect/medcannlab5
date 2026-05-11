@@ -100,6 +100,30 @@ export async function bookAppointment(
     }
 
     if (data) {
+        // V1.9.224 — Setar is_remote=true por default (telemedicina norma MedCannLab).
+        //
+        // Bug regressão empírica 06/05 → 07/05 (caso casualmusic2021):
+        //   • 06/05 appointment 058ff575: is_remote=true → cron enviou reminders 10min + 1min
+        //   • 07/05+ todos appointments via SchedulingWidget: is_remote=false (default DB)
+        //   • Edge video-call-reminders filtra .eq('is_remote', true) → 0 envios
+        //   • Resultado: paciente recebe só "Consulta Confirmada", sem lembretes
+        //
+        // Causa raiz: book_appointment_atomic RPC não aceita p_is_remote, usa default
+        // DB (false). platformFunctionsModule.ts:780 e ProfessionalScheduling.tsx:587
+        // setam true mas só pra paths do médico. Path do paciente (este bookAppointment)
+        // ficou silenciosamente false.
+        //
+        // Fix cirúrgico: UPDATE pós-RPC. Fail-safe (não bloqueia booking se falhar).
+        // Anti-regressão: appointment já criado com sucesso; UPDATE é aditivo.
+        try {
+            await supabase
+                .from('appointments')
+                .update({ is_remote: true })
+                .eq('id', data as string)
+        } catch (e) {
+            console.warn('[V1.9.224] is_remote=true update falhou (não-bloqueante):', e)
+        }
+
         // Trigger Background Notification
         (async () => {
             try {
