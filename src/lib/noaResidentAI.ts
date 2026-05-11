@@ -2154,10 +2154,15 @@ export class NoaResidentAI {
         body: payload
       })
 
+      // V1.9.215 — Timeout 60s (era 45s). Pipeline pós-consentimento pode
+      // levar 7-20s (cleanup_pass V1.9.109 + report + signature + axes +
+      // rationality) — antes timeout caía em P95 e mostrava "instabilidade"
+      // mesmo com pipeline rodando OK. Marcador específico permite distinguir
+      // no catch entre timeout e erro real.
       const { data, error } = await withTimeout(
         invokePromise,
-        45000,
-        'Timeout ao chamar tradevision-core. O Core demorou mais que o esperado para responder.'
+        60000,
+        '__CORE_TIMEOUT__:O Core esta demorando mais que o esperado. Sua avaliacao pode estar sendo processada.'
       ) as any
 
       if (error) throw error
@@ -2229,6 +2234,21 @@ export class NoaResidentAI {
           })()
 
       console.error('ERRO [TradeVision Cloud] Erro de execucao:', errMsg)
+
+      // V1.9.215 — Distingue timeout (pipeline ainda rodando) de erro real.
+      // Marcador __CORE_TIMEOUT__ injetado no withTimeout (linha ~2160).
+      const isCoreTimeout = errMsg.startsWith('__CORE_TIMEOUT__')
+
+      if (isCoreTimeout) {
+        return this.createResponse(
+          'Sua avaliacao foi registrada e esta sendo processada.\n\n' +
+          'O relatorio clinico pode levar alguns segundos para aparecer no painel. ' +
+          'Voce pode atualizar a pagina em instantes para ver o resultado.',
+          0.7,
+          'text',
+          { source: 'tradevision-core', status: 'processing_async', error: errMsg }
+        )
+      }
 
       return this.createResponse(
         'Estou com instabilidade ao conectar ao Core agora. Pode tentar novamente em alguns segundos?\n\n' +

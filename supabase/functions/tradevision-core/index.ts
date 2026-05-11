@@ -1153,6 +1153,13 @@ async function handleFinalizeAssessment(params: {
         assessmentData.patient_id = resolvedPatientId;
     }
     
+    // V1.9.215 — Instrumentação de latência por etapa (logs leves, zero risco).
+    // Markers permitem identificar gargalo real do pipeline pós-consentimento
+    // sem dependência de analytics engine. Estrutura: __t_<stage>_ms
+    const pipelineT0 = Date.now()
+    const lat: Record<string, number> = {}
+    const stamp = (stage: string) => { lat[stage] = Date.now() - pipelineT0 }
+
     console.log('🧠 [PIPELINE_STAGE] START', { interaction_id, resolvedPatientId });
 
     try {
@@ -1203,13 +1210,21 @@ async function handleFinalizeAssessment(params: {
 
         if (existing) {
             console.warn(`⚠️ [PIPELINE_REDUNDANT_TRIGGER] Report recente (${Math.round((Date.now() - new Date(existing.created_at).getTime()) / 1000)}s atrás, existing=${existing.id}, current_interaction=${interaction_id}). Devolvendo report_id existente.`);
+            stamp('idempotent_hit');
             return { report_id: existing.id, status: 'idempotent_recent' as const };
         }
+        stamp('idempotency_ok');
 
         // 1.1. [DOCTOR_RESOLUTION] Resolver médico real do paciente em vez de cair no fallback hardcoded.
         //      Ordem: request → último appointment → preferred_doctor_id → fallback institucional.
         //      [HARDENING 22/04] Cada candidato é validado contra public.users (type='professional')
         //      para evitar atribuir relatório/wallet a profissional anonimizado/excluído (LGPD trigger).
+        //
+        // V1.9.215 — PARALELIZAÇÃO: fallback queries (appointments + profile) rodam em
+        // Promise.all quando request não trouxe doctor válido. Antes: 4 queries seriais
+        // (~200-400ms). Agora: 1 validação rápida + 2 queries paralelas. Ganho 100-200ms
+        // no caminho crítico pós-consentimento. Lógica de prioridade preservada
+        // (request > appointments > profile > fallback), só latência mudou.
         const FALLBACK_DOCTOR_ID = '2135f0c0-eb5a-43b1-bc00-5f8dfea13561'; // Dr. Ricardo Valença
 
         const isValidActiveProfessional = async (candidateId: string | null | undefined): Promise<boolean> => {
@@ -1233,44 +1248,42 @@ async function handleFinalizeAssessment(params: {
         if (await isValidActiveProfessional(requestedDoctorId)) {
             resolvedDoctorId = requestedDoctorId;
             console.log('🩺 [DOCTOR_RESOLUTION] Vínculo via request (validado):', resolvedDoctorId);
-        } else if (requestedDoctorId) {
-            console.warn('🩺 [DOCTOR_RESOLUTION] professionalId do request inválido/não-profissional:', requestedDoctorId);
-        }
-
-        if (!resolvedDoctorId) {
-            try {
-                const { data: lastAppt } = await supabaseClient
+        } else {
+            if (requestedDoctorId) {
+                console.warn('🩺 [DOCTOR_RESOLUTION] professionalId do request inválido/não-profissional:', requestedDoctorId);
+            }
+            // Paraleliza fallbacks (appointments + profile)
+            const [apptIds, preferredId] = await Promise.all([
+                supabaseClient
                     .from('appointments')
                     .select('professional_id')
                     .eq('patient_id', resolvedPatientId)
                     .not('professional_id', 'is', null)
                     .order('created_at', { ascending: false })
-                    .limit(5);
-                for (const appt of (lastAppt || [])) {
-                    if (await isValidActiveProfessional(appt.professional_id)) {
-                        resolvedDoctorId = appt.professional_id;
-                        console.log('🩺 [DOCTOR_RESOLUTION] Vínculo via appointments (validado):', resolvedDoctorId);
-                        break;
-                    }
-                }
-            } catch (e) {
-                console.warn('[DOCTOR_RESOLUTION] Falha ao consultar appointments:', e);
-            }
-        }
-
-        if (!resolvedDoctorId) {
-            try {
-                const { data: profile } = await supabaseClient
+                    .limit(5)
+                    .then((r: any) => (r?.data || []).map((a: any) => a.professional_id))
+                    .catch((e: any) => { console.warn('[DOCTOR_RESOLUTION] appointments:', e); return [] as string[]; }),
+                supabaseClient
                     .from('profiles')
                     .select('preferred_doctor_id')
                     .eq('id', resolvedPatientId)
-                    .maybeSingle();
-                if (await isValidActiveProfessional(profile?.preferred_doctor_id)) {
-                    resolvedDoctorId = profile!.preferred_doctor_id;
-                    console.log('🩺 [DOCTOR_RESOLUTION] Vínculo via preferred_doctor_id (validado):', resolvedDoctorId);
+                    .maybeSingle()
+                    .then((r: any) => r?.data?.preferred_doctor_id ?? null)
+                    .catch((e: any) => { console.warn('[DOCTOR_RESOLUTION] profile:', e); return null; })
+            ]);
+
+            // Prioridade preservada: appointments primeiro (atividade clínica recente)
+            for (const candidate of apptIds) {
+                if (await isValidActiveProfessional(candidate)) {
+                    resolvedDoctorId = candidate;
+                    console.log('🩺 [DOCTOR_RESOLUTION] Vínculo via appointments (validado):', resolvedDoctorId);
+                    break;
                 }
-            } catch (e) {
-                console.warn('[DOCTOR_RESOLUTION] Falha ao consultar profiles:', e);
+            }
+
+            if (!resolvedDoctorId && preferredId && await isValidActiveProfessional(preferredId)) {
+                resolvedDoctorId = preferredId;
+                console.log('🩺 [DOCTOR_RESOLUTION] Vínculo via preferred_doctor_id (validado):', resolvedDoctorId);
             }
         }
 
@@ -1278,6 +1291,7 @@ async function handleFinalizeAssessment(params: {
             resolvedDoctorId = FALLBACK_DOCTOR_ID;
             console.warn('🩺 [DOCTOR_RESOLUTION] Sem vínculo válido — fallback institucional Dr. Ricardo aplicado.');
         }
+        stamp('doctor_resolved');
 
         // 2.0 [GOLDEN FIX] Buscar nome do paciente se patientData estiver vazio
         let resolvedPatientName = patientData?.user?.user_metadata?.name || patientData?.user?.user_metadata?.full_name || patientData?.user?.name || patientData?.user?.full_name || null;
@@ -1414,6 +1428,7 @@ Input: ${JSON.stringify(assessmentData)}`
                 (cleanupErr as Error).message);
             // cleanedAssessmentData continua = assessmentData (default seguro)
         }
+        stamp('cleanup_pass');
 
         // [V1.9.109-A2] Telemetria estruturada em noa_logs (auditoria empírica).
         // Permite Pedro/Ricardo abrir noa_logs e ver histórico de TODAS relocations
@@ -1581,6 +1596,7 @@ Finalizar SEMPRE com:
             throw reportError;
         }
         console.log('✅ [PIPELINE_STAGE] REPORT_GENERATED', { report_id: report.id, doctor_id: resolvedDoctorId });
+        stamp('report_persisted');
 
         // [V1.9.73] Assinatura de integridade (content hashing) — não é NFT blockchain.
         // Hash SHA-256 do payload clínico congelado: prova que `content` não foi adulterado
@@ -1616,6 +1632,7 @@ Finalizar SEMPRE com:
         } catch (sigErr) {
             console.warn('⚠️ [SIGNATURE] Erro inesperado:', (sigErr as Error)?.message);
         }
+        stamp('signature');
 
         // 4. Extração Determinística de Eixos (Padrão 04/04)
         console.log('🧠 [PIPELINE_STAGE] AXES', { report_id: report.id });
@@ -1640,6 +1657,7 @@ Finalizar SEMPRE com:
         } else {
             console.log('✅ [PIPELINE_STAGE] AXES_SYNCED');
         }
+        stamp('axes');
 
         // 5. Inteligência Ativa: Racionalidade Integrativa
         console.log('🧠 [PIPELINE_STAGE] RATIONALITY');
@@ -1664,12 +1682,23 @@ Finalizar SEMPRE com:
         } else {
             console.log('✅ [PIPELINE_STAGE] RATIONALITY_SYNCED');
         }
+        stamp('rationality');
 
+        // V1.9.215 — Sumário agregado de latência (cumulative ms desde START).
+        // Permite identificar gargalo real do pipeline pós-consentimento sem
+        // dependência de analytics engine. Facilita comparar antes/depois de
+        // mudanças no Edge e detectar regressões em produção.
+        console.log('⏱️ [PIPELINE_LATENCY]', {
+            interaction_id,
+            report_id: report.id,
+            total_ms: Date.now() - pipelineT0,
+            stages: lat
+        });
         console.log('✅ [PIPELINE_STAGE] DONE', { interaction_id, report_id: report.id });
         return { report_id: report.id, status: 'created' as const };
 
     } catch (e) {
-        console.error('❌ [PIPELINE_STAGE] ERROR', e);
+        console.error('❌ [PIPELINE_STAGE] ERROR', e, '⏱️ stages_at_error:', lat);
         return { report_id: null, status: 'error' as const, error: (e as Error)?.message };
     }
 }
