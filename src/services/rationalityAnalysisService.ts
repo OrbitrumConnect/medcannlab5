@@ -1,5 +1,6 @@
 import { supabase } from '../lib/supabase'
 import { NoaResidentAI } from '../lib/noaResidentAI'
+import { simpleCache } from '../lib/simpleCache'
 
 export type Rationality = 'biomedical' | 'traditional_chinese' | 'ayurvedic' | 'homeopathic' | 'integrative'
 
@@ -180,6 +181,21 @@ export class RationalityAnalysisService {
       const gateResult = await this.enforceRoleGate(userId, rationality, reportContent)
       if (!gateResult.granted) {
         throw new Error(`FORBIDDEN_ROLE: ${gateResult.reason ?? 'Racionalidades médicas são restritas a profissionais e administradores.'}`)
+      }
+
+      // V1.9.211 — Cache em memória 5min TTL. Médico que abre mesmo relatório
+      // múltiplas vezes na mesma sessão reutiliza análise gerada (reduz ~30%
+      // chamadas Edge). Chave inclui report_id + rationality + patient_id
+      // pra evitar leak entre pacientes. Princípio 46 (reuso > criação):
+      // utility genérico em src/lib/simpleCache.ts (adaptado fóssil ACDSS).
+      const reportId: string | undefined =
+        reportContent?.id ?? reportContent?.rawContent?.id ?? reportContent?.content?.id
+      const cacheKey = reportId
+        ? `rationality:${reportId}:${rationality}:${patientId ?? 'no-pat'}`
+        : null
+      if (cacheKey) {
+        const cached = simpleCache.get<RationalityAnalysis>(cacheKey)
+        if (cached) return cached
       }
 
       // [V1.9.40] Build do contexto com schema PT (como o backend grava desde
@@ -454,10 +470,27 @@ FORMATAÇÃO (UI não renderiza markdown):
         approach: this.extractApproach(response.content)
       }
 
+      // V1.9.211 — Cachear pra próxima leitura do mesmo relatório+racionalidade
+      if (cacheKey) {
+        simpleCache.set(cacheKey, analysis)
+      }
+
       return analysis
     } catch (error) {
       console.error('Erro ao gerar análise de racionalidade:', error)
       throw error
+    }
+  }
+
+  /**
+   * V1.9.211 — Invalidação de cache de uma racionalidade específica.
+   * Chamar quando análise for atualizada/regenerada (saveAnalysisToReport).
+   */
+  invalidateRationalityCache(reportId: string, rationality?: Rationality): void {
+    if (rationality) {
+      simpleCache.clearPrefix(`rationality:${reportId}:${rationality}:`)
+    } else {
+      simpleCache.clearPrefix(`rationality:${reportId}:`)
     }
   }
 
