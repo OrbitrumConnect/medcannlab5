@@ -5103,11 +5103,27 @@ ${contentExcerpt || '(Texto não disponível para este documento. O conteúdo ai
         // Validado conceitualmente em logs Carolina 27/04 13:01 BRT:
         // 4 turnos verbatim consumiram ~31k tokens GPT que seriam descartados.
         // ============================================================
+        // V1.9.218 — Inclusão cirúrgica de COMPLAINT_DETAILS APENAS quando
+        // nextQuestionHint é literalmente 'O que mais?' (followup binário de
+        // lista). Bug observado 11/05 (Carolina, AEC com Ricardo testando):
+        // paciente disse "VER retrocesoos" em fase de pior, e GPT improvisou
+        // "O que mais parece piorar essa sensação de compromisso?" em vez do
+        // literal 'O que mais?' do roteiro Ricardo. Causa: V1.8.3-D deixou
+        // COMPLAINT_DETAILS fora do HARD_LOCK propositalmente, pra "preservar
+        // fluidez". Funciona pra sub-perguntas (Onde sente? Quando começou?
+        // Como descreveria?) mas NÃO pra followup literal "O que mais?".
+        // Fix mínimo: incluir SÓ esse caso exato — preserva V1.8.3-D para
+        // outras sub-perguntas de COMPLAINT_DETAILS. Anti-kevlar §1:
+        // REFORÇA fidelidade do roteiro Ricardo, não viola.
+        const isCompliantDetailsOQueMais =
+            assessmentPhase === 'COMPLAINT_DETAILS' &&
+            nextQuestionHint?.trim() === 'O que mais?';
+
         const useVerbatimFirst =
             !!nextQuestionHint?.trim() &&
             aecActorEligible &&
             !!assessmentPhase &&
-            AEC_VERBATIM_HARD_LOCK_PHASES.has(assessmentPhase) &&
+            (AEC_VERBATIM_HARD_LOCK_PHASES.has(assessmentPhase) || isCompliantDetailsOQueMais) &&
             !isUrgent;
 
         let completion: any;
