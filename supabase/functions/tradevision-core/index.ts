@@ -3534,7 +3534,7 @@ Responda SOMENTE com o JSON válido, sem markdown.`
             
             DADOS DO AGENDAMENTO:
             - Data/Hora: ${slotTime}
-            - Dia da Semana: ${new Date(slotTime).toLocaleDateString('pt-BR', { weekday: 'long' })}
+            - Dia da Semana: ${new Date(slotTime).toLocaleDateString('pt-BR', { weekday: 'long', timeZone: 'America/Sao_Paulo' })}
             
             SAÍDA JSON OBRIGATÓRIA:
             {
@@ -3954,17 +3954,22 @@ REGRAS DE OURO (violação = falha grave do protocolo):
                 if (typeof uc.assessmentsCount === 'number') {
                     lines.push(`• Avaliações clínicas realizadas: ${uc.assessmentsCount}`)
                 }
+                // V1.9.217 — timeZone: 'America/Sao_Paulo' obrigatório.
+                // Bug: Deno Edge runa em UTC. `toLocaleString('pt-BR')` formata locale
+                // (DD/MM/AAAA) mas NÃO muda timezone. Sem timeZone option, mostra hora UTC.
+                // Observado 11/05: paciente agendou 14h BRT, banco salvou 17h+00 UTC,
+                // Nôa disse "17:00" (deveria dizer 14:00 BRT).
                 if (uc.lastAssessmentAt) {
                     const d = new Date(uc.lastAssessmentAt)
                     if (!isNaN(d.getTime())) {
-                        lines.push(`• Última avaliação: ${d.toLocaleDateString('pt-BR')}`)
+                        lines.push(`• Última avaliação: ${d.toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' })}`)
                     }
                 }
                 if (uc.nextAppointment?.date) {
                     const d = new Date(uc.nextAppointment.date)
                     if (!isNaN(d.getTime())) {
-                        const dateStr = d.toLocaleDateString('pt-BR')
-                        const timeStr = d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
+                        const dateStr = d.toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' })
+                        const timeStr = d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', timeZone: 'America/Sao_Paulo' })
                         const doc = uc.nextAppointment.doctorName ? ` com ${uc.nextAppointment.doctorName}` : ''
                         const status = uc.nextAppointment.status ? ` (status: ${uc.nextAppointment.status})` : ''
                         lines.push(`• Próxima consulta: ${dateStr} às ${timeStr}${doc}${status}`)
@@ -3974,7 +3979,7 @@ REGRAS DE OURO (violação = falha grave do protocolo):
                 }
                 if (uc.trial && uc.trial.endsAt) {
                     if (uc.trial.active) {
-                        lines.push(`• Período de trial ATIVO — termina em ${new Date(uc.trial.endsAt).toLocaleDateString('pt-BR')} (${uc.trial.daysLeft} dias restantes)`)
+                        lines.push(`• Período de trial ATIVO — termina em ${new Date(uc.trial.endsAt).toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' })} (${uc.trial.daysLeft} dias restantes)`)
                     } else {
                         lines.push(`• Período de trial encerrado`)
                     }
@@ -4020,7 +4025,7 @@ INSTRUÇÃO DE USO (NÃO NEGOCIÁVEL):
                     const items = uc.todayAppointments.slice(0, 5).map((a: any) => {
                         const d = a?.date ? new Date(a.date) : null
                         const timeStr = d && !isNaN(d.getTime())
-                            ? d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
+                            ? d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', timeZone: 'America/Sao_Paulo' })
                             : '??:??'
                         const who = a?.patientName ? a.patientName : 'paciente'
                         const st = a?.status ? ` [${a.status}]` : ''
@@ -4031,8 +4036,8 @@ INSTRUÇÃO DE USO (NÃO NEGOCIÁVEL):
                 if (uc.nextAppointment?.date) {
                     const d = new Date(uc.nextAppointment.date)
                     if (!isNaN(d.getTime())) {
-                        const dateStr = d.toLocaleDateString('pt-BR')
-                        const timeStr = d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
+                        const dateStr = d.toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' })
+                        const timeStr = d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', timeZone: 'America/Sao_Paulo' })
                         const who = uc.nextAppointment.patientName ? ` — ${uc.nextAppointment.patientName}` : ''
                         const st = uc.nextAppointment.status ? ` (${uc.nextAppointment.status})` : ''
                         lines.push(`• Próxima consulta: ${dateStr} às ${timeStr}${who}${st}`)
@@ -4166,7 +4171,7 @@ INSTRUÇÃO DE USO (NÃO NEGOCIÁVEL):
                     if (p.lastActivityAt) {
                         const d = new Date(p.lastActivityAt)
                         if (!isNaN(d.getTime())) {
-                            lines.push(`• Última atividade: ${d.toLocaleDateString('pt-BR')}`)
+                            lines.push(`• Última atividade: ${d.toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' })}`)
                         }
                     }
                 }
