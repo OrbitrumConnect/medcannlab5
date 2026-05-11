@@ -1245,10 +1245,25 @@ async function handleFinalizeAssessment(params: {
         let resolvedDoctorId: string | null = null;
         const requestedDoctorId = (professionalId && professionalId !== 'system-global') ? professionalId : null;
 
-        if (await isValidActiveProfessional(requestedDoctorId)) {
+        // V1.9.222 — TOPO da chain: id médico-alvo declarado pelo paciente (persistido em FSM AEC).
+        // Caso Cristiano 11/05: paciente pediu Faveret, sistema vinculou Ricardo silenciosamente
+        // porque a intenção (id) não chegava aqui. Agora vem em assessmentData.target_doctor_id
+        // (top-level) — popularizado por noaResidentAI:2063 desde V1.9.222.
+        // BACKWARD-COMPAT: quando target_doctor_id ausente/inválido, cadeia ORIGINAL preservada.
+        const targetDoctorId = (typeof assessmentData?.target_doctor_id === 'string' && assessmentData.target_doctor_id.trim())
+            || (typeof assessmentData?.content?.target_doctor_id === 'string' && assessmentData.content.target_doctor_id.trim())
+            || null;
+        if (targetDoctorId && await isValidActiveProfessional(targetDoctorId)) {
+            resolvedDoctorId = targetDoctorId;
+            console.log('🎯 [DOCTOR_RESOLUTION] V1.9.222 — Vínculo via target_doctor_id (intencao paciente, FSM):', resolvedDoctorId);
+        } else if (targetDoctorId) {
+            console.warn('🎯 [DOCTOR_RESOLUTION] V1.9.222 — target_doctor_id INVALIDO/anonimizado, cai pra fallback chain:', targetDoctorId);
+        }
+
+        if (!resolvedDoctorId && await isValidActiveProfessional(requestedDoctorId)) {
             resolvedDoctorId = requestedDoctorId;
             console.log('🩺 [DOCTOR_RESOLUTION] Vínculo via request (validado):', resolvedDoctorId);
-        } else {
+        } else if (!resolvedDoctorId) {
             if (requestedDoctorId) {
                 console.warn('🩺 [DOCTOR_RESOLUTION] professionalId do request inválido/não-profissional:', requestedDoctorId);
             }
@@ -1292,6 +1307,32 @@ async function handleFinalizeAssessment(params: {
             console.warn('🩺 [DOCTOR_RESOLUTION] Sem vínculo válido — fallback institucional Dr. Ricardo aplicado.');
         }
         stamp('doctor_resolved');
+
+        // V1.9.222 — Telemetria de DIVERGÊNCIA. Se paciente declarou intenção
+        // (target_doctor_id) MAS DOCTOR_RESOLUTION final caiu em outro médico
+        // (fallback chain), registra evento auditável. Permite captar drifts
+        // longitudinalmente sem bloquear pipeline pré-PMF. Fail-safe via try/catch.
+        if (targetDoctorId && resolvedDoctorId && resolvedDoctorId !== targetDoctorId) {
+            try {
+                await supabaseClient.from('cognitive_events').insert({
+                    intent: 'CLINICA',
+                    action: 'DOCTOR_DIVERGENCE_DETECTED',
+                    decision_result: 'AUDIT',
+                    source: 'V1.9.222',
+                    metadata: {
+                        target_doctor_id: targetDoctorId,
+                        target_doctor_name: assessmentData?.target_doctor_name ?? null,
+                        resolved_doctor_id: resolvedDoctorId,
+                        patient_id: resolvedPatientId,
+                        interaction_id,
+                        reason: 'fallback_chain_overrode_patient_intent'
+                    }
+                });
+                console.warn('🎯 [DOCTOR_DIVERGENCE] V1.9.222 — intenção paciente diferente do resolvido (auditado em cognitive_events)');
+            } catch (e) {
+                console.warn('[V1.9.222] Telemetria divergencia falhou (nao-bloqueante):', e);
+            }
+        }
 
         // 2.0 [GOLDEN FIX] Buscar nome do paciente se patientData estiver vazio
         let resolvedPatientName = patientData?.user?.user_metadata?.name || patientData?.user?.user_metadata?.full_name || patientData?.user?.name || patientData?.user?.full_name || null;

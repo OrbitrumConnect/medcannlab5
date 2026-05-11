@@ -13,7 +13,11 @@ const AEC_SESSION_MAX_AGE_MS = 1000 * 60 * 60 * 8 // 8h — evita profissional �
 
 const aecChatContextKey = (userId: string) => `medcannlab_aec_chat_context_v1:${userId}`
 
-type AecTargetProfessional = { name: string; specialty?: string }
+// V1.9.222 — `id` opcional. Quando presente, carrega intenção do paciente
+// como dado de primeira classe (preserva semântica até o Edge resolver).
+// Caso Cristiano 11/05: paciente pediu Faveret, sistema vinculou Ricardo
+// porque id não chegava ao pipeline. Backward-compat: id ausente = comportamento atual.
+type AecTargetProfessional = { id?: string; name: string; specialty?: string }
 
 function readAecTargetFromSession(userId: string | undefined): AecTargetProfessional | null {
   if (!userId || typeof sessionStorage === 'undefined') return null
@@ -30,7 +34,8 @@ function readAecTargetFromSession(userId: string | undefined): AecTargetProfessi
     }
     const p = o?.targetProfessional
     if (p?.name && String(p.name).trim()) {
-      return { name: String(p.name).trim(), specialty: p.specialty }
+      // V1.9.222 — preserva id quando presente (backward-compat se ausente).
+      return { id: p.id, name: String(p.name).trim(), specialty: p.specialty }
     }
   } catch {
     /* ignore */
@@ -104,7 +109,8 @@ const PatientNOAChat: React.FC = () => {
     const st = location.state as { targetProfessional?: AecTargetProfessional } | null
     const p = st?.targetProfessional
     if (p?.name && String(p.name).trim()) {
-      return { name: String(p.name).trim(), specialty: p.specialty }
+      // V1.9.222 — preserva id quando vier do PatientAppointments (origem).
+      return { id: p.id, name: String(p.name).trim(), specialty: p.specialty }
     }
     return null
   }, [location.state])

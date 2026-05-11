@@ -848,6 +848,9 @@ export class NoaResidentAI {
         (typeof platformData?.aecConsultationPhysicianName === 'string'
           ? platformData.aecConsultationPhysicianName.trim()
           : undefined) || gate.doctor.doctorName
+      // V1.9.222 — propaga id do gate quando intent veio do gate (id existe em DoctorContext).
+      // Quando intent veio de mensagem verbal (doctorFromMessage), id e desconhecido — deixa Edge resolver.
+      const targetDocId = !doctorFromMessage ? gate.doctor.doctorId : undefined
       if (doctorFromMessage) {
         console.log('[DOCTOR_OVERRIDE]', {
           source: 'processAssessment',
@@ -857,7 +860,7 @@ export class NoaResidentAI {
           finalChoice: targetDoc,
         })
       }
-      clinicalAssessmentFlow.startAssessment(userId, pn, targetDoc)
+      clinicalAssessmentFlow.startAssessment(userId, pn, targetDoc, targetDocId)
       console.log('IA inicializada para:', userEmail)
 
       // Sincronizar com platformFunctions para que ele saiba da avaliação
@@ -1688,6 +1691,12 @@ export class NoaResidentAI {
           platformData.aecConsultationPhysicianName.trim()) ||
         extractDoctorFromMessage(userMessage) ||
         ''
+      // V1.9.222 — id do médico-alvo (caso UI propagou via PatientAppointments → PatientNOAChat).
+      // Backward-compat: undefined quando UI legada não passa.
+      const aecPhysicianId =
+        (typeof uiContext?.aecTargetProfessional?.id === 'string' &&
+          uiContext.aecTargetProfessional.id.trim()) ||
+        undefined
       if (aecPhysicianName) {
         console.log('[AEC_PHYSICIAN_RESOLVED]', {
           name: aecPhysicianName,
@@ -1767,7 +1776,9 @@ export class NoaResidentAI {
             clinicalAssessmentFlow.startAssessment(
               platformData.user.id,
               patientName,
-              targetDoc
+              targetDoc,
+              // V1.9.222 — propaga id pra FSM persistir aecTargetPhysicianId
+              aecPhysicianId
             )
             flowState = clinicalAssessmentFlow.getState(platformData.user.id)
             await clinicalAssessmentFlow.persist(platformData.user.id)
@@ -1775,7 +1786,9 @@ export class NoaResidentAI {
               'AEC: ASSESSMENT_START - sessao reiniciada (estado anterior descartado) | Nome:',
               patientName || '(—)',
               '| Profissional AEC:',
-              targetDoc || '(padrao Dr. Ricardo Valenca)'
+              targetDoc || '(padrao Dr. Ricardo Valenca)',
+              '| ID alvo:',
+              aecPhysicianId || '(nao informado — fallback chain)'
             )
           }
         } else if (!flowState && clientWantsAecStart) {
@@ -1796,14 +1809,18 @@ export class NoaResidentAI {
           clinicalAssessmentFlow.startAssessment(
             platformData.user.id,
             patientName,
-            targetDoc
+            targetDoc,
+            // V1.9.222 — propaga id pra FSM persistir aecTargetPhysicianId
+            aecPhysicianId
           )
           flowState = clinicalAssessmentFlow.getState(platformData.user.id)
           console.log(
             'AEC: fluxo iniciado | trigger: pedido_no_chat | Nome perfil:',
             patientName || '(—)',
             '| Profissional AEC:',
-            targetDoc || '(padrao Dr. Ricardo Valenca)'
+            targetDoc || '(padrao Dr. Ricardo Valenca)',
+            '| ID alvo:',
+            aecPhysicianId || '(nao informado — fallback chain)'
           )
         }
 
@@ -2046,8 +2063,20 @@ export class NoaResidentAI {
         ])
         if (finalizeState && FINAL_PHASES.has(finalizeState.phase as string)) {
           const d: any = finalizeState.data || {}
+          // V1.9.222 — Lê id médico-alvo persistido em FSM (preferido) com fallback
+          // pro scope local (caso UI passou via uiContext mas FSM ainda não recebeu).
+          // Edge handleFinalizeAssessment.DOCTOR_RESOLUTION lê isso primeiro.
+          const fsmTargetDoctorId = (typeof d.aecTargetPhysicianId === 'string' && d.aecTargetPhysicianId.trim())
+            || aecPhysicianId
+            || undefined
+          const fsmTargetDoctorName = (typeof d.aecTargetPhysicianDisplayName === 'string' && d.aecTargetPhysicianDisplayName.trim())
+            || aecPhysicianName
+            || undefined
           aecFinalizationData = {
             patient_id: platformData.user.id,
+            // V1.9.222 — médico-alvo declarado pelo paciente (top-level pra Edge ler facilmente)
+            target_doctor_id: fsmTargetDoctorId,
+            target_doctor_name: fsmTargetDoctorName,
             content: {
               identificacao: {
                 nome: d.patientName ?? null,

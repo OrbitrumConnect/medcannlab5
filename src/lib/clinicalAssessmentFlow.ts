@@ -97,6 +97,12 @@ export interface AssessmentData {
 
   /** Médico/profissional com quem o paciente pretende agendar (vitrine); personaliza abertura/consentimento/encerramento AEC */
   aecTargetPhysicianDisplayName?: string
+  // V1.9.222 — id do médico-alvo persistido na FSM. Permite que pipeline pós-AEC
+  // (handleFinalizeAssessment.DOCTOR_RESOLUTION) leia intenção declarada como
+  // dado de primeira classe, evitando fallback silencioso (caso Cristiano 11/05
+  // — paciente pediu Faveret, sistema vinculou Ricardo). Backward-compat:
+  // undefined = comportamento atual (fallback chain inalterada).
+  aecTargetPhysicianId?: string
 }
 
 export interface AssessmentState {
@@ -414,16 +420,21 @@ export class ClinicalAssessmentFlow {
   /**
    * Inicia uma nova avaliação clínica inicial
    */
-  startAssessment(userId: string, patientName?: string, aecTargetPhysicianDisplayName?: string): AssessmentState {
+  startAssessment(userId: string, patientName?: string, aecTargetPhysicianDisplayName?: string, aecTargetPhysicianId?: string): AssessmentState {
     const trimmedName = patientName?.trim()
     const skipGreetingWithProfile = !!trimmedName
     const targetDoc = aecTargetPhysicianDisplayName?.trim()
+    // V1.9.222 — persiste id quando UUID válido. isValidUuid local inline pra
+    // evitar import circular (clinicalAssessmentFlow é importado por muitos lugares).
+    const targetDocId = aecTargetPhysicianId?.trim()
+    const targetDocIdValid = !!targetDocId && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(targetDocId)
     const state: AssessmentState = {
       phase: skipGreetingWithProfile ? 'IDENTIFICATION' : 'INITIAL_GREETING',
       data: {
         patientName: trimmedName || undefined,
         patientPresentation: skipGreetingWithProfile ? trimmedName : undefined,
         aecTargetPhysicianDisplayName: targetDoc || undefined,
+        aecTargetPhysicianId: targetDocIdValid ? targetDocId : undefined,
         complaintList: [],
         medicalHistory: [],
         familyHistoryMother: [],

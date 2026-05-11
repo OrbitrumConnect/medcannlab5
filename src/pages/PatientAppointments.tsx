@@ -830,7 +830,14 @@ const PatientAppointments: React.FC = () => {
     navigate('/app/clinica/paciente/chat-noa', {
       state:
         selectedProfessional != null
-          ? { startAssessment: true, targetProfessional: selectedProfessional }
+          ? {
+              startAssessment: true,
+              // V1.9.222 — Inclui id (selectedProfessionalId existia paralelo,
+              // mas nao era propagado pra targetProfessional). Caso Cristiano
+              // 11/05: paciente pediu Faveret, sistema vinculou Ricardo (drift
+              // silencioso). Fix: propagar id como dado de primeira classe.
+              targetProfessional: { ...selectedProfessional, id: selectedProfessionalId }
+            }
           : undefined
     })
   }

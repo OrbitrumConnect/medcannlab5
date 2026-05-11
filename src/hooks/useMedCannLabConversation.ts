@@ -215,8 +215,10 @@ export interface DocumentContextForChat {
 
 export const useMedCannLabConversation = (options?: {
   documentContext?: DocumentContextForChat | null
-  /** Profissional escolhido na vitrine antes da AEC — personaliza abertura/consentimento no fluxo */
-  aecTargetProfessional?: { name: string; specialty?: string } | null
+  /** Profissional escolhido na vitrine antes da AEC — personaliza abertura/consentimento no fluxo.
+   *  V1.9.222: aceita `id` opcional. Quando presente, propaga até FSM AEC e Edge DOCTOR_RESOLUTION
+   *  como dado de primeira classe. Backward-compat: ausente = comportamento atual (só name/specialty). */
+  aecTargetProfessional?: { id?: string; name: string; specialty?: string } | null
 }) => {
   const { user } = useAuth()
   const documentContext = options?.documentContext ?? null
@@ -1109,7 +1111,12 @@ export const useMedCannLabConversation = (options?: {
         // [V1.9.105] última msg da Nôa pra detector contextual ASSESSMENT_START
         ...(lastAssistantMessage ? { lastAssistantMessage } : {}),
         ...(aecTargetProfessional?.name
-          ? { aecTargetProfessional: { name: aecTargetProfessional.name, specialty: aecTargetProfessional.specialty } }
+          ? { aecTargetProfessional: {
+              // V1.9.222 — propaga id como dado de primeira classe (id pode ser undefined; Edge valida).
+              id: aecTargetProfessional.id,
+              name: aecTargetProfessional.name,
+              specialty: aecTargetProfessional.specialty
+            } }
           : {}),
         last_local_navigation: navigationCommand
           ? {
