@@ -946,6 +946,11 @@ const ClinicalReports: React.FC<ClinicalReportsProps> = ({ className = '', onSha
     // em ~linha 420 (V1.9.200 Sprint 1 Devolution). Só faltava o filtro usar.
     // 'shared' e 'validated' continuam lendo status FSM (sem mudança de design).
     if (filterStatus === 'reviewed') return report.reviewStatus === 'reviewed'
+    // V1.9.226 — Mesmo padrão V1.9.225 pra aba "Validados". Empírico 11/05:
+    // 'validated' não existe em FSM status nem review_status (schema:
+    // 'draft' | 'reviewed' | 'approved' | 'rejected'). Convenção UI:
+    // "Validados" = approved (após "Aprovar e devolver").
+    if (filterStatus === 'validated') return report.reviewStatus === 'approved'
     return report.status === filterStatus
   })
 
@@ -2026,28 +2031,57 @@ const ClinicalReports: React.FC<ClinicalReportsProps> = ({ className = '', onSha
 
               {!isPatient && (
                 <>
+                  {/* V1.9.227 — Idempotência empírica (Pedro 11/05 19h): médico não deve
+                      poder re-marcar/re-aprovar um report já no estado final ou superior.
+                      'reviewed' → não pode "Marcar revisado" de novo (já está)
+                      'approved' → não pode nem "Marcar revisado" (regrediria), nem "Aprovar" (já aprovado)
+                      Tooltip explica estado pro médico ler antes de re-clicar.
+                      Princípio: dado clínico final é IMUTÁVEL pós-devolução (CFM 2.314). */}
                   <button
                     onClick={() => handleReviewReport(selectedReport.id, 'reviewed')}
-                    disabled={isApprovingReport}
+                    disabled={
+                      isApprovingReport ||
+                      selectedReport.reviewStatus === 'reviewed' ||
+                      selectedReport.reviewStatus === 'approved'
+                    }
                     className="flex-1 min-w-[120px] px-4 py-2 text-white rounded-lg transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
                     style={{ background: 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)' }}
-                    title="Marcar relatório como visto (sem devolver ao paciente ainda)"
+                    title={
+                      selectedReport.reviewStatus === 'approved'
+                        ? 'Já aprovado e devolvido — não pode regredir pra revisado'
+                        : selectedReport.reviewStatus === 'reviewed'
+                        ? 'Já marcado como revisado'
+                        : 'Marcar relatório como visto (sem devolver ao paciente ainda)'
+                    }
                   >
-                    {isApprovingReport ? 'Salvando...' : 'Marcar revisado'}
+                    {isApprovingReport ? 'Salvando...' :
+                      selectedReport.reviewStatus === 'reviewed' ? 'Já revisado' :
+                      selectedReport.reviewStatus === 'approved' ? 'Já aprovado' :
+                      'Marcar revisado'}
                   </button>
                   <button
                     onClick={() => handleReviewReport(selectedReport.id, 'approved')}
-                    disabled={isApprovingReport || (doctorNotes || '').trim().length < 3}
+                    disabled={
+                      isApprovingReport ||
+                      (doctorNotes || '').trim().length < 3 ||
+                      selectedReport.reviewStatus === 'approved'
+                    }
                     className="flex-1 min-w-[160px] px-4 py-2 text-white rounded-lg transition-colors flex items-center justify-center space-x-2 disabled:opacity-60 disabled:cursor-not-allowed"
                     style={{ background: 'linear-gradient(135deg, #00C16A 0%, #13794f 100%)' }}
                     title={
-                      (doctorNotes || '').trim().length < 3
+                      selectedReport.reviewStatus === 'approved'
+                        ? 'Já aprovado e devolvido ao paciente — devolução é imutável (CFM 2.314)'
+                        : (doctorNotes || '').trim().length < 3
                         ? 'Escreva uma nota clínica para o paciente antes de aprovar'
                         : 'Aprovar e devolver ao paciente — registra revisão clínica e notifica o paciente'
                     }
                   >
                     {isApprovingReport ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle className="w-4 h-4" />}
-                    <span>{isApprovingReport ? 'Devolvendo...' : 'Aprovar e devolver'}</span>
+                    <span>
+                      {isApprovingReport ? 'Devolvendo...' :
+                        selectedReport.reviewStatus === 'approved' ? 'Já aprovado' :
+                        'Aprovar e devolver'}
+                    </span>
                   </button>
                 </>
               )}
