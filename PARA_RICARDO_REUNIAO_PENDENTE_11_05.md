@@ -106,6 +106,54 @@ Dia 11/05 tivemos sessão técnica densa: **11 commits**, **9 bugs estruturais**
 
 ---
 
+## 11. EMAIL LEMBRETE 5MIN ANTES + LINK CHAT-MÉDICO (DESCOBERTO HOJE 15:47 BRT — sessão sua atual)
+
+**Empírico fresco (appointment 16:00 BRT seu hoje, ID `01f18db0`):**
+
+Auditoria de campo do appointment atual revelou:
+```
+is_remote:              false   ← appointment criado SEM flag remoto
+meeting_url:            null    ← link nunca foi gerado
+reminder_sent_24h:      false
+reminder_sent_30min:    false   ← deveria ter saído às 15:30 BRT
+reminder_sent_10min:    false
+reminder_sent_1min:     false
+gcal_sync_status:       pending
+```
+
+Cron `video_call_reminders` (pg_cron a cada 5min) está rodando OK (~228 sweeps nas últimas 19h), mas TODOS retornam `scanned: 0` — **filtra `is_remote=true`** e nenhum appointment recente tem esse flag setado.
+
+**Causa raiz:**
+- `SchedulingWidget` em `NoaConversationalInterface.tsx` cria appointment via `bookAppointment()` sem setar `is_remote=true`
+- `book_appointment_atomic` RPC default não infere remoto
+- Cron ignora apppointments não-remotos → 100% das consultas hoje sem lembrete
+
+**Proposta sua (Pedro 15:47 BRT):**
+
+> *"5 min antes da consulta, email lembrete com explicação aonde o médico estar esperando, e se possível o URL do chat c meu médico"*
+
+Tradução técnica:
+
+| Item | LOC | Complexidade |
+|---|---|---|
+| 1. Migration `ALTER TABLE appointments ADD COLUMN reminder_sent_5min boolean DEFAULT false` | 1 SQL | Trivial |
+| 2. Edge `video_call_reminders` slot 5min — replica padrão dos 4 existentes | ~30 LOC | Reusa V1.9.99 sweep mode |
+| 3. Template Resend HTML — "Dr. X está aguardando no Chat. [Entrar agora]" | ~20 LOC | Reusa V1.9.99 elite template |
+| 4. Fix `is_remote=true` default em `bookAppointment()` lib | 1 linha | Trivial, mas anti-regressão obrigatória |
+| 5. Remover filtro `is_remote=true` do cron — OU manter e setar `true` na criação | Decisão | — |
+
+**Decisão:**
+
+(a) Aplicar fix completo (~60 LOC, 1 commit, push 4 refs) — eu posso depois da consulta de hoje
+(b) Aplicar só itens 1-3 + 5 (manter `is_remote=false` flag mas cron passa a pegar todos) — mais simples
+(c) Parking até Sprint 1 medindo destravar — não-bloqueante
+
+**Implicação Muhdo:**
+
+Pacientes externos reais NÃO recebem lembrete email antes da consulta. Em paciente pagante real, isso = no-show garantido. Bloqueador pré-PMF empírico.
+
+---
+
 ## 10. UX GAP — "Marcar revisado" vs "Aprovar e devolver" (DESCOBERTO HOJE 15:16 BRT)
 
 **Empírico fresco (sessão sua hoje 11/05 15:15-15:34 BRT):**
@@ -177,6 +225,7 @@ professionals_with_fee:           1/10  (só você, 400/consulta)
 | 8 | UX-4 contexto retomada — autorizar polish? | ⬜ | |
 | 9 | Onboarding 9 médicos — você contata ou suspende? | ⬜ | |
 | **10** | **"Marcar revisado" vs "Aprovar e devolver" — qual opção (c1/c2/c3/c4)?** | ⬜ | **EMPÍRICO HOJE: 6 reports marcados revisado, 0 aprovados, KPI Muhdo 0%** |
+| **11** | **Email lembrete 5min antes + link chat-médico — autorizar fix (a/b/c)?** | ⬜ | **EMPÍRICO HOJE 15:47 BRT: appointment 16:00 sem `is_remote`, 0 reminders, cron ignora. Bloqueador no-show pré-PMF.** |
 
 ---
 
