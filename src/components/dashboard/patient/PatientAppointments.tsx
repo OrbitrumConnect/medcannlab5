@@ -122,7 +122,11 @@ export const PatientAppointments: React.FC<PatientAppointmentsProps> = ({
                                 </div>
                                 <div>
                                     <p className="text-white font-semibold">{apt.professional}</p>
-                                    <p className="text-slate-400 text-sm">{new Date(apt.date).toLocaleDateString('pt-BR')} às {apt.time}</p>
+                                    {/* V1.9.219 — apt.date aqui vem como TIMESTAMPTZ direto do banco
+                                        (usePatientDashboard.ts:85 — `date: apt.appointment_date`).
+                                        Sem timeZone, toLocaleDateString em runtime UTC pode mostrar
+                                        dia errado. Forcar America/Sao_Paulo. */}
+                                    <p className="text-slate-400 text-sm">{apt.date ? new Date(apt.date).toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' }) : '—'} às {apt.time}</p>
                                 </div>
                             </div>
                             <div className="flex flex-col items-end gap-2">

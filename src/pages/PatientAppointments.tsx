@@ -1409,7 +1409,8 @@ const PatientAppointments: React.FC = () => {
                     <p className="text-white font-semibold text-lg">{rescheduleTargetApt?.professional}</p>
                     <div className="flex items-center gap-2 mt-1 text-slate-400 text-sm">
                       <Calendar className="w-4 h-4" />
-                      <span>{new Date(rescheduleTargetApt?.date).toLocaleDateString('pt-BR')}</span>
+                      {/* V1.9.219 — apt.date local "YYYY-MM-DD", sem new Date (dupla conv UTC) */}
+                      <span>{rescheduleTargetApt?.date ? rescheduleTargetApt.date.split('-').reverse().join('/') : '—'}</span>
                       <span className="w-1 h-1 rounded-full bg-slate-600"></span>
                       <Clock className="w-4 h-4" />
                       <span>{rescheduleTargetApt?.time}</span>
@@ -1505,7 +1506,8 @@ const PatientAppointments: React.FC = () => {
                     <div>
                       <p className="text-white font-semibold">{cancelTargetApt?.professional}</p>
                       <p className="text-xs text-slate-400">
-                        {new Date(cancelTargetApt?.date).toLocaleDateString('pt-BR')} às {cancelTargetApt?.time}
+                        {/* V1.9.219 — apt.date local "YYYY-MM-DD", sem new Date (dupla conv UTC) */}
+                        {cancelTargetApt?.date ? cancelTargetApt.date.split('-').reverse().join('/') : '—'} às {cancelTargetApt?.time}
                       </p>
                     </div>
                   </div>
@@ -1768,7 +1770,12 @@ const PatientAppointments: React.FC = () => {
                             <div className="flex-1">
                               <p className="text-white font-semibold">{apt.professional}</p>
                               <p className="text-slate-400 text-sm">
-                                {new Date(apt.date).toLocaleDateString('pt-BR')} às {apt.time}
+                                {/* V1.9.219 — apt.date ja vem como "YYYY-MM-DD" local (linha ~482).
+                                    Passar por new Date() causa dupla conversao: string sem hora
+                                    e tratada como UTC midnight, em BRT (-3h) vira dia anterior.
+                                    Bug empirico 11/05: appointments do dia mostravam "10/05".
+                                    Fix: split direto, zero dependencia de timezone do browser. */}
+                                {apt.date ? apt.date.split('-').reverse().join('/') : '—'} às {apt.time}
                               </p>
                               <p className="text-slate-500 text-xs">{apt.service || apt.type}</p>
                             </div>
