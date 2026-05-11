@@ -5,7 +5,7 @@ import React, {
   useRef,
   useState,
 } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   Mic,
@@ -543,6 +543,7 @@ const NoaConversationalInterface = React.forwardRef<
     } = useNoaPlatform();
     const resolvedVariant = variant || "default";
     const navigate = useNavigate();
+    const location = useLocation();
     const [isOpen, setIsOpen] = useState(
       (hideButton && position === "inline") || contextIsOpen,
     );
@@ -3575,11 +3576,23 @@ const NoaConversationalInterface = React.forwardRef<
                 const navKey = (c: (typeof navCommands)[number]) =>
                   `${c.command?.type ?? ""}:${(c.command?.target ?? "").split("?")[0]}`;
                 const seenNav = new Set<string>();
-                const dedupedNav = navCommands.filter((c) => {
+                const dedupedNavRaw = navCommands.filter((c) => {
                   const k = navKey(c);
                   if (!k || seenNav.has(k)) return false;
                   seenNav.add(k);
                   return true;
+                });
+                // V1.9.214 — Suprime card navigate-route redundante (já estamos na rota).
+                // Bug Pedro 11/05: prompt auto-injetado "Iniciar Avaliação Clínica Inicial"
+                // disparava regex do Core (index.ts:1107) que retornava card pra
+                // /app/clinica/paciente/dashboard?section=avaliacao — rota onde paciente
+                // JÁ ESTÁ. Polish puramente client-side, zero toque CORE/AEC.
+                const currentPath = (location.pathname || "").replace(/\/+$/, "");
+                const dedupedNav = dedupedNavRaw.filter((c) => {
+                  if (c.command?.type !== "navigate-route") return true;
+                  const target = (c.command?.target ?? "").split("?")[0].replace(/\/+$/, "");
+                  if (!target) return true;
+                  return target !== currentPath;
                 });
 
                 return (
