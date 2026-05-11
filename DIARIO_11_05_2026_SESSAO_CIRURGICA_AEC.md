@@ -251,5 +251,133 @@ Aplicação: estimei o gargalo do pipeline em CLEANUP_PASS. A telemetria V1.9.21
 
 ---
 
-**HEAD final:** `f5ed892`
-**Próxima sessão entra com:** Vercel front V1.9.214-218 deployado, Edge medcannlab5 V1.9.214-218 deployado (~2-3h após push), banco com rules Ricardo limpas, report `0f299ac4` mantido como evidência empírica do bug cascata.
+**HEAD final inicial:** `f5ed892`
+
+---
+
+## BLOCO M — Sessão tarde (15:30-16:00 BRT) — Ricardo aparece + ARQ-1 + 3 emails + Princípio 53
+
+### Cronograma factual
+
+```
+~14:50 BRT — V1.9.219 datas appointments client (sidebar dia anterior)
+~15:00 BRT — V1.9.220+221 paradores soisso + concordância isso (caso Cristiano)
+~15:16 BRT — Ricardo LOGA pela primeira vez desde 07/05 (rrvalenca@gmail.com)
+             Revisa 6 reports em 64s (Carolina×2, Pedro passosmir4, Pedro casualmusic×2,
+             João Vidal sócio jvbiocann@gmail.com)
+             Mas TODOS via "Marcar revisado" (review_status='reviewed'), NÃO "Aprovar e devolver"
+             → KPI closed_loop_completion_rate continua 0.00%
+~15:25 BRT — Audit empírico ARQ-1 Faveret→Ricardo aprofundado (6 dimensões GPT externo)
+~15:40 BRT — V1.9.222 médico-alvo como dado de primeira classe (~90 LOC, 6 arquivos)
+             Backward-compat 100%, anti-regressão verificada
+~15:47 BRT — V1.9.223 validação regex email signup (caso `@hotmai.c` Cristiano)
+~15:50 BRT — Descoberta dos 3 emails da jornada paciente:
+             (1) ✅ Ao agendar — `notifyAppointmentConfirmation` funciona
+             (2) 🟡 10min antes — slot pg_cron existe, filtra is_remote=true → 0 envios
+             (3) ❌ Ao iniciar call — Edge `video-call-request-notification` v59 ÓRFÃ
+~15:55 BRT — Item 11 do 1-pager refinado (design Pedro: agendou + 10min + ao iniciar)
+16:00 BRT — Consulta Pedro casualmusic ↔ Ricardo (appointment 01f18db0)
+```
+
+### V1.9.222 — ARQ-1 fix completo (6 arquivos, ~90 LOC, BACKWARD-COMPAT 100%)
+
+Causa raiz cristalizada: `aec_assessment_state.data` não modelava médico-alvo como dado de primeira classe. `id` do médico existia em variável paralela `selectedProfessionalId` (PatientAppointments) mas não propagava. Cascata: PatientAppointments → PatientNOAChat → useMedCannLabConversation → noaResidentAI → Edge — em cada elo, id ausente.
+
+Fix:
+1. PatientAppointments.tsx — propaga `selectedProfessionalId` no `targetProfessional`
+2. PatientNOAChat.tsx — tipo aceita `id?` + readSession + fromRouterState
+3. useMedCannLabConversation.ts — hook signature aceita id + uiContext propaga
+4. clinicalAssessmentFlow.ts — AssessmentData `aecTargetPhysicianId?` + startAssessment 4º param
+5. noaResidentAI.ts — `aecPhysicianId` em 3 calls de startAssessment + `target_doctor_id` em aecFinalizationData
+6. tradevision-core/index.ts — DOCTOR_RESOLUTION lê `target_doctor_id` no TOPO + telemetria `DOCTOR_DIVERGENCE_DETECTED`
+
+Cobertura: 3 rotas (PatientAppointments, Gate D' V1.9.100-P0b, processAssessment legacy).
+
+### Sessão Ricardo 15:16 BRT — dado empírico de ouro
+
+**Ricardo logou e revisou 6 reports em 64 segundos** (Carolina×2, Pedro passosmir4, Pedro casualmusic×2, João Vidal sócio). Sinal POSITIVO MASSIVO de uso real.
+
+**Mas gap UX/KPI:**
+- Clicou em "Marcar revisado" 6× (`markAsReviewed` → `review_status='reviewed'`)
+- NUNCA clicou em "Aprovar e devolver" (`approveAndDeliver` → `review_status='approved'`)
+- View `v_clinical_cycle_health` só conta `approved` → KPI Muhdo continua 0%
+
+Reports tocados:
+- `31666d79` — Carolina (5c98c123)
+- `cf7f4398` — Carolina (5c98c123)
+- `61cda7cd` — Pedro passosmir4 (df6cee2d)
+- `89824425` — Pedro casualmusic (d5e01ead)
+- `cf2ad13b` — Pedro casualmusic (d5e01ead)
+- `d3d987ae` — João Eduardo Vidal (`jvbiocann@gmail.com`, c68fb133 sócio)
+
+### Princípio 53 cristalizado — 5 perguntas obrigatórias
+
+Trigger: 4 erros MEUS de classificação na mesma sessão:
+1. Bug 1 (loop retomada) → era idempotência correta
+2. Cristiano "primeiro paciente externo real" → friendly user teste
+3. ARQ-1 "DOCTOR_RESOLUTION funcionou OK" → não cruzei intenção declarada
+4. "Ricardo default sem escolha" → existe Gate D' inline
+
+Rule: ANTES de afirmar limitação/bug, responder com evidência empírica:
+1. Existe gate upstream que eu não vi?
+2. Existe captura downstream que compensa?
+3. Dado/id existe em estrutura paralela?
+4. Fluxo manual/voluntário contorna?
+5. Auditei TODOS os call sites?
+
+Documentado em `memory/feedback_dry_run_mental_mensagem_catch_11_05.md` (expansão tarde).
+
+### 3 funções órfãs descobertas hoje
+
+Padrão arquitetural: infra existe mas plug nunca foi conectado.
+
+1. **`bindPatientToDoctor`** ([aecGate.ts:156](src/lib/aecGate.ts#L156)) — vincula paciente↔médico explícito. Definida V1.9.100-P0b, nunca chamada.
+2. **Edge `video-call-request-notification` v59 ACTIVE** — deveria mandar email quando médico inicia call. Zero invocações no client, zero triggers SQL.
+3. **Slot 5min reminder** (DESCARTADO Pedro escolheu 10min existente em vez de adicionar 5min).
+
+### 11 itens preparados pra reunião Ricardo (1-pager `PARA_RICARDO_REUNIAO_PENDENTE_11_05.md`)
+
+1. Sprint 1 medindo — aprovar 5 reports
+2. Laudo ARQ-1 + V1.9.222 validar + plug `bindPatientToDoctor`
+3. V16 RIM (pendente 07/05)
+4. Score hardcoded 1.5
+5. Bug 3 (anoite localização)
+6. Bug 6 ("O que mais?" cap)
+7. RATIONALITY async (~18s pipeline 55% total)
+8. UX-4 contexto retomada
+9. Onboarding 9 médicos sem council/fee
+10. **(NOVO) "Marcar revisado" vs "Aprovar e devolver"** — empírico hoje 15:16 BRT
+11. **(NOVO) 3 emails jornada** — agendou ✅ / 10min antes 🟡 / ao iniciar ❌
+
+### Total commits sessão 11/05: 17
+
+```
+7234c39  V1.9.214      Card navigate-route redundante
+2f4c1d7  V1.9.215      Timeout 60s + telemetria + paralelo
+cd34732  V1.9.216      3 fixes AEC
+a7a99c8  V1.9.217      7 fixes timezone Edge
+7e0c36b  V1.9.218      Verbatim "O que mais?" COMPLAINT_DETAILS
+f5ed892  (audit)       DELETE 3 rules duplicadas Ricardo
+7c59012  (diário M-L)  DIARIO 11/05 inicial
+59c5825  V1.9.219      Datas appointments client
+bc974e8  V1.9.220+221  Paradores + concordâncias Cristiano
+253afd3  V1.9.222      ARQ-1 médico-alvo dado primeira classe
+dec957b  V1.9.223      Validação email signup + 1-pager Ricardo (9 itens)
+309f771  (docs)        Item 10 reunião — UX gap reviewed vs approved
+396227f  (docs)        Item 11 — email lembrete 5min (versão inicial)
+1e57b1a  (docs)        Item 11 refinado — 3 emails jornada
+(este)   (docs)        Bloco M diário 11/05 final
+```
+
+Type-check 33 = baseline em todos. Push 4 refs em todos.
+
+### Frase âncora atualizada (final)
+
+*"Princípio 52 + Princípio 53 = dry-run mental no momento do código E no momento da análise. Interpretação superficial cobra preço em ambas as camadas."*
+
+*"3 funções órfãs descobertas em 1 sessão indicam padrão arquitetural: pré-PMF acumula intenção escrita mas não conectada. Plug > inventar."*
+
+---
+
+**HEAD final sessão (pré-Bloco M commit):** `1e57b1a`
+**Próxima sessão entra com:** reunião Ricardo materializada, decisões dos 11 itens, plug das 3 funções órfãs decidido, KPI Muhdo destravado se Ricardo aprovou 5 reports.
