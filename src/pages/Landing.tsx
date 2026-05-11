@@ -229,6 +229,16 @@ const Landing: React.FC = () => {
     if (!registerData.name || !registerData.email || !registerData.password) return error('Campos obrigatórios faltando')
     if (registerData.password !== registerData.confirmPassword) return error('Senhas não conferem')
 
+    // V1.9.223 — Validação básica de email no signup. Caso Cristiano 11/05:
+    // sistema aceitou "pontes.cristiano@hotmai.c" (TLD sem ponto-letra-letra),
+    // bouncearia Resend reminder. Regex exige: caractere antes do @ + caractere
+    // depois do @ + ponto + >=2 letras (TLD com números rejeitado: b.c1).
+    // Aplica APENAS new signup. Auditoria retroativa de emails parqueado.
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[a-zA-Z]{2,}$/
+    if (!emailRegex.test(registerData.email.trim())) {
+      return error('Email inválido. Use formato como exemplo@dominio.com')
+    }
+
     // V1.9.207 — Validação obrigatória CFM 2.314/2022 para profissionais
     // Antes 9/10 médicos cadastravam sem council_state (campo UF não existia separado).
     // Agora signup exige tipo + número + UF antes de criar conta.
