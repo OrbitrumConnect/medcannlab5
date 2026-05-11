@@ -106,6 +106,46 @@ Dia 11/05 tivemos sessão técnica densa: **11 commits**, **9 bugs estruturais**
 
 ---
 
+## 10. UX GAP — "Marcar revisado" vs "Aprovar e devolver" (DESCOBERTO HOJE 15:16 BRT)
+
+**Empírico fresco (sessão sua hoje 11/05 15:15-15:34 BRT):**
+
+Você logou e revisou **6 reports em 64 segundos** (ação ativa em sequência rápida). Sinal positivo MASSIVO de uso real do Sprint 1.
+
+**Reports tocados:**
+- 2× Carolina Campello (`5c98c123`)
+- 1× Pedro paciente `passosmir4` (`df6cee2d`)
+- 2× Pedro paciente `casualmusic` (`d5e01ead`)
+- 1× **João Eduardo Vidal** sócio (`jvbiocann@gmail.com`) ← interessante
+
+**Resultado banco:**
+- `reports_reviewed_marked: 1 → 6` ✅
+- `reports_approved_total: 0` 🔴 (sem mudança)
+- `closed_loop_completion_rate_30d_pct: 0.00%` 🔴 (KPI Muhdo continua 0)
+
+**Causa identificada empíricamente:**
+
+UI tem **2 botões separados**:
+
+| Botão | Função | Banco | Conta KPI Muhdo? |
+|---|---|---|---|
+| **"Marcar revisado"** | `markAsReviewed()` | `review_status='reviewed'` | ❌ Não |
+| **"Aprovar e devolver"** | `approveAndDeliver()` | `review_status='approved'` + notifica paciente | ✅ Sim |
+
+Você clicou em "Marcar revisado" 6×, mas **não** em "Aprovar e devolver" em nenhum.
+
+**Decisão (perguntas dirigidas):**
+
+(a) Você sabia da diferença entre os 2 botões antes desta reunião?
+(b) Quando pretende clicar em "Aprovar e devolver" nesses 6 reports?
+(c) Workflow ideal: **(c1) combinar os 2 botões em um** / **(c2) manter separados mas com tooltip claro** / **(c3) Sprint 1 medindo passar a contar `reviewed OR approved`** (mais permissivo) / **(c4) workflow consciente — você revisa todos primeiro, aprova em batch depois**
+
+**Implicação Muhdo:**
+
+Sem aprovação ("approved"), KPI `closed_loop_completion_rate_30d_pct` continua **0.00%**. Em D+7 Muhdo perguntar status do método AEC longitudinal, vamos mostrar 0% mesmo com você usando ativamente. Decisão sua hoje destrava esse KPI.
+
+---
+
 ## 9. ONBOARDING 9 médicos sem council/fee (operacional)
 
 **Empírico:** view `v_clinical_cycle_health`:
@@ -127,7 +167,7 @@ professionals_with_fee:           1/10  (só você, 400/consulta)
 
 | # | Pergunta | Y/N | Notas |
 |---|---|---|---|
-| 1 | Aprovar 5 reports draft pra destravar Sprint 1 medindo | ⬜ | |
+| 1 | Aprovar 5 reports draft pra destravar Sprint 1 medindo | ⬜ | clicar em "Aprovar e devolver" (não "Marcar revisado") |
 | 2 | Validar V1.9.222 e autorizar plug `bindPatientToDoctor`? | ⬜ | |
 | 3 | Aprovar V16 RIM Caminho A.1? | ⬜ | |
 | 4 | Aceitar score binário "completou/não" até definir fórmula? | ⬜ | |
@@ -136,6 +176,7 @@ professionals_with_fee:           1/10  (só você, 400/consulta)
 | 7 | RATIONALITY async pós-retorno? | ⬜ | |
 | 8 | UX-4 contexto retomada — autorizar polish? | ⬜ | |
 | 9 | Onboarding 9 médicos — você contata ou suspende? | ⬜ | |
+| **10** | **"Marcar revisado" vs "Aprovar e devolver" — qual opção (c1/c2/c3/c4)?** | ⬜ | **EMPÍRICO HOJE: 6 reports marcados revisado, 0 aprovados, KPI Muhdo 0%** |
 
 ---
 
