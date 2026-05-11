@@ -281,4 +281,41 @@ Adiados → manter no parking com nova data de revisão.
 
 ---
 
+## Audit trail — fix de dado pontual (não migration formal)
+
+### 11/05/2026 — DELETE 3 rules duplicadas em professional_availability (Dr. Ricardo)
+
+**Bug observado:** widget de agendamento mostrava horários duplicados (06:00-16:00 BRT + 11:00-16:00 BRT duplicados). RPC `get_available_slots_v3` retornava 17 rows para 13/05 (quarta) sendo 11 únicos + 6 duplicatas.
+
+**Causa raiz:** Dr. Ricardo (2135f0c0-eb5a-43b1-bc00-5f8dfea13561) tinha 7 rules em `professional_availability`, 3 delas duplicatas sobrepostas (rule A: 09:00-20:00 + rule B: 14:00-20:00 no mesmo day_of_week). Todas as 7 com `created_at: 2026-05-08 00:11:47.874246+00` (microsegundos idênticos = seed automático, não criação humana manual).
+
+**Backup pré-DELETE (JSON completo):**
+```json
+[
+  {"id":"47f2dbc8-eea4-4ed7-b2e8-8d97e25d9235","professional_id":"2135f0c0-eb5a-43b1-bc00-5f8dfea13561","day_of_week":1,"start_time":"14:00:00","end_time":"20:00:00","slot_duration":60,"slot_interval_minutes":null,"is_active":true,"created_at":"2026-05-08 00:11:47.874246+00"},
+  {"id":"398ff644-743e-4d1b-81d5-3594767af9c0","professional_id":"2135f0c0-eb5a-43b1-bc00-5f8dfea13561","day_of_week":3,"start_time":"14:00:00","end_time":"20:00:00","slot_duration":60,"slot_interval_minutes":null,"is_active":true,"created_at":"2026-05-08 00:11:47.874246+00"},
+  {"id":"0f341e4f-7c14-4a37-be85-e37ba5b8eef5","professional_id":"2135f0c0-eb5a-43b1-bc00-5f8dfea13561","day_of_week":5,"start_time":"14:00:00","end_time":"20:00:00","slot_duration":60,"slot_interval_minutes":null,"is_active":true,"created_at":"2026-05-08 00:11:47.874246+00"}
+]
+```
+
+**SQL executado:**
+```sql
+DELETE FROM professional_availability
+WHERE id IN (
+  '47f2dbc8-eea4-4ed7-b2e8-8d97e25d9235',
+  '398ff644-743e-4d1b-81d5-3594767af9c0',
+  '0f341e4f-7c14-4a37-be85-e37ba5b8eef5'
+);
+```
+
+**Validação empírica pós-DELETE:** RPC `get_available_slots_v3` para 13/05 retornou 11 slots únicos (era 17). Estado final: 4 rules (seg/qua/qui/sex), sem sobreposição.
+
+**Rollback (se necessário):** re-INSERT do JSON acima em `professional_availability` (com novos `id` UUIDs).
+
+**Por que não migration formal:** fix-de-dado pontual pré-PMF de 1 médico afetado. Migration tracking seria over-engineering pra DELETE de 3 rows em ambiente com 10 profissionais cadastrados. Documentado aqui para audit trail caso precise repetir o padrão (ex: outro médico cadastrar manualmente com duplicação similar).
+
+**Lição arquitetural:** RPC `get_available_slots_v3` retorna slots por rule sem dedup — comportamento correto, não bug. Defesa contra duplicação futura deve ficar no UI de cadastro de rules (que ainda não existe), não na RPC.
+
+---
+
 *Este arquivo é parte da disciplina temporal de execução pré-PMF. Não expandir. Não transformar em narrativa. Manter factual e curto.*
