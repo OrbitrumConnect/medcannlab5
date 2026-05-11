@@ -43,6 +43,43 @@ export class ClinicalReportService {
     patientName: string,
     assessmentData: any
   ): Promise<ClinicalReport> {
+    // V1.9.213 — Dedupe defensivo no banco (5 min TTL).
+    //
+    // Bug observado 11/05/2026: 5 reports duplicados criados em 56s pra
+    // mesmo paciente (Pedro admin 17345b36). Gate in-memory V1.9.25
+    // (clinicalAssessmentFlow.isReportDispatched) NÃO PERSISTE entre
+    // sessões — fechou app, reabriu, gerou múltiplos reports em loop.
+    //
+    // Fix: verifica banco antes de criar. Se já existe report do mesmo
+    // paciente gerado pela IA nos últimos 5min, REUSAR em vez de INSERT.
+    // Princípio: defesa em depth (Princípio 4) + sistema real > abstrato
+    // (Princípio 51).
+    try {
+      const fiveMinAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString()
+      const { data: recentReport } = await supabase
+        .from('clinical_reports')
+        .select('*')
+        .eq('patient_id', patientId)
+        .eq('generated_by', 'noa_ai')
+        .gte('generated_at', fiveMinAgo)
+        .order('generated_at', { ascending: false })
+        .limit(1)
+        .maybeSingle()
+
+      if (recentReport) {
+        console.warn(
+          '[clinicalReportService] V1.9.213 dedupe — report existente reutilizado:',
+          (recentReport as any).id,
+          `(criado há ${Math.round((Date.now() - new Date((recentReport as any).generated_at).getTime()) / 1000)}s)`
+        )
+        return recentReport as unknown as ClinicalReport
+      }
+    } catch (dedupErr) {
+      // Falha silenciosa do dedupe: NÃO bloqueia geração (defesa em depth fail-open).
+      // Se SELECT falhar, prossegue com INSERT normal (comportamento pré-V1.9.213).
+      console.warn('[clinicalReportService] dedupe check falhou (prosseguindo):', dedupErr)
+    }
+
     const reportId = `report_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
 
     const report: ClinicalReport = {
