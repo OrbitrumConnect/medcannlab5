@@ -417,7 +417,15 @@ const ClinicalReports: React.FC<ClinicalReportsProps> = ({ className = '', onSha
             })()
           },
           doctorNotes: stripClinical(content.doctor_notes) || undefined,
-          reviewStatus: (content.review_status as SharedReport['reviewStatus']) || 'pending',
+          // V1.9.225 patch — `review_status` é COLUNA TOP-LEVEL em clinical_reports,
+          // não dentro de content (jsonb). Empírico 11/05: Ricardo marcou 6 reports
+          // como reviewed (banco: review_status='reviewed' TOP-LEVEL); UI lia
+          // content.review_status → undefined → fallback 'pending' → aba "Revisados"
+          // sempre vazia mesmo após V1.9.200 Sprint 1.
+          // Fallback `content.review_status` preservado pra eventual compat retro.
+          reviewStatus: (report.review_status as SharedReport['reviewStatus'])
+            || (content.review_status as SharedReport['reviewStatus'])
+            || 'pending',
           rawContent: content
         }
       })
