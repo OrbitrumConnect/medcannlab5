@@ -312,6 +312,11 @@ export class ClinicalAssessmentFlow {
     if (/^(pronto|é\s+tudo|e\s+tudo)$/i.test(t.trim())) return true
     if (/(^|\s)(so isso|e so isso|apenas isso|somente isso|e isso)(\s|!|$)/.test(t)) return true
     if (lower.includes('é só isso') || lower.includes('só isso')) return true
+    // V1.9.220 — typos sem espaco de "so isso" (caso Cristiano 11/05 — "soisso"
+    // capturado como sintoma associado no relatorio porque regex anteriores
+    // exigem espaco entre "so" e "isso"). Defesa cirurgica: aceitar formas
+    // colapsadas/erro de digitacao comuns como parador valido.
+    if (/^(soisso|s[oó]iso|saisso|so\s*iso|s[oó]\s*iss[oa])\s*[!.?]*\s*$/i.test(t.trim())) return true
     if (/\bso\s+isso\s+mesmo\b/.test(t)) return true
     if (/\b(so|só)\s+prosseguir\b/.test(t)) return true
     if (/\b(isso\s+mesmo|e\s+isso|s[oó]\s+isso)\b/.test(t)) return true
@@ -1044,6 +1049,15 @@ export class ClinicalAssessmentFlow {
             /^(ok|ta|tá)\b/i.test(lr) ||
             /^(apenas\s+)?prosseguir\b/i.test(lr) ||
             /\bnao\s+precisa\s+corrigir|nada\s+a\s+corrigir|nada\s+para\s+corrigir\b/i.test(lowerResponse) ||
+            // V1.9.221 — concordancia natural em PT-BR. Caso Cristiano 11/05:
+            // paciente respondeu "isso" para "Voce concorda?" → re-loop indevido
+            // ("Vamos revisar. isso. Por favor, me diga o que precisa corrigir...").
+            // Defesa cirurgica: aceitar "isso", "exato", "perfeito" SOZINHOS
+            // (string inteira) como concordancia. Match em substring derrubaria
+            // pacientes que dissessem "isso esta errado" — por isso ^...$.
+            /^isso\s*[!.]?\s*$/i.test(lr.trim()) ||
+            /^exato\s*[!.]?\s*$/i.test(lr.trim()) ||
+            /^perfeito\s*[!.]?\s*$/i.test(lr.trim()) ||
             (/\bsim\b/.test(lowerResponse) &&
               !/\bnao\b/.test(lowerResponse.normalize('NFD').replace(/[\u0300-\u036f]/g, '')) &&
               !lowerResponse.includes('não')))
