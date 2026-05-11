@@ -2240,13 +2240,41 @@ export class NoaResidentAI {
       const isCoreTimeout = errMsg.startsWith('__CORE_TIMEOUT__')
 
       if (isCoreTimeout) {
+        // V1.9.216 — Mensagem por fase: timeout no MEIO da AEC (coleta ativa)
+        // mostrava texto de "avaliação registrada" prematuro, paciente reagia
+        // ("entendi mais acabou?") e AEC capturava como sintoma. Cascata
+        // observada empíricamente 11/05 (report 0f299ac4 contaminado).
+        // Fix: ler fase atual via clinicalAssessmentFlow. Se coleta ativa,
+        // pedir repetição. Se fechamento/concluído, mensagem de processamento.
+        const phase = (() => {
+          try {
+            const uid = platformData?.user?.id
+            return uid ? clinicalAssessmentFlow.getState(uid)?.phase : undefined
+          } catch { return undefined }
+        })()
+        const closingPhases = new Set([
+          'CONSENT_COLLECTION', 'CONSENSUS_CONFIRMATION',
+          'FINAL_RECOMMENDATION', 'COMPLETED'
+        ])
+        const isClosing = phase ? closingPhases.has(phase) : false
+
+        if (isClosing) {
+          return this.createResponse(
+            'Sua avaliacao foi registrada e esta sendo processada.\n\n' +
+            'O relatorio clinico pode levar alguns segundos para aparecer no painel. ' +
+            'Voce pode atualizar a pagina em instantes para ver o resultado.',
+            0.7,
+            'text',
+            { source: 'tradevision-core', status: 'processing_async', error: errMsg, phase }
+          )
+        }
+
+        // Fase de coleta (ou desconhecida): pedir repetição sem dar a entender que acabou.
         return this.createResponse(
-          'Sua avaliacao foi registrada e esta sendo processada.\n\n' +
-          'O relatorio clinico pode levar alguns segundos para aparecer no painel. ' +
-          'Voce pode atualizar a pagina em instantes para ver o resultado.',
-          0.7,
+          'Tive um pequeno atraso para responder agora. Voce poderia repetir sua ultima resposta para seguirmos?',
+          0.5,
           'text',
-          { source: 'tradevision-core', status: 'processing_async', error: errMsg }
+          { source: 'tradevision-core', status: 'collect_retry', error: errMsg, phase }
         )
       }
 

@@ -881,7 +881,7 @@ export class ClinicalAssessmentFlow {
         state.lastUpdate = new Date()
         const anchor = this.hdaLabel(state)
         return {
-          nextQuestion: `Vamos explorar com mais detalhes a **${anchor}** (e o sintoma que voce descreveu na lista). Onde voce sente isso com mais nitidez?`,
+          nextQuestion: `Vamos explorar com mais detalhes o sintoma **${anchor}**. Onde voce sente isso com mais nitidez?`,
           phase: 'COMPLAINT_DETAILS',
           isComplete: false
         }
@@ -1236,8 +1236,8 @@ export class ClinicalAssessmentFlow {
     const label = this.hdaLabel(state)
     const questions = [
       { field: 'complaintLocation', question: `Onde você sente ${label}?` },
-      { field: 'complaintOnset', question: `Quando essa dor ou incômodo em ${label} começou?` },
-      { field: 'complaintDescription', question: `Como é essa sensação (em ${label})?` },
+      { field: 'complaintOnset', question: `Quando esse sintoma (${label}) começou?` },
+      { field: 'complaintDescription', question: `Como você descreveria esse sintoma (${label})?` },
       {
         field: 'complaintAssociatedSymptoms',
         question: `O que mais você sente junto com ${label}?`,

@@ -4685,9 +4685,30 @@ ${JSON.stringify(patientData, null, 2)}
                 .limit(1)
                 .maybeSingle()
 
+            // V1.9.216 — Guard anti-violação REGRA HARD §1.
+            // Antes: detector usava só `lastReport.status=completed` na história.
+            // Qualquer AEC concluída no passado disparava trigger no MEIO da NOVA AEC.
+            // Bug observado 11/05 (Pedro paciente, 2ª AEC em COMPLAINT_DETAILS):
+            // sistema ofertou agendamento espontaneamente porque report de 1h atrás
+            // existia. Paciente reagiu textualmente, AEC capturou reação como
+            // fator de piora — relatório 0f299ac4 saiu contaminado.
+            // Fix: se há FSM em fase de coleta/revisão ativa, SKIP o trigger.
+            // Defesa em depth — AEC GATE V1.5 também retém downstream, mas evitar
+            // injetar no prompt do GPT é a prevenção mais limpa.
+            const AEC_ACTIVE_COLLECTING_PHASES = new Set([
+                'INITIAL_GREETING', 'IDENTIFICATION', 'COMPLAINT_LIST', 'MAIN_COMPLAINT',
+                'COMPLAINT_DETAILS', 'MEDICAL_HISTORY', 'FAMILY_HISTORY_MOTHER',
+                'FAMILY_HISTORY_FATHER', 'LIFESTYLE_HABITS', 'OBJECTIVE_QUESTIONS',
+                'CONSENSUS_REVIEW', 'CONSENSUS_REPORT', 'CONSENSUS_CONFIRMATION',
+                'CONSENT_COLLECTION', 'INTERRUPTED'
+            ])
+            const aecActiveCollecting = !!assessmentPhase && AEC_ACTIVE_COLLECTING_PHASES.has(assessmentPhase)
+            if (aecActiveCollecting && lastReport) {
+                console.log(`⏳ [SMART_SCHEDULING_GUARD V1.9.216] AEC ativa em ${assessmentPhase} — trigger pos-avaliacao SKIPADO (defende REGRA HARD §1).`)
+            }
 
-            // 2. Se tem avaliação concluída, rodar lógica de Trigger Pós-Avaliação
-            if (lastReport) {
+            // 2. Se tem avaliação concluída E não há AEC ativa em coleta, rodar lógica de Trigger Pós-Avaliação
+            if (lastReport && !aecActiveCollecting) {
                 // AJUSTE 3: SYSTEM_TRIGGER passa pelo CEP (Audit)
                 await supabaseClient.from('cognitive_events').insert({
                     intent: currentIntent,
