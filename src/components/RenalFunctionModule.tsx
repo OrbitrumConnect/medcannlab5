@@ -97,10 +97,16 @@ const RenalFunctionModule: React.FC<RenalFunctionModuleProps> = ({ patientId, pa
                     ].filter((id): id is string => Boolean(id));
                     const ids = Array.from(new Set(allIds));
                     if (ids.length > 0) {
+                        // V1.9.212 — filtra type=patient pra excluir admins/profissionais
+                        // que aparecem em clinical_assessments/clinical_reports por causa
+                        // de AECs de teste internos (Pedro, Eduardo, João, Ana Ventorini,
+                        // etc cadastraram AEC como "paciente" pra smoke-test).
+                        // Sem filtro, Ricardo via 37 IDs (12 fake). Com filtro, 25 reais.
                         const { data } = await supabase
                             .from('users')
                             .select('id, name')
                             .in('id', ids)
+                            .in('type', ['patient', 'paciente'])
                             .order('name', { ascending: true });
                         if (data) list = data.map((u: any) => ({ id: u.id, name: u.name || 'Sem nome' }));
                     }
