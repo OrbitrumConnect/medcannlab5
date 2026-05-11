@@ -155,7 +155,8 @@ const Landing: React.FC = () => {
     councilType: '',
     councilNumber: '',
     councilState: '',
-    specialty: '' // V1.9.147: especialidade do profissional (input texto livre)
+    specialty: '', // V1.9.147: especialidade do profissional (input texto livre)
+    consultationFee: '' // V1.9.229: valor consulta (R$350-1300, obrigatório pra profissional)
   })
 
   // Effects & Handlers
@@ -242,14 +243,29 @@ const Landing: React.FC = () => {
     // V1.9.207 — Validação obrigatória CFM 2.314/2022 para profissionais
     // Antes 9/10 médicos cadastravam sem council_state (campo UF não existia separado).
     // Agora signup exige tipo + número + UF antes de criar conta.
+    // V1.9.229: estendido — specialty + fee tambem obrigatorios pra profissional.
+    // Trigger handle_new_user persiste tudo + seta onboarding_completed_at se completo.
     const userTypeToRegister = registerData.userType || localStorage.getItem('selectedUserType') || 'paciente'
     const isProf = userTypeToRegister === 'profissional' || userTypeToRegister === 'professional'
+    let feeNum: number | undefined = undefined
     if (isProf) {
       const ct = (registerData.councilType || '').trim()
       const cn = (registerData.councilNumber || '').trim()
       const cs = (registerData.councilState || '').trim()
+      const sp = (registerData.specialty || '').trim()
+      const feeRaw = (registerData.consultationFee || '').trim()
       if (!ct || !cn || !cs) {
         return error('Para profissionais, informe Conselho + Número + UF (obrigatório CFM 2.314/2022)')
+      }
+      if (!sp) {
+        return error('Informe sua Especialidade (obrigatório para profissionais).')
+      }
+      if (!feeRaw) {
+        return error('Informe o valor da consulta (R$ 350 a R$ 1.300). Você pode ajustar depois no Perfil.')
+      }
+      feeNum = parseFloat(feeRaw.replace(',', '.'))
+      if (Number.isNaN(feeNum) || feeNum < 350 || feeNum > 1300) {
+        return error('Valor da consulta deve estar entre R$ 350 e R$ 1.300.')
       }
     }
 
@@ -264,7 +280,8 @@ const Landing: React.FC = () => {
         registerData.councilType,
         registerData.councilNumber,
         registerData.councilState,
-        registerData.specialty // V1.9.147
+        registerData.specialty, // V1.9.147
+        feeNum // V1.9.229: opcional pra paciente, obrigatorio pra profissional (validado acima)
       )
       success('Conta criada com sucesso!')
       navigate(getDefaultRouteByType(normalizeUserType(userTypeToRegister)))
@@ -1406,13 +1423,29 @@ const Landing: React.FC = () => {
                 * Obrigatório para prescrição CFM 2.314/2022
               </p>
               {/* V1.9.147: especialidade — texto livre (admin pode editar depois) */}
+              {/* V1.9.229: agora OBRIGATORIA pra profissional (validada em handleRegister) */}
               <input
                 type="text"
-                placeholder="Especialidade (ex: Clínica Geral, Nefrologia, Cannabis Medicinal)"
+                placeholder="Especialidade* (ex: Clínica Geral, Nefrologia, Cannabis Medicinal)"
                 value={registerData.specialty}
                 onChange={(e) => setRegisterData({ ...registerData, specialty: e.target.value })}
                 className="w-full bg-slate-800 border border-slate-700 rounded-lg p-3 text-white outline-none focus:border-green-500 placeholder:text-slate-500"
               />
+              {/* V1.9.229: valor da consulta (obrigatorio R$350-1300, constraint banco V1.9.150) */}
+              <input
+                type="number"
+                inputMode="decimal"
+                min={350}
+                max={1300}
+                step={10}
+                placeholder="Valor da consulta* (R$ 350 a R$ 1.300 — ajustável depois)"
+                value={registerData.consultationFee}
+                onChange={(e) => setRegisterData({ ...registerData, consultationFee: e.target.value })}
+                className="w-full bg-slate-800 border border-slate-700 rounded-lg p-3 text-white outline-none focus:border-green-500 placeholder:text-slate-500"
+              />
+              <p className="text-[10px] text-slate-500 ml-1">
+                * Você pode ajustar especialidade e valor depois no Perfil.
+              </p>
             </div>
           )}
 

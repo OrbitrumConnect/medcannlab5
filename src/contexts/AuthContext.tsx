@@ -38,7 +38,8 @@ interface AuthContextType {
     councilType?: string,
     councilNumber?: string,
     councilState?: string,
-    specialty?: string
+    specialty?: string,
+    consultationFee?: number // V1.9.229
   ) => Promise<void>
 }
 
@@ -308,7 +309,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     councilType?: string,
     councilNumber?: string,
     councilState?: string,
-    specialty?: string
+    specialty?: string,
+    consultationFee?: number // V1.9.229: valor consulta R$350-1300 (obrigatorio pra profissional, validado em Landing)
   ) => {
     try {
       setIsLoading(true)
@@ -336,7 +338,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             council_state: councilState,
             // V1.9.147: especialidade (consumida pelo trigger handle_new_user
             // ao criar row em users.specialty)
-            specialty: specialty
+            specialty: specialty,
+            // V1.9.229: fee — trigger persiste em users.consultation_fee_default
+            // e seta onboarding_completed_at se profissional + 5 campos preenchidos.
+            // String pra evitar JSON number precision; trigger faz ::numeric com try/catch.
+            consultation_fee_default: consultationFee != null ? String(consultationFee) : undefined
           }
         }
       })
