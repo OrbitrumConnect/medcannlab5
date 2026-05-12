@@ -106,6 +106,42 @@ Pedro perguntou tirando Stripe/CNPJ o que precisa pra app ficar selado igual cad
 - ~~Cristiano sem reminders~~ → V1.9.228 corrigiu
 - ~~Signup pro sem fee/specialty obrigatório~~ → V1.9.229 corrigiu
 - ~~exam_requests sem ICP~~ → V1.9.231 corrigiu
+- ~~Notificações do sino não-clicáveis~~ → V1.9.232 corrigiu (exceção legítima ao freeze)
+
+---
+
+## BLOCO E — V1.9.232 (excepção legítima ao freeze 16/05)
+
+Após o diário ser criado, Pedro reportou empíricamente bug UX do sino (50 testers): clicar no texto da notificação não direciona. Autorizou como **exceção legítima ao Princípio 48** (bug UX real reportado por usuários, sem CORE).
+
+### Auditoria empírica
+- 167 notifs no DB, 5 tipos (video_call_request 109 / report_shared 43 / video_call_reminder 8 / new_clinical_report 6 / info 1)
+- 94% sem `metadata.action_url` populado (apenas video_call_reminder + info têm)
+- Pedro admin (17345b36) tem **0 notifs no DB** mas screenshot mostra 4 ("Avalie sua consulta" + "Consulta Concluída")
+- Fonte exata das 4 mockadas **não localizada em 8 buscas grep** (possível cache stale, mock residual ou localStorage legacy)
+- 4 callsites de `createNotification` mapeados; `clinicalDevolutionService.ts:136` já popula `metadata.action_url` corretamente (V1.9.188-C honrado)
+
+### V1.9.232 — Card clicável + fallback per type (NotificationCenter.tsx, +117/-50 LOC)
+- `resolveFallbackRoute(notif, userType)` pura no topo do arquivo: 8 tipos mapeados pra rotas paciente/profissional/admin
+- Regex em `title`/`message` captura "Avalie/Avaliar/Conclu" mesmo sem type formal — cobre as 4 mockadas
+- Card todo clicável (`onClick` no div) com `cursor-pointer` + hover só quando há rota
+- Tipos genéricos (info/success/warning/error) ficam **não-clicáveis** (UX previsível)
+- Botões ✓ e ✗ com `e.stopPropagation()` — não disparam navigate
+- `role="button"` + `tabIndex` + Enter/Space (a11y)
+- `try/catch` no `navigate` (defensivo)
+- Marca lida fire-and-forget ao clicar (otimista)
+
+### Anti-regressão validada empíricamente
+- type-check 0 erros (baseline preservado de V1.9.231)
+- 3 callsites sem action_url ficam cobertos pelo fallback per type
+- `clinicalDevolutionService` premium UX preservado (deeplink direto pro report via `metadata.action_url`)
+- CORE intocado (AEC FSM, Pipeline, ICP-Brasil, Edge Functions)
+- Janela 50 testers preservada (mudança é melhoria UX visível, não bloqueio)
+
+### Achado empírico não resolvido (registro honesto)
+- Notifs mockadas do sino do admin Pedro **não rastreadas** ao banco
+- Fix universal (regex em title/message) cobre o sintoma
+- Fonte original fica como pendência empírica pra audit futuro se reaparecer
 
 ---
 
@@ -134,12 +170,18 @@ Pedro perguntou tirando Stripe/CNPJ o que precisa pra app ficar selado igual cad
 
 > **"Cadeado AEC virou cadeado APP. Os 4 itens auto-executáveis viraram 4 versões com push 4 refs sem regressão. O que falta agora não é código — é Ricardo aprovar, CNPJ existir, e médico subir PFX."**
 
+### Frase âncora secundária (pós V1.9.232)
+
+> **"Fix universal cobre sintoma mesmo sem origem mapeada — quando empiricamente impossível rastrear fonte (mockada/cache/legacy), regex defensivo + fallback per type resolve o bug do usuário real sem caçar fantasma."**
+
 ---
 
-**Estado ao iniciar 12/05:**
-- HEAD `2072d18` selado
-- type-check 0 erros
-- 4 versões V1.9.228+229+230+231 deployadas
-- CORE intocado
+**Estado da sessão virada 11→12 (encerramento):**
+- HEAD `5206a95` selado
+- type-check **0 erros**
+- **5 versões V1.9.228+229+230+231+232** deployadas
+- **6 commits** push 4 refs (5 versões + 1 diário)
+- CORE intocado em todas
 - Janela ~50 testers preservada
+- Freeze 16/05 mantido com **1 exceção legítima documentada** (V1.9.232 — bug UX empírico)
 - Aguarda movimento humano nos 3 gates duros
