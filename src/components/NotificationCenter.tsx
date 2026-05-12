@@ -4,12 +4,49 @@
 // Componente para exibir e gerenciar notificações
 
 import React, { useState, useEffect, useCallback, useRef } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { Bell, X, Check, CheckCheck, AlertCircle, Info, CheckCircle, AlertTriangle, FileText, Calendar, MessageSquare, Stethoscope, Video, FlaskConical } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
 import { notificationService, Notification, NotificationType } from '../services/notificationService'
 
 interface NotificationCenterProps {
   className?: string
+}
+
+// V1.9.232 — Fallback rotas por tipo de notificação.
+// Aplica quando action_url não foi populado em metadata.action_url (94% dos casos
+// historicos: 109 video_call_request + 43 report_shared + 6 new_clinical_report
+// criados sem action_url). Mantem card clicavel sem depender de migration retroativa.
+// Recebe userType pra escolher rota correta (paciente vs profissional vs admin).
+function resolveFallbackRoute(notif: Notification, userType: string | undefined): string | null {
+  const t = (notif.type || '').toLowerCase()
+  const isPro = userType === 'profissional' || userType === 'professional' || userType === 'admin'
+
+  // Tipos clinicos
+  if (t === 'video_call_request' || t === 'video_call_scheduled' || t === 'video_call_reminder' || t === 'appointment') {
+    return isPro ? '/app/clinica/profissional/agendamentos' : '/app/clinica/paciente/agendamentos'
+  }
+  if (t === 'report' || t === 'new_clinical_report' || t === 'report_shared') {
+    return isPro ? '/app/clinica/profissional/relatorios' : '/app/clinica/paciente/dashboard?section=analytics'
+  }
+  if (t === 'prescription') {
+    return isPro ? '/app/clinica/profissional/dashboard?section=prescriptions' : '/app/clinica/paciente/dashboard?section=meus-agendamentos'
+  }
+  if (t === 'exam_request') {
+    return isPro ? '/app/clinica/profissional/dashboard?section=terminal-clinico&tab=prescriptions' : '/app/clinica/paciente/dashboard?section=analytics'
+  }
+  if (t === 'message') {
+    return isPro ? '/app/clinica/profissional/chat-profissionais' : '/app/clinica/paciente/chat-profissional'
+  }
+  if (t === 'clinical' || t === 'clinical_devolution') {
+    return isPro ? '/app/clinica/profissional/dashboard' : '/app/clinica/paciente/dashboard?section=analytics'
+  }
+  // appointment_completed (trigger SQL) + variantes "Avalie sua consulta" — paciente vai pro dashboard
+  if (t === 'appointment_completed' || /avalie|avaliar|conclu/i.test(notif.title || '') || /avalie|avaliar|conclu/i.test(notif.message || '')) {
+    return isPro ? '/app/clinica/profissional/dashboard' : '/app/clinica/paciente/dashboard?section=analytics'
+  }
+  // info / warning / success / error genericos — sem rota especifica
+  return null
 }
 
 // V1.9.165 — beep curto via Web Audio API (zero dependência externa).
@@ -99,6 +136,7 @@ const getNotificationColor = (type: NotificationType) => {
 
 const NotificationCenter: React.FC<NotificationCenterProps> = ({ className = '' }) => {
   const { user } = useAuth()
+  const navigate = useNavigate()
   const [isOpen, setIsOpen] = useState(false)
   const [notifications, setNotifications] = useState<Notification[]>([])
   const [unreadCount, setUnreadCount] = useState(0)
@@ -184,6 +222,28 @@ const NotificationCenter: React.FC<NotificationCenterProps> = ({ className = '' 
   const handleDelete = async (notificationId: string) => {
     await notificationService.deleteNotification(notificationId)
     setNotifications(prev => prev.filter(n => n.id !== notificationId))
+  }
+
+  // V1.9.232 — Click no card inteiro: marca lida + navega.
+  // Prioridade: notification.action_url (vindo de metadata.action_url) → fallback per type.
+  // Se rota resolvida == rota atual, só fecha o painel (sem navigate inutil).
+  const handleCardClick = async (notification: Notification) => {
+    const target = notification.action_url || resolveFallbackRoute(notification, user?.type)
+    // Marca lida (otimista) e fecha painel SEM aguardar API
+    if (!notification.is_read) {
+      handleMarkAsRead(notification.id) // fire-and-forget
+    }
+    setIsOpen(false)
+    if (!target) {
+      // Tipo generico sem rota — só fecha o painel (UX previsivel)
+      return
+    }
+    try {
+      navigate(target)
+    } catch (e) {
+      // Defensivo: se rota invalida, nao quebrar UX
+      console.warn('[NotificationCenter] Falha ao navegar:', target, e)
+    }
   }
 
   // Formatar data relativa
@@ -274,62 +334,69 @@ const NotificationCenter: React.FC<NotificationCenterProps> = ({ className = '' 
                 </div>
               ) : (
                 <div className="divide-y divide-slate-800">
-                  {notifications.map((notification) => (
-                    <div
-                      key={notification.id}
-                      className={`p-4 hover:bg-slate-800/50 transition-colors ${!notification.is_read ? 'bg-slate-800/30' : ''
-                        }`}
-                    >
-                      <div className="flex items-start gap-3">
-                        <div className="flex-shrink-0 mt-0.5">
-                          {getNotificationIcon(notification.type)}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-start justify-between gap-2">
-                            <div className="flex-1">
-                              <h4 className={`text-sm font-semibold ${!notification.is_read ? 'text-white' : 'text-slate-300'}`}>
-                                {notification.title}
-                              </h4>
-                              <p className="text-xs text-slate-400 mt-1 line-clamp-2">
-                                {notification.message}
-                              </p>
-                              <p className="text-xs text-slate-500 mt-2">
-                                {formatRelativeTime(notification.created_at)}
-                              </p>
+                  {notifications.map((notification) => {
+                    // V1.9.232 — pré-calcula destino pra dar feedback visual (cursor + hover)
+                    // só quando há rota real. Tipos genéricos (info/success) ficam não-clicáveis.
+                    const targetRoute = notification.action_url || resolveFallbackRoute(notification, user?.type)
+                    const isClickable = !!targetRoute
+                    return (
+                      <div
+                        key={notification.id}
+                        onClick={isClickable ? () => handleCardClick(notification) : undefined}
+                        className={`p-4 transition-colors ${!notification.is_read ? 'bg-slate-800/30' : ''} ${isClickable ? 'hover:bg-slate-800/50 cursor-pointer' : ''}`}
+                        role={isClickable ? 'button' : undefined}
+                        tabIndex={isClickable ? 0 : undefined}
+                        onKeyDown={isClickable ? (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleCardClick(notification) } } : undefined}
+                      >
+                        <div className="flex items-start gap-3">
+                          <div className="flex-shrink-0 mt-0.5">
+                            {getNotificationIcon(notification.type)}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-start justify-between gap-2">
+                              <div className="flex-1">
+                                <h4 className={`text-sm font-semibold ${!notification.is_read ? 'text-white' : 'text-slate-300'}`}>
+                                  {notification.title}
+                                </h4>
+                                <p className="text-xs text-slate-400 mt-1 line-clamp-2">
+                                  {notification.message}
+                                </p>
+                                <p className="text-xs text-slate-500 mt-2">
+                                  {formatRelativeTime(notification.created_at)}
+                                </p>
+                              </div>
+                              {!notification.is_read && (
+                                <div className="w-2 h-2 bg-blue-500 rounded-full flex-shrink-0 mt-1" />
+                              )}
                             </div>
-                            {!notification.is_read && (
-                              <div className="w-2 h-2 bg-blue-500 rounded-full flex-shrink-0 mt-1" />
+                            {/* V1.9.232 — "Ver detalhes →" agora redundante (card todo clicável),
+                                mantido pra users que esperam link explícito (a11y). */}
+                            {isClickable && (
+                              <span className="text-xs text-blue-400 mt-2 inline-block">
+                                Ver detalhes →
+                              </span>
                             )}
                           </div>
-                          {notification.action_url && (
-                            <a
-                              href={notification.action_url}
-                              className="text-xs text-blue-400 hover:text-blue-300 mt-2 inline-block"
-                              onClick={() => handleMarkAsRead(notification.id)}
+                          <div className="flex flex-col gap-1">
+                            <button
+                              onClick={(e) => { e.stopPropagation(); handleMarkAsRead(notification.id) }}
+                              className="p-1 rounded hover:bg-slate-700 transition-colors"
+                              title="Marcar como lida"
                             >
-                              Ver detalhes →
-                            </a>
-                          )}
-                        </div>
-                        <div className="flex flex-col gap-1">
-                          <button
-                            onClick={() => handleMarkAsRead(notification.id)}
-                            className="p-1 rounded hover:bg-slate-700 transition-colors"
-                            title="Marcar como lida"
-                          >
-                            <Check className="w-4 h-4 text-slate-400" />
-                          </button>
-                          <button
-                            onClick={() => handleDelete(notification.id)}
-                            className="p-1 rounded hover:bg-slate-700 transition-colors"
-                            title="Deletar"
-                          >
-                            <X className="w-4 h-4 text-slate-400" />
-                          </button>
+                              <Check className="w-4 h-4 text-slate-400" />
+                            </button>
+                            <button
+                              onClick={(e) => { e.stopPropagation(); handleDelete(notification.id) }}
+                              className="p-1 rounded hover:bg-slate-700 transition-colors"
+                              title="Deletar"
+                            >
+                              <X className="w-4 h-4 text-slate-400" />
+                            </button>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
+                    )
+                  })}
                 </div>
               )}
             </div>
