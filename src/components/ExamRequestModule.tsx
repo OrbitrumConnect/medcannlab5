@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { FileText, Plus, Printer, X, Save, Search, Settings, AlertCircle, Check, Send, Loader2 } from 'lucide-react';
+import { FileText, Plus, Printer, X, Save, Search, Settings, AlertCircle, Check, Send, Loader2, ShieldCheck, ShieldAlert } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
 import { notificationService } from '../services/notificationService';
 
-// Tipos 
+// Tipos
 type ExamTemplate = {
     id: string;
     title: string;
@@ -13,11 +13,17 @@ type ExamTemplate = {
     is_public: boolean;
 };
 
+// V1.9.231 — campos ICP-Brasil adicionados (espelho de cfm_prescriptions).
+// status: draft | signed | sent | cancelled. digital_signature populado pela Edge.
 type ExamRequest = {
     id: string;
     content: string;
     status: string;
     created_at: string;
+    digital_signature?: string | null;
+    iti_validation_code?: string | null;
+    iti_validation_url?: string | null;
+    signature_timestamp?: string | null;
 };
 
 type ExamRequestModuleProps = {
@@ -42,6 +48,8 @@ export const ExamRequestModule: React.FC<ExamRequestModuleProps> = ({
     const [history, setHistory] = useState<ExamRequest[]>([]);
     const [loading, setLoading] = useState(false);
     const [saving, setSaving] = useState(false);
+    // V1.9.231 — id em assinatura corrente (botao por item) pra UX feedback granular.
+    const [signingId, setSigningId] = useState<string | null>(null);
     const [feedback, setFeedback] = useState<{ type: 'success' | 'error', message: string } | null>(null);
 
     // Carregar Templates ao montar (e ao mudar aba)
@@ -80,18 +88,65 @@ export const ExamRequestModule: React.FC<ExamRequestModuleProps> = ({
         if (!patientId) return;
         setLoading(true);
         try {
+            // V1.9.231 — select inclui campos ICP pra badge de status + idempotencia botao assinar.
             const { data, error } = await supabase
                 .from('patient_exam_requests')
-                .select('*')
+                .select('id, content, status, created_at, digital_signature, iti_validation_code, iti_validation_url, signature_timestamp')
                 .eq('patient_id', patientId)
                 .order('created_at', { ascending: false });
 
             if (error) throw error;
-            setHistory((data || []).map(d => ({ ...d, status: d.status ?? 'pending', created_at: d.created_at ?? new Date().toISOString() })));
+            setHistory((data || []).map((d: any) => ({
+                ...d,
+                status: d.status ?? 'pending',
+                created_at: d.created_at ?? new Date().toISOString()
+            })));
         } catch (err) {
             console.error('Erro ao carregar histórico:', err);
         } finally {
             setLoading(false);
+        }
+    };
+
+    // V1.9.231 — Assinatura digital ICP-Brasil (espelha PatientPrescriptions V1.9.137).
+    // Chama Edge `digital-signature` com documentType='exam_request' (param backward-compat).
+    // Idempotente: bloqueia re-assinar se status='signed' OU digital_signature ja populado.
+    const handleSign = async (req: ExamRequest) => {
+        if (!user || !req.id) return;
+        // Idempotencia local antes do call (Edge tambem valida)
+        if (req.status === 'signed' || req.digital_signature) {
+            setFeedback({ type: 'error', message: 'Solicitacao ja assinada (idempotencia CFM 2.314).' });
+            return;
+        }
+        setSigningId(req.id);
+        setFeedback(null);
+        try {
+            const { data, error } = await supabase.functions.invoke('digital-signature', {
+                body: {
+                    documentId: req.id,
+                    documentLevel: 'level_2', // exam_request = level_2 (entre atestado e prescricao)
+                    professionalId: user.id,
+                    documentType: 'exam_request', // V1.9.231 — rota Edge pra patient_exam_requests
+                    userConfirmed: true
+                }
+            });
+
+            if (error) throw error;
+            if (!data?.success) throw new Error(data?.error || 'Falha desconhecida ao assinar');
+
+            setFeedback({ type: 'success', message: 'Solicitacao assinada com ICP-Brasil. Codigo ITI gerado.' });
+            // Recarregar pra refletir status=signed + iti_validation_code
+            await loadHistory();
+        } catch (err: any) {
+            const msg = err?.message || 'Erro ao assinar';
+            // Sem cert -> banner pra configurar
+            if (msg.toLowerCase().includes('certificado')) {
+                setFeedback({ type: 'error', message: 'Configure seu certificado ICP-Brasil em Certificados Digitais antes de assinar.' });
+            } else {
+                setFeedback({ type: 'error', message: `Erro ao assinar: ${msg}` });
+            }
+        } finally {
+            setSigningId(null);
         }
     };
 
@@ -175,7 +230,15 @@ export const ExamRequestModule: React.FC<ExamRequestModuleProps> = ({
         }
     };
 
-    const handlePrint = () => {
+    // V1.9.231 — handlePrint aceita req opcional. Sem req = print do editor (modal novo pedido)
+    // -> sempre RASCUNHO (sem ICP). Com req = print de pedido existente -> contextual ao status.
+    const handlePrint = (req?: ExamRequest) => {
+        const isSigned = !!(req && (req.status === 'signed' || req.status === 'sent') && req.digital_signature);
+        const contentToPrint = req?.content ?? editorContent;
+        const itiCode = req?.iti_validation_code || '';
+        const itiUrl = req?.iti_validation_url || '';
+        const sigTs = req?.signature_timestamp ? new Date(req.signature_timestamp).toLocaleString('pt-BR') : '';
+
         const printWindow = window.open('', '', 'width=800,height=600');
         if (printWindow) {
             printWindow.document.write(`
@@ -183,12 +246,15 @@ export const ExamRequestModule: React.FC<ExamRequestModuleProps> = ({
                     <head>
                         <title>Pedido de Exame - ${patientName || 'Paciente'}</title>
                         <style>
-                            body { font-family: 'Segoe UI', Arial, sans-serif; padding: 40px; color: #333; }
+                            body { font-family: 'Segoe UI', Arial, sans-serif; padding: 40px; color: #333; position: relative; }
                             .header { text-align: center; margin-bottom: 40px; border-bottom: 2px solid #000; padding-bottom: 20px; }
                             .logo { font-size: 24px; font-weight: bold; color: #000; }
                             .patient-info { margin-bottom: 30px; background: #f9f9f9; padding: 15px; border-radius: 8px; }
                             .content { white-space: pre-wrap; line-height: 1.6; font-size: 14px; min-height: 300px; }
                             .footer { margin-top: 60px; text-align: center; border-top: 1px solid #ccc; padding-top: 20px; font-size: 12px; color: #666; }
+                            .warn-banner { background: #fff3cd; border: 2px solid #f0ad4e; color: #856404; padding: 12px; margin-bottom: 20px; border-radius: 6px; font-weight: bold; text-align: center; }
+                            .signed-banner { background: #d4edda; border: 2px solid #28a745; color: #155724; padding: 12px; margin-bottom: 20px; border-radius: 6px; font-weight: bold; text-align: center; }
+                            .watermark { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-30deg); font-size: 100px; color: rgba(240, 173, 78, 0.18); font-weight: bold; pointer-events: none; z-index: 999; user-select: none; }
                             @media print {
                                 body { padding: 0; }
                                 .no-print { display: none; }
@@ -196,20 +262,21 @@ export const ExamRequestModule: React.FC<ExamRequestModuleProps> = ({
                         </style>
                     </head>
                     <body>
+                        ${!isSigned ? '<div class="watermark">RASCUNHO</div>' : ''}
+                        ${!isSigned ? '<div class="warn-banner">⚠ RASCUNHO — Sem valor legal. Assine digitalmente (ICP-Brasil) antes de entregar ao paciente. CFM 2.314/2022.</div>' : '<div class="signed-banner">✓ Documento assinado digitalmente com ICP-Brasil — valor legal pleno (CFM 2.314/2022).</div>'}
                         <div class="header">
                             <div class="logo">MedCannLab</div>
-                            <p>Dr(a). ${user?.email?.split('@')[0] || 'Profissional'} | CRM: 00.000</p>
+                            <p>Dr(a). ${user?.email?.split('@')[0] || 'Profissional'}</p>
                         </div>
                         <div class="patient-info">
                             <p><strong>Paciente:</strong> ${patientName || 'Não Informado'}</p>
-                            <p><strong>Data:</strong> ${new Date().toLocaleDateString()}</p>
+                            <p><strong>Data:</strong> ${new Date().toLocaleDateString('pt-BR')}</p>
                         </div>
                         <div class="content">
-                            ${editorContent}
+                            ${contentToPrint}
                         </div>
                         <div class="footer">
-                            <p>Este documento foi gerado eletronicamente.</p>
-                            <p>Assinado Digitalmente</p>
+                            ${isSigned ? `<p><strong>Assinado digitalmente em:</strong> ${sigTs}</p><p><strong>Codigo ITI:</strong> ${itiCode}</p>${itiUrl ? `<p><strong>Validacao:</strong> ${itiUrl}</p>` : ''}` : '<p>Este documento eh um RASCUNHO sem assinatura digital.</p>'}
                         </div>
                     </body>
                 </html>
@@ -313,20 +380,80 @@ export const ExamRequestModule: React.FC<ExamRequestModuleProps> = ({
             {/* History View */}
             {activeTab === 'history' && (
                 <div className="space-y-4">
+                    {/* V1.9.231 — feedback global do handleSign (separado do feedback do modal) */}
+                    {feedback && !showEditor && (
+                        <div className={`p-3 rounded-lg text-sm font-medium flex items-center gap-2 ${feedback.type === 'success' ? 'bg-emerald-500/10 border border-emerald-500/40 text-emerald-300' : 'bg-red-500/10 border border-red-500/40 text-red-300'}`}>
+                            {feedback.type === 'success' ? <Check className="w-4 h-4" /> : <AlertCircle className="w-4 h-4" />}
+                            {feedback.message}
+                        </div>
+                    )}
+                    {/* V1.9.231 — Banner de aviso CFM 2.314/2022 se houver drafts (espelha V1.9.137 prescriptions) */}
+                    {history.some(r => (r.status === 'draft' || r.status === 'pending') && !r.digital_signature) && (
+                        <div className="p-3 rounded-lg bg-amber-500/10 border border-amber-500/40 text-amber-200 text-xs flex items-start gap-2">
+                            <ShieldAlert className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                            <div>
+                                <strong>Aviso CFM 2.314/2022:</strong> Solicitações em <strong>rascunho</strong> não têm valor legal. Assine digitalmente (ICP-Brasil) antes de entregar ao paciente.
+                            </div>
+                        </div>
+                    )}
                     {loading ? (
                         <div className="py-10 text-center text-slate-500">Carregando histórico...</div>
                     ) : history.length > 0 ? (
-                        history.map(req => (
-                            <div key={req.id} className="p-4 bg-slate-800/50 border border-slate-700 rounded-xl flex justify-between items-center">
-                                <div>
-                                    <p className="text-white font-medium line-clamp-1">{req.content.substring(0, 60)}...</p>
-                                    <p className="text-xs text-slate-400 mt-1">{new Date(req.created_at).toLocaleString()} • {req.status}</p>
+                        history.map(req => {
+                            const isSigned = (req.status === 'signed' || req.status === 'sent') && !!req.digital_signature;
+                            const isDraft = !isSigned;
+                            return (
+                                <div key={req.id} className="p-4 bg-slate-800/50 border border-slate-700 rounded-xl flex flex-col md:flex-row md:justify-between md:items-center gap-3">
+                                    <div className="flex-1 min-w-0">
+                                        <p className="text-white font-medium line-clamp-1">{req.content.substring(0, 80)}{req.content.length > 80 ? '...' : ''}</p>
+                                        <div className="flex flex-wrap items-center gap-2 mt-1 text-xs">
+                                            <span className="text-slate-400">{new Date(req.created_at).toLocaleString('pt-BR')}</span>
+                                            <span className="text-slate-600">•</span>
+                                            {/* V1.9.231 — badge contextual: rascunho amarelo, assinado verde */}
+                                            {isSigned ? (
+                                                <span className="px-2 py-0.5 rounded bg-emerald-500/15 border border-emerald-500/40 text-emerald-300 flex items-center gap-1">
+                                                    <ShieldCheck className="w-3 h-3" />
+                                                    Assinado ICP-Brasil
+                                                </span>
+                                            ) : (
+                                                <span className="px-2 py-0.5 rounded bg-amber-500/15 border border-amber-500/40 text-amber-300 flex items-center gap-1">
+                                                    <ShieldAlert className="w-3 h-3" />
+                                                    Rascunho — sem valor legal
+                                                </span>
+                                            )}
+                                            {req.iti_validation_code && (
+                                                <span className="text-cyan-400/80 font-mono text-[10px]">{req.iti_validation_code}</span>
+                                            )}
+                                        </div>
+                                    </div>
+                                    <div className="flex gap-2 flex-shrink-0">
+                                        {/* V1.9.231 — Botão Assinar (só draft, idempotente) */}
+                                        {isDraft && (
+                                            <button
+                                                onClick={() => handleSign(req)}
+                                                disabled={signingId === req.id}
+                                                className="px-3 py-1.5 rounded-lg text-xs font-medium bg-gradient-to-r from-emerald-600 to-cyan-600 hover:from-emerald-500 hover:to-cyan-500 text-white shadow disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5"
+                                                title="Assinar digitalmente com ICP-Brasil (CFM 2.314/2022)"
+                                            >
+                                                {signingId === req.id ? (
+                                                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                                ) : (
+                                                    <ShieldCheck className="w-3.5 h-3.5" />
+                                                )}
+                                                {signingId === req.id ? 'Assinando...' : 'Assinar'}
+                                            </button>
+                                        )}
+                                        <button
+                                            onClick={() => handlePrint(req)}
+                                            className={`p-2 rounded-lg ${isDraft ? 'text-amber-400 hover:bg-amber-900/20' : 'text-cyan-400 hover:bg-cyan-900/20'}`}
+                                            title={isDraft ? 'Imprimir RASCUNHO (sem valor legal)' : 'Imprimir documento assinado'}
+                                        >
+                                            <Printer className="w-4 h-4" />
+                                        </button>
+                                    </div>
                                 </div>
-                                <button className="text-cyan-400 p-2 hover:bg-cyan-900/20 rounded-lg">
-                                    <Printer className="w-4 h-4" />
-                                </button>
-                            </div>
-                        ))
+                            );
+                        })
                     ) : (
                         <div className="text-center py-12 text-slate-500 bg-slate-800/30 rounded-2xl border border-slate-800 border-dashed">
                             <Printer className="w-12 h-12 mx-auto mb-3 opacity-20" />
@@ -392,9 +519,9 @@ export const ExamRequestModule: React.FC<ExamRequestModuleProps> = ({
                             </div>
                             <div className="flex gap-3 w-full md:w-auto justify-end">
                                 <button
-                                    onClick={handlePrint}
+                                    onClick={() => handlePrint()}
                                     className="px-4 py-2 text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-700 border border-slate-600 rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
-                                    title="Imprimir ou Salvar PDF"
+                                    title="Imprimir RASCUNHO (sem valor legal — salve e assine no histórico)"
                                 >
                                     <Printer className="w-4 h-4" />
                                     <span className="hidden sm:inline">Imprimir</span>

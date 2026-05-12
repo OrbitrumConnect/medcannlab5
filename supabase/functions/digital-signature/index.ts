@@ -20,6 +20,15 @@ interface SignatureRequest {
   documentLevel: 'level_1' | 'level_2' | 'level_3'
   professionalId: string
   userConfirmed?: boolean // Confirmação explícita do usuário
+  // V1.9.231 — Tipo de doc pra rotear table (default 'prescription' = backward-compat).
+  // 'exam_request' adiciona patient_exam_requests no fluxo PKCS#7 ICP-Brasil.
+  documentType?: 'prescription' | 'exam_request'
+}
+
+// V1.9.231 — Map doc_type → table. Centraliza acoplamento ao banco em 1 lugar.
+const TABLE_BY_DOC_TYPE: Record<'prescription' | 'exam_request', string> = {
+  prescription: 'cfm_prescriptions',
+  exam_request: 'patient_exam_requests'
 }
 
 interface SignatureResponse {
@@ -57,20 +66,39 @@ async function resolveCertificate(
 
 /**
  * Prepara hash SHA-256 do documento
+ * V1.9.231 — Aceita documentType pra serializar fields corretos por tipo.
+ * Prescription mantem fields anteriores (backward-compat). Exam_request usa
+ * patient_id + content (schema simples).
  */
-async function prepareDocumentHash(document: any): Promise<string> {
+async function prepareDocumentHash(
+  document: any,
+  documentType: 'prescription' | 'exam_request' = 'prescription'
+): Promise<string> {
   // Serializar documento (em produção, usar PDF real)
-  const documentContent = JSON.stringify({
-    id: document.id,
-    prescription_type: document.prescription_type,
-    patient_name: document.patient_name,
-    patient_cpf: document.patient_cpf,
-    professional_name: document.professional_name,
-    professional_crm: document.professional_crm,
-    medications: document.medications,
-    notes: document.notes,
-    created_at: document.created_at
-  })
+  let documentContent: string
+
+  if (documentType === 'exam_request') {
+    documentContent = JSON.stringify({
+      id: document.id,
+      patient_id: document.patient_id,
+      professional_id: document.professional_id,
+      content: document.content,
+      created_at: document.created_at
+    })
+  } else {
+    // prescription (default — backward-compat)
+    documentContent = JSON.stringify({
+      id: document.id,
+      prescription_type: document.prescription_type,
+      patient_name: document.patient_name,
+      patient_cpf: document.patient_cpf,
+      professional_name: document.professional_name,
+      professional_crm: document.professional_crm,
+      medications: document.medications,
+      notes: document.notes,
+      created_at: document.created_at
+    })
+  }
 
   // Calcular hash SHA-256
   const encoder = new TextEncoder()
@@ -348,6 +376,8 @@ async function persistAudit(
 
 /**
  * Atualiza documento com assinatura
+ * V1.9.231 — Recebe documentType pra rotear table (cfm_prescriptions OR patient_exam_requests).
+ * Mesmos campos ICP em ambas (espelho de schema V1.9.231 migration).
  */
 async function updateDocument(
   supabase: any,
@@ -355,11 +385,14 @@ async function updateDocument(
   signature: string,
   validationCode: string,
   validationUrl: string,
-  documentLevel: 'level_1' | 'level_2' | 'level_3' = 'level_3'
+  documentLevel: 'level_1' | 'level_2' | 'level_3' = 'level_3',
+  documentType: 'prescription' | 'exam_request' = 'prescription'
 ): Promise<void> {
+  const tableName = TABLE_BY_DOC_TYPE[documentType]
   // V1.9.185 — documentLevel passado dinâmico (level_2 atestado, level_3 prescrição)
+  // V1.9.231 — table dinamica via TABLE_BY_DOC_TYPE; campos ICP identicos.
   await supabase
-    .from('cfm_prescriptions')
+    .from(tableName)
     .update({
       digital_signature: signature,
       signature_timestamp: new Date().toISOString(),
@@ -409,11 +442,24 @@ Deno.serve(async (req: Request) => {
     // 2. Parse do body
     const body: SignatureRequest = await req.json()
     const { documentId, documentLevel, professionalId, userConfirmed } = body
+    // V1.9.231 — documentType default 'prescription' = backward-compat.
+    const documentType: 'prescription' | 'exam_request' = body.documentType || 'prescription'
 
     if (!documentId || !documentLevel || !professionalId) {
       return new Response(JSON.stringify({
         success: false,
         error: 'Parâmetros obrigatórios: documentId, documentLevel, professionalId'
+      }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      })
+    }
+
+    // V1.9.231 — Validar documentType
+    if (!['prescription', 'exam_request'].includes(documentType)) {
+      return new Response(JSON.stringify({
+        success: false,
+        error: 'documentType deve ser prescription ou exam_request'
       }), {
         status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
@@ -448,8 +494,10 @@ Deno.serve(async (req: Request) => {
     }
 
     // 5. Buscar documento
+    // V1.9.231 — table dinamica via TABLE_BY_DOC_TYPE.
+    const docTable = TABLE_BY_DOC_TYPE[documentType]
     const { data: document, error: docError } = await supabase
-      .from('cfm_prescriptions')
+      .from(docTable)
       .select('*')
       .eq('id', documentId)
       .single()
@@ -475,8 +523,8 @@ Deno.serve(async (req: Request) => {
       })
     }
 
-    // 7. Preparar hash do documento
-    const documentHash = await prepareDocumentHash(document)
+    // 7. Preparar hash do documento (V1.9.231 — fields condicionais por type)
+    const documentHash = await prepareDocumentHash(document, documentType)
 
     // 8. Criar snapshot imutável
     await createSnapshot(supabase, documentId, documentHash)
@@ -492,8 +540,8 @@ Deno.serve(async (req: Request) => {
     // 11. Persistir auditoria (com modo)
     await persistAudit(supabase, documentId, certificate, signature, validationCode, mode)
 
-    // 12. Atualizar documento
-    await updateDocument(supabase, documentId, signature, validationCode, validationUrl, documentLevel)
+    // 12. Atualizar documento (V1.9.231 — table dinamica via documentType)
+    await updateDocument(supabase, documentId, signature, validationCode, validationUrl, documentLevel, documentType)
 
     // 13. Retornar resultado (V1.9.176 — inclui modo pra frontend exibir aviso se simulação)
     const response: SignatureResponse & { mode?: string } = {
