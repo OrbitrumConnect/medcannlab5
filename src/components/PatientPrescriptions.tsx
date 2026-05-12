@@ -15,6 +15,7 @@ import {
 } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
+import PatientExamRequestsCard from './dashboard/patient/PatientExamRequestsCard'
 
 interface CfmPrescription {
   id: string
@@ -836,6 +837,13 @@ export function PatientPrescriptions({ className = '', onBack, onRequestNew }: P
           />
         </div>
       )}
+
+      {/* V1.9.233: card "Exames Solicitados" reutilizado (mesmo componente do Dashboard
+          em ?section=analytics). Modo autonomo: faz propria query patient_exam_requests.
+          Da ao paciente 2 lugares pra visualizar — Dashboard OU aba Minhas Prescricoes. */}
+      <div className="mt-6">
+        <PatientExamRequestsCard />
+      </div>
 
       {selectedCfm && <CfmDetailModal rx={selectedCfm} onClose={() => setSelectedCfm(null)} />}
       {selectedPlan && (
