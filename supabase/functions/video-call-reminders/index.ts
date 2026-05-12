@@ -123,7 +123,17 @@ Deno.serve(async (req) => {
 
         const formattedTime = scheduledTime.toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' })
         const titleMessage = formatReminderTitle(window.minutes, scheduledTime)
-        const fullMessage = `${titleMessage} (${formattedTime}). ${apt.meeting_url ? `Link: ${apt.meeting_url}` : 'Link da chamada será disponibilizado.'}`
+        // V1.9.236 (12/05): linha "Link: ..." removida do corpo do email.
+        // Causa: appointments.meeting_url é NULL em 100% dos casos empíricos
+        // (audit 12/05: 0/6 appointments remotos com URL populado). Antigo template
+        // exibia "Link da chamada será disponibilizado" (promessa quebrada — nunca vem)
+        // OU URL inválida quando meeting_url estava setado de forma incorreta.
+        // O link clicável que FUNCIONA continua existindo embaixo: "Acessar Atendimento
+        // Integrado" → ${APP_URL}/app/clinica/paciente/chat-profissional (paciente)
+        // OU /app/clinica/paciente/chat-profissional?origin=professional-dashboard (médico).
+        // Quando algum dia meeting_url for populado (sync-gcal ou pre-criação WiseCare),
+        // reabrir essa linha condicionalmente.
+        const fullMessage = `${titleMessage} (${formattedTime}).`
 
         // V1.9.163: enriquecer com nome do outro lado + link do Atendimento Integrado
         const patientContact = apt.patient_id ? usersMap.get(apt.patient_id) : null
