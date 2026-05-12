@@ -31,7 +31,7 @@ import {
   Filter,
   Search,
   ChevronLeft,
-  ChevronRight,
+  ChevronRight, // V1.9.234: ainda usado em outro lugar do arquivo (não remover)
   ChevronDown,
   ChevronUp,
   Settings,
@@ -56,6 +56,7 @@ import { getAvailableSlots, bookAppointment } from '../lib/scheduling'
 
 
 import JourneyManualModal from '../components/JourneyManualModal'
+import DotPagination from '../components/ui/DotPagination'
 import AssessmentRequiredModal from '../components/AssessmentRequiredModal'
 
 type ProfessionalCard = {
@@ -1687,47 +1688,13 @@ const PatientAppointments: React.FC = () => {
                       </motion.div>
                     </AnimatePresence>
 
-                    {/* Paginação animada (apenas se >1 página) */}
-                    {totalPartnersPages > 1 && (
-                      <div className="flex items-center justify-center gap-3 mt-5">
-                        <button
-                          type="button"
-                          onClick={() => setPartnersPage(p => Math.max(0, p - 1))}
-                          disabled={partnersPage === 0}
-                          className="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-                          aria-label="Página anterior"
-                        >
-                          <ChevronLeft className="w-4 h-4" />
-                        </button>
-                        <div className="flex items-center gap-1.5">
-                          {Array.from({ length: totalPartnersPages }).map((_, i) => (
-                            <button
-                              key={i}
-                              type="button"
-                              onClick={() => setPartnersPage(i)}
-                              className={`w-2 h-2 rounded-full transition-all ${
-                                i === partnersPage
-                                  ? 'bg-cyan-400 w-6'
-                                  : 'bg-slate-600 hover:bg-slate-500'
-                              }`}
-                              aria-label={`Ir para página ${i + 1}`}
-                            />
-                          ))}
-                        </div>
-                        <button
-                          type="button"
-                          onClick={() => setPartnersPage(p => Math.min(totalPartnersPages - 1, p + 1))}
-                          disabled={partnersPage === totalPartnersPages - 1}
-                          className="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-                          aria-label="Próxima página"
-                        >
-                          <ChevronRight className="w-4 h-4" />
-                        </button>
-                        <span className="text-xs text-slate-500 ml-2">
-                          {partnersPage + 1} / {totalPartnersPages}
-                        </span>
-                      </div>
-                    )}
+                    {/* V1.9.234: extraído pra <DotPagination /> reutilizável.
+                        partnersPage continua 0-indexed internamente; converte na props. */}
+                    <DotPagination
+                      currentPage={partnersPage + 1}
+                      totalPages={totalPartnersPages}
+                      onPageChange={(p) => setPartnersPage(p - 1)}
+                    />
                   </div>
                 )}
 

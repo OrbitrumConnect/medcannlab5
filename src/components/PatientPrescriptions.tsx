@@ -16,6 +16,7 @@ import {
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
 import PatientExamRequestsCard from './dashboard/patient/PatientExamRequestsCard'
+import DotPagination from './ui/DotPagination'
 
 interface CfmPrescription {
   id: string
@@ -801,11 +802,11 @@ export function PatientPrescriptions({ className = '', onBack, onRequestNew }: P
               <CfmPrescriptionCard key={rx.id} rx={rx} onClick={() => setSelectedCfm(rx)} />
             ))}
           </div>
-          <Pagination
+          {/* V1.9.234: paginação dots reutilizável (mesmo padrão dos cards profissionais agendamento) */}
+          <DotPagination
             currentPage={cfmPage}
             totalPages={cfmTotalPages}
             onPageChange={setCfmPage}
-            total={totalCfm}
           />
         </div>
       )}
@@ -829,11 +830,11 @@ export function PatientPrescriptions({ className = '', onBack, onRequestNew }: P
               />
             ))}
           </div>
-          <Pagination
+          {/* V1.9.234: paginação dots reutilizável */}
+          <DotPagination
             currentPage={planPage}
             totalPages={planTotalPages}
             onPageChange={setPlanPage}
-            total={totalPlan}
           />
         </div>
       )}

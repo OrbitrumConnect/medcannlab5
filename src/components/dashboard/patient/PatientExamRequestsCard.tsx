@@ -2,6 +2,7 @@ import React from 'react'
 import { FlaskConical, ChevronDown, Printer, Send } from 'lucide-react'
 import { useAuth } from '../../../contexts/AuthContext'
 import { supabase } from '../../../lib/supabase'
+import DotPagination from '../../ui/DotPagination'
 
 /**
  * V1.9.233 — PatientExamRequestsCard
@@ -203,28 +204,14 @@ const PatientExamRequestsCard: React.FC<PatientExamRequestsCardProps> = ({
         </div>
       )}
 
-      {/* Pagination */}
+      {/* V1.9.234: paginação dots reutilizável (mesmo padrão dos cards profissionais agendamento) */}
       {examTotalPages > 1 && (
-        <div className="px-5 py-3 border-t border-slate-700/50 flex items-center justify-between bg-slate-900/20">
-          <button
-            type="button"
-            className="px-3 py-1.5 rounded-lg border border-slate-700/60 bg-slate-900/40 text-slate-200 text-sm hover:bg-slate-800/50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-            onClick={() => setExamPage((p: number) => Math.max(1, p - 1))}
-            disabled={safeExamPage <= 1}
-          >
-            ← Anterior
-          </button>
-          <span className="text-xs text-slate-400">
-            <span className="text-slate-200 font-medium">{safeExamPage}</span> / <span className="text-slate-200 font-medium">{examTotalPages}</span>
-          </span>
-          <button
-            type="button"
-            className="px-3 py-1.5 rounded-lg border border-slate-700/60 bg-slate-900/40 text-slate-200 text-sm hover:bg-slate-800/50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-            onClick={() => setExamPage((p: number) => Math.min(examTotalPages, p + 1))}
-            disabled={safeExamPage >= examTotalPages}
-          >
-            Próxima →
-          </button>
+        <div className="px-5 py-3 border-t border-slate-700/50 bg-slate-900/20">
+          <DotPagination
+            currentPage={safeExamPage}
+            totalPages={examTotalPages}
+            onPageChange={setExamPage}
+          />
         </div>
       )}
     </div>
