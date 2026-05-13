@@ -1171,20 +1171,22 @@ const PatientAppointments: React.FC = () => {
 
   // V1.9.111: helper unificado de card profissional (reuso Tier 1 + Tier 2)
   // V1.9.111-A: cards menores (p-3.5, avatar 10x10), borda mais sutil (40% opacity)
+  // V1.9.259 (Pedro 13/05 19h): mais compacto e mais quadrado — p-3.5→p-3,
+  // avatar 10→9, icone 4→3.5, nome text-base→text-sm, gap-3→gap-2.5
   const renderProfessionalCard = (professional: ProfessionalCard, isOfficial: boolean = false) => (
     <motion.div
       key={professional.id}
       whileHover={{ scale: 1.015, y: -2 }}
       transition={{ duration: 0.2 }}
-      className={`rounded-xl border ${isOfficial ? 'border-amber-500/30 bg-gradient-to-br from-slate-900/80 to-amber-950/15' : 'border-slate-700/40 bg-slate-900/40'} p-3.5 flex flex-col justify-between gap-3 transition-all hover:border-primary-500/40 hover:shadow-lg hover:shadow-primary-500/10`}
+      className={`rounded-xl border ${isOfficial ? 'border-amber-500/30 bg-gradient-to-br from-slate-900/80 to-amber-950/15' : 'border-slate-700/40 bg-slate-900/40'} p-3 flex flex-col justify-between gap-2.5 transition-all hover:border-primary-500/40 hover:shadow-lg hover:shadow-primary-500/10`}
     >
-      <div className="flex items-start gap-3">
-        <div className={`w-10 h-10 rounded-lg flex items-center justify-center border border-slate-800/60 ${professional.accentClasses} shrink-0`}>
-          <Stethoscope className="w-4 h-4" />
+      <div className="flex items-start gap-2.5">
+        <div className={`w-9 h-9 rounded-lg flex items-center justify-center border border-slate-800/60 ${professional.accentClasses} shrink-0`}>
+          <Stethoscope className="w-3.5 h-3.5" />
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-1.5 flex-wrap">
-            <h4 className="text-white text-base font-semibold">{professional.name}</h4>
+            <h4 className="text-white text-sm font-semibold">{professional.name}</h4>
             {/* V1.9.144: rating só se REAL (RPC calculate_professional_rating retornou visibility='active') */}
             {professional.rating && (
               <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-slate-800 border border-slate-700/50 text-[11px] text-slate-300">
@@ -1662,7 +1664,8 @@ const PatientAppointments: React.FC = () => {
                       <Star className="w-3.5 h-3.5 fill-amber-400" />
                       Equipe Oficial MedCannLab
                     </h4>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {/* V1.9.259 — grid mais denso pra cards quadrados (lg:grid-cols-3 + gap-3) */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                       {tier1Professionals.map(p => renderProfessionalCard(p, true))}
                     </div>
                   </div>
@@ -1682,7 +1685,7 @@ const PatientAppointments: React.FC = () => {
                         animate={{ x: 0, opacity: 1 }}
                         exit={{ x: -40, opacity: 0 }}
                         transition={{ duration: 0.25 }}
-                        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
+                        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3"
                       >
                         {paginatedPartners.map(p => renderProfessionalCard(p, false))}
                       </motion.div>
