@@ -164,10 +164,13 @@ const PatientDashboard: React.FC = () => {
           </div>
 
           {/* [V1.9.126] Ações principais movidas para o topo (acessibilidade 50+) */}
+          {/* V1.9.253 — onOpenReports redireciona "Enviar Medico" pra aba Relatorios
+              (reusa ShareReportModal completo em vez de modal proprio reduzido). */}
           <PatientHeaderActions
             reports={reports}
             onScheduleClick={() => navigate('/app/clinica/paciente/agendamentos')}
             onStartAssessment={handleStartAssessment}
+            onOpenReports={() => setActiveTab('report-detail')}
           />
 
           {/* V1.9.x — Linha de continuidade FUNDIDA no header do PatientAnalytics

@@ -9,6 +9,11 @@ interface PatientHeaderActionsProps {
     onScheduleClick?: () => void
     onStartAssessment?: () => void
     isProfessionalView?: boolean
+    // V1.9.253 (Pedro 13/05): trigger "Enviar Medico" agora redireciona pra
+    // aba Relatorios em vez do modal interno proprio (ShareReportModal mais
+    // completo + paciente escolhe QUAL report enviar, nao so o ultimo).
+    // Modal interno mantido como fallback se prop nao passada.
+    onOpenReports?: () => void
 }
 
 interface DoctorOption {
@@ -27,6 +32,7 @@ const PatientHeaderActions: React.FC<PatientHeaderActionsProps> = ({
     onScheduleClick,
     onStartAssessment,
     isProfessionalView = false,
+    onOpenReports,
 }) => {
     const navigate = useNavigate()
     const [showDoctorSelect, setShowDoctorSelect] = useState(false)
@@ -120,10 +126,13 @@ const PatientHeaderActions: React.FC<PatientHeaderActionsProps> = ({
                         <Calendar className="w-5 h-5" />
                         <span>Agendar<br className="md:hidden" /> Consulta</span>
                     </button>
-                    {/* Enviar para Médico */}
+                    {/* V1.9.253 — Enviar Medico agora abre aba Relatorios (Pedro 13/05).
+                        Antes abria modal interno que listava medicos e enviava o ULTIMO report.
+                        Agora redireciona pra aba onde paciente escolhe QUAL report enviar via
+                        ShareReportModal completo (anti-duplicacao, principio "polir nao inventar"). */}
                     <button
-                        onClick={handleOpenDoctorSelect}
-                        title="Enviar relatório para médico"
+                        onClick={onOpenReports ?? handleOpenDoctorSelect}
+                        title={onOpenReports ? 'Abrir meus relatórios para revisar e enviar' : 'Enviar relatório para médico'}
                         className="flex flex-col items-center justify-center gap-1 aspect-[5/4] md:aspect-auto md:flex-row md:gap-2 md:px-5 md:py-3 bg-blue-500/10 text-blue-400 hover:bg-blue-500/20 border border-blue-500/20 rounded-xl text-[11px] leading-tight md:text-base font-medium transition-colors text-center md:text-left"
                     >
                         <FileText className="w-5 h-5" />
