@@ -176,7 +176,7 @@ Após o diário ser criado, Pedro reportou empíricamente bug UX do sino (50 tes
 
 ---
 
-**Estado da sessão virada 11→12 (encerramento):**
+**Estado da sessão virada 11→12 (encerramento parcial — só 1ª sessão):**
 - HEAD `5206a95` selado
 - type-check **0 erros**
 - **5 versões V1.9.228+229+230+231+232** deployadas
@@ -185,3 +185,59 @@ Após o diário ser criado, Pedro reportou empíricamente bug UX do sino (50 tes
 - Janela ~50 testers preservada
 - Freeze 16/05 mantido com **1 exceção legítima documentada** (V1.9.232 — bug UX empírico)
 - Aguarda movimento humano nos 3 gates duros
+
+---
+
+## BLOCO F — Continuação dia 12/05 (manhã+tarde+noite, registrado retroativamente em 13/05)
+
+### Audits empíricos profundos
+
+| Hora | Item | Resultado |
+|------|------|-----------|
+| ~10h45 | Item 4 widgets AEC paralelos | ✅ **Desmistificado** — pirâmide intacta. Os "3 widgets" eram (1) ClinicalAssessment.tsx órfão eliminado V1.9.230, (2) `/chat-noa-esperanca` que é ALIAS pro mesmo PatientNOAChat, (3) inexistente. Não havia bypass real |
+| ~10h55 | Monitor "O que mais?" pós-V1.9.218 | ✅ Empírico: 31 sessões pós-fix com **exatamente 1 OQM cada** (zero loop). Outlier de 97 era session_id=NULL (rows órfãs legacy). Bug 6 Ricardo provavelmente **resolvido sem precisar cap quantitativo** |
+| ~13h30 | Audit prescrições casualmusic + ICP Ricardo | ✅ Mapeado: 7 docs assinados ICP-Brasil (5 PKCS#7 real .pfx 06-09/05 + 2 simulação legacy 31/01). 4 docs para Carolina + 1 Pedro Alberto + 2 Gilda. Casualmusic tem 4 docs em DRAFT (Ricardo criou mas não fechou). NFT lógico empírico: 26 NFTs, 18 com signature_hash, ~14 herdam hash ICP-Brasil do report |
+| ~15h00 | Audit empírico `meeting_url` | 🚨 **Gap real descoberto:** 0/6 appointments remotos têm meeting_url populado. `meeting_url` só é setado em sync-gcal (half-implemented). bookAppointment + wisecare-session NÃO populam. Em produção, reminder enviava "Link da chamada será disponibilizado" (promessa quebrada) |
+
+### Versões deployadas (sessão tarde+noite)
+
+| Versão | O que entregou | Status |
+|--------|----------------|--------|
+| **V1.9.233** | Card "Exames Solicitados" extraído em componente reutilizável (`PatientExamRequestsCard.tsx`). Modo híbrido: controlled (PatientAnalytics passa props) OR autonomous (PatientPrescriptions faz própria query). Paciente agora vê exames em 2 rotas: Dashboard analytics + aba Minhas Prescrições | ✅ Selado |
+| **V1.9.234** | `<DotPagination />` reutilizável extraído de PatientAppointments. Aplicado em 4 callsites (PatientAppointments cards profissionais + PatientPrescriptions cfmPage + planPage + PatientExamRequestsCard examPage). Padrão visual unificado (chevron + dots cinza→cyan + contador) | ✅ Selado |
+| **V1.9.236** | Edge `video-call-reminders` — remove linha "Link: ${meeting_url}" do template (era sempre vazio ou URL fake). Email reminder agora vai apenas com "Acessar Atendimento Integrado" (link que funciona). Edge re-deployed via PAT | ✅ Selado |
+| **V1.9.237** | Densificação laptop 1280x720+ — 3 arquivos paciente: PatientDashboard (container `p-6` + `space-y-6` + hero menor), PatientHeaderActions (`p-4` + `space-y-2`), PatientStats (`gap-3` + cards `p-4 md:p-5`). Mobile preservado. Ganho ~100px altura útil. Aplicado pré-evento quinta 15/05 | ✅ Selado (00h30 13/05) |
+
+### Smoke-test empírico (12/05 ~14h45)
+
+3 emails de agendamento disparados via Edge `send-email` pra `phpg69@gmail.com`:
+- Email 1: "✅ Consulta Confirmada" → ✅ chegou
+- Email 2: "Sua consulta começa em 10 minutos" → ✅ chegou mas com bugs
+- Email 3: "Sua consulta começa em 1 minuto" → ✅ chegou mas com bugs
+
+**Bugs reportados pelo Pedro:**
+- 🔴 Encoding UTF-8 quebrado (`Olá` → `Ol�`, `Valença` → `Valen�a`, emojis `👤🔗` → `??`). Hipótese: meu curl Windows Git Bash converteu UTF-8 pra ANSI no transporte. Re-teste com Unicode escape disparado (Resend ID `6f0fcaca`) — **resposta empírica pendente** se chegou bonito
+- 🟡 Link `meeting_url` placeholder fictício deu erro real → corrigido em V1.9.236 (removido)
+- ✅ Link "Acessar Atendimento Integrado" funciona corretamente
+
+### Princípios cristalizados / atualizados
+
+- **Métrica de uso ≠ problema operacional** (cristalizado em sessão 11/05, aplicado várias vezes 12/05)
+- **Conferir UI real antes de propor estrutura nova** (reverti expansão Profile.tsx antes de commit quando Pedro mostrou screenshot da Vitrine que já tinha CRM)
+- **Fix universal cobre sintoma mesmo sem origem mapeada** (cristalizado V1.9.232, aplicado também em V1.9.236)
+
+### Estado real do encerramento 12/05 (verdadeiro)
+
+- HEAD: `2e9e40a` (V1.9.237)
+- **10 commits sessão dupla 11→12** (5 versões + 1 diário + V1.9.233 + V1.9.234 + V1.9.236 + V1.9.237 + atualizações)
+- Wait, recontar: V1.9.228, 229, 230, 231, 232, 233, 234, 236, 237 = **9 versões** + diário + update diário = **11 commits**
+- type-check **0 erros** preservado em TODAS
+- CORE intocado em TODAS
+- Janela ~50 testers preservada
+- Freeze 16/05 mantido — **5 exceções legítimas documentadas** (V1.9.232 sino + V1.9.233 card exames + V1.9.234 dots + V1.9.236 link quebrado + V1.9.237 densificação laptop)
+- 4 auditorias empíricas profundas via PAT
+- Aguarda movimento humano nos 3 gates duros (CNPJ + Ricardo + Muhdo)
+
+### Frase âncora terciária (encerramento real 12/05 → 13/05)
+
+> **"O que era pra ser 1 sessão virou 2. O que era pra ser cadeado virou app inteiro densificado. 9 versões em 36h sem regressão — porque o caminho era polir empíricamente, não inventar."**
