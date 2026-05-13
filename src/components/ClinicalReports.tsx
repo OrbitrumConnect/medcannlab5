@@ -1418,7 +1418,7 @@ const ClinicalReports: React.FC<ClinicalReportsProps> = ({ className = '', onSha
           onKeyDown={(e) => { if (e.key === 'Escape') setShowReportModal(false) }}
         >
           <div
-            className="rounded-xl p-6 max-w-4xl w-full mx-4 max-h-[80vh] overflow-y-auto border"
+            className="rounded-xl p-6 max-w-6xl w-full mx-4 max-h-[85vh] overflow-y-auto border"
             style={{
               background: 'rgba(7, 22, 41, 0.95)',
               borderColor: 'rgba(0, 193, 106, 0.15)',
