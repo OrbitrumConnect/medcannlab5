@@ -27,7 +27,7 @@ import {
   Check
 } from 'lucide-react'
 import { supabase } from '../lib/supabase'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { stripPlatformInjectionNoise } from '../lib/clinicalAssessmentFlow'
 import {
   downloadClinicalReportPDF,
@@ -106,6 +106,12 @@ const REPORTS_PER_PAGE = 5
 const ClinicalReports: React.FC<ClinicalReportsProps> = ({ className = '', onShareReport }) => {
   const { user } = useAuth()
   const navigate = useNavigate()
+  // V1.9.256 — auto-open modal quando URL traz ?report=XXX (vindo do card de
+  // devolucao em Acompanhamento do Plano). Antes, paciente caia na lista e
+  // tinha que clicar "Abrir" manual pra ver a faixa V1.9.202 com a nota do
+  // medico. Bug Pedro 13/05 18h31: "acessei so vi o meu q fiz antes".
+  const [searchParams, setSearchParams] = useSearchParams()
+  const autoOpenReportId = searchParams.get('report')
   const { getEffectiveUserType, isAdminViewingAs } = useUserView()
   const [reports, setReports] = useState<SharedReport[]>([])
   const [loading, setLoading] = useState(true)
@@ -480,6 +486,24 @@ const ClinicalReports: React.FC<ClinicalReportsProps> = ({ className = '', onSha
       })
 
       setReports(formattedReports)
+
+      // V1.9.256 — Auto-open modal pelo query param ?report=XXX (vindo do card
+      // de devolucao). Limpa o param da URL apos abrir pra evitar reabrir em
+      // refresh acidental.
+      if (autoOpenReportId) {
+        const target = formattedReports.find((r) => r.id === autoOpenReportId)
+        if (target) {
+          setSelectedReport(target)
+          setDoctorNotes(target.doctorNotes || '')
+          setShowReportModal(true)
+          // Buscar conversa do paciente correto (V1.9.248)
+          void fetchConversation(target.patientId, target.date)
+          // Limpa o param da URL (preserva section)
+          const next = new URLSearchParams(searchParams)
+          next.delete('report')
+          setSearchParams(next, { replace: true })
+        }
+      }
     } catch (error) {
       console.error('❌ Erro ao carregar relatórios:', error)
     } finally {
