@@ -13,7 +13,10 @@ const BRAND = {
   primaryDark: '#13794f',
   text: '#1a2332',
   muted: '#64748b',
-  watermark: '#e2e8f0',
+  // V1.9.249 — Tom mais claro pra marca d'agua nao competir com conteudo.
+  // Anterior #e2e8f0 (cinza-claro 230) ficava denso quando repetido em mesh.
+  // Agora #f1f5f9 (~240) — bem leve, perceptivel mas nao invasivo.
+  watermark: '#f1f5f9',
   divider: '#d1d5db',
 }
 
@@ -111,18 +114,17 @@ export function generateClinicalReportPDF(opts: GeneratePDFOptions): jsPDF {
   // HEADER + WATERMARK + FOOTER aplicados em cada pagina
   // ──────────────────────────────────────────────────────────────────────────
   const drawPageChrome = (currentPage: number) => {
-    // Watermark diagonal repetida (cinza claro, opacity baixa via cor pastel)
+    // V1.9.249 — Watermark muito mais discreta: 1 instancia central em vez
+    // de mesh 6x4 que cobria todo conteudo. Tom #f1f5f9 (quase imperceptivel).
+    // Posicao central, 60pt, angulo -30, alpha implicito via cor clara.
     doc.saveGraphicsState()
     doc.setTextColor(BRAND.watermark)
     doc.setFont('helvetica', 'bold')
-    doc.setFontSize(48)
-    for (let row = 0; row < 6; row++) {
-      for (let col = 0; col < 4; col++) {
-        const wx = 20 + col * 55
-        const wy = 50 + row * 50
-        doc.text('MedCannLab', wx, wy, { angle: -30 })
-      }
-    }
+    doc.setFontSize(72)
+    doc.text('MedCannLab', PAGE.width / 2, PAGE.height / 2, {
+      angle: -30,
+      align: 'center',
+    })
     doc.restoreGraphicsState()
 
     // Header — faixa verde
@@ -515,15 +517,15 @@ export function downloadClinicalReportPDF(opts: GeneratePDFOptions): void {
  * Chamar uma vez por pagina (apos addPage ou no inicio).
  */
 export function drawBrandedPageChrome(doc: jsPDF, opts: { pageNumber: number; signatureHashShort?: string }): void {
+  // V1.9.249 — Watermark central unica (em vez de mesh 6x4 invasivo).
   doc.saveGraphicsState()
   doc.setTextColor(BRAND.watermark)
   doc.setFont('helvetica', 'bold')
-  doc.setFontSize(48)
-  for (let row = 0; row < 6; row++) {
-    for (let col = 0; col < 4; col++) {
-      doc.text('MedCannLab', 20 + col * 55, 50 + row * 50, { angle: -30 })
-    }
-  }
+  doc.setFontSize(72)
+  doc.text('MedCannLab', PAGE.width / 2, PAGE.height / 2, {
+    angle: -30,
+    align: 'center',
+  })
   doc.restoreGraphicsState()
 
   doc.setFillColor(BRAND.primary)
