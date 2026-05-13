@@ -7,6 +7,36 @@
 
 ---
 
+## ✅ STATUS: APROVADA EMPIRICAMENTE — 13/05/2026 ~12h BRT
+
+**Resposta empírica do Dr. Ricardo Valença:** Aprovou separação 3 camadas + modelo R$ 5/AEC + R$ 35/mês.
+
+**Camadas oficialmente nomeadas pelo Sr.:**
+| Camada | Natureza | Valor |
+|--------|----------|-------|
+| Triagem narrativa pública | organização inicial | entrada |
+| AEC formal | método clínico autoral | ato clínico |
+| Consulta médica | decisão terapêutica humana | responsabilidade profissional |
+
+**Frase âncora cristalizada pelo Sr.:**
+> *"O sistema digital serve ao relacionamento clínico longitudinal. O valor não está na IA em si, mas na continuidade humana que ela consegue sustentar."*
+
+**Alerta crítico do Sr.:** *"O risco oculto NÃO é o preço. É a experiência narrativa ainda não estar calibrada para escala pública."*
+- Implicação operacional: SEO público abre só após calibração narrativa pós-evento quinta
+- Loops, "O que mais?", interrogatório → mapear empíricamente durante beta
+
+**Memórias criadas registrando esse marco:**
+- `project_3_camadas_aprovacao_ricardo_13_05.md`
+- `project_frase_ancora_ricardo_13_05.md`
+- `project_token_metrica_escuta_13_05.md`
+
+**Próximos passos institucionais:**
+1. Pós-evento quinta 15/05 — observação narrativa empírica
+2. Pós-CNPJ — Stripe/MP integração + Camada 1 ativada
+3. Magno V17 — formalizar "Triagem narrativa pública" como categoria oficial
+
+---
+
 ## 🎯 O que está sendo proposto
 
 Criar uma **versão "triagem" da AEC** no SEO público (Google → MedCannLab) **antes do cadastro**, com 4 salvaguardas que preservam integralmente o método AEC autoral seu.

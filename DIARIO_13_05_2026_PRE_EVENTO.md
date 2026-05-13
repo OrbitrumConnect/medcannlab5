@@ -149,3 +149,78 @@
 - 48h até evento quinta
 - Janela ~50 testers preservada
 - Freeze 16/05 — vence dia depois do evento. Bem alinhado.
+
+---
+
+## BLOCO G — Marco constitucional 13/05 ~12h BRT (aprovação Ricardo)
+
+### V1.9.238 + V1.9.240 selados de manhã
+- **V1.9.238** (cost telemetry empírica): 2 chats validados, processing_time + cost_usd_estimate + pricing_version populados. 100% campos OK.
+- **V1.9.240** (rate limit anti-abuso): 3 buckets calibrados (10/min, 60/15min, 200/dia) + bypass 7 founders + fail-open temporário. RPC race-free testada 12 calls.
+
+### Análise externa GPT pricing → Modelo final empírico definido
+Convergência tripla:
+- **Pedro + Claude + GPT externo** convergiram em **R$ 5/AEC pay-per-use + R$ 35/mês ilimitado + 3 AECs grátis 1ª semana**.
+- Empírico custo IA hoje: ~R$ 2,50-4 por AEC (V1.9.238 validou). Margem ~36% no modelo R$ 5.
+- Threshold "promover pra mensal" em 7 AECs/mês (break-even empírico).
+
+### Proposta a Ricardo: separação 3 camadas constitucionais
+Documento `PROPOSTA_RICARDO_AEC_SEO_13_05_2026.md` + msg WhatsApp criados.
+Proposta: rodar Camada 1 (Triagem narrativa pública) no SEO sem violar anti-kevlar §1.
+
+### 🏛️ APROVAÇÃO RICARDO RECEBIDA — Marco histórico empírico
+
+Ricardo respondeu cristalizando 3 camadas distintas:
+1. **Triagem narrativa pública** (organização inicial — entrada SEO)
+2. **AEC formal** (método clínico autoral — ato clínico)
+3. **Consulta médica** (decisão terapêutica humana — responsabilidade profissional)
+
+**Significado constitucional:** Ricardo (autor método AEC) APROVOU implicitamente Camada 1 como categoria distinta. Desbloqueia codificação SEO sem violar Constituição da Nôa. Magno V17 documentaria.
+
+**Modelo aprovado pelos 4 stakeholders:** R$ 5/AEC + R$ 35/mês + 3 AECs grátis 1ª semana.
+
+### Frase âncora cristalizada por Ricardo
+
+> *"O sistema digital serve ao relacionamento clínico longitudinal. O valor não está na IA em si, mas na continuidade humana que ela consegue sustentar."*
+
+**Resolve 3 tensões empíricas:**
+- Tese Muhdo (biological×semantic drift) unificada
+- Pricing strategy fundamentada (não cobrar por IA, cobrar por continuidade)
+- Identidade Nôa Esperanza preservada (infraestrutura subordinada ao cuidado)
+
+### Validação empírica V1.9.238 como métrica de escuta longitudinal
+
+GPT do Ricardo elevou V1.9.238 a "marcador longitudinal de interação narrativa individualizada". Validação empírica via PAT confirmou:
+
+**Densidade narrativa por usuário (30 dias):**
+- Ricardo (médico autoral): 13.740 tokens/turn
+- Cristiano (paciente real): 1.423 tokens/turn
+- **9,6× diferença empírica** — cohorts naturais emergem dos dados
+
+**Distribuição empírica:**
+- 51,3% turns em sweet spot 5-10k tokens (AEC normal)
+- 4,7% turns em 20k+ (heavy users sessão extrema)
+- 38,7% turns <1k (Verbatim First / early returns)
+- Token NÃO é uniforme — é proxy de profundidade narrativa
+
+### Princípios candidatos cristalizados (parqueados pós-freeze 16/05)
+
+- **Princípio 56:** "Triagem narrativa ≠ AEC formal ≠ Consulta — 3 camadas com naturezas e valores próprios"
+- **Princípio 57:** "Toda decisão pergunta: serve ao relacionamento clínico longitudinal?"
+- **Princípio 58:** "Token = fragmento de experiência humana processada longitudinalmente. Métrica operacional da escuta — não biomarcador fisiológico."
+
+### 3 memórias criadas
+
+- `project_3_camadas_aprovacao_ricardo_13_05.md`
+- `project_frase_ancora_ricardo_13_05.md`
+- `project_token_metrica_escuta_13_05.md`
+
+### Alerta empírico crítico Ricardo
+
+> *"Risco oculto NÃO é preço. É experiência narrativa não calibrada pra escala pública."*
+
+**Implicação operacional:** evento quinta 15/05 vira oportunidade empírica de mapear patologias narrativas (loops, "O que mais?" infinito, sensação de interrogatório, fadiga, abandono). SEO público só abre após calibração baseada nesses dados.
+
+### Frase âncora secundária pós-13/05
+
+> **"O marco não foi técnico — foi institucional. Ricardo aprovou 3 camadas, validou modelo de pricing, e cristalizou que continuidade longitudinal é o produto real. Token virou métrica empírica disso."**
