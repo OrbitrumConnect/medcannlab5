@@ -1374,10 +1374,21 @@ const ClinicalReports: React.FC<ClinicalReportsProps> = ({ className = '', onSha
                     <span>Download</span>
                   </button>
                 )}
-                {/* V1.9.242 — Botao "Gerar NFT" REMOVIDO do card (proposta Ricardo 13/05):
-                    NFT e acao consciente pos-revisao. Disponivel no modal (linha 2057+)
-                    pra medico/admin. Anti-padrao "botao bloqueado com proibido"
-                    aparecia quando nftLoading=true em outro report — confundia medico. */}
+                {/* V1.9.243 — Gerar NFT no card SO pra paciente (Pedro 13/05):
+                    Paciente ve NFT no card (apresentacao de estado do proprio relatorio).
+                    Medico/admin nao tem NFT no card — botao fica no modal pos-revisao
+                    (acao consciente clinica), evita anti-padrao "proibido" com nftLoading. */}
+                {isPatient && (
+                  <button
+                    onClick={() => handleGenerateNFT(report)}
+                    disabled={nftLoading}
+                    className="flex items-center space-x-1 px-4 py-2 rounded-lg transition-colors text-white bg-slate-600/50 border border-slate-500/30 hover:bg-slate-600/80 disabled:opacity-60 disabled:cursor-not-allowed"
+                    title={nftLoading ? 'Gerando assinatura visual...' : 'Gerar certificado NFT do relatório'}
+                  >
+                    {nftLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <QrCode className="w-4 h-4" />}
+                    <span>{nftLoading ? 'Gerando...' : 'Gerar NFT'}</span>
+                  </button>
+                )}
               </div>
             </div>
           ))}
@@ -2042,16 +2053,20 @@ const ClinicalReports: React.FC<ClinicalReportsProps> = ({ className = '', onSha
               >
                 Fechar
               </button>
-              <button
-                onClick={() => handleDownloadReport(selectedReport)}
-                className="flex-1 min-w-[120px] px-4 py-2 text-white rounded-lg transition-colors flex items-center justify-center space-x-2"
-                style={{ background: 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)' }}
-              >
-                <Download className="w-4 h-4" />
-                <span>Baixar</span>
-              </button>
+              {/* V1.9.243 — Baixar so pra medico/admin no modal (paciente baixa no card). */}
+              {!isPatient && (
+                <button
+                  onClick={() => handleDownloadReport(selectedReport)}
+                  className="flex-1 min-w-[120px] px-4 py-2 text-white rounded-lg transition-colors flex items-center justify-center space-x-2"
+                  style={{ background: 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)' }}
+                >
+                  <Download className="w-4 h-4" />
+                  <span>Baixar</span>
+                </button>
+              )}
 
-              {/* Ações rápidas (atalhos para fluxos já existentes na plataforma) */}
+              {/* V1.9.243 — Agendar consulta: unica acao nova pro paciente no modal
+                  (card so apresenta estado; modal abre fluxos novos). */}
               {isPatient && (
                 <button
                   onClick={() => {
@@ -2068,27 +2083,20 @@ const ClinicalReports: React.FC<ClinicalReportsProps> = ({ className = '', onSha
                   <span>Agendar consulta</span>
                 </button>
               )}
-              {isPatient && onShareReport && (
+              {/* V1.9.243 — Compartilhar e Gerar NFT removidos do modal pra paciente:
+                  ja existem no card (anti-duplicacao Pedro 13/05). Mantidos pra medico/admin. */}
+              {!isPatient && (
                 <button
-                  onClick={() => onShareReport(selectedReport.id)}
-                  className="flex-1 min-w-[140px] px-4 py-2 text-white rounded-lg transition-colors flex items-center justify-center space-x-2"
-                  style={{ background: 'linear-gradient(135deg, #00C16A 0%, #13794f 100%)' }}
-                  title="Compartilhar este relatório com seu médico"
+                  onClick={() => handleGenerateNFT(selectedReport)}
+                  disabled={nftLoading}
+                  className="flex-1 min-w-[140px] px-4 py-2 text-white rounded-lg transition-colors flex items-center justify-center space-x-2 disabled:opacity-60 disabled:cursor-not-allowed"
+                  style={{ background: 'linear-gradient(135deg, #9333ea 0%, #7c3aed 100%)' }}
+                  title={nftLoading ? 'Gerando assinatura visual...' : 'Gerar certificado NFT de autenticidade do relatório'}
                 >
-                  <Share2 className="w-4 h-4" />
-                  <span>Compartilhar</span>
+                  {nftLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <QrCode className="w-4 h-4" />}
+                  <span>{nftLoading ? 'Gerando...' : 'Gerar NFT'}</span>
                 </button>
               )}
-              <button
-                onClick={() => handleGenerateNFT(selectedReport)}
-                disabled={nftLoading}
-                className="flex-1 min-w-[140px] px-4 py-2 text-white rounded-lg transition-colors flex items-center justify-center space-x-2 disabled:opacity-60 disabled:cursor-not-allowed"
-                style={{ background: 'linear-gradient(135deg, #9333ea 0%, #7c3aed 100%)' }}
-                title={nftLoading ? 'Gerando assinatura visual...' : 'Gerar certificado NFT de autenticidade do relatório'}
-              >
-                {nftLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <QrCode className="w-4 h-4" />}
-                <span>{nftLoading ? 'Gerando...' : 'Gerar NFT'}</span>
-              </button>
 
               {!isPatient && (
                 <>
