@@ -482,3 +482,285 @@ export function downloadClinicalReportPDF(opts: GeneratePDFOptions): void {
   })()
   doc.save(`relatorio_${safeName}_${dateStr}.pdf`)
 }
+
+// ──────────────────────────────────────────────────────────────────────────
+// V1.9.247 — Helpers reutilizaveis pra outros PDFs branded (racionalidades)
+// ──────────────────────────────────────────────────────────────────────────
+
+/**
+ * Aplica header/footer/watermark MedCannLab numa pagina ja existente do doc.
+ * Chamar uma vez por pagina (apos addPage ou no inicio).
+ */
+export function drawBrandedPageChrome(doc: jsPDF, opts: { pageNumber: number; signatureHashShort?: string }): void {
+  doc.saveGraphicsState()
+  doc.setTextColor(BRAND.watermark)
+  doc.setFont('helvetica', 'bold')
+  doc.setFontSize(48)
+  for (let row = 0; row < 6; row++) {
+    for (let col = 0; col < 4; col++) {
+      doc.text('MedCannLab', 20 + col * 55, 50 + row * 50, { angle: -30 })
+    }
+  }
+  doc.restoreGraphicsState()
+
+  doc.setFillColor(BRAND.primary)
+  doc.rect(0, 0, PAGE.width, 12, 'F')
+  doc.setFillColor(BRAND.primaryDark)
+  doc.rect(0, 12, PAGE.width, 1.5, 'F')
+
+  doc.setTextColor('#ffffff')
+  doc.setFont('helvetica', 'bold')
+  doc.setFontSize(13)
+  doc.text('MedCannLab', PAGE.marginX, 8)
+
+  doc.setFont('helvetica', 'normal')
+  doc.setFontSize(9)
+  doc.text('Plataforma Clinica · Noa Esperanza', PAGE.width - PAGE.marginX, 8, { align: 'right' })
+
+  doc.setDrawColor(BRAND.divider)
+  doc.setLineWidth(0.2)
+  doc.line(PAGE.marginX, PAGE.height - 14, PAGE.width - PAGE.marginX, PAGE.height - 14)
+
+  doc.setTextColor(BRAND.muted)
+  doc.setFont('helvetica', 'normal')
+  doc.setFontSize(7.5)
+  doc.text('Documento assinado digitalmente · Lei 14.063/2020 + CFM 2.314/2022', PAGE.marginX, PAGE.height - 9)
+  if (opts.signatureHashShort) {
+    doc.text(`ICP-Brasil: ${opts.signatureHashShort}`, PAGE.marginX, PAGE.height - 5)
+  }
+  doc.text(`Pagina ${opts.pageNumber}`, PAGE.width - PAGE.marginX, PAGE.height - 9, { align: 'right' })
+}
+
+const RATIONALITY_LABELS: Record<string, string> = {
+  biomedical: 'Biomedica',
+  traditionalChinese: 'Medicina Tradicional Chinesa',
+  ayurvedic: 'Ayurvedica',
+  homeopathic: 'Homeopatica',
+  integrative: 'Integrativa',
+}
+
+export interface RationalityPDFOptions {
+  patientName: string
+  reportDate: string
+  reportId: string
+  rationalityKey: string
+  value: any
+  signatureHashShort?: string
+}
+
+/**
+ * PDF de UMA racionalidade individual (botao "Baixar" dentro do modal).
+ */
+export function downloadRationalityPDF(opts: RationalityPDFOptions): void {
+  const { patientName, reportDate, rationalityKey, value, signatureHashShort } = opts
+  const label = RATIONALITY_LABELS[rationalityKey] || rationalityKey
+  const doc = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait' })
+
+  let pageNum = 1
+  let y = PAGE.marginTop
+  drawBrandedPageChrome(doc, { pageNumber: pageNum, signatureHashShort })
+
+  const ensureSpace = (needed: number) => {
+    if (y + needed > PAGE.height - PAGE.marginBottom) {
+      doc.addPage()
+      pageNum++
+      drawBrandedPageChrome(doc, { pageNumber: pageNum, signatureHashShort })
+      y = PAGE.marginTop
+    }
+  }
+
+  const writeParagraph = (text: string, paraOpts: { bold?: boolean; size?: number; color?: string } = {}) => {
+    if (!text || !text.trim()) return
+    const size = paraOpts.size ?? 9
+    doc.setTextColor(paraOpts.color ?? BRAND.text)
+    doc.setFont('helvetica', paraOpts.bold ? 'bold' : 'normal')
+    doc.setFontSize(size)
+    for (const line of doc.splitTextToSize(text, PAGE.contentWidth)) {
+      ensureSpace(size * 0.45 + 1)
+      doc.text(line, PAGE.marginX, y)
+      y += size * 0.45 + 1
+    }
+  }
+
+  const writeSection = (title: string) => {
+    ensureSpace(12)
+    y += 3
+    doc.setTextColor(BRAND.primaryDark)
+    doc.setFont('helvetica', 'bold')
+    doc.setFontSize(10)
+    doc.text(title.toUpperCase(), PAGE.marginX, y)
+    y += 1.5
+    doc.setDrawColor(BRAND.primary)
+    doc.setLineWidth(0.4)
+    doc.line(PAGE.marginX, y, PAGE.marginX + 30, y)
+    y += 4.5
+  }
+
+  // Cabecalho
+  doc.setTextColor(BRAND.text)
+  doc.setFont('helvetica', 'bold')
+  doc.setFontSize(16)
+  doc.text('Analise Clinica', PAGE.marginX, y)
+  y += 7
+
+  doc.setTextColor(BRAND.muted)
+  doc.setFont('helvetica', 'normal')
+  doc.setFontSize(9)
+  doc.text(`Racionalidade ${label}`, PAGE.marginX, y)
+  y += 6
+
+  doc.setDrawColor(BRAND.divider)
+  doc.setLineWidth(0.3)
+  doc.roundedRect(PAGE.marginX, y, PAGE.contentWidth, 16, 1.5, 1.5)
+  doc.setTextColor(BRAND.muted)
+  doc.setFontSize(8)
+  doc.text('PACIENTE', PAGE.marginX + 4, y + 5)
+  doc.text('DATA DO RELATORIO', PAGE.marginX + 90, y + 5)
+  doc.setTextColor(BRAND.text)
+  doc.setFont('helvetica', 'bold')
+  doc.setFontSize(10)
+  doc.text(patientName, PAGE.marginX + 4, y + 11)
+  const dateStr = (() => {
+    try { return new Date(reportDate).toLocaleDateString('pt-BR') } catch { return reportDate }
+  })()
+  doc.text(dateStr, PAGE.marginX + 90, y + 11)
+  y += 22
+
+  // Conteudo
+  if (value.assessment) {
+    writeSection('Avaliacao')
+    writeParagraph(stripClinical(value.assessment))
+  }
+
+  if (Array.isArray(value.recommendations) && value.recommendations.length) {
+    writeSection('Recomendacoes')
+    value.recommendations.forEach((r: string, i: number) => {
+      const text = stripClinical(r)
+      writeParagraph(`${i + 1}. ${text}`)
+    })
+  }
+
+  if (value.considerations) {
+    writeSection('Consideracoes')
+    writeParagraph(stripClinical(value.considerations))
+  }
+
+  if (value.approach) {
+    writeSection('Abordagem')
+    writeParagraph(stripClinical(value.approach))
+  }
+
+  const safeName = patientName.replace(/[^a-zA-Z0-9_-]/g, '_')
+  doc.save(`analise_${rationalityKey}_${safeName}.pdf`)
+}
+
+export interface RationalitiesComparativePDFOptions {
+  patientName: string
+  reportId: string
+  rationalities: Record<string, any>
+  signatureHashShort?: string
+}
+
+/**
+ * PDF comparativo de TODAS racionalidades aplicadas (botao "Baixar TODAS").
+ */
+export function downloadRationalitiesComparativePDF(opts: RationalitiesComparativePDFOptions): void {
+  const { patientName, rationalities, signatureHashShort } = opts
+  const doc = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait' })
+
+  let pageNum = 1
+  let y = PAGE.marginTop
+  drawBrandedPageChrome(doc, { pageNumber: pageNum, signatureHashShort })
+
+  const ensureSpace = (needed: number) => {
+    if (y + needed > PAGE.height - PAGE.marginBottom) {
+      doc.addPage()
+      pageNum++
+      drawBrandedPageChrome(doc, { pageNumber: pageNum, signatureHashShort })
+      y = PAGE.marginTop
+    }
+  }
+
+  const writeParagraph = (text: string, paraOpts: { bold?: boolean; size?: number; color?: string } = {}) => {
+    if (!text || !text.trim()) return
+    const size = paraOpts.size ?? 9
+    doc.setTextColor(paraOpts.color ?? BRAND.text)
+    doc.setFont('helvetica', paraOpts.bold ? 'bold' : 'normal')
+    doc.setFontSize(size)
+    for (const line of doc.splitTextToSize(text, PAGE.contentWidth)) {
+      ensureSpace(size * 0.45 + 1)
+      doc.text(line, PAGE.marginX, y)
+      y += size * 0.45 + 1
+    }
+  }
+
+  const writeRationalityHeader = (label: string) => {
+    ensureSpace(14)
+    y += 4
+    doc.setFillColor('#ecfdf5')
+    doc.setDrawColor(BRAND.primary)
+    doc.setLineWidth(0.3)
+    doc.roundedRect(PAGE.marginX, y - 4, PAGE.contentWidth, 9, 1.2, 1.2, 'FD')
+    doc.setTextColor(BRAND.primaryDark)
+    doc.setFont('helvetica', 'bold')
+    doc.setFontSize(11)
+    doc.text(label, PAGE.marginX + 3, y + 1.5)
+    y += 9
+  }
+
+  const writeSubsection = (title: string) => {
+    ensureSpace(6)
+    y += 2
+    doc.setTextColor(BRAND.muted)
+    doc.setFont('helvetica', 'bold')
+    doc.setFontSize(8.5)
+    doc.text(title.toUpperCase(), PAGE.marginX, y)
+    y += 3.5
+  }
+
+  // Cabecalho
+  doc.setTextColor(BRAND.text)
+  doc.setFont('helvetica', 'bold')
+  doc.setFontSize(16)
+  doc.text('Visao Comparativa', PAGE.marginX, y)
+  y += 7
+  doc.setTextColor(BRAND.muted)
+  doc.setFont('helvetica', 'normal')
+  doc.setFontSize(9)
+  doc.text('Analises Multi-Racionalidade · Paciente: ' + patientName, PAGE.marginX, y)
+  y += 4
+  doc.text(`Gerado em ${new Date().toLocaleString('pt-BR')}`, PAGE.marginX, y)
+  y += 6
+
+  let hasContent = false
+  Object.entries(rationalities).forEach(([key, value]: [string, any]) => {
+    if (!value) return
+    const text = value.assessment || value.summary || value.content || value.analysis || ''
+    const recs = Array.isArray(value.recommendations) ? value.recommendations : []
+    const cons = value.considerations || ''
+    if (!text && !recs.length && !cons) return
+
+    hasContent = true
+    writeRationalityHeader(RATIONALITY_LABELS[key] || key)
+
+    if (text) {
+      writeSubsection('Avaliacao')
+      writeParagraph(stripClinical(text))
+    }
+    if (recs.length) {
+      writeSubsection('Recomendacoes')
+      recs.forEach((r: string) => writeParagraph(`▸ ${stripClinical(r)}`))
+    }
+    if (cons) {
+      writeSubsection('Consideracoes')
+      writeParagraph(stripClinical(cons))
+    }
+  })
+
+  if (!hasContent) {
+    writeParagraph('Nenhuma racionalidade aplicada ate o momento.', { color: BRAND.muted })
+  }
+
+  const safeName = patientName.replace(/[^a-zA-Z0-9_-]/g, '_')
+  doc.save(`racionalidades_comparativo_${safeName}_${Date.now()}.pdf`)
+}

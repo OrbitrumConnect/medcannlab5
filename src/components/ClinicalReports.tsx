@@ -29,7 +29,11 @@ import {
 import { supabase } from '../lib/supabase'
 import { useNavigate } from 'react-router-dom'
 import { stripPlatformInjectionNoise } from '../lib/clinicalAssessmentFlow'
-import { downloadClinicalReportPDF } from '../lib/clinicalReportPDF'
+import {
+  downloadClinicalReportPDF,
+  downloadRationalityPDF,
+  downloadRationalitiesComparativePDF,
+} from '../lib/clinicalReportPDF'
 
 const MEDICAL_RECORD_SESSION_LOOKBACK_MS = 90 * 60 * 1000
 
@@ -738,97 +742,37 @@ const ClinicalReports: React.FC<ClinicalReportsProps> = ({ className = '', onSha
     }, 300)
   }
 
-  // 📥 Baixar TODAS as racionalidades aplicadas em um único arquivo .txt
+  // V1.9.247 — Refatorado de TXT pra PDF MedCannLab (coerencia com V1.9.245).
+  // Baixar TODAS racionalidades aplicadas em PDF comparativo com brand.
   const handleDownloadAllRationalities = () => {
     if (!selectedReport) return
-    const rats = selectedReport.content.rationalities || {}
-    const labelMap: Record<string, string> = {
-      biomedical: 'Biomédica',
-      traditionalChinese: 'Medicina Tradicional Chinesa',
-      ayurvedic: 'Ayurvédica',
-      homeopathic: 'Homeopática',
-      integrative: 'Integrativa',
+    try {
+      downloadRationalitiesComparativePDF({
+        patientName: selectedReport.patientName,
+        reportId: selectedReport.id,
+        rationalities: selectedReport.content.rationalities || {},
+        signatureHashShort: selectedReport.signatureHashShort,
+      })
+    } catch (error) {
+      console.error('Erro ao baixar comparativo PDF:', error)
     }
-    const lines: string[] = []
-    lines.push('═══════════════════════════════════════')
-    lines.push('  ANÁLISES MULTI-RACIONALIDADE — VISÃO COMPARATIVA')
-    lines.push('═══════════════════════════════════════', '')
-    lines.push(`Paciente: ${selectedReport.patientName}`)
-    lines.push(`Relatório: ${selectedReport.id}`)
-    lines.push(`Data: ${new Date().toLocaleString('pt-BR')}`, '')
-
-    Object.entries(rats).forEach(([key, value]: [string, any]) => {
-      if (!value) return
-      const text = value.assessment || value.summary || value.content || value.analysis || ''
-      const recs = value.recommendations || []
-      const cons = value.considerations || ''
-      if (!text && !recs.length && !cons) return
-      lines.push('───────────────────────────────────────')
-      lines.push(`▸ ${labelMap[key] || key}`)
-      lines.push('───────────────────────────────────────')
-      if (text) {
-        lines.push('Avaliação:')
-        lines.push(stripClinical(text), '')
-      }
-      if (recs.length) {
-        lines.push('Recomendações:')
-        recs.forEach((r: string) => lines.push(`  • ${stripClinical(r)}`))
-        lines.push('')
-      }
-      if (cons) {
-        lines.push('Considerações:')
-        lines.push(stripClinical(cons), '')
-      }
-    })
-
-    const blob = new Blob([lines.join('\n')], { type: 'text/plain;charset=utf-8' })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = `racionalidades_comparativo_${selectedReport.patientName}_${Date.now()}.txt`
-    document.body.appendChild(a)
-    a.click()
-    document.body.removeChild(a)
-    URL.revokeObjectURL(url)
   }
 
-  // 📄 Baixar análise individual de UMA racionalidade
+  // V1.9.247 — Baixar analise individual de UMA racionalidade em PDF MedCannLab.
   const handleDownloadRationality = (rationalityKey: string, value: any) => {
     if (!selectedReport || !value) return
-    const labelMap: Record<string, string> = {
-      biomedical: 'Biomédica',
-      traditionalChinese: 'Medicina Tradicional Chinesa',
-      ayurvedic: 'Ayurvédica',
-      homeopathic: 'Homeopática',
-      integrative: 'Integrativa'
+    try {
+      downloadRationalityPDF({
+        patientName: selectedReport.patientName,
+        reportDate: selectedReport.date,
+        reportId: selectedReport.id,
+        rationalityKey,
+        value,
+        signatureHashShort: selectedReport.signatureHashShort,
+      })
+    } catch (error) {
+      console.error('Erro ao baixar racionalidade PDF:', error)
     }
-    const label = labelMap[rationalityKey] || rationalityKey
-    const lines: string[] = [
-      `ANÁLISE — RACIONALIDADE ${label.toUpperCase()}`,
-      `Paciente: ${selectedReport.patientName}`,
-      `Relatório: ${new Date(selectedReport.date).toLocaleDateString('pt-BR')}`,
-      '═══════════════════════════════════════', '',
-      '▸ AVALIAÇÃO:', stripClinical(value.assessment || ''), ''
-    ]
-    if (Array.isArray(value.recommendations) && value.recommendations.length) {
-      lines.push('▸ RECOMENDAÇÕES:')
-      value.recommendations.forEach((r: string, i: number) => lines.push(`  ${i + 1}. ${stripClinical(r)}`))
-      lines.push('')
-    }
-    if (value.considerations) lines.push('▸ CONSIDERAÇÕES:', stripClinical(value.considerations), '')
-    if (value.approach) lines.push('▸ ABORDAGEM:', stripClinical(value.approach), '')
-    lines.push('═══════════════════════════════════════')
-    lines.push(`Gerado em ${new Date().toLocaleString('pt-BR')} • MedCannLab — Nôa Esperanza`)
-
-    const blob = new Blob([lines.join('\n')], { type: 'text/plain;charset=utf-8' })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = `analise_${rationalityKey}_${selectedReport.patientName.replace(/\s+/g, '_')}.txt`
-    document.body.appendChild(a)
-    a.click()
-    document.body.removeChild(a)
-    URL.revokeObjectURL(url)
   }
 
   // 📤 Compartilhar análise individual
