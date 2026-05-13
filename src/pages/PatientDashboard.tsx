@@ -150,15 +150,17 @@ const PatientDashboard: React.FC = () => {
   }
 
   return (
-    <div className="p-4 md:p-8 max-w-7xl mx-auto w-full space-y-8">
+    // V1.9.237: densificacao laptop (md:p-8 -> md:p-6 + space-y-8 -> space-y-6) — mobile (<768) intacto
+    <div className="p-4 md:p-6 max-w-7xl mx-auto w-full space-y-6">
       {activeTab === 'analytics' && (
         <>
           {/* V1.9.145: banner pending ratings (aparece só se há consulta concluída sem avaliação) */}
           <PendingRatingsBanner />
 
-          <div className="space-y-2">
-            <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-white to-slate-400 bg-clip-text text-transparent">Olá, {user?.name?.split(' ')[0]}</h1>
-            <p className="text-slate-400 text-lg">Aqui está o resumo da sua jornada de cuidado.</p>
+          <div className="space-y-1">
+            {/* V1.9.237: hero -1 tamanho de fonte em cada breakpoint (laptop cabe mais conteudo na fold) */}
+            <h1 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-white to-slate-400 bg-clip-text text-transparent">Olá, {user?.name?.split(' ')[0]}</h1>
+            <p className="text-slate-400 text-base">Aqui está o resumo da sua jornada de cuidado.</p>
           </div>
 
           {/* [V1.9.126] Ações principais movidas para o topo (acessibilidade 50+) */}

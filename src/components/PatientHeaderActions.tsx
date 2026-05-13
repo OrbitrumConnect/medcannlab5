@@ -103,10 +103,11 @@ const PatientHeaderActions: React.FC<PatientHeaderActionsProps> = ({
 
     return (
         <>
-            <div className="bg-slate-900/40 border border-white/5 rounded-2xl p-4 md:p-6 space-y-3">
+            {/* V1.9.237: densificacao laptop (p-6 → p-4 + space-y-3 → space-y-2) — mobile (<768) ainda p-4 enxuto */}
+            <div className="bg-slate-900/40 border border-white/5 rounded-2xl p-3 md:p-4 space-y-2">
                 <div className="space-y-0.5">
-                    <h2 className="text-lg md:text-xl font-semibold text-white">O que você quer fazer agora?</h2>
-                    <p className="text-slate-400 text-sm">Ações rápidas para sua jornada clínica.</p>
+                    <h2 className="text-base md:text-lg font-semibold text-white">O que você quer fazer agora?</h2>
+                    <p className="text-slate-400 text-xs md:text-sm">Ações rápidas para sua jornada clínica.</p>
                 </div>
                 {/* [V1.9.130-A] Mobile: grid 3 colunas com ícones quadrados | Desktop (md+): flex horizontal */}
                 <div className="grid grid-cols-3 gap-2 md:flex md:flex-wrap md:gap-3">
