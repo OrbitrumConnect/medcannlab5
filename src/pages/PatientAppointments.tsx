@@ -1225,11 +1225,13 @@ const PatientAppointments: React.FC = () => {
           )}
         </div>
       </div>
-      <div className="grid grid-cols-2 gap-2">
+      {/* V1.9.261 (Pedro 13/05 19h06) — botoes mais compactos: px-3→px-2.5,
+          py-1.5→py-1, text-xs→[11px], gap-1.5→gap-1, ArrowRight 3.5→3 */}
+      <div className="grid grid-cols-2 gap-1.5">
         <button
           type="button"
           onClick={() => setProfileProfessional(professional)}
-          className="w-full inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-100 bg-slate-700/60 hover:bg-slate-700 transition-colors"
+          className="w-full inline-flex items-center justify-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-semibold text-slate-100 bg-slate-700/60 hover:bg-slate-700 transition-colors"
         >
           Ver perfil
         </button>
@@ -1255,10 +1257,10 @@ const PatientAppointments: React.FC = () => {
               setShowAppointmentModal(true)
             }
           }}
-          className={`w-full inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-white transition-all ${professional.buttonClasses} hover:scale-[1.02]`}
+          className={`w-full inline-flex items-center justify-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-semibold text-white transition-all ${professional.buttonClasses} hover:scale-[1.02]`}
         >
           Agendar
-          <ArrowRight className="w-3.5 h-3.5" />
+          <ArrowRight className="w-3 h-3" />
         </button>
       </div>
     </motion.div>
