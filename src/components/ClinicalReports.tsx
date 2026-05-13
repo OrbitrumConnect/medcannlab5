@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react'
+import React, { useState, useEffect, useCallback, useMemo } from 'react'
 import {
   FileText,
   Download,
@@ -22,7 +22,9 @@ import {
   MessageSquare,
   ChevronDown,
   ChevronUp,
-  Sparkles
+  Sparkles,
+  Info,
+  Check
 } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { useNavigate } from 'react-router-dom'
@@ -106,6 +108,15 @@ const ClinicalReports: React.FC<ClinicalReportsProps> = ({ className = '', onSha
   const effectiveType = getEffectiveUserType(user?.type)
   const isUserAdmin = effectiveType === 'admin'
   const isPatient = effectiveType === 'paciente'
+
+  // V1.9.241 — contador empirico de pendencias (fila de cuidado longitudinal).
+  // Vocabulario clinico Ricardo: "aguardando revisao" > "draft/pending".
+  // ICP-Brasil e infra invisivel (Pipeline V1.9.95 assina automatico).
+  // Revisao = responsabilidade humana, Aprovacao = ato clinico (CFM 2.314).
+  const pendingReviewCount = useMemo(
+    () => reports.filter(r => r.reviewStatus !== 'reviewed' && r.reviewStatus !== 'approved').length,
+    [reports]
+  )
   const [selectedRationality, setSelectedRationality] = useState<Rationality | null>(null)
   const [isGeneratingAnalysis, setIsGeneratingAnalysis] = useState(false)
   const [nftModal, setNftModal] = useState<{ show: boolean; token: string; hash: string }>({ show: false, token: '', hash: '' })
@@ -1004,13 +1015,33 @@ const ClinicalReports: React.FC<ClinicalReportsProps> = ({ className = '', onSha
         }}
       >
         <div className="flex items-center justify-between mb-4">
-          <div>
-            <h2 className="text-2xl font-bold text-white mb-2 flex items-center space-x-2">
+          <div className="flex-1 min-w-0">
+            <h2 className="text-2xl font-bold text-white mb-2 flex items-center gap-2 flex-wrap">
               <FileText className="w-6 h-6 text-[#00C16A]" />
               <span>{isPatient ? 'Meus Relatórios Clínicos' : isUserAdmin ? 'Todos os Relatórios Clínicos' : 'Relatórios da Avaliação Clínica Inicial'}</span>
+              {/* V1.9.241 (C) — contador de fila clinica longitudinal pra medico/admin */}
+              {!isPatient && pendingReviewCount > 0 && (
+                <span
+                  className="text-xs font-semibold px-2.5 py-1 rounded-full bg-amber-500/15 text-amber-300 border border-amber-500/30 flex items-center gap-1"
+                  title="Reports aguardando sua revisão clínica"
+                >
+                  <Clock className="w-3 h-3" />
+                  {pendingReviewCount} aguardando revisão
+                </span>
+              )}
+              {/* V1.9.241 (B) — tooltip educativo: ICP automatico via Pipeline */}
+              {!isPatient && (
+                <span
+                  className="cursor-help text-slate-400 hover:text-slate-200 transition-colors"
+                  title="Reports clínicos vêm assinados automaticamente com ICP-Brasil pelo Pipeline V1.9.95. Sua tarefa é a validação clínica humana: clique no card para revisar, escrever nota e devolver ao paciente (CFM 2.314/2022)."
+                  aria-label="Informação sobre fluxo de assinatura"
+                >
+                  <Info className="w-4 h-4" />
+                </span>
+              )}
             </h2>
             <p className="text-[#C8D6E5]">
-              {isPatient ? 'Seus relatórios de avaliação clínica' : isUserAdmin ? 'Visão administrativa de todos os relatórios' : 'Relatórios compartilhados pelos pacientes com você'}
+              {isPatient ? 'Seus relatórios de avaliação clínica' : isUserAdmin ? 'Visão administrativa de todos os relatórios' : 'Sua fila de revisão clínica longitudinal — clique em um relatório para revisar e devolver ao paciente'}
             </p>
           </div>
           <div className="flex items-center space-x-2">
@@ -1130,28 +1161,32 @@ const ClinicalReports: React.FC<ClinicalReportsProps> = ({ className = '', onSha
                   </div>
                 </div>
                 <div className="flex items-center space-x-2">
-                  {/* V1.9.225 — Badge prioriza reviewStatus quando há revisão médica.
-                      'reviewed' (revisão médica V1.9.200) é mais informativo pro paciente
-                      que 'shared' ou 'completed' do FSM AEC. Demais estados FSM mantidos
-                      como fallback (zero regressão pra reports sem reviewStatus definido,
-                      que já caem em 'pending' via linha 420 default). */}
-                  <span className={`flex items-center space-x-1 px-2 py-1 rounded-full text-sm border ${
-                    report.reviewStatus === 'reviewed' ? 'bg-blue-500/10 text-blue-400 border-blue-500/20' :
-                    report.status === 'shared' ? 'bg-orange-500/10 text-orange-400 border-orange-500/20' :
-                    report.status === 'reviewed' ? 'bg-blue-500/10 text-blue-400 border-blue-500/20' :
-                    report.status === 'validated' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' :
-                    'bg-slate-500/10 text-slate-400 border-slate-500/20'
-                  }`}>
-                    {getStatusIcon(report.status)}
-                    <span className="capitalize">{
-                      report.reviewStatus === 'reviewed' ? 'Revisado' :
-                      report.status === 'shared' ? 'Compartilhado' :
-                      report.status === 'reviewed' ? 'Revisado' :
-                      report.status === 'validated' ? 'Validado' :
-                      report.status === 'completed' ? 'Completo' :
-                      report.status
-                    }</span>
-                  </span>
+                  {/* V1.9.241 (A) — Badge contextual com vocabulario clinico Ricardo 13/05.
+                      Princípio: "validar clinicamente" > "assinar tecnicamente".
+                      ICP-Brasil é infra invisível (Pipeline V1.9.95 assina automatico).
+                      Revisao = responsabilidade humana. Aprovacao = ato clinico CFM 2.314.
+                      Vocabulario centrado em humano: "Aguardando sua revisão" > "draft/pending". */}
+                  {report.reviewStatus === 'approved' ? (
+                    <span className="flex items-center space-x-1 px-2 py-1 rounded-full text-sm border bg-emerald-500/10 text-emerald-400 border-emerald-500/20">
+                      <CheckCircle className="w-3.5 h-3.5" />
+                      <span>{isPatient ? 'Devolvido com nota clínica' : 'Aprovado e devolvido'}</span>
+                    </span>
+                  ) : report.reviewStatus === 'reviewed' ? (
+                    <span className="flex items-center space-x-1 px-2 py-1 rounded-full text-sm border bg-blue-500/10 text-blue-400 border-blue-500/20">
+                      <Check className="w-3.5 h-3.5" />
+                      <span>{isPatient ? 'Revisado pelo médico' : 'Revisado'}</span>
+                    </span>
+                  ) : !isPatient ? (
+                    <span className="flex items-center space-x-1 px-2 py-1 rounded-full text-sm border bg-amber-500/10 text-amber-300 border-amber-500/30">
+                      <Clock className="w-3.5 h-3.5" />
+                      <span>Aguardando sua revisão</span>
+                    </span>
+                  ) : (
+                    <span className="flex items-center space-x-1 px-2 py-1 rounded-full text-sm border bg-slate-500/10 text-slate-400 border-slate-500/20">
+                      {getStatusIcon(report.status)}
+                      <span>Aguardando revisão médica</span>
+                    </span>
+                  )}
                   {report.nftToken && (
                     <span className="px-2 py-1 rounded-full text-xs font-semibold bg-purple-500/10 text-purple-400 border border-purple-500/20">
                       NFT: {report.nftToken}
