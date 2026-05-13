@@ -4,6 +4,8 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2"
 import OpenAI from "https://esm.sh/openai@4"
 import { COS, COS_Context } from "./cos_kernel.ts"
 import { assertPatientHasDoctorContext } from "../_shared/aec_gate.ts"
+// V1.9.238: tabela versionada de precos pra calculo empirico de custo por turn
+import { calcCostUsd, getProviderFor, PRICING_VERSION } from "../_shared/modelPricing.ts"
 
 // ============================================================================
 // [V1.9.35] Clinical Score Calculator — INLINE dentro do index.ts
@@ -1745,6 +1747,10 @@ Finalizar SEMPRE com:
 }
 
 Deno.serve(async (req: Request) => {
+    // V1.9.238: timer pra medir processing_time (ms) entre request → response.
+    // Antes desta versao: 0/3195 rows com latency. Agora: 100% rows novas.
+    const requestStartedAt = Date.now()
+
     const origin = req.headers.get('Origin');
     const corsHeaders = getCorsHeaders(origin);
 
@@ -5919,7 +5925,17 @@ ${contentExcerpt || '(Texto não disponível para este documento. O conteúdo ai
             }
 
             // [FIX 16/04] DUAL-WRITE: Salvar TAMBÉM em ai_chat_interactions para manter o pipeline GPT Extraction v2 funcional
+            // V1.9.238: instrumentacao empirica de custo — processing_time (ms) + tokens estruturados +
+            // cost_usd_estimate + provider + pricing_version. Permite responder via SQL: custo/turn,
+            // custo/sessao, custo/usuario/mes, eficiencia por modelo (quando integrar Claude/Gemini).
             try {
+                const processingTimeMs = Date.now() - requestStartedAt
+                const promptTokens = completion.usage?.prompt_tokens || 0
+                const completionTokens = completion.usage?.completion_tokens || 0
+                const totalTokens = completion.usage?.total_tokens || 0
+                const costUsd = calcCostUsd(completion.model, promptTokens, completionTokens)
+                const provider = getProviderFor(completion.model)
+
                 // 🛡️ [HOSPITAL-GRADE] PERSISTÊNCIA PURA: Apenas linguagem humana entra aqui.
                 await supabaseClient
                     .from('ai_chat_interactions')
@@ -5930,11 +5946,19 @@ ${contentExcerpt || '(Texto não disponível para este documento. O conteúdo ai
                         intent: currentIntent || null,
                         session_id: interaction_id,
                         patient_id: patientData.user.id,
+                        processing_time: processingTimeMs, // V1.9.238: ms request→response
                         metadata: {
                             system: 'TradeVision Core V2 (Hospital Grade)',
                             simbologia,
                             model: completion.model,
-                            tokens: completion.usage?.total_tokens || 0,
+                            // V1.9.238: instrumentacao economica empirica
+                            provider,                             // openai / anthropic / google / unknown
+                            pricing_version: PRICING_VERSION,     // ISO date do snapshot vigente
+                            prompt_tokens: promptTokens,
+                            completion_tokens: completionTokens,
+                            total_tokens: totalTokens,            // legacy compat
+                            cost_usd_estimate: costUsd,           // 6 decimais USD
+                            tokens: totalTokens,                  // legacy compat (manter)
                             sanitized: rawInputMessage !== cleanHumanMessage
                         }
                     });
