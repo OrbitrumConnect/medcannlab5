@@ -82,6 +82,10 @@ interface SharedReport {
   rawContent?: Record<string, any>
   doctorNotes?: string
   reviewStatus?: 'pending' | 'reviewed' | 'approved'
+  // V1.9.242: signature_hash da Pipeline V1.9.95 (ICP-Brasil automatico).
+  // Quando presente, exibe badge "ICP automatico" no card. Ausencia indica
+  // report legado pre-26/04 (Pipeline V1.9.95 nao existia ainda).
+  hasICPSignature?: boolean
 }
 
 interface ClinicalReportsProps {
@@ -437,6 +441,8 @@ const ClinicalReports: React.FC<ClinicalReportsProps> = ({ className = '', onSha
           reviewStatus: (report.review_status as SharedReport['reviewStatus'])
             || (content.review_status as SharedReport['reviewStatus'])
             || 'pending',
+          // V1.9.242: flag presenca de assinatura ICP-Brasil automatica (Pipeline V1.9.95)
+          hasICPSignature: !!(report.signature_hash),
           rawContent: content
         }
       })
@@ -1187,6 +1193,18 @@ const ClinicalReports: React.FC<ClinicalReportsProps> = ({ className = '', onSha
                       <span>Aguardando revisão médica</span>
                     </span>
                   )}
+                  {/* V1.9.242 — Badge "ICP automático" pra report assinado via Pipeline V1.9.95.
+                      Educa medico: ICP-Brasil e infra invisivel, automatica. Validacao clinica
+                      e responsabilidade humana separada (review_status). */}
+                  {report.hasICPSignature && (
+                    <span
+                      className="px-2 py-1 rounded-full text-xs font-semibold bg-cyan-500/10 text-cyan-300 border border-cyan-500/20 flex items-center gap-1"
+                      title="Assinado automaticamente com ICP-Brasil pelo Pipeline V1.9.95 (CFM 2.314/2022). Validacao clinica e separada — clique pra revisar."
+                    >
+                      <Sparkles className="w-3 h-3" />
+                      ICP automático
+                    </span>
+                  )}
                   {report.nftToken && (
                     <span className="px-2 py-1 rounded-full text-xs font-semibold bg-purple-500/10 text-purple-400 border border-purple-500/20">
                       NFT: {report.nftToken}
@@ -1328,37 +1346,38 @@ const ClinicalReports: React.FC<ClinicalReportsProps> = ({ className = '', onSha
                     setAppliedRationalities(applied)
                   }}
                   className="flex items-center space-x-1 px-4 py-2 rounded-lg transition-colors text-white"
-                  style={{ background: 'linear-gradient(135deg, #ea580c 0%, #c2410c 100%)' }}
+                  style={{ background: 'linear-gradient(135deg, #00C16A 0%, #13794f 100%)' }}
+                  title="Abrir para revisar, escrever nota clínica e devolver ao paciente"
                 >
                   <Eye className="w-4 h-4" />
-                  <span>Revisar</span>
+                  <span>{isPatient ? 'Abrir' : 'Abrir para revisar'}</span>
                 </button>
+                {/* V1.9.242 — Compartilhar so pra paciente (acao do dono do relatorio). */}
                 {isPatient && onShareReport && (
                   <button
                     onClick={() => onShareReport(report.id)}
-                    className="flex items-center space-x-1 px-4 py-2 rounded-lg transition-colors text-white"
-                    style={{ background: 'linear-gradient(135deg, #00C16A 0%, #13794f 100%)' }}
+                    className="flex items-center space-x-1 px-4 py-2 rounded-lg transition-colors text-white bg-slate-600/50 border border-slate-500/30 hover:bg-slate-600/80"
                   >
                     <Share2 className="w-4 h-4" />
                     <span>Compartilhar</span>
                   </button>
                 )}
-                <button
-                  onClick={() => handleGenerateNFT(report)}
-                  disabled={nftLoading}
-                  className="flex items-center space-x-1 px-4 py-2 rounded-lg transition-colors text-white disabled:opacity-60 disabled:cursor-not-allowed"
-                  style={{ background: 'linear-gradient(135deg, #9333ea 0%, #7c3aed 100%)' }}
-                >
-                  {nftLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <QrCode className="w-4 h-4" />}
-                  <span>{nftLoading ? 'Gerando...' : 'Gerar NFT'}</span>
-                </button>
-                <button
-                  onClick={() => handleDownloadReport(report)}
-                  className="flex items-center space-x-1 px-4 py-2 rounded-lg transition-colors text-white bg-slate-600/50 border border-slate-500/30 hover:bg-slate-600/80"
-                >
-                  <Download className="w-4 h-4" />
-                  <span>Download</span>
-                </button>
+                {/* V1.9.242 — Download mantido no card APENAS pra paciente.
+                    Paciente baixa PDF do proprio relatorio (acao simples/frequente).
+                    Medico/Admin: Download esta dentro do modal apos revisao (linha 2027). */}
+                {isPatient && (
+                  <button
+                    onClick={() => handleDownloadReport(report)}
+                    className="flex items-center space-x-1 px-4 py-2 rounded-lg transition-colors text-white bg-slate-600/50 border border-slate-500/30 hover:bg-slate-600/80"
+                  >
+                    <Download className="w-4 h-4" />
+                    <span>Download</span>
+                  </button>
+                )}
+                {/* V1.9.242 — Botao "Gerar NFT" REMOVIDO do card (proposta Ricardo 13/05):
+                    NFT e acao consciente pos-revisao. Disponivel no modal (linha 2057+)
+                    pra medico/admin. Anti-padrao "botao bloqueado com proibido"
+                    aparecia quando nftLoading=true em outro report — confundia medico. */}
               </div>
             </div>
           ))}
@@ -1997,6 +2016,13 @@ const ClinicalReports: React.FC<ClinicalReportsProps> = ({ className = '', onSha
                 <div>
                   <label className="block text-sm font-medium text-slate-300 mb-2">
                     Suas Notas e Observações:
+                    {/* V1.9.242 — texto inline visivel (proposta Ricardo 13/05):
+                        em vez de tooltip oculto no botao, indicacao clara do que falta. */}
+                    {(doctorNotes || '').trim().length < 3 && selectedReport?.reviewStatus !== 'approved' && (
+                      <span className="ml-2 text-xs font-normal text-amber-300/90">
+                        — Escreva uma nota (mínimo 3 caracteres) para liberar a devolução ao paciente
+                      </span>
+                    )}
                   </label>
                   <textarea
                     value={doctorNotes}
