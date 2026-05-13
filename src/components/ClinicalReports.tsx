@@ -1490,16 +1490,31 @@ const ClinicalReports: React.FC<ClinicalReportsProps> = ({ className = '', onSha
           >
             <div className="flex items-center justify-between mb-4">
               <h3 id="clinical-report-modal-title" className="text-xl font-bold text-white">
-                Revisar Relatório - {selectedReport.patientName}
+                {isPatient ? 'Detalhes do Relatório' : `Revisar Relatório - ${selectedReport.patientName}`}
               </h3>
-              <button
-                onClick={() => setShowReportModal(false)}
-                className="text-slate-400 hover:text-white transition-colors text-xl"
-                aria-label="Fechar relatório"
-                title="Fechar"
-              >
-                ✕
-              </button>
+              <div className="flex items-center gap-2">
+                {/* V1.9.244 — Baixar como icone utilitario no header (medico/admin so).
+                    Filosofia: footer = fluxo clinico (Aprovar e devolver dominante).
+                    Header = utilitarios (download). Reduz competicao visual com CTA. */}
+                {!isPatient && (
+                  <button
+                    onClick={() => handleDownloadReport(selectedReport)}
+                    className="w-9 h-9 flex items-center justify-center rounded-lg text-slate-400 hover:text-indigo-300 hover:bg-indigo-500/10 transition-colors"
+                    aria-label="Baixar relatório em PDF"
+                    title="Baixar PDF do relatório"
+                  >
+                    <Download className="w-5 h-5" />
+                  </button>
+                )}
+                <button
+                  onClick={() => setShowReportModal(false)}
+                  className="w-9 h-9 flex items-center justify-center text-slate-400 hover:text-white transition-colors text-xl"
+                  aria-label="Fechar relatório"
+                  title="Fechar"
+                >
+                  ✕
+                </button>
+              </div>
             </div>
 
             {/* V1.9.202 — Faixa de devolução clínica visível ao abrir relatório aprovado */}
@@ -2053,17 +2068,11 @@ const ClinicalReports: React.FC<ClinicalReportsProps> = ({ className = '', onSha
               >
                 Fechar
               </button>
-              {/* V1.9.243 — Baixar so pra medico/admin no modal (paciente baixa no card). */}
-              {!isPatient && (
-                <button
-                  onClick={() => handleDownloadReport(selectedReport)}
-                  className="flex-1 min-w-[120px] px-4 py-2 text-white rounded-lg transition-colors flex items-center justify-center space-x-2"
-                  style={{ background: 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)' }}
-                >
-                  <Download className="w-4 h-4" />
-                  <span>Baixar</span>
-                </button>
-              )}
+              {/* V1.9.244 — Footer focado em fluxo clinico (Ricardo+GPT+Pedro 13/05):
+                  Baixar foi pro header (icone utilitario). NFT removido (acao do paciente,
+                  nao do medico — RLS de patient_nfts permite medico VER via galeria, nao
+                  GERAR). Marcar revisado escondido (codigo morto: 0 reports usaram empiricamente).
+                  CTA dominante unico = "Aprovar e devolver" (verde). */}
 
               {/* V1.9.243 — Agendar consulta: unica acao nova pro paciente no modal
                   (card so apresenta estado; modal abre fluxos novos). */}
@@ -2083,51 +2092,9 @@ const ClinicalReports: React.FC<ClinicalReportsProps> = ({ className = '', onSha
                   <span>Agendar consulta</span>
                 </button>
               )}
-              {/* V1.9.243 — Compartilhar e Gerar NFT removidos do modal pra paciente:
-                  ja existem no card (anti-duplicacao Pedro 13/05). Mantidos pra medico/admin. */}
-              {!isPatient && (
-                <button
-                  onClick={() => handleGenerateNFT(selectedReport)}
-                  disabled={nftLoading}
-                  className="flex-1 min-w-[140px] px-4 py-2 text-white rounded-lg transition-colors flex items-center justify-center space-x-2 disabled:opacity-60 disabled:cursor-not-allowed"
-                  style={{ background: 'linear-gradient(135deg, #9333ea 0%, #7c3aed 100%)' }}
-                  title={nftLoading ? 'Gerando assinatura visual...' : 'Gerar certificado NFT de autenticidade do relatório'}
-                >
-                  {nftLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <QrCode className="w-4 h-4" />}
-                  <span>{nftLoading ? 'Gerando...' : 'Gerar NFT'}</span>
-                </button>
-              )}
 
               {!isPatient && (
                 <>
-                  {/* V1.9.227 — Idempotência empírica (Pedro 11/05 19h): médico não deve
-                      poder re-marcar/re-aprovar um report já no estado final ou superior.
-                      'reviewed' → não pode "Marcar revisado" de novo (já está)
-                      'approved' → não pode nem "Marcar revisado" (regrediria), nem "Aprovar" (já aprovado)
-                      Tooltip explica estado pro médico ler antes de re-clicar.
-                      Princípio: dado clínico final é IMUTÁVEL pós-devolução (CFM 2.314). */}
-                  <button
-                    onClick={() => handleReviewReport(selectedReport.id, 'reviewed')}
-                    disabled={
-                      isApprovingReport ||
-                      selectedReport.reviewStatus === 'reviewed' ||
-                      selectedReport.reviewStatus === 'approved'
-                    }
-                    className="flex-1 min-w-[120px] px-4 py-2 text-white rounded-lg transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
-                    style={{ background: 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)' }}
-                    title={
-                      selectedReport.reviewStatus === 'approved'
-                        ? 'Já aprovado e devolvido — não pode regredir pra revisado'
-                        : selectedReport.reviewStatus === 'reviewed'
-                        ? 'Já marcado como revisado'
-                        : 'Marcar relatório como visto (sem devolver ao paciente ainda)'
-                    }
-                  >
-                    {isApprovingReport ? 'Salvando...' :
-                      selectedReport.reviewStatus === 'reviewed' ? 'Já revisado' :
-                      selectedReport.reviewStatus === 'approved' ? 'Já aprovado' :
-                      'Marcar revisado'}
-                  </button>
                   <button
                     onClick={() => handleReviewReport(selectedReport.id, 'approved')}
                     disabled={
