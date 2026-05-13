@@ -1327,16 +1327,42 @@ const ClinicalReports: React.FC<ClinicalReportsProps> = ({ className = '', onSha
           }}
         >
           <FileText className="w-16 h-16 text-slate-600 mx-auto mb-4" />
-          <h3 className="text-lg font-semibold text-slate-300 mb-2">
-            {isPatient ? 'Nenhum relatório encontrado' : 'Nenhum relatório compartilhado'}
-          </h3>
-          <p className="text-slate-500">
-            {isPatient
-              ? 'Você ainda não possui relatórios de avaliação clínica. Converse com a Nôa para iniciar sua avaliação.'
-              : isUserAdmin
-                ? 'Ainda não existem relatórios clínicos na plataforma.'
-                : 'Os pacientes ainda não compartilharam relatórios de avaliação clínica inicial com você.'}
-          </p>
+          {/* V1.9.250 — Mensagem vazio CONTEXTUAL ao filtro selecionado.
+              Bug reportado por Ricardo 13/05 ~14h46: clicou "Revisados" e
+              viu "Nenhum relatório compartilhado / pacientes ainda não
+              compartilharam" — misleading, contradiz badge "32 aguardando
+              revisão" no header. Mensagem agora reflete o filtro ativo. */}
+          {(() => {
+            const baseTitle = isPatient ? 'Nenhum relatório' : 'Lista vazia neste filtro'
+            const titleByFilter: Record<typeof filterStatus, string> = {
+              all: isPatient ? 'Nenhum relatório encontrado' : (isUserAdmin ? 'Nenhum relatório na plataforma' : 'Nenhum relatório compartilhado'),
+              shared: isPatient ? `${baseTitle} compartilhado` : 'Nenhum relatório compartilhado pendente',
+              reviewed: isPatient ? `${baseTitle} revisado ainda` : 'Nenhum relatório marcado como revisado',
+              validated: isPatient ? `${baseTitle} validado ainda` : 'Nenhum relatório aprovado e devolvido',
+            }
+            const bodyByFilter: Record<typeof filterStatus, string> = {
+              all: isPatient
+                ? 'Você ainda não possui relatórios de avaliação clínica. Converse com a Nôa para iniciar sua avaliação.'
+                : isUserAdmin
+                  ? 'Ainda não existem relatórios clínicos na plataforma.'
+                  : 'Os pacientes ainda não compartilharam relatórios de avaliação clínica com você.',
+              shared: isPatient
+                ? 'Nenhum dos seus relatórios está em estado "compartilhado" no momento.'
+                : 'Nenhum paciente tem relatório em estado "compartilhado" no momento. Veja a aba "Todos" para o histórico completo.',
+              reviewed: isPatient
+                ? 'Seu médico ainda não marcou nenhum relatório como revisado. Aguarde a análise clínica.'
+                : 'Você ainda não marcou nenhum relatório como revisado. Abra um relatório na aba "Todos" e use "Aprovar e devolver" para iniciar a fila clínica longitudinal.',
+              validated: isPatient
+                ? 'Nenhum relatório foi aprovado e devolvido ainda pelo seu médico. Cada devolução clínica vem com nota personalizada.'
+                : 'Nenhum relatório foi aprovado e devolvido ao paciente ainda. Aprovar fecha o ciclo clínico longitudinal (Sprint 1 Devolution).',
+            }
+            return (
+              <>
+                <h3 className="text-lg font-semibold text-slate-300 mb-2">{titleByFilter[filterStatus]}</h3>
+                <p className="text-slate-500">{bodyByFilter[filterStatus]}</p>
+              </>
+            )
+          })()}
         </div>
       )}
 
