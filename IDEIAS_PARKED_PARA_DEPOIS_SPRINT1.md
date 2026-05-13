@@ -63,6 +63,25 @@ Em caso de exceção: registrar abaixo na seção "Exceções acionadas" antes d
   Origem: Claude (proposta) + Pedro (curadoria) 09/05
   Conexão: estágio 4 LONGITUDINAL — feature nova, NÃO polish
 
+- [13/05] — **NFT = royalty + ranking + gamificação natural (tese Ricardo 13/05)**
+  Cristalização empírica do Ricardo via WhatsApp 12h41-12h44 BRT em reação ao
+  V1.9.243+244: "Se o paciente quiser compartilhar o NFT dele com o médico,
+  valida o royalty. Pela qualidade do atendimento. Se gostar, compartilha — é
+  assim que funciona no mundo real. E assim organiza o ranking de pacientes
+  satisfeitos. Já está embutido no custo de tokenização. E gamifica."
+  Une 5 vetores em uma só formulação: NFT (Lei 14.063) + royalty (incentivo
+  econômico) + ranking marketplace (já ativo V1.9.150-155) + satisfação paciente
+  + gamificação mimética ("assim funciona no mundo real" = like/share/review).
+  Convergente com ideias parqueadas 09/05 acima (galeria + nft_shares).
+  Volume real estimado pós-Sprint 1 + pós-CNPJ: ~10-14h.
+  Princípio 59 candidato (pós-freeze 16/05): "Compartilhamento de NFT pelo
+  paciente = sinal validado de satisfação clínica = input do ranking de
+  qualidade, não decisão IA. Royalty financia o ato. Mimético, não imposto."
+  Pedro nota: "kkkk já é mais ou menos o que estamos falando, porém nossa
+  avaliação é melhor prosseguir" (mantém freeze, prossegue V1.9.244 atual).
+  Origem: Ricardo (criador método AEC) 13/05
+  Conexão: estágios 4+5 LONGITUDINAL + camada marketplace
+
 - [09/05] — **IA na página renal coletando exames laboratoriais** (sugestão Ricardo 05/05).
   Nôa pede ao paciente: creatinina, EAS + cultura urinária, US vias urinárias.
   Volume estimado: ~6-8h. Anti-kevlar §2 OK porque Ricardo dita os exames
