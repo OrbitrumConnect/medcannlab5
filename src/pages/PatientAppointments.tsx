@@ -627,7 +627,11 @@ const PatientAppointments: React.FC = () => {
   // V1.9.111: Tier classification — Equipe Oficial vs Parceiros
   // Tier 1: Ricardo + Eduardo (Equipe Oficial MedCannLab)
   // Tier 2: demais profissionais (Parceiros) com paginação 6/page
-  const PARTNERS_PER_PAGE = 6
+  // V1.9.260 — Aumentado de 6 → 8 (Pedro 13/05 19h: "ficou pag 2 mas tem
+  // espaço ali"). Pos-V1.9.259 (cards menores + xl:grid-cols-4) cabe 8 em
+  // 2 linhas no desktop largo (lg+ 3-col em 3 linhas com 2 sobrando na ultima,
+  // xl+ 4-col em 2 linhas justas). Reduz fricção paginacao pra 8 parceiros.
+  const PARTNERS_PER_PAGE = 8
   const [partnersPage, setPartnersPage] = useState(0)
 
   const { tier1Professionals, tier2Professionals } = useMemo(() => {
