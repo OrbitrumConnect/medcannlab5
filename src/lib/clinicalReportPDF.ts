@@ -26,7 +26,30 @@ const PAGE = {
   contentWidth: 174, // 210 - 18*2
 }
 
-const stripClinical = (s: unknown): string => stripPlatformInjectionNoise(String(s ?? ''))
+// V1.9.248 — Sanitiza emojis/caracteres unicode fora do range Latin-1
+// (helvetica nativa do jspdf nao tem suporte completo a UTF-8 e renderizava
+// "▸" como "%¸", "✓" como "'", emojis como "Ø=ÜË"/"Ø=ÜG", etc).
+// Mantem acentos PT-BR (à-ÿ) intactos. Substitui marcadores conhecidos por
+// equivalentes ASCII seguros e remove emojis.
+const sanitizeForPDF = (s: string): string => {
+  return s
+    // Marcadores conhecidos que o body do AEC injeta
+    .replace(/▸/g, '>')
+    .replace(/✓/g, 'OK')
+    .replace(/•/g, '-')
+    .replace(/═/g, '=')
+    .replace(/─/g, '-')
+    .replace(/│/g, '|')
+    .replace(/✅/g, '[OK]')
+    // Remove qualquer emoji/simbolo fora do range Latin-1 extendido
+    .replace(/[\u{1F000}-\u{1FFFF}]/gu, '')
+    .replace(/[\u{2600}-\u{27BF}]/gu, '')
+    .replace(/[\u{1F300}-\u{1F9FF}]/gu, '')
+    // Catch-all: chars acima de U+00FF que sobraram viram espaço
+    .replace(/[^\x00-\xFF]/g, '')
+}
+
+const stripClinical = (s: unknown): string => sanitizeForPDF(stripPlatformInjectionNoise(String(s ?? '')))
 const stripClinicalList = (arr: unknown): string[] => {
   if (!Array.isArray(arr)) return []
   return arr.map((x) => stripClinical(x)).filter((t) => t.length > 0)
@@ -206,7 +229,7 @@ export function generateClinicalReportPDF(opts: GeneratePDFOptions): jsPDF {
       doc.setTextColor(BRAND.primary)
       doc.setFont('helvetica', 'bold')
       doc.setFontSize(9)
-      doc.text('▸', PAGE.marginX, y)
+      doc.text('>', PAGE.marginX, y)
       doc.setTextColor(BRAND.text)
       doc.setFont('helvetica', 'normal')
       const lines = doc.splitTextToSize(item, PAGE.contentWidth - 5)
@@ -253,7 +276,7 @@ export function generateClinicalReportPDF(opts: GeneratePDFOptions): jsPDF {
   doc.setTextColor(BRAND.text)
   doc.setFont('helvetica', 'bold')
   doc.setFontSize(10)
-  doc.text(report.patientName, PAGE.marginX + 4, y + 11)
+  doc.text(sanitizeForPDF(report.patientName), PAGE.marginX + 4, y + 11)
 
   const dateStr = (() => {
     try {

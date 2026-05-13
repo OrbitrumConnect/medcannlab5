@@ -137,9 +137,14 @@ const ClinicalReports: React.FC<ClinicalReportsProps> = ({ className = '', onSha
   const [loadingConversation, setLoadingConversation] = useState(false)
   const [showConversation, setShowConversation] = useState(false)
 
-  const fetchConversation = useCallback(async (patientId: string, reportDate?: string) => {
-    setLoadingConversation(true)
-    setConversationHistory([])
+  // V1.9.248 — Extraido como funcao pura (sem mutar state) pra que
+  // handleDownloadReport possa fetch a conversa do paciente CORRETO ao baixar
+  // PDF direto do card. Bug critico antes: state conversationHistory global
+  // era reusado entre reports → vazava conversa do paciente A no PDF do B.
+  const fetchConversationData = useCallback(async (
+    patientId: string,
+    reportDate?: string
+  ): Promise<Array<{ user_message: string; ai_response: string; created_at: string }>> => {
     try {
       let aecMessages: Array<{ user_message: string; ai_response: string; created_at: string; metadata?: unknown }> = []
 
@@ -254,13 +259,28 @@ const ClinicalReports: React.FC<ClinicalReportsProps> = ({ className = '', onSha
         }
       }
 
-      setConversationHistory(aecMessages)
+      return aecMessages.map((m) => ({
+        user_message: m.user_message,
+        ai_response: m.ai_response,
+        created_at: m.created_at,
+      }))
     } catch (err) {
       console.error('Erro ao carregar conversa:', err)
+      return []
+    }
+  }, [])
+
+  // V1.9.248 — Wrapper que popula state (usado pelo modal pra renderizar conversa visual).
+  const fetchConversation = useCallback(async (patientId: string, reportDate?: string) => {
+    setLoadingConversation(true)
+    setConversationHistory([])
+    try {
+      const msgs = await fetchConversationData(patientId, reportDate)
+      setConversationHistory(msgs)
     } finally {
       setLoadingConversation(false)
     }
-  }, [])
+  }, [fetchConversationData])
 
   useEffect(() => {
     loadSharedReports()
@@ -531,13 +551,16 @@ const ClinicalReports: React.FC<ClinicalReportsProps> = ({ className = '', onSha
     }
   }
 
-  // V1.9.245 — Substituido blob text/plain (criticado por Ricardo 13/05:
-  // "abre um txt, poderia abrir um pdf pre formatado com estilo e marca d'agua").
-  // Reuso 100% do modulo isolado clinicalReportPDF.ts: header verde MedCannLab,
-  // marca d'agua diagonal cinza claro, body formatado (queixa/lista/racionalidades/
-  // scores/conversa AEC), footer com ICP-Brasil signature_hash + Lei 14.063/CFM 2.314.
-  const handleDownloadReport = (report: SharedReport) => {
+  // V1.9.245 — Substituido blob text/plain (Ricardo 13/05: "abre um txt,
+  // poderia abrir um pdf pre formatado com estilo e marca d'agua").
+  // V1.9.248 — Fix critico de privacidade (Pedro 13/05): antes usava state
+  // `conversationHistory` global, que continha conversa do ULTIMO report
+  // aberto no modal — vazava conversa do paciente A no PDF do B quando
+  // baixava direto do card. Agora fetch a conversa do paciente CORRETO
+  // do report-alvo. Sempre. Async.
+  const handleDownloadReport = async (report: SharedReport) => {
     try {
+      const conversation = await fetchConversationData(report.patientId, report.date)
       downloadClinicalReportPDF({
         report: {
           id: report.id,
@@ -554,7 +577,7 @@ const ClinicalReports: React.FC<ClinicalReportsProps> = ({ className = '', onSha
           content: report.content,
           rawContent: report.rawContent,
         },
-        conversationHistory,
+        conversationHistory: conversation,
         signatureHashShort: report.signatureHashShort,
       })
     } catch (error) {
