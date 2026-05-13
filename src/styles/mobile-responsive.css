@@ -19,15 +19,21 @@ body {
   width: 100%;
 }
 
+/* V1.9.252 — Densificacao global 80% (Pedro 13/05 17h30 BRT).
+   Antes: 14px mobile / 16px desktop. Pedro empirico: "no 100% browser
+   fica muito proximo, dou zoom out 75-80% e fica ideal". Solucao:
+   reduzir base CSS pra ~80% do tamanho padrao, eliminando necessidade
+   de zoom out manual. Tailwind reescala tudo via rem automatico.
+   Touch targets preservados via min-height/min-width 44px abaixo. */
 html {
-  font-size: 14px;
-  /* Base menor para mobile */
+  font-size: 12.8px;
+  /* 80% de 16px — base unica mobile + desktop */
 }
 
 @media (min-width: 768px) {
   html {
-    font-size: 16px;
-    /* Tamanho normal para desktop */
+    font-size: 12.8px;
+    /* mantido em 80% pro desktop tambem (era 16px puro) */
   }
 }
 
