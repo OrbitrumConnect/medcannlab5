@@ -381,8 +381,26 @@ const ClinicalReports: React.FC<ClinicalReportsProps> = ({ className = '', onSha
         const nested = (rawDb.raw && typeof rawDb.raw === 'object' && rawDb.raw.content && typeof rawDb.raw.content === 'object')
           ? rawDb.raw.content
           : null
+        // V1.9.257 — Bug critico (Pedro 13/05 empirico): quando Pipeline Master
+        // encapsulou em content.raw.content, mapping perdia doctor_notes +
+        // rationalities + review_status + doctor_notes_at/by porque essas chaves
+        // ficam no TOP do content jsonb (adicionadas POS-Pipeline pelo medico),
+        // nao dentro de raw.content. Paciente abria modal de report devolvido e
+        // nao via nota do medico nem racionalidades aplicadas. Audit PAT confirmou
+        // top_has_notes=true / raw_has_notes=false. Fix: preserva campos pos-Pipeline
+        // do TOP (rawDb) sobre nested, com nested como fallback (compat retroativa).
         const content: Record<string, any> = nested
-          ? { ...nested, structured: rawDb.structured, scores: nested.scores || rawDb.raw?.scores, risk_level: rawDb.raw?.risk_level }
+          ? {
+              ...nested,
+              structured: rawDb.structured,
+              scores: nested.scores || rawDb.raw?.scores,
+              risk_level: rawDb.raw?.risk_level,
+              doctor_notes: rawDb.doctor_notes ?? nested.doctor_notes,
+              rationalities: rawDb.rationalities ?? nested.rationalities,
+              doctor_notes_at: rawDb.doctor_notes_at ?? nested.doctor_notes_at,
+              doctor_notes_by: rawDb.doctor_notes_by ?? nested.doctor_notes_by,
+              review_status: rawDb.review_status ?? nested.review_status,
+            }
           : rawDb
 
         // Map AEC protocol fields to display fields
