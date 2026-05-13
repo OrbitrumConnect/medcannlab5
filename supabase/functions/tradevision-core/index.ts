@@ -2503,6 +2503,81 @@ Finalizar SEMPRE com:
         // Mudança 2 retorna 401 antes desse ponto se !effectiveUserId,
         // então jwtUserId/jwtEmail estão sempre presentes ao chegar aqui.
 
+        // ====================================================================
+        // V1.9.240 — RATE LIMIT (B1 plano lead_free SEO 03/05)
+        // ====================================================================
+        // Bypass founders (linha 2467) — Pedro/Ricardo/Eduardo/Joao nunca bloqueados.
+        // 3 buckets calibrados: 10 req/min, 60 req/15min, 200 req/dia.
+        // Fail-open temporario pre-PMF (indisponibilidade > abuso temporario).
+        // RPC atomica via UPSERT — race-free.
+        const isFounder = jwtEmail && founders.includes(jwtEmail)
+        if (!isFounder) {
+            // AJUSTE 5: sanitize x-forwarded-for (primeiro IP valido + fallback)
+            const rawIp = (req.headers.get('x-forwarded-for') || '').split(',')[0]?.trim() || ''
+            const isValidIp = /^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$/.test(rawIp) || (rawIp.includes(':') && rawIp.length >= 3)
+            const clientIp = isValidIp ? rawIp : 'unknown'
+
+            const RATE_LIMITS = [
+                { window: 60,    max: 10,  label: 'minute_limit'  },
+                { window: 900,   max: 60,  label: 'quarter_limit' },
+                { window: 86400, max: 200, label: 'daily_limit'   }
+            ]
+
+            for (const lc of RATE_LIMITS) {
+                const key = jwtUserId
+                    ? `user:${jwtUserId}:${lc.label}`
+                    : `ip:${clientIp}:${lc.label}`
+
+                const { data: rl, error: rlErr } = await supabaseClient.rpc('rate_limit_check', {
+                    p_key: key,
+                    p_window_seconds: lc.window,
+                    p_max_count: lc.max
+                })
+
+                if (rlErr) {
+                    // Fail-open temporario pre-PMF — log warn, nao bloqueia
+                    console.warn(`[RATE_LIMIT] RPC failed (fail-open): ${rlErr.message}`)
+                    continue
+                }
+
+                if (rl && !rl.allowed) {
+                    // Persiste evento de bloqueio (fire-and-forget, nao-bloqueante)
+                    supabaseClient.from('rate_limit_events').insert({
+                        user_id: jwtUserId || null,
+                        ip: clientIp,
+                        bucket_key: key,
+                        reason: lc.label,
+                        count: rl.count,
+                        limit_value: rl.limit,
+                        endpoint: 'tradevision-core'
+                    }).then(() => null, (e: any) => console.warn('[RATE_LIMIT] Event log failed:', e?.message))
+
+                    // AJUSTE 3: jitter anti-sincronizacao de bursts (1-3s)
+                    const retryAfter = (rl.retry_after_seconds || 60) + Math.floor(Math.random() * 3)
+
+                    console.warn(`[RATE_LIMIT] BLOCKED ${key} count=${rl.count}/${rl.limit} retry=${retryAfter}s`)
+
+                    return new Response(JSON.stringify({
+                        success: false,
+                        error: 'Rate limit exceeded',
+                        reason: lc.label,
+                        count: rl.count,
+                        limit: rl.limit,
+                        remaining: rl.remaining || 0,  // AJUSTE 2
+                        retry_after_seconds: retryAfter
+                    }), {
+                        status: 429,
+                        headers: {
+                            ...corsHeaders,
+                            'Content-Type': 'application/json',
+                            'Retry-After': String(retryAfter)
+                        }
+                    })
+                }
+            }
+        }
+        // ====================================================================
+
         // [VIP TRIGGER] Padrão Agendamento para o Terminal
         // Determinístico, Imutável, Fora da Governança de Role para Fundadores/Admins
         const shouldTriggerTerminal = (userRole === 'admin' || userRole === 'master' || userRole === 'professional') && 
