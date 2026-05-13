@@ -29,6 +29,7 @@ import {
 import { supabase } from '../lib/supabase'
 import { useNavigate } from 'react-router-dom'
 import { stripPlatformInjectionNoise } from '../lib/clinicalAssessmentFlow'
+import { downloadClinicalReportPDF } from '../lib/clinicalReportPDF'
 
 const MEDICAL_RECORD_SESSION_LOOKBACK_MS = 90 * 60 * 1000
 
@@ -86,6 +87,9 @@ interface SharedReport {
   // Quando presente, exibe badge "ICP automatico" no card. Ausencia indica
   // report legado pre-26/04 (Pipeline V1.9.95 nao existia ainda).
   hasICPSignature?: boolean
+  // V1.9.245: primeiros 16 chars do signature_hash pra exibir no footer do PDF
+  // gerado (rastreabilidade ICP-Brasil sem expor hash completo no UI).
+  signatureHashShort?: string
 }
 
 interface ClinicalReportsProps {
@@ -443,6 +447,10 @@ const ClinicalReports: React.FC<ClinicalReportsProps> = ({ className = '', onSha
             || 'pending',
           // V1.9.242: flag presenca de assinatura ICP-Brasil automatica (Pipeline V1.9.95)
           hasICPSignature: !!(report.signature_hash),
+          // V1.9.245: hash truncado pra footer PDF (rastreabilidade ICP-Brasil)
+          signatureHashShort: report.signature_hash
+            ? String(report.signature_hash).slice(0, 16)
+            : undefined,
           rawContent: content
         }
       })
@@ -519,140 +527,34 @@ const ClinicalReports: React.FC<ClinicalReportsProps> = ({ className = '', onSha
     }
   }
 
+  // V1.9.245 — Substituido blob text/plain (criticado por Ricardo 13/05:
+  // "abre um txt, poderia abrir um pdf pre formatado com estilo e marca d'agua").
+  // Reuso 100% do modulo isolado clinicalReportPDF.ts: header verde MedCannLab,
+  // marca d'agua diagonal cinza claro, body formatado (queixa/lista/racionalidades/
+  // scores/conversa AEC), footer com ICP-Brasil signature_hash + Lei 14.063/CFM 2.314.
   const handleDownloadReport = (report: SharedReport) => {
     try {
-      const raw = report.rawContent || {}
-      const lines: string[] = [
-        `RELATÓRIO CLÍNICO — ${report.patientName}`,
-        `Data: ${new Date(report.date).toLocaleDateString('pt-BR')}`,
-        `Tipo: Avaliação Clínica Inicial (AEC 001)`,
-        `Protocolo: IMRE`,
-        `Status: ${report.status}`,
-        '',
-        '═══════════════════════════════════════',
-      ]
-
-      // AEC Data (full)
-      if (report.content.chiefComplaint) {
-        lines.push('', '▸ QUEIXA PRINCIPAL:', report.content.chiefComplaint)
-      }
-
-      if (raw.lista_indiciaria && Array.isArray(raw.lista_indiciaria) && raw.lista_indiciaria.length > 0) {
-        lines.push('', `▸ LISTA INDICIÁRIA (${raw.lista_indiciaria.length} queixas):`)
-        raw.lista_indiciaria.forEach((item: any, i: number) => {
-          lines.push(`  ${i + 1}. ${stripListaIndiciariaItem(item)}`)
-          if (typeof item === 'object' && item.intensity) lines.push(`     Intensidade: ${stripClinical(item.intensity)}`)
-          if (typeof item === 'object' && item.frequency) lines.push(`     Frequência: ${stripClinical(item.frequency)}`)
-        })
-      }
-
-      if (raw.desenvolvimento_queixa) {
-        const dq = raw.desenvolvimento_queixa
-        lines.push('', '▸ DESENVOLVIMENTO DA QUEIXA:')
-        if (dq.descricao) lines.push(`  Descrição: ${stripClinical(dq.descricao)}`)
-        if (dq.localizacao) lines.push(`  Localização: ${stripClinical(dq.localizacao)}`)
-        if (dq.inicio) lines.push(`  Início: ${stripClinical(dq.inicio)}`)
-        if (Array.isArray(dq.sintomas_associados) && dq.sintomas_associados.length) {
-          lines.push(`  Sintomas Associados: ${stripClinicalList(dq.sintomas_associados).join(', ')}`)
-        }
-        if (Array.isArray(dq.fatores_melhora) && dq.fatores_melhora.length) {
-          lines.push(`  Fatores de Melhora: ${stripClinicalList(dq.fatores_melhora).join(', ')}`)
-        }
-        if (Array.isArray(dq.fatores_piora) && dq.fatores_piora.length) {
-          lines.push(`  Fatores de Piora: ${stripClinicalList(dq.fatores_piora).join(', ')}`)
-        }
-      }
-
-      if (report.content.history) {
-        lines.push('', '▸ HISTÓRIA / ANAMNESE:', report.content.history)
-      }
-
-      if (raw.historia_patologica_pregressa && Array.isArray(raw.historia_patologica_pregressa) && raw.historia_patologica_pregressa.length) {
-        lines.push('', '▸ HISTÓRIA PATOLÓGICA PREGRESSA:', `  ${stripClinicalList(raw.historia_patologica_pregressa).join(', ')}`)
-      }
-
-      if (raw.historia_familiar) {
-        const hf = raw.historia_familiar
-        if ((hf.lado_materno?.length) || (hf.lado_paterno?.length)) {
-          lines.push('', '▸ HISTÓRIA FAMILIAR:')
-          if (hf.lado_materno?.length) lines.push(`  Materno: ${stripClinicalList(hf.lado_materno).join(', ')}`)
-          if (hf.lado_paterno?.length) lines.push(`  Paterno: ${stripClinicalList(hf.lado_paterno).join(', ')}`)
-        }
-      }
-
-      if (raw.habitos_vida && Array.isArray(raw.habitos_vida) && raw.habitos_vida.length) {
-        lines.push('', '▸ HÁBITOS DE VIDA:', `  ${stripClinicalList(raw.habitos_vida).join(', ')}`)
-      }
-
-      if (raw.perguntas_objetivas && typeof raw.perguntas_objetivas === 'object' && Object.keys(raw.perguntas_objetivas).length) {
-        lines.push('', '▸ PERGUNTAS OBJETIVAS:')
-        Object.entries(raw.perguntas_objetivas).forEach(([k, v]: [string, any]) => {
-          if (v) lines.push(`  ${k.replace(/_/g, ' ')}: ${stripClinical(v)}`)
-        })
-      }
-
-      if (raw.consenso) {
-        lines.push('', '▸ CONSENSO:', `  ${raw.consenso.aceito ? 'Aceito pelo paciente' : 'Pendente'}${raw.consenso.revisoes_realizadas > 0 ? ` • ${raw.consenso.revisoes_realizadas} revisões` : ''}`)
-      }
-
-      // Legacy IMRE fields
-      if (raw.investigation) lines.push('', '▸ INVESTIGAÇÃO (IMRE):', stripClinical(raw.investigation))
-      if (raw.methodology) lines.push('', '▸ METODOLOGIA (IMRE):', stripClinical(raw.methodology))
-      if (raw.result) lines.push('', '▸ RESULTADO (IMRE):', stripClinical(raw.result))
-      if (raw.evolution) lines.push('', '▸ EVOLUÇÃO (IMRE):', stripClinical(raw.evolution))
-
-      if (report.content.assessment) lines.push('', '▸ AVALIAÇÃO:', report.content.assessment)
-      if (report.content.plan) lines.push('', '▸ PLANO TERAPÊUTICO:', report.content.plan)
-
-      // Scores
-      if (raw.scores) {
-        lines.push('', '▸ SCORES:')
-        Object.entries(raw.scores).forEach(([k, v]: [string, any]) => {
-          if (typeof v === 'number' || typeof v === 'string' || typeof v === 'boolean') {
-            lines.push(`  ${k.replace(/_/g, ' ')}: ${typeof v === 'number' ? `${v}%` : String(v)}`)
-          }
-        })
-      }
-
-      lines.push('', '═══════════════════════════════════════', '', '▸ RACIONALIDADES MÉDICAS APLICADAS:')
-      Object.entries(report.content.rationalities || {}).forEach(([key, value]: [string, any]) => {
-        if (value?.assessment) {
-          lines.push(`  • ${key}: ${stripClinical(value.assessment)}`)
-          if (value.recommendations) lines.push(`    Recomendações: ${stripClinical(value.recommendations)}`)
-        }
+      downloadClinicalReportPDF({
+        report: {
+          id: report.id,
+          patientName: report.patientName,
+          patientAge: report.patientAge,
+          patientCpf: report.patientCpf,
+          date: report.date,
+          status: report.status,
+          reviewStatus: report.reviewStatus,
+          hasICPSignature: report.hasICPSignature,
+          doctorNotes: report.doctorNotes,
+          nftToken: report.nftToken,
+          blockchainHash: report.blockchainHash,
+          content: report.content,
+          rawContent: report.rawContent,
+        },
+        conversationHistory,
+        signatureHashShort: report.signatureHashShort,
       })
-
-      // Conversa AEC completa
-      if (conversationHistory.length > 0) {
-        lines.push('', '═══════════════════════════════════════', '', '▸ CONVERSA AEC COMPLETA:', '')
-        conversationHistory.forEach((msg) => {
-          const cleanMsg = stripClinical(msg.user_message || '')
-          const cleanResp = stripClinical((msg.ai_response || '').split('[ASSESSMENT_COMPLETED]')[0])
-          if (cleanMsg) lines.push(`PACIENTE: ${cleanMsg}`)
-          if (cleanResp) lines.push(`NÔA: ${cleanResp}`)
-          lines.push('---')
-        })
-      }
-
-      if (report.nftToken) {
-        lines.push('', `NFT Token: ${report.nftToken}`)
-        if (report.blockchainHash) lines.push(`Hash: ${report.blockchainHash}`)
-      }
-
-      lines.push('', '', `Gerado em: ${new Date().toLocaleDateString('pt-BR')} ${new Date().toLocaleTimeString('pt-BR')}`)
-      lines.push('Plataforma: MedCannLab — Nôa Esperanza')
-
-      const blob = new Blob([lines.join('\n')], { type: 'text/plain;charset=utf-8' })
-      const url = URL.createObjectURL(blob)
-      const a = document.createElement('a')
-      a.href = url
-      a.download = `relatorio_${report.patientName.replace(/\s+/g, '_')}_${new Date(report.date).toISOString().slice(0, 10)}.txt`
-      document.body.appendChild(a)
-      a.click()
-      document.body.removeChild(a)
-      URL.revokeObjectURL(url)
     } catch (error) {
-      console.error('Erro ao baixar relatório:', error)
+      console.error('Erro ao baixar relatorio PDF:', error)
     }
   }
 
@@ -1362,18 +1264,18 @@ const ClinicalReports: React.FC<ClinicalReportsProps> = ({ className = '', onSha
                     <span>Compartilhar</span>
                   </button>
                 )}
-                {/* V1.9.242 — Download mantido no card APENAS pra paciente.
-                    Paciente baixa PDF do proprio relatorio (acao simples/frequente).
-                    Medico/Admin: Download esta dentro do modal apos revisao (linha 2027). */}
-                {isPatient && (
-                  <button
-                    onClick={() => handleDownloadReport(report)}
-                    className="flex items-center space-x-1 px-4 py-2 rounded-lg transition-colors text-white bg-slate-600/50 border border-slate-500/30 hover:bg-slate-600/80"
-                  >
-                    <Download className="w-4 h-4" />
-                    <span>Download</span>
-                  </button>
-                )}
+                {/* V1.9.246 — Download no card pra TODOS (paciente + medico + admin).
+                    Pedro 13/05: medico precisa baixar PDF formatado pra arquivo/leitura
+                    pos-consulta. Reusa V1.9.245 (PDF MedCannLab com marca d'agua, ICP).
+                    Modal do medico tambem tem icone Baixar no header (atalho rapido). */}
+                <button
+                  onClick={() => handleDownloadReport(report)}
+                  className="flex items-center space-x-1 px-4 py-2 rounded-lg transition-colors text-white bg-slate-600/50 border border-slate-500/30 hover:bg-slate-600/80"
+                  title="Baixar PDF formatado do relatorio (marca d'agua MedCannLab, ICP-Brasil)"
+                >
+                  <Download className="w-4 h-4" />
+                  <span>Download</span>
+                </button>
                 {/* V1.9.243 — Gerar NFT no card SO pra paciente (Pedro 13/05):
                     Paciente ve NFT no card (apresentacao de estado do proprio relatorio).
                     Medico/admin nao tem NFT no card — botao fica no modal pos-revisao
