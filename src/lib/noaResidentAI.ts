@@ -1729,8 +1729,19 @@ export class NoaResidentAI {
         const aecKeyword = /\b(aval[ai][a-z]{0,3}c?[aã]o|abaliac[aã]o|avliac[aã]o|imre|protocolo|triagem|primeira\s+consulta|nova\s+consulta|atendimento\s+clinic[ao]?)\b/
         const intentVerb = /\b(quero|gostaria|preciso|desejo|vamos|fazer|comecar|come[cç]ar|iniciar|pedir|solicitar|bora|start)\b/
         const aecCanonical = /\b(iniciar\s+(a\s+)?(avaliac|imre|protocolo)|protocolo\s+imre|avaliac[aã]o\s+clinic[ao]?\s+inicial|primeira\s+consulta)/
+        // V1.9.254 — Negative guard contra disparo de AEC fantasma.
+        // Bug Ricardo 13/05 17:55 BRT (logado como Carolina): apos completar AEC,
+        // voltou ao chat e disse "Vamos encerrrar a avaliacao inicial que fiz
+        // ainda agora?" → aecKeyword bateu "avaliacao" + intentVerb bateu "vamos"
+        // → disparou nova AEC. FSM avancou IDENTIFICATION → COMPLAINT_LIST →
+        // registrou "encerrar" como queixa principal. Verbatim-First nem chamou GPT
+        // (era roteiro puro respondendo). Causa raiz: matcher generico capturou
+        // INTENCAO INVERSA. Fix: negative-keyword filtra "encerrar/parar/cancelar/
+        // ja fiz/que fiz" antes de aprovar start. Lock V1.9.95 intocado.
+        const stopKeyword = /\b(encerr|cancel|finaliz|terminar|j[aá]\s+(fiz|completei|terminei)|que\s+fiz|que\s+(completei|terminei|acabei)|acabei\s+de\s+(fazer|completar)|parar\s+(a|essa))\b/
         const clientWantsAecStart =
           intent === 'CLINICA' &&
+          !stopKeyword.test(normForStart) &&
           (aecCanonical.test(normForStart) || (aecKeyword.test(normForStart) && intentVerb.test(normForStart)))
 
         // Card/botão "Iniciar avaliação clínica" = nova sessão desde a etapa 1.
