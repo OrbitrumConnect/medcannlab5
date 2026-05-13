@@ -308,7 +308,7 @@ const PatientDashboard: React.FC = () => {
                 return (
                   <button
                     key={dev.reportId}
-                    onClick={() => navigate(`/app/clinica/paciente?section=relatorio&report=${encodeURIComponent(dev.reportId)}`)}
+                    onClick={() => navigate(`/app/clinica/paciente/dashboard?section=relatorio&report=${encodeURIComponent(dev.reportId)}`)}
                     className="w-full text-left rounded-2xl p-5 transition-all hover:scale-[1.005] active:scale-[0.995] border"
                     style={{
                       background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.08) 0%, rgba(6, 182, 212, 0.05) 100%)',
