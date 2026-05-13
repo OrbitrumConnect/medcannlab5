@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { FileText, Plus, Printer, X, Save, Search, Settings, AlertCircle, Check, Send, Loader2, ShieldCheck, ShieldAlert, FileSignature } from 'lucide-react';
+import { FileText, Plus, Printer, X, Save, Search, Settings, AlertCircle, Check, Send, Loader2, ShieldCheck, ShieldAlert, FileSignature, Pencil } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
+import { useConfirm } from '../contexts/ConfirmContext';
 import { supabase } from '../lib/supabase';
 import { notificationService } from '../services/notificationService';
 
@@ -38,10 +39,13 @@ export const ExamRequestModule: React.FC<ExamRequestModuleProps> = ({
     className = ''
 }) => {
     const { user } = useAuth();
+    const { confirm } = useConfirm();
     const [activeTab, setActiveTab] = useState<'library' | 'history'>('library');
     const [selectedTemplate, setSelectedTemplate] = useState<ExamTemplate | null>(null);
     const [editorContent, setEditorContent] = useState('');
     const [showEditor, setShowEditor] = useState(false);
+    // V1.9.263 — id em edicao quando reabrindo rascunho (Ricardo 13/05 — editar inline em vez de ir pra Prescricoes)
+    const [editingId, setEditingId] = useState<string | null>(null);
 
     // Estados de Dados
     const [templates, setTemplates] = useState<ExamTemplate[]>([]);
@@ -120,6 +124,15 @@ export const ExamRequestModule: React.FC<ExamRequestModuleProps> = ({
             setFeedback({ type: 'error', message: 'Solicitacao ja assinada (idempotencia CFM 2.314).' });
             return;
         }
+        // V1.9.263 — Confirm modal antes de assinar
+        const confirmed = await confirm({
+            title: 'Confirmar Assinatura Digital',
+            message: 'Apos assinar com ICP-Brasil, o conteudo da solicitacao nao pode mais ser editado (CFM 2.314/2022 — imutabilidade do ato clinico assinado). Deseja prosseguir?',
+            type: 'warning',
+            confirmText: 'Sim, Assinar',
+            cancelText: 'Cancelar'
+        });
+        if (!confirmed) return;
         setSigningId(req.id);
         setFeedback(null);
         try {
@@ -155,6 +168,7 @@ export const ExamRequestModule: React.FC<ExamRequestModuleProps> = ({
     const handleOpenTemplate = (template: ExamTemplate) => {
         setSelectedTemplate(template);
         setEditorContent(template.content);
+        setEditingId(null); // V1.9.263 — novo a partir de template, nao edicao
         setShowEditor(true);
         setFeedback(null);
     };
@@ -162,7 +176,15 @@ export const ExamRequestModule: React.FC<ExamRequestModuleProps> = ({
     const handleCreateNew = () => {
         setSelectedTemplate(null);
         setEditorContent('');
+        setEditingId(null); // V1.9.263 — novo pedido, nao edicao
         setShowEditor(true);
+        setFeedback(null);
+    };
+
+    // V1.9.263 — Fechar editor reseta editingId pra nao contaminar proxima abertura
+    const handleCloseEditor = () => {
+        setShowEditor(false);
+        setEditingId(null);
         setFeedback(null);
     };
 
@@ -174,34 +196,45 @@ export const ExamRequestModule: React.FC<ExamRequestModuleProps> = ({
 
         setSaving(true);
         try {
-            const { error } = await supabase.from('patient_exam_requests').insert({
-                patient_id: patientId,
-                professional_id: user.id, // Auth Context user ID
-                content: editorContent,
-                status: 'draft'
-            });
-
-            if (error) throw error;
-
-            // Enviar notificação para o paciente (sininho)
-            try {
-                await notificationService.createNotification({
-                    user_id: patientId,
-                    title: 'Nova Solicitação de Exame',
-                    message: `Seu médico solicitou novos exames. Acesse sua área de Evolução para ver os detalhes.`,
-                    type: 'clinical',
-                    is_read: false,
+            // V1.9.263 — UPDATE se editando rascunho existente, INSERT se novo
+            if (editingId) {
+                const { error } = await supabase
+                    .from('patient_exam_requests')
+                    .update({ content: editorContent, updated_at: new Date().toISOString() })
+                    .eq('id', editingId)
+                    .eq('status', 'draft'); // hard-lock: nunca edita signed
+                if (error) throw error;
+                setFeedback({ type: 'success', message: 'Rascunho atualizado.' });
+            } else {
+                const { error } = await supabase.from('patient_exam_requests').insert({
+                    patient_id: patientId,
+                    professional_id: user.id,
+                    content: editorContent,
+                    status: 'draft'
                 });
-            } catch (notifErr) {
-                console.warn('Não foi possível enviar notificação ao paciente:', notifErr);
+                if (error) throw error;
+
+                // Notificacao paciente apenas em INSERT (criacao real)
+                try {
+                    await notificationService.createNotification({
+                        user_id: patientId,
+                        title: 'Nova Solicitação de Exame',
+                        message: 'Seu médico solicitou novos exames. Acesse sua área de Evolução para ver os detalhes.',
+                        type: 'clinical',
+                        is_read: false,
+                    });
+                } catch (notifErr) {
+                    console.warn('Não foi possível enviar notificação ao paciente:', notifErr);
+                }
+                setFeedback({ type: 'success', message: 'Pedido salvo com sucesso!' });
             }
 
-            setFeedback({ type: 'success', message: 'Pedido salvo com sucesso!' });
             setTimeout(() => {
                 setShowEditor(false);
-                setActiveTab('history'); // Mudar para histórico para ver o novo item
+                setEditingId(null);
+                setActiveTab('history');
+                loadHistory();
             }, 1000);
-
         } catch (err: any) {
             setFeedback({ type: 'error', message: `Erro ao salvar: ${err.message}` });
         } finally {
@@ -210,9 +243,7 @@ export const ExamRequestModule: React.FC<ExamRequestModuleProps> = ({
     };
 
     // V1.9.262 — Salvar e Assinar atomico (Ricardo 13/05 19:27 BRT "saiu como rascunho sem valor legal").
-    // Cria patient_exam_requests draft + invoca Edge digital-signature em sequencia.
-    // Profissional COM cert ICP -> documento sai signed direto (sem rascunho intermediario).
-    // Profissional SEM cert -> mensagem clara pra cadastrar antes (em vez de descobrir tarde via imprimir).
+    // V1.9.263 — Confirm modal antes de assinar (Ricardo 13/05 — "depois que assina nao pode editar") + suporte editingId
     const handleSaveAndSign = async () => {
         if (!patientId || !user) {
             setFeedback({ type: 'error', message: 'Paciente ou Profissional nao identificados.' });
@@ -222,29 +253,48 @@ export const ExamRequestModule: React.FC<ExamRequestModuleProps> = ({
             setFeedback({ type: 'error', message: 'Conteudo vazio. Adicione a solicitacao antes de assinar.' });
             return;
         }
+        // V1.9.263 — Confirm modal antes de assinar (educa Ricardo sobre imutabilidade CFM 2.314)
+        const confirmed = await confirm({
+            title: 'Confirmar Assinatura Digital',
+            message: 'Apos assinar com ICP-Brasil, o conteudo da solicitacao nao pode mais ser editado (CFM 2.314/2022 — imutabilidade do ato clinico assinado). Deseja prosseguir?',
+            type: 'warning',
+            confirmText: 'Sim, Assinar',
+            cancelText: 'Cancelar'
+        });
+        if (!confirmed) return;
+
         setSavingAndSigning(true);
         setFeedback(null);
-        let createdId: string | null = null;
+        let targetId: string | null = editingId;
         try {
-            // Passo 1 — INSERT draft (mesmo padrao do handleSaveRequest)
-            const { data: inserted, error: insertError } = await supabase
-                .from('patient_exam_requests')
-                .insert({
-                    patient_id: patientId,
-                    professional_id: user.id,
-                    content: editorContent,
-                    status: 'draft'
-                })
-                .select('id')
-                .single();
-            if (insertError) throw insertError;
-            createdId = inserted?.id || null;
-            if (!createdId) throw new Error('Falha ao obter id da solicitacao criada.');
+            // Passo 1 — UPDATE se editando rascunho existente, INSERT se novo
+            if (editingId) {
+                const { error: updateError } = await supabase
+                    .from('patient_exam_requests')
+                    .update({ content: editorContent, updated_at: new Date().toISOString() })
+                    .eq('id', editingId)
+                    .eq('status', 'draft');
+                if (updateError) throw updateError;
+            } else {
+                const { data: inserted, error: insertError } = await supabase
+                    .from('patient_exam_requests')
+                    .insert({
+                        patient_id: patientId,
+                        professional_id: user.id,
+                        content: editorContent,
+                        status: 'draft'
+                    })
+                    .select('id')
+                    .single();
+                if (insertError) throw insertError;
+                targetId = inserted?.id || null;
+            }
+            if (!targetId) throw new Error('Falha ao obter id da solicitacao.');
 
-            // Passo 2 — invoke Edge digital-signature (mesmo padrao do handleSign)
+            // Passo 2 — invoke Edge digital-signature
             const { data, error } = await supabase.functions.invoke('digital-signature', {
                 body: {
-                    documentId: createdId,
+                    documentId: targetId,
                     documentLevel: 'level_2',
                     professionalId: user.id,
                     documentType: 'exam_request',
@@ -254,28 +304,30 @@ export const ExamRequestModule: React.FC<ExamRequestModuleProps> = ({
             if (error) throw error;
             if (!data?.success) throw new Error(data?.error || 'Falha desconhecida ao assinar');
 
-            // Notificacao paciente (best-effort, igual handleSaveRequest)
-            try {
-                await notificationService.createNotification({
-                    user_id: patientId,
-                    title: 'Nova Solicitacao de Exame',
-                    message: 'Seu medico solicitou novos exames. Acesse sua area de Evolucao para ver os detalhes.',
-                    type: 'clinical',
-                    is_read: false,
-                });
-            } catch (notifErr) {
-                console.warn('Nao foi possivel enviar notificacao ao paciente:', notifErr);
+            // Notificacao paciente apenas em criacao nova (best-effort)
+            if (!editingId) {
+                try {
+                    await notificationService.createNotification({
+                        user_id: patientId,
+                        title: 'Nova Solicitacao de Exame',
+                        message: 'Seu medico solicitou novos exames. Acesse sua area de Evolucao para ver os detalhes.',
+                        type: 'clinical',
+                        is_read: false,
+                    });
+                } catch (notifErr) {
+                    console.warn('Nao foi possivel enviar notificacao ao paciente:', notifErr);
+                }
             }
 
             setFeedback({ type: 'success', message: 'Solicitacao salva e assinada com ICP-Brasil. Valor legal pleno (CFM 2.314/2022).' });
             setTimeout(() => {
                 setShowEditor(false);
+                setEditingId(null);
                 setActiveTab('history');
                 loadHistory();
             }, 1200);
         } catch (err: any) {
             const msg = err?.message || 'Erro desconhecido';
-            // Sem cert -> mensagem clara orientando cadastro (resolve UX dos 9 medicos sem PFX)
             if (msg.toLowerCase().includes('certificado')) {
                 setFeedback({
                     type: 'error',
@@ -284,13 +336,25 @@ export const ExamRequestModule: React.FC<ExamRequestModuleProps> = ({
             } else {
                 setFeedback({ type: 'error', message: `Erro ao salvar e assinar: ${msg}. Se a solicitacao foi salva, voce pode assina-la no historico.` });
             }
-            // Mesmo com erro de assinatura, garante que o draft fique visivel no historico
-            if (createdId) {
+            if (targetId) {
                 setTimeout(() => loadHistory(), 800);
             }
         } finally {
             setSavingAndSigning(false);
         }
+    };
+
+    // V1.9.263 — Reabre rascunho no editor pra edicao inline (em vez de mandar Ricardo pra Prescricoes)
+    const handleEditDraft = (req: ExamRequest) => {
+        if (req.status === 'signed' || req.digital_signature) {
+            setFeedback({ type: 'error', message: 'Solicitacao ja assinada nao pode ser editada (imutabilidade CFM 2.314).' });
+            return;
+        }
+        setEditingId(req.id);
+        setEditorContent(req.content);
+        setSelectedTemplate(null);
+        setShowEditor(true);
+        setFeedback(null);
     };
 
     const handleSaveAsTemplate = async () => {
@@ -513,6 +577,18 @@ export const ExamRequestModule: React.FC<ExamRequestModuleProps> = ({
                                         </div>
                                     </div>
                                     <div className="flex gap-2 flex-shrink-0">
+                                        {/* V1.9.263 — Botao Editar (so draft, reabre editor inline; Ricardo 13/05) */}
+                                        {isDraft && (
+                                            <button
+                                                onClick={() => handleEditDraft(req)}
+                                                disabled={signingId === req.id}
+                                                className="px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-700 hover:bg-slate-600 text-slate-200 border border-slate-600 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5"
+                                                title="Editar conteudo do rascunho antes de assinar"
+                                            >
+                                                <Pencil className="w-3.5 h-3.5" />
+                                                Editar
+                                            </button>
+                                        )}
                                         {/* V1.9.231 — Botão Assinar (só draft, idempotente) */}
                                         {isDraft && (
                                             <button
@@ -557,11 +633,11 @@ export const ExamRequestModule: React.FC<ExamRequestModuleProps> = ({
                         <div className="p-5 border-b border-slate-700 flex justify-between items-center bg-slate-800/50 rounded-t-2xl">
                             <div>
                                 <h3 className="text-lg font-bold text-white flex items-center gap-2">
-                                    {selectedTemplate ? `Editar: ${selectedTemplate.title}` : 'Novo Pedido de Exame'}
+                                    {editingId ? 'Editar Rascunho de Exame' : (selectedTemplate ? `Editar: ${selectedTemplate.title}` : 'Novo Pedido de Exame')}
                                 </h3>
                                 <p className="text-sm text-slate-400">Paciente: <span className="text-white font-medium">{patientName || 'Não selecionado'}</span></p>
                             </div>
-                            <button onClick={() => setShowEditor(false)} className="p-2 hover:bg-slate-700 rounded-lg text-slate-400 hover:text-white transition-colors">
+                            <button onClick={handleCloseEditor} className="p-2 hover:bg-slate-700 rounded-lg text-slate-400 hover:text-white transition-colors">
                                 <X className="w-5 h-5" />
                             </button>
                         </div>
