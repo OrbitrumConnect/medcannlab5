@@ -461,3 +461,139 @@ Risco principal:       João falar "Roadshow / investidor" e Marina
 Mitigação:             Pedro abre evento estabelecendo "teste beta" antes
                        do João falar. Anti-overclaim institucional.
 ```
+
+---
+
+## BLOCO C — Manhã desktop + audiência consultiva João (14/05/2026 ~09h30-13h30)
+
+### C.1 — 12 commits cirúrgicos V1.9.280→291 (pull do laptop OK)
+
+Sessão desktop com pull já concluído. Untracked herdados do laptop:
+- `INVESTMENT_KIT/pitch_atual_14_05.md`
+- `PARA_RICARDO_V16_2_APROVAR_14_05.md`
+
+**12 commits push 4 refs (amigo+medcannlab5 × main+master):**
+
+| Versão | Hash | Foco |
+|---|---|---|
+| V1.9.280 | d2dd444 | 6 tapas visuais Terminal Clínico Integrado |
+| V1.9.281 | d6e9521 | **Visão Geral elite escalável** — 7 blocos top-down |
+| V1.9.282 | 199ae30 | Alergias/Meds/Sangue movidos pra Visão Geral |
+| V1.9.283 | 622b96b | Aba Prescrição Prontuário triple A |
+| V1.9.284 | d5cb7c4 | Busca integrada ao empty state Paciente em foco |
+| V1.9.285 | c5ffee4 | Abre direto Evolução+Analytics ao clicar paciente |
+| V1.9.286 | a34ff96 | "Voltar à seleção" limpa paciente |
+| V1.9.287 | c243cfb | "Resumo das Abas" → "Resumo" |
+| V1.9.288 | de509e5 | Chat Clínico header 1 linha + Novo Chat sóbrio |
+| V1.9.289 | d2c6fdc | Fix InvalidJWT (introduziu regressão) |
+| V1.9.290 | 3f6b9fc | Fix regex bucket (correção da V1.9.289) |
+| V1.9.291 | 5580897 | Fix download → inline (Blob + Content-Type) |
+
+**Aprendizado destacado:** Trio Library (289→290→291) reforça princípio operacional — regex/fix não testado empiricamente é palpite, não código. Pedro corrigiu rápido na hora.
+
+### C.2 — Conversa consultiva com João Vidal (~12h-12h45)
+
+Pedro entrou em modo consultivo (banho), autorizou IA atender João pra dúvidas SEM mexer código. Senha de retorno: **"Pedro aquI"** (I maiúsculo).
+
+**Pedidos do João atendidos (entregues como texto markdown pra ele copiar):**
+1. Deck interno 12 slides — alinhamento sócios pré-Prefeitura RJ
+2. Deck externo 10 slides — apresentação Prefeitura RJ (parceria com indústria 1.0)
+3. Handout A4 — material residual pós-reunião
+4. Email frio — 3 versões pra abrir conversa com Subsecretaria SMS-RJ
+5. Roteiro de fala 12 min coordenado com deck externo + dicas presenciais
+
+**Modo consultivo respeitado: 0 arquivos criados, 0 commits, 0 código tocado.** Tudo em chat.
+
+### C.3 — Chapéu paralelo João — BIOCANN / 1 Pure separado MedCannLab
+
+Tema institucional novo emergiu da conversa, depois confirmado e refinado pelo Pedro ao retornar:
+
+```
+1 Pure (farmacêutica canabidiol)
+   └─► JV BIOCANN (representação comercial + educação/cultura)
+              ▲ João representante autorizado (Lei 4.886/1965 representação comercial)
+              │
+              ▼
+   MedCannLab (entidade soberana na gestão — sem vínculo com BIOCANN)
+              ▲ João = sócio institucional MedCannLab
+```
+
+**Selo declarado pelo Pedro 14/05:**
+- MedCannLab × JV BIOCANN = **zero relação atual**
+- MedCannLab × 1 Pure = **zero relação atual** (caso futuro investimento/parceria = outro caso, não tratar como existente)
+- Trajetória histórica: Remederi (até início 2026) → 1 Pure via BIOCANN
+- Email `jvbiocann@gmail.com` já circulava desde fev/2026 — não é entidade nova, é refinamento da representação
+- **Sem conflito de interesse declarado** pelos 4 sócios MedCannLab
+- João conduz pitches MedCannLab como sócio institucional, sem misturar narrativa com BIOCANN/1 Pure
+
+**Risco regulatório RDC 96/2008 fica em BIOCANN/1 Pure (não em MedCannLab):**
+Propaganda de medicamento sob prescrição a leigos é restrita. Risco primário na 1 Pure (titular registro); BIOCANN responde solidariamente como agente executor. MedCannLab não comercializa medicamento — fora desse risco.
+
+**Memória nova selada:** `project_joao_vidal_biocann_1pure_estrutura.md` (entrada Nível 2.5 no MEMORY.md).
+
+### C.4 — Re-auditoria via PAT (princípio 38 aplicado)
+
+Antes de aceitar os números do pitch entregue ao João, Pedro pediu re-audit via PAT pra calibrar com a realidade do banco. PAT novo fornecido: `sbp_740dd1f6a65b28d141d0dde382fbbefaef608f19` (rotacionar fim sessão).
+
+**9 queries rodadas + 8 contagens de log. Comparativo memória vs auditado 14/05 ~13h:**
+
+| Métrica | Pitch entregue | **Real auditado** | Δ |
+|---|---|---|---|
+| Reports clínicos 30d | 104 | **104** | ✅ exato |
+| Reports clínicos TOTAL | — | **123** | 🆕 |
+| ICP signed 30d | 25 | **33** | ⬆️ +8 |
+| ICP signed TOTAL | — | **33** | 🆕 100% nos últimos 30d — aceleração ICP |
+| Reports Ricardo (toda base) | 88 | **97** | ⬆️ +9 |
+| Pacientes Ricardo via reports | 18 | **8** | ⬇️ -10 (clínico-rigoroso) |
+| Pacientes Ricardo via appointments | — | **22** | 🆕 mais inclusivo |
+| Pacientes Ricardo via chat ativo | — | **19** | 🆕 conversa ativa |
+| Hits renais 90d | 358 | **28** | ⬇️ **-330** 🚨 |
+| Tabelas public | 134 | **177** | ⬆️ +43 |
+| Policies RLS | 414 | **432** | ⬆️ +18 |
+| Logs auditáveis | 5.394 | **10.124** | ⬆️ +4.730 (8 tabelas: noa_logs 9.872 dominante) |
+
+**Discrepâncias críticas pré-Prefeitura:**
+1. **Hits renais 90d**: 358 → 28. Memória `project_cohort_ckd_existe_pos_muhdo_08_05.md` já tinha registrado essa volatilidade (1.203 → 358 → 18 nas iterações). **28 é factual auditado agora.**
+2. **Pacientes Ricardo**: 18 → narrativa de funil é mais honesta (22 atendidos → 19 conversando → 8 com relatório assinado)
+3. **Audit logs**: tabela `audit_logs` não existe; total agregado real é 10.124 distribuído em 8 tabelas
+
+**Ajustes positivos pro pitch:**
+- ICP signed pulou de 25 → 33 (+32% em ~5 dias). Narrativa de aceleração legítima.
+- Banco cresceu 134→177 tabelas. Sinal de evolução arquitetural sólida.
+- 10k+ logs auditáveis (vs 5.394 anteriores).
+
+### C.5 — Pitch institucional TOP MASTER (Etapa 4 desta sessão)
+
+Refazendo o deck externo Prefeitura RJ com dados auditados via PAT — vira "top master". Pedro autorizou. Substitui versão anterior entregue ao João.
+
+[a fazer após este bloco]
+
+### C.6 — Lições do dia
+
+- **Princípio 38 ratificado**: re-audit via PAT antes de afirmar métrica externa salvou João de levar número 358 (inflado em 12,7x) pra Prefeitura RJ. Dado primário sempre auditável.
+- **Sócio em dupla atividade institucional**: requer documentação explícita pra evitar confusão pública. Memória nova fecha esse gap.
+- **Trio Library 289-291**: bug humilde — fix sem teste empírico é regressão garantida. Pedro me corrigiu na hora.
+
+### C.7 — Frase âncora do bloco
+
+> *"Antes de entregar número pra fora, re-auditar pra dentro.*
+> *Pitch com memória é palpite; pitch com PAT é evidência."*
+
+---
+
+## RESUMO DO DIA 14/05 (estado ao final do BLOCO C)
+
+```
+Hora:                  ~13h30 BRT
+Commits hoje:          12 (V1.9.280→291), 4 refs OK
+Conversa João:         5 materiais consultivos entregues (deck interno, externo,
+                       handout, email frio, roteiro fala) sem tocar código
+Chapéu João aclarado:  BIOCANN/1 Pure ≠ MedCannLab — memória nova selada
+Re-audit PAT:          9 métricas reavaliadas — 3 discrepâncias críticas
+                       (hits renais 358→28, pacientes Ricardo 18→funil 22/19/8,
+                       logs 5394→10124)
+Próximo:               Pitch TOP MASTER com dados reais (substitui o entregue ao João)
+                       Depois: aba A/B/C Prescrição Prontuário (volta código)
+PAT pra rotacionar:    sbp_740dd1f6a65b28d141d0dde382fbbefaef608f19
+```
+
