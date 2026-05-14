@@ -334,45 +334,41 @@ const ProfessionalChatSystem: React.FC<ProfessionalChatSystemProps> = ({ classNa
 
   return (
     <div className={`bg-slate-800/80 rounded-lg border border-slate-700 flex flex-col h-full ${className}`}>
-      {/* Optimized Centered Header - Compact Version */}
-      <div className="flex flex-col items-center text-center space-y-4 py-3 border-b border-slate-700/50">
-        <div className="flex items-center justify-center gap-3">
-          <div className="flex items-center gap-2 px-3 py-1.5 bg-emerald-500/5 rounded-xl border border-emerald-500/20 shadow-sm shadow-emerald-500/5">
-            <MessageCircle className="w-4 h-4 text-emerald-400" />
-            <span className="text-[10px] font-black text-emerald-400 uppercase tracking-widest">
-              {isOnline ? 'Online' : 'Offline'}
-            </span>
-          </div>
+      {/* V1.9.288 (Pedro 14/05 11h46): header compactado numa linha só (era flex-col com 2 linhas + space-y-4).
+          Online badge esquerda • filtros centro • Novo Chat direita (mesmo estilo dos filtros, não mais azul sólido). */}
+      <div className="flex flex-wrap items-center justify-between gap-2 px-3 py-2 border-b border-slate-700/50">
+        <div className="flex items-center gap-1.5 px-2.5 py-1 bg-emerald-500/5 rounded-full border border-emerald-500/20">
+          <MessageCircle className="w-3.5 h-3.5 text-emerald-400" />
+          <span className="text-[10px] font-black text-emerald-400 uppercase tracking-widest">
+            {isOnline ? 'Online' : 'Offline'}
+          </span>
         </div>
 
-        <div className="flex flex-col md:flex-row items-center justify-center gap-3 w-full">
-          {/* Filters Container - More Compact */}
-          <div className="flex items-center p-0.5 bg-slate-900/50 rounded-full border border-slate-700 backdrop-blur-md overflow-x-auto no-scrollbar max-w-full">
-            {(['all', 'professional', 'student', 'patient'] as RoomFilter[]).map((tabKey) => (
-              <button
-                key={tabKey}
-                onClick={() => setFilter(tabKey)}
-                className={`px-4 py-1.5 text-xs font-medium rounded-full transition-all whitespace-nowrap ${filter === tabKey
-                  ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-900/10'
-                  : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
-                  }`}
-              >
-                {tabKey === 'all' ? 'Todos' : tabKey === 'professional' ? 'Profissionais' : tabKey === 'student' ? 'Estudantes' : 'Pacientes'}
-              </button>
-            ))}
-          </div>
-
-          <button
-            onClick={() => {
-              // TODO: Implementar modal de seleção de profissional para novo chat
-              alert('Funcionalidade de pesquisar profissionais para iniciar novo chat em desenvolvimento.')
-            }}
-            className="flex items-center gap-2 px-4 py-1.5 bg-blue-600 text-white text-xs font-bold rounded-full hover:bg-blue-700 transition-all shadow-lg shadow-blue-900/20"
-          >
-            <Plus className="w-3 h-3" />
-            Novo Chat
-          </button>
+        <div className="flex items-center p-0.5 bg-slate-900/50 rounded-full border border-slate-700 backdrop-blur-md overflow-x-auto no-scrollbar">
+          {(['all', 'professional', 'student', 'patient'] as RoomFilter[]).map((tabKey) => (
+            <button
+              key={tabKey}
+              onClick={() => setFilter(tabKey)}
+              className={`px-3 py-1 text-xs font-medium rounded-full transition-all whitespace-nowrap ${filter === tabKey
+                ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-900/10'
+                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
+                }`}
+            >
+              {tabKey === 'all' ? 'Todos' : tabKey === 'professional' ? 'Profissionais' : tabKey === 'student' ? 'Estudantes' : 'Pacientes'}
+            </button>
+          ))}
         </div>
+
+        <button
+          onClick={() => {
+            // TODO: Implementar modal de seleção de profissional para novo chat
+            alert('Funcionalidade de pesquisar profissionais para iniciar novo chat em desenvolvimento.')
+          }}
+          className="flex items-center gap-1.5 px-3 py-1 text-xs font-medium rounded-full border border-slate-700 bg-slate-900/50 text-slate-300 hover:text-white hover:bg-slate-800/70 transition-all"
+        >
+          <Plus className="w-3 h-3" />
+          Novo Chat
+        </button>
       </div>
 
       <div className="flex flex-1 overflow-hidden">
