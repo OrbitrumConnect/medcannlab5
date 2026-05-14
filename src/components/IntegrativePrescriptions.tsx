@@ -20,7 +20,6 @@ import {
   Zap,
   History,
   LayoutGrid,
-  List,
   Printer
 } from 'lucide-react'
 
@@ -269,6 +268,16 @@ const IntegrativePrescriptions: React.FC<IntegrativePrescriptionsProps> = ({
     })
   }, [selectedTemplate])
 
+  // V1.9.283: KPIs do paciente derivados de patientPrescriptions (zero fetch extra — princípio polir).
+  // Status enum: draft | active | completed | suspended | cancelled.
+  const prescriptionKPIs = useMemo(() => {
+    const total = patientPrescriptions.length
+    const active = patientPrescriptions.filter(p => p.status === 'active').length
+    const draft = patientPrescriptions.filter(p => p.status === 'draft').length
+    const completed = patientPrescriptions.filter(p => p.status === 'completed').length
+    return { total, active, draft, completed }
+  }, [patientPrescriptions])
+
   const filteredTemplates = useMemo(() => {
     const normalizedSearch = searchTerm.trim().toLowerCase()
     return templates.filter(template => {
@@ -375,22 +384,23 @@ const IntegrativePrescriptions: React.FC<IntegrativePrescriptionsProps> = ({
 
   return (
     <>
-      <div className={`space-y-6 ${className} w-full`}>
-        {/* Header & Controls */}
-        <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-6 space-y-6">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div>
-              <p className="text-xs uppercase tracking-[0.3em] text-primary-300 mb-2">Prescrições Integrativas</p>
-              <h2 className="text-2xl font-semibold text-white flex items-center gap-2">
-                <Brain className="w-6 h-6 text-primary-300" />
-                Gestão de Prescrições
-              </h2>
+      <div className={`space-y-4 ${className} w-full`}>
+        {/* V1.9.283: Header compactado (era card 2xl com 6 padding e 2 sub-blocos border-top) */}
+        <div className="bg-slate-900/80 border border-slate-800 rounded-2xl px-4 py-3 flex items-center justify-between gap-3 flex-wrap">
+          <div className="flex items-center gap-2.5 min-w-0">
+            <div className="w-9 h-9 rounded-lg bg-primary-500/15 border border-primary-500/30 flex items-center justify-center shrink-0">
+              <Brain className="w-4.5 h-4.5 text-primary-300" />
             </div>
-            {/* V1.9.119-H: Tabs muted (era bg-primary-500 sólido — verde competia com outros CTAs) */}
-            <div className="flex items-center gap-1 bg-slate-950/50 p-1 rounded-xl border border-slate-800/50">
+            <div className="min-w-0">
+              <p className="text-[10px] uppercase tracking-[0.25em] text-primary-300/80 font-semibold">Prescrições</p>
+              <h2 className="text-base font-bold text-white leading-tight">Gestão de Prescrições</h2>
+            </div>
+          </div>
+          <div className="flex items-center gap-1.5 flex-wrap">
+            <div className="flex items-center gap-1 bg-slate-950/50 p-0.5 rounded-lg border border-slate-800/50">
               <button
                 onClick={() => setActiveTab('library')}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${activeTab === 'library'
+                className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium transition-all ${activeTab === 'library'
                     ? 'bg-emerald-500/15 text-emerald-300 border border-emerald-500/30'
                     : 'text-slate-400 hover:text-white hover:bg-slate-800/60 border border-transparent'
                   }`}
@@ -400,7 +410,7 @@ const IntegrativePrescriptions: React.FC<IntegrativePrescriptionsProps> = ({
               </button>
               <button
                 onClick={() => setActiveTab('history')}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${activeTab === 'history'
+                className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium transition-all ${activeTab === 'history'
                     ? 'bg-emerald-500/15 text-emerald-300 border border-emerald-500/30'
                     : 'text-slate-400 hover:text-white hover:bg-slate-800/60 border border-transparent'
                   }`}
@@ -409,24 +419,6 @@ const IntegrativePrescriptions: React.FC<IntegrativePrescriptionsProps> = ({
                 Histórico
               </button>
             </div>
-          </div>
-
-          {/* Subheader Actions */}
-          <div className="flex items-center justify-between border-t border-slate-800 pt-4">
-            <div className="flex items-center gap-2 text-xs text-slate-400">
-              {activeTab === 'library' ? (
-                <>
-                  <BookOpen className="w-3.5 h-3.5 text-primary-400" />
-                  <span>Selecione um protocolo para iniciar a prescrição</span>
-                </>
-              ) : (
-                <>
-                  <List className="w-3.5 h-3.5 text-primary-400" />
-                  <span>Histórico de prescrições emitidas para o paciente</span>
-                </>
-              )}
-            </div>
-            {/* V1.9.119-H: Botao "Nova Prescricao CFM" continua emerald (CTA primario) mas mais sobrio */}
             <button
               onClick={() => setShowCFMModal(true)}
               className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-600/90 hover:bg-emerald-500 text-white text-xs font-medium transition-all hover:scale-[1.02] shadow-md shadow-emerald-900/20"
@@ -435,75 +427,112 @@ const IntegrativePrescriptions: React.FC<IntegrativePrescriptionsProps> = ({
               Nova Prescrição CFM
             </button>
           </div>
-
-          {actionMessage && (
-            <div
-              className={`rounded-xl px-4 py-3 text-sm flex items-center gap-2 ${actionMessage.type === 'success'
-                  ? 'bg-emerald-500/10 border border-emerald-400/40 text-emerald-200'
-                  : 'bg-rose-500/10 border border-rose-400/40 text-rose-200'
-                }`}
-            >
-              <div className={`w-2 h-2 rounded-full ${actionMessage.type === 'success' ? 'bg-emerald-400' : 'bg-rose-400'}`} />
-              {actionMessage.text}
-            </div>
-          )}
         </div>
+
+        {/* V1.9.283: KPIs do paciente (só dentro do Prontuário onde patientId existe).
+            Ataca diretamente gargalo 94% DRAFT (memória 05/05) — médico vê o estado prescritivo dele de cara. */}
+        {patientId && (
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+            <div className="bg-slate-800/40 rounded-lg p-3 border border-slate-700/50">
+              <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-0.5">Total</p>
+              <p className="text-lg font-bold text-white">{prescriptionsLoading ? '—' : prescriptionKPIs.total}</p>
+              <p className="text-[10px] text-slate-500">prescrições</p>
+            </div>
+            <div className="bg-emerald-500/8 rounded-lg p-3 border border-emerald-500/25">
+              <p className="text-[10px] font-bold text-emerald-300 uppercase tracking-wider mb-0.5">✓ Ativas</p>
+              <p className="text-lg font-bold text-white">{prescriptionsLoading ? '—' : prescriptionKPIs.active}</p>
+              <p className="text-[10px] text-slate-500">em curso</p>
+            </div>
+            <div className={`rounded-lg p-3 border ${prescriptionKPIs.draft > 0 ? 'bg-amber-500/10 border-amber-500/30' : 'bg-slate-800/40 border-slate-700/50'}`}>
+              <p className={`text-[10px] font-bold uppercase tracking-wider mb-0.5 ${prescriptionKPIs.draft > 0 ? 'text-amber-300' : 'text-slate-500'}`}>
+                ⚠️ Draft
+              </p>
+              <p className="text-lg font-bold text-white">{prescriptionsLoading ? '—' : prescriptionKPIs.draft}</p>
+              <p className="text-[10px] text-slate-500">{prescriptionKPIs.draft > 0 ? 'requer ação' : 'nenhuma'}</p>
+            </div>
+            <div className="bg-slate-800/40 rounded-lg p-3 border border-slate-700/50">
+              <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-0.5">Concluídas</p>
+              <p className="text-lg font-bold text-white">{prescriptionsLoading ? '—' : prescriptionKPIs.completed}</p>
+              <p className="text-[10px] text-slate-500">finalizadas</p>
+            </div>
+          </div>
+        )}
+
+        {actionMessage && (
+          <div
+            className={`rounded-xl px-4 py-3 text-sm flex items-center gap-2 ${actionMessage.type === 'success'
+                ? 'bg-emerald-500/10 border border-emerald-400/40 text-emerald-200'
+                : 'bg-rose-500/10 border border-rose-400/40 text-rose-200'
+              }`}
+          >
+            <div className={`w-2 h-2 rounded-full ${actionMessage.type === 'success' ? 'bg-emerald-400' : 'bg-rose-400'}`} />
+            {actionMessage.text}
+          </div>
+        )}
 
         {/* --- LIBRARY TAB --- */}
         {activeTab === 'library' && (
-          <div className="space-y-6 animate-in fade-in zoom-in-95 duration-300">
-            {/* V1.9.119-B: Tipos de Receituario CFM (acesso direto, sem precisar abrir modal "Nova Prescricao") */}
-            <div className="bg-slate-900/60 border border-slate-800 rounded-2xl p-5 space-y-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="text-sm font-semibold text-white flex items-center gap-2">
-                    <Lock className="w-4 h-4 text-primary-300" />
-                    Tipos de Receituário CFM
-                  </h3>
-                  <p className="text-xs text-slate-400 mt-1">Forma legal/regulatória do documento — escolha o tipo de receita conforme a categoria do medicamento.</p>
-                </div>
+          <div className="space-y-4 animate-in fade-in zoom-in-95 duration-300">
+            {/* V1.9.283: Trilho de Tipos de Receituário CFM compactado — descrição em tooltip (title), não verbosa */}
+            <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-3">
+              <div className="flex items-center gap-2 mb-2">
+                <Lock className="w-3.5 h-3.5 text-primary-300" />
+                <h3 className="text-xs font-bold text-slate-300 uppercase tracking-wider">Nova receita</h3>
+                <span className="text-[10px] text-slate-500 italic">— clique no tipo de receituário</span>
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-2">
                 <button
                   onClick={() => navigate('/app/prescriptions?type=simple')}
-                  className="p-4 rounded-xl border border-slate-800 bg-slate-950/60 text-left space-y-1.5 hover:border-primary-500/40 hover:bg-slate-900/80 transition-all"
+                  title="Receituário Simples — Medicamentos sem controle especial"
+                  className="flex items-center gap-2 px-3 py-2 rounded-lg border border-slate-800 bg-slate-950/60 text-left hover:border-primary-500/50 hover:bg-primary-500/5 transition-all group"
                 >
-                  <FileText className="w-6 h-6 text-primary-300" />
-                  <p className="text-white font-semibold text-sm">Receituário Simples</p>
-                  <p className="text-[11px] text-slate-400 leading-snug">Medicamentos sem controle especial.</p>
+                  <FileText className="w-4 h-4 text-primary-300 shrink-0 group-hover:scale-110 transition-transform" />
+                  <div className="min-w-0">
+                    <p className="text-white font-semibold text-xs leading-tight truncate">Simples</p>
+                    <p className="text-[10px] text-slate-500 leading-tight truncate">sem controle</p>
+                  </div>
                 </button>
                 <button
                   onClick={() => navigate('/app/prescriptions?type=special')}
-                  className="p-4 rounded-xl border border-slate-800 bg-slate-950/60 text-left space-y-1.5 hover:border-sky-500/40 hover:bg-slate-900/80 transition-all"
+                  title="Controle Especial (Branca) — Lista C2, ANVISA Portaria 344/98, 2 vias"
+                  className="flex items-center gap-2 px-3 py-2 rounded-lg border border-slate-800 bg-slate-950/60 text-left hover:border-sky-500/50 hover:bg-sky-500/5 transition-all group"
                 >
-                  <Lock className="w-6 h-6 text-sky-300" />
-                  <p className="text-white font-semibold text-sm">Controle Especial (Branca)</p>
-                  <p className="text-[11px] text-slate-400 leading-snug">Lista C2 — ANVISA Portaria 344/98 (2 vias).</p>
+                  <Lock className="w-4 h-4 text-sky-300 shrink-0 group-hover:scale-110 transition-transform" />
+                  <div className="min-w-0">
+                    <p className="text-white font-semibold text-xs leading-tight truncate">Branca (C2)</p>
+                    <p className="text-[10px] text-slate-500 leading-tight truncate">controle especial</p>
+                  </div>
                 </button>
                 <button
                   onClick={() => navigate('/app/prescriptions?type=blue')}
-                  className="p-4 rounded-xl border border-slate-800 bg-slate-950/60 text-left space-y-1.5 hover:border-blue-500/40 hover:bg-slate-900/80 transition-all"
+                  title="Receita Azul B1/B2 — Entorpecentes e psicotrópicos com QR Code"
+                  className="flex items-center gap-2 px-3 py-2 rounded-lg border border-slate-800 bg-slate-950/60 text-left hover:border-blue-500/50 hover:bg-blue-500/5 transition-all group"
                 >
-                  <Lock className="w-6 h-6 text-blue-300" />
-                  <p className="text-white font-semibold text-sm">Receita Azul (B1/B2)</p>
-                  <p className="text-[11px] text-slate-400 leading-snug">Entorpecentes/psicotrópicos com QR Code.</p>
+                  <Lock className="w-4 h-4 text-blue-300 shrink-0 group-hover:scale-110 transition-transform" />
+                  <div className="min-w-0">
+                    <p className="text-white font-semibold text-xs leading-tight truncate">Azul (B1/B2)</p>
+                    <p className="text-[10px] text-slate-500 leading-tight truncate">psicotrópicos</p>
+                  </div>
                 </button>
                 <button
                   onClick={() => navigate('/app/prescriptions?type=yellow')}
-                  className="p-4 rounded-xl border border-slate-800 bg-slate-950/60 text-left space-y-1.5 hover:border-amber-500/40 hover:bg-slate-900/80 transition-all"
+                  title="Receita Amarela A1/A2/A3 — Entorpecentes restritos, integração Portal ITI"
+                  className="flex items-center gap-2 px-3 py-2 rounded-lg border border-slate-800 bg-slate-950/60 text-left hover:border-amber-500/50 hover:bg-amber-500/5 transition-all group"
                 >
-                  <Lock className="w-6 h-6 text-amber-300" />
-                  <p className="text-white font-semibold text-sm">Receita Amarela (A1/A2/A3)</p>
-                  <p className="text-[11px] text-slate-400 leading-snug">Restrito — integração Portal ITI.</p>
+                  <Lock className="w-4 h-4 text-amber-300 shrink-0 group-hover:scale-110 transition-transform" />
+                  <div className="min-w-0">
+                    <p className="text-white font-semibold text-xs leading-tight truncate">Amarela (A1-A3)</p>
+                    <p className="text-[10px] text-slate-500 leading-tight truncate">restrito ITI</p>
+                  </div>
                 </button>
               </div>
             </div>
 
-            {/* V1.9.119-B: titulo separador para Protocolos Terapeuticos (mantém grid existente abaixo intocado) */}
-            <div className="flex items-center gap-3 pt-2">
-              <div className="h-px flex-1 bg-slate-800"></div>
-              <span className="text-xs uppercase tracking-[0.25em] text-slate-500 font-medium">Protocolos Terapêuticos</span>
-              <div className="h-px flex-1 bg-slate-800"></div>
+            {/* V1.9.283: separador minimalista (era 3 elementos com border) */}
+            <div className="flex items-center gap-2 pt-1">
+              <BookOpen className="w-3.5 h-3.5 text-primary-400" />
+              <h3 className="text-xs font-bold text-slate-300 uppercase tracking-wider">Protocolos Terapêuticos</h3>
+              <span className="text-[10px] text-slate-500 italic">— biblioteca de protocolos pré-definidos</span>
             </div>
 
             {/* Filters */}
