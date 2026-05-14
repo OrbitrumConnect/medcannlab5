@@ -11,16 +11,18 @@
   }
 
   /* V1.9.252 — Densificacao global 80% (Pedro 13/05 17h30 BRT).
-     Antes: 85% aqui mas sobrescrito por mobile-responsive.css. Agora
-     mobile-responsive ja aplica 12.8px (80% de 16px) consistente. Mantemos
-     85% aqui como fallback caso o import de mobile-responsive falhe.
-     Sidebar reduzida proporcionalmente: 320px * 80% = 256px. */
+     V1.9.267 — Calibrado +20% pra medicos 50+ enxergarem melhor
+     (Pedro 13/05 21h30 testando empiricamente Ricardo). Agora 96%
+     (80% * 1.20). Tudo em rem (text-xs/sm/base/lg etc) reescala
+     proporcionalmente. Tailwind preserva todas as relacoes.
+     Sidebar acompanhou: 320px * 96% = 307px. Mobile-responsive
+     atualizado pra 15.36px (16px * 0.96). */
   html {
-    font-size: 80%;
+    font-size: 96%;
     scroll-behavior: smooth;
     overflow-x: hidden;
     max-width: 100vw;
-    --sidebar-width: 256px; /* 80% de 320px */
+    --sidebar-width: 307px; /* 96% de 320px */
   }
 
   body {

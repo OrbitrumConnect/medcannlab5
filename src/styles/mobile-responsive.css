@@ -20,20 +20,20 @@ body {
 }
 
 /* V1.9.252 — Densificacao global 80% (Pedro 13/05 17h30 BRT).
-   Antes: 14px mobile / 16px desktop. Pedro empirico: "no 100% browser
-   fica muito proximo, dou zoom out 75-80% e fica ideal". Solucao:
-   reduzir base CSS pra ~80% do tamanho padrao, eliminando necessidade
-   de zoom out manual. Tailwind reescala tudo via rem automatico.
-   Touch targets preservados via min-height/min-width 44px abaixo. */
+   V1.9.267 — Calibrado +20% pra medicos 50+ (Pedro 13/05 21h30).
+   Antes: 12.8px (80% de 16px). Agora: 15.36px (96% de 16px).
+   Mantem leve densificacao mas com legibilidade pra faixa 50+
+   (Ricardo, Eduardo). Touch targets 44px min preservados.
+   Tailwind reescala TUDO via rem automatico. */
 html {
-  font-size: 12.8px;
-  /* 80% de 16px — base unica mobile + desktop */
+  font-size: 15.36px;
+  /* 96% de 16px — base unica mobile + desktop */
 }
 
 @media (min-width: 768px) {
   html {
-    font-size: 12.8px;
-    /* mantido em 80% pro desktop tambem (era 16px puro) */
+    font-size: 15.36px;
+    /* mantido em 96% pro desktop (calibrado pra legibilidade 50+) */
   }
 }
 
