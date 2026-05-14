@@ -213,6 +213,9 @@ type WidgetProfessional = {
   id: string;
   name: string;
   specialty: string;
+  // V1.9.294 — fee dinâmico (Pedro 14/05): antes hardcoded R$350 mesmo se
+  // médico editou outro valor no Profile. Mariana viu R$350 vs Ricardo R$400.
+  consultationFee?: number | null;
 };
 
 // Mapeamento simples nome→especialidade (sincroniza com FALLBACK_PROFESSIONALS de PatientAppointments)
@@ -263,9 +266,11 @@ const SchedulingWidget = ({
         // V1.9.97-E: removido 'email' do select — least data exposure (overexposed
         // read surface fix). Email nao eh exibido nem usado pra agendamento; era
         // apenas usado pra inferSpecialty fallback (agora so via nome).
+        // V1.9.294 — incluir consultation_fee_default pra mostrar valor real
+        // do médico selecionado (não mais R$350 hardcoded).
         const { data, error } = await supabase
           .from("users")
-          .select("id, name, type")
+          .select("id, name, type, consultation_fee_default")
           .in("type", ["profissional", "professional", "admin"])
           .order("name", { ascending: true });
 
@@ -281,6 +286,10 @@ const SchedulingWidget = ({
             id: p.id,
             name: p.name || "Profissional",
             specialty: inferSpecialty(p.name),
+            // V1.9.294 — fee real (Number ou null se médico não configurou)
+            consultationFee: p.consultation_fee_default != null
+              ? Number(p.consultation_fee_default)
+              : null,
           }));
 
         setProfessionals(mapped);
@@ -487,12 +496,28 @@ const SchedulingWidget = ({
         </div>
       )}
 
-      {/* Disclaimer e Botão */}
+      {/* Disclaimer e Botão — V1.9.294 fee dinâmico do médico selecionado
+          (Pedro 14/05: Mariana viu R$350 hardcoded vs Ricardo configurado R$400) */}
       <div className="space-y-3 pt-2 border-t border-slate-700">
         <div className="flex items-start text-xs text-yellow-400/90 bg-yellow-900/10 p-2 rounded">
           <Activity className="w-3 h-3 mr-1.5 mt-0.5 flex-shrink-0" />
           <span>
-            Valor da consulta particular: <strong>R$ 350,00</strong>
+            {(() => {
+              const selected = professionals.find(p => p.id === selectedProfessionalId)
+              const fee = selected?.consultationFee
+              if (fee && fee > 0) {
+                return (
+                  <>
+                    Valor da consulta particular: <strong>R$ {fee.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</strong>
+                  </>
+                )
+              }
+              return (
+                <>
+                  Valor da consulta a confirmar com o profissional.
+                </>
+              )
+            })()}
           </span>
         </div>
 
