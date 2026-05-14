@@ -669,29 +669,26 @@ const QuickPrescriptions: React.FC<QuickPrescriptionsProps> = ({ className = '',
             {/* Divisor interno */}
             <div className="w-px h-5 bg-slate-700/50 mx-1 shrink-0"></div>
 
-            {/* CTA 1 — Nova Prescrição (emerald solido) */}
+            {/* V1.9.266 — CTAs sem cor solida (Pedro 13/05: "a cor azul e verde nao precisa nos triggers").
+                Discretos como filtros, com icone colorido pra acento sutil. */}
             <button
               onClick={() => setIsModalOpen(true)}
-              className="flex items-center space-x-1.5 px-4 py-1.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs rounded-full transition-all shadow shadow-emerald-500/10 hover:scale-105 active:scale-95 whitespace-nowrap"
+              title="Nova prescrição"
+              className="flex items-center space-x-1.5 px-4 py-1.5 text-slate-200 hover:bg-slate-800/50 hover:text-white font-medium text-xs rounded-full transition-all whitespace-nowrap"
             >
-              <Plus className="w-3.5 h-3.5" />
+              <Plus className="w-3.5 h-3.5 text-emerald-400" />
               <span>Nova Prescrição</span>
             </button>
 
-            {/* CTA 2 — Solicitar Exame (cyan solido, V1.9.264) */}
             <button
               onClick={() => setShowExamModal(true)}
               title="Solicitar exame para um paciente"
-              className="flex items-center space-x-1.5 px-4 py-1.5 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs rounded-full transition-all shadow shadow-cyan-500/10 hover:scale-105 active:scale-95 whitespace-nowrap"
+              className="flex items-center space-x-1.5 px-4 py-1.5 text-slate-200 hover:bg-slate-800/50 hover:text-white font-medium text-xs rounded-full transition-all whitespace-nowrap"
             >
-              <FlaskConical className="w-3.5 h-3.5" />
+              <FlaskConical className="w-3.5 h-3.5 text-cyan-400" />
               <span>Solicitar Exame</span>
             </button>
 
-            {/* Divisor interno */}
-            <div className="w-px h-5 bg-slate-700/50 mx-1 shrink-0"></div>
-
-            {/* Navegacao — Ver todas / Rascunhos (slate outline) */}
             <button
               onClick={() => {
                 setStatusFilter('draft')
@@ -700,7 +697,7 @@ const QuickPrescriptions: React.FC<QuickPrescriptionsProps> = ({ className = '',
               title="Ir para suas prescrições (filtra rascunhos)"
               className="flex items-center space-x-1.5 px-4 py-1.5 text-slate-200 hover:bg-slate-800/50 hover:text-white font-medium text-xs rounded-full transition-all whitespace-nowrap"
             >
-              <ListChecks className="w-3.5 h-3.5 text-emerald-400" />
+              <ListChecks className="w-3.5 h-3.5 text-slate-400" />
               <span>Ver todas / Rascunhos</span>
             </button>
           </div>
@@ -1402,50 +1399,56 @@ const QuickPrescriptions: React.FC<QuickPrescriptionsProps> = ({ className = '',
                     patientName={effectivePatientName}
                   />
                 ) : (
-                  <div className="py-4">
-                    <div className="text-center mb-4">
-                      <FlaskConical className="w-12 h-12 mx-auto mb-3 text-cyan-400/60" />
-                      <p className="text-white font-semibold mb-1">Selecione o paciente</p>
-                      <p className="text-slate-400 text-xs">Busque pelo nome abaixo e clique pra abrir o editor de exames.</p>
-                    </div>
-                    <div className="relative mb-3 max-w-md mx-auto">
-                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                      <input
-                        type="text"
-                        autoFocus
-                        value={examPatientSearch}
-                        onChange={(e) => setExamPatientSearch(e.target.value)}
-                        placeholder="Buscar paciente por nome..."
-                        className="w-full bg-slate-800 text-white pl-9 pr-9 py-2.5 rounded-lg border border-slate-700 focus:border-cyan-500 focus:outline-none text-sm"
-                      />
-                      {examPatientSearch && (
-                        <button
-                          onClick={() => setExamPatientSearch('')}
-                          className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-500 hover:text-white p-1"
-                        >
-                          <X className="w-3.5 h-3.5" />
-                        </button>
-                      )}
-                    </div>
-                    <div className="max-h-[55vh] overflow-y-auto max-w-md mx-auto space-y-1.5 pr-1">
-                      {filteredPatients.length === 0 ? (
-                        <p className="text-center text-slate-500 text-sm py-8">
-                          {patientsList.length === 0 ? 'Carregando pacientes...' : 'Nenhum paciente encontrado com esse nome.'}
-                        </p>
-                      ) : (
-                        filteredPatients.map(p => (
+                  <div className="py-6 px-2">
+                    {/* V1.9.266 — Dropdown compacto (Pedro 13/05 21h15: "precisa ajustar o dropdown").
+                        Combobox: input + lista densa max-h-64 (~5 itens visiveis) abaixo. */}
+                    <div className="max-w-md mx-auto">
+                      <div className="flex items-center gap-2 mb-2 text-slate-300 text-sm">
+                        <FlaskConical className="w-4 h-4 text-cyan-400" />
+                        <span className="font-medium">Selecione o paciente</span>
+                      </div>
+                      <div className="relative">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+                        <input
+                          type="text"
+                          autoFocus
+                          value={examPatientSearch}
+                          onChange={(e) => setExamPatientSearch(e.target.value)}
+                          placeholder={patientsList.length === 0 ? 'Carregando pacientes...' : `Buscar entre ${patientsList.length} pacientes...`}
+                          className="w-full bg-slate-800 text-white pl-9 pr-9 py-2 rounded-lg border border-slate-700 focus:border-cyan-500 focus:outline-none text-sm"
+                        />
+                        {examPatientSearch && (
                           <button
-                            key={p.id}
-                            onClick={() => { setExamPatientLocal(p); setExamPatientSearch('') }}
-                            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg bg-slate-800/50 hover:bg-cyan-500/10 border border-slate-700 hover:border-cyan-500/40 transition-colors text-left"
+                            onClick={() => setExamPatientSearch('')}
+                            className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-500 hover:text-white p-1"
+                            title="Limpar busca"
                           >
-                            <div className="w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center shrink-0">
-                              <User className="w-4 h-4 text-slate-300" />
-                            </div>
-                            <span className="text-white text-sm font-medium truncate">{p.name}</span>
+                            <X className="w-3.5 h-3.5" />
                           </button>
-                        ))
-                      )}
+                        )}
+                      </div>
+                      {/* Lista dropdown-like, densa e contida */}
+                      <div className="mt-1 max-h-64 overflow-y-auto rounded-lg border border-slate-700/60 bg-slate-900/40 divide-y divide-slate-800">
+                        {filteredPatients.length === 0 ? (
+                          <p className="text-center text-slate-500 text-xs py-6">
+                            {patientsList.length === 0 ? 'Carregando...' : 'Nenhum paciente encontrado.'}
+                          </p>
+                        ) : (
+                          filteredPatients.map(p => (
+                            <button
+                              key={p.id}
+                              onClick={() => { setExamPatientLocal(p); setExamPatientSearch('') }}
+                              className="w-full flex items-center gap-2.5 px-3 py-2 hover:bg-cyan-500/10 transition-colors text-left group"
+                            >
+                              <User className="w-3.5 h-3.5 text-slate-500 group-hover:text-cyan-400 shrink-0" />
+                              <span className="text-slate-200 group-hover:text-white text-sm truncate">{p.name}</span>
+                            </button>
+                          ))
+                        )}
+                      </div>
+                      <p className="text-[11px] text-slate-500 mt-2 text-center">
+                        {filteredPatients.length > 0 && `${filteredPatients.length} de ${patientsList.length} pacientes`}
+                      </p>
                     </div>
                   </div>
                 )}
