@@ -198,6 +198,10 @@ const PatientFocusView: React.FC<PatientFocusViewProps> = ({ activePatientId, on
         setPatientSearch(p.name)
         setPatientDropdownOpen(false)
         onPatientChange(p.id, p.name)
+        // V1.9.285 (Pedro 14/05 10h41): abre direto Evolução e Analytics ao escolher paciente —
+        // elimina passo intermediário "Abrir vista unificada" (médico já quer ver imediatamente).
+        setPatientFocusSubTab('analytics')
+        setShowPatientAvatarView(true)
     }
 
     const handleClearPatient = () => {
