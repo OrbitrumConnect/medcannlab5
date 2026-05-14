@@ -13,10 +13,24 @@ interface BonusCycle {
   reference_month: string;
 }
 
+// V1.9.269 — Escala de bônus referral por alcance (Pedro+Claude 13/05 22h30 BRT).
+// Médico indica paciente pra PLATAFORMA (não pra outro médico) — CFM 2.314 OK.
+// Cada faixa desbloqueia +N% adicional sobre a take rate dos primeiros 6 meses
+// do paciente indicado (vai pra referral_bonus_cycles.bonus_value).
+// MVP: UI apenas, lógica server-side fica pra V1.9.27X (pós-CNPJ + Ricardo aprovar).
+const REFERRAL_TIERS = [
+  { threshold: 5,   bonusPct: 1, label: 'Sementeira',  description: '1ª vitória — bônus desbloqueado' },
+  { threshold: 20,  bonusPct: 2, label: 'Crescimento', description: 'Médico engajado' },
+  { threshold: 50,  bonusPct: 4, label: 'Consolidado', description: 'Carteira ativa' },
+  { threshold: 100, bonusPct: 6, label: 'Referência',  description: 'Top de plataforma' },
+  { threshold: 250, bonusPct: 8, label: 'Mestre',      description: 'Aspiracional' },
+];
+
 export const IncentivosPanel: React.FC = () => {
   const { user } = useAuth();
   const [loading, setLoading] = useState(true);
   const [bonusCycles, setBonusCycles] = useState<BonusCycle[]>([]);
+  const [invitedCount, setInvitedCount] = useState(0);
   const [stats, setStats] = useState({
     totalPending: 0,
     totalApproved: 0,
@@ -77,12 +91,32 @@ export const IncentivosPanel: React.FC = () => {
         activePatientCycles: activePatients
       });
 
+      // V1.9.269 — Conta pacientes que se cadastraram via link de indicação deste médico.
+      // users.invited_by é UUID FK que existe (audit empírico 13/05). Best-effort: se RLS
+      // bloquear, count fica 0 e UI mostra "0/5" sem quebrar nada.
+      try {
+        const { count: invCount } = await supabase
+          .from('users')
+          .select('id', { count: 'exact', head: true })
+          .eq('invited_by', user?.id ?? '');
+        setInvitedCount(invCount ?? 0);
+      } catch (invErr) {
+        console.warn('Erro ao contar indicações (RLS?):', invErr);
+        setInvitedCount(0);
+      }
     } catch (error) {
       console.error('❌ Erro ao carregar incentivos:', error);
     } finally {
       setLoading(false);
     }
   };
+
+  // V1.9.269 — Helpers escala referral (pure functions, sem dependência externa)
+  const currentTier = REFERRAL_TIERS.slice().reverse().find(t => invitedCount >= t.threshold) || null;
+  const nextTier = REFERRAL_TIERS.find(t => invitedCount < t.threshold) || null;
+  const progressPct = nextTier
+    ? Math.min(100, Math.round((invitedCount / nextTier.threshold) * 100))
+    : 100;
 
   if (loading) {
     return (
@@ -147,13 +181,92 @@ export const IncentivosPanel: React.FC = () => {
             Protocolo de Blindagem Financeira (Modelo B)
           </h3>
           <p className="text-sm text-primary-100 max-w-2xl">
-            Seu sistema de bônus de 30% está ativo. O bônus é calculado sobre a take rate dos primeiros 6 meses 
+            Seu sistema de bônus de 30% está ativo. O bônus é calculado sobre a take rate dos primeiros 6 meses
             de cada paciente indicado, garantindo sustentabilidade e rastreabilidade total.
           </p>
         </div>
         <div className="absolute top-0 right-0 p-4 opacity-10">
           <TrendingUp className="w-32 h-32" />
         </div>
+      </div>
+
+      {/* V1.9.269 — Escala de bônus por alcance de indicações (Pedro+Claude 13/05 22h30) */}
+      <div className="bg-gradient-to-br from-emerald-900/40 to-cyan-900/30 border border-emerald-500/30 rounded-xl p-6 text-white">
+        <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
+          <div>
+            <h3 className="text-lg font-bold flex items-center gap-2">
+              <TrendingUp className="w-5 h-5 text-emerald-400" />
+              Bônus Escalonado por Indicações
+            </h3>
+            <p className="text-xs text-slate-300 mt-1">
+              Adicional sobre a take rate por paciente indicado à plataforma.
+            </p>
+          </div>
+          <div className="text-right">
+            <p className="text-3xl font-bold text-emerald-300">{invitedCount}</p>
+            <p className="text-xs text-slate-400">pacientes indicados</p>
+          </div>
+        </div>
+
+        {/* Barra de progresso pra próxima faixa */}
+        {nextTier ? (
+          <div className="mb-4">
+            <div className="flex items-center justify-between text-xs mb-1.5">
+              <span className="text-slate-300">
+                Próxima faixa: <strong className="text-cyan-300">{nextTier.label}</strong> ({nextTier.threshold} indicados → <strong>+{nextTier.bonusPct}%</strong>)
+              </span>
+              <span className="text-slate-400">{invitedCount}/{nextTier.threshold}</span>
+            </div>
+            <div className="w-full h-2 bg-slate-800/60 rounded-full overflow-hidden">
+              <div
+                className="h-full bg-gradient-to-r from-emerald-500 to-cyan-400 transition-all"
+                style={{ width: `${progressPct}%` }}
+              />
+            </div>
+            <p className="text-[11px] text-slate-400 mt-1.5">
+              Faltam <strong className="text-white">{Math.max(0, nextTier.threshold - invitedCount)}</strong> indicações pra desbloquear <strong className="text-cyan-300">+{nextTier.bonusPct}%</strong>.
+            </p>
+          </div>
+        ) : (
+          <div className="mb-4 px-3 py-2 bg-emerald-500/15 border border-emerald-500/30 rounded-lg text-xs text-emerald-200">
+            🎉 Você atingiu o nível máximo (<strong>{currentTier?.label}</strong>). Bônus máximo +8% ativo.
+          </div>
+        )}
+
+        {/* Tabela compacta de faixas (visual claro do caminho completo) */}
+        <div className="grid grid-cols-5 gap-2">
+          {REFERRAL_TIERS.map(tier => {
+            const reached = invitedCount >= tier.threshold;
+            const isCurrent = currentTier?.threshold === tier.threshold;
+            return (
+              <div
+                key={tier.threshold}
+                className={`rounded-lg p-2.5 text-center transition-all ${
+                  reached
+                    ? isCurrent
+                      ? 'bg-emerald-500/25 border-2 border-emerald-400'
+                      : 'bg-emerald-500/10 border border-emerald-500/30'
+                    : 'bg-slate-800/40 border border-slate-700'
+                }`}
+                title={tier.description}
+              >
+                <p className={`text-[10px] uppercase font-bold tracking-wider ${reached ? 'text-emerald-300' : 'text-slate-500'}`}>
+                  {tier.label}
+                </p>
+                <p className={`text-base font-bold ${reached ? 'text-white' : 'text-slate-400'}`}>
+                  +{tier.bonusPct}%
+                </p>
+                <p className={`text-[10px] ${reached ? 'text-emerald-200/80' : 'text-slate-500'}`}>
+                  {tier.threshold} indicados
+                </p>
+              </div>
+            );
+          })}
+        </div>
+
+        <p className="text-[11px] text-slate-400 mt-4 leading-relaxed">
+          <strong className="text-slate-300">Como funciona:</strong> a cada paciente que se cadastra pela plataforma usando seu link de indicação, você acumula uma faixa. Quanto mais indicados, maior o adicional sobre os bônus mensais gerados por eles. Cashback do paciente (8,7% gamificação) é independente e não afeta este cálculo.
+        </p>
       </div>
 
       {/* Tabela de Ciclos */}

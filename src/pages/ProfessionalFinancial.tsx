@@ -1,13 +1,17 @@
 import { useState } from 'react'
-import { Wallet, BarChart3, Sparkles } from 'lucide-react'
+import { Wallet, BarChart3, Sparkles, TrendingUp } from 'lucide-react'
 import { WalletTab } from '../components/financial/WalletTab'
 import { SimulatorTab } from '../components/financial/SimulatorTab'
 import { VisionTab } from '../components/financial/VisionTab'
+// V1.9.269 — Incentivos vivia em /clinica/profissional/dashboard?section=incentivos
+// (Meu Dashboard). Pedro 13/05: "nao vejo na gestao financeira". Reuso 100% (P8).
+import { IncentivosPanel } from '../components/IncentivosPanel'
 
-type TabId = 'wallet' | 'simulator' | 'vision'
+type TabId = 'wallet' | 'incentivos' | 'simulator' | 'vision'
 
 const TABS: { id: TabId; label: string; icon: any; description: string }[] = [
   { id: 'wallet', label: 'Carteira', icon: Wallet, description: 'Saldo real, transações e saques' },
+  { id: 'incentivos', label: 'Incentivos', icon: TrendingUp, description: 'Cashback, indicações e bônus escalonado' },
   { id: 'simulator', label: 'Simulador', icon: BarChart3, description: 'Projeções e análise SWOT' },
   { id: 'vision', label: 'Visão', icon: Sparkles, description: 'Modelo sustentável e impacto' },
 ]
@@ -56,6 +60,7 @@ export function ProfessionalFinancial() {
         {/* Tab content */}
         <div>
           {activeTab === 'wallet' && <WalletTab />}
+          {activeTab === 'incentivos' && <IncentivosPanel />}
           {activeTab === 'simulator' && <SimulatorTab />}
           {activeTab === 'vision' && <VisionTab />}
         </div>
