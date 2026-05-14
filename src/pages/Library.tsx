@@ -245,20 +245,27 @@ const Library: React.FC = () => {
       // → erro {"statusCode":"400","error":"InvalidJWT","message":"\"exp\" claim timestamp check failed"}.
       // Fix: SEMPRE regerar signed URL on-the-fly antes de abrir. Não persistir mais no DB.
 
-      // Caso 1: URL aponta pro Supabase Storage — extrair filePath e re-gerar signed URL fresh
+      // V1.9.290 (Pedro 14/05 12h): bugfix da V1.9.289.
+      // Regex anterior /[^\/]+\/([^?]+)/ incluía o nome do bucket no filePath capturado
+      // → createSignedUrl('documents/<user>/...') tentava achar em 'documents/documents/...' e falhava.
+      // Fix: capturar bucket e filePath SEPARADAMENTE.
+      // Formato URL Supabase: /storage/v1/object/{public|sign|authenticated}/{bucket}/{path}
       if (viewUrl && viewUrl.includes('supabase.co/storage')) {
-        const pathMatch = viewUrl.match(/\/storage\/v1\/object\/[^\/]+\/([^?]+)/)
+        const pathMatch = viewUrl.match(/\/storage\/v1\/object\/(?:public|sign|authenticated)\/([^\/]+)\/([^?]+)/)
         if (pathMatch) {
-          const filePath = decodeURIComponent(pathMatch[1])
+          const bucket = pathMatch[1]
+          const filePath = decodeURIComponent(pathMatch[2])
           const { data: signedData, error: signedError } = await supabase.storage
-            .from('documents')
+            .from(bucket)
             .createSignedUrl(filePath, 3600)
           if (!signedError && signedData) {
             viewUrl = signedData.signedUrl
           } else {
-            console.warn('V1.9.289 signed URL refresh falhou, tentando fallback list:', signedError)
+            console.warn('V1.9.290 signed URL refresh falhou:', { bucket, filePath, signedError })
             viewUrl = null
           }
+        } else {
+          console.warn('V1.9.290 regex não casou com URL Supabase:', viewUrl)
         }
       }
 
