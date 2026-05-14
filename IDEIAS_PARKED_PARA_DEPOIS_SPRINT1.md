@@ -378,4 +378,111 @@ WHERE id IN (
 
 ---
 
+### [14/05] — DRC Risk Module (arquitetura micro-serviço cognitivo isolado)
+
+**Origem:** Conversa Pedro+Ricardo+João saindo casa Ricardo madrugada 14/05 + análise GPT externo. Pedro cristalizou direção arquitetural mais madura que o esboço Triagem original (linha 342 acima).
+
+**Decisão conceitual aprovada pelos 3 sócios:**
+
+DRC Risk **NÃO entra no tradevision-core** (motor longitudinal AEC).
+DRC Risk vira **módulo satélite isolado** ativado por **botão explícito no dashboard paciente** (não via chat Nôa).
+
+**Arquitetura proposta (modelo "micro-serviço cognitivo"):**
+
+```
+[ Dashboard Paciente ]
+       ↓ click explícito (Princípio 11 — eventos explícitos)
+[ Botão "Fazer rastreio renal" ]
+       ↓
+[ Edge Function NOVA: drc-risk-collect ]
+       ↓ mesma OPENAI_API_KEY existente
+[ gpt-4o-mini com prompt enxuto dedicado ]
+       ↓
+[ Schema NOVO: drc_risk_assessments ]
+   - patient_id, answers jsonb, score, created_at
+   - ZERO toque em clinical_assessments
+```
+
+**Decisão técnica conservadora (Princípio 8 — polir não inventar):**
+
+- ❌ **NÃO usar OpenAI Assistant API** — custo ~1000× maior ($0.10/1K vs $0.0001/msg)
+- ✅ **Reusar OPENAI_API_KEY existente** + gpt-4o-mini (mesmo modelo do V1.9.84 escriba)
+- ✅ Edge Function nova isolada (`drc-risk-collect`)
+- ✅ Schema próprio (`drc_risk_assessments`) — NÃO em `clinical_assessments`
+- ✅ Botão dashboard paciente (não trigger chat)
+
+**4 problemas resolvidos simultaneamente:**
+
+| Problema | Resolve |
+|----------|---------|
+| Latência AEC (29.5s base) | ✅ DRC paralelo, não bloqueia |
+| Sobrecarga GPT principal | ✅ Edge Function separada |
+| Risco kevlar §1 | ✅ Zero toque AEC/Pipeline/FSM |
+| Escalabilidade futura | ✅ +1 satélite num modelo modular |
+
+**Risco identificado pelo GPT externo:**
+
+> *"Não é incompatibilidade OpenAI. É identidade do usuário + sincronização contexto + race conditions."*
+
+Mitigação: mesmo `user_id`, sessões diferentes, memórias separadas.
+
+```
+user_id     = mesmo
+session     = diferente
+assistant   = não usar (gpt-4o-mini suficiente)
+memory      = drc_risk_assessments isolada
+```
+
+**Conformidade pré-implementação:**
+- LGPD art. 11 §1: paciente consente antes de iniciar rastreio (botão explícito é consent material)
+- CFM: rastreio epidemiológico ≠ diagnóstico (não substitui consulta)
+- RDC ANVISA 1.015/2026: enquadramento confirmar com Ricardo+Eduardo
+
+**O que DRC Risk NÃO precisa fazer (manter escopo enxuto):**
+- ❌ Pipeline ICP-Brasil (não é ato clínico)
+- ❌ Verbatim First (não é AEC FSM)
+- ❌ Signature_hash (não é prontuário oficial)
+- ❌ Longitudinalidade pesada (snapshot único do momento)
+
+**O que DRC Risk faz (enxuto):**
+- ✅ Coleta contextual (17 perguntas do esboço Ricardo)
+- ✅ Score epidemiológico simples (alto > 20 / mod > 10 / baixo)
+- ✅ Determinantes sociais + hábitos + comorbidades
+- ✅ Output: card no dashboard "Seu risco renal estimado: X"
+- ✅ CTA pós-resultado: "Agendar consulta com Dr. Ricardo"
+
+**Status:** PARQUEADO até pós-evento 15/05 + freeze 16/05 vencer.
+
+**Condições pra ativar:**
+- Pós-freeze 16/05
+- Pós-evento empírico (validar com Marina + Daniel + Protássio se faz sentido)
+- Decisão explícita Ricardo (curadoria pesos do score + 17 perguntas)
+- Aprovação dos 4 sócios no enquadramento ANVISA
+
+**Anti-regressão garantida (na hora de codar):**
+- Edge Function isolada (`drc-risk-collect`)
+- Tabela isolada (`drc_risk_assessments`)
+- RLS própria (paciente só vê próprio, profissional via vínculo)
+- ZERO toque AEC FSM / Pipeline / tradevision-core / clinical_assessments
+- Lock V1.9.95+97+98+99-B intocado
+
+**Conexão com pitch Prefeitura RJ:**
+Cidade Amiga dos Rins ativa rastreio populacional via dashboard pacientes cadastrados. DRC Risk vira diferencial empírico — não é algoritmo blackbox, é arquitetura clínico-narrativa autoral com módulo satélite isolado pra rastreio epidemiológico.
+
+**Princípio cristalizado na conversa madrugada 14/05:**
+
+> *"Núcleo AEC permanece intocado. Satélites desacoplados crescem livremente. Cada satélite tem sua própria API, função, fila, latência. Arquitetura de plataforma real, não monolito de prompt."*
+
+(GPT externo nomeou bonito — empíricamente já era a tese da MedCannLab desde V1.9.150-156 Marketplace Layer.)
+
+**Por que NÃO falar como pronto pra Marina amanhã (15/05 20h):**
+
+Marina (CMO Cura+Saúde, 4000 clínicas) pode interpretar *"temos rastreio DRC integrado"* como produto pronto. **Não temos.** Linguagem honesta pra ela:
+
+> *"Nossa arquitetura é modular. Método AEC do Ricardo é o núcleo. Podemos adicionar módulos satélites (DRC, DST, escalas, etc) sem afetar a longitudinalidade do principal."*
+
+= verdadeiro + não promete inexistente.
+
+---
+
 *Este arquivo é parte da disciplina temporal de execução pré-PMF. Não expandir. Não transformar em narrativa. Manter factual e curto.*
