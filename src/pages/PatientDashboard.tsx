@@ -27,6 +27,8 @@ import { usePatientDashboard, PatientTab } from '../hooks/dashboard/usePatientDa
 import ShareReportModal from '../components/ShareReportModal'
 import NoaConversationalInterface from '../components/NoaConversationalInterface'
 import PendingRatingsBanner from '../components/PendingRatingsBanner'
+// V1.9.275 — Consent paciente pra direcionamento entre médicos (LGPD art. 11 §1)
+import PatientReferralConsentBanner from '../components/patient/PatientReferralConsentBanner'
 // Lazy load — Tier A perf optimization (V1.9.x). Componentes pesados só carregam quando aba ativa.
 const PatientAnalytics = lazy(() => import('../components/PatientAnalytics'))
 const PatientNFTGallery = lazy(() => import('../components/PatientNFTGallery'))
@@ -154,6 +156,10 @@ const PatientDashboard: React.FC = () => {
     <div className="p-4 md:p-6 max-w-7xl mx-auto w-full space-y-6">
       {activeTab === 'analytics' && (
         <>
+          {/* V1.9.275: banner consent direcionamento (LGPD art. 11 §1) — aparece só
+              se há patient_referrals.status='pending_patient_consent'. Princípio: paciente
+              decide compartilhamento de vínculo clínico — não é automatizado. */}
+          <PatientReferralConsentBanner />
           {/* V1.9.145: banner pending ratings (aparece só se há consulta concluída sem avaliação) */}
           <PendingRatingsBanner />
 
