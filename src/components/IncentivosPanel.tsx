@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { TrendingUp, Users, Calendar, AlertCircle, CheckCircle, Clock, ChevronRight } from 'lucide-react';
+import { TrendingUp, Users, Calendar, AlertCircle, CheckCircle, Clock, ChevronRight, Link2, Copy, Check } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -31,12 +31,34 @@ export const IncentivosPanel: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [bonusCycles, setBonusCycles] = useState<BonusCycle[]>([]);
   const [invitedCount, setInvitedCount] = useState(0);
+  const [linkCopied, setLinkCopied] = useState(false);
   const [stats, setStats] = useState({
     totalPending: 0,
     totalApproved: 0,
     totalPaid: 0,
     activePatientCycles: 0
   });
+
+  // V1.9.270 — Link de indicação do médico (reuso padrao NewPatientForm.generateInviteLink — P8).
+  const inviteLink = user?.id ? `${window.location.origin}/invite?doctor_id=${user.id}` : '';
+  const handleCopyLink = async () => {
+    if (!inviteLink) return;
+    try {
+      await navigator.clipboard.writeText(inviteLink);
+      setLinkCopied(true);
+      setTimeout(() => setLinkCopied(false), 2500);
+    } catch {
+      // Fallback pra browsers sem clipboard API
+      const textArea = document.createElement('textarea');
+      textArea.value = inviteLink;
+      document.body.appendChild(textArea);
+      textArea.select();
+      try { document.execCommand('copy'); } catch {}
+      document.body.removeChild(textArea);
+      setLinkCopied(true);
+      setTimeout(() => setLinkCopied(false), 2500);
+    }
+  };
 
   useEffect(() => {
     if (user) {
@@ -128,48 +150,93 @@ export const IncentivosPanel: React.FC = () => {
 
   return (
     <div className="space-y-6 animate-fadeIn">
-      {/* Header & Stats */}
+      {/* V1.9.270 — Card Link de Indicação (Pedro 13/05 22h45 BRT)
+          Permite ao médico copiar seu link único pra compartilhar com pacientes/colegas.
+          URL segue padrão NewPatientForm.generateInviteLink (P8 reuso). */}
+      <div className="bg-gradient-to-br from-cyan-900/40 via-blue-900/30 to-emerald-900/30 border border-cyan-500/30 rounded-xl p-5">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div className="flex items-start gap-3 flex-1 min-w-0">
+            <div className="w-10 h-10 rounded-xl bg-cyan-500/20 border border-cyan-500/40 flex items-center justify-center shrink-0">
+              <Link2 className="w-5 h-5 text-cyan-300" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <h3 className="text-base font-bold text-white mb-1">Seu link de indicação</h3>
+              <p className="text-xs text-slate-300 mb-2">
+                Compartilhe com pacientes ou colegas. Cada cadastro pela plataforma conta na sua escala de bônus.
+              </p>
+              <div className="bg-slate-900/60 border border-slate-700 rounded-lg px-3 py-2 flex items-center gap-2 max-w-full">
+                <code className="text-[12px] text-cyan-300 truncate flex-1 min-w-0" title={inviteLink}>
+                  {inviteLink || 'Carregando...'}
+                </code>
+              </div>
+            </div>
+          </div>
+          <button
+            onClick={handleCopyLink}
+            disabled={!inviteLink}
+            className={`shrink-0 px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-2 transition-all ${
+              linkCopied
+                ? 'bg-emerald-500 text-slate-950'
+                : 'bg-cyan-500 hover:bg-cyan-400 text-slate-950'
+            } disabled:opacity-50 disabled:cursor-not-allowed`}
+          >
+            {linkCopied ? (
+              <>
+                <Check className="w-4 h-4" />
+                <span>Copiado!</span>
+              </>
+            ) : (
+              <>
+                <Copy className="w-4 h-4" />
+                <span>Copiar link</span>
+              </>
+            )}
+          </button>
+        </div>
+      </div>
+
+      {/* Header & Stats — V1.9.270 cores corrigidas pra tema dark coerente */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <div className="bg-gradient-to-br from-emerald-500/10 to-teal-500/10 border border-emerald-500/20 rounded-xl p-5 shadow-sm">
           <div className="flex items-center justify-between mb-2">
-            <TrendingUp className="w-5 h-5 text-emerald-600" />
-            <span className="text-xs font-bold text-emerald-600 uppercase tracking-wider">Pendente</span>
+            <TrendingUp className="w-5 h-5 text-emerald-400" />
+            <span className="text-xs font-bold text-emerald-400 uppercase tracking-wider">Pendente</span>
           </div>
-          <p className="text-2xl font-bold text-slate-800">
+          <p className="text-2xl font-bold text-white">
             R$ {stats.totalPending.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
           </p>
-          <p className="text-xs text-slate-500 mt-1">Aguardando aprovação</p>
+          <p className="text-xs text-slate-400 mt-1">Aguardando aprovação</p>
         </div>
 
         <div className="bg-gradient-to-br from-blue-500/10 to-indigo-500/10 border border-blue-500/20 rounded-xl p-5 shadow-sm">
           <div className="flex items-center justify-between mb-2">
-            <CheckCircle className="w-5 h-5 text-blue-600" />
-            <span className="text-xs font-bold text-blue-600 uppercase tracking-wider">Aprovado</span>
+            <CheckCircle className="w-5 h-5 text-blue-400" />
+            <span className="text-xs font-bold text-blue-400 uppercase tracking-wider">Aprovado</span>
           </div>
-          <p className="text-2xl font-bold text-slate-800">
+          <p className="text-2xl font-bold text-white">
             R$ {stats.totalApproved.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
           </p>
-          <p className="text-xs text-slate-500 mt-1">Pronto para resgate</p>
+          <p className="text-xs text-slate-400 mt-1">Pronto para resgate</p>
         </div>
 
         <div className="bg-gradient-to-br from-slate-500/10 to-slate-700/10 border border-slate-500/20 rounded-xl p-5 shadow-sm">
           <div className="flex items-center justify-between mb-2">
-            <Clock className="w-5 h-5 text-slate-600" />
-            <span className="text-xs font-bold text-slate-600 uppercase tracking-wider">Pago</span>
+            <Clock className="w-5 h-5 text-slate-400" />
+            <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Pago</span>
           </div>
-          <p className="text-2xl font-bold text-slate-800">
+          <p className="text-2xl font-bold text-white">
             R$ {stats.totalPaid.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
           </p>
-          <p className="text-xs text-slate-500 mt-1">Total resgatado</p>
+          <p className="text-xs text-slate-400 mt-1">Total resgatado</p>
         </div>
 
         <div className="bg-gradient-to-br from-purple-500/10 to-pink-500/10 border border-purple-500/20 rounded-xl p-5 shadow-sm">
           <div className="flex items-center justify-between mb-2">
-            <Users className="w-5 h-5 text-purple-600" />
-            <span className="text-xs font-bold text-purple-600 uppercase tracking-wider">Pacientes Ativos</span>
+            <Users className="w-5 h-5 text-purple-400" />
+            <span className="text-xs font-bold text-purple-400 uppercase tracking-wider">Pacientes Ativos</span>
           </div>
-          <p className="text-2xl font-bold text-slate-800">{stats.activePatientCycles}</p>
-          <p className="text-xs text-slate-500 mt-1">Geração de bônus ativa</p>
+          <p className="text-2xl font-bold text-white">{stats.activePatientCycles}</p>
+          <p className="text-xs text-slate-400 mt-1">Geração de bônus ativa</p>
         </div>
       </div>
 
@@ -269,24 +336,26 @@ export const IncentivosPanel: React.FC = () => {
         </p>
       </div>
 
-      {/* Tabela de Ciclos */}
-      <div className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
-        <div className="p-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
-          <h3 className="font-semibold text-slate-800 flex items-center gap-2">
-            <Calendar className="w-4 h-4 text-emerald-600" />
+      {/* V1.9.270 — Tabela de Ciclos repaginada pra tema dark (Pedro 13/05 22h45:
+          "aqui esta branco o card nao e legal"). Antes: bg-white/text-slate-700/etc.
+          Agora: slate-900/700/200 coerente com o resto do app. */}
+      <div className="bg-slate-900/60 border border-slate-700 rounded-xl shadow-sm overflow-hidden">
+        <div className="p-4 border-b border-slate-700 flex justify-between items-center bg-slate-800/30">
+          <h3 className="font-semibold text-slate-100 flex items-center gap-2">
+            <Calendar className="w-4 h-4 text-emerald-400" />
             Detalhamento de Ciclos
           </h3>
-          <button 
+          <button
             onClick={loadIncentivosData}
-            className="text-xs text-primary-600 hover:underline font-medium"
+            className="text-xs text-emerald-400 hover:text-emerald-300 hover:underline font-medium"
           >
             Atualizar dados
           </button>
         </div>
-        
+
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm">
-            <thead className="bg-slate-50 text-slate-500 font-medium">
+            <thead className="bg-slate-800/50 text-slate-400 font-medium">
               <tr>
                 <th className="px-6 py-3">Paciente</th>
                 <th className="px-6 py-3">Ciclo</th>
@@ -296,50 +365,50 @@ export const IncentivosPanel: React.FC = () => {
                 <th className="px-6 py-3">Data</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100 text-slate-700">
+            <tbody className="divide-y divide-slate-800 text-slate-200">
               {bonusCycles.length > 0 ? (
                 bonusCycles.map((cycle) => (
-                  <tr key={cycle.id} className="hover:bg-slate-50 transition-colors group">
-                    <td className="px-6 py-4 font-medium text-slate-900">{cycle.patient_name}</td>
+                  <tr key={cycle.id} className="hover:bg-slate-800/40 transition-colors group">
+                    <td className="px-6 py-4 font-medium text-white">{cycle.patient_name}</td>
                     <td className="px-6 py-4">
-                      <span className="px-2 py-0.5 bg-slate-100 rounded-full text-xs">
+                      <span className="px-2 py-0.5 bg-slate-800 border border-slate-700 rounded-full text-xs text-slate-300">
                         {cycle.cycle_number}/6
                       </span>
                     </td>
-                    <td className="px-6 py-4 uppercase">{cycle.reference_month}</td>
-                    <td className="px-6 py-4 font-bold text-emerald-600">
+                    <td className="px-6 py-4 uppercase text-slate-300">{cycle.reference_month}</td>
+                    <td className="px-6 py-4 font-bold text-emerald-400">
                       R$ {cycle.bonus_value.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                     </td>
                     <td className="px-6 py-4">
                       {cycle.status === 'pending' && (
-                        <span className="flex items-center gap-1.5 text-orange-600">
+                        <span className="flex items-center gap-1.5 text-amber-400">
                           <Clock className="w-3 h-3" /> Pendente
                         </span>
                       )}
                       {cycle.status === 'approved' && (
-                        <span className="flex items-center gap-1.5 text-blue-600">
+                        <span className="flex items-center gap-1.5 text-sky-400">
                           <CheckCircle className="w-3 h-3" /> Aprovado
                         </span>
                       )}
                       {cycle.status === 'paid' && (
-                        <span className="flex items-center gap-1.5 text-emerald-600">
+                        <span className="flex items-center gap-1.5 text-emerald-400">
                           <CheckCircle className="w-3 h-3" /> Pago
                         </span>
                       )}
                       {cycle.status === 'cancelled' && (
-                        <span className="flex items-center gap-1.5 text-red-600">
+                        <span className="flex items-center gap-1.5 text-rose-400">
                           <AlertCircle className="w-3 h-3" /> Cancelado
                         </span>
                       )}
                     </td>
-                    <td className="px-6 py-4 text-slate-400">
+                    <td className="px-6 py-4 text-slate-500">
                       {new Date(cycle.created_at).toLocaleDateString('pt-BR')}
                     </td>
                   </tr>
                 ))
               ) : (
                 <tr>
-                  <td colSpan={6} className="px-6 py-12 text-center text-slate-400">
+                  <td colSpan={6} className="px-6 py-12 text-center text-slate-500">
                     Nenhum bônus registrado até o momento.
                   </td>
                 </tr>
