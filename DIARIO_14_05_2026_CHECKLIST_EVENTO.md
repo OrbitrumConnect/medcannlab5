@@ -321,3 +321,143 @@ Ricardo aprovou "referral pinga pra ambos" (paciente também ganha) — mas sche
 - AEC empírica validada (log João 13/05 19h45)
 - Quórum 3 sócios noite 13/05 aprovou direcionamento consent-first
 - 18h até evento quinta 20h BRT
+
+---
+
+## BLOCO B — Conversa Pedro+Ricardo+João saindo casa Ricardo (14/05 madrugada)
+
+### B.1 — Transcrição-chave (gravada por Pedro no GPT)
+
+Audiência real de amanhã CONFIRMADA pelos 3 sócios:
+
+```
+✓ Pedro Protássio
+✓ Daniel Rubens
+± Outro psiquiatra (a confirmar)
+★ Marina — CMO Cura+Saúde (4000 clínicas) — POTENCIAL PARCEIRA B2B
++ Colaborador novo do João (até agora não conhece o app)
++ Pessoas com pacientes pra testar
+```
+
+**João citou nomes hipotéticos** (Dr. Silvio Piotti, Gomes Prudêncio, Jorge Forbes, Fernando Roquete) — **nenhum desses vem amanhã**. Ricardo corrigiu na hora.
+
+### B.2 — Tensão narrativa entre os 3 (relevante)
+
+```
+João:    "É Roadshow, meu irmão. Já chamar investidores pra cá."
+Pedro:   "Amanhã não é Roadshow. Presta atenção. É teste beta ainda."
+Ricardo: [alinhado Pedro] "A função do amanhã é pegar a pessoa que já está
+         na plataforma e dizer assim ó, olha, você tem que fazer isso aqui."
+```
+
+**Pedro+Ricardo unidos.** Pedro precisou ser explícito 2x. João tende a **over-claim institucional** — ele pode falar "Roadshow / investidor" pra Marina mas o produto é PRÉ-PMF. Risco: expectativa quebrada se ela ouvir vs ver.
+
+Aplicação **`feedback_anti_overclaim_endorsements.md`**: linguagem amanhã deve ser **empírica e honesta** (Pedro+Ricardo), NÃO inflada (João). Material gravado vira pitch reutilizável — qualquer overclaim vira problema institucional.
+
+### B.3 — Diferenciais que Ricardo quer enfatizar
+
+Sequência cristalizada por Ricardo na conversa:
+
+```
+1. "Desenvolvido por médico que trabalha no mercado"
+   → autoridade clínica autoral (não tech startup genérica)
+
+2. "Dois médicos trocam pacientes"
+   → V1.9.273-275 consent-first DIRECIONAMENTO PACIENTES que entreguei
+     na noite anterior. SEQUÊNCIA PERFEITA: quórum 3 sócios → feature →
+     demo institucional. Cristaliza Princípio "Quórum aproveita".
+
+3. "Sugere dados, gera segurança, prontuário, facilidade, agilidade"
+   → AEC + Pipeline + ICP-Brasil + UX premium (V1.9.262-278)
+
+4. "Todo mundo tá ganhando dinheiro"
+   → Modelo 3 mecanismos (take rate + cashback + referral)
+```
+
+### B.4 — Marina + Cura+Saúde (potencial B2B 4000 clínicas)
+
+Pedro perguntou: *"você colocar com prontuário eletrônico da clínica..."*
+
+Pode estar avaliando **integração da plataforma com prontuário eletrônico das clínicas dela**. **Diferente do roadmap atual (B2C via CNPJ+Stripe).** É venda B2B estratégica.
+
+Implicação pra demo amanhã: Marina **não vê um aplicativo de paciente**, ela vê uma **camada que poderia integrar com 4000 prontuários**. O pitch pra ela é arquitetural (ICP-Brasil + RLS + integração), não jornada paciente.
+
+**Risco honesto:** se mostrar só jornada paciente, Marina pode achar que é "mais um aplicativo de telemedicina". Diferencial pra ela é **infraestrutura clínica reutilizável**.
+
+### B.5 — Função clarificada do evento
+
+NÃO é Roadshow. **É 3 coisas simultâneas:**
+
+```
+1. TESTE BETA com gente que já está cadastrada
+   → exercita fluxos empíricamente, descobre bugs (igual 13/05 noite 8 bugs)
+
+2. GRAVAÇÃO AO VIVO de demo guiada
+   → vira material reusável pós-evento (onboarding + pitch + tutorial)
+
+3. EXPOSIÇÃO INSTITUCIONAL pra Marina + Pedro Protássio + Daniel Rubens
+   → sem inflar — mostrar o que existe empíricamente
+   → potencial Marina = parceira B2B 4000 clínicas (não investidor)
+```
+
+### B.6 — Refinamento do roteiro (post B.1-B.5)
+
+**Adicionar ao roteiro:**
+
+```
+ABERTURA AJUSTADA (5min)
+- Pedro abre: "Pré-PMF — vocês são amigos testando, não investidores."
+              (estabelece expectativa antes do João inflar)
+- Ricardo abre clinicamente: tese longitudinal + método AEC + autoral
+- Frase âncora cristalizada 13/05 (sistema digital serve relacionamento)
+
+PRA MARINA ESPECIFICAMENTE (não está no roteiro original)
+- Mostrar o REGISTRO clínico assinado ICP-Brasil
+- Mostrar como direcionamento entre médicos respeita LGPD/CFM
+- Mostrar como prontuário é estruturado (escriba V1.9.84 + 5 racionalidades)
+- Pergunta-âncora: "Quantas das 4000 clínicas têm hoje sistema clínico
+                    cannabis medicinal com signature ICP-Brasil + AEC autoral?"
+- Resposta esperada: ZERO. Diferencial estabelecido.
+
+PRA PEDRO PROTÁSSIO + DANIEL RUBENS
+- Foco: jornada clínica completa
+- Mostrar AEC → Pipeline → NFT → Devolução end-to-end
+- "Funciona com método autoral Dr. Ricardo + autoridade jurídica nativa"
+```
+
+### B.7 — Tarefa nova pra Pedro hoje
+
+```
+[ ] Alinhar com João ANTES do evento sobre linguagem:
+    - NÃO usar "Roadshow / investidor / vamos escalar"
+    - USAR "teste beta / gravação demo / Marina é amiga que pode virar parceira"
+    
+[ ] Imprimir/anotar pra João o que NÃO falar (Pedro pode ter conversa difícil
+    com sócio mas é necessário pré-evento — risco institucional concreto)
+```
+
+### B.8 — Frase âncora da conversa noite
+
+> *"João viu Roadshow. Ricardo viu Demo. Pedro precisou alinhar os 3.
+>  Resultado: amanhã é teste beta institucional, com gravação ao vivo,
+>  pra audiência misturada (testers + Marina B2B + Daniel/Protássio
+>  clínicos). Material reusável. Sem inflar. Empírico."*
+
+---
+
+## RESUMO DO DIA 14/05 (estado ao final do BLOCO B)
+
+```
+Hora:                  ~03h BRT
+Sessão noite 13/05:    17 commits encadeados (V1.9.262-278)
+Conversa 3 sócios:     captada por Pedro, transcrita no GPT, analisada
+                       por Claude pra ajuste de roteiro
+Decisão final:         alinhamento Pedro-João pré-evento sobre linguagem
+                       narrativa = TASK CRÍTICA hoje antes 20h
+Audiência refinada:    Pedro Protássio + Daniel Rubens + Marina (B2B 4000
+                       clínicas) + colaborador novo + testers cadastrados
+Risco principal:       João falar "Roadshow / investidor" e Marina
+                       comparar expectativa vs realidade pré-PMF
+Mitigação:             Pedro abre evento estabelecendo "teste beta" antes
+                       do João falar. Anti-overclaim institucional.
+```
