@@ -840,7 +840,9 @@ const ClinicalReports: React.FC<ClinicalReportsProps> = ({ className = '', onSha
     }
   }
 
-  // 📤 Compartilhar análise individual
+  // V1.9.268 — Compartilhar agora gera PDF MedCannLab (era TXT puro).
+  // Reuso downloadRationalityPDF (P8). Toast orienta usuario a anexar
+  // o PDF baixado no compartilhamento (WhatsApp/Email/etc).
   const handleShareRationality = async (rationalityKey: string, value: any) => {
     if (!selectedReport || !value) return
     const labelMap: Record<string, string> = {
@@ -851,16 +853,23 @@ const ClinicalReports: React.FC<ClinicalReportsProps> = ({ className = '', onSha
       integrative: 'Integrativa'
     }
     const label = labelMap[rationalityKey] || rationalityKey
-    const text = `Análise ${label} — ${selectedReport.patientName}\n\n${stripClinical(value.assessment || '')}`
     try {
-      if (navigator.share) {
-        await navigator.share({ title: `Análise ${label}`, text })
-      } else {
-        await navigator.clipboard.writeText(text)
-        toastSuccess('Análise copiada', 'Texto disponível na área de transferência.')
-      }
+      // Gera PDF MedCannLab via modulo compartilhado (V1.9.247)
+      downloadRationalityPDF({
+        patientName: selectedReport.patientName,
+        reportDate: selectedReport.date,
+        reportId: selectedReport.id,
+        rationalityKey,
+        value,
+        signatureHashShort: selectedReport.signatureHashShort,
+      })
+      toastSuccess(
+        'PDF gerado',
+        `Análise ${label} baixada como PDF MedCannLab. Anexe-o ao compartilhar pelo WhatsApp/Email.`
+      )
     } catch (err) {
-      console.warn('Share cancelado/erro:', err)
+      console.error('Erro ao gerar PDF de racionalidade:', err)
+      toastSuccess('Erro', 'Não foi possível gerar o PDF. Tente novamente.')
     }
   }
 
@@ -1937,32 +1946,26 @@ const ClinicalReports: React.FC<ClinicalReportsProps> = ({ className = '', onSha
                               </div>
                             )}
 
+                            {/* V1.9.268 — Botoes Baixar/Compartilhar apenas. NFT removido
+                                (Ricardo+GPT 13/05 V1.9.243: NFT e ato do paciente, nao do medico).
+                                Compartilhar agora gera PDF MedCannLab (era TXT puro). */}
                             {!isPatient && (
                               <div className="flex flex-wrap gap-1.5 pt-3 border-t border-slate-700/40">
                                 <button
                                   onClick={() => handleDownloadRationality(key, value)}
                                   className="flex items-center gap-1 px-2.5 py-1 text-[11px] font-medium rounded-lg bg-slate-800/60 border border-slate-600/40 text-slate-300 hover:bg-indigo-500/20 hover:border-indigo-400/40 hover:text-indigo-200 transition-all"
-                                  title="Baixar esta análise (.txt)"
+                                  title="Baixar PDF MedCannLab desta análise"
                                 >
                                   <Download className="w-3 h-3" />
-                                  <span>Baixar</span>
+                                  <span>Baixar PDF</span>
                                 </button>
                                 <button
                                   onClick={() => handleShareRationality(key, value)}
                                   className="flex items-center gap-1 px-2.5 py-1 text-[11px] font-medium rounded-lg bg-slate-800/60 border border-slate-600/40 text-slate-300 hover:bg-sky-500/20 hover:border-sky-400/40 hover:text-sky-200 transition-all"
-                                  title="Compartilhar esta análise"
+                                  title="Gerar PDF e compartilhar"
                                 >
                                   <Share2 className="w-3 h-3" />
                                   <span>Compartilhar</span>
-                                </button>
-                                <button
-                                  onClick={() => selectedReport && handleGenerateNFT(selectedReport)}
-                                  disabled={nftLoading}
-                                  className="flex items-center gap-1 px-2.5 py-1 text-[11px] font-medium rounded-lg bg-slate-800/60 border border-slate-600/40 text-slate-300 hover:bg-amber-500/20 hover:border-amber-400/40 hover:text-amber-200 transition-all disabled:opacity-60 disabled:cursor-not-allowed"
-                                  title="Registrar como NFT"
-                                >
-                                  {nftLoading ? <Loader2 className="w-3 h-3 animate-spin" /> : <QrCode className="w-3 h-3" />}
-                                  <span>{nftLoading ? '...' : 'NFT'}</span>
                                 </button>
                               </div>
                             )}
