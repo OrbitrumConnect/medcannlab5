@@ -105,6 +105,9 @@ const QuickPrescriptions: React.FC<QuickPrescriptionsProps> = ({ className = '',
   const [showCertHelpModal, setShowCertHelpModal] = useState(false)
   // V1.9.264 — modal Solicitar Exame inline na aba Prescricoes
   const [showExamModal, setShowExamModal] = useState(false)
+  // V1.9.265 — seletor de paciente inline (em vez de mandar pra outra aba)
+  const [examPatientLocal, setExamPatientLocal] = useState<{ id: string; name: string } | null>(null)
+  const [examPatientSearch, setExamPatientSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState<'todas' | 'draft' | 'signed' | 'sent'>('todas')
 
   // V1.9.180-C — Edit inline (cards rascunho clicáveis pra editar). Removidos
@@ -645,9 +648,11 @@ const QuickPrescriptions: React.FC<QuickPrescriptionsProps> = ({ className = '',
           <div className="w-10 h-1 bg-slate-700/30 rounded-full mx-auto"></div>
         </div>
 
-        <div className="flex flex-col md:flex-row items-center justify-center gap-3 w-full">
-          {/* Categories Container */}
-          <div className="flex items-center p-0.5 bg-slate-900/50 rounded-full border border-slate-700 backdrop-blur-md overflow-x-auto no-scrollbar max-w-full">
+        {/* V1.9.265 — TODOS os triggers (filtros + CTAs) num UNICO container rounded-full (Pedro 13/05 21h).
+            Antes: 3 grupos visualmente separados. Agora: barra unica com divisores verticais internos. */}
+        <div className="flex justify-center w-full px-2">
+          <div className="inline-flex items-center p-1 bg-slate-900/50 rounded-full border border-slate-700 backdrop-blur-md overflow-x-auto no-scrollbar max-w-full gap-1">
+            {/* Filtros de categoria */}
             {categories.map((category) => (
               <button
                 key={category.id}
@@ -660,42 +665,45 @@ const QuickPrescriptions: React.FC<QuickPrescriptionsProps> = ({ className = '',
                 {category.label}
               </button>
             ))}
+
+            {/* Divisor interno */}
+            <div className="w-px h-5 bg-slate-700/50 mx-1 shrink-0"></div>
+
+            {/* CTA 1 — Nova Prescrição (emerald solido) */}
+            <button
+              onClick={() => setIsModalOpen(true)}
+              className="flex items-center space-x-1.5 px-4 py-1.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs rounded-full transition-all shadow shadow-emerald-500/10 hover:scale-105 active:scale-95 whitespace-nowrap"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              <span>Nova Prescrição</span>
+            </button>
+
+            {/* CTA 2 — Solicitar Exame (cyan solido, V1.9.264) */}
+            <button
+              onClick={() => setShowExamModal(true)}
+              title="Solicitar exame para um paciente"
+              className="flex items-center space-x-1.5 px-4 py-1.5 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs rounded-full transition-all shadow shadow-cyan-500/10 hover:scale-105 active:scale-95 whitespace-nowrap"
+            >
+              <FlaskConical className="w-3.5 h-3.5" />
+              <span>Solicitar Exame</span>
+            </button>
+
+            {/* Divisor interno */}
+            <div className="w-px h-5 bg-slate-700/50 mx-1 shrink-0"></div>
+
+            {/* Navegacao — Ver todas / Rascunhos (slate outline) */}
+            <button
+              onClick={() => {
+                setStatusFilter('draft')
+                minhasPrescricoesRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+              }}
+              title="Ir para suas prescrições (filtra rascunhos)"
+              className="flex items-center space-x-1.5 px-4 py-1.5 text-slate-200 hover:bg-slate-800/50 hover:text-white font-medium text-xs rounded-full transition-all whitespace-nowrap"
+            >
+              <ListChecks className="w-3.5 h-3.5 text-emerald-400" />
+              <span>Ver todas / Rascunhos</span>
+            </button>
           </div>
-
-          <div className="hidden md:block w-px h-6 bg-slate-700/50 mx-1"></div>
-
-          {/* V1.9.264 — 3 triggers uniformizados (mesmo padrao rounded-full px-5 py-2 text-xs font-bold).
-              Cores semanticas: emerald sólido (CTA primario) / cyan sólido (CTA Exame) / slate outline (navegacao) */}
-          <button
-            onClick={() => setIsModalOpen(true)}
-            className="flex items-center space-x-1.5 px-5 py-2 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs rounded-full transition-all shadow-lg shadow-emerald-500/10 hover:scale-105 active:scale-95"
-          >
-            <Plus className="w-3.5 h-3.5" />
-            <span>Nova Prescrição</span>
-          </button>
-
-          {/* V1.9.264 — Solicitar Exame inline (Ricardo 13/05 20h45: "falta exames nessa aba") */}
-          <button
-            onClick={() => setShowExamModal(true)}
-            title={patientId ? 'Solicitar exame para o paciente selecionado' : 'Selecione um paciente antes de solicitar exame'}
-            className="flex items-center space-x-1.5 px-5 py-2 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs rounded-full transition-all shadow-lg shadow-cyan-500/10 hover:scale-105 active:scale-95"
-          >
-            <FlaskConical className="w-3.5 h-3.5" />
-            <span>Solicitar Exame</span>
-          </button>
-
-          {/* [V1.9.180-C] Scroll suave pra seção "Minhas Prescrições" que já existe na MESMA página + filtra rascunhos */}
-          <button
-            onClick={() => {
-              setStatusFilter('draft')
-              minhasPrescricoesRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-            }}
-            title="Ir para suas prescrições (filtra rascunhos)"
-            className="flex items-center space-x-1.5 px-5 py-2 bg-slate-800/50 hover:bg-slate-700/50 text-slate-200 font-bold text-xs rounded-full border border-slate-700 hover:border-emerald-500/50 transition-all hover:scale-105 active:scale-95"
-          >
-            <ListChecks className="w-3.5 h-3.5 text-emerald-400" />
-            <span>Ver todas / Rascunhos</span>
-          </button>
         </div>
       </div>
 
@@ -1341,54 +1349,111 @@ const QuickPrescriptions: React.FC<QuickPrescriptionsProps> = ({ className = '',
         </div>
       )}
 
-      {/* V1.9.264 — Modal Solicitar Exame (Ricardo 13/05): reuso ExamRequestModule.
-          Sem paciente -> mensagem clara. Com paciente -> renderiza modulo completo. */}
-      {showExamModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm" onClick={() => setShowExamModal(false)}>
-          <div className="bg-slate-900 border border-cyan-500/20 rounded-2xl max-w-5xl w-full max-h-[92vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
-            <div className="sticky top-0 z-10 flex items-center justify-between p-4 bg-slate-900/95 backdrop-blur border-b border-slate-800">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-cyan-500/15 border border-cyan-500/30 flex items-center justify-center">
-                  <FlaskConical className="w-5 h-5 text-cyan-400" />
+      {/* V1.9.264/265 — Modal Solicitar Exame (Ricardo 13/05): reuso ExamRequestModule + seletor inline.
+          Resolucao paciente: prop patientId (contexto Terminal) -> examPatientLocal (escolhido aqui dentro) -> seletor. */}
+      {showExamModal && (() => {
+        const effectivePatientId = patientId || examPatientLocal?.id || ''
+        const effectivePatientName = patientId
+          ? patientsList.find(p => p.id === patientId)?.name
+          : examPatientLocal?.name
+        const hasPatient = !!effectivePatientId
+        const filteredPatients = examPatientSearch.trim()
+          ? patientsList.filter(p => p.name?.toLowerCase().includes(examPatientSearch.toLowerCase()))
+          : patientsList
+        const closeExamModal = () => {
+          setShowExamModal(false)
+          setExamPatientLocal(null)
+          setExamPatientSearch('')
+        }
+        return (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm" onClick={closeExamModal}>
+            <div className="bg-slate-900 border border-cyan-500/20 rounded-2xl max-w-5xl w-full max-h-[92vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+              <div className="sticky top-0 z-10 flex items-center justify-between p-4 bg-slate-900/95 backdrop-blur border-b border-slate-800">
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="w-10 h-10 rounded-xl bg-cyan-500/15 border border-cyan-500/30 flex items-center justify-center shrink-0">
+                    <FlaskConical className="w-5 h-5 text-cyan-400" />
+                  </div>
+                  <div className="min-w-0">
+                    <h3 className="text-lg font-bold text-white">Solicitação de Exames</h3>
+                    <p className="text-xs text-slate-400 truncate">
+                      {hasPatient ? `Paciente: ${effectivePatientName || 'Selecionado'}` : 'Selecione um paciente abaixo pra começar'}
+                    </p>
+                  </div>
                 </div>
-                <div>
-                  <h3 className="text-lg font-bold text-white">Solicitação de Exames</h3>
-                  <p className="text-xs text-slate-400">
-                    {patientId
-                      ? `Paciente: ${patientsList.find(p => p.id === patientId)?.name || 'Selecionado'}`
-                      : 'Selecione um paciente antes de solicitar'}
-                  </p>
-                </div>
-              </div>
-              <button onClick={() => setShowExamModal(false)} className="text-slate-400 hover:text-white p-1">
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-            <div className="p-4">
-              {patientId ? (
-                <ExamRequestModule
-                  patientId={patientId}
-                  patientName={patientsList.find(p => p.id === patientId)?.name}
-                />
-              ) : (
-                <div className="text-center py-16 px-6">
-                  <FlaskConical className="w-16 h-16 mx-auto mb-4 text-slate-600 opacity-50" />
-                  <p className="text-white font-semibold mb-2">Nenhum paciente selecionado</p>
-                  <p className="text-slate-400 text-sm mb-6 max-w-md mx-auto">
-                    Para solicitar exames, primeiro selecione um paciente na aba <strong className="text-cyan-400">Prontuário</strong> ou <strong className="text-cyan-400">Paciente em foco</strong>.
-                  </p>
-                  <button
-                    onClick={() => setShowExamModal(false)}
-                    className="px-5 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-lg text-sm border border-slate-700"
-                  >
-                    Fechar
+                <div className="flex items-center gap-2 shrink-0">
+                  {!patientId && examPatientLocal && (
+                    <button
+                      onClick={() => { setExamPatientLocal(null); setExamPatientSearch('') }}
+                      title="Trocar paciente"
+                      className="px-3 py-1.5 rounded-lg text-xs bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700"
+                    >
+                      Trocar paciente
+                    </button>
+                  )}
+                  <button onClick={closeExamModal} className="text-slate-400 hover:text-white p-1">
+                    <X className="w-5 h-5" />
                   </button>
                 </div>
-              )}
+              </div>
+              <div className="p-4">
+                {hasPatient ? (
+                  <ExamRequestModule
+                    patientId={effectivePatientId}
+                    patientName={effectivePatientName}
+                  />
+                ) : (
+                  <div className="py-4">
+                    <div className="text-center mb-4">
+                      <FlaskConical className="w-12 h-12 mx-auto mb-3 text-cyan-400/60" />
+                      <p className="text-white font-semibold mb-1">Selecione o paciente</p>
+                      <p className="text-slate-400 text-xs">Busque pelo nome abaixo e clique pra abrir o editor de exames.</p>
+                    </div>
+                    <div className="relative mb-3 max-w-md mx-auto">
+                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                      <input
+                        type="text"
+                        autoFocus
+                        value={examPatientSearch}
+                        onChange={(e) => setExamPatientSearch(e.target.value)}
+                        placeholder="Buscar paciente por nome..."
+                        className="w-full bg-slate-800 text-white pl-9 pr-9 py-2.5 rounded-lg border border-slate-700 focus:border-cyan-500 focus:outline-none text-sm"
+                      />
+                      {examPatientSearch && (
+                        <button
+                          onClick={() => setExamPatientSearch('')}
+                          className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-500 hover:text-white p-1"
+                        >
+                          <X className="w-3.5 h-3.5" />
+                        </button>
+                      )}
+                    </div>
+                    <div className="max-h-[55vh] overflow-y-auto max-w-md mx-auto space-y-1.5 pr-1">
+                      {filteredPatients.length === 0 ? (
+                        <p className="text-center text-slate-500 text-sm py-8">
+                          {patientsList.length === 0 ? 'Carregando pacientes...' : 'Nenhum paciente encontrado com esse nome.'}
+                        </p>
+                      ) : (
+                        filteredPatients.map(p => (
+                          <button
+                            key={p.id}
+                            onClick={() => { setExamPatientLocal(p); setExamPatientSearch('') }}
+                            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg bg-slate-800/50 hover:bg-cyan-500/10 border border-slate-700 hover:border-cyan-500/40 transition-colors text-left"
+                          >
+                            <div className="w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center shrink-0">
+                              <User className="w-4 h-4 text-slate-300" />
+                            </div>
+                            <span className="text-white text-sm font-medium truncate">{p.name}</span>
+                          </button>
+                        ))
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )
+      })()}
 
     </div>
   )
