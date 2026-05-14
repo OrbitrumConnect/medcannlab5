@@ -330,3 +330,102 @@ Foi um dia bom de trabalhar. 🍃
 ## Frase âncora final do dia 13/05 (revisada pós-Bloco L+M)
 
 > **"Dia de dois marcos: institucional (Ricardo aprovou 3 camadas + cristalizou tese longitudinal e NFT royalty pela manhã) e técnico (16 versões em sequência, 8 bugs silenciosos descobertos por uso real, todos corrigidos no mesmo dia, sem tocar Lock V1.9.95). O empirismo dirigiu a evolução — não havia como descobrir sem alguém usando de verdade. Ricardo aprovou V1.9.254 dizendo que 'gera insegurança pra apresentar'. Pedro, ao abrir report devolvido como paciente, expôs bug Sprint 1 silencioso de 3 dias. A camada de governança protegeu enquanto a camada de experiência respirava."**
+
+---
+
+## BLOCO N — Sessão noite 13/05 → 14/05 madrugada (17 commits, V1.9.262-278)
+
+### N.1 — Trigger
+
+Pedro voltou ao PC noite 13/05 e auditou app empíricamente. Sessão se desdobrou em ~4h contínuas. Quórum raro: **3 sócios online simultaneamente** (Pedro+Ricardo+João) ~23h pra decisões arquiteturais delicadas.
+
+### N.2 — 17 commits cronológicos
+
+```
+V1.9.262  Salvar e Assinar atômico exam_request   (Ricardo: "saiu como rascunho")
+V1.9.263  Confirm modal antes assinar + editar rascunho inline
+V1.9.264  Trigger Solicitar Exame inline + uniforme visual
+V1.9.265  Barra única triggers + seletor paciente inline modal
+V1.9.266  Triggers sem cor sólida + dropdown compacto
+V1.9.267  Tipografia +20% (80%→96%) — médicos 50+
+V1.9.268  NFT removido bloco médico + Compartilhar PDF
+V1.9.269  Aba Incentivos + escala referral 5/20/50/100/250
+V1.9.270  Link de indicação + fix card branco
+V1.9.271  QR code + WhatsApp/Email/Native share
+V1.9.272  3 círculos status vínculo (zero migration)
+V1.9.273  Migration patient_referrals consent-first (RLS + indexes + trigger)
+V1.9.274  UI Médico A — ReferralsManager
+V1.9.275  Banner consent paciente direcionamento (LGPD art. 11 §1)
+V1.9.276  Equipe Clínica wider (max-w-7xl)
+V1.9.277  paddingBottom safe-area em 4 inputs mobile
+V1.9.278  min-h-[100dvh] PatientDoctorChat (scroll laptop pequeno Ricardo)
+```
+
+### N.3 — MARCO arquitetural: direcionamento consent-first
+
+Pedro+Ricardo+João aprovaram juntos noite 13/05 modelo:
+
+```
+Dr. A sugere → INSERT patient_referrals status='pending_patient_consent'
+        ↓ (NÃO automático)
+Paciente recebe banner amber → modal decisão clara
+        ↓
+Aceito → status='accepted', Dr. B vê paciente (RLS pr_select_to)
+Recuso → status='declined_by_patient', Dr. B nunca soube
+```
+
+**Conformidade total:** LGPD art. 11 §1 + art. 18 VI + art. 20 / CFM 2.314 art. 8 / Código Ética art. 89 / Princípio 11.
+
+Ricardo aprovou explicitamente:
+> *"proficional mesmo estagiario ou da equipe dele por mais que ele ou outro esteja com agenda cheia nao passar atuomaticamente antes de avisar para ele qual seria com direito dele escolher acha o mais correto?!"*
+
+Auto-direcionamento (arquiteturalmente tentador) foi REJEITADO em respeito ao consentimento explícito.
+
+### N.4 — Modelo financeiro 3 mecanismos INDEPENDENTES
+
+```
+Mec 1 — Take rate marketplace   30%/70% padrão, pode descer até 20%/80% (mérito)
+Mec 2 — Cashback gamificação     8,7% paciente + benefícios ELITE/GOLD pro pro
+Mec 3 — Referral escala          5/20/50/100/250 → +1/+2/+4/+6/+8% (consent paciente)
+```
+
+Pedro+Ricardo+João validaram em real-time. Decisão: parquear motor backend pós-CNPJ + Stripe Connect. **UI hoje só DISPLAY** (saldo simulado).
+
+**Gap empírico identificado (Princípio 53):**
+- Cost telemetry V1.9.238 NÃO popula em prod (audit 13/05 noite)
+- Schema `referral_bonus_cycles` só tem doctor_id (precisa migration pra "ambos" futuro)
+- Conexão `current_discount_percent` → split fee NÃO confirmada empíricamente
+
+### N.5 — Log AEC João Vidal — validação empírica final pré-evento
+
+~19h45 BRT — João completou AEC end-to-end empírico:
+
+```
+✓ 4 fases finais: CONSENSUS_REVIEW → REPORT → CONSENT → FINAL_RECOMMENDATION
+✓ Verbatim First V1.9.86 (0 tokens, 4 turns)
+✓ AEC GATE V1.5 + SMART_SCHEDULING_GUARD V1.9.216
+✓ Pipeline completo: SCORES (62, high) → REPORT (V1.9.84) → SIGNATURE
+   → AXES → RATIONALITY → DONE
+✓ Hash ICP: 490b3dc333934a32...
+✓ Total latency: 29.5s (alinhado baseline)
+✓ DB SAVED interaction_id 6a2ec0bc
+```
+
+Pedro:
+> *"joao fez end to end agendou ricardo aceitou relatorio ja devolveu para ele ele fez o nft! depois eles se ligaram de video sem agendamento para conversa! tudo foi perfeito"*
+
+**Sistema completo (AEC + Pipeline + Devolução + NFT + Vídeo + Referral) validado em produção real, na véspera do evento.**
+
+### N.6 — Princípios cristalizados
+
+- **"Quórum aproveita"** (14/05 madrugada) — quando 3 sócios estão presentes simultaneamente (raro), decisões arquiteturais delicadas viram naquele momento. Adiar = dispersão.
+- **"Consent-first antes de auto"** — sistema saúde sugere, médico decide, paciente consente. Auto sem consent = viola LGPD + CFM + Princípio 11.
+- **"Feature emergente do schema"** — V1.9.272 (3 círculos) mostrou que `invited_by + appointments + professional_teams` já suporta sistema completo sem migration. P8 reuso > P53 invenção.
+
+### N.7 — Frase âncora pós-N
+
+> **"De 13/05 manhã (Ricardo aprovou 3 camadas + frase âncora longitudinal) a 14/05 madrugada (consent-first direcionamento, 17 commits encadeados pré-evento), o dia evoluiu de marco institucional pra produto vivo. AEC do João Vidal rodou perfeita end-to-end na véspera do evento. Sistema completo entregue. Lock V1.9.95 intocado em 24h de codificação pesada. Próximo: 20 amigos quinta 20h."**
+
+---
+
+*[DIÁRIO 13/05 SELADO 14/05 ~02h BRT. Próximo: DIARIO_14_05_2026_CHECKLIST_EVENTO.md]*
