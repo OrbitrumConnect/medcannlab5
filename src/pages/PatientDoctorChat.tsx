@@ -1012,35 +1012,34 @@ const PatientDoctorChat: React.FC = () => {
       <div className="absolute bottom-0 right-1/4 w-80 h-80 bg-emerald-500/5 rounded-full blur-[100px] pointer-events-none" />
 
       <div className="relative z-10 w-full max-w-[1600px] mx-auto px-4 md:px-6 lg:px-8 py-5 flex-1 flex flex-col min-h-0">
-        <div className="flex flex-col gap-5 flex-1 min-h-0">
-          {/* V1.9.169-B — Voltar outer hide em mobile com sala ativa (usa "Voltar à lista" do section) */}
-          <button
-            onClick={() => navigate(-1)}
-            className={`${activeRoomId ? 'hidden lg:inline-flex' : 'inline-flex'} items-center gap-2 text-slate-400 hover:text-white transition-colors group w-fit shrink-0`}
-          >
-            <ArrowLeft className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" />
-            <span className="text-sm">Voltar</span>
-          </button>
-
-          {/* V1.9.169-B — Header gigante hide em mobile com sala ativa (libera ~250px viewport) */}
-          {/* V1.9.279 (Pedro 14/05 09h43) — header vertical compactado: p-6→p-3/4,
-              icone 9→7, text-3xl→xl, gap-4→gap-2, mb-2/mt-2→mb-1/mt-1, descricao
-              max-w-xl→2xl + leading-snug. Libera ~50px viewport pro chat respirar. */}
+        <div className="flex flex-col gap-3 flex-1 min-h-0">
+          {/* V1.9.280 (Pedro 14/05): Voltar movido pra DENTRO do header (era botão isolado acima, ocupava ~28px vazios).
+              Mantém mesma lógica de hide mobile com sala ativa que o header. */}
           <header className={`relative overflow-hidden bg-slate-900/60 backdrop-blur-xl border border-slate-700/40 rounded-2xl p-3 md:p-4 ${activeRoomId ? 'hidden lg:flex' : 'flex'} flex-col md:flex-row md:items-center md:justify-between gap-2 shrink-0`}>
             {/* Header glow */}
             <div className="absolute top-0 right-0 w-64 h-64 bg-primary-500/8 rounded-full blur-3xl -mr-20 -mt-20 pointer-events-none" />
             <div className="absolute bottom-0 left-0 w-48 h-48 bg-emerald-500/6 rounded-full blur-3xl -ml-16 -mb-16 pointer-events-none" />
-            <div className="relative z-10">
-              <p className="text-[10px] uppercase tracking-[0.35em] text-primary-300/80 mb-1 font-medium">Programa de Cuidado Renal</p>
-              <h1 className="text-lg md:text-xl font-bold text-white flex items-center gap-2">
-                <div className="w-7 h-7 rounded-lg bg-primary-500/15 border border-primary-500/20 flex items-center justify-center">
-                  <MessageCircle className="w-4 h-4 text-primary-400" />
-                </div>
-                Atendimento Integrado
-              </h1>
-              <p className="text-slate-400 text-xs md:text-sm mt-1 max-w-2xl leading-snug">
-                Converse com a equipe clínica responsável pelo seu acompanhamento em cannabis medicinal e saúde renal.
-              </p>
+            <div className="relative z-10 flex items-start gap-3 flex-1 min-w-0">
+              <button
+                onClick={() => navigate(-1)}
+                className="p-1.5 -ml-1 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800/50 transition-colors shrink-0 mt-0.5 group"
+                title="Voltar"
+                aria-label="Voltar"
+              >
+                <ArrowLeft className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" />
+              </button>
+              <div className="min-w-0 flex-1">
+                <p className="text-[10px] uppercase tracking-[0.35em] text-primary-300/80 mb-1 font-medium">Programa de Cuidado Renal</p>
+                <h1 className="text-lg md:text-xl font-bold text-white flex items-center gap-2">
+                  <div className="w-7 h-7 rounded-lg bg-primary-500/15 border border-primary-500/20 flex items-center justify-center">
+                    <MessageCircle className="w-4 h-4 text-primary-400" />
+                  </div>
+                  Atendimento Integrado
+                </h1>
+                <p className="text-slate-400 text-xs md:text-sm mt-1 max-w-2xl leading-snug">
+                  Converse com a equipe clínica responsável pelo seu acompanhamento em cannabis medicinal e saúde renal.
+                </p>
+              </div>
             </div>
             <div className="flex flex-wrap items-center gap-3 relative z-10">
               <span className={`px-3 py-1.5 rounded-full text-xs font-semibold backdrop-blur-sm ${isOnline

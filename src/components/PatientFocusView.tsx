@@ -283,14 +283,9 @@ const PatientFocusView: React.FC<PatientFocusViewProps> = ({ activePatientId, on
                     </div>
                 ) : (
                     <>
-                        <div className="flex items-center gap-3 mb-6">
-                            <User className="w-10 h-10 text-amber-400" />
-                            <div>
-                                <h2 className="text-xl font-bold text-white">Paciente em foco</h2>
-                                <p className="text-sm text-slate-400">Selecione um paciente para acessar Evolução e Analytics e o Prontuário em uma única vista.</p>
-                            </div>
-                        </div>
-                        <div className="flex flex-wrap items-center gap-3 mb-6">
+                        {/* V1.9.280 (Pedro 14/05): header "Paciente em foco" removido — redundante com a aba homônima do IntegratedWorkstation.
+                            Contexto fica no placeholder card abaixo ("Busque e selecione um paciente acima..."). */}
+                        <div className="flex flex-wrap items-center gap-3 mb-4">
                             <div className="relative" ref={patientDropdownRef}>
                                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
                                 <input

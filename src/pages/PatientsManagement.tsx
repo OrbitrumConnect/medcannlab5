@@ -428,7 +428,7 @@ const PatientsManagement: React.FC<PatientsManagementProps> = ({ embedded = fals
     { id: 'none', name: 'Sem especialidade' },
     { id: 'cannabis', name: 'Cannabis Medicinal' },
     { id: 'nephrology', name: 'Nefrologia' },
-    { id: 'pain', name: 'Dor' },
+    { id: 'pain', name: 'Medicina da Dor' },
     { id: 'psychiatry', name: 'Psiquiatria' }
   ]
 
@@ -1218,22 +1218,68 @@ const PatientsManagement: React.FC<PatientsManagementProps> = ({ embedded = fals
         {/* V1.9.119-G: Filters Bar compactado (era p-6 mb-4 → p-3 mb-3) */}
         {!detailOnly && (
           <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl p-3 mb-3 border border-slate-700/50">
-            <div className="flex flex-col md:flex-row md:items-center justify-between mb-3 gap-3">
-              <div className="flex items-center gap-3">
-                <button
-                  onClick={handleBack}
-                  className="p-1.5 hover:bg-slate-700 rounded-lg transition-all hover:scale-105"
-                  title="Voltar"
+            {/* V1.9.280: linha única — back + filtros + Novo Paciente todos na mesma altura. Removido h2 "Filtros de Busca" (redundante). */}
+            <div className="flex flex-col md:flex-row md:items-center gap-2">
+              <button
+                onClick={handleBack}
+                className="self-start md:self-auto p-1.5 hover:bg-slate-700 rounded-lg transition-all hover:scale-105 shrink-0"
+                title="Voltar"
+              >
+                <ArrowLeft className="w-4 h-4 text-white" />
+              </button>
+
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-2 flex-1 min-w-0">
+                {/* Search */}
+                <div className="relative">
+                  <Search className="absolute left-2.5 top-1/2 transform -translate-y-1/2 text-slate-400 w-4 h-4" />
+                  <input
+                    type="text"
+                    placeholder="Buscar por nome, CPF ou código..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="w-full pl-9 pr-3 py-1.5 bg-slate-700 border border-slate-600 rounded-lg text-white text-sm placeholder-slate-400 focus:outline-none focus:border-blue-500 transition-colors"
+                  />
+                </div>
+
+                {/* Specialty Filter */}
+                <select
+                  value={selectedSpecialty}
+                  onChange={(e) => setSelectedSpecialty(e.target.value)}
+                  className="px-3 py-1.5 bg-slate-700 border border-slate-600 rounded-lg text-white text-sm focus:outline-none focus:border-blue-500 transition-colors"
                 >
-                  <ArrowLeft className="w-4 h-4 text-white" />
-                </button>
-                <h2 className="text-base font-semibold text-white">Filtros de Busca</h2>
+                  <option value="all">Todas as Especialidades</option>
+                  {specialties.map(spec => (
+                    <option key={spec.id} value={spec.id}>{spec.name}</option>
+                  ))}
+                </select>
+
+                {/* Clinic Filter */}
+                <select
+                  value={selectedClinic}
+                  onChange={(e) => setSelectedClinic(e.target.value)}
+                  className="px-3 py-1.5 bg-slate-700 border border-slate-600 rounded-lg text-white text-sm focus:outline-none focus:border-blue-500 transition-colors"
+                >
+                  {clinics.map(clinic => (
+                    <option key={clinic.id} value={clinic.id}>{clinic.name}</option>
+                  ))}
+                </select>
+
+                {/* Room Filter */}
+                <select
+                  value={selectedRoom}
+                  onChange={(e) => setSelectedRoom(e.target.value)}
+                  className="px-3 py-1.5 bg-slate-700 border border-slate-600 rounded-lg text-white text-sm focus:outline-none focus:border-blue-500 transition-colors"
+                >
+                  {rooms.map(room => (
+                    <option key={room.id} value={room.id}>{room.name}</option>
+                  ))}
+                </select>
               </div>
 
-              <div className="relative new-patient-menu-container">
+              <div className="relative new-patient-menu-container shrink-0">
                 <button
                   onClick={() => setShowNewPatientMenu(!showNewPatientMenu)}
-                  className="flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-blue-500 to-cyan-500 text-white rounded-lg hover:from-blue-600 hover:to-cyan-600 transition-all hover:scale-[1.02] text-sm font-medium shadow-md shadow-blue-900/20"
+                  className="w-full md:w-auto flex items-center justify-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-blue-500 to-cyan-500 text-white rounded-lg hover:from-blue-600 hover:to-cyan-600 transition-all hover:scale-[1.02] text-sm font-medium shadow-md shadow-blue-900/20"
                   title="Cadastrar novo paciente"
                 >
                   <UserPlus className="w-4 h-4" />
@@ -1290,54 +1336,6 @@ const PatientsManagement: React.FC<PatientsManagementProps> = ({ embedded = fals
                   </div>
                 )}
               </div>
-            </div>
-            {/* V1.9.119-G: filtros mais compactos (gap-4 py-2 → gap-2 py-1.5) */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-2">
-              {/* Search */}
-              <div className="relative">
-                <Search className="absolute left-2.5 top-1/2 transform -translate-y-1/2 text-slate-400 w-4 h-4" />
-                <input
-                  type="text"
-                  placeholder="Buscar por nome, CPF ou código..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-9 pr-3 py-1.5 bg-slate-700 border border-slate-600 rounded-lg text-white text-sm placeholder-slate-400 focus:outline-none focus:border-blue-500 transition-colors"
-                />
-              </div>
-
-              {/* Specialty Filter */}
-              <select
-                value={selectedSpecialty}
-                onChange={(e) => setSelectedSpecialty(e.target.value)}
-                className="px-3 py-1.5 bg-slate-700 border border-slate-600 rounded-lg text-white text-sm focus:outline-none focus:border-blue-500 transition-colors"
-              >
-                <option value="all">Todas as Especialidades</option>
-                {specialties.map(spec => (
-                  <option key={spec.id} value={spec.id}>{spec.name}</option>
-                ))}
-              </select>
-
-              {/* Clinic Filter */}
-              <select
-                value={selectedClinic}
-                onChange={(e) => setSelectedClinic(e.target.value)}
-                className="px-3 py-1.5 bg-slate-700 border border-slate-600 rounded-lg text-white text-sm focus:outline-none focus:border-blue-500 transition-colors"
-              >
-                {clinics.map(clinic => (
-                  <option key={clinic.id} value={clinic.id}>{clinic.name}</option>
-                ))}
-              </select>
-
-              {/* Room Filter */}
-              <select
-                value={selectedRoom}
-                onChange={(e) => setSelectedRoom(e.target.value)}
-                className="px-3 py-1.5 bg-slate-700 border border-slate-600 rounded-lg text-white text-sm focus:outline-none focus:border-blue-500 transition-colors"
-              >
-                {rooms.map(room => (
-                  <option key={room.id} value={room.id}>{room.name}</option>
-                ))}
-              </select>
             </div>
           </div>
         )}

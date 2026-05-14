@@ -638,7 +638,7 @@ const ProfessionalMyDashboard: React.FC = () => {
       : 'patients'
     return (
       <div className="h-screen w-full bg-[#0f172a] flex flex-col">
-        <SectionHeader title="Terminal Clínico Integrado" icon={Terminal} />
+        {/* V1.9.280: removido SectionHeader duplicado — IntegratedWorkstation já tem header próprio ("Terminal Integrado / MedCannLab OS" + tabs) */}
         <div className="flex-1 overflow-hidden">
           <IntegratedWorkstation initialTab={initialTab} />
         </div>
