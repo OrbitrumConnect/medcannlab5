@@ -240,9 +240,30 @@ const Library: React.FC = () => {
         return
       }
 
-      // Se não tiver URL ou URL não funcionar, tentar criar signed URL
-      if (!viewUrl || viewUrl.includes('Bucket not found') || viewUrl.includes('404')) {
-        // Tentar encontrar o arquivo no Storage (user-scoped folder)
+      // V1.9.289 (Pedro 14/05 11h56): bugfix InvalidJWT.
+      // Causa: signed URL com TTL 1h era PERSISTIDA no DB (file_url) e reutilizada após expirar
+      // → erro {"statusCode":"400","error":"InvalidJWT","message":"\"exp\" claim timestamp check failed"}.
+      // Fix: SEMPRE regerar signed URL on-the-fly antes de abrir. Não persistir mais no DB.
+
+      // Caso 1: URL aponta pro Supabase Storage — extrair filePath e re-gerar signed URL fresh
+      if (viewUrl && viewUrl.includes('supabase.co/storage')) {
+        const pathMatch = viewUrl.match(/\/storage\/v1\/object\/[^\/]+\/([^?]+)/)
+        if (pathMatch) {
+          const filePath = decodeURIComponent(pathMatch[1])
+          const { data: signedData, error: signedError } = await supabase.storage
+            .from('documents')
+            .createSignedUrl(filePath, 3600)
+          if (!signedError && signedData) {
+            viewUrl = signedData.signedUrl
+          } else {
+            console.warn('V1.9.289 signed URL refresh falhou, tentando fallback list:', signedError)
+            viewUrl = null
+          }
+        }
+      }
+
+      // Caso 2 (fallback): sem URL ou refresh falhou → procurar arquivo no Storage por nome
+      if (!viewUrl) {
         const { data: { user: storageUser } } = await supabase.auth.getUser()
         const userFolder = storageUser?.id || ''
         const fileName = doc.title || ''
@@ -257,32 +278,12 @@ const Library: React.FC = () => {
           )
 
           if (file) {
-            // Criar signed URL
             const { data: signedData, error: signedError } = await supabase.storage
               .from('documents')
               .createSignedUrl(`${userFolder}/${file.name}`, 3600)
-
             if (!signedError && signedData) {
               viewUrl = signedData.signedUrl
-              // Atualizar file_url no documento
-              await supabase
-                .from('documents')
-                .update({ file_url: signedData.signedUrl })
-                .eq('id', doc.id)
             }
-          }
-        }
-      } else if (viewUrl.includes('supabase.co/storage')) {
-        // Se for URL do Supabase mas não funcionar, tentar criar signed URL
-        const pathMatch = viewUrl.match(/\/storage\/v1\/object\/[^\/]+\/(.+)$/)
-        if (pathMatch) {
-          const filePath = decodeURIComponent(pathMatch[1])
-          const { data: signedData, error: signedError } = await supabase.storage
-            .from('documents')
-            .createSignedUrl(filePath, 3600)
-
-          if (!signedError && signedData) {
-            viewUrl = signedData.signedUrl
           }
         }
       }
