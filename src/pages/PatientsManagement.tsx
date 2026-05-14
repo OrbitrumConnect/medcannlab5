@@ -1747,35 +1747,8 @@ const PatientsManagement: React.FC<PatientsManagementProps> = ({ embedded = fals
                     </div>
                   </div>
 
-                  {/* V1.9.119-F: Bloco ATENCOES — alergias + medicacoes (so renderiza se tem dado) */}
-                  {(selectedPatient.allergies || selectedPatient.medications || selectedPatient.bloodType) && (
-                    <div className="mt-3 pt-3 border-t border-slate-700/50 space-y-1.5 text-xs">
-                      {selectedPatient.allergies && (
-                        <div className="flex items-start gap-2">
-                          <span className="text-amber-400 font-semibold shrink-0">⚠️ Alergias:</span>
-                          <span className="text-slate-300">{selectedPatient.allergies}</span>
-                        </div>
-                      )}
-                      {selectedPatient.medications && (
-                        <div className="flex items-start gap-2">
-                          <span className="text-blue-400 font-semibold shrink-0">💊 Medicações em curso:</span>
-                          <span className="text-slate-300">{selectedPatient.medications}</span>
-                        </div>
-                      )}
-                      {selectedPatient.bloodType && (
-                        <div className="flex items-start gap-2">
-                          <span className="text-rose-400 font-semibold shrink-0">🩸 Tipo sanguíneo:</span>
-                          <span className="text-slate-300">{selectedPatient.bloodType}</span>
-                        </div>
-                      )}
-                    </div>
-                  )}
-                  {!selectedPatient.allergies && !selectedPatient.medications && !selectedPatient.bloodType && (
-                    <div className="mt-3 pt-3 border-t border-slate-700/50 text-xs text-slate-500 italic">
-                      Nenhum dado clínico cadastrado (alergias, medicações, tipo sanguíneo).
-                      Você pode adicionar via aba Evolução.
-                    </div>
-                  )}
+                  {/* V1.9.282 (Pedro 14/05): Alergias/Medicações/Sangue movidos do header pra DENTRO da Visão Geral
+                      (info salva-vidas merece destaque na primeira tela da aba, não escondida no header). */}
 
                   {/* V1.9.119-F: Métricas compactas em LINHA (era 3 cards grandes — agora inline) */}
                   <div className="mt-3 pt-3 border-t border-slate-700/50 flex items-center gap-4 text-xs flex-wrap">
@@ -1867,6 +1840,36 @@ const PatientsManagement: React.FC<PatientsManagementProps> = ({ embedded = fals
                               </div>
                               <span className="text-xs text-amber-300 group-hover:translate-x-0.5 transition-transform">Revisar →</span>
                             </button>
+                          )}
+
+                          {/* V1.9.282 — BLOCO 1.5: Dados Clínicos Críticos (alergias/medicações/sangue).
+                              Movido do header de cima pra cá: info salva-vidas merece destaque visível na Visão Geral.
+                              Só renderiza se há algum dado (não polui com empty state quando vazio — o card "Última AEC" já comunica isso). */}
+                          {(selectedPatient.allergies || selectedPatient.medications || selectedPatient.bloodType) && (
+                            <div className="bg-gradient-to-r from-amber-500/8 via-slate-800/30 to-rose-500/8 border border-amber-500/25 rounded-xl p-3 space-y-1.5">
+                              <div className="flex items-center gap-1.5 mb-1">
+                                <AlertCircle className="w-3.5 h-3.5 text-amber-400" />
+                                <p className="text-[10px] font-bold text-amber-200 uppercase tracking-wider">Dados Clínicos Críticos</p>
+                              </div>
+                              {selectedPatient.allergies && (
+                                <div className="flex items-start gap-2 text-xs">
+                                  <span className="text-amber-400 font-bold shrink-0">⚠️ Alergias:</span>
+                                  <span className="text-slate-200">{selectedPatient.allergies}</span>
+                                </div>
+                              )}
+                              {selectedPatient.medications && (
+                                <div className="flex items-start gap-2 text-xs">
+                                  <span className="text-blue-400 font-bold shrink-0">💊 Medicações em curso:</span>
+                                  <span className="text-slate-200">{selectedPatient.medications}</span>
+                                </div>
+                              )}
+                              {selectedPatient.bloodType && (
+                                <div className="flex items-start gap-2 text-xs">
+                                  <span className="text-rose-400 font-bold shrink-0">🩸 Tipo sanguíneo:</span>
+                                  <span className="text-slate-200">{selectedPatient.bloodType}</span>
+                                </div>
+                              )}
+                            </div>
                           )}
 
                           {/* BLOCO 2: Última Avaliação Clínica — card destaque com queixa, score, sparkline, alertas */}
