@@ -532,7 +532,11 @@ const ProfessionalChatSystem: React.FC<ProfessionalChatSystemProps> = ({ classNa
                 })}
               </div>
 
-              <footer className="p-4 border-t border-slate-700">
+              {/* V1.9.277 — paddingBottom safe-area mobile (Pedro 13/05). */}
+              <footer
+                className="p-4 border-t border-slate-700"
+                style={{ paddingBottom: 'max(1rem, env(safe-area-inset-bottom, 1rem))' }}
+              >
                 <form className="flex items-center gap-2" onSubmit={handleSendMessage}>
                   <input
                     ref={fileInputRef}

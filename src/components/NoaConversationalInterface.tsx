@@ -3696,7 +3696,9 @@ const NoaConversationalInterface = React.forwardRef<
               )}
             </div>
 
-            {/* CRÍTICO: Área de input SEMPRE VISÍVEL - especialmente em mobile */}
+            {/* CRÍTICO: Área de input SEMPRE VISÍVEL - especialmente em mobile.
+                V1.9.277 — paddingBottom safe-area pra Android gesture bar + iOS notch.
+                Pedro 13/05 noite: "chats ficam um pouco abaixo para pessoas mais velhas". */}
             <div
               className="border-t border-slate-800 bg-slate-900/95 px-2 sm:px-5 py-2 sm:py-3 space-y-1 sm:space-y-2 flex-shrink-0"
               style={{
@@ -3706,6 +3708,7 @@ const NoaConversationalInterface = React.forwardRef<
                 minHeight: "70px",
                 display: "flex",
                 flexDirection: "column",
+                paddingBottom: "max(0.75rem, env(safe-area-inset-bottom, 0px))",
                 backgroundColor:
                   resolvedVariant === "clean"
                     ? "transparent"

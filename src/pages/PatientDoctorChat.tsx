@@ -1469,7 +1469,13 @@ const PatientDoctorChat: React.FC = () => {
                 </div>
               )}
 
-              <form onSubmit={handleSubmitMessage} className="relative z-10 border-t border-slate-700/40 px-5 py-4 bg-slate-900/30 backdrop-blur-sm">
+              {/* V1.9.277 — paddingBottom safe-area pra Android gesture bar + iOS notch.
+                  Pedro 13/05 noite: input ficava cortado embaixo em mobile (50+). */}
+              <form
+                onSubmit={handleSubmitMessage}
+                className="relative z-10 border-t border-slate-700/40 px-5 py-4 bg-slate-900/30 backdrop-blur-sm"
+                style={{ paddingBottom: 'max(1rem, env(safe-area-inset-bottom, 1rem))' }}
+              >
                 <div className="flex items-center gap-3">
                   <input
                     ref={fileInputRef}

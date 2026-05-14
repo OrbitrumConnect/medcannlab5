@@ -1634,8 +1634,12 @@ const ChatGlobal: React.FC = () => {
                 <div ref={messagesEndRef} />
               </div>
 
-              {/* Message Input */}
-              <div className="p-2 md:p-4 border-t border-slate-700">
+              {/* Message Input
+                  V1.9.277 — paddingBottom safe-area mobile (Pedro 13/05). */}
+              <div
+                className="p-2 md:p-4 border-t border-slate-700"
+                style={{ paddingBottom: 'max(0.5rem, env(safe-area-inset-bottom, 0.5rem))' }}
+              >
                 <div className="flex items-center space-x-1 md:space-x-2">
                   <button className="p-1.5 md:p-2 text-slate-400 hover:text-primary-400 transition-colors hidden sm:block">
                     <Paperclip className="w-4 h-4 md:w-5 md:h-5" />
