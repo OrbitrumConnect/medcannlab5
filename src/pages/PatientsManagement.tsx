@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect, useCallback } from 'react'
+import React, { useState, useEffect, useCallback, useRef } from 'react'
 import { useNavigate, useSearchParams, useLocation } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
@@ -263,6 +263,19 @@ const PatientsManagement: React.FC<PatientsManagementProps> = ({ embedded = fals
   // V1.9.281: Overview elite escalável
   const [overviewData, setOverviewData] = useState<OverviewData | null>(null)
   const [overviewLoading, setOverviewLoading] = useState(false)
+
+  // V1.9.292: clicar em item do histórico Visão Geral → aba Evolução com highlight + auto-scroll
+  const [highlightEvolutionId, setHighlightEvolutionId] = useState<string | null>(null)
+  const highlightedEvolutionRef = useRef<HTMLDivElement | null>(null)
+
+  useEffect(() => {
+    if (activeTab === 'evolution' && highlightEvolutionId && highlightedEvolutionRef.current) {
+      highlightedEvolutionRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      // Limpa destaque após 3s pra não ficar permanente
+      const timer = setTimeout(() => setHighlightEvolutionId(null), 3500)
+      return () => clearTimeout(timer)
+    }
+  }, [activeTab, highlightEvolutionId])
 
   // ACDSS Integration
   const patientContext = React.useMemo(() => {
@@ -2097,7 +2110,17 @@ const PatientsManagement: React.FC<PatientsManagementProps> = ({ embedded = fals
                                     : evolution.source === 'assessment' ? { icon: '🩺', label: 'AEC', cls: 'bg-blue-500/15 text-blue-300 border-blue-500/30' }
                                     : { icon: '📝', label: 'Registro', cls: 'bg-slate-500/15 text-slate-300 border-slate-500/30' }
                                   return (
-                                    <div key={evolution.id} className="bg-slate-700/30 rounded-xl p-3 border border-slate-600/50">
+                                    <button
+                                      key={evolution.id}
+                                      type="button"
+                                      onClick={() => {
+                                        // V1.9.292: clicar item do histórico → aba Evolução com highlight + auto-scroll
+                                        setHighlightEvolutionId(evolution.id)
+                                        setActiveTab('evolution')
+                                      }}
+                                      title="Ver detalhes na aba Evolução"
+                                      className="w-full text-left bg-slate-700/30 rounded-xl p-3 border border-slate-600/50 hover:border-emerald-500/40 hover:bg-slate-700/50 transition-all cursor-pointer"
+                                    >
                                       <div className="flex items-start justify-between mb-2 gap-2">
                                         <p className="text-[13px] text-slate-200 font-bold">{evolution.date} • {evolution.time}</p>
                                         <div className="flex items-center gap-1.5 shrink-0">
@@ -2116,7 +2139,7 @@ const PatientsManagement: React.FC<PatientsManagementProps> = ({ embedded = fals
                                       </div>
                                       <p className="text-sm text-slate-300 line-clamp-2 leading-relaxed mb-1.5">{evolutionContentString(evolution.content, '—')}</p>
                                       <p className="text-[11px] text-slate-500 font-bold uppercase tracking-tight">{evolution.professional}</p>
-                                    </div>
+                                    </button>
                                   )
                                 })}
                                 {evolutions.length > 5 && (
@@ -2230,23 +2253,33 @@ const PatientsManagement: React.FC<PatientsManagementProps> = ({ embedded = fals
                             </div>
                           ) : (
                             <div className="space-y-4">
-                              {evolutions.map(evolution => (
-                                <div key={evolution.id} className="bg-slate-700/50 rounded-lg p-4 border border-slate-600">
-                                  <div className="flex items-start justify-between mb-2">
-                                    <div>
-                                      <p className="font-semibold text-white">{evolution.date} • {evolution.time}</p>
-                                      <p className="text-xs text-slate-400">{evolution.professional}</p>
+                              {evolutions.map(evolution => {
+                                const isHighlighted = highlightEvolutionId === evolution.id
+                                return (
+                                  <div
+                                    key={evolution.id}
+                                    ref={isHighlighted ? highlightedEvolutionRef : null}
+                                    className={`bg-slate-700/50 rounded-lg p-4 border transition-all ${isHighlighted
+                                      ? 'border-emerald-500 ring-2 ring-emerald-500/40 bg-emerald-500/5 shadow-lg shadow-emerald-900/20'
+                                      : 'border-slate-600'
+                                      }`}
+                                  >
+                                    <div className="flex items-start justify-between mb-2">
+                                      <div>
+                                        <p className="font-semibold text-white">{evolution.date} • {evolution.time}</p>
+                                        <p className="text-xs text-slate-400">{evolution.professional}</p>
+                                      </div>
+                                      <span className={`px-2 py-1 rounded-full text-xs ${evolution.type === 'current'
+                                        ? 'bg-green-500/20 text-green-400'
+                                        : 'bg-blue-500/20 text-blue-400'
+                                        }`}>
+                                        {evolution.type === 'current' ? 'Atual' : 'Histórico'}
+                                      </span>
                                     </div>
-                                    <span className={`px-2 py-1 rounded-full text-xs ${evolution.type === 'current'
-                                      ? 'bg-green-500/20 text-green-400'
-                                      : 'bg-blue-500/20 text-blue-400'
-                                      }`}>
-                                      {evolution.type === 'current' ? 'Atual' : 'Histórico'}
-                                    </span>
+                                    <p className="text-slate-300 text-sm whitespace-pre-wrap">{evolutionContentString(evolution.content, '—')}</p>
                                   </div>
-                                  <p className="text-slate-300 text-sm whitespace-pre-wrap">{evolutionContentString(evolution.content, '—')}</p>
-                                </div>
-                              ))}
+                                )
+                              })}
                             </div>
                           )}
                         </div>
