@@ -786,7 +786,43 @@ Pedro perguntou: *"Eduardo e Ricardo são sócios do app — o curso é deles, n
 
 `reference_audit_compliance_rdc_1015_14_05.md` consolida análise artigo-por-artigo + achados empíricos + cursos MEC + recomendações por opção. Adicionada ao MEMORY.md.
 
-### D.13 — Pendências fim de tarde 14/05
+### D.13 — V1.9.292 polish pré-evento (~15h45)
+
+Pedro pediu polish leve antes de ir pra casa do Ricardo. Feature pequena cirúrgica.
+
+**V1.9.292 (commit `7d7a01a`, push amigo OK / medcannlab5 bloqueado pelo PAT):**
+
+Histórico da Visão Geral do Prontuário virou interativo:
+- Items (AEC / Relatório / Registro) viraram `<button>` clicáveis com hover emerald
+- onClick: troca pra aba Evolução + highlight visual do item correspondente
+- Aba Evolução: item ganha ring emerald + bg emerald/5 + shadow + auto-scroll smooth
+- Highlight limpa após 3.5s pra não ficar permanente
+
+Decisão técnica: caminho **PDF JIT** descartado pré-evento porque `clinical_reports` não tem `pdf_url` salvo — apenas `content` JSONB + `signature_hash` + `signed_payload`. PDFs são gerados on-the-fly via jspdf (memória 13/05 V1.9.245-249). Pra abrir PDF JIT precisaria pipeline novo, fora do escopo "leve".
+
+Híbrido pragmático: **todos os items vão pra aba Evolução com destaque**. Médico vê content completo lá. Reusa pipeline jsPDF existente se quiser baixar.
+
+Anti-regressão:
+- Zero toque queries / AEC FSM / Pipeline / Lock V1.9.95
+- Reusa state activeTab existente
+- Type-check passou clean
+- Componente novo isolado (apenas state + ref + useEffect)
+
+### D.14 — Estado deploy pra laptop (Pedro vai casa Ricardo evento ~20h)
+
+```
+amigo (GitHub): up to date no main + master (7d7a01a)
+medcannlab5:    bloqueado pelo Secret Scanning (3 commits histórico
+                com PAT — resolve depois com force-push ou unblock manual)
+
+Pra puxar no laptop:
+  git pull amigo main
+
+Vercel: auto-deploy do amigo deve ter feito o build (validar
+        em https://medcannlab.com.br)
+```
+
+### D.15 — Pendências fim de tarde 14/05
 
 1. **PAT** `sbp_…[REDACTED]` exposto no commit 6e94a76 (pushed ao `amigo`). Bloqueia push pro `medcannlab5` até force-push ou unblock manual no GitHub. **Revogação no Supabase Dashboard URGENTE (memória `feedback_credentials.md`).**
 2. **Pré-evento 15/05 20h** — opções leves a atacar: smoke visual V1.9.280-291 com pacientes reais (Carolina/Carlos Eduardo/Badhia), atualizar `pitch_atual_14_05.md` pra apontar `pitch_prefeitura_rj_top_master_14_05.md`, alinhamento João sobre linguagem ("teste beta", não "Roadshow").
