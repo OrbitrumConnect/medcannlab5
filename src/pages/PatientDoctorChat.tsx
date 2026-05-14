@@ -1023,19 +1023,22 @@ const PatientDoctorChat: React.FC = () => {
           </button>
 
           {/* V1.9.169-B — Header gigante hide em mobile com sala ativa (libera ~250px viewport) */}
-          <header className={`relative overflow-hidden bg-slate-900/60 backdrop-blur-xl border border-slate-700/40 rounded-2xl p-6 ${activeRoomId ? 'hidden lg:flex' : 'flex'} flex-col md:flex-row md:items-center md:justify-between gap-4 shrink-0`}>
+          {/* V1.9.279 (Pedro 14/05 09h43) — header vertical compactado: p-6→p-3/4,
+              icone 9→7, text-3xl→xl, gap-4→gap-2, mb-2/mt-2→mb-1/mt-1, descricao
+              max-w-xl→2xl + leading-snug. Libera ~50px viewport pro chat respirar. */}
+          <header className={`relative overflow-hidden bg-slate-900/60 backdrop-blur-xl border border-slate-700/40 rounded-2xl p-3 md:p-4 ${activeRoomId ? 'hidden lg:flex' : 'flex'} flex-col md:flex-row md:items-center md:justify-between gap-2 shrink-0`}>
             {/* Header glow */}
             <div className="absolute top-0 right-0 w-64 h-64 bg-primary-500/8 rounded-full blur-3xl -mr-20 -mt-20 pointer-events-none" />
             <div className="absolute bottom-0 left-0 w-48 h-48 bg-emerald-500/6 rounded-full blur-3xl -ml-16 -mb-16 pointer-events-none" />
             <div className="relative z-10">
-              <p className="text-[10px] uppercase tracking-[0.35em] text-primary-300/80 mb-2 font-medium">Programa de Cuidado Renal</p>
-              <h1 className="text-2xl md:text-3xl font-bold text-white flex items-center gap-3">
-                <div className="w-9 h-9 rounded-xl bg-primary-500/15 border border-primary-500/20 flex items-center justify-center">
-                  <MessageCircle className="w-5 h-5 text-primary-400" />
+              <p className="text-[10px] uppercase tracking-[0.35em] text-primary-300/80 mb-1 font-medium">Programa de Cuidado Renal</p>
+              <h1 className="text-lg md:text-xl font-bold text-white flex items-center gap-2">
+                <div className="w-7 h-7 rounded-lg bg-primary-500/15 border border-primary-500/20 flex items-center justify-center">
+                  <MessageCircle className="w-4 h-4 text-primary-400" />
                 </div>
                 Atendimento Integrado
               </h1>
-              <p className="text-slate-400 text-sm mt-2 max-w-xl leading-relaxed">
+              <p className="text-slate-400 text-xs md:text-sm mt-1 max-w-2xl leading-snug">
                 Converse com a equipe clínica responsável pelo seu acompanhamento em cannabis medicinal e saúde renal.
               </p>
             </div>
