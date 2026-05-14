@@ -222,7 +222,13 @@ const PatientFocusView: React.FC<PatientFocusViewProps> = ({ activePatientId, on
                         <div className="flex items-center justify-between gap-4 mb-4 flex-shrink-0">
                             <button
                                 type="button"
-                                onClick={() => { setShowPatientAvatarView(false); setPatientFocusSubTab('analytics') }}
+                                onClick={() => {
+                                    // V1.9.286 (Pedro 14/05 11h22): "Voltar à seleção" agora limpa o paciente também,
+                                    // cai direto no empty state pra nova busca (não no card intermediário).
+                                    setShowPatientAvatarView(false)
+                                    setPatientFocusSubTab('analytics')
+                                    handleClearPatient()
+                                }}
                                 className="flex items-center gap-2 text-slate-400 hover:text-white text-sm font-medium transition-colors"
                             >
                                 <ChevronLeft className="w-4 h-4" />
