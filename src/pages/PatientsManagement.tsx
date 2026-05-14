@@ -2050,7 +2050,7 @@ const PatientsManagement: React.FC<PatientsManagementProps> = ({ embedded = fals
                             <div className="bg-slate-700/30 rounded-lg p-3 border border-slate-700/50">
                               <div className="flex items-center gap-1.5 mb-2">
                                 <FileText className="w-3.5 h-3.5 text-orange-400" />
-                                <p className="text-[11px] font-bold text-slate-300 uppercase tracking-wider">Resumo das Abas</p>
+                                <p className="text-[11px] font-bold text-slate-300 uppercase tracking-wider">Resumo</p>
                               </div>
                               <div className="grid grid-cols-2 gap-1 text-xs">
                                 <button onClick={() => setActiveTab('evolution')} className="text-left flex items-center justify-between px-2 py-1 rounded hover:bg-slate-600/30 transition-colors">
