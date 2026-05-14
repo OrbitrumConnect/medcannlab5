@@ -23,6 +23,8 @@ import { useAuth } from '../contexts/AuthContext'
 import { useToast } from '../contexts/ToastContext'
 import { useConfirm } from '../contexts/ConfirmContext'
 import { useTeamPresence } from '../hooks/useTeamPresence'
+// V1.9.274 — Direcionamento de pacientes consent-first (Pedro+Ricardo+João 13/05)
+import { ReferralsManager } from './team/ReferralsManager'
 
 // ─────────────────────────────────────────────────────────────────────────────
 // TYPES
@@ -966,6 +968,19 @@ const TeamManagement: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* V1.9.274 — Direcionamento de pacientes consent-first.
+          Mostrado se médico tem equipe formada (mesmo critério do botão "Sugerir"
+          que fica disabled sem membros). Aprovado Pedro+Ricardo+João 13/05. */}
+      <ReferralsManager
+        teamMembers={team
+          .filter(m => m.is_active && m.accepted_at)
+          .map(m => ({
+            team_member_id: m.team_member_id,
+            member_name: m.member_name,
+            member_specialty: m.member_specialty,
+          }))}
+      />
 
       {/* V1.9.187 — Filtros + contador */}
       {team.length > 0 && (
