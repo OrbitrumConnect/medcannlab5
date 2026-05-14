@@ -4,6 +4,7 @@ import { useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { useToast } from '../contexts/ToastContext'
 import { supabase } from '../lib/supabase'
+import { getVinculoStatus, type VinculoStatus, type VinculoSource } from '../lib/vinculoStatus'
 import {
   Clock,
   Calendar,
@@ -453,6 +454,63 @@ const PatientAppointments: React.FC = () => {
       setSelectedDate(findNextWorkingDate(currentDate))
     }
   }, [selectedDate, currentDate])
+
+  // V1.9.272 — Maps auxiliares pro helper puro getVinculoStatus (Pedro 13/05 23h30).
+  // Pre-carrega 3 selects leves 1x quando user logado — feature emergente do schema.
+  const [vinculoInvitedBy, setVinculoInvitedBy] = useState<string | null>(null)
+  const [vinculoAppointmentsSet, setVinculoAppointmentsSet] = useState<Set<string>>(new Set())
+  const [vinculoCareNetworkSet, setVinculoCareNetworkSet] = useState<Set<string>>(new Set())
+
+  // V1.9.272 — Carregar maps de vínculo (zero migration, lê schema existente)
+  useEffect(() => {
+    if (!user?.id) return
+    const loadVinculoMaps = async () => {
+      try {
+        // (1) invited_by do paciente logado
+        const { data: u } = await supabase
+          .from('users')
+          .select('invited_by')
+          .eq('id', user.id)
+          .maybeSingle()
+        const invitedBy = (u as any)?.invited_by ?? null
+        setVinculoInvitedBy(invitedBy)
+
+        // (2) appointments ativos do paciente (qualquer médico, exceto cancelados)
+        const { data: appts } = await supabase
+          .from('appointments')
+          .select('professional_id, status')
+          .eq('patient_id', user.id)
+          .neq('status', 'cancelled')
+        const apptsSet = new Set<string>(
+          (appts || [])
+            .map((a: any) => a.professional_id)
+            .filter((id: string | null): id is string => !!id)
+        )
+        setVinculoAppointmentsSet(apptsSet)
+
+        // (3) rede de cuidado: profissionais que o invited_by tem na equipe ATIVA
+        if (invitedBy) {
+          const { data: team } = await supabase
+            .from('professional_teams')
+            .select('team_member_id')
+            .eq('professional_id', invitedBy)
+            .eq('is_active', true)
+          const netSet = new Set<string>(
+            (team || [])
+              .map((t: any) => t.team_member_id)
+              .filter((id: string | null): id is string => !!id)
+          )
+          setVinculoCareNetworkSet(netSet)
+        } else {
+          setVinculoCareNetworkSet(new Set())
+        }
+      } catch (err) {
+        // Best-effort: se RLS bloquear, mantém maps vazios e UI cai em 'red' silencioso
+        console.warn('[V1.9.272] vinculo maps load (RLS?):', err)
+      }
+    }
+    loadVinculoMaps()
+  }, [user?.id])
 
   // Carregar agendamentos e plano de cuidado
   useEffect(() => {
@@ -1177,7 +1235,33 @@ const PatientAppointments: React.FC = () => {
   // V1.9.111-A: cards menores (p-3.5, avatar 10x10), borda mais sutil (40% opacity)
   // V1.9.259 (Pedro 13/05 19h): mais compacto e mais quadrado — p-3.5→p-3,
   // avatar 10→9, icone 4→3.5, nome text-base→text-sm, gap-3→gap-2.5
-  const renderProfessionalCard = (professional: ProfessionalCard, isOfficial: boolean = false) => (
+  const renderProfessionalCard = (professional: ProfessionalCard, isOfficial: boolean = false) => {
+    // V1.9.272 — Resolve UUID real do profissional (alguns cards usam slug semântico).
+    // Mesmo padrão usado no botão "Agendar" abaixo (linha ~1305).
+    const uuidRegexLocal = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+    const SPECIALTY_PROF_IDS_LOCAL: Record<string, string> = {
+      'Neurologia': 'f4a62265-8982-44db-8282-78129c4d014a',
+      'Nefrologia': '2135f0c0-eb5a-43b1-bc00-5f8dfea13561',
+      'Homeopatia': '2135f0c0-eb5a-43b1-bc00-5f8dfea13561',
+    }
+    const resolvedProfIdForVinculo = uuidRegexLocal.test(professional.id)
+      ? professional.id
+      : SPECIALTY_PROF_IDS_LOCAL[professional.specialty] || ''
+    // V1.9.272 — Calcula status de vínculo via helper puro (zero side effects).
+    // Hierarquia determinística: appointment > direct_invite > network > none.
+    const vinculo = resolvedProfIdForVinculo
+      ? getVinculoStatus({
+          professionalId: resolvedProfIdForVinculo,
+          invitedBy: vinculoInvitedBy,
+          appointmentsSet: vinculoAppointmentsSet,
+          careNetworkSet: vinculoCareNetworkSet,
+        })
+      : null
+    const vinculoDotColor =
+      vinculo?.status === 'green' ? 'bg-emerald-400'
+      : vinculo?.status === 'yellow' ? 'bg-amber-400'
+      : 'bg-rose-400'
+    return (
     <motion.div
       key={professional.id}
       whileHover={{ scale: 1.015, y: -2 }}
@@ -1185,8 +1269,20 @@ const PatientAppointments: React.FC = () => {
       className={`rounded-xl border ${isOfficial ? 'border-amber-500/30 bg-gradient-to-br from-slate-900/80 to-amber-950/15' : 'border-slate-700/40 bg-slate-900/40'} p-3 flex flex-col justify-between gap-2.5 transition-all hover:border-primary-500/40 hover:shadow-lg hover:shadow-primary-500/10`}
     >
       <div className="flex items-start gap-2.5">
-        <div className={`w-9 h-9 rounded-lg flex items-center justify-center border border-slate-800/60 ${professional.accentClasses} shrink-0`}>
-          <Stethoscope className="w-3.5 h-3.5" />
+        <div className="relative shrink-0">
+          <div className={`w-9 h-9 rounded-lg flex items-center justify-center border border-slate-800/60 ${professional.accentClasses}`}>
+            <Stethoscope className="w-3.5 h-3.5" />
+          </div>
+          {/* V1.9.272 — Círculo de vínculo paciente↔profissional (top-right do avatar).
+              Verde (consulta ativa/indicação direta) / Amarelo (rede de cuidado via equipe) / Vermelho (sem vínculo). */}
+          {vinculo && (
+            <div
+              className={`absolute -top-1 -right-1 w-3 h-3 rounded-full ring-2 ring-slate-900 ${vinculoDotColor}`}
+              title={vinculo.tooltip}
+              aria-label={`Status de vínculo: ${vinculo.tooltip}`}
+              data-vinculo-source={vinculo.source}
+            />
+          )}
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-1.5 flex-wrap">
@@ -1264,7 +1360,8 @@ const PatientAppointments: React.FC = () => {
         </button>
       </div>
     </motion.div>
-  )
+    )
+  }
 
   return (
     <div className="min-h-screen bg-slate-900">
