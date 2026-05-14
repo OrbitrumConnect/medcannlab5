@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { TrendingUp, Users, Calendar, AlertCircle, CheckCircle, Clock, ChevronRight, Link2, Copy, Check } from 'lucide-react';
+import { TrendingUp, Users, Calendar, AlertCircle, CheckCircle, Clock, ChevronRight, Link2, Copy, Check, Share2, Mail, MessageCircle } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -40,7 +40,15 @@ export const IncentivosPanel: React.FC = () => {
   });
 
   // V1.9.270 — Link de indicação do médico (reuso padrao NewPatientForm.generateInviteLink — P8).
+  // V1.9.271 — Acrescenta QR code (api.qrserver.com, zero npm install) + share WhatsApp/Email/Native.
   const inviteLink = user?.id ? `${window.location.origin}/invite?doctor_id=${user.id}` : '';
+  const qrCodeUrl = inviteLink
+    ? `https://api.qrserver.com/v1/create-qr-code/?size=180x180&margin=8&data=${encodeURIComponent(inviteLink)}`
+    : '';
+  const shareMessage = inviteLink
+    ? `Olá! Convido você a se cadastrar na plataforma MedCannLab pelo meu link de indicação:\n\n${inviteLink}\n\nA plataforma oferece avaliação clínica integrativa em cannabis medicinal com método autoral Dr. Ricardo Valença (AEC).`
+    : '';
+
   const handleCopyLink = async () => {
     if (!inviteLink) return;
     try {
@@ -57,6 +65,38 @@ export const IncentivosPanel: React.FC = () => {
       document.body.removeChild(textArea);
       setLinkCopied(true);
       setTimeout(() => setLinkCopied(false), 2500);
+    }
+  };
+
+  // V1.9.271 — Share triggers (WhatsApp / Email / Web Share API nativo)
+  const handleShareWhatsApp = () => {
+    if (!shareMessage) return;
+    window.open(`https://wa.me/?text=${encodeURIComponent(shareMessage)}`, '_blank', 'noopener,noreferrer');
+  };
+
+  const handleShareEmail = () => {
+    if (!shareMessage || !inviteLink) return;
+    const subject = encodeURIComponent('Convite MedCannLab — Plataforma Cannabis Medicinal');
+    const body = encodeURIComponent(shareMessage);
+    window.location.href = `mailto:?subject=${subject}&body=${body}`;
+  };
+
+  const handleShareNative = async () => {
+    if (!inviteLink) return;
+    if (typeof navigator !== 'undefined' && 'share' in navigator) {
+      try {
+        await navigator.share({
+          title: 'Convite MedCannLab',
+          text: shareMessage,
+          url: inviteLink,
+        });
+      } catch (err) {
+        // User cancelou ou navegador rejeitou — silencioso
+        console.debug('Share cancelado:', err);
+      }
+    } else {
+      // Fallback: copia o link
+      handleCopyLink();
     }
   };
 
@@ -151,47 +191,111 @@ export const IncentivosPanel: React.FC = () => {
   return (
     <div className="space-y-6 animate-fadeIn">
       {/* V1.9.270 — Card Link de Indicação (Pedro 13/05 22h45 BRT)
-          Permite ao médico copiar seu link único pra compartilhar com pacientes/colegas.
-          URL segue padrão NewPatientForm.generateInviteLink (P8 reuso). */}
+          V1.9.271 — QR code (api.qrserver.com, zero npm) + share WhatsApp/Email/Native */}
       <div className="bg-gradient-to-br from-cyan-900/40 via-blue-900/30 to-emerald-900/30 border border-cyan-500/30 rounded-xl p-5">
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-          <div className="flex items-start gap-3 flex-1 min-w-0">
-            <div className="w-10 h-10 rounded-xl bg-cyan-500/20 border border-cyan-500/40 flex items-center justify-center shrink-0">
-              <Link2 className="w-5 h-5 text-cyan-300" />
-            </div>
-            <div className="min-w-0 flex-1">
-              <h3 className="text-base font-bold text-white mb-1">Seu link de indicação</h3>
-              <p className="text-xs text-slate-300 mb-2">
-                Compartilhe com pacientes ou colegas. Cada cadastro pela plataforma conta na sua escala de bônus.
-              </p>
-              <div className="bg-slate-900/60 border border-slate-700 rounded-lg px-3 py-2 flex items-center gap-2 max-w-full">
-                <code className="text-[12px] text-cyan-300 truncate flex-1 min-w-0" title={inviteLink}>
-                  {inviteLink || 'Carregando...'}
-                </code>
+        <div className="flex flex-col lg:flex-row items-start lg:items-center gap-5">
+          {/* QR Code — img externa, fallback gracioso se servico cair */}
+          <div className="shrink-0 flex flex-col items-center gap-2 mx-auto lg:mx-0">
+            {qrCodeUrl ? (
+              <div className="bg-white p-2 rounded-lg shadow-lg">
+                <img
+                  src={qrCodeUrl}
+                  alt="QR Code do seu link de indicação"
+                  width={180}
+                  height={180}
+                  loading="lazy"
+                  className="block"
+                  onError={(e) => {
+                    // Fallback silencioso: esconde img se servico cair (UX nao quebra)
+                    (e.target as HTMLImageElement).style.display = 'none';
+                  }}
+                />
+              </div>
+            ) : (
+              <div className="w-[180px] h-[180px] bg-slate-800/60 border border-slate-700 rounded-lg flex items-center justify-center">
+                <span className="text-xs text-slate-500">Carregando QR...</span>
+              </div>
+            )}
+            <p className="text-[11px] text-slate-400 text-center max-w-[180px]">
+              Imprima ou mostre pro paciente escanear
+            </p>
+          </div>
+
+          {/* Conteudo direito */}
+          <div className="flex-1 min-w-0 w-full">
+            <div className="flex items-start gap-3 mb-3">
+              <div className="w-10 h-10 rounded-xl bg-cyan-500/20 border border-cyan-500/40 flex items-center justify-center shrink-0">
+                <Link2 className="w-5 h-5 text-cyan-300" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <h3 className="text-base font-bold text-white mb-1">Seu link de indicação</h3>
+                <p className="text-xs text-slate-300">
+                  Compartilhe com pacientes ou colegas. Cada cadastro pela plataforma conta na sua escala de bônus.
+                </p>
               </div>
             </div>
+
+            <div className="bg-slate-900/60 border border-slate-700 rounded-lg px-3 py-2 mb-3">
+              <code className="text-[12px] text-cyan-300 break-all" title={inviteLink}>
+                {inviteLink || 'Carregando...'}
+              </code>
+            </div>
+
+            {/* Triggers de compartilhamento — V1.9.271 */}
+            <div className="flex flex-wrap gap-2">
+              <button
+                onClick={handleCopyLink}
+                disabled={!inviteLink}
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all ${
+                  linkCopied
+                    ? 'bg-emerald-500 text-slate-950'
+                    : 'bg-slate-800 hover:bg-slate-700 text-slate-100 border border-slate-700'
+                } disabled:opacity-50 disabled:cursor-not-allowed`}
+              >
+                {linkCopied ? (
+                  <>
+                    <Check className="w-3.5 h-3.5" />
+                    <span>Copiado!</span>
+                  </>
+                ) : (
+                  <>
+                    <Copy className="w-3.5 h-3.5" />
+                    <span>Copiar link</span>
+                  </>
+                )}
+              </button>
+
+              <button
+                onClick={handleShareWhatsApp}
+                disabled={!inviteLink}
+                title="Compartilhar via WhatsApp"
+                className="px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 bg-green-600 hover:bg-green-500 text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <MessageCircle className="w-3.5 h-3.5" />
+                <span>WhatsApp</span>
+              </button>
+
+              <button
+                onClick={handleShareEmail}
+                disabled={!inviteLink}
+                title="Compartilhar por E-mail"
+                className="px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 bg-slate-800 hover:bg-slate-700 text-slate-100 border border-slate-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <Mail className="w-3.5 h-3.5" />
+                <span>E-mail</span>
+              </button>
+
+              <button
+                onClick={handleShareNative}
+                disabled={!inviteLink}
+                title="Compartilhar (apps do celular)"
+                className="px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 bg-cyan-500 hover:bg-cyan-400 text-slate-950 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <Share2 className="w-3.5 h-3.5" />
+                <span>Compartilhar</span>
+              </button>
+            </div>
           </div>
-          <button
-            onClick={handleCopyLink}
-            disabled={!inviteLink}
-            className={`shrink-0 px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-2 transition-all ${
-              linkCopied
-                ? 'bg-emerald-500 text-slate-950'
-                : 'bg-cyan-500 hover:bg-cyan-400 text-slate-950'
-            } disabled:opacity-50 disabled:cursor-not-allowed`}
-          >
-            {linkCopied ? (
-              <>
-                <Check className="w-4 h-4" />
-                <span>Copiado!</span>
-              </>
-            ) : (
-              <>
-                <Copy className="w-4 h-4" />
-                <span>Copiar link</span>
-              </>
-            )}
-          </button>
         </div>
       </div>
 
