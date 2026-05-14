@@ -337,4 +337,45 @@ WHERE id IN (
 
 ---
 
+## Entries 14/05/2026
+
+### [14/05] — Triagem narrativa pública DRC + AEC Nefro Extension (esboço Ricardo)
+
+**Origem:** Dr. Ricardo Valença enviou pseudocódigo Python (`class NoaEsperanza` com 17 perguntas DRC) junto da RDC ANVISA 1.015/2026.
+
+**Conteúdo do esboço:** 17 perguntas sequenciais — 11 determinantes sociais (idade, sexo, escolaridade, renda, habitação, saneamento, água) + 6 hábitos/comorbidades (sal, tabagismo, álcool, exercício, HAS, DM). Score linear simples (alto > 20 / moderado > 10 / baixo). Sem perguntas laboratoriais (creatinina/TFG/proteinúria intencionalmente fora — captura ANTES de exame).
+
+**Interpretação alinhada com 3 camadas constitucionais (Ricardo 13/05):**
+- **Camada 1 — Triagem narrativa pública:** ESSE questionário mora aqui (entrada SEO, score populacional, orientação a procurar atendimento — não diagnóstico)
+- Camada 2 — AEC formal: intocada (kevlar §1)
+- Camada 3 — Consulta médica: intocada
+
+**Conexão com RDC ANVISA 1.015/2026:** Art. 38 + Anexo II exigem TCLE individualizado por enfermidade. Triagem DRC qualificada alimentaria input pro TCLE em prescrições cannabis para CKD (cenário Cidade Amiga dos Rins). RDC entrou em vigor 04/05/2026.
+
+**Conexão com tese Muhdo:** biological×semantic drift renal — Triagem Camada 1 capturaria *semantic drift* longitudinal (mudança de respostas ao longo do tempo) → input pra cohort CKD.
+
+**Conexão com pitch Prefeitura RJ:** vira diferencial — score de risco DRC nascido em arquitetura clínico-narrativa autoral, não algoritmo blackbox.
+
+**2 alertas a registrar antes de codar:**
+1. Modelo de score linear é ingênuo cientificamente. Modelos validados (KDIGO, CKD-PC) usam pesos diferentes por fator + idade + etnia. Pesos precisam curadoria Ricardo OU substituição por modelo já validado.
+2. Nome `NoaEsperanza` em Python colide com identidade da IA da plataforma. Se virar feature, deve ser `Camada1_TriagemRenal` ou `TriagemDRCPublica` — preserva identidade Nôa Esperanza completa (memória `project_principio_identidade_noa_esperanza.md`).
+
+**Status:** PARQUEADO. Não codar pré-PMF.
+
+**Condições pra ativar:**
+- Pós-freeze 16/05/2026
+- Aprovação explícita Ricardo (autor método AEC + curadoria pesos do score)
+- Sprint 1 medido (CARD-RJ ou equivalente)
+- Decisão pelos 4 sócios se entra como Camada 1 separada ou módulo opt-in da AEC
+
+**Anti-regressão garantida:**
+- ZERO toque AEC FSM (kevlar §1)
+- Componente novo isolado, rota nova (`/triagem-renal` ou similar)
+- Nova tabela `triagem_drc_responses` (não modifica clinical_assessments)
+- Feature flag off por padrão até decisão dos 4 sócios
+
+**Por que não agora:** freeze 16/05 ativo. Ricardo enviou material conceitual, não pediu implementação. RDC entrou em vigor há 10 dias, não há urgência regulatória (MedCannLab não é detentora AS). Sprint 1 (Devolution V1) ainda não mediu. Decisão arquitetural grande requer condições maduras.
+
+---
+
 *Este arquivo é parte da disciplina temporal de execução pré-PMF. Não expandir. Não transformar em narrativa. Manter factual e curto.*

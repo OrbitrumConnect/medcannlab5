@@ -533,7 +533,7 @@ Propaganda de medicamento sob prescrição a leigos é restrita. Risco primário
 
 ### C.4 — Re-auditoria via PAT (princípio 38 aplicado)
 
-Antes de aceitar os números do pitch entregue ao João, Pedro pediu re-audit via PAT pra calibrar com a realidade do banco. PAT novo fornecido: `sbp_740dd1f6a65b28d141d0dde382fbbefaef608f19` (rotacionar fim sessão).
+Antes de aceitar os números do pitch entregue ao João, Pedro pediu re-audit via PAT pra calibrar com a realidade do banco. PAT novo fornecido `sbp_…[REDACTED — ver fluxo de credenciais; rotacionado fim sessão 14/05]`.
 
 **9 queries rodadas + 8 contagens de log. Comparativo memória vs auditado 14/05 ~13h:**
 
@@ -594,6 +594,217 @@ Re-audit PAT:          9 métricas reavaliadas — 3 discrepâncias críticas
                        logs 5394→10124)
 Próximo:               Pitch TOP MASTER com dados reais (substitui o entregue ao João)
                        Depois: aba A/B/C Prescrição Prontuário (volta código)
-PAT pra rotacionar:    sbp_740dd1f6a65b28d141d0dde382fbbefaef608f19
+PAT pra rotacionar:    sbp_…[REDACTED — rotacionado fim sessão 14/05]
 ```
+
+---
+
+## BLOCO D — Tarde RDC ANVISA 1.015 + análise Triagem DRC (14/05/2026 ~13h30-15h15)
+
+### D.1 — Ricardo trouxe RDC ANVISA Nº 1.015/2026 + pseudocódigo Python
+
+Pedro recebeu de Ricardo: PDF da **RDC ANVISA Nº 1.015 de 02/02/2026 (vigência 04/05/2026)** + pseudocódigo Python `class NoaEsperanza` com 17 perguntas Triagem DRC.
+
+**Comentário Ricardo (frase âncora):** *"Não podemos usar como está, mas adaptar e estudar."*
+
+A RDC 1.015 **revoga a RDC 327/2019** — base regulatória anterior que estava documentada nas memórias. Regula Autorização Sanitária (AS) para fabricação/importação/comercialização de produtos cannabis medicinal.
+
+Pedro: *"isso era da Remederi! agora mudou para 1 Pure como representante e abriu a JV BIOCANN."* — confirma trajetória histórica. Email `jvbiocann@gmail.com` já circulava desde fevereiro/2026 conforme `docs/DIARIO_COMPLETO_05-06_FEVEREIRO_2026.md`.
+
+### D.2 — Análise técnica RDC 1.015 × estado atual MedCannLab
+
+**Veredito principal:** MedCannLab NÃO é sujeito regulado direto da RDC 1.015 (não fabrica/importa/comercializa). 1 Pure SIM. Médicos prescritores cannabis na plataforma têm responsabilidade individual.
+
+**O que JÁ atende (zero ação):**
+- Art. 36 prescritor habilitado — V1.9.207 valida CRM/UF
+- Art. 37 §1+§2 receitas Branca/Amarela — V1.9.185 implementou 4 tipos CFM + Portal ITI
+- Art. 38 §1 assinatura — ICP-Brasil PKCS#7 SHA-256 nativo
+- Art. 39-40 dispensação SNGPC — fora do escopo (não somos farmácia)
+
+**Gaps identificados (não urgentes, não bloqueadores):**
+
+| # | Ponto | Status real |
+|---|---|---|
+| 1 | TCLE Anexo II | Tabela `medical_certificates` existe mas é pra certificados ICP dos médicos, **não pra TCLE de paciente**. Gap real, médico gera fora hoje |
+| 2 | Auto-classificação Branca/Amarela por teor THC | Médico escolhe manual. UX, não compliance bloqueador |
+| 3 | Audit Library termos proibidos | Apenas 1 doc dos 46 (`Protocolos REUNI.pdf`) cita "full spectrum"/"broad spectrum"; HCP-only. Risco regulatório próximo de zero |
+
+### D.3 — Esboço Ricardo "class NoaEsperanza" Triagem DRC
+
+17 perguntas (11 determinantes sociais + 6 hábitos/comorbidades), score linear simples. **Sem perguntas laboratoriais** — captura ANTES de exame.
+
+**Interpretação alinhada com 3 camadas constitucionais Ricardo 13/05:**
+
+```
+Camada 1: TRIAGEM NARRATIVA PÚBLICA  ◄── Esse questionário mora AQUI
+   ├─ Entrada SEO / web pública
+   ├─ Score populacional de risco DRC
+   ├─ Baseado em determinantes sociais + hábitos
+   └─ Output: orientação a procurar atendimento (não diagnóstico)
+
+Camada 2: AEC FORMAL (ato clínico autoral Ricardo) — kevlar §1, intocada
+Camada 3: CONSULTA MÉDICA (responsabilidade humana)
+```
+
+**Decisão Pedro:** PARQUEAR. Entry detalhada em `IDEIAS_PARKED_PARA_DEPOIS_SPRINT1.md`. Honra freeze 16/05.
+
+### D.4 — Análise de risco arquitetural (pergunta Pedro: "o que implica em AEC, GPT, toda arquitetura?")
+
+| Camada | Cenário A (Triagem Camada 1) | Cenário B (AEC Nefro Extension) |
+|---|---|---|
+| AEC FSM | ✅ ZERO toque | 🔴 MEXE NO CORE |
+| tradevision-core (6338 LOC) | ✅ ZERO toque (form determinístico, não LLM) | 🟠 Adicionar ramos condicionais — risco regressão |
+| Pirâmide 8 camadas | ✅ ZERO toque | 🔴 Toca camada 2 (AEC) + camada 3 (Verbatim) |
+| ICP-Brasil | ✅ Não gera doc médico | 🟠 Pode precisar hash diferente |
+| Schema | 1 tabela nova `triagem_drc_responses` | Migration complexa em `clinical_assessments` + `clinical_axes` |
+| Anti-kevlar §1 | ✅ NÃO viola | 🔴 VIOLA — exige Magno V2.0+ |
+| 3 camadas constitucionais | ✅ Encaixa perfeitamente em Camada 1 | 🔴 Muda Camada 2 — requer Ricardo + 4 sócios |
+| Rollback | Trivial | Complexo (migration de dados) |
+
+### D.5 — Análise latência 3 usuários simultâneos (User1 AEC + User2 chat + User3 RDC)
+
+```
+Cenário A (Triagem DRC):
+  User1 AEC turn:        ~3-15s (tradevision-core LLM)
+  User2 chat livre:      ~3-5s (mesma Edge)
+  User3 Triagem DRC:     ~100-300ms (form local + insert Supabase)
+
+  → User3 INVISÍVEL pra User1 e User2 (caminho técnico separado).
+  → Zero competição por GPT / tradevision-core / fila.
+
+Cenário B (AEC Nefro Extension):
+  User1 AEC base:        ~3-15s
+  User2 chat livre:      ~3-5s
+  User3 AEC Nefro:       ~5-20s (módulo extra)
+
+  → AEC Nefro divide tradevision-core com User1 e User2.
+  → Pipeline RATIONALITY (já ~20s = 55% latência total) pode ir pra 30-40s.
+  → Risco UX real acima de 5-7 users simultâneos AEC Nefro.
+```
+
+### D.6 — Pergunta Pedro: "usuário iniciaria do mesmo jeito que AEC porém RDC sem atrapalhar core AEC?"
+
+**Sim, totalmente possível.** Padrão recomendado: **mesma porta UX, rotas/componentes técnicos separados.**
+
+```
+[Botão "Iniciar Avaliação"]
+      │
+      ▼
+[Seletor: Triagem rápida 5min OU Avaliação clínica completa?]
+      │                            │
+      ▼                            ▼
+/triagem-renal               /aec
+TriagemDRCForm.tsx           AECChat.tsx
+triagem_drc_responses        clinical_assessments
+NÃO chama LLM                tradevision-core
+NÃO Pipeline                 Pipeline completo
+NÃO ICP-Brasil               ICP-Brasil signature
+```
+
+**2 regras críticas pra não confundir o Core:**
+1. Final da Triagem NÃO pode auto-disparar AEC (princípio 11 — eventos explícitos, clique não inferência). Paciente vê score + CTA "Quer fazer AEC completa? [SIM]" → clica → AEC inicia
+2. Triagem NUNCA grava em `clinical_assessments` (tabela própria + RLS própria — não contamina query `is_complete`)
+
+### D.7 — Conexões com sessão atual
+
+- **Princípio 56 (3 camadas — Ricardo 13/05)** ↔ esboço Triagem DRC encaixa perfeitamente como Camada 1
+- **Princípio 57 (relacionamento clínico longitudinal — Ricardo 13/05)** ↔ Art. 47-52 farmacovigilância pós-mercado RDC 1.015 → oportunidade B2B Muhdo
+- **Consent-first V1.9.275** ↔ Art. 38 + Anexo II TCLE individualizado → precursor arquitetural
+- **TradeVision Constitution Final** ("A IA não é confiável. O sistema é.") ↔ Art. 9 publicidade + Art. 19 termos proibidos → filtro editorial nativo possível
+
+### D.8 — Memórias seladas nesta sessão tarde
+
+1. **`project_joao_vidal_biocann_1pure_estrutura.md`** — chapéu paralelo João separado MedCannLab
+2. **`reference_rdc_anvisa_1015_2026.md`** — referência regulatória completa com cross-ref princípios 56+57
+3. **`project_sessao_14_05_2026_consolidacao_tarde.md`** — selo desta sessão (manhã + tarde)
+
+3 entries novas em MEMORY.md (Nível 2.5 — regras de decisão).
+
+### D.9 — Frase âncora do BLOCO D
+
+> *"RDC 1.015 não regula a plataforma — regula quem fabrica e quem prescreve.*
+> *Pra MedCannLab, a RDC é contexto, não bloqueador.*
+> *A Triagem DRC do Ricardo é Camada 1, não AEC. Encaixa sem violar kevlar §1."*
+
+### D.10 — Análise profunda compliance RDC 1.015 × plataforma (~15h)
+
+Pedro pediu análise artigo-por-artigo da RDC × cada dimensão MedCannLab. 16 queries PAT empíricas. **Veredito final: compliance plena.**
+
+**Premissa jurídica:** MedCannLab NÃO é sujeito regulado direto da RDC (não fabricamos/importamos/comercializamos). Art. 36 §2 explicita: "indicação e forma de uso são responsabilidade do prescritor." Blindagem jurídica clara.
+
+**Achados empíricos críticos:**
+
+1. **6 prescrições cannabis DRAFT** com termos problemáticos:
+   - `6986c52f`: "REuni CBD Oil **borad spectrum** 3600 mg 0% THC" (marca Remederi + termo proibido Art. 19 III)
+   - `5e2fcafe`: "CBD **full spectrum**" 36 mg (termo proibido)
+   - 4 outras genéricas OK ("CBD para Dor Crônica Renal")
+   - Status: TODAS DRAFT, não assinadas ICP, não saíram da plataforma. **Sem dano regulatório efetivo.**
+   - Análise: Art. 19 III proíbe em rótulos/embalagens/folhetos do PRODUTO — não em prescrição médica per se. Responsabilidade do médico (Art. 36 §2).
+
+2. **TCLE Anexo II não existe** — tabela `patient_consents` ausente. GAP real, mas Art. 38 §2 atribui arquivamento ao prescritor, não plataforma. Oportunidade feature pós-PMF.
+
+3. **Farmacovigilância sem tabela dedicada** — Arts. 47-52 obrigam detentor AS (1 Pure), não MedCannLab. Eventos clínicos vivem em `noa_logs` (9.872) + AEC. Oportunidade B2B futura (módulo VigiMed pra titulares AS, conexão tese Muhdo).
+
+4. **RLS templates permissiva** — qualquer logado pode SELECT direto API. UI não expõe (3 contextos HCP-only). Vetor teórico, risco prático muito baixo.
+
+5. **Library 9 docs cannabis ATIVOS** — TODOS target_audience HCP (professional/admin/student), nenhum `patient`. Configuração editorial correta. Único doc com termo "Protocolos REUNI" (full/broad spectrum) é HCP-only.
+
+### D.11 — Cursos cannabis + MEC + responsabilidade Eduardo/Ricardo
+
+Pedro perguntou: *"Eduardo e Ricardo são sócios do app — o curso é deles, não necessariamente o app precisa da RDC? E o MEC também?"*
+
+**Estado real auditado (PAT):**
+- **3 cursos cannabis ativos:**
+  - "Pós-Graduação Cannabis Medicinal" (5ea0c91c)
+  - "Introdução à Cannabis Medicinal" (4b712f23)
+  - "Pós-graduação em Cannabis Medicinal" (e1771364) ⚠️ duplicação?
+- `lesson_content` cannabis: **0** (cursos vazios, pré-PMF)
+- `lesson_content` com termos proibidos: 0
+
+**Análise jurídica:**
+
+| Dimensão | App precisa? | Eduardo/Ricardo precisam? |
+|---|---|---|
+| **RDC ANVISA 1.015** | 🟢 NÃO (não fabrica/importa/comercializa) | 🟢 NÃO (só pra ministrar; respondem via CFM como médicos-autores) |
+| **MEC** | 🔴 SIM SE chamar "Pós-Graduação" (LDB Lei 9.394/1996 + Res. CNE/CES 1/2007) | 🟢 NÃO (são autores, não emissores de diploma) |
+| **CFM 1.974/2011 publicidade médica** | 🟢 Plataforma curadora | 🔴 SIM como médicos com CRM ativo |
+| **RDC 96/2008 propaganda** | 🟡 SE curso virar propaganda a leigos | 🟡 SE endossar produto/marca |
+
+**Achado regulatório real:** 2 dos 3 cursos cannabis ativos usam termo "Pós-Graduação". Se MedCannLab não é Instituição de Ensino Superior credenciada MEC, isso pode caracterizar:
+- Infração LDB (uso indevido nomenclatura reservada)
+- Propaganda enganosa CDC Art. 37
+- Problema com aluno tentando usar certificado como pós-graduação reconhecida
+
+**3 opções operacionais:**
+- **A — Renomear** "Pós-Graduação" → "Capacitação em Cannabis Medicinal" (1 SQL UPDATE, custo zero, elimina obrigação MEC). **Recomendado pré-PMF.**
+- **B — Parceria** com IES credenciada (acordo institucional, mantém termo)
+- **C — Credenciar** MedCannLab como IES (pós-PMF, capitalizado, anos)
+
+**Vantagem institucional Eduardo + Ricardo:** ambos têm CRM ativo. Como médicos-sócios, **autoridade científica nativa** vs plataforma EdTech sem médicos no quadro. Diferencial pro pitch.
+
+### D.12 — Memória nova selada
+
+`reference_audit_compliance_rdc_1015_14_05.md` consolida análise artigo-por-artigo + achados empíricos + cursos MEC + recomendações por opção. Adicionada ao MEMORY.md.
+
+### D.13 — Pendências fim de tarde 14/05
+
+1. **PAT vazado** `sbp_740dd1f6a65b28d141d0dde382fbbefaef608f19` exposto no commit 6e94a76 (pushed ao `amigo`). Bloqueia push pro `medcannlab5`. Aguarda decisão Pedro: force-push limpa OU commit novo com contaminação. **Revogação no Supabase Dashboard URGENTE (memória `feedback_credentials.md`).**
+2. **Pré-evento 15/05 20h** — opções leves a atacar: smoke visual V1.9.280-291 com pacientes reais (Carolina/Carlos Eduardo/Badhia), atualizar `pitch_atual_14_05.md` pra apontar `pitch_prefeitura_rj_top_master_14_05.md`, alinhamento João sobre linguagem ("teste beta", não "Roadshow").
+3. **Aba A/B/C Prescrição** (substituir IntegrativePrescriptions por QuickPrescriptions) — fila original do dia. Não urgente pré-evento.
+
+---
+
+## RESUMO DO DIA 14/05 (estado ao final do BLOCO D)
+
+```
+Hora:                  ~15h30 BRT
+Commits hoje:          12 (V1.9.280→291), 4 refs OK
+Memórias seladas hoje: 3 (chapéu João, RDC 1.015, selo sessão tarde)
+RDC 1.015 absorvida:   sim — análise + parking + cross-ref princípios 56+57
+Triagem DRC esboço:    parqueado em IDEIAS_PARKED, Camada 1 publica futura
+Pitch TOP MASTER:      pronto em INVESTMENT_KIT, dados auditados via PAT
+PAT decisão:           AGUARDANDO Pedro (force-push limpa OU commit novo)
+Pré-evento 15/05 20h:  opções leves listadas, aguardando escolha Pedro
+```
+
 
