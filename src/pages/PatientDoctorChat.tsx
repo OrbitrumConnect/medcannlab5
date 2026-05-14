@@ -982,7 +982,12 @@ const PatientDoctorChat: React.FC = () => {
   }, [])
 
   return (
-    <div className="h-[100dvh] bg-slate-950 text-slate-100 relative overflow-hidden flex flex-col">
+    // V1.9.278 — Permite scroll da página em laptops pequenos (Pedro 14/05).
+    // Antes: h-[100dvh] + overflow-hidden travava a página, em laptop ~768px
+    // o input ficava cortado embaixo e Ricardo não rolava.
+    // Agora: min-h-[100dvh] sem overflow-hidden — página cresce e rola natural
+    // quando o conteúdo passa do viewport.
+    <div className="min-h-[100dvh] bg-slate-950 text-slate-100 relative flex flex-col">
       {/* Brain watermark moved inside chat section */}
       {/* ── Ambient Particles ── */}
       <div className="absolute inset-0 pointer-events-none z-0">
