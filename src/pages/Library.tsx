@@ -245,61 +245,76 @@ const Library: React.FC = () => {
       // → erro {"statusCode":"400","error":"InvalidJWT","message":"\"exp\" claim timestamp check failed"}.
       // Fix: SEMPRE regerar signed URL on-the-fly antes de abrir. Não persistir mais no DB.
 
-      // V1.9.290 (Pedro 14/05 12h): bugfix da V1.9.289.
-      // Regex anterior /[^\/]+\/([^?]+)/ incluía o nome do bucket no filePath capturado
-      // → createSignedUrl('documents/<user>/...') tentava achar em 'documents/documents/...' e falhava.
-      // Fix: capturar bucket e filePath SEPARADAMENTE.
-      // Formato URL Supabase: /storage/v1/object/{public|sign|authenticated}/{bucket}/{path}
+      // V1.9.291 (Pedro 14/05 12h10): fix download → inline view.
+      // Causa: upload sem contentType explícito → Supabase salva como octet-stream
+      // → browser baixa em vez de renderizar PDF/imagem inline.
+      // Fix: baixar Blob via supabase JS + forçar Content-Type baseado na extensão local,
+      // abrir como Object URL. PDFs/imagens viram inline; docx/xlsx continuam download (esperado).
+
+      let bucket = 'documents'
+      let filePath: string | null = null
+
+      // Extrair bucket + filePath de URL Supabase
       if (viewUrl && viewUrl.includes('supabase.co/storage')) {
         const pathMatch = viewUrl.match(/\/storage\/v1\/object\/(?:public|sign|authenticated)\/([^\/]+)\/([^?]+)/)
         if (pathMatch) {
-          const bucket = pathMatch[1]
-          const filePath = decodeURIComponent(pathMatch[2])
-          const { data: signedData, error: signedError } = await supabase.storage
-            .from(bucket)
-            .createSignedUrl(filePath, 3600)
-          if (!signedError && signedData) {
-            viewUrl = signedData.signedUrl
-          } else {
-            console.warn('V1.9.290 signed URL refresh falhou:', { bucket, filePath, signedError })
-            viewUrl = null
-          }
+          bucket = pathMatch[1]
+          filePath = decodeURIComponent(pathMatch[2])
         } else {
-          console.warn('V1.9.290 regex não casou com URL Supabase:', viewUrl)
+          console.warn('V1.9.291 regex não casou com URL Supabase:', viewUrl)
         }
       }
 
-      // Caso 2 (fallback): sem URL ou refresh falhou → procurar arquivo no Storage por nome
-      if (!viewUrl) {
+      // Fallback: sem URL ou regex falhou → procurar arquivo no Storage por nome (user-scoped folder)
+      if (!filePath) {
         const { data: { user: storageUser } } = await supabase.auth.getUser()
         const userFolder = storageUser?.id || ''
         const fileName = doc.title || ''
-        const { data: files } = await supabase.storage
-          .from('documents')
-          .list(userFolder, { limit: 100 })
-
+        const { data: files } = await supabase.storage.from('documents').list(userFolder, { limit: 100 })
         if (files) {
           const file = files.find(f =>
             f.name.toLowerCase().includes(fileName.toLowerCase().split('.')[0]) ||
             fileName.toLowerCase().includes(f.name.toLowerCase().split('.')[0])
           )
-
           if (file) {
-            const { data: signedData, error: signedError } = await supabase.storage
-              .from('documents')
-              .createSignedUrl(`${userFolder}/${file.name}`, 3600)
-            if (!signedError && signedData) {
-              viewUrl = signedData.signedUrl
-            }
+            bucket = 'documents'
+            filePath = `${userFolder}/${file.name}`
           }
         }
       }
 
-      if (viewUrl) {
-        window.open(viewUrl, '_blank')
-      } else {
+      if (!filePath) {
         alert('Não foi possível acessar o arquivo. Verifique se o arquivo existe no Storage.')
+        return
       }
+
+      // Baixar Blob + forçar Content-Type correto baseado na extensão
+      const { data: blob, error: dlError } = await supabase.storage.from(bucket).download(filePath)
+      if (dlError || !blob) {
+        console.warn('V1.9.291 download falhou:', { bucket, filePath, dlError })
+        alert('Não foi possível abrir o arquivo. Verifique se ele existe no Storage.')
+        return
+      }
+
+      const ext = filePath.toLowerCase().split('.').pop() || ''
+      const typeMap: Record<string, string> = {
+        pdf: 'application/pdf',
+        jpg: 'image/jpeg',
+        jpeg: 'image/jpeg',
+        png: 'image/png',
+        gif: 'image/gif',
+        webp: 'image/webp',
+        svg: 'image/svg+xml',
+        txt: 'text/plain;charset=utf-8',
+        html: 'text/html;charset=utf-8',
+        json: 'application/json',
+      }
+      const correctType = typeMap[ext] || blob.type || 'application/octet-stream'
+      const fixedBlob = new Blob([blob], { type: correctType })
+      const blobUrl = URL.createObjectURL(fixedBlob)
+      window.open(blobUrl, '_blank')
+      // Cleanup Object URL após 5min — tempo suficiente pra abrir, evita leak
+      setTimeout(() => URL.revokeObjectURL(blobUrl), 5 * 60 * 1000)
     } catch (error) {
       console.error('Erro ao visualizar:', error)
       alert('Erro ao visualizar o arquivo. Verifique as permissões do Storage.')
