@@ -167,6 +167,47 @@ interface Evolution {
   type: 'current' | 'historical'
   content: string
   professional: string
+  // V1.9.281: tipagem da fonte pra timeline tipada na Visão Geral
+  source?: 'assessment' | 'report' | 'record' | 'appointment' | 'prescription'
+  signed?: boolean
+  score?: number | null
+  rawCreatedAt?: string
+}
+
+// V1.9.281: dados agregados da Visão Geral elite escalável
+interface OverviewData {
+  lastReport: {
+    id: string
+    generatedAt: string
+    chiefComplaint: string
+    score: number | null
+    prevScore: number | null
+    signed: boolean
+    riskFlags: string[]
+    scoreHistory: number[]
+  } | null
+  pendingReviewCount: number
+  lastPrescription: {
+    id: string
+    summary: string
+    status: string
+    createdAt: string
+  } | null
+  nextAppointment: {
+    id: string
+    dateISO: string
+    professionalId: string | null
+    isRemote: boolean
+  } | null
+  chatCount30d: number
+  clinicalTeam: Array<{ id: string; name: string; specialty?: string | null; role: 'responsible' | 'partner'; appointmentCount: number }>
+  tabCounts: {
+    aecs: number
+    prescriptions: number
+    exams: number
+    appointments: number
+  }
+  drcStage: string | null
 }
 
 /** Garante que o conteúdo de evolução seja sempre string (evita React error #31 ao renderizar objeto). */
@@ -218,6 +259,10 @@ const PatientsManagement: React.FC<PatientsManagementProps> = ({ embedded = fals
   const [analyticsAppointments, setAnalyticsAppointments] = useState<Array<{ id: string; date: string; time: string; professional: string; type: string; status: string }>>([])
   const [analyticsPrescriptions, setAnalyticsPrescriptions] = useState<Array<{ id: string; title: string; status: string; issuedAt?: string; startsAt?: string | null; endsAt?: string | null; professionalName?: string | null }>>([])
   const [analyticsPrescriptionsLoading, setAnalyticsPrescriptionsLoading] = useState(false)
+
+  // V1.9.281: Overview elite escalável
+  const [overviewData, setOverviewData] = useState<OverviewData | null>(null)
+  const [overviewLoading, setOverviewLoading] = useState(false)
 
   // ACDSS Integration
   const patientContext = React.useMemo(() => {
@@ -799,6 +844,149 @@ const PatientsManagement: React.FC<PatientsManagementProps> = ({ embedded = fals
     }
   }
 
+  // V1.9.281: Overview elite escalável — Promise.all paralelo (pattern V1.9.209).
+  // Reusa dados que já existem (clinical_reports + cfm_prescriptions + appointments + exam_requests + chat_messages_legacy).
+  // Zero schema novo. Equipe clínica derivada de distinct(professional_id) em appointments.
+  const loadOverviewData = async (patientId: string) => {
+    setOverviewLoading(true)
+    setOverviewData(null)
+    try {
+      const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()
+      const todayISO = new Date().toISOString().split('T')[0]
+
+      const [reportsRes, prescRes, apptRes, examsRes, chatRes] = await Promise.all([
+        supabase.from('clinical_reports').select('id, generated_at, content, status, review_status, signature_hash, signed_at')
+          .eq('patient_id', patientId).order('generated_at', { ascending: false }).limit(10),
+        supabase.from('cfm_prescriptions').select('id, created_at, medications, status, prescription_type')
+          .eq('patient_id', patientId).order('created_at', { ascending: false }).limit(5),
+        supabase.from('appointments').select('id, appointment_date, appointment_time, status, professional_id, is_remote, appointment_type')
+          .eq('patient_id', patientId).order('appointment_date', { ascending: false }).limit(30),
+        supabase.from('patient_exam_requests').select('id, status', { count: 'exact', head: false })
+          .eq('patient_id', patientId),
+        supabase.from('chat_messages_legacy').select('id', { count: 'exact', head: true })
+          .eq('user_id', patientId).gte('created_at', thirtyDaysAgo),
+      ])
+
+      // Última AEC + sparkline scores
+      const reports = (reportsRes.data || []) as any[]
+      const scoreHistory: number[] = []
+      let lastReportData: OverviewData['lastReport'] = null
+      reports.forEach(r => {
+        const sc = (r.content as any)?.scores?.clinical_score
+        if (typeof sc === 'number') scoreHistory.push(sc)
+      })
+      if (reports[0]) {
+        const r = reports[0]
+        const content = (r.content || {}) as any
+        const chiefComplaint = String(
+          content.queixa_principal || content.chief_complaint || content.investigation || content.result || 'Sem queixa registrada'
+        ).slice(0, 180)
+        const score = typeof content?.scores?.clinical_score === 'number' ? content.scores.clinical_score : null
+        const prevScore = scoreHistory.length > 1 ? scoreHistory[1] : null
+        const flagsRaw = content.risk_flags || content.alertas || content.alerts || []
+        const riskFlags = Array.isArray(flagsRaw) ? flagsRaw.slice(0, 3).map(String) : []
+        lastReportData = {
+          id: r.id,
+          generatedAt: r.generated_at,
+          chiefComplaint,
+          score,
+          prevScore,
+          signed: !!r.signature_hash || !!r.signed_at,
+          riskFlags,
+          scoreHistory: scoreHistory.slice(0, 5).reverse(),
+        }
+      }
+
+      // Pendência de revisão (Sprint 1 V1.9.200)
+      const pendingReviewCount = reports.filter(r => r.review_status === 'pending').length
+
+      // Última prescrição
+      const prescriptions = (prescRes.data || []) as any[]
+      let lastPrescriptionData: OverviewData['lastPrescription'] = null
+      if (prescriptions[0]) {
+        const p = prescriptions[0]
+        const meds = Array.isArray(p.medications) ? p.medications : []
+        const firstMed = meds[0] || {}
+        const summary = firstMed.name || firstMed.medication || firstMed.descricao || p.prescription_type || 'Prescrição emitida'
+        lastPrescriptionData = {
+          id: p.id,
+          summary: String(summary).slice(0, 80),
+          status: p.status || 'DRAFT',
+          createdAt: p.created_at,
+        }
+      }
+
+      // Próxima consulta
+      const appts = (apptRes.data || []) as any[]
+      const nextAppt = appts
+        .filter(a => a.appointment_date >= todayISO && !['cancelled', 'canceled', 'completed'].includes(a.status))
+        .sort((a, b) => `${a.appointment_date} ${a.appointment_time || ''}`.localeCompare(`${b.appointment_date} ${b.appointment_time || ''}`))[0]
+      const nextAppointmentData: OverviewData['nextAppointment'] = nextAppt ? {
+        id: nextAppt.id,
+        dateISO: `${nextAppt.appointment_date}${nextAppt.appointment_time ? `T${nextAppt.appointment_time}` : ''}`,
+        professionalId: nextAppt.professional_id || null,
+        isRemote: !!nextAppt.is_remote || nextAppt.appointment_type === 'video',
+      } : null
+
+      // Equipe clínica — distintos profissionais que atenderam o paciente
+      const profIds = new Set<string>()
+      const apptCountByProf = new Map<string, number>()
+      appts.forEach(a => {
+        if (a.professional_id) {
+          profIds.add(a.professional_id)
+          apptCountByProf.set(a.professional_id, (apptCountByProf.get(a.professional_id) || 0) + 1)
+        }
+      })
+      let clinicalTeam: OverviewData['clinicalTeam'] = []
+      if (profIds.size > 0) {
+        const { data: profs } = await supabase
+          .from('users').select('id, name, specialty')
+          .in('id', Array.from(profIds))
+        if (profs) {
+          const sorted = [...profs].map(p => ({
+            id: p.id,
+            name: p.name || 'Profissional',
+            specialty: (p as any).specialty || null,
+            appointmentCount: apptCountByProf.get(p.id) || 0,
+          })).sort((a, b) => b.appointmentCount - a.appointmentCount)
+          clinicalTeam = sorted.map((p, i) => ({
+            ...p,
+            role: i === 0 ? 'responsible' as const : 'partner' as const,
+          }))
+        }
+      }
+
+      // Contadores por aba
+      const tabCounts = {
+        aecs: reports.length,
+        prescriptions: prescriptions.length,
+        exams: examsRes.count || 0,
+        appointments: appts.length,
+      }
+
+      // DRC stage (extraído do último report, se Nefrologia)
+      const drcStage = lastReportData ? String(
+        (reports[0]?.content as any)?.drc_stage || (reports[0]?.content as any)?.ckd_stage || ''
+      ) || null : null
+
+      setOverviewData({
+        lastReport: lastReportData,
+        pendingReviewCount,
+        lastPrescription: lastPrescriptionData,
+        nextAppointment: nextAppointmentData,
+        chatCount30d: chatRes.count || 0,
+        clinicalTeam,
+        tabCounts,
+        drcStage,
+      })
+    } catch (e) {
+      console.error('V1.9.281 loadOverviewData erro:', e)
+      setOverviewData(null)
+    } finally {
+      setOverviewLoading(false)
+    }
+  }
+
   const loadEvolutions = async (patientId: string) => {
     try {
       setLoadingEvolutions(true)
@@ -820,7 +1008,11 @@ const PatientsManagement: React.FC<PatientsManagementProps> = ({ embedded = fals
             time: new Date(assessment.created_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
             type: assessment.status === 'completed' ? 'current' : 'historical',
             content: evolutionContentString((assessment.clinical_report ?? (assessment.data as any)?.clinicalNotes ?? (assessment.data as any)?.investigation) as string, 'Avaliação clínica realizada'),
-            professional: 'IA Residente'
+            professional: 'IA Residente',
+            source: 'assessment',
+            signed: false,
+            score: typeof (assessment.data as any)?.scores?.clinical_score === 'number' ? (assessment.data as any).scores.clinical_score : null,
+            rawCreatedAt: assessment.created_at,
           })
         })
       }
@@ -845,7 +1037,11 @@ const PatientsManagement: React.FC<PatientsManagementProps> = ({ embedded = fals
               content: typeof report.content === 'string'
                 ? report.content
                 : (report.content as any)?.investigation || (report.content as any)?.result || 'Relatório clínico gerado',
-              professional: (report as any).professional_name || (report.generated_by === 'noa_ai' ? 'IA Residente' : 'Profissional')
+              professional: (report as any).professional_name || (report.generated_by === 'noa_ai' ? 'IA Residente' : 'Profissional'),
+              source: 'report',
+              signed: !!(report as any).signature_hash || !!(report as any).signed_at,
+              score: typeof (report.content as any)?.scores?.clinical_score === 'number' ? (report.content as any).scores.clinical_score : null,
+              rawCreatedAt: report.generated_at,
             })
           }
         })
@@ -873,7 +1069,11 @@ const PatientsManagement: React.FC<PatientsManagementProps> = ({ embedded = fals
                   typeof record.record_data === 'string' ? record.record_data : ((record.record_data as any)?.content ?? (record.record_data as any)?.summary ?? (record as any).title),
                   'Registro médico'
                 ),
-                professional: typeof (record.record_data as any)?.professional_name === 'string' ? (record.record_data as any).professional_name : 'Sistema'
+                professional: typeof (record.record_data as any)?.professional_name === 'string' ? (record.record_data as any).professional_name : 'Sistema',
+                source: 'record',
+                signed: false,
+                score: null,
+                rawCreatedAt: record.created_at,
               })
             }
           })
@@ -941,8 +1141,11 @@ const PatientsManagement: React.FC<PatientsManagementProps> = ({ embedded = fals
   const handleSelectPatient = (patient: Patient) => {
     setSelectedPatient(patient)
     setActiveTab('overview')
-    // Carregar evoluções do paciente selecionado
-    loadEvolutions(patient.id)
+    // V1.9.281: paralelizar fetch da timeline + overview elite. Pattern V1.9.209.
+    void Promise.all([
+      loadEvolutions(patient.id),
+      loadOverviewData(patient.id),
+    ])
   }
 
   const handleOpenPatientChat = async () => {
@@ -1647,73 +1850,322 @@ const PatientsManagement: React.FC<PatientsManagementProps> = ({ embedded = fals
                       )}
                       {activeTab === 'overview' && (
                         <div className="space-y-3">
-                          {/* V1.9.119-F: Grid compacto Especialidade/Unidade/Sala/Encaminhador (era cards grandes) */}
+                          {/* V1.9.281 — Visão Geral elite escalável. ACDSS removido daqui (mock-data risk, mesma razão V1.9.203).
+                              Princípio: entregar todo valor clínico que a plataforma tem na primeira aba. */}
+
+                          {/* BLOCO 1: Banner pendência Sprint 1 — só renderiza se há AEC aguardando revisão */}
+                          {overviewData && overviewData.pendingReviewCount > 0 && (
+                            <button
+                              onClick={() => setActiveTab('evolution')}
+                              className="w-full bg-amber-500/10 border border-amber-500/30 rounded-lg p-3 flex items-center justify-between hover:bg-amber-500/15 transition-colors group"
+                            >
+                              <div className="flex items-center gap-2.5">
+                                <AlertCircle className="w-4 h-4 text-amber-400 shrink-0" />
+                                <span className="text-sm text-amber-200 font-medium">
+                                  {overviewData.pendingReviewCount} avaliação(ões) aguardando sua revisão
+                                </span>
+                              </div>
+                              <span className="text-xs text-amber-300 group-hover:translate-x-0.5 transition-transform">Revisar →</span>
+                            </button>
+                          )}
+
+                          {/* BLOCO 2: Última Avaliação Clínica — card destaque com queixa, score, sparkline, alertas */}
+                          {overviewLoading ? (
+                            <div className="bg-slate-700/30 rounded-xl p-4 border border-slate-700/50 animate-pulse">
+                              <div className="h-3 bg-slate-700 rounded w-1/3 mb-3"></div>
+                              <div className="h-4 bg-slate-700 rounded w-2/3 mb-2"></div>
+                              <div className="h-3 bg-slate-700 rounded w-1/2"></div>
+                            </div>
+                          ) : overviewData?.lastReport ? (
+                            <div className="bg-gradient-to-br from-emerald-500/8 via-slate-800/40 to-blue-500/8 border border-emerald-500/25 rounded-xl p-4">
+                              <div className="flex items-start justify-between gap-3 mb-2.5">
+                                <div className="flex items-center gap-2 min-w-0">
+                                  <Target className="w-4 h-4 text-emerald-400 shrink-0" />
+                                  <h3 className="text-sm font-bold text-white">Última Avaliação Clínica</h3>
+                                  {overviewData.lastReport.signed && (
+                                    <span className="px-1.5 py-0.5 rounded text-[9px] font-black uppercase bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 flex items-center gap-0.5">
+                                      <CheckCircle className="w-2.5 h-2.5" />
+                                      ICP
+                                    </span>
+                                  )}
+                                </div>
+                                <span className="text-[11px] text-slate-400 shrink-0">
+                                  {new Date(overviewData.lastReport.generatedAt).toLocaleDateString('pt-BR')} • {new Date(overviewData.lastReport.generatedAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                                </span>
+                              </div>
+
+                              <p className="text-sm text-slate-200 leading-relaxed mb-3 line-clamp-2">
+                                <span className="text-slate-500 text-xs uppercase tracking-wider font-bold mr-1.5">Queixa:</span>
+                                {overviewData.lastReport.chiefComplaint}
+                              </p>
+
+                              <div className="flex items-center gap-3 flex-wrap mb-2">
+                                {overviewData.lastReport.score !== null && (
+                                  <div className="flex items-center gap-1.5">
+                                    <span className="text-[10px] uppercase font-bold text-slate-500">Score</span>
+                                    <span className="text-base font-bold text-white">{overviewData.lastReport.score}</span>
+                                    {overviewData.lastReport.prevScore !== null && (() => {
+                                      const delta = (overviewData.lastReport.score ?? 0) - overviewData.lastReport.prevScore
+                                      const sign = delta > 0 ? '+' : ''
+                                      const cls = delta > 0 ? 'text-emerald-400' : delta < 0 ? 'text-rose-400' : 'text-slate-400'
+                                      return <span className={`text-[11px] font-bold ${cls}`}>({sign}{delta})</span>
+                                    })()}
+                                  </div>
+                                )}
+                                {/* Sparkline scores — SVG inline, sem dep externa */}
+                                {overviewData.lastReport.scoreHistory.length >= 2 && (() => {
+                                  const pts = overviewData.lastReport.scoreHistory
+                                  const max = Math.max(...pts, 100)
+                                  const min = Math.min(...pts, 0)
+                                  const range = max - min || 1
+                                  const W = 80, H = 20
+                                  const step = pts.length > 1 ? W / (pts.length - 1) : W
+                                  const path = pts.map((v, i) => `${i === 0 ? 'M' : 'L'} ${(i * step).toFixed(1)} ${(H - ((v - min) / range) * H).toFixed(1)}`).join(' ')
+                                  return (
+                                    <svg width={W} height={H} className="shrink-0">
+                                      <path d={path} fill="none" stroke="rgb(52,211,153)" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round" />
+                                    </svg>
+                                  )
+                                })()}
+                                {overviewData.drcStage && (
+                                  <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-cyan-500/15 text-cyan-300 border border-cyan-500/25">
+                                    DRC {overviewData.drcStage}
+                                  </span>
+                                )}
+                              </div>
+
+                              {overviewData.lastReport.riskFlags.length > 0 && (
+                                <div className="mt-2 pt-2 border-t border-amber-500/20 flex items-start gap-1.5">
+                                  <AlertCircle className="w-3.5 h-3.5 text-amber-400 mt-0.5 shrink-0" />
+                                  <div className="text-xs text-amber-200">
+                                    <span className="font-bold uppercase tracking-wider text-[10px] mr-1">Alertas:</span>
+                                    {overviewData.lastReport.riskFlags.join(' • ')}
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          ) : (
+                            <div className="bg-slate-700/20 rounded-xl p-4 border border-slate-700/40 text-center">
+                              <Target className="w-6 h-6 mx-auto mb-1.5 text-slate-600" />
+                              <p className="text-sm text-slate-400">Nenhuma avaliação clínica registrada ainda</p>
+                              <p className="text-[11px] text-slate-500 mt-0.5">A próxima AEC vai aparecer aqui em destaque</p>
+                            </div>
+                          )}
+
+                          {/* BLOCO 3: 4 mini-cards inline — AECs / Prescrição / Próxima Consulta / Chat 30d */}
                           <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
                             <div className="bg-slate-700/30 rounded-lg p-3 border border-slate-700/50">
-                              <p className="text-[10px] font-bold text-slate-500 mb-0.5 uppercase tracking-wider">Especialidade</p>
-                              <p className="text-sm font-semibold text-white truncate">{selectedPatient.specialty}</p>
+                              <div className="flex items-center gap-1.5 mb-1">
+                                <BarChart3 className="w-3.5 h-3.5 text-blue-400" />
+                                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">AECs</p>
+                              </div>
+                              <p className="text-lg font-bold text-white">{overviewData?.tabCounts.aecs ?? '—'}</p>
+                              <p className="text-[10px] text-slate-500">total registradas</p>
                             </div>
+
                             <div className="bg-slate-700/30 rounded-lg p-3 border border-slate-700/50">
-                              <p className="text-[10px] font-bold text-slate-500 mb-0.5 uppercase tracking-wider">Unidade</p>
-                              <p className="text-sm font-semibold text-white truncate">{selectedPatient.clinic}</p>
+                              <div className="flex items-center gap-1.5 mb-1">
+                                <Edit className="w-3.5 h-3.5 text-purple-400" />
+                                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Prescrição</p>
+                              </div>
+                              {overviewData?.lastPrescription ? (
+                                <>
+                                  <p className="text-xs font-semibold text-white truncate">{overviewData.lastPrescription.summary}</p>
+                                  <p className={`text-[10px] font-bold uppercase ${overviewData.lastPrescription.status === 'signed' ? 'text-emerald-400' : 'text-amber-400'}`}>
+                                    {overviewData.lastPrescription.status === 'signed' ? '✓ assinada' : '⚠ ' + overviewData.lastPrescription.status}
+                                  </p>
+                                </>
+                              ) : (
+                                <p className="text-xs text-slate-500 italic">sem prescrição</p>
+                              )}
                             </div>
+
                             <div className="bg-slate-700/30 rounded-lg p-3 border border-slate-700/50">
-                              <p className="text-[10px] font-bold text-slate-500 mb-0.5 uppercase tracking-wider">Sala</p>
-                              <p className="text-sm font-semibold text-white truncate">{selectedPatient.room}</p>
+                              <div className="flex items-center gap-1.5 mb-1">
+                                <Calendar className="w-3.5 h-3.5 text-cyan-400" />
+                                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Próx Consulta</p>
+                              </div>
+                              {overviewData?.nextAppointment ? (() => {
+                                const date = new Date(overviewData.nextAppointment.dateISO)
+                                const daysAhead = Math.ceil((date.getTime() - Date.now()) / (1000 * 60 * 60 * 24))
+                                return (
+                                  <>
+                                    <p className="text-xs font-semibold text-white">{date.toLocaleDateString('pt-BR')}</p>
+                                    <p className="text-[10px] text-slate-400">
+                                      {overviewData.nextAppointment.isRemote ? '🎥 vídeo' : '🏥 presencial'}
+                                      {daysAhead >= 0 && daysAhead <= 90 ? ` • em ${daysAhead}d` : ''}
+                                    </p>
+                                  </>
+                                )
+                              })() : (
+                                <p className="text-xs text-slate-500 italic">sem agendamento</p>
+                              )}
                             </div>
+
                             <div className="bg-slate-700/30 rounded-lg p-3 border border-slate-700/50">
-                              <p className="text-[10px] font-bold text-slate-500 mb-0.5 uppercase tracking-wider">Encaminhador</p>
-                              <p className="text-sm font-semibold text-white truncate">{selectedPatient.referringDoctor || 'Não informado'}</p>
+                              <div className="flex items-center gap-1.5 mb-1">
+                                <Activity className="w-3.5 h-3.5 text-emerald-400" />
+                                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Chat 30d</p>
+                              </div>
+                              <p className="text-lg font-bold text-white">{overviewData?.chatCount30d ?? '—'}</p>
+                              <p className="text-[10px] text-slate-500">mensagens</p>
                             </div>
                           </div>
 
-                          {/* V1.9.119-F: ACDSS COLAPSADO (era card gigante dominando topo) */}
-                          {/* Honra heranca TradeVision Core mas nao polui Visao Geral default */}
-                          <details className="bg-slate-800/40 border border-slate-700/50 rounded-xl group">
-                            <summary className="cursor-pointer px-4 py-2.5 text-xs font-semibold text-slate-300 hover:text-white flex items-center justify-between transition-colors list-none">
-                              <span className="flex items-center gap-2">
-                                <span className="text-purple-400">🧠</span>
-                                Análise Cognitiva (ACDSS) — clique para expandir
-                              </span>
-                              <span className="text-slate-500 group-open:rotate-180 transition-transform">▾</span>
-                            </summary>
-                            <div className="px-4 pb-4 pt-2 border-t border-slate-700/50">
-                              <IntegratedGovernanceView patientId={selectedPatient.id} />
+                          {/* BLOCO 4: Equipe Clínica + Resumo das Abas (2 colunas) */}
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                            {/* Equipe Clínica do paciente */}
+                            <div className="bg-slate-700/30 rounded-lg p-3 border border-slate-700/50">
+                              <div className="flex items-center gap-1.5 mb-2">
+                                <User className="w-3.5 h-3.5 text-indigo-400" />
+                                <p className="text-[11px] font-bold text-slate-300 uppercase tracking-wider">Equipe Clínica</p>
+                              </div>
+                              {overviewData?.clinicalTeam.length ? (
+                                <div className="space-y-1.5">
+                                  {overviewData.clinicalTeam.slice(0, 3).map(prof => (
+                                    <div key={prof.id} className="flex items-center justify-between gap-2">
+                                      <div className="min-w-0 flex-1">
+                                        <p className="text-xs font-semibold text-white truncate">{prof.name}</p>
+                                        <p className="text-[10px] text-slate-400 truncate">
+                                          {prof.specialty || 'Profissional'}
+                                          {prof.role === 'responsible' && <span className="ml-1 text-emerald-400">• responsável</span>}
+                                        </p>
+                                      </div>
+                                      <span className="text-[10px] text-slate-500 shrink-0">{prof.appointmentCount}x</span>
+                                    </div>
+                                  ))}
+                                  {overviewData.clinicalTeam.length > 3 && (
+                                    <p className="text-[10px] text-slate-500 italic pt-0.5">+{overviewData.clinicalTeam.length - 3} outros</p>
+                                  )}
+                                </div>
+                              ) : (
+                                <p className="text-xs text-slate-500 italic">Sem equipe vinculada ainda</p>
+                              )}
                             </div>
-                          </details>
+
+                            {/* Resumo das abas — contadores rápidos clicáveis */}
+                            <div className="bg-slate-700/30 rounded-lg p-3 border border-slate-700/50">
+                              <div className="flex items-center gap-1.5 mb-2">
+                                <FileText className="w-3.5 h-3.5 text-orange-400" />
+                                <p className="text-[11px] font-bold text-slate-300 uppercase tracking-wider">Resumo das Abas</p>
+                              </div>
+                              <div className="grid grid-cols-2 gap-1 text-xs">
+                                <button onClick={() => setActiveTab('evolution')} className="text-left flex items-center justify-between px-2 py-1 rounded hover:bg-slate-600/30 transition-colors">
+                                  <span className="text-slate-300">🩺 AECs</span>
+                                  <span className="text-white font-bold">{overviewData?.tabCounts.aecs ?? '—'}</span>
+                                </button>
+                                <button onClick={() => setActiveTab('prescription')} className="text-left flex items-center justify-between px-2 py-1 rounded hover:bg-slate-600/30 transition-colors">
+                                  <span className="text-slate-300">💊 Prescr</span>
+                                  <span className="text-white font-bold">{overviewData?.tabCounts.prescriptions ?? '—'}</span>
+                                </button>
+                                <button onClick={() => setActiveTab('exams')} className="text-left flex items-center justify-between px-2 py-1 rounded hover:bg-slate-600/30 transition-colors">
+                                  <span className="text-slate-300">🧪 Exames</span>
+                                  <span className="text-white font-bold">{overviewData?.tabCounts.exams ?? '—'}</span>
+                                </button>
+                                <button onClick={() => setActiveTab('appointments')} className="text-left flex items-center justify-between px-2 py-1 rounded hover:bg-slate-600/30 transition-colors">
+                                  <span className="text-slate-300">📅 Consultas</span>
+                                  <span className="text-white font-bold">{overviewData?.tabCounts.appointments ?? '—'}</span>
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* BLOCO 5: Histórico — Timeline tipada (mantém na Visão Geral, evolui com badge por fonte) */}
                           <div className="bg-slate-700/50 rounded-lg p-4">
-                            <p className="text-sm text-slate-400 mb-2">Histórico</p>
+                            <div className="flex items-center justify-between mb-2">
+                              <p className="text-sm text-slate-400 font-semibold">Histórico</p>
+                              {evolutions.length > 5 && (
+                                <button onClick={() => setActiveTab('evolution')} className="text-[11px] text-emerald-400 hover:text-emerald-300 transition-colors">
+                                  ver tudo →
+                                </button>
+                              )}
+                            </div>
                             {loadingEvolutions ? (
                               <div className="text-center text-slate-400 py-4">
                                 <Clock className="w-6 h-6 mx-auto mb-2 animate-spin" />
                                 <p className="text-sm">Carregando histórico...</p>
                               </div>
                             ) : evolutions.length === 0 ? (
-                              <p className="text-slate-300">Não há informações para serem exibidas.</p>
+                              <p className="text-slate-300 text-sm">Não há informações para serem exibidas.</p>
                             ) : (
                               <div className="space-y-2 max-h-60 overflow-y-auto">
-                                {evolutions.slice(0, 5).map(evolution => (
-                                  <div key={evolution.id} className="bg-slate-700/30 rounded-xl p-3 border border-slate-600/50">
-                                    <div className="flex items-start justify-between mb-2">
-                                      <p className="text-[13px] text-slate-200 font-bold">{evolution.date} • {evolution.time}</p>
-                                      <span className={`px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider ${evolution.type === 'current'
-                                        ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
-                                        : 'bg-blue-500/20 text-blue-400 border border-blue-500/30'
-                                        }`}>
-                                        {evolution.type === 'current' ? 'Atual' : 'Histórico'}
-                                      </span>
+                                {evolutions.slice(0, 5).map(evolution => {
+                                  const sourceLabel = evolution.source === 'report' ? { icon: '📄', label: 'Relatório', cls: 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30' }
+                                    : evolution.source === 'assessment' ? { icon: '🩺', label: 'AEC', cls: 'bg-blue-500/15 text-blue-300 border-blue-500/30' }
+                                    : { icon: '📝', label: 'Registro', cls: 'bg-slate-500/15 text-slate-300 border-slate-500/30' }
+                                  return (
+                                    <div key={evolution.id} className="bg-slate-700/30 rounded-xl p-3 border border-slate-600/50">
+                                      <div className="flex items-start justify-between mb-2 gap-2">
+                                        <p className="text-[13px] text-slate-200 font-bold">{evolution.date} • {evolution.time}</p>
+                                        <div className="flex items-center gap-1.5 shrink-0">
+                                          <span className={`px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider border ${sourceLabel.cls}`}>
+                                            <span className="mr-0.5">{sourceLabel.icon}</span>{sourceLabel.label}
+                                          </span>
+                                          {evolution.signed && (
+                                            <span className="px-1.5 py-0.5 rounded text-[9px] font-black uppercase bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                                              ICP
+                                            </span>
+                                          )}
+                                          {typeof evolution.score === 'number' && (
+                                            <span className="text-[10px] font-bold text-slate-300">score {evolution.score}</span>
+                                          )}
+                                        </div>
+                                      </div>
+                                      <p className="text-sm text-slate-300 line-clamp-2 leading-relaxed mb-1.5">{evolutionContentString(evolution.content, '—')}</p>
+                                      <p className="text-[11px] text-slate-500 font-bold uppercase tracking-tight">{evolution.professional}</p>
                                     </div>
-                                    <p className="text-sm text-slate-300 line-clamp-2 leading-relaxed mb-1.5">{evolutionContentString(evolution.content, '—')}</p>
-                                    <p className="text-[11px] text-slate-500 font-bold uppercase tracking-tight">{evolution.professional}</p>
-                                  </div>
-                                ))}
+                                  )
+                                })}
                                 {evolutions.length > 5 && (
                                   <p className="text-xs text-slate-400 text-center pt-2">
-                                    ... e mais {evolutions.length - 5} registro(s). Veja mais na aba "Evolução"
+                                    ... e mais {evolutions.length - 5} registro(s) na aba "Evolução"
                                   </p>
                                 )}
                               </div>
                             )}
+                          </div>
+
+                          {/* BLOCO 6: Ações Rápidas — 4 CTAs principais */}
+                          <div className="bg-slate-800/40 rounded-lg p-3 border border-slate-700/50">
+                            <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">Ações Rápidas</p>
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-1.5">
+                              <button
+                                onClick={() => { setActiveTab('evolution'); setShowNewEvolution(true) }}
+                                className="flex items-center justify-center gap-1.5 px-2.5 py-2 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/30 text-blue-300 text-xs font-medium transition-colors"
+                              >
+                                <Plus className="w-3.5 h-3.5" /> Nova Evolução
+                              </button>
+                              <button
+                                onClick={() => setActiveTab('prescription')}
+                                className="flex items-center justify-center gap-1.5 px-2.5 py-2 rounded-lg bg-purple-500/10 hover:bg-purple-500/20 border border-purple-500/30 text-purple-300 text-xs font-medium transition-colors"
+                              >
+                                <Edit className="w-3.5 h-3.5" /> Prescrever
+                              </button>
+                              <button
+                                onClick={() => setActiveTab('appointments')}
+                                className="flex items-center justify-center gap-1.5 px-2.5 py-2 rounded-lg bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/30 text-cyan-300 text-xs font-medium transition-colors"
+                              >
+                                <Calendar className="w-3.5 h-3.5" /> Agendar
+                              </button>
+                              <button
+                                onClick={handleOpenPatientChat}
+                                disabled={openingChat}
+                                className="flex items-center justify-center gap-1.5 px-2.5 py-2 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 text-emerald-300 text-xs font-medium transition-colors disabled:opacity-50"
+                              >
+                                <Activity className="w-3.5 h-3.5" /> {openingChat ? 'Abrindo...' : 'Chat'}
+                              </button>
+                            </div>
+                          </div>
+
+                          {/* BLOCO 7: Rodapé admin compacto — info administrativa rebaixada (era 4 cards grandes no topo) */}
+                          <div className="pt-2 border-t border-slate-700/40 flex items-center gap-2 text-[11px] text-slate-500 flex-wrap">
+                            <span><span className="text-slate-600">Esp.</span> {selectedPatient.specialty || '—'}</span>
+                            <span className="text-slate-700">•</span>
+                            <span><span className="text-slate-600">Sala</span> {selectedPatient.room || '—'}</span>
+                            <span className="text-slate-700">•</span>
+                            <span><span className="text-slate-600">Unidade</span> {selectedPatient.clinic || '—'}</span>
+                            <span className="text-slate-700">•</span>
+                            <span><span className="text-slate-600">Encaminhador</span> {selectedPatient.referringDoctor || '—'}</span>
                           </div>
                         </div>
                       )}
