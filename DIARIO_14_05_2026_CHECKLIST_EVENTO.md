@@ -788,7 +788,7 @@ Pedro perguntou: *"Eduardo e Ricardo são sócios do app — o curso é deles, n
 
 ### D.13 — Pendências fim de tarde 14/05
 
-1. **PAT vazado** `sbp_740dd1f6a65b28d141d0dde382fbbefaef608f19` exposto no commit 6e94a76 (pushed ao `amigo`). Bloqueia push pro `medcannlab5`. Aguarda decisão Pedro: force-push limpa OU commit novo com contaminação. **Revogação no Supabase Dashboard URGENTE (memória `feedback_credentials.md`).**
+1. **PAT** `sbp_…[REDACTED]` exposto no commit 6e94a76 (pushed ao `amigo`). Bloqueia push pro `medcannlab5` até force-push ou unblock manual no GitHub. **Revogação no Supabase Dashboard URGENTE (memória `feedback_credentials.md`).**
 2. **Pré-evento 15/05 20h** — opções leves a atacar: smoke visual V1.9.280-291 com pacientes reais (Carolina/Carlos Eduardo/Badhia), atualizar `pitch_atual_14_05.md` pra apontar `pitch_prefeitura_rj_top_master_14_05.md`, alinhamento João sobre linguagem ("teste beta", não "Roadshow").
 3. **Aba A/B/C Prescrição** (substituir IntegrativePrescriptions por QuickPrescriptions) — fila original do dia. Não urgente pré-evento.
 
