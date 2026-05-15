@@ -51,14 +51,14 @@ export function PaymentCheckout() {
           'mock-1': {
             id: 'mock-1',
             name: 'Plano Acesso - Básico',
-            monthly_price: 60.00,
+            monthly_price: 33.33,
             setup_fee: 79.99,
             consultation_discount: 10
           },
           'mock-2': {
             id: 'mock-2',
             name: 'Plano Acesso - Premium',
-            monthly_price: 60.00,
+            monthly_price: 33.33,
             setup_fee: 79.99,
             consultation_discount: 20
           },

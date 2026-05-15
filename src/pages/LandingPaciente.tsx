@@ -51,7 +51,7 @@ const LandingPaciente = () => {
           perfil="paciente"
           title="Plano Paciente"
           subtitle="Acesso à plataforma + Nôa Esperanza + relatórios estruturados"
-          price="R$ 60"
+          price="R$ 33,33"
           priceUnit="/mês"
           priceNote="Consultas com médicos parceiros: a partir de R$ 350, cobradas pelo profissional"
           includes={[

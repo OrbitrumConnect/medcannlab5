@@ -42,7 +42,7 @@ export function SubscriptionPlans() {
           id: 'plano-acesso',
           name: 'Plano Acesso',
           description: 'Acesso completo ao ecossistema cognitivo MedCannLab com IA residente e ferramentas clínicas.',
-          monthly_price: 60.00,
+          monthly_price: 33.33,
           consultation_discount: 0,
           features: [
             'Avaliação Clínica IMRE com Nôa Esperanza (IA)',

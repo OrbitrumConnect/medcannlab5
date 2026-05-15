@@ -1042,7 +1042,7 @@ const Landing: React.FC = () => {
 
                 <div className="mb-6 border-b border-slate-800 pb-6">
                   <div className="flex items-end gap-2 text-white">
-                    <span className="text-4xl font-extrabold tracking-tight">R$ 60</span>
+                    <span className="text-4xl font-extrabold tracking-tight">R$ 33,33</span>
                     <span className="text-slate-400 pb-1">/mês</span>
                   </div>
                   <div className="flex flex-col space-y-1 mt-3">
