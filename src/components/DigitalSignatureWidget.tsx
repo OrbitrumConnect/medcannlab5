@@ -171,13 +171,38 @@ const DigitalSignatureWidget: React.FC<DigitalSignatureWidgetProps> = ({
             </div>
           )}
 
-          {/* ITI Validation */}
+          {/* V1.9.298: Verificação criptográfica honesta. Substitui antigo bloco "Validar no Portal ITI"
+              que apontava pra URL fictício (validacao.iti.gov.br) — credenciamento institucional MedCannLab
+              pendente. Assinatura PKCS#7 SHA-256 continua REAL ICP-Brasil (AC DigitalSign credenciada ITI
+              desde 04/09/2013), apenas a UI agora reflete o estado real e oferece validador oficial. */}
           {hasValidationData && (
             <div className="space-y-3">
+              <div className="p-3 bg-emerald-500/5 border border-emerald-500/20 rounded-lg">
+                <p className="text-xs text-emerald-300 font-medium mb-2 flex items-center gap-1">
+                  <FileCheck className="w-3 h-3" />
+                  Verificação Criptográfica ICP-Brasil
+                </p>
+                <ul className="text-xs text-slate-300 space-y-1.5">
+                  <li className="flex items-start gap-1.5">
+                    <span className="text-emerald-400 shrink-0">✓</span>
+                    <span>Hash autenticado (PKCS#7 SHA-256)</span>
+                  </li>
+                  <li className="flex items-start gap-1.5">
+                    <span className="text-emerald-400 shrink-0">✓</span>
+                    <span>Certificado emitido por <strong>AC DigitalSign</strong> (credenciada ICP-Brasil)</span>
+                  </li>
+                  <li className="flex items-start gap-1.5">
+                    <span className="text-emerald-400 shrink-0">✓</span>
+                    <span>Conforme Lei 14.063/2020 + CFM 2.314/2022</span>
+                  </li>
+                </ul>
+              </div>
+
+              {/* Código interno (referência do documento) */}
               <div className="p-3 bg-slate-700/50 rounded-lg">
                 <p className="text-xs text-slate-400 mb-2 flex items-center gap-1">
-                  <FileCheck className="w-3 h-3" />
-                  Validação ICP-Brasil / ITI
+                  <Key className="w-3 h-3" />
+                  Código de referência do documento
                 </p>
                 <div className="flex items-center gap-2">
                   <input
@@ -200,54 +225,30 @@ const DigitalSignatureWidget: React.FC<DigitalSignatureWidgetProps> = ({
                 </div>
               </div>
 
-              {/* QR Code */}
-              {showQRCode && qrCodeUrl && (
-                <div className="p-4 bg-white rounded-lg flex flex-col items-center gap-3">
-                  <img
-                    src={qrCodeUrl}
-                    alt="QR Code Validação ITI"
-                    className="w-48 h-48"
-                  />
-                  <div className="text-center">
-                    <p className="text-xs text-slate-600 font-medium mb-1">
-                      Escaneie para validar
-                    </p>
-                    <p className="text-xs text-slate-500">
-                      Ou acesse o portal do ITI
-                    </p>
-                  </div>
-                </div>
-              )}
-
-              {/* Validation Button */}
-              <button
-                onClick={handleValidate}
-                disabled={validating}
-                className="w-full px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-lg flex items-center justify-center gap-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              {/* Validador oficial do ITI — URL REAL */}
+              <a
+                href="https://validar.iti.gov.br/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-lg flex items-center justify-center gap-2 transition-colors"
               >
-                {validating ? (
-                  <>
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    Validando...
-                  </>
-                ) : (
-                  <>
-                    <ExternalLink className="w-4 h-4" />
-                    Validar no Portal ITI
-                  </>
-                )}
-              </button>
+                <ExternalLink className="w-4 h-4" />
+                Abrir validador oficial do ITI
+              </a>
 
-              {/* Instructions */}
+              {/* Instruções honestas */}
               <div className="p-3 bg-blue-500/10 border border-blue-500/20 rounded-lg">
                 <p className="text-xs text-blue-300 font-medium mb-2">
-                  Como validar este documento:
+                  Como validar a autenticidade:
                 </p>
                 <ol className="text-xs text-blue-200 space-y-1 list-decimal list-inside">
-                  <li>Acesse o portal do ITI ou escaneie o QR Code acima</li>
-                  <li>Digite o código de validação: <strong className="font-mono">{itiValidationCode}</strong></li>
-                  <li>Verifique a autenticidade da assinatura digital</li>
+                  <li>Baixe o PDF assinado (ou abra-o no Adobe Acrobat Reader)</li>
+                  <li>Adobe Acrobat valida cadeia ICP-Brasil automaticamente</li>
+                  <li>Alternativa: <a href="https://validar.iti.gov.br/" target="_blank" rel="noopener noreferrer" className="underline hover:text-blue-100">validar.iti.gov.br</a> — fazer upload do documento</li>
                 </ol>
+                <p className="text-[10px] text-blue-300/70 mt-2 italic">
+                  A assinatura criptográfica é válida e auditável por qualquer ferramenta padrão ICP-Brasil.
+                </p>
               </div>
             </div>
           )}

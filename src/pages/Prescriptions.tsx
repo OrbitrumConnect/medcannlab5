@@ -1272,11 +1272,11 @@ const Prescriptions: React.FC = () => {
                             )}
                             {prescription.iti_validation_url && (
                               <a
-                                href={prescription.iti_validation_url}
+                                href="https://validar.iti.gov.br/"
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="p-2 hover:bg-slate-700 rounded-lg transition-colors"
-                                title="Validar no Portal ITI"
+                                title="Abrir validador oficial do ITI (validar.iti.gov.br)"
                               >
                                 <FileCheck className="w-5 h-5 text-green-400" />
                               </a>
