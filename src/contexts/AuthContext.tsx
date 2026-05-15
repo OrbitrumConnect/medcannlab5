@@ -196,6 +196,31 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setIsLoading(false)
   }
 
+  // V1.9.297: heartbeat last_seen_at — usuário logado pinga o banco a cada 60s
+  // pra que o painel admin mostre "online" baseado em atividade real, não no
+  // último login explícito (que ficava 15min sem atualizar mesmo com usuário ativo).
+  // Anti-regressão: chamada silenciosa, falha = no-op. RPC heartbeat_user_seen
+  // usa auth.uid() (security definer), zero risco RLS.
+  useEffect(() => {
+    if (!user?.id) return
+    let cancelled = false
+    const tick = async () => {
+      if (cancelled) return
+      try {
+        // V1.9.297: RPC criada via migration 20260515140000. Cast 'as any' até types.ts ser regenerado.
+        await (supabase.rpc as any)('heartbeat_user_seen')
+      } catch {
+        // Silent: heartbeat não é crítico, não trava UX
+      }
+    }
+    tick() // primeira chamada imediata
+    const interval = setInterval(tick, 60_000) // 60s
+    return () => {
+      cancelled = true
+      clearInterval(interval)
+    }
+  }, [user?.id])
+
   // Verificar se o usuário já está logado
   useEffect(() => {
     // Tratamento global para erros de refresh token
