@@ -80,13 +80,46 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // FONTE ÚNICA DE VERDADE PARA PERMISSÕES: public.user_roles (via RPC get_my_primary_role)
     // Dados de exibição (nome / pagamento) podem vir de public.users, mas NÃO definem role.
     try {
+      // V1.9.296: helper pra detectar erro auth-related (JWT expired, unauthorized, etc)
+      const isAuthError = (err: any): boolean => {
+        if (!err) return false
+        const msg = String(err?.message || '').toLowerCase()
+        const code = String(err?.code || '')
+        return (
+          msg.includes('jwt') ||
+          msg.includes('expired') ||
+          msg.includes('unauthorized') ||
+          msg.includes('refresh') ||
+          msg.includes('invalid token') ||
+          code === 'PGRST301' ||
+          code === '42501'
+        )
+      }
+
       // 1) Role (server-side)
-      const { data: roleData, error: roleError } = await supabase.rpc('get_my_primary_role')
+      let { data: roleData, error: roleError } = await supabase.rpc('get_my_primary_role')
+
+      // V1.9.296: se RPC falhou por JWT/auth → tentar refresh + retry 1x; se refresh falhar → signout limpo
+      if (roleError && isAuthError(roleError)) {
+        console.warn('🔐 V1.9.296 — JWT/auth error no RPC, tentando refreshSession()...')
+        const { data: refreshData, error: refreshError } = await supabase.auth.refreshSession()
+        if (refreshError || !refreshData?.session) {
+          console.warn('🔐 V1.9.296 — Refresh falhou; forçando signOut limpo (não promover paciente fantasma)')
+          try { await supabase.auth.signOut() } catch { /* silent */ }
+          setUser(null)
+          setIsLoading(false)
+          return
+        }
+        // Refresh OK → retry RPC 1x
+        const retry = await supabase.rpc('get_my_primary_role')
+        roleData = retry.data
+        roleError = retry.error
+      }
 
       if (!roleError && roleData) {
         userType = normalizeUserType(String(roleData))
       } else {
-        // Fallback seguro
+        // Fallback seguro pra outros erros (não-auth: RLS, network, etc)
         if (roleError) {
           console.warn('⚠️ Erro ao buscar role via RPC get_my_primary_role:', roleError)
         }
