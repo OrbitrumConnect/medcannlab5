@@ -843,4 +843,122 @@ PAT decisão:           AGUARDANDO Pedro (force-push limpa OU commit novo)
 Pré-evento 15/05 20h:  opções leves listadas, aguardando escolha Pedro
 ```
 
+---
+
+## BLOCO E — Pós-evento (~19h-23h BRT 14/05)
+
+### E.1 — V1.9.293 RLS clinical_assessments quebrada (Ricardo 18:58)
+
+Ricardo testou "Salvar conversa como evolução" no canal atendimento durante uso real. Erro `"Erro ao salvar conversa como evolução: Object"` — opaco no console.
+
+**Audit empírico PAT** revelou conflito impossível:
+- Policy `"Medico cria envelope vazio"` exigia `status='pending'`
+- CHECK constraint só aceitava `IN ('in_progress','completed','reviewed')`
+- Resultado: todo INSERT direto rejeitado. Rows existentes só via SECURITY DEFINER RPC.
+
+Migration `20260514220000_v1_9_293_fix_clinical_assessments_rls.sql` — DROP policy + CREATE nova alinhada. Aplicada via PAT + commit + push 4 refs.
+
+### E.2 — V1.9.294 R$350 hardcoded (caso Mariana)
+
+Mariana Carvalho (paciente externo) fez AEC completa empíricamente entre 11:22-11:25 BRT (13 fases). Mas Pipeline abortou 3× em P0B_GATE_C — não tinha vínculo médico.
+
+Pedro identificou a causa: `NoaConversationalInterface.tsx:495` tinha string literal `"R$ 350,00"` como fallback de placeholder. Ricardo configurou R$400 no perfil. Mariana viu R$350 → não converteu booking → sem vínculo → drafts órfãos.
+
+Fix:
+- `WidgetProfessional` ganhou campo `consultationFee?: number | null`
+- SELECT incluiu `consultation_fee_default`
+- JSX dinâmico: valor real do médico selecionado ou "Valor a confirmar"
+
+**Limitação documentada:** Mariana especificamente NÃO é fix retroativo. Reports atuais dela continuam drafts client-side (`aec_draft_*` no banco). Pra virar caso end-to-end, refazer AEC selecionando Ricardo OU compartilhar drafts pra Ricardo aceitar manual.
+
+Empíricamente: 3 reports da Mariana têm 1563 bytes cada em `clinical_reports.content` — AEC clínica completa (queixa lateral costas, HPP rim esquerdo 2 cirurgias, HF nefrolitíase familiar, medicações Duelle, dor com peso academia). **Ouro clínico** pra Ricardo (nefrologia/CKD) se ela compartilhar.
+
+### E.3 — V1.9.295 Painel Governance 8 vs 18 vínculos Ricardo
+
+Pedro abriu "Base de Usuários Unificada" (ClinicalGovernanceAdmin). Viu 3 pacientes com "Ricardo Valença" como Owner na 1ª página. Perguntou: "vejo apenas 3 são os únicos que vincularam a ele?"
+
+Audit PAT revelou:
+- 8 pacientes com `owner_id` = Ricardo (UI mostraria 8 ao paginar — usuário viu 3 da 1ª página)
+- 11 pacientes vinculados ao Ricardo SÓ via `appointments` (sem owner_id setado) → invisíveis na coluna
+- **Total real: 18 vínculos**
+
+Causa-raiz: RPC `admin_get_users_status` lia `u.owner_id` literal. Fix sem regressão (ProfessionalMyDashboard único outro caller, não usa owner_id):
+
+```sql
+COALESCE(
+  u.owner_id,
+  u.invited_by,
+  (SELECT a.professional_id FROM appointments a
+   WHERE a.patient_id = u.id AND a.professional_id IS NOT NULL
+   ORDER BY a.created_at DESC LIMIT 1)
+)
+```
+
+Migration `20260515020000_v1_9_295_owner_id_coalesce.sql`. Validação: 8 → 18 (PAT pós-fix).
+
+### E.4 — Reunião sócios pós-evento (Pedro + Ricardo + João)
+
+Pedro passou trechos de áudio. Modo observação ligado (pedido explícito Pedro: *"essas discussões nós debatemos algumas aqui antes e está vindo à tona pra galera"*).
+
+**Sinais técnicos absorvidos** (salvos em `project_reuniao_pos_evento_14_05.md`):
+- 🟢 Argumento João SEO+tagueamento via Meta Developer SDK — legítimo, justifica unlock CNPJ
+- 🟢 Match marketing × arquitetura: 3 públicos (Pacientes/Profissionais/Alunos) = 3 eixos (Clínica/Pesquisa/Ensino)
+- 🔴 **Internacionalização — risco arquitetural mal calibrado.** João propôs "é só Google Translator antes do GPT". Tecnicamente quebra Verbatim First V1.9.86. Ressalva latente.
+- 🟡 Pricing R$5 + R$30-39 — discussão aberta, NÃO selada. Marco Ricardo 13/05 (R$5/R$35) continua válido.
+- 🔴 **Bug empírico — módulo Pesquisa "não abre nada"** (Ricardo demonstrou ao vivo). Cards visíveis (avaliação MR renal, estratificação, plano terapêutico, triagem renal guiada, certificação 10CTS) mas clique não abre. Candidato bug-fixing pós-freeze 16/05.
+- 🟢 Demo DRC saudável — Ricardo classifica estágio G3 via creatinina automaticamente. Case forte B2B.
+- 🟡 Tema legal latente — regulação imagem governo federal pra plataforma pública.
+
+### E.5 — Padrão hype João — 4 ocorrências em 48h
+
+Consolidação empírica:
+1. 13/05: "Roadshow / investidores"
+2. 14/05 pré-evento: "contrato Prefeitura Santos"
+3. 14/05 pós-evento: "Roberto + Santa Casa + 90 dias piloto + voo de avião + apartamento beira-mar"
+4. 14/05 pós-evento: **caso Ana** — alegou estar encaminhando paciente "Ana", Pedro abriu painel ao vivo → Ana NÃO existe na plataforma. Único over-claim PRESENTE (não futuro hipotético).
+
+Pedro+Ricardo aterrissaram consistentemente. Reforço empírico forte de `feedback_dinamica_relacional_socios.md`.
+
+### E.6 — Decisão CNPJ esperar caixa real
+
+João pressionou registro MedCannLab AGORA (R$1200+R$1120) alegando ter 12k dólares pra receber. Grupo segurou: "espera dinheiro cair, 14 dias". João escalou tom. Pedro+Ricardo mantiveram conservadorismo financeiro.
+
+**Princípio cristalizado:** `feedback_plataforma_fact_checker_e_caixa_real_14_05.md` consolida 2 regras empíricas:
+1. **Plataforma como fact-checker institucional** — over-claim sobre uso atual morre em 30s via consulta banco (caso Ana)
+2. **Decisão caixa real ≠ promessa** — gasto material espera dinheiro CAIR, não promessa entrar
+
+### E.7 — Pipeline diário → Magno observado em ação
+
+Pedro: *"essas discussões nós debatemos algumas aqui antes e está vindo à tona pra galera"*.
+
+Padrão `project_pipeline_diario_para_magno.md` operando empíricamente:
+```
+Sessão privada (Pedro+Claude) → memória/diário → reunião sócios → cristalização
+```
+
+Pedro chegou na reunião com hipóteses já maturadas no laboratório individual (pricing, padrão João, decisão CNPJ). Por isso conseguiu aterrissar 4 desvios do João em 48h. João opera SEM esse laboratório → traz produtos finais sem maturação empírica → fricção recorrente.
+
+### E.8 — Memórias seladas no bloco E
+
+3 memórias novas no `MEMORY.md` NÍVEL 1:
+1. `project_fixes_v1_9_293_294_295_14_05.md` — 3 fixes empíricos do dia
+2. `project_reuniao_pos_evento_14_05.md` — snapshot reunião sócios (sinais técnicos + bug Pesquisa + DRC demo)
+3. `feedback_plataforma_fact_checker_e_caixa_real_14_05.md` — 2 princípios cristalizados
+
+### E.9 — Estado fim de dia 14/05
+
+```
+Hora:                       ~23h BRT
+Commits totais do dia:      15 (BLOCO A-D: 12, BLOCO E: 3 = V1.9.293+294+295)
+HEAD:                       55b296e (V1.9.295 owner_id COALESCE)
+Push 4 refs:                OK (hub/main, hub/master, origin/main, origin/master)
+Memórias adicionadas hoje:  6 (3 BLOCO D + 3 BLOCO E)
+Diário:                     atualizado BLOCO E
+Reunião sócios:             absorvida modo observação, sinais salvos em memória
+Bug Pesquisa "não abre":    documentado, candidato pós-freeze 16/05
+CORE Lock V1.9.95:          intocado (zero toque AEC FSM / Pipeline / Verbatim)
+```
+
+**Frase âncora BLOCO E:** *Plataforma virou fact-checker institucional. Caixa real venceu promessa. 18 vínculos Ricardo agora visíveis. CORE intocado.*
+
 
