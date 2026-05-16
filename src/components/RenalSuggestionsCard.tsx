@@ -1,8 +1,11 @@
 /**
- * RenalSuggestionsCard — V1.9.307
+ * RenalSuggestionsCard — V1.9.307 (compact layout V1.9.309)
  *
  * Card pra médico ver sugestões DRC pendentes (extraídas automaticamente
  * de captation_extras laboratorios_inline). Médico aprova/rejeita.
+ *
+ * V1.9.309: layout compacto side-by-side com paginação lateral (máx 5/página).
+ * Reusa <DotPagination /> + padrão grid agendamento parceiros (PatientAppointments.tsx:1784-1803).
  *
  * IMPORTANTE clínico/regulatório:
  * - Linguagem NÃO-categórica obrigatória ("possível estadiamento compatível com")
@@ -10,12 +13,14 @@
  * - Rejeição arquiva sem persistir
  * - Sugestões expiram em 30d automaticamente (pg_cron)
  *
- * Memória: project_v1_9_307_renal_inline_suggestions (a criar).
+ * Visibilidade RLS (V1.9.307 migration): médico vinculado ao paciente
+ * via appointments OU admin. Paciente NÃO vê. (Pedro vê tudo como admin.)
  */
 
-import { useEffect, useState } from 'react'
-import { AlertTriangle, CheckCircle, XCircle, Activity, Calendar, Info } from 'lucide-react'
+import { useEffect, useState, useMemo } from 'react'
+import { AlertTriangle, CheckCircle, XCircle, Activity, Info } from 'lucide-react'
 import { supabase } from '../lib/supabase'
+import DotPagination from './ui/DotPagination'
 
 interface RenalSuggestion {
   id: string
@@ -36,13 +41,15 @@ interface RenalSuggestion {
 }
 
 const STAGE_DESCRIPTIONS: Record<string, { label: string, color: string, bg: string }> = {
-  G1: { label: 'Normal/Elevado (TFG ≥ 90)', color: 'text-emerald-300', bg: 'bg-emerald-500/10 border-emerald-500/30' },
-  G2: { label: 'Levemente diminuído (TFG 60-89)', color: 'text-lime-300', bg: 'bg-lime-500/10 border-lime-500/30' },
-  G3a: { label: 'Leve a moderado (TFG 45-59)', color: 'text-amber-300', bg: 'bg-amber-500/10 border-amber-500/30' },
-  G3b: { label: 'Moderado a grave (TFG 30-44)', color: 'text-orange-300', bg: 'bg-orange-500/10 border-orange-500/30' },
-  G4: { label: 'Gravemente diminuído (TFG 15-29)', color: 'text-red-300', bg: 'bg-red-500/10 border-red-500/30' },
-  G5: { label: 'Falência renal (TFG < 15)', color: 'text-red-400', bg: 'bg-red-500/20 border-red-500/40' }
+  G1: { label: 'TFG ≥ 90', color: 'text-emerald-300', bg: 'bg-emerald-500/10 border-emerald-500/30' },
+  G2: { label: 'TFG 60-89', color: 'text-lime-300', bg: 'bg-lime-500/10 border-lime-500/30' },
+  G3a: { label: 'TFG 45-59', color: 'text-amber-300', bg: 'bg-amber-500/10 border-amber-500/30' },
+  G3b: { label: 'TFG 30-44', color: 'text-orange-300', bg: 'bg-orange-500/10 border-orange-500/30' },
+  G4: { label: 'TFG 15-29', color: 'text-red-300', bg: 'bg-red-500/10 border-red-500/30' },
+  G5: { label: 'TFG < 15', color: 'text-red-400', bg: 'bg-red-500/20 border-red-500/40' }
 }
+
+const PER_PAGE = 5
 
 export default function RenalSuggestionsCard() {
   const [suggestions, setSuggestions] = useState<RenalSuggestion[]>([])
@@ -50,11 +57,10 @@ export default function RenalSuggestionsCard() {
   const [processingId, setProcessingId] = useState<string | null>(null)
   const [rejectReasonFor, setRejectReasonFor] = useState<string | null>(null)
   const [rejectReason, setRejectReason] = useState('')
+  const [page, setPage] = useState(0)
 
   const loadSuggestions = async () => {
     setLoading(true)
-    // V1.9.307: view nova não está em supabase types.ts gerado automático.
-    // Cast as any segue padrão usado em V1.9.300 admin_get_users_activity_summary etc.
     const { data, error } = await (supabase as any)
       .from('v_renal_suggestions_pending')
       .select('*')
@@ -66,10 +72,19 @@ export default function RenalSuggestionsCard() {
 
   useEffect(() => {
     loadSuggestions()
-    // Auto-refresh a cada 60s
     const interval = setInterval(loadSuggestions, 60000)
     return () => clearInterval(interval)
   }, [])
+
+  const totalPages = Math.max(1, Math.ceil(suggestions.length / PER_PAGE))
+  const paginated = useMemo(() => {
+    const start = page * PER_PAGE
+    return suggestions.slice(start, start + PER_PAGE)
+  }, [suggestions, page])
+
+  useEffect(() => {
+    if (page > 0 && page >= totalPages) setPage(Math.max(0, totalPages - 1))
+  }, [totalPages, page])
 
   const handleApprove = async (sugg: RenalSuggestion) => {
     if (!window.confirm(
@@ -116,178 +131,169 @@ export default function RenalSuggestionsCard() {
 
   if (loading && suggestions.length === 0) {
     return (
-      <div className="bg-slate-900/60 border border-slate-700/50 rounded-2xl p-6">
-        <div className="flex items-center gap-3 mb-2">
+      <div className="bg-slate-900/60 border border-slate-700/50 rounded-2xl p-4">
+        <div className="flex items-center gap-3">
           <Activity className="w-5 h-5 text-cyan-400 animate-pulse" />
-          <h3 className="text-base font-semibold text-white">Sugestões DRC Pendentes</h3>
+          <span className="text-sm text-slate-400">Carregando sugestões DRC…</span>
         </div>
-        <p className="text-xs text-slate-500">Carregando…</p>
       </div>
     )
   }
 
-  if (suggestions.length === 0) return null  // Não polui UI se nada pendente
+  if (suggestions.length === 0) return null
 
   return (
-    <div className="bg-gradient-to-br from-orange-950/30 to-red-950/20 border border-orange-500/30 rounded-2xl p-6">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-3">
-          <div className="p-2 bg-orange-500/20 rounded-xl">
-            <Activity className="w-5 h-5 text-orange-300" />
+    <div className="bg-gradient-to-br from-orange-950/30 to-red-950/20 border border-orange-500/30 rounded-2xl p-5">
+      {/* Header compacto */}
+      <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center gap-2.5">
+          <div className="p-1.5 bg-orange-500/20 rounded-lg">
+            <Activity className="w-4 h-4 text-orange-300" />
           </div>
           <div>
-            <h3 className="text-base font-semibold text-white">
+            <h3 className="text-sm font-semibold text-white flex items-center gap-2">
               Sugestões DRC Pendentes
-              <span className="ml-2 px-2 py-0.5 bg-orange-500/20 text-orange-300 text-xs rounded-full font-bold">
+              <span className="px-2 py-0.5 bg-orange-500/20 text-orange-300 text-[10px] rounded-full font-bold">
                 {suggestions.length}
               </span>
             </h3>
-            <p className="text-[11px] text-orange-300/70">
-              Detectadas automaticamente a partir das falas dos pacientes — requer validação médica
+            <p className="text-[10px] text-orange-300/70">
+              Detectadas das falas dos pacientes — requer validação médica
             </p>
           </div>
         </div>
       </div>
 
-      {/* Disclaimer regulatório (GPT review #3) */}
-      <div className="mb-4 p-3 bg-blue-500/5 border border-blue-500/20 rounded-lg flex items-start gap-2">
-        <Info className="w-4 h-4 text-blue-400 mt-0.5 flex-shrink-0" />
-        <p className="text-[11px] text-blue-300/90 leading-relaxed">
-          Sugestão automatizada baseada em valores laboratoriais mencionados pelo paciente durante a
-          AEC, calculada via fórmula <strong>CKD-EPI</strong>. Não constitui diagnóstico — requer sua
-          validação clínica. Sugestões expiram em 30 dias se não revisadas.
+      {/* Disclaimer regulatório compacto */}
+      <div className="mb-3 px-3 py-2 bg-blue-500/5 border border-blue-500/20 rounded-lg flex items-start gap-2">
+        <Info className="w-3.5 h-3.5 text-blue-400 mt-0.5 flex-shrink-0" />
+        <p className="text-[10px] text-blue-300/90 leading-snug">
+          Sugestão automatizada via <strong>CKD-EPI</strong> a partir de valores mencionados pelo paciente
+          na AEC. Não constitui diagnóstico — requer validação clínica. Expira em 30d.
         </p>
       </div>
 
-      {/* Lista de sugestões */}
-      <div className="space-y-3">
-        {suggestions.map(sugg => {
+      {/* Grid compacto side-by-side (até 5/página) */}
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-5 gap-3">
+        {paginated.map(sugg => {
           const stageInfo = sugg.drc_stage_suggested ? STAGE_DESCRIPTIONS[sugg.drc_stage_suggested] : null
           const isProcessing = processingId === sugg.id
-          const daysLeft = typeof sugg.days_until_expire === 'string'
-            ? parseFloat(sugg.days_until_expire)
-            : sugg.days_until_expire
+          const isRejecting = rejectReasonFor === sugg.id
 
           return (
-            <div key={sugg.id} className="bg-slate-900/60 border border-slate-700/40 rounded-xl p-4">
-              {/* Linha 1: paciente + confiança */}
-              <div className="flex items-start justify-between mb-3 gap-3">
+            <div
+              key={sugg.id}
+              className="bg-slate-900/60 border border-slate-700/40 rounded-xl p-3 flex flex-col gap-2 hover:border-orange-500/40 transition-colors"
+            >
+              {/* Paciente + estágio destaque */}
+              <div className="flex items-start justify-between gap-2">
                 <div className="min-w-0 flex-1">
-                  <div className="font-semibold text-white text-sm truncate">{sugg.patient_name}</div>
-                  <div className="text-[11px] text-slate-500 mt-0.5">
+                  <div className="font-semibold text-white text-xs truncate">{sugg.patient_name}</div>
+                  <div className="text-[10px] text-slate-500 truncate">
                     {sugg.patient_age && sugg.patient_sex
-                      ? `${sugg.patient_age} anos · ${sugg.patient_sex === 'female' ? 'feminino' : 'masculino'}`
-                      : '⚠ Idade/sexo não cadastrados — eGFR pode estar incompleto'}
+                      ? `${sugg.patient_age}a · ${sugg.patient_sex === 'female' ? 'F' : 'M'}`
+                      : '⚠ sem idade/sexo'}
                   </div>
                 </div>
-                <div className="flex flex-col items-end gap-1">
-                  <span className="text-[10px] uppercase tracking-wider text-slate-500">Confiança</span>
-                  <span className={`text-xs font-bold ${
-                    sugg.confidence_score >= 0.8 ? 'text-emerald-400' :
-                    sugg.confidence_score >= 0.6 ? 'text-amber-400' : 'text-slate-400'
-                  }`}>
-                    {(sugg.confidence_score * 100).toFixed(0)}%
-                  </span>
-                </div>
+                <span className={`text-[10px] font-bold flex-shrink-0 ${
+                  sugg.confidence_score >= 0.8 ? 'text-emerald-400' :
+                  sugg.confidence_score >= 0.6 ? 'text-amber-400' : 'text-slate-400'
+                }`}>
+                  {(sugg.confidence_score * 100).toFixed(0)}%
+                </span>
               </div>
 
-              {/* Estágio sugerido (destaque) */}
+              {/* Estágio sugerido (linguagem não-categórica) */}
               {stageInfo && sugg.drc_stage_suggested && (
-                <div className={`mb-3 px-3 py-2 rounded-lg border ${stageInfo.bg}`}>
-                  <div className="flex items-center gap-2">
-                    <AlertTriangle className={`w-4 h-4 ${stageInfo.color}`} />
-                    <span className={`text-sm font-bold ${stageInfo.color}`}>
-                      Possível estadiamento compatível com DRC {sugg.drc_stage_suggested}
+                <div className={`px-2 py-1.5 rounded-lg border ${stageInfo.bg}`}>
+                  <div className="flex items-center gap-1.5">
+                    <AlertTriangle className={`w-3 h-3 flex-shrink-0 ${stageInfo.color}`} />
+                    <span className={`text-[11px] font-bold ${stageInfo.color}`}>
+                      Possível DRC {sugg.drc_stage_suggested}
                     </span>
                   </div>
-                  <p className={`text-[11px] mt-0.5 ml-6 ${stageInfo.color} opacity-80`}>
+                  <p className={`text-[9px] mt-0.5 ml-4.5 ${stageInfo.color} opacity-80`}>
                     {stageInfo.label}
                   </p>
                 </div>
               )}
 
-              {/* Valores laboratoriais */}
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mb-3">
+              {/* Labs compactos */}
+              <div className="space-y-1 text-[10px]">
                 {sugg.creatinine_mg_dl != null && (
-                  <div className="bg-slate-800/60 rounded px-3 py-1.5">
-                    <div className="text-[10px] text-slate-500 uppercase">Creatinina</div>
-                    <div className="text-sm text-white font-bold">{sugg.creatinine_mg_dl} mg/dL</div>
+                  <div className="flex justify-between bg-slate-800/60 rounded px-2 py-1">
+                    <span className="text-slate-500 uppercase">Creat</span>
+                    <span className="text-white font-bold">{sugg.creatinine_mg_dl} mg/dL</span>
                   </div>
                 )}
                 {sugg.egfr_calculated != null && (
-                  <div className="bg-slate-800/60 rounded px-3 py-1.5">
-                    <div className="text-[10px] text-slate-500 uppercase">eGFR ({sugg.ckd_epi_version})</div>
-                    <div className="text-sm text-white font-bold">{sugg.egfr_calculated} mL/min/1.73m²</div>
+                  <div className="flex justify-between bg-slate-800/60 rounded px-2 py-1">
+                    <span className="text-slate-500 uppercase">eGFR</span>
+                    <span className="text-white font-bold">{sugg.egfr_calculated}</span>
                   </div>
                 )}
                 {sugg.proteinuria_acr_mg_g != null && (
-                  <div className="bg-slate-800/60 rounded px-3 py-1.5">
-                    <div className="text-[10px] text-slate-500 uppercase">A/Cr</div>
-                    <div className="text-sm text-white font-bold">{sugg.proteinuria_acr_mg_g} mg/g</div>
+                  <div className="flex justify-between bg-slate-800/60 rounded px-2 py-1">
+                    <span className="text-slate-500 uppercase">A/Cr</span>
+                    <span className="text-white font-bold">{sugg.proteinuria_acr_mg_g} mg/g</span>
                   </div>
                 )}
               </div>
 
-              {/* Fonte (proveniência — GPT review #5) */}
-              <details className="mb-3">
-                <summary className="text-[11px] text-slate-500 cursor-pointer hover:text-slate-300">
-                  Ver trecho original do paciente
+              {/* Proveniência — detalhe expansível */}
+              <details className="text-[10px]">
+                <summary className="text-slate-500 cursor-pointer hover:text-slate-300">
+                  Trecho original
                 </summary>
-                <p className="mt-2 text-[12px] text-slate-300 italic bg-slate-800/40 rounded p-2 leading-relaxed">
+                <p className="mt-1 text-[10px] text-slate-300 italic bg-slate-800/40 rounded p-1.5 leading-relaxed line-clamp-4">
                   "{sugg.source_text}"
                 </p>
               </details>
 
-              {/* Expiração */}
-              <div className="flex items-center gap-1 mb-3 text-[10px] text-slate-500">
-                <Calendar className="w-3 h-3" />
-                Expira em {Math.floor(daysLeft)} dias se não revisada
-              </div>
-
               {/* Ações */}
-              {rejectReasonFor === sugg.id ? (
-                <div className="space-y-2">
+              {isRejecting ? (
+                <div className="space-y-1.5 mt-auto">
                   <input
                     type="text"
                     value={rejectReason}
                     onChange={e => setRejectReason(e.target.value)}
-                    placeholder="Motivo (opcional)…"
-                    className="w-full px-3 py-2 bg-slate-800 border border-slate-600 rounded text-sm text-white"
+                    placeholder="Motivo (opcional)"
+                    className="w-full px-2 py-1 bg-slate-800 border border-slate-600 rounded text-[10px] text-white"
                   />
-                  <div className="flex gap-2">
+                  <div className="flex gap-1">
                     <button
                       onClick={() => handleReject(sugg)}
                       disabled={isProcessing}
-                      className="flex-1 px-3 py-2 bg-red-600/30 hover:bg-red-600/50 text-red-200 rounded text-sm font-semibold disabled:opacity-50"
+                      className="flex-1 px-2 py-1 bg-red-600/30 hover:bg-red-600/50 text-red-200 rounded text-[10px] font-semibold disabled:opacity-50"
                     >
-                      Confirmar rejeição
+                      Confirmar
                     </button>
                     <button
                       onClick={() => { setRejectReasonFor(null); setRejectReason('') }}
-                      className="px-3 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded text-sm"
+                      className="px-2 py-1 bg-slate-700 hover:bg-slate-600 text-white rounded text-[10px]"
                     >
-                      Cancelar
+                      ✕
                     </button>
                   </div>
                 </div>
               ) : (
-                <div className="flex gap-2">
+                <div className="flex gap-1 mt-auto">
                   <button
                     onClick={() => handleApprove(sugg)}
                     disabled={isProcessing}
-                    className="flex-1 px-3 py-2 bg-emerald-600/30 hover:bg-emerald-600/50 text-emerald-200 rounded text-sm font-semibold flex items-center justify-center gap-2 disabled:opacity-50 border border-emerald-500/30"
+                    className="flex-1 px-2 py-1.5 bg-emerald-600/30 hover:bg-emerald-600/50 text-emerald-200 rounded text-[10px] font-semibold flex items-center justify-center gap-1 disabled:opacity-50 border border-emerald-500/30"
+                    title="Aprovar e criar registro renal_exams oficial"
                   >
-                    <CheckCircle className="w-4 h-4" />
-                    Aprovar e criar exame
+                    <CheckCircle className="w-3 h-3" />
+                    Aprovar
                   </button>
                   <button
                     onClick={() => setRejectReasonFor(sugg.id)}
                     disabled={isProcessing}
-                    className="px-3 py-2 bg-slate-700 hover:bg-slate-600 text-slate-200 rounded text-sm flex items-center gap-2 disabled:opacity-50"
+                    className="px-2 py-1.5 bg-slate-700 hover:bg-slate-600 text-slate-200 rounded text-[10px] flex items-center justify-center disabled:opacity-50"
+                    title="Descartar sugestão"
                   >
-                    <XCircle className="w-4 h-4" />
-                    Descartar
+                    <XCircle className="w-3 h-3" />
                   </button>
                 </div>
               )}
@@ -295,6 +301,13 @@ export default function RenalSuggestionsCard() {
           )
         })}
       </div>
+
+      {/* Paginação lateral — DotPagination V1.9.234 (padrão agendamento parceiros) */}
+      <DotPagination
+        currentPage={page + 1}
+        totalPages={totalPages}
+        onPageChange={(p) => setPage(p - 1)}
+      />
     </div>
   )
 }
