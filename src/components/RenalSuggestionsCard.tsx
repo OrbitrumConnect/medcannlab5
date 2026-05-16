@@ -60,6 +60,8 @@ export default function RenalSuggestionsCard() {
   const [rejectReasonFor, setRejectReasonFor] = useState<string | null>(null)
   const [rejectReason, setRejectReason] = useState('')
   const [page, setPage] = useState(0)
+  // V1.9.307-D — modal in-context (não navega pra outra tela)
+  const [reviewingSugg, setReviewingSugg] = useState<RenalSuggestion | null>(null)
 
   const loadSuggestions = async () => {
     setLoading(true)
@@ -289,27 +291,23 @@ export default function RenalSuggestionsCard() {
               ) : (
                 <div className="space-y-1 mt-auto">
                   {/*
-                    V1.9.307-C (16/05/2026 noite): fix Pedro reportou abertura
-                    em nova aba indo pra Agendamentos (section=atendimento estava
-                    errado — atendimento é ProfessionalSchedulingWidget, não AEC).
-                    Correção:
-                    - Rota correta: /app/clinica/profissional/dashboard (sem section)
-                      → componente ProfessionalMyDashboard que tem Analisar Paciente
-                    - Query param ?analyze=<patient_id> dispara auto-seleção +
-                      auto-execução do painel analítico (useEffect V1.9.307-C)
-                    - navigate MESMA aba (não nova aba) — UX melhor pro médico,
-                      browser back funciona, evita perder contexto da janela
+                    V1.9.307-D (16/05/2026 noite): modal in-context na própria tela.
+                    Pedro reportou que navegar pra outra rota (V1.9.307-C) era ruim —
+                    médico perde contexto. Agora abre modal lateral aqui mesmo com:
+                    - Fala original completa (sem line-clamp)
+                    - Estágio KDIGO descritivo
+                    - Valores labs com unidades
+                    - Trigger "Ver relatório completo" pra quem quiser ir mais fundo
+                    - Aprovar/Descartar acessíveis dentro do modal
                   */}
                   <button
-                    onClick={() => {
-                      navigate(`/app/clinica/profissional/dashboard?analyze=${sugg.patient_id}`)
-                    }}
+                    onClick={() => setReviewingSugg(sugg)}
                     disabled={isProcessing}
                     className="w-full px-2 py-1.5 bg-slate-800/60 hover:bg-slate-700 text-slate-300 rounded text-[10px] font-medium flex items-center justify-center gap-1 disabled:opacity-50 border border-slate-700/50"
-                    title="Abre painel Analisar Paciente com a AEC completa pra revisar contexto antes de aprovar"
+                    title="Revisar detalhes antes de aprovar — abre modal in-context"
                   >
                     <FileSearch className="w-3 h-3" />
-                    Revisar AEC completa
+                    Revisar detalhes
                   </button>
                   <div className="flex gap-1">
                     <button
@@ -343,6 +341,210 @@ export default function RenalSuggestionsCard() {
         totalPages={totalPages}
         onPageChange={(p) => setPage(p - 1)}
       />
+
+      {/*
+        V1.9.307-D — Modal de revisão in-context.
+        Médico clica "Revisar detalhes" → modal abre AQUI (não navega).
+        Mostra info expandida + trigger pra "Ver relatório completo" se
+        quiser ir mais fundo. Aprovar/Descartar acessíveis dentro do modal.
+      */}
+      {reviewingSugg && (
+        <SuggestionReviewModal
+          suggestion={reviewingSugg}
+          onClose={() => setReviewingSugg(null)}
+          onApprove={async () => {
+            const s = reviewingSugg
+            setReviewingSugg(null)
+            await handleApprove(s)
+          }}
+          onReject={() => {
+            setRejectReasonFor(reviewingSugg.id)
+            setReviewingSugg(null)
+          }}
+          onOpenReport={() => {
+            // Navega pra rota de relatórios da paciente — médico vê
+            // contexto completo (último report + histórico AEC)
+            navigate(`/app/clinica/profissional/relatorios?patientId=${reviewingSugg.patient_id}`)
+            setReviewingSugg(null)
+          }}
+        />
+      )}
+    </div>
+  )
+}
+
+// ============================================================================
+// SuggestionReviewModal — modal in-context pra revisão pré-aprovação
+// ============================================================================
+interface SuggestionReviewModalProps {
+  suggestion: RenalSuggestion
+  onClose: () => void
+  onApprove: () => void
+  onReject: () => void
+  onOpenReport: () => void
+}
+
+function SuggestionReviewModal({ suggestion, onClose, onApprove, onReject, onOpenReport }: SuggestionReviewModalProps) {
+  const stageInfo = suggestion.drc_stage_suggested ? STAGE_DESCRIPTIONS[suggestion.drc_stage_suggested] : null
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm"
+      onClick={onClose}
+      role="dialog"
+      aria-modal="true"
+      onKeyDown={(e) => { if (e.key === 'Escape') onClose() }}
+    >
+      <div
+        className="w-full max-w-2xl bg-slate-900 border border-orange-500/30 rounded-2xl shadow-2xl overflow-hidden max-h-[90vh] flex flex-col animate-in fade-in zoom-in-95 duration-200"
+        onClick={e => e.stopPropagation()}
+      >
+        {/* Header */}
+        <div className="px-5 py-3 border-b border-slate-700 flex items-center justify-between bg-orange-500/5 flex-shrink-0">
+          <div className="flex items-center gap-2 min-w-0">
+            <Activity className="w-5 h-5 text-orange-300 flex-shrink-0" />
+            <div className="min-w-0">
+              <h3 className="text-sm font-bold text-white truncate">
+                Revisão · Sugestão DRC pendente
+              </h3>
+              <p className="text-[11px] text-orange-300/80 truncate">
+                {suggestion.patient_name}
+                {suggestion.patient_age && suggestion.patient_sex && (
+                  <span className="text-slate-500 ml-1">
+                    · {suggestion.patient_age}a · {suggestion.patient_sex === 'female' ? 'feminino' : 'masculino'}
+                  </span>
+                )}
+              </p>
+            </div>
+          </div>
+          <button onClick={onClose} className="p-1.5 hover:bg-slate-700 rounded-full text-slate-400 hover:text-white">
+            <XCircle className="w-4 h-4" />
+          </button>
+        </div>
+
+        {/* Body — scrollable */}
+        <div className="flex-1 overflow-y-auto p-5 space-y-4">
+          {/* Estágio sugerido (destaque visual) */}
+          {stageInfo && suggestion.drc_stage_suggested && (
+            <div className={`px-4 py-3 rounded-lg border ${stageInfo.bg}`}>
+              <div className="flex items-center gap-2 mb-1">
+                <AlertTriangle className={`w-5 h-5 ${stageInfo.color}`} />
+                <span className={`text-base font-bold ${stageInfo.color}`}>
+                  Possível estadiamento compatível com DRC {suggestion.drc_stage_suggested}
+                </span>
+              </div>
+              <p className={`text-xs ml-7 ${stageInfo.color} opacity-90`}>
+                {stageInfo.label}
+              </p>
+              <p className="text-[10px] text-slate-400 mt-2 ml-7 italic">
+                Sugestão automatizada via CKD-EPI 2021 — não constitui diagnóstico, requer sua validação clínica.
+              </p>
+            </div>
+          )}
+
+          {/* Confiança da detecção */}
+          <div className="flex items-center justify-between bg-slate-800/40 rounded-lg px-3 py-2">
+            <span className="text-[11px] text-slate-400 uppercase tracking-wider">Confiança da detecção</span>
+            <span className={`text-sm font-bold ${
+              suggestion.confidence_score >= 0.8 ? 'text-emerald-400' :
+              suggestion.confidence_score >= 0.6 ? 'text-amber-400' : 'text-slate-400'
+            }`}>
+              {(suggestion.confidence_score * 100).toFixed(0)}%
+            </span>
+          </div>
+
+          {/* Valores laboratoriais (grandes, com unidades) */}
+          <div>
+            <div className="text-[10px] text-slate-500 uppercase tracking-wider font-bold mb-2">
+              Valores mencionados pelo paciente
+            </div>
+            <div className="grid grid-cols-3 gap-2">
+              {suggestion.creatinine_mg_dl != null && (
+                <div className="bg-slate-800/60 rounded-lg p-3">
+                  <div className="text-[10px] text-slate-500 uppercase">Creatinina</div>
+                  <div className="text-lg text-white font-bold mt-0.5">{suggestion.creatinine_mg_dl}</div>
+                  <div className="text-[10px] text-slate-500">mg/dL</div>
+                </div>
+              )}
+              {suggestion.egfr_calculated != null && (
+                <div className="bg-slate-800/60 rounded-lg p-3">
+                  <div className="text-[10px] text-slate-500 uppercase">eGFR</div>
+                  <div className="text-lg text-white font-bold mt-0.5">{suggestion.egfr_calculated}</div>
+                  <div className="text-[10px] text-slate-500">mL/min/1.73m²</div>
+                </div>
+              )}
+              {suggestion.proteinuria_acr_mg_g != null && (
+                <div className="bg-slate-800/60 rounded-lg p-3">
+                  <div className="text-[10px] text-slate-500 uppercase">A/Cr</div>
+                  <div className="text-lg text-white font-bold mt-0.5">{suggestion.proteinuria_acr_mg_g}</div>
+                  <div className="text-[10px] text-slate-500">mg/g</div>
+                </div>
+              )}
+            </div>
+            <div className="text-[9px] text-slate-500 mt-2 italic">
+              CKD-EPI versão {suggestion.ckd_epi_version} · processado em {new Date(suggestion.created_at).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit' })}
+            </div>
+          </div>
+
+          {/* Fala original COMPLETA (sem line-clamp) */}
+          <div>
+            <div className="flex items-center gap-1.5 text-[10px] text-slate-500 uppercase tracking-wider font-bold mb-2">
+              <Info className="w-3 h-3" />
+              Fala original do paciente (sem corte)
+            </div>
+            <div className="bg-slate-800/40 border-l-2 border-orange-500/40 rounded p-3">
+              <p className="text-xs text-slate-200 italic leading-relaxed whitespace-pre-wrap">
+                "{suggestion.source_text}"
+              </p>
+            </div>
+          </div>
+
+          {/* Alerta idade/sexo se ausente (eGFR pode estar incompleto) */}
+          {(!suggestion.patient_age || !suggestion.patient_sex) && (
+            <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg px-3 py-2">
+              <p className="text-[11px] text-amber-300">
+                ⚠ Idade/sexo não estão cadastrados pra esta paciente — o eGFR pode estar incompleto (CKD-EPI requer ambos).
+              </p>
+            </div>
+          )}
+
+          {/* Trigger: ver relatório completo */}
+          <button
+            onClick={onOpenReport}
+            className="w-full px-3 py-2.5 bg-slate-800/60 hover:bg-slate-700 text-slate-300 rounded-lg text-xs font-medium flex items-center justify-center gap-2 border border-slate-700/50 transition-colors"
+          >
+            <FileSearch className="w-3.5 h-3.5" />
+            Ver relatório completo da paciente
+            <span className="text-[10px] text-slate-500">(abre página de relatórios)</span>
+          </button>
+        </div>
+
+        {/* Footer — Aprovar / Descartar / Cancelar */}
+        <div className="px-4 py-3 border-t border-slate-700 bg-slate-800/30 flex items-center gap-2 flex-shrink-0">
+          <button
+            onClick={onClose}
+            className="px-3 py-2 text-xs text-slate-400 hover:text-white transition-colors"
+          >
+            Voltar
+          </button>
+          <div className="flex-1" />
+          <button
+            onClick={onReject}
+            className="flex items-center gap-1.5 px-3 py-2 bg-slate-700 hover:bg-slate-600 text-slate-200 rounded-lg text-xs font-medium"
+          >
+            <XCircle className="w-3.5 h-3.5" />
+            Descartar
+          </button>
+          <button
+            onClick={onApprove}
+            className="flex items-center gap-1.5 px-4 py-2 bg-emerald-600/40 hover:bg-emerald-600/60 text-emerald-100 rounded-lg text-xs font-bold border border-emerald-500/40 shadow-lg"
+            title="Cria registro oficial em renal_exams (prontuário)"
+          >
+            <CheckCircle className="w-3.5 h-3.5" />
+            Aprovar e criar registro
+          </button>
+        </div>
+      </div>
     </div>
   )
 }
