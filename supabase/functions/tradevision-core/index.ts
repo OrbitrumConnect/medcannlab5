@@ -2065,13 +2065,75 @@ Deno.serve(async (req: Request) => {
 
                 // ── Regenerar narrativa structured via escriba V1.9.84
                 console.log('🧠 [PIPELINE_PROMOTION] NARRATIVE (escriba V1.9.84)', { report_id: reportId });
+
+                // V1.9.303 — buscar tópicos extras capturados durante AEC
+                // (despejos >300 chars que não couberam na pergunta atual mas foram
+                // classificados pelo GPT-4o-mini detector no edge tradevision-core).
+                // Bug Maria 15/05: DRC 2021 + creatinina 1.61 + proteinúria 1924
+                // ficaram fora do JSON. Agora escriba lê esses extras e enriquece.
+                let captationExtras: any[] = [];
+                try {
+                    const { data: extraLogs } = await supabaseClient
+                        .from('noa_logs')
+                        .select('payload, created_at')
+                        .eq('user_id', existingReport.patient_id)
+                        .eq('interaction_type', 'captation_extra')
+                        .gte('created_at', new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString())
+                        .order('created_at', { ascending: true });
+                    if (Array.isArray(extraLogs)) {
+                        for (const log of extraLogs) {
+                            const extras = log?.payload?.extras;
+                            if (Array.isArray(extras)) {
+                                for (const e of extras) {
+                                    if (e?.text && e?.classification) captationExtras.push(e);
+                                }
+                            }
+                        }
+                    }
+                    console.log(`📦 [V1.9.303] Captation extras pra enriquecer relatório: ${captationExtras.length} tópicos`);
+                } catch (capErr: any) {
+                    console.warn(`📦 [V1.9.303] Falha ao buscar captation extras (não bloqueia):`, capErr?.message);
+                }
+
+                const captationSection = captationExtras.length > 0
+                    ? `
+
+═══════════════════════════════════════════════════════════════════
+🔍 BUFFER DE CAPTAÇÃO PARALELA V1.9.303 — TÓPICOS EXTRAS DO PACIENTE
+═══════════════════════════════════════════════════════════════════
+Estes tópicos foram falados pelo paciente DURANTE a AEC mas em fases
+diferentes das esperadas. INCORPORE-OS aos campos certos do relatório
+abaixo. NUNCA descarte. Categorias e regras de roteamento:
+
+- "hpp_doencas_cronicas" → adicione em "História Patológica Pregressa"
+- "laboratorios_inline" → adicione em "História Patológica Pregressa"
+  (com formato: "Valor laboratorial citado: X")
+- "cirurgias_previas" → adicione em "História Patológica Pregressa"
+  (com prefixo: "Cirurgias prévias: ")
+- "comorbidades" → adicione em "História Patológica Pregressa"
+- "medicacoes_atuais" → adicione em "Perguntas Objetivas / Medicações
+  Regulares" se não já listado
+- "queixa_lateral" → adicione em "Lista Indiciária" se relevante
+- "outros" → adicione em "Lacunas Declaradas" ou campo mais próximo
+
+TÓPICOS:
+${captationExtras.map((e: any, i: number) =>
+  `  ${i + 1}. [${e.classification}] "${e.text}" (confiança: ${e.confidence || 'n/a'})`
+).join('\n')}
+
+REGRA CRÍTICA: Fidelidade > Concisão. Se um tópico já estiver coberto
+no JSON principal, NÃO duplique. Se NÃO estiver, ADICIONE textualmente.
+═══════════════════════════════════════════════════════════════════
+`
+                    : '';
+
                 const reportPromptEnrich = `Organize os dados brutos da avaliação clínica abaixo num relatório estruturado fiel (Markdown).
 
 Objetivo: ORGANIZAR as informações fornecidas pelo paciente, sem inferir diagnóstico, sem prescrever conduta, sem atribuir risco clínico, sem propor exames.
 
 Dados:
 ${JSON.stringify(structuredTopFromContent)}
-
+${captationSection}
 Estrutura Obrigatória:
 - Identificação (nome do paciente)
 - Queixa Principal (textual, em destaque)
@@ -5247,6 +5309,112 @@ ${contentExcerpt || '(Texto não disponível para este documento. O conteúdo ai
             !!assessmentPhase &&
             (AEC_VERBATIM_HARD_LOCK_PHASES.has(assessmentPhase) || isCompliantDetailsOQueMais) &&
             !isUrgent;
+
+        // =====================================================
+        // V1.9.303 — CAPTATION INTELIGENTE PARALELA
+        // =====================================================
+        // Quando paciente despeja >300 chars na resposta (caso Maria 15/05: DRC
+        // 2021 + creatinina 1.61 + proteinúria 1924), Verbatim First V1.9.86
+        // descartava o excedente. Agora extraímos tópicos extras via GPT-4o-mini
+        // e persistimos em noa_logs (interaction_type='captation_extra'). Escriba
+        // V1.9.84 lê esses logs no final do AEC e enriquece campos do JSON.
+        //
+        // Anti-regressão: try/catch silencioso. Se falhar, AEC funciona igual antes.
+        // Threshold 300 chars + check fase = só ativa em ~10% dos turns.
+        // =====================================================
+        const CAPTATION_THRESHOLD_CHARS = 300;
+        const CAPTATION_ELIGIBLE_PHASES = new Set([
+            'IDENTIFICATION',
+            'COMPLAINT_LIST',
+            'COMPLAINT_DETAILS',
+            'HPP',
+            'HF',
+            'HABITS'
+        ]);
+
+        try {
+            const lastUserMsg = [...messages].reverse().find((m: any) => m.role === 'user');
+            const userInput = typeof lastUserMsg?.content === 'string' ? lastUserMsg.content : '';
+
+            if (
+                userInput.length > CAPTATION_THRESHOLD_CHARS &&
+                assessmentPhase &&
+                CAPTATION_ELIGIBLE_PHASES.has(assessmentPhase) &&
+                aecActorEligible &&
+                effectiveUserId
+            ) {
+                console.log(`📦 [V1.9.303 CAPTATION] Despejo livre detectado (${userInput.length} chars, fase=${assessmentPhase}). Extraindo tópicos extras via GPT-4o-mini...`);
+
+                const captationPrompt = `Você é um classificador clínico estruturado. O paciente está em uma Avaliação Clínica Estruturada (AEC) e foi perguntado sobre a fase atual: "${assessmentPhase}".
+
+O paciente respondeu com mais conteúdo do que o esperado pela pergunta atual. Sua tarefa: EXTRAIR TÓPICOS EXTRAS que NÃO correspondem à pergunta atual e classificá-los.
+
+CATEGORIAS DE CLASSIFICAÇÃO:
+- "hpp_doencas_cronicas": doenças crônicas pré-existentes (DRC, cardiopatia, diabetes, autoimune)
+- "laboratorios_inline": valores laboratoriais mencionados (creatinina, eGFR, proteinúria, glicemia)
+- "cirurgias_previas": cirurgias passadas (cesárea, vesícula, varizes, etc.)
+- "comorbidades": condições associadas (anemia, labirintopatia, dor crônica)
+- "medicacoes_atuais": medicamentos em uso (nome, dose, frequência)
+- "queixa_lateral": sintomas secundários não-principais
+- "outros": catchall pra fragmentos relevantes
+
+RESPONDA APENAS JSON VÁLIDO (sem markdown, sem texto extra) no formato:
+{
+  "extras": [
+    {"classification": "hpp_doencas_cronicas", "text": "DRC desde 2021, controlada com dieta e medicação, sem diálise", "confidence": 0.95},
+    {"classification": "laboratorios_inline", "text": "creatinina 1.61", "confidence": 0.98}
+  ]
+}
+
+Se NÃO houver tópicos extras (paciente respondeu apenas a pergunta atual), retorne {"extras": []}.
+
+FALA DO PACIENTE:
+"""
+${userInput.substring(0, 2000)}
+"""`;
+
+                const captationResp = await openai.chat.completions.create({
+                    model: 'gpt-4o-mini',
+                    messages: [{ role: 'user', content: captationPrompt }],
+                    temperature: 0.1,
+                    max_tokens: 600,
+                    response_format: { type: 'json_object' }
+                }).catch((err: any) => {
+                    console.warn(`📦 [V1.9.303] GPT-4o-mini classificador falhou (não bloqueia):`, err?.message);
+                    return null;
+                });
+
+                if (captationResp?.choices?.[0]?.message?.content) {
+                    const parsed = JSON.parse(captationResp.choices[0].message.content);
+                    const extras = Array.isArray(parsed?.extras) ? parsed.extras : [];
+
+                    if (extras.length > 0) {
+                        await supabaseClient.from('noa_logs').insert({
+                            user_id: effectiveUserId,
+                            interaction_type: 'captation_extra',
+                            payload: {
+                                from_phase: assessmentPhase,
+                                input_length: userInput.length,
+                                input_preview: userInput.substring(0, 200),
+                                extras_count: extras.length,
+                                extras,
+                                interaction_id,
+                                detected_at: new Date().toISOString(),
+                                tokens_used: captationResp.usage?.total_tokens || 0
+                            }
+                        });
+                        console.log(`📦 [V1.9.303 CAPTATION] ${extras.length} tópicos extras classificados + persistidos. Categorias: ${extras.map((e: any) => e.classification).join(', ')}`);
+                    } else {
+                        console.log(`📦 [V1.9.303 CAPTATION] Despejo grande mas sem tópicos extras detectados (paciente respondeu pergunta com riqueza).`);
+                    }
+                }
+            }
+        } catch (captationErr: any) {
+            console.warn(`📦 [V1.9.303 CAPTATION] Erro silencioso (não bloqueia AEC):`, captationErr?.message);
+        }
+        // =====================================================
+        // FIM V1.9.303 — continua fluxo normal Verbatim First
+        // =====================================================
 
         let completion: any;
 

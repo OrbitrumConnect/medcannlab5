@@ -416,7 +416,19 @@ export const ExamRequestModule: React.FC<ExamRequestModuleProps> = ({
                         ${!isSigned ? '<div class="warn-banner">⚠ RASCUNHO — Sem valor legal. Assine digitalmente (ICP-Brasil) antes de entregar ao paciente. CFM 2.314/2022.</div>' : '<div class="signed-banner">✓ Documento assinado digitalmente com ICP-Brasil — valor legal pleno (CFM 2.314/2022).</div>'}
                         <div class="header">
                             <div class="logo">MedCannLab</div>
-                            <p>Dr(a). ${user?.email?.split('@')[0] || 'Profissional'}</p>
+                            <p>${(() => {
+                              // V1.9.299: nome real de users.name (não prefix do email).
+                              // Strip "Dr." duplicado (se já vem no banco) + fallback se
+                              // só temos email-username (ex: "rrvalenca") → "Profissional".
+                              const rawName = String((user as any)?.name || '').trim()
+                              const cleanedName = rawName
+                                .replace(/^(dra?\.?\s+)/i, '')
+                                .trim()
+                              const looksLikeUsername = /^[a-z0-9_.-]+$/i.test(cleanedName) && !cleanedName.includes(' ')
+                              return (cleanedName && !looksLikeUsername)
+                                ? `Dr(a). ${cleanedName}`
+                                : 'Profissional'
+                            })()}</p>
                         </div>
                         <div class="patient-info">
                             <p><strong>Paciente:</strong> ${patientName || 'Não Informado'}</p>

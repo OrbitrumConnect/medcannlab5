@@ -73,9 +73,33 @@ const NeonBadge = ({ type, text }: { type: 'success' | 'warning' | 'danger' | 'i
     )
 }
 
+// V1.9.300 — atividade ao vivo por user (merge com admin_get_users_status)
+interface UserActivity {
+    user_id: string
+    last_phase: string | null
+    last_evt: string | null
+    last_activity_at: string
+}
+
+// Map fase AEC → label humano resumido
+const AEC_PHASE_LABELS: Record<string, string> = {
+    IDENTIFICATION: 'Identificação',
+    COMPLAINT_LIST: 'Listando queixas',
+    COMPLAINT_DETAILS: 'Detalhando queixa',
+    HPP: 'História pregressa',
+    HF: 'História familiar',
+    HABITS: 'Hábitos de vida',
+    REVIEW: 'Revisão clínica',
+    CONSENT: 'Consentimento',
+    AXES_TRIAXIAL: 'Eixos triaxiais',
+    RATIONALITY_5: '5 medicinas',
+    NONE: 'Transição',
+}
+
 export default function ClinicalGovernanceAdmin() {
     // State
     const [users, setUsers] = useState<AdminUser[]>([])
+    const [activityByUser, setActivityByUser] = useState<Record<string, UserActivity>>({})
     const [loading, setLoading] = useState(true)
     const [search, setSearch] = useState('')
     const [refreshTime, setRefreshTime] = useState(new Date())
@@ -94,15 +118,47 @@ export default function ClinicalGovernanceAdmin() {
     const fetchData = async () => {
         setLoading(true)
         try {
-            const { data, error } = await supabase.rpc('admin_get_users_status')
-            if (error) throw error
-            if (data) setUsers(data as any)
+            // V1.9.300 — fetch paralelo: lista de usuários + atividade ao vivo (últimos 30min)
+            // Falha graciosa: se RPC de atividade quebrar, badge cai pra "ONLINE" simples
+            const [statusRes, activityRes] = await Promise.all([
+                supabase.rpc('admin_get_users_status'),
+                (supabase.rpc as any)('admin_get_users_activity_summary')
+            ])
+
+            if (statusRes.error) throw statusRes.error
+            if (statusRes.data) setUsers(statusRes.data as any)
+
+            // Atividade ao vivo — merge silencioso se RPC indisponível
+            if (!activityRes.error && Array.isArray(activityRes.data)) {
+                const activityMap: Record<string, UserActivity> = {}
+                for (const row of activityRes.data as UserActivity[]) {
+                    if (row?.user_id) activityMap[row.user_id] = row
+                }
+                setActivityByUser(activityMap)
+            }
         } catch (error) {
             console.error('Erro no Painel Admin:', error)
         } finally {
             setLoading(false)
             setRefreshTime(new Date())
         }
+    }
+
+    // V1.9.300 — gera label de atividade pra usuário online
+    // Fallback: 'ONLINE' se sem registro recente em noa_logs
+    const getActivityLabel = (userId: string): string | null => {
+        const activity = activityByUser[userId]
+        if (!activity) return null
+        const { last_phase, last_evt } = activity
+        // chat_turn em fase AEC → "Em AEC ({fase legível})"
+        if (last_evt === 'chat_turn' && last_phase && last_phase !== 'NONE') {
+            return `Em AEC: ${AEC_PHASE_LABELS[last_phase] || last_phase}`
+        }
+        // Outros eventos noa_logs sem fase ativa → "Chat com Nôa"
+        if (last_evt === 'chat_turn') return 'Chat com Nôa'
+        if (last_evt?.startsWith('verbatim')) return 'Em AEC (Verbatim)'
+        if (last_evt === 'ism_state_observed') return 'AEC observada'
+        return last_evt ? `Nôa: ${last_evt.substring(0, 20)}` : null
     }
 
     // Actions
@@ -298,6 +354,12 @@ export default function ClinicalGovernanceAdmin() {
                                     <div className="font-bold text-white text-sm truncate">{user.name || 'Sem Nome'}</div>
                                     <div className="text-xs text-slate-500 font-mono truncate">{user.email}</div>
                                     <div className="text-[10px] text-slate-600 font-mono">ID: {user.user_id.slice(0, 8)}...</div>
+                                    {/* V1.9.300: badge atividade ao vivo (mobile) */}
+                                    {user.is_online && getActivityLabel(user.user_id) && (
+                                        <div className="mt-1 inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-medium bg-cyan-500/10 text-cyan-300 border border-cyan-500/20">
+                                            ▶ {getActivityLabel(user.user_id)}
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                             <div className="flex items-center gap-2 flex-wrap">
@@ -365,20 +427,28 @@ export default function ClinicalGovernanceAdmin() {
                             {paginatedUsers.map((user) => (
                                 <tr key={user.user_id} className={`hover:bg-slate-800/30 transition-colors group ${user.status === 'banned' ? 'opacity-50 grayscale' : ''}`}>
                                     <td className="px-6 py-4">
-                                        <div className="flex items-center gap-2">
-                                            {user.status === 'banned' ? (
-                                                <div className="w-2 h-2 rounded-full bg-red-500"></div>
-                                            ) : user.is_online ? (
-                                                <div className="relative flex h-2.5 w-2.5">
-                                                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                                                    <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
-                                                </div>
-                                            ) : (
-                                                <div className="w-2.5 h-2.5 rounded-full bg-slate-600"></div>
+                                        <div className="flex flex-col gap-1">
+                                            <div className="flex items-center gap-2">
+                                                {user.status === 'banned' ? (
+                                                    <div className="w-2 h-2 rounded-full bg-red-500"></div>
+                                                ) : user.is_online ? (
+                                                    <div className="relative flex h-2.5 w-2.5">
+                                                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                                                        <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+                                                    </div>
+                                                ) : (
+                                                    <div className="w-2.5 h-2.5 rounded-full bg-slate-600"></div>
+                                                )}
+                                                <span className={`text-xs font-bold ${user.is_online ? 'text-emerald-400' : 'text-slate-500'}`}>
+                                                    {user.status === 'banned' ? 'BANIDO' : user.is_online ? 'ONLINE' : 'OFFLINE'}
+                                                </span>
+                                            </div>
+                                            {/* V1.9.300: badge atividade ao vivo (desktop) */}
+                                            {user.is_online && getActivityLabel(user.user_id) && (
+                                                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium bg-cyan-500/10 text-cyan-300 border border-cyan-500/20 w-fit">
+                                                    ▶ {getActivityLabel(user.user_id)}
+                                                </span>
                                             )}
-                                            <span className={`text-xs font-bold ${user.is_online ? 'text-emerald-400' : 'text-slate-500'}`}>
-                                                {user.status === 'banned' ? 'BANIDO' : user.is_online ? 'ONLINE' : 'OFFLINE'}
-                                            </span>
                                         </div>
                                     </td>
                                     <td className="px-6 py-4">

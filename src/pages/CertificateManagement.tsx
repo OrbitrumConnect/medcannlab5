@@ -51,15 +51,14 @@ const CertificateManagement: React.FC = () => {
   const [expiresAt, setExpiresAt] = useState('')
   const [certificatePassword, setCertificatePassword] = useState('')
 
+  // V1.9.299 (15/05) — limitado a DigitalSign por enquanto.
+  // Edge sign-pdf-icp tem chain ICP-Brasil hardcoded da AC DigitalSign RFB G3.
+  // Outras AC (Soluti, Certisign, Valid, Safeweb, Serasa) precisam ter chain
+  // baixada e embeddada no icp_chain.ts antes de liberar — ~30min de trabalho
+  // por AC. Pré-PMF: só DigitalSign é necessário (única AC com médicos cadastrados).
+  // Pós-PMF (quando 2º médico vier com AC diferente) → adiciona chain dele.
   const AC_PROVIDERS = [
-    'DigitalSign',  // V1.9.177 — A1 RSA-SHA256, ICP-Brasil
-    'Soluti',
-    'Certisign',
-    'Valid',
-    'Safeweb',
-    'Serasa',
-    'AC Certificadora',
-    'Outro'
+    'DigitalSign'
   ]
 
   useEffect(() => {
@@ -364,6 +363,11 @@ const CertificateManagement: React.FC = () => {
                       <option key={provider} value={provider}>{provider}</option>
                     ))}
                   </select>
+                  <p className="mt-1.5 text-[11px] text-slate-400 leading-relaxed">
+                    💡 Por enquanto suportamos apenas <strong className="text-emerald-300">DigitalSign</strong>.
+                    Outras autoridades certificadoras (Soluti, Certisign, Valid, Safeweb, Serasa) serão
+                    habilitadas em breve. Já tem cert de outra AC? Avise o suporte.
+                  </p>
                 </div>
 
                 <div>
@@ -484,6 +488,42 @@ const CertificateManagement: React.FC = () => {
                       💡 <strong className="text-slate-200">Errou a senha?</strong> Sem problema. Quando o app
                       tentar assinar uma prescrição vai dar erro claro — você volta aqui, exclui este registro,
                       e cadastra de novo com a senha correta. Não há dano.
+                    </p>
+                  </div>
+
+                  {/* V1.9.299 — alerta crítico sobre chain ao exportar .pfx */}
+                  <div className="border-t border-amber-500/30 pt-3 mt-2">
+                    <div className="flex items-center gap-2 mb-2">
+                      <AlertTriangle className="w-4 h-4 text-amber-300 shrink-0" />
+                      <h4 className="text-sm font-semibold text-amber-200">
+                        Ao exportar o .pfx — marque a opção da cadeia
+                      </h4>
+                    </div>
+                    <p className="text-[11px] text-slate-300 leading-relaxed mb-2">
+                      Quando você exportar seu certificado (Windows: <code className="text-amber-200">certmgr.msc</code>
+                      → Exportar), marque <strong className="text-white">"Incluir todos os certificados no caminho
+                      de certificação se possível"</strong>. Sem isso, validadores externos (validar.iti.gov.br,
+                      Adobe Acrobat) podem não confirmar autenticidade.
+                    </p>
+                    <p className="text-[11px] text-slate-400 leading-relaxed">
+                      ⚙️ <strong className="text-slate-200">Cobertura automática</strong>: para certificados emitidos
+                      pela <strong className="text-emerald-300">AC DigitalSign RFB G3</strong>, nosso sistema
+                      adiciona a cadeia ICP-Brasil automaticamente mesmo se você esqueceu de marcar. Para outras
+                      AC (Soluti, Certisign, Valid, Safeweb, etc.), re-exporte marcando a opção acima — ou avise
+                      o suporte pra incluir sua AC na cadeia automática.
+                    </p>
+                  </div>
+
+                  {/* V1.9.299 — sugestão de validação pós-cadastro */}
+                  <div className="border-t border-blue-500/20 pt-3 mt-2">
+                    <p className="text-[11px] text-slate-400 leading-relaxed">
+                      🧪 <strong className="text-slate-200">Quer testar?</strong> Após cadastrar, assine 1 prescrição
+                      de teste, baixe o PDF e faça upload em <a
+                        href="https://validar.iti.gov.br/"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-blue-300 underline hover:text-blue-200"
+                      >validar.iti.gov.br</a> — deve aparecer "Assinatura válida" com seu nome.
                     </p>
                   </div>
                 </div>
