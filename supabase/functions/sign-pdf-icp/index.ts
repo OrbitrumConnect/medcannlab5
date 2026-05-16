@@ -369,9 +369,12 @@ async function generateBasePdf(
     })
   }
 
-  // Bloco "Verificação Criptográfica ICP-Brasil"
+  // V10 (16/05/2026): linguagem calibrada — descritivo factual, sem overclaim
+  // jurídico até validar.iti.gov.br reconhecer como AD-RB CONFORME.
+  // GPT review: invocar leis (14.063, CFM 2.314) e "validade garantida" antes da
+  // conformidade técnica passar no ITI = sobre-promessa.
   drawCentered('VERIFICACAO CRIPTOGRAFICA ICP-BRASIL', sigBoxTop - 92, helveticaBold, 10, C_GREEN)
-  drawCentered('Hash PKCS#7 SHA-256 + AC DigitalSign + Lei 14.063/2020 + CFM 2.314/2022',
+  drawCentered('Assinatura digital vinculada a certificado ICP-Brasil (AC DigitalSign)',
     sigBoxTop - 106, helvetica, 8, C_TEXT_SOFT)
 
   // Hash truncado
@@ -380,8 +383,8 @@ async function generateBasePdf(
     : 'AGUARDANDO PROCESSAMENTO PKCS#7'
   drawCentered(sigHashShort, sigBoxTop - 124, helvetica, 7, C_TEXT_DIM)
 
-  // Linha "Valide em validar.iti.gov.br"
-  drawCentered('Valide em validar.iti.gov.br — assinatura embedded no PDF', sigBoxTop - 138, helvetica, 8, C_TEXT_MUTED)
+  // Linha "Para verificação: validar.iti.gov.br" (sem prometer que passa)
+  drawCentered('Para verificação: validar.iti.gov.br', sigBoxTop - 138, helvetica, 8, C_TEXT_MUTED)
 
   // =====================================================
   // FOOTER
@@ -394,7 +397,7 @@ async function generateBasePdf(
     50, helvetica, 8, C_TEXT_MUTED
   )
   drawCentered(
-    'Documento gerado eletronicamente — validade juridica garantida pela MP 2.200-2/2001',
+    'Assinatura digital ICP-Brasil — MP 2.200-2/2001',
     36, helveticaOblique, 7, C_TEXT_MUTED
   )
 
@@ -548,12 +551,21 @@ async function signPdfBytes(
   const placeholderHexLength = contentsMatch[1].length
 
   // 3. Calcular ByteRange real
-  // ByteRange = [0, contentsStart+1, contentsEnd-1, fileSize - (contentsEnd-1)]
-  // Inclui tudo EXCETO os bytes hex internos ao <...>
+  // V11 (16/05/2026): FIX BUG CRÍTICO off-by-2 que existia desde V6.
+  // Causa raiz "SigDict /Contents illegal data" no Adobe Reader + "assinatura
+  // desconhecida" no ITI: ByteRange anterior INCLUÍA bytes '<' e '>' (delimitadores
+  // ASCII) no hash assinado, e EXCLUÍA 2 hex chars adjacentes do PKCS#7. Hash que
+  // Adobe/ITI recalcula NÃO BATIA com messageDigest dentro do PKCS#7. Diagnóstico
+  // empírico: Ricardo print Adobe Reader 16/05 ~15h53 + audit byte-level confirmou
+  // 'off-by-2' (gap declarado 65536 bytes vs real 65538 bytes).
+  //
+  // PDF Reference §12.8.1: ByteRange exclui o /Contents <HEX> INTEIRO,
+  // INCLUSIVE os delimitadores '<' e '>'. Range coberto é "tudo EXCETO
+  // <HEX>" (não "tudo EXCETO hex").
   const byteRangeStart1 = 0
-  const byteRangeLength1 = contentsStart + 1 // até e incluindo '<'
-  const byteRangeStart2 = contentsEnd - 1   // a partir de '>'
-  const byteRangeLength2 = pdfBytes.length - byteRangeStart2
+  const byteRangeLength1 = contentsStart // bytes 0 até ANTES de '<' (exclui '<')
+  const byteRangeStart2 = contentsEnd    // bytes a partir de APÓS '>' (exclui '>')
+  const byteRangeLength2 = pdfBytes.length - contentsEnd
 
   // 4. Substituir placeholder /ByteRange pelo real (mesma largura via padding)
   const newByteRangeStr = `/ByteRange [${byteRangeStart1} ${byteRangeLength1} ${byteRangeStart2} ${byteRangeLength2}]`
@@ -699,8 +711,74 @@ async function signPdfBytes(
   // Sign primeiro (forge calcula messageDigest + RSA sign de contentType+messageDigest+signingTime)
   p7.sign({ detached: true })
 
-  // POST-PROCESSING: injetar signing-certificate-v2 NO ASN.1 + re-assinar
-  // 1. Construir ASN.1 do attribute
+  // POST-PROCESSING V8 (16/05/2026): injetar 2 attributes obrigatórios DOC-ICP-15.03
+  //   1. signing-certificate-v2 COM issuerSerial (V7 só tinha certHash → ITI rejeitou)
+  //   2. signature-policy-identifier apontando pra PA AD-RB v2.4 vigente
+  //
+  // Background: V7 (15/05) só com certHash deu "assinatura desconhecida" no ITI.
+  // Análise pós-falha mostrou que DOC-ICP-15.03 promove a obrigatórios os 2 campos
+  // que RFC 5035 deixa como OPTIONAL no padrão internacional. Sem AMBOS, ITI não
+  // classifica como AD-RB CONFORME.
+  //
+  // PA AD-RB v2.4 vigente desde 12/06/2025 (DER baixado direto de
+  // politicas.icpbrasil.gov.br/PA_AD_RB_v2_4.der, hash extraído via openssl
+  // asn1parse do SignPolicyInfo interno).
+
+  // ============================================================================
+  // ATTRIBUTE 1: signing-certificate-v2 (OID 1.2.840.113549.1.9.16.2.47)
+  // Estrutura COMPLETA RFC 5035 + DOC-ICP-15.03:
+  //   SigningCertificateV2 ::= SEQUENCE { certs SEQUENCE OF ESSCertIDv2 }
+  //   ESSCertIDv2 ::= SEQUENCE {
+  //     hashAlgorithm AlgorithmIdentifier DEFAULT sha256 (omitido),
+  //     certHash      OCTET STRING,
+  //     issuerSerial  IssuerSerial  ← V8: obrigatório no BR (era OPTIONAL RFC)
+  //   }
+  //   IssuerSerial ::= SEQUENCE {
+  //     issuer        GeneralNames,    ← SEQUENCE OF GeneralName
+  //     serialNumber  CertificateSerialNumber  ← INTEGER
+  //   }
+  //   GeneralName CHOICE [4] directoryName Name ← EXPLICIT [4] do issuer DN
+  // ============================================================================
+
+  // Issuer DN do cert (já parseado pelo forge)
+  const issuerDnAsn1 = forge.pki.distinguishedNameToAsn1(cert.issuer)
+  // GeneralName [4] directoryName EXPLICIT → wrap em [4]
+  const generalName = forge.asn1.create(
+    forge.asn1.Class.CONTEXT_SPECIFIC,
+    4,
+    true,
+    [issuerDnAsn1]
+  )
+  // GeneralNames ::= SEQUENCE OF GeneralName
+  const generalNames = forge.asn1.create(
+    forge.asn1.Class.UNIVERSAL,
+    forge.asn1.Type.SEQUENCE,
+    true,
+    [generalName]
+  )
+  // Serial number (forge usa hex string, precisa converter pra bytes INTEGER)
+  const serialHex = cert.serialNumber
+  // INTEGER bytes (big endian, signed — leading 0x00 se primeiro byte ≥ 0x80)
+  let serialBytes = ''
+  for (let i = 0; i < serialHex.length; i += 2) {
+    serialBytes += String.fromCharCode(parseInt(serialHex.slice(i, i + 2), 16))
+  }
+  if ((serialBytes.charCodeAt(0) & 0x80) !== 0) {
+    serialBytes = String.fromCharCode(0) + serialBytes
+  }
+  const serialNumberAsn1 = forge.asn1.create(
+    forge.asn1.Class.UNIVERSAL,
+    forge.asn1.Type.INTEGER,
+    false,
+    serialBytes
+  )
+  const issuerSerial = forge.asn1.create(
+    forge.asn1.Class.UNIVERSAL,
+    forge.asn1.Type.SEQUENCE,
+    true,
+    [generalNames, serialNumberAsn1]
+  )
+
   const essCertIDv2 = forge.asn1.create(
     forge.asn1.Class.UNIVERSAL,
     forge.asn1.Type.SEQUENCE,
@@ -711,7 +789,8 @@ async function signPdfBytes(
         forge.asn1.Type.OCTETSTRING,
         false,
         leafCertHashBytes
-      )
+      ),
+      issuerSerial // V8: ADICIONADO (V7 não tinha)
     ]
   )
   const certsSeqOf = forge.asn1.create(
@@ -747,7 +826,116 @@ async function signPdfBytes(
     ]
   )
 
-  // 2. Injetar no SignerInfo.authenticatedAttributes
+  // ============================================================================
+  // ATTRIBUTE 2: signature-policy-identifier (OID 1.2.840.113549.1.9.16.2.15)
+  // RFC 3126 §5.8.1 + DOC-ICP-15.03 (AD-RB obriga signaturePolicyId, não Implied)
+  //   SignaturePolicyIdentifier ::= CHOICE {
+  //     signaturePolicyId        SignaturePolicyId,
+  //     signaturePolicyImplied   NULL  ← AD-RB NÃO aceita esta CHOICE
+  //   }
+  //   SignaturePolicyId ::= SEQUENCE {
+  //     sigPolicyId         OBJECT IDENTIFIER,  ← 2.16.76.1.7.1.1.2.4
+  //     sigPolicyHash       OtherHashAlgAndValue
+  //   }
+  //   OtherHashAlgAndValue ::= SEQUENCE {
+  //     hashAlgorithm   AlgorithmIdentifier,    ← sha256: 2.16.840.1.101.3.4.2.1
+  //     hashValue       OCTET STRING            ← hash do SignPolicyInfo
+  //   }
+  //
+  // Hash extraído empiricamente 16/05/2026 (refinado em V12 após diagnóstico ITI):
+  //   curl -O http://politicas.icpbrasil.gov.br/PA_AD_RB_v2_4.der
+  //   openssl asn1parse -inform der | tail -1
+  //   => 4508:d=1 hl=2 l=32 prim: OCTET STRING [HEX DUMP]:1F3C904C...AF5DCF13
+  //
+  // CORREÇÃO V12 (16/05/2026 ~16h40): NÃO é hash calculado sobre SignPolicyInfo.
+  // RFC 3125 §5.8.1 — SignaturePolicy declara internamente o campo
+  // signPolicyHash OPTIONAL OCTET STRING. PA BR usa esse VALOR LITERAL
+  // declarado, não computa hash externo. Diagnóstico empírico ITI V11:
+  // "IdAaEtsSigPolicyId Invalid — valor do resumo criptográfico não é
+  // equivalente ao esperado" — confirmou que V8 (1DD2BB35...) era hash errado.
+  // Valor literal do OCTET STRING declarado em offset 4508 da PA_AD_RB_v2_4.der:
+  // ============================================================================
+  const PA_AD_RB_V24_OID = '2.16.76.1.7.1.1.2.4'
+  const PA_AD_RB_V24_SIGPOLICYHASH_HEX = '1F3C904C44C392FEEF447E21FAA7A04E85D9C0153346320F557B7042AF5DCF13'
+
+  // Converter hex hash pra bytes binários (forge OCTET STRING value = binary string)
+  let policyHashBytes = ''
+  for (let i = 0; i < PA_AD_RB_V24_SIGPOLICYHASH_HEX.length; i += 2) {
+    policyHashBytes += String.fromCharCode(parseInt(PA_AD_RB_V24_SIGPOLICYHASH_HEX.slice(i, i + 2), 16))
+  }
+
+  // AlgorithmIdentifier SEQUENCE { sha256 OID, NULL }
+  const sha256AlgId = forge.asn1.create(
+    forge.asn1.Class.UNIVERSAL,
+    forge.asn1.Type.SEQUENCE,
+    true,
+    [
+      forge.asn1.create(
+        forge.asn1.Class.UNIVERSAL,
+        forge.asn1.Type.OID,
+        false,
+        forge.asn1.oidToDer('2.16.840.1.101.3.4.2.1').getBytes()
+      ),
+      forge.asn1.create(
+        forge.asn1.Class.UNIVERSAL,
+        forge.asn1.Type.NULL,
+        false,
+        ''
+      )
+    ]
+  )
+  // OtherHashAlgAndValue ::= SEQUENCE { hashAlgorithm, hashValue }
+  const sigPolicyHashSeq = forge.asn1.create(
+    forge.asn1.Class.UNIVERSAL,
+    forge.asn1.Type.SEQUENCE,
+    true,
+    [
+      sha256AlgId,
+      forge.asn1.create(
+        forge.asn1.Class.UNIVERSAL,
+        forge.asn1.Type.OCTETSTRING,
+        false,
+        policyHashBytes
+      )
+    ]
+  )
+  // SignaturePolicyId ::= SEQUENCE { sigPolicyId OID, sigPolicyHash }
+  const sigPolicyIdValue = forge.asn1.create(
+    forge.asn1.Class.UNIVERSAL,
+    forge.asn1.Type.SEQUENCE,
+    true,
+    [
+      forge.asn1.create(
+        forge.asn1.Class.UNIVERSAL,
+        forge.asn1.Type.OID,
+        false,
+        forge.asn1.oidToDer(PA_AD_RB_V24_OID).getBytes()
+      ),
+      sigPolicyHashSeq
+    ]
+  )
+  // Attribute: SEQUENCE [OID, SET [SignaturePolicyId]]
+  const sigPolicyIdAttr = forge.asn1.create(
+    forge.asn1.Class.UNIVERSAL,
+    forge.asn1.Type.SEQUENCE,
+    true,
+    [
+      forge.asn1.create(
+        forge.asn1.Class.UNIVERSAL,
+        forge.asn1.Type.OID,
+        false,
+        forge.asn1.oidToDer('1.2.840.113549.1.9.16.2.15').getBytes()
+      ),
+      forge.asn1.create(
+        forge.asn1.Class.UNIVERSAL,
+        forge.asn1.Type.SET,
+        true,
+        [sigPolicyIdValue]
+      )
+    ]
+  )
+
+  // Injetar AMBOS no SignerInfo.authenticatedAttributes
   // PKCS#7 structure: SignedData → signerInfos SET → SignerInfo SEQUENCE
   // SignerInfo: [version, sid, digestAlg, [0] authAttrs, sigAlg, signature, ...]
   const p7Asn1Tree = p7.toAsn1()
@@ -762,10 +950,31 @@ async function signPdfBytes(
   if (!authAttrs || authAttrs.type !== 0) {
     throw new Error('authenticatedAttributes [0] não encontrado no SignerInfo')
   }
-  // Adicionar o novo attribute
+  // V8: adicionar AMBOS attributes (signing-certificate-v2 + signature-policy-identifier)
   authAttrs.value.push(signingCertV2Attr)
+  authAttrs.value.push(sigPolicyIdAttr)
 
-  // 3. RE-ASSINAR: hash dos authenticatedAttributes mudou, RSA precisa recalcular
+  // V9 (16/05/2026): DER-canonicalize SET OF SignedAttributes.
+  // X.690 §11.6 + RFC 5652 §5.4: elementos de SET OF devem ser DER-ordenados
+  // (byte-wise lexicographic comparison do DER encoding completo de cada elemento).
+  // forge.pkcs7 NÃO ordena automaticamente — auditoria empírica V8 PKCS#7 mostrou
+  // ordem inválida (contentType/messageDigest/signingTime/SCv2/sigPolicy em vez de
+  // contentType/signingTime/messageDigest/sigPolicy/SCv2). ITI rejeita como não
+  // conforme → "assinatura desconhecida".
+  // Sort ANTES de calcular hash + serializar (afeta ambos).
+  authAttrs.value.sort((a: any, b: any) => {
+    const aBytes = forge.asn1.toDer(a).getBytes()
+    const bBytes = forge.asn1.toDer(b).getBytes()
+    const minLen = Math.min(aBytes.length, bBytes.length)
+    for (let i = 0; i < minLen; i++) {
+      const av = aBytes.charCodeAt(i)
+      const bv = bBytes.charCodeAt(i)
+      if (av !== bv) return av - bv
+    }
+    return aBytes.length - bBytes.length
+  })
+
+  // RE-ASSINAR: hash dos authenticatedAttributes mudou, RSA precisa recalcular
   // Construir SET (não [0] IMPLICIT) pra calcular hash (RFC 5652 §5.4)
   const authAttrsForHash = forge.asn1.create(
     forge.asn1.Class.UNIVERSAL,
@@ -789,11 +998,7 @@ async function signPdfBytes(
     newSignature
   )
 
-  // 4. Re-atualizar messageDigest no novo attribute set NÃO É necessário —
-  // o messageDigest do conteúdo (bytes do PDF) NÃO mudou, só estamos adicionando
-  // novo attribute paralelo. messageDigest continua válido.
-
-  console.log(`🇧🇷 PBAD AD-RB: signing-certificate-v2 injetado + RSA re-signed`)
+  console.log(`🇧🇷 PBAD AD-RB V9: 5 SignedAttributes DER-sorted + RSA re-signed`)
 
   // CRÍTICO: usar p7Asn1Tree MODIFICADO (não chamar p7.toAsn1() de novo, que
   // reconstroi a partir do state interno do forge e perde nossa injeção).
