@@ -47,14 +47,18 @@ export const RiskCockpit: React.FC = () => {
     const fetchRiskData = async () => {
         setLoading(true);
         try {
-            // 1. Fetch Clinical Risk Stats
+            // V1.9.307 — Risk Cockpit agora lê renal_exams REAL (não mais MOCK).
+            // Pacientes só aparecem aqui após médico aprovar sugestão DRC pendente
+            // via RenalSuggestionsCard → cria renal_exams oficial.
+            // GPT review #8: nunca misturar sugestão pendente com dado oficial.
             const { data: renalData } = await supabase
                 .from('renal_exams')
-                .select('drc_stage, exam_date');
+                .select('id, patient_id, drc_stage, exam_date, creatinine, egfr, users:patient_id(name)')
+                .order('exam_date', { ascending: false });
 
             const highRisk = renalData?.filter(e => e.drc_stage === 'G4' || e.drc_stage === 'G5').length || 0;
 
-            // 2. Fetch Financial Risk (Pending bonuses)
+            // Financial risk (bonuses pendentes) — INTOCADO
             const { data: bonusData } = await supabase
                 .from('referral_bonus_cycles')
                 .select('bonus_value')
@@ -62,22 +66,37 @@ export const RiskCockpit: React.FC = () => {
 
             const totalPending = bonusData?.reduce((acc, curr) => acc + Number(curr.bonus_value), 0) || 0;
 
-            // 3. Fetch High Risk Patients List
-            const { data: ptData } = await supabase
-                .rpc('get_high_risk_patients_summary'); // Hypothetical RPC for combined data
-
             setStats({
                 clinicalRiskHigh: highRisk,
-                financialRiskHigh: totalPending > 1000 ? 1 : 0, // Placeholder logic
+                financialRiskHigh: totalPending > 1000 ? 1 : 0,
                 pendingBonusesValue: totalPending,
                 activeProtections: renalData?.length || 0
             });
 
-            // Mocked high risk for demonstration if no data
-            setHighRiskPatients((ptData as any[] || [
-                { id: '1', name: 'Paulo Gonçalves', risk_level: 'G4', last_exam_date: '2026-02-01', days_since_exam: 10 },
-                { id: '2', name: 'Maria Silva', risk_level: 'G5', last_exam_date: '2026-01-15', days_since_exam: 27 }
-            ]).map((p: any) => ({ ...p, risk_level: p.risk_level as 'G1'|'G2'|'G3a'|'G3b'|'G4'|'G5' })));
+            // V1.9.307 — High risk SÓ DE DADOS REAIS (sem mock). Lista vazia
+            // se não há renal_exams aprovados — UI mostra estado correto.
+            // Filtra pacientes G3b+ (preocupantes clinicamente) deduplica por patient_id
+            // mantendo exame mais recente.
+            const realHighRisk: RiskPatient[] = []
+            const seen = new Set<string>()
+            for (const exam of renalData || []) {
+                if (!exam.patient_id || seen.has(exam.patient_id)) continue
+                if (!['G3b','G4','G5'].includes(exam.drc_stage || '')) continue
+                seen.add(exam.patient_id)
+                const examDate = exam.exam_date ? new Date(exam.exam_date) : null
+                const daysSince = examDate
+                    ? Math.floor((Date.now() - examDate.getTime()) / 86400000)
+                    : 0
+                const patientName = (exam.users as any)?.name || 'Paciente'
+                realHighRisk.push({
+                    id: exam.id,
+                    name: patientName,
+                    risk_level: exam.drc_stage as 'G3b'|'G4'|'G5',
+                    last_exam_date: exam.exam_date || '',
+                    days_since_exam: daysSince
+                })
+            }
+            setHighRiskPatients(realHighRisk);
 
         } catch (error) {
             console.error('Error fetching risk data:', error);

@@ -36,6 +36,7 @@ import { useDashboardTriggers } from '../contexts/DashboardTriggersContext'
 import IntegratedWorkstation from '../components/IntegratedWorkstation'
 import ProfessionalSchedulingWidget from '../components/ProfessionalSchedulingWidget'
 import ProfessionalChatSystem from '../components/ProfessionalChatSystem'
+import RenalSuggestionsCard from '../components/RenalSuggestionsCard'
 import Prescriptions from './Prescriptions'
 
 const ProfessionalMyDashboard: React.FC = () => {
@@ -917,6 +918,13 @@ const ProfessionalMyDashboard: React.FC = () => {
               </>
             )}
           </section>
+        </div>
+
+        {/* V1.9.307 — Sugestões DRC Pendentes (sidecar clínico renal).
+            Card só renderiza se houver sugestões pendentes pra esse médico.
+            Memory: project_v1_9_307_renal_inline_suggestions */}
+        <div className="mb-6">
+          <RenalSuggestionsCard />
         </div>
 
         {/* Overlay Scanner verde (Matrix) — paciente “scaneado” no centro (avatar ou inicial) */}
