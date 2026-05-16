@@ -270,16 +270,292 @@ Verificação V10 (PDF 70.306 bytes, hash `d014d3af...`):
 
 ---
 
+### 🎨 BLOCO I — V1.9.310-A: Clinical Cockpit cores no dashboard professional (~12h-13h)
+
+Pedro printou o dashboard professional + perguntou *"duvida muito colorido o dashboard?! kkk"*. GPT externo aprofundou diagnóstico: cor por **estado clínico**, não por **identidade de feature**. Princípio cristalizado em memória + aplicação concreta.
+
+**Linha "O que você quer fazer agora?"** tinha 6 botões em 6 cores fortes competindo (emerald/purple/blue/cyan/indigo/amber). Reduzido pra:
+- **Ver Agenda** = emerald (ação primária do dia, sem `animate-pulse` nem glow)
+- **4 ações secundárias** (Relatórios, Nova Prescrição, Chat Equipe, Meus Pacientes) = slate neutro + ícone emerald sutil
+- **Cann Matrix** = amber suave (único accent contextual — fórum entre médicos, natureza diferente)
+- **Card DRC laranja preservado** como gravidade visual única do dashboard (memória renal V1.9.307)
+
+Type-check clean. Commit `25eed9b` push 4 refs.
+
+**Decisão Pedro**: NÃO fazer redesign agora. Ao tocar UI futura: não adicionar novo accent, evitar múltiplos âmbar/laranja simultâneos.
+
+---
+
+### 🎨 BLOCO J — V1.9.310-B: Clinical Cockpit aluno + paciente (~13h)
+
+Pedro screenshot do dashboard **Aluno** mostrou mesmo padrão arco-íris (6 botões = 6 cores: emerald/azul/roxo/cyan/âmbar/violeta). Aplicado mesmo princípio nos 2 dashboards restantes:
+
+**AlunoDashboard.tsx:**
+- **Estudar Curso** = emerald (ação primária)
+- 4 neutros (Simulação Clínica / Teste Nivelamento / Biblioteca / Meu Perfil) = slate + ícone emerald
+- **Fórum Aluno** = amber suave (único accent — comunidade vs estudo)
+
+**PatientHeaderActions.tsx:**
+- **Agendar Consulta** = emerald (ação primária — sem glow/pulse)
+- 4 neutros (Enviar Médico / Iniciar Avaliação / Canal Atendimento / Vincular Médico) = slate + ícone emerald
+- **WhatsApp** mantém verde marca `#25D366` (convenção universal reconhecível, análogo ao Cann Matrix/Fórum)
+
+Coerência completa Clinical Cockpit nos **3 dashboards**. Commit `e56b321` push 4 refs.
+
+| Dashboard | Ação primária (emerald) | Accent único | Cores neutralizadas |
+|---|---|---|---|
+| Professional | Ver Agenda | Cann Matrix amber | purple/blue/cyan/indigo → slate |
+| Aluno | Estudar Curso | Fórum amber | blue/purple/cyan/indigo → slate |
+| Paciente | Agendar Consulta | WhatsApp verde marca | blue/blue/emerald/purple/indigo → slate |
+
+---
+
+### 🎨 BLOCO K — V1.9.311: NFT Consent Pattern (B-lite) + Galeria Clínica médico (~13h-14h)
+
+**Trigger**: Pedro perguntou se existe trigger pra paciente compartilhar NFT com profissional + galeria do médico mostrando NFTs liberados. Audit empírico via PAT mostrou:
+- Tabela `patient_nfts` existe (V1.9.193, 33 NFTs hoje)
+- RLS antiga: médico vinculado via report-pai acessa AUTOMÁTICO (acesso implícito)
+- NÃO existia: `nft_shares`, RPCs, `ProfessionalNFTGallery`, UI de consent
+
+Mesmo padrão do `RenalSuggestionsCard` ANTES de 16/05 manhã: dado + RLS existem, mas sem UI no profissional → bug "invisível".
+
+**3 iterações GPT review** convergiram em **B-lite** (consent explícito por peça, alinhado com referral consent V1.9.275):
+
+#### Migration `20260516220000_v1_9_311_nft_consent.sql`
+```sql
+ALTER TABLE patient_nfts
+  ADD COLUMN shared_with_professional bool DEFAULT false NOT NULL,
+  ADD COLUMN shared_at timestamptz,
+  ADD COLUMN shared_by uuid REFERENCES auth.users(id);
+
+DROP POLICY "Professional sees patient NFTs via clinical reports";
+CREATE POLICY "Professional sees only patient-shared NFTs"
+  USING (shared_with_professional = true AND EXISTS (...));
+CREATE POLICY "Patient toggles share on own NFTs" FOR UPDATE
+  USING (auth.uid() = patient_id);
+```
+
+#### 5 cenários empíricos via PAT (todos passaram)
+| # | Cenário | Esperado | Real |
+|---|---|---|---|
+| 1 | Paciente Cristiano vê próprios | 4 | **4** ✅ |
+| 2 | Ricardo SEM consent | 0 | **0** ✅ |
+| 3 | Toggle libera 1 NFT | ok | **ok** ✅ |
+| 4 | Ricardo APÓS consent | 1 | **1** ✅ |
+| 5 | Admin (Pedro) vê tudo | 30 | **30** ✅ |
+| 6 | Revert toggle → Ricardo volta a 0 | 0 | **0** ✅ |
+
+#### Componentes
+- **`PatientNFTGallery.tsx`** editado: copy header honesta (`X/Y ancoradas criptograficamente`) + 2 badges card factuais (verde signature / âmbar sem ancoragem) + badge cyan se shared + toggle "Permitir visualização clínica" no modal
+- **`ProfessionalNFTGallery.tsx`** NOVO (~370 linhas, read-only): paciente_name SEMPRE visível no card + bloco "Contexto Clínico" via JOIN `clinical_reports.content` (queixa principal + completude + data)
+
+**Decisão Pedro Opção A** (admin = back office padrão SaaS): 5 admins continuam vendo tudo via policy `Admin sees all NFTs`. LGPD coberto via Termos.
+
+Commit `83f5307` push 4 refs.
+
+---
+
+### 🐛 BLOCO L — V1.9.311-B: Fix Galeria plugada no Terminal CORRETO (~14h)
+
+Pedro testou e: *"ok mas não vejo no Terminal de Atendimento do profissional a aba NFT pacientes"*.
+
+**Bug encontrado**: pluguei a aba em `ClinicalTerminal.tsx` que é **componente órfão** (só importa a si mesmo, nada renderiza). A rota real `?section=terminal-clinico` no `ProfessionalMyDashboard.tsx:633-647` renderiza `IntegratedWorkstation`, NÃO `ClinicalTerminal`. Naming colisão (`ClinicalTerminal` vs `IntegratedWorkstation` — ambos com "Terminal" no contexto).
+
+**Fix:**
+- Aba `gallery` (Sparkles purple, grupo `governanca`) movida pra `IntegratedWorkstation` allTabs
+- `case 'gallery'` renderiza `<ProfessionalNFTGallery />`
+- Filtro tab válido em `ProfessionalMyDashboard:637` atualizado (deep link `?tab=gallery`)
+- ClinicalTerminal.tsx revertido (mantém órfão)
+
+**Lição operacional cristalizada**: antes de plugar aba em "Terminal X", verificar empíricamente qual componente a rota renderiza — naming colisão é fácil em apps com múltiplos "Terminal".
+
+Commit `6c77cf0` push 4 refs.
+
+---
+
+### 📡 BLOCO M — V1.9.312: System Activity Timeline (radar admin, ~14h-15h)
+
+Pedro pediu: *"abaixo de onde aparece os usuários posso ver a log do que foi completado por eles ou onde bugou? criar algo assim? legal?"*
+
+**Audit empírico via PAT antes de codar** revelou MUITA infraestrutura pronta:
+- **15 tabelas** de log/event/audit (`noa_logs` 3858 logs em 8 dias + `user_activity_logs` + `user_lifecycle_logs` + `noa_interaction_logs` + `ai_chat_interactions` + `scheduling_audit_log` + `institutional_trauma_log` + `video_call_quality_logs` + 7 outras)
+- **5 RPCs admin**: `admin_get_users_activity_summary` + `admin_get_users_status` + `get_recent_audit_logs` + `log_aec_state_anomaly` + `log_institutional_trauma`
+
+**Decisão GPT-review**: caminho (B) timeline unificado vs (A) drill-down individual. Pré-PMF com 45 users / 2-5 ativos/dia, "sentir pulso do sistema" > "investigar caso individual". Drill-down parqueado pra pós-PMF.
+
+#### Componente `SystemActivityTimeline.tsx` NOVO (~321 linhas)
+Reaproveita 3 fontes via Promise.all (sem migration):
+- `get_recent_audit_logs` (ai_chat_interactions com risk_level)
+- `noa_logs` filtrado `user_id IS NOT NULL` (exclui cron sweeps tipo `video_call_reminders_sweep`)
+- `cfm_prescriptions` signed (atos clínicos médicos)
+
+**Aplicação Clinical Cockpit Mode à timeline** (cores por ESTADO):
+- error/risk HIGH → vermelho
+- warning → âmbar
+- success (ICP/prescrição) → emerald
+- info (AEC normal) → azul discreto
+- neutral → slate
+
+4 filtros (GPT review): Todos / Clínico / Sistema / Risco. Auto-refresh 30s. Cap 30 eventos.
+
+Smoke empírico via PAT: AECs Maria das Dores (CONSENT_COLLECTION, FINAL_RECOMMENDATION) ✅ + 5 prescrições Ricardo→Carolina/Pedro ✅.
+
+Plugada `<SystemActivityTimeline />` embaixo da "Base de Usuários Unificada" em `ClinicalGovernanceAdmin.tsx`. Commit `11a1d6c` push 4 refs.
+
+---
+
+### 🔧 BLOCO N — V11: Fix off-by-2 ByteRange (~16h, descoberta via Adobe Reader)
+
+Ricardo testou V10 no validar.iti.gov.br — mesma resposta "desconhecida". Pedi Ricardo testar **Adobe Reader gratuito** como diagnóstico complementar. Print do Ricardo mostrou:
+
+> *"Há erros na formatação ou nas informações contidas nesta assinatura (informações de suporte: **SigDict /Contents illegal data**)"*
+
+**Diagnóstico via inspeção byte-level do PDF V10:**
+```
+ByteRange declarado: [0, 4102, 69638, 668] → gap 65536 bytes excluídos
+< position empírico: 4101 (1 byte ANTES do declarado)
+> position empírico: 69638 (1 byte DEPOIS do declarado)
+Gap real <HEX>: 65538 bytes (INCLUINDO delimitadores)
+→ Off-by-2 confirmado: < e > sendo INCLUÍDOS no hash assinado
+→ 2 hex chars adjacentes do PKCS#7 sendo EXCLUÍDOS
+→ Hash recalculado NÃO BATE com messageDigest interno
+```
+
+**Causa raiz histórica**: bug existia desde V6 (15/05 tarde) — comentário no código original dizia `"até e incluindo '<'"` deliberadamente. PDF Reference §12.8.1: ByteRange exclui `/Contents <HEX>` INTEIRO INCLUSIVE delimitadores.
+
+**Por que demorou 5 versões pra detectar**: V7→V10 estavam consertando o PKCS#7 INTERNO perfeitamente. Bug estava no ENVELOPE EXTERNO. Adobe foi mais loquaz que ITI.
+
+**Fix V11** (2 linhas):
+```typescript
+// Antes (errado):
+const byteRangeLength1 = contentsStart + 1  // incluía '<'
+const byteRangeStart2 = contentsEnd - 1     // incluía '>'
+
+// Depois (correto):
+const byteRangeLength1 = contentsStart      // bytes ANTES de '<'
+const byteRangeStart2 = contentsEnd         // bytes A PARTIR DE depois de '>'
+```
+
+**Verificação empírica V11**:
+| Check | Esperado | Real |
+|---|---|---|
+| Range 1 end | posição `<` (4100) | **4100** ✅ |
+| Range 2 start | posição `>` + 1 (69638) | **69638** ✅ |
+| Range 2 end | total bytes (70305) | **70305** ✅ |
+| Gap excluído | 65538 bytes | **65538** ✅ |
+
+**Resultado Ricardo V11 ITI:**
+- Antes (V10): "Assinatura desconhecida" (ITI nem reconhecia)
+- Agora (V11): **"Assinatura reprovada — problemas com atributos"** — **AVANÇO GIGANTE** ITI agora reconhece estrutura, ancorou cadeia, validou política PA AD-RB v2.4
+
+Mais ainda — Adobe disse:
+> ✅ *"O documento não foi modificado desde que esta assinatura foi aplicada"* — **HASH BATE pela primeira vez em 6 versões**
+
+---
+
+### 🎯 BLOCO O — V12: sigPolicyHash literal (~16h35, descoberta via ITI Completo)
+
+Aba **Completo** do ITI mostrou diagnóstico cirúrgico:
+```
+Atributos obrigatórios: Reprovados
+✅ IdMessageDigest               Valid
+✅ IdContentType                 Valid
+❌ IdAaEtsSigPolicyId            INVALID
+   "Falha ao construir o atributo. O valor do resumo criptográfico
+    não é equivalente ao esperado."
+✅ IdAaSigningCertificateV2      Valid
+✅ SignatureDictionary           Valid
+✅ IdSigningTime                 Valid
+```
+
+**1 atributo específico errado**: `signature-policy-identifier` (V8) com **hash da política errado**.
+
+**Audit empírico DER da PA**:
+```bash
+openssl asn1parse -inform der -in PA_AD_RB_v2_4.der | tail -1
+# => 4508:d=1 hl=2 l=32 prim: OCTET STRING [HEX DUMP]:1F3C904C44C392FEEF447E21FAA7A04E85D9C0153346320F557B7042AF5DCF13
+```
+
+**Interpretação errada em V8**: calculava SHA-256 do `SignPolicyInfo` (`1DD2BB35...`). **Correto**: RFC 3125 §5.8.1 declara `signPolicyHash OPTIONAL OCTET STRING` DENTRO da própria PA — usar o **VALOR LITERAL** declarado.
+
+**Fix V12** (1 hex string):
+```typescript
+// Antes (calculado, errado):
+const PA_AD_RB_V24_SIGPOLICYHASH_HEX = '1DD2BB35D9B7E7A1B6694FE8726DB03CF21465856C1C0C9C56D06CDC1ED60506'
+
+// Depois (literal do OCTET STRING declarado na PA):
+const PA_AD_RB_V24_SIGPOLICYHASH_HEX = '1F3C904C44C392FEEF447E21FAA7A04E85D9C0153346320F557B7042AF5DCF13'
+```
+
+**🏆 Resultado Ricardo V12 ITI** (hash arquivo `ca34d4ef...`):
+```
+Status de assinatura: APROVADO ✅
+Caminho de certificação: Valid ✅
+Estrutura: Em conformidade com o padrão ✅
+Cifra assimétrica: Aprovada ✅
+Resumo criptográfico: true ✅
+Atributos obrigatórios: APROVADOS ✅
+Política de assinatura: PA_AD_RB_v2_4.der ✅
+
+6/6 atributos individuais Valid:
+- IdMessageDigest ✅
+- IdContentType ✅
+- IdAaEtsSigPolicyId ✅  ← AGORA
+- IdAaSigningCertificateV2 ✅
+- SignatureDictionary ✅
+- IdSigningTime ✅
+```
+
+**Commit V1.9.299-final** `d8e30f5` (unificado V8/V9/V10/V11/V12) push 4 refs.
+
+---
+
+### 🔒 BLOCO P — Selo + cadeado V1.9.299 (~17h BRT)
+
+Pedro pediu cadear formal pra não mexer. 4 camadas de proteção ativadas:
+
+1. **Tag git anotada** `v1.9.299-pbad-conforme-locked` apontando commit `d8e30f5`, pushed nas 2 remotes
+2. **CLAUDE.md atualizado** — Lock canônico passa de `V1.9.95+97+98+99-B` pra `+V1.9.299` + bloco "⚠️ NÃO TOCAR" listando arquivos/constants intocáveis do edge
+3. **Memória `feedback_lock_v1_9_299_pbad_nao_tocar_16_05.md`** — regra operacional + checklist 5 passos obrigatório antes de qualquer mudança (backup empírico / diff binário / smoke ITI completo / Adobe cross-check / só commit se ambos passarem)
+4. **MEMORY.md indexado** — próxima sessão (qualquer Claude novo) lê primeiro
+
+Commit `9214927` (CLAUDE.md) + commit `9c6a070` (diário apêndice histórico) push 4 refs.
+
+**Tags git canônicas agora:**
+```
+v1.9.95-lock-aec-relatorio-agendamento    (CORE clínico)
+v1.9.99-resend-prod-locked                (email prod)
+v1.9.113-locked                           (Analisar Paciente)
+v1.9.299-pbad-conforme-locked             ← novo, atual 🏆
+```
+
+---
+
 ## 📦 Arquivos modificados hoje (sem regressão)
 
+**Manhã/início tarde:**
 ```
 supabase/migrations/20260516200000_v1_9_307_renal_inline_suggestions.sql  [NOVO]
 supabase/functions/renal-signal-extractor/index.ts                         [NOVO]
 src/components/RenalSuggestionsCard.tsx                                    [NOVO V1.9.307 / refeito V1.9.309]
-supabase/functions/sign-pdf-icp/index.ts                                   (V7 → V8 → V9 → V10)
 supabase/functions/tradevision-core/index.ts                               (V1.9.308 RAG híbrido)
 src/components/RiskCockpit.tsx                                             (V1.9.307 — zero MOCK)
-src/pages/ProfessionalMyDashboard.tsx                                      (V1.9.307 integração card)
+src/pages/ProfessionalMyDashboard.tsx                                      (V1.9.307 integração card + V1.9.310-A cores)
+```
+
+**Tarde (Clinical Cockpit + NFT consent + Timeline + V12 final):**
+```
+src/pages/AlunoDashboard.tsx                                               (V1.9.310-B cores aluno)
+src/components/PatientHeaderActions.tsx                                    (V1.9.310-B cores paciente)
+supabase/migrations/20260516220000_v1_9_311_nft_consent.sql               [NOVO V1.9.311]
+src/components/PatientNFTGallery.tsx                                       (V1.9.311 toggle + 2 badges + copy honesta)
+src/components/ProfessionalNFTGallery.tsx                                  [NOVO ~370 linhas V1.9.311]
+src/components/IntegratedWorkstation.tsx                                   (V1.9.311-B aba gallery plugada)
+src/components/SystemActivityTimeline.tsx                                  [NOVO ~321 linhas V1.9.312]
+src/pages/ClinicalGovernanceAdmin.tsx                                      (V1.9.312 plug timeline)
+supabase/functions/sign-pdf-icp/index.ts                                   (V7 → V8 → V9 → V10 → V11 → V12 final ✅)
+CLAUDE.md                                                                  (selo Lock V1.9.299)
+DIARIO_16_05_2026_SIDECAR_RENAL_E_PBAD_AD_RB.md                            (este — apêndice fechamento + blocos I→P)
 ```
 
 ## ⚠️ Zero alteração em código intocável
@@ -294,57 +570,94 @@ src/pages/ProfessionalMyDashboard.tsx                                      (V1.9
 
 ---
 
-## 🎯 Estado atual HEAD (~12h37 BRT)
+## 🎯 Estado final HEAD (~17h BRT)
 
-**Edge `sign-pdf-icp` v17** (V10 deployada) + 3 commits novos no main:
-- `ab19a61` V1.9.307 Renal Inline Suggestions (push 4 refs)
-- `2800b3c` V1.9.308 RAG híbrido (push 4 refs)
-- `7e6f947` V1.9.309 RenalSuggestionsCard layout compacto (push 4 refs)
-- V8/V9/V10 sign-pdf-icp deployados mas **commit pendente** (aguarda smoke ITI passar)
+**12 commits no main hoje** (todos push 4 refs amigo+medcannlab5 × main+master):
 
-**Aguardando**:
-- Ricardo testar V10 no [validar.iti.gov.br](https://validar.iti.gov.br) (hash arquivo: `d014d3af69d1eb49f80c3b0b7812d14ace25231eaea933c135fad6782b43caa8`)
+| Commit | Versão | Conteúdo |
+|---|---|---|
+| `ab19a61` | V1.9.307 | Sidecar Renal (renal-signal-extractor + tabela + RPCs + UI Maria DRC) |
+| `2800b3c` | V1.9.308 | RAG híbrido (base_conhecimento + documents + blindagem AEC) |
+| `7e6f947` | V1.9.309 | RenalSuggestionsCard layout compacto + DotPagination |
+| `9ff7682` | docs | Diário 16/05 corpo inicial (12h37) |
+| `25eed9b` | V1.9.310-A | Clinical Cockpit cores professional dashboard |
+| `e56b321` | V1.9.310-B | Clinical Cockpit cores aluno + paciente |
+| `83f5307` | V1.9.311 | NFT Consent Pattern + ProfessionalNFTGallery |
+| `6c77cf0` | V1.9.311-B | Fix Galeria Clínica plugada no IntegratedWorkstation correto |
+| `11a1d6c` | V1.9.312 | System Activity Timeline (radar admin) |
+| **`d8e30f5`** | **V1.9.299-final** | **🏆 PBAD AD-RB CONFORME validado ITI** |
+| `9214927` | docs | CLAUDE.md selo Lock V1.9.299 + ⚠️ NÃO TOCAR |
+| `9c6a070` | docs | Diário apêndice fechamento histórico |
+
+**Tag git nova**: `v1.9.299-pbad-conforme-locked` apontando `d8e30f5` (pushed nas 2 remotes).
+
+**Edge `sign-pdf-icp` v18+** (V12 final) deployada + APROVADA oficialmente em validar.iti.gov.br.
+
+**8 memórias novas indexadas em MEMORY.md**:
+1. `project_v1_9_307_renal_inline_suggestions_16_05.md`
+2. `feedback_clinical_cockpit_cor_por_estado_16_05.md`
+3. `feedback_linguagem_estado_real_nao_identidade_16_05.md`
+4. `project_v1_9_311_nft_consent_pattern_16_05.md`
+5. `project_drift_nefro_cannabis_16_05.md`
+6. ~~`project_pbad_v10_aguardando_completo_iti_16_05.md`~~ (SUPERSEDED)
+7. 🏆 `project_v1_9_299_pbad_ad_rb_conforme_16_05.md`
+8. 🔒 `feedback_lock_v1_9_299_pbad_nao_tocar_16_05.md`
+
+**Pendentes (próxima sessão / próximos dias)**:
 - Ricardo aprovar sugestão DRC G3b da Maria via RenalSuggestionsCard → 1ª linha real em `renal_exams` → Risk Cockpit deixa de ser zero
-
-**Se V10 passar (AD-RB CONFORME)**:
-- Commit V1.9.299-final (V8+V9+V10 sign-pdf-icp) + push 4 refs
-- Selo V1.9.299 fechado (PDF ICP REAL operacional)
-- Atualizar memória `project_v1_9_299_pdf_icp_real_15_05.md` → adicionar journey V7→V10
-- Próximo: V11 polish (embedar font UTF-8 + fix `Uso: Diário por Contínuo` + reduzir bloco hex visual PKCS#7)
-- Ricardo cadastrar 2ª prescrição pra confirmar reprodutibilidade
-
-**Se V10 ainda falhar**:
-- Pedir Ricardo screenshot da aba **"Completo"** do validador (mostra qual atributo/chain/encoding falhou específicamente)
-- V11 ataca a causa exata (não chute)
+- **V1.9.300** próximo natural: integração frontend (botão "Baixar PDF assinado ICP-Brasil" no widget, usa coluna `signed_pdf_url`)
+- **V1.9.301** próximo natural: trigger automático pós-signing (frontend chama `sign-pdf-icp` em background após `digital-signature` retornar success)
+- V11 polish (embedar font UTF-8 pra acentos + fix `Uso: Diário por Contínuo` + reduzir bloco hex visual PKCS#7) — opcional
 
 ---
 
-## 🧭 Decisões/lições cristalizadas hoje
+## 🧭 Decisões/lições cristalizadas hoje (14 princípios)
+
+### Da manhã/início tarde (V1.9.307-310)
 
 1. **Sidecar paralelo > modificar CORE** quando feature toca dado clínico crítico (Pedro endossou: *"AEC é imutável lembra?"*). V1.9.307 prova padrão reutilizável (próximos: `cardio_inline_suggestions`, `diabetes_inline_suggestions`, `autoimmune_inline_suggestions`).
 
-2. **DOC-ICP-15.03 ≠ RFC 5035** — Brasil promove campos OPTIONAL do RFC a OBRIGATÓRIOS. Validador ITI aplica regra brasileira estritamente. Implementação só com base no padrão internacional falha silenciosamente como "desconhecida".
+2. **Risk Cockpit antes vs depois V1.9.307** — antes era MOCK chamado de "real". Pedro lê dashboard e confia. MOCK em produção = bug latente quando dado real chegar. V1.9.307 zerou MOCK + agora honesto (0 pacientes G3b+ até Ricardo aprovar Maria).
 
-3. **`forge.pkcs7` não DER-canonicaliza SET OF** — bug conhecido da biblioteca. Implementações PBAD precisam sortar manualmente antes de hash + serialização. ITI valida rigorosamente — sem isso = "desconhecida".
+3. **Clinical Cockpit Mode** (memória `feedback_clinical_cockpit_cor_por_estado_16_05.md`) — cor por ESTADO clínico, não por feature. Trigger pra migrar pro modo cockpit completo: Sprint 1 medido OU Ricardo/Eduardo pedirem OU onboarding mostrar atrito.
 
-4. **Auditoria estrutural empírica (openssl asn1parse) > especulação** — 5 iterações V7→V10 só funcionaram porque cada falha foi auditada nos bytes reais, não no que "deveria" estar. PKCS#7 dentro PDF tem encoding camuflado (hex-uppercase de ASCII-hex) — fácil errar a busca.
+4. **Linguagem comunica estado real, não identidade** (memória `feedback_linguagem_estado_real_nao_identidade_16_05.md`) — extensão Clinical Cockpit pra COPY. Mostrar "X/Y atendem" > "TODOS atendem". Aplicado V1.9.310 PDF + V1.9.311 NFT Gallery copy. Anti-overclaim regulatório.
 
-5. **Anti-overclaim antes da validação técnica fechar** — invocar leis ("MP 2.200-2", "Lei 14.063", "CFM 2.314") + prometer garantia jurídica num PDF que validar.iti.gov.br ainda rejeita = sobre-promessa que vira passivo se alguém auditar. Descrever fato técnico (vinculação ASN.1 ao cert ICP) > prometer conformidade regulatória.
+### Do meio tarde (V1.9.311-312)
 
-6. **Bundle iterações em batches** — entre V9 deploy e V10 GPT-feedback, decidi não enviar V9 ao Ricardo e bundlar V9+V10 em uma única iteração (Ricardo testa UMA vez com PDF final). Princípio: respeitar tempo do tester humano > "subir cedo".
+5. **B-lite consent pattern** (memória `project_v1_9_311_nft_consent_pattern_16_05.md`) — paciente libera artefato simbólico peça-a-peça via toggle, vs acesso automático via report-pai. Alinhado com referral consent V1.9.275. Default conservador (`false`) = mais fácil abrir depois do que retirar privacidade.
 
-7. **Risk Cockpit antes vs depois V1.9.307** — antes era MOCK chamado de "real". Pedro lê dashboard e confia. MOCK em produção = bug latente quando dado real chegar. V1.9.307 zerou MOCK + agora honesto (0 pacientes G3b+ até Ricardo aprovar Maria).
+6. **Naming colisão em componentes Terminal** (lição V1.9.311-B) — antes de plugar feature em "Terminal X", verificar empíricamente qual componente a rota renderiza. ClinicalTerminal (órfão) ≠ IntegratedWorkstation (vivo) — ambos com "Terminal" no contexto. Bug consumiu 1 ciclo Pedro pra detectar.
 
-8. **Memória "Clinical Cockpit Mode"** (`feedback_clinical_cockpit_cor_por_estado_16_05.md`) — cor por ESTADO clínico, não por feature. Trigger pra migrar pro modo cockpit completo: Sprint 1 medido OU Ricardo/Eduardo pedirem OU onboarding mostrar atrito.
+7. **Audit empírico ANTES de codar** (V1.9.312 timeline) — descobriu 15 tabelas log + 5 RPCs admin já prontas no banco antes de inventar feature nova. Reaproveitamento via Promise.all client-side > migration nova. Princípio: backend frequentemente já tem 80% do que parece "feature nova".
+
+8. **Drift NefroCannabis cristalizado** (memória `project_drift_nefro_cannabis_16_05.md`) — auditoria 22 sinais empíricos: 10 nefro / 7 cannabis / 5 híbridos. Produto está em "infraestrutura clínica geral + validação profunda em NefroCannabis". Vertical-first é trajetória clássica de produtos clínicos sérios, não fraqueza.
+
+### Da tarde PBAD AD-RB (V1.9.299 V6→V12)
+
+9. **DOC-ICP-15.03 ≠ RFC 5035** — Brasil promove campos OPTIONAL do RFC a OBRIGATÓRIOS. Validador ITI aplica regra brasileira estritamente. Implementação só com base no padrão internacional falha silenciosamente como "desconhecida".
+
+10. **`forge.pkcs7` não DER-canonicaliza SET OF** — bug conhecido da biblioteca. Implementações PBAD precisam sortar manualmente antes de hash + serialização. ITI valida rigorosamente — sem isso = "desconhecida".
+
+11. **Auditoria estrutural empírica (openssl asn1parse + Adobe Reader) > especulação** — 7 iterações V6→V12 só funcionaram porque cada falha foi auditada nos bytes reais. PKCS#7 dentro PDF tem encoding camuflado (hex-uppercase de ASCII-hex). Adobe Reader foi mais loquaz que ITI no diagnóstico crítico ("SigDict /Contents illegal data" destravou V11).
+
+12. **Hash literal vs calculado** (lição V12) — RFCs frequentemente deixam OPTIONAL o que padrão regulatório brasileiro promove a OBRIGATÓRIO. Sempre verificar se valor existe **declarado** no artefato regulatório (PA, certificate extension) antes de calcular externamente. RFC 3125 `signPolicyHash OPTIONAL OCTET STRING` declara internamente — usar valor literal, não calcular.
+
+13. **5 iterações com mesmo erro vago = parar técnico** (princípio cristalizado às 15h pré-V11) — buscar diagnóstico explícito antes de continuar. Disciplina anti-chute economizou ciclos quando produção ITI quebrou na tarde. Pedro endossou: *"a decisão de parar de chutar até ver o Completo está correta"*.
+
+14. **Anti-overclaim antes da validação técnica fechar** (V10) — invocar leis ("MP 2.200-2", "Lei 14.063", "CFM 2.314") + prometer garantia jurídica num PDF que validar.iti.gov.br ainda rejeita = sobre-promessa que vira passivo se alguém auditar. Descrever fato técnico (vinculação ASN.1 ao cert ICP) > prometer conformidade regulatória.
 
 ---
 
 ## 🤝 Quem fez o quê hoje
 
-- **Pedro (CTO)**: decisões arquiteturais (sidecar paralelo Maria, RAG híbrido com blindagem AEC, layout compacto, calibrações textuais V10), bridge WhatsApp ↔ Ricardo, validação visual UI, identificação de overclaim, princípio Clinical Cockpit Mode
-- **Claude Opus 4.7**: implementação V1.9.307 (sidecar full stack) + V1.9.308 (RAG) + V1.9.309 (UI) + V7→V10 sign-pdf-icp + auditoria openssl + extração PA AD-RB v2.4 hash + memória clinical cockpit
-- **Ricardo (sócio clínico)**: trigger investigação Maria das Dores ("Nôa comeu a parte mais importante") + smoke ITI V7 + V8 ❌ + (pendente V10)
-- **GPT-5 externo**: validação 8 salvaguardas sidecar renal + revisão pós-V8 falha (chain trust vs DER ordering) + revisão visual PDF V9 (overclaim)
+- **Pedro (CTO)**: orquestração completa do dia, decisões arquiteturais (sidecar paralelo Maria, RAG híbrido com blindagem AEC, layout compacto, calibrações textuais V10, B-lite consent NFT, timeline (B) > drill-down (A), Opção A admin = back office), bridge WhatsApp ↔ Ricardo, validação visual UI, identificação de overclaim, princípio Clinical Cockpit Mode, **disciplina anti-chute às 15h** (recusou V11 sem diagnóstico), pediu o Completo do Ricardo, conseguiu o print do Adobe que destravou tudo, autorizou cadeado V1.9.299 final
+- **Claude Opus 4.7**: implementação técnica V1.9.307→V1.9.312 (sidecar renal full stack + RAG + UI compacta + Clinical Cockpit nos 3 dashboards + NFT consent migration+UI dupla + System Activity Timeline + 7 iterações sign-pdf-icp V6→V12) + auditoria empírica openssl asn1parse + extração PA AD-RB v2.4 hash (V8 errado + V12 correto literal) + descoberta bug ByteRange off-by-2 + 8 memórias documentando jornada + fechamento cadeado
+- **Ricardo (sócio clínico)**: smoke ITI 7 versões (V5→V12) via WhatsApp, sem reclamar; print do Adobe Reader (V11 destravado: "SigDict /Contents illegal data"); print do ITI Completo (V12 destravado: "IdAaEtsSigPolicyId Invalid"); trigger investigação Maria das Dores manhã ("Nôa comeu a parte mais importante")
+- **João Eduardo Vidal (sócio)**: confirmação institucional ao final ("parabéns")
+- **GPT-5 externo**: validação 8 salvaguardas sidecar renal + revisão pós-V8 falha (chain trust vs DER ordering) + revisão visual PDF V9 (overclaim) + análise dashboard cores (cor por estado) + B-lite consent semântica (3 ressalvas) + síntese fim de dia validando arquitetura
+- **Adobe Reader**: parser strict que diagnosticou o que ITI escondia ("SigDict /Contents illegal data" revelou bug ByteRange existente desde V6)
+- **ITI Completo (validar.iti.gov.br)**: diagnóstico cirúrgico V11→V12 ("IdAaEtsSigPolicyId Invalid — valor do resumo criptográfico não equivalente ao esperado")
 - **Maria das Dores Pinto Pitoco (paciente)**: trigger empírico que destravou V1.9.307 (não testar — paciente real, mas dados validaram pipeline E2E retrofix)
 
 ---
