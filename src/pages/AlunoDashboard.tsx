@@ -1059,13 +1059,19 @@ const AlunoDashboard: React.FC = () => {
                     <h2 className="text-lg md:text-xl font-semibold text-white">O que você quer fazer agora?</h2>
                     <p className="text-slate-400 text-sm">Ações rápidas da sua jornada de aprendizado.</p>
                   </div>
+                  {/*
+                    V1.9.310 (16/05/2026) — Clinical Cockpit Mode: cor por ESTADO, não feature.
+                    Ação primária do papel Aluno = Estudar Curso (emerald). Demais neutros
+                    com ícone emerald sutil. Fórum mantém amber suave como único accent
+                    secundário (módulo de natureza diferente: comunidade vs estudo).
+                  */}
                   <div className="grid grid-cols-3 gap-2 md:flex md:flex-wrap md:gap-3">
-                    {/* Estudar Curso (curso ativo) */}
+                    {/* Estudar Curso (ação primária do dia) */}
                     <button
                       onClick={() => mainCourse?.id && navigate(`/app/courses/${mainCourse.id}`)}
                       title="Continuar estudando o curso ativo"
                       aria-label="Estudar curso ativo"
-                      className="flex flex-col items-center justify-center gap-1 aspect-[5/4] md:aspect-auto md:flex-row md:gap-2 md:px-5 md:py-3 bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 border border-emerald-500/30 rounded-xl text-[11px] leading-tight md:text-base font-medium transition-all shadow-[0_0_15px_rgba(16,185,129,0.25)] hover:shadow-[0_0_20px_rgba(16,185,129,0.45)] animate-pulse text-center md:text-left"
+                      className="flex flex-col items-center justify-center gap-1 aspect-[5/4] md:aspect-auto md:flex-row md:gap-2 md:px-5 md:py-3 bg-emerald-500/10 text-emerald-300 hover:bg-emerald-500/20 border border-emerald-500/30 rounded-xl text-[11px] leading-tight md:text-base font-medium transition-colors text-center md:text-left"
                     >
                       <GraduationCap className="w-5 h-5" />
                       <span>Estudar<br className="md:hidden" /> Curso</span>
@@ -1075,9 +1081,9 @@ const AlunoDashboard: React.FC = () => {
                       onClick={() => setActiveTab('simulacoes')}
                       title="Simulação clínica com pacientes virtuais"
                       aria-label="Simulação clínica"
-                      className="flex flex-col items-center justify-center gap-1 aspect-[5/4] md:aspect-auto md:flex-row md:gap-2 md:px-5 md:py-3 bg-blue-500/10 text-blue-400 hover:bg-blue-500/20 border border-blue-500/30 rounded-xl text-[11px] leading-tight md:text-base font-medium transition-colors text-center md:text-left"
+                      className="flex flex-col items-center justify-center gap-1 aspect-[5/4] md:aspect-auto md:flex-row md:gap-2 md:px-5 md:py-3 bg-slate-800/40 text-slate-200 hover:bg-slate-700/60 border border-slate-700/50 rounded-xl text-[11px] leading-tight md:text-base font-medium transition-colors text-center md:text-left"
                     >
-                      <Stethoscope className="w-5 h-5" />
+                      <Stethoscope className="w-5 h-5 text-emerald-400" />
                       <span>Simulação<br className="md:hidden" /> Clínica</span>
                     </button>
                     {/* Teste de Nivelamento */}
@@ -1085,9 +1091,9 @@ const AlunoDashboard: React.FC = () => {
                       onClick={() => setActiveTab('teste')}
                       title="Teste de nivelamento adaptativo (20 questões)"
                       aria-label="Teste de nivelamento"
-                      className="flex flex-col items-center justify-center gap-1 aspect-[5/4] md:aspect-auto md:flex-row md:gap-2 md:px-5 md:py-3 bg-purple-500/10 text-purple-400 hover:bg-purple-500/20 border border-purple-500/30 rounded-xl text-[11px] leading-tight md:text-base font-medium transition-colors text-center md:text-left"
+                      className="flex flex-col items-center justify-center gap-1 aspect-[5/4] md:aspect-auto md:flex-row md:gap-2 md:px-5 md:py-3 bg-slate-800/40 text-slate-200 hover:bg-slate-700/60 border border-slate-700/50 rounded-xl text-[11px] leading-tight md:text-base font-medium transition-colors text-center md:text-left"
                     >
-                      <Trophy className="w-5 h-5" />
+                      <Trophy className="w-5 h-5 text-emerald-400" />
                       <span>Teste<br className="md:hidden" /> Nivelamento</span>
                     </button>
                     {/* Biblioteca */}
@@ -1095,17 +1101,17 @@ const AlunoDashboard: React.FC = () => {
                       onClick={() => setActiveTab('biblioteca')}
                       title="Biblioteca de materiais do curso"
                       aria-label="Biblioteca"
-                      className="flex flex-col items-center justify-center gap-1 aspect-[5/4] md:aspect-auto md:flex-row md:gap-2 md:px-5 md:py-3 bg-cyan-500/10 text-cyan-400 hover:bg-cyan-500/20 border border-cyan-500/30 rounded-xl text-[11px] leading-tight md:text-base font-medium transition-colors text-center md:text-left"
+                      className="flex flex-col items-center justify-center gap-1 aspect-[5/4] md:aspect-auto md:flex-row md:gap-2 md:px-5 md:py-3 bg-slate-800/40 text-slate-200 hover:bg-slate-700/60 border border-slate-700/50 rounded-xl text-[11px] leading-tight md:text-base font-medium transition-colors text-center md:text-left"
                     >
-                      <BookOpen className="w-5 h-5" />
+                      <BookOpen className="w-5 h-5 text-emerald-400" />
                       <span>Biblioteca</span>
                     </button>
-                    {/* Fórum */}
+                    {/* Fórum — único accent contextual (comunidade vs estudo) */}
                     <button
                       onClick={() => setActiveTab('forum')}
                       title="Fórum de discussão entre alunos"
                       aria-label="Fórum aluno"
-                      className="flex flex-col items-center justify-center gap-1 aspect-[5/4] md:aspect-auto md:flex-row md:gap-2 md:px-5 md:py-3 bg-amber-500/10 text-amber-400 hover:bg-amber-500/20 border border-amber-500/30 rounded-xl text-[11px] leading-tight md:text-base font-medium transition-colors text-center md:text-left"
+                      className="flex flex-col items-center justify-center gap-1 aspect-[5/4] md:aspect-auto md:flex-row md:gap-2 md:px-5 md:py-3 bg-amber-500/5 text-amber-300/90 hover:bg-amber-500/10 border border-amber-500/20 rounded-xl text-[11px] leading-tight md:text-base font-medium transition-colors text-center md:text-left"
                     >
                       <MessageCircle className="w-5 h-5" />
                       <span>Fórum<br className="md:hidden" /> Aluno</span>
@@ -1115,9 +1121,9 @@ const AlunoDashboard: React.FC = () => {
                       onClick={() => setActiveTab('perfil')}
                       title="Meu perfil + certificações"
                       aria-label="Meu perfil"
-                      className="flex flex-col items-center justify-center gap-1 aspect-[5/4] md:aspect-auto md:flex-row md:gap-2 md:px-5 md:py-3 bg-indigo-500/10 text-indigo-400 hover:bg-indigo-500/20 border border-indigo-500/30 rounded-xl text-[11px] leading-tight md:text-base font-medium transition-colors text-center md:text-left"
+                      className="flex flex-col items-center justify-center gap-1 aspect-[5/4] md:aspect-auto md:flex-row md:gap-2 md:px-5 md:py-3 bg-slate-800/40 text-slate-200 hover:bg-slate-700/60 border border-slate-700/50 rounded-xl text-[11px] leading-tight md:text-base font-medium transition-colors text-center md:text-left"
                     >
-                      <User className="w-5 h-5" />
+                      <User className="w-5 h-5 text-emerald-400" />
                       <span>Meu<br className="md:hidden" /> Perfil</span>
                     </button>
                   </div>

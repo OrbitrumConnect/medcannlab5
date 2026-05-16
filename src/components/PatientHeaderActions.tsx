@@ -115,13 +115,19 @@ const PatientHeaderActions: React.FC<PatientHeaderActionsProps> = ({
                     <h2 className="text-base md:text-lg font-semibold text-white">O que você quer fazer agora?</h2>
                     <p className="text-slate-400 text-xs md:text-sm">Ações rápidas para sua jornada clínica.</p>
                 </div>
-                {/* [V1.9.130-A] Mobile: grid 3 colunas com ícones quadrados | Desktop (md+): flex horizontal */}
+                {/*
+                  V1.9.310 (16/05/2026) — Clinical Cockpit Mode aplicado ao paciente.
+                  Agendar Consulta = ação primária emerald (sem glow/pulse). Demais slate
+                  neutro + ícone emerald. WhatsApp mantém verde marca (#25D366) como único
+                  accent — convenção visual universal reconhecível, mesma lógica do Cann
+                  Matrix âmbar no Professional / Fórum no Aluno.
+                */}
                 <div className="grid grid-cols-3 gap-2 md:flex md:flex-wrap md:gap-3">
-                    {/* Agendar Consulta */}
+                    {/* Agendar Consulta (ação primária) */}
                     <button
                         onClick={onScheduleClick}
                         title="Agendar consulta"
-                        className="flex flex-col items-center justify-center gap-1 aspect-[5/4] md:aspect-auto md:flex-row md:gap-2 md:px-5 md:py-3 bg-blue-500/10 text-blue-400 hover:bg-blue-500/20 border border-blue-500/20 rounded-xl text-[11px] leading-tight md:text-base font-medium transition-all shadow-[0_0_15px_rgba(59,130,246,0.3)] hover:shadow-[0_0_20px_rgba(59,130,246,0.5)] animate-pulse text-center md:text-left"
+                        className="flex flex-col items-center justify-center gap-1 aspect-[5/4] md:aspect-auto md:flex-row md:gap-2 md:px-5 md:py-3 bg-emerald-500/10 text-emerald-300 hover:bg-emerald-500/20 border border-emerald-500/30 rounded-xl text-[11px] leading-tight md:text-base font-medium transition-colors text-center md:text-left"
                     >
                         <Calendar className="w-5 h-5" />
                         <span>Agendar<br className="md:hidden" /> Consulta</span>
@@ -133,9 +139,9 @@ const PatientHeaderActions: React.FC<PatientHeaderActionsProps> = ({
                     <button
                         onClick={onOpenReports ?? handleOpenDoctorSelect}
                         title={onOpenReports ? 'Abrir meus relatórios para revisar e enviar' : 'Enviar relatório para médico'}
-                        className="flex flex-col items-center justify-center gap-1 aspect-[5/4] md:aspect-auto md:flex-row md:gap-2 md:px-5 md:py-3 bg-blue-500/10 text-blue-400 hover:bg-blue-500/20 border border-blue-500/20 rounded-xl text-[11px] leading-tight md:text-base font-medium transition-colors text-center md:text-left"
+                        className="flex flex-col items-center justify-center gap-1 aspect-[5/4] md:aspect-auto md:flex-row md:gap-2 md:px-5 md:py-3 bg-slate-800/40 text-slate-200 hover:bg-slate-700/60 border border-slate-700/50 rounded-xl text-[11px] leading-tight md:text-base font-medium transition-colors text-center md:text-left"
                     >
-                        <FileText className="w-5 h-5" />
+                        <FileText className="w-5 h-5 text-emerald-400" />
                         <span>Enviar<br className="md:hidden" /> Médico</span>
                     </button>
                     {/* Iniciar Avaliação */}
@@ -143,9 +149,9 @@ const PatientHeaderActions: React.FC<PatientHeaderActionsProps> = ({
                         <button
                             onClick={onStartAssessment}
                             title="Iniciar avaliação clínica"
-                            className="flex flex-col items-center justify-center gap-1 aspect-[5/4] md:aspect-auto md:flex-row md:gap-2 md:px-5 md:py-3 bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 border border-emerald-500/30 rounded-xl text-[11px] leading-tight md:text-base font-medium transition-colors text-center md:text-left"
+                            className="flex flex-col items-center justify-center gap-1 aspect-[5/4] md:aspect-auto md:flex-row md:gap-2 md:px-5 md:py-3 bg-slate-800/40 text-slate-200 hover:bg-slate-700/60 border border-slate-700/50 rounded-xl text-[11px] leading-tight md:text-base font-medium transition-colors text-center md:text-left"
                         >
-                            <Brain className="w-5 h-5" />
+                            <Brain className="w-5 h-5 text-emerald-400" />
                             <span>Iniciar<br className="md:hidden" /> Avaliação</span>
                         </button>
                     )}
@@ -153,21 +159,21 @@ const PatientHeaderActions: React.FC<PatientHeaderActionsProps> = ({
                     <button
                         onClick={() => navigate('/app/clinica/paciente/chat-profissional')}
                         title="Canal de Atendimento (chat + videoconsulta)"
-                        className="flex flex-col items-center justify-center gap-1 aspect-[5/4] md:aspect-auto md:flex-row md:gap-2 md:px-5 md:py-3 bg-purple-500/10 text-purple-400 hover:bg-purple-500/20 border border-purple-500/20 rounded-xl text-[11px] leading-tight md:text-base font-medium transition-colors text-center md:text-left"
+                        className="flex flex-col items-center justify-center gap-1 aspect-[5/4] md:aspect-auto md:flex-row md:gap-2 md:px-5 md:py-3 bg-slate-800/40 text-slate-200 hover:bg-slate-700/60 border border-slate-700/50 rounded-xl text-[11px] leading-tight md:text-base font-medium transition-colors text-center md:text-left"
                     >
-                        <MessageCircle className="w-5 h-5" />
+                        <MessageCircle className="w-5 h-5 text-emerald-400" />
                         <span>Canal<br className="md:hidden" /> Atendimento</span>
                     </button>
                     {/* Vincular Médico */}
                     <button
                         onClick={() => navigate('/app/clinica/paciente/agendamentos')}
                         title="Vincular-se a um médico"
-                        className="flex flex-col items-center justify-center gap-1 aspect-[5/4] md:aspect-auto md:flex-row md:gap-2 md:px-5 md:py-3 bg-indigo-500/10 text-indigo-400 hover:bg-indigo-500/20 border border-indigo-500/20 rounded-xl text-[11px] leading-tight md:text-base font-medium transition-colors text-center md:text-left"
+                        className="flex flex-col items-center justify-center gap-1 aspect-[5/4] md:aspect-auto md:flex-row md:gap-2 md:px-5 md:py-3 bg-slate-800/40 text-slate-200 hover:bg-slate-700/60 border border-slate-700/50 rounded-xl text-[11px] leading-tight md:text-base font-medium transition-colors text-center md:text-left"
                     >
-                        <UserPlus className="w-5 h-5" />
+                        <UserPlus className="w-5 h-5 text-emerald-400" />
                         <span>Vincular<br className="md:hidden" /> Médico</span>
                     </button>
-                    {/* WhatsApp */}
+                    {/* WhatsApp — única exceção (cor de marca universal reconhecível) */}
                     <button
                         onClick={handleWhatsApp}
                         title="Compartilhar via WhatsApp"
