@@ -124,23 +124,45 @@ const RichClinicalReportView: React.FC<RichClinicalReportViewProps> = ({ content
             {dev.inicio && (
               <p><span className="text-slate-400">Início:</span> {strip(dev.inicio)}</p>
             )}
+            {/* V1.9.305 — múltiplos sintomas/fatores em bullet (antes join vírgula virava texto corrido) */}
             {Array.isArray(dev.sintomas_associados) && dev.sintomas_associados.length > 0 && (
-              <p>
-                <span className="text-slate-400">Sintomas Associados:</span>{' '}
-                {stripList(dev.sintomas_associados).join(', ')}
-              </p>
+              <div>
+                <span className="text-slate-400">Sintomas Associados:</span>
+                <ul className="ml-3 mt-0.5 space-y-0.5">
+                  {stripList(dev.sintomas_associados).map((s: string, i: number) => (
+                    <li key={i} className="flex items-start space-x-2">
+                      <span className="text-slate-500 mt-0.5">•</span>
+                      <span>{s}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
             )}
             {Array.isArray(dev.fatores_melhora) && dev.fatores_melhora.length > 0 && (
-              <p>
-                <span className="text-green-400">▲ Melhora:</span>{' '}
-                {stripList(dev.fatores_melhora).join(', ')}
-              </p>
+              <div>
+                <span className="text-green-400">▲ Melhora:</span>
+                <ul className="ml-3 mt-0.5 space-y-0.5">
+                  {stripList(dev.fatores_melhora).map((s: string, i: number) => (
+                    <li key={i} className="flex items-start space-x-2">
+                      <span className="text-green-500/60 mt-0.5">•</span>
+                      <span>{s}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
             )}
             {Array.isArray(dev.fatores_piora) && dev.fatores_piora.length > 0 && (
-              <p>
-                <span className="text-red-400">▼ Piora:</span>{' '}
-                {stripList(dev.fatores_piora).join(', ')}
-              </p>
+              <div>
+                <span className="text-red-400">▼ Piora:</span>
+                <ul className="ml-3 mt-0.5 space-y-0.5">
+                  {stripList(dev.fatores_piora).map((s: string, i: number) => (
+                    <li key={i} className="flex items-start space-x-2">
+                      <span className="text-red-500/60 mt-0.5">•</span>
+                      <span>{s}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
             )}
           </div>
         </div>
@@ -154,23 +176,65 @@ const RichClinicalReportView: React.FC<RichClinicalReportViewProps> = ({ content
           não renderizamos mais visualmente. */}
 
       {/* História Patológica Pregressa */}
+      {/* V1.9.305 — itens em bullet list (antes era join(', ') que virava texto
+          corrido de 1500+ chars quando tinham >5 doenças crônicas. Caso Maria
+          16/05: 13 itens incluindo DRC + cardiopatia + polimialgia ficavam
+          ilegíveis. Pedro identificou empíricamente. */}
       {hpp.length > 0 && (
         <div className="border-l-2 border-orange-500/50 pl-3">
-          <strong className="text-orange-400 text-xs uppercase tracking-wider">História Patológica Pregressa</strong>
-          <p className="mt-1">{stripList(hpp).join(', ')}</p>
+          <strong className="text-orange-400 text-xs uppercase tracking-wider">
+            História Patológica Pregressa ({hpp.length})
+          </strong>
+          <ul className="mt-1 space-y-1">
+            {stripList(hpp).map((item: string, i: number) => (
+              <li key={i} className="flex items-start space-x-2">
+                <span className="text-orange-400 mt-0.5">•</span>
+                <span>{item}</span>
+              </li>
+            ))}
+          </ul>
         </div>
       )}
 
       {/* História Familiar */}
+      {/* V1.9.305 — bullet quando >1 item por lado (antes vírgula concatenada) */}
       {(matSide.length > 0 || patSide.length > 0) && (
         <div className="border-l-2 border-pink-500/50 pl-3">
           <strong className="text-pink-400 text-xs uppercase tracking-wider">História Familiar</strong>
-          <div className="mt-1 space-y-1">
+          <div className="mt-1 space-y-2">
             {matSide.length > 0 && (
-              <p><span className="text-slate-400">Materno:</span> {stripList(matSide).join(', ')}</p>
+              <div>
+                <span className="text-slate-400">Materno:</span>
+                {matSide.length === 1 ? (
+                  <span> {stripList(matSide)[0]}</span>
+                ) : (
+                  <ul className="ml-3 mt-0.5 space-y-0.5">
+                    {stripList(matSide).map((s: string, i: number) => (
+                      <li key={i} className="flex items-start space-x-2">
+                        <span className="text-pink-500/60 mt-0.5">•</span>
+                        <span>{s}</span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
             )}
             {patSide.length > 0 && (
-              <p><span className="text-slate-400">Paterno:</span> {stripList(patSide).join(', ')}</p>
+              <div>
+                <span className="text-slate-400">Paterno:</span>
+                {patSide.length === 1 ? (
+                  <span> {stripList(patSide)[0]}</span>
+                ) : (
+                  <ul className="ml-3 mt-0.5 space-y-0.5">
+                    {stripList(patSide).map((s: string, i: number) => (
+                      <li key={i} className="flex items-start space-x-2">
+                        <span className="text-pink-500/60 mt-0.5">•</span>
+                        <span>{s}</span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
             )}
           </div>
         </div>

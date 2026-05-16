@@ -1567,26 +1567,48 @@ const ClinicalReports: React.FC<ClinicalReportsProps> = ({ className = '', onSha
                               {stripClinical(selectedReport.rawContent.desenvolvimento_queixa.inicio)}
                             </p>
                           )}
+                          {/* V1.9.305 — bullet list pra listas longas (antes vírgula concatenada virava texto corrido) */}
                           {Array.isArray(selectedReport.rawContent.desenvolvimento_queixa.sintomas_associados) &&
                             selectedReport.rawContent.desenvolvimento_queixa.sintomas_associados.length > 0 && (
-                            <p>
-                              <span className="text-slate-400">Sintomas Associados:</span>{' '}
-                              {stripClinicalList(selectedReport.rawContent.desenvolvimento_queixa.sintomas_associados).join(', ')}
-                            </p>
+                            <div>
+                              <span className="text-slate-400">Sintomas Associados:</span>
+                              <ul className="ml-3 mt-0.5 space-y-0.5">
+                                {stripClinicalList(selectedReport.rawContent.desenvolvimento_queixa.sintomas_associados).map((s: string, i: number) => (
+                                  <li key={i} className="flex items-start space-x-2">
+                                    <span className="text-slate-500 mt-0.5">•</span>
+                                    <span>{s}</span>
+                                  </li>
+                                ))}
+                              </ul>
+                            </div>
                           )}
                           {Array.isArray(selectedReport.rawContent.desenvolvimento_queixa.fatores_melhora) &&
                             selectedReport.rawContent.desenvolvimento_queixa.fatores_melhora.length > 0 && (
-                            <p>
-                              <span className="text-green-400">▲ Melhora:</span>{' '}
-                              {stripClinicalList(selectedReport.rawContent.desenvolvimento_queixa.fatores_melhora).join(', ')}
-                            </p>
+                            <div>
+                              <span className="text-green-400">▲ Melhora:</span>
+                              <ul className="ml-3 mt-0.5 space-y-0.5">
+                                {stripClinicalList(selectedReport.rawContent.desenvolvimento_queixa.fatores_melhora).map((s: string, i: number) => (
+                                  <li key={i} className="flex items-start space-x-2">
+                                    <span className="text-green-500/60 mt-0.5">•</span>
+                                    <span>{s}</span>
+                                  </li>
+                                ))}
+                              </ul>
+                            </div>
                           )}
                           {Array.isArray(selectedReport.rawContent.desenvolvimento_queixa.fatores_piora) &&
                             selectedReport.rawContent.desenvolvimento_queixa.fatores_piora.length > 0 && (
-                            <p>
-                              <span className="text-red-400">▼ Piora:</span>{' '}
-                              {stripClinicalList(selectedReport.rawContent.desenvolvimento_queixa.fatores_piora).join(', ')}
-                            </p>
+                            <div>
+                              <span className="text-red-400">▼ Piora:</span>
+                              <ul className="ml-3 mt-0.5 space-y-0.5">
+                                {stripClinicalList(selectedReport.rawContent.desenvolvimento_queixa.fatores_piora).map((s: string, i: number) => (
+                                  <li key={i} className="flex items-start space-x-2">
+                                    <span className="text-red-500/60 mt-0.5">•</span>
+                                    <span>{s}</span>
+                                  </li>
+                                ))}
+                              </ul>
+                            </div>
                           )}
                         </div>
                       </div>
@@ -1598,34 +1620,65 @@ const ClinicalReports: React.FC<ClinicalReportsProps> = ({ className = '', onSha
                         Memory: feedback_dry_run_mental + project_v1_9_303. */}
 
                     {/* História Patológica Pregressa (AEC Etapa 5) */}
+                    {/* V1.9.305 — bullet list (caso Maria 16/05: 13 itens longos viravam texto corrido) */}
                     {selectedReport.rawContent?.historia_patologica_pregressa && Array.isArray(selectedReport.rawContent.historia_patologica_pregressa) && selectedReport.rawContent.historia_patologica_pregressa.length > 0 && (
                       <div className="border-l-2 border-orange-500/50 pl-3">
-                        <strong className="text-orange-400 text-xs uppercase tracking-wider">História Patológica Pregressa</strong>
-                        <p className="mt-1">
-                          {stripClinicalList(selectedReport.rawContent.historia_patologica_pregressa).join(', ')}
-                        </p>
+                        <strong className="text-orange-400 text-xs uppercase tracking-wider">
+                          História Patológica Pregressa ({selectedReport.rawContent.historia_patologica_pregressa.length})
+                        </strong>
+                        <ul className="mt-1 space-y-1">
+                          {stripClinicalList(selectedReport.rawContent.historia_patologica_pregressa).map((item: string, i: number) => (
+                            <li key={i} className="flex items-start space-x-2">
+                              <span className="text-orange-400 mt-0.5">•</span>
+                              <span>{item}</span>
+                            </li>
+                          ))}
+                        </ul>
                       </div>
                     )}
 
                     {/* História Familiar */}
+                    {/* V1.9.305 — bullet quando >1 item por lado */}
                     {selectedReport.rawContent?.historia_familiar && (
                       (Array.isArray(selectedReport.rawContent.historia_familiar.lado_materno) && selectedReport.rawContent.historia_familiar.lado_materno.length > 0) ||
                       (Array.isArray(selectedReport.rawContent.historia_familiar.lado_paterno) && selectedReport.rawContent.historia_familiar.lado_paterno.length > 0)
                     ) && (
                       <div className="border-l-2 border-pink-500/50 pl-3">
                         <strong className="text-pink-400 text-xs uppercase tracking-wider">História Familiar</strong>
-                        <div className="mt-1 space-y-1">
+                        <div className="mt-1 space-y-2">
                           {selectedReport.rawContent.historia_familiar.lado_materno?.length > 0 && (
-                            <p>
-                              <span className="text-slate-400">Materno:</span>{' '}
-                              {stripClinicalList(selectedReport.rawContent.historia_familiar.lado_materno).join(', ')}
-                            </p>
+                            <div>
+                              <span className="text-slate-400">Materno:</span>
+                              {selectedReport.rawContent.historia_familiar.lado_materno.length === 1 ? (
+                                <span> {stripClinicalList(selectedReport.rawContent.historia_familiar.lado_materno)[0]}</span>
+                              ) : (
+                                <ul className="ml-3 mt-0.5 space-y-0.5">
+                                  {stripClinicalList(selectedReport.rawContent.historia_familiar.lado_materno).map((s: string, i: number) => (
+                                    <li key={i} className="flex items-start space-x-2">
+                                      <span className="text-pink-500/60 mt-0.5">•</span>
+                                      <span>{s}</span>
+                                    </li>
+                                  ))}
+                                </ul>
+                              )}
+                            </div>
                           )}
                           {selectedReport.rawContent.historia_familiar.lado_paterno?.length > 0 && (
-                            <p>
-                              <span className="text-slate-400">Paterno:</span>{' '}
-                              {stripClinicalList(selectedReport.rawContent.historia_familiar.lado_paterno).join(', ')}
-                            </p>
+                            <div>
+                              <span className="text-slate-400">Paterno:</span>
+                              {selectedReport.rawContent.historia_familiar.lado_paterno.length === 1 ? (
+                                <span> {stripClinicalList(selectedReport.rawContent.historia_familiar.lado_paterno)[0]}</span>
+                              ) : (
+                                <ul className="ml-3 mt-0.5 space-y-0.5">
+                                  {stripClinicalList(selectedReport.rawContent.historia_familiar.lado_paterno).map((s: string, i: number) => (
+                                    <li key={i} className="flex items-start space-x-2">
+                                      <span className="text-pink-500/60 mt-0.5">•</span>
+                                      <span>{s}</span>
+                                    </li>
+                                  ))}
+                                </ul>
+                              )}
+                            </div>
                           )}
                         </div>
                       </div>
