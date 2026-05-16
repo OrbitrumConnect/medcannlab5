@@ -33,6 +33,7 @@ import {
 } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { notificationService } from '../services/notificationService'
+import SystemActivityTimeline from '../components/SystemActivityTimeline'
 
 // --- Types ---
 type Domain = 'todos' | 'cannabis' | 'nefrologia'
@@ -546,6 +547,15 @@ export default function ClinicalGovernanceAdmin() {
                     </div>
                 )}
             </SpaceCard>
+
+            {/*
+              V1.9.312 — Timeline unificada de atividade do sistema.
+              "Radar empírico" pré-PMF: sentir pulso do sistema > investigar caso a caso.
+              Reaproveita 3 RPCs/tabelas existentes via Promise.all (sem migration).
+              Cores por ESTADO clínico (Clinical Cockpit Mode), não por feature.
+              Drill-down (A) parqueado pra pós-PMF quando volume justificar.
+            */}
+            <SystemActivityTimeline />
         </div>
     )
 }
