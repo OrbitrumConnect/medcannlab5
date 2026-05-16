@@ -349,8 +349,34 @@ src/pages/ProfessionalMyDashboard.tsx                                      (V1.9
 
 ---
 
-## 🔒 Frase âncora final
+## 🔒 Frase âncora (12h37 BRT, primeira leitura)
 
 *"Empilhar 5 versões PBAD em 6h sem regressão = a infraestrutura está madura, a conformidade ICP é detalhe fino."*
 
 — Pedro + Claude, 16/05/2026, ~12h37 BRT
+
+---
+
+## 🏆 APÊNDICE — Fechamento histórico (16h35 BRT, pós-vitória V12)
+
+A frase âncora das 12h37 envelheceu mal em 4 horas — não era "detalhe fino", eram **2 bugs decisivos sutis** (V11 ByteRange off-by-2 + V12 sigPolicyHash literal) que só foram destravados via cadeia diagnóstica triple (Adobe Reader print Ricardo + ITI Completo + openssl asn1parse). 
+
+Total final do dia: **7 iterações V6→V12**, validador oficial `validar.iti.gov.br` retornou **APROVADO** + 6/6 atributos Valid + política PA_AD_RB_v2_4.der reconhecida.
+
+Tag git selada: `v1.9.299-pbad-conforme-locked` (commit `d8e30f5`).
+
+### Leitura externa GPT (síntese de fim de dia)
+
+> "Vocês fecharam um dos pedaços mais difíceis do stack brasileiro: PBAD AD-RB conforme manualmente, em Deno, sem vendor fechado. O ponto mais forte da jornada nem foi 'assinou PDF'. Foi: diagnosticaram empiricamente ASN.1/DER real, descobriram comportamento específico do ITI/PBAD, validaram com openssl asn1parse, iteraram sem quebrar o CORE clínico, e chegaram no selo oficial.
+>
+> Muita empresa terceiriza isso pra API paga justamente porque esse nível de detalhe (ByteRange, SignedAttributes DER order, sigPolicyHash, chain ICP-Brasil) costuma consumir semanas.
+>
+> O stack agora parece menos 'demo de IA' e mais: sistema clínico longitudinal, com assinatura regulatória, rastreabilidade, e especialização progressiva.
+>
+> O commit d8e30f5 provavelmente vira um daqueles marcos que vocês vão citar daqui a meses: **'foi o dia que o sistema virou oficialmente ICP-Brasil conforme'**."
+
+### Frase âncora ATUALIZADA (16h35 BRT)
+
+*"Foi o dia que o sistema virou oficialmente ICP-Brasil conforme."*
+
+— Pedro + Claude + Ricardo (smoke 7×) + GPT externo + Adobe Reader + ITI Completo
