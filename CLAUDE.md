@@ -6,7 +6,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **MedCannLab 3.0** — HealthTech/EdTech de Cannabis Medicinal com IA Nôa Esperança. Arquitetura por 3 eixos: **Clínica** (AEC + Relatório + Agendamento), **Ensino** (cursos + TRL), **Pesquisa** (forum + casos clínicos). Sistema cognitivo de 8 camadas onde **GPT é o último a falar e o primeiro a ser checado**.
 
-**Estado atual** (02/05/2026): **Lock V1.9.95+V1.9.97+V1.9.98+V1.9.99-B** em AEC + Pipeline + Agendamento + Resend prod + Storage RLS. Tag git mais recente: `v1.9.113-locked` (selo AEC + Pipeline + Analisar Paciente estável). Tag anterior: `v1.9.99-resend-prod-locked`. Pré-PMF (zero pacientes externos pagantes; testes internos com Pedro/Dr. Ricardo/Carolina).
+**Estado atual** (16/05/2026): **Lock V1.9.95+V1.9.97+V1.9.98+V1.9.99-B+V1.9.299** em AEC + Pipeline + Agendamento + Resend prod + Storage RLS + **PBAD AD-RB ICP-Brasil CONFORME** (edge sign-pdf-icp validado oficialmente em validar.iti.gov.br como APROVADO em 16/05 16h31 BRT após 7 iterações V6→V12). Tag git mais recente: `v1.9.299-pbad-conforme-locked` (commit d8e30f5). Tags anteriores: `v1.9.113-locked`, `v1.9.99-resend-prod-locked`. Pré-PMF (zero pacientes externos pagantes; testes internos com Pedro/Dr. Ricardo/Carolina).
+
+**⚠️ NÃO TOCAR** (sem auditoria empírica via openssl asn1parse + smoke ITI + diff binário vs PDF aprovado):
+- `supabase/functions/sign-pdf-icp/index.ts` — algoritmo PBAD AD-RB validado, mexer = risco voltar pra "desconhecida"
+- `supabase/functions/sign-pdf-icp/icp_chain.ts` — chain ICP embedded validada
+- Constants `PA_AD_RB_V24_OID` e `PA_AD_RB_V24_SIGPOLICYHASH_HEX` no edge — só atualizar quando ITI publicar nova PA (próxima v2.5+)
 
 ## Common commands
 
