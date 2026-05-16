@@ -619,6 +619,34 @@ const ProfessionalMyDashboard: React.FC = () => {
   const query = new URLSearchParams(location.search)
   const section = query.get('section')
 
+  /*
+   * V1.9.307-C (16/05/2026 noite): suporte ao deep-link ?analyze=<patient_id>.
+   * Quando RenalSuggestionsCard (ou outro card de sugestão) precisa que médico
+   * revise AEC completa antes de aprovar, navega pra esta tela com o param.
+   * Auto-seleciona paciente + dispara painel analítico sem clique extra.
+   *
+   * Auto-cleanup do query param após disparar (history.replaceState) pra:
+   *  - URL limpa
+   *  - Não re-disparar se médico clicar em outro paciente do dropdown depois
+   *  - Browser back não loopa
+   */
+  useEffect(() => {
+    if (!linkedPatients.length) return  // espera pacientes carregarem
+    const analyzeParam = query.get('analyze')
+    if (!analyzeParam || analysisScanning || analysisPanelOpen) return
+    const target = linkedPatients.find(p => p.id === analyzeParam)
+    if (!target) return
+    setSelectedPatientForAnalysis(target)
+    // Dispara análise no próximo tick (após state propagar)
+    setTimeout(() => { void runPatientAnalysis() }, 50)
+    // Limpa param da URL preservando outros params se houver
+    const newSearch = new URLSearchParams(location.search)
+    newSearch.delete('analyze')
+    const newUrl = location.pathname + (newSearch.toString() ? `?${newSearch.toString()}` : '')
+    window.history.replaceState({}, '', newUrl)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [linkedPatients, location.search])
+
   // Helper: back button shared across section views
   const SectionHeader = ({ title, icon: Icon }: { title: string; icon: React.ElementType }) => (
     <header className="h-14 border-b border-slate-700/50 bg-slate-800/50 flex items-center px-4 gap-3 shrink-0">

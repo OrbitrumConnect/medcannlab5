@@ -18,6 +18,7 @@
  */
 
 import { useEffect, useState, useMemo } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { AlertTriangle, CheckCircle, XCircle, Activity, Info, FileSearch } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import DotPagination from './ui/DotPagination'
@@ -52,6 +53,7 @@ const STAGE_DESCRIPTIONS: Record<string, { label: string, color: string, bg: str
 const PER_PAGE = 5
 
 export default function RenalSuggestionsCard() {
+  const navigate = useNavigate()
   const [suggestions, setSuggestions] = useState<RenalSuggestion[]>([])
   const [loading, setLoading] = useState(true)
   const [processingId, setProcessingId] = useState<string | null>(null)
@@ -287,19 +289,24 @@ export default function RenalSuggestionsCard() {
               ) : (
                 <div className="space-y-1 mt-auto">
                   {/*
-                    V1.9.307-B: Botão "Ver AEC completa" pra revisar contexto clínico
-                    (alimentação, medicações concomitantes, hidratação, comorbidades)
-                    ANTES de aprovar. Abre em nova aba pra não perder o card.
-                    Reusa rota Analisar Paciente já existente.
+                    V1.9.307-C (16/05/2026 noite): fix Pedro reportou abertura
+                    em nova aba indo pra Agendamentos (section=atendimento estava
+                    errado — atendimento é ProfessionalSchedulingWidget, não AEC).
+                    Correção:
+                    - Rota correta: /app/clinica/profissional/dashboard (sem section)
+                      → componente ProfessionalMyDashboard que tem Analisar Paciente
+                    - Query param ?analyze=<patient_id> dispara auto-seleção +
+                      auto-execução do painel analítico (useEffect V1.9.307-C)
+                    - navigate MESMA aba (não nova aba) — UX melhor pro médico,
+                      browser back funciona, evita perder contexto da janela
                   */}
                   <button
                     onClick={() => {
-                      const url = `/app/clinica/profissional/dashboard?section=atendimento&analyze=${sugg.patient_id}`
-                      window.open(url, '_blank', 'noopener')
+                      navigate(`/app/clinica/profissional/dashboard?analyze=${sugg.patient_id}`)
                     }}
                     disabled={isProcessing}
                     className="w-full px-2 py-1.5 bg-slate-800/60 hover:bg-slate-700 text-slate-300 rounded text-[10px] font-medium flex items-center justify-center gap-1 disabled:opacity-50 border border-slate-700/50"
-                    title="Abre AEC completa do paciente em nova aba pra revisar contexto antes de aprovar"
+                    title="Abre painel Analisar Paciente com a AEC completa pra revisar contexto antes de aprovar"
                   >
                     <FileSearch className="w-3 h-3" />
                     Revisar AEC completa
