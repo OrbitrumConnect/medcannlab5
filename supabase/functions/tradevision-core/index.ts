@@ -4699,8 +4699,21 @@ AGORA: Analise o contexto. Se pedir Sistema Renal/Urinário, atue como LÚCIA ou
             });
         }
 
-        // 🔍 RAG: Busca na Base de Conhecimento (Knowledge Retrieval)
-        // BLINDAGEM: Se AEC está ativo para paciente, RAG é SILENCIADO para não contaminar o roteiro clínico
+        // 🔍 RAG: Busca em DUAS fontes (V1.9.308 — Knowledge Retrieval híbrido)
+        // BLINDAGEM CRÍTICA (intocada): Se AEC está ativa para PACIENTE, RAG é
+        // SILENCIADO COMPLETAMENTE para não contaminar o roteiro clínico autoral
+        // (anti-kevlar §1 — AEC = método selado, perguntas literais, Verbatim First).
+        //
+        // V1.9.308 — Busca paralela em 2 tabelas:
+        //   1. base_conhecimento (5 entradas DNA Nôa: Identidade, AEC, IMRE,
+        //      CBD critérios, Curso AEC) — sempre prioritária quando tem match
+        //   2. documents (44 PDFs científicos/protocolos do Ricardo+Eduardo —
+        //      biblioteca técnica). Filtros: category in ('research','protocols',
+        //      'protocolo_clinico','ai-documents') + content NOT NULL + length > 200
+        //      (descarta PDFs vazios só com metadata como "Global Burden 2020.pdf")
+        //
+        // Bug corrigido: hoje Nôa não vê Pharmacokinetics CBD/CKD, inibition CB1 CKD,
+        // ou outros papers do Ricardo. Após V1.9.308 ela cita quando perguntada.
         const isAecActiveForPatient = !!assessmentPhase && assessmentPhase !== 'COMPLETED' && assessmentPhase !== 'INTERRUPTED' && userRole === 'patient'
         let knowledgeBlock = ''
         if (message && message.length > 3 && !isAecActiveForPatient) {
@@ -4711,23 +4724,72 @@ AGORA: Analise o contexto. Se pedir Sistema Renal/Urinário, atue como LÚCIA ou
                 .slice(0, 5); // Limit 5 keywords
 
             if (keywords.length > 0) {
-                // Busca OR simples por keywords no conteudo
-                const queryFilters = keywords.map((w: string) => `conteudo.ilike.%${w}%`).join(',');
+                // V1.9.308 — Busca paralela em base_conhecimento + documents
+                const baseFilters = keywords.map((w: string) => `conteudo.ilike.%${w}%`).join(',');
+                const docsFilters = keywords.map((w: string) => `content.ilike.%${w}%`).join(',');
 
                 try {
-                    const { data: knowledge, error: ragError } = await supabaseClient
-                        .from('base_conhecimento')
-                        .select('titulo, conteudo')
-                        .or(queryFilters)
-                        .limit(3);
+                    const [baseRes, docsRes] = await Promise.all([
+                        // Fonte 1: base_conhecimento (DNA Nôa — prioritário)
+                        supabaseClient
+                            .from('base_conhecimento')
+                            .select('titulo, conteudo')
+                            .or(baseFilters)
+                            .limit(3),
+                        // Fonte 2: documents (biblioteca científica do Ricardo+Eduardo)
+                        // Só docs com conteúdo extraído (length>200 descarta PDFs vazios)
+                        supabaseClient
+                            .from('documents')
+                            .select('title, author, content, category')
+                            .or(docsFilters)
+                            .in('category', ['research', 'protocols', 'protocolo_clinico', 'ai-documents'])
+                            .not('content', 'is', null)
+                            .limit(2)
+                    ]);
 
-                    if (!ragError && knowledge && knowledge.length > 0) {
-                        const ragLabel = (userRole === 'admin' || userRole === 'master' || userRole === 'professional') ? 'CONSULTA OPCIONAL — use apenas se o usuário perguntar sobre este tema' : 'FONTE PRIORITÁRIA'
-                        knowledgeBlock = `\n\n📚 BASE DE CONHECIMENTO (${ragLabel}):\n${knowledge.map((k: any) => `• [${k.titulo}]: ${k.conteudo}`).join('\n')}\nUtilize ESTRITAMENTE estas informações para responder se forem relevantes. Se a resposta estiver aqui, cite a fonte.`;
-                        console.log(`[RAG] ${knowledge.length} artigos encontrados para keywords: [${keywords.join(', ')}]`);
+                    const sections: string[] = []
+
+                    // Bloco 1: base_conhecimento
+                    if (!baseRes.error && baseRes.data && baseRes.data.length > 0) {
+                        const ragLabel = (userRole === 'admin' || userRole === 'master' || userRole === 'professional')
+                            ? 'CONSULTA OPCIONAL — use apenas se o usuário perguntar sobre este tema'
+                            : 'FONTE PRIORITÁRIA'
+                        sections.push(
+                            `\n📚 BASE DE CONHECIMENTO INSTITUCIONAL (${ragLabel}):\n` +
+                            baseRes.data.map((k: any) => `• [${k.titulo}]: ${k.conteudo}`).join('\n')
+                        )
+                        console.log(`[RAG V1.9.308] base_conhecimento: ${baseRes.data.length} artigos`);
+                    }
+
+                    // Bloco 2: documents (biblioteca técnica, sempre opcional + citação obrigatória)
+                    if (!docsRes.error && docsRes.data && docsRes.data.length > 0) {
+                        const docsTrimmed = docsRes.data
+                            .filter((d: any) => d.content && d.content.length > 200)
+                            .map((d: any) => ({
+                                title: d.title,
+                                author: d.author || 'Autor não declarado',
+                                category: d.category,
+                                // Truncate content em 1500 chars pra evitar inflar contexto
+                                content: String(d.content).substring(0, 1500)
+                            }))
+
+                        if (docsTrimmed.length > 0) {
+                            sections.push(
+                                `\n📖 BIBLIOTECA CIENTÍFICA (referência opcional — CITE TÍTULO+AUTOR se usar):\n` +
+                                docsTrimmed.map((d: any) =>
+                                    `• [${d.title}] (autor: ${d.author}, ${d.category}):\n${d.content}...`
+                                ).join('\n\n')
+                            )
+                            console.log(`[RAG V1.9.308] documents: ${docsTrimmed.length} artigos (autores: ${docsTrimmed.map((d: any) => d.author).join(', ')})`);
+                        }
+                    }
+
+                    if (sections.length > 0) {
+                        knowledgeBlock = sections.join('\n') +
+                            '\n\nUtilize ESTRITAMENTE estas informações para responder se forem relevantes. Se a resposta estiver aqui, CITE A FONTE pelo título.';
                     }
                 } catch (err) {
-                    console.warn('[RAG] Falha na busca de conhecimento:', err);
+                    console.warn('[RAG V1.9.308] Falha na busca paralela:', err);
                 }
             }
         }
