@@ -1592,13 +1592,10 @@ const ClinicalReports: React.FC<ClinicalReportsProps> = ({ className = '', onSha
                       </div>
                     )}
 
-                    {/* História (campo mapeado ou legado) */}
-                    {selectedReport.content.history && (
-                      <div className="border-l-2 border-amber-500/50 pl-3">
-                        <strong className="text-amber-400 text-xs uppercase tracking-wider">História / Anamnese</strong>
-                        <p className="mt-1">{selectedReport.content.history}</p>
-                      </div>
-                    )}
+                    {/* V1.9.304 (16/05) — Bloco "História / Anamnese (legado)" REMOVIDO.
+                        Redundante com "História Patológica Pregressa" abaixo + formatação
+                        pipes (|) confundia clinicamente. Pedro identificou pós-retrofix Maria.
+                        Memory: feedback_dry_run_mental + project_v1_9_303. */}
 
                     {/* História Patológica Pregressa (AEC Etapa 5) */}
                     {selectedReport.rawContent?.historia_patologica_pregressa && Array.isArray(selectedReport.rawContent.historia_patologica_pregressa) && selectedReport.rawContent.historia_patologica_pregressa.length > 0 && (

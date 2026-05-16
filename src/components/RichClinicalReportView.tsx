@@ -146,13 +146,12 @@ const RichClinicalReportView: React.FC<RichClinicalReportViewProps> = ({ content
         </div>
       )}
 
-      {/* História / Anamnese (legado) */}
-      {historyLegacy && (
-        <div className="border-l-2 border-amber-500/50 pl-3">
-          <strong className="text-amber-400 text-xs uppercase tracking-wider">História / Anamnese</strong>
-          <p className="mt-1 whitespace-pre-wrap">{historyLegacy}</p>
-        </div>
-      )}
+      {/* V1.9.304 (16/05) — Bloco "História / Anamnese (legado)" REMOVIDO.
+          Redundante com "História Patológica Pregressa" abaixo + formatação
+          pipes (|) confundia clinicamente. Pedro identificou após retrofix Maria.
+          Memory: feedback_dry_run_mental + project_v1_9_303_captation_buffer.
+          historyLegacy ainda é populado pelo parser pra compatibilidade — só
+          não renderizamos mais visualmente. */}
 
       {/* História Patológica Pregressa */}
       {hpp.length > 0 && (

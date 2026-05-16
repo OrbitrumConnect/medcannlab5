@@ -11,6 +11,42 @@
  */
 import { supabase } from './supabase'
 
+/**
+ * V1.9.304 — Fuzzy match pra typos comuns em "concordo".
+ * Bug Ricardo 13/05 16:54 (sessão Hylton): digitou "Comcordo" → matching strict
+ * `lowerResponse.includes('concordo')` falhou → Nôa pediu correção indevida.
+ * Princípio: paciente real digita errado, sistema deve tolerar typo de 1 char.
+ *
+ * Levenshtein distance helper (sem dependência externa).
+ * Considera match se qualquer palavra de 7-10 chars na resposta tem distância ≤1
+ * pra "concordo". Cobre: Comcordo, Cocordo, Concodo, Concrdo, Cnocordo, etc.
+ */
+export function isFuzzyConcordo(text: string): boolean {
+  if (!text || typeof text !== 'string') return false
+  const norm = text.toLowerCase()
+  if (norm.includes('concordo')) return true
+  const words = norm.match(/[a-zà-ÿ]+/g) || []
+  return words.some(w =>
+    w.length >= 7 && w.length <= 10 && levenshtein(w, 'concordo') <= 1
+  )
+}
+
+function levenshtein(a: string, b: string): number {
+  if (a.length === 0) return b.length
+  if (b.length === 0) return a.length
+  const dp: number[][] = Array.from({ length: b.length + 1 }, () => Array(a.length + 1).fill(0))
+  for (let i = 0; i <= b.length; i++) dp[i][0] = i
+  for (let j = 0; j <= a.length; j++) dp[0][j] = j
+  for (let i = 1; i <= b.length; i++) {
+    for (let j = 1; j <= a.length; j++) {
+      dp[i][j] = b[i - 1] === a[j - 1]
+        ? dp[i - 1][j - 1]
+        : Math.min(dp[i - 1][j - 1], dp[i][j - 1], dp[i - 1][j]) + 1
+    }
+  }
+  return dp[b.length][a.length]
+}
+
 /** Trechos RAG/documento injetados no chat nao devem entrar nas respostas clinicas persistidas no AEC. */
 export function stripPlatformInjectionNoise(raw: string): string {
   if (!raw || typeof raw !== 'string') return ''
@@ -1053,7 +1089,7 @@ export class ClinicalAssessmentFlow {
             !/\b(nao|não)\s+preciso\s+corrigir\b/.test(lowerResponse))
         const consensusAffirm =
           !explicitDisagree &&
-          (lowerResponse.includes('concordo') ||
+          (isFuzzyConcordo(lowerResponse) ||
             /\bestá\s+correto\b/.test(lowerResponse) ||
             /\besta\s+correto\b/.test(lowerResponse) ||
             (/\bcorreto\b/.test(lowerResponse) && !/incorreto/.test(lowerResponse)) ||
@@ -1104,7 +1140,7 @@ export class ClinicalAssessmentFlow {
       case 'CONSENT_COLLECTION':
         if (lowerResponse.includes('sim') ||
           lowerResponse.includes('autorizo') ||
-          lowerResponse.includes('concordo') ||
+          isFuzzyConcordo(lowerResponse) ||
           lowerResponse.includes('aceito')) {
           state.data.consentGiven = true
           state.data.consentTimestamp = new Date().toISOString()

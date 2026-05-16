@@ -337,13 +337,29 @@ const ResearchDashboardContent: React.FC = () => {
                                     </div>
 
                                     <div className="flex items-center space-x-2">
-                                        <button className="p-2 bg-slate-600 rounded-lg hover:bg-slate-500 transition-colors">
+                                        {/* V1.9.304 (16/05) — Bug "Pesquisa não abre nada" identificado por
+                                            Ricardo no evento 13/05. Eram botões sem onClick handler. Fix:
+                                            Ver → navega pro detalhe do projeto Cidade Amiga dos Rins.
+                                            Download/Share → disabled com tooltip (features pós-PMF). */}
+                                        <button
+                                            onClick={() => navigate('/app/pesquisa/profissional/cidade-amiga-dos-rins')}
+                                            className="p-2 bg-slate-600 rounded-lg hover:bg-slate-500 transition-colors"
+                                            title="Ver detalhes do estudo"
+                                        >
                                             <Eye className="w-4 h-4" />
                                         </button>
-                                        <button className="p-2 bg-slate-600 rounded-lg hover:bg-slate-500 transition-colors">
+                                        <button
+                                            disabled
+                                            className="p-2 bg-slate-700 rounded-lg opacity-40 cursor-not-allowed"
+                                            title="Em breve — Exportação de dados de pesquisa (pós-PMF)"
+                                        >
                                             <Download className="w-4 h-4" />
                                         </button>
-                                        <button className="p-2 bg-slate-600 rounded-lg hover:bg-slate-500 transition-colors">
+                                        <button
+                                            disabled
+                                            className="p-2 bg-slate-700 rounded-lg opacity-40 cursor-not-allowed"
+                                            title="Em breve — Compartilhamento com colaboradores (pós-PMF)"
+                                        >
                                             <Share2 className="w-4 h-4" />
                                         </button>
                                     </div>
