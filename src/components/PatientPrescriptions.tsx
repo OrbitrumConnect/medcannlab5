@@ -6,12 +6,23 @@
  *
  * V1.9.124-C (pós-feedback Pedro): mini-stats topo + cards clicáveis
  * + modal de detalhes + botão solicitar nova + imprimir + validar ITI.
+ *
+ * V1.9.315 (16/05/2026 noite — Pedro empírico): 3 fixes UI honesta
+ *   • Friendly labels p/ prescription_type (sem "simple" cru no modal)
+ *   • Guard URL fictícia: 11 prescrições legadas têm iti_validation_url
+ *     apontando `validacao.iti.gov.br` (domínio NÃO existe, DNS 404).
+ *     UPDATE no DB bloqueado pela trigger CFM imutabilidade (correto —
+ *     assinatura legal é imutável). Fix puro no frontend: isFictitiousItiUrl()
+ *     detecta e oculta botão quebrado.
+ *   • Botão "Validar no ITI" só renderiza se signed_pdf_url V1.9.299 real
+ *     existir; aponta pro portal oficial validar.iti.gov.br + instrução
+ *     "baixe o PDF e suba lá" (validador exige upload, não URL).
  */
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import {
   Pill, FileText, ShieldCheck, ExternalLink, Loader2, AlertCircle,
   RefreshCw, ChevronLeft, ChevronRight, Stethoscope, Plus, X,
-  Calendar, CheckCircle2, Clock, Printer
+  Calendar, CheckCircle2, Clock, Printer, Download
 } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
@@ -33,6 +44,8 @@ interface CfmPrescription {
   expires_at: string | null
   created_at: string
   document_level: string | null
+  // V1.9.299: PDF assinado ICP-Brasil real PBAD AD-RB CONFORME
+  signed_pdf_url: string | null
 }
 
 interface PatientPrescription {
@@ -57,6 +70,36 @@ interface ProfessionalRow {
 }
 
 const PAGE_SIZE = 5
+
+// [V1.9.315] Friendly labels — enum cru "simple"/"blue"/"special" não fala
+// português pro paciente. Mapeamento segue nomenclatura CFM 2.314/2022.
+const PRESCRIPTION_TYPE_LABELS: Record<string, string> = {
+  simple:      'Receita Simples (Branca)',
+  blue:        'Receita Azul B1 (Controlada)',
+  special:     'Receita Amarela A (Controle Especial)',
+  control:     'Receita de Controle Especial',
+  yellow:      'Receita Amarela A (Controle Especial)',
+  white:       'Receita Simples (Branca)',
+  attestation: 'Atestado Médico',
+  certificate: 'Atestado Médico',
+  exam:        'Solicitação de Exames',
+  exam_request:'Solicitação de Exames',
+  report:      'Laudo Médico',
+}
+
+function prettyPrescriptionType(t: string | null | undefined): string {
+  if (!t) return 'Receita CFM'
+  const key = t.toLowerCase().trim()
+  return PRESCRIPTION_TYPE_LABELS[key] || t
+}
+
+// [V1.9.315] Detecta URLs fictícias geradas antes de V1.9.298 (15/05).
+// Domínio `validacao.iti.gov.br` NÃO existe (DNS 404). O validador oficial
+// do ITI é `validar.iti.gov.br` (exige upload de PDF, não link de verificação).
+function isFictitiousItiUrl(url: string | null | undefined): boolean {
+  if (!url) return false
+  return /validacao\.iti\.gov\.br/i.test(url)
+}
 
 const STATUS_LABELS: Record<string, { label: string; color: string }> = {
   active:    { label: 'Ativa',     color: 'emerald' },
@@ -136,7 +179,7 @@ function CfmPrescriptionCard({ rx, onClick }: { rx: CfmPrescription; onClick: ()
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-1.5 flex-wrap">
             <h3 className="font-semibold text-white text-sm truncate">
-              {rx.prescription_type || 'Receita CFM'}
+              {prettyPrescriptionType(rx.prescription_type)}
             </h3>
             <StatusBadge status={rx.status} />
             {isSigned && (
@@ -312,7 +355,7 @@ function CfmDetailModal({ rx, onClose }: { rx: CfmPrescription; onClose: () => v
               <ShieldCheck className="w-5 h-5 text-amber-300" />
             </div>
             <div>
-              <h2 className="text-lg font-bold text-white">{rx.prescription_type || 'Receita CFM'}</h2>
+              <h2 className="text-lg font-bold text-white">{prettyPrescriptionType(rx.prescription_type)}</h2>
               <div className="flex items-center gap-2 mt-0.5">
                 <StatusBadge status={rx.status} size="md" />
                 {isSigned && (
@@ -438,8 +481,52 @@ function CfmDetailModal({ rx, onClose }: { rx: CfmPrescription; onClose: () => v
           )}
         </div>
 
+        {/* [V1.9.315] Aviso PDF ICP indisponível p/ receitas antigas (pré-V1.9.299
+            ou ainda não regeneradas). Não criamos URL fictícia — diz a verdade. */}
+        {isSigned && !rx.signed_pdf_url && (
+          <div className="mx-5 mb-2 rounded-lg border border-slate-600/40 bg-slate-800/40 px-3 py-2 flex items-start gap-2 print:hidden">
+            <AlertCircle className="w-4 h-4 text-slate-400 shrink-0 mt-0.5" />
+            <p className="text-[11px] text-slate-300 leading-relaxed">
+              <strong className="text-slate-200">PDF ICP-Brasil não disponível para download nesta receita.</strong>{' '}
+              A assinatura digital existe no sistema, mas o arquivo PDF assinado
+              (formato PBAD) só é gerado para receitas emitidas a partir de 15/05/2026.
+              Para apresentação física use o botão "Imprimir" abaixo (receita oficial CFM 2.314/2022).
+            </p>
+          </div>
+        )}
+
         <div className="sticky bottom-0 bg-slate-900 border-t border-amber-500/20 px-5 py-3 flex items-center justify-end gap-2 flex-wrap">
-          {rx.iti_validation_url && (
+          {/* [V1.9.315] Botões ITI honestos:
+              1. Baixar PDF assinado (só se signed_pdf_url V1.9.299 real existir)
+              2. Abrir validador oficial validar.iti.gov.br (paciente sobe o PDF lá)
+              Removido: link direto pra iti_validation_url legado (apontava pra
+              domínio fictício validacao.iti.gov.br que dava DNS 404).
+          */}
+          {rx.signed_pdf_url && (
+            <>
+              <a
+                href={rx.signed_pdf_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="px-3 py-1.5 bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/30 text-emerald-200 text-xs rounded-lg transition-all flex items-center gap-1.5"
+                title="Baixar PDF assinado ICP-Brasil (PBAD)"
+              >
+                <Download className="w-3 h-3" /> Baixar PDF ICP
+              </a>
+              <a
+                href="https://validar.iti.gov.br/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="px-3 py-1.5 bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/30 text-amber-200 text-xs rounded-lg transition-all flex items-center gap-1.5"
+                title="Validador oficial do ITI — faça upload do PDF baixado"
+              >
+                <ExternalLink className="w-3 h-3" /> Validar no ITI oficial
+              </a>
+            </>
+          )}
+          {/* [V1.9.315] Fallback: URL não-fictícia legada (caso raro de fluxo
+              antigo que gerou URL válida real). Hoje empíricamente 0 rows. */}
+          {!rx.signed_pdf_url && rx.iti_validation_url && !isFictitiousItiUrl(rx.iti_validation_url) && (
             <a
               href={rx.iti_validation_url}
               target="_blank"
@@ -611,9 +698,11 @@ export function PatientPrescriptions({ className = '', onBack, onRequestNew }: P
     setError(null)
     try {
       const [cfmRes, planRes] = await Promise.all([
-        supabase
+        // [V1.9.315] signed_pdf_url existe no DB (V1.9.299 migration) mas o
+        // codegen de tipos Supabase está defasado → cast via supabase as any
+        (supabase as any)
           .from('cfm_prescriptions')
-          .select('id, prescription_type, professional_name, professional_crm, professional_specialty, medications, notes, status, signature_timestamp, iti_validation_url, iti_qr_code, expires_at, created_at, document_level')
+          .select('id, prescription_type, professional_name, professional_crm, professional_specialty, medications, notes, status, signature_timestamp, iti_validation_url, iti_qr_code, expires_at, created_at, document_level, signed_pdf_url')
           .eq('patient_id', user.id)
           .order('created_at', { ascending: false }),
         (supabase as any)
