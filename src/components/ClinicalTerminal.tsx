@@ -14,7 +14,8 @@ import {
     X,
     ChevronLeft,
     LayoutDashboard,
-    ClipboardList
+    ClipboardList,
+    Sparkles
 } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
 import { supabase } from '../lib/supabase'
@@ -25,8 +26,9 @@ import Library from '../pages/Library'
 import ForumCasosClinicos from '../pages/ForumCasosClinicos'
 import PatientsManagement from '../pages/PatientsManagement'
 import PatientAnalytics from './PatientAnalytics'
+import ProfessionalNFTGallery from './ProfessionalNFTGallery'
 
-type TabId = 'governance' | 'reports' | 'knowledge' | 'forum' | 'patient-focus'
+type TabId = 'governance' | 'reports' | 'knowledge' | 'forum' | 'patient-focus' | 'gallery'
 
 const ClinicalTerminal: React.FC = () => {
     const { user } = useAuth()
@@ -202,7 +204,9 @@ const ClinicalTerminal: React.FC = () => {
         { id: 'patient-focus' as TabId, label: 'Paciente em foco', icon: User, color: 'text-amber-400' },
         { id: 'reports' as TabId, label: 'Relatórios IA', icon: BarChart3, color: 'text-orange-400' },
         { id: 'knowledge' as TabId, label: 'Base de Conhecimento', icon: BookOpen, color: 'text-emerald-400' },
-        { id: 'forum' as TabId, label: 'Fórum de Casos Clínicos', icon: MessageSquare, color: 'text-cyan-400' }
+        { id: 'forum' as TabId, label: 'Fórum de Casos Clínicos', icon: MessageSquare, color: 'text-cyan-400' },
+        // V1.9.311 — Galeria Clínica: NFTs que pacientes liberaram explícito
+        { id: 'gallery' as TabId, label: 'Galeria Clínica', icon: Sparkles, color: 'text-purple-400' }
     ]
 
     const renderContent = () => {
@@ -226,6 +230,8 @@ const ClinicalTerminal: React.FC = () => {
                 return <div className="h-full overflow-y-auto scrollbar-hide"><Library /></div>
             case 'forum':
                 return <div className="h-full overflow-y-auto scrollbar-hide"><ForumCasosClinicos /></div>
+            case 'gallery':
+                return <div className="h-full overflow-y-auto scrollbar-hide"><ProfessionalNFTGallery /></div>
             case 'patient-focus':
                 return (
                     <div className="h-full overflow-y-auto scrollbar-hide p-3 md:p-6 lg:p-8 xl:p-10">
