@@ -94,7 +94,13 @@ function mapAuditLogToEvent(row: any): TimelineEvent {
         action_label: isHighRisk
             ? `Interação flagada (risco ${row.risk_level})`
             : `Interação clínica · ${row.domain || 'geral'}`,
-        target: row.user_message ? `"${String(row.user_message).slice(0, 60)}${row.user_message.length > 60 ? '…' : ''}"` : null,
+        // V1.9.312-B (16/05/2026 fix LGPD): NÃO incluir user_message no display.
+        // Conteúdo literal das mensagens do paciente é dado de saúde categoria
+        // especial (LGPD art. 11). Princípio minimização: timeline mostra ESTADO
+        // (quem/quando/que tipo de evento), não CONTEÚDO clínico bruto.
+        // Para investigar conteúdo específico: acessar via prontuário oficial
+        // (clinical_assessments/clinical_reports) com auditoria de acesso.
+        target: null,
         state,
         module,
         icon: isHighRisk ? AlertTriangle : Brain,
@@ -300,10 +306,13 @@ export default function SystemActivityTimeline() {
                 )}
             </div>
 
-            {/* Footer info */}
-            <div className="px-4 md:px-6 py-2 border-t border-slate-700/50 bg-slate-900/40">
+            {/* Footer info — V1.9.312-B (16/05/2026): disclaimer LGPD minimização */}
+            <div className="px-4 md:px-6 py-2 border-t border-slate-700/50 bg-slate-900/40 space-y-0.5">
                 <p className="text-[10px] text-slate-500">
                     Últimos {events.length} eventos · Auto-refresh 30s · Fontes: noa_logs · ai_chat_interactions · cfm_prescriptions
+                </p>
+                <p className="text-[10px] text-slate-600">
+                    🔒 Apenas metadados (quem/quando/tipo). Conteúdo clínico fica no prontuário oficial (LGPD art. 11 minimização).
                 </p>
             </div>
         </div>
