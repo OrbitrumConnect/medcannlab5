@@ -18,7 +18,7 @@
  */
 
 import { useEffect, useState, useMemo } from 'react'
-import { AlertTriangle, CheckCircle, XCircle, Activity, Info } from 'lucide-react'
+import { AlertTriangle, CheckCircle, XCircle, Activity, Info, FileSearch } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import DotPagination from './ui/DotPagination'
 
@@ -240,15 +240,23 @@ export default function RenalSuggestionsCard() {
                 )}
               </div>
 
-              {/* Proveniência — detalhe expansível */}
-              <details className="text-[10px]">
-                <summary className="text-slate-500 cursor-pointer hover:text-slate-300">
-                  Trecho original
-                </summary>
-                <p className="mt-1 text-[10px] text-slate-300 italic bg-slate-800/40 rounded p-1.5 leading-relaxed line-clamp-4">
+              {/*
+                V1.9.307-B (16/05/2026 noite): Trecho original SEMPRE expandido.
+                Antes era <details> collapsible — médico precisava lembrar de
+                clicar pra ver O QUE paciente literal disse. Pedro identificou que
+                isso induz aprovação impulsiva sem revisão clínica. Aprovar = ato
+                clínico oficial (cria registro renal_exams no prontuário) — leitura
+                do trecho deve ser default, não opcional.
+              */}
+              <div className="text-[10px]">
+                <div className="flex items-center gap-1 text-slate-500 mb-1">
+                  <Info className="w-2.5 h-2.5" />
+                  <span className="font-semibold uppercase tracking-wider">Fala do paciente</span>
+                </div>
+                <p className="text-[10px] text-slate-300 italic bg-slate-800/40 rounded p-1.5 leading-relaxed line-clamp-4">
                   "{sugg.source_text}"
                 </p>
-              </details>
+              </div>
 
               {/* Ações */}
               {isRejecting ? (
@@ -277,24 +285,44 @@ export default function RenalSuggestionsCard() {
                   </div>
                 </div>
               ) : (
-                <div className="flex gap-1 mt-auto">
+                <div className="space-y-1 mt-auto">
+                  {/*
+                    V1.9.307-B: Botão "Ver AEC completa" pra revisar contexto clínico
+                    (alimentação, medicações concomitantes, hidratação, comorbidades)
+                    ANTES de aprovar. Abre em nova aba pra não perder o card.
+                    Reusa rota Analisar Paciente já existente.
+                  */}
                   <button
-                    onClick={() => handleApprove(sugg)}
+                    onClick={() => {
+                      const url = `/app/clinica/profissional/dashboard?section=atendimento&analyze=${sugg.patient_id}`
+                      window.open(url, '_blank', 'noopener')
+                    }}
                     disabled={isProcessing}
-                    className="flex-1 px-2 py-1.5 bg-emerald-600/30 hover:bg-emerald-600/50 text-emerald-200 rounded text-[10px] font-semibold flex items-center justify-center gap-1 disabled:opacity-50 border border-emerald-500/30"
-                    title="Aprovar e criar registro renal_exams oficial"
+                    className="w-full px-2 py-1.5 bg-slate-800/60 hover:bg-slate-700 text-slate-300 rounded text-[10px] font-medium flex items-center justify-center gap-1 disabled:opacity-50 border border-slate-700/50"
+                    title="Abre AEC completa do paciente em nova aba pra revisar contexto antes de aprovar"
                   >
-                    <CheckCircle className="w-3 h-3" />
-                    Aprovar
+                    <FileSearch className="w-3 h-3" />
+                    Revisar AEC completa
                   </button>
-                  <button
-                    onClick={() => setRejectReasonFor(sugg.id)}
-                    disabled={isProcessing}
-                    className="px-2 py-1.5 bg-slate-700 hover:bg-slate-600 text-slate-200 rounded text-[10px] flex items-center justify-center disabled:opacity-50"
-                    title="Descartar sugestão"
-                  >
-                    <XCircle className="w-3 h-3" />
-                  </button>
+                  <div className="flex gap-1">
+                    <button
+                      onClick={() => handleApprove(sugg)}
+                      disabled={isProcessing}
+                      className="flex-1 px-2 py-1.5 bg-emerald-600/30 hover:bg-emerald-600/50 text-emerald-200 rounded text-[10px] font-semibold flex items-center justify-center gap-1 disabled:opacity-50 border border-emerald-500/30"
+                      title="Aprovar e criar registro renal_exams oficial"
+                    >
+                      <CheckCircle className="w-3 h-3" />
+                      Aprovar
+                    </button>
+                    <button
+                      onClick={() => setRejectReasonFor(sugg.id)}
+                      disabled={isProcessing}
+                      className="px-2 py-1.5 bg-slate-700 hover:bg-slate-600 text-slate-200 rounded text-[10px] flex items-center justify-center disabled:opacity-50"
+                      title="Descartar sugestão"
+                    >
+                      <XCircle className="w-3 h-3" />
+                    </button>
+                  </div>
                 </div>
               )}
             </div>
