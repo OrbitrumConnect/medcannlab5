@@ -209,6 +209,8 @@ const Sidebar: React.FC<SidebarProps> = ({
       { name: 'Dashboard do Paciente', href: '/app/clinica/paciente/dashboard?section=analytics', icon: TrendingUp, section: 'main' },
       { name: 'Acompanhamento do Plano', href: '/app/clinica/paciente/dashboard?section=plano', icon: Activity, section: 'main' },
       { name: 'Minhas Prescrições', href: '/app/clinica/paciente/dashboard?section=minhas-prescricoes', icon: Pill, section: 'main' },
+      // V1.9.313 — Meus Exames (paciente sobe laudos/ressonância/EEG antigos)
+      { name: 'Meus Exames', href: '/app/clinica/paciente/dashboard?section=meus-exames', icon: FileText, section: 'main' },
       { name: 'Biblioteca Personalizada', href: '/app/library', icon: BookOpen, section: 'main' },
       { name: 'Chat Nôa Esperanza', href: '/app/clinica/paciente/chat-noa', icon: Brain, section: 'quick' },
       { name: 'Agendamentos', href: '/app/clinica/paciente/agendamentos', icon: Clock, section: 'quick' },

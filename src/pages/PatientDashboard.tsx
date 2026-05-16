@@ -33,6 +33,8 @@ import PatientReferralConsentBanner from '../components/patient/PatientReferralC
 const PatientAnalytics = lazy(() => import('../components/PatientAnalytics'))
 const PatientNFTGallery = lazy(() => import('../components/PatientNFTGallery'))
 const ClinicalReports = lazy(() => import('../components/ClinicalReports'))
+// V1.9.313 — Meus Exames (paciente sobe laudos/ressonância/EEG antigos)
+const PatientMyExams = lazy(() => import('../components/PatientMyExams'))
 
 import PatientHeaderActions from '../components/PatientHeaderActions'
 import PatientPrescriptions from '../components/PatientPrescriptions'
@@ -86,7 +88,7 @@ const PatientDashboard: React.FC = () => {
           openNoaChat()
           return
         }
-        const validTabs: PatientTab[] = ['analytics', 'meus-agendamentos', 'plano', 'reportar-problema', 'minhas-prescricoes', 'galeria']
+        const validTabs: PatientTab[] = ['analytics', 'meus-agendamentos', 'plano', 'reportar-problema', 'minhas-prescricoes', 'galeria', 'meus-exames']
         if (validTabs.includes(section as PatientTab)) {
           setActiveTab(section as PatientTab)
         }
@@ -269,6 +271,15 @@ const PatientDashboard: React.FC = () => {
             openNoaChat()
           }}
         />
+      )}
+
+      {/* V1.9.313 — Meus Exames (paciente sobe laudos/ressonância/EEG antigos). */}
+      {activeTab === 'meus-exames' && (
+        <ErrorBoundary fallback={<FeatureErrorFallback name="Meus Exames" />}>
+          <Suspense fallback={<DashboardSectionSkeleton variant="gallery" />}>
+            <PatientMyExams onBack={() => setActiveTab('analytics')} />
+          </Suspense>
+        </ErrorBoundary>
       )}
 
       {/* V1.9.193 — Galeria de Assinaturas Visuais (NFT lógico clínico) */}

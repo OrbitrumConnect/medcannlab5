@@ -45,7 +45,7 @@ export interface PatientPrescriptionSummary {
     planTitle: string | null
 }
 
-export type PatientTab = 'dashboard' | 'agendamento' | 'meus-agendamentos' | 'plano' | 'conteudo' | 'chat' | 'chat-noa' | 'perfil' | 'reportar-problema' | 'analytics' | 'report-detail' | 'minhas-prescricoes' | 'galeria'
+export type PatientTab = 'dashboard' | 'agendamento' | 'meus-agendamentos' | 'plano' | 'conteudo' | 'chat' | 'chat-noa' | 'perfil' | 'reportar-problema' | 'analytics' | 'report-detail' | 'minhas-prescricoes' | 'galeria' | 'meus-exames'
 
 export function usePatientDashboard() {
     const { user } = useAuth()
