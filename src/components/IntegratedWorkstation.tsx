@@ -11,7 +11,8 @@ import {
     BarChart3,
     BookOpen,
     MessageCircle,
-    UsersRound
+    UsersRound,
+    Sparkles
 } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
 
@@ -26,6 +27,7 @@ import ClinicalReports from './ClinicalReports'
 import Library from '../pages/Library'
 import ForumCasosClinicos from '../pages/ForumCasosClinicos'
 import TeamManagement from './TeamManagement'
+import ProfessionalNFTGallery from './ProfessionalNFTGallery'
 
 // Props do Componente
 interface IntegratedWorkstationProps {
@@ -34,7 +36,7 @@ interface IntegratedWorkstationProps {
 }
 
 type TabGroup = 'atendimento' | 'governanca'
-type TabId = 'patients' | 'patient-focus' | 'chat' | 'renal' | 'prescriptions' | 'scheduling' | 'team' | 'governance' | 'reports' | 'knowledge' | 'forum'
+type TabId = 'patients' | 'patient-focus' | 'chat' | 'renal' | 'prescriptions' | 'scheduling' | 'team' | 'governance' | 'reports' | 'knowledge' | 'forum' | 'gallery'
 
 const IntegratedWorkstation: React.FC<IntegratedWorkstationProps> = ({ initialTab, defaultPatientId }) => {
     const { user } = useAuth()
@@ -49,7 +51,7 @@ const IntegratedWorkstation: React.FC<IntegratedWorkstationProps> = ({ initialTa
     const [activePatientId, setActivePatientId] = useState<string | null>(defaultPatientId || null)
     const [activeTab, setActiveTab] = useState<TabId>(() => {
         const t = (initialTab as TabId)
-        const valid: TabId[] = ['patients', 'patient-focus', 'chat', 'renal', 'prescriptions', 'scheduling', 'team', 'governance', 'reports', 'knowledge', 'forum']
+        const valid: TabId[] = ['patients', 'patient-focus', 'chat', 'renal', 'prescriptions', 'scheduling', 'team', 'governance', 'reports', 'knowledge', 'forum', 'gallery']
         // Fallback: se URL forçou ?initialTab=governance e não é dev/admin → volta pra default
         if (t === 'governance' && !isDevOrAdmin) return 'patients'
         return t && valid.includes(t) ? t : 'patients'
@@ -67,7 +69,9 @@ const IntegratedWorkstation: React.FC<IntegratedWorkstationProps> = ({ initialTa
         { id: 'governance', label: 'Governança', icon: Shield, color: 'text-purple-400', group: 'governanca' },
         { id: 'reports', label: 'Relatórios IA', icon: BarChart3, color: 'text-orange-400', group: 'governanca' },
         { id: 'knowledge', label: 'Conhecimento', icon: BookOpen, color: 'text-emerald-400', group: 'governanca' },
-        { id: 'forum', label: 'Fórum', icon: MessageCircle, color: 'text-cyan-400', group: 'governanca' }
+        { id: 'forum', label: 'Fórum', icon: MessageCircle, color: 'text-cyan-400', group: 'governanca' },
+        // V1.9.311 — Galeria Clínica: NFTs que pacientes liberaram via consent (toggle no PatientNFTGallery)
+        { id: 'gallery', label: 'Galeria Clínica', icon: Sparkles, color: 'text-purple-400', group: 'governanca' }
     ]
     const tabs = allTabs.filter(tab => tab.id !== 'governance' || isDevOrAdmin)
 
@@ -134,6 +138,8 @@ const IntegratedWorkstation: React.FC<IntegratedWorkstationProps> = ({ initialTa
                 return <div className="h-full overflow-y-auto scrollbar-hide bg-[#0f172a]"><Library /></div>
             case 'forum':
                 return <div className="h-full overflow-y-auto scrollbar-hide bg-[#0f172a]"><ForumCasosClinicos /></div>
+            case 'gallery':
+                return <div className="h-full overflow-y-auto scrollbar-hide bg-[#0f172a]"><ProfessionalNFTGallery /></div>
             default:
                 return null
         }

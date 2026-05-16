@@ -634,7 +634,7 @@ const ProfessionalMyDashboard: React.FC = () => {
     // V1.9.99 — atalhos diretos pra abas específicas via ?tab=X
     // Ex: ?section=terminal-clinico&tab=chat → abre direto na aba Chat Clínico
     const requestedTab = query.get('tab')
-    const initialTab = requestedTab && ['patients', 'patient-focus', 'chat', 'renal', 'prescriptions', 'scheduling', 'team', 'governance', 'reports', 'knowledge', 'forum'].includes(requestedTab)
+    const initialTab = requestedTab && ['patients', 'patient-focus', 'chat', 'renal', 'prescriptions', 'scheduling', 'team', 'governance', 'reports', 'knowledge', 'forum', 'gallery'].includes(requestedTab)
       ? requestedTab
       : 'patients'
     return (
