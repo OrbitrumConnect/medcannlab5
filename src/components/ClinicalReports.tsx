@@ -52,6 +52,21 @@ function stripListaIndiciariaItem(item: unknown): string {
   }
   return stripClinical(typeof item === 'object' ? JSON.stringify(item) : item)
 }
+
+// V1.9.306 — Labels canônicos pras Perguntas Objetivas (antes era key.replace
+// '_' → ' ' que deixava "medicacoes regulares" em lowercase sem acento).
+const PERGUNTA_LABELS: Record<string, string> = {
+  alergias: 'Alergias',
+  medicacoes_regulares: 'Medicações Regulares',
+  medicacoes_esporadicas: 'Medicações Esporádicas',
+  cirurgias: 'Cirurgias Prévias',
+  historico_familiar: 'Histórico Familiar',
+  historico_pessoal: 'Histórico Pessoal'
+}
+function labelFromKey(key: string): string {
+  return PERGUNTA_LABELS[key] ||
+    key.replace(/_/g, ' ').replace(/(^|\s)\S/g, t => t.toUpperCase())
+}
 import { useAuth } from '../contexts/AuthContext'
 import { useUserView } from '../contexts/UserViewContext'
 import { rationalityAnalysisService, type Rationality } from '../services/rationalityAnalysisService'
@@ -446,10 +461,12 @@ const ClinicalReports: React.FC<ClinicalReportsProps> = ({ className = '', onSha
           (content.consenso
             ? `Consenso: ${content.consenso.aceito ? 'Aceito' : 'Pendente'} • Revisões: ${content.consenso.revisoes_realizadas || 0}`
             : '')
-        const plan = stripClinical(
-          content.plan ||
-            (habitosVida.length ? `Hábitos: ${stripClinicalList(habitosVida).join(', ')}` : content.evolution || '')
-        )
+        // V1.9.306 — Plano = plano TERAPÊUTICO do médico (vazio até consulta).
+        // Antes tinha fallback `Hábitos: ${habitos_vida}` que renderizava bloco
+        // "Plano" duplicando Hábitos de Vida — clinicamente errado (Hábitos != Plano
+        // terapêutico). Pedro identificou pós-retrofix Maria 16/05.
+        // Agora: plan vazio → bloco "Plano" não renderiza (condicional já existe).
+        const plan = stripClinical(content.plan || content.evolution || '')
 
         return {
           id: report.id,
@@ -1700,7 +1717,7 @@ const ClinicalReports: React.FC<ClinicalReportsProps> = ({ className = '', onSha
                           {Object.entries(selectedReport.rawContent.perguntas_objetivas).map(([key, val]: [string, any]) => (
                             val && (
                               <p key={key}>
-                                <span className="text-slate-400">{key.replace(/_/g, ' ')}:</span> {stripClinical(val)}
+                                <span className="text-slate-400">{labelFromKey(key)}:</span> {stripClinical(val)}
                               </p>
                             )
                           ))}
@@ -1754,7 +1771,7 @@ const ClinicalReports: React.FC<ClinicalReportsProps> = ({ className = '', onSha
                             .filter(([_, val]) => typeof val === 'number' || typeof val === 'string' || typeof val === 'boolean')
                             .map(([key, val]: [string, any]) => (
                               <div key={key} className="bg-slate-900/50 rounded px-2 py-1">
-                                <span className="text-slate-400 text-xs">{key.replace(/_/g, ' ')}:</span>
+                                <span className="text-slate-400 text-xs">{labelFromKey(key)}:</span>
                                 <span className="text-emerald-300 ml-1 font-semibold">
                                   {typeof val === 'number' ? `${val}%` : String(val)}
                                 </span>

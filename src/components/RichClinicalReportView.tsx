@@ -52,6 +52,21 @@ const RichClinicalReportView: React.FC<RichClinicalReportViewProps> = ({ content
   const patSide = Array.isArray(familiar.lado_paterno) ? familiar.lado_paterno : []
   const habitos = Array.isArray(aec.habitos_vida) ? aec.habitos_vida : []
   const perguntas = aec.perguntas_objetivas && typeof aec.perguntas_objetivas === 'object' ? aec.perguntas_objetivas : null
+
+  // V1.9.306 — Labels canônicos pras Perguntas Objetivas (antes era key.replace
+  // '_' → ' ' que deixava "medicacoes regulares" em lowercase sem acento).
+  // Pedro identificou pós-retrofix Maria 16/05.
+  const PERGUNTA_LABELS: Record<string, string> = {
+    alergias: 'Alergias',
+    medicacoes_regulares: 'Medicações Regulares',
+    medicacoes_esporadicas: 'Medicações Esporádicas',
+    cirurgias: 'Cirurgias Prévias',
+    historico_familiar: 'Histórico Familiar',
+    historico_pessoal: 'Histórico Pessoal'
+  }
+  const labelFromKey = (key: string): string =>
+    PERGUNTA_LABELS[key] ||
+    key.replace(/_/g, ' ').replace(/(^|\s)\S/g, t => t.toUpperCase())
   const consenso = aec.consenso
 
   const isEmpty =
@@ -256,7 +271,7 @@ const RichClinicalReportView: React.FC<RichClinicalReportViewProps> = ({ content
             {Object.entries(perguntas).map(([key, val]: [string, any]) => (
               val && (
                 <p key={key}>
-                  <span className="text-slate-400">{key.replace(/_/g, ' ')}:</span> {strip(val)}
+                  <span className="text-slate-400">{labelFromKey(key)}:</span> {strip(val)}
                 </p>
               )
             ))}
