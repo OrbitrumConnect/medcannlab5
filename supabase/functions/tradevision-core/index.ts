@@ -2837,7 +2837,22 @@ Finalizar SEMPRE com:
         const isClinicalAssessmentStart = (norm.includes('avaliacao') || norm.includes('avaliação')) &&
             (norm.includes('inicial') || norm.includes('imre') || norm.includes('iniciar') || norm.includes('começar') || norm.includes('comecar') || norm.includes('do zero') || norm.includes('reiniciar'))
 
-        const shouldBypassInterceptors = isAecActive || isClinicalAssessmentStart;
+        // [V1.9.320] Causa raiz do bug "Você deseja abrir qual documento?" em
+        // racionalidades médicas (16-17/05/2026). O fullMessage do
+        // rationalityAnalysisService contém texto longo com palavras "ver",
+        // "buscar", "documento", "protocolo", "material", "consultar" — o que
+        // ativa detectDocumentRequest (linha 540) → smart_trigger linha 3135
+        // short-circuita ANTES de chamar GPT e retorna lista de docs. V1.9.316
+        // e V1.9.319 não pegavam porque atuam DEPOIS do GPT. Empíricamente:
+        // 102 análises OK (22/04→14/05) → 9 lixos após (15/05→17/05) com
+        // doc "A dama de stairway" no topo (updated 14/05 14h56 BRT).
+        // Bypass na fonte: detecta prompt fixo do service de racionalidade.
+        const isRationalityAnalysisMessage = !!message && (
+            message.includes('[RATIONALITY_ANALYSIS_MODE]') ||
+            /Analise este relatório clínico do ponto de vista/i.test(message)
+        )
+
+        const shouldBypassInterceptors = isAecActive || isClinicalAssessmentStart || isRationalityAnalysisMessage;
 
         console.log(`[DOC DETECT] isDocRequest=${isDocRequest}, isDocListRequest=${isDocListRequest}, isAnalyzeOpen=${isAnalyzeOpenDocRequest}, userId=${!!patientData?.user?.id}, realUserRole=${realUserRole}, userRole=${userRole}, normSnippet="${norm.substring(0, 80)}"`)
 
