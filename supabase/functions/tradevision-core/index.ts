@@ -4875,7 +4875,17 @@ AGORA: Analise o contexto. Se pedir Sistema Renal/Urinário, atue como LÚCIA ou
         }
 
         // Se for navegação, priorizamos o modo CLÍNICO (secretária master)
-        if (isNavigationRequest) {
+        // [V1.9.323-A2] Sub-patch coerência contextual: sticky teaching vence
+        // heurística lexical de navegação. Pedro testou 17/05 13:09: "obrigado!
+        // logo mais agendarei sua consulta" tinha "agend" → regex matchou navegação
+        // → desligou teaching → pipeline disparou (CONSENT_GATE salvou). Mas a
+        // mensagem era fala diegética dentro do roleplay, não navegação real.
+        // Empíricamente: isNavigationRequest só controla PERSONA (linha 4882) —
+        // VIP triggers reais (linhas 2646-2654) e GPT tags [NAVIGATE_*] funcionam
+        // independente. Logo, blindar persona vs heurística lexical é seguro.
+        // Estado persistente (sticky 30min) vence heurística per-turn. Escape:
+        // usuário diz "encerrando simulação" OU sticky expira aos 30min.
+        if (isNavigationRequest && ismState?.teaching_mode_persistent !== true) {
             isTeachingMode = false
         }
 
