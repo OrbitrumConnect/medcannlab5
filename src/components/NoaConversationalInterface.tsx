@@ -2831,8 +2831,12 @@ const NoaConversationalInterface = React.forwardRef<
     return (
       <>
         {/* Viewer Inline de Documento (abrir no chat) */}
+        {/* [V1.9.324-UI] lg:right-[640px] — em desktop grande, overlay respeita
+            a área do chat Nôa (600px width + 40px respiro) à direita. Antes
+            (inset-0 puro) o card cobria tela inteira e chat Nôa z-[9999]
+            sobrepunha. Agora coexistem visualmente. Mobile/tablet inalterado. */}
         {inlineDocOpen && (
-          <div className="fixed inset-0 z-[60] bg-black/70 flex items-center justify-center p-4">
+          <div className="fixed inset-0 lg:right-[640px] z-[60] bg-black/70 flex items-center justify-center p-4">
             <div className="w-full max-w-3xl rounded-2xl border border-slate-700 bg-slate-950 shadow-2xl">
               <div className="flex items-start justify-between gap-4 p-4 border-b border-slate-800">
                 <div className="min-w-0">
