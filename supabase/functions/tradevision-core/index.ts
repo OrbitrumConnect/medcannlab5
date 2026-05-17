@@ -4715,8 +4715,16 @@ AGORA: Analise o contexto. Se pedir Sistema Renal/Urinário, atue como LÚCIA ou
         // Bug corrigido: hoje Nôa não vê Pharmacokinetics CBD/CKD, inibition CB1 CKD,
         // ou outros papers do Ricardo. Após V1.9.308 ela cita quando perguntada.
         const isAecActiveForPatient = !!assessmentPhase && assessmentPhase !== 'COMPLETED' && assessmentPhase !== 'INTERRUPTED' && userRole === 'patient'
+        // [V1.9.316] Detecta tag de análise por racionalidade médica enviada pelo
+        // rationalityAnalysisService. Esse serviço JÁ injeta RAG curado por
+        // racionalidade (biomedical/MTC/ayurveda/homeopatia/integrativa) nas
+        // suas próprias linhas 341-370 com keywords específicas da escola.
+        // Duplicar com o RAG genérico V1.9.308 = inflar contexto + aumentar
+        // probabilidade do GPT classificar erroneamente como DOCUMENT_LIST
+        // (bug Ricardo 16/05 23h01: "Análise Biomédica" devolvia lista de PDFs).
+        const isRationalityAnalysis = !!message && message.includes('[RATIONALITY_ANALYSIS_MODE]')
         let knowledgeBlock = ''
-        if (message && message.length > 3 && !isAecActiveForPatient) {
+        if (message && message.length > 3 && !isAecActiveForPatient && !isRationalityAnalysis) {
             const keywords = message.split(' ')
                 .filter((w: string) => w.length > 3)
                 .map((w: string) => w.toLowerCase().replace(/[^a-z0-9áàâãéèêíïóôõöúçñ]/g, '')) // Sanitização leve
@@ -6304,7 +6312,15 @@ ${userInput.substring(0, 2000)}
         // Modelo selado: quando o GPT emite [DOCUMENT_LIST], Core governa e injeta lista ou abre 1 doc direto no chat
         const docTermFromMessage = sanitizeSearchTerm(stripInjectedContext(message || ''))
         let docTerm = docTermFromMessage
-        if (aiResponse?.includes(GPT_TRIGGERS.DOCUMENT_LIST) && patientData?.user?.id) {
+        // [V1.9.316] Bypass DOCUMENT_LIST quando a request veio do
+        // rationalityAnalysisService. Mesmo que o GPT classifique erroneamente
+        // o prompt "Analise este relatório clínico..." como pedido de listar
+        // documentos (keyword "avaliação clínica" no índice 4542), Core IGNORA
+        // o trigger e devolve a resposta natural da análise. Sem essa guarda,
+        // 2 das 5 racionalidades quebram (Biomédica + Integrativa) — empíricamente
+        // visto no log Ricardo 16/05 23h01.
+        const isRationalityRequest = !!message && message.includes('[RATIONALITY_ANALYSIS_MODE]')
+        if (aiResponse?.includes(GPT_TRIGGERS.DOCUMENT_LIST) && patientData?.user?.id && !isRationalityRequest) {
             const docList = await runDocumentListFlowFromTrigger(supabaseClient, patientData.user.id, realUserRole, docTerm, currentIntent)
             if (docList) {
                 if (docList.singleDoc) {
@@ -6333,8 +6349,11 @@ ${userInput.substring(0, 2000)}
                     textForUser = (textForUser.trim() + '\n\n' + docList.listText + "\n\nDiga \"listar mais\" para ver os próximos 5.").trim()
                 }
             }
-        } else if (patientData?.user?.id) {
+        } else if (patientData?.user?.id && !isRationalityRequest) {
             // Fallback: GPT disse que vai abrir um documento (ex.: "vou abrir o documento Próximos Passos") mas não emitiu [DOCUMENT_LIST]; extrair nome da resposta e abrir
+            // [V1.9.316] Idem ao bypass acima: requests de análise por racionalidade
+            // não devem abrir documentos automaticamente, mesmo se GPT mencionar título
+            // (ex.: análise biomédica pode citar "estudo X" como referência → não é pedido pra abrir).
             const termFromResponse = extractDocumentTermFromGPTResponse(aiResponse || '')
             if (termFromResponse) {
                 docTerm = termFromResponse

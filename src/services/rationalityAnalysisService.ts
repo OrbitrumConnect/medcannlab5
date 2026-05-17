@@ -438,8 +438,20 @@ FORMATAÇÃO (UI não renderiza markdown):
 - Listas numeradas (1. 2. 3.) ou com hífen (-).
 - SEÇÃO "RECOMENDAÇÕES" na verdade é "REFERÊNCIAS DA LITERATURA" — cada item começa com hífen (-), frase epistemológica curta, máximo 5 itens. Não é lista de ações a tomar, é síntese do que a escola diz sobre casos similares.`
 
-      // Mensagem completa para a IA (com RAG + diretrizes)
-      const fullMessage = `${rationalityPrompt}\n\n${reportContext}${patientHistoryContext}${knowledgeBaseContext}\n${analysisRequirements}\n\nCom base no relatório, no histórico do paciente e nas referências acima, forneça uma análise detalhada e personalizada segundo esta racionalidade médica, seguindo ESTRITAMENTE as diretrizes obrigatórias.`
+      // [V1.9.316] Tag invisível no início do prompt — identifica esta request
+      // ao Core (tradevision-core) como ANÁLISE POR RACIONALIDADE MÉDICA. Core lê
+      // a tag e:
+      //   1. Pula RAG paralelo V1.9.308 (este serviço já injetou RAG curado por
+      //      racionalidade nas linhas 341-370 — duplicar = inflar contexto +
+      //      aumentar drift do classificador)
+      //   2. Bypassa trigger [DOCUMENT_LIST] (índice 4542 do Core) — o prompt
+      //      começa com "Analise este relatório clínico..." que casa com keyword
+      //      "avaliação clínica" e fazia GPT emitir DOCUMENT_LIST, devolvendo
+      //      "Você deseja abrir qual documento?" ao invés de análise (bug
+      //      detectado por Ricardo 16/05 23h01 testando Maria das Dores).
+      // Fronteira clara: apenas requests com esta tag passam pelo bypass.
+      // Chat livre, AEC, navegação — todos intocados.
+      const fullMessage = `[RATIONALITY_ANALYSIS_MODE]\n${rationalityPrompt}\n\n${reportContext}${patientHistoryContext}${knowledgeBaseContext}\n${analysisRequirements}\n\nCom base no relatório, no histórico do paciente e nas referências acima, forneça uma análise detalhada e personalizada segundo esta racionalidade médica, seguindo ESTRITAMENTE as diretrizes obrigatórias.`
 
       // [V1.9.40] Log do payload — salva horas de debug se saída vier estranha.
       // Só os primeiros 1200 chars, evita poluir console com muito RAG.
