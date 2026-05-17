@@ -9,6 +9,8 @@ import IntegrativePrescriptions from '../components/IntegrativePrescriptions'
 import { ExamRequestModule } from '../components/ExamRequestModule'
 // V1.9.326 — médico anexa exames/laudos/resultados ao prontuário (Pedro+Ricardo 17/05)
 import ProfessionalPatientFiles from '../components/ProfessionalPatientFiles'
+// V1.9.327 — timeline narrativa mensal substitui placeholder "Nenhum gráfico disponível" (Pedro 17/05 opção B)
+import PatientClinicalTimeline from '../components/PatientClinicalTimeline'
 import {
   ArrowLeft,
   Search,
@@ -2321,11 +2323,10 @@ const PatientsManagement: React.FC<PatientsManagementProps> = ({ embedded = fals
                         </div>
                       )}
 
-                      {activeTab === 'charts' && (
-                        <div className="text-center text-slate-400 py-8">
-                          <TrendingUp className="w-12 h-12 mx-auto mb-3 text-slate-600" />
-                          <p>Nenhum gráfico disponível</p>
-                        </div>
+                      {activeTab === 'charts' && selectedPatient && (
+                        // V1.9.327 — timeline narrativa mensal derivada de reports+prescrições+appointments+exames.
+                        // Substitui placeholder estático. Sem chart lib nova (Pedro opção B 17/05).
+                        <PatientClinicalTimeline patientId={selectedPatient.id} />
                       )}
                     </div>
                   </div>
