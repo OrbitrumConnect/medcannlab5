@@ -325,9 +325,22 @@ export class NoaResidentAI {
       const platformIntent = this.platformFunctions.detectIntent(userMessage, userId, _conversationContext)
       console.log('[Noa] Intencao de plataforma:', platformIntent.type, platformIntent.metadata?.contextual ? '(contextual)' : '(strict)')
 
+      // [V1.9.317] Bypass de TODAS platform actions quando request é análise por
+      // racionalidade médica (tag injetada pelo rationalityAnalysisService em
+      // V1.9.316). Justificativa: prompt "Analise este relatório clínico..."
+      // dispara erroneamente intent REPORT_GENERATE no detector, que então
+      // executa platformFunctionsModule.generateReport(userId, platformData)
+      // criando relatório vazio (scores=0, content placeholder) atribuído ao
+      // userId do médico logado como patient_id. Bug pré-existente desde
+      // nov/2025 (~6 meses). Racionalidade APENAS analisa relatório que já
+      // existe — nunca precisa criar/agendar/buscar nada via platform action.
+      // Fronteira clara: tag é única e injetada exclusivamente pelo serviço de
+      // racionalidade (rationalityAnalysisService.ts:442). Zero falso positivo.
+      const isRationalityAnalysis = userMessage.includes('[RATIONALITY_ANALYSIS_MODE]')
+
       // Se for funcao da plataforma, executar acao ANTES de chamar o Assistant
       let platformActionResult: any = null
-      if (platformIntent.type !== 'NONE') {
+      if (platformIntent.type !== 'NONE' && !isRationalityAnalysis) {
         platformActionResult = await this.platformFunctions.executeAction(platformIntent, userId, platformData)
 
         // Se a acao requer resposta, adicionar contexto para o Assistant
