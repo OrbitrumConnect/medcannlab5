@@ -2864,6 +2864,12 @@ Finalizar SEMPRE com:
         }
 
         // 0) Total de documentos na base (ex.: "quantos documentos temos?")
+        // [V1.9.322] Pedro 17/05 detectou empíricamente bug pré-existente:
+        // resposta promete "pode pedir pelo número (ex.: 1, 2, 3)" mas
+        // NÃO criava pending_action implícita → "2" caía em fallback "Entendi.
+        // Para abrir um documento...". UX-copy mismatch desde commit a4c706c.
+        // Fix: ao responder count, JÁ cria pending com top 5 docs ordenados
+        // (mesma lógica do smart_trigger linha 3135). Agora "2" funciona direto.
         if (isDocCountRequest && !isClinicalAssessmentStart) {
             try {
                 let countQuery = supabaseClient.from('documents').select('*', { count: 'exact', head: true }).neq('category', 'slides')
@@ -2872,6 +2878,68 @@ Finalizar SEMPRE com:
                 }
                 const { count, error: countErr } = await countQuery
                 if (!countErr && typeof count === 'number') {
+                    // [V1.9.322] Cria pending_action implícita com top 5 docs
+                    // pra que "2" funcione direto sem pedir "listar documentos" antes.
+                    // Reusa lógica de filtros do smart_trigger 3135.
+                    if (patientData?.user?.id && count > 0) {
+                        try {
+                            let listQuery = supabaseClient
+                                .from('documents')
+                                .select('id, title, summary, category, target_audience, is_published, aiRelevance, file_url, file_type, created_at, updated_at')
+                                .neq('category', 'slides')
+                                .order('created_at', { ascending: false })
+                                .order('aiRelevance', { ascending: false })
+                                .limit(50)
+                            const { data: docsRaw } = await listQuery
+                            const listFiltered = (docsRaw || [])
+                                .filter((d: any) => !!d?.id && !!d?.title)
+                                .filter((d: any) => {
+                                    if (realUserRole === 'patient' || realUserRole === 'student') {
+                                        const aud = Array.isArray(d.target_audience) ? d.target_audience : []
+                                        const allowed = aud.includes(userRole) || aud.includes('all')
+                                        return allowed && d.is_published === true
+                                    }
+                                    return true
+                                })
+                                .sort((a: any, b: any) => {
+                                    const af = a.file_url ? 1 : 0
+                                    const bf = b.file_url ? 1 : 0
+                                    if (bf !== af) return bf - af
+                                    return Number(b.aiRelevance || 0) - Number(a.aiRelevance || 0)
+                                })
+                            const seen = new Set<string>()
+                            const top5 = listFiltered.filter((d: any) => {
+                                const k = String(d.title || '').trim().toLowerCase()
+                                if (!k || seen.has(k)) return false
+                                seen.add(k); return true
+                            }).slice(0, 5)
+                            if (top5.length > 0) {
+                                const top5Ids = top5.map((d: any) => d.id)
+                                const { data: contentRows } = await supabaseClient
+                                    .from('documents').select('id, content').in('id', top5Ids)
+                                const contentMap = new Map((contentRows || []).map((d: any) => [d.id, d.content]))
+                                const candidates: PendingActionCandidate[] = top5.map((d: any, idx: number) => ({
+                                    document_id: d.id,
+                                    title: d.title,
+                                    summary: d.summary,
+                                    content: contentMap.get(d.id) || null,
+                                    audience: Array.isArray(d.target_audience) ? d.target_audience : [],
+                                    category: d.category ?? null,
+                                    score: (d.aiRelevance ?? 0) * 10 + (d.file_url ? 3 : 0) + (5 - idx)
+                                }))
+                                await supabaseClient.from('noa_pending_actions').insert({
+                                    user_id: patientData.user.id,
+                                    kind: DOC_PENDING_KIND,
+                                    status: 'pending',
+                                    candidates,
+                                    context: { role: userRole, term: '', list_offset: 0, source: 'doc_count_implicit_v1_9_322' },
+                                    expires_at: new Date(Date.now() + 3 * 60 * 1000).toISOString()
+                                })
+                            }
+                        } catch (implicitErr) {
+                            console.warn('[V1.9.322] Falha ao criar pending implícita (não-bloqueante):', implicitErr)
+                        }
+                    }
                     return new Response(JSON.stringify({
                         text: `Temos atualmente **${count}** documento(s) na base. Você pode pedir pelo número (ex.: 1, 2, 3), pelo nome do documento, ou dizer "listar documentos" para eu mostrar os primeiros 5 — e depois "listar mais" para ver os próximos 5.`,
                         metadata: { intent: currentIntent, system: 'TradeVision Core V2', audited: true }
