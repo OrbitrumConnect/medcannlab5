@@ -7,6 +7,8 @@ import { useUserView } from '../hooks/useUserView'
 import { useToast } from '../contexts/ToastContext'
 import IntegrativePrescriptions from '../components/IntegrativePrescriptions'
 import { ExamRequestModule } from '../components/ExamRequestModule'
+// V1.9.326 — médico anexa exames/laudos/resultados ao prontuário (Pedro+Ricardo 17/05)
+import ProfessionalPatientFiles from '../components/ProfessionalPatientFiles'
 import {
   ArrowLeft,
   Search,
@@ -1302,53 +1304,8 @@ const PatientsManagement: React.FC<PatientsManagementProps> = ({ embedded = fals
     }
   }
 
-  const handleUploadFiles = async () => {
-    if (!selectedPatient) {
-      toast.info('Selecione um paciente primeiro')
-      return
-    }
-
-    const input = document.createElement('input')
-    input.type = 'file'
-    input.multiple = true
-    input.accept = '.pdf,.jpg,.jpeg,.png,.doc,.docx,.txt'
-
-    input.onchange = async (e) => {
-      const files = (e.target as HTMLInputElement).files
-      if (!files || files.length === 0) return
-
-      try {
-        let uploadedCount = 0
-        let errorCount = 0
-
-        for (const file of Array.from(files)) {
-          const filePath = `patient - files / ${selectedPatient.id}/${Date.now()}-${file.name}`
-
-          const { error } = await supabase.storage
-            .from('medical-files')
-            .upload(filePath, file)
-
-          if (error) {
-            console.error('Erro upload:', error)
-            errorCount++
-          } else {
-            uploadedCount++
-          }
-        }
-
-        if (uploadedCount > 0) {
-          toast.success('Upload concluído', `${uploadedCount} arquivo(s) enviado(s)${errorCount > 0 ? `. ${errorCount} falharam.` : ''}`)
-        } else {
-          toast.error('Erro no upload', 'Verifique se o bucket "medical-files" existe no Supabase Storage.')
-        }
-      } catch (error) {
-        console.error('Erro ao fazer upload:', error)
-        toast.error('Erro ao enviar arquivos')
-      }
-    }
-
-    input.click()
-  }
+  // V1.9.326 — handleUploadFiles legado removido (bucket "medical-files" inexistente + path malformado).
+  // Substituído por ProfessionalPatientFiles renderizado na aba "files" com fluxo completo via patient_documents.
 
   return (
     <div className={`${embedded ? 'h-full w-full' : 'min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900'}`}>
@@ -2348,20 +2305,13 @@ const PatientsManagement: React.FC<PatientsManagementProps> = ({ embedded = fals
                         </div>
                       )}
 
-                      {activeTab === 'files' && (
-                        <div className="space-y-4">
-                          <div className="text-center text-slate-400 py-8">
-                            <Archive className="w-12 h-12 mx-auto mb-3 text-slate-600" />
-                            <p>Nenhum arquivo anexado</p>
-                            <button
-                              onClick={handleUploadFiles}
-                              className="mt-4 px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-lg hover:from-purple-600 hover:to-pink-600 transition-colors"
-                            >
-                              <Upload className="w-5 h-5 inline mr-2" />
-                              Upload de Arquivos
-                            </button>
-                          </div>
-                        </div>
+                      {activeTab === 'files' && selectedPatient && (
+                        // V1.9.326 — substitui placeholder + handleUploadFiles quebrado (bucket medical-files inexistente).
+                        // Reusa patient_documents (V1.9.313). RLS: doc do médico é imutável pro paciente (opção A Pedro 17/05).
+                        <ProfessionalPatientFiles
+                          patientId={selectedPatient.id}
+                          patientName={selectedPatient.name}
+                        />
                       )}
 
                       {activeTab === 'receipts' && (
