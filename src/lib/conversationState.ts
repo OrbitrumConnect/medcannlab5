@@ -62,6 +62,21 @@ export interface ConversationState {
    * Reservado pra Fase 3 (HH fix). Null se nada aguardado.
    */
   active_slot: string | null
+  /**
+   * [V1.9.323-A] TEACHING mode persistente entre turns.
+   *
+   * Resolve Bug Arquitetural #1 (memoria feedback_teaching_mode_vazamento_camadas_17_05):
+   * antes, TEACHING era detectado por keyword no turn ATUAL (tradevision-core:4859).
+   * Em turns sem keyword ("o que mais?", "quando começou?"), desligava silenciosamente
+   * — mas GPT continuava roleplay porque histórico tinha contexto. Resultado:
+   * persona TEACHING no GPT vs infraestrutura CLINICAL no backend → pipeline disparado
+   * em vazio, agendamento real oferecido, consent_gate salvando por acaso.
+   *
+   * Fix: frontend declara explícito quando sessão TEACHING está ativa.
+   * Sticky por 30min após primeiro turn com keyword teaching. Core usa como OR
+   * adicional à detecção lexical existente.
+   */
+  teaching_mode_persistent: boolean
 }
 
 interface BuildArgs {
@@ -71,6 +86,8 @@ interface BuildArgs {
   physicianViewingAs?: string | null
   viewingAsRole?: string | null
   activeSlot?: string | null
+  /** [V1.9.323-A] Frontend declara TEACHING ativo (sticky 30min). */
+  teachingModePersistent?: boolean
 }
 
 /**
@@ -98,6 +115,7 @@ export function buildConversationState(args: BuildArgs): ConversationState {
     viewing_as_role: viewingAsNorm,
     real_role: realRoleNorm,
     active_slot: args.activeSlot ?? null,
+    teaching_mode_persistent: args.teachingModePersistent === true,
   }
 }
 

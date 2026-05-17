@@ -163,6 +163,51 @@ export class NoaResidentAI {
   private platformFunctions = getPlatformFunctionsModule()
   private activeAssessments: Map<string, IMREAssessmentState> = new Map()
 
+  /**
+   * [V1.9.323-A] TEACHING mode sticky por sessão.
+   *
+   * Resolve Bug Arquitetural #1 (memoria feedback_teaching_mode_vazamento_camadas_17_05):
+   * antes, TEACHING era detectado por keyword no turn ATUAL no Core (linha 4859).
+   * Em turns sem keyword desligava, mas GPT continuava roleplay por contexto
+   * histórico → persona TEACHING vs infraestrutura CLINICAL → pipeline disparado
+   * em vazio, agendamento real, etc.
+   *
+   * Fix: flag in-memory por userId com TTL 30 min. Primeiro turn com keyword
+   * teaching → seta `teachingStickyUntil[userId] = now + 30min`. Próximos turns
+   * dentro da janela → envia `teaching_mode_persistent=true` no conversation_state.
+   * Core usa como OR adicional à detecção lexical (não substitui — adiciona).
+   *
+   * Reset automático: expira após 30 min OU usuário disser keyword de fim
+   * ("encerrando simulação", "voltar ao normal", "fim do teste").
+   */
+  private teachingStickyUntil: Map<string, number> = new Map()
+  private static TEACHING_TTL_MS = 30 * 60 * 1000 // 30 min
+
+  /** [V1.9.323-A] Marca/checa/expira TEACHING sticky por userId. */
+  private isTeachingSessionActive(userId: string | undefined, userMessage: string): boolean {
+    if (!userId) return false
+    const now = Date.now()
+    const normMsg = (userMessage || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '')
+
+    // Keyword reset — usuário explicitamente encerra simulação
+    if (/\b(encerrando\s+simula|fim\s+(da|do)\s+(simula|teste|nivelamento)|voltar\s+ao\s+normal|sair\s+da\s+simula)\b/i.test(normMsg)) {
+      this.teachingStickyUntil.delete(userId)
+      return false
+    }
+
+    // Keyword start — primeiro turn com gatilho teaching seta sticky
+    if (/\b(simula|treina|caso\s+cl[ií]nic|teste|nivelamento|entrevista\s+cl[ií]nica|paciente\s+simula)/i.test(normMsg)) {
+      this.teachingStickyUntil.set(userId, now + NoaResidentAI.TEACHING_TTL_MS)
+      return true
+    }
+
+    // Sticky continuation — turn sem keyword mas janela ativa
+    const until = this.teachingStickyUntil.get(userId)
+    if (until && until > now) return true
+    if (until && until <= now) this.teachingStickyUntil.delete(userId) // GC
+    return false
+  }
+
 
   constructor() {
     this.config = {
@@ -2172,6 +2217,11 @@ export class NoaResidentAI {
       // aecSnapshot.consensusAgreed, aecPhysicianName), aqui consolidamos no
       // formato contratual. Fase 1 = só observabilidade; comportamento do Core
       // não muda.
+      // [V1.9.323-A] TEACHING sticky por userId (TTL 30min) — declarado
+      // explicitamente no payload pra Core não depender só de heurística lexical.
+      // userId no escopo deste método vem via rawUser.id (platformData.user.id).
+      const teachingPersistent = this.isTeachingSessionActive(rawUser?.id, userMessage)
+
       const conversation_state = buildConversationState({
         realRole: rawUser?.type || rawUser?.user_type,
         aecPhase: currentPhase,
@@ -2179,6 +2229,7 @@ export class NoaResidentAI {
         physicianViewingAs: aecPhysicianName ?? null,
         viewingAsRole: null, // reservado pra Fase 2 (CC fix tipoVisual)
         activeSlot: null,    // reservado pra Fase 3 (HH fix slot mapping)
+        teachingModePersistent: teachingPersistent, // [V1.9.323-A] sticky 30min
       })
 
       const payload = {

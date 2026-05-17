@@ -4848,15 +4848,29 @@ AGORA: Analise o contexto. Se pedir Sistema Renal/Urinário, atue como LÚCIA ou
         const isNavigationRequest = /\[NAVIGATE_|\[TRIGGER_SCHEDULING\]|terminal|atendimento|agenda|pacientes/.test(norm)
         const isAdmin = userRole === 'admin' || userRole === 'master' || userRole === 'professional'
 
-        let isTeachingMode = currentIntent === 'ENSINO';
+        // [V1.9.323-A] TEACHING detection EXPANDIDA — agora 2 sinais:
+        //   1. intent === 'ENSINO' (heurística lexical do platformFunctions, per-turn)
+        //   2. conversation_state.teaching_mode_persistent (sticky 30min do frontend)
+        //
+        // Antes (bug arquitetural #1, memory feedback_teaching_mode_vazamento_camadas_17_05):
+        // detecção SÓ por sinal #1 → keyword no turn atual. Turns sem keyword
+        // ("o que mais?", "quando começou?") desligavam silenciosamente — GPT
+        // continuava roleplay por contexto histórico, mas infraestrutura
+        // backend rodava CLINICAL → pipeline disparado em vazio, agendamento real.
+        //
+        // Fix V1.9.323-A: frontend declara TEACHING ativo (sticky) via conversation_state.
+        // Core usa OR — sinal #1 OU sinal #2 = TEACHING ativo.
+        let isTeachingMode = currentIntent === 'ENSINO' || ismState?.teaching_mode_persistent === true;
 
-        // Bloqueio de Ensino: Admins só entram em Ensino se pedirem explicitamente.
+        // Bloqueio de Ensino: Admins só entram em Ensino se pedirem explicitamente
+        // E não houver flag persistente do frontend.
         // [V1.9.10] Regex expandida: "simular" não casava em "simulação" (forma
         // substantiva que o frontend envia ao clicar no botão "Iniciar Simulação").
-        // Agora cobre: simula(r/ção/cao), treina(r/mento), caso clínico, teste,
-        // nivelamento, entrevista clínica — todas as formas que o AlunoDashboard
-        // e EnsinoDashboard disparam no sendInitialMessage.
-        if (isAdmin && !/\b(simula|treina|caso\s+cl[ií]nic|teste|nivelamento|entrevista\s+cl[ií]nica|paciente\s+simula)/i.test(norm)) {
+        // [V1.9.323-A] Adicionado guard: respeita teaching_mode_persistent do frontend
+        // (se sticky ativo, NÃO desliga mesmo sem keyword no turn atual).
+        if (isAdmin
+            && ismState?.teaching_mode_persistent !== true
+            && !/\b(simula|treina|caso\s+cl[ií]nic|teste|nivelamento|entrevista\s+cl[ií]nica|paciente\s+simula)/i.test(norm)) {
             isTeachingMode = false
         }
 
@@ -5937,7 +5951,14 @@ ${userInput.substring(0, 2000)}
             console.log(`⏳ [AEC GATE V1.5] Agendamento retido: Fluxo clínico ativo (${assessmentPhase}) tem soberania.`);
         }
 
-        if (aiResponse?.includes(TRIGGER_SCHEDULING_TOKEN) && (!isAecActive || overrideAllowedContext)) {
+        // [V1.9.323-A] GUARD TEACHING: scheduling trigger NÃO dispara em simulação.
+        // Antes (bug arquitetural #3, memory feedback_teaching_mode_vazamento_camadas_17_05):
+        // aluno terminando simulação via card "Confirmar Agendamento R$400 Dr. Ricardo"
+        // — agendamento real oferecido em contexto educacional. Em produção com 50 alunos
+        // testando = fricção real (cancelamentos, R$400 percebido como cobrança).
+        // Fix: backend NÃO emite shouldTriggerScheduling em teaching → frontend
+        // não recebe trigger → SchedulingWidget não renderiza.
+        if (aiResponse?.includes(TRIGGER_SCHEDULING_TOKEN) && (!isAecActive || overrideAllowedContext) && !isTeachingMode) {
             shouldTriggerScheduling = true;
         }
 
@@ -6096,7 +6117,17 @@ ${userInput.substring(0, 2000)}
 
         // 🧬 [BACK-TO-APRIL-4] AUTOMATIC CLINICAL ORCHESTRATION v2
         // Se a avaliação foi concluída, disparar o pipeline de inteligência clínica completo.
-        if (aiResponse?.includes('[ASSESSMENT_COMPLETED]')) {
+        //
+        // [V1.9.323-A] GUARD TEACHING: pipeline real NUNCA dispara em simulação.
+        // Antes (bug arquitetural #2, memory feedback_teaching_mode_vazamento_camadas_17_05):
+        // condição era APENAS a tag — em TEACHING o sistema injeta [ASSESSMENT_COMPLETED]
+        // igual (linha 5998 ~6020), disparava pipeline real com effectiveUserId do
+        // admin/professional como patient_id. CONSENT_GATE salvou por acaso (0 drafts
+        // falsos criados). Mas sorte arquitetural, não defesa intencional.
+        //
+        // Fix: pipeline só roda se NÃO for teaching. Em teaching, GPT já gera o
+        // feedback educacional dentro da própria resposta (TEACHING_PROMPT linha 4634).
+        if (aiResponse?.includes('[ASSESSMENT_COMPLETED]') && !isTeachingMode) {
             const orchestratorPatientId = assessmentData?.patient_id || effectiveUserId;
             if (orchestratorPatientId) {
                 // ──────────────────────────────────────────────────────────────
