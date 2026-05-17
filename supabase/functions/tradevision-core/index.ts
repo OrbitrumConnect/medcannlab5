@@ -4715,10 +4715,18 @@ AGORA: Analise o contexto. Se pedir Sistema Renal/Urinário, atue como LÚCIA ou
         // tocou eles mesmo). Guarda isRationalityAnalysis V1.9.316 PRESERVADA
         // como defesa em profundidade caso futuro reintrodução do RAG híbrido.
         const isAecActiveForPatient = !!assessmentPhase && assessmentPhase !== 'COMPLETED' && assessmentPhase !== 'INTERRUPTED' && userRole === 'patient'
-        // [V1.9.316] Mantém detecção de tag mesmo após revert V1.9.308 — defesa
-        // em profundidade. Se houver reintrodução futura de RAG paralelo, esta
-        // guarda já está pronta pra silenciar em racionalidades.
-        const isRationalityAnalysis = !!message && message.includes('[RATIONALITY_ANALYSIS_MODE]')
+        // [V1.9.319] Detecção robusta de request de análise por racionalidade
+        // médica. NÃO depende de tag injetada pelo frontend (Vercel pode estar
+        // com build atrasado). Detecta pelo conteúdo literal do prompt fixo
+        // do rationalityAnalysisService.ts:14-69, que SEMPRE começa com
+        // "Analise este relatório clínico do ponto de vista [escola]...".
+        // Cobre todas 5 racionalidades: biomedical, MTC, ayurvédica, homeopática,
+        // integrativa. Tag [RATIONALITY_ANALYSIS_MODE] V1.9.316 fica como
+        // canal redundante (defesa em profundidade quando frontend novo subir).
+        const isRationalityAnalysis = !!message && (
+            message.includes('[RATIONALITY_ANALYSIS_MODE]') ||
+            /Analise este relatório clínico do ponto de vista/i.test(message)
+        )
         let knowledgeBlock = ''
         if (message && message.length > 3 && !isAecActiveForPatient && !isRationalityAnalysis) {
             const keywords = message.split(' ')
@@ -6266,7 +6274,12 @@ ${userInput.substring(0, 2000)}
         // o trigger e devolve a resposta natural da análise. Sem essa guarda,
         // 2 das 5 racionalidades quebram (Biomédica + Integrativa) — empíricamente
         // visto no log Ricardo 16/05 23h01.
-        const isRationalityRequest = !!message && message.includes('[RATIONALITY_ANALYSIS_MODE]')
+        // [V1.9.319] Detecção robusta — não depende de tag do frontend.
+        // Detecta prompt fixo do rationalityAnalysisService (cobre 5 racionalidades).
+        const isRationalityRequest = !!message && (
+            message.includes('[RATIONALITY_ANALYSIS_MODE]') ||
+            /Analise este relatório clínico do ponto de vista/i.test(message)
+        )
         if (aiResponse?.includes(GPT_TRIGGERS.DOCUMENT_LIST) && patientData?.user?.id && !isRationalityRequest) {
             const docList = await runDocumentListFlowFromTrigger(supabaseClient, patientData.user.id, realUserRole, docTerm, currentIntent)
             if (docList) {
