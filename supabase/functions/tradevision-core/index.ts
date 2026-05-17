@@ -2526,14 +2526,17 @@ Finalizar SEMPRE com:
         }
 
         // elevation logic
+        // [V1.9.321] Audit empírico 17/05 confirmou: 4 emails fantasmas na lista
+        // (eduardo.faveret@medcannlab.com, eduardo@medcannlab.com,
+        // joao@medcannlab.com, jeduardo@gmail.com) — nenhum cadastrado em
+        // auth.users. Remoção é defesa em profundidade: se alguém criar conta
+        // futura com qualquer um deles, NÃO ganha elevation automática a master.
+        // Lista agora reflete realidade DB: 3 founders cadastrados.
+        // Memória: audit_profundo_5_camadas_17_05.md
         const founders = [
             'phpg69@gmail.com',
             'rrvalenca@gmail.com',
-            'eduardoscfaveret@gmail.com',
-            'eduardo.faveret@medcannlab.com',
-            'eduardo@medcannlab.com',
-            'joao@medcannlab.com',
-            'jeduardo@gmail.com'
+            'eduardoscfaveret@gmail.com'
         ]
 
         // [V1.9.59 S4 cirúrgico] effectiveEmail APENAS do JWT.
@@ -6156,6 +6159,17 @@ ${userInput.substring(0, 2000)}
             if (isTeachingMode) simbologia = ' Simulação de Paciente';
             else if (currentIntent === 'ADMIN') simbologia = '🔵 Escuta Institucional';
 
+            // [V1.9.321] Cost observability EXPANDIDA pra noa_logs.payload.
+            // Audit empírico 17/05 revelou: V1.9.238 popula cost_usd_estimate APENAS
+            // em ai_chat_interactions (dual-write), e só em 65/1995 chats (3%) —
+            // o try/catch silencioso falha frequentemente.
+            // Como noa_logs é o canal AUDITORIA PRIMÁRIA (insert obrigatório com
+            // retry 3x), replicar cost_usd aqui garante observabilidade econômica
+            // confiável. Decisões de pricing/rate-limit dependem disso.
+            const _promptTokens = completion.usage?.prompt_tokens || 0
+            const _completionTokens = completion.usage?.completion_tokens || 0
+            const _costUsd = calcCostUsd(completion.model, _promptTokens, _completionTokens)
+
             // Colunas reais: user_id, appointment_id, interaction_type, payload (jsonb)
             const payload = {
                 interaction_id,
@@ -6163,6 +6177,11 @@ ${userInput.substring(0, 2000)}
                 output: aiResponse,
                 model: completion.model,
                 tokens: completion.usage?.total_tokens || 0,
+                // [V1.9.321] Observabilidade econômica granular
+                tokens_input: _promptTokens,
+                tokens_output: _completionTokens,
+                cost_usd: _costUsd,
+                pricing_version: PRICING_VERSION,
                 context: {
                     intent: currentIntent,
                     mode: isTeachingMode ? 'TEACHING_ROLEPLAY' : 'CLINICAL',
