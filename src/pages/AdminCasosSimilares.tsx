@@ -11,7 +11,10 @@ import {
   ChevronLeft,
   FileText,
   DollarSign,
-  Sparkles
+  Sparkles,
+  X,
+  ExternalLink,
+  User
 } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
@@ -72,6 +75,49 @@ const AdminCasosSimilares: React.FC = () => {
   const [result, setResult] = useState<SearchResult | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [monthlyCost, setMonthlyCost] = useState<number>(0)
+  // [V1.9.356] (18/05): modal preview do caso
+  const [selectedCase, setSelectedCase] = useState<CaseResult | null>(null)
+  const [caseDetails, setCaseDetails] = useState<any>(null)
+  const [loadingCaseDetails, setLoadingCaseDetails] = useState(false)
+
+  // Carregar detalhes completos quando seleciona caso (content jsonb + racionalidades full)
+  useEffect(() => {
+    if (!selectedCase) {
+      setCaseDetails(null)
+      return
+    }
+    let cancelled = false
+    const loadDetails = async () => {
+      setLoadingCaseDetails(true)
+      try {
+        const [reportRes, ratRes] = await Promise.all([
+          supabase.from('clinical_reports').select('content, signed_at, status').eq('id', selectedCase.reportId).single(),
+          supabase.from('clinical_rationalities').select('rationality_type, assessment, created_at').eq('patient_id', selectedCase.patientId).order('created_at', { ascending: false }).limit(10),
+        ])
+        if (cancelled) return
+        setCaseDetails({
+          content: reportRes.data?.content,
+          signed_at: reportRes.data?.signed_at,
+          status: reportRes.data?.status,
+          rationalities: ratRes.data || [],
+        })
+      } finally {
+        if (!cancelled) setLoadingCaseDetails(false)
+      }
+    }
+    void loadDetails()
+    return () => { cancelled = true }
+  }, [selectedCase])
+
+  // ESC fecha modal
+  useEffect(() => {
+    if (!selectedCase) return
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setSelectedCase(null)
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [selectedCase])
 
   // Carregar custo mensal acumulado (admin spike — só Casos Similares = simbologia própria)
   useEffect(() => {
@@ -378,7 +424,8 @@ const AdminCasosSimilares: React.FC = () => {
                 {result.cases.map((c, idx) => (
                   <div
                     key={c.reportId}
-                    className="bg-slate-800/40 border border-slate-700/50 rounded-lg p-4 hover:border-purple-500/30 transition-colors"
+                    onClick={() => setSelectedCase(c)}
+                    className="bg-slate-800/40 border border-slate-700/50 rounded-lg p-4 hover:border-purple-500/40 hover:bg-slate-800/60 transition-colors cursor-pointer group"
                   >
                     <div className="flex items-start justify-between gap-3 mb-2">
                       <div>
@@ -427,6 +474,120 @@ const AdminCasosSimilares: React.FC = () => {
           </div>
         )}
       </div>
+
+      {/* [V1.9.356] Modal preview do caso — abre quando clica em qualquer card */}
+      {selectedCase && (
+        <div
+          className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-150"
+          onClick={() => setSelectedCase(null)}
+        >
+          <div
+            className="bg-slate-900 border border-slate-700 rounded-xl max-w-3xl w-full max-h-[85vh] overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header modal */}
+            <div className="sticky top-0 bg-slate-900 border-b border-slate-700/50 px-6 py-4 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-lg bg-purple-500/10 border border-purple-500/20">
+                  <User className="w-4 h-4 text-purple-400" />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-white">{selectedCase.patientName}</h3>
+                  <p className="text-xs text-slate-400">{formatDate(selectedCase.createdAt)}</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setSelectedCase(null)}
+                className="p-2 hover:bg-slate-800 rounded-lg transition-colors"
+                title="Fechar (ESC)"
+              >
+                <X className="w-4 h-4 text-slate-400" />
+              </button>
+            </div>
+
+            <div className="p-6 space-y-5">
+              {loadingCaseDetails ? (
+                <div className="text-center py-8">
+                  <Loader2 className="w-6 h-6 text-purple-400 animate-spin mx-auto mb-2" />
+                  <p className="text-xs text-slate-500">Carregando detalhes...</p>
+                </div>
+              ) : (
+                <>
+                  {/* Status */}
+                  {caseDetails?.signed_at && (
+                    <div className="flex items-center gap-2 text-xs">
+                      <span className="px-2 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 font-semibold">
+                        Assinado em {formatDate(caseDetails.signed_at)}
+                      </span>
+                    </div>
+                  )}
+
+                  {/* Queixa principal */}
+                  <div>
+                    <h4 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">Queixa Principal</h4>
+                    <p className="text-sm text-slate-200 leading-relaxed">
+                      {caseDetails?.content?.queixa_principal || caseDetails?.content?.chiefComplaint || selectedCase.queixaPrincipal || '—'}
+                    </p>
+                  </div>
+
+                  {/* Lista indiciária */}
+                  {Array.isArray(caseDetails?.content?.lista_indiciaria) && caseDetails.content.lista_indiciaria.length > 0 && (
+                    <div>
+                      <h4 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">Lista Indiciária</h4>
+                      <ul className="space-y-1">
+                        {caseDetails.content.lista_indiciaria.map((item: any, i: number) => (
+                          <li key={i} className="text-xs text-slate-300 flex gap-2">
+                            <span className="text-purple-400">▸</span>
+                            <span>{typeof item === 'string' ? item : (item?.label || JSON.stringify(item))}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
+                  {/* Racionalidades aplicadas — full */}
+                  {caseDetails?.rationalities && caseDetails.rationalities.length > 0 && (
+                    <div>
+                      <h4 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">
+                        Racionalidades Aplicadas ({caseDetails.rationalities.length})
+                      </h4>
+                      <div className="space-y-2">
+                        {caseDetails.rationalities.map((r: any, i: number) => (
+                          <div key={i} className="bg-slate-800/50 border border-slate-700/50 rounded-lg p-3">
+                            <div className="flex items-center justify-between mb-1.5">
+                              <span className="px-2 py-0.5 text-[10px] bg-purple-500/15 text-purple-300 border border-purple-500/30 rounded-full font-semibold">
+                                {RATIONALITY_LABELS[r.rationality_type as RationalityType] || r.rationality_type}
+                              </span>
+                              <span className="text-[10px] text-slate-500">{formatDate(r.created_at)}</span>
+                            </div>
+                            <p className="text-xs text-slate-300 leading-relaxed">
+                              {r.assessment ? r.assessment.substring(0, 350) + (r.assessment.length > 350 ? '...' : '') : '—'}
+                            </p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Ação navegar pro report completo */}
+                  <div className="pt-3 border-t border-slate-700/50 flex items-center justify-between flex-wrap gap-2">
+                    <p className="text-[10px] text-slate-500">
+                      💡 Sistema agrega + apresenta. Decisão clínica é do médico (CFM 2.314).
+                    </p>
+                    <button
+                      onClick={() => navigate(`/app/clinica/profissional/dashboard?section=terminal-clinico&tab=patient-focus`)}
+                      className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-purple-300 hover:text-purple-200 hover:bg-purple-500/10 rounded-lg transition-colors"
+                    >
+                      <ExternalLink className="w-3 h-3" />
+                      Abrir no prontuário
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
