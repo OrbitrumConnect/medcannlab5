@@ -479,10 +479,16 @@ const ProfessionalSchedulingWidget: React.FC<ProfessionalSchedulingWidgetProps> 
               </button>
             </div>
 
-            {/* [V1.9.347] (18/05): margem entre células mais nítida (gap-px→gap-1.5 = 6px). */}
-            {/* Células ganharam border completa + rounded-md = visual de cards separados. */}
-            {/* Wrapper sem background (transparente). Pedro pediu nítido mas não muito grande. */}
-            <div className="grid grid-cols-7 gap-1.5">
+            {/* [V1.9.348] (18/05): 5 quick wins polish em 1 commit: */}
+            {/* 1. Animação fade-in ao trocar mês (key=year-month força remount + animate-in) */}
+            {/* 2. Densidade responsiva: text-[10px] mobile → text-[11px] desktop */}
+            {/* 3. Linha sutil entre semanas: cells Domingo (i%7===0) ganham margem-top sutil */}
+            {/* 4. Hover tooltip nativo: title="X consultas, Y confirmadas" */}
+            {/* 5. Badge +N polish: background pill emerald em vez de texto plano */}
+            <div
+              key={`${year}-${month}`}
+              className="grid grid-cols-7 gap-1.5 animate-in fade-in slide-in-from-bottom-1 duration-200"
+            >
               {['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'].map((day) => (
                 <div key={day} className="bg-slate-900/60 text-center text-slate-500 text-[10px] font-bold py-1.5 uppercase tracking-wider rounded-md border border-slate-600/40">
                   {day}
@@ -495,20 +501,28 @@ const ProfessionalSchedulingWidget: React.FC<ProfessionalSchedulingWidgetProps> 
                 const day = i + 1
                 const dayAppointments = getAppointmentsForDay(day)
                 const isToday = new Date().toDateString() === new Date(year, month, day).toDateString()
+                // V1.9.348: tooltip nativo + dia da semana pra marcação sutil de Domingo
+                const dayOfWeek = (firstDay + i) % 7
+                const isSunday = dayOfWeek === 0
+                const confirmedCount = dayAppointments.filter(a => ['confirmed', 'scheduled'].includes(a.status)).length
+                const tooltipText = dayAppointments.length === 0
+                  ? `${day} — sem agendamentos`
+                  : `${dayAppointments.length} ${dayAppointments.length === 1 ? 'agendamento' : 'agendamentos'}${confirmedCount > 0 ? ` · ${confirmedCount} confirmado${confirmedCount > 1 ? 's' : ''}` : ''}`
 
                 return (
                   <div
                     key={day}
+                    title={tooltipText}
                     onClick={() => {
                       const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`
                       setSelectedDay({ day, dateStr })
                       setIsDayModalOpen(true)
                     }}
-                    className={`bg-slate-800/50 min-h-[72px] p-1 hover:bg-slate-700/50 transition-all rounded-md border relative group cursor-pointer ${isToday ? 'ring-2 ring-emerald-500/50 bg-emerald-500/8 border-emerald-500/40' : 'border-slate-600/40 hover:border-slate-500/60'}`}
+                    className={`bg-slate-800/50 min-h-[72px] p-1 hover:bg-slate-700/50 transition-all rounded-md border relative group cursor-pointer ${isToday ? 'ring-2 ring-emerald-500/50 bg-emerald-500/8 border-emerald-500/40' : 'border-slate-600/40 hover:border-slate-500/60'} ${isSunday ? 'mt-0.5' : ''}`}
                   >
                     {isToday && <div className="absolute top-0 left-0 w-full h-0.5 bg-emerald-500 rounded-b" />}
                     <div className="flex justify-end mb-0.5">
-                      <span className={`text-[11px] font-bold ${isToday ? 'bg-emerald-500 text-slate-950 w-5 h-5 rounded-md flex items-center justify-center shadow-sm' : 'text-slate-500 group-hover:text-slate-300'}`}>
+                      <span className={`text-[10px] sm:text-[11px] font-bold ${isToday ? 'bg-emerald-500 text-slate-950 w-5 h-5 rounded-md flex items-center justify-center shadow-sm' : 'text-slate-500 group-hover:text-slate-300'}`}>
                         {day}
                       </span>
                     </div>
@@ -516,17 +530,19 @@ const ProfessionalSchedulingWidget: React.FC<ProfessionalSchedulingWidgetProps> 
                       {dayAppointments.slice(0, 2).map(app => (
                         <div
                           key={app.id}
-                          className="w-full text-left text-[9px] bg-slate-900/70 border border-slate-600/50 rounded-md px-1 py-0.5 truncate"
+                          className="w-full text-left text-[9px] sm:text-[10px] bg-slate-900/70 border border-slate-600/50 rounded-md px-1 py-0.5 truncate"
                         >
                           <span className="text-slate-300 font-medium">{app.time}</span>
                           <span className="block truncate text-slate-500 capitalize">{app.patientName.toLowerCase()}</span>
                         </div>
                       ))}
                       {dayAppointments.length > 2 && (
-                        <div className="text-[8px] font-semibold text-emerald-500/70 text-center pt-0.5">+{dayAppointments.length - 2}</div>
+                        <div className="text-[8px] sm:text-[9px] font-bold text-emerald-300 text-center pt-0.5">
+                          <span className="bg-emerald-500/20 border border-emerald-500/30 rounded-full px-1.5 py-0.5">+{dayAppointments.length - 2}</span>
+                        </div>
                       )}
                       {dayAppointments.length === 0 && (
-                        <div className="opacity-0 group-hover:opacity-100 transition-opacity text-[8px] text-slate-600 text-center pt-1">Ver dia</div>
+                        <div className="opacity-0 group-hover:opacity-100 transition-opacity text-[8px] sm:text-[9px] text-slate-600 text-center pt-1">Ver dia</div>
                       )}
                     </div>
                   </div>
