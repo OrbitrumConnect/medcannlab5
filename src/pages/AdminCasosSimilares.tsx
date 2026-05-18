@@ -14,11 +14,13 @@ import {
   Sparkles,
   X,
   ExternalLink,
-  User
+  User,
+  Zap
 } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
 import { simpleCache } from '../lib/simpleCache'
+import { NoaResidentAI } from '../lib/noaResidentAI'
 
 // [V1.9.354] (18/05/2026) — Casos Similares Admin Spike (Fase 1)
 // Memory: project_casos_similares_memoria_clinica_institucional_18_05
@@ -79,6 +81,9 @@ const AdminCasosSimilares: React.FC = () => {
   const [selectedCase, setSelectedCase] = useState<CaseResult | null>(null)
   const [caseDetails, setCaseDetails] = useState<any>(null)
   const [loadingCaseDetails, setLoadingCaseDetails] = useState(false)
+  // [V1.9.357] (18/05): toggle síntese IA (GPT real) vs determinística (default)
+  const [useGPTSynthesis, setUseGPTSynthesis] = useState(false)
+  const [sessionCost, setSessionCost] = useState(0)
 
   // Carregar detalhes completos quando seleciona caso (content jsonb + racionalidades full)
   useEffect(() => {
@@ -154,8 +159,8 @@ const AdminCasosSimilares: React.FC = () => {
     setError(null)
     setLoading(true)
 
-    // Cache key
-    const cacheKey = `casos-similares:${searchTerm.trim().toLowerCase()}:${rationalityFilter}:${periodFilter}`
+    // Cache key inclui toggle pra separar (síntese GPT vs determinística têm output diferente)
+    const cacheKey = `casos-similares:${searchTerm.trim().toLowerCase()}:${rationalityFilter}:${periodFilter}:gpt-${useGPTSynthesis}`
     const cached = simpleCache.get<SearchResult>(cacheKey)
     if (cached) {
       setResult({ ...cached, cached: true })
@@ -255,19 +260,77 @@ const AdminCasosSimilares: React.FC = () => {
         .map(([type, count]) => `${RATIONALITY_LABELS[type as RationalityType] || type}: ${count}`)
         .join(', ')
 
-      // Síntese local (sem GPT) — Fase 1 admin spike economiza custo, mostra agregação determinística
-      const synthesis = `Encontrados ${reportsList.length} relatórios com "${searchTerm}" nos últimos ${periodFilter} dias. ` +
-        `Em ${patientIds.length} ${patientIds.length === 1 ? 'paciente único' : 'pacientes únicos'}. ` +
-        (totalRationalitiesApplied > 0
-          ? `Total de ${totalRationalitiesApplied} racionalidades aplicadas (${counts}). `
-          : 'Nenhuma racionalidade aplicada ainda nestes casos. ') +
-        `Sistema agrega e apresenta. Interpretação clínica é responsabilidade do médico.`
+      // Síntese — V1.9.357: toggle entre determinística (default) ou GPT real
+      let synthesis: string
+      let synthesisCost = 0
+
+      if (useGPTSynthesis && cases.length > 0) {
+        // Síntese IA — chama GPT-4o-mini via noaResidentAI com prompt agregador curado
+        // Tag [CASOS_SIMILARES_AGGREGATION_MODE] sinaliza ao Core que é agregação,
+        // não consulta clínica individual. Anti-alucinação: prompt restringe a fatos.
+        try {
+          const rationalityExtracts = (rationalities || []).slice(0, 8).map((r: any) => ({
+            type: RATIONALITY_LABELS[r.rationality_type as RationalityType] || r.rationality_type,
+            extract: r.assessment ? r.assessment.substring(0, 300) : '',
+          }))
+          const queixas = cases.map(c => `- ${c.queixaPrincipal}`).join('\n')
+          const extracts = rationalityExtracts.map(r => `[${r.type}]: ${r.extract}`).join('\n\n')
+
+          const aggregatorPrompt = `[CASOS_SIMILARES_AGGREGATION_MODE]
+
+Você é a Nôa em modo agregação. NÃO sugira conduta clínica. NÃO infira diagnóstico individual. Responda APENAS com base nos dados fornecidos. Use linguagem técnica + agregada.
+
+CONTEXTO:
+- Termo de busca: "${searchTerm}"
+- Período: últimos ${periodFilter} dias
+- Filtro racionalidade: ${RATIONALITY_LABELS[rationalityFilter]}
+- ${reportsList.length} relatórios encontrados
+- ${patientIds.length} paciente${patientIds.length === 1 ? '' : 's'} único${patientIds.length === 1 ? '' : 's'}
+- ${totalRationalitiesApplied} racionalidades aplicadas (${counts})
+
+QUEIXAS PRINCIPAIS:
+${queixas}
+
+EXTRATOS DE RACIONALIDADES APLICADAS:
+${extracts}
+
+TAREFA:
+Em 3-5 parágrafos curtos, agregue os padrões observáveis:
+1. O que esses casos têm em comum (sintomas, contexto)?
+2. Como as racionalidades aplicadas convergem ou divergem?
+3. Sinalize evidências de padrões recorrentes vs casos isolados.
+
+REGRAS RÍGIDAS:
+- NÃO sugira tratamento.
+- NÃO use "recomendo", "deveria", "indica-se".
+- NÃO infira chance de melhora.
+- Use "casos sugerem...", "observa-se...", "X de Y casos apresentam...".
+- Termine com: "Sistema agrega e apresenta. Decisão clínica é responsabilidade do médico (CFM 2.314)."`
+
+          const noa = new NoaResidentAI()
+          const response = await noa.processMessage(aggregatorPrompt, user?.id, user?.email)
+          synthesis = response.content
+          synthesisCost = 0.03 // estimativa GPT-4o-mini agregação ~3k tokens input + ~500 output
+          setSessionCost(prev => prev + synthesisCost)
+        } catch (gptErr: any) {
+          console.warn('[CasosSimilares] GPT síntese falhou, fallback determinística:', gptErr)
+          synthesis = `Encontrados ${reportsList.length} relatórios com "${searchTerm}" nos últimos ${periodFilter} dias. Em ${patientIds.length} ${patientIds.length === 1 ? 'paciente único' : 'pacientes únicos'}. Total de ${totalRationalitiesApplied} racionalidades aplicadas (${counts}). ⚠️ Síntese IA indisponível — fallback determinístico.`
+        }
+      } else {
+        // Síntese determinística (default — custo zero)
+        synthesis = `Encontrados ${reportsList.length} relatórios com "${searchTerm}" nos últimos ${periodFilter} dias. ` +
+          `Em ${patientIds.length} ${patientIds.length === 1 ? 'paciente único' : 'pacientes únicos'}. ` +
+          (totalRationalitiesApplied > 0
+            ? `Total de ${totalRationalitiesApplied} racionalidades aplicadas (${counts}). `
+            : 'Nenhuma racionalidade aplicada ainda nestes casos. ') +
+          `Sistema agrega e apresenta. Interpretação clínica é responsabilidade do médico.`
+      }
 
       const finalResult: SearchResult = {
         cases,
         synthesis,
         totalFound: reportsList.length,
-        costUsd: 0, // Síntese local em V1.9.354 (sem GPT). Versões futuras: chamar GPT
+        costUsd: synthesisCost,
         cached: false,
       }
 
@@ -368,6 +431,30 @@ const AdminCasosSimilares: React.FC = () => {
               </div>
             </div>
 
+            {/* [V1.9.357] Toggle síntese IA — opt-in com aviso de custo */}
+            <div className="flex items-center justify-between gap-3 p-3 rounded-lg bg-slate-900/50 border border-slate-700/50">
+              <div className="flex items-center gap-2.5">
+                <Zap className={`w-4 h-4 ${useGPTSynthesis ? 'text-yellow-400' : 'text-slate-500'}`} />
+                <div>
+                  <div className="text-xs font-semibold text-white">
+                    Síntese IA (Nôa agregadora)
+                  </div>
+                  <div className="text-[10px] text-slate-500">
+                    {useGPTSynthesis
+                      ? `Custo estimado: ~$0.03/busca · Sessão atual: $${sessionCost.toFixed(2)}`
+                      : 'Default: síntese determinística ($0, instantânea)'}
+                  </div>
+                </div>
+              </div>
+              <button
+                onClick={() => setUseGPTSynthesis(prev => !prev)}
+                className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${useGPTSynthesis ? 'bg-yellow-500' : 'bg-slate-600'}`}
+                title={useGPTSynthesis ? 'Desativar IA' : 'Ativar IA (custo ~$0.03/busca)'}
+              >
+                <span className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform ${useGPTSynthesis ? 'translate-x-5' : 'translate-x-0.5'}`} />
+              </button>
+            </div>
+
             <button
               onClick={handleSearch}
               disabled={loading || !searchTerm.trim()}
@@ -376,12 +463,12 @@ const AdminCasosSimilares: React.FC = () => {
               {loading ? (
                 <>
                   <Loader2 className="w-4 h-4 animate-spin" />
-                  Buscando...
+                  {useGPTSynthesis ? 'Buscando + IA sintetizando...' : 'Buscando...'}
                 </>
               ) : (
                 <>
                   <Search className="w-4 h-4" />
-                  Buscar
+                  Buscar {useGPTSynthesis && <span className="text-yellow-300 text-xs ml-1">⚡ IA</span>}
                 </>
               )}
             </button>
@@ -401,14 +488,19 @@ const AdminCasosSimilares: React.FC = () => {
           <div className="space-y-6">
             {/* Síntese */}
             <div className="bg-purple-500/5 border border-purple-500/30 rounded-xl p-5">
-              <h2 className="text-sm font-bold text-purple-300 uppercase tracking-wider mb-3 flex items-center gap-2">
+              <h2 className="text-sm font-bold text-purple-300 uppercase tracking-wider mb-3 flex items-center gap-2 flex-wrap">
                 <Brain className="w-4 h-4" />
-                Síntese (agregação determinística)
+                {result.costUsd > 0 ? 'Síntese (IA agregadora)' : 'Síntese (agregação determinística)'}
+                {result.costUsd > 0 && (
+                  <span className="text-[10px] font-normal bg-yellow-500/15 text-yellow-300 border border-yellow-500/30 px-2 py-0.5 rounded inline-flex items-center gap-1">
+                    <Zap className="w-2.5 h-2.5" /> IA · ${result.costUsd.toFixed(2)}
+                  </span>
+                )}
                 {result.cached && (
                   <span className="text-[10px] font-normal text-slate-500 bg-slate-800 px-2 py-0.5 rounded">cache</span>
                 )}
               </h2>
-              <p className="text-sm text-slate-200 leading-relaxed">{result.synthesis}</p>
+              <p className="text-sm text-slate-200 leading-relaxed whitespace-pre-line">{result.synthesis}</p>
               <p className="text-[10px] text-slate-500 mt-3 leading-relaxed">
                 💡 Sistema agrega + apresenta. Decisão clínica é responsabilidade do médico (CFM 2.314).
               </p>
