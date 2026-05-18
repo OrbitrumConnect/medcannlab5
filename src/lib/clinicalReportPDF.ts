@@ -151,14 +151,18 @@ export function generateClinicalReportPDF(opts: GeneratePDFOptions): jsPDF {
     doc.setTextColor(BRAND.muted)
     doc.setFont('helvetica', 'normal')
     doc.setFontSize(7.5)
+    // V1.9.333 (18/05) — Footer honesto. Este PDF eh template visual jsPDF, nao
+    // eh assinado via sign-pdf-icp. Hash mostrado eh referencia ao report-fonte
+    // (que SIM passou por digital-signature em outro fluxo), nao deste PDF
+    // gerado em runtime. Ver feedback_linguagem_estado_real_nao_identidade_16_05.
     doc.text(
-      'Documento assinado digitalmente · Lei 14.063/2020 + CFM 2.314/2022',
+      'Relatorio clinico · Documento informativo · Referencia ao ato medico individual assinado',
       PAGE.marginX,
       PAGE.height - 9
     )
     if (signatureHashShort) {
       doc.text(
-        `ICP-Brasil: ${signatureHashShort}`,
+        `Ref. relatorio-fonte: ${signatureHashShort}`,
         PAGE.marginX,
         PAGE.height - 5
       )
@@ -549,9 +553,14 @@ export function drawBrandedPageChrome(doc: jsPDF, opts: { pageNumber: number; si
   doc.setTextColor(BRAND.muted)
   doc.setFont('helvetica', 'normal')
   doc.setFontSize(7.5)
-  doc.text('Documento assinado digitalmente · Lei 14.063/2020 + CFM 2.314/2022', PAGE.marginX, PAGE.height - 9)
+  // V1.9.333 (18/05) — Footer honesto pos-audit. Este PDF eh template visual jsPDF,
+  // NAO eh assinado digitalmente via sign-pdf-icp (PBAD AD-RB CONFORME esta apenas
+  // em prescricoes/atestados/exames via Edge digital-signature). Hash mostrado eh
+  // referencia ao report-fonte (assinado separadamente), nao deste PDF gerado em
+  // runtime. Memory: feedback_linguagem_estado_real_nao_identidade_16_05.
+  doc.text('Comparativo informativo · Analises auxiliares por IA · Nao substitui laudo/prescricao individuais assinados', PAGE.marginX, PAGE.height - 9)
   if (opts.signatureHashShort) {
-    doc.text(`ICP-Brasil: ${opts.signatureHashShort}`, PAGE.marginX, PAGE.height - 5)
+    doc.text(`Ref. relatorio-fonte: ${opts.signatureHashShort}`, PAGE.marginX, PAGE.height - 5)
   }
   doc.text(`Pagina ${opts.pageNumber}`, PAGE.width - PAGE.marginX, PAGE.height - 9, { align: 'right' })
 }
