@@ -67,10 +67,20 @@ const RATIONALITY_LABELS: Record<RationalityType, string> = {
   integrative: 'Integrativa',
 }
 
-const AdminCasosSimilares: React.FC = () => {
+// [V1.9.358] Prop embedded — quando true (dentro de Workstation), esconde header próprio
+// pra não duplicar. Padrão de uso:
+//  - standalone admin: <AdminCasosSimilares />
+//  - dentro Research: <AdminCasosSimilares embedded />
+//  - dentro Workstation atendimento: <AdminCasosSimilares embedded defaultQuery="dor" />
+interface Props {
+  embedded?: boolean
+  defaultQuery?: string
+}
+
+const AdminCasosSimilares: React.FC<Props> = ({ embedded = false, defaultQuery = '' }) => {
   const navigate = useNavigate()
   const { user } = useAuth()
-  const [searchTerm, setSearchTerm] = useState('')
+  const [searchTerm, setSearchTerm] = useState(defaultQuery)
   const [rationalityFilter, setRationalityFilter] = useState<RationalityType>('all')
   const [periodFilter, setPeriodFilter] = useState<Period>(90)
   const [loading, setLoading] = useState(false)
@@ -353,32 +363,34 @@ REGRAS RÍGIDAS:
   }
 
   return (
-    <div className="min-h-screen bg-[#0f172a] text-white p-6">
-      <div className="max-w-5xl mx-auto">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => navigate('/app/admin')}
-              className="p-2 hover:bg-slate-800 rounded-lg transition-colors"
-              title="Voltar"
-            >
-              <ChevronLeft className="w-5 h-5 text-slate-400" />
-            </button>
-            <div className="p-2 rounded-lg bg-purple-500/10 border border-purple-500/20">
-              <Sparkles className="w-5 h-5 text-purple-400" />
+    <div className={embedded ? 'text-white' : 'min-h-screen bg-[#0f172a] text-white p-6'}>
+      <div className={embedded ? '' : 'max-w-5xl mx-auto'}>
+        {/* Header — só mostra quando standalone (admin). Embedded usa header do parent (Workstation). */}
+        {!embedded && (
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => navigate('/app/admin')}
+                className="p-2 hover:bg-slate-800 rounded-lg transition-colors"
+                title="Voltar"
+              >
+                <ChevronLeft className="w-5 h-5 text-slate-400" />
+              </button>
+              <div className="p-2 rounded-lg bg-purple-500/10 border border-purple-500/20">
+                <Sparkles className="w-5 h-5 text-purple-400" />
+              </div>
+              <div>
+                <h1 className="text-xl font-bold text-white">Casos Similares</h1>
+                <p className="text-xs text-slate-400">Admin Spike · Memória clínica institucional</p>
+              </div>
             </div>
-            <div>
-              <h1 className="text-xl font-bold text-white">Casos Similares</h1>
-              <p className="text-xs text-slate-400">Admin Spike · Memória clínica institucional</p>
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-800/50 border border-slate-700">
+              <DollarSign className="w-3.5 h-3.5 text-emerald-400" />
+              <span className="text-xs text-slate-400">Cap mensal:</span>
+              <span className="text-xs font-bold text-white">${monthlyCost.toFixed(2)} / $50</span>
             </div>
           </div>
-          <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-800/50 border border-slate-700">
-            <DollarSign className="w-3.5 h-3.5 text-emerald-400" />
-            <span className="text-xs text-slate-400">Cap mensal:</span>
-            <span className="text-xs font-bold text-white">${monthlyCost.toFixed(2)} / $50</span>
-          </div>
-        </div>
+        )}
 
         {/* Search bar */}
         <div className="bg-slate-800/30 border border-slate-700/50 rounded-xl p-5 mb-6">

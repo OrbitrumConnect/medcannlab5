@@ -8,7 +8,8 @@ import {
     ClipboardList,
     Users,
     Bell,
-    CheckCircle
+    CheckCircle,
+    Sparkles
 } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
 import EnsinoDashboard from '../pages/EnsinoDashboard'
@@ -17,6 +18,8 @@ import ResearchDashboardContent from './ResearchDashboardContent'
 import ForumCasosClinicos from '../pages/ForumCasosClinicos'
 import Library from '../pages/Library' // Usado para Protocolos
 import CidadeAmigaDosRins from '../pages/CidadeAmigaDosRins'
+// [V1.9.358] Casos Similares embedado no Terminal de Pesquisa
+import AdminCasosSimilares from '../pages/AdminCasosSimilares'
 
 // Props do Componente
 interface ResearchWorkstationProps {
@@ -24,20 +27,22 @@ interface ResearchWorkstationProps {
 }
 
 type TabGroup = 'pesquisa' | 'colaboracao'
-type TabId = 'dashboard' | 'forum' | 'library' | 'protocols' | 'mentoria' | 'newsletter' | 'evaluation'
+type TabId = 'dashboard' | 'forum' | 'library' | 'protocols' | 'casos-similares' | 'mentoria' | 'newsletter' | 'evaluation'
 
 const ResearchWorkstation: React.FC<ResearchWorkstationProps> = ({ initialTab }) => {
     const { user } = useAuth()
 
     const [activeTab, setActiveTab] = useState<TabId>(() => {
         const t = (initialTab as TabId)
-        const valid: TabId[] = ['dashboard', 'forum', 'library', 'protocols', 'mentoria', 'newsletter', 'evaluation']
+        const valid: TabId[] = ['dashboard', 'forum', 'library', 'protocols', 'casos-similares', 'mentoria', 'newsletter', 'evaluation']
         return t && valid.includes(t) ? t : 'dashboard'
     })
 
     // Abas
+    // [V1.9.358] (18/05) Casos Similares adicionada como aba pesquisa (memória clínica institucional)
     const tabs: { id: TabId; label: string; icon: any; color: string; group: TabGroup }[] = [
         { id: 'dashboard', label: 'Dashboard de Pesquisa', icon: BarChart3, color: 'text-emerald-400', group: 'pesquisa' },
+        { id: 'casos-similares', label: 'Casos Similares', icon: Sparkles, color: 'text-purple-400', group: 'pesquisa' },
         { id: 'forum', label: 'Fórum de Casos Clínicos', icon: MessageCircle, color: 'text-cyan-400', group: 'colaboracao' },
         { id: 'library', label: 'Base de Conhecimento', icon: BookOpen, color: 'text-indigo-400', group: 'pesquisa' },
         { id: 'protocols', label: 'Protocolos', icon: ClipboardList, color: 'text-orange-400', group: 'pesquisa' },
@@ -72,6 +77,12 @@ const ResearchWorkstation: React.FC<ResearchWorkstationProps> = ({ initialTab })
                 return (
                     <div className="h-full overflow-y-auto scrollbar-hide bg-[#0f172a] p-4">
                         <CidadeAmigaDosRins />
+                    </div>
+                )
+            case 'casos-similares':
+                return (
+                    <div className="h-full overflow-y-auto scrollbar-hide bg-[#0f172a] p-4">
+                        <AdminCasosSimilares embedded />
                     </div>
                 )
             case 'mentoria':
