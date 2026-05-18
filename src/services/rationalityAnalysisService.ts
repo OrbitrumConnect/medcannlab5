@@ -11,50 +11,69 @@ interface RationalityAnalysis {
   approach: string
 }
 
+// V1.9.331 (18/05 Pedro+namorada+amigos+GPT calibração 3 iter) — Conditional Section
+// Emission contra over-completion bias. Audit empírico: 42.8% das racionalidades
+// biomedical fabricavam "Interações Medicamentosas" sem evidência específica do caso
+// (prompt antigo pedia como seção obrigatória → modelo inventava plausibilidade).
+// 3/112 universalmente diziam "X é a hipótese principal devido a Y" sem critério
+// laboratorial confirmatório (fabrication-by-section-requirement). Fix: tornar seções
+// opcionais condicionadas a evidência específica + hedging obrigatório em hipóteses.
+// Ref: project_presentation_contract_layer_18_05 + project_v1_9_331_*.
+
+const SHARED_OUTPUT_DISCIPLINE = `
+
+DISCIPLINA DE SAÍDA (V1.9.331 — obrigatória em TODAS racionalidades):
+1. Hedging obrigatório: use "hipótese sindrômica compatível com X" ou "padrão compatível com X" em vez de "X é a hipótese principal" / "X é o diagnóstico" quando faltar critério laboratorial/clínico confirmatório.
+2. Conditional section emission: NÃO emita seção "Interações Medicamentosas", "Contraindicações", "Riscos Farmacológicos" se não houver evidência específica no caso (medicamento ativo + comorbidade documentada + interação literatura conhecida). Omita a seção em vez de inventar plausibilidade.
+3. Separação fala vs achado: distinga citações textuais do paciente ("FALA DO PACIENTE: ...") de achados clínicos documentados ("ACHADO: medição/exame/observação registrada").
+4. Não preencher por completude: prefere seção AUSENTE a seção INVENTADA. Brevidade hedged > completude alucinada.
+5. CBD/cannabis: trate como variável contextual (paciente em uso), não como fator causal interpretativo automático. Só relacione clinicamente se houver evidência específica da intervenção no caso.
+`
+
 const RATIONALITY_PROMPTS: Record<Rationality, string> = {
-  biomedical: `Analise este relatório clínico do ponto de vista biomédico ocidental. 
+  biomedical: `Analise este relatório clínico do ponto de vista biomédico ocidental.
 Foque em:
 - Diagnósticos diferenciais baseados em evidências
 - Exames complementares recomendados
-- Protocolos farmacológicos baseados em evidências científicas
+- Protocolos farmacológicos baseados em evidências científicas (apenas se houver evidência específica)
 - Monitoramento de parâmetros laboratoriais e clínicos
-- Interações medicamentosas e contraindicações
-
+- Interações medicamentosas APENAS se houver evidência específica (medicamento ativo + comorbidade + literatura conhecida)
+${SHARED_OUTPUT_DISCIPLINE}
 Forneça uma análise estruturada com recomendações práticas.`,
 
   traditional_chinese: `Analise este relatório clínico do ponto de vista da Medicina Tradicional Chinesa (MTC).
 Foque em:
-- Padrões de desarmonia (Zang-Fu)
+- Padrões de desarmonia (Zang-Fu) — apresente como hipótese funcional, não diagnóstico
 - Síndromes identificadas (ex: deficiência de Qi, estagnação de Xue)
 - Princípios de tratamento (tonificar, dispersar, harmonizar)
-- Pontos de acupuntura relevantes
-- Fitoterapia chinesa e formulações clássicas
+- Pontos de acupuntura relevantes — APENAS se houver indicação clara
+- Fitoterapia chinesa e formulações clássicas — APENAS se houver indicação clara
 - Relação com os cinco elementos e meridianos
-
+${SHARED_OUTPUT_DISCIPLINE}
 Forneça uma análise estruturada com recomendações práticas.`,
 
   ayurvedic: `Analise este relatório clínico do ponto de vista da Medicina Ayurvédica.
 Foque em:
-- Identificação do dosha predominante (Vata, Pitta, Kapha) e desequilíbrios
+- Identificação do dosha predominante (Vata, Pitta, Kapha) e desequilíbrios — APENAS se houver sinais clínicos típicos no caso
 - Constituição (Prakriti) e estado atual (Vikriti)
-- Agni (fogo digestivo) e Ama (toxinas)
+- Agni (fogo digestivo) e Ama (toxinas) — APENAS se houver sinais digestivos relevantes
 - Recomendações dietéticas (Ahara) baseadas no dosha
-- Fitoterapia ayurvédica e formulações
+- Fitoterapia ayurvédica e formulações — APENAS se houver indicação clara
 - Práticas de estilo de vida (Dinacharya, Ritucharya)
-- Tratamentos de purificação (Panchakarma) se aplicável
-
+- Tratamentos de purificação (Panchakarma) APENAS se aplicável ao caso
+${SHARED_OUTPUT_DISCIPLINE}
 Forneça uma análise estruturada com recomendações práticas.`,
 
   homeopathic: `Analise este relatório clínico do ponto de vista da Homeopatia.
 Foque em:
 - Sintomas mentais, emocionais e físicos característicos
-- Modalidades (o que melhora/piora)
-- Miasmas identificados (Psora, Sycosis, Syphilis)
+- Modalidades (o que melhora/piora) — APENAS se houver dado específico no relato
+- Miasmas identificados (Psora, Sycosis, Syphilis) — APENAS se houver padrão clínico claro; omita se for inferência genérica
 - Remédio constitucional sugerido
 - Remédios agudos ou sintomáticos se aplicável
-- Potência e posologia recomendadas
-- Considerações sobre agravação inicial e direção da cura (Lei de Hering)
-
+- Potência e posologia recomendadas — APENAS se houver indicação específica
+- Considerações sobre agravação inicial e direção da cura (Lei de Hering) — APENAS se relevante ao caso
+${SHARED_OUTPUT_DISCIPLINE}
 Forneça uma análise estruturada com recomendações práticas.`,
 
   integrative: `Analise este relatório clínico do ponto de vista da Medicina Integrativa.
@@ -65,7 +84,7 @@ Foque em:
 - Priorização de intervenções baseada em segurança e evidências
 - Plano de tratamento coordenado
 - Monitoramento integrado de resultados
-
+${SHARED_OUTPUT_DISCIPLINE}
 Forneça uma análise estruturada com recomendações práticas que integrem múltiplas racionalidades.`
 }
 
