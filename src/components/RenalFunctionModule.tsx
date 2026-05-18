@@ -399,14 +399,45 @@ const RenalFunctionModule: React.FC<RenalFunctionModuleProps> = ({ patientId, pa
             </div>
 
             {/* ─── No Patient Selected ─── */}
+            {/* [V1.9.350] (18/05): empty state enriquecido — Pedro pediu explicar como usar */}
+            {/* Antes: só "Selecione um paciente". Depois: 3 passos + protocolo + público. */}
             {!patientId && (
-                <div className="flex-1 flex flex-col items-center justify-center px-6 py-16 text-center">
+                <div className="flex-1 flex flex-col items-center justify-center px-6 py-12 text-center">
                     <div className="w-16 h-16 bg-emerald-500/10 rounded-2xl flex items-center justify-center mb-5 border border-emerald-500/20 shadow-lg shadow-emerald-500/5">
                         <Activity className="w-8 h-8 text-emerald-400 opacity-70" />
                     </div>
                     <h3 className="text-xl font-bold text-white tracking-tight mb-2">Selecione um paciente</h3>
-                    <p className="text-slate-400 text-sm max-w-sm leading-relaxed">
-                        Use o campo de busca acima para selecionar um paciente e visualizar ou registrar exames de função renal.
+                    <p className="text-slate-400 text-sm max-w-md leading-relaxed mb-6">
+                        Módulo de função renal para uso clínico do profissional. O sistema calcula a TFG (CKD-EPI 2021) e classifica o estágio de doença renal automaticamente.
+                    </p>
+
+                    {/* 3 passos visuais */}
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 max-w-2xl mb-6">
+                        <div className="bg-slate-800/40 border border-slate-700/50 rounded-lg p-3 text-left">
+                            <div className="flex items-center gap-2 mb-1.5">
+                                <span className="w-5 h-5 rounded-full bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 text-[10px] font-bold flex items-center justify-center">1</span>
+                                <span className="text-xs font-bold text-slate-200">Buscar paciente</span>
+                            </div>
+                            <p className="text-[11px] text-slate-400 leading-relaxed">Use o campo acima (nome ou CPF) para selecionar um paciente da sua carteira.</p>
+                        </div>
+                        <div className="bg-slate-800/40 border border-slate-700/50 rounded-lg p-3 text-left">
+                            <div className="flex items-center gap-2 mb-1.5">
+                                <span className="w-5 h-5 rounded-full bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 text-[10px] font-bold flex items-center justify-center">2</span>
+                                <span className="text-xs font-bold text-slate-200">Registrar exame</span>
+                            </div>
+                            <p className="text-[11px] text-slate-400 leading-relaxed">Insira creatinina (mg/dL), ureia opcional e data do exame.</p>
+                        </div>
+                        <div className="bg-slate-800/40 border border-slate-700/50 rounded-lg p-3 text-left">
+                            <div className="flex items-center gap-2 mb-1.5">
+                                <span className="w-5 h-5 rounded-full bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 text-[10px] font-bold flex items-center justify-center">3</span>
+                                <span className="text-xs font-bold text-slate-200">TFG automática</span>
+                            </div>
+                            <p className="text-[11px] text-slate-400 leading-relaxed">Sistema calcula TFG via CKD-EPI 2021 e estágio CKD (G1-G5).</p>
+                        </div>
+                    </div>
+
+                    <p className="text-[11px] text-slate-500 max-w-md">
+                        💡 Dica: o paciente vê o resultado no relatório clínico, mas só você (profissional) registra exames aqui.
                     </p>
                 </div>
             )}
