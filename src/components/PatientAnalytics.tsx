@@ -32,6 +32,8 @@ import { enrichReportWithScores } from '../lib/clinicalScoreCalculator'
 import { stripPlatformInjectionNoise } from '../lib/clinicalAssessmentFlow'
 import RichClinicalReportView from './RichClinicalReportView'
 import PatientExamRequestsCard from './dashboard/patient/PatientExamRequestsCard'
+// [V1.9.353] Mini card função renal pra paciente (decisão Pedro 18/05 ~16h40)
+import PatientRenalCard from './patient/PatientRenalCard'
 
 function stripReportText(s: unknown): string {
     return stripPlatformInjectionNoise(String(s ?? ''))
@@ -1097,6 +1099,9 @@ const PatientAnalytics: React.FC<PatientAnalyticsProps> = ({ reports, loading, u
                             </div>
                         </div>
                     </div>
+
+                    {/* [V1.9.353] Mini card função renal pra paciente — entre Insights e Resumo Clínico */}
+                    <PatientRenalCard />
 
                     {/* ─── Resumo Clínico — Enhanced Card ─── */}
                     <div className="rounded-xl border border-slate-700/50 bg-slate-800/30 backdrop-blur-sm overflow-hidden relative">
