@@ -27,7 +27,7 @@ import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
 import { simpleCache } from '../lib/simpleCache'
 import { NoaResidentAI } from '../lib/noaResidentAI'
-import { useSearchHistory, type RecordedSearch } from '../hooks/useSearchHistory'
+import { useSearchHistory, type RecordedSearch, type PinnedSearch, type OpenedCase } from '../hooks/useSearchHistory'
 
 // [V1.9.354] (18/05/2026) — Casos Similares Admin Spike (Fase 1)
 // Memory: project_casos_similares_memoria_clinica_institucional_18_05
@@ -82,6 +82,201 @@ const RATIONALITY_LABELS: Record<RationalityType, string> = {
 interface Props {
   embedded?: boolean
   defaultQuery?: string
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// [V1.9.365] Sidebar panels — Trilha de Pesquisa + Notas Rápidas
+// ─────────────────────────────────────────────────────────────────────────────
+
+type TrailFilter = 'today' | 'week' | 'month'
+
+interface TrailPanelProps {
+  recent: RecordedSearch[]
+  caseOpens: OpenedCase[]
+  pinned: PinnedSearch[]
+  rationalityLabels: Record<string, string>
+  onReplaySearch: (r: RecordedSearch) => void
+  onOpenCase: (c: OpenedCase) => void
+  onClearCases: () => void
+}
+
+const startOfDay = (ts: number) => {
+  const d = new Date(ts)
+  d.setHours(0, 0, 0, 0)
+  return d.getTime()
+}
+
+const dayLabel = (dayKey: string) => {
+  const today = new Date()
+  const yesterday = new Date(Date.now() - 86400000)
+  const todayKey = today.toISOString().slice(0, 10)
+  const ydayKey = yesterday.toISOString().slice(0, 10)
+  if (dayKey === todayKey) return 'Hoje'
+  if (dayKey === ydayKey) return 'Ontem'
+  const d = new Date(dayKey + 'T00:00:00')
+  return d.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })
+}
+
+const timeLabel = (ts: number) =>
+  new Date(ts).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
+
+const TrailPanel: React.FC<TrailPanelProps> = ({
+  recent,
+  caseOpens,
+  rationalityLabels,
+  onReplaySearch,
+  onOpenCase,
+  onClearCases,
+}) => {
+  const [filter, setFilter] = useState<TrailFilter>('today')
+
+  type TrailItem =
+    | { kind: 'search'; ts: number; data: RecordedSearch }
+    | { kind: 'caseopen'; ts: number; data: OpenedCase }
+
+  const all: TrailItem[] = [
+    ...recent.map(r => ({ kind: 'search' as const, ts: r.ts, data: r })),
+    ...caseOpens.map(c => ({ kind: 'caseopen' as const, ts: c.ts, data: c })),
+  ].sort((a, b) => b.ts - a.ts)
+
+  const now = Date.now()
+  const cutoff =
+    filter === 'today' ? startOfDay(now)
+    : filter === 'week' ? now - 7 * 86400000
+    : now - 30 * 86400000
+
+  const filtered = all.filter(i => i.ts >= cutoff)
+
+  const groups = filtered.reduce<Record<string, TrailItem[]>>((acc, item) => {
+    const day = new Date(item.ts).toISOString().slice(0, 10)
+    ;(acc[day] = acc[day] || []).push(item)
+    return acc
+  }, {})
+
+  return (
+    <div className="bg-slate-800/30 border border-slate-700/50 rounded-xl p-4">
+      <div className="flex items-center justify-between mb-3">
+        <h3 className="text-xs font-bold text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
+          <Clock className="w-3.5 h-3.5 text-purple-400" />
+          Trilha de Pesquisa
+        </h3>
+        {caseOpens.length > 0 && (
+          <button
+            onClick={onClearCases}
+            className="text-[10px] text-slate-500 hover:text-slate-300"
+            title="Limpar histórico de casos abertos"
+          >
+            limpar
+          </button>
+        )}
+      </div>
+      <div className="flex items-center gap-1 mb-3">
+        {(['today', 'week', 'month'] as TrailFilter[]).map(f => (
+          <button
+            key={f}
+            onClick={() => setFilter(f)}
+            className={`px-2.5 py-1 text-[10px] uppercase tracking-wider font-semibold rounded-full transition-colors ${
+              filter === f
+                ? 'bg-purple-500/20 text-purple-200 border border-purple-500/40'
+                : 'bg-slate-800/50 text-slate-500 border border-slate-700 hover:text-slate-300'
+            }`}
+          >
+            {f === 'today' ? 'Hoje' : f === 'week' ? '7 dias' : '30 dias'}
+          </button>
+        ))}
+      </div>
+
+      {filtered.length === 0 ? (
+        <div className="text-center py-6 text-[11px] text-slate-500 leading-relaxed">
+          Nenhuma atividade no período.<br />
+          Faça uma busca ou abra um caso pra começar a trilha.
+        </div>
+      ) : (
+        <div className="space-y-3 max-h-[420px] overflow-y-auto pr-1">
+          {Object.entries(groups).map(([day, items]) => (
+            <div key={day}>
+              <div className="text-[10px] uppercase tracking-wider text-slate-600 font-semibold mb-1.5 sticky top-0 bg-slate-800/30 backdrop-blur-sm py-0.5">
+                {dayLabel(day)}
+              </div>
+              <div className="space-y-1">
+                {items.map((item, i) => (
+                  item.kind === 'search' ? (
+                    <button
+                      key={`s-${item.ts}-${i}`}
+                      onClick={() => onReplaySearch(item.data)}
+                      className="w-full text-left flex items-start gap-2 px-2 py-1.5 rounded-md hover:bg-purple-500/10 transition-colors group"
+                      title={`Re-executar: ${rationalityLabels[item.data.rationality] || item.data.rationality} · ${item.data.period}d`}
+                    >
+                      <Search className="w-3 h-3 text-purple-400 flex-shrink-0 mt-0.5" />
+                      <div className="flex-1 min-w-0">
+                        <div className="text-[11px] text-slate-300 group-hover:text-purple-200 truncate">
+                          buscou <span className="font-semibold">"{item.data.term}"</span>
+                        </div>
+                        <div className="text-[9px] text-slate-600">
+                          {timeLabel(item.ts)} · {rationalityLabels[item.data.rationality] || item.data.rationality} · {item.data.period}d
+                          {item.data.useGPT && <span className="ml-1 text-yellow-500">⚡</span>}
+                        </div>
+                      </div>
+                    </button>
+                  ) : (
+                    <button
+                      key={`c-${item.ts}-${i}`}
+                      onClick={() => onOpenCase(item.data)}
+                      className="w-full text-left flex items-start gap-2 px-2 py-1.5 rounded-md hover:bg-emerald-500/10 transition-colors group"
+                      title="Reabrir caso"
+                    >
+                      <Eye className="w-3 h-3 text-emerald-400 flex-shrink-0 mt-0.5" />
+                      <div className="flex-1 min-w-0">
+                        <div className="text-[11px] text-slate-300 group-hover:text-emerald-200 truncate">
+                          abriu <span className="font-semibold">{item.data.patientName}</span>
+                        </div>
+                        <div className="text-[9px] text-slate-600 truncate">
+                          {timeLabel(item.ts)}
+                          {item.data.queixa && ` · ${item.data.queixa}`}
+                        </div>
+                      </div>
+                    </button>
+                  )
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
+interface NotesPanelProps {
+  notes: string
+  onChange: (s: string) => void
+}
+
+const NotesPanel: React.FC<NotesPanelProps> = ({ notes, onChange }) => {
+  const MAX = 8000
+  return (
+    <div className="bg-slate-800/30 border border-slate-700/50 rounded-xl p-4">
+      <div className="flex items-center justify-between mb-2">
+        <h3 className="text-xs font-bold text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
+          <FileText className="w-3.5 h-3.5 text-amber-400" />
+          Notas Rápidas
+        </h3>
+        <span className={`text-[10px] tabular-nums ${notes.length > MAX * 0.9 ? 'text-amber-400' : 'text-slate-600'}`}>
+          {notes.length} / {MAX}
+        </span>
+      </div>
+      <textarea
+        value={notes}
+        onChange={(e) => onChange(e.target.value.slice(0, MAX))}
+        placeholder="Anotações da sua sessão de pesquisa. Persistido localmente neste navegador, só você vê."
+        rows={8}
+        className="w-full px-3 py-2 bg-slate-900/60 border border-slate-700/50 rounded-lg text-xs text-slate-200 placeholder-slate-600 focus:outline-none focus:border-amber-500/40 resize-y leading-relaxed"
+      />
+      <p className="text-[9px] text-slate-600 mt-1.5 leading-relaxed">
+        💾 Salvo automaticamente · localStorage · não sai do navegador
+      </p>
+    </div>
+  )
 }
 
 const AdminCasosSimilares: React.FC<Props> = ({ embedded = false, defaultQuery = '' }) => {
@@ -418,7 +613,10 @@ REGRAS RÍGIDAS:
   return (
     // [V1.9.361] Padding lateral em embedded (Pedro: muito próximo do sidebar)
     <div className={embedded ? 'text-white px-4 md:px-6 py-2' : 'min-h-screen bg-[#0f172a] text-white p-6'}>
-      <div className={embedded ? 'max-w-5xl' : 'max-w-5xl mx-auto'}>
+      <div className={embedded ? 'max-w-5xl' : 'max-w-7xl mx-auto'}>
+      {/* [V1.9.365] Grid 2 colunas em lg (não-embedded): main + sidebar Trilha/Notas */}
+      <div className={!embedded ? 'lg:grid lg:grid-cols-[1fr_340px] lg:gap-6 lg:items-start' : ''}>
+      <div className={!embedded ? 'min-w-0' : ''}>
         {/* Header — só mostra quando standalone (admin). Embedded usa header do parent (Workstation). */}
         {!embedded && (
           <div className="flex items-center justify-between mb-6">
@@ -724,7 +922,15 @@ REGRAS RÍGIDAS:
                 {result.cases.map((c, idx) => (
                   <div
                     key={c.reportId}
-                    onClick={() => { history.recordCaseView(); setSelectedCase(c) }}
+                    onClick={() => {
+                      history.recordCaseOpen({
+                        caseId: c.reportId,
+                        patientId: c.patientId,
+                        patientName: c.patientName,
+                        queixa: c.queixaPrincipal,
+                      })
+                      setSelectedCase(c)
+                    }}
                     className="bg-slate-800/40 border border-slate-700/50 rounded-lg p-4 hover:border-purple-500/40 hover:bg-slate-800/60 transition-colors cursor-pointer group"
                   >
                     <div className="flex items-start justify-between gap-3 mb-2">
@@ -807,6 +1013,43 @@ REGRAS RÍGIDAS:
           <span><kbd className="px-1.5 py-0.5 bg-slate-800 border border-slate-700 rounded text-slate-400 font-mono text-[9px]">↵</kbd> buscar</span>
           <span><kbd className="px-1.5 py-0.5 bg-slate-800 border border-slate-700 rounded text-slate-400 font-mono text-[9px]">Esc</kbd> fechar modal</span>
         </div>
+      </div>
+      {/* fim main column */}
+
+      {/* [V1.9.365] Sidebar — Trilha de Pesquisa + Notas Rápidas (só não-embedded) */}
+      {!embedded && (
+        <aside className="mt-6 lg:mt-0 lg:sticky lg:top-6 space-y-4 lg:max-h-[calc(100vh-3rem)] lg:overflow-y-auto pr-1">
+          {/* Trilha de Pesquisa */}
+          <TrailPanel
+            recent={history.recent}
+            caseOpens={history.caseOpens}
+            pinned={history.pinned}
+            rationalityLabels={RATIONALITY_LABELS}
+            onReplaySearch={applyRecorded}
+            onOpenCase={(c) => {
+              history.recordCaseOpen({ caseId: c.caseId, patientId: c.patientId, patientName: c.patientName, queixa: c.queixa })
+              setSelectedCase({
+                reportId: c.caseId,
+                patientId: c.patientId,
+                patientName: c.patientName,
+                createdAt: new Date(c.ts).toISOString(),
+                queixaPrincipal: c.queixa || '—',
+                rationalitiesApplied: [],
+              })
+            }}
+            onClearCases={history.clearCaseOpens}
+          />
+
+          {/* Notas Rápidas */}
+          <NotesPanel
+            notes={history.notes}
+            onChange={history.setNotes}
+          />
+        </aside>
+      )}
+
+      </div>
+      {/* fim grid wrapper */}
       </div>
 
       {/* [V1.9.356] Modal preview do caso — abre quando clica em qualquer card */}

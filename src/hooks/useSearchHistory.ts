@@ -6,6 +6,11 @@ import { useCallback, useEffect, useState } from 'react'
 //  - últimas buscas (chips clicáveis)
 //  - buscas favoritadas (pin/unpin)
 //  - KPIs (buscas hoje/mês, sínteses IA usadas, casos abertos sessão)
+//
+// [V1.9.365] (18/05/2026) — Estendido com Trilha + Notas Rápidas:
+//  - caseOpens[]: snapshot dos últimos casos abertos (max 50, persistido)
+//  - notes: scratchpad markdown livre do médico
+//
 // Zero impacto em server-side, zero risco de regressão.
 
 export interface RecordedSearch {
@@ -21,6 +26,14 @@ export interface PinnedSearch extends RecordedSearch {
   label: string
 }
 
+export interface OpenedCase {
+  caseId: string
+  patientId: string
+  patientName: string
+  queixa?: string
+  ts: number
+}
+
 interface SearchStats {
   searchesToday: number
   searchesMonth: number
@@ -32,11 +45,15 @@ interface SearchStats {
 interface SearchHistoryState {
   recent: RecordedSearch[]
   pinned: PinnedSearch[]
+  caseOpens: OpenedCase[]
+  notes: string
   stats: SearchStats
 }
 
 const MAX_RECENT = 8
 const MAX_PINNED = 12
+const MAX_CASE_OPENS = 50
+const MAX_NOTES_CHARS = 8000
 
 const todayStr = () => new Date().toISOString().slice(0, 10)
 const monthStr = () => new Date().toISOString().slice(0, 7)
@@ -44,6 +61,8 @@ const monthStr = () => new Date().toISOString().slice(0, 7)
 const emptyState = (): SearchHistoryState => ({
   recent: [],
   pinned: [],
+  caseOpens: [],
+  notes: '',
   stats: {
     searchesToday: 0,
     searchesMonth: 0,
@@ -65,6 +84,8 @@ const loadFromStorage = (userId: string | undefined): SearchHistoryState => {
     return {
       recent: Array.isArray(parsed.recent) ? parsed.recent.slice(0, MAX_RECENT) : [],
       pinned: Array.isArray(parsed.pinned) ? parsed.pinned.slice(0, MAX_PINNED) : [],
+      caseOpens: Array.isArray(parsed.caseOpens) ? parsed.caseOpens.slice(0, MAX_CASE_OPENS) : [],
+      notes: typeof parsed.notes === 'string' ? parsed.notes.slice(0, MAX_NOTES_CHARS) : '',
       stats: { ...emptyState().stats, ...(parsed.stats || {}) },
     }
   } catch {
@@ -186,13 +207,46 @@ export function useSearchHistory(userId: string | undefined) {
     })
   }, [userId])
 
-  const recordCaseView = useCallback(() => {
-    setCasesViewedSession(n => n + 1)
-  }, [])
+  // [V1.9.365] recordCaseOpen: agora persiste snapshot do caso aberto (não só conta)
+  const recordCaseOpen = useCallback(
+    (c: Omit<OpenedCase, 'ts'>) => {
+      setCasesViewedSession(n => n + 1)
+      setState(prev => {
+        const dedup = prev.caseOpens.filter(o => o.caseId !== c.caseId)
+        const caseOpens = [{ ...c, ts: Date.now() }, ...dedup].slice(0, MAX_CASE_OPENS)
+        const next = { ...prev, caseOpens }
+        saveToStorage(userId, next)
+        return next
+      })
+    },
+    [userId]
+  )
+
+  const clearCaseOpens = useCallback(() => {
+    setState(prev => {
+      const next = { ...prev, caseOpens: [] }
+      saveToStorage(userId, next)
+      return next
+    })
+  }, [userId])
+
+  // [V1.9.365] Notas rápidas — scratchpad markdown livre do médico
+  const setNotes = useCallback(
+    (notes: string) => {
+      setState(prev => {
+        const next = { ...prev, notes: notes.slice(0, MAX_NOTES_CHARS) }
+        saveToStorage(userId, next)
+        return next
+      })
+    },
+    [userId]
+  )
 
   return {
     recent: state.recent,
     pinned: state.pinned,
+    caseOpens: state.caseOpens,
+    notes: state.notes,
     stats: state.stats,
     casesViewedSession,
     recordSearch,
@@ -200,6 +254,8 @@ export function useSearchHistory(userId: string | undefined) {
     unpinSearch,
     isPinned,
     clearRecent,
-    recordCaseView,
+    recordCaseOpen,
+    clearCaseOpens,
+    setNotes,
   }
 }
