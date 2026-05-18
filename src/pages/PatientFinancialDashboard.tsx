@@ -53,7 +53,9 @@ interface TransactionData {
 }
 
 // Regras de cashback e desconto conforme normas brasileiras (CDC)
-const CASHBACK_RATE = 0.087 // 8.7%
+// V1.9.336 (18/05): ajustado de 8.7% → 5% pra alinhar com mercado BR (Hapvida/Bradesco 2-5%,
+// Méliuz 3-8%) e fechar margem unit economics. Zero pagante externo afetado (decisão pré-PMF).
+const CASHBACK_RATE = 0.05 // 5%
 const XP_DISCOUNT_TIERS = [
   { minXp: 0, maxXp: 499, discount: 0, label: 'Iniciante' },
   { minXp: 500, maxXp: 1499, discount: 5, label: 'Bronze' },
@@ -241,7 +243,7 @@ export default function PatientFinancialDashboard() {
 
       if (data) {
         setTransactions(data)
-        // Calcular cashback acumulado (8.7% sobre pagamentos completed)
+        // Calcular cashback acumulado (5% sobre pagamentos completed — V1.9.336)
         const totalPaid = data
           .filter(t => t.status === 'completed' || t.status === 'paid')
           .reduce((acc, t) => acc + Math.abs(t.amount || 0), 0)

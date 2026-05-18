@@ -436,7 +436,7 @@ export const IncentivosPanel: React.FC = () => {
         </div>
 
         <p className="text-[11px] text-slate-400 mt-4 leading-relaxed">
-          <strong className="text-slate-300">Como funciona:</strong> a cada paciente que se cadastra pela plataforma usando seu link de indicação, você acumula uma faixa. Quanto mais indicados, maior o adicional sobre os bônus mensais gerados por eles. Cashback do paciente (8,7% gamificação) é independente e não afeta este cálculo.
+          <strong className="text-slate-300">Como funciona:</strong> a cada paciente que se cadastra pela plataforma usando seu link de indicação, você acumula uma faixa. Quanto mais indicados, maior o adicional sobre os bônus mensais gerados por eles. Cashback do paciente (5% gamificação — V1.9.336) é independente e não afeta este cálculo.
         </p>
       </div>
 
