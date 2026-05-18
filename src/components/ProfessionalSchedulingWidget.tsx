@@ -479,14 +479,17 @@ const ProfessionalSchedulingWidget: React.FC<ProfessionalSchedulingWidgetProps> 
               </button>
             </div>
 
-            <div className="grid grid-cols-7 gap-px bg-slate-700/20 border border-slate-600/40 rounded-xl overflow-hidden">
+            {/* [V1.9.347] (18/05): margem entre células mais nítida (gap-px→gap-1.5 = 6px). */}
+            {/* Células ganharam border completa + rounded-md = visual de cards separados. */}
+            {/* Wrapper sem background (transparente). Pedro pediu nítido mas não muito grande. */}
+            <div className="grid grid-cols-7 gap-1.5">
               {['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'].map((day) => (
-                <div key={day} className="bg-slate-900/50 text-center text-slate-500 text-[10px] font-bold py-1.5 uppercase tracking-wider border-b border-slate-600/40">
+                <div key={day} className="bg-slate-900/60 text-center text-slate-500 text-[10px] font-bold py-1.5 uppercase tracking-wider rounded-md border border-slate-600/40">
                   {day}
                 </div>
               ))}
               {Array.from({ length: firstDay }).map((_, i) => (
-                <div key={`empty-${i}`} className="bg-slate-800/30 min-h-[72px]" />
+                <div key={`empty-${i}`} className="bg-slate-800/20 min-h-[72px] rounded-md border border-slate-700/30" />
               ))}
               {Array.from({ length: days }).map((_, i) => {
                 const day = i + 1
@@ -501,7 +504,7 @@ const ProfessionalSchedulingWidget: React.FC<ProfessionalSchedulingWidgetProps> 
                       setSelectedDay({ day, dateStr })
                       setIsDayModalOpen(true)
                     }}
-                    className={`bg-slate-800/50 min-h-[72px] p-1 hover:bg-slate-700/40 transition-all border-t border-slate-600/40 relative group cursor-pointer ${isToday ? 'ring-1 ring-emerald-500/30 bg-emerald-500/5' : 'hover:ring-1 hover:ring-slate-500/30'}`}
+                    className={`bg-slate-800/50 min-h-[72px] p-1 hover:bg-slate-700/50 transition-all rounded-md border relative group cursor-pointer ${isToday ? 'ring-2 ring-emerald-500/50 bg-emerald-500/8 border-emerald-500/40' : 'border-slate-600/40 hover:border-slate-500/60'}`}
                   >
                     {isToday && <div className="absolute top-0 left-0 w-full h-0.5 bg-emerald-500 rounded-b" />}
                     <div className="flex justify-end mb-0.5">
