@@ -643,10 +643,9 @@ const QuickPrescriptions: React.FC<QuickPrescriptionsProps> = ({ className = '',
       )}
 
       {/* Header */}
-      <div className="flex flex-col items-center text-center space-y-4 py-2 border-b border-slate-700/50 mb-2">
-        <div className="flex items-center justify-center py-2">
-          <div className="w-10 h-1 bg-slate-700/30 rounded-full mx-auto"></div>
-        </div>
+      {/* [V1.9.349] (18/05): Pedro pediu reduzir espaço entre stats cards e triggers. */}
+      {/* Removido handle decorativo + space-y-4→space-y-2 + py-2→py-0 + mb-2→mb-0 */}
+      <div className="flex flex-col items-center text-center space-y-2 pb-2 border-b border-slate-700/50">
 
         {/* V1.9.265 — TODOS os triggers (filtros + CTAs) num UNICO container rounded-full (Pedro 13/05 21h).
             Antes: 3 grupos visualmente separados. Agora: barra unica com divisores verticais internos. */}
@@ -705,15 +704,16 @@ const QuickPrescriptions: React.FC<QuickPrescriptionsProps> = ({ className = '',
       </div>
 
       {/* Search and Filter */}
-      <div className="flex space-x-4">
-        <div className="flex-1 relative">
+      {/* [V1.9.349] Pedro: barra de pesquisa muito grande, fica no meio menor (max-w-md + py-2). */}
+      <div className="flex justify-center">
+        <div className="relative w-full max-w-md">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-4 h-4" />
           <input
             type="text"
             placeholder="Buscar modelos de prescrição..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full bg-slate-800 text-white px-10 py-3 rounded-lg border border-slate-700 focus:border-blue-500 focus:outline-none"
+            className="w-full bg-slate-800 text-white text-sm px-10 py-2 rounded-lg border border-slate-700 focus:border-blue-500 focus:outline-none"
           />
         </div>
       </div>
