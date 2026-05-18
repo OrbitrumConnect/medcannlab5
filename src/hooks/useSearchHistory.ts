@@ -1,0 +1,205 @@
+import { useCallback, useEffect, useState } from 'react'
+
+// [V1.9.364] (18/05/2026) — Hook de histórico de pesquisa
+// Persistência client-side (localStorage), escopado por user.id.
+// Usado por AdminCasosSimilares pra alimentar:
+//  - últimas buscas (chips clicáveis)
+//  - buscas favoritadas (pin/unpin)
+//  - KPIs (buscas hoje/mês, sínteses IA usadas, casos abertos sessão)
+// Zero impacto em server-side, zero risco de regressão.
+
+export interface RecordedSearch {
+  term: string
+  rationality: string
+  period: number
+  useGPT: boolean
+  ts: number
+}
+
+export interface PinnedSearch extends RecordedSearch {
+  id: string
+  label: string
+}
+
+interface SearchStats {
+  searchesToday: number
+  searchesMonth: number
+  gptSynthesesMonth: number
+  lastSearchDate: string
+  lastResetMonth: string
+}
+
+interface SearchHistoryState {
+  recent: RecordedSearch[]
+  pinned: PinnedSearch[]
+  stats: SearchStats
+}
+
+const MAX_RECENT = 8
+const MAX_PINNED = 12
+
+const todayStr = () => new Date().toISOString().slice(0, 10)
+const monthStr = () => new Date().toISOString().slice(0, 7)
+
+const emptyState = (): SearchHistoryState => ({
+  recent: [],
+  pinned: [],
+  stats: {
+    searchesToday: 0,
+    searchesMonth: 0,
+    gptSynthesesMonth: 0,
+    lastSearchDate: todayStr(),
+    lastResetMonth: monthStr(),
+  },
+})
+
+const storageKey = (userId: string | undefined) =>
+  `medcannlab:search-history:${userId || 'anon'}`
+
+const loadFromStorage = (userId: string | undefined): SearchHistoryState => {
+  if (typeof window === 'undefined') return emptyState()
+  try {
+    const raw = window.localStorage.getItem(storageKey(userId))
+    if (!raw) return emptyState()
+    const parsed = JSON.parse(raw) as SearchHistoryState
+    return {
+      recent: Array.isArray(parsed.recent) ? parsed.recent.slice(0, MAX_RECENT) : [],
+      pinned: Array.isArray(parsed.pinned) ? parsed.pinned.slice(0, MAX_PINNED) : [],
+      stats: { ...emptyState().stats, ...(parsed.stats || {}) },
+    }
+  } catch {
+    return emptyState()
+  }
+}
+
+const saveToStorage = (userId: string | undefined, state: SearchHistoryState) => {
+  if (typeof window === 'undefined') return
+  try {
+    window.localStorage.setItem(storageKey(userId), JSON.stringify(state))
+  } catch {
+    // localStorage cheio ou desabilitado — silencioso, histórico é nice-to-have
+  }
+}
+
+const rollStatsIfNeeded = (stats: SearchStats): SearchStats => {
+  const today = todayStr()
+  const month = monthStr()
+  let next = stats
+  if (stats.lastSearchDate !== today) {
+    next = { ...next, searchesToday: 0, lastSearchDate: today }
+  }
+  if (stats.lastResetMonth !== month) {
+    next = { ...next, searchesMonth: 0, gptSynthesesMonth: 0, lastResetMonth: month }
+  }
+  return next
+}
+
+export function useSearchHistory(userId: string | undefined) {
+  const [state, setState] = useState<SearchHistoryState>(() => loadFromStorage(userId))
+  const [casesViewedSession, setCasesViewedSession] = useState(0)
+
+  // Reload quando userId muda (login/logout no mesmo tab)
+  useEffect(() => {
+    setState(loadFromStorage(userId))
+    setCasesViewedSession(0)
+  }, [userId])
+
+  // Roll de stats no mount (caso usuário volte no dia seguinte sem recarregar)
+  useEffect(() => {
+    setState(prev => {
+      const rolled = rollStatsIfNeeded(prev.stats)
+      if (rolled === prev.stats) return prev
+      const next = { ...prev, stats: rolled }
+      saveToStorage(userId, next)
+      return next
+    })
+  }, [userId])
+
+  const recordSearch = useCallback(
+    (term: string, rationality: string, period: number, useGPT: boolean) => {
+      setState(prev => {
+        const stats = rollStatsIfNeeded(prev.stats)
+        const entry: RecordedSearch = { term: term.trim(), rationality, period, useGPT, ts: Date.now() }
+        const dedup = prev.recent.filter(
+          r => !(r.term === entry.term && r.rationality === entry.rationality && r.period === entry.period)
+        )
+        const recent = [entry, ...dedup].slice(0, MAX_RECENT)
+        const next: SearchHistoryState = {
+          ...prev,
+          recent,
+          stats: {
+            ...stats,
+            searchesToday: stats.searchesToday + 1,
+            searchesMonth: stats.searchesMonth + 1,
+            gptSynthesesMonth: stats.gptSynthesesMonth + (useGPT ? 1 : 0),
+          },
+        }
+        saveToStorage(userId, next)
+        return next
+      })
+    },
+    [userId]
+  )
+
+  const pinSearch = useCallback(
+    (s: RecordedSearch, label?: string) => {
+      setState(prev => {
+        const id = `${s.term}|${s.rationality}|${s.period}`
+        if (prev.pinned.some(p => p.id === id)) return prev
+        const pinned: PinnedSearch[] = [
+          { ...s, id, label: label || s.term },
+          ...prev.pinned,
+        ].slice(0, MAX_PINNED)
+        const next = { ...prev, pinned }
+        saveToStorage(userId, next)
+        return next
+      })
+    },
+    [userId]
+  )
+
+  const unpinSearch = useCallback(
+    (id: string) => {
+      setState(prev => {
+        const pinned = prev.pinned.filter(p => p.id !== id)
+        const next = { ...prev, pinned }
+        saveToStorage(userId, next)
+        return next
+      })
+    },
+    [userId]
+  )
+
+  const isPinned = useCallback(
+    (term: string, rationality: string, period: number) => {
+      const id = `${term}|${rationality}|${period}`
+      return state.pinned.some(p => p.id === id)
+    },
+    [state.pinned]
+  )
+
+  const clearRecent = useCallback(() => {
+    setState(prev => {
+      const next = { ...prev, recent: [] }
+      saveToStorage(userId, next)
+      return next
+    })
+  }, [userId])
+
+  const recordCaseView = useCallback(() => {
+    setCasesViewedSession(n => n + 1)
+  }, [])
+
+  return {
+    recent: state.recent,
+    pinned: state.pinned,
+    stats: state.stats,
+    casesViewedSession,
+    recordSearch,
+    pinSearch,
+    unpinSearch,
+    isPinned,
+    clearRecent,
+    recordCaseView,
+  }
+}

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
   Search,
@@ -15,12 +15,19 @@ import {
   X,
   ExternalLink,
   User,
-  Zap
+  Zap,
+  Clock,
+  Bookmark,
+  BookmarkPlus,
+  Keyboard,
+  BarChart3,
+  Eye
 } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
 import { simpleCache } from '../lib/simpleCache'
 import { NoaResidentAI } from '../lib/noaResidentAI'
+import { useSearchHistory, type RecordedSearch } from '../hooks/useSearchHistory'
 
 // [V1.9.354] (18/05/2026) — Casos Similares Admin Spike (Fase 1)
 // Memory: project_casos_similares_memoria_clinica_institucional_18_05
@@ -94,6 +101,11 @@ const AdminCasosSimilares: React.FC<Props> = ({ embedded = false, defaultQuery =
   // [V1.9.357] (18/05): toggle síntese IA (GPT real) vs determinística (default)
   const [useGPTSynthesis, setUseGPTSynthesis] = useState(false)
   const [sessionCost, setSessionCost] = useState(0)
+  // [V1.9.364] (18/05): histórico/favoritos/KPIs (localStorage scoped por user.id)
+  const history = useSearchHistory(user?.id)
+  const searchInputRef = useRef<HTMLInputElement>(null)
+  // autoRunRef: chip click dispara handleSearch APÓS state batch flushar (1 commit React 18)
+  const autoRunRef = useRef(false)
 
   // Carregar detalhes completos quando seleciona caso (content jsonb + racionalidades full)
   useEffect(() => {
@@ -129,6 +141,43 @@ const AdminCasosSimilares: React.FC<Props> = ({ embedded = false, defaultQuery =
     if (!selectedCase) return
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') setSelectedCase(null)
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [selectedCase])
+
+  // [V1.9.364] Aplicar busca de chip (recent/pinned): set filters → effect dispara handleSearch
+  const applyRecorded = (r: RecordedSearch) => {
+    autoRunRef.current = true
+    setSearchTerm(r.term)
+    setRationalityFilter(r.rationality as RationalityType)
+    setPeriodFilter(r.period as Period)
+    setUseGPTSynthesis(r.useGPT)
+  }
+  useEffect(() => {
+    if (!autoRunRef.current) return
+    autoRunRef.current = false
+    void handleSearch()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchTerm, rationalityFilter, periodFilter, useGPTSynthesis])
+
+  // [V1.9.364] Atalhos globais: Cmd/Ctrl+K ou "/" focam search input
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (selectedCase) return // modal aberto: deixa o ESC dele agir
+      const isMod = e.metaKey || e.ctrlKey
+      const target = e.target as HTMLElement | null
+      const inField = !!target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable)
+      if (isMod && e.key.toLowerCase() === 'k') {
+        e.preventDefault()
+        searchInputRef.current?.focus()
+        searchInputRef.current?.select()
+        return
+      }
+      if (e.key === '/' && !inField) {
+        e.preventDefault()
+        searchInputRef.current?.focus()
+      }
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
@@ -175,6 +224,8 @@ const AdminCasosSimilares: React.FC<Props> = ({ embedded = false, defaultQuery =
     if (cached) {
       setResult({ ...cached, cached: true })
       setLoading(false)
+      // [V1.9.364] cache hit também conta como busca do médico (intenção registrada)
+      history.recordSearch(searchTerm, rationalityFilter, periodFilter, useGPTSynthesis)
       return
     }
 
@@ -347,6 +398,8 @@ REGRAS RÍGIDAS:
       // Cache 24h
       simpleCache.set(cacheKey, finalResult, 24 * 60 * 60 * 1000)
       setResult(finalResult)
+      // [V1.9.364] registra busca bem-sucedida (após cache write)
+      history.recordSearch(searchTerm, rationalityFilter, periodFilter, useGPTSynthesis)
     } catch (err: any) {
       setError(err.message || 'Erro inesperado na busca')
     } finally {
@@ -420,6 +473,44 @@ REGRAS RÍGIDAS:
           </div>
         </div>
 
+        {/* [V1.9.364] Bloco 1 — KPIs pessoais do médico (telemetria do próprio uso) */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 mb-6">
+          <div className="bg-slate-800/40 border border-slate-700/50 rounded-lg px-3 py-2.5">
+            <div className="flex items-center gap-1.5 mb-1">
+              <Search className="w-3 h-3 text-purple-400" />
+              <span className="text-[10px] uppercase tracking-wider text-slate-500 font-semibold">Buscas hoje</span>
+            </div>
+            <div className="text-lg font-bold text-white tabular-nums">{history.stats.searchesToday}</div>
+          </div>
+          <div className="bg-slate-800/40 border border-slate-700/50 rounded-lg px-3 py-2.5">
+            <div className="flex items-center gap-1.5 mb-1">
+              <BarChart3 className="w-3 h-3 text-purple-400" />
+              <span className="text-[10px] uppercase tracking-wider text-slate-500 font-semibold">No mês</span>
+            </div>
+            <div className="text-lg font-bold text-white tabular-nums">{history.stats.searchesMonth}</div>
+          </div>
+          <div className="bg-slate-800/40 border border-slate-700/50 rounded-lg px-3 py-2.5">
+            <div className="flex items-center gap-1.5 mb-1">
+              <Zap className="w-3 h-3 text-yellow-400" />
+              <span className="text-[10px] uppercase tracking-wider text-slate-500 font-semibold">Sínteses IA</span>
+            </div>
+            <div className="text-lg font-bold text-white tabular-nums">
+              {history.stats.gptSynthesesMonth}
+              <span className="text-[10px] text-slate-500 font-normal ml-1">no mês</span>
+            </div>
+          </div>
+          <div className="bg-slate-800/40 border border-slate-700/50 rounded-lg px-3 py-2.5">
+            <div className="flex items-center gap-1.5 mb-1">
+              <Eye className="w-3 h-3 text-emerald-400" />
+              <span className="text-[10px] uppercase tracking-wider text-slate-500 font-semibold">Casos abertos</span>
+            </div>
+            <div className="text-lg font-bold text-white tabular-nums">
+              {history.casesViewedSession}
+              <span className="text-[10px] text-slate-500 font-normal ml-1">sessão</span>
+            </div>
+          </div>
+        </div>
+
         {/* Search bar */}
         <div className="bg-slate-800/30 border border-slate-700/50 rounded-xl p-5 mb-6">
           <div className="space-y-4">
@@ -430,11 +521,12 @@ REGRAS RÍGIDAS:
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
                 <input
+                  ref={searchInputRef}
                   type="text"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-                  placeholder='ex: "dor lombar", "fadiga + cannabis", "ansiedade"'
+                  placeholder='ex: "dor lombar", "fadiga + cannabis", "ansiedade"  (⌘K ou / pra focar)'
                   className="w-full pl-10 pr-4 py-2.5 bg-slate-900 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-purple-500/50"
                 />
               </div>
@@ -470,6 +562,64 @@ REGRAS RÍGIDAS:
                 </select>
               </div>
             </div>
+
+            {/* [V1.9.364] Bloco 2 — Chips: pinned + últimas buscas (clicar = re-executa) */}
+            {(history.pinned.length > 0 || history.recent.length > 0) && (
+              <div className="space-y-2">
+                {history.pinned.length > 0 && (
+                  <div className="flex items-start gap-2 flex-wrap">
+                    <span className="text-[10px] text-slate-500 font-semibold uppercase tracking-wider flex items-center gap-1 mt-1">
+                      <Bookmark className="w-3 h-3" /> Fixadas
+                    </span>
+                    {history.pinned.map(p => (
+                      <div key={p.id} className="group inline-flex items-center gap-1 bg-amber-500/10 border border-amber-500/30 hover:border-amber-500/60 rounded-full pl-2.5 pr-1 py-0.5 transition-colors">
+                        <button
+                          onClick={() => applyRecorded(p)}
+                          className="text-[11px] text-amber-200 hover:text-amber-100"
+                          title={`Re-executar: ${RATIONALITY_LABELS[p.rationality as RationalityType] || p.rationality} · ${p.period}d${p.useGPT ? ' · IA' : ''}`}
+                        >
+                          {p.label}
+                        </button>
+                        <button
+                          onClick={() => history.unpinSearch(p.id)}
+                          className="opacity-50 hover:opacity-100 p-0.5 rounded-full hover:bg-amber-500/20"
+                          title="Desfixar"
+                        >
+                          <X className="w-2.5 h-2.5 text-amber-300" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                {history.recent.length > 0 && (
+                  <div className="flex items-start gap-2 flex-wrap">
+                    <span className="text-[10px] text-slate-500 font-semibold uppercase tracking-wider flex items-center gap-1 mt-1">
+                      <Clock className="w-3 h-3" /> Últimas
+                    </span>
+                    {history.recent.map((r, i) => (
+                      <button
+                        key={`${r.term}-${r.rationality}-${r.period}-${i}`}
+                        onClick={() => applyRecorded(r)}
+                        className="inline-flex items-center gap-1 px-2.5 py-0.5 text-[11px] bg-slate-700/40 hover:bg-purple-500/15 border border-slate-600/50 hover:border-purple-500/40 text-slate-300 hover:text-purple-200 rounded-full transition-colors"
+                        title={`${RATIONALITY_LABELS[r.rationality as RationalityType] || r.rationality} · ${r.period}d${r.useGPT ? ' · IA' : ''}`}
+                      >
+                        {r.term}
+                        {r.useGPT && <Zap className="w-2.5 h-2.5 text-yellow-400/70" />}
+                      </button>
+                    ))}
+                    {history.recent.length > 2 && (
+                      <button
+                        onClick={() => history.clearRecent()}
+                        className="text-[10px] text-slate-500 hover:text-slate-300 px-2 py-0.5"
+                        title="Limpar histórico de buscas"
+                      >
+                        limpar
+                      </button>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* [V1.9.357] Toggle síntese IA — opt-in com aviso de custo */}
             <div className="flex items-center justify-between gap-3 p-3 rounded-lg bg-slate-900/50 border border-slate-700/50">
@@ -539,6 +689,24 @@ REGRAS RÍGIDAS:
                 {result.cached && (
                   <span className="text-[10px] font-normal text-slate-500 bg-slate-800 px-2 py-0.5 rounded">cache</span>
                 )}
+                {/* [V1.9.364] Fixar busca atual (toggle) */}
+                {history.isPinned(searchTerm, rationalityFilter, periodFilter) ? (
+                  <button
+                    onClick={() => history.unpinSearch(`${searchTerm}|${rationalityFilter}|${periodFilter}`)}
+                    className="ml-auto inline-flex items-center gap-1 px-2 py-0.5 text-[10px] bg-amber-500/15 border border-amber-500/40 text-amber-200 rounded-full hover:bg-amber-500/25"
+                    title="Desfixar"
+                  >
+                    <Bookmark className="w-2.5 h-2.5 fill-current" /> Fixada
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => history.pinSearch({ term: searchTerm, rationality: rationalityFilter, period: periodFilter, useGPT: useGPTSynthesis, ts: Date.now() })}
+                    className="ml-auto inline-flex items-center gap-1 px-2 py-0.5 text-[10px] bg-slate-700/40 hover:bg-amber-500/15 border border-slate-600/50 hover:border-amber-500/30 text-slate-400 hover:text-amber-200 rounded-full transition-colors"
+                    title="Fixar essa busca (volta nela quando quiser)"
+                  >
+                    <BookmarkPlus className="w-2.5 h-2.5" /> Fixar
+                  </button>
+                )}
               </h2>
               <p className="text-sm text-slate-200 leading-relaxed whitespace-pre-line">{result.synthesis}</p>
               <p className="text-[10px] text-slate-500 mt-3 leading-relaxed">
@@ -556,7 +724,7 @@ REGRAS RÍGIDAS:
                 {result.cases.map((c, idx) => (
                   <div
                     key={c.reportId}
-                    onClick={() => setSelectedCase(c)}
+                    onClick={() => { history.recordCaseView(); setSelectedCase(c) }}
                     className="bg-slate-800/40 border border-slate-700/50 rounded-lg p-4 hover:border-purple-500/40 hover:bg-slate-800/60 transition-colors cursor-pointer group"
                   >
                     <div className="flex items-start justify-between gap-3 mb-2">
@@ -594,17 +762,51 @@ REGRAS RÍGIDAS:
           </div>
         )}
 
-        {/* Empty state inicial */}
+        {/* [V1.9.364] Empty state inteligente — sugestões clicáveis (1ª vez ou volta) */}
         {!result && !loading && !error && (
-          <div className="text-center py-16">
+          <div className="text-center py-12">
             <Sparkles className="w-12 h-12 text-purple-400/50 mx-auto mb-4" />
-            <p className="text-sm text-slate-400 max-w-md mx-auto leading-relaxed">
-              Digite um padrão clínico acima pra buscar casos similares no corpus próprio
-              ({/* TODO replace com valores dinâmicos quando atingir 200+ */}128 relatórios + 119 racionalidades).
-              Esta é a Fase 1 (admin spike) — validação de conceito.
+            {history.recent.length === 0 ? (
+              <>
+                <p className="text-sm text-slate-300 max-w-md mx-auto leading-relaxed mb-1">
+                  Bem-vindo ao Terminal de Pesquisa.
+                </p>
+                <p className="text-xs text-slate-500 max-w-md mx-auto leading-relaxed mb-5">
+                  Sistema agrega padrões observados no corpus próprio. Pra começar, tente um dos termos abaixo:
+                </p>
+              </>
+            ) : (
+              <p className="text-xs text-slate-500 max-w-md mx-auto leading-relaxed mb-5">
+                Digite um padrão clínico acima ou repita uma busca recente. Sugestões pra explorar:
+              </p>
+            )}
+            <div className="flex items-center justify-center gap-2 flex-wrap max-w-lg mx-auto">
+              {['dor', 'fadiga', 'cannabis', 'ansiedade', 'rim', 'sono'].map(term => (
+                <button
+                  key={term}
+                  onClick={() => applyRecorded({ term, rationality: 'all', period: 90, useGPT: false, ts: Date.now() })}
+                  className="px-3 py-1.5 text-xs bg-slate-800/60 hover:bg-purple-500/15 border border-slate-700 hover:border-purple-500/40 text-slate-300 hover:text-purple-200 rounded-full transition-colors"
+                >
+                  {term}
+                </button>
+              ))}
+            </div>
+            <p className="text-[10px] text-slate-600 mt-6">
+              Fase 1 (admin spike) · memória clínica institucional · ⚠️ ainda experimental
             </p>
           </div>
         )}
+
+        {/* [V1.9.364] Bloco 7 — footer atalhos teclado (sinal de ferramenta profissional) */}
+        <div className="mt-8 pt-4 border-t border-slate-800/60 flex items-center justify-center gap-4 flex-wrap text-[10px] text-slate-600">
+          <span className="flex items-center gap-1.5">
+            <Keyboard className="w-3 h-3" />
+            <span className="font-semibold uppercase tracking-wider">Atalhos:</span>
+          </span>
+          <span><kbd className="px-1.5 py-0.5 bg-slate-800 border border-slate-700 rounded text-slate-400 font-mono text-[9px]">⌘K</kbd> ou <kbd className="px-1.5 py-0.5 bg-slate-800 border border-slate-700 rounded text-slate-400 font-mono text-[9px]">/</kbd> focar busca</span>
+          <span><kbd className="px-1.5 py-0.5 bg-slate-800 border border-slate-700 rounded text-slate-400 font-mono text-[9px]">↵</kbd> buscar</span>
+          <span><kbd className="px-1.5 py-0.5 bg-slate-800 border border-slate-700 rounded text-slate-400 font-mono text-[9px]">Esc</kbd> fechar modal</span>
+        </div>
       </div>
 
       {/* [V1.9.356] Modal preview do caso — abre quando clica em qualquer card */}
