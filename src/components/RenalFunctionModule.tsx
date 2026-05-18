@@ -274,16 +274,16 @@ const RenalFunctionModule: React.FC<RenalFunctionModuleProps> = ({ patientId, pa
     return (
         <div className="bg-[#0f172a] min-h-[400px] flex flex-col">
             {/* ─── Header ─── */}
-            <div className="border-b border-slate-700/50 bg-slate-800/30 px-6 py-4">
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                    <div className="flex items-center gap-3">
-                        <div className="p-2 bg-emerald-500/10 rounded-xl border border-emerald-500/20 shadow-lg shadow-emerald-500/5">
-                            <Activity className="w-6 h-6 text-emerald-400" />
+            {/* [V1.9.352] (18/05): compactado igual V1.9.346 da Agenda. Título "Módulo de Função Renal" */}
+            {/* removido (redundante com aba "Saúde Renal" do terminal pai). Ícone reduzido. */}
+            {/* py-4 → py-2.5. Subtítulo CKD-EPI 2021 inline + discreto. */}
+            <div className="border-b border-slate-700/50 bg-slate-800/30 px-6 py-2.5">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                    <div className="flex items-center gap-2">
+                        <div className="p-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
+                            <Activity className="w-4 h-4 text-emerald-400" />
                         </div>
-                        <div>
-                            <h2 className="text-lg font-bold text-white tracking-tight">Módulo de Função Renal</h2>
-                            <p className="text-slate-400 text-xs">Protocolo CKD-EPI 2021 • Cálculo de TFG em tempo real</p>
-                        </div>
+                        <span className="text-[11px] text-slate-500" title="Cálculo de TFG via CKD-EPI 2021 + classificação CKD G1-G5">Protocolo CKD-EPI 2021</span>
                     </div>
 
                     {/* ─── Patient Selector ─── */}
