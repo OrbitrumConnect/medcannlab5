@@ -94,6 +94,8 @@ import KpisTea from './pages/KpisTea'
 import ClinicalGovernanceDemo from './pages/ClinicalGovernanceDemo'
 import ClinicalGovernanceAdmin from './pages/ClinicalGovernanceAdmin'
 import InvitePatient from './pages/InvitePatient' // IMPORT AT TOP
+// [V1.9.354] Admin Casos Similares — Fase 1 spike (memória clínica institucional)
+import AdminCasosSimilares from './pages/AdminCasosSimilares'
 import AssessmentAnalytics from './pages/AssessmentAnalytics'
 import PatientFinancialDashboard from './pages/PatientFinancialDashboard'
 import ProfessionalDashboardRouter from './components/ProfessionalDashboardRouter'
@@ -295,6 +297,12 @@ function App() {
                           <Route path="admin/news" element={
                             <ProtectedRoute requiredRole="admin">
                               <NewsManagement />
+                            </ProtectedRoute>
+                          } />
+                          {/* [V1.9.354] Casos Similares — Fase 1 admin spike */}
+                          <Route path="admin/casos-similares" element={
+                            <ProtectedRoute requiredRole="admin">
+                              <AdminCasosSimilares />
                             </ProtectedRoute>
                           } />
 
