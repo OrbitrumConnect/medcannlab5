@@ -436,8 +436,8 @@ const RenalFunctionModule: React.FC<RenalFunctionModuleProps> = ({ patientId, pa
                         </div>
                     </div>
 
-                    <p className="text-[11px] text-slate-500 max-w-md">
-                        💡 Dica: o paciente vê o resultado no relatório clínico, mas só você (profissional) registra exames aqui.
+                    <p className="text-[11px] text-slate-500 max-w-md leading-relaxed">
+                        💡 <strong className="text-slate-400">Dica:</strong> além do registro manual aqui, a Nôa extrai exames mencionados pelo paciente na AEC e sugere automaticamente pra você aprovar (card "Sugestões Renais" no dashboard). Mini card de visualização pelo paciente em desenvolvimento.
                     </p>
                 </div>
             )}
