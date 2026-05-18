@@ -115,11 +115,99 @@ const PoliticaPrivacidade: React.FC = () => {
               <p>Os dados pessoais podem ser compartilhados com:</p>
               <ul className="space-y-2 ml-4">
                 <li className="flex gap-2"><span className="text-emerald-400">•</span><strong className="text-white">Profissionais de saúde parceiros:</strong> Apenas dados clínicos do paciente que expressamente consentiu, para fins de consulta;</li>
-                <li className="flex gap-2"><span className="text-emerald-400">•</span><strong className="text-white">Processadores de pagamento:</strong> Stripe/gateway PIX para transações financeiras (dados financeiros apenas);</li>
+                <li className="flex gap-2"><span className="text-emerald-400">•</span><strong className="text-white">Processadores de pagamento:</strong> Stripe (dados financeiros) / Gateway PIX nacional;</li>
                 <li className="flex gap-2"><span className="text-emerald-400">•</span><strong className="text-white">Infraestrutura:</strong> Supabase (banco de dados com RLS), provedores de nuvem com certificação SOC 2;</li>
                 <li className="flex gap-2"><span className="text-emerald-400">•</span><strong className="text-white">Autoridades:</strong> Quando exigido por lei ou decisão judicial.</li>
               </ul>
               <p className="mt-3"><strong className="text-white">NÃO vendemos, alugamos ou comercializamos dados pessoais.</strong></p>
+            </div>
+          </section>
+
+          {/* Transferência Internacional — V1.9.X 18/05 patch pós-audit */}
+          <section className="bg-amber-500/5 backdrop-blur-md border border-amber-500/30 rounded-2xl p-8">
+            <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-3">
+              <Globe className="w-5 h-5 text-amber-400" />
+              5.1. Transferência Internacional de Dados (Art. 33-36, LGPD)
+            </h2>
+            <div className="space-y-3 text-slate-300 text-sm leading-relaxed">
+              <p>
+                Alguns serviços essenciais à plataforma envolvem transferência de dados para fora do território nacional.
+                Em conformidade com os artigos 33 a 36 da LGPD, declaramos transparentemente:
+              </p>
+
+              <div className="bg-slate-900/50 border border-slate-700/50 rounded-xl p-4 space-y-3">
+                <div>
+                  <h3 className="font-bold text-white mb-1">OpenAI Inc. (Estados Unidos)</h3>
+                  <p className="text-xs">
+                    Conteúdo de mensagens, contexto clínico e relatórios estruturados são processados pela
+                    OpenAI (modelo GPT-4o) via Edge Functions servidor-a-servidor. Não há armazenamento permanente
+                    pela OpenAI. <strong className="text-white">Base legal:</strong> Art. 33, IV (cumprimento
+                    de obrigação contratual mediante consentimento específico do titular — vide ConsentGuard inicial).
+                  </p>
+                </div>
+
+                <div>
+                  <h3 className="font-bold text-white mb-1">Stripe Inc. (Estados Unidos)</h3>
+                  <p className="text-xs">
+                    Dados financeiros (cartão, valor, identificação para transação) processados pela Stripe.
+                    Não compartilhamos dados clínicos com a Stripe. <strong className="text-white">Base legal:</strong>
+                    Art. 33, II + V (execução contratual + obrigação legal de pagamento).
+                  </p>
+                </div>
+
+                <div>
+                  <h3 className="font-bold text-white mb-1">Supabase Inc. (Estados Unidos — região de processamento configurável)</h3>
+                  <p className="text-xs">
+                    Banco de dados principal. Aplicamos Row Level Security (RLS) e isolamento por usuário.
+                    Dados em repouso criptografados pela infraestrutura Supabase (AES-256).
+                    <strong className="text-white"> Base legal:</strong> Art. 33, II (execução contratual).
+                  </p>
+                </div>
+
+                <div>
+                  <h3 className="font-bold text-white mb-1">Vercel Inc. (Estados Unidos)</h3>
+                  <p className="text-xs">
+                    Hospedagem do frontend (servidor de aplicação). Não armazena dados pessoais —
+                    apenas serve arquivos estáticos e roteamento. <strong className="text-white">Base legal:</strong>
+                    Art. 33, II (execução contratual).
+                  </p>
+                </div>
+              </div>
+
+              <p className="text-xs mt-3">
+                <strong className="text-white">Mecanismos de proteção aplicados:</strong> Cláusulas contratuais padrão exigidas
+                a cada provedor (DPA — Data Processing Agreement), minimização de dados transmitidos, criptografia
+                em trânsito (TLS 1.3), e consentimento explícito do titular antes da primeira operação clínica
+                via ConsentGuard bloqueante.
+              </p>
+
+              <p className="text-xs mt-2">
+                <strong className="text-amber-300">Direito de oposição:</strong> Você pode solicitar à plataforma
+                a interrupção do processamento de seus dados por provedores externos (sujeito à inviabilidade técnica
+                de prosseguir com o serviço). Contato: <strong className="text-amber-300">dpo@medcannlab.com.br</strong>
+              </p>
+            </div>
+          </section>
+
+          {/* Uso de IA — V1.9.X 18/05 patch pós-audit */}
+          <section className="bg-blue-500/5 backdrop-blur-md border border-blue-500/30 rounded-2xl p-8">
+            <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-3">
+              <Brain className="w-5 h-5 text-blue-400" />
+              5.2. Uso de Inteligência Artificial Generativa
+            </h2>
+            <div className="space-y-3 text-slate-300 text-sm leading-relaxed">
+              <p>
+                A plataforma utiliza modelos de IA generativa (GPT-4o da OpenAI) como apoio em fluxos clínicos
+                — entrevista guiada (AEC), análise multi-racional, organização narrativa. Em transparência ativa,
+                declaramos:
+              </p>
+              <ul className="space-y-2 ml-4 text-xs">
+                <li className="flex gap-2"><span className="text-blue-400">•</span><strong className="text-white">A IA não diagnostica, não prescreve, não substitui o ato médico.</strong> Toda decisão clínica final é do profissional humano (CRM ativo).</li>
+                <li className="flex gap-2"><span className="text-blue-400">•</span><strong className="text-white">Saídas da IA são auditáveis</strong> — logs completos em <code className="bg-slate-800 px-1 rounded text-xs">ai_chat_interactions</code> + <code className="bg-slate-800 px-1 rounded text-xs">cognitive_events</code> + <code className="bg-slate-800 px-1 rounded text-xs">noa_logs</code>.</li>
+                <li className="flex gap-2"><span className="text-blue-400">•</span><strong className="text-white">Conteúdo gerado para o paciente</strong> passa por hierarquização semântica (técnico vs leigo) — paciente não lê brainstorm clínico bruto.</li>
+                <li className="flex gap-2"><span className="text-blue-400">•</span><strong className="text-white">Revisão humana</strong> — relatórios são revisados pelo médico responsável antes de devolução ao paciente.</li>
+                <li className="flex gap-2"><span className="text-blue-400">•</span><strong className="text-white">Você pode solicitar revisão humana</strong> de qualquer interação automatizada (Art. 20, LGPD — direito de revisão de decisão automatizada).</li>
+              </ul>
             </div>
           </section>
 
