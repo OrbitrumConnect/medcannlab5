@@ -1616,7 +1616,7 @@ const PatientsManagement: React.FC<PatientsManagementProps> = ({ embedded = fals
                       <p className="text-slate-400">Gerencie agendamentos e visualize sua agenda completa</p>
                     </div>
                     <button
-                      onClick={() => navigate('/app/scheduling')}
+                      onClick={() => navigate('/app/clinica/profissional/dashboard?section=terminal-clinico&tab=scheduling')}
                       className="flex items-center space-x-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors"
                     >
                       <Plus className="w-4 h-4" />
@@ -1633,7 +1633,7 @@ const PatientsManagement: React.FC<PatientsManagementProps> = ({ embedded = fals
                   {/* Ações Rápidas */}
                   <div className="flex flex-wrap gap-3">
                     <button
-                      onClick={() => navigate('/app/scheduling')}
+                      onClick={() => navigate('/app/clinica/profissional/dashboard?section=terminal-clinico&tab=scheduling')}
                       className="flex items-center space-x-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
                     >
                       <Plus className="w-4 h-4" />
@@ -2287,7 +2287,7 @@ const PatientsManagement: React.FC<PatientsManagementProps> = ({ embedded = fals
                                 <p className="text-slate-400">Gerencie agendamentos e visualize sua agenda completa</p>
                               </div>
                               <button
-                                onClick={() => navigate('/app/scheduling')}
+                                onClick={() => navigate('/app/clinica/profissional/dashboard?section=terminal-clinico&tab=scheduling')}
                                 className="flex items-center space-x-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors"
                               >
                                 <Plus className="w-4 h-4" />
@@ -2303,7 +2303,7 @@ const PatientsManagement: React.FC<PatientsManagementProps> = ({ embedded = fals
                             {/* Ações Rápidas */}
                             <div className="flex flex-wrap gap-3">
                               <button
-                                onClick={() => navigate('/app/scheduling')}
+                                onClick={() => navigate('/app/clinica/profissional/dashboard?section=terminal-clinico&tab=scheduling')}
                                 className="flex items-center space-x-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
                               >
                                 <Plus className="w-4 h-4" />
