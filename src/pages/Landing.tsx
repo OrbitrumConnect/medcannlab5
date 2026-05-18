@@ -692,7 +692,7 @@ const Landing: React.FC = () => {
               A Arte da Entrevista Clínica
             </h2>
             <p className="text-lg text-slate-300 leading-relaxed">
-              O paciente não é um formulário. O AEC 001 é o nosso protocolo exclusivo de escuta estruturada, garantindo que o tempo presencial com o médico seja focado no cuidado, não em preencher dados.
+              O paciente não é um formulário. O AEC 001 é o protocolo autoral do Dr. Ricardo Valença de escuta estruturada que prioriza o tempo presencial com o médico focado no cuidado, não em preencher dados.
             </p>
           </div>
 
@@ -721,7 +721,7 @@ const Landing: React.FC = () => {
                 Síntese Cognitiva
               </h3>
               <p className="text-slate-400 text-sm leading-relaxed">
-                A IA estrutura o seu relato cru em um relatório clínico padrão ouro (IMRE). Sintomas, cronologia e bandeiras vermelhas são mapeados automaticamente em tempo real.
+                A IA estrutura seu relato em um relatório baseado no protocolo IMRE (autoral Dr. Ricardo Valença). Sintomas, cronologia e sinais de alerta são organizados pra revisão médica.
               </p>
               
               {/* Connector line for large screens */}

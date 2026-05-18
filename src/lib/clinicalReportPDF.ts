@@ -783,7 +783,10 @@ export function downloadRationalitiesComparativePDF(opts: RationalitiesComparati
     }
     if (recs.length) {
       writeSubsection('Recomendacoes')
-      recs.forEach((r: string) => writeParagraph(`▸ ${stripClinical(r)}`))
+      // V1.9.334 (18/05) — bullet "▸" literal era emitido APÓS sanitizeForPDF (que
+      // converteria ▸ → >). Trocado direto por ">" pra evitar renderização "%¸" em
+      // Helvetica jsPDF sem suporte Unicode U+25B8. Memory: project_v1_9_331_b_smoke.
+      recs.forEach((r: string) => writeParagraph(`> ${stripClinical(r)}`))
     }
     if (cons) {
       writeSubsection('Consideracoes')
