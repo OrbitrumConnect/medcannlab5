@@ -74,14 +74,16 @@ const RATIONALITY_LABELS: Record<RationalityType, string> = {
   integrative: 'Integrativa',
 }
 
-// [V1.9.358] Prop embedded — quando true (dentro de Workstation), esconde header próprio
-// pra não duplicar. Padrão de uso:
-//  - standalone admin: <AdminCasosSimilares />
-//  - dentro Research: <AdminCasosSimilares embedded />
-//  - dentro Workstation atendimento: <AdminCasosSimilares embedded defaultQuery="dor" />
+// [V1.9.358] Prop embedded — quando true (dentro de Workstation), esconde header próprio.
+// [V1.9.366] showSidebar — controle EXPLÍCITO da sidebar (Trilha + Notas), independente
+// de embedded. Default = !embedded (mantém compat V1.9.365). Padrão de uso:
+//  - standalone admin: <AdminCasosSimilares />                       → sidebar ON
+//  - Terminal de Pesquisa: <AdminCasosSimilares embedded showSidebar />  → sidebar ON
+//  - Workstation atendimento: <AdminCasosSimilares embedded />       → sidebar OFF (apertado)
 interface Props {
   embedded?: boolean
   defaultQuery?: string
+  showSidebar?: boolean
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -279,9 +281,11 @@ const NotesPanel: React.FC<NotesPanelProps> = ({ notes, onChange }) => {
   )
 }
 
-const AdminCasosSimilares: React.FC<Props> = ({ embedded = false, defaultQuery = '' }) => {
+const AdminCasosSimilares: React.FC<Props> = ({ embedded = false, defaultQuery = '', showSidebar }) => {
   const navigate = useNavigate()
   const { user } = useAuth()
+  // [V1.9.366] showSidebar default = !embedded (compat V1.9.365), mas caller pode forçar
+  const sidebarVisible = showSidebar !== undefined ? showSidebar : !embedded
   const [searchTerm, setSearchTerm] = useState(defaultQuery)
   const [rationalityFilter, setRationalityFilter] = useState<RationalityType>('all')
   const [periodFilter, setPeriodFilter] = useState<Period>(90)
@@ -613,10 +617,10 @@ REGRAS RÍGIDAS:
   return (
     // [V1.9.361] Padding lateral em embedded (Pedro: muito próximo do sidebar)
     <div className={embedded ? 'text-white px-4 md:px-6 py-2' : 'min-h-screen bg-[#0f172a] text-white p-6'}>
-      <div className={embedded ? 'max-w-5xl' : 'max-w-7xl mx-auto'}>
-      {/* [V1.9.365] Grid 2 colunas em lg (não-embedded): main + sidebar Trilha/Notas */}
-      <div className={!embedded ? 'lg:grid lg:grid-cols-[1fr_340px] lg:gap-6 lg:items-start' : ''}>
-      <div className={!embedded ? 'min-w-0' : ''}>
+      <div className={sidebarVisible ? (embedded ? 'max-w-7xl' : 'max-w-7xl mx-auto') : (embedded ? 'max-w-5xl' : 'max-w-5xl mx-auto')}>
+      {/* [V1.9.365/V1.9.366] Grid 2 colunas em lg quando sidebar visível: main + sidebar */}
+      <div className={sidebarVisible ? 'lg:grid lg:grid-cols-[1fr_340px] lg:gap-6 lg:items-start' : ''}>
+      <div className={sidebarVisible ? 'min-w-0' : ''}>
         {/* Header — só mostra quando standalone (admin). Embedded usa header do parent (Workstation). */}
         {!embedded && (
           <div className="flex items-center justify-between mb-6">
@@ -1016,8 +1020,8 @@ REGRAS RÍGIDAS:
       </div>
       {/* fim main column */}
 
-      {/* [V1.9.365] Sidebar — Trilha de Pesquisa + Notas Rápidas (só não-embedded) */}
-      {!embedded && (
+      {/* [V1.9.365/V1.9.366] Sidebar — Trilha de Pesquisa + Notas Rápidas (controlada por showSidebar) */}
+      {sidebarVisible && (
         <aside className="mt-6 lg:mt-0 lg:sticky lg:top-6 space-y-4 lg:max-h-[calc(100vh-3rem)] lg:overflow-y-auto pr-1">
           {/* Trilha de Pesquisa */}
           <TrailPanel

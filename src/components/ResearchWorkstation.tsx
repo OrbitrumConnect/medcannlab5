@@ -82,7 +82,8 @@ const ResearchWorkstation: React.FC<ResearchWorkstationProps> = ({ initialTab })
             case 'casos-similares':
                 return (
                     <div className="h-full overflow-y-auto scrollbar-hide bg-[#0f172a] p-4">
-                        <AdminCasosSimilares embedded />
+                        {/* [V1.9.366] showSidebar=true → mostra Trilha + Notas Rápidas side-by-side */}
+                        <AdminCasosSimilares embedded showSidebar />
                     </div>
                 )
             case 'mentoria':
