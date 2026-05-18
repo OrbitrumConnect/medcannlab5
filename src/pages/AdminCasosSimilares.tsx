@@ -393,6 +393,33 @@ REGRAS RÍGIDAS:
           </div>
         )}
 
+        {/* [V1.9.363] Banner ALPHA fortíssimo — crítica formal Dr. Ricardo 18/05 noite */}
+        {/* Memory: feedback_ricardo_similaridade_por_qual_criterio_18_05 */}
+        <div className="bg-amber-500/10 border-2 border-amber-500/40 rounded-xl p-4 mb-6">
+          <div className="flex items-start gap-3">
+            <AlertCircle className="w-5 h-5 text-amber-400 flex-shrink-0 mt-0.5" />
+            <div className="space-y-2">
+              <h3 className="text-sm font-bold text-amber-300 uppercase tracking-wider">
+                ⚠️ Experimental — Não use pra decisão clínica
+              </h3>
+              <p className="text-xs text-amber-100/90 leading-relaxed">
+                Critérios de similaridade ainda <strong>imaturos</strong> (busca textual simples em campos jsonb).
+                Pode produzir <strong>falsa sensação de evidência ou recorrência</strong>.
+              </p>
+              <p className="text-xs text-amber-100/70 leading-relaxed">
+                <strong>Crítica formal Dr. Ricardo Valença (18/05/2026):</strong> "similaridade por qual critério?" —
+                CID é pobre, impressão diagnóstica varia entre médicos, narrativa carrega viés, longitudinal exige
+                maturidade de dados. Sistema ainda não estabilizou taxonomia + governança + pseudonimização robusta.
+              </p>
+              <p className="text-xs text-amber-200 leading-relaxed font-semibold pt-1 border-t border-amber-500/20">
+                Use APENAS pra explorar o corpus internamente. NÃO orientar conduta clínica.
+                Sequência prevista: 1º histórico longitudinal do próprio paciente, 2º memória clínica do próprio médico,
+                3º (só MUITO depois) casos similares institucionais.
+              </p>
+            </div>
+          </div>
+        </div>
+
         {/* Search bar */}
         <div className="bg-slate-800/30 border border-slate-700/50 rounded-xl p-5 mb-6">
           <div className="space-y-4">
