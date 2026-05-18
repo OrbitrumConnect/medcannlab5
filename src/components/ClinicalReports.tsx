@@ -1987,30 +1987,48 @@ const ClinicalReports: React.FC<ClinicalReportsProps> = ({ className = '', onSha
                           </div>
 
                           <div className="space-y-3 text-sm">
-                            {text && (
-                              <div>
-                                <div className="text-[10px] uppercase tracking-wider font-bold text-slate-400 mb-1">Avaliação</div>
-                                <p className="text-slate-200 leading-relaxed">{stripClinical(text)}</p>
-                              </div>
-                            )}
-                            {recs.length > 0 && (
-                              <div>
-                                <div className="text-[10px] uppercase tracking-wider font-bold text-slate-400 mb-1">Recomendações</div>
-                                <ul className="space-y-1">
-                                  {recs.map((rec: string, idx: number) => (
-                                    <li key={idx} className="flex gap-2 text-slate-200 leading-relaxed">
-                                      <span className={`${m.color} mt-0.5`}>▸</span>
-                                      <span>{stripClinical(rec)}</span>
-                                    </li>
-                                  ))}
-                                </ul>
-                              </div>
-                            )}
-                            {cons && (
-                              <div>
-                                <div className="text-[10px] uppercase tracking-wider font-bold text-slate-400 mb-1">Considerações</div>
-                                <p className="text-slate-200 leading-relaxed">{stripClinical(cons)}</p>
-                              </div>
+                            {/* V1.9.330-A (18/05 Pedro+namorada+amigos audit) —
+                                Guard `isPatient`: paciente não lê texto técnico bruto
+                                (Estagnação de Qi do Fígado / Miasmas / Dosha Pitta etc.
+                                colapsam hierarquia interpretativa pra leigo).
+                                Médico continua vendo tudo. Audience Contract design v3
+                                parqueado em memory project_v1_9_330_audience_contract_design_18_05.
+                                Quando trigger ativar (Ricardo pedir publicação ativa OU
+                                1º pagante externo): V1.9.330-FULL agrega summary + hierarchy_label
+                                + lifecycle alinhado a clinical_reports. */}
+                            {isPatient ? (
+                              <p className="text-[12px] text-slate-300/90 leading-relaxed italic">
+                                Análise <span className={`font-semibold ${m.color}`}>{m.label}</span> aplicada ao seu relatório.
+                                O conteúdo técnico está disponível ao seu médico para discussão na consulta.
+                              </p>
+                            ) : (
+                              <>
+                                {text && (
+                                  <div>
+                                    <div className="text-[10px] uppercase tracking-wider font-bold text-slate-400 mb-1">Avaliação</div>
+                                    <p className="text-slate-200 leading-relaxed">{stripClinical(text)}</p>
+                                  </div>
+                                )}
+                                {recs.length > 0 && (
+                                  <div>
+                                    <div className="text-[10px] uppercase tracking-wider font-bold text-slate-400 mb-1">Recomendações</div>
+                                    <ul className="space-y-1">
+                                      {recs.map((rec: string, idx: number) => (
+                                        <li key={idx} className="flex gap-2 text-slate-200 leading-relaxed">
+                                          <span className={`${m.color} mt-0.5`}>▸</span>
+                                          <span>{stripClinical(rec)}</span>
+                                        </li>
+                                      ))}
+                                    </ul>
+                                  </div>
+                                )}
+                                {cons && (
+                                  <div>
+                                    <div className="text-[10px] uppercase tracking-wider font-bold text-slate-400 mb-1">Considerações</div>
+                                    <p className="text-slate-200 leading-relaxed">{stripClinical(cons)}</p>
+                                  </div>
+                                )}
+                              </>
                             )}
 
                             {/* V1.9.268 — Botoes Baixar/Compartilhar apenas. NFT removido
