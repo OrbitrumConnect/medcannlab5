@@ -22,12 +22,14 @@ interface RationalityAnalysis {
 
 const SHARED_OUTPUT_DISCIPLINE = `
 
-DISCIPLINA DE SAÍDA (V1.9.331 — obrigatória em TODAS racionalidades):
-1. Hedging obrigatório: use "hipótese sindrômica compatível com X" ou "padrão compatível com X" em vez de "X é a hipótese principal" / "X é o diagnóstico" quando faltar critério laboratorial/clínico confirmatório.
+DISCIPLINA DE SAÍDA (V1.9.331-B — obrigatória em TODAS racionalidades):
+1. Hedging obrigatório: use "hipótese sindrômica compatível com X" ou "padrão compatível com X" em vez de "X é a hipótese principal" / "X é o diagnóstico" quando faltar critério laboratorial/clínico confirmatório. Aplique hedging TAMBÉM em hipóteses secundárias e em títulos de seção — NÃO use cabeçalho "HIPÓTESE PRINCIPAL"; use "HIPÓTESE COM MAIOR CONVERGÊNCIA DE EVIDÊNCIAS" ou "HIPÓTESE COM MAIS SUPORTE NO CASO".
 2. Conditional section emission: NÃO emita seção "Interações Medicamentosas", "Contraindicações", "Riscos Farmacológicos" se não houver evidência específica no caso (medicamento ativo + comorbidade documentada + interação literatura conhecida). Omita a seção em vez de inventar plausibilidade.
 3. Separação fala vs achado: distinga citações textuais do paciente ("FALA DO PACIENTE: ...") de achados clínicos documentados ("ACHADO: medição/exame/observação registrada").
 4. Não preencher por completude: prefere seção AUSENTE a seção INVENTADA. Brevidade hedged > completude alucinada.
 5. CBD/cannabis: trate como variável contextual (paciente em uso), não como fator causal interpretativo automático. Só relacione clinicamente se houver evidência específica da intervenção no caso.
+6. Hierarquia semântica visual: quando emitir seções, separe-as com cabeçalhos MAIÚSCULOS distintos (EVIDÊNCIA / HIPÓTESE / EXAMES / CONDUTA / LITERATURA). Não renderize HIPÓTESE e LITERATURA com mesmo peso visual — paciente leigo lê "literatura geral" como autoridade equivalente a "hipótese personalizada". Qualifique hipóteses secundárias com "menos sugestivo", "alternativa exploratória" — mantenha hedging consistente entre principal e secundárias.
+7. Omissão estrutural de protocolo: omita seções "EXAMES COMPLEMENTARES" se exame proposto NÃO muda conduta clínica relevante (ex: PCR para herpes labial não-complicado autorresolutivo). Omita "CONDUTA EM 3 TEMPOS" se caso for clinicamente auto-resolutivo simples (ex: gripe leve sem comorbidade). Omita "REFERÊNCIAS DA LITERATURA" se você não tem citação concreta (autor/ano/journal) — prefira ausência a referência genérica tipo "estudos sugerem".
 `
 
 const RATIONALITY_PROMPTS: Record<Rationality, string> = {
