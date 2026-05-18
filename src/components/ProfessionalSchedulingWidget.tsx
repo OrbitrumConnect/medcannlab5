@@ -413,20 +413,34 @@ const ProfessionalSchedulingWidget: React.FC<ProfessionalSchedulingWidgetProps> 
 
   return (
     <div className={`space-y-4 ${className}`}>
-      {/* Header sofisticado — gradiente azul/emerald com título e ações */}
-      {/* [V1.9.345] (18/05): compactado — py-4→py-2.5, mb-1→mb-0, mt-4→mt-2.5, pt-3→pt-2 */}
-      {/* Bug Pedro 18/05 ~16h07: header ocupava muito espaço pra só 2 itens (título + botão). */}
+      {/* [V1.9.346] (18/05): header refatorado — removido título "Agenda" (redundante com */}
+      {/* aba "Agendamentos" do terminal) + "Nova Consulta" desceu pro mesmo nível das tabs. */}
+      {/* Bug UX Pedro: 2 linhas separadas pra título+botão e tabs era waste de espaço. */}
       <div className="rounded-xl overflow-hidden border border-white/5 shadow-xl">
-        <div className="bg-slate-800/40 backdrop-blur-md px-6 py-2.5">
-          <div className="flex items-center justify-between gap-4">
-            <div className="min-w-0">
-              <div className="flex items-center gap-2.5">
-                <div className="p-1.5 rounded-lg bg-cyan-500/15 border border-cyan-500/20">
-                  <Calendar className="w-4 h-4 text-cyan-400" />
-                </div>
-                <h2 className="text-lg font-bold text-white tracking-tight">Agenda</h2>
-              </div>
+        <div className="bg-slate-800/40 backdrop-blur-md px-4 py-2">
+          <div className="flex items-center justify-between gap-3 flex-wrap">
+            {/* Tabs à esquerda */}
+            <div className="flex items-center gap-1">
+              {[
+                { key: 'calendar', label: 'Calendário', icon: <Calendar className="w-3.5 h-3.5" /> },
+                { key: 'list', label: 'Lista', icon: <Users className="w-3.5 h-3.5" /> },
+                { key: 'analytics', label: 'Analytics', icon: <BarChart3 className="w-3.5 h-3.5" /> },
+                { key: 'config', label: 'Configurações', icon: <Settings className="w-3.5 h-3.5" /> }
+              ].map((tab) => (
+                <button
+                  key={tab.key}
+                  onClick={() => setActiveTab(tab.key as any)}
+                  className={`flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold rounded-lg transition-all ${activeTab === tab.key
+                    ? 'bg-emerald-600/30 text-emerald-300 border border-emerald-500/40 shadow-sm'
+                    : 'text-slate-400 hover:text-slate-200 hover:bg-white/5'
+                    }`}
+                >
+                  {tab.icon}
+                  <span>{tab.label}</span>
+                </button>
+              ))}
             </div>
+            {/* Botão Nova Consulta à direita */}
             <button
               onClick={() => setIsNewAppointmentModalOpen(true)}
               className="flex-shrink-0 flex items-center gap-1.5 px-4 py-2 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs rounded-lg transition-all shadow-lg shadow-emerald-500/20 active:scale-[0.98]"
@@ -434,27 +448,6 @@ const ProfessionalSchedulingWidget: React.FC<ProfessionalSchedulingWidgetProps> 
               <Plus className="w-3.5 h-3.5" />
               <span>Nova Consulta</span>
             </button>
-          </div>
-          {/* Tabs integradas ao header */}
-          <div className="flex items-center gap-1 mt-2.5 pt-2 border-t border-white/8">
-            {[
-              { key: 'calendar', label: 'Calendário', icon: <Calendar className="w-3.5 h-3.5" /> },
-              { key: 'list', label: 'Lista', icon: <Users className="w-3.5 h-3.5" /> },
-              { key: 'analytics', label: 'Analytics', icon: <BarChart3 className="w-3.5 h-3.5" /> },
-              { key: 'config', label: 'Configurações', icon: <Settings className="w-3.5 h-3.5" /> }
-            ].map((tab) => (
-              <button
-                key={tab.key}
-                onClick={() => setActiveTab(tab.key as any)}
-                className={`flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold rounded-lg transition-all ${activeTab === tab.key
-                  ? 'bg-emerald-600/30 text-emerald-300 border border-emerald-500/40 shadow-sm'
-                  : 'text-slate-400 hover:text-slate-200 hover:bg-white/5'
-                  }`}
-              >
-                {tab.icon}
-                <span>{tab.label}</span>
-              </button>
-            ))}
           </div>
         </div>
       </div>
