@@ -731,6 +731,13 @@ const sanitizeSearchTerm = (value: string) => {
         .replace(/\r?\n+/g, ' ')
         .replace(/[,*()]/g, ' ')
         .replace(/["'\\]/g, ' ')
+        // V1.9.332 (18/05 audit cross-PARECER 01/04) — escapar SQL LIKE wildcards
+        // Reason: PARECER_FISCAL_INDEPENDENTE_01_04_2026 P1-11 apontou que sanitizeSearchTerm
+        // não removia/escapava % e _ — wildcards LIKE permitem manipulação de busca.
+        // Audit empírico 18/05: 9/41 (22%) documents têm % ou _ no título — REMOVER quebraria
+        // busca legítima. Escapar com \\ preserva o caractere literal + neutraliza função wildcard.
+        // Ref: feedback_debitos_tecnicos_parecer_fiscal_01_04_pendentes_18_05.
+        .replace(/([%_])/g, '\\$1')
         .replace(/\s+/g, ' ')
         .trim()
         .slice(0, 80)
