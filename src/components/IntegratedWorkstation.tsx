@@ -57,6 +57,20 @@ const IntegratedWorkstation: React.FC<IntegratedWorkstationProps> = ({ initialTa
         return t && valid.includes(t) ? t : 'patients'
     })
 
+    // [V1.9.344] (18/05): sync prop initialTab → state activeTab quando URL muda.
+    // Bug reportado Pedro 18/05 ~16h: clicar "Novo Agendamento" no prontuário não fazia nada
+    // visível. Causa: useState com initializer só roda 1× (montagem). PatientsManagement
+    // navigate?tab=scheduling mudava URL mas IntegratedWorkstation já estava montado, prop
+    // initialTab atualizava mas state ficava parado em 'patients'. useEffect resolve.
+    useEffect(() => {
+        if (!initialTab) return
+        const valid: TabId[] = ['patients', 'patient-focus', 'chat', 'renal', 'prescriptions', 'scheduling', 'team', 'governance', 'reports', 'knowledge', 'forum', 'gallery']
+        if (initialTab === 'governance' && !isDevOrAdmin) return
+        if (valid.includes(initialTab as TabId) && initialTab !== activeTab) {
+            setActiveTab(initialTab as TabId)
+        }
+    }, [initialTab, isDevOrAdmin])
+
     // Abas com group para agrupamento futuro (lista plana em V1)
     const allTabs: { id: TabId; label: string; icon: typeof Users; color: string; group: TabGroup }[] = [
         { id: 'patients', label: 'Prontuário', icon: Users, color: 'text-blue-400', group: 'atendimento' },
