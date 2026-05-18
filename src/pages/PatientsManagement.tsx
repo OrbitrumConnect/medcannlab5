@@ -45,14 +45,21 @@ import PatientAnalytics from '../components/PatientAnalytics'
 import { getAllPatients, isAdmin } from '../lib/adminPermissions'
 
 /** Componente: KPIs de agendamento com dados reais */
-const RealAppointmentStats = () => {
+// [V1.9.342] (18/05): prop patientId opcional. Quando renderizado DENTRO do prontuário
+// do paciente selecionado (activeTab='appointments' linha 2266), filtra pra mostrar só
+// stats daquele paciente. Sem patientId (visão geral linha 1616), mantém TODOS os
+// stats do médico logado (RLS já filtra por professional_id). Bug Pedro 18/05: aba
+// Agenda dentro do prontuário do Carlos Eduardo mostrava agendamentos de Maria + João.
+const RealAppointmentStats = ({ patientId }: { patientId?: string }) => {
   const [stats, setStats] = useState({ today: 0, thisWeek: 0, confirmed: 0, pending: 0 })
   useEffect(() => {
     const load = async () => {
       const now = new Date()
       const todayStr = now.toISOString().split('T')[0]
       const weekEnd = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
-      const { data } = await supabase.from('appointments').select('id, appointment_date, status').gte('appointment_date', todayStr).lte('appointment_date', weekEnd + 'T23:59:59')
+      let query = supabase.from('appointments').select('id, appointment_date, status').gte('appointment_date', todayStr).lte('appointment_date', weekEnd + 'T23:59:59')
+      if (patientId) query = query.eq('patient_id', patientId)
+      const { data } = await query
       const all = data || []
       const todayAppts = all.filter(a => a.appointment_date?.startsWith(todayStr))
       setStats({
@@ -63,7 +70,7 @@ const RealAppointmentStats = () => {
       })
     }
     load()
-  }, [])
+  }, [patientId])
   return (
     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
       <div className="bg-slate-700/50 rounded-lg p-4"><p className="text-sm text-slate-400 mb-1">Hoje</p><p className="text-2xl font-bold text-white">{stats.today}</p></div>
@@ -75,18 +82,23 @@ const RealAppointmentStats = () => {
 }
 
 /** Componente: Agenda de hoje com dados reais */
-const RealAgendaHoje = () => {
+// [V1.9.342] (18/05): prop patientId opcional pra filtrar quando dentro do prontuário
+// individual. Veja comentário em RealAppointmentStats. RLS appointments já filtra
+// por professional_id (Pedro/Ricardo só vê seus appts), mas dentro do prontuário X
+// queremos só os do paciente X.
+const RealAgendaHoje = ({ patientId }: { patientId?: string }) => {
   const [appointments, setAppointments] = useState<any[]>([])
   useEffect(() => {
     const load = async () => {
       const todayStr = new Date().toISOString().split('T')[0]
-      const { data } = await supabase
+      let query = supabase
         .from('appointments')
         .select('id, title, appointment_date, appointment_time, status, patient_id, description')
         .gte('appointment_date', todayStr)
         .lte('appointment_date', todayStr + 'T23:59:59')
         .not('status', 'in', '("cancelled","canceled")')
-        .order('appointment_date', { ascending: true })
+      if (patientId) query = query.eq('patient_id', patientId)
+      const { data } = await query.order('appointment_date', { ascending: true })
       if (!data?.length) { setAppointments([]); return }
       const patientIds = [...new Set(data.map(a => a.patient_id).filter(Boolean))]
       const { data: users } = await supabase.from('users').select('id, name').in('id', patientIds)
@@ -94,7 +106,7 @@ const RealAgendaHoje = () => {
       setAppointments(data.map(a => ({ ...a, patient_name: nameMap[a.patient_id] || 'Paciente' })))
     }
     load()
-  }, [])
+  }, [patientId])
 
   const statusStyle = (s: string) => {
     if (['confirmed', 'scheduled'].includes(s)) return 'bg-green-500/20 text-green-400'
@@ -2284,8 +2296,9 @@ const PatientsManagement: React.FC<PatientsManagementProps> = ({ embedded = fals
                             </div>
 
                             {/* KPIs e Agenda de Hoje — dados reais */}
-                            <RealAppointmentStats />
-                            <RealAgendaHoje />
+                            {/* [V1.9.342] passa selectedPatient.id pra filtrar dentro do prontuário individual */}
+                            <RealAppointmentStats patientId={selectedPatient?.id} />
+                            <RealAgendaHoje patientId={selectedPatient?.id} />
 
                             {/* Ações Rápidas */}
                             <div className="flex flex-wrap gap-3">
