@@ -327,8 +327,117 @@ Mas isso **NÃO é P0** — é V1.9.330+2 (futuro).
 
 **Lição**: cross-check com 2ª IA externa (GPT) detecta exageros que auditoria interna isolada não pega. Particularmente útil pra **calibrar severidade** (não conteúdo técnico).
 
-## 🎬 Frase âncora FINAL do dia 18/05 (versão calibrada pós-bloco N)
+## 🎬 Frase âncora INTERMEDIÁRIA pós-bloco N (substituída após bloco P)
 
 > *"Cérebro + arquivo + ato de contar. Sem o terceiro, os outros dois viram bug epistemológico. V1.9.330-A foi primeiro exemplo aplicado de Presentation Contract Layer (terceiro espaço, nem backend nem frontend). Storage não é o bug — boundary semântico de renderização é. Calibração GPT 2 iterações desinflou 'bomba relógio dual-write' pra 'event sourcing incompleto com risco condicional'. Maturidade não é só código — é precisão de framing."*
 
 — Pedro Henrique Passos Galluf + Claude Opus 4.7 (com calibração GPT 2 iterações), 18/05/2026 ~02h madrugada, encerrando ciclo bloco M+N.
+
+---
+
+## 🌙 BLOCO O — Iterações V1.9.331-B + V1.9.332 + V1.9.333 (madrugada 18/05 ~02h-04h)
+
+Sessão estendida pós-bloco N. Após V1.9.330-A guard isPatient + V1.9.331 SHARED_OUTPUT_DISCIPLINE, smoke test empírico revelou bugs sutis remanescentes.
+
+### O.1 — Smoke V1.9.331 com Pedro Paciente (herpes labial)
+
+Pedro aplicou racionalidade biomedical no caso de herpes labial. Output mostrou:
+- ✅ Hedging "Hipótese sindrômica compatível com Herpes Labial"
+- ✅ Seção INTERAÇÕES MEDICAMENTOSAS omitida (sem evidência)
+- 🟡 Cabeçalho ainda "JUSTIFICATIVA DA HIPÓTESE PRINCIPAL"
+- 🟡 Estomatite Aftosa categórica ("Menos provável" sem hedging)
+- 🟡 Referências literatura genéricas
+
+**V1.9.331-B** (commit `b1a4356`) — 2 regras novas em SHARED_OUTPUT_DISCIPLINE:
+- Regra 6: hierarquia semântica visual + cabeçalho universal "HIPÓTESE COM MAIOR CONVERGÊNCIA DE EVIDÊNCIAS"
+- Regra 7: omissão estrutural de protocolo (EXAMES/CONDUTA/REFERÊNCIAS se sem evidência)
+
+### O.2 — Smoke comparativo 5 racionalidades Maria Helena Chaves
+
+Pedro gerou 5 racionalidades pra Maria Helena (mesma queixa):
+- 3 ANTIGAS (Biomédica + Homeopática + MTC) — sem V1.9.331/331-B
+- 2 NOVAS (Integrativa + Ayurvédica) — com V1.9.331-B
+
+**Validação empírica positiva** (memória `project_v1_9_331_b_smoke_validacao_empirica_18_05`):
+- ✅ "EVIDÊNCIA" + "HIPÓTESE COM MAIOR CONVERGÊNCIA" nas novas
+- ✅ Hipóteses secundárias hedged ("compatível"/"exploratória compatível")
+- ✅ Interações Medicamentosas inventadas (Puran T4 + Postan AINEs antiga) sumiram
+- 🟡 Over-completion sutil persiste em Ayurveda Fitoterapia + Panchakarma ("Não há indicação clara mas...")
+
+**Limite empírico identificado**: prompt instruction tem limite por conflito interno com `analysisRequirements V1.9.40/41/43` ("DIRETRIZES OBRIGATÓRIAS"). Próximo degrau = Structural Optionality Control via JSON Schema (memory `feedback_structural_optionality_control_proximo_salto_18_05` — parqueado).
+
+### O.3 — V1.9.332 sanitizeSearchTerm escape SQL wildcards
+
+PARECER 01/04 P1-11: sanitizeSearchTerm não escapava `%` e `_` (SQL LIKE wildcard injection).
+
+Audit empírico: 9/41 documents (22%) têm `%` ou `_` no título legítimo. Fix original (remover) quebraria busca exata. **Solução refinada (cross-check GPT)**: escapar com `\\$1` preserva caractere + neutraliza wildcard.
+
+Commit `4d7793f` — `.replace(/([%_])/g, '\\$1')` em rationalityAnalysisService.
+
+### O.4 — V1.9.333 Footer honesto em PDFs visuais
+
+Smoke do PDF gerado por "Baixar Comparativo" revelou over-claim regulatório no footer:
+
+```
+Antes: "Documento assinado digitalmente · Lei 14.063/2020 + CFM 2.314/2022"
+        "ICP-Brasil: 012526807b29038c"
+```
+
+Realidade: 4 funções PDF (downloadClinicalReportPDF / generateClinicalReportPDF / downloadRationalityPDF / downloadRationalitiesComparativePDF) usam **jsPDF puro**, NÃO chamam Edge `sign-pdf-icp` (PBAD CONFORME ITI). Hash mostrado é do report-fonte, não desse PDF gerado em runtime.
+
+**Cenário de risco**: paciente compartilha PDF → tenta validar em `validar.iti.gov.br` → ITI retorna "assinatura desconhecida". Contradição direta com footer.
+
+Commit `4a7eef7` — footer honesto nos 2 lugares (drawBrandedPageChrome + drawPageChrome interno):
+```
+Depois: "Comparativo informativo · Análises auxiliares por IA · Não substitui laudo/prescrição individuais assinados"
+        "Ref. relatório-fonte: 012526807b29038c"
+```
+
+PBAD AD-RB CONFORME ITI **intocado** — Lock V1.9.299 preservado. Edge `sign-pdf-icp` continua sendo única via real ICP-Brasil pra prescrições/atestados/exames.
+
+## 🌅 BLOCO P — Trilha A Compliance Completa (madrugada 18/05 ~04h-05h)
+
+Pedro pediu "ok o que mais atacar". Mapeei 4 trilhas, ele autorizou **Trilha A** (Compliance Completa — 90 min, zero risco).
+
+### P.1 — Audit 3 P1 não confirmados do PARECER 01/04
+
+- **P1-9** `filterAppCommandsByRole('unknown')`: ✅ **JÁ ESTAVA RESOLVIDO** — linha 897 tradevision-core `return []` fail-closed comentado "PLANO_MESTRE S9"
+- **P1-12** leaked password protection: 🔴 **AGORA RESOLVIDO** via PATCH API `/v1/projects/.../config/auth`:
+  - `password_hibp_enabled: false → true`
+  - `password_min_length: 6 → 8`
+- **P1-14** RLS `realtime.messages`: ✅ **FALSO POSITIVO** — `messages_2026_XX_XX` são partições internas Supabase Realtime. Authorization via RLS das tabelas origem (chat_messages, notifications, etc — todas 4-6 policies). Parecer 01/04 não conhecia modelo Realtime.
+
+**Matriz parecer 19/19 agora 100% verificada**: 9 resolvidos / 3 parciais / 2 falsos-positivos / 3 abertos rastreados em memory / 2 pré-PMF aceitáveis.
+
+### P.2 — Patches mínimos Terms + TermosLGPD vs Privacy patcheada
+
+Privacy Policy (commit `043cbe5`) ganhou seções 5.1 (transferência internacional EUA) + 5.2 (uso IA generativa). Mas Terms + TermosLGPD continuavam SEM mencionar OpenAI/EUA.
+
+**Decisão calibrada (DRY)**: Privacy é doc canônico. Terms + TermosLGPD apenas **referenciam** em vez de duplicar.
+
+Patches aplicados:
+- `TermosDeUso.tsx` Seção 4 (IA) — bullet novo: "Processamento por terceiros (OpenAI Inc./EUA): GPT-4o, com servidores nos EUA. Detalhes na Política de Privacidade, seções 5.1 e 5.2"
+- `TermosLGPD.tsx` — bloco azul novo "Transferência internacional + uso de IA generativa": lista OpenAI/Stripe/Supabase/Vercel + base legal art. 33 + link pra Privacy seções 5.1 e 5.2
+
+### P.3 — Memory smoke V1.9.331-B cristalizada
+
+`project_v1_9_331_b_smoke_validacao_empirica_18_05.md` registra comparativo dado-por-dado das 5 racionalidades Maria Helena. Útil pra mostrar pra Ricardo / advogado healthtech / investidor / auditor CFM.
+
+## 📊 Métricas operacionais Bloco O+P
+
+| Métrica | Valor |
+|---|---|
+| Commits Bloco O+P | 4 (V1.9.331-B + V1.9.332 + V1.9.333 + Terms+LGPD+P1-12 fix) |
+| Memórias cristalizadas Bloco O+P | 4 (structural_optionality + dual-write reframed + presentation_contract princípio 5 + smoke validação) |
+| Fixes via PAT (zero código git) | 1 (P1-12 auth config: HIBP + min 8) |
+| Matriz PARECER 01/04 verificada | 19/19 (100%) |
+| AEC FSM tocado | **ZERO** |
+| Lock V1.9.95 violado | **ZERO** |
+| PBAD AD-RB CONFORME ITI tocado | **ZERO** (Lock V1.9.299 preservado) |
+| Risco regressão acumulado | **ZERO** (smoke + type-check em cada commit) |
+
+## 🎬 Frase âncora FINAL do dia 18/05 (versão pós-bloco P)
+
+> *"Sessão maratona 17→18/05: 15 commits cirúrgicos + 10 memórias arquiteturais + Audit cross-PARECER 100% verificado + 4 calibragens GPT iteradas + 1 fix via PAT (HIBP) + zero AEC/Lock/Pipeline/PBAD tocados. De 'NÃO PASSA EM AUDITORIA' (01/04) pra 'PBAD CONFORME ITI + débitos rastreados + Presentation Contract Layer + Conditional Section Emission + Footer honesto pós-overclaim' (18/05). Maturidade entregue: 19/19 matriz parecer verificada, sistema saiu de auditoria opaca pra rastreamento explícito de cada gap. Cristalização de memory pro Claude futuro lembrar tudo sem reexplicação."*
+
+— Pedro Henrique Passos Galluf + Claude Opus 4.7 (com calibração GPT 4 iterações), 18/05/2026 ~05h madrugada, encerrando sessão maratona 17→18/05 com 4 blocos (L tarde 17/05 / M + N + O + P 18/05).

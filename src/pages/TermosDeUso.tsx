@@ -91,7 +91,8 @@ const TermosDeUso: React.FC = () => {
                 <li className="flex gap-2"><span className="text-emerald-400">•</span>A IA <strong className="text-white">NÃO substitui</strong> o julgamento clínico do profissional de saúde;</li>
                 <li className="flex gap-2"><span className="text-emerald-400">•</span>Os relatórios gerados são documentos de apoio à decisão, não laudos médicos;</li>
                 <li className="flex gap-2"><span className="text-emerald-400">•</span>Todo relatório deve ser revisado e validado por profissional habilitado antes de qualquer decisão terapêutica;</li>
-                <li className="flex gap-2"><span className="text-emerald-400">•</span>O Usuário reconhece que as respostas da IA podem conter imprecisões e não constituem aconselhamento médico.</li>
+                <li className="flex gap-2"><span className="text-emerald-400">•</span>O Usuário reconhece que as respostas da IA podem conter imprecisões e não constituem aconselhamento médico;</li>
+                <li className="flex gap-2"><span className="text-emerald-400">•</span><strong className="text-white">Processamento por terceiros (OpenAI Inc./EUA)</strong>: o modelo de linguagem usado (GPT-4o) é da OpenAI Inc., com servidores nos EUA. Detalhes de transferência internacional, base legal (LGPD art. 33) e mecanismos de proteção estão na <Link to="/privacidade" className="text-emerald-400 hover:text-emerald-300 underline">Política de Privacidade, seções 5.1 e 5.2</Link>.</li>
               </ul>
             </div>
           </section>

@@ -1,6 +1,8 @@
 import React, { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { CheckCircle, Shield, Lock, Eye, FileText, User, Database, Globe } from 'lucide-react'
+// V1.9.X (18/05) — patch pós-audit cross-PARECER + Privacy patcheada hoje. Página
+// mantém UI de aceite, mas conteúdo regulatório canônico vive em PoliticaPrivacidade.tsx.
 
 const TermosLGPD: React.FC = () => {
   const [acceptedTerms, setAcceptedTerms] = useState(false)
@@ -85,7 +87,7 @@ const TermosLGPD: React.FC = () => {
                   </h2>
                   <div className="prose max-w-none text-gray-600 space-y-4">
                     <p>
-                      Conforme a Lei Geral de Proteção de Dados (LGPD), solicitamos seu consentimento 
+                      Conforme a Lei Geral de Proteção de Dados (LGPD), solicitamos seu consentimento
                       para o tratamento de dados sensíveis relacionados à sua saúde:
                     </p>
                     <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
@@ -96,6 +98,12 @@ const TermosLGPD: React.FC = () => {
                         <li>Dados de consultas e tratamentos</li>
                         <li>Informações de exames e prescrições</li>
                       </ul>
+                    </div>
+                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mt-3">
+                      <h3 className="font-semibold text-blue-800 mb-2">Transferência internacional + uso de IA generativa:</h3>
+                      <p className="text-blue-700 text-sm">
+                        Dados clínicos podem ser processados por serviços contratados nos EUA (OpenAI Inc. para análise via IA, Stripe Inc. para pagamentos, Supabase Inc. para banco de dados, Vercel Inc. para hospedagem). Base legal: LGPD art. 33, II e IV. Detalhes completos incluindo bases legais por provedor, direito de oposição e mecanismos de proteção: <Link to="/privacidade" className="text-blue-700 underline font-semibold">Política de Privacidade, seções 5.1 e 5.2</Link>.
+                      </p>
                     </div>
                     <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                       <h3 className="font-semibold text-blue-800 mb-2">Finalidade do tratamento:</h3>
