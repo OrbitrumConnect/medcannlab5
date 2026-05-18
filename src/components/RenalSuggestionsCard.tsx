@@ -19,10 +19,14 @@
 
 import { useEffect, useState, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { AlertTriangle, CheckCircle, XCircle, Activity, Info, FileSearch } from 'lucide-react'
+import { AlertTriangle, CheckCircle, XCircle, Activity, Info, FileSearch, Archive, ExternalLink } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import DotPagination from './ui/DotPagination'
 
+// V1.9.329 — campos adicionais (status/reviewed/reviewer_name/rejection_reason/renal_exam_id)
+// vindos de v_renal_suggestions_active (substitui v_renal_suggestions_pending).
+// Permite renderizar 3 estados visuais distintos (pending laranja / approved verde / rejected cinza)
+// + ação "Arquivar" pra médico tirar do dashboard quando quiser.
 interface RenalSuggestion {
   id: string
   patient_id: string
@@ -39,6 +43,13 @@ interface RenalSuggestion {
   created_at: string
   expires_at: string
   days_until_expire: string | number
+  // V1.9.329 — estado/revisão/arquivo
+  status: 'pending' | 'approved' | 'rejected'
+  reviewed_at: string | null
+  reviewed_by: string | null
+  reviewer_name: string | null
+  rejection_reason: string | null
+  renal_exam_id: string | null
 }
 
 const STAGE_DESCRIPTIONS: Record<string, { label: string, color: string, bg: string }> = {
@@ -65,8 +76,10 @@ export default function RenalSuggestionsCard() {
 
   const loadSuggestions = async () => {
     setLoading(true)
+    // V1.9.329 — view nova: pending + approved/rejected últimos 30d, exclui archived.
+    // Frontend renderiza estados visuais distintos por status.
     const { data, error } = await (supabase as any)
-      .from('v_renal_suggestions_pending')
+      .from('v_renal_suggestions_active')
       .select('*')
     if (!error && data) {
       setSuggestions(data as RenalSuggestion[])
@@ -133,6 +146,33 @@ export default function RenalSuggestionsCard() {
     }
   }
 
+  // V1.9.329 — arquiva sugestão já revisada (approved/rejected) pra tirar do dashboard
+  // sem perder o registro. Card some apenas após ato deliberado do médico.
+  const handleArchive = async (sugg: RenalSuggestion) => {
+    if (!window.confirm(
+      `Arquivar sugestão de ${sugg.patient_name}?\n\n` +
+      `O registro continua salvo no banco e em Saúde Renal. Apenas sai do dashboard ativo.`
+    )) return
+
+    setProcessingId(sugg.id)
+    const { error } = await (supabase.rpc as any)('archive_renal_suggestion', {
+      p_suggestion_id: sugg.id
+    })
+    setProcessingId(null)
+
+    if (error) {
+      alert('Erro ao arquivar: ' + error.message)
+    } else {
+      await loadSuggestions()
+    }
+  }
+
+  // V1.9.329 — navegar pro prontuário do paciente, aba Saúde Renal (renal_exams oficial)
+  const goToRenalExam = (sugg: RenalSuggestion) => {
+    // Rota Terminal Profissional com paciente preselecionado
+    navigate(`/app/clinica/profissional/patients?selected=${sugg.patient_id}`)
+  }
+
   if (loading && suggestions.length === 0) {
     return (
       <div className="bg-slate-900/60 border border-slate-700/50 rounded-2xl p-4">
@@ -183,12 +223,35 @@ export default function RenalSuggestionsCard() {
           const stageInfo = sugg.drc_stage_suggested ? STAGE_DESCRIPTIONS[sugg.drc_stage_suggested] : null
           const isProcessing = processingId === sugg.id
           const isRejecting = rejectReasonFor === sugg.id
+          // V1.9.329 — borda/hover por estado (Clinical Cockpit: cor comunica estado clínico)
+          const cardBorder =
+            sugg.status === 'approved' ? 'border-emerald-500/40 hover:border-emerald-500/60' :
+            sugg.status === 'rejected' ? 'border-slate-600/40 hover:border-slate-500/60' :
+            'border-slate-700/40 hover:border-orange-500/40'
 
           return (
             <div
               key={sugg.id}
-              className="bg-slate-900/60 border border-slate-700/40 rounded-xl p-3 flex flex-col gap-2 hover:border-orange-500/40 transition-colors"
+              className={`bg-slate-900/60 border rounded-xl p-3 flex flex-col gap-2 transition-colors ${cardBorder}`}
             >
+              {/* V1.9.329 — badge de status pra approved/rejected (pending sem badge = layout limpo original) */}
+              {sugg.status === 'approved' && sugg.reviewed_at && (
+                <div className="flex items-center gap-1.5 px-2 py-1 rounded bg-emerald-500/10 border border-emerald-500/30">
+                  <CheckCircle className="w-3 h-3 text-emerald-300 flex-shrink-0" />
+                  <span className="text-[10px] text-emerald-200 font-semibold truncate">
+                    Aprovada{sugg.reviewer_name ? ` por ${sugg.reviewer_name}` : ''} · {new Date(sugg.reviewed_at).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })}
+                  </span>
+                </div>
+              )}
+              {sugg.status === 'rejected' && sugg.reviewed_at && (
+                <div className="flex items-center gap-1.5 px-2 py-1 rounded bg-slate-700/30 border border-slate-600/40">
+                  <XCircle className="w-3 h-3 text-slate-400 flex-shrink-0" />
+                  <span className="text-[10px] text-slate-300 font-semibold truncate">
+                    Rejeitada{sugg.reviewer_name ? ` por ${sugg.reviewer_name}` : ''} · {new Date(sugg.reviewed_at).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })}
+                  </span>
+                </div>
+              )}
+
               {/* Paciente + estágio destaque */}
               <div className="flex items-start justify-between gap-2">
                 <div className="min-w-0 flex-1">
@@ -262,8 +325,15 @@ export default function RenalSuggestionsCard() {
                 </p>
               </div>
 
-              {/* Ações */}
-              {isRejecting ? (
+              {/* V1.9.329 — motivo de rejeição visível se houver */}
+              {sugg.status === 'rejected' && sugg.rejection_reason && (
+                <div className="text-[10px] text-slate-400 italic bg-slate-800/30 rounded px-2 py-1">
+                  Motivo: {sugg.rejection_reason}
+                </div>
+              )}
+
+              {/* Ações — V1.9.329 condicional por status */}
+              {sugg.status === 'pending' && isRejecting ? (
                 <div className="space-y-1.5 mt-auto">
                   <input
                     type="text"
@@ -287,6 +357,41 @@ export default function RenalSuggestionsCard() {
                       ✕
                     </button>
                   </div>
+                </div>
+              ) : sugg.status === 'approved' ? (
+                // V1.9.329 — estado approved: link Saúde Renal + Arquivar
+                <div className="space-y-1 mt-auto">
+                  <button
+                    onClick={() => goToRenalExam(sugg)}
+                    disabled={isProcessing}
+                    className="w-full px-2 py-1.5 bg-emerald-600/20 hover:bg-emerald-600/40 text-emerald-200 rounded text-[10px] font-semibold flex items-center justify-center gap-1 disabled:opacity-50 border border-emerald-500/30"
+                    title="Abrir prontuário do paciente (Saúde Renal)"
+                  >
+                    <ExternalLink className="w-3 h-3" />
+                    Ver em Saúde Renal
+                  </button>
+                  <button
+                    onClick={() => handleArchive(sugg)}
+                    disabled={isProcessing}
+                    className="w-full px-2 py-1.5 bg-slate-800/60 hover:bg-slate-700 text-slate-400 rounded text-[10px] font-medium flex items-center justify-center gap-1 disabled:opacity-50 border border-slate-700/50"
+                    title="Arquivar — tira do dashboard, mantém registro"
+                  >
+                    <Archive className="w-3 h-3" />
+                    Arquivar
+                  </button>
+                </div>
+              ) : sugg.status === 'rejected' ? (
+                // V1.9.329 — estado rejected: só Arquivar (registro já tem motivo)
+                <div className="mt-auto">
+                  <button
+                    onClick={() => handleArchive(sugg)}
+                    disabled={isProcessing}
+                    className="w-full px-2 py-1.5 bg-slate-800/60 hover:bg-slate-700 text-slate-400 rounded text-[10px] font-medium flex items-center justify-center gap-1 disabled:opacity-50 border border-slate-700/50"
+                    title="Arquivar — tira do dashboard, mantém registro"
+                  >
+                    <Archive className="w-3 h-3" />
+                    Arquivar
+                  </button>
                 </div>
               ) : (
                 <div className="space-y-1 mt-auto">
