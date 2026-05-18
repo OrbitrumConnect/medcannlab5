@@ -178,12 +178,18 @@ Deno.serve(async (req) => {
               } else {
                 try {
                   // V1.9.163: email enriquecido (nome do outro lado + link Atendimento Integrado)
+                  // V1.9.338 (18/05): incluir patientId no link do email PRO MÉDICO. Sem isso,
+                  // médico clicava no link do email "Maria das Dores" e caía no canal de OUTRO
+                  // paciente (ex: João Guimarães) — frontend abria sala arbitrária (primeira/
+                  // última ativa) por falta de contexto. Bug LGPD art. 11 grave reportado por
+                  // Ricardo 18/05 11h. Paciente continua SEM patientId (paciente só tem 1
+                  // canal próprio, frontend resolve por user.id da session).
                   const otherLine = r.otherName
                     ? `<p>👤 <strong>${r.otherLabel}:</strong> ${r.otherName}</p>`
                     : ''
                   const atendimentoPath = r.role === 'paciente'
                     ? '/app/clinica/paciente/chat-profissional'
-                    : '/app/clinica/paciente/chat-profissional?origin=professional-dashboard'
+                    : `/app/clinica/paciente/chat-profissional?origin=professional-dashboard${apt.patient_id ? `&patientId=${apt.patient_id}` : ''}`
                   const atendimentoUrl = `${APP_URL}${atendimentoPath}`
                   const resendRes = await fetch('https://api.resend.com/emails', {
                     method: 'POST',
