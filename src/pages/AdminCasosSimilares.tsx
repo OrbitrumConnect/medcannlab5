@@ -118,15 +118,25 @@ const AdminCasosSimilares: React.FC = () => {
     }
 
     try {
-      // 1. Buscar reports com match em content (full-text simples via ILIKE)
+      // 1. Buscar reports com match em campos jsonb específicos
+      // [V1.9.355] (18/05): fix bug "operator does not exist: jsonb ~~* unknown"
+      // V1.9.354 tentou .ilike('content::text', term) mas Postgres não converte
+      // jsonb→text direto em ILIKE. Solução: or() com paths jsonb explícitos
+      // (content->>field). Cobre os campos mais comuns onde paciente menciona queixa.
       const periodCutoff = new Date(Date.now() - periodFilter * 24 * 60 * 60 * 1000).toISOString()
       const term = `%${searchTerm.trim()}%`
+      const orFilter = [
+        `content->>queixa_principal.ilike.${term}`,
+        `content->>chiefComplaint.ilike.${term}`,
+        `content->>structured.ilike.${term}`,
+        `content->>assessment.ilike.${term}`,
+      ].join(',')
 
       const { data: reports, error: reportsError } = await supabase
         .from('clinical_reports')
         .select('id, patient_id, created_at, content')
         .gte('created_at', periodCutoff)
-        .ilike('content::text', term)
+        .or(orFilter)
         .limit(50)
 
       if (reportsError) throw new Error(`Erro busca reports: ${reportsError.message}`)
