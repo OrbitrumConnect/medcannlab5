@@ -1606,6 +1606,26 @@ export class ClinicalAssessmentFlow {
     // Sem isso, state in-memory ficava COMPLETED mas DB nunca recebia o sinal.
     void this.persist(userId)
 
+    // [V1.9.339] (18/05): UPDATE clinical_assessments.status pra fechar débito P0
+    // (PARECER FISCAL 01/04 + audit 18/05 — 52 cases empíricos in_progress eternos).
+    // Causa raiz: noaResidentAI.ts:1448 atualiza só `data`, nunca `status`. ZERO
+    // UPDATE de status existia no codebase. Fix cirúrgico aditivo aqui.
+    // Guard: só se paciente deu consent (REGRA HARD §1 respeitada).
+    // userId === patient_id em AEC paciente (caller noaResidentAI:2297 passa user.id).
+    // Idempotente: .eq('status','in_progress') = no-op se já completed.
+    // RLS "Paciente preenche avaliacao" permite (auth.uid()=patient_id).
+    // Trigger update_clinical_assessments_updated_at cuida do updated_at.
+    if (state.data.consentGiven) {
+      void supabase
+        .from('clinical_assessments')
+        .update({ status: 'completed' })
+        .eq('patient_id', userId)
+        .eq('status', 'in_progress')
+        .then(({ error }) => {
+          if (error) console.warn('[AEC V1.9.339] update status falhou (não bloqueia):', error)
+        })
+    }
+
     return state.data
   }
 
