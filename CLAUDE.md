@@ -55,6 +55,47 @@ curl -X POST "https://api.supabase.com/v1/projects/itdjkfubfzmvmuxxjoae/database
 
 *Discrepância conhecida: `cos_engine.ts` diz "v1.0" mas Magno selou v5.0 em 04-06/02/2026. É v5.0.*
 
+## Fonte de verdade de racionalidades (CRÍTICO — cristalizado 18/05 pós-V1.9.330-A)
+
+Sistema mantém **duas fontes paralelas** com propósitos diferentes (divergência **controlada**, não acidental):
+
+| Fonte | Propósito | Quem lê | Otimização |
+|---|---|---|---|
+| `clinical_reports.content.rationalities` (JSONB) | **Source de UI** — snapshot displayável | Frontend (ClinicalReports.tsx, PDF, share) | Latência, formato display, imutabilidade do que paciente viu |
+| `clinical_rationalities` (TABELA) | **Espelho analítico** — KPIs, pesquisa, RAG interno | Analytics (v_clinical_cycle_health), service RAG (rationalityAnalysisService linha 322) | Query, agregação, JOIN |
+
+### Regra de ouro
+
+**Nunca derivar UI paciente de tabelas analíticas de racionalidade. Sempre derivar de `clinical_reports.content.*`.**
+
+Inversão futura desta regra exige migração explícita documentada com:
+1. Trigger SQL replicador (source → projection)
+2. Plano de reconciliação dos 112+ rows históricos
+3. Validação cross-source antes do cutover
+
+### Contrato de divergência controlada (não eliminação)
+
+Aceitamos que jsonb e tabela divergem por design. Governar o COMO:
+
+- **Edge tradevision-core** (linhas 1716+2272) escreve só na tabela → racionalidade aparece em analytics ANTES de aparecer na UI (latência aceitável)
+- **Service rationalityAnalysisService.saveAnalysisToReport** (linha 539) escreve nos 2 sequencialmente (jsonb UPDATE + tabela UPSERT) → falha de uma não rollback a outra
+- **Frontend** lê apenas jsonb (snapshot do que paciente viu naquele momento)
+- **Analytics** lê apenas tabela (estado atual normalizado)
+
+### Antes de qualquer feature que toque rationalities — checklist
+
+```
+□ Feature lê de jsonb OU de tabela?
+□ Se lê de tabela mas serve UI paciente → BLOQUEIO. Use jsonb ou migra fonte explicitamente.
+□ Feature escreve em jsonb? Em tabela? Em ambos?
+□ Se escreve só em 1: divergência ESPERADA ou ACIDENTAL?
+□ Se divergência esperada: documentar contrato (qual fonte, por quanto tempo, reconciliação)
+□ Migration aditiva em tabela mexe em campo que UI lê do jsonb? → propagar trigger
+□ Backfill SQL direto numa fonte → executar simétrico na outra OU documentar drift aceito
+```
+
+Memórias completas: `feedback_dual_write_contract_jsonb_vs_tabela_18_05.md` + `project_v1_9_330_audience_contract_design_18_05.md`.
+
 ## Stack
 
 | Camada | Tecnologia |

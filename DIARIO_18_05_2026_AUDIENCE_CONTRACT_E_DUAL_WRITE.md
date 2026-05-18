@@ -208,8 +208,127 @@ Sem esse design, V1.9.330-FULL pode AMPLIFICAR o bug em vez de resolver.
 
 6. **GPT como camada de calibração funciona bem quando Pedro faz cross-check**. Não engolir cego, mas usar como segunda perspectiva. GPT trouxe insight "dual-write contract" que eu não tinha pensado.
 
-## 🎬 Frase âncora final do dia 18/05
+## 🎬 Frase âncora intermediária do dia 18/05 (descartada após bloco N)
 
-> *"3 níveis de descoberta arquitetural em 1 dia: (1) namorada+amigos viram colapso de hierarquia interpretativa; (2) audit empírico revelou que UI lê jsonb não tabela — fix virou hotfix 15 linhas; (3) GPT identificou dual-write contract como bomba relógio epistemológica pré-requisito de qualquer V1.9.330-FULL. Padrão recolocável: audit → reuso → calibração → hotfix mínimo → design parqueado → próximo gate humano. Cresceu maturidade de processo, não só de código."*
+> *"3 níveis de descoberta arquitetural em 1 dia: (1) namorada+amigos viram colapso de hierarquia interpretativa; (2) audit empírico revelou que UI lê jsonb não tabela — fix virou hotfix 15 linhas; (3) GPT identificou dual-write contract como bomba relógio epistemológica pré-requisito de qualquer V1.9.330-FULL."*
 
-— Pedro Henrique Passos Galluf + Claude Opus 4.7, 18/05/2026 ~01h30 madrugada, encerrando ciclo de sessão maratona 17→18.
+Nota retrospectiva: a frase **exagerou** a severidade do dual-write. GPT calibrou 2ª iteração — ver BLOCO N abaixo.
+
+---
+
+## 🔬 BLOCO N — Recalibração GPT (2ª iteração) + Presentation Contract Layer
+
+GPT analisou tudo que foi documentado no bloco M e produziu **3 calibrações importantes** que retificam exageros.
+
+### N.1 — Validações fortes (o que estava certo)
+
+✅ V1.9.330-A guard UI = nível certo do problema atual
+- Não tinha problema de RLS
+- Não tinha problema de schema
+- Tinha problema de **renderização sem contrato de audiência**
+- Atacou o boundary certo
+
+✅ Descoberta jsonb vs tabela é arquiteturalmente relevante
+- **Mas não é "dual-write clínico"** — é source primário implícito + shadow table
+- Muda completamente a gravidade
+
+✅ Audience contract como problema existe de fato
+- Ausência de distinção entre conteúdo gerado / interpretado / exibido
+- Linguagem "ansiedade interpretativa" bem capturada
+
+### N.2 — Correções conceituais (onde EXAGEREI)
+
+**N.2.1 — "Dual-write contract crítico / bomba relógio" → EXAGERADO**:
+
+Hoje tecnicamente é **event sourcing incompleto** (write + projection manual):
+- jsonb = UI source of truth (snapshot clínico CFM 2.314 imutável)
+- tabela = analytics projection
+
+**NÃO é dual-write crítico ainda. NÃO é bloqueador de V1.9.330-FULL.**
+
+Só vira problema real SE:
+- Alguém EDITAR tabela como source
+- BI clínico direto da tabela
+- Tabela usada pra decisão médica
+
+Hoje **nenhum** desses cenários está ativo. Risco existe **condicional**, não atual.
+
+**N.2.2 — "RLS não importa" → CUIDADO**:
+
+RLS da tabela não afeta UI paciente (esse ponto está correto). MAS RLS continua importando porque:
+- Analytics clínico pode virar compliance layer
+- Export/PDF/auditoria futura pode usar tabela
+- Integrações externas provavelmente vão usar tabela
+
+→ RLS não resolve UI, mas ainda é camada de governança futura.
+
+**N.2.3 — "Schema não precisa de mudança" → PARCIALMENTE CERTO**:
+
+✅ Pro problema atual (paciente lê texto bruto): UI guard resolve
+❌ Pro problema estrutural (lineage/trace/versionamento): incompleto
+
+Mas isso **NÃO é P0** — é V1.9.330+2 (futuro).
+
+### N.3 — Reframing V1.9.330 em 3 camadas (versão limpa)
+
+| Camada | O quê | Status |
+|---|---|---|
+| **SOURCE** (verdade clínica atual) | `clinical_reports.content.rationalities` (jsonb) — usado pelo frontend + médico, NÃO versionado formalmente | OK |
+| **PROJECTION** (analytics/espelho) | `clinical_rationalities` (table) — usado pra métricas/pesquisa/RAG, NÃO source de verdade | OK |
+| **PRESENTATION CONTRACT** (bug real) | `ClinicalReports.tsx` — onde estava o bug, onde foi corrigido com V1.9.330-A | Hotfix aplicado |
+
+### N.4 — Diagnóstico final corrigido (substitui M.3)
+
+> *"O sistema não tinha um problema de arquitetura de dados. Ele tinha um problema de ausência de **contrato de apresentação** entre geração de racionalidade clínica (AI), persistência estruturada (jsonb + tabela) e exposição ao paciente (UI). A falha não era de storage nem de RLS — era de **boundary semântico de renderização**."*
+
+### N.5 — V1.9.330-FULL revisado (versão limpa, sem overengineering)
+
+- **V1.9.330-A** ✅ deployado: UI guard (resolve exposição)
+- **V1.9.330-B** (opcional, não crítico):
+  - Padronizar jsonb structure (schema enforcement leve)
+  - Adicionar `intended_audience` (só se quiser formalizar futuro)
+- **V1.9.330-C** (futuro real):
+  - Formalizar projection pipeline (event-driven via trigger SQL)
+  - OU eliminar duplicação tabela vs jsonb (decisão única de source)
+
+**Custo real V1.9.330-FULL recalibrado**: muito menor que estimei. Trigger SQL AFTER UPDATE content → projection (~10 linhas) + simplificar 2 call sites. Não é refator de 14 colunas + RLS + modal.
+
+### N.6 — Insight verdadeiro do dia (cristalizado GPT)
+
+> *"Vocês construíram primeiro o cérebro (racionalidades), depois o arquivo (storage), mas esqueceram o ato de contar isso para alguém. Esse ato de contar é uma camada própria — **PRESENTATION CONTRACT LAYER**. E ela não é nem backend nem frontend. É um terceiro espaço."*
+
+**Não é** bug de UI / bug de schema / dual-write.
+**É** ausência de Presentation Contract Layer.
+
+### N.7 — Patches aplicados no CLAUDE.md (bloco N)
+
+**Adicionado**: seção "Fonte de verdade de racionalidades (CRÍTICO)" antes de "Stack":
+
+- Tabela jsonb (source UI) vs tabela (projection analytics) com propósitos diferentes
+- **Regra de ouro**: *"Nunca derivar UI paciente de tabelas analíticas de racionalidade. Sempre derivar de `clinical_reports.content.*`."*
+- Contrato de divergência **controlada** (não eliminação)
+- Checklist 7 perguntas antes de feature que toque rationalities/content
+
+### N.8 — Memórias atualizadas/criadas (bloco N)
+
+1. `feedback_dual_write_contract_jsonb_vs_tabela_18_05.md` — **REFRAMING**: "dual-write crítico/bomba relógio" → "event sourcing implícito + risco condicional". Versão FINAL após 2 iterações GPT.
+
+2. **NOVA** `project_presentation_contract_layer_18_05.md` — Conceito arquitetural cristalizado. Camada própria ortogonal a frontend/backend. 4 princípios + padrão recolocável pra futuros artefatos (notas livres, devolutivas, pareceres, hipóteses, conselheiros editoriais). Conexão com tese Escola Clínica Digital (camadas 3+4 = Presentation Contract em ação).
+
+3. `MEMORY.md` — entrada dual-write reescrita, entrada Presentation Contract Layer adicionada em NÍVEL 1.
+
+### N.9 — Aprendizado meta do bloco N
+
+**Calibração externa (GPT) corrigiu exagero de 1ª iteração.** Padrão saudável:
+
+- 1ª iteração: minha leitura tendeu a alarmismo ("bomba relógio epistemológica")
+- 2ª iteração GPT: calibrou pra realidade ("event sourcing incompleto, risco condicional")
+- Resultado: documentação **mais precisa**, menos urgência fabricada, mesmo rigor estrutural
+
+**Lição**: cross-check com 2ª IA externa (GPT) detecta exageros que auditoria interna isolada não pega. Particularmente útil pra **calibrar severidade** (não conteúdo técnico).
+
+## 🎬 Frase âncora FINAL do dia 18/05 (versão calibrada pós-bloco N)
+
+> *"Cérebro + arquivo + ato de contar. Sem o terceiro, os outros dois viram bug epistemológico. V1.9.330-A foi primeiro exemplo aplicado de Presentation Contract Layer (terceiro espaço, nem backend nem frontend). Storage não é o bug — boundary semântico de renderização é. Calibração GPT 2 iterações desinflou 'bomba relógio dual-write' pra 'event sourcing incompleto com risco condicional'. Maturidade não é só código — é precisão de framing."*
+
+— Pedro Henrique Passos Galluf + Claude Opus 4.7 (com calibração GPT 2 iterações), 18/05/2026 ~02h madrugada, encerrando ciclo bloco M+N.
