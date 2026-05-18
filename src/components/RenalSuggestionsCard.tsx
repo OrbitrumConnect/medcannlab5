@@ -167,10 +167,12 @@ export default function RenalSuggestionsCard() {
     }
   }
 
-  // V1.9.329 — navegar pro prontuário do paciente, aba Saúde Renal (renal_exams oficial)
+  // V1.9.329-B (17/05 23h47) — fix rota 404. Rota real é /app/patients (não
+  // /app/clinica/profissional/patients). Query param correto é patientId (não selected).
+  // Aba 'charts' (Linha do Tempo V1.9.327) mostra renal_exam aprovado como evento
+  // em "Mai/2026" após V1.9.330 estender PatientClinicalTimeline com renal_exams.
   const goToRenalExam = (sugg: RenalSuggestion) => {
-    // Rota Terminal Profissional com paciente preselecionado
-    navigate(`/app/clinica/profissional/patients?selected=${sugg.patient_id}`)
+    navigate(`/app/patients?patientId=${sugg.patient_id}&tab=charts`)
   }
 
   if (loading && suggestions.length === 0) {

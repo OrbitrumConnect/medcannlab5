@@ -18,7 +18,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { supabase } from '../lib/supabase'
 import {
     FileText, Pill, Calendar, FlaskConical, TrendingUp,
-    Loader2, Activity, Sparkles
+    Loader2, Activity, Sparkles, Droplet
 } from 'lucide-react'
 
 interface Props {
@@ -34,6 +34,9 @@ interface MonthBucket {
     appointments: number
     examRequests: number
     examsSigned: number
+    // V1.9.329-B — renal_exams oficiais (aprovação V1.9.307 + visibilidade na timeline)
+    renalExams: number
+    renalStages: string[]  // pra mostrar G3b etc no último evento
     total: number
     lastEventAt: string | null
     lastEventType: string | null
@@ -67,7 +70,7 @@ export default function PatientClinicalTimeline({ patientId }: Props) {
             const sb = supabase as any
 
             try {
-                const [reportsR, presR, appR, examR] = await Promise.all([
+                const [reportsR, presR, appR, examR, renalR] = await Promise.all([
                     sb.from('clinical_reports')
                         .select('created_at, signed_at')
                         .eq('patient_id', patientId),
@@ -79,6 +82,10 @@ export default function PatientClinicalTimeline({ patientId }: Props) {
                         .eq('patient_id', patientId),
                     sb.from('patient_exam_requests')
                         .select('created_at, status')
+                        .eq('patient_id', patientId),
+                    // V1.9.329-B — renal_exams (aprovações V1.9.307 viram eventos na timeline)
+                    sb.from('renal_exams')
+                        .select('created_at, exam_date, drc_stage, egfr')
                         .eq('patient_id', patientId),
                 ])
 
@@ -95,6 +102,7 @@ export default function PatientClinicalTimeline({ patientId }: Props) {
                             reports: 0, reportsSigned: 0,
                             prescriptions: 0, appointments: 0,
                             examRequests: 0, examsSigned: 0,
+                            renalExams: 0, renalStages: [],
                             total: 0, lastEventAt: null, lastEventType: null,
                         }
                         map.set(k, b)
@@ -141,6 +149,20 @@ export default function PatientClinicalTimeline({ patientId }: Props) {
                     b.total += 1
                     if (e.status === 'signed') b.examsSigned += 1
                     bumpLast(b, e.created_at, 'Solicitação de exame')
+                })
+
+                // V1.9.329-B — renal_exams oficiais (V1.9.307 aprovação CKD-EPI)
+                ;(renalR.data || []).forEach((r: any) => {
+                    const iso = r.exam_date || r.created_at
+                    if (!iso) return
+                    const b = touch(iso)
+                    b.renalExams += 1
+                    b.total += 1
+                    if (r.drc_stage) b.renalStages.push(r.drc_stage)
+                    const label = r.drc_stage
+                        ? `Exame renal · DRC ${r.drc_stage}`
+                        : 'Exame renal'
+                    bumpLast(b, iso, label)
                 })
 
                 const sorted = Array.from(map.values()).sort((a, b) =>
@@ -297,6 +319,15 @@ export default function PatientClinicalTimeline({ patientId }: Props) {
                                         value={b.examRequests}
                                         subtitle={b.examsSigned > 0 ? `${b.examsSigned} assinados` : undefined}
                                         color="text-cyan-300"
+                                    />
+                                )}
+                                {b.renalExams > 0 && (
+                                    <Counter
+                                        icon={Droplet}
+                                        label="Renal"
+                                        value={b.renalExams}
+                                        subtitle={b.renalStages.length > 0 ? `DRC ${Array.from(new Set(b.renalStages)).join(', ')}` : undefined}
+                                        color="text-orange-300"
                                     />
                                 )}
                             </div>

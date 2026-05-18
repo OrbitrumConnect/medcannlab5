@@ -307,10 +307,11 @@ const PatientsManagement: React.FC<PatientsManagementProps> = ({ embedded = fals
     const patientIdParam = searchParams.get('patientId')
     const newEvolutionParam = searchParams.get('newEvolution')
 
-    if (tabParam === 'appointments') {
-      setActiveTab('appointments')
-    } else if (tabParam === 'evolution') {
-      setActiveTab('evolution')
+    // V1.9.329-B — aceitar mais tabs via URL pra deep-link de cards externos
+    // (ex: RenalSuggestionsCard "Ver em Saúde Renal" → ?tab=charts mostra timeline V1.9.327)
+    const validTabs = ['overview', 'evolution', 'prescription', 'exams', 'files', 'receipts', 'charts', 'appointments', 'analytics'] as const
+    if (tabParam && (validTabs as readonly string[]).includes(tabParam)) {
+      setActiveTab(tabParam as typeof activeTab)
     }
 
     // Se houver patientId na URL, buscar e selecionar o paciente
