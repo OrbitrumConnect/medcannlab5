@@ -208,6 +208,19 @@ const ArteEntrevistaClinica: React.FC = () => {
     }
   }
 
+  // [V1.9.340] (18/05): Detecta se texto extraído de PDF é legível em pt-BR.
+  // Causa raiz: extract-document-text Edge às vezes retorna RAW BINARY do PDF
+  // (FEFF...stream q...endobj) quando PDF tem fontes embutidas estranhas ou é
+  // scaneado sem OCR. Bug reportado por Pedro 18/05 navegando como aluno —
+  // perfil Ricardo Valença mostrava lixo binário em "Formação" e "Contribuições".
+  // Heurística: ≥75% caracteres latinos legíveis (letras pt-BR + pontuação + dígitos).
+  // PDF raw tem <30% (predomina símbolos, números em ponto flutuante, hex).
+  const isReadableText = (text: string): boolean => {
+    if (!text || text.length < 100) return false
+    const readable = text.match(/[a-záàâãéêíóôõúüçñA-ZÁÀÂÃÉÊÍÓÔÕÚÜÇÑ\s.,;:!?()0-9-]/g)?.length ?? 0
+    return readable / text.length > 0.75
+  }
+
   // Função para parsear informações do currículo Lattes REAL (sem dados mockados)
   const parseCurriculumData = (text: string): CurriculumData => {
     const formacao: string[] = []
@@ -1494,7 +1507,7 @@ const ArteEntrevistaClinica: React.FC = () => {
                             </div>
                           ))}
                         </div>
-                      ) : curriculumData?.content && curriculumData.content.length > 100 && !curriculumData.content.includes('Documento:') ? (
+                      ) : curriculumData?.content && curriculumData.content.length > 100 && !curriculumData.content.includes('Documento:') && isReadableText(curriculumData.content) ? (
                         <div className="space-y-2">
                           <p className="text-xs text-slate-400 mb-2">Conteúdo extraído do currículo:</p>
                           <p className="text-xs leading-relaxed text-gray-300 whitespace-pre-line">
@@ -1504,6 +1517,12 @@ const ArteEntrevistaClinica: React.FC = () => {
                           <p className="text-xs text-slate-500 mt-2">
                             {curriculumData.content.length > 1000 ? `(${Math.floor(curriculumData.content.length / 1000)}k caracteres extraídos)` : ''}
                           </p>
+                        </div>
+                      ) : curriculumData?.content && !isReadableText(curriculumData.content) ? (
+                        // [V1.9.340] Fallback quando PDF extração retorna lixo binário
+                        <div className="text-center py-4">
+                          <p className="text-sm text-gray-400">Currículo do instrutor não processado automaticamente.</p>
+                          <p className="text-xs text-gray-500 mt-2">PDF pode estar em formato de imagem ou com fontes não-extraíveis. Consulte materiais adicionais.</p>
                         </div>
                       ) : (
                         <div className="text-center py-4">
@@ -1617,13 +1636,19 @@ const ArteEntrevistaClinica: React.FC = () => {
                         </div>
                       ))}
                     </div>
-                  ) : curriculumData?.content && curriculumData.content.length > 100 ? (
+                  ) : curriculumData?.content && curriculumData.content.length > 100 && isReadableText(curriculumData.content) ? (
                     <div className="space-y-3">
                       <p className="text-sm text-slate-400 mb-2">Conteúdo extraído do currículo:</p>
                       <p className="text-sm leading-relaxed text-gray-300 whitespace-pre-line">
                         {curriculumData.content.substring(0, 1000)}
                         {curriculumData.content.length > 1000 && '...'}
                       </p>
+                    </div>
+                  ) : curriculumData?.content && !isReadableText(curriculumData.content) ? (
+                    // [V1.9.340] Fallback simétrico ao bloco Formação — evita dump raw binary
+                    <div className="text-center py-4">
+                      <p className="text-sm text-gray-400">Contribuições não processadas automaticamente do PDF.</p>
+                      <p className="text-xs text-gray-500 mt-2">Consulte aulas e material didático do curso.</p>
                     </div>
                   ) : (
                     <div className="text-center py-4">
