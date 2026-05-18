@@ -198,6 +198,8 @@ function App() {
                           <Route path="pesquisa/profissional/cidade-amiga-dos-rins" element={<PesquisaDashboard initialTab="protocols" />} />
                           <Route path="pesquisa/profissional/medcann-lab" element={<MedCannLab />} />
                           <Route path="pesquisa/profissional/jardins-de-cura" element={<JardinsDeCura />} />
+                          {/* [V1.9.362] Rota direta pra aba Casos Similares (Pedro 18/05 ~18h05) */}
+                          <Route path="pesquisa/profissional/casos-similares" element={<PesquisaDashboard initialTab="casos-similares" />} />
 
                           <Route path="pesquisa/aluno/dashboard" element={<PesquisaDashboard />} />
                           <Route path="pesquisa/aluno/forum-casos" element={<ForumCasosClinicos />} />

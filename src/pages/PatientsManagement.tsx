@@ -11,8 +11,7 @@ import { ExamRequestModule } from '../components/ExamRequestModule'
 import ProfessionalPatientFiles from '../components/ProfessionalPatientFiles'
 // V1.9.327 — timeline narrativa mensal substitui placeholder "Nenhum gráfico disponível" (Pedro 17/05 opção B)
 import PatientClinicalTimeline from '../components/PatientClinicalTimeline'
-// [V1.9.359] Atalho Casos Similares no Workstation atendimento (C)
-import AdminCasosSimilares from './AdminCasosSimilares'
+// [V1.9.362] Casos Similares removido do prontuário — usar Terminal de Pesquisa
 import {
   ArrowLeft,
   Search,
@@ -264,7 +263,7 @@ const PatientsManagement: React.FC<PatientsManagementProps> = ({ embedded = fals
   const [selectedClinic, setSelectedClinic] = useState<string>('all')
   const [selectedRoom, setSelectedRoom] = useState<string>('indifferent')
   const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null)
-  const [activeTab, setActiveTab] = useState<'overview' | 'evolution' | 'prescription' | 'exams' | 'files' | 'receipts' | 'charts' | 'appointments' | 'analytics' | 'similares'>('overview')
+  const [activeTab, setActiveTab] = useState<'overview' | 'evolution' | 'prescription' | 'exams' | 'files' | 'receipts' | 'charts' | 'appointments' | 'analytics'>('overview')
   const [showNewEvolution, setShowNewEvolution] = useState(false)
   const [evolutionContent, setEvolutionContent] = useState('')
   const [patients, setPatients] = useState<Patient[]>([])
@@ -1775,9 +1774,9 @@ const PatientsManagement: React.FC<PatientsManagementProps> = ({ embedded = fals
                           { id: 'appointments', label: 'Agenda', icon: Calendar },
                           { id: 'files', label: 'Arquivos', icon: Archive },
                           { id: 'receipts', label: 'Recebimentos', icon: Download },
-                          { id: 'charts', label: 'Gráficos', icon: TrendingUp },
-                          // [V1.9.360] Casos Similares como aba (decisão Pedro 18/05 ~17h50 — botão poluía header)
-                          { id: 'similares', label: 'Similares', icon: Sparkles }
+                          { id: 'charts', label: 'Gráficos', icon: TrendingUp }
+                          // [V1.9.362] Removida aba "Similares" (decisão Pedro 18/05 ~18h05 —
+                          // Casos Similares fica APENAS no Terminal de Pesquisa, foco 1 lugar)
                         ].map(tab => {
                           const Icon = tab.icon
                           return (
@@ -2351,10 +2350,7 @@ const PatientsManagement: React.FC<PatientsManagementProps> = ({ embedded = fals
                         <PatientClinicalTimeline patientId={selectedPatient.id} />
                       )}
 
-                      {/* [V1.9.360] Casos Similares como aba (decisão Pedro 18/05 ~17h50) */}
-                      {activeTab === 'similares' && selectedPatient && (
-                        <AdminCasosSimilares embedded />
-                      )}
+                      {/* [V1.9.362] Aba "Similares" removida do prontuário — fica APENAS no Terminal de Pesquisa */}
                     </div>
                   </div>
                 )}
