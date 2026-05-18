@@ -363,8 +363,9 @@ REGRAS RÍGIDAS:
   }
 
   return (
-    <div className={embedded ? 'text-white' : 'min-h-screen bg-[#0f172a] text-white p-6'}>
-      <div className={embedded ? '' : 'max-w-5xl mx-auto'}>
+    // [V1.9.361] Padding lateral em embedded (Pedro: muito próximo do sidebar)
+    <div className={embedded ? 'text-white px-4 md:px-6 py-2' : 'min-h-screen bg-[#0f172a] text-white p-6'}>
+      <div className={embedded ? 'max-w-5xl' : 'max-w-5xl mx-auto'}>
         {/* Header — só mostra quando standalone (admin). Embedded usa header do parent (Workstation). */}
         {!embedded && (
           <div className="flex items-center justify-between mb-6">
