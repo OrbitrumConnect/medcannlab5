@@ -112,7 +112,12 @@ const IntegratedWorkstation: React.FC<IntegratedWorkstationProps> = ({ initialTa
                     </div>
                 )
             case 'scheduling':
-                return <div className="h-full overflow-y-auto bg-[#0f172a]"><ProfessionalSchedulingWidget /></div>
+                // V1.9.337 (18/05): passa activePatientId pra filtrar agenda quando navegado de
+                // dentro do prontuário de um paciente específico. Sem patientId, widget mostra
+                // todos appointments (comportamento original em ProfessionalMyDashboard).
+                // Bug reportado Ricardo 18/05: aba agenda mostrava OUTROS pacientes ao invés do
+                // selecionado (Carolina). Causa: prop patientId não estava sendo passada aqui.
+                return <div className="h-full overflow-y-auto bg-[#0f172a]"><ProfessionalSchedulingWidget patientId={activePatientId || undefined} /></div>
             case 'team':
                 return <div className="h-full overflow-y-auto bg-[#0f172a]"><TeamManagement /></div>
             case 'governance':

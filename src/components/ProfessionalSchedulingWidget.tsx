@@ -114,7 +114,9 @@ const ProfessionalSchedulingWidget: React.FC<ProfessionalSchedulingWidgetProps> 
       loadPatientsList()
       loadAvailabilityRules()
     }
-  }, [user])
+    // V1.9.337: patientId nas deps pra re-buscar appointments quando navega entre prontuários
+    // de pacientes diferentes (mantendo widget montado, só mudando patientId via prop).
+  }, [user, patientId])
 
   const loadAvailabilityRules = async () => {
     if (!user) return
@@ -238,10 +240,21 @@ const ProfessionalSchedulingWidget: React.FC<ProfessionalSchedulingWidgetProps> 
 
     setLoading(true)
     try {
-      const { data: appointmentsData, error: appointmentsError } = await supabase
+      // V1.9.337 (18/05): filtro condicional por patientId. Sem patientId, lista TODOS
+      // appointments do médico (uso em ProfessionalMyDashboard agenda geral). Com patientId,
+      // filtra pra mostrar só os do paciente selecionado (uso em IntegratedWorkstation quando
+      // navega da aba agenda dentro do prontuário). Bug reportado Ricardo 18/05 — prontuário
+      // Carolina mostrava agenda de outros pacientes.
+      let appointmentsQuery = supabase
         .from('appointments')
         .select('*')
         .eq('professional_id', user.id)
+
+      if (patientId) {
+        appointmentsQuery = appointmentsQuery.eq('patient_id', patientId)
+      }
+
+      const { data: appointmentsData, error: appointmentsError } = await appointmentsQuery
         .order('appointment_date', { ascending: true })
 
       if (appointmentsError) throw appointmentsError
