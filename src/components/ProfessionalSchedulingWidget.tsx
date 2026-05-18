@@ -414,17 +414,18 @@ const ProfessionalSchedulingWidget: React.FC<ProfessionalSchedulingWidgetProps> 
   return (
     <div className={`space-y-4 ${className}`}>
       {/* Header sofisticado — gradiente azul/emerald com título e ações */}
+      {/* [V1.9.345] (18/05): compactado — py-4→py-2.5, mb-1→mb-0, mt-4→mt-2.5, pt-3→pt-2 */}
+      {/* Bug Pedro 18/05 ~16h07: header ocupava muito espaço pra só 2 itens (título + botão). */}
       <div className="rounded-xl overflow-hidden border border-white/5 shadow-xl">
-        <div className="bg-slate-800/40 backdrop-blur-md px-6 py-4">
-          <div className="flex items-start justify-between gap-4">
+        <div className="bg-slate-800/40 backdrop-blur-md px-6 py-2.5">
+          <div className="flex items-center justify-between gap-4">
             <div className="min-w-0">
-              <div className="flex items-center gap-2.5 mb-1">
+              <div className="flex items-center gap-2.5">
                 <div className="p-1.5 rounded-lg bg-cyan-500/15 border border-cyan-500/20">
                   <Calendar className="w-4 h-4 text-cyan-400" />
                 </div>
                 <h2 className="text-lg font-bold text-white tracking-tight">Agenda</h2>
               </div>
-
             </div>
             <button
               onClick={() => setIsNewAppointmentModalOpen(true)}
@@ -435,7 +436,7 @@ const ProfessionalSchedulingWidget: React.FC<ProfessionalSchedulingWidgetProps> 
             </button>
           </div>
           {/* Tabs integradas ao header */}
-          <div className="flex items-center gap-1 mt-4 pt-3 border-t border-white/8">
+          <div className="flex items-center gap-1 mt-2.5 pt-2 border-t border-white/8">
             {[
               { key: 'calendar', label: 'Calendário', icon: <Calendar className="w-3.5 h-3.5" /> },
               { key: 'list', label: 'Lista', icon: <Users className="w-3.5 h-3.5" /> },
