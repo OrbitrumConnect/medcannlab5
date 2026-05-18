@@ -209,16 +209,21 @@ const ArteEntrevistaClinica: React.FC = () => {
   }
 
   // [V1.9.340] (18/05): Detecta se texto extraído de PDF é legível em pt-BR.
-  // Causa raiz: extract-document-text Edge às vezes retorna RAW BINARY do PDF
-  // (FEFF...stream q...endobj) quando PDF tem fontes embutidas estranhas ou é
-  // scaneado sem OCR. Bug reportado por Pedro 18/05 navegando como aluno —
-  // perfil Ricardo Valença mostrava lixo binário em "Formação" e "Contribuições".
-  // Heurística: ≥75% caracteres latinos legíveis (letras pt-BR + pontuação + dígitos).
-  // PDF raw tem <30% (predomina símbolos, números em ponto flutuante, hex).
+  // [V1.9.341] (18/05): HEURÍSTICA V2 — V1 falhou (regex aceitava hex+números+espaços
+  // → "FEFF004300...stream q endobj" passava como "legível"). V2 usa detecção
+  // explícita de marcadores PDF/PostScript + verificação de palavras pt-BR comuns.
+  // Pedro reportou que V1 ainda mostrava lixo no perfil Ricardo após deploy.
   const isReadableText = (text: string): boolean => {
     if (!text || text.length < 100) return false
-    const readable = text.match(/[a-záàâãéêíóôõúüçñA-ZÁÀÂÃÉÊÍÓÔÕÚÜÇÑ\s.,;:!?()0-9-]/g)?.length ?? 0
-    return readable / text.length > 0.75
+    // Camada 1: detecta marcadores PDF/PostScript raw — se 3+ matches = binário
+    const pdfMarkers = /\b(stream|endstream|endobj|FEFF[0-9A-F]{4,}|\bobj\b|\bcm\b\s+0\s+0\s+0\s+RG)/gi
+    const markerCount = text.match(pdfMarkers)?.length ?? 0
+    if (markerCount >= 3) return false
+    // Camada 2: verifica palavras pt-BR comuns (≥5 = texto real)
+    const commonWords = /\b(de|da|do|e|em|para|com|por|que|na|no|os|as|um|uma|é|ou|se|ao|à)\b/gi
+    const wordCount = text.match(commonWords)?.length ?? 0
+    if (wordCount < 5) return false
+    return true
   }
 
   // Função para parsear informações do currículo Lattes REAL (sem dados mockados)
