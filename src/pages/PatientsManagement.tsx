@@ -264,7 +264,7 @@ const PatientsManagement: React.FC<PatientsManagementProps> = ({ embedded = fals
   const [selectedClinic, setSelectedClinic] = useState<string>('all')
   const [selectedRoom, setSelectedRoom] = useState<string>('indifferent')
   const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null)
-  const [activeTab, setActiveTab] = useState<'overview' | 'evolution' | 'prescription' | 'exams' | 'files' | 'receipts' | 'charts' | 'appointments' | 'analytics'>('overview')
+  const [activeTab, setActiveTab] = useState<'overview' | 'evolution' | 'prescription' | 'exams' | 'files' | 'receipts' | 'charts' | 'appointments' | 'analytics' | 'similares'>('overview')
   const [showNewEvolution, setShowNewEvolution] = useState(false)
   const [evolutionContent, setEvolutionContent] = useState('')
   const [patients, setPatients] = useState<Patient[]>([])
@@ -273,8 +273,7 @@ const PatientsManagement: React.FC<PatientsManagementProps> = ({ embedded = fals
   const [loadingEvolutions, setLoadingEvolutions] = useState(false)
   const [showNewPatientMenu, setShowNewPatientMenu] = useState(false)
   const [openingChat, setOpeningChat] = useState(false)
-  // [V1.9.359] Modal Casos Similares ao paciente atual (atalho durante consulta)
-  const [showCasosSimilaresModal, setShowCasosSimilaresModal] = useState(false)
+  // [V1.9.360] Removido showCasosSimilaresModal — agora é aba dedicada
   const [analyticsReports, setAnalyticsReports] = useState<any[]>([])
   const [analyticsReportsLoading, setAnalyticsReportsLoading] = useState(false)
   const [analyticsAppointments, setAnalyticsAppointments] = useState<Array<{ id: string; date: string; time: string; professional: string; type: string; status: string }>>([])
@@ -1724,15 +1723,8 @@ const PatientsManagement: React.FC<PatientsManagementProps> = ({ embedded = fals
                       >
                         + Nova Evolução
                       </button>
-                      {/* [V1.9.359] Atalho Casos Similares — abre modal sem trocar de tela */}
-                      <button
-                        onClick={() => setShowCasosSimilaresModal(true)}
-                        className="px-3 py-1.5 bg-purple-600/80 hover:bg-purple-600 text-white rounded-lg transition-colors text-xs font-medium flex items-center gap-1.5"
-                        title="Buscar casos similares no histórico (admin/pesquisa)"
-                      >
-                        <Sparkles className="w-3.5 h-3.5" />
-                        Similares
-                      </button>
+                      {/* [V1.9.360] Removido botão "Similares" do header (poluía com 3 botões) */}
+                      {/* Casos Similares agora é aba dedicada (label: "Similares", ícone Sparkles roxo) */}
                       <button
                         onClick={handleOpenPatientChat}
                         disabled={openingChat}
@@ -1783,7 +1775,9 @@ const PatientsManagement: React.FC<PatientsManagementProps> = ({ embedded = fals
                           { id: 'appointments', label: 'Agenda', icon: Calendar },
                           { id: 'files', label: 'Arquivos', icon: Archive },
                           { id: 'receipts', label: 'Recebimentos', icon: Download },
-                          { id: 'charts', label: 'Gráficos', icon: TrendingUp }
+                          { id: 'charts', label: 'Gráficos', icon: TrendingUp },
+                          // [V1.9.360] Casos Similares como aba (decisão Pedro 18/05 ~17h50 — botão poluía header)
+                          { id: 'similares', label: 'Similares', icon: Sparkles }
                         ].map(tab => {
                           const Icon = tab.icon
                           return (
@@ -2356,6 +2350,11 @@ const PatientsManagement: React.FC<PatientsManagementProps> = ({ embedded = fals
                         // Substitui placeholder estático. Sem chart lib nova (Pedro opção B 17/05).
                         <PatientClinicalTimeline patientId={selectedPatient.id} />
                       )}
+
+                      {/* [V1.9.360] Casos Similares como aba (decisão Pedro 18/05 ~17h50) */}
+                      {activeTab === 'similares' && selectedPatient && (
+                        <AdminCasosSimilares embedded />
+                      )}
                     </div>
                   </div>
                 )}
@@ -2371,38 +2370,7 @@ const PatientsManagement: React.FC<PatientsManagementProps> = ({ embedded = fals
         </div>
       </div>
 
-      {/* [V1.9.359] Modal Casos Similares — atalho durante consulta */}
-      {showCasosSimilaresModal && selectedPatient && (
-        <div
-          className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-150"
-          onClick={() => setShowCasosSimilaresModal(false)}
-        >
-          <div
-            className="bg-slate-900 border border-slate-700 rounded-xl max-w-5xl w-full max-h-[90vh] overflow-y-auto relative"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="sticky top-0 bg-slate-900 border-b border-slate-700/50 px-6 py-4 flex items-center justify-between z-10">
-              <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-purple-500/10 border border-purple-500/20">
-                  <Sparkles className="w-4 h-4 text-purple-400" />
-                </div>
-                <div>
-                  <h3 className="text-base font-bold text-white">Casos Similares</h3>
-                  <p className="text-xs text-slate-400">Busca no histórico clínico durante consulta de {selectedPatient.name}</p>
-                </div>
-              </div>
-              <button
-                onClick={() => setShowCasosSimilaresModal(false)}
-                className="p-2 hover:bg-slate-800 rounded-lg transition-colors"
-                title="Fechar (ESC)"
-              >
-                <XCircle className="w-5 h-5 text-slate-400" />
-              </button>
-            </div>
-            <AdminCasosSimilares embedded />
-          </div>
-        </div>
-      )}
+      {/* [V1.9.360] Modal removido — Casos Similares agora é aba dedicada */}
     </div>
   )
 }
