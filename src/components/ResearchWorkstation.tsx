@@ -54,16 +54,21 @@ const ResearchWorkstation: React.FC<ResearchWorkstationProps> = ({ initialTab })
     // Abas
     // [V1.9.358] (18/05) Casos Similares adicionada como aba pesquisa (memória clínica institucional)
     // [V1.9.369-A] (18/05) Literatura adicionada como aba pesquisa (PubMed externo, separado dos docs internos da Base de Conhecimento)
+    // [V1.9.379-AA] (19/05) Reordenação Pedro+Ricardo:
+    //   fluxo cognitivo: ver → comparar → debater → estruturar → estudar → protocolar
+    //   Casos Similares → Fórum → Noa Matrix (futuro) → Literatura → Protocolos → ... → Base Conhecimento (final)
+    //   Noa Matrix será adicionada em V1.9.379-D (chat pesquisa Z2 não-diretivo)
     const tabs: { id: TabId; label: string; icon: any; color: string; group: TabGroup }[] = [
         { id: 'dashboard', label: 'Dashboard de Pesquisa', icon: BarChart3, color: 'text-emerald-400', group: 'pesquisa' },
         { id: 'casos-similares', label: 'Casos Similares', icon: Sparkles, color: 'text-purple-400', group: 'pesquisa' },
         { id: 'forum', label: 'Fórum de Casos Clínicos', icon: MessageCircle, color: 'text-cyan-400', group: 'colaboracao' },
-        { id: 'library', label: 'Base de Conhecimento', icon: BookOpen, color: 'text-indigo-400', group: 'pesquisa' },
+        // V1.9.379-D adicionará aqui: { id: 'noa-matrix', label: 'Nôa Matrix', icon: <novo>, color: '...', group: 'pesquisa' }
         { id: 'literature', label: 'Literatura', icon: Microscope, color: 'text-indigo-400', group: 'pesquisa' },
         { id: 'protocols', label: 'Protocolos', icon: ClipboardList, color: 'text-orange-400', group: 'pesquisa' },
         { id: 'mentoria', label: 'Mentoria', icon: Users, color: 'text-green-400', group: 'colaboracao' },
         { id: 'newsletter', label: 'Notícias & Eventos', icon: Bell, color: 'text-amber-400', group: 'colaboracao' },
-        { id: 'evaluation', label: 'Avaliações', icon: CheckCircle, color: 'text-teal-400', group: 'colaboracao' }
+        { id: 'evaluation', label: 'Avaliações', icon: CheckCircle, color: 'text-teal-400', group: 'colaboracao' },
+        { id: 'library', label: 'Base de Conhecimento', icon: BookOpen, color: 'text-indigo-400', group: 'pesquisa' }
     ]
 
     const renderContent = () => {

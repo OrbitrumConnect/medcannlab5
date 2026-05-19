@@ -488,6 +488,121 @@ Hoje 0 pagantes externos. Custo OpenAI absorvido por Pedro. BYO-LLM faz sentido 
 
 ---
 
+## 🧪 BLOCO K — Chat Pesquisa Fase 1 (V1.9.379) — Checklist parqueado
+
+### K.1 — Origem
+
+Conversa Ricardo+Pedro 19/05 ~13h WhatsApp (Material A puro) + 6 análises GPT externo iterativas (Material B re-cunhador). Pedro reconheceu padrão saturação Material B no 6º texto. Aplicação direta do checklist anti-dialeto-paralelo cristalizado horas antes.
+
+Pedro autorizou: **Fase 1 Opção A** (reusar `tradevision-core` com `bypassFSM=true`). Fase 2 Opção B (Edge dedicada) parqueada como standby — implementar só quando trigger ativar.
+
+### K.2 — Decisão arquitetural Opção A vs B (empírico)
+
+Audit empírico via PAT (mesma sessão):
+
+| Critério | Opção A (reuso tradevision-core) | Opção B (Edge dedicada) |
+|---|---|---|
+| Prompt size | 21k chars (CLINICAL_PROMPT vai junto) | ~3-5k chars enxuto |
+| Custo/turn mini | ~$0.005 | ~$0.0005 (60× mais barato) |
+| Latência p50 | 4-6s | 3-5s |
+| Cold start | Sempre warm | 100-500ms 1ª call |
+| Implementação | Pequena (flag + prompt) | Médio (~300-500 linhas Edge nova) |
+| Polir-não-inventar | ✅ Total | ⚠️ Cria nova Edge |
+
+**Conclusão**: Opção A valida feature primeiro (princípio empírico). Opção B otimiza pós-validação (trigger: médico não-Ricardo regular OU custo > 20% MRR OU desperdício > R$ 100/mês).
+
+### K.3 — Modificações backend `tradevision-core/index.ts` (8 pontos)
+
+| # | Linha aprox | Modificação |
+|---|---|---|
+| B.1 | linha 290 `processMessage` | Detectar `uiContext.bypassFSM === true` (uiContext já existe na assinatura) |
+| B.2 | linha 321-323 | Skip `clinicalAssessmentFlow.ensureLoaded` quando bypassFSM |
+| B.3 | linha 4899 | Adicionar 3º case: `isResearchMode ? RESEARCH_PROMPT : (isTeachingMode ? TEACHING : CLINICAL)` |
+| B.4 | nova constante | `RESEARCH_PROMPT` (~3k chars) — Z2 restritivo (definir conteúdo) |
+| B.5 | linha 5251-5253 | Skip Phase Lock injection quando bypassFSM |
+| B.6 | linha 5605 `model: CHAT_MODEL` | Forçar `gpt-4o-mini` quando bypassFSM (não envar) |
+| B.7 | persistência metadata | Setar `metadata.simbologia = '🧪 Chat Pesquisa'` (não polui métricas AEC) |
+| B.8 | após chamada GPT | Quality gate Failsafe — bloqueia resposta lixo se Sovereignty Protocol disparar |
+
+### K.4 — Modificações frontend (4 arquivos)
+
+| Arquivo | Tipo | O quê |
+|---|---|---|
+| `src/hooks/useResearchChat.ts` | NOVO | Hook isolado de `useMedCannLabConversation`. Chama `noaResidentAI.processMessage(prompt, userId, email, { bypassFSM: true, source: 'research_chat' })` |
+| `src/components/ResearchChat.tsx` | NOVO | UI dedicada (não reusa `NoaConversationalInterface` pra evitar confusão UX) |
+| `src/pages/AdminCasosSimilares.tsx` | MODIFICAR | Adicionar seção "🧪 Chat Pesquisa" embedded no Terminal de Pesquisa |
+| `src/lib/noaResidentAI.ts:290` | MODIFICAR | Garantir `uiContext` passado adiante na chamada Edge (assinatura já existe) |
+
+### K.5 — 5 gates de proteção (não-negociáveis)
+
+| # | Gate | Onde |
+|---|---|---|
+| G.1 | `bypassFSM` impede FSM AEC carregar | Backend B.2 |
+| G.2 | `RESEARCH_PROMPT` Z2 restritivo (sem palavras gatilho "recomendo/sugiro/melhor abordagem") | Backend B.4 |
+| G.3 | Simbologia `🧪 Chat Pesquisa` separa métricas | Backend B.7 |
+| G.4 | Quality gate Failsafe bloqueia lixo se Sovereignty disparar | Backend B.8 |
+| G.5 | Atrito intencional UX (médico marca msg manualmente pra "anexar dossiê fórum") | Frontend |
+
+### K.6 — 7 smoke tests obrigatórios
+
+| # | Teste | Critério |
+|---|---|---|
+| T.1 | Médico abre chat pesquisa | NÃO inicia FSM AEC (`aec_assessment_state` continua null) |
+| T.2 | 10 turnos | NÃO cria stub `clinical_report` |
+| T.3 | Audit 5 respostas | Nenhuma começa com palavras gatilho |
+| T.4 | Custo médio 20 turnos | < $0.01/turn |
+| T.5 | OpenAI 429 simulado | Mensagem amigável, NÃO grava lixo |
+| T.6 | Painel V1.9.374-A | `🧪 Chat Pesquisa` separado de `🔴 Escuta Clínica` |
+| T.7 | "Levar ao fórum" | Exige confirmação explícita + revisão pseudonimizada |
+
+### K.7 — Ordem de implementação (4 commits cirúrgicos)
+
+```
+V1.9.379-A — Backend bypassFSM core (B.1, B.2, B.5) + T.1
+V1.9.379-B — Backend RESEARCH_PROMPT + mini + simbologia (B.3, B.4, B.6, B.7, B.8) + T.3, T.5
+V1.9.379-C — Frontend hook + componente (F.1, F.2, F.4)
+V1.9.379-D — Frontend integration + UX atrito + smoke completo
+```
+
+Cada commit: type-check clean + push 4 refs + smoke específico antes do próximo.
+
+### K.8 — Trigger pra migrar pra Opção B (Fase 2)
+
+Implementar Edge `pesquisa-chat` dedicada apenas quando:
+- Médico não-Ricardo usar >3 sessões/semana confirmadas via painel
+- OU custo Chat Pesquisa > 20% custo OpenAI mensal
+- OU desperdício CLINICAL_PROMPT > R$ 100/mês
+- OU feature nova exige Edge dedicada
+
+### K.9 — 5 decisões humanas pendentes ANTES de V1.9.379-A
+
+| Decisão | Quem |
+|---|---|
+| Conteúdo RESEARCH_PROMPT (~3k chars exato) | Pedro + Ricardo aprovar |
+| Inputs anexáveis Fase 1 (Casos + Literatura + KB?) | Pedro |
+| UX (tab vs modal vs sidebar) no Terminal Pesquisa | Pedro |
+| Simbologia oficial (`🧪` confirmado?) | Pedro |
+| Threshold quality gate Failsafe | Pedro |
+
+### K.10 — Estratégia rollback
+
+Caso V1.9.379-A→D dê problema empírico em produção:
+
+```bash
+git revert <commit_hash>  # cria commit reverso (preserva história)
+git push amigo HEAD:main && git push amigo HEAD:master \
+  && git push medcannlab5 HEAD:main && git push medcannlab5 HEAD:master
+```
+
+Como cada uma das 4 etapas (A/B/C/D) é commit separado, rollback é granular:
+- Reverter só V1.9.379-D mantém backend + frontend hook funcionando
+- Reverter V1.9.379-C+D mantém apenas backend (frontend offline)
+- Reverter A+B+C+D restaura estado pré-Fase 1 (HEAD `9333988`)
+
+Princípio aplicado: cada commit isolado = rollback granular. Lock V1.9.95+97+98+99-B+299 intocado em qualquer cenário.
+
+---
+
 ## 📂 Arquivos modificados/criados (19/05)
 
 ### Código (3 commits)
