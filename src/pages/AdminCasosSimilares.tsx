@@ -34,6 +34,13 @@ import {
   type ExtractedTerm,
 } from '../lib/clinicalTermsTranslator'
 import { extractTermsViaGPT } from '../lib/gptTermExtractor'
+import {
+  searchPubMed,
+  EVIDENCE_LABELS,
+  EVIDENCE_COLORS,
+  type EvidenceLevel,
+  type PubMedArticle,
+} from '../services/pubmedService'
 
 // [V1.9.354] (18/05/2026) — Casos Similares Admin Spike (Fase 1)
 // Memory: project_casos_similares_memoria_clinica_institucional_18_05
@@ -290,6 +297,187 @@ const NotesPanel: React.FC<NotesPanelProps> = ({ notes, onChange }) => {
   )
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// [V1.9.371] LiteratureReport — mini-relatório AGREGADO (inteligência estrutural)
+// Memory: feedback_inteligencia_estrutural_vs_inferencial_18_05
+// Princípio: AGREGAR + CONTAR + AGRUPAR + ORDENAR ≠ SINTETIZAR significado clínico
+// ─────────────────────────────────────────────────────────────────────────────
+
+const EVIDENCE_ICON: Record<EvidenceLevel, string> = {
+  'meta-analysis': '🏆',
+  'rct': '🔬',
+  'guideline': '📋',
+  'observational': '📈',
+  'review': '📚',
+  'case-report': '📝',
+  'other': '📄',
+}
+
+const EVIDENCE_ORDER: EvidenceLevel[] = [
+  'meta-analysis', 'rct', 'guideline', 'observational', 'review', 'case-report', 'other',
+]
+
+function parsePubYear(pubdate: string): number | null {
+  const match = pubdate.match(/\b(19|20)\d{2}\b/)
+  return match ? parseInt(match[0], 10) : null
+}
+
+interface LiteratureReportProps {
+  articles: PubMedArticle[]
+  total: number
+  query: string
+}
+
+const LiteratureReport: React.FC<LiteratureReportProps> = ({ articles, total, query }) => {
+  if (articles.length === 0) {
+    return (
+      <div className="bg-slate-800/40 border border-slate-700/50 rounded-lg p-4 text-center">
+        <p className="text-xs text-slate-400">
+          Nenhum resultado pra "{query}"
+        </p>
+        <p className="text-[10px] text-slate-600 mt-1">
+          Tente termos em inglês ou refine na aba Literatura.
+        </p>
+      </div>
+    )
+  }
+
+  // Agrupamento ESTRUTURAL por evidence level
+  const grouped: Partial<Record<EvidenceLevel, PubMedArticle[]>> = {}
+  for (const art of articles) {
+    if (!grouped[art.evidenceLevel]) grouped[art.evidenceLevel] = []
+    grouped[art.evidenceLevel]!.push(art)
+  }
+
+  // Métricas estruturais (contagens, ordenação — NÃO interpretação)
+  const currentYear = new Date().getFullYear()
+  const last5 = articles.filter(a => {
+    const y = parsePubYear(a.pubdate)
+    return y !== null && y >= currentYear - 5
+  }).length
+  const last1 = articles.filter(a => {
+    const y = parsePubYear(a.pubdate)
+    return y !== null && y >= currentYear - 1
+  }).length
+
+  // Top 3 journals
+  const journalCounts: Record<string, number> = {}
+  for (const a of articles) {
+    if (a.journal) journalCounts[a.journal] = (journalCounts[a.journal] || 0) + 1
+  }
+  const topJournals = Object.entries(journalCounts)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 3)
+
+  return (
+    <div className="bg-slate-800/40 border border-indigo-500/30 rounded-lg overflow-hidden">
+      {/* Header relatório */}
+      <div className="px-4 py-3 bg-indigo-500/10 border-b border-indigo-500/20 flex items-center justify-between flex-wrap gap-2">
+        <div className="flex items-center gap-2">
+          <BarChart3 className="w-4 h-4 text-indigo-400" />
+          <h4 className="text-xs font-bold text-indigo-200 uppercase tracking-wider">Relatório estrutural</h4>
+        </div>
+        <span className="text-[10px] text-slate-400 tabular-nums">
+          {articles.length} mostrados · {total.toLocaleString('pt-BR')} no PubMed
+        </span>
+      </div>
+
+      <div className="p-4 space-y-4 max-h-[440px] overflow-y-auto">
+        {/* Métricas estruturais (contagens — NÃO interpretação) */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+          <div className="bg-slate-900/60 border border-slate-700/40 rounded-md px-2 py-1.5">
+            <div className="text-[9px] uppercase tracking-wider text-slate-500 font-semibold">Total PubMed</div>
+            <div className="text-sm font-bold text-white tabular-nums">{total.toLocaleString('pt-BR')}</div>
+          </div>
+          <div className="bg-slate-900/60 border border-slate-700/40 rounded-md px-2 py-1.5">
+            <div className="text-[9px] uppercase tracking-wider text-slate-500 font-semibold">Últimos 5 anos</div>
+            <div className="text-sm font-bold text-white tabular-nums">{last5}/{articles.length}</div>
+          </div>
+          <div className="bg-slate-900/60 border border-slate-700/40 rounded-md px-2 py-1.5">
+            <div className="text-[9px] uppercase tracking-wider text-slate-500 font-semibold">Último ano</div>
+            <div className="text-sm font-bold text-white tabular-nums">{last1}/{articles.length}</div>
+          </div>
+          <div className="bg-slate-900/60 border border-slate-700/40 rounded-md px-2 py-1.5">
+            <div className="text-[9px] uppercase tracking-wider text-slate-500 font-semibold">Top journal</div>
+            <div className="text-[10px] font-semibold text-white truncate" title={topJournals[0]?.[0] || '—'}>
+              {topJournals[0]?.[0] || '—'}
+              {topJournals[0] && <span className="text-slate-500 ml-1">({topJournals[0][1]})</span>}
+            </div>
+          </div>
+        </div>
+
+        {/* Grupos por nível de evidência (forte → fraco) */}
+        {EVIDENCE_ORDER.map(level => {
+          const list = grouped[level]
+          if (!list || list.length === 0) return null
+          const colorClass = EVIDENCE_COLORS[level]
+          return (
+            <div key={level}>
+              <h5 className="text-[11px] font-bold text-slate-300 uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
+                <span>{EVIDENCE_ICON[level]}</span>
+                {EVIDENCE_LABELS[level]}
+                <span className="text-slate-500 font-normal tabular-nums">({list.length})</span>
+              </h5>
+              <ul className="space-y-1 pl-1">
+                {list.map(art => {
+                  const year = parsePubYear(art.pubdate)
+                  return (
+                    <li key={art.pmid} className="text-[11px] leading-relaxed">
+                      <a
+                        href={art.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-slate-300 hover:text-indigo-200 hover:underline inline-flex items-start gap-1 group"
+                      >
+                        <span className="text-slate-600 mt-0.5 group-hover:text-indigo-400">▸</span>
+                        <span className="flex-1">
+                          <span className="font-medium">{art.title}</span>
+                          {(art.journal || year) && (
+                            <span className="text-slate-500 ml-1">
+                              · {art.journal}{year ? ` · ${year}` : ''}
+                            </span>
+                          )}
+                        </span>
+                        <ExternalLink className="w-2.5 h-2.5 text-slate-600 group-hover:text-indigo-400 flex-shrink-0 mt-1" />
+                      </a>
+                    </li>
+                  )
+                })}
+              </ul>
+            </div>
+          )
+        })}
+
+        {/* Top journals (estrutural — mostra concentração, não avalia "alto impacto") */}
+        {topJournals.length > 1 && (
+          <div className="pt-3 border-t border-slate-700/50">
+            <div className="text-[10px] uppercase tracking-wider text-slate-500 font-semibold mb-1.5">
+              Journals mais frequentes neste recorte
+            </div>
+            <div className="flex flex-wrap gap-1.5">
+              {topJournals.map(([journal, count]) => (
+                <span
+                  key={journal}
+                  className="text-[10px] bg-slate-900/60 border border-slate-700/40 rounded-full px-2 py-0.5 text-slate-400"
+                >
+                  {journal} <span className="text-slate-600 tabular-nums">({count})</span>
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+
+      <div className="px-4 py-2.5 bg-slate-900/40 border-t border-slate-700/40">
+        <p className="text-[10px] text-slate-500 leading-relaxed">
+          📊 Sistema AGREGOU + ORGANIZOU. Decisão clínica permanece com o médico (CFM 2.314).
+          Click em qualquer paper abre o original no PubMed.
+        </p>
+      </div>
+    </div>
+  )
+}
+
 const AdminCasosSimilares: React.FC<Props> = ({ embedded = false, defaultQuery = '', showSidebar, onNavigateToLiterature }) => {
   const navigate = useNavigate()
   const { user } = useAuth()
@@ -323,6 +511,12 @@ const AdminCasosSimilares: React.FC<Props> = ({ embedded = false, defaultQuery =
   const [literatureUseGPT, setLiteratureUseGPT] = useState(false)
   const [literatureGPTLoading, setLiteratureGPTLoading] = useState(false)
   const [literatureExtraTerm, setLiteratureExtraTerm] = useState('')
+  // [V1.9.371] Estados pro mini-relatório agregado (memory feedback_inteligencia_estrutural_vs_inferencial)
+  const [literatureReportLoading, setLiteratureReportLoading] = useState(false)
+  const [literatureReportArticles, setLiteratureReportArticles] = useState<PubMedArticle[] | null>(null)
+  const [literatureReportTotal, setLiteratureReportTotal] = useState(0)
+  const [literatureReportError, setLiteratureReportError] = useState<string | null>(null)
+  const [literatureReportQuery, setLiteratureReportQuery] = useState('')
 
   // Carregar detalhes completos quando seleciona caso (content jsonb + racionalidades full)
   useEffect(() => {
@@ -641,7 +835,34 @@ REGRAS RÍGIDAS:
     setLiteratureUseGPT(false)
     setLiteratureGPTLoading(false)
     setLiteratureExtraTerm('')
+    // [V1.9.371] Reset do relatório a cada novo modal aberto
+    setLiteratureReportArticles(null)
+    setLiteratureReportTotal(0)
+    setLiteratureReportError(null)
+    setLiteratureReportLoading(false)
+    setLiteratureReportQuery('')
     setLiteratureModalOpen(true)
+  }
+
+  // [V1.9.371] Gera mini-relatório AGREGADO (não navega) — inteligência estrutural
+  // memory: feedback_inteligencia_estrutural_vs_inferencial_18_05
+  const runLiteratureReport = async () => {
+    if (literatureTerms.length === 0) return
+    const query = buildPubMedQueryFromTerms(literatureTerms)
+    setLiteratureReportLoading(true)
+    setLiteratureReportError(null)
+    setLiteratureReportQuery(query)
+    try {
+      const result = await searchPubMed({ term: query, retmax: 12, yearsBack: 10 })
+      setLiteratureReportArticles(result.articles)
+      setLiteratureReportTotal(result.total)
+    } catch (err: any) {
+      setLiteratureReportError(err?.message || 'Erro ao buscar literatura no PubMed')
+      setLiteratureReportArticles([])
+      setLiteratureReportTotal(0)
+    } finally {
+      setLiteratureReportLoading(false)
+    }
   }
 
   // [V1.9.369-C] Toggle GPT — quando ativa, chama extrator restrito e MERGE com dict
@@ -682,7 +903,7 @@ REGRAS RÍGIDAS:
     setLiteratureExtraTerm('')
   }
 
-  // [V1.9.369-C] Confirma busca → chama callback do parent + fecha modais
+  // [V1.9.369-C/V1.9.371] Navegar pra aba Literatura completa (ponte opcional secundária)
   const handleNavigateToLiteratureFromModal = () => {
     if (!onNavigateToLiterature || literatureTerms.length === 0) return
     const query = buildPubMedQueryFromTerms(literatureTerms)
@@ -1394,26 +1615,59 @@ REGRAS RÍGIDAS:
 
               {/* Princípio epistemológico */}
               <p className="text-[10px] text-slate-500 leading-relaxed">
-                💡 Sistema EXTRAI termos, médico DECIDE busca, PubMed RETORNA evidência.
-                Nenhum dos 3 sintetiza significado clínico automaticamente.
+                💡 Sistema EXTRAI termos · agregação ESTRUTURAL (conta + agrupa + ordena) · NÃO sintetiza significado clínico.
+                Médico interpreta + decide + age.
               </p>
 
+              {/* [V1.9.371] Mini-relatório agregado — inteligência estrutural */}
+              {literatureReportLoading && (
+                <div className="bg-slate-800/40 border border-slate-700/50 rounded-lg p-6 text-center">
+                  <Loader2 className="w-5 h-5 text-indigo-400 animate-spin mx-auto mb-2" />
+                  <p className="text-xs text-slate-400">Buscando no PubMed e agregando estrutura...</p>
+                </div>
+              )}
+              {literatureReportError && !literatureReportLoading && (
+                <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-3 flex items-start gap-2">
+                  <AlertCircle className="w-4 h-4 text-red-400 flex-shrink-0 mt-0.5" />
+                  <p className="text-xs text-red-300">{literatureReportError}</p>
+                </div>
+              )}
+              {literatureReportArticles && !literatureReportLoading && (
+                <LiteratureReport
+                  articles={literatureReportArticles}
+                  total={literatureReportTotal}
+                  query={literatureReportQuery}
+                />
+              )}
+
               {/* Ações */}
-              <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-700/50">
+              <div className="flex items-center justify-between gap-2 pt-2 border-t border-slate-700/50 flex-wrap">
                 <button
                   onClick={() => setLiteratureModalOpen(false)}
                   className="px-4 py-2 text-xs text-slate-400 hover:text-white transition-colors"
                 >
-                  Cancelar
+                  Fechar
                 </button>
-                <button
-                  onClick={handleNavigateToLiteratureFromModal}
-                  disabled={literatureTerms.length === 0}
-                  className="flex items-center gap-2 px-4 py-2 text-xs font-semibold bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-700 disabled:text-slate-500 disabled:cursor-not-allowed text-white rounded-lg transition-colors"
-                >
-                  Buscar no PubMed
-                  <ExternalLink className="w-3 h-3" />
-                </button>
+                <div className="flex items-center gap-2 flex-wrap">
+                  {onNavigateToLiterature && literatureTerms.length > 0 && (
+                    <button
+                      onClick={handleNavigateToLiteratureFromModal}
+                      className="flex items-center gap-1.5 px-3 py-2 text-xs text-indigo-300 hover:text-indigo-200 hover:bg-indigo-500/10 rounded-lg transition-colors"
+                      title="Refinar busca + ver mais resultados na aba Literatura"
+                    >
+                      Ver tudo na Literatura
+                      <ExternalLink className="w-3 h-3" />
+                    </button>
+                  )}
+                  <button
+                    onClick={runLiteratureReport}
+                    disabled={literatureTerms.length === 0 || literatureReportLoading}
+                    className="flex items-center gap-2 px-4 py-2 text-xs font-semibold bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-700 disabled:text-slate-500 disabled:cursor-not-allowed text-white rounded-lg transition-colors"
+                  >
+                    <BarChart3 className="w-3.5 h-3.5" />
+                    {literatureReportArticles ? 'Atualizar relatório' : 'Gerar relatório'}
+                  </button>
+                </div>
               </div>
             </div>
           </div>
