@@ -24,33 +24,77 @@
  *  - polir-não-inventar (reusa hooks/componentes existentes)
  */
 import React, { useMemo, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { useSearchHistory } from '../hooks/useSearchHistory'
+import { usePatientLongitudinal } from '../hooks/usePatientLongitudinal'
 import { ResearchChat } from './ResearchChat'
-import { Sparkles, FileText, StickyNote, Check, Info, Folder } from 'lucide-react'
+import { Sparkles, FileText, StickyNote, Check, Info, Folder, User, Stethoscope, Activity } from 'lucide-react'
 
 interface AttachableCard {
   id: string
-  type: 'case' | 'note' | 'pinned-search'
+  type: 'case' | 'note' | 'pinned-search' | 'patient-report' | 'patient-rationality'
   title: string
   subtitle?: string
   body: string  // texto que vai pro contexto do chat
   timestamp?: number
 }
 
+const RATIONALITY_LABELS: Record<string, string> = {
+  biomedical: 'Biomédica',
+  traditional_chinese: 'MTC',
+  ayurvedic: 'Ayurveda',
+  homeopathic: 'Homeopatia',
+  integrative: 'Integrativa',
+}
+
 export const NoaMatrixView: React.FC = () => {
   const { user } = useAuth()
+  const [searchParams] = useSearchParams()
+  // V1.9.382 — patientId vindo do Terminal de Atendimento (trigger "Levar para Nôa Matrix")
+  // Médico abre paciente em foco e clica botão pra trazer recortes longitudinais pro chat.
+  const patientId = searchParams.get('patientId') || undefined
   const history = useSearchHistory(user?.id)
+  const longitudinal = usePatientLongitudinal(patientId)
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
 
-  // Compor lista de cards anexáveis a partir do useSearchHistory.
-  // Casos abertos: mais relevante (médico já viu detalhe)
-  // Notes: scratchpad livre (pode ter raciocínio do médico)
-  // Pinned searches: buscas salvas com termo + filtros
+  // Compor lista de cards anexáveis a partir de múltiplas fontes.
+  // V1.9.379-D: localStorage (caseOpens + notes + pinned)
+  // V1.9.382: + clinical_reports + clinical_rationalities do paciente em foco (longitudinal)
   const cards = useMemo<AttachableCard[]>(() => {
     const list: AttachableCard[] = []
 
-    // Casos abertos (até 12 mais recentes)
+    // V1.9.382 — Recortes longitudinais do paciente em foco (vindo do Terminal de Atendimento)
+    // Aparecem PRIMEIRO porque são contexto explícito que o médico trouxe.
+    longitudinal.reports.forEach((r) => {
+      const dateStr = new Date(r.created_at).toLocaleDateString('pt-BR')
+      const lista = r.listaIndiciaria && r.listaIndiciaria.length > 0
+        ? r.listaIndiciaria.filter(Boolean).join(', ')
+        : ''
+      list.push({
+        id: `pr-${r.id}`,
+        type: 'patient-report',
+        title: `Relatório de ${dateStr}`,
+        subtitle: `${r.status}${r.signed_at ? ' · ICP' : ''}`,
+        body: `Relatório clínico (${dateStr})\nStatus: ${r.status}${r.signed_at ? ' (assinado ICP-Brasil)' : ''}${r.mainComplaint ? `\nQueixa principal: "${r.mainComplaint}"` : ''}${lista ? `\nLista indiciária: ${lista}` : ''}`,
+        timestamp: new Date(r.created_at).getTime(),
+      })
+    })
+
+    longitudinal.rationalities.forEach((r) => {
+      const dateStr = new Date(r.created_at).toLocaleDateString('pt-BR')
+      const label = RATIONALITY_LABELS[r.rationality_type] || r.rationality_type
+      list.push({
+        id: `pr-rat-${r.id}`,
+        type: 'patient-rationality',
+        title: `Racionalidade ${label} (${dateStr})`,
+        subtitle: r.rationality_type,
+        body: `Racionalidade ${label} aplicada em ${dateStr}${r.assessmentExcerpt ? `\nRecorte: "${r.assessmentExcerpt}..."` : ''}`,
+        timestamp: new Date(r.created_at).getTime(),
+      })
+    })
+
+    // V1.9.379-D — Casos abertos (até 12 mais recentes)
     history.caseOpens.slice(0, 12).forEach((c) => {
       list.push({
         id: `case-${c.caseId}`,
@@ -86,7 +130,7 @@ export const NoaMatrixView: React.FC = () => {
     })
 
     return list
-  }, [history.caseOpens, history.notes, history.pinned])
+  }, [history.caseOpens, history.notes, history.pinned, longitudinal.reports, longitudinal.rationalities])
 
   const toggleCard = (id: string) => {
     setSelectedIds((prev) => {
@@ -110,6 +154,25 @@ export const NoaMatrixView: React.FC = () => {
 
   return (
     <div className="space-y-4">
+      {/* V1.9.382 — Banner contextual quando há paciente em foco (vindo Terminal de Atendimento) */}
+      {patientId && (
+        <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-3 flex items-start gap-3">
+          <User className="w-4 h-4 text-amber-300 flex-shrink-0 mt-0.5" />
+          <div className="flex-1 min-w-0">
+            <div className="text-xs font-semibold text-amber-200">
+              Sessão sobre paciente{longitudinal.patientName ? `: ${longitudinal.patientName}` : ''}
+            </div>
+            <div className="text-[10px] text-amber-300/70 mt-0.5">
+              {longitudinal.loading
+                ? 'Carregando recortes longitudinais...'
+                : longitudinal.error
+                  ? `Erro: ${longitudinal.error}`
+                  : `${longitudinal.reports.length} relatório(s) e ${longitudinal.rationalities.length} racionalidade(s) disponíveis abaixo. Marque o que considerar relevante.`}
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Header da view */}
       <div className="bg-slate-900/40 border border-purple-500/20 rounded-xl p-4">
         <div className="flex items-start justify-between gap-3 flex-wrap">
@@ -179,7 +242,12 @@ export const NoaMatrixView: React.FC = () => {
             <div className="space-y-2 max-h-[600px] overflow-y-auto pr-1">
               {cards.map((card) => {
                 const isSelected = selectedIds.has(card.id)
-                const Icon = card.type === 'case' ? FileText : card.type === 'note' ? StickyNote : Sparkles
+                const Icon =
+                  card.type === 'patient-report' ? Stethoscope :
+                  card.type === 'patient-rationality' ? Activity :
+                  card.type === 'case' ? FileText :
+                  card.type === 'note' ? StickyNote :
+                  Sparkles
                 return (
                   <button
                     key={card.id}

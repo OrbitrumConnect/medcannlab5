@@ -38,8 +38,10 @@ const ResearchWorkstation: React.FC<ResearchWorkstationProps> = ({ initialTab })
     const { user } = useAuth()
 
     const [activeTab, setActiveTab] = useState<TabId>(() => {
+        // V1.9.382 — Trigger Terminal de Atendimento → Nôa Matrix usa query param `section`.
+        // initialTab vem do parent (dashboard router). Se vier 'noa-matrix', ativa direto.
         const t = (initialTab as TabId)
-        const valid: TabId[] = ['dashboard', 'forum', 'library', 'literature', 'protocols', 'casos-similares', 'mentoria', 'newsletter', 'evaluation']
+        const valid: TabId[] = ['dashboard', 'forum', 'noa-matrix', 'library', 'literature', 'protocols', 'casos-similares', 'mentoria', 'newsletter', 'evaluation']
         return t && valid.includes(t) ? t : 'dashboard'
     })
 

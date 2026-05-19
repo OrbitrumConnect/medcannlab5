@@ -4,8 +4,10 @@ import {
     Search,
     ChevronLeft,
     LayoutDashboard,
-    ClipboardList
+    ClipboardList,
+    Sparkles  // V1.9.382 — ícone Nôa Matrix trigger
 } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { supabase } from '../lib/supabase'
 import { clinicalReportService } from '../lib/clinicalReportService'
@@ -21,6 +23,7 @@ export interface PatientFocusViewProps {
 
 const PatientFocusView: React.FC<PatientFocusViewProps> = ({ activePatientId, onPatientChange }) => {
     const { user } = useAuth()
+    const navigate = useNavigate()
     const [linkedPatients, setLinkedPatients] = useState<{ id: string; name: string }[]>([])
     const [patientSearch, setPatientSearch] = useState('')
     const [patientDropdownOpen, setPatientDropdownOpen] = useState(false)
@@ -234,7 +237,7 @@ const PatientFocusView: React.FC<PatientFocusViewProps> = ({ activePatientId, on
                                 <ChevronLeft className="w-4 h-4" />
                                 Voltar à seleção
                             </button>
-                            <div className="flex items-center gap-2 min-w-0">
+                            <div className="flex items-center gap-2 min-w-0 flex-1">
                                 {patientAvatarUrl ? (
                                     <img src={patientAvatarUrl} alt="" className="w-8 h-8 rounded-full object-cover ring-2 ring-amber-500/50" />
                                 ) : (
@@ -244,6 +247,19 @@ const PatientFocusView: React.FC<PatientFocusViewProps> = ({ activePatientId, on
                                 )}
                                 <span className="text-white font-medium truncate">{selectedPatient.name}</span>
                             </div>
+                            {/* V1.9.382 — Trigger "Levar para Nôa Matrix": navega pra Terminal de Pesquisa
+                                 com patientId em query string. Nôa Matrix carrega recortes longitudinais
+                                 (clinical_reports + clinical_rationalities) como cards anexáveis.
+                                 Atrito intencional: médico marca explicitamente o que quer trazer pro chat. */}
+                            <button
+                                type="button"
+                                onClick={() => navigate(`/app/pesquisa/profissional/dashboard?section=noa-matrix&patientId=${selectedPatient.id}`)}
+                                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-purple-500/10 text-purple-300 border border-purple-500/30 hover:bg-purple-500/20 hover:border-purple-500/50 transition-colors flex-shrink-0"
+                                title="Levar recortes deste paciente para Nôa Matrix (chat pesquisa Z2 estrutural)"
+                            >
+                                <Sparkles className="w-3.5 h-3.5" />
+                                <span className="hidden sm:inline">Nôa Matrix</span>
+                            </button>
                         </div>
                         <div className="flex gap-1 p-1 rounded-xl bg-slate-800/60 border border-slate-700/50 mb-4 flex-shrink-0">
                             <button
