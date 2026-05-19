@@ -1381,13 +1381,18 @@ REGRAS RÍGIDAS:
                   <div
                     key={c.reportId}
                     onClick={() => {
+                      // V1.9.384 — Pedro 19/05 noite: click em caso similar agora vai DIRETO
+                      // pra Nôa Matrix com paciente em foco (em vez de abrir modal prontuário-like).
+                      // Modal antigo (setSelectedCase) preservado pro caso de querer reativar
+                      // botão "ver detalhes" no futuro — só o onClick principal mudou.
+                      // Casos Similares passa a ser "via pesquisa" pura: lista → Matrix direto.
                       history.recordCaseOpen({
                         caseId: c.reportId,
                         patientId: c.patientId,
                         patientName: c.patientName,
                         queixa: c.queixaPrincipal,
                       })
-                      setSelectedCase(c)
+                      navigate(`/app/pesquisa/profissional/dashboard?section=noa-matrix&patientId=${c.patientId}`)
                     }}
                     className="bg-slate-800/40 border border-slate-700/50 rounded-lg p-4 hover:border-purple-500/40 hover:bg-slate-800/60 transition-colors cursor-pointer group"
                   >

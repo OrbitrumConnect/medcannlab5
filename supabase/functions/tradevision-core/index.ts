@@ -1870,7 +1870,15 @@ Deno.serve(async (req: Request) => {
             appointmentData,
             ui_context
         } = body
-        
+
+        // [V1.9.384] isResearchMode declarado MAIS CEDO (antes da construção do
+        // knowledgeBlock RAG na linha ~4824). Antes ficava no meio do fluxo e o
+        // RAG da base_conhecimento era injetado mesmo em modo Nôa Matrix → bug
+        // empírico Pedro 19/05 noite: chat mostrou papers que NÃO foram marcados
+        // pelo médico ("vazamento de corpus") e fez inferências especulativas
+        // conectando queixa "dor no pé" com papers cannabis.
+        const isResearchMode = ui_context?.bypassFSM === true || ui_context?.source === 'research_chat'
+
         let assessmentPhase = assessmentPhaseFromBody || null
         let nextQuestionHint = nextQuestionHintFromBody || '' // Restaurando a variável faltante
         const conversationHistory = convFromBody ?? body.history ?? []
@@ -4821,7 +4829,11 @@ AGORA: Analise o contexto. Se pedir Sistema Renal/Urinário, atue como LÚCIA ou
             /Analise este relatório clínico do ponto de vista/i.test(message)
         )
         let knowledgeBlock = ''
-        if (message && message.length > 3 && !isAecActiveForPatient && !isRationalityAnalysis) {
+        // [V1.9.384] SKIP RAG da base_conhecimento quando isResearchMode.
+        // Bug empírico Pedro 19/05 noite: Nôa Matrix injetava papers da Base de Conhecimento
+        // mesmo o médico tendo marcado APENAS um caso clínico — vazamento de corpus.
+        // Z2 estrutural = chat lê SÓ o que médico marcou explicitamente.
+        if (message && message.length > 3 && !isAecActiveForPatient && !isRationalityAnalysis && !isResearchMode) {
             const keywords = message.split(' ')
                 .filter((w: string) => w.length > 3)
                 .map((w: string) => w.toLowerCase().replace(/[^a-z0-9áàâãéèêíïóôõöúçñ]/g, '')) // Sanitização leve
@@ -4896,10 +4908,9 @@ AGORA: Analise o contexto. Se pedir Sistema Renal/Urinário, atue como LÚCIA ou
             isTeachingMode = false
         }
 
-        // [V1.9.379-A/B] Detectar modo Nôa Matrix (chat pesquisa Z2 não-diretivo).
-        // Declarado aqui (antes do systemPrompt) pra escopo cobrir todo o fluxo.
-        // Memory: project_ricardo_19_05_forum_validation_features_solicitadas
-        const isResearchMode = ui_context?.bypassFSM === true || ui_context?.source === 'research_chat'
+        // [V1.9.384] isResearchMode foi MOVIDO pra ~linha 1880 (logo após body destructuring)
+        // pra cobrir também construção do knowledgeBlock RAG (~linha 4830).
+        // Antes ficava aqui (V1.9.379-A/B) mas RAG era injetado antes mesmo do prompt switch.
 
         // [V1.9.379-B] RESEARCH_PROMPT — Nôa Matrix (chat pesquisa Z2 não-diretivo).
         // Bloqueia palavras gatilho ("recomendo", "sugiro", "melhor abordagem", hipótese diagnóstica).
@@ -4935,7 +4946,10 @@ O QUE VOCÊ PODE FAZER (Z2 estrutural):
    solicitar (temporal, sintomático, racionalidade aplicada).
 3. CITAR — referenciar papers da Literatura selecionada com PMID/título,
    sem inferir validade clínica.
-4. ESTRUTURAR PERGUNTAS — listar perguntas que o caso levanta, sem responder.
+4. ESTRUTURAR PERGUNTAS — listar perguntas DIRETAS sobre o material marcado,
+   SEM conectar itens diferentes especulativamente. Exemplo CERTO: "Quais
+   sintomas o paciente relatou nesse caso?". Exemplo PROIBIDO: "Qual a relação
+   entre a queixa X e o paper Y?" (isso é inferência clínica disfarçada).
 5. APONTAR DIVERGÊNCIAS — entre racionalidades aplicadas a casos similares,
    sem opinar qual está certa.
 6. RECUPERAR HISTÓRICO — relembrar o que o médico já comentou nas notas
@@ -4951,6 +4965,13 @@ O QUE VOCÊ NÃO PODE FAZER (proibições absolutas):
 - Citar conhecimento fora do corpus marcado pelo médico (sem alucinação)
 - Resumir como se fosse conclusão clínica
 - Usar palavras "talvez", "provavelmente", "pode ser" em contexto clínico
+- **CONECTAR itens diferentes do corpus especulativamente** (ex: "Qual a relação
+  entre queixa X e paper Y?" — isso é inferência disfarçada de pergunta)
+- Listar "possíveis relações", "impactos considerando", "evidências que relacionem"
+  entre items que o médico marcou — ele decide as relações, você só estrutura
+- Mencionar conteúdo de papers/casos que o médico NÃO marcou explicitamente
+- Tratar a primeira mensagem do médico como pedido pra "interpretar tudo
+  disponível" — espere o médico fazer pergunta CONCRETA sobre items específicos
 
 ESTRUTURA DE RESPOSTA:
 - Use cabeçalhos em MAIÚSCULAS quando útil (sem markdown ** ou *)

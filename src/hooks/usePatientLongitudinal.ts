@@ -40,11 +40,32 @@ export interface LongitudinalRationality {
 }
 
 export interface PatientLongitudinalData {
-  patientName: string | null
+  patientName: string | null         // Nome REAL (médico precisa identificar internamente)
+  patientPseudonym: string | null    // V1.9.384 — código curto pra contexto Matrix (LGPD-friendly)
   reports: LongitudinalReport[]
   rationalities: LongitudinalRationality[]
   loading: boolean
   error: string | null
+}
+
+/**
+ * V1.9.384 — Gera pseudônimo determinístico curto a partir do patient_id.
+ * Médico vê "Paciente #A4F2" em vez de "Pedro Paciente" no contexto do chat.
+ *
+ * Por que pseudonimizar mesmo num chat privado do médico?
+ *  - Higiene Z2 cristalizada (Material A Pedro 19/05 noite)
+ *  - Prepara pro fluxo futuro Fórum (já sai anonimizado)
+ *  - Reduz risco médico copiar/colar conversa com PHI em comunicação externa
+ *  - Médico SABE quem é (vê no Terminal de Atendimento) — Matrix só não usa o nome
+ *
+ * Deterministico (mesmo patient_id sempre gera mesmo pseudônimo na sessão)
+ * + curto (4 chars hex) + legível.
+ */
+function generatePseudonym(patientId: string): string {
+  // Hash leve dos últimos 8 chars do UUID — não-criptográfico, só pra exibição
+  const tail = patientId.slice(-8).toUpperCase()
+  // Pega 4 chars distribuídos pra evitar colisão visual ("Paciente #A4F2")
+  return `${tail[0]}${tail[2]}${tail[4]}${tail[6]}`
 }
 
 const MAX_REPORTS = 5
@@ -54,6 +75,7 @@ const ASSESSMENT_EXCERPT_CHARS = 200
 export function usePatientLongitudinal(patientId: string | undefined | null): PatientLongitudinalData {
   const [data, setData] = useState<PatientLongitudinalData>({
     patientName: null,
+    patientPseudonym: null,
     reports: [],
     rationalities: [],
     loading: false,
@@ -62,7 +84,7 @@ export function usePatientLongitudinal(patientId: string | undefined | null): Pa
 
   useEffect(() => {
     if (!patientId) {
-      setData({ patientName: null, reports: [], rationalities: [], loading: false, error: null })
+      setData({ patientName: null, patientPseudonym: null, reports: [], rationalities: [], loading: false, error: null })
       return
     }
 
@@ -136,6 +158,7 @@ export function usePatientLongitudinal(patientId: string | undefined | null): Pa
 
         setData({
           patientName: userData?.name || null,
+          patientPseudonym: generatePseudonym(patientId),  // V1.9.384 — sempre pseudônimo no contexto Matrix
           reports,
           rationalities,
           loading: false,

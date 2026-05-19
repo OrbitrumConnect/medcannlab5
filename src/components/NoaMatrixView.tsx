@@ -66,6 +66,8 @@ export const NoaMatrixView: React.FC = () => {
 
     // V1.9.382 — Recortes longitudinais do paciente em foco (vindo do Terminal de Atendimento)
     // Aparecem PRIMEIRO porque são contexto explícito que o médico trouxe.
+    // V1.9.384 — body usa pseudônimo (LGPD higiene). Médico vê nome real só no banner topo.
+    const pseudonym = longitudinal.patientPseudonym ? `Paciente #${longitudinal.patientPseudonym}` : 'Paciente'
     longitudinal.reports.forEach((r) => {
       const dateStr = new Date(r.created_at).toLocaleDateString('pt-BR')
       const lista = r.listaIndiciaria && r.listaIndiciaria.length > 0
@@ -76,7 +78,7 @@ export const NoaMatrixView: React.FC = () => {
         type: 'patient-report',
         title: `Relatório de ${dateStr}`,
         subtitle: `${r.status}${r.signed_at ? ' · ICP' : ''}`,
-        body: `Relatório clínico (${dateStr})\nStatus: ${r.status}${r.signed_at ? ' (assinado ICP-Brasil)' : ''}${r.mainComplaint ? `\nQueixa principal: "${r.mainComplaint}"` : ''}${lista ? `\nLista indiciária: ${lista}` : ''}`,
+        body: `Relatório clínico de ${pseudonym} (${dateStr})\nStatus: ${r.status}${r.signed_at ? ' (assinado ICP-Brasil)' : ''}${r.mainComplaint ? `\nQueixa principal: "${r.mainComplaint}"` : ''}${lista ? `\nLista indiciária: ${lista}` : ''}`,
         timestamp: new Date(r.created_at).getTime(),
       })
     })
@@ -89,7 +91,7 @@ export const NoaMatrixView: React.FC = () => {
         type: 'patient-rationality',
         title: `Racionalidade ${label} (${dateStr})`,
         subtitle: r.rationality_type,
-        body: `Racionalidade ${label} aplicada em ${dateStr}${r.assessmentExcerpt ? `\nRecorte: "${r.assessmentExcerpt}..."` : ''}`,
+        body: `Racionalidade ${label} aplicada a ${pseudonym} em ${dateStr}${r.assessmentExcerpt ? `\nRecorte: "${r.assessmentExcerpt}..."` : ''}`,
         timestamp: new Date(r.created_at).getTime(),
       })
     })
@@ -154,13 +156,19 @@ export const NoaMatrixView: React.FC = () => {
 
   return (
     <div className="space-y-4">
-      {/* V1.9.382 — Banner contextual quando há paciente em foco (vindo Terminal de Atendimento) */}
+      {/* V1.9.382/384 — Banner contextual com nome real (médico identifica)
+           + pseudônimo (Matrix usa nas conversas/contexto pra GPT) */}
       {patientId && (
         <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-3 flex items-start gap-3">
           <User className="w-4 h-4 text-amber-300 flex-shrink-0 mt-0.5" />
           <div className="flex-1 min-w-0">
             <div className="text-xs font-semibold text-amber-200">
-              Sessão sobre paciente{longitudinal.patientName ? `: ${longitudinal.patientName}` : ''}
+              Sessão sobre {longitudinal.patientName || 'paciente'}
+              {longitudinal.patientPseudonym && (
+                <span className="ml-2 text-[10px] font-mono text-amber-300/70">
+                  · contexto Matrix usa código <strong>#{longitudinal.patientPseudonym}</strong> (LGPD)
+                </span>
+              )}
             </div>
             <div className="text-[10px] text-amber-300/70 mt-0.5">
               {longitudinal.loading
