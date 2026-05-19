@@ -29,7 +29,7 @@ import { useAuth } from '../contexts/AuthContext'
 import { useSearchHistory } from '../hooks/useSearchHistory'
 import { usePatientLongitudinal } from '../hooks/usePatientLongitudinal'
 import { ResearchChat } from './ResearchChat'
-import { Sparkles, FileText, StickyNote, Check, Info, Folder, User, Stethoscope, Activity } from 'lucide-react'
+import { Sparkles, FileText, StickyNote, Check, Info, Folder, User, Stethoscope, Activity, X } from 'lucide-react'
 
 interface AttachableCard {
   id: string
@@ -57,6 +57,9 @@ export const NoaMatrixView: React.FC = () => {
   const history = useSearchHistory(user?.id)
   const longitudinal = usePatientLongitudinal(patientId)
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
+  // V1.9.386 — Pedro 19/05 noite: trigger ocultar cards pra não acumular
+  // (não-destrutivo, só esconde da view atual; reload da sessão reseta)
+  const [hiddenIds, setHiddenIds] = useState<Set<string>>(new Set())
 
   // Compor lista de cards anexáveis a partir de múltiplas fontes.
   // V1.9.379-D: localStorage (caseOpens + notes + pinned)
@@ -142,6 +145,19 @@ export const NoaMatrixView: React.FC = () => {
       return next
     })
   }
+
+  // V1.9.386 — Ocultar card da view (não-destrutivo). Reload da sessão reseta.
+  const hideCard = (id: string) => {
+    setHiddenIds((prev) => new Set(prev).add(id))
+    setSelectedIds((prev) => {
+      const next = new Set(prev)
+      next.delete(id)  // Se estava marcado, desmarca antes de ocultar
+      return next
+    })
+  }
+
+  // Cards visíveis (não-ocultos)
+  const visibleCards = useMemo(() => cards.filter((c) => !hiddenIds.has(c.id)), [cards, hiddenIds])
 
   // Compor contexto pra passar pro ResearchChat.
   const attachedContext = useMemo(() => {
@@ -237,57 +253,97 @@ export const NoaMatrixView: React.FC = () => {
             )}
           </div>
 
-          {cards.length === 0 ? (
+          {visibleCards.length === 0 ? (
             <div className="bg-slate-900/40 border border-slate-700/30 rounded-xl p-6 text-center">
               <Folder className="w-8 h-8 text-slate-600 mx-auto mb-2" />
-              <p className="text-xs text-slate-400 mb-1">Nenhum material marcado ainda.</p>
+              <p className="text-xs text-slate-400 mb-1">
+                {hiddenIds.size > 0
+                  ? `Todos os ${hiddenIds.size} itens foram ocultados nesta sessão.`
+                  : 'Nenhum material marcado ainda.'}
+              </p>
               <p className="text-[10px] text-slate-500 leading-relaxed max-w-xs mx-auto">
-                Abra casos em <strong className="text-purple-300">Casos Similares</strong>,
-                escreva notas no painel lateral e favorite buscas — depois volte aqui pra trazer ao chat.
+                {hiddenIds.size > 0 ? (
+                  <button
+                    onClick={() => setHiddenIds(new Set())}
+                    className="text-purple-300 hover:text-purple-200 underline-offset-2 hover:underline"
+                  >
+                    Restaurar itens ocultos
+                  </button>
+                ) : (
+                  <>
+                    Abra casos em <strong className="text-purple-300">Casos Similares</strong>,
+                    escreva notas no painel lateral e favorite buscas — depois volte aqui pra trazer ao chat.
+                  </>
+                )}
               </p>
             </div>
           ) : (
-            <div className="space-y-2 max-h-[600px] overflow-y-auto pr-1">
-              {cards.map((card) => {
-                const isSelected = selectedIds.has(card.id)
-                const Icon =
-                  card.type === 'patient-report' ? Stethoscope :
-                  card.type === 'patient-rationality' ? Activity :
-                  card.type === 'case' ? FileText :
-                  card.type === 'note' ? StickyNote :
-                  Sparkles
-                return (
+            <>
+              {hiddenIds.size > 0 && (
+                <div className="text-[10px] text-slate-500 flex items-center justify-between gap-2 px-1">
+                  <span>{hiddenIds.size} item(ns) ocultado(s)</span>
                   <button
-                    key={card.id}
-                    onClick={() => toggleCard(card.id)}
-                    className={`w-full text-left rounded-lg p-3 border transition-all ${
-                      isSelected
-                        ? 'bg-purple-500/15 border-purple-500/40 shadow-md shadow-purple-500/10'
-                        : 'bg-slate-900/40 border-slate-700/30 hover:border-purple-500/30 hover:bg-purple-500/5'
-                    }`}
+                    onClick={() => setHiddenIds(new Set())}
+                    className="text-purple-300 hover:text-purple-200 underline-offset-2 hover:underline"
                   >
-                    <div className="flex items-start gap-2.5">
-                      <div className={`mt-0.5 flex-shrink-0 p-1 rounded ${isSelected ? 'bg-purple-500/20' : 'bg-slate-800/60'}`}>
-                        {isSelected ? (
-                          <Check className="w-3 h-3 text-purple-300" />
-                        ) : (
-                          <Icon className="w-3 h-3 text-slate-500" />
-                        )}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="text-xs font-semibold text-white truncate">{card.title}</div>
-                        {card.subtitle && (
-                          <div className="text-[10px] text-slate-500 mt-0.5">{card.subtitle}</div>
-                        )}
-                        <div className="text-[10px] text-slate-400 mt-1 line-clamp-2 leading-relaxed">
-                          {card.body.split('\n').slice(0, 2).join(' · ')}
-                        </div>
-                      </div>
-                    </div>
+                    restaurar todos
                   </button>
-                )
-              })}
-            </div>
+                </div>
+              )}
+              <div className="space-y-2 max-h-[600px] overflow-y-auto pr-1">
+                {visibleCards.map((card) => {
+                  const isSelected = selectedIds.has(card.id)
+                  const Icon =
+                    card.type === 'patient-report' ? Stethoscope :
+                    card.type === 'patient-rationality' ? Activity :
+                    card.type === 'case' ? FileText :
+                    card.type === 'note' ? StickyNote :
+                    Sparkles
+                  return (
+                    <div
+                      key={card.id}
+                      className={`relative rounded-lg p-3 border transition-all ${
+                        isSelected
+                          ? 'bg-purple-500/15 border-purple-500/40 shadow-md shadow-purple-500/10'
+                          : 'bg-slate-900/40 border-slate-700/30 hover:border-purple-500/30 hover:bg-purple-500/5'
+                      }`}
+                    >
+                      {/* V1.9.386 — Botão ocultar card (não-destrutivo) */}
+                      <button
+                        onClick={(e) => { e.stopPropagation(); hideCard(card.id) }}
+                        className="absolute top-1.5 right-1.5 p-1 rounded text-slate-600 hover:text-red-300 hover:bg-red-500/10 transition-colors z-10"
+                        title="Ocultar este item da lista (não-destrutivo, reload restaura)"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => toggleCard(card.id)}
+                        className="w-full text-left flex items-start gap-2.5 pr-5"
+                      >
+                        <div className={`mt-0.5 flex-shrink-0 p-1 rounded ${isSelected ? 'bg-purple-500/20' : 'bg-slate-800/60'}`}>
+                          {isSelected ? (
+                            <Check className="w-3 h-3 text-purple-300" />
+                          ) : (
+                            <Icon className="w-3 h-3 text-slate-500" />
+                          )}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="text-xs font-semibold text-white truncate">{card.title}</div>
+                          {card.subtitle && (
+                            <div className="text-[10px] text-slate-500 mt-0.5">{card.subtitle}</div>
+                          )}
+                          <div className="text-[10px] text-slate-400 mt-1 line-clamp-2 leading-relaxed">
+                            {card.body.split('\n').slice(0, 2).join(' · ')}
+                          </div>
+                        </div>
+                      </button>
+                    </div>
+                  )
+                })}
+              </div>
+            </>
           )}
         </div>
 
