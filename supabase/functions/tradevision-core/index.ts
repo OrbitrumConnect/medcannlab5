@@ -2870,7 +2870,14 @@ Finalizar SEMPRE com:
             /Analise este relatório clínico do ponto de vista/i.test(message)
         )
 
-        const shouldBypassInterceptors = isAecActive || isClinicalAssessmentStart || isRationalityAnalysisMessage;
+        // [V1.9.388-A.5] Adiciona isResearchMode ao bypass: chat Nôa Matrix NUNCA
+        // deve disparar listagem de documents/lista de "Você deseja abrir qual
+        // documento?". Bug empírico Pedro 19/05 ~23h BRT: pergunta "analise esses
+        // relatórios e documentos" no chat Matrix disparou DOCUMENT_LIST handler
+        // (palavra "documentos") → respondeu com "Você deseja abrir qual
+        // documento? 1) A dama..." que é UX da Nôa clínica, não da Matrix Z2.
+        // Matrix lê APENAS o corpus marcado pelo médico via attachedContext.
+        const shouldBypassInterceptors = isAecActive || isClinicalAssessmentStart || isRationalityAnalysisMessage || isResearchMode;
 
         console.log(`[DOC DETECT] isDocRequest=${isDocRequest}, isDocListRequest=${isDocListRequest}, isAnalyzeOpen=${isAnalyzeOpenDocRequest}, userId=${!!patientData?.user?.id}, realUserRole=${realUserRole}, userRole=${userRole}, normSnippet="${norm.substring(0, 80)}"`)
 
@@ -2885,7 +2892,10 @@ Finalizar SEMPRE com:
         // Para abrir um documento...". UX-copy mismatch desde commit a4c706c.
         // Fix: ao responder count, JÁ cria pending com top 5 docs ordenados
         // (mesma lógica do smart_trigger linha 3135). Agora "2" funciona direto.
-        if (isDocCountRequest && !isClinicalAssessmentStart) {
+        // [V1.9.388-A.5] Skip DocCount branch também em research mode (Matrix Z2
+        // não responde "temos X documentos na base"). Branch separado porque
+        // não usa shouldBypassInterceptors.
+        if (isDocCountRequest && !isClinicalAssessmentStart && !isResearchMode) {
             try {
                 let countQuery = supabaseClient.from('documents').select('*', { count: 'exact', head: true }).neq('category', 'slides')
                 if (realUserRole === 'patient' || realUserRole === 'student') {
