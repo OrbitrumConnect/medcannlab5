@@ -306,9 +306,12 @@ const ExternalLiterature: React.FC<Props> = ({ embedded = false, initialTerm, in
               <span className="text-[10px] text-slate-600 uppercase tracking-wider">PubMed/NIH</span>
             </div>
 
-            {articles.map((art, idx) => (
-              <ArticleCard key={art.pmid} article={art} idx={idx} />
-            ))}
+            {/* [V1.9.370] Side-by-side em lg+ (Pedro 18/05 ~21h38) */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+              {articles.map((art, idx) => (
+                <ArticleCard key={art.pmid} article={art} idx={idx} />
+              ))}
+            </div>
 
             {total > articles.length && (
               <p className="text-[11px] text-slate-500 text-center mt-4">
