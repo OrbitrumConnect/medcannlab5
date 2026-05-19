@@ -4829,11 +4829,15 @@ AGORA: Analise o contexto. Se pedir Sistema Renal/Urinário, atue como LÚCIA ou
             /Analise este relatório clínico do ponto de vista/i.test(message)
         )
         let knowledgeBlock = ''
-        // [V1.9.384] SKIP RAG da base_conhecimento quando isResearchMode.
-        // Bug empírico Pedro 19/05 noite: Nôa Matrix injetava papers da Base de Conhecimento
-        // mesmo o médico tendo marcado APENAS um caso clínico — vazamento de corpus.
-        // Z2 estrutural = chat lê SÓ o que médico marcou explicitamente.
-        if (message && message.length > 3 && !isAecActiveForPatient && !isRationalityAnalysis && !isResearchMode) {
+        // [V1.9.388-A] Base de Conhecimento agora DISPONÍVEL em research mode também
+        // (revertendo guard !isResearchMode de V1.9.384), mas com 2 condições críticas
+        // que diferenciam de bug-vazamento original:
+        //   1. Rotulada explicitamente como "ACERVO OPCIONAL" — não corpus marcado
+        //   2. RESEARCH_PROMPT força citação fonte explícita ("Doc #A1")
+        //   3. RESEARCH_PROMPT exige: usar APENAS se enriquecer comparação/análise pedida
+        // Em vez de injeção silenciosa que GPT tratava como corpus marcado, agora é
+        // contexto separado, rastreável, sob controle do prompt Z2.
+        if (message && message.length > 3 && !isAecActiveForPatient && !isRationalityAnalysis) {
             const keywords = message.split(' ')
                 .filter((w: string) => w.length > 3)
                 .map((w: string) => w.toLowerCase().replace(/[^a-z0-9áàâãéèêíïóôõöúçñ]/g, '')) // Sanitização leve
@@ -4847,14 +4851,24 @@ AGORA: Analise o contexto. Se pedir Sistema Renal/Urinário, atue como LÚCIA ou
                 try {
                     const { data: knowledge, error: ragError } = await supabaseClient
                         .from('base_conhecimento')
-                        .select('titulo, conteudo')
+                        .select('id, titulo, conteudo')
                         .or(queryFilters)
                         .limit(3);
 
                     if (!ragError && knowledge && knowledge.length > 0) {
-                        const ragLabel = (userRole === 'admin' || userRole === 'master' || userRole === 'professional') ? 'CONSULTA OPCIONAL — use apenas se o usuário perguntar sobre este tema' : 'FONTE PRIORITÁRIA'
-                        knowledgeBlock = `\n\n📚 BASE DE CONHECIMENTO (${ragLabel}):\n${knowledge.map((k: any) => `• [${k.titulo}]: ${k.conteudo}`).join('\n')}\nUtilize ESTRITAMENTE estas informações para responder se forem relevantes. Se a resposta estiver aqui, cite a fonte.`;
-                        console.log(`[RAG] ${knowledge.length} artigos encontrados para keywords: [${keywords.join(', ')}]`);
+                        // V1.9.388-A — label diferenciado pra research mode (Z2 rastreável)
+                        if (isResearchMode) {
+                            const docs = knowledge.map((k: any, idx: number) => {
+                                // ID curto pra citação ("Doc #A1", "Doc #A2"...)
+                                const shortId = `A${idx + 1}`
+                                return `• [Doc #${shortId} · "${k.titulo}"]: ${(k.conteudo || '').substring(0, 600)}`
+                            }).join('\n\n')
+                            knowledgeBlock = `\n\n[ACERVO BASE DE CONHECIMENTO — consulta opcional]:\n${docs}\n\nREGRAS DE USO: Este acervo é OPCIONAL. Use APENAS se o médico explicitamente pediu análise/comparação que se beneficiaria de contexto adicional. Se usar, CITE OBRIGATORIAMENTE a fonte exata: "Doc #A1" ou "Conforme Doc #A2 (título)". Se a pergunta do médico for restrita ao corpus marcado, IGNORE este acervo completamente. NUNCA misture conteúdo do acervo com afirmações clínicas — apenas referencie estruturalmente.`
+                        } else {
+                            const ragLabel = (userRole === 'admin' || userRole === 'master' || userRole === 'professional') ? 'CONSULTA OPCIONAL — use apenas se o usuário perguntar sobre este tema' : 'FONTE PRIORITÁRIA'
+                            knowledgeBlock = `\n\n📚 BASE DE CONHECIMENTO (${ragLabel}):\n${knowledge.map((k: any) => `• [${k.titulo}]: ${k.conteudo}`).join('\n')}\nUtilize ESTRITAMENTE estas informações para responder se forem relevantes. Se a resposta estiver aqui, cite a fonte.`;
+                        }
+                        console.log(`[RAG${isResearchMode ? ' research' : ''}] ${knowledge.length} artigos encontrados para keywords: [${keywords.join(', ')}]`);
                     }
                 } catch (err) {
                     console.warn('[RAG] Falha na busca de conhecimento:', err);
@@ -4956,6 +4970,21 @@ O QUE VOCÊ PODE FAZER (Z2 estrutural):
    marcadas, sem reinterpretar.
 7. RECONHECER LIMITES — quando o material trazido não permite responder,
    dizer claramente: "este corpus não cobre essa dimensão".
+
+ACERVO BASE DE CONHECIMENTO (V1.9.388-A — fonte opcional citável):
+Pode existir bloco "[ACERVO BASE DE CONHECIMENTO — consulta opcional]" no
+contexto. Esse acervo é institucional (MedCannLab), NÃO corpus marcado pelo
+médico. Use APENAS quando o médico explicitamente pediu análise/comparação que
+se enriquece com referência externa estrutural (ex: "compare este caso com a
+literatura institucional", "tem algo no acervo sobre granularidade narrativa?").
+
+REGRAS DE USO DO ACERVO:
+- Se o médico pediu apenas análise do corpus marcado, IGNORE o acervo.
+- Quando usar, CITE a fonte: "Conforme Doc #A1" ou "Doc #A2 (título)".
+- NUNCA misture conteúdo do acervo com afirmação clínica. Apenas referencie
+  estruturalmente — "Doc #A1 descreve X" em vez de "X é o caso".
+- Acervo NÃO é corpus marcado. NÃO trate como se fosse caso anexado.
+- Se Doc do acervo contradiz corpus marcado, aponte a divergência — não opine.
 
 O QUE VOCÊ NÃO PODE FAZER (proibições absolutas):
 - Sugerir conduta ("recomendo", "sugiro", "indica-se", "deve-se")
