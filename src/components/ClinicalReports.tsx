@@ -24,7 +24,8 @@ import {
   ChevronUp,
   Sparkles,
   Info,
-  Check
+  Check,
+  Search
 } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { useNavigate, useSearchParams } from 'react-router-dom'
@@ -134,6 +135,8 @@ const ClinicalReports: React.FC<ClinicalReportsProps> = ({ className = '', onSha
   const [showReportModal, setShowReportModal] = useState(false)
   const [doctorNotes, setDoctorNotes] = useState('')
   const [filterStatus, setFilterStatus] = useState<'all' | 'shared' | 'reviewed' | 'validated'>('all')
+  // V1.9.377 — Busca por nome (visível só pra profissional/admin, paciente vê só os próprios)
+  const [searchName, setSearchName] = useState('')
   const [currentPage, setCurrentPage] = useState(1)
 
   const { success: toastSuccess, error: toastError, warning: toastWarning } = useToast()
@@ -891,6 +894,13 @@ const ClinicalReports: React.FC<ClinicalReportsProps> = ({ className = '', onSha
   }
 
   const filteredReports = reports.filter(report => {
+    // V1.9.377 — Filtro busca por nome (case-insensitive). Visível só pra profissional/admin.
+    // Paciente vê só os próprios reports (RLS no banco já garante), search é redundante.
+    if (searchName.trim() && !isPatient) {
+      const needle = searchName.trim().toLowerCase()
+      const haystack = (report.patientName || '').toLowerCase()
+      if (!haystack.includes(needle)) return false
+    }
     if (filterStatus === 'all') return true
     // V1.9.225 — 'reviewed' é REVISÃO MÉDICA (review_status), NÃO status FSM AEC.
     // Bug empírico 11/05: Ricardo marcou 6 reports como reviewed (clinicalDevolutionService
@@ -909,7 +919,7 @@ const ClinicalReports: React.FC<ClinicalReportsProps> = ({ className = '', onSha
   })
 
   // Reset page when filter changes
-  useEffect(() => { setCurrentPage(1) }, [filterStatus])
+  useEffect(() => { setCurrentPage(1) }, [filterStatus, searchName])
 
   const totalPages = Math.max(1, Math.ceil(filteredReports.length / REPORTS_PER_PAGE))
   const paginatedReports = filteredReports.slice(
@@ -1055,6 +1065,33 @@ const ClinicalReports: React.FC<ClinicalReportsProps> = ({ className = '', onSha
             </button>
           ))}
         </div>
+
+        {/* V1.9.377 — Busca por nome do paciente (profissional/admin só) */}
+        {!isPatient && (
+          <div className="mt-3 relative">
+            <input
+              type="text"
+              value={searchName}
+              onChange={(e) => setSearchName(e.target.value)}
+              placeholder="Buscar por nome do paciente..."
+              className="w-full pl-9 pr-9 py-2 rounded-lg text-sm text-white placeholder:text-slate-500 focus:outline-none focus:ring-1 focus:ring-emerald-500/50"
+              style={{
+                background: 'rgba(15, 36, 60, 0.7)',
+                border: '1px solid rgba(0, 193, 106, 0.12)',
+              }}
+            />
+            <Search className="w-4 h-4 text-slate-500 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+            {searchName.trim() && (
+              <button
+                onClick={() => setSearchName('')}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-emerald-300 text-xs"
+                title="Limpar busca"
+              >
+                ✕
+              </button>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Lista de Relatórios */}
@@ -1065,7 +1102,8 @@ const ClinicalReports: React.FC<ClinicalReportsProps> = ({ className = '', onSha
         </div>
       ) : filteredReports.length > 0 ? (
         <>
-        <div className="space-y-4">
+        {/* V1.9.377 — Side-by-side: grid 1 coluna mobile, 2 colunas desktop */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           {paginatedReports.map((report) => (
             <div
               key={report.id}
