@@ -617,9 +617,10 @@ REGRAS RÍGIDAS:
   return (
     // [V1.9.361] Padding lateral em embedded (Pedro: muito próximo do sidebar)
     <div className={embedded ? 'text-white px-4 md:px-6 py-2' : 'min-h-screen bg-[#0f172a] text-white p-6'}>
-      <div className={sidebarVisible ? (embedded ? 'max-w-7xl' : 'max-w-7xl mx-auto') : (embedded ? 'max-w-5xl' : 'max-w-5xl mx-auto')}>
+      {/* [V1.9.367] Largura maior em wide-screen quando sidebar visível (até 1800px) */}
+      <div className={sidebarVisible ? (embedded ? 'max-w-[1800px]' : 'max-w-[1800px] mx-auto') : (embedded ? 'max-w-5xl' : 'max-w-5xl mx-auto')}>
       {/* [V1.9.365/V1.9.366] Grid 2 colunas em lg quando sidebar visível: main + sidebar */}
-      <div className={sidebarVisible ? 'lg:grid lg:grid-cols-[1fr_340px] lg:gap-6 lg:items-start' : ''}>
+      <div className={sidebarVisible ? 'lg:grid lg:grid-cols-[1fr_360px] lg:gap-6 lg:items-start' : ''}>
       <div className={sidebarVisible ? 'min-w-0' : ''}>
         {/* Header — só mostra quando standalone (admin). Embedded usa header do parent (Workstation). */}
         {!embedded && (
@@ -1020,9 +1021,10 @@ REGRAS RÍGIDAS:
       </div>
       {/* fim main column */}
 
-      {/* [V1.9.365/V1.9.366] Sidebar — Trilha de Pesquisa + Notas Rápidas (controlada por showSidebar) */}
+      {/* [V1.9.365/V1.9.366/V1.9.367] Sidebar — Trilha + Notas (fluxo natural, sem sticky
+          pra compat com ResearchWorkstation que tem overflow-y-auto no parent) */}
       {sidebarVisible && (
-        <aside className="mt-6 lg:mt-0 lg:sticky lg:top-6 space-y-4 lg:max-h-[calc(100vh-3rem)] lg:overflow-y-auto pr-1">
+        <aside className="mt-6 lg:mt-0 space-y-4">
           {/* Trilha de Pesquisa */}
           <TrailPanel
             recent={history.recent}
