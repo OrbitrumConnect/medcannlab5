@@ -6,6 +6,8 @@ import Reports from './Reports'
 import Library from './Library'
 import { RiskCockpit } from '../components/RiskCockpit'
 import ClinicalGovernanceAdmin from './ClinicalGovernanceAdmin'
+// [V1.9.374] Observabilidade Sistemas IA (Z1/Z2)
+import AdminAIGovernance from './AdminAIGovernance'
 import { useUserView } from '../contexts/UserViewContext'
 import { UserType } from '../lib/userTypes'
 import { LessonPreparation } from './LessonPreparation'
@@ -29,6 +31,8 @@ const AdminDashboard: React.FC = () => {
     { id: 'renal', label: 'Protocolos/Pesquisa', icon: Search },
     { id: 'financial', label: 'Financeiro', icon: BanknoteIcon },
     { id: 'analytics', label: 'Análises', icon: BarChart3 },
+    // [V1.9.374] Observabilidade Sistemas IA (Z1/Z2) — não é "performance médica"
+    { id: 'ai-governance', label: 'Observabilidade IA', icon: Eye },
     { id: 'system', label: 'Sistema', icon: Settings },
     { id: 'reports', label: 'Relatórios', icon: FileText },
     { id: 'upload', label: 'Conhecimento', icon: Upload }
@@ -68,6 +72,9 @@ const AdminDashboard: React.FC = () => {
         return <ProfessionalFinancial />
       case 'analytics':
         return <AdminSettings initialTab="analytics" />
+      // [V1.9.374] Observabilidade Sistemas IA — invariante Z1/Z2 declarado no componente
+      case 'ai-governance':
+        return <AdminAIGovernance />
       case 'system':
         return <AdminSettings initialTab="system" />
       case 'reports':
