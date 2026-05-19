@@ -23,6 +23,8 @@ import CidadeAmigaDosRins from '../pages/CidadeAmigaDosRins'
 import AdminCasosSimilares from '../pages/AdminCasosSimilares'
 // [V1.9.369-A] Literatura externa (PubMed) — aba paralela à Base de Conhecimento interna
 import ExternalLiterature from '../pages/ExternalLiterature'
+// [V1.9.379-D] Nôa Matrix — chat pesquisa Z2 não-diretivo com cards anexáveis
+import { NoaMatrixView } from './NoaMatrixView'
 
 // Props do Componente
 interface ResearchWorkstationProps {
@@ -30,7 +32,7 @@ interface ResearchWorkstationProps {
 }
 
 type TabGroup = 'pesquisa' | 'colaboracao'
-type TabId = 'dashboard' | 'forum' | 'library' | 'literature' | 'protocols' | 'casos-similares' | 'mentoria' | 'newsletter' | 'evaluation'
+type TabId = 'dashboard' | 'forum' | 'noa-matrix' | 'library' | 'literature' | 'protocols' | 'casos-similares' | 'mentoria' | 'newsletter' | 'evaluation'
 
 const ResearchWorkstation: React.FC<ResearchWorkstationProps> = ({ initialTab }) => {
     const { user } = useAuth()
@@ -62,7 +64,8 @@ const ResearchWorkstation: React.FC<ResearchWorkstationProps> = ({ initialTab })
         { id: 'dashboard', label: 'Dashboard de Pesquisa', icon: BarChart3, color: 'text-emerald-400', group: 'pesquisa' },
         { id: 'casos-similares', label: 'Casos Similares', icon: Sparkles, color: 'text-purple-400', group: 'pesquisa' },
         { id: 'forum', label: 'Fórum de Casos Clínicos', icon: MessageCircle, color: 'text-cyan-400', group: 'colaboracao' },
-        // V1.9.379-D adicionará aqui: { id: 'noa-matrix', label: 'Nôa Matrix', icon: <novo>, color: '...', group: 'pesquisa' }
+        // [V1.9.379-D] Nôa Matrix — chat pesquisa Z2 entre Fórum e Literatura
+        { id: 'noa-matrix', label: 'Nôa Matrix', icon: Sparkles, color: 'text-purple-400', group: 'pesquisa' },
         { id: 'literature', label: 'Literatura', icon: Microscope, color: 'text-indigo-400', group: 'pesquisa' },
         { id: 'protocols', label: 'Protocolos', icon: ClipboardList, color: 'text-orange-400', group: 'pesquisa' },
         { id: 'mentoria', label: 'Mentoria', icon: Users, color: 'text-green-400', group: 'colaboracao' },
@@ -85,6 +88,14 @@ const ResearchWorkstation: React.FC<ResearchWorkstationProps> = ({ initialTab })
                 return (
                     <div className="h-full overflow-y-auto scrollbar-hide bg-[#0f172a]">
                         <ForumCasosClinicos />
+                    </div>
+                )
+            case 'noa-matrix':
+                // [V1.9.379-D] Nôa Matrix — chat pesquisa Z2 com cards anexáveis
+                // (casos abertos + notas + favoritos via useSearchHistory localStorage)
+                return (
+                    <div className="h-full overflow-y-auto scrollbar-hide bg-[#0f172a] p-4">
+                        <NoaMatrixView />
                     </div>
                 )
             case 'library':
