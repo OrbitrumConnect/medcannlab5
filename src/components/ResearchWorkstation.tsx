@@ -167,19 +167,25 @@ const ResearchWorkstation: React.FC<ResearchWorkstationProps> = ({ initialTab })
         // Agora: usa 100dvh (dynamic viewport height) em mobile, calc(100vh-64px) em sm+.
         // dvh respeita barras dinâmicas do browser mobile, fix Pedro 19/05 noite.
         <div className="flex flex-col h-[calc(100dvh-56px)] sm:h-[calc(100vh-64px)] bg-[#0f172a] w-full max-w-full overflow-hidden" data-integrated-terminal-research>
-            <header className="bg-gradient-to-r from-slate-900 via-slate-800 to-emerald-900 border-b border-[#334155] shrink-0 z-10 shadow-sm relative w-full h-12 flex items-center">
-                <div className="flex items-center justify-between px-3 w-full h-full">
+            {/* V1.9.388-A.7 — Header mobile-aware espelhando padrão IntegratedWorkstation.
+                Bug Pedro 19/05 noite (screenshots WhatsApp): Terminal Atendimento abria
+                grid de cards 5×N em mobile (legível), Terminal Pesquisa só mostrava ícone
+                FlaskConical e abas invisíveis. Solução: 2 linhas — desktop com nav
+                horizontal scroll, mobile com grid grid-cols-5 (10 abas = 2 linhas). */}
+            <header className="bg-gradient-to-r from-slate-900 via-slate-800 to-emerald-900 border-b border-[#334155] shrink-0 z-10 shadow-sm relative w-full min-h-[48px] flex flex-col">
+                {/* Linha 1: Desktop — título + tabs horizontais (hidden em mobile) */}
+                <div className="hidden sm:flex items-center px-3 w-full h-12">
                     <div className="flex items-center gap-3 shrink-0">
                         <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-600 to-teal-600 flex items-center justify-center shadow-md">
                             <FlaskConical className="w-4 h-4 text-white" />
                         </div>
-                        <div className="hidden sm:block leading-tight">
+                        <div className="leading-tight">
                             <h1 className="text-sm font-bold text-white leading-none">Terminal de Pesquisa</h1>
                             <p className="text-[9px] uppercase tracking-wider text-slate-400 font-semibold mt-0.5">MedCannLab Research</p>
                         </div>
                     </div>
 
-                    <nav className="flex-1 flex items-center justify-start sm:justify-center overflow-x-auto no-scrollbar mx-2 h-full">
+                    <nav className="flex-1 flex items-center justify-center overflow-x-auto no-scrollbar mx-2 h-full">
                         <div className="flex items-center gap-1 h-full">
                             {tabs.map((tab) => {
                                 const Icon = tab.icon
@@ -189,18 +195,14 @@ const ResearchWorkstation: React.FC<ResearchWorkstationProps> = ({ initialTab })
                                         key={tab.id}
                                         onClick={() => setActiveTab(tab.id)}
                                         className={`
-                                            relative group flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 h-8 rounded-md text-[10px] sm:text-xs font-medium transition-all whitespace-nowrap
+                                            relative group flex items-center gap-1.5 px-2.5 h-8 rounded-md text-xs font-medium transition-all whitespace-nowrap
                                             ${isActive
                                                 ? 'bg-[#334155] text-white shadow-inner'
                                                 : 'text-slate-400 hover:text-slate-200 hover:bg-[#334155]/50'}
                                         `}
                                     >
                                         <Icon className={`w-3.5 h-3.5 transition-colors ${isActive ? tab.color : 'text-slate-500 group-hover:text-slate-400'}`} />
-                                        {/* V1.9.388-A.6 — Labels SEMPRE visíveis (incluindo mobile).
-                                            Antes: hidden sm:inline → mobile só ícone, mas vários ícones idênticos
-                                            (Casos Similares + Nôa Matrix ambos Sparkles purple) ficavam indistinguíveis.
-                                            Agora: text-[10px] em mobile, text-xs em sm+, scroll horizontal preservado. */}
-                                        <span>{tab.label}</span>
+                                        <span className="hidden md:inline">{tab.label}</span>
                                         {isActive && (
                                             <span className={`absolute bottom-0 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full mb-0.5 ${tab.color.replace('text-', 'bg-')}`}></span>
                                         )}
@@ -209,12 +211,33 @@ const ResearchWorkstation: React.FC<ResearchWorkstationProps> = ({ initialTab })
                             })}
                         </div>
                     </nav>
+                </div>
 
-                    {/* Espaço para ações futuras ou botão sair (que já fi ca no menu lateral) */}
-                    <div className="flex items-center shrink-0 ml-2">
+                {/* Linha 2: Mobile — grid de cards 5 colunas × 2 linhas (sm:hidden) */}
+                <div className="sm:hidden w-full px-2 py-2">
+                    <div className="grid grid-cols-5 gap-1">
+                        {tabs.map((tab) => {
+                            const Icon = tab.icon
+                            const isActive = activeTab === tab.id
+                            return (
+                                <button
+                                    key={tab.id}
+                                    onClick={() => setActiveTab(tab.id)}
+                                    className={`
+                                        flex flex-col items-center justify-center gap-0.5 py-1.5 px-1 rounded-lg text-[10px] font-medium transition-all min-h-[44px] touch-manipulation
+                                        ${isActive
+                                            ? 'bg-[#334155] text-white shadow-inner'
+                                            : 'text-slate-400 active:bg-[#334155]/50'}
+                                    `}
+                                >
+                                    <Icon className={`w-4 h-4 ${isActive ? tab.color : 'text-slate-500'}`} />
+                                    <span className="leading-tight truncate w-full text-center">{tab.label}</span>
+                                </button>
+                            )
+                        })}
                     </div>
                 </div>
-            </header >
+            </header>
 
             <main className="flex-1 overflow-hidden relative bg-[#0f172a] w-full">
                 {renderContent()}
