@@ -147,6 +147,27 @@ interface TelemetryIssue {
   human_action_required: string
 }
 
+// [V1.9.374-A] Cobertura da instrumentação — flag de subcontagem honesto
+// Cost tracking começou V1.9.238 (13/05/2026). Interações anteriores têm cost NULL.
+// Painel mostra APENAS subconjunto instrumentado — banner declara isso explicitamente.
+interface InstrumentationCoverage {
+  total_lifetime: number
+  with_cost: number
+  without_cost: number
+  coverage_pct: number
+  instrumentation_started: string // ISO date
+  observed_cost_usd: number
+  extrapolated_lifetime_cost_usd: number // approx: observed / coverage_pct
+}
+
+// [V1.9.374-A] Composição de users ativos (filtro interno/externo via tabela users)
+interface UserComposition {
+  total_active_30d: number
+  by_type: Record<string, number> // { admin: 2, professional: 3, patient: 11, paciente: 0, ... }
+  internal_estimate: number // admin + professional (proxy de interno)
+  external_estimate: number // patient (proxy de externo)
+}
+
 // =============================================================================
 // QUERIES — todas read-only, agregadas, sem PII
 // =============================================================================
@@ -321,6 +342,84 @@ async function fetchSlowOutliers(): Promise<SlowOutlier[]> {
   } catch (err) {
     console.warn('[AIGovernance] fetchSlowOutliers falhou:', err)
     return []
+  }
+}
+
+// [V1.9.374-A] Cobertura da instrumentação — quanto do lifetime tem cost vs NULL
+async function fetchInstrumentationCoverage(): Promise<InstrumentationCoverage | null> {
+  try {
+    const { data, error } = await supabase
+      .from('ai_chat_interactions')
+      .select('metadata, created_at')
+      .limit(10000)
+    if (error || !data) return null
+    let withCost = 0
+    let observedCost = 0
+    for (const row of data as any[]) {
+      const cost = row.metadata?.cost_usd_estimate
+      if (cost !== null && cost !== undefined && cost !== '') {
+        withCost++
+        observedCost += parseFloat(cost) || 0
+      }
+    }
+    const total = data.length
+    const coveragePct = total > 0 ? (withCost / total) : 0
+    // Extrapolação aproximada — assume custo médio observado aplicável ao não-instrumentado
+    // Honest disclosure: isso é APENAS estimativa, não medição real
+    const extrapolated = coveragePct > 0 ? observedCost / coveragePct : 0
+    return {
+      total_lifetime: total,
+      with_cost: withCost,
+      without_cost: total - withCost,
+      coverage_pct: coveragePct,
+      instrumentation_started: '2026-05-13', // V1.9.238
+      observed_cost_usd: observedCost,
+      extrapolated_lifetime_cost_usd: extrapolated,
+    }
+  } catch (err) {
+    console.warn('[AIGovernance] fetchInstrumentationCoverage falhou:', err)
+    return null
+  }
+}
+
+// [V1.9.374-A] Composição de users ativos 30d com type breakdown
+async function fetchUserComposition(): Promise<UserComposition | null> {
+  try {
+    // 1. Buscar users ativos nos últimos 30d
+    const { data: activeData, error: activeErr } = await supabase
+      .from('ai_chat_interactions')
+      .select('user_id')
+      .gte('created_at', new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString())
+      .not('user_id', 'is', null)
+      .limit(10000)
+    if (activeErr || !activeData) return null
+    const activeUserIds = Array.from(new Set((activeData as any[]).map(r => r.user_id).filter(Boolean)))
+    if (activeUserIds.length === 0) {
+      return { total_active_30d: 0, by_type: {}, internal_estimate: 0, external_estimate: 0 }
+    }
+    // 2. Buscar types desses users
+    const { data: usersData, error: usersErr } = await supabase
+      .from('users')
+      .select('id, type')
+      .in('id', activeUserIds)
+    if (usersErr || !usersData) return null
+    const byType: Record<string, number> = {}
+    for (const u of usersData as any[]) {
+      const t = (u.type || 'unknown').toLowerCase()
+      byType[t] = (byType[t] || 0) + 1
+    }
+    // Proxy: admin + professional = internal (testers/staff); patient/paciente = external (pagantes-alvo)
+    const internal = (byType.admin || 0) + (byType.professional || 0)
+    const external = (byType.patient || 0) + (byType.paciente || 0)
+    return {
+      total_active_30d: activeUserIds.length,
+      by_type: byType,
+      internal_estimate: internal,
+      external_estimate: external,
+    }
+  } catch (err) {
+    console.warn('[AIGovernance] fetchUserComposition falhou:', err)
+    return null
   }
 }
 
@@ -655,6 +754,124 @@ const IssuesCard: React.FC<{ issues: TelemetryIssue[] }> = ({ issues }) => {
   )
 }
 
+// [V1.9.374-A] CoverageCard — flag de subcontagem honesto + extrapolação declarada
+const CoverageCard: React.FC<{ coverage: InstrumentationCoverage | null }> = ({ coverage }) => {
+  if (!coverage) return null
+  const pctText = (coverage.coverage_pct * 100).toFixed(1)
+  const isSubcounting = coverage.coverage_pct < 0.5
+  return (
+    <div className={`border rounded-xl p-4 ${isSubcounting ? 'bg-amber-500/10 border-amber-500/40' : 'bg-emerald-500/10 border-emerald-500/30'}`}>
+      <div className="flex items-start gap-3">
+        {isSubcounting ? (
+          <AlertTriangle className="w-5 h-5 text-amber-400 flex-shrink-0 mt-0.5" />
+        ) : (
+          <ShieldCheck className="w-5 h-5 text-emerald-400 flex-shrink-0 mt-0.5" />
+        )}
+        <div className="flex-1 space-y-2">
+          <h3 className={`text-sm font-bold uppercase tracking-wider ${isSubcounting ? 'text-amber-300' : 'text-emerald-300'}`}>
+            Cobertura da instrumentação (declarada)
+          </h3>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mt-2">
+            <div className="bg-slate-900/40 border border-slate-700/40 rounded-md px-2 py-1.5">
+              <div className="text-[9px] uppercase tracking-wider text-slate-500 font-semibold">Total lifetime</div>
+              <div className="text-sm font-bold text-white tabular-nums">{coverage.total_lifetime.toLocaleString('pt-BR')}</div>
+            </div>
+            <div className="bg-slate-900/40 border border-slate-700/40 rounded-md px-2 py-1.5">
+              <div className="text-[9px] uppercase tracking-wider text-slate-500 font-semibold">Com cost</div>
+              <div className="text-sm font-bold text-emerald-300 tabular-nums">{coverage.with_cost.toLocaleString('pt-BR')}</div>
+            </div>
+            <div className="bg-slate-900/40 border border-slate-700/40 rounded-md px-2 py-1.5">
+              <div className="text-[9px] uppercase tracking-wider text-slate-500 font-semibold">Sem cost (NULL)</div>
+              <div className={`text-sm font-bold tabular-nums ${coverage.without_cost > 0 ? 'text-amber-300' : 'text-slate-300'}`}>
+                {coverage.without_cost.toLocaleString('pt-BR')}
+              </div>
+            </div>
+            <div className="bg-slate-900/40 border border-slate-700/40 rounded-md px-2 py-1.5">
+              <div className="text-[9px] uppercase tracking-wider text-slate-500 font-semibold">Cobertura</div>
+              <div className={`text-sm font-bold tabular-nums ${isSubcounting ? 'text-amber-300' : 'text-emerald-300'}`}>
+                {pctText}%
+              </div>
+            </div>
+          </div>
+          <p className="text-[11px] text-slate-300 leading-relaxed">
+            <strong>Custo observado:</strong> {formatUSD(coverage.observed_cost_usd)} ({pctText}% das interações lifetime).
+            <br />
+            <strong>Extrapolação aproximada lifetime:</strong> ~{formatUSD(coverage.extrapolated_lifetime_cost_usd)}
+            <span className="text-slate-500"> (assume custo médio observado aplicável ao não-instrumentado).</span>
+          </p>
+          <p className="text-[10px] text-slate-500 leading-relaxed italic">
+            ⚠️ Instrumentação de custo começou em <strong className="text-slate-400">{coverage.instrumentation_started}</strong> (V1.9.238).
+            Interações anteriores têm <code className="text-slate-400">cost_usd_estimate = NULL</code>.
+            Para custo real lifetime, consultar billing dashboard OpenAI direto. Painel mostra apenas observado.
+          </p>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// [V1.9.374-A] UserCompositionCard — filtro interno/externo via tabela users
+const UserCompositionCard: React.FC<{ comp: UserComposition | null }> = ({ comp }) => {
+  if (!comp) return null
+  const total = comp.total_active_30d || 1
+  return (
+    <div className="bg-slate-800/30 border border-slate-700/50 rounded-xl p-4">
+      <h3 className="text-xs font-bold text-slate-300 uppercase tracking-wider mb-3 flex items-center gap-2">
+        <Users className="w-3.5 h-3.5 text-indigo-400" />
+        Composição de users ativos (últimos 30 dias)
+      </h3>
+      <p className="text-[10px] text-slate-500 mb-3 italic">
+        Proxy interno/externo via coluna <code>users.type</code>. NÃO confundir com pagantes (Marco 2 exige validação separada).
+      </p>
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-3">
+        <div className="bg-slate-900/60 border border-slate-700/40 rounded-md px-2 py-1.5">
+          <div className="text-[9px] uppercase tracking-wider text-slate-500 font-semibold">Total ativos</div>
+          <div className="text-sm font-bold text-white tabular-nums">{comp.total_active_30d}</div>
+        </div>
+        <div className="bg-slate-900/60 border border-slate-700/40 rounded-md px-2 py-1.5">
+          <div className="text-[9px] uppercase tracking-wider text-slate-500 font-semibold">Interno (proxy)</div>
+          <div className="text-sm font-bold text-amber-300 tabular-nums">
+            {comp.internal_estimate}
+            <span className="text-[10px] text-slate-500 font-normal ml-1">({Math.round((comp.internal_estimate / total) * 100)}%)</span>
+          </div>
+        </div>
+        <div className="bg-slate-900/60 border border-slate-700/40 rounded-md px-2 py-1.5">
+          <div className="text-[9px] uppercase tracking-wider text-slate-500 font-semibold">Externo (proxy)</div>
+          <div className="text-sm font-bold text-emerald-300 tabular-nums">
+            {comp.external_estimate}
+            <span className="text-[10px] text-slate-500 font-normal ml-1">({Math.round((comp.external_estimate / total) * 100)}%)</span>
+          </div>
+        </div>
+        <div className="bg-slate-900/60 border border-slate-700/40 rounded-md px-2 py-1.5">
+          <div className="text-[9px] uppercase tracking-wider text-slate-500 font-semibold">Tipos</div>
+          <div className="text-sm font-bold text-slate-300 tabular-nums">{Object.keys(comp.by_type).length}</div>
+        </div>
+      </div>
+      <div className="space-y-1">
+        <div className="text-[10px] uppercase tracking-wider text-slate-500 font-semibold mb-1">Breakdown por type</div>
+        <div className="flex flex-wrap gap-1.5">
+          {Object.entries(comp.by_type).sort((a, b) => b[1] - a[1]).map(([type, n]) => (
+            <span
+              key={type}
+              className={`text-[10px] rounded-full px-2 py-0.5 border ${
+                type === 'admin' || type === 'professional'
+                  ? 'bg-amber-500/10 text-amber-300 border-amber-500/30'
+                  : 'bg-emerald-500/10 text-emerald-300 border-emerald-500/30'
+              }`}
+            >
+              <code className="font-mono">{type}</code> <span className="text-slate-500 tabular-nums">({n})</span>
+            </span>
+          ))}
+        </div>
+      </div>
+      <p className="text-[10px] text-slate-500 mt-2 italic leading-relaxed">
+        ⚠️ Inconsistência conhecida: existem types <code>'patient'</code> (EN) e <code>'paciente'</code> (PT) no banco. Soma simples
+        pode mascarar. Memory <code>feedback_drift_historico_dev_aceitavel_pre_pmf_18_05</code> documenta drift pré-PMF aceito.
+      </p>
+    </div>
+  )
+}
+
 const TopUsersCard: React.FC<{ users: TopUser[] }> = ({ users }) => (
   <div className="bg-slate-800/30 border border-slate-700/50 rounded-xl p-4">
     <h3 className="text-xs font-bold text-slate-300 uppercase tracking-wider mb-3 flex items-center gap-2">
@@ -703,16 +920,21 @@ const AdminAIGovernance: React.FC = () => {
   const [latency, setLatency] = useState<LatencyPercentiles | null>(null)
   const [outliers, setOutliers] = useState<SlowOutlier[]>([])
   const [topUsers, setTopUsers] = useState<TopUser[]>([])
+  // [V1.9.374-A] Cobertura + composição (refinos pós-audit empírico contradição custo)
+  const [coverage, setCoverage] = useState<InstrumentationCoverage | null>(null)
+  const [userComp, setUserComp] = useState<UserComposition | null>(null)
 
   const loadAll = async () => {
     setRefreshing(true)
-    const [aggR, featR, trendR, latR, outR, topR] = await Promise.all([
+    const [aggR, featR, trendR, latR, outR, topR, covR, compR] = await Promise.all([
       fetchAggregateMetrics(),
       fetchFeatureFrequency(),
       fetchDailyTrend(14),
       fetchLatencyPercentiles(),
       fetchSlowOutliers(),
       fetchTopUsers(),
+      fetchInstrumentationCoverage(),
+      fetchUserComposition(),
     ])
     setAggregate(aggR)
     setFeatures(featR)
@@ -720,6 +942,8 @@ const AdminAIGovernance: React.FC = () => {
     setLatency(latR)
     setOutliers(outR)
     setTopUsers(topR)
+    setCoverage(covR)
+    setUserComp(compR)
     setLastRefresh(new Date())
     setLoading(false)
     setRefreshing(false)
@@ -759,35 +983,38 @@ const AdminAIGovernance: React.FC = () => {
         <div className="text-center py-12 text-slate-400 text-sm">Carregando observabilidade...</div>
       ) : (
         <>
-          {/* KPIs */}
+          {/* KPIs — labels atualizados pós-audit pra refletir subcontagem */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
             <KPICard
               icon={DollarSign}
-              label="Custo lifetime"
+              label="Custo observado lifetime"
               value={aggregate ? formatUSD(aggregate.total_cost_usd) : '—'}
-              sublabel={aggregate ? `${aggregate.total_interactions} interações` : ''}
+              sublabel={aggregate ? `${aggregate.total_interactions} interações instrumentadas` : ''}
             />
             <KPICard
               icon={Activity}
-              label="Custo 30d"
+              label="Custo 30d (observado)"
               value={aggregate ? formatUSD(aggregate.cost_30d) : '—'}
               sublabel={aggregate ? `${aggregate.last_30d} interações` : ''}
             />
             <KPICard
               icon={TrendingUp}
-              label="Custo 7d"
+              label="Custo 7d (observado)"
               value={aggregate ? formatUSD(aggregate.cost_7d) : '—'}
               sublabel={aggregate ? `${aggregate.last_7d} interações` : ''}
               tone={aggregate && aggregate.cost_7d > 5 ? 'warn' : 'default'}
             />
             <KPICard
               icon={Zap}
-              label="Custo hoje"
+              label="Custo hoje (observado)"
               value={aggregate ? formatUSD(aggregate.cost_today) : '—'}
               sublabel={aggregate ? `${aggregate.distinct_users} users (30d)` : ''}
               tone={aggregate && aggregate.cost_today > 2 ? 'warn' : 'default'}
             />
           </div>
+
+          {/* [V1.9.374-A] Cobertura — declara subcontagem honestamente */}
+          <CoverageCard coverage={coverage} />
 
           {/* Issues no topo (mais visível) */}
           <IssuesCard issues={issues} />
@@ -803,6 +1030,9 @@ const AdminAIGovernance: React.FC = () => {
 
           {/* Outliers detalhados */}
           <OutliersCard outliers={outliers} />
+
+          {/* [V1.9.374-A] Composição de users (interno/externo proxy via type) */}
+          <UserCompositionCard comp={userComp} />
 
           {/* Top users pseudonimizado */}
           <TopUsersCard users={topUsers} />
