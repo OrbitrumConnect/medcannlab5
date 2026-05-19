@@ -4,11 +4,27 @@
  * V1.9.379-C — Frontend hook minimalista. Stateless no servidor (bypassFSM=true),
  * stateful no client (lembra mensagens da sessão atual).
  *
+ * V1.9.388-A.1 — REMOVIDA chamada via NoaResidentAI.processMessage(). Causa raiz
+ * de drift inferencial confirmada empíricamente (logs 19/05 ~20h25 BRT):
+ *  - Intent classifier marcava "ADMINISTRATIVA → REPORT_GENERATE" pré-Edge
+ *  - Platform actions tentavam generateAIReport (bloqueado por V1.9.376-C mas executava)
+ *  - RAG Local duplicava knowledgeBlock do Edge (V1.9.388-A)
+ *  - Assistant API adicionava camada extra
+ *  - conversationHistory carregado "sem filtro de sessão" → envenenamento por
+ *    turnos antigos de OUTROS chats do mesmo userId (Esperança clínica, AEC,
+ *    admin) com tiques GPT (### bold "Vamos analisar"), modelo imitava history
+ *    em vez de seguir RESEARCH_PROMPT V1.9.387
+ *
+ * Solução V1.9.388-A.1: chamada direta supabase.functions.invoke('tradevision-core').
+ * Pipeline NoaResidentAI inteira pulada — só Matrix afetado (NoaResidentAI segue
+ * intocado nos outros chats: Esperança paciente/médico, AEC, Admin, Teaching).
+ *
  * Diferenças críticas vs useMedCannLabConversation:
  *  - NÃO conduz fluxo AEC (FSM não disparada — backend skip via bypassFSM)
  *  - NÃO persiste em aec_assessment_state (Nôa Matrix é stateless server-side)
  *  - NÃO faz síntese de voz (chat texto puro)
  *  - NÃO gera clinical_report nem racionalidades (Z2 estrutural só)
+ *  - NÃO usa NoaResidentAI.processMessage (V1.9.388-A.1 — bypass total pipeline)
  *  - DETECTA Failsafe response (quality gate B.8) e mostra msg amigável
  *
  * Memórias correlatas:
@@ -18,7 +34,7 @@
  */
 import { useCallback, useState } from 'react'
 import { useAuth } from '../contexts/AuthContext'
-import { NoaResidentAI } from '../lib/noaResidentAI'
+import { supabase } from '../lib/supabase'
 
 export interface ResearchChatMessage {
   id: string
@@ -71,30 +87,62 @@ export function useResearchChat(): UseResearchChatReturn {
     setErrorMessage(null)
 
     try {
-      // V1.9.379-A/B — Chama Core via processMessage com bypassFSM=true.
-      // Backend (tradevision-core) detecta isResearchMode e:
+      // V1.9.388-A.1 — Chamada DIRETA ao Edge tradevision-core (pula NoaResidentAI
+      // pipeline). Detalhes em comentário do header. Body mínimo necessário pro
+      // Edge selecionar RESEARCH_PROMPT (V1.9.387) e gpt-4o-mini.
+      //
+      // Backend (tradevision-core) detecta isResearchMode via ui_context e:
       //  - skip FSM AEC load
       //  - skip Phase Lock injection
-      //  - usa RESEARCH_PROMPT (~3k chars Z2)
+      //  - usa RESEARCH_PROMPT V1.9.385+387+388-A (~5k chars Z2)
       //  - força gpt-4o-mini (17× mais barato)
+      //  - injeta ACERVO BASE DE CONHECIMENTO com label "Doc #A1" rastreável
       //  - simbologia '🧬 Nôa Matrix' nos logs metadata
-      const noa = new NoaResidentAI()
 
-      // Compor input com contexto anexado (Casos Similares + Literatura + notas marcadas pelo médico).
-      // V1.9.379-D vai adicionar UX pra anexar contexto via cards selecionados.
+      // Compor input com contexto anexado (Casos Similares + Literatura + notas marcadas).
       const fullInput = attachedContext && attachedContext.trim()
         ? `[CONTEXTO MARCADO PELO MÉDICO]\n${attachedContext.trim()}\n\n[PERGUNTA DO MÉDICO]\n${text.trim()}`
         : text.trim()
 
-      const response = await noa.processMessage(
-        fullInput,
-        user.id,
-        user.email || undefined,
-        { bypassFSM: true, source: 'research_chat' }  // V1.9.379-A flag crítico
-      )
+      // History LOCAL apenas (só mensagens deste chat Matrix nesta sessão).
+      // Importante: zero contaminação cross-chat (Esperança, AEC, Admin).
+      // Mapeia formato esperado pelo Edge: role 'user' ou 'assistant'.
+      const localHistory = messages.map((m) => ({
+        role: m.role === 'user' ? 'user' : 'assistant',
+        content: m.content,
+      }))
 
-      const model = (response as any)?.metadata?.model
-      const tokensUsed = (response as any)?.metadata?.tokensUsed
+      // Role real do user via AuthContext (não hardcoded). user.type vem de
+      // AuthContext que normaliza via RPC get_my_primary_role (FONTE ÚNICA).
+      const userType = (user as any)?.type || 'profissional'
+
+      const payload = {
+        message: fullInput,
+        conversationHistory: localHistory,
+        ui_context: { bypassFSM: true, source: 'research_chat' },
+        patientData: {
+          user: {
+            id: user.id,
+            type: userType,
+            user_type: userType,
+            email: user.email || undefined,
+          },
+          intent: 'ADMIN',
+          userEmail: user.email || undefined,
+        },
+      }
+
+      const { data, error } = await supabase.functions.invoke('tradevision-core', {
+        body: payload,
+      })
+
+      if (error) throw error
+      if ((data as any)?.error) throw new Error((data as any).error)
+      const responseText = (data as any)?.text
+      if (!responseText) throw new Error('Resposta da Nôa Matrix veio vazia.')
+
+      const model = (data as any)?.metadata?.model
+      const tokensUsed = (data as any)?.metadata?.tokensUsed
       const isFailsafe = isFailsafeResponse(model, tokensUsed)
 
       const matrixMessage: ResearchChatMessage = {
@@ -102,7 +150,7 @@ export function useResearchChat(): UseResearchChatReturn {
         role: 'noa-matrix',
         content: isFailsafe
           ? '⚠️ Nôa Matrix indisponível no momento — o motor cognitivo retornou em modo determinístico. Tente novamente em alguns minutos. Sua pergunta NÃO foi processada estruturalmente.'
-          : response.content,
+          : responseText,
         timestamp: new Date(),
         isFailsafe,
         model,
