@@ -32,7 +32,7 @@
  *  - feedback_state_pollution_noa_core_reutilizado_19_05 (bypassFSM design)
  *  - feedback_limitar_autoridade_computacional_19_05 (Z2/Z3/Z4)
  */
-import { useCallback, useState } from 'react'
+import { useCallback, useRef, useState } from 'react'
 import { useAuth } from '../contexts/AuthContext'
 import { supabase } from '../lib/supabase'
 
@@ -68,6 +68,19 @@ export function useResearchChat(): UseResearchChatReturn {
   const [messages, setMessages] = useState<ResearchChatMessage[]>([])
   const [isProcessing, setIsProcessing] = useState(false)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
+  // V1.9.388-A.4 — Ref do último attachedContext ENVIADO ao Edge. Usado pra
+  // não re-injetar [CONTEXTO MARCADO PELO MÉDICO] em turnos puramente
+  // conversacionais. Bug empírico (Pedro 19/05 ~22h BRT via logs Edge):
+  // toda mensagem reinjeta o corpus completo → modelo full obedece "analise
+  // o corpus" porque o material está literalmente na mensagem atual →
+  // re-estrutura tudo em loop em vez de progredir conversação.
+  //
+  // Estratégia: só injetar [CONTEXTO MARCADO] quando o ctx MUDOU desde o
+  // último envio. Médico marca novo card / anexa novo paper PubMed → ctx
+  // muda → re-injeta. Pergunta puramente conversacional ("o que você acha?",
+  // "explica de novo isso") → ctx igual → não re-injeta → modelo lê só a
+  // pergunta + history → CONVERSA referenciando o que ela mesma disse antes.
+  const lastSentContextRef = useRef<string>('')
 
   const sendMessage = useCallback(async (text: string, attachedContext?: string) => {
     if (!text.trim() || isProcessing) return
@@ -99,10 +112,24 @@ export function useResearchChat(): UseResearchChatReturn {
       //  - injeta ACERVO BASE DE CONHECIMENTO com label "Doc #A1" rastreável
       //  - simbologia '🧬 Nôa Matrix' nos logs metadata
 
-      // Compor input com contexto anexado (Casos Similares + Literatura + notas marcadas).
-      const fullInput = attachedContext && attachedContext.trim()
-        ? `[CONTEXTO MARCADO PELO MÉDICO]\n${attachedContext.trim()}\n\n[PERGUNTA DO MÉDICO]\n${text.trim()}`
-        : text.trim()
+      // V1.9.388-A.4 — Só injeta [CONTEXTO MARCADO] quando o ctx MUDOU desde
+      // o último envio. Permite turnos conversacionais ("o que você acha?")
+      // não recarregarem todo o corpus, evitando re-estruturação em loop.
+      // Se médico marca/desmarca card ou anexa paper PubMed novo → ctx muda
+      // → string diferente → re-injeta com prefixo de atualização.
+      const ctx = (attachedContext || '').trim()
+      const isFirstTurn = messages.length === 0
+      const ctxChanged = ctx !== lastSentContextRef.current
+      let fullInput: string
+      if (ctx && (isFirstTurn || ctxChanged)) {
+        const headerLabel = isFirstTurn
+          ? '[CONTEXTO MARCADO PELO MÉDICO]'
+          : '[CONTEXTO ATUALIZADO PELO MÉDICO — material foi alterado desde a última pergunta]'
+        fullInput = `${headerLabel}\n${ctx}\n\n[PERGUNTA DO MÉDICO]\n${text.trim()}`
+      } else {
+        fullInput = text.trim()
+      }
+      lastSentContextRef.current = ctx
 
       // History LOCAL apenas (só mensagens deste chat Matrix nesta sessão).
       // Importante: zero contaminação cross-chat (Esperança, AEC, Admin).
@@ -177,6 +204,8 @@ export function useResearchChat(): UseResearchChatReturn {
   const clearChat = useCallback(() => {
     setMessages([])
     setErrorMessage(null)
+    // V1.9.388-A.4 — Reset do ref pra próxima sessão limpa
+    lastSentContextRef.current = ''
   }, [])
 
   return {
