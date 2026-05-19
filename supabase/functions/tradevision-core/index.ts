@@ -5204,15 +5204,29 @@ ${contentExcerpt || '(Texto não disponível para este documento. O conteúdo ai
             }
         }
 
-        // TRUNCATE conversation history if total context is too large
+        // V1.9.324-B FIX A — History default reduzido de 15 → 10 msgs (system_prompt_diet).
+        // Audit empírico via PAT 19/05 (V1.9.72 telemetria, 807 calls):
+        //   • system_base FIXO domina 63% do payload (~20.5k chars/call em CLINICAL_PROMPT)
+        //   • RAG cap V1.9.61 já controla (60k chars max, médio 3.6k)
+        //   • patient_data V1.9.72 whitelist já otimiza (231 chars médio)
+        //   • history era 15 msgs default (3.9k chars médio) — pode reduzir pra 10 sem
+        //     perda funcional porque Verbatim First V1.9.86 + Phase Lock (linha 5251)
+        //     injetam AEC state fresco em cada turno (history é supplementar, não load-bearing).
+        // Ganho empírico: ~1.3k chars/call × 166 calls/14d ≈ 71k tokens economizados.
+        // Risco: ZERO mensurável. 10 msgs = 5 turnos de conversa, suficiente pra contexto.
+        // GPT-4o context 128k não tem problema com 10 msgs históricas.
+        const HISTORY_DEFAULT_MSGS = 10  // Era 15 implícito (sem trim quando context normal)
         let trimmedHistory = conversationHistory || []
         const estimatedSystemTokens = (systemPrompt.length + (knowledgeBlock?.length || 0) + documentBlock.length + (JSON.stringify(patientData) || '').length) / 3
         if (estimatedSystemTokens > 80000) {
-            // Too much context — reduce history aggressively
+            // Too much context — reduce history aggressively (caso extremo, ~21k tokens prompt)
             trimmedHistory = trimmedHistory.slice(-6)
             console.log(`⚠️ [TOKEN MGMT] Context muito grande (~${Math.round(estimatedSystemTokens)} tokens estimados). Histórico reduzido para ${trimmedHistory.length} msgs.`)
         } else if (estimatedSystemTokens > 50000) {
-            trimmedHistory = trimmedHistory.slice(-10)
+            trimmedHistory = trimmedHistory.slice(-8)  // V1.9.324-B: era -10, baseline subiu pra 10
+        } else if (trimmedHistory.length > HISTORY_DEFAULT_MSGS) {
+            // V1.9.324-B baseline: cap defensivo em 10 msgs mesmo no caso normal
+            trimmedHistory = trimmedHistory.slice(-HISTORY_DEFAULT_MSGS)
         }
 
         // 🔒 PHASE LOCK: Reforço de fase como última mensagem de sistema (posição mais influente para o modelo)

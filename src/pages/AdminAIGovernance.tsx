@@ -556,6 +556,87 @@ const KPICard: React.FC<{ icon: React.ElementType; label: string; value: string;
   )
 }
 
+/**
+ * V1.9.324-B FIX B — Quota Alert Card.
+ *
+ * Origem: incidente OpenAI quota 19/05 (~22h21 BRT) — caiu sem aviso prévio. 38 stubs
+ * órfãos lifetime + racionalidade MTC lixo gravada no banco. Audit empírico (PAT 19/05)
+ * mostrou que a plataforma absorvia ~$25/recarga (cartão pessoal Pedro pré-CNPJ) sem
+ * mecanismo proativo de alerta.
+ *
+ * Threshold default $50/mês baseado em audit:
+ *   • Custo observado 14d: $4.81 ≈ ~$20-30/mês observado
+ *   • Custo real estimado: ~$100-150/mês (subconta 90.5% pré-V1.9.238)
+ *   • $50 é threshold "amarelo" pra duas/três recargas mensais antes de quota out
+ *
+ * Estados visuais por % do threshold:
+ *   < 50%  → verde   (operação normal)
+ *   50-70% → amarelo (atenção, planejar)
+ *   70-90% → laranja (próximo do limite — revisar uso)
+ *   ≥ 90%  → vermelho (provável quota out em dias)
+ *
+ * Reusa fetchAggregateMetrics.cost_30d (já calculado). Zero query nova.
+ * Threshold é constante simples — pode virar config row no futuro se necessário.
+ */
+const QUOTA_MONTHLY_THRESHOLD_USD = 50
+
+const QuotaAlertCard: React.FC<{ cost30d: number | null }> = ({ cost30d }) => {
+  const cost = cost30d ?? 0
+  const pct = Math.min(100, (cost / QUOTA_MONTHLY_THRESHOLD_USD) * 100)
+  let tone: 'green' | 'yellow' | 'orange' | 'red' = 'green'
+  let label = 'Operação normal'
+  let advice = 'Custo dentro do esperado pra estágio pré-PMF.'
+  if (pct >= 90) {
+    tone = 'red'
+    label = 'Quota crítica'
+    advice = 'Próximo de incidente como 19/05. Recarregue OpenAI ou aplique V1.9.324-C (modular CLINICAL_PROMPT).'
+  } else if (pct >= 70) {
+    tone = 'orange'
+    label = 'Quota alta'
+    advice = 'Revisar uso: RAG truncation, fases custosas, migração gpt-4o-mini.'
+  } else if (pct >= 50) {
+    tone = 'yellow'
+    label = 'Quota atenta'
+    advice = 'Planejar próxima recarga + verificar tendência semanal.'
+  }
+  const tones = {
+    green: { border: 'border-emerald-500/40', bar: 'bg-emerald-500', text: 'text-emerald-300' },
+    yellow: { border: 'border-amber-500/40', bar: 'bg-amber-500', text: 'text-amber-300' },
+    orange: { border: 'border-orange-500/40', bar: 'bg-orange-500', text: 'text-orange-300' },
+    red: { border: 'border-red-500/40', bar: 'bg-red-500', text: 'text-red-300' },
+  }
+  const t = tones[tone]
+  return (
+    <div className={`bg-slate-800/40 border ${t.border} rounded-xl p-4`}>
+      <div className="flex items-start justify-between mb-2.5">
+        <div>
+          <h3 className="text-xs font-bold text-slate-300 uppercase tracking-wider flex items-center gap-2">
+            <AlertTriangle className={`w-3.5 h-3.5 ${t.text}`} />
+            Quota OpenAI 30d
+          </h3>
+          <p className="text-[10px] text-slate-500 italic mt-0.5">
+            Alerta proativo — V1.9.324-B pós-incidente quota 19/05
+          </p>
+        </div>
+        <div className={`text-xs font-semibold ${t.text}`}>{label}</div>
+      </div>
+      <div className="flex items-baseline justify-between mb-1.5">
+        <div className="text-xl font-bold text-white tabular-nums">{formatUSD(cost)}</div>
+        <div className="text-[11px] text-slate-400 tabular-nums">
+          {pct.toFixed(0)}% de {formatUSD(QUOTA_MONTHLY_THRESHOLD_USD)}
+        </div>
+      </div>
+      <div className="h-1.5 bg-slate-900/60 rounded-full overflow-hidden mb-2">
+        <div className={`h-full ${t.bar} transition-all`} style={{ width: `${pct}%` }} />
+      </div>
+      <p className={`text-[10px] ${t.text} leading-tight`}>{advice}</p>
+      <p className="text-[9px] text-slate-600 italic mt-1.5">
+        Threshold observado (instrumentação 9.5% pós-V1.9.238). Custo real OpenAI billing pode ser ~10× maior — verificar dashboard direto.
+      </p>
+    </div>
+  )
+}
+
 const FeatureTable: React.FC<{ features: FeatureFrequency[] }> = ({ features }) => (
   <div className="bg-slate-800/30 border border-slate-700/50 rounded-xl p-4">
     <h3 className="text-xs font-bold text-slate-300 uppercase tracking-wider mb-3 flex items-center gap-2">
@@ -1012,6 +1093,9 @@ const AdminAIGovernance: React.FC = () => {
               tone={aggregate && aggregate.cost_today > 2 ? 'warn' : 'default'}
             />
           </div>
+
+          {/* [V1.9.324-B] Quota Alert proativo — pós-incidente OpenAI 19/05 */}
+          <QuotaAlertCard cost30d={aggregate?.cost_30d ?? null} />
 
           {/* [V1.9.374-A] Cobertura — declara subcontagem honestamente */}
           <CoverageCard coverage={coverage} />
