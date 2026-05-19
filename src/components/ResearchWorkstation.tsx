@@ -160,7 +160,13 @@ const ResearchWorkstation: React.FC<ResearchWorkstationProps> = ({ initialTab })
     }
 
     return (
-        <div className="flex flex-col h-[calc(100vh-64px)] bg-[#0f172a] w-full max-w-full overflow-hidden" data-integrated-terminal-research>
+        // V1.9.388-A.6 — Altura responsiva mobile-aware.
+        // Antes: h-[calc(100vh-64px)] assumia header desktop fixed 64px, mas em mobile
+        // o navegador tem barras dinâmicas (URL + nav) que mudam 100vh → conteúdo era
+        // empurrado pra fora da viewport ou cortado em iOS Safari / Chrome Android.
+        // Agora: usa 100dvh (dynamic viewport height) em mobile, calc(100vh-64px) em sm+.
+        // dvh respeita barras dinâmicas do browser mobile, fix Pedro 19/05 noite.
+        <div className="flex flex-col h-[calc(100dvh-56px)] sm:h-[calc(100vh-64px)] bg-[#0f172a] w-full max-w-full overflow-hidden" data-integrated-terminal-research>
             <header className="bg-gradient-to-r from-slate-900 via-slate-800 to-emerald-900 border-b border-[#334155] shrink-0 z-10 shadow-sm relative w-full h-12 flex items-center">
                 <div className="flex items-center justify-between px-3 w-full h-full">
                     <div className="flex items-center gap-3 shrink-0">
@@ -183,14 +189,18 @@ const ResearchWorkstation: React.FC<ResearchWorkstationProps> = ({ initialTab })
                                         key={tab.id}
                                         onClick={() => setActiveTab(tab.id)}
                                         className={`
-                                            relative group flex items-center gap-1.5 px-2.5 h-8 rounded-md text-xs font-medium transition-all whitespace-nowrap
+                                            relative group flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 h-8 rounded-md text-[10px] sm:text-xs font-medium transition-all whitespace-nowrap
                                             ${isActive
                                                 ? 'bg-[#334155] text-white shadow-inner'
                                                 : 'text-slate-400 hover:text-slate-200 hover:bg-[#334155]/50'}
                                         `}
                                     >
                                         <Icon className={`w-3.5 h-3.5 transition-colors ${isActive ? tab.color : 'text-slate-500 group-hover:text-slate-400'}`} />
-                                        <span className="hidden sm:inline">{tab.label}</span>
+                                        {/* V1.9.388-A.6 — Labels SEMPRE visíveis (incluindo mobile).
+                                            Antes: hidden sm:inline → mobile só ícone, mas vários ícones idênticos
+                                            (Casos Similares + Nôa Matrix ambos Sparkles purple) ficavam indistinguíveis.
+                                            Agora: text-[10px] em mobile, text-xs em sm+, scroll horizontal preservado. */}
+                                        <span>{tab.label}</span>
                                         {isActive && (
                                             <span className={`absolute bottom-0 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full mb-0.5 ${tab.color.replace('text-', 'bg-')}`}></span>
                                         )}
