@@ -1122,50 +1122,48 @@ const ClinicalReports: React.FC<ClinicalReportsProps> = ({ className = '', onSha
                 e.currentTarget.style.boxShadow = '0 8px 24px rgba(2, 12, 27, 0.4)'
               }}
             >
-              <div className="flex items-start justify-between mb-4">
-                <div className="flex-1">
-                  <div className="flex items-center space-x-3 mb-2">
-                    <User className="w-5 h-5 text-slate-400" />
-                    <h3 className="text-lg font-semibold text-white">{report.patientName}</h3>
-                    {report.patientCpf && <span className="text-sm text-slate-400">CPF: {report.patientCpf}</span>}
-                    {report.patientAge > 0 && <span className="text-sm text-slate-400">Idade: {report.patientAge} anos</span>}
+              {/* V1.9.380 — Layout reorganizado pra grid 2 colunas: nome no topo,
+                   badges empilhados à direita, metadata compacto abaixo. */}
+              <div className="flex items-start justify-between gap-3 mb-3 flex-wrap">
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-1.5">
+                    <User className="w-4 h-4 text-slate-400 flex-shrink-0" />
+                    <h3 className="text-base font-semibold text-white truncate">{report.patientName}</h3>
                   </div>
-                  <div className="flex items-center space-x-4 text-sm text-slate-400">
-                    <div className="flex items-center space-x-1">
-                      <Calendar className="w-4 h-4" />
-                      <span>Compartilhado em: {new Date(report.sharedAt).toLocaleDateString('pt-BR')}</span>
-                    </div>
-                    <div className="flex items-center space-x-1">
-                      <Clock className="w-4 h-4" />
-                      <span>{new Date(report.date).toLocaleDateString('pt-BR')}</span>
-                    </div>
+                  <div className="flex items-center gap-2 text-xs text-slate-400 flex-wrap">
+                    {report.patientCpf && <span>CPF {report.patientCpf}</span>}
+                    {report.patientAge > 0 && <span>· {report.patientAge}a</span>}
+                    <span className="flex items-center gap-1">
+                      <Calendar className="w-3 h-3" />
+                      {new Date(report.sharedAt).toLocaleDateString('pt-BR')}
+                    </span>
                   </div>
                 </div>
-                <div className="flex items-center space-x-2">
+                <div className="flex flex-col items-end gap-1.5 flex-shrink-0">
                   {/* V1.9.241 (A) — Badge contextual com vocabulario clinico Ricardo 13/05.
                       Princípio: "validar clinicamente" > "assinar tecnicamente".
                       ICP-Brasil é infra invisível (Pipeline V1.9.95 assina automatico).
                       Revisao = responsabilidade humana. Aprovacao = ato clinico CFM 2.314.
                       Vocabulario centrado em humano: "Aguardando sua revisão" > "draft/pending". */}
                   {report.reviewStatus === 'approved' ? (
-                    <span className="flex items-center space-x-1 px-2 py-1 rounded-full text-sm border bg-emerald-500/10 text-emerald-400 border-emerald-500/20">
-                      <CheckCircle className="w-3.5 h-3.5" />
-                      <span>{isPatient ? 'Devolvido com nota clínica' : 'Aprovado e devolvido'}</span>
+                    <span className="flex items-center gap-1 px-2 py-0.5 rounded-full text-xs border bg-emerald-500/10 text-emerald-400 border-emerald-500/20 whitespace-nowrap">
+                      <CheckCircle className="w-3 h-3" />
+                      <span>{isPatient ? 'Devolvido com nota' : 'Aprovado'}</span>
                     </span>
                   ) : report.reviewStatus === 'reviewed' ? (
-                    <span className="flex items-center space-x-1 px-2 py-1 rounded-full text-sm border bg-blue-500/10 text-blue-400 border-blue-500/20">
-                      <Check className="w-3.5 h-3.5" />
-                      <span>{isPatient ? 'Revisado pelo médico' : 'Revisado'}</span>
+                    <span className="flex items-center gap-1 px-2 py-0.5 rounded-full text-xs border bg-blue-500/10 text-blue-400 border-blue-500/20 whitespace-nowrap">
+                      <Check className="w-3 h-3" />
+                      <span>{isPatient ? 'Revisado' : 'Revisado'}</span>
                     </span>
                   ) : !isPatient ? (
-                    <span className="flex items-center space-x-1 px-2 py-1 rounded-full text-sm border bg-amber-500/10 text-amber-300 border-amber-500/30">
-                      <Clock className="w-3.5 h-3.5" />
-                      <span>Aguardando sua revisão</span>
+                    <span className="flex items-center gap-1 px-2 py-0.5 rounded-full text-xs border bg-amber-500/10 text-amber-300 border-amber-500/30 whitespace-nowrap">
+                      <Clock className="w-3 h-3" />
+                      <span>Aguardando revisão</span>
                     </span>
                   ) : (
-                    <span className="flex items-center space-x-1 px-2 py-1 rounded-full text-sm border bg-slate-500/10 text-slate-400 border-slate-500/20">
+                    <span className="flex items-center gap-1 px-2 py-0.5 rounded-full text-xs border bg-slate-500/10 text-slate-400 border-slate-500/20 whitespace-nowrap">
                       {getStatusIcon(report.status)}
-                      <span>Aguardando revisão médica</span>
+                      <span>Aguardando revisão</span>
                     </span>
                   )}
                   {/* V1.9.242 — Badge "ICP automático" pra report assinado via Pipeline V1.9.95.
