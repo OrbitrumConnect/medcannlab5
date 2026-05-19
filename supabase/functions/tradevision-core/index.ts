@@ -6882,7 +6882,15 @@ ${userInput.substring(0, 2000)}
         }
 
         // 9. Retorno da Resposta (texto sem triggers GPT; token [TRIGGER_ACTION] só se houver app_commands)
-        const finalText = textWithActionToken(textForUser, app_commands)
+        // V1.9.388-A.2 — Em research mode (Nôa Matrix) NUNCA anexar [TRIGGER_ACTION]:
+        //   - Matrix é Z2 estrutural, não tem app_commands legítimos (não navega, não agenda)
+        //   - Token aparecia literal no chat (vazamento UX) porque GPT às vezes copia
+        //     padrão do final do prompt mesmo sem app_commands populados
+        //   - Strip também remove caso o GPT emita o token diretamente no output
+        let finalText = isResearchMode ? (textForUser || '').trim() : textWithActionToken(textForUser, app_commands)
+        if (isResearchMode) {
+            finalText = finalText.replace(/\s*\[TRIGGER_ACTION\]\s*$/g, '').trim()
+        }
         const finalResponsePayload = {
             text: finalText,
             metadata: {
