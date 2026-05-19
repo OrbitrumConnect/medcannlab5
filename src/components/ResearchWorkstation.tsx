@@ -65,9 +65,10 @@ const ResearchWorkstation: React.FC<ResearchWorkstationProps> = ({ initialTab })
     const tabs: { id: TabId; label: string; icon: any; color: string; group: TabGroup }[] = [
         { id: 'dashboard', label: 'Dashboard de Pesquisa', icon: BarChart3, color: 'text-emerald-400', group: 'pesquisa' },
         { id: 'casos-similares', label: 'Casos Similares', icon: Sparkles, color: 'text-purple-400', group: 'pesquisa' },
-        { id: 'forum', label: 'Fórum de Casos Clínicos', icon: MessageCircle, color: 'text-cyan-400', group: 'colaboracao' },
-        // [V1.9.379-D] Nôa Matrix — chat pesquisa Z2 entre Fórum e Literatura
+        // [V1.9.383] Reorder Pedro 19/05 noite: Nôa Matrix vem ANTES do Fórum.
+        // Fluxo cognitivo: ver casos → ESTRUTURAR (Matrix) → DEBATER (Fórum) → estudar (Literatura)
         { id: 'noa-matrix', label: 'Nôa Matrix', icon: Sparkles, color: 'text-purple-400', group: 'pesquisa' },
+        { id: 'forum', label: 'Fórum de Casos Clínicos', icon: MessageCircle, color: 'text-cyan-400', group: 'colaboracao' },
         { id: 'literature', label: 'Literatura', icon: Microscope, color: 'text-indigo-400', group: 'pesquisa' },
         { id: 'protocols', label: 'Protocolos', icon: ClipboardList, color: 'text-orange-400', group: 'pesquisa' },
         { id: 'mentoria', label: 'Mentoria', icon: Users, color: 'text-green-400', group: 'colaboracao' },

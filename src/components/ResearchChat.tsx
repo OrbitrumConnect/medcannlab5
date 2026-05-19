@@ -56,9 +56,12 @@ export const ResearchChat: React.FC<ResearchChatProps> = ({ attachedContext, onM
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-3 border-b border-purple-500/20 bg-slate-900/60">
         <div className="flex items-center gap-2.5">
-          <div className="p-1.5 rounded-lg bg-purple-500/10 border border-purple-500/30">
-            <Sparkles className="w-4 h-4 text-purple-300" />
-          </div>
+          {/* V1.9.383 — Avatar Nôa estático (mesmo asset usado em Header.tsx + outros chats) */}
+          <img
+            src="/AvatarsEstatico.png"
+            alt="Nôa Matrix"
+            className="w-9 h-9 rounded-full object-cover ring-2 ring-purple-500/40"
+          />
           <div>
             <h3 className="text-sm font-semibold text-white flex items-center gap-1.5">
               <span>🧬 Nôa Matrix</span>
@@ -84,9 +87,12 @@ export const ResearchChat: React.FC<ResearchChatProps> = ({ attachedContext, onM
       <div className="flex-1 overflow-y-auto p-4 space-y-3 min-h-[300px] max-h-[500px]">
         {messages.length === 0 ? (
           <div className="text-center py-8">
-            <div className="inline-flex p-3 rounded-full bg-purple-500/10 border border-purple-500/20 mb-3">
-              <Sparkles className="w-5 h-5 text-purple-300" />
-            </div>
+            {/* V1.9.383 — Avatar Nôa Matrix no empty state */}
+            <img
+              src="/AvatarsEstatico.png"
+              alt="Nôa Matrix"
+              className="w-16 h-16 rounded-full object-cover mx-auto mb-3 ring-2 ring-purple-500/30"
+            />
             <p className="text-sm text-slate-400 mb-1.5">Nôa Matrix pronta para estruturar.</p>
             <p className="text-xs text-slate-500 max-w-md mx-auto leading-relaxed">
               Marque casos em <strong className="text-purple-300">Casos Similares</strong> e papers em <strong className="text-purple-300">Literatura</strong>, depois traga aqui pra comparar, agrupar, citar e estruturar perguntas.
@@ -100,10 +106,18 @@ export const ResearchChat: React.FC<ResearchChatProps> = ({ attachedContext, onM
             {messages.map((msg) => (
               <div
                 key={msg.id}
-                className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                className={`flex items-start gap-2 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
               >
+                {/* V1.9.383 — Avatar Nôa Matrix ao lado das mensagens dela (consistência com chats paciente) */}
+                {msg.role === 'noa-matrix' && (
+                  <img
+                    src="/AvatarsEstatico.png"
+                    alt=""
+                    className="w-7 h-7 rounded-full object-cover flex-shrink-0 ring-1 ring-purple-500/30 mt-0.5"
+                  />
+                )}
                 <div
-                  className={`max-w-[85%] rounded-lg px-3.5 py-2.5 ${
+                  className={`max-w-[80%] rounded-lg px-3.5 py-2.5 ${
                     msg.role === 'user'
                       ? 'bg-emerald-500/15 border border-emerald-500/30 text-emerald-50'
                       : msg.isFailsafe
@@ -131,7 +145,13 @@ export const ResearchChat: React.FC<ResearchChatProps> = ({ attachedContext, onM
               </div>
             ))}
             {isProcessing && (
-              <div className="flex justify-start">
+              <div className="flex items-start gap-2 justify-start">
+                {/* V1.9.383 — Avatar Nôa Matrix durante loading (consistência) */}
+                <img
+                  src="/AvatarsEstatico.png"
+                  alt=""
+                  className="w-7 h-7 rounded-full object-cover flex-shrink-0 ring-1 ring-purple-500/30 mt-0.5"
+                />
                 <div className="bg-purple-500/10 border border-purple-500/20 rounded-lg px-3.5 py-2.5 flex items-center gap-2">
                   <Loader2 className="w-3.5 h-3.5 text-purple-300 animate-spin" />
                   <span className="text-xs text-slate-400">Nôa Matrix estruturando...</span>
