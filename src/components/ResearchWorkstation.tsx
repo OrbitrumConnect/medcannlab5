@@ -9,7 +9,8 @@ import {
     Users,
     Bell,
     CheckCircle,
-    Sparkles
+    Sparkles,
+    Microscope
 } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
 import EnsinoDashboard from '../pages/EnsinoDashboard'
@@ -20,6 +21,8 @@ import Library from '../pages/Library' // Usado para Protocolos
 import CidadeAmigaDosRins from '../pages/CidadeAmigaDosRins'
 // [V1.9.358] Casos Similares embedado no Terminal de Pesquisa
 import AdminCasosSimilares from '../pages/AdminCasosSimilares'
+// [V1.9.369-A] Literatura externa (PubMed) — aba paralela à Base de Conhecimento interna
+import ExternalLiterature from '../pages/ExternalLiterature'
 
 // Props do Componente
 interface ResearchWorkstationProps {
@@ -27,24 +30,26 @@ interface ResearchWorkstationProps {
 }
 
 type TabGroup = 'pesquisa' | 'colaboracao'
-type TabId = 'dashboard' | 'forum' | 'library' | 'protocols' | 'casos-similares' | 'mentoria' | 'newsletter' | 'evaluation'
+type TabId = 'dashboard' | 'forum' | 'library' | 'literature' | 'protocols' | 'casos-similares' | 'mentoria' | 'newsletter' | 'evaluation'
 
 const ResearchWorkstation: React.FC<ResearchWorkstationProps> = ({ initialTab }) => {
     const { user } = useAuth()
 
     const [activeTab, setActiveTab] = useState<TabId>(() => {
         const t = (initialTab as TabId)
-        const valid: TabId[] = ['dashboard', 'forum', 'library', 'protocols', 'casos-similares', 'mentoria', 'newsletter', 'evaluation']
+        const valid: TabId[] = ['dashboard', 'forum', 'library', 'literature', 'protocols', 'casos-similares', 'mentoria', 'newsletter', 'evaluation']
         return t && valid.includes(t) ? t : 'dashboard'
     })
 
     // Abas
     // [V1.9.358] (18/05) Casos Similares adicionada como aba pesquisa (memória clínica institucional)
+    // [V1.9.369-A] (18/05) Literatura adicionada como aba pesquisa (PubMed externo, separado dos docs internos da Base de Conhecimento)
     const tabs: { id: TabId; label: string; icon: any; color: string; group: TabGroup }[] = [
         { id: 'dashboard', label: 'Dashboard de Pesquisa', icon: BarChart3, color: 'text-emerald-400', group: 'pesquisa' },
         { id: 'casos-similares', label: 'Casos Similares', icon: Sparkles, color: 'text-purple-400', group: 'pesquisa' },
         { id: 'forum', label: 'Fórum de Casos Clínicos', icon: MessageCircle, color: 'text-cyan-400', group: 'colaboracao' },
         { id: 'library', label: 'Base de Conhecimento', icon: BookOpen, color: 'text-indigo-400', group: 'pesquisa' },
+        { id: 'literature', label: 'Literatura', icon: Microscope, color: 'text-indigo-400', group: 'pesquisa' },
         { id: 'protocols', label: 'Protocolos', icon: ClipboardList, color: 'text-orange-400', group: 'pesquisa' },
         { id: 'mentoria', label: 'Mentoria', icon: Users, color: 'text-green-400', group: 'colaboracao' },
         { id: 'newsletter', label: 'Notícias & Eventos', icon: Bell, color: 'text-amber-400', group: 'colaboracao' },
@@ -71,6 +76,13 @@ const ResearchWorkstation: React.FC<ResearchWorkstationProps> = ({ initialTab })
                 return (
                     <div className="h-full overflow-y-auto scrollbar-hide bg-[#0f172a]">
                         <Library />
+                    </div>
+                )
+            case 'literature':
+                return (
+                    <div className="h-full overflow-y-auto scrollbar-hide bg-[#0f172a] p-4">
+                        {/* [V1.9.369-A] Literatura externa (PubMed) — sempre embedded no Terminal de Pesquisa */}
+                        <ExternalLiterature embedded />
                     </div>
                 )
             case 'protocols':
