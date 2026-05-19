@@ -205,14 +205,64 @@ export function extractClinicalTermsFromDictionary(text: string, maxTerms = 8): 
 }
 
 /**
- * Monta query PubMed a partir de termos extraídos.
- * Concatena EN entre aspas pra busca frase-exata quando multi-word.
+ * [V1.9.372] Estratégias de construção de query PubMed.
+ *
+ * Bug descoberto V1.9.371 empírico (Pedro 18/05 ~23h): herpes labial + herpes + febre + dor
+ * geravam `"herpes labialis" "herpes simplex" fever pain` que PubMed interpreta como
+ * AND implícito → ZERO resultados (nenhum paper tem os 4 termos juntos).
+ *
+ * Soluções:
+ *  - simple: AND implícito (legado, pra compat reversa)
+ *  - principal_or: 1º termo é OBRIGATÓRIO + resto OR — RECOMENDADO
+ *  - all_or: tudo OR (fallback quando principal_or também volta 0)
+ *  - principal_only: só o 1º termo (fallback final)
  */
-export function buildPubMedQueryFromTerms(terms: ExtractedTerm[]): string {
-  return terms
-    .map(t => {
-      const en = t.en.trim()
-      return en.includes(' ') ? `"${en}"` : en
-    })
-    .join(' ')
+export type QueryMode = 'simple' | 'principal_or' | 'all_or' | 'principal_only'
+
+function formatTerm(en: string): string {
+  const trimmed = en.trim()
+  return trimmed.includes(' ') ? `"${trimmed}"` : trimmed
+}
+
+function dedupTermsByEN(terms: ExtractedTerm[]): ExtractedTerm[] {
+  const seen = new Set<string>()
+  const out: ExtractedTerm[] = []
+  for (const t of terms) {
+    const key = t.en.trim().toLowerCase()
+    if (key && !seen.has(key)) {
+      seen.add(key)
+      out.push(t)
+    }
+  }
+  return out
+}
+
+/**
+ * Monta query PubMed com lógica configurável + dedup automática por EN.
+ * Default principal_or = 1º termo obrigatório + resto OR (resolve o bug V1.9.371).
+ */
+export function buildPubMedQueryFromTerms(
+  terms: ExtractedTerm[],
+  mode: QueryMode = 'principal_or'
+): string {
+  const deduped = dedupTermsByEN(terms)
+  if (deduped.length === 0) return ''
+
+  const formatted = deduped.map(t => formatTerm(t.en))
+
+  if (deduped.length === 1) return formatted[0]
+
+  switch (mode) {
+    case 'simple':
+      return formatted.join(' ')
+    case 'all_or':
+      return `(${formatted.join(' OR ')})`
+    case 'principal_only':
+      return formatted[0]
+    case 'principal_or':
+    default: {
+      const [principal, ...rest] = formatted
+      return `${principal} AND (${rest.join(' OR ')})`
+    }
+  }
 }

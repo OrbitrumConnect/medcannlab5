@@ -32,8 +32,9 @@ import {
   extractClinicalTermsFromDictionary,
   buildPubMedQueryFromTerms,
   type ExtractedTerm,
+  type QueryMode,
 } from '../lib/clinicalTermsTranslator'
-import { extractTermsViaGPT } from '../lib/gptTermExtractor'
+import { buildQueryViaGPT } from '../lib/gptQueryBuilder'
 import {
   searchPubMed,
   EVIDENCE_LABELS,
@@ -322,6 +323,51 @@ function parsePubYear(pubdate: string): number | null {
   return match ? parseInt(match[0], 10) : null
 }
 
+// [V1.9.372] Sub-categorias heurísticas pra grupo "Outros" (5ª análise GPT externa).
+// Sem IA — só keyword match em title+journal. Reduz ruído cognitivo do grupo genérico.
+type OtherSubgroup = 'safety' | 'preclinical' | 'epidemiologic' | 'misc'
+
+const OTHER_SUBGROUP_LABEL: Record<OtherSubgroup, string> = {
+  safety: '🚨 Segurança / Efeitos adversos',
+  preclinical: '🧪 Pré-clínico',
+  epidemiologic: '📊 Epidemiológicos',
+  misc: '📄 Outros',
+}
+
+function classifyOtherSubgroup(art: PubMedArticle): OtherSubgroup {
+  const text = `${art.title} ${art.journal}`.toLowerCase()
+  if (/\b(use disorder|abuse|hyperemesis|adverse|toxic|safety|overdose|withdrawal|adverse reaction|adverse event)\b/.test(text)) {
+    return 'safety'
+  }
+  if (/\b(in mice|in vitro|pharmacokin|preclinic|animal|murine|mouse|rat|cell line|receptor binding)\b/.test(text)) {
+    return 'preclinical'
+  }
+  if (/\b(prevalence|cross-sectional|cohort|epidemiolog|incidence|survey|population-based)\b/.test(text)) {
+    return 'epidemiologic'
+  }
+  return 'misc'
+}
+
+// [V1.9.372] Linha "potencialmente periférico" — % overlap title × query.
+// Sinaliza honestamente paper que pode ter foco diferente. Honesto sobre lexical noise.
+// memory: feedback_lexical_nao_e_clinica_18_05
+function tokenizeQuery(query: string): string[] {
+  // Extrai palavras (sem aspas, sem operadores PubMed)
+  return query
+    .toLowerCase()
+    .replace(/[\[\]"()]/g, ' ')
+    .replace(/\b(and|or|not|title|abstract|mesh|terms|publication|type)\b/g, ' ')
+    .split(/\s+/)
+    .filter(w => w.length > 3)
+}
+
+function isPotentiallyPeripheral(art: PubMedArticle, queryTokens: string[]): boolean {
+  if (queryTokens.length === 0) return false
+  const titleLower = art.title.toLowerCase()
+  const hits = queryTokens.filter(t => titleLower.includes(t)).length
+  return hits / queryTokens.length < 0.3 // menos de 30% dos termos no título
+}
+
 interface LiteratureReportProps {
   articles: PubMedArticle[]
   total: number
@@ -406,11 +452,91 @@ const LiteratureReport: React.FC<LiteratureReportProps> = ({ articles, total, qu
           </div>
         </div>
 
-        {/* Grupos por nível de evidência (forte → fraco) */}
+        {/* [V1.9.372] Tokens da query pra detecção de papers periféricos */}
+        {(() => null)()}
+
+        {/* Grupos por nível de evidência (forte → fraco) — Outros vira sub-agrupado */}
         {EVIDENCE_ORDER.map(level => {
           const list = grouped[level]
           if (!list || list.length === 0) return null
-          const colorClass = EVIDENCE_COLORS[level]
+          const isOtherGroup = level === 'other'
+
+          // Sub-agrupa "other" em 4 categorias heurísticas
+          const subgrouped: Partial<Record<OtherSubgroup, PubMedArticle[]>> = {}
+          if (isOtherGroup) {
+            for (const a of list) {
+              const sg = classifyOtherSubgroup(a)
+              if (!subgrouped[sg]) subgrouped[sg] = []
+              subgrouped[sg]!.push(a)
+            }
+          }
+
+          const queryTokens = tokenizeQuery(query)
+
+          const renderItem = (art: PubMedArticle) => {
+            const year = parsePubYear(art.pubdate)
+            const peripheral = isPotentiallyPeripheral(art, queryTokens)
+            return (
+              <li key={art.pmid} className="text-[11px] leading-relaxed">
+                <a
+                  href={art.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-slate-300 hover:text-indigo-200 hover:underline inline-flex items-start gap-1 group"
+                >
+                  <span className="text-slate-600 mt-0.5 group-hover:text-indigo-400">▸</span>
+                  <span className="flex-1">
+                    <span className="font-medium">{art.title}</span>
+                    {peripheral && (
+                      <span
+                        className="ml-1.5 px-1 py-0 text-[8px] bg-amber-500/15 text-amber-300 border border-amber-500/30 rounded uppercase tracking-wider align-middle"
+                        title="Menos de 30% dos termos da query no título — foco possivelmente periférico"
+                      >
+                        ⚠ periférico
+                      </span>
+                    )}
+                    {(art.journal || year) && (
+                      <span className="text-slate-500 ml-1">
+                        · {art.journal}{year ? ` · ${year}` : ''}
+                      </span>
+                    )}
+                  </span>
+                  <ExternalLink className="w-2.5 h-2.5 text-slate-600 group-hover:text-indigo-400 flex-shrink-0 mt-1" />
+                </a>
+              </li>
+            )
+          }
+
+          if (isOtherGroup) {
+            // Renderiza Outros com sub-grupos
+            return (
+              <div key={level}>
+                <h5 className="text-[11px] font-bold text-slate-300 uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
+                  <span>{EVIDENCE_ICON[level]}</span>
+                  {EVIDENCE_LABELS[level]}
+                  <span className="text-slate-500 font-normal tabular-nums">({list.length})</span>
+                </h5>
+                <div className="space-y-2 pl-1">
+                  {(['safety', 'preclinical', 'epidemiologic', 'misc'] as OtherSubgroup[]).map(sg => {
+                    const sgList = subgrouped[sg]
+                    if (!sgList || sgList.length === 0) return null
+                    return (
+                      <div key={sg}>
+                        <div className="text-[10px] uppercase tracking-wider text-slate-500 font-semibold mb-1 ml-2">
+                          {OTHER_SUBGROUP_LABEL[sg]}{' '}
+                          <span className="text-slate-600 normal-case tracking-normal">({sgList.length})</span>
+                        </div>
+                        <ul className="space-y-1 pl-3">
+                          {sgList.map(renderItem)}
+                        </ul>
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
+            )
+          }
+
           return (
             <div key={level}>
               <h5 className="text-[11px] font-bold text-slate-300 uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
@@ -419,30 +545,7 @@ const LiteratureReport: React.FC<LiteratureReportProps> = ({ articles, total, qu
                 <span className="text-slate-500 font-normal tabular-nums">({list.length})</span>
               </h5>
               <ul className="space-y-1 pl-1">
-                {list.map(art => {
-                  const year = parsePubYear(art.pubdate)
-                  return (
-                    <li key={art.pmid} className="text-[11px] leading-relaxed">
-                      <a
-                        href={art.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-slate-300 hover:text-indigo-200 hover:underline inline-flex items-start gap-1 group"
-                      >
-                        <span className="text-slate-600 mt-0.5 group-hover:text-indigo-400">▸</span>
-                        <span className="flex-1">
-                          <span className="font-medium">{art.title}</span>
-                          {(art.journal || year) && (
-                            <span className="text-slate-500 ml-1">
-                              · {art.journal}{year ? ` · ${year}` : ''}
-                            </span>
-                          )}
-                        </span>
-                        <ExternalLink className="w-2.5 h-2.5 text-slate-600 group-hover:text-indigo-400 flex-shrink-0 mt-1" />
-                      </a>
-                    </li>
-                  )
-                })}
+                {list.map(renderItem)}
               </ul>
             </div>
           )
@@ -470,7 +573,7 @@ const LiteratureReport: React.FC<LiteratureReportProps> = ({ articles, total, qu
 
       <div className="px-4 py-2.5 bg-slate-900/40 border-t border-slate-700/40">
         <p className="text-[10px] text-slate-500 leading-relaxed">
-          📊 Sistema AGREGOU + ORGANIZOU. Decisão clínica permanece com o médico (CFM 2.314).
+          📊 Sistema organiza por estrutura (tipo · recência · frequência) — não interpreta validade clínica.
           Click em qualquer paper abre o original no PubMed.
         </p>
       </div>
@@ -517,6 +620,10 @@ const AdminCasosSimilares: React.FC<Props> = ({ embedded = false, defaultQuery =
   const [literatureReportTotal, setLiteratureReportTotal] = useState(0)
   const [literatureReportError, setLiteratureReportError] = useState<string | null>(null)
   const [literatureReportQuery, setLiteratureReportQuery] = useState('')
+  // [V1.9.372] Estratégia de query usada + reasoning GPT (quando aplicável) + fallback flag
+  const [literatureReportMode, setLiteratureReportMode] = useState<QueryMode | 'gpt'>('principal_or')
+  const [literatureReportFallback, setLiteratureReportFallback] = useState<string | null>(null)
+  const [literatureGPTReasoning, setLiteratureGPTReasoning] = useState<string | null>(null)
 
   // Carregar detalhes completos quando seleciona caso (content jsonb + racionalidades full)
   useEffect(() => {
@@ -841,53 +948,96 @@ REGRAS RÍGIDAS:
     setLiteratureReportError(null)
     setLiteratureReportLoading(false)
     setLiteratureReportQuery('')
+    // [V1.9.372] Reset da estratégia de query + fallback
+    setLiteratureReportMode('principal_or')
+    setLiteratureReportFallback(null)
+    setLiteratureGPTReasoning(null)
     setLiteratureModalOpen(true)
   }
 
-  // [V1.9.371] Gera mini-relatório AGREGADO (não navega) — inteligência estrutural
-  // memory: feedback_inteligencia_estrutural_vs_inferencial_18_05
+  // [V1.9.371/V1.9.372] Gera mini-relatório AGREGADO com fallback inteligente.
+  // Memory: feedback_inteligencia_estrutural_vs_inferencial_18_05
+  // Bug V1.9.371 corrigido: AND implícito gerava 0 hits → agora principal_or → all_or → principal_only
+  // Se toggle GPT ON → GPT constrói query MeSH-aware no lugar do dict simples.
   const runLiteratureReport = async () => {
     if (literatureTerms.length === 0) return
-    const query = buildPubMedQueryFromTerms(literatureTerms)
     setLiteratureReportLoading(true)
     setLiteratureReportError(null)
-    setLiteratureReportQuery(query)
-    try {
-      const result = await searchPubMed({ term: query, retmax: 12, yearsBack: 10 })
-      setLiteratureReportArticles(result.articles)
-      setLiteratureReportTotal(result.total)
-    } catch (err: any) {
-      setLiteratureReportError(err?.message || 'Erro ao buscar literatura no PubMed')
-      setLiteratureReportArticles([])
-      setLiteratureReportTotal(0)
-    } finally {
-      setLiteratureReportLoading(false)
-    }
-  }
+    setLiteratureReportFallback(null)
+    setLiteratureGPTReasoning(null)
 
-  // [V1.9.369-C] Toggle GPT — quando ativa, chama extrator restrito e MERGE com dict
-  const handleToggleGPTExtraction = async () => {
-    const next = !literatureUseGPT
-    setLiteratureUseGPT(next)
-    if (!next || !literatureSourceText) return
-    setLiteratureGPTLoading(true)
-    try {
-      const gptTerms = await extractTermsViaGPT(literatureSourceText, user?.id, user?.email)
-      // Merge: termos dict permanecem, GPT acrescenta o que faltava (dedup por en lowercase)
-      setLiteratureTerms(prev => {
-        const seenEn = new Set(prev.map(t => t.en.toLowerCase()))
-        const merged = [...prev]
-        for (const t of gptTerms) {
-          if (!seenEn.has(t.en.toLowerCase())) {
-            merged.push(t)
-            seenEn.add(t.en.toLowerCase())
+    // Estratégia 1: GPT query builder (se opt-in) — query MeSH-aware estruturada
+    if (literatureUseGPT && literatureSourceText) {
+      try {
+        const gptResult = await buildQueryViaGPT(literatureSourceText, literatureTerms, user?.id, user?.email)
+        if (gptResult && gptResult.query.trim()) {
+          setLiteratureReportMode('gpt')
+          setLiteratureReportQuery(gptResult.query)
+          setLiteratureGPTReasoning(gptResult.reasoning)
+          try {
+            const result = await searchPubMed({ term: gptResult.query, retmax: 12, yearsBack: 10 })
+            if (result.articles.length > 0) {
+              setLiteratureReportArticles(result.articles)
+              setLiteratureReportTotal(result.total)
+              setLiteratureReportLoading(false)
+              return
+            }
+            // GPT query veio mas 0 hits → cai pro fallback dict
+            setLiteratureReportFallback('GPT construiu query mas retornou 0 — caindo pra dicionário')
+          } catch {
+            setLiteratureReportFallback('GPT query falhou — caindo pra dicionário')
           }
         }
-        return merged.slice(0, 10)
-      })
-    } finally {
-      setLiteratureGPTLoading(false)
+      } catch {
+        // silencioso — cai pra dict
+      }
     }
+
+    // Estratégia 2-4: dict com 3 modos progressivos (principal_or → all_or → principal_only)
+    const tryModes: Array<{ mode: QueryMode; label: string }> = [
+      { mode: 'principal_or', label: 'principal + opcionais' },
+      { mode: 'all_or', label: 'todos os termos (OR)' },
+      { mode: 'principal_only', label: 'só o termo principal' },
+    ]
+
+    let lastError: string | null = null
+    for (let i = 0; i < tryModes.length; i++) {
+      const { mode, label } = tryModes[i]
+      const query = buildPubMedQueryFromTerms(literatureTerms, mode)
+      if (!query) continue
+      try {
+        const result = await searchPubMed({ term: query, retmax: 12, yearsBack: 10 })
+        setLiteratureReportQuery(query)
+        setLiteratureReportMode(mode)
+        if (result.articles.length > 0) {
+          setLiteratureReportArticles(result.articles)
+          setLiteratureReportTotal(result.total)
+          // Marca fallback se não foi a 1ª estratégia
+          if (i > 0 || (literatureUseGPT && literatureReportFallback)) {
+            setLiteratureReportFallback(`Busca afrouxada pra ${label} (estratégia anterior 0 hits)`)
+          }
+          setLiteratureReportLoading(false)
+          return
+        }
+        // 0 hits — tenta próximo modo
+      } catch (err: any) {
+        lastError = err?.message || 'Erro ao buscar literatura no PubMed'
+      }
+    }
+
+    // Todos os modos retornaram 0 (ou erro)
+    setLiteratureReportError(lastError || 'Nenhum resultado em nenhuma estratégia. Refine termos manualmente.')
+    setLiteratureReportArticles([])
+    setLiteratureReportTotal(0)
+    setLiteratureReportLoading(false)
+  }
+
+  // [V1.9.372] Toggle GPT muda PAPEL: era extração de termos (V1.9.369-C),
+  // agora ativa CONSTRUÇÃO DE QUERY MeSH-aware via GPT no momento de "Gerar relatório".
+  // Memory: gptQueryBuilder reorientou GPT pra valor real (construir query inteligente).
+  // Não dispara chamada imediata — GPT só roda quando médico clica botão.
+  const handleToggleGPTExtraction = () => {
+    setLiteratureUseGPT(prev => !prev)
   }
 
   // [V1.9.369-C] Remover chip individual
@@ -1534,23 +1684,38 @@ REGRAS RÍGIDAS:
                       Nenhum termo identificado pelo dicionário curado. Ative IA opcional ou adicione termos manualmente.
                     </span>
                   ) : (
-                    literatureTerms.map((t, idx) => (
-                      <div
-                        key={`${t.pt}-${idx}`}
-                        className="inline-flex items-center gap-1.5 bg-indigo-500/15 border border-indigo-500/40 rounded-full pl-3 pr-1 py-1"
-                      >
-                        <span className="text-xs text-indigo-100">{t.pt}</span>
-                        <span className="text-[10px] text-slate-500">↔</span>
-                        <span className="text-xs text-indigo-300 font-mono">{t.en}</span>
-                        <button
-                          onClick={() => handleRemoveLiteratureTerm(idx)}
-                          className="p-0.5 rounded-full hover:bg-indigo-500/30"
-                          title="Remover"
+                    literatureTerms.map((t, idx) => {
+                      const isPrincipal = idx === 0
+                      return (
+                        <div
+                          key={`${t.pt}-${idx}`}
+                          className={`inline-flex items-center gap-1.5 rounded-full pl-3 pr-1 py-1 ${
+                            isPrincipal
+                              ? 'bg-emerald-500/15 border border-emerald-500/50'
+                              : 'bg-indigo-500/15 border border-indigo-500/40'
+                          }`}
+                          title={isPrincipal
+                            ? 'Termo PRINCIPAL (obrigatório na query — AND)'
+                            : 'Termo opcional (OR com outros opcionais)'}
                         >
-                          <X className="w-2.5 h-2.5 text-indigo-300" />
-                        </button>
-                      </div>
-                    ))
+                          {isPrincipal && (
+                            <span className="text-[9px] uppercase tracking-wider font-bold text-emerald-300 mr-0.5">
+                              principal
+                            </span>
+                          )}
+                          <span className={`text-xs ${isPrincipal ? 'text-emerald-100' : 'text-indigo-100'}`}>{t.pt}</span>
+                          <span className="text-[10px] text-slate-500">↔</span>
+                          <span className={`text-xs font-mono ${isPrincipal ? 'text-emerald-300' : 'text-indigo-300'}`}>{t.en}</span>
+                          <button
+                            onClick={() => handleRemoveLiteratureTerm(idx)}
+                            className={`p-0.5 rounded-full ${isPrincipal ? 'hover:bg-emerald-500/30' : 'hover:bg-indigo-500/30'}`}
+                            title="Remover"
+                          >
+                            <X className={`w-2.5 h-2.5 ${isPrincipal ? 'text-emerald-300' : 'text-indigo-300'}`} />
+                          </button>
+                        </div>
+                      )
+                    })
                   )}
                 </div>
               </div>
@@ -1576,35 +1741,37 @@ REGRAS RÍGIDAS:
                 </div>
               )}
 
-              {/* Toggle GPT — pattern V1.9.357 reutilizado */}
+              {/* [V1.9.372] Toggle GPT — papel mudou: agora CONSTRÓI query MeSH-aware (não extrai termos) */}
               <div className="flex items-center justify-between gap-3 p-3 rounded-lg bg-slate-900/50 border border-slate-700/50">
                 <div className="flex items-center gap-2.5 min-w-0">
                   <Zap className={`w-4 h-4 flex-shrink-0 ${literatureUseGPT ? 'text-yellow-400' : 'text-slate-500'}`} />
                   <div className="min-w-0">
-                    <div className="text-xs font-semibold text-white">Extração IA expandida</div>
+                    <div className="text-xs font-semibold text-white">IA constrói query inteligente</div>
                     <div className="text-[10px] text-slate-500 leading-tight">
-                      {literatureGPTLoading
-                        ? 'Extraindo termos sofisticados...'
-                        : literatureUseGPT
-                          ? '~$0.01/uso · termos clínicos sofisticados (sinônimos, classificações)'
-                          : 'Default: dicionário curado ($0, instantâneo, 95% cobertura)'}
+                      {literatureUseGPT
+                        ? '~$0.005/uso · GPT monta query PubMed MeSH-aware ao gerar relatório'
+                        : 'Default: dicionário curado monta query (principal + opcionais OR)'}
                     </div>
                   </div>
                 </div>
                 <button
                   onClick={handleToggleGPTExtraction}
-                  disabled={literatureGPTLoading}
-                  className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${literatureUseGPT ? 'bg-yellow-500' : 'bg-slate-600'} ${literatureGPTLoading ? 'opacity-50' : ''}`}
-                  title={literatureUseGPT ? 'Desativar IA expandida' : 'Ativar IA (custo ~$0.01)'}
+                  className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${literatureUseGPT ? 'bg-yellow-500' : 'bg-slate-600'}`}
+                  title={literatureUseGPT ? 'Desativar IA construtor' : 'Ativar IA construtor de query (~$0.005)'}
                 >
                   <span className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform ${literatureUseGPT ? 'translate-x-5' : 'translate-x-0.5'}`} />
                 </button>
               </div>
 
-              {/* Preview query final */}
+              {/* [V1.9.372] Preview query — mostra dict atual (GPT constrói só ao gerar relatório) */}
               <div className="bg-slate-800/40 border border-slate-700/50 rounded-lg p-3">
-                <div className="text-[10px] uppercase tracking-wider text-slate-500 font-semibold mb-1.5">
-                  Query PubMed que será executada
+                <div className="text-[10px] uppercase tracking-wider text-slate-500 font-semibold mb-1.5 flex items-center justify-between">
+                  <span>Query PubMed prevista (dicionário)</span>
+                  {literatureUseGPT && (
+                    <span className="text-yellow-400 normal-case tracking-normal font-normal">
+                      ⚡ GPT vai reescrever ao gerar relatório
+                    </span>
+                  )}
                 </div>
                 <code className="text-xs text-indigo-300 font-mono break-all leading-relaxed block">
                   {literatureTerms.length === 0
@@ -1613,10 +1780,10 @@ REGRAS RÍGIDAS:
                 </code>
               </div>
 
-              {/* Princípio epistemológico */}
+              {/* [V1.9.372] Princípio epistemológico — wording mais elegante (5ª análise GPT externa) */}
               <p className="text-[10px] text-slate-500 leading-relaxed">
-                💡 Sistema EXTRAI termos · agregação ESTRUTURAL (conta + agrupa + ordena) · NÃO sintetiza significado clínico.
-                Médico interpreta + decide + age.
+                💡 O sistema organiza resultados bibliográficos por estrutura (tipo, recência e frequência),
+                sem interpretar validade clínica. A decisão permanece com o médico.
               </p>
 
               {/* [V1.9.371] Mini-relatório agregado — inteligência estrutural */}
@@ -1633,11 +1800,28 @@ REGRAS RÍGIDAS:
                 </div>
               )}
               {literatureReportArticles && !literatureReportLoading && (
-                <LiteratureReport
-                  articles={literatureReportArticles}
-                  total={literatureReportTotal}
-                  query={literatureReportQuery}
-                />
+                <>
+                  {/* [V1.9.372] Notice de fallback / reasoning GPT */}
+                  {(literatureReportFallback || literatureGPTReasoning || literatureReportMode === 'gpt') && (
+                    <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg px-3 py-2 space-y-1">
+                      {literatureReportMode === 'gpt' && literatureGPTReasoning && (
+                        <p className="text-[11px] text-yellow-200 leading-relaxed">
+                          <strong>⚡ Query GPT:</strong> {literatureGPTReasoning}
+                        </p>
+                      )}
+                      {literatureReportFallback && (
+                        <p className="text-[11px] text-yellow-200 leading-relaxed">
+                          <strong>↪ Fallback:</strong> {literatureReportFallback}
+                        </p>
+                      )}
+                    </div>
+                  )}
+                  <LiteratureReport
+                    articles={literatureReportArticles}
+                    total={literatureReportTotal}
+                    query={literatureReportQuery}
+                  />
+                </>
               )}
 
               {/* Ações */}
