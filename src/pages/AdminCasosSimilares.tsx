@@ -28,6 +28,12 @@ import { useAuth } from '../contexts/AuthContext'
 import { simpleCache } from '../lib/simpleCache'
 import { NoaResidentAI } from '../lib/noaResidentAI'
 import { useSearchHistory, type RecordedSearch, type PinnedSearch, type OpenedCase } from '../hooks/useSearchHistory'
+import {
+  extractClinicalTermsFromDictionary,
+  buildPubMedQueryFromTerms,
+  type ExtractedTerm,
+} from '../lib/clinicalTermsTranslator'
+import { extractTermsViaGPT } from '../lib/gptTermExtractor'
 
 // [V1.9.354] (18/05/2026) — Casos Similares Admin Spike (Fase 1)
 // Memory: project_casos_similares_memoria_clinica_institucional_18_05
@@ -84,6 +90,9 @@ interface Props {
   embedded?: boolean
   defaultQuery?: string
   showSidebar?: boolean
+  // [V1.9.369-C] Cross-link: parent (ResearchWorkstation) recebe termo extraído
+  // de uma racionalidade e navega pra aba Literatura com query pré-preenchida.
+  onNavigateToLiterature?: (term: string) => void
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -281,7 +290,7 @@ const NotesPanel: React.FC<NotesPanelProps> = ({ notes, onChange }) => {
   )
 }
 
-const AdminCasosSimilares: React.FC<Props> = ({ embedded = false, defaultQuery = '', showSidebar }) => {
+const AdminCasosSimilares: React.FC<Props> = ({ embedded = false, defaultQuery = '', showSidebar, onNavigateToLiterature }) => {
   const navigate = useNavigate()
   const { user } = useAuth()
   // [V1.9.366] showSidebar default = !embedded (compat V1.9.365), mas caller pode forçar
@@ -305,6 +314,15 @@ const AdminCasosSimilares: React.FC<Props> = ({ embedded = false, defaultQuery =
   const searchInputRef = useRef<HTMLInputElement>(null)
   // autoRunRef: chip click dispara handleSearch APÓS state batch flushar (1 commit React 18)
   const autoRunRef = useRef(false)
+
+  // [V1.9.369-C] Estados pra mini-modal de extração de termos (cross-link Literatura)
+  const [literatureModalOpen, setLiteratureModalOpen] = useState(false)
+  const [literatureSourceLabel, setLiteratureSourceLabel] = useState<string>('')
+  const [literatureSourceText, setLiteratureSourceText] = useState<string>('')
+  const [literatureTerms, setLiteratureTerms] = useState<ExtractedTerm[]>([])
+  const [literatureUseGPT, setLiteratureUseGPT] = useState(false)
+  const [literatureGPTLoading, setLiteratureGPTLoading] = useState(false)
+  const [literatureExtraTerm, setLiteratureExtraTerm] = useState('')
 
   // Carregar detalhes completos quando seleciona caso (content jsonb + racionalidades full)
   useEffect(() => {
@@ -612,6 +630,65 @@ REGRAS RÍGIDAS:
     } catch {
       return iso
     }
+  }
+
+  // [V1.9.369-C] Abre modal de extração com termos do dicionário (default)
+  const openLiteratureExtractionModal = (rationalityLabel: string, text: string) => {
+    const initial = extractClinicalTermsFromDictionary(text)
+    setLiteratureSourceLabel(rationalityLabel)
+    setLiteratureSourceText(text)
+    setLiteratureTerms(initial)
+    setLiteratureUseGPT(false)
+    setLiteratureGPTLoading(false)
+    setLiteratureExtraTerm('')
+    setLiteratureModalOpen(true)
+  }
+
+  // [V1.9.369-C] Toggle GPT — quando ativa, chama extrator restrito e MERGE com dict
+  const handleToggleGPTExtraction = async () => {
+    const next = !literatureUseGPT
+    setLiteratureUseGPT(next)
+    if (!next || !literatureSourceText) return
+    setLiteratureGPTLoading(true)
+    try {
+      const gptTerms = await extractTermsViaGPT(literatureSourceText, user?.id, user?.email)
+      // Merge: termos dict permanecem, GPT acrescenta o que faltava (dedup por en lowercase)
+      setLiteratureTerms(prev => {
+        const seenEn = new Set(prev.map(t => t.en.toLowerCase()))
+        const merged = [...prev]
+        for (const t of gptTerms) {
+          if (!seenEn.has(t.en.toLowerCase())) {
+            merged.push(t)
+            seenEn.add(t.en.toLowerCase())
+          }
+        }
+        return merged.slice(0, 10)
+      })
+    } finally {
+      setLiteratureGPTLoading(false)
+    }
+  }
+
+  // [V1.9.369-C] Remover chip individual
+  const handleRemoveLiteratureTerm = (idx: number) => {
+    setLiteratureTerms(prev => prev.filter((_, i) => i !== idx))
+  }
+
+  // [V1.9.369-C] Adicionar termo manual (PT — EN = mesmo se não traduzir)
+  const handleAddLiteratureTerm = () => {
+    const t = literatureExtraTerm.trim()
+    if (!t) return
+    setLiteratureTerms(prev => [...prev, { pt: t, en: t }].slice(0, 10))
+    setLiteratureExtraTerm('')
+  }
+
+  // [V1.9.369-C] Confirma busca → chama callback do parent + fecha modais
+  const handleNavigateToLiteratureFromModal = () => {
+    if (!onNavigateToLiterature || literatureTerms.length === 0) return
+    const query = buildPubMedQueryFromTerms(literatureTerms)
+    onNavigateToLiterature(query)
+    setLiteratureModalOpen(false)
+    setSelectedCase(null) // fecha modal do caso também — usuário foi pra outra aba
   }
 
   return (
@@ -1144,19 +1221,33 @@ REGRAS RÍGIDAS:
                         Racionalidades Aplicadas ({caseDetails.rationalities.length})
                       </h4>
                       <div className="space-y-2">
-                        {caseDetails.rationalities.map((r: any, i: number) => (
-                          <div key={i} className="bg-slate-800/50 border border-slate-700/50 rounded-lg p-3">
-                            <div className="flex items-center justify-between mb-1.5">
-                              <span className="px-2 py-0.5 text-[10px] bg-purple-500/15 text-purple-300 border border-purple-500/30 rounded-full font-semibold">
-                                {RATIONALITY_LABELS[r.rationality_type as RationalityType] || r.rationality_type}
-                              </span>
-                              <span className="text-[10px] text-slate-500">{formatDate(r.created_at)}</span>
+                        {caseDetails.rationalities.map((r: any, i: number) => {
+                          const ratLabel = RATIONALITY_LABELS[r.rationality_type as RationalityType] || r.rationality_type
+                          return (
+                            <div key={i} className="bg-slate-800/50 border border-slate-700/50 rounded-lg p-3">
+                              <div className="flex items-center justify-between mb-1.5">
+                                <span className="px-2 py-0.5 text-[10px] bg-purple-500/15 text-purple-300 border border-purple-500/30 rounded-full font-semibold">
+                                  {ratLabel}
+                                </span>
+                                <span className="text-[10px] text-slate-500">{formatDate(r.created_at)}</span>
+                              </div>
+                              <p className="text-xs text-slate-300 leading-relaxed">
+                                {r.assessment ? r.assessment.substring(0, 350) + (r.assessment.length > 350 ? '...' : '') : '—'}
+                              </p>
+                              {/* [V1.9.369-C] Cross-link: extrair termos desta racionalidade → buscar Literatura */}
+                              {onNavigateToLiterature && r.assessment && r.assessment.length > 30 && (
+                                <button
+                                  onClick={() => openLiteratureExtractionModal(ratLabel, r.assessment)}
+                                  className="mt-2 inline-flex items-center gap-1.5 px-2 py-1 text-[10px] bg-indigo-500/10 hover:bg-indigo-500/20 border border-indigo-500/30 hover:border-indigo-500/50 text-indigo-300 hover:text-indigo-200 rounded-md transition-colors"
+                                  title="Extrair termos clínicos e buscar no PubMed"
+                                >
+                                  <Search className="w-3 h-3" />
+                                  Buscar literatura sobre esta racionalidade
+                                </button>
+                              )}
                             </div>
-                            <p className="text-xs text-slate-300 leading-relaxed">
-                              {r.assessment ? r.assessment.substring(0, 350) + (r.assessment.length > 350 ? '...' : '') : '—'}
-                            </p>
-                          </div>
-                        ))}
+                          )
+                        })}
                       </div>
                     </div>
                   )}
@@ -1176,6 +1267,154 @@ REGRAS RÍGIDAS:
                   </div>
                 </>
               )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* [V1.9.369-C] Mini-modal extração de termos pra busca em Literatura externa
+          GPT é "ferramenta linguística", não autoridade epistemológica:
+            expande termos, traduz PT→EN, detecta sinônimos — médico revisa antes de buscar */}
+      {literatureModalOpen && (
+        <div
+          className="fixed inset-0 z-[60] bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-150"
+          onClick={() => setLiteratureModalOpen(false)}
+        >
+          <div
+            className="bg-slate-900 border border-slate-700 rounded-xl max-w-2xl w-full max-h-[85vh] overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="sticky top-0 bg-slate-900 border-b border-slate-700/50 px-6 py-4 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Search className="w-4 h-4 text-indigo-400" />
+                <h3 className="text-base font-bold text-white">Buscar literatura externa</h3>
+              </div>
+              <button
+                onClick={() => setLiteratureModalOpen(false)}
+                className="p-2 hover:bg-slate-800 rounded-lg transition-colors"
+                title="Cancelar (ESC)"
+              >
+                <X className="w-4 h-4 text-slate-400" />
+              </button>
+            </div>
+
+            <div className="p-6 space-y-4">
+              {/* Origem */}
+              <p className="text-xs text-slate-400 leading-relaxed">
+                A partir da racionalidade <span className="text-purple-300 font-semibold">{literatureSourceLabel}</span>{' '}
+                · termos extraídos automaticamente (revise antes de buscar):
+              </p>
+
+              {/* Chips termos extraídos */}
+              <div className="bg-slate-800/30 border border-slate-700/50 rounded-lg p-3 min-h-[80px]">
+                <div className="flex items-start gap-2 flex-wrap">
+                  {literatureTerms.length === 0 ? (
+                    <span className="text-xs text-slate-500 italic">
+                      Nenhum termo identificado pelo dicionário curado. Ative IA opcional ou adicione termos manualmente.
+                    </span>
+                  ) : (
+                    literatureTerms.map((t, idx) => (
+                      <div
+                        key={`${t.pt}-${idx}`}
+                        className="inline-flex items-center gap-1.5 bg-indigo-500/15 border border-indigo-500/40 rounded-full pl-3 pr-1 py-1"
+                      >
+                        <span className="text-xs text-indigo-100">{t.pt}</span>
+                        <span className="text-[10px] text-slate-500">↔</span>
+                        <span className="text-xs text-indigo-300 font-mono">{t.en}</span>
+                        <button
+                          onClick={() => handleRemoveLiteratureTerm(idx)}
+                          className="p-0.5 rounded-full hover:bg-indigo-500/30"
+                          title="Remover"
+                        >
+                          <X className="w-2.5 h-2.5 text-indigo-300" />
+                        </button>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+
+              {/* Adicionar termo manual */}
+              {literatureTerms.length < 10 && (
+                <div className="flex items-center gap-2">
+                  <input
+                    type="text"
+                    value={literatureExtraTerm}
+                    onChange={(e) => setLiteratureExtraTerm(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && handleAddLiteratureTerm()}
+                    placeholder="+ adicionar termo (PT ou EN)"
+                    className="flex-1 px-3 py-1.5 bg-slate-900 border border-slate-700 rounded-lg text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500/50"
+                  />
+                  <button
+                    onClick={handleAddLiteratureTerm}
+                    disabled={!literatureExtraTerm.trim()}
+                    className="px-3 py-1.5 text-xs bg-slate-700 hover:bg-slate-600 disabled:bg-slate-800 disabled:text-slate-600 text-white rounded-lg transition-colors"
+                  >
+                    +
+                  </button>
+                </div>
+              )}
+
+              {/* Toggle GPT — pattern V1.9.357 reutilizado */}
+              <div className="flex items-center justify-between gap-3 p-3 rounded-lg bg-slate-900/50 border border-slate-700/50">
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <Zap className={`w-4 h-4 flex-shrink-0 ${literatureUseGPT ? 'text-yellow-400' : 'text-slate-500'}`} />
+                  <div className="min-w-0">
+                    <div className="text-xs font-semibold text-white">Extração IA expandida</div>
+                    <div className="text-[10px] text-slate-500 leading-tight">
+                      {literatureGPTLoading
+                        ? 'Extraindo termos sofisticados...'
+                        : literatureUseGPT
+                          ? '~$0.01/uso · termos clínicos sofisticados (sinônimos, classificações)'
+                          : 'Default: dicionário curado ($0, instantâneo, 95% cobertura)'}
+                    </div>
+                  </div>
+                </div>
+                <button
+                  onClick={handleToggleGPTExtraction}
+                  disabled={literatureGPTLoading}
+                  className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${literatureUseGPT ? 'bg-yellow-500' : 'bg-slate-600'} ${literatureGPTLoading ? 'opacity-50' : ''}`}
+                  title={literatureUseGPT ? 'Desativar IA expandida' : 'Ativar IA (custo ~$0.01)'}
+                >
+                  <span className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform ${literatureUseGPT ? 'translate-x-5' : 'translate-x-0.5'}`} />
+                </button>
+              </div>
+
+              {/* Preview query final */}
+              <div className="bg-slate-800/40 border border-slate-700/50 rounded-lg p-3">
+                <div className="text-[10px] uppercase tracking-wider text-slate-500 font-semibold mb-1.5">
+                  Query PubMed que será executada
+                </div>
+                <code className="text-xs text-indigo-300 font-mono break-all leading-relaxed block">
+                  {literatureTerms.length === 0
+                    ? <span className="text-slate-600 italic">(adicione termos pra buscar)</span>
+                    : buildPubMedQueryFromTerms(literatureTerms)}
+                </code>
+              </div>
+
+              {/* Princípio epistemológico */}
+              <p className="text-[10px] text-slate-500 leading-relaxed">
+                💡 Sistema EXTRAI termos, médico DECIDE busca, PubMed RETORNA evidência.
+                Nenhum dos 3 sintetiza significado clínico automaticamente.
+              </p>
+
+              {/* Ações */}
+              <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-700/50">
+                <button
+                  onClick={() => setLiteratureModalOpen(false)}
+                  className="px-4 py-2 text-xs text-slate-400 hover:text-white transition-colors"
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={handleNavigateToLiteratureFromModal}
+                  disabled={literatureTerms.length === 0}
+                  className="flex items-center gap-2 px-4 py-2 text-xs font-semibold bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-700 disabled:text-slate-500 disabled:cursor-not-allowed text-white rounded-lg transition-colors"
+                >
+                  Buscar no PubMed
+                  <ExternalLink className="w-3 h-3" />
+                </button>
+              </div>
             </div>
           </div>
         </div>

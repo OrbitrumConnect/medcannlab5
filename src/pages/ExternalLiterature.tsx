@@ -48,6 +48,12 @@ import {
 
 interface Props {
   embedded?: boolean
+  // [V1.9.369-C] Cross-link: parent (ResearchWorkstation) injeta termo vindo
+  // de outra aba (ex: Casos Similares → Buscar literatura dessa racionalidade).
+  // initialTermKey muda toda vez que parent quer FORÇAR novo set (mesmo termo
+  // duas vezes — useEffect re-dispara via key change).
+  initialTerm?: string
+  initialTermKey?: number
 }
 
 const EVIDENCE_OPTIONS: Array<EvidenceLevel | 'all'> = [
@@ -82,7 +88,7 @@ const EDITORIAL_TABS: EditorialTab[] = [
   { id: 'guidelines', label: 'Guidelines', icon: ScrollText, hint: 'cannabis · Publication Type = Guideline' },
 ]
 
-const ExternalLiterature: React.FC<Props> = ({ embedded = false }) => {
+const ExternalLiterature: React.FC<Props> = ({ embedded = false, initialTerm, initialTermKey }) => {
   const {
     term,
     setTerm,
@@ -102,6 +108,15 @@ const ExternalLiterature: React.FC<Props> = ({ embedded = false }) => {
   } = useExternalLiterature()
 
   const searchInputRef = useRef<HTMLInputElement>(null)
+
+  // [V1.9.369-C] Quando vem term via cross-link (Casos Similares → Literatura),
+  // popula automaticamente e força tab de busca livre
+  useEffect(() => {
+    if (initialTerm && initialTerm.trim().length >= 3) {
+      setTerm(initialTerm)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialTerm, initialTermKey])
 
   // Atalhos globais Cmd/Ctrl+K ou "/" focam search (consistente com Casos Similares V1.9.364)
   useEffect(() => {

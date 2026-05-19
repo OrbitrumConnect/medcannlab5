@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useCallback, useState } from 'react'
 import {
     BarChart3,
     Activity,
@@ -41,6 +41,16 @@ const ResearchWorkstation: React.FC<ResearchWorkstationProps> = ({ initialTab })
         return t && valid.includes(t) ? t : 'dashboard'
     })
 
+    // [V1.9.369-C] Cross-link Casos Similares → Literatura: parent guarda termo
+    // injetado por filho. initialTermKey força re-trigger mesmo se mesmo termo.
+    const [pendingLiteratureTerm, setPendingLiteratureTerm] = useState<string | undefined>(undefined)
+    const [pendingLiteratureKey, setPendingLiteratureKey] = useState<number>(0)
+    const navigateToLiteratureWithTerm = useCallback((term: string) => {
+        setPendingLiteratureTerm(term)
+        setPendingLiteratureKey(k => k + 1)
+        setActiveTab('literature')
+    }, [])
+
     // Abas
     // [V1.9.358] (18/05) Casos Similares adicionada como aba pesquisa (memória clínica institucional)
     // [V1.9.369-A] (18/05) Literatura adicionada como aba pesquisa (PubMed externo, separado dos docs internos da Base de Conhecimento)
@@ -81,8 +91,12 @@ const ResearchWorkstation: React.FC<ResearchWorkstationProps> = ({ initialTab })
             case 'literature':
                 return (
                     <div className="h-full overflow-y-auto scrollbar-hide bg-[#0f172a] p-4">
-                        {/* [V1.9.369-A] Literatura externa (PubMed) — sempre embedded no Terminal de Pesquisa */}
-                        <ExternalLiterature embedded />
+                        {/* [V1.9.369-A/C] Literatura externa (PubMed) — aceita termo via cross-link */}
+                        <ExternalLiterature
+                            embedded
+                            initialTerm={pendingLiteratureTerm}
+                            initialTermKey={pendingLiteratureKey}
+                        />
                     </div>
                 )
             case 'protocols':
@@ -94,8 +108,13 @@ const ResearchWorkstation: React.FC<ResearchWorkstationProps> = ({ initialTab })
             case 'casos-similares':
                 return (
                     <div className="h-full overflow-y-auto scrollbar-hide bg-[#0f172a] p-4">
-                        {/* [V1.9.366] showSidebar=true → mostra Trilha + Notas Rápidas side-by-side */}
-                        <AdminCasosSimilares embedded showSidebar />
+                        {/* [V1.9.366] showSidebar=true → Trilha + Notas Rápidas side-by-side */}
+                        {/* [V1.9.369-C] onNavigateToLiterature → cross-link racionalidade → Literatura */}
+                        <AdminCasosSimilares
+                            embedded
+                            showSidebar
+                            onNavigateToLiterature={navigateToLiteratureWithTerm}
+                        />
                     </div>
                 )
             case 'mentoria':
