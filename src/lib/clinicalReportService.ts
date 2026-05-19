@@ -24,6 +24,8 @@ export interface ClinicalReport {
   status: 'draft' | 'completed' | 'reviewed'
   professional_id?: string
   professional_name?: string
+  // V1.9.376-B — Persistir consent dado pelo paciente (antes ficava NULL no banco)
+  consent_given?: boolean
 }
 
 export class ClinicalReportService {
@@ -43,6 +45,22 @@ export class ClinicalReportService {
     patientName: string,
     assessmentData: any
   ): Promise<ClinicalReport> {
+    // V1.9.376-C — Quality gate de dados mínimos clínicos.
+    // Bloqueia INSERT quando assessmentData é vazio/genérico (caller legado
+    // checkForAssessmentCompletion antes de V1.9.376-A passava OBJETO HARDCODED
+    // sem ler flowState real → 38 stubs órfãos lifetime, 9 do Dr. Ricardo).
+    // Audit empírico 19/05: 32/32 AECs signed têm lista_indiciaria OR queixa_principal.
+    // Gate não bloqueia caso legítimo histórico.
+    const hasMinClinicalData =
+      (Array.isArray(assessmentData?.lista_indiciaria) && assessmentData.lista_indiciaria.length > 0) ||
+      Boolean(assessmentData?.queixa_principal) ||
+      Boolean(assessmentData?.chiefComplaint)
+
+    if (!hasMinClinicalData) {
+      console.warn('[V1.9.376-C] generateAIReport bloqueado — dados clínicos insuficientes (provável caller legado sem flowState)')
+      throw new Error('AEC_DATA_INSUFFICIENT')
+    }
+
     // V1.9.213 — Dedupe defensivo no banco (5 min TTL).
     //
     // Bug observado 11/05/2026: 5 reports duplicados criados em 56s pra
@@ -107,7 +125,9 @@ export class ClinicalReportService {
       },
       generated_by: 'noa_ai',
       generated_at: new Date().toISOString(),
-      status: 'completed'
+      status: 'completed',
+      // V1.9.376-B — Propaga consent vindo no assessmentData (FSM gate LGPD já validou upstream)
+      consent_given: Boolean(assessmentData?.consentGiven ?? assessmentData?.consent_given)
     }
 
     // Salvar no banco de dados
@@ -138,7 +158,9 @@ export class ClinicalReportService {
           generated_at: report.generated_at,
           status: report.status,
           professional_id: report.professional_id,
-          professional_name: report.professional_name
+          professional_name: report.professional_name,
+          // V1.9.376-B — Antes faltava no INSERT → ficava false no banco mesmo após gate LGPD validar
+          consent_given: report.consent_given ?? false
         }])
 
       if (error) {

@@ -495,6 +495,21 @@ FORMATAÇÃO (UI não renderiza markdown):
         userEmail
       )
 
+      // V1.9.376-D — Quality gate: NÃO gravar racionalidade clínica com texto
+      // Failsafe institucional ("Registrado. Posso te ajudar com agenda..."). Audit
+      // 19/05 empírico: 1 racionalidade MTC gravada com texto template quando OpenAI
+      // quota estourou (clinical_rationalities e13c0b7a-...). Throw aqui impede que
+      // saveAnalysisToReport persista lixo no banco.
+      const respModel = (response as any)?.metadata?.model
+      const respTokens = (response as any)?.metadata?.tokensUsed
+      if (
+        (typeof respModel === 'string' && (respModel.includes('Deterministic') || respModel.includes('Failsafe'))) ||
+        respTokens === 0
+      ) {
+        console.warn('[V1.9.376-D] Racionalidade NÃO gerada — GPT indisponível (model:', respModel, 'tokens:', respTokens, ')')
+        throw new Error('GPT_INDISPONIVEL: racionalidade adiada — tente novamente quando GPT estiver disponível')
+      }
+
       // Estruturar resposta
       const analysis: RationalityAnalysis = {
         assessment: response.content,

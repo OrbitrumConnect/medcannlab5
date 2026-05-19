@@ -1580,27 +1580,16 @@ export class NoaResidentAI {
 
         const patientName = (userData as any)?.name || 'Paciente'
 
-        // Gerar relatório clínico
+        // V1.9.376-A — Passa flowState.data REAL em vez de objeto hardcoded.
+        // Antes (legado pré-V1.9.376): objeto hardcoded com strings genéricas →
+        // gerava 38 stubs órfãos lifetime sem dados clínicos. Audit empírico 19/05:
+        // 9 stubs do Dr. Ricardo, 15 do Pedro admin, 14 outros. Patten same as
+        // platformFunctionsModule.ts:328 (que já fazia certo).
+        // Quality gate V1.9.376-C em generateAIReport bloqueia se data vazia.
         const report = await clinicalReportService.generateAIReport(
           userId,
           patientName,
-          {
-            investigation: 'Investigacao realizada atraves da avaliacao clinica inicial com IA residente',
-            methodology: 'Aplicacao da Arte da Entrevista Clinica (AEC) com protocolo IMRE',
-            result: 'Avaliacao clinica inicial concluida com sucesso',
-            evolution: 'Plano de cuidado personalizado estabelecido',
-            recommendations: [
-              'Continuar acompanhamento clinico regular',
-              'Seguir protocolo de tratamento estabelecido',
-              'Manter comunicacao com equipe medica'
-            ],
-            scores: {
-              clinical_score: flowState?.data?.complaintList?.length ? Math.min(100, flowState.data.complaintList.length * 15 + 30) : 50,
-              treatment_adherence: 50,
-              symptom_improvement: 50,
-              quality_of_life: 50
-            }
-          }
+          flowState?.data || {}
         )
 
         console.log('Relatorio clinico gerado:', report.id)

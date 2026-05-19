@@ -340,6 +340,154 @@ Esclarecimento pendente com Ricardo presencial.
 
 ---
 
+## 🔥 BLOCO I — Incidente OpenAI Quota 19/05 (~22h21 BRT 18/05 → ~11h BRT 19/05)
+
+### I.1 — Diagnóstico empírico
+
+Pedro reportou chat Nôa quebrado. Hipótese inicial: mexi no Core AEC. Audit empírico via `git show` dos 3 commits 19/05 (V1.9.374/374-A/375-A) **descartou** — zero arquivo do Core tocado.
+
+Logs Edge `tradevision-core` confirmaram causa raiz:
+```
+error: 429 You exceeded your current quota
+code: "insufficient_quota"
+type: "insufficient_quota"
+```
+
+**Diagnóstico final**: OpenAI quota mensal estourou. NÃO regressão minha.
+
+### I.2 — Timeline exata via PAT empírico
+
+| Timestamp UTC | Evento |
+|---|---|
+| 00:55:57 (19/05) | Última call GPT bem-sucedida (gpt-4o, 20k prompt tokens, $0.052) |
+| 01:21:30 | Primeira call em `TradeVision-Core-Deterministic` (Failsafe) |
+| 12:00-13:30 | 11 calls 100% Failsafe, 0 tokens GPT |
+| **14:02 UTC (~11h BRT)** | **OpenAI voltou** (Ricardo recarregou) — gpt-4o-2024-08-06 normal |
+
+Janela offline: **~13h**.
+
+### I.3 — Locks defensivos validados em produção
+
+Durante toda a janela offline, arquitetura defensiva sustentou operação:
+
+| Lock | Comportamento sem GPT |
+|---|---|
+| V1.9.95 FSM AEC | Avançou 13 fases até FOLLOW_UP |
+| V1.9.86 Verbatim First | Cada pergunta IMRE entregue literal (hard lock por fase) |
+| V1.9.97 AEC GATE V1.5 | "Agendamento retido: Fluxo clínico ativo tem soberania" |
+| REGRA HARD §1 (anti-kevlar) | "concordo" na revisão ≠ "sim" no consentimento |
+| V1.9.82 Fail-Safe Clínico | Devolveu verbatim em vez de fallback institucional |
+| **Quality gate narrator V1.9.84** ← achado novo | Bloqueou criação de clinical_report quando GPT falhou (pipeline abortou em `handleFinalizeAssessment:1519`) |
+| V1.9.213 dedupe | Reutilizou stubs existentes |
+
+**Sovereignty Protocol v2** (implementado 27/02/2026 em `tradevision-core/index.ts:5595-6109`) executou 5 camadas determinísticas (Conceitos, Memória, Fatores, Rephrase, Blocos).
+
+### I.4 — State pollution descoberto
+
+3 sites mapeados que reutilizam Core conversacional para chamadas técnicas:
+
+| Site | Bug confirmado |
+|---|---|
+| `AdminCasosSimilares.tsx:889` Síntese IA agregadora | Cria stub `clinical_report` via `processMessage(prompt, userId)` |
+| `rationalityAnalysisService.ts:322` | Gerou racionalidade MTC com texto Failsafe "Registrado. Posso te ajudar com agenda..." (gravada no banco) |
+| V1.9.213 dedupe | Burla quality gate narrator V1.9.84 reciclando stubs técnicos |
+
+**3 reports lixo + 1 racionalidade MTC lixo** criados no banco (todos do Pedro admin como paciente teste).
+
+### I.5 — V1.9.376 fixes parqueados (zero risco regressão)
+
+| Fix | Risco AEC | Smoke obrigatório |
+|---|---|---|
+| A: Flag `bypassFSM=true` em chamadas técnicas | 0 | AEC real completa sem regressão |
+| B: Filtro `metadata.source != 'technical_call'` no dedupe (acoplado a A) | 0 | Stub real ainda dedupa |
+| C: Quality gate em `rationalityAnalysisService` | 0 | Racionalidade com GPT ON grava normal / GPT OFF mostra msg |
+| D: Quality gate em `AdminCasosSimilares.tsx` Síntese IA | 0 | Idem |
+
+3 memórias cristalizadas durante o incidente:
+- `feedback_state_pollution_noa_core_reutilizado_19_05` (3 sites mapeados + 3 adendos)
+- Princípio: "Reutilizar Core conversacional pra funcionalidade técnica polui estado AEC do usuário"
+- Quality gate narrator V1.9.84 documentado pela primeira vez
+
+---
+
+## 🔌 BLOCO J — BYO-LLM (Bring Your Own LLM) — discussão estratégica
+
+### J.1 — Trigger empírico
+
+Após incidente, Pedro propôs BYO-LLM como direção futura: cada profissional conecta própria API key (OpenAI/Claude/Gemini/DeepSeek). Analogia precisa do Pedro:
+> *"no caso voc claude estou usando dentro do app da antigravit! seria isso...vc tbm deve ter suas limitacoes nao?"*
+
+**Sim**. Claude opera dentro de 3 camadas de subordinação: Anthropic (provedor) → Antigravity (ambiente IDE) → CLAUDE.md (projeto). Médico operaria dentro de 3 camadas: provedor LLM → MedCannLab (Locks/Gates/FSM) → caso clínico (CFM/LGPD/AEC).
+
+### J.2 — Audit empírico de viabilidade
+
+| Recurso | Status |
+|---|---|
+| Pattern provider-agnostic | ✅ Existe (`VideoProviderRegistry.ts` 03/03/2026) |
+| Edge criptografia | ✅ Existe (`cert-encrypt-password` V1.9.177) |
+| Único site OpenAI call | ✅ 1 ponto fork (`tradevision-core/index.ts:5354`) |
+| Tabela `professional_integrations` | ⚠️ Existe mas schema OAuth — criar `professional_llm_config` nova |
+| Edge `llm-key-encrypt` | ❌ Não existe — copiar pattern V1.9.177 |
+| LLM Router em `tradevision-core` | ❌ Não existe — switch case + adapter |
+
+**Conclusão arquitetural**: **aditivo puro, zero regressão**. Locks intactos. Filtro 6 perguntas (`feedback_coerencia_e_alinhamento_qualquer_fix_17_05`) passa 100%.
+
+### J.3 — Análise empírica do PDF "Doc Mestre Conselho Técnico"
+
+PDF GPT externo proposto como discussão estratégica. Audit revelou que **90% é re-descoberta** de coisas já cristalizadas:
+
+| Quando | Onde | O quê |
+|---|---|---|
+| 03/02/2026 | AUDITORIA_COS_5_0_FINAL (Antigravity) | "OpenAI cai → sistema lobotomizado" |
+| 27/02/2026 | DIARIO_27_02 + index.ts:5595+ | Motor Determinístico Sovereignty Protocol v2 IMPLEMENTADO |
+| 03/03/2026 | DIARIO_03_03 + VideoProviderRegistry | Pattern provider-agnostic |
+| 01/04/2026 | PARECER_FISCAL_INDEPENDENTE | "Design resiliente" classificado |
+| 28/04/2026 | project_piramide_governanca_28_04 | 8 camadas formalizadas |
+| 07/05/2026 | DIARIO_07_05:972 | "Single point of cognitive failure" |
+| 14/05/2026 | pitch_atual_14_05.md:48 | **"Infraestrutura cognitiva auditável"** no pitch |
+
+**10% novidade real**: BYO-LLM operacional + Multi-LLM router + Fine-tuning Llama 8B.
+
+Incidente 19/05 **não revelou arquitetura nova** — **validou em produção** o que estava cristalizado há 3,5 meses.
+
+### J.4 — Pricing BYO — decisão cristalizada
+
+Pedro decidiu: **desconto máximo R$ 10** pra médico que ativar BYO.
+
+Cálculo prudente:
+```
+desconto_max_seguro = custo_openai_observado_por_medico × 0.7
+                    = R$ 50 × 0.7 = R$ 35 (teto)
+```
+
+R$ 10 é seguro (dentro da margem). Decisão final pós-Marco 2 quando observar adoção real.
+
+### J.5 — Quem paga?
+
+| Modelo | Quem paga LLM |
+|---|---|
+| Hoje (sem BYO) | Pedro pessoal (~$25/recarga, cartão pessoal pré-CNPJ) |
+| Médico ativa BYO | Médico paga próprio uso direto pra provider (NÃO passa pelos $25) |
+| Médico desativa BYO | Volta pra plataforma → Pedro paga (ou assinatura cobra) |
+
+Hoje 0 pagantes externos. Custo OpenAI absorvido por Pedro. BYO-LLM faz sentido pós-Marco 2/3 quando custo > 30% MRR.
+
+### J.6 — Memory parqueada
+
+`project_byo_llm_arquitetura_parqueada_19_05` cristalizada com:
+- Schema completo
+- Edge function design
+- UX (nova rota `/profissional/configuracoes` com Tab "🤖 IA")
+- 6 pré-condições obrigatórias do profissional
+- Whitelist de providers (Tier 1/2/3 + bloqueados)
+- 4 limites não-negociáveis
+- 6 riscos não-óbvios + mitigações
+- Decisões humanas pendentes (Pedro + João + advogado + Ricardo + Eduardo)
+- Triggers empíricos pra ativar (recalibrados com lastro)
+- Pricing decisão R$ 10 desconto máximo
+
+---
+
 ## 📂 Arquivos modificados/criados (19/05)
 
 ### Código (3 commits)
@@ -347,10 +495,12 @@ Esclarecimento pendente com Ricardo presencial.
 - `src/pages/AdminDashboard.tsx` (+5 linhas tab Observabilidade IA)
 - `src/pages/AdminCasosSimilares.tsx` (V1.9.375-A: banner cosmologia + blockquote queixa + toggle GPT label + subtítulo)
 
-### Memory cristalizadas (3 novas)
+### Memory cristalizadas (5 novas)
 - `memory/feedback_material_a_b_c_separacao_19_05.md`
 - `memory/feedback_pesquisa_materializacao_tese_ricardo_nao_drift_19_05.md`
 - `memory/audit_19_05_subcontagem_custo_painel_v1_9_374.md`
+- `memory/feedback_state_pollution_noa_core_reutilizado_19_05.md` (incidente + 3 adendos)
+- `memory/project_byo_llm_arquitetura_parqueada_19_05.md` (arquitetura técnica completa + pricing)
 
 ### Docs
 - `DIARIO_19_05_2026_OBSERVABILIDADE_E_RECALIBRACAO.md` (este arquivo)

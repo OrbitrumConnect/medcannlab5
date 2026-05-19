@@ -1294,34 +1294,12 @@ REGRAS RÍGIDAS:
               </div>
             )}
 
-            {/* [V1.9.357] Toggle síntese IA — opt-in com aviso de custo */}
-            <div className="flex items-center justify-between gap-3 p-3 rounded-lg bg-slate-900/50 border border-slate-700/50">
-              <div className="flex items-center gap-2.5">
-                <Zap className={`w-4 h-4 ${useGPTSynthesis ? 'text-yellow-400' : 'text-slate-500'}`} />
-                <div>
-                  <div className="text-xs font-semibold text-white">
-                    Síntese IA (Nôa agregadora)
-                  </div>
-                  {/* [V1.9.375-A] Label declara tensão com tese Ricardo (áudio Uber 19/05):
-                       "sem ChatGPT generalista". Default OFF preserva bypass. */}
-                  <div className="text-[10px] text-slate-500 leading-tight">
-                    {useGPTSynthesis
-                      ? `~$0.03/busca · GPT-4o-mini (generalista) · Sessão: $${sessionCost.toFixed(2)}`
-                      : 'Default: síntese determinística ($0, instantânea)'}
-                  </div>
-                  <div className="text-[9px] text-slate-600 italic mt-0.5">
-                    Tese Dr. Ricardo: preferir bypass de GPT generalista quando possível
-                  </div>
-                </div>
-              </div>
-              <button
-                onClick={() => setUseGPTSynthesis(prev => !prev)}
-                className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${useGPTSynthesis ? 'bg-yellow-500' : 'bg-slate-600'}`}
-                title={useGPTSynthesis ? 'Desativar IA' : 'Ativar IA (custo ~$0.03/busca)'}
-              >
-                <span className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform ${useGPTSynthesis ? 'translate-x-5' : 'translate-x-0.5'}`} />
-              </button>
-            </div>
+            {/* [V1.9.376-E] Toggle Síntese IA REMOVIDO da UI — bug confirmado empíricamente:
+                 mesmo com GPT ON, devolvia template institucional "Registrado. Posso te ajudar
+                 com agenda, pacientes..." (Failsafe Core Nôa). Síntese determinística entrega
+                 100% do valor estrutural (contagens + composição racionalidades). Estado
+                 useGPTSynthesis preservado em false default. Reativar futuramente exige fix
+                 arquitetural (rationalityAnalysisService quality gate + adapter específico). */}
 
             <button
               onClick={handleSearch}
@@ -1773,27 +1751,11 @@ REGRAS RÍGIDAS:
                 </div>
               )}
 
-              {/* [V1.9.372] Toggle GPT — papel mudou: agora CONSTRÓI query MeSH-aware (não extrai termos) */}
-              <div className="flex items-center justify-between gap-3 p-3 rounded-lg bg-slate-900/50 border border-slate-700/50">
-                <div className="flex items-center gap-2.5 min-w-0">
-                  <Zap className={`w-4 h-4 flex-shrink-0 ${literatureUseGPT ? 'text-yellow-400' : 'text-slate-500'}`} />
-                  <div className="min-w-0">
-                    <div className="text-xs font-semibold text-white">IA constrói query inteligente</div>
-                    <div className="text-[10px] text-slate-500 leading-tight">
-                      {literatureUseGPT
-                        ? '~$0.005/uso · GPT monta query PubMed MeSH-aware ao gerar relatório'
-                        : 'Default: dicionário curado monta query (principal + opcionais OR)'}
-                    </div>
-                  </div>
-                </div>
-                <button
-                  onClick={handleToggleGPTExtraction}
-                  className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${literatureUseGPT ? 'bg-yellow-500' : 'bg-slate-600'}`}
-                  title={literatureUseGPT ? 'Desativar IA construtor' : 'Ativar IA construtor de query (~$0.005)'}
-                >
-                  <span className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform ${literatureUseGPT ? 'translate-x-5' : 'translate-x-0.5'}`} />
-                </button>
-              </div>
+              {/* [V1.9.376-E] Toggle "IA constrói query" OCULTO da UI — dicionário curado
+                   (~85 termos PT↔EN) já entrega query PubMed MeSH-aware satisfatória. GPT
+                   construtor era decoração com custo marginal sem ganho clínico mensurável.
+                   Estado literatureUseGPT preservado em false default. Reativar futuramente
+                   exige trigger empírico (termo PT fora do dicionário curado). */}
 
               {/* [V1.9.372] Preview query — mostra dict atual (GPT constrói só ao gerar relatório) */}
               <div className="bg-slate-800/40 border border-slate-700/50 rounded-lg p-3">
