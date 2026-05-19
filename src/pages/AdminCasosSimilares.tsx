@@ -638,7 +638,10 @@ REGRAS RÍGIDAS:
               </div>
               <div>
                 <h1 className="text-xl font-bold text-white">Casos Similares</h1>
-                <p className="text-xs text-slate-400">Admin Spike · Memória clínica institucional</p>
+                {/* [V1.9.368] Subtítulo refinado pós-2 análises GPT externas:
+                    "Exploração experimental" é o NOME técnico-honesto do que a feature É;
+                    "Casos Similares" mantido como label familiar pra médico. */}
+                <p className="text-xs text-slate-400">Exploração experimental de padrões narrativos · Admin Spike</p>
               </div>
             </div>
             <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-800/50 border border-slate-700">
@@ -661,6 +664,12 @@ REGRAS RÍGIDAS:
               <p className="text-xs text-amber-100/90 leading-relaxed">
                 Critérios de similaridade ainda <strong>imaturos</strong> (busca textual simples em campos jsonb).
                 Pode produzir <strong>falsa sensação de evidência ou recorrência</strong>.
+              </p>
+              {/* [V1.9.368] Distinção lexical ≠ clínica com exemplo concreto auditado 18/05 */}
+              <p className="text-xs text-amber-100/85 leading-relaxed">
+                <strong>Similaridade lexical ≠ similaridade clínica.</strong> O matching textual não enxerga semântica:
+                no corpus atual, "dor de cabeça" e "a dor de cabeça" são contadas como grupos diferentes
+                (mesma realidade clínica, escrita diferente). Agrupamento textual não é evidência clínica.
               </p>
               <p className="text-xs text-amber-100/70 leading-relaxed">
                 <strong>Crítica formal Dr. Ricardo Valença (18/05/2026):</strong> "similaridade por qual critério?" —
