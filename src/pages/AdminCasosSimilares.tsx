@@ -1514,11 +1514,15 @@ REGRAS RÍGIDAS:
       {/* [V1.9.356] Modal preview do caso — abre quando clica em qualquer card */}
       {selectedCase && (
         <div
-          className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-150"
+          /* V1.9.378 — z-[80] acima do Header.tsx:157 (z-[60]). Antes z-50 ficava
+              EMBAIXO do header em viewports widescreen, modal aparecia cortado. */
+          className="fixed inset-0 z-[80] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-150"
           onClick={() => setSelectedCase(null)}
         >
           <div
-            className="bg-slate-900 border border-slate-700 rounded-xl max-w-5xl w-full max-h-[92vh] overflow-y-auto"
+            /* V1.9.378 — max-w-6xl (1152px) em vez de 5xl (1024px). Em widescreen
+                4096px ainda fica centralizado; em laptops normais cresce ~13%. */
+            className="bg-slate-900 border border-slate-700 rounded-xl max-w-6xl w-full max-h-[92vh] overflow-y-auto"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Header modal */}
@@ -1658,11 +1662,15 @@ REGRAS RÍGIDAS:
             expande termos, traduz PT→EN, detecta sinônimos — médico revisa antes de buscar */}
       {literatureModalOpen && (
         <div
-          className="fixed inset-0 z-[60] bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-150"
+          /* V1.9.378 — z-[90] acima do modal caso (z-[80]) e do Header (z-[60]).
+              Antes z-[60] empatava com Header, ordem DOM decidia visibilidade. */
+          className="fixed inset-0 z-[90] bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-150"
           onClick={() => setLiteratureModalOpen(false)}
         >
           <div
-            className="bg-slate-900 border border-slate-700 rounded-xl max-w-2xl w-full max-h-[85vh] overflow-y-auto"
+            /* V1.9.378 — max-w-4xl (896px) em vez de 2xl (672px). Modal tinha chips
+                + query preview + relatório estrutural amontoados em 672px. */
+            className="bg-slate-900 border border-slate-700 rounded-xl max-w-4xl w-full max-h-[88vh] overflow-y-auto"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="sticky top-0 bg-slate-900 border-b border-slate-700/50 px-6 py-4 flex items-center justify-between">
