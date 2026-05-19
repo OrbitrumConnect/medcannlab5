@@ -5231,8 +5231,12 @@ ${contentExcerpt || '(Texto não disponível para este documento. O conteúdo ai
 
         // 🔒 PHASE LOCK: Reforço de fase como última mensagem de sistema (posição mais influente para o modelo)
         // Isso impede que o GPT abandone o protocolo AEC quando o paciente dá respostas curtas ou ambíguas.
+        // [V1.9.379-A] SKIP Phase Lock quando ui_context.bypassFSM=true (Nôa Matrix — chat pesquisa Z2).
+        // Chat pesquisa não conduz fluxo AEC, então Phase Lock é irrelevante e inflaria prompt
+        // com ~3k chars de instruções clínicas que não aplicam.
+        const isResearchMode = ui_context?.bypassFSM === true || ui_context?.source === 'research_chat'
         const phaseReinforcementMessages: Array<{ role: string, content: string }> = []
-        if (assessmentPhase) {
+        if (assessmentPhase && !isResearchMode) {
             // clinicalAssessmentFlow.ts usa INITIAL_GREETING, IDENTIFICATION, etc. — mapear para trilhos do Core (antes só OPENING/COMPLAINT_* alinhavam).
             const phaseMap: Record<string, string> = {
                 'OPENING': '🔒 PHASE LOCK: Você está na ABERTURA do protocolo AEC 001. Apresente-se com a frase exata do protocolo. NÃO encerre a conversa.',

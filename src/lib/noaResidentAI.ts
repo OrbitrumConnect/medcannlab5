@@ -295,6 +295,13 @@ export class NoaResidentAI {
     this.isProcessing = true
     const rawUserMessage = userMessage
 
+    // [V1.9.379-A] Detectar modo Nôa Matrix (chat pesquisa Z2 não-diretivo).
+    // Quando bypassFSM=true (vindo de useResearchChat), pular toda lógica de FSM AEC,
+    // Phase Lock e CLINICAL_PROMPT. Chat pesquisa NÃO conduz fluxo clínico —
+    // organiza corpus marcado pelo médico (Casos Similares + Literatura + notas).
+    // Memory: feedback_state_pollution_noa_core_reutilizado_19_05 + project_ricardo_19_05_forum_validation_features_solicitadas
+    const isResearchMode = uiContext?.bypassFSM === true || uiContext?.source === 'research_chat'
+
     try {
       // Ler dados da plataforma em tempo real
       const platformData = this.getPlatformData()
@@ -318,7 +325,8 @@ export class NoaResidentAI {
       // [V1.9.105] Garante state AEC carregado ANTES de qualquer detectIntent contextual.
       // Sem isso, paciente com state em DB mas não em memória teria peek=null →
       // contextual disparaa erroneamente em mid-AEC.
-      if (userId && isPatientForAec) {
+      // [V1.9.379-A] SKIP FSM AEC load quando research mode — chat pesquisa não usa FSM
+      if (userId && isPatientForAec && !isResearchMode) {
         await clinicalAssessmentFlow.ensureLoaded(userId)
       }
       const _aecStatePeek = userId ? clinicalAssessmentFlow.getState(userId) : null
