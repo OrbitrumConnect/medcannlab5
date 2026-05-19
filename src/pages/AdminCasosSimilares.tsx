@@ -1522,7 +1522,7 @@ REGRAS RÍGIDAS:
           onClick={() => setSelectedCase(null)}
         >
           <div
-            className="bg-slate-900 border border-slate-700 rounded-xl max-w-3xl w-full max-h-[85vh] overflow-y-auto"
+            className="bg-slate-900 border border-slate-700 rounded-xl max-w-5xl w-full max-h-[92vh] overflow-y-auto"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Header modal */}
