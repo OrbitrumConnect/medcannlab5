@@ -11,9 +11,14 @@ import {
   Keyboard,
   Globe,
   Sparkles,
+  Newspaper,
+  MapPin,
+  ScrollText,
+  Compass,
 } from 'lucide-react'
 import {
   useExternalLiterature,
+  type EditorialPreset,
 } from '../hooks/useExternalLiterature'
 import {
   EVIDENCE_LABELS,
@@ -62,6 +67,21 @@ const YEAR_OPTIONS: Array<{ value: 0 | 5 | 10 | 20; label: string }> = [
   { value: 0, label: 'Sem limite' },
 ]
 
+// [V1.9.369-B] Tabs editoriais — query cannabis pré-configurada pra reduzir fricção de adoção
+interface EditorialTab {
+  id: EditorialPreset
+  label: string
+  icon: React.ComponentType<{ className?: string }>
+  hint: string
+}
+
+const EDITORIAL_TABS: EditorialTab[] = [
+  { id: 'free', label: 'Busca livre', icon: Compass, hint: 'pesquise qualquer termo' },
+  { id: 'novidades', label: 'Novidades 30 dias', icon: Newspaper, hint: 'cannabis · ordenado por data' },
+  { id: 'cannabis-br', label: 'Cannabis no Brasil', icon: MapPin, hint: 'autores com afiliação BR · 10 anos' },
+  { id: 'guidelines', label: 'Guidelines', icon: ScrollText, hint: 'cannabis · Publication Type = Guideline' },
+]
+
 const ExternalLiterature: React.FC<Props> = ({ embedded = false }) => {
   const {
     term,
@@ -70,6 +90,8 @@ const ExternalLiterature: React.FC<Props> = ({ embedded = false }) => {
     setYearsBack,
     evidenceFilter,
     setEvidenceFilter,
+    preset,
+    setPreset,
     loading,
     error,
     articles,
@@ -134,6 +156,32 @@ const ExternalLiterature: React.FC<Props> = ({ embedded = false }) => {
                 Sempre verifique o paper original no link antes de citar.
               </p>
             </div>
+          </div>
+        </div>
+
+        {/* [V1.9.369-B] Tabs editoriais — clica e já carrega query curada (sem digitar) */}
+        <div className="bg-slate-800/20 border border-slate-700/40 rounded-xl p-2 mb-4">
+          <div className="flex items-center gap-1 flex-wrap">
+            {EDITORIAL_TABS.map(tab => {
+              const Icon = tab.icon
+              const isActive = preset === tab.id
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => setPreset(tab.id)}
+                  className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs transition-colors whitespace-nowrap ${
+                    isActive
+                      ? 'bg-indigo-500/20 text-indigo-200 border border-indigo-500/40'
+                      : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60 border border-transparent'
+                  }`}
+                  title={tab.hint}
+                >
+                  <Icon className={`w-3.5 h-3.5 ${isActive ? 'text-indigo-300' : 'text-slate-500'}`} />
+                  <span className="font-semibold">{tab.label}</span>
+                  <span className="hidden md:inline text-[10px] text-slate-500 font-normal">· {tab.hint}</span>
+                </button>
+              )
+            })}
           </div>
         </div>
 

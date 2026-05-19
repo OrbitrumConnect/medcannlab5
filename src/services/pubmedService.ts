@@ -63,6 +63,10 @@ export interface SearchOpts {
   retmax?: number
   yearsBack?: number
   evidenceFilter?: EvidenceLevel | 'all'
+  // [V1.9.369-B] presets editoriais
+  daysBack?: number // override yearsBack pra granularidade fina (Novidades 7 dias, etc)
+  affiliationBR?: boolean // restringe Affiliation=Brazil/Brasil
+  sortBy?: 'relevance' | 'pub_date' // PubMed default = relevance; pub_date pra Novidades
   signal?: AbortSignal
 }
 
@@ -104,13 +108,21 @@ function buildSearchTerm(opts: SearchOpts): string {
   const base = opts.term.trim()
   const parts: string[] = [`(${base}[Title/Abstract])`]
 
-  if (opts.yearsBack && opts.yearsBack > 0) {
+  // daysBack tem precedência sobre yearsBack (granularidade fina pra Novidades)
+  if (opts.daysBack && opts.daysBack > 0) {
+    parts.push(`("last ${opts.daysBack} days"[PDat])`)
+  } else if (opts.yearsBack && opts.yearsBack > 0) {
     parts.push(`("last ${opts.yearsBack} years"[PDat])`)
   }
 
   if (opts.evidenceFilter && opts.evidenceFilter !== 'all') {
     const ptFilter = evidenceFilterToPubType(opts.evidenceFilter)
     if (ptFilter) parts.push(ptFilter)
+  }
+
+  // [V1.9.369-B] filtro afiliação Brasil — autor com instituição BR
+  if (opts.affiliationBR) {
+    parts.push('(Brazil[Affiliation] OR Brasil[Affiliation])')
   }
 
   return parts.join(' AND ')
@@ -146,7 +158,8 @@ async function fetchJson(url: string, signal?: AbortSignal): Promise<any> {
 async function esearch(opts: SearchOpts): Promise<{ ids: string[]; total: number }> {
   const term = buildSearchTerm(opts)
   const retmax = opts.retmax ?? 10
-  const url = `${BASE_URL}/esearch.fcgi?db=pubmed&term=${encodeURIComponent(term)}&retmax=${retmax}&retmode=json&tool=${TOOL_NAME}&email=${encodeURIComponent(CONTACT_EMAIL)}`
+  const sort = opts.sortBy === 'pub_date' ? '&sort=pub+date' : ''
+  const url = `${BASE_URL}/esearch.fcgi?db=pubmed&term=${encodeURIComponent(term)}&retmax=${retmax}&retmode=json&tool=${TOOL_NAME}&email=${encodeURIComponent(CONTACT_EMAIL)}${sort}`
   const data = await fetchJson(url, opts.signal)
   const ids = (data?.esearchresult?.idlist as string[]) || []
   const total = parseInt(data?.esearchresult?.count || '0', 10)
