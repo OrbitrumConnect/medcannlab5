@@ -4896,14 +4896,87 @@ AGORA: Analise o contexto. Se pedir Sistema Renal/Urinário, atue como LÚCIA ou
             isTeachingMode = false
         }
 
-        const systemPrompt = isTeachingMode ? TEACHING_PROMPT : CLINICAL_PROMPT;
+        // [V1.9.379-A/B] Detectar modo Nôa Matrix (chat pesquisa Z2 não-diretivo).
+        // Declarado aqui (antes do systemPrompt) pra escopo cobrir todo o fluxo.
+        // Memory: project_ricardo_19_05_forum_validation_features_solicitadas
+        const isResearchMode = ui_context?.bypassFSM === true || ui_context?.source === 'research_chat'
+
+        // [V1.9.379-B] RESEARCH_PROMPT — Nôa Matrix (chat pesquisa Z2 não-diretivo).
+        // Bloqueia palavras gatilho ("recomendo", "sugiro", "melhor abordagem", hipótese diagnóstica).
+        // Vocabulário 100% derivado de docs Ricardo aprovados (CLINICAL_PROMPT linhas 4505-4508
+        // epistemologia escuta-primeiro + frase 12/03/2026 "não categoriza por doença" + áudio Uber 19/05).
+        // Memory: project_ricardo_19_05_forum_validation_features_solicitadas — checklist Z2.
+        const RESEARCH_PROMPT = `Você é Nôa Matrix, a versão da Nôa Esperanza dedicada à pesquisa estrutural
+do MedCannLab. Sua voz é a mesma — contralto, clara, acolhedora — mas seu
+papel é diferente: você NÃO conduz fluxo clínico. Você ORGANIZA conhecimento.
+
+EPISTEMOLOGIA (Dr. Ricardo Valença):
+A doença não é o centro. O centro é a escuta e a narrativa. Você estrutura
+comparações, agrupamentos e citações — nunca diagnostica, nunca recomenda,
+nunca categoriza por doença. O médico decide. Você organiza.
+
+CONTEXTO DA SESSÃO:
+O profissional acessou Casos Similares e Literatura, marcou cards e notas
+que considerou relevantes, e trouxe esse material para conversar com você.
+Sua função é ajudá-lo a estruturar o raciocínio sobre esse corpus selecionado.
+
+PRIORIDADE EPISTEMOLÓGICA (na ordem):
+1. Fidelidade ao corpus marcado pelo médico
+2. Rastreabilidade das fontes (Caso #X / PMID / doc KB)
+3. Clareza estrutural (cabeçalhos, listas)
+4. Reconhecimento explícito de limites do material
+
+Nunca priorize completude especulativa sobre fidelidade ao corpus.
+
+O QUE VOCÊ PODE FAZER (Z2 estrutural):
+1. COMPARAR — apontar similaridades e divergências entre casos marcados,
+   sempre citando "Caso #X" como fonte.
+2. AGRUPAR — organizar casos/papers por critério explícito que o médico
+   solicitar (temporal, sintomático, racionalidade aplicada).
+3. CITAR — referenciar papers da Literatura selecionada com PMID/título,
+   sem inferir validade clínica.
+4. ESTRUTURAR PERGUNTAS — listar perguntas que o caso levanta, sem responder.
+5. APONTAR DIVERGÊNCIAS — entre racionalidades aplicadas a casos similares,
+   sem opinar qual está certa.
+6. RECUPERAR HISTÓRICO — relembrar o que o médico já comentou nas notas
+   marcadas, sem reinterpretar.
+7. RECONHECER LIMITES — quando o material trazido não permite responder,
+   dizer claramente: "este corpus não cobre essa dimensão".
+
+O QUE VOCÊ NÃO PODE FAZER (proibições absolutas):
+- Sugerir conduta ("recomendo", "sugiro", "indica-se", "deve-se")
+- Inferir diagnóstico ("hipótese provável é", "quadro compatível com")
+- Sintetizar decisão clínica ("a melhor abordagem é")
+- Categorizar por doença antes que o médico o faça
+- Citar conhecimento fora do corpus marcado pelo médico (sem alucinação)
+- Resumir como se fosse conclusão clínica
+- Usar palavras "talvez", "provavelmente", "pode ser" em contexto clínico
+
+ESTRUTURA DE RESPOSTA:
+- Use cabeçalhos em MAIÚSCULAS quando útil (sem markdown ** ou *)
+- Liste com hífen (-) ou números (1. 2.)
+- Cite fontes assim: "Caso #3 (15/03/2026)" ou "PMID 12345"
+- Termine cada resposta com: "Estruturação a partir do corpus marcado.
+  Interpretação clínica é responsabilidade do médico."
+
+LIMITAÇÃO ESSENCIAL:
+Se o médico fizer pergunta que exige inferência clínica, responda:
+"Posso comparar/agrupar/citar o material que você marcou. Para hipótese
+diagnóstica ou conduta, a decisão é sua — não posso inferir."
+
+Nunca diga "como IA, eu não posso..." — em vez disso, mostre o que pode fazer
+dentro do material trazido.`;
+
+        // [V1.9.379-B] 3-way switch: RESEARCH > TEACHING > CLINICAL
+        const systemPrompt = isResearchMode ? RESEARCH_PROMPT : (isTeachingMode ? TEACHING_PROMPT : CLINICAL_PROMPT);
 
         console.log('🎭 [PERSONA SELECTED]', {
-            mode: isTeachingMode ? 'TEACHING (Patient Paula)' : 'CLINICAL (Doctor Noa)',
+            mode: isResearchMode ? 'RESEARCH (Nôa Matrix)' : (isTeachingMode ? 'TEACHING (Patient Paula)' : 'CLINICAL (Doctor Noa)'),
             intent: currentIntent,
             triggerKeyword: isTeachingMode,
             isAdmin,
-            isNavigationRequest
+            isNavigationRequest,
+            isResearchMode
         });
 
         if (action === 'calculate_priority') {
@@ -5231,10 +5304,8 @@ ${contentExcerpt || '(Texto não disponível para este documento. O conteúdo ai
 
         // 🔒 PHASE LOCK: Reforço de fase como última mensagem de sistema (posição mais influente para o modelo)
         // Isso impede que o GPT abandone o protocolo AEC quando o paciente dá respostas curtas ou ambíguas.
-        // [V1.9.379-A] SKIP Phase Lock quando ui_context.bypassFSM=true (Nôa Matrix — chat pesquisa Z2).
-        // Chat pesquisa não conduz fluxo AEC, então Phase Lock é irrelevante e inflaria prompt
-        // com ~3k chars de instruções clínicas que não aplicam.
-        const isResearchMode = ui_context?.bypassFSM === true || ui_context?.source === 'research_chat'
+        // [V1.9.379-A/B] SKIP Phase Lock quando isResearchMode=true (Nôa Matrix — chat pesquisa Z2).
+        // isResearchMode declarado mais cedo no fluxo (antes do systemPrompt) — reusa aqui.
         const phaseReinforcementMessages: Array<{ role: string, content: string }> = []
         if (assessmentPhase && !isResearchMode) {
             // clinicalAssessmentFlow.ts usa INITIAL_GREETING, IDENTIFICATION, etc. — mapear para trilhos do Core (antes só OPENING/COMPLAINT_* alinhavam).
@@ -5605,10 +5676,14 @@ ${userInput.substring(0, 2000)}
             } as any;
         } else {
         // 7. Chamada à OpenAI (GPT-4o)
+        // [V1.9.379-B] Forçar gpt-4o-mini quando isResearchMode (chat pesquisa Z2 não exige polish caro do gpt-4o).
+        // Empírico audit 19/05: gpt-4o-mini é 17× mais barato no input ($0.15 vs $2.50 por 1M).
+        // Chat pesquisa estrutura/agrupa/cita — não precisa de gpt-4o.
+        const effectiveChatModel = isResearchMode ? 'gpt-4o-mini' : CHAT_MODEL
         completion = await openai.chat.completions.create({
-            model: CHAT_MODEL,
+            model: effectiveChatModel,
             messages,
-            temperature: isTeachingMode ? 0.7 : 0.2, // Ensino = 0.7 para atuação mais natural da Paula
+            temperature: isResearchMode ? 0.1 : (isTeachingMode ? 0.7 : 0.2), // Pesquisa: 0.1 (alta fidelidade). Ensino: 0.7 (Paula natural). Clínica: 0.2 (Nôa estável).
             max_tokens: 1500
         }).catch(async (openaiError: any) => {
             console.error('⚠️ [OPENAI DOWN] Ativando Modo Determinístico (Consciência Reduzida)...', openaiError);
@@ -6290,7 +6365,10 @@ ${userInput.substring(0, 2000)}
         // [TITAN 3.2] A Persistência de Auditoria agora é OBRIGATÓRIA e TRANSACIONAL
         if (patientData?.user?.id) {
             let simbologia = '🔴 Escuta Clínica';
-            if (isTeachingMode) simbologia = ' Simulação de Paciente';
+            // [V1.9.379-B] Nôa Matrix (chat pesquisa Z2) — simbologia dedicada separa métricas
+            // do Painel V1.9.374-A Observabilidade IA (não polui métricas AEC).
+            if (isResearchMode) simbologia = '🧬 Nôa Matrix';
+            else if (isTeachingMode) simbologia = ' Simulação de Paciente';
             else if (currentIntent === 'ADMIN') simbologia = '🔵 Escuta Institucional';
 
             // [V1.9.321] Cost observability EXPANDIDA pra noa_logs.payload.
