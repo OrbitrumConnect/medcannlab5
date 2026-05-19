@@ -1124,6 +1124,13 @@ REGRAS RÍGIDAS:
                 CID é pobre, impressão diagnóstica varia entre médicos, narrativa carrega viés, longitudinal exige
                 maturidade de dados. Sistema ainda não estabilizou taxonomia + governança + pseudonimização robusta.
               </p>
+              {/* [V1.9.375-A] Termo "cosmologia" do Ricardo (áudio Uber 19/05) — cada racionalidade é cosmologia diferente */}
+              <p className="text-xs text-amber-100/85 leading-relaxed">
+                <strong>Cosmologias clínicas diferentes (Dr. Ricardo, 19/05):</strong> cada racionalidade é uma
+                <em> cosmologia</em> — DRC vista pela biomédica (creatinina, eGFR, proteinúria) ≠ DRC vista pela MTC
+                (estagnação de Qi do Rim) ≠ vista pela ayurveda (dosha). Filtro "Todas" agrega cosmologias
+                incompatíveis. Use racionalidade ESPECÍFICA pra leitura coerente.
+              </p>
               <p className="text-xs text-amber-200 leading-relaxed font-semibold pt-1 border-t border-amber-500/20">
                 Use APENAS pra explorar o corpus internamente. NÃO orientar conduta clínica.
                 Sequência prevista: 1º histórico longitudinal do próprio paciente, 2º memória clínica do próprio médico,
@@ -1201,9 +1208,15 @@ REGRAS RÍGIDAS:
                   value={rationalityFilter}
                   onChange={(e) => setRationalityFilter(e.target.value as RationalityType)}
                   className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white text-sm focus:outline-none focus:border-purple-500/50"
+                  title={rationalityFilter === 'all'
+                    ? '⚠️ Filtro "Todas" agrega 5 cosmologias clínicas diferentes (Dr. Ricardo) — DRC visto pela biomédica ≠ DRC visto pela MTC'
+                    : `Filtro ativo: ${RATIONALITY_LABELS[rationalityFilter]}`}
                 >
                   {Object.entries(RATIONALITY_LABELS).map(([key, label]) => (
-                    <option key={key} value={key}>{label}</option>
+                    // [V1.9.375-A] "Todas" recebe rótulo de alerta — Ricardo: cada racionalidade é uma cosmologia
+                    <option key={key} value={key}>
+                      {key === 'all' ? '⚠️ Todas (mistura cosmologias)' : label}
+                    </option>
                   ))}
                 </select>
               </div>
@@ -1289,10 +1302,15 @@ REGRAS RÍGIDAS:
                   <div className="text-xs font-semibold text-white">
                     Síntese IA (Nôa agregadora)
                   </div>
-                  <div className="text-[10px] text-slate-500">
+                  {/* [V1.9.375-A] Label declara tensão com tese Ricardo (áudio Uber 19/05):
+                       "sem ChatGPT generalista". Default OFF preserva bypass. */}
+                  <div className="text-[10px] text-slate-500 leading-tight">
                     {useGPTSynthesis
-                      ? `Custo estimado: ~$0.03/busca · Sessão atual: $${sessionCost.toFixed(2)}`
+                      ? `~$0.03/busca · GPT-4o-mini (generalista) · Sessão: $${sessionCost.toFixed(2)}`
                       : 'Default: síntese determinística ($0, instantânea)'}
+                  </div>
+                  <div className="text-[9px] text-slate-600 italic mt-0.5">
+                    Tese Dr. Ricardo: preferir bypass de GPT generalista quando possível
                   </div>
                 </div>
               </div>
@@ -1562,12 +1580,26 @@ REGRAS RÍGIDAS:
                     </div>
                   )}
 
-                  {/* Queixa principal */}
+                  {/* [V1.9.375-A] Queixa principal como CITAÇÃO — Ricardo no áudio Uber:
+                       "no que vai pro livro entra entre aspas referência às queixas principais" */}
                   <div>
                     <h4 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">Queixa Principal</h4>
-                    <p className="text-sm text-slate-200 leading-relaxed">
-                      {caseDetails?.content?.queixa_principal || caseDetails?.content?.chiefComplaint || selectedCase.queixaPrincipal || '—'}
-                    </p>
+                    {(() => {
+                      const queixa = caseDetails?.content?.queixa_principal || caseDetails?.content?.chiefComplaint || selectedCase.queixaPrincipal || ''
+                      const hasQueixa = queixa && queixa !== '—'
+                      return hasQueixa ? (
+                        <>
+                          <blockquote className="border-l-2 border-purple-500/40 pl-3 italic text-sm text-slate-200 leading-relaxed">
+                            "{queixa}"
+                          </blockquote>
+                          <p className="text-[10px] text-slate-500 mt-1.5 italic">
+                            Fala literal do paciente (referência) — não é interpretação clínica
+                          </p>
+                        </>
+                      ) : (
+                        <p className="text-sm text-slate-500">—</p>
+                      )
+                    })()}
                   </div>
 
                   {/* Lista indiciária */}
