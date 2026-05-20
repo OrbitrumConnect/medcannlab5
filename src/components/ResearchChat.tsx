@@ -55,10 +55,16 @@ export const ResearchChat: React.FC<ResearchChatProps> = ({ attachedContext, onM
     }
   }
 
+  // V1.9.391 (Pedro+GPT-Pedro 20/05 ~15h BRT) — fix overflow flex Tailwind clássico.
+  // Bug empírico: respostas longas Matrix ficavam cobertas pelo input/footer.
+  // Causas: max-h-[500px] cortava sem respiro + pai flex sem min-h-0 + input sem shrink-0.
+  // Solução: min-h-0 no pai, pb-extra no scrollable, shrink-0 no header/input.
+  // Memory feedback_coerencia_e_alinhamento: análise empírica antes do código.
   return (
-    <div className="flex flex-col h-full bg-slate-900/40 border border-purple-500/20 rounded-xl overflow-hidden">
+    <div className="flex flex-col h-full min-h-0 bg-slate-900/40 border border-purple-500/20 rounded-xl overflow-hidden">
       {/* Header */}
-      <div className="flex items-center justify-between px-4 py-3 border-b border-purple-500/20 bg-slate-900/60">
+      {/* V1.9.391 — header com shrink-0 (não compress pelo scrollable) */}
+      <div className="shrink-0 flex items-center justify-between px-4 py-3 border-b border-purple-500/20 bg-slate-900/60">
         <div className="flex items-center gap-2.5">
           {/* V1.9.383 — Avatar Nôa estático (mesmo asset usado em Header.tsx + outros chats) */}
           <img
@@ -101,7 +107,10 @@ export const ResearchChat: React.FC<ResearchChatProps> = ({ attachedContext, onM
       </div>
 
       {/* Mensagens */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-3 min-h-[300px] max-h-[500px]">
+      {/* V1.9.391 — scrollable com min-h-0 (fix bug overflow flex Tailwind)
+          + pb-6 pra respiro entre última mensagem e input
+          + max-h aumentado 500→650 pra acomodar respostas Matrix longas (~2000 chars) */}
+      <div className="flex-1 min-h-0 overflow-y-auto p-4 pb-6 space-y-3 min-h-[300px] max-h-[650px]">
         {messages.length === 0 ? (
           <div className="text-center py-8">
             {/* V1.9.383 — Avatar Nôa Matrix no empty state */}
@@ -182,14 +191,15 @@ export const ResearchChat: React.FC<ResearchChatProps> = ({ attachedContext, onM
 
       {/* Erro */}
       {errorMessage && (
-        <div className="px-4 py-2 bg-red-500/10 border-t border-red-500/30 flex items-center gap-2">
+        <div className="shrink-0 px-4 py-2 bg-red-500/10 border-t border-red-500/30 flex items-center gap-2">
           <AlertTriangle className="w-3.5 h-3.5 text-red-400" />
           <span className="text-xs text-red-300">{errorMessage}</span>
         </div>
       )}
 
       {/* Input */}
-      <div className="border-t border-purple-500/20 bg-slate-900/60 p-3">
+      {/* V1.9.391 — shrink-0 garante que input nunca seja comprimido pelo scrollable */}
+      <div className="shrink-0 border-t border-purple-500/20 bg-slate-900/60 p-3">
         <div className="flex items-end gap-2">
           <textarea
             value={input}
