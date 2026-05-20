@@ -29,10 +29,11 @@ import { useAuth } from '../contexts/AuthContext'
 import { useSearchHistory } from '../hooks/useSearchHistory'
 import { usePatientLongitudinal } from '../hooks/usePatientLongitudinal'
 import { useExternalLiterature } from '../hooks/useExternalLiterature'
+import { useDossierPersist, type SavedDossier } from '../hooks/useDossierPersist'
 import { EVIDENCE_LABELS } from '../services/pubmedService'
 import { ResearchChat } from './ResearchChat'
-import { exportDossierToPDF, type DossierMessage } from '../lib/dossierExport'
-import { Sparkles, FileText, StickyNote, Check, Info, Folder, User, Stethoscope, Activity, X, BookOpen, Search, Loader2 } from 'lucide-react'
+import { exportDossierToPDF, type DossierMessage, type DossierData } from '../lib/dossierExport'
+import { Sparkles, FileText, StickyNote, Check, Info, Folder, User, Stethoscope, Activity, X, BookOpen, Search, Loader2, Archive, Trash2 } from 'lucide-react'
 
 interface AttachableCard {
   id: string
@@ -65,6 +66,17 @@ export const NoaMatrixView: React.FC = () => {
   // V1.9.386 — Pedro 19/05 noite: trigger ocultar cards pra não acumular
   // (não-destrutivo, só esconde da view atual; reload da sessão reseta)
   const [hiddenIds, setHiddenIds] = useState<Set<string>>(new Set())
+
+  // V1.9.392 (F3-A.2) — Persistência de dossiês. Hook isolado, RLS por physician_id.
+  const { saveDossier, listDossiers, deleteDossier, saving: dossierSaving } = useDossierPersist()
+  const [savedDossiers, setSavedDossiers] = useState<SavedDossier[]>([])
+  const [dossiersOpen, setDossiersOpen] = useState(false)
+  const [dossierFeedback, setDossierFeedback] = useState<string | null>(null)
+
+  const refreshDossiers = async () => {
+    const list = await listDossiers(10)
+    setSavedDossiers(list)
+  }
 
   // V1.9.388-A.3 — Reuso pubmedService V1.9.369 (princípio "polir não inventar").
   // Médico digita termo, vê papers, clica "anexar" → artigo vira card no attachedContext.
@@ -492,17 +504,113 @@ export const NoaMatrixView: React.FC = () => {
               </div>
             )}
           </div>
+
+          {/* V1.9.392 (F3-A.2) — Accordion "Meus Dossiês" — histórico persistido.
+              Lazy load: lista só quando médico abre. RLS garante que só vê os próprios.
+              Re-gerar PDF a partir do snapshot jsonb (não depende de estado atual do banco). */}
+          <div className="bg-slate-900/40 border border-emerald-500/25 rounded-xl overflow-hidden">
+            <button
+              type="button"
+              onClick={() => {
+                const next = !dossiersOpen
+                setDossiersOpen(next)
+                if (next) refreshDossiers()
+              }}
+              className="w-full flex items-center justify-between gap-2 px-3 py-2.5 hover:bg-emerald-500/5 transition-colors"
+            >
+              <div className="flex items-center gap-2">
+                <Archive className="w-4 h-4 text-emerald-300" />
+                <span className="text-xs font-semibold text-slate-200">Meus Dossiês</span>
+                {savedDossiers.length > 0 && (
+                  <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-200">
+                    {savedDossiers.length}
+                  </span>
+                )}
+              </div>
+              <span className="text-[10px] text-slate-500">{dossiersOpen ? 'fechar' : 'expandir'}</span>
+            </button>
+
+            {dossiersOpen && (
+              <div className="border-t border-emerald-500/20 p-3 space-y-2">
+                {savedDossiers.length === 0 ? (
+                  <p className="text-[10px] text-slate-500 italic">
+                    Nenhum dossiê salvo ainda. Use "Fechar como dossiê" no chat pra gerar o primeiro.
+                  </p>
+                ) : (
+                  savedDossiers.map((d) => (
+                    <div
+                      key={d.id}
+                      className="rounded-md p-2 border bg-slate-800/40 border-slate-700/30 text-[11px]"
+                    >
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="flex-1 min-w-0">
+                          <div className="font-medium text-slate-200 truncate">{d.title}</div>
+                          <div className="text-[10px] text-slate-500 mt-0.5">
+                            {new Date(d.generated_at).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                            {' · '}{d.content?.messages?.length ?? 0} msgs · {d.content?.selectedCards?.length ?? 0} cards
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-1 flex-shrink-0">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              // Re-gera PDF a partir do snapshot imutável
+                              const snap = d.content
+                              exportDossierToPDF({ ...snap, generatedAt: new Date(snap.generatedAt) })
+                            }}
+                            title="Re-gerar PDF deste dossiê"
+                            className="p-1 rounded text-emerald-300 hover:bg-emerald-500/15 transition-colors"
+                          >
+                            <FileText className="w-3.5 h-3.5" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={async () => {
+                              const ok = await deleteDossier(d.id)
+                              if (ok) refreshDossiers()
+                            }}
+                            title="Remover dossiê do histórico"
+                            className="p-1 rounded text-slate-500 hover:text-red-300 hover:bg-red-500/10 transition-colors"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                )}
+                <div className="flex items-start gap-1.5 text-[10px] text-slate-500 italic leading-tight pt-1 border-t border-slate-700/30">
+                  <Info className="w-3 h-3 flex-shrink-0 mt-0.5" />
+                  <span>
+                    Dossiês são snapshots imutáveis da sessão (corpus + papers + conversa).
+                    Visíveis apenas para você (RLS). Re-gerar PDF não depende de mudanças no banco.
+                  </span>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* V1.9.392 — Feedback de salvamento de dossiê */}
+          {dossierFeedback && (
+            <div className="rounded-lg bg-emerald-500/10 border border-emerald-500/30 px-3 py-2 flex items-center gap-2">
+              {dossierSaving
+                ? <Loader2 className="w-3.5 h-3.5 text-emerald-300 animate-spin flex-shrink-0" />
+                : <Check className="w-3.5 h-3.5 text-emerald-300 flex-shrink-0" />}
+              <span className="text-[11px] text-emerald-200">{dossierFeedback}</span>
+            </div>
+          )}
         </div>
 
         {/* Chat */}
         <div className="lg:col-span-7">
           <ResearchChat
             attachedContext={attachedContext}
-            // V1.9.390 (F3-A.1) — Callback "Fechar como dossiê". NoaMatrixView combina
-            // messages do chat + cards selecionados + papers PubMed anexados + identidade
-            // médico/paciente, e chama exportDossierToPDF (window.print local, sem schema banco).
-            // Memory: project_visao_final_eixo_pesquisa_19_05 F3 = fechar dossiê.
-            onCloseDossier={(matrixMessages: DossierMessage[]) => {
+            // V1.9.390 (F3-A.1) → V1.9.392 (F3-A.2) — Callback "Fechar como dossiê".
+            // F3-A.1: combina messages + cards + papers + identidade → exportDossierToPDF.
+            // F3-A.2: ADICIONA persistência (saveDossier → physician_research_dossiers,
+            //   snapshot imutável jsonb). Salva E gera PDF num clique. Memory:
+            //   project_visao_final_eixo_pesquisa_19_05 F3 = fechar dossiê.
+            onCloseDossier={async (matrixMessages: DossierMessage[]) => {
               const selectedCardsArr = cards
                 .filter((c) => selectedIds.has(c.id))
                 .map((c) => ({
@@ -513,7 +621,7 @@ export const NoaMatrixView: React.FC = () => {
                   body: c.body,
                   timestamp: c.timestamp,
                 }))
-              exportDossierToPDF({
+              const dossierData: DossierData = {
                 physicianName: (user as any)?.name || user?.email?.split('@')[0] || 'Médico',
                 physicianEmail: user?.email || undefined,
                 patientPseudonym: longitudinal.patientPseudonym || null,
@@ -529,7 +637,18 @@ export const NoaMatrixView: React.FC = () => {
                 })),
                 messages: matrixMessages,
                 generatedAt: new Date(),
-              })
+              }
+              // F3-A.1 — gera PDF (sempre, mesmo se persistência falhar)
+              exportDossierToPDF(dossierData)
+              // F3-A.2 — persiste snapshot no banco (RLS protege)
+              const savedId = await saveDossier(dossierData, patientId || null)
+              if (savedId) {
+                setDossierFeedback('Dossiê salvo + PDF gerado.')
+                refreshDossiers()
+              } else {
+                setDossierFeedback('PDF gerado. (Falha ao salvar no histórico — tente novamente.)')
+              }
+              setTimeout(() => setDossierFeedback(null), 6000)
             }}
           />
         </div>
