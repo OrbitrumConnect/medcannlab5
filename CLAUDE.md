@@ -6,7 +6,20 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **MedCannLab 3.0** — HealthTech/EdTech de Cannabis Medicinal com IA Nôa Esperança. Arquitetura por 3 eixos: **Clínica** (AEC + Relatório + Agendamento), **Ensino** (cursos + TRL), **Pesquisa** (forum + casos clínicos). Sistema cognitivo de 8 camadas onde **GPT é o último a falar e o primeiro a ser checado**.
 
-**Estado atual** (16/05/2026): **Lock V1.9.95+V1.9.97+V1.9.98+V1.9.99-B+V1.9.299** em AEC + Pipeline + Agendamento + Resend prod + Storage RLS + **PBAD AD-RB ICP-Brasil CONFORME** (edge sign-pdf-icp validado oficialmente em validar.iti.gov.br como APROVADO em 16/05 16h31 BRT após 7 iterações V6→V12). Tag git mais recente: `v1.9.299-pbad-conforme-locked` (commit d8e30f5). Tags anteriores: `v1.9.113-locked`, `v1.9.99-resend-prod-locked`. Pré-PMF (zero pacientes externos pagantes; testes internos com Pedro/Dr. Ricardo/Carolina).
+**Estado atual** (18/05/2026): Locks preservados V1.9.95+V1.9.97+V1.9.98+V1.9.99-B+V1.9.299 (AEC + Pipeline + Agendamento + Resend prod + Storage RLS + PBAD AD-RB ICP-Brasil CONFORME ITI). **HEAD atual `bf2340b` V1.9.334+V1.9.335** (18/05 final). Tag mais recente: `v1.9.299-pbad-conforme-locked` (commit d8e30f5, 16/05). 38 commits cirúrgicos pós-lock V1.9.299 — todos documentados no MEMORY.md e diários. Pré-PMF (zero pacientes externos pagantes; testes internos com Pedro/Dr. Ricardo/Carolina/João Vidal).
+
+**Memórias 17-18/05 com cobertura completa dos commits pós-PBAD**:
+- RAG truncation endêmico (`feedback_rag_truncation_endemico_17_05`)
+- Grounded Response Mode ausente (`feedback_grounded_response_mode_ausente_17_05`)
+- Arquitetura "Escola Clínica Digital" 5 camadas (`project_arquitetura_escola_clinica_digital_17_05`)
+- Audience Contract V1.9.330-A deployado (`project_v1_9_330_audience_contract_design_18_05`)
+- Conditional Section Emission V1.9.331 (`project_v1_9_331_conditional_section_emission_18_05`)
+- Presentation Contract Layer (`project_presentation_contract_layer_18_05`)
+- Dual-write jsonb vs tabela contract (`feedback_dual_write_contract_jsonb_vs_tabela_18_05`)
+- PARECER FISCAL 19/19 verificado (`feedback_debitos_tecnicos_parecer_fiscal_01_04_pendentes_18_05`)
+- DoctorRelationCard parqueado (`project_doctor_relation_card_design_18_05`)
+- 3 marcos de reprecificação valuation (`project_3_marcos_minimos_reprecificacao_valuation_18_05`)
+- Drift histórico dev pré-PMF aceitável (`feedback_drift_historico_dev_aceitavel_pre_pmf_18_05`)
 
 **⚠️ NÃO TOCAR** (sem auditoria empírica via openssl asn1parse + smoke ITI + diff binário vs PDF aprovado):
 - `supabase/functions/sign-pdf-icp/index.ts` — algoritmo PBAD AD-RB validado, mexer = risco voltar pra "desconhecida"
@@ -30,8 +43,14 @@ npm run test:integration
 npx supabase functions deploy <slug> --project-ref itdjkfubfzmvmuxxjoae --no-verify-jwt
 
 # Push dual-remote (POLÍTICA OBRIGATÓRIA — sempre 4 refs)
-git push hub HEAD:main && git push hub HEAD:master && \
-  git push origin HEAD:main && git push origin HEAD:master
+# ⚠️ Naming dos remotes muda por máquina (laptop = hub+origin; desktop = amigo+medcannlab5)
+# Antes de pushar, validar com: git remote -v
+# Desktop atual (Pedro 18/05):
+git push amigo HEAD:main && git push amigo HEAD:master && \
+  git push medcannlab5 HEAD:main && git push medcannlab5 HEAD:master
+# Laptop equivalente:
+# git push hub HEAD:main && git push hub HEAD:master && \
+#   git push origin HEAD:main && git push origin HEAD:master
 
 # Supabase Management API (queries SQL)
 curl -X POST "https://api.supabase.com/v1/projects/itdjkfubfzmvmuxxjoae/database/query" \
@@ -96,6 +115,61 @@ Aceitamos que jsonb e tabela divergem por design. Governar o COMO:
 
 Memórias completas: `feedback_dual_write_contract_jsonb_vs_tabela_18_05.md` + `project_v1_9_330_audience_contract_design_18_05.md`.
 
+## Fonte de verdade do RAG da Nôa (CRÍTICO — cristalizado 20/05 audit Sprint 1)
+
+Sistema mantém **DUAS bases de conhecimento separadas POR DESIGN**. NÃO MIGRE entre elas sem ler V1.9.318:
+
+| Fonte | Propósito | Quem lê | Onde aparece |
+|---|---|---|---|
+| `public.documents` (41 rows) | **Acervo institucional** — UI Base de Conhecimento da IA Residente | Frontend UI admin (`/profissional/dashboard?section=conhecimento`) | Cards com botões Ver/Baixar/Desvinc/Excluir |
+| `public.base_conhecimento` (5 rows) | **RAG curado HAND-CRAFTED** — entries minimalistas que protegem contra DOC_LIST hijacking | Edge `tradevision-core` linha ~4862 (`.from('base_conhecimento').or(queryFilters).limit(3)`) | Quando GPT puxa contexto em chat clínico/Matrix |
+
+### Por que separadas (anti-padrão histórico)
+
+**V1.9.308 (16/05/2026)** adicionou busca paralela em `documents` ao bloco RAG. **V1.9.318 (17/05/2026) REVERTEU empiricamente** porque:
+
+- GPT começou a interpretar "analise este relatório" como "ele quer ver documentos"
+- Emitia `[DOCUMENT_LIST]` e devolvia lista de PDFs em vez de raciocínio clínico
+- Bug: 1 caso isolado em 16+ dias ANTES → 6 casos em 21h DEPOIS de V1.9.308
+
+**Aprendizado cristalizado**: **RAG não é só banco de conhecimento — RAG molda comportamento cognitivo do sistema**. Engrossar `base_conhecimento` com docs brutos altera prior implícita do GPT sobre intenção do usuário.
+
+### Regra de ouro
+
+**NUNCA migrar `documents.content` → `base_conhecimento.conteudo` em massa.** As 5 entries hand-crafted (`noa_identidade`, `metodologia_aec`, `sistema_imre`, `kb-curso-aec`, `kb-protocolo-cbd`) são proteção empíricamente validada contra DOC_LIST hijacking.
+
+### Quando expandir RAG real (gatilho futuro)
+
+Se Matrix Z2 precisar corpus expandido empíricamente (médico reclamar de RAG raso DEPOIS de beta 20-30):
+- **Opção B parqueada**: criar `base_conhecimento_pesquisa` (tabela separada)
+- Edge Matrix faz UNION com `base_conhecimento` original
+- Chat clínico NÃO toca a segunda tabela
+- Boundary explícita preserva V1.9.318
+
+### Antes de qualquer feature que toque RAG — checklist
+
+```
+□ Feature lê de documents OU base_conhecimento?
+□ Se lê de base_conhecimento: respeita .limit(3) do Edge?
+□ Se migra documents → base_conhecimento: LEU V1.9.318? Há mitigação contra DOC_LIST?
+□ Conteúdo migrado é >50k chars? → vai estourar TOKEN MGMT V1.9.61 (60k cap)
+□ Doc é institucional ou paciente individual? → cases vai pra patient_documents, NÃO documents
+□ Trigger empírico ocorreu (médico pediu RAG maior)? Ou é "salto" especulativo?
+```
+
+### Cases LGPD (cristalizado 20/05 quarentena Atestado Marco Tanus)
+
+Categoria `cases` em `public.documents` representa **anomalia arquitetural** — doc clínico individual vazou pra tabela institucional. Solução de quarentena:
+- `is_published = false`
+- `isLinkedToAI = false`
+- `target_audience = []`
+- `category = 'cases_lgpd_quarantine'`
+- Arquivo preservado no Storage (audit trail LGPD)
+
+Próximos docs clínicos individuais devem ir pra `patient_documents` (RLS por `patient_id`).
+
+Memórias completas: `audit_pendencias_um_mes_pos_pbad_20_05.md` (Sprint 1) + memory princípio `feedback_rag_molda_comportamento_cognitivo_20_05` (a ser criada).
+
 ## Stack
 
 | Camada | Tecnologia |
@@ -109,32 +183,40 @@ Memórias completas: `feedback_dual_write_contract_jsonb_vs_tabela_18_05.md` + `
 | IA Escriba (V1.9.84) | OpenAI `gpt-4o-mini` (temperature 0.1) |
 | Email | **Resend** (`RESEND_API_KEY` + `RESEND_FROM_EMAIL=noreply@medcannlab.com.br`) — domínio verified 28/04, envia pra externos OK |
 | Vídeo | **WiseCare V4H** (`session-manager.homolog.v4h.cloud` — ⚠️ HOMOLOG) |
-| Calendar | Google Calendar (sync via `sync-gcal` — ⚠️ half-impl) |
+| Calendar | Google Calendar (sync via `sync-gcal` — 💤 dormindo completo, audit 18/05) |
 | Origem histórica | App nasceu na **Lovable** (no-code), CORS de send-email permite `*.lovable.app` |
 | Repos | hub (`amigo-connect-hub`) + origin (`medcannlab5`) |
 
-## Edge Functions (11)
+## Edge Functions (13 ativas — atualizado 18/05)
 
 ```
-🟢 FUNCIONAIS (7)
-  tradevision-core (v302)        Core IA Nôa principal — auditado completo
-  digital-signature (v52)         Assinatura digital ICP-Brasil/CFM (3 levels)
-  wisecare-session (v68)          Provedor vídeo V4H (HOMOLOG, migrar)
-  extract-document-text (v49)     OCR via pdfjs-serverless
-  send-email (v46)                Resend
-  video-call-request-notification (v49)
-  get_chat_history (v6)
+🟢 CORE / FUNCIONAIS
+  tradevision-core              Core IA Nôa principal (6697 linhas, auditado completo)
+  digital-signature             Assinatura digital ICP-Brasil/CFM (3 levels)
+  sign-pdf-icp                  PBAD AD-RB ICP-Brasil CONFORME ITI (V1.9.299 LOCK)
+  cert-encrypt-password         Cripto password p/ cert ICP do médico
+  wisecare-session              Provedor vídeo V4H (HOMOLOG, migrar)
+  extract-document-text         OCR via pdfjs-serverless
+  send-email                    Resend
+  video-call-request-notification
+  video-call-reminders          Sweep mode + cron 5min + Resend (V1.9.99-B)
+  generate-nft-from-report      NFT consent peça-a-peça (V1.9.311)
+  renal-signal-extractor        Sidecar renal DRC (V1.9.307)
 
-🟢 RESCATADA — V1.9.99 (28/04 ~14h30)
-  video-call-reminders (v3)       ← reescrita elite sweep mode + cron 5min + Resend
-                                    + idempotência via 3 colunas em appointments
-
-🔴 HALF-IMPLEMENTED — Edge Function deployed mas tabela ausente
-  google-auth (v16)               ← falta professional_integrations
-  sync-gcal (v16)                 ← faltam integration_jobs + professional_integrations
+💤 FEATURE DORMINDO COMPLETA (Google Calendar integration) — audit 18/05
+  google-auth                   ← Edge OAuth Google (tabelas existem agora, vazias)
+  sync-gcal                     ← Edge cron (tabelas existem agora, vazias)
+                                  Schemas professional_integrations + integration_jobs
+                                  criados V1.9.99-B (28/04). 0 rows, 0 callers
+                                  frontend/backend. Reativar requer só chamadas
+                                  frontend. Decisão Pedro 18/05: manter intocado
+                                  (drift dev pré-PMF aceitável). NÃO é mais
+                                  "half-implemented" strict.
 ```
 
-*Cleanup 28/04 ~10h45*: Edge `video-call-request-notification-` (v23, duplicata com hífen) **deletada**. Backup em `.backups/`. Trigger duplicado `trg_handle_new_auth_user` em auth.users **dropado**. Edge `video-call-reminders` v52 deletada (P9 erro de processo) → reintroduzida elite v53/v3 às ~14h30 com sweep mode + cron + Resend (4 smoke tests passaram). Total: **10 Edge Functions ativas**, 5 triggers em auth.users.
+*Cleanup 28/04 ~10h45*: Edge `video-call-request-notification-` (v23, duplicata com hífen) deletada. Backup em `.backups/`. Trigger duplicado `trg_handle_new_auth_user` em auth.users dropado. Edge `video-call-reminders` v52 deletada (P9) → reintroduzida elite v53/v3 com sweep mode + cron + Resend.
+
+*Adições pós-V1.9.299 (16-18/05)*: `sign-pdf-icp` + `cert-encrypt-password` (PBAD ICP-Brasil), `generate-nft-from-report` (V1.9.311 NFT consent), `renal-signal-extractor` (V1.9.307 sidecar DRC). Total: **13 Edge Functions ativas**, 5 triggers em auth.users.
 
 ## REGRA HARD §1 (constitucional, anti-kevlar)
 
@@ -181,9 +263,14 @@ PACIENTES EXTERNOS PAGANTES: ZERO (pré-PMF)
 
 ## Diretório de memórias persistentes
 
-`~/.claude/projects/c--Users-phpg6-OneDrive-Imagens-amigo-connect-hub-main/memory/`
+```
+Desktop atual (Pedro 18/05):
+  ~/.claude/projects/c--Users-phpg6-Desktop-amigo-connect-hub-main/memory/
+Laptop equivalente:
+  ~/.claude/projects/c--Users-phpg6-OneDrive-Imagens-amigo-connect-hub-main/memory/
+```
 
-30+ memórias organizadas por tipo (`project_*`, `feedback_*`, `reference_*`, `user_*`). Sempre ler `MEMORY.md` (índice) ao iniciar sessão. Memórias críticas:
+**179 arquivos de memória** (cresceu de 30+ em abril pra 179 em 18/05). Sempre ler `MEMORY.md` (índice no nível 1) ao iniciar sessão. Memórias críticas:
 
 - `project_lock_v1995_aec_relatorio_agendamento.md` — estado do cadeado atual
 - `project_pipeline_diario_para_magno.md` — princípio meta-arquitetural
@@ -203,7 +290,7 @@ PACIENTES EXTERNOS PAGANTES: ZERO (pré-PMF)
 3. **Princípio 8** — polir, não inventar (reutilizar mecanismo equivalente antes)
 4. **Defense in depth** — validação em runtime > confiança em prompt/UI
 5. **Princípio de Grounding factual** — GPT NUNCA responde número factual sem fonte autoritativa
-6. **Push dual-remote 4 refs** — hub + origin × main + master, sempre
+6. **Push dual-remote 4 refs** — 2 remotes × main + master, sempre (naming varia por máquina: laptop=hub+origin, desktop=amigo+medcannlab5 — validar com `git remote -v`)
 7. **Método de validação 5 etapas** — logs + DB + código + classificação 🟢🟡🟠🔴 + review humano
 8. **Action_cards `role='system'` não chamam Core** — early return em sendMessage
 9. **UUID nunca tem fallback de slug** — `isValidUuid` antes de qualquer DB op
@@ -218,7 +305,7 @@ PACIENTES EXTERNOS PAGANTES: ZERO (pré-PMF)
 - `prescriptions` tem 8 rows mas é **vulnerável historicamente** — RLS já fechado em V1.9.97-D. Use `cfm_prescriptions` (32 rows oficiais) pra modificações.
 - 4 tabelas de perfil existem (`users`, `user_profiles`, `profiles`, `usuarios`) — **`users` é canônica** (38 cols, escrita diariamente). Outras são órfãs/legacy.
 - Build local quebra por `dompurify` (em `node_modules` vazio), Vercel passa porque tem em `package.json`.
-- 3 Edge Functions deployadas falham silenciosamente (tabelas ausentes — ver lista acima).
+- 2 Edge Functions Google Calendar dormindo completas (tabelas EXISTEM agora, vazias, sem caller — audit 18/05 atualizou status de "half-impl" → "dormindo intencionalmente").
 - 72 files órfãos no bucket `documents` (~67 MB) de owners deletados — LGPD compliance pendente.
 - `chat-images` storage **fechado em V1.9.98 (28/04)**: bucket `public=false`, 4 policies Opção B (owner OR participante de mesma chat_room via JOIN), AdminChat usa `createSignedUrl` TTL 1 ano. Imagem antiga (1 teste do Pedro) não carrega mais via URL pública direta — impacto zero.
 - Discrepância `users (30)` vs `user_profiles (35)` — 5 órfãos, investigar antes de deletar.
@@ -255,7 +342,7 @@ PACIENTES EXTERNOS PAGANTES: ZERO (pré-PMF)
 ```
 🔴 P0 (segurança/funcional)
   • RLS chat-images (signed URL)
-  • 3 Edge Functions half-implemented (criar tabelas OU desativar)
+  • ~~3 Edge Functions half-implemented~~ — RESOLVIDO audit 18/05 (tabelas existem; feature Google Calendar dormindo intencionalmente, sem callers)
   • Limpar 72 files órfãos no bucket documents
   • Migrar WiseCare homolog → produção
 
