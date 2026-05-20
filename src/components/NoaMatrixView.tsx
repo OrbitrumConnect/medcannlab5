@@ -31,6 +31,7 @@ import { usePatientLongitudinal } from '../hooks/usePatientLongitudinal'
 import { useExternalLiterature } from '../hooks/useExternalLiterature'
 import { EVIDENCE_LABELS } from '../services/pubmedService'
 import { ResearchChat } from './ResearchChat'
+import { exportDossierToPDF, type DossierMessage } from '../lib/dossierExport'
 import { Sparkles, FileText, StickyNote, Check, Info, Folder, User, Stethoscope, Activity, X, BookOpen, Search, Loader2 } from 'lucide-react'
 
 interface AttachableCard {
@@ -495,7 +496,42 @@ export const NoaMatrixView: React.FC = () => {
 
         {/* Chat */}
         <div className="lg:col-span-7">
-          <ResearchChat attachedContext={attachedContext} />
+          <ResearchChat
+            attachedContext={attachedContext}
+            // V1.9.390 (F3-A.1) — Callback "Fechar como dossiê". NoaMatrixView combina
+            // messages do chat + cards selecionados + papers PubMed anexados + identidade
+            // médico/paciente, e chama exportDossierToPDF (window.print local, sem schema banco).
+            // Memory: project_visao_final_eixo_pesquisa_19_05 F3 = fechar dossiê.
+            onCloseDossier={(matrixMessages: DossierMessage[]) => {
+              const selectedCardsArr = cards
+                .filter((c) => selectedIds.has(c.id))
+                .map((c) => ({
+                  id: c.id,
+                  type: c.type,
+                  title: c.title,
+                  subtitle: c.subtitle,
+                  body: c.body,
+                  timestamp: c.timestamp,
+                }))
+              exportDossierToPDF({
+                physicianName: (user as any)?.name || user?.email?.split('@')[0] || 'Médico',
+                physicianEmail: user?.email || undefined,
+                patientPseudonym: longitudinal.patientPseudonym || null,
+                selectedCards: selectedCardsArr,
+                attachedPapers: attachedPubmed.map((p) => ({
+                  pmid: p.pmid,
+                  title: p.title,
+                  authors: p.authors,
+                  journal: p.journal,
+                  pubdate: p.pubdate,
+                  evidenceLevel: p.evidenceLevel,
+                  url: p.url,
+                })),
+                messages: matrixMessages,
+                generatedAt: new Date(),
+              })
+            }}
+          />
         </div>
       </div>
     </div>

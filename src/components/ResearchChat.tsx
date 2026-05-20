@@ -17,17 +17,21 @@
  *  - purple (Nôa Matrix — diferencia de emerald da Nôa Esperanza)
  */
 import React, { useState, useRef, useEffect } from 'react'
-import { Send, Loader2, AlertTriangle, Sparkles, Trash2, Info } from 'lucide-react'
+import { Send, Loader2, AlertTriangle, Sparkles, Trash2, Info, FileText } from 'lucide-react'
 import { useResearchChat } from '../hooks/useResearchChat'
+import type { DossierMessage } from '../lib/dossierExport'
 
 interface ResearchChatProps {
   /** Contexto anexado (Casos Similares + Literatura + notas marcadas). V1.9.379-D injetará via prop. */
   attachedContext?: string
   /** Callback opcional pra marcar mensagem pra dossiê do fórum (V1.9.379-D). */
   onMarkForForum?: (messageId: string, content: string) => void
+  /** V1.9.390 (F3-A.1) — callback "Fechar como dossiê". NoaMatrixView recebe messages
+   *  e combina com cards+papers estruturados pra gerar PDF via window.print(). */
+  onCloseDossier?: (messages: DossierMessage[]) => void
 }
 
-export const ResearchChat: React.FC<ResearchChatProps> = ({ attachedContext, onMarkForForum }) => {
+export const ResearchChat: React.FC<ResearchChatProps> = ({ attachedContext, onMarkForForum, onCloseDossier }) => {
   const { messages, isProcessing, sendMessage, clearChat, errorMessage } = useResearchChat()
   const [input, setInput] = useState('')
   const messagesEndRef = useRef<HTMLDivElement>(null)
@@ -73,13 +77,26 @@ export const ResearchChat: React.FC<ResearchChatProps> = ({ attachedContext, onM
           </div>
         </div>
         {messages.length > 0 && (
-          <button
-            onClick={clearChat}
-            className="p-1.5 rounded-md text-slate-500 hover:text-purple-300 hover:bg-purple-500/10 transition-colors"
-            title="Limpar conversa"
-          >
-            <Trash2 className="w-3.5 h-3.5" />
-          </button>
+          <div className="flex items-center gap-1.5">
+            {/* V1.9.390 (F3-A.1) — Fechar como dossiê. Só aparece se callback existe E há mensagens. */}
+            {onCloseDossier && (
+              <button
+                onClick={() => onCloseDossier(messages)}
+                className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-[11px] font-medium bg-emerald-500/15 text-emerald-200 border border-emerald-500/30 hover:bg-emerald-500/25 hover:border-emerald-500/50 transition-colors"
+                title="Fechar esta sessão como dossiê PDF (gera HTML estruturado + print do navegador)"
+              >
+                <FileText className="w-3 h-3" />
+                <span>Fechar como dossiê</span>
+              </button>
+            )}
+            <button
+              onClick={clearChat}
+              className="p-1.5 rounded-md text-slate-500 hover:text-purple-300 hover:bg-purple-500/10 transition-colors"
+              title="Limpar conversa"
+            >
+              <Trash2 className="w-3.5 h-3.5" />
+            </button>
+          </div>
         )}
       </div>
 
