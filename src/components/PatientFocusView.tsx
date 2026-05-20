@@ -1,12 +1,11 @@
-import React, { useState, useEffect, useRef, useMemo } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import {
     User,
     Search,
     ChevronLeft,
     LayoutDashboard,
     ClipboardList,
-    Sparkles,  // V1.9.382 — ícone Nôa Matrix trigger
-    X          // V1.9.389 (F1) — dismiss do banner auto-ativação Matrix
+    Sparkles  // V1.9.382 — ícone Nôa Matrix trigger
 } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
@@ -39,44 +38,6 @@ const PatientFocusView: React.FC<PatientFocusViewProps> = ({ activePatientId, on
     const [focusAppointments, setFocusAppointments] = useState<Array<{ id: string; date: string; time: string; professional: string; type: string; status: string }>>([])
     const [focusPrescriptions, setFocusPrescriptions] = useState<Array<{ id: string; title: string; status: string; issuedAt?: string; startsAt?: string | null; endsAt?: string | null; professionalName?: string | null }>>([])
     const [focusPrescriptionsLoading, setFocusPrescriptionsLoading] = useState(false)
-
-    // V1.9.389 (F1 Sprint 2) — Auto-ativação Matrix pós-relatório assinado.
-    // Memory: project_visao_final_eixo_pesquisa_19_05 (gap F1 da jornada Pesquisa).
-    // Detecta clinical_report recém-assinado (signed_at < 24h) e mostra banner sugerindo
-    // estruturar reflexão na Nôa Matrix. NÃO toca AEC/Pipeline/Locks — apenas UX layer.
-    // Princípio "polir não inventar": reusa focusReports existente + rota Matrix V1.9.382.
-    // Dismiss por reportId em localStorage (não chatear médico — uma sugestão por relatório).
-    const F1_DISMISS_KEY = 'f1_dismissed_reports_v1'
-    const [dismissedReports, setDismissedReports] = useState<Set<string>>(() => {
-        try {
-            const raw = localStorage.getItem(F1_DISMISS_KEY)
-            if (!raw) return new Set()
-            const arr = JSON.parse(raw)
-            return new Set(Array.isArray(arr) ? arr : [])
-        } catch { return new Set() }
-    })
-    const dismissReport = (reportId: string) => {
-        setDismissedReports((prev) => {
-            const next = new Set(prev)
-            next.add(reportId)
-            try { localStorage.setItem(F1_DISMISS_KEY, JSON.stringify([...next])) } catch {}
-            return next
-        })
-    }
-    const recentSignedReport = useMemo(() => {
-        if (!focusReports || focusReports.length === 0) return null
-        const now = Date.now()
-        const TWENTY_FOUR_HOURS = 24 * 60 * 60 * 1000
-        const recent = focusReports
-            .filter((r: any) => r?.signed_at)
-            .filter((r: any) => !dismissedReports.has(r.id))
-            .filter((r: any) => {
-                const signedAt = new Date(r.signed_at).getTime()
-                return !isNaN(signedAt) && (now - signedAt) < TWENTY_FOUR_HOURS
-            })
-            .sort((a: any, b: any) => new Date(b.signed_at).getTime() - new Date(a.signed_at).getTime())
-        return recent[0] || null
-    }, [focusReports, dismissedReports])
 
     // Sincronizar selectedPatient com activePatientId (workstation é fonte da verdade)
     useEffect(() => {
@@ -300,57 +261,6 @@ const PatientFocusView: React.FC<PatientFocusViewProps> = ({ activePatientId, on
                                 <span className="hidden sm:inline">Nôa Matrix</span>
                             </button>
                         </div>
-
-                        {/* V1.9.389 (F1 Sprint 2 20/05) — Banner auto-ativação Matrix pós-relatório assinado.
-                            Aparece quando há relatório com signed_at < 24h e médico ainda não dismissou.
-                            Princípio Z2 não-diretivo: SUGERE estruturação, não força. Dismiss persistente
-                            por reportId em localStorage. Memory: project_visao_final_eixo_pesquisa_19_05.
-                            UX: amber/purple (Matrix theme), 2 CTAs, dismiss ✕ disponível. */}
-                        {recentSignedReport && (
-                            <div className="mb-4 flex-shrink-0 rounded-xl bg-gradient-to-r from-purple-500/10 to-amber-500/10 border border-purple-500/30 px-4 py-3 flex items-start gap-3">
-                                <div className="p-1.5 rounded-lg bg-purple-500/15 border border-purple-500/30 flex-shrink-0">
-                                    <Sparkles className="w-4 h-4 text-purple-300" />
-                                </div>
-                                <div className="flex-1 min-w-0">
-                                    <div className="text-sm font-semibold text-white leading-tight">
-                                        Relatório de {selectedPatient.name.split(' ')[0]} acabou de ser assinado.
-                                    </div>
-                                    <div className="text-xs text-slate-300 mt-1 leading-relaxed">
-                                        Quer estruturar sua reflexão sobre este caso na <strong className="text-purple-300">Nôa Matrix</strong>?
-                                        Chat Z2 não-diretivo · organiza corpus marcado · cruza com PubMed e Base de Conhecimento.
-                                    </div>
-                                    <div className="flex items-center gap-2 mt-2.5 flex-wrap">
-                                        <button
-                                            type="button"
-                                            onClick={() => {
-                                                dismissReport(recentSignedReport.id)
-                                                navigate(`/app/pesquisa/profissional/dashboard?section=noa-matrix&patientId=${selectedPatient.id}`)
-                                            }}
-                                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium bg-purple-500/20 text-purple-200 border border-purple-500/40 hover:bg-purple-500/30 transition-colors"
-                                        >
-                                            <Sparkles className="w-3.5 h-3.5" />
-                                            Estruturar na Nôa Matrix
-                                        </button>
-                                        <button
-                                            type="button"
-                                            onClick={() => dismissReport(recentSignedReport.id)}
-                                            className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-md text-xs text-slate-400 hover:text-slate-200 hover:bg-slate-700/40 transition-colors"
-                                        >
-                                            Mais tarde
-                                        </button>
-                                    </div>
-                                </div>
-                                <button
-                                    type="button"
-                                    onClick={() => dismissReport(recentSignedReport.id)}
-                                    className="p-1 rounded text-slate-500 hover:text-slate-300 hover:bg-slate-700/40 transition-colors flex-shrink-0"
-                                    title="Ocultar este aviso (não mostrar novamente para este relatório)"
-                                >
-                                    <X className="w-3.5 h-3.5" />
-                                </button>
-                            </div>
-                        )}
-
                         <div className="flex gap-1 p-1 rounded-xl bg-slate-800/60 border border-slate-700/50 mb-4 flex-shrink-0">
                             <button
                                 type="button"

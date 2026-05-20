@@ -2088,37 +2088,63 @@ const PatientsManagement: React.FC<PatientsManagementProps> = ({ embedded = fals
                                   const sourceLabel = evolution.source === 'report' ? { icon: '📄', label: 'Relatório', cls: 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30' }
                                     : evolution.source === 'assessment' ? { icon: '🩺', label: 'AEC', cls: 'bg-blue-500/15 text-blue-300 border-blue-500/30' }
                                     : { icon: '📝', label: 'Registro', cls: 'bg-slate-500/15 text-slate-300 border-slate-500/30' }
+                                  // V1.9.389-B (Sprint 2 — F1 revisado, Opção B Pedro 20/05):
+                                  // Botão "Estruturar Matrix" inline no card pra QUALQUER relatório assinado (não só <24h).
+                                  // Memory: project_visao_final_eixo_pesquisa_19_05 — gap F1 da jornada Pesquisa.
+                                  // Reusa rota Matrix existente V1.9.382. NÃO toca AEC/Pipeline/Locks.
+                                  // Substitui banner top-level V1.9.389 (revertido) por trigger granular contextual.
+                                  const showMatrixCTA = evolution.source === 'report' && evolution.signed && !!selectedPatient?.id
                                   return (
-                                    <button
+                                    <div
                                       key={evolution.id}
-                                      type="button"
-                                      onClick={() => {
-                                        // V1.9.292: clicar item do histórico → aba Evolução com highlight + auto-scroll
-                                        setHighlightEvolutionId(evolution.id)
-                                        setActiveTab('evolution')
-                                      }}
-                                      title="Ver detalhes na aba Evolução"
-                                      className="w-full text-left bg-slate-700/30 rounded-xl p-3 border border-slate-600/50 hover:border-emerald-500/40 hover:bg-slate-700/50 transition-all cursor-pointer"
+                                      className="bg-slate-700/30 rounded-xl p-3 border border-slate-600/50 hover:border-emerald-500/40 hover:bg-slate-700/50 transition-all"
                                     >
-                                      <div className="flex items-start justify-between mb-2 gap-2">
-                                        <p className="text-[13px] text-slate-200 font-bold">{evolution.date} • {evolution.time}</p>
-                                        <div className="flex items-center gap-1.5 shrink-0">
-                                          <span className={`px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider border ${sourceLabel.cls}`}>
-                                            <span className="mr-0.5">{sourceLabel.icon}</span>{sourceLabel.label}
-                                          </span>
-                                          {evolution.signed && (
-                                            <span className="px-1.5 py-0.5 rounded text-[9px] font-black uppercase bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
-                                              ICP
+                                      <button
+                                        type="button"
+                                        onClick={() => {
+                                          // V1.9.292: clicar item do histórico → aba Evolução com highlight + auto-scroll
+                                          setHighlightEvolutionId(evolution.id)
+                                          setActiveTab('evolution')
+                                        }}
+                                        title="Ver detalhes na aba Evolução"
+                                        className="w-full text-left cursor-pointer"
+                                      >
+                                        <div className="flex items-start justify-between mb-2 gap-2">
+                                          <p className="text-[13px] text-slate-200 font-bold">{evolution.date} • {evolution.time}</p>
+                                          <div className="flex items-center gap-1.5 shrink-0">
+                                            <span className={`px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider border ${sourceLabel.cls}`}>
+                                              <span className="mr-0.5">{sourceLabel.icon}</span>{sourceLabel.label}
                                             </span>
-                                          )}
-                                          {typeof evolution.score === 'number' && (
-                                            <span className="text-[10px] font-bold text-slate-300">score {evolution.score}</span>
-                                          )}
+                                            {evolution.signed && (
+                                              <span className="px-1.5 py-0.5 rounded text-[9px] font-black uppercase bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                                                ICP
+                                              </span>
+                                            )}
+                                            {typeof evolution.score === 'number' && (
+                                              <span className="text-[10px] font-bold text-slate-300">score {evolution.score}</span>
+                                            )}
+                                          </div>
                                         </div>
-                                      </div>
-                                      <p className="text-sm text-slate-300 line-clamp-2 leading-relaxed mb-1.5">{evolutionContentString(evolution.content, '—')}</p>
-                                      <p className="text-[11px] text-slate-500 font-bold uppercase tracking-tight">{evolution.professional}</p>
-                                    </button>
+                                        <p className="text-sm text-slate-300 line-clamp-2 leading-relaxed mb-1.5">{evolutionContentString(evolution.content, '—')}</p>
+                                        <p className="text-[11px] text-slate-500 font-bold uppercase tracking-tight">{evolution.professional}</p>
+                                      </button>
+                                      {showMatrixCTA && (
+                                        <div className="mt-2 pt-2 border-t border-slate-600/30 flex justify-end">
+                                          <button
+                                            type="button"
+                                            onClick={(e) => {
+                                              e.stopPropagation()
+                                              navigate(`/app/pesquisa/profissional/dashboard?section=noa-matrix&patientId=${selectedPatient!.id}`)
+                                            }}
+                                            title="Estruturar reflexão deste relatório na Nôa Matrix (chat Z2)"
+                                            className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-[10px] font-medium bg-purple-500/10 text-purple-300 border border-purple-500/30 hover:bg-purple-500/20 hover:border-purple-500/50 transition-colors"
+                                          >
+                                            <Sparkles className="w-3 h-3" />
+                                            Estruturar na Matrix
+                                          </button>
+                                        </div>
+                                      )}
+                                    </div>
                                   )
                                 })}
                                 {evolutions.length > 5 && (

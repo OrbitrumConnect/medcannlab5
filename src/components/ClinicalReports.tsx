@@ -1347,6 +1347,22 @@ const ClinicalReports: React.FC<ClinicalReportsProps> = ({ className = '', onSha
                   <Download className="w-4 h-4" />
                   <span>Download</span>
                 </button>
+                {/* V1.9.389-B (Sprint 2 — F1 revisado, Opção B Pedro 20/05):
+                    Botão "Estruturar Matrix" inline em cada card de relatório ICP.
+                    Substitui banner top-level V1.9.389 (revertido). Opção B chosen Pedro.
+                    Memory: project_visao_final_eixo_pesquisa_19_05 — gap F1 jornada Pesquisa.
+                    Reusa rota Matrix V1.9.382. SÓ pra médico (não-paciente) E report c/ ICP signature.
+                    Trigger granular por relatório, sem dismiss (é ação, não notificação). */}
+                {!isPatient && report.hasICPSignature && report.patientId && (
+                  <button
+                    onClick={() => navigate(`/app/pesquisa/profissional/dashboard?section=noa-matrix&patientId=${report.patientId}`)}
+                    className="flex items-center space-x-1 px-4 py-2 rounded-lg transition-colors text-purple-200 bg-purple-500/10 border border-purple-500/30 hover:bg-purple-500/20 hover:border-purple-500/50"
+                    title="Estruturar reflexão deste relatório na Nôa Matrix (chat Z2 estrutural)"
+                  >
+                    <Sparkles className="w-4 h-4" />
+                    <span>Matrix</span>
+                  </button>
+                )}
                 {/* V1.9.243 — Gerar NFT no card SO pra paciente (Pedro 13/05):
                     Paciente ve NFT no card (apresentacao de estado do proprio relatorio).
                     Medico/admin nao tem NFT no card — botao fica no modal pos-revisao
