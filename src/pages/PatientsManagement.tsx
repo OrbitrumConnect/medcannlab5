@@ -2137,7 +2137,7 @@ const PatientsManagement: React.FC<PatientsManagementProps> = ({ embedded = fals
                                               navigate(`/app/pesquisa/profissional/dashboard?section=noa-matrix&patientId=${selectedPatient!.id}`)
                                             }}
                                             title="Estruturar reflexão deste relatório na Nôa Matrix (chat Z2)"
-                                            className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-[10px] font-medium bg-purple-500/10 text-purple-300 border border-purple-500/30 hover:bg-purple-500/20 hover:border-purple-500/50 transition-colors"
+                                            className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-[10px] font-medium bg-emerald-500/10 text-emerald-300 border border-emerald-500/30 hover:bg-emerald-500/20 hover:border-emerald-500/50 transition-colors"
                                           >
                                             <Sparkles className="w-3 h-3" />
                                             Estruturar na Matrix

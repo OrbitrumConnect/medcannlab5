@@ -1356,7 +1356,7 @@ const ClinicalReports: React.FC<ClinicalReportsProps> = ({ className = '', onSha
                 {!isPatient && report.hasICPSignature && report.patientId && (
                   <button
                     onClick={() => navigate(`/app/pesquisa/profissional/dashboard?section=noa-matrix&patientId=${report.patientId}`)}
-                    className="flex items-center space-x-1 px-4 py-2 rounded-lg transition-colors text-purple-200 bg-purple-500/10 border border-purple-500/30 hover:bg-purple-500/20 hover:border-purple-500/50"
+                    className="flex items-center space-x-1 px-4 py-2 rounded-lg transition-colors text-emerald-200 bg-emerald-500/10 border border-emerald-500/30 hover:bg-emerald-500/20 hover:border-emerald-500/50"
                     title="Estruturar reflexão deste relatório na Nôa Matrix (chat Z2 estrutural)"
                   >
                     <Sparkles className="w-4 h-4" />

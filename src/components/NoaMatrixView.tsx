@@ -284,7 +284,7 @@ export const NoaMatrixView: React.FC = () => {
             {selectedCount > 0 && (
               <button
                 onClick={() => setSelectedIds(new Set())}
-                className="text-[10px] text-slate-500 hover:text-purple-300 transition-colors"
+                className="text-[10px] text-slate-500 hover:text-emerald-300 transition-colors"
               >
                 limpar seleção
               </button>
@@ -328,7 +328,9 @@ export const NoaMatrixView: React.FC = () => {
                   </button>
                 </div>
               )}
-              <div className="space-y-2 max-h-[500px] overflow-y-auto pr-1">
+              {/* V1.9.389-C (Pedro 20/05 ~13h30) — altura reduzida 500→320 pra dividir
+                  coluna esquerda 50/50 com bloco PubMed abaixo (anti-aglomeração). */}
+              <div className="space-y-2 max-h-[320px] overflow-y-auto pr-1">
                 {visibleCards.map((card) => {
                   const isSelected = selectedIds.has(card.id)
                   const Icon =
@@ -385,18 +387,22 @@ export const NoaMatrixView: React.FC = () => {
             </>
           )}
 
-          {/* V1.9.388-A.3 — Busca PubMed inline (reuso pubmedService V1.9.369) */}
-          <div className="bg-slate-900/40 border border-purple-500/20 rounded-xl overflow-hidden">
+          {/* V1.9.388-A.3 — Busca PubMed inline (reuso pubmedService V1.9.369)
+              V1.9.389-C (Pedro 20/05 ~13h30 BRT) — Cores migradas purple → emerald-neon (anti-arco-íris).
+              Memory feedback_clinical_cockpit_cor_por_estado_16_05: cor comunica estado/identidade
+              consistente. Emerald = ação/CTA/MedCannLab brand. Purple fica só em identidade Matrix
+              (header avatar). PubMed agora com altura igual ao Material disponível (split visual 50/50). */}
+          <div className="bg-slate-900/40 border border-emerald-500/30 rounded-xl overflow-hidden">
             <button
               type="button"
               onClick={() => setPubmedOpen((v) => !v)}
-              className="w-full flex items-center justify-between gap-2 px-3 py-2.5 hover:bg-purple-500/5 transition-colors"
+              className="w-full flex items-center justify-between gap-2 px-3 py-2.5 hover:bg-emerald-500/5 transition-colors"
             >
               <div className="flex items-center gap-2">
-                <BookOpen className="w-4 h-4 text-purple-300" />
+                <BookOpen className="w-4 h-4 text-emerald-300" />
                 <span className="text-xs font-semibold text-slate-200">Buscar literatura PubMed</span>
                 {attachedPubmed.length > 0 && (
-                  <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-purple-500/20 text-purple-200">
+                  <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-200">
                     {attachedPubmed.length} anexado(s)
                   </span>
                 )}
@@ -405,7 +411,7 @@ export const NoaMatrixView: React.FC = () => {
             </button>
 
             {pubmedOpen && (
-              <div className="border-t border-purple-500/20 p-3 space-y-2.5">
+              <div className="border-t border-emerald-500/20 p-3 space-y-2.5">
                 <div className="flex items-center gap-2">
                   <div className="flex-1 relative">
                     <Search className="w-3 h-3 text-slate-500 absolute left-2 top-1/2 -translate-y-1/2" />
@@ -414,10 +420,10 @@ export const NoaMatrixView: React.FC = () => {
                       value={literature.term}
                       onChange={(e) => literature.setTerm(e.target.value)}
                       placeholder="ex: cannabis chronic pain"
-                      className="w-full bg-slate-800/60 border border-purple-500/20 rounded-md pl-7 pr-2 py-1.5 text-xs text-white placeholder:text-slate-500 focus:outline-none focus:ring-1 focus:ring-purple-500/50"
+                      className="w-full bg-slate-800/60 border border-emerald-500/20 rounded-md pl-7 pr-2 py-1.5 text-xs text-white placeholder:text-slate-500 focus:outline-none focus:ring-1 focus:ring-emerald-500/50"
                     />
                   </div>
-                  {literature.loading && <Loader2 className="w-3.5 h-3.5 text-purple-300 animate-spin flex-shrink-0" />}
+                  {literature.loading && <Loader2 className="w-3.5 h-3.5 text-emerald-300 animate-spin flex-shrink-0" />}
                 </div>
 
                 {literature.error && (
@@ -429,7 +435,7 @@ export const NoaMatrixView: React.FC = () => {
                 )}
 
                 {literature.articles.length > 0 && (
-                  <div className="space-y-1.5 max-h-[280px] overflow-y-auto pr-1">
+                  <div className="space-y-1.5 max-h-[320px] overflow-y-auto pr-1">
                     {literature.articles.slice(0, 8).map((a) => {
                       const isAttached = attachedPubmed.some((p) => p.pmid === a.pmid)
                       const evidenceLabel = EVIDENCE_LABELS[a.evidenceLevel] || a.evidenceLevel
@@ -438,7 +444,7 @@ export const NoaMatrixView: React.FC = () => {
                           key={a.pmid}
                           className={`rounded-md p-2 border text-[11px] ${
                             isAttached
-                              ? 'bg-purple-500/10 border-purple-500/30'
+                              ? 'bg-emerald-500/10 border-emerald-500/30'
                               : 'bg-slate-800/40 border-slate-700/30'
                           }`}
                         >
@@ -448,7 +454,7 @@ export const NoaMatrixView: React.FC = () => {
                                 href={a.url}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="text-purple-200 hover:underline font-medium line-clamp-2"
+                                className="text-emerald-200 hover:underline font-medium line-clamp-2"
                                 title={a.title}
                               >
                                 {a.title}
@@ -462,8 +468,8 @@ export const NoaMatrixView: React.FC = () => {
                               onClick={() => isAttached ? detachPubmed(a.pmid) : attachPubmed(a)}
                               className={`flex-shrink-0 text-[10px] px-2 py-1 rounded transition-colors ${
                                 isAttached
-                                  ? 'bg-purple-500/20 text-purple-200 hover:bg-purple-500/30'
-                                  : 'bg-slate-700/40 text-slate-300 hover:bg-purple-500/20 hover:text-purple-200'
+                                  ? 'bg-emerald-500/20 text-emerald-200 hover:bg-emerald-500/30'
+                                  : 'bg-slate-700/40 text-slate-300 hover:bg-emerald-500/20 hover:text-emerald-200'
                               }`}
                             >
                               {isAttached ? '✓ anexado' : '+ anexar'}
