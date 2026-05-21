@@ -17,7 +17,7 @@
  *  - purple (Nôa Matrix — diferencia de emerald da Nôa Esperanza)
  */
 import React, { useState, useRef, useEffect } from 'react'
-import { Send, Loader2, AlertTriangle, Sparkles, Trash2, Info, FileText } from 'lucide-react'
+import { Send, Loader2, AlertTriangle, Sparkles, Trash2, Info, FileText, Eye, GitBranch } from 'lucide-react'
 import { useResearchChat } from '../hooks/useResearchChat'
 import type { DossierMessage } from '../lib/dossierExport'
 
@@ -29,17 +29,60 @@ interface ResearchChatProps {
   /** V1.9.390 (F3-A.1) — callback "Fechar como dossiê". NoaMatrixView recebe messages
    *  e combina com cards+papers estruturados pra gerar PDF via window.print(). */
   onCloseDossier?: (messages: DossierMessage[]) => void
+  /** V1.9.393 (F3 reabrir dossiê) — pedido de restauração de um dossiê salvo.
+   *  token muda a cada clique → permite reabrir o mesmo dossiê 2×.
+   *  mode 'review' = só-leitura (snapshot imutável); 'continue' = sessão derivada editável. */
+  restoreRequest?: {
+    token: number
+    title: string
+    messages: DossierMessage[]
+    mode: 'review' | 'continue'
+  } | null
 }
 
-export const ResearchChat: React.FC<ResearchChatProps> = ({ attachedContext, onMarkForForum, onCloseDossier }) => {
-  const { messages, isProcessing, sendMessage, clearChat, errorMessage } = useResearchChat()
+export const ResearchChat: React.FC<ResearchChatProps> = ({ attachedContext, onMarkForForum, onCloseDossier, restoreRequest }) => {
+  const { messages, isProcessing, sendMessage, clearChat, loadSession, errorMessage } = useResearchChat()
   const [input, setInput] = useState('')
   const messagesEndRef = useRef<HTMLDivElement>(null)
+
+  // V1.9.393 (F3 reabrir dossiê) — modo da sessão:
+  //  'live'     = sessão normal de pesquisa
+  //  'review'   = revisando um dossiê salvo (só-leitura, snapshot imutável)
+  //  'continue' = sessão derivada de um dossiê (editável; original não é tocado)
+  const [sessionMode, setSessionMode] = useState<'live' | 'review' | 'continue'>('live')
+  const [restoredTitle, setRestoredTitle] = useState('')
+  const lastRestoreToken = useRef(0)
 
   // Auto-scroll para última mensagem
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
+
+  // V1.9.393 (F3 reabrir dossiê) — quando NoaMatrixView pede restauração,
+  // carrega o snapshot na sessão. token muda a cada clique (reabrir 2× funciona).
+  // timestamp vem do jsonb como string → normaliza pra Date.
+  useEffect(() => {
+    if (!restoreRequest || restoreRequest.token === lastRestoreToken.current) return
+    lastRestoreToken.current = restoreRequest.token
+    loadSession(
+      restoreRequest.messages.map((m) => ({
+        id: m.id,
+        role: m.role,
+        content: m.content,
+        timestamp: new Date(m.timestamp),
+        isFailsafe: m.isFailsafe,
+      })),
+    )
+    setSessionMode(restoreRequest.mode)
+    setRestoredTitle(restoreRequest.title)
+  }, [restoreRequest, loadSession])
+
+  // V1.9.393 — limpar sempre volta à sessão viva (sai de review/continue)
+  const handleClear = () => {
+    clearChat()
+    setSessionMode('live')
+    setRestoredTitle('')
+  }
 
   const handleSend = async () => {
     if (!input.trim() || isProcessing) return
@@ -82,7 +125,7 @@ export const ResearchChat: React.FC<ResearchChatProps> = ({ attachedContext, onM
             </p>
           </div>
         </div>
-        {messages.length > 0 && (
+        {messages.length > 0 && sessionMode !== 'review' && (
           <div className="flex items-center gap-1.5">
             {/* V1.9.390 (F3-A.1) — Fechar como dossiê. Só aparece se callback existe E há mensagens. */}
             {onCloseDossier && (
@@ -96,7 +139,7 @@ export const ResearchChat: React.FC<ResearchChatProps> = ({ attachedContext, onM
               </button>
             )}
             <button
-              onClick={clearChat}
+              onClick={handleClear}
               className="p-1.5 rounded-md text-slate-500 hover:text-purple-300 hover:bg-purple-500/10 transition-colors"
               title="Limpar conversa"
             >
@@ -105,6 +148,25 @@ export const ResearchChat: React.FC<ResearchChatProps> = ({ attachedContext, onM
           </div>
         )}
       </div>
+
+      {/* V1.9.393 (F3 reabrir dossiê) — banner sessão derivada (modo continue) */}
+      {sessionMode === 'continue' && (
+        <div className="shrink-0 px-4 py-2 bg-purple-500/10 border-b border-purple-500/20 flex items-center justify-between gap-2">
+          <div className="flex items-center gap-1.5 text-[11px] text-purple-200 min-w-0">
+            <GitBranch className="w-3.5 h-3.5 flex-shrink-0" />
+            <span className="truncate">
+              Sessão derivada de <strong>{restoredTitle}</strong> — o dossiê original não é alterado.
+            </span>
+          </div>
+          <button
+            onClick={handleClear}
+            className="flex-shrink-0 text-[10px] text-slate-400 hover:text-purple-200 underline-offset-2 hover:underline"
+            title="Descartar esta sessão derivada e começar do zero"
+          >
+            nova sessão
+          </button>
+        </div>
+      )}
 
       {/* Mensagens */}
       {/* V1.9.391 — scrollable com min-h-0 (fix bug overflow flex Tailwind)
@@ -197,8 +259,48 @@ export const ResearchChat: React.FC<ResearchChatProps> = ({ attachedContext, onM
         </div>
       )}
 
+      {/* V1.9.393 (F3 reabrir dossiê) — modo revisão: input substituído por painel só-leitura */}
+      {sessionMode === 'review' && (
+        <div className="shrink-0 border-t border-amber-500/20 bg-slate-900/60 p-3">
+          <div className="flex items-center justify-between gap-2 flex-wrap">
+            <div className="flex items-center gap-1.5 text-[11px] text-amber-200 min-w-0">
+              <Eye className="w-3.5 h-3.5 flex-shrink-0" />
+              <span className="truncate">
+                Revisando <strong>{restoredTitle}</strong> — snapshot imutável, somente leitura.
+              </span>
+            </div>
+            <div className="flex items-center gap-1.5 flex-shrink-0">
+              <button
+                onClick={() => setSessionMode('continue')}
+                className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-md text-[11px] font-medium bg-purple-500/15 text-purple-200 border border-purple-500/30 hover:bg-purple-500/25 transition-colors"
+                title="Abrir uma sessão derivada editável a partir deste dossiê"
+              >
+                <GitBranch className="w-3 h-3" />
+                <span>Continuar pesquisa</span>
+              </button>
+              <button
+                onClick={handleClear}
+                className="px-2.5 py-1.5 rounded-md text-[11px] text-slate-400 hover:text-purple-200 border border-slate-700/40 hover:border-purple-500/30 transition-colors"
+                title="Sair da revisão e voltar à sessão livre"
+              >
+                Sair
+              </button>
+            </div>
+          </div>
+          <div className="mt-2 flex items-start gap-1.5 text-[10px] text-slate-500 italic leading-tight">
+            <Info className="w-3 h-3 flex-shrink-0 mt-0.5" />
+            <span>
+              Dossiê é foto fixa da sessão. Para retomar a conversa, use "Continuar pesquisa" —
+              uma sessão derivada que não altera o dossiê original.
+            </span>
+          </div>
+        </div>
+      )}
+
       {/* Input */}
       {/* V1.9.391 — shrink-0 garante que input nunca seja comprimido pelo scrollable */}
+      {/* V1.9.393 — input só aparece fora do modo revisão */}
+      {sessionMode !== 'review' && (
       <div className="shrink-0 border-t border-purple-500/20 bg-slate-900/60 p-3">
         <div className="flex items-end gap-2">
           <textarea
@@ -230,6 +332,7 @@ export const ResearchChat: React.FC<ResearchChatProps> = ({ attachedContext, onM
           </span>
         </div>
       </div>
+      )}
     </div>
   )
 }

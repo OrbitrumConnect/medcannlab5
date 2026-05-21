@@ -50,6 +50,8 @@ export interface UseResearchChatReturn {
   isProcessing: boolean
   sendMessage: (text: string, attachedContext?: string) => Promise<void>
   clearChat: () => void
+  /** V1.9.393 (F3 reabrir dossiê) — carrega o snapshot de conversa de um dossiê salvo. */
+  loadSession: (msgs: ResearchChatMessage[]) => void
   errorMessage: string | null
 }
 
@@ -199,7 +201,11 @@ export function useResearchChat(): UseResearchChatReturn {
     } finally {
       setIsProcessing(false)
     }
-  }, [user, isProcessing])
+    // V1.9.393 — `messages` incluído nas deps: necessário pra que sendMessage
+    // enxergue o snapshot restaurado por loadSession (F3 "Continuar pesquisa").
+    // Sem isso, o closure ficava preso às mensagens de antes da restauração e
+    // o localHistory enviado ao Edge não incluía a conversa do dossiê.
+  }, [user, isProcessing, messages])
 
   const clearChat = useCallback(() => {
     setMessages([])
@@ -208,11 +214,24 @@ export function useResearchChat(): UseResearchChatReturn {
     lastSentContextRef.current = ''
   }, [])
 
+  // V1.9.393 (F3 reabrir dossiê) — Restaura a conversa de um dossiê salvo na
+  // sessão atual. Substitui as mensagens pelo snapshot imutável. Reseta o ref
+  // de contexto: a sessão derivada recomeça "limpa" do ponto de vista de
+  // re-injeção de corpus (médico re-marca cards se quiser). O dossiê de origem
+  // NUNCA é alterado — saveDossier sempre faz INSERT, então "Continuar pesquisa"
+  // que termine em novo "Fechar como dossiê" cria outra row, não muta a original.
+  const loadSession = useCallback((msgs: ResearchChatMessage[]) => {
+    setMessages(msgs)
+    setErrorMessage(null)
+    lastSentContextRef.current = ''
+  }, [])
+
   return {
     messages,
     isProcessing,
     sendMessage,
     clearChat,
+    loadSession,
     errorMessage,
   }
 }

@@ -33,7 +33,7 @@ import { useDossierPersist, type SavedDossier } from '../hooks/useDossierPersist
 import { EVIDENCE_LABELS } from '../services/pubmedService'
 import { ResearchChat } from './ResearchChat'
 import { exportDossierToPDF, type DossierMessage, type DossierData } from '../lib/dossierExport'
-import { Sparkles, FileText, StickyNote, Check, Info, Folder, User, Stethoscope, Activity, X, BookOpen, Search, Loader2, Archive, Trash2 } from 'lucide-react'
+import { Sparkles, FileText, StickyNote, Check, Info, Folder, User, Stethoscope, Activity, X, BookOpen, Search, Loader2, Archive, Trash2, Eye, GitBranch } from 'lucide-react'
 
 interface AttachableCard {
   id: string
@@ -72,6 +72,11 @@ export const NoaMatrixView: React.FC = () => {
   const [savedDossiers, setSavedDossiers] = useState<SavedDossier[]>([])
   const [dossiersOpen, setDossiersOpen] = useState(false)
   const [dossierFeedback, setDossierFeedback] = useState<string | null>(null)
+  // V1.9.393 (F3 reabrir dossiê) — pedido de restauração passado ao ResearchChat.
+  // token = Date.now() a cada clique → reabrir o mesmo dossiê 2× dispara o efeito.
+  const [restoreRequest, setRestoreRequest] = useState<
+    { token: number; title: string; messages: DossierMessage[]; mode: 'review' | 'continue' } | null
+  >(null)
 
   const refreshDossiers = async () => {
     const list = await listDossiers(10)
@@ -551,6 +556,34 @@ export const NoaMatrixView: React.FC = () => {
                           </div>
                         </div>
                         <div className="flex items-center gap-1 flex-shrink-0">
+                          {/* V1.9.393 (F3 reabrir dossiê) — Revisar = conversa em só-leitura */}
+                          <button
+                            type="button"
+                            onClick={() => setRestoreRequest({
+                              token: Date.now(),
+                              title: d.title,
+                              messages: d.content?.messages || [],
+                              mode: 'review',
+                            })}
+                            title="Revisar a conversa deste dossiê no chat (somente leitura)"
+                            className="p-1 rounded text-amber-300 hover:bg-amber-500/15 transition-colors"
+                          >
+                            <Eye className="w-3.5 h-3.5" />
+                          </button>
+                          {/* V1.9.393 — Continuar = sessão derivada editável (não altera o original) */}
+                          <button
+                            type="button"
+                            onClick={() => setRestoreRequest({
+                              token: Date.now(),
+                              title: d.title,
+                              messages: d.content?.messages || [],
+                              mode: 'continue',
+                            })}
+                            title="Continuar a pesquisa a partir deste dossiê (sessão derivada)"
+                            className="p-1 rounded text-purple-300 hover:bg-purple-500/15 transition-colors"
+                          >
+                            <GitBranch className="w-3.5 h-3.5" />
+                          </button>
                           <button
                             type="button"
                             onClick={() => {
@@ -582,8 +615,10 @@ export const NoaMatrixView: React.FC = () => {
                 <div className="flex items-start gap-1.5 text-[10px] text-slate-500 italic leading-tight pt-1 border-t border-slate-700/30">
                   <Info className="w-3 h-3 flex-shrink-0 mt-0.5" />
                   <span>
-                    Dossiês são snapshots imutáveis da sessão (corpus + papers + conversa).
-                    Visíveis apenas para você (RLS). Re-gerar PDF não depende de mudanças no banco.
+                    Dossiês são snapshots imutáveis da sessão. Visíveis apenas para você (RLS).
+                    <strong className="text-amber-300"> Revisar</strong> abre a conversa em
+                    só-leitura · <strong className="text-purple-300">Continuar</strong> deriva
+                    uma sessão nova sem alterar o original · o ícone de documento re-gera o PDF.
                   </span>
                 </div>
               </div>
@@ -605,6 +640,7 @@ export const NoaMatrixView: React.FC = () => {
         <div className="lg:col-span-7">
           <ResearchChat
             attachedContext={attachedContext}
+            restoreRequest={restoreRequest}
             // V1.9.390 (F3-A.1) → V1.9.392 (F3-A.2) — Callback "Fechar como dossiê".
             // F3-A.1: combina messages + cards + papers + identidade → exportDossierToPDF.
             // F3-A.2: ADICIONA persistência (saveDossier → physician_research_dossiers,
