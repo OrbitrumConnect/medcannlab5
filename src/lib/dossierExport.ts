@@ -300,6 +300,13 @@ h2 {
   padding: 8px 10px;
 }
 
+/* V1.9.399 — nota declarativa sob o título de seção (tom Z2 estrutural) */
+.section-note {
+  color: #888; font-style: italic; font-size: 9px;
+  margin: -4px 0 12px 2px;
+  line-height: 1.5;
+}
+
 .footer {
   margin-top: 28px;
   border-top: 2px solid #00C16A;
@@ -340,6 +347,7 @@ h2 {
   </div>
 
   <h2>§1. Corpus marcado — Casos, Racionalidades e Documentos</h2>
+  <p class="section-note">Material que o médico marcou como contexto da sessão. Nem todo item é necessariamente invocado na reflexão da §3.</p>
   ${corpusBlock}
 
   <h2>§2. Literatura anexada — PubMed</h2>
