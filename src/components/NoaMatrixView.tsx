@@ -263,7 +263,11 @@ export const NoaMatrixView: React.FC = () => {
         type: 'case',
         title: c.patientName || 'Paciente sem nome',
         subtitle: new Date(c.ts).toLocaleDateString('pt-BR'),
-        body: `Caso #${c.caseId.slice(-6)} (${c.patientName})${c.queixa ? `\nQueixa: "${c.queixa}"` : ''}`,
+        // V1.9.407 (LGPD) — body NÃO leva patientName: o body vai pro contexto da
+        // Matrix → síntese do dossiê → conteúdo do forum_post (visível a outros
+        // profissionais). O nome real fica só no `title` (UI do médico). O `Caso #`
+        // já é o identificador pseudonimizado.
+        body: `Caso #${c.caseId.slice(-6)}${c.queixa ? `\nQueixa: "${c.queixa}"` : ''}`,
         timestamp: c.ts,
       })
     })
