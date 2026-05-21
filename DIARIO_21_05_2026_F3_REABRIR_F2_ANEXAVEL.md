@@ -219,4 +219,4 @@ O plano F4 saiu do papel e virou espinha funcional **no mesmo dia**:
 
 > *"Eixo Pesquisa validado de ponta a ponta, e o F4 saiu do papel pra espinha funcional no mesmo dia — dossiê → Enviar ao Fórum → conselho Avalia → aprovar/rejeitar. 16 commits cirúrgicos (V1.9.393→407), F4.0→F4.3, cada um type-check + smoke + 4 refs, zero regressão. O audit Material B foi verificado por grep — e pegou 1 erro dele. Uma dúvida do Pedro ('tá correto?') achou um furo de LGPD que nem o audit viu. Disciplina: Material B se verifica; a desconfiança calibrada acha o que a análise não acha."*
 
-— Dia 21/05/2026 · V1.9.393→407 + F4.0→F4.3 + Plano F4 · eixo Pesquisa + espinha do Fórum · 7 memórias nível 1
+— Dia 21/05/2026 · V1.9.393→407 + F4.0→F4.3 + Plano F4 · eixo Pesquisa + espinha do Fórum · 6 memórias nível 1
