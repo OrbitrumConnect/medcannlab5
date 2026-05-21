@@ -82,12 +82,21 @@ const DOC_CONTENT_PLACEHOLDERS = [
   '[processando extração de texto',
   'não pôde extrair o texto',
 ]
+// V1.9.402 — detecta conteúdo que é lixo binário de PDF (tabela xref gravada
+// como "content" por extração falha no upload). Assinatura: várias entradas
+// xref no formato "NNNNNNNNNN NNNNN n/f".
+function looksLikePdfBinary(text: string): boolean {
+  const xrefEntries = text.match(/\d{10} \d{5} [nf]\b/g)
+  return !!xrefEntries && xrefEntries.length >= 3
+}
 function usableDocText(doc: KnowledgeDocument): string {
   const pick = (s: string) => {
     const t = (s || '').trim()
     if (!t) return ''
     const low = t.toLowerCase()
-    return DOC_CONTENT_PLACEHOLDERS.some((p) => low.includes(p)) ? '' : t
+    if (DOC_CONTENT_PLACEHOLDERS.some((p) => low.includes(p))) return ''
+    if (looksLikePdfBinary(t)) return ''
+    return t
   }
   return pick(doc.content) || pick(doc.summary)
 }
@@ -865,7 +874,9 @@ export const NoaMatrixView: React.FC = () => {
         </div>
 
         {/* Chat */}
-        <div className="lg:col-span-7">
+        {/* V1.9.402 — sticky: o chat fica fixo na tela enquanto os painéis da
+            esquerda (PubMed / Base de Conhecimento) expandem e empurram a página */}
+        <div className="lg:col-span-7 lg:sticky lg:top-4 lg:self-start">
           <ResearchChat
             attachedContext={attachedContext}
             restoreRequest={restoreRequest}
