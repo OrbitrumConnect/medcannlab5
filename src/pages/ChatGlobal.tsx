@@ -382,59 +382,75 @@ const ChatGlobal: React.FC = () => {
     try {
       setLoadingDebates(true)
 
-      // Buscar debates do banco
-      const { data: forumPosts, error } = await supabase
+      // V1.9.408 (F4) — debates = forum_posts APROVADOS pelo conselho.
+      // Filtra por status: só 'active'/'resolved' viram debate no Cann Matrix.
+      // pending_review / rejected / archived NÃO aparecem aqui — fecha o
+      // end-to-end (dossiê → Enviar → pending_review → conselho aprova →
+      // active → debate). is_active mantido como guard adicional.
+      // (supabase as any) — o chain select+eq+in+order+order estoura a
+      // profundidade de tipo do query builder (TS2589); cast é o padrão.
+      const { data: forumPosts, error } = await (supabase as any)
         .from('forum_posts')
         .select('*')
         .eq('is_active', true)
+        .in('status', ['active', 'resolved'])
         .order('is_pinned', { ascending: false })
         .order('created_at', { ascending: false })
 
       if (error) {
         console.warn('Erro ao carregar debates do banco, usando fallback:', error)
-        // Fallback para debates hardcoded
         const filtered = BASE_DEBATES.filter(debate => debate.allowedRoles.includes(userType))
         setDebates(filtered)
         return
       }
 
       if (forumPosts && forumPosts.length > 0) {
-        // Converter posts do banco para formato DebateConfig
+        // V1.9.408 — autor vem de `users` (forum_posts tem author_id, não author_name)
+        const authorIds = [...new Set(forumPosts.map(p => p.author_id).filter(Boolean))]
+        const { data: authorRows } = authorIds.length > 0
+          ? await (supabase as any).from('users').select('id, name').in('id', authorIds)
+          : { data: [] as any[] }
+        const authorMap = new Map<string, string>(
+          (authorRows || []).map((a: any) => [a.id, a.name] as [string, string])
+        )
+
+        // Converter posts do banco para DebateConfig — mapeando COLUNAS REAIS
         const debatesFromDb = forumPosts
           .filter(post => {
             if (!post.allowed_roles || post.allowed_roles.length === 0) return true
             return post.allowed_roles.includes(userType)
           })
-          .map(post => ({
-            id: post.id,
-            title: post.title,
-            author: (post as any).author_name,
-            authorAvatar: (post as any).author_avatar || (post as any).author_name?.split(' ').map((n: string) => n[0]).join('') || 'A',
-            category: post.category || '',
-            participants: (post as any).participants_count || 0,
-            views: (post as any).views_count || 0,
-            replies: post.replies_count || 0,
-            votes: { up: post.votes_up || 0, down: post.votes_down || 0 },
-            tags: post.tags || [],
-            lastActivity: (post as any).last_activity ? formatTimeAgo(new Date((post as any).last_activity)) : 'Agora',
-            isPinned: post.is_pinned || false,
-            isHot: post.is_hot || false,
-            isActive: post.is_active || false,
-            isPasswordProtected: post.is_password_protected || false,
-            description: post.description || post.content,
-            allowedRoles: post.allowed_roles || [],
-            postRoles: post.post_roles || []
-          }))
+          .map(post => {
+            const authorName = authorMap.get(post.author_id) || 'Médico autor'
+            return {
+              id: post.id,
+              title: post.title,
+              author: authorName,
+              authorAvatar: authorName.split(' ').map((n: string) => n[0]).join('').slice(0, 2) || 'A',
+              category: post.category || '',
+              participants: post.current_participants || 0,
+              views: post.views || 0,
+              replies: post.replies_count || 0,
+              votes: { up: post.votes_up || 0, down: post.votes_down || 0 },
+              tags: post.tags || [],
+              lastActivity: post.updated_at ? formatTimeAgo(new Date(post.updated_at)) : 'Agora',
+              isPinned: post.is_pinned || false,
+              isHot: post.is_hot || false,
+              isActive: post.is_active || false,
+              isPasswordProtected: post.is_password_protected || false,
+              description: post.description || post.content,
+              allowedRoles: post.allowed_roles || [],
+              postRoles: post.post_roles || []
+            }
+          })
 
         setDebates(debatesFromDb as any)
       } else {
-        // Se não houver posts no banco, usar fallback
         const filtered = BASE_DEBATES.filter(debate => debate.allowedRoles.includes(userType))
         setDebates(filtered)
       }
     } catch (error) {
       console.error('Erro ao carregar debates:', error)
-      // Fallback para debates hardcoded
       const filtered = BASE_DEBATES.filter(debate => debate.allowedRoles.includes(userType))
       setDebates(filtered)
     } finally {
