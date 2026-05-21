@@ -133,8 +133,66 @@ Todos push 4 refs (amigo + medcannlab5 × main + master). Frontend deploya via V
 
 ---
 
+## 🔠 BLOCO K — Tarde: legibilidade + a saga do dossiê (V1.9.397→402)
+
+### K.1 — Legibilidade e polish
+- **V1.9.397** (`e129957`) — chat da Nôa Matrix com letra maior (pedido do Ricardo, que não enxerga bem). Escopado só ao `ResearchChat`: mensagens 12→14px, metadados 10→11px.
+- **V1.9.398** (`41b91c5`) — dossiê PDF **condensa** os docs da Base de Conhecimento (eram parede de 8k chars de texto acadêmico que enterrava a conversa). Trecho de 600 chars + nota. Contexto da Matrix inalterado.
+- **V1.9.399** (`48a3398`) — nota de honestidade sob a §1 do dossiê: *"Material que o médico marcou como contexto. Nem todo item é necessariamente invocado na §3."*
+
+### K.2 — A saga do dossiê reaberto (V1.9.400 → 401)
+- **V1.9.400** (`26d3339`) — re-fechar um dossiê reaberto preservava §1/§2 vindo do snapshot original (o reabrir V1.9.393 traz só a conversa).
+- **Smoke empírico**: vários PDFs saíram em branco mesmo com V1.9.400. Diagnóstico via PAT (`physician_research_dossiers`): **NÃO era bug do V1.9.400** — o usuário reabria dossiês **vazios**. A lista é ordenada por recência → cada re-fechar criava um vazio mais novo que subia ao topo e enterrava o bom. Ciclo vicioso.
+- **V1.9.401** (`84bd44b`) — fix definitivo: re-fechar sessão reaberta **sem continuar a conversa** (mesma contagem de mensagens) só re-exporta o PDF, **não duplica** o dossiê.
+- **V1.9.402** (`2851cc3`) — (1) chat **sticky** (some de vista quando os painéis PubMed/Base expandem); (2) filtro de **lixo binário de PDF** — o doc "Cannabis Exposure..." entrou anexável com conteúdo = tabela xref crua (`endobj xref 0000000016 00000 n...`); `looksLikePdfBinary()` detecta a assinatura.
+
+### K.3 — Lição
+"0 rows" pode ser "ninguém usou" OU "ninguém consegue usar". E um artefato que se cria a cada ação + lista por recência = se a ação for repetível sem mudança, gera lixo que se auto-promove. V1.9.401 quebrou esse padrão.
+
+## 🏛 BLOCO L — Avaliação do Fórum + Plano F4
+
+### L.1 — Audit do subsistema fórum (PAT + front + back)
+- **3 componentes** tocam `forum_posts`: `ForumCasosClinicos` (tab), `ChatGlobal` (Fórum Cann Matrix, `/app/chat`), `DebateRoom` (detalhe).
+- **2 com schema quebrado** — cada um escreve colunas-fantasma diferentes. Bucket `forum-attachments` **não existe**.
+- `forum_posts` é a **espinha compartilhada** — o ChatGlobal já converte linhas de `forum_posts` em debates.
+- Infra de **ranking já existe** (`ranking_history`, `view_current_ranking_live`).
+- Tudo **0 rows** → reforma é a mais segura do app.
+
+### L.2 — Caminho B + Plano F4
+Pedro confirmou o **Caminho B**: o dossiê é a fonte; um trigger o envia ao fórum; cai na análise do conselho; vira debate no Cann Matrix. `forum_posts.status` é o trilho. Papéis: **Casos Clínicos = curadoria/conselho/ranking · Cann Matrix = debate**.
+
+**`PLANO_F4_FORUM_CANN_MATRIX_21_05.md`** escrito e commitado (`36c7027`) — 5 fases (F4.0 consent+RLS / F4.1 schema / F4.2 UI+trigger / F4.3 workflow conselho / F4.4 ranking). **F4 NÃO foi codado** — o plano aguarda aprovação + 2 decisões humanas (modelo de consent · quem é o conselho).
+
+## 📋 BLOCO M — Estado de fechamento do dia
+
+### Commits do dia (HEAD `2851cc3`)
+```
+2851cc3  V1.9.402  chat sticky + filtro lixo binário PDF
+84bd44b  V1.9.401  re-fechar dossiê reaberto sem mudança não duplica
+26d3339  V1.9.400  re-fechar dossiê reaberto preserva §1/§2
+36c7027  docs      PLANO F4 fórum
+0880231  V1.9.396  polish dossiê (rodapé + filtro placeholder)
+48a3398  V1.9.399  nota honestidade §1
+41b91c5  V1.9.398  dossiê condensa docs da Base
+ad25b0e  V1.9.394  aviso Casos Similares recolhível
+9b63b1b  V1.9.395  F2 Base de Conhecimento anexável
+e129957  V1.9.397  legibilidade chat Matrix
+5ed2fc4  V1.9.393  F3 reabrir dossiê
+b819117  docs      DIARIO_21
+```
+**10 commits de código (V1.9.393→402) + 2 de docs.** Todos type-check + smoke + push 4 refs.
+
+### Memórias cristalizadas hoje
+- `feedback_matrix_vies_suavizacao_primeira_passada_21_05` (nível 1)
+- `project_f4_forum_plano_e_audit_21_05` (nível 1) — audit fórum + plano F4
+
+### Próximo passo
+F4 — aprovar o `PLANO_F4` + as 2 decisões humanas. Começar pela F4.0 (fix RLS órfã `noa_clinical_cases` + decidir consent).
+
+---
+
 ## 🎯 Frase âncora do dia
 
-> *"Loop do eixo Pesquisa fechado e validado empíricamente: anexar (F2) → estruturar em conversa → fechar dossiê (F3) → reabrir (V1.9.393). A Matrix passou um teste de 5 turnos — suaviza na primeira passada, mas corrige limpo sob desafio e admite o que não sabe. A conversa É a mitigação. 4 commits cirúrgicos, smoke empírico em cada um, zero regressão."*
+> *"Eixo Pesquisa validado de ponta a ponta — anexar (F2) → conversa Z2 → dossiê (F3) → reabrir (V1.9.393). A Matrix passou 5 turnos de escrutínio. O dossiê passou por uma saga de PDFs em branco que o audit empírico desmascarou: não era bug, era o usuário reabrindo dossiês vazios — V1.9.401 matou o ciclo. E o Fórum foi auditado e planejado (Caminho B): não se constrói do zero, se desentorta. 10 commits cirúrgicos, smoke em cada um, zero regressão."*
 
-— Dia 21/05/2026 · V1.9.393→396 · eixo Pesquisa validado · 1 memória nível 1
+— Dia 21/05/2026 · V1.9.393→402 + Plano F4 · eixo Pesquisa validado · 2 memórias nível 1
