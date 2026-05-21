@@ -316,7 +316,7 @@ h2 {
     </div>
   </div>
 
-  <h2>§1. Corpus marcado — Casos e Racionalidades</h2>
+  <h2>§1. Corpus marcado — Casos, Racionalidades e Documentos</h2>
   ${corpusBlock}
 
   <h2>§2. Literatura anexada — PubMed</h2>
@@ -335,7 +335,8 @@ h2 {
     <div class="legal">
       Plataforma MedCannLab 3.0 · Sistema cognitivo Z2 (estrutural não-decisional) ·
       Identificação de paciente pseudonimizada (LGPD art. 12) ·
-      Geração local pelo navegador (sem persistência server-side nesta versão F3-A.1).
+      PDF gerado localmente pelo navegador; o snapshot do dossiê é persistido com
+      acesso restrito ao médico autor (RLS).
     </div>
   </div>
 </body>

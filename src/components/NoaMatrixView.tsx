@@ -73,6 +73,25 @@ const CTX_LABEL: Record<AttachableCard['type'], string> = {
 // (memory feedback_rag_molda_comportamento_cognitivo: nunca migrar pra base_conhecimento).
 const MAX_DOC_CHARS = 8000
 
+// V1.9.396 (F2) — placeholders de extração falha (gravados em documents.content
+// pelo upload do Library quando OCR/parse não roda). Doc cujo texto é só isso
+// não tem conteúdo aproveitável pra anexar — some da lista da Base de Conhecimento.
+const DOC_CONTENT_PLACEHOLDERS = [
+  'não foi possível extrair',
+  'nenhum texto legível foi extraído',
+  '[processando extração de texto',
+  'não pôde extrair o texto',
+]
+function usableDocText(doc: KnowledgeDocument): string {
+  const pick = (s: string) => {
+    const t = (s || '').trim()
+    if (!t) return ''
+    const low = t.toLowerCase()
+    return DOC_CONTENT_PLACEHOLDERS.some((p) => low.includes(p)) ? '' : t
+  }
+  return pick(doc.content) || pick(doc.summary)
+}
+
 interface AttachedDoc {
   id: string
   title: string
@@ -146,10 +165,10 @@ export const NoaMatrixView: React.FC = () => {
     setKbLoading(true)
     try {
       const all = await KnowledgeBaseIntegration.getAllDocuments()
-      // Exclui quarentena LGPD + docs sem texto aproveitável.
+      // Exclui quarentena LGPD + docs sem texto aproveitável (inclui placeholders
+      // de extração falha — V1.9.396).
       const usable = all.filter((d) =>
-        d.category !== 'cases_lgpd_quarantine' &&
-        ((d.content || '').trim().length > 0 || (d.summary || '').trim().length > 0))
+        d.category !== 'cases_lgpd_quarantine' && usableDocText(d).length > 0)
       setKbDocs(usable)
     } catch (e) {
       console.warn('[NoaMatrix] erro ao carregar Base de Conhecimento:', e)
@@ -159,7 +178,7 @@ export const NoaMatrixView: React.FC = () => {
   }
 
   const attachDoc = (doc: KnowledgeDocument) => {
-    const raw = (doc.content || '').trim() || (doc.summary || '').trim()
+    const raw = usableDocText(doc)
     const excerpt = raw.length > MAX_DOC_CHARS ? raw.slice(0, MAX_DOC_CHARS) : raw
     setAttachedDocs((prev) => prev.find((d) => d.id === doc.id) ? prev : [...prev, {
       id: doc.id,
@@ -658,7 +677,7 @@ export const NoaMatrixView: React.FC = () => {
                   <div className="space-y-1.5 max-h-[320px] overflow-y-auto pr-1">
                     {kbVisible.map((d) => {
                       const isAttached = attachedDocs.some((a) => a.id === d.id)
-                      const chars = (d.content || '').trim().length || (d.summary || '').trim().length
+                      const chars = usableDocText(d).length
                       return (
                         <div
                           key={d.id}
