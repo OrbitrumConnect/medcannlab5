@@ -21,7 +21,8 @@ import {
   BookmarkPlus,
   Keyboard,
   BarChart3,
-  Eye
+  Eye,
+  ChevronDown
 } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
@@ -593,6 +594,10 @@ const AdminCasosSimilares: React.FC<Props> = ({ embedded = false, defaultQuery =
   const [result, setResult] = useState<SearchResult | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [monthlyCost, setMonthlyCost] = useState<number>(0)
+  // [V1.9.394] (21/05) — aviso experimental recolhível (resumo curto por padrão).
+  // Conteúdo integral preservado; só a apresentação mudou (parede de texto ocupava
+  // tela toda no mobile / meia tela no desktop).
+  const [warningExpanded, setWarningExpanded] = useState(false)
   // [V1.9.356] (18/05): modal preview do caso
   const [selectedCase, setSelectedCase] = useState<CaseResult | null>(null)
   const [caseDetails, setCaseDetails] = useState<any>(null)
@@ -1101,14 +1106,38 @@ REGRAS RÍGIDAS:
         )}
 
         {/* [V1.9.363] Banner ALPHA fortíssimo — crítica formal Dr. Ricardo 18/05 noite */}
+        {/* [V1.9.394] (21/05) Recolhível — resumo curto por padrão, detalhe completo on-demand.
+            Conteúdo integral preservado: continua válido (a Nôa Matrix NÃO estende o Casos
+            Similares — são operações cognitivas distintas, memory
+            feedback_matrix_prolonga_vs_casos_similares_infere_20_05). Só a APRESENTAÇÃO mudou.
+            A linha crítica de segurança ("não use pra decisão clínica") fica SEMPRE visível
+            no cabeçalho — o expand revela apenas o raciocínio detalhado. */}
         {/* Memory: feedback_ricardo_similaridade_por_qual_criterio_18_05 */}
-        <div className="bg-amber-500/10 border-2 border-amber-500/40 rounded-xl p-4 mb-6">
-          <div className="flex items-start gap-3">
-            <AlertCircle className="w-5 h-5 text-amber-400 flex-shrink-0 mt-0.5" />
-            <div className="space-y-2">
-              <h3 className="text-sm font-bold text-amber-300 uppercase tracking-wider">
-                ⚠️ Experimental — Não use pra decisão clínica
-              </h3>
+        <div className="bg-amber-500/10 border-2 border-amber-500/40 rounded-xl mb-6">
+          <button
+            type="button"
+            onClick={() => setWarningExpanded((v) => !v)}
+            className="w-full flex items-center gap-2.5 p-3 text-left"
+            aria-expanded={warningExpanded}
+          >
+            <AlertCircle className="w-4 h-4 text-amber-400 flex-shrink-0" />
+            <div className="flex-1 min-w-0">
+              <span className="text-xs font-bold text-amber-300 uppercase tracking-wider">
+                ⚠️ Experimental — não use pra decisão clínica
+              </span>
+              {!warningExpanded && (
+                <span className="block text-[11px] text-amber-100/70 leading-snug mt-0.5">
+                  Agrupamento textual não é evidência clínica. Toque para entender os limites.
+                </span>
+              )}
+            </div>
+            <ChevronDown
+              className={`w-4 h-4 text-amber-400 flex-shrink-0 transition-transform ${warningExpanded ? 'rotate-180' : ''}`}
+            />
+          </button>
+
+          {warningExpanded && (
+            <div className="px-3 pb-4 space-y-2">
               <p className="text-xs text-amber-100/90 leading-relaxed">
                 Critérios de similaridade ainda <strong>imaturos</strong> (busca textual simples em campos jsonb).
                 Pode produzir <strong>falsa sensação de evidência ou recorrência</strong>.
@@ -1137,7 +1166,7 @@ REGRAS RÍGIDAS:
                 3º (só MUITO depois) casos similares institucionais.
               </p>
             </div>
-          </div>
+          )}
         </div>
 
         {/* [V1.9.364] Bloco 1 — KPIs pessoais do médico (telemetria do próprio uso) */}
