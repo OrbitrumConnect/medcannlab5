@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react'
 import { useAuth } from '../contexts/AuthContext'
 import { supabase } from '../lib/supabase'
 import { NoaResidentAI } from '../lib/noaResidentAI'
+import { useForumReview } from '../hooks/useForumReview'
 import {
   Search,
   MessageCircle,
@@ -73,7 +74,7 @@ interface CasePost {
   comments: number
   isBookmarked: boolean
   isPinned: boolean
-  status: 'open' | 'closed' | 'resolved'
+  status: 'open' | 'closed' | 'resolved' | 'pending_review' | 'active' | 'archived' | 'rejected'
   attachments?: string[]
   rationality_analysis?: Record<Rationality, string>
   ai_discussion?: string
@@ -109,6 +110,13 @@ const ForumCasosClinicos: React.FC = () => {
   const [isAnalyzingRationality, setIsAnalyzingRationality] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const chatContainerRef = useRef<HTMLDivElement>(null)
+
+  // V1.9.406 (F4.3) — avaliação do conselho. v1: gate = admin (Ricardo + Eduardo
+  // cobrem na prática; role dedicada de conselho vem depois).
+  const isConselho = (user as any)?.type === 'admin'
+  const forumReview = useForumReview()
+  const [reviewTarget, setReviewTarget] = useState<CasePost | null>(null)
+  const [reviewNotes, setReviewNotes] = useState('')
 
   const [newCase, setNewCase] = useState<NewCaseForm>({
     title: '',
@@ -213,7 +221,7 @@ const ForumCasosClinicos: React.FC = () => {
           comments: comments.length,
           isBookmarked: false,
           isPinned: post.is_pinned || false,
-          status: (post.status || 'open') as 'open' | 'closed' | 'resolved',
+          status: (post.status || 'pending_review') as CasePost['status'],
           attachments: post.attachments || [],
           rationality_analysis: post.rationality_analysis || {},
           ai_discussion: post.ai_discussion || ''
@@ -499,6 +507,16 @@ Forneça:
 
   const getStatusColor = (status: string) => {
     switch (status) {
+      // V1.9.406 (F4.3) — status do workflow F4
+      case 'pending_review':
+        return 'bg-amber-100 text-amber-800'
+      case 'active':
+        return 'bg-emerald-100 text-emerald-800'
+      case 'rejected':
+        return 'bg-red-100 text-red-800'
+      case 'archived':
+        return 'bg-gray-100 text-gray-800'
+      // status legados
       case 'open':
         return 'bg-green-100 text-green-800'
       case 'closed':
@@ -512,6 +530,16 @@ Forneça:
 
   const getStatusLabel = (status: string) => {
     switch (status) {
+      // V1.9.406 (F4.3) — status do workflow F4
+      case 'pending_review':
+        return 'Em análise'
+      case 'active':
+        return 'Em debate'
+      case 'rejected':
+        return 'Rejeitado'
+      case 'archived':
+        return 'Arquivado'
+      // status legados
       case 'open':
         return 'Aberto'
       case 'closed':
@@ -783,6 +811,20 @@ Forneça:
                       <span>{post.comments}</span>
                     </div>
                   </div>
+                  {/* V1.9.406 (F4.3) — Avaliar: conselho (admin) revisa o pending_review */}
+                  {post.status === 'pending_review' && (
+                    isConselho ? (
+                      <button
+                        onClick={() => { setReviewTarget(post); setReviewNotes('') }}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-amber-500/20 text-amber-200 border border-amber-500/40 hover:bg-amber-500/30 transition-colors"
+                      >
+                        <CheckCircle className="w-4 h-4" />
+                        <span>Avaliar</span>
+                      </button>
+                    ) : (
+                      <span className="text-xs text-slate-500 italic">em análise do conselho</span>
+                    )
+                  )}
                 </div>
               </div>
             ))}
@@ -1121,6 +1163,72 @@ Forneça:
                   Publicar Caso
                 </button>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* V1.9.406 (F4.3) — modal de avaliação do conselho */}
+      {reviewTarget && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+          <div className="w-full max-w-2xl max-h-[85vh] overflow-y-auto bg-slate-900 border border-amber-500/30 rounded-xl p-5 space-y-4">
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0">
+                <h3 className="text-base font-bold text-white">Avaliar caso — Conselho</h3>
+                <p className="text-xs text-slate-400 mt-0.5">{reviewTarget.title}</p>
+                <p className="text-[11px] text-slate-500 mt-0.5">Autor: {reviewTarget.author.name}</p>
+              </div>
+              <button onClick={() => setReviewTarget(null)} className="text-slate-400 hover:text-white flex-shrink-0">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="bg-slate-800/60 border border-slate-700/40 rounded-lg p-3 max-h-[40vh] overflow-y-auto">
+              <p className="text-xs text-slate-200 whitespace-pre-wrap leading-relaxed">{reviewTarget.content}</p>
+            </div>
+            <div>
+              <label className="text-[11px] text-slate-400">
+                Observações do conselho <span className="text-slate-500">(obrigatório ao rejeitar)</span>
+              </label>
+              <textarea
+                value={reviewNotes}
+                onChange={(e) => setReviewNotes(e.target.value)}
+                rows={3}
+                placeholder="Feedback ao autor — o que falta, o que ajustar..."
+                className="w-full mt-1 bg-slate-800/60 border border-slate-700/50 rounded-md px-2.5 py-2 text-xs text-white placeholder:text-slate-500 focus:outline-none focus:ring-1 focus:ring-amber-500/50 resize-none"
+              />
+            </div>
+            {forumReview.error && <div className="text-[11px] text-red-300">{forumReview.error}</div>}
+            <div className="flex items-center justify-end gap-2">
+              <button
+                onClick={() => setReviewTarget(null)}
+                className="px-3 py-1.5 rounded-md text-xs text-slate-400 hover:text-slate-200 border border-slate-700/50 transition-colors"
+              >
+                Cancelar
+              </button>
+              <button
+                disabled={forumReview.reviewing || !reviewNotes.trim()}
+                onClick={async () => {
+                  const t = reviewTarget
+                  if (!t) return
+                  const ok = await forumReview.reject(t.id, reviewNotes)
+                  if (ok) { setReviewTarget(null); loadForumData() }
+                }}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium bg-red-500/15 text-red-300 border border-red-500/30 hover:bg-red-500/25 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              >
+                <X className="w-3.5 h-3.5" /> Rejeitar
+              </button>
+              <button
+                disabled={forumReview.reviewing}
+                onClick={async () => {
+                  const t = reviewTarget
+                  if (!t) return
+                  const ok = await forumReview.approve(t.id)
+                  if (ok) { setReviewTarget(null); loadForumData() }
+                }}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold bg-emerald-500/20 text-emerald-200 border border-emerald-500/40 hover:bg-emerald-500/30 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              >
+                <CheckCircle className="w-3.5 h-3.5" /> Aprovar → vira debate
+              </button>
             </div>
           </div>
         </div>
