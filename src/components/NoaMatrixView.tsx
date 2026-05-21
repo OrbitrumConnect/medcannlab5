@@ -30,11 +30,12 @@ import { useSearchHistory } from '../hooks/useSearchHistory'
 import { usePatientLongitudinal } from '../hooks/usePatientLongitudinal'
 import { useExternalLiterature } from '../hooks/useExternalLiterature'
 import { useDossierPersist, type SavedDossier } from '../hooks/useDossierPersist'
+import { useForumPublish } from '../hooks/useForumPublish'
 import { EVIDENCE_LABELS } from '../services/pubmedService'
 import { ResearchChat } from './ResearchChat'
 import { exportDossierToPDF, type DossierMessage, type DossierData } from '../lib/dossierExport'
 import { KnowledgeBaseIntegration, type KnowledgeDocument } from '../services/knowledgeBaseIntegration'
-import { Sparkles, FileText, StickyNote, Check, Info, Folder, User, Stethoscope, Activity, X, BookOpen, Search, Loader2, Archive, Trash2, Eye, GitBranch, Library } from 'lucide-react'
+import { Sparkles, FileText, StickyNote, Check, Info, Folder, User, Stethoscope, Activity, X, BookOpen, Search, Loader2, Archive, Trash2, Eye, GitBranch, Library, Send } from 'lucide-react'
 
 interface AttachableCard {
   id: string
@@ -137,6 +138,11 @@ export const NoaMatrixView: React.FC = () => {
   // o §1/§2 deste snapshot (a restauração V1.9.393 traz só a conversa, não o
   // corpus). Sem isto o novo PDF sairia com "Nenhum item marcado".
   const [restoredSnapshot, setRestoredSnapshot] = useState<DossierData | null>(null)
+
+  // V1.9.403 (F4.2-A) — envio do dossiê ao Fórum (Caminho B): trigger + consent.
+  const forumPublish = useForumPublish()
+  const [publishTarget, setPublishTarget] = useState<SavedDossier | null>(null)
+  const [publishAttested, setPublishAttested] = useState(false)
 
   const refreshDossiers = async () => {
     const list = await listDossiers(10)
@@ -821,6 +827,15 @@ export const NoaMatrixView: React.FC = () => {
                           >
                             <GitBranch className="w-3.5 h-3.5" />
                           </button>
+                          {/* V1.9.403 (F4.2-A) — Enviar dossiê ao Fórum (Caminho B) */}
+                          <button
+                            type="button"
+                            onClick={() => { setPublishTarget(d); setPublishAttested(false) }}
+                            title="Enviar este dossiê ao Fórum (entra em análise do conselho)"
+                            className="p-1 rounded text-cyan-300 hover:bg-cyan-500/15 transition-colors"
+                          >
+                            <Send className="w-3.5 h-3.5" />
+                          </button>
                           <button
                             type="button"
                             onClick={() => {
@@ -940,6 +955,69 @@ export const NoaMatrixView: React.FC = () => {
           />
         </div>
       </div>
+
+      {/* V1.9.403 (F4.2-A) — modal "Enviar ao Fórum" com atestação de consent */}
+      {publishTarget && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+          <div className="w-full max-w-md bg-slate-900 border border-cyan-500/30 rounded-xl p-5 space-y-4">
+            <div className="flex items-start gap-2.5">
+              <Send className="w-5 h-5 text-cyan-300 flex-shrink-0 mt-0.5" />
+              <div className="min-w-0">
+                <h3 className="text-sm font-bold text-white">Enviar dossiê ao Fórum</h3>
+                <p className="text-xs text-slate-400 mt-0.5 truncate">{publishTarget.title}</p>
+              </div>
+            </div>
+            <p className="text-[11px] text-slate-400 leading-relaxed">
+              O dossiê vai para <strong className="text-cyan-300">análise do conselho</strong>.
+              Aprovado, vira debate no Fórum — visível a profissionais e admins. O paciente
+              aparece pseudonimizado.
+            </p>
+            <label className="flex items-start gap-2 text-[11px] text-slate-300 leading-relaxed cursor-pointer">
+              <input
+                type="checkbox"
+                checked={publishAttested}
+                onChange={(e) => setPublishAttested(e.target.checked)}
+                className="mt-0.5 flex-shrink-0"
+              />
+              <span>
+                Atesto que o paciente consentiu que este caso, de forma pseudonimizada,
+                seja discutido no fórum profissional do MedCannLab.
+              </span>
+            </label>
+            {forumPublish.error && (
+              <div className="text-[11px] text-red-300">{forumPublish.error}</div>
+            )}
+            <div className="flex items-center justify-end gap-2 pt-1">
+              <button
+                type="button"
+                onClick={() => { setPublishTarget(null); setPublishAttested(false) }}
+                className="px-3 py-1.5 rounded-md text-[11px] text-slate-400 hover:text-slate-200 border border-slate-700/50 transition-colors"
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                disabled={!publishAttested || forumPublish.publishing}
+                onClick={async () => {
+                  const target = publishTarget
+                  if (!target) return
+                  const ok = await forumPublish.publishDossier(target)
+                  if (ok) {
+                    setPublishTarget(null)
+                    setPublishAttested(false)
+                    setDossierFeedback('Dossiê enviado ao Fórum — em análise do conselho.')
+                    setTimeout(() => setDossierFeedback(null), 6000)
+                  }
+                }}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[11px] font-medium bg-cyan-500/20 text-cyan-200 border border-cyan-500/40 hover:bg-cyan-500/30 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              >
+                {forumPublish.publishing ? <Loader2 className="w-3 h-3 animate-spin" /> : <Send className="w-3 h-3" />}
+                <span>Publicar no Fórum</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
