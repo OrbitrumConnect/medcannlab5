@@ -86,6 +86,29 @@ const CATEGORY_LABEL: Record<string, string> = {
   'kb-document': 'Documento da Base de Conhecimento',
 }
 
+/** V1.9.398 — máximo de caracteres do conteúdo de um doc da Base exibido no PDF.
+ *  O texto completo (até 8k) vai pro contexto da Matrix e fica no snapshot jsonb;
+ *  o PDF mostra só um trecho pra não virar parede de texto acadêmico.
+ *  Condensar o PDF NÃO perde auditabilidade — o full text continua no jsonb. */
+const KB_DOC_PREVIEW_CHARS = 600
+
+/** Renderiza o corpo de um card do §1. Para 'kb-document' condensa o conteúdo
+ *  (cabeçalho + trecho + nota); demais tipos mantêm o corpo completo. */
+function renderCardBody(c: DossierCard): string {
+  const toHtml = (s: string) => escapeHtml(s).replace(/\n/g, '<br>')
+  if (c.type !== 'kb-document') return toHtml(c.body)
+  const raw = String(c.body ?? '')
+  const marker = 'Conteúdo:\n'
+  const idx = raw.indexOf(marker)
+  const head = idx >= 0 ? raw.slice(0, idx + marker.length) : ''
+  const content = (idx >= 0 ? raw.slice(idx + marker.length) : raw).trim()
+  if (content.length <= KB_DOC_PREVIEW_CHARS) return toHtml(head + content)
+  const preview = content.slice(0, KB_DOC_PREVIEW_CHARS).trimEnd() + '…'
+  const note = '\n\n— Trecho exibido. O documento foi usado como contexto da sessão; '
+    + 'o texto completo está preservado no registro do dossiê.'
+  return toHtml(head + preview + note)
+}
+
 /**
  * Gera HTML completo do dossiê pronto pra print/PDF.
  * Estrutura 4 seções: cabeçalho institucional, corpus marcado, literatura, reflexão Matrix.
@@ -115,7 +138,7 @@ export function generateDossierHTML(data: DossierData): string {
           ${c.subtitle ? `<span class="card-subtitle">${escapeHtml(c.subtitle)}</span>` : ''}
         </div>
         <div class="card-title">${escapeHtml(c.title)}</div>
-        <div class="card-body">${escapeHtml(c.body).replace(/\n/g, '<br>')}</div>
+        <div class="card-body">${renderCardBody(c)}</div>
       </div>
     `).join('')
     : '<p class="empty">Nenhum item marcado nesta sessão.</p>'
