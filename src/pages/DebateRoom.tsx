@@ -69,6 +69,7 @@ const DebateRoom: React.FC = () => {
   const [participants, setParticipants] = useState<any[]>([])
   const [messages, setMessages] = useState<any[]>([])
   const [isModerator, setIsModerator] = useState(false)
+  const [dossierExpanded, setDossierExpanded] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
   // Carregar dados do debate do Supabase
@@ -140,7 +141,10 @@ const DebateRoom: React.FC = () => {
           views: forumPost.views || 0,
           votes: { up: forumPost.votes_up || 0, down: forumPost.votes_down || 0 },
           isPinned: forumPost.is_pinned || false,
-          isHot: forumPost.is_hot || false
+          isHot: forumPost.is_hot || false,
+          // V1.9.410 — dossiê de origem (Caminho B do F4). Se preenchido, este
+          // debate nasceu de um dossiê de pesquisa e ganha card fixado no topo.
+          dossierId: forumPost.dossier_id || null
         }
 
         setDebate(debateData)
@@ -405,7 +409,11 @@ const DebateRoom: React.FC = () => {
                   </div>
                 )}
               </h1>
-              <p className="text-slate-300 mt-1">{debate.description}</p>
+              <p className="text-slate-300 mt-1">
+                {debate.dossierId
+                  ? 'Debate clínico originado de um dossiê de pesquisa da Nôa Matrix.'
+                  : debate.description}
+              </p>
             </div>
           </div>
           <div className="flex items-center space-x-2">
@@ -531,7 +539,31 @@ const DebateRoom: React.FC = () => {
         </div>
 
         {/* Chat Area */}
-        <div className="lg:col-span-3">
+        <div className="lg:col-span-3 space-y-6">
+          {/* V1.9.410 — Dossiê fixado no topo da sala (Caminho B do F4). Cada
+              debate aprovado tem a SUA própria sala; o documento de origem
+              fica acessível aqui, sem se misturar ao chat. */}
+          {debate.dossierId && (
+            <div className="bg-slate-800/80 rounded-lg border border-emerald-500/30">
+              <div className="p-4 border-b border-slate-700 flex items-center space-x-2">
+                <Pin className="w-4 h-4 text-emerald-400" />
+                <span className="text-emerald-300 text-sm font-semibold">📄 Dossiê de pesquisa em debate</span>
+              </div>
+              <div className="p-4">
+                <p className={`text-slate-200 text-sm whitespace-pre-wrap ${dossierExpanded ? '' : 'line-clamp-4'}`}>
+                  {debate.description}
+                </p>
+                {(debate.description?.length || 0) > 280 && (
+                  <button
+                    onClick={() => setDossierExpanded(v => !v)}
+                    className="mt-3 text-emerald-400 text-xs font-medium hover:text-emerald-300 transition-colors"
+                  >
+                    {dossierExpanded ? '▲ Recolher dossiê' : '▼ Ver dossiê completo'}
+                  </button>
+                )}
+              </div>
+            </div>
+          )}
           <div className="bg-slate-800/80 rounded-lg border border-slate-700 h-[600px] flex flex-col">
             {/* Chat Header */}
             <div className="p-4 border-b border-slate-700 bg-slate-700/50">
