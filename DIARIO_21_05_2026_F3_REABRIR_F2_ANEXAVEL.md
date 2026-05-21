@@ -186,13 +186,37 @@ b819117  docs      DIARIO_21
 - `feedback_matrix_vies_suavizacao_primeira_passada_21_05` (nível 1)
 - `project_f4_forum_plano_e_audit_21_05` (nível 1) — audit fórum + plano F4
 
-### Próximo passo
-F4 — aprovar o `PLANO_F4` + as 2 decisões humanas. Começar pela F4.0 (fix RLS órfã `noa_clinical_cases` + decidir consent).
+---
+
+## 🏛 BLOCO N — F4 construído (tarde/noite 21/05)
+
+O plano F4 saiu do papel e virou espinha funcional **no mesmo dia**:
+
+- **F4.0** ✅ — fix da RLS órfã `noa_clinical_cases` (via PAT): `SELECT USING(true)` → `profissional OR admin`. Débito de 1 mês fechado.
+- **F4.1** ✅ — migration `forum_posts` (via PAT): 9 colunas aditivas (`dossier_id`, `status`, `reviewed_by/at`, `review_notes`, `resolved_at`, `reopened_count`, `consent_attested`, `patient_pseudonym`) + CHECK status + RLS SELECT por status. 0 rows = risco nulo.
+- **V1.9.403** — F4.2-A: trigger "Enviar ao Fórum" no dossiê + modal de consent (atestação do médico) + hook `useForumPublish`. O pipe dossiê→`forum_posts` funciona — validado empíricamente (post criado, `pending_review`, dossier_id linkado).
+- **V1.9.404** — F4.2-B.1: "+ Novo Caso" manual aposentado (Caminho B).
+- **V1.9.405** — F4.2-B.2 parcial: botão "Criar aula" removido do card (eixo Ensino fora do `pending_review`).
+- **V1.9.406** — F4.3: avaliação do conselho — hook `useForumReview` + botão "Avaliar" (gate admin) + modal aprovar/rejeitar com `review_notes`. Rótulos de status PT.
+- **V1.9.407** — fix LGPD: card `case` não vaza mais `patientName` no body (ia pro contexto → dossiê → fórum). Resíduo conhecido parqueado.
+
+**Espinha do F4 completa:** dossiê → Enviar → `pending_review` → conselho Avalia → `active`/`rejected`. Falta só "Abrir debate" (card active → Cann Matrix) + ranking.
+
+## 🔍 BLOCO O — Audit empírico Material B + dúvidas verificadas
+
+- Audit externo (Material B) do repo verificado por grep: alinhamento doc×código alto; 2 achados novos confirmados — encryption fallback dev (`encryption.ts:7`) e Ricardo UUID `2135f0c0` hardcoded em 4 pontos do Core. **O audit errou** ao dizer que o Ricardo-UUID não estava documentado — está, nos diários de abril. Material B se verifica, não se aceita.
+- 4 memórias cristalizadas à tarde: `feedback_pedro_nao_usar_card_de_escolha`, `feedback_encryption_fallback_dev_em_producao_21_05`, `feedback_ricardo_uuid_hardcoded_marco3_blocker_21_05`, `feedback_pseudonimizacao_conteudo_forum_21_05`.
+- Conversas estratégicas ("destino da IA em 10 anos") — reflexão, não cristalizadas em memory por decisão do Pedro. Convergência: o movimento real é Marco 1 (CNPJ + cap table + contrato), não código.
+
+### Pendência humana (não-código)
+- ⚠️ Pedro verificar no Vercel se `VITE_ENCRYPTION_KEY` está setada (resolve o achado #1 do audit).
+- Bloqueadores de Marco 2: pseudonimização do conteúdo do Fórum (resíduo), TURN server, WiseCare prod.
+- Bloqueador de Marco 3: Ricardo UUID hardcoded.
 
 ---
 
 ## 🎯 Frase âncora do dia
 
-> *"Eixo Pesquisa validado de ponta a ponta — anexar (F2) → conversa Z2 → dossiê (F3) → reabrir (V1.9.393). A Matrix passou 5 turnos de escrutínio. O dossiê passou por uma saga de PDFs em branco que o audit empírico desmascarou: não era bug, era o usuário reabrindo dossiês vazios — V1.9.401 matou o ciclo. E o Fórum foi auditado e planejado (Caminho B): não se constrói do zero, se desentorta. 10 commits cirúrgicos, smoke em cada um, zero regressão."*
+> *"Eixo Pesquisa validado de ponta a ponta, e o F4 saiu do papel pra espinha funcional no mesmo dia — dossiê → Enviar ao Fórum → conselho Avalia → aprovar/rejeitar. 16 commits cirúrgicos (V1.9.393→407), F4.0→F4.3, cada um type-check + smoke + 4 refs, zero regressão. O audit Material B foi verificado por grep — e pegou 1 erro dele. Uma dúvida do Pedro ('tá correto?') achou um furo de LGPD que nem o audit viu. Disciplina: Material B se verifica; a desconfiança calibrada acha o que a análise não acha."*
 
-— Dia 21/05/2026 · V1.9.393→402 + Plano F4 · eixo Pesquisa validado · 2 memórias nível 1
+— Dia 21/05/2026 · V1.9.393→407 + F4.0→F4.3 + Plano F4 · eixo Pesquisa + espinha do Fórum · 7 memórias nível 1
