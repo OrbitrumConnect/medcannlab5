@@ -124,6 +124,10 @@ export const NoaMatrixView: React.FC = () => {
   const [restoreRequest, setRestoreRequest] = useState<
     { token: number; title: string; messages: DossierMessage[]; mode: 'review' | 'continue' } | null
   >(null)
+  // V1.9.400 — snapshot do dossiê reaberto. Re-fechar uma sessão reaberta usa
+  // o §1/§2 deste snapshot (a restauração V1.9.393 traz só a conversa, não o
+  // corpus). Sem isto o novo PDF sairia com "Nenhum item marcado".
+  const [restoredSnapshot, setRestoredSnapshot] = useState<DossierData | null>(null)
 
   const refreshDossiers = async () => {
     const list = await listDossiers(10)
@@ -777,12 +781,15 @@ export const NoaMatrixView: React.FC = () => {
                           {/* V1.9.393 (F3 reabrir dossiê) — Revisar = conversa em só-leitura */}
                           <button
                             type="button"
-                            onClick={() => setRestoreRequest({
-                              token: Date.now(),
-                              title: d.title,
-                              messages: d.content?.messages || [],
-                              mode: 'review',
-                            })}
+                            onClick={() => {
+                              setRestoredSnapshot(d.content)
+                              setRestoreRequest({
+                                token: Date.now(),
+                                title: d.title,
+                                messages: d.content?.messages || [],
+                                mode: 'review',
+                              })
+                            }}
                             title="Revisar a conversa deste dossiê no chat (somente leitura)"
                             className="p-1 rounded text-amber-300 hover:bg-amber-500/15 transition-colors"
                           >
@@ -791,12 +798,15 @@ export const NoaMatrixView: React.FC = () => {
                           {/* V1.9.393 — Continuar = sessão derivada editável (não altera o original) */}
                           <button
                             type="button"
-                            onClick={() => setRestoreRequest({
-                              token: Date.now(),
-                              title: d.title,
-                              messages: d.content?.messages || [],
-                              mode: 'continue',
-                            })}
+                            onClick={() => {
+                              setRestoredSnapshot(d.content)
+                              setRestoreRequest({
+                                token: Date.now(),
+                                title: d.title,
+                                messages: d.content?.messages || [],
+                                mode: 'continue',
+                              })
+                            }}
                             title="Continuar a pesquisa a partir deste dossiê (sessão derivada)"
                             className="p-1 rounded text-purple-300 hover:bg-purple-500/15 transition-colors"
                           >
@@ -864,8 +874,12 @@ export const NoaMatrixView: React.FC = () => {
             // F3-A.2: ADICIONA persistência (saveDossier → physician_research_dossiers,
             //   snapshot imutável jsonb). Salva E gera PDF num clique. Memory:
             //   project_visao_final_eixo_pesquisa_19_05 F3 = fechar dossiê.
-            onCloseDossier={async (matrixMessages: DossierMessage[]) => {
-              const selectedCardsArr = cards
+            onCloseDossier={async (matrixMessages: DossierMessage[], fromRestore: boolean) => {
+              // V1.9.400 — re-fechar um dossiê reaberto (V1.9.393): a sessão
+              // reaberta restaura só a CONVERSA, não o corpus. Quando fromRestore,
+              // §1/§2 vêm do snapshot original; só a §3 (conversa) é atualizada.
+              const snap = fromRestore ? restoredSnapshot : null
+              const liveCards = cards
                 .filter((c) => selectedIds.has(c.id))
                 .map((c) => ({
                   id: c.id,
@@ -878,9 +892,9 @@ export const NoaMatrixView: React.FC = () => {
               const dossierData: DossierData = {
                 physicianName: (user as any)?.name || user?.email?.split('@')[0] || 'Médico',
                 physicianEmail: user?.email || undefined,
-                patientPseudonym: longitudinal.patientPseudonym || null,
-                selectedCards: selectedCardsArr,
-                attachedPapers: attachedPubmed.map((p) => ({
+                patientPseudonym: snap ? snap.patientPseudonym : (longitudinal.patientPseudonym || null),
+                selectedCards: snap ? snap.selectedCards : liveCards,
+                attachedPapers: snap ? snap.attachedPapers : attachedPubmed.map((p) => ({
                   pmid: p.pmid,
                   title: p.title,
                   authors: p.authors,
@@ -897,7 +911,7 @@ export const NoaMatrixView: React.FC = () => {
               // F3-A.2 — persiste snapshot no banco (RLS protege)
               const savedId = await saveDossier(dossierData, patientId || null)
               if (savedId) {
-                setDossierFeedback('Dossiê salvo + PDF gerado.')
+                setDossierFeedback(snap ? 'Dossiê atualizado + PDF gerado.' : 'Dossiê salvo + PDF gerado.')
                 refreshDossiers()
               } else {
                 setDossierFeedback('PDF gerado. (Falha ao salvar no histórico — tente novamente.)')

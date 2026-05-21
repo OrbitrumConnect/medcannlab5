@@ -28,7 +28,7 @@ interface ResearchChatProps {
   onMarkForForum?: (messageId: string, content: string) => void
   /** V1.9.390 (F3-A.1) — callback "Fechar como dossiê". NoaMatrixView recebe messages
    *  e combina com cards+papers estruturados pra gerar PDF via window.print(). */
-  onCloseDossier?: (messages: DossierMessage[]) => void
+  onCloseDossier?: (messages: DossierMessage[], fromRestore: boolean) => void
   /** V1.9.393 (F3 reabrir dossiê) — pedido de restauração de um dossiê salvo.
    *  token muda a cada clique → permite reabrir o mesmo dossiê 2×.
    *  mode 'review' = só-leitura (snapshot imutável); 'continue' = sessão derivada editável. */
@@ -130,7 +130,7 @@ export const ResearchChat: React.FC<ResearchChatProps> = ({ attachedContext, onM
             {/* V1.9.390 (F3-A.1) — Fechar como dossiê. Só aparece se callback existe E há mensagens. */}
             {onCloseDossier && (
               <button
-                onClick={() => onCloseDossier(messages)}
+                onClick={() => onCloseDossier(messages, sessionMode !== 'live')}
                 className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-[11px] font-medium bg-emerald-500/15 text-emerald-200 border border-emerald-500/30 hover:bg-emerald-500/25 hover:border-emerald-500/50 transition-colors"
                 title="Fechar esta sessão como dossiê PDF (gera HTML estruturado + print do navegador)"
               >
