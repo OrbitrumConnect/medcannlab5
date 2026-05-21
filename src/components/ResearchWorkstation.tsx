@@ -25,6 +25,7 @@ import AdminCasosSimilares from '../pages/AdminCasosSimilares'
 import ExternalLiterature from '../pages/ExternalLiterature'
 // [V1.9.379-D] Nôa Matrix — chat pesquisa Z2 não-diretivo com cards anexáveis
 import { NoaMatrixView } from './NoaMatrixView'
+import { backgroundGradient } from '../constants/designSystem'
 
 // Props do Componente
 interface ResearchWorkstationProps {
@@ -80,8 +81,9 @@ const ResearchWorkstation: React.FC<ResearchWorkstationProps> = ({ initialTab })
     const renderContent = () => {
         switch (activeTab) {
             case 'dashboard':
+                // V1.9.413 — degradê igual aos demais tabs (era bg-[#0f172a] flat)
                 return (
-                    <div className="h-full w-full overflow-hidden bg-[#0f172a] relative integrated-terminal-content">
+                    <div className="h-full w-full overflow-hidden relative integrated-terminal-content" style={{ background: backgroundGradient }}>
                         <div className="absolute inset-0 overflow-y-auto overflow-x-hidden scrollbar-hide">
                             <ResearchDashboardContent />
                         </div>
@@ -96,8 +98,9 @@ const ResearchWorkstation: React.FC<ResearchWorkstationProps> = ({ initialTab })
             case 'noa-matrix':
                 // [V1.9.379-D] Nôa Matrix — chat pesquisa Z2 com cards anexáveis
                 // (casos abertos + notas + favoritos via useSearchHistory localStorage)
+                // V1.9.413 — degradê igual aos demais tabs (era bg-[#0f172a] flat)
                 return (
-                    <div className="h-full overflow-y-auto scrollbar-hide bg-[#0f172a] p-4">
+                    <div className="h-full overflow-y-auto scrollbar-hide p-4" style={{ background: backgroundGradient }}>
                         <NoaMatrixView />
                     </div>
                 )
@@ -125,8 +128,9 @@ const ResearchWorkstation: React.FC<ResearchWorkstationProps> = ({ initialTab })
                     </div>
                 )
             case 'casos-similares':
+                // V1.9.413 — degradê igual aos demais tabs (era bg-[#0f172a] flat)
                 return (
-                    <div className="h-full overflow-y-auto scrollbar-hide bg-[#0f172a] p-4">
+                    <div className="h-full overflow-y-auto scrollbar-hide p-4" style={{ background: backgroundGradient }}>
                         {/* [V1.9.366] showSidebar=true → Trilha + Notas Rápidas side-by-side */}
                         {/* [V1.9.369-C] onNavigateToLiterature → cross-link racionalidade → Literatura */}
                         <AdminCasosSimilares
