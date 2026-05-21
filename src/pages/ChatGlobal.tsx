@@ -49,7 +49,7 @@ import {
   Flag
 } from 'lucide-react'
 
-type CommunityPanelId = 'news' | 'partnerships' | 'sponsors' | 'supporters'
+type CommunityPanelId = 'debates' | 'partnerships' | 'sponsors' | 'supporters'
 
 type CommunityPanelConfig = {
   title: string
@@ -59,7 +59,7 @@ type CommunityPanelConfig = {
 }
 
 const COMMUNITY_PANEL_TABS: { id: CommunityPanelId; label: string }[] = [
-  { id: 'news', label: 'Notícias' },
+  { id: 'debates', label: 'Debates' },
   { id: 'partnerships', label: 'Parcerias' },
   { id: 'sponsors', label: 'Patrocinadores' },
   { id: 'supporters', label: 'Apoiadores' }
@@ -191,7 +191,7 @@ const ChatGlobal: React.FC = () => {
   const promptHandledRef = useRef(false)
   const [showGuidelines, setShowGuidelines] = useState(false)
   const [showCommunityColumn, setShowCommunityColumn] = useState(true)
-  const [activeCommunityPanel, setActiveCommunityPanel] = useState<CommunityPanelId>('news')
+  const [activeCommunityPanel, setActiveCommunityPanel] = useState<CommunityPanelId>('debates')
   const [showNewPostModal, setShowNewPostModal] = useState(false)
   const [newPost, setNewPost] = useState({
     title: '',
@@ -228,6 +228,11 @@ const ChatGlobal: React.FC = () => {
     }
     return showCommunityColumn ? 'grid-cols-1 lg:grid-cols-4' : 'grid-cols-1 lg:grid-cols-3'
   }, [showModeration, isAdmin, showCommunityColumn])
+
+  // V1.9.409 — `debates` declarado ACIMA do communityPanelConfig: o painel
+  // lateral "Debates" lê esse estado dentro do useMemo (ficar abaixo = TDZ).
+  const [debates, setDebates] = useState<DebateConfig[]>([])
+  const [loadingDebates, setLoadingDebates] = useState(true)
 
   const communityPanelConfig = useMemo<CommunityPanelConfig>(() => {
     switch (activeCommunityPanel) {
@@ -307,34 +312,48 @@ const ChatGlobal: React.FC = () => {
             </div>
           )
         }
-      case 'news':
+      case 'debates':
       default:
         return {
-          title: '📰 Notícias',
-          icon: BookOpen,
+          title: '🔥 Debates Ativos',
+          icon: MessageSquare,
           iconColor: 'text-primary-400',
           content: (
+            // V1.9.409 — substitui as 3 notícias hardcoded (15/01/2025) por
+            // debates reais: forum_posts aprovados pelo conselho (status
+            // active/resolved). Mesma fonte do quadro de debates da aba Fórum.
             <div className="space-y-3">
-              <article className="bg-slate-700/50 rounded-lg p-4 hover:bg-slate-700/70 transition-colors">
-                <h4 className="text-white font-medium text-sm mb-1">Novo protocolo de Cannabis Medicinal aprovado pela ANVISA</h4>
-                <p className="text-slate-400 text-xs mb-1">A ANVISA aprovou um novo protocolo para uso de cannabis medicinal em pacientes com epilepsia refratária...</p>
-                <span className="text-slate-500 text-xs">15/01/2025</span>
-              </article>
-              <article className="bg-slate-700/50 rounded-lg p-4 hover:bg-slate-700/70 transition-colors">
-                <h4 className="text-white font-medium text-sm mb-1">Pesquisa mostra eficácia do CBD em casos de TEA</h4>
-                <p className="text-slate-400 text-xs mb-1">Estudo publicado na Nature Medicine mostra resultados promissores...</p>
-                <span className="text-slate-500 text-xs">12/01/2025</span>
-              </article>
-              <article className="bg-slate-700/50 rounded-lg p-4 hover:bg-slate-700/70 transition-colors">
-                <h4 className="text-white font-medium text-sm mb-1">Curso de Pós-graduação em Cannabis Medicinal - Novas Turmas</h4>
-                <p className="text-slate-400 text-xs mb-1">Inscrições abertas para a próxima turma do curso de especialização...</p>
-                <span className="text-slate-500 text-xs">10/01/2025</span>
-              </article>
+              {loadingDebates ? (
+                <p className="text-slate-400 text-xs">Carregando debates…</p>
+              ) : debates.length === 0 ? (
+                <p className="text-slate-400 text-xs">
+                  Nenhum debate ativo ainda. Os debates nascem de dossiês de
+                  pesquisa aprovados pelo conselho no Fórum de Casos Clínicos.
+                </p>
+              ) : (
+                debates.slice(0, 6).map(debate => (
+                  <button
+                    key={debate.id}
+                    type="button"
+                    onClick={() => navigate(`/app/debate/${debate.id}`)}
+                    className="w-full text-left bg-slate-700/50 rounded-lg p-4 hover:bg-slate-700/70 transition-colors"
+                  >
+                    <div className="flex items-start gap-2 mb-1">
+                      {debate.isPinned && <Pin className="w-3.5 h-3.5 text-yellow-400 mt-0.5 shrink-0" />}
+                      <h4 className="text-white font-medium text-sm flex-1">{debate.title}</h4>
+                    </div>
+                    <p className="text-slate-400 text-xs mb-1 line-clamp-2">{debate.description}</p>
+                    <span className="text-slate-500 text-xs">
+                      {debate.author} • {debate.participants} participante(s) • {debate.lastActivity}
+                    </span>
+                  </button>
+                ))
+              )}
             </div>
           )
         }
     }
-  }, [activeCommunityPanel])
+  }, [activeCommunityPanel, debates, loadingDebates, navigate])
   const PanelIcon = communityPanelConfig.icon
 
   const channelsWithAccess: ChannelWithAccess[] = useMemo(() => {
@@ -370,10 +389,7 @@ const ChatGlobal: React.FC = () => {
     }
   }, [accessibleChannels, activeChannel])
 
-  const [debates, setDebates] = useState<DebateConfig[]>([])
-  const [loadingDebates, setLoadingDebates] = useState(true)
-
-  // Carregar debates do banco de dados
+  // Carregar debates do banco de dados (estado declarado acima — V1.9.409)
   useEffect(() => {
     loadDebates()
   }, [userType])
