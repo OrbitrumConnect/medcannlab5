@@ -83,6 +83,7 @@ const CATEGORY_LABEL: Record<string, string> = {
   'patient-report': 'Relatório Longitudinal',
   'patient-rationality': 'Racionalidade Aplicada',
   'pubmed-article': 'Paper PubMed',
+  'kb-document': 'Documento da Base de Conhecimento',
 }
 
 /**

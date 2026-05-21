@@ -33,11 +33,12 @@ import { useDossierPersist, type SavedDossier } from '../hooks/useDossierPersist
 import { EVIDENCE_LABELS } from '../services/pubmedService'
 import { ResearchChat } from './ResearchChat'
 import { exportDossierToPDF, type DossierMessage, type DossierData } from '../lib/dossierExport'
-import { Sparkles, FileText, StickyNote, Check, Info, Folder, User, Stethoscope, Activity, X, BookOpen, Search, Loader2, Archive, Trash2, Eye, GitBranch } from 'lucide-react'
+import { KnowledgeBaseIntegration, type KnowledgeDocument } from '../services/knowledgeBaseIntegration'
+import { Sparkles, FileText, StickyNote, Check, Info, Folder, User, Stethoscope, Activity, X, BookOpen, Search, Loader2, Archive, Trash2, Eye, GitBranch, Library } from 'lucide-react'
 
 interface AttachableCard {
   id: string
-  type: 'case' | 'note' | 'pinned-search' | 'patient-report' | 'patient-rationality' | 'pubmed-article'
+  type: 'case' | 'note' | 'pinned-search' | 'patient-report' | 'patient-rationality' | 'pubmed-article' | 'kb-document'
   title: string
   subtitle?: string
   body: string  // texto que vai pro contexto do chat
@@ -52,6 +53,33 @@ const RATIONALITY_LABELS: Record<string, string> = {
   ayurvedic: 'Ayurveda',
   homeopathic: 'Homeopatia',
   integrative: 'Integrativa',
+}
+
+// V1.9.395 (F2) — rótulo de contexto por tipo de card (cabeçalho enviado ao Edge).
+const CTX_LABEL: Record<AttachableCard['type'], string> = {
+  'case': 'CASO MARCADO',
+  'note': 'NOTAS DO MÉDICO',
+  'pinned-search': 'BUSCA FAVORITADA',
+  'patient-report': 'RELATÓRIO DO PACIENTE',
+  'patient-rationality': 'RACIONALIDADE APLICADA',
+  'pubmed-article': 'PAPER PUBMED',
+  'kb-document': 'DOCUMENTO DA BASE DE CONHECIMENTO',
+}
+
+// V1.9.395 (F2) — teto de caracteres por doc anexado da Base de Conhecimento.
+// Doc grande (ex: 618k chars no acervo atual) estouraria o TOKEN MGMT do Edge
+// (cap 60k tokens). 8000 chars ~= 2k tokens — 3 docs anexados cabem folgado.
+// Anexo MANUAL bounded (médico escolhe) — NÃO é o RAG automático
+// (memory feedback_rag_molda_comportamento_cognitivo: nunca migrar pra base_conhecimento).
+const MAX_DOC_CHARS = 8000
+
+interface AttachedDoc {
+  id: string
+  title: string
+  category: string
+  author: string
+  excerpt: string      // já truncado a MAX_DOC_CHARS no momento do anexo
+  totalChars: number
 }
 
 export const NoaMatrixView: React.FC = () => {
@@ -99,6 +127,55 @@ export const NoaMatrixView: React.FC = () => {
     setSelectedIds((prev) => {
       const next = new Set(prev)
       next.delete(`pubmed-${pmid}`)
+      return next
+    })
+  }
+
+  // V1.9.395 (F2) — Base de Conhecimento anexável. Médico escolhe docs internos
+  // (public.documents via KnowledgeBaseIntegration — mesmo serviço da aba Library)
+  // pra Matrix usar como contexto, igual ao PubMed. Anexo MANUAL, não RAG automático.
+  const [kbOpen, setKbOpen] = useState(false)
+  const [kbDocs, setKbDocs] = useState<KnowledgeDocument[]>([])
+  const [kbLoading, setKbLoading] = useState(false)
+  const [kbFilter, setKbFilter] = useState('')
+  const [attachedDocs, setAttachedDocs] = useState<AttachedDoc[]>([])
+
+  // Lazy load — só busca docs quando o médico abre o painel.
+  const loadKbDocs = async () => {
+    if (kbDocs.length > 0 || kbLoading) return
+    setKbLoading(true)
+    try {
+      const all = await KnowledgeBaseIntegration.getAllDocuments()
+      // Exclui quarentena LGPD + docs sem texto aproveitável.
+      const usable = all.filter((d) =>
+        d.category !== 'cases_lgpd_quarantine' &&
+        ((d.content || '').trim().length > 0 || (d.summary || '').trim().length > 0))
+      setKbDocs(usable)
+    } catch (e) {
+      console.warn('[NoaMatrix] erro ao carregar Base de Conhecimento:', e)
+    } finally {
+      setKbLoading(false)
+    }
+  }
+
+  const attachDoc = (doc: KnowledgeDocument) => {
+    const raw = (doc.content || '').trim() || (doc.summary || '').trim()
+    const excerpt = raw.length > MAX_DOC_CHARS ? raw.slice(0, MAX_DOC_CHARS) : raw
+    setAttachedDocs((prev) => prev.find((d) => d.id === doc.id) ? prev : [...prev, {
+      id: doc.id,
+      title: doc.title || 'Documento sem título',
+      category: doc.category || '—',
+      author: doc.author || '—',
+      excerpt,
+      totalChars: raw.length,
+    }])
+    setSelectedIds((prev) => new Set(prev).add(`kb-${doc.id}`))
+  }
+  const detachDoc = (id: string) => {
+    setAttachedDocs((prev) => prev.filter((d) => d.id !== id))
+    setSelectedIds((prev) => {
+      const next = new Set(prev)
+      next.delete(`kb-${id}`)
       return next
     })
   }
@@ -190,8 +267,22 @@ export const NoaMatrixView: React.FC = () => {
       })
     })
 
+    // V1.9.395 (F2) — Documentos da Base de Conhecimento anexados pelo médico.
+    attachedDocs.forEach((d) => {
+      const truncNote = d.totalChars > d.excerpt.length
+        ? `\n[... documento truncado — ${d.totalChars} caracteres no total, ${d.excerpt.length} anexados]`
+        : ''
+      list.push({
+        id: `kb-${d.id}`,
+        type: 'kb-document',
+        title: d.title,
+        subtitle: `Base de Conhecimento · ${d.category}`,
+        body: `Documento da Base de Conhecimento\nTítulo: ${d.title}\nCategoria: ${d.category} · Autor: ${d.author}\nConteúdo:\n${d.excerpt}${truncNote}`,
+      })
+    })
+
     return list
-  }, [history.caseOpens, history.notes, history.pinned, longitudinal.reports, longitudinal.rationalities, attachedPubmed])
+  }, [history.caseOpens, history.notes, history.pinned, longitudinal.reports, longitudinal.rationalities, attachedPubmed, attachedDocs])
 
   const toggleCard = (id: string) => {
     setSelectedIds((prev) => {
@@ -220,11 +311,16 @@ export const NoaMatrixView: React.FC = () => {
     if (selectedIds.size === 0) return ''
     const selected = cards.filter((c) => selectedIds.has(c.id))
     return selected
-      .map((c) => `[${c.type === 'case' ? 'CASO MARCADO' : c.type === 'note' ? 'NOTAS DO MÉDICO' : 'BUSCA FAVORITADA'}]\n${c.body}`)
+      .map((c) => `[${CTX_LABEL[c.type]}]\n${c.body}`)
       .join('\n\n---\n\n')
   }, [selectedIds, cards])
 
   const selectedCount = selectedIds.size
+
+  // V1.9.395 (F2) — lista da Base de Conhecimento filtrada client-side (por título).
+  const kbVisible = kbFilter.trim()
+    ? kbDocs.filter((d) => (d.title || '').toLowerCase().includes(kbFilter.trim().toLowerCase()))
+    : kbDocs
 
   return (
     <div className="space-y-4">
@@ -357,6 +453,7 @@ export const NoaMatrixView: React.FC = () => {
                     card.type === 'case' ? FileText :
                     card.type === 'note' ? StickyNote :
                     card.type === 'pubmed-article' ? BookOpen :
+                    card.type === 'kb-document' ? Library :
                     Sparkles
                   return (
                     <div
@@ -504,6 +601,108 @@ export const NoaMatrixView: React.FC = () => {
                   <span>
                     Busca direta no PubMed (NCBI). Anexar paper o coloca no contexto da Nôa Matrix
                     como card citável (PMID + título). Z2: ela referencia, não infere validade clínica.
+                  </span>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* V1.9.395 (F2) — Base de Conhecimento anexável. Mesmo padrão do PubMed:
+              médico escolhe docs internos do acervo pra Matrix usar como contexto.
+              Anexo MANUAL bounded (não RAG automático). Lazy load on expand.
+              Memory feedback_rag_molda_comportamento_cognitivo: nunca migrar
+              documents → base_conhecimento; anexo manual escolhido é seguro. */}
+          <div className="bg-slate-900/40 border border-emerald-500/30 rounded-xl overflow-hidden">
+            <button
+              type="button"
+              onClick={() => {
+                const next = !kbOpen
+                setKbOpen(next)
+                if (next) loadKbDocs()
+              }}
+              className="w-full flex items-center justify-between gap-2 px-3 py-2.5 hover:bg-emerald-500/5 transition-colors"
+            >
+              <div className="flex items-center gap-2">
+                <Library className="w-4 h-4 text-emerald-300" />
+                <span className="text-xs font-semibold text-slate-200">Base de Conhecimento</span>
+                {attachedDocs.length > 0 && (
+                  <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-200">
+                    {attachedDocs.length} anexado(s)
+                  </span>
+                )}
+              </div>
+              <span className="text-[10px] text-slate-500">{kbOpen ? 'fechar' : 'expandir'}</span>
+            </button>
+
+            {kbOpen && (
+              <div className="border-t border-emerald-500/20 p-3 space-y-2.5">
+                <div className="flex items-center gap-2">
+                  <div className="flex-1 relative">
+                    <Search className="w-3 h-3 text-slate-500 absolute left-2 top-1/2 -translate-y-1/2" />
+                    <input
+                      type="text"
+                      value={kbFilter}
+                      onChange={(e) => setKbFilter(e.target.value)}
+                      placeholder="Filtrar documentos por título..."
+                      className="w-full bg-slate-800/60 border border-emerald-500/20 rounded-md pl-7 pr-2 py-1.5 text-xs text-white placeholder:text-slate-500 focus:outline-none focus:ring-1 focus:ring-emerald-500/50"
+                    />
+                  </div>
+                  {kbLoading && <Loader2 className="w-3.5 h-3.5 text-emerald-300 animate-spin flex-shrink-0" />}
+                </div>
+
+                {!kbLoading && kbDocs.length === 0 && (
+                  <div className="text-[10px] text-slate-500 italic">Nenhum documento na Base de Conhecimento.</div>
+                )}
+
+                {kbVisible.length > 0 && (
+                  <div className="space-y-1.5 max-h-[320px] overflow-y-auto pr-1">
+                    {kbVisible.map((d) => {
+                      const isAttached = attachedDocs.some((a) => a.id === d.id)
+                      const chars = (d.content || '').trim().length || (d.summary || '').trim().length
+                      return (
+                        <div
+                          key={d.id}
+                          className={`rounded-md p-2 border text-[11px] ${
+                            isAttached ? 'bg-emerald-500/10 border-emerald-500/30' : 'bg-slate-800/40 border-slate-700/30'
+                          }`}
+                        >
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="flex-1 min-w-0">
+                              <div className="text-slate-200 font-medium line-clamp-2" title={d.title}>{d.title}</div>
+                              <div className="text-[10px] text-slate-500 mt-0.5 truncate">
+                                {d.category} · {chars > MAX_DOC_CHARS
+                                  ? `${(chars / 1000).toFixed(0)}k caracteres (anexa trecho)`
+                                  : `${chars} caracteres`}
+                              </div>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => isAttached ? detachDoc(d.id) : attachDoc(d)}
+                              className={`flex-shrink-0 text-[10px] px-2 py-1 rounded transition-colors ${
+                                isAttached
+                                  ? 'bg-emerald-500/20 text-emerald-200 hover:bg-emerald-500/30'
+                                  : 'bg-slate-700/40 text-slate-300 hover:bg-emerald-500/20 hover:text-emerald-200'
+                              }`}
+                            >
+                              {isAttached ? '✓ anexado' : '+ anexar'}
+                            </button>
+                          </div>
+                        </div>
+                      )
+                    })}
+                  </div>
+                )}
+
+                {!kbLoading && kbDocs.length > 0 && kbVisible.length === 0 && (
+                  <div className="text-[10px] text-slate-500 italic">Nenhum documento bate com o filtro.</div>
+                )}
+
+                <div className="flex items-start gap-1.5 text-[10px] text-slate-500 italic leading-tight pt-1 border-t border-slate-700/30">
+                  <Info className="w-3 h-3 flex-shrink-0 mt-0.5" />
+                  <span>
+                    Documentos internos do acervo. Anexar coloca o conteúdo no contexto da Nôa Matrix
+                    como card citável. Docs grandes entram truncados (trecho de {(MAX_DOC_CHARS / 1000).toFixed(0)}k caracteres).
+                    Anexo manual — a Matrix não puxa documentos sozinha.
                   </span>
                 </div>
               </div>
