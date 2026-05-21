@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { useAuth } from '../contexts/AuthContext'
-import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { NoaResidentAI } from '../lib/noaResidentAI'
 import {
@@ -25,8 +24,7 @@ import {
   Zap,
   Target,
   CheckCircle,
-  Loader2,
-  GraduationCap
+  Loader2
 } from 'lucide-react'
 import { backgroundGradient, colors, accentGradient } from '../constants/designSystem'
 
@@ -95,7 +93,6 @@ interface NewCaseForm {
 
 const ForumCasosClinicos: React.FC = () => {
   const { user } = useAuth()
-  const navigate = useNavigate()
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedCategory, setSelectedCategory] = useState('all')
   const [selectedComplexity, setSelectedComplexity] = useState('all')
@@ -437,10 +434,6 @@ Forneça:
     }
   }
 
-  const handleCreateLessonFromCase = (caseId: string) => {
-    navigate(`/app/ensino/profissional/preparacao-aulas?case_id=${caseId}`)
-  }
-
   const categories = [
     { id: 'all', name: 'Todas as Categorias', count: stats.totalCases },
     { id: 'cannabis', name: 'Cannabis Medicinal', count: categoryCounts['cannabis'] || 0 },
@@ -745,17 +738,13 @@ Forneça:
                       </div>
                     </div>
                   </div>
+                  {/* V1.9.405 (F4.2-B) — botão "Criar aula" removido do card:
+                      é ação do eixo Ensino e não cabe num caso pending_review.
+                      Ações por status (Avaliar / Debate) entram no F4.3. */}
                   <div className="flex items-center space-x-2">
                     <span className={`px-2 py-1 text-xs rounded-full ${getStatusColor(post.status)}`}>
                       {getStatusLabel(post.status)}
                     </span>
-                    <button
-                      onClick={() => handleCreateLessonFromCase(post.id)}
-                      className="p-2 text-green-400 hover:text-green-300 hover:bg-slate-700 rounded-lg transition-colors"
-                      title="Criar aula baseada neste caso"
-                    >
-                      <GraduationCap className="w-4 h-4" />
-                    </button>
                   </div>
                 </div>
 
