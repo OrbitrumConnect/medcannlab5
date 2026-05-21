@@ -243,15 +243,10 @@ const Sidebar: React.FC<SidebarProps> = ({
         section: 'quick',
         color: 'bg-green-600'
       },
-      {
-        // [V1.9.135-A] Sidebar leva direto pra aba Prescrições do Terminal de Atendimento
-        // (não mais rota standalone /clinica/prescricoes — fluxo unificado dentro do Terminal)
-        name: 'Prescrições Médicas',
-        href: '/app/clinica/profissional/dashboard?section=terminal-clinico&tab=prescriptions',
-        icon: Pill,
-        section: 'main',
-        color: 'bg-blue-600'
-      },
+      // V1.9.411 — "Prescrições Médicas" removida do sidebar: era atalho
+      // duplicado pra aba Prescrições que já vive dentro do Terminal de
+      // Atendimento (mesma rota ?section=terminal-clinico&tab=prescriptions).
+      // O acesso segue 100% pelo Terminal — só o item redundante do menu saiu.
       {
         name: 'Terminal de Pesquisa',
         href: '/app/pesquisa/profissional/dashboard',
