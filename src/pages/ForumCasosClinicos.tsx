@@ -4,7 +4,6 @@ import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { NoaResidentAI } from '../lib/noaResidentAI'
 import {
-  Plus,
   Search,
   MessageCircle,
   Eye,
@@ -581,14 +580,15 @@ Forneça:
                   </div>
                 </div>
               </div>
-              <button
-                onClick={() => setShowNewCaseModal(true)}
-                className="px-4 md:px-6 lg:px-8 py-2 md:py-3 lg:py-4 rounded-xl font-bold text-sm md:text-base lg:text-lg transition-all transform hover:scale-105 shadow-lg flex items-center justify-center space-x-2 flex-shrink-0 whitespace-nowrap text-white"
-                style={{ background: 'linear-gradient(135deg, #00c16a 0%, #00a85a 100%)' }}
-              >
-                <Plus className="w-5 h-5 md:w-6 md:h-6 flex-shrink-0" />
-                <span>Novo Caso</span>
-              </button>
+              {/* V1.9.404 (F4.2-B) — Caminho B: o "Novo Caso" manual foi aposentado.
+                  Os casos do fórum chegam de dossiês da Nôa Matrix via "Enviar ao Fórum".
+                  O modal antigo segue no código (inalcançável) — removido no rework completo do F4.2-B. */}
+              <div className="flex items-center gap-2 px-3 md:px-4 py-2 md:py-3 rounded-xl bg-slate-800/60 border border-emerald-500/25 flex-shrink-0 max-w-xs">
+                <Send className="w-4 h-4 text-emerald-300 flex-shrink-0" />
+                <span className="text-[11px] md:text-xs text-slate-300 leading-snug">
+                  Casos chegam da <strong className="text-emerald-300">Nôa Matrix</strong> — feche um dossiê e use "Enviar ao Fórum".
+                </span>
+              </div>
             </div>
 
             {/* Acesso ético e seguro */}
