@@ -908,6 +908,14 @@ export const NoaMatrixView: React.FC = () => {
               }
               // F3-A.1 — gera PDF (sempre, mesmo se persistência falhar)
               exportDossierToPDF(dossierData)
+              // V1.9.401 — re-fechar uma sessão reaberta SEM ter continuado a
+              // conversa (mesma contagem de mensagens) é só re-exportar o PDF —
+              // NÃO cria dossiê novo. Mata o ciclo de dossiês-lixo duplicados.
+              if (snap && matrixMessages.length === snap.messages.length) {
+                setDossierFeedback('PDF re-gerado (sem alterações — dossiê não duplicado).')
+                setTimeout(() => setDossierFeedback(null), 6000)
+                return
+              }
               // F3-A.2 — persiste snapshot no banco (RLS protege)
               const savedId = await saveDossier(dossierData, patientId || null)
               if (savedId) {
