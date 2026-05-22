@@ -115,3 +115,14 @@ O script `npm run deploy:tradevision` (criado V1.9.419, na branch do refator) us
 > *"O sistema não tem incêndio — tem higiene pendente. RLS é universal, as views estão todas blindadas (um P0 antigo resolveu sozinho), a governança clínica está intacta e o app é usado de verdade (23 AECs/mês). O que sobra é dívida acumulada visível — sprawl de 139 tabelas, backups de abril, um core de 7 mil linhas — e o de sempre: o gargalo não é mais 'consegue construir?', é 'CNPJ + 1º pagante'. A auditoria empírica achou 1 P0 que se resolveu, 1 bug de script no caminho do refator, e confirmou que quase tudo que parecia risco é, na real, dívida calma."*
 
 — Auditoria 22/05/2026 · 139 tabelas · 13 Edge Functions · 41 views · empírica via PAT · classificada 🟢🟡🟠🔴
+
+---
+
+## ✅ Atualização — Classe A executada no mesmo dia (22/05, tarde)
+
+A "schema hygiene sprint" (Classe A — safe wins) foi executada:
+
+- **Fix `--no-verify-jwt`** — script `deploy:tradevision` corrigido (V1.9.419-E, commit `a7b211f`, branch do refator). Deploy do refator agora preserva `verify_jwt:true`.
+- **3 backups arquivados + dropados** — exportados pra `docs/archive_backups_22_05/` (dump JSON + schema, commit `37041ab`) e então `DROP TABLE` (verificado: 0 tabelas "backup" restantes). 139 → 136 tabelas. Reversível pelo arquivo.
+
+Análise profunda confirmou o que **NÃO** atacar: tabelas vazias (`patient_prescriptions`, `noa_clinical_cases`, `messages`…) são referenciadas por código vivo — dropá-las seria regressão. Sprawl de perfil/mensagem/prescrição = migração arquitetural, não higiene. Ficam parqueados como Classe B.
