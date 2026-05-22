@@ -189,7 +189,6 @@ const ChatGlobal: React.FC = () => {
     'Protocolos Clínicos Integrados - Integração Cannabis & Nefrologia'
   )
   const promptHandledRef = useRef(false)
-  const [showGuidelines, setShowGuidelines] = useState(false)
   const [showCommunityColumn, setShowCommunityColumn] = useState(true)
   const [activeCommunityPanel, setActiveCommunityPanel] = useState<CommunityPanelId>('debates')
   const [showNewPostModal, setShowNewPostModal] = useState(false)
@@ -210,12 +209,6 @@ const ChatGlobal: React.FC = () => {
   const headerGradient = 'linear-gradient(135deg, #0A192F 0%, #1a365d 55%, #2d5a3d 100%)'
   const accentGradient = 'linear-gradient(135deg, #00C16A 0%, #13794f 100%)'
   const secondaryGradient = 'linear-gradient(135deg, #1a365d 0%, #274a78 100%)'
-  const bannerGradient = 'linear-gradient(135deg, rgba(0,193,106,0.18) 0%, rgba(16,49,91,0.35) 50%, rgba(7,22,41,0.82) 100%)'
-  const bannerSurface: React.CSSProperties = {
-    background: 'rgba(7,22,41,0.88)',
-    border: '1px solid rgba(0,193,106,0.12)',
-    boxShadow: '0 18px 42px rgba(2,12,27,0.45)'
-  }
 
   const [channels, setChannels] = useState<ChannelPermissionConfig[]>(() =>
     BASE_CHANNELS.map(channel => ({ ...channel }))
@@ -226,7 +219,7 @@ const ChatGlobal: React.FC = () => {
     if (showModeration && isAdmin) {
       return 'grid-cols-1 lg:grid-cols-3'
     }
-    return showCommunityColumn ? 'grid-cols-1 lg:grid-cols-4' : 'grid-cols-1 lg:grid-cols-3'
+    return showCommunityColumn ? 'grid-cols-1 lg:grid-cols-5' : 'grid-cols-1 lg:grid-cols-3'
   }, [showModeration, isAdmin, showCommunityColumn])
 
   // V1.9.409 — `debates` declarado ACIMA do communityPanelConfig: o painel
@@ -1363,103 +1356,9 @@ const ChatGlobal: React.FC = () => {
           </div>
         )}
       </div>
-      <p className="text-white/70 text-xs px-1 -mt-1">
-        Comunidade para debates sobre cannabis medicinal, protocolos clínicos e pesquisa aplicada.
-      </p>
-
-      {/* Banner de Orientações — compacto */}
-      <div
-        className="rounded-lg px-3 py-2 mb-3 overflow-hidden"
-        style={{ background: bannerGradient, border: '1px solid rgba(0,193,106,0.16)' }}
-      >
-        <div className="flex flex-wrap items-center gap-x-3 gap-y-2" style={bannerSurface}>
-          <span className="text-sm font-medium text-white">Participação responsável:</span>
-          <span className="text-xs text-slate-200/85">
-            Objetivo, evidências e canal certo.
-          </span>
-          <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[11px] text-slate-200/90 bg-slate-900/50 border border-slate-700/50">
-            <Check className="w-2.5 h-2.5 text-[#00F5A0]" /> Etiqueta clínica
-          </span>
-          <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[11px] text-slate-200/90 bg-slate-900/50 border border-slate-700/50">
-            <Check className="w-2.5 h-2.5 text-[#00F5A0]" /> Evidências primeiro
-          </span>
-          <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[11px] text-slate-200/90 bg-slate-900/50 border border-slate-700/50">
-            <Check className="w-2.5 h-2.5 text-[#00F5A0]" /> Respeito às permissões
-          </span>
-          <div className="flex gap-1.5 ml-auto">
-            <button
-              type="button"
-              onClick={() => setShowGuidelines(prev => !prev)}
-              className={`px-2 py-1 rounded text-xs font-medium transition-colors border border-slate-700/60 ${showGuidelines ? 'bg-slate-800/80 text-white' : 'bg-slate-900/40 text-slate-200 hover:text-white'}`}
-              aria-expanded={showGuidelines}
-            >
-              {showGuidelines ? 'Ocultar' : 'Orientações'}
-            </button>
-            <button
-              type="button"
-              onClick={() => setShowCommunityColumn(prev => !prev)}
-              className={`px-2 py-1 rounded text-xs font-medium transition-colors border border-slate-700/60 ${showCommunityColumn ? 'bg-slate-900/40 text-slate-200 hover:text-white' : 'bg-primary-600 text-white'}`}
-              aria-pressed={showCommunityColumn}
-            >
-              {showCommunityColumn ? 'Ocultar painel' : 'Painel lateral'}
-            </button>
-          </div>
-        </div>
-
-          {showGuidelines && (
-            <div className="grid gap-4 md:grid-cols-2 mt-3 pt-3 border-t border-slate-700/50">
-              <div className="rounded-lg border border-slate-700/60 bg-slate-900/40 p-4 space-y-2">
-                <h4 className="text-sm font-semibold text-white flex items-center gap-2">
-                  <BookOpen className="w-4 h-4 text-[#00F5A0]" />
-                  Como participar
-                </h4>
-                <ul className="space-y-2 text-sm text-slate-200/85">
-                  <li className="flex items-start gap-2">
-                    <Check className="w-4 h-4 mt-0.5 text-[#00F5A0]" />
-                    <span>Escolha o canal que melhor corresponde ao tema antes de iniciar um debate.</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <Check className="w-4 h-4 mt-0.5 text-[#00F5A0]" />
-                    <span>Compartilhe referências, casos documentados e experiências clínicas verificáveis.</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <Check className="w-4 h-4 mt-0.5 text-[#00F5A0]" />
-                    <span>Use linguagem colaborativa e reporte desvios do código de conduta aos moderadores.</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <Check className="w-4 h-4 mt-0.5 text-[#00F5A0]" />
-                    <span>Mencione especialistas quando precisar de revisão ou validação clínica.</span>
-                  </li>
-                </ul>
-              </div>
-
-              <div className="rounded-lg border border-slate-700/60 bg-slate-900/40 p-4 space-y-3">
-                <h4 className="text-sm font-semibold text-white flex items-center gap-2">
-                  <Award className="w-4 h-4 text-[#FFD33D]" />
-                  Limitações por perfil
-                </h4>
-                <div className="space-y-2 text-sm text-slate-200/85">
-                  <div className="flex items-start gap-2">
-                    <Users className="w-4 h-4 mt-0.5 text-[#4FE0C1]" />
-                    <p><strong className="text-white">Profissional:</strong> acesso completo; pode iniciar debates clínicos e mentorias.</p>
-                  </div>
-                  <div className="flex items-start gap-2">
-                    <Award className="w-4 h-4 mt-0.5 text-[#FFD33D]" />
-                    <p><strong className="text-white">Admin:</strong> curadoria da comunidade, permissões avançadas e métricas.</p>
-                  </div>
-                  <div className="flex items-start gap-2">
-                    <BookOpen className="w-4 h-4 mt-0.5 text-[#86E3CE]" />
-                    <p><strong className="text-white">Aluno:</strong> interações mediadas por docentes em debates clínicos avançados.</p>
-                  </div>
-                  <div className="flex items-start gap-2">
-                    <Heart className="w-4 h-4 mt-0.5 text-[#FF8E72]" />
-                    <p><strong className="text-white">Paciente:</strong> participação orientada em canais de suporte com mediação profissional.</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-      </div>
+      {/* V1.9.415 — intro "Comunidade para debates..." + banner "Participação
+          responsável" removidos (decisão Pedro 21/05): liberam espaço vertical
+          pro chat. O toggle do painel lateral segue dentro do próprio painel. */}
 
       {/* Chat Tab */}
       {activeTab === 'chat' && (
@@ -1567,9 +1466,10 @@ const ChatGlobal: React.FC = () => {
             </div>
           </div>
 
-          {/* Chat Area */}
-          <div className={`${showModeration && isAdmin ? 'lg:col-span-2' : 'lg:col-span-2'} order-1 lg:order-2`}>
-            <div className="bg-slate-800/80 rounded-lg border border-slate-700 h-[400px] md:h-[500px] lg:h-[600px] flex flex-col">
+          {/* Chat Area — V1.9.415: col-span-3 (de 2) quando o painel lateral está
+              visível → chat ~60% da largura; sidebars caem de 25% pra 20% cada */}
+          <div className={`${!showModeration && showCommunityColumn ? 'lg:col-span-3' : 'lg:col-span-2'} order-1 lg:order-2`}>
+            <div className="bg-slate-800/80 rounded-lg border border-slate-700 h-[400px] md:h-[500px] lg:h-[680px] flex flex-col">
               {/* Chat Header */}
               <div className="p-3 md:p-4 border-b border-slate-700 bg-slate-700/50">
                 <div className="flex items-center justify-between">
