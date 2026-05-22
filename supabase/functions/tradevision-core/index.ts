@@ -26,6 +26,8 @@ import { COS, COS_Context } from "./cos_kernel.ts"
 import { assertPatientHasDoctorContext } from "../_shared/aec_gate.ts"
 // V1.9.238: tabela versionada de precos pra calculo empirico de custo por turn
 import { calcCostUsd, getProviderFor, PRICING_VERSION } from "../_shared/modelPricing.ts"
+// [V1.9.419] Helpers extraídos — refator anti-bus-factor (ver sentinel no topo)
+import { getCorsHeaders } from "./cors.ts"
 
 // ============================================================================
 // [V1.9.35] Clinical Score Calculator — INLINE dentro do index.ts
@@ -201,37 +203,10 @@ function unwrapAecContent(content: any): any {
 // Fim do bloco inline scoreCalculator.
 // ============================================================================
 
-const corsHeaders = {
-    'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-    'Access-Control-Allow-Methods': 'POST, OPTIONS',
-}
-
 // Cache de idempotência em memória (LRE)
 const requestCache = new Map<string, any>()
 // Limpeza automática do cache a cada 5 minutos
 setInterval(() => requestCache.clear(), 300000)
-
-function getCorsHeaders(origin: string | null) {
-    const allowedOrigins = [
-        'http://localhost:3000',
-        'https://medcannlab.vercel.app',
-        'https://www.medcannlab.com.br'
-    ];
-
-    // Dynamic Hardening: Permitir domínios oficiais ou subdomínios do lovable.app
-    const isAllowed = origin && (
-        allowedOrigins.includes(origin) ||
-        origin.endsWith('.lovable.app') ||
-        origin.endsWith('.lovableproject.com')
-    );
-
-    if (isAllowed) {
-        return { ...corsHeaders, 'Access-Control-Allow-Origin': origin };
-    }
-
-    // Fallback seguro (evita wildcard '*')
-    return { ...corsHeaders, 'Access-Control-Allow-Origin': allowedOrigins[0] };
-}
 
 // Contrato institucional (IMUTÁVEL): token base de agendamento
 const TRIGGER_SCHEDULING_TOKEN = '[TRIGGER_SCHEDULING]'
