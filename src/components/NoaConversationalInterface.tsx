@@ -375,15 +375,15 @@ const SchedulingWidget = ({
   };
 
   return (
-    <div className="bg-slate-800/80 rounded-lg p-4 mb-4 border border-brand-border w-full animate-in fade-in zoom-in duration-300">
-      <div className="flex items-center justify-between mb-3 border-b border-brand-border pb-2">
+    <div className="bg-slate-800/80 rounded-lg p-4 mb-4 border border-slate-700 w-full animate-in fade-in zoom-in duration-300">
+      <div className="flex items-center justify-between mb-3 border-b border-slate-700 pb-2">
         <div className="flex-1 min-w-0">
-          <h4 className="text-brand-text font-semibold flex items-center">
+          <h4 className="text-white font-semibold flex items-center">
             <CalendarIcon className="w-4 h-4 mr-2 text-blue-400" />
             Agendar Consulta
           </h4>
         </div>
-        <button onClick={onCancel} className="text-brand-text-muted hover:text-brand-text ml-2">
+        <button onClick={onCancel} className="text-slate-400 hover:text-white ml-2">
           <X className="w-4 h-4" />
         </button>
       </div>
@@ -391,7 +391,7 @@ const SchedulingWidget = ({
       {/* V1.9.93 Fix B: dropdown de profissionais (sempre visivel quando ha lista carregada) */}
       {professionals.length > 0 && (
         <div className="mb-3">
-          <label className="block text-xs text-brand-text-muted mb-1">
+          <label className="block text-xs text-slate-400 mb-1">
             Profissional
           </label>
           <select
@@ -400,7 +400,7 @@ const SchedulingWidget = ({
               setSelectedProfessionalId(e.target.value || null);
               setSelectedSlot(null);
             }}
-            className="w-full bg-slate-900/60 border border-brand-border rounded-md px-2 py-1.5 text-sm text-slate-100 focus:outline-none focus:border-blue-500"
+            className="w-full bg-slate-900/60 border border-slate-700 rounded-md px-2 py-1.5 text-sm text-slate-100 focus:outline-none focus:border-blue-500"
           >
             {!isValidUuid(selectedProfessionalId) && (
               <option value="">Selecione um profissional</option>
@@ -422,12 +422,12 @@ const SchedulingWidget = ({
               new Date(selectedDate.setDate(selectedDate.getDate() - 1)),
             )
           }
-          className="p-1 hover:bg-brand-surface-subtle rounded transition-colors text-brand-text-secondary"
+          className="p-1 hover:bg-slate-700 rounded transition-colors text-slate-300"
           disabled={selectedDate <= new Date()}
         >
           &lt;
         </button>
-        <span className="text-brand-text font-medium">
+        <span className="text-white font-medium">
           {selectedDate.toLocaleDateString("pt-BR", {
             weekday: "short",
             day: "2-digit",
@@ -440,7 +440,7 @@ const SchedulingWidget = ({
               new Date(selectedDate.setDate(selectedDate.getDate() + 1)),
             )
           }
-          className="p-1 hover:bg-brand-surface-subtle rounded transition-colors text-brand-text-secondary"
+          className="p-1 hover:bg-slate-700 rounded transition-colors text-slate-300"
         >
           &gt;
         </button>
@@ -449,7 +449,7 @@ const SchedulingWidget = ({
       {/* Grid de Horários */}
       <div className="grid grid-cols-3 gap-2 mb-4 max-h-40 overflow-y-auto pr-1">
         {loading ? (
-          <div className="col-span-3 text-center py-4 text-brand-text-muted">
+          <div className="col-span-3 text-center py-4 text-slate-400">
             <Loader2 className="w-5 h-5 animate-spin mx-auto mb-2" />
             Buscando horários...
           </div>
@@ -478,8 +478,8 @@ const SchedulingWidget = ({
                 className={clsx(
                   "py-1.5 px-2 rounded text-xs transition-colors border",
                   selectedSlot === slot
-                    ? "bg-blue-600 border-blue-500 text-brand-text"
-                    : "bg-slate-700/50 border-slate-600 text-brand-text-secondary hover:bg-brand-surface-subtle",
+                    ? "bg-blue-600 border-blue-500 text-white"
+                    : "bg-slate-700/50 border-slate-600 text-slate-300 hover:bg-slate-700",
                 )}
               >
                 {slotLabel}
@@ -498,7 +498,7 @@ const SchedulingWidget = ({
 
       {/* Disclaimer e Botão — V1.9.294 fee dinâmico do médico selecionado
           (Pedro 14/05: Mariana viu R$350 hardcoded vs Ricardo configurado R$400) */}
-      <div className="space-y-3 pt-2 border-t border-brand-border">
+      <div className="space-y-3 pt-2 border-t border-slate-700">
         <div className="flex items-start text-xs text-yellow-400/90 bg-yellow-900/10 p-2 rounded">
           <Activity className="w-3 h-3 mr-1.5 mt-0.5 flex-shrink-0" />
           <span>
@@ -524,7 +524,7 @@ const SchedulingWidget = ({
         <button
           onClick={handleBooking}
           disabled={!selectedSlot || bookingLoading}
-          className="w-full bg-green-600 hover:bg-green-500 disabled:opacity-50 disabled:cursor-not-allowed text-brand-text text-sm font-semibold py-2 rounded-md transition-colors flex items-center justify-center space-x-2 shadow-lg shadow-green-900/20"
+          className="w-full bg-green-600 hover:bg-green-500 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-semibold py-2 rounded-md transition-colors flex items-center justify-center space-x-2 shadow-lg shadow-green-900/20"
         >
           {bookingLoading ? (
             <>
@@ -2837,18 +2837,18 @@ const NoaConversationalInterface = React.forwardRef<
             sobrepunha. Agora coexistem visualmente. Mobile/tablet inalterado. */}
         {inlineDocOpen && (
           <div className="fixed inset-0 lg:right-[640px] z-[60] bg-black/70 flex items-center justify-center p-4">
-            <div className="w-full max-w-3xl rounded-2xl border border-brand-border bg-slate-950 shadow-2xl">
-              <div className="flex items-start justify-between gap-4 p-4 border-b border-brand-border-subtle">
+            <div className="w-full max-w-3xl rounded-2xl border border-slate-700 bg-slate-950 shadow-2xl">
+              <div className="flex items-start justify-between gap-4 p-4 border-b border-slate-800">
                 <div className="min-w-0">
-                  <div className="text-xs text-brand-text-muted">
+                  <div className="text-xs text-slate-400">
                     Documento (inline)
                   </div>
-                  <div className="text-lg font-semibold text-brand-text truncate">
+                  <div className="text-lg font-semibold text-white truncate">
                     {inlineDoc?.title ||
                       (inlineDocLoading ? "Carregando…" : "Documento")}
                   </div>
                   {inlineDoc?.category && (
-                    <div className="text-xs text-brand-text-muted mt-1">
+                    <div className="text-xs text-slate-400 mt-1">
                       Categoria: {inlineDoc.category}
                     </div>
                   )}
@@ -2859,7 +2859,7 @@ const NoaConversationalInterface = React.forwardRef<
                     setInlineDoc(null);
                     setInlineDocError(null);
                   }}
-                  className="text-brand-text-secondary hover:text-brand-text px-3 py-2 rounded-lg bg-brand-bg border border-brand-border-subtle"
+                  className="text-slate-300 hover:text-white px-3 py-2 rounded-lg bg-slate-900 border border-slate-800"
                 >
                   Fechar
                 </button>
@@ -2867,7 +2867,7 @@ const NoaConversationalInterface = React.forwardRef<
 
               <div className="p-4">
                 {inlineDocLoading && (
-                  <div className="text-brand-text-secondary flex items-center gap-2">
+                  <div className="text-slate-300 flex items-center gap-2">
                     <Loader2 className="w-4 h-4 animate-spin" />
                     Carregando documento…
                   </div>
@@ -2896,7 +2896,7 @@ const NoaConversationalInterface = React.forwardRef<
                             },
                           )
                         }
-                        className="px-3 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-brand-text text-sm font-semibold"
+                        className="px-3 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-semibold"
                       >
                         Enviar para Nôa analisar
                       </button>
@@ -2905,7 +2905,7 @@ const NoaConversationalInterface = React.forwardRef<
                           onClick={() =>
                             window.open(inlineDoc.file_url as string, "_blank")
                           }
-                          className="px-3 py-2 rounded-lg bg-brand-surface-subtle hover:bg-slate-600 text-brand-text text-sm font-semibold border border-slate-600"
+                          className="px-3 py-2 rounded-lg bg-slate-700 hover:bg-slate-600 text-white text-sm font-semibold border border-slate-600"
                         >
                           Abrir arquivo
                         </button>
@@ -2976,23 +2976,23 @@ const NoaConversationalInterface = React.forwardRef<
                             state: { openDocumentId: inlineDoc.id },
                           })
                         }
-                        className="px-3 py-2 rounded-lg bg-brand-surface hover:bg-brand-surface-subtle text-brand-text text-sm font-semibold border border-brand-border"
+                        className="px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-white text-sm font-semibold border border-slate-700"
                       >
                         Abrir na Biblioteca
                       </button>
                     </div>
 
                     {inlineDoc.summary && (
-                      <div className="text-slate-200 text-sm bg-slate-900/60 border border-brand-border-subtle rounded-xl p-3 mb-3 whitespace-pre-wrap">
-                        <div className="text-xs text-brand-text-muted mb-1">
+                      <div className="text-slate-200 text-sm bg-slate-900/60 border border-slate-800 rounded-xl p-3 mb-3 whitespace-pre-wrap">
+                        <div className="text-xs text-slate-400 mb-1">
                           Resumo
                         </div>
                         {sanitizeInlineText(inlineDoc.summary)}
                       </div>
                     )}
 
-                    <div className="bg-slate-900/60 border border-brand-border-subtle rounded-xl p-3 max-h-[40vh] overflow-y-auto">
-                      <div className="text-xs text-brand-text-muted mb-2">
+                    <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-3 max-h-[40vh] overflow-y-auto">
+                      <div className="text-xs text-slate-400 mb-2">
                         Conteúdo
                       </div>
                       <pre className="whitespace-pre-wrap break-words text-slate-100 text-sm leading-relaxed">
@@ -3011,7 +3011,7 @@ const NoaConversationalInterface = React.forwardRef<
           <button
             onClick={() => setIsOpen(true)}
             className={clsx(
-              "fixed z-50 w-16 h-16 rounded-full shadow-xl hidden md:flex items-center justify-center text-brand-text overflow-hidden border border-[#00C16A]/30 transition-transform duration-300 hover:scale-110",
+              "fixed z-50 w-16 h-16 rounded-full shadow-xl hidden md:flex items-center justify-center text-white overflow-hidden border border-[#00C16A]/30 transition-transform duration-300 hover:scale-110",
               positionClasses,
             )}
             style={{
@@ -3035,9 +3035,9 @@ const NoaConversationalInterface = React.forwardRef<
               position === "inline"
                 ? clsx(
                     "relative w-full h-[100%] max-h-none flex flex-col border-none",
-                    variant === "clean" ? "bg-transparent" : "bg-brand-bg",
+                    variant === "clean" ? "bg-transparent" : "bg-slate-900",
                   )
-                : "fixed z-[9999] bg-slate-900/95 border border-brand-border rounded-2xl sm:rounded-3xl shadow-2xl backdrop-blur-xl flex flex-col transition-all duration-300",
+                : "fixed z-[9999] bg-slate-900/95 border border-slate-700 rounded-2xl sm:rounded-3xl shadow-2xl backdrop-blur-xl flex flex-col transition-all duration-300",
               position !== "inline" &&
                 (isExpanded
                   ? "left-0 sm:left-[80px] lg:left-[320px] right-0 sm:right-4 top-0 sm:top-4 bottom-0 sm:bottom-4" // Mobile: tela cheia
@@ -3132,13 +3132,13 @@ const NoaConversationalInterface = React.forwardRef<
             )}
 
             {resolvedVariant !== "clean" && (
-              <div className="border-b border-brand-border-subtle bg-slate-900/80 px-3 sm:px-5 py-1 sm:py-2 flex items-center justify-between text-[10px] sm:text-xs text-brand-text-muted flex-shrink-0">
+              <div className="border-b border-slate-800 bg-slate-900/80 px-3 sm:px-5 py-1 sm:py-2 flex items-center justify-between text-[10px] sm:text-xs text-slate-400 flex-shrink-0">
                 <span className="flex items-center gap-1 truncate">
                   <Activity className="w-2.5 h-2.5 sm:w-3 sm:h-3" />{" "}
                   <span className="hidden sm:inline">Último fluxo:</span>{" "}
                   {lastIntent ?? "Exploração"}
                 </span>
-                <span className="flex items-center gap-1 text-brand-text-muted flex-shrink-0">
+                <span className="flex items-center gap-1 text-slate-400 flex-shrink-0">
                   {messages.length} interações
                 </span>
                 {isRecordingConsultation && (
@@ -3168,13 +3168,13 @@ const NoaConversationalInterface = React.forwardRef<
 
             {/* Seletor de Paciente */}
             {showPatientSelector && !isRecordingConsultation && (
-              <div className="border-b border-brand-border-subtle bg-slate-900/90 px-5 py-4">
-                <p className="text-sm text-brand-text-secondary mb-3">
+              <div className="border-b border-slate-800 bg-slate-900/90 px-5 py-4">
+                <p className="text-sm text-slate-300 mb-3">
                   Selecione o paciente:
                 </p>
                 <div className="space-y-2 max-h-40 overflow-y-auto">
                   {availablePatients.length === 0 ? (
-                    <p className="text-xs text-brand-text-muted">
+                    <p className="text-xs text-slate-400">
                       Nenhum paciente encontrado. Você precisa ter pelo menos
                       uma avaliação clínica com um paciente.
                     </p>
@@ -3187,7 +3187,7 @@ const NoaConversationalInterface = React.forwardRef<
                           setShowPatientSelector(false);
                           handleStartConsultationRecording();
                         }}
-                        className="w-full text-left px-3 py-2 rounded-lg bg-brand-surface hover:bg-brand-surface-subtle text-slate-200 text-sm flex items-center gap-2 transition"
+                        className="w-full text-left px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-sm flex items-center gap-2 transition"
                       >
                         <User className="w-4 h-4" />
                         <span>{patient.name || patient.email}</span>
@@ -3197,7 +3197,7 @@ const NoaConversationalInterface = React.forwardRef<
                 </div>
                 <button
                   onClick={() => setShowPatientSelector(false)}
-                  className="mt-3 text-xs text-brand-text-muted hover:text-slate-200"
+                  className="mt-3 text-xs text-slate-400 hover:text-slate-200"
                 >
                   Cancelar
                 </button>
@@ -3210,18 +3210,18 @@ const NoaConversationalInterface = React.forwardRef<
                 normalizeUserType(user.type) === "admin") &&
               !showPatientSelector &&
               resolvedVariant !== "clean" && (
-                <div className="border-b border-brand-border-subtle bg-slate-900/80 px-5 py-3">
+                <div className="border-b border-slate-800 bg-slate-900/80 px-5 py-3">
                   {!isRecordingConsultation ? (
                     <button
                       onClick={handleStartConsultationRecording}
-                      className="w-full px-4 py-2 bg-red-600 hover:bg-red-700 text-brand-text rounded-lg font-medium flex items-center justify-center gap-2 transition"
+                      className="w-full px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium flex items-center justify-center gap-2 transition"
                     >
-                      <Mic className="w-4 h-4 text-brand-text" />
+                      <Mic className="w-4 h-4 text-white" />
                       Iniciar Gravação de Consulta
                     </button>
                   ) : (
                     <div className="space-y-2">
-                      <div className="flex items-center justify-between text-sm text-brand-text-secondary">
+                      <div className="flex items-center justify-between text-sm text-slate-300">
                         <span>Gravando consulta...</span>
                         <span className="text-red-400 animate-pulse">
                           {consultationStartTime &&
@@ -3236,7 +3236,7 @@ const NoaConversationalInterface = React.forwardRef<
                       <button
                         onClick={handleStopConsultationRecording}
                         disabled={isSavingConsultation}
-                        className="w-full px-4 py-2 bg-brand-surface-subtle hover:bg-slate-600 text-brand-text rounded-lg font-medium flex items-center justify-center gap-2 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="w-full px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg font-medium flex items-center justify-center gap-2 transition disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         <X className="w-4 h-4" />
                         {isSavingConsultation
@@ -3263,14 +3263,14 @@ const NoaConversationalInterface = React.forwardRef<
               const label = phase ? (PHASE_LABEL[phase] ?? phase) : '';
               const isDone = progress >= 100;
               return (
-                <div className="border-b border-brand-border-subtle bg-slate-900/90 backdrop-blur-sm px-4 py-2">
+                <div className="border-b border-slate-800 bg-slate-900/90 backdrop-blur-sm px-4 py-2">
                   <div className="flex items-center justify-between mb-1.5">
                     <span className="text-[10px] font-semibold uppercase tracking-wider text-emerald-400">
                       {isDone ? '✓ AEC Concluída' : `AEC · ${label}`}
                     </span>
-                    <span className="text-[10px] font-mono text-brand-text-muted">{progress}%</span>
+                    <span className="text-[10px] font-mono text-slate-400">{progress}%</span>
                   </div>
-                  <div className="h-1.5 w-full bg-brand-surface rounded-full overflow-hidden border border-slate-700/50">
+                  <div className="h-1.5 w-full bg-slate-800 rounded-full overflow-hidden border border-slate-700/50">
                     <motion.div
                       initial={{ width: 0 }}
                       animate={{ width: `${progress}%` }}
@@ -3331,10 +3331,10 @@ const NoaConversationalInterface = React.forwardRef<
                     )}
 
                     <div className="text-center space-y-3 z-10">
-                      <h2 className="text-2xl font-light text-brand-text tracking-wide">
+                      <h2 className="text-2xl font-light text-white tracking-wide">
                         Nôa Esperança
                       </h2>
-                      <p className="text-sm text-brand-text-muted font-light tracking-wider uppercase text-[10px]">
+                      <p className="text-sm text-slate-400 font-light tracking-wider uppercase text-[10px]">
                         IA Residente · Avaliação Clínica
                       </p>
 
@@ -3359,7 +3359,7 @@ const NoaConversationalInterface = React.forwardRef<
                                       <span className="text-[10px] text-emerald-400 font-medium uppercase tracking-tighter">Progresso AEC</span>
                                       <span className="text-[10px] text-slate-500 font-mono">{progress}%</span>
                                   </div>
-                                  <div className="h-1.5 w-full bg-brand-surface rounded-full overflow-hidden border border-slate-700/50">
+                                  <div className="h-1.5 w-full bg-slate-800 rounded-full overflow-hidden border border-slate-700/50">
                                       <motion.div 
                                           initial={{ width: 0 }}
                                           animate={{ width: `${progress}%` }}
@@ -3452,7 +3452,7 @@ const NoaConversationalInterface = React.forwardRef<
                                 );
                                 setIsOpen(false);
                               }}
-                              className="bg-emerald-500 hover:bg-emerald-600 text-brand-text px-6 py-2.5 rounded-xl text-sm font-medium transition-all shadow-lg hover:shadow-emerald-500/20 flex items-center gap-2"
+                              className="bg-emerald-500 hover:bg-emerald-600 text-white px-6 py-2.5 rounded-xl text-sm font-medium transition-all shadow-lg hover:shadow-emerald-500/20 flex items-center gap-2"
                             >
                               <Activity className="w-4 h-4" />
                               {action.label}
@@ -3488,8 +3488,8 @@ const NoaConversationalInterface = React.forwardRef<
                           className={clsx(
                             "max-w-[85%] sm:max-w-[80%] px-3 sm:px-4 py-2 sm:py-3 rounded-xl sm:rounded-2xl text-sm sm:text-base shadow-sm backdrop-blur-sm border group relative",
                             message.role === "user"
-                              ? "bg-emerald-600/90 text-brand-text border-emerald-400/50"
-                              : "bg-slate-800/90 text-slate-100 border-brand-border",
+                              ? "bg-emerald-600/90 text-white border-emerald-400/50"
+                              : "bg-slate-800/90 text-slate-100 border-slate-700",
                           )}
                         >
                           <p className="whitespace-pre-wrap leading-relaxed break-words text-sm sm:text-base">
@@ -3636,8 +3636,8 @@ const NoaConversationalInterface = React.forwardRef<
                       className={clsx(
                         "max-w-[85%] sm:max-w-[80%] px-3 sm:px-4 py-2 sm:py-3 rounded-xl sm:rounded-2xl text-sm sm:text-base shadow-sm backdrop-blur-sm border",
                         message.role === "user"
-                          ? "bg-emerald-600/90 text-brand-text border-emerald-400/50"
-                          : "bg-slate-800/90 text-slate-100 border-brand-border",
+                          ? "bg-emerald-600/90 text-white border-emerald-400/50"
+                          : "bg-slate-800/90 text-slate-100 border-slate-700",
                       )}
                     >
                       <p className="whitespace-pre-wrap leading-relaxed break-words text-sm sm:text-base">
@@ -3645,7 +3645,7 @@ const NoaConversationalInterface = React.forwardRef<
                           (meta?.fullContent as string) || message.content,
                         )}
                       </p>
-                      <span className="block text-[9px] sm:text-[10px] mt-1.5 sm:mt-2 text-brand-text-muted">
+                      <span className="block text-[9px] sm:text-[10px] mt-1.5 sm:mt-2 text-slate-400">
                         {message.timestamp.toLocaleTimeString("pt-BR", {
                           hour: "2-digit",
                           minute: "2-digit",
@@ -3682,8 +3682,8 @@ const NoaConversationalInterface = React.forwardRef<
                               }}
                               className={
                                 isPostAec
-                                  ? "px-4 py-2.5 rounded-xl text-sm font-semibold bg-emerald-600/90 hover:bg-emerald-500 text-brand-text border border-emerald-400/50 shadow-md transition-all duration-200 hover:scale-[1.02]"
-                                  : "px-3 py-1.5 rounded-lg text-xs font-medium bg-brand-surface-subtle hover:bg-slate-600 text-slate-200 border border-slate-600"
+                                  ? "px-4 py-2.5 rounded-xl text-sm font-semibold bg-emerald-600/90 hover:bg-emerald-500 text-white border border-emerald-400/50 shadow-md transition-all duration-200 hover:scale-[1.02]"
+                                  : "px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-700 hover:bg-slate-600 text-slate-200 border border-slate-600"
                               }
                             >
                               {isPostAec ? label : `Abrir: ${label}`}
@@ -3704,7 +3704,7 @@ const NoaConversationalInterface = React.forwardRef<
                             ?.documents_block_size) as number | undefined;
                         const blockSize = typeof block === "number" ? block : 5;
                         return (
-                          <div className="mt-2 max-w-[85%] sm:max-w-[80%] px-3 py-2 rounded-xl bg-slate-800/80 border border-brand-border text-xs text-brand-text-secondary">
+                          <div className="mt-2 max-w-[85%] sm:max-w-[80%] px-3 py-2 rounded-xl bg-slate-800/80 border border-slate-700 text-xs text-slate-300">
                             📚 <strong>{total}</strong> documentos na base.
                             Blocos de {blockSize} — diga &quot;listar mais&quot;
                             para os próximos.
@@ -3717,7 +3717,7 @@ const NoaConversationalInterface = React.forwardRef<
 
               {isProcessing && (
                 <div className="flex justify-start">
-                  <div className="px-4 py-3 rounded-2xl bg-slate-800/80 text-brand-text-secondary text-sm border border-brand-border flex items-center gap-2">
+                  <div className="px-4 py-3 rounded-2xl bg-slate-800/80 text-slate-300 text-sm border border-slate-700 flex items-center gap-2">
                     <Loader2 className="w-4 h-4 animate-spin" />
                     Elaborando resposta clínica...
                   </div>
@@ -3729,7 +3729,7 @@ const NoaConversationalInterface = React.forwardRef<
                 V1.9.277 — paddingBottom safe-area pra Android gesture bar + iOS notch.
                 Pedro 13/05 noite: "chats ficam um pouco abaixo para pessoas mais velhas". */}
             <div
-              className="border-t border-brand-border-subtle bg-slate-900/95 px-2 sm:px-5 py-2 sm:py-3 space-y-1 sm:space-y-2 flex-shrink-0"
+              className="border-t border-slate-800 bg-slate-900/95 px-2 sm:px-5 py-2 sm:py-3 space-y-1 sm:space-y-2 flex-shrink-0"
               style={{
                 position: "sticky",
                 bottom: 0,
@@ -3783,8 +3783,8 @@ const NoaConversationalInterface = React.forwardRef<
                     className={clsx(
                       "p-2.5 sm:p-3 rounded-xl sm:rounded-2xl border transition flex-shrink-0",
                       isUploading
-                        ? "bg-emerald-600 text-brand-text border-emerald-400 opacity-50 cursor-not-allowed"
-                        : "border-brand-border text-brand-text-secondary hover:border-emerald-400 hover:text-emerald-200",
+                        ? "bg-emerald-600 text-white border-emerald-400 opacity-50 cursor-not-allowed"
+                        : "border-slate-700 text-slate-300 hover:border-emerald-400 hover:text-emerald-200",
                     )}
                     title={
                       isUploading
@@ -3828,10 +3828,10 @@ const NoaConversationalInterface = React.forwardRef<
                     className={clsx(
                       "p-2.5 sm:p-3 rounded-xl sm:rounded-2xl border transition-all duration-300 flex-shrink-0",
                       isListening
-                        ? "bg-emerald-600 text-brand-text border-emerald-400 shadow-lg shadow-emerald-500/50 hover:bg-emerald-500 cursor-pointer animate-pulse"
+                        ? "bg-emerald-600 text-white border-emerald-400 shadow-lg shadow-emerald-500/50 hover:bg-emerald-500 cursor-pointer animate-pulse"
                         : isSpeaking
-                          ? "bg-blue-600 text-brand-text border-blue-400 shadow-lg shadow-blue-500/50 cursor-pointer hover:bg-blue-500"
-                          : "bg-brand-surface border-brand-border text-brand-text-secondary hover:bg-brand-surface-subtle hover:border-emerald-400 hover:text-emerald-200 cursor-pointer",
+                          ? "bg-blue-600 text-white border-blue-400 shadow-lg shadow-blue-500/50 cursor-pointer hover:bg-blue-500"
+                          : "bg-slate-800 border-slate-700 text-slate-300 hover:bg-slate-700 hover:border-emerald-400 hover:text-emerald-200 cursor-pointer",
                       (isProcessing || isRecordingConsultation) &&
                         "opacity-50 cursor-not-allowed",
                     )}
@@ -3849,9 +3849,9 @@ const NoaConversationalInterface = React.forwardRef<
                     }
                   >
                     {isListening ? (
-                      <Mic className="w-4 h-4 sm:w-5 sm:h-5 text-brand-text animate-pulse" />
+                      <Mic className="w-4 h-4 sm:w-5 sm:h-5 text-white animate-pulse" />
                     ) : isSpeaking ? (
-                      <Activity className="w-4 h-4 sm:w-5 sm:h-5 text-brand-text animate-pulse" />
+                      <Activity className="w-4 h-4 sm:w-5 sm:h-5 text-white animate-pulse" />
                     ) : (
                       <MicOff className="w-4 h-4 sm:w-5 sm:h-5" />
                     )}
@@ -3884,7 +3884,7 @@ const NoaConversationalInterface = React.forwardRef<
                   autoFocus={false}
                   autoComplete="off"
                   spellCheck="true"
-                  className="flex-1 min-w-[100px] bg-brand-surface border-2 border-slate-600 text-brand-text text-sm sm:text-base px-4 sm:px-5 py-3 sm:py-3.5 rounded-xl sm:rounded-2xl focus:outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-500/40 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                  className="flex-1 min-w-[100px] bg-slate-800 border-2 border-slate-600 text-white text-sm sm:text-base px-4 sm:px-5 py-3 sm:py-3.5 rounded-xl sm:rounded-2xl focus:outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-500/40 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
                   style={{
                     fontSize: "16px",
                     display: "block",
@@ -3910,7 +3910,7 @@ const NoaConversationalInterface = React.forwardRef<
                     }
                   }}
                   disabled={!inputValue.trim() || isProcessing}
-                  className="p-2.5 sm:p-3 rounded-xl sm:rounded-2xl bg-gradient-to-r from-emerald-600 to-sky-500 text-brand-text shadow-lg hover:from-emerald-500 hover:to-sky-400 transition disabled:opacity-40 disabled:cursor-not-allowed flex-shrink-0"
+                  className="p-2.5 sm:p-3 rounded-xl sm:rounded-2xl bg-gradient-to-r from-emerald-600 to-sky-500 text-white shadow-lg hover:from-emerald-500 hover:to-sky-400 transition disabled:opacity-40 disabled:cursor-not-allowed flex-shrink-0"
                   style={{ display: "block", visibility: "visible" }}
                   title={isProcessing ? "Processando..." : "Enviar mensagem"}
                 >
@@ -3939,7 +3939,7 @@ const NoaConversationalInterface = React.forwardRef<
                         window.location.reload();
                       }
                     }}
-                    className="p-2 rounded-lg bg-red-600 hover:bg-red-500 text-brand-text text-xs flex-shrink-0 ml-2 animate-pulse"
+                    className="p-2 rounded-lg bg-red-600 hover:bg-red-500 text-white text-xs flex-shrink-0 ml-2 animate-pulse"
                     title="Resetar se travado (clique para recarregar)"
                   >
                     🔄 Reset
@@ -3953,11 +3953,11 @@ const NoaConversationalInterface = React.forwardRef<
         {/* Modal de Upload com Categorias */}
         {showUploadModal && (
           <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[60] p-4">
-            <div className="bg-brand-surface rounded-xl shadow-2xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+            <div className="bg-slate-800 rounded-xl shadow-2xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
               {/* Modal Header */}
-              <div className="p-6 border-b border-brand-border">
+              <div className="p-6 border-b border-slate-700">
                 <div className="flex items-center justify-between">
-                  <h2 className="text-2xl font-bold text-brand-text">
+                  <h2 className="text-2xl font-bold text-white">
                     {isUploading
                       ? "📤 Enviando Documento..."
                       : "📚 Categorizar Documento"}
@@ -3977,7 +3977,7 @@ const NoaConversationalInterface = React.forwardRef<
                     }}
                     disabled={isUploading}
                     className={clsx(
-                      "text-brand-text-muted hover:text-brand-text transition-colors",
+                      "text-slate-400 hover:text-white transition-colors",
                       isUploading && "opacity-50 cursor-not-allowed",
                     )}
                   >
@@ -3994,10 +3994,10 @@ const NoaConversationalInterface = React.forwardRef<
                     <div className="flex items-center space-x-3">
                       <Upload className="w-8 h-8 text-emerald-400" />
                       <div className="flex-1">
-                        <p className="text-brand-text font-medium">
+                        <p className="text-white font-medium">
                           {uploadedFile.name}
                         </p>
-                        <p className="text-sm text-brand-text-muted">
+                        <p className="text-sm text-slate-400">
                           {(uploadedFile.size / 1024 / 1024).toFixed(2)} MB
                         </p>
                       </div>
@@ -4007,7 +4007,7 @@ const NoaConversationalInterface = React.forwardRef<
 
                 {/* Seleção de Categoria */}
                 <div>
-                  <label className="block text-sm font-medium text-brand-text-secondary mb-3">
+                  <label className="block text-sm font-medium text-slate-300 mb-3">
                     📚 Categoria
                   </label>
                   <div className="grid grid-cols-2 gap-3">
@@ -4043,10 +4043,10 @@ const NoaConversationalInterface = React.forwardRef<
                             : "border-slate-600 hover:border-slate-500 bg-slate-700/50"
                         }`}
                       >
-                        <h3 className="font-semibold text-brand-text text-sm mb-1">
+                        <h3 className="font-semibold text-white text-sm mb-1">
                           {cat.name}
                         </h3>
-                        <p className="text-xs text-brand-text-muted">{cat.desc}</p>
+                        <p className="text-xs text-slate-400">{cat.desc}</p>
                       </button>
                     ))}
                   </div>
@@ -4054,7 +4054,7 @@ const NoaConversationalInterface = React.forwardRef<
 
                 {/* Seleção de Área */}
                 <div>
-                  <label className="block text-sm font-medium text-brand-text-secondary mb-3">
+                  <label className="block text-sm font-medium text-slate-300 mb-3">
                     🎯 Área
                   </label>
                   <div className="grid grid-cols-2 gap-3">
@@ -4073,7 +4073,7 @@ const NoaConversationalInterface = React.forwardRef<
                             : "border-slate-600 hover:border-slate-500 bg-slate-700/50"
                         }`}
                       >
-                        <span className="font-semibold text-brand-text text-sm">
+                        <span className="font-semibold text-white text-sm">
                           {area.name}
                         </span>
                       </button>
@@ -4083,7 +4083,7 @@ const NoaConversationalInterface = React.forwardRef<
 
                 {/* Seleção de Tipo de Usuário */}
                 <div>
-                  <label className="block text-sm font-medium text-brand-text-secondary mb-3">
+                  <label className="block text-sm font-medium text-slate-300 mb-3">
                     👥 Tipo de Usuário
                   </label>
                   <div className="grid grid-cols-2 gap-3">
@@ -4120,7 +4120,7 @@ const NoaConversationalInterface = React.forwardRef<
                               : "border-slate-600 hover:border-slate-500 bg-slate-700/50"
                           }`}
                         >
-                          <span className="font-semibold text-brand-text text-sm">
+                          <span className="font-semibold text-white text-sm">
                             {type.name}
                           </span>
                         </button>
@@ -4133,14 +4133,14 @@ const NoaConversationalInterface = React.forwardRef<
                 {isUploading && (
                   <div>
                     <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm text-brand-text-secondary">
+                      <span className="text-sm text-slate-300">
                         Enviando...
                       </span>
-                      <span className="text-sm text-brand-text-secondary">
+                      <span className="text-sm text-slate-300">
                         {uploadProgress}%
                       </span>
                     </div>
-                    <div className="w-full bg-brand-surface-subtle rounded-full h-2">
+                    <div className="w-full bg-slate-700 rounded-full h-2">
                       <div
                         className="bg-gradient-to-r from-emerald-500 to-sky-500 h-2 rounded-full transition-all duration-300"
                         style={{ width: `${uploadProgress}%` }}
@@ -4150,7 +4150,7 @@ const NoaConversationalInterface = React.forwardRef<
                 )}
 
                 {/* Modal Actions */}
-                <div className="flex space-x-3 pt-4 border-t border-brand-border">
+                <div className="flex space-x-3 pt-4 border-t border-slate-700">
                   <button
                     onClick={() => {
                       setShowUploadModal(false);
@@ -4166,7 +4166,7 @@ const NoaConversationalInterface = React.forwardRef<
                     }}
                     disabled={isUploading}
                     className={clsx(
-                      "flex-1 px-4 py-3 bg-brand-surface-subtle hover:bg-slate-600 text-brand-text rounded-lg transition-colors",
+                      "flex-1 px-4 py-3 bg-slate-700 hover:bg-slate-600 text-white rounded-lg transition-colors",
                       isUploading && "opacity-50 cursor-not-allowed",
                     )}
                   >
@@ -4190,7 +4190,7 @@ const NoaConversationalInterface = React.forwardRef<
                       processFileUpload();
                     }}
                     disabled={!uploadedFile || isUploading}
-                    className="flex-1 px-4 py-3 bg-gradient-to-r from-emerald-600 to-sky-500 hover:from-emerald-500 hover:to-sky-400 text-brand-text rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center font-semibold"
+                    className="flex-1 px-4 py-3 bg-gradient-to-r from-emerald-600 to-sky-500 hover:from-emerald-500 hover:to-sky-400 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center font-semibold"
                   >
                     {isUploading ? (
                       <>
@@ -4234,7 +4234,7 @@ NoaConversationalInterface.displayName = "NoaConversationalInterface";
 
 // Render the progress bar at the top of the chat messages container:
 // {currentProgress > 0 && (
-//   <div className="w-full bg-brand-surface h-1.5 mb-4 rounded-full overflow-hidden">
+//   <div className="w-full bg-slate-800 h-1.5 mb-4 rounded-full overflow-hidden">
 //     <div 
 //       className="bg-emerald-500 h-full transition-all duration-500" 
 //       style={{ width: `${currentProgress}%` }} 

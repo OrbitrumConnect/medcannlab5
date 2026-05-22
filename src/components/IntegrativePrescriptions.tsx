@@ -356,7 +356,7 @@ const IntegrativePrescriptions: React.FC<IntegrativePrescriptionsProps> = ({
 
   const rationalityBadge = (rationality: Rationality | null) => {
     if (!rationality) return null
-    let badgeColor = 'bg-brand-surface border-brand-border text-brand-text-secondary'
+    let badgeColor = 'bg-slate-800 border-slate-700 text-slate-300'
     switch (rationality) {
       case 'biomedical':
         badgeColor = 'bg-blue-500/10 border-blue-400/40 text-blue-200'
@@ -386,14 +386,14 @@ const IntegrativePrescriptions: React.FC<IntegrativePrescriptionsProps> = ({
     <>
       <div className={`space-y-4 ${className} w-full`}>
         {/* V1.9.283: Header compactado (era card 2xl com 6 padding e 2 sub-blocos border-top) */}
-        <div className="bg-slate-900/80 border border-brand-border-subtle rounded-2xl px-4 py-3 flex items-center justify-between gap-3 flex-wrap">
+        <div className="bg-slate-900/80 border border-slate-800 rounded-2xl px-4 py-3 flex items-center justify-between gap-3 flex-wrap">
           <div className="flex items-center gap-2.5 min-w-0">
             <div className="w-9 h-9 rounded-lg bg-primary-500/15 border border-primary-500/30 flex items-center justify-center shrink-0">
               <Brain className="w-4.5 h-4.5 text-primary-300" />
             </div>
             <div className="min-w-0">
               <p className="text-[10px] uppercase tracking-[0.25em] text-primary-300/80 font-semibold">Prescrições</p>
-              <h2 className="text-base font-bold text-brand-text leading-tight">Gestão de Prescrições</h2>
+              <h2 className="text-base font-bold text-white leading-tight">Gestão de Prescrições</h2>
             </div>
           </div>
           <div className="flex items-center gap-1.5 flex-wrap">
@@ -402,7 +402,7 @@ const IntegrativePrescriptions: React.FC<IntegrativePrescriptionsProps> = ({
                 onClick={() => setActiveTab('library')}
                 className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium transition-all ${activeTab === 'library'
                     ? 'bg-emerald-500/15 text-emerald-300 border border-emerald-500/30'
-                    : 'text-brand-text-muted hover:text-brand-text hover:bg-slate-800/60 border border-transparent'
+                    : 'text-slate-400 hover:text-white hover:bg-slate-800/60 border border-transparent'
                   }`}
               >
                 <LayoutGrid className="w-3.5 h-3.5" />
@@ -412,7 +412,7 @@ const IntegrativePrescriptions: React.FC<IntegrativePrescriptionsProps> = ({
                 onClick={() => setActiveTab('history')}
                 className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium transition-all ${activeTab === 'history'
                     ? 'bg-emerald-500/15 text-emerald-300 border border-emerald-500/30'
-                    : 'text-brand-text-muted hover:text-brand-text hover:bg-slate-800/60 border border-transparent'
+                    : 'text-slate-400 hover:text-white hover:bg-slate-800/60 border border-transparent'
                   }`}
               >
                 <History className="w-3.5 h-3.5" />
@@ -421,7 +421,7 @@ const IntegrativePrescriptions: React.FC<IntegrativePrescriptionsProps> = ({
             </div>
             <button
               onClick={() => setShowCFMModal(true)}
-              className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-600/90 hover:bg-emerald-500 text-brand-text text-xs font-medium transition-all hover:scale-[1.02] shadow-md shadow-emerald-900/20"
+              className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-600/90 hover:bg-emerald-500 text-white text-xs font-medium transition-all hover:scale-[1.02] shadow-md shadow-emerald-900/20"
             >
               <Plus className="w-3.5 h-3.5" />
               Nova Prescrição CFM
@@ -435,24 +435,24 @@ const IntegrativePrescriptions: React.FC<IntegrativePrescriptionsProps> = ({
           <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
             <div className="bg-slate-800/40 rounded-lg p-3 border border-slate-700/50">
               <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-0.5">Total</p>
-              <p className="text-lg font-bold text-brand-text">{prescriptionsLoading ? '—' : prescriptionKPIs.total}</p>
+              <p className="text-lg font-bold text-white">{prescriptionsLoading ? '—' : prescriptionKPIs.total}</p>
               <p className="text-[10px] text-slate-500">prescrições</p>
             </div>
             <div className="bg-emerald-500/8 rounded-lg p-3 border border-emerald-500/25">
               <p className="text-[10px] font-bold text-emerald-300 uppercase tracking-wider mb-0.5">✓ Ativas</p>
-              <p className="text-lg font-bold text-brand-text">{prescriptionsLoading ? '—' : prescriptionKPIs.active}</p>
+              <p className="text-lg font-bold text-white">{prescriptionsLoading ? '—' : prescriptionKPIs.active}</p>
               <p className="text-[10px] text-slate-500">em curso</p>
             </div>
             <div className={`rounded-lg p-3 border ${prescriptionKPIs.draft > 0 ? 'bg-amber-500/10 border-amber-500/30' : 'bg-slate-800/40 border-slate-700/50'}`}>
               <p className={`text-[10px] font-bold uppercase tracking-wider mb-0.5 ${prescriptionKPIs.draft > 0 ? 'text-amber-300' : 'text-slate-500'}`}>
                 ⚠️ Draft
               </p>
-              <p className="text-lg font-bold text-brand-text">{prescriptionsLoading ? '—' : prescriptionKPIs.draft}</p>
+              <p className="text-lg font-bold text-white">{prescriptionsLoading ? '—' : prescriptionKPIs.draft}</p>
               <p className="text-[10px] text-slate-500">{prescriptionKPIs.draft > 0 ? 'requer ação' : 'nenhuma'}</p>
             </div>
             <div className="bg-slate-800/40 rounded-lg p-3 border border-slate-700/50">
               <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-0.5">Concluídas</p>
-              <p className="text-lg font-bold text-brand-text">{prescriptionsLoading ? '—' : prescriptionKPIs.completed}</p>
+              <p className="text-lg font-bold text-white">{prescriptionsLoading ? '—' : prescriptionKPIs.completed}</p>
               <p className="text-[10px] text-slate-500">finalizadas</p>
             </div>
           </div>
@@ -474,54 +474,54 @@ const IntegrativePrescriptions: React.FC<IntegrativePrescriptionsProps> = ({
         {activeTab === 'library' && (
           <div className="space-y-4 animate-in fade-in zoom-in-95 duration-300">
             {/* V1.9.283: Trilho de Tipos de Receituário CFM compactado — descrição em tooltip (title), não verbosa */}
-            <div className="bg-slate-900/60 border border-brand-border-subtle rounded-xl p-3">
+            <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-3">
               <div className="flex items-center gap-2 mb-2">
                 <Lock className="w-3.5 h-3.5 text-primary-300" />
-                <h3 className="text-xs font-bold text-brand-text-secondary uppercase tracking-wider">Nova receita</h3>
+                <h3 className="text-xs font-bold text-slate-300 uppercase tracking-wider">Nova receita</h3>
                 <span className="text-[10px] text-slate-500 italic">— clique no tipo de receituário</span>
               </div>
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-2">
                 <button
                   onClick={() => navigate('/app/prescriptions?type=simple')}
                   title="Receituário Simples — Medicamentos sem controle especial"
-                  className="flex items-center gap-2 px-3 py-2 rounded-lg border border-brand-border-subtle bg-slate-950/60 text-left hover:border-primary-500/50 hover:bg-primary-500/5 transition-all group"
+                  className="flex items-center gap-2 px-3 py-2 rounded-lg border border-slate-800 bg-slate-950/60 text-left hover:border-primary-500/50 hover:bg-primary-500/5 transition-all group"
                 >
                   <FileText className="w-4 h-4 text-primary-300 shrink-0 group-hover:scale-110 transition-transform" />
                   <div className="min-w-0">
-                    <p className="text-brand-text font-semibold text-xs leading-tight truncate">Simples</p>
+                    <p className="text-white font-semibold text-xs leading-tight truncate">Simples</p>
                     <p className="text-[10px] text-slate-500 leading-tight truncate">sem controle</p>
                   </div>
                 </button>
                 <button
                   onClick={() => navigate('/app/prescriptions?type=special')}
                   title="Controle Especial (Branca) — Lista C2, ANVISA Portaria 344/98, 2 vias"
-                  className="flex items-center gap-2 px-3 py-2 rounded-lg border border-brand-border-subtle bg-slate-950/60 text-left hover:border-sky-500/50 hover:bg-sky-500/5 transition-all group"
+                  className="flex items-center gap-2 px-3 py-2 rounded-lg border border-slate-800 bg-slate-950/60 text-left hover:border-sky-500/50 hover:bg-sky-500/5 transition-all group"
                 >
                   <Lock className="w-4 h-4 text-sky-300 shrink-0 group-hover:scale-110 transition-transform" />
                   <div className="min-w-0">
-                    <p className="text-brand-text font-semibold text-xs leading-tight truncate">Branca (C2)</p>
+                    <p className="text-white font-semibold text-xs leading-tight truncate">Branca (C2)</p>
                     <p className="text-[10px] text-slate-500 leading-tight truncate">controle especial</p>
                   </div>
                 </button>
                 <button
                   onClick={() => navigate('/app/prescriptions?type=blue')}
                   title="Receita Azul B1/B2 — Entorpecentes e psicotrópicos com QR Code"
-                  className="flex items-center gap-2 px-3 py-2 rounded-lg border border-brand-border-subtle bg-slate-950/60 text-left hover:border-blue-500/50 hover:bg-blue-500/5 transition-all group"
+                  className="flex items-center gap-2 px-3 py-2 rounded-lg border border-slate-800 bg-slate-950/60 text-left hover:border-blue-500/50 hover:bg-blue-500/5 transition-all group"
                 >
                   <Lock className="w-4 h-4 text-blue-300 shrink-0 group-hover:scale-110 transition-transform" />
                   <div className="min-w-0">
-                    <p className="text-brand-text font-semibold text-xs leading-tight truncate">Azul (B1/B2)</p>
+                    <p className="text-white font-semibold text-xs leading-tight truncate">Azul (B1/B2)</p>
                     <p className="text-[10px] text-slate-500 leading-tight truncate">psicotrópicos</p>
                   </div>
                 </button>
                 <button
                   onClick={() => navigate('/app/prescriptions?type=yellow')}
                   title="Receita Amarela A1/A2/A3 — Entorpecentes restritos, integração Portal ITI"
-                  className="flex items-center gap-2 px-3 py-2 rounded-lg border border-brand-border-subtle bg-slate-950/60 text-left hover:border-amber-500/50 hover:bg-amber-500/5 transition-all group"
+                  className="flex items-center gap-2 px-3 py-2 rounded-lg border border-slate-800 bg-slate-950/60 text-left hover:border-amber-500/50 hover:bg-amber-500/5 transition-all group"
                 >
                   <Lock className="w-4 h-4 text-amber-300 shrink-0 group-hover:scale-110 transition-transform" />
                   <div className="min-w-0">
-                    <p className="text-brand-text font-semibold text-xs leading-tight truncate">Amarela (A1-A3)</p>
+                    <p className="text-white font-semibold text-xs leading-tight truncate">Amarela (A1-A3)</p>
                     <p className="text-[10px] text-slate-500 leading-tight truncate">restrito ITI</p>
                   </div>
                 </button>
@@ -531,12 +531,12 @@ const IntegrativePrescriptions: React.FC<IntegrativePrescriptionsProps> = ({
             {/* V1.9.283: separador minimalista (era 3 elementos com border) */}
             <div className="flex items-center gap-2 pt-1">
               <BookOpen className="w-3.5 h-3.5 text-primary-400" />
-              <h3 className="text-xs font-bold text-brand-text-secondary uppercase tracking-wider">Protocolos Terapêuticos</h3>
+              <h3 className="text-xs font-bold text-slate-300 uppercase tracking-wider">Protocolos Terapêuticos</h3>
               <span className="text-[10px] text-slate-500 italic">— biblioteca de protocolos pré-definidos</span>
             </div>
 
             {/* Filters */}
-            <div className="bg-slate-900/60 border border-brand-border-subtle rounded-2xl p-4 flex flex-col md:flex-row gap-4 items-center justify-between">
+            <div className="bg-slate-900/60 border border-slate-800 rounded-2xl p-4 flex flex-col md:flex-row gap-4 items-center justify-between">
               <div className="relative w-full md:w-96">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 w-4 h-4" />
                 <input
@@ -544,7 +544,7 @@ const IntegrativePrescriptions: React.FC<IntegrativePrescriptionsProps> = ({
                   value={searchTerm}
                   onChange={event => setSearchTerm(event.target.value)}
                   placeholder="Buscar protocolo..."
-                  className="w-full bg-slate-950/70 border border-brand-border-subtle rounded-xl pl-10 pr-4 py-2 text-sm text-brand-text placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-primary-500/60"
+                  className="w-full bg-slate-950/70 border border-slate-800 rounded-xl pl-10 pr-4 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-primary-500/60"
                 />
               </div>
               <div className="flex items-center gap-2 overflow-x-auto w-full md:w-auto pb-2 md:pb-0 scrollbar-hide">
@@ -554,7 +554,7 @@ const IntegrativePrescriptions: React.FC<IntegrativePrescriptionsProps> = ({
                     onClick={() => setSelectedRationality(option.key)}
                     className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-medium transition-colors whitespace-nowrap ${selectedRationality === option.key
                         ? 'border-primary-500/60 bg-primary-500/10 text-primary-200'
-                        : 'border-brand-border-subtle bg-slate-900/50 text-brand-text-muted hover:border-brand-border hover:text-slate-200'
+                        : 'border-slate-800 bg-slate-900/50 text-slate-400 hover:border-slate-700 hover:text-slate-200'
                       }`}
                   >
                     {option.icon}
@@ -566,17 +566,17 @@ const IntegrativePrescriptions: React.FC<IntegrativePrescriptionsProps> = ({
 
             {/* Grid */}
             {templatesLoading ? (
-              <div className="flex items-center justify-center py-20 text-brand-text-muted text-sm">
+              <div className="flex items-center justify-center py-20 text-slate-400 text-sm">
                 <Loader2 className="w-5 h-5 animate-spin mr-3 text-primary-500" />
                 Carregando biblioteca...
               </div>
             ) : filteredTemplates.length === 0 ? (
-              <div className="border border-dashed border-brand-border-subtle rounded-2xl py-16 text-center space-y-4 bg-slate-900/20">
-                <div className="bg-slate-900/50 w-16 h-16 rounded-full flex items-center justify-center mx-auto border border-brand-border-subtle">
+              <div className="border border-dashed border-slate-800 rounded-2xl py-16 text-center space-y-4 bg-slate-900/20">
+                <div className="bg-slate-900/50 w-16 h-16 rounded-full flex items-center justify-center mx-auto border border-slate-800">
                   <Search className="w-6 h-6 text-slate-600" />
                 </div>
                 <div>
-                  <p className="text-brand-text-secondary font-medium">Nenhum protocolo encontrado</p>
+                  <p className="text-slate-300 font-medium">Nenhum protocolo encontrado</p>
                   <p className="text-sm text-slate-500">Tente ajustar seus filtros de busca.</p>
                 </div>
               </div>
@@ -585,12 +585,12 @@ const IntegrativePrescriptions: React.FC<IntegrativePrescriptionsProps> = ({
                 {filteredTemplates.map(template => (
                   <article
                     key={template.id}
-                    className="group rounded-xl border border-brand-border-subtle bg-slate-950/40 p-3.5 space-y-2.5 transition-all hover:border-primary-500/30 hover:bg-slate-900/80 hover:shadow-lg hover:shadow-primary-900/5 flex flex-col"
+                    className="group rounded-xl border border-slate-800 bg-slate-950/40 p-3.5 space-y-2.5 transition-all hover:border-primary-500/30 hover:bg-slate-900/80 hover:shadow-lg hover:shadow-primary-900/5 flex flex-col"
                   >
                     <div className="flex items-start justify-between gap-2">
                       <div className="space-y-1.5">
                         <div className="flex items-center justify-between w-full">
-                          <h3 className="text-brand-text text-sm font-semibold leading-snug group-hover:text-primary-200 transition-colors">
+                          <h3 className="text-white text-sm font-semibold leading-snug group-hover:text-primary-200 transition-colors">
                             {template.name}
                           </h3>
                         </div>
@@ -599,7 +599,7 @@ const IntegrativePrescriptions: React.FC<IntegrativePrescriptionsProps> = ({
                         </div>
                       </div>
                     </div>
-                    <p className="text-xs text-brand-text-muted line-clamp-2 leading-relaxed flex-grow">
+                    <p className="text-xs text-slate-400 line-clamp-2 leading-relaxed flex-grow">
                       {template.summary ?? template.description}
                     </p>
 
@@ -616,7 +616,7 @@ const IntegrativePrescriptions: React.FC<IntegrativePrescriptionsProps> = ({
 
                     <button
                       onClick={() => handleOpenTemplate(template)}
-                      className="w-full inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg bg-brand-surface text-brand-text-secondary text-xs font-medium hover:bg-primary-600 hover:text-brand-text transition-all shadow-sm"
+                      className="w-full inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800 text-slate-300 text-xs font-medium hover:bg-primary-600 hover:text-white transition-all shadow-sm"
                     >
                       Prescrever este protocolo
                       <ArrowRight className="w-3.5 h-3.5" />
@@ -630,9 +630,9 @@ const IntegrativePrescriptions: React.FC<IntegrativePrescriptionsProps> = ({
 
         {/* --- HISTORY TAB --- */}
         {activeTab === 'history' && (
-          <div className="bg-slate-900/60 border border-brand-border-subtle rounded-2xl overflow-hidden animate-in fade-in slide-in-from-bottom-2 duration-300">
-            <div className="p-4 border-b border-brand-border-subtle flex items-center justify-between bg-slate-900/80">
-              <h3 className="text-sm font-semibold text-brand-text flex items-center gap-2">
+          <div className="bg-slate-900/60 border border-slate-800 rounded-2xl overflow-hidden animate-in fade-in slide-in-from-bottom-2 duration-300">
+            <div className="p-4 border-b border-slate-800 flex items-center justify-between bg-slate-900/80">
+              <h3 className="text-sm font-semibold text-white flex items-center gap-2">
                 <FileText className="w-4 h-4 text-primary-300" />
                 Registros de Prescrições
               </h3>
@@ -645,8 +645,8 @@ const IntegrativePrescriptions: React.FC<IntegrativePrescriptionsProps> = ({
             </div>
 
             <div className="overflow-x-auto custom-scrollbar">
-              <table className="w-full text-left text-sm text-brand-text-muted">
-                <thead className="bg-slate-950/80 text-xs uppercase font-semibold text-slate-500 border-b border-brand-border-subtle sticky top-0">
+              <table className="w-full text-left text-sm text-slate-400">
+                <thead className="bg-slate-950/80 text-xs uppercase font-semibold text-slate-500 border-b border-slate-800 sticky top-0">
                   <tr>
                     <th className="px-6 py-4 whitespace-nowrap">Data / Hora</th>
                     <th className="px-6 py-4 whitespace-nowrap">Protocolo / Título</th>
@@ -667,7 +667,7 @@ const IntegrativePrescriptions: React.FC<IntegrativePrescriptionsProps> = ({
                   ) : patientPrescriptions.length === 0 ? (
                     <tr>
                       <td colSpan={6} className="px-6 py-16 text-center text-slate-600 bg-slate-900/20">
-                        <div className="bg-slate-800/50 w-12 h-12 rounded-full flex items-center justify-center mx-auto border border-brand-border mb-3">
+                        <div className="bg-slate-800/50 w-12 h-12 rounded-full flex items-center justify-center mx-auto border border-slate-700 mb-3">
                           <History className="w-5 h-5 text-slate-500" />
                         </div>
                         Nenhuma prescrição encontrada para este paciente.
@@ -676,8 +676,8 @@ const IntegrativePrescriptions: React.FC<IntegrativePrescriptionsProps> = ({
                   ) : (
                     patientPrescriptions.map(presc => (
                       <tr key={presc.id} className="hover:bg-slate-800/30 transition-colors group">
-                        <td className="px-6 py-4 text-brand-text-secondary whitespace-nowrap">
-                          <div className="font-medium text-brand-text">{new Date(presc.issuedAt).toLocaleDateString('pt-BR')}</div>
+                        <td className="px-6 py-4 text-slate-300 whitespace-nowrap">
+                          <div className="font-medium text-white">{new Date(presc.issuedAt).toLocaleDateString('pt-BR')}</div>
                           <div className="text-xs text-slate-600">{new Date(presc.issuedAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</div>
                         </td>
                         <td className="px-6 py-4">
@@ -690,12 +690,12 @@ const IntegrativePrescriptions: React.FC<IntegrativePrescriptionsProps> = ({
                         <td className="px-6 py-4">
                           <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border ${presc.status === 'active' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' :
                               presc.status === 'completed' ? 'bg-blue-500/10 text-blue-400 border-blue-500/20' :
-                                'bg-brand-surface text-brand-text-muted border-brand-border'
+                                'bg-slate-800 text-slate-400 border-slate-700'
                             }`}>
                             {presc.status === 'active' ? 'Ativa' : presc.status}
                           </span>
                         </td>
-                        <td className="px-6 py-4 text-brand-text-muted whitespace-nowrap">
+                        <td className="px-6 py-4 text-slate-400 whitespace-nowrap">
                           {presc.professionalName || <span className="text-slate-600 italic">Sistema</span>}
                         </td>
                         <td className="px-6 py-4 text-right">
@@ -716,17 +716,17 @@ const IntegrativePrescriptions: React.FC<IntegrativePrescriptionsProps> = ({
       {/* --- TEMPLATE MODAL (UNCHANGED) --- */}
       {showTemplateModal && selectedTemplate && (
         <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center z-[1000] px-4 animate-in fade-in duration-200">
-          <div className="bg-slate-950 rounded-2xl w-full max-w-3xl max-h-[85vh] overflow-y-auto border border-brand-border-subtle shadow-2xl">
-            <div className="flex items-center justify-between px-6 py-4 border-b border-brand-border-subtle bg-slate-900/50 sticky top-0 backdrop-blur-md z-10">
+          <div className="bg-slate-950 rounded-2xl w-full max-w-3xl max-h-[85vh] overflow-y-auto border border-slate-800 shadow-2xl">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-800 bg-slate-900/50 sticky top-0 backdrop-blur-md z-10">
               <div>
-                <h3 className="text-xl font-semibold text-brand-text">{selectedTemplate.name}</h3>
-                <p className="text-xs text-brand-text-muted mt-1">
+                <h3 className="text-xl font-semibold text-white">{selectedTemplate.name}</h3>
+                <p className="text-xs text-slate-400 mt-1">
                   Vinculada ao paciente {patientName ?? 'selecionado'} • {RATIONALITY_LABEL[selectedTemplate.rationality]}
                 </p>
               </div>
               <button
                 onClick={() => setShowTemplateModal(false)}
-                className="w-9 h-9 rounded-full border border-brand-border text-brand-text-secondary hover:text-primary-200 hover:border-primary-500/40 transition-colors flex items-center justify-center"
+                className="w-9 h-9 rounded-full border border-slate-700 text-slate-300 hover:text-primary-200 hover:border-primary-500/40 transition-colors flex items-center justify-center"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -739,7 +739,7 @@ const IntegrativePrescriptions: React.FC<IntegrativePrescriptionsProps> = ({
                     value={draft.dosage}
                     onChange={event => setDraft(prev => ({ ...prev, dosage: event.target.value }))}
                     placeholder={selectedTemplate.defaultDosage ?? 'Defina a dosagem'}
-                    className="w-full mt-1.5 bg-slate-950/60 border border-brand-border-subtle rounded-xl px-3 py-2.5 text-sm text-brand-text placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-primary-500/60 focus:border-transparent transition-all"
+                    className="w-full mt-1.5 bg-slate-950/60 border border-slate-800 rounded-xl px-3 py-2.5 text-sm text-white placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-primary-500/60 focus:border-transparent transition-all"
                   />
                 </div>
                 <div>
@@ -748,7 +748,7 @@ const IntegrativePrescriptions: React.FC<IntegrativePrescriptionsProps> = ({
                     value={draft.frequency}
                     onChange={event => setDraft(prev => ({ ...prev, frequency: event.target.value }))}
                     placeholder={selectedTemplate.defaultFrequency ?? 'Defina a frequência'}
-                    className="w-full mt-1.5 bg-slate-950/60 border border-brand-border-subtle rounded-xl px-3 py-2.5 text-sm text-brand-text placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-primary-500/60 focus:border-transparent transition-all"
+                    className="w-full mt-1.5 bg-slate-950/60 border border-slate-800 rounded-xl px-3 py-2.5 text-sm text-white placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-primary-500/60 focus:border-transparent transition-all"
                   />
                 </div>
                 <div>
@@ -757,7 +757,7 @@ const IntegrativePrescriptions: React.FC<IntegrativePrescriptionsProps> = ({
                     value={draft.duration}
                     onChange={event => setDraft(prev => ({ ...prev, duration: event.target.value }))}
                     placeholder={selectedTemplate.defaultDuration ?? 'Defina a duração'}
-                    className="w-full mt-1.5 bg-slate-950/60 border border-brand-border-subtle rounded-xl px-3 py-2.5 text-sm text-brand-text placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-primary-500/60 focus:border-transparent transition-all"
+                    className="w-full mt-1.5 bg-slate-950/60 border border-slate-800 rounded-xl px-3 py-2.5 text-sm text-white placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-primary-500/60 focus:border-transparent transition-all"
                   />
                 </div>
                 <div className="grid grid-cols-2 gap-3">
@@ -767,7 +767,7 @@ const IntegrativePrescriptions: React.FC<IntegrativePrescriptionsProps> = ({
                       type="date"
                       value={draft.startsAt}
                       onChange={event => setDraft(prev => ({ ...prev, startsAt: event.target.value }))}
-                      className="w-full mt-1.5 bg-slate-950/60 border border-brand-border-subtle rounded-xl px-3 py-2.5 text-sm text-brand-text focus:outline-none focus:ring-2 focus:ring-primary-500/60 focus:border-transparent transition-all"
+                      className="w-full mt-1.5 bg-slate-950/60 border border-slate-800 rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-primary-500/60 focus:border-transparent transition-all"
                     />
                   </div>
                   <div>
@@ -776,7 +776,7 @@ const IntegrativePrescriptions: React.FC<IntegrativePrescriptionsProps> = ({
                       type="date"
                       value={draft.endsAt}
                       onChange={event => setDraft(prev => ({ ...prev, endsAt: event.target.value }))}
-                      className="w-full mt-1.5 bg-slate-950/60 border border-brand-border-subtle rounded-xl px-3 py-2.5 text-sm text-brand-text focus:outline-none focus:ring-2 focus:ring-primary-500/60 focus:border-transparent transition-all"
+                      className="w-full mt-1.5 bg-slate-950/60 border border-slate-800 rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-primary-500/60 focus:border-transparent transition-all"
                     />
                   </div>
                 </div>
@@ -787,7 +787,7 @@ const IntegrativePrescriptions: React.FC<IntegrativePrescriptionsProps> = ({
                   value={draft.instructions}
                   onChange={event => setDraft(prev => ({ ...prev, instructions: event.target.value }))}
                   placeholder={selectedTemplate.defaultInstructions ?? 'Descreva as orientações para o paciente'}
-                  className="w-full mt-1.5 bg-slate-950/60 border border-brand-border-subtle rounded-xl px-3 py-3 text-sm text-brand-text placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-primary-500/60 focus:border-transparent min-h-[120px] transition-all"
+                  className="w-full mt-1.5 bg-slate-950/60 border border-slate-800 rounded-xl px-3 py-3 text-sm text-white placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-primary-500/60 focus:border-transparent min-h-[120px] transition-all"
                 />
               </div>
               <div>
@@ -796,10 +796,10 @@ const IntegrativePrescriptions: React.FC<IntegrativePrescriptionsProps> = ({
                   value={draft.notes}
                   onChange={event => setDraft(prev => ({ ...prev, notes: event.target.value }))}
                   placeholder="Informações complementares visíveis apenas para a equipe profissional."
-                  className="w-full mt-1.5 bg-slate-950/60 border border-brand-border-subtle rounded-xl px-3 py-3 text-sm text-brand-text placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-primary-500/60 focus:border-transparent min-h-[100px] transition-all"
+                  className="w-full mt-1.5 bg-slate-950/60 border border-slate-800 rounded-xl px-3 py-3 text-sm text-white placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-primary-500/60 focus:border-transparent min-h-[100px] transition-all"
                 />
               </div>
-              <div className="rounded-xl border border-brand-border-subtle bg-slate-900/60 px-4 py-3 text-xs text-brand-text-secondary space-y-1">
+              <div className="rounded-xl border border-slate-800 bg-slate-900/60 px-4 py-3 text-xs text-slate-300 space-y-1">
                 <p>• Indicações principais: {selectedTemplate.indications.join(', ') || 'Sem indicações registradas'}</p>
                 {selectedTemplate.contraindications.length > 0 && (
                   <p>• Contraindicações: {selectedTemplate.contraindications.join(', ')}</p>
@@ -809,17 +809,17 @@ const IntegrativePrescriptions: React.FC<IntegrativePrescriptionsProps> = ({
                 )}
               </div>
             </div>
-            <div className="px-6 py-5 border-t border-brand-border-subtle flex flex-col md:flex-row md:items-center md:justify-between gap-3 bg-slate-900/30 sticky bottom-0 backdrop-blur-md">
+            <div className="px-6 py-5 border-t border-slate-800 flex flex-col md:flex-row md:items-center md:justify-between gap-3 bg-slate-900/30 sticky bottom-0 backdrop-blur-md">
               <button
                 onClick={() => setShowTemplateModal(false)}
-                className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg border border-brand-border text-brand-text-secondary hover:text-primary-200 hover:border-primary-500/40 text-sm transition-colors"
+                className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg border border-slate-700 text-slate-300 hover:text-primary-200 hover:border-primary-500/40 text-sm transition-colors"
               >
                 Cancelar
               </button>
               <button
                 onClick={handleConfirmPrescription}
                 disabled={actionLoading}
-                className="inline-flex items-center justify-center gap-2 px-6 py-2 rounded-lg bg-primary-500 hover:bg-primary-400 text-brand-text text-sm font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-primary-900/20"
+                className="inline-flex items-center justify-center gap-2 px-6 py-2 rounded-lg bg-primary-500 hover:bg-primary-400 text-white text-sm font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-primary-900/20"
               >
                 {actionLoading && <Loader2 className="w-4 h-4 animate-spin" />}
                 Confirmar prescrição
@@ -840,22 +840,22 @@ const IntegrativePrescriptions: React.FC<IntegrativePrescriptionsProps> = ({
           }}
         >
           <div
-            className="bg-slate-950 rounded-2xl w-full max-w-4xl max-h-[85vh] overflow-y-auto border border-brand-border-subtle shadow-2xl"
+            className="bg-slate-950 rounded-2xl w-full max-w-4xl max-h-[85vh] overflow-y-auto border border-slate-800 shadow-2xl"
             onClick={event => event.stopPropagation()}
           >
-            <div className="flex items-center justify-between px-6 py-5 border-b border-brand-border-subtle bg-slate-900/50">
+            <div className="flex items-center justify-between px-6 py-5 border-b border-slate-800 bg-slate-900/50">
               <div>
-                <h3 className="text-xl font-semibold text-brand-text flex items-center gap-2">
+                <h3 className="text-xl font-semibold text-white flex items-center gap-2">
                   <Lock className="w-5 h-5 text-primary-300" />
                   Emitir prescrição CFM
                 </h3>
-                <p className="text-xs text-brand-text-muted mt-1">
+                <p className="text-xs text-slate-400 mt-1">
                   Selecione o tipo de receituário conforme as diretrizes do Conselho Federal de Medicina.
                 </p>
               </div>
               <button
                 onClick={() => setShowCFMModal(false)}
-                className="w-9 h-9 rounded-full border border-brand-border text-brand-text-secondary hover:text-primary-200 hover:border-primary-500/40 transition-colors flex items-center justify-center"
+                className="w-9 h-9 rounded-full border border-slate-700 text-slate-300 hover:text-primary-200 hover:border-primary-500/40 transition-colors flex items-center justify-center"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -867,44 +867,44 @@ const IntegrativePrescriptions: React.FC<IntegrativePrescriptionsProps> = ({
                     navigate('/app/prescriptions?type=simple')
                     setShowCFMModal(false)
                   }}
-                  className="p-5 rounded-2xl border border-brand-border-subtle bg-slate-950/60 text-left space-y-2 hover:border-primary-500/40 hover:bg-slate-900/80 transition-all hover:scale-[1.01]"
+                  className="p-5 rounded-2xl border border-slate-800 bg-slate-950/60 text-left space-y-2 hover:border-primary-500/40 hover:bg-slate-900/80 transition-all hover:scale-[1.01]"
                 >
                   <FileText className="w-7 h-7 text-primary-300" />
-                  <p className="text-brand-text font-semibold text-lg">Receituário simples</p>
-                  <p className="text-sm text-brand-text-muted">Medicamentos sem controle especial, assinatura digital e envio automático ao paciente.</p>
+                  <p className="text-white font-semibold text-lg">Receituário simples</p>
+                  <p className="text-sm text-slate-400">Medicamentos sem controle especial, assinatura digital e envio automático ao paciente.</p>
                 </button>
                 <button
                   onClick={() => {
                     navigate('/app/prescriptions?type=special')
                     setShowCFMModal(false)
                   }}
-                  className="p-5 rounded-2xl border border-brand-border-subtle bg-slate-950/60 text-left space-y-2 hover:border-primary-500/40 hover:bg-slate-900/80 transition-all hover:scale-[1.01]"
+                  className="p-5 rounded-2xl border border-slate-800 bg-slate-950/60 text-left space-y-2 hover:border-primary-500/40 hover:bg-slate-900/80 transition-all hover:scale-[1.01]"
                 >
                   <Lock className="w-7 h-7 text-sky-300" />
-                  <p className="text-brand-text font-semibold text-lg">Receita branca controle especial</p>
-                  <p className="text-sm text-brand-text-muted">Psicotrópicos e retinoides (lista C2) com assinatura ICP-Brasil.</p>
+                  <p className="text-white font-semibold text-lg">Receita branca controle especial</p>
+                  <p className="text-sm text-slate-400">Psicotrópicos e retinoides (lista C2) com assinatura ICP-Brasil.</p>
                 </button>
                 <button
                   onClick={() => {
                     navigate('/app/prescriptions?type=blue')
                     setShowCFMModal(false)
                   }}
-                  className="p-5 rounded-2xl border border-brand-border-subtle bg-slate-950/60 text-left space-y-2 hover:border-primary-500/40 hover:bg-slate-900/80 transition-all hover:scale-[1.01]"
+                  className="p-5 rounded-2xl border border-slate-800 bg-slate-950/60 text-left space-y-2 hover:border-primary-500/40 hover:bg-slate-900/80 transition-all hover:scale-[1.01]"
                 >
                   <Lock className="w-7 h-7 text-blue-300" />
-                  <p className="text-brand-text font-semibold text-lg">Receita azul (B1/B2)</p>
-                  <p className="text-sm text-brand-text-muted">Entorpecentes e psicotrópicos controlados, com QR Code para validação.</p>
+                  <p className="text-white font-semibold text-lg">Receita azul (B1/B2)</p>
+                  <p className="text-sm text-slate-400">Entorpecentes e psicotrópicos controlados, com QR Code para validação.</p>
                 </button>
                 <button
                   onClick={() => {
                     navigate('/app/prescriptions?type=yellow')
                     setShowCFMModal(false)
                   }}
-                  className="p-5 rounded-2xl border border-brand-border-subtle bg-slate-950/60 text-left space-y-2 hover:border-primary-500/40 hover:bg-slate-900/80 transition-all hover:scale-[1.01]"
+                  className="p-5 rounded-2xl border border-slate-800 bg-slate-950/60 text-left space-y-2 hover:border-primary-500/40 hover:bg-slate-900/80 transition-all hover:scale-[1.01]"
                 >
                   <Lock className="w-7 h-7 text-amber-300" />
-                  <p className="text-brand-text font-semibold text-lg">Receita amarela (A1/A2/A3)</p>
-                  <p className="text-sm text-brand-text-muted">Entorpecentes de uso restrito com integração ao Portal do ITI.</p>
+                  <p className="text-white font-semibold text-lg">Receita amarela (A1/A2/A3)</p>
+                  <p className="text-sm text-slate-400">Entorpecentes de uso restrito com integração ao Portal do ITI.</p>
                 </button>
               </div>
             </div>

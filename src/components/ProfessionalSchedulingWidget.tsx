@@ -432,7 +432,7 @@ const ProfessionalSchedulingWidget: React.FC<ProfessionalSchedulingWidgetProps> 
                   onClick={() => setActiveTab(tab.key as any)}
                   className={`flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold rounded-lg transition-all ${activeTab === tab.key
                     ? 'bg-emerald-600/30 text-emerald-300 border border-emerald-500/40 shadow-sm'
-                    : 'text-brand-text-muted hover:text-slate-200 hover:bg-white/5'
+                    : 'text-slate-400 hover:text-slate-200 hover:bg-white/5'
                     }`}
                 >
                   {tab.icon}
@@ -462,18 +462,18 @@ const ProfessionalSchedulingWidget: React.FC<ProfessionalSchedulingWidgetProps> 
               <div className="flex items-center gap-3">
                 <div className="flex flex-col">
                   <span className="text-slate-500 text-[9px] font-semibold uppercase tracking-widest mb-0.5">Mês</span>
-                  <h3 className="text-brand-text text-lg font-bold capitalize tracking-tight">
+                  <h3 className="text-white text-lg font-bold capitalize tracking-tight">
                     {monthNames[month]} <span className="text-emerald-400/80 font-medium">{year}</span>
                   </h3>
                 </div>
                 <div className="flex bg-slate-900/60 rounded-lg p-0.5 border border-slate-600/50">
-                  <button onClick={() => navigateMonth(-1)} className="p-1 hover:bg-brand-surface-subtle rounded-md text-brand-text-muted hover:text-brand-text transition-all"><ChevronLeft className="w-3.5 h-3.5" /></button>
-                  <button onClick={() => navigateMonth(1)} className="p-1 hover:bg-brand-surface-subtle rounded-md text-brand-text-muted hover:text-brand-text transition-all"><ChevronRight className="w-3.5 h-3.5" /></button>
+                  <button onClick={() => navigateMonth(-1)} className="p-1 hover:bg-slate-700 rounded-md text-slate-400 hover:text-white transition-all"><ChevronLeft className="w-3.5 h-3.5" /></button>
+                  <button onClick={() => navigateMonth(1)} className="p-1 hover:bg-slate-700 rounded-md text-slate-400 hover:text-white transition-all"><ChevronRight className="w-3.5 h-3.5" /></button>
                 </div>
               </div>
               <button
                 onClick={() => setCurrentDate(new Date())}
-                className="px-2.5 py-1 bg-slate-800/80 hover:bg-brand-surface-subtle border border-slate-600/50 rounded-lg text-[10px] font-bold text-emerald-400 hover:text-emerald-300 uppercase tracking-wider transition-all"
+                className="px-2.5 py-1 bg-slate-800/80 hover:bg-slate-700 border border-slate-600/50 rounded-lg text-[10px] font-bold text-emerald-400 hover:text-emerald-300 uppercase tracking-wider transition-all"
               >
                 Voltar para Hoje
               </button>
@@ -522,7 +522,7 @@ const ProfessionalSchedulingWidget: React.FC<ProfessionalSchedulingWidgetProps> 
                   >
                     {isToday && <div className="absolute top-0 left-0 w-full h-0.5 bg-emerald-500 rounded-b" />}
                     <div className="flex justify-end mb-0.5">
-                      <span className={`text-[10px] sm:text-[11px] font-bold ${isToday ? 'bg-emerald-500 text-slate-950 w-5 h-5 rounded-md flex items-center justify-center shadow-sm' : 'text-slate-500 group-hover:text-brand-text-secondary'}`}>
+                      <span className={`text-[10px] sm:text-[11px] font-bold ${isToday ? 'bg-emerald-500 text-slate-950 w-5 h-5 rounded-md flex items-center justify-center shadow-sm' : 'text-slate-500 group-hover:text-slate-300'}`}>
                         {day}
                       </span>
                     </div>
@@ -532,7 +532,7 @@ const ProfessionalSchedulingWidget: React.FC<ProfessionalSchedulingWidgetProps> 
                           key={app.id}
                           className="w-full text-left text-[9px] sm:text-[10px] bg-slate-900/70 border border-slate-600/50 rounded-md px-1 py-0.5 truncate"
                         >
-                          <span className="text-brand-text-secondary font-medium">{app.time}</span>
+                          <span className="text-slate-300 font-medium">{app.time}</span>
                           <span className="block truncate text-slate-500 capitalize">{app.patientName.toLowerCase()}</span>
                         </div>
                       ))}
@@ -561,19 +561,19 @@ const ProfessionalSchedulingWidget: React.FC<ProfessionalSchedulingWidgetProps> 
               <div className="grid grid-cols-2 gap-x-3 gap-y-2">
                 <div className="flex items-center gap-2">
                   <div className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" />
-                  <span className="text-[10px] font-medium text-brand-text-secondary">Confirmado</span>
+                  <span className="text-[10px] font-medium text-slate-300">Confirmado</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <div className="w-2 h-2 rounded-full bg-blue-500 shrink-0" />
-                  <span className="text-[10px] font-medium text-brand-text-secondary">Em Atendimento</span>
+                  <span className="text-[10px] font-medium text-slate-300">Em Atendimento</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <div className="w-2 h-2 rounded-full bg-amber-500/80 shrink-0" />
-                  <span className="text-[10px] font-medium text-brand-text-secondary">Pendente</span>
+                  <span className="text-[10px] font-medium text-slate-300">Pendente</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <div className="w-2 h-2 rounded-full bg-red-500 shrink-0" />
-                  <span className="text-[10px] font-medium text-brand-text-secondary">Cancelado</span>
+                  <span className="text-[10px] font-medium text-slate-300">Cancelado</span>
                 </div>
               </div>
             </div>
@@ -583,12 +583,12 @@ const ProfessionalSchedulingWidget: React.FC<ProfessionalSchedulingWidgetProps> 
               <h4 className="text-[9px] font-bold text-emerald-400/90 uppercase tracking-widest mb-2.5">Agenda de Hoje</h4>
               <div className="grid grid-cols-2 gap-2 mb-3">
                 <div>
-                  <p className="text-lg font-bold text-brand-text tabular-nums">12</p>
-                  <p className="text-[9px] font-medium text-brand-text-muted uppercase">Total</p>
+                  <p className="text-lg font-bold text-white tabular-nums">12</p>
+                  <p className="text-[9px] font-medium text-slate-400 uppercase">Total</p>
                 </div>
                 <div>
                   <p className="text-lg font-bold text-emerald-400 tabular-nums">08</p>
-                  <p className="text-[9px] font-medium text-brand-text-muted uppercase">Confirmados</p>
+                  <p className="text-[9px] font-medium text-slate-400 uppercase">Confirmados</p>
                 </div>
               </div>
               <button className="w-full py-2 bg-emerald-500/90 hover:bg-emerald-500 text-slate-950 text-[10px] font-bold uppercase tracking-wider rounded-lg transition-all shadow-sm">
@@ -601,7 +601,7 @@ const ProfessionalSchedulingWidget: React.FC<ProfessionalSchedulingWidgetProps> 
                 <Star className="w-2.5 h-2.5 text-amber-400" />
                 Dica Produtiva
               </h4>
-              <p className="text-[10px] font-medium text-brand-text-muted leading-snug">
+              <p className="text-[10px] font-medium text-slate-400 leading-snug">
                 Configure notificações via WhatsApp para reduzir em até 30% a taxa de ausência.
               </p>
             </div>
@@ -612,20 +612,20 @@ const ProfessionalSchedulingWidget: React.FC<ProfessionalSchedulingWidgetProps> 
       {/* List View */}
       {activeTab === 'list' && (
         <div className="space-y-4">
-          <div className="bg-brand-surface border border-brand-border rounded-lg p-4">
+          <div className="bg-slate-800 border border-slate-700 rounded-lg p-4">
             <input
               type="text"
               placeholder="Buscar consultas..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full bg-brand-surface-subtle text-brand-text px-4 py-2 rounded-md border border-slate-600 focus:border-green-500 focus:outline-none"
+              className="w-full bg-slate-700 text-white px-4 py-2 rounded-md border border-slate-600 focus:border-green-500 focus:outline-none"
             />
           </div>
           {appointments.map((appointment) => (
-            <div key={appointment.id} className="bg-brand-surface border border-brand-border rounded-lg p-4 flex justify-between">
+            <div key={appointment.id} className="bg-slate-800 border border-slate-700 rounded-lg p-4 flex justify-between">
               <div>
-                <h4 className="text-brand-text font-medium">{appointment.patientName}</h4>
-                <p className="text-sm text-brand-text-muted">{appointment.date} - {appointment.time}</p>
+                <h4 className="text-white font-medium">{appointment.patientName}</h4>
+                <p className="text-sm text-slate-400">{appointment.date} - {appointment.time}</p>
               </div>
               <span className={`px-2 py-1 text-xs rounded ${getStatusColor(appointment.status)}`}>
                 {appointment.status}
@@ -636,7 +636,7 @@ const ProfessionalSchedulingWidget: React.FC<ProfessionalSchedulingWidgetProps> 
       )}
 
       {activeTab === 'analytics' && (
-        <div className="text-center text-brand-text-muted py-10">Analytics Carregado</div>
+        <div className="text-center text-slate-400 py-10">Analytics Carregado</div>
       )}
 
       {/* CONFIG: Disponibilidade do Profissional */}
@@ -645,11 +645,11 @@ const ProfessionalSchedulingWidget: React.FC<ProfessionalSchedulingWidgetProps> 
           <div className="bg-slate-800/40 backdrop-blur-sm border border-slate-600/40 rounded-xl p-5 shadow-lg">
             <div className="flex items-center justify-between mb-5">
               <div>
-                <h3 className="text-brand-text font-bold text-base flex items-center gap-2">
+                <h3 className="text-white font-bold text-base flex items-center gap-2">
                   <Settings className="w-4 h-4 text-cyan-400" />
                   Horários de Atendimento
                 </h3>
-                <p className="text-brand-text-muted text-xs mt-1">Configure seus dias e horários disponíveis para agendamento</p>
+                <p className="text-slate-400 text-xs mt-1">Configure seus dias e horários disponíveis para agendamento</p>
               </div>
               <button
                 onClick={saveAvailabilityRules}
@@ -693,7 +693,7 @@ const ProfessionalSchedulingWidget: React.FC<ProfessionalSchedulingWidgetProps> 
                       </button>
 
                       {/* Day name */}
-                      <span className={`text-sm font-semibold w-24 flex-shrink-0 ${isActive ? 'text-brand-text' : 'text-slate-500'}`}>
+                      <span className={`text-sm font-semibold w-24 flex-shrink-0 ${isActive ? 'text-white' : 'text-slate-500'}`}>
                         {dayName}
                       </span>
 
@@ -705,7 +705,7 @@ const ProfessionalSchedulingWidget: React.FC<ProfessionalSchedulingWidgetProps> 
                               type="time"
                               value={rule.start_time}
                               onChange={(e) => updateRule(dow, 'start_time', e.target.value)}
-                              className="bg-brand-surface-subtle border border-slate-600 rounded-lg px-2 py-1 text-brand-text text-xs focus:outline-none focus:border-emerald-500 w-24"
+                              className="bg-slate-700 border border-slate-600 rounded-lg px-2 py-1 text-white text-xs focus:outline-none focus:border-emerald-500 w-24"
                             />
                           </div>
                           <div className="flex items-center gap-1.5">
@@ -714,7 +714,7 @@ const ProfessionalSchedulingWidget: React.FC<ProfessionalSchedulingWidgetProps> 
                               type="time"
                               value={rule.end_time}
                               onChange={(e) => updateRule(dow, 'end_time', e.target.value)}
-                              className="bg-brand-surface-subtle border border-slate-600 rounded-lg px-2 py-1 text-brand-text text-xs focus:outline-none focus:border-emerald-500 w-24"
+                              className="bg-slate-700 border border-slate-600 rounded-lg px-2 py-1 text-white text-xs focus:outline-none focus:border-emerald-500 w-24"
                             />
                           </div>
                           <div className="flex items-center gap-1.5">
@@ -722,7 +722,7 @@ const ProfessionalSchedulingWidget: React.FC<ProfessionalSchedulingWidgetProps> 
                             <select
                               value={rule.slot_duration}
                               onChange={(e) => updateRule(dow, 'slot_duration', parseInt(e.target.value))}
-                              className="bg-brand-surface-subtle border border-slate-600 rounded-lg px-2 py-1 text-brand-text text-xs focus:outline-none focus:border-emerald-500"
+                              className="bg-slate-700 border border-slate-600 rounded-lg px-2 py-1 text-white text-xs focus:outline-none focus:border-emerald-500"
                             >
                               <option value={30}>30 min</option>
                               <option value={45}>45 min</option>
@@ -751,27 +751,27 @@ const ProfessionalSchedulingWidget: React.FC<ProfessionalSchedulingWidgetProps> 
       {/* Modal de Novo Agendamento */}
       {isNewAppointmentModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 text-left">
-          <div className="bg-brand-surface border border-brand-border rounded-xl w-full max-w-2xl shadow-2xl animate-in fade-in zoom-in duration-200 flex flex-col max-h-[90vh] relative overflow-hidden">
+          <div className="bg-slate-800 border border-slate-700 rounded-xl w-full max-w-2xl shadow-2xl animate-in fade-in zoom-in duration-200 flex flex-col max-h-[90vh] relative overflow-hidden">
 
             {/* SUCESSO ELEGANTE - OVERLAY */}
             {showSuccess && (
-              <div className="absolute inset-0 z-50 bg-brand-surface flex flex-col items-center justify-center animate-in fade-in duration-300">
+              <div className="absolute inset-0 z-50 bg-slate-800 flex flex-col items-center justify-center animate-in fade-in duration-300">
                 <div className="w-20 h-20 bg-green-500/20 rounded-full flex items-center justify-center mb-6 animate-bounce">
                   <Check className="w-10 h-10 text-green-400" />
                 </div>
-                <h3 className="text-2xl font-bold text-brand-text mb-2">Agendamento Realizado!</h3>
-                <p className="text-brand-text-muted">Consulta confirmada no calendário.</p>
+                <h3 className="text-2xl font-bold text-white mb-2">Agendamento Realizado!</h3>
+                <p className="text-slate-400">Consulta confirmada no calendário.</p>
               </div>
             )}
 
-            <div className="flex items-center justify-between p-6 border-b border-brand-border shrink-0">
-              <h3 className="text-xl font-bold text-brand-text flex items-center gap-2">
+            <div className="flex items-center justify-between p-6 border-b border-slate-700 shrink-0">
+              <h3 className="text-xl font-bold text-white flex items-center gap-2">
                 <Calendar className="w-5 h-5 text-green-500" />
                 Novo Agendamento
               </h3>
               <button
                 onClick={() => setIsNewAppointmentModalOpen(false)}
-                className="text-brand-text-muted hover:text-brand-text transition-colors"
+                className="text-slate-400 hover:text-white transition-colors"
                 disabled={showSuccess}
               >
                 <Trash2 className="w-5 h-5 rotate-45" />
@@ -781,10 +781,10 @@ const ProfessionalSchedulingWidget: React.FC<ProfessionalSchedulingWidgetProps> 
 
             <div className="p-6 space-y-5 overflow-y-auto custom-scrollbar">
               <div>
-                <label className="block text-sm font-medium text-brand-text-secondary mb-1">Paciente</label>
+                <label className="block text-sm font-medium text-slate-300 mb-1">Paciente</label>
                 <div className="flex gap-2">
                   <select
-                    className="w-full bg-brand-surface-subtle border border-slate-600 rounded-lg px-4 py-2.5 text-brand-text focus:outline-none focus:border-green-500"
+                    className="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-green-500"
                     value={newAppointment.patientId}
                     onChange={(e) => setNewAppointment({ ...newAppointment, patientId: e.target.value })}
                   >
@@ -797,17 +797,17 @@ const ProfessionalSchedulingWidget: React.FC<ProfessionalSchedulingWidgetProps> 
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                 <div>
-                  <label className="block text-sm font-medium text-brand-text-secondary mb-1">Data</label>
-                  <input type="date" className="w-full bg-brand-surface-subtle border border-slate-600 rounded-lg px-4 py-2.5 text-brand-text focus:outline-none focus:border-green-500" value={newAppointment.date} onChange={(e) => setNewAppointment({ ...newAppointment, date: e.target.value })} />
+                  <label className="block text-sm font-medium text-slate-300 mb-1">Data</label>
+                  <input type="date" className="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-green-500" value={newAppointment.date} onChange={(e) => setNewAppointment({ ...newAppointment, date: e.target.value })} />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-brand-text-secondary mb-1">Horário</label>
-                  <input type="time" className="w-full bg-brand-surface-subtle border border-slate-600 rounded-lg px-4 py-2.5 text-brand-text focus:outline-none focus:border-green-500" value={newAppointment.time} onChange={(e) => setNewAppointment({ ...newAppointment, time: e.target.value })} />
+                  <label className="block text-sm font-medium text-slate-300 mb-1">Horário</label>
+                  <input type="time" className="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-green-500" value={newAppointment.time} onChange={(e) => setNewAppointment({ ...newAppointment, time: e.target.value })} />
                 </div>
               </div>
-              <div className="p-6 border-t border-brand-border flex justify-end gap-3 shrink-0">
-                <button onClick={() => setIsNewAppointmentModalOpen(false)} className="px-6 py-2.5 text-brand-text-secondary hover:text-brand-text hover:bg-brand-surface-subtle rounded-lg transition-colors font-medium" disabled={showSuccess}>Cancelar</button>
-                <button onClick={handleCreateAppointment} className="px-6 py-2.5 bg-green-600 hover:bg-green-700 text-brand-text rounded-lg font-medium shadow-lg hover:scale-105" disabled={saving || showSuccess}>Agendar</button>
+              <div className="p-6 border-t border-slate-700 flex justify-end gap-3 shrink-0">
+                <button onClick={() => setIsNewAppointmentModalOpen(false)} className="px-6 py-2.5 text-slate-300 hover:text-white hover:bg-slate-700 rounded-lg transition-colors font-medium" disabled={showSuccess}>Cancelar</button>
+                <button onClick={handleCreateAppointment} className="px-6 py-2.5 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium shadow-lg hover:scale-105" disabled={saving || showSuccess}>Agendar</button>
               </div>
             </div>
           </div>
@@ -817,10 +817,10 @@ const ProfessionalSchedulingWidget: React.FC<ProfessionalSchedulingWidgetProps> 
       {/* APPOINTMENT DETAILS MODAL */}
       {isDetailsModalOpen && selectedAppointment && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
-          <div className="bg-brand-surface border border-brand-border rounded-xl w-full max-w-md shadow-2xl animate-in fade-in zoom-in duration-200">
-            <div className="flex items-center justify-between p-6 border-b border-brand-border">
-              <h3 className="text-xl font-bold text-brand-text">Detalhes do Agendamento</h3>
-              <button onClick={() => setIsDetailsModalOpen(false)} className="text-brand-text-muted hover:text-brand-text"><X className="w-5 h-5" /></button>
+          <div className="bg-slate-800 border border-slate-700 rounded-xl w-full max-w-md shadow-2xl animate-in fade-in zoom-in duration-200">
+            <div className="flex items-center justify-between p-6 border-b border-slate-700">
+              <h3 className="text-xl font-bold text-white">Detalhes do Agendamento</h3>
+              <button onClick={() => setIsDetailsModalOpen(false)} className="text-slate-400 hover:text-white"><X className="w-5 h-5" /></button>
             </div>
             <div className="p-6 space-y-4">
               <div className="flex items-center gap-4 mb-4">
@@ -828,33 +828,33 @@ const ProfessionalSchedulingWidget: React.FC<ProfessionalSchedulingWidgetProps> 
                   {selectedAppointment.patientName.charAt(0)}
                 </div>
                 <div>
-                  <h4 className="text-lg font-bold text-brand-text">{selectedAppointment.patientName}</h4>
+                  <h4 className="text-lg font-bold text-white">{selectedAppointment.patientName}</h4>
                   <p className="text-green-400 text-sm">{selectedAppointment.specialty}</p>
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div className="bg-slate-700/50 p-3 rounded-lg">
-                  <span className="text-brand-text-muted block mb-1">Data</span>
-                  <span className="text-brand-text font-medium flex items-center gap-2"><Calendar className="w-3 h-3" /> {new Date(selectedAppointment.date).toLocaleDateString()}</span>
+                  <span className="text-slate-400 block mb-1">Data</span>
+                  <span className="text-white font-medium flex items-center gap-2"><Calendar className="w-3 h-3" /> {new Date(selectedAppointment.date).toLocaleDateString()}</span>
                 </div>
                 <div className="bg-slate-700/50 p-3 rounded-lg">
-                  <span className="text-brand-text-muted block mb-1">Horário</span>
-                  <span className="text-brand-text font-medium flex items-center gap-2"><Clock className="w-3 h-3" /> {selectedAppointment.time}</span>
+                  <span className="text-slate-400 block mb-1">Horário</span>
+                  <span className="text-white font-medium flex items-center gap-2"><Clock className="w-3 h-3" /> {selectedAppointment.time}</span>
                 </div>
               </div>
 
               {selectedAppointment.notes && (
-                <div className="bg-slate-700/30 p-3 rounded-lg border border-brand-border">
+                <div className="bg-slate-700/30 p-3 rounded-lg border border-slate-700">
                   <span className="text-xs text-slate-500 uppercase font-bold tracking-wider mb-2 block">Observações</span>
-                  <p className="text-brand-text-secondary text-sm">{selectedAppointment.notes}</p>
+                  <p className="text-slate-300 text-sm">{selectedAppointment.notes}</p>
                 </div>
               )}
 
               <div className="grid grid-cols-3 gap-2 pt-4">
                 <button
                   onClick={() => selectedAppointment.patientPhone && window.open(`https://wa.me/${selectedAppointment.patientPhone.replace(/\D/g, '')}`, '_blank')}
-                  className="flex flex-col items-center justify-center gap-1 p-3 rounded-lg bg-brand-surface-subtle hover:bg-slate-600 text-brand-text transition-colors"
+                  className="flex flex-col items-center justify-center gap-1 p-3 rounded-lg bg-slate-700 hover:bg-slate-600 text-white transition-colors"
                 >
                   <Phone className="w-5 h-5 text-green-400" />
                   <span className="text-xs">WhatsApp</span>
@@ -868,14 +868,14 @@ const ProfessionalSchedulingWidget: React.FC<ProfessionalSchedulingWidgetProps> 
                     // "Clicou abriu" — médico vai pro chat texto + videocall sob demanda.
                     navigate(`/app/clinica/paciente/chat-profissional?patientId=${selectedAppointment.patientId}&origin=appointment-card`)
                   }}
-                  className="flex flex-col items-center justify-center gap-1 p-3 rounded-lg bg-brand-surface-subtle hover:bg-slate-600 text-brand-text transition-colors"
+                  className="flex flex-col items-center justify-center gap-1 p-3 rounded-lg bg-slate-700 hover:bg-slate-600 text-white transition-colors"
                 >
                   <MessageCircle className="w-5 h-5 text-blue-400" />
                   <span className="text-xs">Chat</span>
                 </button>
                 <button
                   onClick={() => handleCancelAppointment(selectedAppointment.id)}
-                  className="flex flex-col items-center justify-center gap-1 p-3 rounded-lg bg-brand-surface-subtle hover:bg-red-900/30 hover:border-red-800 border border-transparent text-brand-text transition-colors group"
+                  className="flex flex-col items-center justify-center gap-1 p-3 rounded-lg bg-slate-700 hover:bg-red-900/30 hover:border-red-800 border border-transparent text-white transition-colors group"
                 >
                   <X className="w-5 h-5 text-red-500 group-hover:text-red-400" />
                   <span className="text-xs group-hover:text-red-300">Cancelar</span>
@@ -925,7 +925,7 @@ const ProfessionalSchedulingWidget: React.FC<ProfessionalSchedulingWidgetProps> 
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={() => setIsDayModalOpen(false)}>
             <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
             <div
-              className="relative w-full max-w-lg bg-brand-bg border border-slate-700/60 rounded-2xl shadow-2xl overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-200"
+              className="relative w-full max-w-lg bg-slate-900 border border-slate-700/60 rounded-2xl shadow-2xl overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-200"
               onClick={e => e.stopPropagation()}
             >
               {/* Header do modal */}
@@ -933,15 +933,15 @@ const ProfessionalSchedulingWidget: React.FC<ProfessionalSchedulingWidgetProps> 
                 <div>
                   <div className="flex items-center gap-2 mb-1">
                     <Calendar className="w-4 h-4 text-cyan-400" />
-                    <h3 className="text-brand-text font-bold text-base capitalize">{dayLabel}</h3>
+                    <h3 className="text-white font-bold text-base capitalize">{dayLabel}</h3>
                   </div>
                   <div className="flex items-center gap-3 text-[11px]">
                     <span className="text-emerald-400 font-semibold">{dayAppts.length} consulta{dayAppts.length !== 1 ? 's' : ''}</span>
                     <span className="text-slate-500">·</span>
-                    <span className="text-brand-text-muted">{freeSlots.length} horário{freeSlots.length !== 1 ? 's' : ''} livre{freeSlots.length !== 1 ? 's' : ''}</span>
+                    <span className="text-slate-400">{freeSlots.length} horário{freeSlots.length !== 1 ? 's' : ''} livre{freeSlots.length !== 1 ? 's' : ''}</span>
                   </div>
                 </div>
-                <button onClick={() => setIsDayModalOpen(false)} className="p-1 rounded-lg hover:bg-white/10 text-brand-text-muted hover:text-brand-text transition-colors">
+                <button onClick={() => setIsDayModalOpen(false)} className="p-1 rounded-lg hover:bg-white/10 text-slate-400 hover:text-white transition-colors">
                   <X className="w-5 h-5" />
                 </button>
               </div>
@@ -960,17 +960,17 @@ const ProfessionalSchedulingWidget: React.FC<ProfessionalSchedulingWidgetProps> 
                         <div
                           key={apt.id}
                           onClick={() => { setSelectedAppointment(apt); setIsDetailsModalOpen(true); setIsDayModalOpen(false) }}
-                          className="flex items-center gap-3 p-3 bg-slate-800/60 border border-slate-700/50 rounded-xl hover:border-emerald-500/30 hover:bg-brand-surface cursor-pointer transition-all group"
+                          className="flex items-center gap-3 p-3 bg-slate-800/60 border border-slate-700/50 rounded-xl hover:border-emerald-500/30 hover:bg-slate-800 cursor-pointer transition-all group"
                         >
                           <div className="w-14 text-center flex-shrink-0">
                             <span className="text-emerald-400 font-bold text-sm">{apt.time.slice(0, 5)}</span>
                           </div>
-                          <div className="w-px h-8 bg-brand-surface-subtle flex-shrink-0" />
+                          <div className="w-px h-8 bg-slate-700 flex-shrink-0" />
                           <div className="flex-1 min-w-0">
-                            <p className="text-brand-text font-medium text-sm truncate">{apt.patientName}</p>
-                            <p className="text-brand-text-muted text-[11px] truncate">{apt.specialty}</p>
+                            <p className="text-white font-medium text-sm truncate">{apt.patientName}</p>
+                            <p className="text-slate-400 text-[11px] truncate">{apt.specialty}</p>
                           </div>
-                          <span className={`flex-shrink-0 text-[10px] font-semibold px-2 py-0.5 rounded-full border ${statusColor[apt.status] || 'text-brand-text-muted bg-slate-500/10 border-slate-500/20'}`}>
+                          <span className={`flex-shrink-0 text-[10px] font-semibold px-2 py-0.5 rounded-full border ${statusColor[apt.status] || 'text-slate-400 bg-slate-500/10 border-slate-500/20'}`}>
                             {statusLabel[apt.status] || apt.status}
                           </span>
                         </div>
@@ -996,7 +996,7 @@ const ProfessionalSchedulingWidget: React.FC<ProfessionalSchedulingWidgetProps> 
                             setIsDayModalOpen(false)
                             setIsNewAppointmentModalOpen(true)
                           }}
-                          className="py-2 rounded-lg border border-slate-700/50 bg-slate-800/40 hover:border-emerald-500/40 hover:bg-emerald-500/10 text-brand-text-muted hover:text-emerald-400 text-[11px] font-semibold transition-all"
+                          className="py-2 rounded-lg border border-slate-700/50 bg-slate-800/40 hover:border-emerald-500/40 hover:bg-emerald-500/10 text-slate-400 hover:text-emerald-400 text-[11px] font-semibold transition-all"
                         >
                           {slot}
                         </button>
@@ -1015,7 +1015,7 @@ const ProfessionalSchedulingWidget: React.FC<ProfessionalSchedulingWidgetProps> 
                   <Plus className="w-3.5 h-3.5" />
                   Nova Consulta Neste Dia
                 </button>
-                <button onClick={() => setIsDayModalOpen(false)} className="text-xs text-slate-500 hover:text-brand-text-secondary transition-colors">
+                <button onClick={() => setIsDayModalOpen(false)} className="text-xs text-slate-500 hover:text-slate-300 transition-colors">
                   Fechar
                 </button>
               </div>

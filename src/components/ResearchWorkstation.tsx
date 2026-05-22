@@ -181,11 +181,11 @@ const ResearchWorkstation: React.FC<ResearchWorkstationProps> = ({ initialTab })
                 <div className="hidden sm:flex items-center px-3 w-full h-12">
                     <div className="flex items-center gap-3 shrink-0">
                         <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-600 to-teal-600 flex items-center justify-center shadow-md">
-                            <FlaskConical className="w-4 h-4 text-brand-text" />
+                            <FlaskConical className="w-4 h-4 text-white" />
                         </div>
                         <div className="leading-tight">
-                            <h1 className="text-sm font-bold text-brand-text leading-none">Terminal de Pesquisa</h1>
-                            <p className="text-[9px] uppercase tracking-wider text-brand-text-muted font-semibold mt-0.5">MedCannLab Research</p>
+                            <h1 className="text-sm font-bold text-white leading-none">Terminal de Pesquisa</h1>
+                            <p className="text-[9px] uppercase tracking-wider text-slate-400 font-semibold mt-0.5">MedCannLab Research</p>
                         </div>
                     </div>
 
@@ -201,11 +201,11 @@ const ResearchWorkstation: React.FC<ResearchWorkstationProps> = ({ initialTab })
                                         className={`
                                             relative group flex items-center gap-1.5 px-2.5 h-8 rounded-md text-xs font-medium transition-all whitespace-nowrap
                                             ${isActive
-                                                ? 'bg-[#334155] text-brand-text shadow-inner'
-                                                : 'text-brand-text-muted hover:text-slate-200 hover:bg-[#334155]/50'}
+                                                ? 'bg-[#334155] text-white shadow-inner'
+                                                : 'text-slate-400 hover:text-slate-200 hover:bg-[#334155]/50'}
                                         `}
                                     >
-                                        <Icon className={`w-3.5 h-3.5 transition-colors ${isActive ? tab.color : 'text-slate-500 group-hover:text-brand-text-muted'}`} />
+                                        <Icon className={`w-3.5 h-3.5 transition-colors ${isActive ? tab.color : 'text-slate-500 group-hover:text-slate-400'}`} />
                                         <span className="hidden md:inline">{tab.label}</span>
                                         {isActive && (
                                             <span className={`absolute bottom-0 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full mb-0.5 ${tab.color.replace('text-', 'bg-')}`}></span>
@@ -230,8 +230,8 @@ const ResearchWorkstation: React.FC<ResearchWorkstationProps> = ({ initialTab })
                                     className={`
                                         flex flex-col items-center justify-center gap-0.5 py-1.5 px-1 rounded-lg text-[10px] font-medium transition-all min-h-[44px] touch-manipulation
                                         ${isActive
-                                            ? 'bg-[#334155] text-brand-text shadow-inner'
-                                            : 'text-brand-text-muted active:bg-[#334155]/50'}
+                                            ? 'bg-[#334155] text-white shadow-inner'
+                                            : 'text-slate-400 active:bg-[#334155]/50'}
                                     `}
                                 >
                                     <Icon className={`w-4 h-4 ${isActive ? tab.color : 'text-slate-500'}`} />

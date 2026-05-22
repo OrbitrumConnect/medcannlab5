@@ -5,11 +5,11 @@ const UserTypeDebug: React.FC = () => {
   const { user } = useAuth()
 
   if (!user) {
-    return <div className="fixed top-4 left-4 bg-red-500 text-brand-text p-2 rounded z-50">Usuário não logado</div>
+    return <div className="fixed top-4 left-4 bg-red-500 text-white p-2 rounded z-50">Usuário não logado</div>
   }
 
   return (
-    <div className="fixed top-4 left-4 bg-blue-500 text-brand-text p-3 rounded z-50 max-w-sm">
+    <div className="fixed top-4 left-4 bg-blue-500 text-white p-3 rounded z-50 max-w-sm">
       <h3 className="font-bold">Debug - Tipo de Usuário</h3>
       <p><strong>Email:</strong> {user.email}</p>
       <p><strong>Tipo:</strong> {user.type}</p>

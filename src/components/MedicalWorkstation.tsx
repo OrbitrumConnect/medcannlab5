@@ -99,7 +99,7 @@ const MedicalWorkstation: React.FC = () => {
     const renderActiveTool = () => {
         if (!selectedPatient) {
             return (
-                <div className="flex-1 flex items-center justify-center text-brand-text-muted">
+                <div className="flex-1 flex items-center justify-center text-slate-400">
                     <div className="text-center">
                         <User className="w-16 h-16 mx-auto mb-4 opacity-30" />
                         <p className="text-lg">Selecione um paciente na lista</p>
@@ -117,12 +117,12 @@ const MedicalWorkstation: React.FC = () => {
                 return (
                     <div className="flex-1 flex flex-col">
                         <div className="bg-slate-800/50 rounded-lg p-6 h-full flex flex-col">
-                            <div className="flex items-center gap-3 mb-4 pb-4 border-b border-brand-border">
+                            <div className="flex items-center gap-3 mb-4 pb-4 border-b border-slate-700">
                                 <MessageCircle className="w-6 h-6 text-blue-400" />
-                                <h3 className="text-lg font-semibold text-brand-text">Chat com {selectedPatient.name}</h3>
+                                <h3 className="text-lg font-semibold text-white">Chat com {selectedPatient.name}</h3>
                             </div>
                             <div className="flex-1 bg-slate-900/50 rounded-lg p-4 mb-4 overflow-y-auto">
-                                <p className="text-brand-text-muted text-center py-8">
+                                <p className="text-slate-400 text-center py-8">
                                     💬 Histórico de mensagens do paciente aparecerá aqui
                                 </p>
                             </div>
@@ -130,9 +130,9 @@ const MedicalWorkstation: React.FC = () => {
                                 <input
                                     type="text"
                                     placeholder="Digite sua mensagem..."
-                                    className="flex-1 px-4 py-3 bg-brand-surface border border-slate-600 rounded-lg text-brand-text placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    className="flex-1 px-4 py-3 bg-slate-800 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
                                 />
-                                <button className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-brand-text rounded-lg font-medium transition-colors">
+                                <button className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors">
                                     Enviar
                                 </button>
                             </div>
@@ -146,44 +146,44 @@ const MedicalWorkstation: React.FC = () => {
                         <div className="bg-slate-800/50 rounded-lg p-6">
                             <div className="flex items-center gap-3 mb-6">
                                 <FileText className="w-6 h-6 text-green-400" />
-                                <h3 className="text-lg font-semibold text-brand-text">Nova Prescrição para {selectedPatient.name}</h3>
+                                <h3 className="text-lg font-semibold text-white">Nova Prescrição para {selectedPatient.name}</h3>
                             </div>
                             <div className="grid gap-4">
                                 <div>
-                                    <label className="block text-sm text-brand-text-secondary mb-2">Medicamento / Produto</label>
+                                    <label className="block text-sm text-slate-300 mb-2">Medicamento / Produto</label>
                                     <input
                                         type="text"
                                         placeholder="Ex: CBD Oil 5%"
-                                        className="w-full px-4 py-3 bg-brand-bg border border-slate-600 rounded-lg text-brand-text placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-green-500"
+                                        className="w-full px-4 py-3 bg-slate-900 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-green-500"
                                     />
                                 </div>
                                 <div className="grid grid-cols-2 gap-4">
                                     <div>
-                                        <label className="block text-sm text-brand-text-secondary mb-2">Dosagem</label>
+                                        <label className="block text-sm text-slate-300 mb-2">Dosagem</label>
                                         <input
                                             type="text"
                                             placeholder="Ex: 10mg"
-                                            className="w-full px-4 py-3 bg-brand-bg border border-slate-600 rounded-lg text-brand-text placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-green-500"
+                                            className="w-full px-4 py-3 bg-slate-900 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-green-500"
                                         />
                                     </div>
                                     <div>
-                                        <label className="block text-sm text-brand-text-secondary mb-2">Frequência</label>
+                                        <label className="block text-sm text-slate-300 mb-2">Frequência</label>
                                         <input
                                             type="text"
                                             placeholder="Ex: 2x ao dia"
-                                            className="w-full px-4 py-3 bg-brand-bg border border-slate-600 rounded-lg text-brand-text placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-green-500"
+                                            className="w-full px-4 py-3 bg-slate-900 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-green-500"
                                         />
                                     </div>
                                 </div>
                                 <div>
-                                    <label className="block text-sm text-brand-text-secondary mb-2">Instruções</label>
+                                    <label className="block text-sm text-slate-300 mb-2">Instruções</label>
                                     <textarea
                                         rows={3}
                                         placeholder="Instruções adicionais..."
-                                        className="w-full px-4 py-3 bg-brand-bg border border-slate-600 rounded-lg text-brand-text placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-green-500 resize-none"
+                                        className="w-full px-4 py-3 bg-slate-900 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-green-500 resize-none"
                                     />
                                 </div>
-                                <button className="w-full py-3 bg-green-600 hover:bg-green-700 text-brand-text rounded-lg font-semibold transition-colors">
+                                <button className="w-full py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg font-semibold transition-colors">
                                     Gerar Prescrição
                                 </button>
                             </div>
@@ -197,15 +197,15 @@ const MedicalWorkstation: React.FC = () => {
                         <div className="bg-slate-800/50 rounded-lg p-6">
                             <div className="flex items-center gap-3 mb-6">
                                 <Calendar className="w-6 h-6 text-purple-400" />
-                                <h3 className="text-lg font-semibold text-brand-text">Agenda de {selectedPatient.name}</h3>
+                                <h3 className="text-lg font-semibold text-white">Agenda de {selectedPatient.name}</h3>
                             </div>
                             <div className="space-y-4">
-                                <div className="bg-slate-900/50 rounded-lg p-4 border border-brand-border">
-                                    <p className="text-brand-text-muted text-center py-8">
+                                <div className="bg-slate-900/50 rounded-lg p-4 border border-slate-700">
+                                    <p className="text-slate-400 text-center py-8">
                                         📅 Próximas consultas e histórico de agendamentos
                                     </p>
                                 </div>
-                                <button className="w-full py-3 bg-purple-600 hover:bg-purple-700 text-brand-text rounded-lg font-semibold transition-colors">
+                                <button className="w-full py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-semibold transition-colors">
                                     + Agendar Nova Consulta
                                 </button>
                             </div>
@@ -221,20 +221,20 @@ const MedicalWorkstation: React.FC = () => {
     return (
         <div className="h-[calc(100vh-120px)] flex gap-4">
             {/* COLUNA 1: Lista de Pacientes */}
-            <div className="w-80 flex-shrink-0 bg-slate-800/50 rounded-xl border border-brand-border flex flex-col overflow-hidden">
-                <div className="p-4 border-b border-brand-border">
-                    <h2 className="text-lg font-semibold text-brand-text mb-3 flex items-center gap-2">
+            <div className="w-80 flex-shrink-0 bg-slate-800/50 rounded-xl border border-slate-700 flex flex-col overflow-hidden">
+                <div className="p-4 border-b border-slate-700">
+                    <h2 className="text-lg font-semibold text-white mb-3 flex items-center gap-2">
                         <User className="w-5 h-5 text-emerald-400" />
                         Pacientes
                     </h2>
                     <div className="relative">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-brand-text-muted" />
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                         <input
                             type="text"
                             placeholder="Buscar paciente..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            className="w-full pl-10 pr-4 py-2 bg-brand-bg border border-slate-600 rounded-lg text-brand-text placeholder-slate-400 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                            className="w-full pl-10 pr-4 py-2 bg-slate-900 border border-slate-600 rounded-lg text-white placeholder-slate-400 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
                         />
                     </div>
                 </div>
@@ -245,7 +245,7 @@ const MedicalWorkstation: React.FC = () => {
                             <Loader2 className="w-6 h-6 text-emerald-400 animate-spin" />
                         </div>
                     ) : filteredPatients.length === 0 ? (
-                        <div className="text-center py-8 text-brand-text-muted text-sm">
+                        <div className="text-center py-8 text-slate-400 text-sm">
                             Nenhum paciente encontrado
                         </div>
                     ) : (
@@ -259,12 +259,12 @@ const MedicalWorkstation: React.FC = () => {
                                             : 'hover:bg-slate-700/50'
                                         }`}
                                 >
-                                    <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-cyan-500 rounded-full flex items-center justify-center text-brand-text font-bold text-sm flex-shrink-0">
+                                    <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-cyan-500 rounded-full flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
                                         {patient.name?.charAt(0)?.toUpperCase() || '?'}
                                     </div>
                                     <div className="flex-1 min-w-0">
-                                        <p className="text-brand-text font-medium truncate">{patient.name || 'Sem nome'}</p>
-                                        <p className="text-brand-text-muted text-xs truncate">{patient.email}</p>
+                                        <p className="text-white font-medium truncate">{patient.name || 'Sem nome'}</p>
+                                        <p className="text-slate-400 text-xs truncate">{patient.email}</p>
                                     </div>
                                     <ChevronRight className="w-4 h-4 text-slate-500 flex-shrink-0" />
                                 </button>
@@ -288,7 +288,7 @@ const MedicalWorkstation: React.FC = () => {
                                     onClick={() => setActiveTool(tool.id)}
                                     className={`px-4 py-2 rounded-lg font-medium text-sm transition-all flex items-center gap-2 ${isActive
                                             ? `bg-${tool.color}-500/20 text-${tool.color}-300 border border-${tool.color}-500/40`
-                                            : 'bg-slate-800/50 text-brand-text-secondary hover:bg-brand-surface-subtle border border-brand-border'
+                                            : 'bg-slate-800/50 text-slate-300 hover:bg-slate-700 border border-slate-700'
                                         }`}
                                     style={isActive ? {
                                         backgroundColor: tool.color === 'blue' ? 'rgba(59, 130, 246, 0.2)' :
@@ -314,23 +314,23 @@ const MedicalWorkstation: React.FC = () => {
                 )}
 
                 {/* Conteúdo da Ferramenta Ativa */}
-                <div className="flex-1 bg-slate-800/30 rounded-xl border border-brand-border p-4 overflow-y-auto">
+                <div className="flex-1 bg-slate-800/30 rounded-xl border border-slate-700 p-4 overflow-y-auto">
                     {renderActiveTool()}
                 </div>
             </div>
 
             {/* COLUNA 3: Contexto do Paciente */}
-            <div className="w-72 flex-shrink-0 bg-slate-800/50 rounded-xl border border-brand-border overflow-hidden">
+            <div className="w-72 flex-shrink-0 bg-slate-800/50 rounded-xl border border-slate-700 overflow-hidden">
                 {selectedPatient ? (
                     <div className="h-full flex flex-col">
                         {/* Header do Paciente */}
-                        <div className="p-4 bg-gradient-to-r from-emerald-900/50 to-cyan-900/50 border-b border-brand-border">
+                        <div className="p-4 bg-gradient-to-r from-emerald-900/50 to-cyan-900/50 border-b border-slate-700">
                             <div className="flex items-center gap-3">
-                                <div className="w-14 h-14 bg-gradient-to-br from-emerald-500 to-cyan-500 rounded-full flex items-center justify-center text-brand-text font-bold text-xl">
+                                <div className="w-14 h-14 bg-gradient-to-br from-emerald-500 to-cyan-500 rounded-full flex items-center justify-center text-white font-bold text-xl">
                                     {selectedPatient.name?.charAt(0)?.toUpperCase() || '?'}
                                 </div>
                                 <div className="flex-1">
-                                    <p className="text-brand-text font-semibold">{selectedPatient.name}</p>
+                                    <p className="text-white font-semibold">{selectedPatient.name}</p>
                                     {selectedPatient.birth_date && (
                                         <p className="text-emerald-200/70 text-sm">
                                             {calculateAge(selectedPatient.birth_date)} anos
@@ -339,7 +339,7 @@ const MedicalWorkstation: React.FC = () => {
                                 </div>
                                 <button
                                     onClick={() => setSelectedPatient(null)}
-                                    className="text-brand-text-muted hover:text-brand-text transition-colors"
+                                    className="text-slate-400 hover:text-white transition-colors"
                                 >
                                     <X className="w-5 h-5" />
                                 </button>
@@ -350,47 +350,47 @@ const MedicalWorkstation: React.FC = () => {
                         <div className="flex-1 p-4 space-y-4 overflow-y-auto">
                             <div className="space-y-3">
                                 <div className="flex items-center gap-3 text-sm">
-                                    <Mail className="w-4 h-4 text-brand-text-muted" />
-                                    <span className="text-brand-text-secondary truncate">{selectedPatient.email}</span>
+                                    <Mail className="w-4 h-4 text-slate-400" />
+                                    <span className="text-slate-300 truncate">{selectedPatient.email}</span>
                                 </div>
                                 {selectedPatient.phone && (
                                     <div className="flex items-center gap-3 text-sm">
-                                        <Phone className="w-4 h-4 text-brand-text-muted" />
-                                        <span className="text-brand-text-secondary">{selectedPatient.phone}</span>
+                                        <Phone className="w-4 h-4 text-slate-400" />
+                                        <span className="text-slate-300">{selectedPatient.phone}</span>
                                     </div>
                                 )}
                                 {selectedPatient.gender && (
                                     <div className="flex items-center gap-3 text-sm">
-                                        <User className="w-4 h-4 text-brand-text-muted" />
-                                        <span className="text-brand-text-secondary capitalize">{selectedPatient.gender}</span>
+                                        <User className="w-4 h-4 text-slate-400" />
+                                        <span className="text-slate-300 capitalize">{selectedPatient.gender}</span>
                                     </div>
                                 )}
                             </div>
 
                             {/* Seção de Alertas */}
-                            <div className="pt-4 border-t border-brand-border">
+                            <div className="pt-4 border-t border-slate-700">
                                 <h4 className="text-xs uppercase tracking-wider text-slate-500 mb-3 flex items-center gap-2">
                                     <AlertCircle className="w-3 h-3" />
                                     Alertas Clínicos
                                 </h4>
-                                <div className="bg-slate-900/50 rounded-lg p-3 text-sm text-brand-text-muted">
+                                <div className="bg-slate-900/50 rounded-lg p-3 text-sm text-slate-400">
                                     Nenhum alerta registrado
                                 </div>
                             </div>
 
                             {/* Histórico Rápido */}
-                            <div className="pt-4 border-t border-brand-border">
+                            <div className="pt-4 border-t border-slate-700">
                                 <h4 className="text-xs uppercase tracking-wider text-slate-500 mb-3 flex items-center gap-2">
                                     <Clock className="w-3 h-3" />
                                     Última Atividade
                                 </h4>
-                                <div className="bg-slate-900/50 rounded-lg p-3 text-sm text-brand-text-muted">
+                                <div className="bg-slate-900/50 rounded-lg p-3 text-sm text-slate-400">
                                     Cadastrado em {new Date(selectedPatient.created_at || '').toLocaleDateString('pt-BR')}
                                 </div>
                             </div>
 
                             {/* Ações Rápidas */}
-                            <div className="pt-4 border-t border-brand-border">
+                            <div className="pt-4 border-t border-slate-700">
                                 <h4 className="text-xs uppercase tracking-wider text-slate-500 mb-3">
                                     Ações Rápidas
                                 </h4>
@@ -408,7 +408,7 @@ const MedicalWorkstation: React.FC = () => {
                         </div>
                     </div>
                 ) : (
-                    <div className="h-full flex items-center justify-center text-brand-text-muted">
+                    <div className="h-full flex items-center justify-center text-slate-400">
                         <div className="text-center p-6">
                             <User className="w-12 h-12 mx-auto mb-3 opacity-30" />
                             <p className="text-sm">Selecione um paciente</p>

@@ -233,17 +233,17 @@ const AdminSettings: React.FC<AdminSettingsProps> = ({ initialTab }) => {
       {!isEmbedded && (
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-brand-text mb-2">
+            <h1 className="text-3xl font-bold text-white mb-2">
               ⚙️ Configurações Administrativas
             </h1>
-            <p className="text-brand-text-secondary">
+            <p className="text-slate-300">
               Gerencie todas as configurações da plataforma
             </p>
           </div>
           <div className="flex space-x-3">
             <button
               onClick={handleExportData}
-              className="bg-blue-600 hover:bg-blue-700 text-brand-text px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors"
+              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors"
             >
               <Download className="w-4 h-4" />
               <span>Exportar Config</span>
@@ -251,7 +251,7 @@ const AdminSettings: React.FC<AdminSettingsProps> = ({ initialTab }) => {
             <button
               onClick={handleSaveSettings}
               disabled={isLoading}
-              className="bg-green-600 hover:bg-green-700 disabled:bg-green-800 text-brand-text px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors"
+              className="bg-green-600 hover:bg-green-700 disabled:bg-green-800 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors"
             >
               <Save className="w-4 h-4" />
               <span>{isLoading ? 'Salvando...' : 'Salvar Todas'}</span>
@@ -263,41 +263,41 @@ const AdminSettings: React.FC<AdminSettingsProps> = ({ initialTab }) => {
       {/* Stats Cards — só mostra quando NÃO está embutido */}
       {!isEmbedded && (
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <div className="bg-slate-800/80 rounded-lg p-4 border border-brand-border">
+          <div className="bg-slate-800/80 rounded-lg p-4 border border-slate-700">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-brand-text-muted">Total de Usuários</p>
-                <p className="text-2xl font-bold text-brand-text">{stats.totalUsers}</p>
+                <p className="text-sm text-slate-400">Total de Usuários</p>
+                <p className="text-2xl font-bold text-white">{stats.totalUsers}</p>
               </div>
               <Users className="w-8 h-8 text-blue-400" />
             </div>
           </div>
-          <div className="bg-slate-800/80 rounded-lg p-4 border border-brand-border">
+          <div className="bg-slate-800/80 rounded-lg p-4 border border-slate-700">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-brand-text-muted">Documentos</p>
-                <p className="text-2xl font-bold text-brand-text">{stats.totalDocuments}</p>
+                <p className="text-sm text-slate-400">Documentos</p>
+                <p className="text-2xl font-bold text-white">{stats.totalDocuments}</p>
               </div>
               <FileText className="w-8 h-8 text-green-400" />
             </div>
           </div>
           <div 
-            className="bg-slate-800/80 rounded-lg p-4 border border-brand-border cursor-pointer hover:bg-brand-surface transition-colors"
+            className="bg-slate-800/80 rounded-lg p-4 border border-slate-700 cursor-pointer hover:bg-slate-800 transition-colors"
             onClick={handleOpenMessages}
           >
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-brand-text-muted">Mensagens</p>
-                <p className="text-2xl font-bold text-brand-text">{stats.totalMessages}</p>
+                <p className="text-sm text-slate-400">Mensagens</p>
+                <p className="text-2xl font-bold text-white">{stats.totalMessages}</p>
                 <p className="text-xs text-slate-500 mt-1">Clique para ver</p>
               </div>
               <Mail className="w-8 h-8 text-purple-400" />
             </div>
           </div>
-          <div className="bg-slate-800/80 rounded-lg p-4 border border-brand-border">
+          <div className="bg-slate-800/80 rounded-lg p-4 border border-slate-700">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-brand-text-muted">Status do Sistema</p>
+                <p className="text-sm text-slate-400">Status do Sistema</p>
                 <p className="text-lg font-bold text-green-400">
                   {stats.systemHealth === 'excellent' ? '✓ Excelente' : stats.systemHealth}
                 </p>
@@ -309,9 +309,9 @@ const AdminSettings: React.FC<AdminSettingsProps> = ({ initialTab }) => {
       )}
 
       {/* Tabs — só mostra barra interna quando NÃO está embutido */}
-      <div className={isEmbedded ? '' : 'bg-slate-800/80 rounded-lg border border-brand-border'}>
+      <div className={isEmbedded ? '' : 'bg-slate-800/80 rounded-lg border border-slate-700'}>
         {!isEmbedded && (
-          <div className="border-b border-brand-border">
+          <div className="border-b border-slate-700">
             <nav className="flex space-x-1 p-4 overflow-x-auto">
               {tabs.map((tab) => {
                 const Icon = tab.icon
@@ -321,8 +321,8 @@ const AdminSettings: React.FC<AdminSettingsProps> = ({ initialTab }) => {
                     onClick={() => setActiveTab(tab.id)}
                     className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors ${
                       activeTab === tab.id
-                        ? 'bg-primary-600 text-brand-text'
-                        : 'text-brand-text-secondary hover:bg-brand-surface-subtle'
+                        ? 'bg-primary-600 text-white'
+                        : 'text-slate-300 hover:bg-slate-700'
                     }`}
                   >
                     <Icon className="w-4 h-4" />
@@ -338,25 +338,25 @@ const AdminSettings: React.FC<AdminSettingsProps> = ({ initialTab }) => {
         <div className="p-6">
           {activeTab === 'general' && (
             <div className="space-y-6">
-              <h3 className="text-xl font-semibold text-brand-text mb-4">Configurações Gerais</h3>
+              <h3 className="text-xl font-semibold text-white mb-4">Configurações Gerais</h3>
               
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-brand-text-secondary mb-2">
+                  <label className="block text-sm font-medium text-slate-300 mb-2">
                     Nome da Plataforma
                   </label>
                   <input
                     type="text"
                     value={generalSettings.platformName}
                     onChange={(e) => setGeneralSettings(prev => ({ ...prev, platformName: e.target.value }))}
-                    className="w-full px-4 py-3 bg-brand-surface-subtle border border-slate-600 rounded-lg text-brand-text focus:outline-none focus:ring-2 focus:ring-primary-500"
+                    className="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
                   />
                 </div>
 
                 <div className="flex items-center justify-between p-4 bg-slate-700/50 rounded-lg">
                   <div>
-                    <p className="text-sm font-medium text-brand-text">Modo de Manutenção</p>
-                    <p className="text-xs text-brand-text-muted">Bloquear acesso de usuários durante manutenção</p>
+                    <p className="text-sm font-medium text-white">Modo de Manutenção</p>
+                    <p className="text-xs text-slate-400">Bloquear acesso de usuários durante manutenção</p>
                   </div>
                   <label className="relative inline-flex items-center cursor-pointer">
                     <input
@@ -371,8 +371,8 @@ const AdminSettings: React.FC<AdminSettingsProps> = ({ initialTab }) => {
 
                 <div className="flex items-center justify-between p-4 bg-slate-700/50 rounded-lg">
                   <div>
-                    <p className="text-sm font-medium text-brand-text">Permitir Registros</p>
-                    <p className="text-xs text-brand-text-muted">Permitir novos usuários se registrarem</p>
+                    <p className="text-sm font-medium text-white">Permitir Registros</p>
+                    <p className="text-xs text-slate-400">Permitir novos usuários se registrarem</p>
                   </div>
                   <label className="relative inline-flex items-center cursor-pointer">
                     <input
@@ -386,14 +386,14 @@ const AdminSettings: React.FC<AdminSettingsProps> = ({ initialTab }) => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-brand-text-secondary mb-2">
+                  <label className="block text-sm font-medium text-slate-300 mb-2">
                     Timeout de Sessão (minutos)
                   </label>
                   <input
                     type="number"
                     value={generalSettings.sessionTimeout}
                     onChange={(e) => setGeneralSettings(prev => ({ ...prev, sessionTimeout: parseInt(e.target.value) || 60 }))}
-                    className="w-full px-4 py-3 bg-brand-surface-subtle border border-slate-600 rounded-lg text-brand-text focus:outline-none focus:ring-2 focus:ring-primary-500"
+                    className="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
                     min="5"
                     max="480"
                   />
@@ -405,11 +405,11 @@ const AdminSettings: React.FC<AdminSettingsProps> = ({ initialTab }) => {
           {activeTab === 'users' && (
             <div className="space-y-6">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-xl font-semibold text-brand-text">Gestão de Usuários</h3>
+                <h3 className="text-xl font-semibold text-white">Gestão de Usuários</h3>
                 {!isEmbedded && (
                   <button
                     onClick={() => navigate('/app/admin/users')}
-                    className="bg-blue-600 hover:bg-blue-700 text-brand-text px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors"
+                    className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors"
                   >
                     <Users className="w-4 h-4" />
                     <span>Ver Todos</span>
@@ -420,15 +420,15 @@ const AdminSettings: React.FC<AdminSettingsProps> = ({ initialTab }) => {
               
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="bg-slate-700/50 rounded-lg p-4 border border-slate-600">
-                  <p className="text-sm text-brand-text-muted mb-2">Total de Usuários</p>
-                  <p className="text-3xl font-bold text-brand-text">{stats.totalUsers}</p>
+                  <p className="text-sm text-slate-400 mb-2">Total de Usuários</p>
+                  <p className="text-3xl font-bold text-white">{stats.totalUsers}</p>
                 </div>
                 <div className="bg-slate-700/50 rounded-lg p-4 border border-slate-600">
-                  <p className="text-sm text-brand-text-muted mb-2">Usuários Ativos</p>
+                  <p className="text-sm text-slate-400 mb-2">Usuários Ativos</p>
                   <p className="text-3xl font-bold text-green-400">{stats.activeUsers}</p>
                 </div>
                 <div className="bg-slate-700/50 rounded-lg p-4 border border-slate-600">
-                  <p className="text-sm text-brand-text-muted mb-2">Novos Hoje</p>
+                  <p className="text-sm text-slate-400 mb-2">Novos Hoje</p>
                   <p className="text-3xl font-bold text-blue-400">0</p>
                 </div>
               </div>
@@ -437,15 +437,15 @@ const AdminSettings: React.FC<AdminSettingsProps> = ({ initialTab }) => {
                 {!isEmbedded && (
                   <button
                     onClick={() => navigate('/app/admin/users')}
-                    className="flex-1 bg-brand-surface-subtle hover:bg-slate-600 text-brand-text px-4 py-3 rounded-lg transition-colors text-left"
+                    className="flex-1 bg-slate-700 hover:bg-slate-600 text-white px-4 py-3 rounded-lg transition-colors text-left"
                   >
                     <p className="font-medium">Gestão Completa de Usuários</p>
-                    <p className="text-sm text-brand-text-muted">Ver, editar e gerenciar todos os usuários</p>
+                    <p className="text-sm text-slate-400">Ver, editar e gerenciar todos os usuários</p>
                   </button>
                 )}
                 <button
                   onClick={loadStats}
-                  className={`bg-brand-surface-subtle hover:bg-slate-600 text-brand-text px-4 py-3 rounded-lg transition-colors ${isEmbedded ? 'flex-1' : ''}`}
+                  className={`bg-slate-700 hover:bg-slate-600 text-white px-4 py-3 rounded-lg transition-colors ${isEmbedded ? 'flex-1' : ''}`}
                 >
                   <RefreshCw className="w-5 h-5 mx-auto" />
                 </button>
@@ -456,10 +456,10 @@ const AdminSettings: React.FC<AdminSettingsProps> = ({ initialTab }) => {
           {activeTab === 'content' && (
             <div className="space-y-6">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-xl font-semibold text-brand-text">Gestão de Conteúdo</h3>
+                <h3 className="text-xl font-semibold text-white">Gestão de Conteúdo</h3>
                 <button
                   onClick={() => navigate('/app/library')}
-                  className="bg-blue-600 hover:bg-blue-700 text-brand-text px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors"
+                  className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors"
                 >
                   <FileText className="w-4 h-4" />
                   <span>Biblioteca</span>
@@ -470,10 +470,10 @@ const AdminSettings: React.FC<AdminSettingsProps> = ({ initialTab }) => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="bg-slate-700/50 rounded-lg p-4 border border-slate-600">
                   <div className="flex items-center justify-between mb-3">
-                    <p className="text-sm font-medium text-brand-text">Documentos</p>
+                    <p className="text-sm font-medium text-white">Documentos</p>
                     <FileText className="w-5 h-5 text-blue-400" />
                   </div>
-                  <p className="text-2xl font-bold text-brand-text">{stats.totalDocuments}</p>
+                  <p className="text-2xl font-bold text-white">{stats.totalDocuments}</p>
                   <button
                     onClick={() => navigate('/app/admin/upload')}
                     className="mt-3 text-sm text-blue-400 hover:text-blue-300"
@@ -483,10 +483,10 @@ const AdminSettings: React.FC<AdminSettingsProps> = ({ initialTab }) => {
                 </div>
                 <div className="bg-slate-700/50 rounded-lg p-4 border border-slate-600">
                   <div className="flex items-center justify-between mb-3">
-                    <p className="text-sm font-medium text-brand-text">Categorias</p>
+                    <p className="text-sm font-medium text-white">Categorias</p>
                     <Settings className="w-5 h-5 text-purple-400" />
                   </div>
-                  <p className="text-2xl font-bold text-brand-text">-</p>
+                  <p className="text-2xl font-bold text-white">-</p>
                   <button
                     onClick={() => navigate('/app/admin/upload')}
                     className="mt-3 text-sm text-purple-400 hover:text-purple-300"
@@ -500,14 +500,14 @@ const AdminSettings: React.FC<AdminSettingsProps> = ({ initialTab }) => {
 
           {activeTab === 'security' && (
             <div className="space-y-6">
-              <h3 className="text-xl font-semibold text-brand-text mb-4">Segurança e Privacidade</h3>
+              <h3 className="text-xl font-semibold text-white mb-4">Segurança e Privacidade</h3>
               
               <div className="space-y-4">
                 <div className="bg-slate-700/50 rounded-lg p-4 border border-slate-600">
                   <div className="flex items-center justify-between mb-3">
                     <div>
-                      <p className="text-sm font-medium text-brand-text">Autenticação de Dois Fatores</p>
-                      <p className="text-xs text-brand-text-muted">Requerer 2FA para todos os admins</p>
+                      <p className="text-sm font-medium text-white">Autenticação de Dois Fatores</p>
+                      <p className="text-xs text-slate-400">Requerer 2FA para todos os admins</p>
                     </div>
                     <label className="relative inline-flex items-center cursor-pointer">
                       <input type="checkbox" className="sr-only peer" />
@@ -519,8 +519,8 @@ const AdminSettings: React.FC<AdminSettingsProps> = ({ initialTab }) => {
                 <div className="bg-slate-700/50 rounded-lg p-4 border border-slate-600">
                   <div className="flex items-center justify-between mb-3">
                     <div>
-                      <p className="text-sm font-medium text-brand-text">Logs de Auditoria</p>
-                      <p className="text-xs text-brand-text-muted">Registrar todas as ações administrativas</p>
+                      <p className="text-sm font-medium text-white">Logs de Auditoria</p>
+                      <p className="text-xs text-slate-400">Registrar todas as ações administrativas</p>
                     </div>
                     <label className="relative inline-flex items-center cursor-pointer">
                       <input type="checkbox" defaultChecked className="sr-only peer" />
@@ -532,8 +532,8 @@ const AdminSettings: React.FC<AdminSettingsProps> = ({ initialTab }) => {
                 <div className="bg-slate-700/50 rounded-lg p-4 border border-slate-600">
                   <div className="flex items-center justify-between mb-3">
                     <div>
-                      <p className="text-sm font-medium text-brand-text">Política de Senhas</p>
-                      <p className="text-xs text-brand-text-muted">Forçar senhas fortes</p>
+                      <p className="text-sm font-medium text-white">Política de Senhas</p>
+                      <p className="text-xs text-slate-400">Forçar senhas fortes</p>
                     </div>
                     <label className="relative inline-flex items-center cursor-pointer">
                       <input type="checkbox" defaultChecked className="sr-only peer" />
@@ -544,7 +544,7 @@ const AdminSettings: React.FC<AdminSettingsProps> = ({ initialTab }) => {
 
                 <button
                   onClick={() => navigate('/app/admin/system')}
-                  className="w-full bg-blue-600 hover:bg-blue-700 text-brand-text px-4 py-3 rounded-lg transition-colors text-left flex items-center justify-between"
+                  className="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-3 rounded-lg transition-colors text-left flex items-center justify-between"
                 >
                   <span>Configurações Avançadas de Segurança</span>
                   <ChevronRight className="w-5 h-5" />
@@ -555,14 +555,14 @@ const AdminSettings: React.FC<AdminSettingsProps> = ({ initialTab }) => {
 
           {activeTab === 'notifications' && (
             <div className="space-y-6">
-              <h3 className="text-xl font-semibold text-brand-text mb-4">Notificações do Sistema</h3>
+              <h3 className="text-xl font-semibold text-white mb-4">Notificações do Sistema</h3>
               
               <div className="space-y-4">
                 <div className="bg-slate-700/50 rounded-lg p-4 border border-slate-600">
                   <div className="flex items-center justify-between mb-3">
                     <div>
-                      <p className="text-sm font-medium text-brand-text">Notificações por Email</p>
-                      <p className="text-xs text-brand-text-muted">Enviar emails para eventos importantes</p>
+                      <p className="text-sm font-medium text-white">Notificações por Email</p>
+                      <p className="text-xs text-slate-400">Enviar emails para eventos importantes</p>
                     </div>
                     <label className="relative inline-flex items-center cursor-pointer">
                       <input type="checkbox" defaultChecked className="sr-only peer" />
@@ -574,8 +574,8 @@ const AdminSettings: React.FC<AdminSettingsProps> = ({ initialTab }) => {
                 <div className="bg-slate-700/50 rounded-lg p-4 border border-slate-600">
                   <div className="flex items-center justify-between mb-3">
                     <div>
-                      <p className="text-sm font-medium text-brand-text">Alertas de Sistema</p>
-                      <p className="text-xs text-brand-text-muted">Notificar sobre problemas do sistema</p>
+                      <p className="text-sm font-medium text-white">Alertas de Sistema</p>
+                      <p className="text-xs text-slate-400">Notificar sobre problemas do sistema</p>
                     </div>
                     <label className="relative inline-flex items-center cursor-pointer">
                       <input type="checkbox" defaultChecked className="sr-only peer" />
@@ -590,11 +590,11 @@ const AdminSettings: React.FC<AdminSettingsProps> = ({ initialTab }) => {
           {activeTab === 'analytics' && (
             <div className="space-y-6">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-xl font-semibold text-brand-text">Análises e Relatórios</h3>
+                <h3 className="text-xl font-semibold text-white">Análises e Relatórios</h3>
                 {!isEmbedded && (
                   <button
                     onClick={() => navigate('/app/admin/analytics')}
-                    className="bg-blue-600 hover:bg-blue-700 text-brand-text px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors"
+                    className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors"
                   >
                     <BarChart3 className="w-4 h-4" />
                     <span>Ver Análises Completas</span>
@@ -605,12 +605,12 @@ const AdminSettings: React.FC<AdminSettingsProps> = ({ initialTab }) => {
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="bg-slate-700/50 rounded-lg p-4 border border-slate-600">
-                  <p className="text-sm text-brand-text-muted mb-2">Relatórios Disponíveis</p>
-                  <p className="text-2xl font-bold text-brand-text">12</p>
+                  <p className="text-sm text-slate-400 mb-2">Relatórios Disponíveis</p>
+                  <p className="text-2xl font-bold text-white">12</p>
                 </div>
                 <div className="bg-slate-700/50 rounded-lg p-4 border border-slate-600">
-                  <p className="text-sm text-brand-text-muted mb-2">Último Relatório</p>
-                  <p className="text-lg font-medium text-brand-text">Hoje</p>
+                  <p className="text-sm text-slate-400 mb-2">Último Relatório</p>
+                  <p className="text-lg font-medium text-white">Hoje</p>
                 </div>
               </div>
             </div>
@@ -618,14 +618,14 @@ const AdminSettings: React.FC<AdminSettingsProps> = ({ initialTab }) => {
 
           {activeTab === 'backup' && (
             <div className="space-y-6">
-              <h3 className="text-xl font-semibold text-brand-text mb-4">Backup e Restauração</h3>
+              <h3 className="text-xl font-semibold text-white mb-4">Backup e Restauração</h3>
               
               <div className="space-y-4">
                 <div className="bg-slate-700/50 rounded-lg p-4 border border-slate-600">
                   <div className="flex items-center justify-between mb-3">
                     <div>
-                      <p className="text-sm font-medium text-brand-text">Backup Automático</p>
-                      <p className="text-xs text-brand-text-muted">Executar backup diariamente</p>
+                      <p className="text-sm font-medium text-white">Backup Automático</p>
+                      <p className="text-xs text-slate-400">Executar backup diariamente</p>
                     </div>
                     <label className="relative inline-flex items-center cursor-pointer">
                       <input type="checkbox" defaultChecked className="sr-only peer" />
@@ -635,11 +635,11 @@ const AdminSettings: React.FC<AdminSettingsProps> = ({ initialTab }) => {
                 </div>
 
                 <div className="flex space-x-3">
-                  <button className="flex-1 bg-blue-600 hover:bg-blue-700 text-brand-text px-4 py-3 rounded-lg transition-colors">
+                  <button className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-4 py-3 rounded-lg transition-colors">
                     <Download className="w-5 h-5 mx-auto mb-2" />
                     <p className="font-medium">Criar Backup Agora</p>
                   </button>
-                  <button className="flex-1 bg-purple-600 hover:bg-purple-700 text-brand-text px-4 py-3 rounded-lg transition-colors">
+                  <button className="flex-1 bg-purple-600 hover:bg-purple-700 text-white px-4 py-3 rounded-lg transition-colors">
                     <Upload className="w-5 h-5 mx-auto mb-2" />
                     <p className="font-medium">Restaurar Backup</p>
                   </button>
@@ -650,38 +650,38 @@ const AdminSettings: React.FC<AdminSettingsProps> = ({ initialTab }) => {
 
           {activeTab === 'system' && (
             <div className="space-y-6">
-              <h3 className="text-xl font-semibold text-brand-text mb-4">Sistema e Performance</h3>
+              <h3 className="text-xl font-semibold text-white mb-4">Sistema e Performance</h3>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="bg-slate-700/50 rounded-lg p-4 border border-slate-600">
-                  <p className="text-sm text-brand-text-muted mb-2">Status do Sistema</p>
+                  <p className="text-sm text-slate-400 mb-2">Status do Sistema</p>
                   <p className="text-2xl font-bold text-green-400">✓ Operacional</p>
                 </div>
                 <div className="bg-slate-700/50 rounded-lg p-4 border border-slate-600">
-                  <p className="text-sm text-brand-text-muted mb-2">Uptime</p>
-                  <p className="text-2xl font-bold text-brand-text">99.9%</p>
+                  <p className="text-sm text-slate-400 mb-2">Uptime</p>
+                  <p className="text-2xl font-bold text-white">99.9%</p>
                 </div>
                 <div className="bg-slate-700/50 rounded-lg p-4 border border-slate-600">
-                  <p className="text-sm text-brand-text-muted mb-2">Versão</p>
-                  <p className="text-2xl font-bold text-brand-text">3.0.0</p>
+                  <p className="text-sm text-slate-400 mb-2">Versão</p>
+                  <p className="text-2xl font-bold text-white">3.0.0</p>
                 </div>
                 <div className="bg-slate-700/50 rounded-lg p-4 border border-slate-600">
-                  <p className="text-sm text-brand-text-muted mb-2">Última Atualização</p>
-                  <p className="text-lg font-medium text-brand-text">Hoje</p>
+                  <p className="text-sm text-slate-400 mb-2">Última Atualização</p>
+                  <p className="text-lg font-medium text-white">Hoje</p>
                 </div>
               </div>
 
               <div className="flex space-x-3">
                 <button
                   onClick={() => navigate('/app/admin/system')}
-                  className="flex-1 bg-blue-600 hover:bg-blue-700 text-brand-text px-4 py-3 rounded-lg transition-colors text-left"
+                  className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-4 py-3 rounded-lg transition-colors text-left"
                 >
                   <p className="font-medium">Configurações Avançadas</p>
-                  <p className="text-sm text-brand-text-secondary">Ajustes detalhados do sistema</p>
+                  <p className="text-sm text-slate-300">Ajustes detalhados do sistema</p>
                 </button>
                 <button
                   onClick={loadStats}
-                  className="bg-brand-surface-subtle hover:bg-slate-600 text-brand-text px-4 py-3 rounded-lg transition-colors"
+                  className="bg-slate-700 hover:bg-slate-600 text-white px-4 py-3 rounded-lg transition-colors"
                 >
                   <RefreshCw className="w-5 h-5" />
                 </button>
@@ -694,18 +694,18 @@ const AdminSettings: React.FC<AdminSettingsProps> = ({ initialTab }) => {
       {/* Modal de Mensagens */}
       {showMessagesModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-brand-surface rounded-lg border border-brand-border w-full max-w-4xl max-h-[90vh] flex flex-col">
+          <div className="bg-slate-800 rounded-lg border border-slate-700 w-full max-w-4xl max-h-[90vh] flex flex-col">
             {/* Header do Modal */}
-            <div className="flex items-center justify-between p-6 border-b border-brand-border">
+            <div className="flex items-center justify-between p-6 border-b border-slate-700">
               <div>
-                <h2 className="text-2xl font-bold text-brand-text">Mensagens do Sistema</h2>
-                <p className="text-sm text-brand-text-muted mt-1">Total: {stats.totalMessages} mensagens</p>
+                <h2 className="text-2xl font-bold text-white">Mensagens do Sistema</h2>
+                <p className="text-sm text-slate-400 mt-1">Total: {stats.totalMessages} mensagens</p>
               </div>
               <button
                 onClick={() => setShowMessagesModal(false)}
-                className="p-2 hover:bg-brand-surface-subtle rounded-lg transition-colors"
+                className="p-2 hover:bg-slate-700 rounded-lg transition-colors"
               >
-                <X className="w-5 h-5 text-brand-text-muted" />
+                <X className="w-5 h-5 text-slate-400" />
               </button>
             </div>
 
@@ -714,31 +714,31 @@ const AdminSettings: React.FC<AdminSettingsProps> = ({ initialTab }) => {
               {loadingMessages ? (
                 <div className="flex items-center justify-center py-12">
                   <RefreshCw className="w-6 h-6 animate-spin text-blue-400" />
-                  <span className="ml-3 text-brand-text-muted">Carregando mensagens...</span>
+                  <span className="ml-3 text-slate-400">Carregando mensagens...</span>
                 </div>
               ) : messages.length === 0 ? (
                 <div className="text-center py-12">
                   <Mail className="w-12 h-12 text-slate-600 mx-auto mb-4" />
-                  <p className="text-brand-text-muted">Nenhuma mensagem encontrada</p>
+                  <p className="text-slate-400">Nenhuma mensagem encontrada</p>
                 </div>
               ) : (
                 <div className="space-y-4">
                   {messages.map((message) => (
                     <div
                       key={message.id}
-                      className="bg-slate-700/50 rounded-lg p-4 border border-slate-600 hover:bg-brand-surface-subtle transition-colors"
+                      className="bg-slate-700/50 rounded-lg p-4 border border-slate-600 hover:bg-slate-700 transition-colors"
                     >
                       <div className="flex items-start justify-between mb-2">
                         <div className="flex-1">
                           <div className="flex items-center space-x-2 mb-1">
-                            <span className="text-sm font-medium text-brand-text">
+                            <span className="text-sm font-medium text-white">
                               {message.sender?.name || 'Usuário Desconhecido'}
                             </span>
                             <span className="text-xs text-slate-500">
                               {message.sender?.email || ''}
                             </span>
                           </div>
-                          <p className="text-sm text-brand-text-secondary whitespace-pre-wrap break-words">
+                          <p className="text-sm text-slate-300 whitespace-pre-wrap break-words">
                             {message.content || message.message || 'Sem conteúdo'}
                           </p>
                         </div>
@@ -766,18 +766,18 @@ const AdminSettings: React.FC<AdminSettingsProps> = ({ initialTab }) => {
             </div>
 
             {/* Footer do Modal */}
-            <div className="p-6 border-t border-brand-border flex items-center justify-between">
+            <div className="p-6 border-t border-slate-700 flex items-center justify-between">
               <button
                 onClick={loadMessages}
                 disabled={loadingMessages}
-                className="bg-blue-600 hover:bg-blue-700 disabled:bg-blue-800 text-brand-text px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors"
+                className="bg-blue-600 hover:bg-blue-700 disabled:bg-blue-800 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors"
               >
                 <RefreshCw className={`w-4 h-4 ${loadingMessages ? 'animate-spin' : ''}`} />
                 <span>Atualizar</span>
               </button>
               <button
                 onClick={() => navigate('/app/chat-global')}
-                className="bg-purple-600 hover:bg-purple-700 text-brand-text px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors"
+                className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors"
               >
                 <Mail className="w-4 h-4" />
                 <span>Ir para Chat Global</span>

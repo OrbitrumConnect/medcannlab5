@@ -177,7 +177,7 @@ const SlidePlayer: React.FC<SlidePlayerProps> = ({ isOpen, onClose, initialSlide
   if (loading) {
     return (
       <div className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center">
-        <div className="text-brand-text text-xl">Carregando slides...</div>
+        <div className="text-white text-xl">Carregando slides...</div>
       </div>
     )
   }
@@ -185,11 +185,11 @@ const SlidePlayer: React.FC<SlidePlayerProps> = ({ isOpen, onClose, initialSlide
   if (slides.length === 0) {
     return (
       <div className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center">
-        <div className="text-center text-brand-text">
+        <div className="text-center text-white">
           <p className="text-xl mb-4">Nenhum slide disponível</p>
           <button
             onClick={onClose}
-            className="px-6 py-3 bg-green-500 text-brand-text rounded-lg hover:bg-green-600 transition-colors"
+            className="px-6 py-3 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"
           >
             Fechar
           </button>
@@ -203,18 +203,18 @@ const SlidePlayer: React.FC<SlidePlayerProps> = ({ isOpen, onClose, initialSlide
   return (
     <div className="fixed inset-0 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 z-50 flex flex-col">
       {/* Header */}
-      <div className="bg-slate-800/90 backdrop-blur-sm border-b border-brand-border p-4 flex items-center justify-between">
+      <div className="bg-slate-800/90 backdrop-blur-sm border-b border-slate-700 p-4 flex items-center justify-between">
         <div className="flex items-center space-x-4">
           <button
             onClick={onClose}
-            className="p-2 hover:bg-brand-surface-subtle rounded-lg transition-colors"
+            className="p-2 hover:bg-slate-700 rounded-lg transition-colors"
             title="Fechar (ESC)"
           >
-            <X className="w-5 h-5 text-brand-text" />
+            <X className="w-5 h-5 text-white" />
           </button>
           <div>
-            <h2 className="text-brand-text font-semibold">{currentSlide.title}</h2>
-            <p className="text-sm text-brand-text-muted">
+            <h2 className="text-white font-semibold">{currentSlide.title}</h2>
+            <p className="text-sm text-slate-400">
               Slide {currentSlideIndex + 1} de {slides.length}
             </p>
           </div>
@@ -224,8 +224,8 @@ const SlidePlayer: React.FC<SlidePlayerProps> = ({ isOpen, onClose, initialSlide
             onClick={toggleAutoPlay}
             className={`p-2 rounded-lg transition-colors ${
               isAutoPlay
-                ? 'bg-green-500 text-brand-text hover:bg-green-600'
-                : 'bg-brand-surface-subtle text-brand-text hover:bg-slate-600'
+                ? 'bg-green-500 text-white hover:bg-green-600'
+                : 'bg-slate-700 text-white hover:bg-slate-600'
             }`}
             title="Reprodução Automática"
           >
@@ -233,7 +233,7 @@ const SlidePlayer: React.FC<SlidePlayerProps> = ({ isOpen, onClose, initialSlide
           </button>
           <button
             onClick={toggleFullscreen}
-            className="p-2 bg-brand-surface-subtle text-brand-text rounded-lg hover:bg-slate-600 transition-colors"
+            className="p-2 bg-slate-700 text-white rounded-lg hover:bg-slate-600 transition-colors"
             title="Tela Cheia (F)"
           >
             {isFullscreen ? <Minimize2 className="w-5 h-5" /> : <Maximize2 className="w-5 h-5" />}
@@ -262,14 +262,14 @@ const SlidePlayer: React.FC<SlidePlayerProps> = ({ isOpen, onClose, initialSlide
       </div>
 
       {/* Navigation */}
-      <div className="bg-slate-800/90 backdrop-blur-sm border-t border-brand-border p-4 flex items-center justify-between">
+      <div className="bg-slate-800/90 backdrop-blur-sm border-t border-slate-700 p-4 flex items-center justify-between">
         <button
           onClick={previousSlide}
           disabled={currentSlideIndex === 0}
           className={`flex items-center space-x-2 px-6 py-3 rounded-lg font-semibold transition-colors ${
             currentSlideIndex === 0
-              ? 'bg-brand-surface-subtle text-slate-500 cursor-not-allowed'
-              : 'bg-green-500 text-brand-text hover:bg-green-600'
+              ? 'bg-slate-700 text-slate-500 cursor-not-allowed'
+              : 'bg-green-500 text-white hover:bg-green-600'
           }`}
         >
           <ChevronLeft className="w-5 h-5" />
@@ -297,8 +297,8 @@ const SlidePlayer: React.FC<SlidePlayerProps> = ({ isOpen, onClose, initialSlide
           disabled={currentSlideIndex === slides.length - 1}
           className={`flex items-center space-x-2 px-6 py-3 rounded-lg font-semibold transition-colors ${
             currentSlideIndex === slides.length - 1
-              ? 'bg-brand-surface-subtle text-slate-500 cursor-not-allowed'
-              : 'bg-green-500 text-brand-text hover:bg-green-600'
+              ? 'bg-slate-700 text-slate-500 cursor-not-allowed'
+              : 'bg-green-500 text-white hover:bg-green-600'
           }`}
         >
           <span>Próximo</span>
@@ -307,7 +307,7 @@ const SlidePlayer: React.FC<SlidePlayerProps> = ({ isOpen, onClose, initialSlide
       </div>
 
       {/* Keyboard Shortcuts Help */}
-      <div className="absolute bottom-20 right-4 bg-slate-800/80 backdrop-blur-sm rounded-lg p-3 text-xs text-brand-text-secondary">
+      <div className="absolute bottom-20 right-4 bg-slate-800/80 backdrop-blur-sm rounded-lg p-3 text-xs text-slate-300">
         <p className="mb-1">Atalhos:</p>
         <p>← → Navegar | ESC Fechar | F Tela Cheia | Espaço Próximo</p>
       </div>

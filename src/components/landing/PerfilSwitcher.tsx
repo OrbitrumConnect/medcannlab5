@@ -9,7 +9,7 @@ export const PerfilSwitcher = ({ ativo }: { ativo?: PerfilLanding }) => {
   const currentPath = location.pathname
 
   return (
-    <div className="w-full bg-slate-900/60 backdrop-blur-md border-y border-brand-border-subtle">
+    <div className="w-full bg-slate-900/60 backdrop-blur-md border-y border-slate-800">
       <div className="container mx-auto px-6 py-2 flex items-center justify-center gap-2 md:gap-4">
         <span className="text-xs text-slate-500 hidden sm:inline">Você é:</span>
         {PERFIS.map(perfil => {
@@ -25,7 +25,7 @@ export const PerfilSwitcher = ({ ativo }: { ativo?: PerfilLanding }) => {
                 'inline-flex items-center gap-1.5 px-3 md:px-4 py-1.5 rounded-full text-xs md:text-sm font-medium transition-all',
                 isActive
                   ? cn(theme.badge, 'shadow-md')
-                  : 'text-brand-text-muted hover:text-brand-text hover:bg-slate-800/60 border border-transparent'
+                  : 'text-slate-400 hover:text-white hover:bg-slate-800/60 border border-transparent'
               )}
             >
               <span className="text-base">{theme.iconEmoji}</span>

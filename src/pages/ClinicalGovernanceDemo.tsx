@@ -235,15 +235,15 @@ export default function ClinicalGovernanceDemo({ selectedPatientId, selectedPati
                 {/* Paciente em foco (dados reais do avatar/relatório) */}
                 {selectedPatientId && selectedPatientName && (
                     <div className="mb-6 p-4 rounded-xl bg-indigo-500/15 border border-indigo-500/30 flex items-center gap-3">
-                        <span className="w-10 h-10 rounded-full bg-indigo-500/50 flex items-center justify-center text-brand-text font-semibold">
+                        <span className="w-10 h-10 rounded-full bg-indigo-500/50 flex items-center justify-center text-white font-semibold">
                             {selectedPatientName.charAt(0).toUpperCase()}
                         </span>
                         <div>
-                            <p className="text-sm font-semibold text-brand-text">Análise ACDSS baseada em dados do paciente</p>
+                            <p className="text-sm font-semibold text-white">Análise ACDSS baseada em dados do paciente</p>
                             <p className="text-xs text-indigo-300">{selectedPatientName} — relatório e histórico vinculados</p>
                         </div>
                         {realContextLoading && (
-                            <span className="text-xs text-brand-text-muted ml-auto">Carregando contexto…</span>
+                            <span className="text-xs text-slate-400 ml-auto">Carregando contexto…</span>
                         )}
                     </div>
                 )}
@@ -252,7 +252,7 @@ export default function ClinicalGovernanceDemo({ selectedPatientId, selectedPati
                 <div className="mb-8 text-center">
                     <div className="flex items-center justify-center gap-3 mb-4">
                         <Brain className="w-12 h-12 text-purple-400" />
-                        <h1 className="text-4xl font-bold text-brand-text">Clinical Governance Engine</h1>
+                        <h1 className="text-4xl font-bold text-white">Clinical Governance Engine</h1>
                     </div>
                     <p className="text-gray-400">
                         Adaptive Clinical Decision Support System (ACDSS)
@@ -264,7 +264,7 @@ export default function ClinicalGovernanceDemo({ selectedPatientId, selectedPati
 
                 {/* Specialty Selector */}
                 <div className="mb-6">
-                    <h3 className="text-brand-text font-semibold mb-3 text-center">Selecione a Especialidade:</h3>
+                    <h3 className="text-white font-semibold mb-3 text-center">Selecione a Especialidade:</h3>
                     <div className="grid grid-cols-7 gap-2">
                         {SPECIALTY_OPTIONS.map(spec => {
                             const Icon = spec.icon
@@ -278,8 +278,8 @@ export default function ClinicalGovernanceDemo({ selectedPatientId, selectedPati
                                         : 'bg-gray-800 hover:bg-gray-700'
                                         }`}
                                 >
-                                    <Icon className="w-6 h-6 mx-auto mb-2 text-brand-text" />
-                                    <p className="text-xs text-brand-text font-medium text-center">{spec.label}</p>
+                                    <Icon className="w-6 h-6 mx-auto mb-2 text-white" />
+                                    <p className="text-xs text-white font-medium text-center">{spec.label}</p>
                                 </button>
                             )
                         })}
@@ -292,7 +292,7 @@ export default function ClinicalGovernanceDemo({ selectedPatientId, selectedPati
                         <button
                             onClick={() => setSelectedCase('stable')}
                             className={`px-6 py-3 rounded-lg font-semibold transition-all ${selectedCase === 'stable'
-                                ? 'bg-green-600 text-brand-text shadow-lg shadow-green-900/50'
+                                ? 'bg-green-600 text-white shadow-lg shadow-green-900/50'
                                 : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
                                 }`}
                         >
@@ -301,7 +301,7 @@ export default function ClinicalGovernanceDemo({ selectedPatientId, selectedPati
                         <button
                             onClick={() => setSelectedCase('critical')}
                             className={`px-6 py-3 rounded-lg font-semibold transition-all ${selectedCase === 'critical'
-                                ? 'bg-red-600 text-brand-text shadow-lg shadow-red-900/50'
+                                ? 'bg-red-600 text-white shadow-lg shadow-red-900/50'
                                 : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
                                 }`}
                         >
@@ -316,7 +316,7 @@ export default function ClinicalGovernanceDemo({ selectedPatientId, selectedPati
                 {/* Raw Output */}
                 {analysis && (
                     <div className="mt-8 p-6 bg-gray-900/50 rounded-lg border border-gray-700/30">
-                        <h3 className="text-brand-text font-semibold mb-3">Output Completo (Debug)</h3>
+                        <h3 className="text-white font-semibold mb-3">Output Completo (Debug)</h3>
                         <pre className="text-xs text-gray-300 overflow-auto max-h-96">
                             {JSON.stringify(analysis, null, 2)}
                         </pre>

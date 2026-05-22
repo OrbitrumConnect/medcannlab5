@@ -193,24 +193,24 @@ const NoaChatHelpModal: React.FC<NoaChatHelpModalProps> = ({ isOpen, onClose, ro
       aria-modal="true"
     >
       <div
-        className="bg-brand-bg border border-brand-border rounded-2xl w-full max-w-lg max-h-[85vh] overflow-y-auto shadow-2xl animate-in zoom-in-95 duration-200"
+        className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-lg max-h-[85vh] overflow-y-auto shadow-2xl animate-in zoom-in-95 duration-200"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="sticky top-0 bg-slate-900/95 backdrop-blur-sm border-b border-brand-border px-5 py-4 flex justify-between items-center z-10">
+        <div className="sticky top-0 bg-slate-900/95 backdrop-blur-sm border-b border-slate-700 px-5 py-4 flex justify-between items-center z-10">
           <div className="flex items-center gap-3">
             <div className="p-2 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
               {icon}
             </div>
             <div>
-              <h2 className="text-base font-bold text-brand-text">{title}</h2>
-              <p className="text-brand-text-muted text-xs mt-0.5">
+              <h2 className="text-base font-bold text-white">{title}</h2>
+              <p className="text-slate-400 text-xs mt-0.5">
                 Guia rápido de uso do chat da Nôa para o seu perfil.
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 hover:bg-brand-surface rounded-lg text-brand-text-muted hover:text-brand-text transition-colors"
+            className="p-1.5 hover:bg-slate-800 rounded-lg text-slate-400 hover:text-white transition-colors"
             aria-label="Fechar"
           >
             <X className="w-4 h-4" />
@@ -225,13 +225,13 @@ const NoaChatHelpModal: React.FC<NoaChatHelpModalProps> = ({ isOpen, onClose, ro
                 {section.items.map((item, j) => {
                   if (typeof item === 'string') {
                     return (
-                      <li key={j} className="text-sm text-brand-text-secondary leading-relaxed pl-4 relative before:content-['•'] before:text-emerald-500 before:absolute before:left-0">
+                      <li key={j} className="text-sm text-slate-300 leading-relaxed pl-4 relative before:content-['•'] before:text-emerald-500 before:absolute before:left-0">
                         {item}
                       </li>
                     )
                   }
                   return (
-                    <li key={j} className="text-sm text-brand-text-secondary leading-relaxed pl-4 relative before:content-['•'] before:text-emerald-500 before:absolute before:left-0">
+                    <li key={j} className="text-sm text-slate-300 leading-relaxed pl-4 relative before:content-['•'] before:text-emerald-500 before:absolute before:left-0">
                       {item.label && <span className="text-emerald-300 font-medium">{item.label}: </span>}
                       <span>{item.text}</span>
                     </li>
@@ -241,7 +241,7 @@ const NoaChatHelpModal: React.FC<NoaChatHelpModalProps> = ({ isOpen, onClose, ro
             </div>
           ))}
 
-          <div className="pt-4 border-t border-brand-border-subtle">
+          <div className="pt-4 border-t border-slate-800">
             <p className="text-xs text-slate-500 italic">
               A Nôa coleta, organiza e orienta. Decisão clínica final pertence ao médico responsável.
             </p>

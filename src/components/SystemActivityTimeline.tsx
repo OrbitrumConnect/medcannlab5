@@ -52,7 +52,7 @@ const STATE_STYLES: Record<TimelineState, { icon: string; bg: string; border: st
     warning: { icon: 'text-amber-400', bg: 'bg-amber-500/10', border: 'border-amber-500/30', text: 'text-amber-300' },
     success: { icon: 'text-emerald-400', bg: 'bg-emerald-500/10', border: 'border-emerald-500/30', text: 'text-emerald-300' },
     info: { icon: 'text-blue-400', bg: 'bg-blue-500/5', border: 'border-blue-500/20', text: 'text-blue-300' },
-    neutral: { icon: 'text-brand-text-muted', bg: 'bg-slate-800/40', border: 'border-slate-700/50', text: 'text-brand-text-secondary' },
+    neutral: { icon: 'text-slate-400', bg: 'bg-slate-800/40', border: 'border-slate-700/50', text: 'text-slate-300' },
 }
 
 const FILTERS: { id: FilterId; label: string }[] = [
@@ -225,14 +225,14 @@ export default function SystemActivityTimeline() {
             <div className="p-4 md:p-6 border-b border-slate-700/50 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
                 <div className="flex items-center gap-3">
                     <div className="h-8 w-1 bg-emerald-500 rounded-full"></div>
-                    <h3 className="text-base md:text-xl font-bold text-brand-text">Atividade Recente do Sistema</h3>
-                    <span className="px-2 py-0.5 bg-brand-surface rounded text-[10px] text-slate-500 font-mono">
+                    <h3 className="text-base md:text-xl font-bold text-white">Atividade Recente do Sistema</h3>
+                    <span className="px-2 py-0.5 bg-slate-800 rounded text-[10px] text-slate-500 font-mono">
                         SYNC: {lastRefresh.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
                     </span>
                 </div>
                 <div className="flex items-center gap-2">
                     {/* Filtros — 4 estados (Pedro 16/05 GPT review) */}
-                    <div className="flex items-center gap-1 p-1 rounded-lg bg-slate-800/60 border border-brand-border">
+                    <div className="flex items-center gap-1 p-1 rounded-lg bg-slate-800/60 border border-slate-700">
                         <Filter className="w-3.5 h-3.5 text-slate-500 ml-1 mr-0.5" />
                         {FILTERS.map(f => (
                             <button
@@ -241,7 +241,7 @@ export default function SystemActivityTimeline() {
                                 className={`px-2.5 py-1 rounded text-[11px] font-semibold transition-colors ${
                                     filter === f.id
                                         ? 'bg-emerald-500/20 text-emerald-300'
-                                        : 'text-brand-text-muted hover:text-slate-200'
+                                        : 'text-slate-400 hover:text-slate-200'
                                 }`}
                             >
                                 {f.label}
@@ -251,7 +251,7 @@ export default function SystemActivityTimeline() {
                     <button
                         onClick={() => void fetchTimeline()}
                         disabled={loading}
-                        className="p-1.5 rounded-lg bg-slate-800/60 hover:bg-brand-surface-subtle text-brand-text-muted hover:text-brand-text transition-colors disabled:opacity-50"
+                        className="p-1.5 rounded-lg bg-slate-800/60 hover:bg-slate-700 text-slate-400 hover:text-white transition-colors disabled:opacity-50"
                         title="Atualizar agora"
                     >
                         <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
@@ -284,7 +284,7 @@ export default function SystemActivityTimeline() {
                                             <Icon className={`w-3.5 h-3.5 flex-shrink-0 mt-0.5 ${s.icon}`} />
                                             <div className="flex-1 min-w-0">
                                                 <div className="flex items-baseline justify-between gap-2 flex-wrap">
-                                                    <span className="text-xs text-brand-text font-semibold truncate">
+                                                    <span className="text-xs text-white font-semibold truncate">
                                                         <span className="font-mono text-slate-500 mr-2">{formatTime(ev.ts)}</span>
                                                         {ev.actor_name}
                                                     </span>
@@ -294,7 +294,7 @@ export default function SystemActivityTimeline() {
                                                 </div>
                                                 <div className={`text-[11px] mt-0.5 ${s.text}`}>
                                                     {ev.action_label}
-                                                    {ev.target && <span className="text-brand-text-muted ml-1">{ev.target}</span>}
+                                                    {ev.target && <span className="text-slate-400 ml-1">{ev.target}</span>}
                                                 </div>
                                             </div>
                                         </div>

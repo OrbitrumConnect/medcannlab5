@@ -260,7 +260,7 @@ const PatientNOAChat: React.FC = () => {
         <div className="flex items-center justify-between">
           <button
             onClick={() => navigate('/app/clinica/paciente/dashboard')}
-            className="flex items-center gap-2 text-brand-text-muted hover:text-emerald-400 transition-colors group px-3 py-2 rounded-lg hover:bg-slate-800/50"
+            className="flex items-center gap-2 text-slate-400 hover:text-emerald-400 transition-colors group px-3 py-2 rounded-lg hover:bg-slate-800/50"
           >
             <ArrowLeft className="w-5 h-5 group-hover:-translate-x-0.5 transition-transform" />
             <span className="text-sm font-medium">Voltar</span>
@@ -273,7 +273,7 @@ const PatientNOAChat: React.FC = () => {
 
           <button
             onClick={() => navigate('/app/library')}
-            className="flex items-center gap-2 text-brand-text-muted hover:text-emerald-400 transition-colors px-3 py-2 rounded-lg hover:bg-slate-800/50"
+            className="flex items-center gap-2 text-slate-400 hover:text-emerald-400 transition-colors px-3 py-2 rounded-lg hover:bg-slate-800/50"
             title="Biblioteca & Documentos"
           >
             <BookOpen className="w-5 h-5" />

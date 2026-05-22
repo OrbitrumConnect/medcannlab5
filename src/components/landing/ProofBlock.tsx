@@ -18,8 +18,8 @@ export const ProofBlock = ({ perfil, title, subtitle, items }: ProofBlockProps) 
       <div className="container mx-auto max-w-4xl">
         {(title || subtitle) && (
           <div className="text-center mb-10">
-            {title && <h2 className="text-3xl md:text-4xl font-bold text-brand-text mb-3">{title}</h2>}
-            {subtitle && <p className="text-brand-text-muted text-base">{subtitle}</p>}
+            {title && <h2 className="text-3xl md:text-4xl font-bold text-white mb-3">{title}</h2>}
+            {subtitle && <p className="text-slate-400 text-base">{subtitle}</p>}
           </div>
         )}
 

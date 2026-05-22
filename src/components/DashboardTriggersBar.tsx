@@ -60,11 +60,11 @@ const DashboardTriggersBar: React.FC = () => {
                   type="button"
                   onClick={() => handleAction(opt.id)}
                   className={`flex-shrink-0 flex items-center gap-1.5 px-2.5 py-1 rounded-lg border text-xs font-medium transition-all whitespace-nowrap ${
-                    isActive ? 'bg-emerald-600/20 border-emerald-500/40 text-emerald-100' : 'bg-slate-800/60 border-slate-700/50 text-brand-text-secondary hover:bg-brand-surface-subtle hover:text-brand-text hover:border-emerald-500/30'
+                    isActive ? 'bg-emerald-600/20 border-emerald-500/40 text-emerald-100' : 'bg-slate-800/60 border-slate-700/50 text-slate-300 hover:bg-slate-700 hover:text-white hover:border-emerald-500/30'
                   }`}
                   title={opt.description || opt.label}
                 >
-                  <Icon className={`w-3.5 h-3.5 ${isActive ? 'text-emerald-400' : 'text-brand-text-muted'}`} />
+                  <Icon className={`w-3.5 h-3.5 ${isActive ? 'text-emerald-400' : 'text-slate-400'}`} />
                   {opt.label}
                 </button>
               )
@@ -79,7 +79,7 @@ const DashboardTriggersBar: React.FC = () => {
           className="relative w-11 h-11 rounded-full bg-gradient-to-b from-emerald-500 to-emerald-700 flex items-center justify-center shadow-lg shadow-emerald-500/20 border border-emerald-400/20 hover:scale-110 transition-all"
           aria-label="Abrir chat Nôa"
         >
-          <Brain className="w-5 h-5 text-brand-text drop-shadow-md" />
+          <Brain className="w-5 h-5 text-white drop-shadow-md" />
         </button>
       </div>
       <div className="flex-1 flex justify-start overflow-hidden min-w-0">
@@ -93,11 +93,11 @@ const DashboardTriggersBar: React.FC = () => {
                 type="button"
                 onClick={() => handleAction(opt.id)}
                 className={`flex-shrink-0 flex items-center gap-1.5 px-2.5 py-1 rounded-lg border text-xs font-medium transition-all whitespace-nowrap ${
-                  isActive ? 'bg-emerald-600/20 border-emerald-500/40 text-emerald-100' : 'bg-slate-800/60 border-slate-700/50 text-brand-text-secondary hover:bg-brand-surface-subtle hover:text-brand-text hover:border-emerald-500/30'
+                  isActive ? 'bg-emerald-600/20 border-emerald-500/40 text-emerald-100' : 'bg-slate-800/60 border-slate-700/50 text-slate-300 hover:bg-slate-700 hover:text-white hover:border-emerald-500/30'
                 }`}
                 title={opt.description || opt.label}
               >
-                <Icon className={`w-3.5 h-3.5 ${isActive ? 'text-emerald-400' : 'text-brand-text-muted'}`} />
+                <Icon className={`w-3.5 h-3.5 ${isActive ? 'text-emerald-400' : 'text-slate-400'}`} />
                 {opt.label}
               </button>
             )
@@ -107,12 +107,12 @@ const DashboardTriggersBar: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setMoreOpen((o) => !o)}
-                className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg border text-xs font-medium transition-all whitespace-nowrap bg-slate-800/60 border-slate-700/50 text-brand-text-secondary hover:bg-brand-surface-subtle hover:text-brand-text hover:border-emerald-500/30 ${
+                className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg border text-xs font-medium transition-all whitespace-nowrap bg-slate-800/60 border-slate-700/50 text-slate-300 hover:bg-slate-700 hover:text-white hover:border-emerald-500/30 ${
                   moreOpen ? 'bg-emerald-600/20 border-emerald-500/40 text-emerald-100' : ''
                 }`}
                 title="Mais ações"
               >
-                <ChevronDown className={`w-3.5 h-3.5 ${moreOpen ? 'text-emerald-400' : 'text-brand-text-muted'}`} />
+                <ChevronDown className={`w-3.5 h-3.5 ${moreOpen ? 'text-emerald-400' : 'text-slate-400'}`} />
                 Mais
               </button>
               {moreOpen && (
@@ -129,10 +129,10 @@ const DashboardTriggersBar: React.FC = () => {
                         type="button"
                         onClick={() => handleAction(opt.id)}
                         className={`w-full flex items-center gap-2 px-3 py-2 text-left text-xs font-medium transition-colors ${
-                          isActive ? 'bg-emerald-600/20 text-emerald-100' : 'text-brand-text-secondary hover:bg-brand-surface-subtle hover:text-brand-text'
+                          isActive ? 'bg-emerald-600/20 text-emerald-100' : 'text-slate-300 hover:bg-slate-700 hover:text-white'
                         }`}
                       >
-                        <Icon className={`w-4 h-4 flex-shrink-0 ${isActive ? 'text-emerald-400' : 'text-brand-text-muted'}`} />
+                        <Icon className={`w-4 h-4 flex-shrink-0 ${isActive ? 'text-emerald-400' : 'text-slate-400'}`} />
                         {opt.label}
                       </button>
                     )

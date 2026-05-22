@@ -358,51 +358,51 @@ Ocorreu um erro ao processar o arquivo. Tente novamente ou verifique se o arquiv
   }
 
   return (
-    <div className="bg-brand-bg min-h-screen">
+    <div className="bg-slate-900 min-h-screen">
       <div className="flex min-h-screen">
         {/* Sidebar - Base de Conhecimentos */}
-        <div className="w-80 bg-slate-800/80 border-r border-brand-border flex flex-col">
-          <div className="p-6 border-b border-brand-border">
-            <h2 className="text-xl font-bold text-brand-text mb-2">🧠 Conhecimento da IA Residente</h2>
-            <p className="text-brand-text-secondary text-sm">IA inteligente com análise cruzada</p>
+        <div className="w-80 bg-slate-800/80 border-r border-slate-700 flex flex-col">
+          <div className="p-6 border-b border-slate-700">
+            <h2 className="text-xl font-bold text-white mb-2">🧠 Conhecimento da IA Residente</h2>
+            <p className="text-slate-300 text-sm">IA inteligente com análise cruzada</p>
           </div>
 
           {/* Estatísticas da Base */}
-          <div className="p-4 border-b border-brand-border">
+          <div className="p-4 border-b border-slate-700">
             <div className="grid grid-cols-2 gap-3">
               <div className="bg-slate-700/50 rounded-lg p-3 text-center">
                 <div className="text-lg font-bold text-blue-400">{documents.length}</div>
-                <div className="text-xs text-brand-text-muted">Documentos</div>
+                <div className="text-xs text-slate-400">Documentos</div>
               </div>
               <div className="bg-slate-700/50 rounded-lg p-3 text-center">
                 <div className="text-lg font-bold text-green-400">{stats.connections.toLocaleString()}</div>
-                <div className="text-xs text-brand-text-muted">Conexões</div>
+                <div className="text-xs text-slate-400">Conexões</div>
               </div>
               <div className="bg-slate-700/50 rounded-lg p-3 text-center">
                 <div className="text-lg font-bold text-purple-400">{stats.precision > 0 ? `${stats.precision}%` : '0%'}</div>
-                <div className="text-xs text-brand-text-muted">Precisão</div>
+                <div className="text-xs text-slate-400">Precisão</div>
               </div>
               <div className="bg-slate-700/50 rounded-lg p-3 text-center">
                 <div className="text-lg font-bold text-orange-400">{stats.studies}</div>
-                <div className="text-xs text-brand-text-muted">Estudos</div>
+                <div className="text-xs text-slate-400">Estudos</div>
               </div>
             </div>
           </div>
 
           {/* Análise Cruzada */}
-          <div className="p-4 border-b border-brand-border">
-            <h3 className="text-sm font-semibold text-brand-text mb-3">🔍 Análise Cruzada</h3>
+          <div className="p-4 border-b border-slate-700">
+            <h3 className="text-sm font-semibold text-white mb-3">🔍 Análise Cruzada</h3>
             <div className="space-y-2">
               <div className="flex items-center justify-between text-xs">
-                <span className="text-brand-text-muted">Similaridades Encontradas</span>
+                <span className="text-slate-400">Similaridades Encontradas</span>
                 <span className="text-green-400 font-bold">{stats.similarities.toLocaleString()}</span>
               </div>
               <div className="flex items-center justify-between text-xs">
-                <span className="text-brand-text-muted">Padrões Identificados</span>
+                <span className="text-slate-400">Padrões Identificados</span>
                 <span className="text-blue-400 font-bold">{stats.patterns}</span>
               </div>
               <div className="flex items-center justify-between text-xs">
-                <span className="text-brand-text-muted">Conexões Semânticas</span>
+                <span className="text-slate-400">Conexões Semânticas</span>
                 <span className="text-purple-400 font-bold">{stats.semanticConnections.toLocaleString()}</span>
               </div>
             </div>
@@ -415,7 +415,7 @@ Ocorreu um erro ao processar o arquivo. Tente novamente ou verifique se o arquiv
                   key={doc.id}
                   className={`p-3 rounded-lg border cursor-pointer transition-colors duration-200 ${selectedDocs.includes(doc.id)
                       ? 'bg-primary-600/20 border-primary-500 text-primary-300'
-                      : 'bg-slate-700/50 border-slate-600 hover:bg-brand-surface-subtle text-brand-text-secondary'
+                      : 'bg-slate-700/50 border-slate-600 hover:bg-slate-700 text-slate-300'
                     }`}
                   onClick={() => {
                     if (selectedDocs.includes(doc.id)) {
@@ -429,7 +429,7 @@ Ocorreu um erro ao processar o arquivo. Tente novamente ou verifique se o arquiv
                     <FileText className="w-5 h-5 mt-0.5 flex-shrink-0" />
                     <div className="flex-1 min-w-0">
                       <h3 className="font-medium text-sm truncate">{doc.name}</h3>
-                      <p className="text-xs text-brand-text-muted mt-1">{doc.type} • {doc.size}</p>
+                      <p className="text-xs text-slate-400 mt-1">{doc.type} • {doc.size}</p>
                       {doc.summary && (
                         <p className="text-xs text-slate-500 mt-1 line-clamp-2">{doc.summary}</p>
                       )}
@@ -440,10 +440,10 @@ Ocorreu um erro ao processar o arquivo. Tente novamente ou verifique se o arquiv
             </div>
           </div>
 
-          <div className="p-4 border-t border-brand-border">
+          <div className="p-4 border-t border-slate-700">
             <button
               onClick={() => setShowUploadModal(true)}
-              className="w-full flex items-center justify-center space-x-2 bg-primary-600 hover:bg-primary-700 text-brand-text py-2 px-4 rounded-lg transition-colors duration-200"
+              className="w-full flex items-center justify-center space-x-2 bg-primary-600 hover:bg-primary-700 text-white py-2 px-4 rounded-lg transition-colors duration-200"
             >
               <Upload className="w-4 h-4" />
               <span>Upload Documento</span>
@@ -454,25 +454,25 @@ Ocorreu um erro ao processar o arquivo. Tente novamente ou verifique se o arquiv
         {/* Main Chat Area */}
         <div className="flex-1 flex flex-col">
           {/* Header */}
-          <div className="bg-slate-800/80 border-b border-brand-border p-4">
+          <div className="bg-slate-800/80 border-b border-slate-700 p-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-3">
                 <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
-                  <Brain className="w-5 h-5 text-brand-text" />
+                  <Brain className="w-5 h-5 text-white" />
                 </div>
                 <div>
-                  <h1 className="text-lg font-bold text-brand-text">IA Documentos</h1>
-                  <p className="text-sm text-brand-text-secondary">Análise semântica inteligente</p>
+                  <h1 className="text-lg font-bold text-white">IA Documentos</h1>
+                  <p className="text-sm text-slate-300">Análise semântica inteligente</p>
                 </div>
               </div>
               <div className="flex items-center space-x-4">
                 {/* Navegação */}
-                <div className="flex bg-brand-surface-subtle rounded-lg p-1">
+                <div className="flex bg-slate-700 rounded-lg p-1">
                   <button
                     onClick={() => setActiveView('chat')}
                     className={`px-3 py-1 rounded-md text-xs font-medium transition-colors ${activeView === 'chat'
-                        ? 'bg-blue-600 text-brand-text'
-                        : 'text-brand-text-secondary hover:text-brand-text'
+                        ? 'bg-blue-600 text-white'
+                        : 'text-slate-300 hover:text-white'
                       }`}
                   >
                     💬 Chat
@@ -480,8 +480,8 @@ Ocorreu um erro ao processar o arquivo. Tente novamente ou verifique se o arquiv
                   <button
                     onClick={() => setActiveView('library')}
                     className={`px-3 py-1 rounded-md text-xs font-medium transition-colors ${activeView === 'library'
-                        ? 'bg-blue-600 text-brand-text'
-                        : 'text-brand-text-secondary hover:text-brand-text'
+                        ? 'bg-blue-600 text-white'
+                        : 'text-slate-300 hover:text-white'
                       }`}
                   >
                     📚 Biblioteca
@@ -489,8 +489,8 @@ Ocorreu um erro ao processar o arquivo. Tente novamente ou verifique se o arquiv
                   <button
                     onClick={() => setActiveView('edit')}
                     className={`px-3 py-1 rounded-md text-xs font-medium transition-colors ${activeView === 'edit'
-                        ? 'bg-blue-600 text-brand-text'
-                        : 'text-brand-text-secondary hover:text-brand-text'
+                        ? 'bg-blue-600 text-white'
+                        : 'text-slate-300 hover:text-white'
                       }`}
                   >
                     ✏️ Editar
@@ -498,7 +498,7 @@ Ocorreu um erro ao processar o arquivo. Tente novamente ou verifique se o arquiv
                 </div>
 
                 <div className="flex items-center space-x-2">
-                  <div className="flex items-center space-x-1 text-sm text-brand-text-secondary">
+                  <div className="flex items-center space-x-1 text-sm text-slate-300">
                     <Database className="w-4 h-4" />
                     <span>{documents.length} docs</span>
                   </div>
@@ -526,16 +526,16 @@ Ocorreu um erro ao processar o arquivo. Tente novamente ou verifique se o arquiv
                         }`}>
                         {message.type === 'ai' && (
                           <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center flex-shrink-0">
-                            <Brain className="w-4 h-4 text-brand-text" />
+                            <Brain className="w-4 h-4 text-white" />
                           </div>
                         )}
                         <div className={`flex-1 ${message.type === 'user'
-                            ? 'bg-primary-600 text-brand-text'
-                            : 'bg-brand-surface-subtle text-slate-200'
+                            ? 'bg-primary-600 text-white'
+                            : 'bg-slate-700 text-slate-200'
                           } rounded-lg p-4`}>
                           <div className="whitespace-pre-wrap">{message.content}</div>
                           <div className="flex items-center justify-between mt-2">
-                            <div className="flex items-center space-x-2 text-xs text-brand-text-muted">
+                            <div className="flex items-center space-x-2 text-xs text-slate-400">
                               <span>{formatTime(message.timestamp)}</span>
                               {message.confidence && (
                                 <span className="flex items-center space-x-1">
@@ -561,16 +561,16 @@ Ocorreu um erro ao processar o arquivo. Tente novamente ou verifique se o arquiv
                   <div className="flex justify-start">
                     <div className="flex items-start space-x-3">
                       <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
-                        <Brain className="w-4 h-4 text-brand-text" />
+                        <Brain className="w-4 h-4 text-white" />
                       </div>
-                      <div className="bg-brand-surface-subtle text-slate-200 rounded-lg p-4">
+                      <div className="bg-slate-700 text-slate-200 rounded-lg p-4">
                         <div className="flex items-center space-x-2">
                           <div className="flex space-x-1">
                             <div className="w-2 h-2 bg-slate-400 rounded-full animate-bounce"></div>
                             <div className="w-2 h-2 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
                             <div className="w-2 h-2 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
                           </div>
-                          <span className="text-sm text-brand-text-muted">IA analisando...</span>
+                          <span className="text-sm text-slate-400">IA analisando...</span>
                         </div>
                       </div>
                     </div>
@@ -583,12 +583,12 @@ Ocorreu um erro ao processar o arquivo. Tente novamente ou verifique se o arquiv
             {activeView === 'library' && (
               <div className="space-y-4">
                 <div className="bg-slate-800/80 rounded-lg p-6">
-                  <h2 className="text-xl font-bold text-brand-text mb-4">📚 Biblioteca de Documentos</h2>
+                  <h2 className="text-xl font-bold text-white mb-4">📚 Biblioteca de Documentos</h2>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {documents.map((doc) => (
                       <div key={doc.id} className="bg-slate-700/50 rounded-lg p-4 border border-slate-600 hover:border-slate-500 transition-colors">
                         <div className="flex items-start justify-between mb-2">
-                          <h3 className="font-semibold text-brand-text text-sm">{doc.title}</h3>
+                          <h3 className="font-semibold text-white text-sm">{doc.title}</h3>
                           <div className="flex space-x-1">
                             <button
                               onClick={() => {
@@ -613,16 +613,16 @@ Ocorreu um erro ao processar o arquivo. Tente novamente ou verifique se o arquiv
                           </div>
                         </div>
                         {doc.summary && (
-                          <p className="text-brand-text-secondary text-xs mb-2 line-clamp-3">{doc.summary}</p>
+                          <p className="text-slate-300 text-xs mb-2 line-clamp-3">{doc.summary}</p>
                         )}
-                        <div className="flex items-center justify-between text-xs text-brand-text-muted">
+                        <div className="flex items-center justify-between text-xs text-slate-400">
                           <span>{doc.keywords?.length || 0} termos</span>
                           <span>{new Date(doc.created_at).toLocaleDateString('pt-BR')}</span>
                         </div>
                         {doc.keywords && doc.keywords.length > 0 && (
                           <div className="mt-2 flex flex-wrap gap-1">
                             {doc.keywords.slice(0, 3).map((keyword, idx) => (
-                              <span key={idx} className="bg-slate-600 text-brand-text-secondary text-xs px-2 py-1 rounded">
+                              <span key={idx} className="bg-slate-600 text-slate-300 text-xs px-2 py-1 rounded">
                                 {keyword}
                               </span>
                             ))}
@@ -642,13 +642,13 @@ Ocorreu um erro ao processar o arquivo. Tente novamente ou verifique se o arquiv
               <div className="space-y-4">
                 <div className="bg-slate-800/80 rounded-lg p-6">
                   <div className="flex items-center justify-between mb-4">
-                    <h2 className="text-xl font-bold text-brand-text">✏️ Editar Documento</h2>
+                    <h2 className="text-xl font-bold text-white">✏️ Editar Documento</h2>
                     <button
                       onClick={() => {
                         setEditingDoc(null)
                         setActiveView('library')
                       }}
-                      className="text-brand-text-muted hover:text-brand-text"
+                      className="text-slate-400 hover:text-white"
                     >
                       ← Voltar
                     </button>
@@ -656,38 +656,38 @@ Ocorreu um erro ao processar o arquivo. Tente novamente ou verifique se o arquiv
 
                   <div className="space-y-4">
                     <div>
-                      <label className="block text-sm font-medium text-brand-text-secondary mb-2">
+                      <label className="block text-sm font-medium text-slate-300 mb-2">
                         Título
                       </label>
                       <input
                         type="text"
                         value={editingDoc.title}
                         onChange={(e) => setEditingDoc({ ...editingDoc, title: e.target.value })}
-                        className="w-full px-3 py-2 bg-brand-surface-subtle border border-slate-600 rounded-lg text-brand-text focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-brand-text-secondary mb-2">
+                      <label className="block text-sm font-medium text-slate-300 mb-2">
                         Resumo
                       </label>
                       <textarea
                         value={editingDoc.summary || ''}
                         onChange={(e) => setEditingDoc({ ...editingDoc, summary: e.target.value })}
                         rows={4}
-                        className="w-full px-3 py-2 bg-brand-surface-subtle border border-slate-600 rounded-lg text-brand-text focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-brand-text-secondary mb-2">
+                      <label className="block text-sm font-medium text-slate-300 mb-2">
                         Palavras-chave (separadas por vírgula)
                       </label>
                       <input
                         type="text"
                         value={editingDoc.keywords?.join(', ') || ''}
                         onChange={(e) => setEditingDoc({ ...editingDoc, keywords: e.target.value.split(',').map(k => k.trim()) })}
-                        className="w-full px-3 py-2 bg-brand-surface-subtle border border-slate-600 rounded-lg text-brand-text focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                       />
                     </div>
 
@@ -699,7 +699,7 @@ Ocorreu um erro ao processar o arquivo. Tente novamente ou verifique se o arquiv
                           setActiveView('library')
                           setEditingDoc(null)
                         }}
-                        className="bg-blue-600 hover:bg-blue-700 text-brand-text px-4 py-2 rounded-lg transition-colors"
+                        className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors"
                       >
                         💾 Salvar Alterações
                       </button>
@@ -708,7 +708,7 @@ Ocorreu um erro ao processar o arquivo. Tente novamente ou verifique se o arquiv
                           setActiveView('library')
                           setEditingDoc(null)
                         }}
-                        className="bg-slate-600 hover:bg-brand-surface-subtle text-brand-text px-4 py-2 rounded-lg transition-colors"
+                        className="bg-slate-600 hover:bg-slate-700 text-white px-4 py-2 rounded-lg transition-colors"
                       >
                         ❌ Cancelar
                       </button>
@@ -722,11 +722,11 @@ Ocorreu um erro ao processar o arquivo. Tente novamente ou verifique se o arquiv
               <div className="flex items-center justify-center h-64">
                 <div className="text-center">
                   <div className="text-6xl mb-4">📚</div>
-                  <h3 className="text-xl font-semibold text-brand-text mb-2">Selecione um documento para editar</h3>
-                  <p className="text-brand-text-muted mb-4">Vá para a Biblioteca e clique em "Editar" em qualquer documento</p>
+                  <h3 className="text-xl font-semibold text-white mb-2">Selecione um documento para editar</h3>
+                  <p className="text-slate-400 mb-4">Vá para a Biblioteca e clique em "Editar" em qualquer documento</p>
                   <button
                     onClick={() => setActiveView('library')}
-                    className="bg-blue-600 hover:bg-blue-700 text-brand-text px-4 py-2 rounded-lg transition-colors"
+                    className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors"
                   >
                     📚 Ir para Biblioteca
                   </button>
@@ -737,7 +737,7 @@ Ocorreu um erro ao processar o arquivo. Tente novamente ou verifique se o arquiv
 
           {/* Input - Visível apenas na view de chat */}
           {activeView === 'chat' && (
-            <div className="bg-slate-800/80 border-t border-brand-border p-4">
+            <div className="bg-slate-800/80 border-t border-slate-700 p-4">
               <div className="flex items-center space-x-3">
                 <div className="flex-1">
                   <input
@@ -747,16 +747,16 @@ Ocorreu um erro ao processar o arquivo. Tente novamente ou verifique se o arquiv
                     onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
                     placeholder={isInitialized ? "Faça uma pergunta sobre os documentos..." : "Inicializando IA local..."}
                     disabled={!isInitialized}
-                    className={`w-full px-4 py-3 border rounded-lg text-brand-text placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary-500 ${isInitialized
-                        ? 'bg-brand-surface-subtle border-slate-600'
-                        : 'bg-brand-surface border-brand-border cursor-not-allowed opacity-50'
+                    className={`w-full px-4 py-3 border rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary-500 ${isInitialized
+                        ? 'bg-slate-700 border-slate-600'
+                        : 'bg-slate-800 border-slate-700 cursor-not-allowed opacity-50'
                       }`}
                   />
                 </div>
                 <button
                   onClick={handleSendMessage}
                   disabled={!inputMessage.trim() || !isInitialized}
-                  className="bg-primary-600 hover:bg-primary-700 disabled:bg-slate-600 disabled:cursor-not-allowed text-brand-text p-3 rounded-lg transition-colors duration-200 flex items-center justify-center"
+                  className="bg-primary-600 hover:bg-primary-700 disabled:bg-slate-600 disabled:cursor-not-allowed text-white p-3 rounded-lg transition-colors duration-200 flex items-center justify-center"
                 >
                   <Send className="w-5 h-5" />
                 </button>
@@ -769,13 +769,13 @@ Ocorreu um erro ao processar o arquivo. Tente novamente ou verifique se o arquiv
       {/* Upload Modal */}
       {showUploadModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-brand-surface rounded-lg max-w-2xl w-full">
+          <div className="bg-slate-800 rounded-lg max-w-2xl w-full">
             <div className="p-6">
               <div className="flex justify-between items-center mb-6">
-                <h2 className="text-2xl font-bold text-brand-text">📄 Upload de Documento</h2>
+                <h2 className="text-2xl font-bold text-white">📄 Upload de Documento</h2>
                 <button
                   onClick={() => setShowUploadModal(false)}
-                  className="text-brand-text-muted hover:text-brand-text"
+                  className="text-slate-400 hover:text-white"
                 >
                   <X className="w-6 h-6" />
                 </button>
@@ -783,19 +783,19 @@ Ocorreu um erro ao processar o arquivo. Tente novamente ou verifique se o arquiv
 
               <div className="space-y-6">
                 <div className="text-center">
-                  <div className="w-16 h-16 bg-brand-surface-subtle rounded-full flex items-center justify-center mx-auto mb-4">
-                    <Upload className="w-8 h-8 text-brand-text-muted" />
+                  <div className="w-16 h-16 bg-slate-700 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <Upload className="w-8 h-8 text-slate-400" />
                   </div>
-                  <h3 className="text-lg font-semibold text-brand-text mb-2">
+                  <h3 className="text-lg font-semibold text-white mb-2">
                     Carregue seu documento
                   </h3>
-                  <p className="text-brand-text-secondary mb-4">
+                  <p className="text-slate-300 mb-4">
                     A IA irá analisar e indexar o conteúdo para busca semântica
                   </p>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-brand-text-secondary mb-2">
+                  <label className="block text-sm font-medium text-slate-300 mb-2">
                     Selecione o arquivo
                   </label>
                   <input
@@ -821,8 +821,8 @@ Ocorreu um erro ao processar o arquivo. Tente novamente ou verifique se o arquiv
                 )}
 
                 <div className="bg-slate-700/50 rounded-lg p-4">
-                  <h4 className="text-sm font-semibold text-brand-text mb-2">🔍 O que a IA fará:</h4>
-                  <ul className="text-sm text-brand-text-secondary space-y-1">
+                  <h4 className="text-sm font-semibold text-white mb-2">🔍 O que a IA fará:</h4>
+                  <ul className="text-sm text-slate-300 space-y-1">
                     <li>• Extrair e analisar o conteúdo</li>
                     <li>• Identificar conceitos e palavras-chave</li>
                     <li>• Indexar para busca semântica</li>

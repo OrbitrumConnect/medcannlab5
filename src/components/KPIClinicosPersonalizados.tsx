@@ -266,7 +266,7 @@ const KPIClinicosPersonalizados: React.FC<KPIClinicosPersonalizadosProps> = ({ c
       <div className="bg-gradient-to-r from-indigo-800 to-purple-700 rounded-lg p-6">
         <div className="flex items-center justify-between mb-4">
           <div>
-            <h2 className="text-2xl font-bold text-brand-text mb-2 flex items-center space-x-2">
+            <h2 className="text-2xl font-bold text-white mb-2 flex items-center space-x-2">
               <Brain className="w-6 h-6" />
               <span>KPIs Clínicos Personalizados</span>
             </h2>
@@ -276,7 +276,7 @@ const KPIClinicosPersonalizados: React.FC<KPIClinicosPersonalizadosProps> = ({ c
           </div>
           <button
             onClick={() => setShowKPICreator(true)}
-            className="flex items-center space-x-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-brand-text rounded-md transition-colors"
+            className="flex items-center space-x-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-md transition-colors"
           >
             <Plus className="w-4 h-4" />
             <span>Criar KPI</span>
@@ -295,7 +295,7 @@ const KPIClinicosPersonalizados: React.FC<KPIClinicosPersonalizadosProps> = ({ c
               key={tab.key}
               onClick={() => setActiveTab(tab.key as any)}
               className={`flex items-center space-x-2 px-4 py-2 rounded-md transition-colors ${activeTab === tab.key
-                ? 'bg-indigo-600 text-brand-text'
+                ? 'bg-indigo-600 text-white'
                 : 'bg-indigo-700 text-indigo-200 hover:bg-indigo-600'
                 }`}
             >
@@ -307,7 +307,7 @@ const KPIClinicosPersonalizados: React.FC<KPIClinicosPersonalizadosProps> = ({ c
       </div>
 
       {/* Filtros */}
-      <div className="bg-brand-surface border border-brand-border rounded-lg p-4">
+      <div className="bg-slate-800 border border-slate-700 rounded-lg p-4">
         <div className="flex flex-wrap gap-2">
           {[
             { key: 'all', label: 'Todos' },
@@ -321,8 +321,8 @@ const KPIClinicosPersonalizados: React.FC<KPIClinicosPersonalizadosProps> = ({ c
               key={category.key}
               onClick={() => setSelectedCategory(category.key as any)}
               className={`px-3 py-1 rounded-md text-sm transition-colors ${selectedCategory === category.key
-                ? 'bg-indigo-600 text-brand-text'
-                : 'bg-brand-surface-subtle text-brand-text-secondary hover:bg-slate-600'
+                ? 'bg-indigo-600 text-white'
+                : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
                 }`}
             >
               {category.label}
@@ -336,56 +336,56 @@ const KPIClinicosPersonalizados: React.FC<KPIClinicosPersonalizadosProps> = ({ c
         <div className="space-y-6">
           {/* Métricas Gerais */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="bg-brand-surface border border-brand-border rounded-lg p-6">
+            <div className="bg-slate-800 border border-slate-700 rounded-lg p-6">
               <div className="flex items-center justify-between mb-2">
-                <h3 className="text-brand-text font-semibold">KPIs Ativos</h3>
+                <h3 className="text-white font-semibold">KPIs Ativos</h3>
                 <BarChart3 className="w-5 h-5 text-indigo-400" />
               </div>
-              <p className="text-3xl font-bold text-brand-text">{filteredKPIs.length}</p>
+              <p className="text-3xl font-bold text-white">{filteredKPIs.length}</p>
               <p className="text-green-400 text-sm">+2 este mês</p>
             </div>
-            <div className="bg-brand-surface border border-brand-border rounded-lg p-6">
+            <div className="bg-slate-800 border border-slate-700 rounded-lg p-6">
               <div className="flex items-center justify-between mb-2">
-                <h3 className="text-brand-text font-semibold">Pacientes Monitorados</h3>
+                <h3 className="text-white font-semibold">Pacientes Monitorados</h3>
                 <Users className="w-5 h-5 text-blue-400" />
               </div>
-              <p className="text-3xl font-bold text-brand-text">{patients.length}</p>
+              <p className="text-3xl font-bold text-white">{patients.length}</p>
               <p className="text-green-400 text-sm">100% TEA</p>
             </div>
-            <div className="bg-brand-surface border border-brand-border rounded-lg p-6">
+            <div className="bg-slate-800 border border-slate-700 rounded-lg p-6">
               <div className="flex items-center justify-between mb-2">
-                <h3 className="text-brand-text font-semibold">KPIs da Nôa</h3>
+                <h3 className="text-white font-semibold">KPIs da Nôa</h3>
                 <Brain className="w-5 h-5 text-purple-400" />
               </div>
-              <p className="text-3xl font-bold text-brand-text">
+              <p className="text-3xl font-bold text-white">
                 {filteredKPIs.filter(kpi => kpi.noaGenerated).length}
               </p>
               <p className="text-blue-400 text-sm">IA Gerados</p>
             </div>
-            <div className="bg-brand-surface border border-brand-border rounded-lg p-6">
+            <div className="bg-slate-800 border border-slate-700 rounded-lg p-6">
               <div className="flex items-center justify-between mb-2">
-                <h3 className="text-brand-text font-semibold">Consentimento Pesquisa</h3>
+                <h3 className="text-white font-semibold">Consentimento Pesquisa</h3>
                 <CheckCircle className="w-5 h-5 text-green-400" />
               </div>
-              <p className="text-3xl font-bold text-brand-text">
+              <p className="text-3xl font-bold text-white">
                 {patients.filter(p => p.consentResearch).length}
               </p>
-              <p className="text-brand-text-muted text-sm">de {patients.length}</p>
+              <p className="text-slate-400 text-sm">de {patients.length}</p>
             </div>
           </div>
 
           {/* Lista de KPIs */}
           <div className="space-y-4">
             {filteredKPIs.map((kpi) => (
-              <div key={kpi.id} className="bg-brand-surface border border-brand-border rounded-lg p-6 hover:border-slate-600 transition-colors">
+              <div key={kpi.id} className="bg-slate-800 border border-slate-700 rounded-lg p-6 hover:border-slate-600 transition-colors">
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center space-x-3">
                     <div className={`p-2 rounded-lg ${getCategoryColor(kpi.category)}`}>
                       {getCategoryIcon(kpi.category)}
                     </div>
                     <div>
-                      <h3 className="text-brand-text font-semibold">{kpi.name}</h3>
-                      <p className="text-brand-text-muted text-sm">{kpi.description}</p>
+                      <h3 className="text-white font-semibold">{kpi.name}</h3>
+                      <p className="text-slate-400 text-sm">{kpi.description}</p>
                     </div>
                   </div>
                   <div className="flex items-center space-x-2">
@@ -402,18 +402,18 @@ const KPIClinicosPersonalizados: React.FC<KPIClinicosPersonalizadosProps> = ({ c
 
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
                   <div className="text-center">
-                    <p className="text-2xl font-bold text-brand-text">{kpi.current}</p>
-                    <p className="text-brand-text-muted text-sm">Atual</p>
+                    <p className="text-2xl font-bold text-white">{kpi.current}</p>
+                    <p className="text-slate-400 text-sm">Atual</p>
                   </div>
                   <div className="text-center">
                     <p className="text-2xl font-bold text-indigo-400">{kpi.target}</p>
-                    <p className="text-brand-text-muted text-sm">Meta</p>
+                    <p className="text-slate-400 text-sm">Meta</p>
                   </div>
                   <div className="text-center">
                     <p className={`text-2xl font-bold ${getStatusColor(kpi.current, kpi.thresholds)}`}>
                       {getStatusText(kpi.current, kpi.thresholds)}
                     </p>
-                    <p className="text-brand-text-muted text-sm">Status</p>
+                    <p className="text-slate-400 text-sm">Status</p>
                   </div>
                   <div className="text-center">
                     <div className="flex items-center justify-center space-x-1">
@@ -424,12 +424,12 @@ const KPIClinicosPersonalizados: React.FC<KPIClinicosPersonalizadosProps> = ({ c
                         {kpi.trendValue > 0 ? '+' : ''}{kpi.trendValue}%
                       </span>
                     </div>
-                    <p className="text-brand-text-muted text-sm">Tendência</p>
+                    <p className="text-slate-400 text-sm">Tendência</p>
                   </div>
                 </div>
 
                 <div className="flex items-center justify-between">
-                  <div className="text-brand-text-muted text-sm">
+                  <div className="text-slate-400 text-sm">
                     <p>Frequência: {kpi.frequency} • Última atualização: {new Date(kpi.lastUpdated).toLocaleString('pt-BR')}</p>
                   </div>
                   <div className="flex items-center space-x-2">
@@ -452,27 +452,27 @@ const KPIClinicosPersonalizados: React.FC<KPIClinicosPersonalizadosProps> = ({ c
 
       {activeTab === 'criador' && (
         <div className="space-y-6">
-          <div className="bg-brand-surface border border-brand-border rounded-lg p-6">
-            <h3 className="text-brand-text font-semibold mb-4">Criar Novo KPI Clínico</h3>
+          <div className="bg-slate-800 border border-slate-700 rounded-lg p-6">
+            <h3 className="text-white font-semibold mb-4">Criar Novo KPI Clínico</h3>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-brand-text-secondary text-sm mb-2">Nome do KPI</label>
+                <label className="block text-slate-300 text-sm mb-2">Nome do KPI</label>
                 <input
                   type="text"
                   value={newKPI.name || ''}
                   onChange={(e) => setNewKPI({ ...newKPI, name: e.target.value })}
-                  className="w-full bg-brand-surface-subtle text-brand-text px-3 py-2 rounded-md border border-slate-600 focus:border-indigo-500 focus:outline-none"
+                  className="w-full bg-slate-700 text-white px-3 py-2 rounded-md border border-slate-600 focus:border-indigo-500 focus:outline-none"
                   placeholder="Ex: Frequência de Crises Epilépticas"
                 />
               </div>
 
               <div>
-                <label className="block text-brand-text-secondary text-sm mb-2">Categoria</label>
+                <label className="block text-slate-300 text-sm mb-2">Categoria</label>
                 <select
                   value={newKPI.category || 'neurologico'}
                   onChange={(e) => setNewKPI({ ...newKPI, category: e.target.value as any })}
-                  className="w-full bg-brand-surface-subtle text-brand-text px-3 py-2 rounded-md border border-slate-600 focus:border-indigo-500 focus:outline-none"
+                  className="w-full bg-slate-700 text-white px-3 py-2 rounded-md border border-slate-600 focus:border-indigo-500 focus:outline-none"
                 >
                   <option value="neurologico">Neurológico</option>
                   <option value="comportamental">Comportamental</option>
@@ -483,11 +483,11 @@ const KPIClinicosPersonalizados: React.FC<KPIClinicosPersonalizadosProps> = ({ c
               </div>
 
               <div>
-                <label className="block text-brand-text-secondary text-sm mb-2">Tipo</label>
+                <label className="block text-slate-300 text-sm mb-2">Tipo</label>
                 <select
                   value={newKPI.type || 'percentage'}
                   onChange={(e) => setNewKPI({ ...newKPI, type: e.target.value as any })}
-                  className="w-full bg-brand-surface-subtle text-brand-text px-3 py-2 rounded-md border border-slate-600 focus:border-indigo-500 focus:outline-none"
+                  className="w-full bg-slate-700 text-white px-3 py-2 rounded-md border border-slate-600 focus:border-indigo-500 focus:outline-none"
                 >
                   <option value="percentage">Percentual (%)</option>
                   <option value="count">Contagem</option>
@@ -498,33 +498,33 @@ const KPIClinicosPersonalizados: React.FC<KPIClinicosPersonalizadosProps> = ({ c
               </div>
 
               <div>
-                <label className="block text-brand-text-secondary text-sm mb-2">Meta</label>
+                <label className="block text-slate-300 text-sm mb-2">Meta</label>
                 <input
                   type="number"
                   value={newKPI.target || ''}
                   onChange={(e) => setNewKPI({ ...newKPI, target: Number(e.target.value) })}
-                  className="w-full bg-brand-surface-subtle text-brand-text px-3 py-2 rounded-md border border-slate-600 focus:border-indigo-500 focus:outline-none"
+                  className="w-full bg-slate-700 text-white px-3 py-2 rounded-md border border-slate-600 focus:border-indigo-500 focus:outline-none"
                   placeholder="Valor da meta"
                 />
               </div>
 
               <div>
-                <label className="block text-brand-text-secondary text-sm mb-2">Unidade</label>
+                <label className="block text-slate-300 text-sm mb-2">Unidade</label>
                 <input
                   type="text"
                   value={newKPI.unit || ''}
                   onChange={(e) => setNewKPI({ ...newKPI, unit: e.target.value })}
-                  className="w-full bg-brand-surface-subtle text-brand-text px-3 py-2 rounded-md border border-slate-600 focus:border-indigo-500 focus:outline-none"
+                  className="w-full bg-slate-700 text-white px-3 py-2 rounded-md border border-slate-600 focus:border-indigo-500 focus:outline-none"
                   placeholder="Ex: %, minutos, vezes/dia"
                 />
               </div>
 
               <div>
-                <label className="block text-brand-text-secondary text-sm mb-2">Frequência</label>
+                <label className="block text-slate-300 text-sm mb-2">Frequência</label>
                 <select
                   value={newKPI.frequency || 'daily'}
                   onChange={(e) => setNewKPI({ ...newKPI, frequency: e.target.value as any })}
-                  className="w-full bg-brand-surface-subtle text-brand-text px-3 py-2 rounded-md border border-slate-600 focus:border-indigo-500 focus:outline-none"
+                  className="w-full bg-slate-700 text-white px-3 py-2 rounded-md border border-slate-600 focus:border-indigo-500 focus:outline-none"
                 >
                   <option value="daily">Diário</option>
                   <option value="weekly">Semanal</option>
@@ -535,22 +535,22 @@ const KPIClinicosPersonalizados: React.FC<KPIClinicosPersonalizadosProps> = ({ c
             </div>
 
             <div className="mt-4">
-              <label className="block text-brand-text-secondary text-sm mb-2">Descrição</label>
+              <label className="block text-slate-300 text-sm mb-2">Descrição</label>
               <textarea
                 value={newKPI.description || ''}
                 onChange={(e) => setNewKPI({ ...newKPI, description: e.target.value })}
-                className="w-full bg-brand-surface-subtle text-brand-text px-3 py-2 rounded-md border border-slate-600 focus:border-indigo-500 focus:outline-none"
+                className="w-full bg-slate-700 text-white px-3 py-2 rounded-md border border-slate-600 focus:border-indigo-500 focus:outline-none"
                 rows={3}
                 placeholder="Descrição detalhada do KPI..."
               />
             </div>
 
             <div className="mt-4">
-              <label className="block text-brand-text-secondary text-sm mb-2">Paciente Específico (Opcional)</label>
+              <label className="block text-slate-300 text-sm mb-2">Paciente Específico (Opcional)</label>
               <select
                 value={newKPI.patientId || ''}
                 onChange={(e) => setNewKPI({ ...newKPI, patientId: e.target.value })}
-                className="w-full bg-brand-surface-subtle text-brand-text px-3 py-2 rounded-md border border-slate-600 focus:border-indigo-500 focus:outline-none"
+                className="w-full bg-slate-700 text-white px-3 py-2 rounded-md border border-slate-600 focus:border-indigo-500 focus:outline-none"
               >
                 <option value="">KPI Global</option>
                 {patients.map(patient => (
@@ -562,7 +562,7 @@ const KPIClinicosPersonalizados: React.FC<KPIClinicosPersonalizadosProps> = ({ c
             <div className="flex items-center space-x-4 mt-6">
               <button
                 onClick={handleCreateKPI}
-                className="flex items-center space-x-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-brand-text rounded-md transition-colors"
+                className="flex items-center space-x-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-md transition-colors"
               >
                 <Save className="w-4 h-4" />
                 <span>Criar KPI</span>
@@ -572,7 +572,7 @@ const KPIClinicosPersonalizados: React.FC<KPIClinicosPersonalizadosProps> = ({ c
                   setNewKPI({})
                   setShowKPICreator(false)
                 }}
-                className="flex items-center space-x-2 px-4 py-2 bg-slate-600 hover:bg-brand-surface-subtle text-brand-text rounded-md transition-colors"
+                className="flex items-center space-x-2 px-4 py-2 bg-slate-600 hover:bg-slate-700 text-white rounded-md transition-colors"
               >
                 <X className="w-4 h-4" />
                 <span>Cancelar</span>
@@ -585,15 +585,15 @@ const KPIClinicosPersonalizados: React.FC<KPIClinicosPersonalizadosProps> = ({ c
       {activeTab === 'pacientes' && (
         <div className="space-y-4">
           {patients.map((patient) => (
-            <div key={patient.id} className="bg-brand-surface border border-brand-border rounded-lg p-6">
+            <div key={patient.id} className="bg-slate-800 border border-slate-700 rounded-lg p-6">
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center space-x-3">
                   <div className="w-12 h-12 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full flex items-center justify-center">
-                    <Brain className="w-6 h-6 text-brand-text" />
+                    <Brain className="w-6 h-6 text-white" />
                   </div>
                   <div>
-                    <h3 className="text-brand-text font-semibold">{patient.name}</h3>
-                    <p className="text-brand-text-muted text-sm">{patient.age} anos • {patient.diagnosis}</p>
+                    <h3 className="text-white font-semibold">{patient.name}</h3>
+                    <p className="text-slate-400 text-sm">{patient.age} anos • {patient.diagnosis}</p>
                   </div>
                 </div>
                 <div className="flex items-center space-x-2">
@@ -616,10 +616,10 @@ const KPIClinicosPersonalizados: React.FC<KPIClinicosPersonalizadosProps> = ({ c
               </div>
 
               <div className="mb-4">
-                <p className="text-brand-text-secondary text-sm mb-2">Perfil Neurológico:</p>
+                <p className="text-slate-300 text-sm mb-2">Perfil Neurológico:</p>
                 <div className="flex flex-wrap gap-1">
                   {patient.neurologicalProfile.map((profile, index) => (
-                    <span key={index} className="px-2 py-1 bg-brand-surface-subtle text-brand-text-secondary rounded text-xs">
+                    <span key={index} className="px-2 py-1 bg-slate-700 text-slate-300 rounded text-xs">
                       {profile}
                     </span>
                   ))}
@@ -627,7 +627,7 @@ const KPIClinicosPersonalizados: React.FC<KPIClinicosPersonalizadosProps> = ({ c
               </div>
 
               <div className="flex items-center justify-between">
-                <div className="text-brand-text-muted text-sm">
+                <div className="text-slate-400 text-sm">
                   <p>KPIs Personalizados: {patient.customKPIs.length}</p>
                 </div>
                 <div className="flex items-center space-x-2">
@@ -648,14 +648,14 @@ const KPIClinicosPersonalizados: React.FC<KPIClinicosPersonalizadosProps> = ({ c
 
       {activeTab === 'configuracoes' && (
         <div className="space-y-6">
-          <div className="bg-brand-surface border border-brand-border rounded-lg p-6">
-            <h3 className="text-brand-text font-semibold mb-4">Configurações de Monitoramento</h3>
+          <div className="bg-slate-800 border border-slate-700 rounded-lg p-6">
+            <h3 className="text-white font-semibold mb-4">Configurações de Monitoramento</h3>
 
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <h4 className="text-brand-text font-medium">Integração com Nôa Esperança</h4>
-                  <p className="text-brand-text-muted text-sm">Permitir que a IA sugira KPIs baseados nos dados do paciente</p>
+                  <h4 className="text-white font-medium">Integração com Nôa Esperança</h4>
+                  <p className="text-slate-400 text-sm">Permitir que a IA sugira KPIs baseados nos dados do paciente</p>
                 </div>
                 <button className="w-12 h-6 bg-indigo-600 rounded-full relative">
                   <div className="w-5 h-5 bg-white rounded-full absolute right-0.5 top-0.5"></div>
@@ -664,8 +664,8 @@ const KPIClinicosPersonalizados: React.FC<KPIClinicosPersonalizadosProps> = ({ c
 
               <div className="flex items-center justify-between">
                 <div>
-                  <h4 className="text-brand-text font-medium">Alertas Automáticos</h4>
-                  <p className="text-brand-text-muted text-sm">Notificar quando KPIs atingem níveis críticos</p>
+                  <h4 className="text-white font-medium">Alertas Automáticos</h4>
+                  <p className="text-slate-400 text-sm">Notificar quando KPIs atingem níveis críticos</p>
                 </div>
                 <button className="w-12 h-6 bg-indigo-600 rounded-full relative">
                   <div className="w-5 h-5 bg-white rounded-full absolute right-0.5 top-0.5"></div>
@@ -674,8 +674,8 @@ const KPIClinicosPersonalizados: React.FC<KPIClinicosPersonalizadosProps> = ({ c
 
               <div className="flex items-center justify-between">
                 <div>
-                  <h4 className="text-brand-text font-medium">Compartilhamento de Dados</h4>
-                  <p className="text-brand-text-muted text-sm">Permitir compartilhamento anônimo para pesquisa</p>
+                  <h4 className="text-white font-medium">Compartilhamento de Dados</h4>
+                  <p className="text-slate-400 text-sm">Permitir compartilhamento anônimo para pesquisa</p>
                 </div>
                 <button className="w-12 h-6 bg-indigo-600 rounded-full relative">
                   <div className="w-5 h-5 bg-white rounded-full absolute right-0.5 top-0.5"></div>

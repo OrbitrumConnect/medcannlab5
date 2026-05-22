@@ -103,13 +103,13 @@ const tabBaseButton =
 const getTabButtonStyles = (active: boolean, gradient?: string) => {
   if (gradient) {
     return {
-      className: `${tabBaseButton} text-brand-text shadow-md`,
+      className: `${tabBaseButton} text-white shadow-md`,
       style: { background: gradient, border: '1px solid rgba(0,0,0,0.05)' }
     }
   }
 
   return {
-    className: `${tabBaseButton} ${active ? 'text-brand-text shadow-lg' : 'text-[#C8D6E5]'}`,
+    className: `${tabBaseButton} ${active ? 'text-white shadow-lg' : 'text-[#C8D6E5]'}`,
     style: active
       ? { background: accentGradient, border: '1px solid rgba(0,193,106,0.35)' }
       : { background: 'rgba(12, 34, 54, 0.6)', border: '1px solid rgba(0,193,106,0.08)' }
@@ -567,7 +567,7 @@ const AlunoDashboard: React.FC = () => {
       case 'Concluído': return 'bg-green-500/20 text-green-400 border border-green-500/30'
       case 'Disponível': return 'bg-green-500/20 text-green-400 border border-green-500/30'
       case 'Pendente': return 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30'
-      default: return 'bg-slate-500/20 text-brand-text-muted border border-slate-500/30'
+      default: return 'bg-slate-500/20 text-slate-400 border border-slate-500/30'
     }
   }
 
@@ -593,8 +593,8 @@ const AlunoDashboard: React.FC = () => {
                 <Monitor className="w-5 h-5 text-emerald-400" />
               </div>
               <div>
-                <h4 className="text-sm font-bold text-brand-text leading-none mb-1">🕹️ Estação de Trabalho Ativa</h4>
-                <p className="text-xs text-brand-text-muted">Troque entre seus terminais de curso instalados</p>
+                <h4 className="text-sm font-bold text-white leading-none mb-1">🕹️ Estação de Trabalho Ativa</h4>
+                <p className="text-xs text-slate-400">Troque entre seus terminais de curso instalados</p>
               </div>
             </div>
 
@@ -605,7 +605,7 @@ const AlunoDashboard: React.FC = () => {
                   const enrollment = allEnrollments.find(en => en.id === e.target.value)
                   if (enrollment) handleSwitchCourse(enrollment)
                 }}
-                className="appearance-none bg-slate-900/60 text-brand-text text-sm font-bold py-2.5 pl-4 pr-10 rounded-xl border border-emerald-500/30 focus:outline-none focus:border-emerald-500 transition-all cursor-pointer hover:bg-brand-surface"
+                className="appearance-none bg-slate-900/60 text-white text-sm font-bold py-2.5 pl-4 pr-10 rounded-xl border border-emerald-500/30 focus:outline-none focus:border-emerald-500 transition-all cursor-pointer hover:bg-slate-800"
               >
                 {allEnrollments.map(en => (
                   <option key={en.id} value={en.id}>
@@ -621,42 +621,42 @@ const AlunoDashboard: React.FC = () => {
         {/* Cards de Estatísticas */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-5">
           {/* Dias na Plataforma */}
-          <div className="bg-slate-900/60 border border-brand-border-subtle rounded-xl p-6">
+          <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-6">
             <div className="flex items-center justify-between mb-4">
               <Clock className="w-9 h-9 text-indigo-300" />
-              <span className="text-3xl font-bold text-brand-text">{studentStats.daysOnPlatform}</span>
+              <span className="text-3xl font-bold text-white">{studentStats.daysOnPlatform}</span>
             </div>
-            <h3 className="text-lg font-semibold text-brand-text-secondary mb-2">Dias na Plataforma</h3>
-            <p className="text-base text-brand-text-muted">Tempo de uso do sistema</p>
+            <h3 className="text-lg font-semibold text-slate-300 mb-2">Dias na Plataforma</h3>
+            <p className="text-base text-slate-400">Tempo de uso do sistema</p>
           </div>
 
           {/* Módulos */}
-          <div className="bg-slate-900/60 border border-brand-border-subtle rounded-xl p-6">
+          <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-6">
             <div className="flex items-center justify-between mb-4">
               <BookOpen className="w-9 h-9 text-primary-300" />
-              <span className="text-3xl font-bold text-brand-text">{totalModulos}</span>
+              <span className="text-3xl font-bold text-white">{totalModulos}</span>
             </div>
-            <h3 className="text-lg font-semibold text-brand-text-secondary mb-2">Módulos</h3>
-            <div className="space-y-1.5 text-base text-brand-text-muted">
+            <h3 className="text-lg font-semibold text-slate-300 mb-2">Módulos</h3>
+            <div className="space-y-1.5 text-base text-slate-400">
               <div className="flex justify-between">
                 <span>Concluídos:</span>
                 <span className="text-emerald-400">{modulosConcluidos}</span>
               </div>
               <div className="flex justify-between">
                 <span>Total:</span>
-                <span className="text-brand-text-secondary">{totalModulos}</span>
+                <span className="text-slate-300">{totalModulos}</span>
               </div>
             </div>
           </div>
 
           {/* Progresso do Curso */}
-          <div className="bg-slate-900/60 border border-brand-border-subtle rounded-xl p-6">
+          <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-6">
             <div className="flex items-center justify-between mb-4">
               <Target className="w-9 h-9 text-emerald-300" />
-              <span className="text-3xl font-bold text-brand-text">{progressoGeral}%</span>
+              <span className="text-3xl font-bold text-white">{progressoGeral}%</span>
             </div>
-            <h3 className="text-lg font-semibold text-brand-text-secondary mb-2">Progresso Geral</h3>
-            <div className="space-y-1.5 text-base text-brand-text-muted">
+            <h3 className="text-lg font-semibold text-slate-300 mb-2">Progresso Geral</h3>
+            <div className="space-y-1.5 text-base text-slate-400">
               <div className="flex justify-between">
                 <span>Curso:</span>
                 <span className="text-emerald-400">{mainCourse?.title || 'Pós-Graduação'}</span>
@@ -665,13 +665,13 @@ const AlunoDashboard: React.FC = () => {
           </div>
 
           {/* Fórum */}
-          <div className="bg-slate-900/60 border border-brand-border-subtle rounded-xl p-6">
+          <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-6">
             <div className="flex items-center justify-between mb-4">
               <MessageCircle className="w-9 h-9 text-purple-300" />
-              <span className="text-3xl font-bold text-brand-text">{studentStats.forumPosts}</span>
+              <span className="text-3xl font-bold text-white">{studentStats.forumPosts}</span>
             </div>
-            <h3 className="text-lg font-semibold text-brand-text-secondary mb-2">Posts no Fórum</h3>
-            <div className="space-y-1.5 text-base text-brand-text-muted">
+            <h3 className="text-lg font-semibold text-slate-300 mb-2">Posts no Fórum</h3>
+            <div className="space-y-1.5 text-base text-slate-400">
               <div className="flex justify-between">
                 <span>Participações:</span>
                 <span className="text-purple-400">{studentStats.forumPosts}</span>
@@ -680,13 +680,13 @@ const AlunoDashboard: React.FC = () => {
           </div>
 
           {/* Biblioteca */}
-          <div className="bg-slate-900/60 border border-brand-border-subtle rounded-xl p-6">
+          <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-6">
             <div className="flex items-center justify-between mb-4">
               <Database className="w-9 h-9 text-sky-300" />
-              <span className="text-3xl font-bold text-brand-text">{studentStats.libraryAccess}</span>
+              <span className="text-3xl font-bold text-white">{studentStats.libraryAccess}</span>
             </div>
-            <h3 className="text-lg font-semibold text-brand-text-secondary mb-2">Biblioteca</h3>
-            <div className="space-y-1.5 text-base text-brand-text-muted">
+            <h3 className="text-lg font-semibold text-slate-300 mb-2">Biblioteca</h3>
+            <div className="space-y-1.5 text-base text-slate-400">
               <div className="flex justify-between">
                 <span>Acessos:</span>
                 <span className="text-sky-400">{studentStats.libraryAccess}</span>
@@ -697,73 +697,73 @@ const AlunoDashboard: React.FC = () => {
 
         {/* Progresso do Curso */}
         {mainCourse && (
-          <div className="bg-slate-900/60 border border-brand-border-subtle rounded-xl p-6">
+          <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-6">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-xl font-semibold text-brand-text flex items-center gap-2">
+              <h3 className="text-xl font-semibold text-white flex items-center gap-2">
                 <Target className="w-6 h-6 text-primary-300" />
                 Progresso do Curso
               </h3>
               <span className="text-2xl font-bold text-primary-300">{progressoGeral}%</span>
             </div>
-            <div className="w-full h-3 rounded-full bg-brand-surface">
+            <div className="w-full h-3 rounded-full bg-slate-800">
               <div
                 className="h-3 rounded-full transition-all bg-gradient-to-r from-primary-500 to-emerald-500"
                 style={{ width: `${progressoGeral}%` }}
               />
             </div>
-            <p className="text-base text-brand-text-muted mt-2">{mainCourse.title}</p>
+            <p className="text-base text-slate-400 mt-2">{mainCourse.title}</p>
           </div>
         )}
 
         {/* Analytics de Uso */}
-        <div className="bg-slate-900/60 border border-brand-border-subtle rounded-xl p-6">
-          <h3 className="text-xl font-semibold text-brand-text flex items-center gap-2 mb-4">
+        <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-6">
+          <h3 className="text-xl font-semibold text-white flex items-center gap-2 mb-4">
             <BarChart3 className="w-6 h-6 text-primary-300" />
             Analytics de Uso
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* Engajamento */}
-            <div className="bg-slate-800/50 rounded-lg p-4 border border-brand-border">
+            <div className="bg-slate-800/50 rounded-lg p-4 border border-slate-700">
               <div className="flex items-center gap-2 mb-3">
                 <Activity className="w-6 h-6 text-emerald-400" />
-                <h4 className="text-base font-semibold text-brand-text">Engajamento</h4>
+                <h4 className="text-base font-semibold text-white">Engajamento</h4>
               </div>
               <div className="space-y-2 text-base">
-                <div className="flex justify-between text-brand-text-secondary">
+                <div className="flex justify-between text-slate-300">
                   <span>Módulos concluídos:</span>
-                  <span className="font-semibold text-brand-text">{modulosConcluidos}</span>
+                  <span className="font-semibold text-white">{modulosConcluidos}</span>
                 </div>
-                <div className="flex justify-between text-brand-text-secondary">
+                <div className="flex justify-between text-slate-300">
                   <span>Progresso geral:</span>
-                  <span className="font-semibold text-brand-text">{progressoGeral}%</span>
+                  <span className="font-semibold text-white">{progressoGeral}%</span>
                 </div>
-                <div className="flex justify-between text-brand-text-secondary">
+                <div className="flex justify-between text-slate-300">
                   <span>Posts no fórum:</span>
-                  <span className="font-semibold text-brand-text">{studentStats.forumPosts}</span>
+                  <span className="font-semibold text-white">{studentStats.forumPosts}</span>
                 </div>
               </div>
             </div>
 
             {/* Atividade Recente */}
-            <div className="bg-slate-800/50 rounded-lg p-4 border border-brand-border">
+            <div className="bg-slate-800/50 rounded-lg p-4 border border-slate-700">
               <div className="flex items-center gap-2 mb-3">
                 <TrendingUp className="w-6 h-6 text-blue-400" />
-                <h4 className="text-base font-semibold text-brand-text">Atividade Recente</h4>
+                <h4 className="text-base font-semibold text-white">Atividade Recente</h4>
               </div>
               <div className="space-y-2 text-base">
-                <div className="flex justify-between text-brand-text-secondary">
+                <div className="flex justify-between text-slate-300">
                   <span>Curso atual:</span>
-                  <span className="font-semibold text-brand-text">{mainCourse?.title || 'N/A'}</span>
+                  <span className="font-semibold text-white">{mainCourse?.title || 'N/A'}</span>
                 </div>
                 {mainCourse?.nextClass && (
-                  <div className="flex justify-between text-brand-text-secondary">
+                  <div className="flex justify-between text-slate-300">
                     <span>Próxima aula:</span>
-                    <span className="font-semibold text-brand-text">{mainCourse.nextClass}</span>
+                    <span className="font-semibold text-white">{mainCourse.nextClass}</span>
                   </div>
                 )}
-                <div className="flex justify-between text-brand-text-secondary">
+                <div className="flex justify-between text-slate-300">
                   <span>Status:</span>
-                  <span className="font-semibold text-brand-text">{mainCourse?.status || 'Em Andamento'}</span>
+                  <span className="font-semibold text-white">{mainCourse?.status || 'Em Andamento'}</span>
                 </div>
               </div>
             </div>
@@ -772,7 +772,7 @@ const AlunoDashboard: React.FC = () => {
 
         {/* Cards de Ações Rápidas */}
         <div className="space-y-6">
-          <h3 className="text-xl font-semibold text-brand-text flex items-center gap-2">
+          <h3 className="text-xl font-semibold text-white flex items-center gap-2">
             <Zap className="w-6 h-6 text-amber-400" />
             Ações Rápidas
           </h3>
@@ -808,10 +808,10 @@ const AlunoDashboard: React.FC = () => {
             >
               <div className="flex items-start gap-3">
                 <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
-                  <Play className="w-5 h-5 text-brand-text" />
+                  <Play className="w-5 h-5 text-white" />
                 </div>
                 <div className="space-y-1">
-                  <h3 className="text-lg font-semibold text-brand-text leading-tight">📚 Acessar Curso</h3>
+                  <h3 className="text-lg font-semibold text-white leading-tight">📚 Acessar Curso</h3>
                   <p className="text-sm text-white/80">Continue seus estudos e módulos</p>
                 </div>
               </div>
@@ -841,10 +841,10 @@ const AlunoDashboard: React.FC = () => {
             >
               <div className="flex items-start gap-3">
                 <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
-                  <Brain className="w-5 h-5 text-brand-text" />
+                  <Brain className="w-5 h-5 text-white" />
                 </div>
                 <div className="space-y-1">
-                  <h3 className="text-lg font-semibold text-brand-text leading-tight">🤖 Chat com Nôa</h3>
+                  <h3 className="text-lg font-semibold text-white leading-tight">🤖 Chat com Nôa</h3>
                   <p className="text-sm text-white/80">Tire dúvidas e receba suporte</p>
                 </div>
               </div>
@@ -880,10 +880,10 @@ const AlunoDashboard: React.FC = () => {
             >
               <div className="flex items-start gap-3">
                 <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
-                  <MessageCircle className="w-5 h-5 text-brand-text" />
+                  <MessageCircle className="w-5 h-5 text-white" />
                 </div>
                 <div className="space-y-1">
-                  <h3 className="text-lg font-semibold text-brand-text leading-tight">💬 Fórum Cann Matrix</h3>
+                  <h3 className="text-lg font-semibold text-white leading-tight">💬 Fórum Cann Matrix</h3>
                   <p className="text-sm text-white/80">Participe de discussões e debates</p>
                 </div>
               </div>
@@ -919,10 +919,10 @@ const AlunoDashboard: React.FC = () => {
             >
               <div className="flex items-start gap-3">
                 <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
-                  <BookOpen className="w-5 h-5 text-brand-text" />
+                  <BookOpen className="w-5 h-5 text-white" />
                 </div>
                 <div className="space-y-1">
-                  <h3 className="text-lg font-semibold text-brand-text leading-tight">📖 Biblioteca</h3>
+                  <h3 className="text-lg font-semibold text-white leading-tight">📖 Biblioteca</h3>
                   <p className="text-sm text-white/80">Acesse materiais e recursos</p>
                 </div>
               </div>
@@ -931,44 +931,44 @@ const AlunoDashboard: React.FC = () => {
         </div>
 
         {/* Funcionalidades Utilizadas */}
-        <div className="bg-slate-900/60 border border-brand-border-subtle rounded-xl p-6">
-          <h3 className="text-xl font-semibold text-brand-text flex items-center gap-2 mb-4">
+        <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-6">
+          <h3 className="text-xl font-semibold text-white flex items-center gap-2 mb-4">
             <Zap className="w-6 h-6 text-amber-400" />
             Funcionalidades Utilizadas
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className={`p-4 rounded-lg border ${modulosConcluidos > 0 ? 'bg-emerald-500/10 border-emerald-500/40' : 'bg-slate-800/50 border-brand-border'}`}>
+            <div className={`p-4 rounded-lg border ${modulosConcluidos > 0 ? 'bg-emerald-500/10 border-emerald-500/40' : 'bg-slate-800/50 border-slate-700'}`}>
               <div className="flex items-center gap-2 mb-2">
                 <BookOpen className={`w-5 h-5 ${modulosConcluidos > 0 ? 'text-emerald-400' : 'text-slate-500'}`} />
-                <span className={`font-semibold ${modulosConcluidos > 0 ? 'text-emerald-300' : 'text-brand-text-muted'}`}>
+                <span className={`font-semibold ${modulosConcluidos > 0 ? 'text-emerald-300' : 'text-slate-400'}`}>
                   Módulos
                 </span>
               </div>
-              <p className="text-sm text-brand-text-muted">
+              <p className="text-sm text-slate-400">
                 {modulosConcluidos > 0 ? `${modulosConcluidos} módulo(s) concluído(s)` : 'Ainda não utilizado'}
               </p>
             </div>
 
-            <div className={`p-4 rounded-lg border ${studentStats.forumPosts > 0 ? 'bg-purple-500/10 border-purple-500/40' : 'bg-slate-800/50 border-brand-border'}`}>
+            <div className={`p-4 rounded-lg border ${studentStats.forumPosts > 0 ? 'bg-purple-500/10 border-purple-500/40' : 'bg-slate-800/50 border-slate-700'}`}>
               <div className="flex items-center gap-2 mb-2">
                 <MessageCircle className={`w-5 h-5 ${studentStats.forumPosts > 0 ? 'text-purple-400' : 'text-slate-500'}`} />
-                <span className={`font-semibold ${studentStats.forumPosts > 0 ? 'text-purple-300' : 'text-brand-text-muted'}`}>
+                <span className={`font-semibold ${studentStats.forumPosts > 0 ? 'text-purple-300' : 'text-slate-400'}`}>
                   Fórum
                 </span>
               </div>
-              <p className="text-sm text-brand-text-muted">
+              <p className="text-sm text-slate-400">
                 {studentStats.forumPosts > 0 ? `${studentStats.forumPosts} post(s) publicado(s)` : 'Ainda não utilizado'}
               </p>
             </div>
 
-            <div className={`p-4 rounded-lg border ${studentStats.libraryAccess > 0 ? 'bg-sky-500/10 border-sky-500/40' : 'bg-slate-800/50 border-brand-border'}`}>
+            <div className={`p-4 rounded-lg border ${studentStats.libraryAccess > 0 ? 'bg-sky-500/10 border-sky-500/40' : 'bg-slate-800/50 border-slate-700'}`}>
               <div className="flex items-center gap-2 mb-2">
                 <Database className={`w-5 h-5 ${studentStats.libraryAccess > 0 ? 'text-sky-400' : 'text-slate-500'}`} />
-                <span className={`font-semibold ${studentStats.libraryAccess > 0 ? 'text-sky-300' : 'text-brand-text-muted'}`}>
+                <span className={`font-semibold ${studentStats.libraryAccess > 0 ? 'text-sky-300' : 'text-slate-400'}`}>
                   Biblioteca
                 </span>
               </div>
-              <p className="text-sm text-brand-text-muted">
+              <p className="text-sm text-slate-400">
                 {studentStats.libraryAccess > 0 ? `${studentStats.libraryAccess} acesso(s) realizado(s)` : 'Ainda não utilizado'}
               </p>
             </div>
@@ -980,10 +980,10 @@ const AlunoDashboard: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-brand-bg text-brand-text flex items-center justify-center">
+      <div className="min-h-screen bg-slate-900 text-white flex items-center justify-center">
         <div className="text-center">
           <Clock className="w-12 h-12 mx-auto mb-4 animate-spin text-green-500" />
-          <p className="text-brand-text-muted">Carregando cursos...</p>
+          <p className="text-slate-400">Carregando cursos...</p>
         </div>
       </div>
     )
@@ -991,10 +991,10 @@ const AlunoDashboard: React.FC = () => {
 
   if (!mainCourse) {
     return (
-      <div className="min-h-screen bg-brand-bg text-brand-text flex items-center justify-center">
+      <div className="min-h-screen bg-slate-900 text-white flex items-center justify-center">
         <div className="text-center">
           <BookOpen className="w-12 h-12 mx-auto mb-4 text-slate-600" />
-          <p className="text-brand-text-muted">Nenhum curso encontrado</p>
+          <p className="text-slate-400">Nenhum curso encontrado</p>
         </div>
       </div>
     )
@@ -1002,7 +1002,7 @@ const AlunoDashboard: React.FC = () => {
 
   return (
     <div
-      className="min-h-screen text-brand-text"
+      className="min-h-screen text-white"
       style={{ background: backgroundGradient }}
       data-page="aluno-dashboard"
     >
@@ -1023,12 +1023,12 @@ const AlunoDashboard: React.FC = () => {
                   <div className="flex items-center gap-2 shrink-0">
                     <span className="inline-flex items-center gap-1 px-2 py-1 rounded bg-white/5 border border-white/10 text-[11px]">
                       <Zap className="w-3 h-3 text-amber-400" />
-                      <span className="font-medium text-brand-text tabular-nums">{studentStats.overallProgress || 0}%</span>
+                      <span className="font-medium text-white tabular-nums">{studentStats.overallProgress || 0}%</span>
                       <span className="text-slate-500">jornada</span>
                     </span>
                     <span className="inline-flex items-center gap-1 px-2 py-1 rounded bg-white/5 border border-white/10 text-[11px]">
                       <Award className="w-3 h-3 text-emerald-400" />
-                      <span className="font-medium text-brand-text tabular-nums">#42</span>
+                      <span className="font-medium text-white tabular-nums">#42</span>
                       <span className="text-slate-500">ranking</span>
                     </span>
                   </div>
@@ -1041,7 +1041,7 @@ const AlunoDashboard: React.FC = () => {
                           const enrollment = allEnrollments.find(en => en.course_id === e.target.value)
                           if (enrollment) handleSwitchCourse(enrollment)
                         }}
-                        className="w-full appearance-none bg-[#102C45]/80 text-brand-text text-sm font-bold py-2 px-3 pr-9 rounded-lg border border-emerald-500/30 focus:outline-none focus:border-emerald-500 transition-all cursor-pointer hover:bg-brand-surface"
+                        className="w-full appearance-none bg-[#102C45]/80 text-white text-sm font-bold py-2 px-3 pr-9 rounded-lg border border-emerald-500/30 focus:outline-none focus:border-emerald-500 transition-all cursor-pointer hover:bg-slate-800"
                       >
                         {allEnrollments.map(en => (
                           <option key={en.id} value={en.course_id}>
@@ -1057,8 +1057,8 @@ const AlunoDashboard: React.FC = () => {
                 {/* [V1.9.132-B] Ações rápidas — mobile-first grid quadrados (mesma estética V1.9.130) */}
                 <div className="bg-slate-900/40 border border-white/5 rounded-2xl p-4 md:p-6 space-y-3">
                   <div className="space-y-0.5">
-                    <h2 className="text-lg md:text-xl font-semibold text-brand-text">O que você quer fazer agora?</h2>
-                    <p className="text-brand-text-muted text-sm">Ações rápidas da sua jornada de aprendizado.</p>
+                    <h2 className="text-lg md:text-xl font-semibold text-white">O que você quer fazer agora?</h2>
+                    <p className="text-slate-400 text-sm">Ações rápidas da sua jornada de aprendizado.</p>
                   </div>
                   {/*
                     V1.9.310 (16/05/2026) — Clinical Cockpit Mode: cor por ESTADO, não feature.
@@ -1138,32 +1138,32 @@ const AlunoDashboard: React.FC = () => {
                   <>
                     {/* BARRA DE PERFORMANCE SUPERIOR (KPIs GLOBAIS) - SLIM DESIGN */}
                     <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-3 mb-6 mt-0 animate-in fade-in slide-in-from-top-2 duration-500">
-                      <div className="bg-[#102C45]/80 p-4 rounded-xl border border-brand-border-subtle shadow-lg backdrop-blur-sm flex items-center justify-between gap-4">
+                      <div className="bg-[#102C45]/80 p-4 rounded-xl border border-slate-800 shadow-lg backdrop-blur-sm flex items-center justify-between gap-4">
                         <div className="flex flex-col">
                           <span className="text-[9px] text-slate-500 uppercase font-bold tracking-widest mb-1">Desempenho da Jornada</span>
                           <div className="flex items-baseline gap-1">
-                            <span className="text-2xl font-bold text-brand-text">{studentStats.overallProgress || 0}%</span>
+                            <span className="text-2xl font-bold text-white">{studentStats.overallProgress || 0}%</span>
                             <span className="text-[10px] text-emerald-500 font-bold uppercase tracking-tighter">Geral</span>
                           </div>
                         </div>
-                        <div className="flex-1 max-w-[100px] h-1.5 bg-brand-surface rounded-full overflow-hidden">
+                        <div className="flex-1 max-w-[100px] h-1.5 bg-slate-800 rounded-full overflow-hidden">
                           <div className="h-full bg-emerald-500" style={{ width: `${studentStats.overallProgress || 0}%` }}></div>
                         </div>
                         <BarChart3 className="w-5 h-5 text-emerald-400 opacity-50" />
                       </div>
 
-                      <div className="bg-[#102C45]/80 p-4 rounded-xl border border-brand-border-subtle shadow-lg backdrop-blur-sm flex items-center justify-between gap-4">
+                      <div className="bg-[#102C45]/80 p-4 rounded-xl border border-slate-800 shadow-lg backdrop-blur-sm flex items-center justify-between gap-4">
                         <div className="flex flex-col">
                           <span className="text-[9px] text-slate-500 uppercase font-bold tracking-widest mb-1">Status Ativo</span>
-                          <span className="text-lg font-bold text-brand-text uppercase tracking-tight">Em Andamento</span>
+                          <span className="text-lg font-bold text-white uppercase tracking-tight">Em Andamento</span>
                         </div>
                         <Zap className="w-5 h-5 text-emerald-400 animate-pulse opacity-50" />
                       </div>
 
-                      <div className="bg-[#102C45]/80 p-4 rounded-xl border border-brand-border-subtle shadow-lg backdrop-blur-sm flex items-center justify-between gap-4">
+                      <div className="bg-[#102C45]/80 p-4 rounded-xl border border-slate-800 shadow-lg backdrop-blur-sm flex items-center justify-between gap-4">
                         <div className="flex flex-col">
                           <span className="text-[9px] text-slate-500 uppercase font-bold tracking-widest mb-1">Seu Ranking</span>
-                          <span className="text-lg font-bold text-brand-text uppercase tracking-tight">#42</span>
+                          <span className="text-lg font-bold text-white uppercase tracking-tight">#42</span>
                         </div>
                         <Award className="w-5 h-5 text-emerald-400 opacity-50" />
                       </div>
@@ -1181,11 +1181,11 @@ const AlunoDashboard: React.FC = () => {
                         </div>
                       </div>
 
-                      <div className="bg-[#102C45]/80 p-4 rounded-xl border border-brand-border-subtle shadow-lg backdrop-blur-sm flex items-center justify-between gap-4">
+                      <div className="bg-[#102C45]/80 p-4 rounded-xl border border-slate-800 shadow-lg backdrop-blur-sm flex items-center justify-between gap-4">
                         <div className="flex flex-col">
                           <span className="text-[9px] text-slate-500 uppercase font-bold tracking-widest mb-1">Estrelas (Média)</span>
                           <div className="flex items-center gap-1">
-                            <span className="text-lg font-bold text-brand-text">4.5</span>
+                            <span className="text-lg font-bold text-white">4.5</span>
                             <div className="flex text-yellow-500">
                               <Star className="w-2.5 h-2.5 fill-current" />
                               <Star className="w-2.5 h-2.5 fill-current" />
@@ -1216,7 +1216,7 @@ const AlunoDashboard: React.FC = () => {
                             >
                               {isActive && (
                                 <div className="absolute top-0 right-0 p-2">
-                                  <div className="bg-emerald-500 text-[8px] font-bold text-brand-text px-2 py-0.5 rounded-bl-lg tracking-widest uppercase">ESTUDANDO AGORA</div>
+                                  <div className="bg-emerald-500 text-[8px] font-bold text-white px-2 py-0.5 rounded-bl-lg tracking-widest uppercase">ESTUDANDO AGORA</div>
                                 </div>
                               )}
 
@@ -1225,13 +1225,13 @@ const AlunoDashboard: React.FC = () => {
                                   {course.title?.toLowerCase().includes('cannabis') ? <GraduationCap className="w-8 h-8 text-emerald-400" /> : <BookOpen className="w-8 h-8 text-emerald-400" />}
                                 </div>
                                 <div className="min-w-0 flex-1">
-                                  <h3 className="text-lg font-bold text-brand-text group-hover:text-emerald-300 transition-colors leading-tight truncate">
+                                  <h3 className="text-lg font-bold text-white group-hover:text-emerald-300 transition-colors leading-tight truncate">
                                     {course.title?.toLowerCase().includes('rins') || course.title?.toLowerCase().includes('aec')
                                       ? 'AEC - Avaliação Clínica Inicial'
                                       : course.title
                                     }
                                   </h3>
-                                  <p className="text-sm text-brand-text-muted mt-1 truncate">
+                                  <p className="text-sm text-slate-400 mt-1 truncate">
                                     {course.title?.toLowerCase().includes('rins') || course.title?.toLowerCase().includes('aec') || course.title?.toLowerCase().includes('clínica')
                                       ? 'Dr. Ricardo Valença'
                                       : course.title?.toLowerCase().includes('eduardo') || course.title?.toLowerCase().includes('cannabis')
@@ -1244,11 +1244,11 @@ const AlunoDashboard: React.FC = () => {
 
                               <div className="space-y-4">
                                 <div>
-                                  <div className="flex justify-between text-xs text-brand-text-muted mb-2">
+                                  <div className="flex justify-between text-xs text-slate-400 mb-2">
                                     <span>Seu Progresso</span>
                                     <span className="text-emerald-400 font-bold">{enrollment.progress}%</span>
                                   </div>
-                                  <div className="w-full bg-brand-surface h-1.5 rounded-full overflow-hidden">
+                                  <div className="w-full bg-slate-800 h-1.5 rounded-full overflow-hidden">
                                     <div
                                       className="h-full bg-gradient-to-r from-emerald-500 to-emerald-400 shadow-[0_0_10px_rgba(16,185,129,0.3)]"
                                       style={{ width: `${enrollment.progress}%` }}
@@ -1261,7 +1261,7 @@ const AlunoDashboard: React.FC = () => {
                                     e.stopPropagation();
                                     handleOpenModule(0, enrollment.courses);
                                   }}
-                                  className="w-full py-3 rounded-xl font-bold text-sm transition-all bg-emerald-600 text-brand-text flex items-center justify-center gap-2 hover:bg-emerald-500 shadow-lg shadow-emerald-900/20"
+                                  className="w-full py-3 rounded-xl font-bold text-sm transition-all bg-emerald-600 text-white flex items-center justify-center gap-2 hover:bg-emerald-500 shadow-lg shadow-emerald-900/20"
                                 >
                                   Continuar Agora
                                   <ArrowRight className="w-4 h-4" />
@@ -1272,15 +1272,15 @@ const AlunoDashboard: React.FC = () => {
                         })}
                       </div>
                     ) : (
-                      <div className="text-center py-16 bg-slate-900/40 rounded-3xl border border-dashed border-brand-border-subtle">
+                      <div className="text-center py-16 bg-slate-900/40 rounded-3xl border border-dashed border-slate-800">
                         <div className="w-20 h-20 bg-slate-800/50 rounded-full flex items-center justify-center mx-auto mb-6">
                           <LayoutDashboard className="w-10 h-10 text-slate-600" />
                         </div>
-                        <h3 className="text-xl font-bold text-brand-text mb-2">Sua Workstation está vazia</h3>
-                        <p className="text-brand-text-muted mb-8 max-w-sm mx-auto">Explore o catálogo de cursos e escolha sua próxima jornada de especialização.</p>
+                        <h3 className="text-xl font-bold text-white mb-2">Sua Workstation está vazia</h3>
+                        <p className="text-slate-400 mb-8 max-w-sm mx-auto">Explore o catálogo de cursos e escolha sua próxima jornada de especialização.</p>
                         <button
                           onClick={() => navigate('/app/ensino/aluno/cursos')}
-                          className="px-8 py-3 bg-emerald-600 hover:bg-emerald-500 text-brand-text font-bold rounded-xl transition-all shadow-[0_0_20px_rgba(16,185,129,0.3)]"
+                          className="px-8 py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl transition-all shadow-[0_0_20px_rgba(16,185,129,0.3)]"
                         >
                           Ver Catálogo de Cursos
                         </button>
@@ -1298,7 +1298,7 @@ const AlunoDashboard: React.FC = () => {
                       {/* Lado Esquerdo: Módulos e Conteúdo */}
                       <div className="lg:col-span-2 space-y-6">
                         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 mb-4">
-                          <h3 className="text-2xl font-bold text-brand-text flex items-center gap-3">
+                          <h3 className="text-2xl font-bold text-white flex items-center gap-3">
                             <BookOpen className="w-7 h-7 text-emerald-400" />
                             Módulos do {mainCourse.title}
                           </h3>
@@ -1310,7 +1310,7 @@ const AlunoDashboard: React.FC = () => {
                               </div>
                               <div>
                                 <span className="block text-[10px] font-black text-emerald-400 uppercase tracking-tighter">Mentoria ao Vivo</span>
-                                <span className="text-sm font-bold text-brand-text flex items-center gap-1.5">
+                                <span className="text-sm font-bold text-white flex items-center gap-1.5">
                                   Toda Quarta <span className="w-1 h-1 rounded-full bg-slate-500"></span> 20h00
                                 </span>
                               </div>
@@ -1320,13 +1320,13 @@ const AlunoDashboard: React.FC = () => {
 
                         <div className="grid grid-cols-1 gap-4">
                           {mainCourse.modules?.map((module: any, idx: number) => (
-                            <div key={module.id} className="bg-[#102C45]/60 p-4 rounded-xl border border-brand-border-subtle hover:border-emerald-500/30 transition-all group flex items-center justify-between gap-4 shadow-sm backdrop-blur-sm">
+                            <div key={module.id} className="bg-[#102C45]/60 p-4 rounded-xl border border-slate-800 hover:border-emerald-500/30 transition-all group flex items-center justify-between gap-4 shadow-sm backdrop-blur-sm">
                               <div className="flex items-center gap-3 min-w-0">
                                 <div className="w-9 h-9 rounded-lg bg-emerald-500/10 flex items-center justify-center text-sm font-bold text-emerald-400 border border-emerald-500/20 shrink-0">
                                   {idx + 1}
                                 </div>
                                 <div className="min-w-0">
-                                  <h4 className="text-base font-bold text-brand-text group-hover:text-emerald-300 transition-colors truncate">{module.title}</h4>
+                                  <h4 className="text-base font-bold text-white group-hover:text-emerald-300 transition-colors truncate">{module.title}</h4>
                                   <div className="flex items-center gap-2 mt-0.5">
                                     <span className="text-[10px] text-slate-500 font-medium truncate max-w-[200px]">{module.description}</span>
                                     <span className="text-[9px] text-emerald-500 font-bold bg-emerald-500/5 px-1.5 py-0.5 rounded border border-emerald-500/10">
@@ -1343,7 +1343,7 @@ const AlunoDashboard: React.FC = () => {
                                 </div>
                                 <button
                                   onClick={() => handleOpenModule(idx)}
-                                  className="w-8 h-8 bg-emerald-600/90 text-brand-text rounded-lg flex items-center justify-center hover:scale-105 transition-all shadow-lg active:scale-95 group-hover:bg-emerald-500"
+                                  className="w-8 h-8 bg-emerald-600/90 text-white rounded-lg flex items-center justify-center hover:scale-105 transition-all shadow-lg active:scale-95 group-hover:bg-emerald-500"
                                 >
                                   <Play className="w-3.5 h-3.5 fill-current" />
                                 </button>
@@ -1353,8 +1353,8 @@ const AlunoDashboard: React.FC = () => {
                         </div>
 
                         {/* Portal de Mentorias ao Vivo e Agenda */}
-                        <div className="bg-slate-900/40 border border-brand-border-subtle rounded-2xl p-6">
-                          <h3 className="text-lg font-bold text-brand-text mb-4 flex items-center gap-2">
+                        <div className="bg-slate-900/40 border border-slate-800 rounded-2xl p-6">
+                          <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
                             <Calendar className="w-5 h-5 text-indigo-400" />
                             Portal de Mentorias ao Vivo
                           </h3>
@@ -1396,7 +1396,7 @@ const AlunoDashboard: React.FC = () => {
                                           </span>
                                         </div>
                                         <div className="text-left">
-                                          <h4 className="text-sm font-black text-brand-text uppercase tracking-tight group-hover:text-emerald-400 transition-colors">Entrar na Mentoria Agora</h4>
+                                          <h4 className="text-sm font-black text-white uppercase tracking-tight group-hover:text-emerald-400 transition-colors">Entrar na Mentoria Agora</h4>
                                           <p className="text-[10px] text-emerald-500 font-bold">Sala Aberta • 12/30 Alunos online</p>
                                         </div>
                                       </div>
@@ -1411,13 +1411,13 @@ const AlunoDashboard: React.FC = () => {
                               return (
                                 <div className="bg-[#102C45]/80 p-4 rounded-xl border border-emerald-500/10 flex items-center justify-between">
                                   <div className="flex items-center gap-4">
-                                    <div className="bg-brand-surface px-3 py-1 rounded-lg text-center min-w-[60px]">
+                                    <div className="bg-slate-800 px-3 py-1 rounded-lg text-center min-w-[60px]">
                                       <span className="block text-[8px] font-bold text-emerald-400 uppercase">PROX</span>
-                                      <span className="block text-md font-bold text-brand-text">QUA</span>
+                                      <span className="block text-md font-bold text-white">QUA</span>
                                     </div>
                                     <div>
-                                      <h4 className="text-sm font-bold text-brand-text">Mentoria com Dr. Ricardo</h4>
-                                      <p className="text-[10px] text-brand-text-muted">Cidade Amiga dos Rins • 20h00</p>
+                                      <h4 className="text-sm font-bold text-white">Mentoria com Dr. Ricardo</h4>
+                                      <p className="text-[10px] text-slate-400">Cidade Amiga dos Rins • 20h00</p>
                                     </div>
                                   </div>
                                   <Video className="w-4 h-4 text-emerald-500" />
@@ -1427,7 +1427,7 @@ const AlunoDashboard: React.FC = () => {
                           </div>
 
                           {/* Cronograma de Mentorias - Lista Completa */}
-                          <div className="mt-6 border-t border-brand-border-subtle pt-6">
+                          <div className="mt-6 border-t border-slate-800 pt-6">
                             <h4 className="text-xs font-black text-slate-500 uppercase tracking-widest mb-4 flex items-center gap-2">
                               <Clock className="w-3.5 h-3.5" />
                               Próximos Encontros
@@ -1449,10 +1449,10 @@ const AlunoDashboard: React.FC = () => {
                                   <div key={i} className="flex items-center justify-between p-3 rounded-lg bg-slate-800/30 border border-slate-800/50 hover:bg-slate-800/50 transition-colors group">
                                     <div className="flex items-center gap-4">
                                       <div className="text-center min-w-[45px]">
-                                        <span className="block text-[10px] font-bold text-brand-text leading-none">{item.date}</span>
+                                        <span className="block text-[10px] font-bold text-white leading-none">{item.date}</span>
                                         <span className="block text-[8px] font-medium text-slate-500">{item.day}</span>
                                       </div>
-                                      <div className="w-px h-6 bg-brand-surface-subtle" />
+                                      <div className="w-px h-6 bg-slate-700" />
                                       <div>
                                         <p className="text-xs font-bold text-slate-200 group-hover:text-emerald-400 transition-colors">{item.theme}</p>
                                         <p className="text-[9px] text-slate-500">{item.time} • Sala de Mentoria</p>
@@ -1470,39 +1470,39 @@ const AlunoDashboard: React.FC = () => {
                       {/* Lado Direito: Estatísticas e Recursos (Estilo o print do Ricardo) */}
                       <div className="space-y-6">
 
-                        <div className="bg-[#102C45]/80 p-6 rounded-3xl border border-brand-border-subtle">
-                          <h3 className="text-sm font-bold text-brand-text-muted uppercase tracking-widest mb-4">Recursos Extras</h3>
+                        <div className="bg-[#102C45]/80 p-6 rounded-3xl border border-slate-800">
+                          <h3 className="text-sm font-bold text-slate-400 uppercase tracking-widest mb-4">Recursos Extras</h3>
                           <div className="space-y-3">
-                            <button className="w-full p-3 rounded-xl bg-slate-900/50 border border-brand-border-subtle flex items-center justify-between group hover:border-emerald-500/30 transition-all">
+                            <button className="w-full p-3 rounded-xl bg-slate-900/50 border border-slate-800 flex items-center justify-between group hover:border-emerald-500/30 transition-all">
                               <div className="flex items-center gap-3">
                                 <FileText className="w-4 h-4 text-emerald-400" />
-                                <span className="text-xs text-brand-text">Material Didático</span>
+                                <span className="text-xs text-white">Material Didático</span>
                               </div>
                               <Download className="w-3 h-3 text-slate-600 group-hover:text-emerald-400" />
                             </button>
-                            <button className="w-full p-3 rounded-xl bg-slate-900/50 border border-brand-border-subtle flex items-center justify-between group hover:border-emerald-500/30 transition-all">
+                            <button className="w-full p-3 rounded-xl bg-slate-900/50 border border-slate-800 flex items-center justify-between group hover:border-emerald-500/30 transition-all">
                               <div className="flex items-center gap-3">
                                 <MessageCircle className="w-4 h-4 text-blue-400" />
-                                <span className="text-xs text-brand-text">Fórum do Curso</span>
+                                <span className="text-xs text-white">Fórum do Curso</span>
                               </div>
                               <ArrowRight className="w-3 h-3 text-slate-600 group-hover:text-blue-400" />
                             </button>
-                            <button className="w-full p-3 rounded-xl bg-slate-900/50 border border-brand-border-subtle flex items-center justify-between group hover:border-emerald-500/30 transition-all">
+                            <button className="w-full p-3 rounded-xl bg-slate-900/50 border border-slate-800 flex items-center justify-between group hover:border-emerald-500/30 transition-all">
                               <div className="flex items-center gap-3">
                                 <Star className="w-4 h-4 text-amber-400" />
-                                <span className="text-xs text-brand-text">Avaliar Curso</span>
+                                <span className="text-xs text-white">Avaliar Curso</span>
                               </div>
                             </button>
                           </div>
                         </div>
 
                         {/* Próxima Aula do Dia */}
-                        <div className="bg-[#102C45]/80 p-6 rounded-3xl border border-brand-border-subtle relative overflow-hidden group">
+                        <div className="bg-[#102C45]/80 p-6 rounded-3xl border border-slate-800 relative overflow-hidden group">
                           {/* Efeito Glow no fundo */}
                           <div className="absolute -top-24 -right-24 w-48 h-48 bg-emerald-500/10 rounded-full blur-3xl group-hover:bg-emerald-500/20 transition-all"></div>
                           
                           <div className="flex items-center justify-between mb-6">
-                            <h3 className="text-sm font-bold text-brand-text-muted uppercase tracking-widest">Próxima Aula do Dia</h3>
+                            <h3 className="text-sm font-bold text-slate-400 uppercase tracking-widest">Próxima Aula do Dia</h3>
                             <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20">
                               <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></div>
                               <span className="text-[10px] font-black text-emerald-400">AO VIVO HOJE</span>
@@ -1511,17 +1511,17 @@ const AlunoDashboard: React.FC = () => {
 
                           <div className="space-y-6">
                             <div className="flex items-start gap-4">
-                              <div className="w-12 h-12 rounded-2xl bg-slate-900/50 border border-brand-border-subtle flex items-center justify-center shrink-0">
+                              <div className="w-12 h-12 rounded-2xl bg-slate-900/50 border border-slate-800 flex items-center justify-center shrink-0">
                                 <Video className="w-6 h-6 text-indigo-400" />
                               </div>
                               <div className="min-w-0">
-                                <h4 className="text-base font-bold text-brand-text leading-tight truncate">
+                                <h4 className="text-base font-bold text-white leading-tight truncate">
                                   {mainCourse.title?.toLowerCase().includes('ricardo') || mainCourse.title?.toLowerCase().includes('aec')
                                     ? 'Teorias da Comunicação em Saúde'
                                     : 'Manejo Clínico Avançado'
                                   }
                                 </h4>
-                                <p className="text-xs text-brand-text-muted mt-1">Dr. Ricardo Valença • 20h00</p>
+                                <p className="text-xs text-slate-400 mt-1">Dr. Ricardo Valença • 20h00</p>
                               </div>
                             </div>
 
@@ -1530,11 +1530,11 @@ const AlunoDashboard: React.FC = () => {
                                 <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Ocupação da Sala</span>
                                 <span className="text-[10px] font-bold text-emerald-400">12 / 30 Máx</span>
                               </div>
-                              <div className="w-full bg-brand-bg h-1.5 rounded-full overflow-hidden mb-2">
+                              <div className="w-full bg-slate-900 h-1.5 rounded-full overflow-hidden mb-2">
                                 <div className="w-[40%] h-full bg-gradient-to-r from-emerald-600 to-emerald-400 rounded-full"></div>
                               </div>
                               <p className="text-[9px] text-slate-500 text-center leading-tight">
-                                Seleção por <span className="text-brand-text font-bold">Ranking Global</span> ou ordem de chegada (First-In).
+                                Seleção por <span className="text-white font-bold">Ranking Global</span> ou ordem de chegada (First-In).
                               </p>
                             </div>
 
@@ -1566,8 +1566,8 @@ const AlunoDashboard: React.FC = () => {
                                   }}
                                   className={`w-full py-4 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-3 shadow-lg 
                                     ${isAvailable 
-                                      ? 'bg-emerald-600 text-brand-text hover:bg-emerald-500 shadow-emerald-900/20 animate-in fade-in zoom-in duration-300' 
-                                      : 'bg-brand-surface text-slate-500 cursor-not-allowed border border-slate-700/50'
+                                      ? 'bg-emerald-600 text-white hover:bg-emerald-500 shadow-emerald-900/20 animate-in fade-in zoom-in duration-300' 
+                                      : 'bg-slate-800 text-slate-500 cursor-not-allowed border border-slate-700/50'
                                     }`}
                                 >
                                   {isAvailable ? <Play className="w-4 h-4 fill-current" /> : <Lock className="w-4 h-4" />}
@@ -1587,11 +1587,11 @@ const AlunoDashboard: React.FC = () => {
                   <div className="mt-20 animate-in fade-in slide-in-from-bottom-8 duration-1000">
                     <div className="flex items-center justify-between mb-8">
                       <div>
-                        <h3 className="text-2xl font-bold text-brand-text flex items-center gap-3">
+                        <h3 className="text-2xl font-bold text-white flex items-center gap-3">
                           <Zap className="w-7 h-7 text-amber-400" />
                           Explore Novas Especializações
                         </h3>
-                        <p className="text-brand-text-muted mt-1">Expanda sua carreira na MedCannLab com novos terminais de ensino.</p>
+                        <p className="text-slate-400 mt-1">Expanda sua carreira na MedCannLab com novos terminais de ensino.</p>
                       </div>
                       <button
                         onClick={() => navigate('/app/ensino/aluno/cursos')}
@@ -1604,12 +1604,12 @@ const AlunoDashboard: React.FC = () => {
 
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                       {availableCourses.map((course) => (
-                        <div key={course.id} className="bg-slate-900/40 border border-brand-border-subtle rounded-2xl p-4 hover:border-emerald-500/30 transition-all group">
-                          <div className="w-10 h-10 rounded-xl bg-brand-surface flex items-center justify-center text-xl mb-4 group-hover:scale-110 transition-transform">
+                        <div key={course.id} className="bg-slate-900/40 border border-slate-800 rounded-2xl p-4 hover:border-emerald-500/30 transition-all group">
+                          <div className="w-10 h-10 rounded-xl bg-slate-800 flex items-center justify-center text-xl mb-4 group-hover:scale-110 transition-transform">
                             {(course as any).logo_url || '🎓'}
                           </div>
-                          <h4 className="text-base font-bold text-brand-text mb-1.5 leading-tight">{course.title}</h4>
-                          <p className="text-[11px] text-brand-text-muted mb-4 line-clamp-2 h-8 leading-relaxed">{course.description}</p>
+                          <h4 className="text-base font-bold text-white mb-1.5 leading-tight">{course.title}</h4>
+                          <p className="text-[11px] text-slate-400 mb-4 line-clamp-2 h-8 leading-relaxed">{course.description}</p>
 
                           <div className="flex items-center gap-3 text-[9px] text-slate-500 font-bold uppercase mb-4">
                             <span className="flex items-center gap-1.5"><Clock className="w-3 h-3 text-emerald-500/70" /> {course.duration_text || '60 horas'}</span>
@@ -1618,7 +1618,7 @@ const AlunoDashboard: React.FC = () => {
 
                           <button
                             onClick={() => handleJoinCourse(course.id)}
-                            className="w-full py-2.5 bg-emerald-600 hover:bg-emerald-500 text-brand-text font-bold text-xs rounded-xl transition-all shadow-lg shadow-emerald-900/20 flex items-center justify-center gap-2 group-hover:translate-y-[-2px]"
+                            className="w-full py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl transition-all shadow-lg shadow-emerald-900/20 flex items-center justify-center gap-2 group-hover:translate-y-[-2px]"
                           >
                             <Plus className="w-3.5 h-3.5" /> Instalar no Terminal
                           </button>
@@ -1642,7 +1642,7 @@ const AlunoDashboard: React.FC = () => {
                         📷
                       </div>
                       <div>
-                        <h3 className="text-lg font-semibold text-brand-text">Instagram</h3>
+                        <h3 className="text-lg font-semibold text-white">Instagram</h3>
                         <p className="text-xs text-slate-300/80">@medcannlab</p>
                       </div>
                     </div>
@@ -1653,7 +1653,7 @@ const AlunoDashboard: React.FC = () => {
                       href="https://instagram.com/medcannlab"
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg font-semibold text-brand-text transition-transform transform hover:scale-[1.02] w-full"
+                      className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg font-semibold text-white transition-transform transform hover:scale-[1.02] w-full"
                       style={{ background: 'linear-gradient(135deg, #833AB4 0%, #FD1D1D 50%, #FCB045 100%)' }}
                     >
                       <span>Seguir no Instagram</span>
@@ -1668,7 +1668,7 @@ const AlunoDashboard: React.FC = () => {
                         💼
                       </div>
                       <div>
-                        <h3 className="text-lg font-semibold text-brand-text">LinkedIn</h3>
+                        <h3 className="text-lg font-semibold text-white">LinkedIn</h3>
                         <p className="text-xs text-slate-300/80">MedCannLab</p>
                       </div>
                     </div>
@@ -1679,7 +1679,7 @@ const AlunoDashboard: React.FC = () => {
                       href="https://linkedin.com/company/medcannlab"
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg font-semibold text-brand-text transition-transform transform hover:scale-[1.02] w-full"
+                      className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg font-semibold text-white transition-transform transform hover:scale-[1.02] w-full"
                       style={{ background: 'linear-gradient(135deg, #0077B5 0%, #00A0DC 100%)' }}
                     >
                       <span>Conectar no LinkedIn</span>
@@ -1694,7 +1694,7 @@ const AlunoDashboard: React.FC = () => {
                         ▶️
                       </div>
                       <div>
-                        <h3 className="text-lg font-semibold text-brand-text">YouTube</h3>
+                        <h3 className="text-lg font-semibold text-white">YouTube</h3>
                         <p className="text-xs text-slate-300/80">Canal MedCannLab</p>
                       </div>
                     </div>
@@ -1705,7 +1705,7 @@ const AlunoDashboard: React.FC = () => {
                       href="https://youtube.com/@medcannlab"
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg font-semibold text-brand-text transition-transform transform hover:scale-[1.02] w-full"
+                      className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg font-semibold text-white transition-transform transform hover:scale-[1.02] w-full"
                       style={{ background: 'linear-gradient(135deg, #FF0000 0%, #CC0000 100%)' }}
                     >
                       <span>Inscrever-se no Canal</span>
@@ -1720,7 +1720,7 @@ const AlunoDashboard: React.FC = () => {
                         💬
                       </div>
                       <div>
-                        <h3 className="text-lg font-semibold text-brand-text">WhatsApp</h3>
+                        <h3 className="text-lg font-semibold text-white">WhatsApp</h3>
                         <p className="text-xs text-slate-300/80">Grupo de Alunos</p>
                       </div>
                     </div>
@@ -1731,7 +1731,7 @@ const AlunoDashboard: React.FC = () => {
                       href="https://wa.me/5521999999999"
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg font-semibold text-brand-text transition-transform transform hover:scale-[1.02] w-full"
+                      className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg font-semibold text-white transition-transform transform hover:scale-[1.02] w-full"
                       style={{ background: 'linear-gradient(135deg, #25D366 0%, #128C7E 100%)' }}
                     >
                       <span>Entrar no Grupo</span>
@@ -1746,7 +1746,7 @@ const AlunoDashboard: React.FC = () => {
                         ✈️
                       </div>
                       <div>
-                        <h3 className="text-lg font-semibold text-brand-text">Telegram</h3>
+                        <h3 className="text-lg font-semibold text-white">Telegram</h3>
                         <p className="text-xs text-slate-300/80">Canal de Notícias</p>
                       </div>
                     </div>
@@ -1757,7 +1757,7 @@ const AlunoDashboard: React.FC = () => {
                       href="https://t.me/medcannlab"
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg font-semibold text-brand-text transition-transform transform hover:scale-[1.02] w-full"
+                      className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg font-semibold text-white transition-transform transform hover:scale-[1.02] w-full"
                       style={{ background: 'linear-gradient(135deg, #0088CC 0%, #229ED9 100%)' }}
                     >
                       <span>Entrar no Canal</span>
@@ -1772,7 +1772,7 @@ const AlunoDashboard: React.FC = () => {
                         🐦
                       </div>
                       <div>
-                        <h3 className="text-lg font-semibold text-brand-text">Twitter/X</h3>
+                        <h3 className="text-lg font-semibold text-white">Twitter/X</h3>
                         <p className="text-xs text-slate-300/80">@medcannlab</p>
                       </div>
                     </div>
@@ -1783,7 +1783,7 @@ const AlunoDashboard: React.FC = () => {
                       href="https://twitter.com/medcannlab"
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg font-semibold text-brand-text transition-transform transform hover:scale-[1.02] w-full"
+                      className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg font-semibold text-white transition-transform transform hover:scale-[1.02] w-full"
                       style={{ background: 'linear-gradient(135deg, #000000 0%, #1DA1F2 100%)' }}
                     >
                       <span>Seguir no Twitter/X</span>
@@ -1794,10 +1794,10 @@ const AlunoDashboard: React.FC = () => {
 
                 {/* Informações Adicionais */}
                 <div className="rounded-xl p-6" style={{ ...cardStyle, border: '1px solid rgba(0,193,106,0.18)' }}>
-                  <h3 className="text-xl font-semibold text-brand-text mb-4">Comunidade MedCannLab</h3>
+                  <h3 className="text-xl font-semibold text-white mb-4">Comunidade MedCannLab</h3>
                   <div className="space-y-4">
                     <div>
-                      <h4 className="font-semibold text-brand-text mb-2">📌 Por que seguir nossas redes sociais?</h4>
+                      <h4 className="font-semibold text-white mb-2">📌 Por que seguir nossas redes sociais?</h4>
                       <ul className="space-y-2 text-sm text-slate-200/85 list-disc list-inside ml-4">
                         <li>Acesso exclusivo a conteúdos educativos e casos clínicos</li>
                         <li>Participação em discussões com profissionais e colegas</li>
@@ -1807,7 +1807,7 @@ const AlunoDashboard: React.FC = () => {
                       </ul>
                     </div>
                     <div className="pt-4 border-t border-slate-700/50">
-                      <h4 className="font-semibold text-brand-text mb-2">💡 Dica</h4>
+                      <h4 className="font-semibold text-white mb-2">💡 Dica</h4>
                       <p className="text-sm text-slate-200/85">
                         Ative as notificações nas redes sociais para não perder nenhuma atualização importante sobre o curso e a comunidade MedCannLab.
                       </p>
@@ -1835,10 +1835,10 @@ const AlunoDashboard: React.FC = () => {
                 <div className="rounded-xl p-6 mb-6" style={surfaceStyle}>
                   <div className="flex items-center space-x-4 mb-6">
                     <div className="w-16 h-16 rounded-full flex items-center justify-center" style={{ background: accentGradient }}>
-                      <Brain className="w-8 h-8 text-brand-text" />
+                      <Brain className="w-8 h-8 text-white" />
                     </div>
                     <div>
-                      <h3 className="text-xl font-bold text-brand-text">Simulação de Paciente com IA Residente</h3>
+                      <h3 className="text-xl font-bold text-white">Simulação de Paciente com IA Residente</h3>
                       <p className="text-slate-200/80">Selecione um sistema para iniciar a simulação</p>
                     </div>
                   </div>
@@ -1856,7 +1856,7 @@ const AlunoDashboard: React.FC = () => {
                       </label>
                       <select
                         id="sistema-simulacao"
-                        className="w-full px-4 py-3 rounded-lg text-brand-text font-medium focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all"
+                        className="w-full px-4 py-3 rounded-lg text-white font-medium focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all"
                         style={inputStyle}
                         defaultValue=""
                       >
@@ -1880,7 +1880,7 @@ const AlunoDashboard: React.FC = () => {
                       </label>
                       <select
                         id="tipo-simulacao"
-                        className="w-full px-4 py-3 rounded-lg text-brand-text font-medium focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all"
+                        className="w-full px-4 py-3 rounded-lg text-white font-medium focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all"
                         style={inputStyle}
                         defaultValue=""
                       >
@@ -1961,7 +1961,7 @@ const AlunoDashboard: React.FC = () => {
                         openChat()
                         sendInitialMessage(mensagemInicial)
                       }}
-                      className="w-full text-brand-text px-6 py-4 rounded-lg font-bold text-lg flex items-center justify-center space-x-2 shadow-lg hover:shadow-xl transition-transform transform hover:scale-105"
+                      className="w-full text-white px-6 py-4 rounded-lg font-bold text-lg flex items-center justify-center space-x-2 shadow-lg hover:shadow-xl transition-transform transform hover:scale-105"
                       style={{ background: accentGradient }}
                     >
                       <Stethoscope className="w-6 h-6" />
@@ -1970,7 +1970,7 @@ const AlunoDashboard: React.FC = () => {
                   </div>
 
                   <div className="mt-6 p-4 rounded-lg" style={{ ...cardStyle, border: '1px solid rgba(0,193,106,0.18)' }}>
-                    <h4 className="font-semibold text-brand-text mb-2 flex items-center space-x-2">
+                    <h4 className="font-semibold text-white mb-2 flex items-center space-x-2">
                       <Award className="w-5 h-5 text-yellow-400" />
                       <span>Como Funciona:</span>
                     </h4>
@@ -1997,10 +1997,10 @@ const AlunoDashboard: React.FC = () => {
                   <article className="rounded-xl p-6 space-y-3" style={{ ...cardStyle, border: '1px solid rgba(0,193,106,0.18)' }}>
                     <div className="flex items-center gap-3">
                       <div className="p-2 rounded-lg" style={{ background: secondaryGradient }}>
-                        <Database className="w-5 h-5 text-brand-text" />
+                        <Database className="w-5 h-5 text-white" />
                       </div>
                       <div>
-                        <h3 className="text-lg font-semibold text-brand-text">Conhecimento da IA Residente</h3>
+                        <h3 className="text-lg font-semibold text-white">Conhecimento da IA Residente</h3>
                         <p className="text-xs text-slate-300/80 uppercase tracking-[0.28em]">Documentos vinculados à IA</p>
                       </div>
                     </div>
@@ -2010,7 +2010,7 @@ const AlunoDashboard: React.FC = () => {
                     </p>
                     <button
                       onClick={() => navigate('/app/library?filter=knowledge-base')}
-                      className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg font-semibold text-brand-text transition-transform transform hover:scale-[1.02]"
+                      className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg font-semibold text-white transition-transform transform hover:scale-[1.02]"
                       style={{ background: 'linear-gradient(135deg, #1a365d 0%, #274a78 100%)' }}
                     >
                       Ver Documentos Vinculados
@@ -2021,10 +2021,10 @@ const AlunoDashboard: React.FC = () => {
                   <article className="rounded-xl p-6 space-y-3" style={{ ...cardStyle, border: '1px solid rgba(0,193,106,0.18)' }}>
                     <div className="flex items-center gap-3">
                       <div className="p-2 rounded-lg" style={{ background: accentGradient }}>
-                        <Lightbulb className="w-5 h-5 text-brand-text" />
+                        <Lightbulb className="w-5 h-5 text-white" />
                       </div>
                       <div>
-                        <h3 className="text-lg font-semibold text-brand-text">Leituras Sugeridas</h3>
+                        <h3 className="text-lg font-semibold text-white">Leituras Sugeridas</h3>
                         <p className="text-xs text-slate-300/80 uppercase tracking-[0.28em]">Curadoria por módulo</p>
                       </div>
                     </div>
@@ -2036,7 +2036,7 @@ const AlunoDashboard: React.FC = () => {
                         openChat()
                         sendInitialMessage?.('Nôa, pode me indicar leituras sugeridas para o módulo atual da pós-graduação?')
                       }}
-                      className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg font-semibold text-brand-text transition-transform transform hover:scale-[1.02]"
+                      className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg font-semibold text-white transition-transform transform hover:scale-[1.02]"
                       style={{ background: 'linear-gradient(135deg, #00C16A 0%, #13794f 100%)' }}
                     >
                       Pedir Sugestões à IA
@@ -2047,10 +2047,10 @@ const AlunoDashboard: React.FC = () => {
                   <article className="rounded-xl p-6 space-y-3" style={{ ...cardStyle, border: '1px solid rgba(0,193,106,0.18)' }}>
                     <div className="flex items-center gap-3">
                       <div className="p-2 rounded-lg" style={{ background: dangerGradient }}>
-                        <Download className="w-5 h-5 text-brand-text" />
+                        <Download className="w-5 h-5 text-white" />
                       </div>
                       <div>
-                        <h3 className="text-lg font-semibold text-brand-text">Materiais Complementares</h3>
+                        <h3 className="text-lg font-semibold text-white">Materiais Complementares</h3>
                         <p className="text-xs text-slate-300/80 uppercase tracking-[0.28em]">Planilhas, roteiros e slides</p>
                       </div>
                     </div>
@@ -2059,7 +2059,7 @@ const AlunoDashboard: React.FC = () => {
                     </p>
                     <button
                       onClick={() => navigate('/app/library?filter=downloads')}
-                      className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg font-semibold text-brand-text transition-transform transform hover:scale-[1.02]"
+                      className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg font-semibold text-white transition-transform transform hover:scale-[1.02]"
                       style={{ background: 'linear-gradient(135deg, #FF5F6D 0%, #FFC371 100%)', color: '#10243D' }}
                     >
                       Acessar Downloads
@@ -2069,10 +2069,10 @@ const AlunoDashboard: React.FC = () => {
                 </section>
 
                 <section className="rounded-xl p-6" style={{ ...cardStyle, border: '1px solid rgba(0,193,106,0.18)' }}>
-                  <h3 className="text-xl font-semibold text-brand-text mb-4">Coleções em Destaque</h3>
+                  <h3 className="text-xl font-semibold text-white mb-4">Coleções em Destaque</h3>
                   <div className="space-y-4 text-sm text-slate-300/85">
                     <div>
-                      <p className="font-semibold text-brand-text">Arte da Entrevista Clínica</p>
+                      <p className="font-semibold text-white">Arte da Entrevista Clínica</p>
                       <p className="mt-1 leading-relaxed">
                         Casos, transcrições comentadas, fichas IMRE e mapas de aprendizagem para cada eixo da metodologia desenvolvida pelo Dr. Ricardo Valença.
                       </p>
@@ -2085,7 +2085,7 @@ const AlunoDashboard: React.FC = () => {
                       </button>
                     </div>
                     <div>
-                      <p className="font-semibold text-brand-text">Cannabis & Função Renal</p>
+                      <p className="font-semibold text-white">Cannabis & Função Renal</p>
                       <p className="mt-1 leading-relaxed">
                         Estudos clínicos, revisões sistemáticas e protocolos correlacionados à pesquisa MedCannLab sobre nefrologia e terapia canabinoide.
                       </p>
@@ -2107,11 +2107,11 @@ const AlunoDashboard: React.FC = () => {
               <div className="space-y-6">
 
                 {/* Informações do Teste */}
-                <div className="bg-brand-surface rounded-xl p-6 border border-brand-border mb-6">
-                  <h3 className="text-xl font-semibold text-brand-text mb-4">Sobre o Teste de Nivelamento</h3>
-                  <div className="space-y-3 text-brand-text-secondary">
+                <div className="bg-slate-800 rounded-xl p-6 border border-slate-700 mb-6">
+                  <h3 className="text-xl font-semibold text-white mb-4">Sobre o Teste de Nivelamento</h3>
+                  <div className="space-y-3 text-slate-300">
                     <p>
-                      O teste de nivelamento do curso <strong className="text-brand-text">Arte da Entrevista Clínica</strong> ajuda a identificar:
+                      O teste de nivelamento do curso <strong className="text-white">Arte da Entrevista Clínica</strong> ajuda a identificar:
                     </p>
                     <ul className="list-disc list-inside space-y-2 ml-4">
                       <li>Seu nível atual de conhecimento sobre entrevista clínica</li>
@@ -2123,39 +2123,39 @@ const AlunoDashboard: React.FC = () => {
                 </div>
 
                 {/* Estrutura do Teste */}
-                <div className="bg-brand-surface rounded-xl p-6 border border-brand-border mb-6">
-                  <h3 className="text-xl font-semibold text-brand-text mb-4">Estrutura do Teste</h3>
+                <div className="bg-slate-800 rounded-xl p-6 border border-slate-700 mb-6">
+                  <h3 className="text-xl font-semibold text-white mb-4">Estrutura do Teste</h3>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div className="bg-brand-surface-subtle rounded-lg p-4">
+                    <div className="bg-slate-700 rounded-lg p-4">
                       <div className="flex items-center space-x-2 mb-2">
                         <Target className="w-5 h-5 text-blue-400" />
-                        <h4 className="font-semibold text-brand-text">20 Questões</h4>
+                        <h4 className="font-semibold text-white">20 Questões</h4>
                       </div>
-                      <p className="text-sm text-brand-text-muted">Questões de múltipla escolha</p>
+                      <p className="text-sm text-slate-400">Questões de múltipla escolha</p>
                     </div>
-                    <div className="bg-brand-surface-subtle rounded-lg p-4">
+                    <div className="bg-slate-700 rounded-lg p-4">
                       <div className="flex items-center space-x-2 mb-2">
                         <Clock className="w-5 h-5 text-green-400" />
-                        <h4 className="font-semibold text-brand-text">30 Minutos</h4>
+                        <h4 className="font-semibold text-white">30 Minutos</h4>
                       </div>
-                      <p className="text-sm text-brand-text-muted">Tempo estimado para conclusão</p>
+                      <p className="text-sm text-slate-400">Tempo estimado para conclusão</p>
                     </div>
-                    <div className="bg-brand-surface-subtle rounded-lg p-4">
+                    <div className="bg-slate-700 rounded-lg p-4">
                       <div className="flex items-center space-x-2 mb-2">
                         <Award className="w-5 h-5 text-yellow-400" />
-                        <h4 className="font-semibold text-brand-text">Certificado</h4>
+                        <h4 className="font-semibold text-white">Certificado</h4>
                       </div>
-                      <p className="text-sm text-brand-text-muted">Certificado de nivelamento</p>
+                      <p className="text-sm text-slate-400">Certificado de nivelamento</p>
                     </div>
                   </div>
                 </div>
 
                 {/* Botão de Iniciar Teste */}
-                <div className="bg-brand-surface rounded-xl p-6 border border-brand-border">
+                <div className="bg-slate-800 rounded-xl p-6 border border-slate-700">
                   <div className="text-center">
                     <Activity className="w-16 h-16 mx-auto mb-4 text-yellow-400" />
-                    <h3 className="text-2xl font-bold text-brand-text mb-2">Pronto para começar?</h3>
-                    <p className="text-brand-text-secondary mb-6">
+                    <h3 className="text-2xl font-bold text-white mb-2">Pronto para começar?</h3>
+                    <p className="text-slate-300 mb-6">
                       O teste é adaptativo e se ajusta ao seu nível de conhecimento.
                       Não há penalidades por respostas incorretas.
                     </p>
@@ -2164,7 +2164,7 @@ const AlunoDashboard: React.FC = () => {
                         openChat()
                         sendInitialMessage('Vou iniciar o teste de nivelamento do curso Arte da Entrevista Clínica. Você está pronto para começar?')
                       }}
-                      className="bg-gradient-to-r from-yellow-500 to-orange-500 text-brand-text px-8 py-4 rounded-lg font-bold text-lg hover:from-yellow-600 hover:to-orange-600 transition-colors flex items-center justify-center space-x-2 mx-auto"
+                      className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white px-8 py-4 rounded-lg font-bold text-lg hover:from-yellow-600 hover:to-orange-600 transition-colors flex items-center justify-center space-x-2 mx-auto"
                     >
                       <Zap className="w-5 h-5" />
                       <span>Iniciar Teste de Nivelamento</span>
@@ -2215,7 +2215,7 @@ const AlunoDashboard: React.FC = () => {
                   <div className="relative" style={{ zIndex: 10 }}>
                     <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
                       <div>
-                        <h2 className="text-lg font-bold text-brand-text mb-1">Fórum Cann Matrix</h2>
+                        <h2 className="text-lg font-bold text-white mb-1">Fórum Cann Matrix</h2>
                         <p className="text-slate-200/85 text-xs md:text-sm mb-3">
                           Comunidade viva para debates profissionais sobre cannabis medicinal, protocolos clínicos e pesquisa aplicada
                         </p>
@@ -2236,7 +2236,7 @@ const AlunoDashboard: React.FC = () => {
                       </div>
                       <button
                         onClick={() => navigate('/app/chat?context=aluno')}
-                        className="px-4 py-2 rounded-lg font-semibold text-brand-text text-sm transition-transform transform hover:scale-[1.02] shrink-0"
+                        className="px-4 py-2 rounded-lg font-semibold text-white text-sm transition-transform transform hover:scale-[1.02] shrink-0"
                         style={{ background: dangerGradient, color: '#10243D' }}
                       >
                         Acessar Fórum
@@ -2270,7 +2270,7 @@ const AlunoDashboard: React.FC = () => {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="rounded-xl p-6" style={{ ...cardStyle, border: '1px solid rgba(0,193,106,0.18)' }}>
-                    <h3 className="text-lg font-semibold text-brand-text mb-2">Canais em Destaque</h3>
+                    <h3 className="text-lg font-semibold text-white mb-2">Canais em Destaque</h3>
                     <ul className="space-y-2 text-sm text-slate-200/85 list-disc list-inside">
                       <li>#casos-clinicos – discussão orientada pelos docentes</li>
                       <li>#metodologia-aec – dúvidas sobre protocolos IMRE</li>
@@ -2279,7 +2279,7 @@ const AlunoDashboard: React.FC = () => {
                     </ul>
                   </div>
                   <div className="rounded-xl p-6" style={{ ...cardStyle, border: '1px solid rgba(0,193,106,0.18)' }}>
-                    <h3 className="text-lg font-semibold text-brand-text mb-2">Boas Práticas</h3>
+                    <h3 className="text-lg font-semibold text-white mb-2">Boas Práticas</h3>
                     <ul className="space-y-2 text-sm text-slate-200/85 list-disc list-inside">
                       <li>Traga evidências ou referências sempre que possível.</li>
                       <li>Mantenha confidencialidade dos pacientes.</li>
@@ -2299,16 +2299,16 @@ const AlunoDashboard: React.FC = () => {
                     {/* Área do avatar — mais espaço e destaque */}
                     <div className="flex flex-col items-center shrink-0">
                       <div className="w-24 h-24 sm:w-28 sm:h-28 bg-gradient-to-br from-emerald-500 to-green-600 rounded-2xl flex items-center justify-center shadow-lg ring-2 ring-emerald-400/20">
-                        <span className="text-brand-text font-bold text-3xl sm:text-4xl">
+                        <span className="text-white font-bold text-3xl sm:text-4xl">
                           {user?.name ? user.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() : 'A'}
                         </span>
                       </div>
-                      <p className="font-semibold text-brand-text mt-3 text-lg">{user?.name || 'Aluno'}</p>
+                      <p className="font-semibold text-white mt-3 text-lg">{user?.name || 'Aluno'}</p>
                       <p className="text-sm text-emerald-400/90">Estudante</p>
                     </div>
                     <div className="flex-1 text-center sm:text-left min-w-0">
-                      <h2 className="text-xl sm:text-2xl font-semibold text-brand-text">Bem-vindo, {user?.name || 'Aluno'}!</h2>
-                      <p className="text-brand-text-muted mt-1">Seu centro de acompanhamento completo como estudante</p>
+                      <h2 className="text-xl sm:text-2xl font-semibold text-white">Bem-vindo, {user?.name || 'Aluno'}!</h2>
+                      <p className="text-slate-400 mt-1">Seu centro de acompanhamento completo como estudante</p>
                     </div>
                   </div>
                 </div>

@@ -73,10 +73,10 @@ const NoaCapabilities: React.FC<NoaCapabilitiesProps> = ({ className = '' }) => 
   ]
 
   return (
-    <div className={`bg-brand-surface rounded-xl p-6 ${className}`}>
+    <div className={`bg-slate-800 rounded-xl p-6 ${className}`}>
       <div className="mb-6">
-        <h3 className="text-xl font-bold text-brand-text mb-2">🤖 Capacidades da IA Residente</h3>
-        <p className="text-brand-text-muted text-sm">
+        <h3 className="text-xl font-bold text-white mb-2">🤖 Capacidades da IA Residente</h3>
+        <p className="text-slate-400 text-sm">
           A Nôa Esperança pode gerenciar toda a plataforma através de comandos especializados
         </p>
       </div>
@@ -85,17 +85,17 @@ const NoaCapabilities: React.FC<NoaCapabilitiesProps> = ({ className = '' }) => 
         {capabilities.map((capability, index) => (
           <div
             key={index}
-            className="bg-brand-surface-subtle rounded-lg p-4 hover:bg-slate-600 transition-colors cursor-pointer"
+            className="bg-slate-700 rounded-lg p-4 hover:bg-slate-600 transition-colors cursor-pointer"
             onClick={() => handleCommand(capability.command)}
           >
             <div className="flex items-center space-x-3 mb-3">
-              <div className={`p-2 rounded-lg ${capability.color} text-brand-text`}>
+              <div className={`p-2 rounded-lg ${capability.color} text-white`}>
                 {capability.icon}
               </div>
-              <h4 className="font-semibold text-brand-text text-sm">{capability.title}</h4>
+              <h4 className="font-semibold text-white text-sm">{capability.title}</h4>
             </div>
-            <p className="text-brand-text-secondary text-xs mb-2">{capability.description}</p>
-            <div className="text-xs text-brand-text-muted font-mono bg-slate-600 px-2 py-1 rounded">
+            <p className="text-slate-300 text-xs mb-2">{capability.description}</p>
+            <div className="text-xs text-slate-400 font-mono bg-slate-600 px-2 py-1 rounded">
               {capability.command}
             </div>
           </div>
@@ -103,10 +103,10 @@ const NoaCapabilities: React.FC<NoaCapabilitiesProps> = ({ className = '' }) => 
       </div>
 
       {isProcessing && (
-        <div className="bg-brand-surface-subtle rounded-lg p-4 mb-4">
+        <div className="bg-slate-700 rounded-lg p-4 mb-4">
           <div className="flex items-center space-x-3">
             <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-400"></div>
-            <span className="text-brand-text-secondary text-sm">Processando comando...</span>
+            <span className="text-slate-300 text-sm">Processando comando...</span>
           </div>
         </div>
       )}
@@ -127,9 +127,9 @@ const NoaCapabilities: React.FC<NoaCapabilitiesProps> = ({ className = '' }) => 
               {result.success ? 'Sucesso' : 'Erro'}
             </span>
           </div>
-          <p className="text-brand-text-secondary text-sm mb-2">{result.message}</p>
+          <p className="text-slate-300 text-sm mb-2">{result.message}</p>
           {result.data && (
-            <div className="bg-brand-surface rounded p-3 text-xs text-brand-text-muted font-mono">
+            <div className="bg-slate-800 rounded p-3 text-xs text-slate-400 font-mono">
               <pre>{JSON.stringify(result.data, null, 2)}</pre>
             </div>
           )}
@@ -142,8 +142,8 @@ const NoaCapabilities: React.FC<NoaCapabilitiesProps> = ({ className = '' }) => 
       )}
 
       <div className="mt-4 p-3 bg-slate-700/50 rounded-lg">
-        <h4 className="text-sm font-semibold text-brand-text mb-2">Comandos Disponíveis:</h4>
-        <div className="text-xs text-brand-text-muted space-y-1">
+        <h4 className="text-sm font-semibold text-white mb-2">Comandos Disponíveis:</h4>
+        <div className="text-xs text-slate-400 space-y-1">
           {assistantIntegration.getAvailableCommands().map((cmd, index) => (
             <div key={index} className="font-mono">• {cmd}</div>
           ))}

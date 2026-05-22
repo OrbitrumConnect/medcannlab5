@@ -460,11 +460,11 @@ export const ExamRequestModule: React.FC<ExamRequestModuleProps> = ({
     return (
         <div className={`space-y-6 ${className} w-full`}>
             {/* Header */}
-            <div className="bg-slate-900/80 border border-brand-border-subtle rounded-2xl p-6">
+            <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-6">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div>
                         <p className="text-xs uppercase tracking-[0.3em] text-cyan-300 mb-2">Solicitações e Laudos</p>
-                        <h2 className="text-2xl font-semibold text-brand-text flex items-center gap-2">
+                        <h2 className="text-2xl font-semibold text-white flex items-center gap-2">
                             <FileText className="w-6 h-6 text-cyan-300" />
                             Solicitação de Exames
                         </h2>
@@ -473,14 +473,14 @@ export const ExamRequestModule: React.FC<ExamRequestModuleProps> = ({
                     <div className="flex gap-2">
                         <button
                             onClick={() => setActiveTab('library')}
-                            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${activeTab === 'library' ? 'bg-cyan-600 text-brand-text shadow-lg' : 'text-brand-text-muted hover:bg-brand-surface'
+                            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${activeTab === 'library' ? 'bg-cyan-600 text-white shadow-lg' : 'text-slate-400 hover:bg-slate-800'
                                 }`}
                         >
                             Biblioteca
                         </button>
                         <button
                             onClick={() => setActiveTab('history')}
-                            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${activeTab === 'history' ? 'bg-cyan-600 text-brand-text shadow-lg' : 'text-brand-text-muted hover:bg-brand-surface'
+                            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${activeTab === 'history' ? 'bg-cyan-600 text-white shadow-lg' : 'text-slate-400 hover:bg-slate-800'
                                 }`}
                         >
                             Histórico
@@ -489,15 +489,15 @@ export const ExamRequestModule: React.FC<ExamRequestModuleProps> = ({
                 </div>
 
                 {/* Action Bar */}
-                <div className="mt-6 pt-6 border-t border-brand-border-subtle flex justify-between items-center">
-                    <p className="text-sm text-brand-text-muted">
+                <div className="mt-6 pt-6 border-t border-slate-800 flex justify-between items-center">
+                    <p className="text-sm text-slate-400">
                         {activeTab === 'library'
                             ? 'Selecione um modelo abaixo ou crie um novo pedido.'
                             : 'Histórico de exames solicitados para este paciente.'}
                     </p>
                     <button
                         onClick={handleCreateNew}
-                        className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-brand-text rounded-lg font-medium shadow-lg transition-all"
+                        className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white rounded-lg font-medium shadow-lg transition-all"
                     >
                         <Plus className="w-4 h-4" />
                         Novo Pedido
@@ -517,13 +517,13 @@ export const ExamRequestModule: React.FC<ExamRequestModuleProps> = ({
                             <button
                                 key={template.id}
                                 onClick={() => handleOpenTemplate(template)}
-                                className="group flex flex-col items-start text-left p-5 rounded-xl bg-slate-800/50 border border-brand-border hover:border-cyan-500/50 hover:bg-slate-800/80 hover:shadow-xl hover:shadow-cyan-900/10 transition-all"
+                                className="group flex flex-col items-start text-left p-5 rounded-xl bg-slate-800/50 border border-slate-700 hover:border-cyan-500/50 hover:bg-slate-800/80 hover:shadow-xl hover:shadow-cyan-900/10 transition-all"
                             >
                                 <div className="mb-3 w-10 h-10 rounded-lg bg-cyan-500/10 flex items-center justify-center group-hover:bg-cyan-500/20 transition-colors">
                                     <FileText className="w-5 h-5 text-cyan-400" />
                                 </div>
-                                <h3 className="font-semibold text-brand-text mb-1 group-hover:text-cyan-300 transition-colors">{template.title}</h3>
-                                <p className="text-sm text-brand-text-muted line-clamp-2">{template.content}</p>
+                                <h3 className="font-semibold text-white mb-1 group-hover:text-cyan-300 transition-colors">{template.title}</h3>
+                                <p className="text-sm text-slate-400 line-clamp-2">{template.content}</p>
                                 <div className="mt-4 w-full pt-3 border-t border-slate-700/50 flex justify-between items-center">
                                     <span className="text-xs text-slate-500 font-medium uppercase tracking-wider">{template.category || 'Geral'}</span>
                                     <span className="text-xs text-cyan-400 font-medium opacity-0 group-hover:opacity-100 transition-opacity">Usar modelo →</span>
@@ -531,7 +531,7 @@ export const ExamRequestModule: React.FC<ExamRequestModuleProps> = ({
                             </button>
                         ))
                     ) : (
-                        <div className="col-span-full py-10 text-center text-slate-500 bg-slate-900/50 rounded-xl border border-dashed border-brand-border-subtle">
+                        <div className="col-span-full py-10 text-center text-slate-500 bg-slate-900/50 rounded-xl border border-dashed border-slate-800">
                             <p>Nenhum modelo encontrado.</p>
                             <button onClick={handleCreateNew} className="text-cyan-400 hover:underline mt-2 text-sm">Crie seu primeiro modelo</button>
                         </div>
@@ -565,11 +565,11 @@ export const ExamRequestModule: React.FC<ExamRequestModuleProps> = ({
                             const isSigned = (req.status === 'signed' || req.status === 'sent') && !!req.digital_signature;
                             const isDraft = !isSigned;
                             return (
-                                <div key={req.id} className="p-4 bg-slate-800/50 border border-brand-border rounded-xl flex flex-col md:flex-row md:justify-between md:items-center gap-3">
+                                <div key={req.id} className="p-4 bg-slate-800/50 border border-slate-700 rounded-xl flex flex-col md:flex-row md:justify-between md:items-center gap-3">
                                     <div className="flex-1 min-w-0">
-                                        <p className="text-brand-text font-medium line-clamp-1">{req.content.substring(0, 80)}{req.content.length > 80 ? '...' : ''}</p>
+                                        <p className="text-white font-medium line-clamp-1">{req.content.substring(0, 80)}{req.content.length > 80 ? '...' : ''}</p>
                                         <div className="flex flex-wrap items-center gap-2 mt-1 text-xs">
-                                            <span className="text-brand-text-muted">{new Date(req.created_at).toLocaleString('pt-BR')}</span>
+                                            <span className="text-slate-400">{new Date(req.created_at).toLocaleString('pt-BR')}</span>
                                             <span className="text-slate-600">•</span>
                                             {/* V1.9.231 — badge contextual: rascunho amarelo, assinado verde */}
                                             {isSigned ? (
@@ -594,7 +594,7 @@ export const ExamRequestModule: React.FC<ExamRequestModuleProps> = ({
                                             <button
                                                 onClick={() => handleEditDraft(req)}
                                                 disabled={signingId === req.id}
-                                                className="px-3 py-1.5 rounded-lg text-xs font-medium bg-brand-surface-subtle hover:bg-slate-600 text-slate-200 border border-slate-600 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5"
+                                                className="px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-700 hover:bg-slate-600 text-slate-200 border border-slate-600 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5"
                                                 title="Editar conteudo do rascunho antes de assinar"
                                             >
                                                 <Pencil className="w-3.5 h-3.5" />
@@ -606,7 +606,7 @@ export const ExamRequestModule: React.FC<ExamRequestModuleProps> = ({
                                             <button
                                                 onClick={() => handleSign(req)}
                                                 disabled={signingId === req.id}
-                                                className="px-3 py-1.5 rounded-lg text-xs font-medium bg-gradient-to-r from-emerald-600 to-cyan-600 hover:from-emerald-500 hover:to-cyan-500 text-brand-text shadow disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5"
+                                                className="px-3 py-1.5 rounded-lg text-xs font-medium bg-gradient-to-r from-emerald-600 to-cyan-600 hover:from-emerald-500 hover:to-cyan-500 text-white shadow disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5"
                                                 title="Assinar digitalmente com ICP-Brasil (CFM 2.314/2022)"
                                             >
                                                 {signingId === req.id ? (
@@ -629,7 +629,7 @@ export const ExamRequestModule: React.FC<ExamRequestModuleProps> = ({
                             );
                         })
                     ) : (
-                        <div className="text-center py-12 text-slate-500 bg-slate-800/30 rounded-2xl border border-brand-border-subtle border-dashed">
+                        <div className="text-center py-12 text-slate-500 bg-slate-800/30 rounded-2xl border border-slate-800 border-dashed">
                             <Printer className="w-12 h-12 mx-auto mb-3 opacity-20" />
                             <p>Nenhuma solicitação encontrada no histórico deste paciente.</p>
                         </div>
@@ -640,16 +640,16 @@ export const ExamRequestModule: React.FC<ExamRequestModuleProps> = ({
             {/* Editor Modal */}
             {showEditor && (
                 <div className="fixed inset-0 bg-slate-950/90 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
-                    <div className="bg-brand-bg border border-brand-border rounded-2xl w-full max-w-4xl max-h-[90vh] flex flex-col shadow-2xl">
+                    <div className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-4xl max-h-[90vh] flex flex-col shadow-2xl">
                         {/* Modal Header */}
-                        <div className="p-5 border-b border-brand-border flex justify-between items-center bg-slate-800/50 rounded-t-2xl">
+                        <div className="p-5 border-b border-slate-700 flex justify-between items-center bg-slate-800/50 rounded-t-2xl">
                             <div>
-                                <h3 className="text-lg font-bold text-brand-text flex items-center gap-2">
+                                <h3 className="text-lg font-bold text-white flex items-center gap-2">
                                     {editingId ? 'Editar Rascunho de Exame' : (selectedTemplate ? `Editar: ${selectedTemplate.title}` : 'Novo Pedido de Exame')}
                                 </h3>
-                                <p className="text-sm text-brand-text-muted">Paciente: <span className="text-brand-text font-medium">{patientName || 'Não selecionado'}</span></p>
+                                <p className="text-sm text-slate-400">Paciente: <span className="text-white font-medium">{patientName || 'Não selecionado'}</span></p>
                             </div>
-                            <button onClick={handleCloseEditor} className="p-2 hover:bg-brand-surface-subtle rounded-lg text-brand-text-muted hover:text-brand-text transition-colors">
+                            <button onClick={handleCloseEditor} className="p-2 hover:bg-slate-700 rounded-lg text-slate-400 hover:text-white transition-colors">
                                 <X className="w-5 h-5" />
                             </button>
                         </div>
@@ -664,11 +664,11 @@ export const ExamRequestModule: React.FC<ExamRequestModuleProps> = ({
                                 </div>
                             )}
 
-                            <label className="block text-sm font-medium text-brand-text-secondary mb-2 uppercase tracking-wider">Conteúdo da Solicitação</label>
+                            <label className="block text-sm font-medium text-slate-300 mb-2 uppercase tracking-wider">Conteúdo da Solicitação</label>
                             <textarea
                                 value={editorContent}
                                 onChange={(e) => setEditorContent(e.target.value)}
-                                className="w-full h-96 bg-slate-950 text-slate-200 border border-brand-border rounded-xl p-5 font-mono text-sm leading-relaxed focus:ring-2 focus:ring-cyan-500/50 focus:border-cyan-500 outline-none resize-none"
+                                className="w-full h-96 bg-slate-950 text-slate-200 border border-slate-700 rounded-xl p-5 font-mono text-sm leading-relaxed focus:ring-2 focus:ring-cyan-500/50 focus:border-cyan-500 outline-none resize-none"
                                 placeholder="Digite os exames solicitados aqui..."
                             />
                             <div className="flex justify-end gap-2 mt-2">
@@ -682,11 +682,11 @@ export const ExamRequestModule: React.FC<ExamRequestModuleProps> = ({
                         </div>
 
                         {/* Modal Footer */}
-                        <div className="p-5 border-t border-brand-border bg-slate-800/30 rounded-b-2xl flex flex-col md:flex-row justify-between items-center gap-4">
+                        <div className="p-5 border-t border-slate-700 bg-slate-800/30 rounded-b-2xl flex flex-col md:flex-row justify-between items-center gap-4">
                             <div className="flex gap-2 w-full md:w-auto">
                                 <button
                                     onClick={handleSaveAsTemplate}
-                                    className="px-4 py-2 bg-brand-surface-subtle hover:bg-slate-600 text-slate-200 rounded-lg text-sm font-medium transition-colors flex-1 md:flex-none"
+                                    className="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-slate-200 rounded-lg text-sm font-medium transition-colors flex-1 md:flex-none"
                                 >
                                     Salvar como Modelo
                                 </button>
@@ -694,7 +694,7 @@ export const ExamRequestModule: React.FC<ExamRequestModuleProps> = ({
                             <div className="flex gap-3 w-full md:w-auto justify-end">
                                 <button
                                     onClick={() => handlePrint()}
-                                    className="px-4 py-2 text-brand-text-secondary hover:text-brand-text bg-brand-surface hover:bg-brand-surface-subtle border border-slate-600 rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
+                                    className="px-4 py-2 text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-700 border border-slate-600 rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
                                     title="Imprimir RASCUNHO (sem valor legal — salve e assine no histórico)"
                                 >
                                     <Printer className="w-4 h-4" />
@@ -702,18 +702,18 @@ export const ExamRequestModule: React.FC<ExamRequestModuleProps> = ({
                                 </button>
                                 <button
                                     onClick={handleSend}
-                                    className="px-4 py-2 text-brand-text-secondary hover:text-brand-text bg-brand-surface hover:bg-brand-surface-subtle border border-slate-600 rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
+                                    className="px-4 py-2 text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-700 border border-slate-600 rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
                                     title="Enviar por E-mail"
                                 >
                                     <Send className="w-4 h-4" />
                                     <span className="hidden sm:inline">Enviar</span>
                                 </button>
-                                <div className="w-px h-8 bg-brand-surface-subtle mx-1 hidden sm:block"></div>
+                                <div className="w-px h-8 bg-slate-700 mx-1 hidden sm:block"></div>
                                 <button
                                     onClick={handleSaveRequest}
                                     disabled={saving || savingAndSigning}
                                     title="Salva como rascunho. Assine depois no historico (botao Assinar)."
-                                    className="px-4 py-2 bg-brand-surface-subtle hover:bg-slate-600 text-slate-200 rounded-lg text-sm font-semibold transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                                    className="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-slate-200 rounded-lg text-sm font-semibold transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
                                     {saving ? (
                                         <Loader2 className="w-4 h-4 animate-spin" />
@@ -729,7 +729,7 @@ export const ExamRequestModule: React.FC<ExamRequestModuleProps> = ({
                                     onClick={handleSaveAndSign}
                                     disabled={saving || savingAndSigning}
                                     title="Salva e assina automaticamente com ICP-Brasil (valor legal pleno CFM 2.314/2022). Requer certificado configurado."
-                                    className="px-6 py-2 bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-500 hover:to-green-500 text-brand-text rounded-lg font-bold shadow-lg shadow-emerald-900/20 transition-transform active:scale-95 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                                    className="px-6 py-2 bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-500 hover:to-green-500 text-white rounded-lg font-bold shadow-lg shadow-emerald-900/20 transition-transform active:scale-95 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
                                     {savingAndSigning ? (
                                         <>

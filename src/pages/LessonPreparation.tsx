@@ -608,17 +608,17 @@ export function LessonPreparation() {
   if (!isAdmin) {
     return (
       <div className="min-h-screen bg-[#050914] flex items-center justify-center p-4">
-        <div className="bg-slate-900/50 backdrop-blur-xl p-10 rounded-3xl border border-brand-border-subtle max-w-md text-center shadow-2xl">
+        <div className="bg-slate-900/50 backdrop-blur-xl p-10 rounded-3xl border border-slate-800 max-w-md text-center shadow-2xl">
           <div className="w-20 h-20 bg-indigo-500/20 rounded-full flex items-center justify-center mx-auto mb-6 border border-indigo-500/30">
             <Shield className="w-10 h-10 text-indigo-400" />
           </div>
-          <h2 className="text-2xl font-bold text-brand-text mb-4">Acesso Restrito</h2>
-          <p className="text-brand-text-muted mb-8 leading-relaxed">
+          <h2 className="text-2xl font-bold text-white mb-4">Acesso Restrito</h2>
+          <p className="text-slate-400 mb-8 leading-relaxed">
             As Ferramentas Pedagógicas são exclusivas para o conselho docente e curadores da MedCannLab.
           </p>
           <button 
             onClick={() => navigate('/app/clinica/profissional/dashboard')}
-            className="w-full px-6 py-4 bg-indigo-600 hover:bg-indigo-500 text-brand-text rounded-2xl font-bold transition-all shadow-lg shadow-indigo-600/20"
+            className="w-full px-6 py-4 bg-indigo-600 hover:bg-indigo-500 text-white rounded-2xl font-bold transition-all shadow-lg shadow-indigo-600/20"
           >
             Voltar ao Dashboard
           </button>
@@ -635,13 +635,13 @@ export function LessonPreparation() {
           <div className="flex items-center space-x-4">
             <button
               onClick={() => navigate('/app/ensino/profissional/dashboard')}
-              className="flex items-center space-x-2 text-brand-text-secondary hover:text-brand-text transition-colors"
+              className="flex items-center space-x-2 text-slate-300 hover:text-white transition-colors"
             >
               <ArrowLeft className="w-5 h-5" />
               <span>Voltar</span>
             </button>
             <div>
-              <h1 className="text-3xl font-bold text-brand-text mb-2">
+              <h1 className="text-3xl font-bold text-white mb-2">
                 📝 Ferramentas Pedagógicas
               </h1>
               <p className="text-gray-300">
@@ -654,14 +654,14 @@ export function LessonPreparation() {
               <>
                 <button
                   onClick={handleSaveLesson}
-                  className="bg-emerald-600 hover:bg-emerald-700 text-brand-text px-4 py-2 rounded-lg font-semibold flex items-center gap-2"
+                  className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg font-semibold flex items-center gap-2"
                 >
                   <Save size={18} />
                   Salvar
                 </button>
                 <button
                   onClick={handlePublishLesson}
-                  className="bg-green-600 hover:bg-green-700 text-brand-text px-4 py-2 rounded-lg font-semibold flex items-center gap-2"
+                  className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-semibold flex items-center gap-2"
                 >
                   <Globe size={18} />
                   Publicar no Curso
@@ -681,7 +681,7 @@ export function LessonPreparation() {
                 placeholder="Buscar casos ou aulas..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 bg-brand-surface border border-brand-border rounded-lg text-brand-text placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full pl-10 pr-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
           </div>
@@ -689,12 +689,12 @@ export function LessonPreparation() {
 
         {/* Tabs */}
         <div className="mb-6">
-          <div className="flex gap-4 border-b border-brand-border">
+          <div className="flex gap-4 border-b border-slate-700">
             <button
               onClick={() => setActiveTab('cases')}
               className={`pb-3 px-4 font-semibold transition-colors ${activeTab === 'cases'
                 ? 'text-emerald-400 border-b-2 border-emerald-400'
-                : 'text-gray-400 hover:text-brand-text'
+                : 'text-gray-400 hover:text-white'
                 }`}
             >
               📁 Casos Clínicos ({cases.length})
@@ -703,7 +703,7 @@ export function LessonPreparation() {
               onClick={() => setActiveTab('lessons')}
               className={`pb-3 px-4 font-semibold transition-colors ${activeTab === 'lessons'
                 ? 'text-emerald-400 border-b-2 border-emerald-400'
-                : 'text-gray-400 hover:text-brand-text'
+                : 'text-gray-400 hover:text-white'
                 }`}
             >
               📚 Minhas Aulas ({lessons.length})
@@ -712,7 +712,7 @@ export function LessonPreparation() {
               onClick={() => setActiveTab('slides')}
               className={`pb-3 px-4 font-semibold transition-colors ${activeTab === 'slides'
                 ? 'text-emerald-400 border-b-2 border-emerald-400'
-                : 'text-gray-400 hover:text-brand-text'
+                : 'text-gray-400 hover:text-white'
                 }`}
             >
               📊 Preparação de Slides ({slides.length})
@@ -721,7 +721,7 @@ export function LessonPreparation() {
               onClick={() => setActiveTab('flipped')}
               className={`pb-3 px-4 font-semibold transition-colors ${activeTab === 'flipped'
                 ? 'text-emerald-400 border-b-2 border-emerald-400'
-                : 'text-gray-400 hover:text-brand-text'
+                : 'text-gray-400 hover:text-white'
                 }`}
             >
               🔄 Sala de Aula Invertida ({flippedLessons.length})
@@ -730,7 +730,7 @@ export function LessonPreparation() {
               onClick={() => setActiveTab('quizzes')}
               className={`pb-3 px-4 font-semibold transition-colors ${activeTab === 'quizzes'
                 ? 'text-emerald-400 border-b-2 border-emerald-400'
-                : 'text-gray-400 hover:text-brand-text'
+                : 'text-gray-400 hover:text-white'
                 }`}
             >
               📝 Geração de Quizzes ({quizzes.length})
@@ -755,11 +755,11 @@ export function LessonPreparation() {
                 currentCases.map((caseItem) => (
                   <div
                     key={caseItem.id}
-                    className="bg-brand-surface rounded-xl p-6 border border-brand-border hover:border-emerald-500 transition-all cursor-pointer"
+                    className="bg-slate-800 rounded-xl p-6 border border-slate-700 hover:border-emerald-500 transition-all cursor-pointer"
                   >
                     <div className="flex items-start justify-between mb-4">
                       <div>
-                        <h3 className="text-lg font-bold text-brand-text mb-1">
+                        <h3 className="text-lg font-bold text-white mb-1">
                           {caseItem.patient_name}
                         </h3>
                         <p className="text-sm text-gray-400">{caseItem.diagnosis}</p>
@@ -800,19 +800,19 @@ export function LessonPreparation() {
                 <button
                   onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                   disabled={currentPage === 1}
-                  className="px-4 py-2 bg-brand-surface hover:bg-brand-surface-subtle text-emerald-400 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed border border-emerald-900/50 transition-colors"
+                  className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-emerald-400 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed border border-emerald-900/50 transition-colors"
                 >
                   Anterior
                 </button>
                 <div className="flex items-center space-x-2">
-                  <span className="text-brand-text-muted text-sm">
-                    Página <span className="text-emerald-400 font-bold">{currentPage}</span> de <span className="text-brand-text font-bold">{totalPages}</span>
+                  <span className="text-slate-400 text-sm">
+                    Página <span className="text-emerald-400 font-bold">{currentPage}</span> de <span className="text-white font-bold">{totalPages}</span>
                   </span>
                 </div>
                 <button
                   onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
                   disabled={currentPage === totalPages}
-                  className="px-4 py-2 bg-brand-surface hover:bg-brand-surface-subtle text-emerald-400 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed border border-emerald-900/50 transition-colors"
+                  className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-emerald-400 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed border border-emerald-900/50 transition-colors"
                 >
                   Próxima
                 </button>
@@ -824,20 +824,20 @@ export function LessonPreparation() {
         {/* Lessons */}
         {activeTab === 'lessons' && (
           <div>
-            <h2 className="text-2xl font-bold text-brand-text mb-4">Minhas Aulas</h2>
+            <h2 className="text-2xl font-bold text-white mb-4">Minhas Aulas</h2>
             <div className="space-y-4">
               {filteredLessons.map((lesson) => (
                 <div
                   key={lesson.id}
-                  className="bg-brand-surface rounded-xl p-6 border border-brand-border hover:border-emerald-500 transition-all"
+                  className="bg-slate-800 rounded-xl p-6 border border-slate-700 hover:border-emerald-500 transition-all"
                 >
                   <div className="flex items-start justify-between mb-4">
                     <div className="flex items-start gap-4">
                       <div className="w-12 h-12 bg-emerald-600 rounded-lg flex items-center justify-center">
-                        <Presentation className="text-brand-text" size={24} />
+                        <Presentation className="text-white" size={24} />
                       </div>
                       <div>
-                        <h3 className="text-lg font-bold text-brand-text mb-1">{lesson.title}</h3>
+                        <h3 className="text-lg font-bold text-white mb-1">{lesson.title}</h3>
                         <p className="text-sm text-gray-300">{lesson.description}</p>
                       </div>
                     </div>
@@ -867,19 +867,19 @@ export function LessonPreparation() {
                   <div className="flex gap-3 mt-4">
                     <button
                       onClick={() => handleEditLesson(lesson.id)}
-                      className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-brand-text py-2 rounded-lg font-semibold text-sm"
+                      className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white py-2 rounded-lg font-semibold text-sm"
                     >
                       Editar
                     </button>
                     <button
                       onClick={() => handleViewLesson(lesson.id)}
-                      className="flex-1 bg-brand-surface-subtle hover:bg-slate-600 text-brand-text py-2 rounded-lg font-semibold text-sm"
+                      className="flex-1 bg-slate-700 hover:bg-slate-600 text-white py-2 rounded-lg font-semibold text-sm"
                     >
                       Visualizar
                     </button>
                     <button
                       onClick={() => handleDeleteLesson(lesson.id)}
-                      className="px-4 bg-brand-surface-subtle hover:bg-red-600 text-brand-text py-2 rounded-lg text-sm"
+                      className="px-4 bg-slate-700 hover:bg-red-600 text-white py-2 rounded-lg text-sm"
                     >
                       Deletar
                     </button>
@@ -894,15 +894,15 @@ export function LessonPreparation() {
         {activeTab === 'editor' && editingLesson && (
           <div className="space-y-6">
             {/* Editor Toolbar */}
-            <div className="bg-brand-surface rounded-xl p-4 border border-brand-border flex items-center gap-2">
-              <button className="p-2 hover:bg-brand-surface-subtle rounded-lg" title="Negrito"><strong>B</strong></button>
-              <button className="p-2 hover:bg-brand-surface-subtle rounded-lg" title="Itálico"><em>I</em></button>
-              <button className="p-2 hover:bg-brand-surface-subtle rounded-lg" title="Sublinhado"><u>U</u></button>
+            <div className="bg-slate-800 rounded-xl p-4 border border-slate-700 flex items-center gap-2">
+              <button className="p-2 hover:bg-slate-700 rounded-lg" title="Negrito"><strong>B</strong></button>
+              <button className="p-2 hover:bg-slate-700 rounded-lg" title="Itálico"><em>I</em></button>
+              <button className="p-2 hover:bg-slate-700 rounded-lg" title="Sublinhado"><u>U</u></button>
               <div className="w-px h-6 bg-slate-600"></div>
-              <button className="p-2 hover:bg-brand-surface-subtle rounded-lg" title="Título"><span className="text-xl">H</span></button>
-              <button className="p-2 hover:bg-brand-surface-subtle rounded-lg" title="Lista">• Lista</button>
+              <button className="p-2 hover:bg-slate-700 rounded-lg" title="Título"><span className="text-xl">H</span></button>
+              <button className="p-2 hover:bg-slate-700 rounded-lg" title="Lista">• Lista</button>
               <div className="flex-1"></div>
-              <button className="p-2 hover:bg-brand-surface-subtle rounded-lg" title="Exportar PDF"><Download size={18} /></button>
+              <button className="p-2 hover:bg-slate-700 rounded-lg" title="Exportar PDF"><Download size={18} /></button>
             </div>
 
             {/* Title */}
@@ -912,7 +912,7 @@ export function LessonPreparation() {
                 type="text"
                 value={editorContent.title}
                 onChange={(e) => setEditorContent({ ...editorContent, title: e.target.value })}
-                className="w-full px-4 py-3 bg-brand-surface border border-brand-border rounded-lg text-brand-text text-xl font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-white text-xl font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500"
                 placeholder="Ex: Relato de Caso: Cannabis Medicinal em Dor Crônica"
               />
             </div>
@@ -924,7 +924,7 @@ export function LessonPreparation() {
                 value={editorContent.abstract}
                 onChange={(e) => setEditorContent({ ...editorContent, abstract: e.target.value })}
                 rows={4}
-                className="w-full px-4 py-3 bg-brand-surface border border-brand-border rounded-lg text-brand-text focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                 placeholder="Resumo do artigo em até 250 palavras..."
               />
             </div>
@@ -936,7 +936,7 @@ export function LessonPreparation() {
                 type="text"
                 value={editorContent.keywords}
                 onChange={(e) => setEditorContent({ ...editorContent, keywords: e.target.value })}
-                className="w-full px-4 py-3 bg-brand-surface border border-brand-border rounded-lg text-brand-text focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                 placeholder="palavra-chave 1, palavra-chave 2, palavra-chave 3..."
               />
             </div>
@@ -948,7 +948,7 @@ export function LessonPreparation() {
                 value={editorContent.introduction}
                 onChange={(e) => setEditorContent({ ...editorContent, introduction: e.target.value })}
                 rows={6}
-                className="w-full px-4 py-3 bg-brand-surface border border-brand-border rounded-lg text-brand-text focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                 placeholder="Contexto, justificativa e objetivos do caso..."
               />
             </div>
@@ -960,7 +960,7 @@ export function LessonPreparation() {
                 value={editorContent.methodology}
                 onChange={(e) => setEditorContent({ ...editorContent, methodology: e.target.value })}
                 rows={6}
-                className="w-full px-4 py-3 bg-brand-surface border border-brand-border rounded-lg text-brand-text focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                 placeholder="Metodologia de avaliação utilizada (Sistema IMRE)..."
               />
             </div>
@@ -972,7 +972,7 @@ export function LessonPreparation() {
                 value={editorContent.results}
                 onChange={(e) => setEditorContent({ ...editorContent, results: e.target.value })}
                 rows={8}
-                className="w-full px-4 py-3 bg-brand-surface border border-brand-border rounded-lg text-brand-text focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                 placeholder="Resultados da avaliação clínica, dados coletados..."
               />
             </div>
@@ -984,7 +984,7 @@ export function LessonPreparation() {
                 value={editorContent.discussion}
                 onChange={(e) => setEditorContent({ ...editorContent, discussion: e.target.value })}
                 rows={6}
-                className="w-full px-4 py-3 bg-brand-surface border border-brand-border rounded-lg text-brand-text focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                 placeholder="Análise dos resultados, interpretação dos achados..."
               />
             </div>
@@ -996,7 +996,7 @@ export function LessonPreparation() {
                 value={editorContent.conclusion}
                 onChange={(e) => setEditorContent({ ...editorContent, conclusion: e.target.value })}
                 rows={4}
-                className="w-full px-4 py-3 bg-brand-surface border border-brand-border rounded-lg text-brand-text focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                 placeholder="Conclusões e recomendações finais..."
               />
             </div>
@@ -1008,32 +1008,32 @@ export function LessonPreparation() {
                 value={editorContent.references}
                 onChange={(e) => setEditorContent({ ...editorContent, references: e.target.value })}
                 rows={6}
-                className="w-full px-4 py-3 bg-brand-surface border border-brand-border rounded-lg text-brand-text focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono text-sm"
+                className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono text-sm"
                 placeholder="1. Autor, A. (2024). Título do artigo. Revista, volume(issue), páginas."
               />
             </div>
 
             {/* Action Buttons */}
-            <div className="flex gap-3 pt-4 border-t border-brand-border">
+            <div className="flex gap-3 pt-4 border-t border-slate-700">
               <button
                 onClick={() => {
                   setEditingLesson(null)
                   setActiveTab('lessons')
                 }}
-                className="px-6 py-3 bg-brand-surface-subtle hover:bg-slate-600 text-brand-text rounded-lg font-semibold"
+                className="px-6 py-3 bg-slate-700 hover:bg-slate-600 text-white rounded-lg font-semibold"
               >
                 Cancelar
               </button>
               <button
                 onClick={handleSaveLesson}
-                className="px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-brand-text rounded-lg font-semibold flex items-center gap-2"
+                className="px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-semibold flex items-center gap-2"
               >
                 <Save size={20} />
                 Salvar Rascunho
               </button>
               <button
                 onClick={handlePublishLesson}
-                className="px-6 py-3 bg-green-600 hover:bg-green-700 text-brand-text rounded-lg font-semibold flex items-center gap-2"
+                className="px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg font-semibold flex items-center gap-2"
               >
                 <Globe size={20} />
                 Publicar no Curso de Pós-graduação
@@ -1048,8 +1048,8 @@ export function LessonPreparation() {
             <div className="bg-gradient-to-r from-blue-900/40 via-slate-900/60 to-emerald-900/40 border border-slate-700/60 rounded-xl p-6">
               <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
                 <div>
-                  <h2 className="text-2xl font-bold text-brand-text mb-1">Preparação de Slides</h2>
-                  <p className="text-brand-text-secondary text-sm max-w-2xl">
+                  <h2 className="text-2xl font-bold text-white mb-1">Preparação de Slides</h2>
+                  <p className="text-slate-300 text-sm max-w-2xl">
                     Crie apresentações clínicas com a paleta da landing page, gere rascunhos com a IA residente e exporte em formato PowerPoint.
                   </p>
                 </div>
@@ -1071,7 +1071,7 @@ export function LessonPreparation() {
                       }
                       fileInput.click()
                     }}
-                    className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-brand-text px-4 py-2 rounded-lg font-semibold flex items-center gap-2 shadow-lg"
+                    className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-4 py-2 rounded-lg font-semibold flex items-center gap-2 shadow-lg"
                   >
                     <Upload size={18} />
                     Enviar PowerPoint
@@ -1088,7 +1088,7 @@ export function LessonPreparation() {
                         "Instrua a IA a usar a paleta Emerald (#10B981) e Navy (#050914) em um estilo Dark Medical de luxo."
                       )
                     }}
-                    className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-brand-text px-6 py-2.5 rounded-xl font-bold transition-all shadow-lg flex items-center gap-2"
+                    className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white px-6 py-2.5 rounded-xl font-bold transition-all shadow-lg flex items-center gap-2"
                   >
                     <Sparkles size={18} />
                     Roteirizar com Nôa
@@ -1109,13 +1109,13 @@ export function LessonPreparation() {
                         }`}
                     >
                       <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2 text-sm font-semibold text-brand-text">
+                        <div className="flex items-center gap-2 text-sm font-semibold text-white">
                           <Layout size={16} />
                           {template.label}
                         </div>
                         {isSelected && <CheckCircle className="w-5 h-5 text-[#00F5A0]" />}
                       </div>
-                      <p className="text-xs text-brand-text-secondary mt-2 leading-relaxed">{template.description}</p>
+                      <p className="text-xs text-slate-300 mt-2 leading-relaxed">{template.description}</p>
                     </button>
                   )
                 })}
@@ -1126,14 +1126,14 @@ export function LessonPreparation() {
               <div className="space-y-4">
                 <div className="bg-slate-900/70 border border-slate-700/60 rounded-xl p-4 shadow-lg">
                   <div className="flex items-center justify-between mb-3">
-                    <h3 className="text-xs font-semibold text-brand-text uppercase tracking-wide">Meus slides ({slides.length})</h3>
-                    <button onClick={loadSlides} className="text-xs text-brand-text-muted flex items-center gap-1">
+                    <h3 className="text-xs font-semibold text-white uppercase tracking-wide">Meus slides ({slides.length})</h3>
+                    <button onClick={loadSlides} className="text-xs text-slate-400 flex items-center gap-1">
                       <RotateCcw size={14} />
                       Recarregar
                     </button>
                   </div>
                   <div className="space-y-2 max-h-[420px] overflow-y-auto pr-1">
-                    {slides.length === 0 && <p className="text-xs text-brand-text-muted">Selecione um template e clique em "Novo Slide" para iniciar.</p>}
+                    {slides.length === 0 && <p className="text-xs text-slate-400">Selecione um template e clique em "Novo Slide" para iniciar.</p>}
                     {slides.map((slide, index) => {
                       const accentStyle = slideAccentStyles[(slide.accent as SlideContent['accent']) || 'emerald']
                       const isActive = currentSlide === index
@@ -1147,10 +1147,10 @@ export function LessonPreparation() {
                             }`}
                         >
                           <div className="flex items-center justify-between mb-1">
-                            <span className="text-sm font-semibold text-brand-text truncate">{slide.title || `Slide ${index + 1}`}</span>
-                            <span className="text-[11px] text-brand-text-muted">#{index + 1}</span>
+                            <span className="text-sm font-semibold text-white truncate">{slide.title || `Slide ${index + 1}`}</span>
+                            <span className="text-[11px] text-slate-400">#{index + 1}</span>
                           </div>
-                          <div className="text-[11px] text-brand-text-muted flex items-center gap-2">
+                          <div className="text-[11px] text-slate-400 flex items-center gap-2">
                             <span>{slide.layout === 'cover' ? 'Capa' : slide.layout === 'two-column' ? 'Comparativo' : slide.layout === 'image-focus' ? 'Visual' : 'Tópicos'}</span>
                             <span style={{ color: accentStyle.body }}>•</span>
                             <span>{(slide.bullets || []).length} tópicos</span>
@@ -1172,10 +1172,10 @@ export function LessonPreparation() {
                         <div className="bg-slate-900/70 border border-slate-700/60 rounded-xl p-4 shadow-xl">
                           <div className="flex items-center justify-between mb-4">
                             <div>
-                              <h3 className="text-sm font-semibold text-brand-text uppercase tracking-wide">Pré-visualização</h3>
-                              <p className="text-xs text-brand-text-muted">Ajuste o layout e veja como o slide será apresentado.</p>
+                              <h3 className="text-sm font-semibold text-white uppercase tracking-wide">Pré-visualização</h3>
+                              <p className="text-xs text-slate-400">Ajuste o layout e veja como o slide será apresentado.</p>
                             </div>
-                            <div className="flex items-center gap-2 text-xs text-brand-text-secondary">
+                            <div className="flex items-center gap-2 text-xs text-slate-300">
                               <Sparkles size={14} />
                               {slide.aiDraft ? 'Rascunho gerado pela IA' : 'Edição manual'}
                             </div>
@@ -1241,22 +1241,22 @@ export function LessonPreparation() {
                     <div className="bg-slate-900/70 border border-slate-700/60 rounded-xl p-6 shadow-xl space-y-5">
                       <div className="grid gap-4 md:grid-cols-2">
                         <div>
-                          <label className="block text-xs font-semibold text-brand-text-secondary mb-2">Título</label>
+                          <label className="block text-xs font-semibold text-slate-300 mb-2">Título</label>
                           <input
                             type="text"
                             value={slides[currentSlide].title}
                             onChange={(e) => updateSlideAtIndex(currentSlide, { title: e.target.value })}
-                            className="w-full px-4 py-3 bg-brand-surface border border-brand-border rounded-lg text-brand-text focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                            className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
                             placeholder="Digite o título do slide"
                           />
                         </div>
                         <div className="grid grid-cols-2 gap-3 text-xs">
                           <div>
-                            <label className="block font-semibold text-brand-text-secondary mb-2">Layout</label>
+                            <label className="block font-semibold text-slate-300 mb-2">Layout</label>
                             <select
                               value={slides[currentSlide].layout}
                               onChange={(e) => updateSlideAtIndex(currentSlide, { layout: e.target.value as SlideContent['layout'] })}
-                              className="w-full px-3 py-2 bg-brand-surface border border-brand-border rounded-lg text-brand-text focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                              className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
                             >
                               <option value="cover">Capa / Destaque</option>
                               <option value="bullets">Tópicos</option>
@@ -1265,11 +1265,11 @@ export function LessonPreparation() {
                             </select>
                           </div>
                           <div>
-                            <label className="block font-semibold text-brand-text-secondary mb-2">Paleta</label>
+                            <label className="block font-semibold text-slate-300 mb-2">Paleta</label>
                             <select
                               value={slides[currentSlide].accent}
                               onChange={(e) => updateSlideAtIndex(currentSlide, { accent: e.target.value as SlideContent['accent'] })}
-                              className="w-full px-3 py-2 bg-brand-surface border border-brand-border rounded-lg text-brand-text focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                              className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
                             >
                               <option value="emerald">Verde Neon</option>
                               <option value="blue">Azul Profundo</option>
@@ -1281,18 +1281,18 @@ export function LessonPreparation() {
                       </div>
 
                       <div>
-                        <label className="block text-xs font-semibold text-brand-text-secondary mb-2">Texto livre</label>
+                        <label className="block text-xs font-semibold text-slate-300 mb-2">Texto livre</label>
                         <textarea
                           rows={4}
                           value={slides[currentSlide].content}
                           onChange={(e) => updateSlideAtIndex(currentSlide, { content: e.target.value })}
-                          className="w-full px-4 py-3 bg-brand-surface border border-brand-border rounded-lg text-brand-text focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm"
+                          className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm"
                           placeholder="Cole aqui parágrafos ou adicione observações para transformar em tópicos."
                         />
                       </div>
 
                       <div>
-                        <label className="block text-xs font-semibold text-brand-text-secondary mb-2">Tópicos (um por linha)</label>
+                        <label className="block text-xs font-semibold text-slate-300 mb-2">Tópicos (um por linha)</label>
                         <textarea
                           rows={5}
                           value={(slides[currentSlide].bullets || []).join('\n')}
@@ -1306,25 +1306,25 @@ export function LessonPreparation() {
                               content: bulletArray.join('\n')
                             })
                           }}
-                          className="w-full px-4 py-3 bg-brand-surface border border-brand-border rounded-lg text-brand-text focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm"
+                          className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm"
                           placeholder="• Introdução ao tema\n• Evidência clínica relevante\n• Conexão com o plano terapêutico"
                         />
                       </div>
 
                       <div>
-                        <label className="block text-xs font-semibold text-brand-text-secondary mb-2">Notas de apresentação</label>
+                        <label className="block text-xs font-semibold text-slate-300 mb-2">Notas de apresentação</label>
                         <textarea
                           rows={4}
                           value={slides[currentSlide].notes || ''}
                           onChange={(e) => updateSlideAtIndex(currentSlide, { notes: e.target.value })}
-                          className="w-full px-4 py-3 bg-brand-surface border border-brand-border rounded-lg text-brand-text focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm"
+                          className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm"
                           placeholder="Apontamentos para o facilitador, insights da IA residente, referências clínicas..."
                         />
                       </div>
 
                       <div className="grid gap-4 md:grid-cols-2">
                         <div>
-                          <label className="block text-xs font-semibold text-brand-text-secondary mb-2">Prompt para imagem</label>
+                          <label className="block text-xs font-semibold text-slate-300 mb-2">Prompt para imagem</label>
                           <input
                             type="text"
                             value={slides[currentSlide].imagePrompt || ''}
@@ -1336,7 +1336,7 @@ export function LessonPreparation() {
                                 scheduleSlideSave(() => saveSlide({ ...baseSlide, imagePrompt: newPrompt }))
                               }
                             }}
-                            className="w-full px-4 py-3 bg-brand-surface border border-brand-border rounded-lg text-brand-text focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm"
+                            className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm"
                             placeholder="Ex.: neurônios conectados em tons verdes neon"
                           />
                         </div>
@@ -1351,7 +1351,7 @@ export function LessonPreparation() {
                           {slides[currentSlide].imageUrl && (
                             <button
                               onClick={() => updateSlideAtIndex(currentSlide, { imageUrl: undefined })}
-                              className="px-3 py-2 bg-brand-surface border border-slate-600 rounded-lg text-xs text-brand-text-secondary"
+                              className="px-3 py-2 bg-slate-800 border border-slate-600 rounded-lg text-xs text-slate-300"
                             >
                               Remover
                             </button>
@@ -1363,7 +1363,7 @@ export function LessonPreparation() {
                         <button
                           onClick={handleGenerateSlideWithAI}
                           disabled={isGeneratingSlide}
-                          className="bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-brand-text px-4 py-2 rounded-lg font-semibold flex items-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
+                          className="bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white px-4 py-2 rounded-lg font-semibold flex items-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
                         >
                           <Sparkles size={18} />
                           {isGeneratingSlide ? 'Gerando rascunho...' : 'Gerar texto com IA'}
@@ -1376,14 +1376,14 @@ export function LessonPreparation() {
                               'Finalize com um slide de conclusão e uma chamada para ação clínica.'
                             )
                           }}
-                          className="bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-brand-text px-4 py-2 rounded-lg font-semibold flex items-center gap-2"
+                          className="bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white px-4 py-2 rounded-lg font-semibold flex items-center gap-2"
                         >
                           <Download size={18} />
                           Exportar PPT
                         </button>
                         <button
                           onClick={() => handleAddSlide(slides[currentSlide].layout)}
-                          className="bg-brand-surface border border-slate-600 hover:bg-brand-surface-subtle text-brand-text px-4 py-2 rounded-lg text-sm"
+                          className="bg-slate-800 border border-slate-600 hover:bg-slate-700 text-white px-4 py-2 rounded-lg text-sm"
                         >
                           Duplicar template
                         </button>
@@ -1391,7 +1391,7 @@ export function LessonPreparation() {
                     </div>
                   </>
                 ) : (
-                  <div className="bg-slate-900/70 border border-slate-700/60 rounded-xl p-10 text-center text-brand-text-muted">
+                  <div className="bg-slate-900/70 border border-slate-700/60 rounded-xl p-10 text-center text-slate-400">
                     Crie seu primeiro slide selecionando um template acima.
                   </div>
                 )}
@@ -1405,7 +1405,7 @@ export function LessonPreparation() {
           <div className="space-y-6">
             <div className="flex items-center justify-between mb-6">
               <div>
-                <h2 className="text-2xl font-bold text-brand-text">Sala de Aula Invertida</h2>
+                <h2 className="text-2xl font-bold text-white">Sala de Aula Invertida</h2>
                 <p className="text-gray-400 mt-2">Organize materiais pré-aula, atividades em sala e pós-aula</p>
               </div>
               <button
@@ -1426,7 +1426,7 @@ export function LessonPreparation() {
                   setNewFlippedLesson({ title: '', preClassMaterial: '', inClassActivity: '', postClassActivity: '' })
                   alert('Aula invertida criada com sucesso!')
                 }}
-                className="bg-emerald-600 hover:bg-emerald-700 text-brand-text px-4 py-2 rounded-lg font-semibold flex items-center gap-2"
+                className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg font-semibold flex items-center gap-2"
               >
                 <Plus size={18} />
                 Nova Aula
@@ -1439,53 +1439,53 @@ export function LessonPreparation() {
                 type="text"
                 value={newFlippedLesson.title}
                 onChange={(e) => setNewFlippedLesson({ ...newFlippedLesson, title: e.target.value })}
-                className="w-full px-4 py-3 bg-brand-surface border border-slate-600 rounded-lg text-brand-text focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-4 py-3 bg-slate-800 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                 placeholder="Digite o título da aula..."
               />
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               {/* Pre-Class Material */}
-              <div className="bg-brand-surface rounded-xl p-6">
+              <div className="bg-slate-800 rounded-xl p-6">
                 <div className="flex items-center gap-2 mb-4">
                   <BookOpen className="w-5 h-5 text-emerald-400" />
-                  <h3 className="text-lg font-semibold text-brand-text">Material Pré-Aula</h3>
+                  <h3 className="text-lg font-semibold text-white">Material Pré-Aula</h3>
                 </div>
                 <textarea
                   value={newFlippedLesson.preClassMaterial}
                   onChange={(e) => setNewFlippedLesson({ ...newFlippedLesson, preClassMaterial: e.target.value })}
                   rows={8}
-                  className="w-full px-4 py-3 bg-brand-surface-subtle border border-slate-600 rounded-lg text-brand-text focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="Vídeos, leituras e materiais que os alunos devem estudar antes da aula..."
                 />
               </div>
 
               {/* In-Class Activity */}
-              <div className="bg-brand-surface rounded-xl p-6">
+              <div className="bg-slate-800 rounded-xl p-6">
                 <div className="flex items-center gap-2 mb-4">
                   <Users className="w-5 h-5 text-green-400" />
-                  <h3 className="text-lg font-semibold text-brand-text">Atividade em Sala</h3>
+                  <h3 className="text-lg font-semibold text-white">Atividade em Sala</h3>
                 </div>
                 <textarea
                   value={newFlippedLesson.inClassActivity}
                   onChange={(e) => setNewFlippedLesson({ ...newFlippedLesson, inClassActivity: e.target.value })}
                   rows={8}
-                  className="w-full px-4 py-3 bg-brand-surface-subtle border border-slate-600 rounded-lg text-brand-text focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="Exercícios práticos, discussões e atividades presenciais..."
                 />
               </div>
 
               {/* Post-Class Activity */}
-              <div className="bg-brand-surface rounded-xl p-6">
+              <div className="bg-slate-800 rounded-xl p-6">
                 <div className="flex items-center gap-2 mb-4">
                   <RotateCcw className="w-5 h-5 text-purple-400" />
-                  <h3 className="text-lg font-semibold text-brand-text">Atividade Pós-Aula</h3>
+                  <h3 className="text-lg font-semibold text-white">Atividade Pós-Aula</h3>
                 </div>
                 <textarea
                   value={newFlippedLesson.postClassActivity}
                   onChange={(e) => setNewFlippedLesson({ ...newFlippedLesson, postClassActivity: e.target.value })}
                   rows={8}
-                  className="w-full px-4 py-3 bg-brand-surface-subtle border border-slate-600 rounded-lg text-brand-text focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="Revisões, exercícios e avaliações para consolidar o aprendizado..."
                 />
               </div>
@@ -1494,11 +1494,11 @@ export function LessonPreparation() {
             {/* Existing Flipped Lessons */}
             {flippedLessons.length > 0 && (
               <div className="mt-6">
-                <h3 className="text-xl font-semibold text-brand-text mb-4">Aulas Criadas</h3>
+                <h3 className="text-xl font-semibold text-white mb-4">Aulas Criadas</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {flippedLessons.map((lesson) => (
-                    <div key={lesson.id} className="bg-brand-surface rounded-xl p-6 border border-brand-border">
-                      <h4 className="text-lg font-semibold text-brand-text mb-4">{lesson.title}</h4>
+                    <div key={lesson.id} className="bg-slate-800 rounded-xl p-6 border border-slate-700">
+                      <h4 className="text-lg font-semibold text-white mb-4">{lesson.title}</h4>
                       <div className="space-y-3 text-sm">
                         <div>
                           <span className="text-emerald-400 font-medium">Pré-Aula:</span>
@@ -1526,7 +1526,7 @@ export function LessonPreparation() {
           <div className="space-y-6">
             <div className="flex items-center justify-between mb-6">
               <div>
-                <h2 className="text-2xl font-bold text-brand-text">Geração de Quizzes</h2>
+                <h2 className="text-2xl font-bold text-white">Geração de Quizzes</h2>
                 <p className="text-gray-400 mt-2">Crie questões interativas para avaliar seus alunos</p>
               </div>
               <button
@@ -1541,7 +1541,7 @@ export function LessonPreparation() {
                   setCurrentQuiz(newQuiz)
                   setQuizQuestions([])
                 }}
-                className="bg-emerald-600 hover:bg-emerald-700 text-brand-text px-4 py-2 rounded-lg font-semibold flex items-center gap-2"
+                className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg font-semibold flex items-center gap-2"
               >
                 <Plus size={18} />
                 Novo Quiz
@@ -1551,8 +1551,8 @@ export function LessonPreparation() {
             {quizzes.length > 0 ? (
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 {/* Quiz List */}
-                <div className="lg:col-span-1 bg-brand-surface rounded-xl p-4">
-                  <h3 className="text-lg font-semibold text-brand-text mb-4">Meus Quizzes</h3>
+                <div className="lg:col-span-1 bg-slate-800 rounded-xl p-4">
+                  <h3 className="text-lg font-semibold text-white mb-4">Meus Quizzes</h3>
                   <div className="space-y-2">
                     {quizzes.map((quiz) => (
                       <div
@@ -1562,8 +1562,8 @@ export function LessonPreparation() {
                           setQuizQuestions(quiz.questions || [])
                         }}
                         className={`p-3 rounded-lg cursor-pointer transition-colors ${currentQuiz?.id === quiz.id
-                          ? 'bg-emerald-600 text-brand-text'
-                          : 'bg-brand-surface-subtle hover:bg-slate-600 text-gray-300'
+                          ? 'bg-emerald-600 text-white'
+                          : 'bg-slate-700 hover:bg-slate-600 text-gray-300'
                           }`}
                       >
                         <div className="font-medium">{quiz.title}</div>
@@ -1576,7 +1576,7 @@ export function LessonPreparation() {
                 </div>
 
                 {/* Quiz Editor */}
-                <div className="lg:col-span-2 bg-brand-surface rounded-xl p-6">
+                <div className="lg:col-span-2 bg-slate-800 rounded-xl p-6">
                   {currentQuiz && (
                     <div className="space-y-6">
                       <div>
@@ -1589,13 +1589,13 @@ export function LessonPreparation() {
                             setQuizzes(updated)
                             setCurrentQuiz({ ...currentQuiz, title: e.target.value })
                           }}
-                          className="w-full px-4 py-3 bg-brand-surface-subtle border border-slate-600 rounded-lg text-brand-text focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          className="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                         />
                       </div>
 
                       <div className="space-y-4">
                         <div className="flex items-center justify-between">
-                          <h3 className="text-lg font-semibold text-brand-text">Questões</h3>
+                          <h3 className="text-lg font-semibold text-white">Questões</h3>
                           <button
                             onClick={() => {
                               const newQuestion = {
@@ -1606,7 +1606,7 @@ export function LessonPreparation() {
                               }
                               setQuizQuestions([...quizQuestions, newQuestion])
                             }}
-                            className="bg-green-600 hover:bg-green-700 text-brand-text px-4 py-2 rounded-lg text-sm font-semibold flex items-center gap-2"
+                            className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-semibold flex items-center gap-2"
                           >
                             <Plus size={16} />
                             Adicionar Questão
@@ -1614,7 +1614,7 @@ export function LessonPreparation() {
                         </div>
 
                         {quizQuestions.map((question, qIndex) => (
-                          <div key={question.id} className="bg-brand-surface-subtle rounded-lg p-4">
+                          <div key={question.id} className="bg-slate-700 rounded-lg p-4">
                             <div className="mb-4">
                               <label className="block text-sm font-semibold text-gray-300 mb-2">
                                 Questão {qIndex + 1}
@@ -1627,7 +1627,7 @@ export function LessonPreparation() {
                                   setQuizQuestions(updated)
                                 }}
                                 rows={2}
-                                className="w-full px-4 py-2 bg-slate-600 border border-slate-500 rounded-lg text-brand-text focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                className="w-full px-4 py-2 bg-slate-600 border border-slate-500 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                                 placeholder="Digite a pergunta..."
                               />
                             </div>
@@ -1653,7 +1653,7 @@ export function LessonPreparation() {
                                       updated[qIndex].options[oIndex] = e.target.value
                                       setQuizQuestions(updated)
                                     }}
-                                    className="flex-1 px-4 py-2 bg-slate-600 border border-slate-500 rounded-lg text-brand-text focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    className="flex-1 px-4 py-2 bg-slate-600 border border-slate-500 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                                     placeholder={`Alternativa ${oIndex + 1}...`}
                                   />
                                 </div>
@@ -1672,7 +1672,7 @@ export function LessonPreparation() {
                         ))}
                       </div>
 
-                      <div className="flex gap-3 pt-4 border-t border-brand-border">
+                      <div className="flex gap-3 pt-4 border-t border-slate-700">
                         <button
                           onClick={() => {
                             if (!currentQuiz.title.trim()) {
@@ -1692,7 +1692,7 @@ export function LessonPreparation() {
                             setCurrentQuiz(updated.find(q => q.id === currentQuiz.id))
                             alert('Quiz salvo com sucesso!')
                           }}
-                          className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-brand-text py-2 rounded-lg font-semibold flex items-center justify-center gap-2"
+                          className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white py-2 rounded-lg font-semibold flex items-center justify-center gap-2"
                         >
                           <Save size={18} />
                           Salvar Quiz
@@ -1718,7 +1718,7 @@ export function LessonPreparation() {
                             setQuizQuestions([...quizQuestions, generatedQuestion])
                             alert('Questão gerada com IA adicionada! (Demo)')
                           }}
-                          className="flex-1 bg-purple-600 hover:bg-purple-700 text-brand-text py-2 rounded-lg font-semibold flex items-center justify-center gap-2"
+                          className="flex-1 bg-purple-600 hover:bg-purple-700 text-white py-2 rounded-lg font-semibold flex items-center justify-center gap-2"
                         >
                           <Sparkles size={18} />
                           Gerar com IA
@@ -1729,7 +1729,7 @@ export function LessonPreparation() {
                 </div>
               </div>
             ) : (
-              <div className="bg-brand-surface rounded-xl p-12 text-center">
+              <div className="bg-slate-800 rounded-xl p-12 text-center">
                 <HelpCircle className="w-16 h-16 text-gray-400 mx-auto mb-4" />
                 <p className="text-gray-400 mb-4">Nenhum quiz criado ainda</p>
                 <button
@@ -1744,7 +1744,7 @@ export function LessonPreparation() {
                     setCurrentQuiz(newQuiz)
                     setQuizQuestions([])
                   }}
-                  className="bg-emerald-600 hover:bg-emerald-700 text-brand-text px-6 py-3 rounded-lg font-semibold"
+                  className="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-3 rounded-lg font-semibold"
                 >
                   Criar Primeiro Quiz
                 </button>
@@ -1756,10 +1756,10 @@ export function LessonPreparation() {
         {/* Modal New Lesson */}
         {showNewLesson && selectedCase && (
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-            <div className="bg-brand-surface rounded-xl p-6 max-w-md w-full mx-4 border border-brand-border">
-              <h2 className="text-2xl font-bold text-brand-text mb-4">Criar Nova Aula</h2>
+            <div className="bg-slate-800 rounded-xl p-6 max-w-md w-full mx-4 border border-slate-700">
+              <h2 className="text-2xl font-bold text-white mb-4">Criar Nova Aula</h2>
               <p className="text-gray-300 mb-6">
-                Criar aula baseada no caso: <strong className="text-brand-text">{selectedCase.patient_name}</strong>
+                Criar aula baseada no caso: <strong className="text-white">{selectedCase.patient_name}</strong>
               </p>
               <div className="flex gap-3">
                 <button
@@ -1767,13 +1767,13 @@ export function LessonPreparation() {
                     setShowNewLesson(false)
                     setSelectedCase(null)
                   }}
-                  className="flex-1 bg-brand-surface-subtle hover:bg-slate-600 text-brand-text py-2 rounded-lg font-semibold"
+                  className="flex-1 bg-slate-700 hover:bg-slate-600 text-white py-2 rounded-lg font-semibold"
                 >
                   Cancelar
                 </button>
                 <button
                   onClick={handleSaveNewLesson}
-                  className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-brand-text py-2 rounded-lg font-semibold"
+                  className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white py-2 rounded-lg font-semibold"
                 >
                   Criar Aula
                 </button>

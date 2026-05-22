@@ -480,8 +480,8 @@ const Scheduling: React.FC = () => {
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
               <div>
-                <h1 className="text-3xl font-bold text-brand-text mb-2">Agendamento de Consultas</h1>
-                <p className="text-brand-text-muted">Consulte nossos profissionais e agende sua consulta online</p>
+                <h1 className="text-3xl font-bold text-white mb-2">Agendamento de Consultas</h1>
+                <p className="text-slate-400">Consulte nossos profissionais e agende sua consulta online</p>
               </div>
             </div>
           </div>
@@ -515,25 +515,25 @@ const Scheduling: React.FC = () => {
               <div className="flex items-center justify-between mb-6">
                 <button
                   onClick={handlePreviousMonth}
-                  className="p-2 hover:bg-brand-surface-subtle rounded-lg transition-colors"
+                  className="p-2 hover:bg-slate-700 rounded-lg transition-colors"
                 >
-                  <ChevronLeft className="w-5 h-5 text-brand-text" />
+                  <ChevronLeft className="w-5 h-5 text-white" />
                 </button>
-                <h2 className="text-xl font-bold text-brand-text">
+                <h2 className="text-xl font-bold text-white">
                   {months[selectedDate.getMonth()]} {selectedDate.getFullYear()}
                 </h2>
                 <button
                   onClick={handleNextMonth}
-                  className="p-2 hover:bg-brand-surface-subtle rounded-lg transition-colors"
+                  className="p-2 hover:bg-slate-700 rounded-lg transition-colors"
                 >
-                  <ChevronRight className="w-5 h-5 text-brand-text" />
+                  <ChevronRight className="w-5 h-5 text-white" />
                 </button>
               </div>
 
               {/* Dias da Semana */}
               <div className="grid grid-cols-7 gap-2 mb-4">
                 {weekDays.map((day) => (
-                  <div key={day} className="text-center text-sm font-semibold text-brand-text-muted py-2">
+                  <div key={day} className="text-center text-sm font-semibold text-slate-400 py-2">
                     {day}
                   </div>
                 ))}
@@ -560,7 +560,7 @@ const Scheduling: React.FC = () => {
                       className={`
                         aspect-square rounded-lg transition-all
                         ${!day.isCurrentMonth ? 'opacity-30' : ''}
-                        ${isSelected ? 'bg-gradient-to-br from-blue-500 to-cyan-500 text-brand-text' : 'bg-slate-700/50 hover:bg-brand-surface-subtle text-brand-text'}
+                        ${isSelected ? 'bg-gradient-to-br from-blue-500 to-cyan-500 text-white' : 'bg-slate-700/50 hover:bg-slate-700 text-white'}
                         ${isDisabled ? 'cursor-not-allowed opacity-30 hover:bg-slate-700/50' : ''}
                         ${isToday && !isSelected ? 'ring-2 ring-blue-500' : ''}
                       `}
@@ -579,11 +579,11 @@ const Scheduling: React.FC = () => {
             {selectedProfessional && (
               <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl p-6 border border-slate-700/50 mt-6">
                 <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-xl font-bold text-brand-text">
+                  <h3 className="text-xl font-bold text-white">
                     Horários Disponíveis - {getDayName(selectedDate)}
                   </h3>
                   {loadingSlots && (
-                    <Loader2 className="w-4 h-4 text-brand-text-muted animate-spin" />
+                    <Loader2 className="w-4 h-4 text-slate-400 animate-spin" />
                   )}
                 </div>
                 {error && (
@@ -624,10 +624,10 @@ const Scheduling: React.FC = () => {
                         className={`
                           p-3 rounded-lg border-2 transition-all relative
                           ${isOccupied
-                            ? 'bg-slate-800/30 border-brand-border text-slate-500 cursor-not-allowed'
+                            ? 'bg-slate-800/30 border-slate-700 text-slate-500 cursor-not-allowed'
                             : selectedTime === time
-                              ? 'bg-gradient-to-br from-blue-500 to-cyan-500 border-blue-400 text-brand-text'
-                              : 'bg-slate-700/50 border-slate-600 hover:border-slate-500 text-brand-text'
+                              ? 'bg-gradient-to-br from-blue-500 to-cyan-500 border-blue-400 text-white'
+                              : 'bg-slate-700/50 border-slate-600 hover:border-slate-500 text-white'
                           }
                         `}
                         title={isOccupied ? 'Horário ocupado' : `Agendar para ${time}`}
@@ -649,7 +649,7 @@ const Scheduling: React.FC = () => {
           <div className="space-y-6">
             {/* Seleção de Profissional */}
             <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl p-6 border border-slate-700/50">
-              <h3 className="text-xl font-bold text-brand-text mb-4">Selecione o Profissional</h3>
+              <h3 className="text-xl font-bold text-white mb-4">Selecione o Profissional</h3>
               <div className="space-y-3">
                 {professionals.map((professional) => (
                   <button
@@ -670,13 +670,13 @@ const Scheduling: React.FC = () => {
                     <div className="flex items-center space-x-3">
                       <div className="text-3xl">{professional.avatar}</div>
                       <div className="flex-1">
-                        <h4 className="font-semibold text-brand-text">{professional.name}</h4>
-                        <p className="text-sm text-brand-text-muted">{professional.specialty}</p>
-                        <div className="flex items-center mt-2 space-x-2 text-xs text-brand-text-muted">
+                        <h4 className="font-semibold text-white">{professional.name}</h4>
+                        <p className="text-sm text-slate-400">{professional.specialty}</p>
+                        <div className="flex items-center mt-2 space-x-2 text-xs text-slate-400">
                           <CalendarIcon className="w-3 h-3" />
                           <span>{professional.workingDays.join(', ')}</span>
                         </div>
-                        <div className="flex items-center space-x-2 text-xs text-brand-text-muted">
+                        <div className="flex items-center space-x-2 text-xs text-slate-400">
                           <Clock className="w-3 h-3" />
                           <span>{professional.workingHours.start} - {professional.workingHours.end}</span>
                         </div>
@@ -693,32 +693,32 @@ const Scheduling: React.FC = () => {
             {/* Resumo do Agendamento */}
             {(selectedProfessional || selectedTime) && (
               <div className="bg-gradient-to-br from-blue-500/20 to-cyan-500/20 backdrop-blur-sm rounded-xl p-6 border border-blue-500/30">
-                <h3 className="text-xl font-bold text-brand-text mb-4">Resumo do Agendamento</h3>
+                <h3 className="text-xl font-bold text-white mb-4">Resumo do Agendamento</h3>
                 <div className="space-y-3">
                   {selectedProfessional && (
                     <div className="flex items-center justify-between">
-                      <span className="text-brand-text-muted">Profissional:</span>
-                      <span className="font-semibold text-brand-text">
+                      <span className="text-slate-400">Profissional:</span>
+                      <span className="font-semibold text-white">
                         {professionals.find(p => p.id === selectedProfessional)?.name}
                       </span>
                     </div>
                   )}
                   {selectedDate && (
                     <div className="flex items-center justify-between">
-                      <span className="text-brand-text-muted">Data:</span>
-                      <span className="font-semibold text-brand-text">
+                      <span className="text-slate-400">Data:</span>
+                      <span className="font-semibold text-white">
                         {selectedDate.toLocaleDateString('pt-BR')}
                       </span>
                     </div>
                   )}
                   {selectedTime && (
                     <div className="flex items-center justify-between">
-                      <span className="text-brand-text-muted">Horário:</span>
-                      <span className="font-semibold text-brand-text">{selectedTime}</span>
+                      <span className="text-slate-400">Horário:</span>
+                      <span className="font-semibold text-white">{selectedTime}</span>
                     </div>
                   )}
                   <div className="flex items-center justify-between pt-3 border-t border-slate-600">
-                    <span className="text-brand-text-muted">Modalidade:</span>
+                    <span className="text-slate-400">Modalidade:</span>
                     <div className="flex items-center space-x-2">
                       <Video className="w-4 h-4 text-green-400" />
                       <span className="font-semibold text-green-400">Online</span>
@@ -729,7 +729,7 @@ const Scheduling: React.FC = () => {
                 <button
                   onClick={handleBookAppointment}
                   disabled={!selectedProfessional || !selectedTime || loading || occupiedSlots.has(selectedTime || '')}
-                  className="w-full mt-6 bg-gradient-to-r from-blue-500 to-cyan-500 text-brand-text py-3 rounded-lg font-semibold hover:from-blue-600 hover:to-cyan-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
+                  className="w-full mt-6 bg-gradient-to-r from-blue-500 to-cyan-500 text-white py-3 rounded-lg font-semibold hover:from-blue-600 hover:to-cyan-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
                 >
                   {loading ? (
                     <>
@@ -745,8 +745,8 @@ const Scheduling: React.FC = () => {
 
             {/* Informações */}
             <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl p-6 border border-slate-700/50">
-              <h4 className="font-semibold text-brand-text mb-3">ℹ️ Informações Importantes</h4>
-              <ul className="space-y-2 text-sm text-brand-text-muted">
+              <h4 className="font-semibold text-white mb-3">ℹ️ Informações Importantes</h4>
+              <ul className="space-y-2 text-sm text-slate-400">
                 <li className="flex items-start">
                   <CheckCircle className="w-4 h-4 text-green-400 mr-2 mt-0.5" />
                   <span>Consultas online realizadas pela plataforma</span>

@@ -62,7 +62,7 @@ const STATUS_LABELS: Record<ReferralStatus, { label: string; color: string; icon
   pending_patient_consent: { label: 'Aguardando paciente', color: 'text-amber-300 bg-amber-500/10 border-amber-500/30', icon: Clock },
   accepted: { label: 'Aceito pelo paciente', color: 'text-emerald-300 bg-emerald-500/10 border-emerald-500/30', icon: CheckCircle2 },
   declined_by_patient: { label: 'Recusado pelo paciente', color: 'text-rose-300 bg-rose-500/10 border-rose-500/30', icon: XCircle },
-  revoked: { label: 'Cancelado', color: 'text-brand-text-muted bg-slate-500/10 border-slate-500/30', icon: XCircle },
+  revoked: { label: 'Cancelado', color: 'text-slate-400 bg-slate-500/10 border-slate-500/30', icon: XCircle },
 }
 
 interface ReferralsManagerProps {
@@ -213,7 +213,7 @@ export const ReferralsManager: React.FC<ReferralsManagerProps> = ({ teamMembers 
       <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
         <div className="flex items-center gap-2">
           <ArrowRightLeft className="w-4 h-4 text-cyan-400" />
-          <h3 className="text-base font-bold text-brand-text">Direcionamento de Pacientes</h3>
+          <h3 className="text-base font-bold text-white">Direcionamento de Pacientes</h3>
           <span className="text-[10px] uppercase tracking-wider text-slate-500 ml-1">
             Consent-first · LGPD
           </span>
@@ -228,15 +228,15 @@ export const ReferralsManager: React.FC<ReferralsManagerProps> = ({ teamMembers 
                 : 'Adicione membros à sua equipe antes de direcionar'
               : 'Sugerir paciente meu pra um colega da equipe'
           }
-          className="flex items-center gap-2 px-4 py-2 bg-cyan-500 hover:bg-cyan-400 disabled:bg-brand-surface-subtle disabled:cursor-not-allowed text-slate-950 disabled:text-slate-500 rounded-lg text-sm font-bold transition-colors"
+          className="flex items-center gap-2 px-4 py-2 bg-cyan-500 hover:bg-cyan-400 disabled:bg-slate-700 disabled:cursor-not-allowed text-slate-950 disabled:text-slate-500 rounded-lg text-sm font-bold transition-colors"
         >
           <UserPlus className="w-4 h-4" />
           Sugerir Direcionamento
         </button>
       </div>
 
-      <p className="text-xs text-brand-text-muted mb-4 leading-relaxed">
-        Sugira paciente seu pra outro profissional da sua equipe. <strong className="text-brand-text-secondary">O paciente recebe notificação e decide se aceita.</strong> Você pode cancelar antes da resposta.
+      <p className="text-xs text-slate-400 mb-4 leading-relaxed">
+        Sugira paciente seu pra outro profissional da sua equipe. <strong className="text-slate-300">O paciente recebe notificação e decide se aceita.</strong> Você pode cancelar antes da resposta.
       </p>
 
       {loading ? (
@@ -251,7 +251,7 @@ export const ReferralsManager: React.FC<ReferralsManagerProps> = ({ teamMembers 
               <Clock className="w-3 h-3" /> Pendentes ({pendingReferrals.length})
             </h4>
             {pendingReferrals.length === 0 ? (
-              <p className="text-xs text-slate-500 py-3 px-3 bg-slate-800/30 rounded-lg border border-brand-border-subtle">
+              <p className="text-xs text-slate-500 py-3 px-3 bg-slate-800/30 rounded-lg border border-slate-800">
                 Nenhuma sugestão aguardando resposta do paciente.
               </p>
             ) : (
@@ -269,11 +269,11 @@ export const ReferralsManager: React.FC<ReferralsManagerProps> = ({ teamMembers 
 
           {/* Histórico */}
           <div>
-            <h4 className="text-[10px] uppercase tracking-wider text-brand-text-muted font-bold mb-2 flex items-center gap-1.5">
+            <h4 className="text-[10px] uppercase tracking-wider text-slate-400 font-bold mb-2 flex items-center gap-1.5">
               <CheckCircle2 className="w-3 h-3" /> Histórico ({historyReferrals.length})
             </h4>
             {historyReferrals.length === 0 ? (
-              <p className="text-xs text-slate-500 py-3 px-3 bg-slate-800/30 rounded-lg border border-brand-border-subtle">
+              <p className="text-xs text-slate-500 py-3 px-3 bg-slate-800/30 rounded-lg border border-slate-800">
                 Nenhum direcionamento finalizado ainda.
               </p>
             ) : (
@@ -294,19 +294,19 @@ export const ReferralsManager: React.FC<ReferralsManagerProps> = ({ teamMembers 
           onClick={() => !submitting && setShowModal(false)}
         >
           <div
-            className="bg-brand-bg border border-cyan-500/30 rounded-2xl max-w-md w-full p-5"
+            className="bg-slate-900 border border-cyan-500/30 rounded-2xl max-w-md w-full p-5"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-start justify-between mb-4">
               <div>
-                <h3 className="text-lg font-bold text-brand-text mb-1">Sugerir Direcionamento</h3>
-                <p className="text-xs text-brand-text-muted">
+                <h3 className="text-lg font-bold text-white mb-1">Sugerir Direcionamento</h3>
+                <p className="text-xs text-slate-400">
                   O paciente decidirá se aceita compartilhar vínculo com o destino.
                 </p>
               </div>
               <button
                 onClick={() => !submitting && setShowModal(false)}
-                className="text-brand-text-muted hover:text-brand-text p-1"
+                className="text-slate-400 hover:text-white p-1"
               >
                 <XCircle className="w-5 h-5" />
               </button>
@@ -314,11 +314,11 @@ export const ReferralsManager: React.FC<ReferralsManagerProps> = ({ teamMembers 
 
             <div className="space-y-4">
               <div>
-                <label className="block text-xs text-brand-text-secondary font-semibold mb-1.5">Paciente</label>
+                <label className="block text-xs text-slate-300 font-semibold mb-1.5">Paciente</label>
                 <select
                   value={selectedPatient}
                   onChange={(e) => setSelectedPatient(e.target.value)}
-                  className="w-full bg-brand-surface border border-brand-border rounded-lg px-3 py-2 text-sm text-brand-text focus:border-cyan-500 focus:outline-none"
+                  className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:border-cyan-500 focus:outline-none"
                 >
                   <option value="">Selecione um paciente seu...</option>
                   {myPatients.map(p => (
@@ -328,11 +328,11 @@ export const ReferralsManager: React.FC<ReferralsManagerProps> = ({ teamMembers 
               </div>
 
               <div>
-                <label className="block text-xs text-brand-text-secondary font-semibold mb-1.5">Direcionar para</label>
+                <label className="block text-xs text-slate-300 font-semibold mb-1.5">Direcionar para</label>
                 <select
                   value={selectedToDoctor}
                   onChange={(e) => setSelectedToDoctor(e.target.value)}
-                  className="w-full bg-brand-surface border border-brand-border rounded-lg px-3 py-2 text-sm text-brand-text focus:border-cyan-500 focus:outline-none"
+                  className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:border-cyan-500 focus:outline-none"
                 >
                   <option value="">Selecione um colega da equipe...</option>
                   {teamMembers.map(m => (
@@ -344,15 +344,15 @@ export const ReferralsManager: React.FC<ReferralsManagerProps> = ({ teamMembers 
               </div>
 
               <div>
-                <label className="block text-xs text-brand-text-secondary font-semibold mb-1.5">Razão</label>
+                <label className="block text-xs text-slate-300 font-semibold mb-1.5">Razão</label>
                 <div className="grid grid-cols-1 gap-1.5">
                   {(Object.keys(REASON_LABELS) as ReferralReason[]).map(r => (
                     <label
                       key={r}
                       className={`flex items-center gap-2 px-3 py-2 rounded-lg cursor-pointer transition-colors border ${
                         selectedReason === r
-                          ? 'bg-cyan-500/15 border-cyan-500/40 text-brand-text'
-                          : 'bg-slate-800/40 border-brand-border text-brand-text-secondary hover:bg-brand-surface'
+                          ? 'bg-cyan-500/15 border-cyan-500/40 text-white'
+                          : 'bg-slate-800/40 border-slate-700 text-slate-300 hover:bg-slate-800'
                       }`}
                     >
                       <input
@@ -383,14 +383,14 @@ export const ReferralsManager: React.FC<ReferralsManagerProps> = ({ teamMembers 
               <button
                 onClick={() => setShowModal(false)}
                 disabled={submitting}
-                className="flex-1 px-4 py-2 bg-brand-surface hover:bg-brand-surface-subtle text-slate-200 rounded-lg text-sm font-semibold transition-colors disabled:opacity-50"
+                className="flex-1 px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg text-sm font-semibold transition-colors disabled:opacity-50"
               >
                 Cancelar
               </button>
               <button
                 onClick={handleSubmit}
                 disabled={submitting || !selectedPatient || !selectedToDoctor}
-                className="flex-1 px-4 py-2 bg-cyan-500 hover:bg-cyan-400 disabled:bg-brand-surface-subtle disabled:cursor-not-allowed text-slate-950 disabled:text-slate-500 rounded-lg text-sm font-bold transition-colors flex items-center justify-center gap-2"
+                className="flex-1 px-4 py-2 bg-cyan-500 hover:bg-cyan-400 disabled:bg-slate-700 disabled:cursor-not-allowed text-slate-950 disabled:text-slate-500 rounded-lg text-sm font-bold transition-colors flex items-center justify-center gap-2"
               >
                 {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
                 Enviar sugestão
@@ -417,10 +417,10 @@ const ReferralCard: React.FC<{
     <div className="bg-slate-800/40 border border-slate-700/50 rounded-lg p-3 text-xs">
       <div className="flex items-start justify-between gap-2 mb-2">
         <div className="min-w-0 flex-1">
-          <p className="text-brand-text font-semibold truncate">
+          <p className="text-white font-semibold truncate">
             {referral.patient_name} <span className="text-slate-500">→</span> {referral.to_doctor_name}
           </p>
-          <p className="text-[10px] text-brand-text-muted mt-0.5">
+          <p className="text-[10px] text-slate-400 mt-0.5">
             {REASON_LABELS[referral.reason]} · {dateStr}
           </p>
         </div>

@@ -356,7 +356,7 @@ const DRCMonitoringSchedule: React.FC = () => {
       case 'clinical': return 'bg-green-500/20 text-green-400 border-green-500/30'
       case 'imaging': return 'bg-purple-500/20 text-purple-400 border-purple-500/30'
       case 'consultation': return 'bg-rose-500/20 text-rose-400 border-rose-500/30'
-      default: return 'bg-slate-500/20 text-brand-text-muted border-slate-500/30'
+      default: return 'bg-slate-500/20 text-slate-400 border-slate-500/30'
     }
   }
 
@@ -368,7 +368,7 @@ const DRCMonitoringSchedule: React.FC = () => {
       case 'Estágio 3b': return 'bg-orange-500/20 text-orange-400 border-orange-500/30'
       case 'Estágio 4': return 'bg-red-500/20 text-red-400 border-red-500/30'
       case 'Estágio 5': return 'bg-rose-500/20 text-rose-400 border-rose-500/30'
-      default: return 'bg-slate-500/20 text-brand-text-muted border-slate-500/30'
+      default: return 'bg-slate-500/20 text-slate-400 border-slate-500/30'
     }
   }
 
@@ -397,7 +397,7 @@ const DRCMonitoringSchedule: React.FC = () => {
         <div className="mb-8">
           <button
             onClick={() => navigate(-1)}
-            className="flex items-center gap-2 text-brand-text-secondary hover:text-brand-text mb-4 transition-colors"
+            className="flex items-center gap-2 text-slate-300 hover:text-white mb-4 transition-colors"
           >
             <ArrowLeft className="w-5 h-5" />
             <span>Voltar</span>
@@ -405,11 +405,11 @@ const DRCMonitoringSchedule: React.FC = () => {
           
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold text-brand-text mb-2 flex items-center gap-3">
+              <h1 className="text-3xl font-bold text-white mb-2 flex items-center gap-3">
                 <Calendar className="w-8 h-8 text-rose-400" />
                 Calendário de Monitoramento - DRC
               </h1>
-              <p className="text-brand-text-secondary">
+              <p className="text-slate-300">
                 Calendário de referência baseado nas diretrizes KDIGO e SBN para Doença Renal Crônica
               </p>
             </div>
@@ -417,14 +417,14 @@ const DRCMonitoringSchedule: React.FC = () => {
             <div className="flex items-center gap-3">
               <button
                 onClick={handleExport}
-                className="flex items-center gap-2 px-4 py-2 bg-brand-surface-subtle hover:bg-slate-600 text-brand-text rounded-lg transition-colors"
+                className="flex items-center gap-2 px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg transition-colors"
               >
                 <Download className="w-4 h-4" />
                 Exportar
               </button>
               <button
                 onClick={handlePrint}
-                className="flex items-center gap-2 px-4 py-2 bg-rose-600 hover:bg-rose-700 text-brand-text rounded-lg transition-colors"
+                className="flex items-center gap-2 px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-lg transition-colors"
               >
                 <Printer className="w-4 h-4" />
                 Imprimir
@@ -441,7 +441,7 @@ const DRCMonitoringSchedule: React.FC = () => {
               <h3 className="text-sm font-semibold text-blue-300 mb-1">
                 Baseado nas Diretrizes Oficiais
               </h3>
-              <p className="text-xs text-brand-text-secondary leading-relaxed">
+              <p className="text-xs text-slate-300 leading-relaxed">
                 Este calendário segue as recomendações das diretrizes KDIGO (Kidney Disease: Improving Global Outcomes) 
                 e SBN (Sociedade Brasileira de Nefrologia) para monitoramento de pacientes com Doença Renal Crônica. 
                 As frequências podem ser ajustadas conforme avaliação clínica individual e presença de comorbidades.
@@ -452,7 +452,7 @@ const DRCMonitoringSchedule: React.FC = () => {
 
         {/* Filtro por Estágio */}
         <div className="mb-6">
-          <label className="block text-sm font-medium text-brand-text-secondary mb-3">
+          <label className="block text-sm font-medium text-slate-300 mb-3">
             Filtrar por Estágio da DRC
           </label>
           <div className="flex flex-wrap gap-2">
@@ -462,8 +462,8 @@ const DRCMonitoringSchedule: React.FC = () => {
                 onClick={() => setSelectedStage(stage)}
                 className={`px-4 py-2 rounded-lg font-medium transition-colors ${
                   selectedStage === stage
-                    ? 'bg-rose-600 text-brand-text'
-                    : 'bg-brand-surface-subtle text-brand-text-secondary hover:bg-slate-600'
+                    ? 'bg-rose-600 text-white'
+                    : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
                 }`}
               >
                 {stage === 'all' ? 'Todos os Estágios' : stage}
@@ -473,24 +473,24 @@ const DRCMonitoringSchedule: React.FC = () => {
         </div>
 
         {/* Tabela de Monitoramento */}
-        <div className="bg-slate-800/80 rounded-xl border border-brand-border overflow-hidden">
+        <div className="bg-slate-800/80 rounded-xl border border-slate-700 overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full">
-              <thead className="bg-slate-900/50 border-b border-brand-border">
+              <thead className="bg-slate-900/50 border-b border-slate-700">
                 <tr>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-brand-text-secondary uppercase tracking-wider">
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-slate-300 uppercase tracking-wider">
                     Estágio DRC
                   </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-brand-text-secondary uppercase tracking-wider">
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-slate-300 uppercase tracking-wider">
                     Exame/Procedimento
                   </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-brand-text-secondary uppercase tracking-wider">
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-slate-300 uppercase tracking-wider">
                     Frequência
                   </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-brand-text-secondary uppercase tracking-wider">
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-slate-300 uppercase tracking-wider">
                     Descrição
                   </th>
-                  <th className="px-6 py-4 text-center text-xs font-semibold text-brand-text-secondary uppercase tracking-wider">
+                  <th className="px-6 py-4 text-center text-xs font-semibold text-slate-300 uppercase tracking-wider">
                     Tipo
                   </th>
                 </tr>
@@ -513,19 +513,19 @@ const DRCMonitoringSchedule: React.FC = () => {
                         {item.critical && (
                           <AlertCircle className="w-4 h-4 text-rose-400 flex-shrink-0" />
                         )}
-                        <span className={`font-medium ${item.critical ? 'text-rose-300' : 'text-brand-text'}`}>
+                        <span className={`font-medium ${item.critical ? 'text-rose-300' : 'text-white'}`}>
                           {item.exam}
                         </span>
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center gap-2">
-                        <Clock className="w-4 h-4 text-brand-text-muted" />
+                        <Clock className="w-4 h-4 text-slate-400" />
                         <span className="text-slate-200 font-medium">{item.frequency}</span>
                       </div>
                     </td>
                     <td className="px-6 py-4">
-                      <p className="text-sm text-brand-text-secondary">{item.description}</p>
+                      <p className="text-sm text-slate-300">{item.description}</p>
                     </td>
                     <td className="px-6 py-4 text-center">
                       <span className={`inline-flex items-center gap-1 px-2 py-1 rounded text-xs border ${getCategoryColor(item.category)}`}>
@@ -547,45 +547,45 @@ const DRCMonitoringSchedule: React.FC = () => {
 
         {/* Legenda */}
         <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="bg-slate-800/80 rounded-xl border border-brand-border p-4">
-            <h3 className="text-sm font-semibold text-brand-text mb-3 flex items-center gap-2">
+          <div className="bg-slate-800/80 rounded-xl border border-slate-700 p-4">
+            <h3 className="text-sm font-semibold text-white mb-3 flex items-center gap-2">
               <Info className="w-4 h-4 text-blue-400" />
               Legenda de Estágios
             </h3>
             <div className="space-y-2 text-xs">
               <div className="flex items-center gap-2">
                 <span className="w-3 h-3 rounded-full bg-green-500"></span>
-                <span className="text-brand-text-secondary">Estágio 1: TFG ≥ 90 mL/min/1.73m²</span>
+                <span className="text-slate-300">Estágio 1: TFG ≥ 90 mL/min/1.73m²</span>
               </div>
               <div className="flex items-center gap-2">
                 <span className="w-3 h-3 rounded-full bg-emerald-500"></span>
-                <span className="text-brand-text-secondary">Estágio 2: TFG 60-89 mL/min/1.73m²</span>
+                <span className="text-slate-300">Estágio 2: TFG 60-89 mL/min/1.73m²</span>
               </div>
               <div className="flex items-center gap-2">
                 <span className="w-3 h-3 rounded-full bg-yellow-500"></span>
-                <span className="text-brand-text-secondary">Estágio 3a: TFG 45-59 mL/min/1.73m²</span>
+                <span className="text-slate-300">Estágio 3a: TFG 45-59 mL/min/1.73m²</span>
               </div>
               <div className="flex items-center gap-2">
                 <span className="w-3 h-3 rounded-full bg-orange-500"></span>
-                <span className="text-brand-text-secondary">Estágio 3b: TFG 30-44 mL/min/1.73m²</span>
+                <span className="text-slate-300">Estágio 3b: TFG 30-44 mL/min/1.73m²</span>
               </div>
               <div className="flex items-center gap-2">
                 <span className="w-3 h-3 rounded-full bg-red-500"></span>
-                <span className="text-brand-text-secondary">Estágio 4: TFG 15-29 mL/min/1.73m²</span>
+                <span className="text-slate-300">Estágio 4: TFG 15-29 mL/min/1.73m²</span>
               </div>
               <div className="flex items-center gap-2">
                 <span className="w-3 h-3 rounded-full bg-rose-500"></span>
-                <span className="text-brand-text-secondary">Estágio 5: TFG &lt; 15 mL/min/1.73m² ou em diálise</span>
+                <span className="text-slate-300">Estágio 5: TFG &lt; 15 mL/min/1.73m² ou em diálise</span>
               </div>
             </div>
           </div>
 
-          <div className="bg-slate-800/80 rounded-xl border border-brand-border p-4">
-            <h3 className="text-sm font-semibold text-brand-text mb-3 flex items-center gap-2">
+          <div className="bg-slate-800/80 rounded-xl border border-slate-700 p-4">
+            <h3 className="text-sm font-semibold text-white mb-3 flex items-center gap-2">
               <AlertCircle className="w-4 h-4 text-rose-400" />
               Observações Importantes
             </h3>
-            <ul className="space-y-2 text-xs text-brand-text-secondary">
+            <ul className="space-y-2 text-xs text-slate-300">
               <li className="flex items-start gap-2">
                 <CheckCircle className="w-4 h-4 text-green-400 mt-0.5 flex-shrink-0" />
                 <span>As frequências podem ser ajustadas conforme avaliação clínica individual</span>

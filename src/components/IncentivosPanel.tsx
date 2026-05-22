@@ -212,11 +212,11 @@ export const IncentivosPanel: React.FC = () => {
                 />
               </div>
             ) : (
-              <div className="w-[180px] h-[180px] bg-slate-800/60 border border-brand-border rounded-lg flex items-center justify-center">
+              <div className="w-[180px] h-[180px] bg-slate-800/60 border border-slate-700 rounded-lg flex items-center justify-center">
                 <span className="text-xs text-slate-500">Carregando QR...</span>
               </div>
             )}
-            <p className="text-[11px] text-brand-text-muted text-center max-w-[180px]">
+            <p className="text-[11px] text-slate-400 text-center max-w-[180px]">
               Imprima ou mostre pro paciente escanear
             </p>
           </div>
@@ -228,14 +228,14 @@ export const IncentivosPanel: React.FC = () => {
                 <Link2 className="w-5 h-5 text-cyan-300" />
               </div>
               <div className="min-w-0 flex-1">
-                <h3 className="text-base font-bold text-brand-text mb-1">Seu link de indicação</h3>
-                <p className="text-xs text-brand-text-secondary">
+                <h3 className="text-base font-bold text-white mb-1">Seu link de indicação</h3>
+                <p className="text-xs text-slate-300">
                   Compartilhe com pacientes ou colegas. Cada cadastro pela plataforma conta na sua escala de bônus.
                 </p>
               </div>
             </div>
 
-            <div className="bg-slate-900/60 border border-brand-border rounded-lg px-3 py-2 mb-3">
+            <div className="bg-slate-900/60 border border-slate-700 rounded-lg px-3 py-2 mb-3">
               <code className="text-[12px] text-cyan-300 break-all" title={inviteLink}>
                 {inviteLink || 'Carregando...'}
               </code>
@@ -249,7 +249,7 @@ export const IncentivosPanel: React.FC = () => {
                 className={`px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all ${
                   linkCopied
                     ? 'bg-emerald-500 text-slate-950'
-                    : 'bg-brand-surface hover:bg-brand-surface-subtle text-slate-100 border border-brand-border'
+                    : 'bg-slate-800 hover:bg-slate-700 text-slate-100 border border-slate-700'
                 } disabled:opacity-50 disabled:cursor-not-allowed`}
               >
                 {linkCopied ? (
@@ -269,7 +269,7 @@ export const IncentivosPanel: React.FC = () => {
                 onClick={handleShareWhatsApp}
                 disabled={!inviteLink}
                 title="Compartilhar via WhatsApp"
-                className="px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 bg-green-600 hover:bg-green-500 text-brand-text transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 bg-green-600 hover:bg-green-500 text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <MessageCircle className="w-3.5 h-3.5" />
                 <span>WhatsApp</span>
@@ -279,7 +279,7 @@ export const IncentivosPanel: React.FC = () => {
                 onClick={handleShareEmail}
                 disabled={!inviteLink}
                 title="Compartilhar por E-mail"
-                className="px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 bg-brand-surface hover:bg-brand-surface-subtle text-slate-100 border border-brand-border transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 bg-slate-800 hover:bg-slate-700 text-slate-100 border border-slate-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <Mail className="w-3.5 h-3.5" />
                 <span>E-mail</span>
@@ -306,10 +306,10 @@ export const IncentivosPanel: React.FC = () => {
             <TrendingUp className="w-5 h-5 text-emerald-400" />
             <span className="text-xs font-bold text-emerald-400 uppercase tracking-wider">Pendente</span>
           </div>
-          <p className="text-2xl font-bold text-brand-text">
+          <p className="text-2xl font-bold text-white">
             R$ {stats.totalPending.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
           </p>
-          <p className="text-xs text-brand-text-muted mt-1">Aguardando aprovação</p>
+          <p className="text-xs text-slate-400 mt-1">Aguardando aprovação</p>
         </div>
 
         <div className="bg-gradient-to-br from-blue-500/10 to-indigo-500/10 border border-blue-500/20 rounded-xl p-5 shadow-sm">
@@ -317,21 +317,21 @@ export const IncentivosPanel: React.FC = () => {
             <CheckCircle className="w-5 h-5 text-blue-400" />
             <span className="text-xs font-bold text-blue-400 uppercase tracking-wider">Aprovado</span>
           </div>
-          <p className="text-2xl font-bold text-brand-text">
+          <p className="text-2xl font-bold text-white">
             R$ {stats.totalApproved.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
           </p>
-          <p className="text-xs text-brand-text-muted mt-1">Pronto para resgate</p>
+          <p className="text-xs text-slate-400 mt-1">Pronto para resgate</p>
         </div>
 
         <div className="bg-gradient-to-br from-slate-500/10 to-slate-700/10 border border-slate-500/20 rounded-xl p-5 shadow-sm">
           <div className="flex items-center justify-between mb-2">
-            <Clock className="w-5 h-5 text-brand-text-muted" />
-            <span className="text-xs font-bold text-brand-text-muted uppercase tracking-wider">Pago</span>
+            <Clock className="w-5 h-5 text-slate-400" />
+            <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Pago</span>
           </div>
-          <p className="text-2xl font-bold text-brand-text">
+          <p className="text-2xl font-bold text-white">
             R$ {stats.totalPaid.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
           </p>
-          <p className="text-xs text-brand-text-muted mt-1">Total resgatado</p>
+          <p className="text-xs text-slate-400 mt-1">Total resgatado</p>
         </div>
 
         <div className="bg-gradient-to-br from-purple-500/10 to-pink-500/10 border border-purple-500/20 rounded-xl p-5 shadow-sm">
@@ -339,16 +339,16 @@ export const IncentivosPanel: React.FC = () => {
             <Users className="w-5 h-5 text-purple-400" />
             <span className="text-xs font-bold text-purple-400 uppercase tracking-wider">Pacientes Ativos</span>
           </div>
-          <p className="text-2xl font-bold text-brand-text">{stats.activePatientCycles}</p>
-          <p className="text-xs text-brand-text-muted mt-1">Geração de bônus ativa</p>
+          <p className="text-2xl font-bold text-white">{stats.activePatientCycles}</p>
+          <p className="text-xs text-slate-400 mt-1">Geração de bônus ativa</p>
         </div>
       </div>
 
       {/* Informativo Blindagem */}
-      <div className="bg-primary-900 border border-primary-700 rounded-xl p-6 text-brand-text overflow-hidden relative">
+      <div className="bg-primary-900 border border-primary-700 rounded-xl p-6 text-white overflow-hidden relative">
         <div className="relative z-10">
           <h3 className="text-lg font-bold mb-2 flex items-center gap-2">
-            <span className="bg-emerald-500 text-brand-text text-[10px] px-2 py-0.5 rounded-full">ATIVO</span>
+            <span className="bg-emerald-500 text-white text-[10px] px-2 py-0.5 rounded-full">ATIVO</span>
             Protocolo de Blindagem Financeira (Modelo B)
           </h3>
           <p className="text-sm text-primary-100 max-w-2xl">
@@ -362,20 +362,20 @@ export const IncentivosPanel: React.FC = () => {
       </div>
 
       {/* V1.9.269 — Escala de bônus por alcance de indicações (Pedro+Claude 13/05 22h30) */}
-      <div className="bg-gradient-to-br from-emerald-900/40 to-cyan-900/30 border border-emerald-500/30 rounded-xl p-6 text-brand-text">
+      <div className="bg-gradient-to-br from-emerald-900/40 to-cyan-900/30 border border-emerald-500/30 rounded-xl p-6 text-white">
         <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
           <div>
             <h3 className="text-lg font-bold flex items-center gap-2">
               <TrendingUp className="w-5 h-5 text-emerald-400" />
               Bônus Escalonado por Indicações
             </h3>
-            <p className="text-xs text-brand-text-secondary mt-1">
+            <p className="text-xs text-slate-300 mt-1">
               Adicional sobre a take rate por paciente indicado à plataforma.
             </p>
           </div>
           <div className="text-right">
             <p className="text-3xl font-bold text-emerald-300">{invitedCount}</p>
-            <p className="text-xs text-brand-text-muted">pacientes indicados</p>
+            <p className="text-xs text-slate-400">pacientes indicados</p>
           </div>
         </div>
 
@@ -383,10 +383,10 @@ export const IncentivosPanel: React.FC = () => {
         {nextTier ? (
           <div className="mb-4">
             <div className="flex items-center justify-between text-xs mb-1.5">
-              <span className="text-brand-text-secondary">
+              <span className="text-slate-300">
                 Próxima faixa: <strong className="text-cyan-300">{nextTier.label}</strong> ({nextTier.threshold} indicados → <strong>+{nextTier.bonusPct}%</strong>)
               </span>
-              <span className="text-brand-text-muted">{invitedCount}/{nextTier.threshold}</span>
+              <span className="text-slate-400">{invitedCount}/{nextTier.threshold}</span>
             </div>
             <div className="w-full h-2 bg-slate-800/60 rounded-full overflow-hidden">
               <div
@@ -394,8 +394,8 @@ export const IncentivosPanel: React.FC = () => {
                 style={{ width: `${progressPct}%` }}
               />
             </div>
-            <p className="text-[11px] text-brand-text-muted mt-1.5">
-              Faltam <strong className="text-brand-text">{Math.max(0, nextTier.threshold - invitedCount)}</strong> indicações pra desbloquear <strong className="text-cyan-300">+{nextTier.bonusPct}%</strong>.
+            <p className="text-[11px] text-slate-400 mt-1.5">
+              Faltam <strong className="text-white">{Math.max(0, nextTier.threshold - invitedCount)}</strong> indicações pra desbloquear <strong className="text-cyan-300">+{nextTier.bonusPct}%</strong>.
             </p>
           </div>
         ) : (
@@ -417,14 +417,14 @@ export const IncentivosPanel: React.FC = () => {
                     ? isCurrent
                       ? 'bg-emerald-500/25 border-2 border-emerald-400'
                       : 'bg-emerald-500/10 border border-emerald-500/30'
-                    : 'bg-slate-800/40 border border-brand-border'
+                    : 'bg-slate-800/40 border border-slate-700'
                 }`}
                 title={tier.description}
               >
                 <p className={`text-[10px] uppercase font-bold tracking-wider ${reached ? 'text-emerald-300' : 'text-slate-500'}`}>
                   {tier.label}
                 </p>
-                <p className={`text-base font-bold ${reached ? 'text-brand-text' : 'text-brand-text-muted'}`}>
+                <p className={`text-base font-bold ${reached ? 'text-white' : 'text-slate-400'}`}>
                   +{tier.bonusPct}%
                 </p>
                 <p className={`text-[10px] ${reached ? 'text-emerald-200/80' : 'text-slate-500'}`}>
@@ -435,16 +435,16 @@ export const IncentivosPanel: React.FC = () => {
           })}
         </div>
 
-        <p className="text-[11px] text-brand-text-muted mt-4 leading-relaxed">
-          <strong className="text-brand-text-secondary">Como funciona:</strong> a cada paciente que se cadastra pela plataforma usando seu link de indicação, você acumula uma faixa. Quanto mais indicados, maior o adicional sobre os bônus mensais gerados por eles. Cashback do paciente (5% gamificação — V1.9.336) é independente e não afeta este cálculo.
+        <p className="text-[11px] text-slate-400 mt-4 leading-relaxed">
+          <strong className="text-slate-300">Como funciona:</strong> a cada paciente que se cadastra pela plataforma usando seu link de indicação, você acumula uma faixa. Quanto mais indicados, maior o adicional sobre os bônus mensais gerados por eles. Cashback do paciente (5% gamificação — V1.9.336) é independente e não afeta este cálculo.
         </p>
       </div>
 
       {/* V1.9.270 — Tabela de Ciclos repaginada pra tema dark (Pedro 13/05 22h45:
           "aqui esta branco o card nao e legal"). Antes: bg-white/text-slate-700/etc.
           Agora: slate-900/700/200 coerente com o resto do app. */}
-      <div className="bg-slate-900/60 border border-brand-border rounded-xl shadow-sm overflow-hidden">
-        <div className="p-4 border-b border-brand-border flex justify-between items-center bg-slate-800/30">
+      <div className="bg-slate-900/60 border border-slate-700 rounded-xl shadow-sm overflow-hidden">
+        <div className="p-4 border-b border-slate-700 flex justify-between items-center bg-slate-800/30">
           <h3 className="font-semibold text-slate-100 flex items-center gap-2">
             <Calendar className="w-4 h-4 text-emerald-400" />
             Detalhamento de Ciclos
@@ -459,7 +459,7 @@ export const IncentivosPanel: React.FC = () => {
 
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm">
-            <thead className="bg-slate-800/50 text-brand-text-muted font-medium">
+            <thead className="bg-slate-800/50 text-slate-400 font-medium">
               <tr>
                 <th className="px-6 py-3">Paciente</th>
                 <th className="px-6 py-3">Ciclo</th>
@@ -473,13 +473,13 @@ export const IncentivosPanel: React.FC = () => {
               {bonusCycles.length > 0 ? (
                 bonusCycles.map((cycle) => (
                   <tr key={cycle.id} className="hover:bg-slate-800/40 transition-colors group">
-                    <td className="px-6 py-4 font-medium text-brand-text">{cycle.patient_name}</td>
+                    <td className="px-6 py-4 font-medium text-white">{cycle.patient_name}</td>
                     <td className="px-6 py-4">
-                      <span className="px-2 py-0.5 bg-brand-surface border border-brand-border rounded-full text-xs text-brand-text-secondary">
+                      <span className="px-2 py-0.5 bg-slate-800 border border-slate-700 rounded-full text-xs text-slate-300">
                         {cycle.cycle_number}/6
                       </span>
                     </td>
-                    <td className="px-6 py-4 uppercase text-brand-text-secondary">{cycle.reference_month}</td>
+                    <td className="px-6 py-4 uppercase text-slate-300">{cycle.reference_month}</td>
                     <td className="px-6 py-4 font-bold text-emerald-400">
                       R$ {cycle.bonus_value.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                     </td>

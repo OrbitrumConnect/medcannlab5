@@ -87,20 +87,20 @@ const ProfessionalDashboard: React.FC = () => {
       <div className="min-h-screen bg-[#0f172a] flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-500 mx-auto mb-4" />
-          <p className="text-brand-text-muted">Carregando painel profissional...</p>
+          <p className="text-slate-400">Carregando painel profissional...</p>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-[#0f172a] text-brand-text">
+    <div className="min-h-screen bg-[#0f172a] text-white">
       <div className="container mx-auto px-4 py-8 max-w-7xl space-y-8">
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
           <div>
             <h1 className="text-3xl font-bold">Olá, Dr(a). {user?.user_metadata?.name?.split(' ')[0] || 'Profissional'}</h1>
-            <p className="text-brand-text-muted">Gestão Clínica Inteligente • MedCannLab</p>
+            <p className="text-slate-400">Gestão Clínica Inteligente • MedCannLab</p>
           </div>
           <div className="flex items-center gap-3 bg-white/5 border border-white/10 p-2 rounded-xl backdrop-blur-md">
             <div className="w-10 h-10 rounded-lg bg-primary-500/20 flex items-center justify-center border border-primary-500/30">
@@ -124,8 +124,8 @@ const ProfessionalDashboard: React.FC = () => {
                   setSearchParams({ section })
                 }}
                 className={`px-6 py-2.5 rounded-xl text-sm font-bold whitespace-nowrap transition-all border ${activeSection === section
-                  ? 'bg-primary-500 border-primary-400 text-brand-text shadow-lg shadow-primary-500/20'
-                  : 'bg-white/5 border-white/5 text-brand-text-muted hover:text-brand-text hover:bg-white/10'
+                  ? 'bg-primary-500 border-primary-400 text-white shadow-lg shadow-primary-500/20'
+                  : 'bg-white/5 border-white/5 text-slate-400 hover:text-white hover:bg-white/10'
                   }`}
               >
                 {section === 'dashboard' ? 'Início' :
@@ -158,17 +158,17 @@ const ProfessionalDashboard: React.FC = () => {
                   </div>
                   <div className="space-y-6">
                     <div className="bg-slate-900/40 border border-white/5 rounded-2xl p-6 backdrop-blur-xl">
-                      <h3 className="text-lg font-bold text-brand-text mb-4 flex items-center gap-2">
+                      <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
                         <Activity className="w-5 h-5 text-emerald-400" /> Atividade Recente
                       </h3>
                       <div className="space-y-4">
                         <div className="flex items-center gap-3 text-sm">
                           <div className="w-2 h-2 rounded-full bg-emerald-500" />
-                          <p className="text-brand-text-secondary">Novo relatório de avaliação (Nôa)</p>
+                          <p className="text-slate-300">Novo relatório de avaliação (Nôa)</p>
                         </div>
                         <div className="flex items-center gap-3 text-sm">
                           <div className="w-2 h-2 rounded-full bg-blue-500" />
-                          <p className="text-brand-text-secondary">Agendamento confirmado para amanhã</p>
+                          <p className="text-slate-300">Agendamento confirmado para amanhã</p>
                         </div>
                       </div>
                     </div>
@@ -196,7 +196,7 @@ const ProfessionalDashboard: React.FC = () => {
                       {selectedPatientData?.name}
                       <span className="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Em acompanhamento</span>
                     </h2>
-                    <p className="text-brand-text-muted text-sm flex items-center gap-2">
+                    <p className="text-slate-400 text-sm flex items-center gap-2">
                       <User className="w-3 h-3" /> CPF: {selectedPatientData?.cpf} • <Phone className="w-4 h-4" /> {selectedPatientData?.phone || 'N/A'}
                     </p>
                   </div>
@@ -219,7 +219,7 @@ const ProfessionalDashboard: React.FC = () => {
                     <QuickPrescriptions className="sticky top-8" />
                     <div className="bg-blue-500/10 border border-blue-500/20 rounded-2xl p-6">
                       <h4 className="font-bold text-blue-400 mb-3 flex items-center gap-2"><AlertCircle className="w-4 h-4" /> Lembretes Clínicos</h4>
-                      <ul className="space-y-3 text-sm text-brand-text-secondary">
+                      <ul className="space-y-3 text-sm text-slate-300">
                         <li className="flex items-start gap-2">• Revisar função renal em 30 dias.</li>
                         <li className="flex items-start gap-2">• Renovar receita de controle especial.</li>
                       </ul>

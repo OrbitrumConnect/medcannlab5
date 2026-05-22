@@ -153,7 +153,7 @@ const StudentNewsFeed: React.FC<Props> = ({ surfaceStyle, secondarySurfaceStyle,
         {/* Ordenação + força de evidência */}
         <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-xs">
           <div className="flex items-center gap-1.5">
-            <span className="text-brand-text-muted font-medium">Ordenar:</span>
+            <span className="text-slate-400 font-medium">Ordenar:</span>
             {SORT_MODES.map(s => (
               <button
                 key={s.id}
@@ -170,7 +170,7 @@ const StudentNewsFeed: React.FC<Props> = ({ surfaceStyle, secondarySurfaceStyle,
             ))}
           </div>
           <div className="flex items-center gap-1.5">
-            <span className="text-brand-text-muted font-medium">Evidência:</span>
+            <span className="text-slate-400 font-medium">Evidência:</span>
             {EVIDENCE_CHOICES.map(e => (
               <button
                 key={e.id}
@@ -196,7 +196,7 @@ const StudentNewsFeed: React.FC<Props> = ({ surfaceStyle, secondarySurfaceStyle,
 
       {/* Estados */}
       {loading ? (
-        <div className="rounded-xl p-8 flex items-center justify-center gap-2 text-brand-text-secondary" style={surfaceStyle}>
+        <div className="rounded-xl p-8 flex items-center justify-center gap-2 text-slate-300" style={surfaceStyle}>
           <Loader2 className="w-5 h-5 animate-spin" />
           <span className="text-sm">Buscando artigos no PubMed…</span>
         </div>
@@ -231,14 +231,14 @@ const StudentNewsFeed: React.FC<Props> = ({ surfaceStyle, secondarySurfaceStyle,
                   {a.journal && <span className="text-xs italic text-slate-300/80">{a.journal}</span>}
                   {a.pubdate && <span className="text-xs text-slate-400/70">· {a.pubdate}</span>}
                 </div>
-                <h3 className="text-lg font-semibold text-brand-text mb-2 leading-snug">{a.title}</h3>
+                <h3 className="text-lg font-semibold text-white mb-2 leading-snug">{a.title}</h3>
                 {a.authors.length > 0 && (
                   <p className="text-xs text-slate-300/70 mb-3">
                     {a.authors.slice(0, 3).join(', ')}
                     {a.authors.length > 3 ? ' et al.' : ''}
                   </p>
                 )}
-                <span className="text-[#4FE0C1] hover:text-brand-text text-sm font-medium inline-flex items-center gap-1">
+                <span className="text-[#4FE0C1] hover:text-white text-sm font-medium inline-flex items-center gap-1">
                   Ver no PubMed
                   <ExternalLink className="w-3 h-3" />
                 </span>
@@ -252,7 +252,7 @@ const StudentNewsFeed: React.FC<Props> = ({ surfaceStyle, secondarySurfaceStyle,
               <button
                 onClick={handleLoadMore}
                 disabled={loadingMore}
-                className="px-5 py-2.5 rounded-lg text-sm font-semibold text-brand-text inline-flex items-center gap-2 transition-transform transform hover:scale-[1.02] disabled:opacity-60"
+                className="px-5 py-2.5 rounded-lg text-sm font-semibold text-white inline-flex items-center gap-2 transition-transform transform hover:scale-[1.02] disabled:opacity-60"
                 style={{ background: accentGradient }}
               >
                 {loadingMore && <Loader2 className="w-4 h-4 animate-spin" />}

@@ -44,10 +44,10 @@ const Breadcrumbs: React.FC = () => {
   }
 
   return (
-    <nav className="flex items-center space-x-2 text-sm text-brand-text-muted mb-6">
+    <nav className="flex items-center space-x-2 text-sm text-slate-400 mb-6">
       <Link 
         to="/app" 
-        className="flex items-center space-x-1 hover:text-brand-text transition-colors"
+        className="flex items-center space-x-1 hover:text-white transition-colors"
       >
         <Home className="w-4 h-4" />
         <span>Início</span>
@@ -57,13 +57,13 @@ const Breadcrumbs: React.FC = () => {
         <React.Fragment key={index}>
           <ChevronRight className="w-4 h-4" />
           {isLastSegment(index) ? (
-            <span className="text-brand-text font-medium">
+            <span className="text-white font-medium">
               {getBreadcrumbLabel(segment, index)}
             </span>
           ) : (
             <Link 
               to={getBreadcrumbPath(index)}
-              className="hover:text-brand-text transition-colors"
+              className="hover:text-white transition-colors"
             >
               {getBreadcrumbLabel(segment, index)}
             </Link>

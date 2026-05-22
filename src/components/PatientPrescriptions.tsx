@@ -127,7 +127,7 @@ function StatusBadge({ status, size = 'sm' }: { status: string | null; size?: 's
   const cfg = (status && STATUS_LABELS[status.toLowerCase()]) || { label: status || 'Pendente', color: 'slate' }
   const colorMap: Record<string, string> = {
     emerald: 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30',
-    slate:   'bg-slate-500/15 text-brand-text-secondary border-slate-500/30',
+    slate:   'bg-slate-500/15 text-slate-300 border-slate-500/30',
     blue:    'bg-blue-500/15 text-blue-300 border-blue-500/30',
     amber:   'bg-amber-500/15 text-amber-300 border-amber-500/30',
     rose:    'bg-rose-500/15 text-rose-300 border-rose-500/30',
@@ -147,7 +147,7 @@ function StatBox({ icon: Icon, label, value, color }: { icon: any; label: string
     amber:   'border-amber-500/30 bg-amber-500/5 text-amber-300',
     emerald: 'border-emerald-500/30 bg-emerald-500/5 text-emerald-300',
     blue:    'border-blue-500/30 bg-blue-500/5 text-blue-300',
-    slate:   'border-slate-500/30 bg-slate-500/5 text-brand-text-secondary',
+    slate:   'border-slate-500/30 bg-slate-500/5 text-slate-300',
   }[color]
   return (
     <div className={`border rounded-lg px-3 py-2 ${colorCls}`}>
@@ -178,7 +178,7 @@ function CfmPrescriptionCard({ rx, onClick }: { rx: CfmPrescription; onClick: ()
 
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-1.5 flex-wrap">
-            <h3 className="font-semibold text-brand-text text-sm truncate">
+            <h3 className="font-semibold text-white text-sm truncate">
               {prettyPrescriptionType(rx.prescription_type)}
             </h3>
             <StatusBadge status={rx.status} />
@@ -189,7 +189,7 @@ function CfmPrescriptionCard({ rx, onClick }: { rx: CfmPrescription; onClick: ()
             )}
           </div>
 
-          <div className="flex items-center gap-2 text-xs text-brand-text-muted mt-0.5 flex-wrap">
+          <div className="flex items-center gap-2 text-xs text-slate-400 mt-0.5 flex-wrap">
             {rx.professional_name && (
               <span className="flex items-center gap-1 truncate">
                 <Stethoscope className="w-3 h-3 flex-shrink-0" />
@@ -202,7 +202,7 @@ function CfmPrescriptionCard({ rx, onClick }: { rx: CfmPrescription; onClick: ()
           </div>
 
           {medName && (
-            <div className="flex items-center gap-2 text-xs text-brand-text-secondary mt-1 flex-wrap">
+            <div className="flex items-center gap-2 text-xs text-slate-300 mt-1 flex-wrap">
               <span className="text-slate-500">Medicação:</span>
               <span className="font-medium truncate">{medName}</span>
               {firstMed?.dosage && <span className="text-slate-500">· {firstMed.dosage}</span>}
@@ -241,7 +241,7 @@ function PatientPrescriptionCard({ rx, professionalName, onClick }: { rx: Patien
 
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-1.5 flex-wrap">
-            <h3 className="font-semibold text-brand-text text-sm truncate">
+            <h3 className="font-semibold text-white text-sm truncate">
               {rx.title || 'Plano Terapêutico'}
             </h3>
             <StatusBadge status={rx.status} />
@@ -252,7 +252,7 @@ function PatientPrescriptionCard({ rx, professionalName, onClick }: { rx: Patien
             )}
           </div>
 
-          <div className="flex items-center gap-2 text-xs text-brand-text-muted mt-0.5 flex-wrap">
+          <div className="flex items-center gap-2 text-xs text-slate-400 mt-0.5 flex-wrap">
             {professionalName && (
               <span className="flex items-center gap-1 truncate">
                 <Stethoscope className="w-3 h-3 flex-shrink-0" />
@@ -264,13 +264,13 @@ function PatientPrescriptionCard({ rx, professionalName, onClick }: { rx: Patien
           </div>
 
           {rx.summary && (
-            <p className="text-xs text-brand-text-secondary mt-1 line-clamp-1">{rx.summary}</p>
+            <p className="text-xs text-slate-300 mt-1 line-clamp-1">{rx.summary}</p>
           )}
         </div>
 
         <div className="flex flex-col items-end gap-0.5 flex-shrink-0">
           {rx.starts_at && (
-            <span className="text-[10px] text-brand-text-muted whitespace-nowrap">
+            <span className="text-[10px] text-slate-400 whitespace-nowrap">
               {formatDate(rx.starts_at)}
             </span>
           )}
@@ -301,7 +301,7 @@ function Pagination({ currentPage, totalPages, onPageChange, total }: Pagination
         <button
           onClick={() => onPageChange(Math.max(1, currentPage - 1))}
           disabled={currentPage === 1}
-          className="p-1 text-brand-text-muted hover:text-brand-text bg-white/5 hover:bg-white/10 border border-white/10 rounded transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+          className="p-1 text-slate-400 hover:text-white bg-white/5 hover:bg-white/10 border border-white/10 rounded transition-all disabled:opacity-30 disabled:cursor-not-allowed"
           title="Página anterior"
         >
           <ChevronLeft className="w-3.5 h-3.5" />
@@ -309,7 +309,7 @@ function Pagination({ currentPage, totalPages, onPageChange, total }: Pagination
         <button
           onClick={() => onPageChange(Math.min(totalPages, currentPage + 1))}
           disabled={currentPage === totalPages}
-          className="p-1 text-brand-text-muted hover:text-brand-text bg-white/5 hover:bg-white/10 border border-white/10 rounded transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+          className="p-1 text-slate-400 hover:text-white bg-white/5 hover:bg-white/10 border border-white/10 rounded transition-all disabled:opacity-30 disabled:cursor-not-allowed"
           title="Próxima página"
         >
           <ChevronRight className="w-3.5 h-3.5" />
@@ -346,16 +346,16 @@ function CfmDetailModal({ rx, onClose }: { rx: CfmPrescription; onClose: () => v
       onClick={onClose}
     >
       <div
-        className="bg-brand-bg border border-amber-500/30 rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl"
+        className="bg-slate-900 border border-amber-500/30 rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="sticky top-0 bg-brand-bg border-b border-amber-500/20 px-5 py-3 flex items-center justify-between">
+        <div className="sticky top-0 bg-slate-900 border-b border-amber-500/20 px-5 py-3 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-amber-500/15 rounded-lg">
               <ShieldCheck className="w-5 h-5 text-amber-300" />
             </div>
             <div>
-              <h2 className="text-lg font-bold text-brand-text">{prettyPrescriptionType(rx.prescription_type)}</h2>
+              <h2 className="text-lg font-bold text-white">{prettyPrescriptionType(rx.prescription_type)}</h2>
               <div className="flex items-center gap-2 mt-0.5">
                 <StatusBadge status={rx.status} size="md" />
                 {isSigned && (
@@ -373,7 +373,7 @@ function CfmDetailModal({ rx, onClose }: { rx: CfmPrescription; onClose: () => v
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 text-brand-text-muted hover:text-brand-text hover:bg-white/10 rounded-lg transition-all"
+            className="p-1.5 text-slate-400 hover:text-white hover:bg-white/10 rounded-lg transition-all"
           >
             <X className="w-4 h-4" />
           </button>
@@ -385,9 +385,9 @@ function CfmDetailModal({ rx, onClose }: { rx: CfmPrescription; onClose: () => v
             <AlertCircle className="w-5 h-5 text-yellow-400 shrink-0 mt-0.5" />
             <div className="text-xs">
               <p className="text-yellow-200 font-semibold mb-1">Receita em rascunho — sem valor legal</p>
-              <p className="text-brand-text-secondary leading-relaxed">
+              <p className="text-slate-300 leading-relaxed">
                 Esta receita ainda não foi assinada digitalmente com certificado ICP-Brasil.
-                <strong className="text-brand-text"> Farmácias não aceitam rascunhos</strong> — aguarde o médico concluir a assinatura
+                <strong className="text-white"> Farmácias não aceitam rascunhos</strong> — aguarde o médico concluir a assinatura
                 para uso oficial (CFM 2.314/2022).
               </p>
             </div>
@@ -420,14 +420,14 @@ function CfmDetailModal({ rx, onClose }: { rx: CfmPrescription; onClose: () => v
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="bg-slate-950/40 rounded-lg p-3 border border-white/5">
               <p className="text-[10px] text-slate-500 uppercase mb-1">Médico</p>
-              <p className="text-sm text-brand-text font-medium">{rx.professional_name || '—'}</p>
-              {rx.professional_crm && <p className="text-xs text-brand-text-muted">CRM {rx.professional_crm}</p>}
-              {rx.professional_specialty && <p className="text-xs text-brand-text-muted">{rx.professional_specialty}</p>}
+              <p className="text-sm text-white font-medium">{rx.professional_name || '—'}</p>
+              {rx.professional_crm && <p className="text-xs text-slate-400">CRM {rx.professional_crm}</p>}
+              {rx.professional_specialty && <p className="text-xs text-slate-400">{rx.professional_specialty}</p>}
             </div>
             <div className="bg-slate-950/40 rounded-lg p-3 border border-white/5">
               <p className="text-[10px] text-slate-500 uppercase mb-1">Datas</p>
               {rx.signature_timestamp && (
-                <p className="text-xs text-brand-text-secondary">
+                <p className="text-xs text-slate-300">
                   <span className="text-slate-500">Emitida:</span> {formatDate(rx.signature_timestamp)}
                 </p>
               )}
@@ -444,18 +444,18 @@ function CfmDetailModal({ rx, onClose }: { rx: CfmPrescription; onClose: () => v
               Medicações ({meds.length})
             </p>
             {meds.length === 0 ? (
-              <p className="text-sm text-brand-text-muted italic">Nenhuma medicação registrada</p>
+              <p className="text-sm text-slate-400 italic">Nenhuma medicação registrada</p>
             ) : (
               <div className="space-y-2">
                 {meds.map((med: any, idx: number) => (
                   <div key={idx} className="bg-slate-950/40 rounded-lg p-3 border border-white/5">
-                    <p className="text-sm text-brand-text font-medium">
+                    <p className="text-sm text-white font-medium">
                       {med.name || med.medication || `Medicação ${idx + 1}`}
                     </p>
-                    {med.dosage && <p className="text-xs text-brand-text-muted mt-0.5">Dosagem: {med.dosage}</p>}
-                    {med.frequency && <p className="text-xs text-brand-text-muted">Frequência: {med.frequency}</p>}
-                    {med.duration && <p className="text-xs text-brand-text-muted">Duração: {med.duration}</p>}
-                    {med.instructions && <p className="text-xs text-brand-text-secondary mt-1 italic">"{med.instructions}"</p>}
+                    {med.dosage && <p className="text-xs text-slate-400 mt-0.5">Dosagem: {med.dosage}</p>}
+                    {med.frequency && <p className="text-xs text-slate-400">Frequência: {med.frequency}</p>}
+                    {med.duration && <p className="text-xs text-slate-400">Duração: {med.duration}</p>}
+                    {med.instructions && <p className="text-xs text-slate-300 mt-1 italic">"{med.instructions}"</p>}
                   </div>
                 ))}
               </div>
@@ -466,7 +466,7 @@ function CfmDetailModal({ rx, onClose }: { rx: CfmPrescription; onClose: () => v
             <div>
               <p className="text-[10px] text-slate-500 uppercase mb-2">Observações</p>
               <div className="bg-slate-950/40 rounded-lg p-3 border border-white/5">
-                <p className="text-xs text-brand-text-secondary whitespace-pre-wrap">{rx.notes}</p>
+                <p className="text-xs text-slate-300 whitespace-pre-wrap">{rx.notes}</p>
               </div>
             </div>
           )}
@@ -485,8 +485,8 @@ function CfmDetailModal({ rx, onClose }: { rx: CfmPrescription; onClose: () => v
             ou ainda não regeneradas). Não criamos URL fictícia — diz a verdade. */}
         {isSigned && !rx.signed_pdf_url && (
           <div className="mx-5 mb-2 rounded-lg border border-slate-600/40 bg-slate-800/40 px-3 py-2 flex items-start gap-2 print:hidden">
-            <AlertCircle className="w-4 h-4 text-brand-text-muted shrink-0 mt-0.5" />
-            <p className="text-[11px] text-brand-text-secondary leading-relaxed">
+            <AlertCircle className="w-4 h-4 text-slate-400 shrink-0 mt-0.5" />
+            <p className="text-[11px] text-slate-300 leading-relaxed">
               <strong className="text-slate-200">PDF ICP-Brasil não disponível para download nesta receita.</strong>{' '}
               A assinatura digital existe no sistema, mas o arquivo PDF assinado
               (formato PBAD) só é gerado para receitas emitidas a partir de 15/05/2026.
@@ -495,7 +495,7 @@ function CfmDetailModal({ rx, onClose }: { rx: CfmPrescription; onClose: () => v
           </div>
         )}
 
-        <div className="sticky bottom-0 bg-brand-bg border-t border-amber-500/20 px-5 py-3 flex items-center justify-end gap-2 flex-wrap">
+        <div className="sticky bottom-0 bg-slate-900 border-t border-amber-500/20 px-5 py-3 flex items-center justify-end gap-2 flex-wrap">
           {/* [V1.9.315] Botões ITI honestos:
               1. Baixar PDF assinado (só se signed_pdf_url V1.9.299 real existir)
               2. Abrir validador oficial validar.iti.gov.br (paciente sobe o PDF lá)
@@ -568,16 +568,16 @@ function PlanDetailModal({ rx, professionalName, onClose }: { rx: PatientPrescri
       onClick={onClose}
     >
       <div
-        className="bg-brand-bg border border-blue-500/30 rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl"
+        className="bg-slate-900 border border-blue-500/30 rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="sticky top-0 bg-brand-bg border-b border-blue-500/20 px-5 py-3 flex items-center justify-between">
+        <div className="sticky top-0 bg-slate-900 border-b border-blue-500/20 px-5 py-3 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-blue-500/15 rounded-lg">
               <Pill className="w-5 h-5 text-blue-300" />
             </div>
             <div>
-              <h2 className="text-lg font-bold text-brand-text">{rx.title || 'Plano Terapêutico'}</h2>
+              <h2 className="text-lg font-bold text-white">{rx.title || 'Plano Terapêutico'}</h2>
               <div className="flex items-center gap-2 mt-0.5">
                 <StatusBadge status={rx.status} size="md" />
                 {rx.rationality && (
@@ -590,7 +590,7 @@ function PlanDetailModal({ rx, professionalName, onClose }: { rx: PatientPrescri
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 text-brand-text-muted hover:text-brand-text hover:bg-white/10 rounded-lg transition-all"
+            className="p-1.5 text-slate-400 hover:text-white hover:bg-white/10 rounded-lg transition-all"
           >
             <X className="w-4 h-4" />
           </button>
@@ -602,14 +602,14 @@ function PlanDetailModal({ rx, professionalName, onClose }: { rx: PatientPrescri
               {professionalName && (
                 <div className="bg-slate-950/40 rounded-lg p-3 border border-white/5">
                   <p className="text-[10px] text-slate-500 uppercase mb-1">Médico</p>
-                  <p className="text-sm text-brand-text font-medium">{professionalName}</p>
+                  <p className="text-sm text-white font-medium">{professionalName}</p>
                 </div>
               )}
               {(rx.starts_at || rx.ends_at) && (
                 <div className="bg-slate-950/40 rounded-lg p-3 border border-white/5">
                   <p className="text-[10px] text-slate-500 uppercase mb-1">Período</p>
-                  {rx.starts_at && <p className="text-xs text-brand-text-secondary"><span className="text-slate-500">Início:</span> {formatDate(rx.starts_at)}</p>}
-                  {rx.ends_at && <p className="text-xs text-brand-text-secondary"><span className="text-slate-500">Fim:</span> {formatDate(rx.ends_at)}</p>}
+                  {rx.starts_at && <p className="text-xs text-slate-300"><span className="text-slate-500">Início:</span> {formatDate(rx.starts_at)}</p>}
+                  {rx.ends_at && <p className="text-xs text-slate-300"><span className="text-slate-500">Fim:</span> {formatDate(rx.ends_at)}</p>}
                 </div>
               )}
             </div>
@@ -618,7 +618,7 @@ function PlanDetailModal({ rx, professionalName, onClose }: { rx: PatientPrescri
           {rx.summary && (
             <div>
               <p className="text-[10px] text-slate-500 uppercase mb-2">Resumo</p>
-              <p className="text-sm text-brand-text-secondary">{rx.summary}</p>
+              <p className="text-sm text-slate-300">{rx.summary}</p>
             </div>
           )}
 
@@ -649,13 +649,13 @@ function PlanDetailModal({ rx, professionalName, onClose }: { rx: PatientPrescri
             <div>
               <p className="text-[10px] text-slate-500 uppercase mb-2">Instruções</p>
               <div className="bg-slate-950/40 rounded-lg p-3 border border-white/5">
-                <p className="text-xs text-brand-text-secondary whitespace-pre-wrap">{rx.instructions}</p>
+                <p className="text-xs text-slate-300 whitespace-pre-wrap">{rx.instructions}</p>
               </div>
             </div>
           )}
         </div>
 
-        <div className="sticky bottom-0 bg-brand-bg border-t border-blue-500/20 px-5 py-3 flex items-center justify-end gap-2">
+        <div className="sticky bottom-0 bg-slate-900 border-t border-blue-500/20 px-5 py-3 flex items-center justify-end gap-2">
           <button
             onClick={() => window.print()}
             className="px-3 py-1.5 bg-white/5 hover:bg-white/10 border border-white/10 text-slate-200 text-xs rounded-lg transition-all flex items-center gap-1.5"
@@ -787,7 +787,7 @@ export function PatientPrescriptions({ className = '', onBack, onRequestNew }: P
       <div className={`flex items-center justify-center py-16 ${className}`}>
         <div className="text-center space-y-3">
           <Loader2 className="w-8 h-8 text-amber-400 animate-spin mx-auto" />
-          <p className="text-sm text-brand-text-muted">Carregando suas prescrições...</p>
+          <p className="text-sm text-slate-400">Carregando suas prescrições...</p>
         </div>
       </div>
     )
@@ -801,8 +801,8 @@ export function PatientPrescriptions({ className = '', onBack, onRequestNew }: P
             <Pill className="w-5 h-5 text-amber-300" />
           </div>
           <div>
-            <h2 className="text-xl font-bold text-brand-text">Minhas Prescrições</h2>
-            <p className="text-xs text-brand-text-muted">
+            <h2 className="text-xl font-bold text-white">Minhas Prescrições</h2>
+            <p className="text-xs text-slate-400">
               {stats.total === 0 ? 'Nenhuma prescrição registrada ainda' : `${stats.total} prescrição(ões) registrada(s)`}
             </p>
           </div>
@@ -819,7 +819,7 @@ export function PatientPrescriptions({ className = '', onBack, onRequestNew }: P
           )}
           <button
             onClick={load}
-            className="p-2 text-brand-text-muted hover:text-brand-text bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg transition-all"
+            className="p-2 text-slate-400 hover:text-white bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg transition-all"
             title="Recarregar"
           >
             <RefreshCw className="w-4 h-4" />
@@ -827,7 +827,7 @@ export function PatientPrescriptions({ className = '', onBack, onRequestNew }: P
           {onBack && (
             <button
               onClick={onBack}
-              className="px-3 py-1.5 bg-white/5 border border-white/10 rounded-lg hover:bg-white/10 transition-all text-xs text-brand-text-secondary"
+              className="px-3 py-1.5 bg-white/5 border border-white/10 rounded-lg hover:bg-white/10 transition-all text-xs text-slate-300"
             >
               Voltar
             </button>
@@ -862,8 +862,8 @@ export function PatientPrescriptions({ className = '', onBack, onRequestNew }: P
       {stats.total === 0 && !error && (
         <div className="bg-slate-900/40 border border-white/5 rounded-xl p-8 text-center">
           <FileText className="w-10 h-10 text-slate-600 mx-auto mb-3" />
-          <h3 className="text-base font-semibold text-brand-text mb-1">Nenhuma prescrição ainda</h3>
-          <p className="text-xs text-brand-text-muted max-w-md mx-auto mb-4">
+          <h3 className="text-base font-semibold text-white mb-1">Nenhuma prescrição ainda</h3>
+          <p className="text-xs text-slate-400 max-w-md mx-auto mb-4">
             Quando seu médico emitir prescrições, elas aparecerão aqui automaticamente.
           </p>
           {onRequestNew && (

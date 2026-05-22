@@ -62,7 +62,7 @@ const NoaEsperancaAvatar: React.FC<NoaEsperancaAvatarProps> = ({ className = '' 
           className={`
             w-16 h-16 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 
             shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300
-            flex items-center justify-center text-brand-text relative overflow-hidden
+            flex items-center justify-center text-white relative overflow-hidden
             ${isSpeaking ? 'animate-pulse' : ''}
             ${isTyping ? 'animate-bounce' : ''}
           `}
@@ -80,7 +80,7 @@ const NoaEsperancaAvatar: React.FC<NoaEsperancaAvatarProps> = ({ className = '' 
         </button>
 
         {/* Nome do Avatar */}
-        <div className="absolute -top-12 left-1/2 transform -translate-x-1/2 bg-black/80 text-brand-text px-3 py-1 rounded-full text-sm font-medium whitespace-nowrap">
+        <div className="absolute -top-12 left-1/2 transform -translate-x-1/2 bg-black/80 text-white px-3 py-1 rounded-full text-sm font-medium whitespace-nowrap">
           Nôa Esperança
         </div>
       </div>
@@ -89,7 +89,7 @@ const NoaEsperancaAvatar: React.FC<NoaEsperancaAvatarProps> = ({ className = '' 
       {isOpen && (
         <div className="absolute bottom-20 right-0 w-96 h-[500px] bg-white rounded-lg shadow-2xl border border-gray-200 flex flex-col">
           {/* Header do Chat */}
-          <div className="bg-gradient-to-r from-purple-500 to-pink-500 text-brand-text p-4 rounded-t-lg">
+          <div className="bg-gradient-to-r from-purple-500 to-pink-500 text-white p-4 rounded-t-lg">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-3">
                 <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
@@ -106,7 +106,7 @@ const NoaEsperancaAvatar: React.FC<NoaEsperancaAvatarProps> = ({ className = '' 
               <div className="flex items-center space-x-2">
                 <button
                   onClick={() => setShowPersonality(!showPersonality)}
-                  className="text-white/80 hover:text-brand-text transition-colors"
+                  className="text-white/80 hover:text-white transition-colors"
                 >
                   <SparklesIcon className="w-5 h-5" />
                 </button>
@@ -170,7 +170,7 @@ const NoaEsperancaAvatar: React.FC<NoaEsperancaAvatarProps> = ({ className = '' 
                       className={`
                         px-4 py-2 rounded-lg text-sm
                         ${message.type === 'user' 
-                          ? 'bg-purple-500 text-brand-text' 
+                          ? 'bg-purple-500 text-white' 
                           : 'bg-gray-100 text-gray-800'
                         }
                       `}
@@ -235,7 +235,7 @@ const NoaEsperancaAvatar: React.FC<NoaEsperancaAvatarProps> = ({ className = '' 
                 onClick={handleVoiceToggle}
                 className={`p-2 rounded-lg transition-colors ${
                   isListening 
-                    ? 'bg-red-500 text-brand-text' 
+                    ? 'bg-red-500 text-white' 
                     : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                 }`}
               >
@@ -245,7 +245,7 @@ const NoaEsperancaAvatar: React.FC<NoaEsperancaAvatarProps> = ({ className = '' 
               <button
                 type="submit"
                 disabled={!inputMessage.trim()}
-                className="p-2 bg-purple-500 text-brand-text rounded-lg hover:bg-purple-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="p-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 <MessageCircle className="w-4 h-4" />
               </button>

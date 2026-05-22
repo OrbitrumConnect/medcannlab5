@@ -39,7 +39,7 @@ export const PricingBlock = ({
           transition={{ duration: 0.5 }}
           viewport={{ once: true }}
           className={cn(
-            'bg-brand-bg rounded-2xl p-8 border relative',
+            'bg-slate-900 rounded-2xl p-8 border relative',
             theme.border
           )}
         >
@@ -52,20 +52,20 @@ export const PricingBlock = ({
             </div>
           )}
 
-          <h3 className="text-2xl font-bold text-brand-text mb-2">{title}</h3>
-          {subtitle && <p className="text-brand-text-muted mb-6 text-sm">{subtitle}</p>}
+          <h3 className="text-2xl font-bold text-white mb-2">{title}</h3>
+          {subtitle && <p className="text-slate-400 mb-6 text-sm">{subtitle}</p>}
 
-          <div className="mb-6 border-b border-brand-border-subtle pb-6">
-            <div className="flex items-end gap-2 text-brand-text">
+          <div className="mb-6 border-b border-slate-800 pb-6">
+            <div className="flex items-end gap-2 text-white">
               <span className="text-5xl font-extrabold tracking-tight">{price}</span>
-              {priceUnit && <span className="text-brand-text-muted pb-2 text-lg">{priceUnit}</span>}
+              {priceUnit && <span className="text-slate-400 pb-2 text-lg">{priceUnit}</span>}
             </div>
             {priceNote && <p className={cn('text-xs mt-3 font-medium', theme.text)}>{priceNote}</p>}
           </div>
 
           <ul className="space-y-3 mb-8">
             {includes.map((item, idx) => (
-              <li key={idx} className="flex gap-3 text-sm text-brand-text-secondary">
+              <li key={idx} className="flex gap-3 text-sm text-slate-300">
                 <CheckCircle2 className={cn('w-5 h-5 flex-shrink-0', theme.accent)} />
                 <span>{item}</span>
               </li>

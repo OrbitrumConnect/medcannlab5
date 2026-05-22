@@ -854,32 +854,32 @@ const VideoCall: React.FC<VideoCallProps> = ({ isOpen, onClose, patientId, isAud
       {/* Modal de Consentimento para Videochamada */}
       {showConsentModal && (
         <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-[60] p-4 backdrop-blur-sm">
-          <div className="bg-brand-bg border border-brand-border rounded-2xl w-full max-w-md shadow-2xl">
+          <div className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-md shadow-2xl">
             <div className="p-5 border-b border-slate-700/50">
-              <h3 className="text-lg font-bold text-brand-text flex items-center gap-2">
+              <h3 className="text-lg font-bold text-white flex items-center gap-2">
                 <Video className="w-5 h-5 text-blue-400" />
                 Consentimento para Videochamada
               </h3>
             </div>
             <div className="p-6 space-y-4">
-              <p className="text-brand-text-secondary text-sm">
+              <p className="text-slate-300 text-sm">
                 {VIDEO_CALL_CONSENT_POLICY.description}
               </p>
-              <div className="bg-slate-800/50 rounded-xl p-4 border border-brand-border text-xs space-y-2">
-                <p className="text-brand-text-muted">• Metadados registrados: quem, quando, duração</p>
-                <p className="text-brand-text-muted">• Nenhum conteúdo de áudio/vídeo será armazenado</p>
-                <p className="text-brand-text-muted">• Registro apenas para auditoria e registro clínico</p>
+              <div className="bg-slate-800/50 rounded-xl p-4 border border-slate-700 text-xs space-y-2">
+                <p className="text-slate-400">• Metadados registrados: quem, quando, duração</p>
+                <p className="text-slate-400">• Nenhum conteúdo de áudio/vídeo será armazenado</p>
+                <p className="text-slate-400">• Registro apenas para auditoria e registro clínico</p>
               </div>
               <div className="flex gap-3 pt-2">
                 <button
                   onClick={handleRejectConsent}
-                  className="flex-1 px-4 py-2 bg-brand-surface-subtle hover:bg-slate-600 text-brand-text rounded-lg transition-colors"
+                  className="flex-1 px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg transition-colors"
                 >
                   Recusar
                 </button>
                 <button
                   onClick={handleAcceptConsent}
-                  className="flex-1 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-brand-text rounded-lg transition-colors"
+                  className="flex-1 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors"
                 >
                   Aceitar
                 </button>
@@ -901,10 +901,10 @@ const VideoCall: React.FC<VideoCallProps> = ({ isOpen, onClose, patientId, isAud
                 <div className="w-20 h-20 bg-red-500/20 rounded-full flex items-center justify-center mx-auto mb-4 border-2 border-red-500/50">
                   <Circle className="w-10 h-10 text-red-400 animate-pulse" />
                 </div>
-                <h3 className="text-2xl font-bold text-brand-text mb-2">
+                <h3 className="text-2xl font-bold text-white mb-2">
                   Solicitação de Gravação Clínica
                 </h3>
-                <p className="text-brand-text-secondary text-sm">
+                <p className="text-slate-300 text-sm">
                   O médico solicitou a gravação de um trecho desta consulta
                 </p>
               </div>
@@ -917,8 +917,8 @@ const VideoCall: React.FC<VideoCallProps> = ({ isOpen, onClose, patientId, isAud
                       <span className="text-primary-400 text-xs font-bold">1</span>
                     </div>
                     <div>
-                      <p className="text-brand-text font-medium text-sm">Duração máxima: 5 minutos</p>
-                      <p className="text-brand-text-muted text-xs mt-1">A gravação será curta e pontual</p>
+                      <p className="text-white font-medium text-sm">Duração máxima: 5 minutos</p>
+                      <p className="text-slate-400 text-xs mt-1">A gravação será curta e pontual</p>
                     </div>
                   </div>
 
@@ -927,8 +927,8 @@ const VideoCall: React.FC<VideoCallProps> = ({ isOpen, onClose, patientId, isAud
                       <span className="text-primary-400 text-xs font-bold">2</span>
                     </div>
                     <div>
-                      <p className="text-brand-text font-medium text-sm">Finalidade: registro clínico</p>
-                      <p className="text-brand-text-muted text-xs mt-1">Exclusivamente para seu prontuário médico</p>
+                      <p className="text-white font-medium text-sm">Finalidade: registro clínico</p>
+                      <p className="text-slate-400 text-xs mt-1">Exclusivamente para seu prontuário médico</p>
                     </div>
                   </div>
 
@@ -937,8 +937,8 @@ const VideoCall: React.FC<VideoCallProps> = ({ isOpen, onClose, patientId, isAud
                       <span className="text-primary-400 text-xs font-bold">3</span>
                     </div>
                     <div>
-                      <p className="text-brand-text font-medium text-sm">Uso restrito</p>
-                      <p className="text-brand-text-muted text-xs mt-1">Não será analisada automaticamente nem usada para outros fins</p>
+                      <p className="text-white font-medium text-sm">Uso restrito</p>
+                      <p className="text-slate-400 text-xs mt-1">Não será analisada automaticamente nem usada para outros fins</p>
                     </div>
                   </div>
                 </div>
@@ -948,13 +948,13 @@ const VideoCall: React.FC<VideoCallProps> = ({ isOpen, onClose, patientId, isAud
               <div className="flex gap-4 pt-2">
                 <button
                   onClick={handleRejectRecordingConsent}
-                  className="flex-1 px-6 py-3.5 bg-brand-surface-subtle hover:bg-slate-600 text-brand-text rounded-xl font-semibold transition-all hover:scale-105 active:scale-95"
+                  className="flex-1 px-6 py-3.5 bg-slate-700 hover:bg-slate-600 text-white rounded-xl font-semibold transition-all hover:scale-105 active:scale-95"
                 >
                   Recusar
                 </button>
                 <button
                   onClick={handleAcceptRecordingConsent}
-                  className="flex-1 px-6 py-3.5 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-brand-text rounded-xl font-semibold transition-all hover:scale-105 active:scale-95 shadow-lg shadow-red-500/30"
+                  className="flex-1 px-6 py-3.5 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white rounded-xl font-semibold transition-all hover:scale-105 active:scale-95 shadow-lg shadow-red-500/30"
                 >
                   Aceitar e Iniciar
                 </button>
@@ -978,7 +978,7 @@ const VideoCall: React.FC<VideoCallProps> = ({ isOpen, onClose, patientId, isAud
         <div className="absolute top-4 left-4 z-10 flex items-center gap-2">
           <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium backdrop-blur-md ${activeProvider === 'wisecare' ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' :
               activeProvider === 'webrtc' ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30' :
-                'bg-slate-500/20 text-brand-text-muted border border-slate-500/30'
+                'bg-slate-500/20 text-slate-400 border border-slate-500/30'
             }`}>
             {activeProvider === 'wisecare' ? <Wifi className="w-3 h-3" /> : <WifiOff className="w-3 h-3" />}
             {activeProvider === 'wisecare' ? 'WiseCare' : activeProvider === 'webrtc' ? 'P2P Direto' : 'Conectando...'}
@@ -991,7 +991,7 @@ const VideoCall: React.FC<VideoCallProps> = ({ isOpen, onClose, patientId, isAud
         </div>
 
         {/* Remote Video — imagem do outro participante (tela principal) */}
-        <div className="relative w-full h-full bg-brand-bg">
+        <div className="relative w-full h-full bg-slate-900">
 
           {/* ─── WiseCare: iframe renderizado pelo SDK ─── */}
           {activeProvider === 'wisecare' && (
@@ -1007,7 +1007,7 @@ const VideoCall: React.FC<VideoCallProps> = ({ isOpen, onClose, patientId, isAud
             <div className="absolute inset-0 flex items-center justify-center bg-slate-900/80 z-10">
               <div className="text-center">
                 <div className="w-12 h-12 border-4 border-emerald-500/30 border-t-emerald-500 rounded-full animate-spin mx-auto mb-4" />
-                <p className="text-brand-text-secondary">Conectando via WiseCare...</p>
+                <p className="text-slate-300">Conectando via WiseCare...</p>
                 <p className="text-slate-500 text-xs mt-2">Telemedicina segura</p>
               </div>
             </div>
@@ -1025,7 +1025,7 @@ const VideoCall: React.FC<VideoCallProps> = ({ isOpen, onClose, patientId, isAud
               />
               {webrtcState === 'connecting' && (
                 <div className="absolute inset-0 flex items-center justify-center bg-slate-900/80">
-                  <p className="text-brand-text-muted">Conectando vídeo (P2P)...</p>
+                  <p className="text-slate-400">Conectando vídeo (P2P)...</p>
                 </div>
               )}
             </>
@@ -1035,15 +1035,15 @@ const VideoCall: React.FC<VideoCallProps> = ({ isOpen, onClose, patientId, isAud
             <div className="flex items-center justify-center h-full">
               <div className="text-center">
                 <div className="w-32 h-32 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <span className="text-4xl font-bold text-brand-text">P</span>
+                  <span className="text-4xl font-bold text-white">P</span>
                 </div>
-                <p className="text-brand-text text-xl">Chamada de Áudio</p>
-                <p className="text-brand-text-muted mt-2">
+                <p className="text-white text-xl">Chamada de Áudio</p>
+                <p className="text-slate-400 mt-2">
                   {patientId ? `Paciente ID: ${patientId}` : 'Conectando...'}
                 </p>
                 <p className="text-slate-500 text-sm mt-4">Use &quot;Viva-voz&quot; para ouvir pelo alto-falante</p>
                 {activeProvider === 'webrtc' && signalingRoomId && (
-                  <p className="text-brand-text-muted text-xs mt-2">
+                  <p className="text-slate-400 text-xs mt-2">
                     {webrtcState === 'connecting' && 'Conectando áudio (P2P)...'}
                     {webrtcState === 'connected' && 'Conectado (P2P)'}
                     {webrtcError && <span className="text-amber-400">{webrtcError}</span>}
@@ -1060,7 +1060,7 @@ const VideoCall: React.FC<VideoCallProps> = ({ isOpen, onClose, patientId, isAud
 
           {/* Local Video (Picture-in-Picture) — stream atribuído via useEffect acima */}
           {(!isAudioOnly || cameraOnDuringAudioCall) && (
-            <div className="absolute bottom-20 right-4 w-48 h-36 bg-brand-surface rounded-lg overflow-hidden border border-white/20 shadow-xl">
+            <div className="absolute bottom-20 right-4 w-48 h-36 bg-slate-800 rounded-lg overflow-hidden border border-white/20 shadow-xl">
               <video
                 ref={localVideoRef}
                 autoPlay
@@ -1076,7 +1076,7 @@ const VideoCall: React.FC<VideoCallProps> = ({ isOpen, onClose, patientId, isAud
             <div className="max-w-md mx-auto">
               {/* Call Duration */}
               <div className="text-center mb-4">
-                <span className="text-brand-text font-mono text-lg">
+                <span className="text-white font-mono text-lg">
                   {formatDuration(callDuration)}
                 </span>
               </div>
@@ -1086,8 +1086,8 @@ const VideoCall: React.FC<VideoCallProps> = ({ isOpen, onClose, patientId, isAud
                 <button
                   onClick={toggleMute}
                   className={`p-3.5 rounded-full transition-all ${isMuted
-                      ? 'bg-red-500 hover:bg-red-600 text-brand-text'
-                      : 'bg-white/10 hover:bg-white/20 text-brand-text backdrop-blur-sm'
+                      ? 'bg-red-500 hover:bg-red-600 text-white'
+                      : 'bg-white/10 hover:bg-white/20 text-white backdrop-blur-sm'
                     }`}
                   title={isMuted ? 'Ativar microfone' : 'Desativar microfone'}
                 >
@@ -1098,8 +1098,8 @@ const VideoCall: React.FC<VideoCallProps> = ({ isOpen, onClose, patientId, isAud
                 <button
                   onClick={toggleSpeaker}
                   className={`p-3.5 rounded-full transition-all ${isSpeakerOn
-                      ? 'bg-primary-500 hover:bg-primary-600 text-brand-text'
-                      : 'bg-white/10 hover:bg-white/20 text-brand-text backdrop-blur-sm'
+                      ? 'bg-primary-500 hover:bg-primary-600 text-white'
+                      : 'bg-white/10 hover:bg-white/20 text-white backdrop-blur-sm'
                     }`}
                   title={isSpeakerOn ? 'Viva-voz ligado' : 'Ligar viva-voz (alto-falante)'}
                 >
@@ -1110,7 +1110,7 @@ const VideoCall: React.FC<VideoCallProps> = ({ isOpen, onClose, patientId, isAud
                 {isAudioOnly && !cameraOnDuringAudioCall && (
                   <button
                     onClick={enableCameraDuringCall}
-                    className="p-3.5 rounded-full bg-white/10 hover:bg-white/20 text-brand-text backdrop-blur-sm transition-all"
+                    className="p-3.5 rounded-full bg-white/10 hover:bg-white/20 text-white backdrop-blur-sm transition-all"
                     title="Ligar câmera"
                   >
                     <Video className="w-5 h-5" />
@@ -1121,8 +1121,8 @@ const VideoCall: React.FC<VideoCallProps> = ({ isOpen, onClose, patientId, isAud
                   <button
                     onClick={toggleVideo}
                     className={`p-3.5 rounded-full transition-all ${isVideoOff
-                        ? 'bg-red-500 hover:bg-red-600 text-brand-text'
-                        : 'bg-white/10 hover:bg-white/20 text-brand-text backdrop-blur-sm'
+                        ? 'bg-red-500 hover:bg-red-600 text-white'
+                        : 'bg-white/10 hover:bg-white/20 text-white backdrop-blur-sm'
                       }`}
                     title={isVideoOff ? 'Ligar câmera' : 'Desligar câmera'}
                   >
@@ -1135,7 +1135,7 @@ const VideoCall: React.FC<VideoCallProps> = ({ isOpen, onClose, patientId, isAud
                   <button
                     onClick={flipCamera}
                     disabled={isFlippingCamera}
-                    className="p-3.5 rounded-full bg-white/10 hover:bg-white/20 text-brand-text backdrop-blur-sm transition-all disabled:opacity-50 disabled:cursor-wait"
+                    className="p-3.5 rounded-full bg-white/10 hover:bg-white/20 text-white backdrop-blur-sm transition-all disabled:opacity-50 disabled:cursor-wait"
                     title={`Trocar câmera (atual: ${facingMode === 'user' ? 'frontal' : 'traseira'})`}
                     aria-label="Trocar câmera"
                   >
@@ -1153,8 +1153,8 @@ const VideoCall: React.FC<VideoCallProps> = ({ isOpen, onClose, patientId, isAud
                     }}
                     disabled={recordingRequested}
                     className={`p-3.5 rounded-full transition-all ${recordingRequested
-                        ? 'bg-yellow-500/50 text-brand-text cursor-wait animate-pulse'
-                        : 'bg-white/10 hover:bg-white/20 text-brand-text backdrop-blur-sm'
+                        ? 'bg-yellow-500/50 text-white cursor-wait animate-pulse'
+                        : 'bg-white/10 hover:bg-white/20 text-white backdrop-blur-sm'
                       }`}
                     title={recordingRequested ? 'Aguardando consentimento do paciente...' : 'Solicitar gravação clínica ao paciente'}
                   >
@@ -1166,7 +1166,7 @@ const VideoCall: React.FC<VideoCallProps> = ({ isOpen, onClose, patientId, isAud
                 {isRecording && (
                   <button
                     onClick={stopRecording}
-                    className="p-3.5 rounded-full bg-red-500 hover:bg-red-600 text-brand-text animate-pulse transition-all"
+                    className="p-3.5 rounded-full bg-red-500 hover:bg-red-600 text-white animate-pulse transition-all"
                     title="Parar gravação"
                   >
                     <Square className="w-5 h-5" />
@@ -1175,7 +1175,7 @@ const VideoCall: React.FC<VideoCallProps> = ({ isOpen, onClose, patientId, isAud
 
                 <button
                   onClick={handleEndCall}
-                  className="p-3.5 rounded-full bg-red-500 hover:bg-red-600 text-brand-text transition-all"
+                  className="p-3.5 rounded-full bg-red-500 hover:bg-red-600 text-white transition-all"
                   title="Encerrar chamada"
                 >
                   <X className="w-5 h-5" />
@@ -1183,7 +1183,7 @@ const VideoCall: React.FC<VideoCallProps> = ({ isOpen, onClose, patientId, isAud
 
                 <button
                   onClick={toggleFullscreen}
-                  className="p-3.5 rounded-full bg-white/10 hover:bg-white/20 text-brand-text backdrop-blur-sm transition-all"
+                  className="p-3.5 rounded-full bg-white/10 hover:bg-white/20 text-white backdrop-blur-sm transition-all"
                   title={isFullscreen ? 'Sair do modo tela cheia' : 'Tela cheia'}
                 >
                   {isFullscreen ? <Minimize2 className="w-5 h-5" /> : <Maximize2 className="w-5 h-5" />}
@@ -1191,7 +1191,7 @@ const VideoCall: React.FC<VideoCallProps> = ({ isOpen, onClose, patientId, isAud
               </div>
 
               {/* Call Info */}
-              <div className="mt-4 text-center text-sm text-brand-text-muted space-y-1">
+              <div className="mt-4 text-center text-sm text-slate-400 space-y-1">
                 {!isSpeakerOn && (
                   <p className="text-amber-400 flex items-center justify-center space-x-2">
                     <VolumeX className="w-4 h-4" />
@@ -1223,7 +1223,7 @@ const VideoCall: React.FC<VideoCallProps> = ({ isOpen, onClose, patientId, isAud
           {/* Close Button */}
           <button
             onClick={handleEndCall}
-            className="absolute top-4 right-4 p-2 bg-black/50 hover:bg-black/70 text-brand-text rounded-full transition-colors"
+            className="absolute top-4 right-4 p-2 bg-black/50 hover:bg-black/70 text-white rounded-full transition-colors"
             title="Fechar"
           >
             <X className="w-5 h-5" />

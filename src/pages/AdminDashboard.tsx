@@ -90,7 +90,7 @@ const AdminDashboard: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-[#050914] text-brand-text">
+    <div className="min-h-screen bg-[#050914] text-white">
       <div className="max-w-full mx-auto p-4 sm:p-6 space-y-6">
         {/* Barra de navegação principal */}
         <div className="bg-[#0f172a]/50 backdrop-blur-md rounded-2xl border border-slate-800/50 shadow-xl">
@@ -103,11 +103,11 @@ const AdminDashboard: React.FC = () => {
                   key={t.id}
                   onClick={() => setTab(t.id)}
                   className={`flex items-center gap-1.5 px-3 md:px-5 py-2 md:py-2.5 rounded-xl whitespace-nowrap shrink-0 transition-all font-bold text-xs md:text-sm ${active
-                    ? 'bg-indigo-600 text-brand-text shadow-[0_0_15px_rgba(79,70,229,0.4)] border border-indigo-400/30'
-                    : 'text-slate-500 hover:text-brand-text-secondary hover:bg-slate-800/50'
+                    ? 'bg-indigo-600 text-white shadow-[0_0_15px_rgba(79,70,229,0.4)] border border-indigo-400/30'
+                    : 'text-slate-500 hover:text-slate-300 hover:bg-slate-800/50'
                     }`}
                 >
-                  <Icon className={`w-4 h-4 ${active ? 'text-brand-text' : 'text-slate-600'}`} />
+                  <Icon className={`w-4 h-4 ${active ? 'text-white' : 'text-slate-600'}`} />
                   <span>{t.label}</span>
                 </button>
               )
@@ -117,7 +117,7 @@ const AdminDashboard: React.FC = () => {
 
         {/* Barra "Visualizar Como" — Admin pode simular qualquer perfil */}
         <div className="bg-[#0f172a]/40 backdrop-blur-md rounded-xl border border-slate-800/40 px-4 py-3 flex flex-wrap items-center gap-3">
-          <div className="flex items-center gap-2 text-brand-text-muted text-sm font-medium">
+          <div className="flex items-center gap-2 text-slate-400 text-sm font-medium">
             <Eye className="w-4 h-4" />
             <span>Visualizar como:</span>
           </div>
@@ -127,8 +127,8 @@ const AdminDashboard: React.FC = () => {
               onClick={() => handleViewAs(type, route)}
               className={`flex items-center gap-2 px-4 py-1.5 rounded-lg text-sm font-medium transition-all ${
                 viewAsType === type
-                  ? 'bg-emerald-600 text-brand-text'
-                  : 'bg-slate-800/60 text-brand-text-muted hover:text-brand-text hover:bg-brand-surface-subtle'
+                  ? 'bg-emerald-600 text-white'
+                  : 'bg-slate-800/60 text-slate-400 hover:text-white hover:bg-slate-700'
               }`}
             >
               <Icon className="w-3.5 h-3.5" />

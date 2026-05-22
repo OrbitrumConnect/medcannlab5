@@ -112,7 +112,7 @@ export function WalletTab() {
   }
 
   if (loading) {
-    return <div className="text-brand-text text-center py-12">Carregando carteira...</div>
+    return <div className="text-white text-center py-12">Carregando carteira...</div>
   }
 
   const w = wallet!
@@ -132,13 +132,13 @@ export function WalletTab() {
             <button
               onClick={() => setShowPayoutModal(true)}
               disabled={w.balance_available <= 0}
-              className="text-xs bg-emerald-600 hover:bg-emerald-700 disabled:bg-brand-surface-subtle disabled:text-gray-500 text-brand-text px-3 py-1 rounded-lg font-semibold transition"
+              className="text-xs bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-700 disabled:text-gray-500 text-white px-3 py-1 rounded-lg font-semibold transition"
             >
               Sacar
             </button>
           </div>
           <p className="text-gray-300 text-xs mb-1">Saldo Disponível</p>
-          <p className="text-3xl font-bold text-brand-text">R$ {w.balance_available.toFixed(2)}</p>
+          <p className="text-3xl font-bold text-white">R$ {w.balance_available.toFixed(2)}</p>
           <p className="text-xs text-emerald-300 mt-2">Pronto para saque</p>
         </div>
 
@@ -146,7 +146,7 @@ export function WalletTab() {
         <div className="bg-slate-800/60 border border-yellow-500/20 rounded-xl p-5">
           <Clock className="text-yellow-400 mb-3" size={24} />
           <p className="text-gray-300 text-xs mb-1">A Liberar</p>
-          <p className="text-3xl font-bold text-brand-text">R$ {w.balance_pending.toFixed(2)}</p>
+          <p className="text-3xl font-bold text-white">R$ {w.balance_pending.toFixed(2)}</p>
           <p className="text-xs text-gray-400 mt-2">Aguardando confirmação</p>
         </div>
 
@@ -159,7 +159,7 @@ export function WalletTab() {
             </span>
           </div>
           <p className="text-gray-300 text-xs mb-1">Receita do Mês</p>
-          <p className="text-3xl font-bold text-brand-text">R$ {w.revenue_this_month.toFixed(2)}</p>
+          <p className="text-3xl font-bold text-white">R$ {w.revenue_this_month.toFixed(2)}</p>
           <p className="text-xs text-gray-400 mt-2">{w.transactions_this_month} transações</p>
         </div>
 
@@ -167,7 +167,7 @@ export function WalletTab() {
         <div className="bg-slate-800/60 border border-purple-500/20 rounded-xl p-5">
           <ArrowUpRight className="text-purple-400 mb-3" size={24} />
           <p className="text-gray-300 text-xs mb-1">Total Acumulado</p>
-          <p className="text-3xl font-bold text-brand-text">R$ {w.total_earned.toFixed(2)}</p>
+          <p className="text-3xl font-bold text-white">R$ {w.total_earned.toFixed(2)}</p>
           <p className="text-xs text-gray-400 mt-2">Sacado: R$ {w.total_withdrawn.toFixed(2)}</p>
         </div>
       </div>
@@ -177,16 +177,16 @@ export function WalletTab() {
         <div className="bg-blue-900/20 border border-blue-500/30 rounded-xl p-5 flex items-start gap-3">
           <AlertCircle className="text-blue-400 flex-shrink-0 mt-0.5" size={20} />
           <div className="text-sm text-gray-300">
-            <p className="font-semibold text-brand-text mb-1">Sua carteira ainda está vazia</p>
+            <p className="font-semibold text-white mb-1">Sua carteira ainda está vazia</p>
             <p>Quando você concluir consultas na agenda, elas aparecerão aqui automaticamente como pendentes. Após confirmação de pagamento, o valor (70% líquido para você) cai no saldo disponível.</p>
           </div>
         </div>
       )}
 
       {/* Histórico de transações */}
-      <div className="bg-slate-800/60 border border-brand-border rounded-xl overflow-hidden">
-        <div className="p-5 border-b border-brand-border flex items-center justify-between">
-          <h3 className="text-lg font-bold text-brand-text flex items-center gap-2">
+      <div className="bg-slate-800/60 border border-slate-700 rounded-xl overflow-hidden">
+        <div className="p-5 border-b border-slate-700 flex items-center justify-between">
+          <h3 className="text-lg font-bold text-white flex items-center gap-2">
             <Download size={20} /> Histórico Financeiro
           </h3>
           <span className="text-xs text-gray-400">{transactions.length} registros</span>
@@ -208,7 +208,7 @@ export function WalletTab() {
                       <Icon size={18} />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-brand-text text-sm font-medium truncate">
+                      <p className="text-white text-sm font-medium truncate">
                         {tx.description || `${tx.type === 'consultation' ? 'Consulta' : tx.type}`}
                       </p>
                       <p className="text-xs text-gray-400">
@@ -217,7 +217,7 @@ export function WalletTab() {
                     </div>
                   </div>
                   <div className="text-right ml-3">
-                    <p className="text-brand-text font-bold">R$ {tx.professional_amount.toFixed(2)}</p>
+                    <p className="text-white font-bold">R$ {tx.professional_amount.toFixed(2)}</p>
                     <p className="text-xs text-gray-500">
                       Bruto R$ {tx.amount.toFixed(2)} • Taxa R$ {tx.platform_fee.toFixed(2)}
                     </p>
@@ -235,8 +235,8 @@ export function WalletTab() {
       {/* Modal de saque */}
       {showPayoutModal && (
         <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-brand-bg border border-brand-border rounded-xl p-6 max-w-md w-full">
-            <h3 className="text-xl font-bold text-brand-text mb-2">Solicitar Saque</h3>
+          <div className="bg-slate-900 border border-slate-700 rounded-xl p-6 max-w-md w-full">
+            <h3 className="text-xl font-bold text-white mb-2">Solicitar Saque</h3>
             <p className="text-sm text-gray-400 mb-4">Disponível: R$ {w.balance_available.toFixed(2)}</p>
 
             <input
@@ -246,20 +246,20 @@ export function WalletTab() {
               placeholder="Valor (R$)"
               max={w.balance_available}
               step="0.01"
-              className="w-full bg-brand-surface border border-slate-600 rounded-lg px-4 py-3 text-brand-text focus:border-emerald-500 focus:outline-none mb-4"
+              className="w-full bg-slate-800 border border-slate-600 rounded-lg px-4 py-3 text-white focus:border-emerald-500 focus:outline-none mb-4"
             />
 
             <div className="flex gap-3">
               <button
                 onClick={() => { setShowPayoutModal(false); setPayoutAmount('') }}
-                className="flex-1 bg-brand-surface-subtle hover:bg-slate-600 text-brand-text px-4 py-2 rounded-lg font-semibold"
+                className="flex-1 bg-slate-700 hover:bg-slate-600 text-white px-4 py-2 rounded-lg font-semibold"
               >
                 Cancelar
               </button>
               <button
                 onClick={handleRequestPayout}
                 disabled={requesting}
-                className="flex-1 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-brand-text px-4 py-2 rounded-lg font-semibold"
+                className="flex-1 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white px-4 py-2 rounded-lg font-semibold"
               >
                 {requesting ? 'Processando...' : 'Confirmar'}
               </button>

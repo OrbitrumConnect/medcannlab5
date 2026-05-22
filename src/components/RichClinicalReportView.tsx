@@ -91,7 +91,7 @@ const RichClinicalReportView: React.FC<RichClinicalReportViewProps> = ({ content
   }
 
   return (
-    <div className="space-y-3 text-sm text-brand-text-secondary">
+    <div className="space-y-3 text-sm text-slate-300">
       {/* Queixa Principal */}
       {queixaPrincipal && (
         <div className="border-l-2 border-emerald-500/50 pl-3">
@@ -131,18 +131,18 @@ const RichClinicalReportView: React.FC<RichClinicalReportViewProps> = ({ content
           <strong className="text-purple-400 text-xs uppercase tracking-wider">Desenvolvimento da Queixa</strong>
           <div className="mt-1 space-y-1">
             {dev.descricao && (
-              <p><span className="text-brand-text-muted">Descrição:</span> {strip(dev.descricao)}</p>
+              <p><span className="text-slate-400">Descrição:</span> {strip(dev.descricao)}</p>
             )}
             {dev.localizacao && (
-              <p><span className="text-brand-text-muted">Localização:</span> {strip(dev.localizacao)}</p>
+              <p><span className="text-slate-400">Localização:</span> {strip(dev.localizacao)}</p>
             )}
             {dev.inicio && (
-              <p><span className="text-brand-text-muted">Início:</span> {strip(dev.inicio)}</p>
+              <p><span className="text-slate-400">Início:</span> {strip(dev.inicio)}</p>
             )}
             {/* V1.9.305 — múltiplos sintomas/fatores em bullet (antes join vírgula virava texto corrido) */}
             {Array.isArray(dev.sintomas_associados) && dev.sintomas_associados.length > 0 && (
               <div>
-                <span className="text-brand-text-muted">Sintomas Associados:</span>
+                <span className="text-slate-400">Sintomas Associados:</span>
                 <ul className="ml-3 mt-0.5 space-y-0.5">
                   {stripList(dev.sintomas_associados).map((s: string, i: number) => (
                     <li key={i} className="flex items-start space-x-2">
@@ -219,7 +219,7 @@ const RichClinicalReportView: React.FC<RichClinicalReportViewProps> = ({ content
           <div className="mt-1 space-y-2">
             {matSide.length > 0 && (
               <div>
-                <span className="text-brand-text-muted">Materno:</span>
+                <span className="text-slate-400">Materno:</span>
                 {matSide.length === 1 ? (
                   <span> {stripList(matSide)[0]}</span>
                 ) : (
@@ -236,7 +236,7 @@ const RichClinicalReportView: React.FC<RichClinicalReportViewProps> = ({ content
             )}
             {patSide.length > 0 && (
               <div>
-                <span className="text-brand-text-muted">Paterno:</span>
+                <span className="text-slate-400">Paterno:</span>
                 {patSide.length === 1 ? (
                   <span> {stripList(patSide)[0]}</span>
                 ) : (
@@ -271,7 +271,7 @@ const RichClinicalReportView: React.FC<RichClinicalReportViewProps> = ({ content
             {Object.entries(perguntas).map(([key, val]: [string, any]) => (
               val && (
                 <p key={key}>
-                  <span className="text-brand-text-muted">{labelFromKey(key)}:</span> {strip(val)}
+                  <span className="text-slate-400">{labelFromKey(key)}:</span> {strip(val)}
                 </p>
               )
             ))}

@@ -167,7 +167,7 @@ const AreaAtendimentoEduardo: React.FC = () => {
               <p className="text-xs text-blue-600 mt-1">+2 esta semana</p>
             </div>
             <div className="w-12 h-12 bg-blue-500 rounded-lg flex items-center justify-center">
-              <Users className="h-6 w-6 text-brand-text" />
+              <Users className="h-6 w-6 text-white" />
             </div>
           </div>
         </div>
@@ -180,7 +180,7 @@ const AreaAtendimentoEduardo: React.FC = () => {
               <p className="text-xs text-green-600 mt-1">Sem dados</p>
             </div>
             <div className="w-12 h-12 bg-green-500 rounded-lg flex items-center justify-center">
-              <Calendar className="h-6 w-6 text-brand-text" />
+              <Calendar className="h-6 w-6 text-white" />
             </div>
           </div>
         </div>
@@ -193,7 +193,7 @@ const AreaAtendimentoEduardo: React.FC = () => {
           Buscar Paciente
         </h3>
         <div className="relative mb-4">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-brand-text-muted h-5 w-5" />
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 h-5 w-5" />
           <input
             type="text"
             placeholder="Digite nome ou CPF do paciente..."
@@ -274,7 +274,7 @@ const AreaAtendimentoEduardo: React.FC = () => {
             </button>
             <button
               onClick={handleSaveNotes}
-              className="px-4 py-2 bg-blue-600 text-brand-text rounded-lg hover:bg-blue-700 transition-colors shadow-sm"
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-sm"
             >
               Salvar Notas
             </button>
@@ -388,7 +388,7 @@ const AreaAtendimentoEduardo: React.FC = () => {
               onClick={() => setActiveSection('dashboard')}
               className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
                 activeSection === 'dashboard'
-                  ? 'bg-blue-600 text-brand-text shadow-sm'
+                  ? 'bg-blue-600 text-white shadow-sm'
                   : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
               }`}
             >
@@ -398,7 +398,7 @@ const AreaAtendimentoEduardo: React.FC = () => {
               onClick={() => setActiveSection('kpis')}
               className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
                 activeSection === 'kpis'
-                  ? 'bg-blue-600 text-brand-text shadow-sm'
+                  ? 'bg-blue-600 text-white shadow-sm'
                   : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
               }`}
             >
@@ -408,7 +408,7 @@ const AreaAtendimentoEduardo: React.FC = () => {
               onClick={() => setActiveSection('newsletter')}
               className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
                 activeSection === 'newsletter'
-                  ? 'bg-blue-600 text-brand-text shadow-sm'
+                  ? 'bg-blue-600 text-white shadow-sm'
                   : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
               }`}
             >
@@ -418,7 +418,7 @@ const AreaAtendimentoEduardo: React.FC = () => {
               onClick={() => setActiveSection('prescriptions')}
               className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
                 activeSection === 'prescriptions'
-                  ? 'bg-blue-600 text-brand-text shadow-sm'
+                  ? 'bg-blue-600 text-white shadow-sm'
                   : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
               }`}
             >

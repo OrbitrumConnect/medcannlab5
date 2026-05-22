@@ -333,7 +333,7 @@ const ProfessionalChatSystem: React.FC<ProfessionalChatSystemProps> = ({ classNa
 
 
   return (
-    <div className={`bg-slate-800/80 rounded-lg border border-brand-border flex flex-col h-full ${className}`}>
+    <div className={`bg-slate-800/80 rounded-lg border border-slate-700 flex flex-col h-full ${className}`}>
       {/* V1.9.288 (Pedro 14/05 11h46): header compactado numa linha só (era flex-col com 2 linhas + space-y-4).
           Online badge esquerda • filtros centro • Novo Chat direita (mesmo estilo dos filtros, não mais azul sólido). */}
       <div className="flex flex-wrap items-center justify-between gap-2 px-3 py-2 border-b border-slate-700/50">
@@ -344,14 +344,14 @@ const ProfessionalChatSystem: React.FC<ProfessionalChatSystemProps> = ({ classNa
           </span>
         </div>
 
-        <div className="flex items-center p-0.5 bg-slate-900/50 rounded-full border border-brand-border backdrop-blur-md overflow-x-auto no-scrollbar">
+        <div className="flex items-center p-0.5 bg-slate-900/50 rounded-full border border-slate-700 backdrop-blur-md overflow-x-auto no-scrollbar">
           {(['all', 'professional', 'student', 'patient'] as RoomFilter[]).map((tabKey) => (
             <button
               key={tabKey}
               onClick={() => setFilter(tabKey)}
               className={`px-3 py-1 text-xs font-medium rounded-full transition-all whitespace-nowrap ${filter === tabKey
-                ? 'bg-emerald-600 text-brand-text shadow-lg shadow-emerald-900/10'
-                : 'text-brand-text-muted hover:text-slate-200 hover:bg-slate-800/50'
+                ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-900/10'
+                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
                 }`}
             >
               {tabKey === 'all' ? 'Todos' : tabKey === 'professional' ? 'Profissionais' : tabKey === 'student' ? 'Estudantes' : 'Pacientes'}
@@ -364,7 +364,7 @@ const ProfessionalChatSystem: React.FC<ProfessionalChatSystemProps> = ({ classNa
             // TODO: Implementar modal de seleção de profissional para novo chat
             alert('Funcionalidade de pesquisar profissionais para iniciar novo chat em desenvolvimento.')
           }}
-          className="flex items-center gap-1.5 px-3 py-1 text-xs font-medium rounded-full border border-brand-border bg-slate-900/50 text-brand-text-secondary hover:text-brand-text hover:bg-slate-800/70 transition-all"
+          className="flex items-center gap-1.5 px-3 py-1 text-xs font-medium rounded-full border border-slate-700 bg-slate-900/50 text-slate-300 hover:text-white hover:bg-slate-800/70 transition-all"
         >
           <Plus className="w-3 h-3" />
           Novo Chat
@@ -372,23 +372,23 @@ const ProfessionalChatSystem: React.FC<ProfessionalChatSystemProps> = ({ classNa
       </div>
 
       <div className="flex flex-1 overflow-hidden">
-        <aside className="w-72 lg:w-72 md:w-1/4 border-r border-brand-border flex flex-col min-w-[220px] max-w-[320px]">
-          <div className="p-3 border-b border-brand-border">
+        <aside className="w-72 lg:w-72 md:w-1/4 border-r border-slate-700 flex flex-col min-w-[220px] max-w-[320px]">
+          <div className="p-3 border-b border-slate-700">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-brand-text-muted w-4 h-4" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" />
               <input
                 type="text"
                 placeholder="Buscar salas..."
                 value={searchTerm}
                 onChange={event => setSearchTerm(event.target.value)}
-                className="w-full pl-10 pr-4 py-2 bg-brand-surface-subtle border border-slate-600 rounded-lg text-brand-text placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full pl-10 pr-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
           </div>
 
           <div className="flex-1 overflow-y-auto">
             {inboxLoading && (
-              <div className="p-4 text-sm text-brand-text-muted">Carregando salas...</div>
+              <div className="p-4 text-sm text-slate-400">Carregando salas...</div>
             )}
 
             {!inboxLoading && filteredRooms.length === 0 && (
@@ -396,7 +396,7 @@ const ProfessionalChatSystem: React.FC<ProfessionalChatSystemProps> = ({ classNa
                 <div className="w-12 h-12 bg-slate-700/50 rounded-full flex items-center justify-center mx-auto mb-3">
                   <Search className="w-6 h-6 text-slate-500" />
                 </div>
-                <p className="text-sm text-brand-text-muted font-medium">Nenhuma sala encontrada</p>
+                <p className="text-sm text-slate-400 font-medium">Nenhuma sala encontrada</p>
                 <p className="text-xs text-slate-500 mt-1">Tente mudar o filtro ou iniciar um novo chat.</p>
               </div>
             )}
@@ -408,11 +408,11 @@ const ProfessionalChatSystem: React.FC<ProfessionalChatSystemProps> = ({ classNa
                 <button
                   key={room.id}
                   onClick={() => handleSelectRoom(room)}
-                  className={`w-full text-left p-3 border-b border-brand-border transition-all ${isActive
-                    ? 'bg-emerald-600 text-brand-text shadow-md'
+                  className={`w-full text-left p-3 border-b border-slate-700 transition-all ${isActive
+                    ? 'bg-emerald-600 text-white shadow-md'
                     : room.unreadCount > 0
                       ? 'bg-emerald-500/10 text-emerald-400 border-l-4 border-l-emerald-500 pl-2'
-                      : 'hover:bg-brand-surface-subtle text-brand-text-secondary'
+                      : 'hover:bg-slate-700 text-slate-300'
                     }`}
                 >
                   <div className="flex items-center justify-between gap-2">
@@ -438,10 +438,10 @@ const ProfessionalChatSystem: React.FC<ProfessionalChatSystemProps> = ({ classNa
         <section className="flex-1 flex flex-col">
           {activeRoom ? (
             <>
-              <div className="p-4 border-b border-brand-border flex items-center justify-between">
+              <div className="p-4 border-b border-slate-700 flex items-center justify-between">
                 <div>
-                  <h3 className="text-lg font-semibold text-brand-text">{activeRoom.name}</h3>
-                  <p className="text-sm text-brand-text-muted capitalize">
+                  <h3 className="text-lg font-semibold text-white">{activeRoom.name}</h3>
+                  <p className="text-sm text-slate-400 capitalize">
                     {activeRoom.type ?? 'sem classificação'}
                   </p>
                 </div>
@@ -450,7 +450,7 @@ const ProfessionalChatSystem: React.FC<ProfessionalChatSystemProps> = ({ classNa
                   <button
                     onClick={() => handleStartCall('video')}
                     disabled={!!pendingCallRequest}
-                    className="bg-green-600 hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed text-brand-text px-3 py-2 rounded-lg text-sm transition-colors"
+                    className="bg-green-600 hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed text-white px-3 py-2 rounded-lg text-sm transition-colors"
                     title={pendingCallRequest ? 'Aguardando resposta...' : 'Solicitar videochamada'}
                   >
                     <Video className="w-4 h-4" />
@@ -458,7 +458,7 @@ const ProfessionalChatSystem: React.FC<ProfessionalChatSystemProps> = ({ classNa
                   <button
                     onClick={() => handleStartCall('audio')}
                     disabled={!!pendingCallRequest}
-                    className="bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-brand-text px-3 py-2 rounded-lg text-sm transition-colors"
+                    className="bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-white px-3 py-2 rounded-lg text-sm transition-colors"
                     title={pendingCallRequest ? 'Aguardando resposta...' : 'Solicitar ligação'}
                   >
                     <Phone className="w-4 h-4" />
@@ -481,11 +481,11 @@ const ProfessionalChatSystem: React.FC<ProfessionalChatSystemProps> = ({ classNa
                 />
 
                 {messagesLoading && (
-                  <div className="text-sm text-brand-text-muted relative z-10 text-center py-4">Carregando mensagens...</div>
+                  <div className="text-sm text-slate-400 relative z-10 text-center py-4">Carregando mensagens...</div>
                 )}
 
                 {!messagesLoading && messages.length === 0 && (
-                  <div className="text-sm text-brand-text-muted relative z-10 text-center py-10 opacity-60">
+                  <div className="text-sm text-slate-400 relative z-10 text-center py-10 opacity-60">
                     <p className="mb-2">Nenhuma mensagem registrada nesta sala.</p>
                     <p className="text-xs">Inicie uma conversa profissional e segura.</p>
                   </div>
@@ -500,8 +500,8 @@ const ProfessionalChatSystem: React.FC<ProfessionalChatSystemProps> = ({ classNa
                     >
                       <div
                         className={`max-w-[85%] rounded-2xl px-4 py-2.5 text-sm shadow-sm ${isOwn
-                          ? 'bg-emerald-600 text-brand-text rounded-tr-none'
-                          : 'bg-brand-surface text-slate-200 border border-slate-700/50 rounded-tl-none'
+                          ? 'bg-emerald-600 text-white rounded-tr-none'
+                          : 'bg-slate-800 text-slate-200 border border-slate-700/50 rounded-tl-none'
                           }`}
                       >
                         <div className="mb-1 flex items-center justify-between gap-3">
@@ -530,7 +530,7 @@ const ProfessionalChatSystem: React.FC<ProfessionalChatSystemProps> = ({ classNa
 
               {/* V1.9.277 — paddingBottom safe-area mobile (Pedro 13/05). */}
               <footer
-                className="p-4 border-t border-brand-border"
+                className="p-4 border-t border-slate-700"
                 style={{ paddingBottom: 'max(1rem, env(safe-area-inset-bottom, 1rem))' }}
               >
                 <form className="flex items-center gap-2" onSubmit={handleSendMessage}>
@@ -546,7 +546,7 @@ const ProfessionalChatSystem: React.FC<ProfessionalChatSystemProps> = ({ classNa
                     title="Anexar imagem ou PDF (máx 10 MB)"
                     disabled={!isOnline || uploadingFile || !activeRoomId}
                     onClick={() => fileInputRef.current?.click()}
-                    className="bg-brand-surface-subtle hover:bg-slate-600 disabled:bg-brand-surface disabled:cursor-not-allowed text-slate-200 p-2 rounded-lg transition-colors flex items-center justify-center"
+                    className="bg-slate-700 hover:bg-slate-600 disabled:bg-slate-800 disabled:cursor-not-allowed text-slate-200 p-2 rounded-lg transition-colors flex items-center justify-center"
                   >
                     {uploadingFile ? (
                       <Loader2 className="w-4 h-4 animate-spin" />
@@ -564,18 +564,18 @@ const ProfessionalChatSystem: React.FC<ProfessionalChatSystemProps> = ({ classNa
                         ? 'Digite sua mensagem ou cole imagem/PDF...'
                         : 'Modo offline – mensagens serão enviadas quando reconectar'
                     }
-                    className="flex-1 px-4 py-2 bg-brand-surface-subtle border border-slate-600 rounded-lg text-brand-text placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="flex-1 px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                   <button
                     type="submit"
                     disabled={!inputMessage.trim() || !isOnline}
-                    className="bg-blue-600 hover:bg-blue-700 disabled:bg-slate-600 disabled:cursor-not-allowed text-brand-text px-4 py-2 rounded-lg transition-colors flex items-center gap-2"
+                    className="bg-blue-600 hover:bg-blue-700 disabled:bg-slate-600 disabled:cursor-not-allowed text-white px-4 py-2 rounded-lg transition-colors flex items-center gap-2"
                   >
                     <Send className="w-4 h-4" />
                     Enviar
                   </button>
                 </form>
-                <p className="mt-2 text-xs text-brand-text-muted flex items-center gap-2">
+                <p className="mt-2 text-xs text-slate-400 flex items-center gap-2">
                   {isOnline ? (
                     <>
                       <Activity className="w-3 h-3" />
@@ -592,10 +592,10 @@ const ProfessionalChatSystem: React.FC<ProfessionalChatSystemProps> = ({ classNa
             </>
           ) : (
             <div className="flex-1 flex items-center justify-center p-8">
-              <div className="text-center text-brand-text-secondary space-y-3">
+              <div className="text-center text-slate-300 space-y-3">
                 <MessageCircle className="w-16 h-16 text-slate-500 mx-auto" />
-                <h3 className="text-xl font-semibold text-brand-text">Selecione uma sala</h3>
-                <p className="text-sm text-brand-text-muted">
+                <h3 className="text-xl font-semibold text-white">Selecione uma sala</h3>
+                <p className="text-sm text-slate-400">
                   Escolha uma sala de chat na coluna à esquerda para visualizar as mensagens.
                 </p>
               </div>
@@ -611,10 +611,10 @@ const ProfessionalChatSystem: React.FC<ProfessionalChatSystemProps> = ({ classNa
         <div className="fixed bottom-4 right-4 bg-blue-600/90 backdrop-blur-sm border border-blue-500/50 rounded-xl p-4 shadow-2xl max-w-sm z-50">
           <div className="flex items-start gap-3">
             <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center flex-shrink-0">
-              <Loader2 className="w-5 h-5 text-brand-text animate-spin" />
+              <Loader2 className="w-5 h-5 text-white animate-spin" />
             </div>
             <div className="flex-1">
-              <h4 className="text-sm font-semibold text-brand-text mb-1">⏳ Aguardando resposta</h4>
+              <h4 className="text-sm font-semibold text-white mb-1">⏳ Aguardando resposta</h4>
               <p className="text-xs text-blue-100 leading-relaxed">
                 Sua solicitação de {callType === 'video' ? 'videochamada' : 'ligação'} foi enviada ao profissional/paciente.
               </p>
@@ -627,7 +627,7 @@ const ProfessionalChatSystem: React.FC<ProfessionalChatSystemProps> = ({ classNa
                   toast.success('Cancelado', 'Solicitação cancelada.')
                 }
               }}
-              className="text-white/60 hover:text-brand-text transition-colors p-1 hover:bg-white/10 rounded"
+              className="text-white/60 hover:text-white transition-colors p-1 hover:bg-white/10 rounded"
               title="Cancelar solicitação"
             >
               <X className="w-4 h-4" />

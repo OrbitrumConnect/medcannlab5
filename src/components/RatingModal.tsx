@@ -104,16 +104,16 @@ const RatingModal: React.FC<RatingModalProps> = ({
       onClick={onClose}
     >
       <div
-        className="bg-brand-bg border border-brand-border rounded-2xl shadow-2xl w-full max-w-md p-6"
+        className="bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl w-full max-w-md p-6"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-brand-text text-lg font-semibold">Avalie sua consulta</h3>
+          <h3 className="text-white text-lg font-semibold">Avalie sua consulta</h3>
           <button
             type="button"
             onClick={onClose}
-            className="text-brand-text-muted hover:text-brand-text transition-colors"
+            className="text-slate-400 hover:text-white transition-colors"
             disabled={submitting}
           >
             <X className="w-5 h-5" />
@@ -121,9 +121,9 @@ const RatingModal: React.FC<RatingModalProps> = ({
         </div>
 
         {/* Profissional */}
-        <p className="text-brand-text-secondary text-sm mb-4">
+        <p className="text-slate-300 text-sm mb-4">
           Como foi sua experiência com{' '}
-          <strong className="text-brand-text">{professionalName}</strong>?
+          <strong className="text-white">{professionalName}</strong>?
         </p>
 
         {/* Stars */}
@@ -154,7 +154,7 @@ const RatingModal: React.FC<RatingModalProps> = ({
 
         {/* Label */}
         {displayRating > 0 && (
-          <p className="text-center text-sm text-brand-text-muted mb-4">
+          <p className="text-center text-sm text-slate-400 mb-4">
             {displayRating === 1 && 'Muito insatisfeito'}
             {displayRating === 2 && 'Insatisfeito'}
             {displayRating === 3 && 'Regular'}
@@ -164,7 +164,7 @@ const RatingModal: React.FC<RatingModalProps> = ({
         )}
 
         {/* Comment */}
-        <label className="block text-xs text-brand-text-muted mb-1.5" htmlFor="rating-comment">
+        <label className="block text-xs text-slate-400 mb-1.5" htmlFor="rating-comment">
           Comentário (opcional)
         </label>
         <textarea
@@ -174,7 +174,7 @@ const RatingModal: React.FC<RatingModalProps> = ({
           maxLength={500}
           rows={3}
           placeholder="Conte como foi sua experiência..."
-          className="w-full bg-brand-surface border border-brand-border rounded-lg p-2.5 text-sm text-brand-text placeholder-slate-500 focus:outline-none focus:border-emerald-500 transition-colors"
+          className="w-full bg-slate-800 border border-slate-700 rounded-lg p-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 transition-colors"
           disabled={submitting}
         />
         <p className="text-[10px] text-slate-500 mt-1 text-right">
@@ -193,7 +193,7 @@ const RatingModal: React.FC<RatingModalProps> = ({
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-2 rounded-lg text-sm font-semibold text-brand-text-secondary bg-brand-surface hover:bg-brand-surface-subtle transition-colors"
+            className="px-4 py-2 rounded-lg text-sm font-semibold text-slate-300 bg-slate-800 hover:bg-slate-700 transition-colors"
             disabled={submitting}
           >
             Cancelar
@@ -202,7 +202,7 @@ const RatingModal: React.FC<RatingModalProps> = ({
             type="button"
             onClick={handleSubmit}
             disabled={submitting || rating < 1}
-            className="px-4 py-2 rounded-lg text-sm font-semibold text-brand-text bg-emerald-600 hover:bg-emerald-500 disabled:bg-brand-surface-subtle disabled:text-slate-500 transition-colors"
+            className="px-4 py-2 rounded-lg text-sm font-semibold text-white bg-emerald-600 hover:bg-emerald-500 disabled:bg-slate-700 disabled:text-slate-500 transition-colors"
           >
             {submitting ? 'Enviando...' : 'Enviar avaliação'}
           </button>

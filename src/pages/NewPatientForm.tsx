@@ -396,7 +396,7 @@ const NewPatientForm: React.FC = () => {
     if (type.includes('pdf')) return <FileTextIcon className="w-5 h-5 text-red-400" />
     if (type.includes('word')) return <FileTextIcon className="w-5 h-5 text-blue-500" />
     if (type.includes('excel') || type.includes('spreadsheet') || type.includes('csv')) return <Download className="w-5 h-5 text-green-400" />
-    return <FileTextIcon className="w-5 h-5 text-brand-text-muted" />
+    return <FileTextIcon className="w-5 h-5 text-slate-400" />
   }
 
   const formatFileSize = (bytes: number) => {
@@ -594,13 +594,13 @@ const NewPatientForm: React.FC = () => {
             <div className="flex items-center space-x-4">
               <button
                 onClick={() => navigate('/app/patients')}
-                className="p-2 hover:bg-brand-surface-subtle rounded-lg transition-colors"
+                className="p-2 hover:bg-slate-700 rounded-lg transition-colors"
               >
-                <ArrowLeft className="w-5 h-5 text-brand-text" />
+                <ArrowLeft className="w-5 h-5 text-white" />
               </button>
               <div>
-                <h1 className="text-3xl font-bold text-brand-text mb-2">Novo Paciente</h1>
-                <p className="text-brand-text-muted">
+                <h1 className="text-3xl font-bold text-white mb-2">Novo Paciente</h1>
+                <p className="text-slate-400">
                   {mode === null && 'Escolha o método de cadastro'}
                   {mode === 'manual' && 'Cadastro manual e importação de documentos'}
                   {mode === 'csv' && 'Importar pacientes de arquivo CSV'}
@@ -618,8 +618,8 @@ const NewPatientForm: React.FC = () => {
         {mode === null && (
           <div className="space-y-6">
             <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl p-8 border border-slate-700/50">
-              <h2 className="text-2xl font-bold text-brand-text mb-4 text-center">Como deseja cadastrar os pacientes?</h2>
-              <p className="text-brand-text-muted text-center mb-8">Escolha o método mais adequado para seu caso</p>
+              <h2 className="text-2xl font-bold text-white mb-4 text-center">Como deseja cadastrar os pacientes?</h2>
+              <p className="text-slate-400 text-center mb-8">Escolha o método mais adequado para seu caso</p>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <button
@@ -628,11 +628,11 @@ const NewPatientForm: React.FC = () => {
                 >
                   <div className="flex flex-col items-start space-y-4">
                     <div className="w-16 h-16 bg-gradient-to-br from-[#00c16a] to-[#00a85a] rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
-                      <UserPlus className="w-8 h-8 text-brand-text" />
+                      <UserPlus className="w-8 h-8 text-white" />
                     </div>
                     <div>
-                      <h3 className="text-xl font-bold text-brand-text mb-2">Cadastro Manual</h3>
-                      <p className="text-brand-text-secondary text-sm">
+                      <h3 className="text-xl font-bold text-white mb-2">Cadastro Manual</h3>
+                      <p className="text-slate-300 text-sm">
                         Cadastre pacientes um a um. Ao final, gere um link/QR Code para enviar ao paciente.
                       </p>
                     </div>
@@ -649,11 +649,11 @@ const NewPatientForm: React.FC = () => {
                 >
                   <div className="flex flex-col items-start space-y-4">
                     <div className="w-16 h-16 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
-                      <Download className="w-8 h-8 text-brand-text" />
+                      <Download className="w-8 h-8 text-white" />
                     </div>
                     <div>
-                      <h3 className="text-xl font-bold text-brand-text mb-2">Importação em Massa (CSV)</h3>
-                      <p className="text-brand-text-secondary text-sm">
+                      <h3 className="text-xl font-bold text-white mb-2">Importação em Massa (CSV)</h3>
+                      <p className="text-slate-300 text-sm">
                         Importe múltiplos pacientes de uma vez através de arquivo CSV ou Excel.
                       </p>
                     </div>
@@ -669,8 +669,8 @@ const NewPatientForm: React.FC = () => {
                 <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-4">
                   <div className="flex items-start space-x-3">
                     <AlertCircle className="w-5 h-5 text-blue-400 mt-0.5 flex-shrink-0" />
-                    <div className="text-sm text-brand-text-secondary">
-                      <p className="font-semibold text-brand-text mb-1">Dica:</p>
+                    <div className="text-sm text-slate-300">
+                      <p className="font-semibold text-white mb-1">Dica:</p>
                       <p>Você pode importar planilhas do <strong>Apollo/Ninsaúde</strong> ou da <strong>Clínica de Rio Bonito</strong>.</p>
                     </div>
                   </div>
@@ -695,19 +695,19 @@ const NewPatientForm: React.FC = () => {
                     <div
                       className={`w-10 h-10 rounded-full flex items-center justify-center font-bold transition-colors ${step >= s.num
                         ? step === 4 && s.num === 4
-                          ? 'bg-emerald-500 text-brand-text'
-                          : 'bg-blue-500 text-brand-text'
-                        : 'bg-brand-surface-subtle text-brand-text-muted'
+                          ? 'bg-emerald-500 text-white'
+                          : 'bg-blue-500 text-white'
+                        : 'bg-slate-700 text-slate-400'
                         }`}
                     >
                       {step > s.num ? <CheckCircle className="w-5 h-5" /> : s.num}
                     </div>
-                    <span className={`text-sm mt-2 ${step >= s.num ? 'text-brand-text' : 'text-brand-text-muted'}`}>
+                    <span className={`text-sm mt-2 ${step >= s.num ? 'text-white' : 'text-slate-400'}`}>
                       {s.label}
                     </span>
                   </div>
                   {idx < arr.length - 1 && (
-                    <div className={`flex-1 h-0.5 mx-2 ${step > s.num ? 'bg-blue-500' : 'bg-brand-surface-subtle'}`} />
+                    <div className={`flex-1 h-0.5 mx-2 ${step > s.num ? 'bg-blue-500' : 'bg-slate-700'}`} />
                   )}
                 </div>
               ))}
@@ -725,7 +725,7 @@ const NewPatientForm: React.FC = () => {
                 setCsvData([])
                 setDragDropFiles([])
               }}
-              className="flex items-center space-x-2 text-brand-text-muted hover:text-brand-text transition-colors"
+              className="flex items-center space-x-2 text-slate-400 hover:text-white transition-colors"
             >
               <ArrowLeft className="w-4 h-4" />
               <span>Voltar para seleção</span>
@@ -740,8 +740,8 @@ const NewPatientForm: React.FC = () => {
               <div className="w-20 h-20 bg-emerald-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
                 <CheckCircle className="w-10 h-10 text-emerald-400" />
               </div>
-              <h2 className="text-3xl font-bold text-brand-text mb-2">Paciente Cadastrado! 🎉</h2>
-              <p className="text-brand-text-secondary">
+              <h2 className="text-3xl font-bold text-white mb-2">Paciente Cadastrado! 🎉</h2>
+              <p className="text-slate-300">
                 <strong>{createdPatient.name}</strong> foi adicionado(a) à plataforma e vinculado(a) a você.
               </p>
             </div>
@@ -750,16 +750,16 @@ const NewPatientForm: React.FC = () => {
             <div className="bg-slate-700/50 rounded-xl p-4 mb-6 border border-slate-600/50">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
                 <div>
-                  <p className="text-brand-text-muted">Nome</p>
-                  <p className="text-brand-text font-semibold">{createdPatient.name}</p>
+                  <p className="text-slate-400">Nome</p>
+                  <p className="text-white font-semibold">{createdPatient.name}</p>
                 </div>
                 <div>
-                  <p className="text-brand-text-muted">Email</p>
-                  <p className="text-brand-text font-semibold">{createdPatient.email}</p>
+                  <p className="text-slate-400">Email</p>
+                  <p className="text-white font-semibold">{createdPatient.email}</p>
                 </div>
                 <div>
-                  <p className="text-brand-text-muted">Código</p>
-                  <p className="text-brand-text font-semibold font-mono">{createdPatient.code}</p>
+                  <p className="text-slate-400">Código</p>
+                  <p className="text-white font-semibold font-mono">{createdPatient.code}</p>
                 </div>
               </div>
             </div>
@@ -768,9 +768,9 @@ const NewPatientForm: React.FC = () => {
             <div className="bg-gradient-to-br from-emerald-500/10 to-blue-500/10 border border-emerald-500/30 rounded-xl p-6 mb-6">
               <div className="flex items-center space-x-2 mb-4">
                 <QrCode className="w-6 h-6 text-emerald-400" />
-                <h3 className="text-xl font-bold text-brand-text">Link de Convite</h3>
+                <h3 className="text-xl font-bold text-white">Link de Convite</h3>
               </div>
-              <p className="text-brand-text-secondary text-sm mb-6">
+              <p className="text-slate-300 text-sm mb-6">
                 Envie este link ou QR Code para o paciente. Ao acessar, ele poderá criar sua conta e já ficará vinculado a você automaticamente.
               </p>
 
@@ -788,20 +788,20 @@ const NewPatientForm: React.FC = () => {
                 <div className="flex-1 space-y-4 w-full">
                   {/* Link copiável */}
                   <div>
-                    <label className="block text-sm text-brand-text-muted mb-1">Link de convite</label>
+                    <label className="block text-sm text-slate-400 mb-1">Link de convite</label>
                     <div className="flex items-center gap-2">
                       <input
                         type="text"
                         value={createdPatient.inviteLink}
                         readOnly
-                        className="flex-1 px-4 py-2 bg-brand-surface-subtle text-brand-text rounded-lg text-sm font-mono border border-slate-600"
+                        className="flex-1 px-4 py-2 bg-slate-700 text-white rounded-lg text-sm font-mono border border-slate-600"
                       />
                       <button
                         onClick={() => handleCopyLink(createdPatient.inviteLink)}
                         className={`px-4 py-2 rounded-lg font-semibold text-sm transition-all flex items-center gap-2 ${
                           linkCopied 
-                            ? 'bg-emerald-500 text-brand-text' 
-                            : 'bg-slate-600 hover:bg-slate-500 text-brand-text'
+                            ? 'bg-emerald-500 text-white' 
+                            : 'bg-slate-600 hover:bg-slate-500 text-white'
                         }`}
                       >
                         {linkCopied ? <CheckCircle className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
@@ -813,7 +813,7 @@ const NewPatientForm: React.FC = () => {
                   {/* Botão WhatsApp */}
                   <button
                     onClick={() => handleShareWhatsApp(createdPatient.inviteLink, createdPatient.name)}
-                    className="w-full px-6 py-3 bg-gradient-to-r from-green-500 to-emerald-500 text-brand-text rounded-lg hover:from-green-600 hover:to-emerald-600 transition-colors font-semibold flex items-center justify-center gap-3 text-lg"
+                    className="w-full px-6 py-3 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-lg hover:from-green-600 hover:to-emerald-600 transition-colors font-semibold flex items-center justify-center gap-3 text-lg"
                   >
                     <Share2 className="w-5 h-5" />
                     Enviar via WhatsApp
@@ -829,7 +829,7 @@ const NewPatientForm: React.FC = () => {
                           url: createdPatient.inviteLink
                         })
                       }}
-                      className="w-full px-6 py-2 bg-brand-surface-subtle hover:bg-slate-600 text-brand-text rounded-lg transition-colors font-semibold flex items-center justify-center gap-2"
+                      className="w-full px-6 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg transition-colors font-semibold flex items-center justify-center gap-2"
                     >
                       <ExternalLink className="w-4 h-4" />
                       Compartilhar de outra forma
@@ -843,8 +843,8 @@ const NewPatientForm: React.FC = () => {
             <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-4 mb-6">
               <div className="flex items-start space-x-3">
                 <AlertCircle className="w-5 h-5 text-blue-400 mt-0.5 flex-shrink-0" />
-                <div className="text-sm text-brand-text-secondary">
-                  <p className="font-semibold text-brand-text mb-1">Como funciona para o paciente:</p>
+                <div className="text-sm text-slate-300">
+                  <p className="font-semibold text-white mb-1">Como funciona para o paciente:</p>
                   <ol className="list-decimal list-inside space-y-1">
                     <li>O paciente recebe o link via WhatsApp ou outro meio</li>
                     <li>Acessa o link e cria sua conta com email e senha</li>
@@ -868,14 +868,14 @@ const NewPatientForm: React.FC = () => {
                   })
                   setUploadedFiles([])
                 }}
-                className="px-6 py-3 bg-blue-600 hover:bg-blue-500 text-brand-text rounded-lg font-semibold transition-colors flex items-center justify-center gap-2"
+                className="px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-lg font-semibold transition-colors flex items-center justify-center gap-2"
               >
                 <UserPlus className="w-5 h-5" />
                 Cadastrar Outro Paciente
               </button>
               <button
                 onClick={() => navigate('/app/patients')}
-                className="px-6 py-3 bg-brand-surface-subtle hover:bg-slate-600 text-brand-text rounded-lg font-semibold transition-colors"
+                className="px-6 py-3 bg-slate-700 hover:bg-slate-600 text-white rounded-lg font-semibold transition-colors"
               >
                 Voltar para Pacientes
               </button>
@@ -891,41 +891,41 @@ const NewPatientForm: React.FC = () => {
                 {/* STEP 1 - Dados Pessoais */}
                 {step === 1 && (
                   <div className="space-y-6">
-                    <h2 className="text-2xl font-bold text-brand-text mb-6">Informações Pessoais</h2>
+                    <h2 className="text-2xl font-bold text-white mb-6">Informações Pessoais</h2>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-sm font-medium text-brand-text-secondary mb-2">Nome Completo *</label>
+                        <label className="block text-sm font-medium text-slate-300 mb-2">Nome Completo *</label>
                         <input type="text" name="name" value={formData.name} onChange={handleInputChange}
-                          className="w-full px-4 py-2 bg-brand-surface-subtle border border-slate-600 rounded-lg text-brand-text placeholder-slate-400 focus:outline-none focus:border-blue-500"
+                          className="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:border-blue-500"
                           placeholder="Digite o nome completo" />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-brand-text-secondary mb-2">CPF</label>
+                        <label className="block text-sm font-medium text-slate-300 mb-2">CPF</label>
                         <input type="text" name="cpf" value={formData.cpf} onChange={handleInputChange}
-                          className="w-full px-4 py-2 bg-brand-surface-subtle border border-slate-600 rounded-lg text-brand-text placeholder-slate-400 focus:outline-none focus:border-blue-500"
+                          className="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:border-blue-500"
                           placeholder="000.000.000-00 (opcional)" />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-brand-text-secondary mb-2">Email *</label>
+                        <label className="block text-sm font-medium text-slate-300 mb-2">Email *</label>
                         <input type="email" name="email" value={formData.email} onChange={handleInputChange}
-                          className="w-full px-4 py-2 bg-brand-surface-subtle border border-slate-600 rounded-lg text-brand-text placeholder-slate-400 focus:outline-none focus:border-blue-500"
+                          className="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:border-blue-500"
                           placeholder="paciente@email.com" required />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-brand-text-secondary mb-2">Telefone</label>
+                        <label className="block text-sm font-medium text-slate-300 mb-2">Telefone</label>
                         <input type="text" name="phone" value={formData.phone} onChange={handleInputChange}
-                          className="w-full px-4 py-2 bg-brand-surface-subtle border border-slate-600 rounded-lg text-brand-text placeholder-slate-400 focus:outline-none focus:border-blue-500"
+                          className="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:border-blue-500"
                           placeholder="(21) 99999-9999 (opcional)" />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-brand-text-secondary mb-2">Data de Nascimento</label>
+                        <label className="block text-sm font-medium text-slate-300 mb-2">Data de Nascimento</label>
                         <input type="date" name="birthDate" value={formData.birthDate} onChange={handleInputChange}
-                          className="w-full px-4 py-2 bg-brand-surface-subtle border border-slate-600 rounded-lg text-brand-text placeholder-slate-400 focus:outline-none focus:border-blue-500" />
+                          className="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:border-blue-500" />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-brand-text-secondary mb-2">Sexo</label>
+                        <label className="block text-sm font-medium text-slate-300 mb-2">Sexo</label>
                         <select name="gender" value={formData.gender} onChange={handleInputChange}
-                          className="w-full px-4 py-2 bg-brand-surface-subtle border border-slate-600 rounded-lg text-brand-text focus:outline-none focus:border-blue-500">
+                          className="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:border-blue-500">
                           <option value="">Selecione</option>
                           <option value="M">Masculino</option>
                           <option value="F">Feminino</option>
@@ -933,31 +933,31 @@ const NewPatientForm: React.FC = () => {
                         </select>
                       </div>
                       <div className="md:col-span-2">
-                        <label className="block text-sm font-medium text-brand-text-secondary mb-2">Endereço</label>
+                        <label className="block text-sm font-medium text-slate-300 mb-2">Endereço</label>
                         <input type="text" name="address" value={formData.address} onChange={handleInputChange}
-                          className="w-full px-4 py-2 bg-brand-surface-subtle border border-slate-600 rounded-lg text-brand-text placeholder-slate-400 focus:outline-none focus:border-blue-500"
+                          className="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:border-blue-500"
                           placeholder="Rua, número, complemento" />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-brand-text-secondary mb-2">Cidade</label>
+                        <label className="block text-sm font-medium text-slate-300 mb-2">Cidade</label>
                         <input type="text" name="city" value={formData.city} onChange={handleInputChange}
-                          className="w-full px-4 py-2 bg-brand-surface-subtle border border-slate-600 rounded-lg text-brand-text placeholder-slate-400 focus:outline-none focus:border-blue-500"
+                          className="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:border-blue-500"
                           placeholder="Nome da cidade" />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-brand-text-secondary mb-2">Estado</label>
+                        <label className="block text-sm font-medium text-slate-300 mb-2">Estado</label>
                         <input type="text" name="state" value={formData.state} onChange={handleInputChange}
-                          className="w-full px-4 py-2 bg-brand-surface-subtle border border-slate-600 rounded-lg text-brand-text placeholder-slate-400 focus:outline-none focus:border-blue-500"
+                          className="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:border-blue-500"
                           placeholder="UF" maxLength={2} />
                       </div>
                     </div>
                     <div className="flex justify-end space-x-4">
                       <button onClick={() => navigate('/app/patients')}
-                        className="px-6 py-2 bg-brand-surface-subtle text-brand-text rounded-lg hover:bg-slate-600 transition-colors">
+                        className="px-6 py-2 bg-slate-700 text-white rounded-lg hover:bg-slate-600 transition-colors">
                         Cancelar
                       </button>
                       <button onClick={() => setStep(2)} disabled={!isStep1Valid}
-                        className="px-6 py-2 bg-gradient-to-r from-[#00c16a] to-[#00a85a] text-brand-text rounded-lg hover:from-green-600 hover:to-emerald-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                        className="px-6 py-2 bg-gradient-to-r from-[#00c16a] to-[#00a85a] text-white rounded-lg hover:from-green-600 hover:to-emerald-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
                         Próximo
                       </button>
                     </div>
@@ -967,23 +967,23 @@ const NewPatientForm: React.FC = () => {
                 {/* STEP 2 - Atendimento (profissional auto-selecionado) */}
                 {step === 2 && (
                   <div className="space-y-6">
-                    <h2 className="text-2xl font-bold text-brand-text mb-6">Informações de Atendimento</h2>
+                    <h2 className="text-2xl font-bold text-white mb-6">Informações de Atendimento</h2>
                     <div className="space-y-4">
                       {/* Profissional auto-detectado */}
                       <div>
-                        <label className="block text-sm font-medium text-brand-text-secondary mb-2">
+                        <label className="block text-sm font-medium text-slate-300 mb-2">
                           Profissional Responsável
                         </label>
                         {currentProfessional ? (
                           <div className="p-4 rounded-lg border-2 border-emerald-500 bg-emerald-500/10">
                             <div className="flex items-center space-x-3 mb-2">
                               <div className="w-10 h-10 bg-gradient-to-r from-[#00c16a] to-[#00a85a] rounded-full flex items-center justify-center">
-                                <User className="w-5 h-5 text-brand-text" />
+                                <User className="w-5 h-5 text-white" />
                               </div>
                               <div>
-                                <p className="font-semibold text-brand-text">{currentProfessional.name}</p>
+                                <p className="font-semibold text-white">{currentProfessional.name}</p>
                                 {currentProfessional.crm && (
-                                  <p className="text-xs text-brand-text-muted">{currentProfessional.crm}</p>
+                                  <p className="text-xs text-slate-400">{currentProfessional.crm}</p>
                                 )}
                               </div>
                               <div className="ml-auto">
@@ -992,7 +992,7 @@ const NewPatientForm: React.FC = () => {
                                 </span>
                               </div>
                             </div>
-                            <p className="text-sm text-brand-text-secondary">{currentProfessional.specialty || 'Cannabis Medicinal Integrativa'}</p>
+                            <p className="text-sm text-slate-300">{currentProfessional.specialty || 'Cannabis Medicinal Integrativa'}</p>
                           </div>
                         ) : (
                           <div className="p-4 rounded-lg border-2 border-yellow-500/30 bg-yellow-500/10 text-yellow-300 text-sm">
@@ -1004,9 +1004,9 @@ const NewPatientForm: React.FC = () => {
 
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                          <label className="block text-sm font-medium text-brand-text-secondary mb-2">Especialidade *</label>
+                          <label className="block text-sm font-medium text-slate-300 mb-2">Especialidade *</label>
                           <select name="specialty" value={formData.specialty} onChange={handleInputChange}
-                            className="w-full px-4 py-2 bg-brand-surface-subtle border border-slate-600 rounded-lg text-brand-text focus:outline-none focus:border-blue-500">
+                            className="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:border-blue-500">
                             <option value="">Selecione</option>
                             {specialties.map(spec => (
                               <option key={spec} value={spec}>{spec}</option>
@@ -1014,9 +1014,9 @@ const NewPatientForm: React.FC = () => {
                           </select>
                         </div>
                         <div>
-                          <label className="block text-sm font-medium text-brand-text-secondary mb-2">Sala</label>
+                          <label className="block text-sm font-medium text-slate-300 mb-2">Sala</label>
                           <select name="room" value={formData.room} onChange={handleInputChange}
-                            className="w-full px-4 py-2 bg-brand-surface-subtle border border-slate-600 rounded-lg text-brand-text focus:outline-none focus:border-blue-500">
+                            className="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:border-blue-500">
                             <option value="Indiferente">Indiferente</option>
                             <option value="Sala 1">Sala 1</option>
                             <option value="Sala 2">Sala 2</option>
@@ -1024,28 +1024,28 @@ const NewPatientForm: React.FC = () => {
                           </select>
                         </div>
                         <div className="md:col-span-2">
-                          <label className="block text-sm font-medium text-brand-text-secondary mb-2">Médico Encaminhador</label>
+                          <label className="block text-sm font-medium text-slate-300 mb-2">Médico Encaminhador</label>
                           <input type="text" name="referringDoctor" value={formData.referringDoctor} onChange={handleInputChange}
-                            className="w-full px-4 py-2 bg-brand-surface-subtle border border-slate-600 rounded-lg text-brand-text placeholder-slate-400 focus:outline-none focus:border-blue-500"
+                            className="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:border-blue-500"
                             placeholder="Nome do médico que encaminhou (opcional)" />
                         </div>
                         <div className="md:col-span-2">
-                          <label className="block text-sm font-medium text-brand-text-secondary mb-2">Observações Iniciais</label>
+                          <label className="block text-sm font-medium text-slate-300 mb-2">Observações Iniciais</label>
                           <textarea name="observations" value={formData.observations} onChange={handleInputChange} rows={4}
-                            className="w-full px-4 py-2 bg-brand-surface-subtle border border-slate-600 rounded-lg text-brand-text placeholder-slate-400 focus:outline-none focus:border-blue-500"
+                            className="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:border-blue-500"
                             placeholder="Observações iniciais sobre o paciente..." />
                         </div>
                       </div>
                     </div>
                     <div className="flex justify-end space-x-4">
                       <button onClick={() => setStep(1)}
-                        className="px-6 py-2 bg-brand-surface-subtle text-brand-text rounded-lg hover:bg-slate-600 transition-colors">
+                        className="px-6 py-2 bg-slate-700 text-white rounded-lg hover:bg-slate-600 transition-colors">
                         Voltar
                       </button>
                       <button
                         onClick={() => { if (isStep2Valid) setStep(3) }}
                         disabled={!isStep2Valid}
-                        className="px-6 py-2 bg-gradient-to-r from-[#00c16a] to-[#00a85a] text-brand-text rounded-lg hover:from-green-600 hover:to-emerald-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                        className="px-6 py-2 bg-gradient-to-r from-[#00c16a] to-[#00a85a] text-white rounded-lg hover:from-green-600 hover:to-emerald-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
                         Próximo
                       </button>
                     </div>
@@ -1055,12 +1055,12 @@ const NewPatientForm: React.FC = () => {
                 {/* STEP 3 - Documentos */}
                 {step === 3 && (
                   <div className="space-y-6">
-                    <h2 className="text-2xl font-bold text-brand-text mb-6">Upload de Documentos</h2>
+                    <h2 className="text-2xl font-bold text-white mb-6">Upload de Documentos</h2>
                     <div className="bg-blue-500/10 border border-blue-500/30 rounded-xl p-4 mb-6">
                       <div className="flex items-start space-x-3">
                         <AlertCircle className="w-5 h-5 text-blue-400 mt-0.5" />
-                        <div className="text-sm text-brand-text-secondary">
-                          <p className="font-semibold text-brand-text mb-1">Importação de Arquivos em Lote</p>
+                        <div className="text-sm text-slate-300">
+                          <p className="font-semibold text-white mb-1">Importação de Arquivos em Lote</p>
                           <p>Arraste e solte ou selecione múltiplos arquivos (PDFs, DOCs, imagens, etc.).</p>
                           <p className="mt-2">Arquivos aceitos: PDF, DOC, DOCX, JPG, PNG, DICOM</p>
                         </div>
@@ -1071,13 +1071,13 @@ const NewPatientForm: React.FC = () => {
                       onDragEnter={handleDrag} onDragLeave={handleDrag} onDragOver={handleDrag} onDrop={handleDrop}
                       className={`border-2 border-dashed rounded-xl p-12 text-center transition-colors ${dragActive
                         ? 'border-blue-500 bg-blue-500/10'
-                        : 'border-brand-border bg-slate-700/30 hover:border-slate-600'
+                        : 'border-slate-700 bg-slate-700/30 hover:border-slate-600'
                         }`}
                     >
-                      <Upload className={`w-12 h-12 mx-auto mb-4 ${dragActive ? 'text-blue-400' : 'text-brand-text-muted'}`} />
-                      <p className="text-lg font-semibold text-brand-text mb-2">Arraste arquivos aqui ou clique para selecionar</p>
-                      <p className="text-sm text-brand-text-muted mb-4">Suporta múltiplos arquivos (anamneses, exames, imagens, etc.)</p>
-                      <label className="inline-block px-6 py-2 bg-gradient-to-r from-[#00c16a] to-[#00a85a] text-brand-text rounded-lg hover:from-green-600 hover:to-emerald-600 transition-colors cursor-pointer">
+                      <Upload className={`w-12 h-12 mx-auto mb-4 ${dragActive ? 'text-blue-400' : 'text-slate-400'}`} />
+                      <p className="text-lg font-semibold text-white mb-2">Arraste arquivos aqui ou clique para selecionar</p>
+                      <p className="text-sm text-slate-400 mb-4">Suporta múltiplos arquivos (anamneses, exames, imagens, etc.)</p>
+                      <label className="inline-block px-6 py-2 bg-gradient-to-r from-[#00c16a] to-[#00a85a] text-white rounded-lg hover:from-green-600 hover:to-emerald-600 transition-colors cursor-pointer">
                         Selecionar Arquivos
                         <input type="file" multiple className="hidden"
                           onChange={(e) => handleFileUpload(e.target.files)}
@@ -1087,7 +1087,7 @@ const NewPatientForm: React.FC = () => {
 
                     {uploadedFiles.length > 0 && (
                       <div className="space-y-3">
-                        <h3 className="text-lg font-semibold text-brand-text">Arquivos Anexados ({uploadedFiles.length})</h3>
+                        <h3 className="text-lg font-semibold text-white">Arquivos Anexados ({uploadedFiles.length})</h3>
                         <div className="space-y-2">
                           {uploadedFiles.map((file) => (
                             <div key={file.id} className="flex items-center justify-between p-3 bg-slate-700/50 rounded-lg border border-slate-600">
@@ -1100,8 +1100,8 @@ const NewPatientForm: React.FC = () => {
                                   </div>
                                 )}
                                 <div className="flex-1 min-w-0">
-                                  <p className="text-sm font-medium text-brand-text truncate">{file.name}</p>
-                                  <p className="text-xs text-brand-text-muted">{formatFileSize(file.size)}</p>
+                                  <p className="text-sm font-medium text-white truncate">{file.name}</p>
+                                  <p className="text-xs text-slate-400">{formatFileSize(file.size)}</p>
                                 </div>
                               </div>
                               <button onClick={() => removeFile(file.id)} className="p-2 text-red-400 hover:text-red-300 transition-colors">
@@ -1115,13 +1115,13 @@ const NewPatientForm: React.FC = () => {
 
                     <div className="flex justify-end space-x-4">
                       <button onClick={() => setStep(2)}
-                        className="px-6 py-2 bg-brand-surface-subtle text-brand-text rounded-lg hover:bg-slate-600 transition-colors">
+                        className="px-6 py-2 bg-slate-700 text-white rounded-lg hover:bg-slate-600 transition-colors">
                         Voltar
                       </button>
                       <button
                         onClick={handleSubmit}
                         disabled={isSubmitting}
-                        className="px-6 py-2 bg-gradient-to-r from-green-500 to-emerald-500 text-brand-text rounded-lg hover:from-green-600 hover:to-emerald-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
+                        className="px-6 py-2 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-lg hover:from-green-600 hover:to-emerald-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
                       >
                         {isSubmitting ? (
                           <>
@@ -1144,15 +1144,15 @@ const NewPatientForm: React.FC = () => {
             {/* Modo CSV */}
             {mode === 'csv' && (
               <div className="space-y-6">
-                <h2 className="text-2xl font-bold text-brand-text mb-6 flex items-center space-x-2">
+                <h2 className="text-2xl font-bold text-white mb-6 flex items-center space-x-2">
                   <Download className="w-6 h-6 text-green-400" />
                   <span>Importar Pacientes em Massa</span>
                 </h2>
                 <div className="bg-blue-500/10 border border-blue-500/30 rounded-xl p-4 mb-6">
                   <div className="flex items-start space-x-3">
                     <AlertCircle className="w-5 h-5 text-blue-400 mt-0.5 flex-shrink-0" />
-                    <div className="text-sm text-brand-text-secondary">
-                      <p className="font-semibold text-brand-text mb-2">Formatos Suportados</p>
+                    <div className="text-sm text-slate-300">
+                      <p className="font-semibold text-white mb-2">Formatos Suportados</p>
                       <p className="mb-2">✅ <strong>CSV</strong> (.csv) &bull; ✅ <strong>Excel</strong> (.xlsx, .xls)</p>
                       <p className="mt-2 text-green-400">💡 O sistema reconhece automaticamente diferentes nomes de colunas.</p>
                     </div>
@@ -1171,11 +1171,11 @@ const NewPatientForm: React.FC = () => {
                     }
                   }}
                   className={`border-2 border-dashed rounded-xl p-12 text-center transition-colors ${dragActive
-                    ? 'border-green-500 bg-green-500/10' : 'border-brand-border bg-slate-700/30 hover:border-slate-600'}`}
+                    ? 'border-green-500 bg-green-500/10' : 'border-slate-700 bg-slate-700/30 hover:border-slate-600'}`}
                 >
-                  <Download className={`w-12 h-12 mx-auto mb-4 ${dragActive ? 'text-green-400' : 'text-brand-text-muted'}`} />
-                  <p className="text-lg font-semibold text-brand-text mb-2">Arraste sua planilha aqui ou clique para selecionar</p>
-                  <label className="inline-block px-6 py-2 bg-gradient-to-r from-green-500 to-emerald-500 text-brand-text rounded-lg hover:from-green-600 hover:to-emerald-600 transition-colors cursor-pointer">
+                  <Download className={`w-12 h-12 mx-auto mb-4 ${dragActive ? 'text-green-400' : 'text-slate-400'}`} />
+                  <p className="text-lg font-semibold text-white mb-2">Arraste sua planilha aqui ou clique para selecionar</p>
+                  <label className="inline-block px-6 py-2 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-lg hover:from-green-600 hover:to-emerald-600 transition-colors cursor-pointer">
                     Selecionar Planilha
                     <input type="file" accept=".csv,.xlsx,.xls" className="hidden"
                       onChange={(e) => { if (e.target.files?.[0]) handleSpreadsheetUpload(e.target.files[0]) }} />
@@ -1183,17 +1183,17 @@ const NewPatientForm: React.FC = () => {
                 </div>
                 {csvData.length > 0 && (
                   <div className="mt-6">
-                    <h3 className="text-lg font-bold text-brand-text mb-4">{csvData.length} paciente(s) encontrado(s)</h3>
+                    <h3 className="text-lg font-bold text-white mb-4">{csvData.length} paciente(s) encontrado(s)</h3>
                     <div className="max-h-96 overflow-y-auto space-y-2">
                       {csvData.map((patient, idx) => (
                         <div key={idx} className="p-3 bg-slate-700/50 rounded-lg border border-slate-600">
-                          <p className="font-semibold text-brand-text">{patient.nome || 'Sem nome'}</p>
-                          <p className="text-sm text-brand-text-muted">CPF: {patient.cpf || 'N/A'} • Tel: {patient.telefone || 'N/A'}</p>
+                          <p className="font-semibold text-white">{patient.nome || 'Sem nome'}</p>
+                          <p className="text-sm text-slate-400">CPF: {patient.cpf || 'N/A'} • Tel: {patient.telefone || 'N/A'}</p>
                         </div>
                       ))}
                     </div>
                     <button onClick={handleBulkSubmit} disabled={isSubmitting}
-                      className="mt-4 w-full px-6 py-3 bg-gradient-to-r from-green-500 to-emerald-500 text-brand-text rounded-lg hover:from-green-600 hover:to-emerald-600 transition-colors disabled:opacity-50 flex items-center justify-center space-x-2">
+                      className="mt-4 w-full px-6 py-3 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-lg hover:from-green-600 hover:to-emerald-600 transition-colors disabled:opacity-50 flex items-center justify-center space-x-2">
                       {isSubmitting ? (
                         <><div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" /><span>Importando...</span></>
                       ) : (
@@ -1208,15 +1208,15 @@ const NewPatientForm: React.FC = () => {
             {/* Modo Database */}
             {mode === 'database' && (
               <div className="space-y-6">
-                <h2 className="text-2xl font-bold text-brand-text mb-6 flex items-center space-x-2">
+                <h2 className="text-2xl font-bold text-white mb-6 flex items-center space-x-2">
                   <Database className="w-6 h-6 text-purple-400" />
                   <span>Importar do Banco de Dados</span>
                 </h2>
                 <div className="bg-purple-500/10 border border-purple-500/30 rounded-xl p-4 mb-6">
                   <div className="flex items-start space-x-3">
                     <AlertCircle className="w-5 h-5 text-purple-400 mt-0.5" />
-                    <div className="text-sm text-brand-text-secondary">
-                      <p className="font-semibold text-brand-text mb-1">Conexão Externa</p>
+                    <div className="text-sm text-slate-300">
+                      <p className="font-semibold text-white mb-1">Conexão Externa</p>
                       <p>Configure a conexão com o banco de dados externo para importar pacientes.</p>
                     </div>
                   </div>
@@ -1224,45 +1224,45 @@ const NewPatientForm: React.FC = () => {
                 <div className="space-y-4">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-brand-text-secondary mb-2">Host *</label>
+                      <label className="block text-sm font-medium text-slate-300 mb-2">Host *</label>
                       <input type="text" value={dbConfig.host} onChange={(e) => setDbConfig(prev => ({ ...prev, host: e.target.value }))}
-                        className="w-full px-4 py-2 bg-brand-surface-subtle border border-slate-600 rounded-lg text-brand-text placeholder-slate-400 focus:outline-none focus:border-purple-500"
+                        className="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:border-purple-500"
                         placeholder="localhost ou IP" />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-brand-text-secondary mb-2">Porta *</label>
+                      <label className="block text-sm font-medium text-slate-300 mb-2">Porta *</label>
                       <input type="text" value={dbConfig.port} onChange={(e) => setDbConfig(prev => ({ ...prev, port: e.target.value }))}
-                        className="w-full px-4 py-2 bg-brand-surface-subtle border border-slate-600 rounded-lg text-brand-text placeholder-slate-400 focus:outline-none focus:border-purple-500"
+                        className="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:border-purple-500"
                         placeholder="5432" />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-brand-text-secondary mb-2">Nome do Banco *</label>
+                      <label className="block text-sm font-medium text-slate-300 mb-2">Nome do Banco *</label>
                       <input type="text" value={dbConfig.database} onChange={(e) => setDbConfig(prev => ({ ...prev, database: e.target.value }))}
-                        className="w-full px-4 py-2 bg-brand-surface-subtle border border-slate-600 rounded-lg text-brand-text placeholder-slate-400 focus:outline-none focus:border-purple-500"
+                        className="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:border-purple-500"
                         placeholder="nome_banco" />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-brand-text-secondary mb-2">Tabela *</label>
+                      <label className="block text-sm font-medium text-slate-300 mb-2">Tabela *</label>
                       <input type="text" value={dbConfig.table} onChange={(e) => setDbConfig(prev => ({ ...prev, table: e.target.value }))}
-                        className="w-full px-4 py-2 bg-brand-surface-subtle border border-slate-600 rounded-lg text-brand-text placeholder-slate-400 focus:outline-none focus:border-purple-500"
+                        className="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:border-purple-500"
                         placeholder="pacientes ou users" />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-brand-text-secondary mb-2">Usuário *</label>
+                      <label className="block text-sm font-medium text-slate-300 mb-2">Usuário *</label>
                       <input type="text" value={dbConfig.username} onChange={(e) => setDbConfig(prev => ({ ...prev, username: e.target.value }))}
-                        className="w-full px-4 py-2 bg-brand-surface-subtle border border-slate-600 rounded-lg text-brand-text placeholder-slate-400 focus:outline-none focus:border-purple-500"
+                        className="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:border-purple-500"
                         placeholder="usuario" />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-brand-text-secondary mb-2">Senha *</label>
+                      <label className="block text-sm font-medium text-slate-300 mb-2">Senha *</label>
                       <input type="password" value={dbConfig.password} onChange={(e) => setDbConfig(prev => ({ ...prev, password: e.target.value }))}
-                        className="w-full px-4 py-2 bg-brand-surface-subtle border border-slate-600 rounded-lg text-brand-text placeholder-slate-400 focus:outline-none focus:border-purple-500"
+                        className="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:border-purple-500"
                         placeholder="••••••••" />
                     </div>
                   </div>
                   <button onClick={handleDatabaseImport}
                     disabled={!dbConfig.host || !dbConfig.database || !dbConfig.table || !dbConfig.username || !dbConfig.password || isSubmitting}
-                    className="w-full px-6 py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-brand-text rounded-lg hover:from-purple-600 hover:to-pink-600 transition-colors disabled:opacity-50 flex items-center justify-center space-x-2">
+                    className="w-full px-6 py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-lg hover:from-purple-600 hover:to-pink-600 transition-colors disabled:opacity-50 flex items-center justify-center space-x-2">
                     {isSubmitting ? (
                       <><div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" /><span>Conectando...</span></>
                     ) : (
@@ -1276,7 +1276,7 @@ const NewPatientForm: React.FC = () => {
             {/* Modo Drag-Drop */}
             {mode === 'drag-drop' && (
               <div className="space-y-6">
-                <h2 className="text-2xl font-bold text-brand-text mb-6 flex items-center space-x-2">
+                <h2 className="text-2xl font-bold text-white mb-6 flex items-center space-x-2">
                   <Upload className="w-6 h-6 text-cyan-400" />
                   <span>Arrastar e Soltar Arquivos</span>
                 </h2>
@@ -1293,11 +1293,11 @@ const NewPatientForm: React.FC = () => {
                     }
                   }}
                   className={`border-2 border-dashed rounded-xl p-12 text-center transition-colors ${dragActive
-                    ? 'border-cyan-500 bg-cyan-500/10' : 'border-brand-border bg-slate-700/30 hover:border-slate-600'}`}
+                    ? 'border-cyan-500 bg-cyan-500/10' : 'border-slate-700 bg-slate-700/30 hover:border-slate-600'}`}
                 >
-                  <Upload className={`w-12 h-12 mx-auto mb-4 ${dragActive ? 'text-cyan-400' : 'text-brand-text-muted'}`} />
-                  <p className="text-lg font-semibold text-brand-text mb-2">Arraste arquivos aqui</p>
-                  <label className="inline-block px-6 py-2 bg-gradient-to-r from-cyan-500 to-blue-500 text-brand-text rounded-lg hover:from-cyan-600 hover:to-blue-600 transition-colors cursor-pointer">
+                  <Upload className={`w-12 h-12 mx-auto mb-4 ${dragActive ? 'text-cyan-400' : 'text-slate-400'}`} />
+                  <p className="text-lg font-semibold text-white mb-2">Arraste arquivos aqui</p>
+                  <label className="inline-block px-6 py-2 bg-gradient-to-r from-cyan-500 to-blue-500 text-white rounded-lg hover:from-cyan-600 hover:to-blue-600 transition-colors cursor-pointer">
                     Selecionar Arquivos
                     <input type="file" multiple className="hidden"
                       onChange={(e) => {
@@ -1314,15 +1314,15 @@ const NewPatientForm: React.FC = () => {
                 </div>
                 {dragDropFiles.length > 0 && (
                   <div className="mt-6">
-                    <h3 className="text-lg font-bold text-brand-text mb-4">{dragDropFiles.length} arquivo(s)</h3>
+                    <h3 className="text-lg font-bold text-white mb-4">{dragDropFiles.length} arquivo(s)</h3>
                     <div className="max-h-96 overflow-y-auto space-y-2">
                       {dragDropFiles.map((file) => (
                         <div key={file.id} className="flex items-center justify-between p-3 bg-slate-700/50 rounded-lg border border-slate-600">
                           <div className="flex items-center space-x-3 flex-1 min-w-0">
                             <div className="w-10 h-10 bg-slate-600 rounded flex items-center justify-center">{getFileIcon(file.type)}</div>
                             <div className="flex-1 min-w-0">
-                              <p className="text-sm font-medium text-brand-text truncate">{file.name}</p>
-                              <p className="text-xs text-brand-text-muted">{formatFileSize(file.size)}</p>
+                              <p className="text-sm font-medium text-white truncate">{file.name}</p>
+                              <p className="text-xs text-slate-400">{formatFileSize(file.size)}</p>
                             </div>
                           </div>
                           <button onClick={() => setDragDropFiles(prev => prev.filter(f => f.id !== file.id))}
@@ -1333,7 +1333,7 @@ const NewPatientForm: React.FC = () => {
                       ))}
                     </div>
                     <button onClick={handleDragDropProcess} disabled={isSubmitting}
-                      className="mt-4 w-full px-6 py-3 bg-gradient-to-r from-cyan-500 to-blue-500 text-brand-text rounded-lg hover:from-cyan-600 hover:to-blue-600 transition-colors disabled:opacity-50 flex items-center justify-center space-x-2">
+                      className="mt-4 w-full px-6 py-3 bg-gradient-to-r from-cyan-500 to-blue-500 text-white rounded-lg hover:from-cyan-600 hover:to-blue-600 transition-colors disabled:opacity-50 flex items-center justify-center space-x-2">
                       {isSubmitting ? (
                         <><div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" /><span>Processando...</span></>
                       ) : (

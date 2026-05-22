@@ -243,7 +243,7 @@ const ClinicalTerminal: React.FC = () => {
                                         <button
                                             type="button"
                                             onClick={() => { setShowPatientAvatarView(false); setPatientFocusSubTab('analytics') }}
-                                            className="flex items-center gap-2 text-brand-text-muted hover:text-brand-text text-sm font-medium transition-colors"
+                                            className="flex items-center gap-2 text-slate-400 hover:text-white text-sm font-medium transition-colors"
                                         >
                                             <ChevronLeft className="w-4 h-4" />
                                             Voltar à seleção
@@ -256,14 +256,14 @@ const ClinicalTerminal: React.FC = () => {
                                                     {selectedPatient.name.charAt(0).toUpperCase()}
                                                 </span>
                                             )}
-                                            <span className="text-brand-text font-medium truncate">{selectedPatient.name}</span>
+                                            <span className="text-white font-medium truncate">{selectedPatient.name}</span>
                                         </div>
                                     </div>
                                     <div className="flex gap-1 p-1 rounded-xl bg-slate-800/60 border border-slate-700/50 mb-4 flex-shrink-0">
                                         <button
                                             type="button"
                                             onClick={() => setPatientFocusSubTab('analytics')}
-                                            className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-lg text-sm font-medium transition-all ${patientFocusSubTab === 'analytics' ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40 shadow-sm' : 'text-brand-text-muted hover:text-slate-200 hover:bg-slate-700/50'}`}
+                                            className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-lg text-sm font-medium transition-all ${patientFocusSubTab === 'analytics' ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40 shadow-sm' : 'text-slate-400 hover:text-slate-200 hover:bg-slate-700/50'}`}
                                         >
                                             <LayoutDashboard className="w-4 h-4" />
                                             Evolução e Analytics
@@ -271,7 +271,7 @@ const ClinicalTerminal: React.FC = () => {
                                         <button
                                             type="button"
                                             onClick={() => setPatientFocusSubTab('prontuario')}
-                                            className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-lg text-sm font-medium transition-all ${patientFocusSubTab === 'prontuario' ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40 shadow-sm' : 'text-brand-text-muted hover:text-slate-200 hover:bg-slate-700/50'}`}
+                                            className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-lg text-sm font-medium transition-all ${patientFocusSubTab === 'prontuario' ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40 shadow-sm' : 'text-slate-400 hover:text-slate-200 hover:bg-slate-700/50'}`}
                                         >
                                             <ClipboardList className="w-4 h-4" />
                                             Prontuário
@@ -310,8 +310,8 @@ const ClinicalTerminal: React.FC = () => {
                                     <div className="flex items-center gap-3 mb-6">
                                         <User className="w-10 h-10 text-amber-400" />
                                         <div>
-                                            <h2 className="text-xl font-bold text-brand-text">Paciente em foco</h2>
-                                            <p className="text-sm text-brand-text-muted">Selecione um paciente para acessar Evolução e Analytics (avatar, scores, relatórios) e o Prontuário completo em uma única vista.</p>
+                                            <h2 className="text-xl font-bold text-white">Paciente em foco</h2>
+                                            <p className="text-sm text-slate-400">Selecione um paciente para acessar Evolução e Analytics (avatar, scores, relatórios) e o Prontuário completo em uma única vista.</p>
                                         </div>
                                     </div>
                                     <div className="flex flex-wrap items-center gap-3 mb-6">
@@ -323,16 +323,16 @@ const ClinicalTerminal: React.FC = () => {
                                                 onChange={(e) => { setPatientSearch(e.target.value); setPatientDropdownOpen(true) }}
                                                 onFocus={() => setPatientDropdownOpen(true)}
                                                 placeholder="Buscar por nome..."
-                                                className="w-64 pl-9 pr-3 py-2 rounded-lg bg-slate-800/80 border border-brand-border text-brand-text text-sm placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-amber-500/50"
+                                                className="w-64 pl-9 pr-3 py-2 rounded-lg bg-slate-800/80 border border-slate-700 text-white text-sm placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-amber-500/50"
                                             />
                                             {patientDropdownOpen && filteredPatients.length > 0 && (
-                                                <div className="absolute top-full left-0 mt-1 w-72 rounded-lg border border-brand-border bg-brand-bg shadow-xl z-30 max-h-48 overflow-y-auto scrollbar-hide">
+                                                <div className="absolute top-full left-0 mt-1 w-72 rounded-lg border border-slate-700 bg-slate-900 shadow-xl z-30 max-h-48 overflow-y-auto scrollbar-hide">
                                                     {filteredPatients.map((p) => (
                                                         <button
                                                             key={p.id}
                                                             type="button"
                                                             onClick={() => { setSelectedPatient(p); setPatientSearch(p.name); setPatientDropdownOpen(false) }}
-                                                            className="w-full px-3 py-2 text-left text-sm text-brand-text hover:bg-amber-500/20 flex items-center gap-2"
+                                                            className="w-full px-3 py-2 text-left text-sm text-white hover:bg-amber-500/20 flex items-center gap-2"
                                                         >
                                                             <span className="w-8 h-8 rounded-full bg-amber-500/40 flex items-center justify-center text-amber-200 text-xs font-semibold">
                                                                 {p.name.charAt(0).toUpperCase()}
@@ -345,14 +345,14 @@ const ClinicalTerminal: React.FC = () => {
                                         </div>
                                         {selectedPatient && (
                                             <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-amber-500/15 border border-amber-500/30">
-                                                <span className="w-8 h-8 rounded-full bg-amber-500/50 flex items-center justify-center text-brand-text text-sm font-semibold">
+                                                <span className="w-8 h-8 rounded-full bg-amber-500/50 flex items-center justify-center text-white text-sm font-semibold">
                                                     {selectedPatient.name.charAt(0).toUpperCase()}
                                                 </span>
-                                                <span className="text-sm text-brand-text font-medium">{selectedPatient.name}</span>
+                                                <span className="text-sm text-white font-medium">{selectedPatient.name}</span>
                                                 <button
                                                     type="button"
                                                     onClick={() => { setSelectedPatient(null); setPatientSearch('') }}
-                                                    className="text-brand-text-muted hover:text-brand-text text-xs"
+                                                    className="text-slate-400 hover:text-white text-xs"
                                                 >
                                                     limpar
                                                 </button>
@@ -367,13 +367,13 @@ const ClinicalTerminal: React.FC = () => {
                                             <button
                                                 type="button"
                                                 onClick={() => setShowPatientAvatarView(true)}
-                                                className="px-4 py-2 rounded-lg bg-amber-600 hover:bg-amber-500 text-brand-text text-sm font-medium"
+                                                className="px-4 py-2 rounded-lg bg-amber-600 hover:bg-amber-500 text-white text-sm font-medium"
                                             >
                                                 Abrir vista unificada
                                             </button>
                                         </div>
                                     ) : (
-                                        <div className="rounded-xl border border-brand-border bg-slate-800/50 p-6 text-center text-brand-text-muted">
+                                        <div className="rounded-xl border border-slate-700 bg-slate-800/50 p-6 text-center text-slate-400">
                                             <User className="w-12 h-12 mx-auto mb-3 opacity-50" />
                                             <p>Busque e selecione um paciente acima para abrir Evolução e Analytics + Prontuário no terminal.</p>
                                         </div>
@@ -391,14 +391,14 @@ const ClinicalTerminal: React.FC = () => {
     return (
         <div className="flex flex-col h-[calc(100vh-64px)] bg-[#050914] w-full overflow-hidden" data-clinical-terminal>
             {/* Header do Terminal */}
-            <header className="bg-[#0B1120] border-b border-brand-border-subtle shrink-0 z-20 shadow-2xl">
+            <header className="bg-[#0B1120] border-b border-slate-800 shrink-0 z-20 shadow-2xl">
                 <div className="flex items-center justify-between px-6 h-16 w-full">
                     <div className="flex items-center gap-4 shrink-0">
                         <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-600 to-cyan-600 flex items-center justify-center shadow-[0_0_20px_rgba(79,70,229,0.3)]">
-                            <TerminalIcon className="w-6 h-6 text-brand-text" />
+                            <TerminalIcon className="w-6 h-6 text-white" />
                         </div>
                         <div className="hidden sm:block">
-                            <h1 className="text-xl font-black text-brand-text leading-none tracking-tight">TERMINAL <span className="text-indigo-400">CLÍNICO</span></h1>
+                            <h1 className="text-xl font-black text-white leading-none tracking-tight">TERMINAL <span className="text-indigo-400">CLÍNICO</span></h1>
                             <p className="text-[10px] uppercase tracking-widest text-slate-500 font-bold mt-1">Command & Governance Center</p>
                         </div>
                     </div>
@@ -415,8 +415,8 @@ const ClinicalTerminal: React.FC = () => {
                                         className={`
                                             relative group flex items-center gap-2 px-5 py-2 rounded-xl text-sm font-bold transition-all whitespace-nowrap
                                             ${isActive
-                                                ? 'bg-brand-surface text-brand-text shadow-lg border border-slate-700/50'
-                                                : 'text-slate-500 hover:text-brand-text-secondary hover:bg-slate-800/30'}
+                                                ? 'bg-slate-800 text-white shadow-lg border border-slate-700/50'
+                                                : 'text-slate-500 hover:text-slate-300 hover:bg-slate-800/30'}
                                         `}
                                     >
                                         <Icon className={`w-4 h-4 transition-colors ${isActive ? tab.color : 'text-slate-600 group-hover:text-slate-500'}`} />
@@ -431,7 +431,7 @@ const ClinicalTerminal: React.FC = () => {
                     </nav>
 
                     <div className="flex items-center gap-3 shrink-0">
-                        <div className="h-8 w-[1px] bg-brand-surface mx-2 hidden sm:block"></div>
+                        <div className="h-8 w-[1px] bg-slate-800 mx-2 hidden sm:block"></div>
                         <div className="p-2 rounded-lg bg-indigo-500/10 border border-indigo-500/20 text-indigo-400">
                             <Shield className="w-5 h-5" />
                         </div>

@@ -101,7 +101,7 @@ export default function AssessmentAnalytics() {
                         </div>
                         <button
                             onClick={loadData}
-                            className="px-6 py-3 bg-gradient-to-r from-purple-600 to-blue-600 text-brand-text rounded-xl hover:shadow-lg transition-all"
+                            className="px-6 py-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-xl hover:shadow-lg transition-all"
                         >
                             🔄 Atualizar
                         </button>
@@ -151,7 +151,7 @@ export default function AssessmentAnalytics() {
                         <button
                             onClick={() => setTab('overview')}
                             className={`flex-1 py-3 px-6 rounded-xl font-semibold transition-all ${tab === 'overview'
-                                ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-brand-text shadow-lg'
+                                ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-lg'
                                 : 'text-gray-600 hover:bg-gray-100'
                                 }`}
                         >
@@ -160,7 +160,7 @@ export default function AssessmentAnalytics() {
                         <button
                             onClick={() => setTab('professional')}
                             className={`flex-1 py-3 px-6 rounded-xl font-semibold transition-all ${tab === 'professional'
-                                ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-brand-text shadow-lg'
+                                ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-lg'
                                 : 'text-gray-600 hover:bg-gray-100'
                                 }`}
                         >
@@ -169,7 +169,7 @@ export default function AssessmentAnalytics() {
                         <button
                             onClick={() => setTab('patient')}
                             className={`flex-1 py-3 px-6 rounded-xl font-semibold transition-all ${tab === 'patient'
-                                ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-brand-text shadow-lg'
+                                ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-lg'
                                 : 'text-gray-600 hover:bg-gray-100'
                                 }`}
                         >

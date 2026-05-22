@@ -5,79 +5,6 @@
 @tailwind components;
 @tailwind utilities;
 
-/* [V1.9.425] Tokens de tema — fundação do dark/light.
- *
- * Canal de toggle: atributo `data-theme` no <html> (NÃO `class="dark"`, que
- * dispararia o prefixo `dark:` do Tailwind em superfícies legacy). Default = dark,
- * que é o estado visual atual do app — código antigo (bg-slate-900 etc.) fica
- * 100% inalterado. Só código que opta nos utilitários `brand-*` responde.
- *
- * Os valores de light são DIRECIONAIS (cor honesta, contraste razoável); o
- * designer ajusta os acentos finais light-safe quando entregar os SVGs.
- */
-:root,
-:root[data-theme='dark'] {
-  /* [V1.9.427] Valores alinhados aos slates do Tailwind que o app já usa
-   * (slate-900/800/700, text-white, slate-300/400, etc). Isso é proposital:
-   * o mass-replace de `bg-slate-900` → `bg-brand-bg` precisa ser zero-visual
-   * em dark. A paleta "brandbook ideal" (#0B1220 etc.) vai voltar quando o
-   * designer entregar a versão final com acentos light-safe. */
-  --brand-bg: #0f172a;            /* slate-900 */
-  --brand-surface: #1e293b;        /* slate-800 */
-  --brand-surface-subtle: #334155; /* slate-700 */
-  --brand-bg-gradient: linear-gradient(180deg, #0f172a 0%, #1e293b 100%);
-
-  /* texto */
-  --brand-text: #ffffff;
-  --brand-text-secondary: #cbd5e1; /* slate-300 */
-  --brand-text-muted: #94a3b8;     /* slate-400 */
-
-  /* bordas */
-  --brand-border: #334155;         /* slate-700 */
-  --brand-border-subtle: #1e293b;  /* slate-800 */
-
-  /* acentos da marca — brilhantes pra fundo escuro */
-  --brand-accent: #4fe0c1;
-  --brand-accent-vital: #00e5b2;
-  --brand-accent-warm: #00c853;
-  --brand-gradient: linear-gradient(135deg, #4fe0c1 0%, #00c853 100%);
-
-  /* semânticos */
-  --brand-alert: #ff8a00;
-  --brand-danger: #ef4444;
-  --brand-success: #00e5b2;
-}
-
-:root[data-theme='light'] {
-  /* superfícies — off-white com tom ciano, NÃO branco puro */
-  --brand-bg: #f4f8fb;
-  --brand-surface: #ffffff;
-  --brand-surface-subtle: #edf3f7;
-  /* degradê light: assinatura visual mantida em ciano sutil (eco do dark) */
-  --brand-bg-gradient: linear-gradient(180deg, #edf3f7 0%, #f8fbfd 100%);
-
-  /* texto — o "fundo principal" do dark vira o texto no light (simetria) */
-  --brand-text: #0b1220;
-  --brand-text-secondary: #475569;
-  --brand-text-muted: #64748b;
-
-  /* bordas com tom ciano (eco do "circuito" do emblema) */
-  --brand-border: #dce7ee;
-  --brand-border-subtle: #edf3f7;
-
-  /* acentos — variantes light-safe (contraste AA contra #f4f8fb).
-   * Direcional; designer afina ao entregar paleta light oficial. */
-  --brand-accent: #0ea89a;
-  --brand-accent-vital: #0bba7e;
-  --brand-accent-warm: #048258;
-  --brand-gradient: linear-gradient(135deg, #0ea89a 0%, #048258 100%);
-
-  /* semânticos light-safe */
-  --brand-alert: #c26500;
-  --brand-danger: #b91c1c;
-  --brand-success: #0bba7e;
-}
-
 @layer base {
   * {
     @apply border-gray-200;
@@ -99,8 +26,7 @@
   }
 
   body {
-    /* [V1.9.427] bg/text agora theme-aware (mesma cor em dark, troca em light). */
-    @apply bg-brand-bg text-brand-text font-sans;
+    @apply bg-slate-900 text-white font-sans;
     font-feature-settings: "rlig" 1, "calt" 1;
     overflow-x: hidden;
     max-width: 100vw;

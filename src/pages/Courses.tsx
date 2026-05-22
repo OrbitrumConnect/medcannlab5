@@ -497,10 +497,10 @@ const Courses: React.FC = () => {
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-6">
           <div className="space-y-2">
-            <h1 className="text-3xl lg:text-4xl font-bold text-brand-text mb-3">
+            <h1 className="text-3xl lg:text-4xl font-bold text-white mb-3">
               Catálogo de Cursos
             </h1>
-            <p className="text-base text-brand-text-muted max-w-2xl">
+            <p className="text-base text-slate-400 max-w-2xl">
               Aprofunde seus conhecimentos clínicos, explore os protocolos atualizados e conecte-se com os maiores especialistas da MedCannLab.
             </p>
           </div>
@@ -511,7 +511,7 @@ const Courses: React.FC = () => {
                 setEditingCourse(null)
                 setShowUploadModal(true)
               }}
-              className="flex items-center space-x-3 bg-emerald-600 hover:bg-emerald-500 text-brand-text font-bold px-8 py-4 rounded-2xl shadow-[0_0_20px_rgba(16,185,129,0.3)] transition-all duration-300 hover:scale-105 active:scale-95 shrink-0"
+              className="flex items-center space-x-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-8 py-4 rounded-2xl shadow-[0_0_20px_rgba(16,185,129,0.3)] transition-all duration-300 hover:scale-105 active:scale-95 shrink-0"
             >
               <Plus className="w-6 h-6" />
               <span>Novo Curso</span>
@@ -527,8 +527,8 @@ const Courses: React.FC = () => {
                 key={category.id}
                 onClick={() => setSelectedCategory(category.id)}
                 className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-300 ${selectedCategory === category.id
-                  ? 'bg-emerald-600 text-brand-text shadow-[0_0_15px_rgba(16,185,129,0.3)] border border-emerald-500/50'
-                  : 'bg-slate-800/60 text-brand-text-muted hover:text-brand-text hover:bg-slate-700/80 border border-slate-700/50'
+                  ? 'bg-emerald-600 text-white shadow-[0_0_15px_rgba(16,185,129,0.3)] border border-emerald-500/50'
+                  : 'bg-slate-800/60 text-slate-400 hover:text-white hover:bg-slate-700/80 border border-slate-700/50'
                   }`}
               >
                 {category.name}
@@ -540,13 +540,13 @@ const Courses: React.FC = () => {
         {/* Courses Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 w-full">
           {filteredCourses.map((course) => (
-            <div key={course.id} className="bg-slate-900/40 backdrop-blur-sm rounded-2xl border border-brand-border-subtle hover:border-emerald-500/50 hover:shadow-[0_0_30px_rgba(16,185,129,0.15)] transition-all duration-300 flex flex-col group overflow-hidden">
+            <div key={course.id} className="bg-slate-900/40 backdrop-blur-sm rounded-2xl border border-slate-800 hover:border-emerald-500/50 hover:shadow-[0_0_30px_rgba(16,185,129,0.15)] transition-all duration-300 flex flex-col group overflow-hidden">
               {/* Course Image */}
-              <div className="relative h-48 bg-slate-800/50 flex items-center justify-center border-b border-slate-800/50 group-hover:bg-brand-surface transition-colors duration-300">
+              <div className="relative h-48 bg-slate-800/50 flex items-center justify-center border-b border-slate-800/50 group-hover:bg-slate-800 transition-colors duration-300">
                 <BookOpen className="w-16 h-16 text-slate-600 group-hover:text-emerald-400 group-hover:scale-110 transition-all duration-300" />
                 {course.isLive && (
                   <div className="absolute top-4 left-4">
-                    <span className="bg-rose-500/90 text-brand-text px-3 py-1 rounded-full text-xs font-bold tracking-wide shadow-[0_0_10px_rgba(244,63,94,0.5)]">
+                    <span className="bg-rose-500/90 text-white px-3 py-1 rounded-full text-xs font-bold tracking-wide shadow-[0_0_10px_rgba(244,63,94,0.5)]">
                       AO VIVO
                     </span>
                   </div>
@@ -573,10 +573,10 @@ const Courses: React.FC = () => {
                 </div>
 
                 {/* Title and Description */}
-                <h3 className="text-xl font-bold text-brand-text mb-2 leading-snug group-hover:text-emerald-300 transition-colors">
+                <h3 className="text-xl font-bold text-white mb-2 leading-snug group-hover:text-emerald-300 transition-colors">
                   {course.title.toLowerCase().includes('rins') ? 'Curso da AEC - Avaliação Clínica Inicial' : course.title}
                 </h3>
-                <p className="text-brand-text-muted text-sm mb-6 line-clamp-2">
+                <p className="text-slate-400 text-sm mb-6 line-clamp-2">
                   {course.title.toLowerCase().includes('rins')
                     ? 'Metodologia exclusiva de Avaliação Clínica Inicial (AEC) aplicada à prática médica e nefrologia.'
                     : course.description}
@@ -584,21 +584,21 @@ const Courses: React.FC = () => {
 
                 {/* Course Info */}
                 <div className="grid grid-cols-2 gap-3 mb-6">
-                  <div className="flex items-center text-sm text-brand-text-muted bg-slate-800/30 p-2 rounded-lg">
+                  <div className="flex items-center text-sm text-slate-400 bg-slate-800/30 p-2 rounded-lg">
                     <Clock className="w-4 h-4 mr-2 text-emerald-500/70" />
                     <span className="truncate">{course.duration}</span>
                   </div>
-                  <div className="flex items-center text-sm text-brand-text-muted bg-slate-800/30 p-2 rounded-lg">
+                  <div className="flex items-center text-sm text-slate-400 bg-slate-800/30 p-2 rounded-lg">
                     <Users className="w-4 h-4 mr-2 text-indigo-500/70" />
                     <span className="truncate">{course.students.toLocaleString()} alunos</span>
                   </div>
                   {course.rating > 0 && (
-                    <div className="flex items-center text-sm text-brand-text-muted bg-slate-800/30 p-2 rounded-lg">
+                    <div className="flex items-center text-sm text-slate-400 bg-slate-800/30 p-2 rounded-lg">
                       <Star className="w-4 h-4 mr-2 text-amber-500/70" />
                       <span>{course.rating.toFixed(1)}</span>
                     </div>
                   )}
-                  <div className="flex items-center text-sm text-brand-text-muted bg-slate-800/30 p-2 rounded-lg">
+                  <div className="flex items-center text-sm text-slate-400 bg-slate-800/30 p-2 rounded-lg">
                     <Award className="w-4 h-4 mr-2 text-pink-500/70" />
                     <span className="truncate">{course.level}</span>
                   </div>
@@ -607,11 +607,11 @@ const Courses: React.FC = () => {
                 {/* Progress Bar */}
                 {course.progress > 0 && (
                   <div className="mb-6">
-                    <div className="flex justify-between text-sm text-brand-text-secondary mb-2 font-medium">
+                    <div className="flex justify-between text-sm text-slate-300 mb-2 font-medium">
                       <span>Progresso</span>
                       <span className="text-emerald-400">{course.progress}%</span>
                     </div>
-                    <div className="w-full bg-brand-surface rounded-full h-2 overflow-hidden shadow-inner">
+                    <div className="w-full bg-slate-800 rounded-full h-2 overflow-hidden shadow-inner">
                       <div
                         className="bg-gradient-to-r from-emerald-500 to-emerald-400 h-2 rounded-full shadow-[0_0_10px_rgba(16,185,129,0.5)] transition-all duration-700 ease-out"
                         style={{ width: `${course.progress}%` }}
@@ -633,7 +633,7 @@ const Courses: React.FC = () => {
                 <div className="mt-auto pt-4 border-t border-slate-800/50">
                   {/* Price */}
                   <div className="flex items-center justify-between xl:justify-start xl:gap-3 mb-5">
-                    <span className="text-2xl font-bold text-brand-text tracking-tight">
+                    <span className="text-2xl font-bold text-white tracking-tight">
                       {course.price}
                     </span>
                     {course.originalPrice && (
@@ -652,20 +652,20 @@ const Courses: React.FC = () => {
                     ) : course.progress > 0 ? (
                       <Link
                         to={(course as any).href || `/course/${course.id}`}
-                        className="w-full inline-flex items-center justify-center bg-emerald-600 hover:bg-emerald-500 text-brand-text font-semibold py-3 px-4 rounded-xl shadow-[0_4px_14px_0_rgba(16,185,129,0.3)] transition-all duration-200"
+                        className="w-full inline-flex items-center justify-center bg-emerald-600 hover:bg-emerald-500 text-white font-semibold py-3 px-4 rounded-xl shadow-[0_4px_14px_0_rgba(16,185,129,0.3)] transition-all duration-200"
                       >
                         Continuar Estudo
                       </Link>
                     ) : (
                       <Link
                         to={(course as any).href || `/course/${course.id}`}
-                        className="w-full inline-flex items-center justify-center bg-emerald-600 hover:bg-emerald-500 text-brand-text font-semibold py-3 px-4 rounded-xl shadow-[0_4px_14px_0_rgba(16,185,129,0.3)] transition-all duration-200"
+                        className="w-full inline-flex items-center justify-center bg-emerald-600 hover:bg-emerald-500 text-white font-semibold py-3 px-4 rounded-xl shadow-[0_4px_14px_0_rgba(16,185,129,0.3)] transition-all duration-200"
                       >
                         Iniciar Curso
                       </Link>
                     )}
 
-                    <button className="w-full bg-brand-surface hover:bg-brand-surface-subtle text-brand-text-secondary font-medium py-3 px-4 rounded-xl border border-brand-border transition-all duration-200">
+                    <button className="w-full bg-slate-800 hover:bg-slate-700 text-slate-300 font-medium py-3 px-4 rounded-xl border border-slate-700 transition-all duration-200">
                       Ver Ementa Completa
                     </button>
 
@@ -692,7 +692,7 @@ const Courses: React.FC = () => {
         {filteredCourses.length === 0 && (
           <div className="text-center py-12">
             <BookOpen className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-slate-900 dark:text-brand-text dark:text-slate-900 dark:text-brand-text mb-2">
+            <h3 className="text-lg font-medium text-slate-900 dark:text-white dark:text-slate-900 dark:text-white mb-2">
               Nenhum curso encontrado
             </h3>
             <p className="text-gray-500 dark:text-gray-400">
@@ -704,16 +704,16 @@ const Courses: React.FC = () => {
         {/* Upload/Edit Modal */}
         {showUploadModal && (
           <div className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center z-50 p-2 md:p-4 animate-in fade-in duration-300">
-            <div className="bg-[#0f172a] border border-brand-border-subtle rounded-3xl max-w-4xl w-full max-h-[90vh] overflow-y-auto shadow-2xl">
+            <div className="bg-[#0f172a] border border-slate-800 rounded-3xl max-w-4xl w-full max-h-[90vh] overflow-y-auto shadow-2xl">
               <div className="p-6 md:p-8">
                 <div className="flex justify-between items-center mb-8">
                   <div>
-                    <h2 className="text-2xl font-extrabold text-brand-text">
+                    <h2 className="text-2xl font-extrabold text-white">
                       {editingCourse 
                         ? `Gerenciar: ${editingCourse.title.toLowerCase().includes('rins') ? 'Curso da AEC - Avaliação Clínica Inicial' : editingCourse.title}` 
                         : 'Novo Conteúdo'}
                     </h2>
-                    <p className="text-brand-text-muted text-sm mt-1">
+                    <p className="text-slate-400 text-sm mt-1">
                       {editingCourse ? 'Edite a estrutura, módulos e aulas do curso' : 'Selecione o tipo de mídia para o seu novo curso'}
                     </p>
                   </div>
@@ -722,7 +722,7 @@ const Courses: React.FC = () => {
                       setShowUploadModal(false)
                       setEditingCourse(null)
                     }}
-                    className="w-10 h-10 flex items-center justify-center rounded-full bg-brand-surface text-brand-text-muted hover:text-brand-text hover:bg-brand-surface-subtle transition-all font-bold"
+                    className="w-10 h-10 flex items-center justify-center rounded-full bg-slate-800 text-slate-400 hover:text-white hover:bg-slate-700 transition-all font-bold"
                   >
                     ✕
                   </button>
@@ -743,7 +743,7 @@ const Courses: React.FC = () => {
                         onClick={() => setUploadType(type.id as any)}
                         className={`flex flex-col items-center justify-center p-4 rounded-2xl min-w-[107px] border-2 transition-all ${uploadType === type.id
                           ? `bg-${type.color}-600/10 border-${type.color}-500 text-${type.color}-400 shadow-[0_0_15px_rgba(0,0,0,0.2)]`
-                          : 'bg-slate-900/50 border-brand-border-subtle text-brand-text-muted hover:border-brand-border'
+                          : 'bg-slate-900/50 border-slate-800 text-slate-400 hover:border-slate-700'
                           }`}
                       >
                         <type.icon className="w-6 h-6 mb-2" />
@@ -762,9 +762,9 @@ const Courses: React.FC = () => {
                       </div>
                       <div className="flex-1">
                         <label className="block text-xs font-black text-emerald-500 mb-2 uppercase tracking-[0.2em]">1º Passo Obrigatório</label>
-                        <h3 className="text-xl font-bold text-brand-text mb-3">Em qual curso vamos publicar?</h3>
+                        <h3 className="text-xl font-bold text-white mb-3">Em qual curso vamos publicar?</h3>
                         <select
-                          className="w-full px-5 py-4 bg-slate-950 border-2 border-emerald-500/30 rounded-2xl text-brand-text outline-none focus:border-emerald-500 transition-all font-bold text-lg"
+                          className="w-full px-5 py-4 bg-slate-950 border-2 border-emerald-500/30 rounded-2xl text-white outline-none focus:border-emerald-500 transition-all font-bold text-lg"
                           onChange={(e) => {
                             const selected = courses.find(c => c.id === e.target.value)
                             if (selected) {
@@ -786,40 +786,40 @@ const Courses: React.FC = () => {
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                   {/* Lado Esquerdo: Info Básica */}
                   <div className={`space-y-6 transition-all duration-500 ${!editingCourse ? 'opacity-40 grayscale' : 'opacity-100'}`}>
-                    <h3 className="text-lg font-bold text-brand-text mb-4 flex items-center gap-2">
+                    <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
                       <Settings className="w-5 h-5 text-emerald-500" />
                       Informações Gerais
                     </h3>
 
                     <div>
-                      <label className="block text-sm font-bold text-brand-text-secondary mb-2 uppercase tracking-wide">Título da Aula/Conteúdo</label>
+                      <label className="block text-sm font-bold text-slate-300 mb-2 uppercase tracking-wide">Título da Aula/Conteúdo</label>
                       <input
                         type="text"
                         disabled={!editingCourse}
                         value={formData.title}
                         onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                         placeholder="Ex: Introdução à Prática Clínica"
-                        className="w-full px-4 py-3 bg-brand-bg border border-brand-border rounded-xl text-brand-text placeholder-slate-500 outline-none focus:border-emerald-500/50"
+                        className="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-xl text-white placeholder-slate-500 outline-none focus:border-emerald-500/50"
                       />
                     </div>
 
                     <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-sm font-bold text-brand-text-secondary mb-2 uppercase tracking-wide">Duração</label>
+                        <label className="block text-sm font-bold text-slate-300 mb-2 uppercase tracking-wide">Duração</label>
                         <input
                           type="text"
                           value={formData.duration}
                           onChange={(e) => setFormData({ ...formData, duration: e.target.value })}
                           placeholder="Ex: 45 min"
-                          className="w-full px-4 py-3 bg-brand-bg border border-brand-border rounded-xl text-brand-text placeholder-slate-500 outline-none focus:border-emerald-500/50"
+                          className="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-xl text-white placeholder-slate-500 outline-none focus:border-emerald-500/50"
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-bold text-brand-text-secondary mb-2 uppercase tracking-wide">Nível</label>
+                        <label className="block text-sm font-bold text-slate-300 mb-2 uppercase tracking-wide">Nível</label>
                         <select
                           value={formData.level}
                           onChange={(e) => setFormData({ ...formData, level: e.target.value })}
-                          className="w-full px-4 py-3 bg-brand-bg border border-brand-border rounded-xl text-brand-text outline-none focus:border-emerald-500/50"
+                          className="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-xl text-white outline-none focus:border-emerald-500/50"
                         >
                           <option>Iniciante</option>
                           <option>Intermediário</option>
@@ -829,27 +829,27 @@ const Courses: React.FC = () => {
                     </div>
 
                     <div>
-                      <label className="block text-sm font-bold text-brand-text-secondary mb-2 uppercase tracking-wide">Resumo/Descrição</label>
+                      <label className="block text-sm font-bold text-slate-300 mb-2 uppercase tracking-wide">Resumo/Descrição</label>
                       <textarea
                         value={formData.description}
                         onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                         placeholder="Breve descrição do conteúdo..."
                         rows={3}
-                        className="w-full px-4 py-3 bg-brand-bg border border-brand-border rounded-xl text-brand-text placeholder-slate-500 outline-none focus:border-emerald-500/50 resize-none"
+                        className="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-xl text-white placeholder-slate-500 outline-none focus:border-emerald-500/50 resize-none"
                       />
                     </div>
                   </div>
 
                   {/* Lado Direito: Módulos e Vídeos */}
                   <div className="space-y-6">
-                    <h3 className="text-lg font-bold text-brand-text mb-4 flex items-center gap-2">
+                    <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
                       <Video className="w-5 h-5 text-indigo-500" />
                       Estrutura do Curso
                     </h3>
 
-                    <div className="bg-slate-900/50 border border-brand-border-subtle rounded-2xl p-4 space-y-4 max-h-[350px] overflow-y-auto scrollbar-hide">
+                    <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-4 space-y-4 max-h-[350px] overflow-y-auto scrollbar-hide">
                       {!editingCourse ? (
-                        <div className="text-center py-12 border-2 border-dashed border-brand-border-subtle rounded-xl">
+                        <div className="text-center py-12 border-2 border-dashed border-slate-800 rounded-xl">
                           <AlertCircle className="w-10 h-10 text-slate-700 mx-auto mb-3" />
                           <p className="text-slate-500 text-xs px-6">Selecione um curso no dropdown ao lado para configurar os módulos e aulas.</p>
                         </div>
@@ -885,7 +885,7 @@ const Courses: React.FC = () => {
                                   setSelectedModuleId(e.target.value)
                                   fetchLessons(e.target.value)
                                 }}
-                                className="w-full px-4 py-3 bg-brand-bg border border-emerald-500/30 rounded-xl text-brand-text outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/30 transition-all font-medium text-sm"
+                                className="w-full px-4 py-3 bg-slate-900 border border-emerald-500/30 rounded-xl text-white outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/30 transition-all font-medium text-sm"
                               >
                                 <option value="">-- Escolha o Módulo --</option>
                                 {courseModules.map(m => (
@@ -908,7 +908,7 @@ const Courses: React.FC = () => {
                                     setIsCreatingModule(false)
                                     setNewModuleTitle('')
                                   }}
-                                  className="text-[10px] text-slate-500 hover:text-brand-text font-bold uppercase transition-colors"
+                                  className="text-[10px] text-slate-500 hover:text-white font-bold uppercase transition-colors"
                                 >
                                   Voltar
                                 </button>
@@ -919,7 +919,7 @@ const Courses: React.FC = () => {
                                 value={newModuleTitle}
                                 onChange={(e) => setNewModuleTitle(e.target.value)}
                                 placeholder="Nome do módulo (Ex: Módulo 1)"
-                                className="w-full px-4 py-3 bg-brand-bg border border-indigo-500/30 rounded-xl text-brand-text outline-none focus:border-indigo-500 transition-all font-medium text-sm placeholder:text-slate-600"
+                                className="w-full px-4 py-3 bg-slate-900 border border-indigo-500/30 rounded-xl text-white outline-none focus:border-indigo-500 transition-all font-medium text-sm placeholder:text-slate-600"
                               />
                             </div>
                           )}
@@ -932,23 +932,23 @@ const Courses: React.FC = () => {
                                   <span className="text-[10px] font-black text-emerald-500 uppercase tracking-widest bg-emerald-500/10 px-2 py-0.5 rounded">Módulo Ativo</span>
                                   <CheckCircle className="w-4 h-4 text-emerald-400 font-bold" />
                                 </div>
-                                <h4 className="text-brand-text text-xs font-bold mb-1 truncate">
+                                <h4 className="text-white text-xs font-bold mb-1 truncate">
                                   {courseModules.find(m => m.id === selectedModuleId)?.title}
                                 </h4>
                                 <p className="text-[10px] text-slate-500 italic">O novo vídeo será adicionado após as aulas abaixo.</p>
                               </div>
 
                               {moduleLessons.length > 0 && (
-                                <div className="bg-slate-900/40 rounded-xl border border-brand-border-subtle p-3">
+                                <div className="bg-slate-900/40 rounded-xl border border-slate-800 p-3">
                                   <h5 className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-3 px-1">Aulas Existentes ({moduleLessons.length})</h5>
                                   <div className="space-y-2">
                                     {moduleLessons.map((lesson) => (
                                       <div key={lesson.id} className="flex items-center justify-between p-2.5 rounded-lg bg-slate-800/50 border border-slate-700/50 group/item">
                                         <div className="flex items-center gap-3 min-w-0">
-                                          <div className="w-6 h-6 rounded bg-brand-surface-subtle flex items-center justify-center shrink-0">
+                                          <div className="w-6 h-6 rounded bg-slate-700 flex items-center justify-center shrink-0">
                                             <Play className="w-3 h-3 text-emerald-400" />
                                           </div>
-                                          <span className="text-xs text-brand-text-secondary truncate font-medium">{lesson.title}</span>
+                                          <span className="text-xs text-slate-300 truncate font-medium">{lesson.title}</span>
                                         </div>
                                         <button 
                                           onClick={() => handleDeleteLesson(lesson.id)}
@@ -973,7 +973,7 @@ const Courses: React.FC = () => {
                     </div>
 
                     {/* Seção de Vídeo Link / Arquivo */}
-                    <div className="pt-4 border-t border-brand-border-subtle">
+                    <div className="pt-4 border-t border-slate-800">
                       <label className="block text-sm font-bold text-emerald-500 mb-3 uppercase tracking-wide flex items-center gap-2">
                         <LinkIcon className="w-4 h-4" />
                         URL / Link de Origem ({uploadType.toUpperCase()})
@@ -986,11 +986,11 @@ const Courses: React.FC = () => {
                             value={formData.url}
                             onChange={(e) => setFormData({ ...formData, url: e.target.value })}
                             placeholder={`Cole o link do ${uploadType} aqui...`}
-                            className="w-full pl-4 pr-4 py-3.5 bg-brand-bg border border-brand-border rounded-xl text-brand-text placeholder-slate-600 text-sm outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/20 transition-all"
+                            className="w-full pl-4 pr-4 py-3.5 bg-slate-900 border border-slate-700 rounded-xl text-white placeholder-slate-600 text-sm outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/20 transition-all"
                           />
                         </div>
                       ) : (
-                        <div className="p-6 border-2 border-dashed border-brand-border-subtle rounded-xl bg-slate-900/30 text-center hover:border-emerald-500/30 transition-all cursor-pointer">
+                        <div className="p-6 border-2 border-dashed border-slate-800 rounded-xl bg-slate-900/30 text-center hover:border-emerald-500/30 transition-all cursor-pointer">
                           <Upload className="w-8 h-8 text-slate-600 mx-auto mb-2" />
                           <span className="text-xs text-slate-500 block">Clique para enviar arquivo {uploadType.toUpperCase()}</span>
                         </div>
@@ -1000,21 +1000,21 @@ const Courses: React.FC = () => {
                 </div>
 
                 {/* Footer Actions */}
-                <div className="flex justify-end gap-3 mt-10 pt-6 border-t border-brand-border-subtle">
+                <div className="flex justify-end gap-3 mt-10 pt-6 border-t border-slate-800">
                   <button
                     onClick={() => {
                       setShowUploadModal(false)
                       setEditingCourse(null)
                       resetForm()
                     }}
-                    className="px-6 py-3 bg-brand-surface hover:bg-brand-surface-subtle text-brand-text-muted font-bold rounded-xl transition-all text-sm"
+                    className="px-6 py-3 bg-slate-800 hover:bg-slate-700 text-slate-400 font-bold rounded-xl transition-all text-sm"
                   >
                     Descartar
                   </button>
                   <button
                     onClick={handleSaveCourse}
                     disabled={isSaving}
-                    className="flex-1 md:flex-none px-12 py-3 bg-emerald-600 hover:bg-emerald-500 text-brand-text font-black uppercase tracking-widest rounded-xl transition-all shadow-[0_0_25px_rgba(16,185,129,0.3)] disabled:opacity-50 text-sm"
+                    className="flex-1 md:flex-none px-12 py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-black uppercase tracking-widest rounded-xl transition-all shadow-[0_0_25px_rgba(16,185,129,0.3)] disabled:opacity-50 text-sm"
                   >
                     {isSaving ? <Loader2 className="w-5 h-5 animate-spin mx-auto" /> : (editingCourse ? 'Salvar no Curso' : 'Publicar Conteúdo')}
                   </button>

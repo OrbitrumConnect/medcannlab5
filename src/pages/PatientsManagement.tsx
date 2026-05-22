@@ -75,10 +75,10 @@ const RealAppointmentStats = ({ patientId }: { patientId?: string }) => {
   }, [patientId])
   return (
     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-      <div className="bg-slate-700/50 rounded-lg p-4"><p className="text-sm text-brand-text-muted mb-1">Hoje</p><p className="text-2xl font-bold text-brand-text">{stats.today}</p></div>
-      <div className="bg-slate-700/50 rounded-lg p-4"><p className="text-sm text-brand-text-muted mb-1">Esta Semana</p><p className="text-2xl font-bold text-brand-text">{stats.thisWeek}</p></div>
-      <div className="bg-slate-700/50 rounded-lg p-4"><p className="text-sm text-brand-text-muted mb-1">Confirmados</p><p className="text-2xl font-bold text-green-400">{stats.confirmed}</p></div>
-      <div className="bg-slate-700/50 rounded-lg p-4"><p className="text-sm text-brand-text-muted mb-1">Pendentes</p><p className="text-2xl font-bold text-yellow-400">{stats.pending}</p></div>
+      <div className="bg-slate-700/50 rounded-lg p-4"><p className="text-sm text-slate-400 mb-1">Hoje</p><p className="text-2xl font-bold text-white">{stats.today}</p></div>
+      <div className="bg-slate-700/50 rounded-lg p-4"><p className="text-sm text-slate-400 mb-1">Esta Semana</p><p className="text-2xl font-bold text-white">{stats.thisWeek}</p></div>
+      <div className="bg-slate-700/50 rounded-lg p-4"><p className="text-sm text-slate-400 mb-1">Confirmados</p><p className="text-2xl font-bold text-green-400">{stats.confirmed}</p></div>
+      <div className="bg-slate-700/50 rounded-lg p-4"><p className="text-sm text-slate-400 mb-1">Pendentes</p><p className="text-2xl font-bold text-yellow-400">{stats.pending}</p></div>
     </div>
   )
 }
@@ -124,7 +124,7 @@ const RealAgendaHoje = ({ patientId }: { patientId?: string }) => {
 
   return (
     <div className="mb-6">
-      <h4 className="text-lg font-bold text-brand-text mb-4">Agenda de Hoje</h4>
+      <h4 className="text-lg font-bold text-white mb-4">Agenda de Hoje</h4>
       <div className="space-y-3">
         {appointments.length === 0 ? (
           <p className="text-slate-500 italic text-sm">Nenhum agendamento para hoje.</p>
@@ -134,11 +134,11 @@ const RealAgendaHoje = ({ patientId }: { patientId?: string }) => {
           return (
             <div key={a.id} className="bg-slate-700/50 rounded-lg p-4 border border-slate-600">
               <div className="flex items-start space-x-3">
-                <div className="bg-blue-500 rounded-lg p-2 text-brand-text font-bold text-sm">{hour}</div>
+                <div className="bg-blue-500 rounded-lg p-2 text-white font-bold text-sm">{hour}</div>
                 <div>
-                  <h5 className="font-semibold text-brand-text mb-1">{a.patient_name}</h5>
-                  <p className="text-sm text-brand-text-muted mb-2">{a.title || a.description || 'Consulta'}</p>
-                  <div className="flex items-center space-x-4 text-xs text-brand-text-secondary">
+                  <h5 className="font-semibold text-white mb-1">{a.patient_name}</h5>
+                  <p className="text-sm text-slate-400 mb-2">{a.title || a.description || 'Consulta'}</p>
+                  <div className="flex items-center space-x-4 text-xs text-slate-300">
                     <div className="flex items-center space-x-1"><Clock className="w-3 h-3" /><span>{time}</span></div>
                     <span className={`px-2 py-1 rounded ${statusStyle(a.status)}`}>{statusLabel(a.status)}</span>
                   </div>
@@ -1335,9 +1335,9 @@ const PatientsManagement: React.FC<PatientsManagementProps> = ({ embedded = fals
               <div className="flex items-center space-x-4">
                 <button
                   onClick={handleBack}
-                  className="p-2 hover:bg-brand-surface-subtle rounded-lg transition-colors"
+                  className="p-2 hover:bg-slate-700 rounded-lg transition-colors"
                 >
-                  <ArrowLeft className="w-5 h-5 text-brand-text" />
+                  <ArrowLeft className="w-5 h-5 text-white" />
                 </button>
                 <div>
                 </div>
@@ -1345,7 +1345,7 @@ const PatientsManagement: React.FC<PatientsManagementProps> = ({ embedded = fals
               <div className="relative new-patient-menu-container">
                 <button
                   onClick={() => setShowNewPatientMenu(!showNewPatientMenu)}
-                  className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-blue-500 to-cyan-500 text-brand-text rounded-lg hover:from-blue-600 hover:to-cyan-600 transition-colors"
+                  className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-blue-500 to-cyan-500 text-white rounded-lg hover:from-blue-600 hover:to-cyan-600 transition-colors"
                 >
                   <UserPlus className="w-5 h-5" />
                   <span>Novo Paciente</span>
@@ -1353,7 +1353,7 @@ const PatientsManagement: React.FC<PatientsManagementProps> = ({ embedded = fals
 
                 {showNewPatientMenu && (
                   <div
-                    className="fixed top-24 right-6 w-64 bg-brand-surface border border-brand-border rounded-lg shadow-2xl z-[9999] new-patient-menu-container"
+                    className="fixed top-24 right-6 w-64 bg-slate-800 border border-slate-700 rounded-lg shadow-2xl z-[9999] new-patient-menu-container"
                     style={{ marginTop: '0px' }}
                   >
                     <div className="p-2">
@@ -1362,7 +1362,7 @@ const PatientsManagement: React.FC<PatientsManagementProps> = ({ embedded = fals
                           setShowNewPatientMenu(false)
                           navigate('/app/new-patient?mode=manual')
                         }}
-                        className="w-full text-left px-4 py-2 rounded-lg hover:bg-brand-surface-subtle transition-colors text-brand-text flex items-center space-x-2"
+                        className="w-full text-left px-4 py-2 rounded-lg hover:bg-slate-700 transition-colors text-white flex items-center space-x-2"
                       >
                         <UserPlus className="w-4 h-4" />
                         <span>Cadastro Manual</span>
@@ -1372,7 +1372,7 @@ const PatientsManagement: React.FC<PatientsManagementProps> = ({ embedded = fals
                           setShowNewPatientMenu(false)
                           navigate('/app/new-patient?mode=csv')
                         }}
-                        className="w-full text-left px-4 py-2 rounded-lg hover:bg-brand-surface-subtle transition-colors text-brand-text flex items-center space-x-2"
+                        className="w-full text-left px-4 py-2 rounded-lg hover:bg-slate-700 transition-colors text-white flex items-center space-x-2"
                       >
                         <FileText className="w-4 h-4" />
                         <span>Importar CSV</span>
@@ -1382,7 +1382,7 @@ const PatientsManagement: React.FC<PatientsManagementProps> = ({ embedded = fals
                           setShowNewPatientMenu(false)
                           navigate('/app/new-patient?mode=database')
                         }}
-                        className="w-full text-left px-4 py-2 rounded-lg hover:bg-brand-surface-subtle transition-colors text-brand-text flex items-center space-x-2"
+                        className="w-full text-left px-4 py-2 rounded-lg hover:bg-slate-700 transition-colors text-white flex items-center space-x-2"
                       >
                         <Archive className="w-4 h-4" />
                         <span>Importar do Banco</span>
@@ -1392,7 +1392,7 @@ const PatientsManagement: React.FC<PatientsManagementProps> = ({ embedded = fals
                           setShowNewPatientMenu(false)
                           navigate('/app/new-patient?mode=drag-drop')
                         }}
-                        className="w-full text-left px-4 py-2 rounded-lg hover:bg-brand-surface-subtle transition-colors text-brand-text flex items-center space-x-2"
+                        className="w-full text-left px-4 py-2 rounded-lg hover:bg-slate-700 transition-colors text-white flex items-center space-x-2"
                       >
                         <Upload className="w-4 h-4" />
                         <span>Arrastar Arquivos</span>
@@ -1413,22 +1413,22 @@ const PatientsManagement: React.FC<PatientsManagementProps> = ({ embedded = fals
             <div className="flex flex-col md:flex-row md:items-center gap-2">
               <button
                 onClick={handleBack}
-                className="self-start md:self-auto p-1.5 hover:bg-brand-surface-subtle rounded-lg transition-all hover:scale-105 shrink-0"
+                className="self-start md:self-auto p-1.5 hover:bg-slate-700 rounded-lg transition-all hover:scale-105 shrink-0"
                 title="Voltar"
               >
-                <ArrowLeft className="w-4 h-4 text-brand-text" />
+                <ArrowLeft className="w-4 h-4 text-white" />
               </button>
 
               <div className="grid grid-cols-1 md:grid-cols-4 gap-2 flex-1 min-w-0">
                 {/* Search */}
                 <div className="relative">
-                  <Search className="absolute left-2.5 top-1/2 transform -translate-y-1/2 text-brand-text-muted w-4 h-4" />
+                  <Search className="absolute left-2.5 top-1/2 transform -translate-y-1/2 text-slate-400 w-4 h-4" />
                   <input
                     type="text"
                     placeholder="Buscar por nome, CPF ou código..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full pl-9 pr-3 py-1.5 bg-brand-surface-subtle border border-slate-600 rounded-lg text-brand-text text-sm placeholder-slate-400 focus:outline-none focus:border-blue-500 transition-colors"
+                    className="w-full pl-9 pr-3 py-1.5 bg-slate-700 border border-slate-600 rounded-lg text-white text-sm placeholder-slate-400 focus:outline-none focus:border-blue-500 transition-colors"
                   />
                 </div>
 
@@ -1436,7 +1436,7 @@ const PatientsManagement: React.FC<PatientsManagementProps> = ({ embedded = fals
                 <select
                   value={selectedSpecialty}
                   onChange={(e) => setSelectedSpecialty(e.target.value)}
-                  className="px-3 py-1.5 bg-brand-surface-subtle border border-slate-600 rounded-lg text-brand-text text-sm focus:outline-none focus:border-blue-500 transition-colors"
+                  className="px-3 py-1.5 bg-slate-700 border border-slate-600 rounded-lg text-white text-sm focus:outline-none focus:border-blue-500 transition-colors"
                 >
                   <option value="all">Todas as Especialidades</option>
                   {specialties.map(spec => (
@@ -1448,7 +1448,7 @@ const PatientsManagement: React.FC<PatientsManagementProps> = ({ embedded = fals
                 <select
                   value={selectedClinic}
                   onChange={(e) => setSelectedClinic(e.target.value)}
-                  className="px-3 py-1.5 bg-brand-surface-subtle border border-slate-600 rounded-lg text-brand-text text-sm focus:outline-none focus:border-blue-500 transition-colors"
+                  className="px-3 py-1.5 bg-slate-700 border border-slate-600 rounded-lg text-white text-sm focus:outline-none focus:border-blue-500 transition-colors"
                 >
                   {clinics.map(clinic => (
                     <option key={clinic.id} value={clinic.id}>{clinic.name}</option>
@@ -1459,7 +1459,7 @@ const PatientsManagement: React.FC<PatientsManagementProps> = ({ embedded = fals
                 <select
                   value={selectedRoom}
                   onChange={(e) => setSelectedRoom(e.target.value)}
-                  className="px-3 py-1.5 bg-brand-surface-subtle border border-slate-600 rounded-lg text-brand-text text-sm focus:outline-none focus:border-blue-500 transition-colors"
+                  className="px-3 py-1.5 bg-slate-700 border border-slate-600 rounded-lg text-white text-sm focus:outline-none focus:border-blue-500 transition-colors"
                 >
                   {rooms.map(room => (
                     <option key={room.id} value={room.id}>{room.name}</option>
@@ -1470,7 +1470,7 @@ const PatientsManagement: React.FC<PatientsManagementProps> = ({ embedded = fals
               <div className="relative new-patient-menu-container shrink-0">
                 <button
                   onClick={() => setShowNewPatientMenu(!showNewPatientMenu)}
-                  className="w-full md:w-auto flex items-center justify-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-blue-500 to-cyan-500 text-brand-text rounded-lg hover:from-blue-600 hover:to-cyan-600 transition-all hover:scale-[1.02] text-sm font-medium shadow-md shadow-blue-900/20"
+                  className="w-full md:w-auto flex items-center justify-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-blue-500 to-cyan-500 text-white rounded-lg hover:from-blue-600 hover:to-cyan-600 transition-all hover:scale-[1.02] text-sm font-medium shadow-md shadow-blue-900/20"
                   title="Cadastrar novo paciente"
                 >
                   <UserPlus className="w-4 h-4" />
@@ -1479,7 +1479,7 @@ const PatientsManagement: React.FC<PatientsManagementProps> = ({ embedded = fals
 
                 {showNewPatientMenu && (
                   <div
-                    className="absolute right-0 mt-2 w-60 bg-brand-surface border border-brand-border rounded-lg shadow-2xl z-[9999] new-patient-menu-container"
+                    className="absolute right-0 mt-2 w-60 bg-slate-800 border border-slate-700 rounded-lg shadow-2xl z-[9999] new-patient-menu-container"
                     style={{ top: '100%' }}
                   >
                     <div className="p-1.5">
@@ -1488,7 +1488,7 @@ const PatientsManagement: React.FC<PatientsManagementProps> = ({ embedded = fals
                           setShowNewPatientMenu(false)
                           navigate('/app/new-patient?mode=manual')
                         }}
-                        className="w-full text-left px-3 py-2 rounded-md hover:bg-brand-surface-subtle transition-colors text-brand-text flex items-center gap-2 text-sm"
+                        className="w-full text-left px-3 py-2 rounded-md hover:bg-slate-700 transition-colors text-white flex items-center gap-2 text-sm"
                       >
                         <UserPlus className="w-4 h-4 text-emerald-400" />
                         <span>Cadastro Manual</span>
@@ -1498,7 +1498,7 @@ const PatientsManagement: React.FC<PatientsManagementProps> = ({ embedded = fals
                           setShowNewPatientMenu(false)
                           navigate('/app/new-patient?mode=csv')
                         }}
-                        className="w-full text-left px-3 py-2 rounded-md hover:bg-brand-surface-subtle transition-colors text-brand-text flex items-center gap-2 text-sm"
+                        className="w-full text-left px-3 py-2 rounded-md hover:bg-slate-700 transition-colors text-white flex items-center gap-2 text-sm"
                       >
                         <FileText className="w-4 h-4 text-blue-400" />
                         <span>Importar CSV</span>
@@ -1508,7 +1508,7 @@ const PatientsManagement: React.FC<PatientsManagementProps> = ({ embedded = fals
                           setShowNewPatientMenu(false)
                           navigate('/app/new-patient?mode=database')
                         }}
-                        className="w-full text-left px-3 py-2 rounded-md hover:bg-brand-surface-subtle transition-colors text-brand-text flex items-center gap-2 text-sm"
+                        className="w-full text-left px-3 py-2 rounded-md hover:bg-slate-700 transition-colors text-white flex items-center gap-2 text-sm"
                       >
                         <Archive className="w-4 h-4 text-amber-400" />
                         <span>Importar do Banco</span>
@@ -1518,7 +1518,7 @@ const PatientsManagement: React.FC<PatientsManagementProps> = ({ embedded = fals
                           setShowNewPatientMenu(false)
                           navigate('/app/new-patient?mode=drag-drop')
                         }}
-                        className="w-full text-left px-3 py-2 rounded-md hover:bg-brand-surface-subtle transition-colors text-brand-text flex items-center gap-2 text-sm"
+                        className="w-full text-left px-3 py-2 rounded-md hover:bg-slate-700 transition-colors text-white flex items-center gap-2 text-sm"
                       >
                         <Upload className="w-4 h-4 text-purple-400" />
                         <span>Arrastar Arquivos</span>
@@ -1537,20 +1537,20 @@ const PatientsManagement: React.FC<PatientsManagementProps> = ({ embedded = fals
             <div className="lg:col-span-1">
               <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl border border-slate-700/50">
                 {/* V1.9.119-G: header compacto + contador inline (era 2 linhas) */}
-                <div className="p-3 border-b border-brand-border flex items-center justify-between">
-                  <h3 className="text-sm font-semibold text-brand-text">Pacientes Ativos</h3>
-                  <span className="text-xs text-brand-text-muted bg-slate-900/60 px-2 py-0.5 rounded-md font-mono">
+                <div className="p-3 border-b border-slate-700 flex items-center justify-between">
+                  <h3 className="text-sm font-semibold text-white">Pacientes Ativos</h3>
+                  <span className="text-xs text-slate-400 bg-slate-900/60 px-2 py-0.5 rounded-md font-mono">
                     {filteredPatients.length}/{patients.length}
                   </span>
                 </div>
                 <div className="max-h-[calc(100vh-300px)] overflow-y-auto">
                   {loading ? (
-                    <div className="p-4 text-center text-brand-text-muted">
+                    <div className="p-4 text-center text-slate-400">
                       <Clock className="w-7 h-7 mx-auto mb-2 animate-spin" />
                       <p className="text-xs">Carregando pacientes...</p>
                     </div>
                   ) : filteredPatients.length === 0 ? (
-                    <div className="p-4 text-center text-brand-text-muted">
+                    <div className="p-4 text-center text-slate-400">
                       <User className="w-7 h-7 mx-auto mb-2 text-slate-600" />
                       <p className="text-xs">Nenhum paciente encontrado</p>
                       <p className="text-[10px] text-slate-500 mt-1">Use o filtro acima pra refinar</p>
@@ -1566,18 +1566,18 @@ const PatientsManagement: React.FC<PatientsManagementProps> = ({ embedded = fals
                           }`}
                       >
                         <div className="flex items-center gap-2.5">
-                          <div className={`w-9 h-9 rounded-full flex items-center justify-center shrink-0 transition-all ${selectedPatient?.id === patient.id ? 'bg-emerald-500 ring-2 ring-emerald-500/30' : 'bg-brand-surface-subtle'}`}>
+                          <div className={`w-9 h-9 rounded-full flex items-center justify-center shrink-0 transition-all ${selectedPatient?.id === patient.id ? 'bg-emerald-500 ring-2 ring-emerald-500/30' : 'bg-slate-700'}`}>
                             {patient.photo ? (
                               <img src={patient.photo} alt={patient.name} className="w-9 h-9 rounded-full" />
                             ) : (
-                              <User className={`w-4 h-4 ${selectedPatient?.id === patient.id ? 'text-slate-950' : 'text-brand-text-muted'}`} />
+                              <User className={`w-4 h-4 ${selectedPatient?.id === patient.id ? 'text-slate-950' : 'text-slate-400'}`} />
                             )}
                           </div>
                           <div className="flex-1 min-w-0">
-                            <p className={`font-semibold text-sm truncate ${selectedPatient?.id === patient.id ? 'text-emerald-300' : 'text-brand-text'}`}>{patient.name}</p>
+                            <p className={`font-semibold text-sm truncate ${selectedPatient?.id === patient.id ? 'text-emerald-300' : 'text-white'}`}>{patient.name}</p>
                             <p className="text-[10px] text-slate-500 truncate font-mono">#{patient.code}</p>
                             <div className="flex items-center gap-1.5 mt-0.5">
-                              <span className="text-[10px] text-brand-text-muted bg-brand-bg px-1.5 py-0.5 rounded uppercase font-semibold tracking-wide">
+                              <span className="text-[10px] text-slate-400 bg-slate-900 px-1.5 py-0.5 rounded uppercase font-semibold tracking-wide">
                                 {patient.appointmentsCount} atend.
                               </span>
                               {patient.absences > 0 && (
@@ -1603,7 +1603,7 @@ const PatientsManagement: React.FC<PatientsManagementProps> = ({ embedded = fals
               <div className="flex items-center justify-center py-20">
                 <div className="text-center">
                   <Clock className="w-12 h-12 mx-auto mb-3 text-slate-500 animate-spin" />
-                  <p className="text-brand-text-muted">Carregando prontuário...</p>
+                  <p className="text-slate-400">Carregando prontuário...</p>
                 </div>
               </div>
             ) : !detailOnly && activeTab === 'appointments' && !selectedPatient ? (
@@ -1612,15 +1612,15 @@ const PatientsManagement: React.FC<PatientsManagementProps> = ({ embedded = fals
                 <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl border border-slate-700/50 p-6">
                   <div className="flex items-center justify-between mb-6">
                     <div>
-                      <h3 className="text-xl font-bold text-brand-text mb-2 flex items-center space-x-2">
+                      <h3 className="text-xl font-bold text-white mb-2 flex items-center space-x-2">
                         <Calendar className="w-5 h-5 text-green-400" />
                         <span>Agendamentos</span>
                       </h3>
-                      <p className="text-brand-text-muted">Gerencie agendamentos e visualize sua agenda completa</p>
+                      <p className="text-slate-400">Gerencie agendamentos e visualize sua agenda completa</p>
                     </div>
                     <button
                       onClick={() => navigate('/app/clinica/profissional/dashboard?section=terminal-clinico&tab=scheduling')}
-                      className="flex items-center space-x-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-brand-text rounded-lg transition-colors"
+                      className="flex items-center space-x-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors"
                     >
                       <Plus className="w-4 h-4" />
                       <span>Novo Agendamento</span>
@@ -1637,14 +1637,14 @@ const PatientsManagement: React.FC<PatientsManagementProps> = ({ embedded = fals
                   <div className="flex flex-wrap gap-3">
                     <button
                       onClick={() => navigate('/app/clinica/profissional/dashboard?section=terminal-clinico&tab=scheduling')}
-                      className="flex items-center space-x-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-brand-text rounded-lg transition-colors"
+                      className="flex items-center space-x-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
                     >
                       <Plus className="w-4 h-4" />
                       <span>Novo Agendamento</span>
                     </button>
                     <button
                       onClick={() => navigate('/app/clinica/profissional/dashboard?section=atendimento')}
-                      className="flex items-center space-x-2 px-4 py-2 bg-brand-surface-subtle hover:bg-slate-600 text-brand-text rounded-lg transition-colors"
+                      className="flex items-center space-x-2 px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg transition-colors"
                     >
                       <Calendar className="w-4 h-4" />
                       <span>Ver Agenda Completa</span>
@@ -1659,7 +1659,7 @@ const PatientsManagement: React.FC<PatientsManagementProps> = ({ embedded = fals
                     <button
                       type="button"
                       onClick={onBack}
-                      className="flex items-center gap-1.5 text-brand-text-muted hover:text-brand-text text-sm font-medium"
+                      className="flex items-center gap-1.5 text-slate-400 hover:text-white text-sm font-medium"
                     >
                       <ArrowLeft className="w-4 h-4" />
                       Voltar à seleção
@@ -1674,14 +1674,14 @@ const PatientsManagement: React.FC<PatientsManagementProps> = ({ embedded = fals
                         {selectedPatient.photo ? (
                           <img src={selectedPatient.photo} alt={selectedPatient.name} className="w-14 h-14 rounded-full" />
                         ) : (
-                          <User className="w-7 h-7 text-brand-text" />
+                          <User className="w-7 h-7 text-white" />
                         )}
                       </div>
                       <div className="min-w-0 flex-1">
-                        <h2 className="text-xl font-bold text-brand-text tracking-tight truncate">{selectedPatient.name}</h2>
-                        <div className="flex items-center gap-2 mt-0.5 text-sm font-medium text-brand-text-muted flex-wrap">
+                        <h2 className="text-xl font-bold text-white tracking-tight truncate">{selectedPatient.name}</h2>
+                        <div className="flex items-center gap-2 mt-0.5 text-sm font-medium text-slate-400 flex-wrap">
                           {selectedPatient.birthDate ? (
-                            <span className="text-brand-text-secondary">{selectedPatient.age} anos</span>
+                            <span className="text-slate-300">{selectedPatient.age} anos</span>
                           ) : (
                             <span className="text-slate-500 italic">Idade não informada</span>
                           )}
@@ -1690,13 +1690,13 @@ const PatientsManagement: React.FC<PatientsManagementProps> = ({ embedded = fals
                           {selectedPatient.cpf && (
                             <>
                               <span className="opacity-30">•</span>
-                              <span className="text-brand-text-muted text-xs">CPF: {selectedPatient.cpf}</span>
+                              <span className="text-slate-400 text-xs">CPF: {selectedPatient.cpf}</span>
                             </>
                           )}
                           {selectedPatient.phone && selectedPatient.phone !== 'Não informado' && (
                             <>
                               <span className="opacity-30">•</span>
-                              <span className="text-brand-text-muted text-xs flex items-center gap-1">
+                              <span className="text-slate-400 text-xs flex items-center gap-1">
                                 <Phone className="w-3 h-3 text-emerald-500" />
                                 {selectedPatient.phone}
                               </span>
@@ -1718,7 +1718,7 @@ const PatientsManagement: React.FC<PatientsManagementProps> = ({ embedded = fals
                           setActiveTab('evolution')
                           setShowNewEvolution(true)
                         }}
-                        className="px-3 py-1.5 bg-gradient-to-r from-green-500 to-emerald-500 text-brand-text rounded-lg hover:from-green-600 hover:to-emerald-600 transition-colors text-xs font-medium"
+                        className="px-3 py-1.5 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-lg hover:from-green-600 hover:to-emerald-600 transition-colors text-xs font-medium"
                       >
                         + Nova Evolução
                       </button>
@@ -1728,8 +1728,8 @@ const PatientsManagement: React.FC<PatientsManagementProps> = ({ embedded = fals
                         onClick={handleOpenPatientChat}
                         disabled={openingChat}
                         className={`px-3 py-1.5 rounded-lg transition-colors text-xs font-medium ${openingChat
-                          ? 'bg-primary-500/60 text-brand-text cursor-wait'
-                          : 'bg-primary-500 text-brand-text hover:bg-primary-400'
+                          ? 'bg-primary-500/60 text-white cursor-wait'
+                          : 'bg-primary-500 text-white hover:bg-primary-400'
                           }`}
                       >
                         {openingChat ? 'Abrindo...' : '💬 Chat'}
@@ -1744,17 +1744,17 @@ const PatientsManagement: React.FC<PatientsManagementProps> = ({ embedded = fals
                   <div className="mt-3 pt-3 border-t border-slate-700/50 flex items-center gap-4 text-xs flex-wrap">
                     <div className="flex items-center gap-1.5">
                       <span className="text-slate-500 uppercase tracking-wider font-semibold">Atendimentos</span>
-                      <span className="text-brand-text font-bold text-base">{selectedPatient.appointmentsCount}</span>
+                      <span className="text-white font-bold text-base">{selectedPatient.appointmentsCount}</span>
                     </div>
                     <span className="text-slate-700">|</span>
                     <div className="flex items-center gap-1.5">
                       <span className="text-slate-500 uppercase tracking-wider font-semibold">Faltas</span>
-                      <span className="text-brand-text font-bold text-base">{selectedPatient.absences}</span>
+                      <span className="text-white font-bold text-base">{selectedPatient.absences}</span>
                     </div>
                     <span className="text-slate-700">|</span>
                     <div className="flex items-center gap-1.5">
                       <span className="text-slate-500 uppercase tracking-wider font-semibold">Serviços</span>
-                      <span className="text-brand-text font-bold text-base">{selectedPatient.servicesCount}</span>
+                      <span className="text-white font-bold text-base">{selectedPatient.servicesCount}</span>
                     </div>
                   </div>
                 </div>
@@ -1763,7 +1763,7 @@ const PatientsManagement: React.FC<PatientsManagementProps> = ({ embedded = fals
                 {selectedPatient && (
                   <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl border border-slate-700/50">
                     {/* V1.9.119-I: tabs compactas + scroll visivel + gradiente fade direito indicando mais conteudo */}
-                    <div className="border-b border-brand-border relative">
+                    <div className="border-b border-slate-700 relative">
                       <div className="flex overflow-x-auto gap-1 p-2 md:p-2.5 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-slate-700" style={{ WebkitOverflowScrolling: 'touch' }}>
                         {[
                           { id: 'overview', label: 'Visão Geral', icon: Activity },
@@ -1785,7 +1785,7 @@ const PatientsManagement: React.FC<PatientsManagementProps> = ({ embedded = fals
                               onClick={() => setActiveTab(tab.id as any)}
                               className={`flex items-center gap-1.5 px-2.5 md:px-3.5 py-1.5 md:py-2 rounded-lg transition-all font-medium text-xs md:text-sm whitespace-nowrap shrink-0 ${activeTab === tab.id
                                 ? 'bg-emerald-500/15 text-emerald-300 border border-emerald-500/30'
-                                : 'text-brand-text-muted hover:text-brand-text hover:bg-slate-700/50 border border-transparent'
+                                : 'text-slate-400 hover:text-white hover:bg-slate-700/50 border border-transparent'
                                 }`}
                             >
                               <Icon className="w-3.5 h-3.5" />
@@ -1867,16 +1867,16 @@ const PatientsManagement: React.FC<PatientsManagementProps> = ({ embedded = fals
                           {/* BLOCO 2: Última Avaliação Clínica — card destaque com queixa, score, sparkline, alertas */}
                           {overviewLoading ? (
                             <div className="bg-slate-700/30 rounded-xl p-4 border border-slate-700/50 animate-pulse">
-                              <div className="h-3 bg-brand-surface-subtle rounded w-1/3 mb-3"></div>
-                              <div className="h-4 bg-brand-surface-subtle rounded w-2/3 mb-2"></div>
-                              <div className="h-3 bg-brand-surface-subtle rounded w-1/2"></div>
+                              <div className="h-3 bg-slate-700 rounded w-1/3 mb-3"></div>
+                              <div className="h-4 bg-slate-700 rounded w-2/3 mb-2"></div>
+                              <div className="h-3 bg-slate-700 rounded w-1/2"></div>
                             </div>
                           ) : overviewData?.lastReport ? (
                             <div className="bg-gradient-to-br from-emerald-500/8 via-slate-800/40 to-blue-500/8 border border-emerald-500/25 rounded-xl p-4">
                               <div className="flex items-start justify-between gap-3 mb-2.5">
                                 <div className="flex items-center gap-2 min-w-0">
                                   <Target className="w-4 h-4 text-emerald-400 shrink-0" />
-                                  <h3 className="text-sm font-bold text-brand-text">Última Avaliação Clínica</h3>
+                                  <h3 className="text-sm font-bold text-white">Última Avaliação Clínica</h3>
                                   {overviewData.lastReport.signed && (
                                     <span className="px-1.5 py-0.5 rounded text-[9px] font-black uppercase bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 flex items-center gap-0.5">
                                       <CheckCircle className="w-2.5 h-2.5" />
@@ -1884,7 +1884,7 @@ const PatientsManagement: React.FC<PatientsManagementProps> = ({ embedded = fals
                                     </span>
                                   )}
                                 </div>
-                                <span className="text-[11px] text-brand-text-muted shrink-0">
+                                <span className="text-[11px] text-slate-400 shrink-0">
                                   {new Date(overviewData.lastReport.generatedAt).toLocaleDateString('pt-BR')} • {new Date(overviewData.lastReport.generatedAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
                                 </span>
                               </div>
@@ -1898,11 +1898,11 @@ const PatientsManagement: React.FC<PatientsManagementProps> = ({ embedded = fals
                                 {overviewData.lastReport.score !== null && (
                                   <div className="flex items-center gap-1.5">
                                     <span className="text-[10px] uppercase font-bold text-slate-500">Score</span>
-                                    <span className="text-base font-bold text-brand-text">{overviewData.lastReport.score}</span>
+                                    <span className="text-base font-bold text-white">{overviewData.lastReport.score}</span>
                                     {overviewData.lastReport.prevScore !== null && (() => {
                                       const delta = (overviewData.lastReport.score ?? 0) - overviewData.lastReport.prevScore
                                       const sign = delta > 0 ? '+' : ''
-                                      const cls = delta > 0 ? 'text-emerald-400' : delta < 0 ? 'text-rose-400' : 'text-brand-text-muted'
+                                      const cls = delta > 0 ? 'text-emerald-400' : delta < 0 ? 'text-rose-400' : 'text-slate-400'
                                       return <span className={`text-[11px] font-bold ${cls}`}>({sign}{delta})</span>
                                     })()}
                                   </div>
@@ -1942,7 +1942,7 @@ const PatientsManagement: React.FC<PatientsManagementProps> = ({ embedded = fals
                           ) : (
                             <div className="bg-slate-700/20 rounded-xl p-4 border border-slate-700/40 text-center">
                               <Target className="w-6 h-6 mx-auto mb-1.5 text-slate-600" />
-                              <p className="text-sm text-brand-text-muted">Nenhuma avaliação clínica registrada ainda</p>
+                              <p className="text-sm text-slate-400">Nenhuma avaliação clínica registrada ainda</p>
                               <p className="text-[11px] text-slate-500 mt-0.5">A próxima AEC vai aparecer aqui em destaque</p>
                             </div>
                           )}
@@ -1954,7 +1954,7 @@ const PatientsManagement: React.FC<PatientsManagementProps> = ({ embedded = fals
                                 <BarChart3 className="w-3.5 h-3.5 text-blue-400" />
                                 <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">AECs</p>
                               </div>
-                              <p className="text-lg font-bold text-brand-text">{overviewData?.tabCounts.aecs ?? '—'}</p>
+                              <p className="text-lg font-bold text-white">{overviewData?.tabCounts.aecs ?? '—'}</p>
                               <p className="text-[10px] text-slate-500">total registradas</p>
                             </div>
 
@@ -1965,7 +1965,7 @@ const PatientsManagement: React.FC<PatientsManagementProps> = ({ embedded = fals
                               </div>
                               {overviewData?.lastPrescription ? (
                                 <>
-                                  <p className="text-xs font-semibold text-brand-text truncate">{overviewData.lastPrescription.summary}</p>
+                                  <p className="text-xs font-semibold text-white truncate">{overviewData.lastPrescription.summary}</p>
                                   <p className={`text-[10px] font-bold uppercase ${overviewData.lastPrescription.status === 'signed' ? 'text-emerald-400' : 'text-amber-400'}`}>
                                     {overviewData.lastPrescription.status === 'signed' ? '✓ assinada' : '⚠ ' + overviewData.lastPrescription.status}
                                   </p>
@@ -1985,8 +1985,8 @@ const PatientsManagement: React.FC<PatientsManagementProps> = ({ embedded = fals
                                 const daysAhead = Math.ceil((date.getTime() - Date.now()) / (1000 * 60 * 60 * 24))
                                 return (
                                   <>
-                                    <p className="text-xs font-semibold text-brand-text">{date.toLocaleDateString('pt-BR')}</p>
-                                    <p className="text-[10px] text-brand-text-muted">
+                                    <p className="text-xs font-semibold text-white">{date.toLocaleDateString('pt-BR')}</p>
+                                    <p className="text-[10px] text-slate-400">
                                       {overviewData.nextAppointment.isRemote ? '🎥 vídeo' : '🏥 presencial'}
                                       {daysAhead >= 0 && daysAhead <= 90 ? ` • em ${daysAhead}d` : ''}
                                     </p>
@@ -2002,7 +2002,7 @@ const PatientsManagement: React.FC<PatientsManagementProps> = ({ embedded = fals
                                 <Activity className="w-3.5 h-3.5 text-emerald-400" />
                                 <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Chat 30d</p>
                               </div>
-                              <p className="text-lg font-bold text-brand-text">{overviewData?.chatCount30d ?? '—'}</p>
+                              <p className="text-lg font-bold text-white">{overviewData?.chatCount30d ?? '—'}</p>
                               <p className="text-[10px] text-slate-500">mensagens</p>
                             </div>
                           </div>
@@ -2013,15 +2013,15 @@ const PatientsManagement: React.FC<PatientsManagementProps> = ({ embedded = fals
                             <div className="bg-slate-700/30 rounded-lg p-3 border border-slate-700/50">
                               <div className="flex items-center gap-1.5 mb-2">
                                 <User className="w-3.5 h-3.5 text-indigo-400" />
-                                <p className="text-[11px] font-bold text-brand-text-secondary uppercase tracking-wider">Equipe Clínica</p>
+                                <p className="text-[11px] font-bold text-slate-300 uppercase tracking-wider">Equipe Clínica</p>
                               </div>
                               {overviewData?.clinicalTeam.length ? (
                                 <div className="space-y-1.5">
                                   {overviewData.clinicalTeam.slice(0, 3).map(prof => (
                                     <div key={prof.id} className="flex items-center justify-between gap-2">
                                       <div className="min-w-0 flex-1">
-                                        <p className="text-xs font-semibold text-brand-text truncate">{prof.name}</p>
-                                        <p className="text-[10px] text-brand-text-muted truncate">
+                                        <p className="text-xs font-semibold text-white truncate">{prof.name}</p>
+                                        <p className="text-[10px] text-slate-400 truncate">
                                           {prof.specialty || 'Profissional'}
                                           {prof.role === 'responsible' && <span className="ml-1 text-emerald-400">• responsável</span>}
                                         </p>
@@ -2042,24 +2042,24 @@ const PatientsManagement: React.FC<PatientsManagementProps> = ({ embedded = fals
                             <div className="bg-slate-700/30 rounded-lg p-3 border border-slate-700/50">
                               <div className="flex items-center gap-1.5 mb-2">
                                 <FileText className="w-3.5 h-3.5 text-orange-400" />
-                                <p className="text-[11px] font-bold text-brand-text-secondary uppercase tracking-wider">Resumo</p>
+                                <p className="text-[11px] font-bold text-slate-300 uppercase tracking-wider">Resumo</p>
                               </div>
                               <div className="grid grid-cols-2 gap-1 text-xs">
                                 <button onClick={() => setActiveTab('evolution')} className="text-left flex items-center justify-between px-2 py-1 rounded hover:bg-slate-600/30 transition-colors">
-                                  <span className="text-brand-text-secondary">🩺 AECs</span>
-                                  <span className="text-brand-text font-bold">{overviewData?.tabCounts.aecs ?? '—'}</span>
+                                  <span className="text-slate-300">🩺 AECs</span>
+                                  <span className="text-white font-bold">{overviewData?.tabCounts.aecs ?? '—'}</span>
                                 </button>
                                 <button onClick={() => setActiveTab('prescription')} className="text-left flex items-center justify-between px-2 py-1 rounded hover:bg-slate-600/30 transition-colors">
-                                  <span className="text-brand-text-secondary">💊 Prescr</span>
-                                  <span className="text-brand-text font-bold">{overviewData?.tabCounts.prescriptions ?? '—'}</span>
+                                  <span className="text-slate-300">💊 Prescr</span>
+                                  <span className="text-white font-bold">{overviewData?.tabCounts.prescriptions ?? '—'}</span>
                                 </button>
                                 <button onClick={() => setActiveTab('exams')} className="text-left flex items-center justify-between px-2 py-1 rounded hover:bg-slate-600/30 transition-colors">
-                                  <span className="text-brand-text-secondary">🧪 Exames</span>
-                                  <span className="text-brand-text font-bold">{overviewData?.tabCounts.exams ?? '—'}</span>
+                                  <span className="text-slate-300">🧪 Exames</span>
+                                  <span className="text-white font-bold">{overviewData?.tabCounts.exams ?? '—'}</span>
                                 </button>
                                 <button onClick={() => setActiveTab('appointments')} className="text-left flex items-center justify-between px-2 py-1 rounded hover:bg-slate-600/30 transition-colors">
-                                  <span className="text-brand-text-secondary">📅 Consultas</span>
-                                  <span className="text-brand-text font-bold">{overviewData?.tabCounts.appointments ?? '—'}</span>
+                                  <span className="text-slate-300">📅 Consultas</span>
+                                  <span className="text-white font-bold">{overviewData?.tabCounts.appointments ?? '—'}</span>
                                 </button>
                               </div>
                             </div>
@@ -2068,7 +2068,7 @@ const PatientsManagement: React.FC<PatientsManagementProps> = ({ embedded = fals
                           {/* BLOCO 5: Histórico — Timeline tipada (mantém na Visão Geral, evolui com badge por fonte) */}
                           <div className="bg-slate-700/50 rounded-lg p-4">
                             <div className="flex items-center justify-between mb-2">
-                              <p className="text-sm text-brand-text-muted font-semibold">Histórico</p>
+                              <p className="text-sm text-slate-400 font-semibold">Histórico</p>
                               {evolutions.length > 5 && (
                                 <button onClick={() => setActiveTab('evolution')} className="text-[11px] text-emerald-400 hover:text-emerald-300 transition-colors">
                                   ver tudo →
@@ -2076,18 +2076,18 @@ const PatientsManagement: React.FC<PatientsManagementProps> = ({ embedded = fals
                               )}
                             </div>
                             {loadingEvolutions ? (
-                              <div className="text-center text-brand-text-muted py-4">
+                              <div className="text-center text-slate-400 py-4">
                                 <Clock className="w-6 h-6 mx-auto mb-2 animate-spin" />
                                 <p className="text-sm">Carregando histórico...</p>
                               </div>
                             ) : evolutions.length === 0 ? (
-                              <p className="text-brand-text-secondary text-sm">Não há informações para serem exibidas.</p>
+                              <p className="text-slate-300 text-sm">Não há informações para serem exibidas.</p>
                             ) : (
                               <div className="space-y-2 max-h-60 overflow-y-auto">
                                 {evolutions.slice(0, 5).map(evolution => {
                                   const sourceLabel = evolution.source === 'report' ? { icon: '📄', label: 'Relatório', cls: 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30' }
                                     : evolution.source === 'assessment' ? { icon: '🩺', label: 'AEC', cls: 'bg-blue-500/15 text-blue-300 border-blue-500/30' }
-                                    : { icon: '📝', label: 'Registro', cls: 'bg-slate-500/15 text-brand-text-secondary border-slate-500/30' }
+                                    : { icon: '📝', label: 'Registro', cls: 'bg-slate-500/15 text-slate-300 border-slate-500/30' }
                                   // V1.9.389-B (Sprint 2 — F1 revisado, Opção B Pedro 20/05):
                                   // Botão "Estruturar Matrix" inline no card pra QUALQUER relatório assinado (não só <24h).
                                   // Memory: project_visao_final_eixo_pesquisa_19_05 — gap F1 da jornada Pesquisa.
@@ -2121,11 +2121,11 @@ const PatientsManagement: React.FC<PatientsManagementProps> = ({ embedded = fals
                                               </span>
                                             )}
                                             {typeof evolution.score === 'number' && (
-                                              <span className="text-[10px] font-bold text-brand-text-secondary">score {evolution.score}</span>
+                                              <span className="text-[10px] font-bold text-slate-300">score {evolution.score}</span>
                                             )}
                                           </div>
                                         </div>
-                                        <p className="text-sm text-brand-text-secondary line-clamp-2 leading-relaxed mb-1.5">{evolutionContentString(evolution.content, '—')}</p>
+                                        <p className="text-sm text-slate-300 line-clamp-2 leading-relaxed mb-1.5">{evolutionContentString(evolution.content, '—')}</p>
                                         <p className="text-[11px] text-slate-500 font-bold uppercase tracking-tight">{evolution.professional}</p>
                                       </button>
                                       {showMatrixCTA && (
@@ -2148,7 +2148,7 @@ const PatientsManagement: React.FC<PatientsManagementProps> = ({ embedded = fals
                                   )
                                 })}
                                 {evolutions.length > 5 && (
-                                  <p className="text-xs text-brand-text-muted text-center pt-2">
+                                  <p className="text-xs text-slate-400 text-center pt-2">
                                     ... e mais {evolutions.length - 5} registro(s) na aba "Evolução"
                                   </p>
                                 )}
@@ -2205,19 +2205,19 @@ const PatientsManagement: React.FC<PatientsManagementProps> = ({ embedded = fals
                         <div className="space-y-4">
                           {showNewEvolution && (
                             <div className="bg-gradient-to-r from-blue-500/10 to-cyan-500/10 border border-blue-500/30 rounded-xl p-6">
-                              <h3 className="text-lg font-bold text-brand-text mb-4">Nova Evolução</h3>
+                              <h3 className="text-lg font-bold text-white mb-4">Nova Evolução</h3>
                               <div className="space-y-4">
                                 <div>
-                                  <label className="block text-sm font-medium text-brand-text-secondary mb-2">
+                                  <label className="block text-sm font-medium text-slate-300 mb-2">
                                     Tipo de Evolução
                                   </label>
-                                  <select className="w-full px-4 py-2 bg-brand-surface-subtle border border-slate-600 rounded-lg text-brand-text focus:outline-none focus:border-blue-500">
+                                  <select className="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:border-blue-500">
                                     <option value="current">Atual</option>
                                     <option value="historical">Histórico</option>
                                   </select>
                                 </div>
                                 <div>
-                                  <label className="block text-sm font-medium text-brand-text-secondary mb-2">
+                                  <label className="block text-sm font-medium text-slate-300 mb-2">
                                     Evolução
                                   </label>
                                   <textarea
@@ -2225,19 +2225,19 @@ const PatientsManagement: React.FC<PatientsManagementProps> = ({ embedded = fals
                                     onChange={(e) => setEvolutionContent(e.target.value)}
                                     rows={6}
                                     placeholder="Digite a evolução... Use @ para modelos e # para tags"
-                                    className="w-full px-4 py-2 bg-brand-surface-subtle border border-slate-600 rounded-lg text-brand-text placeholder-slate-400 focus:outline-none focus:border-blue-500"
+                                    className="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:border-blue-500"
                                   />
                                 </div>
                                 <div className="flex space-x-3">
                                   <button
                                     onClick={handleSaveEvolution}
-                                    className="flex-1 px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-500 text-brand-text rounded-lg hover:from-green-600 hover:to-emerald-600 transition-colors"
+                                    className="flex-1 px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-lg hover:from-green-600 hover:to-emerald-600 transition-colors"
                                   >
                                     Salvar Evolução
                                   </button>
                                   <button
                                     onClick={() => setShowNewEvolution(false)}
-                                    className="px-4 py-2 bg-brand-surface-subtle text-brand-text rounded-lg hover:bg-slate-600 transition-colors"
+                                    className="px-4 py-2 bg-slate-700 text-white rounded-lg hover:bg-slate-600 transition-colors"
                                   >
                                     Cancelar
                                   </button>
@@ -2247,12 +2247,12 @@ const PatientsManagement: React.FC<PatientsManagementProps> = ({ embedded = fals
                           )}
 
                           {loadingEvolutions ? (
-                            <div className="text-center text-brand-text-muted py-8">
+                            <div className="text-center text-slate-400 py-8">
                               <Clock className="w-12 h-12 mx-auto mb-3 text-slate-600 animate-spin" />
                               <p>Carregando evoluções...</p>
                             </div>
                           ) : evolutions.length === 0 ? (
-                            <div className="text-center text-brand-text-muted py-8">
+                            <div className="text-center text-slate-400 py-8">
                               <FileText className="w-12 h-12 mx-auto mb-3 text-slate-600" />
                               <p>Nenhuma evolução registrada</p>
                             </div>
@@ -2271,8 +2271,8 @@ const PatientsManagement: React.FC<PatientsManagementProps> = ({ embedded = fals
                                   >
                                     <div className="flex items-start justify-between mb-2">
                                       <div>
-                                        <p className="font-semibold text-brand-text">{evolution.date} • {evolution.time}</p>
-                                        <p className="text-xs text-brand-text-muted">{evolution.professional}</p>
+                                        <p className="font-semibold text-white">{evolution.date} • {evolution.time}</p>
+                                        <p className="text-xs text-slate-400">{evolution.professional}</p>
                                       </div>
                                       <span className={`px-2 py-1 rounded-full text-xs ${evolution.type === 'current'
                                         ? 'bg-green-500/20 text-green-400'
@@ -2281,7 +2281,7 @@ const PatientsManagement: React.FC<PatientsManagementProps> = ({ embedded = fals
                                         {evolution.type === 'current' ? 'Atual' : 'Histórico'}
                                       </span>
                                     </div>
-                                    <p className="text-brand-text-secondary text-sm whitespace-pre-wrap">{evolutionContentString(evolution.content, '—')}</p>
+                                    <p className="text-slate-300 text-sm whitespace-pre-wrap">{evolutionContentString(evolution.content, '—')}</p>
                                   </div>
                                 )
                               })}
@@ -2313,15 +2313,15 @@ const PatientsManagement: React.FC<PatientsManagementProps> = ({ embedded = fals
                           <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl border border-slate-700/50 p-6">
                             <div className="flex items-center justify-between mb-6">
                               <div>
-                                <h3 className="text-xl font-bold text-brand-text mb-2 flex items-center space-x-2">
+                                <h3 className="text-xl font-bold text-white mb-2 flex items-center space-x-2">
                                   <Calendar className="w-5 h-5 text-green-400" />
                                   <span>Agendamentos</span>
                                 </h3>
-                                <p className="text-brand-text-muted">Gerencie agendamentos e visualize sua agenda completa</p>
+                                <p className="text-slate-400">Gerencie agendamentos e visualize sua agenda completa</p>
                               </div>
                               <button
                                 onClick={() => navigate('/app/clinica/profissional/dashboard?section=terminal-clinico&tab=scheduling')}
-                                className="flex items-center space-x-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-brand-text rounded-lg transition-colors"
+                                className="flex items-center space-x-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors"
                               >
                                 <Plus className="w-4 h-4" />
                                 <span>Novo Agendamento</span>
@@ -2337,14 +2337,14 @@ const PatientsManagement: React.FC<PatientsManagementProps> = ({ embedded = fals
                             <div className="flex flex-wrap gap-3">
                               <button
                                 onClick={() => navigate('/app/clinica/profissional/dashboard?section=terminal-clinico&tab=scheduling')}
-                                className="flex items-center space-x-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-brand-text rounded-lg transition-colors"
+                                className="flex items-center space-x-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
                               >
                                 <Plus className="w-4 h-4" />
                                 <span>Novo Agendamento</span>
                               </button>
                               <button
                                 onClick={() => navigate('/app/clinica/profissional/dashboard?section=atendimento')}
-                                className="flex items-center space-x-2 px-4 py-2 bg-brand-surface-subtle hover:bg-slate-600 text-brand-text rounded-lg transition-colors"
+                                className="flex items-center space-x-2 px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg transition-colors"
                               >
                                 <Calendar className="w-4 h-4" />
                                 <span>Ver Agenda Completa</span>
@@ -2364,7 +2364,7 @@ const PatientsManagement: React.FC<PatientsManagementProps> = ({ embedded = fals
                       )}
 
                       {activeTab === 'receipts' && (
-                        <div className="text-center text-brand-text-muted py-8">
+                        <div className="text-center text-slate-400 py-8">
                           <Download className="w-12 h-12 mx-auto mb-3 text-slate-600" />
                           <p>Nenhum recebimento registrado</p>
                         </div>
@@ -2384,8 +2384,8 @@ const PatientsManagement: React.FC<PatientsManagementProps> = ({ embedded = fals
             ) : (
               <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl p-12 border border-slate-700/50 text-center">
                 <User className="w-16 h-16 text-slate-600 mx-auto mb-4" />
-                <h3 className="text-xl font-bold text-brand-text mb-2">Selecione um Paciente</h3>
-                <p className="text-brand-text-muted">Escolha um paciente da lista para visualizar o prontuário</p>
+                <h3 className="text-xl font-bold text-white mb-2">Selecione um Paciente</h3>
+                <p className="text-slate-400">Escolha um paciente da lista para visualizar o prontuário</p>
               </div>
             )}
           </div>

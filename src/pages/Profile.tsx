@@ -580,7 +580,7 @@ const Profile: React.FC = () => {
       <button
         type="button"
         onClick={() => navigate(-1)}
-        className="flex items-center gap-1.5 text-xs text-brand-text-muted hover:text-brand-text transition-colors"
+        className="flex items-center gap-1.5 text-xs text-slate-400 hover:text-white transition-colors"
       >
         <ArrowLeft className="w-3.5 h-3.5" />
         Voltar
@@ -588,10 +588,10 @@ const Profile: React.FC = () => {
 
       {/* Header */}
       <div className="text-center">
-        <h1 className="text-xl font-semibold text-brand-text mb-1">
+        <h1 className="text-xl font-semibold text-white mb-1">
           Meu Perfil
         </h1>
-        <p className="text-sm text-brand-text-muted">
+        <p className="text-sm text-slate-400">
           Informações pessoais e configurações
         </p>
       </div>
@@ -642,15 +642,15 @@ const Profile: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         {/* Profile Info */}
         <div className="lg:col-span-2 space-y-4">
-          <div className="bg-slate-800/80 rounded-lg p-4 border border-brand-border">
+          <div className="bg-slate-800/80 rounded-lg p-4 border border-slate-700">
             <div className="flex items-center justify-between mb-3">
-              <h2 className="text-sm font-semibold text-brand-text">
+              <h2 className="text-sm font-semibold text-white">
                 Informações Pessoais
               </h2>
               {!isEditing ? (
                 <button
                   onClick={() => setIsEditing(true)}
-                  className="bg-blue-600 hover:bg-blue-700 text-brand-text px-2.5 py-1.5 rounded text-xs font-medium flex items-center gap-1.5 transition-colors"
+                  className="bg-blue-600 hover:bg-blue-700 text-white px-2.5 py-1.5 rounded text-xs font-medium flex items-center gap-1.5 transition-colors"
                 >
                   <Edit className="w-3 h-3" />
                   Editar
@@ -660,13 +660,13 @@ const Profile: React.FC = () => {
                   <button
                     onClick={handleSaveProfile}
                     disabled={isLoading}
-                    className="bg-green-600 hover:bg-green-700 disabled:bg-green-800 text-brand-text px-2.5 py-1.5 rounded text-xs font-medium flex items-center gap-1 transition-colors"
+                    className="bg-green-600 hover:bg-green-700 disabled:bg-green-800 text-white px-2.5 py-1.5 rounded text-xs font-medium flex items-center gap-1 transition-colors"
                   >
                     {isLoading ? 'Salvando...' : 'Salvar'}
                   </button>
                   <button
                     onClick={handleCancel}
-                    className="bg-slate-600 hover:bg-brand-surface-subtle text-brand-text px-2.5 py-1.5 rounded text-xs font-medium flex items-center gap-1 transition-colors"
+                    className="bg-slate-600 hover:bg-slate-700 text-white px-2.5 py-1.5 rounded text-xs font-medium flex items-center gap-1 transition-colors"
                   >
                     <X className="w-3 h-3" />
                     Cancelar
@@ -696,20 +696,20 @@ const Profile: React.FC = () => {
                     {avatarUrl ? (
                       <img src={avatarUrl} alt="" className="w-full h-full object-cover" />
                     ) : (
-                      <span className="text-brand-text font-semibold text-lg">
+                      <span className="text-white font-semibold text-lg">
                         {formData.name.charAt(0).toUpperCase()}
                       </span>
                     )}
                   </button>
-                  <span className="absolute -bottom-0.5 right-0 w-5 h-5 rounded-full bg-brand-surface-subtle border border-slate-600 flex items-center justify-center">
-                    <Camera className="w-2.5 h-2.5 text-brand-text-secondary" />
+                  <span className="absolute -bottom-0.5 right-0 w-5 h-5 rounded-full bg-slate-700 border border-slate-600 flex items-center justify-center">
+                    <Camera className="w-2.5 h-2.5 text-slate-300" />
                   </span>
                 </div>
                 <div className="flex-1 min-w-0">
-                  <h3 className="text-sm font-semibold text-brand-text">
+                  <h3 className="text-sm font-semibold text-white">
                     {user?.name || 'Usuário'}
                   </h3>
-                  <p className="text-xs text-brand-text-muted">
+                  <p className="text-xs text-slate-400">
                     {user?.type === 'profissional' ? 'Profissional' :
                       user?.type === 'paciente' ? 'Paciente' :
                         user?.type === 'aluno' ? 'Estudante' : 'Administrador'}
@@ -728,29 +728,29 @@ const Profile: React.FC = () => {
               {/* Form Fields */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-medium text-brand-text-muted mb-1">Nome Completo</label>
+                  <label className="block text-xs font-medium text-slate-400 mb-1">Nome Completo</label>
                   <input
                     type="text"
                     name="name"
                     value={formData.name}
                     onChange={handleInputChange}
                     disabled={!isEditing}
-                    className="w-full px-3 py-2 text-sm bg-brand-surface-subtle border border-slate-600 rounded text-brand-text focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-full px-3 py-2 text-sm bg-slate-700 border border-slate-600 rounded text-white focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-brand-text-muted mb-1">Email</label>
+                  <label className="block text-xs font-medium text-slate-400 mb-1">Email</label>
                   <input
                     type="email"
                     name="email"
                     value={formData.email}
                     onChange={handleInputChange}
                     disabled
-                    className="w-full px-3 py-2 text-sm bg-slate-600 border border-slate-600 rounded text-brand-text cursor-not-allowed"
+                    className="w-full px-3 py-2 text-sm bg-slate-600 border border-slate-600 rounded text-white cursor-not-allowed"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-brand-text-muted mb-1">Telefone</label>
+                  <label className="block text-xs font-medium text-slate-400 mb-1">Telefone</label>
                   <input
                     type="tel"
                     name="phone"
@@ -758,11 +758,11 @@ const Profile: React.FC = () => {
                     onChange={handleInputChange}
                     disabled={!isEditing}
                     placeholder="(11) 99999-9999"
-                    className="w-full px-3 py-2 text-sm bg-brand-surface-subtle border border-slate-600 rounded text-brand-text placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-full px-3 py-2 text-sm bg-slate-700 border border-slate-600 rounded text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
                   />
                 </div>
                 <div>
-                  <label className="text-xs font-medium text-brand-text-muted mb-1 flex items-center gap-1.5">
+                  <label className="text-xs font-medium text-slate-400 mb-1 flex items-center gap-1.5">
                     CEP
                     {isLookingUpCep && <span className="text-[10px] text-emerald-400">buscando…</span>}
                   </label>
@@ -775,11 +775,11 @@ const Profile: React.FC = () => {
                     placeholder="00000-000"
                     inputMode="numeric"
                     maxLength={9}
-                    className="w-full px-3 py-2 text-sm bg-brand-surface-subtle border border-slate-600 rounded text-brand-text placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-full px-3 py-2 text-sm bg-slate-700 border border-slate-600 rounded text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-brand-text-muted mb-1">Localização</label>
+                  <label className="block text-xs font-medium text-slate-400 mb-1">Localização</label>
                   <input
                     type="text"
                     name="location"
@@ -787,13 +787,13 @@ const Profile: React.FC = () => {
                     onChange={handleInputChange}
                     disabled={!isEditing}
                     placeholder="Bairro, Cidade, UF"
-                    className="w-full px-3 py-2 text-sm bg-brand-surface-subtle border border-slate-600 rounded text-brand-text placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-full px-3 py-2 text-sm bg-slate-700 border border-slate-600 rounded text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-brand-text-muted mb-1">Biografia</label>
+                <label className="block text-xs font-medium text-slate-400 mb-1">Biografia</label>
                 <textarea
                   name="bio"
                   value={formData.bio}
@@ -801,7 +801,7 @@ const Profile: React.FC = () => {
                   disabled={!isEditing}
                   rows={3}
                   placeholder="Conte um pouco sobre você..."
-                  className="w-full px-3 py-2 text-sm bg-brand-surface-subtle border border-slate-600 rounded text-brand-text placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full px-3 py-2 text-sm bg-slate-700 border border-slate-600 rounded text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
                 />
               </div>
 
@@ -810,7 +810,7 @@ const Profile: React.FC = () => {
                   Wallet existente já calcula split 70/30 baseado em platform_fee_pct dinâmico
                   (FASE B liga tier_label → 30/23/26/20%). */}
               {((user as any)?.type === 'profissional' || (user as any)?.type === 'professional' || (user as any)?.type === 'admin') && (
-                <div className="border-t border-brand-border pt-4 space-y-3">
+                <div className="border-t border-slate-700 pt-4 space-y-3">
                   <div className="flex items-center gap-2">
                     <Wallet className="w-3.5 h-3.5 text-emerald-400" />
                     <h3 className="text-xs font-semibold text-emerald-300 uppercase tracking-wider">
@@ -819,7 +819,7 @@ const Profile: React.FC = () => {
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                     <div>
-                      <label className="block text-xs font-medium text-brand-text-muted mb-1">
+                      <label className="block text-xs font-medium text-slate-400 mb-1">
                         Especialidade
                         <span className="text-[10px] text-slate-500 ml-1">aparece no card</span>
                       </label>
@@ -831,11 +831,11 @@ const Profile: React.FC = () => {
                         disabled={!isEditing}
                         placeholder="Ex: Nefrologia / Neurologia / Clínica Geral"
                         maxLength={80}
-                        className="w-full px-3 py-2 text-sm bg-brand-surface-subtle border border-slate-600 rounded text-brand-text placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="w-full px-3 py-2 text-sm bg-slate-700 border border-slate-600 rounded text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed"
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-medium text-brand-text-muted mb-1">
+                      <label className="block text-xs font-medium text-slate-400 mb-1">
                         CRM / Conselho
                         <span className="text-[10px] text-slate-500 ml-1">ex: 12345-RJ</span>
                       </label>
@@ -847,11 +847,11 @@ const Profile: React.FC = () => {
                         disabled={!isEditing}
                         placeholder="Ex: 12345-RJ"
                         maxLength={32}
-                        className="w-full px-3 py-2 text-sm bg-brand-surface-subtle border border-slate-600 rounded text-brand-text placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="w-full px-3 py-2 text-sm bg-slate-700 border border-slate-600 rounded text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed"
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-medium text-brand-text-muted mb-1">
+                      <label className="block text-xs font-medium text-slate-400 mb-1">
                         Valor da consulta (R$)
                         <span className="text-[10px] text-slate-500 ml-1">piso 350 · teto 1.300</span>
                       </label>
@@ -865,7 +865,7 @@ const Profile: React.FC = () => {
                         max={1300}
                         step={10}
                         placeholder="350"
-                        className="w-full px-3 py-2 text-sm bg-brand-surface-subtle border border-slate-600 rounded text-brand-text placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="w-full px-3 py-2 text-sm bg-slate-700 border border-slate-600 rounded text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed"
                       />
                       {formData.consultation_fee_default && !Number.isNaN(parseFloat(formData.consultation_fee_default)) && (
                         <p className="text-[11px] text-emerald-300 mt-1">
@@ -875,7 +875,7 @@ const Profile: React.FC = () => {
                       )}
                     </div>
                     <div>
-                      <label className="block text-xs font-medium text-brand-text-muted mb-1">
+                      <label className="block text-xs font-medium text-slate-400 mb-1">
                         Anos de experiência
                         <span className="text-[10px] text-slate-500 ml-1">0-80</span>
                       </label>
@@ -889,14 +889,14 @@ const Profile: React.FC = () => {
                         max={80}
                         step={1}
                         placeholder="0"
-                        className="w-full px-3 py-2 text-sm bg-brand-surface-subtle border border-slate-600 rounded text-brand-text placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="w-full px-3 py-2 text-sm bg-slate-700 border border-slate-600 rounded text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed"
                       />
                     </div>
                   </div>
                   {/* V1.9.x: Tags + Idiomas em comma-separated (UX simples single-line) */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3">
                     <div>
-                      <label className="block text-xs font-medium text-brand-text-muted mb-1">
+                      <label className="block text-xs font-medium text-slate-400 mb-1">
                         Áreas de atuação
                         <span className="text-[10px] text-slate-500 ml-1">separe por vírgula</span>
                       </label>
@@ -908,11 +908,11 @@ const Profile: React.FC = () => {
                         disabled={!isEditing}
                         placeholder="Ex: Nefrologia, Dor, Inflamação, IMRE"
                         maxLength={200}
-                        className="w-full px-3 py-2 text-sm bg-brand-surface-subtle border border-slate-600 rounded text-brand-text placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="w-full px-3 py-2 text-sm bg-slate-700 border border-slate-600 rounded text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed"
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-medium text-brand-text-muted mb-1">
+                      <label className="block text-xs font-medium text-slate-400 mb-1">
                         Idiomas atendidos
                         <span className="text-[10px] text-slate-500 ml-1">separe por vírgula</span>
                       </label>
@@ -924,7 +924,7 @@ const Profile: React.FC = () => {
                         disabled={!isEditing}
                         placeholder="Ex: Português, Inglês, Espanhol"
                         maxLength={120}
-                        className="w-full px-3 py-2 text-sm bg-brand-surface-subtle border border-slate-600 rounded text-brand-text placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="w-full px-3 py-2 text-sm bg-slate-700 border border-slate-600 rounded text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed"
                       />
                     </div>
                   </div>
@@ -934,9 +934,9 @@ const Profile: React.FC = () => {
           </div>
 
           {/* Security Settings */}
-          <div className="bg-slate-800/80 rounded-lg p-4 border border-brand-border">
+          <div className="bg-slate-800/80 rounded-lg p-4 border border-slate-700">
             <div className="flex items-center justify-between mb-3">
-              <h2 className="text-sm font-semibold text-brand-text">
+              <h2 className="text-sm font-semibold text-white">
                 Segurança
               </h2>
               {!isPasswordEditing && (
@@ -952,44 +952,44 @@ const Profile: React.FC = () => {
             {isPasswordEditing && (
               <div className="space-y-3">
                 <div>
-                  <label className="block text-xs font-medium text-brand-text-muted mb-1">Senha Atual</label>
+                  <label className="block text-xs font-medium text-slate-400 mb-1">Senha Atual</label>
                   <div className="relative">
                     <input
                       type={showPassword ? 'text' : 'password'}
                       name="currentPassword"
                       value={passwordData.currentPassword}
                       onChange={handlePasswordChange}
-                      className="w-full px-3 py-2 text-sm bg-brand-surface-subtle border border-slate-600 rounded text-brand-text placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 pr-9"
+                      className="w-full px-3 py-2 text-sm bg-slate-700 border border-slate-600 rounded text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 pr-9"
                       placeholder="Senha atual"
                     />
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-2 top-1/2 -translate-y-1/2 text-brand-text-muted hover:text-brand-text-secondary"
+                      className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-300"
                     >
                       {showPassword ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
                     </button>
                   </div>
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-brand-text-muted mb-1">Nova Senha</label>
+                  <label className="block text-xs font-medium text-slate-400 mb-1">Nova Senha</label>
                   <input
                     type="password"
                     name="newPassword"
                     value={passwordData.newPassword}
                     onChange={handlePasswordChange}
-                    className="w-full px-3 py-2 text-sm bg-brand-surface-subtle border border-slate-600 rounded text-brand-text placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 text-sm bg-slate-700 border border-slate-600 rounded text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     placeholder="Nova senha"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-brand-text-muted mb-1">Confirmar</label>
+                  <label className="block text-xs font-medium text-slate-400 mb-1">Confirmar</label>
                   <input
                     type="password"
                     name="confirmPassword"
                     value={passwordData.confirmPassword}
                     onChange={handlePasswordChange}
-                    className="w-full px-3 py-2 text-sm bg-brand-surface-subtle border border-slate-600 rounded text-brand-text placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 text-sm bg-slate-700 border border-slate-600 rounded text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     placeholder="Confirmar nova senha"
                   />
                 </div>
@@ -997,7 +997,7 @@ const Profile: React.FC = () => {
                   <button
                     onClick={handleChangePassword}
                     disabled={isLoading}
-                    className="bg-blue-600 hover:bg-blue-700 disabled:bg-blue-800 text-brand-text px-3 py-1.5 rounded text-xs font-medium"
+                    className="bg-blue-600 hover:bg-blue-700 disabled:bg-blue-800 text-white px-3 py-1.5 rounded text-xs font-medium"
                   >
                     {isLoading ? 'Alterando...' : 'Confirmar'}
                   </button>
@@ -1010,7 +1010,7 @@ const Profile: React.FC = () => {
                         confirmPassword: ''
                       })
                     }}
-                    className="bg-slate-600 hover:bg-brand-surface-subtle text-brand-text px-3 py-1.5 rounded text-xs font-medium"
+                    className="bg-slate-600 hover:bg-slate-700 text-white px-3 py-1.5 rounded text-xs font-medium"
                   >
                     Cancelar
                   </button>
@@ -1020,8 +1020,8 @@ const Profile: React.FC = () => {
           </div>
 
           {/* Ações Rápidas — abaixo de Segurança, triggers lado a lado */}
-          <div className="bg-slate-800/80 rounded-lg p-3 border border-brand-border">
-            <h3 className="text-sm font-semibold text-brand-text mb-2">
+          <div className="bg-slate-800/80 rounded-lg p-3 border border-slate-700">
+            <h3 className="text-sm font-semibold text-white mb-2">
               Ações Rápidas
             </h3>
             <div className="flex flex-wrap gap-2">
@@ -1048,35 +1048,35 @@ const Profile: React.FC = () => {
         <div className="space-y-3">
           {/* Carteira — especificações */}
           <div id="carteira" className="bg-slate-800/80 rounded-lg p-3 border border-amber-500/20">
-            <h3 className="text-sm font-semibold text-brand-text mb-2 flex items-center gap-1.5">
+            <h3 className="text-sm font-semibold text-white mb-2 flex items-center gap-1.5">
               <Wallet className="w-4 h-4 text-amber-400" />
               Carteira
             </h3>
             <div className="space-y-2 text-xs">
               <div className="flex justify-between items-center">
-                <span className="text-brand-text-muted">Créditos</span>
+                <span className="text-slate-400">Créditos</span>
                 <span className="font-semibold text-amber-400 tabular-nums">{walletCredits}</span>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-brand-text-muted">Cashback</span>
-                <span className="text-brand-text-muted">% consultas</span>
+                <span className="text-slate-400">Cashback</span>
+                <span className="text-slate-400">% consultas</span>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-brand-text-muted">Indicação</span>
-                <span className="text-brand-text-muted">créd./ind.</span>
+                <span className="text-slate-400">Indicação</span>
+                <span className="text-slate-400">créd./ind.</span>
               </div>
               <div className="flex justify-between items-center pt-1.5 border-t border-slate-600">
-                <span className="text-brand-text-muted flex items-center gap-1"><Award className="w-3.5 h-3.5 text-emerald-400" /> Ranking</span>
-                <span className="font-semibold text-brand-text">
+                <span className="text-slate-400 flex items-center gap-1"><Award className="w-3.5 h-3.5 text-emerald-400" /> Ranking</span>
+                <span className="font-semibold text-white">
                   {ranking !== null ? `#${ranking}` : '—'}
                 </span>
               </div>
               <div className="flex justify-between items-center pt-1.5">
-                <span className="text-brand-text-muted flex items-center gap-1"><Star className="w-3.5 h-3.5 text-amber-400" /> Estrelas</span>
+                <span className="text-slate-400 flex items-center gap-1"><Star className="w-3.5 h-3.5 text-amber-400" /> Estrelas</span>
                 {averageRatingStars !== null ? (
                   <span className="flex items-center gap-1.5">
                     {renderStars(averageRatingStars)}
-                    <span className="text-[10px] text-brand-text-muted tabular-nums">({ratingsCount})</span>
+                    <span className="text-[10px] text-slate-400 tabular-nums">({ratingsCount})</span>
                   </span>
                 ) : (
                   <span className="text-[11px] text-slate-500">Sem avaliações</span>
@@ -1091,22 +1091,22 @@ const Profile: React.FC = () => {
           </div>
 
           {/* Account Stats */}
-          <div className="bg-slate-800/80 rounded-lg p-3 border border-brand-border">
-            <h3 className="text-sm font-semibold text-brand-text mb-2">
+          <div className="bg-slate-800/80 rounded-lg p-3 border border-slate-700">
+            <h3 className="text-sm font-semibold text-white mb-2">
               Estatísticas
             </h3>
             <div className="space-y-1.5 text-xs">
               <div className="flex justify-between">
-                <span className="text-brand-text-muted">Membro desde</span>
-                <span className="text-brand-text-secondary">{stats.memberSince}</span>
+                <span className="text-slate-400">Membro desde</span>
+                <span className="text-slate-300">{stats.memberSince}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-brand-text-muted">Último login</span>
-                <span className="text-brand-text-secondary">{stats.lastLogin}</span>
+                <span className="text-slate-400">Último login</span>
+                <span className="text-slate-300">{stats.lastLogin}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-brand-text-muted">Tipo</span>
-                <span className="text-brand-text-secondary">
+                <span className="text-slate-400">Tipo</span>
+                <span className="text-slate-300">
                   {user?.type === 'profissional' ? 'Profissional' :
                     user?.type === 'paciente' ? 'Paciente' :
                       user?.type === 'aluno' ? 'Estudante' : 'Administrador'}
@@ -1116,13 +1116,13 @@ const Profile: React.FC = () => {
           </div>
 
           {/* Preferences */}
-          <div className="bg-slate-800/80 rounded-lg p-3 border border-brand-border">
-            <h3 className="text-sm font-semibold text-brand-text mb-2">
+          <div className="bg-slate-800/80 rounded-lg p-3 border border-slate-700">
+            <h3 className="text-sm font-semibold text-white mb-2">
               Preferências
             </h3>
             <div className="space-y-2 text-xs">
               <div className="flex items-center justify-between">
-                <span className="text-brand-text-muted">Notificações</span>
+                <span className="text-slate-400">Notificações</span>
                 <label className="relative inline-flex items-center cursor-pointer">
                   <input
                     type="checkbox"
@@ -1134,9 +1134,9 @@ const Profile: React.FC = () => {
                 </label>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-brand-text-muted">Idioma</span>
+                <span className="text-slate-400">Idioma</span>
                 <select
-                  className="text-xs border border-slate-600 rounded px-1.5 py-0.5 bg-brand-surface-subtle text-brand-text"
+                  className="text-xs border border-slate-600 rounded px-1.5 py-0.5 bg-slate-700 text-white"
                   value={preferences.language}
                   onChange={(e) => setPreferences(prev => ({ ...prev, language: e.target.value }))}
                 >
@@ -1145,7 +1145,7 @@ const Profile: React.FC = () => {
                 </select>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-brand-text-muted">Privacidade</span>
+                <span className="text-slate-400">Privacidade</span>
                 <button className="text-xs text-blue-400 hover:text-blue-300">Configurar</button>
               </div>
             </div>

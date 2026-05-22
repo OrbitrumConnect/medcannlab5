@@ -86,25 +86,25 @@ const TestMonitoringDashboard: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-brand-bg text-brand-text p-6">
+    <div className="min-h-screen bg-slate-900 text-white p-6">
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold mb-2">🔍 Monitoramento de Testes</h1>
-          <p className="text-brand-text-secondary">Acompanhamento do paciente Paulo Gonçalvez e treinamento da IA</p>
+          <p className="text-slate-300">Acompanhamento do paciente Paulo Gonçalvez e treinamento da IA</p>
         </div>
 
         {/* Controles */}
-        <div className="bg-brand-surface rounded-xl p-6 mb-8">
+        <div className="bg-slate-800 rounded-xl p-6 mb-8">
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-xl font-semibold mb-2">Controle de Monitoramento</h2>
-              <p className="text-brand-text-muted">Inicie o monitoramento dos testes e treinamento da IA</p>
+              <p className="text-slate-400">Inicie o monitoramento dos testes e treinamento da IA</p>
             </div>
             <button
               onClick={startMonitoring}
               disabled={isMonitoring}
-              className="bg-blue-600 hover:bg-blue-700 disabled:bg-slate-600 disabled:cursor-not-allowed text-brand-text px-6 py-3 rounded-lg font-semibold transition-colors flex items-center space-x-2"
+              className="bg-blue-600 hover:bg-blue-700 disabled:bg-slate-600 disabled:cursor-not-allowed text-white px-6 py-3 rounded-lg font-semibold transition-colors flex items-center space-x-2"
             >
               {isMonitoring ? (
                 <>
@@ -124,45 +124,45 @@ const TestMonitoringDashboard: React.FC = () => {
         {/* Status Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           {/* Status da Sessão */}
-          <div className="bg-brand-surface rounded-xl p-6">
+          <div className="bg-slate-800 rounded-xl p-6">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold">Sessão Atual</h3>
               {currentSession && getStatusIcon(currentSession.status)}
             </div>
             <div className="space-y-2">
               <div className="flex justify-between">
-                <span className="text-brand-text-muted">Paciente:</span>
+                <span className="text-slate-400">Paciente:</span>
                 <span className="font-medium">Paulo Gonçalvez</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-brand-text-muted">Status:</span>
+                <span className="text-slate-400">Status:</span>
                 <span className={`font-medium ${getStatusColor(currentSession?.status || 'idle')}`}>
                   {currentSession?.status || 'Não iniciado'}
                 </span>
               </div>
               <div className="flex justify-between">
-                <span className="text-brand-text-muted">ID:</span>
+                <span className="text-slate-400">ID:</span>
                 <span className="font-mono text-sm">{currentSession?.id || 'N/A'}</span>
               </div>
             </div>
           </div>
 
           {/* Progresso do Treinamento */}
-          <div className="bg-brand-surface rounded-xl p-6">
+          <div className="bg-slate-800 rounded-xl p-6">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold">Treinamento IA</h3>
               <Brain className="w-6 h-6 text-purple-500" />
             </div>
             <div className="space-y-2">
               <div className="flex justify-between">
-                <span className="text-brand-text-muted">Iterações:</span>
+                <span className="text-slate-400">Iterações:</span>
                 <span className="font-medium">{trainingProgress}/1000</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-brand-text-muted">Taxa de Sucesso:</span>
+                <span className="text-slate-400">Taxa de Sucesso:</span>
                 <span className="font-medium">{successRate.toFixed(1)}%</span>
               </div>
-              <div className="w-full bg-brand-surface-subtle rounded-full h-2 mt-3">
+              <div className="w-full bg-slate-700 rounded-full h-2 mt-3">
                 <div 
                   className="bg-purple-500 h-2 rounded-full transition-all duration-300"
                   style={{ width: `${(trainingProgress / 1000) * 100}%` }}
@@ -172,48 +172,48 @@ const TestMonitoringDashboard: React.FC = () => {
           </div>
 
           {/* Contagem de Pacientes */}
-          <div className="bg-brand-surface rounded-xl p-6">
+          <div className="bg-slate-800 rounded-xl p-6">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold">Pacientes</h3>
               <Users className="w-6 h-6 text-green-500" />
             </div>
             <div className="space-y-2">
               <div className="flex justify-between">
-                <span className="text-brand-text-muted">Total:</span>
+                <span className="text-slate-400">Total:</span>
                 <span className="font-medium">{patientCount}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-brand-text-muted">Meta:</span>
+                <span className="text-slate-400">Meta:</span>
                 <span className="font-medium">1000</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-brand-text-muted">Progresso:</span>
+                <span className="text-slate-400">Progresso:</span>
                 <span className="font-medium">{((patientCount / 1000) * 100).toFixed(1)}%</span>
               </div>
             </div>
           </div>
 
           {/* Status Geral */}
-          <div className="bg-brand-surface rounded-xl p-6">
+          <div className="bg-slate-800 rounded-xl p-6">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold">Status Geral</h3>
               <BarChart3 className="w-6 h-6 text-blue-500" />
             </div>
             <div className="space-y-2">
               <div className="flex justify-between">
-                <span className="text-brand-text-muted">Monitoramento:</span>
+                <span className="text-slate-400">Monitoramento:</span>
                 <span className={`font-medium ${isMonitoring ? 'text-green-500' : 'text-red-500'}`}>
                   {isMonitoring ? 'Ativo' : 'Inativo'}
                 </span>
               </div>
               <div className="flex justify-between">
-                <span className="text-brand-text-muted">Treinamento:</span>
+                <span className="text-slate-400">Treinamento:</span>
                 <span className={`font-medium ${isTrainingComplete ? 'text-green-500' : 'text-yellow-500'}`}>
                   {isTrainingComplete ? 'Completo' : 'Em andamento'}
                 </span>
               </div>
               <div className="flex justify-between">
-                <span className="text-brand-text-muted">Meta Pacientes:</span>
+                <span className="text-slate-400">Meta Pacientes:</span>
                 <span className={`font-medium ${patientCount >= 1000 ? 'text-green-500' : 'text-yellow-500'}`}>
                   {patientCount >= 1000 ? 'Atingida' : 'Pendente'}
                 </span>
@@ -223,9 +223,9 @@ const TestMonitoringDashboard: React.FC = () => {
         </div>
 
         {/* Logs em Tempo Real */}
-        <div className="bg-brand-surface rounded-xl p-6">
+        <div className="bg-slate-800 rounded-xl p-6">
           <h3 className="text-xl font-semibold mb-4">📊 Logs em Tempo Real</h3>
-          <div className="bg-brand-bg rounded-lg p-4 h-64 overflow-y-auto">
+          <div className="bg-slate-900 rounded-lg p-4 h-64 overflow-y-auto">
             <div className="space-y-2 font-mono text-sm">
               {isMonitoring && (
                 <>

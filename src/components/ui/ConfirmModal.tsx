@@ -39,36 +39,36 @@ const ConfirmModal: React.FC<ConfirmModalProps> = ({
     const getButtonClass = () => {
         switch (type) {
             case 'danger':
-                return 'bg-red-600 hover:bg-red-700 text-brand-text shadow-red-500/20';
+                return 'bg-red-600 hover:bg-red-700 text-white shadow-red-500/20';
             case 'warning':
-                return 'bg-amber-600 hover:bg-amber-700 text-brand-text shadow-amber-500/20';
+                return 'bg-amber-600 hover:bg-amber-700 text-white shadow-amber-500/20';
             case 'info':
-                return 'bg-sky-600 hover:bg-sky-700 text-brand-text shadow-sky-500/20';
+                return 'bg-sky-600 hover:bg-sky-700 text-white shadow-sky-500/20';
         }
     };
 
     return (
         <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-in fade-in duration-200">
             <div
-                className="bg-brand-bg border border-brand-border-subtle rounded-2xl shadow-2xl max-w-md w-full p-6 transform transition-all animate-in zoom-in-95 duration-200"
+                className="bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl max-w-md w-full p-6 transform transition-all animate-in zoom-in-95 duration-200"
                 role="dialog"
                 aria-modal="true"
             >
                 <div className="text-center">
                     {getIcon()}
 
-                    <h3 className="text-xl font-bold text-brand-text mb-2 font-display">
+                    <h3 className="text-xl font-bold text-white mb-2 font-display">
                         {title}
                     </h3>
 
-                    <p className="text-brand-text-muted mb-8 leading-relaxed">
+                    <p className="text-slate-400 mb-8 leading-relaxed">
                         {message}
                     </p>
 
                     <div className="flex gap-3 justify-center">
                         <button
                             onClick={onCancel}
-                            className="px-6 py-2.5 rounded-lg border border-brand-border text-brand-text-secondary hover:bg-brand-surface hover:text-brand-text transition-colors font-medium"
+                            className="px-6 py-2.5 rounded-lg border border-slate-700 text-slate-300 hover:bg-slate-800 hover:text-white transition-colors font-medium"
                         >
                             {cancelText}
                         </button>

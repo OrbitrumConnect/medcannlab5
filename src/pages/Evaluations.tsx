@@ -126,7 +126,7 @@ const Evaluations: React.FC = () => {
       case 'em_andamento': return 'bg-yellow-500/20 text-yellow-400'
       case 'pendente': return 'bg-blue-500/20 text-blue-400'
       case 'cancelada': return 'bg-red-500/20 text-red-400'
-      default: return 'bg-slate-500/20 text-brand-text-muted'
+      default: return 'bg-slate-500/20 text-slate-400'
     }
   }
 
@@ -145,7 +145,7 @@ const Evaluations: React.FC = () => {
       case 'high': return 'bg-red-500/20 text-red-400'
       case 'medium': return 'bg-yellow-500/20 text-yellow-400'
       case 'low': return 'bg-green-500/20 text-green-400'
-      default: return 'bg-slate-500/20 text-brand-text-muted'
+      default: return 'bg-slate-500/20 text-slate-400'
     }
   }
 
@@ -154,7 +154,7 @@ const Evaluations: React.FC = () => {
       case 'IMRE': return <Stethoscope className="w-5 h-5 text-blue-400" />
       case 'AEC': return <Heart className="w-5 h-5 text-red-400" />
       case 'Retorno': return <Users className="w-5 h-5 text-green-400" />
-      default: return <Stethoscope className="w-5 h-5 text-brand-text-muted" />
+      default: return <Stethoscope className="w-5 h-5 text-slate-400" />
     }
   }
 
@@ -163,13 +163,13 @@ const Evaluations: React.FC = () => {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-brand-text mb-2">📊 Avaliações</h1>
-          <p className="text-brand-text-secondary">Gerencie e acompanhe as avaliações dos seus pacientes</p>
+          <h1 className="text-3xl font-bold text-white mb-2">📊 Avaliações</h1>
+          <p className="text-slate-300">Gerencie e acompanhe as avaliações dos seus pacientes</p>
         </div>
         <div className="mt-4 md:mt-0">
           <Link
             to="/clinical-assessment"
-            className="bg-blue-600 hover:bg-blue-700 text-brand-text px-6 py-3 rounded-lg flex items-center space-x-2 transition-colors"
+            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg flex items-center space-x-2 transition-colors"
           >
             <Plus className="w-5 h-5" />
             <span>Nova Avaliação</span>
@@ -178,27 +178,27 @@ const Evaluations: React.FC = () => {
       </div>
 
       {/* Filtros e Busca */}
-      <div className="bg-slate-800/80 rounded-lg p-6 border border-brand-border">
+      <div className="bg-slate-800/80 rounded-lg p-6 border border-slate-700">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {/* Busca */}
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-brand-text-muted w-5 h-5" />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-5 h-5" />
             <input
               type="text"
               placeholder="Buscar por paciente, tipo ou diagnóstico..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-3 bg-brand-surface-subtle border border-slate-600 rounded-lg text-brand-text placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full pl-10 pr-4 py-3 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
 
           {/* Filtro de Status */}
           <div className="flex items-center space-x-2">
-            <Filter className="w-5 h-5 text-brand-text-muted" />
+            <Filter className="w-5 h-5 text-slate-400" />
             <select
               value={filterStatus}
               onChange={(e) => setFilterStatus(e.target.value)}
-              className="flex-1 px-4 py-3 bg-brand-surface-subtle border border-slate-600 rounded-lg text-brand-text focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="flex-1 px-4 py-3 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <option value="all">Todos os Status</option>
               <option value="concluida">Concluída</option>
@@ -210,11 +210,11 @@ const Evaluations: React.FC = () => {
 
           {/* Filtro de Tipo */}
           <div className="flex items-center space-x-2">
-            <Stethoscope className="w-5 h-5 text-brand-text-muted" />
+            <Stethoscope className="w-5 h-5 text-slate-400" />
             <select
               value={filterType}
               onChange={(e) => setFilterType(e.target.value)}
-              className="flex-1 px-4 py-3 bg-brand-surface-subtle border border-slate-600 rounded-lg text-brand-text focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="flex-1 px-4 py-3 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <option value="all">Todos os Tipos</option>
               <option value="IMRE">IMRE</option>
@@ -227,41 +227,41 @@ const Evaluations: React.FC = () => {
 
       {/* Estatísticas Rápidas */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <div className="bg-slate-800/80 rounded-lg p-6 border border-brand-border">
+        <div className="bg-slate-800/80 rounded-lg p-6 border border-slate-700">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-brand-text-muted text-sm">Total de Avaliações</p>
-              <p className="text-2xl font-bold text-brand-text">{evaluations.length}</p>
+              <p className="text-slate-400 text-sm">Total de Avaliações</p>
+              <p className="text-2xl font-bold text-white">{evaluations.length}</p>
             </div>
             <BarChart3 className="w-8 h-8 text-blue-400" />
           </div>
         </div>
         
-        <div className="bg-slate-800/80 rounded-lg p-6 border border-brand-border">
+        <div className="bg-slate-800/80 rounded-lg p-6 border border-slate-700">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-brand-text-muted text-sm">Concluídas</p>
-              <p className="text-2xl font-bold text-brand-text">{evaluations.filter(e => e.status === 'concluida').length}</p>
+              <p className="text-slate-400 text-sm">Concluídas</p>
+              <p className="text-2xl font-bold text-white">{evaluations.filter(e => e.status === 'concluida').length}</p>
             </div>
             <CheckCircle className="w-8 h-8 text-green-400" />
           </div>
         </div>
         
-        <div className="bg-slate-800/80 rounded-lg p-6 border border-brand-border">
+        <div className="bg-slate-800/80 rounded-lg p-6 border border-slate-700">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-brand-text-muted text-sm">Em Andamento</p>
-              <p className="text-2xl font-bold text-brand-text">{evaluations.filter(e => e.status === 'em_andamento').length}</p>
+              <p className="text-slate-400 text-sm">Em Andamento</p>
+              <p className="text-2xl font-bold text-white">{evaluations.filter(e => e.status === 'em_andamento').length}</p>
             </div>
             <Clock className="w-8 h-8 text-yellow-400" />
           </div>
         </div>
         
-        <div className="bg-slate-800/80 rounded-lg p-6 border border-brand-border">
+        <div className="bg-slate-800/80 rounded-lg p-6 border border-slate-700">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-brand-text-muted text-sm">Pendentes</p>
-              <p className="text-2xl font-bold text-brand-text">{evaluations.filter(e => e.status === 'pendente').length}</p>
+              <p className="text-slate-400 text-sm">Pendentes</p>
+              <p className="text-2xl font-bold text-white">{evaluations.filter(e => e.status === 'pendente').length}</p>
             </div>
             <AlertCircle className="w-8 h-8 text-blue-400" />
           </div>
@@ -271,14 +271,14 @@ const Evaluations: React.FC = () => {
       {/* Lista de Avaliações */}
       <div className="space-y-4">
         {filteredEvaluations.map((evaluation) => (
-          <div key={evaluation.id} className="bg-slate-800/80 rounded-lg p-6 border border-brand-border hover:bg-slate-800/90 transition-colors">
+          <div key={evaluation.id} className="bg-slate-800/80 rounded-lg p-6 border border-slate-700 hover:bg-slate-800/90 transition-colors">
             <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between">
               {/* Informações Principais */}
               <div className="flex-1">
                 <div className="flex items-center space-x-4 mb-4">
                   <div className="flex items-center space-x-2">
                     {getTypeIcon(evaluation.type)}
-                    <span className="text-lg font-bold text-brand-text">{evaluation.type}</span>
+                    <span className="text-lg font-bold text-white">{evaluation.type}</span>
                   </div>
                   <div className="flex items-center space-x-2">
                     {getStatusIcon(evaluation.status)}
@@ -293,39 +293,39 @@ const Evaluations: React.FC = () => {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
                   <div>
-                    <p className="text-brand-text-muted text-sm">Paciente</p>
-                    <p className="text-brand-text font-medium">{evaluation.patientName}</p>
+                    <p className="text-slate-400 text-sm">Paciente</p>
+                    <p className="text-white font-medium">{evaluation.patientName}</p>
                   </div>
                   <div>
-                    <p className="text-brand-text-muted text-sm">Data e Hora</p>
-                    <p className="text-brand-text font-medium">{evaluation.date} às {evaluation.time}</p>
+                    <p className="text-slate-400 text-sm">Data e Hora</p>
+                    <p className="text-white font-medium">{evaluation.date} às {evaluation.time}</p>
                   </div>
                   <div>
-                    <p className="text-brand-text-muted text-sm">Duração</p>
-                    <p className="text-brand-text font-medium">{evaluation.duration}</p>
+                    <p className="text-slate-400 text-sm">Duração</p>
+                    <p className="text-white font-medium">{evaluation.duration}</p>
                   </div>
                   <div>
-                    <p className="text-brand-text-muted text-sm">Diagnóstico</p>
-                    <p className="text-brand-text font-medium">{evaluation.diagnosis}</p>
+                    <p className="text-slate-400 text-sm">Diagnóstico</p>
+                    <p className="text-white font-medium">{evaluation.diagnosis}</p>
                   </div>
                   <div>
-                    <p className="text-brand-text-muted text-sm">Próxima Consulta</p>
-                    <p className="text-brand-text font-medium">{evaluation.nextAppointment}</p>
+                    <p className="text-slate-400 text-sm">Próxima Consulta</p>
+                    <p className="text-white font-medium">{evaluation.nextAppointment}</p>
                   </div>
                   {evaluation.score && (
                     <div>
-                      <p className="text-brand-text-muted text-sm">Pontuação</p>
-                      <p className="text-brand-text font-medium">{evaluation.score}/100</p>
+                      <p className="text-slate-400 text-sm">Pontuação</p>
+                      <p className="text-white font-medium">{evaluation.score}/100</p>
                     </div>
                   )}
                 </div>
 
                 {/* Sintomas */}
                 <div className="mb-4">
-                  <p className="text-brand-text-muted text-sm mb-2">Sintomas Relatados</p>
+                  <p className="text-slate-400 text-sm mb-2">Sintomas Relatados</p>
                   <div className="flex flex-wrap gap-2">
                     {evaluation.symptoms.map((symptom, index) => (
-                      <span key={index} className="px-2 py-1 bg-brand-surface-subtle text-brand-text-secondary text-xs rounded-full">
+                      <span key={index} className="px-2 py-1 bg-slate-700 text-slate-300 text-xs rounded-full">
                         {symptom}
                       </span>
                     ))}
@@ -334,7 +334,7 @@ const Evaluations: React.FC = () => {
 
                 {/* Recomendações */}
                 <div className="mb-4">
-                  <p className="text-brand-text-muted text-sm mb-2">Recomendações</p>
+                  <p className="text-slate-400 text-sm mb-2">Recomendações</p>
                   <div className="flex flex-wrap gap-2">
                     {evaluation.recommendations.map((recommendation, index) => (
                       <span key={index} className="px-2 py-1 bg-blue-500/20 text-blue-400 text-xs rounded-full">
@@ -346,8 +346,8 @@ const Evaluations: React.FC = () => {
 
                 {/* Notas */}
                 <div className="mb-4">
-                  <p className="text-brand-text-muted text-sm mb-2">Observações</p>
-                  <p className="text-brand-text-secondary text-sm">{evaluation.notes}</p>
+                  <p className="text-slate-400 text-sm mb-2">Observações</p>
+                  <p className="text-slate-300 text-sm">{evaluation.notes}</p>
                 </div>
               </div>
 
@@ -384,37 +384,37 @@ const Evaluations: React.FC = () => {
 
       {/* Resumo por Tipo */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <div className="bg-slate-800/80 rounded-lg p-6 border border-brand-border">
-          <h3 className="text-lg font-bold text-brand-text mb-4">📊 Resumo por Tipo de Avaliação</h3>
+        <div className="bg-slate-800/80 rounded-lg p-6 border border-slate-700">
+          <h3 className="text-lg font-bold text-white mb-4">📊 Resumo por Tipo de Avaliação</h3>
           <div className="space-y-3">
             <div className="flex justify-between items-center">
-              <span className="text-brand-text-secondary">IMRE</span>
+              <span className="text-slate-300">IMRE</span>
               <span className="text-blue-400 font-bold">2 avaliações</span>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-brand-text-secondary">AEC</span>
+              <span className="text-slate-300">AEC</span>
               <span className="text-red-400 font-bold">1 avaliação</span>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-brand-text-secondary">Retorno</span>
+              <span className="text-slate-300">Retorno</span>
               <span className="text-green-400 font-bold">1 avaliação</span>
             </div>
           </div>
         </div>
 
-        <div className="bg-slate-800/80 rounded-lg p-6 border border-brand-border">
-          <h3 className="text-lg font-bold text-brand-text mb-4">📈 Performance</h3>
+        <div className="bg-slate-800/80 rounded-lg p-6 border border-slate-700">
+          <h3 className="text-lg font-bold text-white mb-4">📈 Performance</h3>
           <div className="space-y-3">
             <div className="flex justify-between items-center">
-              <span className="text-brand-text-secondary">Taxa de Conclusão</span>
+              <span className="text-slate-300">Taxa de Conclusão</span>
               <span className="text-green-400 font-bold">75%</span>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-brand-text-secondary">Tempo Médio</span>
+              <span className="text-slate-300">Tempo Médio</span>
               <span className="text-blue-400 font-bold">42 min</span>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-brand-text-secondary">Satisfação</span>
+              <span className="text-slate-300">Satisfação</span>
               <span className="text-purple-400 font-bold">4.8/5</span>
             </div>
           </div>

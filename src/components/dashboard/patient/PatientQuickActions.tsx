@@ -49,7 +49,7 @@ export const PatientQuickActions = React.forwardRef<HTMLDivElement, PatientQuick
     */
     return (
         <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-700">
-            <h3 className="text-xl font-bold text-brand-text flex items-center gap-2">
+            <h3 className="text-xl font-bold text-white flex items-center gap-2">
                 <Zap className="w-5 h-5 text-emerald-400" /> Ações Complementares
             </h3>
 
@@ -60,11 +60,11 @@ export const PatientQuickActions = React.forwardRef<HTMLDivElement, PatientQuick
                         onClick={onRequestPrescription}
                         className="group flex items-center gap-3 bg-slate-900/40 border border-slate-700/50 hover:border-emerald-500/40 hover:bg-slate-800/60 p-4 rounded-xl transition-all text-left"
                     >
-                        <div className="w-10 h-10 rounded-lg bg-slate-800/60 flex items-center justify-center border border-brand-border">
+                        <div className="w-10 h-10 rounded-lg bg-slate-800/60 flex items-center justify-center border border-slate-700">
                             <Pill className="w-5 h-5 text-emerald-400" />
                         </div>
                         <div className="flex-1 min-w-0">
-                            <h4 className="text-brand-text font-semibold text-sm">Solicitar Receita</h4>
+                            <h4 className="text-white font-semibold text-sm">Solicitar Receita</h4>
                             <p className="text-slate-500 text-xs truncate">Peça nova prescrição ao médico</p>
                         </div>
                         <ChevronRight className="w-4 h-4 text-slate-600 group-hover:translate-x-1 transition-transform flex-shrink-0" />
@@ -72,22 +72,22 @@ export const PatientQuickActions = React.forwardRef<HTMLDivElement, PatientQuick
                 )}
 
                 <button onClick={onViewPlan} className="group flex items-center gap-3 bg-slate-900/40 border border-slate-700/50 hover:border-emerald-500/40 hover:bg-slate-800/60 p-4 rounded-xl transition-all text-left">
-                    <div className="w-10 h-10 rounded-lg bg-slate-800/60 flex items-center justify-center border border-brand-border">
+                    <div className="w-10 h-10 rounded-lg bg-slate-800/60 flex items-center justify-center border border-slate-700">
                         <Heart className="w-5 h-5 text-emerald-400" />
                     </div>
                     <div className="flex-1 min-w-0">
-                        <h4 className="text-brand-text font-semibold text-sm">Plano Terapêutico</h4>
+                        <h4 className="text-white font-semibold text-sm">Plano Terapêutico</h4>
                         <p className="text-slate-500 text-xs truncate">{activeCount} prescrições ativas</p>
                     </div>
                     <ChevronRight className="w-4 h-4 text-slate-600 group-hover:translate-x-1 transition-transform flex-shrink-0" />
                 </button>
 
                 <button onClick={onViewEducational} className="group flex items-center gap-3 bg-slate-900/40 border border-slate-700/50 hover:border-emerald-500/40 hover:bg-slate-800/60 p-4 rounded-xl transition-all text-left">
-                    <div className="w-10 h-10 rounded-lg bg-slate-800/60 flex items-center justify-center border border-brand-border">
+                    <div className="w-10 h-10 rounded-lg bg-slate-800/60 flex items-center justify-center border border-slate-700">
                         <BookOpen className="w-5 h-5 text-emerald-400" />
                     </div>
                     <div className="flex-1 min-w-0">
-                        <h4 className="text-brand-text font-semibold text-sm">Biblioteca</h4>
+                        <h4 className="text-white font-semibold text-sm">Biblioteca</h4>
                         <p className="text-slate-500 text-xs truncate">Guias e vídeos educativos</p>
                     </div>
                     <ChevronRight className="w-4 h-4 text-slate-600 group-hover:translate-x-1 transition-transform flex-shrink-0" />

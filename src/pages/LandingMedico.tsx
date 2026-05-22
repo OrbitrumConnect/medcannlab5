@@ -21,7 +21,7 @@ const LandingMedico = () => {
   const goToLogin = () => navigate('/?login=1')
 
   return (
-    <div className="bg-slate-950 text-brand-text min-h-screen">
+    <div className="bg-slate-950 text-white min-h-screen">
       <LandingHeader onLoginClick={goToLogin} />
       <div className="pt-16">
         <PerfilSwitcher ativo="medico" />

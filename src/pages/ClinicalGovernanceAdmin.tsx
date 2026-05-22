@@ -202,7 +202,7 @@ export default function ClinicalGovernanceAdmin() {
     useEffect(() => { setCurrentPage(1) }, [search])
 
     return (
-        <div className="min-h-screen bg-slate-950 p-6 lg:p-10 font-sans text-brand-text-secondary">
+        <div className="min-h-screen bg-slate-950 p-6 lg:p-10 font-sans text-slate-300">
 
             {/* 1. Header Premium */}
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-12">
@@ -212,7 +212,7 @@ export default function ClinicalGovernanceAdmin() {
                             <Activity className="w-8 h-8 text-indigo-400" />
                         </div>
                         <div>
-                            <h1 className="text-4xl font-black text-brand-text tracking-tight">
+                            <h1 className="text-4xl font-black text-white tracking-tight">
                                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-cyan-400">MEDCANNLAB</span> GOVERNANCE V3.0
                             </h1>
                         </div>
@@ -232,16 +232,16 @@ export default function ClinicalGovernanceAdmin() {
                     </div>
                     <button
                         onClick={fetchData}
-                        className="p-3 bg-brand-surface hover:bg-brand-surface-subtle rounded-xl transition-all border border-brand-border hover:border-slate-600 text-brand-text"
+                        className="p-3 bg-slate-800 hover:bg-slate-700 rounded-xl transition-all border border-slate-700 hover:border-slate-600 text-white"
                         title="Force Refresh"
                     >
                         <RefreshCw className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`} />
                     </button>
-                    <div className="h-10 w-[1px] bg-brand-surface mx-2"></div>
+                    <div className="h-10 w-[1px] bg-slate-800 mx-2"></div>
                     <div className="flex items-center gap-3">
                         <div className="h-10 w-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 p-[2px]">
-                            <div className="h-full w-full rounded-full bg-brand-bg flex items-center justify-center">
-                                <User className="w-5 h-5 text-brand-text" />
+                            <div className="h-full w-full rounded-full bg-slate-900 flex items-center justify-center">
+                                <User className="w-5 h-5 text-white" />
                             </div>
                         </div>
                     </div>
@@ -260,7 +260,7 @@ export default function ClinicalGovernanceAdmin() {
                         </div>
                         <NeonBadge type="info" text="TOTAL" />
                     </div>
-                    <div className="text-4xl font-black text-brand-text mb-1">{stats.totalUsers}</div>
+                    <div className="text-4xl font-black text-white mb-1">{stats.totalUsers}</div>
                     <div className="text-xs text-slate-500 uppercase tracking-widest font-bold">Usuários Cadastrados</div>
                 </SpaceCard>
 
@@ -274,7 +274,7 @@ export default function ClinicalGovernanceAdmin() {
                         </div>
                         <NeonBadge type="success" text="REVENUE" />
                     </div>
-                    <div className="text-4xl font-black text-brand-text mb-1">
+                    <div className="text-4xl font-black text-white mb-1">
                         R$ {stats.totalRevenue.toLocaleString('pt-BR')}
                     </div>
                     <div className="text-xs text-slate-500 uppercase tracking-widest font-bold">Receita Estimada (Paid)</div>
@@ -290,7 +290,7 @@ export default function ClinicalGovernanceAdmin() {
                         </div>
                         <NeonBadge type="purple" text="LIVE" />
                     </div>
-                    <div className="text-4xl font-black text-brand-text mb-1">{stats.onlineNow}</div>
+                    <div className="text-4xl font-black text-white mb-1">{stats.onlineNow}</div>
                     <div className="text-xs text-slate-500 uppercase tracking-widest font-bold">Online Agora (15min)</div>
                 </SpaceCard>
 
@@ -304,7 +304,7 @@ export default function ClinicalGovernanceAdmin() {
                         </div>
                         <NeonBadge type="warning" text="PENDING" />
                     </div>
-                    <div className="text-4xl font-black text-brand-text mb-1">{stats.pendingPayments}</div>
+                    <div className="text-4xl font-black text-white mb-1">{stats.pendingPayments}</div>
                     <div className="text-xs text-slate-500 uppercase tracking-widest font-bold">Aguardando Pagamento</div>
                 </SpaceCard>
             </div>
@@ -315,8 +315,8 @@ export default function ClinicalGovernanceAdmin() {
                 <div className="p-6 border-b border-slate-700/50 flex flex-col md:flex-row justify-between items-center gap-4">
                     <div className="flex items-center gap-3">
                         <div className="h-8 w-1 bg-indigo-500 rounded-full"></div>
-                        <h3 className="text-xl font-bold text-brand-text">Base de Usuários Unificada</h3>
-                        <span className="px-2 py-0.5 bg-brand-surface rounded text-[10px] text-slate-500 font-mono">
+                        <h3 className="text-xl font-bold text-white">Base de Usuários Unificada</h3>
+                        <span className="px-2 py-0.5 bg-slate-800 rounded text-[10px] text-slate-500 font-mono">
                             SYNC: {refreshTime.toLocaleTimeString()}
                         </span>
                     </div>
@@ -328,7 +328,7 @@ export default function ClinicalGovernanceAdmin() {
                             placeholder="Buscar por nome, email ou ID..."
                             value={search}
                             onChange={e => setSearch(e.target.value)}
-                            className="w-full bg-slate-900/50 border border-brand-border rounded-xl py-2.5 pl-10 pr-4 text-sm text-brand-text placeholder-slate-600 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all"
+                            className="w-full bg-slate-900/50 border border-slate-700 rounded-xl py-2.5 pl-10 pr-4 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all"
                         />
                     </div>
                 </div>
@@ -352,7 +352,7 @@ export default function ClinicalGovernanceAdmin() {
                                     </span>
                                 </div>
                                 <div className="min-w-0 flex-1">
-                                    <div className="font-bold text-brand-text text-sm truncate">{user.name || 'Sem Nome'}</div>
+                                    <div className="font-bold text-white text-sm truncate">{user.name || 'Sem Nome'}</div>
                                     <div className="text-xs text-slate-500 font-mono truncate">{user.email}</div>
                                     <div className="text-[10px] text-slate-600 font-mono">ID: {user.user_id.slice(0, 8)}...</div>
                                     {/* V1.9.300: badge atividade ao vivo (mobile) */}
@@ -366,7 +366,7 @@ export default function ClinicalGovernanceAdmin() {
                             <div className="flex items-center gap-2 flex-wrap">
                                 <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${user.type === 'admin' ? 'bg-indigo-500/20 text-indigo-400' :
                                     user.type === 'profissional' ? 'bg-purple-500/20 text-purple-400' :
-                                        'bg-slate-700/30 text-brand-text-muted'
+                                        'bg-slate-700/30 text-slate-400'
                                     }`}>
                                     {user.type}
                                 </span>
@@ -454,7 +454,7 @@ export default function ClinicalGovernanceAdmin() {
                                     </td>
                                     <td className="px-6 py-4">
                                         <div>
-                                            <div className="font-bold text-brand-text text-sm">{user.name || 'Sem Nome'}</div>
+                                            <div className="font-bold text-white text-sm">{user.name || 'Sem Nome'}</div>
                                             <div className="text-xs text-slate-500 font-mono mt-0.5">{user.email}</div>
                                             <div className="text-[10px] text-slate-600 font-mono mt-0.5">ID: {user.user_id.slice(0, 8)}...</div>
                                         </div>
@@ -462,7 +462,7 @@ export default function ClinicalGovernanceAdmin() {
                                     <td className="px-6 py-4">
                                         <span className={`px-2 py-1 rounded-lg text-[10px] font-bold uppercase ${user.type === 'admin' ? 'bg-indigo-500/20 text-indigo-400' :
                                             user.type === 'profissional' ? 'bg-purple-500/20 text-purple-400' :
-                                                'bg-slate-700/30 text-brand-text-muted'
+                                                'bg-slate-700/30 text-slate-400'
                                             }`}>
                                             {user.type}
                                         </span>
@@ -481,7 +481,7 @@ export default function ClinicalGovernanceAdmin() {
                                     </td>
                                     <td className="px-6 py-4">
                                         {user.owner_id ? (
-                                            <div className="text-xs text-brand-text-muted flex items-center gap-1.5">
+                                            <div className="text-xs text-slate-400 flex items-center gap-1.5">
                                                 <User className="w-3 h-3" />
                                                 {users.find(u => u.user_id === user.owner_id)?.name || 'Desconhecido'}
                                             </div>
@@ -532,14 +532,14 @@ export default function ClinicalGovernanceAdmin() {
                             <button
                                 onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                                 disabled={currentPage === 1}
-                                className="px-3 py-1.5 text-xs font-bold rounded-lg bg-brand-surface text-brand-text-muted hover:bg-brand-surface-subtle disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                                className="px-3 py-1.5 text-xs font-bold rounded-lg bg-slate-800 text-slate-400 hover:bg-slate-700 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
                             >
                                 ← Anterior
                             </button>
                             <button
                                 onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
                                 disabled={currentPage === totalPages}
-                                className="px-3 py-1.5 text-xs font-bold rounded-lg bg-brand-surface text-brand-text-muted hover:bg-brand-surface-subtle disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                                className="px-3 py-1.5 text-xs font-bold rounded-lg bg-slate-800 text-slate-400 hover:bg-slate-700 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
                             >
                                 Próxima →
                             </button>

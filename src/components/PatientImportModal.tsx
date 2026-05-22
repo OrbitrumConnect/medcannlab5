@@ -376,23 +376,23 @@ const PatientImportModal: React.FC<PatientImportModalProps> = ({ isOpen, onClose
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-brand-surface rounded-lg border border-brand-border w-full max-w-4xl max-h-[90vh] flex flex-col">
+      <div className="bg-slate-800 rounded-lg border border-slate-700 w-full max-w-4xl max-h-[90vh] flex flex-col">
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-brand-border">
+        <div className="flex items-center justify-between p-6 border-b border-slate-700">
           <div>
-            <h2 className="text-2xl font-bold text-brand-text flex items-center">
+            <h2 className="text-2xl font-bold text-white flex items-center">
               <Users className="w-6 h-6 mr-2 text-blue-400" />
               Importar Pacientes de Planilha
             </h2>
-            <p className="text-sm text-brand-text-muted mt-1">
+            <p className="text-sm text-slate-400 mt-1">
               Importe pacientes de planilhas PDF, CSV ou Excel
             </p>
           </div>
           <button
             onClick={onClose}
-            className="p-2 hover:bg-brand-surface-subtle rounded-lg transition-colors"
+            className="p-2 hover:bg-slate-700 rounded-lg transition-colors"
           >
-            <X className="w-5 h-5 text-brand-text-muted" />
+            <X className="w-5 h-5 text-slate-400" />
           </button>
         </div>
 
@@ -400,15 +400,15 @@ const PatientImportModal: React.FC<PatientImportModalProps> = ({ isOpen, onClose
         <div className="flex-1 overflow-y-auto p-6">
           {/* Seleção de Modo */}
           <div className="mb-6">
-            <label className="block text-sm font-medium text-brand-text-secondary mb-3">
+            <label className="block text-sm font-medium text-slate-300 mb-3">
               Tipo de Arquivo
             </label>
             <div className="grid grid-cols-3 gap-3">
               <button
                 onClick={() => setImportMode('pdf')}
                 className={`p-4 rounded-lg border-2 transition-colors ${importMode === 'pdf'
-                  ? 'border-blue-500 bg-blue-500/20 text-brand-text'
-                  : 'border-slate-600 bg-slate-700/50 text-brand-text-secondary hover:border-slate-500'
+                  ? 'border-blue-500 bg-blue-500/20 text-white'
+                  : 'border-slate-600 bg-slate-700/50 text-slate-300 hover:border-slate-500'
                   }`}
               >
                 <FileText className="w-6 h-6 mx-auto mb-2" />
@@ -417,8 +417,8 @@ const PatientImportModal: React.FC<PatientImportModalProps> = ({ isOpen, onClose
               <button
                 onClick={() => setImportMode('csv')}
                 className={`p-4 rounded-lg border-2 transition-colors ${importMode === 'csv'
-                  ? 'border-blue-500 bg-blue-500/20 text-brand-text'
-                  : 'border-slate-600 bg-slate-700/50 text-brand-text-secondary hover:border-slate-500'
+                  ? 'border-blue-500 bg-blue-500/20 text-white'
+                  : 'border-slate-600 bg-slate-700/50 text-slate-300 hover:border-slate-500'
                   }`}
               >
                 <FileSpreadsheet className="w-6 h-6 mx-auto mb-2" />
@@ -444,11 +444,11 @@ const PatientImportModal: React.FC<PatientImportModalProps> = ({ isOpen, onClose
               className="border-2 border-dashed border-slate-600 rounded-lg p-12 text-center hover:border-blue-500 transition-colors cursor-pointer"
               onClick={() => fileInputRef.current?.click()}
             >
-              <Upload className="w-12 h-12 text-brand-text-muted mx-auto mb-4" />
-              <p className="text-brand-text font-medium mb-2">
+              <Upload className="w-12 h-12 text-slate-400 mx-auto mb-4" />
+              <p className="text-white font-medium mb-2">
                 Clique para selecionar ou arraste o arquivo aqui
               </p>
-              <p className="text-sm text-brand-text-muted">
+              <p className="text-sm text-slate-400">
                 Formatos suportados: {importMode === 'pdf' ? 'PDF' : 'CSV'}
               </p>
               <input
@@ -469,8 +469,8 @@ const PatientImportModal: React.FC<PatientImportModalProps> = ({ isOpen, onClose
           {isProcessing && (
             <div className="text-center py-12">
               <Loader2 className="w-8 h-8 animate-spin text-blue-400 mx-auto mb-4" />
-              <p className="text-brand-text-secondary">Processando arquivo...</p>
-              <p className="text-sm text-brand-text-muted mt-2">Extraindo dados dos pacientes</p>
+              <p className="text-slate-300">Processando arquivo...</p>
+              <p className="text-sm text-slate-400 mt-2">Extraindo dados dos pacientes</p>
             </div>
           )}
 
@@ -481,8 +481,8 @@ const PatientImportModal: React.FC<PatientImportModalProps> = ({ isOpen, onClose
                 <div className="flex items-center space-x-3">
                   <FileText className="w-8 h-8 text-blue-400" />
                   <div>
-                    <p className="text-brand-text font-medium">{file.name}</p>
-                    <p className="text-sm text-brand-text-muted">
+                    <p className="text-white font-medium">{file.name}</p>
+                    <p className="text-sm text-slate-400">
                       {(file.size / 1024).toFixed(2)} KB
                     </p>
                   </div>
@@ -494,7 +494,7 @@ const PatientImportModal: React.FC<PatientImportModalProps> = ({ isOpen, onClose
                   }}
                   className="p-2 hover:bg-slate-600 rounded-lg"
                 >
-                  <X className="w-4 h-4 text-brand-text-muted" />
+                  <X className="w-4 h-4 text-slate-400" />
                 </button>
               </div>
             </div>
@@ -504,13 +504,13 @@ const PatientImportModal: React.FC<PatientImportModalProps> = ({ isOpen, onClose
           {extractedPatients.length > 0 && (
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold text-brand-text">
+                <h3 className="text-lg font-semibold text-white">
                   Pacientes Encontrados ({extractedPatients.length})
                 </h3>
                 <button
                   onClick={importPatients}
                   disabled={isImporting}
-                  className="bg-green-600 hover:bg-green-700 disabled:bg-green-800 text-brand-text px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors"
+                  className="bg-green-600 hover:bg-green-700 disabled:bg-green-800 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors"
                 >
                   {isImporting ? (
                     <>
@@ -530,8 +530,8 @@ const PatientImportModal: React.FC<PatientImportModalProps> = ({ isOpen, onClose
               {isImporting && (
                 <div className="bg-slate-700/50 rounded-lg p-4">
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm text-brand-text-secondary">Progresso</span>
-                    <span className="text-sm text-brand-text-secondary">{importProgress}%</span>
+                    <span className="text-sm text-slate-300">Progresso</span>
+                    <span className="text-sm text-slate-300">{importProgress}%</span>
                   </div>
                   <div className="w-full bg-slate-600 rounded-full h-2">
                     <div
@@ -551,8 +551,8 @@ const PatientImportModal: React.FC<PatientImportModalProps> = ({ isOpen, onClose
                   >
                     <div className="flex items-center justify-between">
                       <div className="flex-1">
-                        <p className="text-brand-text font-medium">{patient.name}</p>
-                        <div className="flex items-center space-x-4 mt-1 text-sm text-brand-text-muted">
+                        <p className="text-white font-medium">{patient.name}</p>
+                        <div className="flex items-center space-x-4 mt-1 text-sm text-slate-400">
                           {patient.email && <span>📧 {patient.email}</span>}
                           {patient.phone && <span>📞 {patient.phone}</span>}
                           {patient.cpf && <span>🆔 {patient.cpf}</span>}
@@ -568,27 +568,27 @@ const PatientImportModal: React.FC<PatientImportModalProps> = ({ isOpen, onClose
           {/* Resultados da Importação */}
           {importResults && (
             <div className="mt-6 bg-slate-700/50 rounded-lg p-4 border border-slate-600">
-              <h3 className="text-lg font-semibold text-brand-text mb-4">Resultado da Importação</h3>
+              <h3 className="text-lg font-semibold text-white mb-4">Resultado da Importação</h3>
               <div className="grid grid-cols-3 gap-4 mb-4">
                 <div className="text-center">
                   <CheckCircle className="w-8 h-8 text-green-400 mx-auto mb-2" />
                   <p className="text-2xl font-bold text-green-400">{importResults.success}</p>
-                  <p className="text-sm text-brand-text-muted">Importados</p>
+                  <p className="text-sm text-slate-400">Importados</p>
                 </div>
                 <div className="text-center">
                   <AlertCircle className="w-8 h-8 text-yellow-400 mx-auto mb-2" />
                   <p className="text-2xl font-bold text-yellow-400">{importResults.skipped}</p>
-                  <p className="text-sm text-brand-text-muted">Ignorados</p>
+                  <p className="text-sm text-slate-400">Ignorados</p>
                 </div>
                 <div className="text-center">
                   <AlertCircle className="w-8 h-8 text-red-400 mx-auto mb-2" />
                   <p className="text-2xl font-bold text-red-400">{importResults.errors}</p>
-                  <p className="text-sm text-brand-text-muted">Erros</p>
+                  <p className="text-sm text-slate-400">Erros</p>
                 </div>
               </div>
               <div className="max-h-48 overflow-y-auto space-y-1">
                 {importResults.details.map((detail, index) => (
-                  <p key={index} className="text-sm text-brand-text-secondary">{detail}</p>
+                  <p key={index} className="text-sm text-slate-300">{detail}</p>
                 ))}
               </div>
             </div>
@@ -596,10 +596,10 @@ const PatientImportModal: React.FC<PatientImportModalProps> = ({ isOpen, onClose
         </div>
 
         {/* Footer */}
-        <div className="p-6 border-t border-brand-border flex items-center justify-end space-x-3">
+        <div className="p-6 border-t border-slate-700 flex items-center justify-end space-x-3">
           <button
             onClick={onClose}
-            className="px-4 py-2 bg-brand-surface-subtle hover:bg-slate-600 text-brand-text rounded-lg transition-colors"
+            className="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg transition-colors"
           >
             Fechar
           </button>

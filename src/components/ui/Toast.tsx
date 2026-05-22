@@ -60,9 +60,9 @@ const Toast: React.FC<ToastProps> = ({ id, type, message, description, duration 
         >
             <div className="flex-shrink-0 mt-0.5">{getIcon()}</div>
             <div className="flex-1 space-y-1">
-                <div className="text-sm font-semibold text-brand-text leading-tight">{message}</div>
+                <div className="text-sm font-semibold text-white leading-tight">{message}</div>
                 {description && (
-                    <div className="text-xs text-brand-text-muted leading-relaxed line-clamp-2">
+                    <div className="text-xs text-slate-400 leading-relaxed line-clamp-2">
                         {description}
                     </div>
                 )}

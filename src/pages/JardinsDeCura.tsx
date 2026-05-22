@@ -26,20 +26,20 @@ const JardinsDeCura: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900/20 to-pink-900/20 text-brand-text">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900/20 to-pink-900/20 text-white">
       {/* Header */}
       <div className="bg-gradient-to-r from-purple-900/80 to-pink-900/80 border-b border-purple-500/30 backdrop-blur-sm sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-6 py-4">
           <div className="flex items-center space-x-4">
             <button 
               onClick={() => navigate('/app/pesquisa/profissional/dashboard')}
-              className="flex items-center space-x-2 text-purple-200 hover:text-brand-text transition-colors"
+              className="flex items-center space-x-2 text-purple-200 hover:text-white transition-colors"
             >
               <ArrowLeft className="w-5 h-5" />
               <span>Voltar</span>
             </button>
             <div className="flex-1">
-              <h1 className="text-2xl font-bold text-brand-text">🌍 Saúde Global & Equidade</h1>
+              <h1 className="text-2xl font-bold text-white">🌍 Saúde Global & Equidade</h1>
               <p className="text-purple-200 text-sm">Jardins de Cura</p>
             </div>
           </div>
@@ -54,10 +54,10 @@ const JardinsDeCura: React.FC = () => {
             <div className="flex-1">
               <div className="flex items-center space-x-4 mb-4">
                 <div className="w-20 h-20 bg-gradient-to-br from-[#00c16a] to-[#00a85a] rounded-xl flex items-center justify-center shadow-lg">
-                  <Globe className="w-10 h-10 text-brand-text" />
+                  <Globe className="w-10 h-10 text-white" />
                 </div>
                 <div>
-                  <h2 className="text-4xl font-bold text-brand-text mb-2">Jardins de Cura</h2>
+                  <h2 className="text-4xl font-bold text-white mb-2">Jardins de Cura</h2>
                   <p className="text-purple-200 text-lg">Saúde Global & Equidade</p>
                 </div>
               </div>
@@ -70,7 +70,7 @@ const JardinsDeCura: React.FC = () => {
               <div className="bg-slate-800/50 rounded-lg p-6 border border-purple-500/30 mb-6">
                 <div className="flex items-center space-x-3 mb-3">
                   <Brain className="w-6 h-6 text-purple-400" />
-                  <h3 className="text-xl font-semibold text-brand-text">Nôa Esperança - Formação em Habilidades de Comunicação</h3>
+                  <h3 className="text-xl font-semibold text-white">Nôa Esperança - Formação em Habilidades de Comunicação</h3>
                 </div>
                 <p className="text-purple-100 leading-relaxed">
                   Nôa Esperança tem o papel fundamental de formação em habilidades de comunicação em saúde, 
@@ -92,7 +92,7 @@ const JardinsDeCura: React.FC = () => {
 
         {/* Características Principais */}
         <div className="bg-slate-800/50 rounded-xl p-8 mb-8 border border-purple-500/30">
-          <h3 className="text-2xl font-bold text-brand-text mb-6 flex items-center space-x-3">
+          <h3 className="text-2xl font-bold text-white mb-6 flex items-center space-x-3">
             <Target className="w-7 h-7 text-purple-400" />
             <span>Características Principais</span>
           </h3>
@@ -104,7 +104,7 @@ const JardinsDeCura: React.FC = () => {
             <div className="bg-gradient-to-br from-purple-900/30 to-pink-900/30 rounded-lg p-6 border border-purple-500/20">
               <div className="flex items-center space-x-3 mb-3">
                 <Users className="w-6 h-6 text-purple-400" />
-                <h4 className="text-lg font-semibold text-brand-text">Formação de Agentes Comunitários</h4>
+                <h4 className="text-lg font-semibold text-white">Formação de Agentes Comunitários</h4>
               </div>
               <p className="text-purple-100 text-sm">
                 Capacitação de lideranças locais para aplicação da metodologia AEC em suas comunidades.
@@ -114,7 +114,7 @@ const JardinsDeCura: React.FC = () => {
             <div className="bg-gradient-to-br from-purple-900/30 to-pink-900/30 rounded-lg p-6 border border-purple-500/20">
               <div className="flex items-center space-x-3 mb-3">
                 <Stethoscope className="w-6 h-6 text-purple-400" />
-                <h4 className="text-lg font-semibold text-brand-text">Triagem Preventiva baseada em AEC</h4>
+                <h4 className="text-lg font-semibold text-white">Triagem Preventiva baseada em AEC</h4>
               </div>
               <p className="text-purple-100 text-sm">
                 Sistemas de identificação precoce de riscos à saúde usando a Arte da Entrevista Clínica.
@@ -124,7 +124,7 @@ const JardinsDeCura: React.FC = () => {
             <div className="bg-gradient-to-br from-purple-900/30 to-pink-900/30 rounded-lg p-6 border border-purple-500/20">
               <div className="flex items-center space-x-3 mb-3">
                 <BarChart3 className="w-6 h-6 text-purple-400" />
-                <h4 className="text-lg font-semibold text-brand-text">Indicadores de Saúde Populacional</h4>
+                <h4 className="text-lg font-semibold text-white">Indicadores de Saúde Populacional</h4>
               </div>
               <p className="text-purple-100 text-sm">
                 Desenvolvimento de métricas específicas para monitoramento da saúde comunitária.
@@ -134,7 +134,7 @@ const JardinsDeCura: React.FC = () => {
             <div className="bg-gradient-to-br from-purple-900/30 to-pink-900/30 rounded-lg p-6 border border-purple-500/20">
               <div className="flex items-center space-x-3 mb-3">
                 <Globe className="w-6 h-6 text-purple-400" />
-                <h4 className="text-lg font-semibold text-brand-text">Parcerias com Organizações Internacionais</h4>
+                <h4 className="text-lg font-semibold text-white">Parcerias com Organizações Internacionais</h4>
               </div>
               <p className="text-purple-100 text-sm">
                 Colaboração com entidades globais para amplificar o impacto das intervenções.
@@ -145,7 +145,7 @@ const JardinsDeCura: React.FC = () => {
 
         {/* Equipe de Coordenação */}
         <div className="bg-slate-800/50 rounded-xl p-8 mb-8 border border-purple-500/30">
-          <h3 className="text-2xl font-bold text-brand-text mb-6 flex items-center space-x-3">
+          <h3 className="text-2xl font-bold text-white mb-6 flex items-center space-x-3">
             <Users className="w-7 h-7 text-purple-400" />
             <span>Equipe de Coordenação</span>
           </h3>
@@ -159,7 +159,7 @@ const JardinsDeCura: React.FC = () => {
                   <Stethoscope className="w-6 h-6 text-blue-400" />
                 </div>
                 <div>
-                  <h4 className="text-lg font-semibold text-brand-text">Dr. Fernando Bozza</h4>
+                  <h4 className="text-lg font-semibold text-white">Dr. Fernando Bozza</h4>
                   <p className="text-sm text-blue-300">Coordenador Geral</p>
                 </div>
               </div>
@@ -210,7 +210,7 @@ const JardinsDeCura: React.FC = () => {
                   <Award className="w-6 h-6 text-purple-400" />
                 </div>
                 <div>
-                  <h4 className="text-lg font-semibold text-brand-text">Dr. Ricardo Valença</h4>
+                  <h4 className="text-lg font-semibold text-white">Dr. Ricardo Valença</h4>
                   <p className="text-sm text-purple-300">Coordenador de Metodologia</p>
                 </div>
               </div>
@@ -261,7 +261,7 @@ const JardinsDeCura: React.FC = () => {
                   <Brain className="w-6 h-6 text-emerald-400" />
                 </div>
                 <div>
-                  <h4 className="text-lg font-semibold text-brand-text">Nôa Esperança</h4>
+                  <h4 className="text-lg font-semibold text-white">Nôa Esperança</h4>
                   <p className="text-sm text-emerald-300">Agente Inteligente</p>
                 </div>
               </div>
@@ -309,7 +309,7 @@ const JardinsDeCura: React.FC = () => {
 
         {/* Pronto para Implementação */}
         <div className="bg-slate-800/50 rounded-xl p-8 mb-8 border border-purple-500/30">
-          <h3 className="text-2xl font-bold text-brand-text mb-6 flex items-center space-x-3">
+          <h3 className="text-2xl font-bold text-white mb-6 flex items-center space-x-3">
             <CheckCircle className="w-7 h-7 text-green-400" />
             <span>Pronto para Implementação</span>
           </h3>
@@ -320,7 +320,7 @@ const JardinsDeCura: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Recursos Técnicos */}
             <div className="bg-gradient-to-br from-purple-900/30 to-pink-900/30 rounded-lg p-6 border border-purple-500/20">
-              <h4 className="text-lg font-semibold text-brand-text mb-4 flex items-center space-x-2">
+              <h4 className="text-lg font-semibold text-white mb-4 flex items-center space-x-2">
                 <Sparkles className="w-5 h-5 text-purple-400" />
                 <span>Recursos Técnicos</span>
               </h4>
@@ -346,7 +346,7 @@ const JardinsDeCura: React.FC = () => {
 
             {/* Recursos Conceituais */}
             <div className="bg-gradient-to-br from-purple-900/30 to-pink-900/30 rounded-lg p-6 border border-purple-500/20">
-              <h4 className="text-lg font-semibold text-brand-text mb-4 flex items-center space-x-2">
+              <h4 className="text-lg font-semibold text-white mb-4 flex items-center space-x-2">
                 <BookOpen className="w-5 h-5 text-purple-400" />
                 <span>Recursos Conceituais</span>
               </h4>
@@ -373,7 +373,7 @@ const JardinsDeCura: React.FC = () => {
 
           {/* Parcerias */}
           <div className="mt-6 bg-gradient-to-br from-purple-900/30 to-pink-900/30 rounded-lg p-6 border border-purple-500/20">
-            <h4 className="text-lg font-semibold text-brand-text mb-4 flex items-center space-x-2">
+            <h4 className="text-lg font-semibold text-white mb-4 flex items-center space-x-2">
               <Globe className="w-5 h-5 text-purple-400" />
               <span>Parcerias</span>
             </h4>
@@ -404,10 +404,10 @@ const JardinsDeCura: React.FC = () => {
             <div className="flex-1">
               <div className="flex items-center space-x-4 mb-4">
                 <div className="w-16 h-16 bg-gradient-to-r from-green-500 to-emerald-500 rounded-xl flex items-center justify-center shadow-lg">
-                  <GraduationCap className="w-8 h-8 text-brand-text" />
+                  <GraduationCap className="w-8 h-8 text-white" />
                 </div>
                 <div>
-                  <h3 className="text-3xl font-bold text-brand-text mb-2">Programa de Formação para ACS</h3>
+                  <h3 className="text-3xl font-bold text-white mb-2">Programa de Formação para ACS</h3>
                   <p className="text-green-200 text-lg">Prevenção e Cuidado de Dengue com Arte da Entrevista Clínica</p>
                 </div>
               </div>
@@ -424,26 +424,26 @@ const JardinsDeCura: React.FC = () => {
                     <Clock className="w-5 h-5 text-green-300" />
                     <span className="text-green-200 text-sm font-medium">Duração</span>
                   </div>
-                  <p className="text-brand-text font-bold">40 horas / 5 semanas</p>
+                  <p className="text-white font-bold">40 horas / 5 semanas</p>
                 </div>
                 <div className="bg-green-900/30 rounded-lg p-4 border border-green-500/30">
                   <div className="flex items-center space-x-2 mb-2">
                     <BookOpen className="w-5 h-5 text-green-300" />
                     <span className="text-green-200 text-sm font-medium">Módulos</span>
                   </div>
-                  <p className="text-brand-text font-bold">9 módulos</p>
+                  <p className="text-white font-bold">9 módulos</p>
                 </div>
                 <div className="bg-green-900/30 rounded-lg p-4 border border-green-500/30">
                   <div className="flex items-center space-x-2 mb-2">
                     <Award className="w-5 h-5 text-green-300" />
                     <span className="text-green-200 text-sm font-medium">Certificado</span>
                   </div>
-                  <p className="text-brand-text font-bold">Sim</p>
+                  <p className="text-white font-bold">Sim</p>
                 </div>
               </div>
 
               <div className="bg-green-900/30 rounded-lg p-6 border border-green-500/30 mb-6">
-                <h4 className="text-xl font-semibold text-brand-text mb-4 flex items-center">
+                <h4 className="text-xl font-semibold text-white mb-4 flex items-center">
                   <Brain className="w-6 h-6 mr-2 text-green-400" />
                   Conteúdo do Curso
                 </h4>
@@ -474,7 +474,7 @@ const JardinsDeCura: React.FC = () => {
               <div className="flex flex-col sm:flex-row gap-4">
                 <button
                   onClick={handleIniciarCurso}
-                  className="bg-gradient-to-r from-green-500 to-emerald-500 text-brand-text px-8 py-4 rounded-lg font-bold text-lg hover:from-green-600 hover:to-emerald-600 transition-all shadow-lg flex items-center justify-center space-x-2"
+                  className="bg-gradient-to-r from-green-500 to-emerald-500 text-white px-8 py-4 rounded-lg font-bold text-lg hover:from-green-600 hover:to-emerald-600 transition-all shadow-lg flex items-center justify-center space-x-2"
                 >
                   <GraduationCap className="w-5 h-5" />
                   <span>Iniciar Curso</span>
@@ -482,7 +482,7 @@ const JardinsDeCura: React.FC = () => {
                 
                 <button
                   onClick={handleSaibaMaisNoa}
-                  className="bg-green-700/50 text-brand-text px-8 py-4 rounded-lg font-bold text-lg hover:bg-green-700/70 transition-colors border-2 border-green-400/30 flex items-center justify-center space-x-2"
+                  className="bg-green-700/50 text-white px-8 py-4 rounded-lg font-bold text-lg hover:bg-green-700/70 transition-colors border-2 border-green-400/30 flex items-center justify-center space-x-2"
                 >
                   <Brain className="w-5 h-5" />
                   <span>Saiba mais com Nôa Esperança</span>
@@ -495,7 +495,7 @@ const JardinsDeCura: React.FC = () => {
         {/* CTA Section */}
         <div className="bg-gradient-to-r from-purple-600 to-pink-600 rounded-2xl p-8 border border-purple-400/50">
           <div className="text-center mb-6">
-            <h3 className="text-3xl font-bold text-brand-text mb-3">Transforme Sua Comunidade</h3>
+            <h3 className="text-3xl font-bold text-white mb-3">Transforme Sua Comunidade</h3>
             <p className="text-purple-100 text-lg">
               Junte-se ao Jardins de Cura e leve a metodologia AEC para sua região, 
               promovendo equidade e inovação em saúde.
@@ -513,7 +513,7 @@ const JardinsDeCura: React.FC = () => {
             
             <button
               onClick={handleConhecerCursos}
-              className="bg-purple-700/50 text-brand-text px-8 py-4 rounded-lg font-bold text-lg hover:bg-purple-700/70 transition-colors border-2 border-white/30 flex items-center justify-center space-x-2"
+              className="bg-purple-700/50 text-white px-8 py-4 rounded-lg font-bold text-lg hover:bg-purple-700/70 transition-colors border-2 border-white/30 flex items-center justify-center space-x-2"
             >
               <GraduationCap className="w-5 h-5" />
               <span>Conhecer Cursos</span>

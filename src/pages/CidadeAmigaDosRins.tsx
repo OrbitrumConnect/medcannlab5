@@ -99,7 +99,7 @@ const SistemaFinanceiroStatus: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="text-brand-text-secondary text-sm mb-4">
+      <div className="text-slate-300 text-sm mb-4">
         Carregando informações financeiras...
       </div>
     )
@@ -109,8 +109,8 @@ const SistemaFinanceiroStatus: React.FC = () => {
     <div className="space-y-4 mb-4">
       <div>
         <h5 className="text-sm font-semibold text-green-300 mb-2">Pagamentos Integrados</h5>
-        <p className="text-xs text-brand-text-secondary mb-3">Sistema completo de pagamentos com múltiplas opções</p>
-        <ul className="space-y-2 text-xs text-brand-text-muted">
+        <p className="text-xs text-slate-300 mb-3">Sistema completo de pagamentos com múltiplas opções</p>
+        <ul className="space-y-2 text-xs text-slate-400">
           {paymentMethods.map((method, index) => (
             <li key={index} className="flex items-center space-x-2">
               <CheckCircle className="w-4 h-4 text-green-400" />
@@ -122,13 +122,13 @@ const SistemaFinanceiroStatus: React.FC = () => {
 
       <div>
         <h5 className="text-sm font-semibold text-green-300 mb-2">Gestão Financeira</h5>
-        <p className="text-xs text-brand-text-secondary mb-3">Controle completo das finanças da plataforma</p>
+        <p className="text-xs text-slate-300 mb-3">Controle completo das finanças da plataforma</p>
         {totalRevenue > 0 && (
           <p className="text-xs text-green-400 mb-2">
             Receita total: R$ {totalRevenue.toFixed(2).replace('.', ',')}
           </p>
         )}
-        <ul className="space-y-2 text-xs text-brand-text-muted">
+        <ul className="space-y-2 text-xs text-slate-400">
           <li className="flex items-center space-x-2">
             <CheckCircle className="w-4 h-4 text-green-400" />
             <span>Dashboard financeiro em tempo real</span>
@@ -152,7 +152,7 @@ const SistemaFinanceiroStatus: React.FC = () => {
         </ul>
         <button
           onClick={() => navigate('/app/professional-financial')}
-          className="mt-3 w-full bg-green-600 hover:bg-green-700 text-brand-text px-4 py-2 rounded-lg text-xs font-semibold transition-colors"
+          className="mt-3 w-full bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-xs font-semibold transition-colors"
         >
           Acessar Dashboard Financeiro
         </button>
@@ -225,7 +225,7 @@ const AgendamentoStatus: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="text-brand-text-secondary text-sm mb-4">
+      <div className="text-slate-300 text-sm mb-4">
         Carregando informações de agendamento...
       </div>
     )
@@ -233,20 +233,20 @@ const AgendamentoStatus: React.FC = () => {
 
   return (
     <>
-      <p className="text-brand-text-secondary text-sm mb-4">
+      <p className="text-slate-300 text-sm mb-4">
         {availableDoctors.length > 0
           ? `Ativo com agenda${availableDoctors.length > 1 ? 's' : ''} disponível${availableDoctors.length > 1 ? 'eis' : ''}: ${availableDoctors.join(', ')}`
           : 'Sistema de agendamento ativo'
         }
         {appointmentsCount > 0 && (
-          <span className="block mt-2 text-xs text-brand-text-muted">
+          <span className="block mt-2 text-xs text-slate-400">
             {appointmentsCount} agendamento{appointmentsCount > 1 ? 's' : ''} futuro{appointmentsCount > 1 ? 's' : ''}
           </span>
         )}
       </p>
       <button
         onClick={() => navigate('/app/clinica/paciente/agendamentos')}
-        className="w-full bg-blue-600 hover:bg-blue-700 text-brand-text px-4 py-2 rounded-lg font-semibold transition-colors"
+        className="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-semibold transition-colors"
       >
         Agendar Consulta
       </button>
@@ -524,21 +524,21 @@ const CidadeAmigaDosRins: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-brand-bg text-brand-text">
+    <div className="min-h-screen bg-slate-900 text-white">
       {/* Header */}
       <div className="bg-gradient-to-r from-blue-900 via-cyan-900 to-blue-900 border-b border-emerald-500/20 p-6">
         <div className="max-w-7xl mx-auto">
           <div className="flex items-center space-x-4 mb-4">
             <button
               onClick={() => navigate('/app/pesquisa/profissional/dashboard')}
-              className="flex items-center space-x-2 text-blue-200 hover:text-brand-text transition-colors"
+              className="flex items-center space-x-2 text-blue-200 hover:text-white transition-colors"
             >
               <ArrowLeft className="w-5 h-5" />
               <span>Voltar</span>
             </button>
             <div className="h-6 w-px bg-blue-400/50" />
             <div>
-              <h1 className="text-2xl font-bold text-brand-text">Primeira Aplicação Social da AEC</h1>
+              <h1 className="text-2xl font-bold text-white">Primeira Aplicação Social da AEC</h1>
               <p className="text-blue-200">Cidade Amiga dos Rins</p>
             </div>
           </div>
@@ -548,29 +548,29 @@ const CidadeAmigaDosRins: React.FC = () => {
       {/* Main Content */}
       <div className="max-w-7xl mx-auto p-6">
         {/* Protocolos Clínicos Integrados */}
-        <div className="bg-brand-surface rounded-xl p-6 mb-8 border border-brand-border shadow-lg">
+        <div className="bg-slate-800 rounded-xl p-6 mb-8 border border-slate-700 shadow-lg">
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-6">
             <div>
-              <h2 className="text-2xl font-bold text-brand-text flex items-center gap-2">
+              <h2 className="text-2xl font-bold text-white flex items-center gap-2">
                 <ClipboardList className="w-6 h-6 text-blue-300" />
                 Protocolos Clínicos Integrados
               </h2>
-              <p className="text-brand-text-secondary text-sm md:text-base max-w-3xl">
+              <p className="text-slate-300 text-sm md:text-base max-w-3xl">
                 Conectamos os eixos clínica, ensino e pesquisa por meio de protocolos que geram avaliações IMRE, relatórios da IA residente e planos
                 terapêuticos individualizados. Explore os protocolos ativos e acompanhe os que estão em construção colaborativa.
               </p>
             </div>
-            <div className="flex items-center gap-2 bg-slate-900/40 border border-brand-border rounded-lg p-1">
+            <div className="flex items-center gap-2 bg-slate-900/40 border border-slate-700 rounded-lg p-1">
               <button
                 onClick={() => setProtocolTab('ativos')}
-                className={`px-3 py-2 text-sm font-semibold rounded-md transition-colors ${protocolTab === 'ativos' ? 'bg-blue-600 text-brand-text' : 'text-brand-text-secondary hover:text-brand-text'
+                className={`px-3 py-2 text-sm font-semibold rounded-md transition-colors ${protocolTab === 'ativos' ? 'bg-blue-600 text-white' : 'text-slate-300 hover:text-white'
                   }`}
               >
                 Protocolos ativos
               </button>
               <button
                 onClick={() => setProtocolTab('novos')}
-                className={`px-3 py-2 text-sm font-semibold rounded-md transition-colors ${protocolTab === 'novos' ? 'bg-blue-600 text-brand-text' : 'text-brand-text-secondary hover:text-brand-text'
+                className={`px-3 py-2 text-sm font-semibold rounded-md transition-colors ${protocolTab === 'novos' ? 'bg-blue-600 text-white' : 'text-slate-300 hover:text-white'
                   }`}
               >
                 Novos protocolos
@@ -587,7 +587,7 @@ const CidadeAmigaDosRins: React.FC = () => {
                 >
                   <div className="space-y-2">
                     <div className="flex items-start justify-between gap-2">
-                      <h3 className="text-lg font-semibold text-brand-text">{protocol.title}</h3>
+                      <h3 className="text-lg font-semibold text-white">{protocol.title}</h3>
                       <span className="px-2 py-1 text-[11px] font-semibold rounded-md bg-blue-500/15 border border-blue-500/30 text-blue-200">
                         {protocol.status}
                       </span>
@@ -596,13 +596,13 @@ const CidadeAmigaDosRins: React.FC = () => {
                       {protocol.axes.map(axis => (
                         <span
                           key={`${protocol.id}-${axis}`}
-                          className="px-2 py-1 text-[11px] font-semibold rounded-full border border-brand-border bg-slate-800/80 text-brand-text-secondary"
+                          className="px-2 py-1 text-[11px] font-semibold rounded-full border border-slate-700 bg-slate-800/80 text-slate-300"
                         >
                           {axis}
                         </span>
                       ))}
                     </div>
-                    <p className="text-sm text-brand-text-secondary leading-relaxed">{protocol.summary}</p>
+                    <p className="text-sm text-slate-300 leading-relaxed">{protocol.summary}</p>
                   </div>
 
                   <ul className="space-y-2 text-sm text-slate-300/90">
@@ -617,7 +617,7 @@ const CidadeAmigaDosRins: React.FC = () => {
                   <div className="flex flex-wrap gap-2 mt-auto">
                     <button
                       onClick={() => handleViewProtocol(protocol.knowledgeRoute)}
-                      className="inline-flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-semibold text-brand-text bg-blue-600 hover:bg-blue-500 transition-colors"
+                      className="inline-flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-semibold text-white bg-blue-600 hover:bg-blue-500 transition-colors"
                     >
                       <BookOpen className="w-4 h-4" />
                       Visualizar protocolo
@@ -640,7 +640,7 @@ const CidadeAmigaDosRins: React.FC = () => {
               {upcomingProtocols.map(protocol => (
                 <article
                   key={protocol.id}
-                  className="rounded-xl border border-brand-border bg-slate-900/60 p-6 shadow-md hover:border-blue-400/30 transition-colors"
+                  className="rounded-xl border border-slate-700 bg-slate-900/60 p-6 shadow-md hover:border-blue-400/30 transition-colors"
                 >
                   <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4 mb-4">
                     <div className="space-y-2">
@@ -648,29 +648,29 @@ const CidadeAmigaDosRins: React.FC = () => {
                         <span className="px-2 py-1 text-[11px] font-semibold rounded-md bg-purple-500/20 border border-purple-400/40 text-purple-200">
                           {protocol.stage}
                         </span>
-                        <span className="px-2 py-1 text-[11px] font-semibold rounded-md bg-brand-surface border border-brand-border text-brand-text-secondary">
+                        <span className="px-2 py-1 text-[11px] font-semibold rounded-md bg-slate-800 border border-slate-700 text-slate-300">
                           {protocol.owner}
                         </span>
                       </div>
-                      <h3 className="text-xl font-semibold text-brand-text">{protocol.title}</h3>
+                      <h3 className="text-xl font-semibold text-white">{protocol.title}</h3>
                       <div className="flex flex-wrap gap-2">
                         {protocol.axes.map(axis => (
                           <span
                             key={`${protocol.id}-axis-${axis}`}
-                            className="px-2 py-1 text-[11px] font-semibold rounded-full border border-brand-border bg-slate-800/80 text-brand-text-secondary"
+                            className="px-2 py-1 text-[11px] font-semibold rounded-full border border-slate-700 bg-slate-800/80 text-slate-300"
                           >
                             {axis}
                           </span>
                         ))}
                       </div>
-                      <p className="text-sm text-brand-text-secondary leading-relaxed">{protocol.description}</p>
+                      <p className="text-sm text-slate-300 leading-relaxed">{protocol.description}</p>
                     </div>
-                    <div className="min-w-[220px] bg-slate-800/70 border border-brand-border rounded-lg p-4 space-y-2">
+                    <div className="min-w-[220px] bg-slate-800/70 border border-slate-700 rounded-lg p-4 space-y-2">
                       <h4 className="text-sm font-semibold text-slate-200 flex items-center gap-2">
                         <Target className="w-4 h-4 text-blue-300" />
                         Próximas entregas
                       </h4>
-                      <ul className="space-y-1 text-xs text-brand-text-muted">
+                      <ul className="space-y-1 text-xs text-slate-400">
                         {protocol.milestones.map((milestone, index) => (
                           <li key={`${protocol.id}-milestone-${index}`} className="flex items-center gap-2">
                             <CheckCircle className="w-4 h-4 text-blue-300/70" />
@@ -685,7 +685,7 @@ const CidadeAmigaDosRins: React.FC = () => {
                   <div className="flex flex-wrap gap-2">
                     <button
                       onClick={() => handleViewProtocol(protocol.knowledgeDraft)}
-                      className="inline-flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-semibold text-brand-text bg-blue-600 hover:bg-blue-500 transition-colors"
+                      className="inline-flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-semibold text-white bg-blue-600 hover:bg-blue-500 transition-colors"
                     >
                       <ClipboardList className="w-4 h-4" />
                       Abrir documento base
@@ -708,10 +708,10 @@ const CidadeAmigaDosRins: React.FC = () => {
         <div className="bg-gradient-to-br from-blue-900/40 to-cyan-900/40 rounded-xl p-8 mb-8 border border-emerald-500/20">
           <div className="flex items-start space-x-6 mb-6">
             <div className="w-24 h-24 bg-gradient-to-br from-[#00c16a] to-[#00a85a] rounded-xl flex items-center justify-center shadow-lg">
-              <MapPin className="w-12 h-12 text-brand-text" />
+              <MapPin className="w-12 h-12 text-white" />
             </div>
             <div className="flex-1">
-              <h2 className="text-4xl font-bold text-brand-text mb-4">Cidade Amiga dos Rins</h2>
+              <h2 className="text-4xl font-bold text-white mb-4">Cidade Amiga dos Rins</h2>
               <p className="text-blue-100 text-lg leading-relaxed mb-6">
                 Programa pioneiro de saúde comunitária que integra tecnologia avançada e cuidado humanizado para identificação
                 de fatores de risco para doença renal crônica e onboarding de profissionais através da metodologia Arte da Entrevista Clínica.
@@ -754,8 +754,8 @@ const CidadeAmigaDosRins: React.FC = () => {
         </div>
 
         {/* Pilares do Programa */}
-        <div className="bg-brand-surface rounded-xl p-6 mb-8 border border-brand-border">
-          <h3 className="text-2xl font-bold text-brand-text mb-6">Pilares do Programa</h3>
+        <div className="bg-slate-800 rounded-xl p-6 mb-8 border border-slate-700">
+          <h3 className="text-2xl font-bold text-white mb-6">Pilares do Programa</h3>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
             {pillars.map((pillar) => {
               const Icon = pillar.icon
@@ -764,8 +764,8 @@ const CidadeAmigaDosRins: React.FC = () => {
                   key={pillar.id}
                   onClick={() => setActivePillar(pillar.id)}
                   className={`p-4 rounded-lg border-2 transition-all ${activePillar === pillar.id
-                    ? 'bg-blue-600 border-blue-400 text-brand-text'
-                    : 'bg-brand-surface-subtle border-slate-600 text-brand-text-secondary hover:border-blue-500'
+                    ? 'bg-blue-600 border-blue-400 text-white'
+                    : 'bg-slate-700 border-slate-600 text-slate-300 hover:border-blue-500'
                     }`}
                 >
                   <Icon className="w-6 h-6 mx-auto mb-2" />
@@ -777,14 +777,14 @@ const CidadeAmigaDosRins: React.FC = () => {
         </div>
 
         {/* Introdução */}
-        <div className="bg-brand-surface rounded-xl p-8 mb-8 border border-brand-border">
+        <div className="bg-slate-800 rounded-xl p-8 mb-8 border border-slate-700">
           <div className="flex items-center space-x-3 mb-6">
             <Sparkles className="w-8 h-8 text-blue-400" />
-            <h3 className="text-2xl font-bold text-brand-text">Introdução</h3>
+            <h3 className="text-2xl font-bold text-white">Introdução</h3>
           </div>
 
           <div className="bg-emerald-900/20 rounded-lg p-6 mb-6 border border-emerald-500/20">
-            <h4 className="text-lg font-semibold text-brand-text mb-3">Componente Principal</h4>
+            <h4 className="text-lg font-semibold text-white mb-3">Componente Principal</h4>
             <p className="text-blue-100 leading-relaxed">
               35 anos de nefrologia aplicados ao desenvolvimento de cidades sustentáveis para a saúde renal.
               A metodologia AEC integrada com Inteligência Artificial permite uma abordagem preventiva inovadora
@@ -794,7 +794,7 @@ const CidadeAmigaDosRins: React.FC = () => {
 
           {/* Cronograma de Implementação */}
           <div className="mt-8">
-            <h4 className="text-xl font-semibold text-brand-text mb-6">Cronograma de Implementação</h4>
+            <h4 className="text-xl font-semibold text-white mb-6">Cronograma de Implementação</h4>
             {loading ? (
               <div className="text-center py-8 text-blue-200">Carregando cronograma...</div>
             ) : implementationPhases.length === 0 ? (
@@ -809,7 +809,7 @@ const CidadeAmigaDosRins: React.FC = () => {
                     if (status.includes('andamento')) return 'text-blue-300'
                     if (status.includes('Iniciando')) return 'text-yellow-300'
                     if (status.includes('Planejado')) return 'text-purple-300'
-                    return 'text-brand-text-muted'
+                    return 'text-slate-400'
                   }
 
                   const getProgressColor = (progress: number) => {
@@ -830,10 +830,10 @@ const CidadeAmigaDosRins: React.FC = () => {
                     <div key={phase.id} className="bg-slate-700/50 rounded-lg p-6 border border-slate-600">
                       <div className="flex items-center justify-between mb-4">
                         <div>
-                          <h5 className="text-lg font-semibold text-brand-text">{phase.title}</h5>
+                          <h5 className="text-lg font-semibold text-white">{phase.title}</h5>
                           <p className={`text-sm ${getStatusColor(phase.status)}`}>{phase.status} • {phase.duration}</p>
                         </div>
-                        <span className={`px-3 py-1 ${getBadgeColor(phase.progress)} text-brand-text rounded-full text-xs font-semibold`}>
+                        <span className={`px-3 py-1 ${getBadgeColor(phase.progress)} text-white rounded-full text-xs font-semibold`}>
                           {phase.progress}%
                         </span>
                       </div>
@@ -853,13 +853,13 @@ const CidadeAmigaDosRins: React.FC = () => {
         </div>
 
         {/* Sistemas Ativos */}
-        <div className="bg-brand-surface rounded-xl p-8 mb-8 border border-brand-border">
+        <div className="bg-slate-800 rounded-xl p-8 mb-8 border border-slate-700">
           <div className="flex items-center space-x-3 mb-6">
             <Zap className="w-8 h-8 text-green-400" />
-            <h3 className="text-2xl font-bold text-brand-text">Sistemas Ativos</h3>
+            <h3 className="text-2xl font-bold text-white">Sistemas Ativos</h3>
           </div>
 
-          <p className="text-brand-text-secondary mb-6">
+          <p className="text-slate-300 mb-6">
             Sistema Financeiro & Agendamento - Plataforma completa para gestão financeira e agendamento de consultas,
             integrando múltiplas formas de pagamento e agenda inteligente.
           </p>
@@ -868,8 +868,8 @@ const CidadeAmigaDosRins: React.FC = () => {
             {/* Sistema Financeiro */}
             <div className="bg-slate-700/50 rounded-lg p-6 border border-green-500/20">
               <div className="flex items-center justify-between mb-4">
-                <h4 className="text-lg font-semibold text-brand-text">Sistema Financeiro</h4>
-                <span className="px-3 py-1 bg-green-600 text-brand-text rounded-full text-xs font-semibold">Ativo</span>
+                <h4 className="text-lg font-semibold text-white">Sistema Financeiro</h4>
+                <span className="px-3 py-1 bg-green-600 text-white rounded-full text-xs font-semibold">Ativo</span>
               </div>
 
               <SistemaFinanceiroStatus />
@@ -878,8 +878,8 @@ const CidadeAmigaDosRins: React.FC = () => {
             {/* Sistema Agendamento */}
             <div className="bg-slate-700/50 rounded-lg p-6 border border-emerald-500/20">
               <div className="flex items-center justify-between mb-4">
-                <h4 className="text-lg font-semibold text-brand-text">Sistema Agendamento</h4>
-                <span className="px-3 py-1 bg-blue-600 text-brand-text rounded-full text-xs font-semibold">Ativo</span>
+                <h4 className="text-lg font-semibold text-white">Sistema Agendamento</h4>
+                <span className="px-3 py-1 bg-blue-600 text-white rounded-full text-xs font-semibold">Ativo</span>
               </div>
               <AgendamentoStatus />
             </div>
@@ -887,16 +887,16 @@ const CidadeAmigaDosRins: React.FC = () => {
             {/* NOVO: Módulo de Função Renal */}
             <div className="bg-gradient-to-br from-cyan-900/30 to-blue-900/30 rounded-lg p-6 border border-cyan-500/30">
               <div className="flex items-center justify-between mb-4">
-                <h4 className="text-lg font-semibold text-brand-text flex items-center gap-2">
+                <h4 className="text-lg font-semibold text-white flex items-center gap-2">
                   <Activity className="w-5 h-5 text-cyan-400" />
                   Função Renal
                 </h4>
-                <span className="px-3 py-1 bg-cyan-600 text-brand-text rounded-full text-xs font-semibold">Novo!</span>
+                <span className="px-3 py-1 bg-cyan-600 text-white rounded-full text-xs font-semibold">Novo!</span>
               </div>
-              <p className="text-brand-text-secondary text-sm mb-4">
+              <p className="text-slate-300 text-sm mb-4">
                 Calculadora de Taxa de Filtração Glomerular (TFG) usando fórmula CKD-EPI 2021 e classificação KDIGO.
               </p>
-              <ul className="space-y-2 text-xs text-brand-text-muted mb-4">
+              <ul className="space-y-2 text-xs text-slate-400 mb-4">
                 <li className="flex items-center space-x-2">
                   <CheckCircle className="w-4 h-4 text-cyan-400" />
                   <span>Cálculo eGFR em tempo real</span>
@@ -916,7 +916,7 @@ const CidadeAmigaDosRins: React.FC = () => {
               </ul>
               <button
                 onClick={() => setShowRenalModule(!showRenalModule)}
-                className="w-full bg-cyan-600 hover:bg-cyan-700 text-brand-text px-4 py-2 rounded-lg text-sm font-semibold transition-colors flex items-center justify-center gap-2"
+                className="w-full bg-cyan-600 hover:bg-cyan-700 text-white px-4 py-2 rounded-lg text-sm font-semibold transition-colors flex items-center justify-center gap-2"
               >
                 <Activity className="w-4 h-4" />
                 {showRenalModule ? 'Ocultar Módulo' : 'Abrir Calculadora TFG'}
@@ -937,7 +937,7 @@ const CidadeAmigaDosRins: React.FC = () => {
                     <select
                       value={selectedPatientForRenal || ''}
                       onChange={(e) => setSelectedPatientForRenal(e.target.value || undefined)}
-                      className="w-full px-4 py-3 bg-brand-surface border border-cyan-500/30 rounded-lg text-brand-text focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                      className="w-full px-4 py-3 bg-slate-800 border border-cyan-500/30 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-cyan-500"
                     >
                       <option value="">-- Selecione um paciente --</option>
                       {patientsList.map(p => (
@@ -963,8 +963,8 @@ const CidadeAmigaDosRins: React.FC = () => {
           {/* Programa Amores */}
           <div className="bg-gradient-to-r from-purple-900/40 to-pink-900/40 rounded-lg p-6 border border-purple-500/20 mb-6">
             <div className="flex items-center justify-between mb-4">
-              <h4 className="text-lg font-semibold text-brand-text">Programa Amores</h4>
-              <span className="px-3 py-1 bg-purple-600 text-brand-text rounded-full text-xs font-semibold">Em desenvolvimento</span>
+              <h4 className="text-lg font-semibold text-white">Programa Amores</h4>
+              <span className="px-3 py-1 bg-purple-600 text-white rounded-full text-xs font-semibold">Em desenvolvimento</span>
             </div>
             <p className="text-purple-100 text-sm mb-4">
               Sistema de pontos e benefícios para fidelização
@@ -995,44 +995,44 @@ const CidadeAmigaDosRins: React.FC = () => {
 
           {/* Métodos de Pagamento */}
           <div className="bg-slate-700/50 rounded-lg p-6 border border-slate-600">
-            <h4 className="text-lg font-semibold text-brand-text mb-4">Métodos de Pagamento Disponíveis</h4>
+            <h4 className="text-lg font-semibold text-white mb-4">Métodos de Pagamento Disponíveis</h4>
             <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-4">
-              <div className="bg-brand-surface rounded-lg p-4 text-center border border-slate-600">
+              <div className="bg-slate-800 rounded-lg p-4 text-center border border-slate-600">
                 <CreditCard className="w-8 h-8 mx-auto mb-2 text-blue-400" />
-                <div className="text-xs text-brand-text-secondary">Cartão de Crédito</div>
+                <div className="text-xs text-slate-300">Cartão de Crédito</div>
               </div>
-              <div className="bg-brand-surface rounded-lg p-4 text-center border border-slate-600">
+              <div className="bg-slate-800 rounded-lg p-4 text-center border border-slate-600">
                 <Zap className="w-8 h-8 mx-auto mb-2 text-green-400" />
-                <div className="text-xs text-brand-text-secondary">Pix</div>
+                <div className="text-xs text-slate-300">Pix</div>
               </div>
-              <div className="bg-brand-surface rounded-lg p-4 text-center border border-slate-600">
+              <div className="bg-slate-800 rounded-lg p-4 text-center border border-slate-600">
                 <FileText className="w-8 h-8 mx-auto mb-2 text-yellow-400" />
-                <div className="text-xs text-brand-text-secondary">Boleto</div>
+                <div className="text-xs text-slate-300">Boleto</div>
               </div>
-              <div className="bg-brand-surface rounded-lg p-4 text-center border border-slate-600">
+              <div className="bg-slate-800 rounded-lg p-4 text-center border border-slate-600">
                 <Star className="w-8 h-8 mx-auto mb-2 text-purple-400" />
-                <div className="text-xs text-brand-text-secondary">Escute-se Points</div>
+                <div className="text-xs text-slate-300">Escute-se Points</div>
               </div>
-              <div className="bg-brand-surface rounded-lg p-4 text-center border border-slate-600">
+              <div className="bg-slate-800 rounded-lg p-4 text-center border border-slate-600">
                 <Wallet className="w-8 h-8 mx-auto mb-2 text-cyan-400" />
-                <div className="text-xs text-brand-text-secondary">Outros</div>
+                <div className="text-xs text-slate-300">Outros</div>
               </div>
             </div>
-            <button className="w-full bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-brand-text px-6 py-3 rounded-lg font-semibold transition-colors">
+            <button className="w-full bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white px-6 py-3 rounded-lg font-semibold transition-colors">
               Testar Sistema de Pagamento
             </button>
           </div>
         </div>
 
         {/* Sistema de Captação de Recursos */}
-        <div className="bg-brand-surface rounded-xl p-8 mb-8 border border-brand-border">
+        <div className="bg-slate-800 rounded-xl p-8 mb-8 border border-slate-700">
           <div className="flex items-center space-x-3 mb-6">
             <DollarSign className="w-8 h-8 text-green-400" />
-            <h3 className="text-2xl font-bold text-brand-text">Sistema de Captação de Recursos</h3>
+            <h3 className="text-2xl font-bold text-white">Sistema de Captação de Recursos</h3>
           </div>
 
           <div className="bg-green-900/20 rounded-lg p-6 mb-6 border border-green-500/20">
-            <h4 className="text-lg font-semibold text-brand-text mb-3">Modelos de Negócio Sustentável</h4>
+            <h4 className="text-lg font-semibold text-white mb-3">Modelos de Negócio Sustentável</h4>
             <p className="text-green-100 text-sm leading-relaxed mb-4">
               Estratégias de desenvolvimento sustentável alinhadas com os princípios de equidade, inovação e mobilização
               de organizações públicas e privadas, baseadas em evidências científicas do artigo "After COP26 — Putting
@@ -1044,26 +1044,26 @@ const CidadeAmigaDosRins: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
             <div className="bg-slate-700/50 rounded-lg p-6 border border-green-500/20">
               <div className="flex items-center justify-between mb-4">
-                <h4 className="text-lg font-semibold text-brand-text">Plataforma de Assinaturas Educacional</h4>
-                <span className="px-3 py-1 bg-green-600 text-brand-text rounded-full text-xs font-semibold">Ativo</span>
+                <h4 className="text-lg font-semibold text-white">Plataforma de Assinaturas Educacional</h4>
+                <span className="px-3 py-1 bg-green-600 text-white rounded-full text-xs font-semibold">Ativo</span>
               </div>
               <div className="space-y-3 mb-4">
-                <p className="text-sm text-brand-text-secondary">Investimento: R$ 50.000 - R$ 200.000</p>
+                <p className="text-sm text-slate-300">Investimento: R$ 50.000 - R$ 200.000</p>
                 <div className="w-full bg-slate-600 rounded-full h-2 mb-2">
                   <div className="bg-green-500 h-2 rounded-full" style={{ width: '85%' }}></div>
                 </div>
-                <p className="text-xs text-brand-text-muted">Progresso de Implementação: 85%</p>
+                <p className="text-xs text-slate-400">Progresso de Implementação: 85%</p>
                 <p className="text-sm text-green-200">Conteúdo exclusivo sobre saúde sustentável e práticas ecológicas</p>
-                <div className="bg-brand-surface rounded p-3">
-                  <p className="text-xs font-semibold text-brand-text mb-2">Benefícios Principais:</p>
-                  <ul className="space-y-1 text-xs text-brand-text-secondary">
+                <div className="bg-slate-800 rounded p-3">
+                  <p className="text-xs font-semibold text-white mb-2">Benefícios Principais:</p>
+                  <ul className="space-y-1 text-xs text-slate-300">
                     <li>• Receita contínua</li>
                     <li>• Disseminação de conhecimento</li>
                     <li>• Educação continuada</li>
                   </ul>
                 </div>
               </div>
-              <button className="w-full bg-green-600 hover:bg-green-700 text-brand-text px-4 py-2 rounded-lg font-semibold transition-colors">
+              <button className="w-full bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-semibold transition-colors">
                 Investir neste Modelo
               </button>
             </div>
@@ -1071,26 +1071,26 @@ const CidadeAmigaDosRins: React.FC = () => {
             <div className="space-y-4">
               <div className="bg-slate-700/50 rounded-lg p-4 border border-slate-600">
                 <div className="flex items-center justify-between mb-2">
-                  <h5 className="text-sm font-semibold text-brand-text">Consultoria em Sustentabilidade para Saúde</h5>
-                  <span className="px-2 py-1 bg-yellow-600 text-brand-text rounded-full text-xs">Em desenvolvimento</span>
+                  <h5 className="text-sm font-semibold text-white">Consultoria em Sustentabilidade para Saúde</h5>
+                  <span className="px-2 py-1 bg-yellow-600 text-white rounded-full text-xs">Em desenvolvimento</span>
                 </div>
               </div>
               <div className="bg-slate-700/50 rounded-lg p-4 border border-slate-600">
                 <div className="flex items-center justify-between mb-2">
-                  <h5 className="text-sm font-semibold text-brand-text">Marketplace Produtos Sustentáveis</h5>
-                  <span className="px-2 py-1 bg-purple-600 text-brand-text rounded-full text-xs">Planejado</span>
+                  <h5 className="text-sm font-semibold text-white">Marketplace Produtos Sustentáveis</h5>
+                  <span className="px-2 py-1 bg-purple-600 text-white rounded-full text-xs">Planejado</span>
                 </div>
               </div>
               <div className="bg-slate-700/50 rounded-lg p-4 border border-slate-600">
                 <div className="flex items-center justify-between mb-2">
-                  <h5 className="text-sm font-semibold text-brand-text">Licenciamento de IA para Saúde Sustentável</h5>
-                  <span className="px-2 py-1 bg-yellow-600 text-brand-text rounded-full text-xs">Em desenvolvimento</span>
+                  <h5 className="text-sm font-semibold text-white">Licenciamento de IA para Saúde Sustentável</h5>
+                  <span className="px-2 py-1 bg-yellow-600 text-white rounded-full text-xs">Em desenvolvimento</span>
                 </div>
               </div>
               <div className="bg-slate-700/50 rounded-lg p-4 border border-green-500/20">
                 <div className="flex items-center justify-between mb-2">
-                  <h5 className="text-sm font-semibold text-brand-text">Parcerias Público-Privadas</h5>
-                  <span className="px-2 py-1 bg-green-600 text-brand-text rounded-full text-xs">Ativo</span>
+                  <h5 className="text-sm font-semibold text-white">Parcerias Público-Privadas</h5>
+                  <span className="px-2 py-1 bg-green-600 text-white rounded-full text-xs">Ativo</span>
                 </div>
               </div>
             </div>
@@ -1098,11 +1098,11 @@ const CidadeAmigaDosRins: React.FC = () => {
 
           {/* Assinaturas */}
           <div className="mt-8">
-            <h4 className="text-xl font-semibold text-brand-text mb-6">Assinaturas Sopro Saúde Renal</h4>
+            <h4 className="text-xl font-semibold text-white mb-6">Assinaturas Sopro Saúde Renal</h4>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Renal Individual */}
               <div className="bg-gradient-to-br from-blue-900/40 to-cyan-900/40 rounded-xl p-6 border border-emerald-500/20">
-                <h5 className="text-xl font-semibold text-brand-text mb-2">Renal Individual</h5>
+                <h5 className="text-xl font-semibold text-white mb-2">Renal Individual</h5>
                 <div className="text-3xl font-bold text-blue-400 mb-4">R$ 100/mês</div>
                 <p className="text-blue-100 text-sm mb-4">Cuidado renal personalizado para você</p>
                 <ul className="space-y-3 mb-6 text-sm text-blue-200">
@@ -1131,17 +1131,17 @@ const CidadeAmigaDosRins: React.FC = () => {
                     <span>Avaliação de risco para DRC com Nôa Esperanza</span>
                   </li>
                 </ul>
-                <button className="w-full bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-brand-text px-6 py-3 rounded-lg font-bold transition-colors">
+                <button className="w-full bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white px-6 py-3 rounded-lg font-bold transition-colors">
                   Assinar Renal Individual
                 </button>
               </div>
 
               {/* Renal Família */}
               <div className="bg-gradient-to-br from-purple-900/40 to-pink-900/40 rounded-xl p-6 border-2 border-purple-500/40 relative">
-                <div className="absolute top-4 right-4 bg-purple-600 text-brand-text px-3 py-1 rounded-full text-xs font-bold">
+                <div className="absolute top-4 right-4 bg-purple-600 text-white px-3 py-1 rounded-full text-xs font-bold">
                   Mais Popular
                 </div>
-                <h5 className="text-xl font-semibold text-brand-text mb-2">Renal Família</h5>
+                <h5 className="text-xl font-semibold text-white mb-2">Renal Família</h5>
                 <div className="text-3xl font-bold text-purple-400 mb-4">R$ 200/mês</div>
                 <p className="text-purple-100 text-sm mb-4">Proteção renal para toda a família</p>
                 <ul className="space-y-3 mb-6 text-sm text-purple-200">
@@ -1174,7 +1174,7 @@ const CidadeAmigaDosRins: React.FC = () => {
                     <span>Plano de monitoramento familiar</span>
                   </li>
                 </ul>
-                <button className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-brand-text px-6 py-3 rounded-lg font-bold transition-colors">
+                <button className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-6 py-3 rounded-lg font-bold transition-colors">
                   Assinar Renal Família
                 </button>
               </div>
@@ -1183,10 +1183,10 @@ const CidadeAmigaDosRins: React.FC = () => {
         </div>
 
         {/* Implementação das Atividades */}
-        <div className="bg-brand-surface rounded-xl p-8 mb-8 border border-brand-border">
+        <div className="bg-slate-800 rounded-xl p-8 mb-8 border border-slate-700">
           <div className="flex items-center space-x-3 mb-6">
             <Activity className="w-8 h-8 text-cyan-400" />
-            <h3 className="text-2xl font-bold text-brand-text">Implementação das Atividades Alinhadas com Sustentabilidade</h3>
+            <h3 className="text-2xl font-bold text-white">Implementação das Atividades Alinhadas com Sustentabilidade</h3>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -1194,12 +1194,12 @@ const CidadeAmigaDosRins: React.FC = () => {
             <div className="bg-slate-700/50 rounded-lg p-6 border border-cyan-500/20">
               <div className="flex items-center space-x-3 mb-4">
                 <BookOpen className="w-6 h-6 text-cyan-400" />
-                <h4 className="text-lg font-semibold text-brand-text">Programas Educacionais</h4>
+                <h4 className="text-lg font-semibold text-white">Programas Educacionais</h4>
               </div>
-              <p className="text-brand-text-secondary text-sm mb-4">
+              <p className="text-slate-300 text-sm mb-4">
                 Treinamento em práticas sustentáveis e equidade na saúde
               </p>
-              <ul className="space-y-2 text-xs text-brand-text-muted">
+              <ul className="space-y-2 text-xs text-slate-400">
                 <li className="flex items-center space-x-2">
                   <CheckCircle className="w-4 h-4 text-cyan-400" />
                   <span>Workshops presenciais</span>
@@ -1219,12 +1219,12 @@ const CidadeAmigaDosRins: React.FC = () => {
             <div className="bg-slate-700/50 rounded-lg p-6 border border-cyan-500/20">
               <div className="flex items-center space-x-3 mb-4">
                 <MessageCircle className="w-6 h-6 text-cyan-400" />
-                <h4 className="text-lg font-semibold text-brand-text">Plataforma Interação Comunitária</h4>
+                <h4 className="text-lg font-semibold text-white">Plataforma Interação Comunitária</h4>
               </div>
-              <p className="text-brand-text-secondary text-sm mb-4">
+              <p className="text-slate-300 text-sm mb-4">
                 Discussão e troca sobre saúde e sustentabilidade
               </p>
-              <ul className="space-y-2 text-xs text-brand-text-muted">
+              <ul className="space-y-2 text-xs text-slate-400">
                 <li className="flex items-center space-x-2">
                   <CheckCircle className="w-4 h-4 text-cyan-400" />
                   <span>Fóruns de discussão</span>
@@ -1244,12 +1244,12 @@ const CidadeAmigaDosRins: React.FC = () => {
             <div className="bg-slate-700/50 rounded-lg p-6 border border-cyan-500/20">
               <div className="flex items-center space-x-3 mb-4">
                 <FlaskConical className="w-6 h-6 text-cyan-400" />
-                <h4 className="text-lg font-semibold text-brand-text">Pesquisa Colaborativa</h4>
+                <h4 className="text-lg font-semibold text-white">Pesquisa Colaborativa</h4>
               </div>
-              <p className="text-brand-text-secondary text-sm mb-4">
+              <p className="text-slate-300 text-sm mb-4">
                 Colaboração entre instituições de pesquisa e ONGs
               </p>
-              <ul className="space-y-2 text-xs text-brand-text-muted">
+              <ul className="space-y-2 text-xs text-slate-400">
                 <li className="flex items-center space-x-2">
                   <CheckCircle className="w-4 h-4 text-cyan-400" />
                   <span>Conferências</span>
@@ -1269,12 +1269,12 @@ const CidadeAmigaDosRins: React.FC = () => {
             <div className="bg-slate-700/50 rounded-lg p-6 border border-cyan-500/20">
               <div className="flex items-center space-x-3 mb-4">
                 <BarChart3 className="w-6 h-6 text-cyan-400" />
-                <h4 className="text-lg font-semibold text-brand-text">Ferramentas Monitoramento</h4>
+                <h4 className="text-lg font-semibold text-white">Ferramentas Monitoramento</h4>
               </div>
-              <p className="text-brand-text-secondary text-sm mb-4">
+              <p className="text-slate-300 text-sm mb-4">
                 Ferramentas digitais para práticas sustentáveis
               </p>
-              <ul className="space-y-2 text-xs text-brand-text-muted">
+              <ul className="space-y-2 text-xs text-slate-400">
                 <li className="flex items-center space-x-2">
                   <CheckCircle className="w-4 h-4 text-cyan-400" />
                   <span>Aplicativos móveis</span>
@@ -1294,12 +1294,12 @@ const CidadeAmigaDosRins: React.FC = () => {
             <div className="bg-slate-700/50 rounded-lg p-6 border border-cyan-500/20">
               <div className="flex items-center space-x-3 mb-4">
                 <Heart className="w-6 h-6 text-cyan-400" />
-                <h4 className="text-lg font-semibold text-brand-text">Saúde Comunitária</h4>
+                <h4 className="text-lg font-semibold text-white">Saúde Comunitária</h4>
               </div>
-              <p className="text-brand-text-secondary text-sm mb-4">
+              <p className="text-slate-300 text-sm mb-4">
                 Programas com foco em equidade e sustentabilidade
               </p>
-              <ul className="space-y-2 text-xs text-brand-text-muted">
+              <ul className="space-y-2 text-xs text-slate-400">
                 <li className="flex items-center space-x-2">
                   <CheckCircle className="w-4 h-4 text-cyan-400" />
                   <span>Organizações locais</span>
@@ -1320,20 +1320,20 @@ const CidadeAmigaDosRins: React.FC = () => {
         {/* Call to Action */}
         <div className="bg-gradient-to-r from-blue-900/40 via-cyan-900/40 to-blue-900/40 rounded-xl p-8 border border-emerald-500/20">
           <div className="text-center mb-6">
-            <h3 className="text-2xl font-bold text-brand-text mb-2">Parcerias Institucionais</h3>
+            <h3 className="text-2xl font-bold text-white mb-2">Parcerias Institucionais</h3>
             <p className="text-blue-200 text-lg mb-6">
               Modelo de negócio sustentável baseado nos princípios do artigo "After COP26",
               promovendo saúde, equidade e sustentabilidade através de parcerias estratégicas.
             </p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <button className="bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-brand-text px-6 py-4 rounded-lg font-bold transition-colors">
+            <button className="bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white px-6 py-4 rounded-lg font-bold transition-colors">
               Investir na Plataforma
             </button>
-            <button className="bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-700 hover:to-teal-700 text-brand-text px-6 py-4 rounded-lg font-bold transition-colors">
+            <button className="bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-700 hover:to-teal-700 text-white px-6 py-4 rounded-lg font-bold transition-colors">
               Aderir a um Plano
             </button>
-            <button className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-brand-text px-6 py-4 rounded-lg font-bold transition-colors">
+            <button className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-6 py-4 rounded-lg font-bold transition-colors">
               Agendar Apresentação
             </button>
           </div>

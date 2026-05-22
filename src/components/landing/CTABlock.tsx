@@ -37,8 +37,8 @@ export const CTABlock = ({
             theme.border
           )}
         >
-          <h2 className="text-3xl md:text-4xl font-bold text-brand-text mb-4">{title}</h2>
-          {subtitle && <p className="text-brand-text-muted text-base md:text-lg mb-8 max-w-2xl mx-auto">{subtitle}</p>}
+          <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">{title}</h2>
+          {subtitle && <p className="text-slate-400 text-base md:text-lg mb-8 max-w-2xl mx-auto">{subtitle}</p>}
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <button

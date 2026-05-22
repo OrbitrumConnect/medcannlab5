@@ -106,7 +106,7 @@ const MedCannLab: React.FC = () => {
   ]
 
   return (
-    <div className="min-h-screen bg-brand-bg text-brand-text">
+    <div className="min-h-screen bg-slate-900 text-white">
       {/* Main Content */}
       <div className="max-w-7xl mx-auto p-6">
         {/* Botão Voltar */}
@@ -156,7 +156,7 @@ const MedCannLab: React.FC = () => {
               />
             </div>
             <div className="flex-1">
-              <h2 className="text-4xl font-bold text-brand-text mb-4">MedCannLab</h2>
+              <h2 className="text-4xl font-bold text-white mb-4">MedCannLab</h2>
               <p className="text-green-100 text-lg leading-relaxed mb-6">
                 Pesquisa pioneira da cannabis medicinal aplicada à nefrologia e neurologia, utilizando a metodologia AEC
                 para identificar benefícios terapêuticos e avaliar impactos na função renal.
@@ -186,8 +186,8 @@ const MedCannLab: React.FC = () => {
         </div>
 
         {/* Seções do Projeto */}
-        <div className="bg-brand-surface rounded-xl p-6 mb-8 border border-brand-border">
-          <h3 className="text-2xl font-bold text-brand-text mb-6">Áreas de Pesquisa</h3>
+        <div className="bg-slate-800 rounded-xl p-6 mb-8 border border-slate-700">
+          <h3 className="text-2xl font-bold text-white mb-6">Áreas de Pesquisa</h3>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
             {sections.map((section) => {
               const Icon = section.icon
@@ -196,8 +196,8 @@ const MedCannLab: React.FC = () => {
                   key={section.id}
                   onClick={() => setActiveSection(section.id)}
                   className={`p-4 rounded-lg border-2 transition-all ${activeSection === section.id
-                    ? 'bg-green-600 border-green-400 text-brand-text'
-                    : 'bg-brand-surface-subtle border-slate-600 text-brand-text-secondary hover:border-green-500'
+                    ? 'bg-green-600 border-green-400 text-white'
+                    : 'bg-slate-700 border-slate-600 text-slate-300 hover:border-green-500'
                     }`}
                 >
                   <Icon className="w-6 h-6 mx-auto mb-2" />
@@ -209,21 +209,21 @@ const MedCannLab: React.FC = () => {
         </div>
 
         {/* Protocolos Integrados */}
-        <div className="bg-brand-surface rounded-xl p-6 mb-8 border border-brand-border">
+        <div className="bg-slate-800 rounded-xl p-6 mb-8 border border-slate-700">
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-6">
             <div>
-              <h3 className="text-2xl font-bold text-brand-text mb-2 flex items-center gap-2">
+              <h3 className="text-2xl font-bold text-white mb-2 flex items-center gap-2">
                 <Clipboard className="w-6 h-6 text-green-300" />
                 Protocolos Clínicos Integrados
               </h3>
-              <p className="text-brand-text-secondary text-sm md:text-base max-w-3xl">
+              <p className="text-slate-300 text-sm md:text-base max-w-3xl">
                 Cada protocolo conecta os eixos clínica, ensino e pesquisa para gerar avaliações IMRE completas, relatórios da IA residente e planos
                 terapêuticos individualizados. Explore a integração com o programa Cidade Amiga dos Rins e acompanhe os novos protocolos em co-criação.
               </p>
             </div>
             <button
               onClick={() => navigate('/app/pesquisa/profissional/cidade-amiga-dos-rins')}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg font-semibold text-brand-text transition-transform transform hover:scale-[1.03]"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg font-semibold text-white transition-transform transform hover:scale-[1.03]"
               style={{ background: 'linear-gradient(135deg, #2563eb 0%, #00c1a0 100%)' }}
             >
               🌍 Ver Cidade Amiga dos Rins
@@ -233,8 +233,8 @@ const MedCannLab: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <article className="rounded-xl border border-green-500/30 bg-slate-900/60 p-5 flex flex-col gap-4 shadow-lg">
               <div className="space-y-2">
-                <h4 className="text-xl font-semibold text-brand-text">Integração Cannabis & Nefrologia</h4>
-                <p className="text-sm text-brand-text-secondary leading-relaxed">
+                <h4 className="text-xl font-semibold text-white">Integração Cannabis & Nefrologia</h4>
+                <p className="text-sm text-slate-300 leading-relaxed">
                   Núcleo principal do MedCannLab. Protocolos de prescrição AEC combinam a avaliação clínica IMRE renal, bibliografia validada e o
                   monitoramento contínuo da função renal para gerar planos terapêuticos individualizados.
                 </p>
@@ -256,7 +256,7 @@ const MedCannLab: React.FC = () => {
               <div className="flex flex-wrap gap-2 mt-auto">
                 <button
                   onClick={() => navigate('/app/library?collection=protocolos&protocol=medcannlab-nefro')}
-                  className="inline-flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-semibold text-brand-text bg-green-600 hover:bg-green-500 transition-colors"
+                  className="inline-flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-semibold text-white bg-green-600 hover:bg-green-500 transition-colors"
                 >
                   <BookOpen className="w-4 h-4" />
                   Abrir documentação
@@ -288,12 +288,12 @@ const MedCannLab: React.FC = () => {
                   <span className="px-2 py-1 text-[11px] font-semibold rounded-md bg-purple-500/20 border border-purple-400/40 text-purple-200">
                     Consulta pública
                   </span>
-                  <span className="px-2 py-1 text-[11px] font-semibold rounded-md bg-brand-surface border border-brand-border text-brand-text-secondary">
+                  <span className="px-2 py-1 text-[11px] font-semibold rounded-md bg-slate-800 border border-slate-700 text-slate-300">
                     MedCannLab Research Hub
                   </span>
                 </div>
-                <h4 className="text-xl font-semibold text-brand-text">Protocolo de Saúde Renal com Cannabis Medicinal</h4>
-                <p className="text-sm text-brand-text-secondary leading-relaxed">
+                <h4 className="text-xl font-semibold text-white">Protocolo de Saúde Renal com Cannabis Medicinal</h4>
+                <p className="text-sm text-slate-300 leading-relaxed">
                   Evolução do Cidade Amiga dos Rins. Consolida bibliografia renal, avaliação clínica inicial dedicada, fluxos de diagnóstico DRC/TEZ e
                   diretrizes para planos terapêuticos personalizados utilizando cannabis medicinal.
                 </p>
@@ -315,7 +315,7 @@ const MedCannLab: React.FC = () => {
               <div className="flex flex-wrap gap-2 mt-auto">
                 <button
                   onClick={() => navigate('/app/library?draft=protocolo-renal-medcannlab')}
-                  className="inline-flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-semibold text-brand-text bg-blue-600 hover:bg-blue-500 transition-colors"
+                  className="inline-flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-semibold text-white bg-blue-600 hover:bg-blue-500 transition-colors"
                 >
                   <Clipboard className="w-4 h-4" />
                   Abrir documento base
@@ -344,7 +344,7 @@ const MedCannLab: React.FC = () => {
         </div>
 
         {/* Sobre o Projeto */}
-        <div className="bg-brand-surface rounded-xl p-8 mb-8 border border-brand-border">
+        <div className="bg-slate-800 rounded-xl p-8 mb-8 border border-slate-700">
           <div className="flex items-center space-x-3 mb-6">
             <div className="w-10 h-10 flex items-center justify-center">
               <img
@@ -356,11 +356,11 @@ const MedCannLab: React.FC = () => {
                 }}
               />
             </div>
-            <h3 className="text-2xl font-bold text-brand-text">Sobre o Projeto</h3>
+            <h3 className="text-2xl font-bold text-white">Sobre o Projeto</h3>
           </div>
 
           <div className="bg-green-900/20 rounded-lg p-6 mb-6 border border-green-500/20">
-            <h4 className="text-lg font-semibold text-brand-text mb-3">Objetivo Principal</h4>
+            <h4 className="text-lg font-semibold text-white mb-3">Objetivo Principal</h4>
             <p className="text-green-100 leading-relaxed">
               O MedCannLab é uma pesquisa inovadora que combina a metodologia Arte da Entrevista Clínica (AEC)
               com tecnologia de ponta para investigar os benefícios terapêuticos da cannabis medicinal na nefrologia
@@ -372,7 +372,7 @@ const MedCannLab: React.FC = () => {
           {/* Características Principais */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
             <div className="bg-slate-700/50 rounded-lg p-6 border border-green-500/20">
-              <h4 className="text-lg font-semibold text-brand-text mb-4 flex items-center space-x-2">
+              <h4 className="text-lg font-semibold text-white mb-4 flex items-center space-x-2">
                 <FileText className="w-6 h-6 text-green-400" />
                 <span>Protocolos de Prescrição Baseados em AEC</span>
               </h4>
@@ -397,7 +397,7 @@ const MedCannLab: React.FC = () => {
             </div>
 
             <div className="bg-slate-700/50 rounded-lg p-6 border border-teal-500/20">
-              <h4 className="text-lg font-semibold text-brand-text mb-4 flex items-center space-x-2">
+              <h4 className="text-lg font-semibold text-white mb-4 flex items-center space-x-2">
                 <MonitorIcon className="w-6 h-6 text-teal-400" />
                 <span>Monitoramento de Função Renal</span>
               </h4>
@@ -422,7 +422,7 @@ const MedCannLab: React.FC = () => {
             </div>
 
             <div className="bg-slate-700/50 rounded-lg p-6 border border-cyan-500/20">
-              <h4 className="text-lg font-semibold text-brand-text mb-4 flex items-center space-x-2">
+              <h4 className="text-lg font-semibold text-white mb-4 flex items-center space-x-2">
                 <Brain className="w-6 h-6 text-cyan-400" />
                 <span>Deep Learning para Análise de Biomarcadores</span>
               </h4>
@@ -447,7 +447,7 @@ const MedCannLab: React.FC = () => {
             </div>
 
             <div className="bg-slate-700/50 rounded-lg p-6 border border-emerald-500/20">
-              <h4 className="text-lg font-semibold text-brand-text mb-4 flex items-center space-x-2">
+              <h4 className="text-lg font-semibold text-white mb-4 flex items-center space-x-2">
                 <DeviceIcon className="w-6 h-6 text-emerald-400" />
                 <span>Integração com Dispositivos Médicos</span>
               </h4>
@@ -474,18 +474,18 @@ const MedCannLab: React.FC = () => {
         </div>
 
         {/* Metodologia de Pesquisa */}
-        <div className="bg-brand-surface rounded-xl p-8 mb-8 border border-brand-border">
+        <div className="bg-slate-800 rounded-xl p-8 mb-8 border border-slate-700">
           <div className="flex items-center space-x-3 mb-6">
             <Target className="w-8 h-8 text-green-400" />
-            <h3 className="text-2xl font-bold text-brand-text">Metodologia de Pesquisa</h3>
+            <h3 className="text-2xl font-bold text-white">Metodologia de Pesquisa</h3>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {/* Fase 1 */}
             <div className="bg-slate-700/50 rounded-lg p-6 border border-green-500/20">
               <div className="flex items-center justify-between mb-4">
-                <h4 className="text-lg font-semibold text-brand-text">Fase 1: Seleção</h4>
-                <span className="px-3 py-1 bg-green-600 text-brand-text rounded-full text-xs font-semibold">Concluída</span>
+                <h4 className="text-lg font-semibold text-white">Fase 1: Seleção</h4>
+                <span className="px-3 py-1 bg-green-600 text-white rounded-full text-xs font-semibold">Concluída</span>
               </div>
               <p className="text-green-100 text-sm mb-4">
                 Seleção de pacientes com condições nefrológicas e neurológicas elegíveis para tratamento com cannabis medicinal.
@@ -505,8 +505,8 @@ const MedCannLab: React.FC = () => {
             {/* Fase 2 */}
             <div className="bg-slate-700/50 rounded-lg p-6 border border-teal-500/20">
               <div className="flex items-center justify-between mb-4">
-                <h4 className="text-lg font-semibold text-brand-text">Fase 2: Protocolos</h4>
-                <span className="px-3 py-1 bg-teal-600 text-brand-text rounded-full text-xs font-semibold">Em Andamento</span>
+                <h4 className="text-lg font-semibold text-white">Fase 2: Protocolos</h4>
+                <span className="px-3 py-1 bg-teal-600 text-white rounded-full text-xs font-semibold">Em Andamento</span>
               </div>
               <p className="text-teal-100 text-sm mb-4">
                 Implementação de protocolos personalizados baseados em AEC com acompanhamento contínuo.
@@ -526,8 +526,8 @@ const MedCannLab: React.FC = () => {
             {/* Fase 3 */}
             <div className="bg-slate-700/50 rounded-lg p-6 border border-cyan-500/20">
               <div className="flex items-center justify-between mb-4">
-                <h4 className="text-lg font-semibold text-brand-text">Fase 3: Análise</h4>
-                <span className="px-3 py-1 bg-cyan-600 text-brand-text rounded-full text-xs font-semibold">Planejada</span>
+                <h4 className="text-lg font-semibold text-white">Fase 3: Análise</h4>
+                <span className="px-3 py-1 bg-cyan-600 text-white rounded-full text-xs font-semibold">Planejada</span>
               </div>
               <p className="text-cyan-100 text-sm mb-4">
                 Análise de dados com Deep Learning para identificar padrões e otimizar tratamentos.
@@ -547,15 +547,15 @@ const MedCannLab: React.FC = () => {
         </div>
 
         {/* Resultados Preliminares */}
-        <div className="bg-brand-surface rounded-xl p-8 mb-8 border border-brand-border">
+        <div className="bg-slate-800 rounded-xl p-8 mb-8 border border-slate-700">
           <div className="flex items-center space-x-3 mb-6">
             <BarChart3 className="w-8 h-8 text-green-400" />
-            <h3 className="text-2xl font-bold text-brand-text">Resultados Preliminares</h3>
+            <h3 className="text-2xl font-bold text-white">Resultados Preliminares</h3>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="bg-green-900/20 rounded-lg p-6 border border-green-500/20">
-              <h4 className="text-lg font-semibold text-brand-text mb-4">Eficácia do Tratamento</h4>
+              <h4 className="text-lg font-semibold text-white mb-4">Eficácia do Tratamento</h4>
               <ul className="space-y-3 text-sm text-green-100">
                 <li className="flex items-center justify-between">
                   <span>Melhoria na função renal:</span>
@@ -577,7 +577,7 @@ const MedCannLab: React.FC = () => {
             </div>
 
             <div className="bg-teal-900/20 rounded-lg p-6 border border-teal-500/20">
-              <h4 className="text-lg font-semibold text-brand-text mb-4">Análise de Biomarcadores</h4>
+              <h4 className="text-lg font-semibold text-white mb-4">Análise de Biomarcadores</h4>
               <ul className="space-y-3 text-sm text-teal-100">
                 <li className="flex items-center justify-between">
                   <span>Biomarcadores analisados:</span>
@@ -601,13 +601,13 @@ const MedCannLab: React.FC = () => {
         </div>
 
         {/* Integrações e Conexões */}
-        <div className="bg-brand-surface rounded-xl p-6 mb-8 border border-brand-border">
-          <h3 className="text-2xl font-bold text-brand-text mb-6">Integrações e Conexões</h3>
+        <div className="bg-slate-800 rounded-xl p-6 mb-8 border border-slate-700">
+          <h3 className="text-2xl font-bold text-white mb-6">Integrações e Conexões</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <article className="rounded-xl border border-teal-500/30 bg-teal-500/5 p-5 flex flex-col gap-4">
               <div className="flex items-start justify-between gap-2">
                 <div>
-                  <h4 className="text-xl font-semibold text-brand-text">Pós-Graduação Cannabis Medicinal</h4>
+                  <h4 className="text-xl font-semibold text-white">Pós-Graduação Cannabis Medicinal</h4>
                   <p className="text-sm text-teal-100 mt-2">
                     Conteúdo do Dr. Eduardo Faveret alimenta os protocolos clínicos e a construção colaborativa dos planos terapêuticos individualizados.
                   </p>
@@ -618,21 +618,21 @@ const MedCannLab: React.FC = () => {
               </div>
               <div className="grid grid-cols-3 gap-3 text-center text-xs text-teal-100">
                 <div className="bg-slate-900/40 rounded-lg p-3 border border-teal-400/20">
-                  <p className="text-2xl font-bold text-brand-text">124</p>
+                  <p className="text-2xl font-bold text-white">124</p>
                   <p className="mt-1 uppercase tracking-[0.2em]">Pacientes</p>
                 </div>
                 <div className="bg-slate-900/40 rounded-lg p-3 border border-teal-400/20">
-                  <p className="text-2xl font-bold text-brand-text">856</p>
+                  <p className="text-2xl font-bold text-white">856</p>
                   <p className="mt-1 uppercase tracking-[0.2em]">Alunos</p>
                 </div>
                 <div className="bg-slate-900/40 rounded-lg p-3 border border-teal-400/20">
-                  <p className="text-2xl font-bold text-brand-text">3</p>
+                  <p className="text-2xl font-bold text-white">3</p>
                   <p className="mt-1 uppercase tracking-[0.2em]">Estudos</p>
                 </div>
               </div>
               <button
                 onClick={() => navigate('/app/ensino/profissional/pos-graduacao-cannabis')}
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-lg font-semibold text-brand-text bg-teal-600 hover:bg-teal-500 transition-colors self-start"
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-lg font-semibold text-white bg-teal-600 hover:bg-teal-500 transition-colors self-start"
               >
                 Acessar curso
               </button>
@@ -641,51 +641,51 @@ const MedCannLab: React.FC = () => {
         </div>
 
         {/* Meus Estudos */}
-        <div className="bg-brand-surface rounded-xl p-6 mb-8 border border-brand-border">
+        <div className="bg-slate-800 rounded-xl p-6 mb-8 border border-slate-700">
           <div className="flex items-start justify-between gap-3 mb-6">
             <div>
-              <h3 className="text-2xl font-bold text-brand-text">🔬 Meus Estudos</h3>
-              <p className="text-brand-text-secondary text-sm md:text-base">
+              <h3 className="text-2xl font-bold text-white">🔬 Meus Estudos</h3>
+              <p className="text-slate-300 text-sm md:text-base">
                 Acompanhe os estudos em andamento no MedCannLab. Os achados retroalimentam os planos terapêuticos e a base de conhecimento da IA residente.
               </p>
             </div>
             <button
               onClick={() => navigate('/app/pesquisa/profissional/dashboard')}
-              className="px-4 py-2 rounded-lg font-semibold text-brand-text bg-primary-600 hover:bg-primary-500 transition-colors"
+              className="px-4 py-2 rounded-lg font-semibold text-white bg-primary-600 hover:bg-primary-500 transition-colors"
             >
               Ver todos (6)
             </button>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {researchStudies.map(study => (
-              <article key={study.id} className="rounded-xl border border-brand-border bg-slate-900/60 p-5 shadow-md">
+              <article key={study.id} className="rounded-xl border border-slate-700 bg-slate-900/60 p-5 shadow-md">
                 <div className="flex items-center justify-between gap-2 mb-3">
                   <div>
-                    <h4 className="text-lg font-semibold text-brand-text">{study.title}</h4>
+                    <h4 className="text-lg font-semibold text-white">{study.title}</h4>
                     <span className="text-xs px-2 py-1 rounded-md bg-blue-500/20 border border-blue-400/30 text-blue-200">
                       {study.status}
                     </span>
                   </div>
                 </div>
-                <p className="text-sm text-brand-text-secondary leading-relaxed mb-4">{study.description}</p>
-                <div className="grid grid-cols-2 gap-3 text-xs text-brand-text-muted mb-4">
+                <p className="text-sm text-slate-300 leading-relaxed mb-4">{study.description}</p>
+                <div className="grid grid-cols-2 gap-3 text-xs text-slate-400 mb-4">
                   <div>
                     <span className="block text-slate-500 uppercase tracking-[0.2em] mb-1">Participantes</span>
-                    <span className="text-brand-text font-semibold">{study.participants}</span>
+                    <span className="text-white font-semibold">{study.participants}</span>
                   </div>
                   <div>
                     <span className="block text-slate-500 uppercase tracking-[0.2em] mb-1">Período</span>
-                    <span className="text-brand-text font-semibold">
+                    <span className="text-white font-semibold">
                       {new Date(study.start).toLocaleDateString('pt-BR')} – {new Date(study.end).toLocaleDateString('pt-BR')}
                     </span>
                   </div>
                 </div>
                 <div>
-                  <div className="flex items-center justify-between text-xs text-brand-text-muted mb-1">
+                  <div className="flex items-center justify-between text-xs text-slate-400 mb-1">
                     <span>Progresso</span>
-                    <span className="text-brand-text font-semibold">{study.progress}%</span>
+                    <span className="text-white font-semibold">{study.progress}%</span>
                   </div>
-                  <div className="h-2 bg-brand-surface rounded-full overflow-hidden border border-brand-border">
+                  <div className="h-2 bg-slate-800 rounded-full overflow-hidden border border-slate-700">
                     <div
                       className="h-full bg-gradient-to-r from-primary-500 to-green-500"
                       style={{ width: `${study.progress}%` }}
@@ -698,7 +698,7 @@ const MedCannLab: React.FC = () => {
           <div className="mt-4 text-right">
             <button
               onClick={() => navigate('/app/pesquisa/profissional/dashboard?filter=concluidos')}
-              className="text-xs font-semibold text-brand-text-muted hover:text-slate-200 transition-colors underline"
+              className="text-xs font-semibold text-slate-400 hover:text-slate-200 transition-colors underline"
             >
               Ver estudos concluídos
             </button>
@@ -709,7 +709,7 @@ const MedCannLab: React.FC = () => {
         <div className="bg-gradient-to-r from-blue-600/20 via-cyan-600/20 to-emerald-500/20 border border-blue-500/30 rounded-xl p-6 mb-8">
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
             <div>
-              <h3 className="text-2xl font-bold text-brand-text mb-2">Cidade Amiga dos Rins & MedCannLab</h3>
+              <h3 className="text-2xl font-bold text-white mb-2">Cidade Amiga dos Rins & MedCannLab</h3>
               <p className="text-slate-200 text-sm md:text-base max-w-3xl">
                 A integração entre a pesquisa MedCannLab e o programa Cidade Amiga dos Rins conecta clínica, ensino e pesquisa em um ciclo contínuo de
                 aprendizado. Acesse o programa para acompanhar cronogramas, indicadores e debates sobre novos protocolos.
@@ -717,7 +717,7 @@ const MedCannLab: React.FC = () => {
             </div>
             <button
               onClick={() => navigate('/app/pesquisa/profissional/cidade-amiga-dos-rins')}
-              className="inline-flex items-center gap-2 px-5 py-3 rounded-lg font-semibold text-brand-text bg-blue-600 hover:bg-blue-500 transition-colors"
+              className="inline-flex items-center gap-2 px-5 py-3 rounded-lg font-semibold text-white bg-blue-600 hover:bg-blue-500 transition-colors"
             >
               🌍 Explorar Cidade Amiga dos Rins
             </button>
@@ -725,14 +725,14 @@ const MedCannLab: React.FC = () => {
         </div>
 
         {/* Sistema de Captação de Recursos */}
-        <div className="bg-brand-surface rounded-xl p-8 mb-8 border border-brand-border">
+        <div className="bg-slate-800 rounded-xl p-8 mb-8 border border-slate-700">
           <div className="flex items-center space-x-3 mb-6">
             <DollarSign className="w-8 h-8 text-green-400" />
-            <h3 className="text-2xl font-bold text-brand-text">Sistema de Captação de Recursos</h3>
+            <h3 className="text-2xl font-bold text-white">Sistema de Captação de Recursos</h3>
           </div>
 
           <div className="bg-green-900/20 rounded-lg p-6 mb-6 border border-green-500/20">
-            <h4 className="text-lg font-semibold text-brand-text mb-3">Modelos de Negócio Sustentável</h4>
+            <h4 className="text-lg font-semibold text-white mb-3">Modelos de Negócio Sustentável</h4>
             <p className="text-green-100 text-sm leading-relaxed mb-4">
               Estratégias de desenvolvimento sustentável alinhadas com os princípios de equidade, inovação e mobilização
               de organizações públicas e privadas, baseadas em evidências científicas do artigo "After COP26 — Putting
@@ -744,19 +744,19 @@ const MedCannLab: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
             <div className="bg-slate-700/50 rounded-lg p-6 border border-green-500/20">
               <div className="flex items-center justify-between mb-4">
-                <h4 className="text-lg font-semibold text-brand-text">Plataforma de Assinaturas Educacional</h4>
-                <span className="px-3 py-1 bg-green-600 text-brand-text rounded-full text-xs font-semibold">Ativo</span>
+                <h4 className="text-lg font-semibold text-white">Plataforma de Assinaturas Educacional</h4>
+                <span className="px-3 py-1 bg-green-600 text-white rounded-full text-xs font-semibold">Ativo</span>
               </div>
               <div className="space-y-3 mb-4">
-                <p className="text-sm text-brand-text-secondary">Investimento: R$ 50.000 - R$ 200.000</p>
+                <p className="text-sm text-slate-300">Investimento: R$ 50.000 - R$ 200.000</p>
                 <div className="w-full bg-slate-600 rounded-full h-2 mb-2">
                   <div className="bg-green-500 h-2 rounded-full" style={{ width: '85%' }}></div>
                 </div>
-                <p className="text-xs text-brand-text-muted">Progresso de Implementação: 85%</p>
+                <p className="text-xs text-slate-400">Progresso de Implementação: 85%</p>
                 <p className="text-sm text-green-200">Conteúdo exclusivo sobre saúde sustentável e práticas ecológicas</p>
-                <div className="bg-brand-surface rounded p-3">
-                  <p className="text-xs font-semibold text-brand-text mb-2">Benefícios Principais:</p>
-                  <ul className="space-y-1 text-xs text-brand-text-secondary">
+                <div className="bg-slate-800 rounded p-3">
+                  <p className="text-xs font-semibold text-white mb-2">Benefícios Principais:</p>
+                  <ul className="space-y-1 text-xs text-slate-300">
                     <li>• Receita contínua</li>
                     <li>• Disseminação de conhecimento</li>
                     <li>• Educação continuada</li>
@@ -765,7 +765,7 @@ const MedCannLab: React.FC = () => {
               </div>
               <button
                 onClick={() => navigate('/app/professional-financial')}
-                className="w-full bg-green-600 hover:bg-green-700 text-brand-text px-4 py-2 rounded-lg font-semibold transition-colors"
+                className="w-full bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-semibold transition-colors"
               >
                 Acessar Gestão Financeira
               </button>
@@ -774,26 +774,26 @@ const MedCannLab: React.FC = () => {
             <div className="space-y-4">
               <div className="bg-slate-700/50 rounded-lg p-4 border border-slate-600">
                 <div className="flex items-center justify-between mb-2">
-                  <h5 className="text-sm font-semibold text-brand-text">Consultoria em Sustentabilidade para Saúde</h5>
-                  <span className="px-2 py-1 bg-yellow-600 text-brand-text rounded-full text-xs">Em desenvolvimento</span>
+                  <h5 className="text-sm font-semibold text-white">Consultoria em Sustentabilidade para Saúde</h5>
+                  <span className="px-2 py-1 bg-yellow-600 text-white rounded-full text-xs">Em desenvolvimento</span>
                 </div>
               </div>
               <div className="bg-slate-700/50 rounded-lg p-4 border border-slate-600">
                 <div className="flex items-center justify-between mb-2">
-                  <h5 className="text-sm font-semibold text-brand-text">Marketplace Produtos Sustentáveis</h5>
-                  <span className="px-2 py-1 bg-purple-600 text-brand-text rounded-full text-xs">Planejado</span>
+                  <h5 className="text-sm font-semibold text-white">Marketplace Produtos Sustentáveis</h5>
+                  <span className="px-2 py-1 bg-purple-600 text-white rounded-full text-xs">Planejado</span>
                 </div>
               </div>
               <div className="bg-slate-700/50 rounded-lg p-4 border border-slate-600">
                 <div className="flex items-center justify-between mb-2">
-                  <h5 className="text-sm font-semibold text-brand-text">Licenciamento de IA para Saúde Sustentável</h5>
-                  <span className="px-2 py-1 bg-yellow-600 text-brand-text rounded-full text-xs">Em desenvolvimento</span>
+                  <h5 className="text-sm font-semibold text-white">Licenciamento de IA para Saúde Sustentável</h5>
+                  <span className="px-2 py-1 bg-yellow-600 text-white rounded-full text-xs">Em desenvolvimento</span>
                 </div>
               </div>
               <div className="bg-slate-700/50 rounded-lg p-4 border border-green-500/20">
                 <div className="flex items-center justify-between mb-2">
-                  <h5 className="text-sm font-semibold text-brand-text">Parcerias Público-Privadas</h5>
-                  <span className="px-2 py-1 bg-green-600 text-brand-text rounded-full text-xs">Ativo</span>
+                  <h5 className="text-sm font-semibold text-white">Parcerias Público-Privadas</h5>
+                  <span className="px-2 py-1 bg-green-600 text-white rounded-full text-xs">Ativo</span>
                 </div>
               </div>
             </div>

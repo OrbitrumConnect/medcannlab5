@@ -89,7 +89,7 @@ export function ContextAnalysisCard({ analysis, loading }: ContextAnalysisCardPr
                     <div className="p-2 bg-purple-500/10 rounded-lg border border-purple-500/20">
                         <Brain className="w-6 h-6 text-purple-400" />
                     </div>
-                    <h3 className="text-xl font-black text-brand-text tracking-tight">Análise Contextual (ACDSS)</h3>
+                    <h3 className="text-xl font-black text-white tracking-tight">Análise Contextual (ACDSS)</h3>
                 </div>
                 {analysis.shouldAlert && (
                     <AlertTriangle className="w-5 h-5 text-orange-400 animate-pulse" />
@@ -121,7 +121,7 @@ export function ContextAnalysisCard({ analysis, loading }: ContextAnalysisCardPr
                                 style={{ width: `${Math.min(analysis.confidence, 100)}%` }}
                             />
                         </div>
-                        <span className="text-xl font-black text-brand-text tracking-tighter">
+                        <span className="text-xl font-black text-white tracking-tighter">
                             {Math.round(analysis.confidence)}%
                         </span>
                     </div>
@@ -132,7 +132,7 @@ export function ContextAnalysisCard({ analysis, loading }: ContextAnalysisCardPr
             <div className="mb-6 p-4 bg-slate-900/40 rounded-xl border border-slate-700/50">
                 <p className="text-[11px] font-black text-slate-500 mb-2 uppercase tracking-widest">Recomendação</p>
                 <div className="flex items-center gap-2">
-                    <p className="text-xl font-black text-brand-text tracking-tight leading-tight">
+                    <p className="text-xl font-black text-white tracking-tight leading-tight">
                         {analysis.recommendation === RecommendationType.MAINTAIN && 'Manter protocolo atual'}
                         {analysis.recommendation === RecommendationType.MONITOR_CLOSELY && 'Monitorar de perto'}
                         {analysis.recommendation === RecommendationType.CONSIDER_CHANGE && 'Considerar mudança'}
@@ -165,7 +165,7 @@ export function ContextAnalysisCard({ analysis, loading }: ContextAnalysisCardPr
 
             {/* Insight contextual */}
             <div className="pt-4 border-t border-slate-700/50">
-                <p className="text-sm italic font-medium text-brand-text-muted leading-relaxed text-center px-4">
+                <p className="text-sm italic font-medium text-slate-400 leading-relaxed text-center px-4">
                     "{analysis.contextualInsight}"
                 </p>
             </div>

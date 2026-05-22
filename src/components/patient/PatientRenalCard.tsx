@@ -76,7 +76,7 @@ export const PatientRenalCard: React.FC = () => {
     const previous = exams[1]?.egfr
     if (latest == null || previous == null) return null
     const diff = latest - previous
-    if (Math.abs(diff) < 3) return { icon: Minus, label: 'Estável', color: 'text-brand-text-muted' }
+    if (Math.abs(diff) < 3) return { icon: Minus, label: 'Estável', color: 'text-slate-400' }
     if (diff > 0) return { icon: TrendingUp, label: 'Melhora', color: 'text-emerald-400' }
     return { icon: TrendingDown, label: 'Reducão', color: 'text-amber-400' }
   })()
@@ -85,7 +85,7 @@ export const PatientRenalCard: React.FC = () => {
   if (loading) {
     return (
       <div className="rounded-xl border border-slate-700/50 bg-slate-800/30 backdrop-blur-sm p-5">
-        <h3 className="text-lg font-semibold text-brand-text mb-2 flex items-center gap-2">
+        <h3 className="text-lg font-semibold text-white mb-2 flex items-center gap-2">
           <Activity className="w-5 h-5 text-emerald-400" />
           Função Renal
         </h3>
@@ -98,11 +98,11 @@ export const PatientRenalCard: React.FC = () => {
   if (exams.length === 0) {
     return (
       <div className="rounded-xl border border-slate-700/50 bg-slate-800/30 backdrop-blur-sm p-5">
-        <h3 className="text-lg font-semibold text-brand-text mb-2 flex items-center gap-2">
+        <h3 className="text-lg font-semibold text-white mb-2 flex items-center gap-2">
           <Activity className="w-5 h-5 text-emerald-400" />
           Função Renal
         </h3>
-        <p className="text-sm text-brand-text-muted leading-relaxed">
+        <p className="text-sm text-slate-400 leading-relaxed">
           Quando seu médico registrar um exame de função renal (ou quando você mencionar um valor à Nôa durante a avaliação clínica e seu médico aprovar), o resultado aparecerá aqui.
         </p>
       </div>
@@ -121,7 +121,7 @@ export const PatientRenalCard: React.FC = () => {
     <div className={`rounded-xl border ${styles.border} ${styles.bg} backdrop-blur-sm p-5 relative overflow-hidden`}>
       <div className={`absolute top-0 right-0 w-32 h-32 ${styles.bg} rounded-full blur-2xl -mr-16 -mt-16 pointer-events-none`}></div>
 
-      <h3 className="text-lg font-semibold text-brand-text mb-4 flex items-center gap-2 relative z-10">
+      <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2 relative z-10">
         <Activity className={`w-5 h-5 ${styles.text}`} />
         Função Renal
       </h3>
@@ -129,23 +129,23 @@ export const PatientRenalCard: React.FC = () => {
       <div className="space-y-3 relative z-10">
         {/* TFG principal */}
         <div className="flex items-baseline gap-2">
-          <span className="text-3xl font-bold text-brand-text">
+          <span className="text-3xl font-bold text-white">
             {latest.egfr != null ? Number(latest.egfr).toFixed(1) : '—'}
           </span>
-          <span className="text-xs text-brand-text-muted">mL/min/1.73m²</span>
+          <span className="text-xs text-slate-400">mL/min/1.73m²</span>
         </div>
 
         {/* Estágio (técnico + leigo) */}
         {latest.drc_stage && stageInfo && (
           <div className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-lg ${styles.bg} border ${styles.border}`}>
             <span className={`text-xs font-bold ${styles.text}`}>{latest.drc_stage}</span>
-            <span className="text-xs text-brand-text-secondary">— {stageInfo.label}</span>
+            <span className="text-xs text-slate-300">— {stageInfo.label}</span>
           </div>
         )}
 
         {/* Data + tendência */}
         <div className="flex items-center justify-between gap-2 pt-2 border-t border-slate-700/40">
-          <span className="text-xs text-brand-text-muted">
+          <span className="text-xs text-slate-400">
             Último: <span className="text-slate-200 font-medium">{examDate}</span>
           </span>
           {trend && (

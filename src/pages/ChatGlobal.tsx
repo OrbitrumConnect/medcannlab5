@@ -235,9 +235,9 @@ const ChatGlobal: React.FC = () => {
             // active/resolved). Mesma fonte do quadro de debates da aba Fórum.
             <div className="space-y-3">
               {loadingDebates ? (
-                <p className="text-brand-text-muted text-xs">Carregando debates…</p>
+                <p className="text-slate-400 text-xs">Carregando debates…</p>
               ) : debates.length === 0 ? (
-                <p className="text-brand-text-muted text-xs">
+                <p className="text-slate-400 text-xs">
                   Nenhum debate ativo ainda. Os debates nascem de dossiês de
                   pesquisa aprovados pelo conselho no Fórum de Casos Clínicos.
                 </p>
@@ -251,9 +251,9 @@ const ChatGlobal: React.FC = () => {
                   >
                     <div className="flex items-start gap-2 mb-1">
                       {debate.isPinned && <Pin className="w-3.5 h-3.5 text-yellow-400 mt-0.5 shrink-0" />}
-                      <h4 className="text-brand-text font-medium text-sm flex-1">{debate.title}</h4>
+                      <h4 className="text-white font-medium text-sm flex-1">{debate.title}</h4>
                     </div>
-                    <p className="text-brand-text-muted text-xs mb-1 line-clamp-2">{debate.description}</p>
+                    <p className="text-slate-400 text-xs mb-1 line-clamp-2">{debate.description}</p>
                     <span className="text-slate-500 text-xs">
                       {debate.author} • {debate.participants} participante(s) • {debate.lastActivity}
                     </span>
@@ -1208,7 +1208,7 @@ const ChatGlobal: React.FC = () => {
 
   const getVoteColor = (votes: { up: number, down: number }) => {
     const total = votes.up + votes.down
-    if (total === 0) return 'text-brand-text-muted'
+    if (total === 0) return 'text-slate-400'
     const ratio = votes.up / total
     if (ratio > 0.7) return 'text-green-400'
     if (ratio > 0.4) return 'text-yellow-400'
@@ -1219,7 +1219,7 @@ const ChatGlobal: React.FC = () => {
     <div className="space-y-3 md:space-y-4 px-2 md:px-4">
       {/* Uma única barra: título + abas + ações admin */}
       <div className="rounded-lg px-3 py-2 md:px-4 md:py-2.5 overflow-hidden flex flex-wrap items-center gap-2 md:gap-4" style={{ background: headerGradient, border: '1px solid rgba(0,193,106,0.18)' }}>
-        <h1 className="text-base md:text-lg font-bold text-brand-text shrink-0">Fórum Cann Matrix</h1>
+        <h1 className="text-base md:text-lg font-bold text-white shrink-0">Fórum Cann Matrix</h1>
         <nav className="flex items-center gap-1 p-1 rounded-lg flex-1 min-w-0" style={{ background: 'rgba(7,22,41,0.6)', border: '1px solid rgba(0,193,106,0.1)' }}>
           <button
             onClick={() => setActiveTab('chat')}
@@ -1245,7 +1245,7 @@ const ChatGlobal: React.FC = () => {
             <Users className="w-4 h-4 shrink-0" />
             <span className="hidden sm:inline truncate">Amigos</span>
             {friendRequests.length > 0 && (
-              <span className="absolute -top-0.5 -right-0.5 bg-red-500 text-brand-text text-[10px] px-1 rounded-full min-w-[14px] text-center">
+              <span className="absolute -top-0.5 -right-0.5 bg-red-500 text-white text-[10px] px-1 rounded-full min-w-[14px] text-center">
                 {friendRequests.length}
               </span>
             )}
@@ -1255,7 +1255,7 @@ const ChatGlobal: React.FC = () => {
           <div className="flex items-center gap-1.5 shrink-0">
             <button
               onClick={() => setShowModeration(!showModeration)}
-              className={`px-2.5 py-1.5 rounded-md flex items-center gap-1.5 text-xs font-medium transition-colors ${showModeration ? 'bg-red-700 text-brand-text' : 'bg-red-600 hover:bg-red-700 text-brand-text'}`}
+              className={`px-2.5 py-1.5 rounded-md flex items-center gap-1.5 text-xs font-medium transition-colors ${showModeration ? 'bg-red-700 text-white' : 'bg-red-600 hover:bg-red-700 text-white'}`}
               title={showModeration ? 'Ocultar Moderação' : 'Painel de Moderação'}
             >
               <Flag className="w-3 h-3" />
@@ -1283,12 +1283,12 @@ const ChatGlobal: React.FC = () => {
         <div className={`grid gap-4 md:gap-6 lg:gap-10 ${gridColumnsClass}`}>
           {/* Sidebar - Channels */}
           <div className="lg:col-span-1 order-2 lg:order-1">
-            <div className="bg-slate-800/80 rounded-lg p-3 md:p-4 lg:p-6 border border-brand-border">
+            <div className="bg-slate-800/80 rounded-lg p-3 md:p-4 lg:p-6 border border-slate-700">
               <div className="flex items-center justify-between mb-4 md:mb-6">
-                <h3 className="text-base md:text-lg font-semibold text-brand-text">
+                <h3 className="text-base md:text-lg font-semibold text-white">
                   📋 Canais
                 </h3>
-                <button className="p-2 text-brand-text-muted hover:text-primary-400 transition-colors">
+                <button className="p-2 text-slate-400 hover:text-primary-400 transition-colors">
                   <Plus className="w-4 h-4 md:w-5 md:h-5" />
                 </button>
               </div>
@@ -1301,10 +1301,10 @@ const ChatGlobal: React.FC = () => {
                     ? (channel as any).messageCount
                     : channel.members || 0
                   const baseClasses = isActive && channel.canView
-                    ? 'bg-primary-600 text-brand-text'
+                    ? 'bg-primary-600 text-white'
                     : channel.canView
-                      ? 'hover:bg-slate-700/50 text-brand-text-secondary'
-                      : 'bg-brand-surface text-slate-500 cursor-not-allowed border border-slate-700/60'
+                      ? 'hover:bg-slate-700/50 text-slate-300'
+                      : 'bg-slate-800 text-slate-500 cursor-not-allowed border border-slate-700/60'
 
                   return (
                     <button
@@ -1332,14 +1332,14 @@ const ChatGlobal: React.FC = () => {
                             Somente leitura
                           </span>
                         )}
-                        {!channel.canView && <Lock className="w-3.5 h-3.5 text-brand-text-muted" />}
+                        {!channel.canView && <Lock className="w-3.5 h-3.5 text-slate-400" />}
                         {channelCount > 0 && (
                           <span className="text-xs bg-slate-600 px-2 py-1 rounded" title={`${channelCount} ${(channel as any).messageCount !== undefined ? 'mensagens' : 'membros'}`}>
                             {channelCount}
                           </span>
                         )}
                         {channel.unread > 0 && channel.canView && (
-                          <span className="bg-red-500 text-brand-text text-xs px-2 py-1 rounded-full">
+                          <span className="bg-red-500 text-white text-xs px-2 py-1 rounded-full">
                             {channel.unread}
                           </span>
                         )}
@@ -1351,11 +1351,11 @@ const ChatGlobal: React.FC = () => {
             </div>
 
             {/* Online Users */}
-            <div className="bg-slate-800/80 rounded-lg p-3 md:p-4 lg:p-6 border border-brand-border mt-4 md:mt-6">
-              <h3 className="text-base md:text-lg font-semibold text-brand-text mb-3 md:mb-4">
+            <div className="bg-slate-800/80 rounded-lg p-3 md:p-4 lg:p-6 border border-slate-700 mt-4 md:mt-6">
+              <h3 className="text-base md:text-lg font-semibold text-white mb-3 md:mb-4">
                 👥 Online
                 {onlineUsers.filter(u => u.status === 'online').length > 0 && (
-                  <span className="text-brand-text-muted font-normal"> ({onlineUsers.filter(u => u.status === 'online').length})</span>
+                  <span className="text-slate-400 font-normal"> ({onlineUsers.filter(u => u.status === 'online').length})</span>
                 )}
               </h3>
               <div className="space-y-3">
@@ -1367,13 +1367,13 @@ const ChatGlobal: React.FC = () => {
                     <div className="flex items-center space-x-3">
                       <div className="relative">
                         <div className="w-10 h-10 bg-gradient-to-br from-primary-500 to-purple-600 rounded-full flex items-center justify-center">
-                          <span className="text-brand-text font-bold text-sm">{user.avatar}</span>
+                          <span className="text-white font-bold text-sm">{user.avatar}</span>
                         </div>
-                        <div className={`absolute -bottom-1 -right-1 w-3 h-3 ${getStatusColor(user.status)} rounded-full border-2 border-brand-border-subtle`}></div>
+                        <div className={`absolute -bottom-1 -right-1 w-3 h-3 ${getStatusColor(user.status)} rounded-full border-2 border-slate-800`}></div>
                       </div>
                       <div>
-                        <p className="text-brand-text font-medium text-sm">{user.name}</p>
-                        <p className="text-brand-text-muted text-xs">{user.specialty} • {user.crm}</p>
+                        <p className="text-white font-medium text-sm">{user.name}</p>
+                        <p className="text-slate-400 text-xs">{user.specialty} • {user.crm}</p>
                       </div>
                     </div>
                     <div className="flex items-center space-x-2">
@@ -1402,15 +1402,15 @@ const ChatGlobal: React.FC = () => {
             {/* V1.9.416 — altura relativa à viewport (composer SEMPRE visível,
                 mensagens rolam dentro). Teto 600px = valor comprovado; o calc
                 só encolhe em telas baixas. Mata o "preciso scrollar pro input". */}
-            <div className="bg-slate-800/80 rounded-lg border border-brand-border h-[400px] md:h-[520px] lg:h-[calc(100vh-220px)] lg:max-h-[600px] flex flex-col">
+            <div className="bg-slate-800/80 rounded-lg border border-slate-700 h-[400px] md:h-[520px] lg:h-[calc(100vh-220px)] lg:max-h-[600px] flex flex-col">
               {/* Chat Header */}
-              <div className="p-3 md:p-4 border-b border-brand-border bg-slate-700/50">
+              <div className="p-3 md:p-4 border-b border-slate-700 bg-slate-700/50">
                 <div className="flex items-center justify-between">
                   <div className="flex-1 min-w-0">
-                    <h3 className="text-base md:text-lg font-semibold text-brand-text truncate">
+                    <h3 className="text-base md:text-lg font-semibold text-white truncate">
                       {activeChannelData?.name || 'Canal indisponível'}
                     </h3>
-                    <p className="text-brand-text-muted text-xs md:text-sm truncate">
+                    <p className="text-slate-400 text-xs md:text-sm truncate">
                       {activeChannelData?.description || 'Canal da comunidade'}
                     </p>
                   </div>
@@ -1427,7 +1427,7 @@ const ChatGlobal: React.FC = () => {
                     {/* V1.9.418 — botões Video/Phone removidos: eram decorativos
                         (sem onClick). Call multi-usuário é feature real (ver infra
                         WiseCare V4H), não cabe num botão fantasma no header do chat. */}
-                    <button className="p-1.5 md:p-2 text-brand-text-muted hover:text-purple-400 transition-colors">
+                    <button className="p-1.5 md:p-2 text-slate-400 hover:text-purple-400 transition-colors">
                       <MoreVertical className="w-4 h-4 md:w-5 md:h-5" />
                     </button>
                   </div>
@@ -1445,7 +1445,7 @@ const ChatGlobal: React.FC = () => {
                     <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
                     <span className="text-green-400 text-sm font-medium">Chat em tempo real ativo</span>
                   </div>
-                  <p className="text-brand-text-muted text-xs mt-2">
+                  <p className="text-slate-400 text-xs mt-2">
                     💬 Conversas expiram em 24 horas para manter o chat limpo e focado
                   </p>
                 </div>
@@ -1456,10 +1456,10 @@ const ChatGlobal: React.FC = () => {
                     <div className="w-14 h-14 rounded-2xl bg-slate-700/40 border border-slate-600/50 flex items-center justify-center mb-3">
                       <MessageSquare className="w-7 h-7 text-slate-500" />
                     </div>
-                    <h4 className="text-sm font-semibold text-brand-text mb-1">
+                    <h4 className="text-sm font-semibold text-white mb-1">
                       Nenhuma conversa em {activeChannelData?.name || 'neste canal'} ainda
                     </h4>
-                    <p className="text-xs text-brand-text-muted max-w-xs leading-relaxed">
+                    <p className="text-xs text-slate-400 max-w-xs leading-relaxed">
                       {activeChannelData?.description || 'Seja o primeiro a abrir um debate aqui.'}
                       {activeChannelData?.canPost === false && ' · Seu perfil acompanha este canal em modo leitura.'}
                     </p>
@@ -1470,39 +1470,39 @@ const ChatGlobal: React.FC = () => {
                   <div key={msg.id} className="flex space-x-3">
                     <div className="relative">
                       <div className="w-10 h-10 bg-gradient-to-br from-primary-500 to-purple-600 rounded-full flex items-center justify-center">
-                        <span className="text-brand-text font-bold text-sm">{msg.user_avatar}</span>
+                        <span className="text-white font-bold text-sm">{msg.user_avatar}</span>
                       </div>
                       {msg.isOnline && (
-                        <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-green-500 rounded-full border-2 border-brand-border-subtle"></div>
+                        <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-green-500 rounded-full border-2 border-slate-800"></div>
                       )}
                     </div>
                     <div className="flex-1">
                       <div className="flex items-center space-x-2 mb-1">
-                        <span className="text-brand-text font-medium">{msg.user_name}</span>
-                        <span className="text-brand-text-muted text-sm">{msg.crm}</span>
+                        <span className="text-white font-medium">{msg.user_name}</span>
+                        <span className="text-slate-400 text-sm">{msg.crm}</span>
                         <span className="text-slate-500 text-sm">•</span>
-                        <span className="text-brand-text-muted text-sm">{msg.specialty}</span>
+                        <span className="text-slate-400 text-sm">{msg.specialty}</span>
                         <span className="text-slate-500 text-sm">•</span>
-                        <span className="text-brand-text-muted text-sm">{new Date(msg.created_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</span>
+                        <span className="text-slate-400 text-sm">{new Date(msg.created_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</span>
                         {msg.isPinned && (
                           <Pin className="w-4 h-4 text-yellow-400" />
                         )}
                       </div>
                       <p className="text-slate-200 mb-2">{msg.content}</p>
                       <div className="flex items-center space-x-4">
-                        <button className="flex items-center space-x-1 text-brand-text-muted hover:text-red-400 transition-colors">
+                        <button className="flex items-center space-x-1 text-slate-400 hover:text-red-400 transition-colors">
                           <Heart className="w-4 h-4" />
                           <span className="text-sm">{msg.reactions?.heart || 0}</span>
                         </button>
-                        <button className="flex items-center space-x-1 text-brand-text-muted hover:text-primary-400 transition-colors">
+                        <button className="flex items-center space-x-1 text-slate-400 hover:text-primary-400 transition-colors">
                           <ThumbsUp className="w-4 h-4" />
                           <span className="text-sm">{msg.reactions?.thumbs || 0}</span>
                         </button>
-                        <button className="flex items-center space-x-1 text-brand-text-muted hover:text-green-400 transition-colors">
+                        <button className="flex items-center space-x-1 text-slate-400 hover:text-green-400 transition-colors">
                           <Reply className="w-4 h-4" />
                           <span className="text-sm">{msg.reactions?.reply || 0}</span>
                         </button>
-                        <button className="text-brand-text-muted hover:text-primary-400 transition-colors">
+                        <button className="text-slate-400 hover:text-primary-400 transition-colors">
                           <UserPlus className="w-4 h-4" />
                         </button>
                       </div>
@@ -1515,11 +1515,11 @@ const ChatGlobal: React.FC = () => {
               {/* Message Input
                   V1.9.277 — paddingBottom safe-area mobile (Pedro 13/05). */}
               <div
-                className="p-2 md:p-4 border-t border-brand-border"
+                className="p-2 md:p-4 border-t border-slate-700"
                 style={{ paddingBottom: 'max(0.5rem, env(safe-area-inset-bottom, 0.5rem))' }}
               >
                 <div className="flex items-center space-x-1 md:space-x-2">
-                  <button className="p-1.5 md:p-2 text-brand-text-muted hover:text-primary-400 transition-colors hidden sm:block">
+                  <button className="p-1.5 md:p-2 text-slate-400 hover:text-primary-400 transition-colors hidden sm:block">
                     <Paperclip className="w-4 h-4 md:w-5 md:h-5" />
                   </button>
                   <div className="flex-1 relative">
@@ -1529,18 +1529,18 @@ const ChatGlobal: React.FC = () => {
                       onChange={(e) => setMessage(e.target.value)}
                       onKeyPress={handleKeyPress}
                       placeholder="Digite sua mensagem..."
-                      className="w-full px-2 md:px-4 py-2 md:py-3 text-sm md:text-base bg-brand-surface-subtle border border-slate-600 rounded-lg text-brand-text placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary-500 disabled:opacity-60 disabled:cursor-not-allowed"
+                      className="w-full px-2 md:px-4 py-2 md:py-3 text-sm md:text-base bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary-500 disabled:opacity-60 disabled:cursor-not-allowed"
                       disabled={!activeChannelData?.canPost}
                     />
                   </div>
-                  <button className="p-1.5 md:p-2 text-brand-text-muted hover:text-yellow-400 transition-colors hidden sm:block">
+                  <button className="p-1.5 md:p-2 text-slate-400 hover:text-yellow-400 transition-colors hidden sm:block">
                     <Smile className="w-4 h-4 md:w-5 md:h-5" />
                   </button>
                   <button
                     onClick={isRecording ? () => setIsRecording(false) : startRecording}
                     className={`p-1.5 md:p-2 transition-colors ${isRecording
                       ? 'text-red-400 hover:text-red-300'
-                      : 'text-brand-text-muted hover:text-red-400'
+                      : 'text-slate-400 hover:text-red-400'
                       }`}
                   >
                     {isRecording ? <MicOff className="w-4 h-4 md:w-5 md:h-5" /> : <Mic className="w-4 h-4 md:w-5 md:h-5" />}
@@ -1548,13 +1548,13 @@ const ChatGlobal: React.FC = () => {
                   <button
                     onClick={handleSendMessage}
                     disabled={isSending || !activeChannelData?.canPost}
-                    className="bg-primary-600 hover:bg-primary-700 text-brand-text px-2 md:px-4 py-2 md:py-3 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                    className="bg-primary-600 hover:bg-primary-700 text-white px-2 md:px-4 py-2 md:py-3 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
                   >
                     <Send className="w-4 h-4 md:w-5 md:h-5" />
                   </button>
                 </div>
                 {activeChannelData?.isReadOnly && (
-                  <p className="mt-2 text-[11px] md:text-xs text-brand-text-muted">
+                  <p className="mt-2 text-[11px] md:text-xs text-slate-400">
                     Este canal é moderado. Perfis <strong>{userType}</strong> participam em modo leitura; envolva um profissional para abrir novas interações.
                   </p>
                 )}
@@ -1565,16 +1565,16 @@ const ChatGlobal: React.FC = () => {
           {/* Painel lateral modular */}
           {!showModeration && showCommunityColumn && (
             <div className="lg:col-span-1 order-3 hidden lg:block">
-              <div className="bg-slate-800/80 rounded-lg p-6 border border-brand-border h-full">
+              <div className="bg-slate-800/80 rounded-lg p-6 border border-slate-700 h-full">
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-2">
                     <PanelIcon className={`w-5 h-5 ${communityPanelConfig.iconColor}`} />
-                    <h3 className="text-lg font-semibold text-brand-text">{communityPanelConfig.title}</h3>
+                    <h3 className="text-lg font-semibold text-white">{communityPanelConfig.title}</h3>
                   </div>
                   <button
                     type="button"
                     onClick={() => setShowCommunityColumn(false)}
-                    className="text-xs text-brand-text-muted hover:text-brand-text transition-colors"
+                    className="text-xs text-slate-400 hover:text-white transition-colors"
                   >
                     Ocultar
                   </button>
@@ -1589,12 +1589,12 @@ const ChatGlobal: React.FC = () => {
           {/* Painel de Moderação Integrado (apenas para admins e Eduardo Faveret) */}
           {showModeration && (isAdmin || user?.email?.includes('faveret')) && (
             <div className="lg:col-span-1">
-              <div className="bg-slate-800/80 rounded-lg p-6 border border-brand-border h-[600px] overflow-y-auto">
-                <h3 className="text-lg font-semibold text-brand-text mb-4">🛡️ Moderação</h3>
+              <div className="bg-slate-800/80 rounded-lg p-6 border border-slate-700 h-[600px] overflow-y-auto">
+                <h3 className="text-lg font-semibold text-white mb-4">🛡️ Moderação</h3>
 
                 {/* Solicitações Pendentes */}
                 <div className="mb-6">
-                  <h4 className="text-sm font-semibold text-brand-text-secondary mb-3">
+                  <h4 className="text-sm font-semibold text-slate-300 mb-3">
                     📨 Solicitações ({moderatorRequests.length})
                   </h4>
                   <div className="space-y-3 max-h-40 overflow-y-auto">
@@ -1602,20 +1602,20 @@ const ChatGlobal: React.FC = () => {
                       <div key={request.id} className="bg-slate-700/50 rounded-lg p-3">
                         <div className="flex items-start justify-between">
                           <div className="flex-1">
-                            <div className="text-brand-text text-sm font-medium">{request.requester_name}</div>
-                            <div className="text-brand-text-muted text-xs mb-2">{request.reason}</div>
+                            <div className="text-white text-sm font-medium">{request.requester_name}</div>
+                            <div className="text-slate-400 text-xs mb-2">{request.reason}</div>
                             <div className="text-slate-500 text-xs">{request.channel}</div>
                           </div>
                           <div className="flex space-x-1">
                             <button
                               onClick={() => handleRespondToRequest(request.id, 'accept')}
-                              className="bg-green-600 hover:bg-green-700 text-brand-text px-2 py-1 rounded text-xs"
+                              className="bg-green-600 hover:bg-green-700 text-white px-2 py-1 rounded text-xs"
                             >
                               ✓
                             </button>
                             <button
                               onClick={() => handleRespondToRequest(request.id, 'decline')}
-                              className="bg-red-600 hover:bg-red-700 text-brand-text px-2 py-1 rounded text-xs"
+                              className="bg-red-600 hover:bg-red-700 text-white px-2 py-1 rounded text-xs"
                             >
                               ✗
                             </button>
@@ -1624,25 +1624,25 @@ const ChatGlobal: React.FC = () => {
                       </div>
                     ))}
                     {moderatorRequests.length === 0 && (
-                      <p className="text-brand-text-muted text-xs text-center py-2">Nenhuma solicitação</p>
+                      <p className="text-slate-400 text-xs text-center py-2">Nenhuma solicitação</p>
                     )}
                   </div>
                 </div>
 
                 {/* Estatísticas Rápidas */}
                 <div className="mb-6">
-                  <h4 className="text-sm font-semibold text-brand-text-secondary mb-3">📊 Estatísticas</h4>
+                  <h4 className="text-sm font-semibold text-slate-300 mb-3">📊 Estatísticas</h4>
                   <div className="space-y-2">
                     <div className="flex justify-between text-xs">
-                      <span className="text-brand-text-muted">Usuários Online</span>
+                      <span className="text-slate-400">Usuários Online</span>
                       <span className="text-green-400 font-bold">{onlineUsers.length}</span>
                     </div>
                     <div className="flex justify-between text-xs">
-                      <span className="text-brand-text-muted">Mensagens Hoje</span>
+                      <span className="text-slate-400">Mensagens Hoje</span>
                       <span className="text-primary-400 font-bold">{messages.length}</span>
                     </div>
                     <div className="flex justify-between text-xs">
-                      <span className="text-brand-text-muted">Canal Ativo</span>
+                      <span className="text-slate-400">Canal Ativo</span>
                       <span className="text-purple-400 font-bold">{activeChannel}</span>
                     </div>
                   </div>
@@ -1650,18 +1650,18 @@ const ChatGlobal: React.FC = () => {
 
                 {/* Ações Rápidas */}
                 <div>
-                  <h4 className="text-sm font-semibold text-brand-text-secondary mb-3">⚡ Ações Rápidas</h4>
+                  <h4 className="text-sm font-semibold text-slate-300 mb-3">⚡ Ações Rápidas</h4>
                   <div className="space-y-2">
-                    <button className="w-full bg-primary-600 hover:bg-primary-700 text-brand-text py-2 px-3 rounded text-xs">
+                    <button className="w-full bg-primary-600 hover:bg-primary-700 text-white py-2 px-3 rounded text-xs">
                       📊 Ver Analytics
                     </button>
-                    <button className="w-full bg-yellow-600 hover:bg-yellow-700 text-brand-text py-2 px-3 rounded text-xs">
+                    <button className="w-full bg-yellow-600 hover:bg-yellow-700 text-white py-2 px-3 rounded text-xs">
                       🚨 Reportes
                     </button>
-                    <button className="w-full bg-purple-600 hover:bg-purple-700 text-brand-text py-2 px-3 rounded text-xs">
+                    <button className="w-full bg-purple-600 hover:bg-purple-700 text-white py-2 px-3 rounded text-xs">
                       👥 Usuários
                     </button>
-                    <button className="w-full bg-green-600 hover:bg-green-700 text-brand-text py-2 px-3 rounded text-xs">
+                    <button className="w-full bg-green-600 hover:bg-green-700 text-white py-2 px-3 rounded text-xs">
                       📈 Estatísticas
                     </button>
                   </div>
@@ -1676,10 +1676,10 @@ const ChatGlobal: React.FC = () => {
       {activeTab === 'forum' && (
         <div className="space-y-8">
           {/* Forum Header */}
-          <div className="bg-slate-800/80 rounded-lg p-6 border border-brand-border space-y-4">
+          <div className="bg-slate-800/80 rounded-lg p-6 border border-slate-700 space-y-4">
             <div>
-              <h2 className="text-2xl font-bold text-brand-text mb-2">🏛️ Fórum Profissional</h2>
-              <p className="text-brand-text-secondary">
+              <h2 className="text-2xl font-bold text-white mb-2">🏛️ Fórum Profissional</h2>
+              <p className="text-slate-300">
                 Espaço colaborativo para acompanhar o desenvolvimento do protocolo integrado Med Cann Lab.
               </p>
             </div>
@@ -1687,23 +1687,23 @@ const ChatGlobal: React.FC = () => {
             {/* Search and Filters */}
             <div className="flex space-x-4">
               <div className="flex-1 relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-brand-text-muted w-5 h-5" />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-5 h-5" />
                 <input
                   type="text"
                   placeholder="Buscar debates..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 bg-brand-surface-subtle border border-slate-600 rounded-lg text-brand-text placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  className="w-full pl-10 pr-4 py-3 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary-500"
                 />
               </div>
               <button
                 onClick={() => setShowNewPostModal(true)}
-                className="px-4 py-3 bg-primary-600 hover:bg-primary-700 text-brand-text rounded-lg transition-colors flex items-center space-x-2"
+                className="px-4 py-3 bg-primary-600 hover:bg-primary-700 text-white rounded-lg transition-colors flex items-center space-x-2"
               >
                 <Plus className="w-5 h-5" />
                 <span>Nova Discussão</span>
               </button>
-              <button className="px-4 py-3 bg-brand-surface-subtle border border-slate-600 rounded-lg text-brand-text-secondary hover:text-brand-text hover:bg-slate-600 transition-colors flex items-center space-x-2">
+              <button className="px-4 py-3 bg-slate-700 border border-slate-600 rounded-lg text-slate-300 hover:text-white hover:bg-slate-600 transition-colors flex items-center space-x-2">
                 <Filter className="w-5 h-5" />
                 <span>Filtros</span>
               </button>
@@ -1725,12 +1725,12 @@ const ChatGlobal: React.FC = () => {
                       }
                     }, 100)
                   }}
-                  className="text-lg font-semibold text-brand-text cursor-pointer hover:text-blue-300 transition-colors"
+                  className="text-lg font-semibold text-white cursor-pointer hover:text-blue-300 transition-colors"
                   title="Clique para ver as discussões deste tema"
                 >
                   {preselectedForumTopic}
                 </h3>
-                <p className="text-sm text-brand-text-secondary mt-2">
+                <p className="text-sm text-slate-300 mt-2">
                   Estamos estruturando o protocolo clínico integrado do Med Cann Lab para unir cannabis medicinal e nefrologia.
                   Compartilhe dados clínicos, experiências assistidas por IA e sugestões metodológicas para fortalecer o documento.
                 </p>
@@ -1747,7 +1747,7 @@ const ChatGlobal: React.FC = () => {
                       }
                     }, 100)
                   }}
-                  className="inline-flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-semibold text-brand-text bg-blue-600 hover:bg-blue-500 transition-colors"
+                  className="inline-flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-semibold text-white bg-blue-600 hover:bg-blue-500 transition-colors"
                 >
                   Buscar discussões relacionadas
                 </button>
@@ -1781,7 +1781,7 @@ const ChatGlobal: React.FC = () => {
                 filteredDebates.map((debate) => {
                   const canPostInDebate = debate.postRoles.includes(userType)
                   return (
-                    <div key={debate.id} className="bg-slate-800/80 rounded-lg p-6 border border-brand-border hover:bg-slate-800/90 transition-colors">
+                    <div key={debate.id} className="bg-slate-800/80 rounded-lg p-6 border border-slate-700 hover:bg-slate-800/90 transition-colors">
                       <div className="flex items-start justify-between mb-4">
                         <div
                           className="flex-1 cursor-pointer"
@@ -1789,7 +1789,7 @@ const ChatGlobal: React.FC = () => {
                           title="Clique para ver as discussões deste debate"
                         >
                           <div className="flex items-center space-x-3 mb-2">
-                            <h3 className="text-lg font-semibold text-brand-text hover:text-blue-300 transition-colors">{debate.title}</h3>
+                            <h3 className="text-lg font-semibold text-white hover:text-blue-300 transition-colors">{debate.title}</h3>
                             {debate.isPinned && <Pin className="w-5 h-5 text-yellow-400" />}
                             {debate.isHot && <TrendingUp className="w-5 h-5 text-red-400" />}
                             {debate.isActive && (
@@ -1805,7 +1805,7 @@ const ChatGlobal: React.FC = () => {
                               </div>
                             )}
                           </div>
-                          <p className="text-brand-text-secondary text-sm mb-3 hover:text-slate-200 transition-colors">{debate.description}</p>
+                          <p className="text-slate-300 text-sm mb-3 hover:text-slate-200 transition-colors">{debate.description}</p>
                           <div className="flex flex-wrap gap-2 mb-3">
                             {debate.tags.map((tag, index) => (
                               <span key={index} className="px-2 py-1 bg-primary-500/20 text-primary-400 text-xs rounded-full">
@@ -1813,10 +1813,10 @@ const ChatGlobal: React.FC = () => {
                               </span>
                             ))}
                           </div>
-                          <div className="flex items-center space-x-4 text-sm text-brand-text-muted">
+                          <div className="flex items-center space-x-4 text-sm text-slate-400">
                             <div className="flex items-center space-x-1">
                               <div className="w-6 h-6 bg-gradient-to-br from-primary-500 to-purple-600 rounded-full flex items-center justify-center">
-                                <span className="text-brand-text font-bold text-xs">{debate.authorAvatar}</span>
+                                <span className="text-white font-bold text-xs">{debate.authorAvatar}</span>
                               </div>
                               <span>{debate.author}</span>
                             </div>
@@ -1848,23 +1848,23 @@ const ChatGlobal: React.FC = () => {
                               onClick={() => handleOpenDebate(debate.id)}
                               disabled={!canPostInDebate}
                               className={`px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors ${canPostInDebate
-                                ? 'bg-primary-600 hover:bg-primary-700 text-brand-text'
-                                : 'bg-brand-surface-subtle text-brand-text-secondary cursor-not-allowed'
+                                ? 'bg-primary-600 hover:bg-primary-700 text-white'
+                                : 'bg-slate-700 text-slate-300 cursor-not-allowed'
                                 }`}
                             >
                               <MessageSquare className="w-4 h-4" />
                               <span>{canPostInDebate ? 'Participar' : 'Somente leitura'}</span>
                             </button>
-                            <button className="p-2 text-brand-text-muted hover:text-primary-400 transition-colors">
+                            <button className="p-2 text-slate-400 hover:text-primary-400 transition-colors">
                               <Eye className="w-4 h-4" />
                             </button>
-                            <button className="p-2 text-brand-text-muted hover:text-green-400 transition-colors">
+                            <button className="p-2 text-slate-400 hover:text-green-400 transition-colors">
                               <Reply className="w-4 h-4" />
                             </button>
-                            <button className="p-2 text-brand-text-muted hover:text-purple-400 transition-colors">
+                            <button className="p-2 text-slate-400 hover:text-purple-400 transition-colors">
                               <Share2 className="w-4 h-4" />
                             </button>
-                            <button className="p-2 text-brand-text-muted hover:text-red-400 transition-colors">
+                            <button className="p-2 text-slate-400 hover:text-red-400 transition-colors">
                               <Flag className="w-4 h-4" />
                             </button>
                           </div>
@@ -1874,7 +1874,7 @@ const ChatGlobal: React.FC = () => {
                   )
                 })
               ) : (
-                <div className="bg-slate-800/80 rounded-lg p-6 border border-brand-border text-brand-text-secondary text-sm">
+                <div className="bg-slate-800/80 rounded-lg p-6 border border-slate-700 text-slate-300 text-sm">
                   {debatesForUser.length === 0
                     ? 'O seu perfil participa do fórum por meio de canais mediados. Converse com a coordenação para ser convidado a debates especializados.'
                     : 'Nenhum debate encontrado para a sua busca. Ajuste os filtros ou tente outra palavra-chave.'}
@@ -1888,12 +1888,12 @@ const ChatGlobal: React.FC = () => {
       {/* Modal de Nova Discussão */}
       {showNewPostModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-brand-surface rounded-xl p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto border border-brand-border">
+          <div className="bg-slate-800 rounded-xl p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto border border-slate-700">
             <div className="flex items-center justify-between mb-6">
-              <h3 className="text-2xl font-bold text-brand-text">Nova Discussão</h3>
+              <h3 className="text-2xl font-bold text-white">Nova Discussão</h3>
               <button
                 onClick={() => setShowNewPostModal(false)}
-                className="text-brand-text-muted hover:text-brand-text transition-colors"
+                className="text-slate-400 hover:text-white transition-colors"
               >
                 <X className="w-6 h-6" />
               </button>
@@ -1910,7 +1910,7 @@ const ChatGlobal: React.FC = () => {
                   value={newPost.title}
                   onChange={(e) => setNewPost(prev => ({ ...prev, title: e.target.value }))}
                   placeholder="Ex: CBD vs THC: Qual é mais eficaz para dor crônica?"
-                  className="w-full px-4 py-3 bg-brand-surface-subtle border border-slate-600 rounded-lg text-brand-text placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  className="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary-500"
                   required
                 />
               </div>
@@ -1925,7 +1925,7 @@ const ChatGlobal: React.FC = () => {
                   onChange={(e) => setNewPost(prev => ({ ...prev, description: e.target.value }))}
                   placeholder="Breve descrição da discussão..."
                   rows={2}
-                  className="w-full px-4 py-3 bg-brand-surface-subtle border border-slate-600 rounded-lg text-brand-text placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary-500 resize-none"
+                  className="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary-500 resize-none"
                 />
               </div>
 
@@ -1939,7 +1939,7 @@ const ChatGlobal: React.FC = () => {
                   onChange={(e) => setNewPost(prev => ({ ...prev, content: e.target.value }))}
                   placeholder="Descreva detalhadamente o tema da discussão..."
                   rows={6}
-                  className="w-full px-4 py-3 bg-brand-surface-subtle border border-slate-600 rounded-lg text-brand-text placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary-500 resize-none"
+                  className="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary-500 resize-none"
                   required
                 />
               </div>
@@ -1952,7 +1952,7 @@ const ChatGlobal: React.FC = () => {
                 <select
                   value={newPost.category}
                   onChange={(e) => setNewPost(prev => ({ ...prev, category: e.target.value }))}
-                  className="w-full px-4 py-3 bg-brand-surface-subtle border border-slate-600 rounded-lg text-brand-text focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  className="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
                 >
                   <option value="Geral">Geral</option>
                   <option value="Cannabis Medicinal">Cannabis Medicinal</option>
@@ -1991,11 +1991,11 @@ const ChatGlobal: React.FC = () => {
                     onChange={(e) => setNewTag(e.target.value)}
                     onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddTag())}
                     placeholder="Digite uma tag e pressione Enter"
-                    className="flex-1 px-4 py-2 bg-brand-surface-subtle border border-slate-600 rounded-lg text-brand-text placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary-500"
+                    className="flex-1 px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary-500"
                   />
                   <button
                     onClick={handleAddTag}
-                    className="px-4 py-2 bg-primary-600 hover:bg-primary-700 text-brand-text rounded-lg transition-colors"
+                    className="px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-lg transition-colors"
                   >
                     Adicionar
                   </button>
@@ -2009,7 +2009,7 @@ const ChatGlobal: React.FC = () => {
                   id="password-protected"
                   checked={newPost.isPasswordProtected}
                   onChange={(e) => setNewPost(prev => ({ ...prev, isPasswordProtected: e.target.checked }))}
-                  className="w-4 h-4 text-primary-600 bg-brand-surface-subtle border-slate-600 rounded focus:ring-primary-500"
+                  className="w-4 h-4 text-primary-600 bg-slate-700 border-slate-600 rounded focus:ring-primary-500"
                 />
                 <label htmlFor="password-protected" className="text-sm text-slate-200">
                   Proteger discussão com senha
@@ -2026,7 +2026,7 @@ const ChatGlobal: React.FC = () => {
                     value={newPost.password}
                     onChange={(e) => setNewPost(prev => ({ ...prev, password: e.target.value }))}
                     placeholder="Digite a senha"
-                    className="w-full px-4 py-3 bg-brand-surface-subtle border border-slate-600 rounded-lg text-brand-text placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary-500"
+                    className="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary-500"
                   />
                 </div>
               )}
@@ -2048,14 +2048,14 @@ const ChatGlobal: React.FC = () => {
                     postRoles: []
                   })
                 }}
-                className="flex-1 px-4 py-3 border border-slate-600 text-brand-text-secondary rounded-lg hover:bg-brand-surface-subtle transition-colors"
+                className="flex-1 px-4 py-3 border border-slate-600 text-slate-300 rounded-lg hover:bg-slate-700 transition-colors"
               >
                 Cancelar
               </button>
               <button
                 onClick={handleCreatePost}
                 disabled={isCreatingPost || !newPost.title.trim() || !newPost.content.trim()}
-                className="flex-1 px-4 py-3 bg-primary-600 hover:bg-primary-700 text-brand-text rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex-1 px-4 py-3 bg-primary-600 hover:bg-primary-700 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isCreatingPost ? 'Criando...' : 'Criar Discussão'}
               </button>
@@ -2068,9 +2068,9 @@ const ChatGlobal: React.FC = () => {
       {activeTab === 'friends' && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
           {/* Friend Requests */}
-          <div className="bg-slate-800/80 rounded-lg p-6 border border-brand-border">
+          <div className="bg-slate-800/80 rounded-lg p-6 border border-slate-700">
             <div className="flex items-center justify-between mb-6">
-              <h3 className="text-lg font-semibold text-brand-text">
+              <h3 className="text-lg font-semibold text-white">
                 📨 Solicitações de Amizade ({friendRequests.length})
               </h3>
               <button
@@ -2086,25 +2086,25 @@ const ChatGlobal: React.FC = () => {
                 <div key={request.id} className="p-4 bg-slate-700/50 rounded-lg">
                   <div className="flex items-start space-x-3 mb-3">
                     <div className="w-12 h-12 bg-gradient-to-br from-primary-500 to-purple-600 rounded-full flex items-center justify-center">
-                      <span className="text-brand-text font-bold">{request.avatar}</span>
+                      <span className="text-white font-bold">{request.avatar}</span>
                     </div>
                     <div className="flex-1">
-                      <h4 className="text-brand-text font-medium">{request.name}</h4>
-                      <p className="text-brand-text-muted text-sm">{request.specialty} • {request.crm}</p>
-                      <p className="text-brand-text-secondary text-sm mt-1">{request.message}</p>
+                      <h4 className="text-white font-medium">{request.name}</h4>
+                      <p className="text-slate-400 text-sm">{request.specialty} • {request.crm}</p>
+                      <p className="text-slate-300 text-sm mt-1">{request.message}</p>
                     </div>
                   </div>
                   <div className="flex space-x-2">
                     <button
                       onClick={() => handleAcceptFriend(request.id)}
-                      className="flex-1 bg-green-600 hover:bg-green-700 text-brand-text py-2 px-4 rounded-lg flex items-center justify-center space-x-2 transition-colors"
+                      className="flex-1 bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-lg flex items-center justify-center space-x-2 transition-colors"
                     >
                       <Check className="w-4 h-4" />
                       <span>Aceitar</span>
                     </button>
                     <button
                       onClick={() => handleRejectFriend(request.id)}
-                      className="flex-1 bg-red-600 hover:bg-red-700 text-brand-text py-2 px-4 rounded-lg flex items-center justify-center space-x-2 transition-colors"
+                      className="flex-1 bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded-lg flex items-center justify-center space-x-2 transition-colors"
                     >
                       <X className="w-4 h-4" />
                       <span>Recusar</span>
@@ -2116,8 +2116,8 @@ const ChatGlobal: React.FC = () => {
           </div>
 
           {/* My Friends */}
-          <div className="bg-slate-800/80 rounded-lg p-6 border border-brand-border">
-            <h3 className="text-lg font-semibold text-brand-text mb-6">
+          <div className="bg-slate-800/80 rounded-lg p-6 border border-slate-700">
+            <h3 className="text-lg font-semibold text-white mb-6">
               👥 Meus Amigos ({onlineUsers.filter(u => u.isFriend).length})
             </h3>
 
@@ -2127,13 +2127,13 @@ const ChatGlobal: React.FC = () => {
                   <div className="flex items-center space-x-3">
                     <div className="relative">
                       <div className="w-10 h-10 bg-gradient-to-br from-primary-500 to-purple-600 rounded-full flex items-center justify-center">
-                        <span className="text-brand-text font-bold text-sm">{friend.avatar}</span>
+                        <span className="text-white font-bold text-sm">{friend.avatar}</span>
                       </div>
-                      <div className={`absolute -bottom-1 -right-1 w-3 h-3 ${getStatusColor(friend.status)} rounded-full border-2 border-brand-border-subtle`}></div>
+                      <div className={`absolute -bottom-1 -right-1 w-3 h-3 ${getStatusColor(friend.status)} rounded-full border-2 border-slate-800`}></div>
                     </div>
                     <div>
-                      <p className="text-brand-text font-medium text-sm">{friend.name}</p>
-                      <p className="text-brand-text-muted text-xs">{friend.specialty} • {friend.crm}</p>
+                      <p className="text-white font-medium text-sm">{friend.name}</p>
+                      <p className="text-slate-400 text-xs">{friend.specialty} • {friend.crm}</p>
                     </div>
                   </div>
                   <div className="flex items-center space-x-2">
@@ -2157,9 +2157,9 @@ const ChatGlobal: React.FC = () => {
       {/* Modal para Solicitar Moderador */}
       {showModeratorRequest && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-brand-surface rounded-lg p-4 md:p-6 w-full max-w-md mx-4">
-            <h3 className="text-xl font-bold text-brand-text mb-4">🚨 Solicitar Moderador</h3>
-            <p className="text-brand-text-secondary mb-4">
+          <div className="bg-slate-800 rounded-lg p-4 md:p-6 w-full max-w-md mx-4">
+            <h3 className="text-xl font-bold text-white mb-4">🚨 Solicitar Moderador</h3>
+            <p className="text-slate-300 mb-4">
               Descreva brevemente o motivo da solicitação. Um moderador será notificado e entrará no chat.
             </p>
             <textarea
@@ -2167,12 +2167,12 @@ const ChatGlobal: React.FC = () => {
               onChange={(e) => setRequestReason(e.target.value)}
               placeholder="Ex: Discussão acalorada, usuário inadequado, dúvida técnica complexa..."
               rows={4}
-              className="w-full px-3 py-2 bg-brand-surface-subtle border border-slate-600 rounded-lg text-brand-text placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-red-500 mb-4"
+              className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-red-500 mb-4"
             />
             <div className="flex space-x-3">
               <button
                 onClick={handleRequestModerator}
-                className="flex-1 bg-red-600 hover:bg-red-700 text-brand-text py-2 px-4 rounded-lg transition-colors"
+                className="flex-1 bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded-lg transition-colors"
               >
                 Enviar Solicitação
               </button>
@@ -2181,7 +2181,7 @@ const ChatGlobal: React.FC = () => {
                   setShowModeratorRequest(false)
                   setRequestReason('')
                 }}
-                className="flex-1 bg-slate-600 hover:bg-brand-surface-subtle text-brand-text py-2 px-4 rounded-lg transition-colors"
+                className="flex-1 bg-slate-600 hover:bg-slate-700 text-white py-2 px-4 rounded-lg transition-colors"
               >
                 Cancelar
               </button>
@@ -2192,12 +2192,12 @@ const ChatGlobal: React.FC = () => {
 
       {/* Painel de Moderação (apenas para admins e Eduardo Faveret) */}
       {showModeration && (isAdmin || user?.email?.includes('faveret')) && (
-        <div className="bg-slate-800/80 rounded-lg p-6 border border-brand-border">
-          <h3 className="text-xl font-bold text-brand-text mb-6">🛡️ Painel de Moderação</h3>
+        <div className="bg-slate-800/80 rounded-lg p-6 border border-slate-700">
+          <h3 className="text-xl font-bold text-white mb-6">🛡️ Painel de Moderação</h3>
 
           {/* Solicitações Pendentes */}
           <div className="mb-6">
-            <h4 className="text-lg font-semibold text-brand-text mb-4">
+            <h4 className="text-lg font-semibold text-white mb-4">
               📨 Solicitações de Moderador ({moderatorRequests.length})
             </h4>
             <div className="space-y-4">
@@ -2206,28 +2206,28 @@ const ChatGlobal: React.FC = () => {
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
                       <div className="flex items-center space-x-2 mb-2">
-                        <span className="text-brand-text font-medium">{request.requester_name}</span>
-                        <span className="text-brand-text-muted text-sm">•</span>
-                        <span className="text-brand-text-muted text-sm">Canal: {request.channel}</span>
+                        <span className="text-white font-medium">{request.requester_name}</span>
+                        <span className="text-slate-400 text-sm">•</span>
+                        <span className="text-slate-400 text-sm">Canal: {request.channel}</span>
                         <span className="bg-red-500/20 text-red-400 px-2 py-1 rounded-full text-xs">
                           {request.priority}
                         </span>
                       </div>
-                      <p className="text-brand-text-secondary text-sm mb-2">{request.reason}</p>
-                      <p className="text-brand-text-muted text-xs">
+                      <p className="text-slate-300 text-sm mb-2">{request.reason}</p>
+                      <p className="text-slate-400 text-xs">
                         {new Date(request.created_at).toLocaleString()}
                       </p>
                     </div>
                     <div className="flex space-x-2">
                       <button
                         onClick={() => handleRespondToRequest(request.id, 'accept')}
-                        className="bg-green-600 hover:bg-green-700 text-brand-text px-3 py-1 rounded text-sm transition-colors"
+                        className="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-sm transition-colors"
                       >
                         Aceitar
                       </button>
                       <button
                         onClick={() => handleRespondToRequest(request.id, 'decline')}
-                        className="bg-red-600 hover:bg-red-700 text-brand-text px-3 py-1 rounded text-sm transition-colors"
+                        className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-sm transition-colors"
                       >
                         Recusar
                       </button>
@@ -2236,7 +2236,7 @@ const ChatGlobal: React.FC = () => {
                 </div>
               ))}
               {moderatorRequests.length === 0 && (
-                <p className="text-brand-text-muted text-center py-4">Nenhuma solicitação pendente</p>
+                <p className="text-slate-400 text-center py-4">Nenhuma solicitação pendente</p>
               )}
             </div>
           </div>
@@ -2247,19 +2247,19 @@ const ChatGlobal: React.FC = () => {
               <div className="text-2xl font-bold text-red-400 mb-1">
                 {moderatorRequests.length}
               </div>
-              <div className="text-brand-text-secondary text-sm">Solicitações Pendentes</div>
+              <div className="text-slate-300 text-sm">Solicitações Pendentes</div>
             </div>
             <div className="bg-slate-700/50 rounded-lg p-4 text-center">
               <div className="text-2xl font-bold text-green-400 mb-1">
                 {onlineUsers.filter(u => u.is_admin).length}
               </div>
-              <div className="text-brand-text-secondary text-sm">Moderadores Online</div>
+              <div className="text-slate-300 text-sm">Moderadores Online</div>
             </div>
             <div className="bg-slate-700/50 rounded-lg p-4 text-center">
               <div className="text-2xl font-bold text-primary-400 mb-1">
                 {onlineUsers.length}
               </div>
-              <div className="text-brand-text-secondary text-sm">Usuários Online</div>
+              <div className="text-slate-300 text-sm">Usuários Online</div>
             </div>
           </div>
         </div>

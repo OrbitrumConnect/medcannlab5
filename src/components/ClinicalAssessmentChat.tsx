@@ -160,22 +160,22 @@ const ClinicalAssessmentChat: React.FC<ClinicalAssessmentChatProps> = ({ onClose
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-slate-800/95 rounded-2xl border border-brand-border overflow-hidden shadow-2xl w-full max-w-4xl h-[80vh] flex flex-col">
+      <div className="bg-slate-800/95 rounded-2xl border border-slate-700 overflow-hidden shadow-2xl w-full max-w-4xl h-[80vh] flex flex-col">
         {/* Header */}
-        <div className="bg-gradient-to-r from-blue-600/20 to-purple-600/20 p-4 border-b border-brand-border">
+        <div className="bg-gradient-to-r from-blue-600/20 to-purple-600/20 p-4 border-b border-slate-700">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
               <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
-                <Stethoscope className="w-5 h-5 text-brand-text" />
+                <Stethoscope className="w-5 h-5 text-white" />
               </div>
               <div>
-                <h3 className="text-lg font-bold text-brand-text">Avaliação Clínica IMRE Triaxial</h3>
-                <p className="text-sm text-brand-text-secondary">Metodologia AEC - Arte da Entrevista Clínica</p>
+                <h3 className="text-lg font-bold text-white">Avaliação Clínica IMRE Triaxial</h3>
+                <p className="text-sm text-slate-300">Metodologia AEC - Arte da Entrevista Clínica</p>
               </div>
             </div>
             <button
               onClick={onClose}
-              className="p-2 text-brand-text-muted hover:text-red-400 transition-colors"
+              className="p-2 text-slate-400 hover:text-red-400 transition-colors"
               title="Fechar avaliação"
             >
               <X className="w-5 h-5" />
@@ -185,17 +185,17 @@ const ClinicalAssessmentChat: React.FC<ClinicalAssessmentChatProps> = ({ onClose
           {/* Progress Bar */}
           <div className="mt-4">
             <div className="flex justify-between text-sm mb-2">
-              <span className="text-brand-text-secondary">Etapa {currentStep} de {totalSteps}</span>
-              <span className="text-brand-text-secondary">{Math.round(progress)}%</span>
+              <span className="text-slate-300">Etapa {currentStep} de {totalSteps}</span>
+              <span className="text-slate-300">{Math.round(progress)}%</span>
             </div>
-            <div className="w-full bg-brand-surface-subtle rounded-full h-2">
+            <div className="w-full bg-slate-700 rounded-full h-2">
               <div 
                 className="bg-gradient-to-r from-blue-500 to-purple-600 h-2 rounded-full transition-all duration-300"
                 style={{ width: `${progress}%` }}
               />
             </div>
             {currentStep <= totalSteps && (
-              <p className="text-sm mt-2 text-brand-text-secondary">
+              <p className="text-sm mt-2 text-slate-300">
                 {steps[currentStep - 1]?.title}
               </p>
             )}
@@ -217,16 +217,16 @@ const ClinicalAssessmentChat: React.FC<ClinicalAssessmentChatProps> = ({ onClose
                     : 'bg-gradient-to-br from-blue-500 to-purple-600'
                 }`}>
                   {message.isUser ? (
-                    <User className="w-4 h-4 text-brand-text" />
+                    <User className="w-4 h-4 text-white" />
                   ) : (
-                    <Bot className="w-4 h-4 text-brand-text" />
+                    <Bot className="w-4 h-4 text-white" />
                   )}
                 </div>
 
                 {/* Message Content */}
                 <div className={`rounded-2xl px-4 py-3 ${
                   message.isUser
-                    ? 'bg-blue-600 text-brand-text'
+                    ? 'bg-blue-600 text-white'
                     : 'bg-slate-700/50 text-slate-200'
                 }`}>
                   <p className="text-sm leading-relaxed whitespace-pre-line">{message.text}</p>
@@ -257,12 +257,12 @@ const ClinicalAssessmentChat: React.FC<ClinicalAssessmentChatProps> = ({ onClose
             <div className="flex justify-start">
               <div className="flex space-x-3">
                 <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
-                  <Bot className="w-4 h-4 text-brand-text" />
+                  <Bot className="w-4 h-4 text-white" />
                 </div>
                 <div className="bg-slate-700/50 rounded-2xl px-4 py-3">
                   <div className="flex items-center space-x-2">
                     <Loader2 className="w-4 h-4 text-blue-400 animate-spin" />
-                    <span className="text-sm text-brand-text-secondary">Processando resposta...</span>
+                    <span className="text-sm text-slate-300">Processando resposta...</span>
                   </div>
                 </div>
               </div>
@@ -273,7 +273,7 @@ const ClinicalAssessmentChat: React.FC<ClinicalAssessmentChatProps> = ({ onClose
         </div>
 
         {/* Input */}
-        <div className="p-4 border-t border-brand-border">
+        <div className="p-4 border-t border-slate-700">
           <form onSubmit={handleSubmit} className="flex space-x-3">
             <div className="flex-1 relative">
               <input
@@ -282,7 +282,7 @@ const ClinicalAssessmentChat: React.FC<ClinicalAssessmentChatProps> = ({ onClose
                 onChange={(e) => setInputMessage(e.target.value)}
                 placeholder="Digite sua resposta..."
                 disabled={isAnalyzing}
-                className="w-full px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-xl text-brand-text placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-xl text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed"
               />
               {isAnalyzing && (
                 <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
@@ -293,14 +293,14 @@ const ClinicalAssessmentChat: React.FC<ClinicalAssessmentChatProps> = ({ onClose
             <button
               type="submit"
               disabled={!inputMessage.trim() || isAnalyzing}
-              className="px-4 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 disabled:from-slate-600 disabled:to-slate-600 disabled:cursor-not-allowed text-brand-text rounded-xl transition-all duration-200 flex items-center space-x-2"
+              className="px-4 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 disabled:from-slate-600 disabled:to-slate-600 disabled:cursor-not-allowed text-white rounded-xl transition-all duration-200 flex items-center space-x-2"
             >
               <Send className="w-4 h-4" />
             </button>
           </form>
 
           {/* Status Indicators */}
-          <div className="flex items-center justify-between mt-3 text-xs text-brand-text-muted">
+          <div className="flex items-center justify-between mt-3 text-xs text-slate-400">
             <div className="flex items-center space-x-4">
               <div className="flex items-center space-x-1">
                 <Stethoscope className="w-3 h-3" />

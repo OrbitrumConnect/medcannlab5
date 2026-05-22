@@ -20,7 +20,7 @@ const NavegacaoIndividualizada: React.FC = () => {
   if (!userRoutes) return null
 
   return (
-    <div className="bg-brand-surface border-b border-brand-border">
+    <div className="bg-slate-800 border-b border-slate-700">
       {/* Breadcrumbs */}
       <div className="px-6 py-3">
         <nav className="flex items-center space-x-2 text-sm">
@@ -28,11 +28,11 @@ const NavegacaoIndividualizada: React.FC = () => {
             <React.Fragment key={index}>
               {index > 0 && <span className="text-slate-500">/</span>}
               {index === breadcrumbs.length - 1 ? (
-                <span className="text-brand-text font-medium">{crumb.label}</span>
+                <span className="text-white font-medium">{crumb.label}</span>
               ) : (
                 <Link 
                   to={crumb.path} 
-                  className="text-brand-text-muted hover:text-brand-text transition-colors"
+                  className="text-slate-400 hover:text-white transition-colors"
                 >
                   {crumb.label}
                 </Link>
@@ -46,12 +46,12 @@ const NavegacaoIndividualizada: React.FC = () => {
       <div className="px-6 py-4">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-xl font-bold text-brand-text">
+            <h1 className="text-xl font-bold text-white">
               {userRoutes.eixo === 'clinica' && '🏥 Eixo Clínica'}
               {userRoutes.eixo === 'ensino' && '🎓 Eixo Ensino'}
               {userRoutes.eixo === 'pesquisa' && '🔬 Eixo Pesquisa'}
             </h1>
-            <p className="text-brand-text-muted text-sm mt-1">
+            <p className="text-slate-400 text-sm mt-1">
               {userRoutes.tipo === 'profissional' && 'Área do Profissional'}
               {userRoutes.tipo === 'paciente' && 'Área do Paciente'}
               {userRoutes.tipo === 'aluno' && 'Área do Aluno'}
@@ -64,8 +64,8 @@ const NavegacaoIndividualizada: React.FC = () => {
               to="/app/clinica/profissional/dashboard"
               className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
                 eixo === 'clinica' 
-                  ? 'bg-blue-600 text-brand-text' 
-                  : 'bg-brand-surface-subtle text-brand-text-secondary hover:bg-slate-600'
+                  ? 'bg-blue-600 text-white' 
+                  : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
               }`}
             >
               🏥 Clínica
@@ -74,8 +74,8 @@ const NavegacaoIndividualizada: React.FC = () => {
               to="/app/ensino/aluno/dashboard"
               className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
                 eixo === 'ensino' 
-                  ? 'bg-green-600 text-brand-text' 
-                  : 'bg-brand-surface-subtle text-brand-text-secondary hover:bg-slate-600'
+                  ? 'bg-green-600 text-white' 
+                  : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
               }`}
             >
               🎓 Ensino
@@ -84,8 +84,8 @@ const NavegacaoIndividualizada: React.FC = () => {
               to="/app/pesquisa/profissional/dashboard"
               className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
                 eixo === 'pesquisa' 
-                  ? 'bg-purple-600 text-brand-text' 
-                  : 'bg-brand-surface-subtle text-brand-text-secondary hover:bg-slate-600'
+                  ? 'bg-purple-600 text-white' 
+                  : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
               }`}
             >
               🔬 Pesquisa
@@ -105,8 +105,8 @@ const NavegacaoIndividualizada: React.FC = () => {
                 to={rota.path}
                 className={`flex items-center space-x-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                   isActive
-                    ? 'bg-blue-600 text-brand-text'
-                    : 'bg-brand-surface-subtle text-brand-text-secondary hover:bg-slate-600'
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
                 }`}
               >
                 <span>{rota.icon}</span>

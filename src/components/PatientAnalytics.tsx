@@ -365,7 +365,7 @@ const PatientAnalytics: React.FC<PatientAnalyticsProps> = ({ reports, loading, u
         if (trend === 'up') return { dot: 'bg-emerald-400', glow: 'rgba(52, 211, 153, 0.45)', text: 'text-emerald-300' }
         if (trend === 'down') return { dot: 'bg-rose-400', glow: 'rgba(251, 113, 133, 0.45)', text: 'text-rose-300' }
         if (trend === 'flat') return { dot: 'bg-sky-400', glow: 'rgba(56, 189, 248, 0.38)', text: 'text-sky-300' }
-        return { dot: 'bg-slate-500', glow: 'rgba(100, 116, 139, 0.25)', text: 'text-brand-text-secondary' }
+        return { dot: 'bg-slate-500', glow: 'rgba(100, 116, 139, 0.25)', text: 'text-slate-300' }
     }
 
     const monitorSignals = useMemo(() => {
@@ -413,7 +413,7 @@ const PatientAnalytics: React.FC<PatientAnalyticsProps> = ({ reports, loading, u
         if (downs >= 2) return { label: 'Atenção', color: 'text-rose-300', dot: 'bg-rose-400' }
         if (ups >= 2) return { label: 'Melhorando', color: 'text-emerald-300', dot: 'bg-emerald-400' }
         if (flats >= 2) return { label: 'Estável', color: 'text-sky-300', dot: 'bg-sky-400' }
-        return { label: 'Em observação', color: 'text-brand-text-secondary', dot: 'bg-slate-500' }
+        return { label: 'Em observação', color: 'text-slate-300', dot: 'bg-slate-500' }
     }, [monitorSignals])
 
     const upcomingAppointments = useMemo(() => {
@@ -442,7 +442,7 @@ const PatientAnalytics: React.FC<PatientAnalyticsProps> = ({ reports, loading, u
     }, [patientPrescriptions])
 
     const prescriptionStatus = useMemo(() => {
-        if (!latestPrescription) return { label: 'Nenhuma', color: 'text-brand-text-secondary', dot: 'bg-slate-500' }
+        if (!latestPrescription) return { label: 'Nenhuma', color: 'text-slate-300', dot: 'bg-slate-500' }
         const status = (latestPrescription.status || '').toLowerCase()
         const endsAt = latestPrescription.endsAt ? new Date(latestPrescription.endsAt) : null
         const isExpired = endsAt ? endsAt.getTime() < Date.now() : false
@@ -457,7 +457,7 @@ const PatientAnalytics: React.FC<PatientAnalyticsProps> = ({ reports, loading, u
         const diff = current - previous
         if (diff > 0) return { icon: ArrowUp, color: 'text-emerald-400', label: `+${diff} pts` }
         if (diff < 0) return { icon: ArrowDown, color: 'text-rose-400', label: `${diff} pts` }
-        return { icon: Minus, color: 'text-brand-text-muted', label: '0 pts' }
+        return { icon: Minus, color: 'text-slate-400', label: '0 pts' }
     }
 
     // Estatísticas atuais
@@ -535,7 +535,7 @@ const PatientAnalytics: React.FC<PatientAnalyticsProps> = ({ reports, loading, u
 
                 <div className="relative z-10 flex items-center gap-3 text-slate-200">
                     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-500"></div>
-                    <span className="text-sm text-brand-text-secondary">Carregando seus indicadores…</span>
+                    <span className="text-sm text-slate-300">Carregando seus indicadores…</span>
                 </div>
             </div>
         )
@@ -572,10 +572,10 @@ const PatientAnalytics: React.FC<PatientAnalyticsProps> = ({ reports, loading, u
 
                 <div className="relative z-10 flex flex-col items-center justify-center space-y-4">
                     <div className="w-16 h-16 rounded-full bg-slate-800/50 flex items-center justify-center mb-2 border border-slate-700/40">
-                        <Activity className="w-8 h-8 text-brand-text-muted" />
+                        <Activity className="w-8 h-8 text-slate-400" />
                     </div>
                     <h3 className="text-xl font-bold text-slate-200">Nenhuma avaliação encontrada</h3>
-                    <p className="text-brand-text-muted max-w-md text-center">
+                    <p className="text-slate-400 max-w-md text-center">
                         Complete sua primeira avaliação clínica inicial com a Nôa para gerar seus indicadores de saúde e acompanhar seu progresso.
                     </p>
 
@@ -633,7 +633,7 @@ const PatientAnalytics: React.FC<PatientAnalyticsProps> = ({ reports, loading, u
                 />
 
                 <div className={`${avatarSize} rounded-full p-[2px] bg-gradient-to-br from-emerald-400 to-cyan-500 shadow-lg shadow-emerald-500/20`}>
-                    <div className="w-full h-full rounded-full bg-brand-bg flex items-center justify-center overflow-hidden">
+                    <div className="w-full h-full rounded-full bg-slate-900 flex items-center justify-center overflow-hidden">
                         {user?.photoURL ? (
                             <img src={user.photoURL} alt={user.name} className="w-full h-full object-cover" />
                         ) : (
@@ -643,8 +643,8 @@ const PatientAnalytics: React.FC<PatientAnalyticsProps> = ({ reports, loading, u
                 </div>
 
                 <div className="flex-1 text-center md:text-left z-10">
-                    <h2 className="text-2xl font-bold text-brand-text mb-1">{user?.name || 'Paciente'}</h2>
-                    <div className="flex flex-wrap items-center justify-center md:justify-start gap-4 text-sm text-brand-text-muted">
+                    <h2 className="text-2xl font-bold text-white mb-1">{user?.name || 'Paciente'}</h2>
+                    <div className="flex flex-wrap items-center justify-center md:justify-start gap-4 text-sm text-slate-400">
                         {user?.email && (
                             <span className="flex items-center gap-1.5">
                                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
@@ -678,9 +678,9 @@ const PatientAnalytics: React.FC<PatientAnalyticsProps> = ({ reports, loading, u
                         const dotColor = d <= 60 ? 'bg-emerald-400' : d <= 180 ? 'bg-amber-400' : 'bg-blue-400'
                         const totalLabel = sortedReports.length === 1 ? '1 avaliação' : `${sortedReports.length} avaliações`
                         return (
-                            <div className="mt-2 flex flex-wrap items-center gap-1.5 text-xs text-brand-text-muted">
+                            <div className="mt-2 flex flex-wrap items-center gap-1.5 text-xs text-slate-400">
                                 <span className={`w-1.5 h-1.5 rounded-full ${dotColor}`}></span>
-                                <span className="text-brand-text-secondary font-medium">Acompanhamento ativo</span>
+                                <span className="text-slate-300 font-medium">Acompanhamento ativo</span>
                                 <span className="text-slate-500">·</span>
                                 <span>última avaliação {formatTimeAgo()}</span>
                                 <span className="text-slate-500">·</span>
@@ -693,8 +693,8 @@ const PatientAnalytics: React.FC<PatientAnalyticsProps> = ({ reports, loading, u
                 <div className="flex items-center gap-3 bg-slate-800/50 px-4 py-2 rounded-xl border border-slate-700/50 backdrop-blur-sm">
                     <Calendar className="w-4 h-4 text-emerald-400" />
                     <div className="text-left">
-                        <p className="text-[10px] text-brand-text-muted uppercase tracking-wider">Última Avaliação</p>
-                        <p className="text-sm font-semibold text-brand-text">
+                        <p className="text-[10px] text-slate-400 uppercase tracking-wider">Última Avaliação</p>
+                        <p className="text-sm font-semibold text-white">
                             {latestReport?.generated_at ? new Date(latestReport.generated_at).toLocaleDateString() : '—'}
                         </p>
                     </div>
@@ -705,7 +705,7 @@ const PatientAnalytics: React.FC<PatientAnalyticsProps> = ({ reports, loading, u
             <div className={`flex flex-col md:flex-row md:items-center justify-between ${sectionGap} ${mtSection}`}>
                 <div>
                     <div className="flex items-center gap-2 mb-1">
-                        <h2 className={`${titleSize} font-bold text-brand-text`}>Índices da Avaliação AEC</h2>
+                        <h2 className={`${titleSize} font-bold text-white`}>Índices da Avaliação AEC</h2>
                         <button
                             type="button"
                             className="shrink-0 rounded-full p-0.5 text-slate-500 hover:text-sky-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-500/50 cursor-help transition-colors"
@@ -715,7 +715,7 @@ const PatientAnalytics: React.FC<PatientAnalyticsProps> = ({ reports, loading, u
                             <Info className="w-4 h-4" strokeWidth={2} aria-hidden />
                         </button>
                     </div>
-                    <p className="text-brand-text-muted text-sm">Acompanhe a completude e riqueza das suas avaliações</p>
+                    <p className="text-slate-400 text-sm">Acompanhe a completude e riqueza das suas avaliações</p>
                 </div>
                 {/* [V1.9.126] Botões de ação movidos para PatientHeaderActions no topo do dashboard */}
             </div>
@@ -747,10 +747,10 @@ const PatientAnalytics: React.FC<PatientAnalyticsProps> = ({ reports, loading, u
                             </div>
 
                             <div className="mt-2">
-                                <p className="text-brand-text-muted text-xs font-medium uppercase tracking-wider">{stat.label}</p>
+                                <p className="text-slate-400 text-xs font-medium uppercase tracking-wider">{stat.label}</p>
                                 {hasCalculatedScores ? (
                                     <div className="flex items-end gap-2 mt-1">
-                                        <span className="text-2xl font-bold text-brand-text">{stat.value}</span>
+                                        <span className="text-2xl font-bold text-white">{stat.value}</span>
                                         <span className="text-slate-500 text-sm mb-1">/ 100</span>
                                     </div>
                                 ) : (
@@ -780,7 +780,7 @@ const PatientAnalytics: React.FC<PatientAnalyticsProps> = ({ reports, loading, u
 
                     {/* Evolution Chart (Simple CSS implementation) */}
                     <div className="rounded-xl border border-slate-700/50 bg-slate-800/30 backdrop-blur-sm p-6">
-                        <h3 className="text-lg font-semibold text-brand-text mb-6 flex items-center gap-2">
+                        <h3 className="text-lg font-semibold text-white mb-6 flex items-center gap-2">
                             <TrendingUp className="w-5 h-5 text-emerald-400" />
                             Evolução da Completude
                         </h3>
@@ -790,7 +790,7 @@ const PatientAnalytics: React.FC<PatientAnalyticsProps> = ({ reports, loading, u
                             <div className="absolute inset-0 flex flex-col justify-between pointer-events-none pb-8 opacity-20">
                                 {[100, 75, 50, 25, 0].map(val => (
                                     <div key={val} className="w-full border-t border-slate-400 flex items-center">
-                                        <span className="text-[10px] text-brand-text-muted -mt-5">{val}</span>
+                                        <span className="text-[10px] text-slate-400 -mt-5">{val}</span>
                                     </div>
                                 ))}
                             </div>
@@ -853,12 +853,12 @@ const PatientAnalytics: React.FC<PatientAnalyticsProps> = ({ reports, loading, u
                                                     title={tooltipText}
                                                 >
                                                     {/* Tooltip hover: data + score médio + count (quando >1 avaliação no dia) */}
-                                                    <div className="absolute -top-9 left-1/2 -translate-x-1/2 bg-brand-bg text-emerald-400 text-xs font-bold py-1 px-2 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap border border-emerald-500/20 pointer-events-none">
+                                                    <div className="absolute -top-9 left-1/2 -translate-x-1/2 bg-slate-900 text-emerald-400 text-xs font-bold py-1 px-2 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap border border-emerald-500/20 pointer-events-none">
                                                         {tooltipText}
                                                     </div>
                                                 </div>
                                             </div>
-                                            <span className="text-[10px] text-brand-text-muted whitespace-nowrap text-center h-3.5 leading-none" style={{ minWidth: '3rem' }}>
+                                            <span className="text-[10px] text-slate-400 whitespace-nowrap text-center h-3.5 leading-none" style={{ minWidth: '3rem' }}>
                                                 {showLabel ? bucket.dateStr : ''}
                                             </span>
                                         </div>
@@ -873,11 +873,11 @@ const PatientAnalytics: React.FC<PatientAnalyticsProps> = ({ reports, loading, u
                         {/* History card */}
                         <div className="rounded-xl border border-slate-700/50 bg-slate-800/30 backdrop-blur-sm overflow-hidden">
                             <div className="p-4 border-b border-slate-700/50 flex justify-between items-center">
-                                <h3 className="text-lg font-semibold text-brand-text flex items-center gap-2">
+                                <h3 className="text-lg font-semibold text-white flex items-center gap-2">
                                     <Brain className="w-5 h-5 text-purple-400" />
                                     Histórico de Avaliações
                                 </h3>
-                                <div className="text-xs text-brand-text-muted">
+                                <div className="text-xs text-slate-400">
                                     {sortedReports.length} total
                                 </div>
                             </div>
@@ -890,7 +890,7 @@ const PatientAnalytics: React.FC<PatientAnalyticsProps> = ({ reports, loading, u
                                                 <FileText className="w-5 h-5 text-purple-400" />
                                             </div>
                                             <div>
-                                                <p className="text-sm font-medium text-brand-text flex items-center gap-2">
+                                                <p className="text-sm font-medium text-white flex items-center gap-2">
                                                     {getAecReportModalPayload(report.content as any).mainComplaint ||
                                                         'Avaliação Clínica'}
                                                     {report.status === 'completed' && (
@@ -899,7 +899,7 @@ const PatientAnalytics: React.FC<PatientAnalyticsProps> = ({ reports, loading, u
                                                         </span>
                                                     )}
                                                 </p>
-                                                <p className="text-xs text-brand-text-muted">
+                                                <p className="text-xs text-slate-400">
                                                     {new Date(report.generated_at).toLocaleDateString()} • {new Date(report.generated_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                                 </p>
                                             </div>
@@ -907,10 +907,10 @@ const PatientAnalytics: React.FC<PatientAnalyticsProps> = ({ reports, loading, u
 
                                         <div className="flex items-center gap-4">
                                             <div className="hidden sm:flex flex-col items-end">
-                                                <span className="text-xs text-brand-text-muted">Score</span>
+                                                <span className="text-xs text-slate-400">Score</span>
                                                 <span className="text-sm font-bold text-emerald-400">{report.content.scores?.calculated ? (report.content.scores?.clinical_score ?? '—') : 'Em cálculo'}</span>
                                             </div>
-                                            <ChevronRight className="w-5 h-5 text-slate-600 group-hover:text-brand-text transition-colors" />
+                                            <ChevronRight className="w-5 h-5 text-slate-600 group-hover:text-white transition-colors" />
                                         </div>
                                     </div>
                                 ))}
@@ -927,7 +927,7 @@ const PatientAnalytics: React.FC<PatientAnalyticsProps> = ({ reports, loading, u
                                         Anterior
                                     </button>
 
-                                    <div className="text-xs text-brand-text-muted">
+                                    <div className="text-xs text-slate-400">
                                         Página <span className="text-slate-200 font-medium">{safeHistoryPage}</span> de{' '}
                                         <span className="text-slate-200 font-medium">{historyTotalPages}</span> (máx. {HISTORY_PAGE_SIZE} por página)
                                     </div>
@@ -951,10 +951,10 @@ const PatientAnalytics: React.FC<PatientAnalyticsProps> = ({ reports, loading, u
 
                             <div className="flex items-start justify-between gap-3 relative z-10">
                                 <div>
-                                    <p className="text-xs text-brand-text-muted uppercase tracking-wider">Monitor de Saúde</p>
+                                    <p className="text-xs text-slate-400 uppercase tracking-wider">Monitor de Saúde</p>
                                     <p className="text-sm font-semibold text-slate-200">Sinais (última vs anterior)</p>
                                 </div>
-                                <span className="text-[10px] px-2 py-1 rounded-full border border-slate-700/50 bg-slate-900/40 text-brand-text-secondary">
+                                <span className="text-[10px] px-2 py-1 rounded-full border border-slate-700/50 bg-slate-900/40 text-slate-300">
                                     Auto
                                 </span>
                             </div>
@@ -1048,7 +1048,7 @@ const PatientAnalytics: React.FC<PatientAnalyticsProps> = ({ reports, loading, u
                                                     className={`w-2.5 h-2.5 rounded-full ${style.dot}`}
                                                     style={{ boxShadow: `0 0 10px ${style.glow}` }}
                                                 />
-                                                <span className="text-xs text-brand-text-secondary truncate">{sig.label}</span>
+                                                <span className="text-xs text-slate-300 truncate">{sig.label}</span>
                                             </div>
                                             <div className={`flex items-center gap-1 ${style.text}`}>
                                                 <TrendIcon className="w-3.5 h-3.5" />
@@ -1067,7 +1067,7 @@ const PatientAnalytics: React.FC<PatientAnalyticsProps> = ({ reports, loading, u
                     <div className="rounded-xl border border-slate-700/50 bg-slate-800/30 backdrop-blur-sm p-5 relative overflow-hidden">
                         <div className="absolute top-0 right-0 w-32 h-32 bg-amber-500/10 rounded-full blur-2xl -mr-16 -mt-16 pointer-events-none"></div>
 
-                        <h3 className="text-lg font-semibold text-brand-text mb-4 flex items-center gap-2 relative z-10">
+                        <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2 relative z-10">
                             <Award className="w-5 h-5 text-amber-400" />
                             Insights & Recomendações
                         </h3>
@@ -1078,14 +1078,14 @@ const PatientAnalytics: React.FC<PatientAnalyticsProps> = ({ reports, loading, u
                                     <div className="mt-0.5 min-w-[16px] w-4 h-4 rounded-full bg-amber-500/20 flex items-center justify-center border border-amber-500/30">
                                         <span className="text-[10px] font-bold text-amber-500">{idx + 1}</span>
                                     </div>
-                                    <p className="text-sm text-brand-text-secondary leading-relaxed">{rec}</p>
+                                    <p className="text-sm text-slate-300 leading-relaxed">{rec}</p>
                                 </div>
                             ))}
                         </div>
 
                         <div className="mt-6 pt-4 border-t border-slate-700/50">
                             <div className="flex items-center justify-between">
-                                <span className="text-xs text-brand-text-muted">Próxima avaliação sugerida</span>
+                                <span className="text-xs text-slate-400">Próxima avaliação sugerida</span>
                                 <span className="text-sm font-medium text-emerald-400">
                                     {daysUntilNext === 0 ? 'Hoje' : `Em ${daysUntilNext} dias`}
                                 </span>
@@ -1114,8 +1114,8 @@ const PatientAnalytics: React.FC<PatientAnalyticsProps> = ({ reports, loading, u
                                     <Clock className="w-5 h-5 text-emerald-400" />
                                 </div>
                                 <div>
-                                    <h4 className="text-base font-semibold text-brand-text">Resumo Clínico</h4>
-                                    <p className="text-[11px] text-brand-text-muted">Visão geral do seu acompanhamento</p>
+                                    <h4 className="text-base font-semibold text-white">Resumo Clínico</h4>
+                                    <p className="text-[11px] text-slate-400">Visão geral do seu acompanhamento</p>
                                 </div>
                             </div>
                             <div className={`flex items-center gap-2 text-xs px-2.5 py-1 rounded-full border ${overallStatus.color} border-current/20`}>
@@ -1131,29 +1131,29 @@ const PatientAnalytics: React.FC<PatientAnalyticsProps> = ({ reports, loading, u
                                     <div className="mx-auto w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center mb-1.5">
                                         <Brain className="w-4 h-4 text-emerald-400" />
                                     </div>
-                                    <p className="text-xl font-bold text-brand-text">{reports.length}</p>
-                                    <p className="text-[10px] text-brand-text-muted mt-0.5">Avaliações</p>
+                                    <p className="text-xl font-bold text-white">{reports.length}</p>
+                                    <p className="text-[10px] text-slate-400 mt-0.5">Avaliações</p>
                                 </div>
                                 <div className="rounded-lg border border-slate-700/40 bg-slate-900/30 p-3 text-center">
                                     <div className="mx-auto w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center mb-1.5">
                                         <AlertCircle className="w-4 h-4 text-blue-400" />
                                     </div>
-                                    <p className="text-xl font-bold text-brand-text">{examRequests.length}</p>
-                                    <p className="text-[10px] text-brand-text-muted mt-0.5">Exames</p>
+                                    <p className="text-xl font-bold text-white">{examRequests.length}</p>
+                                    <p className="text-[10px] text-slate-400 mt-0.5">Exames</p>
                                 </div>
                                 <div className="rounded-lg border border-slate-700/40 bg-slate-900/30 p-3 text-center">
                                     <div className="mx-auto w-8 h-8 rounded-lg bg-purple-500/10 flex items-center justify-center mb-1.5">
                                         <Calendar className="w-4 h-4 text-purple-400" />
                                     </div>
-                                    <p className="text-xl font-bold text-brand-text">{upcomingAppointments.length}</p>
-                                    <p className="text-[10px] text-brand-text-muted mt-0.5">Consultas</p>
+                                    <p className="text-xl font-bold text-white">{upcomingAppointments.length}</p>
+                                    <p className="text-[10px] text-slate-400 mt-0.5">Consultas</p>
                                 </div>
                             </div>
 
                             {/* Data rows */}
                             <div className="space-y-2.5">
                                 <div className="flex items-center justify-between text-sm">
-                                    <span className="text-brand-text-muted flex items-center gap-2">
+                                    <span className="text-slate-400 flex items-center gap-2">
                                         <span className="w-1.5 h-1.5 rounded-full bg-cyan-400"></span>
                                         Última avaliação
                                     </span>
@@ -1172,14 +1172,14 @@ const PatientAnalytics: React.FC<PatientAnalyticsProps> = ({ reports, loading, u
                                     })()}</span>
                                 </div>
                                 <div className="flex items-center justify-between text-sm">
-                                    <span className="text-brand-text-muted flex items-center gap-2">
+                                    <span className="text-slate-400 flex items-center gap-2">
                                         <span className="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
                                         Próxima reavaliação
                                     </span>
                                     <span className="font-semibold text-slate-200">{nextSuggestedDate.toLocaleDateString('pt-BR')}</span>
                                 </div>
                                 <div className="flex items-center justify-between text-sm">
-                                    <span className="text-brand-text-muted flex items-center gap-2">
+                                    <span className="text-slate-400 flex items-center gap-2">
                                         <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
                                         Variação score clínico
                                     </span>
@@ -1193,7 +1193,7 @@ const PatientAnalytics: React.FC<PatientAnalyticsProps> = ({ reports, loading, u
                                     </span>
                                 </div>
                                 <div className="flex items-center justify-between text-sm">
-                                    <span className="text-brand-text-muted flex items-center gap-2">
+                                    <span className="text-slate-400 flex items-center gap-2">
                                         <span className="w-1.5 h-1.5 rounded-full bg-blue-400"></span>
                                         Score atual
                                     </span>
@@ -1202,7 +1202,7 @@ const PatientAnalytics: React.FC<PatientAnalyticsProps> = ({ reports, loading, u
                                     </span>
                                 </div>
                                 <div className="flex items-center justify-between text-sm">
-                                    <span className="text-brand-text-muted flex items-center gap-2">
+                                    <span className="text-slate-400 flex items-center gap-2">
                                         <span className="w-1.5 h-1.5 rounded-full bg-purple-400"></span>
                                         Última avaliação
                                     </span>
@@ -1215,7 +1215,7 @@ const PatientAnalytics: React.FC<PatientAnalyticsProps> = ({ reports, loading, u
                             {/* Assessment cycle progress */}
                             <div className="rounded-lg border border-slate-700/40 bg-slate-900/30 p-3">
                                 <div className="flex items-center justify-between mb-2">
-                                    <span className="text-xs text-brand-text-muted font-medium">Ciclo de reavaliação</span>
+                                    <span className="text-xs text-slate-400 font-medium">Ciclo de reavaliação</span>
                                     <span className="text-xs font-semibold text-emerald-400">{Math.min(100, Math.round(nextProgressPct))}%</span>
                                 </div>
                                 <div className="w-full h-2 bg-slate-700/50 rounded-full overflow-hidden">
@@ -1236,7 +1236,7 @@ const PatientAnalytics: React.FC<PatientAnalyticsProps> = ({ reports, loading, u
 
                             {/* Monitor signals */}
                             <div>
-                                <p className="text-xs text-brand-text-muted font-medium mb-2">Indicadores clínicos</p>
+                                <p className="text-xs text-slate-400 font-medium mb-2">Indicadores clínicos</p>
                                 <div className="grid grid-cols-2 gap-2">
                                     {monitorSignals.map(sig => {
                                         const style = trendToStyle(sig.trend)
@@ -1245,7 +1245,7 @@ const PatientAnalytics: React.FC<PatientAnalyticsProps> = ({ reports, loading, u
                                         return (
                                             <div key={`mini-${sig.id}`} className="rounded-lg border border-slate-700/40 bg-slate-900/30 px-3 py-2.5">
                                                 <div className="flex items-center justify-between gap-2">
-                                                    <span className="text-[11px] text-brand-text-muted truncate">{sig.label}</span>
+                                                    <span className="text-[11px] text-slate-400 truncate">{sig.label}</span>
                                                     <span className={`text-xs font-bold ${style.text}`}>{tag}</span>
                                                 </div>
                                                 <div className="mt-1 flex items-center justify-between">
@@ -1273,7 +1273,7 @@ const PatientAnalytics: React.FC<PatientAnalyticsProps> = ({ reports, loading, u
                             <div className="p-2 rounded-lg bg-blue-500/10 border border-blue-500/20">
                                 <Calendar className="w-4 h-4 text-blue-400" />
                             </div>
-                            <h4 className="text-base font-semibold text-brand-text">Consultas</h4>
+                            <h4 className="text-base font-semibold text-white">Consultas</h4>
                         </div>
                         <button
                             type="button"
@@ -1290,9 +1290,9 @@ const PatientAnalytics: React.FC<PatientAnalyticsProps> = ({ reports, loading, u
                                 <div key={apt.id} className="rounded-lg border border-slate-700/40 bg-slate-900/30 px-3 py-2.5">
                                     <div className="flex items-center justify-between gap-3">
                                         <div className="min-w-0">
-                                            <p className="text-xs text-brand-text-muted">Próxima</p>
+                                            <p className="text-xs text-slate-400">Próxima</p>
                                             <p className="text-sm text-slate-200 font-semibold truncate">{apt.professional}</p>
-                                            <p className="text-xs text-brand-text-muted">
+                                            <p className="text-xs text-slate-400">
                                                 {new Date(apt.date).toLocaleDateString('pt-BR')} • {apt.time} • {apt.type}
                                             </p>
                                         </div>
@@ -1304,7 +1304,7 @@ const PatientAnalytics: React.FC<PatientAnalyticsProps> = ({ reports, loading, u
                             ))}
                         </div>
                     ) : (
-                        <div className="rounded-lg border border-slate-700/40 bg-slate-900/30 px-3 py-3 text-sm text-brand-text-secondary">
+                        <div className="rounded-lg border border-slate-700/40 bg-slate-900/30 px-3 py-3 text-sm text-slate-300">
                             <p>Nenhuma consulta futura encontrada.</p>
                             {lastCompletedAppointment && (
                                 <p className="text-xs text-slate-500 mt-1">
@@ -1318,7 +1318,7 @@ const PatientAnalytics: React.FC<PatientAnalyticsProps> = ({ reports, loading, u
                         <div className="mt-4 flex gap-2">
                             <button
                                 type="button"
-                                className="flex-1 px-3 py-2 rounded-lg bg-blue-600 hover:bg-blue-500 text-brand-text text-sm font-semibold transition-colors"
+                                className="flex-1 px-3 py-2 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-sm font-semibold transition-colors"
                                 onClick={() => navigate('/app/clinica/paciente/agendamentos', { state: { openNew: true } })}
                             >
                                 Nova consulta rápida
@@ -1341,7 +1341,7 @@ const PatientAnalytics: React.FC<PatientAnalyticsProps> = ({ reports, loading, u
                             <div className="p-2 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
                                 <Heart className="w-4 h-4 text-emerald-400" />
                             </div>
-                            <h4 className="text-base font-semibold text-brand-text">Prescrição</h4>
+                            <h4 className="text-base font-semibold text-white">Prescrição</h4>
                         </div>
                         <div className={`flex items-center gap-2 text-xs ${prescriptionStatus.color}`}>
                             <span className={`w-2 h-2 rounded-full ${prescriptionStatus.dot}`}></span>
@@ -1350,21 +1350,21 @@ const PatientAnalytics: React.FC<PatientAnalyticsProps> = ({ reports, loading, u
                     </div>
 
                     {patientPrescriptionsLoading ? (
-                        <div className="text-sm text-brand-text-secondary">Carregando prescrições…</div>
+                        <div className="text-sm text-slate-300">Carregando prescrições…</div>
                     ) : latestPrescription ? (
                         <div className="rounded-lg border border-slate-700/40 bg-slate-900/30 px-3 py-3">
                             <p className="text-sm text-slate-200 font-semibold">{latestPrescription.title}</p>
-                            <p className="text-xs text-brand-text-muted mt-1">
+                            <p className="text-xs text-slate-400 mt-1">
                                 {latestPrescription.professionalName ? `Profissional: ${latestPrescription.professionalName}` : 'Profissional: equipe clínica'}
                             </p>
-                            <p className="text-xs text-brand-text-muted">
+                            <p className="text-xs text-slate-400">
                                 {latestPrescription.endsAt
                                     ? `Validade: até ${new Date(latestPrescription.endsAt).toLocaleDateString('pt-BR')}`
                                     : 'Validade: a definir na consulta'}
                             </p>
                         </div>
                     ) : (
-                        <div className="rounded-lg border border-slate-700/40 bg-slate-900/30 px-3 py-3 text-sm text-brand-text-secondary">
+                        <div className="rounded-lg border border-slate-700/40 bg-slate-900/30 px-3 py-3 text-sm text-slate-300">
                             Nenhuma prescrição registrada ainda.
                         </div>
                     )}
@@ -1373,7 +1373,7 @@ const PatientAnalytics: React.FC<PatientAnalyticsProps> = ({ reports, loading, u
                         <div className="mt-4 flex gap-2">
                             <button
                                 type="button"
-                                className="flex-1 px-3 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-brand-text text-sm font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                className="flex-1 px-3 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                                 disabled={!latestPrescription}
                                 onClick={() => navigate('/app/clinica/paciente/chat-profissional', { state: { topic: 'prescricao', action: 'renew', prescriptionId: latestPrescription?.id } })}
                             >
@@ -1399,9 +1399,9 @@ const PatientAnalytics: React.FC<PatientAnalyticsProps> = ({ reports, loading, u
             {/* Doctor Select Modal */}
             {showDoctorSelect && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" onClick={() => setShowDoctorSelect(false)}>
-                    <div className="w-full max-w-md bg-brand-bg border border-brand-border rounded-2xl shadow-2xl overflow-hidden p-6" onClick={e => e.stopPropagation()}>
-                        <h3 className="text-xl font-bold text-brand-text mb-2">Compartilhar com Médico</h3>
-                        <p className="text-brand-text-muted text-sm mb-6">Selecione os profissionais com quem deseja compartilhar seus dados clínicos.</p>
+                    <div className="w-full max-w-md bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl overflow-hidden p-6" onClick={e => e.stopPropagation()}>
+                        <h3 className="text-xl font-bold text-white mb-2">Compartilhar com Médico</h3>
+                        <p className="text-slate-400 text-sm mb-6">Selecione os profissionais com quem deseja compartilhar seus dados clínicos.</p>
 
                         <div className="space-y-3 mb-6 max-h-60 overflow-y-auto custom-scrollbar">
                             {doctors.length === 0 ? (
@@ -1416,14 +1416,14 @@ const PatientAnalytics: React.FC<PatientAnalyticsProps> = ({ reports, loading, u
                                                 setSelectedDoctors([...selectedDoctors, doc.id])
                                             }
                                         }}
-                                        className={`p-3 rounded-lg border cursor-pointer transition-all flex items-center gap-4 ${selectedDoctors.includes(doc.id) ? 'bg-emerald-500/10 border-emerald-500/50' : 'bg-slate-800/50 border-brand-border hover:border-slate-600'}`}
+                                        className={`p-3 rounded-lg border cursor-pointer transition-all flex items-center gap-4 ${selectedDoctors.includes(doc.id) ? 'bg-emerald-500/10 border-emerald-500/50' : 'bg-slate-800/50 border-slate-700 hover:border-slate-600'}`}
                                     >
                                         <div className={`w-5 h-5 rounded border flex items-center justify-center ${selectedDoctors.includes(doc.id) ? 'bg-emerald-500 border-emerald-500' : 'border-slate-500'}`}>
-                                            {selectedDoctors.includes(doc.id) && <Check className="w-3 h-3 text-brand-text" />}
+                                            {selectedDoctors.includes(doc.id) && <Check className="w-3 h-3 text-white" />}
                                         </div>
                                         <div className="flex-1">
-                                            <p className="text-brand-text font-medium">{doc.name}</p>
-                                            <p className="text-xs text-brand-text-muted uppercase tracking-wider">{doc.specialty}</p>
+                                            <p className="text-white font-medium">{doc.name}</p>
+                                            <p className="text-xs text-slate-400 uppercase tracking-wider">{doc.specialty}</p>
                                         </div>
                                     </div>
                                 ))
@@ -1431,13 +1431,13 @@ const PatientAnalytics: React.FC<PatientAnalyticsProps> = ({ reports, loading, u
                         </div>
 
                         <div className="flex justify-end gap-3">
-                            <button onClick={() => setShowDoctorSelect(false)} className="px-4 py-2 rounded-lg bg-brand-surface hover:bg-brand-surface-subtle text-brand-text-secondary font-medium transition-colors text-sm">
+                            <button onClick={() => setShowDoctorSelect(false)} className="px-4 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 font-medium transition-colors text-sm">
                                 Cancelar
                             </button>
                             <button
                                 onClick={handleShareReport}
                                 disabled={selectedDoctors.length === 0 || sendingShare}
-                                className="px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed text-brand-text font-medium transition-colors text-sm flex items-center gap-2"
+                                className="px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed text-white font-medium transition-colors text-sm flex items-center gap-2"
                             >
                                 {sendingShare ? <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <FileText className="w-4 h-4" />}
                                 Compartilhar
@@ -1744,21 +1744,21 @@ h2.report-title {
 
                 return (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" onClick={() => setSelectedReport(null)}>
-                    <div className="w-full max-w-3xl bg-brand-bg border border-brand-border rounded-2xl shadow-2xl overflow-hidden max-h-[88vh] flex flex-col animate-in fade-in zoom-in-95 duration-200" onClick={e => e.stopPropagation()}>
+                    <div className="w-full max-w-3xl bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl overflow-hidden max-h-[88vh] flex flex-col animate-in fade-in zoom-in-95 duration-200" onClick={e => e.stopPropagation()}>
                         {/* Header */}
-                        <div className="p-5 border-b border-brand-border flex justify-between items-center bg-slate-800/50">
+                        <div className="p-5 border-b border-slate-700 flex justify-between items-center bg-slate-800/50">
                             <div className="flex items-center gap-3">
                                 <div className="w-10 h-10 rounded-full bg-emerald-500/10 flex items-center justify-center border border-emerald-500/20">
                                     <FileText className="w-5 h-5 text-emerald-400" />
                                 </div>
                                 <div>
-                                    <h3 className="text-lg font-bold text-brand-text">Relatório Clínico</h3>
-                                    <p className="text-xs text-brand-text-muted">
+                                    <h3 className="text-lg font-bold text-white">Relatório Clínico</h3>
+                                    <p className="text-xs text-slate-400">
                                         {new Date(selectedReport.generated_at).toLocaleDateString()} às {new Date(selectedReport.generated_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                     </p>
                                 </div>
                             </div>
-                            <button onClick={() => setSelectedReport(null)} className="p-2 hover:bg-brand-surface-subtle rounded-full transition-colors text-brand-text-muted hover:text-brand-text">
+                            <button onClick={() => setSelectedReport(null)} className="p-2 hover:bg-slate-700 rounded-full transition-colors text-slate-400 hover:text-white">
                                 <X className="w-5 h-5" />
                             </button>
                         </div>
@@ -1773,10 +1773,10 @@ h2.report-title {
                         </div>
 
                         {/* Footer Actions */}
-                        <div className="p-4 border-t border-brand-border bg-slate-800/50 flex flex-wrap justify-end gap-2">
+                        <div className="p-4 border-t border-slate-700 bg-slate-800/50 flex flex-wrap justify-end gap-2">
                             <button
                                 onClick={() => handleCopyReport(selectedReport.content)}
-                                className="flex items-center gap-2 px-3 py-2 rounded-lg bg-brand-surface-subtle hover:bg-slate-600 text-brand-text font-medium transition-colors text-sm"
+                                className="flex items-center gap-2 px-3 py-2 rounded-lg bg-slate-700 hover:bg-slate-600 text-white font-medium transition-colors text-sm"
                                 title="Copiar texto do relatório"
                             >
                                 {copied ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
@@ -1784,7 +1784,7 @@ h2.report-title {
                             </button>
                             <button
                                 onClick={handleDownload}
-                                className="flex items-center gap-2 px-3 py-2 rounded-lg bg-brand-surface-subtle hover:bg-slate-600 text-brand-text font-medium transition-colors text-sm"
+                                className="flex items-center gap-2 px-3 py-2 rounded-lg bg-slate-700 hover:bg-slate-600 text-white font-medium transition-colors text-sm"
                                 title="Baixar como arquivo .txt"
                             >
                                 <Download className="w-4 h-4" />
@@ -1794,7 +1794,7 @@ h2.report-title {
                                 <>
                                     <button
                                         onClick={handleWhatsApp}
-                                        className="flex items-center gap-2 px-3 py-2 rounded-lg bg-emerald-700 hover:bg-emerald-600 text-brand-text font-medium transition-colors text-sm"
+                                        className="flex items-center gap-2 px-3 py-2 rounded-lg bg-emerald-700 hover:bg-emerald-600 text-white font-medium transition-colors text-sm"
                                         title="Compartilhar via WhatsApp"
                                     >
                                         <MessageCircle className="w-4 h-4" />
@@ -1802,7 +1802,7 @@ h2.report-title {
                                     </button>
                                     <button
                                         onClick={() => { setSelectedReport(null); setShowDoctorSelect(true) }}
-                                        className="flex items-center gap-2 px-3 py-2 rounded-lg bg-blue-600 hover:bg-blue-500 text-brand-text font-medium transition-colors text-sm"
+                                        className="flex items-center gap-2 px-3 py-2 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-medium transition-colors text-sm"
                                         title="Enviar para um médico vinculado"
                                     >
                                         <UserPlus className="w-4 h-4" />
@@ -1810,7 +1810,7 @@ h2.report-title {
                                     </button>
                                 </>
                             )}
-                            <button onClick={() => setSelectedReport(null)} className="px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-brand-text font-medium transition-colors text-sm">
+                            <button onClick={() => setSelectedReport(null)} className="px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-medium transition-colors text-sm">
                                 Fechar
                             </button>
                         </div>

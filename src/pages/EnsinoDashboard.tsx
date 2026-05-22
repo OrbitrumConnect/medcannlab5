@@ -338,7 +338,7 @@ const EnsinoDashboard: React.FC<EnsinoDashboardProps> = ({ forcedSection }) => {
       case 'Concluído': return 'text-green-400'
       case 'Pendente': return 'text-teal-400'
       case 'Aguardando Inscrição': return 'text-green-300'
-      default: return 'text-brand-text-muted'
+      default: return 'text-slate-400'
     }
   }
 
@@ -462,7 +462,7 @@ const EnsinoDashboard: React.FC<EnsinoDashboardProps> = ({ forcedSection }) => {
   const getNavButtonStyle = (section?: EnsinoSection) => {
     const isActive = section ? activeSection === section : false
     return {
-      className: `${navButtonBase} ${isActive ? 'text-brand-text shadow-lg' : 'text-[#C8D6E5] hover:text-brand-text'}`,
+      className: `${navButtonBase} ${isActive ? 'text-white shadow-lg' : 'text-[#C8D6E5] hover:text-white'}`,
       style: isActive
         ? { background: accentGradient, border: '1px solid rgba(0,193,106,0.35)' }
         : { background: 'rgba(12,34,54,0.55)', border: '1px solid rgba(0,193,106,0.08)' }
@@ -540,7 +540,7 @@ const EnsinoDashboard: React.FC<EnsinoDashboardProps> = ({ forcedSection }) => {
 
   return (
     <div
-      className="min-h-screen text-brand-text"
+      className="min-h-screen text-white"
       style={{ background: backgroundGradient }}
       data-page="ensino-dashboard"
     >
@@ -553,14 +553,14 @@ const EnsinoDashboard: React.FC<EnsinoDashboardProps> = ({ forcedSection }) => {
           <div className="flex items-center space-x-2 md:space-x-4 min-w-0 flex-1 stack-mobile">
             <button
               onClick={() => handleNavigate('/app/dashboard')}
-              className="flex items-center space-x-1 md:space-x-2 text-brand-text-secondary hover:text-brand-text transition-colors flex-shrink-0"
+              className="flex items-center space-x-1 md:space-x-2 text-slate-300 hover:text-white transition-colors flex-shrink-0"
             >
               <ArrowLeft className="w-4 h-4 md:w-5 md:h-5" />
               <span className="hidden sm:inline text-sm md:text-base">Voltar</span>
             </button>
             <div className="min-w-0 flex-1">
-              <h1 className="text-lg md:text-xl lg:text-2xl font-bold text-brand-text truncate">🕹️ Terminal de Ensino</h1>
-              <p className="text-xs md:text-sm text-brand-text-muted hidden sm:block">Workstation profissional de estudos e especializações</p>
+              <h1 className="text-lg md:text-xl lg:text-2xl font-bold text-white truncate">🕹️ Terminal de Ensino</h1>
+              <p className="text-xs md:text-sm text-slate-400 hidden sm:block">Workstation profissional de estudos e especializações</p>
             </div>
           </div>
         </div>
@@ -647,24 +647,24 @@ const EnsinoDashboard: React.FC<EnsinoDashboardProps> = ({ forcedSection }) => {
             <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
                <div className="flex items-center justify-between mb-2">
                 <div>
-                  <h2 className="text-2xl font-bold text-brand-text mb-1">📚 Catálogo e Turmas Ativas</h2>
-                  <p className="text-brand-text-muted">Explore novos cursos ou gerencie as turmas em andamento.</p>
+                  <h2 className="text-2xl font-bold text-white mb-1">📚 Catálogo e Turmas Ativas</h2>
+                  <p className="text-slate-400">Explore novos cursos ou gerencie as turmas em andamento.</p>
                 </div>
               </div>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Aqui voltamos a mostrar o catálogo ou links de gestão para o ADM */}
-                <div className="bg-slate-900/40 p-6 rounded-2xl border border-brand-border-subtle">
-                  <h3 className="text-xl font-bold text-brand-text mb-4">🌿 Pós-graduação em Cannabis</h3>
-                  <p className="text-brand-text-muted mb-6 font-light">Gestão de módulos, aulas e materiais didáticos desta especialização.</p>
-                  <button onClick={() => navigate('/app/ensino/profissional/pos-graduacao-cannabis')} className="w-full py-3 bg-emerald-600 hover:bg-emerald-500 text-brand-text font-bold rounded-xl transition-all">
+                <div className="bg-slate-900/40 p-6 rounded-2xl border border-slate-800">
+                  <h3 className="text-xl font-bold text-white mb-4">🌿 Pós-graduação em Cannabis</h3>
+                  <p className="text-slate-400 mb-6 font-light">Gestão de módulos, aulas e materiais didáticos desta especialização.</p>
+                  <button onClick={() => navigate('/app/ensino/profissional/pos-graduacao-cannabis')} className="w-full py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl transition-all">
                     Gerenciar Curso
                   </button>
                 </div>
-                <div className="bg-slate-900/40 p-6 rounded-2xl border border-brand-border-subtle">
-                  <h3 className="text-xl font-bold text-brand-text mb-4">🎭 Arte da Entrevista Clínica</h3>
-                  <p className="text-brand-text-muted mb-6 font-light">Acompanhamento de mentorias, simulações e rubricas AEC.</p>
-                  <button onClick={() => navigate('/app/arte-entrevista-clinica')} className="w-full py-3 bg-emerald-600 hover:bg-emerald-500 text-brand-text font-bold rounded-xl transition-all">
+                <div className="bg-slate-900/40 p-6 rounded-2xl border border-slate-800">
+                  <h3 className="text-xl font-bold text-white mb-4">🎭 Arte da Entrevista Clínica</h3>
+                  <p className="text-slate-400 mb-6 font-light">Acompanhamento de mentorias, simulações e rubricas AEC.</p>
+                  <button onClick={() => navigate('/app/arte-entrevista-clinica')} className="w-full py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl transition-all">
                     Acessar Terminal AEC
                   </button>
                 </div>
@@ -678,14 +678,14 @@ const EnsinoDashboard: React.FC<EnsinoDashboardProps> = ({ forcedSection }) => {
               <div className="rounded-xl p-4 md:p-6" style={surfaceStyle}>
                 <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                   <div>
-                    <h3 className="text-xl md:text-2xl font-semibold text-brand-text">Biblioteca Acadêmica</h3>
-                    <p className="text-sm md:text-base text-brand-text-secondary max-w-3xl">
+                    <h3 className="text-xl md:text-2xl font-semibold text-white">Biblioteca Acadêmica</h3>
+                    <p className="text-sm md:text-base text-slate-300 max-w-3xl">
                       Curadoria de conteúdos clínicos, guias metodológicos e bases científicas integradas aos eixos de ensino, clínica e pesquisa.
                     </p>
                   </div>
                   <button
                     onClick={() => navigate('/app/library')}
-                    className="px-4 py-2 rounded-lg font-semibold text-brand-text"
+                    className="px-4 py-2 rounded-lg font-semibold text-white"
                     style={{ background: 'linear-gradient(135deg, #00C16A 0%, #13794f 100%)' }}
                   >
                     Acessar Biblioteca Completa
@@ -695,26 +695,26 @@ const EnsinoDashboard: React.FC<EnsinoDashboardProps> = ({ forcedSection }) => {
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {libraryCollections.map(collection => (
-                  <div key={collection.id} className="rounded-xl p-4 md:p-5 text-brand-text shadow-lg" style={{ background: `linear-gradient(145deg, rgba(7,22,41,0.92) 10%, rgba(7,22,41,0.65) 50%, rgba(7,22,41,0.92) 100%)`, border: '1px solid rgba(0,193,106,0.12)' }}>
-                    <div className={`w-12 h-12 rounded-lg mb-4 bg-gradient-to-r ${collection.color} flex items-center justify-center text-brand-text text-xl font-bold`}>📘</div>
+                  <div key={collection.id} className="rounded-xl p-4 md:p-5 text-white shadow-lg" style={{ background: `linear-gradient(145deg, rgba(7,22,41,0.92) 10%, rgba(7,22,41,0.65) 50%, rgba(7,22,41,0.92) 100%)`, border: '1px solid rgba(0,193,106,0.12)' }}>
+                    <div className={`w-12 h-12 rounded-lg mb-4 bg-gradient-to-r ${collection.color} flex items-center justify-center text-white text-xl font-bold`}>📘</div>
                     <h4 className="text-lg font-semibold mb-2">{collection.title}</h4>
-                    <p className="text-brand-text-secondary text-sm mb-3">{collection.description}</p>
-                    <div className="text-xs text-brand-text-secondary mb-2">{collection.format}</div>
+                    <p className="text-slate-300 text-sm mb-3">{collection.description}</p>
+                    <div className="text-xs text-slate-300 mb-2">{collection.format}</div>
                     <div className="text-xs text-[#FFD33D]">{collection.highlight}</div>
                   </div>
                 ))}
               </div>
 
               <div className="rounded-xl p-4 md:p-6" style={surfaceStyle}>
-                <h4 className="text-lg font-semibold text-brand-text mb-4">Ferramentas em Destaque</h4>
+                <h4 className="text-lg font-semibold text-white mb-4">Ferramentas em Destaque</h4>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   <div className="rounded-lg p-4" style={cardStyle}>
-                    <h5 className="font-semibold text-brand-text mb-2">LabPEC Playlists</h5>
-                    <p className="text-sm text-brand-text-secondary">Sequências de vídeos comentados das simulações clínicas com indicadores da IA.</p>
+                    <h5 className="font-semibold text-white mb-2">LabPEC Playlists</h5>
+                    <p className="text-sm text-slate-300">Sequências de vídeos comentados das simulações clínicas com indicadores da IA.</p>
                   </div>
                   <div className="rounded-lg p-4" style={cardStyle}>
-                    <h5 className="font-semibold text-brand-text mb-2">Repositório de Protocolos</h5>
-                    <p className="text-sm text-brand-text-secondary">Protocolos clínicos, formulários e listas de verificação prontos para uso em aulas e clínicas.</p>
+                    <h5 className="font-semibold text-white mb-2">Repositório de Protocolos</h5>
+                    <p className="text-sm text-slate-300">Protocolos clínicos, formulários e listas de verificação prontos para uso em aulas e clínicas.</p>
                   </div>
                 </div>
               </div>
@@ -725,8 +725,8 @@ const EnsinoDashboard: React.FC<EnsinoDashboardProps> = ({ forcedSection }) => {
           {activeSection === 'avaliacao' && (
             <div className="space-y-6">
               <div className="rounded-xl p-4 md:p-6" style={surfaceStyle}>
-                <h3 className="text-xl md:text-2xl font-semibold text-brand-text mb-2">Instrumentos de Avaliação</h3>
-                <p className="text-sm md:text-base text-brand-text-secondary">Ferramentas para acompanhamento do progresso acadêmico, avaliações formativas e certificações.</p>
+                <h3 className="text-xl md:text-2xl font-semibold text-white mb-2">Instrumentos de Avaliação</h3>
+                <p className="text-sm md:text-base text-slate-300">Ferramentas para acompanhamento do progresso acadêmico, avaliações formativas e certificações.</p>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -736,10 +736,10 @@ const EnsinoDashboard: React.FC<EnsinoDashboardProps> = ({ forcedSection }) => {
                     className="rounded-xl p-4"
                     style={{ ...cardStyle, border: `1px solid ${tool.borderColor}` }}
                   >
-                    <h4 className="text-lg font-semibold text-brand-text mb-2">{tool.title}</h4>
-                    <p className="text-sm text-brand-text-secondary mb-4">{tool.description}</p>
-                    <div className="flex items-center justify-between text-xs text-brand-text-secondary stack-mobile">
-                      <span>Status: <strong className="text-brand-text">{tool.status}</strong></span>
+                    <h4 className="text-lg font-semibold text-white mb-2">{tool.title}</h4>
+                    <p className="text-sm text-slate-300 mb-4">{tool.description}</p>
+                    <div className="flex items-center justify-between text-xs text-slate-300 stack-mobile">
+                      <span>Status: <strong className="text-white">{tool.status}</strong></span>
                       <span>{tool.participants} participantes</span>
                     </div>
                   </div>
@@ -747,13 +747,13 @@ const EnsinoDashboard: React.FC<EnsinoDashboardProps> = ({ forcedSection }) => {
               </div>
 
               <div className="rounded-xl p-4 md:p-6" style={surfaceStyle}>
-                <h4 className="text-lg font-semibold text-brand-text mb-3">Fluxo Acadêmico AEC</h4>
+                <h4 className="text-lg font-semibold text-white mb-3">Fluxo Acadêmico AEC</h4>
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                   {['Diagnóstico Formativo', 'Simulação Supervisionada', 'Feedback Longitudinal', 'Certificação Final'].map((step, index) => (
                     <div key={step} className="rounded-lg p-4 flex flex-col space-y-2" style={cardStyle}>
                       <div className="text-[#FFD33D] font-semibold">Etapa {index + 1}</div>
-                      <div className="text-brand-text font-semibold">{step}</div>
-                      <p className="text-xs text-brand-text-secondary">
+                      <div className="text-white font-semibold">{step}</div>
+                      <p className="text-xs text-slate-300">
                         {index === 0 && 'Autoavaliação e planos de desenvolvimento individual com apoio da IA.'}
                         {index === 1 && 'Role-playing no LabPEC com roteiros temáticos e observadores especializados.'}
                         {index === 2 && 'Métricas da IA combinadas ao feedback qualitativo dos mentores.'}
@@ -770,19 +770,19 @@ const EnsinoDashboard: React.FC<EnsinoDashboardProps> = ({ forcedSection }) => {
           {activeSection === 'newsletter' && (
             <div className="space-y-6">
               <div className="rounded-xl p-4 md:p-6" style={surfaceStyle}>
-                <h3 className="text-xl md:text-2xl font-semibold text-brand-text mb-2">Notícias & Eventos</h3>
-                <p className="text-sm md:text-base text-brand-text-secondary">Acompanhe os eventos da pós-graduação, novidades dos eixos integrados e pesquisas em destaque.</p>
+                <h3 className="text-xl md:text-2xl font-semibold text-white mb-2">Notícias & Eventos</h3>
+                <p className="text-sm md:text-base text-slate-300">Acompanhe os eventos da pós-graduação, novidades dos eixos integrados e pesquisas em destaque.</p>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {newsletterUpdates.map(update => (
                   <div key={update.id} className="rounded-xl p-4" style={cardStyle}>
-                    <div className="flex items-center justify-between mb-2 text-xs text-brand-text-secondary stack-mobile">
+                    <div className="flex items-center justify-between mb-2 text-xs text-slate-300 stack-mobile">
                       <span className="uppercase tracking-wide text-[#FFD33D]">{update.category}</span>
                       <span>{update.date}</span>
                     </div>
-                    <h4 className="text-lg font-semibold text-brand-text mb-2">{update.title}</h4>
-                    <p className="text-sm text-brand-text-secondary">{update.description}</p>
+                    <h4 className="text-lg font-semibold text-white mb-2">{update.title}</h4>
+                    <p className="text-sm text-slate-300">{update.description}</p>
                   </div>
                 ))}
               </div>
@@ -790,8 +790,8 @@ const EnsinoDashboard: React.FC<EnsinoDashboardProps> = ({ forcedSection }) => {
               <div className="rounded-xl p-4 md:p-6" style={surfaceStyle}>
                 <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
                   <div>
-                    <h4 className="text-lg font-semibold text-brand-text">Próxima Imersão AEC</h4>
-                    <p className="text-sm text-brand-text-secondary">Inscrições abertas para a imersão intensiva de novembro com foco em entrevistas clínicas complexas.</p>
+                    <h4 className="text-lg font-semibold text-white">Próxima Imersão AEC</h4>
+                    <p className="text-sm text-slate-300">Inscrições abertas para a imersão intensiva de novembro com foco em entrevistas clínicas complexas.</p>
                   </div>
                   <button
                     className="px-4 py-2 rounded-lg font-semibold"
@@ -808,25 +808,25 @@ const EnsinoDashboard: React.FC<EnsinoDashboardProps> = ({ forcedSection }) => {
           {activeSection === 'mentoria' && (
             <div className="space-y-6">
               <div className="rounded-xl p-4 md:p-6" style={surfaceStyle}>
-                <h3 className="text-xl md:text-2xl font-semibold text-brand-text mb-2">Mentoria e Tutoria</h3>
-                <p className="text-sm md:text-base text-brand-text-secondary">Conecte-se com o corpo docente, agende supervisões e acompanhe as agendas do LabPEC.</p>
+                <h3 className="text-xl md:text-2xl font-semibold text-white mb-2">Mentoria e Tutoria</h3>
+                <p className="text-sm md:text-base text-slate-300">Conecte-se com o corpo docente, agende supervisões e acompanhe as agendas do LabPEC.</p>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {mentorshipPrograms.map(program => (
                   <div key={program.id} className="rounded-2xl border border-[#00C16A]/20 bg-gradient-to-br from-[#0A192F] via-[#102C45] to-[#1F4B38] p-5 shadow-xl">
                     <div className="mb-4">
-                      <h4 className="text-xl font-bold text-brand-text mb-1">{program.mentor}</h4>
+                      <h4 className="text-xl font-bold text-white mb-1">{program.mentor}</h4>
                       <p className="text-sm text-emerald-400">{program.role}</p>
                     </div>
-                    <div className="space-y-2 text-sm text-brand-text-secondary mb-4">
-                      <p><strong className="text-brand-text">Disponibilidade:</strong> {program.availability}</p>
-                      <p><strong className="text-brand-text">Canal:</strong> {program.channel}</p>
-                      <p><strong className="text-brand-text">Foco:</strong> {program.focus}</p>
+                    <div className="space-y-2 text-sm text-slate-300 mb-4">
+                      <p><strong className="text-white">Disponibilidade:</strong> {program.availability}</p>
+                      <p><strong className="text-white">Canal:</strong> {program.channel}</p>
+                      <p><strong className="text-white">Foco:</strong> {program.focus}</p>
                     </div>
                     <button
                       onClick={() => handleRequestMentorship(program)}
-                      className="mt-4 w-full px-4 py-3 rounded-lg font-semibold text-brand-text transition-all hover:scale-105 hover:shadow-xl"
+                      className="mt-4 w-full px-4 py-3 rounded-lg font-semibold text-white transition-all hover:scale-105 hover:shadow-xl"
                       style={{ background: accentGradient }}
                     >
                       Solicitar Mentoria
@@ -836,7 +836,7 @@ const EnsinoDashboard: React.FC<EnsinoDashboardProps> = ({ forcedSection }) => {
               </div>
 
               <div className="rounded-xl p-4 md:p-6" style={surfaceStyle}>
-                <h4 className="text-lg font-semibold text-brand-text mb-3">LabPEC – Agenda Semanal</h4>
+                <h4 className="text-lg font-semibold text-white mb-3">LabPEC – Agenda Semanal</h4>
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
                   {[
                     { day: 'Terça', focus: 'Entrevistas AEC – Nefrologia', time: '14h às 20h' },
@@ -846,8 +846,8 @@ const EnsinoDashboard: React.FC<EnsinoDashboardProps> = ({ forcedSection }) => {
                   ].map(slot => (
                     <div key={slot.day} className="rounded-lg p-3" style={cardStyle}>
                       <div className="text-[#FFD33D] text-sm font-semibold">{slot.day}</div>
-                      <div className="text-brand-text font-semibold">{slot.focus}</div>
-                      <div className="text-xs text-brand-text-secondary">{slot.time}</div>
+                      <div className="text-white font-semibold">{slot.focus}</div>
+                      <div className="text-xs text-slate-300">{slot.time}</div>
                     </div>
                   ))}
                 </div>
@@ -870,16 +870,16 @@ const EnsinoDashboard: React.FC<EnsinoDashboardProps> = ({ forcedSection }) => {
                 <div className="flex items-center justify-between stack-mobile">
                   <div className="flex items-center space-x-3">
                     <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{ background: accentGradient }}>
-                      <GraduationCap className="w-4 h-4 text-brand-text" />
+                      <GraduationCap className="w-4 h-4 text-white" />
                     </div>
                     <div>
-                      <h3 className="font-semibold text-brand-text">Nôa Esperança</h3>
-                      <p className="text-xs text-brand-text-muted">Tutora Acadêmica</p>
+                      <h3 className="font-semibold text-white">Nôa Esperança</h3>
+                      <p className="text-xs text-slate-400">Tutora Acadêmica</p>
                     </div>
                   </div>
                   <button
                     onClick={toggleChat}
-                    className="text-brand-text-muted hover:text-brand-text transition-colors"
+                    className="text-slate-400 hover:text-white transition-colors"
                   >
                     ×
                   </button>
@@ -889,7 +889,7 @@ const EnsinoDashboard: React.FC<EnsinoDashboardProps> = ({ forcedSection }) => {
               {/* Messages */}
               <div className="flex-1 overflow-y-auto p-4 space-y-4">
                 {messages.length === 0 ? (
-                  <div className="text-center text-brand-text-secondary py-8">
+                  <div className="text-center text-slate-300 py-8">
                     <GraduationCap className="w-12 h-12 mx-auto mb-3" style={{ color: '#00F5A0' }} />
                     <p className="text-sm">Olá! Sou a Nôa Esperança, sua tutora acadêmica.</p>
                   </div>
@@ -901,7 +901,7 @@ const EnsinoDashboard: React.FC<EnsinoDashboardProps> = ({ forcedSection }) => {
                     >
                       <div
                         className={`max-w-[70%] px-4 py-2 rounded-lg text-sm ${message.type === 'user'
-                          ? 'text-brand-text'
+                          ? 'text-white'
                           : 'text-slate-100'
                           }`}
                         style={
@@ -938,13 +938,13 @@ const EnsinoDashboard: React.FC<EnsinoDashboardProps> = ({ forcedSection }) => {
                     onChange={(e) => setInputMessage(e.target.value)}
                     onKeyPress={handleKeyPress}
                     placeholder="Digite sua mensagem..."
-                    className="flex-1 px-3 py-2 rounded-lg text-brand-text placeholder-slate-400 focus:outline-none"
+                    className="flex-1 px-3 py-2 rounded-lg text-white placeholder-slate-400 focus:outline-none"
                     style={{ background: 'rgba(12,34,54,0.78)', border: '1px solid rgba(0,193,106,0.18)' }}
                   />
                   <button
                     onClick={handleSendMessage}
                     disabled={!inputMessage.trim()}
-                    className="p-2 text-brand-text rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="p-2 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     style={{ background: accentGradient }}
                   >
                     <MessageCircle className="w-4 h-4" />
@@ -960,25 +960,25 @@ const EnsinoDashboard: React.FC<EnsinoDashboardProps> = ({ forcedSection }) => {
       {
         selectedMentor && selectedMentor.id !== 'noa' && (
           <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-            <div className="bg-brand-surface rounded-xl border border-brand-border w-full max-w-md">
+            <div className="bg-slate-800 rounded-xl border border-slate-700 w-full max-w-md">
               {/* Header */}
-              <div className="flex items-center justify-between p-6 border-b border-brand-border">
+              <div className="flex items-center justify-between p-6 border-b border-slate-700">
                 <div>
-                  <h2 className="text-2xl font-bold text-brand-text">Solicitar Mentoria</h2>
-                  <p className="text-sm text-brand-text-muted mt-1">{selectedMentor.mentor}</p>
+                  <h2 className="text-2xl font-bold text-white">Solicitar Mentoria</h2>
+                  <p className="text-sm text-slate-400 mt-1">{selectedMentor.mentor}</p>
                 </div>
                 <button
                   onClick={() => setSelectedMentor(null)}
-                  className="p-2 hover:bg-brand-surface-subtle rounded-lg transition-colors"
+                  className="p-2 hover:bg-slate-700 rounded-lg transition-colors"
                 >
-                  <X className="w-5 h-5 text-brand-text-muted" />
+                  <X className="w-5 h-5 text-slate-400" />
                 </button>
               </div>
 
               {/* Form */}
               <div className="p-6 space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-brand-text-secondary mb-2">
+                  <label className="block text-sm font-medium text-slate-300 mb-2">
                     Data da Mentoria
                   </label>
                   <input
@@ -996,21 +996,21 @@ const EnsinoDashboard: React.FC<EnsinoDashboardProps> = ({ forcedSection }) => {
                       }
                     }}
                     min={new Date().toISOString().split('T')[0]}
-                    className="w-full px-4 py-2 bg-brand-bg border border-slate-600 rounded-lg text-brand-text focus:outline-none focus:border-blue-500"
+                    className="w-full px-4 py-2 bg-slate-900 border border-slate-600 rounded-lg text-white focus:outline-none focus:border-blue-500"
                   />
-                  <p className="text-xs text-brand-text-muted mt-1">
+                  <p className="text-xs text-slate-400 mt-1">
                     Disponível: {selectedMentor.availability}
                   </p>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-brand-text-secondary mb-2">
+                  <label className="block text-sm font-medium text-slate-300 mb-2">
                     Horário
                   </label>
                   <select
                     value={mentorshipTime}
                     onChange={(e) => setMentorshipTime(e.target.value)}
-                    className="w-full px-4 py-2 bg-brand-bg border border-slate-600 rounded-lg text-brand-text focus:outline-none focus:border-blue-500"
+                    className="w-full px-4 py-2 bg-slate-900 border border-slate-600 rounded-lg text-white focus:outline-none focus:border-blue-500"
                   >
                     <option value="">Selecione um horário</option>
                     {getAvailableTimes(selectedMentor.id).map(time => (
@@ -1020,7 +1020,7 @@ const EnsinoDashboard: React.FC<EnsinoDashboardProps> = ({ forcedSection }) => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-brand-text-secondary mb-2">
+                  <label className="block text-sm font-medium text-slate-300 mb-2">
                     Mensagem (opcional)
                   </label>
                   <textarea
@@ -1028,7 +1028,7 @@ const EnsinoDashboard: React.FC<EnsinoDashboardProps> = ({ forcedSection }) => {
                     onChange={(e) => setMentorshipMessage(e.target.value)}
                     placeholder="Descreva o que você gostaria de discutir na mentoria..."
                     rows={4}
-                    className="w-full px-4 py-2 bg-brand-bg border border-slate-600 rounded-lg text-brand-text placeholder-slate-500 focus:outline-none focus:border-blue-500 resize-none"
+                    className="w-full px-4 py-2 bg-slate-900 border border-slate-600 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 resize-none"
                   />
                 </div>
 
@@ -1043,17 +1043,17 @@ const EnsinoDashboard: React.FC<EnsinoDashboardProps> = ({ forcedSection }) => {
               </div>
 
               {/* Footer */}
-              <div className="flex items-center justify-end gap-3 p-6 border-t border-brand-border">
+              <div className="flex items-center justify-end gap-3 p-6 border-t border-slate-700">
                 <button
                   onClick={() => setSelectedMentor(null)}
-                  className="px-4 py-2 bg-brand-surface-subtle hover:bg-slate-600 text-brand-text rounded-lg transition-colors"
+                  className="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg transition-colors"
                 >
                   Cancelar
                 </button>
                 <button
                   onClick={handleSubmitMentorship}
                   disabled={isSubmittingMentorship || !mentorshipDate || !mentorshipTime}
-                  className="px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-800 disabled:cursor-not-allowed text-brand-text rounded-lg transition-colors flex items-center gap-2"
+                  className="px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-800 disabled:cursor-not-allowed text-white rounded-lg transition-colors flex items-center gap-2"
                 >
                   {isSubmittingMentorship ? (
                     <>

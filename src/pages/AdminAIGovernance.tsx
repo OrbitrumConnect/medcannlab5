@@ -557,14 +557,14 @@ const Banner: React.FC = () => (
 
 const KPICard: React.FC<{ icon: React.ElementType; label: string; value: string; sublabel?: string; tone?: 'default' | 'warn' | 'critical' }> = ({ icon: Icon, label, value, sublabel, tone = 'default' }) => {
   const tones = {
-    default: 'border-slate-700/50 text-brand-text',
+    default: 'border-slate-700/50 text-white',
     warn: 'border-amber-500/40 text-amber-100',
     critical: 'border-red-500/40 text-red-100',
   }
   return (
     <div className={`bg-slate-800/40 border ${tones[tone]} rounded-lg px-3 py-2.5`}>
       <div className="flex items-center gap-1.5 mb-1">
-        <Icon className="w-3 h-3 text-brand-text-muted" />
+        <Icon className="w-3 h-3 text-slate-400" />
         <span className="text-[10px] uppercase tracking-wider text-slate-500 font-semibold">{label}</span>
       </div>
       <div className="text-lg font-bold tabular-nums">{value}</div>
@@ -627,7 +627,7 @@ const QuotaAlertCard: React.FC<{ cost30d: number | null }> = ({ cost30d }) => {
     <div className={`bg-slate-800/40 border ${t.border} rounded-xl p-4`}>
       <div className="flex items-start justify-between mb-2.5">
         <div>
-          <h3 className="text-xs font-bold text-brand-text-secondary uppercase tracking-wider flex items-center gap-2">
+          <h3 className="text-xs font-bold text-slate-300 uppercase tracking-wider flex items-center gap-2">
             <AlertTriangle className={`w-3.5 h-3.5 ${t.text}`} />
             Quota OpenAI 30d
           </h3>
@@ -638,8 +638,8 @@ const QuotaAlertCard: React.FC<{ cost30d: number | null }> = ({ cost30d }) => {
         <div className={`text-xs font-semibold ${t.text}`}>{label}</div>
       </div>
       <div className="flex items-baseline justify-between mb-1.5">
-        <div className="text-xl font-bold text-brand-text tabular-nums">{formatUSD(cost)}</div>
-        <div className="text-[11px] text-brand-text-muted tabular-nums">
+        <div className="text-xl font-bold text-white tabular-nums">{formatUSD(cost)}</div>
+        <div className="text-[11px] text-slate-400 tabular-nums">
           {pct.toFixed(0)}% de {formatUSD(QUOTA_MONTHLY_THRESHOLD_USD)}
         </div>
       </div>
@@ -656,7 +656,7 @@ const QuotaAlertCard: React.FC<{ cost30d: number | null }> = ({ cost30d }) => {
 
 const FeatureTable: React.FC<{ features: FeatureFrequency[] }> = ({ features }) => (
   <div className="bg-slate-800/30 border border-slate-700/50 rounded-xl p-4">
-    <h3 className="text-xs font-bold text-brand-text-secondary uppercase tracking-wider mb-3 flex items-center gap-2">
+    <h3 className="text-xs font-bold text-slate-300 uppercase tracking-wider mb-3 flex items-center gap-2">
       <TrendingUp className="w-3.5 h-3.5 text-indigo-400" />
       Frequência observada por feature (últimos 30 dias)
     </h3>
@@ -680,14 +680,14 @@ const FeatureTable: React.FC<{ features: FeatureFrequency[] }> = ({ features }) 
         ) : (
           features.map(f => (
             <tr key={f.feature_label} className="border-b border-slate-800/30 hover:bg-slate-900/30">
-              <td className="py-2 text-brand-text-secondary">{f.feature_label}</td>
-              <td className="py-2 text-right tabular-nums text-brand-text">{f.observed_count}</td>
+              <td className="py-2 text-slate-300">{f.feature_label}</td>
+              <td className="py-2 text-right tabular-nums text-white">{f.observed_count}</td>
               <td className="py-2 text-right tabular-nums text-emerald-300">{formatUSD(f.observed_cost_usd)}</td>
-              <td className="py-2 text-right tabular-nums text-brand-text-secondary">{formatMs(f.avg_latency_ms)}</td>
-              <td className={`py-2 text-right tabular-nums ${f.max_latency_ms > 30000 ? 'text-red-300' : f.max_latency_ms > 10000 ? 'text-amber-300' : 'text-brand-text-secondary'}`}>
+              <td className="py-2 text-right tabular-nums text-slate-300">{formatMs(f.avg_latency_ms)}</td>
+              <td className={`py-2 text-right tabular-nums ${f.max_latency_ms > 30000 ? 'text-red-300' : f.max_latency_ms > 10000 ? 'text-amber-300' : 'text-slate-300'}`}>
                 {formatMs(f.max_latency_ms)}
               </td>
-              <td className="py-2 text-right tabular-nums text-brand-text-secondary">{f.distinct_users}</td>
+              <td className="py-2 text-right tabular-nums text-slate-300">{f.distinct_users}</td>
             </tr>
           ))
         )}
@@ -702,7 +702,7 @@ const TrendChart: React.FC<{ data: DailyTrendPoint[] }> = ({ data }) => {
   const costs = data.map(d => d.observed_cost_usd)
   return (
     <div className="bg-slate-800/30 border border-slate-700/50 rounded-xl p-4">
-      <h3 className="text-xs font-bold text-brand-text-secondary uppercase tracking-wider mb-3 flex items-center gap-2">
+      <h3 className="text-xs font-bold text-slate-300 uppercase tracking-wider mb-3 flex items-center gap-2">
         <Activity className="w-3.5 h-3.5 text-indigo-400" />
         Tendência diária observada (últimos {data.length} dias)
       </h3>
@@ -732,7 +732,7 @@ const TrendChart: React.FC<{ data: DailyTrendPoint[] }> = ({ data }) => {
 
 const LatencyCard: React.FC<{ data: LatencyPercentiles | null }> = ({ data }) => (
   <div className="bg-slate-800/30 border border-slate-700/50 rounded-xl p-4">
-    <h3 className="text-xs font-bold text-brand-text-secondary uppercase tracking-wider mb-3 flex items-center gap-2">
+    <h3 className="text-xs font-bold text-slate-300 uppercase tracking-wider mb-3 flex items-center gap-2">
       <Clock className="w-3.5 h-3.5 text-indigo-400" />
       Distribuição de latência (últimos 7 dias)
     </h3>
@@ -743,7 +743,7 @@ const LatencyCard: React.FC<{ data: LatencyPercentiles | null }> = ({ data }) =>
         <div className="grid grid-cols-3 sm:grid-cols-6 gap-2 mb-3">
           {(['p50', 'p75', 'p90', 'p95', 'p99', 'max'] as const).map(k => {
             const v = data[k] as number
-            const tone = v > 30000 ? 'text-red-300' : v > 10000 ? 'text-amber-300' : 'text-brand-text'
+            const tone = v > 30000 ? 'text-red-300' : v > 10000 ? 'text-amber-300' : 'text-white'
             return (
               <div key={k} className="bg-slate-900/60 border border-slate-700/40 rounded-md px-2 py-1.5">
                 <div className="text-[9px] uppercase tracking-wider text-slate-500 font-semibold">{k}</div>
@@ -753,7 +753,7 @@ const LatencyCard: React.FC<{ data: LatencyPercentiles | null }> = ({ data }) =>
           })}
         </div>
         <div className="flex gap-3 text-[11px] flex-wrap">
-          <span className="text-brand-text-muted">Outliers:</span>
+          <span className="text-slate-400">Outliers:</span>
           <span className="text-amber-300 tabular-nums">{data.over_10s} &gt;10s</span>
           <span className="text-orange-300 tabular-nums">{data.over_20s} &gt;20s</span>
           <span className="text-red-300 tabular-nums">{data.over_30s} &gt;30s</span>
@@ -770,7 +770,7 @@ const OutliersCard: React.FC<{ outliers: SlowOutlier[] }> = ({ outliers }) => {
   if (outliers.length === 0) return null
   return (
     <div className="bg-slate-800/30 border border-slate-700/50 rounded-xl p-4">
-      <h3 className="text-xs font-bold text-brand-text-secondary uppercase tracking-wider mb-3 flex items-center gap-2">
+      <h3 className="text-xs font-bold text-slate-300 uppercase tracking-wider mb-3 flex items-center gap-2">
         <AlertTriangle className="w-3.5 h-3.5 text-amber-400" />
         Outliers de latência (top 5, últimos 7d, &gt;20s)
       </h3>
@@ -788,7 +788,7 @@ const OutliersCard: React.FC<{ outliers: SlowOutlier[] }> = ({ outliers }) => {
                 </span>
               )}
             </div>
-            <div className="text-brand-text-muted">
+            <div className="text-slate-400">
               <strong>user_msg:</strong> "{o.user_msg_preview}"
             </div>
             <div className="text-slate-500 mt-0.5">
@@ -823,7 +823,7 @@ const IssuesCard: React.FC<{ issues: TelemetryIssue[] }> = ({ issues }) => {
     : <Info className="w-4 h-4 text-blue-400" />
   return (
     <div className="bg-slate-800/30 border border-slate-700/50 rounded-xl p-4">
-      <h3 className="text-xs font-bold text-brand-text-secondary uppercase tracking-wider mb-3 flex items-center gap-2">
+      <h3 className="text-xs font-bold text-slate-300 uppercase tracking-wider mb-3 flex items-center gap-2">
         <Bug className="w-3.5 h-3.5 text-red-400" />
         Telemetria quebrada / anomalias observadas
       </h3>
@@ -834,11 +834,11 @@ const IssuesCard: React.FC<{ issues: TelemetryIssue[] }> = ({ issues }) => {
               <div className="mt-0.5">{sevIcon(i.severity)}</div>
               <div className="flex-1 space-y-1">
                 <h4 className="text-xs font-bold text-slate-200">{i.title}</h4>
-                <p className="text-[11px] text-brand-text-muted leading-relaxed">
-                  <strong className="text-brand-text-secondary">Observado:</strong> {i.observed}
+                <p className="text-[11px] text-slate-400 leading-relaxed">
+                  <strong className="text-slate-300">Observado:</strong> {i.observed}
                 </p>
                 <p className="text-[11px] text-slate-500 leading-relaxed">
-                  <strong className="text-brand-text-muted">Hipótese:</strong> {i.hypothesis}
+                  <strong className="text-slate-400">Hipótese:</strong> {i.hypothesis}
                 </p>
                 <p className="text-[11px] text-amber-200/80 leading-relaxed">
                   <strong>Ação humana:</strong> {i.human_action_required}
@@ -872,7 +872,7 @@ const CoverageCard: React.FC<{ coverage: InstrumentationCoverage | null }> = ({ 
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mt-2">
             <div className="bg-slate-900/40 border border-slate-700/40 rounded-md px-2 py-1.5">
               <div className="text-[9px] uppercase tracking-wider text-slate-500 font-semibold">Total lifetime</div>
-              <div className="text-sm font-bold text-brand-text tabular-nums">{coverage.total_lifetime.toLocaleString('pt-BR')}</div>
+              <div className="text-sm font-bold text-white tabular-nums">{coverage.total_lifetime.toLocaleString('pt-BR')}</div>
             </div>
             <div className="bg-slate-900/40 border border-slate-700/40 rounded-md px-2 py-1.5">
               <div className="text-[9px] uppercase tracking-wider text-slate-500 font-semibold">Com cost</div>
@@ -880,7 +880,7 @@ const CoverageCard: React.FC<{ coverage: InstrumentationCoverage | null }> = ({ 
             </div>
             <div className="bg-slate-900/40 border border-slate-700/40 rounded-md px-2 py-1.5">
               <div className="text-[9px] uppercase tracking-wider text-slate-500 font-semibold">Sem cost (NULL)</div>
-              <div className={`text-sm font-bold tabular-nums ${coverage.without_cost > 0 ? 'text-amber-300' : 'text-brand-text-secondary'}`}>
+              <div className={`text-sm font-bold tabular-nums ${coverage.without_cost > 0 ? 'text-amber-300' : 'text-slate-300'}`}>
                 {coverage.without_cost.toLocaleString('pt-BR')}
               </div>
             </div>
@@ -891,15 +891,15 @@ const CoverageCard: React.FC<{ coverage: InstrumentationCoverage | null }> = ({ 
               </div>
             </div>
           </div>
-          <p className="text-[11px] text-brand-text-secondary leading-relaxed">
+          <p className="text-[11px] text-slate-300 leading-relaxed">
             <strong>Custo observado:</strong> {formatUSD(coverage.observed_cost_usd)} ({pctText}% das interações lifetime).
             <br />
             <strong>Extrapolação aproximada lifetime:</strong> ~{formatUSD(coverage.extrapolated_lifetime_cost_usd)}
             <span className="text-slate-500"> (assume custo médio observado aplicável ao não-instrumentado).</span>
           </p>
           <p className="text-[10px] text-slate-500 leading-relaxed italic">
-            ⚠️ Instrumentação de custo começou em <strong className="text-brand-text-muted">{coverage.instrumentation_started}</strong> (V1.9.238).
-            Interações anteriores têm <code className="text-brand-text-muted">cost_usd_estimate = NULL</code>.
+            ⚠️ Instrumentação de custo começou em <strong className="text-slate-400">{coverage.instrumentation_started}</strong> (V1.9.238).
+            Interações anteriores têm <code className="text-slate-400">cost_usd_estimate = NULL</code>.
             Para custo real lifetime, consultar billing dashboard OpenAI direto. Painel mostra apenas observado.
           </p>
         </div>
@@ -914,7 +914,7 @@ const UserCompositionCard: React.FC<{ comp: UserComposition | null }> = ({ comp 
   const total = comp.total_active_30d || 1
   return (
     <div className="bg-slate-800/30 border border-slate-700/50 rounded-xl p-4">
-      <h3 className="text-xs font-bold text-brand-text-secondary uppercase tracking-wider mb-3 flex items-center gap-2">
+      <h3 className="text-xs font-bold text-slate-300 uppercase tracking-wider mb-3 flex items-center gap-2">
         <Users className="w-3.5 h-3.5 text-indigo-400" />
         Composição de users ativos (últimos 30 dias)
       </h3>
@@ -924,7 +924,7 @@ const UserCompositionCard: React.FC<{ comp: UserComposition | null }> = ({ comp 
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-3">
         <div className="bg-slate-900/60 border border-slate-700/40 rounded-md px-2 py-1.5">
           <div className="text-[9px] uppercase tracking-wider text-slate-500 font-semibold">Total ativos</div>
-          <div className="text-sm font-bold text-brand-text tabular-nums">{comp.total_active_30d}</div>
+          <div className="text-sm font-bold text-white tabular-nums">{comp.total_active_30d}</div>
         </div>
         <div className="bg-slate-900/60 border border-slate-700/40 rounded-md px-2 py-1.5">
           <div className="text-[9px] uppercase tracking-wider text-slate-500 font-semibold">Interno (proxy)</div>
@@ -942,7 +942,7 @@ const UserCompositionCard: React.FC<{ comp: UserComposition | null }> = ({ comp 
         </div>
         <div className="bg-slate-900/60 border border-slate-700/40 rounded-md px-2 py-1.5">
           <div className="text-[9px] uppercase tracking-wider text-slate-500 font-semibold">Tipos</div>
-          <div className="text-sm font-bold text-brand-text-secondary tabular-nums">{Object.keys(comp.by_type).length}</div>
+          <div className="text-sm font-bold text-slate-300 tabular-nums">{Object.keys(comp.by_type).length}</div>
         </div>
       </div>
       <div className="space-y-1">
@@ -972,7 +972,7 @@ const UserCompositionCard: React.FC<{ comp: UserComposition | null }> = ({ comp 
 
 const TopUsersCard: React.FC<{ users: TopUser[] }> = ({ users }) => (
   <div className="bg-slate-800/30 border border-slate-700/50 rounded-xl p-4">
-    <h3 className="text-xs font-bold text-brand-text-secondary uppercase tracking-wider mb-3 flex items-center gap-2">
+    <h3 className="text-xs font-bold text-slate-300 uppercase tracking-wider mb-3 flex items-center gap-2">
       <Users className="w-3.5 h-3.5 text-indigo-400" />
       Volume de uso por user pseudonimizado (últimos 30 dias)
     </h3>
@@ -993,8 +993,8 @@ const TopUsersCard: React.FC<{ users: TopUser[] }> = ({ users }) => (
         ) : (
           users.map(u => (
             <tr key={u.user_id_hash} className="border-b border-slate-800/30">
-              <td className="py-2 text-brand-text-secondary font-mono">{u.user_id_hash}</td>
-              <td className="py-2 text-right tabular-nums text-brand-text">{u.observed_count}</td>
+              <td className="py-2 text-slate-300 font-mono">{u.user_id_hash}</td>
+              <td className="py-2 text-right tabular-nums text-white">{u.observed_count}</td>
               <td className="py-2 text-right tabular-nums text-emerald-300">{formatUSD(u.observed_cost_usd)}</td>
             </tr>
           ))
@@ -1058,16 +1058,16 @@ const AdminAIGovernance: React.FC = () => {
       {/* Header */}
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
-          <h2 className="text-base font-bold text-brand-text flex items-center gap-2">
+          <h2 className="text-base font-bold text-white flex items-center gap-2">
             <Eye className="w-4 h-4 text-indigo-400" />
             Observabilidade de Sistemas IA (Z1/Z2)
           </h2>
-          <p className="text-xs text-brand-text-muted">Comportamento do sistema · não é avaliação de conduta humana</p>
+          <p className="text-xs text-slate-400">Comportamento do sistema · não é avaliação de conduta humana</p>
         </div>
         <button
           onClick={() => void loadAll()}
           disabled={refreshing}
-          className="flex items-center gap-1.5 px-3 py-1.5 text-xs bg-brand-surface hover:bg-brand-surface-subtle border border-brand-border text-brand-text-secondary rounded-lg transition-colors disabled:opacity-50"
+          className="flex items-center gap-1.5 px-3 py-1.5 text-xs bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 rounded-lg transition-colors disabled:opacity-50"
         >
           <RefreshCw className={`w-3.5 h-3.5 ${refreshing ? 'animate-spin' : ''}`} />
           {refreshing ? 'Atualizando...' : 'Atualizar'}
@@ -1078,7 +1078,7 @@ const AdminAIGovernance: React.FC = () => {
       <Banner />
 
       {loading ? (
-        <div className="text-center py-12 text-brand-text-muted text-sm">Carregando observabilidade...</div>
+        <div className="text-center py-12 text-slate-400 text-sm">Carregando observabilidade...</div>
       ) : (
         <>
           {/* KPIs — labels atualizados pós-audit pra refletir subcontagem */}
@@ -1143,7 +1143,7 @@ const AdminAIGovernance: React.FC = () => {
             <div className="flex items-start gap-2">
               <AlertCircle className="w-3.5 h-3.5 text-slate-500 flex-shrink-0 mt-0.5" />
               <p className="text-[10px] text-slate-500 leading-relaxed">
-                <strong className="text-brand-text-muted">Z1+Z2 only.</strong> Z3 (interpretativa, com edit humano) e Z4 (clínica) ficam com o médico.
+                <strong className="text-slate-400">Z1+Z2 only.</strong> Z3 (interpretativa, com edit humano) e Z4 (clínica) ficam com o médico.
                 Sistema reporta comportamento, não avalia conduta. Outliers exigem investigação humana — não acionam decisão automática.
                 Última atualização: {lastRefresh.toLocaleTimeString('pt-BR')}.
               </p>

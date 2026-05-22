@@ -86,26 +86,26 @@ const PatientAgenda: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-brand-bg text-brand-text">
+    <div className="min-h-screen bg-slate-900 text-white">
       {/* Header */}
-      <div className="bg-brand-surface border-b border-brand-border p-6">
+      <div className="bg-slate-800 border-b border-slate-700 p-6">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
             <button 
               onClick={() => navigate('/app/clinica/paciente/dashboard')}
-              className="flex items-center space-x-2 text-brand-text-secondary hover:text-brand-text transition-colors"
+              className="flex items-center space-x-2 text-slate-300 hover:text-white transition-colors"
             >
               <ArrowLeft className="w-5 h-5" />
               <span>Voltar</span>
             </button>
             <div>
-              <h1 className="text-2xl font-bold text-brand-text">Agenda</h1>
-              <p className="text-brand-text-muted">Programa de Cuidado Renal</p>
+              <h1 className="text-2xl font-bold text-white">Agenda</h1>
+              <p className="text-slate-400">Programa de Cuidado Renal</p>
             </div>
           </div>
           
           <div className="flex items-center space-x-3">
-            <button className="bg-gradient-to-r from-[#00c16a] to-[#00a85a] text-brand-text px-4 py-2 rounded-lg font-semibold hover:from-purple-600 hover:to-pink-600 transition-colors flex items-center space-x-2">
+            <button className="bg-gradient-to-r from-[#00c16a] to-[#00a85a] text-white px-4 py-2 rounded-lg font-semibold hover:from-purple-600 hover:to-pink-600 transition-colors flex items-center space-x-2">
               <Plus className="w-4 h-4" />
               <span>Nova Consulta</span>
             </button>
@@ -115,30 +115,30 @@ const PatientAgenda: React.FC = () => {
 
       <div className="flex">
         {/* Sidebar */}
-        <div className="w-64 bg-brand-surface border-r border-brand-border min-h-screen">
+        <div className="w-64 bg-slate-800 border-r border-slate-700 min-h-screen">
           <div className="p-6">
             <nav className="space-y-2">
-              <a href="/app/clinica/paciente/dashboard" className="flex items-center space-x-3 p-3 rounded-lg text-brand-text-secondary hover:bg-brand-surface-subtle hover:text-brand-text transition-colors">
+              <a href="/app/clinica/paciente/dashboard" className="flex items-center space-x-3 p-3 rounded-lg text-slate-300 hover:bg-slate-700 hover:text-white transition-colors">
                 <Calendar className="w-5 h-5" />
                 <span>Dashboard</span>
               </a>
-              <a href="#" className="flex items-center space-x-3 p-3 rounded-lg bg-brand-surface-subtle text-brand-text">
+              <a href="#" className="flex items-center space-x-3 p-3 rounded-lg bg-slate-700 text-white">
                 <Calendar className="w-5 h-5" />
                 <span>Agenda</span>
               </a>
-              <a href="#" className="flex items-center space-x-3 p-3 rounded-lg text-brand-text-secondary hover:bg-brand-surface-subtle hover:text-brand-text transition-colors">
+              <a href="#" className="flex items-center space-x-3 p-3 rounded-lg text-slate-300 hover:bg-slate-700 hover:text-white transition-colors">
                 <span className="w-5 h-5">📊</span>
                 <span>Meus KPIs</span>
               </a>
-              <a href="#" className="flex items-center space-x-3 p-3 rounded-lg text-brand-text-secondary hover:bg-brand-surface-subtle hover:text-brand-text transition-colors">
+              <a href="#" className="flex items-center space-x-3 p-3 rounded-lg text-slate-300 hover:bg-slate-700 hover:text-white transition-colors">
                 <span className="w-5 h-5">❤️</span>
                 <span>Avaliação Clínica</span>
               </a>
-              <a href="#" className="flex items-center space-x-3 p-3 rounded-lg text-brand-text-secondary hover:bg-brand-surface-subtle hover:text-brand-text transition-colors">
+              <a href="#" className="flex items-center space-x-3 p-3 rounded-lg text-slate-300 hover:bg-slate-700 hover:text-white transition-colors">
                 <span className="w-5 h-5">💬</span>
                 <span>Chat com Nôa</span>
               </a>
-              <a href="#" className="flex items-center space-x-3 p-3 rounded-lg text-brand-text-secondary hover:bg-brand-surface-subtle hover:text-brand-text transition-colors">
+              <a href="#" className="flex items-center space-x-3 p-3 rounded-lg text-slate-300 hover:bg-slate-700 hover:text-white transition-colors">
                 <span className="w-5 h-5">📄</span>
                 <span>Relatórios</span>
               </a>
@@ -153,11 +153,11 @@ const PatientAgenda: React.FC = () => {
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center space-x-4">
                 <div className="flex items-center space-x-2">
-                  <button className="p-2 bg-brand-surface-subtle rounded-lg hover:bg-slate-600 transition-colors">
+                  <button className="p-2 bg-slate-700 rounded-lg hover:bg-slate-600 transition-colors">
                     <ChevronLeft className="w-4 h-4" />
                   </button>
                   <span className="text-lg font-semibold">Dezembro 2024</span>
-                  <button className="p-2 bg-brand-surface-subtle rounded-lg hover:bg-slate-600 transition-colors">
+                  <button className="p-2 bg-slate-700 rounded-lg hover:bg-slate-600 transition-colors">
                     <ChevronRight className="w-4 h-4" />
                   </button>
                 </div>
@@ -168,7 +168,7 @@ const PatientAgenda: React.FC = () => {
                   <button 
                     onClick={() => setViewMode('day')}
                     className={`px-3 py-1 rounded-lg text-sm ${
-                      viewMode === 'day' ? 'bg-purple-500 text-brand-text' : 'bg-brand-surface-subtle text-brand-text-secondary'
+                      viewMode === 'day' ? 'bg-purple-500 text-white' : 'bg-slate-700 text-slate-300'
                     }`}
                   >
                     Dia
@@ -176,7 +176,7 @@ const PatientAgenda: React.FC = () => {
                   <button 
                     onClick={() => setViewMode('week')}
                     className={`px-3 py-1 rounded-lg text-sm ${
-                      viewMode === 'week' ? 'bg-purple-500 text-brand-text' : 'bg-brand-surface-subtle text-brand-text-secondary'
+                      viewMode === 'week' ? 'bg-purple-500 text-white' : 'bg-slate-700 text-slate-300'
                     }`}
                   >
                     Semana
@@ -184,17 +184,17 @@ const PatientAgenda: React.FC = () => {
                   <button 
                     onClick={() => setViewMode('month')}
                     className={`px-3 py-1 rounded-lg text-sm ${
-                      viewMode === 'month' ? 'bg-purple-500 text-brand-text' : 'bg-brand-surface-subtle text-brand-text-secondary'
+                      viewMode === 'month' ? 'bg-purple-500 text-white' : 'bg-slate-700 text-slate-300'
                     }`}
                   >
                     Mês
                   </button>
                 </div>
                 
-                <button className="p-2 bg-brand-surface-subtle rounded-lg hover:bg-slate-600 transition-colors">
+                <button className="p-2 bg-slate-700 rounded-lg hover:bg-slate-600 transition-colors">
                   <Filter className="w-4 h-4" />
                 </button>
-                <button className="p-2 bg-brand-surface-subtle rounded-lg hover:bg-slate-600 transition-colors">
+                <button className="p-2 bg-slate-700 rounded-lg hover:bg-slate-600 transition-colors">
                   <Search className="w-4 h-4" />
                 </button>
               </div>
@@ -205,22 +205,22 @@ const PatientAgenda: React.FC = () => {
               {appointments.map((appointment) => {
                 const TypeIcon = getTypeIcon(appointment.type)
                 return (
-                  <div key={appointment.id} className="bg-brand-surface rounded-xl p-6 hover:bg-slate-750 transition-colors">
+                  <div key={appointment.id} className="bg-slate-800 rounded-xl p-6 hover:bg-slate-750 transition-colors">
                     <div className="flex items-start justify-between">
                       <div className="flex items-start space-x-4">
                         <div className="w-12 h-12 bg-gradient-to-r from-[#00c16a] to-[#00a85a] rounded-full flex items-center justify-center">
-                          <span className="text-brand-text font-bold text-sm">{appointment.doctor.avatar}</span>
+                          <span className="text-white font-bold text-sm">{appointment.doctor.avatar}</span>
                         </div>
                         
                         <div className="flex-1">
                           <div className="flex items-center space-x-3 mb-2">
-                            <h3 className="text-lg font-semibold text-brand-text">{appointment.title}</h3>
-                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(appointment.status)} text-brand-text`}>
+                            <h3 className="text-lg font-semibold text-white">{appointment.title}</h3>
+                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(appointment.status)} text-white`}>
                               {appointment.status}
                             </span>
                           </div>
                           
-                          <div className="flex items-center space-x-4 text-sm text-brand-text-muted mb-3">
+                          <div className="flex items-center space-x-4 text-sm text-slate-400 mb-3">
                             <div className="flex items-center space-x-1">
                               <Calendar className="w-4 h-4" />
                               <span>{appointment.date}</span>
@@ -240,21 +240,21 @@ const PatientAgenda: React.FC = () => {
                           </div>
                           
                           <div className="flex items-center space-x-2">
-                            <span className="text-sm text-brand-text-secondary">Dr(a). {appointment.doctor.name}</span>
-                            <span className="text-sm text-brand-text-muted">•</span>
-                            <span className="text-sm text-brand-text-muted">{appointment.specialty}</span>
+                            <span className="text-sm text-slate-300">Dr(a). {appointment.doctor.name}</span>
+                            <span className="text-sm text-slate-400">•</span>
+                            <span className="text-sm text-slate-400">{appointment.specialty}</span>
                           </div>
                         </div>
                       </div>
                       
                       <div className="flex items-center space-x-2">
-                        <button className="p-2 bg-brand-surface-subtle rounded-lg hover:bg-slate-600 transition-colors">
+                        <button className="p-2 bg-slate-700 rounded-lg hover:bg-slate-600 transition-colors">
                           <Phone className="w-4 h-4" />
                         </button>
-                        <button className="p-2 bg-brand-surface-subtle rounded-lg hover:bg-slate-600 transition-colors">
+                        <button className="p-2 bg-slate-700 rounded-lg hover:bg-slate-600 transition-colors">
                           <Video className="w-4 h-4" />
                         </button>
-                        <button className="p-2 bg-brand-surface-subtle rounded-lg hover:bg-slate-600 transition-colors">
+                        <button className="p-2 bg-slate-700 rounded-lg hover:bg-slate-600 transition-colors">
                           <span className="text-sm">⋮</span>
                         </button>
                       </div>
@@ -267,10 +267,10 @@ const PatientAgenda: React.FC = () => {
             {/* Empty State */}
             {appointments.length === 0 && (
               <div className="text-center py-12">
-                <Calendar className="w-16 h-16 mx-auto mb-4 text-brand-text-muted" />
-                <h3 className="text-lg font-semibold text-brand-text mb-2">Nenhuma consulta agendada</h3>
-                <p className="text-brand-text-muted mb-6">Você não possui consultas agendadas para este período.</p>
-                <button className="bg-gradient-to-r from-[#00c16a] to-[#00a85a] text-brand-text px-6 py-3 rounded-lg font-semibold hover:from-purple-600 hover:to-pink-600 transition-colors">
+                <Calendar className="w-16 h-16 mx-auto mb-4 text-slate-400" />
+                <h3 className="text-lg font-semibold text-white mb-2">Nenhuma consulta agendada</h3>
+                <p className="text-slate-400 mb-6">Você não possui consultas agendadas para este período.</p>
+                <button className="bg-gradient-to-r from-[#00c16a] to-[#00a85a] text-white px-6 py-3 rounded-lg font-semibold hover:from-purple-600 hover:to-pink-600 transition-colors">
                   Agendar Consulta
                 </button>
               </div>

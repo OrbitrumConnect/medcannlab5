@@ -78,7 +78,7 @@ export function SubscriptionPlans() {
       <div className="container mx-auto max-w-7xl">
         {/* Header */}
         <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-brand-text mb-4">
+          <h1 className="text-4xl font-bold text-white mb-4">
             Acesso à Plataforma
           </h1>
           <p className="text-gray-300 text-lg">
@@ -91,22 +91,22 @@ export function SubscriptionPlans() {
           {plans.map((plan) => (
             <div
               key={plan.id}
-              className={`w-full bg-brand-surface rounded-xl p-8 border-2 transition-all hover:scale-105 border-emerald-500 shadow-xl shadow-emerald-500/20`}
+              className={`w-full bg-slate-800 rounded-xl p-8 border-2 transition-all hover:scale-105 border-emerald-500 shadow-xl shadow-emerald-500/20`}
             >
               <div className="text-center mb-4">
-                <span className="bg-emerald-500 text-brand-text text-sm font-bold px-4 py-1 rounded-full">
+                <span className="bg-emerald-500 text-white text-sm font-bold px-4 py-1 rounded-full">
                   PLANO ÚNICO
                 </span>
               </div>
 
               {/* Nome do Plano */}
-              <h3 className="text-2xl font-bold text-brand-text mb-2">{plan.name}</h3>
+              <h3 className="text-2xl font-bold text-white mb-2">{plan.name}</h3>
               <p className="text-gray-400 mb-6 text-sm">{plan.description}</p>
 
               {/* Preço */}
               <div className="mb-6">
                 <div className="flex items-baseline gap-2">
-                  <span className="text-4xl font-bold text-brand-text">
+                  <span className="text-4xl font-bold text-white">
                     R$ {plan.monthly_price.toFixed(2)}
                   </span>
                   <span className="text-gray-400">/mês</span>
@@ -127,7 +127,7 @@ export function SubscriptionPlans() {
               {/* Botão */}
               <button
                 onClick={() => handleSelectPlan(plan.id)}
-                className={`w-full py-3 rounded-lg font-semibold transition-all bg-emerald-600 hover:bg-emerald-700 text-brand-text shadow-lg shadow-emerald-500/30`}
+                className={`w-full py-3 rounded-lg font-semibold transition-all bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg shadow-emerald-500/30`}
               >
                 Assinar Agora
               </button>

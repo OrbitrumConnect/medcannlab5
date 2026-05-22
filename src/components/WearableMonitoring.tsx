@@ -267,7 +267,7 @@ const WearableMonitoring: React.FC<WearableMonitoringProps> = ({ className = '' 
       <div className="bg-gradient-to-r from-blue-800 to-cyan-700 rounded-lg p-6">
         <div className="flex items-center justify-between mb-4">
           <div>
-            <h2 className="text-2xl font-bold text-brand-text mb-2 flex items-center space-x-2">
+            <h2 className="text-2xl font-bold text-white mb-2 flex items-center space-x-2">
               <Activity className="w-6 h-6" />
               <span>Monitoramento Wearables</span>
             </h2>
@@ -280,8 +280,8 @@ const WearableMonitoring: React.FC<WearableMonitoringProps> = ({ className = '' 
               onClick={() => setIsMonitoring(!isMonitoring)}
               className={`flex items-center space-x-2 px-4 py-2 rounded-md transition-colors ${
                 isMonitoring 
-                  ? 'bg-red-600 hover:bg-red-700 text-brand-text' 
-                  : 'bg-green-600 hover:bg-green-700 text-brand-text'
+                  ? 'bg-red-600 hover:bg-red-700 text-white' 
+                  : 'bg-green-600 hover:bg-green-700 text-white'
               }`}
             >
               {isMonitoring ? (
@@ -306,7 +306,7 @@ const WearableMonitoring: React.FC<WearableMonitoringProps> = ({ className = '' 
               <span className="text-blue-200 text-sm">Dispositivos Conectados</span>
               <CheckCircle className="w-4 h-4 text-green-400" />
             </div>
-            <p className="text-2xl font-bold text-brand-text">
+            <p className="text-2xl font-bold text-white">
               {devices.filter(d => d.connectionStatus === 'connected').length}
             </p>
           </div>
@@ -315,7 +315,7 @@ const WearableMonitoring: React.FC<WearableMonitoringProps> = ({ className = '' 
               <span className="text-blue-200 text-sm">Alertas Ativos</span>
               <AlertTriangle className="w-4 h-4 text-yellow-400" />
             </div>
-            <p className="text-2xl font-bold text-brand-text">
+            <p className="text-2xl font-bold text-white">
               {devices.reduce((acc, device) => acc + device.alerts.filter(a => !a.acknowledged).length, 0)}
             </p>
           </div>
@@ -324,7 +324,7 @@ const WearableMonitoring: React.FC<WearableMonitoringProps> = ({ className = '' 
               <span className="text-blue-200 text-sm">Monitoramento</span>
               <Eye className="w-4 h-4 text-blue-400" />
             </div>
-            <p className="text-2xl font-bold text-brand-text">
+            <p className="text-2xl font-bold text-white">
               {isMonitoring ? 'ATIVO' : 'INATIVO'}
             </p>
           </div>
@@ -333,7 +333,7 @@ const WearableMonitoring: React.FC<WearableMonitoringProps> = ({ className = '' 
               <span className="text-blue-200 text-sm">Última Sincronização</span>
               <Clock className="w-4 h-4 text-purple-400" />
             </div>
-            <p className="text-sm font-semibold text-brand-text">
+            <p className="text-sm font-semibold text-white">
               {devices.length > 0 ? new Date(devices[0].lastSync).toLocaleTimeString('pt-BR') : 'N/A'}
             </p>
           </div>
@@ -343,15 +343,15 @@ const WearableMonitoring: React.FC<WearableMonitoringProps> = ({ className = '' 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Lista de Dispositivos */}
         <div className="lg:col-span-1">
-          <div className="bg-brand-surface border border-brand-border rounded-lg p-4">
-            <h3 className="text-brand-text font-semibold mb-4">Dispositivos Conectados</h3>
+          <div className="bg-slate-800 border border-slate-700 rounded-lg p-4">
+            <h3 className="text-white font-semibold mb-4">Dispositivos Conectados</h3>
             <div className="space-y-3">
               {devices.map((device) => (
                 <button
                   key={device.id}
                   onClick={() => setSelectedDevice(device.id)}
                   className={`w-full p-3 rounded-lg text-left transition-colors ${
-                    selectedDevice === device.id ? 'bg-brand-surface-subtle' : 'bg-slate-700/50 hover:bg-brand-surface-subtle'
+                    selectedDevice === device.id ? 'bg-slate-700' : 'bg-slate-700/50 hover:bg-slate-700'
                   }`}
                 >
                   <div className="flex items-center justify-between mb-2">
@@ -359,15 +359,15 @@ const WearableMonitoring: React.FC<WearableMonitoringProps> = ({ className = '' 
                       <div className={`${getConnectionStatusColor(device.connectionStatus)}`}>
                         {getConnectionStatusIcon(device.connectionStatus)}
                       </div>
-                      <span className="text-brand-text font-semibold text-sm">{device.patientName}</span>
+                      <span className="text-white font-semibold text-sm">{device.patientName}</span>
                     </div>
                     <div className={`${getBatteryColor(device.batteryLevel)}`}>
                       {getBatteryIcon(device.batteryLevel)}
                     </div>
                   </div>
-                  <p className="text-brand-text-muted text-xs mb-1">{device.brand} {device.model}</p>
+                  <p className="text-slate-400 text-xs mb-1">{device.brand} {device.model}</p>
                   <div className="flex items-center justify-between">
-                    <span className="text-brand-text-muted text-xs">
+                    <span className="text-slate-400 text-xs">
                       {device.batteryLevel}% bateria
                     </span>
                     {device.alerts.filter(a => !a.acknowledged).length > 0 && (
@@ -387,11 +387,11 @@ const WearableMonitoring: React.FC<WearableMonitoringProps> = ({ className = '' 
           {selectedDeviceData ? (
             <div className="space-y-4">
               {/* Informações do Dispositivo */}
-              <div className="bg-brand-surface border border-brand-border rounded-lg p-4">
+              <div className="bg-slate-800 border border-slate-700 rounded-lg p-4">
                 <div className="flex items-center justify-between mb-4">
                   <div>
-                    <h3 className="text-brand-text font-semibold">{selectedDeviceData.patientName}</h3>
-                    <p className="text-brand-text-muted text-sm">{selectedDeviceData.brand} {selectedDeviceData.model}</p>
+                    <h3 className="text-white font-semibold">{selectedDeviceData.patientName}</h3>
+                    <p className="text-slate-400 text-sm">{selectedDeviceData.brand} {selectedDeviceData.model}</p>
                   </div>
                   <div className="flex items-center space-x-2">
                     <div className={`${getConnectionStatusColor(selectedDeviceData.connectionStatus)}`}>
@@ -406,36 +406,36 @@ const WearableMonitoring: React.FC<WearableMonitoringProps> = ({ className = '' 
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                   <div className="text-center">
                     <Heart className="w-6 h-6 text-red-400 mx-auto mb-1" />
-                    <p className="text-brand-text font-semibold">{realTimeData?.heartRate.toFixed(0) || '--'} bpm</p>
-                    <p className="text-brand-text-muted text-xs">Frequência Cardíaca</p>
+                    <p className="text-white font-semibold">{realTimeData?.heartRate.toFixed(0) || '--'} bpm</p>
+                    <p className="text-slate-400 text-xs">Frequência Cardíaca</p>
                   </div>
                   <div className="text-center">
                     <Activity className="w-6 h-6 text-blue-400 mx-auto mb-1" />
-                    <p className="text-brand-text font-semibold">{realTimeData?.oxygenSaturation.toFixed(0) || '--'}%</p>
-                    <p className="text-brand-text-muted text-xs">Saturação O2</p>
+                    <p className="text-white font-semibold">{realTimeData?.oxygenSaturation.toFixed(0) || '--'}%</p>
+                    <p className="text-slate-400 text-xs">Saturação O2</p>
                   </div>
                   <div className="text-center">
                     <TrendingUp className="w-6 h-6 text-green-400 mx-auto mb-1" />
-                    <p className="text-brand-text font-semibold">{realTimeData?.movement.toFixed(1) || '--'}</p>
-                    <p className="text-brand-text-muted text-xs">Movimento</p>
+                    <p className="text-white font-semibold">{realTimeData?.movement.toFixed(1) || '--'}</p>
+                    <p className="text-slate-400 text-xs">Movimento</p>
                   </div>
                   <div className="text-center">
                     <Thermometer className="w-6 h-6 text-yellow-400 mx-auto mb-1" />
-                    <p className="text-brand-text font-semibold">{realTimeData?.temperature.toFixed(1) || '--'}°C</p>
-                    <p className="text-brand-text-muted text-xs">Temperatura</p>
+                    <p className="text-white font-semibold">{realTimeData?.temperature.toFixed(1) || '--'}°C</p>
+                    <p className="text-slate-400 text-xs">Temperatura</p>
                   </div>
                 </div>
               </div>
 
               {/* Métricas Adicionais */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="bg-brand-surface border border-brand-border rounded-lg p-4">
+                <div className="bg-slate-800 border border-slate-700 rounded-lg p-4">
                   <div className="flex items-center justify-between mb-2">
-                    <h4 className="text-brand-text font-semibold">Nível de Estresse</h4>
+                    <h4 className="text-white font-semibold">Nível de Estresse</h4>
                     <TrendingUp className="w-4 h-4 text-orange-400" />
                   </div>
-                  <p className="text-2xl font-bold text-brand-text">{realTimeData?.stressLevel.toFixed(0) || '--'}%</p>
-                  <div className="w-full bg-brand-surface-subtle rounded-full h-2 mt-2">
+                  <p className="text-2xl font-bold text-white">{realTimeData?.stressLevel.toFixed(0) || '--'}%</p>
+                  <div className="w-full bg-slate-700 rounded-full h-2 mt-2">
                     <div 
                       className="bg-orange-500 h-2 rounded-full" 
                       style={{ width: `${realTimeData?.stressLevel || 0}%` }}
@@ -443,13 +443,13 @@ const WearableMonitoring: React.FC<WearableMonitoringProps> = ({ className = '' 
                   </div>
                 </div>
 
-                <div className="bg-brand-surface border border-brand-border rounded-lg p-4">
+                <div className="bg-slate-800 border border-slate-700 rounded-lg p-4">
                   <div className="flex items-center justify-between mb-2">
-                    <h4 className="text-brand-text font-semibold">Qualidade do Sono</h4>
+                    <h4 className="text-white font-semibold">Qualidade do Sono</h4>
                     <Clock className="w-4 h-4 text-blue-400" />
                   </div>
-                  <p className="text-2xl font-bold text-brand-text">{realTimeData?.sleepQuality.toFixed(0) || '--'}%</p>
-                  <div className="w-full bg-brand-surface-subtle rounded-full h-2 mt-2">
+                  <p className="text-2xl font-bold text-white">{realTimeData?.sleepQuality.toFixed(0) || '--'}%</p>
+                  <div className="w-full bg-slate-700 rounded-full h-2 mt-2">
                     <div 
                       className="bg-blue-500 h-2 rounded-full" 
                       style={{ width: `${realTimeData?.sleepQuality || 0}%` }}
@@ -457,13 +457,13 @@ const WearableMonitoring: React.FC<WearableMonitoringProps> = ({ className = '' 
                   </div>
                 </div>
 
-                <div className="bg-brand-surface border border-brand-border rounded-lg p-4">
+                <div className="bg-slate-800 border border-slate-700 rounded-lg p-4">
                   <div className="flex items-center justify-between mb-2">
-                    <h4 className="text-brand-text font-semibold">Risco de Crise</h4>
+                    <h4 className="text-white font-semibold">Risco de Crise</h4>
                     <Zap className="w-4 h-4 text-purple-400" />
                   </div>
-                  <p className="text-2xl font-bold text-brand-text">{realTimeData?.seizureRisk.toFixed(0) || '--'}%</p>
-                  <div className="w-full bg-brand-surface-subtle rounded-full h-2 mt-2">
+                  <p className="text-2xl font-bold text-white">{realTimeData?.seizureRisk.toFixed(0) || '--'}%</p>
+                  <div className="w-full bg-slate-700 rounded-full h-2 mt-2">
                     <div 
                       className={`h-2 rounded-full ${
                         (realTimeData?.seizureRisk || 0) > 70 ? 'bg-red-500' : 
@@ -477,18 +477,18 @@ const WearableMonitoring: React.FC<WearableMonitoringProps> = ({ className = '' 
 
               {/* Alertas */}
               {selectedDeviceData.alerts.length > 0 && (
-                <div className="bg-brand-surface border border-brand-border rounded-lg p-4">
-                  <h4 className="text-brand-text font-semibold mb-3">Alertas Recentes</h4>
+                <div className="bg-slate-800 border border-slate-700 rounded-lg p-4">
+                  <h4 className="text-white font-semibold mb-3">Alertas Recentes</h4>
                   <div className="space-y-2">
                     {selectedDeviceData.alerts.map((alert) => (
-                      <div key={alert.id} className="flex items-center justify-between p-2 bg-brand-surface-subtle rounded">
+                      <div key={alert.id} className="flex items-center justify-between p-2 bg-slate-700 rounded">
                         <div className="flex items-center space-x-2">
                           <span className={`px-2 py-1 rounded text-xs ${getAlertSeverityColor(alert.severity)}`}>
                             {alert.severity}
                           </span>
-                          <span className="text-brand-text-secondary text-sm">{alert.message}</span>
+                          <span className="text-slate-300 text-sm">{alert.message}</span>
                         </div>
-                        <span className="text-brand-text-muted text-xs">
+                        <span className="text-slate-400 text-xs">
                           {new Date(alert.timestamp).toLocaleTimeString('pt-BR')}
                         </span>
                       </div>
@@ -498,10 +498,10 @@ const WearableMonitoring: React.FC<WearableMonitoringProps> = ({ className = '' 
               )}
             </div>
           ) : (
-            <div className="bg-brand-surface border border-brand-border rounded-lg p-12 text-center">
+            <div className="bg-slate-800 border border-slate-700 rounded-lg p-12 text-center">
               <Activity className="w-16 h-16 text-blue-500 mx-auto mb-4" />
-              <h3 className="text-xl font-bold text-brand-text mb-2">Selecione um Dispositivo</h3>
-              <p className="text-brand-text-muted">Escolha um dispositivo da lista para visualizar os dados em tempo real</p>
+              <h3 className="text-xl font-bold text-white mb-2">Selecione um Dispositivo</h3>
+              <p className="text-slate-400">Escolha um dispositivo da lista para visualizar os dados em tempo real</p>
             </div>
           )}
         </div>

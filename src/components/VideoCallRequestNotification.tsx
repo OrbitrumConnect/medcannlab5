@@ -57,7 +57,7 @@ const VideoCallRequestNotification: React.FC<VideoCallRequestNotificationProps> 
   }
 
   return (
-    <div className="fixed top-4 right-4 z-50 bg-brand-bg border border-primary-500/50 rounded-xl shadow-2xl p-4 min-w-[320px] max-w-md animate-in slide-in-from-right">
+    <div className="fixed top-4 right-4 z-50 bg-slate-900 border border-primary-500/50 rounded-xl shadow-2xl p-4 min-w-[320px] max-w-md animate-in slide-in-from-right">
       <div className="flex items-start gap-3">
         <div className={`p-2 rounded-lg ${request.call_type === 'video' ? 'bg-blue-500/20' : 'bg-green-500/20'}`}>
           {request.call_type === 'video' ? (
@@ -69,18 +69,18 @@ const VideoCallRequestNotification: React.FC<VideoCallRequestNotificationProps> 
         
         <div className="flex-1">
           <div className="flex items-center justify-between mb-1">
-            <h3 className="text-sm font-semibold text-brand-text">
+            <h3 className="text-sm font-semibold text-white">
               Solicitação de {request.call_type === 'video' ? 'Videochamada' : 'Chamada de Áudio'}
             </h3>
             <button
               onClick={handleReject}
-              className="text-brand-text-muted hover:text-brand-text transition-colors"
+              className="text-slate-400 hover:text-white transition-colors"
             >
               <X className="w-4 h-4" />
             </button>
           </div>
           
-          <p className="text-xs text-brand-text-muted mb-3">
+          <p className="text-xs text-slate-400 mb-3">
             Alguém está solicitando uma {request.call_type === 'video' ? 'videochamada' : 'chamada de áudio'}
           </p>
           
@@ -94,14 +94,14 @@ const VideoCallRequestNotification: React.FC<VideoCallRequestNotificationProps> 
           <div className="flex gap-2">
             <button
               onClick={handleAccept}
-              className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-primary-500 hover:bg-primary-400 text-brand-text rounded-lg text-sm font-medium transition-colors"
+              className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-primary-500 hover:bg-primary-400 text-white rounded-lg text-sm font-medium transition-colors"
             >
               <Check className="w-4 h-4" />
               Aceitar
             </button>
             <button
               onClick={handleReject}
-              className="px-3 py-2 bg-brand-surface hover:bg-brand-surface-subtle text-brand-text-secondary rounded-lg text-sm font-medium transition-colors"
+              className="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-sm font-medium transition-colors"
             >
               Recusar
             </button>
