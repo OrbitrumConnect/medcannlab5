@@ -47,6 +47,7 @@ import { useAuth } from '../contexts/AuthContext'
 import { supabase } from '../lib/supabase'
 import NoaConversationalInterface from '../components/NoaConversationalInterface'
 import SlidePlayer from '../components/SlidePlayer'
+import StudentNewsFeed from '../components/StudentNewsFeed'
 
 const FALLBACK_COURSE = {
   id: 'fallback-course-medcannlab',
@@ -1816,85 +1817,14 @@ const AlunoDashboard: React.FC = () => {
               </div>
             )}
 
-            {/* Notícias */}
+
+            {/* Notícias — V1.9.423: feed PubMed real (era array hardcoded fake) */}
             {activeTab === 'noticias' && (
-              <div className="space-y-6">
-
-                {/* Filtros de Notícias */}
-                <div className="rounded-xl p-4" style={secondarySurfaceStyle}>
-                  <div className="flex flex-wrap gap-2">
-                    <button className="px-4 py-2 text-white rounded-lg text-sm font-medium" style={{ background: accentGradient }}>
-                      Todas
-                    </button>
-                    <button className="px-4 py-2 rounded-lg text-sm font-medium transition-transform transform hover:scale-[1.02]" style={{ background: 'rgba(12,34,54,0.7)', border: '1px solid rgba(0,193,106,0.1)', color: '#C8D6E5' }}>
-                      Cannabis Medicinal
-                    </button>
-                    <button className="px-4 py-2 rounded-lg text-sm font-medium transition-transform transform hover:scale-[1.02]" style={{ background: 'rgba(12,34,54,0.7)', border: '1px solid rgba(0,193,106,0.1)', color: '#C8D6E5' }}>
-                      Pesquisa Clínica
-                    </button>
-                    <button className="px-4 py-2 rounded-lg text-sm font-medium transition-transform transform hover:scale-[1.02]" style={{ background: 'rgba(12,34,54,0.7)', border: '1px solid rgba(0,193,106,0.1)', color: '#C8D6E5' }}>
-                      Metodologia AEC
-                    </button>
-                    <button className="px-4 py-2 rounded-lg text-sm font-medium transition-transform transform hover:scale-[1.02]" style={{ background: 'rgba(12,34,54,0.7)', border: '1px solid rgba(0,193,106,0.1)', color: '#C8D6E5' }}>
-                      Regulamentação
-                    </button>
-                  </div>
-                </div>
-
-                {/* Lista de Notícias */}
-                <div className="space-y-4">
-                  {[
-                    {
-                      id: 1,
-                      title: 'Novos estudos sobre eficácia da Cannabis Medicinal em pacientes renais',
-                      summary: 'Pesquisa recente demonstra resultados promissores no tratamento de pacientes com doença renal crônica.',
-                      category: 'Pesquisa Clínica',
-                      date: '2025-01-10',
-                      image: 'https://via.placeholder.com/400x200'
-                    },
-                    {
-                      id: 2,
-                      title: 'Metodologia AEC ganha reconhecimento internacional',
-                      summary: 'Arte da Entrevista Clínica é destaque em congresso internacional de medicina integrativa.',
-                      category: 'Metodologia AEC',
-                      date: '2025-01-08',
-                      image: 'https://via.placeholder.com/400x200'
-                    },
-                    {
-                      id: 3,
-                      title: 'Atualizações na regulamentação de Cannabis Medicinal no Brasil',
-                      summary: 'Anvisa publica novas diretrizes para prescrição e monitoramento de pacientes.',
-                      category: 'Regulamentação',
-                      date: '2025-01-05',
-                      image: 'https://via.placeholder.com/400x200'
-                    }
-                  ].map((news) => (
-                    <div
-                      key={news.id}
-                      className="rounded-xl p-6 transition-transform transform hover:scale-[1.01] cursor-pointer"
-                      style={surfaceStyle}
-                    >
-                      <div className="flex items-start space-x-4">
-                        <div className="w-32 h-24 rounded-lg flex-shrink-0" style={{ background: 'rgba(12,34,54,0.7)', border: '1px solid rgba(0,193,106,0.1)' }}></div>
-                        <div className="flex-1">
-                          <div className="flex items-center space-x-2 mb-2">
-                            <span className="px-2 py-1 rounded text-xs font-medium" style={{ background: 'rgba(79,224,193,0.18)', color: '#4FE0C1' }}>
-                              {news.category}
-                            </span>
-                            <span className="text-xs text-slate-300/80">{news.date}</span>
-                          </div>
-                          <h3 className="text-lg font-semibold text-white mb-2">{news.title}</h3>
-                          <p className="text-sm text-slate-200/80 mb-3">{news.summary}</p>
-                          <button className="text-[#4FE0C1] hover:text-white text-sm font-medium flex items-center space-x-1">
-                            <span>Ler mais</span>
-                            <ExternalLink className="w-3 h-3" />
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
+              <StudentNewsFeed
+                surfaceStyle={surfaceStyle}
+                secondarySurfaceStyle={secondarySurfaceStyle}
+                accentGradient={accentGradient}
+              />
             )}
 
             {/* Simulações de Pacientes */}
