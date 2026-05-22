@@ -267,38 +267,6 @@ const TrailPanel: React.FC<TrailPanelProps> = ({
   )
 }
 
-interface NotesPanelProps {
-  notes: string
-  onChange: (s: string) => void
-}
-
-const NotesPanel: React.FC<NotesPanelProps> = ({ notes, onChange }) => {
-  const MAX = 8000
-  return (
-    <div className="bg-slate-800/30 border border-slate-700/50 rounded-xl p-4">
-      <div className="flex items-center justify-between mb-2">
-        <h3 className="text-xs font-bold text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
-          <FileText className="w-3.5 h-3.5 text-amber-400" />
-          Notas Rápidas
-        </h3>
-        <span className={`text-[10px] tabular-nums ${notes.length > MAX * 0.9 ? 'text-amber-400' : 'text-slate-600'}`}>
-          {notes.length} / {MAX}
-        </span>
-      </div>
-      <textarea
-        value={notes}
-        onChange={(e) => onChange(e.target.value.slice(0, MAX))}
-        placeholder="Anotações da sua sessão de pesquisa. Persistido localmente neste navegador, só você vê."
-        rows={8}
-        className="w-full px-3 py-2 bg-slate-900/60 border border-slate-700/50 rounded-lg text-xs text-slate-200 placeholder-slate-600 focus:outline-none focus:border-amber-500/40 resize-y leading-relaxed"
-      />
-      <p className="text-[9px] text-slate-600 mt-1.5 leading-relaxed">
-        💾 Salvo automaticamente · localStorage · não sai do navegador
-      </p>
-    </div>
-  )
-}
-
 // ─────────────────────────────────────────────────────────────────────────────
 // [V1.9.371] LiteratureReport — mini-relatório AGREGADO (inteligência estrutural)
 // Memory: feedback_inteligencia_estrutural_vs_inferencial_18_05
@@ -1508,8 +1476,9 @@ REGRAS RÍGIDAS:
       </div>
       {/* fim main column */}
 
-      {/* [V1.9.365/V1.9.366/V1.9.367] Sidebar — Trilha + Notas (fluxo natural, sem sticky
-          pra compat com ResearchWorkstation que tem overflow-y-auto no parent) */}
+      {/* [V1.9.365/V1.9.366/V1.9.367] Sidebar — Trilha de Pesquisa (fluxo natural, sem
+          sticky pra compat com ResearchWorkstation que tem overflow-y-auto no parent).
+          V1.9.414 — "Notas Rápidas" removida: a Nôa Matrix cobre as anotações de sessão. */}
       {sidebarVisible && (
         <aside className="mt-6 lg:mt-0 space-y-4">
           {/* Trilha de Pesquisa */}
@@ -1531,12 +1500,6 @@ REGRAS RÍGIDAS:
               })
             }}
             onClearCases={history.clearCaseOpens}
-          />
-
-          {/* Notas Rápidas */}
-          <NotesPanel
-            notes={history.notes}
-            onChange={history.setNotes}
           />
         </aside>
       )}
