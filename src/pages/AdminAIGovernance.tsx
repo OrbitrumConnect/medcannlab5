@@ -345,24 +345,41 @@ async function fetchSlowOutliers(): Promise<SlowOutlier[]> {
   }
 }
 
-// [V1.9.374-A] Cobertura da instrumentação — quanto do lifetime tem cost vs NULL
+// [V1.9.421] Cobertura da instrumentação — counts no servidor (não puxa linhas).
+//
+// Bug anterior (V1.9.374-A): fazia `.select('metadata').limit(10000)` SEM `.order()`.
+// O PostgREST do Supabase corta toda resposta em 1.000 linhas (`max-rows`), então
+// o `.limit(10000)` nunca pegava o lifetime real — pegava 1.000 linhas em ordem
+// física (≈ as mais ANTIGAS, todas pré-instrumentação) → o painel mostrava
+// `Cobertura 0,0% · $0,00 · total 1.000` sendo o real ~14,5% · ~$6,74 · 3.738.
+//
+// Fix: `total_lifetime` vem de um count exato no servidor (imune ao teto de 1.000);
+// o custo vem de puxar SÓ as linhas já instrumentadas (centenas hoje, bem abaixo
+// do teto), filtrando no servidor por `metadata->cost_usd_estimate not null`.
 async function fetchInstrumentationCoverage(): Promise<InstrumentationCoverage | null> {
   try {
-    const { data, error } = await supabase
+    // Total real lifetime — count no servidor, não traz linhas (imune ao max-rows).
+    const { count: totalCount, error: totalErr } = await supabase
       .from('ai_chat_interactions')
-      .select('metadata, created_at')
-      .limit(10000)
-    if (error || !data) return null
-    let withCost = 0
+      .select('*', { count: 'exact', head: true })
+    if (totalErr || totalCount === null) return null
+
+    // Só as linhas JÁ instrumentadas — filtro no servidor. Hoje são centenas;
+    // o limite alto é folga pro crescimento sem voltar a estourar o teto silencioso.
+    const { data: instrumented, error: instErr } = await supabase
+      .from('ai_chat_interactions')
+      .select('metadata')
+      .not('metadata->cost_usd_estimate', 'is', null)
+      .order('created_at', { ascending: false })
+      .limit(5000)
+    if (instErr || !instrumented) return null
+
     let observedCost = 0
-    for (const row of data as any[]) {
-      const cost = row.metadata?.cost_usd_estimate
-      if (cost !== null && cost !== undefined && cost !== '') {
-        withCost++
-        observedCost += parseFloat(cost) || 0
-      }
+    for (const row of instrumented as any[]) {
+      observedCost += parseFloat((row.metadata as any)?.cost_usd_estimate ?? '0') || 0
     }
-    const total = data.length
+    const total = totalCount
+    const withCost = instrumented.length
     const coveragePct = total > 0 ? (withCost / total) : 0
     // Extrapolação aproximada — assume custo médio observado aplicável ao não-instrumentado
     // Honest disclosure: isso é APENAS estimativa, não medição real
