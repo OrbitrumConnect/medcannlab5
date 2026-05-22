@@ -210,51 +210,13 @@ const requestCache = new Map<string, any>()
 // Limpeza automática do cache a cada 5 minutos
 setInterval(() => requestCache.clear(), 300000)
 
-/** Preserva tags de sistema no fim (ex.: [ASSESSMENT_COMPLETED]) ao reescrever o corpo da mensagem. */
-function splitTrailingAecTags(text: string): { body: string; trailing: string } {
-    if (!text || typeof text !== 'string') return { body: text || '', trailing: '' }
-    const m = text.match(/(\s*\[[A-Z0-9_]+\]\s*)+$/i)
-    if (m === null || m.index === undefined) return { body: text.trim(), trailing: '' }
-    const body = text.slice(0, m.index).trimEnd()
-    const trailing = text.slice(m.index).trim()
-    return { body, trailing }
-}
+// [V1.9.419-D] Bloco aec-governance MORTO removido daqui (confirmado 4x sem
+// call-site, incl. log de AEC completa 22/05): splitTrailingAecTags,
+// normalizeAecPlain, hintAllowsWhatMore, isStrayWhatMoreOnlyOutput,
+// mainComplaintLooksLikeListContinuation, applyAecGovernanceGate ("Guard Rail
+// v2", morto desde o commit kevlar a4c706c). Governanca AEC viva e inline no
+// handler Deno.serve (Verbatim First V1.9.86 + PHASE LOCK + AEC GATE V1.5).
 
-function normalizeAecPlain(s: string): string {
-    return s
-        .toLowerCase()
-        .normalize('NFD')
-        .replace(/[\u0300-\u036f]/g, '')
-        .replace(/\*/g, '')
-        .replace(/\s+/g, ' ')
-        .trim()
-}
-
-function hintAllowsWhatMore(hint: string): boolean {
-    return /\bo que mais\b/i.test(hint)
-}
-
-/** Modelo devolveu só "O que mais?" / "Oq mais?" sem outro conteúdo. */
-function isStrayWhatMoreOnlyOutput(body: string): boolean {
-    const n = normalizeAecPlain(body.replace(/\*\*/g, ''))
-    if (!n) return false
-    return /^(o que mais|oq mais)(\?|\.|!)?$/.test(n)
-}
-
-/** MAIN_COMPLAINT: resposta parece continuação da lista indiciária em vez da pergunta da queixa principal. */
-function mainComplaintLooksLikeListContinuation(body: string, hint: string): boolean {
-    const n = normalizeAecPlain(body.replace(/\*\*/g, ''))
-    if (n.length > 160) return false
-    if (!/\bo que mais\b|\boq mais\b/.test(n)) return false
-    if (/\bde todas\b|\bqual mais\b|\bincomoda\b/.test(n)) return false
-    const h = hint.toLowerCase()
-    return /\bde todas\b|\bqual mais\b|\bincomoda\b/.test(h)
-}
-
-/**
- * Governança determinística: se o sistema está em fase AEC e o modelo tenta escapar do protocolo
- * (seja dizendo apenas "O que mais?" ou tentando encerrar prematuramente), o Core
- */
 /**
  * Camada de Sanitização de Saída (Boundary Protection).
  * Remove tokens internos do Core e tags de controle AEC antes de enviar ao usuário.
@@ -268,71 +230,6 @@ function sanitizeAIResponse(text: string): string {
         .trim()
 }
 
-/**
- * Governança determinística (Guard Rail v2): Garante que a IA não fuja do protocolo clínico.
- * Prioridade 1: Roteiro Selado (Verbatim Lock)
- * Prioridade 2: Válvula de Escape (Interrupção explícita)
- * Prioridade 3: Reforço de Fase (Injeção de Hint em caso de fraqueza)
- */
-function applyAecGovernanceGate(params: {
-    textForUser: string
-    assessmentPhase: string
-    nextQuestionHint?: string
-    aecGateActive: boolean
-    aecVerbatimLock?: boolean
-}): string {
-    const { textForUser, assessmentPhase, nextQuestionHint, aecGateActive, aecVerbatimLock } = params
-
-    // 0. Normalização para detecção robusta de saída (Resolver bug de acentos que quebram escape)
-    const textNorm = (textForUser || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase()
-
-    // 1. FINALIZADO: Apenas limpar saída
-    if (assessmentPhase === 'COMPLETED') {
-        return sanitizeAIResponse(textForUser)
-    }
-
-    if (!aecGateActive || !assessmentPhase) return sanitizeAIResponse(textForUser)
-
-    // 2. Válvula de Escape / Correção (PRIORIDADE MÁXIMA)
-    // Se o usuário quer claramente parar ou corrigir a IA, liberamos a resposta.
-    const isInterruptionResponse = /(parar|cancelar|interromper|reiniciar|recomecar|recomeçar|depois|nao quero|não quero|prefiro parar|voltar mais tarde|encerar|encerrar|parar por agora|chega|sair|stop|cancel|nao falei|nao disse|errou|errado)/i.test(textNorm)
-
-    if (isInterruptionResponse) {
-        console.log('[AEC:Gate] Valvula de escape/correcao acionada. Liberando resposta.')
-        return sanitizeAIResponse(textForUser)
-    }
-
-    // 3. PRIORIDADE 2: ROTEIRO SELADO (AEC_LOCK)
-    if (aecVerbatimLock && nextQuestionHint) {
-        console.log(`[AEC:Verbatim] Lock ativo na fase ${assessmentPhase}. Ignorando IA e retornando Hint Selado.`)
-        return sanitizeAIResponse(nextQuestionHint)
-    }
-
-    // 4. REFORÇO DE PROTOCOLO (Hints)
-    if (nextQuestionHint) {
-        const textNorm = normalizeAecPlain(textForUser)
-
-        // Critério de Fricção 1: Resposta da IA é muito curta ou puramente técnica (alucinação)
-        const isWeakResponse = textForUser.length < 35 || isStrayWhatMoreOnlyOutput(textForUser)
-
-        if (isWeakResponse) {
-            console.log(`[AEC:Gate] Resposta fraca/curta detectada. Resetando para pergunta do protocolo: "${nextQuestionHint}"`)
-            return sanitizeAIResponse(nextQuestionHint)
-        }
-
-        // Critério de Fricção 2: IA divagou e esqueceu a pergunta obrigatória
-        const hintNorm = normalizeAecPlain(nextQuestionHint)
-        const coreWords = hintNorm.split(/\s+/).filter(w => w.length > 5).slice(0, 3)
-        const hasCoreConcept = coreWords.some(word => textNorm.includes(word))
-
-        if (!hasCoreConcept) {
-            console.log(`[AEC:Gate] IA divagou. Concatenando reforço obrigatório.`)
-            return sanitizeAIResponse(`${textForUser}\n\n${nextQuestionHint}`)
-        }
-    }
-
-    return sanitizeAIResponse(textForUser)
-}
 
 const DOC_PENDING_KIND = 'DOC_OPEN_CONFIRMATION'
 
