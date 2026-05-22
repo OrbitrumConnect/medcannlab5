@@ -18,7 +18,7 @@
     "test": "vitest run --coverage",
     "test:watch": "vitest",
     "test:integration": "vitest run tests/integration",
-    "deploy:tradevision": "npx supabase functions deploy tradevision-core --project-ref itdjkfubfzmvmuxxjoae --no-verify-jwt",
+    "deploy:tradevision": "npx supabase functions deploy tradevision-core --project-ref itdjkfubfzmvmuxxjoae",
     "prepare": "husky"
   },
   "lint-staged": {
