@@ -20,12 +20,11 @@ const Header: React.FC<HeaderProps> = ({ onOpenSidebar }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isProfileOpen, setIsProfileOpen] = useState(false)
   const [isViewSwitcherOpen, setIsViewSwitcherOpen] = useState(false)
-  const { t, i18n } = useTranslation()
-
-  const toggleLanguage = () => {
-    const newLang = i18n.language === 'en' ? 'pt' : 'en'
-    i18n.changeLanguage(newLang)
-  }
+  // [V1.9.429] Botão BR/US removido — cobria 3 strings (Login/Sair/Configurações)
+  // de 1.500+ no app. Era promessa vazia (mesma classe do toggle de tema que
+  // matamos). i18n + JSONs + chamadas `t()` mantidos como semente caso um dia
+  // se faça i18n a sério (audit completo das strings primeiro, aí volta o botão).
+  const { t } = useTranslation()
 
   const headerGradient = 'linear-gradient(135deg, rgba(10,25,47,0.96) 0%, rgba(26,54,93,0.92) 55%, rgba(45,90,61,0.9) 100%)'
   const neutralSurface = 'rgba(7, 22, 41, 0.85)'
@@ -227,13 +226,6 @@ const Header: React.FC<HeaderProps> = ({ onOpenSidebar }) => {
             >
               <Menu className="w-5 h-5 sm:w-6 sm:h-6" />
             </button>
-            <button
-              onClick={toggleLanguage}
-              className="md:hidden p-1.5 rounded-lg hover:bg-[#1b314e] transition-colors"
-              title={i18n.language === 'en' ? 'Mudar para Português' : 'Switch to English'}
-            >
-              <span className="text-lg leading-none">{i18n.language === 'en' ? '🇺🇸' : '🇧🇷'}</span>
-            </button>
           </div>
 
           {/* CENTRO: Desktop com triggers/nav; Mobile: vazio (triggers vão na segunda linha) */}
@@ -415,16 +407,7 @@ const Header: React.FC<HeaderProps> = ({ onOpenSidebar }) => {
           {/* User Menu - Direita */}
           <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-2.5 shrink-0 z-20 md:relative md:right-auto md:top-auto md:translate-y-0 md:gap-3 lg:gap-4">
 
-            {/* Language Toggle */}
-            <button
-              onClick={toggleLanguage}
-              className="hidden md:block p-2 rounded-lg hover:bg-[#1b314e] transition-colors"
-              title={i18n.language === 'en' ? 'Mudar para Português' : 'Switch to English'}
-            >
-              <span className="text-xl leading-none">
-                {i18n.language === 'en' ? '🇺🇸' : '🇧🇷'}
-              </span>
-            </button>
+            {/* [V1.9.429] Language Toggle removido — cobria 0,2% das strings. */}
 
             {/* Botão de Ajuda — reabre o tutorial guiado */}
             {user && (
