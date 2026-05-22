@@ -1,4 +1,4 @@
-# Diário 22/05/2026 — Refator tradevision-core (pausado) + F3 dossiê v2
+# Diário 22/05/2026 — Refator tradevision-core (pausado) + auditoria 360° + consent loop + Observabilidade IA
 
 **Estado de entrada**: Diário 21/05 selado em `b0dfd18` (Bloco Q + tag `v1.9.418-forum-cann-matrix-checkpoint`). Sessão da madrugada 21→22/05 abriu uma frente nova: o refator anti-bus-factor do `tradevision-core`.
 
@@ -81,6 +81,51 @@ Frente de Matrix + `dossierExport.ts`. Parqueado → memória `project_f3_dossie
 
 Pedro perguntou à Matrix: *"qual documentação você indicaria, já que escolhi a errada?"* — pergunta **diretiva**. A Matrix **recusou recomendar** (*"não posso indicar documentos específicos"*) e devolveu a curadoria ao médico. **A fronteira Z2 segurou sob provocação direta.** Isso validou empíricamente o refinamento B (o score de pertinência é a forma Z2-safe de ajudar a curadoria — a Matrix não dirige, mas pontua o que o médico marcou).
 
+## 🩹 BLOCO J — Consent loop: paciente real presa (V1.9.420)
+
+Ricardo trouxe um caso urgente: **Maria das Graças** (paciente real) presa na tela de Termos de Uso — aceitava, recarregava, e o modal voltava. **Loop infinito.**
+
+Causa raiz: o `ConsentGuard` fazia `window.location.reload()` **sem checar o resultado** do `.update()`. O Supabase `.update()` não lança exceção em 0 linhas afetadas. Se a conta **não tem registro em `public.users`** (o trigger `handle_new_user` falhou no signup), o update afeta 0 linhas → `consent_accepted_at` fica null → recarrega → modal de novo.
+
+- **V1.9.420** (`6a653cb`) — `handleConfirm` agora faz `.select('id')`, checa `error` e `data.length===0`; em 0 linhas mostra mensagem clara ("não recarregue, contate o suporte") e **NÃO recarrega**; só recarrega em sucesso confirmado.
+- **Maria das Graças**: `af59920c` / `graca11souza62@gmail.com` (Ricardo confirmou o e-mail). INSERT manual da row em `public.users` — verificado: `users` + `user_profiles` + `user_roles` presentes, role `paciente`. Ela destrava.
+- **Passo 2 pendente**: migrar 4 appointments + 7 AECs de `43f53f57` → `af59920c` — aguarda decisão do Ricardo (é dado clínico-real ou teste antigo?).
+
+## 🔍 BLOCO K — Auditoria 360° + Classe A (schema hygiene)
+
+Auditoria completa do sistema — front + back + Supabase (`AUDITORIA_COMPLETA_22_05_2026.md`, commit `88d8674`).
+
+Achados que **calibraram** narrativa antiga: RLS habilitado em **139/139** tabelas; **41 views** todas `security_invoker`; o "72 docs órfãos P0" do backlog **REFUTADO** (0 de owners deletados); divergência dual-write `clinical_rationalities` ↔ jsonb medida em **~3%** (4 de 140); qualidade das policies RLS sã (permissivas só em catálogo/service_role).
+
+**Classe A — schema hygiene** (`37041ab` + `df2786e`): arquivados e dropados **3 tabelas de backup mortas** (`documents_backup_23_04`, `clinical_reports_content_backup_24_04`, `clinical_reports_consent_backup_v1_9_39`). Dumps JSON salvos em `docs/archive_backups_22_05/` **antes** do drop — reversível. Confirmado zero referência em código vivo (só apareciam no `types.ts` auto-gerado).
+
+**Correção do Pedro** (P9): "0 rows ≠ morto" — *não-uso ≠ não-precisa*. Áreas vazias podem ser só features que ninguém usou ainda. Só os 3 backups **datados** eram realmente mortos; o resto fica.
+
+## 📨 BLOCO L — Texto comercial do João (avaliação ×2)
+
+João quer mandar uma carta estruturando um ecossistema "Associação Planta Mãe + MedCannLab + 1 Pure".
+
+- **1ª versão**: overclaim — posicionava a **MedCannLab vendendo produto** / white-label / marca própria / franquia. Recomendado **NÃO mandar**.
+- **2ª versão**: melhorou — produto/white-label/marca própria movidos pra **seção da 1 Pure** (onde devem estar). Mas a seção da MedCannLab ainda descrevia a empresa errada: "plataforma integradora de desenvolvimento institucional" + "apoio à estruturação regulatória" = uma consultoria que a MedCannLab **não é**; e em nenhum momento dizia que existe um **app**.
+
+Pedro reafirmou a linha dura: **"nós na MedCannLab não vendemos óleo nada! temos médicos só, parceria e o app"**. Os 3 papéis corretos: **Planta Mãe** = associação/pacientes · **MedCannLab** = app clínico + corpo médico + modelo de parceria · **1 Pure** = produtos/fornecimento. Entreguei a seção MedCannLab reescrita, pronta pra colar (app clínico / médicos prescritores / prontuário LGPD / eixo ensino em estruturação / modelo de parceria).
+
+**Flag operacional**: a carta fala em **~50 pacientes** da Planta Mãe migrando — mas o beta autorizado é **20-30 usuários**. Precisa faseamento alinhado com Pedro antes de mandar.
+
+## 📊 BLOCO M — Observabilidade IA (Z1/Z2) + V1.9.421
+
+Pedro pediu análise da aba **Observabilidade de Sistemas IA (Z1/Z2)** ("tudo ok?").
+
+Achado: a aba **se autocontradiz** — card de topo mostra `$6,74` de custo, mas a seção "Cobertura da instrumentação" mostra `Cobertura 0,0% · $0,00 · total 1.000`.
+
+Causa raiz (verificada via Management API): **o PostgREST do Supabase corta toda resposta em 1.000 linhas** (`max-rows`). `fetchInstrumentationCoverage` fazia `.select().limit(10000)` **sem `.order()`** → recebia 1.000 linhas em ordem física (≈ as mais antigas, todas pré-instrumentação de 13/05) → 0 com custo → `0,0%`. O card de topo acerta **por sorte** — usa `.order(desc)`, pega as 1.000 mais novas, e as 543 linhas instrumentadas cabem inteiras nessa janela.
+
+Números reais: **3.738** interações lifetime · **543** instrumentadas · **14,5%** cobertura · **$6,74** custo real · latência média 5,8s / p95 13s / máx 58,7s.
+
+- **V1.9.421** (`18ab065`) — `fetchInstrumentationCoverage` agora usa **count exato no servidor** (`count:'exact', head:true`, imune ao teto) + filtro server-side pelas linhas já instrumentadas pra somar custo. 1 arquivo, type-check verde, pushado 4 refs.
+
+As **2 issues que a aba auto-sinaliza** (Casos Similares com 0 interações logadas; outlier de latência AEC pós-consentimento) são **honestas e corretas** — o design Z1/Z2 da aba é bom, o bug era só a query por baixo.
+
 ---
 
 ## 🧬 Memórias cristalizadas hoje
@@ -88,9 +133,11 @@ Pedro perguntou à Matrix: *"qual documentação você indicaria, já que escolh
 - `project_refator_tradevision_core_pausado_22_05` — estado da branch + gatilho de retomada + constraint V1.9.35.
 - `project_f3_dossie_v2_parqueado_22_05` — os 3 refinamentos A+B+C.
 - `feedback_material_b_pode_contradizer_constituicao_22_05` — Material B pode se autocontradizer; triar contra a Constituição.
+- `feedback_postgrest_max_rows_1000_silencioso_22_05` — PostgREST corta todo `.select()` em 1.000 linhas; `.limit(10000)` é no-op acima disso; contar exige `count:'exact'`.
+- `project_joao_vidal_biocann_1pure_estrutura` — **atualizada** com o desenvolvimento 22/05 (carta tripartite Planta Mãe + posicionamento "MedCannLab não vende produto").
 
 ## 🎯 Frase âncora do dia
 
-> *"Um refator de core feito como o método manda: baseline antes, `deno check` por passo, mecânico, reversível — e a auditoria empírica pagou duas vezes (a cicatriz V1.9.35 que quase repetiríamos, e ~115 linhas de falsa-governança morta no core, confirmada 4×). Pausado na fundação, sem limbo: a branch espera, a tag protege, e o que sobra só volta com gatilho real. E a Matrix provou a Constituição: sob uma pergunta diretiva, segurou a linha Z2 e devolveu a decisão ao médico."*
+> *"Um refator de core feito como o método manda: baseline antes, `deno check` por passo, mecânico, reversível — e a auditoria empírica pagou duas vezes (a cicatriz V1.9.35 que quase repetiríamos, e ~115 linhas de falsa-governança morta no core, confirmada 4×). Pausado na fundação, sem limbo. Depois o dia foi de calibragem honesta: uma paciente real presa num loop de consentimento (o `.update()` que não recarrega sem confirmar gravou), uma auditoria 360° que refutou um P0 fantasma, e uma aba de Observabilidade que mentia 0% de cobertura porque o PostgREST corta resposta em 1.000 linhas em silêncio. O padrão do dia: o sistema estava são — o que mentia eram as leituras sobre ele."*
 
-— Dia 22/05/2026 · V1.9.419 + A/B/C/D (branch pausada) · F3 dossiê v2 parqueado · 3 memórias nível 1
+— Dia 22/05/2026 · V1.9.419+A/B/C/D (branch pausada) · V1.9.420 consent loop · V1.9.421 Observabilidade · auditoria 360° + Classe A · 5 memórias nível 1
