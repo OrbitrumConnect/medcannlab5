@@ -1,3 +1,23 @@
+/**
+ * ============================================================================
+ * ⚠️  NOTA DE ARQUITETURA LOAD-BEARING — LEIA ANTES DE MEXER (V1.9.419)
+ * ============================================================================
+ * Refator anti-bus-factor (22/05/2026): a camada de helpers do index.ts está
+ * sendo extraída em módulos irmãos (./cors.ts, ./triggers.ts, ./doc-detection.ts,
+ * ...). O index.ts é o orquestrador que os importa.
+ *
+ * 1. DEPLOY OBRIGATORIAMENTE VIA CLI  →  `npm run deploy:tradevision`
+ *    NUNCA pelo dashboard do Supabase: o dashboard sobe SÓ o index.ts. Esta
+ *    função importa módulos irmãos (./cos_kernel.ts e os helpers extraídos) —
+ *    deploy via dashboard descarta os imports e QUEBRA a função em produção.
+ *
+ * 2. O Clinical Score Calculator permanece INLINE de propósito (cicatriz
+ *    V1.9.33→35: extrair pra arquivo separado já falhou no deploy). Os blocos
+ *    de score abaixo NÃO devem ser modularizados.
+ *
+ * 3. O handler Deno.serve(...) é o orquestrador — permanece neste arquivo.
+ * ============================================================================
+ */
 // TRADEVISION CORE: VERSÃO MASTER (PRODUÇÃO)
 // Deno.serve() — API nativa do runtime (recomendado pela documentação Supabase)
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2"
