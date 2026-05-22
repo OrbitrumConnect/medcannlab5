@@ -213,10 +213,50 @@ O plano F4 saiu do papel e virou espinha funcional **no mesmo dia**:
 - Bloqueadores de Marco 2: pseudonimização do conteúdo do Fórum (resíduo), TURN server, WiseCare prod.
 - Bloqueador de Marco 3: Ricardo UUID hardcoded.
 
+## 🎨 BLOCO P — F4 end-to-end + polish Fórum Cann Matrix (noite 21→22/05)
+
+Sessão continuou pós-Bloco O. **11 commits (V1.9.408→418)**, cada um type-check limpo + push 4 refs, zero regressão.
+
+### P.1 — F4 fechado end-to-end (V1.9.408→410)
+- **V1.9.408** — `loadDebates` do Cann Matrix (`ChatGlobal`) filtra `status` em `active/resolved` + mapeia colunas reais + JOIN `users` pro autor. Só caso aprovado pelo conselho vira debate.
+- **V1.9.409** — painel "Notícias" do Cann Matrix (3 notícias hardcoded 15/01/2025) → **"Debates" ao vivo** (forum_posts aprovados). Estado `debates` movido pra cima do `communityPanelConfig` useMemo (evita TDZ).
+- **V1.9.410** — card do dossiê **fixado no topo da sala de debate** (`DebateRoom`). Resposta à dúvida de design do Pedro: cada debate JÁ tem sala própria (`/app/debate/{id}`, mensagens isoladas por `chat_id`) — não cai no canal compartilhado "Casos Clínicos". Faltava só o doc visível → card recolhível com trigger "Ver dossiê completo".
+- **Ciclo F4 completo:** dossiê → Enviar → `pending_review` → conselho Avalia → `active` → debate (sala própria + doc no topo) → aparece no painel Debates. Falta só F4.4 ranking.
+
+### P.2 — Sidebar + degradê (V1.9.411, 413)
+- **V1.9.411** — "Prescrições Médicas" escondida do sidebar do profissional (era atalho duplicado da aba Prescrições do Terminal de Atendimento — mesma rota).
+- **V1.9.413** — Dashboard de Pesquisa / Nôa Matrix / Casos Similares estavam com fundo flat `#0f172a` (a parada mais escura do `backgroundGradient`); os 3 wrappers em `ResearchWorkstation.renderContent()` passaram a usar o degradê — consistência com os demais 7 tabs.
+
+### P.3 — Redesign Fórum de Casos Clínicos (V1.9.412)
+Header verde gigante → faixa compacta; "Acesso ético" boxed → strip de 1 linha; 4 stats grandes no rodapé → chips no topo; lista esticada → **grid 2 colunas** com cards de altura igual; **paginação** 6/página (`currentPage` clampado contra página fantasma).
+
+### P.4 — Notas Rápidas removida (V1.9.414)
+`NotesPanel` (localStorage) saiu da sidebar do Casos Similares — a Nôa Matrix cobre as anotações de sessão. Sidebar agora só "Trilha de Pesquisa".
+
+### P.5 — Polish Fórum Cann Matrix (V1.9.415→418)
+- **V1.9.415** — intro + banner "Participação responsável" removidos; chat 50%→60% largura (grid lg 4→5 col), sidebars 25%→20%.
+- **V1.9.416** — chat com altura **relativa à viewport** (`calc(100vh-220px)` + teto 600px). V1.9.415 tinha deixado 680px FIXO → estourou a viewport, empurrou a barra de digitar pra baixo da dobra. Lição: altura de chat não é número mágico, é relação com a viewport.
+- **V1.9.417** — empty state do chat (era void com só o indicador); badge "0" escondido quando zero; canais densos (descrição truncada em 1 linha).
+- **V1.9.418** — botões Video/Phone **mortos** (sem `onClick`) removidos do header do chat.
+
+### P.6 — Git corrompido por 2 quedas de luz
+2 quedas de energia na sessão. A segunda corrompeu `.git/refs/heads/main` (bytes nulos) — `git status` reportou "branch broken". **Commits intactos** (objetos OK); ref restaurado removendo o arquivo corrompido + `git update-ref` pro V1.9.413. `push` dos 4 refs confirmou o repo saudável. Nada perdido.
+
+### P.7 — Call multi-usuário: avaliado, não construído
+Pergunta do Pedro: dá pra call de vários usuários? **O motor V4H aguenta** (`WiseCareProvider` é sala de conferência — rastreia `participant:joined/left`). Mas hoje: toda sessão amarrada a `appointmentId` clínico, WiseCare em homolog, sem UI de grupo/governança. É **feature, não polish**. Casa natural = `DebateRoom` (debate ao vivo), não o chat efêmero do canal Geral. Parqueado.
+
+### P.8 — Validação empírica do chat clínico (log `tradevision-core`)
+Log de teste admin do Pedro analisado: AEC percorreu `IDENTIFICATION→COMPLAINT_LIST→MAIN_COMPLAINT→CONFIRMING_EXIT→INTERRUPTED`. AEC GATE V1.5 + SMART_SCHEDULING_GUARD V1.9.216 seguraram agendamento em **toda** fase. Zero erro/warning. Encerramento em `INTERRUPTED` = correto (Pedro pediu encerrar no meio). Nenhum commit do dia tocou edge function — `tradevision-core` intocado. **Zero regressão confirmada empíricamente.**
+
+### Commits V1.9.408→418 (HEAD `d6db875`)
+`408` Cann Matrix end-to-end · `409` Notícias→Debates · `410` dossiê no topo da sala · `411` sidebar Prescrições · `412` redesign Fórum Casos · `413` degradê 3 tabs · `414` Notas Rápidas fora · `415` chat maior · `416` altura viewport · `417` polish empty/zeros/densos · `418` Video/Phone fora.
+
 ---
 
 ## 🎯 Frase âncora do dia
 
 > *"Eixo Pesquisa validado de ponta a ponta, e o F4 saiu do papel pra espinha funcional no mesmo dia — dossiê → Enviar ao Fórum → conselho Avalia → aprovar/rejeitar. 16 commits cirúrgicos (V1.9.393→407), F4.0→F4.3, cada um type-check + smoke + 4 refs, zero regressão. O audit Material B foi verificado por grep — e pegou 1 erro dele. Uma dúvida do Pedro ('tá correto?') achou um furo de LGPD que nem o audit viu. Disciplina: Material B se verifica; a desconfiança calibrada acha o que a análise não acha."*
 
-— Dia 21/05/2026 · V1.9.393→407 + F4.0→F4.3 + Plano F4 · eixo Pesquisa + espinha do Fórum · 6 memórias nível 1
+— Dia 21/05/2026 · V1.9.393→418 + F4.0→F4.3 + Plano F4 · eixo Pesquisa + espinha do Fórum · 6 memórias nível 1
+
+> *Adendo Bloco P (noite 21→22/05): o F4 fechou end-to-end (dossiê → conselho → debate em sala própria com o doc no topo) e o Fórum Cann Matrix levou um pente de polish — 11 commits V1.9.408→418. No meio, 2 quedas de luz; a segunda corrompeu o ref do git e foi recuperada sem perder nada. O log do `tradevision-core` provou que o chat clínico segue intocado. Disciplina: altura de chat é relação com a viewport, não número mágico; e botão sem `onClick` não é feature, é ruído.*
