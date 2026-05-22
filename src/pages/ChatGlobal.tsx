@@ -1469,7 +1469,10 @@ const ChatGlobal: React.FC = () => {
           {/* Chat Area — V1.9.415: col-span-3 (de 2) quando o painel lateral está
               visível → chat ~60% da largura; sidebars caem de 25% pra 20% cada */}
           <div className={`${!showModeration && showCommunityColumn ? 'lg:col-span-3' : 'lg:col-span-2'} order-1 lg:order-2`}>
-            <div className="bg-slate-800/80 rounded-lg border border-slate-700 h-[400px] md:h-[500px] lg:h-[680px] flex flex-col">
+            {/* V1.9.416 — altura relativa à viewport (composer SEMPRE visível,
+                mensagens rolam dentro). Teto 600px = valor comprovado; o calc
+                só encolhe em telas baixas. Mata o "preciso scrollar pro input". */}
+            <div className="bg-slate-800/80 rounded-lg border border-slate-700 h-[400px] md:h-[520px] lg:h-[calc(100vh-220px)] lg:max-h-[600px] flex flex-col">
               {/* Chat Header */}
               <div className="p-3 md:p-4 border-b border-slate-700 bg-slate-700/50">
                 <div className="flex items-center justify-between">
