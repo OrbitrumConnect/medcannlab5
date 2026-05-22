@@ -3,10 +3,11 @@ import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { useUserView } from '../contexts/UserViewContext'
 import { useDashboardTriggersOptional } from '../contexts/DashboardTriggersContext'
-import { Menu, X, User, LogOut, Settings, Stethoscope, GraduationCap, Shield, ChevronDown, Brain, HelpCircle } from 'lucide-react'
+import { Menu, X, User, LogOut, Settings, Stethoscope, GraduationCap, Shield, ChevronDown, Brain, HelpCircle, Sun, Moon } from 'lucide-react'
 import NotificationCenter from './NotificationCenter'
 import { normalizeUserType, getDefaultRouteByType, UserType } from '../lib/userTypes'
 import { useTranslation } from 'react-i18next'
+import { useTheme } from '../contexts/ThemeContext'
 
 interface HeaderProps {
   onOpenSidebar?: () => void
@@ -21,6 +22,8 @@ const Header: React.FC<HeaderProps> = ({ onOpenSidebar }) => {
   const [isProfileOpen, setIsProfileOpen] = useState(false)
   const [isViewSwitcherOpen, setIsViewSwitcherOpen] = useState(false)
   const { t, i18n } = useTranslation()
+  // [V1.9.426] Theme toggle — mesmo padrão UX do language toggle (click → muda)
+  const { theme, toggleTheme } = useTheme()
 
   const toggleLanguage = () => {
     const newLang = i18n.language === 'en' ? 'pt' : 'en'
@@ -234,6 +237,15 @@ const Header: React.FC<HeaderProps> = ({ onOpenSidebar }) => {
             >
               <span className="text-lg leading-none">{i18n.language === 'en' ? '🇺🇸' : '🇧🇷'}</span>
             </button>
+            {/* [V1.9.426] Theme toggle — mobile */}
+            <button
+              onClick={toggleTheme}
+              className="md:hidden p-1.5 rounded-lg hover:bg-[#1b314e] transition-colors text-slate-300 hover:text-emerald-400"
+              title={theme === 'dark' ? 'Modo dia' : 'Modo noite'}
+              aria-label={theme === 'dark' ? 'Ativar modo dia' : 'Ativar modo noite'}
+            >
+              {theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+            </button>
           </div>
 
           {/* CENTRO: Desktop com triggers/nav; Mobile: vazio (triggers vão na segunda linha) */}
@@ -414,6 +426,16 @@ const Header: React.FC<HeaderProps> = ({ onOpenSidebar }) => {
 
           {/* User Menu - Direita */}
           <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-2.5 shrink-0 z-20 md:relative md:right-auto md:top-auto md:translate-y-0 md:gap-3 lg:gap-4">
+
+            {/* [V1.9.426] Theme Toggle — mesmo padrão do Language Toggle */}
+            <button
+              onClick={toggleTheme}
+              className="hidden md:block p-2 rounded-lg hover:bg-[#1b314e] transition-colors text-slate-300 hover:text-emerald-400"
+              title={theme === 'dark' ? 'Mudar para modo dia' : 'Mudar para modo noite'}
+              aria-label={theme === 'dark' ? 'Ativar modo dia' : 'Ativar modo noite'}
+            >
+              {theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+            </button>
 
             {/* Language Toggle */}
             <button
