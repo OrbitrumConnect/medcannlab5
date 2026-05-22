@@ -1,5 +1,6 @@
 
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { ThemeProvider } from './contexts/ThemeContext'
 import { AuthProvider } from './contexts/AuthContext'
 import { ToastProvider } from './contexts/ToastContext'
 import { ConfirmProvider } from './contexts/ConfirmContext'
@@ -104,6 +105,9 @@ import ResetPassword from './pages/ResetPassword'
 
 function App() {
   return (
+    // [V1.9.425] ThemeProvider envolve tudo — tema é infraestrutura ambiente,
+    // disponível inclusive em error pages e antes do AuthProvider.
+    <ThemeProvider>
     <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
       <AuthProvider>
         <UserViewProvider>
@@ -358,6 +362,7 @@ function App() {
         </UserViewProvider>
       </AuthProvider>
     </BrowserRouter>
+    </ThemeProvider>
   )
 }
 

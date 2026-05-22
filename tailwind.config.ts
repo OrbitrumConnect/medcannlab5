@@ -17,6 +17,26 @@ const config: Config = {
     },
     extend: {
       colors: {
+        // [V1.9.425] Tokens de marca theme-aware — resolvem em CSS vars
+        // definidas em src/index.css por `[data-theme="dark|light"]`. Código
+        // novo opta-in com `bg-brand-bg`, `text-brand-text`, etc., e responde
+        // ao toggle. Código legacy (bg-slate-900) fica inalterado.
+        brand: {
+          bg: 'var(--brand-bg)',
+          surface: 'var(--brand-surface)',
+          'surface-subtle': 'var(--brand-surface-subtle)',
+          text: 'var(--brand-text)',
+          'text-secondary': 'var(--brand-text-secondary)',
+          'text-muted': 'var(--brand-text-muted)',
+          border: 'var(--brand-border)',
+          'border-subtle': 'var(--brand-border-subtle)',
+          accent: 'var(--brand-accent)',
+          'accent-vital': 'var(--brand-accent-vital)',
+          'accent-warm': 'var(--brand-accent-warm)',
+          alert: 'var(--brand-alert)',
+          danger: 'var(--brand-danger)',
+          success: 'var(--brand-success)',
+        },
         border: "#e2e8f0",
         input: "#e2e8f0",
         ring: "#3b82f6",
@@ -149,6 +169,9 @@ const config: Config = {
       backgroundImage: {
         'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
         'gradient-conic': 'conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))',
+        // [V1.9.425] Degradês theme-aware — assinatura visual preservada nos 2 modos.
+        'brand-page': 'var(--brand-bg-gradient)',
+        'brand-gradient': 'var(--brand-gradient)',
       },
     },
   },
