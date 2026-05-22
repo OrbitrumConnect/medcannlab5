@@ -15,6 +15,7 @@ const ConsentGuard: React.FC<{ children: React.ReactNode }> = ({ children }) => 
   const [acceptedDataSharing, setAcceptedDataSharing] = useState(false)
   const [acceptedMedicalConsultation, setAcceptedMedicalConsultation] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
+  const [errorMsg, setErrorMsg] = useState<string | null>(null)
 
   // Se não há user ou já aceitou, libera
   if (!user || user.consent_accepted_at) {
@@ -32,16 +33,41 @@ const ConsentGuard: React.FC<{ children: React.ReactNode }> = ({ children }) => 
   const handleConfirm = async () => {
     if (!canProceed || !user) return
     setIsSaving(true)
+    setErrorMsg(null)
     try {
-      await supabase
+      // V1.9.420 — fix bug class "consent loop": o .update() do Supabase NÃO
+      // lança exceção em erro de RLS nem em 0 linhas afetadas — devolve
+      // { data, error }. O código antigo dava window.location.reload() SEM
+      // checar nada → se a conta não tem registro em public.users (trigger
+      // handle_new_user falhou no signup), o update afeta 0 linhas,
+      // consent_accepted_at fica null, recarrega, mostra o modal de novo →
+      // LOOP INFINITO. Agora: .select() pra contar linhas, e só recarrega
+      // se o update REALMENTE gravou.
+      const { data, error } = await supabase
         .from('users')
         .update({ consent_accepted_at: new Date().toISOString() } as any)
         .eq('id', user.id)
+        .select('id')
 
-      // Reload page to refresh user data
+      if (error) {
+        console.error('[ConsentGuard] erro ao salvar consentimento:', error)
+        setErrorMsg('Não foi possível salvar o consentimento. Tente novamente em instantes.')
+        return
+      }
+
+      if (!data || data.length === 0) {
+        // 0 linhas = a conta não existe em public.users. NÃO recarregar —
+        // recarregar aqui é o que prende o usuário no loop infinito.
+        console.error('[ConsentGuard] update afetou 0 linhas — conta sem registro em public.users. user.id:', user.id)
+        setErrorMsg('Sua conta está com um registro incompleto e não foi possível concluir aqui. NÃO recarregue a página — contate o suporte informando o e-mail usado no login.')
+        return
+      }
+
+      // Sucesso confirmado — só agora recarrega pra atualizar os dados do usuário.
       window.location.reload()
     } catch (err) {
-      console.error('Erro ao salvar consentimento:', err)
+      console.error('[ConsentGuard] exceção ao salvar consentimento:', err)
+      setErrorMsg('Erro inesperado ao salvar. Tente novamente.')
     } finally {
       setIsSaving(false)
     }
@@ -166,6 +192,12 @@ const ConsentGuard: React.FC<{ children: React.ReactNode }> = ({ children }) => 
             {isSaving ? 'Salvando...' : 'Confirmar e Continuar'}
           </button>
         </div>
+
+        {errorMsg && (
+          <div className="mt-4 bg-red-500/10 border border-red-500/30 rounded-xl p-3">
+            <p className="text-red-300 text-sm leading-relaxed">{errorMsg}</p>
+          </div>
+        )}
 
         <p className="text-xs text-slate-500 mt-4 text-center">
           Você pode revogar seu consentimento a qualquer momento nas configurações da conta
