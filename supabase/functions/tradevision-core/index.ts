@@ -28,6 +28,7 @@ import { assertPatientHasDoctorContext } from "../_shared/aec_gate.ts"
 import { calcCostUsd, getProviderFor, PRICING_VERSION } from "../_shared/modelPricing.ts"
 // [V1.9.419] Helpers extraídos — refator anti-bus-factor (ver sentinel no topo)
 import { getCorsHeaders } from "./cors.ts"
+import type { AppCommandV1, PendingActionCandidate } from "./types.ts"
 
 // ============================================================================
 // [V1.9.35] Clinical Score Calculator — INLINE dentro do index.ts
@@ -456,35 +457,6 @@ function applyAecGovernanceGate(params: {
     }
 
     return sanitizeAIResponse(textForUser)
-}
-
-type NoaUiCommand =
-    | { type: 'navigate-section'; target: string; label?: string; fallbackRoute?: string; payload?: Record<string, unknown> }
-    | { type: 'navigate-route'; target: string; label?: string; fallbackRoute?: string; payload?: Record<string, unknown> }
-    | { type: 'show-prescription'; target: string; label?: string; fallbackRoute?: string; payload?: Record<string, unknown> }
-    | { type: 'filter-patients'; target: string; label?: string; fallbackRoute?: string; payload?: Record<string, unknown> }
-    | { type: 'open-document'; target: string; label?: string; fallbackRoute?: string; payload?: Record<string, unknown> }
-    | { type: 'show-document-inline'; target: string; label?: string; fallbackRoute?: string; payload?: Record<string, unknown> }
-    | { type: 'document-list'; target?: string; label?: string; payload?: Record<string, unknown> }
-    | { type: 'sign-document'; target?: string; label?: string; payload?: Record<string, unknown> }
-    | { type: 'sign-document'; target?: string; label?: string; payload?: Record<string, unknown> }
-    | { type: 'check-certificate'; target?: string; label?: string; payload?: Record<string, unknown> }
-
-type AppCommandV1 = {
-    kind: 'noa_command'
-    command: NoaUiCommand
-    requires_confirmation?: boolean
-    reason?: string
-}
-
-type PendingActionCandidate = {
-    document_id: string
-    title: string
-    summary?: string
-    content?: string
-    audience?: string[]
-    category?: string | null
-    score?: number
 }
 
 const DOC_PENDING_KIND = 'DOC_OPEN_CONFIRMATION'
