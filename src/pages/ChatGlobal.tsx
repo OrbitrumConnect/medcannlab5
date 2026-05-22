@@ -1378,6 +1378,10 @@ const ChatGlobal: React.FC = () => {
               <div className="space-y-2">
                 {channelsWithAccess.map((channel) => {
                   const isActive = activeChannel === channel.id
+                  // V1.9.417 — contagem do canal (msgs ou membros); 0 não exibe badge
+                  const channelCount = (channel as any).messageCount !== undefined
+                    ? (channel as any).messageCount
+                    : channel.members || 0
                   const baseClasses = isActive && channel.canView
                     ? 'bg-primary-600 text-white'
                     : channel.canView
@@ -1394,26 +1398,28 @@ const ChatGlobal: React.FC = () => {
                         }
                         setActiveChannel(channel.id)
                       }}
-                      className={`w-full flex items-center justify-between p-3 rounded-lg transition-colors ${baseClasses}`}
+                      className={`w-full flex items-center justify-between gap-2 p-2.5 rounded-lg transition-colors ${baseClasses}`}
                       disabled={!channel.canView}
                     >
-                      <div className="flex items-center space-x-3">
-                        <div className={`w-2 h-2 rounded-full ${channel.canView ? 'bg-green-400' : 'bg-slate-500'}`}></div>
-                        <div className="text-left">
-                          <p className="font-medium">{channel.name}</p>
-                          <p className="text-xs opacity-75">{channel.description}</p>
+                      <div className="flex items-center space-x-3 min-w-0 flex-1">
+                        <div className={`w-2 h-2 rounded-full flex-shrink-0 ${channel.canView ? 'bg-green-400' : 'bg-slate-500'}`}></div>
+                        <div className="text-left min-w-0">
+                          <p className="font-medium text-sm truncate">{channel.name}</p>
+                          <p className="text-xs opacity-75 truncate">{channel.description}</p>
                         </div>
                       </div>
-                      <div className="flex items-center space-x-2">
+                      <div className="flex items-center space-x-2 flex-shrink-0">
                         {channel.isReadOnly && channel.canView && (
                           <span className="text-[10px] uppercase tracking-wide bg-slate-600/70 text-slate-200 px-2 py-0.5 rounded-full">
                             Somente leitura
                           </span>
                         )}
                         {!channel.canView && <Lock className="w-3.5 h-3.5 text-slate-400" />}
-                        <span className="text-xs bg-slate-600 px-2 py-1 rounded" title={`${channel.messageCount || 0} mensagens, ${channel.members || 0} membros`}>
-                          {(channel as any).messageCount !== undefined ? (channel as any).messageCount : channel.members || 0}
-                        </span>
+                        {channelCount > 0 && (
+                          <span className="text-xs bg-slate-600 px-2 py-1 rounded" title={`${channelCount} ${(channel as any).messageCount !== undefined ? 'mensagens' : 'membros'}`}>
+                            {channelCount}
+                          </span>
+                        )}
                         {channel.unread > 0 && channel.canView && (
                           <span className="bg-red-500 text-white text-xs px-2 py-1 rounded-full">
                             {channel.unread}
@@ -1429,9 +1435,15 @@ const ChatGlobal: React.FC = () => {
             {/* Online Users */}
             <div className="bg-slate-800/80 rounded-lg p-3 md:p-4 lg:p-6 border border-slate-700 mt-4 md:mt-6">
               <h3 className="text-base md:text-lg font-semibold text-white mb-3 md:mb-4">
-                👥 Online ({onlineUsers.filter(u => u.status === 'online').length})
+                👥 Online
+                {onlineUsers.filter(u => u.status === 'online').length > 0 && (
+                  <span className="text-slate-400 font-normal"> ({onlineUsers.filter(u => u.status === 'online').length})</span>
+                )}
               </h3>
               <div className="space-y-3">
+                {onlineUsers.length === 0 && (
+                  <p className="text-xs text-slate-500 text-center py-2">Ninguém online no momento.</p>
+                )}
                 {onlineUsers.map((user) => (
                   <div key={user.id} className="flex items-center justify-between p-3 hover:bg-slate-700/50 rounded-lg transition-colors">
                     <div className="flex items-center space-x-3">
@@ -1480,8 +1492,8 @@ const ChatGlobal: React.FC = () => {
                     <h3 className="text-base md:text-lg font-semibold text-white truncate">
                       {activeChannelData?.name || 'Canal indisponível'}
                     </h3>
-                    <p className="text-slate-400 text-xs md:text-sm">
-                      {activeChannelData?.members || 0} membros
+                    <p className="text-slate-400 text-xs md:text-sm truncate">
+                      {activeChannelData?.description || 'Canal da comunidade'}
                     </p>
                   </div>
                   <div className="flex items-center space-x-1 md:space-x-2 flex-shrink-0">
@@ -1522,6 +1534,22 @@ const ChatGlobal: React.FC = () => {
                     💬 Conversas expiram em 24 horas para manter o chat limpo e focado
                   </p>
                 </div>
+
+                {/* V1.9.417 — empty state: o void com só o indicador parecia inacabado */}
+                {messages.length === 0 && (
+                  <div className="flex flex-col items-center justify-center text-center py-10 md:py-14">
+                    <div className="w-14 h-14 rounded-2xl bg-slate-700/40 border border-slate-600/50 flex items-center justify-center mb-3">
+                      <MessageSquare className="w-7 h-7 text-slate-500" />
+                    </div>
+                    <h4 className="text-sm font-semibold text-white mb-1">
+                      Nenhuma conversa em {activeChannelData?.name || 'neste canal'} ainda
+                    </h4>
+                    <p className="text-xs text-slate-400 max-w-xs leading-relaxed">
+                      {activeChannelData?.description || 'Seja o primeiro a abrir um debate aqui.'}
+                      {activeChannelData?.canPost === false && ' · Seu perfil acompanha este canal em modo leitura.'}
+                    </p>
+                  </div>
+                )}
 
                 {messages.map((msg) => (
                   <div key={msg.id} className="flex space-x-3">
