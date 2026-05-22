@@ -126,3 +126,25 @@ A "schema hygiene sprint" (Classe A — safe wins) foi executada:
 - **3 backups arquivados + dropados** — exportados pra `docs/archive_backups_22_05/` (dump JSON + schema, commit `37041ab`) e então `DROP TABLE` (verificado: 0 tabelas "backup" restantes). 139 → 136 tabelas. Reversível pelo arquivo.
 
 Análise profunda confirmou o que **NÃO** atacar: tabelas vazias (`patient_prescriptions`, `noa_clinical_cases`, `messages`…) são referenciadas por código vivo — dropá-las seria regressão. Sprawl de perfil/mensagem/prescrição = migração arquitetural, não higiene. Ficam parqueados como Classe B.
+
+---
+
+## 🔬 Análise profunda — 3 investigações empíricas (22/05, tarde)
+
+Aprofundamento read-only nos concerns que a auditoria de superfície só tocou. Padrão: **2 de 3 deflacionaram, 1 confirmou pequeno.**
+
+### 1. Dual-write — divergência MEDIDA: 4 de 140 reports (~3%)
+Comparação `clinical_rationalities` (tabela) × `clinical_reports.content.rationalities` (jsonb):
+- 94 consistentes (nos 2 lados) · 42 sem rationalities em nenhum (ok) · **4 divergem** (1 só-jsonb, 3 só-tabela).
+- O CLAUDE.md dizia "concordam por coincidência" → **medição real: 96% consistente, 4 driftados.** Os 3 "só-tabela" provavelmente são a latência documentada (edge escreve tabela 1º). Não é emergência (4 linhas, pré-PMF) — mas confirma que o contrato de reconciliação parqueado é necessidade real.
+
+### 2. Qualidade das policies RLS — 🟢 sólida (não só "ligada")
+As ~42 policies `USING(true)`/`with_check(true)` triadas: SELECT-true = dado público/catálogo (cursos, lições, TRL, canais) por design; escrita-true `service_*` corretamente escopada a `service_role`. **Nenhuma tabela de dado sensível** (`clinical_*`, `patient_*`, `users`, `prescriptions`, `appointments`) tem policy permissiva. Nitpick trivial: `noa_logs`/`pending_ratings` aceitam INSERT de `authenticated` (risco = poluir log).
+
+### 3. Storage — P0 "72 órfãos no bucket documents" → 🟢 REFUTADO
+Bucket `documents`: 132 objetos, **0 com owner deletado, 0 sem owner**. O P0 do backlog antigo está stale/resolvido. (1 arquivo perdido em `chat-audio` — trivial.)
+
+### Atualização do §6 (reconciliação do backlog)
+- **72 órfãos bucket `documents`** → 🟢 **resolvido/stale** (0 órfãos reais hoje).
+- **Dual-write contract** → 🟡 aberto, mas agora **quantificado** (4/140 ~3%).
+- **Qualidade RLS** → 🟢 confirmada sã (não havia sido verificada além de "habilitado").
