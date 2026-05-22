@@ -251,6 +251,20 @@ Log de teste admin do Pedro analisado: AEC percorreu `IDENTIFICATION→COMPLAINT
 ### Commits V1.9.408→418 (HEAD `d6db875`)
 `408` Cann Matrix end-to-end · `409` Notícias→Debates · `410` dossiê no topo da sala · `411` sidebar Prescrições · `412` redesign Fórum Casos · `413` degradê 3 tabs · `414` Notas Rápidas fora · `415` chat maior · `416` altura viewport · `417` polish empty/zeros/densos · `418` Video/Phone fora.
 
+## 🧱 BLOCO Q — Método do refator do `tradevision-core` (decidido, parqueado)
+
+Pedro perguntou como seria o refator do `tradevision-core` (6690 linhas — item "anti-bus-factor" do backlog). Método confirmado:
+
+- **Código inteiro** — refator ≠ rewrite. Cada linha continua existindo, só muda de arquivo. `index.ts` vira orquestrador fino importando módulos (`auth`, `intent`, `aec/fsm`, `verbatim`, `gate`, `rag`, `pipeline`, `gpt`).
+- **Incremental + verificação granular** — extrai 1 módulo → type-check + smoke + deploy → valida → próximo. Nunca big-bang.
+- **Baseline ANTES de tocar** — capturar uma AEC ponta a ponta funcionando antes de começar; é o "antes" pra comparar. "Conferir só no fim" tem furo: não se sabe qual passo quebrou.
+- **1 passo = 1 commit** — rollback trivial.
+- **Timing**: parqueado. Gatilho real = 2º dev pra onboardar OU mudança grande no core. Método impecável sem gatilho ainda é risco sem retorno.
+
+## 🔒 Encerramento do dia
+
+Diário 21/05 **selado**. Memória `project_f4_forum_plano_e_audit_21_05` atualizada (F4 end-to-end fechado) + índice `MEMORY.md`. Commit deste fechamento marcado com a tag **`v1.9.418-forum-cann-matrix-checkpoint`** — ponto de restauração: se algo não ficar bom na próxima frente, volta-se daqui.
+
 ---
 
 ## 🎯 Frase âncora do dia
