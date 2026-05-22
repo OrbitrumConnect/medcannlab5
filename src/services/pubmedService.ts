@@ -67,6 +67,7 @@ export interface SearchOpts {
   daysBack?: number // override yearsBack pra granularidade fina (Novidades 7 dias, etc)
   affiliationBR?: boolean // restringe Affiliation=Brazil/Brasil
   sortBy?: 'relevance' | 'pub_date' // PubMed default = relevance; pub_date pra Novidades
+  retstart?: number // [V1.9.424] offset de paginação ("Carregar mais")
   signal?: AbortSignal
 }
 
@@ -159,7 +160,10 @@ async function esearch(opts: SearchOpts): Promise<{ ids: string[]; total: number
   const term = buildSearchTerm(opts)
   const retmax = opts.retmax ?? 10
   const sort = opts.sortBy === 'pub_date' ? '&sort=pub+date' : ''
-  const url = `${BASE_URL}/esearch.fcgi?db=pubmed&term=${encodeURIComponent(term)}&retmax=${retmax}&retmode=json&tool=${TOOL_NAME}&email=${encodeURIComponent(CONTACT_EMAIL)}${sort}`
+  // [V1.9.424] retstart só entra na URL quando > 0 — preserva 100% o
+  // comportamento dos callers antigos (Matrix), que nunca passam retstart.
+  const retstart = opts.retstart && opts.retstart > 0 ? `&retstart=${opts.retstart}` : ''
+  const url = `${BASE_URL}/esearch.fcgi?db=pubmed&term=${encodeURIComponent(term)}&retmax=${retmax}&retmode=json&tool=${TOOL_NAME}&email=${encodeURIComponent(CONTACT_EMAIL)}${sort}${retstart}`
   const data = await fetchJson(url, opts.signal)
   const ids = (data?.esearchresult?.idlist as string[]) || []
   const total = parseInt(data?.esearchresult?.count || '0', 10)
