@@ -37,7 +37,6 @@ import {
   Filter,
   Plus,
   TrendingUp,
-  Award,
   BookOpen,
   Calendar,
   Clock,
@@ -48,7 +47,9 @@ import {
   Flag
 } from 'lucide-react'
 
-type CommunityPanelId = 'debates' | 'partnerships' | 'sponsors' | 'supporters'
+// V1.9.422 — painéis partnerships/sponsors/supporters removidos (eram 100% mock).
+// Sobra só 'debates', que é dado real. Tipo mantido por extensibilidade futura.
+type CommunityPanelId = 'debates'
 
 type CommunityPanelConfig = {
   title: string
@@ -56,13 +57,6 @@ type CommunityPanelConfig = {
   iconColor: string
   content: React.ReactNode
 }
-
-const COMMUNITY_PANEL_TABS: { id: CommunityPanelId; label: string }[] = [
-  { id: 'debates', label: 'Debates' },
-  { id: 'partnerships', label: 'Parcerias' },
-  { id: 'sponsors', label: 'Patrocinadores' },
-  { id: 'supporters', label: 'Apoiadores' }
-]
 
 type ChannelPermissionConfig = {
   id: string
@@ -189,7 +183,8 @@ const ChatGlobal: React.FC = () => {
   )
   const promptHandledRef = useRef(false)
   const [showCommunityColumn, setShowCommunityColumn] = useState(true)
-  const [activeCommunityPanel, setActiveCommunityPanel] = useState<CommunityPanelId>('debates')
+  // V1.9.422 — sem setter: só existe 1 painel ('debates'), seletor de abas removido.
+  const [activeCommunityPanel] = useState<CommunityPanelId>('debates')
   const [showNewPostModal, setShowNewPostModal] = useState(false)
   const [newPost, setNewPost] = useState({
     title: '',
@@ -228,82 +223,6 @@ const ChatGlobal: React.FC = () => {
 
   const communityPanelConfig = useMemo<CommunityPanelConfig>(() => {
     switch (activeCommunityPanel) {
-      case 'partnerships':
-        return {
-          title: '🤝 Parcerias',
-          icon: Users,
-          iconColor: 'text-green-400',
-          content: (
-            <div className="space-y-3">
-              <div className="bg-gradient-to-r from-green-500/20 to-emerald-500/20 rounded-lg p-4 border border-green-500/30">
-                <h4 className="text-white font-medium text-sm mb-1">Associação Brasileira de Cannabis Medicinal</h4>
-                <p className="text-slate-400 text-xs">Parceria estratégica para desenvolvimento de protocolos clínicos</p>
-              </div>
-              <div className="bg-gradient-to-r from-blue-500/20 to-cyan-500/20 rounded-lg p-4 border border-blue-500/30">
-                <h4 className="text-white font-medium text-sm mb-1">Sociedade Brasileira de Neurologia</h4>
-                <p className="text-slate-400 text-xs">Colaboração em pesquisas sobre epilepsia e TEA</p>
-              </div>
-              <div className="bg-gradient-to-r from-purple-500/20 to-pink-500/20 rounded-lg p-4 border border-purple-500/30">
-                <h4 className="text-white font-medium text-sm mb-1">Instituto de Pesquisa em Cannabis</h4>
-                <p className="text-slate-400 text-xs">Programa conjunto de estudos clínicos</p>
-              </div>
-            </div>
-          )
-        }
-      case 'sponsors':
-        return {
-          title: '⭐ Patrocinadores',
-          icon: Award,
-          iconColor: 'text-yellow-400',
-          content: (
-            <div className="space-y-3">
-              <div className="bg-gradient-to-r from-yellow-500/20 to-orange-500/20 rounded-lg p-4 border border-yellow-500/30">
-                <div className="flex items-center space-x-3 mb-1">
-                  <div className="w-10 h-10 bg-gradient-to-r from-yellow-500 to-orange-500 rounded-lg flex items-center justify-center">
-                    <span className="text-white font-bold text-sm">P1</span>
-                  </div>
-                  <div>
-                    <h4 className="text-white font-medium text-sm">Patrocinador Platinum</h4>
-                    <p className="text-slate-400 text-xs">Apoio ao desenvolvimento da plataforma</p>
-                  </div>
-                </div>
-              </div>
-              <div className="bg-gradient-to-r from-blue-500/20 to-indigo-500/20 rounded-lg p-4 border border-blue-500/30">
-                <div className="flex items-center space-x-3 mb-1">
-                  <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-lg flex items-center justify-center">
-                    <span className="text-white font-bold text-sm">P2</span>
-                  </div>
-                  <div>
-                    <h4 className="text-white font-medium text-sm">Patrocinador Gold</h4>
-                    <p className="text-slate-400 text-xs">Suporte à pesquisa e desenvolvimento</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )
-        }
-      case 'supporters':
-        return {
-          title: '❤️ Apoiadores',
-          icon: Heart,
-          iconColor: 'text-red-400',
-          content: (
-            <div className="space-y-3">
-              <div className="bg-gradient-to-r from-red-500/20 to-pink-500/20 rounded-lg p-4 border border-red-500/30">
-                <h4 className="text-white font-medium text-sm mb-1">Fundação de Apoio à Pesquisa</h4>
-                <p className="text-slate-400 text-xs">Apoio institucional</p>
-              </div>
-              <div className="bg-gradient-to-r from-purple-500/20 to-violet-500/20 rounded-lg p-4 border border-purple-500/30">
-                <h4 className="text-white font-medium text-sm mb-1">Associação de Pacientes</h4>
-                <p className="text-slate-400 text-xs">Comunidade de apoio</p>
-              </div>
-              <div className="bg-gradient-to-r from-teal-500/20 to-cyan-500/20 rounded-lg p-4 border border-teal-500/30">
-                <h4 className="text-white font-medium text-sm mb-1">Instituto de Tecnologia em Saúde</h4>
-                <p className="text-slate-400 text-xs">Suporte tecnológico</p>
-              </div>
-            </div>
-          )
-        }
       case 'debates':
       default:
         return {
@@ -1660,22 +1579,6 @@ const ChatGlobal: React.FC = () => {
                     Ocultar
                   </button>
                 </div>
-                <div className="flex flex-wrap gap-2 mb-4">
-                  {COMMUNITY_PANEL_TABS.map(tab => (
-                    <button
-                      key={tab.id}
-                      type="button"
-                      onClick={() => setActiveCommunityPanel(tab.id)}
-                      className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors border border-slate-700/60 ${activeCommunityPanel === tab.id
-                        ? 'bg-primary-600 text-white'
-                        : 'bg-slate-900/40 text-slate-300 hover:text-white'
-                        }`}
-                      aria-pressed={activeCommunityPanel === tab.id}
-                    >
-                      {tab.label}
-                    </button>
-                  ))}
-                </div>
                 <div className="space-y-3">
                   {communityPanelConfig.content}
                 </div>
@@ -1868,10 +1771,12 @@ const ChatGlobal: React.FC = () => {
             </div>
           )}
 
-          {/* Grid Layout: Debates + Coluna de Notícias */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
+          {/* V1.9.422 — coluna lateral mockada removida (Notícias/Parcerias/
+              Patrocinadores/Apoiadores eram 100% hardcoded e não existem ainda).
+              A lista de Debates passa a ocupar a largura toda. */}
+          <div>
             {/* Debates List */}
-            <div className="lg:col-span-2 space-y-4">
+            <div className="space-y-4">
               {filteredDebates.length > 0 ? (
                 filteredDebates.map((debate) => {
                   const canPostInDebate = debate.postRoles.includes(userType)
@@ -1975,112 +1880,6 @@ const ChatGlobal: React.FC = () => {
                     : 'Nenhum debate encontrado para a sua busca. Ajuste os filtros ou tente outra palavra-chave.'}
                 </div>
               )}
-            </div>
-
-            {/* Coluna de Notícias, Parcerias, Patrocinadores e Apoiadores */}
-            <div className="lg:col-span-1">
-              <div className="space-y-6">
-                {/* Notícias */}
-                <div className="bg-slate-800/80 rounded-lg p-6 border border-slate-700">
-                  <h3 className="text-lg font-semibold text-white mb-4 flex items-center">
-                    <BookOpen className="w-5 h-5 mr-2 text-primary-400" />
-                    📰 Notícias
-                  </h3>
-                  <div className="space-y-4">
-                    <div className="bg-slate-700/50 rounded-lg p-4 hover:bg-slate-700/70 transition-colors cursor-pointer">
-                      <h4 className="text-white font-medium text-sm mb-2">Novo protocolo de Cannabis Medicinal aprovado pela ANVISA</h4>
-                      <p className="text-slate-400 text-xs mb-2">A ANVISA aprovou um novo protocolo para uso de cannabis medicinal em pacientes com epilepsia refratária...</p>
-                      <span className="text-slate-500 text-xs">15/01/2025</span>
-                    </div>
-                    <div className="bg-slate-700/50 rounded-lg p-4 hover:bg-slate-700/70 transition-colors cursor-pointer">
-                      <h4 className="text-white font-medium text-sm mb-2">Pesquisa mostra eficácia do CBD em casos de TEA</h4>
-                      <p className="text-slate-400 text-xs mb-2">Estudo publicado na Nature Medicine mostra resultados promissores...</p>
-                      <span className="text-slate-500 text-xs">12/01/2025</span>
-                    </div>
-                    <div className="bg-slate-700/50 rounded-lg p-4 hover:bg-slate-700/70 transition-colors cursor-pointer">
-                      <h4 className="text-white font-medium text-sm mb-2">Curso de Pós-graduação em Cannabis Medicinal - Novas Turmas</h4>
-                      <p className="text-slate-400 text-xs mb-2">Inscrições abertas para a próxima turma do curso de especialização...</p>
-                      <span className="text-slate-500 text-xs">10/01/2025</span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Parcerias */}
-                <div className="bg-slate-800/80 rounded-lg p-6 border border-slate-700">
-                  <h3 className="text-lg font-semibold text-white mb-4 flex items-center">
-                    <Users className="w-5 h-5 mr-2 text-green-400" />
-                    🤝 Parcerias
-                  </h3>
-                  <div className="space-y-3">
-                    <div className="bg-gradient-to-r from-green-500/20 to-emerald-500/20 rounded-lg p-4 border border-green-500/30">
-                      <h4 className="text-white font-medium text-sm mb-2">Associação Brasileira de Cannabis Medicinal</h4>
-                      <p className="text-slate-400 text-xs">Parceria estratégica para desenvolvimento de protocolos clínicos</p>
-                    </div>
-                    <div className="bg-gradient-to-r from-blue-500/20 to-cyan-500/20 rounded-lg p-4 border border-blue-500/30">
-                      <h4 className="text-white font-medium text-sm mb-2">Sociedade Brasileira de Neurologia</h4>
-                      <p className="text-slate-400 text-xs">Colaboração em pesquisas sobre epilepsia e TEA</p>
-                    </div>
-                    <div className="bg-gradient-to-r from-purple-500/20 to-pink-500/20 rounded-lg p-4 border border-purple-500/30">
-                      <h4 className="text-white font-medium text-sm mb-2">Instituto de Pesquisa em Cannabis</h4>
-                      <p className="text-slate-400 text-xs">Programa conjunto de estudos clínicos</p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Patrocinadores */}
-                <div className="bg-slate-800/80 rounded-lg p-6 border border-slate-700">
-                  <h3 className="text-lg font-semibold text-white mb-4 flex items-center">
-                    <Award className="w-5 h-5 mr-2 text-yellow-400" />
-                    ⭐ Patrocinadores
-                  </h3>
-                  <div className="space-y-3">
-                    <div className="bg-gradient-to-r from-yellow-500/20 to-orange-500/20 rounded-lg p-4 border border-yellow-500/30">
-                      <div className="flex items-center space-x-3 mb-2">
-                        <div className="w-10 h-10 bg-gradient-to-r from-yellow-500 to-orange-500 rounded-lg flex items-center justify-center">
-                          <span className="text-white font-bold text-sm">P1</span>
-                        </div>
-                        <div>
-                          <h4 className="text-white font-medium text-sm">Patrocinador Platinum</h4>
-                          <p className="text-slate-400 text-xs">Apoio ao desenvolvimento da plataforma</p>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="bg-gradient-to-r from-blue-500/20 to-indigo-500/20 rounded-lg p-4 border border-blue-500/30">
-                      <div className="flex items-center space-x-3 mb-2">
-                        <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-lg flex items-center justify-center">
-                          <span className="text-white font-bold text-sm">P2</span>
-                        </div>
-                        <div>
-                          <h4 className="text-white font-medium text-sm">Patrocinador Gold</h4>
-                          <p className="text-slate-400 text-xs">Suporte à pesquisa e desenvolvimento</p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Apoiadores */}
-                <div className="bg-slate-800/80 rounded-lg p-6 border border-slate-700">
-                  <h3 className="text-lg font-semibold text-white mb-4 flex items-center">
-                    <Heart className="w-5 h-5 mr-2 text-red-400" />
-                    ❤️ Apoiadores
-                  </h3>
-                  <div className="space-y-3">
-                    <div className="bg-gradient-to-r from-red-500/20 to-pink-500/20 rounded-lg p-4 border border-red-500/30">
-                      <h4 className="text-white font-medium text-sm mb-1">Fundação de Apoio à Pesquisa</h4>
-                      <p className="text-slate-400 text-xs">Apoio institucional</p>
-                    </div>
-                    <div className="bg-gradient-to-r from-purple-500/20 to-violet-500/20 rounded-lg p-4 border border-purple-500/30">
-                      <h4 className="text-white font-medium text-sm mb-1">Associação de Pacientes</h4>
-                      <p className="text-slate-400 text-xs">Comunidade de apoio</p>
-                    </div>
-                    <div className="bg-gradient-to-r from-teal-500/20 to-cyan-500/20 rounded-lg p-4 border border-teal-500/30">
-                      <h4 className="text-white font-medium text-sm mb-1">Instituto de Tecnologia em Saúde</h4>
-                      <p className="text-slate-400 text-xs">Suporte tecnológico</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
             </div>
           </div>
         </div>
