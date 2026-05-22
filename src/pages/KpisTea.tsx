@@ -14,11 +14,11 @@ const KpisTea: React.FC = () => {
   const navigate = useNavigate()
 
   return (
-    <div className="min-h-screen text-white" style={{ background: backgroundGradient }}>
+    <div className="min-h-screen text-brand-text" style={{ background: backgroundGradient }}>
       <div className="max-w-3xl mx-auto px-4 md:px-6 py-8">
         <button
           onClick={() => navigate('/app/clinica/profissional/dashboard')}
-          className="flex items-center gap-2 text-slate-400 hover:text-white text-sm mb-6 transition-colors"
+          className="flex items-center gap-2 text-brand-text-muted hover:text-brand-text text-sm mb-6 transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />
           Voltar ao Meu Dashboard
@@ -30,8 +30,8 @@ const KpisTea: React.FC = () => {
               <Brain className="w-6 h-6 text-emerald-400" />
             </div>
             <div>
-              <h1 className="text-2xl md:text-3xl font-bold text-white">KPIs TEA</h1>
-              <p className="text-sm text-slate-400">Monitoramento neurológico — Transtorno do Espectro Autista</p>
+              <h1 className="text-2xl md:text-3xl font-bold text-brand-text">KPIs TEA</h1>
+              <p className="text-sm text-brand-text-muted">Monitoramento neurológico — Transtorno do Espectro Autista</p>
             </div>
           </div>
 
@@ -39,7 +39,7 @@ const KpisTea: React.FC = () => {
             <Clock className="w-5 h-5 text-yellow-400 shrink-0 mt-0.5" />
             <div>
               <h2 className="text-yellow-200 font-semibold mb-1">Em desenvolvimento</h2>
-              <p className="text-sm text-slate-300 leading-relaxed">
+              <p className="text-sm text-brand-text-secondary leading-relaxed">
                 Esta funcionalidade está em construção. O dashboard de KPIs TEA será ativado quando
                 houver coleta clínica real de pacientes neurológicos pela rede MedCannLab.
               </p>
@@ -47,11 +47,11 @@ const KpisTea: React.FC = () => {
           </div>
 
           <div className="space-y-4">
-            <h3 className="text-base font-semibold text-white flex items-center gap-2">
+            <h3 className="text-base font-semibold text-brand-text flex items-center gap-2">
               <Lightbulb className="w-4 h-4 text-emerald-400" />
               O que vai aparecer aqui
             </h3>
-            <ul className="space-y-2 text-sm text-slate-300">
+            <ul className="space-y-2 text-sm text-brand-text-secondary">
               <li className="flex items-start gap-2">
                 <span className="text-emerald-400 mt-0.5">•</span>
                 <span>Indicadores de evolução clínica em pacientes do espectro autista (sono, alimentação, comunicação, comportamento)</span>
@@ -66,7 +66,7 @@ const KpisTea: React.FC = () => {
               </li>
               <li className="flex items-start gap-2">
                 <span className="text-emerald-400 mt-0.5">•</span>
-                <span>Coordenação científica: <strong className="text-white">Dr. Eduardo Faveret</strong> (Neurologia)</span>
+                <span>Coordenação científica: <strong className="text-brand-text">Dr. Eduardo Faveret</strong> (Neurologia)</span>
               </li>
             </ul>
           </div>

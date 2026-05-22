@@ -104,21 +104,21 @@ const PatientKPIs: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-slate-900 text-white">
+    <div className="min-h-screen bg-brand-bg text-brand-text">
       {/* Header */}
-      <div className="bg-slate-800 border-b border-slate-700 p-6">
+      <div className="bg-brand-surface border-b border-brand-border p-6">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
             <button 
               onClick={() => navigate('/app/clinica/paciente/dashboard')}
-              className="flex items-center space-x-2 text-slate-300 hover:text-white transition-colors"
+              className="flex items-center space-x-2 text-brand-text-secondary hover:text-brand-text transition-colors"
             >
               <ArrowLeft className="w-5 h-5" />
               <span>Voltar</span>
             </button>
             <div>
-              <h1 className="text-2xl font-bold text-white">Meus KPIs</h1>
-              <p className="text-slate-400">Programa de Cuidado Renal</p>
+              <h1 className="text-2xl font-bold text-brand-text">Meus KPIs</h1>
+              <p className="text-brand-text-muted">Programa de Cuidado Renal</p>
             </div>
           </div>
           
@@ -126,7 +126,7 @@ const PatientKPIs: React.FC = () => {
             <select 
               value={timeRange}
               onChange={(e) => setTimeRange(e.target.value as any)}
-              className="bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-purple-500"
+              className="bg-brand-surface-subtle border border-slate-600 rounded-lg px-3 py-2 text-brand-text focus:outline-none focus:border-purple-500"
             >
               <option value="week">Última Semana</option>
               <option value="month">Último Mês</option>
@@ -139,30 +139,30 @@ const PatientKPIs: React.FC = () => {
 
       <div className="flex">
         {/* Sidebar */}
-        <div className="w-64 bg-slate-800 border-r border-slate-700 min-h-screen">
+        <div className="w-64 bg-brand-surface border-r border-brand-border min-h-screen">
           <div className="p-6">
             <nav className="space-y-2">
-              <a href="/app/clinica/paciente/dashboard" className="flex items-center space-x-3 p-3 rounded-lg text-slate-300 hover:bg-slate-700 hover:text-white transition-colors">
+              <a href="/app/clinica/paciente/dashboard" className="flex items-center space-x-3 p-3 rounded-lg text-brand-text-secondary hover:bg-brand-surface-subtle hover:text-brand-text transition-colors">
                 <BarChart3 className="w-5 h-5" />
                 <span>Dashboard</span>
               </a>
-              <a href="#" className="flex items-center space-x-3 p-3 rounded-lg text-slate-300 hover:bg-slate-700 hover:text-white transition-colors">
+              <a href="#" className="flex items-center space-x-3 p-3 rounded-lg text-brand-text-secondary hover:bg-brand-surface-subtle hover:text-brand-text transition-colors">
                 <Calendar className="w-5 h-5" />
                 <span>Agenda</span>
               </a>
-              <a href="#" className="flex items-center space-x-3 p-3 rounded-lg bg-slate-700 text-white">
+              <a href="#" className="flex items-center space-x-3 p-3 rounded-lg bg-brand-surface-subtle text-brand-text">
                 <TrendingUp className="w-5 h-5" />
                 <span>Meus KPIs</span>
               </a>
-              <a href="#" className="flex items-center space-x-3 p-3 rounded-lg text-slate-300 hover:bg-slate-700 hover:text-white transition-colors">
+              <a href="#" className="flex items-center space-x-3 p-3 rounded-lg text-brand-text-secondary hover:bg-brand-surface-subtle hover:text-brand-text transition-colors">
                 <span className="w-5 h-5">❤️</span>
                 <span>Avaliação Clínica</span>
               </a>
-              <a href="#" className="flex items-center space-x-3 p-3 rounded-lg text-slate-300 hover:bg-slate-700 hover:text-white transition-colors">
+              <a href="#" className="flex items-center space-x-3 p-3 rounded-lg text-brand-text-secondary hover:bg-brand-surface-subtle hover:text-brand-text transition-colors">
                 <span className="w-5 h-5">💬</span>
                 <span>Chat com Nôa</span>
               </a>
-              <a href="#" className="flex items-center space-x-3 p-3 rounded-lg text-slate-300 hover:bg-slate-700 hover:text-white transition-colors">
+              <a href="#" className="flex items-center space-x-3 p-3 rounded-lg text-brand-text-secondary hover:bg-brand-surface-subtle hover:text-brand-text transition-colors">
                 <span className="w-5 h-5">📄</span>
                 <span>Relatórios</span>
               </a>
@@ -179,7 +179,7 @@ const PatientKPIs: React.FC = () => {
                 const Icon = kpi.icon
                 const TrendIcon = getTrendIcon(kpi.trend)
                 return (
-                  <div key={kpi.id} className="bg-slate-800 rounded-xl p-6 hover:bg-slate-750 transition-colors">
+                  <div key={kpi.id} className="bg-brand-surface rounded-xl p-6 hover:bg-slate-750 transition-colors">
                     <div className="flex items-start justify-between mb-4">
                       <div className={`p-3 rounded-lg ${kpi.bgColor}`}>
                         <Icon className={`w-6 h-6 ${kpi.color}`} />
@@ -192,9 +192,9 @@ const PatientKPIs: React.FC = () => {
                       </div>
                     </div>
                     
-                    <h3 className="text-lg font-semibold text-white mb-1">{kpi.title}</h3>
-                    <div className="text-3xl font-bold text-white mb-2">{kpi.value}</div>
-                    <p className="text-sm text-slate-400">{kpi.description}</p>
+                    <h3 className="text-lg font-semibold text-brand-text mb-1">{kpi.title}</h3>
+                    <div className="text-3xl font-bold text-brand-text mb-2">{kpi.value}</div>
+                    <p className="text-sm text-brand-text-muted">{kpi.description}</p>
                   </div>
                 )
               })}
@@ -203,84 +203,84 @@ const PatientKPIs: React.FC = () => {
             {/* Charts Section */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
               {/* Score Evolution Chart */}
-              <div className="bg-slate-800 rounded-xl p-6">
+              <div className="bg-brand-surface rounded-xl p-6">
                 <div className="flex items-center justify-between mb-6">
-                  <h3 className="text-xl font-semibold text-white">Evolução da Completude</h3>
+                  <h3 className="text-xl font-semibold text-brand-text">Evolução da Completude</h3>
                   <div className="flex items-center space-x-2">
-                    <button className="p-2 bg-slate-700 rounded-lg hover:bg-slate-600 transition-colors">
+                    <button className="p-2 bg-brand-surface-subtle rounded-lg hover:bg-slate-600 transition-colors">
                       <LineChart className="w-4 h-4" />
                     </button>
-                    <button className="p-2 bg-slate-700 rounded-lg hover:bg-slate-600 transition-colors">
+                    <button className="p-2 bg-brand-surface-subtle rounded-lg hover:bg-slate-600 transition-colors">
                       <BarChart3 className="w-4 h-4" />
                     </button>
                   </div>
                 </div>
                 
-                <div className="h-64 bg-slate-700 rounded-lg flex items-center justify-center">
+                <div className="h-64 bg-brand-surface-subtle rounded-lg flex items-center justify-center">
                   <div className="text-center">
-                    <LineChart className="w-16 h-16 mx-auto mb-4 text-slate-400" />
-                    <p className="text-slate-400">Gráfico de evolução do score</p>
+                    <LineChart className="w-16 h-16 mx-auto mb-4 text-brand-text-muted" />
+                    <p className="text-brand-text-muted">Gráfico de evolução do score</p>
                   </div>
                 </div>
               </div>
 
               {/* Adherence Chart */}
-              <div className="bg-slate-800 rounded-xl p-6">
+              <div className="bg-brand-surface rounded-xl p-6">
                 <div className="flex items-center justify-between mb-6">
-                  <h3 className="text-xl font-semibold text-white">Consistência da Informação</h3>
+                  <h3 className="text-xl font-semibold text-brand-text">Consistência da Informação</h3>
                   <div className="flex items-center space-x-2">
-                    <button className="p-2 bg-slate-700 rounded-lg hover:bg-slate-600 transition-colors">
+                    <button className="p-2 bg-brand-surface-subtle rounded-lg hover:bg-slate-600 transition-colors">
                       <PieChart className="w-4 h-4" />
                     </button>
-                    <button className="p-2 bg-slate-700 rounded-lg hover:bg-slate-600 transition-colors">
+                    <button className="p-2 bg-brand-surface-subtle rounded-lg hover:bg-slate-600 transition-colors">
                       <BarChart3 className="w-4 h-4" />
                     </button>
                   </div>
                 </div>
                 
-                <div className="h-64 bg-slate-700 rounded-lg flex items-center justify-center">
+                <div className="h-64 bg-brand-surface-subtle rounded-lg flex items-center justify-center">
                   <div className="text-center">
-                    <PieChart className="w-16 h-16 mx-auto mb-4 text-slate-400" />
-                    <p className="text-slate-400">Gráfico de adesão</p>
+                    <PieChart className="w-16 h-16 mx-auto mb-4 text-brand-text-muted" />
+                    <p className="text-brand-text-muted">Gráfico de adesão</p>
                   </div>
                 </div>
               </div>
             </div>
 
             {/* Detailed Metrics */}
-            <div className="bg-slate-800 rounded-xl p-6">
-              <h3 className="text-xl font-semibold text-white mb-6">Métricas Detalhadas</h3>
+            <div className="bg-brand-surface rounded-xl p-6">
+              <h3 className="text-xl font-semibold text-brand-text mb-6">Métricas Detalhadas</h3>
               
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 <div className="text-center">
                   <div className="text-2xl font-bold text-green-400 mb-2">95%</div>
-                  <div className="text-sm text-slate-400">Consultas Realizadas</div>
+                  <div className="text-sm text-brand-text-muted">Consultas Realizadas</div>
                 </div>
                 <div className="text-center">
                   <div className="text-2xl font-bold text-blue-400 mb-2">8.5</div>
-                  <div className="text-sm text-slate-400">Média de Horas de Sono</div>
+                  <div className="text-sm text-brand-text-muted">Média de Horas de Sono</div>
                 </div>
                 <div className="text-center">
                   <div className="text-2xl font-bold text-yellow-400 mb-2">2.1L</div>
-                  <div className="text-sm text-slate-400">Ingestão de Água/Dia</div>
+                  <div className="text-sm text-brand-text-muted">Ingestão de Água/Dia</div>
                 </div>
                 <div className="text-center">
                   <div className="text-2xl font-bold text-purple-400 mb-2">4.2</div>
-                  <div className="text-sm text-slate-400">Exercícios/Semana</div>
+                  <div className="text-sm text-brand-text-muted">Exercícios/Semana</div>
                 </div>
               </div>
             </div>
 
             {/* Recommendations */}
-            <div className="bg-slate-800 rounded-xl p-6 mt-8">
-              <h3 className="text-xl font-semibold text-white mb-6">Recomendações da Nôa Esperança</h3>
+            <div className="bg-brand-surface rounded-xl p-6 mt-8">
+              <h3 className="text-xl font-semibold text-brand-text mb-6">Recomendações da Nôa Esperança</h3>
               
               <div className="space-y-4">
                 <div className="flex items-start space-x-3 p-4 bg-green-500/10 rounded-lg border border-green-500/20">
                   <CheckCircle className="w-5 h-5 text-green-400 mt-0.5" />
                   <div>
                     <p className="text-green-400 font-medium">Excelente adesão ao tratamento!</p>
-                    <p className="text-sm text-slate-300">Continue mantendo a regularidade nas consultas e medicações.</p>
+                    <p className="text-sm text-brand-text-secondary">Continue mantendo a regularidade nas consultas e medicações.</p>
                   </div>
                 </div>
                 
@@ -288,7 +288,7 @@ const PatientKPIs: React.FC = () => {
                   <Activity className="w-5 h-5 text-blue-400 mt-0.5" />
                   <div>
                     <p className="text-blue-400 font-medium">Melhoria significativa nos sintomas</p>
-                    <p className="text-sm text-slate-300">Os indicadores mostram progresso positivo no tratamento.</p>
+                    <p className="text-sm text-brand-text-secondary">Os indicadores mostram progresso positivo no tratamento.</p>
                   </div>
                 </div>
                 
@@ -296,7 +296,7 @@ const PatientKPIs: React.FC = () => {
                   <AlertCircle className="w-5 h-5 text-yellow-400 mt-0.5" />
                   <div>
                     <p className="text-yellow-400 font-medium">Atenção à hidratação</p>
-                    <p className="text-sm text-slate-300">Considere aumentar a ingestão de água para 2.5L por dia.</p>
+                    <p className="text-sm text-brand-text-secondary">Considere aumentar a ingestão de água para 2.5L por dia.</p>
                   </div>
                 </div>
               </div>

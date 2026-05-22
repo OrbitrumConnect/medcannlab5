@@ -166,20 +166,20 @@ const NewsManagement: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-slate-900 text-white p-6">
+    <div className="min-h-screen bg-brand-bg text-brand-text p-6">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center space-x-4">
             <button
               onClick={() => navigate(-1)}
-              className="p-2 hover:bg-slate-800 rounded-lg transition-colors"
+              className="p-2 hover:bg-brand-surface rounded-lg transition-colors"
             >
               <ArrowLeft className="w-5 h-5" />
             </button>
             <div>
               <h1 className="text-3xl font-bold">📰 Gestão de Notícias</h1>
-              <p className="text-slate-400 mt-1">Crie e gerencie notícias para a plataforma</p>
+              <p className="text-brand-text-muted mt-1">Crie e gerencie notícias para a plataforma</p>
             </div>
           </div>
           <button
@@ -192,7 +192,7 @@ const NewsManagement: React.FC = () => {
         </div>
 
         {/* Filtros */}
-        <div className="bg-slate-800 rounded-lg p-4 mb-6">
+        <div className="bg-brand-surface rounded-lg p-4 mb-6">
           <div className="flex flex-wrap gap-2">
             {categories.map((category) => (
               <button
@@ -200,8 +200,8 @@ const NewsManagement: React.FC = () => {
                 onClick={() => setSelectedCategory(category.key)}
                 className={`px-4 py-2 rounded-lg transition-colors ${
                   selectedCategory === category.key
-                    ? 'bg-green-600 text-white'
-                    : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
+                    ? 'bg-green-600 text-brand-text'
+                    : 'bg-brand-surface-subtle text-brand-text-secondary hover:bg-slate-600'
                 }`}
               >
                 {category.label}
@@ -212,7 +212,7 @@ const NewsManagement: React.FC = () => {
 
         {/* Editor ou Lista */}
         {isEditing && editingItem ? (
-          <div className="bg-slate-800 rounded-lg p-6">
+          <div className="bg-brand-surface rounded-lg p-6">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-2xl font-bold">
                 {editingItem.id ? 'Editar Notícia' : 'Nova Notícia'}
@@ -220,14 +220,14 @@ const NewsManagement: React.FC = () => {
               <div className="flex items-center space-x-2">
                 <button
                   onClick={() => setShowPreview(!showPreview)}
-                  className="flex items-center space-x-2 px-4 py-2 bg-slate-700 hover:bg-slate-600 rounded-lg transition-colors"
+                  className="flex items-center space-x-2 px-4 py-2 bg-brand-surface-subtle hover:bg-slate-600 rounded-lg transition-colors"
                 >
                   <Eye className="w-4 h-4" />
                   <span>Preview</span>
                 </button>
                 <button
                   onClick={handleCancel}
-                  className="flex items-center space-x-2 px-4 py-2 bg-slate-700 hover:bg-slate-600 rounded-lg transition-colors"
+                  className="flex items-center space-x-2 px-4 py-2 bg-brand-surface-subtle hover:bg-slate-600 rounded-lg transition-colors"
                 >
                   <X className="w-4 h-4" />
                   <span>Cancelar</span>
@@ -251,7 +251,7 @@ const NewsManagement: React.FC = () => {
                     type="text"
                     value={editingItem.title}
                     onChange={(e) => setEditingItem({ ...editingItem, title: e.target.value })}
-                    className="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg focus:outline-none focus:border-green-500"
+                    className="w-full px-4 py-2 bg-brand-surface-subtle border border-slate-600 rounded-lg focus:outline-none focus:border-green-500"
                     placeholder="Título da notícia"
                   />
                 </div>
@@ -261,7 +261,7 @@ const NewsManagement: React.FC = () => {
                   <textarea
                     value={editingItem.summary}
                     onChange={(e) => setEditingItem({ ...editingItem, summary: e.target.value })}
-                    className="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg focus:outline-none focus:border-green-500"
+                    className="w-full px-4 py-2 bg-brand-surface-subtle border border-slate-600 rounded-lg focus:outline-none focus:border-green-500"
                     rows={3}
                     placeholder="Resumo da notícia"
                   />
@@ -272,7 +272,7 @@ const NewsManagement: React.FC = () => {
                   <textarea
                     value={editingItem.content || ''}
                     onChange={(e) => setEditingItem({ ...editingItem, content: e.target.value })}
-                    className="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg focus:outline-none focus:border-green-500"
+                    className="w-full px-4 py-2 bg-brand-surface-subtle border border-slate-600 rounded-lg focus:outline-none focus:border-green-500"
                     rows={10}
                     placeholder="Conteúdo completo da notícia (opcional)"
                   />
@@ -284,7 +284,7 @@ const NewsManagement: React.FC = () => {
                     <select
                       value={editingItem.category}
                       onChange={(e) => setEditingItem({ ...editingItem, category: e.target.value as NewsItem['category'] })}
-                      className="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg focus:outline-none focus:border-green-500"
+                      className="w-full px-4 py-2 bg-brand-surface-subtle border border-slate-600 rounded-lg focus:outline-none focus:border-green-500"
                     >
                       {categories.filter(c => c.key !== 'all').map(cat => (
                         <option key={cat.key} value={cat.key}>{cat.label}</option>
@@ -298,7 +298,7 @@ const NewsManagement: React.FC = () => {
                       type="date"
                       value={editingItem.date}
                       onChange={(e) => setEditingItem({ ...editingItem, date: e.target.value })}
-                      className="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg focus:outline-none focus:border-green-500"
+                      className="w-full px-4 py-2 bg-brand-surface-subtle border border-slate-600 rounded-lg focus:outline-none focus:border-green-500"
                     />
                   </div>
                 </div>
@@ -310,7 +310,7 @@ const NewsManagement: React.FC = () => {
                       type="text"
                       value={editingItem.author}
                       onChange={(e) => setEditingItem({ ...editingItem, author: e.target.value })}
-                      className="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg focus:outline-none focus:border-green-500"
+                      className="w-full px-4 py-2 bg-brand-surface-subtle border border-slate-600 rounded-lg focus:outline-none focus:border-green-500"
                       placeholder="Nome do autor"
                     />
                   </div>
@@ -321,7 +321,7 @@ const NewsManagement: React.FC = () => {
                       type="text"
                       value={editingItem.readTime || ''}
                       onChange={(e) => setEditingItem({ ...editingItem, readTime: e.target.value })}
-                      className="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg focus:outline-none focus:border-green-500"
+                      className="w-full px-4 py-2 bg-brand-surface-subtle border border-slate-600 rounded-lg focus:outline-none focus:border-green-500"
                       placeholder="Ex: 5 min"
                     />
                   </div>
@@ -333,7 +333,7 @@ const NewsManagement: React.FC = () => {
                     <select
                       value={editingItem.impact || 'medium'}
                       onChange={(e) => setEditingItem({ ...editingItem, impact: e.target.value as 'high' | 'medium' | 'low' })}
-                      className="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg focus:outline-none focus:border-green-500"
+                      className="w-full px-4 py-2 bg-brand-surface-subtle border border-slate-600 rounded-lg focus:outline-none focus:border-green-500"
                     >
                       <option value="high">Alto</option>
                       <option value="medium">Médio</option>
@@ -346,7 +346,7 @@ const NewsManagement: React.FC = () => {
                     <select
                       value={editingItem.published ? 'true' : 'false'}
                       onChange={(e) => setEditingItem({ ...editingItem, published: e.target.value === 'true' })}
-                      className="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg focus:outline-none focus:border-green-500"
+                      className="w-full px-4 py-2 bg-brand-surface-subtle border border-slate-600 rounded-lg focus:outline-none focus:border-green-500"
                     >
                       <option value="false">Rascunho</option>
                       <option value="true">Publicado</option>
@@ -360,7 +360,7 @@ const NewsManagement: React.FC = () => {
                     type="url"
                     value={editingItem.imageUrl || ''}
                     onChange={(e) => setEditingItem({ ...editingItem, imageUrl: e.target.value })}
-                    className="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg focus:outline-none focus:border-green-500"
+                    className="w-full px-4 py-2 bg-brand-surface-subtle border border-slate-600 rounded-lg focus:outline-none focus:border-green-500"
                     placeholder="https://..."
                   />
                 </div>
@@ -374,7 +374,7 @@ const NewsManagement: React.FC = () => {
                       ...editingItem, 
                       tags: e.target.value.split(',').map(t => t.trim()).filter(t => t) 
                     })}
-                    className="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg focus:outline-none focus:border-green-500"
+                    className="w-full px-4 py-2 bg-brand-surface-subtle border border-slate-600 rounded-lg focus:outline-none focus:border-green-500"
                     placeholder="cannabis, nefrologia, pesquisa"
                   />
                 </div>
@@ -382,7 +382,7 @@ const NewsManagement: React.FC = () => {
 
               {/* Preview */}
               {showPreview && (
-                <div className="bg-slate-700 rounded-lg p-6">
+                <div className="bg-brand-surface-subtle rounded-lg p-6">
                   <h3 className="text-xl font-bold mb-4">Preview</h3>
                   <div className="space-y-4">
                     <div>
@@ -391,8 +391,8 @@ const NewsManagement: React.FC = () => {
                         <span className="text-sm text-green-400">{getCategoryLabel(editingItem.category)}</span>
                       </div>
                       <h4 className="text-lg font-bold mb-2">{editingItem.title || 'Título da notícia'}</h4>
-                      <p className="text-slate-300 text-sm mb-2">{editingItem.summary || 'Resumo da notícia'}</p>
-                      <div className="flex items-center space-x-4 text-xs text-slate-400">
+                      <p className="text-brand-text-secondary text-sm mb-2">{editingItem.summary || 'Resumo da notícia'}</p>
+                      <div className="flex items-center space-x-4 text-xs text-brand-text-muted">
                         <span className="flex items-center space-x-1">
                           <Calendar className="w-3 h-3" />
                           <span>{editingItem.date}</span>
@@ -416,12 +416,12 @@ const NewsManagement: React.FC = () => {
             {isLoading ? (
               <div className="text-center py-12">
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-500 mx-auto"></div>
-                <p className="mt-4 text-slate-400">Carregando notícias...</p>
+                <p className="mt-4 text-brand-text-muted">Carregando notícias...</p>
               </div>
             ) : newsItems.length === 0 ? (
-              <div className="bg-slate-800 rounded-lg p-12 text-center">
+              <div className="bg-brand-surface rounded-lg p-12 text-center">
                 <FileText className="w-16 h-16 text-slate-600 mx-auto mb-4" />
-                <p className="text-slate-400 mb-4">Nenhuma notícia encontrada.</p>
+                <p className="text-brand-text-muted mb-4">Nenhuma notícia encontrada.</p>
                 <p className="text-slate-500 text-sm mb-6">
                   {selectedCategory !== 'all' 
                     ? `Nenhuma notícia na categoria "${getCategoryLabel(selectedCategory)}"` 
@@ -440,7 +440,7 @@ const NewsManagement: React.FC = () => {
               newsItems.map((item) => (
                 <div
                   key={item.id}
-                  className="bg-slate-800 rounded-lg p-6 hover:bg-slate-750 transition-colors"
+                  className="bg-brand-surface rounded-lg p-6 hover:bg-slate-750 transition-colors"
                 >
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
@@ -449,13 +449,13 @@ const NewsManagement: React.FC = () => {
                           {getCategoryLabel(item.category)}
                         </span>
                         {item.published ? (
-                          <span className="px-2 py-1 bg-green-600 text-white text-xs rounded">Publicado</span>
+                          <span className="px-2 py-1 bg-green-600 text-brand-text text-xs rounded">Publicado</span>
                         ) : (
-                          <span className="px-2 py-1 bg-yellow-600 text-white text-xs rounded">Rascunho</span>
+                          <span className="px-2 py-1 bg-yellow-600 text-brand-text text-xs rounded">Rascunho</span>
                         )}
                       </div>
                       <h3 className="text-xl font-bold mb-2">{item.title}</h3>
-                      <p className="text-slate-400 mb-4">{item.summary}</p>
+                      <p className="text-brand-text-muted mb-4">{item.summary}</p>
                       <div className="flex items-center space-x-4 text-sm text-slate-500">
                         <span>{item.author}</span>
                         <span>•</span>
@@ -471,14 +471,14 @@ const NewsManagement: React.FC = () => {
                     <div className="flex items-center space-x-2 ml-4">
                       <button
                         onClick={() => handleEdit(item)}
-                        className="p-2 hover:bg-slate-700 rounded-lg transition-colors"
+                        className="p-2 hover:bg-brand-surface-subtle rounded-lg transition-colors"
                         title="Editar"
                       >
                         <Edit className="w-5 h-5 text-blue-400" />
                       </button>
                       <button
                         onClick={() => item.id && handleDelete(item.id)}
-                        className="p-2 hover:bg-slate-700 rounded-lg transition-colors"
+                        className="p-2 hover:bg-brand-surface-subtle rounded-lg transition-colors"
                         title="Excluir"
                       >
                         <Trash2 className="w-5 h-5 text-red-400" />

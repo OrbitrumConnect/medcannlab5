@@ -50,7 +50,7 @@ const DotPagination: React.FC<DotPaginationProps> = ({
         type="button"
         onClick={() => onPageChange(Math.max(1, safePage - 1))}
         disabled={safePage === 1}
-        className="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+        className="p-2 rounded-lg bg-brand-surface hover:bg-brand-surface-subtle text-brand-text-secondary disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
         aria-label="Página anterior"
       >
         <ChevronLeft className="w-4 h-4" />
@@ -74,7 +74,7 @@ const DotPagination: React.FC<DotPaginationProps> = ({
         type="button"
         onClick={() => onPageChange(Math.min(totalPages, safePage + 1))}
         disabled={safePage === totalPages}
-        className="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+        className="p-2 rounded-lg bg-brand-surface hover:bg-brand-surface-subtle text-brand-text-secondary disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
         aria-label="Próxima página"
       >
         <ChevronRight className="w-4 h-4" />

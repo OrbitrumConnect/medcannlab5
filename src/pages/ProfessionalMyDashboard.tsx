@@ -626,11 +626,11 @@ const ProfessionalMyDashboard: React.FC = () => {
   // Helper: back button shared across section views
   const SectionHeader = ({ title, icon: Icon }: { title: string; icon: React.ElementType }) => (
     <header className="h-14 border-b border-slate-700/50 bg-slate-800/50 flex items-center px-4 gap-3 shrink-0">
-      <button onClick={() => navigate('/app/clinica/profissional/dashboard')} className="p-2 hover:bg-slate-700/50 rounded-lg text-slate-400 hover:text-white transition-colors">
+      <button onClick={() => navigate('/app/clinica/profissional/dashboard')} className="p-2 hover:bg-slate-700/50 rounded-lg text-brand-text-muted hover:text-brand-text transition-colors">
         <ArrowLeft className="w-5 h-5" />
       </button>
       <Icon className="w-5 h-5 text-emerald-400" />
-      <h1 className="text-sm font-bold text-white uppercase tracking-wider">{title}</h1>
+      <h1 className="text-sm font-bold text-brand-text uppercase tracking-wider">{title}</h1>
     </header>
   )
 
@@ -687,7 +687,7 @@ const ProfessionalMyDashboard: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen text-white" style={{ background: backgroundGradient }}>
+    <div className="min-h-screen text-brand-text" style={{ background: backgroundGradient }}>
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6">
         {/* Header — compacto, pro: avatar + nome + XP + ranking + Editar perfil */}
         <div className="mb-4 pb-3 border-b border-white/10">
@@ -700,19 +700,19 @@ const ProfessionalMyDashboard: React.FC = () => {
               {userAvatarUrl ? (
                 <img src={userAvatarUrl} alt="" className="w-full h-full object-cover" />
               ) : (
-                <div className="w-full h-full flex items-center justify-center text-white text-sm font-semibold" style={{ background: accentGradient }}>
+                <div className="w-full h-full flex items-center justify-center text-brand-text text-sm font-semibold" style={{ background: accentGradient }}>
                   {(user?.name || 'P').charAt(0).toUpperCase()}
                 </div>
               )}
-              <span className="absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full bg-slate-800 border border-white/20 flex items-center justify-center">
-                <Pencil className="w-2 h-2 text-slate-400" />
+              <span className="absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full bg-brand-surface border border-white/20 flex items-center justify-center">
+                <Pencil className="w-2 h-2 text-brand-text-muted" />
               </span>
             </Link>
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-2 flex-wrap">
-                <h1 className="text-base font-semibold text-white tracking-tight">Meu Dashboard</h1>
+                <h1 className="text-base font-semibold text-brand-text tracking-tight">Meu Dashboard</h1>
                 <span className="text-slate-500">·</span>
-                <span className="text-sm text-slate-400 truncate">{user?.name || 'Profissional'}</span>
+                <span className="text-sm text-brand-text-muted truncate">{user?.name || 'Profissional'}</span>
                 {/* V1.9.x: mini-bar soft pra "Editar perfil" — destaque sutil mas perceptível.
                     bg+border emerald translucentes, hover scale leve. Substitui link inline puro. */}
                 <Link
@@ -729,12 +729,12 @@ const ProfessionalMyDashboard: React.FC = () => {
             <div className="flex items-center gap-2 shrink-0">
               <span className="inline-flex items-center gap-1 px-2 py-1 rounded bg-white/5 border border-white/10 text-[11px]">
                 <Zap className="w-3 h-3 text-amber-400" />
-                <span className="font-medium text-white tabular-nums">{xp}</span>
+                <span className="font-medium text-brand-text tabular-nums">{xp}</span>
                 <span className="text-slate-500">XP</span>
               </span>
               <span className="inline-flex items-center gap-1 px-2 py-1 rounded bg-white/5 border border-white/10 text-[11px]">
                 <Award className="w-3 h-3 text-emerald-400" />
-                <span className="font-medium text-white tabular-nums">{ranking ? `#${ranking}` : '—'}</span>
+                <span className="font-medium text-brand-text tabular-nums">{ranking ? `#${ranking}` : '—'}</span>
                 <span className="text-slate-500">ranking</span>
               </span>
             </div>
@@ -744,8 +744,8 @@ const ProfessionalMyDashboard: React.FC = () => {
         {/* [V1.9.127-A] Ações rápidas profissionais — acessibilidade 50+ */}
         <div className="bg-slate-900/40 border border-white/5 rounded-2xl p-4 md:p-6 space-y-3 mb-6">
           <div className="space-y-0.5">
-            <h2 className="text-lg md:text-xl font-semibold text-white">O que você quer fazer agora?</h2>
-            <p className="text-slate-400 text-sm">Ações rápidas do seu dia clínico.</p>
+            <h2 className="text-lg md:text-xl font-semibold text-brand-text">O que você quer fazer agora?</h2>
+            <p className="text-brand-text-muted text-sm">Ações rápidas do seu dia clínico.</p>
           </div>
           {/* [V1.9.130-B] Mobile: grid 3 colunas quadrados | Desktop (md+): flex horizontal */}
           <div className="grid grid-cols-3 gap-2 md:flex md:flex-wrap md:gap-3">
@@ -779,7 +779,7 @@ const ProfessionalMyDashboard: React.FC = () => {
               <FileText className="w-5 h-5 text-emerald-400" />
               <span>Relatórios</span>
               {stats.pendingReports > 0 && (
-                <span className="absolute top-1 right-1 md:static md:ml-1 px-1.5 py-0.5 md:px-2 rounded-full bg-slate-700 text-slate-200 text-[10px] md:text-xs font-bold">
+                <span className="absolute top-1 right-1 md:static md:ml-1 px-1.5 py-0.5 md:px-2 rounded-full bg-brand-surface-subtle text-slate-200 text-[10px] md:text-xs font-bold">
                   {stats.pendingReports}<span className="hidden md:inline"> pendentes</span>
                 </span>
               )}
@@ -811,7 +811,7 @@ const ProfessionalMyDashboard: React.FC = () => {
               <Users className="w-5 h-5 text-emerald-400" />
               <span>Meus<br className="md:hidden" /> Pacientes</span>
               {stats.totalPatients > 0 && (
-                <span className="absolute top-1 right-1 md:static md:ml-1 px-1.5 py-0.5 md:px-2 rounded-full bg-slate-700 text-slate-200 text-[10px] md:text-xs font-bold">
+                <span className="absolute top-1 right-1 md:static md:ml-1 px-1.5 py-0.5 md:px-2 rounded-full bg-brand-surface-subtle text-slate-200 text-[10px] md:text-xs font-bold">
                   {stats.totalPatients}
                 </span>
               )}
@@ -839,7 +839,7 @@ const ProfessionalMyDashboard: React.FC = () => {
               <div className="px-3 py-2.5">
                 <div className="flex items-center justify-between mb-2">
                   <Wallet className="w-5 h-5 text-amber-400" />
-                  <span className="text-[10px] text-slate-400 uppercase tracking-wider">Carteira</span>
+                  <span className="text-[10px] text-brand-text-muted uppercase tracking-wider">Carteira</span>
                 </div>
                 <div className="flex items-baseline gap-1.5">
                   <span className="text-2xl font-bold text-amber-400 tabular-nums">{walletCredits}</span>
@@ -847,7 +847,7 @@ const ProfessionalMyDashboard: React.FC = () => {
                 </div>
                 <div className="mt-2 pt-2 border-t border-amber-500/20 flex items-center gap-1.5">
                   <Award className="w-3.5 h-3.5 text-emerald-400" />
-                  <span className="text-[11px] text-slate-300">Ranking <span className="font-semibold text-white">{ranking ? `#${ranking}` : '—'}</span></span>
+                  <span className="text-[11px] text-brand-text-secondary">Ranking <span className="font-semibold text-brand-text">{ranking ? `#${ranking}` : '—'}</span></span>
                 </div>
               </div>
             </Link>
@@ -855,7 +855,7 @@ const ProfessionalMyDashboard: React.FC = () => {
 
           {/* Analisar Paciente — card ao lado da Carteira */}
           <section className="flex-1 min-w-0 rounded-xl border border-emerald-500/20 bg-gradient-to-br from-emerald-500/5 to-transparent p-4 flex flex-col justify-center">
-            <h2 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2 flex items-center gap-2">
+            <h2 className="text-xs font-semibold text-brand-text-muted uppercase tracking-wider mb-2 flex items-center gap-2">
               <Stethoscope className="w-4 h-4 text-emerald-400" />
               Analisar Paciente
             </h2>
@@ -869,10 +869,10 @@ const ProfessionalMyDashboard: React.FC = () => {
                   onChange={(e) => { setAnalysisSearch(e.target.value); setAnalysisDropdownOpen(true) }}
                   onFocus={() => setAnalysisDropdownOpen(true)}
                   placeholder="Buscar ou clique para ver vinculados"
-                  className="w-full pl-9 pr-3 py-2 rounded-lg bg-white/5 border border-white/10 text-white placeholder-slate-500 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
+                  className="w-full pl-9 pr-3 py-2 rounded-lg bg-white/5 border border-white/10 text-brand-text placeholder-slate-500 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
                 />
                 {analysisDropdownOpen && (
-                  <div className="absolute top-full left-0 right-0 mt-1 rounded-lg border border-white/10 bg-slate-900 shadow-xl z-10 max-h-48 overflow-y-auto">
+                  <div className="absolute top-full left-0 right-0 mt-1 rounded-lg border border-white/10 bg-brand-bg shadow-xl z-10 max-h-48 overflow-y-auto">
                     {analysisFilteredPatients.length === 0 ? (
                       <div className="px-3 py-4 text-center text-xs text-slate-500">
                         {linkedPatients.length === 0
@@ -895,7 +895,7 @@ const ProfessionalMyDashboard: React.FC = () => {
                               setAnalysisSearch(p.name)
                               setAnalysisDropdownOpen(false)
                             }}
-                            className="w-full px-3 py-2 text-left text-sm text-white hover:bg-emerald-500/20 flex items-center gap-2"
+                            className="w-full px-3 py-2 text-left text-sm text-brand-text hover:bg-emerald-500/20 flex items-center gap-2"
                           >
                             <span className="w-8 h-8 rounded-full bg-emerald-500/30 flex items-center justify-center text-emerald-200 font-semibold text-xs">
                               {p.name.charAt(0).toUpperCase()}
@@ -912,16 +912,16 @@ const ProfessionalMyDashboard: React.FC = () => {
             {selectedPatientForAnalysis && (
               <>
                 <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-white/5 border border-white/10">
-                  <span className="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-500 to-emerald-700 flex items-center justify-center text-white font-semibold">
+                  <span className="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-500 to-emerald-700 flex items-center justify-center text-brand-text font-semibold">
                     {selectedPatientForAnalysis.name.charAt(0).toUpperCase()}
                   </span>
-                  <span className="text-sm text-white font-medium">{selectedPatientForAnalysis.name}</span>
+                  <span className="text-sm text-brand-text font-medium">{selectedPatientForAnalysis.name}</span>
                 </div>
                 <button
                   type="button"
                   onClick={runPatientAnalysis}
                   disabled={analysisScanning}
-                  className="px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 disabled:opacity-70 text-white text-sm font-medium flex items-center gap-2"
+                  className="px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 disabled:opacity-70 text-brand-text text-sm font-medium flex items-center gap-2"
                 >
                   <Activity className="w-4 h-4" />
                   {analysisScanning ? 'Analisando…' : 'Analisar'}
@@ -968,8 +968,8 @@ const ProfessionalMyDashboard: React.FC = () => {
 
         {/* Painel lateral analítico do paciente — avatar do paciente refletido no card */}
         {analysisPanelOpen && selectedPatientForAnalysis && analysisData && (
-          <div className="fixed top-[8vh] bottom-0 right-0 w-full max-w-md bg-slate-900 border-l border-white/10 shadow-2xl z-40 flex flex-col rounded-l-xl">
-            <div className="py-2.5 px-3 border-b border-white/10 flex items-center justify-between shrink-0 bg-slate-900 relative z-10">
+          <div className="fixed top-[8vh] bottom-0 right-0 w-full max-w-md bg-brand-bg border-l border-white/10 shadow-2xl z-40 flex flex-col rounded-l-xl">
+            <div className="py-2.5 px-3 border-b border-white/10 flex items-center justify-between shrink-0 bg-brand-bg relative z-10">
               <div className="flex items-center gap-2.5 min-w-0">
                 <HumanoidAvatar
                   avatarUrl={analysisData.patientAvatarUrl}
@@ -977,14 +977,14 @@ const ProfessionalMyDashboard: React.FC = () => {
                   size="xs"
                 />
                 <div className="min-w-0 flex-1">
-                  <h3 className="text-white font-semibold truncate text-sm">{selectedPatientForAnalysis.name}</h3>
-                  <p className="text-[11px] text-slate-400">Contexto clínico</p>
+                  <h3 className="text-brand-text font-semibold truncate text-sm">{selectedPatientForAnalysis.name}</h3>
+                  <p className="text-[11px] text-brand-text-muted">Contexto clínico</p>
                 </div>
               </div>
               <button
                 type="button"
                 onClick={() => { setAnalysisPanelOpen(false); setSelectedPatientForAnalysis(null); setAnalysisData(null) }}
-                className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-white/10 flex-shrink-0"
+                className="p-1.5 rounded-lg text-brand-text-muted hover:text-brand-text hover:bg-white/10 flex-shrink-0"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -1011,28 +1011,28 @@ const ProfessionalMyDashboard: React.FC = () => {
                         Sinopse clínica
                       </span>
                     </div>
-                    <div className="space-y-1 text-xs text-slate-300">
+                    <div className="space-y-1 text-xs text-brand-text-secondary">
                       <p>
-                        <span className="text-slate-400">Idade:</span>{' '}
+                        <span className="text-brand-text-muted">Idade:</span>{' '}
                         {age !== null ? `${age} anos` : '—'}
                         {analysisData.patientGender && <span className="ml-2 text-slate-500">• {analysisData.patientGender}</span>}
                       </p>
                       <p>
-                        <span className="text-slate-400">AECs:</span>{' '}
-                        <span className="text-white font-semibold">{totalAecs}</span>
+                        <span className="text-brand-text-muted">AECs:</span>{' '}
+                        <span className="text-brand-text font-semibold">{totalAecs}</span>
                         {lastScore !== null && (
                           <span
                             className="ml-2"
                             title="Indicador da qualidade estrutural da entrevista clínica (completude, coerência e organização narrativa). NÃO representa gravidade clínica nem estado de saúde do paciente."
                           >
-                            <span className="text-slate-400">Profundidade da escuta:</span>{' '}
+                            <span className="text-brand-text-muted">Profundidade da escuta:</span>{' '}
                             <span className="text-emerald-300 font-semibold cursor-help underline decoration-dotted decoration-emerald-500/40 underline-offset-2">{lastScore}/100</span>
                           </span>
                         )}
                       </p>
                       <p>
-                        <span className="text-slate-400">Última consulta:</span>{' '}
-                        <span className="text-white">{lastAptDate || '—'}</span>
+                        <span className="text-brand-text-muted">Última consulta:</span>{' '}
+                        <span className="text-brand-text">{lastAptDate || '—'}</span>
                       </p>
                     </div>
 
@@ -1071,7 +1071,7 @@ const ProfessionalMyDashboard: React.FC = () => {
                     onClick={() => setAnalysisPanelCollapsed(prev => ({ ...prev, privateNotes: !prev.privateNotes }))}
                     className="w-full px-3 py-2 flex items-center justify-between text-left"
                   >
-                    <span className="text-xs font-medium text-white flex items-center gap-2">
+                    <span className="text-xs font-medium text-brand-text flex items-center gap-2">
                       <Pencil className="w-3.5 h-3.5 text-purple-400" />
                       Notas privadas do médico
                       {privateNotesSaving && <span className="text-[9px] text-purple-300">salvando...</span>}
@@ -1081,7 +1081,7 @@ const ProfessionalMyDashboard: React.FC = () => {
                         </span>
                       )}
                     </span>
-                    <ChevronDown className={`w-3.5 h-3.5 text-slate-400 transition-transform ${analysisPanelCollapsed.privateNotes ? '' : 'rotate-180'}`} />
+                    <ChevronDown className={`w-3.5 h-3.5 text-brand-text-muted transition-transform ${analysisPanelCollapsed.privateNotes ? '' : 'rotate-180'}`} />
                   </button>
                   {!analysisPanelCollapsed.privateNotes && (
                     <div className="px-3 pb-3">
@@ -1107,11 +1107,11 @@ const ProfessionalMyDashboard: React.FC = () => {
                   onClick={() => setAnalysisPanelCollapsed(prev => ({ ...prev, assessment: !prev.assessment }))}
                   className="w-full px-3 py-2 flex items-center justify-between text-left"
                 >
-                  <span className="text-xs font-medium text-white flex items-center gap-2">
+                  <span className="text-xs font-medium text-brand-text flex items-center gap-2">
                     <FileText className="w-3.5 h-3.5 text-emerald-400" />
                     Avaliação clínica
                   </span>
-                  <ChevronDown className={`w-3.5 h-3.5 text-slate-400 transition-transform ${analysisPanelCollapsed.assessment ? '' : 'rotate-180'}`} />
+                  <ChevronDown className={`w-3.5 h-3.5 text-brand-text-muted transition-transform ${analysisPanelCollapsed.assessment ? '' : 'rotate-180'}`} />
                 </button>
                 {!analysisPanelCollapsed.assessment && (
                   <div className="px-3 pb-3 space-y-1.5">
@@ -1119,7 +1119,7 @@ const ProfessionalMyDashboard: React.FC = () => {
                       <p className="text-xs text-slate-500">Nenhuma avaliação registrada.</p>
                     ) : (
                       <>
-                        <p className="text-xs text-slate-400">Última: {new Date(analysisData.assessments[0].created_at).toLocaleDateString('pt-BR')}</p>
+                        <p className="text-xs text-brand-text-muted">Última: {new Date(analysisData.assessments[0].created_at).toLocaleDateString('pt-BR')}</p>
                         <Link
                           to={`/app/clinica/profissional/pacientes?patientId=${selectedPatientForAnalysis.id}`}
                           className="inline-flex items-center gap-1 text-xs text-emerald-400 hover:text-emerald-300"
@@ -1138,11 +1138,11 @@ const ProfessionalMyDashboard: React.FC = () => {
                   onClick={() => setAnalysisPanelCollapsed(prev => ({ ...prev, past: !prev.past }))}
                   className="w-full px-3 py-2 flex items-center justify-between text-left"
                 >
-                  <span className="text-xs font-medium text-white flex items-center gap-2">
+                  <span className="text-xs font-medium text-brand-text flex items-center gap-2">
                     <Clock className="w-3.5 h-3.5 text-amber-400" />
                     Consultas anteriores
                   </span>
-                  <ChevronDown className={`w-3.5 h-3.5 text-slate-400 transition-transform ${analysisPanelCollapsed.past ? '' : 'rotate-180'}`} />
+                  <ChevronDown className={`w-3.5 h-3.5 text-brand-text-muted transition-transform ${analysisPanelCollapsed.past ? '' : 'rotate-180'}`} />
                 </button>
                 {!analysisPanelCollapsed.past && (
                   <div className="px-3 pb-3 space-y-1.5">
@@ -1150,7 +1150,7 @@ const ProfessionalMyDashboard: React.FC = () => {
                       <p className="text-xs text-slate-500">Nenhuma consulta anterior.</p>
                     ) : (
                       analysisData.pastAppointments.map((apt: any) => (
-                        <div key={apt.id} className="text-xs text-slate-300">
+                        <div key={apt.id} className="text-xs text-brand-text-secondary">
                           {new Date(apt.appointment_date).toLocaleDateString('pt-BR')} — {apt.status || '—'}
                         </div>
                       ))
@@ -1171,11 +1171,11 @@ const ProfessionalMyDashboard: React.FC = () => {
                   onClick={() => setAnalysisPanelCollapsed(prev => ({ ...prev, upcoming: !prev.upcoming }))}
                   className="w-full px-3 py-2 flex items-center justify-between text-left"
                 >
-                  <span className="text-xs font-medium text-white flex items-center gap-2">
+                  <span className="text-xs font-medium text-brand-text flex items-center gap-2">
                     <Calendar className="w-3.5 h-3.5 text-blue-400" />
                     Próximas consultas
                   </span>
-                  <ChevronDown className={`w-3.5 h-3.5 text-slate-400 transition-transform ${analysisPanelCollapsed.upcoming ? '' : 'rotate-180'}`} />
+                  <ChevronDown className={`w-3.5 h-3.5 text-brand-text-muted transition-transform ${analysisPanelCollapsed.upcoming ? '' : 'rotate-180'}`} />
                 </button>
                 {!analysisPanelCollapsed.upcoming && (
                   <div className="px-3 pb-3 space-y-1.5">
@@ -1183,7 +1183,7 @@ const ProfessionalMyDashboard: React.FC = () => {
                       <p className="text-xs text-slate-500">Nenhuma consulta agendada.</p>
                     ) : (
                       analysisData.upcomingAppointments.map((apt: any) => (
-                        <div key={apt.id} className="text-xs text-slate-300">
+                        <div key={apt.id} className="text-xs text-brand-text-secondary">
                           {new Date(apt.appointment_date).toLocaleString('pt-BR')} — {apt.status || '—'}
                         </div>
                       ))
@@ -1204,11 +1204,11 @@ const ProfessionalMyDashboard: React.FC = () => {
                   onClick={() => setAnalysisPanelCollapsed(prev => ({ ...prev, prescriptions: !prev.prescriptions }))}
                   className="w-full px-3 py-2 flex items-center justify-between text-left"
                 >
-                  <span className="text-xs font-medium text-white flex items-center gap-2">
+                  <span className="text-xs font-medium text-brand-text flex items-center gap-2">
                     <Heart className="w-3.5 h-3.5 text-rose-400" />
                     Prescrições
                   </span>
-                  <ChevronDown className={`w-3.5 h-3.5 text-slate-400 transition-transform ${analysisPanelCollapsed.prescriptions ? '' : 'rotate-180'}`} />
+                  <ChevronDown className={`w-3.5 h-3.5 text-brand-text-muted transition-transform ${analysisPanelCollapsed.prescriptions ? '' : 'rotate-180'}`} />
                 </button>
                 {!analysisPanelCollapsed.prescriptions && (
                   <div className="px-3 pb-3 space-y-1.5">
@@ -1216,7 +1216,7 @@ const ProfessionalMyDashboard: React.FC = () => {
                       <p className="text-xs text-slate-500">Nenhuma prescrição ativa.</p>
                     ) : (
                       analysisData.prescriptions.slice(0, 3).map((px: any) => (
-                        <div key={px.id} className="text-xs text-slate-300">
+                        <div key={px.id} className="text-xs text-brand-text-secondary">
                           {px.title || 'Prescrição'} — {px.status || '—'}
                         </div>
                       ))
@@ -1238,15 +1238,15 @@ const ProfessionalMyDashboard: React.FC = () => {
                   onClick={() => setAnalysisPanelCollapsed(prev => ({ ...prev, evolution: !prev.evolution }))}
                   className="w-full px-3 py-2 flex items-center justify-between text-left"
                 >
-                  <span className="text-xs font-medium text-white flex items-center gap-2">
+                  <span className="text-xs font-medium text-brand-text flex items-center gap-2">
                     <BarChart3 className="w-3.5 h-3.5 text-cyan-400" />
                     Evolução e gráficos
                   </span>
-                  <ChevronDown className={`w-3.5 h-3.5 text-slate-400 transition-transform ${analysisPanelCollapsed.evolution ? '' : 'rotate-180'}`} />
+                  <ChevronDown className={`w-3.5 h-3.5 text-brand-text-muted transition-transform ${analysisPanelCollapsed.evolution ? '' : 'rotate-180'}`} />
                 </button>
                 {!analysisPanelCollapsed.evolution && (
                   <div className="px-3 pb-3 space-y-2.5">
-                    <p className="text-[11px] text-slate-400">Indicadores e relatórios do paciente.</p>
+                    <p className="text-[11px] text-brand-text-muted">Indicadores e relatórios do paciente.</p>
                     {analysisData.patientReports && analysisData.patientReports.length > 0 ? (
                       <>
                         <div className="grid grid-cols-2 gap-1.5">
@@ -1270,14 +1270,14 @@ const ProfessionalMyDashboard: React.FC = () => {
                         <div className="space-y-0.5">
                           <p className="text-[9px] text-slate-500 uppercase tracking-wider">Últimos relatórios</p>
                           {analysisData.patientReports.slice(0, 5).map((r: any) => (
-                            <div key={r.id} className="flex items-center justify-between text-[11px] text-slate-300 py-0.5 border-b border-white/5 last:border-0">
+                            <div key={r.id} className="flex items-center justify-between text-[11px] text-brand-text-secondary py-0.5 border-b border-white/5 last:border-0">
                               <span>{new Date(r.created_at).toLocaleDateString('pt-BR')}</span>
                               <span className="text-slate-500">{r.report_type || r.status || '—'}</span>
                             </div>
                           ))}
                         </div>
                         <div className="flex items-center justify-between gap-2 pt-1.5 border-t border-white/10">
-                          <span className="text-[11px] text-slate-400">{analysisData.patientReports.length} relatório(s)</span>
+                          <span className="text-[11px] text-brand-text-muted">{analysisData.patientReports.length} relatório(s)</span>
                           <Link
                             to={`/app/clinica/profissional/pacientes?patientId=${selectedPatientForAnalysis.id}`}
                             className="text-xs text-emerald-400 hover:text-emerald-300 font-medium"
@@ -1308,7 +1308,7 @@ const ProfessionalMyDashboard: React.FC = () => {
 
         {/* [V1.9.127-B] Gráficos compactados (altura -25%, padding reduzido) */}
         <section className="mb-6 rounded-xl border border-white/10 bg-gradient-to-br from-white/[0.06] to-transparent p-3 sm:p-4">
-          <h2 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3 flex items-center gap-2">
+          <h2 className="text-xs font-semibold text-brand-text-muted uppercase tracking-wider mb-3 flex items-center gap-2">
             <BarChart3 className="w-4 h-4 text-emerald-400" />
             Estatísticas e evolução
           </h2>
@@ -1316,7 +1316,7 @@ const ProfessionalMyDashboard: React.FC = () => {
             {/* Consultas feitas (últimas 6 semanas) */}
             <div className="rounded-lg border border-white/5 bg-white/[0.03] p-3">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-sm font-medium text-white flex items-center gap-1.5">
+                <span className="text-sm font-medium text-brand-text flex items-center gap-1.5">
                   <Calendar className="w-4 h-4 text-emerald-400" />
                   Consultas feitas
                 </span>
@@ -1347,7 +1347,7 @@ const ProfessionalMyDashboard: React.FC = () => {
             {/* Avaliações feitas pelos pacientes vinculados */}
             <div className="rounded-lg border border-white/5 bg-white/[0.03] p-3">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-sm font-medium text-white flex items-center gap-1.5">
+                <span className="text-sm font-medium text-brand-text flex items-center gap-1.5">
                   <Star className="w-4 h-4 text-amber-400" />
                   Avaliações dos meus pacientes
                 </span>
@@ -1359,7 +1359,7 @@ const ProfessionalMyDashboard: React.FC = () => {
                 <>
                   <div className="flex items-baseline gap-2 mb-2">
                     <span className="text-2xl font-bold text-amber-400 tabular-nums">{chartData.patientEvaluationsTotal}</span>
-                    <span className="text-sm text-slate-400">avaliações completas</span>
+                    <span className="text-sm text-brand-text-muted">avaliações completas</span>
                   </div>
                   <div className="flex items-end justify-between gap-1 h-14">
                     {chartData.patientEvaluationsByWeek.map((item, idx) => {
@@ -1386,7 +1386,7 @@ const ProfessionalMyDashboard: React.FC = () => {
         {/* [V1.9.127-B] Três Camadas de KPIs refatorado: só mostra os com dados reais + mini-bars */}
         <section className="mt-6 pt-6 border-t border-white/10">
           <div className="flex items-center justify-between mb-3">
-            <h2 className="text-lg font-bold text-white">Indicadores Ativos</h2>
+            <h2 className="text-lg font-bold text-brand-text">Indicadores Ativos</h2>
             <span className="text-[10px] uppercase tracking-wider text-slate-500">só com dados reais</span>
           </div>
           {(() => {
@@ -1430,7 +1430,7 @@ const ProfessionalMyDashboard: React.FC = () => {
                       title={isZero ? 'Aguardando primeiro dado real' : undefined}
                     >
                       <div className="flex items-baseline justify-between mb-1.5">
-                        <span className="text-[11px] text-slate-400 truncate pr-1">{k.label}</span>
+                        <span className="text-[11px] text-brand-text-muted truncate pr-1">{k.label}</span>
                         <span className={`text-lg font-bold tabular-nums ${colorClasses.split(' ').slice(1, 2).join(' ')}`}>
                           {k.value}{k.suffix || ''}
                         </span>
@@ -1450,87 +1450,87 @@ const ProfessionalMyDashboard: React.FC = () => {
 
           {/* [V1.9.127-B] Eixo Clínica reduzido: 5 cards duplicavam Ações Rápidas no topo. */}
           {/*               Mantém: Arte AEC (metodologia) + KPIs TEA (monitoramento) — únicos não-duplicados. */}
-          <h2 className="text-lg font-bold text-white mb-4">Eixo Clínica · Especialidades</h2>
+          <h2 className="text-lg font-bold text-brand-text mb-4">Eixo Clínica · Especialidades</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-8">
-            <Link to="/app/ensino/profissional/arte-entrevista-clinica" className="rounded-xl p-5 text-white hover:shadow-lg hover:scale-[1.02] transition-all text-left border-2 border-emerald-500/30" style={cardStyle}>
+            <Link to="/app/ensino/profissional/arte-entrevista-clinica" className="rounded-xl p-5 text-brand-text hover:shadow-lg hover:scale-[1.02] transition-all text-left border-2 border-emerald-500/30" style={cardStyle}>
               <div className="flex items-center justify-between mb-2">
-                <h3 className="text-sm font-medium text-white">Arte da Entrevista Clínica</h3>
+                <h3 className="text-sm font-medium text-brand-text">Arte da Entrevista Clínica</h3>
                 <Heart className="w-5 h-5 text-emerald-400" />
               </div>
-              <p className="text-xs text-slate-400">Metodologia AEC — Dr. Ricardo Valença</p>
+              <p className="text-xs text-brand-text-muted">Metodologia AEC — Dr. Ricardo Valença</p>
             </Link>
             {/* [V1.9.131-A] KPIs TEA aponta pra placeholder honesto (em desenvolvimento) */}
-            <Link to="/app/clinica/profissional/tea" className="rounded-xl p-5 text-white hover:shadow-lg hover:scale-[1.02] transition-all text-left relative" style={cardStyle}>
+            <Link to="/app/clinica/profissional/tea" className="rounded-xl p-5 text-brand-text hover:shadow-lg hover:scale-[1.02] transition-all text-left relative" style={cardStyle}>
               <span className="absolute top-2 right-2 px-2 py-0.5 rounded-full bg-yellow-500/15 text-yellow-400 text-[9px] font-bold uppercase tracking-wider border border-yellow-500/30">
                 Em breve
               </span>
               <div className="flex items-center justify-between mb-2">
-                <h3 className="text-sm font-medium text-white">KPIs TEA</h3>
+                <h3 className="text-sm font-medium text-brand-text">KPIs TEA</h3>
                 <Brain className="w-5 h-5 text-emerald-400" />
               </div>
-              <p className="text-xs text-slate-400">Monitoramento neurológico</p>
+              <p className="text-xs text-brand-text-muted">Monitoramento neurológico</p>
             </Link>
             {isEduardoDashboard && (
-              <button type="button" onClick={() => navigate('/app/clinica/profissional/dashboard?section=atendimento')} className="rounded-xl p-5 text-white hover:shadow-lg hover:scale-[1.02] transition-all text-left bg-gradient-to-r from-blue-600 to-indigo-600 border border-white/10">
+              <button type="button" onClick={() => navigate('/app/clinica/profissional/dashboard?section=atendimento')} className="rounded-xl p-5 text-brand-text hover:shadow-lg hover:scale-[1.02] transition-all text-left bg-gradient-to-r from-blue-600 to-indigo-600 border border-white/10">
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-xs font-bold text-white uppercase tracking-wider">Acesso Direto</span>
-                  <MessageCircle className="w-5 h-5 text-white" />
+                  <span className="text-xs font-bold text-brand-text uppercase tracking-wider">Acesso Direto</span>
+                  <MessageCircle className="w-5 h-5 text-brand-text" />
                 </div>
-                <h4 className="text-sm font-bold text-white">Dr. Ricardo Valença</h4>
+                <h4 className="text-sm font-bold text-brand-text">Dr. Ricardo Valença</h4>
                 <p className="text-xs text-blue-100/90">Comunicação entre consultórios</p>
               </button>
             )}
           </div>
 
-          <h2 className="text-lg font-bold text-white mb-4">Eixo Ensino</h2>
+          <h2 className="text-lg font-bold text-brand-text mb-4">Eixo Ensino</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-8">
-            <Link to="/app/ensino/profissional/dashboard" className="rounded-xl p-5 text-white hover:shadow-lg hover:scale-[1.02] transition-all text-left" style={cardStyle}>
+            <Link to="/app/ensino/profissional/dashboard" className="rounded-xl p-5 text-brand-text hover:shadow-lg hover:scale-[1.02] transition-all text-left" style={cardStyle}>
               <div className="flex items-center justify-between mb-2">
-                <h3 className="text-sm font-medium text-white">Gestão de Ensino</h3>
+                <h3 className="text-sm font-medium text-brand-text">Gestão de Ensino</h3>
                 <GraduationCap className="w-5 h-5 text-emerald-400" />
               </div>
-              <p className="text-xs text-slate-400">Gerenciamento de cursos</p>
+              <p className="text-xs text-brand-text-muted">Gerenciamento de cursos</p>
             </Link>
-            <Link to="/app/ensino/profissional/pos-graduacao-cannabis" className="rounded-xl p-5 text-white hover:shadow-lg hover:scale-[1.02] transition-all text-left border-2 border-emerald-500/30" style={cardStyle}>
+            <Link to="/app/ensino/profissional/pos-graduacao-cannabis" className="rounded-xl p-5 text-brand-text hover:shadow-lg hover:scale-[1.02] transition-all text-left border-2 border-emerald-500/30" style={cardStyle}>
               <div className="flex items-center justify-between mb-2">
-                <h3 className="text-sm font-medium text-white">Pós-graduação Cannabis Medicinal</h3>
+                <h3 className="text-sm font-medium text-brand-text">Pós-graduação Cannabis Medicinal</h3>
                 <BookOpen className="w-5 h-5 text-emerald-400" />
               </div>
-              <p className="text-xs text-slate-400">Coordenador: Dr. Eduardo Faveret</p>
+              <p className="text-xs text-brand-text-muted">Coordenador: Dr. Eduardo Faveret</p>
             </Link>
-            <Link to="/app/ensino/profissional/gestao-alunos" className="rounded-xl p-5 text-white hover:shadow-lg hover:scale-[1.02] transition-all text-left" style={cardStyle}>
+            <Link to="/app/ensino/profissional/gestao-alunos" className="rounded-xl p-5 text-brand-text hover:shadow-lg hover:scale-[1.02] transition-all text-left" style={cardStyle}>
               <div className="flex items-center justify-between mb-2">
-                <h3 className="text-sm font-medium text-white">Gestão de Alunos</h3>
+                <h3 className="text-sm font-medium text-brand-text">Gestão de Alunos</h3>
                 <Users className="w-5 h-5 text-emerald-400" />
               </div>
-              <p className="text-xs text-slate-400">Gerenciamento de estudantes</p>
+              <p className="text-xs text-brand-text-muted">Gerenciamento de estudantes</p>
             </Link>
           </div>
 
-          <h2 className="text-lg font-bold text-white mb-4">Eixo Pesquisa</h2>
+          <h2 className="text-lg font-bold text-brand-text mb-4">Eixo Pesquisa</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-            <Link to="/app/pesquisa/profissional/dashboard" className="rounded-xl p-5 text-white hover:shadow-lg hover:scale-[1.02] transition-all text-left" style={cardStyle}>
+            <Link to="/app/pesquisa/profissional/dashboard" className="rounded-xl p-5 text-brand-text hover:shadow-lg hover:scale-[1.02] transition-all text-left" style={cardStyle}>
               <div className="flex items-center justify-between mb-2">
                 <BarChart3 className="w-5 h-5 text-emerald-400" />
                 <span className="text-xs text-slate-500 uppercase">Resumo</span>
               </div>
-              <h3 className="text-sm font-semibold text-white">Resumo Administrativo</h3>
-              <p className="text-xs text-slate-400 mt-1">Visão consolidada da plataforma</p>
+              <h3 className="text-sm font-semibold text-brand-text">Resumo Administrativo</h3>
+              <p className="text-xs text-brand-text-muted mt-1">Visão consolidada da plataforma</p>
             </Link>
-            <Link to="/app/pesquisa/profissional/base-conhecimento" className="rounded-xl p-5 text-white hover:shadow-lg hover:scale-[1.02] transition-all text-left" style={cardStyle}>
+            <Link to="/app/pesquisa/profissional/base-conhecimento" className="rounded-xl p-5 text-brand-text hover:shadow-lg hover:scale-[1.02] transition-all text-left" style={cardStyle}>
               <div className="flex items-center justify-between mb-2">
                 <BookOpen className="w-5 h-5 text-emerald-400" />
                 <span className="text-xs text-slate-500 uppercase">Documentos</span>
               </div>
-              <h3 className="text-sm font-semibold text-white">Conhecimento da IA Residente</h3>
-              <p className="text-xs text-slate-400 mt-1">Biblioteca e Base de Conhecimento</p>
+              <h3 className="text-sm font-semibold text-brand-text">Conhecimento da IA Residente</h3>
+              <p className="text-xs text-brand-text-muted mt-1">Biblioteca e Base de Conhecimento</p>
             </Link>
-            <Link to="/app/pesquisa/profissional/cidade-amiga-dos-rins" className="rounded-xl p-5 text-white hover:shadow-lg hover:scale-[1.02] transition-all text-left bg-gradient-to-r from-cyan-600 to-blue-600 border-2 border-cyan-400/50">
+            <Link to="/app/pesquisa/profissional/cidade-amiga-dos-rins" className="rounded-xl p-5 text-brand-text hover:shadow-lg hover:scale-[1.02] transition-all text-left bg-gradient-to-r from-cyan-600 to-blue-600 border-2 border-cyan-400/50">
               <div className="flex items-center justify-between mb-2">
                 <Heart className="w-5 h-5 text-white/90" />
                 <span className="text-xs text-white/70 uppercase">Projeto</span>
               </div>
-              <h3 className="text-sm font-semibold text-white">Cidade Amiga dos Rins</h3>
+              <h3 className="text-sm font-semibold text-brand-text">Cidade Amiga dos Rins</h3>
               <p className="text-xs text-white/75 mt-1">Clínica, ensino e pesquisa</p>
             </Link>
           </div>

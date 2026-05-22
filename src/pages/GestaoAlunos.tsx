@@ -198,21 +198,21 @@ const GestaoAlunos: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-slate-900 text-white">
+    <div className="min-h-screen bg-brand-bg text-brand-text">
       {/* Header */}
-      <div className="bg-slate-800 border-b border-slate-700 p-6">
+      <div className="bg-brand-surface border-b border-brand-border p-6">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
             <button 
               onClick={() => navigate('/app/ensino/profissional/dashboard')}
-              className="flex items-center space-x-2 text-slate-300 hover:text-white transition-colors"
+              className="flex items-center space-x-2 text-brand-text-secondary hover:text-brand-text transition-colors"
             >
               <ArrowLeft className="w-5 h-5" />
               <span>Voltar</span>
             </button>
             <div>
-              <h1 className="text-2xl font-bold text-white">👥 Gestão de Alunos</h1>
-              <p className="text-slate-400">Acompanhe o desenvolvimento dos alunos por curso</p>
+              <h1 className="text-2xl font-bold text-brand-text">👥 Gestão de Alunos</h1>
+              <p className="text-brand-text-muted">Acompanhe o desenvolvimento dos alunos por curso</p>
             </div>
           </div>
         </div>
@@ -223,64 +223,64 @@ const GestaoAlunos: React.FC = () => {
         <div className="max-w-7xl mx-auto">
           {/* Stats Cards */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-            <div className="bg-slate-800 rounded-xl p-6">
+            <div className="bg-brand-surface rounded-xl p-6">
               <div className="flex items-center justify-between mb-4">
                 <div className="p-3 bg-blue-500/10 rounded-lg">
                   <Users className="w-6 h-6 text-blue-400" />
                 </div>
                 <TrendingUp className="w-5 h-5 text-green-400" />
               </div>
-              <h3 className="text-2xl font-bold text-white mb-1">{stats.total}</h3>
-              <p className="text-sm text-slate-400">Total de Alunos</p>
+              <h3 className="text-2xl font-bold text-brand-text mb-1">{stats.total}</h3>
+              <p className="text-sm text-brand-text-muted">Total de Alunos</p>
             </div>
 
-            <div className="bg-slate-800 rounded-xl p-6">
+            <div className="bg-brand-surface rounded-xl p-6">
               <div className="flex items-center justify-between mb-4">
                 <div className="p-3 bg-green-500/10 rounded-lg">
                   <Activity className="w-6 h-6 text-green-400" />
                 </div>
                 <TrendingUp className="w-5 h-5 text-green-400" />
               </div>
-              <h3 className="text-2xl font-bold text-white mb-1">{stats.active}</h3>
-              <p className="text-sm text-slate-400">Alunos Ativos</p>
+              <h3 className="text-2xl font-bold text-brand-text mb-1">{stats.active}</h3>
+              <p className="text-sm text-brand-text-muted">Alunos Ativos</p>
             </div>
 
-            <div className="bg-slate-800 rounded-xl p-6">
+            <div className="bg-brand-surface rounded-xl p-6">
               <div className="flex items-center justify-between mb-4">
                 <div className="p-3 bg-blue-500/10 rounded-lg">
                   <Award className="w-6 h-6 text-blue-400" />
                 </div>
                 <TrendingUp className="w-5 h-5 text-green-400" />
               </div>
-              <h3 className="text-2xl font-bold text-white mb-1">{stats.completed}</h3>
-              <p className="text-sm text-slate-400">Concluídos</p>
+              <h3 className="text-2xl font-bold text-brand-text mb-1">{stats.completed}</h3>
+              <p className="text-sm text-brand-text-muted">Concluídos</p>
             </div>
 
-            <div className="bg-slate-800 rounded-xl p-6">
+            <div className="bg-brand-surface rounded-xl p-6">
               <div className="flex items-center justify-between mb-4">
                 <div className="p-3 bg-purple-500/10 rounded-lg">
                   <Target className="w-6 h-6 text-purple-400" />
                 </div>
                 <TrendingUp className="w-5 h-5 text-green-400" />
               </div>
-              <h3 className="text-2xl font-bold text-white mb-1">{stats.avgProgress}%</h3>
-              <p className="text-sm text-slate-400">Progresso Médio</p>
+              <h3 className="text-2xl font-bold text-brand-text mb-1">{stats.avgProgress}%</h3>
+              <p className="text-sm text-brand-text-muted">Progresso Médio</p>
             </div>
           </div>
 
           {/* Filters */}
-          <div className="bg-slate-800 rounded-xl p-6 mb-6">
+          <div className="bg-brand-surface rounded-xl p-6 mb-6">
             <div className="flex flex-col md:flex-row gap-4">
               {/* Course Filter */}
               <div className="flex-1">
-                <label className="block text-sm font-medium text-slate-300 mb-2">Filtrar por Curso</label>
+                <label className="block text-sm font-medium text-brand-text-secondary mb-2">Filtrar por Curso</label>
                 <div className="flex gap-2">
                   <button
                     onClick={() => setSelectedCourse('all')}
                     className={`px-4 py-2 rounded-lg font-medium transition-colors ${
                       selectedCourse === 'all'
-                        ? 'bg-blue-600 text-white'
-                        : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
+                        ? 'bg-blue-600 text-brand-text'
+                        : 'bg-brand-surface-subtle text-brand-text-secondary hover:bg-slate-600'
                     }`}
                   >
                     Todos
@@ -289,8 +289,8 @@ const GestaoAlunos: React.FC = () => {
                     onClick={() => setSelectedCourse('arte-entrevista')}
                     className={`px-4 py-2 rounded-lg font-medium transition-colors ${
                       selectedCourse === 'arte-entrevista'
-                        ? 'bg-blue-600 text-white'
-                        : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
+                        ? 'bg-blue-600 text-brand-text'
+                        : 'bg-brand-surface-subtle text-brand-text-secondary hover:bg-slate-600'
                     }`}
                   >
                     Arte da Entrevista Clínica
@@ -299,8 +299,8 @@ const GestaoAlunos: React.FC = () => {
                     onClick={() => setSelectedCourse('cannabis-medicinal')}
                     className={`px-4 py-2 rounded-lg font-medium transition-colors ${
                       selectedCourse === 'cannabis-medicinal'
-                        ? 'bg-green-600 text-white'
-                        : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
+                        ? 'bg-green-600 text-brand-text'
+                        : 'bg-brand-surface-subtle text-brand-text-secondary hover:bg-slate-600'
                     }`}
                   >
                     Cannabis Medicinal
@@ -310,15 +310,15 @@ const GestaoAlunos: React.FC = () => {
 
               {/* Search */}
               <div className="flex-1">
-                <label className="block text-sm font-medium text-slate-300 mb-2">Buscar Aluno</label>
+                <label className="block text-sm font-medium text-brand-text-secondary mb-2">Buscar Aluno</label>
                 <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-5 h-5" />
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-brand-text-muted w-5 h-5" />
                   <input
                     type="text"
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     placeholder="Nome ou email..."
-                    className="w-full pl-10 pr-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:border-blue-500"
+                    className="w-full pl-10 pr-4 py-2 bg-brand-surface-subtle border border-slate-600 rounded-lg text-brand-text placeholder-slate-400 focus:outline-none focus:border-blue-500"
                   />
                 </div>
               </div>
@@ -326,9 +326,9 @@ const GestaoAlunos: React.FC = () => {
           </div>
 
           {/* Students List */}
-          <div className="bg-slate-800 rounded-xl p-6">
+          <div className="bg-brand-surface rounded-xl p-6">
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-semibold text-white">
+              <h2 className="text-xl font-semibold text-brand-text">
                 {selectedCourse === 'all' 
                   ? 'Todos os Alunos' 
                   : selectedCourse === 'arte-entrevista'
@@ -336,27 +336,27 @@ const GestaoAlunos: React.FC = () => {
                   : 'Alunos - Pós-Graduação Cannabis Medicinal'
                 }
               </h2>
-              <span className="text-sm text-slate-400">{filteredStudents.length} aluno(s)</span>
+              <span className="text-sm text-brand-text-muted">{filteredStudents.length} aluno(s)</span>
             </div>
 
             {loading ? (
               <div className="text-center py-12">
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
-                <p className="text-slate-400">Carregando alunos...</p>
+                <p className="text-brand-text-muted">Carregando alunos...</p>
               </div>
             ) : filteredStudents.length === 0 ? (
               <div className="text-center py-12">
-                <Users className="w-16 h-16 text-slate-400 mx-auto mb-4" />
-                <p className="text-slate-400">Nenhum aluno encontrado</p>
+                <Users className="w-16 h-16 text-brand-text-muted mx-auto mb-4" />
+                <p className="text-brand-text-muted">Nenhum aluno encontrado</p>
               </div>
             ) : (
               <div className="space-y-4">
                 {filteredStudents.map((student) => (
-                  <div key={student.id} className="bg-slate-700 rounded-lg p-6 hover:bg-slate-650 transition-colors">
+                  <div key={student.id} className="bg-brand-surface-subtle rounded-lg p-6 hover:bg-slate-650 transition-colors">
                     <div className="flex items-start justify-between mb-4">
                       <div className="flex items-start space-x-4 flex-1">
                         {/* Avatar */}
-                        <div className={`w-12 h-12 rounded-full flex items-center justify-center text-white font-bold ${
+                        <div className={`w-12 h-12 rounded-full flex items-center justify-center text-brand-text font-bold ${
                           student.course === 'arte-entrevista' 
                             ? 'bg-gradient-to-r from-[#00c16a] to-[#00a85a]'
                             : 'bg-gradient-to-r from-green-500 to-teal-500'
@@ -367,13 +367,13 @@ const GestaoAlunos: React.FC = () => {
                         {/* Student Info */}
                         <div className="flex-1">
                           <div className="flex items-center space-x-3 mb-2">
-                            <h3 className="text-lg font-semibold text-white">{student.name}</h3>
-                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(student.status)} text-white`}>
+                            <h3 className="text-lg font-semibold text-brand-text">{student.name}</h3>
+                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(student.status)} text-brand-text`}>
                               {getStatusText(student.status)}
                             </span>
                           </div>
                           
-                          <div className="flex items-center space-x-4 text-sm text-slate-400 mb-3">
+                          <div className="flex items-center space-x-4 text-sm text-brand-text-muted mb-3">
                             <div className="flex items-center space-x-1">
                               <Mail className="w-4 h-4" />
                               <span>{student.email}</span>
@@ -386,7 +386,7 @@ const GestaoAlunos: React.FC = () => {
                             )}
                           </div>
 
-                          <div className="flex items-center space-x-4 text-sm text-slate-300">
+                          <div className="flex items-center space-x-4 text-sm text-brand-text-secondary">
                             <div className="flex items-center space-x-2">
                               <BookOpen className="w-4 h-4" />
                               <span>{student.courseName}</span>
@@ -418,12 +418,12 @@ const GestaoAlunos: React.FC = () => {
                     <div className="mt-4">
                       <div className="flex items-center justify-between text-sm mb-2">
                         <div className="flex items-center space-x-2">
-                          <span className="text-slate-300">Progresso no Curso</span>
-                          <span className="text-white font-medium">{student.progress}%</span>
+                          <span className="text-brand-text-secondary">Progresso no Curso</span>
+                          <span className="text-brand-text font-medium">{student.progress}%</span>
                         </div>
                         <div className="flex items-center space-x-2">
                           <CheckCircle className="w-4 h-4 text-green-400" />
-                          <span className="text-slate-300">
+                          <span className="text-brand-text-secondary">
                             {student.completedModules}/{student.totalModules} módulos concluídos
                           </span>
                         </div>

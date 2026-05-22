@@ -114,7 +114,7 @@ const LessonViewer: React.FC<LessonViewerProps> = ({
     const youtubeEmbedUrl = videoUrl ? getYouTubeEmbedUrl(videoUrl) : null
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white">
+        <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-brand-text">
             {/* Header */}
             <div className="sticky top-0 z-40 bg-slate-900/95 backdrop-blur-sm border-b border-slate-700/50">
                 <div className="container mx-auto px-4 py-4">
@@ -122,17 +122,17 @@ const LessonViewer: React.FC<LessonViewerProps> = ({
                         <div className="flex items-center gap-4">
                             <button
                                 onClick={onBack}
-                                className="flex items-center gap-2 text-slate-300 hover:text-white transition-colors"
+                                className="flex items-center gap-2 text-brand-text-secondary hover:text-brand-text transition-colors"
                             >
                                 <ArrowLeft className="w-5 h-5" />
                                 <span className="hidden sm:inline">Voltar</span>
                             </button>
-                            <div className="h-6 w-px bg-slate-700" />
+                            <div className="h-6 w-px bg-brand-surface-subtle" />
                             <div>
                                 {moduleName && (
                                     <p className="text-xs text-primary-400 uppercase tracking-wider">{moduleName}</p>
                                 )}
-                                <h1 className="text-lg sm:text-xl font-semibold text-white truncate max-w-[200px] sm:max-w-none">
+                                <h1 className="text-lg sm:text-xl font-semibold text-brand-text truncate max-w-[200px] sm:max-w-none">
                                     {title}
                                 </h1>
                             </div>
@@ -146,7 +146,7 @@ const LessonViewer: React.FC<LessonViewerProps> = ({
                             </div>
 
                             {/* Duração */}
-                            <div className="hidden sm:flex items-center gap-2 text-slate-400">
+                            <div className="hidden sm:flex items-center gap-2 text-brand-text-muted">
                                 <Clock className="w-4 h-4" />
                                 <span className="text-sm">{duration}</span>
                             </div>
@@ -168,7 +168,7 @@ const LessonViewer: React.FC<LessonViewerProps> = ({
                 {/* Video Player */}
                 {youtubeEmbedUrl ? (
                     <div className="mb-6 max-w-4xl mx-auto">
-                        <div className="relative w-full aspect-video max-h-[480px] bg-slate-800 rounded-xl overflow-hidden border border-slate-700/50 shadow-xl">
+                        <div className="relative w-full aspect-video max-h-[480px] bg-brand-surface rounded-xl overflow-hidden border border-slate-700/50 shadow-xl">
                             <iframe
                                 src={youtubeEmbedUrl}
                                 title={title}
@@ -180,7 +180,7 @@ const LessonViewer: React.FC<LessonViewerProps> = ({
                     </div>
                 ) : videoUrl ? (
                     <div className="mb-6 max-w-4xl mx-auto">
-                        <div className="relative w-full aspect-video max-h-[480px] bg-slate-800 rounded-xl overflow-hidden border border-slate-700/50 shadow-xl">
+                        <div className="relative w-full aspect-video max-h-[480px] bg-brand-surface rounded-xl overflow-hidden border border-slate-700/50 shadow-xl">
                             <video
                                 src={videoUrl}
                                 controls
@@ -206,7 +206,7 @@ const LessonViewer: React.FC<LessonViewerProps> = ({
                                 href={pdfUrl}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="flex items-center gap-2 px-4 py-2.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-xl transition-colors"
+                                className="flex items-center gap-2 px-4 py-2.5 bg-brand-surface hover:bg-brand-surface-subtle border border-brand-border rounded-xl transition-colors"
                             >
                                 <Download className="w-4 h-4 text-red-400" />
                                 <span className="text-sm font-medium">Material PDF</span>
@@ -217,7 +217,7 @@ const LessonViewer: React.FC<LessonViewerProps> = ({
                                 href={slidesUrl}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="flex items-center gap-2 px-4 py-2.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-xl transition-colors"
+                                className="flex items-center gap-2 px-4 py-2.5 bg-brand-surface hover:bg-brand-surface-subtle border border-brand-border rounded-xl transition-colors"
                             >
                                 <FileText className="w-4 h-4 text-blue-400" />
                                 <span className="text-sm font-medium">Slides</span>
@@ -238,14 +238,14 @@ const LessonViewer: React.FC<LessonViewerProps> = ({
                                 <MessageCircle className="w-5 h-5 text-primary-400" />
                             </div>
                             <div className="text-left">
-                                <p className="text-sm font-semibold text-white">Nôa Esperança</p>
-                                <p className="text-xs text-slate-400">Tire dúvidas sobre esta aula</p>
+                                <p className="text-sm font-semibold text-brand-text">Nôa Esperança</p>
+                                <p className="text-xs text-brand-text-muted">Tire dúvidas sobre esta aula</p>
                             </div>
                         </div>
                         {chatOpen ? (
-                            <ChevronUp className="w-5 h-5 text-slate-400" />
+                            <ChevronUp className="w-5 h-5 text-brand-text-muted" />
                         ) : (
-                            <ChevronDown className="w-5 h-5 text-slate-400" />
+                            <ChevronDown className="w-5 h-5 text-brand-text-muted" />
                         )}
                     </button>
 
@@ -258,7 +258,7 @@ const LessonViewer: React.FC<LessonViewerProps> = ({
                                         <div className="w-12 h-12 bg-primary-500/20 rounded-full flex items-center justify-center mx-auto mb-3">
                                             <MessageCircle className="w-6 h-6 text-primary-400" />
                                         </div>
-                                        <p className="text-slate-400 text-sm">
+                                        <p className="text-brand-text-muted text-sm">
                                             Olá! Sou a Nôa, posso ajudar com dúvidas sobre esta aula.
                                         </p>
                                         <p className="text-slate-500 text-xs mt-1">
@@ -275,8 +275,8 @@ const LessonViewer: React.FC<LessonViewerProps> = ({
                                         )}
                                         <div
                                             className={`max-w-[75%] px-4 py-2 rounded-2xl text-sm ${msg.type === 'user'
-                                                ? 'bg-primary-500 text-white rounded-br-md'
-                                                : 'bg-slate-700 text-slate-200 rounded-bl-md'
+                                                ? 'bg-primary-500 text-brand-text rounded-br-md'
+                                                : 'bg-brand-surface-subtle text-slate-200 rounded-bl-md'
                                                 }`}
                                         >
                                             {msg.content}
@@ -285,7 +285,7 @@ const LessonViewer: React.FC<LessonViewerProps> = ({
                                 ))}
                                 {noaChatLoading && (
                                     <div className="flex justify-start">
-                                        <div className="bg-slate-700 px-4 py-2 rounded-2xl rounded-bl-md">
+                                        <div className="bg-brand-surface-subtle px-4 py-2 rounded-2xl rounded-bl-md">
                                             <Loader2 className="w-4 h-4 text-primary-400 animate-spin" />
                                         </div>
                                     </div>
@@ -302,12 +302,12 @@ const LessonViewer: React.FC<LessonViewerProps> = ({
                                         onChange={(e) => setChatInput(e.target.value)}
                                         onKeyDown={(e) => e.key === 'Enter' && handleSendChat()}
                                         placeholder="Digite sua dúvida..."
-                                        className="flex-1 px-4 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-primary-500/50 text-sm"
+                                        className="flex-1 px-4 py-2.5 bg-brand-bg border border-brand-border rounded-xl text-brand-text placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-primary-500/50 text-sm"
                                     />
                                     <button
                                         onClick={handleSendChat}
                                         disabled={!chatInput.trim() || noaChatLoading}
-                                        className="p-2.5 bg-primary-500 hover:bg-primary-600 disabled:bg-slate-700 disabled:text-slate-500 text-white rounded-xl transition-colors"
+                                        className="p-2.5 bg-primary-500 hover:bg-primary-600 disabled:bg-brand-surface-subtle disabled:text-slate-500 text-brand-text rounded-xl transition-colors"
                                     >
                                         <Send className="w-5 h-5" />
                                     </button>
@@ -320,13 +320,13 @@ const LessonViewer: React.FC<LessonViewerProps> = ({
                 {/* Action Bar */}
                 <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-4 bg-slate-800/50 rounded-2xl border border-slate-700/50">
                     <div className="flex items-center gap-3">
-                        <span className="text-sm text-slate-400">O conteúdo foi útil?</span>
+                        <span className="text-sm text-brand-text-muted">O conteúdo foi útil?</span>
                         <div className="flex gap-2">
                             <button
                                 onClick={() => handleFeedback('like')}
                                 className={`p-2 rounded-lg transition-all ${feedback === 'like'
                                     ? 'bg-primary-500/20 text-primary-400 ring-2 ring-primary-500/30'
-                                    : 'bg-slate-700 text-slate-400 hover:text-primary-400 hover:bg-slate-600'
+                                    : 'bg-brand-surface-subtle text-brand-text-muted hover:text-primary-400 hover:bg-slate-600'
                                     }`}
                             >
                                 <ThumbsUp className="w-5 h-5" />
@@ -335,7 +335,7 @@ const LessonViewer: React.FC<LessonViewerProps> = ({
                                 onClick={() => handleFeedback('dislike')}
                                 className={`p-2 rounded-lg transition-all ${feedback === 'dislike'
                                     ? 'bg-red-500/20 text-red-400 ring-2 ring-red-500/30'
-                                    : 'bg-slate-700 text-slate-400 hover:text-red-400 hover:bg-slate-600'
+                                    : 'bg-brand-surface-subtle text-brand-text-muted hover:text-red-400 hover:bg-slate-600'
                                     }`}
                             >
                                 <ThumbsDown className="w-5 h-5" />
@@ -346,14 +346,14 @@ const LessonViewer: React.FC<LessonViewerProps> = ({
                     <div className="flex items-center gap-3">
                         <button
                             onClick={onBack}
-                            className="px-5 py-2.5 bg-slate-700 hover:bg-slate-600 text-white rounded-xl font-medium transition-colors"
+                            className="px-5 py-2.5 bg-brand-surface-subtle hover:bg-slate-600 text-brand-text rounded-xl font-medium transition-colors"
                         >
                             Voltar
                         </button>
                         {!completed && (
                             <button
                                 onClick={handleComplete}
-                                className="flex items-center gap-2 px-5 py-2.5 bg-primary-500 hover:bg-primary-600 text-white rounded-xl font-medium transition-colors shadow-lg shadow-primary-500/20"
+                                className="flex items-center gap-2 px-5 py-2.5 bg-primary-500 hover:bg-primary-600 text-brand-text rounded-xl font-medium transition-colors shadow-lg shadow-primary-500/20"
                             >
                                 <CheckCircle className="w-5 h-5" />
                                 Marcar como Concluída

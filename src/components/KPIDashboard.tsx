@@ -293,27 +293,27 @@ const KPIDashboard: React.FC<KPIDashboardProps> = ({ userType, userName }) => {
   return (
     <div className="space-y-6">
       {/* Header com seletores de camadas */}
-      <div className="bg-slate-800 rounded-lg p-6">
+      <div className="bg-brand-surface rounded-lg p-6">
         <div className="flex items-center justify-between mb-4">
           <div>
-            <h1 className="text-2xl font-bold text-white mb-2">
+            <h1 className="text-2xl font-bold text-brand-text mb-2">
               🏥 Cidade Amiga dos Rins - Cannabis Medicinal
             </h1>
-            <p className="text-slate-300">
+            <p className="text-brand-text-secondary">
               Painel de KPIs em Tempo Real • Dr. {userName}
             </p>
           </div>
           <div className="flex items-center space-x-4">
             <button
               onClick={() => setSoundEnabled(!soundEnabled)}
-              className="flex items-center space-x-2 px-3 py-2 text-slate-300 border border-slate-600 rounded-md hover:bg-slate-700 transition-colors"
+              className="flex items-center space-x-2 px-3 py-2 text-brand-text-secondary border border-slate-600 rounded-md hover:bg-brand-surface-subtle transition-colors"
             >
               {soundEnabled ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
             </button>
             <button
               onClick={loadKPIData}
               disabled={isRefreshing}
-              className="flex items-center space-x-2 px-3 py-2 text-slate-300 border border-slate-600 rounded-md hover:bg-slate-700 transition-colors disabled:opacity-50"
+              className="flex items-center space-x-2 px-3 py-2 text-brand-text-secondary border border-slate-600 rounded-md hover:bg-brand-surface-subtle transition-colors disabled:opacity-50"
             >
               <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
             </button>
@@ -332,7 +332,7 @@ const KPIDashboard: React.FC<KPIDashboardProps> = ({ userType, userName }) => {
               onClick={() => handleLayerChange(layer.key as any)}
               className={`flex items-center space-x-2 px-4 py-2 rounded-md transition-colors ${selectedLayer === layer.key
                 ? getLayerColor(layer.key)
-                : 'bg-slate-700 hover:bg-slate-600 text-slate-300'
+                : 'bg-brand-surface-subtle hover:bg-slate-600 text-brand-text-secondary'
                 }`}
             >
               {layer.icon}
@@ -342,7 +342,7 @@ const KPIDashboard: React.FC<KPIDashboardProps> = ({ userType, userName }) => {
         </div>
 
         {lastUpdate && (
-          <p className="text-slate-400 text-sm mt-2">
+          <p className="text-brand-text-muted text-sm mt-2">
             Última atualização: {lastUpdate}
           </p>
         )}
@@ -351,16 +351,16 @@ const KPIDashboard: React.FC<KPIDashboardProps> = ({ userType, userName }) => {
       {/* Grid de KPIs */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
         {kpiData.map((kpi) => (
-          <div key={kpi.id} className="bg-slate-800 border border-slate-700 rounded-lg p-6 hover:border-slate-600 transition-colors">
+          <div key={kpi.id} className="bg-brand-surface border border-brand-border rounded-lg p-6 hover:border-slate-600 transition-colors">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-white text-sm font-medium">
+              <h3 className="text-brand-text text-sm font-medium">
                 {kpi.title}
               </h3>
               {getTrendIcon(kpi.trend)}
             </div>
             <div className="space-y-2">
               <div className="flex items-baseline space-x-2">
-                <span className="text-2xl font-bold text-white">
+                <span className="text-2xl font-bold text-brand-text">
                   {kpi.value}%
                 </span>
                 <span className={`px-2 py-1 rounded text-xs ${kpi.trend === 'up' ? 'bg-green-500/20 text-green-400' :
@@ -370,7 +370,7 @@ const KPIDashboard: React.FC<KPIDashboardProps> = ({ userType, userName }) => {
                   {kpi.change > 0 ? '+' : ''}{kpi.change}%
                 </span>
               </div>
-              <p className="text-slate-400 text-xs">
+              <p className="text-brand-text-muted text-xs">
                 {kpi.description}
               </p>
             </div>
@@ -379,31 +379,31 @@ const KPIDashboard: React.FC<KPIDashboardProps> = ({ userType, userName }) => {
       </div>
 
       {/* Seção de Discussão em Tempo Real */}
-      <div className="bg-slate-800 border border-slate-700 rounded-lg p-6">
+      <div className="bg-brand-surface border border-brand-border rounded-lg p-6">
         <div className="flex items-center space-x-2 mb-4">
-          <Users className="w-5 h-5 text-white" />
-          <h3 className="text-white font-semibold">Discussão em Tempo Real</h3>
+          <Users className="w-5 h-5 text-brand-text" />
+          <h3 className="text-brand-text font-semibold">Discussão em Tempo Real</h3>
         </div>
         <div className="space-y-4">
-          <div className="bg-slate-700 rounded-lg p-4">
-            <p className="text-slate-300 text-sm">
+          <div className="bg-brand-surface-subtle rounded-lg p-4">
+            <p className="text-brand-text-secondary text-sm">
               💬 <strong>Dr. Maria Silva:</strong> "Os KPIs clínicos estão mostrando uma melhora significativa na adesão ao tratamento. Vale a pena discutir estratégias para manter essa tendência."
             </p>
-            <p className="text-slate-400 text-xs mt-1">há 2 minutos</p>
+            <p className="text-brand-text-muted text-xs mt-1">há 2 minutos</p>
           </div>
-          <div className="bg-slate-700 rounded-lg p-4">
-            <p className="text-slate-300 text-sm">
+          <div className="bg-brand-surface-subtle rounded-lg p-4">
+            <p className="text-brand-text-secondary text-sm">
               🤖 <strong>Nôa Esperança:</strong> "Analisando os dados semânticos, identifiquei padrões interessantes na evolução dos sintomas. Posso gerar um relatório detalhado?"
             </p>
-            <p className="text-slate-400 text-xs mt-1">há 5 minutos</p>
+            <p className="text-brand-text-muted text-xs mt-1">há 5 minutos</p>
           </div>
           <div className="flex space-x-2">
             <input
               type="text"
               placeholder="Compartilhe suas observações..."
-              className="flex-1 bg-slate-700 text-white px-3 py-2 rounded-md border border-slate-600 focus:border-green-500 focus:outline-none"
+              className="flex-1 bg-brand-surface-subtle text-brand-text px-3 py-2 rounded-md border border-slate-600 focus:border-green-500 focus:outline-none"
             />
-            <button className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md transition-colors">
+            <button className="px-4 py-2 bg-green-600 hover:bg-green-700 text-brand-text rounded-md transition-colors">
               Enviar
             </button>
           </div>

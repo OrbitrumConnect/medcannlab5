@@ -156,7 +156,7 @@ const PatientHealthHistory: React.FC<PatientHealthHistoryProps> = ({ patientId }
       case 'prescription':
         return <Activity className="w-4 h-4 text-orange-400" />
       default:
-        return <Clock className="w-4 h-4 text-slate-400" />
+        return <Clock className="w-4 h-4 text-brand-text-muted" />
     }
   }
 
@@ -179,24 +179,24 @@ const PatientHealthHistory: React.FC<PatientHealthHistoryProps> = ({ patientId }
     <div className="space-y-4">
       {/* Cabeçalho */}
       <div className="bg-gradient-to-r from-blue-600/20 to-purple-600/20 rounded-lg p-4 border border-blue-500/30">
-        <h3 className="text-base font-semibold text-white mb-1 flex items-center space-x-2">
+        <h3 className="text-base font-semibold text-brand-text mb-1 flex items-center space-x-2">
           <Heart className="w-4 h-4 text-blue-400" />
           <span>Histórico de Saúde</span>
         </h3>
-        <p className="text-xs text-slate-400">Últimas interações e informações clínicas</p>
+        <p className="text-xs text-brand-text-muted">Últimas interações e informações clínicas</p>
       </div>
 
       {/* Lista de Eventos */}
-      <div className="bg-slate-800/80 rounded-lg border border-slate-700 max-h-[calc(100vh-350px)] overflow-y-auto">
+      <div className="bg-slate-800/80 rounded-lg border border-brand-border max-h-[calc(100vh-350px)] overflow-y-auto">
         {loading ? (
           <div className="p-6 text-center">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto"></div>
-            <p className="text-slate-400 text-sm mt-2">Carregando histórico...</p>
+            <p className="text-brand-text-muted text-sm mt-2">Carregando histórico...</p>
           </div>
         ) : healthEvents.length === 0 ? (
           <div className="p-6 text-center">
             <AlertCircle className="w-8 h-8 text-slate-500 mx-auto mb-2" />
-            <p className="text-slate-400 text-sm">Nenhum histórico ainda</p>
+            <p className="text-brand-text-muted text-sm">Nenhum histórico ainda</p>
             <p className="text-slate-500 text-xs mt-1">Suas interações aparecerão aqui</p>
           </div>
         ) : (
@@ -211,9 +211,9 @@ const PatientHealthHistory: React.FC<PatientHealthHistoryProps> = ({ patientId }
                     {getEventIcon(event.type)}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-white font-medium text-sm truncate">{event.title}</p>
+                    <p className="text-brand-text font-medium text-sm truncate">{event.title}</p>
                     {event.description && (
-                      <p className="text-slate-400 text-xs mt-1 line-clamp-2">{event.description}</p>
+                      <p className="text-brand-text-muted text-xs mt-1 line-clamp-2">{event.description}</p>
                     )}
                     {event.professional && (
                       <p className="text-blue-400 text-xs mt-1">por {event.professional}</p>
@@ -236,8 +236,8 @@ const PatientHealthHistory: React.FC<PatientHealthHistoryProps> = ({ patientId }
         <div className="flex items-start space-x-2">
           <Brain className="w-4 h-4 text-purple-400 flex-shrink-0 mt-0.5" />
           <div>
-            <p className="text-white text-xs font-medium mb-1">IA Residente Dedicada</p>
-            <p className="text-slate-400 text-xs leading-relaxed">
+            <p className="text-brand-text text-xs font-medium mb-1">IA Residente Dedicada</p>
+            <p className="text-brand-text-muted text-xs leading-relaxed">
               Todas as suas interações são utilizadas pela IA Residente para personalizar seu atendimento e gerar contexto clínico adequado.
             </p>
           </div>

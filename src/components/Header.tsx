@@ -240,7 +240,7 @@ const Header: React.FC<HeaderProps> = ({ onOpenSidebar }) => {
             {/* [V1.9.426] Theme toggle — mobile */}
             <button
               onClick={toggleTheme}
-              className="md:hidden p-1.5 rounded-lg hover:bg-[#1b314e] transition-colors text-slate-300 hover:text-emerald-400"
+              className="md:hidden p-1.5 rounded-lg hover:bg-[#1b314e] transition-colors text-brand-text-secondary hover:text-emerald-400"
               title={theme === 'dark' ? 'Modo dia' : 'Modo noite'}
               aria-label={theme === 'dark' ? 'Ativar modo dia' : 'Ativar modo noite'}
             >
@@ -269,10 +269,10 @@ const Header: React.FC<HeaderProps> = ({ onOpenSidebar }) => {
                           key={opt.id}
                           type="button"
                           onClick={(e) => onTriggerClick(opt.id, e)}
-                          className={`flex-shrink-0 flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border text-xs font-medium whitespace-nowrap transition-all duration-200 hover:scale-[1.02] active:scale-95 relative z-10 ${isActive ? 'bg-emerald-600/20 border-emerald-500/40 text-emerald-100' : 'bg-slate-800/60 border-slate-700/50 text-slate-300 hover:bg-slate-700 hover:text-white hover:border-emerald-500/30'}`}
+                          className={`flex-shrink-0 flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border text-xs font-medium whitespace-nowrap transition-all duration-200 hover:scale-[1.02] active:scale-95 relative z-10 ${isActive ? 'bg-emerald-600/20 border-emerald-500/40 text-emerald-100' : 'bg-slate-800/60 border-slate-700/50 text-brand-text-secondary hover:bg-brand-surface-subtle hover:text-brand-text hover:border-emerald-500/30'}`}
                           title={opt.description || opt.label}
                         >
-                          <Icon className={`w-3.5 h-3.5 ${isActive ? 'text-emerald-400' : 'text-slate-400'}`} />
+                          <Icon className={`w-3.5 h-3.5 ${isActive ? 'text-emerald-400' : 'text-brand-text-muted'}`} />
                           {opt.label}
                         </button>
                       )
@@ -333,10 +333,10 @@ const Header: React.FC<HeaderProps> = ({ onOpenSidebar }) => {
                           key={opt.id}
                           type="button"
                           onClick={(e) => onTriggerClick(opt.id, e)}
-                          className={`flex-shrink-0 flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border text-xs font-medium whitespace-nowrap transition-all duration-200 hover:scale-[1.02] active:scale-95 relative z-10 ${isActive ? 'bg-emerald-600/20 border-emerald-500/40 text-emerald-100' : 'bg-slate-800/60 border-slate-700/50 text-slate-300 hover:bg-slate-700 hover:text-white hover:border-emerald-500/30'}`}
+                          className={`flex-shrink-0 flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border text-xs font-medium whitespace-nowrap transition-all duration-200 hover:scale-[1.02] active:scale-95 relative z-10 ${isActive ? 'bg-emerald-600/20 border-emerald-500/40 text-emerald-100' : 'bg-slate-800/60 border-slate-700/50 text-brand-text-secondary hover:bg-brand-surface-subtle hover:text-brand-text hover:border-emerald-500/30'}`}
                           title={opt.description || opt.label}
                         >
-                          <Icon className={`w-3.5 h-3.5 ${isActive ? 'text-emerald-400' : 'text-slate-400'}`} />
+                          <Icon className={`w-3.5 h-3.5 ${isActive ? 'text-emerald-400' : 'text-brand-text-muted'}`} />
                           {opt.label}
                         </button>
                       )
@@ -430,7 +430,7 @@ const Header: React.FC<HeaderProps> = ({ onOpenSidebar }) => {
             {/* [V1.9.426] Theme Toggle — mesmo padrão do Language Toggle */}
             <button
               onClick={toggleTheme}
-              className="hidden md:block p-2 rounded-lg hover:bg-[#1b314e] transition-colors text-slate-300 hover:text-emerald-400"
+              className="hidden md:block p-2 rounded-lg hover:bg-[#1b314e] transition-colors text-brand-text-secondary hover:text-emerald-400"
               title={theme === 'dark' ? 'Mudar para modo dia' : 'Mudar para modo noite'}
               aria-label={theme === 'dark' ? 'Ativar modo dia' : 'Ativar modo noite'}
             >
@@ -452,7 +452,7 @@ const Header: React.FC<HeaderProps> = ({ onOpenSidebar }) => {
             {user && (
               <button
                 onClick={() => window.dispatchEvent(new CustomEvent('replayOnboardingTutorial'))}
-                className="hidden md:flex items-center justify-center p-2 rounded-lg hover:bg-[#1b314e] transition-colors text-slate-300 hover:text-emerald-400"
+                className="hidden md:flex items-center justify-center p-2 rounded-lg hover:bg-[#1b314e] transition-colors text-brand-text-secondary hover:text-emerald-400"
                 title="Tutorial guiado — clique para rever como usar a plataforma"
                 aria-label="Ajuda — abrir tutorial"
               >
@@ -574,7 +574,7 @@ const Header: React.FC<HeaderProps> = ({ onOpenSidebar }) => {
                               return <Icon className="w-4 h-4 text-[#00C16A] shrink-0" />
                             })()}
                             <span className="text-xs font-medium max-w-[120px] truncate">{activeTypeObj?.label || 'Perfil'}</span>
-                            <ChevronDown className={`w-3.5 h-3.5 text-slate-400 transition-transform ${isViewSwitcherOpen ? 'rotate-180' : ''}`} />
+                            <ChevronDown className={`w-3.5 h-3.5 text-brand-text-muted transition-transform ${isViewSwitcherOpen ? 'rotate-180' : ''}`} />
                           </button>
                           {isViewSwitcherOpen && (
                             <div
@@ -680,7 +680,7 @@ const Header: React.FC<HeaderProps> = ({ onOpenSidebar }) => {
                                   localStorage.setItem('selectedUserType', type.id)
                                 }}
                                 className={`flex items-center space-x-1.5 px-4 py-2 rounded-lg transition-all duration-200 active:scale-95 ${isActive
-                                  ? 'text-white shadow-lg scale-105'
+                                  ? 'text-brand-text shadow-lg scale-105'
                                   : 'bg-[#102642] text-[#C8D6E5]'
                                   }`}
                                 style={{
@@ -707,11 +707,11 @@ const Header: React.FC<HeaderProps> = ({ onOpenSidebar }) => {
                       <div className="md:hidden relative z-30">
                         <button
                           onClick={() => setIsViewSwitcherOpen(!isViewSwitcherOpen)}
-                          className="flex items-center gap-1 px-2 py-1 rounded-lg bg-[#102642] text-white border border-[#213553] active:bg-[#1b314e]"
+                          className="flex items-center gap-1 px-2 py-1 rounded-lg bg-[#102642] text-brand-text border border-[#213553] active:bg-[#1b314e]"
                         >
                           {activeTypeObj.icon && <activeTypeObj.icon className="w-3.5 h-3.5 text-[#00C16A]" />}
                           <span className="text-[10px] font-medium max-w-[60px] truncate">{activeTypeObj.label}</span>
-                          <ChevronDown className={`w-3 h-3 text-slate-400 transition-transform ${isViewSwitcherOpen ? 'rotate-180' : ''}`} />
+                          <ChevronDown className={`w-3 h-3 text-brand-text-muted transition-transform ${isViewSwitcherOpen ? 'rotate-180' : ''}`} />
                         </button>
 
                         {isViewSwitcherOpen && (
@@ -758,7 +758,7 @@ const Header: React.FC<HeaderProps> = ({ onOpenSidebar }) => {
                                     }
                                     localStorage.setItem('selectedUserType', type.id)
                                   }}
-                                  className={`w-full text-left px-4 py-2.5 flex items-center gap-3 hover:bg-[#1b314e] transition-colors ${isSelected ? 'bg-[#1b314e]/50 text-[#00C16A]' : 'text-slate-300'}`}
+                                  className={`w-full text-left px-4 py-2.5 flex items-center gap-3 hover:bg-[#1b314e] transition-colors ${isSelected ? 'bg-[#1b314e]/50 text-[#00C16A]' : 'text-brand-text-secondary'}`}
                                 >
                                   <Icon className="w-4 h-4" />
                                   <span className="text-sm">{type.label}</span>
@@ -788,7 +788,7 @@ const Header: React.FC<HeaderProps> = ({ onOpenSidebar }) => {
                         boxShadow: '0 2px 8px rgba(0,193,106,0.2)'
                       }}
                     >
-                      <User className="w-4 h-4 text-white" />
+                      <User className="w-4 h-4 text-brand-text" />
                     </div>
                     {/* Hide name on very small screens, show on larger */}
                     <span className="hidden sm:block text-xs md:text-sm font-medium truncate max-w-[100px]">{user.name}</span>
@@ -803,7 +803,7 @@ const Header: React.FC<HeaderProps> = ({ onOpenSidebar }) => {
                       }}
                     >
                       <div className="px-2 sm:px-3 md:px-4 py-2 border-b border-[#17324d]">
-                        <p className="text-[10px] sm:text-xs md:text-sm font-medium text-white truncate">{user.name}</p>
+                        <p className="text-[10px] sm:text-xs md:text-sm font-medium text-brand-text truncate">{user.name}</p>
                         <p className="text-[9px] sm:text-xs text-[#8FA7BF] truncate">{user.email}</p>
                       </div>
                       <Link
@@ -854,7 +854,7 @@ const Header: React.FC<HeaderProps> = ({ onOpenSidebar }) => {
             ) : (
               <Link
                 to="/login"
-                className="bg-primary-600 hover:bg-primary-700 active:bg-primary-800 text-white px-2 sm:px-3 md:px-4 py-1.5 sm:py-2 rounded-lg font-medium transition-colors duration-200 text-[10px] sm:text-xs md:text-sm active:scale-95 touch-manipulation"
+                className="bg-primary-600 hover:bg-primary-700 active:bg-primary-800 text-brand-text px-2 sm:px-3 md:px-4 py-1.5 sm:py-2 rounded-lg font-medium transition-colors duration-200 text-[10px] sm:text-xs md:text-sm active:scale-95 touch-manipulation"
               >
                 {t('header.login')}
               </Link>

@@ -11,14 +11,14 @@ interface FooterProps {
 const Footer: React.FC<FooterProps> = ({ marginLeft, width }) => {
   return (
     <footer
-      className="text-white overflow-x-hidden transition-all duration-300"
+      className="text-brand-text overflow-x-hidden transition-all duration-300"
       style={{ marginLeft, width, background: backgroundGradient }}
     >
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-2 md:py-6 w-full max-w-full overflow-x-hidden">
         <div className="flex flex-col md:flex-row justify-between items-center">
           <div className="flex items-center space-x-2 mb-2 md:mb-0">
             <div className="w-5 h-5 md:w-6 md:h-6 bg-gradient-to-r from-primary-600 to-accent-600 rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-xs md:text-sm">M</span>
+              <span className="text-brand-text font-bold text-xs md:text-sm">M</span>
             </div>
             <span className="text-sm md:text-lg font-bold">
               MedCannLab
@@ -27,16 +27,16 @@ const Footer: React.FC<FooterProps> = ({ marginLeft, width }) => {
           </div>
 
           <div className="hidden md:flex space-x-6 text-sm">
-            <Link to="/courses" className="text-gray-300 hover:text-white transition-colors duration-200">
+            <Link to="/courses" className="text-gray-300 hover:text-brand-text transition-colors duration-200">
               Cursos
             </Link>
-            <Link to="/clinical-assessment" className="text-gray-300 hover:text-white transition-colors duration-200">
+            <Link to="/clinical-assessment" className="text-gray-300 hover:text-brand-text transition-colors duration-200">
               Avaliação
             </Link>
-            <Link to="/library" className="text-gray-300 hover:text-white transition-colors duration-200">
+            <Link to="/library" className="text-gray-300 hover:text-brand-text transition-colors duration-200">
               Biblioteca
             </Link>
-            <Link to="/admin" className="text-gray-300 hover:text-white transition-colors duration-200">
+            <Link to="/admin" className="text-gray-300 hover:text-brand-text transition-colors duration-200">
               Admin
             </Link>
           </div>

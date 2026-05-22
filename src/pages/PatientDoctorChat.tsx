@@ -536,7 +536,7 @@ const PatientDoctorChat: React.FC = () => {
 
   if (!user) {
     return (
-      <div className="min-h-[60vh] flex items-center justify-center bg-slate-900 text-slate-200">
+      <div className="min-h-[60vh] flex items-center justify-center bg-brand-bg text-slate-200">
         <p>Faça login para acessar o chat clínico.</p>
       </div>
     )
@@ -548,19 +548,19 @@ const PatientDoctorChat: React.FC = () => {
   if (isImpersonatingPatient) {
     return (
       <div className="min-h-[calc(100vh-6rem)] bg-slate-950 text-slate-100 flex items-center justify-center px-6">
-        <div className="max-w-xl text-center space-y-4 bg-slate-900/70 border border-slate-800 rounded-2xl p-10">
+        <div className="max-w-xl text-center space-y-4 bg-slate-900/70 border border-brand-border-subtle rounded-2xl p-10">
           <MessageCircle className="w-10 h-10 mx-auto text-primary-400" />
-          <h1 className="text-2xl font-semibold text-white">Chat disponível somente para o paciente</h1>
-          <p className="text-slate-400 text-sm leading-relaxed">
+          <h1 className="text-2xl font-semibold text-brand-text">Chat disponível somente para o paciente</h1>
+          <p className="text-brand-text-muted text-sm leading-relaxed">
             Para visualizar o histórico real desta conversa, acesse com a conta do paciente ou adicione-se como participante autorizado na sala correspondente em
             <code className="block mt-2 text-xs text-primary-300">chat_participants</code>.
           </p>
-          <p className="text-slate-300 text-sm mt-4">
+          <p className="text-brand-text-secondary text-sm mt-4">
             💡 <strong>Nota:</strong> Videochamadas podem ser iniciadas pelo profissional mesmo quando você está visualizando como paciente.
           </p>
           <button
             onClick={() => navigate(-1)}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-primary-500 hover:bg-primary-400 text-white text-sm transition-colors"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-primary-500 hover:bg-primary-400 text-brand-text text-sm transition-colors"
           >
             <ArrowLeft className="w-4 h-4" /> Voltar
           </button>
@@ -1022,7 +1022,7 @@ const PatientDoctorChat: React.FC = () => {
             <div className="relative z-10 flex items-start gap-3 flex-1 min-w-0">
               <button
                 onClick={() => navigate(-1)}
-                className="p-1.5 -ml-1 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800/50 transition-colors shrink-0 mt-0.5 group"
+                className="p-1.5 -ml-1 rounded-lg text-brand-text-muted hover:text-brand-text hover:bg-slate-800/50 transition-colors shrink-0 mt-0.5 group"
                 title="Voltar"
                 aria-label="Voltar"
               >
@@ -1030,13 +1030,13 @@ const PatientDoctorChat: React.FC = () => {
               </button>
               <div className="min-w-0 flex-1">
                 <p className="text-[10px] uppercase tracking-[0.35em] text-primary-300/80 mb-1 font-medium">Programa de Cuidado Renal</p>
-                <h1 className="text-lg md:text-xl font-bold text-white flex items-center gap-2">
+                <h1 className="text-lg md:text-xl font-bold text-brand-text flex items-center gap-2">
                   <div className="w-7 h-7 rounded-lg bg-primary-500/15 border border-primary-500/20 flex items-center justify-center">
                     <MessageCircle className="w-4 h-4 text-primary-400" />
                   </div>
                   Atendimento Integrado
                 </h1>
-                <p className="text-slate-400 text-xs md:text-sm mt-1 max-w-2xl leading-snug">
+                <p className="text-brand-text-muted text-xs md:text-sm mt-1 max-w-2xl leading-snug">
                   Converse com a equipe clínica responsável pelo seu acompanhamento em cannabis medicinal e saúde renal.
                 </p>
               </div>
@@ -1044,12 +1044,12 @@ const PatientDoctorChat: React.FC = () => {
             <div className="flex flex-wrap items-center gap-3 relative z-10">
               <span className={`px-3 py-1.5 rounded-full text-xs font-semibold backdrop-blur-sm ${isOnline
                 ? 'bg-emerald-500/15 text-emerald-300 border border-emerald-400/30 shadow-[0_0_12px_rgba(16,185,129,0.15)]'
-                : 'bg-slate-800/60 text-slate-400 border border-slate-700/50'
+                : 'bg-slate-800/60 text-brand-text-muted border border-slate-700/50'
                 }`}>
                 <span className={`inline-block w-1.5 h-1.5 rounded-full mr-1.5 ${isOnline ? 'bg-emerald-400 animate-pulse' : 'bg-slate-500'}`} />
                 {isOnline ? 'Conectado ao Realtime' : 'Offline'}
               </span>
-              <span className="px-3 py-1.5 rounded-full bg-slate-800/40 backdrop-blur-sm border border-slate-700/40 text-xs text-slate-300">
+              <span className="px-3 py-1.5 rounded-full bg-slate-800/40 backdrop-blur-sm border border-slate-700/40 text-xs text-brand-text-secondary">
                 {patientRooms.length} canal(is)
               </span>
             </div>
@@ -1063,7 +1063,7 @@ const PatientDoctorChat: React.FC = () => {
               </h2>
 
               {inboxLoading || patientsLoading ? (
-                <div className="flex-1 flex items-center justify-center text-slate-400 text-sm">
+                <div className="flex-1 flex items-center justify-center text-brand-text-muted text-sm">
                   <Loader2 className="w-4 h-4 animate-spin mr-2" /> Carregando pacientes...
                 </div>
               ) : (
@@ -1075,7 +1075,7 @@ const PatientDoctorChat: React.FC = () => {
                       placeholder="Buscar por nome..."
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
-                      className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-primary-500/50"
+                      className="w-full px-3 py-2 bg-brand-surface border border-brand-border rounded-lg text-sm text-brand-text placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-primary-500/50"
                     />
                   </div>
                   <div className="flex-1 space-y-2 overflow-y-auto pr-1 max-h-[400px] custom-scrollbar">
@@ -1089,14 +1089,14 @@ const PatientDoctorChat: React.FC = () => {
                           key={room.id}
                           onClick={() => handleSelectRoom(room.id)}
                           className={`w-full rounded-xl border px-3 py-3 text-left transition-colors ${isActive
-                            ? 'border-primary-500/60 bg-primary-500/10 text-white'
-                            : 'border-slate-800 bg-slate-900/80 text-slate-200 hover:border-primary-500/40 hover:bg-primary-500/5'
+                            ? 'border-primary-500/60 bg-primary-500/10 text-brand-text'
+                            : 'border-brand-border-subtle bg-slate-900/80 text-slate-200 hover:border-primary-500/40 hover:bg-primary-500/5'
                             }`}
                         >
                           <div className="flex items-center justify-between gap-2">
                             <div className="flex-1 min-w-0">
                               <p className="text-sm font-semibold truncate">{room.name || 'Canal Clínico'}</p>
-                              <p className="text-xs text-slate-400">
+                              <p className="text-xs text-brand-text-muted">
                                 {room.lastMessageAt
                                   ? new Date(room.lastMessageAt).toLocaleString('pt-BR', {
                                     day: '2-digit',
@@ -1109,7 +1109,7 @@ const PatientDoctorChat: React.FC = () => {
                             </div>
                             <div className="flex items-center gap-3 ml-2">
                               {unreadBadge && (
-                                <span className="px-2 py-0.5 rounded-full bg-primary-500 text-white text-[10px] font-semibold">
+                                <span className="px-2 py-0.5 rounded-full bg-primary-500 text-brand-text text-[10px] font-semibold">
                                   {room.unreadCount}
                                 </span>
                               )}
@@ -1128,7 +1128,7 @@ const PatientDoctorChat: React.FC = () => {
                         <button
                           key={`patient-${patient.id}`}
                           onClick={() => handleCreateRoomForPatient(patient.id, patient.name)}
-                          className="w-full rounded-xl border border-slate-800 bg-slate-900/40 text-slate-300 hover:border-primary-500/40 hover:bg-primary-500/5 hover:text-white px-3 py-3 text-left transition-colors"
+                          className="w-full rounded-xl border border-brand-border-subtle bg-slate-900/40 text-brand-text-secondary hover:border-primary-500/40 hover:bg-primary-500/5 hover:text-brand-text px-3 py-3 text-left transition-colors"
                         >
                           <div className="flex items-center justify-between gap-2">
                             <div className="flex-1 min-w-0">
@@ -1143,7 +1143,7 @@ const PatientDoctorChat: React.FC = () => {
 
                       {/* Paciente: mensagem quando não há canais */}
                     {isPatient && patientRooms.length === 0 && (
-                      <div className="text-center py-6 text-slate-400 text-sm">
+                      <div className="text-center py-6 text-brand-text-muted text-sm">
                         <p>Nenhum canal de cuidado ativo.</p>
                         <p className="text-xs mt-1 text-slate-500">Seu profissional irá criar o canal assim que iniciar o acompanhamento.</p>
                       </div>
@@ -1173,7 +1173,7 @@ const PatientDoctorChat: React.FC = () => {
                   {/* Botão voltar à lista (mobile) — V1.9.172 mais clicável */}
                   <button
                     onClick={() => setActiveRoomId(undefined)}
-                    className="lg:hidden inline-flex items-center gap-1.5 px-2 py-1.5 -ml-2 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800/60 active:bg-slate-800 transition-colors text-sm shrink-0"
+                    className="lg:hidden inline-flex items-center gap-1.5 px-2 py-1.5 -ml-2 rounded-lg text-brand-text-secondary hover:text-brand-text hover:bg-slate-800/60 active:bg-brand-surface transition-colors text-sm shrink-0"
                     aria-label="Voltar à lista de conversas"
                   >
                     <ArrowLeft className="w-4 h-4" />
@@ -1181,7 +1181,7 @@ const PatientDoctorChat: React.FC = () => {
                   </button>
                   <div className="min-w-0 flex-1 lg:block">
                     {/* V1.9.172 — Mobile: nome do médico em destaque (contexto). Desktop: nome da sala. */}
-                    <h2 className="text-base md:text-lg font-semibold text-white truncate">
+                    <h2 className="text-base md:text-lg font-semibold text-brand-text truncate">
                       <span className="lg:hidden">
                         {!participantsLoading && otherParticipants.length > 0
                           ? otherParticipants.map(p => p.name || p.email || 'Profissional').join(' • ')
@@ -1192,14 +1192,14 @@ const PatientDoctorChat: React.FC = () => {
                       </span>
                     </h2>
                     {!participantsLoading && otherParticipants.length > 0 && (
-                      <p className="hidden lg:block text-xs text-slate-400 mt-1">
+                      <p className="hidden lg:block text-xs text-brand-text-muted mt-1">
                         {otherParticipants.map(participant => participant.name || participant.email || 'Profissional').join(' • ')}
                       </p>
                     )}
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
-                  {participantsLoading && <Loader2 className="w-4 h-4 animate-spin text-slate-400" />}
+                  {participantsLoading && <Loader2 className="w-4 h-4 animate-spin text-brand-text-muted" />}
 
                   {/* Botões de Videochamada (quando há sala ativa) */}
                   {/* Mostrar botões mesmo se participantes ainda não carregaram ou se houver apenas 1 participante */}
@@ -1372,7 +1372,7 @@ const PatientDoctorChat: React.FC = () => {
 
               {/* V1.9.159+162+168: Banner instruções videoconsulta — colapsável V1.9.168 */}
               {activeRoomId && (
-                <div className="relative z-10 mx-5 mt-3 p-3 rounded-xl bg-gradient-to-r from-emerald-900/20 to-primary-900/20 border border-emerald-500/20 text-xs text-slate-300">
+                <div className="relative z-10 mx-5 mt-3 p-3 rounded-xl bg-gradient-to-r from-emerald-900/20 to-primary-900/20 border border-emerald-500/20 text-xs text-brand-text-secondary">
                   <button
                     onClick={() => setIsBannerExpanded(prev => !prev)}
                     className="w-full flex items-center justify-between gap-2 text-left hover:opacity-90 transition-opacity"
@@ -1388,8 +1388,8 @@ const PatientDoctorChat: React.FC = () => {
                   </button>
                   {isBannerExpanded && (
                     <div className="mt-1.5 space-y-1.5">
-                      <p className="text-slate-400">
-                        Conversem por texto primeiro · O <strong className="text-white">médico inicia</strong> a chamada (botão <Video className="inline w-3 h-3 text-blue-400" />) · O <strong className="text-white">paciente aceita</strong> quando a notificação aparecer · Se falhar, refaça — o sistema reconecta automaticamente.
+                      <p className="text-brand-text-muted">
+                        Conversem por texto primeiro · O <strong className="text-brand-text">médico inicia</strong> a chamada (botão <Video className="inline w-3 h-3 text-blue-400" />) · O <strong className="text-brand-text">paciente aceita</strong> quando a notificação aparecer · Se falhar, refaça — o sistema reconecta automaticamente.
                       </p>
                       <p className="text-amber-300/90 text-[11px] pt-1 border-t border-amber-500/10">
                         💡 <strong>Para melhor experiência</strong>: use celular (WhatsApp-like) ou computador com <strong>câmera e microfone permitidos</strong>. Sem câmera/microfone, a consulta por <strong>conversa de texto</strong> aqui também é completa e registrada no prontuário.
@@ -1402,7 +1402,7 @@ const PatientDoctorChat: React.FC = () => {
               <div className="relative z-10 flex-1 overflow-y-auto overscroll-contain p-5 space-y-3 custom-scrollbar [-webkit-overflow-scrolling:touch]">
                 {activeRoomId ? (
                   messagesLoading ? (
-                    <div className="flex items-center justify-center text-sm text-slate-400 h-full">
+                    <div className="flex items-center justify-center text-sm text-brand-text-muted h-full">
                       <Loader2 className="w-5 h-5 animate-spin mr-2 text-primary-400" /> Carregando mensagens...
                     </div>
                   ) : messages.length === 0 ? (
@@ -1411,7 +1411,7 @@ const PatientDoctorChat: React.FC = () => {
                         <MessageCircle className="w-7 h-7 text-slate-500" />
                       </div>
                       <div>
-                        <p className="text-sm text-slate-300 font-medium">Nenhuma conversa registrada ainda</p>
+                        <p className="text-sm text-brand-text-secondary font-medium">Nenhuma conversa registrada ainda</p>
                         <p className="text-xs text-slate-500 mt-1">Envie a primeira mensagem para iniciar o atendimento.</p>
                       </div>
                     </div>
@@ -1422,7 +1422,7 @@ const PatientDoctorChat: React.FC = () => {
                         <div key={msg.id} className={`flex ${isOwn ? 'justify-end' : 'justify-start'} group`}>
                           <div
                             className={`max-w-[70%] xl:max-w-[55%] rounded-2xl px-5 py-3.5 shadow-lg transition-all duration-200 ${isOwn
-                              ? 'bg-gradient-to-br from-primary-600 to-primary-700 text-white rounded-br-md shadow-primary-900/20'
+                              ? 'bg-gradient-to-br from-primary-600 to-primary-700 text-brand-text rounded-br-md shadow-primary-900/20'
                               : 'bg-slate-800/70 backdrop-blur-sm text-slate-100 border border-slate-700/30 rounded-bl-md shadow-black/10'
                               }`}
                           >
@@ -1444,7 +1444,7 @@ const PatientDoctorChat: React.FC = () => {
                     })
                   )
                 ) : (
-                  <div className="flex items-center justify-center h-full text-sm text-slate-400">
+                  <div className="flex items-center justify-center h-full text-sm text-brand-text-muted">
                     Selecione um canal de atendimento para visualizar as mensagens.
                   </div>
                 )}
@@ -1452,7 +1452,7 @@ const PatientDoctorChat: React.FC = () => {
 
               {/* Botão para salvar conversa como evolução (apenas para profissionais) */}
               {activeRoomId && messages.length > 0 && (user?.type === 'profissional' || user?.type === 'admin') && !isPatient && (
-                <div className="border-t border-slate-800 px-4 py-2 bg-slate-900/30">
+                <div className="border-t border-brand-border-subtle px-4 py-2 bg-slate-900/30">
                   <button
                     onClick={handleSaveConversationAsEvolution}
                     disabled={savingEvolution}
@@ -1496,7 +1496,7 @@ const PatientDoctorChat: React.FC = () => {
                     title="Anexar imagem ou PDF (máx 10 MB)"
                     disabled={!activeRoomId || uploadingFile}
                     onClick={() => fileInputRef.current?.click()}
-                    className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-slate-800/60 hover:bg-slate-700/80 border border-slate-700/40 text-slate-300 hover:text-white transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+                    className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-slate-800/60 hover:bg-slate-700/80 border border-slate-700/40 text-brand-text-secondary hover:text-brand-text transition-all disabled:opacity-40 disabled:cursor-not-allowed"
                   >
                     {uploadingFile ? (
                       <Loader2 className="w-4 h-4 animate-spin" />
@@ -1511,14 +1511,14 @@ const PatientDoctorChat: React.FC = () => {
                     onPaste={handlePasteAttachment}
                     placeholder={activeRoomId ? 'Escreva sua mensagem ou cole imagem/PDF...' : 'Selecione um canal para enviar mensagens'}
                     disabled={!activeRoomId}
-                    className="flex-1 bg-slate-950/50 backdrop-blur-sm border border-slate-700/40 rounded-xl px-5 py-3.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500/30 transition-all"
+                    className="flex-1 bg-slate-950/50 backdrop-blur-sm border border-slate-700/40 rounded-xl px-5 py-3.5 text-sm text-brand-text placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500/30 transition-all"
                   />
                   <button
                     type="submit"
                     disabled={!activeRoomId || !messageInput.trim()}
                     className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-gradient-to-br from-primary-500 to-primary-700 hover:from-primary-400 hover:to-primary-600 transition-all shadow-lg shadow-primary-900/20 disabled:opacity-40 disabled:cursor-not-allowed disabled:shadow-none"
                   >
-                    <Send className="w-4 h-4 text-white" />
+                    <Send className="w-4 h-4 text-brand-text" />
                   </button>
                 </div>
               </form>
@@ -1534,10 +1534,10 @@ const PatientDoctorChat: React.FC = () => {
         <div className="fixed bottom-4 right-4 bg-blue-600/90 backdrop-blur-sm border border-blue-500/50 rounded-xl p-4 shadow-2xl max-w-sm z-50">
           <div className="flex items-start gap-3">
             <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center flex-shrink-0">
-              <Loader2 className="w-5 h-5 text-white animate-spin" />
+              <Loader2 className="w-5 h-5 text-brand-text animate-spin" />
             </div>
             <div className="flex-1">
-              <h4 className="text-sm font-semibold text-white mb-1">⏳ Aguardando resposta</h4>
+              <h4 className="text-sm font-semibold text-brand-text mb-1">⏳ Aguardando resposta</h4>
               <p className="text-xs text-blue-100 leading-relaxed mb-2">
                 {user?.type === 'paciente'
                   ? 'Sua solicitação de videochamada foi enviada ao profissional. Você será notificado quando ele aceitar ou recusar.'
@@ -1547,7 +1547,7 @@ const PatientDoctorChat: React.FC = () => {
               {timeRemaining !== null && (
                 <div className="flex items-center gap-2 mt-2">
                   <span className="text-[10px] text-blue-200/80">⏰ Tempo restante:</span>
-                  <span className="text-xs font-mono font-semibold text-white">
+                  <span className="text-xs font-mono font-semibold text-brand-text">
                     {timeRemaining > 0
                       ? `${Math.floor(timeRemaining / 60)}:${String(Math.floor(timeRemaining % 60)).padStart(2, '0')}`
                       : 'Expirado'
@@ -1582,7 +1582,7 @@ const PatientDoctorChat: React.FC = () => {
                   })
                 }
               }}
-              className="text-white/60 hover:text-white transition-colors p-1 hover:bg-white/10 rounded"
+              className="text-white/60 hover:text-brand-text transition-colors p-1 hover:bg-white/10 rounded"
               title="Cancelar solicitação"
             >
               <X className="w-4 h-4" />

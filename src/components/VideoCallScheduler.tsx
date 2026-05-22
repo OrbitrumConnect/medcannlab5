@@ -149,18 +149,18 @@ const VideoCallScheduler: React.FC<VideoCallSchedulerProps> = ({
 
   return (
     <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
-      <div className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-md shadow-2xl">
+      <div className="bg-brand-bg border border-brand-border rounded-2xl w-full max-w-md shadow-2xl">
         <div className="p-5 border-b border-slate-700/50 flex items-center justify-between">
-          <h3 className="text-lg font-bold text-white flex items-center gap-2">
+          <h3 className="text-lg font-bold text-brand-text flex items-center gap-2">
             <Calendar className="w-5 h-5 text-blue-400" />
             {isPatient ? 'Solicitar Videochamada' : 'Agendar Videochamada'}
           </h3>
           {onClose && (
             <button
               onClick={onClose}
-              className="p-1 hover:bg-slate-800 rounded-lg transition-colors"
+              className="p-1 hover:bg-brand-surface rounded-lg transition-colors"
             >
-              <X className="w-5 h-5 text-slate-400" />
+              <X className="w-5 h-5 text-brand-text-muted" />
             </button>
           )}
         </div>
@@ -175,7 +175,7 @@ const VideoCallScheduler: React.FC<VideoCallSchedulerProps> = ({
 
           {/* Data */}
           <div>
-            <label className="block text-sm font-medium text-slate-300 mb-2">
+            <label className="block text-sm font-medium text-brand-text-secondary mb-2">
               Data
             </label>
             <input
@@ -183,26 +183,26 @@ const VideoCallScheduler: React.FC<VideoCallSchedulerProps> = ({
               value={scheduledAt}
               onChange={(e) => setScheduledAt(e.target.value)}
               min={minDate}
-              className="w-full px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-4 py-2 bg-brand-surface border border-brand-border rounded-lg text-brand-text focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
 
           {/* Hora */}
           <div>
-            <label className="block text-sm font-medium text-slate-300 mb-2">
+            <label className="block text-sm font-medium text-brand-text-secondary mb-2">
               Hora
             </label>
             <input
               type="time"
               value={scheduledTime}
               onChange={(e) => setScheduledTime(e.target.value)}
-              className="w-full px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-4 py-2 bg-brand-surface border border-brand-border rounded-lg text-brand-text focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
 
           {/* Tipo de chamada */}
           <div>
-            <label className="block text-sm font-medium text-slate-300 mb-2">
+            <label className="block text-sm font-medium text-brand-text-secondary mb-2">
               Tipo de Chamada
             </label>
             <div className="flex gap-3">
@@ -211,7 +211,7 @@ const VideoCallScheduler: React.FC<VideoCallSchedulerProps> = ({
                 className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-lg border transition-colors ${
                   callType === 'video'
                     ? 'bg-blue-500/20 border-blue-500 text-blue-400'
-                    : 'bg-slate-800 border-slate-700 text-slate-400 hover:border-slate-600'
+                    : 'bg-brand-surface border-brand-border text-brand-text-muted hover:border-slate-600'
                 }`}
               >
                 <Video className="w-5 h-5" />
@@ -222,7 +222,7 @@ const VideoCallScheduler: React.FC<VideoCallSchedulerProps> = ({
                 className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-lg border transition-colors ${
                   callType === 'audio'
                     ? 'bg-green-500/20 border-green-500 text-green-400'
-                    : 'bg-slate-800 border-slate-700 text-slate-400 hover:border-slate-600'
+                    : 'bg-brand-surface border-brand-border text-brand-text-muted hover:border-slate-600'
                 }`}
               >
                 <Phone className="w-5 h-5" />
@@ -234,7 +234,7 @@ const VideoCallScheduler: React.FC<VideoCallSchedulerProps> = ({
           {/* Mensagem (apenas para paciente) */}
           {isPatient && (
             <div>
-              <label className="block text-sm font-medium text-slate-300 mb-2">
+              <label className="block text-sm font-medium text-brand-text-secondary mb-2">
                 Mensagem (opcional)
               </label>
               <textarea
@@ -242,7 +242,7 @@ const VideoCallScheduler: React.FC<VideoCallSchedulerProps> = ({
                 onChange={(e) => setRequestMessage(e.target.value)}
                 placeholder="Descreva o motivo da solicitação..."
                 rows={3}
-                className="w-full px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+                className="w-full px-4 py-2 bg-brand-surface border border-brand-border rounded-lg text-brand-text placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
               />
             </div>
           )}
@@ -252,7 +252,7 @@ const VideoCallScheduler: React.FC<VideoCallSchedulerProps> = ({
             {onClose && (
               <button
                 onClick={onClose}
-                className="flex-1 px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg transition-colors"
+                className="flex-1 px-4 py-2 bg-brand-surface-subtle hover:bg-slate-600 text-brand-text rounded-lg transition-colors"
               >
                 Cancelar
               </button>
@@ -260,7 +260,7 @@ const VideoCallScheduler: React.FC<VideoCallSchedulerProps> = ({
             <button
               onClick={handleSchedule}
               disabled={loading}
-              className="flex-1 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              className="flex-1 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-brand-text rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
               {loading ? (
                 <>

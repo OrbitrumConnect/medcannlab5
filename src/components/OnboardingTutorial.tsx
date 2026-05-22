@@ -168,12 +168,12 @@ const OnboardingTutorial: React.FC = () => {
         animate={{ opacity: 1, x: 0 }}
         exit={{ opacity: 0, x: -30 }}
         transition={{ duration: 0.3 }}
-        className="bg-slate-800 border border-slate-700 rounded-2xl max-w-md w-full p-8 shadow-2xl relative"
+        className="bg-brand-surface border border-brand-border rounded-2xl max-w-md w-full p-8 shadow-2xl relative"
       >
         {/* Skip button */}
         <button
           onClick={handleSkip}
-          className="absolute top-4 right-4 text-slate-500 hover:text-slate-300 transition-colors"
+          className="absolute top-4 right-4 text-slate-500 hover:text-brand-text-secondary transition-colors"
           title="Pular tutorial"
         >
           <X className="w-5 h-5" />
@@ -196,8 +196,8 @@ const OnboardingTutorial: React.FC = () => {
           <div className="w-16 h-16 bg-slate-700/50 rounded-2xl flex items-center justify-center mx-auto mb-6">
             {step.icon}
           </div>
-          <h2 className="text-xl font-bold text-white mb-3">{step.title}</h2>
-          <p className="text-slate-400 text-sm leading-relaxed">{step.description}</p>
+          <h2 className="text-xl font-bold text-brand-text mb-3">{step.title}</h2>
+          <p className="text-brand-text-muted text-sm leading-relaxed">{step.description}</p>
         </div>
 
         {/* Step counter */}
@@ -210,7 +210,7 @@ const OnboardingTutorial: React.FC = () => {
           {currentStep > 0 && (
             <button
               onClick={() => setCurrentStep(prev => prev - 1)}
-              className="flex-1 bg-slate-700 hover:bg-slate-600 text-white px-4 py-3 rounded-xl font-semibold transition-colors flex items-center justify-center gap-2"
+              className="flex-1 bg-brand-surface-subtle hover:bg-slate-600 text-brand-text px-4 py-3 rounded-xl font-semibold transition-colors flex items-center justify-center gap-2"
             >
               <ChevronLeft className="w-4 h-4" />
               Anterior
@@ -221,7 +221,7 @@ const OnboardingTutorial: React.FC = () => {
             <button
               onClick={handleComplete}
               disabled={isSaving}
-              className="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-3 rounded-xl font-semibold transition-colors flex items-center justify-center gap-2"
+              className="flex-1 bg-emerald-600 hover:bg-emerald-500 text-brand-text px-4 py-3 rounded-xl font-semibold transition-colors flex items-center justify-center gap-2"
             >
               {isSaving ? (
                 <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white" />
@@ -232,7 +232,7 @@ const OnboardingTutorial: React.FC = () => {
           ) : (
             <button
               onClick={() => setCurrentStep(prev => prev + 1)}
-              className="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-3 rounded-xl font-semibold transition-colors flex items-center justify-center gap-2"
+              className="flex-1 bg-emerald-600 hover:bg-emerald-500 text-brand-text px-4 py-3 rounded-xl font-semibold transition-colors flex items-center justify-center gap-2"
             >
               Próximo
               <ChevronRight className="w-4 h-4" />

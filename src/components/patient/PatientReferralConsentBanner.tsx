@@ -140,7 +140,7 @@ export const PatientReferralConsentBanner: React.FC = () => {
             <UserCheck className="w-5 h-5 text-amber-300" />
           </div>
           <div className="flex-1 min-w-0">
-            <h3 className="text-sm font-bold text-white mb-1">
+            <h3 className="text-sm font-bold text-brand-text mb-1">
               {pending.length === 1
                 ? 'Você tem um direcionamento aguardando sua decisão'
                 : `Você tem ${pending.length} direcionamentos aguardando sua decisão`}
@@ -155,12 +155,12 @@ export const PatientReferralConsentBanner: React.FC = () => {
                   onClick={() => setSelectedReferral(r)}
                   className="w-full text-left bg-slate-900/60 hover:bg-slate-900/80 border border-amber-500/30 hover:border-amber-400 rounded-lg p-3 transition-colors group"
                 >
-                  <div className="flex items-center gap-2 text-xs text-slate-300 mb-1">
+                  <div className="flex items-center gap-2 text-xs text-brand-text-secondary mb-1">
                     <ArrowRightLeft className="w-3 h-3 text-amber-400" />
-                    <span><strong className="text-white">{r.from_doctor_name}</strong> sugere acompanhamento com <strong className="text-cyan-300">{r.to_doctor_name}</strong></span>
+                    <span><strong className="text-brand-text">{r.from_doctor_name}</strong> sugere acompanhamento com <strong className="text-cyan-300">{r.to_doctor_name}</strong></span>
                   </div>
                   <div className="flex items-center justify-between gap-2 mt-1">
-                    <span className="text-[10px] text-slate-400">
+                    <span className="text-[10px] text-brand-text-muted">
                       {REASON_LABELS[r.reason]} · {new Date(r.created_at).toLocaleDateString('pt-BR')}
                     </span>
                     <span className="text-[11px] text-amber-300 font-bold group-hover:text-amber-200">
@@ -181,7 +181,7 @@ export const PatientReferralConsentBanner: React.FC = () => {
           onClick={() => !submitting && setSelectedReferral(null)}
         >
           <div
-            className="bg-slate-900 border border-amber-500/30 rounded-2xl max-w-lg w-full p-5"
+            className="bg-brand-bg border border-amber-500/30 rounded-2xl max-w-lg w-full p-5"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-start justify-between mb-4">
@@ -190,22 +190,22 @@ export const PatientReferralConsentBanner: React.FC = () => {
                   <UserCheck className="w-5 h-5 text-amber-300" />
                 </div>
                 <div>
-                  <h3 className="text-base font-bold text-white">Sugestão de Direcionamento</h3>
-                  <p className="text-[11px] text-slate-400">Sua decisão é definitiva — você pode revogar depois</p>
+                  <h3 className="text-base font-bold text-brand-text">Sugestão de Direcionamento</h3>
+                  <p className="text-[11px] text-brand-text-muted">Sua decisão é definitiva — você pode revogar depois</p>
                 </div>
               </div>
               <button
                 onClick={() => !submitting && setSelectedReferral(null)}
-                className="text-slate-400 hover:text-white p-1"
+                className="text-brand-text-muted hover:text-brand-text p-1"
               >
                 <XCircle className="w-5 h-5" />
               </button>
             </div>
 
             <div className="space-y-4">
-              <div className="bg-slate-800/40 border border-slate-700 rounded-lg p-4">
+              <div className="bg-slate-800/40 border border-brand-border rounded-lg p-4">
                 <p className="text-sm text-slate-200 leading-relaxed">
-                  <strong className="text-white">{selectedReferral.from_doctor_name}</strong>
+                  <strong className="text-brand-text">{selectedReferral.from_doctor_name}</strong>
                   {' '}(seu profissional de referência) sugere que você seja acompanhado também por:
                 </p>
                 <div className="mt-3 p-3 bg-cyan-500/10 border border-cyan-500/30 rounded-lg">
@@ -218,8 +218,8 @@ export const PatientReferralConsentBanner: React.FC = () => {
                     </p>
                   )}
                 </div>
-                <p className="text-xs text-slate-400 mt-3">
-                  <strong className="text-slate-300">Razão:</strong> {REASON_LABELS[selectedReferral.reason]}
+                <p className="text-xs text-brand-text-muted mt-3">
+                  <strong className="text-brand-text-secondary">Razão:</strong> {REASON_LABELS[selectedReferral.reason]}
                 </p>
               </div>
 
@@ -239,7 +239,7 @@ export const PatientReferralConsentBanner: React.FC = () => {
               <button
                 onClick={() => handleDecision('declined_by_patient')}
                 disabled={submitting}
-                className="flex-1 px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg text-sm font-semibold transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                className="flex-1 px-4 py-2.5 bg-brand-surface hover:bg-brand-surface-subtle text-slate-200 rounded-lg text-sm font-semibold transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
               >
                 {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <XCircle className="w-4 h-4" />}
                 Recuso
@@ -247,7 +247,7 @@ export const PatientReferralConsentBanner: React.FC = () => {
               <button
                 onClick={() => handleDecision('accepted')}
                 disabled={submitting}
-                className="flex-1 px-4 py-2.5 bg-emerald-500 hover:bg-emerald-400 disabled:bg-slate-700 text-slate-950 disabled:text-slate-500 rounded-lg text-sm font-bold transition-colors flex items-center justify-center gap-2"
+                className="flex-1 px-4 py-2.5 bg-emerald-500 hover:bg-emerald-400 disabled:bg-brand-surface-subtle text-slate-950 disabled:text-slate-500 rounded-lg text-sm font-bold transition-colors flex items-center justify-center gap-2"
               >
                 {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4" />}
                 Aceito direcionamento

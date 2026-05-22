@@ -944,12 +944,12 @@ const ArteEntrevistaClinica: React.FC = () => {
   const totalProgress = modules.reduce((acc, module) => acc + module.progress, 0) / modules.length
 
   return (
-    <div className="min-h-screen text-white" style={{ background: backgroundGradient }}>
+    <div className="min-h-screen text-brand-text" style={{ background: backgroundGradient }}>
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Back Trigger Premium */}
         <button
           onClick={() => navigate('/app/ensino/aluno/dashboard')}
-          className="flex items-center gap-3 text-slate-400 hover:text-emerald-400 transition-all mb-8 group"
+          className="flex items-center gap-3 text-brand-text-muted hover:text-emerald-400 transition-all mb-8 group"
         >
           <div className="w-10 h-10 rounded-xl bg-slate-800/80 flex items-center justify-center group-hover:bg-emerald-500/10 transition-all border border-slate-700/50 group-hover:border-emerald-500/30 group-hover:shadow-[0_0_15px_rgba(16,185,129,0.1)]">
             <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
@@ -961,7 +961,7 @@ const ArteEntrevistaClinica: React.FC = () => {
         </button>
 
         {/* Course Header */}
-        <div className="bg-slate-800 rounded-xl p-8 mb-8">
+        <div className="bg-brand-surface rounded-xl p-8 mb-8">
           <div className="flex flex-col lg:flex-row gap-8">
             <div className="lg:w-2/3">
               <div className="flex items-center space-x-2 mb-4">
@@ -972,7 +972,7 @@ const ArteEntrevistaClinica: React.FC = () => {
                   Certificado
                 </span>
               </div>
-              <h1 className="text-3xl font-bold text-white mb-4">
+              <h1 className="text-3xl font-bold text-brand-text mb-4">
                 {courseInfo.title}
               </h1>
               <p className="text-gray-300 mb-6">
@@ -1009,7 +1009,7 @@ const ArteEntrevistaClinica: React.FC = () => {
             </div>
             <div className="lg:w-1/3">
               <div className="bg-gradient-to-br from-blue-900/20 to-purple-900/20 p-6 rounded-lg">
-                <h3 className="text-lg font-semibold text-white mb-4">
+                <h3 className="text-lg font-semibold text-brand-text mb-4">
                   Progresso do Curso
                 </h3>
                 <div className="mb-4">
@@ -1048,14 +1048,14 @@ const ArteEntrevistaClinica: React.FC = () => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-10">
           {/* Modules List */}
           <div className="lg:col-span-2">
-            <div className="bg-slate-800 rounded-xl p-6">
+            <div className="bg-brand-surface rounded-xl p-6">
               <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-semibold text-white">
+                <h2 className="text-xl font-semibold text-brand-text">
                   Módulos do Curso
                 </h2>
                 <button
                   onClick={() => setShowAssignments(!showAssignments)}
-                  className="px-4 py-2 bg-slate-700 text-white rounded-lg hover:bg-slate-600 text-sm transition-colors"
+                  className="px-4 py-2 bg-brand-surface-subtle text-brand-text rounded-lg hover:bg-slate-600 text-sm transition-colors"
                 >
                   {showAssignments ? 'Ver Módulos' : 'Ver Atividades'}
                 </button>
@@ -1068,12 +1068,12 @@ const ArteEntrevistaClinica: React.FC = () => {
                       key={module.id}
                       className={`p-4 border rounded-lg cursor-pointer transition-colors duration-200 ${activeModule === module.id
                         ? 'border-emerald-500 bg-blue-900/20'
-                        : 'border-slate-700 hover:border-slate-600'
+                        : 'border-brand-border hover:border-slate-600'
                         }`}
                       onClick={() => setActiveModule(activeModule === module.id ? null : module.id)}
                     >
                       <div className="flex items-center justify-between mb-2">
-                        <h3 className="font-semibold text-white">
+                        <h3 className="font-semibold text-brand-text">
                           {module.title}
                         </h3>
                         <div className="flex items-center space-x-2">
@@ -1103,7 +1103,7 @@ const ArteEntrevistaClinica: React.FC = () => {
 
                       {/* Module Lessons */}
                       {activeModule === module.id && (
-                        <div className="mt-4 pt-4 border-t border-slate-700">
+                        <div className="mt-4 pt-4 border-t border-brand-border">
                           <div className="space-y-2">
                             {module.lessons.map((lesson) => (
                               <div
@@ -1111,8 +1111,8 @@ const ArteEntrevistaClinica: React.FC = () => {
                                 className={`flex items-center justify-between p-3 rounded-lg ${lesson.isCompleted
                                   ? 'bg-green-900/20'
                                   : lesson.isLocked
-                                    ? 'bg-slate-700 opacity-60'
-                                    : 'bg-slate-700 hover:bg-slate-600'
+                                    ? 'bg-brand-surface-subtle opacity-60'
+                                    : 'bg-brand-surface-subtle hover:bg-slate-600'
                                   }`}
                               >
                                 <div className="flex items-center space-x-3 flex-1">
@@ -1120,7 +1120,7 @@ const ArteEntrevistaClinica: React.FC = () => {
                                     {getLessonIcon(lesson.type)}
                                   </div>
                                   <div className="flex-1">
-                                    <h4 className="text-sm font-medium text-white">
+                                    <h4 className="text-sm font-medium text-brand-text">
                                       {lesson.title}
                                     </h4>
                                     <div className="flex items-center space-x-4 text-xs text-gray-400 mt-1">
@@ -1156,13 +1156,13 @@ const ArteEntrevistaClinica: React.FC = () => {
                 </div>
               ) : (
                 <div className="space-y-4">
-                  <h3 className="text-lg font-semibold text-white mb-4">
+                  <h3 className="text-lg font-semibold text-brand-text mb-4">
                     Atividades e Atribuições
                   </h3>
                   {assignments.map((assignment) => (
-                    <div key={assignment.id} className="p-4 border border-slate-700 rounded-lg">
+                    <div key={assignment.id} className="p-4 border border-brand-border rounded-lg">
                       <div className="flex items-start justify-between mb-2">
-                        <h4 className="font-semibold text-white">
+                        <h4 className="font-semibold text-brand-text">
                           {assignment.title}
                         </h4>
                         <span className="text-sm text-gray-400">
@@ -1179,7 +1179,7 @@ const ArteEntrevistaClinica: React.FC = () => {
                             {assignment.isSubmitted ? 'Entregue' : 'Pendente'}
                           </span>
                         </div>
-                        <button className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm transition-colors">
+                        <button className="px-4 py-2 bg-blue-600 text-brand-text rounded-lg hover:bg-blue-700 text-sm transition-colors">
                           {assignment.isSubmitted ? 'Ver Feedback' : 'Entregar'}
                         </button>
                       </div>
@@ -1193,58 +1193,58 @@ const ArteEntrevistaClinica: React.FC = () => {
           {/* Sidebar */}
           <div className="space-y-6">
             {/* Course Stats */}
-            <div className="bg-slate-800 rounded-xl p-6">
-              <h3 className="text-lg font-semibold text-white mb-4">
+            <div className="bg-brand-surface rounded-xl p-6">
+              <h3 className="text-lg font-semibold text-brand-text mb-4">
                 Estatística
               </h3>
               <div className="space-y-4">
                 <div className="flex justify-between">
                   <span className="text-sm text-gray-300">Tempo Estudado:</span>
-                  <span className="text-sm font-medium text-white">12h 45min</span>
+                  <span className="text-sm font-medium text-brand-text">12h 45min</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-sm text-gray-300">Aulas Concluídas:</span>
-                  <span className="text-sm font-medium text-white">0/17</span>
+                  <span className="text-sm font-medium text-brand-text">0/17</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-sm text-gray-300">Pontos Ganhos:</span>
-                  <span className="text-sm font-medium text-white">0</span>
+                  <span className="text-sm font-medium text-brand-text">0</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-sm text-gray-300">Ranking:</span>
-                  <span className="text-sm font-medium text-white">#--</span>
+                  <span className="text-sm font-medium text-brand-text">#--</span>
                 </div>
               </div>
             </div>
 
             {/* Resources */}
-            <div className="bg-slate-800 rounded-xl p-6">
-              <h3 className="text-lg font-semibold text-white mb-4">
+            <div className="bg-brand-surface rounded-xl p-6">
+              <h3 className="text-lg font-semibold text-brand-text mb-4">
                 Recursos
               </h3>
               <div className="space-y-3">
-                <button className="w-full flex items-center space-x-3 p-3 text-left hover:bg-slate-700 rounded-lg transition-colors duration-200">
+                <button className="w-full flex items-center space-x-3 p-3 text-left hover:bg-brand-surface-subtle rounded-lg transition-colors duration-200">
                   <FileText className="w-5 h-5 text-blue-400" />
-                  <span className="text-sm text-white">Material Didático</span>
+                  <span className="text-sm text-brand-text">Material Didático</span>
                 </button>
-                <button className="w-full flex items-center space-x-3 p-3 text-left hover:bg-slate-700 rounded-lg transition-colors duration-200">
+                <button className="w-full flex items-center space-x-3 p-3 text-left hover:bg-brand-surface-subtle rounded-lg transition-colors duration-200">
                   <Video className="w-5 h-5 text-green-400" />
-                  <span className="text-sm text-white">Aulas Gravadas</span>
+                  <span className="text-sm text-brand-text">Aulas Gravadas</span>
                 </button>
-                <button className="w-full flex items-center space-x-3 p-3 text-left hover:bg-slate-700 rounded-lg transition-colors duration-200">
+                <button className="w-full flex items-center space-x-3 p-3 text-left hover:bg-brand-surface-subtle rounded-lg transition-colors duration-200">
                   <MessageCircle className="w-5 h-5 text-purple-400" />
-                  <span className="text-sm text-white">Canal do Telegram</span>
+                  <span className="text-sm text-brand-text">Canal do Telegram</span>
                 </button>
-                <button className="w-full flex items-center space-x-3 p-3 text-left hover:bg-slate-700 rounded-lg transition-colors duration-200">
+                <button className="w-full flex items-center space-x-3 p-3 text-left hover:bg-brand-surface-subtle rounded-lg transition-colors duration-200">
                   <Award className="w-5 h-5 text-orange-400" />
-                  <span className="text-sm text-white">Certificado</span>
+                  <span className="text-sm text-brand-text">Certificado</span>
                 </button>
               </div>
             </div>
 
             {/* Instructor */}
-            <div className="bg-slate-800 rounded-xl p-6">
-              <h3 className="text-lg font-semibold text-white mb-4">
+            <div className="bg-brand-surface rounded-xl p-6">
+              <h3 className="text-lg font-semibold text-brand-text mb-4">
                 Instrutor
               </h3>
               <div className="flex items-center space-x-3 mb-4">
@@ -1252,7 +1252,7 @@ const ArteEntrevistaClinica: React.FC = () => {
                   <User className="w-6 h-6 text-blue-400" />
                 </div>
                 <div>
-                  <h4 className="font-medium text-white">
+                  <h4 className="font-medium text-brand-text">
                     {courseInfo.instructor}
                   </h4>
                   <p className="text-sm text-gray-300">
@@ -1266,26 +1266,26 @@ const ArteEntrevistaClinica: React.FC = () => {
               </p>
               <button
                 onClick={() => setShowProfileModal(true)}
-                className="w-full px-4 py-2 bg-slate-700 text-white rounded-lg hover:bg-slate-600 text-sm transition-colors"
+                className="w-full px-4 py-2 bg-brand-surface-subtle text-brand-text rounded-lg hover:bg-slate-600 text-sm transition-colors"
               >
                 Ver Perfil
               </button>
             </div>
 
             {/* Informações Adicionais */}
-            <div className="bg-slate-800 rounded-xl p-6">
-              <h3 className="text-lg font-semibold text-white mb-4">
+            <div className="bg-brand-surface rounded-xl p-6">
+              <h3 className="text-lg font-semibold text-brand-text mb-4">
                 Informações Importantes
               </h3>
               <div className="space-y-3 text-sm text-gray-300">
                 <p>
-                  <strong className="text-white">Aulas ao vivo:</strong> Quartas-feiras, às 20h via ZOOM
+                  <strong className="text-brand-text">Aulas ao vivo:</strong> Quartas-feiras, às 20h via ZOOM
                 </p>
                 <p>
-                  <strong className="text-white">Suporte:</strong> artedaentrevista@gmail.com
+                  <strong className="text-brand-text">Suporte:</strong> artedaentrevista@gmail.com
                 </p>
                 <p>
-                  <strong className="text-white">Recomendação:</strong> Leia o texto "O que se diz do que se vê" disponível na aula 1
+                  <strong className="text-brand-text">Recomendação:</strong> Leia o texto "O que se diz do que se vê" disponível na aula 1
                 </p>
               </div>
             </div>
@@ -1298,11 +1298,11 @@ const ArteEntrevistaClinica: React.FC = () => {
             <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
               <div className="flex items-start space-x-4">
                 <div className="w-12 h-12 md:w-14 md:h-14 rounded-xl flex items-center justify-center bg-gradient-to-r from-[#00C16A] to-[#1a365d] shadow-lg">
-                  <Brain className="w-7 h-7 text-white" />
+                  <Brain className="w-7 h-7 text-brand-text" />
                 </div>
                 <div>
                   <p className="text-[11px] uppercase tracking-[0.35em] text-[#00C16A] mb-2">LabPEC &amp; Arte da Entrevista Clínica</p>
-                  <h2 className="text-2xl md:text-3xl font-bold text-white">Laboratório de Performance em Entrevista Clínica</h2>
+                  <h2 className="text-2xl md:text-3xl font-bold text-brand-text">Laboratório de Performance em Entrevista Clínica</h2>
                   <p className="text-sm md:text-base text-[#C8D6E5] mt-3 max-w-3xl">
                     Projetos inovadores que aplicam a metodologia AEC em diferentes contextos, desde pesquisa aplicada até intervenções comunitárias globais.
                     Integração de Deep Learning e NLP para saúde humanizada, com encontros práticos e supervisão direta do Dr. Ricardo Valença.
@@ -1311,7 +1311,7 @@ const ArteEntrevistaClinica: React.FC = () => {
               </div>
               <button
                 type="button"
-                className="self-start lg:self-center bg-gradient-to-r from-[#00C16A] to-[#1a365d] text-white px-5 md:px-6 py-2.5 md:py-3 rounded-lg font-semibold shadow-lg hover:shadow-xl hover:scale-[1.02] transition-all"
+                className="self-start lg:self-center bg-gradient-to-r from-[#00C16A] to-[#1a365d] text-brand-text px-5 md:px-6 py-2.5 md:py-3 rounded-lg font-semibold shadow-lg hover:shadow-xl hover:scale-[1.02] transition-all"
               >
                 Baixar eBook do Seminário
               </button>
@@ -1319,18 +1319,18 @@ const ArteEntrevistaClinica: React.FC = () => {
 
             <div className="mt-6 grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
               <div className="bg-[#0F243C]/70 border border-[#00C16A]/10 rounded-lg p-5">
-                <h3 className="text-lg font-semibold text-white mb-3 flex items-center space-x-2">
+                <h3 className="text-lg font-semibold text-brand-text mb-3 flex items-center space-x-2">
                   <Play className="w-5 h-5 text-[#FFD33D]" />
                   <span>O que acontece no LabPEC?</span>
                 </h3>
                 <ul className="space-y-3 text-[#9FB3C6] text-sm">
-                  <li className="flex items-start space-x-2"><CheckCircle className="w-4 h-4 text-[#00C16A] mt-1" /><span><strong className="text-white">Role-playing clínico realista:</strong> consultas encenadas por duplas com base em casos clínicos reais.</span></li>
-                  <li className="flex items-start space-x-2"><CheckCircle className="w-4 h-4 text-[#00C16A] mt-1" /><span><strong className="text-white">Análise triaxial da consulta:</strong> diferentes perspectivas entre entrevistador, paciente e professor.</span></li>
-                  <li className="flex items-start space-x-2"><CheckCircle className="w-4 h-4 text-[#00C16A] mt-1" /><span><strong className="text-white">Gravação e revisão técnica:</strong> análise em grupo da comunicação clínica e não-verbal.</span></li>
+                  <li className="flex items-start space-x-2"><CheckCircle className="w-4 h-4 text-[#00C16A] mt-1" /><span><strong className="text-brand-text">Role-playing clínico realista:</strong> consultas encenadas por duplas com base em casos clínicos reais.</span></li>
+                  <li className="flex items-start space-x-2"><CheckCircle className="w-4 h-4 text-[#00C16A] mt-1" /><span><strong className="text-brand-text">Análise triaxial da consulta:</strong> diferentes perspectivas entre entrevistador, paciente e professor.</span></li>
+                  <li className="flex items-start space-x-2"><CheckCircle className="w-4 h-4 text-[#00C16A] mt-1" /><span><strong className="text-brand-text">Gravação e revisão técnica:</strong> análise em grupo da comunicação clínica e não-verbal.</span></li>
                 </ul>
               </div>
               <div className="bg-[#0F243C]/70 border border-[#00C16A]/10 rounded-lg p-5">
-                <h3 className="text-lg font-semibold text-white mb-3 flex items-center space-x-2">
+                <h3 className="text-lg font-semibold text-brand-text mb-3 flex items-center space-x-2">
                   <Target className="w-5 h-5 text-[#FFD33D]" />
                   <span>Por que participar?</span>
                 </h3>
@@ -1342,7 +1342,7 @@ const ArteEntrevistaClinica: React.FC = () => {
                 </ul>
               </div>
               <div className="bg-[#0F243C]/70 border border-[#00C16A]/10 rounded-lg p-5">
-                <h3 className="text-lg font-semibold text-white mb-3 flex items-center space-x-2">
+                <h3 className="text-lg font-semibold text-brand-text mb-3 flex items-center space-x-2">
                   <Users className="w-5 h-5 text-[#FFD33D]" />
                   <span>Para quem?</span>
                 </h3>
@@ -1353,13 +1353,13 @@ const ArteEntrevistaClinica: React.FC = () => {
                 </ul>
               </div>
               <div className="bg-[#0F243C]/70 border border-[#00C16A]/10 rounded-lg p-5">
-                <h3 className="text-lg font-semibold text-white mb-3 flex items-center space-x-2">
+                <h3 className="text-lg font-semibold text-brand-text mb-3 flex items-center space-x-2">
                   <Zap className="w-5 h-5 text-[#FFD33D]" />
                   <span>Como funciona?</span>
                 </h3>
                 <ul className="space-y-3 text-[#9FB3C6] text-sm">
-                  <li className="flex items-start space-x-2"><Video className="w-4 h-4 text-[#00C16A] mt-1" /><span><strong className="text-white">Aulas ao vivo</strong> via Zoom às 21h</span></li>
-                  <li className="flex items-start space-x-2"><FileText className="w-4 h-4 text-[#00C16A] mt-1" /><span><strong className="text-white">Casos clínicos</strong> alinhados ao tema da aula</span></li>
+                  <li className="flex items-start space-x-2"><Video className="w-4 h-4 text-[#00C16A] mt-1" /><span><strong className="text-brand-text">Aulas ao vivo</strong> via Zoom às 21h</span></li>
+                  <li className="flex items-start space-x-2"><FileText className="w-4 h-4 text-[#00C16A] mt-1" /><span><strong className="text-brand-text">Casos clínicos</strong> alinhados ao tema da aula</span></li>
                   <li className="flex items-start space-x-2"><Users className="w-4 h-4 text-[#00C16A] mt-1" /><span>Duplas de alunos selecionadas na hora</span></li>
                   <li className="flex items-start space-x-2"><Clock className="w-4 h-4 text-[#00C16A] mt-1" /><span>Exercícios com até 3 rodadas por noite</span></li>
                   <li className="flex items-start space-x-2"><BarChart3 className="w-4 h-4 text-[#00C16A] mt-1" /><span>Análise final orientada pelo Dr. Ricardo Valença</span></li>
@@ -1375,7 +1375,7 @@ const ArteEntrevistaClinica: React.FC = () => {
           <div className="space-y-6">
             <div className="flex items-center space-x-3">
               <Target className="w-6 h-6 text-[#00C16A]" />
-              <h3 className="text-xl font-semibold text-white">Projetos de Aplicação AEC</h3>
+              <h3 className="text-xl font-semibold text-brand-text">Projetos de Aplicação AEC</h3>
             </div>
             <p className="text-sm md:text-base text-[#C8D6E5] max-w-3xl">
               Aplicações da Arte da Entrevista Clínica em contextos acadêmicos, clínicos e comunitários — conectando ensino, pesquisa e cuidado humanizado.
@@ -1386,7 +1386,7 @@ const ArteEntrevistaClinica: React.FC = () => {
                 <div>
                   <div className="flex items-center space-x-3 mb-4">
                     <Heart className="w-6 h-6 text-cyan-400" />
-                    <h4 className="text-lg font-semibold text-white">Cidade Amiga dos Rins</h4>
+                    <h4 className="text-lg font-semibold text-brand-text">Cidade Amiga dos Rins</h4>
                   </div>
                   <p className="text-sm text-[#9FB3C6] mb-4">
                     Programa pioneiro de saúde comunitária que integra tecnologia avançada e cuidado humanizado para identificar fatores de risco e implementar a metodologia AEC em nefrologia.
@@ -1399,7 +1399,7 @@ const ArteEntrevistaClinica: React.FC = () => {
                 </div>
                 <Link
                   to="/app/pesquisa/profissional/cidade-amiga-dos-rins"
-                  className="mt-6 inline-flex justify-center items-center bg-gradient-to-r from-[#00C16A] to-[#1a365d] text-white px-4 py-2 rounded-lg font-semibold hover:shadow-lg transition-all"
+                  className="mt-6 inline-flex justify-center items-center bg-gradient-to-r from-[#00C16A] to-[#1a365d] text-brand-text px-4 py-2 rounded-lg font-semibold hover:shadow-lg transition-all"
                 >
                   Explorar Projeto
                 </Link>
@@ -1418,7 +1418,7 @@ const ArteEntrevistaClinica: React.FC = () => {
                         filter: 'brightness(1.1) contrast(1.1) drop-shadow(0 0 6px rgba(0, 193, 106, 0.6))'
                       }} />
                     </div>
-                    <h4 className="text-lg font-semibold text-white">MedCannLab</h4>
+                    <h4 className="text-lg font-semibold text-brand-text">MedCannLab</h4>
                   </div>
                   <p className="text-sm text-[#9FB3C6] mb-4">
                     Integração Cannabis &amp; Nefrologia – avaliação contínua de biomarcadores com metodologia AEC, combinando dados clínicos, IA e dispositivos médicos conectados.
@@ -1431,7 +1431,7 @@ const ArteEntrevistaClinica: React.FC = () => {
                 </div>
                 <Link
                   to="/app/pesquisa/profissional/cidade-amiga-dos-rins"
-                  className="mt-6 inline-flex justify-center items-center bg-gradient-to-r from-[#00C16A] to-[#1a365d] text-white px-4 py-2 rounded-lg font-semibold hover:shadow-lg transition-all"
+                  className="mt-6 inline-flex justify-center items-center bg-gradient-to-r from-[#00C16A] to-[#1a365d] text-brand-text px-4 py-2 rounded-lg font-semibold hover:shadow-lg transition-all"
                 >
                   Explorar Projeto
                 </Link>
@@ -1442,7 +1442,7 @@ const ArteEntrevistaClinica: React.FC = () => {
                 <div>
                   <div className="flex items-center space-x-3 mb-4">
                     <Target className="w-6 h-6 text-purple-400" />
-                    <h4 className="text-lg font-semibold text-white">Jardins de Cura</h4>
+                    <h4 className="text-lg font-semibold text-brand-text">Jardins de Cura</h4>
                   </div>
                   <p className="text-sm text-[#9FB3C6] mb-4">
                     Saúde Global &amp; Agência Crítica – implementação da AEC em comunidades vulneráveis, com formação de equipes locais e indicadores de impacto em saúde populacional.
@@ -1455,7 +1455,7 @@ const ArteEntrevistaClinica: React.FC = () => {
                 </div>
                 <Link
                   to="/app/pesquisa/profissional/jardins-de-cura"
-                  className="mt-6 inline-flex justify-center items-center bg-gradient-to-r from-purple-500 to-rose-500 text-white px-4 py-2 rounded-lg font-semibold hover:shadow-lg transition-all"
+                  className="mt-6 inline-flex justify-center items-center bg-gradient-to-r from-purple-500 to-rose-500 text-brand-text px-4 py-2 rounded-lg font-semibold hover:shadow-lg transition-all"
                 >
                   Explorar Projeto
                 </Link>
@@ -1468,20 +1468,20 @@ const ArteEntrevistaClinica: React.FC = () => {
       {/* Modal de Perfil do Dr. Ricardo Valença */}
       {showProfileModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-slate-800 rounded-xl p-8 max-w-2xl w-full max-h-[90vh] overflow-y-auto border border-slate-700">
+          <div className="bg-brand-surface rounded-xl p-8 max-w-2xl w-full max-h-[90vh] overflow-y-auto border border-brand-border">
             <div className="flex items-start justify-between mb-6">
               <div className="flex items-center space-x-4">
                 <div className="w-20 h-20 bg-gradient-to-r from-[#00c16a] to-[#00a85a] rounded-full flex items-center justify-center">
-                  <User className="w-10 h-10 text-white" />
+                  <User className="w-10 h-10 text-brand-text" />
                 </div>
                 <div>
-                  <h2 className="text-2xl font-bold text-white mb-1">Dr. Ricardo Valença</h2>
+                  <h2 className="text-2xl font-bold text-brand-text mb-1">Dr. Ricardo Valença</h2>
                   <p className="text-blue-400 font-medium">Médico e Professor de Semiologia</p>
                 </div>
               </div>
               <button
                 onClick={() => setShowProfileModal(false)}
-                className="text-gray-400 hover:text-white transition-colors"
+                className="text-gray-400 hover:text-brand-text transition-colors"
               >
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -1499,11 +1499,11 @@ const ArteEntrevistaClinica: React.FC = () => {
                 <>
                   {/* Formação */}
                   <div>
-                    <h3 className="text-lg font-semibold text-white mb-3 flex items-center gap-2">
+                    <h3 className="text-lg font-semibold text-brand-text mb-3 flex items-center gap-2">
                       <Award className="w-5 h-5 text-blue-400" />
                       Formação e Credenciais
                     </h3>
-                    <div className="bg-slate-700 rounded-lg p-4 space-y-2 text-sm text-gray-300">
+                    <div className="bg-brand-surface-subtle rounded-lg p-4 space-y-2 text-sm text-gray-300">
                       {curriculumData?.formacao && curriculumData.formacao.length > 0 ? (
                         <div className="space-y-3">
                           {curriculumData.formacao.map((formacao, idx) => (
@@ -1514,7 +1514,7 @@ const ArteEntrevistaClinica: React.FC = () => {
                         </div>
                       ) : curriculumData?.content && curriculumData.content.length > 100 && !curriculumData.content.includes('Documento:') && isReadableText(curriculumData.content) ? (
                         <div className="space-y-2">
-                          <p className="text-xs text-slate-400 mb-2">Conteúdo extraído do currículo:</p>
+                          <p className="text-xs text-brand-text-muted mb-2">Conteúdo extraído do currículo:</p>
                           <p className="text-xs leading-relaxed text-gray-300 whitespace-pre-line">
                             {curriculumData.content.substring(0, 1000)}
                             {curriculumData.content.length > 1000 && '...'}
@@ -1542,7 +1542,7 @@ const ArteEntrevistaClinica: React.FC = () => {
                       )}
                       {curriculumData?.experiencia && curriculumData.experiencia.length > 0 && (
                         <div className="mt-4 pt-4 border-t border-slate-600">
-                          <p className="text-sm text-slate-400 mb-3 font-semibold">Experiência Profissional:</p>
+                          <p className="text-sm text-brand-text-muted mb-3 font-semibold">Experiência Profissional:</p>
                           <div className="space-y-3">
                             {curriculumData.experiencia.map((exp, idx) => (
                               <div key={idx} className="pb-2 border-b border-slate-600 last:border-b-0">
@@ -1559,14 +1559,14 @@ const ArteEntrevistaClinica: React.FC = () => {
 
               {/* Especialização */}
               <div>
-                <h3 className="text-lg font-semibold text-white mb-3 flex items-center gap-2">
+                <h3 className="text-lg font-semibold text-brand-text mb-3 flex items-center gap-2">
                   <BookOpen className="w-5 h-5 text-purple-400" />
                   Especialização
                 </h3>
-                <div className="bg-slate-700 rounded-lg p-4 space-y-3 text-sm text-gray-300">
+                <div className="bg-brand-surface-subtle rounded-lg p-4 space-y-3 text-sm text-gray-300">
                   {curriculumData?.areas && curriculumData.areas.length > 0 ? (
                     <div className="space-y-2">
-                      <p className="text-sm text-slate-400 mb-3 font-semibold">Áreas de Atuação:</p>
+                      <p className="text-sm text-brand-text-muted mb-3 font-semibold">Áreas de Atuação:</p>
                       <div className="flex flex-wrap gap-2">
                         {curriculumData.areas.map((area, idx) => (
                           <span key={idx} className="px-3 py-1 bg-blue-600/20 text-blue-300 rounded text-sm">
@@ -1577,7 +1577,7 @@ const ArteEntrevistaClinica: React.FC = () => {
                     </div>
                   ) : curriculumData?.keywords && curriculumData.keywords.length > 0 ? (
                     <div className="space-y-2">
-                      <p className="text-sm text-slate-400 mb-3 font-semibold">Palavras-chave:</p>
+                      <p className="text-sm text-brand-text-muted mb-3 font-semibold">Palavras-chave:</p>
                       <div className="flex flex-wrap gap-2">
                         {curriculumData.keywords.slice(0, 10).map((keyword, idx) => (
                           <span key={idx} className="px-3 py-1 bg-blue-600/20 text-blue-300 rounded text-sm">
@@ -1606,11 +1606,11 @@ const ArteEntrevistaClinica: React.FC = () => {
                 exp.toLowerCase().includes('metodologia')
               ) && (
                   <div>
-                    <h3 className="text-lg font-semibold text-white mb-3 flex items-center gap-2">
+                    <h3 className="text-lg font-semibold text-brand-text mb-3 flex items-center gap-2">
                       <Star className="w-5 h-5 text-yellow-400" />
                       Metodologia Arte da Entrevista Clínica (AEC)
                     </h3>
-                    <div className="bg-slate-700 rounded-lg p-4 space-y-2 text-sm text-gray-300">
+                    <div className="bg-brand-surface-subtle rounded-lg p-4 space-y-2 text-sm text-gray-300">
                       {curriculumData.experiencia
                         .filter(exp =>
                           exp.toLowerCase().includes('aec') ||
@@ -1627,14 +1627,14 @@ const ArteEntrevistaClinica: React.FC = () => {
 
               {/* Contribuições */}
               <div>
-                <h3 className="text-lg font-semibold text-white mb-3 flex items-center gap-2">
+                <h3 className="text-lg font-semibold text-brand-text mb-3 flex items-center gap-2">
                   <Target className="w-5 h-5 text-green-400" />
                   Contribuições e Realizações
                 </h3>
-                <div className="bg-slate-700 rounded-lg p-4 space-y-2 text-sm text-gray-300">
+                <div className="bg-brand-surface-subtle rounded-lg p-4 space-y-2 text-sm text-gray-300">
                   {curriculumData?.publicacoes && curriculumData.publicacoes.length > 0 ? (
                     <div className="space-y-3">
-                      <p className="text-sm text-slate-400 mb-3 font-semibold">Publicações Relevantes:</p>
+                      <p className="text-sm text-brand-text-muted mb-3 font-semibold">Publicações Relevantes:</p>
                       {curriculumData.publicacoes.map((pub, idx) => (
                         <div key={idx} className="pb-2 border-b border-slate-600 last:border-b-0">
                           <p className="text-sm leading-relaxed text-gray-300">{pub}</p>
@@ -1643,7 +1643,7 @@ const ArteEntrevistaClinica: React.FC = () => {
                     </div>
                   ) : curriculumData?.content && curriculumData.content.length > 100 && isReadableText(curriculumData.content) ? (
                     <div className="space-y-3">
-                      <p className="text-sm text-slate-400 mb-2">Conteúdo extraído do currículo:</p>
+                      <p className="text-sm text-brand-text-muted mb-2">Conteúdo extraído do currículo:</p>
                       <p className="text-sm leading-relaxed text-gray-300 whitespace-pre-line">
                         {curriculumData.content.substring(0, 1000)}
                         {curriculumData.content.length > 1000 && '...'}
@@ -1666,11 +1666,11 @@ const ArteEntrevistaClinica: React.FC = () => {
               {/* Área de Atuação - Removido dados mockados. Será preenchido apenas com dados reais do currículo Lattes */}
               {curriculumData?.areas && curriculumData.areas.length > 0 && (
                 <div>
-                  <h3 className="text-lg font-semibold text-white mb-3 flex items-center gap-2">
+                  <h3 className="text-lg font-semibold text-brand-text mb-3 flex items-center gap-2">
                     <MessageCircle className="w-5 h-5 text-indigo-400" />
                     Área de Atuação
                   </h3>
-                  <div className="bg-slate-700 rounded-lg p-4 space-y-2 text-sm text-gray-300">
+                  <div className="bg-brand-surface-subtle rounded-lg p-4 space-y-2 text-sm text-gray-300">
                     <div className="flex flex-wrap gap-2">
                       {curriculumData.areas.map((area, idx) => (
                         <span key={idx} className="px-3 py-1 bg-indigo-600/20 text-indigo-300 rounded text-sm">
@@ -1686,7 +1686,7 @@ const ArteEntrevistaClinica: React.FC = () => {
             <div className="mt-6 flex justify-end">
               <button
                 onClick={() => setShowProfileModal(false)}
-                className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold transition-colors"
+                className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-brand-text rounded-lg font-semibold transition-colors"
               >
                 Fechar
               </button>

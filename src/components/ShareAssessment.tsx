@@ -37,12 +37,12 @@ const ShareAssessment: React.FC<ShareAssessmentProps> = ({ assessmentId, patient
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div className="bg-slate-800 rounded-lg p-6 w-full max-w-md mx-4">
+      <div className="bg-brand-surface rounded-lg p-6 w-full max-w-md mx-4">
         <div className="flex justify-between items-center mb-6">
-          <h3 className="text-xl font-bold text-white">Compartilhar Avaliação</h3>
+          <h3 className="text-xl font-bold text-brand-text">Compartilhar Avaliação</h3>
           <button
             onClick={onClose}
-            className="text-slate-400 hover:text-white"
+            className="text-brand-text-muted hover:text-brand-text"
           >
             ✕
           </button>
@@ -51,7 +51,7 @@ const ShareAssessment: React.FC<ShareAssessmentProps> = ({ assessmentId, patient
         <div className="space-y-6">
           {/* Link de Compartilhamento */}
           <div>
-            <label className="block text-sm font-medium text-slate-300 mb-2">
+            <label className="block text-sm font-medium text-brand-text-secondary mb-2">
               Link de Compartilhamento
             </label>
             <div className="flex space-x-2">
@@ -59,11 +59,11 @@ const ShareAssessment: React.FC<ShareAssessmentProps> = ({ assessmentId, patient
                 type="text"
                 value={shareUrl}
                 readOnly
-                className="flex-1 bg-slate-700 text-white px-3 py-2 rounded-lg border border-slate-600"
+                className="flex-1 bg-brand-surface-subtle text-brand-text px-3 py-2 rounded-lg border border-slate-600"
               />
               <button
                 onClick={copyToClipboard}
-                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2"
+                className="bg-blue-600 hover:bg-blue-700 text-brand-text px-4 py-2 rounded-lg flex items-center space-x-2"
               >
                 {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
                 <span>{copied ? 'Copiado!' : 'Copiar'}</span>
@@ -73,7 +73,7 @@ const ShareAssessment: React.FC<ShareAssessmentProps> = ({ assessmentId, patient
 
           {/* Compartilhar por Email */}
           <div>
-            <label className="block text-sm font-medium text-slate-300 mb-2">
+            <label className="block text-sm font-medium text-brand-text-secondary mb-2">
               Enviar por Email
             </label>
             <div className="space-y-3">
@@ -82,12 +82,12 @@ const ShareAssessment: React.FC<ShareAssessmentProps> = ({ assessmentId, patient
                 placeholder="email@exemplo.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full bg-slate-700 text-white px-3 py-2 rounded-lg border border-slate-600"
+                className="w-full bg-brand-surface-subtle text-brand-text px-3 py-2 rounded-lg border border-slate-600"
               />
               <button
                 onClick={handleEmailShare}
                 disabled={!email}
-                className="w-full bg-green-600 hover:bg-green-700 disabled:bg-slate-600 text-white py-2 px-4 rounded-lg flex items-center justify-center space-x-2"
+                className="w-full bg-green-600 hover:bg-green-700 disabled:bg-slate-600 text-brand-text py-2 px-4 rounded-lg flex items-center justify-center space-x-2"
               >
                 <Mail className="w-4 h-4" />
                 <span>Enviar por Email</span>
@@ -99,7 +99,7 @@ const ShareAssessment: React.FC<ShareAssessmentProps> = ({ assessmentId, patient
           <div>
             <button
               onClick={handleWhatsAppShare}
-              className="w-full bg-green-500 hover:bg-green-600 text-white py-3 px-4 rounded-lg flex items-center justify-center space-x-2"
+              className="w-full bg-green-500 hover:bg-green-600 text-brand-text py-3 px-4 rounded-lg flex items-center justify-center space-x-2"
             >
               <MessageSquare className="w-5 h-5" />
               <span>Compartilhar no WhatsApp</span>
@@ -108,14 +108,14 @@ const ShareAssessment: React.FC<ShareAssessmentProps> = ({ assessmentId, patient
 
           {/* Mensagem Personalizada */}
           <div>
-            <label className="block text-sm font-medium text-slate-300 mb-2">
+            <label className="block text-sm font-medium text-brand-text-secondary mb-2">
               Mensagem Personalizada (Opcional)
             </label>
             <textarea
               placeholder="Adicione uma mensagem personalizada..."
               value={message}
               onChange={(e) => setMessage(e.target.value)}
-              className="w-full bg-slate-700 text-white px-3 py-2 rounded-lg border border-slate-600 h-20 resize-none"
+              className="w-full bg-brand-surface-subtle text-brand-text px-3 py-2 rounded-lg border border-slate-600 h-20 resize-none"
             />
           </div>
 
@@ -123,7 +123,7 @@ const ShareAssessment: React.FC<ShareAssessmentProps> = ({ assessmentId, patient
           <div className="flex space-x-3">
             <button
               onClick={onClose}
-              className="flex-1 bg-slate-600 hover:bg-slate-700 text-white py-2 px-4 rounded-lg"
+              className="flex-1 bg-slate-600 hover:bg-brand-surface-subtle text-brand-text py-2 px-4 rounded-lg"
             >
               Cancelar
             </button>
@@ -132,7 +132,7 @@ const ShareAssessment: React.FC<ShareAssessmentProps> = ({ assessmentId, patient
                 // Lógica para salvar compartilhamento
                 onClose()
               }}
-              className="flex-1 bg-primary-600 hover:bg-primary-700 text-white py-2 px-4 rounded-lg"
+              className="flex-1 bg-primary-600 hover:bg-primary-700 text-brand-text py-2 px-4 rounded-lg"
             >
               Compartilhar
             </button>

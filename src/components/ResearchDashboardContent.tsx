@@ -105,8 +105,8 @@ const ResearchDashboardContent: React.FC = () => {
             case 'Em Andamento': return 'text-blue-400'
             case 'Análise': return 'text-yellow-400'
             case 'Concluído': return 'text-green-400'
-            case 'Pendente': return 'text-slate-400'
-            default: return 'text-slate-400'
+            case 'Pendente': return 'text-brand-text-muted'
+            default: return 'text-brand-text-muted'
         }
     }
 
@@ -136,7 +136,7 @@ const ResearchDashboardContent: React.FC = () => {
                         </div>
                         <div>
                             <p className="text-[11px] uppercase tracking-[0.35em] text-[#00C16A] mb-2">MedCannLab</p>
-                            <h2 className="text-2xl md:text-3xl font-bold text-white">Integração Cannabis &amp; Nefrologia</h2>
+                            <h2 className="text-2xl md:text-3xl font-bold text-brand-text">Integração Cannabis &amp; Nefrologia</h2>
                             <p className="text-sm md:text-base text-[#C8D6E5] mt-3 max-w-3xl">
                                 Pesquisa pioneira conectando ensino, clínica e pesquisa para mapear benefícios terapêuticos da cannabis medicinal,
                                 avaliando impactos na função renal com apoio da metodologia AEC.
@@ -145,7 +145,7 @@ const ResearchDashboardContent: React.FC = () => {
                     </div>
                     <button
                         onClick={() => navigate('/app/pesquisa/profissional/cidade-amiga-dos-rins')}
-                        className="self-start lg:self-center bg-gradient-to-r from-[#00C16A] to-[#1a365d] text-white px-6 py-3 rounded-lg font-semibold shadow-lg hover:shadow-xl hover:scale-[1.02] transition-all"
+                        className="self-start lg:self-center bg-gradient-to-r from-[#00C16A] to-[#1a365d] text-brand-text px-6 py-3 rounded-lg font-semibold shadow-lg hover:shadow-xl hover:scale-[1.02] transition-all"
                     >
                         Explorar Projeto
                     </button>
@@ -172,7 +172,7 @@ const ResearchDashboardContent: React.FC = () => {
                         <div key={item.title} className="bg-[#0F243C]/70 border border-[#00C16A]/10 rounded-lg p-4 flex items-start space-x-3">
                             <CheckCircle className="w-4 h-4 text-[#00C16A] mt-1" />
                             <div>
-                                <h4 className="text-sm font-semibold text-white mb-1">{item.title}</h4>
+                                <h4 className="text-sm font-semibold text-brand-text mb-1">{item.title}</h4>
                                 <p className="text-xs text-[#9FB3C6] leading-relaxed">{item.description}</p>
                             </div>
                         </div>
@@ -185,8 +185,8 @@ const ResearchDashboardContent: React.FC = () => {
                 856 alunos / 3 estudos) que era hardcoded e enganoso (validado via PAT 10/05:
                 números reais 9-25/10/87/25/0/0). Mesma classe de risco regulatório resolvida em
                 V1.9.203 (ACDSS hide). Cursos têm config em /app/ensino/aluno/cursos (sidebar). */}
-            <div className="bg-slate-800 rounded-xl p-6 mb-8">
-                <h3 className="text-xl font-semibold text-white mb-6 flex items-center space-x-2">
+            <div className="bg-brand-surface rounded-xl p-6 mb-8">
+                <h3 className="text-xl font-semibold text-brand-text mb-6 flex items-center space-x-2">
                     <Link2 className="w-6 h-6 text-emerald-400" />
                     <span>Programa Territorial de Pesquisa</span>
                 </h3>
@@ -208,7 +208,7 @@ const ResearchDashboardContent: React.FC = () => {
                             <div className="text-[11px] font-semibold text-emerald-300 uppercase tracking-[0.2em] mb-2">
                                 Programa Territorial · Pesquisa Aplicada
                             </div>
-                            <h4 className="text-xl md:text-2xl font-bold text-white mb-2">
+                            <h4 className="text-xl md:text-2xl font-bold text-brand-text mb-2">
                                 Cidade Amiga dos Rins
                             </h4>
                             <p className="text-sm text-slate-200/85 leading-relaxed mb-3 max-w-3xl">
@@ -227,8 +227,8 @@ const ResearchDashboardContent: React.FC = () => {
                 {/* Linha discreta: Catálogo de Cursos (atalho UX, sem mock numbers) */}
                 <div className="mt-4 flex items-center justify-between gap-3 px-4 py-3 rounded-lg bg-slate-900/40 border border-slate-700/30">
                     <div className="flex items-center gap-3 min-w-0">
-                        <BookOpen className="w-4 h-4 text-slate-400 flex-shrink-0" />
-                        <span className="text-sm text-slate-300 truncate">
+                        <BookOpen className="w-4 h-4 text-brand-text-muted flex-shrink-0" />
+                        <span className="text-sm text-brand-text-secondary truncate">
                             Procura formação em AEC ou Cannabis Medicinal? Veja o catálogo de cursos.
                         </span>
                     </div>
@@ -243,53 +243,53 @@ const ResearchDashboardContent: React.FC = () => {
 
             {/* Recursos Acadêmicos e Mentoria - Novo Gatilho para o Profissional */}
             <div className="bg-[#0F172A]/40 backdrop-blur-md rounded-xl p-6 mb-8 border border-slate-700/50">
-                <h3 className="text-xl font-semibold text-white mb-6 flex items-center space-x-2">
+                <h3 className="text-xl font-semibold text-brand-text mb-6 flex items-center space-x-2">
                     <GraduationCap className="w-6 h-6 text-emerald-400" />
                     <span>Recursos Acadêmicos e Mentoria</span>
                 </h3>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <button 
                         onClick={() => navigate('/app/ensino/profissional/dashboard?section=chat-profissionais')}
-                        className="bg-[#1E293B]/60 p-4 rounded-xl border border-slate-700 hover:border-emerald-500/50 hover:bg-slate-700/50 transition-all text-left group"
+                        className="bg-[#1E293B]/60 p-4 rounded-xl border border-brand-border hover:border-emerald-500/50 hover:bg-slate-700/50 transition-all text-left group"
                     >
                         <div className="w-10 h-10 rounded-lg bg-emerald-500/10 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
                             <Users className="w-5 h-5 text-emerald-400" />
                         </div>
-                        <h4 className="text-white font-semibold text-sm mb-1">Mentoria LabPEC</h4>
-                        <p className="text-xs text-slate-400">Agende supervisões clínicas e sessões de debriefing.</p>
+                        <h4 className="text-brand-text font-semibold text-sm mb-1">Mentoria LabPEC</h4>
+                        <p className="text-xs text-brand-text-muted">Agende supervisões clínicas e sessões de debriefing.</p>
                     </button>
 
                     <button 
                         onClick={() => navigate('/app/ensino/profissional/dashboard?section=newsletter')}
-                        className="bg-[#1E293B]/60 p-4 rounded-xl border border-slate-700 hover:border-amber-500/50 hover:bg-slate-700/50 transition-all text-left group"
+                        className="bg-[#1E293B]/60 p-4 rounded-xl border border-brand-border hover:border-amber-500/50 hover:bg-slate-700/50 transition-all text-left group"
                     >
                         <div className="w-10 h-10 rounded-lg bg-amber-500/10 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
                             <Bell className="w-5 h-5 text-amber-400" />
                         </div>
-                        <h4 className="text-white font-semibold text-sm mb-1">Notícias & Eventos</h4>
-                        <p className="text-xs text-slate-400">Fique por dentro de seminários e atualizações científicas.</p>
+                        <h4 className="text-brand-text font-semibold text-sm mb-1">Notícias & Eventos</h4>
+                        <p className="text-xs text-brand-text-muted">Fique por dentro de seminários e atualizações científicas.</p>
                     </button>
 
                     <button 
                         onClick={() => navigate('/app/ensino/profissional/dashboard?section=avaliacao')}
-                        className="bg-[#1E293B]/60 p-4 rounded-xl border border-slate-700 hover:border-blue-500/50 hover:bg-slate-700/50 transition-all text-left group"
+                        className="bg-[#1E293B]/60 p-4 rounded-xl border border-brand-border hover:border-blue-500/50 hover:bg-slate-700/50 transition-all text-left group"
                     >
                         <div className="w-10 h-10 rounded-lg bg-blue-500/10 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
                             <CheckCircle className="w-5 h-5 text-blue-400" />
                         </div>
-                        <h4 className="text-white font-semibold text-sm mb-1">Avaliações Científicas</h4>
-                        <p className="text-xs text-slate-400">Acompanhe métricas de desempenho e certificações acadêmicas.</p>
+                        <h4 className="text-brand-text font-semibold text-sm mb-1">Avaliações Científicas</h4>
+                        <p className="text-xs text-brand-text-muted">Acompanhe métricas de desempenho e certificações acadêmicas.</p>
                     </button>
                 </div>
             </div>
 
             {/* Research Studies */}
-            <div className="bg-slate-800 rounded-xl p-6">
+            <div className="bg-brand-surface rounded-xl p-6">
                 <div className="flex items-center justify-between mb-6">
-                    <h3 className="text-xl font-semibold text-white">🔬 Meus Estudos</h3>
+                    <h3 className="text-xl font-semibold text-brand-text">🔬 Meus Estudos</h3>
                     <button
                         onClick={() => setShowAllStudies(!showAllStudies)}
-                        className="bg-gradient-to-r from-[#00c16a] to-[#00a85a] text-white px-4 py-2 rounded-lg font-semibold hover:from-pink-600 hover:to-purple-600 transition-colors"
+                        className="bg-gradient-to-r from-[#00c16a] to-[#00a85a] text-brand-text px-4 py-2 rounded-lg font-semibold hover:from-pink-600 hover:to-purple-600 transition-colors"
                     >
                         {showAllStudies ? 'Ver Ativos' : `Ver Todos (${researchData.length})`}
                     </button>
@@ -299,18 +299,18 @@ const ResearchDashboardContent: React.FC = () => {
                     {isLoading ? (
                         <div className="text-center py-12">
                             <div className="animate-spin w-12 h-12 border-4 border-emerald-500 border-t-transparent rounded-full mx-auto mb-4"></div>
-                            <p className="text-slate-400">Carregando estudos...</p>
+                            <p className="text-brand-text-muted">Carregando estudos...</p>
                         </div>
                     ) : displayedStudies.length === 0 ? (
                         <div className="text-center py-12 bg-slate-700/50 rounded-xl border border-slate-600">
-                            <FlaskConical className="w-16 h-16 text-slate-400 mx-auto mb-4" />
-                            <h4 className="text-lg text-slate-300 mb-2">Nenhum estudo cadastrado</h4>
+                            <FlaskConical className="w-16 h-16 text-brand-text-muted mx-auto mb-4" />
+                            <h4 className="text-lg text-brand-text-secondary mb-2">Nenhum estudo cadastrado</h4>
                             <p className="text-sm text-slate-500 mb-6 max-w-md mx-auto">
                                 Comece a criar estudos de pesquisa para acompanhar o progresso dos seus projetos clínicos.
                             </p>
                             <button
                                 onClick={() => navigate('/app/pesquisa/profissional/cidade-amiga-dos-rins')}
-                                className="bg-gradient-to-r from-[#00c16a] to-[#00a85a] text-white px-6 py-3 rounded-lg font-semibold hover:shadow-lg transition-all inline-flex items-center gap-2"
+                                className="bg-gradient-to-r from-[#00c16a] to-[#00a85a] text-brand-text px-6 py-3 rounded-lg font-semibold hover:shadow-lg transition-all inline-flex items-center gap-2"
                             >
                                 <Plus className="w-5 h-5" />
                                 Explorar Projeto Cidade Amiga dos Rins
@@ -318,16 +318,16 @@ const ResearchDashboardContent: React.FC = () => {
                         </div>
                     ) : (
                         displayedStudies.map((study) => (
-                            <div key={study.id} className="bg-slate-700 rounded-lg p-4 md:p-6 hover:bg-slate-650 transition-colors overflow-hidden w-full max-w-full">
+                            <div key={study.id} className="bg-brand-surface-subtle rounded-lg p-4 md:p-6 hover:bg-slate-650 transition-colors overflow-hidden w-full max-w-full">
                                 <div className="flex items-start justify-between mb-4 gap-2 flex-wrap">
                                     <div className="flex-1 min-w-0">
                                         <div className="flex items-center space-x-3 mb-2 flex-wrap gap-2">
-                                            <h4 className="text-lg font-semibold text-white break-words flex-1 min-w-0">{study.title}</h4>
+                                            <h4 className="text-lg font-semibold text-brand-text break-words flex-1 min-w-0">{study.title}</h4>
                                             <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(study.status)}`}>
                                                 {study.status}
                                             </span>
                                         </div>
-                                        <p className="text-sm text-slate-400 mb-3 break-words">{study.description}</p>
+                                        <p className="text-sm text-brand-text-muted mb-3 break-words">{study.description}</p>
 
                                         <div className="flex items-center flex-wrap gap-x-4 gap-y-2 text-sm text-slate-500 mb-4">
                                             <span className="whitespace-nowrap">Participantes: {study.participants}</span>
@@ -350,14 +350,14 @@ const ResearchDashboardContent: React.FC = () => {
                                         </button>
                                         <button
                                             disabled
-                                            className="p-2 bg-slate-700 rounded-lg opacity-40 cursor-not-allowed"
+                                            className="p-2 bg-brand-surface-subtle rounded-lg opacity-40 cursor-not-allowed"
                                             title="Em breve — Exportação de dados de pesquisa (pós-PMF)"
                                         >
                                             <Download className="w-4 h-4" />
                                         </button>
                                         <button
                                             disabled
-                                            className="p-2 bg-slate-700 rounded-lg opacity-40 cursor-not-allowed"
+                                            className="p-2 bg-brand-surface-subtle rounded-lg opacity-40 cursor-not-allowed"
                                             title="Em breve — Compartilhamento com colaboradores (pós-PMF)"
                                         >
                                             <Share2 className="w-4 h-4" />
@@ -368,8 +368,8 @@ const ResearchDashboardContent: React.FC = () => {
                                 {/* Progress Bar */}
                                 <div className="mb-2">
                                     <div className="flex items-center justify-between text-sm mb-1">
-                                        <span className="text-slate-400">Progresso</span>
-                                        <span className="text-white font-medium">{study.progress}%</span>
+                                        <span className="text-brand-text-muted">Progresso</span>
+                                        <span className="text-brand-text font-medium">{study.progress}%</span>
                                     </div>
                                     <div className="w-full bg-slate-600 rounded-full h-2">
                                         <div
@@ -384,7 +384,7 @@ const ResearchDashboardContent: React.FC = () => {
                 </div>
                 {!showAllStudies && researchData.filter(study => study.status === 'Concluído').length > 0 && (
                     <div className="mt-6 text-center">
-                        <p className="text-sm text-slate-400 mb-2">
+                        <p className="text-sm text-brand-text-muted mb-2">
                             {researchData.filter(study => study.status === 'Concluído').length} estudos concluídos não exibidos
                         </p>
                         <button

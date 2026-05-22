@@ -269,12 +269,12 @@ const NotificationCenter: React.FC<NotificationCenterProps> = ({ className = '' 
       {/* Botão do sino */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="relative p-1.5 sm:p-2 rounded-lg hover:bg-slate-800 transition-colors"
+        className="relative p-1.5 sm:p-2 rounded-lg hover:bg-brand-surface transition-colors"
         aria-label="Notificações"
       >
-        <Bell className="w-5 h-5 sm:w-6 sm:h-6 text-slate-300" />
+        <Bell className="w-5 h-5 sm:w-6 sm:h-6 text-brand-text-secondary" />
         {unreadCount > 0 && (
-          <span className="absolute -top-0.5 -right-0.5 sm:top-0 sm:right-0 w-4 h-4 sm:w-5 sm:h-5 bg-red-500 text-white text-[9px] sm:text-xs font-bold rounded-full flex items-center justify-center">
+          <span className="absolute -top-0.5 -right-0.5 sm:top-0 sm:right-0 w-4 h-4 sm:w-5 sm:h-5 bg-red-500 text-brand-text text-[9px] sm:text-xs font-bold rounded-full flex items-center justify-center">
             {unreadCount > 9 ? '9+' : unreadCount}
           </span>
         )}
@@ -290,14 +290,14 @@ const NotificationCenter: React.FC<NotificationCenterProps> = ({ className = '' 
           />
 
           {/* Painel */}
-          <div className="fixed md:absolute right-2 md:right-0 top-14 md:top-12 w-[calc(100vw-1rem)] md:w-96 max-h-[70vh] md:max-h-[600px] bg-slate-900 border border-slate-700 rounded-xl shadow-2xl z-50 flex flex-col">
+          <div className="fixed md:absolute right-2 md:right-0 top-14 md:top-12 w-[calc(100vw-1rem)] md:w-96 max-h-[70vh] md:max-h-[600px] bg-brand-bg border border-brand-border rounded-xl shadow-2xl z-50 flex flex-col">
             {/* Header */}
-            <div className="flex items-center justify-between p-4 border-b border-slate-700">
+            <div className="flex items-center justify-between p-4 border-b border-brand-border">
               <div className="flex items-center gap-2">
-                <Bell className="w-5 h-5 text-slate-300" />
-                <h3 className="text-lg font-semibold text-white">Notificações</h3>
+                <Bell className="w-5 h-5 text-brand-text-secondary" />
+                <h3 className="text-lg font-semibold text-brand-text">Notificações</h3>
                 {unreadCount > 0 && (
-                  <span className="px-2 py-0.5 bg-red-500 text-white text-xs font-bold rounded-full">
+                  <span className="px-2 py-0.5 bg-red-500 text-brand-text text-xs font-bold rounded-full">
                     {unreadCount}
                   </span>
                 )}
@@ -306,17 +306,17 @@ const NotificationCenter: React.FC<NotificationCenterProps> = ({ className = '' 
                 {unreadCount > 0 && (
                   <button
                     onClick={handleMarkAllAsRead}
-                    className="p-1.5 rounded hover:bg-slate-800 transition-colors"
+                    className="p-1.5 rounded hover:bg-brand-surface transition-colors"
                     title="Marcar todas como lidas"
                   >
-                    <CheckCheck className="w-4 h-4 text-slate-400" />
+                    <CheckCheck className="w-4 h-4 text-brand-text-muted" />
                   </button>
                 )}
                 <button
                   onClick={() => setIsOpen(false)}
-                  className="p-1.5 rounded hover:bg-slate-800 transition-colors"
+                  className="p-1.5 rounded hover:bg-brand-surface transition-colors"
                 >
-                  <X className="w-4 h-4 text-slate-400" />
+                  <X className="w-4 h-4 text-brand-text-muted" />
                 </button>
               </div>
             </div>
@@ -324,11 +324,11 @@ const NotificationCenter: React.FC<NotificationCenterProps> = ({ className = '' 
             {/* Lista de notificações */}
             <div className="flex-1 overflow-y-auto">
               {loading ? (
-                <div className="p-8 text-center text-slate-400">
+                <div className="p-8 text-center text-brand-text-muted">
                   Carregando notificações...
                 </div>
               ) : notifications.length === 0 ? (
-                <div className="p-8 text-center text-slate-400">
+                <div className="p-8 text-center text-brand-text-muted">
                   <Bell className="w-12 h-12 mx-auto mb-4 opacity-50" />
                   <p>Nenhuma notificação</p>
                 </div>
@@ -355,10 +355,10 @@ const NotificationCenter: React.FC<NotificationCenterProps> = ({ className = '' 
                           <div className="flex-1 min-w-0">
                             <div className="flex items-start justify-between gap-2">
                               <div className="flex-1">
-                                <h4 className={`text-sm font-semibold ${!notification.is_read ? 'text-white' : 'text-slate-300'}`}>
+                                <h4 className={`text-sm font-semibold ${!notification.is_read ? 'text-brand-text' : 'text-brand-text-secondary'}`}>
                                   {notification.title}
                                 </h4>
-                                <p className="text-xs text-slate-400 mt-1 line-clamp-2">
+                                <p className="text-xs text-brand-text-muted mt-1 line-clamp-2">
                                   {notification.message}
                                 </p>
                                 <p className="text-xs text-slate-500 mt-2">
@@ -380,17 +380,17 @@ const NotificationCenter: React.FC<NotificationCenterProps> = ({ className = '' 
                           <div className="flex flex-col gap-1">
                             <button
                               onClick={(e) => { e.stopPropagation(); handleMarkAsRead(notification.id) }}
-                              className="p-1 rounded hover:bg-slate-700 transition-colors"
+                              className="p-1 rounded hover:bg-brand-surface-subtle transition-colors"
                               title="Marcar como lida"
                             >
-                              <Check className="w-4 h-4 text-slate-400" />
+                              <Check className="w-4 h-4 text-brand-text-muted" />
                             </button>
                             <button
                               onClick={(e) => { e.stopPropagation(); handleDelete(notification.id) }}
-                              className="p-1 rounded hover:bg-slate-700 transition-colors"
+                              className="p-1 rounded hover:bg-brand-surface-subtle transition-colors"
                               title="Deletar"
                             >
-                              <X className="w-4 h-4 text-slate-400" />
+                              <X className="w-4 h-4 text-brand-text-muted" />
                             </button>
                           </div>
                         </div>

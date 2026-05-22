@@ -59,7 +59,7 @@ const ClinicaDashboard: React.FC = () => {
       case 'high': return 'text-red-400 bg-red-500/10'
       case 'medium': return 'text-yellow-400 bg-yellow-500/10'
       case 'low': return 'text-green-400 bg-green-500/10'
-      default: return 'text-slate-400 bg-slate-500/10'
+      default: return 'text-brand-text-muted bg-slate-500/10'
     }
   }
 
@@ -67,8 +67,8 @@ const ClinicaDashboard: React.FC = () => {
     switch (status) {
       case 'Em Tratamento': return 'text-blue-400'
       case 'Melhorando': return 'text-green-400'
-      case 'Estável': return 'text-slate-400'
-      default: return 'text-slate-400'
+      case 'Estável': return 'text-brand-text-muted'
+      default: return 'text-brand-text-muted'
     }
   }
 
@@ -94,29 +94,29 @@ const ClinicaDashboard: React.FC = () => {
   }, [navigate, openNoaChat, closeChat, isNoaOpen, setDashboardTriggers])
 
   return (
-    <div className="min-h-screen bg-slate-900 text-white">
+    <div className="min-h-screen bg-brand-bg text-brand-text">
       {/* Header */}
-      <div className="bg-slate-800 border-b border-slate-700 p-6">
+      <div className="bg-brand-surface border-b border-brand-border p-6">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
-            <button className="flex items-center space-x-2 text-slate-300 hover:text-white transition-colors">
+            <button className="flex items-center space-x-2 text-brand-text-secondary hover:text-brand-text transition-colors">
               <ArrowLeft className="w-5 h-5" />
               <span>Voltar</span>
             </button>
             <div>
-              <h1 className="text-2xl font-bold text-white">🏥 Dashboard Clínica</h1>
-              <p className="text-slate-400">Área Clínica - Gestão de Pacientes e Avaliações</p>
+              <h1 className="text-2xl font-bold text-brand-text">🏥 Dashboard Clínica</h1>
+              <p className="text-brand-text-muted">Área Clínica - Gestão de Pacientes e Avaliações</p>
             </div>
           </div>
           
           {/* Professional Profile */}
-          <div className="flex items-center space-x-3 bg-slate-700 p-3 rounded-lg">
+          <div className="flex items-center space-x-3 bg-brand-surface-subtle p-3 rounded-lg">
             <div className="w-10 h-10 bg-gradient-to-r from-[#00c16a] to-[#00a85a] rounded-full flex items-center justify-center">
-              <Stethoscope className="w-5 h-5 text-white" />
+              <Stethoscope className="w-5 h-5 text-brand-text" />
             </div>
             <div>
-              <p className="font-semibold text-white">👨‍⚕️ Profissional</p>
-              <p className="text-sm text-slate-400">Médico</p>
+              <p className="font-semibold text-brand-text">👨‍⚕️ Profissional</p>
+              <p className="text-sm text-brand-text-muted">Médico</p>
             </div>
           </div>
         </div>
@@ -124,26 +124,26 @@ const ClinicaDashboard: React.FC = () => {
 
       <div className="flex">
         {/* Sidebar */}
-        <div className="w-64 bg-slate-800 border-r border-slate-700 min-h-screen">
+        <div className="w-64 bg-brand-surface border-r border-brand-border min-h-screen">
           <div className="p-6">
             <nav className="space-y-2">
-              <a href="#" className="flex items-center space-x-3 p-3 rounded-lg bg-slate-700 text-white">
+              <a href="#" className="flex items-center space-x-3 p-3 rounded-lg bg-brand-surface-subtle text-brand-text">
                 <BarChart3 className="w-5 h-5" />
                 <span>🏥 Dashboard Clínica</span>
               </a>
-              <a href="#" className="flex items-center space-x-3 p-3 rounded-lg text-slate-300 hover:bg-slate-700 hover:text-white transition-colors">
+              <a href="#" className="flex items-center space-x-3 p-3 rounded-lg text-brand-text-secondary hover:bg-brand-surface-subtle hover:text-brand-text transition-colors">
                 <Users className="w-5 h-5" />
                 <span>👥 Meus Pacientes</span>
               </a>
-              <a href="#" className="flex items-center space-x-3 p-3 rounded-lg text-slate-300 hover:bg-slate-700 hover:text-white transition-colors">
+              <a href="#" className="flex items-center space-x-3 p-3 rounded-lg text-brand-text-secondary hover:bg-brand-surface-subtle hover:text-brand-text transition-colors">
                 <Heart className="w-5 h-5" />
                 <span>📊 Avaliações</span>
               </a>
-              <a href="#" className="flex items-center space-x-3 p-3 rounded-lg text-slate-300 hover:bg-slate-700 hover:text-white transition-colors">
+              <a href="#" className="flex items-center space-x-3 p-3 rounded-lg text-brand-text-secondary hover:bg-brand-surface-subtle hover:text-brand-text transition-colors">
                 <MessageCircle className="w-5 h-5" />
                 <span>💬 Fórum Cann Matrix</span>
               </a>
-              <a href="#" className="flex items-center space-x-3 p-3 rounded-lg text-slate-300 hover:bg-slate-700 hover:text-white transition-colors">
+              <a href="#" className="flex items-center space-x-3 p-3 rounded-lg text-brand-text-secondary hover:bg-brand-surface-subtle hover:text-brand-text transition-colors">
                 <FileText className="w-5 h-5" />
                 <span>📈 Relatórios</span>
               </a>
@@ -156,78 +156,78 @@ const ClinicaDashboard: React.FC = () => {
           <div className="max-w-6xl mx-auto">
             {/* Stats Cards */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-              <div className="bg-slate-800 rounded-xl p-6">
+              <div className="bg-brand-surface rounded-xl p-6">
                 <div className="flex items-center justify-between mb-4">
                   <div className="p-3 bg-blue-500/10 rounded-lg">
                     <Users className="w-6 h-6 text-blue-400" />
                   </div>
                   <TrendingUp className="w-5 h-5 text-green-400" />
                 </div>
-                <h3 className="text-2xl font-bold text-white mb-1">24</h3>
-                <p className="text-sm text-slate-400">Pacientes Ativos</p>
+                <h3 className="text-2xl font-bold text-brand-text mb-1">24</h3>
+                <p className="text-sm text-brand-text-muted">Pacientes Ativos</p>
               </div>
 
-              <div className="bg-slate-800 rounded-xl p-6">
+              <div className="bg-brand-surface rounded-xl p-6">
                 <div className="flex items-center justify-between mb-4">
                   <div className="p-3 bg-green-500/10 rounded-lg">
                     <CheckCircle className="w-6 h-6 text-green-400" />
                   </div>
                   <TrendingUp className="w-5 h-5 text-green-400" />
                 </div>
-                <h3 className="text-2xl font-bold text-white mb-1">18</h3>
-                <p className="text-sm text-slate-400">Avaliações Hoje</p>
+                <h3 className="text-2xl font-bold text-brand-text mb-1">18</h3>
+                <p className="text-sm text-brand-text-muted">Avaliações Hoje</p>
               </div>
 
-              <div className="bg-slate-800 rounded-xl p-6">
+              <div className="bg-brand-surface rounded-xl p-6">
                 <div className="flex items-center justify-between mb-4">
                   <div className="p-3 bg-yellow-500/10 rounded-lg">
                     <Clock className="w-6 h-6 text-yellow-400" />
                   </div>
                   <TrendingUp className="w-5 h-5 text-green-400" />
                 </div>
-                <h3 className="text-2xl font-bold text-white mb-1">12</h3>
-                <p className="text-sm text-slate-400">Consultas Agendadas</p>
+                <h3 className="text-2xl font-bold text-brand-text mb-1">12</h3>
+                <p className="text-sm text-brand-text-muted">Consultas Agendadas</p>
               </div>
 
-              <div className="bg-slate-800 rounded-xl p-6">
+              <div className="bg-brand-surface rounded-xl p-6">
                 <div className="flex items-center justify-between mb-4">
                   <div className="p-3 bg-purple-500/10 rounded-lg">
                     <Star className="w-6 h-6 text-purple-400" />
                   </div>
                   <TrendingUp className="w-5 h-5 text-green-400" />
                 </div>
-                <h3 className="text-2xl font-bold text-white mb-1">4.8</h3>
-                <p className="text-sm text-slate-400">Satisfação Média</p>
+                <h3 className="text-2xl font-bold text-brand-text mb-1">4.8</h3>
+                <p className="text-sm text-brand-text-muted">Satisfação Média</p>
               </div>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
               {/* Patients List */}
               <div className="lg:col-span-2">
-                <div className="bg-slate-800 rounded-xl p-6">
+                <div className="bg-brand-surface rounded-xl p-6">
                   <div className="flex items-center justify-between mb-6">
-                    <h3 className="text-xl font-semibold text-white">👥 Meus Pacientes</h3>
-                    <button className="bg-gradient-to-r from-[#00c16a] to-[#00a85a] text-white px-4 py-2 rounded-lg font-semibold hover:from-blue-600 hover:to-cyan-600 transition-colors">
+                    <h3 className="text-xl font-semibold text-brand-text">👥 Meus Pacientes</h3>
+                    <button className="bg-gradient-to-r from-[#00c16a] to-[#00a85a] text-brand-text px-4 py-2 rounded-lg font-semibold hover:from-blue-600 hover:to-cyan-600 transition-colors">
                       Ver Todos
                     </button>
                   </div>
 
                   <div className="space-y-4">
                     {patients.map((patient) => (
-                      <div key={patient.id} className="flex items-center justify-between p-4 bg-slate-700 rounded-lg hover:bg-slate-650 transition-colors">
+                      <div key={patient.id} className="flex items-center justify-between p-4 bg-brand-surface-subtle rounded-lg hover:bg-slate-650 transition-colors">
                         <div className="flex items-center space-x-4">
                           <div className="w-12 h-12 bg-gradient-to-r from-[#00c16a] to-[#00a85a] rounded-full flex items-center justify-center">
-                            <span className="text-white font-bold text-sm">{patient.avatar}</span>
+                            <span className="text-brand-text font-bold text-sm">{patient.avatar}</span>
                           </div>
                           
                           <div className="flex-1">
                             <div className="flex items-center space-x-3 mb-1">
-                              <h4 className="font-semibold text-white">{patient.name}</h4>
+                              <h4 className="font-semibold text-brand-text">{patient.name}</h4>
                               <span className={`px-2 py-1 rounded-full text-xs font-medium ${getPriorityColor(patient.priority)}`}>
                                 {patient.priority === 'high' ? 'Alta' : patient.priority === 'medium' ? 'Média' : 'Baixa'}
                               </span>
                             </div>
-                            <p className="text-sm text-slate-400 mb-1">{patient.condition}</p>
+                            <p className="text-sm text-brand-text-muted mb-1">{patient.condition}</p>
                             <div className="flex items-center space-x-4 text-xs text-slate-500">
                               <span>Última visita: {patient.lastVisit}</span>
                               <span>Próxima: {patient.nextAppointment}</span>
@@ -240,7 +240,7 @@ const ClinicaDashboard: React.FC = () => {
                             <div className={`text-sm font-medium ${getStatusColor(patient.status)}`}>
                               {patient.status}
                             </div>
-                            <div className="text-xs text-slate-400">Score: {patient.score}/100</div>
+                            <div className="text-xs text-brand-text-muted">Score: {patient.score}/100</div>
                           </div>
                           
                           <div className="flex items-center space-x-1">
@@ -261,18 +261,18 @@ const ClinicaDashboard: React.FC = () => {
                 </div>
 
                 {/* Recent Assessments */}
-                <div className="bg-slate-800 rounded-xl p-6 mt-6">
-                  <h3 className="text-xl font-semibold text-white mb-6">📊 Avaliações Recentes</h3>
+                <div className="bg-brand-surface rounded-xl p-6 mt-6">
+                  <h3 className="text-xl font-semibold text-brand-text mb-6">📊 Avaliações Recentes</h3>
                   
                   <div className="space-y-4">
-                    <div className="flex items-center justify-between p-4 bg-slate-700 rounded-lg">
+                    <div className="flex items-center justify-between p-4 bg-brand-surface-subtle rounded-lg">
                       <div className="flex items-center space-x-3">
                         <div className="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center">
-                          <CheckCircle className="w-5 h-5 text-white" />
+                          <CheckCircle className="w-5 h-5 text-brand-text" />
                         </div>
                         <div>
-                          <p className="font-semibold text-white">Avaliação Clínica - Dr. Ricardo Valença</p>
-                          <p className="text-sm text-slate-400">Concluída • Score: 85/100</p>
+                          <p className="font-semibold text-brand-text">Avaliação Clínica - Dr. Ricardo Valença</p>
+                          <p className="text-sm text-brand-text-muted">Concluída • Score: 85/100</p>
                         </div>
                       </div>
                       <div className="flex items-center space-x-2">
@@ -290,10 +290,10 @@ const ClinicaDashboard: React.FC = () => {
 
               {/* Chat Section */}
               <div className="lg:col-span-1">
-                <div className="bg-slate-800 rounded-xl p-6 h-full">
+                <div className="bg-brand-surface rounded-xl p-6 h-full">
                   <div className="text-center mb-6">
-                    <h3 className="text-xl font-semibold text-white mb-2">Nôa Esperança</h3>
-                    <p className="text-sm text-slate-400">IA Residente • Suporte Clínico</p>
+                    <h3 className="text-xl font-semibold text-brand-text mb-2">Nôa Esperança</h3>
+                    <p className="text-sm text-brand-text-muted">IA Residente • Suporte Clínico</p>
                   </div>
 
                   {/* Avatar */}
@@ -307,12 +307,12 @@ const ClinicaDashboard: React.FC = () => {
                   </div>
 
                   {/* Welcome Message */}
-                  <div className="bg-slate-700 rounded-lg p-4 mb-4">
-                    <p className="text-sm text-slate-300 mb-2">
+                  <div className="bg-brand-surface-subtle rounded-lg p-4 mb-4">
+                    <p className="text-sm text-brand-text-secondary mb-2">
                       🩺 Olá, Dr(a)! Sou a Nôa Esperança, sua assistente clínica especializada.
                     </p>
-                    <p className="text-xs text-slate-400 mb-2">Posso ajudar com:</p>
-                    <ul className="text-xs text-slate-400 space-y-1">
+                    <p className="text-xs text-brand-text-muted mb-2">Posso ajudar com:</p>
+                    <ul className="text-xs text-brand-text-muted space-y-1">
                       <li>• Análise de casos clínicos</li>
                       <li>• Suporte na Arte da Entrevista</li>
                       <li>• Orientações sobre Cannabis Medicinal</li>
@@ -321,10 +321,10 @@ const ClinicaDashboard: React.FC = () => {
 
                   {/* Quick Actions */}
                   <div className="space-y-3 mb-6">
-                    <button className="w-full bg-gradient-to-r from-[#00c16a] to-[#00a85a] text-white py-3 px-4 rounded-lg font-semibold hover:from-blue-600 hover:to-cyan-600 transition-colors">
+                    <button className="w-full bg-gradient-to-r from-[#00c16a] to-[#00a85a] text-brand-text py-3 px-4 rounded-lg font-semibold hover:from-blue-600 hover:to-cyan-600 transition-colors">
                       Analisar Caso Clínico
                     </button>
-                    <button className="w-full bg-gradient-to-r from-[#00c16a] to-[#00a85a] text-white py-3 px-4 rounded-lg font-semibold hover:from-purple-600 hover:to-pink-600 transition-colors">
+                    <button className="w-full bg-gradient-to-r from-[#00c16a] to-[#00a85a] text-brand-text py-3 px-4 rounded-lg font-semibold hover:from-purple-600 hover:to-pink-600 transition-colors">
                       Arte da Entrevista Clínica
                     </button>
                   </div>
@@ -338,7 +338,7 @@ const ClinicaDashboard: React.FC = () => {
                         onChange={(e) => setInputMessage(e.target.value)}
                         onKeyPress={handleKeyPress}
                         placeholder="Digite sua mensagem..."
-                        className="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:border-blue-500"
+                        className="w-full px-4 py-3 bg-brand-surface-subtle border border-slate-600 rounded-lg text-brand-text placeholder-slate-400 focus:outline-none focus:border-blue-500"
                       />
                     </div>
                     
@@ -356,22 +356,22 @@ const ClinicaDashboard: React.FC = () => {
       {/* Chat Modal */}
       {isOpen && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-slate-800 rounded-xl w-96 h-[600px] flex flex-col">
+          <div className="bg-brand-surface rounded-xl w-96 h-[600px] flex flex-col">
             {/* Chat Header */}
-            <div className="p-4 border-b border-slate-700">
+            <div className="p-4 border-b border-brand-border">
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-3">
                   <div className="w-8 h-8 bg-gradient-to-r from-[#00c16a] to-[#00a85a] rounded-full flex items-center justify-center">
-                    <Stethoscope className="w-4 h-4 text-white" />
+                    <Stethoscope className="w-4 h-4 text-brand-text" />
                   </div>
                   <div>
-                    <h3 className="font-semibold text-white">Nôa Esperança</h3>
-                    <p className="text-xs text-slate-400">Suporte Clínico</p>
+                    <h3 className="font-semibold text-brand-text">Nôa Esperança</h3>
+                    <p className="text-xs text-brand-text-muted">Suporte Clínico</p>
                   </div>
                 </div>
                 <button
                   onClick={toggleChat}
-                  className="text-slate-400 hover:text-white transition-colors"
+                  className="text-brand-text-muted hover:text-brand-text transition-colors"
                 >
                   ×
                 </button>
@@ -381,7 +381,7 @@ const ClinicaDashboard: React.FC = () => {
             {/* Messages */}
             <div className="flex-1 overflow-y-auto p-4 space-y-4">
               {messages.length === 0 ? (
-                <div className="text-center text-slate-400 py-8">
+                <div className="text-center text-brand-text-muted py-8">
                   <Stethoscope className="w-12 h-12 mx-auto mb-3 text-blue-400" />
                   <p className="text-sm">Olá! Sou a Nôa Esperança, sua assistente clínica.</p>
                 </div>
@@ -394,8 +394,8 @@ const ClinicaDashboard: React.FC = () => {
                     <div
                       className={`max-w-[70%] px-4 py-2 rounded-lg text-sm ${
                         message.type === 'user'
-                          ? 'bg-gradient-to-r from-[#00c16a] to-[#00a85a] text-white'
-                          : 'bg-slate-700 text-slate-100'
+                          ? 'bg-gradient-to-r from-[#00c16a] to-[#00a85a] text-brand-text'
+                          : 'bg-brand-surface-subtle text-slate-100'
                       }`}
                     >
                       {message.content}
@@ -406,7 +406,7 @@ const ClinicaDashboard: React.FC = () => {
               
               {isTyping && (
                 <div className="flex justify-start">
-                  <div className="bg-slate-700 px-4 py-2 rounded-lg">
+                  <div className="bg-brand-surface-subtle px-4 py-2 rounded-lg">
                     <div className="flex space-x-1">
                       <div className="w-2 h-2 bg-slate-400 rounded-full animate-bounce" />
                       <div className="w-2 h-2 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }} />
@@ -418,7 +418,7 @@ const ClinicaDashboard: React.FC = () => {
             </div>
 
             {/* Input */}
-            <div className="p-4 border-t border-slate-700">
+            <div className="p-4 border-t border-brand-border">
               <div className="flex items-center space-x-2">
                 <input
                   type="text"
@@ -426,12 +426,12 @@ const ClinicaDashboard: React.FC = () => {
                   onChange={(e) => setInputMessage(e.target.value)}
                   onKeyPress={handleKeyPress}
                   placeholder="Digite sua mensagem..."
-                  className="flex-1 px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:border-blue-500"
+                  className="flex-1 px-3 py-2 bg-brand-surface-subtle border border-slate-600 rounded-lg text-brand-text placeholder-slate-400 focus:outline-none focus:border-blue-500"
                 />
                 <button
                   onClick={handleSendMessage}
                   disabled={!inputMessage.trim()}
-                  className="p-2 bg-gradient-to-r from-[#00c16a] to-[#00a85a] text-white rounded-lg hover:from-blue-600 hover:to-cyan-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="p-2 bg-gradient-to-r from-[#00c16a] to-[#00a85a] text-brand-text rounded-lg hover:from-blue-600 hover:to-cyan-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <MessageCircle className="w-4 h-4" />
                 </button>

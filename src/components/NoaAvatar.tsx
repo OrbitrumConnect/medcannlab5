@@ -54,8 +54,8 @@ const NoaAvatar: React.FC = () => {
           onClick={toggleChat}
           className="fixed bottom-6 right-6 w-16 h-16 bg-gradient-to-r from-primary-600 to-accent-600 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110 z-40 flex items-center justify-center group"
         >
-          <MessageCircle className="w-8 h-8 text-white group-hover:scale-110 transition-transform duration-200" />
-          <div className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 rounded-full flex items-center justify-center text-white text-xs font-bold animate-pulse">
+          <MessageCircle className="w-8 h-8 text-brand-text group-hover:scale-110 transition-transform duration-200" />
+          <div className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 rounded-full flex items-center justify-center text-brand-text text-xs font-bold animate-pulse">
             !
           </div>
         </button>
@@ -65,7 +65,7 @@ const NoaAvatar: React.FC = () => {
       {isOpen && (
         <div className="fixed bottom-6 right-6 w-96 h-[500px] bg-slate-100/50 dark:bg-slate-800/80 rounded-lg shadow-2xl border border-gray-200 dark:border-gray-700 z-50 flex flex-col">
           {/* Header */}
-          <div className="bg-gradient-to-r from-primary-600 to-accent-600 text-white p-4 rounded-t-lg flex items-center justify-between">
+          <div className="bg-gradient-to-r from-primary-600 to-accent-600 text-brand-text p-4 rounded-t-lg flex items-center justify-between">
             <div className="flex items-center space-x-3">
               <div className="w-10 h-10 bg-slate-800/20 rounded-full flex items-center justify-center">
                 <span className="text-lg font-bold">N</span>
@@ -77,7 +77,7 @@ const NoaAvatar: React.FC = () => {
             </div>
             <button
               onClick={toggleChat}
-              className="text-white/80 hover:text-white transition-colors duration-200"
+              className="text-white/80 hover:text-brand-text transition-colors duration-200"
             >
               <X className="w-5 h-5" />
             </button>
@@ -102,8 +102,8 @@ const NoaAvatar: React.FC = () => {
                   <div
                     className={`max-w-xs px-4 py-2 rounded-lg ${
                       message.type === 'user'
-                        ? 'bg-primary-600 text-white'
-                        : 'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white'
+                        ? 'bg-primary-600 text-brand-text'
+                        : 'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-brand-text'
                     }`}
                   >
                     <p className="text-sm">{message.content}</p>
@@ -142,14 +142,14 @@ const NoaAvatar: React.FC = () => {
                 value={inputMessage}
                 onChange={(e) => setInputMessage(e.target.value)}
                 placeholder="Digite sua mensagem..."
-                className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 bg-slate-100/50 dark:bg-slate-800/80 text-gray-900 dark:text-white text-sm"
+                className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 bg-slate-100/50 dark:bg-slate-800/80 text-gray-900 dark:text-brand-text text-sm"
               />
               <button
                 type="button"
                 onClick={handleVoiceToggle}
                 className={`p-2 rounded-lg transition-colors duration-200 ${
                   isListening
-                    ? 'bg-red-500 text-white'
+                    ? 'bg-red-500 text-brand-text'
                     : 'bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
                 }`}
               >
@@ -157,7 +157,7 @@ const NoaAvatar: React.FC = () => {
               </button>
               <button
                 type="submit"
-                className="p-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors duration-200"
+                className="p-2 bg-primary-600 text-brand-text rounded-lg hover:bg-primary-700 transition-colors duration-200"
               >
                 <Send className="w-4 h-4" />
               </button>

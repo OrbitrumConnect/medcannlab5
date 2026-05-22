@@ -122,7 +122,7 @@ const DigitalSignatureWidget: React.FC<DigitalSignatureWidgetProps> = ({
   }
 
   return (
-    <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-6">
+    <div className="bg-slate-800/50 border border-brand-border rounded-lg p-6">
       {/* Header */}
       <div className="flex items-start justify-between mb-4">
         <div className="flex items-center gap-3">
@@ -130,7 +130,7 @@ const DigitalSignatureWidget: React.FC<DigitalSignatureWidgetProps> = ({
             <Shield className={`w-6 h-6 ${statusInfo.color}`} />
           </div>
           <div>
-            <h3 className="text-lg font-semibold text-white">Assinatura Digital</h3>
+            <h3 className="text-lg font-semibold text-brand-text">Assinatura Digital</h3>
             <div className="flex items-center gap-2 mt-1">
               <StatusIcon className={`w-4 h-4 ${statusInfo.color}`} />
               <span className={`text-sm ${statusInfo.color}`}>
@@ -147,10 +147,10 @@ const DigitalSignatureWidget: React.FC<DigitalSignatureWidgetProps> = ({
           {/* Professional Info */}
           {professionalName && (
             <div className="p-3 bg-slate-700/50 rounded-lg">
-              <p className="text-xs text-slate-400 mb-1">Assinado por</p>
-              <p className="text-sm text-white font-medium">{professionalName}</p>
+              <p className="text-xs text-brand-text-muted mb-1">Assinado por</p>
+              <p className="text-sm text-brand-text font-medium">{professionalName}</p>
               {signatureTimestamp && (
-                <p className="text-xs text-slate-400 mt-1 flex items-center gap-1">
+                <p className="text-xs text-brand-text-muted mt-1 flex items-center gap-1">
                   <Calendar className="w-3 h-3" />
                   {new Date(signatureTimestamp).toLocaleString('pt-BR')}
                 </p>
@@ -161,11 +161,11 @@ const DigitalSignatureWidget: React.FC<DigitalSignatureWidgetProps> = ({
           {/* Signature Hash */}
           {signature && (
             <div className="p-3 bg-slate-700/50 rounded-lg">
-              <p className="text-xs text-slate-400 mb-1 flex items-center gap-1">
+              <p className="text-xs text-brand-text-muted mb-1 flex items-center gap-1">
                 <Key className="w-3 h-3" />
                 Hash da Assinatura
               </p>
-              <p className="text-xs text-slate-300 font-mono break-all">
+              <p className="text-xs text-brand-text-secondary font-mono break-all">
                 {signature.substring(0, 64)}...
               </p>
             </div>
@@ -182,7 +182,7 @@ const DigitalSignatureWidget: React.FC<DigitalSignatureWidgetProps> = ({
                   <FileCheck className="w-3 h-3" />
                   Verificação Criptográfica ICP-Brasil
                 </p>
-                <ul className="text-xs text-slate-300 space-y-1.5">
+                <ul className="text-xs text-brand-text-secondary space-y-1.5">
                   <li className="flex items-start gap-1.5">
                     <span className="text-emerald-400 shrink-0">✓</span>
                     <span>Hash autenticado (PKCS#7 SHA-256)</span>
@@ -200,7 +200,7 @@ const DigitalSignatureWidget: React.FC<DigitalSignatureWidgetProps> = ({
 
               {/* Código interno (referência do documento) */}
               <div className="p-3 bg-slate-700/50 rounded-lg">
-                <p className="text-xs text-slate-400 mb-2 flex items-center gap-1">
+                <p className="text-xs text-brand-text-muted mb-2 flex items-center gap-1">
                   <Key className="w-3 h-3" />
                   Código de referência do documento
                 </p>
@@ -209,11 +209,11 @@ const DigitalSignatureWidget: React.FC<DigitalSignatureWidgetProps> = ({
                     type="text"
                     value={itiValidationCode || ''}
                     readOnly
-                    className="flex-1 px-3 py-1.5 bg-slate-800 border border-slate-600 rounded text-xs text-white font-mono"
+                    className="flex-1 px-3 py-1.5 bg-brand-surface border border-slate-600 rounded text-xs text-brand-text font-mono"
                   />
                   <button
                     onClick={handleCopyCode}
-                    className="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 text-white rounded flex items-center gap-1 transition-colors"
+                    className="px-3 py-1.5 bg-brand-surface-subtle hover:bg-slate-600 text-brand-text rounded flex items-center gap-1 transition-colors"
                     title="Copiar código"
                   >
                     {copied ? (
@@ -230,7 +230,7 @@ const DigitalSignatureWidget: React.FC<DigitalSignatureWidgetProps> = ({
                 href="https://validar.iti.gov.br/"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-full px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-lg flex items-center justify-center gap-2 transition-colors"
+                className="w-full px-4 py-2 bg-primary-600 hover:bg-primary-700 text-brand-text rounded-lg flex items-center justify-center gap-2 transition-colors"
               >
                 <ExternalLink className="w-4 h-4" />
                 Abrir validador oficial do ITI

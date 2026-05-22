@@ -399,20 +399,20 @@ export const NoaMatrixView: React.FC = () => {
               <Sparkles className="w-5 h-5 text-purple-300" />
             </div>
             <div>
-              <h2 className="text-base font-bold text-white flex items-center gap-2">
+              <h2 className="text-base font-bold text-brand-text flex items-center gap-2">
                 <span>🧬 Nôa Matrix</span>
                 <span className="text-[10px] font-normal text-purple-300/70 px-1.5 py-0.5 rounded bg-purple-500/10 border border-purple-500/20">
                   Z2 estrutural
                 </span>
               </h2>
-              <p className="text-xs text-slate-400 leading-relaxed mt-0.5">
+              <p className="text-xs text-brand-text-muted leading-relaxed mt-0.5">
                 Chat de pesquisa não-diretivo. Marque casos, notas e buscas favoritas pra estruturar raciocínio.
               </p>
             </div>
           </div>
           <div className="flex items-center gap-1.5 text-xs">
             <Folder className="w-3.5 h-3.5 text-purple-300" />
-            <span className="text-slate-400">
+            <span className="text-brand-text-muted">
               {selectedCount === 0 ? 'Nenhum item marcado' : `${selectedCount} item${selectedCount === 1 ? '' : 'ns'} no chat`}
             </span>
           </div>
@@ -421,7 +421,7 @@ export const NoaMatrixView: React.FC = () => {
         {/* Disclaimer permanente Z2 */}
         <div className="mt-3 flex items-start gap-2 px-3 py-2 rounded-lg bg-purple-500/5 border border-purple-500/15">
           <Info className="w-3.5 h-3.5 text-purple-300/70 flex-shrink-0 mt-0.5" />
-          <p className="text-[11px] text-slate-400 leading-relaxed">
+          <p className="text-[11px] text-brand-text-muted leading-relaxed">
             <strong className="text-purple-300">Como funciona:</strong> marque cards de Casos Similares,
             notas rápidas e buscas favoritas que considerar relevantes.
             A Nôa Matrix lê APENAS o material marcado e ajuda a comparar, agrupar e citar — não sugere conduta nem infere diagnóstico.
@@ -434,7 +434,7 @@ export const NoaMatrixView: React.FC = () => {
         {/* Cards anexáveis */}
         <div className="lg:col-span-5 space-y-3">
           <div className="flex items-center justify-between gap-2 mb-1.5">
-            <h3 className="text-xs font-semibold text-slate-300 uppercase tracking-wider">
+            <h3 className="text-xs font-semibold text-brand-text-secondary uppercase tracking-wider">
               Material disponível
             </h3>
             {selectedCount > 0 && (
@@ -450,7 +450,7 @@ export const NoaMatrixView: React.FC = () => {
           {visibleCards.length === 0 ? (
             <div className="bg-slate-900/40 border border-slate-700/30 rounded-xl p-6 text-center">
               <Folder className="w-8 h-8 text-slate-600 mx-auto mb-2" />
-              <p className="text-xs text-slate-400 mb-1">
+              <p className="text-xs text-brand-text-muted mb-1">
                 {hiddenIds.size > 0
                   ? `Todos os ${hiddenIds.size} itens foram ocultados nesta sessão.`
                   : 'Nenhum material marcado ainda.'}
@@ -528,11 +528,11 @@ export const NoaMatrixView: React.FC = () => {
                           )}
                         </div>
                         <div className="flex-1 min-w-0">
-                          <div className="text-xs font-semibold text-white truncate">{card.title}</div>
+                          <div className="text-xs font-semibold text-brand-text truncate">{card.title}</div>
                           {card.subtitle && (
                             <div className="text-[10px] text-slate-500 mt-0.5">{card.subtitle}</div>
                           )}
-                          <div className="text-[10px] text-slate-400 mt-1 line-clamp-2 leading-relaxed">
+                          <div className="text-[10px] text-brand-text-muted mt-1 line-clamp-2 leading-relaxed">
                             {card.body.split('\n').slice(0, 2).join(' · ')}
                           </div>
                         </div>
@@ -577,7 +577,7 @@ export const NoaMatrixView: React.FC = () => {
                       value={literature.term}
                       onChange={(e) => literature.setTerm(e.target.value)}
                       placeholder="ex: cannabis chronic pain"
-                      className="w-full bg-slate-800/60 border border-emerald-500/20 rounded-md pl-7 pr-2 py-1.5 text-xs text-white placeholder:text-slate-500 focus:outline-none focus:ring-1 focus:ring-emerald-500/50"
+                      className="w-full bg-slate-800/60 border border-emerald-500/20 rounded-md pl-7 pr-2 py-1.5 text-xs text-brand-text placeholder:text-slate-500 focus:outline-none focus:ring-1 focus:ring-emerald-500/50"
                     />
                   </div>
                   {literature.loading && <Loader2 className="w-3.5 h-3.5 text-emerald-300 animate-spin flex-shrink-0" />}
@@ -626,7 +626,7 @@ export const NoaMatrixView: React.FC = () => {
                               className={`flex-shrink-0 text-[10px] px-2 py-1 rounded transition-colors ${
                                 isAttached
                                   ? 'bg-emerald-500/20 text-emerald-200 hover:bg-emerald-500/30'
-                                  : 'bg-slate-700/40 text-slate-300 hover:bg-emerald-500/20 hover:text-emerald-200'
+                                  : 'bg-slate-700/40 text-brand-text-secondary hover:bg-emerald-500/20 hover:text-emerald-200'
                               }`}
                             >
                               {isAttached ? '✓ anexado' : '+ anexar'}
@@ -686,7 +686,7 @@ export const NoaMatrixView: React.FC = () => {
                       value={kbFilter}
                       onChange={(e) => setKbFilter(e.target.value)}
                       placeholder="Filtrar documentos por título..."
-                      className="w-full bg-slate-800/60 border border-emerald-500/20 rounded-md pl-7 pr-2 py-1.5 text-xs text-white placeholder:text-slate-500 focus:outline-none focus:ring-1 focus:ring-emerald-500/50"
+                      className="w-full bg-slate-800/60 border border-emerald-500/20 rounded-md pl-7 pr-2 py-1.5 text-xs text-brand-text placeholder:text-slate-500 focus:outline-none focus:ring-1 focus:ring-emerald-500/50"
                     />
                   </div>
                   {kbLoading && <Loader2 className="w-3.5 h-3.5 text-emerald-300 animate-spin flex-shrink-0" />}
@@ -723,7 +723,7 @@ export const NoaMatrixView: React.FC = () => {
                               className={`flex-shrink-0 text-[10px] px-2 py-1 rounded transition-colors ${
                                 isAttached
                                   ? 'bg-emerald-500/20 text-emerald-200 hover:bg-emerald-500/30'
-                                  : 'bg-slate-700/40 text-slate-300 hover:bg-emerald-500/20 hover:text-emerald-200'
+                                  : 'bg-slate-700/40 text-brand-text-secondary hover:bg-emerald-500/20 hover:text-emerald-200'
                               }`}
                             >
                               {isAttached ? '✓ anexado' : '+ anexar'}
@@ -963,20 +963,20 @@ export const NoaMatrixView: React.FC = () => {
       {/* V1.9.403 (F4.2-A) — modal "Enviar ao Fórum" com atestação de consent */}
       {publishTarget && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
-          <div className="w-full max-w-md bg-slate-900 border border-cyan-500/30 rounded-xl p-5 space-y-4">
+          <div className="w-full max-w-md bg-brand-bg border border-cyan-500/30 rounded-xl p-5 space-y-4">
             <div className="flex items-start gap-2.5">
               <Send className="w-5 h-5 text-cyan-300 flex-shrink-0 mt-0.5" />
               <div className="min-w-0">
-                <h3 className="text-sm font-bold text-white">Enviar dossiê ao Fórum</h3>
-                <p className="text-xs text-slate-400 mt-0.5 truncate">{publishTarget.title}</p>
+                <h3 className="text-sm font-bold text-brand-text">Enviar dossiê ao Fórum</h3>
+                <p className="text-xs text-brand-text-muted mt-0.5 truncate">{publishTarget.title}</p>
               </div>
             </div>
-            <p className="text-[11px] text-slate-400 leading-relaxed">
+            <p className="text-[11px] text-brand-text-muted leading-relaxed">
               O dossiê vai para <strong className="text-cyan-300">análise do conselho</strong>.
               Aprovado, vira debate no Fórum — visível a profissionais e admins. O paciente
               aparece pseudonimizado.
             </p>
-            <label className="flex items-start gap-2 text-[11px] text-slate-300 leading-relaxed cursor-pointer">
+            <label className="flex items-start gap-2 text-[11px] text-brand-text-secondary leading-relaxed cursor-pointer">
               <input
                 type="checkbox"
                 checked={publishAttested}
@@ -995,7 +995,7 @@ export const NoaMatrixView: React.FC = () => {
               <button
                 type="button"
                 onClick={() => { setPublishTarget(null); setPublishAttested(false) }}
-                className="px-3 py-1.5 rounded-md text-[11px] text-slate-400 hover:text-slate-200 border border-slate-700/50 transition-colors"
+                className="px-3 py-1.5 rounded-md text-[11px] text-brand-text-muted hover:text-slate-200 border border-slate-700/50 transition-colors"
               >
                 Cancelar
               </button>

@@ -34,20 +34,20 @@ const NoaPermissions: React.FC<NoaPermissionsProps> = ({ className = '' }) => {
   }
 
   return (
-    <div className={`bg-slate-800 rounded-xl p-6 ${className}`}>
+    <div className={`bg-brand-surface rounded-xl p-6 ${className}`}>
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center space-x-3">
           <div className="p-2 bg-purple-600 rounded-lg">
-            <Shield className="w-6 h-6 text-white" />
+            <Shield className="w-6 h-6 text-brand-text" />
           </div>
           <div>
-            <h3 className="text-lg font-bold text-white">Permissões da IA Residente</h3>
-            <p className="text-slate-400 text-sm">Status das permissões para operações da plataforma</p>
+            <h3 className="text-lg font-bold text-brand-text">Permissões da IA Residente</h3>
+            <p className="text-brand-text-muted text-sm">Status das permissões para operações da plataforma</p>
           </div>
         </div>
         <button
           onClick={() => setShowDetails(!showDetails)}
-          className="text-slate-400 hover:text-white transition-colors"
+          className="text-brand-text-muted hover:text-brand-text transition-colors"
         >
           {showDetails ? 'Ocultar' : 'Detalhes'}
         </button>
@@ -55,21 +55,21 @@ const NoaPermissions: React.FC<NoaPermissionsProps> = ({ className = '' }) => {
 
       {/* Resumo das Permissões */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-        <div className="bg-slate-700 rounded-lg p-4 text-center">
-          <div className="text-2xl font-bold text-white">{summary.total}</div>
-          <div className="text-xs text-slate-400">Total</div>
+        <div className="bg-brand-surface-subtle rounded-lg p-4 text-center">
+          <div className="text-2xl font-bold text-brand-text">{summary.total}</div>
+          <div className="text-xs text-brand-text-muted">Total</div>
         </div>
-        <div className="bg-slate-700 rounded-lg p-4 text-center">
+        <div className="bg-brand-surface-subtle rounded-lg p-4 text-center">
           <div className="text-2xl font-bold text-green-400">{summary.granted}</div>
-          <div className="text-xs text-slate-400">Concedidas</div>
+          <div className="text-xs text-brand-text-muted">Concedidas</div>
         </div>
-        <div className="bg-slate-700 rounded-lg p-4 text-center">
+        <div className="bg-brand-surface-subtle rounded-lg p-4 text-center">
           <div className="text-2xl font-bold text-blue-400">{summary.required}</div>
-          <div className="text-xs text-slate-400">Obrigatórias</div>
+          <div className="text-xs text-brand-text-muted">Obrigatórias</div>
         </div>
-        <div className="bg-slate-700 rounded-lg p-4 text-center">
+        <div className="bg-brand-surface-subtle rounded-lg p-4 text-center">
           <div className="text-2xl font-bold text-purple-400">{summary.requiredGranted}</div>
-          <div className="text-xs text-slate-400">Obrigatórias OK</div>
+          <div className="text-xs text-brand-text-muted">Obrigatórias OK</div>
         </div>
       </div>
 
@@ -99,17 +99,17 @@ const NoaPermissions: React.FC<NoaPermissionsProps> = ({ className = '' }) => {
       {/* Detalhes por Categoria */}
       {showDetails && (
         <div className="space-y-4">
-          <h4 className="text-sm font-semibold text-white">Permissões por Categoria</h4>
+          <h4 className="text-sm font-semibold text-brand-text">Permissões por Categoria</h4>
           {Object.entries(summary.categories).map(([category, stats]) => (
-            <div key={category} className="bg-slate-700 rounded-lg p-4">
+            <div key={category} className="bg-brand-surface-subtle rounded-lg p-4">
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center space-x-2">
                   <div className={getCategoryColor(category)}>
                     {getCategoryIcon(category)}
                   </div>
-                  <span className="font-semibold text-white capitalize">{category}</span>
+                  <span className="font-semibold text-brand-text capitalize">{category}</span>
                 </div>
-                <div className="text-sm text-slate-400">
+                <div className="text-sm text-brand-text-muted">
                   {stats.granted}/{stats.total}
                 </div>
               </div>
@@ -124,10 +124,10 @@ const NoaPermissions: React.FC<NoaPermissionsProps> = ({ className = '' }) => {
 
           {/* Lista Detalhada */}
           <div className="mt-6">
-            <h4 className="text-sm font-semibold text-white mb-3">Lista Detalhada de Permissões</h4>
+            <h4 className="text-sm font-semibold text-brand-text mb-3">Lista Detalhada de Permissões</h4>
             <div className="space-y-2 max-h-64 overflow-y-auto">
               {permissionManager.getAllPermissions().map((permission) => (
-                <div key={permission.id} className="flex items-center justify-between p-3 bg-slate-700 rounded-lg">
+                <div key={permission.id} className="flex items-center justify-between p-3 bg-brand-surface-subtle rounded-lg">
                   <div className="flex items-center space-x-3">
                     {permission.granted ? (
                       <CheckCircle className="w-4 h-4 text-green-400" />
@@ -135,20 +135,20 @@ const NoaPermissions: React.FC<NoaPermissionsProps> = ({ className = '' }) => {
                       <XCircle className="w-4 h-4 text-red-400" />
                     )}
                     <div>
-                      <div className="text-sm font-medium text-white">{permission.name}</div>
-                      <div className="text-xs text-slate-400">{permission.description}</div>
+                      <div className="text-sm font-medium text-brand-text">{permission.name}</div>
+                      <div className="text-xs text-brand-text-muted">{permission.description}</div>
                     </div>
                   </div>
                   <div className="flex items-center space-x-2">
                     {permission.required && (
-                      <span className="text-xs bg-blue-600 text-white px-2 py-1 rounded">
+                      <span className="text-xs bg-blue-600 text-brand-text px-2 py-1 rounded">
                         Obrigatória
                       </span>
                     )}
                     <span className={`text-xs px-2 py-1 rounded ${
                       permission.granted 
-                        ? 'bg-green-600 text-white' 
-                        : 'bg-red-600 text-white'
+                        ? 'bg-green-600 text-brand-text' 
+                        : 'bg-red-600 text-brand-text'
                     }`}>
                       {permission.granted ? 'Concedida' : 'Negada'}
                     </span>
@@ -163,7 +163,7 @@ const NoaPermissions: React.FC<NoaPermissionsProps> = ({ className = '' }) => {
       {/* Token de Autorização */}
       <div className="mt-4 p-3 bg-slate-700/50 rounded-lg">
         <div className="flex items-center justify-between mb-2">
-          <span className="text-sm font-semibold text-white">Token de Autorização</span>
+          <span className="text-sm font-semibold text-brand-text">Token de Autorização</span>
           <button
             onClick={() => {
               const token = permissionManager.generateAuthToken()
@@ -174,7 +174,7 @@ const NoaPermissions: React.FC<NoaPermissionsProps> = ({ className = '' }) => {
             Copiar
           </button>
         </div>
-        <div className="text-xs text-slate-400 font-mono break-all">
+        <div className="text-xs text-brand-text-muted font-mono break-all">
           {permissionManager.generateAuthToken().substring(0, 50)}...
         </div>
       </div>

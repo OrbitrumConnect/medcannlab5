@@ -24,7 +24,7 @@ export function ProfessionalFinancial() {
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-6">
-          <h1 className="text-3xl font-bold text-white mb-2 flex items-center gap-3">
+          <h1 className="text-3xl font-bold text-brand-text mb-2 flex items-center gap-3">
             💎 Terminal Financeiro
           </h1>
           <p className="text-gray-300 text-sm">
@@ -44,7 +44,7 @@ export function ProfessionalFinancial() {
                 className={`flex items-center gap-2 px-5 py-3 font-semibold text-sm whitespace-nowrap transition-all border-b-2 ${
                   active
                     ? 'text-emerald-400 border-emerald-500'
-                    : 'text-gray-400 border-transparent hover:text-white hover:border-slate-600'
+                    : 'text-gray-400 border-transparent hover:text-brand-text hover:border-slate-600'
                 }`}
               >
                 <Icon size={18} />

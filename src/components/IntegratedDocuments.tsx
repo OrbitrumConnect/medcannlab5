@@ -171,7 +171,7 @@ const IntegratedDocuments: React.FC<IntegratedDocumentsProps> = ({
             {getModuleIcon()}
           </div>
           <div>
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-brand-text">
               {title || `Documentos ${module.charAt(0).toUpperCase() + module.slice(1)}`}
             </h3>
             {description && (
@@ -212,7 +212,7 @@ const IntegratedDocuments: React.FC<IntegratedDocumentsProps> = ({
               placeholder="Buscar documentos..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+              className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent dark:bg-gray-700 dark:text-brand-text"
             />
           </div>
         </div>
@@ -234,7 +234,7 @@ const IntegratedDocuments: React.FC<IntegratedDocumentsProps> = ({
               <div className="flex items-start justify-between">
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-2">
-                    <h4 className="font-medium text-gray-900 dark:text-white">
+                    <h4 className="font-medium text-gray-900 dark:text-brand-text">
                       {doc.title}
                     </h4>
                     {doc.isLinkedToAI && (

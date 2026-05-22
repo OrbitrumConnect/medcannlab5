@@ -73,7 +73,7 @@ export const DecisionFeedbackLoop: React.FC = () => {
     }
 
     if (loading) return (
-        <div className="flex items-center justify-center p-8 text-slate-400">
+        <div className="flex items-center justify-center p-8 text-brand-text-muted">
             <div className="animate-spin mr-3"><Brain size={20} /></div>
             <span>Sincronizando Jurisprudência Cognitiva...</span>
         </div>
@@ -102,14 +102,14 @@ export const DecisionFeedbackLoop: React.FC = () => {
                         <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
                             <div className="flex-1">
                                 <div className="flex items-center gap-2 mb-2">
-                                    <span className="text-[10px] font-bold bg-slate-800 text-slate-300 px-2 py-0.5 rounded uppercase tracking-tighter border border-slate-700">
+                                    <span className="text-[10px] font-bold bg-brand-surface text-brand-text-secondary px-2 py-0.5 rounded uppercase tracking-tighter border border-brand-border">
                                         {decision.decision_type}
                                     </span>
                                     <span className="text-[10px] text-slate-500">
                                         {new Date(decision.created_at).toLocaleTimeString()}
                                     </span>
                                     <div className="flex items-center gap-1 ml-2">
-                                        <div className="w-16 h-1 bg-slate-800 rounded-full overflow-hidden">
+                                        <div className="w-16 h-1 bg-brand-surface rounded-full overflow-hidden">
                                             <div
                                                 className="h-full bg-emerald-500 transition-all"
                                                 style={{ width: `${decision.confidence * 100}%` }}
@@ -121,14 +121,14 @@ export const DecisionFeedbackLoop: React.FC = () => {
                                     </div>
                                 </div>
 
-                                <p className="text-white text-sm font-medium mb-3 leading-relaxed">
+                                <p className="text-brand-text text-sm font-medium mb-3 leading-relaxed">
                                     {decision.justification}
                                 </p>
 
                                 {decision.recommendation?.recommended_action && (
                                     <div className="bg-emerald-500/5 border border-emerald-500/10 rounded-lg p-3 mb-4">
                                         <div className="text-[10px] text-[#00C16A] uppercase font-bold mb-1">Ação Sugerida</div>
-                                        <div className="text-white text-xs font-mono">
+                                        <div className="text-brand-text text-xs font-mono">
                                             {decision.recommendation.recommended_action}
                                         </div>
                                     </div>
@@ -139,7 +139,7 @@ export const DecisionFeedbackLoop: React.FC = () => {
                                 <button
                                     onClick={() => handleFeedback(decision.id, 'rejected')}
                                     disabled={!!processingId}
-                                    className="p-2.5 rounded-lg bg-slate-800/50 text-slate-400 hover:bg-red-500/10 hover:text-red-400 transition-colors border border-slate-700"
+                                    className="p-2.5 rounded-lg bg-slate-800/50 text-brand-text-muted hover:bg-red-500/10 hover:text-red-400 transition-colors border border-brand-border"
                                     title="Rejeitar"
                                 >
                                     <X size={18} />
@@ -147,7 +147,7 @@ export const DecisionFeedbackLoop: React.FC = () => {
                                 <button
                                     onClick={() => handleFeedback(decision.id, 'accepted')}
                                     disabled={!!processingId}
-                                    className="flex items-center gap-2 px-5 py-2.5 rounded-lg bg-emerald-600/20 text-emerald-400 hover:bg-emerald-600 hover:text-white transition-all border border-emerald-500/30 font-bold text-xs"
+                                    className="flex items-center gap-2 px-5 py-2.5 rounded-lg bg-emerald-600/20 text-emerald-400 hover:bg-emerald-600 hover:text-brand-text transition-all border border-emerald-500/30 font-bold text-xs"
                                 >
                                     {processingId === decision.id ? (
                                         <div className="animate-spin"><Brain size={14} /></div>

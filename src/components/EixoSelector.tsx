@@ -86,17 +86,17 @@ const EixoSelector: React.FC = () => {
   return (
     <div className="max-w-6xl mx-auto p-6">
       <div className="text-center mb-8">
-        <h1 className="text-3xl font-bold text-white mb-4">
+        <h1 className="text-3xl font-bold text-brand-text mb-4">
           Selecionar Área de Trabalho
         </h1>
-        <p className="text-slate-300 text-lg">
+        <p className="text-brand-text-secondary text-lg">
           Escolha o eixo e tipo de usuário para acessar sua área específica
         </p>
       </div>
 
       {/* Seleção de Eixo */}
       <div className="mb-8">
-        <h2 className="text-xl font-semibold text-white mb-4">1. Escolha o Eixo</h2>
+        <h2 className="text-xl font-semibold text-brand-text mb-4">1. Escolha o Eixo</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {eixos.map((eixo) => {
             const Icon = eixo.icone
@@ -108,16 +108,16 @@ const EixoSelector: React.FC = () => {
                 className={`p-6 rounded-xl cursor-pointer transition-all duration-200 ${
                   isSelected 
                     ? 'bg-gradient-to-r ' + eixo.cor + ' shadow-lg scale-105' 
-                    : 'bg-slate-800 hover:bg-slate-700'
+                    : 'bg-brand-surface hover:bg-brand-surface-subtle'
                 }`}
               >
                 <div className="flex items-center space-x-3 mb-3">
-                  <Icon className={`w-6 h-6 ${isSelected ? 'text-white' : 'text-slate-400'}`} />
-                  <h3 className={`text-lg font-semibold ${isSelected ? 'text-white' : 'text-white'}`}>
+                  <Icon className={`w-6 h-6 ${isSelected ? 'text-brand-text' : 'text-brand-text-muted'}`} />
+                  <h3 className={`text-lg font-semibold ${isSelected ? 'text-brand-text' : 'text-brand-text'}`}>
                     {eixo.nome}
                   </h3>
                 </div>
-                <p className={`text-sm ${isSelected ? 'text-white/90' : 'text-slate-400'}`}>
+                <p className={`text-sm ${isSelected ? 'text-white/90' : 'text-brand-text-muted'}`}>
                   {eixo.descricao}
                 </p>
               </div>
@@ -129,7 +129,7 @@ const EixoSelector: React.FC = () => {
       {/* Seleção de Tipo */}
       {selectedEixo && (
         <div className="mb-8">
-          <h2 className="text-xl font-semibold text-white mb-4">2. Escolha o Tipo de Usuário</h2>
+          <h2 className="text-xl font-semibold text-brand-text mb-4">2. Escolha o Tipo de Usuário</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {getTiposDisponiveis().map((tipo) => {
               const Icon = tipo.icone
@@ -141,8 +141,8 @@ const EixoSelector: React.FC = () => {
                   style={{ background: `linear-gradient(to right, ${tipo.cor.split(' ')[1]}, ${tipo.cor.split(' ')[3]})` }}
                 >
                   <div className="flex items-center space-x-3 mb-3">
-                    <Icon className="w-6 h-6 text-white" />
-                    <h3 className="text-lg font-semibold text-white">
+                    <Icon className="w-6 h-6 text-brand-text" />
+                    <h3 className="text-lg font-semibold text-brand-text">
                       {tipo.nome}
                     </h3>
                   </div>
@@ -161,15 +161,15 @@ const EixoSelector: React.FC = () => {
       )}
 
       {/* Informações do Usuário Atual */}
-      <div className="bg-slate-800 rounded-xl p-4">
+      <div className="bg-brand-surface rounded-xl p-4">
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-slate-400 text-sm">Usuário atual</p>
-            <p className="text-white font-semibold">{user?.name}</p>
-            <p className="text-slate-300 text-sm">Tipo: {user?.type}</p>
+            <p className="text-brand-text-muted text-sm">Usuário atual</p>
+            <p className="text-brand-text font-semibold">{user?.name}</p>
+            <p className="text-brand-text-secondary text-sm">Tipo: {user?.type}</p>
           </div>
           <div className="text-right">
-            <p className="text-slate-400 text-sm">Acesso</p>
+            <p className="text-brand-text-muted text-sm">Acesso</p>
             <p className="text-green-400 text-sm">Admin - Todos os eixos</p>
           </div>
         </div>

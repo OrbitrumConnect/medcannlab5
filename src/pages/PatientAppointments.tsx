@@ -1084,10 +1084,10 @@ const PatientAppointments: React.FC = () => {
     const dayNames = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb']
 
     return (
-      <div className="bg-slate-800 rounded-xl p-4 md:p-6">
+      <div className="bg-brand-surface rounded-xl p-4 md:p-6">
         {/* Header do calendário - mais compacto */}
         <div className="flex justify-between items-center mb-4">
-          <h3 className="text-lg md:text-xl font-semibold text-white">
+          <h3 className="text-lg md:text-xl font-semibold text-brand-text">
             {monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}
           </h3>
           <div className="flex items-center space-x-1">
@@ -1103,15 +1103,15 @@ const PatientAppointments: React.FC = () => {
             </button>
             <button
               onClick={() => navigateMonth('prev')}
-              className="p-1.5 hover:bg-slate-700 rounded-lg transition-colors"
+              className="p-1.5 hover:bg-brand-surface-subtle rounded-lg transition-colors"
             >
-              <ChevronLeft className="w-4 h-4 text-slate-400" />
+              <ChevronLeft className="w-4 h-4 text-brand-text-muted" />
             </button>
             <button
               onClick={() => navigateMonth('next')}
-              className="p-1.5 hover:bg-slate-700 rounded-lg transition-colors"
+              className="p-1.5 hover:bg-brand-surface-subtle rounded-lg transition-colors"
             >
-              <ChevronRight className="w-4 h-4 text-slate-400" />
+              <ChevronRight className="w-4 h-4 text-brand-text-muted" />
             </button>
           </div>
         </div>
@@ -1119,7 +1119,7 @@ const PatientAppointments: React.FC = () => {
         {/* Dias da semana - mais compacto */}
         <div className="grid grid-cols-7 gap-0.5 mb-1">
           {dayNames.map(day => (
-            <div key={day} className="p-1.5 text-center text-xs font-medium text-slate-400">
+            <div key={day} className="p-1.5 text-center text-xs font-medium text-brand-text-muted">
               {day}
             </div>
           ))}
@@ -1133,7 +1133,7 @@ const PatientAppointments: React.FC = () => {
               <div
                 key={index}
                 onClick={() => handleDateSelect(day)}
-                className={`relative p-1.5 h-14 md:h-16 border border-slate-700 rounded-md cursor-pointer transition-all hover:scale-105 ${day.isCurrentMonth
+                className={`relative p-1.5 h-14 md:h-16 border border-brand-border rounded-md cursor-pointer transition-all hover:scale-105 ${day.isCurrentMonth
                   ? 'hover:bg-slate-700/50'
                   : 'text-slate-500 opacity-50'
                   } ${day.isToday
@@ -1166,8 +1166,8 @@ const PatientAppointments: React.FC = () => {
                       <div
                         key={apt.id}
                         className={`text-[10px] px-1 py-0.5 rounded truncate font-medium ${apt.priority === 'high'
-                          ? 'bg-red-500/80 text-white'
-                          : 'bg-emerald-600/90 text-white shadow-sm'
+                          ? 'bg-red-500/80 text-brand-text'
+                          : 'bg-emerald-600/90 text-brand-text shadow-sm'
                           }`}
                         title={`${apt.time} - ${apt.doctorName}`}
                       >
@@ -1175,7 +1175,7 @@ const PatientAppointments: React.FC = () => {
                       </div>
                     ))}
                     {day.appointments.length > 1 && (
-                      <div className="text-[9px] text-center text-slate-400 font-medium">
+                      <div className="text-[9px] text-center text-brand-text-muted font-medium">
                         +{day.appointments.length - 1}
                       </div>
                     )}
@@ -1195,7 +1195,7 @@ const PatientAppointments: React.FC = () => {
 
     if (isLoadingSlots) {
       return (
-        <div className="bg-slate-800 rounded-xl p-6 text-center text-slate-400">
+        <div className="bg-brand-surface rounded-xl p-6 text-center text-brand-text-muted">
           <div className="animate-spin w-6 h-6 border-2 border-primary-500 border-t-transparent rounded-full mx-auto mb-2"></div>
           Verificando disponibilidade...
         </div>
@@ -1205,15 +1205,15 @@ const PatientAppointments: React.FC = () => {
     // Se não houver slots reais retornados da RPC
     if (availableSlots.length === 0) {
       return (
-        <div className="bg-slate-800 rounded-xl p-6 text-center text-slate-400">
+        <div className="bg-brand-surface rounded-xl p-6 text-center text-brand-text-muted">
           <p>Nenhum horário disponível para esta data.</p>
         </div>
       )
     }
 
     return (
-      <div className="bg-slate-800 rounded-xl p-4 md:p-6">
-        <h3 className="text-lg md:text-xl font-semibold text-white mb-3">
+      <div className="bg-brand-surface rounded-xl p-4 md:p-6">
+        <h3 className="text-lg md:text-xl font-semibold text-brand-text mb-3">
           Horários Disponíveis - {selectedDate.toLocaleDateString('pt-BR')}
         </h3>
         <div className="grid grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8 gap-2">
@@ -1221,7 +1221,7 @@ const PatientAppointments: React.FC = () => {
             <button
               key={time}
               onClick={() => handleTimeSelect(time)}
-              className="p-2 rounded-lg text-xs md:text-sm font-medium transition-all bg-slate-700 hover:bg-primary-600 hover:scale-105 text-slate-300 hover:text-white active:scale-95"
+              className="p-2 rounded-lg text-xs md:text-sm font-medium transition-all bg-brand-surface-subtle hover:bg-primary-600 hover:scale-105 text-brand-text-secondary hover:text-brand-text active:scale-95"
             >
               {time}
             </button>
@@ -1286,10 +1286,10 @@ const PatientAppointments: React.FC = () => {
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-1.5 flex-wrap">
-            <h4 className="text-white text-sm font-semibold">{professional.name}</h4>
+            <h4 className="text-brand-text text-sm font-semibold">{professional.name}</h4>
             {/* V1.9.144: rating só se REAL (RPC calculate_professional_rating retornou visibility='active') */}
             {professional.rating && (
-              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-slate-800 border border-slate-700/50 text-[11px] text-slate-300">
+              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-brand-surface border border-slate-700/50 text-[11px] text-brand-text-secondary">
                 <Star className="w-3 h-3 text-amber-300 fill-amber-300" />
                 {professional.rating}
               </span>
@@ -1307,17 +1307,17 @@ const PatientAppointments: React.FC = () => {
               </span>
             )}
           </div>
-          <p className="text-xs text-slate-400 mt-0.5">{professional.role}</p>
+          <p className="text-xs text-brand-text-muted mt-0.5">{professional.role}</p>
           {/* V1.9.x: localidade visível no card só se médico preencheu Profile.location */}
           {professional.location && (
-            <p className="text-[11px] text-slate-400 mt-0.5 flex items-center gap-1">
+            <p className="text-[11px] text-brand-text-muted mt-0.5 flex items-center gap-1">
               <span aria-hidden="true">📍</span>
               <span className="truncate">{professional.location}</span>
             </p>
           )}
           {/* V1.9.144: excerpt só se houver bio/descrição real — sem placeholder genérico */}
           {professional.excerpt && (
-            <p className="text-xs text-slate-300 mt-1.5 line-clamp-2">{professional.excerpt}</p>
+            <p className="text-xs text-brand-text-secondary mt-1.5 line-clamp-2">{professional.excerpt}</p>
           )}
         </div>
       </div>
@@ -1327,7 +1327,7 @@ const PatientAppointments: React.FC = () => {
         <button
           type="button"
           onClick={() => setProfileProfessional(professional)}
-          className="w-full inline-flex items-center justify-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-semibold text-slate-100 bg-slate-700/60 hover:bg-slate-700 transition-colors"
+          className="w-full inline-flex items-center justify-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-semibold text-slate-100 bg-slate-700/60 hover:bg-brand-surface-subtle transition-colors"
         >
           Ver perfil
         </button>
@@ -1353,7 +1353,7 @@ const PatientAppointments: React.FC = () => {
               setShowAppointmentModal(true)
             }
           }}
-          className={`w-full inline-flex items-center justify-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-semibold text-white transition-all ${professional.buttonClasses} hover:scale-[1.02]`}
+          className={`w-full inline-flex items-center justify-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-semibold text-brand-text transition-all ${professional.buttonClasses} hover:scale-[1.02]`}
         >
           Agendar
           <ArrowRight className="w-3 h-3" />
@@ -1364,23 +1364,23 @@ const PatientAppointments: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-slate-900">
+    <div className="min-h-screen bg-brand-bg">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-4 md:py-6">
         {/* Header - mais compacto */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 md:mb-6 gap-4">
           <div>
-            <h1 className="text-2xl md:text-3xl font-bold text-white">Meus Agendamentos</h1>
-            <p className="text-sm md:text-base text-slate-400">Gerencie suas consultas e visualize seu calendário integrado ao seu plano de cuidado</p>
+            <h1 className="text-2xl md:text-3xl font-bold text-brand-text">Meus Agendamentos</h1>
+            <p className="text-sm md:text-base text-brand-text-muted">Gerencie suas consultas e visualize seu calendário integrado ao seu plano de cuidado</p>
           </div>
           <div className="flex items-center gap-2">
             {/* Toggle Calendário/Lista (unificado) */}
-            <div className="inline-flex items-center rounded-lg border border-slate-700 bg-slate-800/60 p-1">
+            <div className="inline-flex items-center rounded-lg border border-brand-border bg-slate-800/60 p-1">
               <button
                 type="button"
                 onClick={() => setViewMode('calendar')}
                 className={`px-3 py-1.5 rounded-md transition-colors text-sm inline-flex items-center gap-1.5 ${viewMode === 'calendar'
-                  ? 'bg-primary-600 text-white'
-                  : 'text-slate-300 hover:text-white hover:bg-slate-700/60'
+                  ? 'bg-primary-600 text-brand-text'
+                  : 'text-brand-text-secondary hover:text-brand-text hover:bg-slate-700/60'
                   }`}
               >
                 <Calendar className="w-4 h-4" />
@@ -1390,8 +1390,8 @@ const PatientAppointments: React.FC = () => {
                 type="button"
                 onClick={() => setViewMode('list')}
                 className={`px-3 py-1.5 rounded-md transition-colors text-sm inline-flex items-center gap-1.5 ${viewMode === 'list'
-                  ? 'bg-primary-600 text-white'
-                  : 'text-slate-300 hover:text-white hover:bg-slate-700/60'
+                  ? 'bg-primary-600 text-brand-text'
+                  : 'text-brand-text-secondary hover:text-brand-text hover:bg-slate-700/60'
                   }`}
               >
                 <FileText className="w-4 h-4" />
@@ -1404,7 +1404,7 @@ const PatientAppointments: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setShowHeaderActions(v => !v)}
-                className="px-3 py-2 rounded-lg border border-slate-700 bg-slate-800/60 hover:bg-slate-800 text-slate-200 text-sm font-semibold inline-flex items-center gap-2 transition-colors"
+                className="px-3 py-2 rounded-lg border border-brand-border bg-slate-800/60 hover:bg-brand-surface text-slate-200 text-sm font-semibold inline-flex items-center gap-2 transition-colors"
                 aria-expanded={showHeaderActions}
                 aria-haspopup="menu"
               >
@@ -1419,49 +1419,49 @@ const PatientAppointments: React.FC = () => {
                     onClick={() => setShowHeaderActions(false)}
                   />
                   <div
-                    className="absolute right-0 mt-2 z-50 w-64 rounded-xl border border-slate-700 bg-slate-900 shadow-xl overflow-hidden"
+                    className="absolute right-0 mt-2 z-50 w-64 rounded-xl border border-brand-border bg-brand-bg shadow-xl overflow-hidden"
                     role="menu"
                   >
                     <button
                       type="button"
                       onClick={openNewAppointment}
-                      className="w-full px-4 py-3 text-left text-sm text-slate-200 hover:bg-slate-800 flex items-center gap-3"
+                      className="w-full px-4 py-3 text-left text-sm text-slate-200 hover:bg-brand-surface flex items-center gap-3"
                       role="menuitem"
                     >
                       <span className="w-9 h-9 rounded-lg bg-blue-600/20 border border-blue-600/30 flex items-center justify-center">
                         <Plus className="w-4 h-4 text-blue-300" />
                       </span>
                       <div className="min-w-0">
-                        <p className="font-semibold text-white">Novo agendamento</p>
-                        <p className="text-xs text-slate-400 truncate">Abrir formulário de consulta</p>
+                        <p className="font-semibold text-brand-text">Novo agendamento</p>
+                        <p className="text-xs text-brand-text-muted truncate">Abrir formulário de consulta</p>
                       </div>
                     </button>
                     <button
                       type="button"
                       onClick={openJourneyManual}
-                      className="w-full px-4 py-3 text-left text-sm text-slate-200 hover:bg-slate-800 flex items-center gap-3"
+                      className="w-full px-4 py-3 text-left text-sm text-slate-200 hover:bg-brand-surface flex items-center gap-3"
                       role="menuitem"
                     >
-                      <span className="w-9 h-9 rounded-lg bg-slate-700/60 border border-slate-700 flex items-center justify-center">
+                      <span className="w-9 h-9 rounded-lg bg-slate-700/60 border border-brand-border flex items-center justify-center">
                         <FileText className="w-4 h-4 text-slate-200" />
                       </span>
                       <div className="min-w-0">
-                        <p className="font-semibold text-white">Manual da jornada</p>
-                        <p className="text-xs text-slate-400 truncate">Entenda o fluxo de cuidado</p>
+                        <p className="font-semibold text-brand-text">Manual da jornada</p>
+                        <p className="text-xs text-brand-text-muted truncate">Entenda o fluxo de cuidado</p>
                       </div>
                     </button>
                     <button
                       type="button"
                       onClick={startClinicalAssessment}
-                      className="w-full px-4 py-3 text-left text-sm text-slate-200 hover:bg-slate-800 flex items-center gap-3"
+                      className="w-full px-4 py-3 text-left text-sm text-slate-200 hover:bg-brand-surface flex items-center gap-3"
                       role="menuitem"
                     >
                       <span className="w-9 h-9 rounded-lg bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center">
                         <Brain className="w-4 h-4 text-emerald-200" />
                       </span>
                       <div className="min-w-0">
-                        <p className="font-semibold text-white">Iniciar avaliação clínica</p>
-                        <p className="text-xs text-slate-400 truncate">Começar protocolo com a Nôa</p>
+                        <p className="font-semibold text-brand-text">Iniciar avaliação clínica</p>
+                        <p className="text-xs text-brand-text-muted truncate">Começar protocolo com a Nôa</p>
                       </div>
                     </button>
                   </div>
@@ -1496,16 +1496,16 @@ const PatientAppointments: React.FC = () => {
         {/* Modal Inteligente de Reagendamento */}
         {showRescheduleModal && (
           <div className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-200">
-            <div className="bg-slate-900 w-full max-w-md sm:rounded-2xl rounded-t-2xl border-t sm:border border-slate-700/50 shadow-2xl flex flex-col max-h-[90vh] sm:max-h-[600px] animate-in slide-in-from-bottom-5 duration-300">
-              <div className="p-4 border-b border-slate-700 flex justify-between items-center bg-slate-800/50 rounded-t-xl">
+            <div className="bg-brand-bg w-full max-w-md sm:rounded-2xl rounded-t-2xl border-t sm:border border-slate-700/50 shadow-2xl flex flex-col max-h-[90vh] sm:max-h-[600px] animate-in slide-in-from-bottom-5 duration-300">
+              <div className="p-4 border-b border-brand-border flex justify-between items-center bg-slate-800/50 rounded-t-xl">
                 <div>
-                  <h3 className="text-lg font-bold text-white flex items-center gap-2">
+                  <h3 className="text-lg font-bold text-brand-text flex items-center gap-2">
                     <Calendar className="w-5 h-5 text-blue-400" />
                     Reagendar
                   </h3>
-                  <p className="text-xs text-slate-400">Selecione o novo horário</p>
+                  <p className="text-xs text-brand-text-muted">Selecione o novo horário</p>
                 </div>
-                <button onClick={() => setShowRescheduleModal(false)} className="text-slate-400 hover:text-white">
+                <button onClick={() => setShowRescheduleModal(false)} className="text-brand-text-muted hover:text-brand-text">
                   <X className="w-5 h-5" />
                 </button>
               </div>
@@ -1519,8 +1519,8 @@ const PatientAppointments: React.FC = () => {
                       <Clock className="w-16 h-16 text-blue-400" />
                     </div>
                     <p className="text-xs font-medium text-blue-400 uppercase tracking-wider mb-1">Agendamento Atual</p>
-                    <p className="text-white font-semibold text-lg">{rescheduleTargetApt?.professional}</p>
-                    <div className="flex items-center gap-2 mt-1 text-slate-400 text-sm">
+                    <p className="text-brand-text font-semibold text-lg">{rescheduleTargetApt?.professional}</p>
+                    <div className="flex items-center gap-2 mt-1 text-brand-text-muted text-sm">
                       <Calendar className="w-4 h-4" />
                       {/* V1.9.219 — apt.date local "YYYY-MM-DD", sem new Date (dupla conv UTC) */}
                       <span>{rescheduleTargetApt?.date ? rescheduleTargetApt.date.split('-').reverse().join('/') : '—'}</span>
@@ -1536,20 +1536,20 @@ const PatientAppointments: React.FC = () => {
                 </div>
 
                 <div className="px-5 pb-5">
-                  <h4 className="text-sm font-medium text-slate-300 mb-3 mt-2 flex items-center gap-2">
+                  <h4 className="text-sm font-medium text-brand-text-secondary mb-3 mt-2 flex items-center gap-2">
                     <span>Próximas Disponibilidades</span>
-                    <div className="h-px bg-slate-800 flex-1"></div>
+                    <div className="h-px bg-brand-surface flex-1"></div>
                   </h4>
 
                   {isLoadingReschedule ? (
-                    <div className="py-12 flex flex-col items-center justify-center text-slate-400">
+                    <div className="py-12 flex flex-col items-center justify-center text-brand-text-muted">
                       <Loader2 className="w-8 h-8 text-blue-500 animate-spin mb-3" />
                       <p className="text-sm">Buscando melhores horários...</p>
                     </div>
                   ) : rescheduleSuggestions.length === 0 ? (
-                    <div className="text-center py-10 bg-slate-800/30 rounded-xl border border-dashed border-slate-700 mx-1">
+                    <div className="text-center py-10 bg-slate-800/30 rounded-xl border border-dashed border-brand-border mx-1">
                       <Calendar className="w-10 h-10 text-slate-600 mx-auto mb-3" />
-                      <p className="text-slate-400">Sem horários próximos.</p>
+                      <p className="text-brand-text-muted">Sem horários próximos.</p>
                       <button onClick={() => { setShowRescheduleModal(false); setShowAppointmentModal(true); }} className="text-blue-400 text-sm mt-2 hover:underline font-medium">
                         Ver calendário completo
                       </button>
@@ -1572,7 +1572,7 @@ const PatientAppointments: React.FC = () => {
                                     handleConfirmReschedule(group.dateStr, time)
                                   }
                                 }}
-                                className="group relative flex items-center justify-center py-2.5 rounded-xl bg-slate-800 border border-slate-700 text-slate-300 text-sm font-medium transition-all duration-200 hover:bg-blue-600 hover:border-blue-500 hover:text-white hover:shadow-lg hover:shadow-blue-500/25 hover:-translate-y-0.5 active:scale-95"
+                                className="group relative flex items-center justify-center py-2.5 rounded-xl bg-brand-surface border border-brand-border text-brand-text-secondary text-sm font-medium transition-all duration-200 hover:bg-blue-600 hover:border-blue-500 hover:text-brand-text hover:shadow-lg hover:shadow-blue-500/25 hover:-translate-y-0.5 active:scale-95"
                               >
                                 {time}
                               </button>
@@ -1591,11 +1591,11 @@ const PatientAppointments: React.FC = () => {
         {/* Modal Inteligente de Cancelamento */}
         {showCancelModal && (
           <div className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-200">
-            <div className="bg-slate-900 w-full max-w-md sm:rounded-2xl rounded-t-2xl border-t sm:border border-red-500/30 shadow-2xl flex flex-col animate-in slide-in-from-bottom-5 duration-300">
+            <div className="bg-brand-bg w-full max-w-md sm:rounded-2xl rounded-t-2xl border-t sm:border border-red-500/30 shadow-2xl flex flex-col animate-in slide-in-from-bottom-5 duration-300">
 
-              <div className="p-5 border-b border-slate-800 flex justify-between items-center bg-red-950/20 rounded-t-2xl">
+              <div className="p-5 border-b border-brand-border-subtle flex justify-between items-center bg-red-950/20 rounded-t-2xl">
                 <div>
-                  <h3 className="text-lg font-bold text-white flex items-center gap-2">
+                  <h3 className="text-lg font-bold text-brand-text flex items-center gap-2">
                     <AlertCircle className="w-5 h-5 text-red-500" />
                     Cancelar Consulta
                   </h3>
@@ -1603,22 +1603,22 @@ const PatientAppointments: React.FC = () => {
                 </div>
                 <button
                   onClick={() => setShowCancelModal(false)}
-                  className="p-2 bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white rounded-full transition-colors"
+                  className="p-2 bg-brand-surface hover:bg-brand-surface-subtle text-brand-text-muted hover:text-brand-text rounded-full transition-colors"
                 >
                   <X className="w-5 h-5" />
                 </button>
               </div>
 
               <div className="p-6">
-                <div className="bg-slate-800/50 border border-slate-700 rounded-xl p-4 mb-6">
-                  <p className="text-sm text-slate-400 mb-1">Você está cancelando a consulta:</p>
+                <div className="bg-slate-800/50 border border-brand-border rounded-xl p-4 mb-6">
+                  <p className="text-sm text-brand-text-muted mb-1">Você está cancelando a consulta:</p>
                   <div className="flex items-center gap-3 mt-2">
-                    <div className="w-10 h-10 rounded-full bg-slate-700 flex items-center justify-center">
-                      <User className="w-5 h-5 text-slate-300" />
+                    <div className="w-10 h-10 rounded-full bg-brand-surface-subtle flex items-center justify-center">
+                      <User className="w-5 h-5 text-brand-text-secondary" />
                     </div>
                     <div>
-                      <p className="text-white font-semibold">{cancelTargetApt?.professional}</p>
-                      <p className="text-xs text-slate-400">
+                      <p className="text-brand-text font-semibold">{cancelTargetApt?.professional}</p>
+                      <p className="text-xs text-brand-text-muted">
                         {/* V1.9.219 — apt.date local "YYYY-MM-DD", sem new Date (dupla conv UTC) */}
                         {cancelTargetApt?.date ? cancelTargetApt.date.split('-').reverse().join('/') : '—'} às {cancelTargetApt?.time}
                       </p>
@@ -1635,14 +1635,14 @@ const PatientAppointments: React.FC = () => {
                 <div className="flex gap-3">
                   <button
                     onClick={() => setShowCancelModal(false)}
-                    className="flex-1 py-3 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl font-medium transition-colors"
+                    className="flex-1 py-3 bg-brand-surface hover:bg-brand-surface-subtle text-brand-text-secondary rounded-xl font-medium transition-colors"
                   >
                     Manter Consulta
                   </button>
                   <button
                     onClick={handleConfirmCancellation}
                     disabled={isLoadingCancel}
-                    className="flex-1 py-3 bg-red-600 hover:bg-red-700 text-white rounded-xl font-bold transition-colors shadow-lg shadow-red-900/20 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                    className="flex-1 py-3 bg-red-600 hover:bg-red-700 text-brand-text rounded-xl font-bold transition-colors shadow-lg shadow-red-900/20 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                   >
                     {isLoadingCancel ? (
                       <>
@@ -1666,16 +1666,16 @@ const PatientAppointments: React.FC = () => {
           <div className="space-y-6">
             <div className="space-y-4 md:space-y-6">
               {/* Profissionais Disponíveis - Unificado */}
-              <div className="bg-slate-800 rounded-xl p-4 md:p-6">
+              <div className="bg-brand-surface rounded-xl p-4 md:p-6">
                 {/* V1.9.x: removido botão "Novo Agendamento" duplicado deste card.
                     Pedro 08/05: redundante porque já existe trigger no header da aba +
                     o fluxo canônico é via cards profissional (Ver perfil → Agendar). */}
                 <div className="mb-4 md:mb-5">
-                  <h3 className="text-lg md:text-xl font-semibold text-white flex items-center gap-2">
+                  <h3 className="text-lg md:text-xl font-semibold text-brand-text flex items-center gap-2">
                     <Stethoscope className="w-5 h-5 md:w-6 md:h-6 text-primary-300" />
                     Agendar com Especialista
                   </h3>
-                  <p className="text-sm text-slate-400 mt-1">
+                  <p className="text-sm text-brand-text-muted mt-1">
                     Escolha um especialista para iniciar seu acompanhamento ou agende sua consulta.
                   </p>
                 </div>
@@ -1689,7 +1689,7 @@ const PatientAppointments: React.FC = () => {
                       value={professionalQuery}
                       onChange={(e) => setProfessionalQuery(e.target.value)}
                       placeholder="🔍 Buscar profissional (nome, especialidade, tag)…"
-                      className="w-full bg-slate-900/60 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-primary-500/60"
+                      className="w-full bg-slate-900/60 border border-brand-border rounded-lg px-3 py-2 text-sm text-brand-text placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-primary-500/60"
                     />
                   </div>
                   <div className="flex-1">
@@ -1699,7 +1699,7 @@ const PatientAppointments: React.FC = () => {
                       value={professionalLocationQuery}
                       onChange={(e) => setProfessionalLocationQuery(e.target.value)}
                       placeholder="📍 Localidade (cidade, estado, CEP)…"
-                      className="w-full bg-slate-900/60 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-primary-500/60"
+                      className="w-full bg-slate-900/60 border border-brand-border rounded-lg px-3 py-2 text-sm text-brand-text placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-primary-500/60"
                     />
                   </div>
                   <div className="md:w-[200px]">
@@ -1708,7 +1708,7 @@ const PatientAppointments: React.FC = () => {
                       id="specialty-filter"
                       value={professionalSpecialtyFilter}
                       onChange={(e) => setProfessionalSpecialtyFilter(e.target.value)}
-                      className="w-full bg-slate-900/60 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-primary-500/60"
+                      className="w-full bg-slate-900/60 border border-brand-border rounded-lg px-3 py-2 text-sm text-brand-text focus:outline-none focus:ring-2 focus:ring-primary-500/60"
                     >
                       <option value="ALL">Todas especialidades</option>
                       {availableSpecialties.map(s => (
@@ -1722,7 +1722,7 @@ const PatientAppointments: React.FC = () => {
                       id="sort-filter"
                       value={professionalSort}
                       onChange={(e) => setProfessionalSort(e.target.value as ProfessionalSortKey)}
-                      className="w-full bg-slate-900/60 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-primary-500/60"
+                      className="w-full bg-slate-900/60 border border-brand-border rounded-lg px-3 py-2 text-sm text-brand-text focus:outline-none focus:ring-2 focus:ring-primary-500/60"
                       aria-label="Ordenar profissionais"
                     >
                       <option value="default">⇅ Padrão</option>
@@ -1735,7 +1735,7 @@ const PatientAppointments: React.FC = () => {
 
                 {/* V1.9.x — Contador resultados visíveis (transparência UX) */}
                 {filteredProfessionals.length > 0 && (
-                  <div className="text-xs text-slate-400 mb-3 flex items-center gap-2">
+                  <div className="text-xs text-brand-text-muted mb-3 flex items-center gap-2">
                     <span>
                       Mostrando <span className="font-semibold text-slate-200">{filteredProfessionals.length}</span>
                       {filteredProfessionals.length === 1 ? ' profissional' : ' profissionais'}
@@ -1805,7 +1805,7 @@ const PatientAppointments: React.FC = () => {
                 )}
 
                 {filteredProfessionals.length === 0 && (
-                  <div className="mt-4 rounded-lg border border-slate-700/60 bg-slate-900/30 px-4 py-4 text-sm text-slate-300">
+                  <div className="mt-4 rounded-lg border border-slate-700/60 bg-slate-900/30 px-4 py-4 text-sm text-brand-text-secondary">
                     Nenhum profissional encontrado para os filtros atuais.
                   </div>
                 )}
@@ -1820,12 +1820,12 @@ const PatientAppointments: React.FC = () => {
                 </div>
                 <div className="lg:col-span-1">
               {/* Card Próximas Consultas - Integrado ao Plano de Cuidado */}
-              <div className="bg-slate-800 rounded-xl p-4 md:p-6">
+              <div className="bg-brand-surface rounded-xl p-4 md:p-6">
                 <div className="flex items-center justify-between mb-3 md:mb-4 gap-3">
                   <div>
-                    <h3 className="text-lg md:text-xl font-semibold text-white">📅 Próximas Consultas</h3>
+                    <h3 className="text-lg md:text-xl font-semibold text-brand-text">📅 Próximas Consultas</h3>
                     {carePlan && (
-                      <p className="text-sm text-slate-400 mt-1">
+                      <p className="text-sm text-brand-text-muted mt-1">
                         Relacionadas ao seu plano de cuidado • Progresso: {carePlan.progress || 0}%
                       </p>
                     )}
@@ -1841,15 +1841,15 @@ const PatientAppointments: React.FC = () => {
                 {upcomingAppointments.length > 0 ? (
                   <div className="space-y-3">
                     {upcomingAppointments.map((apt) => (
-                      <div key={apt.id} className="bg-slate-700 rounded-lg p-3.5 flex flex-col gap-3">
+                      <div key={apt.id} className="bg-brand-surface-subtle rounded-lg p-3.5 flex flex-col gap-3">
                         <div className="flex items-center justify-between">
                           <div className="flex items-center space-x-3.5 flex-1">
                             <div className="w-10 h-10 bg-blue-500/20 rounded-lg flex items-center justify-center flex-shrink-0">
                               <Calendar className="w-5 h-5 text-blue-400" />
                             </div>
                             <div className="flex-1">
-                              <p className="text-white font-semibold">{apt.professional}</p>
-                              <p className="text-slate-400 text-sm">
+                              <p className="text-brand-text font-semibold">{apt.professional}</p>
+                              <p className="text-brand-text-muted text-sm">
                                 {/* V1.9.219 — apt.date ja vem como "YYYY-MM-DD" local (linha ~482).
                                     Passar por new Date() causa dupla conversao: string sem hora
                                     e tratada como UTC midnight, em BRT (-3h) vira dia anterior.
@@ -1879,7 +1879,7 @@ const PatientAppointments: React.FC = () => {
                           <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-600/50">
                             <button
                               onClick={() => handleOpenChat((apt as any).professionalId)}
-                              className="text-xs px-3 py-1.5 rounded hover:bg-slate-600 text-slate-300 hover:text-white transition-colors flex items-center gap-1.5"
+                              className="text-xs px-3 py-1.5 rounded hover:bg-slate-600 text-brand-text-secondary hover:text-brand-text transition-colors flex items-center gap-1.5"
                             >
                               <MessageCircle className="w-3.5 h-3.5" />
                               Mensagem
@@ -1887,7 +1887,7 @@ const PatientAppointments: React.FC = () => {
                             {/* Reagendar -> Cancelar + Nova (simples por enquanto) */}
                             <button
                               onClick={() => handleClickReschedule(apt)}
-                              className="text-xs px-3 py-1.5 rounded hover:bg-slate-600 text-slate-300 hover:text-white transition-colors"
+                              className="text-xs px-3 py-1.5 rounded hover:bg-slate-600 text-brand-text-secondary hover:text-brand-text transition-colors"
                             >
                               Reagendar
                             </button>
@@ -1907,7 +1907,7 @@ const PatientAppointments: React.FC = () => {
                   <div className="rounded-lg border border-slate-700/60 bg-slate-900/30 px-4 py-4 flex items-center justify-between gap-4">
                     <div className="flex items-center gap-3 min-w-0">
                       <div className="w-10 h-10 rounded-lg bg-slate-700/50 flex items-center justify-center shrink-0">
-                        <Calendar className="w-5 h-5 text-slate-400" />
+                        <Calendar className="w-5 h-5 text-brand-text-muted" />
                       </div>
                       <div className="min-w-0">
                         <p className="text-slate-200 text-sm font-semibold truncate">Nenhuma consulta agendada</p>
@@ -1932,25 +1932,25 @@ const PatientAppointments: React.FC = () => {
                 <div className="bg-gradient-to-r from-blue-900/20 to-purple-900/20 border border-blue-500/30 rounded-xl p-4">
                   <div className="flex items-center space-x-3 mb-3">
                     <Target className="w-5 h-5 text-blue-400" />
-                    <h4 className="text-white font-semibold">Plano de Cuidado Personalizado</h4>
+                    <h4 className="text-brand-text font-semibold">Plano de Cuidado Personalizado</h4>
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
-                      <p className="text-slate-400 text-xs mb-1">Progresso do Tratamento</p>
-                      <p className="text-white font-bold text-lg">{carePlan.progress || 0}%</p>
+                      <p className="text-brand-text-muted text-xs mb-1">Progresso do Tratamento</p>
+                      <p className="text-brand-text font-bold text-lg">{carePlan.progress || 0}%</p>
                     </div>
                     {carePlan.nextReview && (
                       <div>
-                        <p className="text-slate-400 text-xs mb-1">Próxima Revisão</p>
-                        <p className="text-white font-bold text-lg">
+                        <p className="text-brand-text-muted text-xs mb-1">Próxima Revisão</p>
+                        <p className="text-brand-text font-bold text-lg">
                           {new Date(carePlan.nextReview).toLocaleDateString('pt-BR')}
                         </p>
                       </div>
                     )}
                     {carePlan.medications && carePlan.medications.length > 0 && (
                       <div>
-                        <p className="text-slate-400 text-xs mb-1">Medicações Ativas</p>
-                        <p className="text-white font-bold text-lg">{carePlan.medications.length}</p>
+                        <p className="text-brand-text-muted text-xs mb-1">Medicações Ativas</p>
+                        <p className="text-brand-text font-bold text-lg">{carePlan.medications.length}</p>
                       </div>
                     )}
                   </div>
@@ -1984,8 +1984,8 @@ const PatientAppointments: React.FC = () => {
             profileProfessional.consultPriceBRL != null)
           return (
           <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center px-4 py-6">
-            <div className="w-full max-w-2xl rounded-2xl border border-slate-700 bg-slate-900 shadow-xl overflow-hidden">
-              <div className="p-5 md:p-6 border-b border-slate-800 flex items-start justify-between gap-4">
+            <div className="w-full max-w-2xl rounded-2xl border border-brand-border bg-brand-bg shadow-xl overflow-hidden">
+              <div className="p-5 md:p-6 border-b border-brand-border-subtle flex items-start justify-between gap-4">
                 <div className="flex items-start gap-4 min-w-0">
                   {/* V1.9.x: avatar com iniciais (fallback honesto sem foto). Stethoscope só
                       se nome vazio (defensivo) — paciente reconhece pessoa pelas iniciais. */}
@@ -1994,25 +1994,25 @@ const PatientAppointments: React.FC = () => {
                   </div>
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <h3 className="text-white text-lg md:text-xl font-bold truncate">{profileProfessional.name}</h3>
+                      <h3 className="text-brand-text text-lg md:text-xl font-bold truncate">{profileProfessional.name}</h3>
                       {isOfficial && (
                         <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-amber-500/15 border border-amber-500/30 text-[10px] font-bold text-amber-300 uppercase tracking-wider">
                           Oficial
                         </span>
                       )}
                       {profileProfessional.rating && (
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-slate-800 border border-slate-700 text-xs text-slate-300">
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-brand-surface border border-brand-border text-xs text-brand-text-secondary">
                           <Star className="w-3 h-3 text-amber-300 fill-amber-300" />
                           {profileProfessional.rating}
                         </span>
                       )}
                     </div>
-                    <p className="text-slate-300 text-sm mt-1 font-medium">{profileProfessional.specialty}</p>
+                    <p className="text-brand-text-secondary text-sm mt-1 font-medium">{profileProfessional.specialty}</p>
                     {showRoleAsSubtitle && (
-                      <p className="text-slate-400 text-xs mt-0.5">{profileProfessional.role}</p>
+                      <p className="text-brand-text-muted text-xs mt-0.5">{profileProfessional.role}</p>
                     )}
                     {profileProfessional.location && (
-                      <p className="text-slate-400 text-xs mt-1.5 flex items-center gap-1">
+                      <p className="text-brand-text-muted text-xs mt-1.5 flex items-center gap-1">
                         <span aria-hidden="true">📍</span>
                         <span className="truncate">{profileProfessional.location}</span>
                       </p>
@@ -2022,7 +2022,7 @@ const PatientAppointments: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setProfileProfessional(null)}
-                  className="text-slate-400 hover:text-white transition-colors text-sm font-semibold shrink-0"
+                  className="text-brand-text-muted hover:text-brand-text transition-colors text-sm font-semibold shrink-0"
                   aria-label="Fechar"
                 >
                   Fechar
@@ -2042,7 +2042,7 @@ const PatientAppointments: React.FC = () => {
                     {profileProfessional.tags.slice(0, 8).map(tag => (
                       <span
                         key={tag}
-                        className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold border border-slate-700 bg-slate-800/60 text-slate-200"
+                        className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold border border-brand-border bg-slate-800/60 text-slate-200"
                       >
                         {tag}
                       </span>
@@ -2052,7 +2052,7 @@ const PatientAppointments: React.FC = () => {
 
                 {/* V1.9.x: idiomas como linha discreta (só se preenchido) */}
                 {(profileProfessional.languages && profileProfessional.languages.length > 0) && (
-                  <p className="text-xs text-slate-400 flex items-center gap-1.5">
+                  <p className="text-xs text-brand-text-muted flex items-center gap-1.5">
                     <span aria-hidden="true">🌐</span>
                     <span>Atende em: <span className="text-slate-200 font-medium">{profileProfessional.languages.join(', ')}</span></span>
                   </p>
@@ -2064,19 +2064,19 @@ const PatientAppointments: React.FC = () => {
                   profileProfessional.experienceYears != null ||
                   profileProfessional.consultPriceBRL != null) && (
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                    <div className="rounded-xl border border-slate-800 bg-slate-800/30 p-3">
-                      <p className="text-xs text-slate-400">Consultas na plataforma</p>
-                      <p className="text-white font-bold text-lg">{profileProfessional.consultCountApprox ?? '—'}</p>
+                    <div className="rounded-xl border border-brand-border-subtle bg-slate-800/30 p-3">
+                      <p className="text-xs text-brand-text-muted">Consultas na plataforma</p>
+                      <p className="text-brand-text font-bold text-lg">{profileProfessional.consultCountApprox ?? '—'}</p>
                       <p className="text-[11px] text-slate-500">aproximado</p>
                     </div>
-                    <div className="rounded-xl border border-slate-800 bg-slate-800/30 p-3">
-                      <p className="text-xs text-slate-400">Experiência</p>
-                      <p className="text-white font-bold text-lg">{profileProfessional.experienceYears ? `${profileProfessional.experienceYears} anos` : '—'}</p>
+                    <div className="rounded-xl border border-brand-border-subtle bg-slate-800/30 p-3">
+                      <p className="text-xs text-brand-text-muted">Experiência</p>
+                      <p className="text-brand-text font-bold text-lg">{profileProfessional.experienceYears ? `${profileProfessional.experienceYears} anos` : '—'}</p>
                       <p className="text-[11px] text-slate-500">informado pelo profissional</p>
                     </div>
-                    <div className="rounded-xl border border-slate-800 bg-slate-800/30 p-3">
-                      <p className="text-xs text-slate-400">Valor</p>
-                      <p className="text-white font-bold text-lg">{profileProfessional.consultPriceBRL ? `R$ ${profileProfessional.consultPriceBRL.toFixed(0)}` : '—'}</p>
+                    <div className="rounded-xl border border-brand-border-subtle bg-slate-800/30 p-3">
+                      <p className="text-xs text-brand-text-muted">Valor</p>
+                      <p className="text-brand-text font-bold text-lg">{profileProfessional.consultPriceBRL ? `R$ ${profileProfessional.consultPriceBRL.toFixed(0)}` : '—'}</p>
                       <p className="text-[11px] text-slate-500">consulta particular</p>
                     </div>
                   </div>
@@ -2085,8 +2085,8 @@ const PatientAppointments: React.FC = () => {
                 {/* V1.9.x: mensagem informativa quando perfil sem enriquecimento (só nome+spec).
                     Não simular dados — sinalizar honestamente que profissional pode completar. */}
                 {!hasAnyEnrichment && (
-                  <div className="rounded-xl border border-slate-800 bg-slate-800/30 p-4 text-center">
-                    <p className="text-sm text-slate-400">
+                  <div className="rounded-xl border border-brand-border-subtle bg-slate-800/30 p-4 text-center">
+                    <p className="text-sm text-brand-text-muted">
                       Este profissional ainda não preencheu detalhes do perfil.
                     </p>
                     <p className="text-xs text-slate-500 mt-1">
@@ -2109,7 +2109,7 @@ const PatientAppointments: React.FC = () => {
                       setAppointmentData(prev => ({ ...prev, specialty: professional.specialty }))
                       setShowAppointmentModal(true)
                     }}
-                    className={`w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold text-white transition-colors ${profileProfessional.buttonClasses}`}
+                    className={`w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold text-brand-text transition-colors ${profileProfessional.buttonClasses}`}
                   >
                     Agendar com {profileProfessional.name.split(' ')[0]}
                     <ArrowRight className="w-4 h-4" />
@@ -2117,7 +2117,7 @@ const PatientAppointments: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => setProfileProfessional(null)}
-                    className="w-full sm:w-auto inline-flex items-center justify-center px-4 py-2.5 rounded-xl text-sm font-semibold text-slate-200 border border-slate-700 bg-slate-800/50 hover:bg-slate-800 transition-colors"
+                    className="w-full sm:w-auto inline-flex items-center justify-center px-4 py-2.5 rounded-xl text-sm font-semibold text-slate-200 border border-brand-border bg-slate-800/50 hover:bg-brand-surface transition-colors"
                   >
                     Voltar
                   </button>
@@ -2129,44 +2129,44 @@ const PatientAppointments: React.FC = () => {
         })()}
 
         {viewMode === 'list' && (
-          <div className="bg-slate-800 rounded-xl p-6">
-            <h3 className="text-xl font-semibold text-white mb-4">Próximas Consultas</h3>
+          <div className="bg-brand-surface rounded-xl p-6">
+            <h3 className="text-xl font-semibold text-brand-text mb-4">Próximas Consultas</h3>
             <div className="space-y-4">
               {appointments.map(appointment => (
-                <div key={appointment.id} className="bg-slate-700 rounded-lg p-4">
+                <div key={appointment.id} className="bg-brand-surface-subtle rounded-lg p-4">
                   <div className="flex justify-between items-start">
                     <div className="flex-1">
                       <div className="flex items-center space-x-4 mb-2">
                         <div className="w-10 h-10 bg-primary-600 rounded-full flex items-center justify-center">
-                          <User className="w-5 h-5 text-white" />
+                          <User className="w-5 h-5 text-brand-text" />
                         </div>
                         <div>
-                          <h4 className="text-white font-medium">{appointment.doctorName}</h4>
-                          <p className="text-slate-400 text-sm">{appointment.doctorSpecialty}</p>
+                          <h4 className="text-brand-text font-medium">{appointment.doctorName}</h4>
+                          <p className="text-brand-text-muted text-sm">{appointment.doctorSpecialty}</p>
                         </div>
                       </div>
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                         <div>
-                          <p className="text-slate-400">Data</p>
-                          <p className="text-white">{appointment.date}</p>
+                          <p className="text-brand-text-muted">Data</p>
+                          <p className="text-brand-text">{appointment.date}</p>
                         </div>
                         <div>
-                          <p className="text-slate-400">Horário</p>
-                          <p className="text-white">{appointment.time}</p>
+                          <p className="text-brand-text-muted">Horário</p>
+                          <p className="text-brand-text">{appointment.time}</p>
                         </div>
                         <div>
-                          <p className="text-slate-400">Tipo</p>
-                          <p className="text-white capitalize">{appointment.type}</p>
+                          <p className="text-brand-text-muted">Tipo</p>
+                          <p className="text-brand-text capitalize">{appointment.type}</p>
                         </div>
                         <div>
-                          <p className="text-slate-400">Sala</p>
-                          <p className="text-white">{appointment.room}</p>
+                          <p className="text-brand-text-muted">Sala</p>
+                          <p className="text-brand-text">{appointment.room}</p>
                         </div>
                       </div>
                       {appointment.notes && (
                         <div className="mt-2">
-                          <p className="text-slate-400 text-sm">Observações</p>
-                          <p className="text-slate-300 text-sm">{appointment.notes}</p>
+                          <p className="text-brand-text-muted text-sm">Observações</p>
+                          <p className="text-brand-text-secondary text-sm">{appointment.notes}</p>
                         </div>
                       )}
                     </div>
@@ -2191,8 +2191,8 @@ const PatientAppointments: React.FC = () => {
         {/* Modal de agendamento */}
         {showAppointmentModal && (
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-            <div className="bg-slate-800 rounded-xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-              <h3 className="text-xl font-semibold text-white mb-4">Novo Agendamento</h3>
+            <div className="bg-brand-surface rounded-xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+              <h3 className="text-xl font-semibold text-brand-text mb-4">Novo Agendamento</h3>
 
               {/* Link para Manual da Jornada */}
               <div className="bg-slate-700/50 border border-slate-600 rounded-lg p-3 mb-4 flex items-center justify-between">
@@ -2200,7 +2200,7 @@ const PatientAppointments: React.FC = () => {
                   <div className="w-8 h-8 bg-emerald-500/20 rounded-full flex items-center justify-center">
                     <Brain className="w-4 h-4 text-emerald-400" />
                   </div>
-                  <span className="text-sm text-slate-300">
+                  <span className="text-sm text-brand-text-secondary">
                     Consulte o <strong className="text-emerald-400">Manual da Jornada</strong> para entender o fluxo de avaliação.
                   </span>
                 </div>
@@ -2216,40 +2216,40 @@ const PatientAppointments: React.FC = () => {
               <div className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm text-slate-400 mb-2">Data <span className="text-red-400">*</span></label>
+                    <label className="block text-sm text-brand-text-muted mb-2">Data <span className="text-red-400">*</span></label>
                     <input
                       type="date"
                       value={appointmentData.date}
                       onChange={(e) => setAppointmentData({ ...appointmentData, date: e.target.value })}
-                      className="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-white"
+                      className="w-full bg-brand-surface-subtle border border-slate-600 rounded-lg px-3 py-2 text-brand-text"
                       required
                     />
                   </div>
                   <div>
-                    <label className="block text-sm text-slate-400 mb-2">Horário <span className="text-red-400">*</span></label>
+                    <label className="block text-sm text-brand-text-muted mb-2">Horário <span className="text-red-400">*</span></label>
                     <input
                       type="time"
                       value={appointmentData.time}
                       onChange={(e) => setAppointmentData({ ...appointmentData, time: e.target.value })}
-                      className="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-white"
+                      className="w-full bg-brand-surface-subtle border border-slate-600 rounded-lg px-3 py-2 text-brand-text"
                       required
                     />
                   </div>
                   <div>
-                    <label className="block text-sm text-slate-400 mb-2">Tipo</label>
+                    <label className="block text-sm text-brand-text-muted mb-2">Tipo</label>
                     <input
                       type="text"
                       value="Online"
                       readOnly
-                      className="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-white uppercase tracking-wide"
+                      className="w-full bg-brand-surface-subtle border border-slate-600 rounded-lg px-3 py-2 text-brand-text uppercase tracking-wide"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm text-slate-400 mb-2">Especialidade <span className="text-red-400">*</span></label>
+                    <label className="block text-sm text-brand-text-muted mb-2">Especialidade <span className="text-red-400">*</span></label>
                     <select
                       value={appointmentData.specialty}
                       onChange={(e) => setAppointmentData({ ...appointmentData, specialty: e.target.value })}
-                      className="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-white"
+                      className="w-full bg-brand-surface-subtle border border-slate-600 rounded-lg px-3 py-2 text-brand-text"
                       required
                     >
                       <option value="">Selecione</option>
@@ -2259,11 +2259,11 @@ const PatientAppointments: React.FC = () => {
                     </select>
                   </div>
                   <div>
-                    <label className="block text-sm text-slate-400 mb-2">Consultório <span className="text-red-400">*</span></label>
+                    <label className="block text-sm text-brand-text-muted mb-2">Consultório <span className="text-red-400">*</span></label>
                     <select
                       value={appointmentData.room}
                       onChange={(e) => setAppointmentData({ ...appointmentData, room: e.target.value })}
-                      className="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-white"
+                      className="w-full bg-brand-surface-subtle border border-slate-600 rounded-lg px-3 py-2 text-brand-text"
                       required
                     >
                       {rooms.map(room => (
@@ -2273,11 +2273,11 @@ const PatientAppointments: React.FC = () => {
                   </div>
                 </div>
                 <div>
-                  <label className="block text-sm text-slate-400 mb-2">Tipo de Serviço <span className="text-red-400">*</span></label>
+                  <label className="block text-sm text-brand-text-muted mb-2">Tipo de Serviço <span className="text-red-400">*</span></label>
                   <select
                     value={appointmentData.service}
                     onChange={(e) => setAppointmentData({ ...appointmentData, service: e.target.value })}
-                    className="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-white"
+                    className="w-full bg-brand-surface-subtle border border-slate-600 rounded-lg px-3 py-2 text-brand-text"
                     required
                   >
                     <option value="Primeira consulta">Primeira consulta</option>
@@ -2285,25 +2285,25 @@ const PatientAppointments: React.FC = () => {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm text-slate-400 mb-2">Observações</label>
+                  <label className="block text-sm text-brand-text-muted mb-2">Observações</label>
                   <textarea
                     value={appointmentData.notes}
                     onChange={(e) => setAppointmentData({ ...appointmentData, notes: e.target.value })}
                     placeholder="Informações adicionais relevantes para a avaliação clínica inicial..."
-                    className="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-white h-20"
+                    className="w-full bg-brand-surface-subtle border border-slate-600 rounded-lg px-3 py-2 text-brand-text h-20"
                   />
                 </div>
               </div>
               <div className="flex justify-end space-x-3 mt-6">
                 <button
                   onClick={() => setShowAppointmentModal(false)}
-                  className="px-4 py-2 text-slate-400 hover:text-white transition-colors"
+                  className="px-4 py-2 text-brand-text-muted hover:text-brand-text transition-colors"
                 >
                   Cancelar
                 </button>
                 <button
                   onClick={handleSaveAppointment}
-                  className="bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 rounded-lg transition-colors"
+                  className="bg-primary-600 hover:bg-primary-700 text-brand-text px-4 py-2 rounded-lg transition-colors"
                 >
                   Agendar
                 </button>

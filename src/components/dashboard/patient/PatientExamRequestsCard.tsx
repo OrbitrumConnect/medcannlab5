@@ -44,7 +44,7 @@ interface PatientExamRequestsCardProps {
 }
 
 const STATUS_CONFIG: Record<string, { label: string; color: string; dot: string; bg: string }> = {
-  draft: { label: 'Rascunho', color: 'text-slate-400', dot: 'bg-slate-400', bg: 'bg-slate-400/10' },
+  draft: { label: 'Rascunho', color: 'text-brand-text-muted', dot: 'bg-slate-400', bg: 'bg-slate-400/10' },
   pending: { label: 'Pendente', color: 'text-amber-400', dot: 'bg-amber-400', bg: 'bg-amber-400/10' },
   sent: { label: 'Enviado', color: 'text-blue-400', dot: 'bg-blue-400', bg: 'bg-blue-400/10' },
   completed: { label: 'Concluído', color: 'text-emerald-400', dot: 'bg-emerald-400', bg: 'bg-emerald-400/10' },
@@ -128,8 +128,8 @@ const PatientExamRequestsCard: React.FC<PatientExamRequestsCardProps> = ({
             <FlaskConical className="w-5 h-5 text-cyan-400" />
           </div>
           <div>
-            <h3 className="text-base font-semibold text-white">Exames Solicitados</h3>
-            <p className="text-[11px] text-slate-400">Clique para expandir • Imprima ou compartilhe</p>
+            <h3 className="text-base font-semibold text-brand-text">Exames Solicitados</h3>
+            <p className="text-[11px] text-brand-text-muted">Clique para expandir • Imprima ou compartilhe</p>
           </div>
         </div>
         {examRequests.length > 0 && (
@@ -141,7 +141,7 @@ const PatientExamRequestsCard: React.FC<PatientExamRequestsCardProps> = ({
 
       {/* Rows */}
       {examRequestsLoading ? (
-        <div className="flex items-center gap-3 py-6 justify-center text-slate-400">
+        <div className="flex items-center gap-3 py-6 justify-center text-brand-text-muted">
           <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-cyan-400" />
           <span className="text-sm">Carregando…</span>
         </div>
@@ -173,11 +173,11 @@ const PatientExamRequestsCard: React.FC<PatientExamRequestsCardProps> = ({
                 {/* Expanded content */}
                 {isExpanded && (
                   <div className="px-5 pb-4 pt-1 bg-slate-900/40 border-t border-slate-700/30">
-                    <pre className="text-sm text-slate-300 whitespace-pre-wrap leading-relaxed font-sans max-h-64 overflow-y-auto custom-scrollbar">{req.content}</pre>
+                    <pre className="text-sm text-brand-text-secondary whitespace-pre-wrap leading-relaxed font-sans max-h-64 overflow-y-auto custom-scrollbar">{req.content}</pre>
                     <div className="mt-3 flex items-center gap-2">
                       <button
                         onClick={(e) => { e.stopPropagation(); handlePrintExam(req.content) }}
-                        className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-200 bg-slate-800 hover:bg-slate-700 border border-slate-600/50 rounded-lg transition-colors"
+                        className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-200 bg-brand-surface hover:bg-brand-surface-subtle border border-slate-600/50 rounded-lg transition-colors"
                       >
                         <Printer className="w-3.5 h-3.5" /> Imprimir
                       </button>
@@ -200,7 +200,7 @@ const PatientExamRequestsCard: React.FC<PatientExamRequestsCardProps> = ({
       ) : (
         <div className="text-center py-8">
           <FlaskConical className="w-8 h-8 text-cyan-400 opacity-30 mx-auto mb-3" />
-          <p className="text-sm text-slate-400">Nenhuma solicitação de exame encontrada</p>
+          <p className="text-sm text-brand-text-muted">Nenhuma solicitação de exame encontrada</p>
         </div>
       )}
 

@@ -509,10 +509,10 @@ const CursoJardinsDeCura: React.FC = () => {
             <div className="flex-1">
               <div className="flex items-center space-x-3 mb-4">
                 <div className="w-16 h-16 bg-gradient-to-r from-green-500 to-emerald-500 rounded-full flex items-center justify-center">
-                  <Heart className="w-8 h-8 text-white" />
+                  <Heart className="w-8 h-8 text-brand-text" />
                 </div>
                 <div>
-                  <h1 className="text-3xl font-bold text-white mb-2">
+                  <h1 className="text-3xl font-bold text-brand-text mb-2">
                     {courseInfo.title}
                   </h1>
                   <p className="text-green-200 text-lg mb-2">
@@ -530,28 +530,28 @@ const CursoJardinsDeCura: React.FC = () => {
                     <Clock className="w-5 h-5 text-green-300" />
                     <span className="text-green-200 text-sm font-medium">Duração</span>
                   </div>
-                  <p className="text-white font-bold">{courseInfo.duration}</p>
+                  <p className="text-brand-text font-bold">{courseInfo.duration}</p>
                 </div>
                 <div className="bg-green-900/30 rounded-lg p-4 border border-green-500/30">
                   <div className="flex items-center space-x-2 mb-2">
                     <BookOpen className="w-5 h-5 text-green-300" />
                     <span className="text-green-200 text-sm font-medium">Módulos</span>
                   </div>
-                  <p className="text-white font-bold">{modules.length}</p>
+                  <p className="text-brand-text font-bold">{modules.length}</p>
                 </div>
                 <div className="bg-green-900/30 rounded-lg p-4 border border-green-500/30">
                   <div className="flex items-center space-x-2 mb-2">
                     <FileText className="w-5 h-5 text-green-300" />
                     <span className="text-green-200 text-sm font-medium">Aulas</span>
                   </div>
-                  <p className="text-white font-bold">{totalLessons}</p>
+                  <p className="text-brand-text font-bold">{totalLessons}</p>
                 </div>
                 <div className="bg-green-900/30 rounded-lg p-4 border border-green-500/30">
                   <div className="flex items-center space-x-2 mb-2">
                     <Award className="w-5 h-5 text-green-300" />
                     <span className="text-green-200 text-sm font-medium">Certificado</span>
                   </div>
-                  <p className="text-white font-bold">{courseInfo.certificate ? 'Sim' : 'Não'}</p>
+                  <p className="text-brand-text font-bold">{courseInfo.certificate ? 'Sim' : 'Não'}</p>
                 </div>
               </div>
             </div>
@@ -559,14 +559,14 @@ const CursoJardinsDeCura: React.FC = () => {
         </div>
 
         {/* Progress Overview */}
-        <div className="bg-slate-800/80 rounded-lg p-6 mb-8 border border-slate-700">
+        <div className="bg-slate-800/80 rounded-lg p-6 mb-8 border border-brand-border">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-bold text-white">Progresso do Curso</h2>
+            <h2 className="text-xl font-bold text-brand-text">Progresso do Curso</h2>
             <span className="text-green-400 font-semibold">
               {Math.round((completedLessons / totalLessons) * 100)}% Concluído
             </span>
           </div>
-          <div className="w-full bg-slate-700 rounded-full h-4 mb-4">
+          <div className="w-full bg-brand-surface-subtle rounded-full h-4 mb-4">
             <div 
               className="bg-gradient-to-r from-green-500 to-emerald-500 h-4 rounded-full transition-all duration-300"
               style={{ width: `${(completedLessons / totalLessons) * 100}%` }}
@@ -574,32 +574,32 @@ const CursoJardinsDeCura: React.FC = () => {
           </div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div>
-              <p className="text-slate-400 text-sm">Aulas Concluídas</p>
-              <p className="text-white font-bold text-lg">{completedLessons} / {totalLessons}</p>
+              <p className="text-brand-text-muted text-sm">Aulas Concluídas</p>
+              <p className="text-brand-text font-bold text-lg">{completedLessons} / {totalLessons}</p>
             </div>
             <div>
-              <p className="text-slate-400 text-sm">Pontos Ganhos</p>
-              <p className="text-white font-bold text-lg">{earnedPoints} / {totalPoints}</p>
+              <p className="text-brand-text-muted text-sm">Pontos Ganhos</p>
+              <p className="text-brand-text font-bold text-lg">{earnedPoints} / {totalPoints}</p>
             </div>
             <div>
-              <p className="text-slate-400 text-sm">Nível</p>
-              <p className="text-white font-bold text-lg">{courseInfo.level}</p>
+              <p className="text-brand-text-muted text-sm">Nível</p>
+              <p className="text-brand-text font-bold text-lg">{courseInfo.level}</p>
             </div>
             <div>
-              <p className="text-slate-400 text-sm">Idioma</p>
-              <p className="text-white font-bold text-lg">{courseInfo.language}</p>
+              <p className="text-brand-text-muted text-sm">Idioma</p>
+              <p className="text-brand-text font-bold text-lg">{courseInfo.language}</p>
             </div>
           </div>
         </div>
 
         {/* Modules List */}
         <div className="space-y-6">
-          <h2 className="text-2xl font-bold text-white mb-6">Módulos do Curso</h2>
+          <h2 className="text-2xl font-bold text-brand-text mb-6">Módulos do Curso</h2>
           
           {modules.map((module) => (
             <div 
               key={module.id}
-              className="bg-slate-800/80 rounded-lg border border-slate-700 overflow-hidden hover:border-green-500/50 transition-colors"
+              className="bg-slate-800/80 rounded-lg border border-brand-border overflow-hidden hover:border-green-500/50 transition-colors"
             >
               <div 
                 className="p-6 cursor-pointer"
@@ -613,21 +613,21 @@ const CursoJardinsDeCura: React.FC = () => {
                           ? 'bg-green-500' 
                           : module.progress > 0 
                             ? 'bg-yellow-500' 
-                            : 'bg-slate-700'
+                            : 'bg-brand-surface-subtle'
                       }`}>
                         {module.isCompleted ? (
-                          <CheckCircle className="w-6 h-6 text-white" />
+                          <CheckCircle className="w-6 h-6 text-brand-text" />
                         ) : (
-                          <span className="text-white font-bold">{module.id}</span>
+                          <span className="text-brand-text font-bold">{module.id}</span>
                         )}
                       </div>
                       <div>
-                        <h3 className="text-xl font-bold text-white mb-1">{module.title}</h3>
-                        <p className="text-slate-400 text-sm">{module.description}</p>
+                        <h3 className="text-xl font-bold text-brand-text mb-1">{module.title}</h3>
+                        <p className="text-brand-text-muted text-sm">{module.description}</p>
                       </div>
                     </div>
                     
-                    <div className="flex items-center space-x-4 mt-4 text-sm text-slate-400">
+                    <div className="flex items-center space-x-4 mt-4 text-sm text-brand-text-muted">
                       <div className="flex items-center space-x-1">
                         <Clock className="w-4 h-4" />
                         <span>{module.duration}</span>
@@ -643,7 +643,7 @@ const CursoJardinsDeCura: React.FC = () => {
                     </div>
 
                     {module.progress > 0 && (
-                      <div className="w-full bg-slate-700 rounded-full h-2 mt-3">
+                      <div className="w-full bg-brand-surface-subtle rounded-full h-2 mt-3">
                         <div 
                           className="bg-gradient-to-r from-green-500 to-emerald-500 h-2 rounded-full transition-all duration-300"
                           style={{ width: `${module.progress}%` }}
@@ -658,7 +658,7 @@ const CursoJardinsDeCura: React.FC = () => {
                         ? 'bg-green-500/20 text-green-400' 
                         : module.progress > 0 
                           ? 'bg-yellow-500/20 text-yellow-400' 
-                          : 'bg-slate-700 text-slate-400'
+                          : 'bg-brand-surface-subtle text-brand-text-muted'
                     }`}>
                       {module.isCompleted ? 'Concluído' : module.progress > 0 ? 'Em Andamento' : 'Pendente'}
                     </span>
@@ -668,18 +668,18 @@ const CursoJardinsDeCura: React.FC = () => {
 
               {/* Lessons List */}
               {activeModule === module.id && (
-                <div className="border-t border-slate-700 bg-slate-900/50 p-6">
-                  <h4 className="text-lg font-semibold text-white mb-4">Aulas do Módulo</h4>
+                <div className="border-t border-brand-border bg-slate-900/50 p-6">
+                  <h4 className="text-lg font-semibold text-brand-text mb-4">Aulas do Módulo</h4>
                   <div className="space-y-3">
                     {module.lessons.map((lesson) => (
                       <div
                         key={lesson.id}
                         className={`p-4 rounded-lg border transition-colors ${
                           lesson.isLocked
-                            ? 'bg-slate-800/50 border-slate-700 opacity-60 cursor-not-allowed'
+                            ? 'bg-slate-800/50 border-brand-border opacity-60 cursor-not-allowed'
                             : lesson.isCompleted
                               ? 'bg-green-500/10 border-green-500/30 hover:bg-green-500/20 cursor-pointer'
-                              : 'bg-slate-700/50 border-slate-600 hover:bg-slate-700 cursor-pointer'
+                              : 'bg-slate-700/50 border-slate-600 hover:bg-brand-surface-subtle cursor-pointer'
                         }`}
                         onClick={() => !lesson.isLocked && handleLessonClick(module.id, lesson.id)}
                       >
@@ -697,7 +697,7 @@ const CursoJardinsDeCura: React.FC = () => {
                             <div className="flex-1">
                               <div className="flex items-center space-x-2 mb-1">
                                 <h5 className={`font-semibold ${
-                                  lesson.isLocked ? 'text-slate-500' : 'text-white'
+                                  lesson.isLocked ? 'text-slate-500' : 'text-brand-text'
                                 }`}>
                                   {lesson.title}
                                 </h5>
@@ -708,7 +708,7 @@ const CursoJardinsDeCura: React.FC = () => {
                                   <Shield className="w-4 h-4 text-slate-500" />
                                 )}
                               </div>
-                              <div className="flex items-center space-x-4 text-xs text-slate-400">
+                              <div className="flex items-center space-x-4 text-xs text-brand-text-muted">
                                 <span className="flex items-center space-x-1">
                                   {getLessonTypeLabel(lesson.type)}
                                 </span>
@@ -735,49 +735,49 @@ const CursoJardinsDeCura: React.FC = () => {
 
         {/* Certification Requirements */}
         <div className="bg-gradient-to-r from-emerald-800 to-green-700 rounded-xl p-6 mt-8 border border-emerald-600/50">
-          <h2 className="text-2xl font-bold text-white mb-4 flex items-center">
+          <h2 className="text-2xl font-bold text-brand-text mb-4 flex items-center">
             <Award className="w-6 h-6 mr-2" />
             Critérios de Certificação
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="bg-emerald-900/30 rounded-lg p-4 border border-emerald-500/30">
-              <h4 className="text-white font-semibold mb-2">✅ Participação Mínima</h4>
+              <h4 className="text-brand-text font-semibold mb-2">✅ Participação Mínima</h4>
               <p className="text-emerald-200 text-sm">Mínimo de 80% de participação em todas as atividades</p>
             </div>
             <div className="bg-emerald-900/30 rounded-lg p-4 border border-emerald-500/30">
-              <h4 className="text-white font-semibold mb-2">✅ Simulações Completas</h4>
+              <h4 className="text-brand-text font-semibold mb-2">✅ Simulações Completas</h4>
               <p className="text-emerald-200 text-sm">Conclusão de pelo menos 3 simulações completas</p>
             </div>
             <div className="bg-emerald-900/30 rounded-lg p-4 border border-emerald-500/30">
-              <h4 className="text-white font-semibold mb-2">✅ Resumo Reflexivo</h4>
+              <h4 className="text-brand-text font-semibold mb-2">✅ Resumo Reflexivo</h4>
               <p className="text-emerald-200 text-sm">Um resumo reflexivo submetido via Nôa Esperança</p>
             </div>
             <div className="bg-emerald-900/30 rounded-lg p-4 border border-emerald-500/30">
-              <h4 className="text-white font-semibold mb-2">✅ Avaliação Final</h4>
+              <h4 className="text-brand-text font-semibold mb-2">✅ Avaliação Final</h4>
               <p className="text-emerald-200 text-sm">Avaliação final com caso aplicado e desafio de comunicação</p>
             </div>
           </div>
         </div>
 
         {/* Anexos Recomendados */}
-        <div className="bg-slate-800/80 rounded-lg p-6 mt-8 border border-slate-700">
-          <h2 className="text-xl font-bold text-white mb-4">📎 Anexos Recomendados</h2>
+        <div className="bg-slate-800/80 rounded-lg p-6 mt-8 border border-brand-border">
+          <h2 className="text-xl font-bold text-brand-text mb-4">📎 Anexos Recomendados</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="bg-slate-700/50 rounded-lg p-4">
-              <h4 className="text-white font-semibold mb-2">📖 Glossário de Termos</h4>
-              <p className="text-slate-400 text-sm">Termos-chave, sinais, classificações clínicas</p>
+              <h4 className="text-brand-text font-semibold mb-2">📖 Glossário de Termos</h4>
+              <p className="text-brand-text-muted text-sm">Termos-chave, sinais, classificações clínicas</p>
             </div>
             <div className="bg-slate-700/50 rounded-lg p-4">
-              <h4 className="text-white font-semibold mb-2">💬 Estrutura de Perguntas da Arte da Entrevista</h4>
-              <p className="text-slate-400 text-sm">Modelo de perguntas e técnicas de escuta</p>
+              <h4 className="text-brand-text font-semibold mb-2">💬 Estrutura de Perguntas da Arte da Entrevista</h4>
+              <p className="text-brand-text-muted text-sm">Modelo de perguntas e técnicas de escuta</p>
             </div>
             <div className="bg-slate-700/50 rounded-lg p-4">
-              <h4 className="text-white font-semibold mb-2">🤖 Exemplo de Interação com Nôa</h4>
-              <p className="text-slate-400 text-sm">Casos práticos de uso da IA na formação</p>
+              <h4 className="text-brand-text font-semibold mb-2">🤖 Exemplo de Interação com Nôa</h4>
+              <p className="text-brand-text-muted text-sm">Casos práticos de uso da IA na formação</p>
             </div>
             <div className="bg-slate-700/50 rounded-lg p-4">
-              <h4 className="text-white font-semibold mb-2">📋 Ficha de Revisão do Supervisor</h4>
-              <p className="text-slate-400 text-sm">Para programas híbridos com supervisão</p>
+              <h4 className="text-brand-text font-semibold mb-2">📋 Ficha de Revisão do Supervisor</h4>
+              <p className="text-brand-text-muted text-sm">Para programas híbridos com supervisão</p>
             </div>
           </div>
         </div>

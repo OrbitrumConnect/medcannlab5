@@ -156,7 +156,7 @@ const TermosLGPD: React.FC = () => {
                         <li>Profissionais para segunda opinião médica</li>
                       </ul>
                     </div>
-                    <div className="bg-slate-900 dark:bg-slate-900 border border-gray-200 rounded-lg p-4">
+                    <div className="bg-brand-bg dark:bg-brand-bg border border-gray-200 rounded-lg p-4">
                       <h3 className="font-semibold text-gray-800 mb-2">Seus direitos:</h3>
                       <ul className="list-disc pl-6 text-gray-700 space-y-1">
                         <li>Acesso aos seus dados a qualquer momento</li>
@@ -190,7 +190,7 @@ const TermosLGPD: React.FC = () => {
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <button
                 onClick={handleAcceptAll}
-                className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 rounded-lg font-semibold transition-colors duration-200 inline-flex items-center"
+                className="bg-blue-600 hover:bg-blue-700 text-brand-text px-8 py-4 rounded-lg font-semibold transition-colors duration-200 inline-flex items-center"
               >
                 <CheckCircle className="w-5 h-5 mr-2" />
                 Aceitar Todos os Termos
@@ -200,7 +200,7 @@ const TermosLGPD: React.FC = () => {
                 to="/dashboard"
                 className={`px-8 py-4 rounded-lg font-semibold transition-colors duration-200 inline-flex items-center ${
                   canProceed
-                    ? 'bg-green-600 hover:bg-green-700 text-white'
+                    ? 'bg-green-600 hover:bg-green-700 text-brand-text'
                     : 'bg-gray-300 text-gray-500 cursor-not-allowed'
                 }`}
                 onClick={(e) => !canProceed && e.preventDefault()}

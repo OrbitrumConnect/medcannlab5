@@ -8,7 +8,7 @@ const NotFound: React.FC = () => {
       <div className="text-center">
         <div className="mb-8">
           <h1 className="text-9xl font-bold text-primary-600 dark:text-primary-400">404</h1>
-          <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-4">
+          <h2 className="text-2xl font-semibold text-gray-900 dark:text-brand-text mb-4">
             Página não encontrada
           </h2>
           <p className="text-gray-600 dark:text-gray-300 mb-8 max-w-md mx-auto">

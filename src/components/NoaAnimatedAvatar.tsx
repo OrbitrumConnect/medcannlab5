@@ -272,7 +272,7 @@ const NoaAnimatedAvatar: React.FC<NoaAnimatedAvatarProps> = ({
 
               {pensando && (
                 <div className="absolute inset-0 flex items-center justify-center bg-black/50">
-                  <Brain className="text-white animate-pulse" size={48} />
+                  <Brain className="text-brand-text animate-pulse" size={48} />
                 </div>
               )}
 
@@ -345,7 +345,7 @@ const NoaAnimatedAvatar: React.FC<NoaAnimatedAvatarProps> = ({
             className={cn(
               "w-14 h-14 rounded-full flex items-center justify-center transition-all",
               recognitionRef.current
-                ? "bg-[#92400e] text-white hover:bg-[#7c2d12]"
+                ? "bg-[#92400e] text-brand-text hover:bg-[#7c2d12]"
                 : "bg-card border-2 border-border hover:border-[#1e3a8a]"
             )}
           >
@@ -357,7 +357,7 @@ const NoaAnimatedAvatar: React.FC<NoaAnimatedAvatarProps> = ({
             className={cn(
               "w-14 h-14 rounded-full flex items-center justify-center transition-all",
               cameraAtiva
-                ? "bg-[#1e40af] text-white hover:bg-[#1e3a8a]"
+                ? "bg-[#1e40af] text-brand-text hover:bg-[#1e3a8a]"
                 : "bg-card border-2 border-border hover:border-[#1e3a8a]"
             )}
           >
@@ -369,7 +369,7 @@ const NoaAnimatedAvatar: React.FC<NoaAnimatedAvatarProps> = ({
             className={cn(
               "w-14 h-14 rounded-full flex items-center justify-center transition-all",
               somAtivo
-                ? "bg-[#1e3a8a] text-white hover:bg-[#1e40af]"
+                ? "bg-[#1e3a8a] text-brand-text hover:bg-[#1e40af]"
                 : "bg-card border-2 border-border hover:border-[#1e3a8a]"
             )}
           >

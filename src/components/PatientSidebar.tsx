@@ -242,7 +242,7 @@ const PatientSidebar: React.FC<PatientSidebarProps> = ({
           </div>
           {!isCollapsed && (
             <div className="min-w-0">
-              <span className="text-base font-bold block truncate text-white">MedCannLab</span>
+              <span className="text-base font-bold block truncate text-brand-text">MedCannLab</span>
               <div className="text-xs text-[rgba(200,214,229,0.75)]">3.0</div>
             </div>
           )}
@@ -256,13 +256,13 @@ const PatientSidebar: React.FC<PatientSidebarProps> = ({
             className={`${isCollapsed ? 'w-12 h-12' : 'w-10 h-10'} rounded-xl flex items-center justify-center shadow-lg flex-shrink-0`}
             style={{ background: accentGradient, boxShadow: '0 8px 20px rgba(0,193,106,0.32)' }}
           >
-            <span className="text-white font-bold text-sm">
+            <span className="text-brand-text font-bold text-sm">
               {user?.name ? user.name.split(' ').map(n => n[0]).join('').slice(0, 2) : 'P'}
             </span>
           </div>
           {!isCollapsed && (
             <div className="flex-1 min-w-0 pr-8">
-              <p className="font-semibold text-white text-sm truncate">{user?.name || 'Paciente'}</p>
+              <p className="font-semibold text-brand-text text-sm truncate">{user?.name || 'Paciente'}</p>
               <p className="text-xs text-[rgba(200,214,229,0.75)]">Paciente</p>
             </div>
           )}
@@ -320,10 +320,10 @@ const PatientSidebar: React.FC<PatientSidebarProps> = ({
               }}
               title={isCollapsed ? card.title : undefined}
             >
-              <Icon className={`${isCollapsed ? 'w-6 h-6' : 'w-6 h-6'} flex-shrink-0 ${isActive ? 'text-white' : 'text-[#C8D6E5]'}`} />
+              <Icon className={`${isCollapsed ? 'w-6 h-6' : 'w-6 h-6'} flex-shrink-0 ${isActive ? 'text-brand-text' : 'text-[#C8D6E5]'}`} />
               {!isCollapsed && (
                 <>
-                  <span className={`text-sm font-medium flex-1 ${isActive ? 'text-white' : 'text-[#C8D6E5]'}`}>
+                  <span className={`text-sm font-medium flex-1 ${isActive ? 'text-brand-text' : 'text-[#C8D6E5]'}`}>
                     {card.title}
                   </span>
                   {card.progress !== undefined && (

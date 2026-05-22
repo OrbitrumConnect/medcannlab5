@@ -947,13 +947,13 @@ const Prescriptions: React.FC = () => {
             <div className="flex items-center space-x-4">
               <button
                 onClick={() => navigate('/app/clinica/profissional/dashboard')}
-                className="p-2 hover:bg-slate-700 rounded-lg transition-colors"
+                className="p-2 hover:bg-brand-surface-subtle rounded-lg transition-colors"
               >
-                <ArrowLeft className="w-5 h-5 text-white" />
+                <ArrowLeft className="w-5 h-5 text-brand-text" />
               </button>
               <div>
-                <h1 className="text-3xl font-bold text-white mb-2">Prescrições Médicas</h1>
-                <p className="text-slate-400">CFM - Prescrição Eletrônica com Assinatura Digital ICP Brasil</p>
+                <h1 className="text-3xl font-bold text-brand-text mb-2">Prescrições Médicas</h1>
+                <p className="text-brand-text-muted">CFM - Prescrição Eletrônica com Assinatura Digital ICP Brasil</p>
               </div>
             </div>
           </div>
@@ -1022,8 +1022,8 @@ const Prescriptions: React.FC = () => {
                   onClick={() => setStatusFilter('todas')}
                   className={`rounded-xl p-4 border text-left transition-all ${statusFilter === 'todas' ? 'border-white/30 bg-white/[0.06]' : 'border-white/5 bg-white/[0.03] hover:border-white/15'}`}
                 >
-                  <div className="text-xs text-slate-400 uppercase tracking-wider">Total</div>
-                  <div className="text-2xl font-bold text-white tabular-nums">{prescriptionStats.total}</div>
+                  <div className="text-xs text-brand-text-muted uppercase tracking-wider">Total</div>
+                  <div className="text-2xl font-bold text-brand-text tabular-nums">{prescriptionStats.total}</div>
                 </button>
                 <button
                   type="button"
@@ -1060,7 +1060,7 @@ const Prescriptions: React.FC = () => {
                   <h3 className="text-base font-semibold text-yellow-200 mb-1">
                     Você tem {prescriptionStats.draft} prescrições em rascunho
                   </h3>
-                  <p className="text-sm text-slate-300 mb-3">
+                  <p className="text-sm text-brand-text-secondary mb-3">
                     Para enviar ao paciente com validade legal CFM, é necessária <strong>assinatura digital ICP-Brasil</strong>.
                     Sem ela, o documento fica como rascunho (válido apenas para impressão local com carimbo manual).
                   </p>
@@ -1075,7 +1075,7 @@ const Prescriptions: React.FC = () => {
                     <button
                       type="button"
                       onClick={() => setShowCertHelpModal(true)}
-                      className="px-4 py-2 rounded-lg bg-white/5 text-white hover:bg-white/10 border border-white/10 text-sm font-medium transition-colors"
+                      className="px-4 py-2 rounded-lg bg-white/5 text-brand-text hover:bg-white/10 border border-white/10 text-sm font-medium transition-colors"
                     >
                       Como obter certificado ICP-Brasil
                     </button>
@@ -1086,7 +1086,7 @@ const Prescriptions: React.FC = () => {
 
             {/* V1.9.182 — Cards compactos (mesmo tamanho dos templates QuickPrescriptions) */}
             <div className="mb-6">
-              <h2 className="text-base md:text-lg font-bold text-white mb-3">Selecione o Tipo de Receita</h2>
+              <h2 className="text-base md:text-lg font-bold text-brand-text mb-3">Selecione o Tipo de Receita</h2>
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
                 {prescriptionTypes.map((type) => {
                   const Icon = type.icon
@@ -1100,10 +1100,10 @@ const Prescriptions: React.FC = () => {
                       className="group bg-slate-800/50 backdrop-blur-sm rounded-xl p-3 md:p-4 border border-slate-700/50 hover:border-slate-600 transition-all text-left hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
                     >
                       <div className={`inline-flex p-2 rounded-lg bg-gradient-to-br ${type.color} mb-2 group-hover:scale-110 transition-transform`}>
-                        <Icon className="w-4 h-4 md:w-5 md:h-5 text-white" />
+                        <Icon className="w-4 h-4 md:w-5 md:h-5 text-brand-text" />
                       </div>
-                      <h3 className="text-xs md:text-sm font-bold text-white leading-tight">{type.name}</h3>
-                      <p className="text-[10px] md:text-xs text-slate-400 mt-1 leading-snug">{type.description}</p>
+                      <h3 className="text-xs md:text-sm font-bold text-brand-text leading-tight">{type.name}</h3>
+                      <p className="text-[10px] md:text-xs text-brand-text-muted mt-1 leading-snug">{type.description}</p>
                     </button>
                   )
                 })}
@@ -1115,8 +1115,8 @@ const Prescriptions: React.FC = () => {
               <div className="flex items-start space-x-3">
                 <AlertCircle className="w-6 h-6 text-blue-400 mt-0.5" />
                 <div>
-                  <h3 className="text-lg font-bold text-white mb-2">Conforme Diretrizes CFM</h3>
-                  <ul className="space-y-2 text-sm text-slate-300">
+                  <h3 className="text-lg font-bold text-brand-text mb-2">Conforme Diretrizes CFM</h3>
+                  <ul className="space-y-2 text-sm text-brand-text-secondary">
                     <li className="flex items-start">
                       <CheckCircle className="w-4 h-4 text-green-400 mr-2 mt-0.5" />
                       <span>Assinatura Digital com Certificado ICP Brasil</span>
@@ -1141,24 +1141,24 @@ const Prescriptions: React.FC = () => {
             {/* Prescrições Recentes */}
             <div>
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-2xl font-bold text-white">
+                <h2 className="text-2xl font-bold text-brand-text">
                   Prescrições Recentes
                   {statusFilter !== 'todas' && (
-                    <span className="ml-2 text-sm font-normal text-slate-400">
+                    <span className="ml-2 text-sm font-normal text-brand-text-muted">
                       · filtro: {statusFilter === 'draft' ? 'Rascunhos' : statusFilter === 'signed' ? 'Assinadas' : 'Enviadas'}
                     </span>
                   )}
                 </h2>
-                {loading && <Loader2 className="w-5 h-5 text-slate-400 animate-spin" />}
+                {loading && <Loader2 className="w-5 h-5 text-brand-text-muted animate-spin" />}
               </div>
 
               {loading && prescriptions.length === 0 ? (
                 <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl p-6 border border-slate-700/50">
-                  <p className="text-slate-400 text-center py-8">Carregando prescrições...</p>
+                  <p className="text-brand-text-muted text-center py-8">Carregando prescrições...</p>
                 </div>
               ) : filteredPrescriptions.length === 0 ? (
                 <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl p-6 border border-slate-700/50">
-                  <p className="text-slate-400 text-center py-8">
+                  <p className="text-brand-text-muted text-center py-8">
                     {prescriptions.length === 0
                       ? 'Nenhuma prescrição encontrada'
                       : `Nenhuma prescrição neste filtro. ${statusFilter !== 'todas' ? 'Limpe o filtro para ver todas.' : ''}`}
@@ -1168,7 +1168,7 @@ const Prescriptions: React.FC = () => {
                       <button
                         type="button"
                         onClick={() => setStatusFilter('todas')}
-                        className="px-4 py-2 rounded-lg bg-white/5 text-white hover:bg-white/10 border border-white/10 text-sm font-medium transition-colors"
+                        className="px-4 py-2 rounded-lg bg-white/5 text-brand-text hover:bg-white/10 border border-white/10 text-sm font-medium transition-colors"
                       >
                         Mostrar todas
                       </button>
@@ -1204,11 +1204,11 @@ const Prescriptions: React.FC = () => {
                           <div className="flex-1">
                             <div className="flex items-center space-x-3 mb-2">
                               <div className={`p-2 rounded-lg bg-gradient-to-br ${typeInfo?.color || 'from-[#00c16a] to-[#00a85a]'}`}>
-                                <TypeIcon className="w-5 h-5 text-white" />
+                                <TypeIcon className="w-5 h-5 text-brand-text" />
                               </div>
                               <div>
-                                <h3 className="text-lg font-bold text-white">{typeInfo?.name}</h3>
-                                <p className="text-sm text-slate-400">
+                                <h3 className="text-lg font-bold text-brand-text">{typeInfo?.name}</h3>
+                                <p className="text-sm text-brand-text-muted">
                                   {prescription.patient_name}
                                   {prescription.patient_cpf && ` • CPF: ${prescription.patient_cpf}`}
                                 </p>
@@ -1220,7 +1220,7 @@ const Prescriptions: React.FC = () => {
                                 <span className={`px-3 py-1 rounded-full border ${statusColors[prescription.status] || statusColors.draft}`}>
                                   {statusLabels[prescription.status] || 'Desconhecido'}
                                 </span>
-                                <span className="text-slate-400">
+                                <span className="text-brand-text-muted">
                                   {new Date(prescription.created_at).toLocaleDateString('pt-BR')}
                                 </span>
                                 {prescription.iti_validation_code && (
@@ -1232,10 +1232,10 @@ const Prescriptions: React.FC = () => {
 
                               {prescription.medications && prescription.medications.length > 0 && (
                                 <div className="mt-3">
-                                  <p className="text-sm font-medium text-slate-300 mb-2">Medicamentos:</p>
+                                  <p className="text-sm font-medium text-brand-text-secondary mb-2">Medicamentos:</p>
                                   <div className="space-y-1">
                                     {prescription.medications.map((med: any, idx: number) => (
-                                      <p key={idx} className="text-sm text-slate-400">
+                                      <p key={idx} className="text-sm text-brand-text-muted">
                                         • {med.name} - {med.dosage} ({med.frequency})
                                       </p>
                                     ))}
@@ -1264,7 +1264,7 @@ const Prescriptions: React.FC = () => {
                           <div className="flex items-center space-x-2">
                             {prescription.iti_qr_code && (
                               <button
-                                className="p-2 hover:bg-slate-700 rounded-lg transition-colors"
+                                className="p-2 hover:bg-brand-surface-subtle rounded-lg transition-colors"
                                 title="Ver QR Code"
                               >
                                 <QrCode className="w-5 h-5 text-blue-400" />
@@ -1275,7 +1275,7 @@ const Prescriptions: React.FC = () => {
                                 href="https://validar.iti.gov.br/"
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="p-2 hover:bg-slate-700 rounded-lg transition-colors"
+                                className="p-2 hover:bg-brand-surface-subtle rounded-lg transition-colors"
                                 title="Abrir validador oficial do ITI (validar.iti.gov.br)"
                               >
                                 <FileCheck className="w-5 h-5 text-green-400" />
@@ -1283,12 +1283,12 @@ const Prescriptions: React.FC = () => {
                             )}
                             <button
                               onClick={() => handlePrintPrescription(prescription)}
-                              className="p-2 hover:bg-slate-700 rounded-lg transition-colors"
+                              className="p-2 hover:bg-brand-surface-subtle rounded-lg transition-colors"
                               title="Visualizar e Imprimir (PDF)"
                             >
                               <div className="flex items-center gap-2">
                                 <Eye className="w-5 h-5 text-blue-400" />
-                                <Download className="w-5 h-5 text-slate-400" />
+                                <Download className="w-5 h-5 text-brand-text-muted" />
                               </div>
                             </button>
                           </div>
@@ -1305,12 +1305,12 @@ const Prescriptions: React.FC = () => {
             {/* Formulário de Prescrição */}
             <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl p-8 border border-slate-700/50 mb-6">
               <div className="flex items-center justify-between mb-6">
-                <h2 className="text-2xl font-bold text-white">
+                <h2 className="text-2xl font-bold text-brand-text">
                   {prescriptionTypes.find(t => t.id === selectedType)?.name}
                 </h2>
                 <button
                   onClick={() => setShowForm(false)}
-                  className="text-slate-400 hover:text-white transition-colors"
+                  className="text-brand-text-muted hover:text-brand-text transition-colors"
                 >
                   ✕
                 </button>
@@ -1318,20 +1318,20 @@ const Prescriptions: React.FC = () => {
 
               {/* Dados do Paciente */}
               <div className="space-y-4 mb-6">
-                <h3 className="text-lg font-semibold text-white">Dados do Paciente</h3>
+                <h3 className="text-lg font-semibold text-brand-text">Dados do Paciente</h3>
 
                 {/* Busca de Paciente */}
                 <div className="relative">
-                  <label className="block text-sm font-medium text-slate-300 mb-2">
+                  <label className="block text-sm font-medium text-brand-text-secondary mb-2">
                     Buscar Paciente
                   </label>
                   <div className="relative">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-slate-400" />
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-brand-text-muted" />
                     <input
                       type="text"
                       value={patientSearch}
                       onChange={(e) => setPatientSearch(e.target.value)}
-                      className="w-full pl-10 pr-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:border-blue-500"
+                      className="w-full pl-10 pr-4 py-2 bg-brand-surface-subtle border border-slate-600 rounded-lg text-brand-text placeholder-slate-400 focus:outline-none focus:border-blue-500"
                       placeholder="Digite nome, CPF ou email — ou veja seus pacientes recentes abaixo"
                     />
                     {selectedPatient && (
@@ -1346,7 +1346,7 @@ const Prescriptions: React.FC = () => {
                           // V1.9.119-C: ao limpar paciente, recarrega lista de recentes
                           loadRecentPatients()
                         }}
-                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-white"
+                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-brand-text-muted hover:text-brand-text"
                       >
                         <X className="w-4 h-4" />
                       </button>
@@ -1355,10 +1355,10 @@ const Prescriptions: React.FC = () => {
 
                   {/* V1.9.119-C: Lista de pacientes — recentes ou resultados de busca */}
                   {!selectedPatient && (
-                    <div className="mt-2 bg-slate-800 border border-slate-600 rounded-lg shadow-lg max-h-72 overflow-y-auto">
+                    <div className="mt-2 bg-brand-surface border border-slate-600 rounded-lg shadow-lg max-h-72 overflow-y-auto">
                       {/* Badge contextual */}
-                      <div className="sticky top-0 px-4 py-2 bg-slate-900/95 border-b border-slate-700 flex items-center justify-between text-xs">
-                        <span className="text-slate-400 font-medium">
+                      <div className="sticky top-0 px-4 py-2 bg-slate-900/95 border-b border-brand-border flex items-center justify-between text-xs">
+                        <span className="text-brand-text-muted font-medium">
                           {patientListLoading ? (
                             <>⏳ Carregando pacientes...</>
                           ) : patientListMode === 'search' ? (
@@ -1378,17 +1378,17 @@ const Prescriptions: React.FC = () => {
                           <button
                             key={patient.id}
                             onClick={() => handleSelectPatient(patient)}
-                            className="w-full px-4 py-3 text-left hover:bg-slate-700 transition-colors border-b border-slate-700 last:border-b-0"
+                            className="w-full px-4 py-3 text-left hover:bg-brand-surface-subtle transition-colors border-b border-brand-border last:border-b-0"
                           >
-                            <p className="text-white font-medium">{patient.name}</p>
-                            <p className="text-sm text-slate-400">
+                            <p className="text-brand-text font-medium">{patient.name}</p>
+                            <p className="text-sm text-brand-text-muted">
                               {patient.cpf && `CPF: ${patient.cpf} • `}
                               {patient.email && `Email: ${patient.email}`}
                             </p>
                           </button>
                         ))
                       ) : !patientListLoading ? (
-                        <div className="px-4 py-6 text-center text-sm text-slate-400">
+                        <div className="px-4 py-6 text-center text-sm text-brand-text-muted">
                           {patientListMode === 'search' ? (
                             <>Nenhum paciente encontrado com "{patientSearch}".<br/>
                             <span className="text-xs text-slate-500">Verifique a grafia ou tente CPF/email.</span></>
@@ -1404,51 +1404,51 @@ const Prescriptions: React.FC = () => {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-slate-300 mb-2">
+                    <label className="block text-sm font-medium text-brand-text-secondary mb-2">
                       Nome do Paciente *
                     </label>
                     <input
                       type="text"
                       value={patientName}
                       onChange={(e) => setPatientName(e.target.value)}
-                      className="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:border-blue-500"
+                      className="w-full px-4 py-2 bg-brand-surface-subtle border border-slate-600 rounded-lg text-brand-text placeholder-slate-400 focus:outline-none focus:border-blue-500"
                       placeholder="Digite o nome completo"
                       required
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-slate-300 mb-2">
+                    <label className="block text-sm font-medium text-brand-text-secondary mb-2">
                       CPF
                     </label>
                     <input
                       type="text"
                       value={patientCPF}
                       onChange={(e) => setPatientCPF(e.target.value)}
-                      className="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:border-blue-500"
+                      className="w-full px-4 py-2 bg-brand-surface-subtle border border-slate-600 rounded-lg text-brand-text placeholder-slate-400 focus:outline-none focus:border-blue-500"
                       placeholder="000.000.000-00"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-slate-300 mb-2">
+                    <label className="block text-sm font-medium text-brand-text-secondary mb-2">
                       Email
                     </label>
                     <input
                       type="email"
                       value={patientEmail}
                       onChange={(e) => setPatientEmail(e.target.value)}
-                      className="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:border-blue-500"
+                      className="w-full px-4 py-2 bg-brand-surface-subtle border border-slate-600 rounded-lg text-brand-text placeholder-slate-400 focus:outline-none focus:border-blue-500"
                       placeholder="email@exemplo.com"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-slate-300 mb-2">
+                    <label className="block text-sm font-medium text-brand-text-secondary mb-2">
                       Telefone
                     </label>
                     <input
                       type="text"
                       value={patientPhone}
                       onChange={(e) => setPatientPhone(e.target.value)}
-                      className="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:border-blue-500"
+                      className="w-full px-4 py-2 bg-brand-surface-subtle border border-slate-600 rounded-lg text-brand-text placeholder-slate-400 focus:outline-none focus:border-blue-500"
                       placeholder="(00) 00000-0000"
                     />
                   </div>
@@ -1459,74 +1459,74 @@ const Prescriptions: React.FC = () => {
               {selectedType === 'special' && (
                 <div className="space-y-4 mb-6 border-t border-slate-700/50 pt-6">
                   <div>
-                    <h3 className="text-lg font-semibold text-white">
+                    <h3 className="text-lg font-semibold text-brand-text">
                       Dados do Comprador
                       <span className="ml-2 text-amber-400 text-sm font-normal">(ANVISA Portaria 344/98 — obrigatório)</span>
                     </h3>
-                    <p className="text-xs text-slate-400 mt-1">
+                    <p className="text-xs text-brand-text-muted mt-1">
                       Pode ser o próprio paciente OU representante (cuidador, familiar) que vai retirar o medicamento na farmácia.
                     </p>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="md:col-span-2">
-                      <label className="block text-sm font-medium text-slate-300 mb-2">Nome do Comprador</label>
+                      <label className="block text-sm font-medium text-brand-text-secondary mb-2">Nome do Comprador</label>
                       <input
                         type="text"
                         value={buyerData.name}
                         onChange={(e) => setBuyerData({ ...buyerData, name: e.target.value })}
-                        className="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:border-blue-500"
+                        className="w-full px-4 py-2 bg-brand-surface-subtle border border-slate-600 rounded-lg text-brand-text placeholder-slate-400 focus:outline-none focus:border-blue-500"
                         placeholder="Nome completo de quem vai retirar"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-slate-300 mb-2">Documento (RG/CPF)</label>
+                      <label className="block text-sm font-medium text-brand-text-secondary mb-2">Documento (RG/CPF)</label>
                       <input
                         type="text"
                         value={buyerData.id}
                         onChange={(e) => setBuyerData({ ...buyerData, id: e.target.value })}
-                        className="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:border-blue-500"
+                        className="w-full px-4 py-2 bg-brand-surface-subtle border border-slate-600 rounded-lg text-brand-text placeholder-slate-400 focus:outline-none focus:border-blue-500"
                         placeholder="Número do documento"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-slate-300 mb-2">Órgão Emissor</label>
+                      <label className="block text-sm font-medium text-brand-text-secondary mb-2">Órgão Emissor</label>
                       <input
                         type="text"
                         value={buyerData.id_org}
                         onChange={(e) => setBuyerData({ ...buyerData, id_org: e.target.value })}
-                        className="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:border-blue-500"
+                        className="w-full px-4 py-2 bg-brand-surface-subtle border border-slate-600 rounded-lg text-brand-text placeholder-slate-400 focus:outline-none focus:border-blue-500"
                         placeholder="Ex: SSP-RJ, Detran-SP"
                       />
                     </div>
                     <div className="md:col-span-2">
-                      <label className="block text-sm font-medium text-slate-300 mb-2">Endereço</label>
+                      <label className="block text-sm font-medium text-brand-text-secondary mb-2">Endereço</label>
                       <input
                         type="text"
                         value={buyerData.address}
                         onChange={(e) => setBuyerData({ ...buyerData, address: e.target.value })}
-                        className="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:border-blue-500"
+                        className="w-full px-4 py-2 bg-brand-surface-subtle border border-slate-600 rounded-lg text-brand-text placeholder-slate-400 focus:outline-none focus:border-blue-500"
                         placeholder="Rua, número, complemento, bairro"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-slate-300 mb-2">Cidade</label>
+                      <label className="block text-sm font-medium text-brand-text-secondary mb-2">Cidade</label>
                       <input
                         type="text"
                         value={buyerData.city}
                         onChange={(e) => setBuyerData({ ...buyerData, city: e.target.value })}
-                        className="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:border-blue-500"
+                        className="w-full px-4 py-2 bg-brand-surface-subtle border border-slate-600 rounded-lg text-brand-text placeholder-slate-400 focus:outline-none focus:border-blue-500"
                         placeholder="Município"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-slate-300 mb-2">UF</label>
+                      <label className="block text-sm font-medium text-brand-text-secondary mb-2">UF</label>
                       <input
                         type="text"
                         maxLength={2}
                         value={buyerData.uf}
                         onChange={(e) => setBuyerData({ ...buyerData, uf: e.target.value.toUpperCase() })}
-                        className="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:border-blue-500"
+                        className="w-full px-4 py-2 bg-brand-surface-subtle border border-slate-600 rounded-lg text-brand-text placeholder-slate-400 focus:outline-none focus:border-blue-500"
                         placeholder="RJ"
                       />
                     </div>
@@ -1540,63 +1540,63 @@ const Prescriptions: React.FC = () => {
 
               {/* Medicamentos */}
               <div className="mb-6">
-                <h3 className="text-lg font-semibold text-white mb-4">Medicamentos</h3>
+                <h3 className="text-lg font-semibold text-brand-text mb-4">Medicamentos</h3>
 
                 {/* Formulário de Medicamento */}
                 <div className="bg-slate-700/50 rounded-lg p-4 mb-4">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                     <div>
-                      <label className="block text-sm font-medium text-slate-300 mb-2">
+                      <label className="block text-sm font-medium text-brand-text-secondary mb-2">
                         Nome do Medicamento
                       </label>
                       <input
                         type="text"
                         value={currentMedication.name}
                         onChange={(e) => setCurrentMedication({ ...currentMedication, name: e.target.value })}
-                        className="w-full px-4 py-2 bg-slate-800 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:border-blue-500"
+                        className="w-full px-4 py-2 bg-brand-surface border border-slate-600 rounded-lg text-brand-text placeholder-slate-400 focus:outline-none focus:border-blue-500"
                         placeholder="Ex: Paracetamol"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-slate-300 mb-2">
+                      <label className="block text-sm font-medium text-brand-text-secondary mb-2">
                         Dosagem
                       </label>
                       <input
                         type="text"
                         value={currentMedication.dosage}
                         onChange={(e) => setCurrentMedication({ ...currentMedication, dosage: e.target.value })}
-                        className="w-full px-4 py-2 bg-slate-800 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:border-blue-500"
+                        className="w-full px-4 py-2 bg-brand-surface border border-slate-600 rounded-lg text-brand-text placeholder-slate-400 focus:outline-none focus:border-blue-500"
                         placeholder="Ex: 500mg"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-slate-300 mb-2">
+                      <label className="block text-sm font-medium text-brand-text-secondary mb-2">
                         Frequência
                       </label>
                       <input
                         type="text"
                         value={currentMedication.frequency}
                         onChange={(e) => setCurrentMedication({ ...currentMedication, frequency: e.target.value })}
-                        className="w-full px-4 py-2 bg-slate-800 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:border-blue-500"
+                        className="w-full px-4 py-2 bg-brand-surface border border-slate-600 rounded-lg text-brand-text placeholder-slate-400 focus:outline-none focus:border-blue-500"
                         placeholder="Ex: De 8/8 horas"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-slate-300 mb-2">
+                      <label className="block text-sm font-medium text-brand-text-secondary mb-2">
                         Duração
                       </label>
                       <input
                         type="text"
                         value={currentMedication.duration}
                         onChange={(e) => setCurrentMedication({ ...currentMedication, duration: e.target.value })}
-                        className="w-full px-4 py-2 bg-slate-800 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:border-blue-500"
+                        className="w-full px-4 py-2 bg-brand-surface border border-slate-600 rounded-lg text-brand-text placeholder-slate-400 focus:outline-none focus:border-blue-500"
                         placeholder="Ex: 7 dias"
                       />
                     </div>
                   </div>
                   <button
                     onClick={handleAddMedication}
-                    className="w-full bg-gradient-to-r from-[#00c16a] to-[#00a85a] text-white py-2 rounded-lg font-semibold hover:from-blue-600 hover:to-cyan-600 transition-colors"
+                    className="w-full bg-gradient-to-r from-[#00c16a] to-[#00a85a] text-brand-text py-2 rounded-lg font-semibold hover:from-blue-600 hover:to-cyan-600 transition-colors"
                   >
                     + Adicionar Medicamento
                   </button>
@@ -1608,8 +1608,8 @@ const Prescriptions: React.FC = () => {
                     {medications.map((med) => (
                       <div key={med.id} className="flex items-center justify-between bg-slate-700/50 p-4 rounded-lg">
                         <div className="flex-1">
-                          <p className="font-semibold text-white">{med.name} - {med.dosage}</p>
-                          <p className="text-sm text-slate-400">{med.frequency} por {med.duration}</p>
+                          <p className="font-semibold text-brand-text">{med.name} - {med.dosage}</p>
+                          <p className="text-sm text-brand-text-muted">{med.frequency} por {med.duration}</p>
                         </div>
                         <button
                           onClick={() => handleRemoveMedication(med.id)}
@@ -1625,13 +1625,13 @@ const Prescriptions: React.FC = () => {
 
               {/* Observações */}
               <div className="mb-6">
-                <label className="block text-sm font-medium text-slate-300 mb-2">
+                <label className="block text-sm font-medium text-brand-text-secondary mb-2">
                   Observações / Notas
                 </label>
                 <textarea
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
-                  className="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:border-blue-500"
+                  className="w-full px-4 py-2 bg-brand-surface-subtle border border-slate-600 rounded-lg text-brand-text placeholder-slate-400 focus:outline-none focus:border-blue-500"
                   placeholder="Observações adicionais sobre a prescrição..."
                   rows={3}
                 />
@@ -1649,7 +1649,7 @@ const Prescriptions: React.FC = () => {
                 <button
                   onClick={handleCreatePrescription}
                   disabled={saving || !patientName || medications.length === 0}
-                  className="flex-1 bg-gradient-to-r from-[#00c16a] to-[#00a85a] text-white py-3 rounded-lg font-semibold hover:from-blue-600 hover:to-cyan-600 transition-colors flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex-1 bg-gradient-to-r from-[#00c16a] to-[#00a85a] text-brand-text py-3 rounded-lg font-semibold hover:from-blue-600 hover:to-cyan-600 transition-colors flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {saving ? (
                     <>
@@ -1675,7 +1675,7 @@ const Prescriptions: React.FC = () => {
                         }
                       }}
                       disabled={saving}
-                      className="flex-1 bg-gradient-to-r from-blue-500 to-cyan-500 text-white py-3 rounded-lg font-semibold hover:from-blue-600 hover:to-cyan-600 transition-colors flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="flex-1 bg-gradient-to-r from-blue-500 to-cyan-500 text-brand-text py-3 rounded-lg font-semibold hover:from-blue-600 hover:to-cyan-600 transition-colors flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       <Eye className="w-5 h-5" />
                       <span>Visualizar / Imprimir</span>
@@ -1683,7 +1683,7 @@ const Prescriptions: React.FC = () => {
                     <button
                       onClick={handleDigitalSignature}
                       disabled={saving}
-                      className="flex-1 bg-gradient-to-r from-green-500 to-emerald-500 text-white py-3 rounded-lg font-semibold hover:from-green-600 hover:to-emerald-600 transition-colors flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="flex-1 bg-gradient-to-r from-green-500 to-emerald-500 text-brand-text py-3 rounded-lg font-semibold hover:from-green-600 hover:to-emerald-600 transition-colors flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       {saving ? (
                         <>
@@ -1700,7 +1700,7 @@ const Prescriptions: React.FC = () => {
                     <button
                       onClick={handleSendToPatient}
                       disabled={saving}
-                      className="flex-1 bg-gradient-to-r from-[#00c16a] to-[#00a85a] text-white py-3 rounded-lg font-semibold hover:from-purple-600 hover:to-pink-600 transition-colors flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="flex-1 bg-gradient-to-r from-[#00c16a] to-[#00a85a] text-brand-text py-3 rounded-lg font-semibold hover:from-purple-600 hover:to-pink-600 transition-colors flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       {saving ? (
                         <>
@@ -1724,15 +1724,15 @@ const Prescriptions: React.FC = () => {
               <div className="flex items-start space-x-3">
                 <QrCode className="w-6 h-6 text-blue-400 mt-0.5" />
                 <div>
-                  <h3 className="text-lg font-bold text-white mb-2">Validação ITI</h3>
-                  <p className="text-sm text-slate-300 mb-4">
+                  <h3 className="text-lg font-bold text-brand-text mb-2">Validação ITI</h3>
+                  <p className="text-sm text-brand-text-secondary mb-4">
                     Cada prescrição receberá um código único para validação no Portal do ITI (Instituto Nacional de Tecnologia da Informação).
                   </p>
-                  <div className="flex items-center space-x-2 text-sm text-slate-400">
+                  <div className="flex items-center space-x-2 text-sm text-brand-text-muted">
                     <CheckCircle className="w-4 h-4 text-green-400" />
                     <span>QR Code gerado automaticamente</span>
                   </div>
-                  <div className="flex items-center space-x-2 text-sm text-slate-400 mt-2">
+                  <div className="flex items-center space-x-2 text-sm text-brand-text-muted mt-2">
                     <CheckCircle className="w-4 h-4 text-green-400" />
                     <span>Link de validação enviado por email e SMS</span>
                   </div>
@@ -1746,54 +1746,54 @@ const Prescriptions: React.FC = () => {
       {/* [V1.9.129-C] Modal educacional ICP-Brasil */}
       {showCertHelpModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm" onClick={() => setShowCertHelpModal(false)}>
-          <div className="bg-slate-900 border border-white/10 rounded-2xl max-w-lg w-full p-6 max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+          <div className="bg-brand-bg border border-white/10 rounded-2xl max-w-lg w-full p-6 max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-start justify-between mb-4">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center">
                   <Lock className="w-5 h-5 text-emerald-400" />
                 </div>
                 <div>
-                  <h3 className="text-lg font-bold text-white">Certificado ICP-Brasil</h3>
-                  <p className="text-xs text-slate-400">Como obter para assinar prescrições com validade legal</p>
+                  <h3 className="text-lg font-bold text-brand-text">Certificado ICP-Brasil</h3>
+                  <p className="text-xs text-brand-text-muted">Como obter para assinar prescrições com validade legal</p>
                 </div>
               </div>
-              <button onClick={() => setShowCertHelpModal(false)} className="text-slate-400 hover:text-white p-1">
+              <button onClick={() => setShowCertHelpModal(false)} className="text-brand-text-muted hover:text-brand-text p-1">
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <div className="space-y-4 text-sm text-slate-300">
+            <div className="space-y-4 text-sm text-brand-text-secondary">
               <div>
-                <h4 className="text-white font-semibold mb-1.5">Por que preciso?</h4>
-                <p className="text-slate-400 leading-relaxed">
-                  O CFM exige assinatura com certificado <strong className="text-white">ICP-Brasil</strong> para prescrições eletrônicas terem
+                <h4 className="text-brand-text font-semibold mb-1.5">Por que preciso?</h4>
+                <p className="text-brand-text-muted leading-relaxed">
+                  O CFM exige assinatura com certificado <strong className="text-brand-text">ICP-Brasil</strong> para prescrições eletrônicas terem
                   validade jurídica e poderem ser entregues digitalmente ao paciente. Sem ele, o documento serve só como rascunho local.
                 </p>
               </div>
 
               <div className="border-t border-white/5 pt-4">
-                <h4 className="text-white font-semibold mb-2">2 tipos de certificado</h4>
+                <h4 className="text-brand-text font-semibold mb-2">2 tipos de certificado</h4>
                 <div className="space-y-3">
                   <div className="rounded-lg border border-blue-500/20 bg-blue-500/[0.05] p-3">
                     <div className="flex items-center gap-2 mb-1">
                       <span className="text-xs font-bold text-blue-300 uppercase tracking-wider">A1</span>
-                      <span className="text-xs text-slate-400">arquivo digital (cloud)</span>
+                      <span className="text-xs text-brand-text-muted">arquivo digital (cloud)</span>
                     </div>
-                    <p className="text-xs text-slate-300">Validade 1 ano · ~R$ 280-400 · Instalado no navegador, prático para uso diário</p>
+                    <p className="text-xs text-brand-text-secondary">Validade 1 ano · ~R$ 280-400 · Instalado no navegador, prático para uso diário</p>
                   </div>
                   <div className="rounded-lg border border-purple-500/20 bg-purple-500/[0.05] p-3">
                     <div className="flex items-center gap-2 mb-1">
                       <span className="text-xs font-bold text-purple-300 uppercase tracking-wider">A3</span>
-                      <span className="text-xs text-slate-400">token físico ou cartão</span>
+                      <span className="text-xs text-brand-text-muted">token físico ou cartão</span>
                     </div>
-                    <p className="text-xs text-slate-300">Validade 3 anos · ~R$ 350-500 · Mais seguro, exige hardware (token USB)</p>
+                    <p className="text-xs text-brand-text-secondary">Validade 3 anos · ~R$ 350-500 · Mais seguro, exige hardware (token USB)</p>
                   </div>
                 </div>
               </div>
 
               <div className="border-t border-white/5 pt-4">
-                <h4 className="text-white font-semibold mb-2">Onde obter</h4>
-                <ul className="space-y-1.5 text-xs text-slate-400">
+                <h4 className="text-brand-text font-semibold mb-2">Onde obter</h4>
+                <ul className="space-y-1.5 text-xs text-brand-text-muted">
                   <li>• <a href="https://www.gov.br/iti/pt-br/assuntos/icp-brasil/lista-de-acs-credenciadas" target="_blank" rel="noreferrer" className="text-emerald-400 hover:underline">ITI — Lista oficial de ACs credenciadas</a></li>
                   <li>• Serasa Experian, Certisign, AC Soluti, Valid, Safeweb</li>
                   <li>• Processo: agendar validação presencial (CPF + foto + comprovante) · entrega em 1-3 dias</li>
@@ -1805,9 +1805,9 @@ const Prescriptions: React.FC = () => {
                   <CheckCircle className="w-4 h-4" />
                   Já tenho certificado
                 </h4>
-                <p className="text-xs text-slate-300">
+                <p className="text-xs text-brand-text-secondary">
                   O certificado é detectado automaticamente pelo navegador (A1) ou via leitor (A3). Quando válido,
-                  o botão <strong className="text-white">"Assinar Digitalmente"</strong> ativa.
+                  o botão <strong className="text-brand-text">"Assinar Digitalmente"</strong> ativa.
                 </p>
               </div>
             </div>
@@ -1816,7 +1816,7 @@ const Prescriptions: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setShowCertHelpModal(false)}
-                className="px-5 py-2.5 rounded-lg bg-white/5 text-white hover:bg-white/10 border border-white/10 text-sm font-medium transition-colors"
+                className="px-5 py-2.5 rounded-lg bg-white/5 text-brand-text hover:bg-white/10 border border-white/10 text-sm font-medium transition-colors"
               >
                 Entendi
               </button>

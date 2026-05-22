@@ -116,7 +116,7 @@ export const ResearchChat: React.FC<ResearchChatProps> = ({ attachedContext, onM
             className="w-9 h-9 rounded-full object-cover ring-2 ring-purple-500/40"
           />
           <div>
-            <h3 className="text-sm font-semibold text-white flex items-center gap-1.5">
+            <h3 className="text-sm font-semibold text-brand-text flex items-center gap-1.5">
               <span>🧬 Nôa Matrix</span>
               <span className="text-[10px] font-normal text-purple-300/70 px-1.5 py-0.5 rounded bg-purple-500/10 border border-purple-500/20">Z2</span>
             </h3>
@@ -160,7 +160,7 @@ export const ResearchChat: React.FC<ResearchChatProps> = ({ attachedContext, onM
           </div>
           <button
             onClick={handleClear}
-            className="flex-shrink-0 text-[10px] text-slate-400 hover:text-purple-200 underline-offset-2 hover:underline"
+            className="flex-shrink-0 text-[10px] text-brand-text-muted hover:text-purple-200 underline-offset-2 hover:underline"
             title="Descartar esta sessão derivada e começar do zero"
           >
             nova sessão
@@ -181,7 +181,7 @@ export const ResearchChat: React.FC<ResearchChatProps> = ({ attachedContext, onM
               alt="Nôa Matrix"
               className="w-16 h-16 rounded-full object-cover mx-auto mb-3 ring-2 ring-purple-500/30"
             />
-            <p className="text-sm text-slate-400 mb-1.5">Nôa Matrix pronta para estruturar.</p>
+            <p className="text-sm text-brand-text-muted mb-1.5">Nôa Matrix pronta para estruturar.</p>
             <p className="text-sm text-slate-500 max-w-md mx-auto leading-relaxed">
               Marque casos em <strong className="text-purple-300">Casos Similares</strong> e papers em <strong className="text-purple-300">Literatura</strong>, depois traga aqui pra comparar, agrupar, citar e estruturar perguntas.
             </p>
@@ -243,7 +243,7 @@ export const ResearchChat: React.FC<ResearchChatProps> = ({ attachedContext, onM
                 />
                 <div className="bg-purple-500/10 border border-purple-500/20 rounded-lg px-3.5 py-2.5 flex items-center gap-2">
                   <Loader2 className="w-3.5 h-3.5 text-purple-300 animate-spin" />
-                  <span className="text-sm text-slate-400">Nôa Matrix estruturando...</span>
+                  <span className="text-sm text-brand-text-muted">Nôa Matrix estruturando...</span>
                 </div>
               </div>
             )}
@@ -281,7 +281,7 @@ export const ResearchChat: React.FC<ResearchChatProps> = ({ attachedContext, onM
               </button>
               <button
                 onClick={handleClear}
-                className="px-2.5 py-1.5 rounded-md text-[11px] text-slate-400 hover:text-purple-200 border border-slate-700/40 hover:border-purple-500/30 transition-colors"
+                className="px-2.5 py-1.5 rounded-md text-[11px] text-brand-text-muted hover:text-purple-200 border border-slate-700/40 hover:border-purple-500/30 transition-colors"
                 title="Sair da revisão e voltar à sessão livre"
               >
                 Sair
@@ -311,7 +311,7 @@ export const ResearchChat: React.FC<ResearchChatProps> = ({ attachedContext, onM
             placeholder="Pergunte sobre o corpus marcado... (ex: compare Caso #1 com Caso #3)"
             disabled={isProcessing}
             rows={2}
-            className="flex-1 bg-slate-800/50 border border-purple-500/20 rounded-lg px-3 py-2 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:ring-1 focus:ring-purple-500/50 resize-none"
+            className="flex-1 bg-slate-800/50 border border-purple-500/20 rounded-lg px-3 py-2 text-sm text-brand-text placeholder:text-slate-500 focus:outline-none focus:ring-1 focus:ring-purple-500/50 resize-none"
           />
           <button
             onClick={handleSend}

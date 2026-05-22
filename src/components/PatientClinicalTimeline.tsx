@@ -198,7 +198,7 @@ export default function PatientClinicalTimeline({ patientId }: Props) {
 
     if (error) {
         return (
-            <div className="text-center py-12 text-slate-400">
+            <div className="text-center py-12 text-brand-text-muted">
                 <p className="text-sm">Erro ao carregar timeline: {error}</p>
             </div>
         )
@@ -206,12 +206,12 @@ export default function PatientClinicalTimeline({ patientId }: Props) {
 
     if (buckets.length === 0) {
         return (
-            <div className="text-center py-12 px-6 bg-gradient-to-br from-slate-900/40 to-slate-800/20 rounded-2xl border border-slate-800">
+            <div className="text-center py-12 px-6 bg-gradient-to-br from-slate-900/40 to-slate-800/20 rounded-2xl border border-brand-border-subtle">
                 <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center">
                     <Activity className="w-7 h-7 text-cyan-300/70" />
                 </div>
-                <h3 className="text-base font-bold text-white mb-2">Sem histórico clínico ainda</h3>
-                <p className="text-sm text-slate-400 max-w-md mx-auto leading-relaxed">
+                <h3 className="text-base font-bold text-brand-text mb-2">Sem histórico clínico ainda</h3>
+                <p className="text-sm text-brand-text-muted max-w-md mx-auto leading-relaxed">
                     A linha do tempo aparecerá conforme atendimentos, prescrições e exames forem registrados.
                 </p>
             </div>
@@ -223,11 +223,11 @@ export default function PatientClinicalTimeline({ patientId }: Props) {
             {/* Header com stats agregadas */}
             <div className="flex flex-wrap items-center justify-between gap-3 mb-2">
                 <div>
-                    <h3 className="text-base font-semibold text-white flex items-center gap-2">
+                    <h3 className="text-base font-semibold text-brand-text flex items-center gap-2">
                         <Activity className="w-4 h-4 text-cyan-400" />
                         Linha do tempo clínica
                     </h3>
-                    <p className="text-xs text-slate-400 mt-0.5">
+                    <p className="text-xs text-brand-text-muted mt-0.5">
                         {stats.totalEvents} {stats.totalEvents === 1 ? 'evento' : 'eventos'} em {buckets.length} {buckets.length === 1 ? 'mês' : 'meses'} de acompanhamento
                     </p>
                 </div>
@@ -256,7 +256,7 @@ export default function PatientClinicalTimeline({ patientId }: Props) {
                             {/* Header do mês */}
                             <div className="flex items-center justify-between mb-3">
                                 <div className="flex items-center gap-2">
-                                    <h4 className={`text-sm font-bold ${isPeak ? 'text-amber-200' : 'text-white'}`}>
+                                    <h4 className={`text-sm font-bold ${isPeak ? 'text-amber-200' : 'text-brand-text'}`}>
                                         {b.monthLabel}
                                     </h4>
                                     {isPeak && (
@@ -334,7 +334,7 @@ export default function PatientClinicalTimeline({ patientId }: Props) {
 
                             {/* Último evento do mês */}
                             {b.lastEventAt && b.lastEventType && (
-                                <p className="text-[11px] text-slate-400">
+                                <p className="text-[11px] text-brand-text-muted">
                                     Último evento: <span className="text-slate-200 font-medium">{b.lastEventType}</span>
                                     <span className="text-slate-500"> · {new Date(b.lastEventAt).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })}</span>
                                 </p>
@@ -346,7 +346,7 @@ export default function PatientClinicalTimeline({ patientId }: Props) {
 
             {/* Nota arquitetural visível ao médico — fim do escopo atual */}
             <div className="mt-4 p-3 rounded-lg bg-slate-800/30 border border-slate-700/40">
-                <p className="text-[11px] text-slate-400 leading-relaxed">
+                <p className="text-[11px] text-brand-text-muted leading-relaxed">
                     Visualização baseada em eventos clínicos registrados. Gráficos quantitativos (evolução de scores, função renal, etc.)
                     serão habilitados conforme acumular série longitudinal suficiente.
                 </p>
@@ -366,7 +366,7 @@ function Counter({ icon: Icon, label, value, subtitle, color }: {
         <div className="flex items-start gap-2 p-2 rounded-lg bg-slate-800/40 border border-slate-700/40">
             <Icon className={`w-3.5 h-3.5 mt-0.5 flex-shrink-0 ${color}`} />
             <div className="min-w-0">
-                <p className="text-xs font-bold text-white leading-tight">{value} <span className="text-[10px] font-normal text-slate-400">{label.toLowerCase()}</span></p>
+                <p className="text-xs font-bold text-brand-text leading-tight">{value} <span className="text-[10px] font-normal text-brand-text-muted">{label.toLowerCase()}</span></p>
                 {subtitle && <p className="text-[10px] text-slate-500 mt-0.5">{subtitle}</p>}
             </div>
         </div>

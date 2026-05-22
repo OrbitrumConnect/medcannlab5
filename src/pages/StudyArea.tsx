@@ -142,21 +142,21 @@ const StudyArea: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-slate-900 text-white">
+    <div className="min-h-screen bg-brand-bg text-brand-text">
       {/* Header */}
-      <div className="bg-slate-800 border-b border-slate-700 p-6">
+      <div className="bg-brand-surface border-b border-brand-border p-6">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
             <button 
               onClick={() => window.history.back()}
-              className="flex items-center space-x-2 text-slate-300 hover:text-white transition-colors"
+              className="flex items-center space-x-2 text-brand-text-secondary hover:text-brand-text transition-colors"
             >
               <ArrowLeft className="w-5 h-5" />
               <span>Voltar</span>
             </button>
             <div>
-              <h1 className="text-2xl font-bold text-white">Área de Estudos</h1>
-              <p className="text-slate-400">Pós-Graduação em Cannabis Medicinal</p>
+              <h1 className="text-2xl font-bold text-brand-text">Área de Estudos</h1>
+              <p className="text-brand-text-muted">Pós-Graduação em Cannabis Medicinal</p>
             </div>
           </div>
           
@@ -164,15 +164,15 @@ const StudyArea: React.FC = () => {
           <div className="flex items-center space-x-6">
             <div className="text-center">
               <div className="text-2xl font-bold text-green-400">0h</div>
-              <div className="text-sm text-slate-400">Estudado</div>
+              <div className="text-sm text-brand-text-muted">Estudado</div>
             </div>
             <div className="text-center">
               <div className="text-2xl font-bold text-blue-400">0</div>
-              <div className="text-sm text-slate-400">Módulos</div>
+              <div className="text-sm text-brand-text-muted">Módulos</div>
             </div>
             <div className="text-center">
               <div className="text-2xl font-bold text-purple-400">0</div>
-              <div className="text-sm text-slate-400">Conquistas</div>
+              <div className="text-sm text-brand-text-muted">Conquistas</div>
             </div>
           </div>
         </div>
@@ -180,30 +180,30 @@ const StudyArea: React.FC = () => {
 
       <div className="flex">
         {/* Sidebar */}
-        <div className="w-80 bg-slate-800 border-r border-slate-700 min-h-screen">
+        <div className="w-80 bg-brand-surface border-r border-brand-border min-h-screen">
           <div className="p-6">
-            <h3 className="text-lg font-semibold text-white mb-4">Módulos do Curso</h3>
+            <h3 className="text-lg font-semibold text-brand-text mb-4">Módulos do Curso</h3>
             <div className="space-y-3">
               {modules.map((module, index) => (
                 <div
                   key={module.id}
                   className={`p-4 rounded-lg cursor-pointer transition-colors ${
-                    currentModule === index ? 'bg-slate-700' : 'bg-slate-700/50 hover:bg-slate-700'
+                    currentModule === index ? 'bg-brand-surface-subtle' : 'bg-slate-700/50 hover:bg-brand-surface-subtle'
                   }`}
                   onClick={() => setCurrentModule(index)}
                 >
                   <div className="flex items-center space-x-3 mb-2">
                     <div className="w-12 h-12 bg-gradient-to-r from-green-500 to-teal-500 rounded-lg flex items-center justify-center">
-                      {module.type === 'video' && <Video className="w-6 h-6 text-white" />}
-                      {module.type === 'interactive' && <Brain className="w-6 h-6 text-white" />}
-                      {module.type === 'case-study' && <Users className="w-6 h-6 text-white" />}
+                      {module.type === 'video' && <Video className="w-6 h-6 text-brand-text" />}
+                      {module.type === 'interactive' && <Brain className="w-6 h-6 text-brand-text" />}
+                      {module.type === 'case-study' && <Users className="w-6 h-6 text-brand-text" />}
                     </div>
                     <div className="flex-1">
-                      <h4 className="font-semibold text-white text-sm">{module.title}</h4>
-                      <p className="text-xs text-slate-400">{module.duration}</p>
+                      <h4 className="font-semibold text-brand-text text-sm">{module.title}</h4>
+                      <p className="text-xs text-brand-text-muted">{module.duration}</p>
                     </div>
                     <div className="text-right">
-                      <div className="text-xs text-slate-400">{module.progress}%</div>
+                      <div className="text-xs text-brand-text-muted">{module.progress}%</div>
                       <div className="w-16 bg-slate-600 rounded-full h-1 mt-1">
                         <div 
                           className="bg-green-500 h-1 rounded-full"
@@ -222,25 +222,25 @@ const StudyArea: React.FC = () => {
         <div className="flex-1 p-6">
           <div className="max-w-7xl mx-auto">
             {/* Video Player Section */}
-            <div className="bg-slate-800 rounded-xl p-6 mb-8">
+            <div className="bg-brand-surface rounded-xl p-6 mb-8">
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-xl font-semibold text-white">{modules[currentModule]?.title}</h2>
+                <h2 className="text-xl font-semibold text-brand-text">{modules[currentModule]?.title}</h2>
                 <div className="flex items-center space-x-2">
-                  <button className="p-2 bg-slate-700 rounded-lg hover:bg-slate-600 transition-colors">
+                  <button className="p-2 bg-brand-surface-subtle rounded-lg hover:bg-slate-600 transition-colors">
                     <Bookmark className="w-4 h-4" />
                   </button>
-                  <button className="p-2 bg-slate-700 rounded-lg hover:bg-slate-600 transition-colors">
+                  <button className="p-2 bg-brand-surface-subtle rounded-lg hover:bg-slate-600 transition-colors">
                     <Share2 className="w-4 h-4" />
                   </button>
-                  <button className="p-2 bg-slate-700 rounded-lg hover:bg-slate-600 transition-colors">
+                  <button className="p-2 bg-brand-surface-subtle rounded-lg hover:bg-slate-600 transition-colors">
                     <Download className="w-4 h-4" />
                   </button>
                 </div>
               </div>
 
               {/* Video Player */}
-              <div className="bg-slate-900 rounded-lg overflow-hidden mb-4">
-                <div className="aspect-video bg-slate-700 relative">
+              <div className="bg-brand-bg rounded-lg overflow-hidden mb-4">
+                <div className="aspect-video bg-brand-surface-subtle relative">
                   <img 
                     src={modules[currentModule]?.thumbnail} 
                     alt={modules[currentModule]?.title}
@@ -253,37 +253,37 @@ const StudyArea: React.FC = () => {
                       onClick={togglePlayPause}
                       className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center hover:bg-white/30 transition-colors"
                     >
-                      {isPlaying ? <Pause className="w-8 h-8 text-white" /> : <Play className="w-8 h-8 text-white ml-1" />}
+                      {isPlaying ? <Pause className="w-8 h-8 text-brand-text" /> : <Play className="w-8 h-8 text-brand-text ml-1" />}
                     </button>
                   </div>
 
                   {/* Progress Bar */}
                   <div className="absolute bottom-0 left-0 right-0 p-4">
                     <div className="flex items-center space-x-3">
-                      <span className="text-white text-sm">{currentTime}</span>
+                      <span className="text-brand-text text-sm">{currentTime}</span>
                       <div className="flex-1 bg-white/20 rounded-full h-1">
                         <div 
                           className="bg-green-500 h-1 rounded-full"
                           style={{ width: `${progress}%` }}
                         />
                       </div>
-                      <span className="text-white text-sm">{duration}</span>
+                      <span className="text-brand-text text-sm">{duration}</span>
                     </div>
                   </div>
                 </div>
 
                 {/* Control Bar */}
-                <div className="p-4 bg-slate-800">
+                <div className="p-4 bg-brand-surface">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-4">
-                      <button onClick={togglePlayPause} className="text-white hover:text-green-400 transition-colors">
+                      <button onClick={togglePlayPause} className="text-brand-text hover:text-green-400 transition-colors">
                         {isPlaying ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5" />}
                       </button>
-                      <button onClick={toggleMute} className="text-white hover:text-green-400 transition-colors">
+                      <button onClick={toggleMute} className="text-brand-text hover:text-green-400 transition-colors">
                         {isMuted ? <VolumeX className="w-5 h-5" /> : <Volume2 className="w-5 h-5" />}
                       </button>
                       <div className="flex items-center space-x-2">
-                        <Volume2 className="w-4 h-4 text-slate-400" />
+                        <Volume2 className="w-4 h-4 text-brand-text-muted" />
                         <div className="w-20 bg-slate-600 rounded-full h-1">
                           <div 
                             className="bg-white h-1 rounded-full"
@@ -293,10 +293,10 @@ const StudyArea: React.FC = () => {
                       </div>
                     </div>
                     <div className="flex items-center space-x-2">
-                      <button className="p-2 bg-slate-700 rounded-lg hover:bg-slate-600 transition-colors">
+                      <button className="p-2 bg-brand-surface-subtle rounded-lg hover:bg-slate-600 transition-colors">
                         <Settings className="w-4 h-4" />
                       </button>
-                      <button className="p-2 bg-slate-700 rounded-lg hover:bg-slate-600 transition-colors">
+                      <button className="p-2 bg-brand-surface-subtle rounded-lg hover:bg-slate-600 transition-colors">
                         <Maximize2 className="w-4 h-4" />
                       </button>
                     </div>
@@ -307,58 +307,58 @@ const StudyArea: React.FC = () => {
               {/* Module Info */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div>
-                  <h4 className="font-semibold text-white mb-2">Descrição</h4>
-                  <p className="text-slate-400 text-sm">{modules[currentModule]?.description}</p>
+                  <h4 className="font-semibold text-brand-text mb-2">Descrição</h4>
+                  <p className="text-brand-text-muted text-sm">{modules[currentModule]?.description}</p>
                 </div>
                 <div>
-                  <h4 className="font-semibold text-white mb-2">Instrutor</h4>
-                  <p className="text-slate-400 text-sm">{modules[currentModule]?.instructor}</p>
+                  <h4 className="font-semibold text-brand-text mb-2">Instrutor</h4>
+                  <p className="text-brand-text-muted text-sm">{modules[currentModule]?.instructor}</p>
                 </div>
                 <div>
-                  <h4 className="font-semibold text-white mb-2">Duração</h4>
-                  <p className="text-slate-400 text-sm">{modules[currentModule]?.duration}</p>
+                  <h4 className="font-semibold text-brand-text mb-2">Duração</h4>
+                  <p className="text-brand-text-muted text-sm">{modules[currentModule]?.duration}</p>
                 </div>
               </div>
             </div>
 
             {/* Study Tools */}
-            <div className="bg-slate-800 rounded-xl p-6 mb-8">
-              <h3 className="text-xl font-semibold text-white mb-6">Ferramentas de Estudo</h3>
+            <div className="bg-brand-surface rounded-xl p-6 mb-8">
+              <h3 className="text-xl font-semibold text-brand-text mb-6">Ferramentas de Estudo</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {studyTools.map((tool, index) => (
-                  <div key={index} className="bg-slate-700 rounded-lg p-4 hover:bg-slate-650 transition-colors cursor-pointer">
+                  <div key={index} className="bg-brand-surface-subtle rounded-lg p-4 hover:bg-slate-650 transition-colors cursor-pointer">
                     <div className="flex items-center space-x-3 mb-3">
                       <div className={`p-2 rounded-lg bg-gradient-to-r ${tool.color}`}>
                         {tool.icon}
                       </div>
-                      <h4 className="font-semibold text-white text-sm">{tool.name}</h4>
+                      <h4 className="font-semibold text-brand-text text-sm">{tool.name}</h4>
                     </div>
-                    <p className="text-slate-400 text-xs">{tool.description}</p>
+                    <p className="text-brand-text-muted text-xs">{tool.description}</p>
                   </div>
                 ))}
               </div>
             </div>
 
             {/* Lessons List */}
-            <div className="bg-slate-800 rounded-xl p-6">
-              <h3 className="text-xl font-semibold text-white mb-6">Aulas do Módulo</h3>
+            <div className="bg-brand-surface rounded-xl p-6">
+              <h3 className="text-xl font-semibold text-brand-text mb-6">Aulas do Módulo</h3>
               <div className="space-y-3">
                 {modules[currentModule]?.lessons.map((lesson, index) => (
-                  <div key={index} className="flex items-center justify-between p-4 bg-slate-700 rounded-lg hover:bg-slate-650 transition-colors cursor-pointer">
+                  <div key={index} className="flex items-center justify-between p-4 bg-brand-surface-subtle rounded-lg hover:bg-slate-650 transition-colors cursor-pointer">
                     <div className="flex items-center space-x-3">
                       <div className="w-8 h-8 bg-slate-600 rounded-full flex items-center justify-center">
-                        <Play className="w-4 h-4 text-white" />
+                        <Play className="w-4 h-4 text-brand-text" />
                       </div>
                       <div>
-                        <h4 className="font-semibold text-white text-sm">{lesson.title}</h4>
-                        <p className="text-slate-400 text-xs">{lesson.duration}</p>
+                        <h4 className="font-semibold text-brand-text text-sm">{lesson.title}</h4>
+                        <p className="text-brand-text-muted text-xs">{lesson.duration}</p>
                       </div>
                     </div>
                     <div className="flex items-center space-x-2">
                       {lesson.completed ? (
                         <CheckCircle className="w-5 h-5 text-green-400" />
                       ) : (
-                        <Clock className="w-5 h-5 text-slate-400" />
+                        <Clock className="w-5 h-5 text-brand-text-muted" />
                       )}
                     </div>
                   </div>

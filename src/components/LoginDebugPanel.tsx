@@ -96,8 +96,8 @@ const LoginDebugPanel: React.FC = () => {
 
   if (!debugInfo) {
     return (
-      <div className="bg-slate-800 border border-slate-700 rounded-lg p-4">
-        <div className="flex items-center space-x-2 text-slate-400">
+      <div className="bg-brand-surface border border-brand-border rounded-lg p-4">
+        <div className="flex items-center space-x-2 text-brand-text-muted">
           <AlertCircle className="w-5 h-5" />
           <span>Nenhuma sessão ativa</span>
         </div>
@@ -106,16 +106,16 @@ const LoginDebugPanel: React.FC = () => {
   }
 
   return (
-    <div className="bg-slate-800 border border-slate-700 rounded-lg p-6">
+    <div className="bg-brand-surface border border-brand-border rounded-lg p-6">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-semibold text-white flex items-center space-x-2">
+        <h3 className="text-lg font-semibold text-brand-text flex items-center space-x-2">
           <Shield className="w-5 h-5 text-yellow-400" />
           <span>Debug do Sistema de Login</span>
         </h3>
         <button
           onClick={loadDebugInfo}
           disabled={isLoadingDebug}
-          className="flex items-center space-x-2 px-3 py-1 bg-slate-700 hover:bg-slate-600 text-slate-300 rounded-lg transition-colors disabled:opacity-50"
+          className="flex items-center space-x-2 px-3 py-1 bg-brand-surface-subtle hover:bg-slate-600 text-brand-text-secondary rounded-lg transition-colors disabled:opacity-50"
         >
           <RefreshCw className={`w-4 h-4 ${isLoadingDebug ? 'animate-spin' : ''}`} />
           <span>Atualizar</span>
@@ -124,38 +124,38 @@ const LoginDebugPanel: React.FC = () => {
 
       <div className="space-y-4">
         {/* Status do Usuário */}
-        <div className="bg-slate-900 rounded-lg p-4">
-          <h4 className="text-sm font-medium text-slate-300 mb-2">Status do Usuário</h4>
+        <div className="bg-brand-bg rounded-lg p-4">
+          <h4 className="text-sm font-medium text-brand-text-secondary mb-2">Status do Usuário</h4>
           <div className="space-y-2">
             <div className="flex items-center space-x-2">
-              <User className="w-4 h-4 text-slate-400" />
-              <span className="text-slate-300">ID:</span>
-              <span className="text-white font-mono text-sm">{debugInfo.authUser.id}</span>
+              <User className="w-4 h-4 text-brand-text-muted" />
+              <span className="text-brand-text-secondary">ID:</span>
+              <span className="text-brand-text font-mono text-sm">{debugInfo.authUser.id}</span>
             </div>
             <div className="flex items-center space-x-2">
-              <span className="text-slate-300">Email:</span>
-              <span className="text-white">{debugInfo.authUser.email}</span>
+              <span className="text-brand-text-secondary">Email:</span>
+              <span className="text-brand-text">{debugInfo.authUser.email}</span>
             </div>
             <div className="flex items-center space-x-2">
-              <span className="text-slate-300">Nome:</span>
-              <span className="text-white">{debugInfo.metadata.name || 'Não definido'}</span>
+              <span className="text-brand-text-secondary">Nome:</span>
+              <span className="text-brand-text">{debugInfo.metadata.name || 'Não definido'}</span>
             </div>
           </div>
         </div>
 
         {/* Tipo de Usuário */}
-        <div className="bg-slate-900 rounded-lg p-4">
-          <h4 className="text-sm font-medium text-slate-300 mb-2">Tipo de Usuário</h4>
+        <div className="bg-brand-bg rounded-lg p-4">
+          <h4 className="text-sm font-medium text-brand-text-secondary mb-2">Tipo de Usuário</h4>
           <div className="space-y-2">
             <div className="flex items-center space-x-2">
-              <span className="text-slate-300">Tipo Detectado:</span>
+              <span className="text-brand-text-secondary">Tipo Detectado:</span>
               <span className={`font-semibold ${getTypeColor(debugInfo.userType)}`}>
                 {debugInfo.userType.toUpperCase()}
               </span>
             </div>
             <div className="flex items-center space-x-2">
-              <span className="text-slate-300">Redirecionamento Esperado:</span>
-              <span className="text-white font-mono text-sm">
+              <span className="text-brand-text-secondary">Redirecionamento Esperado:</span>
+              <span className="text-brand-text font-mono text-sm">
                 {getExpectedRedirect(debugInfo.userType)}
               </span>
             </div>
@@ -163,43 +163,43 @@ const LoginDebugPanel: React.FC = () => {
         </div>
 
         {/* Metadados */}
-        <div className="bg-slate-900 rounded-lg p-4">
-          <h4 className="text-sm font-medium text-slate-300 mb-2">Metadados do Usuário</h4>
+        <div className="bg-brand-bg rounded-lg p-4">
+          <h4 className="text-sm font-medium text-brand-text-secondary mb-2">Metadados do Usuário</h4>
           <div className="space-y-2">
             <div className="flex items-center space-x-2">
-              <span className="text-slate-300">metadata.type:</span>
-              <span className="text-white">{debugInfo.metadata.type || 'null'}</span>
+              <span className="text-brand-text-secondary">metadata.type:</span>
+              <span className="text-brand-text">{debugInfo.metadata.type || 'null'}</span>
             </div>
             <div className="flex items-center space-x-2">
-              <span className="text-slate-300">metadata.user_type:</span>
-              <span className="text-white">{debugInfo.metadata.user_type || 'null'}</span>
+              <span className="text-brand-text-secondary">metadata.user_type:</span>
+              <span className="text-brand-text">{debugInfo.metadata.user_type || 'null'}</span>
             </div>
             <div className="flex items-center space-x-2">
-              <span className="text-slate-300">metadata.role:</span>
-              <span className="text-white">{debugInfo.metadata.role || 'null'}</span>
+              <span className="text-brand-text-secondary">metadata.role:</span>
+              <span className="text-brand-text">{debugInfo.metadata.role || 'null'}</span>
             </div>
           </div>
         </div>
 
         {/* Estado do Context */}
-        <div className="bg-slate-900 rounded-lg p-4">
-          <h4 className="text-sm font-medium text-slate-300 mb-2">Estado do AuthContext</h4>
+        <div className="bg-brand-bg rounded-lg p-4">
+          <h4 className="text-sm font-medium text-brand-text-secondary mb-2">Estado do AuthContext</h4>
           <div className="space-y-2">
             <div className="flex items-center space-x-2">
-              <span className="text-slate-300">Loading:</span>
+              <span className="text-brand-text-secondary">Loading:</span>
               <span className={isLoading ? 'text-yellow-400' : 'text-green-400'}>
                 {isLoading ? 'Sim' : 'Não'}
               </span>
             </div>
             <div className="flex items-center space-x-2">
-              <span className="text-slate-300">User Context:</span>
+              <span className="text-brand-text-secondary">User Context:</span>
               <span className={user ? 'text-green-400' : 'text-red-400'}>
                 {user ? 'Definido' : 'Null'}
               </span>
             </div>
             {user && (
               <div className="flex items-center space-x-2">
-                <span className="text-slate-300">Tipo no Context:</span>
+                <span className="text-brand-text-secondary">Tipo no Context:</span>
                 <span className={`font-semibold ${getTypeColor(user.type)}`}>
                   {user.type.toUpperCase()}
                 </span>
@@ -209,8 +209,8 @@ const LoginDebugPanel: React.FC = () => {
         </div>
 
         {/* Problemas Detectados */}
-        <div className="bg-slate-900 rounded-lg p-4">
-          <h4 className="text-sm font-medium text-slate-300 mb-2">Diagnóstico</h4>
+        <div className="bg-brand-bg rounded-lg p-4">
+          <h4 className="text-sm font-medium text-brand-text-secondary mb-2">Diagnóstico</h4>
           <div className="space-y-2">
             {!debugInfo.metadata.type && !debugInfo.metadata.user_type && !debugInfo.metadata.role && (
               <div className="flex items-center space-x-2 text-yellow-400">

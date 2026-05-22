@@ -262,7 +262,7 @@ const ExperienciaPaciente: React.FC = () => {
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-brand-text mb-2">
             Minha Jornada de Saúde
           </h1>
           <p className="text-gray-600 dark:text-gray-300">
@@ -299,28 +299,28 @@ const ExperienciaPaciente: React.FC = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               <div className="card p-6 text-center">
                 <FileText className="w-8 h-8 text-blue-600 mx-auto mb-2" />
-                <div className="text-2xl font-bold text-gray-900 dark:text-white">
+                <div className="text-2xl font-bold text-gray-900 dark:text-brand-text">
                   {healthStats.totalEntries}
                 </div>
                 <div className="text-sm text-gray-600 dark:text-gray-300">Entradas no Diário</div>
               </div>
               <div className="card p-6 text-center">
                 <Zap className="w-8 h-8 text-yellow-600 mx-auto mb-2" />
-                <div className="text-2xl font-bold text-gray-900 dark:text-white">
+                <div className="text-2xl font-bold text-gray-900 dark:text-brand-text">
                   {healthStats.currentStreak}
                 </div>
                 <div className="text-sm text-gray-600 dark:text-gray-300">Dias Consecutivos</div>
               </div>
               <div className="card p-6 text-center">
                 <Award className="w-8 h-8 text-purple-600 mx-auto mb-2" />
-                <div className="text-2xl font-bold text-gray-900 dark:text-white">
+                <div className="text-2xl font-bold text-gray-900 dark:text-brand-text">
                   {healthStats.totalPoints}
                 </div>
                 <div className="text-sm text-gray-600 dark:text-gray-300">Pontos Ganhos</div>
               </div>
               <div className="card p-6 text-center">
                 <MessageCircle className="w-8 h-8 text-green-600 mx-auto mb-2" />
-                <div className="text-2xl font-bold text-gray-900 dark:text-white">
+                <div className="text-2xl font-bold text-gray-900 dark:text-brand-text">
                   {healthStats.sharedEntries}
                 </div>
                 <div className="text-sm text-gray-600 dark:text-gray-300">Entradas Compartilhadas</div>
@@ -330,7 +330,7 @@ const ExperienciaPaciente: React.FC = () => {
             {/* Recent Entries */}
             <div className="card p-6">
               <div className="flex items-center justify-between mb-6">
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-brand-text">
                   Entradas Recentes
                 </h3>
                 <button
@@ -347,7 +347,7 @@ const ExperienciaPaciente: React.FC = () => {
                     <div className="flex items-start justify-between mb-2">
                       <div className="flex items-center space-x-3">
                         {getEntryIcon(entry.type)}
-                        <h4 className="font-medium text-gray-900 dark:text-white">
+                        <h4 className="font-medium text-gray-900 dark:text-brand-text">
                           {entry.title}
                         </h4>
                         {entry.isMessageCircled && (
@@ -409,7 +409,7 @@ const ExperienciaPaciente: React.FC = () => {
         {activeTab === 'diary' && (
           <div className="space-y-6">
             <div className="flex justify-between items-center">
-              <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+              <h2 className="text-xl font-semibold text-gray-900 dark:text-brand-text">
                 Diário Clínico Digital
               </h2>
               <button
@@ -428,7 +428,7 @@ const ExperienciaPaciente: React.FC = () => {
                     <div className="flex items-start justify-between mb-2">
                       <div className="flex items-center space-x-3">
                         {getEntryIcon(entry.type)}
-                        <h4 className="font-medium text-gray-900 dark:text-white">
+                        <h4 className="font-medium text-gray-900 dark:text-brand-text">
                           {entry.title}
                         </h4>
                         <span className="text-sm text-gray-500 dark:text-gray-400">
@@ -473,7 +473,7 @@ const ExperienciaPaciente: React.FC = () => {
         {activeTab === 'goals' && (
           <div className="space-y-6">
             <div className="flex justify-between items-center">
-              <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+              <h2 className="text-xl font-semibold text-gray-900 dark:text-brand-text">
                 Metas de Saúde
               </h2>
               <button className="btn-primary flex items-center">
@@ -487,7 +487,7 @@ const ExperienciaPaciente: React.FC = () => {
                 <div key={goal.id} className="card p-6">
                   <div className="flex items-start justify-between mb-4">
                     <div>
-                      <h3 className="font-semibold text-gray-900 dark:text-white mb-2">
+                      <h3 className="font-semibold text-gray-900 dark:text-brand-text mb-2">
                         {goal.title}
                       </h3>
                       <p className="text-sm text-gray-600 dark:text-gray-300">
@@ -525,7 +525,7 @@ const ExperienciaPaciente: React.FC = () => {
         {/* Achievements Tab */}
         {activeTab === 'achievements' && (
           <div className="space-y-6">
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-brand-text">
               Conquistas Desbloqueadas
             </h2>
 
@@ -539,7 +539,7 @@ const ExperienciaPaciente: React.FC = () => {
                       </div>
                     </div>
                     <div className="flex-1">
-                      <h3 className="font-semibold text-gray-900 dark:text-white mb-2">
+                      <h3 className="font-semibold text-gray-900 dark:text-brand-text mb-2">
                         {achievement.title}
                       </h3>
                       <p className="text-sm text-gray-600 dark:text-gray-300 mb-3">
@@ -572,13 +572,13 @@ const ExperienciaPaciente: React.FC = () => {
         {/* Community Tab */}
         {activeTab === 'community' && (
           <div className="space-y-6">
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-brand-text">
               Comunidade e Compartilhamento
             </h2>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <div className="card p-6">
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-brand-text mb-4">
                   Compartilhamentos Recentes
                 </h3>
                 <div className="space-y-4">
@@ -599,12 +599,12 @@ const ExperienciaPaciente: React.FC = () => {
               </div>
 
               <div className="card p-6">
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-brand-text mb-4">
                   Discussões Ativas
                 </h3>
                 <div className="space-y-4">
                   <div className="p-4 bg-emerald-50 dark:bg-emerald-900/20 rounded-lg">
-                    <h4 className="font-medium text-gray-900 dark:text-white mb-2">
+                    <h4 className="font-medium text-gray-900 dark:text-brand-text mb-2">
                       Experiência com CBD para Ansiedade
                     </h4>
                     <p className="text-sm text-gray-600 dark:text-gray-300 mb-2">
@@ -616,7 +616,7 @@ const ExperienciaPaciente: React.FC = () => {
                     </div>
                   </div>
                   <div className="p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
-                    <h4 className="font-medium text-gray-900 dark:text-white mb-2">
+                    <h4 className="font-medium text-gray-900 dark:text-brand-text mb-2">
                       Dicas para Manter o Diário
                     </h4>
                     <p className="text-sm text-gray-600 dark:text-gray-300 mb-2">

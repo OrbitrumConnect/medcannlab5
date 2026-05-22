@@ -577,10 +577,10 @@ const QuickPrescriptions: React.FC<QuickPrescriptionsProps> = ({ className = '',
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           <div className="relative rounded-xl p-4 border border-white/10 bg-gradient-to-br from-slate-800/60 to-slate-900/40 hover:from-slate-800/80 hover:border-white/20 transition-all overflow-hidden">
             <div className="flex items-center justify-between mb-1">
-              <span className="text-[10px] text-slate-400 uppercase tracking-wider font-bold">Total</span>
+              <span className="text-[10px] text-brand-text-muted uppercase tracking-wider font-bold">Total</span>
               <FileText className="w-4 h-4 text-slate-500" />
             </div>
-            <div className="text-3xl font-bold text-white tabular-nums">{prescriptionStats.total}</div>
+            <div className="text-3xl font-bold text-brand-text tabular-nums">{prescriptionStats.total}</div>
             <div className="text-[10px] text-slate-500 mt-1">prescrições</div>
           </div>
           <div className="relative rounded-xl p-4 border border-yellow-500/25 bg-gradient-to-br from-yellow-500/[0.10] to-yellow-600/[0.04] hover:border-yellow-500/40 transition-all overflow-hidden">
@@ -618,7 +618,7 @@ const QuickPrescriptions: React.FC<QuickPrescriptionsProps> = ({ className = '',
             <h3 className="text-base font-semibold text-yellow-200 mb-1">
               Você tem {prescriptionStats.draft} prescrições em rascunho
             </h3>
-            <p className="text-sm text-slate-300 mb-3">
+            <p className="text-sm text-brand-text-secondary mb-3">
               Para enviar ao paciente com validade legal CFM, é necessária <strong>assinatura digital ICP-Brasil</strong>.
               Sem ela, o documento fica como rascunho (válido apenas para impressão local com carimbo manual).
             </p>
@@ -633,7 +633,7 @@ const QuickPrescriptions: React.FC<QuickPrescriptionsProps> = ({ className = '',
               <button
                 type="button"
                 onClick={() => setShowCertHelpModal(true)}
-                className="px-4 py-2 rounded-lg bg-white/5 text-white hover:bg-white/10 border border-white/10 text-sm font-medium transition-colors"
+                className="px-4 py-2 rounded-lg bg-white/5 text-brand-text hover:bg-white/10 border border-white/10 text-sm font-medium transition-colors"
               >
                 Como obter certificado ICP-Brasil
               </button>
@@ -650,15 +650,15 @@ const QuickPrescriptions: React.FC<QuickPrescriptionsProps> = ({ className = '',
         {/* V1.9.265 — TODOS os triggers (filtros + CTAs) num UNICO container rounded-full (Pedro 13/05 21h).
             Antes: 3 grupos visualmente separados. Agora: barra unica com divisores verticais internos. */}
         <div className="flex justify-center w-full px-2">
-          <div className="inline-flex items-center p-1 bg-slate-900/50 rounded-full border border-slate-700 backdrop-blur-md overflow-x-auto no-scrollbar max-w-full gap-1">
+          <div className="inline-flex items-center p-1 bg-slate-900/50 rounded-full border border-brand-border backdrop-blur-md overflow-x-auto no-scrollbar max-w-full gap-1">
             {/* Filtros de categoria */}
             {categories.map((category) => (
               <button
                 key={category.id}
                 onClick={() => setSelectedCategory(category.id)}
                 className={`px-4 py-1.5 text-xs font-medium rounded-full transition-all whitespace-nowrap ${selectedCategory === category.id
-                  ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-900/10'
-                  : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
+                  ? 'bg-emerald-600 text-brand-text shadow-lg shadow-emerald-900/10'
+                  : 'text-brand-text-muted hover:text-slate-200 hover:bg-slate-800/50'
                   }`}
               >
                 {category.label}
@@ -673,7 +673,7 @@ const QuickPrescriptions: React.FC<QuickPrescriptionsProps> = ({ className = '',
             <button
               onClick={() => setIsModalOpen(true)}
               title="Nova prescrição"
-              className="flex items-center space-x-1.5 px-4 py-1.5 text-slate-200 hover:bg-slate-800/50 hover:text-white font-medium text-xs rounded-full transition-all whitespace-nowrap"
+              className="flex items-center space-x-1.5 px-4 py-1.5 text-slate-200 hover:bg-slate-800/50 hover:text-brand-text font-medium text-xs rounded-full transition-all whitespace-nowrap"
             >
               <Plus className="w-3.5 h-3.5 text-emerald-400" />
               <span>Nova Prescrição</span>
@@ -682,7 +682,7 @@ const QuickPrescriptions: React.FC<QuickPrescriptionsProps> = ({ className = '',
             <button
               onClick={() => setShowExamModal(true)}
               title="Solicitar exame para um paciente"
-              className="flex items-center space-x-1.5 px-4 py-1.5 text-slate-200 hover:bg-slate-800/50 hover:text-white font-medium text-xs rounded-full transition-all whitespace-nowrap"
+              className="flex items-center space-x-1.5 px-4 py-1.5 text-slate-200 hover:bg-slate-800/50 hover:text-brand-text font-medium text-xs rounded-full transition-all whitespace-nowrap"
             >
               <FlaskConical className="w-3.5 h-3.5 text-cyan-400" />
               <span>Solicitar Exame</span>
@@ -694,9 +694,9 @@ const QuickPrescriptions: React.FC<QuickPrescriptionsProps> = ({ className = '',
                 minhasPrescricoesRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
               }}
               title="Ir para suas prescrições (filtra rascunhos)"
-              className="flex items-center space-x-1.5 px-4 py-1.5 text-slate-200 hover:bg-slate-800/50 hover:text-white font-medium text-xs rounded-full transition-all whitespace-nowrap"
+              className="flex items-center space-x-1.5 px-4 py-1.5 text-slate-200 hover:bg-slate-800/50 hover:text-brand-text font-medium text-xs rounded-full transition-all whitespace-nowrap"
             >
-              <ListChecks className="w-3.5 h-3.5 text-slate-400" />
+              <ListChecks className="w-3.5 h-3.5 text-brand-text-muted" />
               <span>Ver todas / Rascunhos</span>
             </button>
           </div>
@@ -707,13 +707,13 @@ const QuickPrescriptions: React.FC<QuickPrescriptionsProps> = ({ className = '',
       {/* [V1.9.349] Pedro: barra de pesquisa muito grande, fica no meio menor (max-w-md + py-2). */}
       <div className="flex justify-center">
         <div className="relative w-full max-w-md">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-4 h-4" />
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-brand-text-muted w-4 h-4" />
           <input
             type="text"
             placeholder="Buscar modelos de prescrição..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full bg-slate-800 text-white text-sm px-10 py-2 rounded-lg border border-slate-700 focus:border-blue-500 focus:outline-none"
+            className="w-full bg-brand-surface text-brand-text text-sm px-10 py-2 rounded-lg border border-brand-border focus:border-blue-500 focus:outline-none"
           />
         </div>
       </div>
@@ -724,8 +724,8 @@ const QuickPrescriptions: React.FC<QuickPrescriptionsProps> = ({ className = '',
           próprio (motivo + dias + CID-10). */}
       <div className="space-y-3 pt-2">
         <div>
-          <h3 className="text-base md:text-lg font-bold text-white">Tipo de Documento CFM</h3>
-          <p className="text-xs text-slate-400 mt-0.5">Receituário ou Atestado — todos com assinatura digital ICP-Brasil (CFM 2.314/2022)</p>
+          <h3 className="text-base md:text-lg font-bold text-brand-text">Tipo de Documento CFM</h3>
+          <p className="text-xs text-brand-text-muted mt-0.5">Receituário ou Atestado — todos com assinatura digital ICP-Brasil (CFM 2.314/2022)</p>
         </div>
         <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
           {[
@@ -759,10 +759,10 @@ const QuickPrescriptions: React.FC<QuickPrescriptionsProps> = ({ className = '',
                 className={`group rounded-xl p-3 md:p-4 bg-slate-800/50 border ${t.border} text-left transition-all hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-emerald-500/50`}
               >
                 <div className={`inline-flex p-2 rounded-lg bg-gradient-to-br ${t.color} mb-2 group-hover:scale-110 transition-transform`}>
-                  <Icon className="w-4 h-4 md:w-5 md:h-5 text-white" />
+                  <Icon className="w-4 h-4 md:w-5 md:h-5 text-brand-text" />
                 </div>
-                <h4 className="text-xs md:text-sm font-bold text-white leading-tight">{t.name}</h4>
-                <p className="text-[10px] md:text-xs text-slate-400 mt-1 leading-snug">{t.desc}</p>
+                <h4 className="text-xs md:text-sm font-bold text-brand-text leading-tight">{t.name}</h4>
+                <p className="text-[10px] md:text-xs text-brand-text-muted mt-1 leading-snug">{t.desc}</p>
               </button>
             )
           })}
@@ -777,7 +777,7 @@ const QuickPrescriptions: React.FC<QuickPrescriptionsProps> = ({ className = '',
         {filteredTemplates.map((template) => (
           <div
             key={template.id}
-            className="bg-slate-800/50 border border-slate-700 rounded-xl p-3 md:p-4 hover:border-blue-500/60 transition-all hover:scale-[1.02] group cursor-pointer"
+            className="bg-slate-800/50 border border-brand-border rounded-xl p-3 md:p-4 hover:border-blue-500/60 transition-all hover:scale-[1.02] group cursor-pointer"
             onClick={() => {
               loadTemplateIntoForm(template.id);
               setIsModalOpen(true);
@@ -797,10 +797,10 @@ const QuickPrescriptions: React.FC<QuickPrescriptionsProps> = ({ className = '',
               </span>
             </div>
 
-            <h4 className="text-xs md:text-sm font-bold text-white leading-tight group-hover:text-blue-400 transition-colors line-clamp-2">
+            <h4 className="text-xs md:text-sm font-bold text-brand-text leading-tight group-hover:text-blue-400 transition-colors line-clamp-2">
               {template.name}
             </h4>
-            <p className="text-[10px] md:text-xs text-slate-400 mt-1 leading-snug">
+            <p className="text-[10px] md:text-xs text-brand-text-muted mt-1 leading-snug">
               <span className="text-slate-200 font-medium">{template.dosage}</span>
               <span className="mx-1">·</span>
               <span>{template.frequency}</span>
@@ -814,13 +814,13 @@ const QuickPrescriptions: React.FC<QuickPrescriptionsProps> = ({ className = '',
         <div ref={minhasPrescricoesRef} className="space-y-4 pt-6 border-t border-slate-700/50">
           <div className="flex items-center justify-between flex-wrap gap-3">
             <div>
-              <h3 className="text-lg font-bold text-white flex items-center gap-2">
+              <h3 className="text-lg font-bold text-brand-text flex items-center gap-2">
                 <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-500/20 to-emerald-600/10 border border-emerald-500/30 flex items-center justify-center">
                   <FileText className="w-4 h-4 text-emerald-400" />
                 </div>
                 Minhas Prescrições
                 {statusFilter !== 'todas' && (
-                  <span className="text-xs font-normal text-slate-400">
+                  <span className="text-xs font-normal text-brand-text-muted">
                     · filtro: {statusFilter === 'draft' ? 'Rascunhos' : statusFilter === 'signed' ? 'Assinadas' : 'Enviadas'}
                   </span>
                 )}
@@ -840,8 +840,8 @@ const QuickPrescriptions: React.FC<QuickPrescriptionsProps> = ({ className = '',
                   onClick={() => setStatusFilter(opt.id as any)}
                   className={`px-3 py-1.5 text-[11px] font-medium rounded-full transition-all whitespace-nowrap ${
                     statusFilter === opt.id
-                      ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-900/20'
-                      : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
+                      ? 'bg-emerald-600 text-brand-text shadow-lg shadow-emerald-900/20'
+                      : 'text-brand-text-muted hover:text-slate-200 hover:bg-slate-800/50'
                   }`}
                 >
                   {opt.label}
@@ -853,7 +853,7 @@ const QuickPrescriptions: React.FC<QuickPrescriptionsProps> = ({ className = '',
           {filteredMyPrescriptions.length === 0 ? (
             <div className="rounded-xl border border-white/5 bg-gradient-to-br from-slate-800/40 to-slate-900/20 p-8 text-center">
               <FileText className="w-10 h-10 text-slate-600 mx-auto mb-3" />
-              <p className="text-sm text-slate-400">
+              <p className="text-sm text-brand-text-muted">
                 Nenhuma prescrição neste filtro.
                 {statusFilter !== 'todas' && ' Limpe o filtro para ver todas.'}
               </p>
@@ -898,7 +898,7 @@ const QuickPrescriptions: React.FC<QuickPrescriptionsProps> = ({ className = '',
                           <TypeIcon className="w-4 h-4 text-white/90" />
                         </div>
                         <div className="min-w-0 flex-1">
-                          <h4 className="text-sm font-semibold text-white truncate leading-tight">
+                          <h4 className="text-sm font-semibold text-brand-text truncate leading-tight">
                             {p.patient_name || 'Paciente sem nome'}
                           </h4>
                           <p className="text-[10px] text-slate-500 truncate mt-0.5">
@@ -917,9 +917,9 @@ const QuickPrescriptions: React.FC<QuickPrescriptionsProps> = ({ className = '',
                       <div className="rounded-lg bg-black/20 border border-white/5 p-2.5 mb-3">
                         <div className="flex items-center gap-1.5 mb-1">
                           <Pill className="w-3 h-3 text-emerald-400" />
-                          <span className="text-xs font-medium text-white truncate">{firstMed.name || '—'}</span>
+                          <span className="text-xs font-medium text-brand-text truncate">{firstMed.name || '—'}</span>
                         </div>
-                        <div className="flex flex-wrap items-center gap-1.5 text-[10px] text-slate-400">
+                        <div className="flex flex-wrap items-center gap-1.5 text-[10px] text-brand-text-muted">
                           {firstMed.dosage && (
                             <span className="px-1.5 py-0.5 rounded bg-white/5 border border-white/10">{firstMed.dosage}</span>
                           )}
@@ -962,7 +962,7 @@ const QuickPrescriptions: React.FC<QuickPrescriptionsProps> = ({ className = '',
 
           {filteredMyPrescriptions.length > 12 && (
             <div className="text-center pt-2">
-              <p className="text-xs text-slate-400">
+              <p className="text-xs text-brand-text-muted">
                 Mostrando 12 de {filteredMyPrescriptions.length} prescrições. Use os filtros acima (Todas/Rascunhos/Assinadas/Enviadas) para refinar.
               </p>
             </div>
@@ -973,21 +973,21 @@ const QuickPrescriptions: React.FC<QuickPrescriptionsProps> = ({ className = '',
       {/* MODAL DE NOVA PRESCRIÇÃO */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 text-left">
-          <div className="bg-slate-800 border border-slate-700 rounded-xl w-full max-w-2xl shadow-2xl animate-in fade-in zoom-in duration-200 flex flex-col max-h-[90vh] relative overflow-hidden">
+          <div className="bg-brand-surface border border-brand-border rounded-xl w-full max-w-2xl shadow-2xl animate-in fade-in zoom-in duration-200 flex flex-col max-h-[90vh] relative overflow-hidden">
 
             {/* SUCESSO ELEGANTE - OVERLAY */}
             {showSuccess && (
-              <div className="absolute inset-0 z-50 bg-slate-800 flex flex-col items-center justify-center animate-in fade-in duration-300">
+              <div className="absolute inset-0 z-50 bg-brand-surface flex flex-col items-center justify-center animate-in fade-in duration-300">
                 <div className="w-20 h-20 bg-green-500/20 rounded-full flex items-center justify-center mb-6 animate-bounce">
                   <Check className="w-10 h-10 text-green-400" />
                 </div>
-                <h3 className="text-2xl font-bold text-white mb-2">Prescrição Salva!</h3>
-                <p className="text-slate-400">Registrado com sucesso no prontuário.</p>
+                <h3 className="text-2xl font-bold text-brand-text mb-2">Prescrição Salva!</h3>
+                <p className="text-brand-text-muted">Registrado com sucesso no prontuário.</p>
               </div>
             )}
 
-            <div className="flex items-center justify-between p-6 border-b border-slate-700 shrink-0">
-              <h3 className="text-xl font-bold text-white flex items-center gap-2">
+            <div className="flex items-center justify-between p-6 border-b border-brand-border shrink-0">
+              <h3 className="text-xl font-bold text-brand-text flex items-center gap-2">
                 <FileText className="w-5 h-5 text-green-500" />
                 {editingId
                   ? (selectedPrescriptionType === 'attestation' ? 'Editar Atestado' : 'Editar Rascunho')
@@ -995,7 +995,7 @@ const QuickPrescriptions: React.FC<QuickPrescriptionsProps> = ({ className = '',
               </h3>
               <button
                 onClick={handleCloseModal}
-                className="text-slate-400 hover:text-white transition-colors"
+                className="text-brand-text-muted hover:text-brand-text transition-colors"
                 disabled={showSuccess}
               >
                 <X className="w-5 h-5" />
@@ -1006,10 +1006,10 @@ const QuickPrescriptions: React.FC<QuickPrescriptionsProps> = ({ className = '',
             <div className="p-6 space-y-5 overflow-y-auto custom-scrollbar">
               {/* Seleção de Paciente */}
               <div>
-                <label className="block text-sm font-medium text-slate-300 mb-1">Paciente</label>
+                <label className="block text-sm font-medium text-brand-text-secondary mb-1">Paciente</label>
                 <div className="flex gap-2">
                   <select
-                    className="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-blue-500"
+                    className="w-full bg-brand-surface-subtle border border-slate-600 rounded-lg px-4 py-2.5 text-brand-text focus:outline-none focus:border-blue-500"
                     value={selectedPatient}
                     onChange={(e) => setSelectedPatient(e.target.value)}
                   >
@@ -1024,9 +1024,9 @@ const QuickPrescriptions: React.FC<QuickPrescriptionsProps> = ({ className = '',
               {/* V1.9.185 — Modelo só pra prescrições (atestado tem fluxo próprio) */}
               {selectedPrescriptionType !== 'attestation' && (
                 <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-1">Carregar Modelo (Opcional)</label>
+                  <label className="block text-sm font-medium text-brand-text-secondary mb-1">Carregar Modelo (Opcional)</label>
                   <select
-                    className="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-blue-500"
+                    className="w-full bg-brand-surface-subtle border border-slate-600 rounded-lg px-4 py-2.5 text-brand-text focus:outline-none focus:border-blue-500"
                     onChange={(e) => loadTemplateIntoForm(e.target.value)}
                     defaultValue=""
                   >
@@ -1040,17 +1040,17 @@ const QuickPrescriptions: React.FC<QuickPrescriptionsProps> = ({ className = '',
 
               {/* V1.9.185 — Detalhes da Medicação só pra prescrições (atestado tem form próprio) */}
               {selectedPrescriptionType !== 'attestation' && (
-              <div className="border-t border-slate-700 pt-4 mt-2">
-                <h4 className="text-white font-medium mb-4 flex items-center gap-2">
+              <div className="border-t border-brand-border pt-4 mt-2">
+                <h4 className="text-brand-text font-medium mb-4 flex items-center gap-2">
                   <Pill className="w-4 h-4 text-blue-400" /> Detalhes da Medicação
                 </h4>
 
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-sm font-medium text-slate-300 mb-1">Medicamento / Princípio Ativo</label>
+                    <label className="block text-sm font-medium text-brand-text-secondary mb-1">Medicamento / Princípio Ativo</label>
                     <input
                       type="text"
-                      className="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-blue-500"
+                      className="w-full bg-brand-surface-subtle border border-slate-600 rounded-lg px-4 py-2.5 text-brand-text focus:outline-none focus:border-blue-500"
                       placeholder="Ex: Canabidiol (CBD) Isolate"
                       value={prescriptionForm.medication}
                       onChange={(e) => setPrescriptionForm({ ...prescriptionForm, medication: e.target.value })}
@@ -1059,20 +1059,20 @@ const QuickPrescriptions: React.FC<QuickPrescriptionsProps> = ({ className = '',
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                     <div>
-                      <label className="block text-sm font-medium text-slate-300 mb-1">Dosagem</label>
+                      <label className="block text-sm font-medium text-brand-text-secondary mb-1">Dosagem</label>
                       <input
                         type="text"
-                        className="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-blue-500"
+                        className="w-full bg-brand-surface-subtle border border-slate-600 rounded-lg px-4 py-2.5 text-brand-text focus:outline-none focus:border-blue-500"
                         placeholder="Ex: 50mg/ml"
                         value={prescriptionForm.dosage}
                         onChange={(e) => setPrescriptionForm({ ...prescriptionForm, dosage: e.target.value })}
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-slate-300 mb-1">Frequência/Posologia</label>
+                      <label className="block text-sm font-medium text-brand-text-secondary mb-1">Frequência/Posologia</label>
                       <input
                         type="text"
-                        className="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-blue-500"
+                        className="w-full bg-brand-surface-subtle border border-slate-600 rounded-lg px-4 py-2.5 text-brand-text focus:outline-none focus:border-blue-500"
                         placeholder="Ex: 10 gotas de 12/12h"
                         value={prescriptionForm.frequency}
                         onChange={(e) => setPrescriptionForm({ ...prescriptionForm, frequency: e.target.value })}
@@ -1081,10 +1081,10 @@ const QuickPrescriptions: React.FC<QuickPrescriptionsProps> = ({ className = '',
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-slate-300 mb-1">Duração do Tratamento</label>
+                    <label className="block text-sm font-medium text-brand-text-secondary mb-1">Duração do Tratamento</label>
                     <input
                       type="text"
-                      className="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-blue-500"
+                      className="w-full bg-brand-surface-subtle border border-slate-600 rounded-lg px-4 py-2.5 text-brand-text focus:outline-none focus:border-blue-500"
                       placeholder="Ex: 30 dias ou Uso Contínuo"
                       value={prescriptionForm.duration}
                       onChange={(e) => setPrescriptionForm({ ...prescriptionForm, duration: e.target.value })}
@@ -1092,9 +1092,9 @@ const QuickPrescriptions: React.FC<QuickPrescriptionsProps> = ({ className = '',
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-slate-300 mb-1">Instruções / Observações</label>
+                    <label className="block text-sm font-medium text-brand-text-secondary mb-1">Instruções / Observações</label>
                     <textarea
-                      className="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-blue-500 min-h-[80px] resize-none"
+                      className="w-full bg-brand-surface-subtle border border-slate-600 rounded-lg px-4 py-2.5 text-brand-text focus:outline-none focus:border-blue-500 min-h-[80px] resize-none"
                       placeholder="Instruções especiais de uso..."
                       value={prescriptionForm.notes}
                       onChange={(e) => setPrescriptionForm({ ...prescriptionForm, notes: e.target.value })}
@@ -1107,30 +1107,30 @@ const QuickPrescriptions: React.FC<QuickPrescriptionsProps> = ({ className = '',
               {/* V1.9.185 — Form Atestado Médico (purple/indigo, condicional) */}
               {selectedPrescriptionType === 'attestation' && (
                 <div className="border-t border-purple-500/30 pt-4 mt-2">
-                  <h4 className="text-white font-medium mb-4 flex items-center gap-2">
+                  <h4 className="text-brand-text font-medium mb-4 flex items-center gap-2">
                     <FileCheck className="w-4 h-4 text-purple-400" /> Detalhes do Atestado
                   </h4>
 
                   <div className="space-y-4">
                     <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-sm font-medium text-slate-300 mb-1">Dias de Afastamento</label>
+                        <label className="block text-sm font-medium text-brand-text-secondary mb-1">Dias de Afastamento</label>
                         <input
                           type="number"
                           min="0"
                           max="365"
-                          className="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-purple-500"
+                          className="w-full bg-brand-surface-subtle border border-slate-600 rounded-lg px-4 py-2.5 text-brand-text focus:outline-none focus:border-purple-500"
                           placeholder="Ex: 3"
                           value={attestationForm.diasAfastamento}
                           onChange={(e) => setAttestationForm({ ...attestationForm, diasAfastamento: e.target.value })}
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-slate-300 mb-1">CID-10 (opcional)</label>
+                        <label className="block text-sm font-medium text-brand-text-secondary mb-1">CID-10 (opcional)</label>
                         <input
                           type="text"
                           maxLength={10}
-                          className="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-purple-500 uppercase"
+                          className="w-full bg-brand-surface-subtle border border-slate-600 rounded-lg px-4 py-2.5 text-brand-text focus:outline-none focus:border-purple-500 uppercase"
                           placeholder="Ex: J11"
                           value={attestationForm.cid10}
                           onChange={(e) => setAttestationForm({ ...attestationForm, cid10: e.target.value.toUpperCase() })}
@@ -1139,9 +1139,9 @@ const QuickPrescriptions: React.FC<QuickPrescriptionsProps> = ({ className = '',
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-slate-300 mb-1">Atestado / Motivo *</label>
+                      <label className="block text-sm font-medium text-brand-text-secondary mb-1">Atestado / Motivo *</label>
                       <textarea
-                        className="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-purple-500 min-h-[120px] resize-none"
+                        className="w-full bg-brand-surface-subtle border border-slate-600 rounded-lg px-4 py-2.5 text-brand-text focus:outline-none focus:border-purple-500 min-h-[120px] resize-none"
                         placeholder='Ex: "Atesto, para os devidos fins, que o(a) paciente esteve sob meus cuidados profissionais nesta data, necessitando de afastamento de suas atividades laborais por 3 dias a partir de hoje."'
                         value={attestationForm.motivo}
                         onChange={(e) => setAttestationForm({ ...attestationForm, motivo: e.target.value })}
@@ -1161,57 +1161,57 @@ const QuickPrescriptions: React.FC<QuickPrescriptionsProps> = ({ className = '',
                     <AlertCircle className="w-4 h-4 text-amber-400" />
                     <h4 className="text-sm font-semibold text-amber-200">Dados do Comprador (ANVISA Portaria 344/98)</h4>
                   </div>
-                  <p className="text-[11px] text-slate-400 mb-3 leading-relaxed">
+                  <p className="text-[11px] text-brand-text-muted mb-3 leading-relaxed">
                     Receitas controladas exigem identificação do comprador (paciente ou representante que retirará na farmácia).
                     Estes campos podem ser deixados em branco no rascunho — preencha antes de assinar.
                   </p>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                     <div>
-                      <label className="block text-xs font-medium text-slate-300 mb-1">Nome do Comprador</label>
+                      <label className="block text-xs font-medium text-brand-text-secondary mb-1">Nome do Comprador</label>
                       <input
                         type="text"
-                        className="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-500"
+                        className="w-full bg-brand-surface-subtle border border-slate-600 rounded-lg px-3 py-2 text-sm text-brand-text focus:outline-none focus:border-amber-500"
                         placeholder="Ex: João Silva (paciente ou representante)"
                         value={buyerData.name}
                         onChange={(e) => setBuyerData({ ...buyerData, name: e.target.value })}
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-medium text-slate-300 mb-1">CPF/RG</label>
+                      <label className="block text-xs font-medium text-brand-text-secondary mb-1">CPF/RG</label>
                       <input
                         type="text"
-                        className="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-500"
+                        className="w-full bg-brand-surface-subtle border border-slate-600 rounded-lg px-3 py-2 text-sm text-brand-text focus:outline-none focus:border-amber-500"
                         placeholder="000.000.000-00"
                         value={buyerData.id}
                         onChange={(e) => setBuyerData({ ...buyerData, id: e.target.value })}
                       />
                     </div>
                     <div className="md:col-span-2">
-                      <label className="block text-xs font-medium text-slate-300 mb-1">Endereço</label>
+                      <label className="block text-xs font-medium text-brand-text-secondary mb-1">Endereço</label>
                       <input
                         type="text"
-                        className="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-500"
+                        className="w-full bg-brand-surface-subtle border border-slate-600 rounded-lg px-3 py-2 text-sm text-brand-text focus:outline-none focus:border-amber-500"
                         placeholder="Rua, número, bairro"
                         value={buyerData.address}
                         onChange={(e) => setBuyerData({ ...buyerData, address: e.target.value })}
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-medium text-slate-300 mb-1">Cidade</label>
+                      <label className="block text-xs font-medium text-brand-text-secondary mb-1">Cidade</label>
                       <input
                         type="text"
-                        className="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-500"
+                        className="w-full bg-brand-surface-subtle border border-slate-600 rounded-lg px-3 py-2 text-sm text-brand-text focus:outline-none focus:border-amber-500"
                         placeholder="Rio de Janeiro"
                         value={buyerData.city}
                         onChange={(e) => setBuyerData({ ...buyerData, city: e.target.value })}
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-medium text-slate-300 mb-1">UF</label>
+                      <label className="block text-xs font-medium text-brand-text-secondary mb-1">UF</label>
                       <input
                         type="text"
                         maxLength={2}
-                        className="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-500 uppercase"
+                        className="w-full bg-brand-surface-subtle border border-slate-600 rounded-lg px-3 py-2 text-sm text-brand-text focus:outline-none focus:border-amber-500 uppercase"
                         placeholder="RJ"
                         value={buyerData.uf}
                         onChange={(e) => setBuyerData({ ...buyerData, uf: e.target.value.toUpperCase() })}
@@ -1222,12 +1222,12 @@ const QuickPrescriptions: React.FC<QuickPrescriptionsProps> = ({ className = '',
               )}
             </div>
 
-            <div className="p-6 border-t border-slate-700 flex justify-end gap-3 shrink-0 bg-slate-800/50">
+            <div className="p-6 border-t border-brand-border flex justify-end gap-3 shrink-0 bg-slate-800/50">
               {editingId && (
                 <button
                   type="button"
                   onClick={() => handleDeleteDraft(editingId)}
-                  className="px-4 py-2.5 text-red-300 hover:text-white hover:bg-red-600/30 border border-red-500/30 hover:border-red-500/50 rounded-lg transition-colors font-medium flex items-center gap-2 mr-auto"
+                  className="px-4 py-2.5 text-red-300 hover:text-brand-text hover:bg-red-600/30 border border-red-500/30 hover:border-red-500/50 rounded-lg transition-colors font-medium flex items-center gap-2 mr-auto"
                   disabled={showSuccess || saving}
                   title="Excluir este rascunho permanentemente"
                 >
@@ -1237,7 +1237,7 @@ const QuickPrescriptions: React.FC<QuickPrescriptionsProps> = ({ className = '',
               )}
               <button
                 onClick={handleCloseModal}
-                className="px-6 py-2.5 text-slate-300 hover:text-white hover:bg-slate-700 rounded-lg transition-colors font-medium border border-transparent hover:border-slate-600"
+                className="px-6 py-2.5 text-brand-text-secondary hover:text-brand-text hover:bg-brand-surface-subtle rounded-lg transition-colors font-medium border border-transparent hover:border-slate-600"
                 disabled={showSuccess}
               >
                 Cancelar
@@ -1245,7 +1245,7 @@ const QuickPrescriptions: React.FC<QuickPrescriptionsProps> = ({ className = '',
               <button
                 onClick={handleSavePrescription}
                 disabled={saving || signing || showSuccess}
-                className="px-5 py-2.5 bg-slate-700/80 hover:bg-slate-600/80 text-white rounded-lg font-medium border border-slate-600/50 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                className="px-5 py-2.5 bg-slate-700/80 hover:bg-slate-600/80 text-brand-text rounded-lg font-medium border border-slate-600/50 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                 title="Salvar como rascunho (pode editar depois antes de assinar)"
               >
                 {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <><Save className="w-4 h-4" /> {editingId ? 'Salvar Alterações' : 'Salvar Rascunho'}</>}
@@ -1254,7 +1254,7 @@ const QuickPrescriptions: React.FC<QuickPrescriptionsProps> = ({ className = '',
               <button
                 onClick={handleSaveAndSign}
                 disabled={saving || signing || showSuccess}
-                className="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg font-medium shadow-lg shadow-emerald-900/30 transition-all hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                className="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-brand-text rounded-lg font-medium shadow-lg shadow-emerald-900/30 transition-all hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                 title="Salvar e assinar com certificado ICP-Brasil (PKCS#7 RFC 3852)"
               >
                 {signing ? <><Loader2 className="w-4 h-4 animate-spin" /> Assinando...</> : <><Lock className="w-4 h-4" /> Salvar e Assinar ICP</>}
@@ -1267,54 +1267,54 @@ const QuickPrescriptions: React.FC<QuickPrescriptionsProps> = ({ className = '',
       {/* [V1.9.134] Modal educacional ICP-Brasil */}
       {showCertHelpModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm" onClick={() => setShowCertHelpModal(false)}>
-          <div className="bg-slate-900 border border-white/10 rounded-2xl max-w-lg w-full p-6 max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+          <div className="bg-brand-bg border border-white/10 rounded-2xl max-w-lg w-full p-6 max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-start justify-between mb-4">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center">
                   <Lock className="w-5 h-5 text-emerald-400" />
                 </div>
                 <div>
-                  <h3 className="text-lg font-bold text-white">Certificado ICP-Brasil</h3>
-                  <p className="text-xs text-slate-400">Como obter para assinar prescrições com validade legal</p>
+                  <h3 className="text-lg font-bold text-brand-text">Certificado ICP-Brasil</h3>
+                  <p className="text-xs text-brand-text-muted">Como obter para assinar prescrições com validade legal</p>
                 </div>
               </div>
-              <button onClick={() => setShowCertHelpModal(false)} className="text-slate-400 hover:text-white p-1">
+              <button onClick={() => setShowCertHelpModal(false)} className="text-brand-text-muted hover:text-brand-text p-1">
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <div className="space-y-4 text-sm text-slate-300">
+            <div className="space-y-4 text-sm text-brand-text-secondary">
               <div>
-                <h4 className="text-white font-semibold mb-1.5">Por que preciso?</h4>
-                <p className="text-slate-400 leading-relaxed">
-                  O CFM exige assinatura com certificado <strong className="text-white">ICP-Brasil</strong> para prescrições eletrônicas terem
+                <h4 className="text-brand-text font-semibold mb-1.5">Por que preciso?</h4>
+                <p className="text-brand-text-muted leading-relaxed">
+                  O CFM exige assinatura com certificado <strong className="text-brand-text">ICP-Brasil</strong> para prescrições eletrônicas terem
                   validade jurídica e poderem ser entregues digitalmente ao paciente. Sem ele, o documento serve só como rascunho local.
                 </p>
               </div>
 
               <div className="border-t border-white/5 pt-4">
-                <h4 className="text-white font-semibold mb-2">2 tipos de certificado</h4>
+                <h4 className="text-brand-text font-semibold mb-2">2 tipos de certificado</h4>
                 <div className="space-y-3">
                   <div className="rounded-lg border border-blue-500/20 bg-blue-500/[0.05] p-3">
                     <div className="flex items-center gap-2 mb-1">
                       <span className="text-xs font-bold text-blue-300 uppercase tracking-wider">A1</span>
-                      <span className="text-xs text-slate-400">arquivo digital (cloud)</span>
+                      <span className="text-xs text-brand-text-muted">arquivo digital (cloud)</span>
                     </div>
-                    <p className="text-xs text-slate-300">Validade 1 ano · ~R$ 280-400 · Instalado no navegador, prático para uso diário</p>
+                    <p className="text-xs text-brand-text-secondary">Validade 1 ano · ~R$ 280-400 · Instalado no navegador, prático para uso diário</p>
                   </div>
                   <div className="rounded-lg border border-purple-500/20 bg-purple-500/[0.05] p-3">
                     <div className="flex items-center gap-2 mb-1">
                       <span className="text-xs font-bold text-purple-300 uppercase tracking-wider">A3</span>
-                      <span className="text-xs text-slate-400">token físico ou cartão</span>
+                      <span className="text-xs text-brand-text-muted">token físico ou cartão</span>
                     </div>
-                    <p className="text-xs text-slate-300">Validade 3 anos · ~R$ 350-500 · Mais seguro, exige hardware (token USB)</p>
+                    <p className="text-xs text-brand-text-secondary">Validade 3 anos · ~R$ 350-500 · Mais seguro, exige hardware (token USB)</p>
                   </div>
                 </div>
               </div>
 
               <div className="border-t border-white/5 pt-4">
-                <h4 className="text-white font-semibold mb-2">Onde obter</h4>
-                <ul className="space-y-1.5 text-xs text-slate-400">
+                <h4 className="text-brand-text font-semibold mb-2">Onde obter</h4>
+                <ul className="space-y-1.5 text-xs text-brand-text-muted">
                   <li>• <a href="https://www.gov.br/iti/pt-br/assuntos/icp-brasil/lista-de-acs-credenciadas" target="_blank" rel="noreferrer" className="text-emerald-400 hover:underline">ITI — Lista oficial de ACs credenciadas</a></li>
                   <li>• Serasa Experian, Certisign, AC Soluti, Valid, Safeweb</li>
                   <li>• Processo: agendar validação presencial (CPF + foto + comprovante) · entrega em 1-3 dias</li>
@@ -1326,9 +1326,9 @@ const QuickPrescriptions: React.FC<QuickPrescriptionsProps> = ({ className = '',
                   <CheckCircle className="w-4 h-4" />
                   Já tenho certificado
                 </h4>
-                <p className="text-xs text-slate-300">
-                  Cadastre em <strong className="text-white">Certificados Digitais</strong> no menu. Quando válido,
-                  o botão <strong className="text-white">"Assinar Digitalmente"</strong> ativa nas prescrições.
+                <p className="text-xs text-brand-text-secondary">
+                  Cadastre em <strong className="text-brand-text">Certificados Digitais</strong> no menu. Quando válido,
+                  o botão <strong className="text-brand-text">"Assinar Digitalmente"</strong> ativa nas prescrições.
                 </p>
               </div>
             </div>
@@ -1337,7 +1337,7 @@ const QuickPrescriptions: React.FC<QuickPrescriptionsProps> = ({ className = '',
               <button
                 type="button"
                 onClick={() => setShowCertHelpModal(false)}
-                className="px-5 py-2.5 rounded-lg bg-white/5 text-white hover:bg-white/10 border border-white/10 text-sm font-medium transition-colors"
+                className="px-5 py-2.5 rounded-lg bg-white/5 text-brand-text hover:bg-white/10 border border-white/10 text-sm font-medium transition-colors"
               >
                 Entendi
               </button>
@@ -1364,15 +1364,15 @@ const QuickPrescriptions: React.FC<QuickPrescriptionsProps> = ({ className = '',
         }
         return (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm" onClick={closeExamModal}>
-            <div className="bg-slate-900 border border-cyan-500/20 rounded-2xl max-w-5xl w-full max-h-[92vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
-              <div className="sticky top-0 z-10 flex items-center justify-between p-4 bg-slate-900/95 backdrop-blur border-b border-slate-800">
+            <div className="bg-brand-bg border border-cyan-500/20 rounded-2xl max-w-5xl w-full max-h-[92vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+              <div className="sticky top-0 z-10 flex items-center justify-between p-4 bg-slate-900/95 backdrop-blur border-b border-brand-border-subtle">
                 <div className="flex items-center gap-3 min-w-0">
                   <div className="w-10 h-10 rounded-xl bg-cyan-500/15 border border-cyan-500/30 flex items-center justify-center shrink-0">
                     <FlaskConical className="w-5 h-5 text-cyan-400" />
                   </div>
                   <div className="min-w-0">
-                    <h3 className="text-lg font-bold text-white">Solicitação de Exames</h3>
-                    <p className="text-xs text-slate-400 truncate">
+                    <h3 className="text-lg font-bold text-brand-text">Solicitação de Exames</h3>
+                    <p className="text-xs text-brand-text-muted truncate">
                       {hasPatient ? `Paciente: ${effectivePatientName || 'Selecionado'}` : 'Selecione um paciente abaixo pra começar'}
                     </p>
                   </div>
@@ -1382,12 +1382,12 @@ const QuickPrescriptions: React.FC<QuickPrescriptionsProps> = ({ className = '',
                     <button
                       onClick={() => { setExamPatientLocal(null); setExamPatientSearch('') }}
                       title="Trocar paciente"
-                      className="px-3 py-1.5 rounded-lg text-xs bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700"
+                      className="px-3 py-1.5 rounded-lg text-xs bg-brand-surface hover:bg-brand-surface-subtle text-slate-200 border border-brand-border"
                     >
                       Trocar paciente
                     </button>
                   )}
-                  <button onClick={closeExamModal} className="text-slate-400 hover:text-white p-1">
+                  <button onClick={closeExamModal} className="text-brand-text-muted hover:text-brand-text p-1">
                     <X className="w-5 h-5" />
                   </button>
                 </div>
@@ -1403,24 +1403,24 @@ const QuickPrescriptions: React.FC<QuickPrescriptionsProps> = ({ className = '',
                     {/* V1.9.266 — Dropdown compacto (Pedro 13/05 21h15: "precisa ajustar o dropdown").
                         Combobox: input + lista densa max-h-64 (~5 itens visiveis) abaixo. */}
                     <div className="max-w-md mx-auto">
-                      <div className="flex items-center gap-2 mb-2 text-slate-300 text-sm">
+                      <div className="flex items-center gap-2 mb-2 text-brand-text-secondary text-sm">
                         <FlaskConical className="w-4 h-4 text-cyan-400" />
                         <span className="font-medium">Selecione o paciente</span>
                       </div>
                       <div className="relative">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-brand-text-muted pointer-events-none" />
                         <input
                           type="text"
                           autoFocus
                           value={examPatientSearch}
                           onChange={(e) => setExamPatientSearch(e.target.value)}
                           placeholder={patientsList.length === 0 ? 'Carregando pacientes...' : `Buscar entre ${patientsList.length} pacientes...`}
-                          className="w-full bg-slate-800 text-white pl-9 pr-9 py-2 rounded-lg border border-slate-700 focus:border-cyan-500 focus:outline-none text-sm"
+                          className="w-full bg-brand-surface text-brand-text pl-9 pr-9 py-2 rounded-lg border border-brand-border focus:border-cyan-500 focus:outline-none text-sm"
                         />
                         {examPatientSearch && (
                           <button
                             onClick={() => setExamPatientSearch('')}
-                            className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-500 hover:text-white p-1"
+                            className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-500 hover:text-brand-text p-1"
                             title="Limpar busca"
                           >
                             <X className="w-3.5 h-3.5" />
@@ -1441,7 +1441,7 @@ const QuickPrescriptions: React.FC<QuickPrescriptionsProps> = ({ className = '',
                               className="w-full flex items-center gap-2.5 px-3 py-2 hover:bg-cyan-500/10 transition-colors text-left group"
                             >
                               <User className="w-3.5 h-3.5 text-slate-500 group-hover:text-cyan-400 shrink-0" />
-                              <span className="text-slate-200 group-hover:text-white text-sm truncate">{p.name}</span>
+                              <span className="text-slate-200 group-hover:text-brand-text text-sm truncate">{p.name}</span>
                             </button>
                           ))
                         )}

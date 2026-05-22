@@ -68,15 +68,15 @@ const Dashboard: React.FC = () => {
     if (!user) {
       return (
         <div className="text-center py-12">
-          <h1 className="text-3xl font-bold text-white mb-4">
+          <h1 className="text-3xl font-bold text-brand-text mb-4">
             Bem-vindo ao MedCannLab 3.0
           </h1>
-          <p className="text-slate-300 mb-8">
+          <p className="text-brand-text-secondary mb-8">
             Faça login para acessar seu dashboard personalizado
           </p>
           <Link
             to="/"
-            className="bg-primary-600 hover:bg-primary-700 text-white px-6 py-3 rounded-lg font-semibold transition-colors"
+            className="bg-primary-600 hover:bg-primary-700 text-brand-text px-6 py-3 rounded-lg font-semibold transition-colors"
           >
             Fazer Login
           </Link>

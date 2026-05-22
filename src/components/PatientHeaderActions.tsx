@@ -112,8 +112,8 @@ const PatientHeaderActions: React.FC<PatientHeaderActionsProps> = ({
             {/* V1.9.237: densificacao laptop (p-6 → p-4 + space-y-3 → space-y-2) — mobile (<768) ainda p-4 enxuto */}
             <div className="bg-slate-900/40 border border-white/5 rounded-2xl p-3 md:p-4 space-y-2">
                 <div className="space-y-0.5">
-                    <h2 className="text-base md:text-lg font-semibold text-white">O que você quer fazer agora?</h2>
-                    <p className="text-slate-400 text-xs md:text-sm">Ações rápidas para sua jornada clínica.</p>
+                    <h2 className="text-base md:text-lg font-semibold text-brand-text">O que você quer fazer agora?</h2>
+                    <p className="text-brand-text-muted text-xs md:text-sm">Ações rápidas para sua jornada clínica.</p>
                 </div>
                 {/*
                   V1.9.310 (16/05/2026) — Clinical Cockpit Mode aplicado ao paciente.
@@ -189,15 +189,15 @@ const PatientHeaderActions: React.FC<PatientHeaderActionsProps> = ({
 
             {showDoctorSelect && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" onClick={() => !sending && setShowDoctorSelect(false)}>
-                    <div className="bg-slate-900 border border-white/10 rounded-2xl max-w-md w-full p-6" onClick={(e) => e.stopPropagation()}>
+                    <div className="bg-brand-bg border border-white/10 rounded-2xl max-w-md w-full p-6" onClick={(e) => e.stopPropagation()}>
                         <div className="flex items-start justify-between mb-4">
                             <div>
-                                <h3 className="text-xl font-bold text-white">Enviar relatório</h3>
-                                <p className="text-slate-400 text-sm mt-1">
+                                <h3 className="text-xl font-bold text-brand-text">Enviar relatório</h3>
+                                <p className="text-brand-text-muted text-sm mt-1">
                                     {latestReport ? 'Escolha um médico para receber sua última avaliação.' : 'Você ainda não tem avaliação concluída.'}
                                 </p>
                             </div>
-                            <button onClick={() => !sending && setShowDoctorSelect(false)} className="text-slate-500 hover:text-white p-1">
+                            <button onClick={() => !sending && setShowDoctorSelect(false)} className="text-slate-500 hover:text-brand-text p-1">
                                 <X className="w-5 h-5" />
                             </button>
                         </div>
@@ -208,9 +208,9 @@ const PatientHeaderActions: React.FC<PatientHeaderActionsProps> = ({
                                 <span className="font-medium">Relatório enviado!</span>
                             </div>
                         ) : loadingDoctors ? (
-                            <div className="text-slate-400 text-sm py-6 text-center">Carregando médicos...</div>
+                            <div className="text-brand-text-muted text-sm py-6 text-center">Carregando médicos...</div>
                         ) : doctors.length === 0 ? (
-                            <div className="text-slate-400 text-sm py-6 text-center">Nenhum médico disponível agora.</div>
+                            <div className="text-brand-text-muted text-sm py-6 text-center">Nenhum médico disponível agora.</div>
                         ) : (
                             <div className="space-y-2 max-h-72 overflow-y-auto">
                                 {doctors.map((d) => (
@@ -218,10 +218,10 @@ const PatientHeaderActions: React.FC<PatientHeaderActionsProps> = ({
                                         key={d.id}
                                         onClick={() => handleSendToDoctor(d.id)}
                                         disabled={sending || !latestReport}
-                                        className="w-full text-left flex items-center justify-between gap-3 px-4 py-3 bg-slate-800/60 hover:bg-slate-800 border border-white/5 rounded-xl transition-colors disabled:opacity-50"
+                                        className="w-full text-left flex items-center justify-between gap-3 px-4 py-3 bg-slate-800/60 hover:bg-brand-surface border border-white/5 rounded-xl transition-colors disabled:opacity-50"
                                     >
                                         <div>
-                                            <div className="text-white font-medium text-sm">{d.name || d.email}</div>
+                                            <div className="text-brand-text font-medium text-sm">{d.name || d.email}</div>
                                             {d.name && <div className="text-slate-500 text-xs">{d.email}</div>}
                                         </div>
                                         <Send className="w-4 h-4 text-blue-400" />

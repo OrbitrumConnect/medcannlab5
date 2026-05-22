@@ -147,7 +147,7 @@ const PatientDashboard: React.FC = () => {
       <div className="min-h-screen bg-[#0f172a] flex items-center justify-center">
         <div className="text-center">
           <Loader2 className="w-12 h-12 text-primary-500 animate-spin mx-auto mb-4" />
-          <p className="text-slate-400 font-medium">Carregando seu portal clínico...</p>
+          <p className="text-brand-text-muted font-medium">Carregando seu portal clínico...</p>
         </div>
       </div>
     )
@@ -168,7 +168,7 @@ const PatientDashboard: React.FC = () => {
           <div className="space-y-1">
             {/* V1.9.237: hero -1 tamanho de fonte em cada breakpoint (laptop cabe mais conteudo na fold) */}
             <h1 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-white to-slate-400 bg-clip-text text-transparent">Olá, {user?.name?.split(' ')[0]}</h1>
-            <p className="text-slate-400 text-base">Aqui está o resumo da sua jornada de cuidado.</p>
+            <p className="text-brand-text-muted text-base">Aqui está o resumo da sua jornada de cuidado.</p>
           </div>
 
           {/* [V1.9.126] Ações principais movidas para o topo (acessibilidade 50+) */}
@@ -230,7 +230,7 @@ const PatientDashboard: React.FC = () => {
       {activeTab === 'report-detail' && (
         <div className="space-y-6">
           <div className="flex items-center justify-between">
-            <h2 className="text-2xl font-bold text-white flex items-center gap-2">
+            <h2 className="text-2xl font-bold text-brand-text flex items-center gap-2">
               <Shield className="w-6 h-6 text-emerald-400" />
               Relatórios Clínicos
             </h2>
@@ -299,7 +299,7 @@ const PatientDashboard: React.FC = () => {
       {activeTab === 'plano' && (
         <div className="space-y-6">
           <div className="flex items-center justify-between">
-            <h2 className="text-2xl font-bold text-white flex items-center gap-2">
+            <h2 className="text-2xl font-bold text-brand-text flex items-center gap-2">
               <Target className="w-6 h-6 text-emerald-400" />
               Acompanhamento do Plano
             </h2>
@@ -338,8 +338,8 @@ const PatientDashboard: React.FC = () => {
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between gap-2 mb-1">
-                          <span className="text-sm font-semibold text-white">{reviewerLabel}</span>
-                          <span className="text-[11px] text-slate-400 flex-shrink-0">{dateLabel}</span>
+                          <span className="text-sm font-semibold text-brand-text">{reviewerLabel}</span>
+                          <span className="text-[11px] text-brand-text-muted flex-shrink-0">{dateLabel}</span>
                         </div>
                         <p className="text-sm text-slate-200/90 leading-relaxed line-clamp-3">
                           {dev.doctorNotes}
@@ -365,15 +365,15 @@ const PatientDashboard: React.FC = () => {
                     <Activity className="w-5 h-5 text-emerald-400" />
                   </div>
                   <div className="flex-1">
-                    <h3 className="text-lg font-semibold text-white">{therapeuticPlan.title}</h3>
-                    <p className="text-xs text-slate-400">Próxima revisão: {therapeuticPlan.nextReview}</p>
+                    <h3 className="text-lg font-semibold text-brand-text">{therapeuticPlan.title}</h3>
+                    <p className="text-xs text-brand-text-muted">Próxima revisão: {therapeuticPlan.nextReview}</p>
                   </div>
                 </div>
 
                 {/* Progress */}
                 <div className="mb-6">
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm text-slate-400 font-medium">Progresso do plano</span>
+                    <span className="text-sm text-brand-text-muted font-medium">Progresso do plano</span>
                     <span className="text-sm font-bold text-emerald-400">{therapeuticPlan.progress}%</span>
                   </div>
                   <div className="w-full h-3 bg-slate-700/50 rounded-full overflow-hidden">
@@ -389,7 +389,7 @@ const PatientDashboard: React.FC = () => {
 
                 {/* Medications */}
                 <div>
-                  <h4 className="text-sm font-semibold text-slate-300 mb-3 flex items-center gap-2">
+                  <h4 className="text-sm font-semibold text-brand-text-secondary mb-3 flex items-center gap-2">
                     <Shield className="w-4 h-4 text-emerald-400" />
                     Medicações / Protocolo
                   </h4>
@@ -399,7 +399,7 @@ const PatientDashboard: React.FC = () => {
                         <span className="w-6 h-6 rounded-full bg-emerald-500/10 flex items-center justify-center text-emerald-400 text-xs font-bold flex-shrink-0 border border-emerald-500/20">{idx + 1}</span>
                         <div className="flex-1 min-w-0">
                           <p className="text-sm text-slate-200 font-semibold">{med.name}</p>
-                          <p className="text-xs text-slate-400">{med.dosage} • {med.frequency}</p>
+                          <p className="text-xs text-brand-text-muted">{med.dosage} • {med.frequency}</p>
                         </div>
                       </div>
                     ))}
@@ -411,18 +411,18 @@ const PatientDashboard: React.FC = () => {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <button onClick={openNoaChat} className="p-4 rounded-xl bg-slate-800/30 border border-slate-700/50 hover:border-emerald-500/30 transition-all text-left group">
                   <Brain className="w-6 h-6 text-emerald-400 mb-2" />
-                  <p className="text-sm font-semibold text-white">Falar com Nôa</p>
-                  <p className="text-xs text-slate-400">Tirar dúvidas sobre seu plano</p>
+                  <p className="text-sm font-semibold text-brand-text">Falar com Nôa</p>
+                  <p className="text-xs text-brand-text-muted">Tirar dúvidas sobre seu plano</p>
                 </button>
                 <button onClick={() => navigate('/app/clinica/paciente/agendamentos')} className="p-4 rounded-xl bg-slate-800/30 border border-slate-700/50 hover:border-blue-500/30 transition-all text-left group">
                   <Calendar className="w-6 h-6 text-blue-400 mb-2" />
-                  <p className="text-sm font-semibold text-white">Agendar Consulta</p>
-                  <p className="text-xs text-slate-400">Marcar reavaliação</p>
+                  <p className="text-sm font-semibold text-brand-text">Agendar Consulta</p>
+                  <p className="text-xs text-brand-text-muted">Marcar reavaliação</p>
                 </button>
                 <button onClick={() => navigate('/app/clinica/paciente/chat-profissional')} className="p-4 rounded-xl bg-slate-800/30 border border-slate-700/50 hover:border-purple-500/30 transition-all text-left group">
                   <MessageCircle className="w-6 h-6 text-purple-400 mb-2" />
-                  <p className="text-sm font-semibold text-white">Falar com Médico</p>
-                  <p className="text-xs text-slate-400">Discutir ajustes no plano</p>
+                  <p className="text-sm font-semibold text-brand-text">Falar com Médico</p>
+                  <p className="text-xs text-brand-text-muted">Discutir ajustes no plano</p>
                 </button>
               </div>
             </div>
@@ -431,9 +431,9 @@ const PatientDashboard: React.FC = () => {
               <div className="w-16 h-16 bg-emerald-500/10 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-emerald-500/15">
                 <Target className="w-8 h-8 text-emerald-400 opacity-50" />
               </div>
-              <h3 className="text-lg font-semibold text-white mb-2">Plano em construção</h3>
-              <p className="text-sm text-slate-400 max-w-md mx-auto mb-6">Seu plano terapêutico será gerado automaticamente após sua primeira avaliação com a Nôa.</p>
-              <button onClick={handleStartAssessment} className="px-6 py-2.5 bg-gradient-to-r from-emerald-500 to-cyan-600 text-white rounded-xl font-semibold shadow-lg shadow-emerald-500/20 hover:scale-105 transition-all">
+              <h3 className="text-lg font-semibold text-brand-text mb-2">Plano em construção</h3>
+              <p className="text-sm text-brand-text-muted max-w-md mx-auto mb-6">Seu plano terapêutico será gerado automaticamente após sua primeira avaliação com a Nôa.</p>
+              <button onClick={handleStartAssessment} className="px-6 py-2.5 bg-gradient-to-r from-emerald-500 to-cyan-600 text-brand-text rounded-xl font-semibold shadow-lg shadow-emerald-500/20 hover:scale-105 transition-all">
                 Iniciar Avaliação
               </button>
             </div>

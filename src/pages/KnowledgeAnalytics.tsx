@@ -137,11 +137,11 @@ const KnowledgeAnalytics: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-slate-900 p-6">
+    <div className="min-h-screen bg-gray-50 dark:bg-brand-bg p-6">
       <div className="container mx-auto">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">
+          <h1 className="text-3xl font-bold text-slate-900 dark:text-brand-text mb-2">
             📊 Analytics do Conhecimento da IA Residente
           </h1>
           <p className="text-gray-600 dark:text-gray-300">
@@ -156,8 +156,8 @@ const KnowledgeAnalytics: React.FC = () => {
               key={p}
               onClick={() => setPeriod(p)}
               className={`px-4 py-2 rounded-lg font-semibold transition-all ${period === p
-                  ? 'bg-purple-600 text-white'
-                  : 'bg-white dark:bg-slate-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100'
+                  ? 'bg-purple-600 text-brand-text'
+                  : 'bg-white dark:bg-brand-surface text-gray-700 dark:text-gray-300 hover:bg-gray-100'
                 }`}
             >
               {p.toUpperCase()}
@@ -167,11 +167,11 @@ const KnowledgeAnalytics: React.FC = () => {
 
         {/* KPI Cards */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <div className="bg-white dark:bg-slate-800 rounded-xl shadow-lg p-6 border-l-4 border-blue-500">
+          <div className="bg-white dark:bg-brand-surface rounded-xl shadow-lg p-6 border-l-4 border-blue-500">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-gray-600 dark:text-gray-400 text-sm font-medium">Total de Documentos</p>
-                <p className="text-3xl font-bold text-slate-900 dark:text-white mt-2">{data.totalDocuments}</p>
+                <p className="text-3xl font-bold text-slate-900 dark:text-brand-text mt-2">{data.totalDocuments}</p>
               </div>
               <FileText className="w-12 h-12 text-blue-500" />
             </div>
@@ -182,11 +182,11 @@ const KnowledgeAnalytics: React.FC = () => {
             </div>
           </div>
 
-          <div className="bg-white dark:bg-slate-800 rounded-xl shadow-lg p-6 border-l-4 border-purple-500">
+          <div className="bg-white dark:bg-brand-surface rounded-xl shadow-lg p-6 border-l-4 border-purple-500">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-gray-600 dark:text-gray-400 text-sm font-medium">Vinculados à IA</p>
-                <p className="text-3xl font-bold text-slate-900 dark:text-white mt-2">{data.aiLinkedDocuments}</p>
+                <p className="text-3xl font-bold text-slate-900 dark:text-brand-text mt-2">{data.aiLinkedDocuments}</p>
               </div>
               <Brain className="w-12 h-12 text-purple-500" />
             </div>
@@ -199,11 +199,11 @@ const KnowledgeAnalytics: React.FC = () => {
             </div>
           </div>
 
-          <div className="bg-white dark:bg-slate-800 rounded-xl shadow-lg p-6 border-l-4 border-green-500">
+          <div className="bg-white dark:bg-brand-surface rounded-xl shadow-lg p-6 border-l-4 border-green-500">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-gray-600 dark:text-gray-400 text-sm font-medium">Relevância Média</p>
-                <p className="text-3xl font-bold text-slate-900 dark:text-white mt-2">
+                <p className="text-3xl font-bold text-slate-900 dark:text-brand-text mt-2">
                   {data.averageRelevance.toFixed(1)}/10
                 </p>
               </div>
@@ -216,11 +216,11 @@ const KnowledgeAnalytics: React.FC = () => {
             </div>
           </div>
 
-          <div className="bg-white dark:bg-slate-800 rounded-xl shadow-lg p-6 border-l-4 border-orange-500">
+          <div className="bg-white dark:bg-brand-surface rounded-xl shadow-lg p-6 border-l-4 border-orange-500">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-gray-600 dark:text-gray-400 text-sm font-medium">Áreas de Conhecimento</p>
-                <p className="text-3xl font-bold text-slate-900 dark:text-white mt-2">{data.documentsByArea.length}</p>
+                <p className="text-3xl font-bold text-slate-900 dark:text-brand-text mt-2">{data.documentsByArea.length}</p>
               </div>
               <Users className="w-12 h-12 text-orange-500" />
             </div>
@@ -234,8 +234,8 @@ const KnowledgeAnalytics: React.FC = () => {
         {/* Charts */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
           {/* Growth Chart */}
-          <div className="bg-white dark:bg-slate-800 rounded-xl shadow-lg p-6">
-            <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4 flex items-center">
+          <div className="bg-white dark:bg-brand-surface rounded-xl shadow-lg p-6">
+            <h3 className="text-lg font-bold text-slate-900 dark:text-brand-text mb-4 flex items-center">
               <BarChart3 className="w-5 h-5 mr-2" />
               Crescimento do Acervo
             </h3>
@@ -250,7 +250,7 @@ const KnowledgeAnalytics: React.FC = () => {
                         className="w-full bg-gradient-to-t from-purple-600 to-blue-500 rounded-t-lg transition-all duration-300 hover:opacity-80"
                         style={{ height: `${height}%` }}
                       >
-                        <div className="absolute top-2 left-0 right-0 text-center text-xs font-semibold text-white">
+                        <div className="absolute top-2 left-0 right-0 text-center text-xs font-semibold text-brand-text">
                           {item.count}
                         </div>
                       </div>
@@ -263,8 +263,8 @@ const KnowledgeAnalytics: React.FC = () => {
           </div>
 
           {/* Documents by Category */}
-          <div className="bg-white dark:bg-slate-800 rounded-xl shadow-lg p-6">
-            <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4 flex items-center">
+          <div className="bg-white dark:bg-brand-surface rounded-xl shadow-lg p-6">
+            <h3 className="text-lg font-bold text-slate-900 dark:text-brand-text mb-4 flex items-center">
               <PieChart className="w-5 h-5 mr-2" />
               Top Categorias
             </h3>
@@ -278,7 +278,7 @@ const KnowledgeAnalytics: React.FC = () => {
                       <span className="font-medium text-gray-700 dark:text-gray-300">{item.category}</span>
                       <span className="text-gray-500">{item.count}</span>
                     </div>
-                    <div className="w-full bg-gray-200 dark:bg-slate-700 rounded-full h-2">
+                    <div className="w-full bg-gray-200 dark:bg-brand-surface-subtle rounded-full h-2">
                       <div
                         className="bg-gradient-to-r from-purple-600 to-blue-500 h-2 rounded-full transition-all duration-500"
                         style={{ width: `${percentage}%` }}
@@ -294,8 +294,8 @@ const KnowledgeAnalytics: React.FC = () => {
         {/* Distribution Charts */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* By Area */}
-          <div className="bg-white dark:bg-slate-800 rounded-xl shadow-lg p-6">
-            <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4 flex items-center">
+          <div className="bg-white dark:bg-brand-surface rounded-xl shadow-lg p-6">
+            <h3 className="text-lg font-bold text-slate-900 dark:text-brand-text mb-4 flex items-center">
               <PieChart className="w-5 h-5 mr-2" />
               Distribuição por Área
             </h3>
@@ -322,8 +322,8 @@ const KnowledgeAnalytics: React.FC = () => {
           </div>
 
           {/* By Audience */}
-          <div className="bg-white dark:bg-slate-800 rounded-xl shadow-lg p-6">
-            <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4 flex items-center">
+          <div className="bg-white dark:bg-brand-surface rounded-xl shadow-lg p-6">
+            <h3 className="text-lg font-bold text-slate-900 dark:text-brand-text mb-4 flex items-center">
               <PieChart className="w-5 h-5 mr-2" />
               Distribuição por Audiência
             </h3>

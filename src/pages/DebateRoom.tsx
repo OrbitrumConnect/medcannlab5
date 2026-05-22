@@ -371,8 +371,8 @@ const DebateRoom: React.FC = () => {
     switch (role) {
       case 'Criador': return 'bg-purple-500/20 text-purple-400'
       case 'Moderador': return 'bg-blue-500/20 text-blue-400'
-      case 'Participante': return 'bg-slate-500/20 text-slate-400'
-      default: return 'bg-slate-500/20 text-slate-400'
+      case 'Participante': return 'bg-slate-500/20 text-brand-text-muted'
+      default: return 'bg-slate-500/20 text-brand-text-muted'
     }
   }
 
@@ -381,7 +381,7 @@ const DebateRoom: React.FC = () => {
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
-          <p className="text-slate-300">Carregando debate...</p>
+          <p className="text-brand-text-secondary">Carregando debate...</p>
         </div>
       </div>
     )
@@ -390,17 +390,17 @@ const DebateRoom: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="bg-slate-800/80 rounded-lg p-6 border border-slate-700">
+      <div className="bg-slate-800/80 rounded-lg p-6 border border-brand-border">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center space-x-4">
             <button
               onClick={handleLeaveDebate}
-              className="p-2 text-slate-400 hover:text-white hover:bg-slate-700/50 rounded-lg transition-colors"
+              className="p-2 text-brand-text-muted hover:text-brand-text hover:bg-slate-700/50 rounded-lg transition-colors"
             >
               <ArrowLeft className="w-5 h-5" />
             </button>
             <div>
-              <h1 className="text-2xl font-bold text-white flex items-center space-x-3">
+              <h1 className="text-2xl font-bold text-brand-text flex items-center space-x-3">
                 <span>🏛️ {debate.title}</span>
                 {isOnline && (
                   <div className="flex items-center space-x-2">
@@ -409,7 +409,7 @@ const DebateRoom: React.FC = () => {
                   </div>
                 )}
               </h1>
-              <p className="text-slate-300 mt-1">
+              <p className="text-brand-text-secondary mt-1">
                 {debate.dossierId
                   ? 'Debate clínico originado de um dossiê de pesquisa da Nôa Matrix.'
                   : debate.description}
@@ -418,15 +418,15 @@ const DebateRoom: React.FC = () => {
           </div>
           <div className="flex items-center space-x-2">
             {isPasswordProtected && (
-              <div className="flex items-center space-x-2 text-slate-400">
+              <div className="flex items-center space-x-2 text-brand-text-muted">
                 <Lock className="w-4 h-4" />
                 <span className="text-sm">Protegido</span>
               </div>
             )}
-            <button className="p-2 text-slate-400 hover:text-blue-400 transition-colors">
+            <button className="p-2 text-brand-text-muted hover:text-blue-400 transition-colors">
               <Share2 className="w-5 h-5" />
             </button>
-            <button className="p-2 text-slate-400 hover:text-purple-400 transition-colors">
+            <button className="p-2 text-brand-text-muted hover:text-purple-400 transition-colors">
               <Settings className="w-5 h-5" />
             </button>
           </div>
@@ -442,7 +442,7 @@ const DebateRoom: React.FC = () => {
         </div>
 
         {/* Stats */}
-        <div className="flex items-center space-x-6 text-sm text-slate-400">
+        <div className="flex items-center space-x-6 text-sm text-brand-text-muted">
           <div className="flex items-center space-x-1">
             <Users className="w-4 h-4" />
             <span>{debate.currentParticipants}/{debate.maxParticipants} participantes</span>
@@ -465,12 +465,12 @@ const DebateRoom: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
         {/* Participants Sidebar */}
         <div className="lg:col-span-1">
-          <div className="bg-slate-800/80 rounded-lg p-6 border border-slate-700">
+          <div className="bg-slate-800/80 rounded-lg p-6 border border-brand-border">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-white">
+              <h3 className="text-lg font-semibold text-brand-text">
                 👥 Participantes ({participants.filter(p => p.isOnline).length})
               </h3>
-              <button className="p-2 text-slate-400 hover:text-blue-400 transition-colors">
+              <button className="p-2 text-brand-text-muted hover:text-blue-400 transition-colors">
                 <UserPlus className="w-4 h-4" />
               </button>
             </div>
@@ -481,15 +481,15 @@ const DebateRoom: React.FC = () => {
                   <div className="flex items-center space-x-3">
                     <div className="relative">
                       <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
-                        <span className="text-white font-bold text-sm">{participant.avatar}</span>
+                        <span className="text-brand-text font-bold text-sm">{participant.avatar}</span>
                       </div>
                       {participant.isOnline && (
-                        <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-green-500 rounded-full border-2 border-slate-800"></div>
+                        <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-green-500 rounded-full border-2 border-brand-border-subtle"></div>
                       )}
                     </div>
                     <div>
-                      <p className="text-white font-medium text-sm">{participant.name}</p>
-                      <p className="text-slate-400 text-xs">{participant.specialty} • {participant.crm}</p>
+                      <p className="text-brand-text font-medium text-sm">{participant.name}</p>
+                      <p className="text-brand-text-muted text-xs">{participant.specialty} • {participant.crm}</p>
                       <span className={`inline-block px-2 py-1 rounded-full text-xs ${getRoleColor(participant.role)}`}>
                         {participant.role}
                       </span>
@@ -511,25 +511,25 @@ const DebateRoom: React.FC = () => {
           </div>
 
           {/* Debate Controls */}
-          <div className="bg-slate-800/80 rounded-lg p-6 border border-slate-700 mt-6">
-            <h3 className="text-lg font-semibold text-white mb-4">
+          <div className="bg-slate-800/80 rounded-lg p-6 border border-brand-border mt-6">
+            <h3 className="text-lg font-semibold text-brand-text mb-4">
               🎛️ Controles do Debate
             </h3>
             <div className="space-y-3">
-              <button className="w-full flex items-center justify-center space-x-2 p-3 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors">
+              <button className="w-full flex items-center justify-center space-x-2 p-3 bg-green-600 hover:bg-green-700 text-brand-text rounded-lg transition-colors">
                 <Mic className="w-4 h-4" />
                 <span>Falar</span>
               </button>
-              <button className="w-full flex items-center justify-center space-x-2 p-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors">
+              <button className="w-full flex items-center justify-center space-x-2 p-3 bg-blue-600 hover:bg-blue-700 text-brand-text rounded-lg transition-colors">
                 <Video className="w-4 h-4" />
                 <span>Vídeo</span>
               </button>
-              <button className="w-full flex items-center justify-center space-x-2 p-3 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors">
+              <button className="w-full flex items-center justify-center space-x-2 p-3 bg-purple-600 hover:bg-purple-700 text-brand-text rounded-lg transition-colors">
                 <Share2 className="w-4 h-4" />
                 <span>Compartilhar</span>
               </button>
               {isModerator && (
-                <button className="w-full flex items-center justify-center space-x-2 p-3 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors">
+                <button className="w-full flex items-center justify-center space-x-2 p-3 bg-red-600 hover:bg-red-700 text-brand-text rounded-lg transition-colors">
                   <Shield className="w-4 h-4" />
                   <span>Moderar</span>
                 </button>
@@ -545,7 +545,7 @@ const DebateRoom: React.FC = () => {
               fica acessível aqui, sem se misturar ao chat. */}
           {debate.dossierId && (
             <div className="bg-slate-800/80 rounded-lg border border-emerald-500/30">
-              <div className="p-4 border-b border-slate-700 flex items-center space-x-2">
+              <div className="p-4 border-b border-brand-border flex items-center space-x-2">
                 <Pin className="w-4 h-4 text-emerald-400" />
                 <span className="text-emerald-300 text-sm font-semibold">📄 Dossiê de pesquisa em debate</span>
               </div>
@@ -564,13 +564,13 @@ const DebateRoom: React.FC = () => {
               </div>
             </div>
           )}
-          <div className="bg-slate-800/80 rounded-lg border border-slate-700 h-[600px] flex flex-col">
+          <div className="bg-slate-800/80 rounded-lg border border-brand-border h-[600px] flex flex-col">
             {/* Chat Header */}
-            <div className="p-4 border-b border-slate-700 bg-slate-700/50">
+            <div className="p-4 border-b border-brand-border bg-slate-700/50">
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="text-lg font-semibold text-white">💬 Debate Ativo</h3>
-                  <p className="text-slate-400 text-sm">
+                  <h3 className="text-lg font-semibold text-brand-text">💬 Debate Ativo</h3>
+                  <p className="text-brand-text-muted text-sm">
                     {participants.filter(p => p.isOnline).length} participantes online
                   </p>
                 </div>
@@ -578,18 +578,18 @@ const DebateRoom: React.FC = () => {
                   <button 
                     onClick={() => setIsMuted(!isMuted)}
                     className={`p-2 transition-colors ${
-                      isMuted ? 'text-red-400 hover:text-red-300' : 'text-slate-400 hover:text-green-400'
+                      isMuted ? 'text-red-400 hover:text-red-300' : 'text-brand-text-muted hover:text-green-400'
                     }`}
                   >
                     {isMuted ? <VolumeX className="w-5 h-5" /> : <Volume2 className="w-5 h-5" />}
                   </button>
                   <button 
                     onClick={() => setIsFullscreen(!isFullscreen)}
-                    className="p-2 text-slate-400 hover:text-blue-400 transition-colors"
+                    className="p-2 text-brand-text-muted hover:text-blue-400 transition-colors"
                   >
                     {isFullscreen ? <Minimize2 className="w-5 h-5" /> : <Maximize2 className="w-5 h-5" />}
                   </button>
-                  <button className="p-2 text-slate-400 hover:text-purple-400 transition-colors">
+                  <button className="p-2 text-brand-text-muted hover:text-purple-400 transition-colors">
                     <MoreVertical className="w-5 h-5" />
                   </button>
                 </div>
@@ -602,7 +602,7 @@ const DebateRoom: React.FC = () => {
                 <div key={msg.id} className="flex space-x-3">
                   <div className="relative">
                     <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
-                      <span className="text-white font-bold text-sm">{msg.userAvatar}</span>
+                      <span className="text-brand-text font-bold text-sm">{msg.userAvatar}</span>
                     </div>
                     {msg.isModerator && (
                       <Crown className="absolute -top-1 -right-1 w-4 h-4 text-yellow-400" />
@@ -610,12 +610,12 @@ const DebateRoom: React.FC = () => {
                   </div>
                   <div className="flex-1">
                     <div className="flex items-center space-x-2 mb-1">
-                      <span className="text-white font-medium">{msg.user}</span>
-                      <span className="text-slate-400 text-sm">{msg.crm}</span>
+                      <span className="text-brand-text font-medium">{msg.user}</span>
+                      <span className="text-brand-text-muted text-sm">{msg.crm}</span>
                       <span className="text-slate-500 text-sm">•</span>
-                      <span className="text-slate-400 text-sm">{msg.specialty}</span>
+                      <span className="text-brand-text-muted text-sm">{msg.specialty}</span>
                       <span className="text-slate-500 text-sm">•</span>
-                      <span className="text-slate-400 text-sm">{msg.timestamp}</span>
+                      <span className="text-brand-text-muted text-sm">{msg.timestamp}</span>
                       {msg.isPinned && (
                         <Pin className="w-4 h-4 text-yellow-400" />
                       )}
@@ -627,19 +627,19 @@ const DebateRoom: React.FC = () => {
                     </div>
                     <p className="text-slate-200 mb-2">{msg.message}</p>
                     <div className="flex items-center space-x-4">
-                      <button className="flex items-center space-x-1 text-slate-400 hover:text-red-400 transition-colors">
+                      <button className="flex items-center space-x-1 text-brand-text-muted hover:text-red-400 transition-colors">
                         <Heart className="w-4 h-4" />
                         <span className="text-sm">{msg.reactions.heart}</span>
                       </button>
-                      <button className="flex items-center space-x-1 text-slate-400 hover:text-blue-400 transition-colors">
+                      <button className="flex items-center space-x-1 text-brand-text-muted hover:text-blue-400 transition-colors">
                         <ThumbsUp className="w-4 h-4" />
                         <span className="text-sm">{msg.reactions.thumbs}</span>
                       </button>
-                      <button className="flex items-center space-x-1 text-slate-400 hover:text-green-400 transition-colors">
+                      <button className="flex items-center space-x-1 text-brand-text-muted hover:text-green-400 transition-colors">
                         <Reply className="w-4 h-4" />
                         <span className="text-sm">{msg.reactions.reply}</span>
                       </button>
-                      <button className="text-slate-400 hover:text-yellow-400 transition-colors">
+                      <button className="text-brand-text-muted hover:text-yellow-400 transition-colors">
                         <Pin className="w-4 h-4" />
                       </button>
                     </div>
@@ -650,9 +650,9 @@ const DebateRoom: React.FC = () => {
             </div>
 
             {/* Message Input */}
-            <div className="p-4 border-t border-slate-700">
+            <div className="p-4 border-t border-brand-border">
               <div className="flex items-center space-x-3">
-                <button className="p-2 text-slate-400 hover:text-blue-400 transition-colors">
+                <button className="p-2 text-brand-text-muted hover:text-blue-400 transition-colors">
                   <Paperclip className="w-5 h-5" />
                 </button>
                 <div className="flex-1 relative">
@@ -662,10 +662,10 @@ const DebateRoom: React.FC = () => {
                     onChange={(e) => setMessage(e.target.value)}
                     onKeyPress={handleKeyPress}
                     placeholder="Participar do debate..."
-                    className="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-4 py-3 bg-brand-surface-subtle border border-slate-600 rounded-lg text-brand-text placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
-                <button className="p-2 text-slate-400 hover:text-yellow-400 transition-colors">
+                <button className="p-2 text-brand-text-muted hover:text-yellow-400 transition-colors">
                   <Smile className="w-5 h-5" />
                 </button>
                 <button
@@ -673,14 +673,14 @@ const DebateRoom: React.FC = () => {
                   className={`p-2 transition-colors ${
                     isRecording 
                       ? 'text-red-400 hover:text-red-300' 
-                      : 'text-slate-400 hover:text-red-400'
+                      : 'text-brand-text-muted hover:text-red-400'
                   }`}
                 >
                   {isRecording ? <MicOff className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
                 </button>
                 <button
                   onClick={handleSendMessage}
-                  className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-3 rounded-lg transition-colors"
+                  className="bg-blue-600 hover:bg-blue-700 text-brand-text px-4 py-3 rounded-lg transition-colors"
                 >
                   <Send className="w-5 h-5" />
                 </button>
@@ -693,12 +693,12 @@ const DebateRoom: React.FC = () => {
       {/* Password Modal */}
       {showPasswordModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-slate-800 rounded-lg p-6 border border-slate-700 max-w-md w-full mx-4">
+          <div className="bg-brand-surface rounded-lg p-6 border border-brand-border max-w-md w-full mx-4">
             <div className="flex items-center space-x-3 mb-4">
               <Key className="w-6 h-6 text-blue-400" />
-              <h3 className="text-lg font-semibold text-white">Debate Protegido</h3>
+              <h3 className="text-lg font-semibold text-brand-text">Debate Protegido</h3>
             </div>
-            <p className="text-slate-300 mb-4">
+            <p className="text-brand-text-secondary mb-4">
               Este debate é protegido por senha. Digite a senha para participar.
             </p>
             <input
@@ -706,18 +706,18 @@ const DebateRoom: React.FC = () => {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Digite a senha..."
-              className="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 mb-4"
+              className="w-full px-4 py-3 bg-brand-surface-subtle border border-slate-600 rounded-lg text-brand-text placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 mb-4"
             />
             <div className="flex space-x-3">
               <button
                 onClick={() => setShowPasswordModal(false)}
-                className="flex-1 bg-slate-600 hover:bg-slate-700 text-white py-3 px-4 rounded-lg transition-colors"
+                className="flex-1 bg-slate-600 hover:bg-brand-surface-subtle text-brand-text py-3 px-4 rounded-lg transition-colors"
               >
                 Cancelar
               </button>
               <button
                 onClick={handleJoinDebate}
-                className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-3 px-4 rounded-lg transition-colors"
+                className="flex-1 bg-blue-600 hover:bg-blue-700 text-brand-text py-3 px-4 rounded-lg transition-colors"
               >
                 Entrar
               </button>

@@ -142,7 +142,7 @@ export function PaymentCheckout() {
       <div className="container mx-auto max-w-4xl">
         {/* Header */}
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-white mb-2">
+          <h1 className="text-3xl font-bold text-brand-text mb-2">
             Finalizar Pagamento
           </h1>
           <p className="text-gray-300">
@@ -152,13 +152,13 @@ export function PaymentCheckout() {
 
         <div className="grid md:grid-cols-2 gap-6">
           {/* Resumo da Compra */}
-          <div className="bg-slate-800 rounded-xl p-6 border border-slate-700">
-            <h2 className="text-xl font-bold text-white mb-4">Resumo do Pedido</h2>
+          <div className="bg-brand-surface rounded-xl p-6 border border-brand-border">
+            <h2 className="text-xl font-bold text-brand-text mb-4">Resumo do Pedido</h2>
 
             <div className="space-y-3 mb-6">
               <div className="flex justify-between text-gray-300">
                 <span>Plano:</span>
-                <span className="font-semibold text-white">{plan.name}</span>
+                <span className="font-semibold text-brand-text">{plan.name}</span>
               </div>
 
               <div className="flex justify-between text-gray-300">
@@ -168,7 +168,7 @@ export function PaymentCheckout() {
 
               <div className="flex justify-between text-gray-300">
                 <span>Mensalidade:</span>
-                <span className="font-semibold text-white">R$ {plan.monthly_price.toFixed(2)}</span>
+                <span className="font-semibold text-brand-text">R$ {plan.monthly_price.toFixed(2)}</span>
               </div>
 
               {plan.setup_fee && (
@@ -178,9 +178,9 @@ export function PaymentCheckout() {
                 </div>
               )}
 
-              <div className="border-t border-slate-700 pt-3 mt-3">
+              <div className="border-t border-brand-border pt-3 mt-3">
                 <div className="flex justify-between items-center">
-                  <span className="text-lg font-semibold text-white">Total Hoje:</span>
+                  <span className="text-lg font-semibold text-brand-text">Total Hoje:</span>
                   <div className="text-right">
                     <span className="text-2xl font-bold text-emerald-400">
                       R$ {((plan.setup_fee || 0) + (0)).toFixed(2)}
@@ -198,7 +198,7 @@ export function PaymentCheckout() {
                 </div>
                 <div className="mt-2 text-right">
                   <span className="text-sm text-gray-400">Recorrência mensal (30 dias): </span>
-                  <span className="text-sm font-semibold text-white">R$ {plan.monthly_price.toFixed(2)}</span>
+                  <span className="text-sm font-semibold text-brand-text">R$ {plan.monthly_price.toFixed(2)}</span>
                 </div>
               </div>
             </div>
@@ -220,8 +220,8 @@ export function PaymentCheckout() {
           {/* Método de Pagamento */}
           <div className="space-y-6">
             {/* Seleção de Método */}
-            <div className="bg-slate-800 rounded-xl p-6 border border-slate-700">
-              <h2 className="text-xl font-bold text-white mb-4">
+            <div className="bg-brand-surface rounded-xl p-6 border border-brand-border">
+              <h2 className="text-xl font-bold text-brand-text mb-4">
                 Método de Pagamento
               </h2>
 
@@ -231,12 +231,12 @@ export function PaymentCheckout() {
                   onClick={() => setPaymentMethod('pix')}
                   className={`w-full p-4 rounded-lg flex items-center gap-3 transition-all ${paymentMethod === 'pix'
                     ? 'bg-emerald-600 border-2 border-emerald-500'
-                    : 'bg-slate-700 border-2 border-slate-600 hover:border-emerald-500'
+                    : 'bg-brand-surface-subtle border-2 border-slate-600 hover:border-emerald-500'
                     }`}
                 >
-                  <QrCode size={24} className="text-white" />
+                  <QrCode size={24} className="text-brand-text" />
                   <div className="text-left flex-1">
-                    <p className="font-semibold text-white">PIX</p>
+                    <p className="font-semibold text-brand-text">PIX</p>
                     <p className="text-xs text-gray-300">Aprovação imediata</p>
                   </div>
                   {paymentMethod === 'pix' && (
@@ -249,12 +249,12 @@ export function PaymentCheckout() {
                   onClick={() => setPaymentMethod('card')}
                   className={`w-full p-4 rounded-lg flex items-center gap-3 transition-all ${paymentMethod === 'card'
                     ? 'bg-emerald-600 border-2 border-emerald-500'
-                    : 'bg-slate-700 border-2 border-slate-600 hover:border-emerald-500'
+                    : 'bg-brand-surface-subtle border-2 border-slate-600 hover:border-emerald-500'
                     }`}
                 >
-                  <CreditCard size={24} className="text-white" />
+                  <CreditCard size={24} className="text-brand-text" />
                   <div className="text-left flex-1">
-                    <p className="font-semibold text-white">Cartão de Crédito</p>
+                    <p className="font-semibold text-brand-text">Cartão de Crédito</p>
                     <p className="text-xs text-gray-300">Em até 12x sem juros</p>
                   </div>
                   {paymentMethod === 'card' && (
@@ -267,12 +267,12 @@ export function PaymentCheckout() {
                   onClick={() => setPaymentMethod('boleto')}
                   className={`w-full p-4 rounded-lg flex items-center gap-3 transition-all ${paymentMethod === 'boleto'
                     ? 'bg-emerald-600 border-2 border-emerald-500'
-                    : 'bg-slate-700 border-2 border-slate-600 hover:border-emerald-500'
+                    : 'bg-brand-surface-subtle border-2 border-slate-600 hover:border-emerald-500'
                     }`}
                 >
-                  <Barcode size={24} className="text-white" />
+                  <Barcode size={24} className="text-brand-text" />
                   <div className="text-left flex-1">
-                    <p className="font-semibold text-white">Boleto Bancário</p>
+                    <p className="font-semibold text-brand-text">Boleto Bancário</p>
                     <p className="text-xs text-gray-300">Aprovação em 3 dias úteis</p>
                   </div>
                   {paymentMethod === 'boleto' && (
@@ -284,8 +284,8 @@ export function PaymentCheckout() {
 
             {/* QR Code PIX */}
             {paymentMethod === 'pix' && qrCode && (
-              <div className="bg-slate-800 rounded-xl p-6 border border-slate-700">
-                <h3 className="text-lg font-bold text-white mb-4">
+              <div className="bg-brand-surface rounded-xl p-6 border border-brand-border">
+                <h3 className="text-lg font-bold text-brand-text mb-4">
                   Escaneie o QR Code
                 </h3>
 
@@ -302,11 +302,11 @@ export function PaymentCheckout() {
                       type="text"
                       value={qrCodeValue}
                       readOnly
-                      className="flex-1 px-4 py-2 bg-slate-700 text-white rounded-lg text-sm font-mono"
+                      className="flex-1 px-4 py-2 bg-brand-surface-subtle text-brand-text rounded-lg text-sm font-mono"
                     />
                     <button
                       onClick={handleCopyPix}
-                      className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg"
+                      className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-brand-text rounded-lg"
                     >
                       Copiar
                     </button>
@@ -325,7 +325,7 @@ export function PaymentCheckout() {
             <button
               onClick={handlePayment}
               disabled={processing || (paymentMethod === 'pix' && Boolean(qrCode))}
-              className="w-full bg-green-600 hover:bg-green-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white py-4 rounded-lg font-semibold text-lg transition-all flex items-center justify-center gap-2"
+              className="w-full bg-green-600 hover:bg-green-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-brand-text py-4 rounded-lg font-semibold text-lg transition-all flex items-center justify-center gap-2"
             >
               {processing && <Loader2 className="animate-spin" size={20} />}
               {processing
@@ -336,7 +336,7 @@ export function PaymentCheckout() {
 
             <button
               onClick={() => navigate('/app/subscription-plans')}
-              className="w-full text-gray-400 hover:text-white text-sm"
+              className="w-full text-gray-400 hover:text-brand-text text-sm"
             >
               ← Voltar para planos
             </button>

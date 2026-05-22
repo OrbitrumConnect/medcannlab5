@@ -404,7 +404,7 @@ const PatientChat: React.FC = () => {
                                   <span className="text-emerald-400 text-xs font-bold">{professional.name?.[0] || 'P'}</span>
                                 </div>
                                 <div className="flex-1 text-left">
-                                  <p className="font-medium text-white text-sm">{professional.name}</p>
+                                  <p className="font-medium text-brand-text text-sm">{professional.name}</p>
                                   <p className="text-[10px] text-slate-500">Cannabis Medicinal</p>
                                 </div>
                                 {selectedProfessional === professional.id && (
@@ -430,11 +430,11 @@ const PatientChat: React.FC = () => {
                                 }}
                                 className="w-full p-2 rounded-lg hover:bg-slate-800/40 transition-colors flex items-center gap-3 opacity-60 hover:opacity-100"
                               >
-                                <div className="w-8 h-8 flex-shrink-0 bg-slate-800 border border-slate-700 rounded-lg flex items-center justify-center">
-                                  <span className="text-slate-400 text-xs font-bold">{professional.name?.[0] || 'P'}</span>
+                                <div className="w-8 h-8 flex-shrink-0 bg-brand-surface border border-brand-border rounded-lg flex items-center justify-center">
+                                  <span className="text-brand-text-muted text-xs font-bold">{professional.name?.[0] || 'P'}</span>
                                 </div>
                                 <div className="flex-1 text-left">
-                                  <p className="font-medium text-slate-300 text-sm">{professional.name}</p>
+                                  <p className="font-medium text-brand-text-secondary text-sm">{professional.name}</p>
                                   <p className="text-[10px] text-slate-500">Clique para adicionar</p>
                                 </div>
                                 <span className="text-[10px] bg-emerald-500/15 text-emerald-400 px-2 py-0.5 rounded-full border border-emerald-500/20">Add</span>
@@ -457,7 +457,7 @@ const PatientChat: React.FC = () => {
           <div className="flex items-center gap-1.5">
             <button
               onClick={() => setShowTeamModal(true)}
-              className="px-3 py-1.5 text-[10px] font-medium uppercase tracking-wider bg-slate-800/40 text-slate-400 hover:text-emerald-400 hover:bg-emerald-500/10 border border-slate-700/40 hover:border-emerald-500/20 rounded-lg transition-all"
+              className="px-3 py-1.5 text-[10px] font-medium uppercase tracking-wider bg-slate-800/40 text-brand-text-muted hover:text-emerald-400 hover:bg-emerald-500/10 border border-slate-700/40 hover:border-emerald-500/20 rounded-lg transition-all"
             >
               Equipe
             </button>
@@ -541,7 +541,7 @@ const PatientChat: React.FC = () => {
 
               {/* Title */}
               <div className="mt-8 text-center space-y-2">
-                <h2 className="text-xl font-semibold text-white tracking-tight">Nôa Esperança</h2>
+                <h2 className="text-xl font-semibold text-brand-text tracking-tight">Nôa Esperança</h2>
                 <p className="text-sm text-slate-500 max-w-sm leading-relaxed">
                   IA Residente · Avaliação Clínica<br />
                   <span className="text-slate-600 text-xs">Envie uma mensagem para iniciar</span>
@@ -560,7 +560,7 @@ const PatientChat: React.FC = () => {
                   )}
                   <div className={`max-w-[75%] xl:max-w-[60%] rounded-2xl px-4 py-3 transition-all ${msg.isDoctor
                     ? 'bg-slate-800/40 backdrop-blur-sm text-slate-100 border border-slate-700/30 rounded-bl-md'
-                    : 'bg-gradient-to-br from-emerald-600/90 to-emerald-700/90 text-white rounded-br-md shadow-lg shadow-emerald-900/20'
+                    : 'bg-gradient-to-br from-emerald-600/90 to-emerald-700/90 text-brand-text rounded-br-md shadow-lg shadow-emerald-900/20'
                     }`}>
                     <div className="flex items-center justify-between gap-4 mb-1">
                       <span className={`text-[10px] font-semibold ${msg.isDoctor ? 'text-emerald-400/80' : 'text-emerald-100/80'}`}>
@@ -583,7 +583,7 @@ const PatientChat: React.FC = () => {
         <div className="pb-4 pt-2">
           <div className="bg-slate-900/60 backdrop-blur-xl border border-slate-700/30 rounded-2xl px-4 py-3 shadow-xl shadow-black/10">
             <div className="flex items-center gap-3">
-              <button className="p-1.5 text-slate-500 hover:text-slate-300 transition-colors">
+              <button className="p-1.5 text-slate-500 hover:text-brand-text-secondary transition-colors">
                 <Paperclip className="w-4 h-4" />
               </button>
               <input
@@ -592,13 +592,13 @@ const PatientChat: React.FC = () => {
                 onChange={(e) => setMessage(e.target.value)}
                 onKeyPress={handleKeyPress}
                 placeholder="Digite sua mensagem aqui..."
-                className="flex-1 bg-transparent text-sm text-white placeholder-slate-600 focus:outline-none"
+                className="flex-1 bg-transparent text-sm text-brand-text placeholder-slate-600 focus:outline-none"
               />
               <button
                 onClick={startRecording}
                 className={`p-1.5 transition-colors ${isRecording
                   ? 'text-red-400 bg-red-500/10 rounded-lg'
-                  : 'text-slate-500 hover:text-slate-300'
+                  : 'text-slate-500 hover:text-brand-text-secondary'
                   }`}
               >
                 {isRecording ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
@@ -606,7 +606,7 @@ const PatientChat: React.FC = () => {
               <button
                 onClick={handleSendMessage}
                 disabled={!message.trim()}
-                className="p-2 bg-gradient-to-br from-emerald-500 to-emerald-700 text-white rounded-xl hover:from-emerald-400 hover:to-emerald-600 transition-all shadow-lg shadow-emerald-900/20 disabled:opacity-30 disabled:cursor-not-allowed disabled:shadow-none"
+                className="p-2 bg-gradient-to-br from-emerald-500 to-emerald-700 text-brand-text rounded-xl hover:from-emerald-400 hover:to-emerald-600 transition-all shadow-lg shadow-emerald-900/20 disabled:opacity-30 disabled:cursor-not-allowed disabled:shadow-none"
               >
                 <Send className="w-4 h-4" />
               </button>
@@ -624,10 +624,10 @@ const PatientChat: React.FC = () => {
           <div className="bg-slate-900/95 backdrop-blur-xl border border-slate-700/50 rounded-2xl w-full max-w-md mx-4 shadow-2xl shadow-black/30">
             <div className="p-6 border-b border-slate-700/40">
               <div className="flex items-center justify-between">
-                <h2 className="text-lg font-semibold text-white">Minha Equipe</h2>
+                <h2 className="text-lg font-semibold text-brand-text">Minha Equipe</h2>
                 <button
                   onClick={() => setShowTeamModal(false)}
-                  className="p-1 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors"
+                  className="p-1 text-brand-text-muted hover:text-brand-text hover:bg-brand-surface rounded-lg transition-colors"
                 >
                   ✕
                 </button>
@@ -649,13 +649,13 @@ const PatientChat: React.FC = () => {
                     setSelectedTeamMembers(newSet);
                   }}
                   className={`w-full p-3 rounded-xl flex items-center gap-3 transition-colors ${selectedTeamMembers.has(prof.id)
-                    ? 'bg-emerald-500/10 border-2 border-emerald-500/40 text-white'
-                    : 'bg-slate-800/40 border-2 border-transparent hover:bg-slate-800/60 text-slate-300'
+                    ? 'bg-emerald-500/10 border-2 border-emerald-500/40 text-brand-text'
+                    : 'bg-slate-800/40 border-2 border-transparent hover:bg-slate-800/60 text-brand-text-secondary'
                     }`}
                 >
-                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${selectedTeamMembers.has(prof.id) ? 'bg-emerald-500/20 border border-emerald-500/30' : 'bg-slate-800 border border-slate-700'
+                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${selectedTeamMembers.has(prof.id) ? 'bg-emerald-500/20 border border-emerald-500/30' : 'bg-brand-surface border border-brand-border'
                     }`}>
-                    <span className="text-white font-bold">{prof.name?.[0] || 'P'}</span>
+                    <span className="text-brand-text font-bold">{prof.name?.[0] || 'P'}</span>
                   </div>
                   <div className="flex-1 text-left">
                     <p className="font-medium">{prof.name}</p>
@@ -671,7 +671,7 @@ const PatientChat: React.FC = () => {
             <div className="p-4 border-t border-slate-700/40 flex gap-3">
               <button
                 onClick={() => setShowTeamModal(false)}
-                className="flex-1 px-4 py-2 bg-slate-800 text-slate-300 rounded-xl hover:bg-slate-700 transition-colors"
+                className="flex-1 px-4 py-2 bg-brand-surface text-brand-text-secondary rounded-xl hover:bg-brand-surface-subtle transition-colors"
               >
                 Cancelar
               </button>
@@ -680,7 +680,7 @@ const PatientChat: React.FC = () => {
                   console.log('👥 Equipe selecionada:', Array.from(selectedTeamMembers));
                   setShowTeamModal(false);
                 }}
-                className="flex-1 px-4 py-2 bg-emerald-600 text-white rounded-xl hover:bg-emerald-500 font-medium transition-colors"
+                className="flex-1 px-4 py-2 bg-emerald-600 text-brand-text rounded-xl hover:bg-emerald-500 font-medium transition-colors"
                 disabled={selectedTeamMembers.size === 0}
               >
                 Iniciar Conversa ({selectedTeamMembers.size})
@@ -696,10 +696,10 @@ const PatientChat: React.FC = () => {
           <div className="bg-slate-900/95 backdrop-blur-xl border border-slate-700/50 rounded-2xl w-full max-w-md mx-4 shadow-2xl shadow-black/30">
             <div className="p-6 border-b border-slate-700/40">
               <div className="flex items-center justify-between">
-                <h2 className="text-lg font-semibold text-white">Adicionar Profissional</h2>
+                <h2 className="text-lg font-semibold text-brand-text">Adicionar Profissional</h2>
                 <button
                   onClick={() => setShowAddProfModal(false)}
-                  className="p-1 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors"
+                  className="p-1 text-brand-text-muted hover:text-brand-text hover:bg-brand-surface rounded-lg transition-colors"
                 >
                   ✕
                 </button>
@@ -721,10 +721,10 @@ const PatientChat: React.FC = () => {
                       setLinkedProfessionalIds(new Set([...linkedProfessionalIds, prof.id]));
                       setShowAddProfModal(false);
                     }}
-                    className="w-full p-3 rounded-xl flex items-center gap-3 bg-slate-800/40 hover:bg-slate-800/60 text-slate-300 hover:text-white transition-colors"
+                    className="w-full p-3 rounded-xl flex items-center gap-3 bg-slate-800/40 hover:bg-slate-800/60 text-brand-text-secondary hover:text-brand-text transition-colors"
                   >
-                    <div className="w-10 h-10 rounded-xl bg-slate-800 border border-slate-700 flex items-center justify-center">
-                      <span className="text-white font-bold">{prof.name?.[0] || 'P'}</span>
+                    <div className="w-10 h-10 rounded-xl bg-brand-surface border border-brand-border flex items-center justify-center">
+                      <span className="text-brand-text font-bold">{prof.name?.[0] || 'P'}</span>
                     </div>
                     <div className="flex-1 text-left">
                       <p className="font-medium">{prof.name}</p>
@@ -739,7 +739,7 @@ const PatientChat: React.FC = () => {
             <div className="p-4 border-t border-slate-700/40">
               <button
                 onClick={() => setShowAddProfModal(false)}
-                className="w-full px-4 py-2 bg-slate-800 text-slate-300 rounded-xl hover:bg-slate-700 transition-colors"
+                className="w-full px-4 py-2 bg-brand-surface text-brand-text-secondary rounded-xl hover:bg-brand-surface-subtle transition-colors"
               >
                 Fechar
               </button>

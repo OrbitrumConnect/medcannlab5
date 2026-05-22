@@ -899,12 +899,12 @@ const CursoEduardoFaveret: React.FC = () => {
     : userProgress.progress
 
   return (
-    <div className="min-h-screen bg-slate-900 text-white">
+    <div className="min-h-screen bg-brand-bg text-brand-text">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Back Trigger Premium */}
         <button
           onClick={() => navigate('/app/ensino/aluno/dashboard')}
-          className="flex items-center gap-3 text-slate-400 hover:text-emerald-400 transition-all mb-8 group"
+          className="flex items-center gap-3 text-brand-text-muted hover:text-emerald-400 transition-all mb-8 group"
         >
           <div className="w-10 h-10 rounded-xl bg-slate-800/80 flex items-center justify-center group-hover:bg-emerald-500/10 transition-all border border-slate-700/50 group-hover:border-emerald-500/30 group-hover:shadow-[0_0_15px_rgba(16,185,129,0.1)]">
             <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
@@ -916,7 +916,7 @@ const CursoEduardoFaveret: React.FC = () => {
         </button>
 
         {/* Course Header */}
-        <div className="bg-slate-800 rounded-xl p-8 mb-8">
+        <div className="bg-brand-surface rounded-xl p-8 mb-8">
           <div className="flex flex-col lg:flex-row gap-8">
             <div className="lg:w-2/3">
               <div className="flex items-center space-x-2 mb-4">
@@ -927,7 +927,7 @@ const CursoEduardoFaveret: React.FC = () => {
                   Certificado
                 </span>
               </div>
-              <h1 className="text-3xl font-bold text-white mb-4">
+              <h1 className="text-3xl font-bold text-brand-text mb-4">
                 {courseInfo.title}
               </h1>
               <p className="text-gray-300 mb-6">
@@ -955,7 +955,7 @@ const CursoEduardoFaveret: React.FC = () => {
             </div>
             <div className="lg:w-1/3">
               <div className="bg-gradient-to-br from-green-900/20 to-teal-900/20 p-6 rounded-lg">
-                <h3 className="text-lg font-semibold text-white mb-4">
+                <h3 className="text-lg font-semibold text-brand-text mb-4">
                   Progresso do Curso
                 </h3>
                 <div className="mb-4">
@@ -993,14 +993,14 @@ const CursoEduardoFaveret: React.FC = () => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Modules List */}
           <div className="lg:col-span-2">
-            <div className="bg-slate-800 rounded-xl p-6">
+            <div className="bg-brand-surface rounded-xl p-6">
               <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-semibold text-white">
+                <h2 className="text-xl font-semibold text-brand-text">
                   Módulos do Curso
                 </h2>
                 <button
                   onClick={() => setShowAssignments(!showAssignments)}
-                  className="px-4 py-2 bg-slate-700 text-white rounded-lg hover:bg-slate-600 text-sm transition-colors"
+                  className="px-4 py-2 bg-brand-surface-subtle text-brand-text rounded-lg hover:bg-slate-600 text-sm transition-colors"
                 >
                   {showAssignments ? 'Ver Módulos' : 'Ver Atividades'}
                 </button>
@@ -1016,12 +1016,12 @@ const CursoEduardoFaveret: React.FC = () => {
                       className={`p-4 border rounded-lg cursor-pointer transition-colors duration-200 ${
                         activeModule === module.id
                           ? 'border-green-500 bg-green-900/20'
-                          : 'border-slate-700 hover:border-slate-600'
+                          : 'border-brand-border hover:border-slate-600'
                       }`}
                       onClick={() => setActiveModule(activeModule === module.id ? null : module.id)}
                     >
                       <div className="flex items-center justify-between mb-2">
-                        <h3 className="font-semibold text-white">
+                        <h3 className="font-semibold text-brand-text">
                           {module.title}
                         </h3>
                         <div className="flex items-center space-x-2">
@@ -1051,7 +1051,7 @@ const CursoEduardoFaveret: React.FC = () => {
 
                       {/* Module Lessons */}
                       {activeModule === module.id && (
-                        <div className="mt-4 pt-4 border-t border-slate-700">
+                        <div className="mt-4 pt-4 border-t border-brand-border">
                           <div className="space-y-2">
                             {module.lessons.map((lesson) => (
                               <div
@@ -1066,8 +1066,8 @@ const CursoEduardoFaveret: React.FC = () => {
                                   lesson.isCompleted
                                     ? 'bg-green-900/20'
                                     : lesson.isLocked
-                                    ? 'bg-slate-700 opacity-60 cursor-not-allowed'
-                                    : 'bg-slate-700 hover:bg-slate-600'
+                                    ? 'bg-brand-surface-subtle opacity-60 cursor-not-allowed'
+                                    : 'bg-brand-surface-subtle hover:bg-slate-600'
                                 }`}
                               >
                                 <div className="flex items-center space-x-3">
@@ -1075,7 +1075,7 @@ const CursoEduardoFaveret: React.FC = () => {
                                     {getLessonIcon(lesson.type)}
                                   </div>
                                   <div>
-                                    <h4 className="text-sm font-medium text-white">
+                                    <h4 className="text-sm font-medium text-brand-text">
                                       {lesson.title}
                                     </h4>
                                     <p className="text-xs text-gray-400">
@@ -1101,13 +1101,13 @@ const CursoEduardoFaveret: React.FC = () => {
                 </div>
               ) : (
                 <div className="space-y-4">
-                  <h3 className="text-lg font-semibold text-white mb-4">
+                  <h3 className="text-lg font-semibold text-brand-text mb-4">
                     Atividades e Atribuições
                   </h3>
                   {assignments.map((assignment) => (
-                    <div key={assignment.id} className="p-4 border border-slate-700 rounded-lg">
+                    <div key={assignment.id} className="p-4 border border-brand-border rounded-lg">
                       <div className="flex items-start justify-between mb-2">
-                        <h4 className="font-semibold text-white">
+                        <h4 className="font-semibold text-brand-text">
                           {assignment.title}
                         </h4>
                         <span className="text-sm text-gray-400">
@@ -1124,7 +1124,7 @@ const CursoEduardoFaveret: React.FC = () => {
                             {assignment.isSubmitted ? 'Entregue' : 'Pendente'}
                           </span>
                         </div>
-                        <button className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm transition-colors">
+                        <button className="px-4 py-2 bg-green-600 text-brand-text rounded-lg hover:bg-green-700 text-sm transition-colors">
                           {assignment.isSubmitted ? 'Ver Feedback' : 'Entregar'}
                         </button>
                       </div>
@@ -1138,58 +1138,58 @@ const CursoEduardoFaveret: React.FC = () => {
           {/* Sidebar */}
           <div className="space-y-6">
             {/* Course Stats */}
-            <div className="bg-slate-800 rounded-xl p-6">
-              <h3 className="text-lg font-semibold text-white mb-4">
+            <div className="bg-brand-surface rounded-xl p-6">
+              <h3 className="text-lg font-semibold text-brand-text mb-4">
                 Estatísticas
               </h3>
               <div className="space-y-4">
                 <div className="flex justify-between">
                   <span className="text-sm text-gray-300">Tempo Estudado:</span>
-                  <span className="text-sm font-medium text-white">24h 30min</span>
+                  <span className="text-sm font-medium text-brand-text">24h 30min</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-sm text-gray-300">Aulas Concluídas:</span>
-                  <span className="text-sm font-medium text-white">{userProgress.completedLessons}/{userProgress.totalLessons || displayModules.length}</span>
+                  <span className="text-sm font-medium text-brand-text">{userProgress.completedLessons}/{userProgress.totalLessons || displayModules.length}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-sm text-gray-300">Pontos Ganhos:</span>
-                  <span className="text-sm font-medium text-white">{userProgress.points.toLocaleString('pt-BR')}</span>
+                  <span className="text-sm font-medium text-brand-text">{userProgress.points.toLocaleString('pt-BR')}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-sm text-gray-300">Ranking:</span>
-                  <span className="text-sm font-medium text-white">#45</span>
+                  <span className="text-sm font-medium text-brand-text">#45</span>
                 </div>
               </div>
             </div>
 
             {/* Resources */}
-            <div className="bg-slate-800 rounded-xl p-6">
-              <h3 className="text-lg font-semibold text-white mb-4">
+            <div className="bg-brand-surface rounded-xl p-6">
+              <h3 className="text-lg font-semibold text-brand-text mb-4">
                 Recursos
               </h3>
               <div className="space-y-3">
-                <button className="w-full flex items-center space-x-3 p-3 text-left hover:bg-slate-700 rounded-lg transition-colors duration-200">
+                <button className="w-full flex items-center space-x-3 p-3 text-left hover:bg-brand-surface-subtle rounded-lg transition-colors duration-200">
                   <FileText className="w-5 h-5 text-blue-400" />
-                  <span className="text-sm text-white">Material Didático</span>
+                  <span className="text-sm text-brand-text">Material Didático</span>
                 </button>
-                <button className="w-full flex items-center space-x-3 p-3 text-left hover:bg-slate-700 rounded-lg transition-colors duration-200">
+                <button className="w-full flex items-center space-x-3 p-3 text-left hover:bg-brand-surface-subtle rounded-lg transition-colors duration-200">
                   <Video className="w-5 h-5 text-green-400" />
-                  <span className="text-sm text-white">Aulas Gravadas</span>
+                  <span className="text-sm text-brand-text">Aulas Gravadas</span>
                 </button>
-                <button className="w-full flex items-center space-x-3 p-3 text-left hover:bg-slate-700 rounded-lg transition-colors duration-200">
+                <button className="w-full flex items-center space-x-3 p-3 text-left hover:bg-brand-surface-subtle rounded-lg transition-colors duration-200">
                   <MessageCircle className="w-5 h-5 text-purple-400" />
-                  <span className="text-sm text-white">Fórum de Discussão</span>
+                  <span className="text-sm text-brand-text">Fórum de Discussão</span>
                 </button>
-                <button className="w-full flex items-center space-x-3 p-3 text-left hover:bg-slate-700 rounded-lg transition-colors duration-200">
+                <button className="w-full flex items-center space-x-3 p-3 text-left hover:bg-brand-surface-subtle rounded-lg transition-colors duration-200">
                   <Award className="w-5 h-5 text-orange-400" />
-                  <span className="text-sm text-white">Certificado</span>
+                  <span className="text-sm text-brand-text">Certificado</span>
                 </button>
               </div>
             </div>
 
             {/* Instructor */}
-            <div className="bg-slate-800 rounded-xl p-6">
-              <h3 className="text-lg font-semibold text-white mb-4">
+            <div className="bg-brand-surface rounded-xl p-6">
+              <h3 className="text-lg font-semibold text-brand-text mb-4">
                 Instrutor
               </h3>
               <div className="flex items-center space-x-3 mb-4">
@@ -1197,7 +1197,7 @@ const CursoEduardoFaveret: React.FC = () => {
                   <User className="w-6 h-6 text-green-400" />
                 </div>
                 <div>
-                  <h4 className="font-medium text-white">
+                  <h4 className="font-medium text-brand-text">
                     {courseInfo.instructor}
                   </h4>
                   <p className="text-sm text-gray-300">
@@ -1210,7 +1210,7 @@ const CursoEduardoFaveret: React.FC = () => {
               </p>
               <button 
               onClick={() => setShowProfileModal(true)}
-              className="w-full px-4 py-2 bg-slate-700 text-white rounded-lg hover:bg-slate-600 text-sm transition-colors">
+              className="w-full px-4 py-2 bg-brand-surface-subtle text-brand-text rounded-lg hover:bg-slate-600 text-sm transition-colors">
                 Ver Perfil
               </button>
             </div>
@@ -1221,11 +1221,11 @@ const CursoEduardoFaveret: React.FC = () => {
       {/* Modal de Visualização/Edição de Aula */}
       {selectedLesson && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-slate-800 rounded-xl p-8 max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col border border-slate-700">
+          <div className="bg-brand-surface rounded-xl p-8 max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col border border-brand-border">
             {/* Header */}
             <div className="flex items-start justify-between mb-6">
               <div>
-                <h2 className="text-2xl font-bold text-white mb-2">
+                <h2 className="text-2xl font-bold text-brand-text mb-2">
                   {selectedLesson.title}
                 </h2>
                 <p className="text-sm text-gray-400">
@@ -1238,7 +1238,7 @@ const CursoEduardoFaveret: React.FC = () => {
                     <button
                       onClick={saveLessonContent}
                       disabled={isSavingLesson}
-                      className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
+                      className="px-4 py-2 bg-green-600 hover:bg-green-700 text-brand-text rounded-lg font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
                     >
                       <Save className="w-4 h-4" />
                       <span>{isSavingLesson ? 'Salvando...' : 'Salvar'}</span>
@@ -1248,7 +1248,7 @@ const CursoEduardoFaveret: React.FC = () => {
                         setIsEditingLesson(false)
                         loadLessonContent(selectedLesson.moduleId, selectedLesson.lessonId)
                       }}
-                      className="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg font-semibold transition-colors flex items-center space-x-2"
+                      className="px-4 py-2 bg-brand-surface-subtle hover:bg-slate-600 text-brand-text rounded-lg font-semibold transition-colors flex items-center space-x-2"
                     >
                       <X className="w-4 h-4" />
                       <span>Cancelar</span>
@@ -1258,7 +1258,7 @@ const CursoEduardoFaveret: React.FC = () => {
                   <>
                     <button
                       onClick={() => setIsEditingLesson(true)}
-                      className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold transition-colors flex items-center space-x-2"
+                      className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-brand-text rounded-lg font-semibold transition-colors flex items-center space-x-2"
                     >
                       <Edit className="w-4 h-4" />
                       <span>Editar</span>
@@ -1269,7 +1269,7 @@ const CursoEduardoFaveret: React.FC = () => {
                         setIsEditingLesson(false)
                         setLessonContent('')
                       }}
-                      className="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg font-semibold transition-colors"
+                      className="px-4 py-2 bg-brand-surface-subtle hover:bg-slate-600 text-brand-text rounded-lg font-semibold transition-colors"
                     >
                       <X className="w-5 h-5" />
                     </button>
@@ -1284,12 +1284,12 @@ const CursoEduardoFaveret: React.FC = () => {
                 <textarea
                   value={lessonContent}
                   onChange={(e) => setLessonContent(e.target.value)}
-                  className="w-full h-full min-h-[400px] p-4 bg-slate-900 text-white rounded-lg border border-slate-700 focus:outline-none focus:border-blue-500 font-mono text-sm resize-none"
+                  className="w-full h-full min-h-[400px] p-4 bg-brand-bg text-brand-text rounded-lg border border-brand-border focus:outline-none focus:border-blue-500 font-mono text-sm resize-none"
                   placeholder="Digite o conteúdo da aula aqui..."
                 />
               ) : (
-                <div className="p-4 bg-slate-900 rounded-lg border border-slate-700">
-                  <div className="whitespace-pre-wrap text-white text-sm leading-relaxed">
+                <div className="p-4 bg-brand-bg rounded-lg border border-brand-border">
+                  <div className="whitespace-pre-wrap text-brand-text text-sm leading-relaxed">
                     {lessonContent || 'Nenhum conteúdo disponível. Clique em "Editar" para adicionar conteúdo.'}
                   </div>
                 </div>
@@ -1302,20 +1302,20 @@ const CursoEduardoFaveret: React.FC = () => {
       {/* Modal de Perfil do Dr. Eduardo Faveret */}
       {showProfileModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-slate-800 rounded-xl p-8 max-w-2xl w-full max-h-[90vh] overflow-y-auto border border-slate-700">
+          <div className="bg-brand-surface rounded-xl p-8 max-w-2xl w-full max-h-[90vh] overflow-y-auto border border-brand-border">
             <div className="flex items-start justify-between mb-6">
               <div className="flex items-center space-x-4">
                 <div className="w-20 h-20 bg-gradient-to-r from-green-500 to-teal-500 rounded-full flex items-center justify-center">
-                  <User className="w-10 h-10 text-white" />
+                  <User className="w-10 h-10 text-brand-text" />
                 </div>
                 <div>
-                  <h2 className="text-2xl font-bold text-white mb-1">Dr. Eduardo Faveret</h2>
+                  <h2 className="text-2xl font-bold text-brand-text mb-1">Dr. Eduardo Faveret</h2>
                   <p className="text-green-400 font-medium">Neuropediatra</p>
                 </div>
               </div>
               <button
                 onClick={() => setShowProfileModal(false)}
-                className="text-gray-400 hover:text-white transition-colors"
+                className="text-gray-400 hover:text-brand-text transition-colors"
               >
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -1326,26 +1326,26 @@ const CursoEduardoFaveret: React.FC = () => {
             <div className="space-y-6">
               {/* Formação */}
               <div>
-                <h3 className="text-lg font-semibold text-white mb-3 flex items-center gap-2">
+                <h3 className="text-lg font-semibold text-brand-text mb-3 flex items-center gap-2">
                   <Award className="w-5 h-5 text-green-400" />
                   Formação e Credenciais
                 </h3>
-                <div className="bg-slate-700 rounded-lg p-4 space-y-2 text-sm text-gray-300">
-                  <p><strong className="text-white">PhD em Epilepsia</strong></p>
-                  <p><strong className="text-white">Neuropediatra</strong></p>
+                <div className="bg-brand-surface-subtle rounded-lg p-4 space-y-2 text-sm text-gray-300">
+                  <p><strong className="text-brand-text">PhD em Epilepsia</strong></p>
+                  <p><strong className="text-brand-text">Neuropediatra</strong></p>
                   <p className="text-green-400 font-medium">Pioneiro na prescrição de cannabis medicinal no Brasil</p>
                 </div>
               </div>
 
               {/* Experiência */}
               <div>
-                <h3 className="text-lg font-semibold text-white mb-3 flex items-center gap-2">
+                <h3 className="text-lg font-semibold text-brand-text mb-3 flex items-center gap-2">
                   <BookOpen className="w-5 h-5 text-blue-400" />
                   Experiência Profissional
                 </h3>
-                <div className="bg-slate-700 rounded-lg p-4 space-y-3 text-sm text-gray-300">
+                <div className="bg-brand-surface-subtle rounded-lg p-4 space-y-3 text-sm text-gray-300">
                   <p>
-                    <strong className="text-white">Mais de 15 anos de experiência</strong> em cannabis medicinal e medicina integrativa.
+                    <strong className="text-brand-text">Mais de 15 anos de experiência</strong> em cannabis medicinal e medicina integrativa.
                   </p>
                   <p>
                     Especialista em tratamento de epilepsia com cannabis medicinal, com atuação pioneira no desenvolvimento 
@@ -1360,11 +1360,11 @@ const CursoEduardoFaveret: React.FC = () => {
 
               {/* Contribuições */}
               <div>
-                <h3 className="text-lg font-semibold text-white mb-3 flex items-center gap-2">
+                <h3 className="text-lg font-semibold text-brand-text mb-3 flex items-center gap-2">
                   <Star className="w-5 h-5 text-yellow-400" />
                   Contribuições e Realizações
                 </h3>
-                <div className="bg-slate-700 rounded-lg p-4 space-y-2 text-sm text-gray-300">
+                <div className="bg-brand-surface-subtle rounded-lg p-4 space-y-2 text-sm text-gray-300">
                   <p>• Pioneiro na prescrição de cannabis medicinal no Brasil</p>
                   <p>• Criador do curso de Pós-Graduação em Cannabis Medicinal com metodologia prática</p>
                   <p>• Desenvolvedor de protocolos de tratamento baseados em evidências</p>
@@ -1375,13 +1375,13 @@ const CursoEduardoFaveret: React.FC = () => {
 
               {/* Contato */}
               <div>
-                <h3 className="text-lg font-semibold text-white mb-3 flex items-center gap-2">
+                <h3 className="text-lg font-semibold text-brand-text mb-3 flex items-center gap-2">
                   <MessageCircle className="w-5 h-5 text-purple-400" />
                   Contato e Informações
                 </h3>
-                <div className="bg-slate-700 rounded-lg p-4 space-y-2 text-sm text-gray-300">
-                  <p><strong className="text-white">Área de Atuação:</strong> Neuropediatria, Epilepsia, Cannabis Medicinal</p>
-                  <p><strong className="text-white">Especialização:</strong> Medicina Integrativa</p>
+                <div className="bg-brand-surface-subtle rounded-lg p-4 space-y-2 text-sm text-gray-300">
+                  <p><strong className="text-brand-text">Área de Atuação:</strong> Neuropediatria, Epilepsia, Cannabis Medicinal</p>
+                  <p><strong className="text-brand-text">Especialização:</strong> Medicina Integrativa</p>
                 </div>
               </div>
             </div>
@@ -1389,7 +1389,7 @@ const CursoEduardoFaveret: React.FC = () => {
             <div className="mt-6 flex justify-end">
               <button
                 onClick={() => setShowProfileModal(false)}
-                className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold transition-colors"
+                className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-brand-text rounded-lg font-semibold transition-colors"
               >
                 Fechar
               </button>

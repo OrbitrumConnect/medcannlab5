@@ -78,17 +78,17 @@ const ConsentGuard: React.FC<{ children: React.ReactNode }> = ({ children }) => 
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
-        className="bg-slate-800 border border-slate-700 rounded-2xl max-w-2xl w-full p-8 shadow-2xl my-8"
+        className="bg-brand-surface border border-brand-border rounded-2xl max-w-2xl w-full p-8 shadow-2xl my-8"
       >
         {/* Header */}
         <div className="text-center mb-8">
           <div className="w-16 h-16 bg-emerald-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
             <Shield className="w-8 h-8 text-emerald-400" />
           </div>
-          <h1 className="text-2xl font-bold text-white mb-2">
+          <h1 className="text-2xl font-bold text-brand-text mb-2">
             Termos de Uso e LGPD
           </h1>
-          <p className="text-slate-400">
+          <p className="text-brand-text-muted">
             Consentimento obrigatório para uso da plataforma
           </p>
         </div>
@@ -100,8 +100,8 @@ const ConsentGuard: React.FC<{ children: React.ReactNode }> = ({ children }) => 
             <div className="flex items-start gap-3">
               <FileText className="w-5 h-5 text-blue-400 mt-0.5 flex-shrink-0" />
               <div className="flex-1">
-                <h3 className="text-white font-semibold text-sm mb-1">Termos de Uso da Plataforma</h3>
-                <p className="text-slate-400 text-xs mb-3">
+                <h3 className="text-brand-text font-semibold text-sm mb-1">Termos de Uso da Plataforma</h3>
+                <p className="text-brand-text-muted text-xs mb-3">
                   Ao utilizar a plataforma MedCannLab, você concorda com as regras de uso,
                   política de privacidade e responsabilidades do usuário.
                 </p>
@@ -112,7 +112,7 @@ const ConsentGuard: React.FC<{ children: React.ReactNode }> = ({ children }) => 
                     onChange={(e) => setAcceptedTerms(e.target.checked)}
                     className="w-4 h-4 rounded border-slate-500 text-emerald-500 focus:ring-emerald-500 bg-slate-600"
                   />
-                  <span className="text-slate-300 text-sm">Li e aceito os Termos de Uso</span>
+                  <span className="text-brand-text-secondary text-sm">Li e aceito os Termos de Uso</span>
                 </label>
               </div>
             </div>
@@ -123,8 +123,8 @@ const ConsentGuard: React.FC<{ children: React.ReactNode }> = ({ children }) => 
             <div className="flex items-start gap-3">
               <Lock className="w-5 h-5 text-purple-400 mt-0.5 flex-shrink-0" />
               <div className="flex-1">
-                <h3 className="text-white font-semibold text-sm mb-1">Consentimento LGPD — Dados Sensíveis</h3>
-                <p className="text-slate-400 text-xs mb-3">
+                <h3 className="text-brand-text font-semibold text-sm mb-1">Consentimento LGPD — Dados Sensíveis</h3>
+                <p className="text-brand-text-muted text-xs mb-3">
                   Conforme a Lei Geral de Proteção de Dados (LGPD), autorizo o tratamento de dados
                   sensíveis relacionados à minha saúde para fins clínicos e de pesquisa na plataforma.
                 </p>
@@ -135,7 +135,7 @@ const ConsentGuard: React.FC<{ children: React.ReactNode }> = ({ children }) => 
                     onChange={(e) => setAcceptedDataSharing(e.target.checked)}
                     className="w-4 h-4 rounded border-slate-500 text-emerald-500 focus:ring-emerald-500 bg-slate-600"
                   />
-                  <span className="text-slate-300 text-sm">Autorizo o tratamento de dados sensíveis</span>
+                  <span className="text-brand-text-secondary text-sm">Autorizo o tratamento de dados sensíveis</span>
                 </label>
               </div>
             </div>
@@ -146,8 +146,8 @@ const ConsentGuard: React.FC<{ children: React.ReactNode }> = ({ children }) => 
             <div className="flex items-start gap-3">
               <Globe className="w-5 h-5 text-cyan-400 mt-0.5 flex-shrink-0" />
               <div className="flex-1">
-                <h3 className="text-white font-semibold text-sm mb-1">Consultas Médicas Especializadas</h3>
-                <p className="text-slate-400 text-xs mb-3">
+                <h3 className="text-brand-text font-semibold text-sm mb-1">Consultas Médicas Especializadas</h3>
+                <p className="text-brand-text-muted text-xs mb-3">
                   Autorizo consultas médicas especializadas com profissionais parceiros da plataforma
                   e compartilhamento seguro de informações clínicas entre eles.
                 </p>
@@ -158,7 +158,7 @@ const ConsentGuard: React.FC<{ children: React.ReactNode }> = ({ children }) => 
                     onChange={(e) => setAcceptedMedicalConsultation(e.target.checked)}
                     className="w-4 h-4 rounded border-slate-500 text-emerald-500 focus:ring-emerald-500 bg-slate-600"
                   />
-                  <span className="text-slate-300 text-sm">Autorizo consultas médicas na plataforma</span>
+                  <span className="text-brand-text-secondary text-sm">Autorizo consultas médicas na plataforma</span>
                 </label>
               </div>
             </div>
@@ -169,7 +169,7 @@ const ConsentGuard: React.FC<{ children: React.ReactNode }> = ({ children }) => 
         <div className="flex flex-col sm:flex-row gap-3">
           <button
             onClick={handleAcceptAll}
-            className="flex-1 bg-slate-600 hover:bg-slate-500 text-white px-6 py-3 rounded-xl font-semibold transition-colors flex items-center justify-center gap-2"
+            className="flex-1 bg-slate-600 hover:bg-slate-500 text-brand-text px-6 py-3 rounded-xl font-semibold transition-colors flex items-center justify-center gap-2"
           >
             <CheckCircle className="w-4 h-4" />
             Aceitar Todos
@@ -180,8 +180,8 @@ const ConsentGuard: React.FC<{ children: React.ReactNode }> = ({ children }) => 
             disabled={!canProceed || isSaving}
             className={`flex-1 px-6 py-3 rounded-xl font-semibold transition-colors flex items-center justify-center gap-2 ${
               canProceed
-                ? 'bg-emerald-600 hover:bg-emerald-500 text-white'
-                : 'bg-slate-700 text-slate-500 cursor-not-allowed'
+                ? 'bg-emerald-600 hover:bg-emerald-500 text-brand-text'
+                : 'bg-brand-surface-subtle text-slate-500 cursor-not-allowed'
             }`}
           >
             {isSaving ? (

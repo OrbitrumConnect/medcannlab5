@@ -54,11 +54,11 @@ export const HeroSection = ({
             </div>
           )}
 
-          <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold mb-5 leading-tight tracking-tight text-white">
+          <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold mb-5 leading-tight tracking-tight text-brand-text">
             {headline}
           </h1>
 
-          <p className="text-base md:text-lg text-slate-300 mb-8 max-w-2xl mx-auto lg:mx-0 leading-relaxed">
+          <p className="text-base md:text-lg text-brand-text-secondary mb-8 max-w-2xl mx-auto lg:mx-0 leading-relaxed">
             {subhead}
           </p>
 

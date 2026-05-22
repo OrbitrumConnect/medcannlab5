@@ -345,9 +345,9 @@ const Sidebar: React.FC<SidebarProps> = ({
 
   // 📊 Stats reais do banco (sem mocks) — atualizados a cada 60s
   const [systemStats, setSystemStats] = useState<Array<{label:string; value:string; color:string}>>([
-    { label: 'Sistema Online', value: '—', color: 'text-slate-400' },
-    { label: 'Usuários Ativos', value: '—', color: 'text-slate-400' },
-    { label: 'Avaliações Hoje', value: '—', color: 'text-slate-400' },
+    { label: 'Sistema Online', value: '—', color: 'text-brand-text-muted' },
+    { label: 'Usuários Ativos', value: '—', color: 'text-brand-text-muted' },
+    { label: 'Avaliações Hoje', value: '—', color: 'text-brand-text-muted' },
   ])
 
   useEffect(() => {
@@ -374,8 +374,8 @@ const Sidebar: React.FC<SidebarProps> = ({
         if (cancelled) return
         setSystemStats([
           { label: 'Sistema Online', value: 'Offline', color: 'text-red-400' },
-          { label: 'Usuários', value: '0', color: 'text-slate-400' },
-          { label: 'Avaliações Hoje', value: '0', color: 'text-slate-400' },
+          { label: 'Usuários', value: '0', color: 'text-brand-text-muted' },
+          { label: 'Avaliações Hoje', value: '0', color: 'text-brand-text-muted' },
         ])
       }
     }
@@ -559,7 +559,7 @@ const Sidebar: React.FC<SidebarProps> = ({
       )}
 
       {/* Sidebar - Estilo do PatientSidebar - RESPONSIVO MOBILE */}
-      <div className={`text-white transition-all duration-300 flex flex-col fixed left-0 top-0 z-50 overflow-x-hidden ${mobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
+      <div className={`text-brand-text transition-all duration-300 flex flex-col fixed left-0 top-0 z-50 overflow-x-hidden ${mobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
         }`} style={{
           background: backgroundGradient,
           top: '0.1%',
@@ -591,7 +591,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                   />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <span className="text-base font-bold block truncate text-white">MedCannLab</span>
+                  <span className="text-base font-bold block truncate text-brand-text">MedCannLab</span>
                   <div className="text-xs text-[rgba(200,214,229,0.75)]">3.0</div>
                 </div>
               </div>
@@ -700,16 +700,16 @@ const Sidebar: React.FC<SidebarProps> = ({
                           onClick={() => isMobile && handleMobileToggle()}
                         >
                           <div className="relative flex-shrink-0">
-                            <Icon className={`w-6 h-6 ${itemIsActive ? 'text-white' : 'text-[#C8D6E5]'} ${showCallBadge ? 'text-red-400' : ''}`} />
+                            <Icon className={`w-6 h-6 ${itemIsActive ? 'text-brand-text' : 'text-[#C8D6E5]'} ${showCallBadge ? 'text-red-400' : ''}`} />
                             {showCallBadge && (
                               <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-red-500 border border-slate-900 animate-pulse" />
                             )}
                           </div>
                           {!isCollapsed && (
-                            <span className={`text-sm font-medium flex-1 flex items-center gap-2 ${itemIsActive ? 'text-white' : 'text-[#C8D6E5]'}`}>
+                            <span className={`text-sm font-medium flex-1 flex items-center gap-2 ${itemIsActive ? 'text-brand-text' : 'text-[#C8D6E5]'}`}>
                               {item.name}
                               {showCallBadge && (
-                                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-red-500/90 text-white text-[10px] font-bold animate-pulse">
+                                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-red-500/90 text-brand-text text-[10px] font-bold animate-pulse">
                                   {callType === 'audio' ? '📞' : '📹'} chamada
                                 </span>
                               )}
@@ -735,9 +735,9 @@ const Sidebar: React.FC<SidebarProps> = ({
                       const isAxisActive = location.pathname.includes(`/${axis.key}/`)
                       const isAxisExpanded = expandedAxis === axis.key
                       const axisActiveClasses: Record<string, string> = {
-                        clinica: 'bg-blue-600 text-white',
-                        ensino: 'bg-green-600 text-white',
-                        pesquisa: 'bg-purple-600 text-white'
+                        clinica: 'bg-blue-600 text-brand-text',
+                        ensino: 'bg-green-600 text-brand-text',
+                        pesquisa: 'bg-purple-600 text-brand-text'
                       }
 
                       // Seções combinadas para este eixo (admin nunca entra aqui, é tratado acima)
@@ -804,8 +804,8 @@ const Sidebar: React.FC<SidebarProps> = ({
                             }}
                             title={isCollapsed ? axis.label : ''}
                           >
-                            <AxisIcon className={`w-5 h-5 flex-shrink-0 ${isAxisExpanded ? 'text-white' : 'text-[#C8D6E5]'}`} />
-                            {!isCollapsed && <span className={`text-sm font-medium flex-1 ${isAxisExpanded ? 'text-white' : 'text-[#C8D6E5]'}`}>{axis.label}</span>}
+                            <AxisIcon className={`w-5 h-5 flex-shrink-0 ${isAxisExpanded ? 'text-brand-text' : 'text-[#C8D6E5]'}`} />
+                            {!isCollapsed && <span className={`text-sm font-medium flex-1 ${isAxisExpanded ? 'text-brand-text' : 'text-[#C8D6E5]'}`}>{axis.label}</span>}
                           </Link>
 
                           {(expandedAxis === axis.key) && (
@@ -865,10 +865,10 @@ const Sidebar: React.FC<SidebarProps> = ({
                                     onClick={() => isMobile && handleMobileToggle()}
                                     title={isCollapsed ? section.label : ''}
                                   >
-                                    <SectionIcon className={`w-5 h-5 flex-shrink-0 ${sectionIsActive ? 'text-white' : 'text-[#C8D6E5]'}`} />
+                                    <SectionIcon className={`w-5 h-5 flex-shrink-0 ${sectionIsActive ? 'text-brand-text' : 'text-[#C8D6E5]'}`} />
                                     {!isCollapsed && (
                                       <div className="flex flex-col min-w-0 flex-1">
-                                        <span className={`text-sm font-medium truncate ${sectionIsActive ? 'text-white' : 'text-[#C8D6E5]'}`}>{section.label}</span>
+                                        <span className={`text-sm font-medium truncate ${sectionIsActive ? 'text-brand-text' : 'text-[#C8D6E5]'}`}>{section.label}</span>
                                       </div>
                                     )}
                                   </Link>
@@ -941,8 +941,8 @@ const Sidebar: React.FC<SidebarProps> = ({
                         }}
                         onClick={() => isMobile && handleMobileToggle()}
                       >
-                        <Icon className={`w-5 h-5 flex-shrink-0 ${itemIsActive ? 'text-white' : 'text-[#C8D6E5]'}`} />
-                        {!isCollapsed && <span className={`text-sm font-medium flex-1 ${itemIsActive ? 'text-white' : 'text-[#C8D6E5]'}`}>{item.name}</span>}
+                        <Icon className={`w-5 h-5 flex-shrink-0 ${itemIsActive ? 'text-brand-text' : 'text-[#C8D6E5]'}`} />
+                        {!isCollapsed && <span className={`text-sm font-medium flex-1 ${itemIsActive ? 'text-brand-text' : 'text-[#C8D6E5]'}`}>{item.name}</span>}
                       </Link>
                     )
                   })}
@@ -999,8 +999,8 @@ const Sidebar: React.FC<SidebarProps> = ({
                           }}
                           onClick={() => isMobile && handleMobileToggle()}
                         >
-                          <Icon className={`w-5 h-5 flex-shrink-0 ${itemIsActive ? 'text-white' : 'text-[#C8D6E5]'}`} />
-                          {!isCollapsed && <span className={`text-sm font-medium flex-1 ${itemIsActive ? 'text-white' : 'text-[#C8D6E5]'}`}>{item.name}</span>}
+                          <Icon className={`w-5 h-5 flex-shrink-0 ${itemIsActive ? 'text-brand-text' : 'text-[#C8D6E5]'}`} />
+                          {!isCollapsed && <span className={`text-sm font-medium flex-1 ${itemIsActive ? 'text-brand-text' : 'text-[#C8D6E5]'}`}>{item.name}</span>}
                         </Link>
                       )
                     })}
@@ -1056,8 +1056,8 @@ const Sidebar: React.FC<SidebarProps> = ({
                     }}
                     onClick={() => isMobile && handleMobileToggle()}
                   >
-                    <Icon className={`w-5 h-5 flex-shrink-0 ${itemIsActive ? 'text-white' : 'text-[#C8D6E5]'}`} />
-                    {!isCollapsed && <span className={`text-sm font-medium flex-1 ${itemIsActive ? 'text-white' : 'text-[#C8D6E5]'}`}>{item.name}</span>}
+                    <Icon className={`w-5 h-5 flex-shrink-0 ${itemIsActive ? 'text-brand-text' : 'text-[#C8D6E5]'}`} />
+                    {!isCollapsed && <span className={`text-sm font-medium flex-1 ${itemIsActive ? 'text-brand-text' : 'text-[#C8D6E5]'}`}>{item.name}</span>}
                   </Link>
                 )
               })}
@@ -1112,11 +1112,11 @@ const Sidebar: React.FC<SidebarProps> = ({
               }}
             >
               <div className="w-10 h-10 rounded-xl flex items-center justify-center shadow-lg flex-shrink-0" style={{ background: accentGradient, boxShadow: '0 8px 20px rgba(0,193,106,0.32)' }}>
-                <User className="w-5 h-5 text-white" />
+                <User className="w-5 h-5 text-brand-text" />
               </div>
               {!isCollapsed && (
                 <div className="min-w-0 flex-1">
-                  <p className="text-sm font-semibold text-white truncate">Perfil</p>
+                  <p className="text-sm font-semibold text-brand-text truncate">Perfil</p>
                   <p className="text-xs text-[rgba(200,214,229,0.75)] truncate">Configurações</p>
                 </div>
               )}
@@ -1279,7 +1279,7 @@ const Sidebar: React.FC<SidebarProps> = ({
       {!isMobile && (
         <button
           onClick={() => setIsMobileOpen(!isMobileOpen)}
-          className="fixed top-4 left-4 z-50 lg:hidden text-white p-2 rounded-md transition-all touch-manipulation min-w-[44px] min-h-[44px] flex items-center justify-center"
+          className="fixed top-4 left-4 z-50 lg:hidden text-brand-text p-2 rounded-md transition-all touch-manipulation min-w-[44px] min-h-[44px] flex items-center justify-center"
           style={{
             background: 'rgba(12, 34, 54, 0.6)',
             border: '1px solid rgba(0,193,106,0.08)'

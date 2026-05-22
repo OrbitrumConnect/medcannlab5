@@ -39,9 +39,9 @@ export const PatientStats: React.FC<PatientStatsProps> = ({
                 <div key={i} className="bg-slate-900/40 border border-white/5 rounded-2xl p-4 md:p-5 backdrop-blur-md hover:border-white/10 transition-colors">
                     <div className="flex items-center justify-between mb-3">
                         <stat.icon className={`w-6 h-6 md:w-7 md:h-7 ${stat.color}`} />
-                        <span className="text-xl md:text-2xl font-bold text-white">{stat.value}</span>
+                        <span className="text-xl md:text-2xl font-bold text-brand-text">{stat.value}</span>
                     </div>
-                    <h3 className="text-xs md:text-sm font-semibold text-slate-400 uppercase tracking-wider">{stat.label}</h3>
+                    <h3 className="text-xs md:text-sm font-semibold text-brand-text-muted uppercase tracking-wider">{stat.label}</h3>
                     <p className="text-[10px] md:text-xs text-slate-500 mt-1">{stat.sub}</p>
                 </div>
             ))}

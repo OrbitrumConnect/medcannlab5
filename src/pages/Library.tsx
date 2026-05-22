@@ -1045,7 +1045,7 @@ const Library: React.FC = () => {
   }, [searchTerm])
 
   return (
-    <div className="min-h-screen text-white" style={{ background: backgroundGradient }}>
+    <div className="min-h-screen text-brand-text" style={{ background: backgroundGradient }}>
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header — compacto e pro */}
         <div className="mb-5">
@@ -1060,25 +1060,25 @@ const Library: React.FC = () => {
                   className="p-2.5 rounded-xl shrink-0"
                   style={{ background: accentGradient }}
                 >
-                  <Brain className="w-7 h-7 text-white" />
+                  <Brain className="w-7 h-7 text-brand-text" />
                 </div>
                 <div>
                   <h1 className="text-xl md:text-2xl font-bold bg-gradient-to-r from-green-300 via-teal-200 to-cyan-200 bg-clip-text text-transparent leading-tight">
                     Base de Conhecimento da IA Residente
                   </h1>
-                  <p className="text-xs text-slate-300 mt-0.5">Nôa Esperança IA • Educação • Pesquisa</p>
+                  <p className="text-xs text-brand-text-secondary mt-0.5">Nôa Esperança IA • Educação • Pesquisa</p>
                 </div>
               </div>
               {knowledgeStats && (
                 <div className="flex flex-wrap items-center gap-2">
                   <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-800/70 border border-slate-600/50 shadow-sm backdrop-blur-sm">
                     <Brain className="w-3.5 h-3.5 text-[#00F5A0]" />
-                    <span className="text-[11px] text-slate-300">Vinculados</span>
+                    <span className="text-[11px] text-brand-text-secondary">Vinculados</span>
                     <span className="text-xs font-bold tabular-nums text-[#00F5A0]">{knowledgeStats.aiLinkedDocuments}</span>
                   </div>
                   <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-800/70 border border-slate-600/50 shadow-sm backdrop-blur-sm">
                     <TrendingUp className="w-3.5 h-3.5 text-[#4FE0C1]" />
-                    <span className="text-[11px] text-slate-300">Relevância</span>
+                    <span className="text-[11px] text-brand-text-secondary">Relevância</span>
                     <span className="text-xs font-bold tabular-nums text-[#4FE0C1]">{knowledgeStats.averageRelevance.toFixed(2)}</span>
                   </div>
                   <button
@@ -1111,23 +1111,23 @@ const Library: React.FC = () => {
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <div className="text-center py-1">
                   <div className="text-xl font-bold text-[#00F5A0]">{knowledgeStats.totalDocuments}</div>
-                  <div className="text-xs text-slate-300">Total</div>
+                  <div className="text-xs text-brand-text-secondary">Total</div>
                 </div>
                 <div className="text-center py-1">
                   <div className="text-xl font-bold text-[#4FE0C1]">{knowledgeStats.aiLinkedDocuments}</div>
-                  <div className="text-xs text-slate-300">Vinculados IA</div>
+                  <div className="text-xs text-brand-text-secondary">Vinculados IA</div>
                 </div>
                 <div className="text-center py-1">
                   <div className="text-xl font-bold text-[#4FE0C1]">{knowledgeStats.averageRelevance.toFixed(2)}</div>
-                  <div className="text-xs text-slate-300">Relevância</div>
+                  <div className="text-xs text-brand-text-secondary">Relevância</div>
                 </div>
                 <div className="text-center py-1">
                   <div className="text-xl font-bold text-[#FFD33D]">{knowledgeStats.topCategories.length}</div>
-                  <div className="text-xs text-slate-300">Categorias</div>
+                  <div className="text-xs text-brand-text-secondary">Categorias</div>
                 </div>
               </div>
               <div className="mt-3 pt-3 border-t border-slate-700/50">
-                <h3 className="text-xs font-semibold text-slate-300 mb-2 flex items-center gap-1.5">
+                <h3 className="text-xs font-semibold text-brand-text-secondary mb-2 flex items-center gap-1.5">
                   <BarChart3 className="w-4 h-4 text-[#00F5A0]" /> Top Categorias
                 </h3>
                 <div className="flex flex-wrap gap-1.5">
@@ -1155,24 +1155,24 @@ const Library: React.FC = () => {
           <div className="relative z-10 space-y-3">
             <div className="flex flex-col sm:flex-row gap-2">
               <div className="flex-1 relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-brand-text-muted" />
                 <input
                   type="text"
                   placeholder="Buscar por título, conteúdo, autor..."
                   value={searchTerm}
                   onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchTerm(e.target.value)}
-                  className="w-full pl-9 pr-8 py-2.5 rounded-lg text-sm text-white focus:outline-none focus:ring-2 focus:ring-[#00C16A]/50"
+                  className="w-full pl-9 pr-8 py-2.5 rounded-lg text-sm text-brand-text focus:outline-none focus:ring-2 focus:ring-[#00C16A]/50"
                   style={{ border: '1px solid rgba(0,193,106,0.25)', background: 'rgba(12,34,54,0.85)' }}
                 />
                 {searchTerm && (
-                  <button type="button" onClick={() => setSearchTerm('')} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white">
+                  <button type="button" onClick={() => setSearchTerm('')} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-brand-text-muted hover:text-brand-text">
                     <X className="w-4 h-4" />
                   </button>
                 )}
               </div>
               <button
                 onClick={() => setShowUploadModal(true)}
-                className="flex items-center justify-center gap-1 px-3 py-2 text-white text-[11px] font-semibold rounded shrink-0 transition-all hover:opacity-90"
+                className="flex items-center justify-center gap-1 px-3 py-2 text-brand-text text-[11px] font-semibold rounded shrink-0 transition-all hover:opacity-90"
                 style={{ background: accentGradient }}
               >
                 <Upload className="w-3.5 h-3.5" />
@@ -1190,7 +1190,7 @@ const Library: React.FC = () => {
                 <select
                   value={selectedCategory}
                   onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setSelectedCategory(e.target.value)}
-                  className="px-3 py-2 rounded-xl text-white text-[11px] font-medium focus:outline-none focus:ring-2 focus:ring-[#00C16A]/40 min-w-0 transition-all"
+                  className="px-3 py-2 rounded-xl text-brand-text text-[11px] font-medium focus:outline-none focus:ring-2 focus:ring-[#00C16A]/40 min-w-0 transition-all"
                   style={{ background: 'rgba(12,34,54,0.95)', border: '1px solid rgba(0,193,106,0.25)' }}
                 >
                   {categoriesWithCount.map((c) => (
@@ -1200,7 +1200,7 @@ const Library: React.FC = () => {
                 <select
                   value={selectedType}
                   onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setSelectedType(e.target.value)}
-                  className="px-3 py-2 rounded-xl text-white text-[11px] font-medium focus:outline-none focus:ring-2 focus:ring-[#00C16A]/40 min-w-0 transition-all"
+                  className="px-3 py-2 rounded-xl text-brand-text text-[11px] font-medium focus:outline-none focus:ring-2 focus:ring-[#00C16A]/40 min-w-0 transition-all"
                   style={{ background: 'rgba(12,34,54,0.95)', border: '1px solid rgba(0,193,106,0.25)' }}
                 >
                   {documentTypes.map((t) => (
@@ -1210,7 +1210,7 @@ const Library: React.FC = () => {
                 <select
                   value={selectedArea}
                   onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setSelectedArea(e.target.value)}
-                  className="px-3 py-2 rounded-xl text-white text-[11px] font-medium focus:outline-none focus:ring-2 focus:ring-[#00C16A]/40 min-w-0 transition-all"
+                  className="px-3 py-2 rounded-xl text-brand-text text-[11px] font-medium focus:outline-none focus:ring-2 focus:ring-[#00C16A]/40 min-w-0 transition-all"
                   style={{ background: 'rgba(12,34,54,0.95)', border: '1px solid rgba(0,193,106,0.25)' }}
                 >
                   {knowledgeAreas.map((a) => (
@@ -1219,11 +1219,11 @@ const Library: React.FC = () => {
                 </select>
               </div>
               <div className="h-5 w-px bg-slate-600/60 shrink-0" aria-hidden />
-              <span className="inline-flex items-center px-2.5 py-1 rounded-lg bg-slate-800/80 border border-slate-600/50 text-[11px] font-medium text-slate-300 tabular-nums">
+              <span className="inline-flex items-center px-2.5 py-1 rounded-lg bg-slate-800/80 border border-slate-600/50 text-[11px] font-medium text-brand-text-secondary tabular-nums">
                 {filteredDocuments.length} {filteredDocuments.length === 1 ? 'doc.' : 'docs.'}
               </span>
               {selectedUserType !== 'all' && (
-                <span className="text-xs text-slate-400 flex items-center gap-1 px-2 py-1 rounded-lg bg-slate-800/50 border border-slate-700/50">
+                <span className="text-xs text-brand-text-muted flex items-center gap-1 px-2 py-1 rounded-lg bg-slate-800/50 border border-slate-700/50">
                   <Brain className="w-3 h-3 text-[#4FE0C1]" />
                   {userTypes.find(ut => ut.id === selectedUserType)?.name}
                 </span>
@@ -1292,19 +1292,19 @@ const Library: React.FC = () => {
             }}
           >
             <Brain className="w-10 h-10 mx-auto mb-2" style={{ color: isDragging ? '#00F5A0' : '#4FE0C1' }} />
-            <h3 className="text-base font-semibold text-white mb-1">Base de Conhecimento Nôa</h3>
-            <p className="text-sm text-slate-300 mb-3">
+            <h3 className="text-base font-semibold text-brand-text mb-1">Base de Conhecimento Nôa</h3>
+            <p className="text-sm text-brand-text-secondary mb-3">
               {isDragging ? 'Solte aqui' : 'Upload para treinar a IA'}
             </p>
             <button
               onClick={() => setShowUploadModal(true)}
-              className="px-4 py-1.5 text-white text-sm font-medium rounded-lg transition-all"
+              className="px-4 py-1.5 text-brand-text text-sm font-medium rounded-lg transition-all"
               style={{ background: accentGradient }}
             >
               <Upload className="w-4 h-4 inline mr-1.5" />
               Upload
             </button>
-            <p className="text-[11px] text-slate-400 mt-2">Arraste e solte ou clique</p>
+            <p className="text-[11px] text-brand-text-muted mt-2">Arraste e solte ou clique</p>
           </div>
         )}
 
@@ -1325,11 +1325,11 @@ const Library: React.FC = () => {
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-1 flex-wrap">
-                    <h3 className="text-[13px] font-medium text-white line-clamp-1 truncate" title={doc.title}>
+                    <h3 className="text-[13px] font-medium text-brand-text line-clamp-1 truncate" title={doc.title}>
                       {doc.title}
                     </h3>
                     {doc.isLinkedToAI === true && (
-                      <span className="shrink-0 text-white px-1.5 py-0.5 rounded text-[10px] font-semibold flex items-center gap-0.5" style={{ background: accentGradient }}>
+                      <span className="shrink-0 text-brand-text px-1.5 py-0.5 rounded text-[10px] font-semibold flex items-center gap-0.5" style={{ background: accentGradient }}>
                         <Brain className="w-2.5 h-2.5" /> IA
                       </span>
                     )}
@@ -1348,7 +1348,7 @@ const Library: React.FC = () => {
                   {[...(doc.tags || []), ...(doc.keywords || [])].slice(0, 3).map((tag: string, index: number) => (
                     <span
                       key={index}
-                      className="px-1.5 py-0.5 text-slate-400 text-[9px] rounded bg-slate-800/50"
+                      className="px-1.5 py-0.5 text-brand-text-muted text-[9px] rounded bg-slate-800/50"
                     >
                       {tag}
                     </span>
@@ -1621,7 +1621,7 @@ const Library: React.FC = () => {
                 <>
                   <button
                     onClick={() => setCurrentPage(1)}
-                    className="w-9 h-9 rounded-lg font-bold text-sm transition-all text-slate-300 hover:text-white"
+                    className="w-9 h-9 rounded-lg font-bold text-sm transition-all text-brand-text-secondary hover:text-brand-text"
                     style={{ background: 'rgba(12, 31, 54, 0.6)' }}
                   >
                     1
@@ -1638,8 +1638,8 @@ const Library: React.FC = () => {
                     key={page}
                     onClick={() => setCurrentPage(page)}
                     className={`w-9 h-9 rounded-lg font-bold text-sm transition-all ${currentPage === page
-                      ? 'text-white shadow-lg'
-                      : 'text-slate-300 hover:text-white'
+                      ? 'text-brand-text shadow-lg'
+                      : 'text-brand-text-secondary hover:text-brand-text'
                       }`}
                     style={{
                       background: currentPage === page ? accentGradient : 'rgba(12, 31, 54, 0.6)',
@@ -1656,7 +1656,7 @@ const Library: React.FC = () => {
                   {currentPage < totalPages - 3 && <span className="text-slate-500 px-1">...</span>}
                   <button
                     onClick={() => setCurrentPage(totalPages)}
-                    className="w-9 h-9 rounded-lg font-bold text-sm transition-all text-slate-300 hover:text-white"
+                    className="w-9 h-9 rounded-lg font-bold text-sm transition-all text-brand-text-secondary hover:text-brand-text"
                     style={{ background: 'rgba(12, 31, 54, 0.6)' }}
                   >
                     {totalPages}
@@ -1682,7 +1682,7 @@ const Library: React.FC = () => {
 
         {/* Page Info */}
         {filteredDocuments.length > 0 && (
-          <div className="text-center text-sm text-slate-400 mb-6">
+          <div className="text-center text-sm text-brand-text-muted mb-6">
             Mostrando {((currentPage - 1) * ITEMS_PER_PAGE) + 1} - {Math.min(currentPage * ITEMS_PER_PAGE, filteredDocuments.length)} de {filteredDocuments.length} documentos
           </div>
         )}
@@ -1699,10 +1699,10 @@ const Library: React.FC = () => {
             }}
           >
             <div className="w-16 h-16 mx-auto mb-4 text-5xl" style={{ color: '#4FE0C1' }}>📁</div>
-            <h3 className="text-lg font-medium text-white mb-2">
+            <h3 className="text-lg font-medium text-brand-text mb-2">
               Nenhum documento encontrado
             </h3>
-            <p className="text-slate-300">
+            <p className="text-brand-text-secondary">
               Tente ajustar os filtros ou fazer uma nova busca
             </p>
             <p className="text-xs text-[#00F5A0] mt-2">
@@ -1715,38 +1715,38 @@ const Library: React.FC = () => {
         <div className="mt-12 grid grid-cols-1 md:grid-cols-4 gap-6">
           <div className="rounded-xl p-6 text-center" style={{ ...secondarySurfaceStyle, border: '1px solid rgba(0,193,106,0.16)' }}>
             <FileText className="w-8 h-8 mx-auto mb-2" style={{ color: '#4FE0C1' }} />
-            <div className="text-2xl font-bold text-white">
+            <div className="text-2xl font-bold text-brand-text">
               {totalDocs > 0 ? totalDocs : '1,247'}
             </div>
-            <div className="text-sm text-slate-300">
+            <div className="text-sm text-brand-text-secondary">
               {totalDocs > 0 ? 'Documentos Reais' : 'Documentos (Fictício)'}
             </div>
           </div>
           <div className="rounded-xl p-6 text-center" style={{ ...secondarySurfaceStyle, border: '1px solid rgba(0,193,106,0.16)' }}>
             <div className="w-8 h-8 mx-auto mb-2 text-2xl" style={{ color: '#00F5A0' }}>⬇️</div>
-            <div className="text-2xl font-bold text-white">
+            <div className="text-2xl font-bold text-brand-text">
               {realDocuments.reduce((sum, doc: any) => sum + (doc.downloads || 0), 0)}
             </div>
-            <div className="text-sm text-slate-300">Total de Downloads</div>
+            <div className="text-sm text-brand-text-secondary">Total de Downloads</div>
           </div>
           <div className="rounded-xl p-6 text-center" style={{ ...secondarySurfaceStyle, border: '1px solid rgba(0,193,106,0.16)' }}>
             <div className="w-8 h-8 mx-auto mb-2 text-2xl" style={{ color: '#4FE0C1' }}>#</div>
-            <div className="text-2xl font-bold text-white">
+            <div className="text-2xl font-bold text-brand-text">
               {realDocuments.filter((d: any) => d.isLinkedToAI === true).length}
             </div>
-            <div className="text-sm text-slate-300">
+            <div className="text-sm text-brand-text-secondary">
               Vinculados à IA
             </div>
           </div>
           <div className="rounded-xl p-6 text-center" style={{ ...secondarySurfaceStyle, border: '1px solid rgba(0,193,106,0.16)' }}>
             <Star className="w-8 h-8 mx-auto mb-2" style={{ color: '#FFD33D' }} />
-            <div className="text-2xl font-bold text-white">
+            <div className="text-2xl font-bold text-brand-text">
               {realDocuments.length > 0
                 ? (realDocuments.reduce((sum: number, doc: any) => sum + (doc.aiRelevance || 0), 0) / realDocuments.length).toFixed(1)
                 : '0'
               }
             </div>
-            <div className="text-sm text-slate-300">Relevância IA Média</div>
+            <div className="text-sm text-brand-text-secondary">Relevância IA Média</div>
           </div>
         </div>
       </div>
@@ -1761,10 +1761,10 @@ const Library: React.FC = () => {
             {/* Modal Header */}
             <div className="p-6" style={{ borderBottom: '1px solid rgba(0,193,106,0.12)' }}>
               <div className="flex items-center justify-between">
-                <h2 className="text-2xl font-bold text-white">Upload de Documentos</h2>
+                <h2 className="text-2xl font-bold text-brand-text">Upload de Documentos</h2>
                 <button
                   onClick={() => setShowUploadModal(false)}
-                  className="text-slate-400 hover:text-white transition-colors"
+                  className="text-brand-text-muted hover:text-brand-text transition-colors"
                 >
                   <X className="w-6 h-6" />
                 </button>
@@ -1775,7 +1775,7 @@ const Library: React.FC = () => {
             <div className="p-6">
               {/* Upload Categories */}
               <div className="mb-6">
-                <label className="block text-sm font-medium text-slate-300 mb-3">
+                <label className="block text-sm font-medium text-brand-text-secondary mb-3">
                   Selecione a Categoria do Upload
                 </label>
                 <div className="grid grid-cols-2 gap-3">
@@ -1788,13 +1788,13 @@ const Library: React.FC = () => {
                         : 'border-slate-600 hover:border-emerald-400 bg-slate-700/40'
                         }`}
                     >
-                      <div className={`w-12 h-12 rounded-lg bg-gradient-to-br ${category.color} flex items-center justify-center mb-3 text-white`}>
+                      <div className={`w-12 h-12 rounded-lg bg-gradient-to-br ${category.color} flex items-center justify-center mb-3 text-brand-text`}>
                         {category.icon}
                       </div>
-                      <h3 className="font-semibold text-white text-sm mb-1">
+                      <h3 className="font-semibold text-brand-text text-sm mb-1">
                         {category.name}
                       </h3>
-                      <p className="text-xs text-slate-400">
+                      <p className="text-xs text-brand-text-muted">
                         {category.description}
                       </p>
                     </button>
@@ -1804,7 +1804,7 @@ const Library: React.FC = () => {
 
               {/* File Upload Area */}
               <div className="mb-6">
-                <label className="block text-sm font-medium text-slate-300 mb-3">
+                <label className="block text-sm font-medium text-brand-text-secondary mb-3">
                   Selecione o Arquivo
                 </label>
                 <div
@@ -1858,8 +1858,8 @@ const Library: React.FC = () => {
                     <div className="space-y-3">
                       <CheckCircle className="w-16 h-16 text-green-500 mx-auto" />
                       <div>
-                        <p className="text-white font-medium">{uploadedFile.name}</p>
-                        <p className="text-sm text-slate-400">
+                        <p className="text-brand-text font-medium">{uploadedFile.name}</p>
+                        <p className="text-sm text-brand-text-muted">
                           {(uploadedFile.size / 1024 / 1024).toFixed(2)} MB
                         </p>
                       </div>
@@ -1875,11 +1875,11 @@ const Library: React.FC = () => {
                       htmlFor="file-upload"
                       className="cursor-pointer block"
                     >
-                      <Upload className="w-16 h-16 text-slate-400 mx-auto mb-3" />
-                      <p className="text-white font-medium mb-1">
+                      <Upload className="w-16 h-16 text-brand-text-muted mx-auto mb-3" />
+                      <p className="text-brand-text font-medium mb-1">
                         Clique para selecionar ou arraste o arquivo aqui
                       </p>
-                      <p className="text-sm text-slate-400">
+                      <p className="text-sm text-brand-text-muted">
                         {uploadCategory === 'ai-avatar' ? 'PNG, JPG ou SVG (recomendado: PNG, 512x512px)' : 'PDF, DOCX, MP4, Imagens, etc.'}
                       </p>
                     </label>
@@ -1891,10 +1891,10 @@ const Library: React.FC = () => {
               {isUploading && (
                 <div className="mb-6">
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm text-slate-300">Enviando...</span>
-                    <span className="text-sm text-slate-300">{uploadProgress}%</span>
+                    <span className="text-sm text-brand-text-secondary">Enviando...</span>
+                    <span className="text-sm text-brand-text-secondary">{uploadProgress}%</span>
                   </div>
-                  <div className="w-full bg-slate-700 rounded-full h-2">
+                  <div className="w-full bg-brand-surface-subtle rounded-full h-2">
                     <div
                       className="h-2 rounded-full transition-all duration-300"
                       style={{ width: `${uploadProgress}%`, background: accentGradient }}
@@ -1910,7 +1910,7 @@ const Library: React.FC = () => {
                     <CheckCircle className="w-6 h-6 text-green-500" />
                     <div>
                       <p className="font-medium text-green-400">Upload concluído com sucesso!</p>
-                      <p className="text-sm text-slate-300">
+                      <p className="text-sm text-brand-text-secondary">
                         {uploadCategory === 'ai-avatar'
                           ? 'O avatar da IA residente foi atualizado.'
                           : 'O documento foi adicionado à biblioteca.'}
@@ -1924,7 +1924,7 @@ const Library: React.FC = () => {
               <div className="flex space-x-3">
                 <button
                   onClick={() => setShowUploadModal(false)}
-                  className="flex-1 px-4 py-3 rounded-lg transition-colors text-white"
+                  className="flex-1 px-4 py-3 rounded-lg transition-colors text-brand-text"
                   style={{ background: 'rgba(12,34,54,0.85)', border: '1px solid rgba(0,193,106,0.2)' }}
                 >
                   Cancelar
@@ -1932,7 +1932,7 @@ const Library: React.FC = () => {
                 <button
                   onClick={handleUpload}
                   disabled={!uploadedFile || isUploading}
-                  className="flex-1 px-4 py-3 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                  className="flex-1 px-4 py-3 text-brand-text rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
                   style={{ background: accentGradient }}
                 >
                   {isUploading ? 'Enviando...' : 'Fazer Upload'}

@@ -49,7 +49,7 @@ const CATEGORY_META: Record<PatientDocument['category'], { label: string; icon: 
     imagem: { label: 'Imagem médica', icon: ImageIcon, color: 'text-purple-300' },
     relatorio: { label: 'Relatório', icon: FileText, color: 'text-emerald-300' },
     receita_antiga: { label: 'Receita anterior', icon: Pill, color: 'text-pink-300' },
-    outros: { label: 'Outros', icon: MoreHorizontal, color: 'text-slate-300' },
+    outros: { label: 'Outros', icon: MoreHorizontal, color: 'text-brand-text-secondary' },
 }
 
 const CATEGORY_FILTERS: { id: CategoryFilter; label: string }[] = [
@@ -218,14 +218,14 @@ export default function ProfessionalPatientFiles({ patientId, patientName }: Pro
             {/* Header + Upload */}
             <div className="flex items-start justify-between gap-3 mb-4">
                 <div>
-                    <h3 className="text-base font-semibold text-white">Arquivos do prontuário</h3>
-                    <p className="text-xs text-slate-400 mt-0.5">
+                    <h3 className="text-base font-semibold text-brand-text">Arquivos do prontuário</h3>
+                    <p className="text-xs text-brand-text-muted mt-0.5">
                         Anexe exames, laudos e resultados externos. Documentos anexados ficam visíveis ao paciente, mas só você pode editá-los ou removê-los.
                     </p>
                 </div>
                 <button
                     onClick={() => setUploadModalOpen(true)}
-                    className="flex-shrink-0 flex items-center gap-1.5 px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-lg text-sm font-medium hover:from-purple-600 hover:to-pink-600 transition-colors"
+                    className="flex-shrink-0 flex items-center gap-1.5 px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-brand-text rounded-lg text-sm font-medium hover:from-purple-600 hover:to-pink-600 transition-colors"
                 >
                     <Upload className="w-4 h-4" /> Anexar arquivo
                 </button>
@@ -237,7 +237,7 @@ export default function ProfessionalPatientFiles({ patientId, patientName }: Pro
                     <button
                         onClick={() => setSourceFilter('all')}
                         className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full border transition-colors ${
-                            sourceFilter === 'all' ? 'bg-slate-700 border-slate-600 text-white' : 'bg-slate-800/60 border-slate-700 text-slate-300 hover:text-white'
+                            sourceFilter === 'all' ? 'bg-brand-surface-subtle border-slate-600 text-brand-text' : 'bg-slate-800/60 border-brand-border text-brand-text-secondary hover:text-brand-text'
                         }`}
                     >
                         <FileText className="w-3.5 h-3.5" /> Todos ({docs.length})
@@ -245,7 +245,7 @@ export default function ProfessionalPatientFiles({ patientId, patientName }: Pro
                     <button
                         onClick={() => setSourceFilter('professional')}
                         className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full border transition-colors ${
-                            sourceFilter === 'professional' ? 'bg-purple-500/20 border-purple-500/40 text-purple-200' : 'bg-slate-800/60 border-slate-700 text-slate-300 hover:text-white'
+                            sourceFilter === 'professional' ? 'bg-purple-500/20 border-purple-500/40 text-purple-200' : 'bg-slate-800/60 border-brand-border text-brand-text-secondary hover:text-brand-text'
                         }`}
                     >
                         <Stethoscope className="w-3.5 h-3.5" /> Anexados por médico ({byProfessional})
@@ -253,7 +253,7 @@ export default function ProfessionalPatientFiles({ patientId, patientName }: Pro
                     <button
                         onClick={() => setSourceFilter('patient')}
                         className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full border transition-colors ${
-                            sourceFilter === 'patient' ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-200' : 'bg-slate-800/60 border-slate-700 text-slate-300 hover:text-white'
+                            sourceFilter === 'patient' ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-200' : 'bg-slate-800/60 border-brand-border text-brand-text-secondary hover:text-brand-text'
                         }`}
                     >
                         <UserIcon className="w-3.5 h-3.5" /> Enviados pelo paciente ({byPatient})
@@ -263,14 +263,14 @@ export default function ProfessionalPatientFiles({ patientId, patientName }: Pro
 
             {/* Filtros categoria */}
             {!loading && docs.length > 0 && (
-                <div className="flex items-center gap-1 mb-4 p-1 rounded-lg bg-slate-800/60 border border-slate-700 overflow-x-auto">
+                <div className="flex items-center gap-1 mb-4 p-1 rounded-lg bg-slate-800/60 border border-brand-border overflow-x-auto">
                     <Filter className="w-3.5 h-3.5 text-slate-500 ml-2 flex-shrink-0" />
                     {CATEGORY_FILTERS.map(f => (
                         <button
                             key={f.id}
                             onClick={() => setFilter(f.id)}
                             className={`px-3 py-1 rounded text-[11px] font-semibold whitespace-nowrap transition-colors ${
-                                filter === f.id ? 'bg-purple-500/20 text-purple-200' : 'text-slate-400 hover:text-slate-200'
+                                filter === f.id ? 'bg-purple-500/20 text-purple-200' : 'text-brand-text-muted hover:text-slate-200'
                             }`}
                         >
                             {f.label}
@@ -286,12 +286,12 @@ export default function ProfessionalPatientFiles({ patientId, patientName }: Pro
             )}
 
             {!loading && docs.length === 0 && (
-                <div className="text-center py-12 px-6 bg-gradient-to-br from-slate-900/40 to-slate-800/20 rounded-2xl border border-slate-800">
+                <div className="text-center py-12 px-6 bg-gradient-to-br from-slate-900/40 to-slate-800/20 rounded-2xl border border-brand-border-subtle">
                     <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-purple-500/10 border border-purple-500/20 flex items-center justify-center">
                         <FileText className="w-7 h-7 text-purple-300/70" />
                     </div>
-                    <h3 className="text-base font-bold text-white mb-2">Nenhum arquivo no prontuário</h3>
-                    <p className="text-sm text-slate-400 max-w-md mx-auto leading-relaxed mb-5">
+                    <h3 className="text-base font-bold text-brand-text mb-2">Nenhum arquivo no prontuário</h3>
+                    <p className="text-sm text-brand-text-muted max-w-md mx-auto leading-relaxed mb-5">
                         Anexe exames de laboratório, laudos de imagem, receitas externas ou pareceres recebidos fora do app.
                     </p>
                     <button
@@ -324,7 +324,7 @@ export default function ProfessionalPatientFiles({ patientId, patientName }: Pro
                                             <Icon className="w-4 h-4" />
                                         </div>
                                         <div className="flex-1 min-w-0">
-                                            <p className="text-xs font-semibold text-white truncate">{doc.original_name}</p>
+                                            <p className="text-xs font-semibold text-brand-text truncate">{doc.original_name}</p>
                                             <p className="text-[10px] text-slate-500 mt-0.5">
                                                 {formatDate(doc.uploaded_at)} · {formatBytes(doc.size_bytes)}
                                             </p>
@@ -341,7 +341,7 @@ export default function ProfessionalPatientFiles({ patientId, patientName }: Pro
                                         {meta.label}
                                     </span>
                                     {doc.clinical_note && (
-                                        <p className="text-[10px] text-slate-400 mt-1.5 line-clamp-2 italic">"{doc.clinical_note}"</p>
+                                        <p className="text-[10px] text-brand-text-muted mt-1.5 line-clamp-2 italic">"{doc.clinical_note}"</p>
                                     )}
                                 </button>
                             )
@@ -365,18 +365,18 @@ export default function ProfessionalPatientFiles({ patientId, patientName }: Pro
                     aria-modal="true"
                 >
                     <div
-                        className="w-full max-w-4xl bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl overflow-hidden max-h-[90vh] flex flex-col"
+                        className="w-full max-w-4xl bg-brand-bg border border-brand-border rounded-2xl shadow-2xl overflow-hidden max-h-[90vh] flex flex-col"
                         onClick={e => e.stopPropagation()}
                     >
-                        <div className="px-5 py-3 border-b border-slate-700 flex items-center justify-between bg-slate-800/50 flex-shrink-0">
+                        <div className="px-5 py-3 border-b border-brand-border flex items-center justify-between bg-slate-800/50 flex-shrink-0">
                             <div className="flex items-center gap-2 min-w-0">
                                 {(() => {
                                     const Icon = CATEGORY_META[selectedDoc.category].icon
                                     return <Icon className={`w-4 h-4 flex-shrink-0 ${CATEGORY_META[selectedDoc.category].color}`} />
                                 })()}
                                 <div className="min-w-0">
-                                    <h3 className="text-sm font-bold text-white truncate">{selectedDoc.original_name}</h3>
-                                    <p className="text-[11px] text-slate-400">
+                                    <h3 className="text-sm font-bold text-brand-text truncate">{selectedDoc.original_name}</h3>
+                                    <p className="text-[11px] text-brand-text-muted">
                                         {CATEGORY_META[selectedDoc.category].label} · {formatDate(selectedDoc.uploaded_at)} · {formatBytes(selectedDoc.size_bytes)}
                                         {selectedDoc.uploaded_by_role === 'professional'
                                             ? ' · Anexado pelo médico'
@@ -384,7 +384,7 @@ export default function ProfessionalPatientFiles({ patientId, patientName }: Pro
                                     </p>
                                 </div>
                             </div>
-                            <button onClick={closeModal} className="p-1.5 hover:bg-slate-700 rounded-full text-slate-400 hover:text-white">
+                            <button onClick={closeModal} className="p-1.5 hover:bg-brand-surface-subtle rounded-full text-brand-text-muted hover:text-brand-text">
                                 <X className="w-4 h-4" />
                             </button>
                         </div>
@@ -403,16 +403,16 @@ export default function ProfessionalPatientFiles({ patientId, patientName }: Pro
                             )}
                         </div>
 
-                        <div className="px-4 py-3 border-t border-slate-700 bg-slate-800/30 flex-shrink-0 space-y-3">
+                        <div className="px-4 py-3 border-t border-brand-border bg-slate-800/30 flex-shrink-0 space-y-3">
                             {selectedDoc.clinical_note && (
-                                <div className="p-2.5 rounded-lg bg-slate-800/40 border border-slate-700">
-                                    <div className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Anotação clínica</div>
+                                <div className="p-2.5 rounded-lg bg-slate-800/40 border border-brand-border">
+                                    <div className="text-[10px] font-semibold text-brand-text-muted uppercase tracking-wider mb-1">Anotação clínica</div>
                                     <p className="text-xs text-slate-200 italic">"{selectedDoc.clinical_note}"</p>
                                 </div>
                             )}
                             {selectedDoc.description && (
-                                <div className="p-2.5 rounded-lg bg-slate-800/40 border border-slate-700">
-                                    <div className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Descrição</div>
+                                <div className="p-2.5 rounded-lg bg-slate-800/40 border border-brand-border">
+                                    <div className="text-[10px] font-semibold text-brand-text-muted uppercase tracking-wider mb-1">Descrição</div>
                                     <p className="text-xs text-slate-200">{selectedDoc.description}</p>
                                 </div>
                             )}
@@ -483,15 +483,15 @@ function UploadModalProfessional({ onClose, onUpload, uploading, patientName }: 
 
     return (
         <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm" onClick={onClose}>
-            <div className="w-full max-w-md bg-slate-900 border border-slate-700 rounded-2xl p-5 space-y-4 max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+            <div className="w-full max-w-md bg-brand-bg border border-brand-border rounded-2xl p-5 space-y-4 max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
                 <div className="flex items-center justify-between">
                     <div>
-                        <h3 className="text-base font-bold text-white">Anexar arquivo ao prontuário</h3>
+                        <h3 className="text-base font-bold text-brand-text">Anexar arquivo ao prontuário</h3>
                         {patientName && (
-                            <p className="text-xs text-slate-400 mt-0.5">Paciente: {patientName}</p>
+                            <p className="text-xs text-brand-text-muted mt-0.5">Paciente: {patientName}</p>
                         )}
                     </div>
-                    <button onClick={onClose} disabled={uploading} className="text-slate-400 hover:text-white disabled:opacity-50">
+                    <button onClick={onClose} disabled={uploading} className="text-brand-text-muted hover:text-brand-text disabled:opacity-50">
                         <X className="w-4 h-4" />
                     </button>
                 </div>
@@ -502,7 +502,7 @@ function UploadModalProfessional({ onClose, onUpload, uploading, patientName }: 
                     onDragLeave={() => setDragActive(false)}
                     onDrop={handleDrop}
                     className={`block border-2 border-dashed rounded-xl p-6 text-center cursor-pointer transition-colors ${
-                        dragActive ? 'border-purple-500/60 bg-purple-500/5' : 'border-slate-700 hover:border-purple-500/40'
+                        dragActive ? 'border-purple-500/60 bg-purple-500/5' : 'border-brand-border hover:border-purple-500/40'
                     }`}
                 >
                     <input
@@ -516,20 +516,20 @@ function UploadModalProfessional({ onClose, onUpload, uploading, patientName }: 
                     {file ? (
                         <div className="space-y-1">
                             <FileText className="w-8 h-8 text-purple-400 mx-auto" />
-                            <p className="text-sm font-semibold text-white truncate">{file.name}</p>
+                            <p className="text-sm font-semibold text-brand-text truncate">{file.name}</p>
                             <p className="text-xs text-slate-500">{formatBytes(file.size)}</p>
                         </div>
                     ) : (
                         <div className="space-y-1">
                             <Upload className="w-8 h-8 text-slate-500 mx-auto" />
-                            <p className="text-xs text-slate-400">Clique ou arraste o arquivo aqui</p>
+                            <p className="text-xs text-brand-text-muted">Clique ou arraste o arquivo aqui</p>
                             <p className="text-[10px] text-slate-600">PDF, JPG, PNG, WebP, GIF — até 20MB</p>
                         </div>
                     )}
                 </label>
 
                 <div>
-                    <label className="block text-xs font-semibold text-slate-300 mb-1.5">Categoria</label>
+                    <label className="block text-xs font-semibold text-brand-text-secondary mb-1.5">Categoria</label>
                     <div className="grid grid-cols-2 gap-1.5">
                         {(Object.keys(CATEGORY_META) as PatientDocument['category'][]).map(cat => {
                             const meta = CATEGORY_META[cat]
@@ -541,7 +541,7 @@ function UploadModalProfessional({ onClose, onUpload, uploading, patientName }: 
                                     className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-colors ${
                                         category === cat
                                             ? 'bg-purple-500/20 text-purple-200 border border-purple-500/40'
-                                            : 'bg-slate-800/40 text-slate-300 border border-slate-700 hover:border-slate-600'
+                                            : 'bg-slate-800/40 text-brand-text-secondary border border-brand-border hover:border-slate-600'
                                     }`}
                                 >
                                     <Icon className="w-3.5 h-3.5" />
@@ -553,7 +553,7 @@ function UploadModalProfessional({ onClose, onUpload, uploading, patientName }: 
                 </div>
 
                 <div>
-                    <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+                    <label className="block text-xs font-semibold text-brand-text-secondary mb-1.5">
                         Descrição (opcional)
                     </label>
                     <input
@@ -563,12 +563,12 @@ function UploadModalProfessional({ onClose, onUpload, uploading, patientName }: 
                         placeholder="Ex: USG abdominal de mar/2026"
                         maxLength={200}
                         disabled={uploading}
-                        className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-xs text-white placeholder:text-slate-500 focus:outline-none focus:border-purple-500/40"
+                        className="w-full px-3 py-2 bg-brand-surface border border-brand-border rounded-lg text-xs text-brand-text placeholder:text-slate-500 focus:outline-none focus:border-purple-500/40"
                     />
                 </div>
 
                 <div>
-                    <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+                    <label className="block text-xs font-semibold text-brand-text-secondary mb-1.5">
                         Anotação clínica (opcional)
                     </label>
                     <textarea
@@ -578,7 +578,7 @@ function UploadModalProfessional({ onClose, onUpload, uploading, patientName }: 
                         maxLength={500}
                         rows={3}
                         disabled={uploading}
-                        className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-xs text-white placeholder:text-slate-500 focus:outline-none focus:border-purple-500/40 resize-none"
+                        className="w-full px-3 py-2 bg-brand-surface border border-brand-border rounded-lg text-xs text-brand-text placeholder:text-slate-500 focus:outline-none focus:border-purple-500/40 resize-none"
                     />
                     <p className="text-[10px] text-slate-500 mt-1">Visível ao paciente. Ex: contexto, achados, próxima conduta.</p>
                 </div>
@@ -587,7 +587,7 @@ function UploadModalProfessional({ onClose, onUpload, uploading, patientName }: 
                     <button
                         onClick={onClose}
                         disabled={uploading}
-                        className="px-3 py-1.5 text-xs text-slate-400 hover:text-white disabled:opacity-50"
+                        className="px-3 py-1.5 text-xs text-brand-text-muted hover:text-brand-text disabled:opacity-50"
                     >
                         Cancelar
                     </button>

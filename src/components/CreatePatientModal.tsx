@@ -81,13 +81,13 @@ export const CreatePatientModal: React.FC<CreatePatientModalProps> = ({
                 style={modalStyle}
             >
                 <div className="p-6 border-b border-white/5 flex items-center justify-between">
-                    <h2 className="text-xl font-bold text-white flex items-center gap-2">
+                    <h2 className="text-xl font-bold text-brand-text flex items-center gap-2">
                         <User className="w-5 h-5 text-emerald-400" />
                         Novo Paciente
                     </h2>
                     <button
                         onClick={onClose}
-                        className="text-slate-400 hover:text-white transition-colors"
+                        className="text-brand-text-muted hover:text-brand-text transition-colors"
                     >
                         <X className="w-5 h-5" />
                     </button>
@@ -101,7 +101,7 @@ export const CreatePatientModal: React.FC<CreatePatientModalProps> = ({
                     )}
 
                     <div className="space-y-2">
-                        <label className="text-sm font-medium text-slate-300">Nome Completo *</label>
+                        <label className="text-sm font-medium text-brand-text-secondary">Nome Completo *</label>
                         <div className="relative">
                             <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
                             <input
@@ -109,21 +109,21 @@ export const CreatePatientModal: React.FC<CreatePatientModalProps> = ({
                                 required
                                 value={formData.name}
                                 onChange={e => setFormData(prev => ({ ...prev, name: e.target.value }))}
-                                className="w-full pl-10 pr-4 py-2 bg-slate-800/50 border border-slate-700/50 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
+                                className="w-full pl-10 pr-4 py-2 bg-slate-800/50 border border-slate-700/50 rounded-lg text-brand-text placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
                                 placeholder="Ex: João da Silva"
                             />
                         </div>
                     </div>
 
                     <div className="space-y-2">
-                        <label className="text-sm font-medium text-slate-300">Email</label>
+                        <label className="text-sm font-medium text-brand-text-secondary">Email</label>
                         <div className="relative">
                             <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
                             <input
                                 type="email"
                                 value={formData.email}
                                 onChange={e => setFormData(prev => ({ ...prev, email: e.target.value }))}
-                                className="w-full pl-10 pr-4 py-2 bg-slate-800/50 border border-slate-700/50 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
+                                className="w-full pl-10 pr-4 py-2 bg-slate-800/50 border border-slate-700/50 rounded-lg text-brand-text placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
                                 placeholder="Ex: joao@email.com"
                             />
                         </div>
@@ -131,28 +131,28 @@ export const CreatePatientModal: React.FC<CreatePatientModalProps> = ({
 
                     <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2">
-                            <label className="text-sm font-medium text-slate-300">Telefone</label>
+                            <label className="text-sm font-medium text-brand-text-secondary">Telefone</label>
                             <div className="relative">
                                 <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
                                 <input
                                     type="tel"
                                     value={formData.phone}
                                     onChange={e => setFormData(prev => ({ ...prev, phone: e.target.value }))}
-                                    className="w-full pl-10 pr-4 py-2 bg-slate-800/50 border border-slate-700/50 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
+                                    className="w-full pl-10 pr-4 py-2 bg-slate-800/50 border border-slate-700/50 rounded-lg text-brand-text placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
                                     placeholder="(00) 00000-0000"
                                 />
                             </div>
                         </div>
 
                         <div className="space-y-2">
-                            <label className="text-sm font-medium text-slate-300">CPF</label>
+                            <label className="text-sm font-medium text-brand-text-secondary">CPF</label>
                             <div className="relative">
                                 <FileText className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
                                 <input
                                     type="text"
                                     value={formData.cpf}
                                     onChange={e => setFormData(prev => ({ ...prev, cpf: e.target.value }))}
-                                    className="w-full pl-10 pr-4 py-2 bg-slate-800/50 border border-slate-700/50 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
+                                    className="w-full pl-10 pr-4 py-2 bg-slate-800/50 border border-slate-700/50 rounded-lg text-brand-text placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
                                     placeholder="000.000.000-00"
                                 />
                             </div>
@@ -163,14 +163,14 @@ export const CreatePatientModal: React.FC<CreatePatientModalProps> = ({
                         <button
                             type="button"
                             onClick={onClose}
-                            className="px-4 py-2 text-sm font-medium text-slate-400 hover:text-white transition-colors"
+                            className="px-4 py-2 text-sm font-medium text-brand-text-muted hover:text-brand-text transition-colors"
                         >
                             Cancelar
                         </button>
                         <button
                             type="submit"
                             disabled={loading}
-                            className="px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-semibold transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-brand-text text-sm font-semibold transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             {loading ? (
                                 <>

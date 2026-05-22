@@ -180,7 +180,7 @@ export default function RenalSuggestionsCard() {
       <div className="bg-slate-900/60 border border-slate-700/50 rounded-2xl p-4">
         <div className="flex items-center gap-3">
           <Activity className="w-5 h-5 text-cyan-400 animate-pulse" />
-          <span className="text-sm text-slate-400">Carregando sugestões DRC…</span>
+          <span className="text-sm text-brand-text-muted">Carregando sugestões DRC…</span>
         </div>
       </div>
     )
@@ -197,7 +197,7 @@ export default function RenalSuggestionsCard() {
             <Activity className="w-4 h-4 text-orange-300" />
           </div>
           <div>
-            <h3 className="text-sm font-semibold text-white flex items-center gap-2">
+            <h3 className="text-sm font-semibold text-brand-text flex items-center gap-2">
               Sugestões DRC Pendentes
               <span className="px-2 py-0.5 bg-orange-500/20 text-orange-300 text-[10px] rounded-full font-bold">
                 {suggestions.length}
@@ -247,8 +247,8 @@ export default function RenalSuggestionsCard() {
               )}
               {sugg.status === 'rejected' && sugg.reviewed_at && (
                 <div className="flex items-center gap-1.5 px-2 py-1 rounded bg-slate-700/30 border border-slate-600/40">
-                  <XCircle className="w-3 h-3 text-slate-400 flex-shrink-0" />
-                  <span className="text-[10px] text-slate-300 font-semibold truncate">
+                  <XCircle className="w-3 h-3 text-brand-text-muted flex-shrink-0" />
+                  <span className="text-[10px] text-brand-text-secondary font-semibold truncate">
                     Rejeitada{sugg.reviewer_name ? ` por ${sugg.reviewer_name}` : ''} · {new Date(sugg.reviewed_at).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })}
                   </span>
                 </div>
@@ -257,7 +257,7 @@ export default function RenalSuggestionsCard() {
               {/* Paciente + estágio destaque */}
               <div className="flex items-start justify-between gap-2">
                 <div className="min-w-0 flex-1">
-                  <div className="font-semibold text-white text-xs truncate">{sugg.patient_name}</div>
+                  <div className="font-semibold text-brand-text text-xs truncate">{sugg.patient_name}</div>
                   <div className="text-[10px] text-slate-500 truncate">
                     {sugg.patient_age && sugg.patient_sex
                       ? `${sugg.patient_age}a · ${sugg.patient_sex === 'female' ? 'F' : 'M'}`
@@ -266,7 +266,7 @@ export default function RenalSuggestionsCard() {
                 </div>
                 <span className={`text-[10px] font-bold flex-shrink-0 ${
                   sugg.confidence_score >= 0.8 ? 'text-emerald-400' :
-                  sugg.confidence_score >= 0.6 ? 'text-amber-400' : 'text-slate-400'
+                  sugg.confidence_score >= 0.6 ? 'text-amber-400' : 'text-brand-text-muted'
                 }`}>
                   {(sugg.confidence_score * 100).toFixed(0)}%
                 </span>
@@ -292,19 +292,19 @@ export default function RenalSuggestionsCard() {
                 {sugg.creatinine_mg_dl != null && (
                   <div className="flex justify-between bg-slate-800/60 rounded px-2 py-1">
                     <span className="text-slate-500 uppercase">Creat</span>
-                    <span className="text-white font-bold">{sugg.creatinine_mg_dl} mg/dL</span>
+                    <span className="text-brand-text font-bold">{sugg.creatinine_mg_dl} mg/dL</span>
                   </div>
                 )}
                 {sugg.egfr_calculated != null && (
                   <div className="flex justify-between bg-slate-800/60 rounded px-2 py-1">
                     <span className="text-slate-500 uppercase">eGFR</span>
-                    <span className="text-white font-bold">{sugg.egfr_calculated}</span>
+                    <span className="text-brand-text font-bold">{sugg.egfr_calculated}</span>
                   </div>
                 )}
                 {sugg.proteinuria_acr_mg_g != null && (
                   <div className="flex justify-between bg-slate-800/60 rounded px-2 py-1">
                     <span className="text-slate-500 uppercase">A/Cr</span>
-                    <span className="text-white font-bold">{sugg.proteinuria_acr_mg_g} mg/g</span>
+                    <span className="text-brand-text font-bold">{sugg.proteinuria_acr_mg_g} mg/g</span>
                   </div>
                 )}
               </div>
@@ -322,14 +322,14 @@ export default function RenalSuggestionsCard() {
                   <Info className="w-2.5 h-2.5" />
                   <span className="font-semibold uppercase tracking-wider">Fala do paciente</span>
                 </div>
-                <p className="text-[10px] text-slate-300 italic bg-slate-800/40 rounded p-1.5 leading-relaxed line-clamp-4">
+                <p className="text-[10px] text-brand-text-secondary italic bg-slate-800/40 rounded p-1.5 leading-relaxed line-clamp-4">
                   "{sugg.source_text}"
                 </p>
               </div>
 
               {/* V1.9.329 — motivo de rejeição visível se houver */}
               {sugg.status === 'rejected' && sugg.rejection_reason && (
-                <div className="text-[10px] text-slate-400 italic bg-slate-800/30 rounded px-2 py-1">
+                <div className="text-[10px] text-brand-text-muted italic bg-slate-800/30 rounded px-2 py-1">
                   Motivo: {sugg.rejection_reason}
                 </div>
               )}
@@ -342,7 +342,7 @@ export default function RenalSuggestionsCard() {
                     value={rejectReason}
                     onChange={e => setRejectReason(e.target.value)}
                     placeholder="Motivo (opcional)"
-                    className="w-full px-2 py-1 bg-slate-800 border border-slate-600 rounded text-[10px] text-white"
+                    className="w-full px-2 py-1 bg-brand-surface border border-slate-600 rounded text-[10px] text-brand-text"
                   />
                   <div className="flex gap-1">
                     <button
@@ -354,7 +354,7 @@ export default function RenalSuggestionsCard() {
                     </button>
                     <button
                       onClick={() => { setRejectReasonFor(null); setRejectReason('') }}
-                      className="px-2 py-1 bg-slate-700 hover:bg-slate-600 text-white rounded text-[10px]"
+                      className="px-2 py-1 bg-brand-surface-subtle hover:bg-slate-600 text-brand-text rounded text-[10px]"
                     >
                       ✕
                     </button>
@@ -375,7 +375,7 @@ export default function RenalSuggestionsCard() {
                   <button
                     onClick={() => handleArchive(sugg)}
                     disabled={isProcessing}
-                    className="w-full px-2 py-1.5 bg-slate-800/60 hover:bg-slate-700 text-slate-400 rounded text-[10px] font-medium flex items-center justify-center gap-1 disabled:opacity-50 border border-slate-700/50"
+                    className="w-full px-2 py-1.5 bg-slate-800/60 hover:bg-brand-surface-subtle text-brand-text-muted rounded text-[10px] font-medium flex items-center justify-center gap-1 disabled:opacity-50 border border-slate-700/50"
                     title="Arquivar — tira do dashboard, mantém registro"
                   >
                     <Archive className="w-3 h-3" />
@@ -388,7 +388,7 @@ export default function RenalSuggestionsCard() {
                   <button
                     onClick={() => handleArchive(sugg)}
                     disabled={isProcessing}
-                    className="w-full px-2 py-1.5 bg-slate-800/60 hover:bg-slate-700 text-slate-400 rounded text-[10px] font-medium flex items-center justify-center gap-1 disabled:opacity-50 border border-slate-700/50"
+                    className="w-full px-2 py-1.5 bg-slate-800/60 hover:bg-brand-surface-subtle text-brand-text-muted rounded text-[10px] font-medium flex items-center justify-center gap-1 disabled:opacity-50 border border-slate-700/50"
                     title="Arquivar — tira do dashboard, mantém registro"
                   >
                     <Archive className="w-3 h-3" />
@@ -410,7 +410,7 @@ export default function RenalSuggestionsCard() {
                   <button
                     onClick={() => setReviewingSugg(sugg)}
                     disabled={isProcessing}
-                    className="w-full px-2 py-1.5 bg-slate-800/60 hover:bg-slate-700 text-slate-300 rounded text-[10px] font-medium flex items-center justify-center gap-1 disabled:opacity-50 border border-slate-700/50"
+                    className="w-full px-2 py-1.5 bg-slate-800/60 hover:bg-brand-surface-subtle text-brand-text-secondary rounded text-[10px] font-medium flex items-center justify-center gap-1 disabled:opacity-50 border border-slate-700/50"
                     title="Revisar detalhes antes de aprovar — abre modal in-context"
                   >
                     <FileSearch className="w-3 h-3" />
@@ -429,7 +429,7 @@ export default function RenalSuggestionsCard() {
                     <button
                       onClick={() => setRejectReasonFor(sugg.id)}
                       disabled={isProcessing}
-                      className="px-2 py-1.5 bg-slate-700 hover:bg-slate-600 text-slate-200 rounded text-[10px] flex items-center justify-center disabled:opacity-50"
+                      className="px-2 py-1.5 bg-brand-surface-subtle hover:bg-slate-600 text-slate-200 rounded text-[10px] flex items-center justify-center disabled:opacity-50"
                       title="Descartar sugestão"
                     >
                       <XCircle className="w-3 h-3" />
@@ -503,15 +503,15 @@ function SuggestionReviewModal({ suggestion, onClose, onApprove, onReject, onOpe
       onKeyDown={(e) => { if (e.key === 'Escape') onClose() }}
     >
       <div
-        className="w-full max-w-2xl bg-slate-900 border border-orange-500/30 rounded-2xl shadow-2xl overflow-hidden max-h-[90vh] flex flex-col animate-in fade-in zoom-in-95 duration-200"
+        className="w-full max-w-2xl bg-brand-bg border border-orange-500/30 rounded-2xl shadow-2xl overflow-hidden max-h-[90vh] flex flex-col animate-in fade-in zoom-in-95 duration-200"
         onClick={e => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="px-5 py-3 border-b border-slate-700 flex items-center justify-between bg-orange-500/5 flex-shrink-0">
+        <div className="px-5 py-3 border-b border-brand-border flex items-center justify-between bg-orange-500/5 flex-shrink-0">
           <div className="flex items-center gap-2 min-w-0">
             <Activity className="w-5 h-5 text-orange-300 flex-shrink-0" />
             <div className="min-w-0">
-              <h3 className="text-sm font-bold text-white truncate">
+              <h3 className="text-sm font-bold text-brand-text truncate">
                 Revisão · Sugestão DRC pendente
               </h3>
               <p className="text-[11px] text-orange-300/80 truncate">
@@ -524,7 +524,7 @@ function SuggestionReviewModal({ suggestion, onClose, onApprove, onReject, onOpe
               </p>
             </div>
           </div>
-          <button onClick={onClose} className="p-1.5 hover:bg-slate-700 rounded-full text-slate-400 hover:text-white">
+          <button onClick={onClose} className="p-1.5 hover:bg-brand-surface-subtle rounded-full text-brand-text-muted hover:text-brand-text">
             <XCircle className="w-4 h-4" />
           </button>
         </div>
@@ -543,7 +543,7 @@ function SuggestionReviewModal({ suggestion, onClose, onApprove, onReject, onOpe
               <p className={`text-xs ml-7 ${stageInfo.color} opacity-90`}>
                 {stageInfo.label}
               </p>
-              <p className="text-[10px] text-slate-400 mt-2 ml-7 italic">
+              <p className="text-[10px] text-brand-text-muted mt-2 ml-7 italic">
                 Sugestão automatizada via CKD-EPI 2021 — não constitui diagnóstico, requer sua validação clínica.
               </p>
             </div>
@@ -551,10 +551,10 @@ function SuggestionReviewModal({ suggestion, onClose, onApprove, onReject, onOpe
 
           {/* Confiança da detecção */}
           <div className="flex items-center justify-between bg-slate-800/40 rounded-lg px-3 py-2">
-            <span className="text-[11px] text-slate-400 uppercase tracking-wider">Confiança da detecção</span>
+            <span className="text-[11px] text-brand-text-muted uppercase tracking-wider">Confiança da detecção</span>
             <span className={`text-sm font-bold ${
               suggestion.confidence_score >= 0.8 ? 'text-emerald-400' :
-              suggestion.confidence_score >= 0.6 ? 'text-amber-400' : 'text-slate-400'
+              suggestion.confidence_score >= 0.6 ? 'text-amber-400' : 'text-brand-text-muted'
             }`}>
               {(suggestion.confidence_score * 100).toFixed(0)}%
             </span>
@@ -569,21 +569,21 @@ function SuggestionReviewModal({ suggestion, onClose, onApprove, onReject, onOpe
               {suggestion.creatinine_mg_dl != null && (
                 <div className="bg-slate-800/60 rounded-lg p-3">
                   <div className="text-[10px] text-slate-500 uppercase">Creatinina</div>
-                  <div className="text-lg text-white font-bold mt-0.5">{suggestion.creatinine_mg_dl}</div>
+                  <div className="text-lg text-brand-text font-bold mt-0.5">{suggestion.creatinine_mg_dl}</div>
                   <div className="text-[10px] text-slate-500">mg/dL</div>
                 </div>
               )}
               {suggestion.egfr_calculated != null && (
                 <div className="bg-slate-800/60 rounded-lg p-3">
                   <div className="text-[10px] text-slate-500 uppercase">eGFR</div>
-                  <div className="text-lg text-white font-bold mt-0.5">{suggestion.egfr_calculated}</div>
+                  <div className="text-lg text-brand-text font-bold mt-0.5">{suggestion.egfr_calculated}</div>
                   <div className="text-[10px] text-slate-500">mL/min/1.73m²</div>
                 </div>
               )}
               {suggestion.proteinuria_acr_mg_g != null && (
                 <div className="bg-slate-800/60 rounded-lg p-3">
                   <div className="text-[10px] text-slate-500 uppercase">A/Cr</div>
-                  <div className="text-lg text-white font-bold mt-0.5">{suggestion.proteinuria_acr_mg_g}</div>
+                  <div className="text-lg text-brand-text font-bold mt-0.5">{suggestion.proteinuria_acr_mg_g}</div>
                   <div className="text-[10px] text-slate-500">mg/g</div>
                 </div>
               )}
@@ -618,7 +618,7 @@ function SuggestionReviewModal({ suggestion, onClose, onApprove, onReject, onOpe
           {/* Trigger: ver relatório completo */}
           <button
             onClick={onOpenReport}
-            className="w-full px-3 py-2.5 bg-slate-800/60 hover:bg-slate-700 text-slate-300 rounded-lg text-xs font-medium flex items-center justify-center gap-2 border border-slate-700/50 transition-colors"
+            className="w-full px-3 py-2.5 bg-slate-800/60 hover:bg-brand-surface-subtle text-brand-text-secondary rounded-lg text-xs font-medium flex items-center justify-center gap-2 border border-slate-700/50 transition-colors"
           >
             <FileSearch className="w-3.5 h-3.5" />
             Ver relatório completo da paciente
@@ -627,17 +627,17 @@ function SuggestionReviewModal({ suggestion, onClose, onApprove, onReject, onOpe
         </div>
 
         {/* Footer — Aprovar / Descartar / Cancelar */}
-        <div className="px-4 py-3 border-t border-slate-700 bg-slate-800/30 flex items-center gap-2 flex-shrink-0">
+        <div className="px-4 py-3 border-t border-brand-border bg-slate-800/30 flex items-center gap-2 flex-shrink-0">
           <button
             onClick={onClose}
-            className="px-3 py-2 text-xs text-slate-400 hover:text-white transition-colors"
+            className="px-3 py-2 text-xs text-brand-text-muted hover:text-brand-text transition-colors"
           >
             Voltar
           </button>
           <div className="flex-1" />
           <button
             onClick={onReject}
-            className="flex items-center gap-1.5 px-3 py-2 bg-slate-700 hover:bg-slate-600 text-slate-200 rounded-lg text-xs font-medium"
+            className="flex items-center gap-1.5 px-3 py-2 bg-brand-surface-subtle hover:bg-slate-600 text-slate-200 rounded-lg text-xs font-medium"
           >
             <XCircle className="w-3.5 h-3.5" />
             Descartar

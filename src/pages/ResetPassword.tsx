@@ -81,10 +81,10 @@ const ResetPassword: React.FC = () => {
       <div className="w-full max-w-md">
         {/* Logo */}
         <div className="flex items-center justify-center gap-3 mb-8">
-          <div className="w-10 h-10 rounded-lg bg-slate-900 border border-green-500/30 flex items-center justify-center">
+          <div className="w-10 h-10 rounded-lg bg-brand-bg border border-green-500/30 flex items-center justify-center">
             <Brain className="w-6 h-6 text-green-400" />
           </div>
-          <span className="text-xl font-bold text-white">MedCannLab</span>
+          <span className="text-xl font-bold text-brand-text">MedCannLab</span>
         </div>
 
         <div className="bg-slate-900/80 backdrop-blur-xl border border-slate-700/50 rounded-2xl p-8 shadow-2xl">
@@ -95,44 +95,44 @@ const ResetPassword: React.FC = () => {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                 </svg>
               </div>
-              <h2 className="text-2xl font-bold text-white">Senha redefinida!</h2>
-              <p className="text-slate-400">Sua senha foi atualizada com sucesso. Redirecionando para a página inicial...</p>
+              <h2 className="text-2xl font-bold text-brand-text">Senha redefinida!</h2>
+              <p className="text-brand-text-muted">Sua senha foi atualizada com sucesso. Redirecionando para a página inicial...</p>
             </div>
           ) : !isValidSession ? (
             <div className="text-center space-y-4">
-              <h2 className="text-2xl font-bold text-white">Link inválido ou expirado</h2>
-              <p className="text-slate-400 text-sm">Este link de recuperação pode ter expirado. Solicite um novo link na página inicial.</p>
+              <h2 className="text-2xl font-bold text-brand-text">Link inválido ou expirado</h2>
+              <p className="text-brand-text-muted text-sm">Este link de recuperação pode ter expirado. Solicite um novo link na página inicial.</p>
               <button
                 onClick={() => navigate('/')}
-                className="w-full bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-lg p-3 font-semibold hover:opacity-90 transition-all"
+                className="w-full bg-gradient-to-r from-green-600 to-emerald-600 text-brand-text rounded-lg p-3 font-semibold hover:opacity-90 transition-all"
               >
                 Voltar ao início
               </button>
             </div>
           ) : (
             <>
-              <h2 className="text-2xl font-bold text-white mb-2">Redefinir senha</h2>
-              <p className="text-slate-400 text-sm mb-6">Digite sua nova senha abaixo.</p>
+              <h2 className="text-2xl font-bold text-brand-text mb-2">Redefinir senha</h2>
+              <p className="text-brand-text-muted text-sm mb-6">Digite sua nova senha abaixo.</p>
 
               <form onSubmit={handleReset} className="space-y-4">
                 <div>
-                  <label className="block text-sm text-slate-400 mb-1">Nova senha</label>
+                  <label className="block text-sm text-brand-text-muted mb-1">Nova senha</label>
                   <input
                     type="password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="w-full bg-slate-800 border border-slate-700 rounded-lg p-3 text-white focus:ring-2 focus:ring-green-500 outline-none transition-all"
+                    className="w-full bg-brand-surface border border-brand-border rounded-lg p-3 text-brand-text focus:ring-2 focus:ring-green-500 outline-none transition-all"
                     placeholder="Mínimo 6 caracteres"
                     autoFocus
                   />
                 </div>
                 <div>
-                  <label className="block text-sm text-slate-400 mb-1">Confirmar nova senha</label>
+                  <label className="block text-sm text-brand-text-muted mb-1">Confirmar nova senha</label>
                   <input
                     type="password"
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
-                    className="w-full bg-slate-800 border border-slate-700 rounded-lg p-3 text-white focus:ring-2 focus:ring-green-500 outline-none transition-all"
+                    className="w-full bg-brand-surface border border-brand-border rounded-lg p-3 text-brand-text focus:ring-2 focus:ring-green-500 outline-none transition-all"
                     placeholder="Repita a nova senha"
                   />
                 </div>
@@ -144,7 +144,7 @@ const ResetPassword: React.FC = () => {
                 <button
                   type="submit"
                   disabled={isLoading}
-                  className="w-full bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-lg p-3 font-semibold hover:shadow-lg hover:shadow-green-500/20 transition-all disabled:opacity-50"
+                  className="w-full bg-gradient-to-r from-green-600 to-emerald-600 text-brand-text rounded-lg p-3 font-semibold hover:shadow-lg hover:shadow-green-500/20 transition-all disabled:opacity-50"
                 >
                   {isLoading ? 'Salvando...' : 'Salvar nova senha'}
                 </button>

@@ -203,7 +203,7 @@ export default function PatientNFTGallery({ onCreateAssessment }: PatientNFTGall
                         <Sparkles className="w-5 h-5 text-emerald-300" />
                     </div>
                     <div>
-                        <h1 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
+                        <h1 className="text-xl sm:text-2xl font-bold text-brand-text tracking-tight">
                             Galeria de Assinaturas Visuais
                         </h1>
                         {/*
@@ -211,7 +211,7 @@ export default function PatientNFTGallery({ onCreateAssessment }: PatientNFTGall
                           universalmente. Empíricamente apenas peças cujo report-pai foi
                           assinado têm signature_hash. Estado real exibido nos badges abaixo.
                         */}
-                        <p className="text-sm text-slate-400 mt-1 max-w-2xl leading-relaxed">
+                        <p className="text-sm text-brand-text-muted mt-1 max-w-2xl leading-relaxed">
                             Geradas a partir do conteúdo simbólico de relatórios clínicos finalizados.
                             Algumas peças possuem ancoragem criptográfica vinculada à assinatura
                             ICP-Brasil do relatório de origem.
@@ -222,17 +222,17 @@ export default function PatientNFTGallery({ onCreateAssessment }: PatientNFTGall
                 {/* Stats compactas — V1.9.311: badge ICP virou contador estado-real */}
                 {!isEmpty && !loading && (
                     <div className="flex flex-wrap gap-3 mt-4 text-xs">
-                        <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-800/60 border border-slate-700">
+                        <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-800/60 border border-brand-border">
                             <ImageIcon className="w-3.5 h-3.5 text-emerald-400" />
-                            <span className="text-slate-300">{totalCount} {totalCount === 1 ? 'peça' : 'peças'}</span>
+                            <span className="text-brand-text-secondary">{totalCount} {totalCount === 1 ? 'peça' : 'peças'}</span>
                         </div>
-                        <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-800/60 border border-slate-700">
+                        <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-800/60 border border-brand-border">
                             <Shield className="w-3.5 h-3.5 text-emerald-400" />
-                            <span className="text-slate-300">Soulbound · não-transferível</span>
+                            <span className="text-brand-text-secondary">Soulbound · não-transferível</span>
                         </div>
-                        <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-800/60 border border-slate-700">
+                        <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-800/60 border border-brand-border">
                             <FileCheck className="w-3.5 h-3.5 text-emerald-400" />
-                            <span className="text-slate-300">
+                            <span className="text-brand-text-secondary">
                                 {nfts.filter(n => n.signature_hash).length}/{nfts.length} ancoradas criptograficamente
                             </span>
                         </div>
@@ -249,14 +249,14 @@ export default function PatientNFTGallery({ onCreateAssessment }: PatientNFTGall
 
             {/* EMPTY STATE */}
             {isEmpty && (
-                <div className="text-center py-16 px-6 bg-gradient-to-br from-slate-900/40 to-slate-800/20 rounded-2xl border border-slate-800">
+                <div className="text-center py-16 px-6 bg-gradient-to-br from-slate-900/40 to-slate-800/20 rounded-2xl border border-brand-border-subtle">
                     <div className="w-20 h-20 mx-auto mb-5 rounded-full bg-gradient-to-br from-emerald-500/10 to-purple-500/10 border border-emerald-500/20 flex items-center justify-center">
                         <Sparkles className="w-9 h-9 text-emerald-300/70" />
                     </div>
-                    <h3 className="text-lg font-bold text-white mb-2">
+                    <h3 className="text-lg font-bold text-brand-text mb-2">
                         Sua galeria começará a se preencher em breve
                     </h3>
-                    <p className="text-sm text-slate-400 max-w-md mx-auto leading-relaxed mb-6">
+                    <p className="text-sm text-brand-text-muted max-w-md mx-auto leading-relaxed mb-6">
                         Cada relatório clínico finalizado pode gerar uma assinatura visual única,
                         derivada do seu próprio relato e ancorada ao hash do documento. Sem blockchain
                         externa — apenas o vínculo criptográfico nativo do seu prontuário.
@@ -264,7 +264,7 @@ export default function PatientNFTGallery({ onCreateAssessment }: PatientNFTGall
                     {onCreateAssessment && (
                         <button
                             onClick={onCreateAssessment}
-                            className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 text-white text-sm font-semibold transition-all shadow-lg shadow-emerald-500/20"
+                            className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 text-brand-text text-sm font-semibold transition-all shadow-lg shadow-emerald-500/20"
                         >
                             Iniciar uma avaliação
                         </button>
@@ -277,12 +277,12 @@ export default function PatientNFTGallery({ onCreateAssessment }: PatientNFTGall
                 <>
                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4">
                         {nfts.map((nft) => {
-                            const styleInfo = STYLE_LABELS[nft.style] || STYLE_LABELS[nft.generation_version] || { label: nft.style, color: 'text-slate-300' }
+                            const styleInfo = STYLE_LABELS[nft.style] || STYLE_LABELS[nft.generation_version] || { label: nft.style, color: 'text-brand-text-secondary' }
                             return (
                                 <button
                                     key={nft.id}
                                     onClick={() => setSelectedNFT(nft)}
-                                    className="group relative aspect-square rounded-xl overflow-hidden bg-slate-900 border border-slate-800 hover:border-emerald-500/40 transition-all hover:scale-[1.02] hover:shadow-lg hover:shadow-emerald-500/10"
+                                    className="group relative aspect-square rounded-xl overflow-hidden bg-brand-bg border border-brand-border-subtle hover:border-emerald-500/40 transition-all hover:scale-[1.02] hover:shadow-lg hover:shadow-emerald-500/10"
                                     title={`${styleInfo.label} · ${formatDate(nft.created_at)}`}
                                 >
                                     {nft.thumbnail_url || nft.image_url ? (
@@ -320,17 +320,17 @@ export default function PatientNFTGallery({ onCreateAssessment }: PatientNFTGall
                                     */}
                                     {nft.signature_hash ? (
                                         <div className="absolute top-1.5 right-1.5 w-5 h-5 rounded-full bg-emerald-500/90 flex items-center justify-center" title="Ancorado em assinatura ICP-Brasil">
-                                            <Shield className="w-3 h-3 text-white" />
+                                            <Shield className="w-3 h-3 text-brand-text" />
                                         </div>
                                     ) : (
                                         <div className="absolute top-1.5 right-1.5 w-5 h-5 rounded-full bg-amber-500/80 flex items-center justify-center" title="Sem ancoragem criptográfica (relatório de origem não foi assinado)">
-                                            <Hash className="w-3 h-3 text-white" />
+                                            <Hash className="w-3 h-3 text-brand-text" />
                                         </div>
                                     )}
                                     {/* V1.9.311: badge "compartilhado" se paciente liberou peça pro profissional */}
                                     {nft.shared_with_professional && (
                                         <div className="absolute top-1.5 left-1.5 w-5 h-5 rounded-full bg-cyan-500/80 flex items-center justify-center" title="Permitido para visualização clínica">
-                                            <Eye className="w-3 h-3 text-white" />
+                                            <Eye className="w-3 h-3 text-brand-text" />
                                         </div>
                                     )}
                                 </button>
@@ -344,20 +344,20 @@ export default function PatientNFTGallery({ onCreateAssessment }: PatientNFTGall
                             <button
                                 onClick={() => setPage(p => Math.max(0, p - 1))}
                                 disabled={page === 0}
-                                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm bg-slate-800/60 hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors text-slate-300"
+                                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm bg-slate-800/60 hover:bg-brand-surface-subtle disabled:opacity-40 disabled:cursor-not-allowed transition-colors text-brand-text-secondary"
                             >
                                 <ChevronLeft className="w-4 h-4" />
                                 Anterior
                             </button>
-                            <div className="text-xs text-slate-400">
-                                Página <span className="text-white font-semibold">{page + 1}</span> de{' '}
-                                <span className="text-white font-semibold">{totalPages}</span>
+                            <div className="text-xs text-brand-text-muted">
+                                Página <span className="text-brand-text font-semibold">{page + 1}</span> de{' '}
+                                <span className="text-brand-text font-semibold">{totalPages}</span>
                                 <span className="ml-2 text-slate-500">· {PAGE_SIZE} por página</span>
                             </div>
                             <button
                                 onClick={() => setPage(p => Math.min(totalPages - 1, p + 1))}
                                 disabled={page >= totalPages - 1}
-                                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm bg-slate-800/60 hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors text-slate-300"
+                                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm bg-slate-800/60 hover:bg-brand-surface-subtle disabled:opacity-40 disabled:cursor-not-allowed transition-colors text-brand-text-secondary"
                             >
                                 Próxima
                                 <ChevronRight className="w-4 h-4" />
@@ -378,23 +378,23 @@ export default function PatientNFTGallery({ onCreateAssessment }: PatientNFTGall
                     onKeyDown={(e) => { if (e.key === 'Escape') setSelectedNFT(null) }}
                 >
                     <div
-                        className="w-full max-w-5xl bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl overflow-hidden max-h-[90vh] flex flex-col animate-in fade-in zoom-in-95 duration-200"
+                        className="w-full max-w-5xl bg-brand-bg border border-brand-border rounded-2xl shadow-2xl overflow-hidden max-h-[90vh] flex flex-col animate-in fade-in zoom-in-95 duration-200"
                         onClick={e => e.stopPropagation()}
                     >
                         {/* Modal header */}
-                        <div className="px-5 py-3 border-b border-slate-700 flex items-center justify-between bg-slate-800/50 flex-shrink-0">
+                        <div className="px-5 py-3 border-b border-brand-border flex items-center justify-between bg-slate-800/50 flex-shrink-0">
                             <div className="flex items-center gap-2">
                                 <Sparkles className="w-4 h-4 text-emerald-400" />
                                 <div>
-                                    <h3 id="nft-gallery-modal-title" className="text-sm font-bold text-white">Assinatura Visual</h3>
-                                    <p className="text-[11px] text-slate-400">
+                                    <h3 id="nft-gallery-modal-title" className="text-sm font-bold text-brand-text">Assinatura Visual</h3>
+                                    <p className="text-[11px] text-brand-text-muted">
                                         {formatDate(selectedNFT.created_at)}
                                     </p>
                                 </div>
                             </div>
                             <button
                                 onClick={() => setSelectedNFT(null)}
-                                className="p-1.5 hover:bg-slate-700 rounded-full text-slate-400 hover:text-white transition-colors"
+                                className="p-1.5 hover:bg-brand-surface-subtle rounded-full text-brand-text-muted hover:text-brand-text transition-colors"
                                 aria-label="Fechar assinatura visual"
                                 title="Fechar"
                             >
@@ -425,7 +425,7 @@ export default function PatientNFTGallery({ onCreateAssessment }: PatientNFTGall
                                         <Palette className="w-3.5 h-3.5 text-emerald-400 flex-shrink-0 mt-0.5" />
                                         <div className="min-w-0">
                                             <div className="text-[9px] text-slate-500 uppercase tracking-wide">Estilo</div>
-                                            <div className="text-xs text-white font-medium truncate">
+                                            <div className="text-xs text-brand-text font-medium truncate">
                                                 {(STYLE_LABELS[selectedNFT.style] || STYLE_LABELS[selectedNFT.generation_version])?.label || selectedNFT.style}
                                             </div>
                                         </div>
@@ -435,7 +435,7 @@ export default function PatientNFTGallery({ onCreateAssessment }: PatientNFTGall
                                             <Sparkles className="w-3.5 h-3.5 text-purple-400 flex-shrink-0 mt-0.5" />
                                             <div className="min-w-0">
                                                 <div className="text-[9px] text-slate-500 uppercase tracking-wide">Emoção</div>
-                                                <div className="text-xs text-white font-medium capitalize truncate">
+                                                <div className="text-xs text-brand-text font-medium capitalize truncate">
                                                     {selectedNFT.emotional_sig}
                                                 </div>
                                             </div>
@@ -449,7 +449,7 @@ export default function PatientNFTGallery({ onCreateAssessment }: PatientNFTGall
                                         <div className="text-[9px] text-slate-500 uppercase tracking-wide mb-1">Paleta</div>
                                         <div className="flex flex-wrap gap-1">
                                             {selectedNFT.palette.map((color, i) => (
-                                                <span key={i} className="px-1.5 py-0.5 rounded bg-slate-800 border border-slate-700 text-[10px] text-slate-300 capitalize">
+                                                <span key={i} className="px-1.5 py-0.5 rounded bg-brand-surface border border-brand-border text-[10px] text-brand-text-secondary capitalize">
                                                     {color}
                                                 </span>
                                             ))}
@@ -482,7 +482,7 @@ export default function PatientNFTGallery({ onCreateAssessment }: PatientNFTGall
                                             <Hash className="w-3 h-3 text-slate-500 flex-shrink-0 mt-0.5" />
                                             <div className="min-w-0 flex-1">
                                                 <span className="text-slate-500">Hash:</span>{' '}
-                                                <code className="text-slate-300 font-mono text-[9px] break-all">
+                                                <code className="text-brand-text-secondary font-mono text-[9px] break-all">
                                                     {formatHash(selectedNFT.image_hash, 12)}
                                                 </code>
                                             </div>
@@ -502,7 +502,7 @@ export default function PatientNFTGallery({ onCreateAssessment }: PatientNFTGall
                                             <Calendar className="w-3 h-3 text-slate-500 flex-shrink-0 mt-0.5" />
                                             <div className="min-w-0 flex-1">
                                                 <span className="text-slate-500">Criado:</span>{' '}
-                                                <span className="text-slate-300">
+                                                <span className="text-brand-text-secondary">
                                                     {new Date(selectedNFT.created_at).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit' })}
                                                 </span>
                                             </div>
@@ -517,12 +517,12 @@ export default function PatientNFTGallery({ onCreateAssessment }: PatientNFTGall
                                 {selectedNFT.narrative_window && Object.keys(selectedNFT.narrative_window).length > 0 && (
                                     <div className="bg-cyan-500/5 border border-cyan-500/20 rounded-lg p-2.5">
                                         <div className="text-[9px] text-cyan-300 uppercase tracking-wide mb-1 font-semibold">Janela Peri-Event</div>
-                                        <div className="text-[10px] text-slate-300 font-mono">
+                                        <div className="text-[10px] text-brand-text-secondary font-mono">
                                             {selectedNFT.narrative_window.t0_event && (
                                                 <div>Evento: {selectedNFT.narrative_window.t0_event.replace(/_/g, ' ')}</div>
                                             )}
                                             {selectedNFT.narrative_window.event_date && (
-                                                <div className="text-slate-400">Data: {selectedNFT.narrative_window.event_date}</div>
+                                                <div className="text-brand-text-muted">Data: {selectedNFT.narrative_window.event_date}</div>
                                             )}
                                         </div>
                                     </div>
@@ -535,14 +535,14 @@ export default function PatientNFTGallery({ onCreateAssessment }: PatientNFTGall
                                   do paciente sobre artefatos simbólicos derivados da própria
                                   narrativa clínica.
                                 */}
-                                <div className="bg-slate-800/40 border border-slate-700 rounded-lg p-2.5">
+                                <div className="bg-slate-800/40 border border-brand-border rounded-lg p-2.5">
                                     <div className="flex items-start gap-2">
-                                        <Eye className="w-3.5 h-3.5 text-slate-400 flex-shrink-0 mt-0.5" />
+                                        <Eye className="w-3.5 h-3.5 text-brand-text-muted flex-shrink-0 mt-0.5" />
                                         <div className="flex-1 min-w-0">
-                                            <div className="text-[11px] font-semibold text-white mb-0.5">
+                                            <div className="text-[11px] font-semibold text-brand-text mb-0.5">
                                                 Permitir visualização clínica
                                             </div>
-                                            <p className="text-[10px] text-slate-400 leading-relaxed mb-2">
+                                            <p className="text-[10px] text-brand-text-muted leading-relaxed mb-2">
                                                 {selectedNFT.shared_with_professional
                                                     ? <>Esta peça está visível para o profissional responsável pelo relatório de origem.</>
                                                     : <>Por padrão, apenas você vê esta peça. Libere para que o profissional responsável pelo relatório também possa visualizá-la.</>
@@ -555,7 +555,7 @@ export default function PatientNFTGallery({ onCreateAssessment }: PatientNFTGall
                                                     className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors disabled:opacity-50 ${
                                                         selectedNFT.shared_with_professional
                                                             ? 'bg-emerald-500/80'
-                                                            : 'bg-slate-700'
+                                                            : 'bg-brand-surface-subtle'
                                                     }`}
                                                     role="switch"
                                                     aria-checked={!!selectedNFT.shared_with_professional}
@@ -579,16 +579,16 @@ export default function PatientNFTGallery({ onCreateAssessment }: PatientNFTGall
                         </div>
 
                         {/* Modal footer actions */}
-                        <div className="px-4 py-2.5 border-t border-slate-700 bg-slate-800/30 flex items-center justify-end gap-2 flex-shrink-0">
+                        <div className="px-4 py-2.5 border-t border-brand-border bg-slate-800/30 flex items-center justify-end gap-2 flex-shrink-0">
                             <button
                                 onClick={() => setSelectedNFT(null)}
-                                className="px-2.5 py-1 rounded-lg text-xs text-slate-400 hover:text-white transition-colors"
+                                className="px-2.5 py-1 rounded-lg text-xs text-brand-text-muted hover:text-brand-text transition-colors"
                             >
                                 Fechar
                             </button>
                             {selectedNFT.report_id && (
                                 <button
-                                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs bg-emerald-600 hover:bg-emerald-500 text-white font-medium transition-colors shadow-lg shadow-emerald-500/20"
+                                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs bg-emerald-600 hover:bg-emerald-500 text-brand-text font-medium transition-colors shadow-lg shadow-emerald-500/20"
                                     onClick={() => {
                                         // V1.9.197: navegar de fato pro report origem
                                         // Usa query string ?section=relatorio que PatientDashboard

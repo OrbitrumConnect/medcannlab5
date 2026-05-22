@@ -322,7 +322,7 @@ const MedicalRecord: React.FC<MedicalRecordProps> = ({ patientId, patientData, c
     <div className="space-y-6">
       {/* Status Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl p-6 text-white">
+        <div className="bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl p-6 text-brand-text">
           <div className="flex items-center justify-between mb-2">
             <h3 className="text-sm font-medium opacity-90">Total de Pacientes</h3>
             <Users className="w-6 h-6" />
@@ -330,7 +330,7 @@ const MedicalRecord: React.FC<MedicalRecordProps> = ({ patientId, patientData, c
           <p className="text-3xl font-bold">{patients.length}</p>
           <p className="text-xs opacity-80">Ativos</p>
         </div>
-        <div className="bg-gradient-to-r from-green-500 to-green-600 rounded-xl p-6 text-white">
+        <div className="bg-gradient-to-r from-green-500 to-green-600 rounded-xl p-6 text-brand-text">
           <div className="flex items-center justify-between mb-2">
             <h3 className="text-sm font-medium opacity-90">Relatórios Compartilhados</h3>
             <Share2 className="w-6 h-6" />
@@ -338,7 +338,7 @@ const MedicalRecord: React.FC<MedicalRecordProps> = ({ patientId, patientData, c
           <p className="text-3xl font-bold">{clinicalReports.filter(r => r.status === 'shared').length}</p>
           <p className="text-xs opacity-80">Pendentes</p>
         </div>
-        <div className="bg-gradient-to-r from-purple-500 to-purple-600 rounded-xl p-6 text-white opacity-70 grayscale">
+        <div className="bg-gradient-to-r from-purple-500 to-purple-600 rounded-xl p-6 text-brand-text opacity-70 grayscale">
           <div className="flex items-center justify-between mb-2">
             <h3 className="text-sm font-medium opacity-90">NFTs Gerados</h3>
             <QrCode className="w-6 h-6" />
@@ -346,7 +346,7 @@ const MedicalRecord: React.FC<MedicalRecordProps> = ({ patientId, patientData, c
           <p className="text-3xl font-bold">{clinicalReports.filter(r => r.nftToken).length}</p>
           <p className="text-xs opacity-80">Em Breve</p>
         </div>
-        <div className="bg-gradient-to-r from-orange-500 to-orange-600 rounded-xl p-6 text-white">
+        <div className="bg-gradient-to-r from-orange-500 to-orange-600 rounded-xl p-6 text-brand-text">
           <div className="flex items-center justify-between mb-2">
             <h3 className="text-sm font-medium opacity-90">Prescrições</h3>
             <Pill className="w-6 h-6" />
@@ -361,7 +361,7 @@ const MedicalRecord: React.FC<MedicalRecordProps> = ({ patientId, patientData, c
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-semibold text-slate-800">Meus Pacientes</h3>
           <div className="flex items-center space-x-2">
-            <Search className="w-4 h-4 text-slate-400" />
+            <Search className="w-4 h-4 text-brand-text-muted" />
             <input
               type="text"
               placeholder="Buscar paciente..."
@@ -446,7 +446,7 @@ const MedicalRecord: React.FC<MedicalRecordProps> = ({ patientId, patientData, c
                 <div className="flex items-center space-x-2">
                   <button
                     onClick={() => handleShareReport(report)}
-                    className="flex items-center space-x-1 px-3 py-1 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm"
+                    className="flex items-center space-x-1 px-3 py-1 bg-blue-600 text-brand-text rounded-lg hover:bg-blue-700 transition-colors text-sm"
                   >
                     <Share2 className="w-4 h-4" />
                     <span>Compartilhar</span>
@@ -459,7 +459,7 @@ const MedicalRecord: React.FC<MedicalRecordProps> = ({ patientId, patientData, c
                     <QrCode className="w-4 h-4" />
                     <span>Gerar NFT (Em breve)</span>
                   </button>
-                  <button className="flex items-center space-x-1 px-3 py-1 bg-slate-600 text-white rounded-lg hover:bg-slate-700 transition-colors text-sm">
+                  <button className="flex items-center space-x-1 px-3 py-1 bg-slate-600 text-brand-text rounded-lg hover:bg-brand-surface-subtle transition-colors text-sm">
                     <Download className="w-4 h-4" />
                     <span>Download</span>
                   </button>
@@ -509,14 +509,14 @@ const MedicalRecord: React.FC<MedicalRecordProps> = ({ patientId, patientData, c
   return (
     <div className={`space-y-6 ${className}`}>
       {/* Header */}
-      <div className="bg-gradient-to-r from-slate-800 to-slate-700 rounded-xl p-6 text-white">
+      <div className="bg-gradient-to-r from-slate-800 to-slate-700 rounded-xl p-6 text-brand-text">
         <div className="flex items-center justify-between mb-4">
           <div>
             <h2 className="text-2xl font-bold mb-2 flex items-center space-x-2">
               <FileText className="w-6 h-6" />
               <span>Prontuário Médico</span>
             </h2>
-            <p className="text-slate-300">
+            <p className="text-brand-text-secondary">
               Sistema integrado de prontuários com cinco racionalidades médicas
             </p>
           </div>
@@ -582,7 +582,7 @@ const MedicalRecord: React.FC<MedicalRecordProps> = ({ patientId, patientData, c
                   console.log('Compartilhando relatório:', selectedReport.id)
                   setShowShareModal(false)
                 }}
-                className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                className="flex-1 px-4 py-2 bg-blue-600 text-brand-text rounded-lg hover:bg-blue-700 transition-colors"
               >
                 Compartilhar
               </button>

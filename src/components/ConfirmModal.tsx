@@ -42,15 +42,15 @@ const ConfirmModal: React.FC<ConfirmModalProps> = ({
   const getButtonColors = () => {
     switch (type) {
       case 'danger':
-        return 'bg-red-600 hover:bg-red-700 text-white'
+        return 'bg-red-600 hover:bg-red-700 text-brand-text'
       case 'warning':
-        return 'bg-yellow-600 hover:bg-yellow-700 text-white'
+        return 'bg-yellow-600 hover:bg-yellow-700 text-brand-text'
       case 'info':
-        return 'bg-blue-600 hover:bg-blue-700 text-white'
+        return 'bg-blue-600 hover:bg-blue-700 text-brand-text'
       case 'success':
-        return 'bg-green-600 hover:bg-green-700 text-white'
+        return 'bg-green-600 hover:bg-green-700 text-brand-text'
       default:
-        return 'bg-primary-600 hover:bg-primary-700 text-white'
+        return 'bg-primary-600 hover:bg-primary-700 text-brand-text'
     }
   }
 
@@ -63,11 +63,11 @@ const ConfirmModal: React.FC<ConfirmModalProps> = ({
       />
 
       {/* Modal */}
-      <div className="relative bg-slate-800 border border-slate-700 rounded-xl shadow-2xl max-w-md w-full p-6 animate-in fade-in zoom-in duration-200">
+      <div className="relative bg-brand-surface border border-brand-border rounded-xl shadow-2xl max-w-md w-full p-6 animate-in fade-in zoom-in duration-200">
         {/* Close button */}
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 text-slate-400 hover:text-slate-200 transition-colors"
+          className="absolute top-4 right-4 text-brand-text-muted hover:text-slate-200 transition-colors"
         >
           <X className="w-5 h-5" />
         </button>
@@ -78,10 +78,10 @@ const ConfirmModal: React.FC<ConfirmModalProps> = ({
             {getIcon()}
           </div>
           <div className="flex-1 min-w-0">
-            <h3 className="text-lg font-semibold text-white mb-2">
+            <h3 className="text-lg font-semibold text-brand-text mb-2">
               {title}
             </h3>
-            <p className="text-sm text-slate-300 leading-relaxed">
+            <p className="text-sm text-brand-text-secondary leading-relaxed">
               {message}
             </p>
           </div>
@@ -91,7 +91,7 @@ const ConfirmModal: React.FC<ConfirmModalProps> = ({
         <div className="flex items-center justify-end gap-3 mt-6">
           <button
             onClick={onClose}
-            className="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-slate-200 rounded-lg transition-colors font-medium"
+            className="px-4 py-2 bg-brand-surface-subtle hover:bg-slate-600 text-slate-200 rounded-lg transition-colors font-medium"
           >
             {cancelText}
           </button>

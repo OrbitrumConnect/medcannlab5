@@ -161,7 +161,7 @@ const CoordenacaoMedica: React.FC<CoordenacaoMedicaProps> = ({ className = '' })
       <div className="bg-gradient-to-r from-purple-800 to-purple-700 rounded-lg p-6">
         <div className="flex items-center justify-between mb-4">
           <div>
-            <h2 className="text-2xl font-bold text-white mb-2 flex items-center space-x-2">
+            <h2 className="text-2xl font-bold text-brand-text mb-2 flex items-center space-x-2">
               <Users className="w-6 h-6" />
               <span>Coordenação Médica</span>
             </h2>
@@ -169,7 +169,7 @@ const CoordenacaoMedica: React.FC<CoordenacaoMedicaProps> = ({ className = '' })
               Acompanhe o desempenho de cada eixo e tipo de usuário
             </p>
           </div>
-          <button className="flex items-center space-x-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-md transition-colors">
+          <button className="flex items-center space-x-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-brand-text rounded-md transition-colors">
             <Download className="w-4 h-4" />
             <span>Relatório</span>
           </button>
@@ -187,7 +187,7 @@ const CoordenacaoMedica: React.FC<CoordenacaoMedicaProps> = ({ className = '' })
               onClick={() => setActiveTab(tab.key as any)}
               className={`flex items-center space-x-2 px-4 py-2 rounded-md transition-colors ${
                 activeTab === tab.key 
-                  ? 'bg-purple-600 text-white' 
+                  ? 'bg-purple-600 text-brand-text' 
                   : 'bg-purple-700 text-purple-200 hover:bg-purple-600'
               }`}
             >
@@ -202,15 +202,15 @@ const CoordenacaoMedica: React.FC<CoordenacaoMedicaProps> = ({ className = '' })
       {activeTab === 'eixos' && (
         <div className="space-y-4">
           {eixoPerformance.map((eixo) => (
-            <div key={eixo.eixo} className="bg-slate-800 border border-slate-700 rounded-lg p-6 hover:border-slate-600 transition-colors">
+            <div key={eixo.eixo} className="bg-brand-surface border border-brand-border rounded-lg p-6 hover:border-slate-600 transition-colors">
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center space-x-3">
-                  <div className={`p-2 rounded-lg ${getEixoColor(eixo.eixo)} bg-slate-700`}>
+                  <div className={`p-2 rounded-lg ${getEixoColor(eixo.eixo)} bg-brand-surface-subtle`}>
                     {getEixoIcon(eixo.eixo)}
                   </div>
                   <div>
-                    <h3 className="text-white text-lg font-semibold">{eixo.eixo}</h3>
-                    <p className="text-slate-400 text-sm">Eixo {eixo.eixo}</p>
+                    <h3 className="text-brand-text text-lg font-semibold">{eixo.eixo}</h3>
+                    <p className="text-brand-text-muted text-sm">Eixo {eixo.eixo}</p>
                   </div>
                 </div>
                 <span className={`px-3 py-1 rounded-full text-sm ${getStatusColor(eixo.status)}`}>
@@ -220,20 +220,20 @@ const CoordenacaoMedica: React.FC<CoordenacaoMedicaProps> = ({ className = '' })
 
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <div className="text-center">
-                  <p className="text-2xl font-bold text-white">{eixo.usuarios}</p>
-                  <p className="text-slate-400 text-sm">Usuários</p>
+                  <p className="text-2xl font-bold text-brand-text">{eixo.usuarios}</p>
+                  <p className="text-brand-text-muted text-sm">Usuários</p>
                 </div>
                 <div className="text-center">
-                  <p className="text-2xl font-bold text-white">{eixo.atividades}</p>
-                  <p className="text-slate-400 text-sm">Atividades</p>
+                  <p className="text-2xl font-bold text-brand-text">{eixo.atividades}</p>
+                  <p className="text-brand-text-muted text-sm">Atividades</p>
                 </div>
                 <div className="text-center">
-                  <p className="text-2xl font-bold text-white">{eixo.satisfacao}%</p>
-                  <p className="text-slate-400 text-sm">Satisfação</p>
+                  <p className="text-2xl font-bold text-brand-text">{eixo.satisfacao}%</p>
+                  <p className="text-brand-text-muted text-sm">Satisfação</p>
                 </div>
                 <div className="text-center">
                   <p className="text-2xl font-bold text-green-400">+{eixo.crescimento}%</p>
-                  <p className="text-slate-400 text-sm">Crescimento</p>
+                  <p className="text-brand-text-muted text-sm">Crescimento</p>
                 </div>
               </div>
 
@@ -255,39 +255,39 @@ const CoordenacaoMedica: React.FC<CoordenacaoMedicaProps> = ({ className = '' })
       {activeTab === 'usuarios' && (
         <div className="space-y-4">
           {usuarioPerformance.map((usuario) => (
-            <div key={usuario.tipo} className="bg-slate-800 border border-slate-700 rounded-lg p-6 hover:border-slate-600 transition-colors">
+            <div key={usuario.tipo} className="bg-brand-surface border border-brand-border rounded-lg p-6 hover:border-slate-600 transition-colors">
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center space-x-3">
-                  <div className="p-2 rounded-lg bg-slate-700">
+                  <div className="p-2 rounded-lg bg-brand-surface-subtle">
                     <Users className="w-5 h-5 text-blue-400" />
                   </div>
                   <div>
-                    <h3 className="text-white text-lg font-semibold">{usuario.tipo}</h3>
-                    <p className="text-slate-400 text-sm">Tipo de usuário</p>
+                    <h3 className="text-brand-text text-lg font-semibold">{usuario.tipo}</h3>
+                    <p className="text-brand-text-muted text-sm">Tipo de usuário</p>
                   </div>
                 </div>
                 <div className="text-right">
-                  <p className="text-2xl font-bold text-white">{usuario.total}</p>
-                  <p className="text-slate-400 text-sm">Total</p>
+                  <p className="text-2xl font-bold text-brand-text">{usuario.total}</p>
+                  <p className="text-brand-text-muted text-sm">Total</p>
                 </div>
               </div>
 
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <div className="text-center">
                   <p className="text-xl font-bold text-green-400">{usuario.ativos}</p>
-                  <p className="text-slate-400 text-sm">Ativos</p>
+                  <p className="text-brand-text-muted text-sm">Ativos</p>
                 </div>
                 <div className="text-center">
                   <p className="text-xl font-bold text-blue-400">{usuario.novos}</p>
-                  <p className="text-slate-400 text-sm">Novos</p>
+                  <p className="text-brand-text-muted text-sm">Novos</p>
                 </div>
                 <div className="text-center">
                   <p className="text-xl font-bold text-yellow-400">{usuario.engajamento}%</p>
-                  <p className="text-slate-400 text-sm">Engajamento</p>
+                  <p className="text-brand-text-muted text-sm">Engajamento</p>
                 </div>
                 <div className="text-center">
                   <p className="text-xl font-bold text-purple-400">{usuario.satisfacao}%</p>
-                  <p className="text-slate-400 text-sm">Satisfação</p>
+                  <p className="text-brand-text-muted text-sm">Satisfação</p>
                 </div>
               </div>
 
@@ -310,76 +310,76 @@ const CoordenacaoMedica: React.FC<CoordenacaoMedicaProps> = ({ className = '' })
         <div className="space-y-6">
           {/* Métricas Gerais */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="bg-slate-800 border border-slate-700 rounded-lg p-6">
+            <div className="bg-brand-surface border border-brand-border rounded-lg p-6">
               <div className="flex items-center justify-between mb-2">
-                <h3 className="text-white font-semibold">Total de Usuários</h3>
+                <h3 className="text-brand-text font-semibold">Total de Usuários</h3>
                 <Users className="w-5 h-5 text-blue-400" />
               </div>
-              <p className="text-3xl font-bold text-white">346</p>
+              <p className="text-3xl font-bold text-brand-text">346</p>
               <p className="text-green-400 text-sm">+12% este mês</p>
             </div>
-            <div className="bg-slate-800 border border-slate-700 rounded-lg p-6">
+            <div className="bg-brand-surface border border-brand-border rounded-lg p-6">
               <div className="flex items-center justify-between mb-2">
-                <h3 className="text-white font-semibold">Atividades Totais</h3>
+                <h3 className="text-brand-text font-semibold">Atividades Totais</h3>
                 <Activity className="w-5 h-5 text-green-400" />
               </div>
-              <p className="text-3xl font-bold text-white">268</p>
+              <p className="text-3xl font-bold text-brand-text">268</p>
               <p className="text-green-400 text-sm">+8% este mês</p>
             </div>
-            <div className="bg-slate-800 border border-slate-700 rounded-lg p-6">
+            <div className="bg-brand-surface border border-brand-border rounded-lg p-6">
               <div className="flex items-center justify-between mb-2">
-                <h3 className="text-white font-semibold">Satisfação Geral</h3>
+                <h3 className="text-brand-text font-semibold">Satisfação Geral</h3>
                 <Brain className="w-5 h-5 text-purple-400" />
               </div>
-              <p className="text-3xl font-bold text-white">93%</p>
+              <p className="text-3xl font-bold text-brand-text">93%</p>
               <p className="text-green-400 text-sm">+2% este mês</p>
             </div>
-            <div className="bg-slate-800 border border-slate-700 rounded-lg p-6">
+            <div className="bg-brand-surface border border-brand-border rounded-lg p-6">
               <div className="flex items-center justify-between mb-2">
-                <h3 className="text-white font-semibold">Crescimento</h3>
+                <h3 className="text-brand-text font-semibold">Crescimento</h3>
                 <TrendingUp className="w-5 h-5 text-yellow-400" />
               </div>
-              <p className="text-3xl font-bold text-white">+15%</p>
+              <p className="text-3xl font-bold text-brand-text">+15%</p>
               <p className="text-green-400 text-sm">vs mês anterior</p>
             </div>
           </div>
 
           {/* Gráficos de Performance */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div className="bg-slate-800 border border-slate-700 rounded-lg p-6">
-              <h3 className="text-white font-semibold mb-4">Performance por Eixo</h3>
+            <div className="bg-brand-surface border border-brand-border rounded-lg p-6">
+              <h3 className="text-brand-text font-semibold mb-4">Performance por Eixo</h3>
               <div className="space-y-3">
                 {eixoPerformance.map((eixo) => (
                   <div key={eixo.eixo} className="flex items-center justify-between">
-                    <span className="text-slate-300">{eixo.eixo}</span>
+                    <span className="text-brand-text-secondary">{eixo.eixo}</span>
                     <div className="flex items-center space-x-2">
-                      <div className="w-20 bg-slate-700 rounded-full h-2">
+                      <div className="w-20 bg-brand-surface-subtle rounded-full h-2">
                         <div 
                           className="bg-purple-500 h-2 rounded-full" 
                           style={{ width: `${eixo.satisfacao}%` }}
                         ></div>
                       </div>
-                      <span className="text-white font-semibold">{eixo.satisfacao}%</span>
+                      <span className="text-brand-text font-semibold">{eixo.satisfacao}%</span>
                     </div>
                   </div>
                 ))}
               </div>
             </div>
 
-            <div className="bg-slate-800 border border-slate-700 rounded-lg p-6">
-              <h3 className="text-white font-semibold mb-4">Engajamento por Tipo</h3>
+            <div className="bg-brand-surface border border-brand-border rounded-lg p-6">
+              <h3 className="text-brand-text font-semibold mb-4">Engajamento por Tipo</h3>
               <div className="space-y-3">
                 {usuarioPerformance.map((usuario) => (
                   <div key={usuario.tipo} className="flex items-center justify-between">
-                    <span className="text-slate-300">{usuario.tipo}</span>
+                    <span className="text-brand-text-secondary">{usuario.tipo}</span>
                     <div className="flex items-center space-x-2">
-                      <div className="w-20 bg-slate-700 rounded-full h-2">
+                      <div className="w-20 bg-brand-surface-subtle rounded-full h-2">
                         <div 
                           className="bg-blue-500 h-2 rounded-full" 
                           style={{ width: `${usuario.engajamento}%` }}
                         ></div>
                       </div>
-                      <span className="text-white font-semibold">{usuario.engajamento}%</span>
+                      <span className="text-brand-text font-semibold">{usuario.engajamento}%</span>
                     </div>
                   </div>
                 ))}

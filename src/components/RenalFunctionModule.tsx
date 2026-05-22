@@ -298,13 +298,13 @@ const RenalFunctionModule: React.FC<RenalFunctionModuleProps> = ({ patientId, pa
                                         onChange={(e) => { setPatientSearch(e.target.value); setDropdownOpen(true); }}
                                         onFocus={() => setDropdownOpen(true)}
                                         placeholder={patientsLoading ? 'Carregando...' : 'Buscar paciente...'}
-                                        className="w-56 pl-8 pr-8 py-2 rounded-lg bg-slate-900/80 border border-slate-700 text-white text-sm placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-emerald-500/50 transition-all"
+                                        className="w-56 pl-8 pr-8 py-2 rounded-lg bg-slate-900/80 border border-brand-border text-brand-text text-sm placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-emerald-500/50 transition-all"
                                     />
                                     {selectedPatientName && (
                                         <button
                                             type="button"
                                             onClick={handleClearPatient}
-                                            className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-500 hover:text-white transition-colors"
+                                            className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-500 hover:text-brand-text transition-colors"
                                         >
                                             <X className="w-3.5 h-3.5" />
                                         </button>
@@ -314,13 +314,13 @@ const RenalFunctionModule: React.FC<RenalFunctionModuleProps> = ({ patientId, pa
 
                             {/* Dropdown */}
                             {dropdownOpen && filteredPatients.length > 0 && (
-                                <div className="absolute top-full right-0 mt-1 w-72 rounded-xl border border-slate-700 bg-slate-900 shadow-2xl z-50 max-h-52 overflow-y-auto scrollbar-hide animate-in fade-in zoom-in-95 duration-200">
+                                <div className="absolute top-full right-0 mt-1 w-72 rounded-xl border border-brand-border bg-brand-bg shadow-2xl z-50 max-h-52 overflow-y-auto scrollbar-hide animate-in fade-in zoom-in-95 duration-200">
                                     {filteredPatients.map((p) => (
                                         <button
                                             key={p.id}
                                             type="button"
                                             onClick={() => handleSelectPatient(p)}
-                                            className={`w-full px-3 py-2.5 text-left text-sm hover:bg-emerald-500/10 flex items-center gap-2.5 transition-colors ${patientId === p.id ? 'bg-emerald-500/15 text-emerald-300' : 'text-white'
+                                            className={`w-full px-3 py-2.5 text-left text-sm hover:bg-emerald-500/10 flex items-center gap-2.5 transition-colors ${patientId === p.id ? 'bg-emerald-500/15 text-emerald-300' : 'text-brand-text'
                                                 }`}
                                         >
                                             <span className="w-7 h-7 rounded-full bg-emerald-500/20 flex items-center justify-center text-emerald-300 text-xs font-semibold border border-emerald-500/30">
@@ -332,7 +332,7 @@ const RenalFunctionModule: React.FC<RenalFunctionModuleProps> = ({ patientId, pa
                                 </div>
                             )}
                             {dropdownOpen && !patientsLoading && filteredPatients.length === 0 && patientSearch.trim() && (
-                                <div className="absolute top-full right-0 mt-1 w-72 rounded-xl border border-slate-700 bg-slate-900 shadow-2xl z-50 p-4 text-center text-sm text-slate-500">
+                                <div className="absolute top-full right-0 mt-1 w-72 rounded-xl border border-brand-border bg-brand-bg shadow-2xl z-50 p-4 text-center text-sm text-slate-500">
                                     Nenhum paciente encontrado
                                 </div>
                             )}
@@ -343,7 +343,7 @@ const RenalFunctionModule: React.FC<RenalFunctionModuleProps> = ({ patientId, pa
                             <button
                                 type="button"
                                 onClick={() => setShowConfig(!showConfig)}
-                                className={`p-2 rounded-lg border transition-all ${showConfig ? 'bg-emerald-500/15 border-emerald-500/30 text-emerald-400' : 'bg-slate-800/50 border-slate-700 text-slate-400 hover:text-white hover:border-slate-600'
+                                className={`p-2 rounded-lg border transition-all ${showConfig ? 'bg-emerald-500/15 border-emerald-500/30 text-emerald-400' : 'bg-slate-800/50 border-brand-border text-brand-text-muted hover:text-brand-text hover:border-slate-600'
                                     }`}
                                 title="Configurar idade e sexo do paciente"
                             >
@@ -372,22 +372,22 @@ const RenalFunctionModule: React.FC<RenalFunctionModuleProps> = ({ patientId, pa
                 {patientId && showConfig && (
                     <div className="mt-3 flex items-center gap-4 p-3 rounded-lg bg-slate-800/60 border border-slate-700/50 animate-in slide-in-from-top-1 duration-200">
                         <div className="flex items-center gap-2">
-                            <label className="text-xs text-slate-400 font-medium">Idade:</label>
+                            <label className="text-xs text-brand-text-muted font-medium">Idade:</label>
                             <input
                                 type="number"
                                 min={1}
                                 max={120}
                                 value={localAge}
                                 onChange={(e) => setLocalAge(parseInt(e.target.value) || 40)}
-                                className="w-16 px-2 py-1 rounded-md bg-slate-700 border border-slate-600 text-sm text-white focus:ring-1 focus:ring-emerald-500/50 focus:outline-none"
+                                className="w-16 px-2 py-1 rounded-md bg-brand-surface-subtle border border-slate-600 text-sm text-brand-text focus:ring-1 focus:ring-emerald-500/50 focus:outline-none"
                             />
                         </div>
                         <div className="flex items-center gap-2">
-                            <label className="text-xs text-slate-400 font-medium">Sexo:</label>
+                            <label className="text-xs text-brand-text-muted font-medium">Sexo:</label>
                             <select
                                 value={localGender}
                                 onChange={(e) => setLocalGender(e.target.value as 'male' | 'female')}
-                                className="px-2 py-1 rounded-md bg-slate-700 border border-slate-600 text-sm text-white focus:ring-1 focus:ring-emerald-500/50 focus:outline-none"
+                                className="px-2 py-1 rounded-md bg-brand-surface-subtle border border-slate-600 text-sm text-brand-text focus:ring-1 focus:ring-emerald-500/50 focus:outline-none"
                             >
                                 <option value="male">Masculino</option>
                                 <option value="female">Feminino</option>
@@ -406,8 +406,8 @@ const RenalFunctionModule: React.FC<RenalFunctionModuleProps> = ({ patientId, pa
                     <div className="w-16 h-16 bg-emerald-500/10 rounded-2xl flex items-center justify-center mb-5 border border-emerald-500/20 shadow-lg shadow-emerald-500/5">
                         <Activity className="w-8 h-8 text-emerald-400 opacity-70" />
                     </div>
-                    <h3 className="text-xl font-bold text-white tracking-tight mb-2">Selecione um paciente</h3>
-                    <p className="text-slate-400 text-sm max-w-md leading-relaxed mb-6">
+                    <h3 className="text-xl font-bold text-brand-text tracking-tight mb-2">Selecione um paciente</h3>
+                    <p className="text-brand-text-muted text-sm max-w-md leading-relaxed mb-6">
                         Módulo de função renal para uso clínico do profissional. O sistema calcula a TFG (CKD-EPI 2021) e classifica o estágio de doença renal automaticamente.
                     </p>
 
@@ -418,26 +418,26 @@ const RenalFunctionModule: React.FC<RenalFunctionModuleProps> = ({ patientId, pa
                                 <span className="w-5 h-5 rounded-full bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 text-[10px] font-bold flex items-center justify-center">1</span>
                                 <span className="text-xs font-bold text-slate-200">Buscar paciente</span>
                             </div>
-                            <p className="text-[11px] text-slate-400 leading-relaxed">Use o campo acima (nome ou CPF) para selecionar um paciente da sua carteira.</p>
+                            <p className="text-[11px] text-brand-text-muted leading-relaxed">Use o campo acima (nome ou CPF) para selecionar um paciente da sua carteira.</p>
                         </div>
                         <div className="bg-slate-800/40 border border-slate-700/50 rounded-lg p-3 text-left">
                             <div className="flex items-center gap-2 mb-1.5">
                                 <span className="w-5 h-5 rounded-full bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 text-[10px] font-bold flex items-center justify-center">2</span>
                                 <span className="text-xs font-bold text-slate-200">Registrar exame</span>
                             </div>
-                            <p className="text-[11px] text-slate-400 leading-relaxed">Insira creatinina (mg/dL), ureia opcional e data do exame.</p>
+                            <p className="text-[11px] text-brand-text-muted leading-relaxed">Insira creatinina (mg/dL), ureia opcional e data do exame.</p>
                         </div>
                         <div className="bg-slate-800/40 border border-slate-700/50 rounded-lg p-3 text-left">
                             <div className="flex items-center gap-2 mb-1.5">
                                 <span className="w-5 h-5 rounded-full bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 text-[10px] font-bold flex items-center justify-center">3</span>
                                 <span className="text-xs font-bold text-slate-200">TFG automática</span>
                             </div>
-                            <p className="text-[11px] text-slate-400 leading-relaxed">Sistema calcula TFG via CKD-EPI 2021 e estágio CKD (G1-G5).</p>
+                            <p className="text-[11px] text-brand-text-muted leading-relaxed">Sistema calcula TFG via CKD-EPI 2021 e estágio CKD (G1-G5).</p>
                         </div>
                     </div>
 
                     <p className="text-[11px] text-slate-500 max-w-md leading-relaxed">
-                        💡 <strong className="text-slate-400">Dica:</strong> além do registro manual aqui, a Nôa extrai exames mencionados pelo paciente na AEC e sugere automaticamente pra você aprovar (card "Sugestões Renais" no dashboard). Mini card de visualização pelo paciente em desenvolvimento.
+                        💡 <strong className="text-brand-text-muted">Dica:</strong> além do registro manual aqui, a Nôa extrai exames mencionados pelo paciente na AEC e sugere automaticamente pra você aprovar (card "Sugestões Renais" no dashboard). Mini card de visualização pelo paciente em desenvolvimento.
                     </p>
                 </div>
             )}
@@ -447,41 +447,41 @@ const RenalFunctionModule: React.FC<RenalFunctionModuleProps> = ({ patientId, pa
                 <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-8 flex-1">
                     {/* Left Column: Input */}
                     <div className="space-y-4">
-                        <h4 className="font-medium text-slate-300 flex items-center gap-2">
+                        <h4 className="font-medium text-brand-text-secondary flex items-center gap-2">
                             <TrendingUp className="w-4 h-4" /> Novo Registro
                         </h4>
 
                         <div className="grid grid-cols-2 gap-4">
                             <div>
-                                <label className="block text-xs font-medium text-slate-400 mb-1">Creatinina (mg/dL)</label>
+                                <label className="block text-xs font-medium text-brand-text-muted mb-1">Creatinina (mg/dL)</label>
                                 <input
                                     type="number"
                                     step="0.01"
                                     value={creatinine}
                                     onChange={(e) => setCreatinine(e.target.value)}
-                                    className="w-full px-3 py-2 bg-slate-700 rounded-md border border-slate-600 text-sm text-white focus:ring-emerald-500 focus:border-emerald-500 placeholder-slate-500"
+                                    className="w-full px-3 py-2 bg-brand-surface-subtle rounded-md border border-slate-600 text-sm text-brand-text focus:ring-emerald-500 focus:border-emerald-500 placeholder-slate-500"
                                     placeholder="Ex: 0.9"
                                 />
                             </div>
                             <div>
-                                <label className="block text-xs font-medium text-slate-400 mb-1">Ureia (mg/dL)</label>
+                                <label className="block text-xs font-medium text-brand-text-muted mb-1">Ureia (mg/dL)</label>
                                 <input
                                     type="number"
                                     value={urea}
                                     onChange={(e) => setUrea(e.target.value)}
-                                    className="w-full px-3 py-2 bg-slate-700 rounded-md border border-slate-600 text-sm text-white focus:ring-emerald-500 focus:border-emerald-500 placeholder-slate-500"
+                                    className="w-full px-3 py-2 bg-brand-surface-subtle rounded-md border border-slate-600 text-sm text-brand-text focus:ring-emerald-500 focus:border-emerald-500 placeholder-slate-500"
                                     placeholder="Ex: 35"
                                 />
                             </div>
                         </div>
 
                         <div>
-                            <label className="block text-xs font-medium text-slate-400 mb-1">Data do Exame</label>
+                            <label className="block text-xs font-medium text-brand-text-muted mb-1">Data do Exame</label>
                             <input
                                 type="date"
                                 value={examDate}
                                 onChange={(e) => setExamDate(e.target.value)}
-                                className="w-full px-3 py-2 bg-slate-700 rounded-md border border-slate-600 text-sm text-white focus:ring-emerald-500 focus:border-emerald-500"
+                                className="w-full px-3 py-2 bg-brand-surface-subtle rounded-md border border-slate-600 text-sm text-brand-text focus:ring-emerald-500 focus:border-emerald-500"
                             />
                         </div>
 
@@ -490,9 +490,9 @@ const RenalFunctionModule: React.FC<RenalFunctionModuleProps> = ({ patientId, pa
                             <div className={`p-4 rounded-lg border flex items-center justify-between animate-in fade-in duration-300 ${previewEgfr >= 60 ? 'bg-green-900/20 border-green-800' : 'bg-red-900/20 border-red-800'
                                 }`}>
                                 <div>
-                                    <p className="text-xs font-medium text-slate-400 uppercase tracking-wide">eTFG Estimada</p>
-                                    <div className="text-2xl font-bold text-white">
-                                        {previewEgfr} <span className="text-sm font-normal text-slate-400">mL/min/1.73m²</span>
+                                    <p className="text-xs font-medium text-brand-text-muted uppercase tracking-wide">eTFG Estimada</p>
+                                    <div className="text-2xl font-bold text-brand-text">
+                                        {previewEgfr} <span className="text-sm font-normal text-brand-text-muted">mL/min/1.73m²</span>
                                     </div>
                                     <p className="text-[10px] text-slate-500 mt-0.5">
                                         Calculado com {localAge} anos, {localGender === 'female' ? 'feminino' : 'masculino'}
@@ -515,7 +515,7 @@ const RenalFunctionModule: React.FC<RenalFunctionModuleProps> = ({ patientId, pa
                         <button
                             onClick={handleSave}
                             disabled={!creatinine || loading}
-                            className="w-full bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg py-2.5 text-sm font-medium transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-emerald-600/20"
+                            className="w-full bg-emerald-600 hover:bg-emerald-700 text-brand-text rounded-lg py-2.5 text-sm font-medium transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-emerald-600/20"
                         >
                             {loading ? 'Salvando...' : <><Save className="w-4 h-4" /> Registrar Exame</>}
                         </button>
@@ -523,7 +523,7 @@ const RenalFunctionModule: React.FC<RenalFunctionModuleProps> = ({ patientId, pa
 
                     {/* Right Column: History */}
                     <div className="border-l border-slate-700/50 pl-8 space-y-4">
-                        <h4 className="font-medium text-slate-300 flex items-center gap-2">
+                        <h4 className="font-medium text-brand-text-secondary flex items-center gap-2">
                             <History className="w-4 h-4" /> Histórico Renal
                             {exams.length > 0 && (
                                 <span className="text-xs text-slate-500 ml-auto">{exams.length} exame{exams.length > 1 ? 's' : ''}</span>
@@ -541,10 +541,10 @@ const RenalFunctionModule: React.FC<RenalFunctionModuleProps> = ({ patientId, pa
                                 {exams.map((exam) => {
                                     const stageInfo = getStageDescription(exam.drc_stage);
                                     return (
-                                        <div key={exam.id} className="p-3 rounded-lg border border-slate-700 bg-slate-800/50 hover:bg-slate-700/50 transition-colors group">
+                                        <div key={exam.id} className="p-3 rounded-lg border border-brand-border bg-slate-800/50 hover:bg-slate-700/50 transition-colors group">
                                             <div className="flex items-center justify-between">
                                                 <div>
-                                                    <p className="text-xs text-slate-400">{new Date(exam.exam_date).toLocaleDateString('pt-BR')}</p>
+                                                    <p className="text-xs text-brand-text-muted">{new Date(exam.exam_date).toLocaleDateString('pt-BR')}</p>
                                                     <p className="text-sm font-medium text-slate-200">
                                                         Cr: {exam.creatinine} <span className="text-slate-600">|</span> eTFG: {exam.egfr}
                                                         <span className="text-slate-600 ml-1">|</span>
@@ -664,8 +664,8 @@ const RenalFunctionModule: React.FC<RenalFunctionModuleProps> = ({ patientId, pa
                                                     strokeLinecap="round"
                                                 />
                                             </svg>
-                                            <span className="text-2xl font-black text-white leading-none">{displayEgfr}</span>
-                                            <span className="text-[10px] text-slate-400 mt-0.5">mL/min</span>
+                                            <span className="text-2xl font-black text-brand-text leading-none">{displayEgfr}</span>
+                                            <span className="text-[10px] text-brand-text-muted mt-0.5">mL/min</span>
                                         </div>
                                     </div>
 
@@ -689,7 +689,7 @@ const RenalFunctionModule: React.FC<RenalFunctionModuleProps> = ({ patientId, pa
                                                 </span>
                                             )}
                                         </div>
-                                        <p className="text-sm text-slate-300 font-medium">{stageInfo.desc}</p>
+                                        <p className="text-sm text-brand-text-secondary font-medium">{stageInfo.desc}</p>
                                         <p className="text-xs text-slate-500 mt-1 max-w-sm">{stageInfo.action}</p>
 
                                         {/* Mini sparkline */}

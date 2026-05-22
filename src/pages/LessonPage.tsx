@@ -97,16 +97,16 @@ const LessonPage: React.FC = () => {
 
     if (loading) {
         return (
-            <div className="min-h-screen bg-slate-900 flex items-center justify-center">
-                <div className="text-white text-lg">Carregando aula...</div>
+            <div className="min-h-screen bg-brand-bg flex items-center justify-center">
+                <div className="text-brand-text text-lg">Carregando aula...</div>
             </div>
         )
     }
 
     if (!lessonData) {
         return (
-            <div className="min-h-screen bg-slate-900 flex items-center justify-center">
-                <div className="text-white text-lg">Aula não encontrada</div>
+            <div className="min-h-screen bg-brand-bg flex items-center justify-center">
+                <div className="text-brand-text text-lg">Aula não encontrada</div>
             </div>
         )
     }

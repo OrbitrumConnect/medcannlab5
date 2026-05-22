@@ -293,8 +293,8 @@ const ChatAIResident: React.FC<ChatAIResidentProps> = ({
             <Brain className="w-5 h-5 text-purple-400" />
           </div>
           <div>
-            <h4 className="text-white font-semibold text-sm">IA Residente Nôa Esperança</h4>
-            <p className="text-slate-300 text-xs">
+            <h4 className="text-brand-text font-semibold text-sm">IA Residente Nôa Esperança</h4>
+            <p className="text-brand-text-secondary text-xs">
               {isProcessing ? 'Processando conversa...' : 'Presente e ouvindo'}
             </p>
           </div>
@@ -322,13 +322,13 @@ const ChatAIResident: React.FC<ChatAIResidentProps> = ({
       {aiSuggestion && (
         <div className="mt-3 p-3 bg-slate-800/50 rounded-lg border border-purple-500/20">
           <p className="text-xs text-purple-400 mb-1 font-semibold">Sugestão da IA:</p>
-          <p className="text-white text-sm">{aiSuggestion}</p>
+          <p className="text-brand-text text-sm">{aiSuggestion}</p>
         </div>
       )}
 
       {isListening && (
         <div className="mt-3 flex items-center space-x-2">
-          <div className="flex-1 h-1 bg-slate-700 rounded-full overflow-hidden">
+          <div className="flex-1 h-1 bg-brand-surface-subtle rounded-full overflow-hidden">
             <div className="h-full bg-red-500 animate-pulse" style={{ width: '50%' }}></div>
           </div>
           <span className="text-xs text-red-400">Gravando...</span>

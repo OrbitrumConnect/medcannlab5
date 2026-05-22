@@ -108,10 +108,10 @@ const Login: React.FC = () => {
         <div className="text-center">
           <div className="flex justify-center mb-4">
             <div className="w-16 h-16 bg-gradient-to-r from-primary-600 to-accent-600 rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-2xl">M</span>
+              <span className="text-brand-text font-bold text-2xl">M</span>
             </div>
           </div>
-          <h2 className="text-3xl font-bold text-white">
+          <h2 className="text-3xl font-bold text-brand-text">
             {isLogin ? 'Entrar' : 'Criar Conta'}
           </h2>
           <p className="mt-2 text-sm text-slate-200">
@@ -279,7 +279,7 @@ const Login: React.FC = () => {
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Mail className="h-5 w-5 text-slate-400" />
+                  <Mail className="h-5 w-5 text-brand-text-muted" />
                 </div>
                 <input
                   id="email"
@@ -301,7 +301,7 @@ const Login: React.FC = () => {
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Lock className="h-5 w-5 text-slate-400" />
+                  <Lock className="h-5 w-5 text-brand-text-muted" />
                 </div>
                 <input
                   id="password"
@@ -320,9 +320,9 @@ const Login: React.FC = () => {
                   onClick={() => setShowPassword(!showPassword)}
                 >
                   {showPassword ? (
-                    <EyeOff className="h-5 w-5 text-slate-400" />
+                    <EyeOff className="h-5 w-5 text-brand-text-muted" />
                   ) : (
-                    <Eye className="h-5 w-5 text-slate-400" />
+                    <Eye className="h-5 w-5 text-brand-text-muted" />
                   )}
                 </button>
               </div>

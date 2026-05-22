@@ -330,7 +330,7 @@ const Gamificacao: React.FC = () => {
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-slate-900 dark:text-white dark:text-slate-900 dark:text-white mb-2">
+          <h1 className="text-3xl font-bold text-slate-900 dark:text-brand-text dark:text-slate-900 dark:text-brand-text mb-2">
             Programa de Pontos e Engajamento
           </h1>
           <p className="text-gray-600 dark:text-gray-300">
@@ -366,28 +366,28 @@ const Gamificacao: React.FC = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               <div className="card p-6 text-center">
                 <span className="text-4xl mx-auto mb-2 block">🏆</span>
-                <div className="text-2xl font-bold text-slate-900 dark:text-white dark:text-slate-900 dark:text-white">
+                <div className="text-2xl font-bold text-slate-900 dark:text-brand-text dark:text-slate-900 dark:text-brand-text">
                   {userStats.totalPoints.toLocaleString()}
                 </div>
                 <div className="text-sm text-gray-600 dark:text-gray-300">Pontos Totais</div>
               </div>
               <div className="card p-6 text-center">
                 <span className="text-4xl mx-auto mb-2 block">👑</span>
-                <div className="text-2xl font-bold text-slate-900 dark:text-white dark:text-slate-900 dark:text-white">
+                <div className="text-2xl font-bold text-slate-900 dark:text-brand-text dark:text-slate-900 dark:text-brand-text">
                   Nível {userStats.level}
                 </div>
                 <div className="text-sm text-gray-600 dark:text-gray-300">Rank #{userStats.rank}</div>
               </div>
               <div className="card p-6 text-center">
                 <span className="text-4xl mx-auto mb-2 block">💎</span>
-                <div className="text-2xl font-bold text-slate-900 dark:text-white dark:text-slate-900 dark:text-white">
+                <div className="text-2xl font-bold text-slate-900 dark:text-brand-text dark:text-slate-900 dark:text-brand-text">
                   {userStats.nftsOwned}
                 </div>
                 <div className="text-sm text-gray-600 dark:text-gray-300">NFTs Coletados</div>
               </div>
               <div className="card p-6 text-center">
                 <span className="text-4xl mx-auto mb-2 block">🔥</span>
-                <div className="text-2xl font-bold text-slate-900 dark:text-white dark:text-slate-900 dark:text-white">
+                <div className="text-2xl font-bold text-slate-900 dark:text-brand-text dark:text-slate-900 dark:text-brand-text">
                   {userStats.streak}
                 </div>
                 <div className="text-sm text-gray-600 dark:text-gray-300">Dias Consecutivos</div>
@@ -396,7 +396,7 @@ const Gamificacao: React.FC = () => {
 
             {/* Recent Achievements */}
             <div className="card p-6">
-              <h3 className="text-lg font-semibold text-slate-900 dark:text-white dark:text-slate-900 dark:text-white mb-4">
+              <h3 className="text-lg font-semibold text-slate-900 dark:text-brand-text dark:text-slate-900 dark:text-brand-text mb-4">
                 Conquistas Recentes
               </h3>
               <div className="space-y-4">
@@ -408,7 +408,7 @@ const Gamificacao: React.FC = () => {
                       </div>
                     </div>
                     <div className="flex-1">
-                      <h4 className="font-medium text-slate-900 dark:text-white dark:text-slate-900 dark:text-white">
+                      <h4 className="font-medium text-slate-900 dark:text-brand-text dark:text-slate-900 dark:text-brand-text">
                         {achievement.title}
                       </h4>
                       <p className="text-sm text-gray-600 dark:text-gray-300">
@@ -430,7 +430,7 @@ const Gamificacao: React.FC = () => {
 
             {/* Daily Goals */}
             <div className="card p-6">
-              <h3 className="text-lg font-semibold text-slate-900 dark:text-white dark:text-slate-900 dark:text-white mb-4">
+              <h3 className="text-lg font-semibold text-slate-900 dark:text-brand-text dark:text-slate-900 dark:text-brand-text mb-4">
                 Metas de Hoje
               </h3>
               <div className="space-y-4">
@@ -446,7 +446,7 @@ const Gamificacao: React.FC = () => {
                         )}
                       </div>
                       <div>
-                        <h4 className="font-medium text-slate-900 dark:text-white dark:text-slate-900 dark:text-white">
+                        <h4 className="font-medium text-slate-900 dark:text-brand-text dark:text-slate-900 dark:text-brand-text">
                           {goal.title}
                         </h4>
                         <p className="text-sm text-gray-600 dark:text-gray-300">
@@ -485,7 +485,7 @@ const Gamificacao: React.FC = () => {
                     </div>
                     <div className="flex-1">
                       <div className="flex items-center justify-between mb-2">
-                        <h3 className="font-semibold text-slate-900 dark:text-white dark:text-slate-900 dark:text-white">
+                        <h3 className="font-semibold text-slate-900 dark:text-brand-text dark:text-slate-900 dark:text-brand-text">
                           {achievement.title}
                         </h3>
                         {achievement.isUnlocked && (
@@ -543,7 +543,7 @@ const Gamificacao: React.FC = () => {
                     <span className="text-6xl text-gray-400">💎</span>
                   </div>
                   <div className="text-center">
-                    <h3 className="font-semibold text-slate-900 dark:text-white dark:text-slate-900 dark:text-white mb-2">
+                    <h3 className="font-semibold text-slate-900 dark:text-brand-text dark:text-slate-900 dark:text-brand-text mb-2">
                       {nft.name}
                     </h3>
                     <p className="text-sm text-gray-600 dark:text-gray-300 mb-3">
@@ -553,7 +553,7 @@ const Gamificacao: React.FC = () => {
                       <span className={`px-2 py-1 text-xs rounded-full ${getRarityBg(nft.rarity)} ${getRarityColor(nft.rarity)}`}>
                         {nft.rarity}
                       </span>
-                      <span className="text-sm font-medium text-slate-900 dark:text-white dark:text-slate-900 dark:text-white">
+                      <span className="text-sm font-medium text-slate-900 dark:text-brand-text dark:text-slate-900 dark:text-brand-text">
                         {nft.value} pts
                       </span>
                     </div>
@@ -584,7 +584,7 @@ const Gamificacao: React.FC = () => {
         {activeTab === 'goals' && (
           <div className="space-y-6">
             <div className="card p-6">
-              <h3 className="text-lg font-semibold text-slate-900 dark:text-white dark:text-slate-900 dark:text-white mb-4">
+              <h3 className="text-lg font-semibold text-slate-900 dark:text-brand-text dark:text-slate-900 dark:text-brand-text mb-4">
                 Metas Diárias
               </h3>
               <div className="space-y-4">
@@ -600,7 +600,7 @@ const Gamificacao: React.FC = () => {
                         )}
                       </div>
                       <div>
-                        <h4 className="font-medium text-slate-900 dark:text-white dark:text-slate-900 dark:text-white">
+                        <h4 className="font-medium text-slate-900 dark:text-brand-text dark:text-slate-900 dark:text-brand-text">
                           {goal.title}
                         </h4>
                         <p className="text-sm text-gray-600 dark:text-gray-300">
@@ -629,7 +629,7 @@ const Gamificacao: React.FC = () => {
         {activeTab === 'leaderboard' && (
           <div className="space-y-6">
             <div className="card p-6">
-              <h3 className="text-lg font-semibold text-slate-900 dark:text-white dark:text-slate-900 dark:text-white mb-4">
+              <h3 className="text-lg font-semibold text-slate-900 dark:text-brand-text dark:text-slate-900 dark:text-brand-text mb-4">
                 Ranking da Comunidade
               </h3>
               <div className="space-y-4">
@@ -654,7 +654,7 @@ const Gamificacao: React.FC = () => {
                           {user.rank}
                         </div>
                         <div>
-                          <h4 className="font-medium text-slate-900 dark:text-white dark:text-slate-900 dark:text-white">
+                          <h4 className="font-medium text-slate-900 dark:text-brand-text dark:text-slate-900 dark:text-brand-text">
                             {user.name}
                           </h4>
                           <p className="text-sm text-gray-600 dark:text-gray-300">

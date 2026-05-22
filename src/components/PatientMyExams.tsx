@@ -49,7 +49,7 @@ const CATEGORY_META: Record<PatientDocument['category'], { label: string; icon: 
     imagem: { label: 'Imagem médica', icon: ImageIcon, color: 'text-purple-300' },
     relatorio: { label: 'Relatório', icon: FileText, color: 'text-emerald-300' },
     receita_antiga: { label: 'Receita anterior', icon: Pill, color: 'text-pink-300' },
-    outros: { label: 'Outros', icon: MoreHorizontal, color: 'text-slate-300' },
+    outros: { label: 'Outros', icon: MoreHorizontal, color: 'text-brand-text-secondary' },
 }
 
 const CATEGORY_FILTERS: { id: CategoryFilter; label: string }[] = [
@@ -225,8 +225,8 @@ export default function PatientMyExams({ onBack, embedded }: Props) {
                             <FileText className="w-5 h-5 text-emerald-300" />
                         </div>
                         <div>
-                            <h1 className="text-xl sm:text-2xl font-bold text-white tracking-tight">Meus Exames</h1>
-                            <p className="text-sm text-slate-400 mt-1 max-w-2xl leading-relaxed">
+                            <h1 className="text-xl sm:text-2xl font-bold text-brand-text tracking-tight">Meus Exames</h1>
+                            <p className="text-sm text-brand-text-muted mt-1 max-w-2xl leading-relaxed">
                                 Exames antigos seus (laudos, ressonância, EEG, receitas anteriores) que você quer ter à mão
                                 e opcionalmente compartilhar com seu médico vinculado.
                             </p>
@@ -243,13 +243,13 @@ export default function PatientMyExams({ onBack, embedded }: Props) {
                 {/* Stats compactas — copy honesta estado real */}
                 {!loading && docs.length > 0 && (
                     <div className="flex flex-wrap gap-3 mt-4 text-xs">
-                        <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-800/60 border border-slate-700">
+                        <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-800/60 border border-brand-border">
                             <FileText className="w-3.5 h-3.5 text-emerald-400" />
-                            <span className="text-slate-300">{docs.length} {docs.length === 1 ? 'arquivo' : 'arquivos'}</span>
+                            <span className="text-brand-text-secondary">{docs.length} {docs.length === 1 ? 'arquivo' : 'arquivos'}</span>
                         </div>
-                        <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-800/60 border border-slate-700">
+                        <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-800/60 border border-brand-border">
                             <Eye className="w-3.5 h-3.5 text-cyan-400" />
-                            <span className="text-slate-300">
+                            <span className="text-brand-text-secondary">
                                 {sharedCount}/{docs.length} compartilhados com seu médico
                             </span>
                         </div>
@@ -258,14 +258,14 @@ export default function PatientMyExams({ onBack, embedded }: Props) {
 
                 {/* Filtros categoria */}
                 {!loading && docs.length > 0 && (
-                    <div className="flex items-center gap-1 mt-4 p-1 rounded-lg bg-slate-800/60 border border-slate-700 overflow-x-auto">
+                    <div className="flex items-center gap-1 mt-4 p-1 rounded-lg bg-slate-800/60 border border-brand-border overflow-x-auto">
                         <Filter className="w-3.5 h-3.5 text-slate-500 ml-2 flex-shrink-0" />
                         {CATEGORY_FILTERS.map(f => (
                             <button
                                 key={f.id}
                                 onClick={() => setFilter(f.id)}
                                 className={`px-3 py-1 rounded text-[11px] font-semibold whitespace-nowrap transition-colors ${
-                                    filter === f.id ? 'bg-emerald-500/20 text-emerald-300' : 'text-slate-400 hover:text-slate-200'
+                                    filter === f.id ? 'bg-emerald-500/20 text-emerald-300' : 'text-brand-text-muted hover:text-slate-200'
                                 }`}
                             >
                                 {f.label}
@@ -284,12 +284,12 @@ export default function PatientMyExams({ onBack, embedded }: Props) {
 
             {/* Empty state honesto */}
             {!loading && docs.length === 0 && (
-                <div className="text-center py-16 px-6 bg-gradient-to-br from-slate-900/40 to-slate-800/20 rounded-2xl border border-slate-800">
+                <div className="text-center py-16 px-6 bg-gradient-to-br from-slate-900/40 to-slate-800/20 rounded-2xl border border-brand-border-subtle">
                     <div className="w-20 h-20 mx-auto mb-5 rounded-full bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center">
                         <FileText className="w-9 h-9 text-emerald-300/70" />
                     </div>
-                    <h3 className="text-lg font-bold text-white mb-2">Nenhum exame ainda</h3>
-                    <p className="text-sm text-slate-400 max-w-md mx-auto leading-relaxed mb-6">
+                    <h3 className="text-lg font-bold text-brand-text mb-2">Nenhum exame ainda</h3>
+                    <p className="text-sm text-brand-text-muted max-w-md mx-auto leading-relaxed mb-6">
                         Sobe seu primeiro PDF, foto de laudo ou imagem médica.
                         Você decide se compartilha com seu médico depois.
                     </p>
@@ -320,14 +320,14 @@ export default function PatientMyExams({ onBack, embedded }: Props) {
                                             <Icon className="w-4 h-4" />
                                         </div>
                                         <div className="flex-1 min-w-0">
-                                            <p className="text-xs font-semibold text-white truncate">{doc.original_name}</p>
+                                            <p className="text-xs font-semibold text-brand-text truncate">{doc.original_name}</p>
                                             <p className="text-[10px] text-slate-500 mt-0.5">
                                                 {formatDate(doc.uploaded_at)} · {formatBytes(doc.size_bytes)}
                                             </p>
                                         </div>
                                         {doc.shared_with_professional && (
                                             <div className="w-4 h-4 rounded-full bg-cyan-500/80 flex items-center justify-center" title="Compartilhado com seu médico">
-                                                <Eye className="w-2.5 h-2.5 text-white" />
+                                                <Eye className="w-2.5 h-2.5 text-brand-text" />
                                             </div>
                                         )}
                                     </div>
@@ -352,7 +352,7 @@ export default function PatientMyExams({ onBack, embedded }: Props) {
                 <div className="mt-6">
                     <button
                         onClick={onBack}
-                        className="text-sm text-slate-400 hover:text-white transition-colors"
+                        className="text-sm text-brand-text-muted hover:text-brand-text transition-colors"
                     >
                         ← Voltar
                     </button>
@@ -368,24 +368,24 @@ export default function PatientMyExams({ onBack, embedded }: Props) {
                     aria-modal="true"
                 >
                     <div
-                        className="w-full max-w-4xl bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl overflow-hidden max-h-[90vh] flex flex-col"
+                        className="w-full max-w-4xl bg-brand-bg border border-brand-border rounded-2xl shadow-2xl overflow-hidden max-h-[90vh] flex flex-col"
                         onClick={e => e.stopPropagation()}
                     >
                         {/* Header */}
-                        <div className="px-5 py-3 border-b border-slate-700 flex items-center justify-between bg-slate-800/50 flex-shrink-0">
+                        <div className="px-5 py-3 border-b border-brand-border flex items-center justify-between bg-slate-800/50 flex-shrink-0">
                             <div className="flex items-center gap-2 min-w-0">
                                 {(() => {
                                     const Icon = CATEGORY_META[selectedDoc.category].icon
                                     return <Icon className={`w-4 h-4 flex-shrink-0 ${CATEGORY_META[selectedDoc.category].color}`} />
                                 })()}
                                 <div className="min-w-0">
-                                    <h3 className="text-sm font-bold text-white truncate">{selectedDoc.original_name}</h3>
-                                    <p className="text-[11px] text-slate-400">
+                                    <h3 className="text-sm font-bold text-brand-text truncate">{selectedDoc.original_name}</h3>
+                                    <p className="text-[11px] text-brand-text-muted">
                                         {CATEGORY_META[selectedDoc.category].label} · {formatDate(selectedDoc.uploaded_at)} · {formatBytes(selectedDoc.size_bytes)}
                                     </p>
                                 </div>
                             </div>
-                            <button onClick={closeModal} className="p-1.5 hover:bg-slate-700 rounded-full text-slate-400 hover:text-white">
+                            <button onClick={closeModal} className="p-1.5 hover:bg-brand-surface-subtle rounded-full text-brand-text-muted hover:text-brand-text">
                                 <X className="w-4 h-4" />
                             </button>
                         </div>
@@ -406,12 +406,12 @@ export default function PatientMyExams({ onBack, embedded }: Props) {
                         </div>
 
                         {/* Consent toggle + ações */}
-                        <div className="px-4 py-3 border-t border-slate-700 bg-slate-800/30 flex-shrink-0 space-y-3">
-                            <div className="flex items-start gap-2 p-2.5 rounded-lg bg-slate-800/40 border border-slate-700">
-                                <Eye className="w-3.5 h-3.5 text-slate-400 mt-0.5 flex-shrink-0" />
+                        <div className="px-4 py-3 border-t border-brand-border bg-slate-800/30 flex-shrink-0 space-y-3">
+                            <div className="flex items-start gap-2 p-2.5 rounded-lg bg-slate-800/40 border border-brand-border">
+                                <Eye className="w-3.5 h-3.5 text-brand-text-muted mt-0.5 flex-shrink-0" />
                                 <div className="flex-1 min-w-0">
-                                    <div className="text-[11px] font-semibold text-white mb-0.5">Permitir visualização clínica</div>
-                                    <p className="text-[10px] text-slate-400 leading-relaxed mb-2">
+                                    <div className="text-[11px] font-semibold text-brand-text mb-0.5">Permitir visualização clínica</div>
+                                    <p className="text-[10px] text-brand-text-muted leading-relaxed mb-2">
                                         {selectedDoc.shared_with_professional
                                             ? 'Este exame está visível para seus médicos vinculados.'
                                             : 'Por padrão, apenas você vê. Libere para que seu médico vinculado também possa visualizá-lo.'}
@@ -421,7 +421,7 @@ export default function PatientMyExams({ onBack, embedded }: Props) {
                                             onClick={() => handleToggleShare(selectedDoc)}
                                             disabled={togglingShareId === selectedDoc.id}
                                             className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors disabled:opacity-50 ${
-                                                selectedDoc.shared_with_professional ? 'bg-emerald-500/80' : 'bg-slate-700'
+                                                selectedDoc.shared_with_professional ? 'bg-emerald-500/80' : 'bg-brand-surface-subtle'
                                             }`}
                                             role="switch"
                                             aria-checked={selectedDoc.shared_with_professional}
@@ -502,10 +502,10 @@ function UploadModal({ onClose, onUpload, uploading }: {
 
     return (
         <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm" onClick={onClose}>
-            <div className="w-full max-w-md bg-slate-900 border border-slate-700 rounded-2xl p-5 space-y-4" onClick={e => e.stopPropagation()}>
+            <div className="w-full max-w-md bg-brand-bg border border-brand-border rounded-2xl p-5 space-y-4" onClick={e => e.stopPropagation()}>
                 <div className="flex items-center justify-between">
-                    <h3 className="text-base font-bold text-white">Adicionar exame</h3>
-                    <button onClick={onClose} disabled={uploading} className="text-slate-400 hover:text-white disabled:opacity-50">
+                    <h3 className="text-base font-bold text-brand-text">Adicionar exame</h3>
+                    <button onClick={onClose} disabled={uploading} className="text-brand-text-muted hover:text-brand-text disabled:opacity-50">
                         <X className="w-4 h-4" />
                     </button>
                 </div>
@@ -517,7 +517,7 @@ function UploadModal({ onClose, onUpload, uploading }: {
                     onDragLeave={() => setDragActive(false)}
                     onDrop={handleDrop}
                     className={`block border-2 border-dashed rounded-xl p-6 text-center cursor-pointer transition-colors ${
-                        dragActive ? 'border-emerald-500/60 bg-emerald-500/5' : 'border-slate-700 hover:border-emerald-500/40'
+                        dragActive ? 'border-emerald-500/60 bg-emerald-500/5' : 'border-brand-border hover:border-emerald-500/40'
                     }`}
                 >
                     <input
@@ -531,13 +531,13 @@ function UploadModal({ onClose, onUpload, uploading }: {
                     {file ? (
                         <div className="space-y-1">
                             <FileText className="w-8 h-8 text-emerald-400 mx-auto" />
-                            <p className="text-sm font-semibold text-white truncate">{file.name}</p>
+                            <p className="text-sm font-semibold text-brand-text truncate">{file.name}</p>
                             <p className="text-xs text-slate-500">{formatBytes(file.size)}</p>
                         </div>
                     ) : (
                         <div className="space-y-1">
                             <Upload className="w-8 h-8 text-slate-500 mx-auto" />
-                            <p className="text-xs text-slate-400">Clique ou arraste o arquivo aqui</p>
+                            <p className="text-xs text-brand-text-muted">Clique ou arraste o arquivo aqui</p>
                             <p className="text-[10px] text-slate-600">PDF, JPG, PNG, WebP, GIF — até 20MB</p>
                         </div>
                     )}
@@ -545,7 +545,7 @@ function UploadModal({ onClose, onUpload, uploading }: {
 
                 {/* Categoria */}
                 <div>
-                    <label className="block text-xs font-semibold text-slate-300 mb-1.5">Categoria</label>
+                    <label className="block text-xs font-semibold text-brand-text-secondary mb-1.5">Categoria</label>
                     <div className="grid grid-cols-2 gap-1.5">
                         {(Object.keys(CATEGORY_META) as PatientDocument['category'][]).map(cat => {
                             const meta = CATEGORY_META[cat]
@@ -557,7 +557,7 @@ function UploadModal({ onClose, onUpload, uploading }: {
                                     className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-colors ${
                                         category === cat
                                             ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40'
-                                            : 'bg-slate-800/40 text-slate-300 border border-slate-700 hover:border-slate-600'
+                                            : 'bg-slate-800/40 text-brand-text-secondary border border-brand-border hover:border-slate-600'
                                     }`}
                                 >
                                     <Icon className="w-3.5 h-3.5" />
@@ -570,7 +570,7 @@ function UploadModal({ onClose, onUpload, uploading }: {
 
                 {/* Descrição (opcional) */}
                 <div>
-                    <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+                    <label className="block text-xs font-semibold text-brand-text-secondary mb-1.5">
                         Descrição (opcional)
                     </label>
                     <input
@@ -580,7 +580,7 @@ function UploadModal({ onClose, onUpload, uploading }: {
                         placeholder="Ex: Ressonância de 2024, EEG da crise de janeiro..."
                         maxLength={200}
                         disabled={uploading}
-                        className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-xs text-white placeholder:text-slate-500 focus:outline-none focus:border-emerald-500/40"
+                        className="w-full px-3 py-2 bg-brand-surface border border-brand-border rounded-lg text-xs text-brand-text placeholder:text-slate-500 focus:outline-none focus:border-emerald-500/40"
                     />
                 </div>
 
@@ -589,7 +589,7 @@ function UploadModal({ onClose, onUpload, uploading }: {
                     <button
                         onClick={onClose}
                         disabled={uploading}
-                        className="px-3 py-1.5 text-xs text-slate-400 hover:text-white disabled:opacity-50"
+                        className="px-3 py-1.5 text-xs text-brand-text-muted hover:text-brand-text disabled:opacity-50"
                     >
                         Cancelar
                     </button>

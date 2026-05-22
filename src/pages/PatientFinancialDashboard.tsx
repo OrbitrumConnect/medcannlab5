@@ -273,15 +273,15 @@ export default function PatientFinancialDashboard() {
   if (!isPaid && !subscription) {
     return (
       <div className="min-h-screen flex items-center justify-center px-4" style={{ background: 'linear-gradient(135deg, rgba(10,25,47,0.98) 0%, rgba(15,35,55,0.95) 50%, rgba(10,40,35,0.92) 100%)' }}>
-        <div className="bg-slate-800/80 rounded-2xl p-8 max-w-md text-center border border-slate-700">
+        <div className="bg-slate-800/80 rounded-2xl p-8 max-w-md text-center border border-brand-border">
           <Shield className="w-16 h-16 text-emerald-400 mx-auto mb-4" />
-          <h2 className="text-2xl font-bold text-white mb-2">Área Exclusiva</h2>
-          <p className="text-slate-300 mb-6">
+          <h2 className="text-2xl font-bold text-brand-text mb-2">Área Exclusiva</h2>
+          <p className="text-brand-text-secondary mb-6">
             Esta área é exclusiva para assinantes. Assine um plano para acessar sua gestão financeira completa.
           </p>
           <button
             onClick={() => navigate('/app/subscription-plans')}
-            className="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-3 rounded-xl font-semibold transition-colors"
+            className="w-full bg-emerald-600 hover:bg-emerald-700 text-brand-text py-3 rounded-xl font-semibold transition-colors"
           >
             Ver Planos Disponíveis
           </button>
@@ -311,11 +311,11 @@ export default function PatientFinancialDashboard() {
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
-            <h1 className="text-2xl md:text-3xl font-bold text-white flex items-center gap-3">
+            <h1 className="text-2xl md:text-3xl font-bold text-brand-text flex items-center gap-3">
               <Crown className="w-8 h-8 text-amber-400" />
               Gestão Financeira
             </h1>
-            <p className="text-slate-400 mt-1">
+            <p className="text-brand-text-muted mt-1">
               Acompanhe seu plano, pontos, descontos e benefícios
             </p>
           </div>
@@ -335,9 +335,9 @@ export default function PatientFinancialDashboard() {
           <div className="rounded-2xl p-5 border" style={cardStyle}>
             <div className="flex items-center gap-2 mb-3">
               <Calendar className="w-5 h-5 text-emerald-400" />
-              <span className="text-xs text-slate-400 uppercase tracking-wide">Plano</span>
+              <span className="text-xs text-brand-text-muted uppercase tracking-wide">Plano</span>
             </div>
-            <p className="text-lg font-bold text-white mb-1">
+            <p className="text-lg font-bold text-brand-text mb-1">
               {subscription?.plan_name || 'Premium'}
             </p>
             {daysUntilExpiry !== null && (
@@ -356,23 +356,23 @@ export default function PatientFinancialDashboard() {
           <div className="rounded-2xl p-5 border" style={cardStyle}>
             <div className="flex items-center gap-2 mb-3">
               <Award className="w-5 h-5 text-amber-400" />
-              <span className="text-xs text-slate-400 uppercase tracking-wide">XP & Ranking</span>
+              <span className="text-xs text-brand-text-muted uppercase tracking-wide">XP & Ranking</span>
             </div>
-            <p className="text-lg font-bold text-white mb-1">
+            <p className="text-lg font-bold text-brand-text mb-1">
               {xp.toLocaleString('pt-BR')} XP
             </p>
             <div className="flex items-center gap-2">
               <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
                 currentTier.label === 'Diamante' ? 'bg-purple-500/20 text-purple-300' :
                 currentTier.label === 'Ouro' ? 'bg-amber-500/20 text-amber-300' :
-                currentTier.label === 'Prata' ? 'bg-slate-400/20 text-slate-300' :
+                currentTier.label === 'Prata' ? 'bg-slate-400/20 text-brand-text-secondary' :
                 currentTier.label === 'Bronze' ? 'bg-orange-500/20 text-orange-300' :
-                'bg-slate-600/20 text-slate-400'
+                'bg-slate-600/20 text-brand-text-muted'
               }`}>
                 {currentTier.label}
               </span>
               {ranking.position && (
-                <span className="text-xs text-slate-400">#{ranking.position}</span>
+                <span className="text-xs text-brand-text-muted">#{ranking.position}</span>
               )}
             </div>
           </div>
@@ -381,7 +381,7 @@ export default function PatientFinancialDashboard() {
           <div className="rounded-2xl p-5 border" style={cardStyle}>
             <div className="flex items-center gap-2 mb-3">
               <Percent className="w-5 h-5 text-emerald-400" />
-              <span className="text-xs text-slate-400 uppercase tracking-wide">Desconto</span>
+              <span className="text-xs text-brand-text-muted uppercase tracking-wide">Desconto</span>
             </div>
             <p className="text-lg font-bold text-emerald-400 mb-1">
               {totalDiscount}% OFF
@@ -398,7 +398,7 @@ export default function PatientFinancialDashboard() {
           <div className="rounded-2xl p-5 border" style={cardStyle}>
             <div className="flex items-center gap-2 mb-3">
               <Coins className="w-5 h-5 text-green-400" />
-              <span className="text-xs text-slate-400 uppercase tracking-wide">Cashback</span>
+              <span className="text-xs text-brand-text-muted uppercase tracking-wide">Cashback</span>
             </div>
             <p className="text-lg font-bold text-green-400 mb-1">
               R$ {cashbackAccumulated.toFixed(2)}
@@ -417,15 +417,15 @@ export default function PatientFinancialDashboard() {
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
               <TrendingUp className="w-5 h-5 text-emerald-400" />
-              <span className="text-sm font-semibold text-white">Progresso de Desconto por XP</span>
+              <span className="text-sm font-semibold text-brand-text">Progresso de Desconto por XP</span>
             </div>
             {nextTier && (
-              <span className="text-xs text-slate-400">
+              <span className="text-xs text-brand-text-muted">
                 Próximo nível: {nextTier.label} ({nextTier.discount}% desc.) — faltam {(nextTier.minXp - xp).toLocaleString('pt-BR')} XP
               </span>
             )}
           </div>
-          <div className="w-full bg-slate-700 rounded-full h-3 mb-3">
+          <div className="w-full bg-brand-surface-subtle rounded-full h-3 mb-3">
             <div
               className="h-3 rounded-full transition-all duration-500"
               style={{
@@ -448,19 +448,19 @@ export default function PatientFinancialDashboard() {
           <div className="rounded-2xl p-5 border" style={cardStyle}>
             <div className="flex items-center gap-2 mb-4">
               <Share2 className="w-5 h-5 text-blue-400" />
-              <span className="text-sm font-semibold text-white">Sistema de Indicação</span>
+              <span className="text-sm font-semibold text-brand-text">Sistema de Indicação</span>
             </div>
 
             {referral.code ? (
               <>
                 <div className="flex items-center gap-2 mb-4">
                   <div className="flex-1 bg-slate-700/50 px-4 py-2.5 rounded-lg border border-slate-600">
-                    <p className="text-[10px] text-slate-400 mb-0.5">Seu código de indicação</p>
-                    <p className="text-sm font-mono font-bold text-white">{referral.code}</p>
+                    <p className="text-[10px] text-brand-text-muted mb-0.5">Seu código de indicação</p>
+                    <p className="text-sm font-mono font-bold text-brand-text">{referral.code}</p>
                   </div>
                   <button
                     onClick={copyReferralCode}
-                    className="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs rounded-lg font-semibold transition-colors"
+                    className="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-brand-text text-xs rounded-lg font-semibold transition-colors"
                   >
                     Copiar
                   </button>
@@ -468,16 +468,16 @@ export default function PatientFinancialDashboard() {
 
                 <div className="grid grid-cols-3 gap-3">
                   <div className="text-center p-3 bg-slate-700/30 rounded-xl">
-                    <p className="text-lg font-bold text-white">{referral.total_referrals}</p>
-                    <p className="text-[10px] text-slate-400">Indicados</p>
+                    <p className="text-lg font-bold text-brand-text">{referral.total_referrals}</p>
+                    <p className="text-[10px] text-brand-text-muted">Indicados</p>
                   </div>
                   <div className="text-center p-3 bg-slate-700/30 rounded-xl">
                     <p className="text-lg font-bold text-emerald-400">{referral.active_referrals}</p>
-                    <p className="text-[10px] text-slate-400">Ativos</p>
+                    <p className="text-[10px] text-brand-text-muted">Ativos</p>
                   </div>
                   <div className="text-center p-3 bg-slate-700/30 rounded-xl">
                     <p className="text-lg font-bold text-green-400">R$ {referral.total_bonus.toFixed(2)}</p>
-                    <p className="text-[10px] text-slate-400">Bônus</p>
+                    <p className="text-[10px] text-brand-text-muted">Bônus</p>
                   </div>
                 </div>
 
@@ -488,7 +488,7 @@ export default function PatientFinancialDashboard() {
             ) : (
               <div className="text-center py-6">
                 <Gift className="w-10 h-10 text-slate-500 mx-auto mb-2" />
-                <p className="text-sm text-slate-400">Código de indicação será gerado automaticamente.</p>
+                <p className="text-sm text-brand-text-muted">Código de indicação será gerado automaticamente.</p>
               </div>
             )}
           </div>
@@ -497,47 +497,47 @@ export default function PatientFinancialDashboard() {
           <div className="rounded-2xl p-5 border" style={cardStyle}>
             <div className="flex items-center gap-2 mb-4">
               <CreditCard className="w-5 h-5 text-emerald-400" />
-              <span className="text-sm font-semibold text-white">Detalhes da Assinatura</span>
+              <span className="text-sm font-semibold text-brand-text">Detalhes da Assinatura</span>
             </div>
 
             {subscription ? (
               <div className="space-y-3">
                 <div className="flex justify-between text-sm">
-                  <span className="text-slate-400">Plano</span>
-                  <span className="text-white font-semibold">{subscription.plan_name}</span>
+                  <span className="text-brand-text-muted">Plano</span>
+                  <span className="text-brand-text font-semibold">{subscription.plan_name}</span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-slate-400">Mensalidade</span>
-                  <span className="text-white font-semibold">R$ {subscription.monthly_price?.toFixed(2) || '—'}</span>
+                  <span className="text-brand-text-muted">Mensalidade</span>
+                  <span className="text-brand-text font-semibold">R$ {subscription.monthly_price?.toFixed(2) || '—'}</span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-slate-400">Status</span>
+                  <span className="text-brand-text-muted">Status</span>
                   <span className={`font-semibold ${subscription.status === 'active' ? 'text-emerald-400' : 'text-amber-400'}`}>
                     {subscription.status === 'active' ? 'Ativo' : subscription.status}
                   </span>
                 </div>
                 {subscription.started_at && (
                   <div className="flex justify-between text-sm">
-                    <span className="text-slate-400">Início</span>
-                    <span className="text-white">{format(parseISO(subscription.started_at), "dd/MM/yyyy", { locale: ptBR })}</span>
+                    <span className="text-brand-text-muted">Início</span>
+                    <span className="text-brand-text">{format(parseISO(subscription.started_at), "dd/MM/yyyy", { locale: ptBR })}</span>
                   </div>
                 )}
                 {subscription.expires_at && (
                   <div className="flex justify-between text-sm">
-                    <span className="text-slate-400">Expira em</span>
-                    <span className={`font-semibold ${daysUntilExpiry && daysUntilExpiry > 15 ? 'text-white' : 'text-amber-400'}`}>
+                    <span className="text-brand-text-muted">Expira em</span>
+                    <span className={`font-semibold ${daysUntilExpiry && daysUntilExpiry > 15 ? 'text-brand-text' : 'text-amber-400'}`}>
                       {format(parseISO(subscription.expires_at), "dd/MM/yyyy", { locale: ptBR })}
                     </span>
                   </div>
                 )}
                 <div className="flex justify-between text-sm">
-                  <span className="text-slate-400">Renovação Automática</span>
-                  <span className={subscription.auto_renew ? 'text-emerald-400' : 'text-slate-400'}>
+                  <span className="text-brand-text-muted">Renovação Automática</span>
+                  <span className={subscription.auto_renew ? 'text-emerald-400' : 'text-brand-text-muted'}>
                     {subscription.auto_renew ? 'Sim' : 'Não'}
                   </span>
                 </div>
 
-                <div className="mt-4 pt-3 border-t border-slate-700">
+                <div className="mt-4 pt-3 border-t border-brand-border">
                   <p className="text-[10px] text-slate-500">
                     Conforme Art. 49 do CDC, você pode cancelar sua assinatura em até 7 dias após contratação sem custos. 
                     Após este período, o cancelamento será efetivado ao final do ciclo vigente.
@@ -547,7 +547,7 @@ export default function PatientFinancialDashboard() {
             ) : (
               <div className="text-center py-6">
                 <AlertCircle className="w-10 h-10 text-amber-400 mx-auto mb-2" />
-                <p className="text-sm text-slate-400">Status: Pago/VIP</p>
+                <p className="text-sm text-brand-text-muted">Status: Pago/VIP</p>
                 <p className="text-xs text-slate-500 mt-1">Dados detalhados de assinatura não disponíveis.</p>
               </div>
             )}
@@ -558,8 +558,8 @@ export default function PatientFinancialDashboard() {
         <div className="rounded-2xl p-5 border" style={cardStyle}>
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
-              <Clock className="w-5 h-5 text-slate-400" />
-              <span className="text-sm font-semibold text-white">Histórico Financeiro</span>
+              <Clock className="w-5 h-5 text-brand-text-muted" />
+              <span className="text-sm font-semibold text-brand-text">Histórico Financeiro</span>
             </div>
             <span className="text-xs text-slate-500">{transactions.length} transações</span>
           </div>
@@ -579,7 +579,7 @@ export default function PatientFinancialDashboard() {
                        <CreditCard className="w-4 h-4 text-emerald-400" />}
                     </div>
                     <div>
-                      <p className="text-sm text-white">{tx.description}</p>
+                      <p className="text-sm text-brand-text">{tx.description}</p>
                       <p className="text-[10px] text-slate-500">
                         {format(parseISO(tx.created_at), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}
                       </p>
@@ -589,7 +589,7 @@ export default function PatientFinancialDashboard() {
                     <p className={`text-sm font-semibold ${
                       tx.type === 'bonus' ? 'text-green-400' :
                       tx.type === 'refund' ? 'text-red-400' :
-                      'text-white'
+                      'text-brand-text'
                     }`}>
                       {tx.type === 'bonus' ? '+' : tx.type === 'refund' ? '-' : ''}R$ {Math.abs(tx.amount).toFixed(2)}
                     </p>
@@ -610,7 +610,7 @@ export default function PatientFinancialDashboard() {
           ) : (
             <div className="text-center py-8">
               <Clock className="w-10 h-10 text-slate-600 mx-auto mb-2" />
-              <p className="text-sm text-slate-400">Nenhuma transação registrada ainda.</p>
+              <p className="text-sm text-brand-text-muted">Nenhuma transação registrada ainda.</p>
             </div>
           )}
         </div>
@@ -618,7 +618,7 @@ export default function PatientFinancialDashboard() {
         {/* Avisos legais */}
         <div className="rounded-2xl p-4 border border-slate-700/50 bg-slate-800/30">
           <p className="text-[10px] text-slate-500 leading-relaxed">
-            <strong className="text-slate-400">Informações legais:</strong> Os valores apresentados estão em conformidade com o 
+            <strong className="text-brand-text-muted">Informações legais:</strong> Os valores apresentados estão em conformidade com o 
             Código de Defesa do Consumidor (Lei nº 8.078/90). O cashback é calculado sobre o valor efetivamente pago e pode ser 
             utilizado conforme as regras do programa. Os descontos por XP são cumulativos com o desconto do plano, limitados ao 
             máximo previsto nas condições de uso. LGPD: seus dados financeiros são tratados conforme a Lei nº 13.709/18. 

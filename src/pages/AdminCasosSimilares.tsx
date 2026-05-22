@@ -176,14 +176,14 @@ const TrailPanel: React.FC<TrailPanelProps> = ({
   return (
     <div className="bg-slate-800/30 border border-slate-700/50 rounded-xl p-4">
       <div className="flex items-center justify-between mb-3">
-        <h3 className="text-xs font-bold text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
+        <h3 className="text-xs font-bold text-brand-text-secondary uppercase tracking-wider flex items-center gap-1.5">
           <Clock className="w-3.5 h-3.5 text-purple-400" />
           Trilha de Pesquisa
         </h3>
         {caseOpens.length > 0 && (
           <button
             onClick={onClearCases}
-            className="text-[10px] text-slate-500 hover:text-slate-300"
+            className="text-[10px] text-slate-500 hover:text-brand-text-secondary"
             title="Limpar histórico de casos abertos"
           >
             limpar
@@ -198,7 +198,7 @@ const TrailPanel: React.FC<TrailPanelProps> = ({
             className={`px-2.5 py-1 text-[10px] uppercase tracking-wider font-semibold rounded-full transition-colors ${
               filter === f
                 ? 'bg-purple-500/20 text-purple-200 border border-purple-500/40'
-                : 'bg-slate-800/50 text-slate-500 border border-slate-700 hover:text-slate-300'
+                : 'bg-slate-800/50 text-slate-500 border border-brand-border hover:text-brand-text-secondary'
             }`}
           >
             {f === 'today' ? 'Hoje' : f === 'week' ? '7 dias' : '30 dias'}
@@ -229,7 +229,7 @@ const TrailPanel: React.FC<TrailPanelProps> = ({
                     >
                       <Search className="w-3 h-3 text-purple-400 flex-shrink-0 mt-0.5" />
                       <div className="flex-1 min-w-0">
-                        <div className="text-[11px] text-slate-300 group-hover:text-purple-200 truncate">
+                        <div className="text-[11px] text-brand-text-secondary group-hover:text-purple-200 truncate">
                           buscou <span className="font-semibold">"{item.data.term}"</span>
                         </div>
                         <div className="text-[9px] text-slate-600">
@@ -247,7 +247,7 @@ const TrailPanel: React.FC<TrailPanelProps> = ({
                     >
                       <Eye className="w-3 h-3 text-emerald-400 flex-shrink-0 mt-0.5" />
                       <div className="flex-1 min-w-0">
-                        <div className="text-[11px] text-slate-300 group-hover:text-emerald-200 truncate">
+                        <div className="text-[11px] text-brand-text-secondary group-hover:text-emerald-200 truncate">
                           abriu <span className="font-semibold">{item.data.patientName}</span>
                         </div>
                         <div className="text-[9px] text-slate-600 truncate">
@@ -347,7 +347,7 @@ const LiteratureReport: React.FC<LiteratureReportProps> = ({ articles, total, qu
   if (articles.length === 0) {
     return (
       <div className="bg-slate-800/40 border border-slate-700/50 rounded-lg p-4 text-center">
-        <p className="text-xs text-slate-400">
+        <p className="text-xs text-brand-text-muted">
           Nenhum resultado pra "{query}"
         </p>
         <p className="text-[10px] text-slate-600 mt-1">
@@ -392,7 +392,7 @@ const LiteratureReport: React.FC<LiteratureReportProps> = ({ articles, total, qu
           <BarChart3 className="w-4 h-4 text-indigo-400" />
           <h4 className="text-xs font-bold text-indigo-200 uppercase tracking-wider">Relatório estrutural</h4>
         </div>
-        <span className="text-[10px] text-slate-400 tabular-nums">
+        <span className="text-[10px] text-brand-text-muted tabular-nums">
           {articles.length} mostrados · {total.toLocaleString('pt-BR')} no PubMed
         </span>
       </div>
@@ -402,19 +402,19 @@ const LiteratureReport: React.FC<LiteratureReportProps> = ({ articles, total, qu
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
           <div className="bg-slate-900/60 border border-slate-700/40 rounded-md px-2 py-1.5">
             <div className="text-[9px] uppercase tracking-wider text-slate-500 font-semibold">Total PubMed</div>
-            <div className="text-sm font-bold text-white tabular-nums">{total.toLocaleString('pt-BR')}</div>
+            <div className="text-sm font-bold text-brand-text tabular-nums">{total.toLocaleString('pt-BR')}</div>
           </div>
           <div className="bg-slate-900/60 border border-slate-700/40 rounded-md px-2 py-1.5">
             <div className="text-[9px] uppercase tracking-wider text-slate-500 font-semibold">Últimos 5 anos</div>
-            <div className="text-sm font-bold text-white tabular-nums">{last5}/{articles.length}</div>
+            <div className="text-sm font-bold text-brand-text tabular-nums">{last5}/{articles.length}</div>
           </div>
           <div className="bg-slate-900/60 border border-slate-700/40 rounded-md px-2 py-1.5">
             <div className="text-[9px] uppercase tracking-wider text-slate-500 font-semibold">Último ano</div>
-            <div className="text-sm font-bold text-white tabular-nums">{last1}/{articles.length}</div>
+            <div className="text-sm font-bold text-brand-text tabular-nums">{last1}/{articles.length}</div>
           </div>
           <div className="bg-slate-900/60 border border-slate-700/40 rounded-md px-2 py-1.5">
             <div className="text-[9px] uppercase tracking-wider text-slate-500 font-semibold">Top journal</div>
-            <div className="text-[10px] font-semibold text-white truncate" title={topJournals[0]?.[0] || '—'}>
+            <div className="text-[10px] font-semibold text-brand-text truncate" title={topJournals[0]?.[0] || '—'}>
               {topJournals[0]?.[0] || '—'}
               {topJournals[0] && <span className="text-slate-500 ml-1">({topJournals[0][1]})</span>}
             </div>
@@ -451,7 +451,7 @@ const LiteratureReport: React.FC<LiteratureReportProps> = ({ articles, total, qu
                   href={art.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-slate-300 hover:text-indigo-200 hover:underline inline-flex items-start gap-1 group"
+                  className="text-brand-text-secondary hover:text-indigo-200 hover:underline inline-flex items-start gap-1 group"
                 >
                   <span className="text-slate-600 mt-0.5 group-hover:text-indigo-400">▸</span>
                   <span className="flex-1">
@@ -480,7 +480,7 @@ const LiteratureReport: React.FC<LiteratureReportProps> = ({ articles, total, qu
             // Renderiza Outros com sub-grupos
             return (
               <div key={level}>
-                <h5 className="text-[11px] font-bold text-slate-300 uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
+                <h5 className="text-[11px] font-bold text-brand-text-secondary uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
                   <span>{EVIDENCE_ICON[level]}</span>
                   {EVIDENCE_LABELS[level]}
                   <span className="text-slate-500 font-normal tabular-nums">({list.length})</span>
@@ -508,7 +508,7 @@ const LiteratureReport: React.FC<LiteratureReportProps> = ({ articles, total, qu
 
           return (
             <div key={level}>
-              <h5 className="text-[11px] font-bold text-slate-300 uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
+              <h5 className="text-[11px] font-bold text-brand-text-secondary uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
                 <span>{EVIDENCE_ICON[level]}</span>
                 {EVIDENCE_LABELS[level]}
                 <span className="text-slate-500 font-normal tabular-nums">({list.length})</span>
@@ -530,7 +530,7 @@ const LiteratureReport: React.FC<LiteratureReportProps> = ({ articles, total, qu
               {topJournals.map(([journal, count]) => (
                 <span
                   key={journal}
-                  className="text-[10px] bg-slate-900/60 border border-slate-700/40 rounded-full px-2 py-0.5 text-slate-400"
+                  className="text-[10px] bg-slate-900/60 border border-slate-700/40 rounded-full px-2 py-0.5 text-brand-text-muted"
                 >
                   {journal} <span className="text-slate-600 tabular-nums">({count})</span>
                 </span>
@@ -1037,7 +1037,7 @@ REGRAS RÍGIDAS:
 
   return (
     // [V1.9.361] Padding lateral em embedded (Pedro: muito próximo do sidebar)
-    <div className={embedded ? 'text-white px-4 md:px-6 py-2' : 'min-h-screen bg-[#0f172a] text-white p-6'}>
+    <div className={embedded ? 'text-brand-text px-4 md:px-6 py-2' : 'min-h-screen bg-[#0f172a] text-brand-text p-6'}>
       {/* [V1.9.367] Largura maior em wide-screen quando sidebar visível (até 1800px) */}
       <div className={sidebarVisible ? (embedded ? 'max-w-[1800px]' : 'max-w-[1800px] mx-auto') : (embedded ? 'max-w-5xl' : 'max-w-5xl mx-auto')}>
       {/* [V1.9.365/V1.9.366] Grid 2 colunas em lg quando sidebar visível: main + sidebar */}
@@ -1049,26 +1049,26 @@ REGRAS RÍGIDAS:
             <div className="flex items-center gap-3">
               <button
                 onClick={() => navigate('/app/admin')}
-                className="p-2 hover:bg-slate-800 rounded-lg transition-colors"
+                className="p-2 hover:bg-brand-surface rounded-lg transition-colors"
                 title="Voltar"
               >
-                <ChevronLeft className="w-5 h-5 text-slate-400" />
+                <ChevronLeft className="w-5 h-5 text-brand-text-muted" />
               </button>
               <div className="p-2 rounded-lg bg-purple-500/10 border border-purple-500/20">
                 <Sparkles className="w-5 h-5 text-purple-400" />
               </div>
               <div>
-                <h1 className="text-xl font-bold text-white">Casos Similares</h1>
+                <h1 className="text-xl font-bold text-brand-text">Casos Similares</h1>
                 {/* [V1.9.368] Subtítulo refinado pós-2 análises GPT externas:
                     "Exploração experimental" é o NOME técnico-honesto do que a feature É;
                     "Casos Similares" mantido como label familiar pra médico. */}
-                <p className="text-xs text-slate-400">Exploração experimental de padrões narrativos · Admin Spike</p>
+                <p className="text-xs text-brand-text-muted">Exploração experimental de padrões narrativos · Admin Spike</p>
               </div>
             </div>
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-800/50 border border-slate-700">
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-800/50 border border-brand-border">
               <DollarSign className="w-3.5 h-3.5 text-emerald-400" />
-              <span className="text-xs text-slate-400">Cap mensal:</span>
-              <span className="text-xs font-bold text-white">${monthlyCost.toFixed(2)} / $50</span>
+              <span className="text-xs text-brand-text-muted">Cap mensal:</span>
+              <span className="text-xs font-bold text-brand-text">${monthlyCost.toFixed(2)} / $50</span>
             </div>
           </div>
         )}
@@ -1144,21 +1144,21 @@ REGRAS RÍGIDAS:
               <Search className="w-3 h-3 text-purple-400" />
               <span className="text-[10px] uppercase tracking-wider text-slate-500 font-semibold">Buscas hoje</span>
             </div>
-            <div className="text-lg font-bold text-white tabular-nums">{history.stats.searchesToday}</div>
+            <div className="text-lg font-bold text-brand-text tabular-nums">{history.stats.searchesToday}</div>
           </div>
           <div className="bg-slate-800/40 border border-slate-700/50 rounded-lg px-3 py-2.5">
             <div className="flex items-center gap-1.5 mb-1">
               <BarChart3 className="w-3 h-3 text-purple-400" />
               <span className="text-[10px] uppercase tracking-wider text-slate-500 font-semibold">No mês</span>
             </div>
-            <div className="text-lg font-bold text-white tabular-nums">{history.stats.searchesMonth}</div>
+            <div className="text-lg font-bold text-brand-text tabular-nums">{history.stats.searchesMonth}</div>
           </div>
           <div className="bg-slate-800/40 border border-slate-700/50 rounded-lg px-3 py-2.5">
             <div className="flex items-center gap-1.5 mb-1">
               <Zap className="w-3 h-3 text-yellow-400" />
               <span className="text-[10px] uppercase tracking-wider text-slate-500 font-semibold">Sínteses IA</span>
             </div>
-            <div className="text-lg font-bold text-white tabular-nums">
+            <div className="text-lg font-bold text-brand-text tabular-nums">
               {history.stats.gptSynthesesMonth}
               <span className="text-[10px] text-slate-500 font-normal ml-1">no mês</span>
             </div>
@@ -1168,7 +1168,7 @@ REGRAS RÍGIDAS:
               <Eye className="w-3 h-3 text-emerald-400" />
               <span className="text-[10px] uppercase tracking-wider text-slate-500 font-semibold">Casos abertos</span>
             </div>
-            <div className="text-lg font-bold text-white tabular-nums">
+            <div className="text-lg font-bold text-brand-text tabular-nums">
               {history.casesViewedSession}
               <span className="text-[10px] text-slate-500 font-normal ml-1">sessão</span>
             </div>
@@ -1179,7 +1179,7 @@ REGRAS RÍGIDAS:
         <div className="bg-slate-800/30 border border-slate-700/50 rounded-xl p-5 mb-6">
           <div className="space-y-4">
             <div>
-              <label className="block text-xs font-semibold text-slate-400 mb-2 uppercase tracking-wider">
+              <label className="block text-xs font-semibold text-brand-text-muted mb-2 uppercase tracking-wider">
                 Buscar padrão clínico
               </label>
               <div className="relative">
@@ -1191,20 +1191,20 @@ REGRAS RÍGIDAS:
                   onChange={(e) => setSearchTerm(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
                   placeholder='ex: "dor lombar", "fadiga + cannabis", "ansiedade"  (⌘K ou / pra focar)'
-                  className="w-full pl-10 pr-4 py-2.5 bg-slate-900 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-purple-500/50"
+                  className="w-full pl-10 pr-4 py-2.5 bg-brand-bg border border-brand-border rounded-lg text-brand-text placeholder-slate-500 focus:outline-none focus:border-purple-500/50"
                 />
               </div>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs font-semibold text-slate-400 mb-2 uppercase tracking-wider flex items-center gap-1.5">
+                <label className="block text-xs font-semibold text-brand-text-muted mb-2 uppercase tracking-wider flex items-center gap-1.5">
                   <Filter className="w-3 h-3" /> Racionalidade
                 </label>
                 <select
                   value={rationalityFilter}
                   onChange={(e) => setRationalityFilter(e.target.value as RationalityType)}
-                  className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white text-sm focus:outline-none focus:border-purple-500/50"
+                  className="w-full px-3 py-2 bg-brand-bg border border-brand-border rounded-lg text-brand-text text-sm focus:outline-none focus:border-purple-500/50"
                   title={rationalityFilter === 'all'
                     ? '⚠️ Filtro "Todas" agrega 5 cosmologias clínicas diferentes (Dr. Ricardo) — DRC visto pela biomédica ≠ DRC visto pela MTC'
                     : `Filtro ativo: ${RATIONALITY_LABELS[rationalityFilter]}`}
@@ -1218,13 +1218,13 @@ REGRAS RÍGIDAS:
                 </select>
               </div>
               <div>
-                <label className="block text-xs font-semibold text-slate-400 mb-2 uppercase tracking-wider flex items-center gap-1.5">
+                <label className="block text-xs font-semibold text-brand-text-muted mb-2 uppercase tracking-wider flex items-center gap-1.5">
                   <Calendar className="w-3 h-3" /> Período
                 </label>
                 <select
                   value={periodFilter}
                   onChange={(e) => setPeriodFilter(parseInt(e.target.value) as Period)}
-                  className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white text-sm focus:outline-none focus:border-purple-500/50"
+                  className="w-full px-3 py-2 bg-brand-bg border border-brand-border rounded-lg text-brand-text text-sm focus:outline-none focus:border-purple-500/50"
                 >
                   <option value={30}>Últimos 30 dias</option>
                   <option value={90}>Últimos 90 dias</option>
@@ -1270,7 +1270,7 @@ REGRAS RÍGIDAS:
                       <button
                         key={`${r.term}-${r.rationality}-${r.period}-${i}`}
                         onClick={() => applyRecorded(r)}
-                        className="inline-flex items-center gap-1 px-2.5 py-0.5 text-[11px] bg-slate-700/40 hover:bg-purple-500/15 border border-slate-600/50 hover:border-purple-500/40 text-slate-300 hover:text-purple-200 rounded-full transition-colors"
+                        className="inline-flex items-center gap-1 px-2.5 py-0.5 text-[11px] bg-slate-700/40 hover:bg-purple-500/15 border border-slate-600/50 hover:border-purple-500/40 text-brand-text-secondary hover:text-purple-200 rounded-full transition-colors"
                         title={`${RATIONALITY_LABELS[r.rationality as RationalityType] || r.rationality} · ${r.period}d${r.useGPT ? ' · IA' : ''}`}
                       >
                         {r.term}
@@ -1280,7 +1280,7 @@ REGRAS RÍGIDAS:
                     {history.recent.length > 2 && (
                       <button
                         onClick={() => history.clearRecent()}
-                        className="text-[10px] text-slate-500 hover:text-slate-300 px-2 py-0.5"
+                        className="text-[10px] text-slate-500 hover:text-brand-text-secondary px-2 py-0.5"
                         title="Limpar histórico de buscas"
                       >
                         limpar
@@ -1301,7 +1301,7 @@ REGRAS RÍGIDAS:
             <button
               onClick={handleSearch}
               disabled={loading || !searchTerm.trim()}
-              className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-700 disabled:cursor-not-allowed text-white font-semibold rounded-lg transition-colors"
+              className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 disabled:bg-brand-surface-subtle disabled:cursor-not-allowed text-brand-text font-semibold rounded-lg transition-colors"
             >
               {loading ? (
                 <>
@@ -1340,7 +1340,7 @@ REGRAS RÍGIDAS:
                   </span>
                 )}
                 {result.cached && (
-                  <span className="text-[10px] font-normal text-slate-500 bg-slate-800 px-2 py-0.5 rounded">cache</span>
+                  <span className="text-[10px] font-normal text-slate-500 bg-brand-surface px-2 py-0.5 rounded">cache</span>
                 )}
                 {/* [V1.9.364] Fixar busca atual (toggle) */}
                 {history.isPinned(searchTerm, rationalityFilter, periodFilter) ? (
@@ -1354,7 +1354,7 @@ REGRAS RÍGIDAS:
                 ) : (
                   <button
                     onClick={() => history.pinSearch({ term: searchTerm, rationality: rationalityFilter, period: periodFilter, useGPT: useGPTSynthesis, ts: Date.now() })}
-                    className="ml-auto inline-flex items-center gap-1 px-2 py-0.5 text-[10px] bg-slate-700/40 hover:bg-amber-500/15 border border-slate-600/50 hover:border-amber-500/30 text-slate-400 hover:text-amber-200 rounded-full transition-colors"
+                    className="ml-auto inline-flex items-center gap-1 px-2 py-0.5 text-[10px] bg-slate-700/40 hover:bg-amber-500/15 border border-slate-600/50 hover:border-amber-500/30 text-brand-text-muted hover:text-amber-200 rounded-full transition-colors"
                     title="Fixar essa busca (volta nela quando quiser)"
                   >
                     <BookmarkPlus className="w-2.5 h-2.5" /> Fixar
@@ -1370,7 +1370,7 @@ REGRAS RÍGIDAS:
             {/* Cases */}
             {result.cases.length > 0 && (
               <div className="space-y-3">
-                <h2 className="text-sm font-bold text-slate-400 uppercase tracking-wider flex items-center gap-2">
+                <h2 className="text-sm font-bold text-brand-text-muted uppercase tracking-wider flex items-center gap-2">
                   <FileText className="w-4 h-4" />
                   Top {result.cases.length} casos (de {result.totalFound} encontrados)
                 </h2>
@@ -1398,13 +1398,13 @@ REGRAS RÍGIDAS:
                         <div className="flex items-center gap-2 mb-1">
                           <span className="text-xs font-bold text-purple-400">Caso #{idx + 1}</span>
                           <span className="text-xs text-slate-500">·</span>
-                          <span className="text-xs text-slate-400">{formatDate(c.createdAt)}</span>
+                          <span className="text-xs text-brand-text-muted">{formatDate(c.createdAt)}</span>
                         </div>
-                        <p className="text-sm font-medium text-white">{c.patientName}</p>
+                        <p className="text-sm font-medium text-brand-text">{c.patientName}</p>
                       </div>
                     </div>
                     <div className="mt-2 space-y-1.5">
-                      <p className="text-xs text-slate-300">
+                      <p className="text-xs text-brand-text-secondary">
                         <span className="text-slate-500 font-semibold">Queixa:</span> {c.queixaPrincipal}
                       </p>
                       {c.rationalitiesApplied.length > 0 && (
@@ -1434,7 +1434,7 @@ REGRAS RÍGIDAS:
             <Sparkles className="w-12 h-12 text-purple-400/50 mx-auto mb-4" />
             {history.recent.length === 0 ? (
               <>
-                <p className="text-sm text-slate-300 max-w-md mx-auto leading-relaxed mb-1">
+                <p className="text-sm text-brand-text-secondary max-w-md mx-auto leading-relaxed mb-1">
                   Bem-vindo ao Terminal de Pesquisa.
                 </p>
                 <p className="text-xs text-slate-500 max-w-md mx-auto leading-relaxed mb-5">
@@ -1451,7 +1451,7 @@ REGRAS RÍGIDAS:
                 <button
                   key={term}
                   onClick={() => applyRecorded({ term, rationality: 'all', period: 90, useGPT: false, ts: Date.now() })}
-                  className="px-3 py-1.5 text-xs bg-slate-800/60 hover:bg-purple-500/15 border border-slate-700 hover:border-purple-500/40 text-slate-300 hover:text-purple-200 rounded-full transition-colors"
+                  className="px-3 py-1.5 text-xs bg-slate-800/60 hover:bg-purple-500/15 border border-brand-border hover:border-purple-500/40 text-brand-text-secondary hover:text-purple-200 rounded-full transition-colors"
                 >
                   {term}
                 </button>
@@ -1469,9 +1469,9 @@ REGRAS RÍGIDAS:
             <Keyboard className="w-3 h-3" />
             <span className="font-semibold uppercase tracking-wider">Atalhos:</span>
           </span>
-          <span><kbd className="px-1.5 py-0.5 bg-slate-800 border border-slate-700 rounded text-slate-400 font-mono text-[9px]">⌘K</kbd> ou <kbd className="px-1.5 py-0.5 bg-slate-800 border border-slate-700 rounded text-slate-400 font-mono text-[9px]">/</kbd> focar busca</span>
-          <span><kbd className="px-1.5 py-0.5 bg-slate-800 border border-slate-700 rounded text-slate-400 font-mono text-[9px]">↵</kbd> buscar</span>
-          <span><kbd className="px-1.5 py-0.5 bg-slate-800 border border-slate-700 rounded text-slate-400 font-mono text-[9px]">Esc</kbd> fechar modal</span>
+          <span><kbd className="px-1.5 py-0.5 bg-brand-surface border border-brand-border rounded text-brand-text-muted font-mono text-[9px]">⌘K</kbd> ou <kbd className="px-1.5 py-0.5 bg-brand-surface border border-brand-border rounded text-brand-text-muted font-mono text-[9px]">/</kbd> focar busca</span>
+          <span><kbd className="px-1.5 py-0.5 bg-brand-surface border border-brand-border rounded text-brand-text-muted font-mono text-[9px]">↵</kbd> buscar</span>
+          <span><kbd className="px-1.5 py-0.5 bg-brand-surface border border-brand-border rounded text-brand-text-muted font-mono text-[9px]">Esc</kbd> fechar modal</span>
         </div>
       </div>
       {/* fim main column */}
@@ -1519,26 +1519,26 @@ REGRAS RÍGIDAS:
           <div
             /* V1.9.378 — max-w-6xl (1152px) em vez de 5xl (1024px). Em widescreen
                 4096px ainda fica centralizado; em laptops normais cresce ~13%. */
-            className="bg-slate-900 border border-slate-700 rounded-xl max-w-6xl w-full max-h-[92vh] overflow-y-auto"
+            className="bg-brand-bg border border-brand-border rounded-xl max-w-6xl w-full max-h-[92vh] overflow-y-auto"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Header modal */}
-            <div className="sticky top-0 bg-slate-900 border-b border-slate-700/50 px-6 py-4 flex items-center justify-between">
+            <div className="sticky top-0 bg-brand-bg border-b border-slate-700/50 px-6 py-4 flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="p-2 rounded-lg bg-purple-500/10 border border-purple-500/20">
                   <User className="w-4 h-4 text-purple-400" />
                 </div>
                 <div>
-                  <h3 className="text-base font-bold text-white">{selectedCase.patientName}</h3>
-                  <p className="text-xs text-slate-400">{formatDate(selectedCase.createdAt)}</p>
+                  <h3 className="text-base font-bold text-brand-text">{selectedCase.patientName}</h3>
+                  <p className="text-xs text-brand-text-muted">{formatDate(selectedCase.createdAt)}</p>
                 </div>
               </div>
               <button
                 onClick={() => setSelectedCase(null)}
-                className="p-2 hover:bg-slate-800 rounded-lg transition-colors"
+                className="p-2 hover:bg-brand-surface rounded-lg transition-colors"
                 title="Fechar (ESC)"
               >
-                <X className="w-4 h-4 text-slate-400" />
+                <X className="w-4 h-4 text-brand-text-muted" />
               </button>
             </div>
 
@@ -1587,7 +1587,7 @@ REGRAS RÍGIDAS:
                       <h4 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">Lista Indiciária</h4>
                       <ul className="space-y-1">
                         {caseDetails.content.lista_indiciaria.map((item: any, i: number) => (
-                          <li key={i} className="text-xs text-slate-300 flex gap-2">
+                          <li key={i} className="text-xs text-brand-text-secondary flex gap-2">
                             <span className="text-purple-400">▸</span>
                             <span>{typeof item === 'string' ? item : (item?.label || JSON.stringify(item))}</span>
                           </li>
@@ -1613,7 +1613,7 @@ REGRAS RÍGIDAS:
                                 </span>
                                 <span className="text-[10px] text-slate-500">{formatDate(r.created_at)}</span>
                               </div>
-                              <p className="text-xs text-slate-300 leading-relaxed">
+                              <p className="text-xs text-brand-text-secondary leading-relaxed">
                                 {r.assessment ? r.assessment.substring(0, 350) + (r.assessment.length > 350 ? '...' : '') : '—'}
                               </p>
                               {/* [V1.9.369-C] Cross-link: extrair termos desta racionalidade → buscar Literatura */}
@@ -1667,26 +1667,26 @@ REGRAS RÍGIDAS:
           <div
             /* V1.9.378 — max-w-4xl (896px) em vez de 2xl (672px). Modal tinha chips
                 + query preview + relatório estrutural amontoados em 672px. */
-            className="bg-slate-900 border border-slate-700 rounded-xl max-w-4xl w-full max-h-[88vh] overflow-y-auto"
+            className="bg-brand-bg border border-brand-border rounded-xl max-w-4xl w-full max-h-[88vh] overflow-y-auto"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="sticky top-0 bg-slate-900 border-b border-slate-700/50 px-6 py-4 flex items-center justify-between">
+            <div className="sticky top-0 bg-brand-bg border-b border-slate-700/50 px-6 py-4 flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Search className="w-4 h-4 text-indigo-400" />
-                <h3 className="text-base font-bold text-white">Buscar literatura externa</h3>
+                <h3 className="text-base font-bold text-brand-text">Buscar literatura externa</h3>
               </div>
               <button
                 onClick={() => setLiteratureModalOpen(false)}
-                className="p-2 hover:bg-slate-800 rounded-lg transition-colors"
+                className="p-2 hover:bg-brand-surface rounded-lg transition-colors"
                 title="Cancelar (ESC)"
               >
-                <X className="w-4 h-4 text-slate-400" />
+                <X className="w-4 h-4 text-brand-text-muted" />
               </button>
             </div>
 
             <div className="p-6 space-y-4">
               {/* Origem */}
-              <p className="text-xs text-slate-400 leading-relaxed">
+              <p className="text-xs text-brand-text-muted leading-relaxed">
                 A partir da racionalidade <span className="text-purple-300 font-semibold">{literatureSourceLabel}</span>{' '}
                 · termos extraídos automaticamente (revise antes de buscar):
               </p>
@@ -1744,12 +1744,12 @@ REGRAS RÍGIDAS:
                     onChange={(e) => setLiteratureExtraTerm(e.target.value)}
                     onKeyDown={(e) => e.key === 'Enter' && handleAddLiteratureTerm()}
                     placeholder="+ adicionar termo (PT ou EN)"
-                    className="flex-1 px-3 py-1.5 bg-slate-900 border border-slate-700 rounded-lg text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500/50"
+                    className="flex-1 px-3 py-1.5 bg-brand-bg border border-brand-border rounded-lg text-xs text-brand-text placeholder-slate-500 focus:outline-none focus:border-indigo-500/50"
                   />
                   <button
                     onClick={handleAddLiteratureTerm}
                     disabled={!literatureExtraTerm.trim()}
-                    className="px-3 py-1.5 text-xs bg-slate-700 hover:bg-slate-600 disabled:bg-slate-800 disabled:text-slate-600 text-white rounded-lg transition-colors"
+                    className="px-3 py-1.5 text-xs bg-brand-surface-subtle hover:bg-slate-600 disabled:bg-brand-surface disabled:text-slate-600 text-brand-text rounded-lg transition-colors"
                   >
                     +
                   </button>
@@ -1789,7 +1789,7 @@ REGRAS RÍGIDAS:
               {literatureReportLoading && (
                 <div className="bg-slate-800/40 border border-slate-700/50 rounded-lg p-6 text-center">
                   <Loader2 className="w-5 h-5 text-indigo-400 animate-spin mx-auto mb-2" />
-                  <p className="text-xs text-slate-400">Buscando no PubMed e agregando estrutura...</p>
+                  <p className="text-xs text-brand-text-muted">Buscando no PubMed e agregando estrutura...</p>
                 </div>
               )}
               {literatureReportError && !literatureReportLoading && (
@@ -1827,7 +1827,7 @@ REGRAS RÍGIDAS:
               <div className="flex items-center justify-between gap-2 pt-2 border-t border-slate-700/50 flex-wrap">
                 <button
                   onClick={() => setLiteratureModalOpen(false)}
-                  className="px-4 py-2 text-xs text-slate-400 hover:text-white transition-colors"
+                  className="px-4 py-2 text-xs text-brand-text-muted hover:text-brand-text transition-colors"
                 >
                   Fechar
                 </button>
@@ -1845,7 +1845,7 @@ REGRAS RÍGIDAS:
                   <button
                     onClick={runLiteratureReport}
                     disabled={literatureTerms.length === 0 || literatureReportLoading}
-                    className="flex items-center gap-2 px-4 py-2 text-xs font-semibold bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-700 disabled:text-slate-500 disabled:cursor-not-allowed text-white rounded-lg transition-colors"
+                    className="flex items-center gap-2 px-4 py-2 text-xs font-semibold bg-indigo-600 hover:bg-indigo-700 disabled:bg-brand-surface-subtle disabled:text-slate-500 disabled:cursor-not-allowed text-brand-text rounded-lg transition-colors"
                   >
                     <BarChart3 className="w-3.5 h-3.5" />
                     {literatureReportArticles ? 'Atualizar relatório' : 'Gerar relatório'}

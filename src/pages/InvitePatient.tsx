@@ -107,7 +107,7 @@ const InvitePatient: React.FC = () => {
                 {status === 'loading' && (
                     <div className="text-center py-8">
                         <Loader2 className="w-10 h-10 text-emerald-500 animate-spin mx-auto mb-4" />
-                        <p className="text-slate-300">Processando convite...</p>
+                        <p className="text-brand-text-secondary">Processando convite...</p>
                     </div>
                 )}
 
@@ -116,15 +116,15 @@ const InvitePatient: React.FC = () => {
                         <div className="w-20 h-20 bg-emerald-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
                             <Stethoscope className="w-10 h-10 text-emerald-400" />
                         </div>
-                        <h2 className="text-2xl font-bold text-white mb-2">Convite Médico</h2>
-                        <p className="text-slate-300 mb-2">
+                        <h2 className="text-2xl font-bold text-brand-text mb-2">Convite Médico</h2>
+                        <p className="text-brand-text-secondary mb-2">
                             Você foi convidado(a) por
                         </p>
                         <p className="text-lg font-semibold text-emerald-400 mb-6">
                             Dr(a). {doctorName || '...'}
                         </p>
                         <div className="bg-slate-800/60 rounded-xl p-4 mb-6 border border-slate-700/50">
-                            <div className="flex items-center gap-2 text-sm text-slate-400 mb-2">
+                            <div className="flex items-center gap-2 text-sm text-brand-text-muted mb-2">
                                 <Shield className="w-4 h-4 text-emerald-500" />
                                 <span>Plataforma certificada LGPD</span>
                             </div>
@@ -135,7 +135,7 @@ const InvitePatient: React.FC = () => {
                         <div className="space-y-3">
                             <button
                                 onClick={() => saveRedirectAndGo('/')}
-                                className="w-full bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-500 hover:to-green-500 text-white font-semibold py-3.5 rounded-xl transition-all shadow-lg shadow-emerald-500/20"
+                                className="w-full bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-500 hover:to-green-500 text-brand-text font-semibold py-3.5 rounded-xl transition-all shadow-lg shadow-emerald-500/20"
                             >
                                 Criar Conta / Fazer Login
                             </button>
@@ -151,20 +151,20 @@ const InvitePatient: React.FC = () => {
                         <div className="w-16 h-16 bg-emerald-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
                             <UserPlus className="w-8 h-8 text-emerald-400" />
                         </div>
-                        <h2 className="text-2xl font-bold text-white mb-2">Conectar com Profissional</h2>
-                        <p className="text-slate-300 mb-6">
+                        <h2 className="text-2xl font-bold text-brand-text mb-2">Conectar com Profissional</h2>
+                        <p className="text-brand-text-secondary mb-6">
                             Deseja se conectar com <strong className="text-emerald-400">Dr(a). {doctorName}</strong> e iniciar seu acompanhamento?
                         </p>
                         <div className="flex gap-3">
                             <button
                                 onClick={() => navigate('/app/clinica/paciente/dashboard')}
-                                className="flex-1 px-4 py-3 rounded-xl border border-slate-600 text-slate-300 hover:bg-slate-800 transition-colors"
+                                className="flex-1 px-4 py-3 rounded-xl border border-slate-600 text-brand-text-secondary hover:bg-brand-surface transition-colors"
                             >
                                 Cancelar
                             </button>
                             <button
                                 onClick={handleConnect}
-                                className="flex-1 px-4 py-3 rounded-xl bg-gradient-to-r from-emerald-600 to-green-600 text-white font-semibold hover:from-emerald-500 hover:to-green-500 transition-all"
+                                className="flex-1 px-4 py-3 rounded-xl bg-gradient-to-r from-emerald-600 to-green-600 text-brand-text font-semibold hover:from-emerald-500 hover:to-green-500 transition-all"
                             >
                                 Conectar Agora
                             </button>
@@ -177,13 +177,13 @@ const InvitePatient: React.FC = () => {
                         <div className="w-16 h-16 bg-emerald-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
                             <CheckCircle className="w-8 h-8 text-emerald-400" />
                         </div>
-                        <h2 className="text-2xl font-bold text-white mb-2">Já Conectado!</h2>
-                        <p className="text-slate-300 mb-6">
+                        <h2 className="text-2xl font-bold text-brand-text mb-2">Já Conectado!</h2>
+                        <p className="text-brand-text-secondary mb-6">
                             Você já está vinculado(a) ao <strong className="text-emerald-400">Dr(a). {doctorName}</strong>.
                         </p>
                         <button
                             onClick={() => navigate('/app/clinica/paciente/dashboard')}
-                            className="w-full bg-gradient-to-r from-emerald-600 to-green-600 text-white font-semibold py-3 rounded-xl transition-all"
+                            className="w-full bg-gradient-to-r from-emerald-600 to-green-600 text-brand-text font-semibold py-3 rounded-xl transition-all"
                         >
                             Ir para o Dashboard
                         </button>
@@ -195,8 +195,8 @@ const InvitePatient: React.FC = () => {
                         <div className="w-16 h-16 bg-emerald-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
                             <CheckCircle className="w-8 h-8 text-emerald-400" />
                         </div>
-                        <h2 className="text-2xl font-bold text-white mb-2">Conectado com Sucesso!</h2>
-                        <p className="text-slate-300 mb-4">
+                        <h2 className="text-2xl font-bold text-brand-text mb-2">Conectado com Sucesso!</h2>
+                        <p className="text-brand-text-secondary mb-4">
                             Redirecionando para seu painel...
                         </p>
                         <Loader2 className="w-5 h-5 text-emerald-500 animate-spin mx-auto" />
@@ -208,11 +208,11 @@ const InvitePatient: React.FC = () => {
                         <div className="w-16 h-16 bg-red-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
                             <AlertCircle className="w-8 h-8 text-red-400" />
                         </div>
-                        <h2 className="text-xl font-bold text-white mb-2">Ops! Algo deu errado.</h2>
-                        <p className="text-slate-300 mb-6">{errorMessage}</p>
+                        <h2 className="text-xl font-bold text-brand-text mb-2">Ops! Algo deu errado.</h2>
+                        <p className="text-brand-text-secondary mb-6">{errorMessage}</p>
                         <button
                             onClick={() => navigate('/')}
-                            className="w-full bg-slate-700 hover:bg-slate-600 text-white font-semibold py-3 rounded-xl transition-colors"
+                            className="w-full bg-brand-surface-subtle hover:bg-slate-600 text-brand-text font-semibold py-3 rounded-xl transition-colors"
                         >
                             Voltar ao Início
                         </button>

@@ -75,7 +75,7 @@ export function SimulatorTab() {
   return (
     <div className="space-y-6">
       <div className="bg-gradient-to-r from-purple-900/40 to-blue-900/40 rounded-xl p-6 border border-purple-500/20">
-        <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
+        <h3 className="text-xl font-bold text-brand-text mb-4 flex items-center gap-2">
           <BarChart3 size={22} /> Simulador de Investimento
         </h3>
 
@@ -83,14 +83,14 @@ export function SimulatorTab() {
           <div>
             <label className="block text-gray-300 text-xs font-semibold mb-2">Plano</label>
             <select value={selectedSubscription} onChange={(e) => setSelectedSubscription(e.target.value)}
-              className="w-full bg-slate-800 border border-slate-600 rounded-lg px-3 py-2 text-white text-sm focus:border-purple-500 focus:outline-none">
+              className="w-full bg-brand-surface border border-slate-600 rounded-lg px-3 py-2 text-brand-text text-sm focus:border-purple-500 focus:outline-none">
               {SUBSCRIPTION_PLANS.map(p => <option key={p.id} value={p.id}>{p.name} - R$ {p.price}</option>)}
             </select>
           </div>
           <div>
             <label className="block text-gray-300 text-xs font-semibold mb-2">Consultório</label>
             <select value={selectedClinic} onChange={(e) => setSelectedClinic(e.target.value)}
-              className="w-full bg-slate-800 border border-slate-600 rounded-lg px-3 py-2 text-white text-sm focus:border-purple-500 focus:outline-none">
+              className="w-full bg-brand-surface border border-slate-600 rounded-lg px-3 py-2 text-brand-text text-sm focus:border-purple-500 focus:outline-none">
               <option value="all">Todos</option>
               {CLINICS.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
             </select>
@@ -98,20 +98,20 @@ export function SimulatorTab() {
           <div>
             <label className="block text-gray-300 text-xs font-semibold mb-2">Meta Consultas/Mês</label>
             <input type="number" value={targetConsultations} onChange={(e) => setTargetConsultations(parseInt(e.target.value) || 0)}
-              className="w-full bg-slate-800 border border-slate-600 rounded-lg px-3 py-2 text-white text-sm focus:border-purple-500 focus:outline-none" />
+              className="w-full bg-brand-surface border border-slate-600 rounded-lg px-3 py-2 text-brand-text text-sm focus:border-purple-500 focus:outline-none" />
           </div>
         </div>
 
         <div className="flex flex-wrap gap-2">
           <button onClick={() => setSwotFilter('all')}
-            className={`px-3 py-1.5 rounded-lg text-sm font-semibold ${swotFilter === 'all' ? 'bg-emerald-600 text-white' : 'bg-slate-700 text-gray-300'}`}>
+            className={`px-3 py-1.5 rounded-lg text-sm font-semibold ${swotFilter === 'all' ? 'bg-emerald-600 text-brand-text' : 'bg-brand-surface-subtle text-gray-300'}`}>
             Todas
           </button>
           {SWOT_CATEGORIES.map(cat => {
             const Icon = cat.icon
             return (
               <button key={cat.id} onClick={() => setSwotFilter(cat.id)}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-semibold ${swotFilter === cat.id ? 'bg-emerald-600 text-white' : 'bg-slate-700 text-gray-300'}`}>
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-semibold ${swotFilter === cat.id ? 'bg-emerald-600 text-brand-text' : 'bg-brand-surface-subtle text-gray-300'}`}>
                 <Icon size={14} /> {cat.name}
               </button>
             )
@@ -122,27 +122,27 @@ export function SimulatorTab() {
       {simulation && (
         <>
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="bg-slate-800 rounded-xl p-5 border border-green-500/30">
+            <div className="bg-brand-surface rounded-xl p-5 border border-green-500/30">
               <p className="text-gray-400 text-xs mb-1">Receita Projetada</p>
-              <p className="text-2xl font-bold text-white">R$ {simulation.totalRevenue.toFixed(2)}</p>
+              <p className="text-2xl font-bold text-brand-text">R$ {simulation.totalRevenue.toFixed(2)}</p>
             </div>
-            <div className="bg-slate-800 rounded-xl p-5 border border-purple-500/30">
+            <div className="bg-brand-surface rounded-xl p-5 border border-purple-500/30">
               <p className="text-gray-400 text-xs mb-1">ROI</p>
               <p className="text-2xl font-bold text-purple-400">{simulation.roi}%</p>
             </div>
-            <div className="bg-slate-800 rounded-xl p-5 border border-blue-500/30">
+            <div className="bg-brand-surface rounded-xl p-5 border border-blue-500/30">
               <p className="text-gray-400 text-xs mb-1">Lucro Líquido (70%)</p>
               <p className="text-2xl font-bold text-green-400">R$ {simulation.netIncome.toFixed(2)}</p>
             </div>
-            <div className="bg-slate-800 rounded-xl p-5 border border-orange-500/30">
+            <div className="bg-brand-surface rounded-xl p-5 border border-orange-500/30">
               <p className="text-gray-400 text-xs mb-1">Break-Even</p>
-              <p className="text-2xl font-bold text-white">{simulation.breakEvenPoint} consultas</p>
+              <p className="text-2xl font-bold text-brand-text">{simulation.breakEvenPoint} consultas</p>
             </div>
           </div>
 
           {getSwotInsights().length > 0 && (
-            <div className="bg-slate-800/50 rounded-xl p-6 border border-slate-700">
-              <h3 className="text-lg font-bold text-white mb-4">🔍 Análise SWOT</h3>
+            <div className="bg-slate-800/50 rounded-xl p-6 border border-brand-border">
+              <h3 className="text-lg font-bold text-brand-text mb-4">🔍 Análise SWOT</h3>
               <div className="grid md:grid-cols-2 gap-3">
                 {getSwotInsights().map((insight, i) => {
                   const Icon = insight.icon
@@ -150,7 +150,7 @@ export function SimulatorTab() {
                     <div key={i} className={`bg-${insight.color}-900/20 border border-${insight.color}-500/30 rounded-lg p-3 flex items-start gap-3`}>
                       <Icon className={`text-${insight.color}-400 mt-0.5`} size={20} />
                       <div>
-                        <h4 className="text-white font-semibold text-sm">{insight.title}</h4>
+                        <h4 className="text-brand-text font-semibold text-sm">{insight.title}</h4>
                         <p className="text-gray-300 text-xs">{insight.description}</p>
                       </div>
                     </div>

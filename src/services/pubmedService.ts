@@ -42,8 +42,8 @@ export const EVIDENCE_COLORS: Record<EvidenceLevel, string> = {
   'observational': 'bg-cyan-500/15 text-cyan-300 border-cyan-500/30',
   'review': 'bg-violet-500/15 text-violet-300 border-violet-500/30',
   'guideline': 'bg-amber-500/15 text-amber-300 border-amber-500/30',
-  'case-report': 'bg-slate-500/15 text-slate-300 border-slate-500/30',
-  'other': 'bg-slate-700/30 text-slate-400 border-slate-600/40',
+  'case-report': 'bg-slate-500/15 text-brand-text-secondary border-slate-500/30',
+  'other': 'bg-slate-700/30 text-brand-text-muted border-slate-600/40',
 }
 
 export interface PubMedArticle {

@@ -144,7 +144,7 @@ function TeamHealthBadge({ score, memberCount }: { score: number; memberCount: n
         </div>
       </div>
       {memberCount < 30 && (
-        <div className="ml-2 text-[10px] text-slate-400 max-w-[120px] leading-tight" title="Estatística refinada quando atingir 30+ profissionais">
+        <div className="ml-2 text-[10px] text-brand-text-muted max-w-[120px] leading-tight" title="Estatística refinada quando atingir 30+ profissionais">
           Indicativo (n={memberCount})
         </div>
       )}
@@ -161,7 +161,7 @@ function CapacityBar({ member }: { member: TeamMember }) {
               : 'from-emerald-500 to-emerald-600'
   return (
     <div className="flex items-center gap-2 text-xs">
-      <span className="text-slate-400 truncate min-w-[120px] max-w-[200px]">{member.member_name}</span>
+      <span className="text-brand-text-muted truncate min-w-[120px] max-w-[200px]">{member.member_name}</span>
       <div className="flex-1 h-2 bg-slate-800/60 rounded-full overflow-hidden">
         <div className={`h-full bg-gradient-to-r ${color} transition-all`} style={{ width: `${load}%` }} />
       </div>
@@ -216,14 +216,14 @@ function TeamMemberCard({
           {member.member_avatar ? (
             <img src={member.member_avatar} alt={member.member_name} className="w-12 h-12 rounded-full object-cover" />
           ) : (
-            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-indigo-600 to-purple-600 flex items-center justify-center text-white font-bold text-sm">
+            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-indigo-600 to-purple-600 flex items-center justify-center text-brand-text font-bold text-sm">
               {getInitials(member.member_name)}
             </div>
           )}
           <div className={`absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full ring-2 ring-slate-900 ${presence.dotColor} ${effectiveStatus === 'online' ? 'animate-pulse' : ''}`} />
           {isTopPerformer && (
             <div className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center ring-2 ring-slate-900" title="Top Performer">
-              <Award className="w-3 h-3 text-white" />
+              <Award className="w-3 h-3 text-brand-text" />
             </div>
           )}
         </div>
@@ -231,12 +231,12 @@ function TeamMemberCard({
         <div className="flex-1 min-w-0">
           <button
             onClick={onCommand}
-            className="text-white font-semibold truncate hover:text-emerald-300 transition-colors text-left text-sm w-full"
+            className="text-brand-text font-semibold truncate hover:text-emerald-300 transition-colors text-left text-sm w-full"
             title="Abrir Modo Comando"
           >
             {member.member_name}
           </button>
-          <p className="text-[11px] text-slate-400 truncate">{member.member_specialty}</p>
+          <p className="text-[11px] text-brand-text-muted truncate">{member.member_specialty}</p>
         </div>
       </div>
 
@@ -280,7 +280,7 @@ function TeamMemberCard({
       {member.total_received > 0 ? (
         <div className="flex items-center justify-between gap-2 mt-3 px-3 py-2 bg-slate-900/40 rounded-lg border border-slate-700/30">
           <div className="text-center" title="Pacientes recebidos">
-            <div className="text-base font-bold text-white tabular-nums">{member.total_received}</div>
+            <div className="text-base font-bold text-brand-text tabular-nums">{member.total_received}</div>
             <div className="text-[9px] uppercase text-slate-500 tracking-wider">Recebidos</div>
           </div>
           <div className="w-px h-8 bg-slate-700/50" />
@@ -294,7 +294,7 @@ function TeamMemberCard({
             <>
               <div className="w-px h-8 bg-slate-700/50" />
               <div className="text-center" title="Tempo médio de resposta">
-                <div className="text-base font-bold text-white tabular-nums">
+                <div className="text-base font-bold text-brand-text tabular-nums">
                   {member.avg_accept_latency_min.toFixed(1)}<span className="text-xs">min</span>
                 </div>
                 <div className="text-[9px] uppercase text-slate-500 tracking-wider">Latência</div>
@@ -345,7 +345,7 @@ function TeamMemberCard({
           className={`flex flex-col items-center gap-0.5 px-1 py-1.5 rounded-lg border transition-all ${
             isBackup
               ? 'bg-yellow-400/20 border-yellow-400/50 text-yellow-300'
-              : 'bg-slate-700/30 border-slate-600/30 text-slate-400 hover:border-yellow-500/40 hover:text-yellow-400'
+              : 'bg-slate-700/30 border-slate-600/30 text-brand-text-muted hover:border-yellow-500/40 hover:text-yellow-400'
           }`}
           title={isBackup ? 'Desativar Backup' : 'Ativar Backup'}
         >
@@ -388,7 +388,7 @@ function CommandDrawer({
     <div className="fixed inset-0 z-50 flex justify-end" onClick={onClose}>
       <div className="absolute inset-0 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200" />
       <div
-        className="relative w-full max-w-md h-full bg-slate-900 border-l border-slate-700/50 shadow-2xl overflow-y-auto animate-in slide-in-from-right duration-200"
+        className="relative w-full max-w-md h-full bg-brand-bg border-l border-slate-700/50 shadow-2xl overflow-y-auto animate-in slide-in-from-right duration-200"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
@@ -397,22 +397,22 @@ function CommandDrawer({
             {member.member_avatar ? (
               <img src={member.member_avatar} alt={member.member_name} className="w-12 h-12 rounded-full object-cover" />
             ) : (
-              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-indigo-600 to-purple-600 flex items-center justify-center text-white font-bold text-sm">
+              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-indigo-600 to-purple-600 flex items-center justify-center text-brand-text font-bold text-sm">
                 {getInitials(member.member_name)}
               </div>
             )}
             <div className="min-w-0">
-              <h3 className="text-base font-bold text-white truncate">{member.member_name}</h3>
+              <h3 className="text-base font-bold text-brand-text truncate">{member.member_name}</h3>
               <div className="flex items-center gap-1.5 mt-0.5">
                 <span className={`inline-block w-2 h-2 rounded-full ${presence.dotColor}`} />
-                <span className="text-xs text-slate-400">{presence.label}</span>
+                <span className="text-xs text-brand-text-muted">{presence.label}</span>
                 {member.minutes_since_seen != null && (
                   <span className="text-xs text-slate-500">· {formatMinutes(member.minutes_since_seen)}</span>
                 )}
               </div>
             </div>
           </div>
-          <button onClick={onClose} className="p-1.5 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors">
+          <button onClick={onClose} className="p-1.5 text-brand-text-muted hover:text-brand-text hover:bg-brand-surface rounded-lg transition-colors">
             <X className="w-4 h-4" />
           </button>
         </div>
@@ -423,10 +423,10 @@ function CommandDrawer({
           <section>
             <h4 className="text-[10px] uppercase tracking-wider text-slate-500 mb-2">Identidade</h4>
             <div className="bg-slate-800/40 border border-slate-700/40 rounded-lg p-3 space-y-1.5 text-xs">
-              <div><span className="text-slate-500">Especialidade:</span> <span className="text-white">{member.member_specialty}</span></div>
-              <div><span className="text-slate-500">Email:</span> <span className="text-white">{member.member_email}</span></div>
+              <div><span className="text-slate-500">Especialidade:</span> <span className="text-brand-text">{member.member_specialty}</span></div>
+              <div><span className="text-slate-500">Email:</span> <span className="text-brand-text">{member.member_email}</span></div>
               {member.member_phone && (
-                <div><span className="text-slate-500">Telefone:</span> <span className="text-white">{member.member_phone}</span></div>
+                <div><span className="text-slate-500">Telefone:</span> <span className="text-brand-text">{member.member_phone}</span></div>
               )}
               <div className="flex items-center gap-2 pt-1">
                 <span className={`inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full border ${rel.color}`}>
@@ -454,7 +454,7 @@ function CommandDrawer({
               <div className="grid grid-cols-3 gap-2">
                 <div className="bg-slate-800/40 border border-slate-700/40 rounded-lg p-3">
                   <div className="text-[9px] uppercase text-slate-500">Recebidos</div>
-                  <div className="text-lg font-bold text-white tabular-nums">{member.total_received}</div>
+                  <div className="text-lg font-bold text-brand-text tabular-nums">{member.total_received}</div>
                 </div>
                 <div className="bg-slate-800/40 border border-slate-700/40 rounded-lg p-3">
                   <div className="text-[9px] uppercase text-slate-500">Aceite</div>
@@ -467,8 +467,8 @@ function CommandDrawer({
                 </div>
                 <div className="bg-slate-800/40 border border-slate-700/40 rounded-lg p-3">
                   <div className="text-[9px] uppercase text-slate-500">Latência</div>
-                  <div className="text-lg font-bold text-white tabular-nums">
-                    {member.avg_accept_latency_min?.toFixed(1) ?? '—'}<span className="text-xs text-slate-400">min</span>
+                  <div className="text-lg font-bold text-brand-text tabular-nums">
+                    {member.avg_accept_latency_min?.toFixed(1) ?? '—'}<span className="text-xs text-brand-text-muted">min</span>
                   </div>
                 </div>
               </div>
@@ -479,7 +479,7 @@ function CommandDrawer({
           {member.notes && (
             <section>
               <h4 className="text-[10px] uppercase tracking-wider text-slate-500 mb-2">Observações</h4>
-              <div className="bg-slate-800/40 border border-slate-700/40 rounded-lg p-3 text-xs text-slate-300 italic">
+              <div className="bg-slate-800/40 border border-slate-700/40 rounded-lg p-3 text-xs text-brand-text-secondary italic">
                 "{member.notes}"
               </div>
             </section>
@@ -837,7 +837,7 @@ const TeamManagement: React.FC = () => {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <Loader2 className="w-6 h-6 animate-spin text-slate-400" />
+        <Loader2 className="w-6 h-6 animate-spin text-brand-text-muted" />
       </div>
     )
   }
@@ -854,13 +854,13 @@ const TeamManagement: React.FC = () => {
               <Mail className="w-4 h-4 text-purple-300" />
             </div>
             <div>
-              <h3 className="text-sm font-bold text-white">
+              <h3 className="text-sm font-bold text-brand-text">
                 Convites Recebidos
                 <span className="ml-2 text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-purple-500/30 text-purple-200">
                   {pendingInvites.length}
                 </span>
               </h3>
-              <p className="text-[11px] text-slate-400">
+              <p className="text-[11px] text-brand-text-muted">
                 Profissionais te convidaram pra equipe clínica deles. Aceite quando puder.
               </p>
             </div>
@@ -874,19 +874,19 @@ const TeamManagement: React.FC = () => {
                   {invite.inviter_avatar ? (
                     <img src={invite.inviter_avatar} alt="" className="w-9 h-9 rounded-full object-cover" />
                   ) : (
-                    <div className="w-9 h-9 rounded-full bg-gradient-to-br from-indigo-600 to-purple-600 flex items-center justify-center text-white font-bold text-xs">
+                    <div className="w-9 h-9 rounded-full bg-gradient-to-br from-indigo-600 to-purple-600 flex items-center justify-center text-brand-text font-bold text-xs">
                       {getInitials(invite.inviter_name || '??')}
                     </div>
                   )}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-1.5 flex-wrap">
-                      <span className="text-sm font-semibold text-white truncate">{invite.inviter_name || 'Profissional'}</span>
+                      <span className="text-sm font-semibold text-brand-text truncate">{invite.inviter_name || 'Profissional'}</span>
                       <span className={`inline-flex items-center gap-1 text-[9px] font-semibold px-1.5 py-0.5 rounded-full border ${rel.color}`}>
                         <RelIcon className="w-2.5 h-2.5" />
                         {rel.label}
                       </span>
                     </div>
-                    <p className="text-[11px] text-slate-400 truncate">
+                    <p className="text-[11px] text-brand-text-muted truncate">
                       {invite.inviter_specialty || 'Especialista'}
                       {invite.notes && <span className="text-slate-500 italic"> · "{invite.notes}"</span>}
                     </p>
@@ -920,14 +920,14 @@ const TeamManagement: React.FC = () => {
       <div className="flex items-start justify-between gap-3 flex-wrap">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-600 to-purple-600 flex items-center justify-center">
-            <Users className="w-5 h-5 text-white" />
+            <Users className="w-5 h-5 text-brand-text" />
           </div>
           <div>
-            <h2 className="text-lg font-bold text-white flex items-center gap-2">
+            <h2 className="text-lg font-bold text-brand-text flex items-center gap-2">
               Centro de Comando da Equipe
               <Star className="w-4 h-4 text-amber-400" />
             </h2>
-            <p className="text-xs text-slate-400">
+            <p className="text-xs text-brand-text-muted">
               Profissionais que recebem seus pacientes em fallback · status em tempo real · analytics
             </p>
           </div>
@@ -938,7 +938,7 @@ const TeamManagement: React.FC = () => {
           )}
           <button
             onClick={handleOpenAdd}
-            className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white rounded-lg text-sm font-medium transition-all shadow-lg shadow-indigo-900/20 hover:scale-105"
+            className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-brand-text rounded-lg text-sm font-medium transition-all shadow-lg shadow-indigo-900/20 hover:scale-105"
           >
             <UserPlus className="w-4 h-4" />
             Adicionar
@@ -949,9 +949,9 @@ const TeamManagement: React.FC = () => {
       {/* Info banner — preservado */}
       <div className="bg-slate-800/40 backdrop-blur-md border border-slate-700/50 rounded-xl p-4 flex items-start gap-3">
         <AlertTriangle className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" />
-        <div className="text-sm text-slate-300">
+        <div className="text-sm text-brand-text-secondary">
           <p>Quando sua agenda estiver cheia, pacientes verão os membros da sua equipe como alternativa.</p>
-          <p className="text-slate-400 mt-1">
+          <p className="text-brand-text-muted mt-1">
             Membros com status <strong>Backup</strong> são priorizados ·
             <span className="text-yellow-400"> ⚡ glow dourado</span> ·
             <span className="text-emerald-400"> 🟢 online em tempo real</span>
@@ -962,7 +962,7 @@ const TeamManagement: React.FC = () => {
       {/* Mapa de Carga */}
       {team.length > 0 && team.some(m => m.total_received > 0) && (
         <div className="bg-slate-800/30 backdrop-blur-md border border-slate-700/40 rounded-xl p-4">
-          <h3 className="text-xs uppercase tracking-wider text-slate-400 mb-3 flex items-center gap-2">
+          <h3 className="text-xs uppercase tracking-wider text-brand-text-muted mb-3 flex items-center gap-2">
             <BarChart3 className="w-3.5 h-3.5" /> Mapa de Carga (chamadas recebidas históricas)
           </h3>
           <div className="space-y-2">
@@ -1000,8 +1000,8 @@ const TeamManagement: React.FC = () => {
                 onClick={() => setFilterMode(opt.id as any)}
                 className={`px-3 py-1 text-[11px] font-medium rounded-full transition-all whitespace-nowrap ${
                   filterMode === opt.id
-                    ? 'bg-emerald-600 text-white shadow shadow-emerald-900/20'
-                    : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
+                    ? 'bg-emerald-600 text-brand-text shadow shadow-emerald-900/20'
+                    : 'text-brand-text-muted hover:text-slate-200 hover:bg-slate-800/50'
                 }`}
               >
                 {opt.label} <span className="opacity-70 tabular-nums">({opt.count})</span>
@@ -1019,12 +1019,12 @@ const TeamManagement: React.FC = () => {
       {team.length === 0 ? (
         <div className="text-center py-12 bg-slate-800/30 rounded-xl border border-slate-700/30">
           <Users className="w-12 h-12 text-slate-600 mx-auto mb-3" />
-          <p className="text-slate-400">Nenhum membro na equipe ainda</p>
+          <p className="text-brand-text-muted">Nenhum membro na equipe ainda</p>
           <p className="text-slate-500 text-sm mt-1">Adicione profissionais para montar sua rede de referência</p>
         </div>
       ) : pagedTeam.length === 0 ? (
         <div className="text-center py-8 bg-slate-800/30 rounded-xl border border-slate-700/30">
-          <p className="text-slate-400 text-sm">Nenhum membro neste filtro.</p>
+          <p className="text-brand-text-muted text-sm">Nenhum membro neste filtro.</p>
           <button onClick={() => setFilterMode('all')} className="mt-2 text-xs text-emerald-400 hover:text-emerald-300 underline">
             Mostrar todos
           </button>
@@ -1054,7 +1054,7 @@ const TeamManagement: React.FC = () => {
                 type="button"
                 onClick={() => setPage(Math.max(1, page - 1))}
                 disabled={page === 1}
-                className="p-2 text-slate-400 hover:text-white bg-slate-800/40 hover:bg-slate-700/60 border border-slate-700/40 rounded-lg disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                className="p-2 text-brand-text-muted hover:text-brand-text bg-slate-800/40 hover:bg-slate-700/60 border border-slate-700/40 rounded-lg disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
                 title="Página anterior"
               >
                 <ChevronRight className="w-4 h-4 rotate-180" />
@@ -1067,8 +1067,8 @@ const TeamManagement: React.FC = () => {
                     onClick={() => setPage(n)}
                     className={`w-8 h-8 text-xs font-medium rounded-lg transition-all tabular-nums ${
                       page === n
-                        ? 'bg-emerald-600 text-white shadow shadow-emerald-900/20'
-                        : 'text-slate-400 hover:text-white bg-slate-800/40 hover:bg-slate-700/60 border border-slate-700/40'
+                        ? 'bg-emerald-600 text-brand-text shadow shadow-emerald-900/20'
+                        : 'text-brand-text-muted hover:text-brand-text bg-slate-800/40 hover:bg-slate-700/60 border border-slate-700/40'
                     }`}
                   >
                     {n}
@@ -1079,7 +1079,7 @@ const TeamManagement: React.FC = () => {
                 type="button"
                 onClick={() => setPage(Math.min(totalPages, page + 1))}
                 disabled={page === totalPages}
-                className="p-2 text-slate-400 hover:text-white bg-slate-800/40 hover:bg-slate-700/60 border border-slate-700/40 rounded-lg disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                className="p-2 text-brand-text-muted hover:text-brand-text bg-slate-800/40 hover:bg-slate-700/60 border border-slate-700/40 rounded-lg disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
                 title="Próxima página"
               >
                 <ChevronRight className="w-4 h-4" />
@@ -1102,23 +1102,23 @@ const TeamManagement: React.FC = () => {
       {/* Add Modal — preservado V1.9.181 styled */}
       {showAddModal && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-slate-800 border border-slate-700 rounded-2xl w-full max-w-md p-6 space-y-4 shadow-2xl">
+          <div className="bg-brand-surface border border-brand-border rounded-2xl w-full max-w-md p-6 space-y-4 shadow-2xl">
             <div className="flex items-center justify-between">
-              <h3 className="text-lg font-bold text-white flex items-center gap-2">
+              <h3 className="text-lg font-bold text-brand-text flex items-center gap-2">
                 <UserPlus className="w-5 h-5 text-indigo-400" />
                 Adicionar à Equipe
               </h3>
-              <button onClick={() => setShowAddModal(false)} className="text-slate-400 hover:text-white">
+              <button onClick={() => setShowAddModal(false)} className="text-brand-text-muted hover:text-brand-text">
                 <X className="w-5 h-5" />
               </button>
             </div>
 
             <div>
-              <label className="text-sm text-slate-300 font-medium">Profissional</label>
+              <label className="text-sm text-brand-text-secondary font-medium">Profissional</label>
               <select
                 value={selectedProfId}
                 onChange={(e) => setSelectedProfId(e.target.value)}
-                className="w-full mt-1 bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-indigo-500"
+                className="w-full mt-1 bg-brand-surface-subtle border border-slate-600 rounded-lg px-3 py-2 text-brand-text text-sm focus:outline-none focus:border-indigo-500"
               >
                 <option value="">Selecione...</option>
                 {availableProfessionals.map((p) => (
@@ -1128,11 +1128,11 @@ const TeamManagement: React.FC = () => {
             </div>
 
             <div>
-              <label className="text-sm text-slate-300 font-medium">Tipo de Relação</label>
+              <label className="text-sm text-brand-text-secondary font-medium">Tipo de Relação</label>
               <select
                 value={selectedRelationship}
                 onChange={(e) => setSelectedRelationship(e.target.value)}
-                className="w-full mt-1 bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-indigo-500"
+                className="w-full mt-1 bg-brand-surface-subtle border border-slate-600 rounded-lg px-3 py-2 text-brand-text text-sm focus:outline-none focus:border-indigo-500"
               >
                 <option value="colleague">Colega</option>
                 <option value="backup">Backup (priorizado quando agenda cheia · glow dourado)</option>
@@ -1142,26 +1142,26 @@ const TeamManagement: React.FC = () => {
             </div>
 
             <div>
-              <label className="text-sm text-slate-300 font-medium">Observações (opcional)</label>
+              <label className="text-sm text-brand-text-secondary font-medium">Observações (opcional)</label>
               <input
                 value={addNotes}
                 onChange={(e) => setAddNotes(e.target.value)}
                 placeholder="Ex: Atende às quartas-feiras"
-                className="w-full mt-1 bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-indigo-500"
+                className="w-full mt-1 bg-brand-surface-subtle border border-slate-600 rounded-lg px-3 py-2 text-brand-text text-sm focus:outline-none focus:border-indigo-500"
               />
             </div>
 
             <div className="flex justify-end gap-3 pt-2">
               <button
                 onClick={() => setShowAddModal(false)}
-                className="px-4 py-2 text-slate-400 hover:text-white text-sm"
+                className="px-4 py-2 text-brand-text-muted hover:text-brand-text text-sm"
               >
                 Cancelar
               </button>
               <button
                 onClick={handleAddMember}
                 disabled={!selectedProfId || isSaving}
-                className="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white rounded-lg text-sm font-medium"
+                className="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-brand-text rounded-lg text-sm font-medium"
               >
                 {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
                 Adicionar

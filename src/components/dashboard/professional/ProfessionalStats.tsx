@@ -19,7 +19,7 @@ export const ProfessionalStats: React.FC<ProfessionalStatsProps> = ({
                 <div className="flex items-center justify-between">
                     <div>
                         <p className="text-sm font-medium text-blue-400 uppercase tracking-wider">Pacientes Totais</p>
-                        <p className="text-3xl font-bold text-white mt-1">{patients.length}</p>
+                        <p className="text-3xl font-bold text-brand-text mt-1">{patients.length}</p>
                     </div>
                     <div className="w-12 h-12 bg-blue-500/20 rounded-xl flex items-center justify-center border border-blue-500/30">
                         <Users className="h-6 w-6 text-blue-400" />
@@ -31,7 +31,7 @@ export const ProfessionalStats: React.FC<ProfessionalStatsProps> = ({
                 <div className="flex items-center justify-between">
                     <div>
                         <p className="text-sm font-medium text-emerald-400 uppercase tracking-wider">Agenda de Hoje</p>
-                        <p className="text-3xl font-bold text-white mt-1">{appointmentsTodayCount}</p>
+                        <p className="text-3xl font-bold text-brand-text mt-1">{appointmentsTodayCount}</p>
                     </div>
                     <div className="w-12 h-12 bg-emerald-500/20 rounded-xl flex items-center justify-center border border-emerald-500/30">
                         <Calendar className="h-6 w-6 text-emerald-400" />
@@ -43,7 +43,7 @@ export const ProfessionalStats: React.FC<ProfessionalStatsProps> = ({
                 <div className="flex items-center justify-between">
                     <div>
                         <p className="text-sm font-medium text-amber-400 uppercase tracking-wider">Relatórios Pendentes</p>
-                        <p className="text-3xl font-bold text-white mt-1">{newReportsCount}</p>
+                        <p className="text-3xl font-bold text-brand-text mt-1">{newReportsCount}</p>
                     </div>
                     <div className="w-12 h-12 bg-amber-500/20 rounded-xl flex items-center justify-center border border-amber-500/30">
                         <FileText className="h-6 w-6 text-amber-400" />

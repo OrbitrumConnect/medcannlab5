@@ -238,7 +238,7 @@ const Layout: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-900">
+      <div className="min-h-screen flex items-center justify-center bg-brand-bg">
         <div className="text-center">
           <div className="loading-dots mb-4">
             <div></div>
@@ -246,7 +246,7 @@ const Layout: React.FC = () => {
             <div></div>
             <div></div>
           </div>
-          <p className="text-slate-400">Carregando...</p>
+          <p className="text-brand-text-muted">Carregando...</p>
         </div>
       </div>
     )
@@ -259,33 +259,33 @@ const Layout: React.FC = () => {
   // Verificar se o email não foi confirmado
   if ((user?.type as string) === 'unconfirmed') {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-900">
+      <div className="min-h-screen flex items-center justify-center bg-brand-bg">
         <div className="text-center max-w-md mx-auto p-8">
           <div className="w-16 h-16 bg-yellow-500 rounded-full flex items-center justify-center mx-auto mb-6">
-            <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-8 h-8 text-brand-text" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
             </svg>
           </div>
-          <h1 className="text-2xl font-bold text-white mb-4">
+          <h1 className="text-2xl font-bold text-brand-text mb-4">
             Confirme seu Email
           </h1>
-          <p className="text-slate-300 mb-6">
+          <p className="text-brand-text-secondary mb-6">
             Enviamos um link de confirmação para <strong>{user?.email}</strong>
           </p>
-          <p className="text-slate-400 text-sm mb-8">
+          <p className="text-brand-text-muted text-sm mb-8">
             Verifique sua caixa de entrada e clique no link para ativar sua conta.
             Se não encontrar o email, verifique a pasta de spam.
           </p>
           <div className="space-y-4">
             <button
               onClick={() => window.location.href = '/'}
-              className="w-full bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-semibold transition-colors"
+              className="w-full bg-green-600 hover:bg-green-700 text-brand-text px-6 py-3 rounded-lg font-semibold transition-colors"
             >
               Voltar ao Início
             </button>
             <button
               onClick={() => window.location.reload()}
-              className="w-full bg-slate-700 hover:bg-slate-600 text-white px-6 py-3 rounded-lg font-semibold transition-colors"
+              className="w-full bg-brand-surface-subtle hover:bg-slate-600 text-brand-text px-6 py-3 rounded-lg font-semibold transition-colors"
             >
               Já Confirmei - Atualizar
             </button>

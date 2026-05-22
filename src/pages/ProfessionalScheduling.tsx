@@ -659,7 +659,7 @@ const ProfessionalScheduling: React.FC = () => {
       <div className="rounded-xl p-6" style={cardStyle}>
         {/* Header do calendário */}
         <div className="flex justify-between items-center mb-6">
-          <h3 className="text-xl font-semibold text-white">
+          <h3 className="text-xl font-semibold text-brand-text">
             {monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}
           </h3>
           <div className="flex items-center space-x-2">
@@ -668,14 +668,14 @@ const ProfessionalScheduling: React.FC = () => {
               className="p-2 rounded-lg transition-colors hover:opacity-80"
               style={{ background: 'rgba(15, 36, 60, 0.5)' }}
             >
-              <ChevronLeft className="w-5 h-5 text-slate-400" />
+              <ChevronLeft className="w-5 h-5 text-brand-text-muted" />
             </button>
             <button
               onClick={() => navigateMonth('next')}
               className="p-2 rounded-lg transition-colors hover:opacity-80"
               style={{ background: 'rgba(15, 36, 60, 0.5)' }}
             >
-              <ChevronRight className="w-5 h-5 text-slate-400" />
+              <ChevronRight className="w-5 h-5 text-brand-text-muted" />
             </button>
           </div>
         </div>
@@ -683,7 +683,7 @@ const ProfessionalScheduling: React.FC = () => {
         {/* Dias da semana */}
         <div className="grid grid-cols-7 gap-1 mb-2">
           {dayNames.map(day => (
-            <div key={day} className="p-2 text-center text-sm font-medium text-slate-400">
+            <div key={day} className="p-2 text-center text-sm font-medium text-brand-text-muted">
               {day}
             </div>
           ))}
@@ -695,7 +695,7 @@ const ProfessionalScheduling: React.FC = () => {
             <div
               key={index}
               onClick={() => handleDateSelect(day)}
-              className={`p-2 h-20 border border-slate-700 rounded-lg cursor-pointer transition-colors ${day.isCurrentMonth
+              className={`p-2 h-20 border border-brand-border rounded-lg cursor-pointer transition-colors ${day.isCurrentMonth
                 ? 'hover:opacity-80'
                 : 'text-slate-500'
                 } ${day.isToday
@@ -728,7 +728,7 @@ const ProfessionalScheduling: React.FC = () => {
                     </div>
                   ))}
                   {day.appointments.length > 2 && (
-                    <div className="text-xs text-slate-400">
+                    <div className="text-xs text-brand-text-muted">
                       +{day.appointments.length - 2} mais
                     </div>
                   )}
@@ -751,7 +751,7 @@ const ProfessionalScheduling: React.FC = () => {
 
     return (
       <div className="rounded-xl p-6" style={cardStyle}>
-        <h3 className="text-xl font-semibold text-white mb-4">
+        <h3 className="text-xl font-semibold text-brand-text mb-4">
           Horários Disponíveis - {selectedDate.toLocaleDateString('pt-BR')}
         </h3>
         <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
@@ -764,7 +764,7 @@ const ProfessionalScheduling: React.FC = () => {
                 disabled={isBooked}
                 className={`p-3 rounded-lg text-sm font-medium transition-colors ${isBooked
                   ? 'text-slate-500 cursor-not-allowed'
-                  : 'hover:bg-primary-600 text-slate-300 hover:text-white'
+                  : 'hover:bg-primary-600 text-brand-text-secondary hover:text-brand-text'
                   }`}
               >
                 {time}
@@ -793,8 +793,8 @@ const ProfessionalScheduling: React.FC = () => {
           {/* Header */}
           <div className="flex items-center justify-between mb-6">
             <div>
-              <h2 className="text-2xl font-bold text-white capitalize">{formattedDate}</h2>
-              <p className="text-slate-400 mt-1">
+              <h2 className="text-2xl font-bold text-brand-text capitalize">{formattedDate}</h2>
+              <p className="text-brand-text-muted mt-1">
                 {selectedDayAppointments.length} agendamento(s) neste dia
               </p>
             </div>
@@ -802,7 +802,7 @@ const ProfessionalScheduling: React.FC = () => {
               onClick={() => setShowDayDetailsModal(false)}
               className="p-2 rounded-lg hover:bg-slate-700/50 transition-colors"
             >
-              <X className="w-6 h-6 text-slate-400" />
+              <X className="w-6 h-6 text-brand-text-muted" />
             </button>
           </div>
 
@@ -824,43 +824,43 @@ const ProfessionalScheduling: React.FC = () => {
                             <User className="w-6 h-6 text-primary-400" />
                           </div>
                           <div>
-                            <h3 className="text-lg font-semibold text-white">
+                            <h3 className="text-lg font-semibold text-brand-text">
                               {apt.patientName || patient?.name || 'Paciente'}
                             </h3>
-                            <p className="text-sm text-slate-400">{patient?.email || ''}</p>
+                            <p className="text-sm text-brand-text-muted">{patient?.email || ''}</p>
                           </div>
                         </div>
 
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                           <div>
-                            <p className="text-slate-400 mb-1">Horário</p>
+                            <p className="text-brand-text-muted mb-1">Horário</p>
                             <div className="flex items-center space-x-2">
                               <Clock className="w-4 h-4 text-primary-400" />
-                              <p className="text-white font-medium">{apt.time}</p>
+                              <p className="text-brand-text font-medium">{apt.time}</p>
                             </div>
                           </div>
 
                           <div>
-                            <p className="text-slate-400 mb-1">Especialidade</p>
-                            <p className="text-white font-medium">{apt.specialty}</p>
+                            <p className="text-brand-text-muted mb-1">Especialidade</p>
+                            <p className="text-brand-text font-medium">{apt.specialty}</p>
                           </div>
 
                           <div>
-                            <p className="text-slate-400 mb-1">Tipo</p>
+                            <p className="text-brand-text-muted mb-1">Tipo</p>
                             <div className="flex items-center space-x-2">
                               {apt.type === 'online' ? (
                                 <Video className="w-4 h-4 text-sky-400" />
                               ) : (
                                 <MapPin className="w-4 h-4 text-emerald-400" />
                               )}
-                              <p className="text-white font-medium">
+                              <p className="text-brand-text font-medium">
                                 {apt.type === 'online' ? 'Online' : 'Presencial'}
                               </p>
                             </div>
                           </div>
 
                           <div>
-                            <p className="text-slate-400 mb-1">Status</p>
+                            <p className="text-brand-text-muted mb-1">Status</p>
                             <span
                               className={`inline-flex px-3 py-1 rounded-full text-xs font-medium ${apt.status === 'confirmed' || apt.status === 'scheduled'
                                 ? 'bg-green-500/20 text-green-400'
@@ -884,7 +884,7 @@ const ProfessionalScheduling: React.FC = () => {
 
                         {apt.notes && (
                           <div className="mt-3 p-3 rounded-lg" style={{ background: 'rgba(15, 36, 60, 0.3)' }}>
-                            <p className="text-sm text-slate-300">{apt.notes}</p>
+                            <p className="text-sm text-brand-text-secondary">{apt.notes}</p>
                           </div>
                         )}
                       </div>
@@ -931,7 +931,7 @@ const ProfessionalScheduling: React.FC = () => {
                 )
               })
             ) : (
-              <div className="text-center py-8 text-slate-400">
+              <div className="text-center py-8 text-brand-text-muted">
                 <Calendar className="w-12 h-12 mx-auto mb-3 opacity-50" />
                 <p>Nenhum agendamento neste dia</p>
               </div>
@@ -950,7 +950,7 @@ const ProfessionalScheduling: React.FC = () => {
               // Scroll para a seção de horários
               setSelectedTime(null)
             }}
-            className="w-full bg-gradient-to-r from-emerald-600 to-sky-500 text-white px-6 py-3 rounded-lg font-semibold shadow-lg hover:from-emerald-500 hover:to-sky-400 transition-all flex items-center justify-center space-x-2"
+            className="w-full bg-gradient-to-r from-emerald-600 to-sky-500 text-brand-text px-6 py-3 rounded-lg font-semibold shadow-lg hover:from-emerald-500 hover:to-sky-400 transition-all flex items-center justify-center space-x-2"
           >
             <Plus className="w-5 h-5" />
             <span>Novo Agendamento Neste Dia</span>
@@ -968,8 +968,8 @@ const ProfessionalScheduling: React.FC = () => {
         <div className="rounded-xl p-6" style={cardStyle}>
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-slate-400 text-sm">Total de Consultas</p>
-              <p className="text-2xl font-bold text-white">{analyticsData.totalAppointments}</p>
+              <p className="text-brand-text-muted text-sm">Total de Consultas</p>
+              <p className="text-2xl font-bold text-brand-text">{analyticsData.totalAppointments}</p>
             </div>
             <Calendar className="w-8 h-8 text-primary-400" />
           </div>
@@ -978,8 +978,8 @@ const ProfessionalScheduling: React.FC = () => {
         <div className="rounded-xl p-6" style={cardStyle}>
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-slate-400 text-sm">Taxa de Conclusão</p>
-              <p className="text-2xl font-bold text-white">
+              <p className="text-brand-text-muted text-sm">Taxa de Conclusão</p>
+              <p className="text-2xl font-bold text-brand-text">
                 {Math.round((analyticsData.completedAppointments / analyticsData.totalAppointments) * 100)}%
               </p>
             </div>
@@ -990,8 +990,8 @@ const ProfessionalScheduling: React.FC = () => {
         <div className="rounded-xl p-6" style={cardStyle}>
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-slate-400 text-sm">Avaliação Média</p>
-              <p className="text-2xl font-bold text-white">{analyticsData.averageRating}/5</p>
+              <p className="text-brand-text-muted text-sm">Avaliação Média</p>
+              <p className="text-2xl font-bold text-brand-text">{analyticsData.averageRating}/5</p>
             </div>
             <Star className="w-8 h-8 text-yellow-400" />
           </div>
@@ -1000,8 +1000,8 @@ const ProfessionalScheduling: React.FC = () => {
         <div className="rounded-xl p-6" style={cardStyle}>
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-slate-400 text-sm">Receita Total</p>
-              <p className="text-2xl font-bold text-white">R$ {analyticsData.totalRevenue.toLocaleString()}</p>
+              <p className="text-brand-text-muted text-sm">Receita Total</p>
+              <p className="text-2xl font-bold text-brand-text">R$ {analyticsData.totalRevenue.toLocaleString()}</p>
             </div>
             <TrendingUp className="w-8 h-8 text-green-400" />
           </div>
@@ -1012,11 +1012,11 @@ const ProfessionalScheduling: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Gráfico de especialidades */}
         <div className="rounded-xl p-6" style={cardStyle}>
-          <h3 className="text-lg font-semibold text-white mb-4">Consultas por Especialidade</h3>
+          <h3 className="text-lg font-semibold text-brand-text mb-4">Consultas por Especialidade</h3>
           <div className="space-y-3">
             {analyticsData.specialtyStats.map((specialty: any) => (
               <div key={specialty.specialty} className="flex items-center justify-between">
-                <span className="text-slate-300">{specialty.specialty}</span>
+                <span className="text-brand-text-secondary">{specialty.specialty}</span>
                 <div className="flex items-center space-x-2">
                   <div className="w-32 rounded-full h-2" style={{ background: 'rgba(15, 36, 60, 0.7)' }}>
                     <div
@@ -1024,7 +1024,7 @@ const ProfessionalScheduling: React.FC = () => {
                       style={{ width: `${(specialty.appointments / 50) * 100}%` }}
                     ></div>
                   </div>
-                  <span className="text-white font-medium">{specialty.appointments}</span>
+                  <span className="text-brand-text font-medium">{specialty.appointments}</span>
                 </div>
               </div>
             ))}
@@ -1033,11 +1033,11 @@ const ProfessionalScheduling: React.FC = () => {
 
         {/* Gráfico de horários */}
         <div className="rounded-xl p-6" style={cardStyle}>
-          <h3 className="text-lg font-semibold text-white mb-4">Ocupação por Horário</h3>
+          <h3 className="text-lg font-semibold text-brand-text mb-4">Ocupação por Horário</h3>
           <div className="space-y-3">
             {analyticsData.timeSlotStats.map((slot: any) => (
               <div key={slot.time} className="flex items-center justify-between">
-                <span className="text-slate-300">{slot.time}</span>
+                <span className="text-brand-text-secondary">{slot.time}</span>
                 <div className="flex items-center space-x-2">
                   <div className="w-32 rounded-full h-2" style={{ background: 'rgba(15, 36, 60, 0.7)' }}>
                     <div
@@ -1045,7 +1045,7 @@ const ProfessionalScheduling: React.FC = () => {
                       style={{ width: `${slot.utilization}%` }}
                     ></div>
                   </div>
-                  <span className="text-white font-medium">{slot.utilization}%</span>
+                  <span className="text-brand-text font-medium">{slot.utilization}%</span>
                 </div>
               </div>
             ))}
@@ -1061,8 +1061,8 @@ const ProfessionalScheduling: React.FC = () => {
         {/* Header */}
         <div className="flex justify-between items-center mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-white">Sistema de Agendamento</h1>
-            <p className="text-slate-400">Gerencie consultas, visualize analytics e acompanhe performance</p>
+            <h1 className="text-3xl font-bold text-brand-text">Sistema de Agendamento</h1>
+            <p className="text-brand-text-muted">Gerencie consultas, visualize analytics e acompanhe performance</p>
           </div>
           <div className="flex items-center space-x-4">
             <button
@@ -1084,7 +1084,7 @@ const ProfessionalScheduling: React.FC = () => {
                 })
                 setShowAppointmentModal(true)
               }}
-              className="bg-gradient-to-r from-emerald-600 to-sky-500 text-white px-6 py-2.5 rounded-lg font-semibold shadow-lg hover:from-emerald-500 hover:to-sky-400 transition-all flex items-center space-x-2"
+              className="bg-gradient-to-r from-emerald-600 to-sky-500 text-brand-text px-6 py-2.5 rounded-lg font-semibold shadow-lg hover:from-emerald-500 hover:to-sky-400 transition-all flex items-center space-x-2"
             >
               <Plus className="w-5 h-5" />
               <span>Agendar Paciente</span>
@@ -1092,8 +1092,8 @@ const ProfessionalScheduling: React.FC = () => {
             <button
               onClick={() => setViewMode('calendar')}
               className={`px-4 py-2 rounded-lg transition-colors ${viewMode === 'calendar'
-                ? 'bg-primary-600 text-white'
-                : 'text-slate-300 hover:opacity-80'
+                ? 'bg-primary-600 text-brand-text'
+                : 'text-brand-text-secondary hover:opacity-80'
                 }`}
             >
               <Calendar className="w-4 h-4 mr-2" />
@@ -1102,8 +1102,8 @@ const ProfessionalScheduling: React.FC = () => {
             <button
               onClick={() => setViewMode('list')}
               className={`px-4 py-2 rounded-lg transition-colors ${viewMode === 'list'
-                ? 'bg-primary-600 text-white'
-                : 'text-slate-300 hover:opacity-80'
+                ? 'bg-primary-600 text-brand-text'
+                : 'text-brand-text-secondary hover:opacity-80'
                 }`}
             >
               <FileText className="w-4 h-4 mr-2" />
@@ -1112,8 +1112,8 @@ const ProfessionalScheduling: React.FC = () => {
             <button
               onClick={() => setViewMode('analytics')}
               className={`px-4 py-2 rounded-lg transition-colors ${viewMode === 'analytics'
-                ? 'bg-primary-600 text-white'
-                : 'text-slate-300 hover:opacity-80'
+                ? 'bg-primary-600 text-brand-text'
+                : 'text-brand-text-secondary hover:opacity-80'
                 }`}
             >
               <BarChart3 className="w-4 h-4 mr-2" />
@@ -1129,7 +1129,7 @@ const ProfessionalScheduling: React.FC = () => {
               <div className="flex items-center space-x-3">
                 <Bell className="w-6 h-6 text-amber-400" />
                 <div>
-                  <h2 className="text-xl font-bold text-white">Solicitações de Agendamento Pendentes</h2>
+                  <h2 className="text-xl font-bold text-brand-text">Solicitações de Agendamento Pendentes</h2>
                   <p className="text-sm text-amber-200/80">
                     {pendingRequests.length} solicitação(ões) aguardando aprovação
                   </p>
@@ -1152,32 +1152,32 @@ const ProfessionalScheduling: React.FC = () => {
                             <User className="w-5 h-5 text-amber-400" />
                           </div>
                           <div>
-                            <h4 className="text-white font-semibold">{request.patientName || patient?.name || 'Paciente'}</h4>
-                            <p className="text-slate-400 text-sm">{patient?.email || ''}</p>
+                            <h4 className="text-brand-text font-semibold">{request.patientName || patient?.name || 'Paciente'}</h4>
+                            <p className="text-brand-text-muted text-sm">{patient?.email || ''}</p>
                           </div>
                         </div>
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm ml-13">
                           <div>
-                            <p className="text-slate-400">Data</p>
-                            <p className="text-white font-medium">{new Date(request.date).toLocaleDateString('pt-BR')}</p>
+                            <p className="text-brand-text-muted">Data</p>
+                            <p className="text-brand-text font-medium">{new Date(request.date).toLocaleDateString('pt-BR')}</p>
                           </div>
                           <div>
-                            <p className="text-slate-400">Horário</p>
-                            <p className="text-white font-medium">{request.time}</p>
+                            <p className="text-brand-text-muted">Horário</p>
+                            <p className="text-brand-text font-medium">{request.time}</p>
                           </div>
                           <div>
-                            <p className="text-slate-400">Tipo</p>
-                            <p className="text-white capitalize">{request.type || 'Online'}</p>
+                            <p className="text-brand-text-muted">Tipo</p>
+                            <p className="text-brand-text capitalize">{request.type || 'Online'}</p>
                           </div>
                           <div>
-                            <p className="text-slate-400">Especialidade</p>
-                            <p className="text-white">{request.specialty || 'Não especificada'}</p>
+                            <p className="text-brand-text-muted">Especialidade</p>
+                            <p className="text-brand-text">{request.specialty || 'Não especificada'}</p>
                           </div>
                         </div>
                         {request.notes && (
                           <div className="mt-3 ml-13">
-                            <p className="text-slate-400 text-sm">Observações do paciente:</p>
-                            <p className="text-slate-300 text-sm p-2 rounded mt-1" style={secondarySurfaceStyle}>{request.notes}</p>
+                            <p className="text-brand-text-muted text-sm">Observações do paciente:</p>
+                            <p className="text-brand-text-secondary text-sm p-2 rounded mt-1" style={secondarySurfaceStyle}>{request.notes}</p>
                           </div>
                         )}
                       </div>
@@ -1198,7 +1198,7 @@ const ProfessionalScheduling: React.FC = () => {
                               toast.showToast('error', error.message)
                             }
                           }}
-                          className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center space-x-1"
+                          className="bg-emerald-600 hover:bg-emerald-700 text-brand-text px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center space-x-1"
                         >
                           <CheckCircle className="w-4 h-4" />
                           <span>Aprovar</span>
@@ -1227,7 +1227,7 @@ const ProfessionalScheduling: React.FC = () => {
                               toast.showToast('error', error.message)
                             }
                           }}
-                          className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center space-x-1"
+                          className="bg-red-600 hover:bg-red-700 text-brand-text px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center space-x-1"
                         >
                           <AlertCircle className="w-4 h-4" />
                           <span>Rejeitar</span>
@@ -1251,7 +1251,7 @@ const ProfessionalScheduling: React.FC = () => {
 
         {viewMode === 'list' && (
           <div className="rounded-xl p-6" style={cardStyle}>
-            <h3 className="text-xl font-semibold text-white mb-4">Próximas Consultas</h3>
+            <h3 className="text-xl font-semibold text-brand-text mb-4">Próximas Consultas</h3>
             <div className="space-y-4">
               {appointments.map(appointment => (
                 <div key={appointment.id} className="rounded-lg p-4" style={secondarySurfaceStyle}>
@@ -1259,35 +1259,35 @@ const ProfessionalScheduling: React.FC = () => {
                     <div className="flex-1">
                       <div className="flex items-center space-x-4 mb-2">
                         <div className="w-10 h-10 bg-primary-600 rounded-full flex items-center justify-center">
-                          <User className="w-5 h-5 text-white" />
+                          <User className="w-5 h-5 text-brand-text" />
                         </div>
                         <div>
-                          <h4 className="text-white font-medium">{appointment.patientName}</h4>
-                          <p className="text-slate-400 text-sm">{appointment.specialty}</p>
+                          <h4 className="text-brand-text font-medium">{appointment.patientName}</h4>
+                          <p className="text-brand-text-muted text-sm">{appointment.specialty}</p>
                         </div>
                       </div>
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                         <div>
-                          <p className="text-slate-400">Data</p>
-                          <p className="text-white">{appointment.date}</p>
+                          <p className="text-brand-text-muted">Data</p>
+                          <p className="text-brand-text">{appointment.date}</p>
                         </div>
                         <div>
-                          <p className="text-slate-400">Horário</p>
-                          <p className="text-white">{appointment.time}</p>
+                          <p className="text-brand-text-muted">Horário</p>
+                          <p className="text-brand-text">{appointment.time}</p>
                         </div>
                         <div>
-                          <p className="text-slate-400">Tipo</p>
-                          <p className="text-white capitalize">{appointment.type}</p>
+                          <p className="text-brand-text-muted">Tipo</p>
+                          <p className="text-brand-text capitalize">{appointment.type}</p>
                         </div>
                         <div>
-                          <p className="text-slate-400">Sala</p>
-                          <p className="text-white">{appointment.room}</p>
+                          <p className="text-brand-text-muted">Sala</p>
+                          <p className="text-brand-text">{appointment.room}</p>
                         </div>
                       </div>
                       {appointment.notes && (
                         <div className="mt-2">
-                          <p className="text-slate-400 text-sm">Observações</p>
-                          <p className="text-slate-300 text-sm">{appointment.notes}</p>
+                          <p className="text-brand-text-muted text-sm">Observações</p>
+                          <p className="text-brand-text-secondary text-sm">{appointment.notes}</p>
                         </div>
                       )}
                     </div>
@@ -1315,11 +1315,11 @@ const ProfessionalScheduling: React.FC = () => {
         {showAppointmentModal && (
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
             <div className="rounded-xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto" style={{ ...cardStyle, background: 'rgba(15, 36, 60, 0.98)' }}>
-              <h3 className="text-xl font-semibold text-white mb-4">Novo Agendamento</h3>
+              <h3 className="text-xl font-semibold text-brand-text mb-4">Novo Agendamento</h3>
               <div className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm text-slate-400 mb-2">Paciente</label>
+                    <label className="block text-sm text-brand-text-muted mb-2">Paciente</label>
                     <select
                       value={appointmentData.patientId}
                       onChange={(e) => {
@@ -1331,7 +1331,7 @@ const ProfessionalScheduling: React.FC = () => {
                           patientName: patient?.name || ''
                         })
                       }}
-                      className="w-full rounded-lg px-3 py-2 text-white"
+                      className="w-full rounded-lg px-3 py-2 text-brand-text"
                       style={{ background: 'rgba(15, 36, 60, 0.7)', border: '1px solid rgba(0, 193, 106, 0.12)' }}
                     >
                       <option value="">Selecione um paciente</option>
@@ -1360,34 +1360,34 @@ const ProfessionalScheduling: React.FC = () => {
                     {isCreatingPatient && (
                       <div className="mt-3 space-y-3 rounded-lg p-4" style={secondarySurfaceStyle}>
                         <div>
-                          <label className="block text-xs text-slate-400 mb-1">Nome completo</label>
+                          <label className="block text-xs text-brand-text-muted mb-1">Nome completo</label>
                           <input
                             type="text"
                             value={newPatientData.name}
                             onChange={(e) => setNewPatientData(prev => ({ ...prev, name: e.target.value }))}
-                            className="w-full rounded-lg px-3 py-2 text-white text-sm"
+                            className="w-full rounded-lg px-3 py-2 text-brand-text text-sm"
                             style={{ background: 'rgba(15, 36, 60, 0.7)', border: '1px solid rgba(0, 193, 106, 0.12)' }}
                             placeholder="Ex: Maria da Silva"
                           />
                         </div>
                         <div>
-                          <label className="block text-xs text-slate-400 mb-1">Email</label>
+                          <label className="block text-xs text-brand-text-muted mb-1">Email</label>
                           <input
                             type="email"
                             value={newPatientData.email}
                             onChange={(e) => setNewPatientData(prev => ({ ...prev, email: e.target.value }))}
-                            className="w-full rounded-lg px-3 py-2 text-white text-sm"
+                            className="w-full rounded-lg px-3 py-2 text-brand-text text-sm"
                             style={{ background: 'rgba(15, 36, 60, 0.7)', border: '1px solid rgba(0, 193, 106, 0.12)' }}
                             placeholder="paciente@exemplo.com"
                           />
                         </div>
                         <div>
-                          <label className="block text-xs text-slate-400 mb-1">Telefone</label>
+                          <label className="block text-xs text-brand-text-muted mb-1">Telefone</label>
                           <input
                             type="tel"
                             value={newPatientData.phone}
                             onChange={(e) => setNewPatientData(prev => ({ ...prev, phone: e.target.value }))}
-                            className="w-full rounded-lg px-3 py-2 text-white text-sm"
+                            className="w-full rounded-lg px-3 py-2 text-brand-text text-sm"
                             style={{ background: 'rgba(15, 36, 60, 0.7)', border: '1px solid rgba(0, 193, 106, 0.12)' }}
                             placeholder="(11) 99999-9999"
                           />
@@ -1400,7 +1400,7 @@ const ProfessionalScheduling: React.FC = () => {
                             type="button"
                             onClick={handleCreatePatient}
                             disabled={isSavingPatient}
-                            className="flex-1 bg-primary-600 hover:bg-primary-700 text-white text-sm font-semibold px-3 py-2 rounded-lg transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+                            className="flex-1 bg-primary-600 hover:bg-primary-700 text-brand-text text-sm font-semibold px-3 py-2 rounded-lg transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
                           >
                             {isSavingPatient ? 'Salvando...' : 'Salvar paciente'}
                           </button>
@@ -1410,7 +1410,7 @@ const ProfessionalScheduling: React.FC = () => {
                               setIsCreatingPatient(false)
                               resetNewPatientForm()
                             }}
-                            className="text-xs text-slate-400 hover:text-slate-200 transition-colors"
+                            className="text-xs text-brand-text-muted hover:text-slate-200 transition-colors"
                           >
                             Limpar
                           </button>
@@ -1419,41 +1419,41 @@ const ProfessionalScheduling: React.FC = () => {
                     )}
                   </div>
                   <div>
-                    <label className="block text-sm text-slate-400 mb-2">Data</label>
+                    <label className="block text-sm text-brand-text-muted mb-2">Data</label>
                     <input
                       type="date"
                       value={appointmentData.date}
                       onChange={(e) => setAppointmentData({ ...appointmentData, date: e.target.value })}
-                      className="w-full rounded-lg px-3 py-2 text-white"
+                      className="w-full rounded-lg px-3 py-2 text-brand-text"
                       style={{ background: 'rgba(15, 36, 60, 0.7)', border: '1px solid rgba(0, 193, 106, 0.12)' }}
                     />
                   </div>
                   <div>
-                    <label className="block text-sm text-slate-400 mb-2">Horário</label>
+                    <label className="block text-sm text-brand-text-muted mb-2">Horário</label>
                     <input
                       type="time"
                       value={appointmentData.time}
                       onChange={(e) => setAppointmentData({ ...appointmentData, time: e.target.value })}
-                      className="w-full rounded-lg px-3 py-2 text-white"
+                      className="w-full rounded-lg px-3 py-2 text-brand-text"
                       style={{ background: 'rgba(15, 36, 60, 0.7)', border: '1px solid rgba(0, 193, 106, 0.12)' }}
                     />
                   </div>
                   <div>
-                    <label className="block text-sm text-slate-400 mb-2">Tipo</label>
+                    <label className="block text-sm text-brand-text-muted mb-2">Tipo</label>
                     <input
                       type="text"
                       value="Online"
                       readOnly
-                      className="w-full rounded-lg px-3 py-2 text-white uppercase tracking-wide"
+                      className="w-full rounded-lg px-3 py-2 text-brand-text uppercase tracking-wide"
                       style={{ background: 'rgba(15, 36, 60, 0.7)', border: '1px solid rgba(0, 193, 106, 0.12)' }}
                     />
                   </div>
                   <div>
-                    <label className="block text-sm text-slate-400 mb-2">Especialidade</label>
+                    <label className="block text-sm text-brand-text-muted mb-2">Especialidade</label>
                     <select
                       value={appointmentData.specialty}
                       onChange={(e) => setAppointmentData({ ...appointmentData, specialty: e.target.value })}
-                      className="w-full rounded-lg px-3 py-2 text-white"
+                      className="w-full rounded-lg px-3 py-2 text-brand-text"
                       style={{ background: 'rgba(15, 36, 60, 0.7)', border: '1px solid rgba(0, 193, 106, 0.12)' }}
                       required
                     >
@@ -1464,11 +1464,11 @@ const ProfessionalScheduling: React.FC = () => {
                     </select>
                   </div>
                   <div>
-                    <label className="block text-sm text-slate-400 mb-2">Sala</label>
+                    <label className="block text-sm text-brand-text-muted mb-2">Sala</label>
                     <select
                       value={appointmentData.room}
                       onChange={(e) => setAppointmentData({ ...appointmentData, room: e.target.value })}
-                      className="w-full rounded-lg px-3 py-2 text-white"
+                      className="w-full rounded-lg px-3 py-2 text-brand-text"
                       style={{ background: 'rgba(15, 36, 60, 0.7)', border: '1px solid rgba(0, 193, 106, 0.12)' }}
                     >
                       <option value="">Selecione</option>
@@ -1479,11 +1479,11 @@ const ProfessionalScheduling: React.FC = () => {
                   </div>
                 </div>
                 <div>
-                  <label className="block text-sm text-slate-400 mb-2">Serviço</label>
+                  <label className="block text-sm text-brand-text-muted mb-2">Serviço</label>
                   <select
                     value={appointmentData.service}
                     onChange={(e) => setAppointmentData({ ...appointmentData, service: e.target.value })}
-                    className="w-full rounded-lg px-3 py-2 text-white"
+                    className="w-full rounded-lg px-3 py-2 text-brand-text"
                     style={{ background: 'rgba(15, 36, 60, 0.7)', border: '1px solid rgba(0, 193, 106, 0.12)' }}
                     required
                   >
@@ -1492,25 +1492,25 @@ const ProfessionalScheduling: React.FC = () => {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm text-slate-400 mb-2">Observações</label>
+                  <label className="block text-sm text-brand-text-muted mb-2">Observações</label>
                   <textarea
                     value={appointmentData.notes}
                     onChange={(e) => setAppointmentData({ ...appointmentData, notes: e.target.value })}
                     placeholder="Observações adicionais..."
-                    className="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-white h-20"
+                    className="w-full bg-brand-surface-subtle border border-slate-600 rounded-lg px-3 py-2 text-brand-text h-20"
                   />
                 </div>
               </div>
               <div className="flex justify-end space-x-3 mt-6">
                 <button
                   onClick={() => setShowAppointmentModal(false)}
-                  className="px-4 py-2 text-slate-400 hover:text-white transition-colors"
+                  className="px-4 py-2 text-brand-text-muted hover:text-brand-text transition-colors"
                 >
                   Cancelar
                 </button>
                 <button
                   onClick={handleSaveAppointment}
-                  className="bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 rounded-lg transition-colors"
+                  className="bg-primary-600 hover:bg-primary-700 text-brand-text px-4 py-2 rounded-lg transition-colors"
                 >
                   Agendar
                 </button>

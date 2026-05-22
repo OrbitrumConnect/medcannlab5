@@ -162,7 +162,7 @@ const Reports: React.FC = () => {
       case 'draft':
         return { label: 'Rascunho', color: 'bg-amber-500/20 text-amber-400 border-amber-500/30', icon: Clock }
       default:
-        return { label: status, color: 'bg-slate-500/20 text-slate-400 border-slate-500/30', icon: AlertCircle }
+        return { label: status, color: 'bg-slate-500/20 text-brand-text-muted border-slate-500/30', icon: AlertCircle }
     }
   }
 
@@ -175,7 +175,7 @@ const Reports: React.FC = () => {
       case 'emergency':
         return { label: 'Emergência', color: 'text-red-400' }
       default:
-        return { label: type, color: 'text-slate-400' }
+        return { label: type, color: 'text-brand-text-muted' }
     }
   }
 
@@ -192,8 +192,8 @@ const Reports: React.FC = () => {
   const ScoreBar = ({ label, value, color }: { label: string; value: number; color: string }) => (
     <div className="space-y-1">
       <div className="flex justify-between text-xs">
-        <span className="text-slate-400">{label}</span>
-        <span className="text-white font-medium">{value}%</span>
+        <span className="text-brand-text-muted">{label}</span>
+        <span className="text-brand-text font-medium">{value}%</span>
       </div>
       <div className="h-2 bg-slate-700/50 rounded-full overflow-hidden">
         <div
@@ -212,7 +212,7 @@ const Reports: React.FC = () => {
       <div className="min-h-[60vh] flex items-center justify-center">
         <div className="text-center">
           <Loader2 className="w-10 h-10 text-emerald-500 animate-spin mx-auto mb-4" />
-          <p className="text-slate-400">Carregando relatórios clínicos...</p>
+          <p className="text-brand-text-muted">Carregando relatórios clínicos...</p>
         </div>
       </div>
     )
@@ -223,11 +223,11 @@ const Reports: React.FC = () => {
       {/* ── HEADER ── */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
-          <h1 className="text-2xl md:text-3xl font-bold text-white flex items-center gap-3">
+          <h1 className="text-2xl md:text-3xl font-bold text-brand-text flex items-center gap-3">
             <FileText className="w-7 h-7 text-emerald-400" />
             Relatórios Clínicos
           </h1>
-          <p className="text-slate-400 text-sm mt-1">
+          <p className="text-brand-text-muted text-sm mt-1">
             {reports.length} relatório{reports.length !== 1 ? 's' : ''} • {aiReportsCount} gerado{aiReportsCount !== 1 ? 's' : ''} por IA
           </p>
         </div>
@@ -246,7 +246,7 @@ const Reports: React.FC = () => {
                 onClick={() => setViewMode(mode)}
                 className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all ${viewMode === mode
                   ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
-                  : 'text-slate-400 hover:text-white'
+                  : 'text-brand-text-muted hover:text-brand-text'
                   }`}
               >
                 <Icon className="w-3.5 h-3.5" />
@@ -257,14 +257,14 @@ const Reports: React.FC = () => {
 
           <button
             onClick={handleRefresh}
-            className="p-2 rounded-lg bg-slate-800/60 border border-slate-700/50 text-slate-400 hover:text-emerald-400 transition-colors"
+            className="p-2 rounded-lg bg-slate-800/60 border border-slate-700/50 text-brand-text-muted hover:text-emerald-400 transition-colors"
           >
             <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
           </button>
 
           <button
             onClick={() => navigate(-1)}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-slate-400 hover:text-white transition-colors text-sm"
+            className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-brand-text-muted hover:text-brand-text transition-colors text-sm"
           >
             <ArrowLeft className="w-4 h-4" />
             Voltar
@@ -286,9 +286,9 @@ const Reports: React.FC = () => {
           >
             <div className="flex items-center justify-between mb-2">
               <Icon className={`w-5 h-5 ${iconColor}`} />
-              <span className="text-xl font-bold text-white">{value}</span>
+              <span className="text-xl font-bold text-brand-text">{value}</span>
             </div>
-            <p className="text-xs text-slate-400">{label}</p>
+            <p className="text-xs text-brand-text-muted">{label}</p>
           </div>
         ))}
       </div>
@@ -302,7 +302,7 @@ const Reports: React.FC = () => {
         <div className="space-y-6">
           {/* Gráfico de barras simples */}
           <div className="bg-slate-800/40 backdrop-blur-sm border border-slate-700/30 rounded-xl p-6">
-            <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+            <h3 className="text-lg font-semibold text-brand-text mb-4 flex items-center gap-2">
               <BarChart3 className="w-5 h-5 text-emerald-400" />
               Relatórios por Mês
             </h3>
@@ -334,14 +334,14 @@ const Reports: React.FC = () => {
           {/* Scores médios */}
           <div className="grid md:grid-cols-2 gap-4">
             <div className="bg-slate-800/40 backdrop-blur-sm border border-slate-700/30 rounded-xl p-6">
-              <h3 className="text-base font-semibold text-white mb-4">Scores Médios Globais</h3>
+              <h3 className="text-base font-semibold text-brand-text mb-4">Scores Médios Globais</h3>
               <div className="space-y-3">
                 <ScoreBar label="Completude da Avaliação" value={analytics.avgClinicalScore} color="bg-emerald-500" />
                 <ScoreBar label="Consistência da Informação" value={analytics.avgAdherence} color="bg-blue-500" />
               </div>
             </div>
             <div className="bg-slate-800/40 backdrop-blur-sm border border-slate-700/30 rounded-xl p-6">
-              <h3 className="text-base font-semibold text-white mb-4">Distribuição por Status</h3>
+              <h3 className="text-base font-semibold text-brand-text mb-4">Distribuição por Status</h3>
               <div className="space-y-2">
                 {[
                   { label: 'Concluídos', count: analytics.completed, color: 'bg-emerald-500' },
@@ -351,9 +351,9 @@ const Reports: React.FC = () => {
                   <div key={label} className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <div className={`w-2.5 h-2.5 rounded-full ${color}`} />
-                      <span className="text-sm text-slate-300">{label}</span>
+                      <span className="text-sm text-brand-text-secondary">{label}</span>
                     </div>
-                    <span className="text-sm font-medium text-white">{count}</span>
+                    <span className="text-sm font-medium text-brand-text">{count}</span>
                   </div>
                 ))}
               </div>
@@ -372,7 +372,7 @@ const Reports: React.FC = () => {
                 placeholder="Buscar por paciente, ID ou conteúdo..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2.5 bg-slate-800/60 border border-slate-700/50 rounded-lg text-white placeholder-slate-500 text-sm focus:outline-none focus:border-emerald-500/50 transition-colors"
+                className="w-full pl-10 pr-4 py-2.5 bg-slate-800/60 border border-slate-700/50 rounded-lg text-brand-text placeholder-slate-500 text-sm focus:outline-none focus:border-emerald-500/50 transition-colors"
               />
             </div>
 
@@ -380,7 +380,7 @@ const Reports: React.FC = () => {
               <select
                 value={filterStatus}
                 onChange={(e) => setFilterStatus(e.target.value as FilterStatus)}
-                className="bg-slate-800/60 border border-slate-700/50 rounded-lg text-slate-300 text-sm px-3 py-2 focus:outline-none focus:border-emerald-500/50"
+                className="bg-slate-800/60 border border-slate-700/50 rounded-lg text-brand-text-secondary text-sm px-3 py-2 focus:outline-none focus:border-emerald-500/50"
               >
                 <option value="all">Todos status</option>
                 <option value="completed">Concluídos</option>
@@ -391,7 +391,7 @@ const Reports: React.FC = () => {
               <select
                 value={filterType}
                 onChange={(e) => setFilterType(e.target.value as FilterType)}
-                className="bg-slate-800/60 border border-slate-700/50 rounded-lg text-slate-300 text-sm px-3 py-2 focus:outline-none focus:border-emerald-500/50"
+                className="bg-slate-800/60 border border-slate-700/50 rounded-lg text-brand-text-secondary text-sm px-3 py-2 focus:outline-none focus:border-emerald-500/50"
               >
                 <option value="all">Todos tipos</option>
                 <option value="initial_assessment">Avaliação Inicial</option>
@@ -405,7 +405,7 @@ const Reports: React.FC = () => {
           {filteredReports.length === 0 ? (
             <div className="bg-slate-800/30 border border-slate-700/30 rounded-xl p-12 text-center">
               <FileText className="w-12 h-12 text-slate-600 mx-auto mb-4" />
-              <h3 className="text-lg font-semibold text-slate-300 mb-2">
+              <h3 className="text-lg font-semibold text-brand-text-secondary mb-2">
                 {reports.length === 0 ? 'Nenhum relatório encontrado' : 'Nenhum resultado para os filtros aplicados'}
               </h3>
               <p className="text-slate-500 text-sm max-w-md mx-auto">
@@ -436,7 +436,7 @@ const Reports: React.FC = () => {
                         </div>
                         <div className="min-w-0 flex-1">
                           <div className="flex items-center gap-2 flex-wrap">
-                            <h3 className="text-white font-semibold text-sm truncate">
+                            <h3 className="text-brand-text font-semibold text-sm truncate">
                               {report.patient_name || 'Paciente'}
                             </h3>
                             <span className={`text-xs ${typeBadge.color}`}>
@@ -470,7 +470,7 @@ const Reports: React.FC = () => {
                             { label: 'Evolução', value: report.content?.evolution, icon: '📈' }
                           ].map(({ label, value, icon }) => (
                             <div key={label} className="bg-slate-900/50 rounded-lg p-3">
-                              <h4 className="text-xs font-medium text-slate-400 mb-1">{icon} {label}</h4>
+                              <h4 className="text-xs font-medium text-brand-text-muted mb-1">{icon} {label}</h4>
                               <p className="text-sm text-slate-200 line-clamp-3">{value || '—'}</p>
                             </div>
                           ))}
@@ -479,7 +479,7 @@ const Reports: React.FC = () => {
                         {/* Scores */}
                         {report.content?.scores && (
                           <div className="bg-slate-900/50 rounded-lg p-4">
-                            <h4 className="text-xs font-medium text-slate-400 mb-3">📊 Índices da Avaliação</h4>
+                            <h4 className="text-xs font-medium text-brand-text-muted mb-3">📊 Índices da Avaliação</h4>
                             <div className="grid grid-cols-2 gap-3">
                               <ScoreBar label="Completude da Avaliação" value={report.content.scores.clinical_score || 0} color="bg-emerald-500" />
                               <ScoreBar label="Consistência" value={report.content.scores.treatment_adherence || 0} color="bg-blue-500" />
@@ -492,10 +492,10 @@ const Reports: React.FC = () => {
                         {/* Recomendações */}
                         {report.content?.recommendations?.length > 0 && (
                           <div className="bg-slate-900/50 rounded-lg p-4">
-                            <h4 className="text-xs font-medium text-slate-400 mb-2">💡 Recomendações</h4>
+                            <h4 className="text-xs font-medium text-brand-text-muted mb-2">💡 Recomendações</h4>
                             <ul className="space-y-1">
                               {report.content.recommendations.map((rec: string, i: number) => (
-                                <li key={i} className="flex items-start gap-2 text-sm text-slate-300">
+                                <li key={i} className="flex items-start gap-2 text-sm text-brand-text-secondary">
                                   <span className="text-emerald-400 mt-0.5">•</span>
                                   {rec}
                                 </li>
@@ -544,13 +544,13 @@ const Reports: React.FC = () => {
               {totalPages > 1 && (
                 <div className="flex items-center justify-between pt-6 border-t border-slate-700/30">
                   <p className="text-xs text-slate-500">
-                    Mostrando <span className="text-slate-300">{(currentPage - 1) * itemsPerPage + 1}</span> a <span className="text-slate-300">{Math.min(currentPage * itemsPerPage, filteredReports.length)}</span> de <span className="text-slate-300">{filteredReports.length}</span> relatórios
+                    Mostrando <span className="text-brand-text-secondary">{(currentPage - 1) * itemsPerPage + 1}</span> a <span className="text-brand-text-secondary">{Math.min(currentPage * itemsPerPage, filteredReports.length)}</span> de <span className="text-brand-text-secondary">{filteredReports.length}</span> relatórios
                   </p>
                   <div className="flex items-center gap-2">
                     <button
                       onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
                       disabled={currentPage === 1}
-                      className="p-2 rounded-lg bg-slate-800/60 border border-slate-700/50 text-slate-400 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                      className="p-2 rounded-lg bg-slate-800/60 border border-slate-700/50 text-brand-text-muted hover:text-brand-text disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
                     >
                       <ChevronLeft className="w-4 h-4" />
                     </button>
@@ -562,7 +562,7 @@ const Reports: React.FC = () => {
                           onClick={() => setCurrentPage(page)}
                           className={`w-8 h-8 rounded-lg text-xs font-medium transition-all ${currentPage === page
                             ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
-                            : 'text-slate-400 hover:text-white hover:bg-slate-800/60 border border-transparent'
+                            : 'text-brand-text-muted hover:text-brand-text hover:bg-slate-800/60 border border-transparent'
                             }`}
                         >
                           {page}
@@ -573,7 +573,7 @@ const Reports: React.FC = () => {
                     <button
                       onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
                       disabled={currentPage === totalPages}
-                      className="p-2 rounded-lg bg-slate-800/60 border border-slate-700/50 text-slate-400 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                      className="p-2 rounded-lg bg-slate-800/60 border border-slate-700/50 text-brand-text-muted hover:text-brand-text disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
                     >
                       <ChevronRight className="w-4 h-4" />
                     </button>

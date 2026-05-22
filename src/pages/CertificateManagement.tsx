@@ -294,24 +294,24 @@ const CertificateManagement: React.FC = () => {
         <div className="mb-6">
           <button
             onClick={() => navigate(-1)}
-            className="mb-4 flex items-center gap-2 text-slate-400 hover:text-white transition-colors"
+            className="mb-4 flex items-center gap-2 text-brand-text-muted hover:text-brand-text transition-colors"
           >
             <ArrowLeft className="w-4 h-4" />
             Voltar
           </button>
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold text-white mb-2 flex items-center gap-3">
+              <h1 className="text-3xl font-bold text-brand-text mb-2 flex items-center gap-3">
                 <Shield className="w-8 h-8 text-primary-400" />
                 Gestão de Certificados Digitais
               </h1>
-              <p className="text-slate-400">
+              <p className="text-brand-text-muted">
                 Gerencie seus certificados ICP-Brasil para assinatura digital de prescrições
               </p>
             </div>
             <button
               onClick={() => setShowAddForm(!showAddForm)}
-              className="px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-lg flex items-center gap-2 transition-colors"
+              className="px-4 py-2 bg-primary-600 hover:bg-primary-700 text-brand-text rounded-lg flex items-center gap-2 transition-colors"
             >
               <Plus className="w-5 h-5" />
               Adicionar Certificado
@@ -328,18 +328,18 @@ const CertificateManagement: React.FC = () => {
 
         {/* Add Certificate Form */}
         {showAddForm && (
-          <div className="mb-6 p-6 bg-slate-800/50 border border-slate-700 rounded-lg">
-            <h2 className="text-xl font-semibold text-white mb-4">Adicionar Novo Certificado</h2>
+          <div className="mb-6 p-6 bg-slate-800/50 border border-brand-border rounded-lg">
+            <h2 className="text-xl font-semibold text-brand-text mb-4">Adicionar Novo Certificado</h2>
             <form onSubmit={handleAddCertificate} className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-2">
+                  <label className="block text-sm font-medium text-brand-text-secondary mb-2">
                     Tipo de Certificado *
                   </label>
                   <select
                     value={certificateType}
                     onChange={(e) => setCertificateType(e.target.value as 'A1' | 'A3' | 'remote')}
-                    className="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
+                    className="w-full px-4 py-2 bg-brand-surface-subtle border border-slate-600 rounded-lg text-brand-text focus:outline-none focus:ring-2 focus:ring-primary-500"
                     required
                   >
                     <option value="A1">A1 (Arquivo .pfx/.p12)</option>
@@ -349,13 +349,13 @@ const CertificateManagement: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-2">
+                  <label className="block text-sm font-medium text-brand-text-secondary mb-2">
                     Autoridade Certificadora (AC) *
                   </label>
                   <select
                     value={acProvider}
                     onChange={(e) => setAcProvider(e.target.value)}
-                    className="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
+                    className="w-full px-4 py-2 bg-brand-surface-subtle border border-slate-600 rounded-lg text-brand-text focus:outline-none focus:ring-2 focus:ring-primary-500"
                     required
                   >
                     <option value="">Selecione a AC</option>
@@ -363,7 +363,7 @@ const CertificateManagement: React.FC = () => {
                       <option key={provider} value={provider}>{provider}</option>
                     ))}
                   </select>
-                  <p className="mt-1.5 text-[11px] text-slate-400 leading-relaxed">
+                  <p className="mt-1.5 text-[11px] text-brand-text-muted leading-relaxed">
                     💡 Por enquanto suportamos apenas <strong className="text-emerald-300">DigitalSign</strong>.
                     Outras autoridades certificadoras (Soluti, Certisign, Valid, Safeweb, Serasa) serão
                     habilitadas em breve. Já tem cert de outra AC? Avise o suporte.
@@ -371,31 +371,31 @@ const CertificateManagement: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-2">
+                  <label className="block text-sm font-medium text-brand-text-secondary mb-2">
                     Data de Expiração *
                   </label>
                   <input
                     type="date"
                     value={expiresAt}
                     onChange={(e) => setExpiresAt(e.target.value)}
-                    className="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
+                    className="w-full px-4 py-2 bg-brand-surface-subtle border border-slate-600 rounded-lg text-brand-text focus:outline-none focus:ring-2 focus:ring-primary-500"
                     required
                   />
                 </div>
 
                 {certificateType === 'A1' && (
                   <div>
-                    <label className="block text-sm font-medium text-slate-300 mb-2">
+                    <label className="block text-sm font-medium text-brand-text-secondary mb-2">
                       Arquivo do Certificado (.pfx/.p12)
                     </label>
                     <input
                       type="file"
                       accept=".pfx,.p12"
                       onChange={(e) => setCertificateFile(e.target.files?.[0] || null)}
-                      className="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
+                      className="w-full px-4 py-2 bg-brand-surface-subtle border border-slate-600 rounded-lg text-brand-text focus:outline-none focus:ring-2 focus:ring-primary-500"
                     />
                     {certificateFile && (
-                      <p className="mt-2 text-sm text-slate-400">
+                      <p className="mt-2 text-sm text-brand-text-muted">
                         Arquivo selecionado: {certificateFile.name}
                       </p>
                     )}
@@ -404,17 +404,17 @@ const CertificateManagement: React.FC = () => {
 
                 {certificateType === 'A1' && certificateFile && (
                   <div>
-                    <label className="block text-sm font-medium text-slate-300 mb-2">
+                    <label className="block text-sm font-medium text-brand-text-secondary mb-2">
                       Senha do Certificado
                     </label>
                     <input
                       type="password"
                       value={certificatePassword}
                       onChange={(e) => setCertificatePassword(e.target.value)}
-                      className="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
+                      className="w-full px-4 py-2 bg-brand-surface-subtle border border-slate-600 rounded-lg text-brand-text focus:outline-none focus:ring-2 focus:ring-primary-500"
                       placeholder="Digite a senha do arquivo .pfx"
                     />
-                    <p className="text-[11px] text-slate-400 mt-1.5 leading-relaxed">
+                    <p className="text-[11px] text-brand-text-muted mt-1.5 leading-relaxed">
                       É a <strong className="text-slate-200">senha do próprio arquivo .pfx</strong> — a que você
                       digitou no programa da AC (DigitalSign, Soluti, etc.) quando exportou o certificado.
                       Não é a senha do MedCannLab nem a do seu email.
@@ -430,19 +430,19 @@ const CertificateManagement: React.FC = () => {
                     <Info className="w-4 h-4 text-blue-300 shrink-0" />
                     <h4 className="text-sm font-semibold text-blue-200">Como funciona — passo a passo</h4>
                   </div>
-                  <ol className="space-y-2 text-xs text-slate-300 leading-relaxed list-decimal list-inside ml-1">
+                  <ol className="space-y-2 text-xs text-brand-text-secondary leading-relaxed list-decimal list-inside ml-1">
                     <li>
-                      Você emitiu o certificado <strong className="text-white">.pfx</strong> no programa da AC
+                      Você emitiu o certificado <strong className="text-brand-text">.pfx</strong> no programa da AC
                       (DigitalSign A1, Soluti, etc.) e salvou em uma pasta no seu computador.
                     </li>
                     <li>
-                      Aqui você anexa esse arquivo <strong className="text-white">.pfx</strong> e digita a
-                      <strong className="text-white"> senha do próprio .pfx</strong> — a que o programa pediu pra você criar
-                      quando exportou. <em className="text-slate-400">Em geral é a "Senha de Emissão" que veio no seu
+                      Aqui você anexa esse arquivo <strong className="text-brand-text">.pfx</strong> e digita a
+                      <strong className="text-brand-text"> senha do próprio .pfx</strong> — a que o programa pediu pra você criar
+                      quando exportou. <em className="text-brand-text-muted">Em geral é a "Senha de Emissão" que veio no seu
                       email; mas se você criou outra ao exportar, use essa.</em>
                     </li>
                     <li>
-                      Ao clicar <strong className="text-white">"Adicionar Certificado"</strong> o app cifra a senha
+                      Ao clicar <strong className="text-brand-text">"Adicionar Certificado"</strong> o app cifra a senha
                       antes de salvar e envia o .pfx pro armazenamento privado e protegido.
                     </li>
                     <li>
@@ -457,26 +457,26 @@ const CertificateManagement: React.FC = () => {
                       <Shield className="w-4 h-4 text-emerald-300 shrink-0" />
                       <h4 className="text-sm font-semibold text-emerald-200">É seguro? Sim — veja por quê</h4>
                     </div>
-                    <ul className="space-y-1.5 text-xs text-slate-300 leading-relaxed ml-1">
+                    <ul className="space-y-1.5 text-xs text-brand-text-secondary leading-relaxed ml-1">
                       <li>
-                        🔒 <strong className="text-white">Senha cifrada em trânsito e no banco</strong> — usamos
+                        🔒 <strong className="text-brand-text">Senha cifrada em trânsito e no banco</strong> — usamos
                         AES-GCM (mesma criptografia de bancos digitais) com chave que fica só no servidor.
                         Nem o admin do banco consegue ler sua senha.
                       </li>
                       <li>
-                        🔐 <strong className="text-white">Arquivo .pfx em armazenamento privado</strong> — só você
+                        🔐 <strong className="text-brand-text">Arquivo .pfx em armazenamento privado</strong> — só você
                         (e o sistema, com sua autorização) pode baixá-lo. Política RLS por usuário no Supabase.
                       </li>
                       <li>
-                        ✅ <strong className="text-white">Você pode revogar a qualquer momento</strong> — basta
+                        ✅ <strong className="text-brand-text">Você pode revogar a qualquer momento</strong> — basta
                         desativar ou excluir o certificado nesta tela.
                       </li>
                       <li>
-                        ⚠️ <strong className="text-white">Nunca compartilhe seu .pfx ou senha</strong> com outra
+                        ⚠️ <strong className="text-brand-text">Nunca compartilhe seu .pfx ou senha</strong> com outra
                         pessoa fora do app — é equivalente à sua assinatura física e CRM no papel.
                       </li>
                       <li>
-                        💾 <strong className="text-white">Faça backup do .pfx</strong> em pendrive ou cofre digital
+                        💾 <strong className="text-brand-text">Faça backup do .pfx</strong> em pendrive ou cofre digital
                         (1Password, Bitwarden) — se o computador estourar e você perder o arquivo, precisa
                         comprar cert novo.
                       </li>
@@ -484,7 +484,7 @@ const CertificateManagement: React.FC = () => {
                   </div>
 
                   <div className="border-t border-blue-500/20 pt-3">
-                    <p className="text-[11px] text-slate-400 leading-relaxed">
+                    <p className="text-[11px] text-brand-text-muted leading-relaxed">
                       💡 <strong className="text-slate-200">Errou a senha?</strong> Sem problema. Quando o app
                       tentar assinar uma prescrição vai dar erro claro — você volta aqui, exclui este registro,
                       e cadastra de novo com a senha correta. Não há dano.
@@ -499,13 +499,13 @@ const CertificateManagement: React.FC = () => {
                         Ao exportar o .pfx — marque a opção da cadeia
                       </h4>
                     </div>
-                    <p className="text-[11px] text-slate-300 leading-relaxed mb-2">
+                    <p className="text-[11px] text-brand-text-secondary leading-relaxed mb-2">
                       Quando você exportar seu certificado (Windows: <code className="text-amber-200">certmgr.msc</code>
-                      → Exportar), marque <strong className="text-white">"Incluir todos os certificados no caminho
+                      → Exportar), marque <strong className="text-brand-text">"Incluir todos os certificados no caminho
                       de certificação se possível"</strong>. Sem isso, validadores externos (validar.iti.gov.br,
                       Adobe Acrobat) podem não confirmar autenticidade.
                     </p>
-                    <p className="text-[11px] text-slate-400 leading-relaxed">
+                    <p className="text-[11px] text-brand-text-muted leading-relaxed">
                       ⚙️ <strong className="text-slate-200">Cobertura automática</strong>: para certificados emitidos
                       pela <strong className="text-emerald-300">AC DigitalSign RFB G3</strong>, nosso sistema
                       adiciona a cadeia ICP-Brasil automaticamente mesmo se você esqueceu de marcar. Para outras
@@ -516,7 +516,7 @@ const CertificateManagement: React.FC = () => {
 
                   {/* V1.9.299 — sugestão de validação pós-cadastro */}
                   <div className="border-t border-blue-500/20 pt-3 mt-2">
-                    <p className="text-[11px] text-slate-400 leading-relaxed">
+                    <p className="text-[11px] text-brand-text-muted leading-relaxed">
                       🧪 <strong className="text-slate-200">Quer testar?</strong> Após cadastrar, assine 1 prescrição
                       de teste, baixe o PDF e faça upload em <a
                         href="https://validar.iti.gov.br/"
@@ -533,7 +533,7 @@ const CertificateManagement: React.FC = () => {
                 <button
                   type="submit"
                   disabled={saving}
-                  className="px-6 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-lg flex items-center gap-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="px-6 py-2 bg-primary-600 hover:bg-primary-700 text-brand-text rounded-lg flex items-center gap-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {saving ? (
                     <>
@@ -553,7 +553,7 @@ const CertificateManagement: React.FC = () => {
                     setShowAddForm(false)
                     setError(null)
                   }}
-                  className="px-6 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg transition-colors"
+                  className="px-6 py-2 bg-brand-surface-subtle hover:bg-slate-600 text-brand-text rounded-lg transition-colors"
                 >
                   Cancelar
                 </button>
@@ -565,15 +565,15 @@ const CertificateManagement: React.FC = () => {
         {/* Certificates List */}
         <div className="space-y-4">
           {certificates.length === 0 ? (
-            <div className="p-8 bg-slate-800/50 border border-slate-700 rounded-lg text-center">
+            <div className="p-8 bg-slate-800/50 border border-brand-border rounded-lg text-center">
               <Shield className="w-16 h-16 text-slate-600 mx-auto mb-4" />
-              <h3 className="text-xl font-semibold text-white mb-2">Nenhum certificado cadastrado</h3>
-              <p className="text-slate-400 mb-4">
+              <h3 className="text-xl font-semibold text-brand-text mb-2">Nenhum certificado cadastrado</h3>
+              <p className="text-brand-text-muted mb-4">
                 Adicione um certificado ICP-Brasil para poder assinar prescrições digitalmente
               </p>
               <button
                 onClick={() => setShowAddForm(true)}
-                className="px-6 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-lg inline-flex items-center gap-2 transition-colors"
+                className="px-6 py-2 bg-primary-600 hover:bg-primary-700 text-brand-text rounded-lg inline-flex items-center gap-2 transition-colors"
               >
                 <Plus className="w-5 h-5" />
                 Adicionar Primeiro Certificado
@@ -587,14 +587,14 @@ const CertificateManagement: React.FC = () => {
               return (
                 <div
                   key={cert.id}
-                  className="p-6 bg-slate-800/50 border border-slate-700 rounded-lg hover:border-slate-600 transition-colors"
+                  className="p-6 bg-slate-800/50 border border-brand-border rounded-lg hover:border-slate-600 transition-colors"
                 >
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
                       <div className="flex items-center gap-3 mb-3">
                         <Key className="w-6 h-6 text-primary-400" />
                         <div>
-                          <h3 className="text-lg font-semibold text-white">
+                          <h3 className="text-lg font-semibold text-brand-text">
                             Certificado {cert.certificate_type} - {cert.ac_provider}
                           </h3>
                           <div className="flex items-center gap-2 mt-1">
@@ -606,19 +606,19 @@ const CertificateManagement: React.FC = () => {
 
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
                         <div>
-                          <p className="text-xs text-slate-400 mb-1">Tipo</p>
-                          <p className="text-sm text-white">{cert.certificate_type}</p>
+                          <p className="text-xs text-brand-text-muted mb-1">Tipo</p>
+                          <p className="text-sm text-brand-text">{cert.certificate_type}</p>
                         </div>
                         <div>
-                          <p className="text-xs text-slate-400 mb-1">AC</p>
-                          <p className="text-sm text-white">{cert.ac_provider}</p>
+                          <p className="text-xs text-brand-text-muted mb-1">AC</p>
+                          <p className="text-sm text-brand-text">{cert.ac_provider}</p>
                         </div>
                         <div>
-                          <p className="text-xs text-slate-400 mb-1 flex items-center gap-1">
+                          <p className="text-xs text-brand-text-muted mb-1 flex items-center gap-1">
                             <Calendar className="w-3 h-3" />
                             Expira em
                           </p>
-                          <p className={`text-sm ${isCertificateExpired(cert.expires_at) ? 'text-red-400' : isCertificateExpiringSoon(cert.expires_at) ? 'text-yellow-400' : 'text-white'}`}>
+                          <p className={`text-sm ${isCertificateExpired(cert.expires_at) ? 'text-red-400' : isCertificateExpiringSoon(cert.expires_at) ? 'text-yellow-400' : 'text-brand-text'}`}>
                             {new Date(cert.expires_at).toLocaleDateString('pt-BR')}
                           </p>
                         </div>
@@ -626,7 +626,7 @@ const CertificateManagement: React.FC = () => {
 
                       {cert.certificate_thumbprint && (
                         <div className="mt-4">
-                          <p className="text-xs text-slate-400 mb-1">Thumbprint</p>
+                          <p className="text-xs text-brand-text-muted mb-1">Thumbprint</p>
                           <p className="text-xs text-slate-500 font-mono break-all">{cert.certificate_thumbprint}</p>
                         </div>
                       )}

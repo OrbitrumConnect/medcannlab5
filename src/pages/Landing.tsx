@@ -45,19 +45,19 @@ const FeatureCard = ({ icon: Icon, title, description, delay }: { icon: any, tit
     <div className="w-12 h-12 bg-gradient-to-br from-emerald-600/20 to-teal-600/20 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
       <Icon className="w-6 h-6 text-emerald-400 group-hover:text-emerald-300 transition-colors" />
     </div>
-    <h3 className="text-xl font-bold text-white mb-2">{title}</h3>
-    <p className="text-slate-400 leading-relaxed text-sm">{description}</p>
+    <h3 className="text-xl font-bold text-brand-text mb-2">{title}</h3>
+    <p className="text-brand-text-muted leading-relaxed text-sm">{description}</p>
   </motion.div>
 )
 
 const StepCard = ({ number, title, description }: { number: string, title: string, description: string }) => (
   <div className="flex items-start space-x-4">
-    <div className="flex-shrink-0 w-10 h-10 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center font-bold text-green-500">
+    <div className="flex-shrink-0 w-10 h-10 rounded-full bg-brand-surface border border-brand-border flex items-center justify-center font-bold text-green-500">
       {number}
     </div>
     <div>
-      <h3 className="text-lg font-semibold text-white mb-1">{title}</h3>
-      <p className="text-slate-400 text-sm">{description}</p>
+      <h3 className="text-lg font-semibold text-brand-text mb-1">{title}</h3>
+      <p className="text-brand-text-muted text-sm">{description}</p>
     </div>
   </div>
 )
@@ -77,13 +77,13 @@ const AuthModal = ({ isOpen, onClose, title, children }: { isOpen: boolean, onCl
           animate={{ scale: 1, opacity: 1, y: 0 }}
           exit={{ scale: 0.95, opacity: 0, y: 20 }}
           onClick={(e) => e.stopPropagation()}
-          className="bg-slate-900 border border-slate-700 rounded-2xl p-8 max-w-md w-full shadow-2xl relative overflow-hidden"
+          className="bg-brand-bg border border-brand-border rounded-2xl p-8 max-w-md w-full shadow-2xl relative overflow-hidden"
         >
           <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-emerald-500 via-teal-500 to-green-500" />
-          <button onClick={onClose} className="absolute top-4 right-4 text-slate-500 hover:text-white transition-colors">
+          <button onClick={onClose} className="absolute top-4 right-4 text-slate-500 hover:text-brand-text transition-colors">
             <X className="w-5 h-5" />
           </button>
-          <h2 className="text-2xl font-bold text-white mb-6 text-center">{title}</h2>
+          <h2 className="text-2xl font-bold text-brand-text mb-6 text-center">{title}</h2>
           {children}
         </motion.div>
       </motion.div>
@@ -317,7 +317,7 @@ const Landing: React.FC = () => {
   if (authLoading) return <div className="min-h-screen bg-slate-950 flex items-center justify-center"><div className="w-8 h-8 border-4 border-green-500 border-t-transparent rounded-full animate-spin"></div></div>
 
   return (
-    <div className="h-screen overflow-y-auto no-scrollbar text-white font-sans selection:bg-green-500/30 overflow-x-hidden" style={{ background: 'linear-gradient(135deg, #0A192F 0%, #1a365d 50%, #2d5a3d 100%)' }}>
+    <div className="h-screen overflow-y-auto no-scrollbar text-brand-text font-sans selection:bg-green-500/30 overflow-x-hidden" style={{ background: 'linear-gradient(135deg, #0A192F 0%, #1a365d 50%, #2d5a3d 100%)' }}>
 
       {/* --- Navegação High-End --- */}
       <nav className="fixed w-full top-0 z-40 bg-slate-950/80 backdrop-blur-lg border-b border-white/5">
@@ -341,27 +341,27 @@ const Landing: React.FC = () => {
               />
             </div>
             <div>
-              <span className="text-xl font-bold block text-white tracking-tight leading-none">MedCannLab</span>
-              <div className="text-[10px] text-slate-400 font-semibold tracking-widest uppercase ml-0.5 mt-0.5">Plataforma 3.0</div>
+              <span className="text-xl font-bold block text-brand-text tracking-tight leading-none">MedCannLab</span>
+              <div className="text-[10px] text-brand-text-muted font-semibold tracking-widest uppercase ml-0.5 mt-0.5">Plataforma 3.0</div>
             </div>
           </div>
 
           <div className="hidden md:flex items-center space-x-6">
-            <a href="#solucao" className="text-sm text-slate-400 hover:text-white transition-colors">Solução</a>
-            <a href="#sobre" className="text-sm text-slate-400 hover:text-white transition-colors">Sobre</a>
-            <a href="#consultorio-escola" className="text-sm text-slate-400 hover:text-white transition-colors">Consultório-Escola</a>
-            <a href="#eixos" className="text-sm text-slate-400 hover:text-white transition-colors">3 Pilares</a>
-            <a href="#planos" className="text-sm text-slate-400 hover:text-white transition-colors">Planos</a>
+            <a href="#solucao" className="text-sm text-brand-text-muted hover:text-brand-text transition-colors">Solução</a>
+            <a href="#sobre" className="text-sm text-brand-text-muted hover:text-brand-text transition-colors">Sobre</a>
+            <a href="#consultorio-escola" className="text-sm text-brand-text-muted hover:text-brand-text transition-colors">Consultório-Escola</a>
+            <a href="#eixos" className="text-sm text-brand-text-muted hover:text-brand-text transition-colors">3 Pilares</a>
+            <a href="#planos" className="text-sm text-brand-text-muted hover:text-brand-text transition-colors">Planos</a>
           </div>
 
           <div className="hidden md:flex items-center space-x-4">
-            <button onClick={() => setShowLogin(true)} className="text-sm font-medium text-slate-300 hover:text-white transition-colors">Entrar</button>
+            <button onClick={() => setShowLogin(true)} className="text-sm font-medium text-brand-text-secondary hover:text-brand-text transition-colors">Entrar</button>
             <button onClick={() => setShowRegister(true)} className="text-sm font-medium px-5 py-2.5 bg-white text-slate-950 rounded-lg hover:bg-slate-200 transition-colors shadow-lg hover:shadow-white/10">
               Inscreva-se Agora
             </button>
           </div>
 
-          <button className="md:hidden text-white" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
+          <button className="md:hidden text-brand-text" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
             {mobileMenuOpen ? <X /> : <Menu />}
           </button>
         </div>
@@ -384,7 +384,7 @@ const Landing: React.FC = () => {
             transition={{ duration: 0.8 }}
             className="flex-1 text-center lg:text-left"
           >
-            <div className="inline-flex items-center space-x-2 bg-slate-800/50 border border-slate-700 rounded-full px-4 py-1.5 mb-6">
+            <div className="inline-flex items-center space-x-2 bg-slate-800/50 border border-brand-border rounded-full px-4 py-1.5 mb-6">
               <div
                 className="w-8 h-8 rounded-full overflow-hidden border border-green-500/40 flex-shrink-0 bg-slate-950/60"
                 style={{ boxShadow: '0 0 14px rgba(0, 193, 106, 0.28)' }}
@@ -414,7 +414,7 @@ const Landing: React.FC = () => {
             </h1>
 
             {/* [V1.9.128-C] Hero compactado: 3 parágrafos → 1 enxuto + tagline. Mantém todos elementos-chave. */}
-            <p className="text-base text-slate-300 mb-4 max-w-xl mx-auto lg:mx-0 leading-relaxed">
+            <p className="text-base text-brand-text-secondary mb-4 max-w-xl mx-auto lg:mx-0 leading-relaxed">
               Modelo clínico <strong className="text-emerald-300">orientado pela escuta</strong>, fundado na <strong className="text-emerald-300">Arte da Entrevista Clínica (AEC)</strong> — método autoral do <strong className="text-emerald-200">Dr. Ricardo Valença</strong> (Nefrologia, <strong className="text-emerald-200">40 anos</strong> e <strong className="text-emerald-200">2.000+ avaliações</strong>) com direção científica do <strong className="text-teal-200">Dr. Eduardo Faveret</strong> (Neurologia). Aplicável a qualquer especialidade.
             </p>
 
@@ -426,24 +426,24 @@ const Landing: React.FC = () => {
             <div className="grid grid-cols-3 gap-3 mb-8 max-w-xl mx-auto lg:mx-0">
               <div className="bg-slate-900/60 border border-emerald-500/20 rounded-xl px-3 py-3 text-center">
                 <div className="text-2xl lg:text-3xl font-extrabold text-emerald-400">40+</div>
-                <div className="text-[10px] uppercase tracking-wider text-slate-400 mt-1">Anos do método<br />em prática</div>
+                <div className="text-[10px] uppercase tracking-wider text-brand-text-muted mt-1">Anos do método<br />em prática</div>
               </div>
               <div className="bg-slate-900/60 border border-teal-500/20 rounded-xl px-3 py-3 text-center">
                 <div className="text-2xl lg:text-3xl font-extrabold text-teal-400">+90</div>
-                <div className="text-[10px] uppercase tracking-wider text-slate-400 mt-1">Avaliações<br />no sistema</div>
+                <div className="text-[10px] uppercase tracking-wider text-brand-text-muted mt-1">Avaliações<br />no sistema</div>
               </div>
               <div className="bg-slate-900/60 border border-green-500/20 rounded-xl px-3 py-3 text-center">
                 <div className="text-2xl lg:text-3xl font-extrabold text-green-400">9</div>
-                <div className="text-[10px] uppercase tracking-wider text-slate-400 mt-1">Profissionais<br />especialistas</div>
+                <div className="text-[10px] uppercase tracking-wider text-brand-text-muted mt-1">Profissionais<br />especialistas</div>
               </div>
             </div>
 
             <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4">
-              <button onClick={() => setShowRegister(true)} className="w-full sm:w-auto px-8 py-4 bg-gradient-to-r from-green-600 to-emerald-600 rounded-2xl text-white font-semibold hover:shadow-lg hover:shadow-green-500/25 transition-all text-lg flex items-center justify-center space-x-2 group">
+              <button onClick={() => setShowRegister(true)} className="w-full sm:w-auto px-8 py-4 bg-gradient-to-r from-green-600 to-emerald-600 rounded-2xl text-brand-text font-semibold hover:shadow-lg hover:shadow-green-500/25 transition-all text-lg flex items-center justify-center space-x-2 group">
                 <span>Iniciar Avaliação com Método AEC</span>
                 <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
               </button>
-              <button onClick={() => setShowLogin(true)} className="w-full sm:w-auto px-8 py-4 bg-slate-800/50 border border-emerald-500/40 rounded-2xl text-white font-semibold hover:bg-slate-800 hover:border-emerald-500/60 transition-all text-lg backdrop-blur-sm">
+              <button onClick={() => setShowLogin(true)} className="w-full sm:w-auto px-8 py-4 bg-slate-800/50 border border-emerald-500/40 rounded-2xl text-brand-text font-semibold hover:bg-brand-surface hover:border-emerald-500/60 transition-all text-lg backdrop-blur-sm">
                 Já tenho conta — Entrar
               </button>
             </div>
@@ -512,7 +512,7 @@ const Landing: React.FC = () => {
         <div className="container mx-auto px-6">
           <div className="text-center max-w-3xl mx-auto mb-16">
             <h2 className="text-3xl md:text-4xl font-bold mb-4">A Medicina Moderna enfrenta um colapso de atenção.</h2>
-            <p className="text-slate-400 mb-3">O excesso de dados e a burocracia estão drenando a capacidade humana de escutar.</p>
+            <p className="text-brand-text-muted mb-3">O excesso de dados e a burocracia estão drenando a capacidade humana de escutar.</p>
             <p className="text-emerald-300 text-base font-medium">A MedCannLab nasce para resolver exatamente esse colapso — estruturando a escuta clínica com método e tecnologia.</p>
           </div>
 
@@ -570,7 +570,7 @@ const Landing: React.FC = () => {
                   <span className="text-emerald-400">Inteligência que cuida.</span>
                 </h2>
               </div>
-              <p className="text-slate-400 mb-8 text-lg">
+              <p className="text-brand-text-muted mb-8 text-lg">
                 Não substituímos médicos. Amplificamos sua capacidade clínica com uma arquitetura cognitiva desenhada para a saúde.
               </p>
 
@@ -594,9 +594,9 @@ const Landing: React.FC = () => {
             </div>
 
             <div className="flex-1 relative">
-              <div className="relative rounded-2xl overflow-hidden border border-slate-700 shadow-2xl bg-slate-900">
+              <div className="relative rounded-2xl overflow-hidden border border-brand-border shadow-2xl bg-brand-bg">
                 {/* Header da janela com avatar Nôa em destaque */}
-                <div className="p-4 border-b border-slate-800 relative flex items-center justify-center">
+                <div className="p-4 border-b border-brand-border-subtle relative flex items-center justify-center">
                   {/* Bolinhas window controls — absolute left */}
                   <div className="absolute left-4 flex items-center space-x-2">
                     <div className="w-3 h-3 rounded-full bg-red-500/50"></div>
@@ -661,10 +661,10 @@ const Landing: React.FC = () => {
           </div>
 
       {/* --- Middle: Philosophy Quote (Integrated) --- */}
-          <div className="max-w-4xl mx-auto text-center border-t border-slate-800 pt-16 pb-12">
+          <div className="max-w-4xl mx-auto text-center border-t border-brand-border-subtle pt-16 pb-12">
             <Heart className="w-8 h-8 text-green-500 mx-auto mb-6" />
             <h2 className="text-2xl md:text-3xl font-bold mb-4">"Uma epistemologia do cuidado."</h2>
-            <p className="text-lg md:text-xl text-slate-300 italic font-light leading-relaxed mb-6">
+            <p className="text-lg md:text-xl text-brand-text-secondary italic font-light leading-relaxed mb-6">
               "Enquanto a maioria aposta na automação desumanizante, a MedCannLab propõe uma <span className="text-green-400 font-normal">economia da escuta</span>. Nôa Esperanza não é um chatbot; é um artefato cognitivo desenhado para preservar a humanidade na medicina."
             </p>
             <div className="flex items-center justify-center space-x-2 opacity-70">
@@ -677,7 +677,7 @@ const Landing: React.FC = () => {
       </section>
 
       {/* --- AEC 001 Explanation Section --- */}
-      <section className="py-24 bg-slate-900 border-t border-slate-800 relative overflow-hidden">
+      <section className="py-24 bg-brand-bg border-t border-brand-border-subtle relative overflow-hidden">
         {/* Decorative Background Elements */}
         <div className="absolute top-0 right-0 w-1/3 h-full bg-gradient-to-l from-blue-900/10 to-transparent pointer-events-none" />
         <div className="absolute bottom-0 left-0 w-1/3 h-64 bg-gradient-to-t from-green-900/10 to-transparent pointer-events-none" />
@@ -688,39 +688,39 @@ const Landing: React.FC = () => {
               <Brain className="w-4 h-4 text-emerald-400" />
               <span className="text-xs font-bold tracking-widest text-emerald-300 uppercase">AEC 001 Protocol</span>
             </div>
-            <h2 className="text-3xl md:text-5xl font-bold mb-6 text-white leading-tight">
+            <h2 className="text-3xl md:text-5xl font-bold mb-6 text-brand-text leading-tight">
               A Arte da Entrevista Clínica
             </h2>
-            <p className="text-lg text-slate-300 leading-relaxed">
+            <p className="text-lg text-brand-text-secondary leading-relaxed">
               O paciente não é um formulário. O AEC 001 é o protocolo autoral do Dr. Ricardo Valença de escuta estruturada que prioriza o tempo presencial com o médico focado no cuidado, não em preencher dados.
             </p>
           </div>
 
           <div className="grid lg:grid-cols-3 gap-8 max-w-5xl mx-auto">
             {/* Step 1 */}
-            <div className="bg-slate-800/50 border border-slate-700/50 rounded-2xl p-8 hover:bg-slate-800 transition-colors group">
+            <div className="bg-slate-800/50 border border-slate-700/50 rounded-2xl p-8 hover:bg-brand-surface transition-colors group">
               <div className="w-14 h-14 bg-emerald-500/10 rounded-2xl flex items-center justify-center mb-6 border border-emerald-500/20 group-hover:scale-110 transition-transform">
                 <span className="text-2xl font-black text-emerald-400">1</span>
               </div>
-              <h3 className="text-xl font-bold text-white mb-3 flex items-center gap-2">
+              <h3 className="text-xl font-bold text-brand-text mb-3 flex items-center gap-2">
                 <MessageSquare className="w-5 h-5 text-emerald-400" />
                 A Escuta Ativa
               </h3>
-              <p className="text-slate-400 text-sm leading-relaxed">
+              <p className="text-brand-text-muted text-sm leading-relaxed">
                 Antes da sua consulta, Nôa conduz uma conversa imersiva guiada por 28 blocos semânticos. Ela investiga seu histórico, sono, dor e bem-estar, adaptando as perguntas ao seu ritmo.
               </p>
             </div>
 
             {/* Step 2 */}
-            <div className="bg-slate-800/50 border border-slate-700/50 rounded-2xl p-8 hover:bg-slate-800 transition-colors group relative md:-translate-y-4">
+            <div className="bg-slate-800/50 border border-slate-700/50 rounded-2xl p-8 hover:bg-brand-surface transition-colors group relative md:-translate-y-4">
               <div className="w-14 h-14 bg-teal-500/10 rounded-2xl flex items-center justify-center mb-6 border border-teal-500/20 group-hover:scale-110 transition-transform">
                 <span className="text-2xl font-black text-teal-400">2</span>
               </div>
-              <h3 className="text-xl font-bold text-white mb-3 flex items-center gap-2">
+              <h3 className="text-xl font-bold text-brand-text mb-3 flex items-center gap-2">
                 <FileText className="w-5 h-5 text-teal-400" />
                 Síntese Cognitiva
               </h3>
-              <p className="text-slate-400 text-sm leading-relaxed">
+              <p className="text-brand-text-muted text-sm leading-relaxed">
                 A IA estrutura seu relato em um relatório baseado no protocolo IMRE (autoral Dr. Ricardo Valença). Sintomas, cronologia e sinais de alerta são organizados pra revisão médica.
               </p>
               
@@ -730,15 +730,15 @@ const Landing: React.FC = () => {
             </div>
 
             {/* Step 3 */}
-            <div className="bg-slate-800/50 border border-slate-700/50 rounded-2xl p-8 hover:bg-slate-800 transition-colors group">
+            <div className="bg-slate-800/50 border border-slate-700/50 rounded-2xl p-8 hover:bg-brand-surface transition-colors group">
               <div className="w-14 h-14 bg-green-500/10 rounded-2xl flex items-center justify-center mb-6 border border-green-500/20 group-hover:scale-110 transition-transform">
                 <span className="text-2xl font-black text-green-400">3</span>
               </div>
-              <h3 className="text-xl font-bold text-white mb-3 flex items-center gap-2">
+              <h3 className="text-xl font-bold text-brand-text mb-3 flex items-center gap-2">
                 <UserPlus className="w-5 h-5 text-green-400" />
                 O Encontro Médico
               </h3>
-              <p className="text-slate-400 text-sm leading-relaxed">
+              <p className="text-brand-text-muted text-sm leading-relaxed">
                 Quando você e o médico se conectam na videochamada, ele já leu seu mapa clínico completo. Os 20 minutos que seriam gastos fazendo perguntas repetitivas viram tempo real de olho no olho e prescrição cuidadosa.
               </p>
             </div>
@@ -758,7 +758,7 @@ const Landing: React.FC = () => {
               <Microscope className="w-4 h-4 text-emerald-400" />
               <span className="text-xs font-bold tracking-widest text-emerald-300 uppercase">Sobre a MedCannLab</span>
             </div>
-            <h2 className="text-3xl md:text-5xl font-bold mb-6 text-white leading-tight">
+            <h2 className="text-3xl md:text-5xl font-bold mb-6 text-brand-text leading-tight">
               Tese & Arquitetura
             </h2>
             <p className="text-lg text-emerald-200/90 italic max-w-2xl mx-auto">
@@ -767,9 +767,9 @@ const Landing: React.FC = () => {
           </div>
 
           {/* Resumo curto (sempre visível) */}
-          <div className="prose prose-invert max-w-3xl mx-auto text-slate-300 leading-relaxed mb-8">
+          <div className="prose prose-invert max-w-3xl mx-auto text-brand-text-secondary leading-relaxed mb-8">
             <p className="text-base md:text-lg">
-              <strong className="text-white">MedCannLab</strong> é uma <strong className="text-emerald-300">Infraestrutura Cognitiva Clínica orientada pela Escuta</strong>, fundada na <strong className="text-emerald-300">Arte da Entrevista Clínica (AEC)</strong> — método autoral do <strong className="text-white">Dr. Ricardo Valença</strong> e operacionalizado por arquitetura cognitiva auditável.
+              <strong className="text-brand-text">MedCannLab</strong> é uma <strong className="text-emerald-300">Infraestrutura Cognitiva Clínica orientada pela Escuta</strong>, fundada na <strong className="text-emerald-300">Arte da Entrevista Clínica (AEC)</strong> — método autoral do <strong className="text-brand-text">Dr. Ricardo Valença</strong> e operacionalizado por arquitetura cognitiva auditável.
             </p>
           </div>
 
@@ -777,7 +777,7 @@ const Landing: React.FC = () => {
           <div className="text-center mb-2">
             <button
               onClick={() => setShowFullInstitutional(!showFullInstitutional)}
-              className="inline-flex items-center gap-2 px-5 py-2.5 bg-slate-800/60 hover:bg-slate-800 border border-emerald-500/30 hover:border-emerald-500/50 rounded-full text-sm font-medium text-emerald-300 transition-all"
+              className="inline-flex items-center gap-2 px-5 py-2.5 bg-slate-800/60 hover:bg-brand-surface border border-emerald-500/30 hover:border-emerald-500/50 rounded-full text-sm font-medium text-emerald-300 transition-all"
             >
               {showFullInstitutional ? 'Recolher tese completa' : 'Ler tese completa'}
               <ArrowRight className={`w-4 h-4 transition-transform ${showFullInstitutional ? 'rotate-90' : 'rotate-0'}`} />
@@ -796,65 +796,65 @@ const Landing: React.FC = () => {
                 className="overflow-hidden"
               >
                 {/* Parágrafo institucional v15 — em blocos legíveis */}
-                <div className="prose prose-invert max-w-3xl mx-auto space-y-6 text-slate-300 leading-relaxed mt-8">
+                <div className="prose prose-invert max-w-3xl mx-auto space-y-6 text-brand-text-secondary leading-relaxed mt-8">
                   <p className="text-base md:text-lg">
                     O método <strong className="text-emerald-300">Anamnese Triaxial</strong> organiza-se em <strong className="text-emerald-300">3 atos fundamentais</strong>: <strong className="text-emerald-300">Abertura Exponencial</strong> (a escuta se inicia e as queixas são organizadas em lista indiciária) → <strong className="text-emerald-300">Desenvolvimento Indiciário</strong> (cada questão é aprofundada por meio de perguntas cercadoras) → <strong className="text-emerald-300">Fechamento Consensual</strong> (síntese clínica construída e validada com o paciente). Esses três atos não são etapas isoladas, mas expressões de uma mesma lógica clínica de escuta estruturada, operando sob o <strong className="text-emerald-300">motor IMRE</strong> (Incentivator Minimal of Exponential — lógica de perguntas exponenciais), em fluxo determinístico e <strong className="text-emerald-300">28 blocos modulares</strong> (preservando 37 blocos legacy), formando um sistema completo de escuta estruturada e raciocínio diagnóstico.
                   </p>
 
                   <p className="text-base md:text-lg">
-                    A tradução desse método em sistema executável é a contribuição arquitetural original de <strong className="text-white">Pedro Henrique Passos Galluf</strong> (CTO): o <strong className="text-emerald-300">TradeVision Core</strong> — núcleo originado em sua plataforma anterior e amplamente desenvolvido no MedCannLab — codifica a metodologia clínica autoral em <strong className="text-emerald-300">infraestrutura cognitiva auditável</strong>, com FSM determinístico, Verbatim First, AEC Gate, Pipeline Orchestrator e COS Kernel construídos diretamente sobre a AEC para executar o método sob condições auditáveis. A integração entre método e arquitetura foi orquestrada por Pedro em colaboração técnica com Ricardo.
+                    A tradução desse método em sistema executável é a contribuição arquitetural original de <strong className="text-brand-text">Pedro Henrique Passos Galluf</strong> (CTO): o <strong className="text-emerald-300">TradeVision Core</strong> — núcleo originado em sua plataforma anterior e amplamente desenvolvido no MedCannLab — codifica a metodologia clínica autoral em <strong className="text-emerald-300">infraestrutura cognitiva auditável</strong>, com FSM determinístico, Verbatim First, AEC Gate, Pipeline Orchestrator e COS Kernel construídos diretamente sobre a AEC para executar o método sob condições auditáveis. A integração entre método e arquitetura foi orquestrada por Pedro em colaboração técnica com Ricardo.
                   </p>
                 </div>
 
                 {/* Pirâmide de 8 camadas — visual */}
                 <div className="mt-12 max-w-4xl mx-auto">
-                  <div className="bg-slate-900/60 border border-slate-800 rounded-2xl p-8">
+                  <div className="bg-slate-900/60 border border-brand-border-subtle rounded-2xl p-8">
                     <div className="flex items-center gap-3 mb-6">
                       <Lock className="w-5 h-5 text-emerald-400" />
-                      <h3 className="text-lg font-bold text-white tracking-tight">Pirâmide de Governança — 8 camadas</h3>
+                      <h3 className="text-lg font-bold text-brand-text tracking-tight">Pirâmide de Governança — 8 camadas</h3>
                     </div>
-                    <p className="text-sm text-slate-400 mb-6 leading-relaxed">
+                    <p className="text-sm text-brand-text-muted mb-6 leading-relaxed">
                       A plataforma opera sob uma pirâmide formal de governança, onde <strong className="text-emerald-300">GPT é o último a falar e o primeiro a ser checado</strong> — com 46% das interações em hard-lock bypassando o LLM.
                     </p>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
                       <div className="bg-slate-950/60 border border-emerald-500/20 rounded-lg px-3 py-2.5 text-center">
                         <div className="text-emerald-400 font-bold mb-1">0</div>
-                        <div className="text-slate-300">Constituição §1</div>
+                        <div className="text-brand-text-secondary">Constituição §1</div>
                       </div>
                       <div className="bg-slate-950/60 border border-emerald-500/20 rounded-lg px-3 py-2.5 text-center">
                         <div className="text-emerald-400 font-bold mb-1">1</div>
-                        <div className="text-slate-300">COS Kernel v5.0</div>
+                        <div className="text-brand-text-secondary">COS Kernel v5.0</div>
                       </div>
                       <div className="bg-slate-950/60 border border-teal-500/20 rounded-lg px-3 py-2.5 text-center">
                         <div className="text-teal-400 font-bold mb-1">2</div>
-                        <div className="text-slate-300">AEC FSM</div>
+                        <div className="text-brand-text-secondary">AEC FSM</div>
                       </div>
                       <div className="bg-slate-950/60 border border-teal-500/20 rounded-lg px-3 py-2.5 text-center">
                         <div className="text-teal-400 font-bold mb-1">3</div>
-                        <div className="text-slate-300">Verbatim First</div>
+                        <div className="text-brand-text-secondary">Verbatim First</div>
                       </div>
                       <div className="bg-slate-950/60 border border-green-500/20 rounded-lg px-3 py-2.5 text-center">
                         <div className="text-green-400 font-bold mb-1">4</div>
-                        <div className="text-slate-300">AEC Gate</div>
+                        <div className="text-brand-text-secondary">AEC Gate</div>
                       </div>
                       <div className="bg-slate-950/60 border border-slate-700/50 rounded-lg px-3 py-2.5 text-center">
-                        <div className="text-slate-400 font-bold mb-1">5</div>
-                        <div className="text-slate-300">GPT</div>
+                        <div className="text-brand-text-muted font-bold mb-1">5</div>
+                        <div className="text-brand-text-secondary">GPT</div>
                       </div>
                       <div className="bg-slate-950/60 border border-green-500/20 rounded-lg px-3 py-2.5 text-center">
                         <div className="text-green-400 font-bold mb-1">6</div>
-                        <div className="text-slate-300">Pós-processamento</div>
+                        <div className="text-brand-text-secondary">Pós-processamento</div>
                       </div>
                       <div className="bg-slate-950/60 border border-emerald-500/20 rounded-lg px-3 py-2.5 text-center">
                         <div className="text-emerald-400 font-bold mb-1">7</div>
-                        <div className="text-slate-300">Pipeline Orchestrator</div>
+                        <div className="text-brand-text-secondary">Pipeline Orchestrator</div>
                       </div>
                     </div>
                   </div>
                 </div>
 
                 {/* Formação + Constituição */}
-                <div className="prose prose-invert max-w-3xl mx-auto space-y-6 text-slate-300 leading-relaxed mt-12">
+                <div className="prose prose-invert max-w-3xl mx-auto space-y-6 text-brand-text-secondary leading-relaxed mt-12">
                   <p className="text-base md:text-lg">
                     <strong className="text-emerald-300">Formação clínica é pilar:</strong> cursos AEC (R$ 299,90), IMRE Triaxial (R$ 199,90) e Cannabis Medicinal (R$ 2.999,90), Simulador com 20 personas-pacientes, parceria <em>Cidade Amiga dos Rins</em>.
                   </p>
@@ -865,8 +865,8 @@ const Landing: React.FC = () => {
                 </div>
 
                 {/* Frase âncora final */}
-                <div className="mt-12 max-w-3xl mx-auto text-center border-t border-slate-800 pt-10">
-                  <p className="text-lg md:text-xl text-white font-semibold leading-relaxed mb-4">
+                <div className="mt-12 max-w-3xl mx-auto text-center border-t border-brand-border-subtle pt-10">
+                  <p className="text-lg md:text-xl text-brand-text font-semibold leading-relaxed mb-4">
                     MedCannLab não substitui o método clínico — <span className="text-emerald-300">operacionaliza, preserva e escala o método</span> em condições auditáveis.
                   </p>
                   <p className="text-sm text-slate-500 italic tracking-wide">
@@ -890,14 +890,14 @@ const Landing: React.FC = () => {
               <Stethoscope className="w-4 h-4 text-emerald-400" />
               <span className="text-xs font-bold tracking-widest text-emerald-300 uppercase">Consultório-Escola Exponencial</span>
             </div>
-            <h2 className="text-3xl md:text-5xl font-bold mb-4 text-white leading-tight">
+            <h2 className="text-3xl md:text-5xl font-bold mb-4 text-brand-text leading-tight">
               Dois consultórios, um método.<br />
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-teal-300">Escala que ensina.</span>
             </h2>
             <p className="text-base text-emerald-200/90 mb-6 max-w-2xl mx-auto leading-relaxed">
-              Cada atendimento gera <strong className="text-white">cuidado real</strong>, <strong className="text-white">aprendizado contínuo</strong> e <strong className="text-white">base científica</strong>.
+              Cada atendimento gera <strong className="text-brand-text">cuidado real</strong>, <strong className="text-brand-text">aprendizado contínuo</strong> e <strong className="text-brand-text">base científica</strong>.
             </p>
-            <p className="text-lg text-slate-300 leading-relaxed">
+            <p className="text-lg text-brand-text-secondary leading-relaxed">
               A junção da prática clínica do <strong className="text-emerald-300">Dr. Ricardo Valença</strong> (Nefrologia) e do <strong className="text-teal-300">Dr. Eduardo Faveret</strong> (Neurologia) — operacionalizada pelo método AEC e amplificada pela infraestrutura digital MedCannLab.
             </p>
           </div>
@@ -910,11 +910,11 @@ const Landing: React.FC = () => {
                   <Heart className="w-7 h-7 text-emerald-400" />
                 </div>
                 <div>
-                  <h3 className="text-xl font-bold text-white">Dr. Ricardo Valença</h3>
+                  <h3 className="text-xl font-bold text-brand-text">Dr. Ricardo Valença</h3>
                   <p className="text-sm text-emerald-300 font-medium">Nefrologia · Coordenador Científico</p>
                 </div>
               </div>
-              <p className="text-sm text-slate-400 leading-relaxed">
+              <p className="text-sm text-brand-text-muted leading-relaxed">
                 Criador do método AEC. <strong className="text-emerald-200">40+ anos</strong> de prática clínica, <strong className="text-emerald-200">2.000+ avaliações</strong> conduzidas. Mestrado defendido sobre o método. Cidade Amiga dos Rins (CKD).
               </p>
             </div>
@@ -925,11 +925,11 @@ const Landing: React.FC = () => {
                   <Brain className="w-7 h-7 text-teal-400" />
                 </div>
                 <div>
-                  <h3 className="text-xl font-bold text-white">Dr. Eduardo Faveret</h3>
+                  <h3 className="text-xl font-bold text-brand-text">Dr. Eduardo Faveret</h3>
                   <p className="text-sm text-teal-300 font-medium">Neurologia · Diretor Médico</p>
                 </div>
               </div>
-              <p className="text-sm text-slate-400 leading-relaxed">
+              <p className="text-sm text-brand-text-muted leading-relaxed">
                 <strong className="text-teal-200">Direção médica e científica</strong> do MedCannLab. Atuação clínica em <strong className="text-teal-200">neurologia com foco em cannabis medicinal</strong> e escuta estruturada. Integra o método AEC à prática neurológica e à formação clínica continuada dentro do modelo MedCannLab.
               </p>
             </div>
@@ -937,24 +937,24 @@ const Landing: React.FC = () => {
 
           {/* 3 dimensões do consultório-escola */}
           <div className="grid md:grid-cols-3 gap-5 max-w-5xl mx-auto">
-            <div className="bg-slate-950/60 border border-slate-800 rounded-xl p-5 text-center">
+            <div className="bg-slate-950/60 border border-brand-border-subtle rounded-xl p-5 text-center">
               <Stethoscope className="w-6 h-6 text-emerald-400 mx-auto mb-3" />
-              <h4 className="text-white font-semibold mb-2">Atendimento real</h4>
-              <p className="text-xs text-slate-400 leading-relaxed">
+              <h4 className="text-brand-text font-semibold mb-2">Atendimento real</h4>
+              <p className="text-xs text-brand-text-muted leading-relaxed">
                 Cada consulta é prática clínica de verdade — pacientes reais, escuta real, decisão real.
               </p>
             </div>
-            <div className="bg-slate-950/60 border border-slate-800 rounded-xl p-5 text-center">
+            <div className="bg-slate-950/60 border border-brand-border-subtle rounded-xl p-5 text-center">
               <Users className="w-6 h-6 text-teal-400 mx-auto mb-3" />
-              <h4 className="text-white font-semibold mb-2">Aprendizado contínuo</h4>
-              <p className="text-xs text-slate-400 leading-relaxed">
+              <h4 className="text-brand-text font-semibold mb-2">Aprendizado contínuo</h4>
+              <p className="text-xs text-brand-text-muted leading-relaxed">
                 Cada caso clínico estruturado vira material formativo para residentes, alunos e médicos parceiros.
               </p>
             </div>
-            <div className="bg-slate-950/60 border border-slate-800 rounded-xl p-5 text-center">
+            <div className="bg-slate-950/60 border border-brand-border-subtle rounded-xl p-5 text-center">
               <Zap className="w-6 h-6 text-green-400 mx-auto mb-3" />
-              <h4 className="text-white font-semibold mb-2">Escala metódica</h4>
-              <p className="text-xs text-slate-400 leading-relaxed">
+              <h4 className="text-brand-text font-semibold mb-2">Escala metódica</h4>
+              <p className="text-xs text-brand-text-muted leading-relaxed">
                 A infraestrutura digital permite reproduzir o método sem diluir a qualidade clínica.
               </p>
             </div>
@@ -975,44 +975,44 @@ const Landing: React.FC = () => {
               <Brain className="w-4 h-4 text-emerald-400" />
               <span className="text-xs font-bold tracking-widest text-emerald-300 uppercase">Os 3 Pilares</span>
             </div>
-            <h2 className="text-3xl md:text-4xl font-bold mb-4 text-white leading-tight">
+            <h2 className="text-3xl md:text-4xl font-bold mb-4 text-brand-text leading-tight">
               Clínica, Ensino e Pesquisa em Cannabis Medicinal
             </h2>
-            <p className="text-slate-400 text-lg">
+            <p className="text-brand-text-muted text-lg">
               Três eixos integrados sobre o mesmo método autoral: a <strong className="text-emerald-300">Arte da Entrevista Clínica (AEC)</strong> do Dr. Ricardo Valença.
             </p>
           </div>
 
           <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
             {/* Eixo 1 — Clínica */}
-            <div className="bg-slate-900/60 border border-slate-800 rounded-2xl p-7 hover:border-emerald-500/40 transition-colors">
+            <div className="bg-slate-900/60 border border-brand-border-subtle rounded-2xl p-7 hover:border-emerald-500/40 transition-colors">
               <div className="w-12 h-12 bg-emerald-500/10 rounded-xl flex items-center justify-center mb-5 border border-emerald-500/20">
                 <Heart className="w-6 h-6 text-emerald-400" />
               </div>
-              <h3 className="text-xl font-bold text-white mb-3">Clínica — Avaliação com Método AEC</h3>
-              <p className="text-slate-400 text-sm leading-relaxed">
+              <h3 className="text-xl font-bold text-brand-text mb-3">Clínica — Avaliação com Método AEC</h3>
+              <p className="text-brand-text-muted text-sm leading-relaxed">
                 Avaliação clínica estruturada conduzida por médicos especialistas. Escuta ativa, IMRE determinístico, relatórios assinados (ICP-Brasil). Cannabis medicinal, neurologia, nefrologia.
               </p>
             </div>
 
             {/* Eixo 2 — Ensino */}
-            <div className="bg-slate-900/60 border border-slate-800 rounded-2xl p-7 hover:border-teal-500/40 transition-colors">
+            <div className="bg-slate-900/60 border border-brand-border-subtle rounded-2xl p-7 hover:border-teal-500/40 transition-colors">
               <div className="w-12 h-12 bg-teal-500/10 rounded-xl flex items-center justify-center mb-5 border border-teal-500/20">
                 <Users className="w-6 h-6 text-teal-400" />
               </div>
-              <h3 className="text-xl font-bold text-white mb-3">Ensino — Formação Médica Estruturada</h3>
-              <p className="text-slate-400 text-sm leading-relaxed">
+              <h3 className="text-xl font-bold text-brand-text mb-3">Ensino — Formação Médica Estruturada</h3>
+              <p className="text-brand-text-muted text-sm leading-relaxed">
                 Cursos baseados no método AEC (R$ 299,90), Sistema IMRE Triaxial (R$ 199,90) e Pós-Graduação em Cannabis Medicinal. Simulador clínico com 20 personas-pacientes para prática.
               </p>
             </div>
 
             {/* Eixo 3 — Pesquisa */}
-            <div className="bg-slate-900/60 border border-slate-800 rounded-2xl p-7 hover:border-green-500/40 transition-colors">
+            <div className="bg-slate-900/60 border border-brand-border-subtle rounded-2xl p-7 hover:border-green-500/40 transition-colors">
               <div className="w-12 h-12 bg-green-500/10 rounded-xl flex items-center justify-center mb-5 border border-green-500/20">
                 <Database className="w-6 h-6 text-green-400" />
               </div>
-              <h3 className="text-xl font-bold text-white mb-3">Pesquisa — Produção Científica</h3>
-              <p className="text-slate-400 text-sm leading-relaxed">
+              <h3 className="text-xl font-bold text-brand-text mb-3">Pesquisa — Produção Científica</h3>
+              <p className="text-brand-text-muted text-sm leading-relaxed">
                 As avaliações estruturadas pelo método AEC geram dados clínicos organizados e rastreáveis, base para evidência real em cannabis medicinal. <strong className="text-green-300">Mais de 90 casos já estruturados</strong> formam a base inicial. Parceria com Cidade Amiga dos Rins (CKD).
               </p>
             </div>
@@ -1026,42 +1026,42 @@ const Landing: React.FC = () => {
         <div className="container mx-auto px-6">
           <div className="text-center max-w-3xl mx-auto mb-16">
             <h2 className="text-3xl md:text-4xl font-bold mb-4">Acesso Transparente e Direto.</h2>
-            <p className="text-slate-400">Tudo o que você precisa, feito sob medida para o seu perfil.</p>
+            <p className="text-brand-text-muted">Tudo o que você precisa, feito sob medida para o seu perfil.</p>
           </div>
 
           <div className="grid lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
             
             {/* Paciente Plan */}
-            <div className="w-full bg-slate-900 rounded-2xl p-8 border border-slate-800 relative flex flex-col h-full hover:border-green-500/50 transition-colors group">
+            <div className="w-full bg-brand-bg rounded-2xl p-8 border border-brand-border-subtle relative flex flex-col h-full hover:border-green-500/50 transition-colors group">
               <div className="relative z-10 flex-grow">
                 <div className="w-12 h-12 rounded-xl bg-emerald-500/10 flex items-center justify-center mb-6">
                   <UserPlus className="w-6 h-6 text-emerald-400" />
                 </div>
-                <h3 className="text-xl font-bold text-white mb-2">Plano Paciente (SaaS)</h3>
-                <p className="text-slate-400 mb-6 text-sm">Assinatura tecnológica para acesso ao Motor Nôa Esperanza e relatórios estruturados AEC.</p>
+                <h3 className="text-xl font-bold text-brand-text mb-2">Plano Paciente (SaaS)</h3>
+                <p className="text-brand-text-muted mb-6 text-sm">Assinatura tecnológica para acesso ao Motor Nôa Esperanza e relatórios estruturados AEC.</p>
 
-                <div className="mb-6 border-b border-slate-800 pb-6">
-                  <div className="flex items-end gap-2 text-white">
+                <div className="mb-6 border-b border-brand-border-subtle pb-6">
+                  <div className="flex items-end gap-2 text-brand-text">
                     <span className="text-4xl font-extrabold tracking-tight">R$ 33,33</span>
-                    <span className="text-slate-400 pb-1">/mês</span>
+                    <span className="text-brand-text-muted pb-1">/mês</span>
                   </div>
                   <div className="flex flex-col space-y-1 mt-3">
                     <p className="text-xs text-green-400 font-bold tracking-wide">+ Taxa de Inscrição Única: R$ 19,90 (Só no 1º mês)</p>
-                    <p className="text-xs text-slate-400 font-medium mt-1">Lembrete: O valor da Consulta Médica é cobrado separadamente pelo profissional.</p>
+                    <p className="text-xs text-brand-text-muted font-medium mt-1">Lembrete: O valor da Consulta Médica é cobrado separadamente pelo profissional.</p>
                   </div>
                 </div>
 
-                <ul className="space-y-4 text-sm text-slate-300">
+                <ul className="space-y-4 text-sm text-brand-text-secondary">
                   <li className="flex gap-3"><CheckCircle2 className="w-5 h-5 text-green-500 flex-shrink-0" /><span>Avaliação Clínica Inteligente (Nôa AI)</span></li>
                   <li className="flex gap-3"><CheckCircle2 className="w-5 h-5 text-green-500 flex-shrink-0" /><span>Armazenamento Criptografado de Histórico</span></li>
                   <li className="flex gap-3"><CheckCircle2 className="w-5 h-5 text-green-500 flex-shrink-0" /><span>Acesso ao Agendador de Especialistas</span></li>
                 </ul>
               </div>
-              <button onClick={() => setShowRegister(true)} className="w-full mt-8 py-3 bg-slate-800 text-white rounded-xl font-semibold hover:bg-slate-700 transition">Assinar Plataforma</button>
+              <button onClick={() => setShowRegister(true)} className="w-full mt-8 py-3 bg-brand-surface text-brand-text rounded-xl font-semibold hover:bg-brand-surface-subtle transition">Assinar Plataforma</button>
             </div>
 
             {/* Estuda / Aluno Plan */}
-            <div className="w-full bg-slate-900 rounded-2xl p-8 border border-yellow-500/40 shadow-2xl relative flex flex-col h-full hover:border-yellow-400/60 hover:shadow-yellow-500/10 hover:shadow-2xl transition-all duration-300">
+            <div className="w-full bg-brand-bg rounded-2xl p-8 border border-yellow-500/40 shadow-2xl relative flex flex-col h-full hover:border-yellow-400/60 hover:shadow-yellow-500/10 hover:shadow-2xl transition-all duration-300">
               <div className="absolute top-0 left-1/2 -translate-x-1/2 bg-yellow-500 text-slate-950 text-xs font-bold px-4 py-1 rounded-b-xl z-20">
                 ACESSO EDUCACIONAL
               </div>
@@ -1071,57 +1071,57 @@ const Landing: React.FC = () => {
                 <div className="w-12 h-12 rounded-xl bg-yellow-500/10 flex items-center justify-center mb-6">
                   <FileText className="w-6 h-6 text-yellow-400" />
                 </div>
-                <h3 className="text-xl font-bold text-white mb-2">Plano Acadêmico</h3>
-                <p className="text-slate-400 mb-6 text-sm">Biblioteca para pacientes, familiares, e simulador de ensino para prospecção médica.</p>
+                <h3 className="text-xl font-bold text-brand-text mb-2">Plano Acadêmico</h3>
+                <p className="text-brand-text-muted mb-6 text-sm">Biblioteca para pacientes, familiares, e simulador de ensino para prospecção médica.</p>
 
-                <div className="mb-6 border-b border-slate-800 pb-6">
-                  <div className="flex items-end gap-2 text-white">
+                <div className="mb-6 border-b border-brand-border-subtle pb-6">
+                  <div className="flex items-end gap-2 text-brand-text">
                     <span className="text-4xl font-extrabold tracking-tight">R$ 149</span>
-                    <span className="text-slate-400 pb-1">,90/mês</span>
+                    <span className="text-brand-text-muted pb-1">,90/mês</span>
                   </div>
                   <p className="text-xs text-yellow-400 mt-2 font-medium">Acesso vitalício à base Biblioteca MedCannLab</p>
                 </div>
 
-                <ul className="space-y-4 text-sm text-slate-300">
+                <ul className="space-y-4 text-sm text-brand-text-secondary">
                   <li className="flex gap-3"><CheckCircle2 className="w-5 h-5 text-green-500 flex-shrink-0" /><span>Acesso a todos os Cursos EAD Familiares e Clínicos</span></li>
                   <li className="flex gap-3"><CheckCircle2 className="w-5 h-5 text-green-500 flex-shrink-0" /><span>Simulador Clínico da Nôa AI Interativo</span></li>
                   <li className="flex gap-3"><CheckCircle2 className="w-5 h-5 text-green-500 flex-shrink-0" /><span>Módulo Avançado de Biblioteca Literária</span></li>
                   <li className="flex gap-3"><CheckCircle2 className="w-5 h-5 text-green-500 flex-shrink-0" /><span>Fórum Comunitário Educacional</span></li>
                 </ul>
               </div>
-              <button onClick={() => setShowRegister(true)} className="w-full mt-8 py-3 bg-gradient-to-r from-yellow-600 to-amber-600 text-white rounded-xl font-bold hover:shadow-lg transition">Acessar Formação</button>
+              <button onClick={() => setShowRegister(true)} className="w-full mt-8 py-3 bg-gradient-to-r from-yellow-600 to-amber-600 text-brand-text rounded-xl font-bold hover:shadow-lg transition">Acessar Formação</button>
             </div>
 
             {/* Profissional Plan */}
-            <div className="w-full bg-slate-900 rounded-2xl p-8 border border-slate-800 relative flex flex-col h-full hover:border-emerald-500/50 transition-colors group">
+            <div className="w-full bg-brand-bg rounded-2xl p-8 border border-brand-border-subtle relative flex flex-col h-full hover:border-emerald-500/50 transition-colors group">
               <div className="relative z-10 flex-grow">
                 <div className="w-12 h-12 rounded-xl bg-emerald-500/10 flex items-center justify-center mb-6">
                   <Stethoscope className="w-6 h-6 text-emerald-400" />
                 </div>
-                <h3 className="text-xl font-bold text-white mb-2">Pro MedCannLab</h3>
-                <p className="text-slate-400 mb-6 text-sm">Ferramenta Médica SaaS para estruturação de clínicas independentes.</p>
+                <h3 className="text-xl font-bold text-brand-text mb-2">Pro MedCannLab</h3>
+                <p className="text-brand-text-muted mb-6 text-sm">Ferramenta Médica SaaS para estruturação de clínicas independentes.</p>
 
-                <div className="mb-6 border-b border-slate-800 pb-6">
-                  <div className="flex items-end gap-2 text-white">
+                <div className="mb-6 border-b border-brand-border-subtle pb-6">
+                  <div className="flex items-end gap-2 text-brand-text">
                     <span className="text-4xl font-extrabold tracking-tight">R$ 99</span>
-                    <span className="text-slate-400 pb-1">,90/mês</span>
+                    <span className="text-brand-text-muted pb-1">,90/mês</span>
                   </div>
                   <p className="text-xs text-emerald-400 mt-2 font-medium">Taxa de Operação: 30% (Com impostos e infraestrutura já inclusos)</p>
                 </div>
 
-                <ul className="space-y-4 text-sm text-slate-300">
+                <ul className="space-y-4 text-sm text-brand-text-secondary">
                   <li className="flex gap-3"><CheckCircle2 className="w-5 h-5 text-green-500 flex-shrink-0" /><span>Acesso ao Prontuário NLP Mastigado</span></li>
                   <li className="flex gap-3"><CheckCircle2 className="w-5 h-5 text-green-500 flex-shrink-0" /><span>Assinatura Digital Cloud (ICP-Brasil) e Agenda</span></li>
                   <li className="flex gap-3"><CheckCircle2 className="w-5 h-5 text-green-500 flex-shrink-0" /><span>Liquidação Connect (Split 70/30) Automático</span></li>
                   <li className="flex gap-3"><CheckCircle2 className="w-5 h-5 text-green-500 flex-shrink-0" /><span>Sem limites de convites a pacientes</span></li>
                 </ul>
               </div>
-              <button onClick={() => setShowRegister(true)} className="w-full mt-8 py-3 bg-slate-800 text-white rounded-xl font-semibold hover:bg-slate-700 transition">Assinar Licença Pro</button>
+              <button onClick={() => setShowRegister(true)} className="w-full mt-8 py-3 bg-brand-surface text-brand-text rounded-xl font-semibold hover:bg-brand-surface-subtle transition">Assinar Licença Pro</button>
             </div>
 
           </div>
 
-          <div className="mt-12 max-w-4xl mx-auto bg-slate-900/50 border border-slate-800 rounded-xl p-6 text-center">
+          <div className="mt-12 max-w-4xl mx-auto bg-slate-900/50 border border-brand-border-subtle rounded-xl p-6 text-center">
              <p className="text-xs text-slate-500 leading-relaxed font-mono">
                <strong>Aviso de Governança Médica (CFM):</strong> A MedCannLab atua exclusivamente como software (SaaS) de inteligência artificial clínica e intermediação de agendamentos. Nós não prestamos o ato médico, não diagnosticamos doenças e não operamos como Clínica Médica ou Plano de Saúde Suplementar. Todo o ato terapêutico decorrente do uso da plataforma é de responsabilidade civil e autônoma do profissional parceiro.
              </p>
@@ -1142,10 +1142,10 @@ const Landing: React.FC = () => {
             <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-green-600/20 to-emerald-600/20 border border-green-500/30 mb-6">
               <Download className="w-8 h-8 text-green-400" />
             </div>
-            <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
+            <h2 className="text-3xl md:text-4xl font-bold text-brand-text mb-4">
               Acesse de Qualquer Dispositivo
             </h2>
-            <p className="text-lg text-slate-400 mb-10 max-w-2xl mx-auto">
+            <p className="text-lg text-brand-text-muted mb-10 max-w-2xl mx-auto">
               Instale o MedCannLab como app no seu celular ou computador para acesso rápido e experiência nativa.
             </p>
 
@@ -1165,8 +1165,8 @@ const Landing: React.FC = () => {
                   <Smartphone className="w-7 h-7 text-emerald-400" />
                 </div>
                 <div className="text-left">
-                  <p className="text-sm text-slate-400 font-medium">Instalar no</p>
-                  <p className="text-xl font-bold text-white">Celular</p>
+                  <p className="text-sm text-brand-text-muted font-medium">Instalar no</p>
+                  <p className="text-xl font-bold text-brand-text">Celular</p>
                   <p className="text-xs text-slate-500 mt-1">iOS & Android</p>
                 </div>
               </button>
@@ -1186,8 +1186,8 @@ const Landing: React.FC = () => {
                   <Monitor className="w-7 h-7 text-emerald-400" />
                 </div>
                 <div className="text-left">
-                  <p className="text-sm text-slate-400 font-medium">Instalar no</p>
-                  <p className="text-xl font-bold text-white">Computador</p>
+                  <p className="text-sm text-brand-text-muted font-medium">Instalar no</p>
+                  <p className="text-xl font-bold text-brand-text">Computador</p>
                   <p className="text-xs text-slate-500 mt-1">Windows, Mac & Linux</p>
                 </div>
               </button>
@@ -1206,12 +1206,12 @@ const Landing: React.FC = () => {
         <div className="container mx-auto px-6 flex flex-col md:flex-row justify-between items-center opacity-50 hover:opacity-100 transition-opacity">
           <div className="flex items-center space-x-2 mb-4 md:mb-0">
             <Brain className="w-5 h-5 text-slate-500" />
-            <span className="font-semibold text-slate-400">MedCannLab</span>
+            <span className="font-semibold text-brand-text-muted">MedCannLab</span>
           </div>
           <div className="flex space-x-6 text-sm text-slate-500">
-            <Link to="/termos" className="cursor-pointer hover:text-white transition-colors">Termos de Uso</Link>
-            <Link to="/privacidade" className="cursor-pointer hover:text-white transition-colors">Privacidade</Link>
-            <span className="cursor-pointer hover:text-white" onClick={() => setShowAdminLogin(true)}>Admin</span>
+            <Link to="/termos" className="cursor-pointer hover:text-brand-text transition-colors">Termos de Uso</Link>
+            <Link to="/privacidade" className="cursor-pointer hover:text-brand-text transition-colors">Privacidade</Link>
+            <span className="cursor-pointer hover:text-brand-text" onClick={() => setShowAdminLogin(true)}>Admin</span>
           </div>
           <div className="mt-4 md:mt-0 text-xs text-slate-600">
             © 2026 MedCannLab. All rights reserved.
@@ -1225,34 +1225,34 @@ const Landing: React.FC = () => {
       <AuthModal isOpen={showLogin} onClose={() => setShowLogin(false)} title="Bem-vindo de volta">
         <div className="space-y-4">
           <div>
-            <label className="block text-sm text-slate-400 mb-1">Email</label>
+            <label className="block text-sm text-brand-text-muted mb-1">Email</label>
             <input
               type="email"
               value={loginData.email}
               onChange={(e) => setLoginData({ ...loginData, email: e.target.value })}
-              className="w-full bg-slate-800 border border-slate-700 rounded-lg p-3 text-white focus:ring-2 focus:ring-green-500 outline-none transition-all"
+              className="w-full bg-brand-surface border border-brand-border rounded-lg p-3 text-brand-text focus:ring-2 focus:ring-green-500 outline-none transition-all"
               placeholder="seu@email.com"
             />
           </div>
           <div>
-            <label className="block text-sm text-slate-400 mb-1">Senha</label>
+            <label className="block text-sm text-brand-text-muted mb-1">Senha</label>
             <input
               type="password"
               value={loginData.password}
               onChange={(e) => setLoginData({ ...loginData, password: e.target.value })}
-              className="w-full bg-slate-800 border border-slate-700 rounded-lg p-3 text-white focus:ring-2 focus:ring-green-500 outline-none transition-all"
+              className="w-full bg-brand-surface border border-brand-border rounded-lg p-3 text-brand-text focus:ring-2 focus:ring-green-500 outline-none transition-all"
               placeholder="••••••••"
             />
           </div>
           <button
             onClick={handleLogin}
             disabled={isLoading}
-            className="w-full bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-lg p-3 font-semibold hover:shadow-lg hover:shadow-green-500/20 transition-all disabled:opacity-50"
+            className="w-full bg-gradient-to-r from-green-600 to-emerald-600 text-brand-text rounded-lg p-3 font-semibold hover:shadow-lg hover:shadow-green-500/20 transition-all disabled:opacity-50"
           >
             {isLoading ? 'Acessando...' : 'Entrar na Plataforma'}
           </button>
           <div className="flex items-center justify-between mt-4">
-            <p className="text-sm text-slate-500 cursor-pointer hover:text-white" onClick={() => { setShowLogin(false); setShowRegister(true); }}>
+            <p className="text-sm text-slate-500 cursor-pointer hover:text-brand-text" onClick={() => { setShowLogin(false); setShowRegister(true); }}>
               Não tem conta? <span className="text-green-400">Criar agora</span>
             </p>
             <p className="text-sm text-slate-500 cursor-pointer hover:text-green-400 transition-colors" onClick={() => { setShowLogin(false); setShowForgotPassword(true); }}>
@@ -1265,15 +1265,15 @@ const Landing: React.FC = () => {
       {/* Forgot Password Modal */}
       <AuthModal isOpen={showForgotPassword} onClose={() => { setShowForgotPassword(false); setForgotPasswordEmail('') }} title="Recuperar Senha">
         <div className="space-y-4">
-          <p className="text-slate-400 text-sm">Digite seu email e enviaremos um link para redefinir sua senha.</p>
+          <p className="text-brand-text-muted text-sm">Digite seu email e enviaremos um link para redefinir sua senha.</p>
           <div>
-            <label className="block text-sm text-slate-400 mb-1">Email</label>
+            <label className="block text-sm text-brand-text-muted mb-1">Email</label>
             <input
               type="email"
               value={forgotPasswordEmail}
               onChange={(e) => setForgotPasswordEmail(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleForgotPassword()}
-              className="w-full bg-slate-800 border border-slate-700 rounded-lg p-3 text-white focus:ring-2 focus:ring-green-500 outline-none transition-all"
+              className="w-full bg-brand-surface border border-brand-border rounded-lg p-3 text-brand-text focus:ring-2 focus:ring-green-500 outline-none transition-all"
               placeholder="seu@email.com"
               autoFocus
             />
@@ -1281,11 +1281,11 @@ const Landing: React.FC = () => {
           <button
             onClick={handleForgotPassword}
             disabled={isLoading}
-            className="w-full bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-lg p-3 font-semibold hover:shadow-lg hover:shadow-green-500/20 transition-all disabled:opacity-50"
+            className="w-full bg-gradient-to-r from-green-600 to-emerald-600 text-brand-text rounded-lg p-3 font-semibold hover:shadow-lg hover:shadow-green-500/20 transition-all disabled:opacity-50"
           >
             {isLoading ? 'Enviando...' : 'Enviar link de recuperação'}
           </button>
-          <p className="text-center text-sm text-slate-500 cursor-pointer hover:text-white" onClick={() => { setShowForgotPassword(false); setShowLogin(true) }}>
+          <p className="text-center text-sm text-slate-500 cursor-pointer hover:text-brand-text" onClick={() => { setShowForgotPassword(false); setShowLogin(true) }}>
             Lembrou a senha? <span className="text-green-400">Entrar</span>
           </p>
         </div>
@@ -1295,12 +1295,12 @@ const Landing: React.FC = () => {
       <AuthModal isOpen={showRegister} onClose={() => setShowRegister(false)} title="Criar Nova Conta">
         <div className="space-y-4">
           {/* User Type Selector */}
-          <div className="flex bg-slate-800 p-1 rounded-lg mb-4">
+          <div className="flex bg-brand-surface p-1 rounded-lg mb-4">
             {['paciente', 'profissional', 'aluno'].map((type) => (
               <button
                 key={type}
                 onClick={() => setRegisterData({ ...registerData, userType: type as any })}
-                className={`flex-1 py-2 text-sm font-medium rounded-md capitalize transition-all ${registerData.userType === type ? 'bg-slate-600 text-white shadow-md' : 'text-slate-400 hover:text-white'}`}
+                className={`flex-1 py-2 text-sm font-medium rounded-md capitalize transition-all ${registerData.userType === type ? 'bg-slate-600 text-brand-text shadow-md' : 'text-brand-text-muted hover:text-brand-text'}`}
               >
                 {type}
               </button>
@@ -1312,14 +1312,14 @@ const Landing: React.FC = () => {
             placeholder="Nome Completo"
             value={registerData.name}
             onChange={(e) => setRegisterData({ ...registerData, name: e.target.value })}
-            className="w-full bg-slate-800 border border-slate-700 rounded-lg p-3 text-white outline-none focus:border-green-500"
+            className="w-full bg-brand-surface border border-brand-border rounded-lg p-3 text-brand-text outline-none focus:border-green-500"
           />
           <input
             type="email"
             placeholder="Email"
             value={registerData.email}
             onChange={(e) => setRegisterData({ ...registerData, email: e.target.value })}
-            className="w-full bg-slate-800 border border-slate-700 rounded-lg p-3 text-white outline-none focus:border-green-500"
+            className="w-full bg-brand-surface border border-brand-border rounded-lg p-3 text-brand-text outline-none focus:border-green-500"
           />
           <div className="grid grid-cols-2 gap-2">
             <input
@@ -1327,26 +1327,26 @@ const Landing: React.FC = () => {
               placeholder="Senha"
               value={registerData.password}
               onChange={(e) => setRegisterData({ ...registerData, password: e.target.value })}
-              className="w-full bg-slate-800 border border-slate-700 rounded-lg p-3 text-white outline-none focus:border-green-500"
+              className="w-full bg-brand-surface border border-brand-border rounded-lg p-3 text-brand-text outline-none focus:border-green-500"
             />
             <input
               type="password"
               placeholder="Confirmar"
               value={registerData.confirmPassword}
               onChange={(e) => setRegisterData({ ...registerData, confirmPassword: e.target.value })}
-              className="w-full bg-slate-800 border border-slate-700 rounded-lg p-3 text-white outline-none focus:border-green-500"
+              className="w-full bg-brand-surface border border-brand-border rounded-lg p-3 text-brand-text outline-none focus:border-green-500"
             />
           </div>
 
           {/* Referral / Indication Field (Available for all types) */}
           <div className="pt-2 border-t border-slate-700/50">
-            <label className="text-xs text-slate-400 mb-1 block ml-1">Indicação (Opcional)</label>
+            <label className="text-xs text-brand-text-muted mb-1 block ml-1">Indicação (Opcional)</label>
             <input
               type="text"
               placeholder="Código ou Nome de quem indicou"
               value={(registerData as any).referralCode || ''}
               onChange={(e) => setRegisterData({ ...registerData, referralCode: e.target.value } as any)}
-              className="w-full bg-slate-800 border border-slate-700 rounded-lg p-3 text-white outline-none focus:border-green-500 placeholder:text-slate-500"
+              className="w-full bg-brand-surface border border-brand-border rounded-lg p-3 text-brand-text outline-none focus:border-green-500 placeholder:text-slate-500"
             />
             <p className="text-[10px] text-slate-500 mt-1 ml-1">
               * Informe o nome do médico, instituição ou código de parceiro se houver.
@@ -1364,7 +1364,7 @@ const Landing: React.FC = () => {
                 <select
                   value={registerData.councilType}
                   onChange={(e) => setRegisterData({ ...registerData, councilType: e.target.value })}
-                  className="col-span-3 bg-slate-800 border border-slate-700 rounded-lg p-3 text-white outline-none"
+                  className="col-span-3 bg-brand-surface border border-brand-border rounded-lg p-3 text-brand-text outline-none"
                   aria-label="Tipo de conselho"
                 >
                   <option value="">Conselho *</option>
@@ -1380,13 +1380,13 @@ const Landing: React.FC = () => {
                   placeholder="Número *"
                   value={registerData.councilNumber}
                   onChange={(e) => setRegisterData({ ...registerData, councilNumber: e.target.value })}
-                  className="col-span-6 bg-slate-800 border border-slate-700 rounded-lg p-3 text-white outline-none"
+                  className="col-span-6 bg-brand-surface border border-brand-border rounded-lg p-3 text-brand-text outline-none"
                   aria-label="Número do conselho"
                 />
                 <select
                   value={registerData.councilState}
                   onChange={(e) => setRegisterData({ ...registerData, councilState: e.target.value })}
-                  className="col-span-3 bg-slate-800 border border-slate-700 rounded-lg p-3 text-white outline-none"
+                  className="col-span-3 bg-brand-surface border border-brand-border rounded-lg p-3 text-brand-text outline-none"
                   aria-label="UF do conselho"
                 >
                   <option value="">UF *</option>
@@ -1429,7 +1429,7 @@ const Landing: React.FC = () => {
                 placeholder="Especialidade* (ex: Clínica Geral, Nefrologia, Cannabis Medicinal)"
                 value={registerData.specialty}
                 onChange={(e) => setRegisterData({ ...registerData, specialty: e.target.value })}
-                className="w-full bg-slate-800 border border-slate-700 rounded-lg p-3 text-white outline-none focus:border-green-500 placeholder:text-slate-500"
+                className="w-full bg-brand-surface border border-brand-border rounded-lg p-3 text-brand-text outline-none focus:border-green-500 placeholder:text-slate-500"
               />
               {/* V1.9.229: valor da consulta (obrigatorio R$350-1300, constraint banco V1.9.150) */}
               <input
@@ -1441,7 +1441,7 @@ const Landing: React.FC = () => {
                 placeholder="Valor da consulta* (R$ 350 a R$ 1.300 — ajustável depois)"
                 value={registerData.consultationFee}
                 onChange={(e) => setRegisterData({ ...registerData, consultationFee: e.target.value })}
-                className="w-full bg-slate-800 border border-slate-700 rounded-lg p-3 text-white outline-none focus:border-green-500 placeholder:text-slate-500"
+                className="w-full bg-brand-surface border border-brand-border rounded-lg p-3 text-brand-text outline-none focus:border-green-500 placeholder:text-slate-500"
               />
               <p className="text-[10px] text-slate-500 ml-1">
                 * Você pode ajustar especialidade e valor depois no Perfil.
@@ -1456,7 +1456,7 @@ const Landing: React.FC = () => {
                 placeholder="Matrícula / Instituição de Ensino"
                 value={(registerData as any).studentId || ''}
                 onChange={(e) => setRegisterData({ ...registerData, studentId: e.target.value } as any)}
-                className="w-full bg-slate-800 border border-slate-700 rounded-lg p-3 text-white outline-none focus:border-green-500"
+                className="w-full bg-brand-surface border border-brand-border rounded-lg p-3 text-brand-text outline-none focus:border-green-500"
               />
               <div className="p-2 mt-2 bg-blue-900/20 border border-blue-500/20 rounded-lg text-xs text-blue-200 animate-in fade-in">
                 🎓 Acesso exclusivo para estudantes. A matrícula será validada.
@@ -1471,7 +1471,7 @@ const Landing: React.FC = () => {
           >
             {isLoading ? 'Criando Conta...' : `Registrar como ${registerData.userType.charAt(0).toUpperCase() + registerData.userType.slice(1)}`}
           </button>
-          <p className="text-center text-sm text-slate-500 mt-4 cursor-pointer hover:text-white" onClick={() => { setShowRegister(false); setShowLogin(true); }}>
+          <p className="text-center text-sm text-slate-500 mt-4 cursor-pointer hover:text-brand-text" onClick={() => { setShowRegister(false); setShowLogin(true); }}>
             Já tem conta? <span className="text-green-400">Entrar</span>
           </p>
         </div>
@@ -1488,19 +1488,19 @@ const Landing: React.FC = () => {
             placeholder="Admin Email"
             value={adminLoginData.email}
             onChange={(e) => setAdminLoginData({ ...adminLoginData, email: e.target.value })}
-            className="w-full bg-slate-800 border border-slate-700 rounded-lg p-3 text-white outline-none focus:border-yellow-500"
+            className="w-full bg-brand-surface border border-brand-border rounded-lg p-3 text-brand-text outline-none focus:border-yellow-500"
           />
           <input
             type="password"
             placeholder="Admin Key"
             value={adminLoginData.password}
             onChange={(e) => setAdminLoginData({ ...adminLoginData, password: e.target.value })}
-            className="w-full bg-slate-800 border border-slate-700 rounded-lg p-3 text-white outline-none focus:border-yellow-500"
+            className="w-full bg-brand-surface border border-brand-border rounded-lg p-3 text-brand-text outline-none focus:border-yellow-500"
           />
           <button
             onClick={handleAdminLogin}
             disabled={isLoading}
-            className="w-full bg-gradient-to-r from-yellow-600 to-orange-600 text-white rounded-lg p-3 font-semibold hover:shadow-lg transition-all disabled:opacity-50"
+            className="w-full bg-gradient-to-r from-yellow-600 to-orange-600 text-brand-text rounded-lg p-3 font-semibold hover:shadow-lg transition-all disabled:opacity-50"
           >
             {isLoading ? 'Verificando...' : 'Acessar Core'}
           </button>

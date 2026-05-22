@@ -152,16 +152,16 @@ const ShareReportModal: React.FC<ShareReportModalProps> = ({
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-slate-800 rounded-xl p-6 max-w-md w-full border border-slate-700">
+      <div className="bg-brand-surface rounded-xl p-6 max-w-md w-full border border-brand-border">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center space-x-3">
             <Share2 className="w-6 h-6 text-purple-400" />
-            <h3 className="text-xl font-bold text-white">Compartilhar Relatório</h3>
+            <h3 className="text-xl font-bold text-brand-text">Compartilhar Relatório</h3>
           </div>
           <button
             onClick={onClose}
-            className="text-slate-400 hover:text-white transition-colors"
+            className="text-brand-text-muted hover:text-brand-text transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
@@ -169,8 +169,8 @@ const ShareReportModal: React.FC<ShareReportModalProps> = ({
 
         {/* Report Name */}
         <div className="mb-6">
-          <p className="text-slate-400 text-sm mb-2">Relatório:</p>
-          <p className="text-white font-semibold">{reportName}</p>
+          <p className="text-brand-text-muted text-sm mb-2">Relatório:</p>
+          <p className="text-brand-text font-semibold">{reportName}</p>
         </div>
 
         {/* Success Message */}
@@ -193,7 +193,7 @@ const ShareReportModal: React.FC<ShareReportModalProps> = ({
         {!success && (
           <>
             <div className="mb-4">
-              <p className="text-slate-400 text-sm mb-3">Selecione os médicos com quem deseja compartilhar:</p>
+              <p className="text-brand-text-muted text-sm mb-3">Selecione os médicos com quem deseja compartilhar:</p>
               <div className="space-y-2 max-h-64 overflow-y-auto">
                 {doctors.length === 0 ? (
                   <p className="text-slate-500 text-sm text-center py-4">
@@ -203,7 +203,7 @@ const ShareReportModal: React.FC<ShareReportModalProps> = ({
                   doctors.map(doctor => (
                     <label
                       key={doctor.id}
-                      className="flex items-center space-x-3 p-3 bg-slate-700/50 rounded-lg cursor-pointer hover:bg-slate-700 transition-colors"
+                      className="flex items-center space-x-3 p-3 bg-slate-700/50 rounded-lg cursor-pointer hover:bg-brand-surface-subtle transition-colors"
                     >
                       <input
                         type="checkbox"
@@ -213,8 +213,8 @@ const ShareReportModal: React.FC<ShareReportModalProps> = ({
                       />
                       <User className="w-5 h-5 text-purple-400" />
                       <div className="flex-1">
-                        <p className="text-white font-medium">{doctor.name}</p>
-                        <p className="text-slate-400 text-xs">{doctor.email}</p>
+                        <p className="text-brand-text font-medium">{doctor.name}</p>
+                        <p className="text-brand-text-muted text-xs">{doctor.email}</p>
                       </div>
                       {selectedDoctors.includes(doctor.id) && (
                         <CheckCircle className="w-5 h-5 text-green-400" />
@@ -230,14 +230,14 @@ const ShareReportModal: React.FC<ShareReportModalProps> = ({
               <button
                 onClick={onClose}
                 disabled={loading}
-                className="flex-1 px-4 py-2 bg-slate-700 text-white rounded-lg hover:bg-slate-600 transition-colors disabled:opacity-50"
+                className="flex-1 px-4 py-2 bg-brand-surface-subtle text-brand-text rounded-lg hover:bg-slate-600 transition-colors disabled:opacity-50"
               >
                 Cancelar
               </button>
               <button
                 onClick={handleShare}
                 disabled={loading || selectedDoctors.length === 0}
-                className="flex-1 px-4 py-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg hover:from-purple-700 hover:to-pink-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
+                className="flex-1 px-4 py-2 bg-gradient-to-r from-purple-600 to-pink-600 text-brand-text rounded-lg hover:from-purple-700 hover:to-pink-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
               >
                 {loading ? (
                   <>

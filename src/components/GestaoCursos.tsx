@@ -196,7 +196,7 @@ const GestaoCursos: React.FC<GestaoCursosProps> = ({ className = '' }) => {
       <div className="bg-gradient-to-r from-blue-800 to-blue-700 rounded-lg p-6">
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-4 space-y-4 lg:space-y-0">
           <div className="flex-1">
-            <h2 className="text-2xl font-bold text-white mb-2 flex items-center space-x-2">
+            <h2 className="text-2xl font-bold text-brand-text mb-2 flex items-center space-x-2">
               <GraduationCap className="w-6 h-6" />
               <span>Gestão de Cursos</span>
             </h2>
@@ -206,7 +206,7 @@ const GestaoCursos: React.FC<GestaoCursosProps> = ({ className = '' }) => {
           </div>
           <button 
             onClick={() => setShowModal(true)}
-            className="flex items-center space-x-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors w-full lg:w-auto"
+            className="flex items-center space-x-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-brand-text rounded-md transition-colors w-full lg:w-auto"
           >
             <Plus className="w-4 h-4" />
             <span>Novo Curso</span>
@@ -225,7 +225,7 @@ const GestaoCursos: React.FC<GestaoCursosProps> = ({ className = '' }) => {
               onClick={() => setActiveTab(tab.key as any)}
               className={`flex items-center space-x-2 px-4 py-2 rounded-md transition-colors ${
                 activeTab === tab.key 
-                  ? 'bg-blue-600 text-white' 
+                  ? 'bg-blue-600 text-brand-text' 
                   : 'bg-blue-700 text-blue-200 hover:bg-blue-600'
               }`}
             >
@@ -240,7 +240,7 @@ const GestaoCursos: React.FC<GestaoCursosProps> = ({ className = '' }) => {
       {activeTab === 'cursos' && (
         <div className="space-y-4">
           {cursos.map((curso) => (
-            <div key={curso.id} className="bg-slate-800 border border-slate-700 rounded-lg p-6 hover:border-slate-600 transition-colors">
+            <div key={curso.id} className="bg-brand-surface border border-brand-border rounded-lg p-6 hover:border-slate-600 transition-colors">
               <div className="flex flex-col lg:flex-row lg:items-start space-y-4 lg:space-y-0 lg:space-x-4">
                 <img 
                   src={curso.thumbnail} 
@@ -249,7 +249,7 @@ const GestaoCursos: React.FC<GestaoCursosProps> = ({ className = '' }) => {
                 />
                 <div className="flex-1 min-w-0">
                   <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-2 space-y-2 sm:space-y-0">
-                    <h3 className="text-white text-lg font-semibold truncate">{curso.titulo}</h3>
+                    <h3 className="text-brand-text text-lg font-semibold truncate">{curso.titulo}</h3>
                     <div className="flex items-center space-x-2 flex-shrink-0">
                       <span className={`px-2 py-1 rounded text-xs ${getStatusColor(curso.status)}`}>
                         {getStatusText(curso.status)}
@@ -259,32 +259,32 @@ const GestaoCursos: React.FC<GestaoCursosProps> = ({ className = '' }) => {
                       </span>
                     </div>
                   </div>
-                  <p className="text-slate-400 text-sm mb-3">{curso.descricao}</p>
+                  <p className="text-brand-text-muted text-sm mb-3">{curso.descricao}</p>
                   
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
                     <div className="text-center">
-                      <p className="text-white font-semibold">{curso.duracao}h</p>
-                      <p className="text-slate-400 text-xs">Duração</p>
+                      <p className="text-brand-text font-semibold">{curso.duracao}h</p>
+                      <p className="text-brand-text-muted text-xs">Duração</p>
                     </div>
                     <div className="text-center">
-                      <p className="text-white font-semibold">{curso.modulos}</p>
-                      <p className="text-slate-400 text-xs">Módulos</p>
+                      <p className="text-brand-text font-semibold">{curso.modulos}</p>
+                      <p className="text-brand-text-muted text-xs">Módulos</p>
                     </div>
                     <div className="text-center">
-                      <p className="text-white font-semibold">{curso.alunos}</p>
-                      <p className="text-slate-400 text-xs">Alunos</p>
+                      <p className="text-brand-text font-semibold">{curso.alunos}</p>
+                      <p className="text-brand-text-muted text-xs">Alunos</p>
                     </div>
                     <div className="text-center">
-                      <p className="text-white font-semibold flex items-center justify-center">
+                      <p className="text-brand-text font-semibold flex items-center justify-center">
                         <Star className="w-3 h-3 text-yellow-400 mr-1" />
                         {curso.avaliacao}
                       </p>
-                      <p className="text-slate-400 text-xs">Avaliação</p>
+                      <p className="text-brand-text-muted text-xs">Avaliação</p>
                     </div>
                   </div>
 
                   <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0">
-                    <div className="text-slate-400 text-sm">
+                    <div className="text-brand-text-muted text-sm">
                       <p>Criado em: {new Date(curso.dataCriacao).toLocaleDateString('pt-BR')}</p>
                       <p>Última atualização: {new Date(curso.ultimaAtualizacao).toLocaleDateString('pt-BR')}</p>
                     </div>
@@ -313,21 +313,21 @@ const GestaoCursos: React.FC<GestaoCursosProps> = ({ className = '' }) => {
       {activeTab === 'modulos' && (
         <div className="space-y-4">
           {modulos.map((modulo) => (
-            <div key={modulo.id} className="bg-slate-800 border border-slate-700 rounded-lg p-4 hover:border-slate-600 transition-colors">
+            <div key={modulo.id} className="bg-brand-surface border border-brand-border rounded-lg p-4 hover:border-slate-600 transition-colors">
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-3">
-                  <div className="p-2 rounded-lg bg-slate-700">
+                  <div className="p-2 rounded-lg bg-brand-surface-subtle">
                     {getTipoIcon(modulo.tipo)}
                   </div>
                   <div>
-                    <h4 className="text-white font-semibold">{modulo.titulo}</h4>
-                    <p className="text-slate-400 text-sm">{modulo.descricao}</p>
+                    <h4 className="text-brand-text font-semibold">{modulo.titulo}</h4>
+                    <p className="text-brand-text-muted text-sm">{modulo.descricao}</p>
                   </div>
                 </div>
                 <div className="flex items-center space-x-4">
                   <div className="text-right">
-                    <p className="text-white font-semibold">{modulo.duracao}min</p>
-                    <p className="text-slate-400 text-xs">Duração</p>
+                    <p className="text-brand-text font-semibold">{modulo.duracao}min</p>
+                    <p className="text-brand-text-muted text-xs">Duração</p>
                   </div>
                   <div className="flex items-center space-x-2">
                     <button className="p-2 text-blue-400 hover:text-blue-300 transition-colors">
@@ -351,38 +351,38 @@ const GestaoCursos: React.FC<GestaoCursosProps> = ({ className = '' }) => {
         <div className="space-y-6">
           {/* Métricas dos Cursos */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="bg-slate-800 border border-slate-700 rounded-lg p-6">
+            <div className="bg-brand-surface border border-brand-border rounded-lg p-6">
               <div className="flex items-center justify-between mb-2">
-                <h3 className="text-white font-semibold">Total de Cursos</h3>
+                <h3 className="text-brand-text font-semibold">Total de Cursos</h3>
                 <BookOpen className="w-5 h-5 text-blue-400" />
               </div>
-              <p className="text-3xl font-bold text-white">{cursos.length}</p>
+              <p className="text-3xl font-bold text-brand-text">{cursos.length}</p>
               <p className="text-green-400 text-sm">+2 este mês</p>
             </div>
-            <div className="bg-slate-800 border border-slate-700 rounded-lg p-6">
+            <div className="bg-brand-surface border border-brand-border rounded-lg p-6">
               <div className="flex items-center justify-between mb-2">
-                <h3 className="text-white font-semibold">Total de Alunos</h3>
+                <h3 className="text-brand-text font-semibold">Total de Alunos</h3>
                 <Users className="w-5 h-5 text-green-400" />
               </div>
-              <p className="text-3xl font-bold text-white">{cursos.reduce((acc, curso) => acc + curso.alunos, 0)}</p>
+              <p className="text-3xl font-bold text-brand-text">{cursos.reduce((acc, curso) => acc + curso.alunos, 0)}</p>
               <p className="text-green-400 text-sm">+15 este mês</p>
             </div>
-            <div className="bg-slate-800 border border-slate-700 rounded-lg p-6">
+            <div className="bg-brand-surface border border-brand-border rounded-lg p-6">
               <div className="flex items-center justify-between mb-2">
-                <h3 className="text-white font-semibold">Avaliação Média</h3>
+                <h3 className="text-brand-text font-semibold">Avaliação Média</h3>
                 <Star className="w-5 h-5 text-yellow-400" />
               </div>
-              <p className="text-3xl font-bold text-white">
+              <p className="text-3xl font-bold text-brand-text">
                 {(cursos.reduce((acc, curso) => acc + curso.avaliacao, 0) / cursos.length).toFixed(1)}
               </p>
               <p className="text-green-400 text-sm">Excelente</p>
             </div>
-            <div className="bg-slate-800 border border-slate-700 rounded-lg p-6">
+            <div className="bg-brand-surface border border-brand-border rounded-lg p-6">
               <div className="flex items-center justify-between mb-2">
-                <h3 className="text-white font-semibold">Receita Total</h3>
+                <h3 className="text-brand-text font-semibold">Receita Total</h3>
                 <TrendingUp className="w-5 h-5 text-purple-400" />
               </div>
-              <p className="text-3xl font-bold text-white">
+              <p className="text-3xl font-bold text-brand-text">
                 R$ {cursos.reduce((acc, curso) => acc + (curso.preco * curso.alunos), 0).toLocaleString()}
               </p>
               <p className="text-green-400 text-sm">+8% este mês</p>
@@ -390,20 +390,20 @@ const GestaoCursos: React.FC<GestaoCursosProps> = ({ className = '' }) => {
           </div>
 
           {/* Performance dos Cursos */}
-          <div className="bg-slate-800 border border-slate-700 rounded-lg p-6">
-            <h3 className="text-white font-semibold mb-4">Performance dos Cursos</h3>
+          <div className="bg-brand-surface border border-brand-border rounded-lg p-6">
+            <h3 className="text-brand-text font-semibold mb-4">Performance dos Cursos</h3>
             <div className="space-y-3">
               {cursos.map((curso) => (
                 <div key={curso.id} className="flex items-center justify-between">
-                  <span className="text-slate-300">{curso.titulo}</span>
+                  <span className="text-brand-text-secondary">{curso.titulo}</span>
                   <div className="flex items-center space-x-2">
-                    <div className="w-32 bg-slate-700 rounded-full h-2">
+                    <div className="w-32 bg-brand-surface-subtle rounded-full h-2">
                       <div 
                         className="bg-blue-500 h-2 rounded-full" 
                         style={{ width: `${(curso.alunos / Math.max(...cursos.map(c => c.alunos))) * 100}%` }}
                       ></div>
                     </div>
-                    <span className="text-white font-semibold">{curso.alunos} alunos</span>
+                    <span className="text-brand-text font-semibold">{curso.alunos} alunos</span>
                   </div>
                 </div>
               ))}

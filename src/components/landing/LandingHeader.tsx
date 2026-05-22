@@ -27,8 +27,8 @@ export const LandingHeader = ({ onLoginClick }: LandingHeaderProps) => {
             />
           </div>
           <div>
-            <span className="text-xl font-bold block text-white tracking-tight leading-none">MedCannLab</span>
-            <div className="text-[10px] text-slate-400 font-semibold tracking-widest uppercase ml-0.5 mt-0.5">
+            <span className="text-xl font-bold block text-brand-text tracking-tight leading-none">MedCannLab</span>
+            <div className="text-[10px] text-brand-text-muted font-semibold tracking-widest uppercase ml-0.5 mt-0.5">
               Plataforma 3.0
             </div>
           </div>
@@ -36,7 +36,7 @@ export const LandingHeader = ({ onLoginClick }: LandingHeaderProps) => {
 
         <button
           onClick={onLoginClick}
-          className="px-5 py-2 bg-slate-800/50 border border-slate-700 hover:border-emerald-500/40 rounded-xl text-sm font-medium text-white transition-all"
+          className="px-5 py-2 bg-slate-800/50 border border-brand-border hover:border-emerald-500/40 rounded-xl text-sm font-medium text-brand-text transition-all"
         >
           Entrar
         </button>

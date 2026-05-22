@@ -209,23 +209,23 @@ const MedCannLabStructure: React.FC = () => {
   const currentDashboard = getDashboardContent(activeDashboard)
 
   return (
-    <div className="min-h-screen bg-slate-900 text-white">
+    <div className="min-h-screen bg-brand-bg text-brand-text">
       {/* Header */}
-      <div className="bg-slate-800 border-b border-slate-700 p-4">
+      <div className="bg-brand-surface border-b border-brand-border p-4">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-white">🏗️ Estrutura MedCannLab</h1>
-            <p className="text-slate-400">Sistema Hierárquico Integrado</p>
+            <h1 className="text-2xl font-bold text-brand-text">🏗️ Estrutura MedCannLab</h1>
+            <p className="text-brand-text-muted">Sistema Hierárquico Integrado</p>
           </div>
           
           {/* Admin Profile */}
-          <div className="flex items-center space-x-3 bg-slate-700 p-3 rounded-lg">
+          <div className="flex items-center space-x-3 bg-brand-surface-subtle p-3 rounded-lg">
             <div className="w-10 h-10 bg-gradient-to-r from-[#00c16a] to-[#00a85a] rounded-full flex items-center justify-center">
-              <Bot className="w-5 h-5 text-white" />
+              <Bot className="w-5 h-5 text-brand-text" />
             </div>
             <div>
-              <p className="font-semibold text-white">🏗️ Estrutura</p>
-              <p className="text-sm text-slate-400">Sistema Integrado</p>
+              <p className="font-semibold text-brand-text">🏗️ Estrutura</p>
+              <p className="text-sm text-brand-text-muted">Sistema Integrado</p>
             </div>
           </div>
         </div>
@@ -233,16 +233,16 @@ const MedCannLabStructure: React.FC = () => {
 
       <div className="flex h-screen">
         {/* Sidebar - Structure Navigation */}
-        <div className="w-80 bg-slate-800 border-r border-slate-700 flex flex-col">
+        <div className="w-80 bg-brand-surface border-r border-brand-border flex flex-col">
           {/* Structure Tree */}
-          <div className="p-4 border-b border-slate-700">
-            <h3 className="text-lg font-semibold text-white mb-4">Estrutura Hierárquica</h3>
+          <div className="p-4 border-b border-brand-border">
+            <h3 className="text-lg font-semibold text-brand-text mb-4">Estrutura Hierárquica</h3>
             
             {/* MedCannLab Root */}
             <div className="mb-4">
               <div className="flex items-center space-x-2 p-2 bg-gradient-to-r from-purple-600 to-pink-500 rounded-lg">
-                <Bot className="w-5 h-5 text-white" />
-                <span className="font-semibold text-white">MedCannLab</span>
+                <Bot className="w-5 h-5 text-brand-text" />
+                <span className="font-semibold text-brand-text">MedCannLab</span>
               </div>
               
               {/* IA Residente */}
@@ -250,7 +250,7 @@ const MedCannLabStructure: React.FC = () => {
                 <button
                   onClick={() => setActiveArea('ia-residente')}
                   className={`w-full flex items-center space-x-2 p-2 rounded-lg transition-all ${
-                    activeArea === 'ia-residente' ? 'bg-blue-600 text-white' : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
+                    activeArea === 'ia-residente' ? 'bg-blue-600 text-brand-text' : 'bg-brand-surface-subtle text-brand-text-secondary hover:bg-slate-600'
                   }`}
                 >
                   <Bot className="w-4 h-4" />
@@ -263,7 +263,7 @@ const MedCannLabStructure: React.FC = () => {
                     <button
                       onClick={() => setActiveDashboard('ia-multimodal')}
                       className={`w-full flex items-center space-x-2 p-2 rounded-lg transition-all ${
-                        activeDashboard === 'ia-multimodal' ? 'bg-cyan-500 text-white' : 'bg-slate-600 text-slate-300 hover:bg-slate-500'
+                        activeDashboard === 'ia-multimodal' ? 'bg-cyan-500 text-brand-text' : 'bg-slate-600 text-brand-text-secondary hover:bg-slate-500'
                       }`}
                     >
                       <SparklesIcon className="w-4 h-4" />
@@ -278,7 +278,7 @@ const MedCannLabStructure: React.FC = () => {
                 <button
                   onClick={() => setActiveArea('clinica')}
                   className={`w-full flex items-center space-x-2 p-2 rounded-lg transition-all ${
-                    activeArea === 'clinica' ? 'bg-green-600 text-white' : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
+                    activeArea === 'clinica' ? 'bg-green-600 text-brand-text' : 'bg-brand-surface-subtle text-brand-text-secondary hover:bg-slate-600'
                   }`}
                 >
                   <Stethoscope className="w-4 h-4" />
@@ -291,7 +291,7 @@ const MedCannLabStructure: React.FC = () => {
                     <button
                       onClick={() => setActiveDashboard('dashboard-profissional')}
                       className={`w-full flex items-center space-x-2 p-2 rounded-lg transition-all ${
-                        activeDashboard === 'dashboard-profissional' ? 'bg-blue-500 text-white' : 'bg-slate-600 text-slate-300 hover:bg-slate-500'
+                        activeDashboard === 'dashboard-profissional' ? 'bg-blue-500 text-brand-text' : 'bg-slate-600 text-brand-text-secondary hover:bg-slate-500'
                       }`}
                     >
                       <Users className="w-4 h-4" />
@@ -301,7 +301,7 @@ const MedCannLabStructure: React.FC = () => {
                     <button
                       onClick={() => setActiveDashboard('dashboard-paciente')}
                       className={`w-full flex items-center space-x-2 p-2 rounded-lg transition-all ${
-                        activeDashboard === 'dashboard-paciente' ? 'bg-pink-500 text-white' : 'bg-slate-600 text-slate-300 hover:bg-slate-500'
+                        activeDashboard === 'dashboard-paciente' ? 'bg-pink-500 text-brand-text' : 'bg-slate-600 text-brand-text-secondary hover:bg-slate-500'
                       }`}
                     >
                       <Heart className="w-4 h-4" />
@@ -311,7 +311,7 @@ const MedCannLabStructure: React.FC = () => {
                     <button
                       onClick={() => setActiveDashboard('dashboard-alunos')}
                       className={`w-full flex items-center space-x-2 p-2 rounded-lg transition-all ${
-                        activeDashboard === 'dashboard-alunos' ? 'bg-orange-500 text-white' : 'bg-slate-600 text-slate-300 hover:bg-slate-500'
+                        activeDashboard === 'dashboard-alunos' ? 'bg-orange-500 text-brand-text' : 'bg-slate-600 text-brand-text-secondary hover:bg-slate-500'
                       }`}
                     >
                       <BookOpen className="w-4 h-4" />
@@ -326,7 +326,7 @@ const MedCannLabStructure: React.FC = () => {
                 <button
                   onClick={() => setActiveArea('ensino-pesquisa')}
                   className={`w-full flex items-center space-x-2 p-2 rounded-lg transition-all ${
-                    activeArea === 'ensino-pesquisa' ? 'bg-indigo-600 text-white' : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
+                    activeArea === 'ensino-pesquisa' ? 'bg-indigo-600 text-brand-text' : 'bg-brand-surface-subtle text-brand-text-secondary hover:bg-slate-600'
                   }`}
                 >
                   <FlaskConical className="w-4 h-4" />
@@ -339,7 +339,7 @@ const MedCannLabStructure: React.FC = () => {
                     <button
                       onClick={() => setActiveDashboard('dashboard-profissional-academico')}
                       className={`w-full flex items-center space-x-2 p-2 rounded-lg transition-all ${
-                        activeDashboard === 'dashboard-profissional-academico' ? 'bg-green-500 text-white' : 'bg-slate-600 text-slate-300 hover:bg-slate-500'
+                        activeDashboard === 'dashboard-profissional-academico' ? 'bg-green-500 text-brand-text' : 'bg-slate-600 text-brand-text-secondary hover:bg-slate-500'
                       }`}
                     >
                       <Users className="w-4 h-4" />
@@ -348,7 +348,7 @@ const MedCannLabStructure: React.FC = () => {
                     <button
                       onClick={() => setActiveDashboard('administrador')}
                       className={`w-full flex items-center space-x-2 p-2 rounded-lg transition-all ${
-                        activeDashboard === 'administrador' ? 'bg-gray-600 text-white' : 'bg-slate-600 text-slate-300 hover:bg-slate-500'
+                        activeDashboard === 'administrador' ? 'bg-gray-600 text-brand-text' : 'bg-slate-600 text-brand-text-secondary hover:bg-slate-500'
                       }`}
                     >
                       <Settings className="w-4 h-4" />
@@ -361,10 +361,10 @@ const MedCannLabStructure: React.FC = () => {
           </div>
 
           {/* Chat Nôa Esperança */}
-          <div className="p-4 border-t border-slate-700">
+          <div className="p-4 border-t border-brand-border">
             <div className="text-center mb-4">
-              <h3 className="text-lg font-semibold text-white mb-2">Nôa Esperança</h3>
-              <p className="text-sm text-slate-400">IA Residente • Sistema Integrado</p>
+              <h3 className="text-lg font-semibold text-brand-text mb-2">Nôa Esperança</h3>
+              <p className="text-sm text-brand-text-muted">IA Residente • Sistema Integrado</p>
             </div>
 
             {/* Avatar */}
@@ -381,7 +381,7 @@ const MedCannLabStructure: React.FC = () => {
             <div className="space-y-2 mb-4">
               <button 
                 onClick={toggleChat}
-                className="w-full bg-gradient-to-r from-[#00c16a] to-[#00a85a] text-white py-2 px-3 rounded-lg font-semibold hover:opacity-90 transition-opacity text-sm"
+                className="w-full bg-gradient-to-r from-[#00c16a] to-[#00a85a] text-brand-text py-2 px-3 rounded-lg font-semibold hover:opacity-90 transition-opacity text-sm"
               >
                 Sistema Integrado
               </button>
@@ -395,7 +395,7 @@ const MedCannLabStructure: React.FC = () => {
                 onChange={(e) => setInputMessage(e.target.value)}
                 onKeyPress={handleKeyPress}
                 placeholder="Digite sua mensagem..."
-                className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:border-purple-500 text-sm"
+                className="w-full px-3 py-2 bg-brand-surface-subtle border border-slate-600 rounded-lg text-brand-text placeholder-slate-400 focus:outline-none focus:border-purple-500 text-sm"
               />
               <p className="text-xs text-slate-500 text-center">
                 Nôa utiliza AEC • LGPD Compliant
@@ -408,7 +408,7 @@ const MedCannLabStructure: React.FC = () => {
         <div className="flex-1 flex flex-col overflow-hidden">
           {/* Dashboard Header */}
           <div className="bg-gradient-to-r from-purple-600 to-pink-500 p-6">
-            <h2 className="text-2xl font-bold text-white mb-2">
+            <h2 className="text-2xl font-bold text-brand-text mb-2">
               {currentDashboard.title}
             </h2>
             <p className="text-white/90 mb-4">
@@ -426,37 +426,37 @@ const MedCannLabStructure: React.FC = () => {
                 {/* Stats Cards */}
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
                   {currentDashboard.stats.map((stat, index) => (
-                    <div key={index} className="bg-slate-800 rounded-xl p-6">
+                    <div key={index} className="bg-brand-surface rounded-xl p-6">
                       <div className="flex items-center justify-between mb-4">
                         <div className="p-3 bg-purple-500/10 rounded-lg">
                           <BarChart3 className="w-6 h-6 text-purple-400" />
                         </div>
                         <TrendingUp className="w-5 h-5 text-green-400" />
                       </div>
-                      <h3 className="text-2xl font-bold text-white mb-1">{stat.value}</h3>
-                      <p className="text-sm text-slate-400">{stat.label}</p>
+                      <h3 className="text-2xl font-bold text-brand-text mb-1">{stat.value}</h3>
+                      <p className="text-sm text-brand-text-muted">{stat.label}</p>
                       <p className="text-xs text-green-400 mt-1">{stat.trend}</p>
                     </div>
                   ))}
                 </div>
 
                 {/* Dashboard Content */}
-                <div className="bg-slate-800 rounded-xl p-6">
-                  <h3 className="text-xl font-semibold text-white mb-6">
+                <div className="bg-brand-surface rounded-xl p-6">
+                  <h3 className="text-xl font-semibold text-brand-text mb-6">
                     Conteúdo do Dashboard
                   </h3>
                   
                   <div className="space-y-4">
-                    <div className="bg-slate-700 rounded-lg p-4">
-                      <h4 className="font-semibold text-white mb-2">Funcionalidades Principais</h4>
-                      <p className="text-sm text-slate-400">
+                    <div className="bg-brand-surface-subtle rounded-lg p-4">
+                      <h4 className="font-semibold text-brand-text mb-2">Funcionalidades Principais</h4>
+                      <p className="text-sm text-brand-text-muted">
                         Este dashboard oferece funcionalidades específicas para o tipo de usuário selecionado.
                       </p>
                     </div>
                     
-                    <div className="bg-slate-700 rounded-lg p-4">
-                      <h4 className="font-semibold text-white mb-2">Integração com Sistema</h4>
-                      <p className="text-sm text-slate-400">
+                    <div className="bg-brand-surface-subtle rounded-lg p-4">
+                      <h4 className="font-semibold text-brand-text mb-2">Integração com Sistema</h4>
+                      <p className="text-sm text-brand-text-muted">
                         Conectado ao sistema MedCannLab com IA Residente integrada.
                       </p>
                     </div>
@@ -466,8 +466,8 @@ const MedCannLabStructure: React.FC = () => {
             ) : (
               <div className="text-center py-12">
                 <Bot className="w-16 h-16 mx-auto text-purple-400 mb-4" />
-                <h3 className="text-xl font-semibold text-white mb-2">Selecione um Dashboard</h3>
-                <p className="text-slate-400">
+                <h3 className="text-xl font-semibold text-brand-text mb-2">Selecione um Dashboard</h3>
+                <p className="text-brand-text-muted">
                   Escolha um dashboard na sidebar para visualizar o conteúdo específico.
                 </p>
               </div>
@@ -479,22 +479,22 @@ const MedCannLabStructure: React.FC = () => {
       {/* Chat Modal */}
       {isOpen && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-slate-800 rounded-xl w-96 h-[600px] flex flex-col">
+          <div className="bg-brand-surface rounded-xl w-96 h-[600px] flex flex-col">
             {/* Chat Header */}
-            <div className="p-4 border-b border-slate-700">
+            <div className="p-4 border-b border-brand-border">
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-3">
                   <div className="w-8 h-8 bg-gradient-to-r from-[#00c16a] to-[#00a85a] rounded-full flex items-center justify-center">
-                    <Bot className="w-4 h-4 text-white" />
+                    <Bot className="w-4 h-4 text-brand-text" />
                   </div>
                   <div>
-                    <h3 className="font-semibold text-white">Nôa Esperança</h3>
-                    <p className="text-xs text-slate-400">Sistema Integrado</p>
+                    <h3 className="font-semibold text-brand-text">Nôa Esperança</h3>
+                    <p className="text-xs text-brand-text-muted">Sistema Integrado</p>
                   </div>
                 </div>
                 <button
                   onClick={toggleChat}
-                  className="text-slate-400 hover:text-white transition-colors"
+                  className="text-brand-text-muted hover:text-brand-text transition-colors"
                 >
                   ×
                 </button>
@@ -504,7 +504,7 @@ const MedCannLabStructure: React.FC = () => {
             {/* Messages */}
             <div className="flex-1 overflow-y-auto p-4 space-y-4">
               {messages.length === 0 ? (
-                <div className="text-center text-slate-400 py-8">
+                <div className="text-center text-brand-text-muted py-8">
                   <Bot className="w-12 h-12 mx-auto mb-3 text-purple-400" />
                   <p className="text-sm">Olá! Sou a Nôa Esperança, sua IA Residente integrada.</p>
                 </div>
@@ -517,8 +517,8 @@ const MedCannLabStructure: React.FC = () => {
                     <div
                       className={`max-w-[70%] px-4 py-2 rounded-lg text-sm ${
                         message.type === 'user'
-                          ? 'bg-gradient-to-r from-[#00c16a] to-[#00a85a] text-white'
-                          : 'bg-slate-700 text-slate-100'
+                          ? 'bg-gradient-to-r from-[#00c16a] to-[#00a85a] text-brand-text'
+                          : 'bg-brand-surface-subtle text-slate-100'
                       }`}
                     >
                       {message.content}
@@ -529,7 +529,7 @@ const MedCannLabStructure: React.FC = () => {
               
               {isTyping && (
                 <div className="flex justify-start">
-                  <div className="bg-slate-700 px-4 py-2 rounded-lg">
+                  <div className="bg-brand-surface-subtle px-4 py-2 rounded-lg">
                     <div className="flex space-x-1">
                       <div className="w-2 h-2 bg-slate-400 rounded-full animate-bounce" />
                       <div className="w-2 h-2 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }} />
@@ -541,7 +541,7 @@ const MedCannLabStructure: React.FC = () => {
             </div>
 
             {/* Input */}
-            <div className="p-4 border-t border-slate-700">
+            <div className="p-4 border-t border-brand-border">
               <div className="flex items-center space-x-2">
                 <input
                   type="text"
@@ -549,12 +549,12 @@ const MedCannLabStructure: React.FC = () => {
                   onChange={(e) => setInputMessage(e.target.value)}
                   onKeyPress={handleKeyPress}
                   placeholder="Digite sua mensagem..."
-                  className="flex-1 px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:border-purple-500"
+                  className="flex-1 px-3 py-2 bg-brand-surface-subtle border border-slate-600 rounded-lg text-brand-text placeholder-slate-400 focus:outline-none focus:border-purple-500"
                 />
                 <button
                   onClick={handleSendMessage}
                   disabled={!inputMessage.trim()}
-                  className="p-2 bg-gradient-to-r from-[#00c16a] to-[#00a85a] text-white rounded-lg hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="p-2 bg-gradient-to-r from-[#00c16a] to-[#00a85a] text-brand-text rounded-lg hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <MessageCircle className="w-4 h-4" />
                 </button>

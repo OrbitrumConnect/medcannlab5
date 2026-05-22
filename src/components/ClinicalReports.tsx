@@ -969,7 +969,7 @@ const ClinicalReports: React.FC<ClinicalReportsProps> = ({ className = '', onSha
       >
         <div className="flex items-center justify-between mb-4">
           <div className="flex-1 min-w-0">
-            <h2 className="text-2xl font-bold text-white mb-2 flex items-center gap-2 flex-wrap">
+            <h2 className="text-2xl font-bold text-brand-text mb-2 flex items-center gap-2 flex-wrap">
               <FileText className="w-6 h-6 text-[#00C16A]" />
               <span>{isPatient ? 'Meus Relatórios Clínicos' : isUserAdmin ? 'Todos os Relatórios Clínicos' : 'Relatórios da Avaliação Clínica Inicial'}</span>
               {/* V1.9.241 (C) — contador de fila clinica longitudinal pra medico/admin */}
@@ -985,7 +985,7 @@ const ClinicalReports: React.FC<ClinicalReportsProps> = ({ className = '', onSha
               {/* V1.9.241 (B) — tooltip educativo: ICP automatico via Pipeline */}
               {!isPatient && (
                 <span
-                  className="cursor-help text-slate-400 hover:text-slate-200 transition-colors"
+                  className="cursor-help text-brand-text-muted hover:text-slate-200 transition-colors"
                   title="Reports clínicos vêm assinados automaticamente com ICP-Brasil pelo Pipeline V1.9.95. Sua tarefa é a validação clínica humana: clique no card para revisar, escrever nota e devolver ao paciente (CFM 2.314/2022)."
                   aria-label="Informação sobre fluxo de assinatura"
                 >
@@ -1074,7 +1074,7 @@ const ClinicalReports: React.FC<ClinicalReportsProps> = ({ className = '', onSha
               value={searchName}
               onChange={(e) => setSearchName(e.target.value)}
               placeholder="Buscar por nome do paciente..."
-              className="w-full pl-9 pr-9 py-2 rounded-lg text-sm text-white placeholder:text-slate-500 focus:outline-none focus:ring-1 focus:ring-emerald-500/50"
+              className="w-full pl-9 pr-9 py-2 rounded-lg text-sm text-brand-text placeholder:text-slate-500 focus:outline-none focus:ring-1 focus:ring-emerald-500/50"
               style={{
                 background: 'rgba(15, 36, 60, 0.7)',
                 border: '1px solid rgba(0, 193, 106, 0.12)',
@@ -1127,10 +1127,10 @@ const ClinicalReports: React.FC<ClinicalReportsProps> = ({ className = '', onSha
               <div className="flex items-start justify-between gap-3 mb-3 flex-wrap">
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1.5">
-                    <User className="w-4 h-4 text-slate-400 flex-shrink-0" />
-                    <h3 className="text-base font-semibold text-white truncate">{report.patientName}</h3>
+                    <User className="w-4 h-4 text-brand-text-muted flex-shrink-0" />
+                    <h3 className="text-base font-semibold text-brand-text truncate">{report.patientName}</h3>
                   </div>
-                  <div className="flex items-center gap-2 text-xs text-slate-400 flex-wrap">
+                  <div className="flex items-center gap-2 text-xs text-brand-text-muted flex-wrap">
                     {report.patientCpf && <span>CPF {report.patientCpf}</span>}
                     {report.patientAge > 0 && <span>· {report.patientAge}a</span>}
                     <span className="flex items-center gap-1">
@@ -1161,7 +1161,7 @@ const ClinicalReports: React.FC<ClinicalReportsProps> = ({ className = '', onSha
                       <span>Aguardando revisão</span>
                     </span>
                   ) : (
-                    <span className="flex items-center gap-1 px-2 py-0.5 rounded-full text-xs border bg-slate-500/10 text-slate-400 border-slate-500/20 whitespace-nowrap">
+                    <span className="flex items-center gap-1 px-2 py-0.5 rounded-full text-xs border bg-slate-500/10 text-brand-text-muted border-slate-500/20 whitespace-nowrap">
                       {getStatusIcon(report.status)}
                       <span>Aguardando revisão</span>
                     </span>
@@ -1213,22 +1213,22 @@ const ClinicalReports: React.FC<ClinicalReportsProps> = ({ className = '', onSha
 
               {/* Resumo do Relatório */}
               <div className="mb-4">
-                <h4 className="font-semibold text-slate-300 mb-2">Resumo da Avaliação:</h4>
+                <h4 className="font-semibold text-brand-text-secondary mb-2">Resumo da Avaliação:</h4>
                 {report.content.chiefComplaint && (
-                  <p className="text-slate-400 text-sm mb-2">
-                    <strong className="text-slate-300">Queixa Principal:</strong> {report.content.chiefComplaint}
+                  <p className="text-brand-text-muted text-sm mb-2">
+                    <strong className="text-brand-text-secondary">Queixa Principal:</strong> {report.content.chiefComplaint}
                   </p>
                 )}
                 {report.content.assessment && (
-                  <p className="text-slate-400 text-sm">
-                    <strong className="text-slate-300">Avaliação:</strong> {report.content.assessment}
+                  <p className="text-brand-text-muted text-sm">
+                    <strong className="text-brand-text-secondary">Avaliação:</strong> {report.content.assessment}
                   </p>
                 )}
               </div>
 
               {/* Racionalidades Médicas */}
               <div className="mb-4">
-                <h4 className="font-semibold text-slate-300 mb-2">Racionalidades Médicas:</h4>
+                <h4 className="font-semibold text-brand-text-secondary mb-2">Racionalidades Médicas:</h4>
                 <div className="flex flex-wrap gap-2">
                   {Object.entries(report.content?.rationalities || {}).map(([key, value]: [string, any]) => {
                     const hasAnalysis = value && (value.assessment || value.recommendations)
@@ -1236,7 +1236,7 @@ const ClinicalReports: React.FC<ClinicalReportsProps> = ({ className = '', onSha
                       <div
                         key={key}
                         className={`flex items-center space-x-1 px-2 py-1 rounded text-xs ${
-                          hasAnalysis ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-slate-700/50 text-slate-400 border border-slate-600/30'
+                          hasAnalysis ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-slate-700/50 text-brand-text-muted border border-slate-600/30'
                         }`}
                       >
                         {getRationalityIcon(key)}
@@ -1318,7 +1318,7 @@ const ClinicalReports: React.FC<ClinicalReportsProps> = ({ className = '', onSha
                     })
                     setAppliedRationalities(applied)
                   }}
-                  className="flex items-center space-x-1 px-4 py-2 rounded-lg transition-colors text-white"
+                  className="flex items-center space-x-1 px-4 py-2 rounded-lg transition-colors text-brand-text"
                   style={{ background: 'linear-gradient(135deg, #00C16A 0%, #13794f 100%)' }}
                   title="Abrir para revisar, escrever nota clínica e devolver ao paciente"
                 >
@@ -1329,7 +1329,7 @@ const ClinicalReports: React.FC<ClinicalReportsProps> = ({ className = '', onSha
                 {isPatient && onShareReport && (
                   <button
                     onClick={() => onShareReport(report.id)}
-                    className="flex items-center space-x-1 px-4 py-2 rounded-lg transition-colors text-white bg-slate-600/50 border border-slate-500/30 hover:bg-slate-600/80"
+                    className="flex items-center space-x-1 px-4 py-2 rounded-lg transition-colors text-brand-text bg-slate-600/50 border border-slate-500/30 hover:bg-slate-600/80"
                   >
                     <Share2 className="w-4 h-4" />
                     <span>Compartilhar</span>
@@ -1341,7 +1341,7 @@ const ClinicalReports: React.FC<ClinicalReportsProps> = ({ className = '', onSha
                     Modal do medico tambem tem icone Baixar no header (atalho rapido). */}
                 <button
                   onClick={() => handleDownloadReport(report)}
-                  className="flex items-center space-x-1 px-4 py-2 rounded-lg transition-colors text-white bg-slate-600/50 border border-slate-500/30 hover:bg-slate-600/80"
+                  className="flex items-center space-x-1 px-4 py-2 rounded-lg transition-colors text-brand-text bg-slate-600/50 border border-slate-500/30 hover:bg-slate-600/80"
                   title="Baixar PDF formatado do relatorio (marca d'agua MedCannLab, ICP-Brasil)"
                 >
                   <Download className="w-4 h-4" />
@@ -1371,7 +1371,7 @@ const ClinicalReports: React.FC<ClinicalReportsProps> = ({ className = '', onSha
                   <button
                     onClick={() => handleGenerateNFT(report)}
                     disabled={nftLoading}
-                    className="flex items-center space-x-1 px-4 py-2 rounded-lg transition-colors text-white bg-slate-600/50 border border-slate-500/30 hover:bg-slate-600/80 disabled:opacity-60 disabled:cursor-not-allowed"
+                    className="flex items-center space-x-1 px-4 py-2 rounded-lg transition-colors text-brand-text bg-slate-600/50 border border-slate-500/30 hover:bg-slate-600/80 disabled:opacity-60 disabled:cursor-not-allowed"
                     title={nftLoading ? 'Gerando assinatura visual...' : 'Gerar certificado NFT do relatório'}
                   >
                     {nftLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <QrCode className="w-4 h-4" />}
@@ -1392,7 +1392,7 @@ const ClinicalReports: React.FC<ClinicalReportsProps> = ({ className = '', onSha
                 borderColor: 'rgba(0, 193, 106, 0.12)'
               }}
             >
-              <span className="text-sm text-slate-400">
+              <span className="text-sm text-brand-text-muted">
                 Página {currentPage} de {totalPages} • {filteredReports.length} relatórios
               </span>
               <div className="flex items-center space-x-2">
@@ -1478,7 +1478,7 @@ const ClinicalReports: React.FC<ClinicalReportsProps> = ({ className = '', onSha
             }
             return (
               <>
-                <h3 className="text-lg font-semibold text-slate-300 mb-2">{titleByFilter[filterStatus]}</h3>
+                <h3 className="text-lg font-semibold text-brand-text-secondary mb-2">{titleByFilter[filterStatus]}</h3>
                 <p className="text-slate-500">{bodyByFilter[filterStatus]}</p>
               </>
             )
@@ -1504,7 +1504,7 @@ const ClinicalReports: React.FC<ClinicalReportsProps> = ({ className = '', onSha
             }}
           >
             <div className="flex items-center justify-between mb-4">
-              <h3 id="clinical-report-modal-title" className="text-xl font-bold text-white">
+              <h3 id="clinical-report-modal-title" className="text-xl font-bold text-brand-text">
                 {isPatient ? 'Detalhes do Relatório' : `Revisar Relatório - ${selectedReport.patientName}`}
               </h3>
               <div className="flex items-center gap-2">
@@ -1514,7 +1514,7 @@ const ClinicalReports: React.FC<ClinicalReportsProps> = ({ className = '', onSha
                 {!isPatient && (
                   <button
                     onClick={() => handleDownloadReport(selectedReport)}
-                    className="w-9 h-9 flex items-center justify-center rounded-lg text-slate-400 hover:text-indigo-300 hover:bg-indigo-500/10 transition-colors"
+                    className="w-9 h-9 flex items-center justify-center rounded-lg text-brand-text-muted hover:text-indigo-300 hover:bg-indigo-500/10 transition-colors"
                     aria-label="Baixar relatório em PDF"
                     title="Baixar PDF do relatório"
                   >
@@ -1523,7 +1523,7 @@ const ClinicalReports: React.FC<ClinicalReportsProps> = ({ className = '', onSha
                 )}
                 <button
                   onClick={() => setShowReportModal(false)}
-                  className="w-9 h-9 flex items-center justify-center text-slate-400 hover:text-white transition-colors text-xl"
+                  className="w-9 h-9 flex items-center justify-center text-brand-text-muted hover:text-brand-text transition-colors text-xl"
                   aria-label="Fechar relatório"
                   title="Fechar"
                 >
@@ -1584,7 +1584,7 @@ const ClinicalReports: React.FC<ClinicalReportsProps> = ({ className = '', onSha
                     <p className="text-slate-500 text-xs mt-1">Este relatório foi gerado sem dados da avaliação AEC.</p>
                   </div>
                 ) : (
-                  <div className="space-y-3 text-sm text-slate-300">
+                  <div className="space-y-3 text-sm text-brand-text-secondary">
                     {/* Queixa Principal */}
                     {selectedReport.content.chiefComplaint && (
                       <div className="border-l-2 border-emerald-500/50 pl-3">
@@ -1620,19 +1620,19 @@ const ClinicalReports: React.FC<ClinicalReportsProps> = ({ className = '', onSha
                         <div className="mt-1 space-y-1">
                           {selectedReport.rawContent.desenvolvimento_queixa.descricao && (
                             <p>
-                              <span className="text-slate-400">Descrição:</span>{' '}
+                              <span className="text-brand-text-muted">Descrição:</span>{' '}
                               {stripClinical(selectedReport.rawContent.desenvolvimento_queixa.descricao)}
                             </p>
                           )}
                           {selectedReport.rawContent.desenvolvimento_queixa.localizacao && (
                             <p>
-                              <span className="text-slate-400">Localização:</span>{' '}
+                              <span className="text-brand-text-muted">Localização:</span>{' '}
                               {stripClinical(selectedReport.rawContent.desenvolvimento_queixa.localizacao)}
                             </p>
                           )}
                           {selectedReport.rawContent.desenvolvimento_queixa.inicio && (
                             <p>
-                              <span className="text-slate-400">Início:</span>{' '}
+                              <span className="text-brand-text-muted">Início:</span>{' '}
                               {stripClinical(selectedReport.rawContent.desenvolvimento_queixa.inicio)}
                             </p>
                           )}
@@ -1640,7 +1640,7 @@ const ClinicalReports: React.FC<ClinicalReportsProps> = ({ className = '', onSha
                           {Array.isArray(selectedReport.rawContent.desenvolvimento_queixa.sintomas_associados) &&
                             selectedReport.rawContent.desenvolvimento_queixa.sintomas_associados.length > 0 && (
                             <div>
-                              <span className="text-slate-400">Sintomas Associados:</span>
+                              <span className="text-brand-text-muted">Sintomas Associados:</span>
                               <ul className="ml-3 mt-0.5 space-y-0.5">
                                 {stripClinicalList(selectedReport.rawContent.desenvolvimento_queixa.sintomas_associados).map((s: string, i: number) => (
                                   <li key={i} className="flex items-start space-x-2">
@@ -1717,7 +1717,7 @@ const ClinicalReports: React.FC<ClinicalReportsProps> = ({ className = '', onSha
                         <div className="mt-1 space-y-2">
                           {selectedReport.rawContent.historia_familiar.lado_materno?.length > 0 && (
                             <div>
-                              <span className="text-slate-400">Materno:</span>
+                              <span className="text-brand-text-muted">Materno:</span>
                               {selectedReport.rawContent.historia_familiar.lado_materno.length === 1 ? (
                                 <span> {stripClinicalList(selectedReport.rawContent.historia_familiar.lado_materno)[0]}</span>
                               ) : (
@@ -1734,7 +1734,7 @@ const ClinicalReports: React.FC<ClinicalReportsProps> = ({ className = '', onSha
                           )}
                           {selectedReport.rawContent.historia_familiar.lado_paterno?.length > 0 && (
                             <div>
-                              <span className="text-slate-400">Paterno:</span>
+                              <span className="text-brand-text-muted">Paterno:</span>
                               {selectedReport.rawContent.historia_familiar.lado_paterno.length === 1 ? (
                                 <span> {stripClinicalList(selectedReport.rawContent.historia_familiar.lado_paterno)[0]}</span>
                               ) : (
@@ -1769,7 +1769,7 @@ const ClinicalReports: React.FC<ClinicalReportsProps> = ({ className = '', onSha
                           {Object.entries(selectedReport.rawContent.perguntas_objetivas).map(([key, val]: [string, any]) => (
                             val && (
                               <p key={key}>
-                                <span className="text-slate-400">{labelFromKey(key)}:</span> {stripClinical(val)}
+                                <span className="text-brand-text-muted">{labelFromKey(key)}:</span> {stripClinical(val)}
                               </p>
                             )
                           ))}
@@ -1791,25 +1791,25 @@ const ClinicalReports: React.FC<ClinicalReportsProps> = ({ className = '', onSha
                     {/* Dados legados IMRE (para relatórios antigos) */}
                     {selectedReport.rawContent?.investigation && (
                       <div className="border-l-2 border-slate-500/50 pl-3">
-                        <strong className="text-slate-400 text-xs uppercase tracking-wider">Investigação (IMRE)</strong>
+                        <strong className="text-brand-text-muted text-xs uppercase tracking-wider">Investigação (IMRE)</strong>
                         <p className="mt-1">{stripClinical(selectedReport.rawContent.investigation)}</p>
                       </div>
                     )}
                     {selectedReport.rawContent?.methodology && (
                       <div className="border-l-2 border-slate-500/50 pl-3">
-                        <strong className="text-slate-400 text-xs uppercase tracking-wider">Metodologia (IMRE)</strong>
+                        <strong className="text-brand-text-muted text-xs uppercase tracking-wider">Metodologia (IMRE)</strong>
                         <p className="mt-1">{stripClinical(selectedReport.rawContent.methodology)}</p>
                       </div>
                     )}
                     {selectedReport.rawContent?.result && (
                       <div className="border-l-2 border-slate-500/50 pl-3">
-                        <strong className="text-slate-400 text-xs uppercase tracking-wider">Resultado (IMRE)</strong>
+                        <strong className="text-brand-text-muted text-xs uppercase tracking-wider">Resultado (IMRE)</strong>
                         <p className="mt-1">{stripClinical(selectedReport.rawContent.result)}</p>
                       </div>
                     )}
                     {selectedReport.rawContent?.evolution && (
                       <div className="border-l-2 border-slate-500/50 pl-3">
-                        <strong className="text-slate-400 text-xs uppercase tracking-wider">Evolução (IMRE)</strong>
+                        <strong className="text-brand-text-muted text-xs uppercase tracking-wider">Evolução (IMRE)</strong>
                         <p className="mt-1">{stripClinical(selectedReport.rawContent.evolution)}</p>
                       </div>
                     )}
@@ -1823,7 +1823,7 @@ const ClinicalReports: React.FC<ClinicalReportsProps> = ({ className = '', onSha
                             .filter(([_, val]) => typeof val === 'number' || typeof val === 'string' || typeof val === 'boolean')
                             .map(([key, val]: [string, any]) => (
                               <div key={key} className="bg-slate-900/50 rounded px-2 py-1">
-                                <span className="text-slate-400 text-xs">{labelFromKey(key)}:</span>
+                                <span className="text-brand-text-muted text-xs">{labelFromKey(key)}:</span>
                                 <span className="text-emerald-300 ml-1 font-semibold">
                                   {typeof val === 'number' ? `${val}%` : String(val)}
                                 </span>
@@ -1862,14 +1862,14 @@ const ClinicalReports: React.FC<ClinicalReportsProps> = ({ className = '', onSha
                       Conversa AEC Completa ({conversationHistory.length} mensagens)
                     </h4>
                   </div>
-                  {showConversation ? <ChevronUp className="w-5 h-5 text-slate-400" /> : <ChevronDown className="w-5 h-5 text-slate-400" />}
+                  {showConversation ? <ChevronUp className="w-5 h-5 text-brand-text-muted" /> : <ChevronDown className="w-5 h-5 text-brand-text-muted" />}
                 </button>
                 {showConversation && (
                   <div className="px-4 pb-4 max-h-96 overflow-y-auto space-y-3">
                     {loadingConversation ? (
                       <div className="flex items-center justify-center py-6">
                         <Loader2 className="w-5 h-5 animate-spin text-sky-400 mr-2" />
-                        <span className="text-slate-400 text-sm">Carregando conversa...</span>
+                        <span className="text-brand-text-muted text-sm">Carregando conversa...</span>
                       </div>
                     ) : conversationHistory.length === 0 ? (
                       <p className="text-slate-500 text-sm text-center py-4">Nenhuma mensagem encontrada para esta avaliação.</p>
@@ -1905,7 +1905,7 @@ const ClinicalReports: React.FC<ClinicalReportsProps> = ({ className = '', onSha
               {!isPatient && (
                 <div className="bg-blue-900/20 rounded-lg p-4 border border-blue-500/20">
                   <h4 className="font-semibold text-slate-200 mb-3">Aplicar Racionalidades Médicas</h4>
-                  <p className="text-sm text-slate-400 mb-3">
+                  <p className="text-sm text-brand-text-muted mb-3">
                     Selecione uma racionalidade médica para gerar uma análise específica deste relatório:
                   </p>
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mb-3">
@@ -1938,7 +1938,7 @@ const ClinicalReports: React.FC<ClinicalReportsProps> = ({ className = '', onSha
                             ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500/20 cursor-pointer'
                             : isGeneratingAnalysis
                               ? 'bg-slate-700/50 text-slate-500 cursor-not-allowed'
-                              : 'bg-slate-800/50 border border-slate-600/30 text-slate-300 hover:bg-blue-900/20 hover:border-blue-500/30'
+                              : 'bg-slate-800/50 border border-slate-600/30 text-brand-text-secondary hover:bg-blue-900/20 hover:border-blue-500/30'
                             }`}
                           title={hasAnalysis ? 'Análise já gerada — clique para ver abaixo' : `Gerar análise ${label}`}
                         >
@@ -1989,7 +1989,7 @@ const ClinicalReports: React.FC<ClinicalReportsProps> = ({ className = '', onSha
                           <Brain className="w-4.5 h-4.5 text-emerald-300" />
                         </div>
                         <div>
-                          <h4 className="font-bold text-white tracking-tight">Análises por Racionalidade</h4>
+                          <h4 className="font-bold text-brand-text tracking-tight">Análises por Racionalidade</h4>
                           <p className="text-[11px] text-emerald-300/70 font-medium">
                             {Object.values(selectedReport.content.rationalities || {}).filter((v: any) => v && (v.assessment || v.recommendations?.length || v.considerations || v.summary || v.content || v.analysis)).length} de 5 racionalidades aplicadas
                           </p>
@@ -2024,7 +2024,7 @@ const ClinicalReports: React.FC<ClinicalReportsProps> = ({ className = '', onSha
                         homeopathic: { label: 'Homeopática', color: 'text-violet-300', bg: 'from-violet-500/10 to-purple-500/5', border: 'border-violet-400/30', ring: 'ring-violet-400/20' },
                         integrative: { label: 'Integrativa', color: 'text-emerald-300', bg: 'from-emerald-500/10 to-teal-500/5', border: 'border-emerald-400/30', ring: 'ring-emerald-400/20' },
                       }
-                      const m = meta[key] || { label: key, color: 'text-slate-300', bg: 'from-slate-500/10 to-slate-500/5', border: 'border-slate-500/30', ring: 'ring-slate-400/20' }
+                      const m = meta[key] || { label: key, color: 'text-brand-text-secondary', bg: 'from-slate-500/10 to-slate-500/5', border: 'border-slate-500/30', ring: 'ring-slate-400/20' }
 
                       return (
                         <div
@@ -2057,13 +2057,13 @@ const ClinicalReports: React.FC<ClinicalReportsProps> = ({ className = '', onSha
                               <>
                                 {text && (
                                   <div>
-                                    <div className="text-[10px] uppercase tracking-wider font-bold text-slate-400 mb-1">Avaliação</div>
+                                    <div className="text-[10px] uppercase tracking-wider font-bold text-brand-text-muted mb-1">Avaliação</div>
                                     <p className="text-slate-200 leading-relaxed">{stripClinical(text)}</p>
                                   </div>
                                 )}
                                 {recs.length > 0 && (
                                   <div>
-                                    <div className="text-[10px] uppercase tracking-wider font-bold text-slate-400 mb-1">Recomendações</div>
+                                    <div className="text-[10px] uppercase tracking-wider font-bold text-brand-text-muted mb-1">Recomendações</div>
                                     <ul className="space-y-1">
                                       {recs.map((rec: string, idx: number) => (
                                         <li key={idx} className="flex gap-2 text-slate-200 leading-relaxed">
@@ -2076,7 +2076,7 @@ const ClinicalReports: React.FC<ClinicalReportsProps> = ({ className = '', onSha
                                 )}
                                 {cons && (
                                   <div>
-                                    <div className="text-[10px] uppercase tracking-wider font-bold text-slate-400 mb-1">Considerações</div>
+                                    <div className="text-[10px] uppercase tracking-wider font-bold text-brand-text-muted mb-1">Considerações</div>
                                     <p className="text-slate-200 leading-relaxed">{stripClinical(cons)}</p>
                                   </div>
                                 )}
@@ -2090,7 +2090,7 @@ const ClinicalReports: React.FC<ClinicalReportsProps> = ({ className = '', onSha
                               <div className="flex flex-wrap gap-1.5 pt-3 border-t border-slate-700/40">
                                 <button
                                   onClick={() => handleDownloadRationality(key, value)}
-                                  className="flex items-center gap-1 px-2.5 py-1 text-[11px] font-medium rounded-lg bg-slate-800/60 border border-slate-600/40 text-slate-300 hover:bg-indigo-500/20 hover:border-indigo-400/40 hover:text-indigo-200 transition-all"
+                                  className="flex items-center gap-1 px-2.5 py-1 text-[11px] font-medium rounded-lg bg-slate-800/60 border border-slate-600/40 text-brand-text-secondary hover:bg-indigo-500/20 hover:border-indigo-400/40 hover:text-indigo-200 transition-all"
                                   title="Baixar PDF MedCannLab desta análise"
                                 >
                                   <Download className="w-3 h-3" />
@@ -2098,7 +2098,7 @@ const ClinicalReports: React.FC<ClinicalReportsProps> = ({ className = '', onSha
                                 </button>
                                 <button
                                   onClick={() => handleShareRationality(key, value)}
-                                  className="flex items-center gap-1 px-2.5 py-1 text-[11px] font-medium rounded-lg bg-slate-800/60 border border-slate-600/40 text-slate-300 hover:bg-sky-500/20 hover:border-sky-400/40 hover:text-sky-200 transition-all"
+                                  className="flex items-center gap-1 px-2.5 py-1 text-[11px] font-medium rounded-lg bg-slate-800/60 border border-slate-600/40 text-brand-text-secondary hover:bg-sky-500/20 hover:border-sky-400/40 hover:text-sky-200 transition-all"
                                   title="Gerar PDF e compartilhar"
                                 >
                                   <Share2 className="w-3 h-3" />
@@ -2117,7 +2117,7 @@ const ClinicalReports: React.FC<ClinicalReportsProps> = ({ className = '', onSha
               {/* Notas do Médico */}
               {!isPatient && (
                 <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-2">
+                  <label className="block text-sm font-medium text-brand-text-secondary mb-2">
                     Suas Notas e Observações:
                     {/* V1.9.242 — texto inline visivel (proposta Ricardo 13/05):
                         em vez de tooltip oculto no botao, indicacao clara do que falta. */}
@@ -2141,7 +2141,7 @@ const ClinicalReports: React.FC<ClinicalReportsProps> = ({ className = '', onSha
             <div className="flex flex-wrap gap-2 mt-6">
               <button
                 onClick={() => setShowReportModal(false)}
-                className="flex-1 min-w-[120px] px-4 py-2 border border-slate-600/30 text-slate-300 rounded-lg hover:bg-slate-700/50 transition-colors"
+                className="flex-1 min-w-[120px] px-4 py-2 border border-slate-600/30 text-brand-text-secondary rounded-lg hover:bg-slate-700/50 transition-colors"
               >
                 Fechar
               </button>
@@ -2161,7 +2161,7 @@ const ClinicalReports: React.FC<ClinicalReportsProps> = ({ className = '', onSha
                       state: { openNew: true, reason: 'post_assessment' }
                     })
                   }}
-                  className="flex-1 min-w-[140px] px-4 py-2 text-white rounded-lg transition-colors flex items-center justify-center space-x-2"
+                  className="flex-1 min-w-[140px] px-4 py-2 text-brand-text rounded-lg transition-colors flex items-center justify-center space-x-2"
                   style={{ background: 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)' }}
                   title="Abrir tela de agendamento de consulta"
                 >
@@ -2179,7 +2179,7 @@ const ClinicalReports: React.FC<ClinicalReportsProps> = ({ className = '', onSha
                       (doctorNotes || '').trim().length < 3 ||
                       selectedReport.reviewStatus === 'approved'
                     }
-                    className="flex-1 min-w-[160px] px-4 py-2 text-white rounded-lg transition-colors flex items-center justify-center space-x-2 disabled:opacity-60 disabled:cursor-not-allowed"
+                    className="flex-1 min-w-[160px] px-4 py-2 text-brand-text rounded-lg transition-colors flex items-center justify-center space-x-2 disabled:opacity-60 disabled:cursor-not-allowed"
                     style={{ background: 'linear-gradient(135deg, #00C16A 0%, #13794f 100%)' }}
                     title={
                       selectedReport.reviewStatus === 'approved'
@@ -2222,29 +2222,29 @@ const ClinicalReports: React.FC<ClinicalReportsProps> = ({ className = '', onSha
           >
             <div className="w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center"
               style={{ background: 'linear-gradient(135deg, #10b981 0%, #9333ea 100%)' }}>
-              <Sparkles className="w-8 h-8 text-white" />
+              <Sparkles className="w-8 h-8 text-brand-text" />
             </div>
-            <h3 id="nft-modal-title" className="text-xl font-bold text-white mb-2">Assinatura Visual Gerada</h3>
-            <p className="text-slate-400 text-sm mb-6 leading-relaxed">
+            <h3 id="nft-modal-title" className="text-xl font-bold text-brand-text mb-2">Assinatura Visual Gerada</h3>
+            <p className="text-brand-text-muted text-sm mb-6 leading-relaxed">
               Sua assinatura simbólica única foi gerada e ancorada criptograficamente
               ao relatório clínico de origem.
             </p>
             <div className="space-y-2 mb-6">
               <div className="flex items-center justify-between px-4 py-2.5 rounded-lg"
                 style={{ background: 'rgba(15, 36, 60, 0.7)', border: '1px solid rgba(147, 51, 234, 0.15)' }}>
-                <span className="text-slate-400 text-xs">Identificador</span>
+                <span className="text-brand-text-muted text-xs">Identificador</span>
                 <span className="text-purple-400 font-mono text-xs font-semibold">{nftModal.token}</span>
               </div>
               <div className="flex items-center justify-between px-4 py-2.5 rounded-lg"
                 style={{ background: 'rgba(15, 36, 60, 0.7)', border: '1px solid rgba(16, 185, 129, 0.15)' }}>
-                <span className="text-slate-400 text-xs">Hash imagem</span>
+                <span className="text-brand-text-muted text-xs">Hash imagem</span>
                 <span className="text-emerald-400 font-mono text-xs font-semibold">{nftModal.hash}</span>
               </div>
             </div>
             <div className="flex gap-2">
               <button
                 onClick={() => setNftModal({ show: false, token: '', hash: '' })}
-                className="flex-1 px-4 py-2.5 rounded-xl text-slate-300 font-medium transition-all hover:bg-slate-800"
+                className="flex-1 px-4 py-2.5 rounded-xl text-brand-text-secondary font-medium transition-all hover:bg-brand-surface"
                 style={{ background: 'rgba(15, 36, 60, 0.7)', border: '1px solid rgba(255, 255, 255, 0.08)' }}
               >
                 Fechar
@@ -2254,7 +2254,7 @@ const ClinicalReports: React.FC<ClinicalReportsProps> = ({ className = '', onSha
                   setNftModal({ show: false, token: '', hash: '' })
                   navigate('/app/clinica/paciente/dashboard?section=galeria')
                 }}
-                className="flex-1 flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl text-white font-semibold transition-all"
+                className="flex-1 flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl text-brand-text font-semibold transition-all"
                 style={{ background: 'linear-gradient(135deg, #10b981 0%, #9333ea 100%)' }}
               >
                 <Sparkles className="w-4 h-4" />

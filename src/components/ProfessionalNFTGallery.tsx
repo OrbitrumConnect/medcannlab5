@@ -205,10 +205,10 @@ export default function ProfessionalNFTGallery() {
                         <Sparkles className="w-5 h-5 text-emerald-300" />
                     </div>
                     <div>
-                        <h1 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
+                        <h1 className="text-xl sm:text-2xl font-bold text-brand-text tracking-tight">
                             Galeria Clínica
                         </h1>
-                        <p className="text-sm text-slate-400 mt-1 max-w-2xl leading-relaxed">
+                        <p className="text-sm text-brand-text-muted mt-1 max-w-2xl leading-relaxed">
                             Assinaturas visuais que pacientes vinculados liberaram para visualização clínica.
                             Cada peça é derivada simbolicamente do conteúdo de um relatório clínico do paciente.
                             Liberação é controlada exclusivamente pelo paciente.
@@ -218,19 +218,19 @@ export default function ProfessionalNFTGallery() {
 
                 {!isEmpty && !loading && (
                     <div className="flex flex-wrap gap-3 mt-4 text-xs">
-                        <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-800/60 border border-slate-700">
+                        <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-800/60 border border-brand-border">
                             <ImageIcon className="w-3.5 h-3.5 text-emerald-400" />
-                            <span className="text-slate-300">{totalCount} {totalCount === 1 ? 'peça liberada' : 'peças liberadas'}</span>
+                            <span className="text-brand-text-secondary">{totalCount} {totalCount === 1 ? 'peça liberada' : 'peças liberadas'}</span>
                         </div>
-                        <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-800/60 border border-slate-700">
+                        <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-800/60 border border-brand-border">
                             <UserIcon className="w-3.5 h-3.5 text-emerald-400" />
-                            <span className="text-slate-300">
+                            <span className="text-brand-text-secondary">
                                 {uniquePatients} {uniquePatients === 1 ? 'paciente' : 'pacientes'}
                             </span>
                         </div>
-                        <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-800/60 border border-slate-700">
+                        <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-800/60 border border-brand-border">
                             <FileCheck className="w-3.5 h-3.5 text-emerald-400" />
-                            <span className="text-slate-300">
+                            <span className="text-brand-text-secondary">
                                 {nfts.filter(n => n.signature_hash).length}/{nfts.length} ancoradas criptograficamente
                             </span>
                         </div>
@@ -246,14 +246,14 @@ export default function ProfessionalNFTGallery() {
 
             {/* EMPTY STATE — médico, não paciente */}
             {isEmpty && (
-                <div className="text-center py-16 px-6 bg-gradient-to-br from-slate-900/40 to-slate-800/20 rounded-2xl border border-slate-800">
+                <div className="text-center py-16 px-6 bg-gradient-to-br from-slate-900/40 to-slate-800/20 rounded-2xl border border-brand-border-subtle">
                     <div className="w-20 h-20 mx-auto mb-5 rounded-full bg-gradient-to-br from-emerald-500/10 to-purple-500/10 border border-emerald-500/20 flex items-center justify-center">
                         <Sparkles className="w-9 h-9 text-emerald-300/70" />
                     </div>
-                    <h3 className="text-lg font-bold text-white mb-2">
+                    <h3 className="text-lg font-bold text-brand-text mb-2">
                         Nenhuma peça liberada ainda
                     </h3>
-                    <p className="text-sm text-slate-400 max-w-md mx-auto leading-relaxed">
+                    <p className="text-sm text-brand-text-muted max-w-md mx-auto leading-relaxed">
                         Pacientes vinculados a você ainda não liberaram nenhuma assinatura visual
                         para visualização clínica. Quando liberarem, as peças aparecerão aqui com
                         identificação do paciente e contexto do relatório de origem.
@@ -266,12 +266,12 @@ export default function ProfessionalNFTGallery() {
                 <>
                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 gap-3 sm:gap-4">
                         {nfts.map((nft) => {
-                            const styleInfo = STYLE_LABELS[nft.style] || { label: nft.style, color: 'text-slate-300' }
+                            const styleInfo = STYLE_LABELS[nft.style] || { label: nft.style, color: 'text-brand-text-secondary' }
                             return (
                                 <button
                                     key={nft.id}
                                     onClick={() => setSelectedNFT(nft)}
-                                    className="group relative aspect-square rounded-xl overflow-hidden bg-slate-900 border border-slate-800 hover:border-emerald-500/40 transition-all hover:scale-[1.02] hover:shadow-lg hover:shadow-emerald-500/10"
+                                    className="group relative aspect-square rounded-xl overflow-hidden bg-brand-bg border border-brand-border-subtle hover:border-emerald-500/40 transition-all hover:scale-[1.02] hover:shadow-lg hover:shadow-emerald-500/10"
                                     title={`${nft.patient_name} · ${formatDate(nft.created_at)}`}
                                 >
                                     {nft.thumbnail_url || nft.image_url ? (
@@ -291,7 +291,7 @@ export default function ProfessionalNFTGallery() {
                                     {/* Overlay info — sempre visível pra médico identificar paciente */}
                                     <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/90 via-black/60 to-transparent p-2">
                                         <div className="text-left">
-                                            <div className="text-[11px] font-semibold text-white truncate">
+                                            <div className="text-[11px] font-semibold text-brand-text truncate">
                                                 {nft.patient_name}
                                             </div>
                                             <div className="text-[9px] text-slate-300/80 truncate">
@@ -302,11 +302,11 @@ export default function ProfessionalNFTGallery() {
                                     {/* Badge ICP no canto */}
                                     {nft.signature_hash ? (
                                         <div className="absolute top-1.5 right-1.5 w-5 h-5 rounded-full bg-emerald-500/90 flex items-center justify-center" title="Ancorado em assinatura ICP-Brasil">
-                                            <Shield className="w-3 h-3 text-white" />
+                                            <Shield className="w-3 h-3 text-brand-text" />
                                         </div>
                                     ) : (
                                         <div className="absolute top-1.5 right-1.5 w-5 h-5 rounded-full bg-amber-500/80 flex items-center justify-center" title="Sem ancoragem criptográfica">
-                                            <Hash className="w-3 h-3 text-white" />
+                                            <Hash className="w-3 h-3 text-brand-text" />
                                         </div>
                                     )}
                                 </button>
@@ -320,18 +320,18 @@ export default function ProfessionalNFTGallery() {
                             <button
                                 onClick={() => setPage(p => Math.max(0, p - 1))}
                                 disabled={page === 0}
-                                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm bg-slate-800/60 hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors text-slate-300"
+                                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm bg-slate-800/60 hover:bg-brand-surface-subtle disabled:opacity-40 disabled:cursor-not-allowed transition-colors text-brand-text-secondary"
                             >
                                 <ChevronLeft className="w-4 h-4" /> Anterior
                             </button>
-                            <div className="text-xs text-slate-400">
-                                Página <span className="text-white font-semibold">{page + 1}</span> de{' '}
-                                <span className="text-white font-semibold">{totalPages}</span>
+                            <div className="text-xs text-brand-text-muted">
+                                Página <span className="text-brand-text font-semibold">{page + 1}</span> de{' '}
+                                <span className="text-brand-text font-semibold">{totalPages}</span>
                             </div>
                             <button
                                 onClick={() => setPage(p => Math.min(totalPages - 1, p + 1))}
                                 disabled={page >= totalPages - 1}
-                                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm bg-slate-800/60 hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors text-slate-300"
+                                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm bg-slate-800/60 hover:bg-brand-surface-subtle disabled:opacity-40 disabled:cursor-not-allowed transition-colors text-brand-text-secondary"
                             >
                                 Próxima <ChevronRight className="w-4 h-4" />
                             </button>
@@ -350,22 +350,22 @@ export default function ProfessionalNFTGallery() {
                     onKeyDown={(e) => { if (e.key === 'Escape') setSelectedNFT(null) }}
                 >
                     <div
-                        className="w-full max-w-5xl bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl overflow-hidden max-h-[90vh] flex flex-col animate-in fade-in zoom-in-95 duration-200"
+                        className="w-full max-w-5xl bg-brand-bg border border-brand-border rounded-2xl shadow-2xl overflow-hidden max-h-[90vh] flex flex-col animate-in fade-in zoom-in-95 duration-200"
                         onClick={e => e.stopPropagation()}
                     >
-                        <div className="px-5 py-3 border-b border-slate-700 flex items-center justify-between bg-slate-800/50 flex-shrink-0">
+                        <div className="px-5 py-3 border-b border-brand-border flex items-center justify-between bg-slate-800/50 flex-shrink-0">
                             <div className="flex items-center gap-2">
                                 <Sparkles className="w-4 h-4 text-emerald-400" />
                                 <div>
-                                    <h3 className="text-sm font-bold text-white">{selectedNFT.patient_name}</h3>
-                                    <p className="text-[11px] text-slate-400">
+                                    <h3 className="text-sm font-bold text-brand-text">{selectedNFT.patient_name}</h3>
+                                    <p className="text-[11px] text-brand-text-muted">
                                         Liberado em {selectedNFT.shared_at ? formatDate(selectedNFT.shared_at) : '—'}
                                     </p>
                                 </div>
                             </div>
                             <button
                                 onClick={() => setSelectedNFT(null)}
-                                className="p-1.5 hover:bg-slate-700 rounded-full text-slate-400 hover:text-white transition-colors"
+                                className="p-1.5 hover:bg-brand-surface-subtle rounded-full text-brand-text-muted hover:text-brand-text transition-colors"
                                 aria-label="Fechar"
                                 title="Fechar"
                             >
@@ -393,14 +393,14 @@ export default function ProfessionalNFTGallery() {
                                         <UserIcon className="w-3.5 h-3.5 text-emerald-400 flex-shrink-0 mt-0.5" />
                                         <div className="min-w-0">
                                             <div className="text-[9px] text-slate-500 uppercase tracking-wide">Paciente</div>
-                                            <div className="text-xs text-white font-medium truncate">{selectedNFT.patient_name}</div>
+                                            <div className="text-xs text-brand-text font-medium truncate">{selectedNFT.patient_name}</div>
                                         </div>
                                     </div>
                                     <div className="flex items-start gap-1.5">
                                         <Palette className="w-3.5 h-3.5 text-emerald-400 flex-shrink-0 mt-0.5" />
                                         <div className="min-w-0">
                                             <div className="text-[9px] text-slate-500 uppercase tracking-wide">Estilo</div>
-                                            <div className="text-xs text-white font-medium truncate">
+                                            <div className="text-xs text-brand-text font-medium truncate">
                                                 {(STYLE_LABELS[selectedNFT.style])?.label || selectedNFT.style}
                                             </div>
                                         </div>
@@ -413,7 +413,7 @@ export default function ProfessionalNFTGallery() {
                                         <Sparkles className="w-3.5 h-3.5 text-purple-400 flex-shrink-0 mt-0.5" />
                                         <div className="min-w-0">
                                             <div className="text-[9px] text-slate-500 uppercase tracking-wide">Emoção</div>
-                                            <div className="text-xs text-white font-medium capitalize">{selectedNFT.emotional_sig}</div>
+                                            <div className="text-xs text-brand-text font-medium capitalize">{selectedNFT.emotional_sig}</div>
                                         </div>
                                     </div>
                                 )}
@@ -447,7 +447,7 @@ export default function ProfessionalNFTGallery() {
                                                 {selectedNFT.report_created_at && (
                                                     <div className="flex items-center gap-1">
                                                         <Calendar className="w-2.5 h-2.5 text-slate-500" />
-                                                        <span className="text-slate-300">{formatDate(selectedNFT.report_created_at)}</span>
+                                                        <span className="text-brand-text-secondary">{formatDate(selectedNFT.report_created_at)}</span>
                                                     </div>
                                                 )}
                                             </div>
@@ -465,7 +465,7 @@ export default function ProfessionalNFTGallery() {
                                         <div className="text-[9px] text-slate-500 uppercase tracking-wide mb-1">Paleta</div>
                                         <div className="flex flex-wrap gap-1">
                                             {selectedNFT.palette.map((color, i) => (
-                                                <span key={i} className="px-1.5 py-0.5 rounded bg-slate-800 border border-slate-700 text-[10px] text-slate-300 capitalize">{color}</span>
+                                                <span key={i} className="px-1.5 py-0.5 rounded bg-brand-surface border border-brand-border text-[10px] text-brand-text-secondary capitalize">{color}</span>
                                             ))}
                                         </div>
                                     </div>
@@ -495,7 +495,7 @@ export default function ProfessionalNFTGallery() {
                                             <Hash className="w-3 h-3 text-slate-500 flex-shrink-0 mt-0.5" />
                                             <div className="min-w-0 flex-1">
                                                 <span className="text-slate-500">Hash imagem:</span>{' '}
-                                                <code className="text-slate-300 font-mono text-[9px] break-all">
+                                                <code className="text-brand-text-secondary font-mono text-[9px] break-all">
                                                     {formatHash(selectedNFT.image_hash, 12)}
                                                 </code>
                                             </div>
@@ -515,7 +515,7 @@ export default function ProfessionalNFTGallery() {
                                             <Calendar className="w-3 h-3 text-slate-500 flex-shrink-0 mt-0.5" />
                                             <div className="min-w-0 flex-1">
                                                 <span className="text-slate-500">Gerado:</span>{' '}
-                                                <span className="text-slate-300">{formatDate(selectedNFT.created_at)}</span>
+                                                <span className="text-brand-text-secondary">{formatDate(selectedNFT.created_at)}</span>
                                             </div>
                                         </div>
                                         <div className="flex items-start gap-1.5">
@@ -532,10 +532,10 @@ export default function ProfessionalNFTGallery() {
                             </div>
                         </div>
 
-                        <div className="px-4 py-2.5 border-t border-slate-700 bg-slate-800/30 flex items-center justify-end gap-2 flex-shrink-0">
+                        <div className="px-4 py-2.5 border-t border-brand-border bg-slate-800/30 flex items-center justify-end gap-2 flex-shrink-0">
                             <button
                                 onClick={() => setSelectedNFT(null)}
-                                className="px-2.5 py-1 rounded-lg text-xs text-slate-400 hover:text-white transition-colors"
+                                className="px-2.5 py-1 rounded-lg text-xs text-brand-text-muted hover:text-brand-text transition-colors"
                             >
                                 Fechar
                             </button>

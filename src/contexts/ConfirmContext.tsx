@@ -178,7 +178,7 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
                         {/* Close button */}
                         <button
                             onClick={onCancel}
-                            className="absolute top-4 right-4 text-slate-500 hover:text-slate-300 transition-colors p-1 rounded-lg hover:bg-slate-800/50"
+                            className="absolute top-4 right-4 text-slate-500 hover:text-brand-text-secondary transition-colors p-1 rounded-lg hover:bg-slate-800/50"
                         >
                             <X className="w-4 h-4" />
                         </button>
@@ -189,10 +189,10 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
                                 {getIcon()}
                             </div>
                             <div className="flex-1 min-w-0 pr-6">
-                                <h3 className="text-lg font-bold text-white mb-2 leading-tight">
+                                <h3 className="text-lg font-bold text-brand-text mb-2 leading-tight">
                                     {title}
                                 </h3>
-                                <p className="text-sm text-slate-400 leading-relaxed">
+                                <p className="text-sm text-brand-text-muted leading-relaxed">
                                     {message}
                                 </p>
                             </div>
@@ -202,13 +202,13 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
                         <div className="flex items-center justify-end gap-3 mt-6 pt-4 border-t border-slate-800/50">
                             <button
                                 onClick={onCancel}
-                                className="px-5 py-2.5 bg-slate-800/80 hover:bg-slate-700/80 text-slate-300 hover:text-white rounded-xl transition-all duration-200 font-medium text-sm border border-slate-700/50 hover:border-slate-600/50"
+                                className="px-5 py-2.5 bg-slate-800/80 hover:bg-slate-700/80 text-brand-text-secondary hover:text-brand-text rounded-xl transition-all duration-200 font-medium text-sm border border-slate-700/50 hover:border-slate-600/50"
                             >
                                 {cancelText}
                             </button>
                             <button
                                 onClick={onConfirm}
-                                className={`px-5 py-2.5 rounded-xl transition-all duration-200 font-medium text-sm text-white shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] ${getButtonColors()}`}
+                                className={`px-5 py-2.5 rounded-xl transition-all duration-200 font-medium text-sm text-brand-text shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] ${getButtonColors()}`}
                             >
                                 {confirmText}
                             </button>
