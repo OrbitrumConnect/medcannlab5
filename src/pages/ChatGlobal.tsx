@@ -17,7 +17,6 @@ import {
   MicOff,
   Video,
   VideoOff,
-  Phone,
   MoreVertical,
   Smile,
   Paperclip,
@@ -1506,12 +1505,9 @@ const ChatGlobal: React.FC = () => {
                         <Flag className="w-4 h-4 md:w-5 md:h-5" />
                       </button>
                     )}
-                    <button className="p-1.5 md:p-2 text-slate-400 hover:text-primary-400 transition-colors hidden md:block">
-                      <Video className="w-4 h-4 md:w-5 md:h-5" />
-                    </button>
-                    <button className="p-1.5 md:p-2 text-slate-400 hover:text-green-400 transition-colors hidden md:block">
-                      <Phone className="w-4 h-4 md:w-5 md:h-5" />
-                    </button>
+                    {/* V1.9.418 — botões Video/Phone removidos: eram decorativos
+                        (sem onClick). Call multi-usuário é feature real (ver infra
+                        WiseCare V4H), não cabe num botão fantasma no header do chat. */}
                     <button className="p-1.5 md:p-2 text-slate-400 hover:text-purple-400 transition-colors">
                       <MoreVertical className="w-4 h-4 md:w-5 md:h-5" />
                     </button>
