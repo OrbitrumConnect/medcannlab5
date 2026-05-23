@@ -100,12 +100,12 @@ const Landing: React.FC = () => {
   const noaPhotoSrc = `${import.meta.env.BASE_URL}AvatarsEstatico.png`
   const logoBrainSrc = `${import.meta.env.BASE_URL}brain.png`
 
-  // Subtle neural pulse rings (professional, medical aesthetic)
+  // Subtle neural pulse ring (professional, medical aesthetic) — V1.9.435 single ring
   const pulseRings = useMemo(() => {
-    return Array.from({ length: 3 }).map((_, i) => ({
-      delay: i * 2.5,
-      duration: 7 + i * 1.5,
-      maxScale: 1.8 + i * 0.4,
+    return Array.from({ length: 2 }).map((_, i) => ({
+      delay: i * 3.2,
+      duration: 10 + i * 2,
+      maxScale: 1.16 + i * 0.13,
     }))
   }, [])
 
@@ -323,18 +323,13 @@ const Landing: React.FC = () => {
       <nav className="fixed w-full top-0 z-40 bg-slate-950/80 backdrop-blur-lg border-b border-white/5">
         <div className="container mx-auto px-6 h-20 flex items-center justify-between">
           <div className="flex items-center space-x-3">
-            <div className="w-12 h-12 flex items-center justify-center overflow-hidden flex-shrink-0" title="MedCannLab">
-              <img
-                src="/medcannlab-logo.png"
-                alt="MedCannLab Logo"
-                className="w-full h-full object-contain"
-                style={{ filter: 'drop-shadow(0 0 6px rgba(0, 193, 106, 0.6))' }}
-              />
-            </div>
-            <div>
-              <span className="text-2xl font-bold block text-white tracking-tight leading-none">MedCannLab</span>
-              <div className="text-xs text-slate-400 font-semibold tracking-widest uppercase ml-0.5 mt-0.5">Plataforma 3.0</div>
-            </div>
+            {/* V1.9.435 — Logotipo horizontal MCL completo (substitui emblema+texto separados) */}
+            <img
+              src="/medcannlab-logo-alt.png"
+              alt="MedCannLab — Plataforma Clínica Cognitiva"
+              className="h-14 w-auto object-contain hover:scale-105 transition-transform duration-300"
+              style={{ filter: 'drop-shadow(0 0 8px rgba(0, 193, 106, 0.4))' }}
+            />
           </div>
 
           <div className="hidden md:flex items-center space-x-6">
@@ -467,29 +462,33 @@ const Landing: React.FC = () => {
               <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                 {pulseRings.map((ring, i) => (
                   <motion.div
-                    key={i}
-                    className="absolute rounded-full border border-emerald-500/20"
-                    style={{ width: '60%', height: '60%' }}
-                    initial={{ scale: 0.8, opacity: 0 }}
+                    key={`ring-${i}`}
+                    className="absolute rounded-full border-2 border-emerald-400/40"
+                    style={{ width: '60%', height: '60%', boxShadow: '0 0 30px rgba(16, 185, 129, 0.3)' }}
+                    initial={{ scale: 0.7, opacity: 0 }}
                     animate={{
-                      scale: [0.8, ring.maxScale],
-                      opacity: [0.4, 0],
+                      scale: [0.7, ring.maxScale],
+                      opacity: [0, 0.6, 0],
                     }}
                     transition={{
                       duration: ring.duration,
                       repeat: Infinity,
-                      ease: "easeOut",
+                      ease: [0.25, 0.1, 0.25, 1],
                       delay: ring.delay,
+                      times: [0, 0.35, 1],
                     }}
                   />
                 ))}
               </div>
 
+              {/* V1.9.435 — Emblema centralizado + glow intensificado */}
               <img
                 src="/medcannlab-logo.png"
-                alt="AI Core"
+                alt="MCL — Emblema MedCannLab"
                 className="relative z-10 w-full h-full max-w-[38.4rem] object-contain hover:scale-105 transition-transform duration-700 drop-shadow-2xl"
-                style={{ filter: 'drop-shadow(0 0 30px rgba(16, 185, 129, 0.2))' }}
+                style={{
+                  filter: 'drop-shadow(0 0 40px rgba(16, 185, 129, 0.42)) drop-shadow(0 0 80px rgba(0, 229, 178, 0.18))'
+                }}
               />
             </div>
           </motion.div>
@@ -1194,18 +1193,30 @@ const Landing: React.FC = () => {
 
       {/* --- Footer --- */}
       <footer className="bg-slate-950 border-t border-slate-900 py-12">
-        <div className="container mx-auto px-6 flex flex-col md:flex-row justify-between items-center opacity-50 hover:opacity-100 transition-opacity">
-          <div className="flex items-center space-x-2 mb-4 md:mb-0">
-            <Brain className="w-5 h-5 text-slate-500" />
-            <span className="font-semibold text-slate-400">MedCannLab</span>
+        <div className="container mx-auto px-6">
+          {/* V1.9.435 — Logotipo horizontal MCL no topo do footer */}
+          <div className="flex justify-center mb-8">
+            <img
+              src="/medcannlab-logo-alt.png"
+              alt="MCL — MedCannLab Plataforma Clínica Cognitiva"
+              className="h-16 md:h-20 w-auto object-contain opacity-80 hover:opacity-100 transition-opacity"
+              style={{ filter: 'drop-shadow(0 0 12px rgba(16, 185, 129, 0.15))' }}
+            />
           </div>
-          <div className="flex space-x-6 text-sm text-slate-500">
-            <Link to="/termos" className="cursor-pointer hover:text-white transition-colors">Termos de Uso</Link>
-            <Link to="/privacidade" className="cursor-pointer hover:text-white transition-colors">Privacidade</Link>
-            <span className="cursor-pointer hover:text-white" onClick={() => setShowAdminLogin(true)}>Admin</span>
-          </div>
-          <div className="mt-4 md:mt-0 text-xs text-slate-600">
-            © 2026 MedCannLab. All rights reserved.
+
+          <div className="flex flex-col md:flex-row justify-between items-center opacity-50 hover:opacity-100 transition-opacity">
+            <div className="flex items-center space-x-2 mb-4 md:mb-0">
+              <Brain className="w-5 h-5 text-slate-500" />
+              <span className="font-semibold text-slate-400">MedCannLab</span>
+            </div>
+            <div className="flex space-x-6 text-sm text-slate-500">
+              <Link to="/termos" className="cursor-pointer hover:text-white transition-colors">Termos de Uso</Link>
+              <Link to="/privacidade" className="cursor-pointer hover:text-white transition-colors">Privacidade</Link>
+              <span className="cursor-pointer hover:text-white" onClick={() => setShowAdminLogin(true)}>Admin</span>
+            </div>
+            <div className="mt-4 md:mt-0 text-xs text-slate-600">
+              © 2026 MedCannLab. All rights reserved.
+            </div>
           </div>
         </div>
       </footer>
