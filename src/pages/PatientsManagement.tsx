@@ -2364,26 +2364,11 @@ const PatientsManagement: React.FC<PatientsManagementProps> = ({ embedded = fals
               <FileText className="w-4 h-4 text-blue-400" />
               <span>Importar CSV</span>
             </button>
-            <button
-              onClick={() => {
-                setShowNewPatientMenu(false)
-                navigate('/app/new-patient?mode=database')
-              }}
-              className="w-full text-left px-3 py-2 rounded-md hover:bg-slate-700 transition-colors text-white flex items-center gap-2 text-sm"
-            >
-              <Archive className="w-4 h-4 text-amber-400" />
-              <span>Importar do Banco</span>
-            </button>
-            <button
-              onClick={() => {
-                setShowNewPatientMenu(false)
-                navigate('/app/new-patient?mode=drag-drop')
-              }}
-              className="w-full text-left px-3 py-2 rounded-md hover:bg-slate-700 transition-colors text-white flex items-center gap-2 text-sm"
-            >
-              <Upload className="w-4 h-4 text-purple-400" />
-              <span>Arrastar Arquivos</span>
-            </button>
+            {/* V1.9.440-B — "Importar do Banco" + "Arrastar Arquivos" REMOVIDOS
+                (anti-overclaim): smoke audit revelou que handleDatabaseImport
+                so mostrava alert "requer configuracao backend" + handleDragDrop
+                so processava CSV (outros formatos faziam console.log marcando
+                sucesso fake). Voltam quando forem implementadas de verdade. */}
             <div className="my-1 border-t border-slate-700/50" />
             <button
               onClick={() => {
