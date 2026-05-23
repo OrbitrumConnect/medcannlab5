@@ -35,8 +35,10 @@ import {
   CheckCircle,
   XCircle,
   BarChart3,
-  Sparkles
+  Sparkles,
+  Link2
 } from 'lucide-react'
+import { QuickReferralModal } from '../components/QuickReferralModal'
 import { useClinicalGovernance } from '../hooks/useClinicalGovernance'
 import { ContextAnalysisCard } from '../components/ClinicalGovernance/ContextAnalysisCard'
 import IntegratedGovernanceView from '../components/ClinicalGovernance/IntegratedGovernanceView'
@@ -271,6 +273,8 @@ const PatientsManagement: React.FC<PatientsManagementProps> = ({ embedded = fals
   const [evolutions, setEvolutions] = useState<Evolution[]>([])
   const [loadingEvolutions, setLoadingEvolutions] = useState(false)
   const [showNewPatientMenu, setShowNewPatientMenu] = useState(false)
+  // V1.9.440 — Atalho "Enviar Link de Indicação" no menu Novo Paciente
+  const [showReferralModal, setShowReferralModal] = useState(false)
   const [openingChat, setOpeningChat] = useState(false)
   // [V1.9.360] Removido showCasosSimilaresModal — agora é aba dedicada
   const [analyticsReports, setAnalyticsReports] = useState<any[]>([])
@@ -1397,6 +1401,18 @@ const PatientsManagement: React.FC<PatientsManagementProps> = ({ embedded = fals
                         <Upload className="w-4 h-4" />
                         <span>Arrastar Arquivos</span>
                       </button>
+                      {/* V1.9.440 — Atalho rápido: link de indicação (menos atrito que cadastro manual) */}
+                      <div className="my-1 border-t border-slate-700/50" />
+                      <button
+                        onClick={() => {
+                          setShowNewPatientMenu(false)
+                          setShowReferralModal(true)
+                        }}
+                        className="w-full text-left px-4 py-2 rounded-lg hover:bg-slate-700 transition-colors text-white flex items-center space-x-2"
+                      >
+                        <Link2 className="w-4 h-4 text-[#00E5B2]" />
+                        <span>Enviar Link de Indicação</span>
+                      </button>
                     </div>
                   </div>
                 )}
@@ -1522,6 +1538,18 @@ const PatientsManagement: React.FC<PatientsManagementProps> = ({ embedded = fals
                       >
                         <Upload className="w-4 h-4 text-purple-400" />
                         <span>Arrastar Arquivos</span>
+                      </button>
+                      {/* V1.9.440 — Atalho rápido: link de indicação (menos atrito que cadastro manual) */}
+                      <div className="my-1 border-t border-slate-700/50" />
+                      <button
+                        onClick={() => {
+                          setShowNewPatientMenu(false)
+                          setShowReferralModal(true)
+                        }}
+                        className="w-full text-left px-3 py-2 rounded-md hover:bg-slate-700 transition-colors text-white flex items-center gap-2 text-sm"
+                      >
+                        <Link2 className="w-4 h-4 text-[#00E5B2]" />
+                        <span>Enviar Link de Indicação</span>
                       </button>
                     </div>
                   </div>
@@ -2393,6 +2421,12 @@ const PatientsManagement: React.FC<PatientsManagementProps> = ({ embedded = fals
       </div>
 
       {/* [V1.9.360] Modal removido — Casos Similares agora é aba dedicada */}
+
+      {/* V1.9.440 — Modal "Enviar Link de Indicação" (atalho rápido pro menu Novo Paciente) */}
+      <QuickReferralModal
+        open={showReferralModal}
+        onClose={() => setShowReferralModal(false)}
+      />
     </div>
   )
 }

@@ -23,13 +23,19 @@ const InvitePatient: React.FC = () => {
 
         const loadDoctor = async () => {
             try {
-                const { data, error } = await supabase
-                    .from('users')
-                    .select('name')
-                    .eq('id', doctorId)
+                // V1.9.440 — RPC pública (SECURITY DEFINER) bypassa RLS pra
+                // usuários anônimos escaneando QR de invite. Retorna só
+                // name + specialty (zero dados sensíveis tipo email/CRM/CPF).
+                // Bug origem: query direta em public.users bloqueada pelas 6
+                // policies SELECT — todas exigem auth.uid() com permissão.
+                // Filho da Dayana 23/05 escaneou QR sem ter conta -> 0 rows
+                // -> "Profissional nao encontrado". Mesmo erro pra qualquer
+                // medico/QR/anonimo combo.
+                const { data, error } = await (supabase as any)
+                    .rpc('get_public_doctor_info', { doctor_id: doctorId })
                     .single()
 
-                if (error || !data) {
+                if (error || !data || !data.name) {
                     throw new Error('Profissional não encontrado.')
                 }
 
