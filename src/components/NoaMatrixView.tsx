@@ -143,6 +143,8 @@ export const NoaMatrixView: React.FC = () => {
   const forumPublish = useForumPublish()
   const [publishTarget, setPublishTarget] = useState<SavedDossier | null>(null)
   const [publishAttested, setPublishAttested] = useState(false)
+  // V1.9.437 — segundo atestado obrigatório (anti-vazamento de nome no conteúdo)
+  const [publishNoNamesAttested, setPublishNoNamesAttested] = useState(false)
 
   const refreshDossiers = async () => {
     const list = await listDossiers(10)
@@ -834,7 +836,7 @@ export const NoaMatrixView: React.FC = () => {
                           {/* V1.9.403 (F4.2-A) — Enviar dossiê ao Fórum (Caminho B) */}
                           <button
                             type="button"
-                            onClick={() => { setPublishTarget(d); setPublishAttested(false) }}
+                            onClick={() => { setPublishTarget(d); setPublishAttested(false); setPublishNoNamesAttested(false) }}
                             title="Enviar este dossiê ao Fórum (entra em análise do conselho)"
                             className="p-1 rounded text-cyan-300 hover:bg-cyan-500/15 transition-colors"
                           >
@@ -988,20 +990,33 @@ export const NoaMatrixView: React.FC = () => {
                 seja discutido no fórum profissional do MedCannLab.
               </span>
             </label>
+            {/* V1.9.437 — atestado anti-vazamento de nome no conteúdo */}
+            <label className="flex items-start gap-2 text-[11px] text-slate-300 leading-relaxed cursor-pointer">
+              <input
+                type="checkbox"
+                checked={publishNoNamesAttested}
+                onChange={(e) => setPublishNoNamesAttested(e.target.checked)}
+                className="mt-0.5 flex-shrink-0"
+              />
+              <span>
+                Atesto que revisei o conteúdo do dossiê e ele <strong className="text-cyan-300">não menciona nome real do paciente</strong>
+                {' '}(nem em texto livre, nem em excertos de racionalidade).
+              </span>
+            </label>
             {forumPublish.error && (
               <div className="text-[11px] text-red-300">{forumPublish.error}</div>
             )}
             <div className="flex items-center justify-end gap-2 pt-1">
               <button
                 type="button"
-                onClick={() => { setPublishTarget(null); setPublishAttested(false) }}
+                onClick={() => { setPublishTarget(null); setPublishAttested(false); setPublishNoNamesAttested(false) }}
                 className="px-3 py-1.5 rounded-md text-[11px] text-slate-400 hover:text-slate-200 border border-slate-700/50 transition-colors"
               >
                 Cancelar
               </button>
               <button
                 type="button"
-                disabled={!publishAttested || forumPublish.publishing}
+                disabled={!publishAttested || !publishNoNamesAttested || forumPublish.publishing}
                 onClick={async () => {
                   const target = publishTarget
                   if (!target) return
@@ -1009,6 +1024,7 @@ export const NoaMatrixView: React.FC = () => {
                   if (ok) {
                     setPublishTarget(null)
                     setPublishAttested(false)
+                    setPublishNoNamesAttested(false)
                     setDossierFeedback('Dossiê enviado ao Fórum — em análise do conselho.')
                     setTimeout(() => setDossierFeedback(null), 6000)
                   }

@@ -50,6 +50,57 @@ export function useForumPublish(): UseForumPublishReturn {
       const nCards = snap?.selectedCards?.length ?? 0
       const nPapers = snap?.attachedPapers?.length ?? 0
 
+      // V1.9.437 — Camada 2a: bloquear publish sem pseudônimo (LGPD)
+      const pseudonym = (snap?.patientPseudonym || (dossier as any).patient_pseudonym || '').toString().trim()
+      if (!pseudonym) {
+        setError('Dossiê sem pseudônimo de paciente não pode ser publicado no Fórum. Gere o dossiê a partir de um paciente em foco (Terminal de Atendimento → Paciente em foco → Nôa Matrix).')
+        return false
+      }
+
+      // V1.9.437 — Camada 2b: detector heurístico de nome real no conteúdo
+      // (lookup dos primeiros nomes dos pacientes vinculados ao médico via clinical_reports)
+      try {
+        const { data: reportRows } = await (supabase as any)
+          .from('clinical_reports')
+          .select('patient_id')
+          .eq('doctor_id', authorId)
+          .limit(500)
+        const patientIds = Array.from(new Set(
+          (reportRows || []).map((r: any) => r.patient_id).filter(Boolean)
+        )) as string[]
+        if (patientIds.length > 0) {
+          const { data: usersRows } = await (supabase as any)
+            .from('users')
+            .select('full_name')
+            .in('id', patientIds)
+          const riskyFirstNames = Array.from(new Set(
+            (usersRows || [])
+              .map((u: any) => (u.full_name || '').split(/\s+/)[0]?.trim())
+              .filter((name: string) =>
+                !!name && name.length >= 3 &&
+                !/^(paciente|dr|dra|sr|sra|test|teste|noa|nao|nada)$/i.test(name)
+              )
+          )) as string[]
+          const namesFound = riskyFirstNames.filter((name) =>
+            new RegExp(`\\b${name.replace(/[.*+?^${}()|[\\]\\\\]/g, '\\\\$&')}\\b`, 'i').test(content)
+          )
+          if (namesFound.length > 0) {
+            const proceed = typeof window !== 'undefined' && window.confirm(
+              `⚠️ Detectamos possível nome real no conteúdo do dossiê:\n\n${namesFound.join(', ')}\n\n` +
+              `Recomendado: CANCELAR e editar o dossiê removendo nomes próprios antes de publicar.\n\n` +
+              `Confirma mesmo assim que o conteúdo está pseudonimizado adequadamente?`
+            )
+            if (!proceed) {
+              setError('Publicação cancelada — edite o dossiê removendo nomes próprios e tente novamente.')
+              return false
+            }
+          }
+        }
+      } catch (e) {
+        // Falha no lookup NÃO bloqueia publish — é defesa adicional, não crítica
+        console.warn('[useForumPublish] lookup de nomes falhou (publicação prossegue):', e)
+      }
+
       const { error: insErr } = await (supabase as any)
         .from('forum_posts')
         .insert({
@@ -62,7 +113,7 @@ export function useForumPublish(): UseForumPublishReturn {
           tags: [],
           status: 'pending_review',
           consent_attested: true,
-          patient_pseudonym: snap?.patientPseudonym || dossier.patient_pseudonym || null,
+          patient_pseudonym: pseudonym,
           allowed_roles: ['profissional', 'admin'],
           is_active: true,
         })
