@@ -332,7 +332,7 @@ const Landing: React.FC = () => {
               }}
             >
               <img
-                src="/brain.png"
+                src="/medcannlab-logo.jpg"
                 alt="MedCannLab Logo"
                 className="w-full h-full object-contain p-1"
                 style={{
@@ -495,7 +495,7 @@ const Landing: React.FC = () => {
               </div>
 
               <img
-                src="/brain.png"
+                src="/medcannlab-logo.jpg"
                 alt="AI Core"
                 className="relative z-10 w-full h-full max-w-lg object-contain hover:scale-105 transition-transform duration-700 drop-shadow-2xl"
                 style={{ filter: 'drop-shadow(0 0 30px rgba(16, 185, 129, 0.2))' }}
