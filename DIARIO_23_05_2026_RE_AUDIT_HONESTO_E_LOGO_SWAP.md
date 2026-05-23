@@ -168,9 +168,80 @@ Pedro pediu trocar a logo atual da landing pela `logoapenas-removebg-preview.png
 - **Atenção pro Pedro testar**: como `public/brain.png` é asset estático servido direto pelo Vite (sem hash), o **browser pode cachear**. Hard reload necessário (`Ctrl+Shift+R` no Chrome/Firefox, `Cmd+Shift+R` no Safari). Se ainda assim mostrar a antiga, abrir aba anônima.
 - **Risco regressão**: zero — substituição de asset, mesmo path, mesma extensão.
 
-## 🧬 BLOCO F — Memórias cristalizadas hoje
+## 🎨 BLOCO F — Iterações de logo na landing (V1.9.432 → V1.9.435)
 
-Nenhuma memória nova foi criada hoje **por design**. Todo o conteúdo do veredito honesto (BLOCO C) já está cristalizado em memórias 18-22/05:
+4 commits cirúrgicos na landing ao longo do dia, todos push 4 refs OK, type-check verde, secretlint OK:
+
+- **V1.9.432 (`2e793ef`)** — logo nova MCL (`medcanultimalog.jpg`) no header + Hero substituindo `medcannlab-logo.jpg`. Asset adicionado em `public/medcannlab-logo.png` (PNG válido apesar do nome). Header texto duplicado mantido (texto + logo) com filtro CSS verde.
+- **V1.9.433 (`90d3f1e`)** — logo `medcanultimalog` em **círculo Nôa-style** (rounded-full + border + boxShadow + bg) no header (40px→48px, +20%) E Hero (max-w-xl→max-w-[43.2rem], +20%, wrapper rounded-full novo). Tipografia "MedCannLab" + "Plataforma 3.0" também +20%. Pedro testou empíricamente, achou que círculo brigava com identidade.
+- **V1.9.434 (`b55d2cc`)** — **REVERT do círculo + logo v2** (`medcanultimalog2.png` alta resolução, 116KB). Header sem moldura (só drop-shadow verde sutil, w-12 mantido). Hero sem wrapper circle, img direta com max-w-[38.4rem] (+20% mantido). Princípio cristalizado: "círculo competindo com identidade visual da logo = ruído, não destaque".
+- **V1.9.435 (`7513049`)** — **logotipo horizontal MCL inteiro no header** (`medcannlab-logo-alt.png`, MCL_LOGO2t-preview 80KB) substituindo `[emblema circle + texto MedCannLab + Plataforma 3.0]` separados. Hero com emblema centralizado dominando 614px + glow duplo verde-ciano (`drop-shadow 40px/0.42 emerald + 80px/0.18 ciano-saúde`) + **2 pulse rings** suavizados (delays 0/3.2s, duração 10/12s, cubic-bezier(.25,.1,.25,1), opacity 3-keyframe fade-in→peak 0.6→fade-out, maxScale 1.16/1.29 — anéis mal saem do raio do emblema). Footer ganhou **logotipo horizontal centralizado** no topo (h-16/h-20 responsivo). 7 iterações empíricas Pedro durante a sessão antes de fechar.
+
+**Padrão cristalizado**: a iteração visual top-elite passou por 4 estados — moldura quadrada → círculo Nôa-style → sem moldura → logotipo completo. A versão final (V1.9.435) ficou MAIS LIMPA que a inicial porque cada iteração removeu redundância (memory `feedback_polir_nao_inventar` + `feedback_recusa_correta_vale_mais_que_resposta_22_05`).
+
+## 📚 BLOCO G — Deck "Onboarding Profissional v1.0"
+
+Pedro pediu pensar estratégia de treinamento pré-Marco 2 (beta 20-30 autorizado mas não rodou; 0 doc onboarding formal hoje; 1 médico ativo). Sessão produziu:
+
+### G.1 — Análise honesta de 3 caminhos
+- **(A) Self-service** — PDF + vídeo Loom 12min + Zoom 30min. Escala infinito, feedback assíncrono fraco.
+- **(B) Curso dentro do app** — usar Eixo Ensino existente (60% infra). Alto setup 8-12h. Pré-Marco 2 NÃO faz sentido (constrói módulos baseado em intuição, não dado).
+- **(C) White glove** — Pedro + Ricardo, 1h Zoom individual + WhatsApp 30 dias. Feedback denso, não escala além de 20-30.
+
+**Recomendação cristalizada pré-PMF**: **C agora + A em paralelo** (gravar a 1ª sessão Zoom → vira material assíncrono). B só pós-Marco 2 (3 pagantes × 3m).
+
+### G.2 — Deck HTML de 12 slides produzido empíricamente
+Arquivo: `docs/ONBOARDING_PROFISSIONAL_V1.html` (~860 linhas, standalone, Google Fonts via CDN).
+
+12 slides empíricamente fundamentados (grep-validados contra `IntegratedWorkstation.tsx` e `ResearchWorkstation.tsx` — **22 abas reais identificadas**, não chutadas):
+1. Capa (logotipo horizontal MCL real + tagline Brandbook V3)
+2. Os 3 eixos (Clínica/Ensino/Pesquisa)
+3. Terminal de Atendimento — 12 abas em 2 grupos (Atendimento + Governança)
+4. AEC em 13+ fases — fluxograma determinístico
+5. Paciente em foco — visão 360° (mockup embutido)
+6. Devolução paciente — relatório ICP-Brasil PBAD AD-RB CONFORME ITI
+7. Agendamento + Equipe Clínica
+8. Prescrição ANVISA — 3 tipos CFM
+9. Terminal de Pesquisa — 10 abas em 2 grupos (Pesquisa + Colaboração)
+10. 5 anti-padrões (substituir escuta / prescrever sem AEC / publicar sem consent / racionalidade bruta paciente / confiar 100% IA)
+11. Suporte 3 canais (WhatsApp/Email/Zoom)
+12. Checklist primeira semana (7 dias gamificados)
+
+### G.3 — Decisões técnicas iteradas
+- **Paleta Brandbook V3** integral (cool only: ciano-saúde `#00E5B2`, verde-vital `#00C853`, ciano-cognitivo `#4FE0C1`, slate-neutro `#334155`, fundo `#0B1220`). Laranja `#FF8A00` SÓ no slide 10 (anti-padrões).
+- **Tipografia oficial**: Orbitron (títulos) + Exo 2 (subtítulos) + Space Grotesk (corpo).
+- **Dimensões iteradas**: começou 1920×1080 (HD cheio), Pedro achou exagerado no browser → reduzido pra **1280×720** + fontes proporcionais (-33%). HD ainda exportável pra PDF/Google Slides.
+- **Slide 10 estourava 720px** com 5 cards anti-padrão → compactado (paddings 24→10px, fontes 22→14px / 17→11px, gap 16→7px) → coube no slide.
+- **Print-color-adjust forçado** (`-webkit-print-color-adjust: exact` global + reforço `!important` no `@media print` em body/slide/cards) — fix do bug "Chrome imprime background branco mesmo com gráficos de fundo marcados".
+- **Imagem do logo na capa**: `<img src="/medcannlab-logo-alt.png">` (mesma do header) — funciona via Vite (`localhost:3000/docs/...`), QUEBRA se aberto `file://` direto. Trade-off aceito pra simplicidade.
+- **Nome paciente fictício**: trocado "Maria Helena Chaves" (paciente real do banco) por **"Patient Paula"** (alinhado com nome do Teaching Mode V1.9.323-A) + label inline `fictícia (Teaching Mode)` em ciano. Material de treinamento nunca usa PII real.
+
+### G.4 — Trigger LGPD evitado
+Sem essa troca de nome, o deck circularia identificação real de paciente em material de marketing/treinamento — violação LGPD art. 11 (dados sensíveis de saúde exigem consent específico). Pedro apontou empíricamente; corrigido imediatamente.
+
+### G.5 — Compartilhamento (caminhos honestos)
+- **PDF + WhatsApp** (mais simples, zero deploy) — Ctrl+P + Salvar PDF + mandar pelo médico
+- **URL pública** (5min trabalho) — mover `docs/ONBOARDING_PROFISSIONAL_V1.html` → `public/onboarding-profissional.html` → push → Vercel deploya → URL `https://medcannlab.com.br/onboarding-profissional.html` (NÃO feito hoje — Pedro decide quando)
+- **Rota React `/profissional/onboarding`** (8-15h) — só pós-Marco 2 quando souber empiricamente o que funcionou no PDF
+
+## 🧪 BLOCO H — Princípios operacionais cristalizados (treinamento)
+
+3 lições novas que merecem cristalização (NÃO duplicam memórias anteriores):
+
+1. **"Deixa a realidade desenhar o material, não a sua intuição"** — antes de codar a versão interativa do onboarding (opção B), gravar 1 sessão Zoom com médico real navegando no app sem script + anotar onde travou + o que perguntou + termo do produto que não fez sentido. Isso vira briefing empírico dos slides. Princípio aplicável a TODO material de treinamento/onboarding/documentação.
+
+2. **"White glove agora + self-service em paralelo"** — pra beta 20-30, fazer atendimento individual 1:1 enquanto grava → material assíncrono nasce de uso real. Beta 20-30 NÃO escala self-service ainda (sem dado), mas TAMBÉM NÃO desperdiça as sessões individuais (gravar = ROI infinito).
+
+3. **"Audit grep antes de listar abas/features"** — o deck listou 22 abas reais (12 Atendimento + 10 Pesquisa) porque grep validou. Material institucional NUNCA deve listar features chutando da memória. Princípio cristalizado: `feedback_polir_nao_inventar` aplicado a docs de marketing/onboarding.
+
+**Memory criada hoje**: `project_onboarding_profissional_estrategia_23_05.md` (nível 1) — consolida G.1 + H.1+H.2+H.3 + path do deck HTML + checklist de quando codar opção (B) ou (C).
+
+## 🧬 BLOCO I — Memórias cristalizadas hoje
+
+Hoje (diferente do estado de entrada do bloco F original): **1 memória nova cristalizada**:
+- `project_onboarding_profissional_estrategia_23_05` (nível 1) — estratégia treinamento + deck v1.0 + princípios
+
+Veredito honesto (BLOCO C) **não cristalizou memória nova** — já está em memórias 18-22/05:
 
 - `project_3_marcos_minimos_reprecificacao_valuation_18_05` — 3 marcos + valuation por cenário
 - `project_v1_9_388_smoke_final_vitoria_empirica_19_05` — validação técnica empírica

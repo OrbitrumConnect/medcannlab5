@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1920">
+<title>MedCannLab — Onboarding Profissional v1.0</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Exo+2:wght@300;500;700&family=Space+Grotesk:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg-primary: #0B1220;
+  --surface: #1E293B;
+  --surface-2: #283548;
+  --ciano-saude: #00E5B2;
+  --ciano-cognitivo: #4FE0C1;
+  --verde-vital: #00C853;
+  --slate-neutro: #334155;
+  --texto-secundario: #94A3B8;
+  --branco: #FFFFFF;
+  --alerta-laranja: #FF8A00;
+  --alerta-amarelo: #FBBF24;
+}
+* { margin:0; padding:0; box-sizing:border-box; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+html, body { background: var(--bg-primary); color: var(--branco); font-family: 'Space Grotesk', sans-serif; }
+
+.slide {
+  width: 1280px; height: 720px;
+  padding: 50px 65px;
+  position: relative;
+  display: flex; flex-direction: column;
+  page-break-after: always;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 80% 20%, rgba(0,229,178,0.07), transparent 50%),
+    radial-gradient(circle at 20% 80%, rgba(0,200,83,0.05), transparent 50%),
+    var(--bg-primary);
+  border-bottom: 1px solid var(--slate-neutro);
+  margin: 0 auto;
+}
+
+.slide-number {
+  position: absolute; top: 26px; right: 40px;
+  color: var(--texto-secundario);
+  font-family: 'Orbitron', monospace;
+  font-size: 11px; letter-spacing: 0.4em;
+}
+.slide-tag {
+  position: absolute; top: 26px; left: 65px;
+  color: var(--ciano-saude);
+  font-family: 'Orbitron', monospace;
+  font-size: 10px; letter-spacing: 0.5em; text-transform: uppercase;
+}
+
+h1, h2, .ttl-orb { font-family: 'Orbitron', sans-serif; letter-spacing: 0.02em; }
+.subtitle { font-family: 'Exo 2', sans-serif; color: var(--texto-secundario); }
+
+h1 { font-size: 48px; font-weight: 900; color: var(--branco); line-height: 1.05; }
+h2 { font-size: 34px; font-weight: 700; color: var(--ciano-saude); margin-bottom: 12px; }
+h3 { font-size: 20px; font-weight: 700; font-family: 'Exo 2', sans-serif; }
+
+.subtitle-lg { font-size: 18px; margin-top: 8px; margin-bottom: 30px; line-height: 1.4; }
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--slate-neutro);
+  border-radius: 12px;
+  padding: 22px;
+}
+.card-row { display: grid; gap: 16px; }
+.card-row.cols-2 { grid-template-columns: repeat(2, 1fr); }
+.card-row.cols-3 { grid-template-columns: repeat(3, 1fr); }
+.card-row.cols-5 { grid-template-columns: repeat(5, 1fr); }
+
+.bd-vital { border-left: 3px solid var(--verde-vital); }
+.bd-cognitivo { border-left: 3px solid var(--ciano-cognitivo); }
+.bd-saude { border-left: 3px solid var(--ciano-saude); }
+.bd-alerta { border-left: 3px solid var(--alerta-laranja); }
+
+.cap { color: var(--texto-secundario); font-size: 13px; line-height: 1.5; margin-top: auto; padding-top: 18px; }
+.note-box {
+  background: rgba(0,229,178,0.08);
+  border: 1px solid var(--ciano-saude);
+  padding: 14px 20px; border-radius: 10px;
+  font-size: 14px; color: var(--branco);
+}
+.alert-box {
+  background: rgba(255,138,0,0.08);
+  border: 1px solid var(--alerta-laranja);
+  padding: 14px 20px; border-radius: 10px;
+  font-size: 14px; color: var(--branco);
+}
+
+.tab-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+.tab-table th { text-align: left; color: var(--ciano-saude); font-family: 'Orbitron', monospace; font-size: 10px; padding: 10px 8px; border-bottom: 2px solid var(--slate-neutro); letter-spacing: 0.2em; text-transform: uppercase; }
+.tab-table td { padding: 10px 8px; border-bottom: 1px solid var(--slate-neutro); vertical-align: top; color: var(--branco); }
+.tab-table td:first-child { font-weight: 700; color: var(--ciano-cognitivo); font-family: 'Exo 2', sans-serif; }
+.tab-table td:nth-child(2) { color: var(--texto-secundario); font-size: 13px; }
+
+.flow {
+  display: flex; align-items: center; gap: 10px;
+  flex-wrap: wrap; justify-content: center;
+  margin: 24px 0;
+}
+.flow-node {
+  background: var(--surface); border: 1px solid var(--ciano-cognitivo);
+  padding: 10px 16px; border-radius: 8px;
+  font-family: 'Orbitron', monospace; font-size: 11px;
+  color: var(--ciano-saude); white-space: nowrap;
+}
+.flow-arrow { color: var(--ciano-cognitivo); font-size: 20px; }
+
+.checklist { list-style: none; padding: 0; font-size: 16px; line-height: 1.9; }
+.checklist li { padding-left: 34px; position: relative; color: var(--branco); }
+.checklist li::before {
+  content: '☐'; position: absolute; left: 6px; top: 0;
+  color: var(--verde-vital); font-size: 20px; font-weight: 700;
+}
+.checklist li strong { color: var(--ciano-saude); font-family: 'Orbitron', monospace; font-size: 12px; letter-spacing: 0.1em; }
+
+.metric { display: flex; flex-direction: column; align-items: center; }
+.metric-num { font-family: 'Orbitron', monospace; font-size: 38px; font-weight: 900; color: var(--ciano-saude); line-height: 1; }
+.metric-lbl { color: var(--texto-secundario); font-size: 11px; letter-spacing: 0.3em; text-transform: uppercase; margin-top: 6px; }
+
+.brand-mark { font-family: 'Orbitron', monospace; color: var(--ciano-cognitivo); letter-spacing: 0.4em; font-size: 11px; text-transform: uppercase; }
+
+.tagline {
+  font-family: 'Exo 2', sans-serif; font-style: italic; font-weight: 300;
+  font-size: 24px; color: var(--branco); line-height: 1.4;
+  margin: 22px 0;
+}
+
+.kbd { font-family: 'Orbitron', monospace; background: var(--surface-2); padding: 3px 8px; border-radius: 4px; color: var(--ciano-cognitivo); font-size: 0.85em; }
+
+.divider { height: 2px; background: linear-gradient(90deg, transparent, var(--ciano-cognitivo), transparent); margin: 20px 0; }
+
+@media print {
+  @page { size: 1280px 720px; margin: 0; }
+  html, body {
+    background: var(--bg-primary) !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+  .slide {
+    page-break-after: always;
+    border: none;
+    margin: 0;
+    background-color: var(--bg-primary) !important;
+    background-image:
+      radial-gradient(circle at 80% 20%, rgba(0,229,178,0.07), transparent 50%),
+      radial-gradient(circle at 20% 80%, rgba(0,200,83,0.05), transparent 50%) !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+  .card, .note-box, .alert-box, .flow-node {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+}
+</style>
+</head>
+<body>
+
+<!-- ============== SLIDE 1 — CAPA ============== -->
+<section class="slide" id="slide-1">
+  <span class="slide-tag">CAPA</span>
+  <span class="slide-number">01 / 12</span>
+  <div style="margin: auto; text-align: center; max-width: 760px;">
+    <img src="/medcannlab-logo-alt.png" alt="MedCannLab — Plataforma Clínica Cognitiva"
+         style="height: 140px; width: auto; max-width: 90%; margin: 0 auto 24px; display: block;
+                filter: drop-shadow(0 0 24px rgba(0, 229, 178, 0.35));" />
+    <div class="divider"></div>
+    <div class="tagline">
+      "A IA serve.<br/>
+      O método estrutura.<br/>
+      A decisão é humana."
+    </div>
+    <div class="brand-mark">METHOD-FIRST · ARCHITECTURE-GROUNDED · AI-LAST</div>
+    <div style="color: var(--texto-secundario); font-size: 12px; margin-top: 36px;">
+      Onboarding Profissional v1.0 · 2026
+    </div>
+  </div>
+</section>
+
+<!-- ============== SLIDE 2 — 3 EIXOS ============== -->
+<section class="slide" id="slide-2">
+  <span class="slide-tag">VISÃO</span>
+  <span class="slide-number">02 / 12</span>
+  <h2>Onde você vai trabalhar</h2>
+  <div class="subtitle subtitle-lg">Mesmo médico, 3 chapéus. Você troca pelo menu lateral à esquerda.</div>
+
+  <div class="card-row cols-3" style="margin-top: 30px;">
+    <div class="card bd-vital">
+      <div style="font-size: 40px;">🩺</div>
+      <h3 style="color: var(--verde-vital); margin: 10px 0;">CLÍNICA</h3>
+      <p style="font-size: 14px; color: var(--branco); line-height: 1.5;">AEC + Relatório + Prescrição + Agendamento</p>
+      <div style="margin-top: 16px; color: var(--texto-secundario); font-family: 'Orbitron', monospace; font-size: 10px; letter-spacing: 0.2em;">80% DO SEU TEMPO</div>
+    </div>
+    <div class="card bd-cognitivo">
+      <div style="font-size: 40px;">📚</div>
+      <h3 style="color: var(--ciano-cognitivo); margin: 10px 0;">ENSINO</h3>
+      <p style="font-size: 14px; color: var(--branco); line-height: 1.5;">AEC residente + Cursos + Lives + TRL</p>
+      <div style="margin-top: 16px; color: var(--texto-secundario); font-family: 'Orbitron', monospace; font-size: 10px; letter-spacing: 0.2em;">ENSINA + SE ATUALIZA</div>
+    </div>
+    <div class="card bd-saude">
+      <div style="font-size: 40px;">🔬</div>
+      <h3 style="color: var(--ciano-saude); margin: 10px 0;">PESQUISA</h3>
+      <p style="font-size: 14px; color: var(--branco); line-height: 1.5;">Matrix Z2 + Dossiê + Fórum + PubMed</p>
+      <div style="margin-top: 16px; color: var(--texto-secundario); font-family: 'Orbitron', monospace; font-size: 10px; letter-spacing: 0.2em;">REFLETE + PUBLICA</div>
+    </div>
+  </div>
+  <div class="cap">3 eixos integrados pela mesma escuta clínica. O paciente é o mesmo — você só usa lentes diferentes.</div>
+</section>
+
+<!-- ============== SLIDE 3 — TERMINAL DE ATENDIMENTO ============== -->
+<section class="slide" id="slide-3">
+  <span class="slide-tag">TERMINAL CLÍNICO</span>
+  <span class="slide-number">03 / 12</span>
+  <h2>Seu Terminal de Atendimento</h2>
+  <div class="subtitle subtitle-lg">Acessível pelo botão <span class="kbd">🩺 Terminal de Atendimento</span> no menu lateral · 12 abas organizadas em 2 grupos</div>
+
+  <div class="card-row cols-2" style="margin-top: 10px;">
+    <div class="card bd-vital">
+      <h3 style="color: var(--verde-vital); margin-bottom: 16px;">GRUPO: ATENDIMENTO</h3>
+      <table class="tab-table">
+        <tr><td>👥 Prontuário</td><td>Lista de todos os seus pacientes vinculados</td></tr>
+        <tr><td>👤 Paciente em foco</td><td>Visão 360° de UM paciente</td></tr>
+        <tr><td>💬 Chat Clínico</td><td>Conversa direta — imagens, áudio, videocall</td></tr>
+        <tr><td>📄 Prescrições</td><td>Receituário ANVISA assinado ICP-Brasil</td></tr>
+        <tr><td>📅 Agendamentos</td><td>Agenda com reminders 24h+1h automáticos</td></tr>
+        <tr><td>📊 Saúde Renal</td><td>Sidecar eGFR/CKD-EPI 2021 da anamnese</td></tr>
+        <tr><td>👥 Equipe Clínica</td><td>Outros profissionais do mesmo paciente</td></tr>
+      </table>
+    </div>
+    <div class="card bd-cognitivo">
+      <h3 style="color: var(--ciano-cognitivo); margin-bottom: 16px;">GRUPO: GOVERNANÇA</h3>
+      <table class="tab-table">
+        <tr><td>🛡️ Governança</td><td>Quem viu o quê, consents NFT, trilha LGPD</td></tr>
+        <tr><td>📊 Relatórios IA</td><td>Métricas AECs, latências, taxa ICP</td></tr>
+        <tr><td>📖 Conhecimento</td><td>Sua base interna + 5 entries que a Nôa lê</td></tr>
+        <tr><td>💬 Fórum</td><td>Casos publicados pelo conselho editorial</td></tr>
+        <tr><td>✨ Galeria Clínica</td><td>NFTs de consent que o paciente liberou</td></tr>
+      </table>
+      <div class="alert-box" style="margin-top: 20px;">⚠️ Use Prontuário → Paciente em foco → Chat → Prescrição em 80% dos atendimentos. Não precisa abrir todas.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============== SLIDE 4 — AEC 13 FASES ============== -->
+<section class="slide" id="slide-4">
+  <span class="slide-tag">MÉTODO</span>
+  <span class="slide-number">04 / 12</span>
+  <h2>A AEC em 13+ fases</h2>
+  <div class="subtitle subtitle-lg">A entrevista clínica que se conduz sozinha. Você guia, a Nôa estrutura. Você nunca perde o controle.</div>
+
+  <div class="flow">
+    <div class="flow-node">IDENTIFICATION</div><span class="flow-arrow">→</span>
+    <div class="flow-node">COMPLAINT_LIST</div><span class="flow-arrow">→</span>
+    <div class="flow-node">MAIN_COMPLAINT</div><span class="flow-arrow">→</span>
+    <div class="flow-node">COMPLAINT_DETAILS</div>
+  </div>
+  <div class="flow">
+    <div class="flow-node">PATHOLOGICAL_HISTORY</div><span class="flow-arrow">→</span>
+    <div class="flow-node">FAMILY_HISTORY</div><span class="flow-arrow">→</span>
+    <div class="flow-node">MEDICATIONS</div><span class="flow-arrow">→</span>
+    <div class="flow-node">LIFE_HISTORY</div>
+  </div>
+  <div class="flow">
+    <div class="flow-node">CLOSING_LIST</div><span class="flow-arrow">→</span>
+    <div class="flow-node">REPORT_REVIEW</div><span class="flow-arrow">→</span>
+    <div class="flow-node">CONSENT</div><span class="flow-arrow">→</span>
+    <div class="flow-node" style="border-color: var(--verde-vital); color: var(--verde-vital);">✅ COMPLETED</div>
+  </div>
+
+  <div class="card-row cols-2" style="margin-top: 40px;">
+    <div class="note-box">
+      <strong style="color: var(--ciano-saude);">Verbatim First V1.9.86:</strong> ~46,2% das perguntas saem <em>literais</em> do método AEC do Dr. Ricardo, sem GPT no meio. A IA não improvisa onde não pode.
+    </div>
+    <div class="alert-box">
+      <strong style="color: var(--alerta-laranja);">⚠️ REGRA HARD §1:</strong> "concordo" no consentimento NÃO agenda consulta. Só "sim/autorizo" à pergunta literal fecha o ciclo.
+    </div>
+  </div>
+</section>
+
+<!-- ============== SLIDE 5 — PACIENTE EM FOCO ============== -->
+<section class="slide" id="slide-5">
+  <span class="slide-tag">FLUXO PRINCIPAL</span>
+  <span class="slide-number">05 / 12</span>
+  <h2>Tudo de UM paciente em 1 tela</h2>
+  <div class="subtitle subtitle-lg">PatientFocusView — você dispara qualquer ação sem precisar voltar pro Prontuário</div>
+
+  <div class="card-row cols-2" style="margin-top: 20px; align-items: stretch;">
+    <div class="card" style="background: var(--surface-2);">
+      <div style="font-family: 'Orbitron', monospace; color: var(--texto-secundario); font-size: 12px; letter-spacing: 0.3em; margin-bottom: 16px;">MOCKUP DA TELA</div>
+      <div style="background: var(--bg-primary); border-radius: 12px; padding: 24px; border: 1px solid var(--slate-neutro); font-size: 16px; line-height: 1.8;">
+        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
+          <div style="width: 48px; height: 48px; border-radius: 50%; background: var(--surface); border: 2px solid var(--ciano-cognitivo);"></div>
+          <div>
+            <div style="font-weight: 700; color: var(--branco);">Patient Paula</div>
+            <div style="color: var(--texto-secundario); font-size: 14px;">42 anos · DRC estágio 3a · <em style="color: var(--ciano-cognitivo);">fictícia (Teaching Mode)</em></div>
+          </div>
+        </div>
+        <div style="background: linear-gradient(90deg, rgba(0,229,178,0.15), rgba(0,200,83,0.1)); border: 1px solid var(--ciano-saude); border-radius: 8px; padding: 12px; margin: 12px 0; font-size: 14px;">
+          ✨ <strong style="color: var(--ciano-saude);">Sugestão Matrix</strong> → [Estruturar na Nôa Matrix →]
+        </div>
+        <div style="color: var(--ciano-cognitivo); font-size: 14px; margin: 12px 0;">📋 Histórico · 📎 Documentos · 📊 Relatórios · 📅 Linha do tempo</div>
+        <div style="color: var(--branco); font-size: 14px;">• 22/05 — AEC completa + relatório ICP (signed)</div>
+        <div style="color: var(--branco); font-size: 14px;">• 18/05 — Racionalidade integrativa adicionada</div>
+        <div style="color: var(--branco); font-size: 14px;">• 15/05 — Exame creatinina (1.8 mg/dL)</div>
+        <div style="margin-top: 16px; display: flex; gap: 8px; flex-wrap: wrap;">
+          <span style="background: var(--verde-vital); color: var(--bg-primary); padding: 8px 16px; border-radius: 6px; font-size: 13px; font-weight: 700;">+ Nova AEC</span>
+          <span style="background: var(--surface); color: var(--ciano-saude); padding: 8px 16px; border-radius: 6px; font-size: 13px; border: 1px solid var(--ciano-saude);">Prescrever</span>
+          <span style="background: var(--surface); color: var(--ciano-cognitivo); padding: 8px 16px; border-radius: 6px; font-size: 13px; border: 1px solid var(--ciano-cognitivo);">Solicitar exame</span>
+        </div>
+      </div>
+    </div>
+    <div class="card bd-saude">
+      <h3 style="color: var(--ciano-saude); margin-bottom: 24px;">O QUE VOCÊ VÊ AQUI</h3>
+      <ul style="list-style: none; padding: 0; font-size: 20px; line-height: 2; color: var(--branco);">
+        <li>• <strong style="color: var(--ciano-cognitivo);">Histórico:</strong> AECs, evoluções, eventos clínicos</li>
+        <li>• <strong style="color: var(--ciano-cognitivo);">Documentos:</strong> Exames, anexos do paciente e seus</li>
+        <li>• <strong style="color: var(--ciano-cognitivo);">Relatórios:</strong> Todos com hash ICP + 5 racionalidades</li>
+        <li>• <strong style="color: var(--ciano-cognitivo);">Linha do tempo:</strong> Cronologia visual longitudinal</li>
+        <li>• <strong style="color: var(--ciano-cognitivo);">Banner Matrix:</strong> Aparece se houver relatório recente</li>
+        <li>• <strong style="color: var(--ciano-cognitivo);">Saúde Renal:</strong> Sugestões DRC pendentes de aprovação</li>
+      </ul>
+      <div class="cap" style="padding-top: 16px;">Atalhos de ação no rodapé do card disparam fluxos completos.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============== SLIDE 6 — DEVOLUÇÃO ICP ============== -->
+<section class="slide" id="slide-6">
+  <span class="slide-tag">RELATÓRIO + ASSINATURA</span>
+  <span class="slide-number">06 / 12</span>
+  <h2>Seu relatório vale juridicamente</h2>
+  <div class="subtitle subtitle-lg">PBAD AD-RB ICP-Brasil CONFORME ITI — V1.9.299 LOCK · Único MedTech cannabis BR validado</div>
+
+  <div class="card-row cols-3" style="margin-top: 30px;">
+    <div class="card bd-vital">
+      <div style="font-family: 'Orbitron', monospace; font-size: 56px; color: var(--verde-vital); margin-bottom: 16px;">1</div>
+      <h3 style="color: var(--verde-vital); margin-bottom: 16px;">GERAR</h3>
+      <p style="font-size: 18px; line-height: 1.6; color: var(--branco);">AEC completa dispara o Pipeline:</p>
+      <div style="margin-top: 16px; font-family: 'Orbitron', monospace; font-size: 13px; color: var(--ciano-cognitivo); line-height: 2; letter-spacing: 0.1em;">
+        REPORT<br/>→ SCORES<br/>→ SIGNATURE<br/>→ AXES<br/>→ RATIONALITY<br/>→ DONE
+      </div>
+      <div class="cap" style="padding-top: 16px;">~38 segundos do "finalizar AEC" ao relatório pronto.</div>
+    </div>
+    <div class="card bd-cognitivo">
+      <div style="font-family: 'Orbitron', monospace; font-size: 56px; color: var(--ciano-cognitivo); margin-bottom: 16px;">2</div>
+      <h3 style="color: var(--ciano-cognitivo); margin-bottom: 16px;">ASSINAR</h3>
+      <p style="font-size: 18px; line-height: 1.6; color: var(--branco);">PBAD AD-RB ICP-Brasil</p>
+      <ul style="font-size: 16px; color: var(--texto-secundario); line-height: 1.8; margin-top: 16px; list-style: none;">
+        <li>• Cert digital A3 ou A1</li>
+        <li>• Hash SHA-256 embedado</li>
+        <li>• signing-certificate-v2</li>
+        <li>• Chain ICP-Brasil embed</li>
+      </ul>
+      <div class="cap" style="padding-top: 16px;">Validador oficial validar.iti.gov.br aprova.</div>
+    </div>
+    <div class="card bd-saude">
+      <div style="font-family: 'Orbitron', monospace; font-size: 56px; color: var(--ciano-saude); margin-bottom: 16px;">3</div>
+      <h3 style="color: var(--ciano-saude); margin-bottom: 16px;">ENVIAR</h3>
+      <p style="font-size: 18px; line-height: 1.6; color: var(--branco);">WhatsApp + Email</p>
+      <ul style="font-size: 16px; color: var(--texto-secundario); line-height: 1.8; margin-top: 16px; list-style: none;">
+        <li>• Resend domínio verificado</li>
+        <li>• noreply@medcannlab.com.br</li>
+        <li>• Link com PDF + hash</li>
+        <li>• Confirmação de leitura</li>
+      </ul>
+      <div class="cap" style="padding-top: 16px;">Paciente baixa, valida no ITI se quiser.</div>
+    </div>
+  </div>
+
+  <div class="note-box" style="margin-top: 30px;">
+    ✅ <strong>O que isso significa pra você:</strong> Seu PDF substitui receituário em papel pra qualquer órgão regulador. Vale como prova jurídica. CFM 2.314/2022 + Lei 14.063/2020 compliant.
+  </div>
+</section>
+
+<!-- ============== SLIDE 7 — AGENDAMENTO + EQUIPE ============== -->
+<section class="slide" id="slide-7">
+  <span class="slide-tag">AGENDA + EQUIPE</span>
+  <span class="slide-number">07 / 12</span>
+  <h2>Agenda automatizada, equipe coordenada</h2>
+  <div class="subtitle subtitle-lg">Você cuida do paciente. A plataforma cuida do calendário.</div>
+
+  <div class="card-row cols-2" style="margin-top: 30px;">
+    <div class="card bd-vital">
+      <div style="font-size: 48px; margin-bottom: 16px;">📅</div>
+      <h3 style="color: var(--verde-vital); margin-bottom: 24px;">AGENDAMENTOS</h3>
+      <ul style="list-style: none; padding: 0; font-size: 20px; line-height: 1.9; color: var(--branco);">
+        <li>✓ Slots criados pelo seu calendário</li>
+        <li>✓ Google Calendar opcional (sync)</li>
+        <li>✓ <strong style="color: var(--ciano-saude);">Reminder paciente 24h antes</strong></li>
+        <li>✓ <strong style="color: var(--ciano-saude);">Segundo reminder 1h antes</strong></li>
+        <li>✓ WiseCare V4H pra videocall</li>
+        <li>✓ Sala única por consulta</li>
+        <li>✓ Cancelamento dispara remarcação</li>
+      </ul>
+    </div>
+    <div class="card bd-cognitivo">
+      <div style="font-size: 48px; margin-bottom: 16px;">👥</div>
+      <h3 style="color: var(--ciano-cognitivo); margin-bottom: 24px;">EQUIPE CLÍNICA</h3>
+      <ul style="list-style: none; padding: 0; font-size: 20px; line-height: 1.9; color: var(--branco);">
+        <li>✓ Outros profissionais do mesmo paciente</li>
+        <li>✓ Você vê <strong style="color: var(--ciano-saude);">quem fez o quê, quando</strong></li>
+        <li>✓ Sem duplicar consulta</li>
+        <li>✓ Ex: Nefro + Neuro vinculados</li>
+        <li>✓ Tooltip "Conta médico" vs "Conta admin"</li>
+        <li>✓ Refresh manual (V1.9.430)</li>
+        <li>✓ Comunicação cross-equipe via Chat</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="alert-box" style="margin-top: 30px;">
+    <strong style="color: var(--alerta-laranja);">Anti-kevlar:</strong> agendamento NUNCA é disparado por inferência da IA. Sempre clique humano explícito. REGRA HARD §1.
+  </div>
+</section>
+
+<!-- ============== SLIDE 8 — PRESCRIÇÃO ============== -->
+<section class="slide" id="slide-8">
+  <span class="slide-tag">PRESCRIÇÃO</span>
+  <span class="slide-number">08 / 12</span>
+  <h2>Receituário ANVISA digital</h2>
+  <div class="subtitle subtitle-lg">3 tipos de receituário · Todos assinados ICP-Brasil · 2 vias quando exigido por lei</div>
+
+  <div class="card-row cols-3" style="margin-top: 30px;">
+    <div class="card" style="border-top: 6px solid var(--alerta-laranja);">
+      <div style="font-size: 48px;">🟠</div>
+      <h3 style="color: var(--alerta-laranja); margin: 16px 0;">CONTROLE ESPECIAL</h3>
+      <p style="font-size: 18px; line-height: 1.5; color: var(--branco); margin-bottom: 16px;">Cannabis medicinal, opioides, psicotrópicos</p>
+      <ul style="list-style: none; padding: 0; font-size: 16px; color: var(--texto-secundario); line-height: 1.8;">
+        <li>• 2 vias (médico + farmácia)</li>
+        <li>• Validade conforme protocolo</li>
+        <li>• Notificação CFM auto</li>
+        <li>• <strong style="color: var(--ciano-saude);">ICP-Brasil obrigatório</strong></li>
+      </ul>
+    </div>
+    <div class="card" style="border-top: 6px solid var(--alerta-amarelo);">
+      <div style="font-size: 48px;">🟡</div>
+      <h3 style="color: var(--alerta-amarelo); margin: 16px 0;">ANTIMICROBIANO</h3>
+      <p style="font-size: 18px; line-height: 1.5; color: var(--branco); margin-bottom: 16px;">Antibióticos sob prescrição</p>
+      <ul style="list-style: none; padding: 0; font-size: 16px; color: var(--texto-secundario); line-height: 1.8;">
+        <li>• Validade 10 dias</li>
+        <li>• Posologia obrigatória</li>
+        <li>• Resistência tracking</li>
+        <li>• <strong style="color: var(--ciano-saude);">ICP-Brasil obrigatório</strong></li>
+      </ul>
+    </div>
+    <div class="card" style="border-top: 6px solid var(--verde-vital);">
+      <div style="font-size: 48px;">🟢</div>
+      <h3 style="color: var(--verde-vital); margin: 16px 0;">COMUM</h3>
+      <p style="font-size: 18px; line-height: 1.5; color: var(--branco); margin-bottom: 16px;">Demais medicamentos</p>
+      <ul style="list-style: none; padding: 0; font-size: 16px; color: var(--texto-secundario); line-height: 1.8;">
+        <li>• Validade 30 dias</li>
+        <li>• Padrão CFM</li>
+        <li>• Histórico no prontuário</li>
+        <li>• <strong style="color: var(--ciano-saude);">ICP-Brasil obrigatório</strong></li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="note-box" style="margin-top: 30px;">
+    💡 <strong>Reusa AEC:</strong> queixa principal + diagnóstico hipotético da entrevista pré-preenchem o formulário. Você revisa, assina, envia. Nada de digitar do zero.
+  </div>
+</section>
+
+<!-- ============== SLIDE 9 — TERMINAL DE PESQUISA ============== -->
+<section class="slide" id="slide-9">
+  <span class="slide-tag">TERMINAL PESQUISA</span>
+  <span class="slide-number">09 / 12</span>
+  <h2>Onde você pensa sobre seus casos</h2>
+  <div class="subtitle subtitle-lg">Menu lateral → <span class="kbd">🔬 Terminal de Pesquisa</span> · Não substitui Atendimento, complementa · 10 abas em 2 grupos</div>
+
+  <div class="card-row cols-2" style="margin-top: 10px;">
+    <div class="card bd-saude">
+      <h3 style="color: var(--ciano-saude); margin-bottom: 16px;">GRUPO: PESQUISA</h3>
+      <table class="tab-table">
+        <tr><td>📊 Dashboard de Pesquisa</td><td>KPIs AECs, racionalidades, dossiês</td></tr>
+        <tr><td>✨ Casos Similares</td><td>Padrões narrativos (ALPHA exploratório)</td></tr>
+        <tr><td>✨ Nôa Matrix</td><td>Chat Z2 não-diretivo sobre 1 paciente</td></tr>
+        <tr><td>🔬 Literatura</td><td>PubMed integrado · Novidades 30d · Guidelines</td></tr>
+        <tr><td>📋 Protocolos</td><td>Seus protocolos institucionais</td></tr>
+        <tr><td>📖 Base de Conhecimento</td><td>5 entries curadas + anexação manual</td></tr>
+      </table>
+    </div>
+    <div class="card bd-cognitivo">
+      <h3 style="color: var(--ciano-cognitivo); margin-bottom: 16px;">GRUPO: COLABORAÇÃO</h3>
+      <table class="tab-table">
+        <tr><td>💬 Fórum de Casos</td><td>Casos aprovados pelo conselho editorial</td></tr>
+        <tr><td>👥 Mentoria</td><td>Sessões 1:1 com Dr. Ricardo / Dr. Eduardo</td></tr>
+        <tr><td>🔔 Notícias & Eventos</td><td>Feed PubMed por verticais (Nefro, Neuro)</td></tr>
+        <tr><td>✓ Avaliações</td><td>Seu feedback sobre racionalidades</td></tr>
+      </table>
+      <div class="note-box" style="margin-top: 20px; font-size: 18px;">
+        ✅ Fechou dossiê? Publique no Fórum. Conselho avalia → vira debate institucional. <strong style="color: var(--ciano-saude);">O case do seu paciente forma o próximo médico.</strong>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============== SLIDE 10 — ANTI-PADRÕES ============== -->
+<section class="slide" id="slide-10" style="background: radial-gradient(circle at 80% 20%, rgba(255,138,0,0.08), transparent 50%), var(--bg-primary);">
+  <span class="slide-tag" style="color: var(--alerta-laranja);">CUIDADOS</span>
+  <span class="slide-number">10 / 12</span>
+  <h2 style="color: var(--alerta-laranja);">5 coisas que quebram a confiança</h2>
+  <div class="subtitle subtitle-lg">Anti-padrões que invalidam o método. Recusa correta vale mais que resposta impressionante.</div>
+
+  <div style="display: grid; gap: 7px; margin-top: 10px;">
+    <div class="card bd-alerta" style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; padding: 10px 16px;">
+      <div><strong style="color: var(--alerta-laranja); font-size: 14px;">❌ Substituir a escuta pela IA</strong><br/><span style="color: var(--texto-secundario); font-size: 11px;">"deixa a Nôa fazer a anamnese sozinha"</span></div>
+      <div><strong style="color: var(--verde-vital); font-size: 14px;">✅ IA é copiloto</strong><br/><span style="color: var(--branco); font-size: 11px;">Você conduz, ela estrutura. Verbatim First protege o método AEC.</span></div>
+    </div>
+    <div class="card bd-alerta" style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; padding: 10px 16px;">
+      <div><strong style="color: var(--alerta-laranja); font-size: 14px;">❌ Prescrever sem AEC completa</strong><br/><span style="color: var(--texto-secundario); font-size: 11px;">Pular fases pra ir direto pra prescrição</span></div>
+      <div><strong style="color: var(--verde-vital); font-size: 14px;">✅ Fluxo intencional</strong><br/><span style="color: var(--branco); font-size: 11px;">AEC completa → relatório → racionalidade → prescrição.</span></div>
+    </div>
+    <div class="card bd-alerta" style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; padding: 10px 16px;">
+      <div><strong style="color: var(--alerta-laranja); font-size: 14px;">❌ Publicar caso sem consent</strong><br/><span style="color: var(--texto-secundario); font-size: 11px;">Mandar pro Fórum sem atestação do paciente</span></div>
+      <div><strong style="color: var(--verde-vital); font-size: 14px;">✅ Cheque NFT consent</strong><br/><span style="color: var(--branco); font-size: 11px;">Atestação obrigatória no modal V1.9.403.</span></div>
+    </div>
+    <div class="card bd-alerta" style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; padding: 10px 16px;">
+      <div><strong style="color: var(--alerta-laranja); font-size: 14px;">❌ Mostrar racionalidade bruta MTC/Homeo</strong><br/><span style="color: var(--texto-secundario); font-size: 11px;">Paciente vê "estagnação Qi Fígado"</span></div>
+      <div><strong style="color: var(--verde-vital); font-size: 14px;">✅ Audience Contract V1.9.330-A</strong><br/><span style="color: var(--branco); font-size: 11px;">Paciente lê só resumo seguro. Você vê tudo.</span></div>
+    </div>
+    <div class="card bd-alerta" style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; padding: 10px 16px;">
+      <div><strong style="color: var(--alerta-laranja); font-size: 14px;">❌ Confiar 100% nos números da IA</strong><br/><span style="color: var(--texto-secundario); font-size: 11px;">Sem auditar contagens, custos, latências</span></div>
+      <div><strong style="color: var(--verde-vital); font-size: 14px;">✅ Painel Observabilidade IA</strong><br/><span style="color: var(--branco); font-size: 11px;">V1.9.421 mostra cobertura REAL (14,5%) + custo honesto.</span></div>
+    </div>
+  </div>
+
+  <div style="text-align: center; color: var(--ciano-cognitivo); font-style: italic; font-size: 12px; padding-top: 10px;">
+    Z2 não-diretiva: a IA tem voz, mas não atravessa a linha clínica. Decisão sempre humana.
+  </div>
+</section>
+
+<!-- ============== SLIDE 11 — SUPORTE ============== -->
+<section class="slide" id="slide-11">
+  <span class="slide-tag">SUPORTE</span>
+  <span class="slide-number">11 / 12</span>
+  <h2>Quando ficar travado</h2>
+  <div class="subtitle subtitle-lg">Você não está sozinho. Beta orgânico = canal direto com quem construiu.</div>
+
+  <div class="card-row cols-3" style="margin-top: 40px;">
+    <div class="card bd-vital">
+      <div style="font-size: 64px; text-align: center;">📱</div>
+      <h3 style="color: var(--verde-vital); text-align: center; margin: 20px 0;">WHATSAPP</h3>
+      <div style="text-align: center; color: var(--branco); font-size: 22px; margin-bottom: 16px;">Resposta &lt; 30min</div>
+      <div style="color: var(--texto-secundario); font-size: 16px; text-align: center; line-height: 1.6;">Horário comercial · Bugs, dúvidas rápidas, "como faço X?"</div>
+    </div>
+    <div class="card bd-cognitivo">
+      <div style="font-size: 64px; text-align: center;">📧</div>
+      <h3 style="color: var(--ciano-cognitivo); text-align: center; margin: 20px 0;">EMAIL</h3>
+      <div style="text-align: center; color: var(--branco); font-size: 22px; margin-bottom: 16px;">suporte@medcannlab.com.br</div>
+      <div style="color: var(--texto-secundario); font-size: 16px; text-align: center; line-height: 1.6;">Documentação formal · Casos sensíveis · Feedback estruturado</div>
+    </div>
+    <div class="card bd-saude">
+      <div style="font-size: 64px; text-align: center;">🎥</div>
+      <h3 style="color: var(--ciano-saude); text-align: center; margin: 20px 0;">ZOOM</h3>
+      <div style="text-align: center; color: var(--branco); font-size: 22px; margin-bottom: 16px;">Plantão semanal</div>
+      <div style="color: var(--texto-secundario); font-size: 16px; text-align: center; line-height: 1.6;">Onboarding 1:1 · Dúvidas profundas · Co-criação de protocolo</div>
+    </div>
+  </div>
+
+  <div class="note-box" style="margin-top: 50px; text-align: center;">
+    📚 <strong>FAQ acumulada empiricamente:</strong> dúvidas dos primeiros médicos do beta foram cristalizadas em <span class="kbd">/profissional/ajuda</span> (em construção). Você ajuda a escrever.
+  </div>
+</section>
+
+<!-- ============== SLIDE 12 — CHECKLIST 7 DIAS ============== -->
+<section class="slide" id="slide-12">
+  <span class="slide-tag">PRIMEIROS PASSOS</span>
+  <span class="slide-number">12 / 12</span>
+  <h2>Sua primeira semana</h2>
+  <div class="subtitle subtitle-lg">Checklist marcável dentro do app · Gamificação leve · Você não precisa decorar</div>
+
+  <ul class="checklist" style="margin-top: 30px;">
+    <li><strong>DIA 1</strong> — Login + perfil completo + foto + CRM validado</li>
+    <li><strong>DIA 1</strong> — Tour 12 abas Terminal Clínico (este deck)</li>
+    <li><strong>DIA 2</strong> — Primeira AEC com PACIENTE TESTE (Patient Paula, Teaching Mode V1.9.323-A)</li>
+    <li><strong>DIA 2</strong> — Gerar primeiro relatório → assinar ICP → baixar PDF</li>
+    <li><strong>DIA 3</strong> — Validar PDF em <span class="kbd">validar.iti.gov.br</span> ("Aprovado" deve aparecer)</li>
+    <li><strong>DIA 4</strong> — Primeira AEC com paciente REAL (acompanhe Ricardo/Faveret se 1ª vez)</li>
+    <li><strong>DIA 5</strong> — Primeira prescrição (controle especial cannabis)</li>
+    <li><strong>DIA 6</strong> — Abrir Nôa Matrix sobre 1 caso seu — testar reflexão Z2</li>
+    <li><strong>DIA 7</strong> — Feedback Zoom 30min: o que travou, o que faltou</li>
+  </ul>
+
+  <div class="note-box" style="margin-top: 40px;">
+    🎓 <strong style="color: var(--ciano-saude);">Completou os 7 dias?</strong> Badge "Onboarding Profissional MedCannLab" no seu perfil + libera publicação no Fórum de Casos Clínicos.
+  </div>
+
+  <div class="cap" style="text-align: center; padding-top: 24px; color: var(--ciano-cognitivo); font-style: italic;">
+    Próximos 30 dias: WhatsApp aberto + Zoom semanal opcional. Use, erre, pergunte. Nós aprendemos com você também.
+  </div>
+</section>
+
+</body>
+</html>
