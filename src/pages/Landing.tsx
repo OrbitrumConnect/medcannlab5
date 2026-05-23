@@ -323,18 +323,12 @@ const Landing: React.FC = () => {
       <nav className="fixed w-full top-0 z-40 bg-slate-950/80 backdrop-blur-lg border-b border-white/5">
         <div className="container mx-auto px-6 h-20 flex items-center justify-between">
           <div className="flex items-center space-x-3">
-            <div
-              className="w-12 h-12 rounded-full flex items-center justify-center overflow-hidden flex-shrink-0 border border-green-500/40 bg-slate-950/60"
-              style={{ boxShadow: '0 0 14px rgba(0, 193, 106, 0.28)' }}
-              title="MedCannLab"
-            >
+            <div className="w-12 h-12 flex items-center justify-center overflow-hidden flex-shrink-0" title="MedCannLab">
               <img
                 src="/medcannlab-logo.png"
                 alt="MedCannLab Logo"
-                className="w-full h-full object-contain p-1"
-                style={{
-                  filter: 'brightness(1.1) contrast(1.1) drop-shadow(0 0 6px rgba(0, 193, 106, 0.6))'
-                }}
+                className="w-full h-full object-contain"
+                style={{ filter: 'drop-shadow(0 0 6px rgba(0, 193, 106, 0.6))' }}
               />
             </div>
             <div>
@@ -491,18 +485,12 @@ const Landing: React.FC = () => {
                 ))}
               </div>
 
-              {/* Circle frame (Nôa-style) — V1.9.433 */}
-              <div
-                className="relative z-10 w-full h-full rounded-full overflow-hidden border border-green-500/40 bg-slate-950/60 flex items-center justify-center hover:scale-105 transition-transform duration-700"
-                style={{ boxShadow: '0 0 30px rgba(0, 193, 106, 0.35)' }}
-              >
-                <img
-                  src="/medcannlab-logo.png"
-                  alt="AI Core"
-                  className="w-full h-full object-contain p-6 drop-shadow-2xl"
-                  style={{ filter: 'drop-shadow(0 0 30px rgba(16, 185, 129, 0.2))' }}
-                />
-              </div>
+              <img
+                src="/medcannlab-logo.png"
+                alt="AI Core"
+                className="relative z-10 w-full h-full max-w-[38.4rem] object-contain hover:scale-105 transition-transform duration-700 drop-shadow-2xl"
+                style={{ filter: 'drop-shadow(0 0 30px rgba(16, 185, 129, 0.2))' }}
+              />
             </div>
           </motion.div>
         </div>
