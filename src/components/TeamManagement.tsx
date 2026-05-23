@@ -16,7 +16,7 @@ import {
   Users, Plus, X, UserPlus, Loader2, UserCheck, AlertTriangle,
   Phone, MessageCircle, Activity, Star, TrendingUp,
   Zap, Shield, Crown, Award, ChevronRight,
-  Clock, BarChart3, Heart, Mail, Check
+  Clock, BarChart3, Heart, Mail, Check, RefreshCw, Info
 } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
@@ -153,14 +153,18 @@ function TeamHealthBadge({ score, memberCount }: { score: number; memberCount: n
 }
 
 function CapacityBar({ member }: { member: TeamMember }) {
-  // Simulação de carga baseada em total_received nas últimas 7d (sem volume real ainda)
-  // Cap visual: 0-20 = baixa, 20-40 = média, >40 = alta
+  // [V1.9.430] Indicador COMPARATIVO RELATIVO entre membros — NÃO é "% de
+  // saturação real". Capacidade individual por médico ainda não é configurável
+  // (sem campo `capacity_target_monthly` em users). Fórmula: total_received / 50.
+  // Tooltip declara explicitamente, conforme princípio "indicador é contrato
+  // 100% ou declara o que NÃO sabe" cristalizado em 22/05.
   const load = Math.min(100, Math.round((member.total_received / 50) * 100))
   const color = load >= 80 ? 'from-red-500 to-red-600'
               : load >= 50 ? 'from-amber-500 to-amber-600'
               : 'from-emerald-500 to-emerald-600'
+  const tooltip = `${member.total_received} chamadas de vídeo recebidas no histórico — barra é comparação RELATIVA entre membros (capacidade individual de cada médico ainda não configurada)`
   return (
-    <div className="flex items-center gap-2 text-xs">
+    <div className="flex items-center gap-2 text-xs" title={tooltip}>
       <span className="text-slate-400 truncate min-w-[120px] max-w-[200px]">{member.member_name}</span>
       <div className="flex-1 h-2 bg-slate-800/60 rounded-full overflow-hidden">
         <div className={`h-full bg-gradient-to-r ${color} transition-all`} style={{ width: `${load}%` }} />
@@ -276,15 +280,19 @@ function TeamMemberCard({
         </span>
       </div>
 
-      {/* Métricas */}
+      {/* Métricas — V1.9.430: labels desambiguados.
+          Métricas vêm da view `v_video_call_recipient_response` — são sobre
+          CHAMADAS DE VÍDEO, NÃO sobre pacientes direcionados (referral). Antes,
+          o tooltip dizia "Pacientes recebidos" induzindo a confusão semântica.
+          Quando `patient_referrals` tiver dados reais, adicionar bloco separado. */}
       {member.total_received > 0 ? (
         <div className="flex items-center justify-between gap-2 mt-3 px-3 py-2 bg-slate-900/40 rounded-lg border border-slate-700/30">
-          <div className="text-center" title="Pacientes recebidos">
+          <div className="text-center" title="Chamadas de vídeo recebidas (histórico). NÃO é pacientes direcionados — é call do widget de videocall.">
             <div className="text-base font-bold text-white tabular-nums">{member.total_received}</div>
-            <div className="text-[9px] uppercase text-slate-500 tracking-wider">Recebidos</div>
+            <div className="text-[9px] uppercase text-slate-500 tracking-wider">Videocalls</div>
           </div>
           <div className="w-px h-8 bg-slate-700/50" />
-          <div className="text-center" title="Taxa de aceite">
+          <div className="text-center" title="Taxa de aceite das chamadas de vídeo (accepted ÷ total_received)">
             <div className={`text-base font-bold tabular-nums ${acceptRateColor}`}>
               {member.accept_rate_pct?.toFixed(0) ?? '—'}<span className="text-xs">%</span>
             </div>
@@ -293,7 +301,7 @@ function TeamMemberCard({
           {member.avg_accept_latency_min != null && (
             <>
               <div className="w-px h-8 bg-slate-700/50" />
-              <div className="text-center" title="Tempo médio de resposta">
+              <div className="text-center" title="Tempo médio do médico aceitar a chamada de vídeo (em minutos)">
                 <div className="text-base font-bold text-white tabular-nums">
                   {member.avg_accept_latency_min.toFixed(1)}<span className="text-xs">min</span>
                 </div>
@@ -304,7 +312,7 @@ function TeamMemberCard({
         </div>
       ) : (
         <div className="mt-3 px-3 py-2 bg-slate-900/30 rounded-lg border border-slate-700/20 text-center">
-          <p className="text-[10px] text-slate-500">Sem chamadas registradas</p>
+          <p className="text-[10px] text-slate-500">Sem chamadas de vídeo registradas</p>
         </div>
       )}
 
@@ -959,12 +967,32 @@ const TeamManagement: React.FC = () => {
         </div>
       </div>
 
-      {/* Mapa de Carga */}
+      {/* Mapa de Carga — V1.9.430: rótulo honesto + botão refresh manual.
+          A % por membro é comparação RELATIVA (não saturação real); capacidade
+          individual por médico ainda não tem campo no DB. Discrepância
+          screenshot×DB observada em 23/05 foi cache temporal — refresh resolve. */}
       {team.length > 0 && team.some(m => m.total_received > 0) && (
         <div className="bg-slate-800/30 backdrop-blur-md border border-slate-700/40 rounded-xl p-4">
-          <h3 className="text-xs uppercase tracking-wider text-slate-400 mb-3 flex items-center gap-2">
-            <BarChart3 className="w-3.5 h-3.5" /> Mapa de Carga (chamadas recebidas históricas)
-          </h3>
+          <div className="flex items-center justify-between mb-3 gap-2 flex-wrap">
+            <h3 className="text-xs uppercase tracking-wider text-slate-400 flex items-center gap-2">
+              <BarChart3 className="w-3.5 h-3.5" /> Mapa de Carga
+              <span
+                className="inline-flex items-center gap-1 text-[10px] normal-case tracking-normal text-amber-400/80"
+                title="Indicador RELATIVO entre membros (volume de chamadas de vídeo recebidas). Capacidade individual por médico ainda não configurada — barra % é estimativa de comparação, não saturação real."
+              >
+                <Info className="w-3 h-3" /> estimativa relativa
+              </span>
+            </h3>
+            <button
+              type="button"
+              onClick={() => loadTeam()}
+              disabled={isLoading}
+              className="text-[10px] text-slate-400 hover:text-emerald-400 inline-flex items-center gap-1 disabled:opacity-50 transition-colors"
+              title="Recarregar dados da equipe (PostgreSQL → view → frontend)"
+            >
+              <RefreshCw className={`w-3 h-3 ${isLoading ? 'animate-spin' : ''}`} /> atualizar
+            </button>
+          </div>
           <div className="space-y-2">
             {team.map((m) => <CapacityBar key={m.id} member={m} />)}
           </div>
