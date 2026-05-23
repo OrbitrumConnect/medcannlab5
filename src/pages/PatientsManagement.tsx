@@ -1,5 +1,6 @@
 
 import React, { useState, useEffect, useCallback, useRef } from 'react'
+import { createPortal } from 'react-dom'
 import { useNavigate, useSearchParams, useLocation } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
@@ -275,6 +276,29 @@ const PatientsManagement: React.FC<PatientsManagementProps> = ({ embedded = fals
   const [showNewPatientMenu, setShowNewPatientMenu] = useState(false)
   // V1.9.440 — Atalho "Enviar Link de Indicação" no menu Novo Paciente
   const [showReferralModal, setShowReferralModal] = useState(false)
+  // V1.9.440-A — anchor do botão Novo Paciente pra dropdown via Portal
+  // (escapa stacking context dos parents — antes sobrepunha cards abaixo)
+  const newPatientBtnRef = useRef<HTMLButtonElement | null>(null)
+  const [newPatientMenuPos, setNewPatientMenuPos] = useState<{ top: number; right: number } | null>(null)
+  useEffect(() => {
+    if (!showNewPatientMenu) return
+    const updatePos = () => {
+      const btn = newPatientBtnRef.current
+      if (!btn) return
+      const r = btn.getBoundingClientRect()
+      setNewPatientMenuPos({
+        top: r.bottom + 8,
+        right: window.innerWidth - r.right,
+      })
+    }
+    updatePos()
+    window.addEventListener('resize', updatePos)
+    window.addEventListener('scroll', updatePos, true)
+    return () => {
+      window.removeEventListener('resize', updatePos)
+      window.removeEventListener('scroll', updatePos, true)
+    }
+  }, [showNewPatientMenu])
   const [openingChat, setOpeningChat] = useState(false)
   // [V1.9.360] Removido showCasosSimilaresModal — agora é aba dedicada
   const [analyticsReports, setAnalyticsReports] = useState<any[]>([])
@@ -1346,76 +1370,16 @@ const PatientsManagement: React.FC<PatientsManagementProps> = ({ embedded = fals
                 <div>
                 </div>
               </div>
-              <div className="relative new-patient-menu-container">
+              <div className="new-patient-menu-container">
                 <button
+                  ref={newPatientBtnRef}
                   onClick={() => setShowNewPatientMenu(!showNewPatientMenu)}
                   className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-blue-500 to-cyan-500 text-white rounded-lg hover:from-blue-600 hover:to-cyan-600 transition-colors"
                 >
                   <UserPlus className="w-5 h-5" />
                   <span>Novo Paciente</span>
                 </button>
-
-                {showNewPatientMenu && (
-                  <div
-                    className="fixed top-24 right-6 w-64 bg-slate-800 border border-slate-700 rounded-lg shadow-2xl z-[9999] new-patient-menu-container"
-                    style={{ marginTop: '0px' }}
-                  >
-                    <div className="p-2">
-                      <button
-                        onClick={() => {
-                          setShowNewPatientMenu(false)
-                          navigate('/app/new-patient?mode=manual')
-                        }}
-                        className="w-full text-left px-4 py-2 rounded-lg hover:bg-slate-700 transition-colors text-white flex items-center space-x-2"
-                      >
-                        <UserPlus className="w-4 h-4" />
-                        <span>Cadastro Manual</span>
-                      </button>
-                      <button
-                        onClick={() => {
-                          setShowNewPatientMenu(false)
-                          navigate('/app/new-patient?mode=csv')
-                        }}
-                        className="w-full text-left px-4 py-2 rounded-lg hover:bg-slate-700 transition-colors text-white flex items-center space-x-2"
-                      >
-                        <FileText className="w-4 h-4" />
-                        <span>Importar CSV</span>
-                      </button>
-                      <button
-                        onClick={() => {
-                          setShowNewPatientMenu(false)
-                          navigate('/app/new-patient?mode=database')
-                        }}
-                        className="w-full text-left px-4 py-2 rounded-lg hover:bg-slate-700 transition-colors text-white flex items-center space-x-2"
-                      >
-                        <Archive className="w-4 h-4" />
-                        <span>Importar do Banco</span>
-                      </button>
-                      <button
-                        onClick={() => {
-                          setShowNewPatientMenu(false)
-                          navigate('/app/new-patient?mode=drag-drop')
-                        }}
-                        className="w-full text-left px-4 py-2 rounded-lg hover:bg-slate-700 transition-colors text-white flex items-center space-x-2"
-                      >
-                        <Upload className="w-4 h-4" />
-                        <span>Arrastar Arquivos</span>
-                      </button>
-                      {/* V1.9.440 — Atalho rápido: link de indicação (menos atrito que cadastro manual) */}
-                      <div className="my-1 border-t border-slate-700/50" />
-                      <button
-                        onClick={() => {
-                          setShowNewPatientMenu(false)
-                          setShowReferralModal(true)
-                        }}
-                        className="w-full text-left px-4 py-2 rounded-lg hover:bg-slate-700 transition-colors text-white flex items-center space-x-2"
-                      >
-                        <Link2 className="w-4 h-4 text-[#00E5B2]" />
-                        <span>Enviar Link de Indicação</span>
-                      </button>
-                    </div>
-                  </div>
-                )}
+                {/* V1.9.440-A — dropdown movido pra Portal global (fim do return) */}
               </div>
             </div>
           </div>
@@ -1483,8 +1447,9 @@ const PatientsManagement: React.FC<PatientsManagementProps> = ({ embedded = fals
                 </select>
               </div>
 
-              <div className="relative new-patient-menu-container shrink-0">
+              <div className="new-patient-menu-container shrink-0">
                 <button
+                  ref={newPatientBtnRef}
                   onClick={() => setShowNewPatientMenu(!showNewPatientMenu)}
                   className="w-full md:w-auto flex items-center justify-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-blue-500 to-cyan-500 text-white rounded-lg hover:from-blue-600 hover:to-cyan-600 transition-all hover:scale-[1.02] text-sm font-medium shadow-md shadow-blue-900/20"
                   title="Cadastrar novo paciente"
@@ -1492,68 +1457,7 @@ const PatientsManagement: React.FC<PatientsManagementProps> = ({ embedded = fals
                   <UserPlus className="w-4 h-4" />
                   <span>Novo Paciente</span>
                 </button>
-
-                {showNewPatientMenu && (
-                  <div
-                    className="absolute right-0 mt-2 w-60 bg-slate-800 border border-slate-700 rounded-lg shadow-2xl z-[9999] new-patient-menu-container"
-                    style={{ top: '100%' }}
-                  >
-                    <div className="p-1.5">
-                      <button
-                        onClick={() => {
-                          setShowNewPatientMenu(false)
-                          navigate('/app/new-patient?mode=manual')
-                        }}
-                        className="w-full text-left px-3 py-2 rounded-md hover:bg-slate-700 transition-colors text-white flex items-center gap-2 text-sm"
-                      >
-                        <UserPlus className="w-4 h-4 text-emerald-400" />
-                        <span>Cadastro Manual</span>
-                      </button>
-                      <button
-                        onClick={() => {
-                          setShowNewPatientMenu(false)
-                          navigate('/app/new-patient?mode=csv')
-                        }}
-                        className="w-full text-left px-3 py-2 rounded-md hover:bg-slate-700 transition-colors text-white flex items-center gap-2 text-sm"
-                      >
-                        <FileText className="w-4 h-4 text-blue-400" />
-                        <span>Importar CSV</span>
-                      </button>
-                      <button
-                        onClick={() => {
-                          setShowNewPatientMenu(false)
-                          navigate('/app/new-patient?mode=database')
-                        }}
-                        className="w-full text-left px-3 py-2 rounded-md hover:bg-slate-700 transition-colors text-white flex items-center gap-2 text-sm"
-                      >
-                        <Archive className="w-4 h-4 text-amber-400" />
-                        <span>Importar do Banco</span>
-                      </button>
-                      <button
-                        onClick={() => {
-                          setShowNewPatientMenu(false)
-                          navigate('/app/new-patient?mode=drag-drop')
-                        }}
-                        className="w-full text-left px-3 py-2 rounded-md hover:bg-slate-700 transition-colors text-white flex items-center gap-2 text-sm"
-                      >
-                        <Upload className="w-4 h-4 text-purple-400" />
-                        <span>Arrastar Arquivos</span>
-                      </button>
-                      {/* V1.9.440 — Atalho rápido: link de indicação (menos atrito que cadastro manual) */}
-                      <div className="my-1 border-t border-slate-700/50" />
-                      <button
-                        onClick={() => {
-                          setShowNewPatientMenu(false)
-                          setShowReferralModal(true)
-                        }}
-                        className="w-full text-left px-3 py-2 rounded-md hover:bg-slate-700 transition-colors text-white flex items-center gap-2 text-sm"
-                      >
-                        <Link2 className="w-4 h-4 text-[#00E5B2]" />
-                        <span>Enviar Link de Indicação</span>
-                      </button>
-                    </div>
-                  </div>
-                )}
+                {/* V1.9.440-A — dropdown movido pra Portal global (fim do return) */}
               </div>
             </div>
           </div>
@@ -2427,6 +2331,74 @@ const PatientsManagement: React.FC<PatientsManagementProps> = ({ embedded = fals
         open={showReferralModal}
         onClose={() => setShowReferralModal(false)}
       />
+
+      {/* V1.9.440-A — Dropdown Novo Paciente via Portal global (escapa stacking
+          context dos parents — antes sobrepunha cards abaixo, inviável de usar). */}
+      {showNewPatientMenu && newPatientMenuPos && createPortal(
+        <div
+          className="fixed w-60 bg-slate-800 border border-slate-700 rounded-lg shadow-2xl new-patient-menu-container"
+          style={{
+            top: `${newPatientMenuPos.top}px`,
+            right: `${newPatientMenuPos.right}px`,
+            zIndex: 99999,
+          }}
+        >
+          <div className="p-1.5">
+            <button
+              onClick={() => {
+                setShowNewPatientMenu(false)
+                navigate('/app/new-patient?mode=manual')
+              }}
+              className="w-full text-left px-3 py-2 rounded-md hover:bg-slate-700 transition-colors text-white flex items-center gap-2 text-sm"
+            >
+              <UserPlus className="w-4 h-4 text-emerald-400" />
+              <span>Cadastro Manual</span>
+            </button>
+            <button
+              onClick={() => {
+                setShowNewPatientMenu(false)
+                navigate('/app/new-patient?mode=csv')
+              }}
+              className="w-full text-left px-3 py-2 rounded-md hover:bg-slate-700 transition-colors text-white flex items-center gap-2 text-sm"
+            >
+              <FileText className="w-4 h-4 text-blue-400" />
+              <span>Importar CSV</span>
+            </button>
+            <button
+              onClick={() => {
+                setShowNewPatientMenu(false)
+                navigate('/app/new-patient?mode=database')
+              }}
+              className="w-full text-left px-3 py-2 rounded-md hover:bg-slate-700 transition-colors text-white flex items-center gap-2 text-sm"
+            >
+              <Archive className="w-4 h-4 text-amber-400" />
+              <span>Importar do Banco</span>
+            </button>
+            <button
+              onClick={() => {
+                setShowNewPatientMenu(false)
+                navigate('/app/new-patient?mode=drag-drop')
+              }}
+              className="w-full text-left px-3 py-2 rounded-md hover:bg-slate-700 transition-colors text-white flex items-center gap-2 text-sm"
+            >
+              <Upload className="w-4 h-4 text-purple-400" />
+              <span>Arrastar Arquivos</span>
+            </button>
+            <div className="my-1 border-t border-slate-700/50" />
+            <button
+              onClick={() => {
+                setShowNewPatientMenu(false)
+                setShowReferralModal(true)
+              }}
+              className="w-full text-left px-3 py-2 rounded-md hover:bg-slate-700 transition-colors text-white flex items-center gap-2 text-sm"
+            >
+              <Link2 className="w-4 h-4 text-[#00E5B2]" />
+              <span>Enviar Link de Indicação</span>
+            </button>
+          </div>
+        </div>,
+        document.body
+      )}
     </div>
   )
 }
