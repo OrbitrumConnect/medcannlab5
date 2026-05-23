@@ -324,12 +324,9 @@ const Landing: React.FC = () => {
         <div className="container mx-auto px-6 h-20 flex items-center justify-between">
           <div className="flex items-center space-x-3">
             <div
-              className="w-10 h-10 rounded-lg flex items-center justify-center overflow-hidden flex-shrink-0"
-              style={{
-                background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f3a3a 100%)',
-                boxShadow: '0 6px 16px rgba(0, 0, 0, 0.4)',
-                border: '1px solid rgba(0, 193, 106, 0.2)'
-              }}
+              className="w-12 h-12 rounded-full flex items-center justify-center overflow-hidden flex-shrink-0 border border-green-500/40 bg-slate-950/60"
+              style={{ boxShadow: '0 0 14px rgba(0, 193, 106, 0.28)' }}
+              title="MedCannLab"
             >
               <img
                 src="/medcannlab-logo.png"
@@ -341,8 +338,8 @@ const Landing: React.FC = () => {
               />
             </div>
             <div>
-              <span className="text-xl font-bold block text-white tracking-tight leading-none">MedCannLab</span>
-              <div className="text-[10px] text-slate-400 font-semibold tracking-widest uppercase ml-0.5 mt-0.5">Plataforma 3.0</div>
+              <span className="text-2xl font-bold block text-white tracking-tight leading-none">MedCannLab</span>
+              <div className="text-xs text-slate-400 font-semibold tracking-widest uppercase ml-0.5 mt-0.5">Plataforma 3.0</div>
             </div>
           </div>
 
@@ -469,8 +466,8 @@ const Landing: React.FC = () => {
             transition={{ duration: 0.8, delay: 0.2 }}
             className="flex-1 relative"
           >
-            {/* Outer Container (Wider but centered) */}
-            <div className="relative w-full max-w-xl mx-auto aspect-square flex items-center justify-center">
+            {/* Outer Container (Wider but centered) — +20% V1.9.433 */}
+            <div className="relative w-full max-w-[43.2rem] mx-auto aspect-square flex items-center justify-center">
 
               {/* Neural Pulse Rings — Professional Medical Aesthetic */}
               <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
@@ -494,12 +491,18 @@ const Landing: React.FC = () => {
                 ))}
               </div>
 
-              <img
-                src="/medcannlab-logo.png"
-                alt="AI Core"
-                className="relative z-10 w-full h-full max-w-lg object-contain hover:scale-105 transition-transform duration-700 drop-shadow-2xl"
-                style={{ filter: 'drop-shadow(0 0 30px rgba(16, 185, 129, 0.2))' }}
-              />
+              {/* Circle frame (Nôa-style) — V1.9.433 */}
+              <div
+                className="relative z-10 w-full h-full rounded-full overflow-hidden border border-green-500/40 bg-slate-950/60 flex items-center justify-center hover:scale-105 transition-transform duration-700"
+                style={{ boxShadow: '0 0 30px rgba(0, 193, 106, 0.35)' }}
+              >
+                <img
+                  src="/medcannlab-logo.png"
+                  alt="AI Core"
+                  className="w-full h-full object-contain p-6 drop-shadow-2xl"
+                  style={{ filter: 'drop-shadow(0 0 30px rgba(16, 185, 129, 0.2))' }}
+                />
+              </div>
             </div>
           </motion.div>
         </div>
