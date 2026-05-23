@@ -219,15 +219,15 @@ const Reports: React.FC = () => {
   }
 
   return (
-    <div className="space-y-6 p-4 md:p-8 mt-2 max-w-[1600px] mx-auto">
-      {/* ── HEADER ── */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+    <div className="space-y-3 md:space-y-4 p-3 md:p-5 mt-1 max-w-[1600px] mx-auto">
+      {/* ── HEADER ── V1.9.438-B compactado */}
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
         <div>
-          <h1 className="text-2xl md:text-3xl font-bold text-white flex items-center gap-3">
-            <FileText className="w-7 h-7 text-emerald-400" />
+          <h1 className="text-lg md:text-xl font-bold text-white flex items-center gap-2">
+            <FileText className="w-5 h-5 text-emerald-400" />
             Relatórios Clínicos
           </h1>
-          <p className="text-slate-400 text-sm mt-1">
+          <p className="text-slate-400 text-xs mt-0.5">
             {reports.length} relatório{reports.length !== 1 ? 's' : ''} • {aiReportsCount} gerado{aiReportsCount !== 1 ? 's' : ''} por IA
           </p>
         </div>
@@ -272,8 +272,8 @@ const Reports: React.FC = () => {
         </div>
       </div>
 
-      {/* ── KPI CARDS ── */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+      {/* ── KPI CARDS ── V1.9.438-B compactado */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
         {[
           { label: 'Total', value: analytics.total, icon: FileText, color: 'from-emerald-500/20 to-emerald-600/10', iconColor: 'text-emerald-400' },
           { label: 'Concluídos', value: analytics.completed, icon: CheckCircle, color: 'from-blue-500/20 to-blue-600/10', iconColor: 'text-blue-400' },
@@ -282,13 +282,13 @@ const Reports: React.FC = () => {
         ].map(({ label, value, icon: Icon, color, iconColor }) => (
           <div
             key={label}
-            className={`bg-gradient-to-br ${color} backdrop-blur-sm border border-slate-700/30 rounded-xl p-4`}
+            className={`bg-gradient-to-br ${color} backdrop-blur-sm border border-slate-700/30 rounded-lg p-2.5`}
           >
-            <div className="flex items-center justify-between mb-2">
-              <Icon className={`w-5 h-5 ${iconColor}`} />
-              <span className="text-xl font-bold text-white">{value}</span>
+            <div className="flex items-center justify-between mb-1">
+              <Icon className={`w-4 h-4 ${iconColor}`} />
+              <span className="text-lg font-bold text-white">{value}</span>
             </div>
-            <p className="text-xs text-slate-400">{label}</p>
+            <p className="text-[10px] text-slate-400 uppercase tracking-wider font-mono">{label}</p>
           </div>
         ))}
       </div>

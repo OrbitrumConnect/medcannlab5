@@ -1,4 +1,5 @@
-import React, { useCallback, useState } from 'react'
+import React, { useCallback, useState, useEffect } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import {
     BarChart3,
     Activity,
@@ -45,6 +46,19 @@ const ResearchWorkstation: React.FC<ResearchWorkstationProps> = ({ initialTab })
         const valid: TabId[] = ['dashboard', 'forum', 'noa-matrix', 'library', 'literature', 'protocols', 'casos-similares', 'mentoria', 'newsletter', 'evaluation']
         return t && valid.includes(t) ? t : 'dashboard'
     })
+
+    // V1.9.438-B — escuta mudanças de `?section=` em runtime (componente já montado).
+    // Antes: initialTab só lia no mount, então atalhos de dentro do próprio Dashboard de
+    // Pesquisa (ToolCards/QuickLinks que navegavam pra ?section=X) NÃO trocavam de aba.
+    // Agora: useSearchParams escuta a URL viva e atualiza activeTab quando muda.
+    const [searchParams] = useSearchParams()
+    useEffect(() => {
+        const t = searchParams.get('section') as TabId | null
+        const valid: TabId[] = ['dashboard', 'forum', 'noa-matrix', 'library', 'literature', 'protocols', 'casos-similares', 'mentoria', 'newsletter', 'evaluation']
+        if (t && valid.includes(t) && t !== activeTab) {
+            setActiveTab(t)
+        }
+    }, [searchParams, activeTab])
 
     // [V1.9.369-C] Cross-link Casos Similares → Literatura: parent guarda termo
     // injetado por filho. initialTermKey força re-trigger mesmo se mesmo termo.
