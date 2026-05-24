@@ -752,8 +752,24 @@ export class ClinicalAssessmentFlow {
       normLow.includes('fazer triagem') ||
       /\b(vamos|quero|gostaria de|preciso|bora)\s+(iniciar|fazer|comecar|dar inicio)\s+(uma\s+)?(avaliacao|avaliacao clinica|triagem)\b/.test(normLow)
 
+    // [V1.9.443-B] Anti-interrogativa-dúvida (smoke 24/05 caso "devo me vincular? fazer avaliação? ou agendar?"):
+    // Frase com "?" + marcadores de dúvida ("devo", "preciso", "ou", "qual", "como funciona", "primeiro")
+    // não deve disparar startAssessment — é pergunta de orientação de jornada, não pedido imperativo.
+    // Princípio aprendido: "Dúvida sobre percurso ≠ intenção de iniciar avaliação" (espelha JOURNEY_GUIDANCE
+    // no prompt V1.9.443-A). Caminhos legítimos preservados: "quero iniciar avaliação" (imperativo claro
+    // sem "?") continua disparando. Memory: project_universo_vetores_chat_livre_paciente_24_05.
+    const isInterrogativeDoubt =
+      response.includes('?') &&
+      (
+        /\b(devo|preciso|tenho que|deveria|seria)\s+(fazer|comecar|iniciar|me vincular|vincular|ter)/.test(normLow) ||
+        /\bou\s+(fazer|comecar|iniciar|agendar|consultar|me vincular)/.test(normLow) ||
+        /\b(qual|como funciona|como devo|como proceder|primeiro|diferenca entre)\b/.test(normLow) ||
+        /\b(fazer|comecar|iniciar)\s+(uma\s+)?(avaliacao|triagem)\s+(primeiro|antes|ou)/.test(normLow)
+      )
+
     const wantsRestart =
       restartSignals &&
+      !isInterrogativeDoubt &&  // V1.9.443-B: bloqueia pergunta de orientação de jornada
       state.phase !== 'CONFIRMING_EXIT' &&
       state.phase !== 'COMPLETED' &&
       state.phase !== 'INITIAL_GREETING'

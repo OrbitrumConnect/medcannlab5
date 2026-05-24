@@ -1794,9 +1794,24 @@ export class NoaResidentAI {
         // INTENCAO INVERSA. Fix: negative-keyword filtra "encerrar/parar/cancelar/
         // ja fiz/que fiz" antes de aprovar start. Lock V1.9.95 intocado.
         const stopKeyword = /\b(encerr|cancel|finaliz|terminar|j[aá]\s+(fiz|completei|terminei)|que\s+fiz|que\s+(completei|terminei|acabei)|acabei\s+de\s+(fazer|completar)|parar\s+(a|essa))\b/
+        // [V1.9.443-B] Anti-interrogativa-dúvida: pergunta de orientação de jornada com "?"
+        // + marcadores de dúvida ("devo", "preciso", "ou", "qual", "como", "primeiro") NÃO deve
+        // disparar AEC. É pergunta de percurso, não pedido imperativo. Smoke 24/05 caso "devo me
+        // vincular a médico ou fazer uma avaliação primeiro?" disparava startAssessment
+        // indevidamente. Princípio espelha JOURNEY_GUIDANCE no prompt CLINICAL_PROMPT.
+        // Memory: project_universo_vetores_chat_livre_paciente_24_05 + feedback_mapear_universo_vetores.
+        const isJourneyDoubt =
+          userMessage.includes('?') &&
+          (
+            /\b(devo|preciso|tenho que|deveria|seria)\s+(fazer|comecar|come[cç]ar|iniciar|me vincular|vincular|ter)/i.test(normForStart) ||
+            /\bou\s+(fazer|comecar|come[cç]ar|iniciar|agendar|consultar|me vincular)/i.test(normForStart) ||
+            /\b(qual|como funciona|como devo|como proceder|primeiro|diferenca entre|diferen[çc]a entre)\b/i.test(normForStart) ||
+            /\b(fazer|comecar|come[cç]ar|iniciar)\s+(uma\s+)?(avaliacao|avalia[çc][aã]o|triagem)\s+(primeiro|antes|ou)/i.test(normForStart)
+          )
         const clientWantsAecStart =
           intent === 'CLINICA' &&
           !stopKeyword.test(normForStart) &&
+          !isJourneyDoubt &&  // V1.9.443-B: bloqueia pergunta de orientação de jornada
           (aecCanonical.test(normForStart) || (aecKeyword.test(normForStart) && intentVerb.test(normForStart)))
 
         // Card/botão "Iniciar avaliação clínica" = nova sessão desde a etapa 1.
