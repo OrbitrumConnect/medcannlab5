@@ -27,6 +27,8 @@ import { usePatientDashboard, PatientTab } from '../hooks/dashboard/usePatientDa
 import ShareReportModal from '../components/ShareReportModal'
 import NoaConversationalInterface from '../components/NoaConversationalInterface'
 import PendingRatingsBanner from '../components/PendingRatingsBanner'
+// V1.9.442 — Seletor de modo (AEC estruturada vs chat livre) antes de iniciar avaliação
+import { ChatModeSelector, hasUserDismissedChatModeSelector } from '../components/ChatModeSelector'
 // V1.9.275 — Consent paciente pra direcionamento entre médicos (LGPD art. 11 §1)
 import PatientReferralConsentBanner from '../components/patient/PatientReferralConsentBanner'
 // Lazy load — Tier A perf optimization (V1.9.x). Componentes pesados só carregam quando aba ativa.
@@ -100,6 +102,8 @@ const PatientDashboard: React.FC = () => {
   const [shareModalOpen, setShareModalOpen] = useState(false)
   const [shareModalReportId, setShareModalReportId] = useState<string | null>(null)
   const [shouldStartAssessment, setShouldStartAssessment] = useState(false)
+  // V1.9.442 — Card de seleção de modo (AEC vs chat livre) antes de iniciar avaliação
+  const [showChatModeSelector, setShowChatModeSelector] = useState(false)
 
   // Sync Global Chat Visibility
   useEffect(() => {
@@ -134,8 +138,30 @@ const PatientDashboard: React.FC = () => {
     return () => setDashboardTriggers(null)
   }, [activeTab, isNoaOpen, setActiveTab, setDashboardTriggers, openNoaChat, closeChat])
 
+  // V1.9.442 — Intercepta "Iniciar Avaliação" pra mostrar seletor de modo
+  // (AEC estruturada vs Chat Livre). Calibra expectativa do paciente antes
+  // de cair na coleta determinística. Se usuário já viu antes (localStorage)
+  // pula direto pra AEC — respeitando autonomia do usuário experiente.
+  // Memórias: feedback_aec_como_repelente_natural / feedback_chat_livre
+  // _dominante_vs_aec_minoria_24_05 (ambas cristalizadas 24/05).
   const handleStartAssessment = () => {
+    if (hasUserDismissedChatModeSelector()) {
+      // Usuário já entendeu a diferença antes → vai direto pra AEC
+      sendInitialMessage('iniciar avaliação clínica inicial')
+    } else {
+      setShowChatModeSelector(true)
+    }
+  }
+
+  // V1.9.442 — Callbacks do seletor
+  const handleChooseAEC = () => {
+    setShowChatModeSelector(false)
     sendInitialMessage('iniciar avaliação clínica inicial')
+  }
+
+  const handleChooseFreeChat = () => {
+    setShowChatModeSelector(false)
+    openNoaChat() // Abre chat livre SEM enviar mensagem "iniciar avaliação"
   }
 
   const handleOpenChat = () => {
@@ -441,6 +467,14 @@ const PatientDashboard: React.FC = () => {
         </div>
       )}
 
+
+      {/* V1.9.442 — Seletor de modo (AEC vs chat livre) — Portal escapa stacking context */}
+      <ChatModeSelector
+        open={showChatModeSelector}
+        onClose={() => setShowChatModeSelector(false)}
+        onChooseAEC={handleChooseAEC}
+        onChooseFreeChat={handleChooseFreeChat}
+      />
 
       <ShareReportModal
         isOpen={shareModalOpen}
