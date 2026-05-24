@@ -752,14 +752,17 @@ export class ClinicalAssessmentFlow {
       normLow.includes('fazer triagem') ||
       /\b(vamos|quero|gostaria de|preciso|bora)\s+(iniciar|fazer|comecar|dar inicio)\s+(uma\s+)?(avaliacao|avaliacao clinica|triagem)\b/.test(normLow)
 
-    // [V1.9.443-B] Anti-interrogativa-dúvida (smoke 24/05 caso "devo me vincular? fazer avaliação? ou agendar?"):
+    // [V1.9.443-B fix V1.9.443-B-hotfix]: Anti-interrogativa-dúvida (smoke 24/05 caso "devo me vincular? fazer avaliação? ou agendar?"):
     // Frase com "?" + marcadores de dúvida ("devo", "preciso", "ou", "qual", "como funciona", "primeiro")
-    // não deve disparar startAssessment — é pergunta de orientação de jornada, não pedido imperativo.
+    // não deve disparar restartAssessment durante AEC ativa — é pergunta de orientação de jornada, não pedido imperativo.
     // Princípio aprendido: "Dúvida sobre percurso ≠ intenção de iniciar avaliação" (espelha JOURNEY_GUIDANCE
     // no prompt V1.9.443-A). Caminhos legítimos preservados: "quero iniciar avaliação" (imperativo claro
     // sem "?") continua disparando. Memory: project_universo_vetores_chat_livre_paciente_24_05.
+    // BUG HOTFIX (carolina teste 17:17 BRT): variável era `response` (não existe) → `userResponse` (parâmetro real).
+    // Erro silencioso fazia processResponse crashar a CADA turno AEC → GPT respondia de cabeça sem state → violou
+    // regras "uma pergunta por vez" + "esperar paciente encerrar lista indiciária".
     const isInterrogativeDoubt =
-      response.includes('?') &&
+      userResponse.includes('?') &&
       (
         /\b(devo|preciso|tenho que|deveria|seria)\s+(fazer|comecar|iniciar|me vincular|vincular|ter)/.test(normLow) ||
         /\bou\s+(fazer|comecar|iniciar|agendar|consultar|me vincular)/.test(normLow) ||
