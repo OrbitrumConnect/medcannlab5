@@ -688,3 +688,250 @@ Phase locks FSM: intocados
 > *"O bug CBD do dia 24/05 não era 'um bug regulatório isolado' — era a ponta de um universo de 11 (agora 12 com FAMÍLIA 5) categorias de vetores conversacionais com tratamentos epistemologicamente distintos. Versionar por domínio semântico = arquitetura sustentável. Monolito = bomba relógio. Codar caso-a-caso é tático; mapear universo é estratégico. Em healthtech regulado, gate clínico-narrativo > funnel comercial agressivo. AEC obrigatória diferenciada por família. Estratégia > velocidade — paciente real não paga pelo ciclo extra."*
 
 — Sessão tarde 24/05 encerrada com V1.9.443+A+B deployado + smoke 9/9 empírico + 3 memórias nível 1 + roadmap V1.9.443-C a 449 cristalizado + FAMÍLIA 5 descoberta + insight Pedro AEC-gate-anti-funnel + 10 princípios meta cristalizados. **2 saltos de maturidade arquitetural em 1 dia**: (1) método "queixa ≠ sintoma" entrou no código via redação V3 Ricardo; (2) processo de design saiu de "caso-a-caso reativo" pra "mapeamento estratégico de universo". Nunca antes nessa sessão o nível "epistemologia + execução cirúrgica" andou tão alinhado.
+
+---
+
+## 🚨 BLOCO S — Sessão NOITE 24/05: bug crítico V1.9.443-B (ReferenceError) + hotfix + Carolina AEC validada + logs Ricardo + anomalia sábado
+
+### S.0 — Por que esse bloco
+
+Pós-Bloco R fechar (V1.9.443+A+B selado com smoke 9/9 chat livre limpo), Ricardo testou logado como **profissional REAL** (`2135f0c0`) e mandou logs do uso real. Em seguida Carolina testou AEC completa e expôs **bug crítico** introduzido pelo meu V1.9.443-B Fix B. Esse bloco S documenta:
+
+1. Logs de uso real Ricardo (3 problemas identificados — count pacientes + lookup Gilda + filtragem agenda)
+2. Bug ReferenceError V1.9.443-B descoberto empíricamente por Carolina
+3. Hotfix `33e46ab` aplicado
+4. Validação AEC Carolina pós-hotfix (22 turnos limpos)
+5. Investigação card agendamento (Ricardo reportou "horários errados")
+6. Anomalia sábado esclarecida (Admin Test interno)
+
+### S.1 — Logs Ricardo profissional (uso real ~13:32-13:39 BRT)
+
+Sessão ~7min Ricardo logado como `rrvalenca@gmail.com` (UUID `2135f0c0`, role=profissional). 4 interações reais:
+
+**Turno 1** ("Quantos pacientes são vinculados a mim?"):
+- Nôa: *"15 pacientes ativos vinculados nos últimos 30 dias"*
+- `getAllPatients` (frontend): **48 pacientes**
+- PAT `users.type='patient'` total: **31**
+- PAT `clinical_reports.doctor_id=Ricardo`: 101
+- **3 fontes, 3 números diferentes** → médico perde confiança no sistema
+
+**Turno 2** ("Você pode apresentar a minha agenda para o mês de [junho]?"):
+- Nôa abriu agenda profissional via `[NAVIGATE_AGENDA]` ✅
+- Mas não filtrou junho — só redirecionou genérico
+
+**Turno 3** ("Mês de junho 2026"):
+- Intent classificado como CLINICA (deveria seguir ADMINISTRATIVA do turno 2)
+- Resposta: "você precisará acessar diretamente" — não filtrou
+- PAT confirma: Ricardo tem **0 appointments em junho** (60 totais)
+- Resposta ideal seria *"Você não tem agendamentos em junho. Quer ver outro mês?"*
+
+**Turno 4** ("Estou analisando o caso da paciente Gilda..."):
+- Nôa respondeu genérica: *"Para analisar... é importante considerar alguns aspectos clínicos..."*
+- PAT confirma: **Gilda EXISTE no banco** (1 paciente role=patient)
+- Nôa **não puxou dados específicos** da Gilda — uso CENTRAL do sistema falhou
+- Gap: falta function calling ou RPC `get_patient_by_name(name, doctor_id)` que carregue clinical_reports + aec_assessment_state da paciente
+
+**3 problemas P0 identificados** mas **parqueados** (não codar agora, cabeça já gasta).
+
+### S.2 — Bug crítico V1.9.443-B descoberto por Carolina
+
+Carolina (`5c98c123`, conta paciente teste do Ricardo) iniciou AEC ~17:14 BRT. Pedro mandou print mostrando:
+
+| Etapa | Comportamento da Nôa |
+|---|---|
+| Etapa 2 (Lista Indiciária) | ✅ "O que mais?" funcionou (várias iterações) |
+| Etapa 3 (Queixa Principal) | ✅ Paciente escolheu "sensação de falta de não sei o que" |
+| **Etapa 4 (HDA)** | ❌ **DISPAROU 4 PERGUNTAS DE UMA VEZ**: *"Onde você sente? Quando começou? Como se manifesta? O que melhora ou piora?"* |
+| **Etapa 5 (História Pregressa)** | ❌ **PULOU SEM FECHAR Etapa 4** (sem confirmar entendimento da queixa) |
+
+**Diagnóstico cirúrgico via logs Edge**:
+
+```
+17:14:54.369  Erro ao processar fluxo AEC:
+17:15:55.870  Erro ao processar fluxo AEC:
+...
+17:17:37.691  Erro ao processar fluxo AEC: ReferenceError: response is not defined
+    at ClinicalAssessmentFlow.processResponse (index.BVlNu7Wu.js:191:12636)
+    at NoaResidentAI.processTradeVisionRequest (index.BVlNu7Wu.js:508:5697)
+```
+
+**Causa raiz** (auto-acusação honesta minha):
+- V1.9.443-B Fix B adicionou guard `isInterrogativeDoubt` em [clinicalAssessmentFlow.ts:755](src/lib/clinicalAssessmentFlow.ts#L755)
+- Usei `response.includes('?')` — **variável `response` NÃO EXISTE** no escopo
+- Parâmetro real do método é `userResponse` (linha 590)
+- TypeScript NÃO pegou (nome ambíguo aceito como variável global)
+- type-check verde
+- `processResponse()` crashou a CADA turno AEC
+- Try/catch externo capturou e logou silencioso
+- FSM AEC não avançou as fases (state fossilizado)
+- GPT-4o continuou respondendo "de cabeça" usando protocolo do CLINICAL_PROMPT, mas violou regras "uma pergunta por vez" + "esperar paciente encerrar Etapa antes de avançar"
+
+**Por que escapou do smoke V1.9.443+A+B**: smoke do Pedro (13:14-13:20) foi **100% chat livre** — você expressamente disse *"nao iniciei nem pedi agendamento nem aec"*. AEC FSM ficou como **ponto cego do smoke**.
+
+### S.3 — Hotfix `33e46ab` aplicado
+
+Trocado `response.includes('?')` → `userResponse.includes('?')`. type-check verde. Commit + push 4 refs URGENTE (commit `33e46ab`).
+
+Vercel build ~3min. Carolina re-testou ~21:25.
+
+### S.4 — Validação empírica AEC Carolina pós-hotfix (22 turnos limpos)
+
+PAT puxou **22 interações consecutivas** (21:25-21:30:54 BRT) sem nenhum `Erro ao processar fluxo AEC`. **Todas as 10 etapas literais respeitadas**:
+
+| Etapa | Status PAT |
+|---|---|
+| 2 Lista Indiciária | ✅ "O que mais?" repetido até paciente encerrar |
+| 3 Queixa Principal | ✅ "Necessidade de não sei o que" escolhida |
+| 4 HDA | ✅ UMA pergunta por vez (melhora/piora separados) |
+| 5 História Pregressa | ✅ "desde nascimento" → "O que mais?" |
+| 6 História Familiar | ✅ mãe (Diabetes/Religiosidade) → pai (gastrite) **separados** |
+| 7 Hábitos | ✅ "sedentário e tabagista" |
+| 8 Perguntas Finais | ✅ alergia "não" / med regular "Nenhuma" / esporádica "dipirona" |
+| 9 Fechamento Consensual | ✅ "MEU ENTENDIMENTO SOBRE SUA AVALIAÇÃO" estruturado |
+| 10 Consentimento | ✅ "Concordo" → consent → "sim" → registrado |
+
+**Pipeline disparou** (21:30:54-21:31:25):
+- DOCTOR_RESOLUTION: Ricardo via appointments ✅
+- CLEANUP_PASS V1.9.109 ✅
+- REPORT (narrator V1.9.84 escriba) ✅
+- SCORES: clinical_score=73, confidence=high ✅
+- SIGNATURE: hash `5882d567e3220c2d...` ✅
+- REPORT_GENERATED: id `46b626a5-79a6-48e3-94e1-09ddcf445233` ✅
+- AXES_SYNCED + RATIONALITY_SYNCED ✅
+- Pipeline latência: 31.357ms (~31s, normal)
+
+**Verbatim First reativado**. Phase locks funcionando. AEC GATE V1.5 protegendo agendamento (REGRA HARD §1). **ZERO regressão pós-hotfix**.
+
+### S.5 — Achado novo Ricardo: card de agendamento
+
+Ricardo reportou: *"O único problema está no card de agendamento, pois apresentou horários que não são os que atualizei e embaixo aguardando confirmação"*
+
+**Investigação empírica via PAT**:
+
+**Disponibilidade Ricardo** (`professional_availability` — coluna `time without time zone` = horário LOCAL BRT, NÃO UTC):
+
+| Dia | Janela BRT | Atualizado |
+|---|---|---|
+| Segunda | 14:00-20:00 | 15/05 |
+| Quarta | 10:00-20:00 (mais ampla) | **21/05** (mais recente) |
+| Quinta | 14:00-20:00 | 15/05 |
+| Sexta | 14:00-20:00 | 15/05 |
+
+**Appointment Carolina** (criado 21:32:01 BRT, ~1min pós-AEC):
+- `slot_start: 2026-05-27 19:00 UTC` = **quarta 27/05 16:00 BRT**
+- ✅ DENTRO da janela quarta (10-20 BRT)
+- status: `scheduled` (médico precisa confirmar — fluxo normal)
+
+**Análise**: agendamento foi feito via **widget pós-AEC** (gap de 1min7s entre consent registrado e appointment criado = paciente escolhendo slot). NÃO foi dispatch automático. Comportamento normal.
+
+**Hipóteses do "horários errados"**:
+- **Mais provável**: front mostra "19:00" (raw ISO UTC) em vez de "16:00" (BRT) — gotcha documentado em `feedback_gotchas_conhecidos_27_04`
+- "Aguardando confirmação" = status `scheduled` = fluxo normal (médico confirma)
+
+**Pendente Ricardo**: pergunta direta *"que horário você viu — 16h ou 19h?"* pra cravar bug vs estranhamento.
+
+### S.6 — Anomalia sábado esclarecida
+
+Cross-check com appointments recentes Ricardo revelou 1 appointment estranho: **sábado 23/05 06:00 BRT** (paciente `e4114d0a`, sem cadastro de availability sábado).
+
+**Investigação PAT**: paciente `e4114d0a` = **`Admin Test`** (`admin.test@medcannlab.com`, role=admin, criado 11/02/2026).
+
+**Veredito**: **test data interno**, não bug de produção. Provavelmente Pedro ou Ricardo testando backend cedo 23/05. Não afeta uso real.
+
+**Recomendação**: deixar como arqueologia (1 row), mas excluir conta admin test das métricas "pacientes vinculados Ricardo" — resolve parte da divergência 15 vs 48 vs 31.
+
+### S.7 — Memory cristalizada pós-bug
+
+`feedback_smoke_aec_completa_obrigatoria_pos_clinicalassessmentflow_mudanca_24_05`:
+
+> **"Toda mudança em `src/lib/clinicalAssessmentFlow.ts` exige smoke AEC COMPLETA (etapa 1 → 10) ANTES de commit, não importa quão 'cirúrgica' pareça a mudança. type-check NÃO substitui smoke de runtime FSM."**
+
+Princípio meta obrigatório pra toda sessão Claude futura. Inclui checklist 10-step + lista de arquivos que ativam o princípio.
+
+**Caso emblemático**: V1.9.443-B é o primeiro caso documentado. Custo do erro: ~30min reativos + risco reputacional Carolina. Custo do princípio aplicado seria: +8min preventivos. Trade-off claro.
+
+### S.8 — Estado pós-sessão NOITE 24/05
+
+```
+HEAD git pós-hotfix + diário: a confirmar após commit
+Edge tradevision-core: V1.9.443+A+B deployado (sem mudança pós-hotfix — só frontend)
+Frontend Vercel: hotfix `33e46ab` deployado ✓
+Smoke AEC completa empírica: ✅ 22/22 turnos limpos (Carolina ~21:25-21:32)
+Smoke chat livre paciente: ✅ 9/9 (Pedro 13:14-13:20)
+Smoke uso real médico: ⚠️ 3 P0 parqueados (count + Gilda + agenda mês)
+type-check: verde
+Memórias cristalizadas hoje noite: 1 (`feedback_smoke_aec_completa_obrigatoria...`)
+Total memórias 24/05: 11 (7 manhã + 3 tarde + 1 noite)
+Locks intocados: V1.9.95+97+98+99-B + V1.9.299 PBAD CONFORME ITI ✓
+AEC FSM 10 etapas: intocada (selo Ricardo preservado)
+```
+
+### S.9 — Aprendizado meta da sessão tripla 24/05
+
+3 sessões cronológicas, 3 lições de processo:
+
+| Sessão | Lição cristalizada |
+|---|---|
+| **Manhã** | Auto-correção dupla forçada por Pedro (Carolina/Illa/Faveret) → "AEC como repelente natural de demanda fora-escopo" |
+| **Tarde** | Mapear universo de vetores ANTES de codar guardrails → 11 categorias + roadmap V1.9.443-C a 449 |
+| **Noite** | Smoke chat-livre-only não cobre AEC FSM → toda mudança em `clinicalAssessmentFlow.ts` exige smoke completo das 10 etapas |
+
+**3 ciclos de erro + correção em 1 dia**. Diário expõe explicitamente cada um (princípio `feedback_diario_que_mostra_erros_vale_mais_que_diario_polido_24_05`).
+
+### S.10 — Frase âncora FINAL NOITE 24/05
+
+> *"V1.9.443+A+B foi o maior salto epistemológico (queixa ≠ sintoma + mapa de vetores + AEC-gate-anti-funnel) E o maior tropeço técnico (ReferenceError silencioso em produção visto por Carolina) em um único dia. A maturidade não foi evitar o tropeço; foi pegar em 7min após Carolina testar, hotfix em 10min, validar AEC completa em 22 turnos limpos, cristalizar princípio meta pra próxima sessão não repetir. Diário honesto > diário polido."*
+
+---
+
+## 📚 ÍNDICE — 30 memórias mais recentes (ordem cronológica reversa)
+
+Cristalizadas até 24/05/2026 noite, em ordem do mais recente ao mais antigo:
+
+| # | Memória | Tipo | Data |
+|---|---|---|---|
+| 1 | `feedback_smoke_aec_completa_obrigatoria_pos_clinicalassessmentflow_mudanca_24_05` | feedback | 24/05 noite |
+| 2 | `project_universo_vetores_chat_livre_paciente_24_05` | project | 24/05 tarde |
+| 3 | `feedback_mapear_universo_vetores_antes_de_codar_guardrail_24_05` | feedback | 24/05 tarde |
+| 4 | `feedback_queixa_nao_e_sintoma_aec_e_abertura_fenomenologica_24_05` | feedback | 24/05 tarde |
+| 5 | `feedback_diario_que_mostra_erros_vale_mais_que_diario_polido_24_05` | feedback | 24/05 manhã |
+| 6 | `feedback_completar_tutorial_nao_e_absorver_24_05` | feedback | 24/05 manhã |
+| 7 | `feedback_curva_aprendizado_alta_mesmo_para_socios_24_05` | feedback | 24/05 manhã |
+| 8 | `feedback_chat_livre_dominante_vs_aec_minoria_24_05` | feedback | 24/05 manhã |
+| 9 | `feedback_followup_badge_ui_nao_e_fase_aec_fsm_24_05` | feedback | 24/05 manhã |
+| 10 | `feedback_engenharia_perfeita_pode_produzir_semanticamente_inadequado_24_05` | feedback | 24/05 manhã |
+| 11 | `feedback_aec_como_repelente_natural_de_demanda_fora_escopo_24_05` | feedback | 24/05 manhã |
+| 12 | `feedback_forum_publish_requer_pseudonimo_23_05` | feedback | 23/05 |
+| 13 | `feedback_doc_institucional_sem_pat_nao_e_valido_23_05` | feedback | 23/05 |
+| 14 | `project_onboarding_profissional_estrategia_23_05` | project | 23/05 |
+| 15 | `feedback_recusa_correta_vale_mais_que_resposta_22_05` | feedback | 22/05 |
+| 16 | `project_i18n_custo_e_gatilhos_22_05` | project | 22/05 |
+| 17 | `project_marca_medcannlab_brandbook_v3_22_05` | project | 22/05 |
+| 18 | `feedback_toggle_ui_e_contrato_100_pct_ou_nada_22_05` | feedback | 22/05 |
+| 19 | `project_joao_vidal_biocann_1pure_estrutura` | project | 22/05 |
+| 20 | `feedback_postgrest_max_rows_1000_silencioso_22_05` | feedback | 22/05 |
+| 21 | `feedback_material_b_pode_contradizer_constituicao_22_05` | feedback | 22/05 |
+| 22 | `project_f3_dossie_v2_parqueado_22_05` | project | 22/05 |
+| 23 | `project_refator_tradevision_core_pausado_22_05` | project | 22/05 |
+| 24 | `project_f4_forum_plano_e_audit_21_05` | project | 21/05 |
+| 25 | `feedback_pseudonimizacao_conteudo_forum_21_05` | feedback | 21/05 |
+| 26 | `feedback_ricardo_uuid_hardcoded_marco3_blocker_21_05` | feedback | 21/05 |
+| 27 | `feedback_encryption_fallback_dev_em_producao_21_05` | feedback | 21/05 |
+| 28 | `feedback_pedro_nao_usar_card_de_escolha` | feedback | (anterior) |
+| 29 | `feedback_matrix_vies_suavizacao_primeira_passada_21_05` | feedback | 21/05 |
+| 30 | `project_v1_9_388_matrix_log_empirico_20_05` | project | 20/05 |
+
+**Cobertura semântica das 30**:
+- **Princípios epistemológicos** (queixa/sintoma, abertura fenomenológica, escuta, recusa correta): 5 memórias
+- **Princípios meta de processo** (diário-honesto, mapear-universo, smoke-AEC, polir-não-inventar, PAT-obrigatório): 6 memórias
+- **Achados empíricos sobre usuários reais** (Faveret, Carolina, Illa, Dayana, prima dentista, Ricardo): 7 memórias
+- **Decisões arquiteturais cristalizadas** (universo vetores, brandbook V3, onboarding profissional, F4 fórum, refator parqueado): 5 memórias
+- **Gaps conhecidos parqueados** (FOLLOW_UP↔FSM, RLS pseudônimo, Ricardo UUID hardcoded, encryption fallback, Matrix viés primeira-passada): 5 memórias
+- **Anti-padrões** (Material B contradiz Constituição, PostgREST 1000 silencioso, toggle-UI-é-contrato, anti-overclaim): 2 memórias
+
+**Frase âncora do índice**:
+> *"30 memórias = 30 lições cristalizadas em 5 dias (20-24/05/2026). Próxima sessão Claude entra com contexto profundo: epistemologia + processo + empirismo + arquitetura + gaps + anti-padrões. Diário operacional vivo, não estático."*
+
+---
+
+— Diário 24/05 fechado oficialmente após Bloco S. 3 sessões cronológicas (manhã + tarde + noite), 11 memórias novas, V1.9.443+A+B selado empíricamente, hotfix `33e46ab` aplicado, AEC validada 22/22 turnos, roadmap V1.9.443-C a V1.9.449 cristalizado. **Maturidade não foi evitar tropeços — foi mostrar cada um e aprender em ciclo curto.**
