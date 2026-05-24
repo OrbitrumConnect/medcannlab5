@@ -1211,11 +1211,16 @@ export class ClinicalAssessmentFlow {
           /\b(n[aã]o)\s+(quero|queria|vou|vamos|preciso|posso|desejo|pretendo)\b/.test(norm) ||
           /\b(n[aã]o)\s+(continuar|conversar|falar|fazer|avaliar|retomar|seguir|prosseguir|voltar)\b/.test(norm) ||
           /\b(deixa\s+(pra|para)\s+l[aá]|outra\s+hora|depois\s+conversamos|esquece|por\s+agora\s+n[aã]o|agora\s+n[aã]o|mais\s+tarde)\b/.test(norm) ||
-          /\b(vamos\s+(s[oó]|somente|apenas)\s+conversar|vamos\s+conversar\s+apenas|quero\s+(s[oó]|somente|apenas)\s+conversar)\b/.test(norm) ||
-          // [V1.9.6] Respostas curtas diretas ao prompt "ou apenas conversar": aceita "apenas conversar",
-          // "so conversar", "somente conversar", "conversar apenas" e apenas "conversar" como resposta única.
-          /^(s[oó]|somente|apenas)?\s*conversar(\s+(apenas|s[oó]|somente|por\s+agora))?\s*[!.?]?$/.test(norm) ||
-          /^(apenas|s[oó]|somente)\s+conversar\s*[!.?]?$/.test(norm)
+          /\b(vamos\s+(s[oó]|somente|apenas)\s+conversa[r]?|vamos\s+conversa[r]?\s+apenas|quero\s+(s[oó]|somente|apenas)\s+conversa[r]?)\b/.test(norm) ||
+          // [V1.9.6 + V1.9.441] Respostas curtas diretas ao prompt "ou apenas conversar": aceita
+          // "apenas conversar"/"apenas conversa", "so conversar"/"so conversa", "somente conversar",
+          // "conversar apenas" e apenas "conversar"/"conversa" como resposta unica.
+          // V1.9.441 (24/05): R final opcional (conversa[r]?) — bug empirico Pedro 24/05 manha:
+          // "apenas conversa" (sem R) nao casava com regex que exigia "conversar" infinitivo,
+          // travando Verbatim Hard Lock e repetindo resposta literal. Confirma compat reversa
+          // (quem digita "conversar" continua casando). Atinge 54 AECs in_progress potenciais.
+          /^(s[oó]|somente|apenas)?\s*conversa[r]?(\s+(apenas|s[oó]|somente|por\s+agora))?\s*[!.?]?$/.test(norm) ||
+          /^(apenas|s[oó]|somente)\s+conversa[r]?\s*[!.?]?$/.test(norm)
 
         if (isRefusing) {
           // [V1.9.67] Em vez de mentir state.phase = 'COMPLETED' (que dispara
