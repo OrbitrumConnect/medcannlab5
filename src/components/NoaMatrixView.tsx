@@ -31,6 +31,7 @@ import { usePatientLongitudinal } from '../hooks/usePatientLongitudinal'
 import { useExternalLiterature } from '../hooks/useExternalLiterature'
 import { useDossierPersist, type SavedDossier } from '../hooks/useDossierPersist'
 import { useForumPublish } from '../hooks/useForumPublish'
+import { useCaseSearch } from '../hooks/useCaseSearch'
 import { EVIDENCE_LABELS } from '../services/pubmedService'
 import { ResearchChat } from './ResearchChat'
 import { exportDossierToPDF, type DossierMessage, type DossierData } from '../lib/dossierExport'
@@ -113,13 +114,42 @@ interface AttachedDoc {
 
 export const NoaMatrixView: React.FC = () => {
   const { user } = useAuth()
-  const [searchParams] = useSearchParams()
+  const [searchParams, setSearchParams] = useSearchParams()
   // V1.9.382 — patientId vindo do Terminal de Atendimento (trigger "Levar para Nôa Matrix")
   // Médico abre paciente em foco e clica botão pra trazer recortes longitudinais pro chat.
+  // V1.9.446 — busca embutida (abaixo) também atualiza patientId via setSearchParams.
   const patientId = searchParams.get('patientId') || undefined
   const history = useSearchHistory(user?.id)
   const longitudinal = usePatientLongitudinal(patientId)
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
+
+  // V1.9.446 — busca embutida de paciente/caso (Pedro: unifica fluxo Casos
+  // Similares → Matrix em 0 clique extra). Reusa useCaseSearch (mesma query
+  // dupla de V1.9.445). Click em resultado: recordCaseOpen + setSearchParams
+  // (atualiza patientId → longitudinal carrega → cards remontam).
+  const caseSearch = useCaseSearch()
+  const [searchOpen, setSearchOpen] = useState(false)
+  const [searchTerm, setSearchTerm] = useState('')
+  const handleCaseSearch = () => {
+    if (searchTerm.trim().length < 3) return
+    void caseSearch.search(searchTerm, 90)
+  }
+  const handleSelectSearchHit = (hit: { reportId: string; patientId: string; patientName: string; queixaPrincipal: string }) => {
+    history.recordCaseOpen({
+      caseId: hit.reportId,
+      patientId: hit.patientId,
+      patientName: hit.patientName,
+      queixa: hit.queixaPrincipal,
+    })
+    // Atualiza URL preservando section (e qualquer outro param)
+    const next = new URLSearchParams(searchParams)
+    next.set('patientId', hit.patientId)
+    setSearchParams(next, { replace: false })
+    // Limpa lista de resultados pra reduzir ruído (busca fecha-se naturalmente)
+    caseSearch.clear()
+    setSearchTerm('')
+    setSearchOpen(false)
+  }
   // V1.9.386 — Pedro 19/05 noite: trigger ocultar cards pra não acumular
   // (não-destrutivo, só esconde da view atual; reload da sessão reseta)
   const [hiddenIds, setHiddenIds] = useState<Set<string>>(new Set())
@@ -446,6 +476,92 @@ export const NoaMatrixView: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
         {/* Cards anexáveis */}
         <div className="lg:col-span-5 space-y-3">
+
+          {/* V1.9.446 — Busca embutida paciente/caso (unifica Casos Similares → Matrix).
+              Mesmo padrão visual dos painéis PubMed/Base de Conhecimento (colapsável,
+              borda emerald). Click em resultado: atualiza patientId via setSearchParams,
+              longitudinal recarrega, cards remontam. */}
+          <div className="bg-slate-900/40 border border-emerald-500/30 rounded-xl overflow-hidden">
+            <button
+              type="button"
+              onClick={() => setSearchOpen((v) => !v)}
+              className="w-full flex items-center justify-between gap-2 px-3 py-2.5 hover:bg-emerald-500/5 transition-colors"
+            >
+              <div className="flex items-center gap-2">
+                <Search className="w-4 h-4 text-emerald-300" />
+                <span className="text-xs font-semibold text-slate-200">Buscar paciente ou caso</span>
+              </div>
+              <span className="text-[10px] text-slate-500">{searchOpen ? 'fechar' : 'expandir'}</span>
+            </button>
+
+            {searchOpen && (
+              <div className="border-t border-emerald-500/20 p-3 space-y-2.5">
+                <div className="flex items-center gap-2">
+                  <div className="flex-1 relative">
+                    <Search className="w-3 h-3 text-slate-500 absolute left-2 top-1/2 -translate-y-1/2" />
+                    <input
+                      type="text"
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      onKeyDown={(e) => { if (e.key === 'Enter') handleCaseSearch() }}
+                      placeholder='ex: "Carolina", "dor lombar"'
+                      className="w-full bg-slate-800/60 border border-emerald-500/20 rounded-md pl-7 pr-2 py-1.5 text-xs text-white placeholder:text-slate-500 focus:outline-none focus:ring-1 focus:ring-emerald-500/50"
+                    />
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleCaseSearch}
+                    disabled={caseSearch.loading || searchTerm.trim().length < 3}
+                    className="text-[10px] px-2 py-1.5 rounded bg-emerald-500/20 text-emerald-200 hover:bg-emerald-500/30 disabled:opacity-40 disabled:cursor-not-allowed transition-colors flex-shrink-0"
+                  >
+                    {caseSearch.loading ? <Loader2 className="w-3 h-3 animate-spin" /> : 'buscar'}
+                  </button>
+                </div>
+
+                {caseSearch.error && (
+                  <div className="text-[10px] text-red-300">{caseSearch.error}</div>
+                )}
+
+                {!caseSearch.loading && caseSearch.results.length === 0 && searchTerm.trim().length >= 3 && !caseSearch.error && (
+                  <div className="text-[10px] text-slate-500 italic">Nenhum caso encontrado nos últimos 90 dias.</div>
+                )}
+
+                {caseSearch.results.length > 0 && (
+                  <div className="space-y-1.5 max-h-[320px] overflow-y-auto pr-1">
+                    {caseSearch.results.map((hit) => (
+                      <button
+                        type="button"
+                        key={hit.reportId}
+                        onClick={() => handleSelectSearchHit(hit)}
+                        className="w-full text-left rounded-md p-2 border border-slate-700/30 bg-slate-800/40 hover:border-emerald-500/40 hover:bg-emerald-500/5 transition-colors"
+                      >
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="flex-1 min-w-0">
+                            <div className="text-[11px] font-semibold text-white truncate">{hit.patientName}</div>
+                            <div className="text-[10px] text-slate-400 mt-0.5 line-clamp-2 leading-relaxed">
+                              {hit.queixaPrincipal}
+                            </div>
+                          </div>
+                          <span className="text-[9px] text-slate-500 flex-shrink-0 mt-0.5">
+                            {new Date(hit.createdAt).toLocaleDateString('pt-BR')}
+                          </span>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                )}
+
+                <div className="flex items-start gap-1.5 text-[10px] text-slate-500 italic leading-tight pt-1 border-t border-slate-700/30">
+                  <Info className="w-3 h-3 flex-shrink-0 mt-0.5" />
+                  <span>
+                    Busca por nome do paciente ou termo da queixa (últimos 90d).
+                    Click no resultado traz o paciente pro chat sem precisar abrir Casos Similares.
+                  </span>
+                </div>
+              </div>
+            )}
+          </div>
+
           <div className="flex items-center justify-between gap-2 mb-1.5">
             <h3 className="text-xs font-semibold text-slate-300 uppercase tracking-wider">
               Material disponível
