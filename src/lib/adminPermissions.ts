@@ -94,11 +94,18 @@ export const getAllPatients = async (
 
       if (patientIds.length === 0) return []
 
-      // Buscamos os nomes reais desses pacientes na tabela users
+      // [V1.9.449] Filtrar por type='patient' — bug empírico Ricardo 24/05:
+      // getAllPatients devolvia 48 pra Ricardo (UNION assessments+appointments
+      // distintos) sem checar tipo real. PAT confirmou: dos 48 vinculados,
+      // 34 são role=paciente (real) e 14 são admin/professional test users
+      // (Admin Test + profissionais cadastrados como paciente em testes antigos).
+      // Filtro exclui ruído sem mexer no fluxo. Médico passa a ver número honesto.
+      // Memory: backlog Ricardo 24/05 documenta divergência 15/48/31 (hoje 31→34).
       const { data: users, error: userError } = await supabase
         .from('users')
         .select('id, name, email, phone, created_at')
         .in('id', patientIds)
+        .in('type', ['paciente', 'patient'])
         .order('name', { ascending: true })
 
       if (userError) throw userError
