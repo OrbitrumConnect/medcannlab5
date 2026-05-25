@@ -36,12 +36,28 @@ export const notificationService = {
     }
   },
 
-  async notifyAppointmentConfirmation(patientEmail: string, professionalEmail: string, appointmentDetails: any) {
+  async notifyAppointmentConfirmation(patientEmail: string, professionalEmail: string, appointmentDetails: any): Promise<void> {
     const { date, time, professionalName, patientName } = appointmentDetails
 
-    // 🔥 DESACOPLAMENTO (Nível Produção): Disparar em Background (Fire and Forget)
-    // Não usamos 'await' aqui para que o UI não trave esperando o e-mail
-    this.sendEmail({
+    // V1.9.447 — bug empírico João 25/05 madrugada:
+    //
+    // Antes: 2 sendEmail() em fire-and-forget puro (sem await). Funcionava em
+    // contextos onde o componente permanecia vivo (ex: SchedulingWidget no chat
+    // pós-AEC — Carolina recebeu email 24/05 21:32 BRT confirmado no Resend).
+    // QUEBRAVA em contextos com navigate() imediato pós-bookAppointment (ex:
+    // PatientAppointments.tsx:943 navega pra /app/chat-noa-esperanca → componente
+    // desmonta → fetch do Edge `send-email` é abortado pelo browser → email some
+    // sem rastro (catch silencioso só logava no console que já não existe mais).
+    //
+    // Agora: Promise.all dos 2 envios é AGUARDADO (await). O caller (bookAppointment)
+    // pode envolver isso num Promise.race com timeout (200ms-5s) pra garantir que
+    // a navegação UX não trava demais. Trade-off aceito pré-PMF: +200-500ms no
+    // tempo de "agendar" pra confiabilidade total do email.
+    //
+    // Não-bloqueante por design: erros são logados mas NÃO lançam (mantém o
+    // contrato "se email falhar, booking ainda é considerado sucesso"). Quem
+    // quiser bloquear UI no email pode checar logs do console.
+    const patientEmailPromise = this.sendEmail({
       to: patientEmail,
       subject: '✅ Consulta Confirmada - MedCannLab',
       html: `
@@ -58,9 +74,12 @@ export const notificationService = {
           <p style="font-size: 12px; color: #64748b;">MedCannLab - Tecnologia para Medicina Canabinoide</p>
         </div>
       `
-    }).catch(err => console.error('⚠️ [Silent Fail] Patient Email:', err))
+    }).catch((err: any) => {
+      console.error('⚠️ [notifyAppointmentConfirmation] patient email falhou:', err)
+      return { success: false, error: err }
+    })
 
-    this.sendEmail({
+    const professionalEmailPromise = this.sendEmail({
       to: professionalEmail,
       subject: '📅 Novo Agendamento - MedCannLab',
       html: `
@@ -77,6 +96,14 @@ export const notificationService = {
           <p style="font-size: 12px; color: #64748b;">MedCannLab - Gestão Clínica Inteligente</p>
         </div>
       `
-    }).catch(err => console.error('⚠️ [Silent Fail] Professional Email:', err))
+    }).catch((err: any) => {
+      console.error('⚠️ [notifyAppointmentConfirmation] professional email falhou:', err)
+      return { success: false, error: err }
+    })
+
+    // Aguarda OS DOIS. Erro individual já capturado em .catch acima — promise
+    // sempre resolve. Promise.all aqui só pra garantir que ambos foram ao
+    // menos despachados (request enviado) antes de devolver controle.
+    await Promise.all([patientEmailPromise, professionalEmailPromise])
   }
 }

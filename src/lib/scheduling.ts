@@ -124,34 +124,61 @@ export async function bookAppointment(
             console.warn('[V1.9.224] is_remote=true update falhou (não-bloqueante):', e)
         }
 
-        // Trigger Background Notification
-        (async () => {
-            try {
-                const { notificationService } = await import('./notificationService')
+        // V1.9.447 — Trigger notification AWAITED com timeout protective.
+        //
+        // Antes (V1.9.224): IIFE puro fire-and-forget. Funcionava QUANDO o
+        // componente caller permanecia vivo após o return de bookAppointment
+        // (ex: SchedulingWidget pós-AEC — Carolina recebeu email 24/05 21:32 BRT).
+        // QUEBRAVA em callers que faziam `navigate()` imediatamente pós-await
+        // (ex: PatientAppointments.tsx:943 navega pra /app/chat-noa-esperanca →
+        // componente desmonta → fetch do Edge `send-email` é abortado pelo
+        // browser → email some sem rastro. João 25/05 madrugada: 2 appointments
+        // criados, ZERO email enviado, confirmado via dashboard Resend).
+        //
+        // Agora: aguarda Promise.race entre (notifyAppointmentConfirmation, timeout 6s).
+        // - Email tipicamente leva 200-500ms (Resend rápido) — UX impacto baixo.
+        // - Timeout 6s evita travar UX se Edge demorar (Edge cold start até 3s).
+        // - Erros internos já são capturados em notificationService (não lançam).
+        // - try/catch externo continua como defesa em profundidade.
+        try {
+            const { notificationService } = await import('./notificationService')
 
-                // Fetch emails and names
-                const [{ data: patient }, { data: professional }] = await Promise.all([
-                    supabase.from('users').select('email, name').eq('id', patientId).single(),
-                    supabase.from('users').select('email, name').eq('id', targetProfId).single()
+            const [{ data: patient }, { data: professional }] = await Promise.all([
+                supabase.from('users').select('email, name').eq('id', patientId).single(),
+                supabase.from('users').select('email, name').eq('id', targetProfId).single()
+            ])
+
+            if (patient?.email && professional?.email) {
+                const dateObj = new Date(slotTime)
+                const notifyPromise = notificationService.notifyAppointmentConfirmation(
+                    patient.email,
+                    professional.email,
+                    {
+                        date: dateObj.toLocaleDateString('pt-BR'),
+                        time: dateObj.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
+                        professionalName: professional.name || 'Médico',
+                        patientName: patient.name || 'Paciente'
+                    }
+                )
+                // Race com timeout 6s — garante que o caller pode prosseguir sem travar UX
+                // se Edge `send-email` demorar (cold start). Cobre 99% dos casos:
+                // Resend tipicamente responde em 200-500ms.
+                await Promise.race([
+                    notifyPromise,
+                    new Promise<void>((resolve) => setTimeout(() => {
+                        console.warn('[bookAppointment] notification timeout 6s — request despachado, prosseguindo UX')
+                        resolve()
+                    }, 6000))
                 ])
-
-                if (patient?.email && professional?.email) {
-                    const dateObj = new Date(slotTime)
-                    await notificationService.notifyAppointmentConfirmation(
-                        patient.email,
-                        professional.email,
-                        {
-                            date: dateObj.toLocaleDateString('pt-BR'),
-                            time: dateObj.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
-                            professionalName: professional.name || 'Médico',
-                            patientName: patient.name || 'Paciente'
-                        }
-                    )
-                }
-            } catch (notifyError) {
-                console.error('Non-blocking notification error:', notifyError)
+            } else {
+                console.warn('[bookAppointment] patient.email ou professional.email vazio — email pulado', {
+                    hasPatientEmail: !!patient?.email,
+                    hasProfessionalEmail: !!professional?.email,
+                })
             }
-        })()
+        } catch (notifyError) {
+            console.error('[bookAppointment] notification error (non-blocking):', notifyError)
+        }
     }
 
     return data // Returns the UUID of the new appointment
