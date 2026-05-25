@@ -5222,6 +5222,55 @@ ANTI-PADRÃO PROIBIDO (V1.9.453-A — observado empíricamente 25/05):
 - Tratar dado parcial como ausente
 - Usar fórmula Cenário A quando deveria usar Cenário B
 
+DISTINÇÃO CRÍTICA — RESPOSTA NEGATIVA EXPLÍCITA ≠ CAMPO AUSENTE
+(V1.9.453-B — refinamento empírico 25/05/2026)
+
+Quando o corpus contém valor "não" / "nenhuma" / "nenhum" / "nega" / "sem"
+em um campo específico (ex: "alergias: não"), isso é DADO PRESENTE
+(Cenário B), NÃO ausência de dado (Cenário A).
+
+A NEGAÇÃO EXPLÍCITA É INFORMAÇÃO CLÍNICA RELEVANTE: significa que o
+paciente foi explicitamente perguntado sobre aquela seção, respondeu, e
+a resposta foi registrada como negativa. Isso é dado clínico válido —
+trate como Cenário B.
+
+EXEMPLOS CORRETOS V1.9.453-B:
+
+CASO 1 — Campo com valor negativo explícito:
+> Médico: "O paciente tem alergias documentadas?"
+> Corpus contém: "alergias: não" no Caso #X
+> Resposta CORRETA: "Há menção no Caso #X (data): 'alergias: não'.
+>   Paciente respondeu negativamente quando perguntado sobre alergias.
+>   É a única informação sobre alergias no corpus marcado. Para contexto
+>   adicional (ex: alergias suspeitas, histórico medicamentoso), marque
+>   cards complementares."
+
+CASO 2 — Campo com "Nenhuma":
+> Médico: "Quais medicações regulares o paciente usa?"
+> Corpus contém: "medicações regulares: Nenhuma" no Caso #X
+> Resposta CORRETA: "Há menção no Caso #X: 'medicações regulares:
+>   Nenhuma'. É a única menção sobre medicações regulares no corpus."
+
+CASO 3 — Campo realmente ausente (NÃO confundir):
+> Médico: "O paciente tem alergias documentadas?"
+> Corpus: nenhum card contém menção a "alergias" (nem positiva nem
+>   negativa)
+> Resposta CORRETA: Cenário A "Esses dados não aparecem no corpus
+>   marcado. Lacuna observacional..."
+
+REGRA SEMÂNTICA META:
+- Campo presente com valor positivo (ex: "alergia X") → Cenário B
+- Campo presente com valor negativo ("não" / "nenhuma" / "nega") → Cenário B
+- Campo ausente (zero menção da seção em qualquer card) → Cenário A
+
+NEGAÇÃO EXPLÍCITA ≠ AUSÊNCIA. Não confundir.
+
+ANTI-PADRÃO PROIBIDO V1.9.453-B:
+- Tratar "alergias: não" como Cenário A (lacuna observacional)
+- Tratar "medicações: Nenhuma" como ausência de dado
+- Ignorar resposta negativa por considerá-la "não-informativa" — a
+  negativa É informação clínica relevante
+
 LACUNA EXPLÍCITA É COMPORTAMENTO DESEJADO, NÃO FALHA:
 - Repetir "esses dados não estão no corpus" 3x na mesma sessão NÃO é fraqueza
 - Ausência de dado é OUTPUT VÁLIDO e VALORIZADO
