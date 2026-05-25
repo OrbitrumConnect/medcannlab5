@@ -23,6 +23,8 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
 
+import { extractPseudonymizedClinicalContent, type PseudonymizedClinicalContent } from '../lib/casePseudonymization'
+
 export interface LongitudinalReport {
   id: string
   created_at: string
@@ -30,6 +32,15 @@ export interface LongitudinalReport {
   signed_at: string | null
   mainComplaint?: string
   listaIndiciaria?: string[]
+  // [V1.9.450-B] Conteúdo clínico pseudonimizado extraído via mesma helper
+  // V1.9.450 (casePseudonymization.ts). NoaMatrixView body usa
+  // formatPseudonymizedCaseBody quando presente → Matrix recebe corpus rico
+  // (família + HDA + hábitos + perguntas objetivas) também no path automático
+  // (Terminal → Paciente → Matrix), não só via marcação manual (caseOpens).
+  // Sem isso, Matrix tentava completar lacuna via plausibilidade — bug
+  // empírico descoberto 25/05/2026 smoke V1.9.450.
+  // LGPD: NÃO inclui identificacao.nome (helper preserva whitelist).
+  clinicalContent?: PseudonymizedClinicalContent | null
 }
 
 export interface LongitudinalRationality {
@@ -120,6 +131,11 @@ export function usePatientLongitudinal(patientId: string | undefined | null): Pa
 
         const reports: LongitudinalReport[] = (reportsData || []).map((r: any) => {
           const c = r.content || {}
+          // [V1.9.450-B] Extrai whitelist clínica completa do content jsonb.
+          // Inclui história familiar, HDA, hábitos, perguntas objetivas
+          // — campos que NÃO existiam no body antigo do longitudinal.
+          // Sem isso Matrix alucinava esses dados (smoke 25/05 caso real).
+          const clinicalContent = extractPseudonymizedClinicalContent(c)
           return {
             id: r.id,
             created_at: r.created_at,
@@ -129,6 +145,7 @@ export function usePatientLongitudinal(patientId: string | undefined | null): Pa
             listaIndiciaria: Array.isArray(c.lista_indiciaria)
               ? c.lista_indiciaria.slice(0, 5).map((x: any) => typeof x === 'string' ? x : (x?.label ?? ''))
               : undefined,
+            clinicalContent,
           }
         })
 

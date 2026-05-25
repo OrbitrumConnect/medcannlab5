@@ -267,15 +267,35 @@ export const NoaMatrixView: React.FC = () => {
     const pseudonym = longitudinal.patientPseudonym ? `Paciente #${longitudinal.patientPseudonym}` : 'Paciente'
     longitudinal.reports.forEach((r) => {
       const dateStr = new Date(r.created_at).toLocaleDateString('pt-BR')
-      const lista = r.listaIndiciaria && r.listaIndiciaria.length > 0
-        ? r.listaIndiciaria.filter(Boolean).join(', ')
-        : ''
+      // [V1.9.450-B] Quando clinicalContent presente (whitelist V1.9.450),
+      // usa formatPseudonymizedCaseBody pra corpus rico (família + HDA +
+      // hábitos + perguntas objetivas). Sem isso Matrix alucinava esses
+      // dados — smoke empírico 25/05/2026 expôs 6 dados inventados.
+      // Fallback (clinicalContent ausente): body legado V1.9.382 (queixa +
+      // lista indiciária) — preservado pra compat retroativa.
+      let body: string
+      if (r.clinicalContent) {
+        const caseIdShort = r.id.slice(-6)
+        const richBody = formatPseudonymizedCaseBody(
+          caseIdShort,
+          dateStr,
+          r.clinicalContent,
+          r.mainComplaint,
+        )
+        // Prepend metadata do relatório (status + ICP) — não está no helper
+        body = `Relatório clínico de ${pseudonym} (${dateStr})\nStatus: ${r.status}${r.signed_at ? ' (assinado ICP-Brasil)' : ''}\n\n${richBody}`
+      } else {
+        const lista = r.listaIndiciaria && r.listaIndiciaria.length > 0
+          ? r.listaIndiciaria.filter(Boolean).join(', ')
+          : ''
+        body = `Relatório clínico de ${pseudonym} (${dateStr})\nStatus: ${r.status}${r.signed_at ? ' (assinado ICP-Brasil)' : ''}${r.mainComplaint ? `\nQueixa principal: "${r.mainComplaint}"` : ''}${lista ? `\nLista indiciária: ${lista}` : ''}`
+      }
       list.push({
         id: `pr-${r.id}`,
         type: 'patient-report',
         title: `Relatório de ${dateStr}`,
         subtitle: `${r.status}${r.signed_at ? ' · ICP' : ''}`,
-        body: `Relatório clínico de ${pseudonym} (${dateStr})\nStatus: ${r.status}${r.signed_at ? ' (assinado ICP-Brasil)' : ''}${r.mainComplaint ? `\nQueixa principal: "${r.mainComplaint}"` : ''}${lista ? `\nLista indiciária: ${lista}` : ''}`,
+        body,
         timestamp: new Date(r.created_at).getTime(),
       })
     })
