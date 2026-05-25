@@ -230,6 +230,21 @@ export function useSearchHistory(userId: string | undefined) {
     })
   }, [userId])
 
+  // [V1.9.444] removeCaseOpen: remove 1 caso específico do histórico persistido.
+  // Granularidade que faltava ao clearCaseOpens (que apaga todos).
+  // Usado pelo botão ✕ do card no NoaMatrixView pra remoção definitiva
+  // (antes era só ocultação volátil — reload restaurava).
+  const removeCaseOpen = useCallback(
+    (caseId: string) => {
+      setState(prev => {
+        const next = { ...prev, caseOpens: prev.caseOpens.filter(o => o.caseId !== caseId) }
+        saveToStorage(userId, next)
+        return next
+      })
+    },
+    [userId]
+  )
+
   // [V1.9.365] Notas rápidas — scratchpad markdown livre do médico
   const setNotes = useCallback(
     (notes: string) => {
@@ -256,6 +271,7 @@ export function useSearchHistory(userId: string | undefined) {
     clearRecent,
     recordCaseOpen,
     clearCaseOpens,
+    removeCaseOpen,
     setNotes,
   }
 }

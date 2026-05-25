@@ -337,8 +337,19 @@ export const NoaMatrixView: React.FC = () => {
     })
   }
 
-  // V1.9.386 — Ocultar card da view (não-destrutivo). Reload da sessão reseta.
+  // V1.9.386 — Ocultar card da view.
+  // V1.9.444 — Cards do tipo `case` agora também removem do histórico persistido
+  // (localStorage caseOpens) via removeCaseOpen — o ✕ vira ação definitiva pra
+  // casos que vieram de Casos Similares, em vez de ocultação volátil que reload
+  // restaurava. Outros tipos (note/pinned/longitudinal/pubmed/kb) seguem com
+  // ocultação só-sessão porque vêm de fontes que o médico controla por outras
+  // vias (notes editáveis, pinned tem unpin, longitudinal vem do paciente em foco,
+  // pubmed/kb tem detach próprio).
   const hideCard = (id: string) => {
+    if (id.startsWith('case-')) {
+      const caseId = id.slice('case-'.length)
+      history.removeCaseOpen(caseId)
+    }
     setHiddenIds((prev) => new Set(prev).add(id))
     setSelectedIds((prev) => {
       const next = new Set(prev)
@@ -508,11 +519,15 @@ export const NoaMatrixView: React.FC = () => {
                           : 'bg-slate-900/40 border-slate-700/30 hover:border-purple-500/30 hover:bg-purple-500/5'
                       }`}
                     >
-                      {/* V1.9.386 — Botão ocultar card (não-destrutivo) */}
+                      {/* V1.9.386 — Botão remover card.
+                          V1.9.444 — Casos vindos de "Casos Similares" agora
+                          são removidos do histórico persistido (não voltam
+                          após reload). Outros tipos seguem como ocultação
+                          de sessão. */}
                       <button
                         onClick={(e) => { e.stopPropagation(); hideCard(card.id) }}
                         className="absolute top-1.5 right-1.5 p-1 rounded text-slate-600 hover:text-red-300 hover:bg-red-500/10 transition-colors z-10"
-                        title="Ocultar este item da lista (não-destrutivo, reload restaura)"
+                        title={card.type === 'case' ? 'Remover este caso do histórico' : 'Ocultar este item da lista (só nesta sessão)'}
                       >
                         <X className="w-3 h-3" />
                       </button>
