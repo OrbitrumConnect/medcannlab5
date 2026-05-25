@@ -558,3 +558,151 @@ Esse alinhamento é o que GPT externo descreveu como *"arquitetura madura"* — 
 > *"A Matrix Z2 começou o dia alucinando 6 dados clínicos pra parecer útil. Terminou o dia com taxonomia semântica 3 cenários + negação explícita distinguida de ausência + locks micro-factuais explícitos + UX elite acionado por (?). Não foi calibração ideológica — foi 6 ciclos empíricos PAT → diagnóstico → fix → smoke → validação → próximo gap → fix. Maturidade de processo > velocidade de delivery."*
 
 — Sessão 25/05 encerrada com 6 commits cirúrgicos (V1.9.449 → V1.9.454), 3 memórias nível 1, princípio meta-arquitetural conectando 24/05 (queixa ≠ sintoma) com 25/05 (sustentar lacuna sem colapsar), AEC FSM intocada em todos os fixes, Vercel deployado, edge tradevision-core 4× deployado, type-check verde em todos, push 4 refs OK em todos. Matrix Z2 epistemicamente íntegra: nem alucinante, nem omissiva, nem cruzando linha clínica — apenas estruturadora honesta do corpus marcado pelo médico.
+
+---
+
+## 📅 BLOCO R — Retrospectiva mensal V3 (25/05 ~22h BRT)
+
+Pedro pediu retrospectiva 30 dias (26/04 → 25/05). V1 (530 linhas) rejeitada: *"a restrospectiva e so isso? mal tem conteudo?"*. V2 (1.738 linhas) insuficiente: *"voce tem pat back front memorias enfim! cai pra dentro"*. **V3 (2.338 linhas, commit `13c673b`) absorveu**:
+
+**Nova SEÇÃO 2.4** com 11 subseções de granularidade empírica via PAT:
+- Top intents: CLINICA 2.246 (92,2%) / ADMIN 116 / ENSINO 84
+- Reports por status: 37 completed / 21 shared / 9 draft / 1 reviewed (descobriu race condition: 3 reports SIGNED sem status `completed`)
+- Racionalidades por tipo: integrative 55% / 30% MTC+Homeo+Ayurv (exato volume protegido pelo Audience Contract V1.9.330-A)
+- Dual-write empírico: 39 jsonb vs 74 tabela (divergência por design)
+- Appointments: 26 scheduled / 8 cancelled / 3 completed (taxa 8%, pré-PMF)
+- Top 5 pacientes: Carolina 17, Pedro admin 12, Pedro paciente 10, Ricardo profissional 8 — 78% dos reports = 5 entidades teste
+- Latência IA: 5.7s média
+- Heatmap horário: pico 16h (309 chats), madrugada 7% (regime cofounder solo)
+- Heatmap diário: 5 picos = TODOS dias de marco arquitetural
+- AEC FSM colunas: `invalidated_at` + `invalidation_reason` (caso Dayana V1.9.440)
+- Users por type: 31 patient + 3 paciente drift PT/EN
+
+**Anexo 4** mergulho técnico (back+front+memórias):
+- Topologia 4 camadas RESEARCH_PROMPT V1.9.453+A+B
+- Pseudonimização opt-in (whitelist 7 seções)
+- 4 famílias PATIENT_FREE_CHAT_GUARDRAILS
+- 4 sugestões anti-Constituição REJEITADAS + 3 conceitos úteis incorporados
+- 8 sinais a vigiar Marco 2
+
+**Anexo 5**: genealogia epistemológica em árvore (Ricardo IMRE → Constituição MedCannLab 2 vertentes / 4 eixos).
+
+Resumo WhatsApp pro time também produzido (~300 linhas, formato monospace compatível com chat).
+
+---
+
+## 🚨 BLOCO S — Caso João Guimarães (25/05 ~17:46-18:44 BRT)
+
+**Primeiro paciente externo REAL do mês a estressar fluxo PDF→receptor**. Não conta teste interna. Não Carolina, não Pedro, não Dayana — paciente REAL do Dr. Ricardo Valença.
+
+### O caso
+
+João Guimarães recebeu pedido de exame pela plataforma MedCannLab e levou ao laboratório. Atendente recusou agendar. Conversa WhatsApp literal:
+
+> *"[17:46, 25/05/2026] João Guimarães: Oi Ricardo, não consigo agendar os exames. Não tem assinatura. Precisa do QR code. No final do exame aparece como assinado pelo ICP BRASIL. Correto?"*
+>
+> *"[18:44, 25/05/2026] João Guimarães: Mas o rapaz disse q o QR code que é a assinatura ?"*
+
+### Diagnóstico empírico via grep código
+
+**O que o PDF tem ✅**:
+- Assinatura ICP-Brasil REAL via `sign-pdf-icp/index.ts` (V1.9.299 PBAD AD-RB CONFORME ITI)
+- Selo visual rodapé "Assinado por Dr. Ricardo Valença - ICP-Brasil"
+- Validação criptográfica OK via `openssl asn1parse` + `validar.iti.gov.br` + Adobe Reader
+- **Juridicamente VÁLIDO** (Decisão CFM 2.299/2021 + Lei 14.063/2020 + MP 2.200-2/2001)
+
+**O que o PDF NÃO tem ❌**:
+- **QR Code visual embedded** — atendente não consegue escanear
+- `iti_qr_code` na tabela: `null` (não populado)
+- `sign-pdf-icp` (LOCK V1.9.299) só assina criptograficamente, não desenha QR
+- `DigitalSignatureWidget.tsx:108-111` gera QR via `api.qrserver.com` mas é só UI do médico
+
+### Conflito empírico
+
+| Ponto de vista | Diagnóstico |
+|---|---|
+| **João/atendente operacional** | "PDF sem QR = inválido pra agendar" |
+| **Jurídico/ICP-Brasil** | "PDF assinado ICP = juridicamente válido, dispensa carimbo" |
+
+Os 2 estão "certos" no seu domínio. Mas em healthtech B2C onde paciente externo bate em laboratório real, **operacional vence jurídico** se não tiver atalho de validação.
+
+### Resolução curta (Ricardo enviou ao João via WhatsApp)
+
+```
+Oi João! Vamos por partes:
+
+1) O exame ESTÁ assinado digitalmente com ICP-Brasil REAL
+   (assinatura jurídica = assinatura física + carimbo, vale por lei).
+
+2) Sobre o QR Code: nosso PDF hoje não embeda QR Code visual
+   (vamos adicionar essa semana). Mas a assinatura é 100% válida.
+
+3) Pra o laboratório validar AGORA, 3 caminhos:
+
+a) Adobe Acrobat Reader (grátis) — mostra "Assinado por
+   Dr. Ricardo Valença Médico - ICP-Brasil - Válido"
+b) validar.iti.gov.br — upload do PDF → "Assinatura válida"
+c) portal.cfm.org.br/buscamedicos — confirma CRM-PE ativo
+
+4) Receita/exame com ICP-Brasil dispensa carimbo físico desde
+   2021 (Decisão CFM 2.299/2021). Se o laboratório recusar, me
+   liga que falo com eles. Dr. Ricardo
+```
+
+### Resolução longa parqueada (V1.9.455 — embed QR no PDF)
+
+**Decisão arquitetural pendente Pedro com Ricardo** (não codar sem alinhamento).
+
+3 opções mapeadas com trade-offs explícitos:
+
+| Opção | Como | Risco V1.9.299 | Tempo |
+|---|---|---|---|
+| A | Mexer no sign-pdf-icp pra desenhar QR após assinar | 🔴 ALTO — quebra lock | 4-8h + auditoria pesada |
+| **B** | 2 PDFs separados (principal ICP + comprovante QR) | 🟢 ZERO — não toca lock | 2-3h |
+| **C** | Desenhar QR ANTES de assinar (upstream) | 🟡 MÉDIO — pipeline novo, smoke obrigatório | 3-5h + smoke |
+
+**Recomendação técnica**: Opção C (elegante, 1 PDF, QR coberto pela assinatura, lock V1.9.299 intocado). Smoke obrigatório:
+1. `openssl asn1parse` (binário ICP intacto)
+2. `validar.iti.gov.br` (portal real mostra "Válida")
+3. Escanear QR com celular → URL validação correta
+4. Adobe Reader → assinatura válida + QR visível
+5. Diff binário vs PDF aprovado pré-mudança
+
+Design completo + 3 opções A/B/C em memória dedicada `project_v1_9_455_qr_code_embedded_pdf_design_25_05`.
+
+### Princípios meta cristalizados pelo caso
+
+#### 1. Lock V1.9.299 PBAD protege de modificação pós-assinatura
+
+PBAD = assinatura por hash do binário PDF. Qualquer byte modificado DEPOIS = hash diferente = validação ITI volta pra "Desconhecida". Lock V1.9.299 CLAUDE.md é manifestação técnica disso, não cautela arbitrária. Pra adicionar QR Code: modificar PDF ANTES da assinatura (Opção C upstream).
+
+Cristalizado em `feedback_lock_v1_9_299_pbad_protege_modificacao_pos_assinatura_25_05`.
+
+#### 2. Paciente externo real estressa arquitetura DIFERENTE de teste interno
+
+Carolina/Pedro/Dayana testaram TUDO do fluxo IA. Nenhum levou PDF a receptor externo. João foi o primeiro. Smoke interno termina em "PDF gerado + assinatura válida"; smoke externo termina em "laboratório aceita o PDF".
+
+Frase âncora Pedro: *"ricardo sempre vem com uma!"* — captura dinâmica empírica do projeto.
+
+Pra Marco 2 (20-30 pacientes externos pagantes): toda feature de output (PDF, NFT, link share) precisa de **Smoke 3 externo operacional** ANTES de chegar a paciente pagante.
+
+Cristalizado em `feedback_paciente_externo_real_estressa_arquitetura_25_05`.
+
+#### 3. Validação jurídica ≠ validação operacional
+
+ICP-Brasil substitui carimbo físico juridicamente desde 2021. MAS atendente de laboratório aplica processo operacional (escanear QR) aprendido com Memed/Prescrevi. Em healthtech B2C, **cumprir a lei não basta — precisa cumprir o processo que receptor espera**.
+
+### 4 memórias criadas (caso João + V1.9.455)
+
+1. `feedback_qr_code_embedded_pdf_gap_caso_joao_guimaraes_25_05` — caso real + diagnóstico técnico + resolução curta
+2. `project_v1_9_455_qr_code_embedded_pdf_design_25_05` — design 3 opções A/B/C com trade-offs
+3. `feedback_lock_v1_9_299_pbad_protege_modificacao_pos_assinatura_25_05` — princípio meta sobre o lock
+4. `feedback_paciente_externo_real_estressa_arquitetura_25_05` — princípio meta sobre paciente externo (frase âncora Pedro)
+
+---
+
+## 🎯 BLOCO T — Frase âncora final do dia (versão atualizada pós-22h)
+
+> *"A Matrix Z2 começou o dia alucinando 6 dados clínicos pra parecer útil. Terminou o dia com taxonomia semântica 3 cenários + negação explícita distinguida de ausência + locks micro-factuais explícitos + UX elite acionado por (?). À noite, retrospectiva mensal V3 (2.338 linhas) absorveu PAT empírico granular + back+front+memórias. E quando o dia parecia encerrado, João Guimarães (paciente externo REAL, primeiro do mês a estressar fluxo PDF→receptor) bateu no laboratório com PDF assinado ICP mas SEM QR Code visual. Pedro: 'ricardo sempre vem com uma!' — captura a dinâmica empírica do projeto. V1.9.455 parqueado com 3 opções A/B/C, lock V1.9.299 PBAD preservado, princípio cristalizado: validação jurídica ≠ validação operacional. Não foi calibração ideológica — foi 6 ciclos empíricos PAT → diagnóstico → fix → smoke → validação → próximo gap → fix, terminando em descoberta empírica do gap operacional que define o próximo sprint. Maturidade de processo > velocidade de delivery."*
+
+— Sessão 25/05 encerrada (versão final) com 6 commits cirúrgicos pré-22h (V1.9.449 → V1.9.454) + commit retrospectiva V3 às 22h (`13c673b`) + 4 memórias adicionais pós-22h (caso João + V1.9.455 design + lock V1.9.299 princípio + paciente externo princípio). **Total dia**: 9 memórias nível 1, 1 retrospectiva mensal V3 (2.338 linhas), Bloco S+T adicionados ao diário pós-22h. AEC FSM intocada em todos os fixes. Vercel deployado. Push 4 refs OK. Matrix Z2 + Constituição cristalizada + caso real externo absorvido em memórias persistentes — **próxima sessão Claude (laptop ou continuação) tem contexto INTEGRAL** pra entender o caso João sem repetir análise + tem 3 opções A/B/C de V1.9.455 já mapeadas + tem lock V1.9.299 explicado tecnicamente, não politicamente.
