@@ -36,6 +36,7 @@ import {
   type QueryMode,
 } from '../lib/clinicalTermsTranslator'
 import { buildQueryViaGPT } from '../lib/gptQueryBuilder'
+import { extractPseudonymizedClinicalContent } from '../lib/casePseudonymization'
 import {
   searchPubMed,
   EVIDENCE_LABELS,
@@ -70,6 +71,10 @@ interface CaseResult {
   createdAt: string
   queixaPrincipal: string
   rationalitiesApplied: string[]
+  // [V1.9.450] Conteúdo clínico pseudonimizado (whitelist).
+  // Populado via extractPseudonymizedClinicalContent quando reportsList vem
+  // do search dual. Passado pro recordCaseOpen → corpus rico Matrix.
+  clinicalContent?: import('../lib/casePseudonymization').PseudonymizedClinicalContent | null
 }
 
 interface SearchResult {
@@ -836,6 +841,9 @@ const AdminCasosSimilares: React.FC<Props> = ({ embedded = false, defaultQuery =
       const cases: CaseResult[] = reportsList.slice(0, 5).map((r: any) => {
         const content = typeof r.content === 'object' ? r.content : {}
         const queixa = content.queixa_principal || content.chiefComplaint || '—'
+        // [V1.9.450] Extrai whitelist clínica pseudonimizada — passa pro
+        // recordCaseOpen no click do card (linha ~1435) → corpus rico Matrix.
+        const clinicalContent = extractPseudonymizedClinicalContent(content)
         return {
           reportId: r.id,
           patientId: r.patient_id,
@@ -843,6 +851,7 @@ const AdminCasosSimilares: React.FC<Props> = ({ embedded = false, defaultQuery =
           createdAt: r.created_at,
           queixaPrincipal: typeof queixa === 'string' ? queixa.substring(0, 100) : '—',
           rationalitiesApplied: ratByPatient[r.patient_id] || [],
+          clinicalContent,
         }
       })
 
@@ -1437,6 +1446,9 @@ REGRAS RÍGIDAS:
                         patientId: c.patientId,
                         patientName: c.patientName,
                         queixa: c.queixaPrincipal,
+                        // [V1.9.450] Passa conteúdo clínico pseudonimizado pra
+                        // body rico do caso na Matrix Z2 (queixa+lista+HDA+família+hábitos+po).
+                        ...(c.clinicalContent ? { clinicalContent: c.clinicalContent } : {}),
                       })
                       navigate(`/app/pesquisa/profissional/dashboard?section=noa-matrix&patientId=${c.patientId}`)
                     }}

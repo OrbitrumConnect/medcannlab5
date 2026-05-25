@@ -18,6 +18,7 @@
  */
 import { useState, useCallback } from 'react'
 import { supabase } from '../lib/supabase'
+import { extractPseudonymizedClinicalContent, type PseudonymizedClinicalContent } from '../lib/casePseudonymization'
 
 export interface CaseSearchHit {
   reportId: string
@@ -25,6 +26,11 @@ export interface CaseSearchHit {
   patientName: string
   queixaPrincipal: string
   createdAt: string
+  // [V1.9.450] Conteúdo clínico pseudonimizado completo (whitelist).
+  // Populado via extractPseudonymizedClinicalContent. Usado por
+  // NoaMatrixView recordCaseOpen pra alimentar corpus rico da Matrix.
+  // null se report sem content estruturado (legado).
+  clinicalContent: PseudonymizedClinicalContent | null
 }
 
 export interface UseCaseSearchReturn {
@@ -125,12 +131,17 @@ export function useCaseSearch(): UseCaseSearchReturn {
       setResults(reportsList.map((r: any) => {
         const content = typeof r.content === 'object' ? r.content : {}
         const queixa = content.queixa_principal || content.chiefComplaint || '—'
+        // [V1.9.450] extrai whitelist clínica pseudonimizada — alimenta
+        // corpus rico da Matrix quando médico marca o caso (NoaMatrixView).
+        // Helper desce 1 nível em content.raw.content (formato legado V1.9.33).
+        const clinicalContent = extractPseudonymizedClinicalContent(content)
         return {
           reportId: r.id,
           patientId: r.patient_id,
           patientName: nameMap[r.patient_id] || 'Paciente',
           queixaPrincipal: typeof queixa === 'string' ? queixa.substring(0, 120) : '—',
           createdAt: r.created_at,
+          clinicalContent,
         }
       }))
     } catch (e: any) {

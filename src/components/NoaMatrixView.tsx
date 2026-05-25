@@ -32,6 +32,7 @@ import { useExternalLiterature } from '../hooks/useExternalLiterature'
 import { useDossierPersist, type SavedDossier } from '../hooks/useDossierPersist'
 import { useForumPublish } from '../hooks/useForumPublish'
 import { useCaseSearch } from '../hooks/useCaseSearch'
+import { formatPseudonymizedCaseBody } from '../lib/casePseudonymization'
 import { EVIDENCE_LABELS } from '../services/pubmedService'
 import { ResearchChat } from './ResearchChat'
 import { exportDossierToPDF, type DossierMessage, type DossierData } from '../lib/dossierExport'
@@ -134,12 +135,16 @@ export const NoaMatrixView: React.FC = () => {
     if (searchTerm.trim().length < 3) return
     void caseSearch.search(searchTerm, 90)
   }
-  const handleSelectSearchHit = (hit: { reportId: string; patientId: string; patientName: string; queixaPrincipal: string }) => {
+  const handleSelectSearchHit = (hit: import('../hooks/useCaseSearch').CaseSearchHit) => {
     history.recordCaseOpen({
       caseId: hit.reportId,
       patientId: hit.patientId,
       patientName: hit.patientName,
       queixa: hit.queixaPrincipal,
+      // [V1.9.450] Passa conteúdo clínico pseudonimizado pra body rico do caso.
+      // useCaseSearch.ts:128 já extraiu via extractPseudonymizedClinicalContent.
+      // null se report sem content estruturado (cai pro fallback queixa-only).
+      ...(hit.clinicalContent ? { clinicalContent: hit.clinicalContent } : {}),
     })
     // Atualiza URL preservando section (e qualquer outro param)
     const next = new URLSearchParams(searchParams)
@@ -289,17 +294,33 @@ export const NoaMatrixView: React.FC = () => {
     })
 
     // V1.9.379-D — Casos abertos (até 12 mais recentes)
+    // V1.9.450 — body agora formata seções clínicas estruturadas pseudonimizadas
+    // (queixa + lista indiciária + HDA + história familiar + hábitos + perguntas
+    // objetivas) via formatPseudonymizedCaseBody. Matrix Z2 deixa de responder
+    // "não há dados" quando médico pergunta sobre família/lista indiciária —
+    // passa a ter corpus rico pra responder substantivamente preservando voz Z2
+    // e pseudonimização ("Caso #X" sem nome real).
     history.caseOpens.slice(0, 12).forEach((c) => {
+      const dateStr = new Date(c.ts).toLocaleDateString('pt-BR')
+      const caseIdShort = c.caseId.slice(-6)
       list.push({
         id: `case-${c.caseId}`,
         type: 'case',
         title: c.patientName || 'Paciente sem nome',
-        subtitle: new Date(c.ts).toLocaleDateString('pt-BR'),
+        subtitle: dateStr,
         // V1.9.407 (LGPD) — body NÃO leva patientName: o body vai pro contexto da
         // Matrix → síntese do dossiê → conteúdo do forum_post (visível a outros
         // profissionais). O nome real fica só no `title` (UI do médico). O `Caso #`
         // já é o identificador pseudonimizado.
-        body: `Caso #${c.caseId.slice(-6)}${c.queixa ? `\nQueixa: "${c.queixa}"` : ''}`,
+        // V1.9.450 — body usa formatPseudonymizedCaseBody quando c.clinicalContent
+        // está presente (case marcado via V1.9.450+). Cai pro formato legado
+        // (Caso #X + Queixa) quando ausente (cases antigos do localStorage).
+        body: formatPseudonymizedCaseBody(
+          caseIdShort,
+          dateStr,
+          c.clinicalContent ?? null,
+          c.queixa,
+        ),
         timestamp: c.ts,
       })
     })

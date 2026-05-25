@@ -32,6 +32,16 @@ export interface OpenedCase {
   patientName: string
   queixa?: string
   ts: number
+  // [V1.9.450] Corpus clínico expandido pseudonimizado.
+  // Campos opcionais — caller pode passar via extractPseudonymizedClinicalContent
+  // (src/lib/casePseudonymization.ts). Quando presente, NoaMatrixView formata
+  // body com seções completas (queixa + lista indiciária + HDA + história
+  // familiar + hábitos + perguntas objetivas), permitindo Matrix Z2 responder
+  // perguntas substantivas sobre o caso. Quando ausente (compat retroativa),
+  // body cai pro formato pré-V1.9.450 (só Caso #X + queixa).
+  // LGPD: NUNCA armazenar campo "identificacao" ou nome em texto livre nesta
+  // estrutura — pseudonimização preservada via "Caso #X" no body.
+  clinicalContent?: import('../lib/casePseudonymization').PseudonymizedClinicalContent
 }
 
 interface SearchStats {
