@@ -721,11 +721,20 @@ const AdminCasosSimilares: React.FC<Props> = ({ embedded = false, defaultQuery =
     }
 
     try {
-      // 1. Buscar reports com match em campos jsonb específicos
-      // [V1.9.355] (18/05): fix bug "operator does not exist: jsonb ~~* unknown"
-      // V1.9.354 tentou .ilike('content::text', term) mas Postgres não converte
-      // jsonb→text direto em ILIKE. Solução: or() com paths jsonb explícitos
-      // (content->>field). Cobre os campos mais comuns onde paciente menciona queixa.
+      // 1. Buscar reports — dois caminhos em paralelo, merge dedup por id.
+      //
+      // (a) Match em campos jsonb específicos (conteúdo clínico)
+      //     [V1.9.355] (18/05): fix bug "operator does not exist: jsonb ~~* unknown"
+      //     V1.9.354 tentou .ilike('content::text', term) mas Postgres não converte
+      //     jsonb→text direto em ILIKE. Solução: or() com paths jsonb explícitos
+      //     (content->>field). Cobre os campos mais comuns onde paciente menciona queixa.
+      //
+      // (b) [V1.9.445] Match em nome do paciente (users.name → patient_ids → reports)
+      //     Pedro 24/05: Casos Similares vinha sendo usado só pra achar paciente
+      //     pra Nôa Matrix. Acrescenta busca por nome sem mudar fluxo: digita
+      //     "Carolina" (nome) ou "dor lombar" (queixa) — mesma caixa.
+      //     Filtra users.type pra patient/paciente (não vaza admin/profissional).
+      //     Body pseudonimizado (V1.9.407) preservado — nome só na lista do médico.
       const periodCutoff = new Date(Date.now() - periodFilter * 24 * 60 * 60 * 1000).toISOString()
       const term = `%${searchTerm.trim()}%`
       const orFilter = [
@@ -735,20 +744,57 @@ const AdminCasosSimilares: React.FC<Props> = ({ embedded = false, defaultQuery =
         `content->>assessment.ilike.${term}`,
       ].join(',')
 
-      const { data: reports, error: reportsError } = await supabase
+      const contentSearch = supabase
         .from('clinical_reports')
         .select('id, patient_id, created_at, content')
         .gte('created_at', periodCutoff)
         .or(orFilter)
         .limit(50)
 
-      if (reportsError) throw new Error(`Erro busca reports: ${reportsError.message}`)
+      const nameSearch = supabase
+        .from('users')
+        .select('id')
+        .ilike('name', term)
+        .in('type', ['patient', 'paciente'])
+        .limit(50)
 
-      const reportsList = reports || []
+      const [contentResp, nameResp] = await Promise.all([contentSearch, nameSearch])
+
+      if (contentResp.error) throw new Error(`Erro busca reports: ${contentResp.error.message}`)
+
+      let reportsByName: any[] = []
+      const matchedPatientIds = (nameResp.data || [])
+        .map((u: any) => u.id)
+        .filter(Boolean)
+      if (matchedPatientIds.length > 0) {
+        const { data: rByName, error: nameReportsError } = await supabase
+          .from('clinical_reports')
+          .select('id, patient_id, created_at, content')
+          .gte('created_at', periodCutoff)
+          .in('patient_id', matchedPatientIds)
+          .limit(50)
+        if (nameReportsError) {
+          console.warn('[CasosSimilares] busca por nome falhou no JOIN reports:', nameReportsError.message)
+        } else {
+          reportsByName = rByName || []
+        }
+      }
+
+      // Merge dedup por id, ordenar por created_at desc, cap 50.
+      const merged = new Map<string, any>()
+      ;[...(contentResp.data || []), ...reportsByName].forEach((r: any) => {
+        if (r?.id && !merged.has(r.id)) merged.set(r.id, r)
+      })
+      const reportsList = [...merged.values()]
+        .sort((a, b) =>
+          new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime()
+        )
+        .slice(0, 50)
+
       if (reportsList.length === 0) {
         setResult({
           cases: [],
-          synthesis: `Nenhum caso encontrado com "${searchTerm}" nos últimos ${periodFilter} dias. Tente termos mais amplos (ex: "dor", "fadiga", "cannabis") ou aumente o período.`,
+          synthesis: `Nenhum caso encontrado com "${searchTerm}" nos últimos ${periodFilter} dias. Tente nome do paciente, termo da queixa (ex: "dor", "fadiga", "cannabis") ou aumente o período.`,
           totalFound: 0,
           costUsd: 0,
           cached: false,
@@ -1180,7 +1226,7 @@ REGRAS RÍGIDAS:
           <div className="space-y-4">
             <div>
               <label className="block text-xs font-semibold text-slate-400 mb-2 uppercase tracking-wider">
-                Buscar padrão clínico
+                Buscar paciente ou padrão clínico
               </label>
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
@@ -1190,10 +1236,13 @@ REGRAS RÍGIDAS:
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-                  placeholder='ex: "dor lombar", "fadiga + cannabis", "ansiedade"  (⌘K ou / pra focar)'
+                  placeholder='ex: "Carolina", "dor lombar", "fadiga + cannabis"  (⌘K ou / pra focar)'
                   className="w-full pl-10 pr-4 py-2.5 bg-slate-900 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-purple-500/50"
                 />
               </div>
+              <p className="mt-1.5 text-[10px] text-slate-500 leading-relaxed">
+                Aceita nome do paciente (ex: "Carolina") ou termo clínico (ex: "dor lombar"). Resultados unificados.
+              </p>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
