@@ -37,7 +37,8 @@ import { EVIDENCE_LABELS } from '../services/pubmedService'
 import { ResearchChat } from './ResearchChat'
 import { exportDossierToPDF, type DossierMessage, type DossierData } from '../lib/dossierExport'
 import { KnowledgeBaseIntegration, type KnowledgeDocument } from '../services/knowledgeBaseIntegration'
-import { Sparkles, FileText, StickyNote, Check, Info, Folder, User, Stethoscope, Activity, X, BookOpen, Search, Loader2, Archive, Trash2, Eye, GitBranch, Library, Send } from 'lucide-react'
+import { Sparkles, FileText, StickyNote, Check, Info, Folder, User, Stethoscope, Activity, X, BookOpen, Search, Loader2, Archive, Trash2, Eye, GitBranch, Library, Send, HelpCircle } from 'lucide-react'
+import { MatrixHelpModal } from './MatrixHelpModal'
 
 interface AttachableCard {
   id: string
@@ -158,6 +159,11 @@ export const NoaMatrixView: React.FC = () => {
   // V1.9.386 — Pedro 19/05 noite: trigger ocultar cards pra não acumular
   // (não-destrutivo, só esconde da view atual; reload da sessão reseta)
   const [hiddenIds, setHiddenIds] = useState<Set<string>>(new Set())
+
+  // [V1.9.454] Modal de ajuda elite ("Modo de uso profissional") acionado
+  // pelo ícone (?) ao lado do título. Substitui bloco "Como funciona"
+  // fixo do topo (visual mais limpo + conteúdo denso disponível on-demand).
+  const [helpModalOpen, setHelpModalOpen] = useState(false)
 
   // V1.9.392 (F3-A.2) — Persistência de dossiês. Hook isolado, RLS por physician_id.
   const { saveDossier, listDossiers, deleteDossier, saving: dossierSaving } = useDossierPersist()
@@ -488,6 +494,16 @@ export const NoaMatrixView: React.FC = () => {
                 <span className="text-[10px] font-normal text-purple-300/70 px-1.5 py-0.5 rounded bg-purple-500/10 border border-purple-500/20">
                   Z2 estrutural
                 </span>
+                {/* [V1.9.454] Botão (?) — abre MatrixHelpModal com modo de uso elite */}
+                <button
+                  type="button"
+                  onClick={() => setHelpModalOpen(true)}
+                  className="ml-0.5 p-1 text-purple-300/60 hover:text-purple-200 hover:bg-purple-500/10 rounded-full transition-colors"
+                  title="Modo de uso profissional"
+                  aria-label="Abrir modo de uso"
+                >
+                  <HelpCircle className="w-4 h-4" />
+                </button>
               </h2>
               <p className="text-xs text-slate-400 leading-relaxed mt-0.5">
                 Chat de pesquisa não-diretivo. Marque casos, notas e buscas favoritas pra estruturar raciocínio.
@@ -502,16 +518,26 @@ export const NoaMatrixView: React.FC = () => {
           </div>
         </div>
 
-        {/* Disclaimer permanente Z2 */}
-        <div className="mt-3 flex items-start gap-2 px-3 py-2 rounded-lg bg-purple-500/5 border border-purple-500/15">
-          <Info className="w-3.5 h-3.5 text-purple-300/70 flex-shrink-0 mt-0.5" />
-          <p className="text-[11px] text-slate-400 leading-relaxed">
-            <strong className="text-purple-300">Como funciona:</strong> marque cards de Casos Similares,
-            notas rápidas e buscas favoritas que considerar relevantes.
-            A Nôa Matrix lê APENAS o material marcado e ajuda a comparar, agrupar e citar — não sugere conduta nem infere diagnóstico.
+        {/* [V1.9.454] Disclaimer compacto — bloco antigo "Como funciona..." denso
+            virou linha mínima + link pra modal elite (MatrixHelpModal). Reduz
+            ruído visual sem perder conteúdo (disponível on-demand via "?"). */}
+        <div className="mt-3 flex items-center gap-2 px-3 py-1.5 rounded-lg bg-purple-500/5 border border-purple-500/15">
+          <Info className="w-3.5 h-3.5 text-purple-300/70 flex-shrink-0" />
+          <p className="text-[11px] text-slate-400">
+            Matrix lê APENAS o material marcado — não sugere conduta nem infere diagnóstico.
+            <button
+              type="button"
+              onClick={() => setHelpModalOpen(true)}
+              className="ml-1 text-purple-300 hover:text-purple-200 underline underline-offset-2 transition-colors"
+            >
+              Modo de uso →
+            </button>
           </p>
         </div>
       </div>
+
+      {/* [V1.9.454] Modal de modo de uso profissional */}
+      <MatrixHelpModal isOpen={helpModalOpen} onClose={() => setHelpModalOpen(false)} />
 
       {/* Grid: cards (esquerda) + chat (direita) */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
