@@ -1235,28 +1235,33 @@ const PatientAppointments: React.FC = () => {
   // V1.9.111-A: cards menores (p-3.5, avatar 10x10), borda mais sutil (40% opacity)
   // V1.9.259 (Pedro 13/05 19h): mais compacto e mais quadrado — p-3.5→p-3,
   // avatar 10→9, icone 4→3.5, nome text-base→text-sm, gap-3→gap-2.5
-  const renderProfessionalCard = (professional: ProfessionalCard, isOfficial: boolean = false) => {
-    // V1.9.272 — Resolve UUID real do profissional (alguns cards usam slug semântico).
-    // Mesmo padrão usado no botão "Agendar" abaixo (linha ~1305).
+  // V1.9.448 — Helper compartilhado pra calcular vínculo de qualquer profissional
+  // (usado no card da grade E no modal de perfil expandido — DRY).
+  // Encapsula o resolvedProfId (slug semântico → UUID) + chamada do helper puro.
+  const computeProfessionalVinculo = (professional: { id: string; specialty: string }) => {
     const uuidRegexLocal = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
     const SPECIALTY_PROF_IDS_LOCAL: Record<string, string> = {
       'Neurologia': 'f4a62265-8982-44db-8282-78129c4d014a',
       'Nefrologia': '2135f0c0-eb5a-43b1-bc00-5f8dfea13561',
       'Homeopatia': '2135f0c0-eb5a-43b1-bc00-5f8dfea13561',
     }
-    const resolvedProfIdForVinculo = uuidRegexLocal.test(professional.id)
+    const resolvedProfId = uuidRegexLocal.test(professional.id)
       ? professional.id
       : SPECIALTY_PROF_IDS_LOCAL[professional.specialty] || ''
+    if (!resolvedProfId) return null
+    return getVinculoStatus({
+      professionalId: resolvedProfId,
+      invitedBy: vinculoInvitedBy,
+      appointmentsSet: vinculoAppointmentsSet,
+      careNetworkSet: vinculoCareNetworkSet,
+    })
+  }
+
+  const renderProfessionalCard = (professional: ProfessionalCard, isOfficial: boolean = false) => {
     // V1.9.272 — Calcula status de vínculo via helper puro (zero side effects).
+    // V1.9.448 — Refatorado pra usar computeProfessionalVinculo (compartilhado com modal perfil).
     // Hierarquia determinística: appointment > direct_invite > network > none.
-    const vinculo = resolvedProfIdForVinculo
-      ? getVinculoStatus({
-          professionalId: resolvedProfIdForVinculo,
-          invitedBy: vinculoInvitedBy,
-          appointmentsSet: vinculoAppointmentsSet,
-          careNetworkSet: vinculoCareNetworkSet,
-        })
-      : null
+    const vinculo = computeProfessionalVinculo(professional)
     const vinculoDotColor =
       vinculo?.status === 'green' ? 'bg-emerald-400'
       : vinculo?.status === 'yellow' ? 'bg-amber-400'
@@ -1304,6 +1309,18 @@ const PatientAppointments: React.FC = () => {
             {isOfficial && (
               <span className="inline-flex items-center px-1.5 py-0.5 rounded-full bg-amber-500/15 border border-amber-500/30 text-[9px] font-bold text-amber-300 uppercase tracking-wider">
                 Oficial
+              </span>
+            )}
+            {/* V1.9.448 — Badge "Seu Médico" pra paciente identificar visualmente
+                quem já é vínculo dele (appointment ativo OU médico que o convidou).
+                Coerência com trigger "Vincular Médico" no dashboard: paciente que
+                clica esperando vincular já vê com quem JÁ tem vínculo. */}
+            {vinculo?.status === 'green' && (
+              <span
+                className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full bg-emerald-500/20 border border-emerald-500/50 text-[9px] font-bold text-emerald-300 uppercase tracking-wider"
+                title={vinculo.tooltip}
+              >
+                ⭐ Seu Médico
               </span>
             )}
           </div>
@@ -1355,7 +1372,13 @@ const PatientAppointments: React.FC = () => {
           }}
           className={`w-full inline-flex items-center justify-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-semibold text-white transition-all ${professional.buttonClasses} hover:scale-[1.02]`}
         >
-          Agendar
+          {/* V1.9.448 — Label do botão condicional ao estado de vínculo.
+              - Verde (appointment ativo OU direct_invite) → "Agendar consulta"
+                (paciente já é vinculado, só está marcando nova consulta)
+              - Amarelo/Vermelho → "Vincular" (coerência com trigger
+                "Vincular Médico" no dashboard).
+              Função (bookAppointment) permanece IDÊNTICA — só o label muda. */}
+          {vinculo?.status === 'green' ? 'Agendar consulta' : 'Vincular'}
           <ArrowRight className="w-3 h-3" />
         </button>
       </div>
@@ -1673,7 +1696,7 @@ const PatientAppointments: React.FC = () => {
                 <div className="mb-4 md:mb-5">
                   <h3 className="text-lg md:text-xl font-semibold text-white flex items-center gap-2">
                     <Stethoscope className="w-5 h-5 md:w-6 md:h-6 text-primary-300" />
-                    Agendar com Especialista
+                    Vincular a um Especialista
                   </h3>
                   <p className="text-sm text-slate-400 mt-1">
                     Escolha um especialista para iniciar seu acompanhamento ou agende sua consulta.
@@ -2111,7 +2134,14 @@ const PatientAppointments: React.FC = () => {
                     }}
                     className={`w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold text-white transition-colors ${profileProfessional.buttonClasses}`}
                   >
-                    Agendar com {profileProfessional.name.split(' ')[0]}
+                    {/* V1.9.448 — Mesma lógica condicional do card: Verde = "Agendar consulta"; resto = "Vincular". */}
+                    {(() => {
+                      const v = computeProfessionalVinculo(profileProfessional)
+                      const firstName = profileProfessional.name.split(' ')[0]
+                      return v?.status === 'green'
+                        ? `Agendar consulta com ${firstName}`
+                        : `Vincular a ${firstName}`
+                    })()}
                     <ArrowRight className="w-4 h-4" />
                   </button>
                   <button
