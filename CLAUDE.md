@@ -337,25 +337,38 @@ Laptop equivalente:
 305 interações Core       ~$1.40 USD/h (~$0.60/AEC)
 ```
 
-## Backlog priorizado atual
+## Backlog priorizado atual (atualizado 26/05 pós-retrospectiva mensal V3)
 
 ```
 🔴 P0 (segurança/funcional)
-  • RLS chat-images (signed URL)
-  • ~~3 Edge Functions half-implemented~~ — RESOLVIDO audit 18/05 (tabelas existem; feature Google Calendar dormindo intencionalmente, sem callers)
-  • Limpar 72 files órfãos no bucket documents
-  • Migrar WiseCare homolog → produção
+  • Migrar WiseCare homolog → produção (provider vídeo)
+  • V1.9.452 sanitize assessment_excerpt em clinical_rationalities
+    (LGPD reforço — empíricamente visto vazamento nome 25/05 smoke Carolina;
+    pré-Marco 2 obrigatório; trigger: pacientes externos reais)
 
 🟡 P1 (polish pré-escala)
-  • V1.9.97-B timezone agenda
-  • V1.9.98 fix "Dias na Plataforma" no dashboard
-  • V1.9.99 grounding factual da Nôa (function call)
-  • V1.9.96 guardrail tiered HARD/SOFT/INFO
+  • V1.9.451 function calling Edge (lookup_patient_status + get_appointments_summary)
+    — gap empírico Ricardo caso Gilda + filtragem agenda mês (24/05 noite)
+  • V1.9.455 QR Code embedded PDF — design 3 opções A/B/C parqueado
+    (caso João Guimarães 25/05 ~17:46-18:44 BRT); DECISÃO ARQUITETURAL Pedro+Ricardo
+  • 13 aec_assessment_state in_progress não-finalizadas — dashboard pra médico
+  • 2 forum_posts pending_review — conselho (Ricardo/Eduardo) aprovar/rejeitar
 
-🤝 Decisões humanas pendentes
+✅ RESOLVIDOS empíricamente no mês (mantido pra rastreio)
+  • RLS chat-images → V1.9.98 (28/04)
+  • 72 files órfãos bucket documents → REFUTADO audit 360° 22/05 (0 órfãos de owners deletados)
+  • 3 Edge Functions half-implemented → audit 18/05 (Google Calendar dormindo intencional)
+  • V1.9.97-B timezone agenda → coluna time without time zone = BRT (gotcha conhecido)
+  • V1.9.99 grounding factual da Nôa → V1.9.453+A+B Matrix Z2 anti-alucinação cobre
+
+🤝 Decisões humanas pendentes (destravam ~50% do roadmap)
+  • CNPJ João Vidal (Marco 1) — destrava recebimento direto / pricing / parcerias
+  • WhatsApp Faveret + Manual v1.1 (Marco 3) — sócio-médico abandonou 19 dias 05/05
+  • 2º médico independente real (Marco 2)
+  • 20-30 pacientes externos pagantes (PMF declarável)
   • Onda 2/3 Ricardo (gap GPT-first arquitetural)
-  • TRL com Eduardo Faveret (7 tabelas zeradas — ativar?)
-  • Monetização (subscription_plans cadastrados, 0 ativos)
+  • TRL com Eduardo Faveret (7 tabelas zeradas — ativar pós-Marco 3)
+  • Monetização (subscription_plans cadastrados, 0 ativos — depende CNPJ)
 ```
 
 ## Avisos finais

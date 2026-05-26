@@ -34,6 +34,50 @@
 
 - [🌍 Paciente externo real estressa arquitetura ≠ teste interno](feedback_paciente_externo_real_estressa_arquitetura_25_05.md) — Caso João paradigmático. Smoke interno termina em "PDF gerado + assinatura válida"; smoke externo termina em "receptor aceita o PDF". Frase âncora Pedro: *"ricardo sempre vem com uma!"*. Pré-Marco 2: toda feature de OUTPUT precisa de Smoke 3 externo formal.
 
+### ✅ Memórias espelhadas no repo 26/05 (34 novas — sync cross-machine)
+
+Pacote enxuto pós-retrospectiva: princípios duráveis + identidade + referências críticas + sócios. Anteriormente só existiam local no laptop do Pedro.
+
+**Princípios duráveis pivotais**:
+- [TOPO ABSOLUTO — Regra operacional canônica V1 (06/05)](feedback_regra_operacional_canonica_06_05.md)
+- [Princípio 8 — Polir não inventar](feedback_polir_nao_inventar.md)
+- [Anti-overclaim endorsements (28/04)](feedback_anti_overclaim_endorsements.md)
+- [Auditar 100% antes de qualquer mudança](feedback_auditar_100_antes_de_qualquer_mudanca.md)
+- [Método de validação produção (5 etapas)](feedback_metodo_validacao_producao.md)
+- [Uso zero ≠ código morto (princípio P9)](feedback_uso_zero_nao_e_morto.md)
+- [7 gotchas conhecidos (27/04)](feedback_gotchas_conhecidos_27_04.md)
+- [Action_cards não são input do Core (V1.9.95-B)](feedback_action_cards_nao_sao_input.md)
+- [Eventos explícitos + anti-fallback silencioso](feedback_eventos_explicitos_e_anti_fallback.md)
+- [Idempotência granular (anti-skip-mascarado)](feedback_idempotencia_granular.md)
+- [Instrumentação ANTES do teste](feedback_instrumentacao_antes_do_teste.md)
+- [Paridade funcional completa (anti-paridade-falsa)](feedback_paridade_funcional_completa.md)
+- [Push 4 refs dual-remote](feedback_push_dual_remote.md)
+- [Dep removal protocolo (4 passos)](feedback_dep_removal_protocolo.md)
+- [Anomalia ≠ bug](feedback_anomalia_nao_e_bug.md)
+- [IAs são SUPORTE, nunca AUTORIA](feedback_ias_sao_suporte_nao_autoria.md)
+- [Princípio clínico — invalidate vs DELETE](feedback_principio_clinico_destrutivo.md)
+- [Dinâmica relacional sócios (28/04)](feedback_dinamica_relacional_socios.md)
+- [Plataforma fact-checker + caixa real ≠ promessa (14/05)](feedback_plataforma_fact_checker_e_caixa_real_14_05.md)
+- [NÃO estimar tempo de codificação pra Pedro](feedback_nao_estimar_tempo_codificacao.md)
+
+**Identidade projeto + Locks fundacionais + Sócios**:
+- [Projeto MedCannLab — overview](project_medcannlab_overview.md)
+- [Lock V1.9.95 AEC+Relatório+Agendamento](project_lock_v1995_aec_relatorio_agendamento.md)
+- [REGRA HARD §1 — Consentimento ≠ Agendamento](project_regra_consentimento_nao_e_agendamento.md)
+- [4 motores clínicos mapeados (AEC FSM, Pipeline, Signature, Verbatim)](project_4_motores_clinicos_mapeados.md)
+- [Pipeline Diário → Magno (meta-arquitetural)](project_pipeline_diario_para_magno.md)
+- [Identidades reais 04/05/2026 (4 sócios + familiares)](project_identidades_reais_04_05.md)
+- [Decisão estrutural Caminho B — 1 CNPJ MedCannLab Tec](project_decisao_estrutural_caminho_b_04_05.md)
+- [Dr. Ricardo — 2 contas oficiais (intencional)](project_dr_ricardo_2_contas_oficiais.md)
+- [Princípio identidade Nôa Esperanza](project_principio_identidade_noa_esperanza.md)
+- [Perfil do usuário Pedro Galluf](user_role.md)
+
+**Referências técnicas críticas**:
+- [Cheatsheet operacional Supabase](reference_cheatsheet_supabase_operacional.md)
+- [Catálogo Edge Functions completo (13 ativas)](reference_edge_functions_catalogo_completo.md)
+- [Estado total Supabase 28/04/2026](reference_supabase_estado_total_28_04_2026.md)
+- [Rotas fantasma + app_commands](reference_rotas_fantasma_e_app_commands.md)
+
 ### Anteriores (continua)
 
 - [⏸ Refator tradevision-core PAUSADO — branch não-deployada (22/05)](project_refator_tradevision_core_pausado_22_05.md) — refator anti-bus-factor do `index.ts` (7036 linhas). Branch `refactor/tradevision-core-modular`, 5 commits (V1.9.419 + A/B/C/D): proteções + cors/types/triggers extraídos + ~109 linhas de código morto removidas. `deno check` verde (baseline 5) em cada passo; Deno 2.7.14 em `~/.deno`. **NÃO deployada/merjada** — prod roda o antigo. Retomar = deploy+smoke+merge do que está pronto (Pedro decide pós-sono 22/05); rollback = tag `v1.9.418-...`. Deploy SEMPRE via CLI (`npm run deploy:tradevision`). doc-detection/commands/finalize + handler `Deno.serve` parqueados.
