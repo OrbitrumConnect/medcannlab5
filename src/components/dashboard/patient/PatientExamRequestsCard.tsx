@@ -1,11 +1,12 @@
 import React from 'react'
-import { FlaskConical, ChevronDown, Printer, Send } from 'lucide-react'
+import { FlaskConical, ChevronDown, Printer, Send, Download, ShieldCheck, AlertCircle, ExternalLink, Link as LinkIcon } from 'lucide-react'
 import { useAuth } from '../../../contexts/AuthContext'
 import { supabase } from '../../../lib/supabase'
 import DotPagination from '../../ui/DotPagination'
 
 /**
  * V1.9.233 — PatientExamRequestsCard
+ * V1.9.455 (26/05/2026) — Wiring ICP-Brasil PDF binário (PARTE B).
  *
  * Card "Exames Solicitados" extraído de PatientAnalytics.tsx (linhas 1392-1534)
  * pra ser reutilizável em 2+ rotas:
@@ -16,11 +17,18 @@ import DotPagination from '../../ui/DotPagination'
  *   - Se props (examRequests, loading) passados → controlled (usa external state)
  *   - Se NÃO passados → autônomo (faz própria query patient_exam_requests)
  *
+ * V1.9.455 — Espelha padrão `PatientPrescriptions.tsx:486-538` (polir-não-inventar):
+ *   - Badge "ICP" quando digital_signature populado
+ *   - Botão "Baixar PDF assinado" quando signed_pdf_url V1.9.299 existir
+ *   - Banner amarelo quando signed mas sem PDF (legado pré-V1.9.299)
+ *   - Guard isFictitiousItiUrl() esconde URL ITI fake (gov.br/iti/...codigo=)
+ *   - "WhatsApp link" usa signed URL Storage TTL 7d (Ariane abre direto)
+ *   - Handlers existentes (handlePrintExam, handleShareWhatsApp texto) preservados
+ *
  * Anti-regressão:
- *   - JSX/state/handlers idênticos ao inline anterior (zero divergência UX)
- *   - Mesma query: patient_exam_requests filtrado por user.id, order desc, limit 20
+ *   - JSX/state/handlers anteriores intocados
  *   - Mesma paginação (5 per page) + accordion (1 expanded por vez)
- *   - Handlers print/whatsapp preservados (UX existente)
+ *   - Botões ICP só renderizam condicionalmente (não substitui UX existente)
  */
 
 export interface ExamRequestRow {
@@ -28,6 +36,21 @@ export interface ExamRequestRow {
   content: string
   status: string
   created_at: string
+  // V1.9.455: campos ICP-Brasil (opcional p/ backward-compat modo controlled)
+  digital_signature?: string | null
+  signed_pdf_url?: string | null
+  iti_validation_url?: string | null
+  signature_timestamp?: string | null
+  professional_id?: string | null
+}
+
+// V1.9.455: detecta URLs fictícias geradas antes de V1.9.298 (15/05).
+// Espelho de PatientPrescriptions.tsx:99-102.
+// Domínio `validacao.iti.gov.br` (sem `r` no fim) ou `gov.br/iti/pt-br/validacao?codigo=` NÃO existem.
+// O validador oficial é `validar.iti.gov.br` (exige upload de PDF binário).
+function isFictitiousItiUrl(url: string | null | undefined): boolean {
+  if (!url) return false
+  return /validacao\.iti\.gov\.br|gov\.br\/iti\/pt-br\/validacao\?codigo/i.test(url)
 }
 
 interface PatientExamRequestsCardProps {
@@ -72,9 +95,11 @@ const PatientExamRequestsCard: React.FC<PatientExamRequestsCardProps> = ({
     const fetchExamRequests = async () => {
       setInternalLoading(true)
       try {
-        const { data, error } = await supabase
+        // V1.9.455: query estendida com campos ICP-Brasil (signed_pdf_url + iti_*).
+        // Cast supabase as any porque codegen tipo defasado (V1.9.299 migration não regenerou types.ts).
+        const { data, error } = await (supabase as any)
           .from('patient_exam_requests')
-          .select('id, content, status, created_at')
+          .select('id, content, status, created_at, digital_signature, signed_pdf_url, iti_validation_url, signature_timestamp, professional_id')
           .eq('patient_id', user.id)
           .order('created_at', { ascending: false })
           .limit(20)
@@ -117,6 +142,46 @@ const PatientExamRequestsCard: React.FC<PatientExamRequestsCardProps> = ({
     window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank')
   }
 
+  // V1.9.455: gera signed URL (TTL 7 dias) e abre PDF binário ICP-Brasil em nova aba.
+  // Path `exam_requests/<id>.pdf` → URL temporária assinada pelo Storage (RLS owner-only).
+  // Trigger empírico: caso João Guimarães 25/05 (laboratório exigiu PDF/link, não print).
+  const handleDownloadSignedPdf = async (req: ExamRequestRow) => {
+    if (!req.signed_pdf_url) return
+    try {
+      const { data, error } = await supabase
+        .storage
+        .from('signed_documents')
+        .createSignedUrl(req.signed_pdf_url, 60 * 60 * 24 * 7) // 7 dias
+      if (error) throw error
+      if (data?.signedUrl) window.open(data.signedUrl, '_blank')
+    } catch (err: any) {
+      console.error('[PatientExamRequestsCard] Erro ao gerar signed URL:', err?.message || err)
+      alert('Não foi possível gerar o link do PDF assinado. Tente novamente em alguns segundos.')
+    }
+  }
+
+  // V1.9.455: gera signed URL + manda WhatsApp com LINK (não só texto).
+  // Resolve caso Ariane: laboratório precisa abrir PDF, não print. Link signed URL TTL 7d
+  // permite atendente abrir direto no navegador dela sem login.
+  const handleShareSignedPdfWhatsApp = async (req: ExamRequestRow) => {
+    if (!req.signed_pdf_url) return
+    try {
+      const { data, error } = await supabase
+        .storage
+        .from('signed_documents')
+        .createSignedUrl(req.signed_pdf_url, 60 * 60 * 24 * 7) // 7 dias
+      if (error) throw error
+      if (data?.signedUrl) {
+        const text = `*Solicitação de Exame Assinada Digitalmente - MedCannLab*\n\nDocumento assinado com certificado ICP-Brasil (validade jurídica plena - CFM 2.314/2022 + Lei 14.063/2020).\n\n📥 Baixar PDF assinado: ${data.signedUrl}\n\n🔎 Validar criptograficamente: https://validar.iti.gov.br/\n\n_Link válido por 7 dias._`
+        window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank')
+      }
+    } catch (err: any) {
+      console.error('[PatientExamRequestsCard] Erro ao compartilhar PDF:', err?.message || err)
+      // Fallback: compartilha texto sem PDF
+      handleShareWhatsApp(req.content)
+    }
+  }
+
   return (
     <div className="rounded-xl border border-slate-700/50 bg-slate-800/30 backdrop-blur-sm overflow-hidden relative">
       <div className="absolute top-0 right-0 w-48 h-48 bg-cyan-500/5 rounded-full blur-3xl -mr-20 -mt-20 pointer-events-none" />
@@ -151,6 +216,9 @@ const PatientExamRequestsCard: React.FC<PatientExamRequestsCardProps> = ({
             const st = STATUS_CONFIG[req.status] || STATUS_CONFIG.draft
             const isExpanded = expandedExamId === req.id
             const preview = req.content.split('\n')[0].substring(0, 80)
+            // V1.9.455: flags ICP-Brasil
+            const isSigned = !!req.digital_signature
+            const hasIcpPdf = !!req.signed_pdf_url
             return (
               <div key={req.id}>
                 {/* Collapsed row — clickable */}
@@ -162,6 +230,12 @@ const PatientExamRequestsCard: React.FC<PatientExamRequestsCardProps> = ({
                     {(safeExamPage - 1) * EXAM_PAGE_SIZE + idx + 1}
                   </span>
                   <p className="text-sm text-slate-200 font-medium truncate flex-1">{preview}{req.content.length > 80 ? '…' : ''}</p>
+                  {/* V1.9.455: badge ICP quando assinado */}
+                  {isSigned && (
+                    <span className="text-[9px] px-1 py-0.5 bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 rounded font-medium whitespace-nowrap" title="Assinado digitalmente com ICP-Brasil">
+                      ICP
+                    </span>
+                  )}
                   <span className="text-[11px] text-slate-500 whitespace-nowrap hidden sm:inline">{new Date(req.created_at).toLocaleDateString('pt-BR')}</span>
                   <div className={`flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-full border ${st.color} ${st.bg} border-current/20 whitespace-nowrap`}>
                     <span className={`w-1.5 h-1.5 rounded-full ${st.dot}`} />
@@ -174,19 +248,86 @@ const PatientExamRequestsCard: React.FC<PatientExamRequestsCardProps> = ({
                 {isExpanded && (
                   <div className="px-5 pb-4 pt-1 bg-slate-900/40 border-t border-slate-700/30">
                     <pre className="text-sm text-slate-300 whitespace-pre-wrap leading-relaxed font-sans max-h-64 overflow-y-auto custom-scrollbar">{req.content}</pre>
-                    <div className="mt-3 flex items-center gap-2">
+
+                    {/* V1.9.455: banner verde — documento assinado ICP + PDF disponível */}
+                    {isSigned && hasIcpPdf && (
+                      <div className="mt-3 rounded-lg border border-emerald-500/30 bg-emerald-500/5 px-3 py-2 flex items-start gap-2">
+                        <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                        <div className="flex-1">
+                          <p className="text-[11px] text-emerald-200 leading-relaxed">
+                            <strong>Documento assinado digitalmente com ICP-Brasil.</strong>{' '}
+                            Validade jurídica plena (CFM 2.314/2022 + Lei 14.063/2020). PDF PBAD AD-RB conforme ITI.
+                          </p>
+                          {req.signature_timestamp && (
+                            <p className="text-[10px] text-emerald-300/70 mt-0.5">
+                              Assinado em {new Date(req.signature_timestamp).toLocaleString('pt-BR')}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* V1.9.455: banner amarelo — assinado mas PDF binário ainda não gerado (legado pré-V1.9.299 ou processando) */}
+                    {isSigned && !hasIcpPdf && (
+                      <div className="mt-3 rounded-lg border border-amber-500/30 bg-amber-500/5 px-3 py-2 flex items-start gap-2">
+                        <AlertCircle className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
+                        <p className="text-[11px] text-amber-200 leading-relaxed">
+                          <strong>PDF ICP-Brasil ainda não gerado.</strong>{' '}
+                          A assinatura digital existe no sistema, mas o arquivo PBAD ainda não foi processado (documento legado ou em processamento). Para apresentação física use "Imprimir" abaixo; para reprocessar, contacte o suporte.
+                        </p>
+                      </div>
+                    )}
+
+                    <div className="mt-3 flex items-center gap-2 flex-wrap">
+                      {/* V1.9.455: botão "Baixar PDF assinado" — só renderiza se signed_pdf_url existir */}
+                      {hasIcpPdf && (
+                        <button
+                          onClick={(e) => { e.stopPropagation(); handleDownloadSignedPdf(req) }}
+                          className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-emerald-200 bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/30 rounded-lg transition-colors"
+                          title="Baixar PDF assinado ICP-Brasil (PBAD AD-RB)"
+                        >
+                          <Download className="w-3.5 h-3.5" /> Baixar PDF ICP
+                        </button>
+                      )}
+                      {/* V1.9.455: link "Validar no ITI" — só renderiza se PDF binário existe (validador oficial exige upload) */}
+                      {hasIcpPdf && (
+                        <a
+                          href="https://validar.iti.gov.br/"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          onClick={(e) => e.stopPropagation()}
+                          className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-amber-200 bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 rounded-lg transition-colors"
+                          title="Validador oficial do ITI — faça upload do PDF baixado"
+                        >
+                          <ExternalLink className="w-3.5 h-3.5" /> Validar no ITI
+                        </a>
+                      )}
+                      {/* V1.9.455: "WhatsApp link" — manda PDF binário via link signed URL TTL 7d (resolve caso Ariane laboratório) */}
+                      {hasIcpPdf && (
+                        <button
+                          onClick={(e) => { e.stopPropagation(); handleShareSignedPdfWhatsApp(req) }}
+                          className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-[#25D366] bg-[#25D366]/15 hover:bg-[#25D366]/25 border border-[#25D366]/30 rounded-lg transition-colors"
+                          title="Compartilhar PDF assinado via WhatsApp (link válido 7 dias)"
+                        >
+                          <LinkIcon className="w-3.5 h-3.5" /> WhatsApp + PDF
+                        </button>
+                      )}
+                      {/* Handlers existentes preservados (anti-regressão) */}
                       <button
                         onClick={(e) => { e.stopPropagation(); handlePrintExam(req.content) }}
                         className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-200 bg-slate-800 hover:bg-slate-700 border border-slate-600/50 rounded-lg transition-colors"
                       >
                         <Printer className="w-3.5 h-3.5" /> Imprimir
                       </button>
-                      <button
-                        onClick={(e) => { e.stopPropagation(); handleShareWhatsApp(req.content) }}
-                        className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-[#25D366] bg-[#25D366]/10 hover:bg-[#25D366]/20 border border-[#25D366]/20 rounded-lg transition-colors"
-                      >
-                        <Send className="w-3.5 h-3.5" /> WhatsApp
-                      </button>
+                      {/* Botão WhatsApp texto: só renderiza se NÃO houver PDF binário (senão usa o "WhatsApp + PDF" acima) */}
+                      {!hasIcpPdf && (
+                        <button
+                          onClick={(e) => { e.stopPropagation(); handleShareWhatsApp(req.content) }}
+                          className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-[#25D366] bg-[#25D366]/10 hover:bg-[#25D366]/20 border border-[#25D366]/20 rounded-lg transition-colors"
+                        >
+                          <Send className="w-3.5 h-3.5" /> WhatsApp
+                        </button>
+                      )}
                       <span className="text-[11px] text-slate-500 ml-auto">
                         {new Date(req.created_at).toLocaleDateString('pt-BR')} às {new Date(req.created_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
                       </span>

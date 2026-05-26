@@ -149,6 +149,24 @@ export const ExamRequestModule: React.FC<ExamRequestModuleProps> = ({
             if (error) throw error;
             if (!data?.success) throw new Error(data?.error || 'Falha desconhecida ao assinar');
 
+            // V1.9.455 (26/05): invoke sign-pdf-icp em paralelo (background, não-bloqueante)
+            // pra gerar PDF binario PBAD AD-RB CONFORME ITI no bucket signed_documents.
+            // Resolve caso Joao Guimaraes 25/05 (laboratorio exigiu PDF/link, nao print).
+            // Falha NAO bloqueia fluxo digital-signature (assinatura PKCS#7 ja persistida).
+            supabase.functions.invoke('sign-pdf-icp', {
+                body: { documentId: req.id, documentType: 'exam_request' }
+            }).then(({ data: pdfData, error: pdfError }) => {
+                if (pdfError) {
+                    console.warn('[V1.9.455] sign-pdf-icp falhou (nao-bloqueante):', pdfError?.message || pdfError);
+                } else if (pdfData?.signed_pdf_url) {
+                    console.log('[V1.9.455] PDF ICP-Brasil gerado:', pdfData.signed_pdf_url, `${pdfData.pdfSizeBytes} bytes`);
+                    // Recarrega historico mais uma vez pra refletir signed_pdf_url populado
+                    loadHistory().catch(() => { /* silent */ });
+                }
+            }).catch((err) => {
+                console.warn('[V1.9.455] sign-pdf-icp invoke rejeitado (nao-bloqueante):', err?.message || err);
+            });
+
             setFeedback({ type: 'success', message: 'Solicitacao assinada com ICP-Brasil. Codigo ITI gerado.' });
             // Recarregar pra refletir status=signed + iti_validation_code
             await loadHistory();
@@ -303,6 +321,22 @@ export const ExamRequestModule: React.FC<ExamRequestModuleProps> = ({
             });
             if (error) throw error;
             if (!data?.success) throw new Error(data?.error || 'Falha desconhecida ao assinar');
+
+            // V1.9.455 (26/05): invoke sign-pdf-icp em paralelo (background, não-bloqueante)
+            // pra gerar PDF binario PBAD AD-RB CONFORME ITI no bucket signed_documents.
+            // Resolve caso Joao Guimaraes 25/05 (laboratorio exigiu PDF/link, nao print).
+            // Falha NAO bloqueia fluxo digital-signature (assinatura PKCS#7 ja persistida).
+            supabase.functions.invoke('sign-pdf-icp', {
+                body: { documentId: targetId, documentType: 'exam_request' }
+            }).then(({ data: pdfData, error: pdfError }) => {
+                if (pdfError) {
+                    console.warn('[V1.9.455] sign-pdf-icp falhou (nao-bloqueante):', pdfError?.message || pdfError);
+                } else if (pdfData?.signed_pdf_url) {
+                    console.log('[V1.9.455] PDF ICP-Brasil gerado:', pdfData.signed_pdf_url, `${pdfData.pdfSizeBytes} bytes`);
+                }
+            }).catch((err) => {
+                console.warn('[V1.9.455] sign-pdf-icp invoke rejeitado (nao-bloqueante):', err?.message || err);
+            });
 
             // Notificacao paciente apenas em criacao nova (best-effort)
             if (!editingId) {
