@@ -686,6 +686,13 @@ export type Database = {
             foreignKeyName: "benefit_usage_log_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
+            referencedRelation: "v_team_member_overview"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "benefit_usage_log_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
             referencedRelation: "view_current_ranking_live"
             referencedColumns: ["user_id"]
           },
@@ -720,6 +727,7 @@ export type Database = {
           sent_via_sms: boolean | null
           signature_certificate: string | null
           signature_timestamp: string | null
+          signed_pdf_url: string | null
           sms_sent_at: string | null
           status: string | null
           updated_at: string | null
@@ -752,6 +760,7 @@ export type Database = {
           sent_via_sms?: boolean | null
           signature_certificate?: string | null
           signature_timestamp?: string | null
+          signed_pdf_url?: string | null
           sms_sent_at?: string | null
           status?: string | null
           updated_at?: string | null
@@ -784,6 +793,7 @@ export type Database = {
           sent_via_sms?: boolean | null
           signature_certificate?: string | null
           signature_timestamp?: string | null
+          signed_pdf_url?: string | null
           sms_sent_at?: string | null
           status?: string | null
           updated_at?: string | null
@@ -801,6 +811,13 @@ export type Database = {
             columns: ["patient_id"]
             isOneToOne: false
             referencedRelation: "users_compatible"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cfm_prescriptions_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "v_team_member_overview"
             referencedColumns: ["id"]
           },
           {
@@ -1040,6 +1057,13 @@ export type Database = {
             foreignKeyName: "chat_participants_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
+            referencedRelation: "v_team_member_overview"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "chat_participants_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
             referencedRelation: "view_current_ranking_live"
             referencedColumns: ["user_id"]
           },
@@ -1112,6 +1136,7 @@ export type Database = {
         Row: {
           appointment_id: string | null
           assessment_type: string | null
+          captation_buffer: Json
           clinical_report: string | null
           created_at: string | null
           data: Json | null
@@ -1127,6 +1152,7 @@ export type Database = {
         Insert: {
           appointment_id?: string | null
           assessment_type?: string | null
+          captation_buffer?: Json
           clinical_report?: string | null
           created_at?: string | null
           data?: Json | null
@@ -1142,6 +1168,7 @@ export type Database = {
         Update: {
           appointment_id?: string | null
           assessment_type?: string | null
+          captation_buffer?: Json
           clinical_report?: string | null
           created_at?: string | null
           data?: Json | null
@@ -1195,6 +1222,13 @@ export type Database = {
             columns: ["patient_id"]
             isOneToOne: false
             referencedRelation: "users_compatible"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "clinical_assessments_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "v_team_member_overview"
             referencedColumns: ["id"]
           },
           {
@@ -1256,6 +1290,13 @@ export type Database = {
             columns: ["patient_id"]
             isOneToOne: false
             referencedRelation: "users_compatible"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "clinical_axes_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "v_team_member_overview"
             referencedColumns: ["id"]
           },
           {
@@ -1484,6 +1525,13 @@ export type Database = {
             foreignKeyName: "clinical_north_star_events_patient_id_fkey"
             columns: ["patient_id"]
             isOneToOne: false
+            referencedRelation: "v_team_member_overview"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "clinical_north_star_events_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
             referencedRelation: "view_current_ranking_live"
             referencedColumns: ["user_id"]
           },
@@ -1499,6 +1547,13 @@ export type Database = {
             columns: ["professional_id"]
             isOneToOne: false
             referencedRelation: "users_compatible"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "clinical_north_star_events_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "v_team_member_overview"
             referencedColumns: ["id"]
           },
           {
@@ -1686,6 +1741,13 @@ export type Database = {
             foreignKeyName: "clinical_rationalities_patient_id_fkey"
             columns: ["patient_id"]
             isOneToOne: false
+            referencedRelation: "v_team_member_overview"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "clinical_rationalities_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
             referencedRelation: "view_current_ranking_live"
             referencedColumns: ["user_id"]
           },
@@ -1837,45 +1899,6 @@ export type Database = {
             referencedColumns: ["user_id"]
           },
         ]
-      }
-      clinical_reports_consent_backup_v1_9_39: {
-        Row: {
-          consent_at: string | null
-          consent_given: boolean | null
-          created_at: string | null
-          id: string | null
-        }
-        Insert: {
-          consent_at?: string | null
-          consent_given?: boolean | null
-          created_at?: string | null
-          id?: string | null
-        }
-        Update: {
-          consent_at?: string | null
-          consent_given?: boolean | null
-          created_at?: string | null
-          id?: string | null
-        }
-        Relationships: []
-      }
-      clinical_reports_content_backup_24_04: {
-        Row: {
-          backed_up_at: string | null
-          content_before: Json | null
-          id: string | null
-        }
-        Insert: {
-          backed_up_at?: string | null
-          content_before?: Json | null
-          id?: string | null
-        }
-        Update: {
-          backed_up_at?: string | null
-          content_before?: Json | null
-          id?: string | null
-        }
-        Relationships: []
       }
       clinics: {
         Row: {
@@ -2110,30 +2133,67 @@ export type Database = {
       }
       conversation_ratings: {
         Row: {
+          appointment_id: string | null
+          comment: string | null
           context: string
           created_at: string
           id: string
           patient_id: string
           professional_id: string | null
           rating: number
+          updated_at: string | null
         }
         Insert: {
+          appointment_id?: string | null
+          comment?: string | null
           context?: string
           created_at?: string
           id?: string
           patient_id: string
           professional_id?: string | null
           rating: number
+          updated_at?: string | null
         }
         Update: {
+          appointment_id?: string | null
+          comment?: string | null
           context?: string
           created_at?: string
           id?: string
           patient_id?: string
           professional_id?: string | null
           rating?: number
+          updated_at?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "conversation_ratings_appointment_id_fkey"
+            columns: ["appointment_id"]
+            isOneToOne: false
+            referencedRelation: "appointments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "conversation_ratings_appointment_id_fkey"
+            columns: ["appointment_id"]
+            isOneToOne: false
+            referencedRelation: "v_appointments_json"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "conversation_ratings_appointment_id_fkey"
+            columns: ["appointment_id"]
+            isOneToOne: false
+            referencedRelation: "v_appointments_unified"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "conversation_ratings_appointment_id_fkey"
+            columns: ["appointment_id"]
+            isOneToOne: false
+            referencedRelation: "v_next_appointments"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "conversation_ratings_patient_id_fkey"
             columns: ["patient_id"]
@@ -2475,6 +2535,13 @@ export type Database = {
             referencedRelation: "cfm_prescriptions"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "document_snapshots_document_id_fkey"
+            columns: ["document_id"]
+            isOneToOne: false
+            referencedRelation: "v_cfm_prescription_stuck_drafts"
+            referencedColumns: ["id"]
+          },
         ]
       }
       documents: {
@@ -2552,87 +2619,6 @@ export type Database = {
           tags?: string[] | null
           target_audience?: string[] | null
           title?: string
-          type?: string | null
-          updated_at?: string | null
-          uploaded_by?: string | null
-        }
-        Relationships: []
-      }
-      documents_backup_23_04_2026: {
-        Row: {
-          aiRelevance: number | null
-          author: string | null
-          category: string | null
-          content: string | null
-          created_at: string | null
-          downloads: number | null
-          embeddings: Json | null
-          file_size: number | null
-          file_type: string | null
-          file_url: string | null
-          id: string | null
-          is_curated: boolean | null
-          is_featured: boolean | null
-          is_published: boolean | null
-          isLinkedToAI: boolean | null
-          keywords: string[] | null
-          medical_terms: string[] | null
-          summary: string | null
-          tags: string[] | null
-          target_audience: string[] | null
-          title: string | null
-          type: string | null
-          updated_at: string | null
-          uploaded_by: string | null
-        }
-        Insert: {
-          aiRelevance?: number | null
-          author?: string | null
-          category?: string | null
-          content?: string | null
-          created_at?: string | null
-          downloads?: number | null
-          embeddings?: Json | null
-          file_size?: number | null
-          file_type?: string | null
-          file_url?: string | null
-          id?: string | null
-          is_curated?: boolean | null
-          is_featured?: boolean | null
-          is_published?: boolean | null
-          isLinkedToAI?: boolean | null
-          keywords?: string[] | null
-          medical_terms?: string[] | null
-          summary?: string | null
-          tags?: string[] | null
-          target_audience?: string[] | null
-          title?: string | null
-          type?: string | null
-          updated_at?: string | null
-          uploaded_by?: string | null
-        }
-        Update: {
-          aiRelevance?: number | null
-          author?: string | null
-          category?: string | null
-          content?: string | null
-          created_at?: string | null
-          downloads?: number | null
-          embeddings?: Json | null
-          file_size?: number | null
-          file_type?: string | null
-          file_url?: string | null
-          id?: string | null
-          is_curated?: boolean | null
-          is_featured?: boolean | null
-          is_published?: boolean | null
-          isLinkedToAI?: boolean | null
-          keywords?: string[] | null
-          medical_terms?: string[] | null
-          summary?: string | null
-          tags?: string[] | null
-          target_audience?: string[] | null
-          title?: string | null
           type?: string | null
           updated_at?: string | null
           uploaded_by?: string | null
@@ -2869,6 +2855,13 @@ export type Database = {
             foreignKeyName: "forum_comments_author_id_fkey"
             columns: ["author_id"]
             isOneToOne: false
+            referencedRelation: "v_team_member_overview"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "forum_comments_author_id_fkey"
+            columns: ["author_id"]
+            isOneToOne: false
             referencedRelation: "view_current_ranking_live"
             referencedColumns: ["user_id"]
           },
@@ -2926,6 +2919,13 @@ export type Database = {
             foreignKeyName: "forum_likes_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
+            referencedRelation: "v_team_member_overview"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "forum_likes_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
             referencedRelation: "view_current_ranking_live"
             referencedColumns: ["user_id"]
           },
@@ -2936,10 +2936,12 @@ export type Database = {
           allowed_roles: string[] | null
           author_id: string
           category: string | null
+          consent_attested: boolean
           content: string
           created_at: string | null
           current_participants: number | null
           description: string | null
+          dossier_id: string | null
           id: string
           is_active: boolean | null
           is_hot: boolean | null
@@ -2947,9 +2949,16 @@ export type Database = {
           is_pinned: boolean | null
           max_participants: number | null
           password: string | null
+          patient_pseudonym: string | null
           post_roles: string[] | null
+          reopened_count: number
           replies_count: number | null
+          resolved_at: string | null
+          review_notes: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
           slug: string | null
+          status: string
           tags: string[] | null
           title: string
           updated_at: string | null
@@ -2961,10 +2970,12 @@ export type Database = {
           allowed_roles?: string[] | null
           author_id: string
           category?: string | null
+          consent_attested?: boolean
           content: string
           created_at?: string | null
           current_participants?: number | null
           description?: string | null
+          dossier_id?: string | null
           id?: string
           is_active?: boolean | null
           is_hot?: boolean | null
@@ -2972,9 +2983,16 @@ export type Database = {
           is_pinned?: boolean | null
           max_participants?: number | null
           password?: string | null
+          patient_pseudonym?: string | null
           post_roles?: string[] | null
+          reopened_count?: number
           replies_count?: number | null
+          resolved_at?: string | null
+          review_notes?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
           slug?: string | null
+          status?: string
           tags?: string[] | null
           title: string
           updated_at?: string | null
@@ -2986,10 +3004,12 @@ export type Database = {
           allowed_roles?: string[] | null
           author_id?: string
           category?: string | null
+          consent_attested?: boolean
           content?: string
           created_at?: string | null
           current_participants?: number | null
           description?: string | null
+          dossier_id?: string | null
           id?: string
           is_active?: boolean | null
           is_hot?: boolean | null
@@ -2997,9 +3017,16 @@ export type Database = {
           is_pinned?: boolean | null
           max_participants?: number | null
           password?: string | null
+          patient_pseudonym?: string | null
           post_roles?: string[] | null
+          reopened_count?: number
           replies_count?: number | null
+          resolved_at?: string | null
+          review_notes?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
           slug?: string | null
+          status?: string
           tags?: string[] | null
           title?: string
           updated_at?: string | null
@@ -3021,6 +3048,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "v_user_points_balance"
             referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "forum_posts_dossier_id_fkey"
+            columns: ["dossier_id"]
+            isOneToOne: false
+            referencedRelation: "physician_research_dossiers"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -3063,6 +3097,13 @@ export type Database = {
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "users_compatible"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "forum_views_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "v_team_member_overview"
             referencedColumns: ["id"]
           },
           {
@@ -3610,42 +3651,51 @@ export type Database = {
       medical_certificates: {
         Row: {
           ac_provider: string
+          certificate_file_path: string | null
           certificate_serial_number: string | null
           certificate_subject: string | null
           certificate_thumbprint: string | null
           certificate_type: string
           created_at: string | null
+          encrypted_password: string | null
           expires_at: string
           id: string
           is_active: boolean | null
           professional_id: string
           updated_at: string | null
+          uploaded_at: string | null
         }
         Insert: {
           ac_provider: string
+          certificate_file_path?: string | null
           certificate_serial_number?: string | null
           certificate_subject?: string | null
           certificate_thumbprint?: string | null
           certificate_type: string
           created_at?: string | null
+          encrypted_password?: string | null
           expires_at: string
           id?: string
           is_active?: boolean | null
           professional_id: string
           updated_at?: string | null
+          uploaded_at?: string | null
         }
         Update: {
           ac_provider?: string
+          certificate_file_path?: string | null
           certificate_serial_number?: string | null
           certificate_subject?: string | null
           certificate_thumbprint?: string | null
           certificate_type?: string
           created_at?: string | null
+          encrypted_password?: string | null
           expires_at?: string
           id?: string
           is_active?: boolean | null
           professional_id?: string
           updated_at?: string | null
+          uploaded_at?: string | null
         }
         Relationships: [
           {
@@ -4471,13 +4521,120 @@ export type Database = {
           },
         ]
       }
+      patient_documents: {
+        Row: {
+          category: string
+          clinical_note: string | null
+          description: string | null
+          file_path: string
+          id: string
+          metadata: Json | null
+          mime_type: string | null
+          original_name: string
+          patient_id: string
+          shared_at: string | null
+          shared_by: string | null
+          shared_with_professional: boolean
+          size_bytes: number | null
+          uploaded_at: string
+          uploaded_by: string | null
+          uploaded_by_role: string | null
+        }
+        Insert: {
+          category?: string
+          clinical_note?: string | null
+          description?: string | null
+          file_path: string
+          id?: string
+          metadata?: Json | null
+          mime_type?: string | null
+          original_name: string
+          patient_id: string
+          shared_at?: string | null
+          shared_by?: string | null
+          shared_with_professional?: boolean
+          size_bytes?: number | null
+          uploaded_at?: string
+          uploaded_by?: string | null
+          uploaded_by_role?: string | null
+        }
+        Update: {
+          category?: string
+          clinical_note?: string | null
+          description?: string | null
+          file_path?: string
+          id?: string
+          metadata?: Json | null
+          mime_type?: string | null
+          original_name?: string
+          patient_id?: string
+          shared_at?: string | null
+          shared_by?: string | null
+          shared_with_professional?: boolean
+          size_bytes?: number | null
+          uploaded_at?: string
+          uploaded_by?: string | null
+          uploaded_by_role?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "patient_documents_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "v_auth_activity"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "patient_documents_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "v_user_points_balance"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "patient_documents_shared_by_fkey"
+            columns: ["shared_by"]
+            isOneToOne: false
+            referencedRelation: "v_auth_activity"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "patient_documents_shared_by_fkey"
+            columns: ["shared_by"]
+            isOneToOne: false
+            referencedRelation: "v_user_points_balance"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "patient_documents_uploaded_by_fkey"
+            columns: ["uploaded_by"]
+            isOneToOne: false
+            referencedRelation: "v_auth_activity"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "patient_documents_uploaded_by_fkey"
+            columns: ["uploaded_by"]
+            isOneToOne: false
+            referencedRelation: "v_user_points_balance"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
       patient_exam_requests: {
         Row: {
           content: string
           created_at: string | null
+          digital_signature: string | null
+          document_level: string | null
           id: string
+          iti_qr_code: string | null
+          iti_validation_code: string | null
+          iti_validation_url: string | null
           patient_id: string
           professional_id: string
+          signature_certificate: string | null
+          signature_timestamp: string | null
           signature_token: string | null
           signed_at: string | null
           signed_pdf_url: string | null
@@ -4487,9 +4644,16 @@ export type Database = {
         Insert: {
           content: string
           created_at?: string | null
+          digital_signature?: string | null
+          document_level?: string | null
           id?: string
+          iti_qr_code?: string | null
+          iti_validation_code?: string | null
+          iti_validation_url?: string | null
           patient_id: string
           professional_id: string
+          signature_certificate?: string | null
+          signature_timestamp?: string | null
           signature_token?: string | null
           signed_at?: string | null
           signed_pdf_url?: string | null
@@ -4499,9 +4663,16 @@ export type Database = {
         Update: {
           content?: string
           created_at?: string | null
+          digital_signature?: string | null
+          document_level?: string | null
           id?: string
+          iti_qr_code?: string | null
+          iti_validation_code?: string | null
+          iti_validation_url?: string | null
           patient_id?: string
           professional_id?: string
+          signature_certificate?: string | null
+          signature_timestamp?: string | null
           signature_token?: string | null
           signed_at?: string | null
           signed_pdf_url?: string | null
@@ -4521,6 +4692,13 @@ export type Database = {
             columns: ["patient_id"]
             isOneToOne: false
             referencedRelation: "users_compatible"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "patient_exam_requests_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "v_team_member_overview"
             referencedColumns: ["id"]
           },
           {
@@ -4749,6 +4927,128 @@ export type Database = {
           },
         ]
       }
+      patient_nfts: {
+        Row: {
+          created_at: string | null
+          emotional_sig: string | null
+          generation_version: string | null
+          id: string
+          image_hash: string
+          image_url: string
+          metadata: Json | null
+          model: string | null
+          narrative_window: Json | null
+          palette: string[] | null
+          patient_id: string
+          prompt: string | null
+          report_id: string
+          seed: string
+          shared_at: string | null
+          shared_by: string | null
+          shared_with_professional: boolean
+          signature_hash: string | null
+          style: string
+          symbols: string[] | null
+          thumbnail_url: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          emotional_sig?: string | null
+          generation_version?: string | null
+          id?: string
+          image_hash: string
+          image_url: string
+          metadata?: Json | null
+          model?: string | null
+          narrative_window?: Json | null
+          palette?: string[] | null
+          patient_id: string
+          prompt?: string | null
+          report_id: string
+          seed: string
+          shared_at?: string | null
+          shared_by?: string | null
+          shared_with_professional?: boolean
+          signature_hash?: string | null
+          style: string
+          symbols?: string[] | null
+          thumbnail_url?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          emotional_sig?: string | null
+          generation_version?: string | null
+          id?: string
+          image_hash?: string
+          image_url?: string
+          metadata?: Json | null
+          model?: string | null
+          narrative_window?: Json | null
+          palette?: string[] | null
+          patient_id?: string
+          prompt?: string | null
+          report_id?: string
+          seed?: string
+          shared_at?: string | null
+          shared_by?: string | null
+          shared_with_professional?: boolean
+          signature_hash?: string | null
+          style?: string
+          symbols?: string[] | null
+          thumbnail_url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "patient_nfts_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "v_auth_activity"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "patient_nfts_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "v_user_points_balance"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "patient_nfts_report_id_fkey"
+            columns: ["report_id"]
+            isOneToOne: true
+            referencedRelation: "clinical_reports"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "patient_nfts_report_id_fkey"
+            columns: ["report_id"]
+            isOneToOne: true
+            referencedRelation: "v_clinical_reports"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "patient_nfts_report_id_fkey"
+            columns: ["report_id"]
+            isOneToOne: true
+            referencedRelation: "v_prescriptions_queue"
+            referencedColumns: ["report_id"]
+          },
+          {
+            foreignKeyName: "patient_nfts_shared_by_fkey"
+            columns: ["shared_by"]
+            isOneToOne: false
+            referencedRelation: "v_auth_activity"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "patient_nfts_shared_by_fkey"
+            columns: ["shared_by"]
+            isOneToOne: false
+            referencedRelation: "v_user_points_balance"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
       patient_prescriptions: {
         Row: {
           created_at: string
@@ -4870,6 +5170,127 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "integrative_prescription_templates"
             referencedColumns: ["id"]
+          },
+        ]
+      }
+      patient_referrals: {
+        Row: {
+          consent_given_at: string | null
+          created_at: string
+          from_doctor_id: string
+          id: string
+          patient_id: string
+          reason: string
+          status: string
+          to_doctor_id: string
+          updated_at: string
+        }
+        Insert: {
+          consent_given_at?: string | null
+          created_at?: string
+          from_doctor_id: string
+          id?: string
+          patient_id: string
+          reason: string
+          status?: string
+          to_doctor_id: string
+          updated_at?: string
+        }
+        Update: {
+          consent_given_at?: string | null
+          created_at?: string
+          from_doctor_id?: string
+          id?: string
+          patient_id?: string
+          reason?: string
+          status?: string
+          to_doctor_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "patient_referrals_from_doctor_id_fkey"
+            columns: ["from_doctor_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "patient_referrals_from_doctor_id_fkey"
+            columns: ["from_doctor_id"]
+            isOneToOne: false
+            referencedRelation: "users_compatible"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "patient_referrals_from_doctor_id_fkey"
+            columns: ["from_doctor_id"]
+            isOneToOne: false
+            referencedRelation: "v_team_member_overview"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "patient_referrals_from_doctor_id_fkey"
+            columns: ["from_doctor_id"]
+            isOneToOne: false
+            referencedRelation: "view_current_ranking_live"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "patient_referrals_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "patient_referrals_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "users_compatible"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "patient_referrals_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "v_team_member_overview"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "patient_referrals_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "view_current_ranking_live"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "patient_referrals_to_doctor_id_fkey"
+            columns: ["to_doctor_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "patient_referrals_to_doctor_id_fkey"
+            columns: ["to_doctor_id"]
+            isOneToOne: false
+            referencedRelation: "users_compatible"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "patient_referrals_to_doctor_id_fkey"
+            columns: ["to_doctor_id"]
+            isOneToOne: false
+            referencedRelation: "v_team_member_overview"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "patient_referrals_to_doctor_id_fkey"
+            columns: ["to_doctor_id"]
+            isOneToOne: false
+            referencedRelation: "view_current_ranking_live"
+            referencedColumns: ["user_id"]
           },
         ]
       }
@@ -5003,6 +5424,124 @@ export type Database = {
           },
         ]
       }
+      pending_ratings: {
+        Row: {
+          appointment_id: string
+          created_at: string | null
+          deadline: string
+          id: string
+          patient_id: string
+          professional_id: string
+          source: string
+          status: string
+        }
+        Insert: {
+          appointment_id: string
+          created_at?: string | null
+          deadline?: string
+          id?: string
+          patient_id: string
+          professional_id: string
+          source?: string
+          status?: string
+        }
+        Update: {
+          appointment_id?: string
+          created_at?: string | null
+          deadline?: string
+          id?: string
+          patient_id?: string
+          professional_id?: string
+          source?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pending_ratings_appointment_id_fkey"
+            columns: ["appointment_id"]
+            isOneToOne: true
+            referencedRelation: "appointments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pending_ratings_appointment_id_fkey"
+            columns: ["appointment_id"]
+            isOneToOne: true
+            referencedRelation: "v_appointments_json"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pending_ratings_appointment_id_fkey"
+            columns: ["appointment_id"]
+            isOneToOne: true
+            referencedRelation: "v_appointments_unified"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pending_ratings_appointment_id_fkey"
+            columns: ["appointment_id"]
+            isOneToOne: true
+            referencedRelation: "v_next_appointments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pending_ratings_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pending_ratings_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "users_compatible"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pending_ratings_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "v_team_member_overview"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pending_ratings_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "view_current_ranking_live"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "pending_ratings_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pending_ratings_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "users_compatible"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pending_ratings_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "v_team_member_overview"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pending_ratings_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "view_current_ranking_live"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
       permissoes_compartilhamento: {
         Row: {
           consultas: boolean | null
@@ -5045,6 +5584,42 @@ export type Database = {
         }
         Relationships: []
       }
+      physician_research_dossiers: {
+        Row: {
+          content: Json
+          generated_at: string
+          id: string
+          patient_id: string | null
+          patient_pseudonym: string | null
+          physician_id: string
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          content: Json
+          generated_at?: string
+          id?: string
+          patient_id?: string | null
+          patient_pseudonym?: string | null
+          physician_id: string
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          content?: Json
+          generated_at?: string
+          id?: string
+          patient_id?: string | null
+          patient_pseudonym?: string | null
+          physician_id?: string
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       pki_transactions: {
         Row: {
           ac_provider: string | null
@@ -5052,6 +5627,7 @@ export type Database = {
           created_at: string | null
           document_id: string
           id: string
+          metadata: Json | null
           signature_value: string
           signer_cpf: string
         }
@@ -5061,6 +5637,7 @@ export type Database = {
           created_at?: string | null
           document_id: string
           id?: string
+          metadata?: Json | null
           signature_value: string
           signer_cpf: string
         }
@@ -5070,6 +5647,7 @@ export type Database = {
           created_at?: string | null
           document_id?: string
           id?: string
+          metadata?: Json | null
           signature_value?: string
           signer_cpf?: string
         }
@@ -5079,6 +5657,13 @@ export type Database = {
             columns: ["document_id"]
             isOneToOne: false
             referencedRelation: "cfm_prescriptions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pki_transactions_document_id_fkey"
+            columns: ["document_id"]
+            isOneToOne: false
+            referencedRelation: "v_cfm_prescription_stuck_drafts"
             referencedColumns: ["id"]
           },
         ]
@@ -5362,6 +5947,13 @@ export type Database = {
             foreignKeyName: "professional_integrations_professional_id_fkey"
             columns: ["professional_id"]
             isOneToOne: false
+            referencedRelation: "v_team_member_overview"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "professional_integrations_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
             referencedRelation: "view_current_ranking_live"
             referencedColumns: ["user_id"]
           },
@@ -5369,6 +5961,7 @@ export type Database = {
       }
       professional_teams: {
         Row: {
+          accepted_at: string | null
           created_at: string | null
           id: string
           is_active: boolean
@@ -5379,6 +5972,7 @@ export type Database = {
           updated_at: string | null
         }
         Insert: {
+          accepted_at?: string | null
           created_at?: string | null
           id?: string
           is_active?: boolean
@@ -5389,6 +5983,7 @@ export type Database = {
           updated_at?: string | null
         }
         Update: {
+          accepted_at?: string | null
           created_at?: string | null
           id?: string
           is_active?: boolean
@@ -5436,11 +6031,14 @@ export type Database = {
           created_at: string | null
           email: string | null
           id: string
+          languages: string | null
           location: string | null
           name: string | null
           phone: string | null
           slug: string | null
+          tags: string | null
           type: string | null
+          updated_at: string
           user_id: string | null
         }
         Insert: {
@@ -5449,11 +6047,14 @@ export type Database = {
           created_at?: string | null
           email?: string | null
           id?: string
+          languages?: string | null
           location?: string | null
           name?: string | null
           phone?: string | null
           slug?: string | null
+          tags?: string | null
           type?: string | null
+          updated_at?: string
           user_id?: string | null
         }
         Update: {
@@ -5462,11 +6063,14 @@ export type Database = {
           created_at?: string | null
           email?: string | null
           id?: string
+          languages?: string | null
           location?: string | null
           name?: string | null
           phone?: string | null
           slug?: string | null
+          tags?: string | null
           type?: string | null
+          updated_at?: string
           user_id?: string | null
         }
         Relationships: []
@@ -5527,10 +6131,80 @@ export type Database = {
             foreignKeyName: "ranking_history_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
+            referencedRelation: "v_team_member_overview"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ranking_history_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
             referencedRelation: "view_current_ranking_live"
             referencedColumns: ["user_id"]
           },
         ]
+      }
+      rate_limit_buckets: {
+        Row: {
+          count: number
+          created_at: string
+          expires_at: string
+          key: string
+          updated_at: string
+          window_start: string
+        }
+        Insert: {
+          count?: number
+          created_at?: string
+          expires_at: string
+          key: string
+          updated_at?: string
+          window_start?: string
+        }
+        Update: {
+          count?: number
+          created_at?: string
+          expires_at?: string
+          key?: string
+          updated_at?: string
+          window_start?: string
+        }
+        Relationships: []
+      }
+      rate_limit_events: {
+        Row: {
+          bucket_key: string
+          count: number
+          created_at: string
+          endpoint: string
+          id: string
+          ip: string | null
+          limit_value: number
+          reason: string
+          user_id: string | null
+        }
+        Insert: {
+          bucket_key: string
+          count: number
+          created_at?: string
+          endpoint?: string
+          id?: string
+          ip?: string | null
+          limit_value: number
+          reason: string
+          user_id?: string | null
+        }
+        Update: {
+          bucket_key?: string
+          count?: number
+          created_at?: string
+          endpoint?: string
+          id?: string
+          ip?: string | null
+          limit_value?: number
+          reason?: string
+          user_id?: string | null
+        }
+        Relationships: []
       }
       referral_bonus_cycles: {
         Row: {
@@ -5619,6 +6293,13 @@ export type Database = {
             foreignKeyName: "referral_bonus_cycles_doctor_id_fkey"
             columns: ["doctor_id"]
             isOneToOne: false
+            referencedRelation: "v_team_member_overview"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "referral_bonus_cycles_doctor_id_fkey"
+            columns: ["doctor_id"]
+            isOneToOne: false
             referencedRelation: "view_current_ranking_live"
             referencedColumns: ["user_id"]
           },
@@ -5634,6 +6315,13 @@ export type Database = {
             columns: ["patient_id"]
             isOneToOne: false
             referencedRelation: "users_compatible"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "referral_bonus_cycles_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "v_team_member_overview"
             referencedColumns: ["id"]
           },
           {
@@ -5713,6 +6401,148 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "v_user_points_balance"
             referencedColumns: ["user_id"]
+          },
+        ]
+      }
+      renal_inline_suggestions: {
+        Row: {
+          archived_at: string | null
+          archived_by: string | null
+          ckd_epi_version: string
+          confidence_score: number | null
+          created_at: string
+          creatinine_mg_dl: number | null
+          drc_stage_suggested: string | null
+          egfr_calculated: number | null
+          expires_at: string
+          id: string
+          parser_version: string
+          patient_age: number | null
+          patient_id: string
+          patient_sex: string | null
+          proteinuria_acr_mg_g: number | null
+          rejection_reason: string | null
+          renal_exam_id: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          source_noa_log_id: string | null
+          source_text: string | null
+          source_turn_id: string | null
+          status: string
+        }
+        Insert: {
+          archived_at?: string | null
+          archived_by?: string | null
+          ckd_epi_version?: string
+          confidence_score?: number | null
+          created_at?: string
+          creatinine_mg_dl?: number | null
+          drc_stage_suggested?: string | null
+          egfr_calculated?: number | null
+          expires_at?: string
+          id?: string
+          parser_version?: string
+          patient_age?: number | null
+          patient_id: string
+          patient_sex?: string | null
+          proteinuria_acr_mg_g?: number | null
+          rejection_reason?: string | null
+          renal_exam_id?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          source_noa_log_id?: string | null
+          source_text?: string | null
+          source_turn_id?: string | null
+          status?: string
+        }
+        Update: {
+          archived_at?: string | null
+          archived_by?: string | null
+          ckd_epi_version?: string
+          confidence_score?: number | null
+          created_at?: string
+          creatinine_mg_dl?: number | null
+          drc_stage_suggested?: string | null
+          egfr_calculated?: number | null
+          expires_at?: string
+          id?: string
+          parser_version?: string
+          patient_age?: number | null
+          patient_id?: string
+          patient_sex?: string | null
+          proteinuria_acr_mg_g?: number | null
+          rejection_reason?: string | null
+          renal_exam_id?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          source_noa_log_id?: string | null
+          source_text?: string | null
+          source_turn_id?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "renal_inline_suggestions_archived_by_fkey"
+            columns: ["archived_by"]
+            isOneToOne: false
+            referencedRelation: "v_auth_activity"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "renal_inline_suggestions_archived_by_fkey"
+            columns: ["archived_by"]
+            isOneToOne: false
+            referencedRelation: "v_user_points_balance"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "renal_inline_suggestions_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "v_auth_activity"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "renal_inline_suggestions_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "v_user_points_balance"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "renal_inline_suggestions_renal_exam_id_fkey"
+            columns: ["renal_exam_id"]
+            isOneToOne: false
+            referencedRelation: "renal_exams"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "renal_inline_suggestions_renal_exam_id_fkey"
+            columns: ["renal_exam_id"]
+            isOneToOne: false
+            referencedRelation: "v_renal_trend"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "renal_inline_suggestions_reviewed_by_fkey"
+            columns: ["reviewed_by"]
+            isOneToOne: false
+            referencedRelation: "v_auth_activity"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "renal_inline_suggestions_reviewed_by_fkey"
+            columns: ["reviewed_by"]
+            isOneToOne: false
+            referencedRelation: "v_user_points_balance"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "renal_inline_suggestions_source_noa_log_id_fkey"
+            columns: ["source_noa_log_id"]
+            isOneToOne: false
+            referencedRelation: "noa_logs"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -5863,6 +6693,13 @@ export type Database = {
             columns: ["document_id"]
             isOneToOne: false
             referencedRelation: "cfm_prescriptions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "signature_confirmations_document_id_fkey"
+            columns: ["document_id"]
+            isOneToOne: false
+            referencedRelation: "v_cfm_prescription_stuck_drafts"
             referencedColumns: ["id"]
           },
           {
@@ -6745,6 +7582,13 @@ export type Database = {
             foreignKeyName: "user_benefits_status_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: true
+            referencedRelation: "v_team_member_overview"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_benefits_status_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
             referencedRelation: "view_current_ranking_live"
             referencedColumns: ["user_id"]
           },
@@ -7167,6 +8011,7 @@ export type Database = {
           birth_date: string | null
           blood_type: string | null
           consent_accepted_at: string | null
+          consultation_fee_default: number | null
           council_number: string | null
           council_state: string | null
           council_type: string | null
@@ -7181,6 +8026,7 @@ export type Database = {
           invited_by: string | null
           is_anonymized: boolean
           is_official: boolean | null
+          last_seen_at: string | null
           medications: string | null
           metadata: Json | null
           name: string
@@ -7199,6 +8045,7 @@ export type Database = {
           type: string
           updated_at: string | null
           user_metadata: Json | null
+          years_experience: number | null
         }
         Insert: {
           address?: string | null
@@ -7208,6 +8055,7 @@ export type Database = {
           birth_date?: string | null
           blood_type?: string | null
           consent_accepted_at?: string | null
+          consultation_fee_default?: number | null
           council_number?: string | null
           council_state?: string | null
           council_type?: string | null
@@ -7222,6 +8070,7 @@ export type Database = {
           invited_by?: string | null
           is_anonymized?: boolean
           is_official?: boolean | null
+          last_seen_at?: string | null
           medications?: string | null
           metadata?: Json | null
           name: string
@@ -7240,6 +8089,7 @@ export type Database = {
           type?: string
           updated_at?: string | null
           user_metadata?: Json | null
+          years_experience?: number | null
         }
         Update: {
           address?: string | null
@@ -7249,6 +8099,7 @@ export type Database = {
           birth_date?: string | null
           blood_type?: string | null
           consent_accepted_at?: string | null
+          consultation_fee_default?: number | null
           council_number?: string | null
           council_state?: string | null
           council_type?: string | null
@@ -7263,6 +8114,7 @@ export type Database = {
           invited_by?: string | null
           is_anonymized?: boolean
           is_official?: boolean | null
+          last_seen_at?: string | null
           medications?: string | null
           metadata?: Json | null
           name?: string
@@ -7281,6 +8133,7 @@ export type Database = {
           type?: string
           updated_at?: string | null
           user_metadata?: Json | null
+          years_experience?: number | null
         }
         Relationships: [
           {
@@ -7295,6 +8148,13 @@ export type Database = {
             columns: ["invited_by"]
             isOneToOne: false
             referencedRelation: "users_compatible"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "users_invited_by_fkey"
+            columns: ["invited_by"]
+            isOneToOne: false
+            referencedRelation: "v_team_member_overview"
             referencedColumns: ["id"]
           },
           {
@@ -8158,6 +9018,114 @@ export type Database = {
         }
         Relationships: []
       }
+      v_cfm_prescription_creation_trend: {
+        Row: {
+          created: number | null
+          day: string | null
+          reached_sent: number | null
+          reached_signed: number | null
+          still_draft: number | null
+        }
+        Relationships: []
+      }
+      v_cfm_prescription_funnel: {
+        Row: {
+          avg_hours_since_update: number | null
+          distinct_patients: number | null
+          distinct_professionals: number | null
+          last_update: string | null
+          oldest_created: string | null
+          pct_total: number | null
+          stale_30d: number | null
+          stale_7d: number | null
+          status: string | null
+          total: number | null
+        }
+        Relationships: []
+      }
+      v_cfm_prescription_stuck_drafts: {
+        Row: {
+          created_at: string | null
+          days_stale: number | null
+          document_level: string | null
+          has_certificate: boolean | null
+          has_notes: boolean | null
+          has_signature: boolean | null
+          id: string | null
+          medication_count: number | null
+          patient_id: string | null
+          patient_name: string | null
+          prescription_type: string | null
+          professional_crm: string | null
+          professional_id: string | null
+          professional_name: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          days_stale?: never
+          document_level?: string | null
+          has_certificate?: never
+          has_notes?: never
+          has_signature?: never
+          id?: string | null
+          medication_count?: never
+          patient_id?: string | null
+          patient_name?: string | null
+          prescription_type?: string | null
+          professional_crm?: string | null
+          professional_id?: string | null
+          professional_name?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          days_stale?: never
+          document_level?: string | null
+          has_certificate?: never
+          has_notes?: never
+          has_signature?: never
+          id?: string | null
+          medication_count?: never
+          patient_id?: string | null
+          patient_name?: string | null
+          prescription_type?: string | null
+          professional_crm?: string | null
+          professional_id?: string | null
+          professional_name?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cfm_prescriptions_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cfm_prescriptions_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "users_compatible"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cfm_prescriptions_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "v_team_member_overview"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cfm_prescriptions_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "view_current_ranking_live"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
       v_chat_inbox: {
         Row: {
           created_at: string | null
@@ -8212,6 +9180,37 @@ export type Database = {
           platform_fee: number | null
           points_balance: number | null
           user_id: string | null
+        }
+        Relationships: []
+      }
+      v_clinical_cycle_health: {
+        Row: {
+          ai_chats_30d: number | null
+          avg_review_days_30d: number | null
+          closed_loop_completion_rate_30d_pct: number | null
+          icp_signing_rate_30d_pct: number | null
+          noa_logs_30d: number | null
+          patients_total: number | null
+          prescriptions_draft: number | null
+          prescriptions_sent: number | null
+          prescriptions_signed: number | null
+          prescriptions_total: number | null
+          professionals_total: number | null
+          professionals_with_council_state: number | null
+          professionals_with_fee: number | null
+          rationalities_30d: number | null
+          rationalities_total: number | null
+          reports_30d: number | null
+          reports_7d: number | null
+          reports_approved_30d: number | null
+          reports_approved_7d: number | null
+          reports_approved_total: number | null
+          reports_draft_total: number | null
+          reports_reviewed_marked: number | null
+          reports_signed_30d: number | null
+          reports_signed_total: number | null
+          reports_total: number | null
+          snapshot_at: string | null
         }
         Relationships: []
       }
@@ -8339,6 +9338,19 @@ export type Database = {
         }
         Relationships: []
       }
+      v_icp_pdf_status: {
+        Row: {
+          doc_type: string | null
+          has_pkcs7_json: boolean | null
+          has_signed_pdf_icp: boolean | null
+          id: string | null
+          patient_id: string | null
+          professional_id: string | null
+          signature_timestamp: string | null
+          status: string | null
+        }
+        Relationships: []
+      }
       v_kpi_basic: {
         Row: {
           appointments_count: number | null
@@ -8346,6 +9358,36 @@ export type Database = {
           week: string | null
         }
         Relationships: []
+      }
+      v_medical_certificates_status: {
+        Row: {
+          ac_provider: string | null
+          certificate_type: string | null
+          created_at: string | null
+          expires_at: string | null
+          id: string | null
+          is_active: boolean | null
+          professional_id: string | null
+          professional_name: string | null
+          status_real: string | null
+          uploaded_at: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "medical_certificates_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "v_auth_activity"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "medical_certificates_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "v_user_points_balance"
+            referencedColumns: ["user_id"]
+          },
+        ]
       }
       v_next_appointments: {
         Row: {
@@ -8477,6 +9519,15 @@ export type Database = {
           },
         ]
       }
+      v_pki_signing_modes: {
+        Row: {
+          first_seen: string | null
+          last_seen: string | null
+          signing_mode: string | null
+          total: number | null
+        }
+        Relationships: []
+      }
       v_prescriptions_queue: {
         Row: {
           created_at: string | null
@@ -8564,6 +9615,110 @@ export type Database = {
         }
         Relationships: []
       }
+      v_renal_suggestions_active: {
+        Row: {
+          ckd_epi_version: string | null
+          confidence_score: number | null
+          created_at: string | null
+          creatinine_mg_dl: number | null
+          days_until_expire: number | null
+          drc_stage_suggested: string | null
+          egfr_calculated: number | null
+          expires_at: string | null
+          id: string | null
+          patient_age: number | null
+          patient_id: string | null
+          patient_name: string | null
+          patient_sex: string | null
+          proteinuria_acr_mg_g: number | null
+          rejection_reason: string | null
+          renal_exam_id: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          reviewer_name: string | null
+          source_text: string | null
+          status: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "renal_inline_suggestions_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "v_auth_activity"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "renal_inline_suggestions_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "v_user_points_balance"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "renal_inline_suggestions_renal_exam_id_fkey"
+            columns: ["renal_exam_id"]
+            isOneToOne: false
+            referencedRelation: "renal_exams"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "renal_inline_suggestions_renal_exam_id_fkey"
+            columns: ["renal_exam_id"]
+            isOneToOne: false
+            referencedRelation: "v_renal_trend"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "renal_inline_suggestions_reviewed_by_fkey"
+            columns: ["reviewed_by"]
+            isOneToOne: false
+            referencedRelation: "v_auth_activity"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "renal_inline_suggestions_reviewed_by_fkey"
+            columns: ["reviewed_by"]
+            isOneToOne: false
+            referencedRelation: "v_user_points_balance"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
+      v_renal_suggestions_pending: {
+        Row: {
+          ckd_epi_version: string | null
+          confidence_score: number | null
+          created_at: string | null
+          creatinine_mg_dl: number | null
+          days_until_expire: number | null
+          drc_stage_suggested: string | null
+          egfr_calculated: number | null
+          expires_at: string | null
+          id: string | null
+          patient_age: number | null
+          patient_id: string | null
+          patient_name: string | null
+          patient_sex: string | null
+          proteinuria_acr_mg_g: number | null
+          source_text: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "renal_inline_suggestions_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "v_auth_activity"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "renal_inline_suggestions_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "v_user_points_balance"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
       v_renal_trend: {
         Row: {
           creatinine: number | null
@@ -8616,6 +9771,98 @@ export type Database = {
         }
         Relationships: []
       }
+      v_team_member_overview: {
+        Row: {
+          avatar_url: string | null
+          consultation_fee_default: number | null
+          email: string | null
+          id: string | null
+          is_official: boolean | null
+          last_seen_at: string | null
+          minutes_since_seen: number | null
+          name: string | null
+          phone: string | null
+          presence_status: string | null
+          specialty: string | null
+          type: string | null
+          years_experience: number | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          consultation_fee_default?: number | null
+          email?: string | null
+          id?: string | null
+          is_official?: boolean | null
+          last_seen_at?: string | null
+          minutes_since_seen?: never
+          name?: string | null
+          phone?: string | null
+          presence_status?: never
+          specialty?: string | null
+          type?: string | null
+          years_experience?: number | null
+        }
+        Update: {
+          avatar_url?: string | null
+          consultation_fee_default?: number | null
+          email?: string | null
+          id?: string | null
+          is_official?: boolean | null
+          last_seen_at?: string | null
+          minutes_since_seen?: never
+          name?: string | null
+          phone?: string | null
+          presence_status?: never
+          specialty?: string | null
+          type?: string | null
+          years_experience?: number | null
+        }
+        Relationships: []
+      }
+      v_team_pending_invites_for_me: {
+        Row: {
+          created_at: string | null
+          id: string | null
+          invitee_id: string | null
+          inviter_avatar: string | null
+          inviter_email: string | null
+          inviter_id: string | null
+          inviter_name: string | null
+          inviter_specialty: string | null
+          notes: string | null
+          relationship_type: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "professional_teams_professional_id_fkey"
+            columns: ["inviter_id"]
+            isOneToOne: false
+            referencedRelation: "v_auth_activity"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "professional_teams_professional_id_fkey"
+            columns: ["inviter_id"]
+            isOneToOne: false
+            referencedRelation: "v_user_points_balance"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "professional_teams_team_member_id_fkey"
+            columns: ["invitee_id"]
+            isOneToOne: false
+            referencedRelation: "v_auth_activity"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "professional_teams_team_member_id_fkey"
+            columns: ["invitee_id"]
+            isOneToOne: false
+            referencedRelation: "v_user_points_balance"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
       v_unread_messages_kpi: {
         Row: {
           unread_total: number | null
@@ -8630,6 +9877,66 @@ export type Database = {
           user_id: string | null
         }
         Relationships: []
+      }
+      v_video_call_conversion: {
+        Row: {
+          avg_response_minutes: number | null
+          distinct_recipients: number | null
+          distinct_requesters: number | null
+          last_24h: number | null
+          last_7d: number | null
+          newest: string | null
+          oldest: string | null
+          pct_total: number | null
+          status: string | null
+          total: number | null
+        }
+        Relationships: []
+      }
+      v_video_call_daily_trend: {
+        Row: {
+          accept_rate_pct: number | null
+          accepted: number | null
+          cancelled: number | null
+          day: string | null
+          distinct_recipients: number | null
+          distinct_requesters: number | null
+          expired: number | null
+          rejected: number | null
+          total_requests: number | null
+        }
+        Relationships: []
+      }
+      v_video_call_recipient_response: {
+        Row: {
+          accept_rate_pct: number | null
+          accepted: number | null
+          avg_accept_latency_min: number | null
+          cancelled_by_caller: number | null
+          expired: number | null
+          last_request_at: string | null
+          recipient_id: string | null
+          recipient_name: string | null
+          recipient_type: string | null
+          rejected: number | null
+          total_received: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "video_call_requests_recipient_id_fkey"
+            columns: ["recipient_id"]
+            isOneToOne: false
+            referencedRelation: "v_auth_activity"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "video_call_requests_recipient_id_fkey"
+            columns: ["recipient_id"]
+            isOneToOne: false
+            referencedRelation: "v_user_points_balance"
+            referencedColumns: ["user_id"]
+          },
+        ]
       }
       view_current_ranking_live: {
         Row: {
@@ -8647,6 +9954,15 @@ export type Database = {
       _normalize_appointment_status: { Args: { raw: string }; Returns: string }
       _now_br: { Args: never; Returns: string }
       _today_br: { Args: never; Returns: string }
+      admin_get_users_activity_summary: {
+        Args: never
+        Returns: {
+          last_activity_at: string
+          last_evt: string
+          last_phase: string
+          user_id: string
+        }[]
+      }
       admin_get_users_status: {
         Args: never
         Returns: {
@@ -8665,6 +9981,22 @@ export type Database = {
       anonymize_user_safely: {
         Args: { _reason?: string; _triggered_by?: string; _user_id: string }
         Returns: boolean
+      }
+      approve_renal_suggestion: {
+        Args: {
+          p_creatinine?: number
+          p_drc_stage?: string
+          p_egfr?: number
+          p_exam_date?: string
+          p_proteinuria?: number
+          p_suggestion_id: string
+          p_urea?: number
+        }
+        Returns: Json
+      }
+      archive_renal_suggestion: {
+        Args: { p_suggestion_id: string }
+        Returns: Json
       }
       award_gamification_points: {
         Args: {
@@ -8700,6 +10032,10 @@ export type Database = {
       calculate_monthly_ranking: {
         Args: { ref_date?: string }
         Returns: undefined
+      }
+      calculate_professional_rating: {
+        Args: { last_n?: number; prof_id: string }
+        Returns: Json
       }
       calculate_subscription_discount: {
         Args: { p_consultation_amount: number; p_user_id: string }
@@ -8926,6 +10262,14 @@ export type Database = {
         Returns: Json
       }
       get_platform_statistics: { Args: never; Returns: Json }
+      get_public_doctor_info: {
+        Args: { doctor_id: string }
+        Returns: {
+          id: string
+          name: string
+          specialty: string
+        }[]
+      }
       get_recent_audit_logs: {
         Args: { p_limit?: number }
         Returns: {
@@ -8943,13 +10287,19 @@ export type Database = {
         Args: { p_doctor_id: string }
         Returns: {
           content: Json
+          doctor_id: string
           generated_at: string
           id: string
           patient_id: string
           patient_name: string
+          professional_id: string
           protocol: string
           report_type: string
+          review_status: string
+          reviewed_at: string
+          reviewed_by: string
           shared_at: string
+          signature_hash: string
           status: string
         }[]
       }
@@ -8983,6 +10333,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      heartbeat_user_seen: { Args: never; Returns: undefined }
       increment_document_download: {
         Args: { p_id: string }
         Returns: undefined
@@ -9056,6 +10407,11 @@ export type Database = {
         Args: { _reason?: string; _triggered_by?: string; _user_id: string }
         Returns: string
       }
+      rate_limit_check: {
+        Args: { p_key: string; p_max_count: number; p_window_seconds: number }
+        Returns: Json
+      }
+      rate_limit_cleanup: { Args: never; Returns: number }
       record_north_star_event: {
         Args: {
           p_appointment_id?: string
@@ -9082,6 +10438,10 @@ export type Database = {
           p_session_id: string
         }
         Returns: string
+      }
+      reject_renal_suggestion: {
+        Args: { p_reason?: string; p_suggestion_id: string }
+        Returns: Json
       }
       request_payout: { Args: { p_amount: number }; Returns: string }
       resolve_professional_by_slug: {
