@@ -73,6 +73,7 @@ import { useUserView } from '../contexts/UserViewContext'
 import { rationalityAnalysisService, type Rationality } from '../services/rationalityAnalysisService'
 import { clinicalDevolutionService } from '../services/clinicalDevolutionService'
 import { useToast } from '../contexts/ToastContext'
+import { usePatientLongitudinal, type LongitudinalReport } from '../hooks/usePatientLongitudinal'
 
 interface SharedReport {
   id: string
@@ -144,6 +145,83 @@ const ClinicalReports: React.FC<ClinicalReportsProps> = ({ className = '', onSha
   const effectiveType = getEffectiveUserType(user?.type)
   const isUserAdmin = effectiveType === 'admin'
   const isPatient = effectiveType === 'paciente'
+
+  // V1.9.456 — Contexto longitudinal automático no modal de revisão (só HCP/admin).
+  // Reusa usePatientLongitudinal (já em produção via NoaMatrixView desde V1.9.382).
+  //
+  // Origem empírica: caso Carolina 25/05 — Ricardo abriu report queixa principal
+  // "saco cheio das coisas" sem ver histórico (8 AECs em maio, padrão dor cabeça 5x).
+  // Pedro+Ricardo: "AEC não puxa dado longitudinal — deveria". AEC FSM intocada
+  // (continua respeitando escuta fenomenológica da paciente). Mudança fica na
+  // camada operacional posterior (review do médico) — alinhado princípio Ricardo
+  // 24/05 (`feedback_queixa_nao_e_sintoma_aec_e_abertura_fenomenologica_24_05`).
+  //
+  // Hook só dispara fetch quando selectedReport.patientId presente — em produção
+  // significa "quando modal aberto". Audience Contract V1.9.330-A respeitado:
+  // bloco renderizado APENAS se !isPatient (médico/admin/student).
+  const longitudinal = usePatientLongitudinal(
+    showReportModal && selectedReport && !isPatient ? selectedReport.patientId : null
+  )
+
+  // V1.9.456 — Análise observacional do histórico (sem inferir clinicamente).
+  // Princípio meta `feedback_locks_macro_vs_micro_matrix_alucinacao_completiva_25_05`:
+  // mostrar dados literais (queixas datadas, contagens), nunca interpolar
+  // diagnóstico ou inferir padrão clínico.
+  const longitudinalSummary = useMemo(() => {
+    if (!selectedReport || isPatient) return null
+    const otherReports = longitudinal.reports.filter(r => r.id !== selectedReport.id)
+    if (otherReports.length === 0) return null
+
+    // Queixas principais cronológicas (cada uma é unidade narrativa do dia)
+    const queixasCronologicas = otherReports
+      .map(r => ({
+        date: r.created_at,
+        complaint: (r.mainComplaint || '—').trim(),
+      }))
+      .filter(q => q.complaint && q.complaint !== '—')
+
+    // Contagem por queixa (agrupada lower-case + trim pra dedup)
+    const counts = new Map<string, { label: string; count: number; dates: string[] }>()
+    queixasCronologicas.forEach(q => {
+      const key = q.complaint.toLowerCase()
+      const existing = counts.get(key)
+      if (existing) {
+        existing.count++
+        existing.dates.push(q.date)
+      } else {
+        counts.set(key, { label: q.complaint, count: 1, dates: [q.date] })
+      }
+    })
+    const topQueixas = Array.from(counts.values())
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 4)
+
+    // Sintomas novos: itens da lista_indiciaria deste report que NÃO aparecem em
+    // listas indiciárias históricas. Comparação lower-case + trim pra robustez.
+    const historicalSymptoms = new Set<string>()
+    otherReports.forEach(r => {
+      (r.listaIndiciaria || []).forEach(item => {
+        if (typeof item === 'string' && item.trim()) {
+          historicalSymptoms.add(item.trim().toLowerCase())
+        }
+      })
+    })
+    const currentLista: string[] = Array.isArray((selectedReport.content as any)?.lista_indiciaria)
+      ? (selectedReport.content as any).lista_indiciaria
+      : Array.isArray((selectedReport.content as any)?.listaIndiciaria)
+        ? (selectedReport.content as any).listaIndiciaria
+        : []
+    const sintomasNovos = currentLista
+      .filter((item: any) => typeof item === 'string' && item.trim())
+      .filter((item: string) => !historicalSymptoms.has(item.trim().toLowerCase()))
+
+    return {
+      totalReports: otherReports.length,
+      queixasCronologicas,
+      topQueixas,
+      sintomasNovos,
+    }
+  }, [longitudinal.reports, selectedReport, isPatient])
 
   // V1.9.241 — contador empirico de pendencias (fila de cuidado longitudinal).
   // Vocabulario clinico Ricardo: "aguardando revisao" > "draft/pending".
@@ -1554,6 +1632,95 @@ const ClinicalReports: React.FC<ClinicalReportsProps> = ({ className = '', onSha
                     </p>
                   </div>
                 </div>
+              </div>
+            )}
+
+            {/* V1.9.456 — Bloco "Histórico observacional desta paciente" (só HCP/admin).
+                Aparece SE há outros reports do mesmo paciente nos últimos 5 carregados pelo
+                hook. Audience Contract V1.9.330-A respeitado: !isPatient guard.
+                Princípio meta `feedback_queixa_nao_e_sintoma`: contexto observacional
+                histórico não infere nem reduz queixa atual — médico interpreta. */}
+            {!isPatient && longitudinalSummary && (
+              <div
+                className="mb-4 rounded-lg p-4 border"
+                style={{
+                  background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.06) 0%, rgba(56, 189, 248, 0.04) 100%)',
+                  borderColor: 'rgba(99, 102, 241, 0.25)'
+                }}
+              >
+                <div className="flex items-start gap-3 mb-3">
+                  <div className="w-9 h-9 rounded-full bg-indigo-500/15 border border-indigo-500/30 flex items-center justify-center flex-shrink-0">
+                    <Stethoscope className="w-4 h-4 text-indigo-300" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="text-xs font-semibold text-indigo-300 uppercase tracking-wide">
+                      Histórico observacional desta paciente
+                    </div>
+                    <p className="text-[10px] text-slate-400 mt-0.5 italic leading-relaxed">
+                      Recortes longitudinais (até últimos 5 relatórios). AEC desta sessão preserva a escuta fenomenológica integralmente — médico interpreta padrões.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
+                  {/* Queixas anteriores (cronológicas) */}
+                  {longitudinalSummary.queixasCronologicas.length > 0 && (
+                    <div>
+                      <div className="text-[11px] font-semibold text-slate-300 mb-1.5 uppercase tracking-wider">
+                        Queixas principais anteriores ({longitudinalSummary.totalReports})
+                      </div>
+                      <ul className="space-y-1 text-slate-300">
+                        {longitudinalSummary.queixasCronologicas.map((q, idx) => (
+                          <li key={idx} className="flex items-start gap-2">
+                            <span className="text-slate-500 text-[10px] font-mono mt-0.5 flex-shrink-0">
+                              {new Date(q.date).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })}
+                            </span>
+                            <span className="leading-snug">{q.complaint}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
+                  {/* Top queixas agrupadas */}
+                  {longitudinalSummary.topQueixas.length > 0 && (
+                    <div>
+                      <div className="text-[11px] font-semibold text-slate-300 mb-1.5 uppercase tracking-wider">
+                        Padrão de queixas
+                      </div>
+                      <ul className="space-y-1 text-slate-300">
+                        {longitudinalSummary.topQueixas.map((q, idx) => (
+                          <li key={idx} className="flex items-center gap-2">
+                            <span className="text-indigo-300 font-mono text-[10px] flex-shrink-0">
+                              {q.count}×
+                            </span>
+                            <span className="leading-snug">{q.label}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+
+                {/* Sintomas novos hoje (vs histórico) */}
+                {longitudinalSummary.sintomasNovos.length > 0 && (
+                  <div className="mt-3 pt-3 border-t border-indigo-500/15">
+                    <div className="text-[11px] font-semibold text-amber-300 mb-1.5 uppercase tracking-wider flex items-center gap-1.5">
+                      <span>⚠️</span>
+                      <span>Sintomas novos hoje (não aparecem nos relatórios anteriores)</span>
+                    </div>
+                    <div className="flex flex-wrap gap-1.5">
+                      {longitudinalSummary.sintomasNovos.map((s, idx) => (
+                        <span
+                          key={idx}
+                          className="text-[11px] px-2 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-200"
+                        >
+                          {s}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             )}
 
