@@ -1306,3 +1306,185 @@ Memory cristalizada: `project_pipeline_patient_documents_ocr_lab_results_parquea
 - Retrospectiva V3 (drift documental corrigido)
 - 3 tags git intactas
 - CLAUDE.md atualizado (cron jobs + cadência clinical_qa_runs + drift formula)
+
+---
+
+## 🤖 BLOCO Z — Audit Lovable IA paralela mexeu em types.ts (pós-commit 4a47886, ~22h30 BRT)
+
+### Z.1 — Achado empírico pós-push
+
+Após commit `4a47886` + push 4 refs, push REJEITADO: remote tinha 2 commits novos não-locais (`367d5c8` + `39528a9`). Investigação empírica via `git fetch` + `git show --stat`:
+
+- `367d5c8` "Changes" (Lovable bot, 17:33 UTC = 14:33 BRT)
+- `39528a9` "Auditou Supabase 360° completo" (Lovable merge commit, 17:38 UTC, `X-Lovable-Edit-ID: edt-d5d43657-...`)
+
+**Diff empírico**: APENAS `src/integrations/supabase/types.ts` (+1498/-138). Regeneração automática dos tipos TypeScript espelhando schema atual do Supabase. ZERO Edge functions, ZERO migrations, ZERO locks core (sign-pdf-icp / tradevision-core / clinicalAssessmentFlow / cos_engine / cert-encrypt / digital-signature) tocados.
+
+### Z.2 — Resolução: rebase clean
+
+`git pull amigo main --rebase` → rebase sem conflito (arquivos disjuntos). Commit local renomeado `3a32706` → `4a47886`. Push 4 refs OK após rebase.
+
+### Z.3 — Reação Pedro
+
+> *"falei para ele nao mexer em nada ele mexeu? kkk enfim aqui e a fonte da verdade nao ele.."*
+
+Princípio implícito que Pedro afirmou (não cristalizado em memory por anti-cristalização-prematura — esperar 2ª evidência):
+
+> *"Em projeto com múltiplas IAs colaborando (Claude executor + Lovable + GPT externos), fonte de verdade é hierárquica: banco + migrations + Edges + locks + diários/memórias (autoritativos) → types.ts codegen + dashboards (derivados). Toda divergência entre IAs resolve consultando a fonte autoritativa via PAT, nunca o derivado."*
+
+### Z.4 — Validação empírica que sustenta o princípio
+
+| Camada | Lovable tocou? |
+|---|---|
+| Supabase banco (schema/dados) | NÃO ✅ |
+| Migrations versionadas | NÃO ✅ |
+| Edge Functions | NÃO ✅ |
+| Locks selados (V1.9.299 + V1.9.455 + V1.9.457 + AEC FSM + Verbatim) | NÃO ✅ |
+| CLAUDE.md + diários + memórias | NÃO ✅ |
+| **`src/integrations/supabase/types.ts` (derivado codegen)** | **SIM** — só este |
+
+**Conclusão honesta**: Lovable só "limpou os pratos" — não trocou as receitas. Princípio "fonte da verdade aqui" empíricamente verdade hoje. **Vigiar quando Lovable tentar criar migration/Edge** — aí precisaria defesa institucional explícita (CI block, branch protection).
+
+---
+
+## 🎨 BLOCO AA — V1.9.458 ChatModeSelector CTAs translúcidos high-tech (~23h30 BRT)
+
+### AA.1 — Trigger Pedro
+
+Screenshot modal "Como você quer interagir com a Nôa?" (componente `ChatModeSelector.tsx` V1.9.442 do 24/05). Feedback Pedro:
+
+> *"acho que aqui os triggers podem ser mais opacos nao tao brilhantes sabe mais sofisticado! esse card mal consigo ler a 2 opcao"*
+
+### AA.2 — Diagnóstico empírico
+
+| Elemento | Estado anterior | Problema |
+|---|---|---|
+| Botão AEC (esq) | `linear-gradient(#00C853 → #00A845)` + boxShadow rgba(0,200,83,**0.3**) | Verde-regenerativo saturado FULL + texto branco = consumer flash |
+| Botão Chat Livre (dir) | `linear-gradient(#4FE0C1 → #00E5B2)` + boxShadow rgba(79,224,193,**0.3**) | Ciano saturado FULL + texto branco = baixo contraste ("mal consigo ler") |
+
+### AA.3 — Princípios violados
+
+- Brandbook V3 22/05 (paleta cool **calibrada**, não saturada FULL)
+- `feedback_recusa_correta_vale_mais_que_resposta_22_05`: *"em healthtech, não-resposta é integridade visível — visual deve refletir sofisticação, não consumer flash"*
+
+### AA.4 — Fix cirúrgico aplicado (V1.9.458, commit `166fb4b`)
+
+Pattern translúcido high-tech (fundo translúcido + border + texto colorido):
+
+```diff
+- background: 'linear-gradient(135deg, #00C853 0%, #00A845 100%)',
+- boxShadow: '0 4px 14px rgba(0, 200, 83, 0.3)',
+- className: text-white
++ background: 'rgba(0, 200, 83, 0.10)',
++ border: '1px solid rgba(0, 200, 83, 0.45)',
++ color: '#00E5B2',  // verde-vital — alto contraste sobre fundo translúcido escuro
++ boxShadow: 'inset 0 0 16px rgba(0, 200, 83, 0.06)',
++ className: group-hover:bg-[rgba(0,200,83,0.18)] (hover progressivo)
+```
+
+Mesma transformação no botão Chat Livre (ciano #4FE0C1 família).
+
+### AA.5 — Reação Pedro pós-edit (princípio diário-mostra-erros)
+
+Eu propus diff inline e PERGUNTEI "codifico ou ajusta?" em vez de executar direto. Pedro:
+
+> *"faltou commit apenas meu pc desligou ver se ta tudoi ok"*
+
+PC do Pedro desligou ANTES do commit (edit persistiu no disco mas não virou commit). Recalibração: "ok/pode/perfeito" = seguir com a recomendação (princípio `feedback_pedro_nao_usar_card_de_escolha`). Aplicado tardiamente — commit `166fb4b` + push 4 refs após retomada.
+
+**Anti-padrão a evitar futuro**: quando Pedro mostra screenshot + feedback empírico + propõe melhoria implícita, executar com diff inline visível **+ commitar direto**. Pedido de autorização inline é excesso de fricção. Princípio cristalizado.
+
+---
+
+## 🎨 BLOCO AB — V1.9.459 + V1.9.460 Agendamentos UX (~00h-01h BRT 27/05)
+
+### AB.1 — V1.9.459 Triggers azuis Tier 2 → unificados verde-vital translúcido (commit `ae7df08`)
+
+**Feedback Pedro** (screenshot `/paciente/agendamentos`):
+
+> *"os triggers azuis podem ficar iguais aqui tbm verde? sabe veja como esta da pra dar um tapa mais high tech?"*
+
+**Estado empírico anterior**:
+- Tier 1 Eduardo: `bg-emerald-600/90 hover:bg-emerald-500` (verde-esmeralda saturado)
+- Tier 1 Ricardo: `bg-primary-600/90 hover:bg-primary-500` (verde-primary saturado)
+- Tier 2 Parceiros: `bg-cyan-600/90 hover:bg-cyan-500` (ciano saturado — "azul" pra Pedro)
+
+**Histórico** (linha 122-124): V1.9.111-A já unificou Tier 2 em 1 cor única (antes era "discoteca" 5 cores). V1.9.459 deu **próximo passo**: unifica Tier 1+2 em verde-vital translúcido sofisticado.
+
+**Fix cirúrgico** (5 edits):
+1. Eduardo buttonClasses → translúcido `rgba(0,229,178,0.10)` + border + texto `#00E5B2`
+2. Ricardo buttonClasses → mesmo
+3. PARTNER_ACCENT buttonClasses → mesmo (Pedro pediu "iguais verde")
+4. Remove `text-white` hardcoded no JSX linha 1373 (card)
+5. Remove `text-white` hardcoded no JSX linha 2135 (profile modal)
+
+**Diferenciação Tier 1 vs Tier 2 PRESERVADA** via outros sinais semânticos (cor do CTA não era único sinal):
+- Estrela ⭐ amber-400 fill + badge "OFICIAL" / "SEU MÉDICO" (Tier 1)
+- Header "Equipe Oficial MedCannLab" amber-400 vs "Profissionais Parceiros" cyan-400
+- Posicionamento (Tier 1 sempre no topo)
+- Badge "🆕 NOVO" (Tier 2 sem rating real)
+
+**Princípio aplicado**: polir-não-inventar (pattern V1.9.458 ChatModeSelector reutilizado).
+
+### AB.2 — V1.9.460 Conteúdo da aba ~20% mais compacto (commit `8bcffa7`)
+
+**Feedback Pedro**:
+
+> *"acho que o conteudo dessa aba pode diminuir total tbm uns 20% para caber mais na tela"*
+
+**7 ajustes cirúrgicos de spacing/sizing** (zero estrutura HTML tocada):
+
+| Elemento | Antes | Depois | Ganho vertical |
+|---|---|---|---|
+| Container card | `p-4 md:p-6` | `p-3 md:p-4` | ~16px |
+| Header título | `text-lg md:text-xl` + ícone w-5/6 | `text-base md:text-lg` + w-4/5 | ~8px |
+| Header descrição | `text-sm mt-1` | `text-xs mt-0.5` | ~4px |
+| Busca/filtros | `gap-3 mb-4` | `gap-2 mb-3` | ~8px |
+| Tier 1 → Tier 2 | `mb-6` | `mb-4` | ~8px |
+| Headers Tier | `text-xs mb-3` + Star w-3.5 | `text-[11px] mb-2` + w-3 | ~4px |
+| Grid gap cards | `gap-3` | `gap-2` | ~4px |
+| Card padding | `p-3 gap-2.5` | `p-2.5 gap-2` | ~4-6px |
+| Avatar card | `w-9 h-9` + Stethoscope w-3.5 | `w-8 h-8` + w-3 | ~4px |
+| Excerpt margin | `mt-1.5` | `mt-1` | ~2px |
+
+**Estimativa total**: ~60-80px vertical compactado = ~15-20% real (depende viewport).
+
+**NÃO TOCADO** (preservação):
+- Botões CTA (V1.9.458 + V1.9.459 acabados de polish)
+- Badges Oficial / 🆕 NOVO / SEU MÉDICO
+- DotPagination
+- Lógica/data binding
+- Calendar + Próximas Consultas (cards embaixo)
+
+### AB.3 — Princípios aplicados nos 3 commits UX noite²
+
+| Princípio | Aplicação |
+|---|---|
+| `project_marca_medcannlab_brandbook_v3_22_05` | Paleta cool preservada (verde-vital + ciano-cognitivo + verde-regenerativo) — só intensidade ajustada |
+| `feedback_recusa_correta_vale_mais_que_resposta_22_05` | Sofisticação médica > consumer flash |
+| `feedback_polir_nao_inventar` | V1.9.458 pattern reutilizado em V1.9.459. V1.9.460 ajustou spacing dentro de classes Tailwind existentes |
+| `feedback_pedro_nao_usar_card_de_escolha` | Após PC desligar antes do commit, princípio reaplicado: feedback Pedro = executar direto, não perguntar inline |
+
+---
+
+## 🎯 BLOCO AC — Frase âncora versão FINAL FINAL FINAL FINAL (pós V1.9.460)
+
+> *"Sessão noite² 26/05 começou com audit Lovable × PAT 17 itens (cross-check empírico revelou ~70-80% confirmavam memória / 5 genuinamente novos) → cristalizou princípio meta 'IA executora em projeto com memória persistente densa não descobre — valida, atualiza, sinaliza desvio' (memory `feedback_claude_audit_diferenciar_validacao_de_descoberta_26_05`). Pedro testou portal `validar.iti.gov.br` oficial gov.br → APROVADO ✓ assinatura PBAD do PDF Pedro Paciente (1ª validação por terceiro neutro do MedCannLab, memory `project_marco_empirico_validacao_iti_externa_pedro_paciente_26_05`). 5 fixes doc-only executados + pipeline `patient_documents`→OCR→`lab_results` mapeado e parqueado com 3 triggers explícitos (memory `project_pipeline_patient_documents_ocr_lab_results_parqueado_26_05`). Push commit `4a47886` rejeitado: Lovable IA paralela tinha mexido em `src/integrations/supabase/types.ts` (codegen do schema, ZERO Edges/migrations/locks). Rebase clean, princípio implícito Pedro 'aqui é a fonte da verdade, não ele' validado empíricamente (Lovable só toca artefato derivado). Pedro voltou pós-LoL pedindo 3 polishes UX: (1) V1.9.458 ChatModeSelector CTAs translúcidos high-tech 'mais sofisticado'; (2) V1.9.459 Agendamentos triggers Tier 1+2 unificados verde-vital translúcido (V1.9.111-A unificou Tier 2 → V1.9.459 unifica Tier 1+2 mantendo hierarquia semântica via estrela/header/posição); (3) V1.9.460 conteúdo aba Agendamentos ~15-20% mais compacto via 7 ajustes spacing/sizing cirúrgicos. Lock V1.9.299 PBAD INTOCADO. Zero código clínico tocado. 4 commits do dia (V1.9.455+457 ICP + docs noite² + V1.9.458+459+460 UX) + 1 rebase Lovable absorvido. Estado git: HEAD `8bcffa7` em main+master ambos remotes. Constituição MedCannLab inteira preservada: arquitetura técnica + epistemologia codificada + disciplina cultural + agora vacina visual (sofisticação médica vs consumer flash) cristalizada em pattern translúcido reutilizável."*
+
+— Sessão 26/05 noite² encerrada (versão FINAL FINAL FINAL FINAL, ~01h+ BRT 27/05). **Push 4 refs OK em todas as branches**. Vercel CI vai auto-deployar UX polish em ~2-3min. Working tree clean (`deno.lock` untracked persistente — herança refator parqueado 22/05).
+
+### O QUE ESPERAR pós V1.9.458+459+460 (próximas 24-72h)
+
+| Onde | O que muda visual |
+|---|---|
+| Modal "Como você quer interagir com a Nôa?" | CTAs translúcidos verde/ciano com border + texto colorido legível |
+| `/paciente/agendamentos` Tier 1 (Eduardo + Ricardo) | Botões "Vincular / Agendar consulta" verde-vital translúcido sofisticado |
+| `/paciente/agendamentos` Tier 2 (9 Parceiros) | Mesma cor verde-vital translúcido (não mais ciano) — uniformidade |
+| `/paciente/agendamentos` layout geral | ~60-80px vertical economizado (mais cards/calendar visíveis sem scroll) |
+| Tier 1 vs Tier 2 ainda distinguíveis? | ✅ via estrela ⭐ amber + header amber/cyan + badge "OFICIAL"/"NOVO" + posição |
+
+**Próxima sessão Claude entra com**:
+- 12 memórias 26/05 (5 laptop + 4 desktop tarde + 3 noite²) + ainda 3 NÍVEL 1 entry-points
+- Este diário (Blocos A→AC, ~26 blocos total — sessão mais longa documentada do mês)
+- 7 commits push 4 refs em 26/05 (V1.9.455+456+457 ICP-Brasil + docs noite² + V1.9.458+459+460 UX polish)
+- Princípio meta cristalizado VALIDAÇÃO vs DESCOBERTA será aplicado por padrão
