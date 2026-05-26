@@ -221,7 +221,7 @@ Memórias completas: `audit_pendencias_um_mes_pos_pbad_20_05.md` (Sprint 1) + me
 
 *Audit 26/05 (Management API)*: total real **14 Edge Functions ativas** (descoberto `get_chat_history` órfã não documentada, caller a investigar — provavelmente legacy V1.9.84 Escriba). 5 triggers em auth.users.
 
-*Vetor segurança conhecido (V1.9.457 parqueado pré-Marco 2)*: `sign-pdf-icp` Edge tem `verify_jwt: false` + zero ownership check. ANON_KEY pode invocar pra qualquer `documentId`. Hoje risco BAIXO (34 pacientes rede pessoal), pós-Marco 2 = ALTO LGPD. Pendência: Edge validar JWT + `auth.uid() = professional_id` OR admin.
+*Vetor segurança FECHADO V1.9.457 (26/05)*: `sign-pdf-icp` Edge v19 agora valida Authorization header obrigatório + resolve user via `auth.getUser(token)` + ownership check (`document.professional_id === user.id` OR admin OR SERVICE_ROLE_KEY bypass). Algoritmo PBAD AD-RB integralmente preservado (lock V1.9.299 intocado). Smoke 1+2 validados (401 sem auth e com ANON_KEY role=anon).
 
 ## REGRA HARD §1 (constitucional, anti-kevlar)
 
@@ -350,9 +350,6 @@ Laptop equivalente:
   • V1.9.452 sanitize assessment_excerpt em clinical_rationalities
     (LGPD reforço — empíricamente visto vazamento nome 25/05 smoke Carolina;
     pré-Marco 2 obrigatório; trigger: pacientes externos reais)
-  • V1.9.457 Edge sign-pdf-icp validar JWT + ownership (`auth.uid() = professional_id`)
-    — vetor abuso ANON_KEY hoje BAIXO risco (rede pessoal 34 pacientes), pós-Marco 2
-    = ALTO risco LGPD. Edge tem `verify_jwt: false` + zero ownership check (audit 26/05)
 
 🟡 P1 (polish pré-escala)
   • V1.9.451 function calling Edge (lookup_patient_status + get_appointments_summary)
@@ -374,6 +371,13 @@ Laptop equivalente:
     backfill (11/12 sucesso, 1 fail graceful Gilda médico legacy sem cert).
     Sistema saiu de 2/17 docs com PDF binário (12%) pra 13/17 (76%).
     Núcleo V1.9.299 PBAD AD-RB CONFORME ITI integralmente preservado.
+  • V1.9.457 Edge sign-pdf-icp auth + ownership (anti-abuso ANON_KEY) —
+    commit d19cc83 merge f90f346 (branch feature/v1_9_457_jwt_validation),
+    Edge v19 deployada. Smoke pós-deploy: SMOKE 1 (sem auth) + SMOKE 2
+    (ANON_KEY role=anon) ambos retornam 401 ✅. Algoritmo PBAD AD-RB
+    integralmente preservado (lock V1.9.299 intocado). V1.9.455 PARTE C
+    auto-invoke continua funcionando (supabase.functions.invoke injeta
+    session JWT user automático → ownership pass).
 
 ✅ RESOLVIDOS empíricamente no mês (mantido pra rastreio)
   • RLS chat-images → V1.9.98 (28/04)
