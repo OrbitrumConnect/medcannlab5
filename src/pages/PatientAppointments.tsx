@@ -1274,12 +1274,13 @@ const PatientAppointments: React.FC = () => {
       key={professional.id}
       whileHover={{ scale: 1.015, y: -2 }}
       transition={{ duration: 0.2 }}
-      className={`rounded-xl border ${isOfficial ? 'border-amber-500/30 bg-gradient-to-br from-slate-900/80 to-amber-950/15' : 'border-slate-700/40 bg-slate-900/40'} p-3 flex flex-col justify-between gap-2.5 transition-all hover:border-primary-500/40 hover:shadow-lg hover:shadow-primary-500/10`}
+      className={`rounded-xl border ${isOfficial ? 'border-amber-500/30 bg-gradient-to-br from-slate-900/80 to-amber-950/15' : 'border-slate-700/40 bg-slate-900/40'} p-2.5 flex flex-col justify-between gap-2 transition-all hover:border-primary-500/40 hover:shadow-lg hover:shadow-primary-500/10`}
     >
-      <div className="flex items-start gap-2.5">
+      {/* V1.9.460 — card padding p-3→p-2.5, gap-2.5→gap-2, avatar w-9→w-8 */}
+      <div className="flex items-start gap-2">
         <div className="relative shrink-0">
-          <div className={`w-9 h-9 rounded-lg flex items-center justify-center border border-slate-800/60 ${professional.accentClasses}`}>
-            <Stethoscope className="w-3.5 h-3.5" />
+          <div className={`w-8 h-8 rounded-lg flex items-center justify-center border border-slate-800/60 ${professional.accentClasses}`}>
+            <Stethoscope className="w-3 h-3" />
           </div>
           {/* V1.9.272 — Círculo de vínculo paciente↔profissional (top-right do avatar).
               Verde (consulta ativa/indicação direta) / Amarelo (rede de cuidado via equipe) / Vermelho (sem vínculo). */}
@@ -1335,9 +1336,10 @@ const PatientAppointments: React.FC = () => {
               <span className="truncate">{professional.location}</span>
             </p>
           )}
-          {/* V1.9.144: excerpt só se houver bio/descrição real — sem placeholder genérico */}
+          {/* V1.9.144: excerpt só se houver bio/descrição real — sem placeholder genérico
+              V1.9.460 — mt-1.5→mt-1 pra compactar */}
           {professional.excerpt && (
-            <p className="text-xs text-slate-300 mt-1.5 line-clamp-2">{professional.excerpt}</p>
+            <p className="text-xs text-slate-300 mt-1 line-clamp-2">{professional.excerpt}</p>
           )}
         </div>
       </div>
@@ -1692,22 +1694,24 @@ const PatientAppointments: React.FC = () => {
           <div className="space-y-6">
             <div className="space-y-4 md:space-y-6">
               {/* Profissionais Disponíveis - Unificado */}
-              <div className="bg-slate-800 rounded-xl p-4 md:p-6">
+              {/* V1.9.460 — container ~20% mais compacto pra caber mais na tela (Pedro 26/05 noite²) */}
+              <div className="bg-slate-800 rounded-xl p-3 md:p-4">
                 {/* V1.9.x: removido botão "Novo Agendamento" duplicado deste card.
                     Pedro 08/05: redundante porque já existe trigger no header da aba +
                     o fluxo canônico é via cards profissional (Ver perfil → Agendar). */}
-                <div className="mb-4 md:mb-5">
-                  <h3 className="text-lg md:text-xl font-semibold text-white flex items-center gap-2">
-                    <Stethoscope className="w-5 h-5 md:w-6 md:h-6 text-primary-300" />
+                <div className="mb-3 md:mb-4">
+                  <h3 className="text-base md:text-lg font-semibold text-white flex items-center gap-2">
+                    <Stethoscope className="w-4 h-4 md:w-5 md:h-5 text-primary-300" />
                     Vincular a um Especialista
                   </h3>
-                  <p className="text-sm text-slate-400 mt-1">
+                  <p className="text-xs text-slate-400 mt-0.5">
                     Escolha um especialista para iniciar seu acompanhamento ou agende sua consulta.
                   </p>
                 </div>
 
-                {/* Busca e filtros — V1.9.x: 2 inputs dedicados (profissional × localidade) + dropdowns */}
-                <div className="flex flex-col md:flex-row gap-3 mb-4">
+                {/* Busca e filtros — V1.9.x: 2 inputs dedicados (profissional × localidade) + dropdowns.
+                    V1.9.460 — gap+mb reduzidos pra compactar a tela. */}
+                <div className="flex flex-col md:flex-row gap-2 mb-3">
                   <div className="flex-1">
                     <label className="sr-only" htmlFor="professional-search">Buscar profissional</label>
                     <input
@@ -1786,25 +1790,27 @@ const PatientAppointments: React.FC = () => {
                   </div>
                 )}
 
-                {/* V1.9.111: Tier 1 — Equipe Oficial MedCannLab (Ricardo + Eduardo) */}
+                {/* V1.9.111: Tier 1 — Equipe Oficial MedCannLab (Ricardo + Eduardo)
+                    V1.9.460 — mb-6→mb-4 (spacing entre seções) + gap-3→gap-2 (grid cards) */}
                 {tier1Professionals.length > 0 && (
-                  <div className="mb-6">
-                    <h4 className="text-xs uppercase tracking-widest text-amber-400 font-bold mb-3 flex items-center gap-2">
-                      <Star className="w-3.5 h-3.5 fill-amber-400" />
+                  <div className="mb-4">
+                    <h4 className="text-[11px] uppercase tracking-widest text-amber-400 font-bold mb-2 flex items-center gap-2">
+                      <Star className="w-3 h-3 fill-amber-400" />
                       Equipe Oficial MedCannLab
                     </h4>
-                    {/* V1.9.259 — grid mais denso pra cards quadrados (lg:grid-cols-3 + gap-3) */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                    {/* V1.9.259 — grid mais denso pra cards quadrados (lg:grid-cols-3) */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
                       {tier1Professionals.map(p => renderProfessionalCard(p, true))}
                     </div>
                   </div>
                 )}
 
-                {/* V1.9.111: Tier 2 — Profissionais Parceiros (paginated 6/page com slide animation) */}
+                {/* V1.9.111: Tier 2 — Profissionais Parceiros (paginated 6/page com slide animation)
+                    V1.9.460 — header text-xs→text-[11px] + mb-3→mb-2 + grid gap-3→gap-2 */}
                 {tier2Professionals.length > 0 && (
                   <div>
-                    <h4 className="text-xs uppercase tracking-widest text-cyan-400 font-bold mb-3 flex items-center gap-2">
-                      <Users className="w-3.5 h-3.5" />
+                    <h4 className="text-[11px] uppercase tracking-widest text-cyan-400 font-bold mb-2 flex items-center gap-2">
+                      <Users className="w-3 h-3" />
                       Profissionais Parceiros ({tier2Professionals.length})
                     </h4>
                     <AnimatePresence mode="wait">
@@ -1814,7 +1820,7 @@ const PatientAppointments: React.FC = () => {
                         animate={{ x: 0, opacity: 1 }}
                         exit={{ x: -40, opacity: 0 }}
                         transition={{ duration: 0.25 }}
-                        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3"
+                        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2"
                       >
                         {paginatedPartners.map(p => renderProfessionalCard(p, false))}
                       </motion.div>
