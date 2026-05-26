@@ -1,5 +1,5 @@
 // =====================================================
-// 🔐 EDGE FUNCTION: PDF ASSINADO ICP-BRASIL REAL (V1.9.299)
+// 🔐 EDGE FUNCTION: PDF ASSINADO ICP-BRASIL REAL (V1.9.299 + V1.9.457)
 // =====================================================
 // Gera PDF programaticamente + embeda PKCS#7 detached no /Sig dictionary
 // conforme ISO 32000-1 §12.8. Validável em validar.iti.gov.br e Adobe Acrobat.
@@ -11,7 +11,17 @@
 // IMPORTANTE: roda PARALELO à edge digital-signature (V1.9.176).
 // Edge digital-signature continua INTACTA — gera PKCS#7 sobre JSON (auditoria interna).
 // Esta edge gera PDF jurídico oficial (PKCS#7 sobre bytes do PDF, /Sig embedded).
-// ZERO regressão.
+// ZERO regressão sobre algoritmo PBAD AD-RB CONFORME ITI (lock V1.9.299).
+//
+// V1.9.457 (26/05/2026): auth check + ownership validation (anti-abuso ANON_KEY).
+// Adiciona 2 camadas SEM tocar algoritmo PBAD:
+//   1. Authorization header obrigatório (rejeita invokes anônimos)
+//   2. Ownership check: user.id === document.professional_id OR user.type === 'admin'
+//   3. Bypass total se Authorization é SERVICE_ROLE_KEY (backfill/cron interno)
+// Resolve vetor abuso: ANON_KEY no bundle pública não consegue mais invocar
+// pra documentId de outro médico (gerar PDF spurious encheria Storage + audit CFM).
+// Audit 26/05 BLOCO L pós-V1.9.455. ZERO impacto V1.9.455 PARTE C (frontend
+// invoke injeta JWT user automático via supabase.functions.invoke).
 // =====================================================
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2"
@@ -1079,6 +1089,56 @@ Deno.serve(async (req: Request) => {
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
+    // ========================================================================
+    // V1.9.457: AUTH CHECK + OWNERSHIP (anti-abuso ANON_KEY)
+    // Anti-regressão: NÃO toca algoritmo PBAD (lock V1.9.299 preservado).
+    // Adiciona 2 camadas ANTES do body parsing:
+    //   1. Authorization header obrigatório
+    //   2. Token resolve em 3 modos:
+    //      a) Token === SERVICE_ROLE_KEY → bypass total (backfill/cron interno)
+    //      b) Token é JWT user válido → continua, ownership check pós-doc lookup
+    //      c) Token inválido/expirado → 401
+    // ========================================================================
+    const authHeader = req.headers.get('Authorization')
+    if (!authHeader) {
+      return new Response(JSON.stringify({
+        success: false,
+        error: 'Authorization header obrigatório (V1.9.457 anti-abuso)'
+      }), {
+        status: 401,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      })
+    }
+
+    const token = authHeader.replace(/^Bearer\s+/i, '').trim()
+    const isServiceRoleCall = token === supabaseServiceKey
+
+    let authenticatedUserId: string | null = null
+    let isAdminUser = false
+
+    if (!isServiceRoleCall) {
+      // Resolve user via JWT (frontend supabase.functions.invoke injeta automaticamente)
+      const { data: userData, error: userError } = await supabase.auth.getUser(token)
+      if (userError || !userData?.user) {
+        return new Response(JSON.stringify({
+          success: false,
+          error: 'Token JWT inválido ou expirado (V1.9.457). Faça login novamente.'
+        }), {
+          status: 401,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        })
+      }
+      authenticatedUserId = userData.user.id
+
+      // Verifica se é admin (admins têm bypass de ownership)
+      const { data: profile } = await supabase
+        .from('users')
+        .select('type')
+        .eq('id', authenticatedUserId)
+        .single()
+      isAdminUser = profile?.type === 'admin'
+    }
+
     const body: SignPdfRequest = await req.json()
     const { documentId } = body
     const documentType: 'prescription' | 'exam_request' = body.documentType || 'prescription'
@@ -1110,6 +1170,25 @@ Deno.serve(async (req: Request) => {
         status: 404,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       })
+    }
+
+    // V1.9.457: OWNERSHIP CHECK — só permite gerar PDF se for:
+    //   - service_role call (backfill/cron) — já passou bypass acima
+    //   - admin (qualquer doc)
+    //   - profissional dono do documento (professional_id === user.id)
+    // Bloqueia: paciente do doc, OUTROS médicos, anon, etc.
+    if (!isServiceRoleCall && !isAdminUser) {
+      const isOwnerProfessional = document.professional_id === authenticatedUserId
+      if (!isOwnerProfessional) {
+        console.warn(`[V1.9.457] ACCESS DENIED — user ${authenticatedUserId} tentou gerar PDF do doc ${documentId} (owner: ${document.professional_id})`)
+        return new Response(JSON.stringify({
+          success: false,
+          error: 'Você não tem permissão para gerar PDF deste documento (V1.9.457 ownership check).'
+        }), {
+          status: 403,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        })
+      }
     }
 
     if (document.status !== 'signed' && document.status !== 'sent') {
