@@ -1,6 +1,40 @@
-# 📚 Memory Index — Hierarquia explícita (06/05 atualizado pós-audit 360°)
+# 📚 Memory Index — Hierarquia explícita (25/05 atualizado pós-retrospectiva mensal V3)
 
 ## 🔴 NÍVEL 1 — ENTRY POINT (LER PRIMEIRO, sempre)
+
+### ⭐⭐ META-MEMÓRIA do mês (25/05 — referência primária)
+
+- [⭐⭐ Constituição MedCannLab = 2 vertentes da mesma matriz epistemológica Ricardo (META 25/05)](feedback_duas_vertentes_uma_matriz_epistemologica_constituicao_medcannlab_25_05.md) — **META-PRINCÍPIO PIVOTAL DO MÊS.** Conecta 24/05 (chat paciente "queixa ≠ sintoma") + 25/05 (Matrix Z2 "sustentar lacuna sem colapsar"). 4 eixos comuns: Escuta>Interpretação · Fidelidade>Completude · Honestidade>Utilidade percebida · Estrutura>Síntese. Framework filtro 4 perguntas pra TODA feature clínico-conversacional futura.
+
+- [📅 Retrospectiva mensal 26/04 → 25/05/2026 — snapshot ponteiro](project_retrospectiva_mensal_26_04_a_25_05_2026.md) — Snapshot consolidado do mês (2338 linhas no arquivo `RETROSPECTIVA_MENSAL_2026_04_26_a_2026_05_25.md` raiz). 30 dias: 90 commits, 94 memórias, 26 diários, +91% reports, +113% pacientes, 40 reports ICP REAL, 30+ princípios cristalizados. Referência primária pra context-continuity.
+
+### 🔥 Cristalizações pivotais 24-25/05
+
+- [🩺 Queixa ≠ Sintoma — AEC preserva abertura fenomenológica (princípio Ricardo 24/05)](feedback_queixa_nao_e_sintoma_aec_e_abertura_fenomenologica_24_05.md) — ⭐ **VERTENTE CLÍNICA da Constituição.** 2 textos Ricardo pivotais (madrugada+manhã 24/05). Anamnese clássica é centrífuga (sintoma → doença); AEC é centrípeta (indivíduo → eventualmente doença). Aplicado V1.9.443+A+B PATIENT_FREE_CHAT_GUARDRAILS.
+
+- [🧬 Locks MACRO vs MICRO + paradoxo corpus rico ↔ drift (Matrix alucinação 25/05)](feedback_locks_macro_vs_micro_matrix_alucinacao_completiva_25_05.md) — ⭐ **VERTENTE PESQUISA da Constituição.** Bug paradigmático: Matrix alucinou 6 dados clínicos inexistentes pós-V1.9.450 (corpus expandido). Solução dual: V1.9.450-B (reduz PRESSÃO) + V1.9.453+A+B (reduz PERMISSÃO via taxonomia 3 cenários + negação ≠ ausência). Princípio meta: lacuna explícita é COMPORTAMENTO DESEJADO.
+
+- [♻ AEC é repelente natural de demanda fora-escopo (3 recalibrações Pedro 24/05)](feedback_aec_como_repelente_natural_de_demanda_fora_escopo_24_05.md) — ⭐ Pedro recalibrou Claude 3x na mesma conversa. 89.8% chat livre vs 2% AEC formal (empírico PAT). Auto-seleção saudável > onboarding inflado. Antes de propor fix UX baseado em "usuário abandonou", validar se ele pertencia ao escopo.
+
+- [📝 Doc institucional sem PAT cruzar não é válido (princípio Ricardo 23/05)](feedback_doc_institucional_sem_pat_nao_e_valido_23_05.md) — ⭐ Ricardo grupo WhatsApp sócios 23/05 10h11 BRT. "Quem não cruza com PAT cria dívida pra quem vai cruzar depois". Adotado como regra compartilhada. Aplicado DEZENAS de vezes no mês. Marcos pra frases aspiracionais virarem fato: V1.9.451+452 + Marco 1+2+3 + 20-30 pacientes pagantes.
+
+- [✅ Smoke AEC COMPLETA obrigatória pós-mudança clinicalAssessmentFlow.ts](feedback_smoke_aec_completa_obrigatoria_pos_clinicalassessmentflow_mudanca_24_05.md) — ⭐ Bug V1.9.443-B (Claude introduziu ReferenceError em produção 24/05 noite). Carolina pegou em 10min. Hotfix 10min. **type-check NÃO substitui smoke runtime FSM.** Checklist 5 passos obrigatório pós-mudança em código FSM clínico.
+
+### 🔥 Memórias do dia 25/05 (Bloco O + S)
+
+- [🔢 V1.9.449 count pacientes filter + 3 P0 Ricardo (gaps function calling parqueados)](feedback_count_pacientes_v1_9_449_e_gaps_function_calling_v1_9_450_25_05.md) — V1.9.449 fix `.in('type', ['paciente','patient'])`. Ricardo 48→34 reais. 14 admin/professional sumiu. 3 P0: count (resolvido), Gilda lookup (V1.9.451 parqueado), agenda mês (V1.9.451 parqueado), timezone (gotcha conhecido).
+
+- [🛡️ Matrix Z2 contida é FEATURE + GPT externo pode sugerir anti-Constituição](feedback_matrix_z2_contida_e_feature_nao_bug_e_gpt_externo_pode_sugerir_anti_constituicao_25_05.md) — Triagem cirúrgica 8 sugestões GPT externo. 2 REJEITADAS (camada indiciária probabilística + motor sintoma↔CID). Z2 contida ≠ Z2 burra. Toda sugestão GPT triada contra Z2/Locks/Princípio Ricardo ANTES do mérito.
+
+- [📜 Caso João Guimarães — QR Code embedded no PDF gap (1º paciente externo real)](feedback_qr_code_embedded_pdf_gap_caso_joao_guimaraes_25_05.md) — 25/05 ~17:46-18:44 BRT. João levou PDF assinado ICP ao laboratório. Atendente recusou agendar por falta de QR. PDF juridicamente válido (ICP-Brasil) MAS sem QR embedded. Validação jurídica ≠ validação operacional. Resolução curta enviada via WhatsApp.
+
+- [🧱 V1.9.455 QR Code embedded no PDF — design 3 opções A/B/C parqueado](project_v1_9_455_qr_code_embedded_pdf_design_25_05.md) — Design técnico pra resolver gap caso João. 3 opções A/B/C com trade-offs vs Lock V1.9.299. Recomendação: Opção C (QR antes de assinar, upstream). Smoke obrigatório 5 etapas. NÃO codar sem alinhamento Pedro+Ricardo.
+
+- [🔒 Lock V1.9.299 PBAD protege de modificação pós-assinatura (princípio técnico)](feedback_lock_v1_9_299_pbad_protege_modificacao_pos_assinatura_25_05.md) — PBAD = assinatura por hash do binário PDF. Qualquer byte modificado DEPOIS = hash diferente = validação ITI volta pra "Desconhecida". Lock V1.9.299 do CLAUDE.md é manifestação técnica, não cautela arbitrária. Toda feature que mexe no PDF assinado deve modificar ANTES da assinatura.
+
+- [🌍 Paciente externo real estressa arquitetura ≠ teste interno](feedback_paciente_externo_real_estressa_arquitetura_25_05.md) — Caso João paradigmático. Smoke interno termina em "PDF gerado + assinatura válida"; smoke externo termina em "receptor aceita o PDF". Frase âncora Pedro: *"ricardo sempre vem com uma!"*. Pré-Marco 2: toda feature de OUTPUT precisa de Smoke 3 externo formal.
+
+### Anteriores (continua)
 
 - [⏸ Refator tradevision-core PAUSADO — branch não-deployada (22/05)](project_refator_tradevision_core_pausado_22_05.md) — refator anti-bus-factor do `index.ts` (7036 linhas). Branch `refactor/tradevision-core-modular`, 5 commits (V1.9.419 + A/B/C/D): proteções + cors/types/triggers extraídos + ~109 linhas de código morto removidas. `deno check` verde (baseline 5) em cada passo; Deno 2.7.14 em `~/.deno`. **NÃO deployada/merjada** — prod roda o antigo. Retomar = deploy+smoke+merge do que está pronto (Pedro decide pós-sono 22/05); rollback = tag `v1.9.418-...`. Deploy SEMPRE via CLI (`npm run deploy:tradevision`). doc-detection/commands/finalize + handler `Deno.serve` parqueados.
 
