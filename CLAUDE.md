@@ -83,6 +83,10 @@ Sistema mantém **duas fontes paralelas** com propósitos diferentes (divergênc
 | `clinical_reports.content.rationalities` (JSONB) | **Source de UI** — snapshot displayável | Frontend (ClinicalReports.tsx, PDF, share) | Latência, formato display, imutabilidade do que paciente viu |
 | `clinical_rationalities` (TABELA) | **Espelho analítico** — KPIs, pesquisa, RAG interno | Analytics (v_clinical_cycle_health), service RAG (rationalityAnalysisService linha 322) | Query, agregação, JOIN |
 
+**Estrutura empírica `content.rationalities`** (audit PAT 26/05 noite): é **OBJECT** com chaves por tipo (`biomedical`, `integrative`, `homeopathic`, `traditionalChinese`, `ayurvedic`), NÃO array. Empírico em 143 reports: 48 NULL / 95 object / 0 array. Comparação direta `jsonb_array_length(...) vs COUNT(*) clinical_rationalities` é **inválida** (granularidade diferente — jsonb por tipo, tabela por instância). Pra medir drift correto: `jsonb_object_keys(content->'rationalities')` em jsonb × `rationality_type` na tabela.
+
+**Schema empírico tabela `clinical_rationalities`**: `id, report_id, patient_id, rationality_type, assessment (text COM PII), recommendations (jsonb), considerations, approach, generated_by, created_at, updated_at`. **Campo `assessment_excerpt` não existe** — campo real é **`assessment`**.
+
 ### Regra de ouro
 
 **Nunca derivar UI paciente de tabelas analíticas de racionalidade. Sempre derivar de `clinical_reports.content.*`.**
@@ -223,6 +227,36 @@ Memórias completas: `audit_pendencias_um_mes_pos_pbad_20_05.md` (Sprint 1) + me
 
 *Vetor segurança FECHADO V1.9.457 (26/05)*: `sign-pdf-icp` Edge v19 agora valida Authorization header obrigatório + resolve user via `auth.getUser(token)` + ownership check (`document.professional_id === user.id` OR admin OR SERVICE_ROLE_KEY bypass). Algoritmo PBAD AD-RB integralmente preservado (lock V1.9.299 intocado). Smoke 1+2 validados (401 sem auth e com ANON_KEY role=anon).
 
+## Cron Jobs ativos (pg_cron — catalogado 26/05 noite pós-audit empírico)
+
+3 cron jobs registrados em `cron.job` (extension `pg_cron` v1.6.4):
+
+| jobname | schedule | comando | telemetria |
+|---|---|---|---|
+| `video-call-reminders-5min` | `*/5 * * * *` | `net.http_post` → Edge `video-call-reminders` (V1.9.99-B sweep+Resend) | rodando OK desde 28/04 |
+| `monthly-closing-medcannlab` | `0 3 1 * *` (dia 1 do mês às 3h) | `SELECT public.process_monthly_closing()` — chama `calculate_monthly_ranking` + `grant_benefits_rewards` (**gamification**) | **0 runs ainda** — cron criado após dia 1/05; primeira execução prevista **01/06/2026 03h BRT** |
+| `expire-renal-suggestions` | `0 2 * * *` (todo dia 2h) | `UPDATE renal_inline_suggestions SET status='expired' WHERE pending AND expires_at < now()` | rodando OK diariamente, mas empíricamente vazio (1 row total tabela — Maria das Dores 14/05) |
+
+**Telemetria agregada `cron.job_run_details` últimos 7d**: 2.023 runs, **100% succeeded**, last_run 26/05 18:20 BRT.
+
+**⚠️ Atenção `monthly-closing-medcannlab` — gamification dormindo**: memory `project_veredito_final_24_04` documentou *"gamification DESABILITADA por feature flag"*. Cron chama `calculate_monthly_ranking` + `grant_benefits_rewards` mesmo assim. **Verificar empíricamente em 02/06/2026** após primeira execução: se populou `gamification_points` indevidamente → desativar cron via `SELECT cron.unschedule('monthly-closing-medcannlab')` até reativar feature explicitamente. Pré-condição checklist: revisar definição de `calculate_monthly_ranking` + `grant_benefits_rewards` para confirmar se honram feature flag interno.
+
+## Cadência mínima `clinical_qa_runs` (cristalizado 26/05 noite — princípio operacional, não código)
+
+`clinical_qa_runs` é a tabela do **PMF Audit Framework** Memo 28/04 — desenhada V1.9.85 (27/04) com 17 colunas ricas: `verdict + verdict_score + log_findings + db_findings + code_findings + green_facts + yellow_hypotheses + orange_interpretations + red_blindspots + system_version + notes + metadata`. **Cobertura empírica audit 26/05**: 1 row / 133 reports assináveis = **0,75%**. Última execução **27/04** (Claude rodou formal V1.9.85 score 75 "parcial"). Framework existe mas **não virou processo**.
+
+### Cadência mínima proposta
+
+1. **1 QA run por nova versão V1.9.X que toca código clínico** (AEC FSM / Pipeline / Verbatim / signature / RAG) — não toda versão, só as que afetam pirâmide 8 camadas
+2. **1 QA run quinzenal num report aleatório** — rotação Claude/Pedro/Ricardo executando
+3. **1 QA run OBRIGATÓRIA pré-Marco 2 em report do 1º paciente externo pagante** — instrumenta baseline antes da escala real
+
+**Custo**: ~1h Claude + ~30min review humano = ~1h30min por run. Cadência mínima ~2/mês ≈ 3h/mês overhead. Pré-PMF aceitável.
+
+**Risco de NÃO fazer**: chegada Marco 2 sem baseline empírico de validação clínica = recurso fica indemonstrável para investidor / regulador / 2º médico independente. Memo 28/04 frase âncora: *"Crítico instrumentar AGORA. Quando paciente externo entrar, baseline já existe pra comparação."*
+
+**Trigger pra ativar cadência formal**: próxima versão V1.9.X que tocar AEC FSM ou Pipeline, OU 14/06/2026 (quinzena), o que vier primeiro. Cristalizar `feedback_clinical_qa_runs_cadencia_minima_26_05` quando 2ª run rodar empíricamente (anti-cristalização-prematura).
+
 ## REGRA HARD §1 (constitucional, anti-kevlar)
 
 **"Consentimento ≠ Agendamento"** — `concordo` durante revisão clínica nunca dispara agendamento. Apenas `sim/autorizo` à pergunta literal de consentimento (`isAskingConsent` guard em `tradevision-core/index.ts`) fecha AEC.
@@ -347,9 +381,15 @@ Laptop equivalente:
 ```
 🔴 P0 (segurança/funcional)
   • Migrar WiseCare homolog → produção (provider vídeo)
-  • V1.9.452 sanitize assessment_excerpt em clinical_rationalities
-    (LGPD reforço — empíricamente visto vazamento nome 25/05 smoke Carolina;
-    pré-Marco 2 obrigatório; trigger: pacientes externos reais)
+  • V1.9.452 sanitize `assessment` em clinical_rationalities
+    (LGPD reforço — empíricamente visto vazamento nome 25/05 smoke Carolina + audit
+    PAT 26/05 confirmou 4/5 rows recentes com nome completo: Maria das Dores Pinto
+    Pitoco / Carolina Campello do Rêgo Valença / "O paciente, Pedro";
+    campo real é `assessment` text, NÃO `assessment_excerpt` como backlog antigo
+    dizia; fix vai em service `rationalityAnalysisService.saveAnalysisToReport`
+    linhas 575+603 reusando `pseudonymizePatientReferences` V1.9.407 — princípio
+    polir-não-inventar; pré-Marco 2 obrigatório; trigger: pacientes externos reais;
+    risco MÉDIO de mutilação clínica se sanitização agressiva — smoke obrigatório)
 
 🟡 P1 (polish pré-escala)
   • V1.9.451 function calling Edge (lookup_patient_status + get_appointments_summary)
@@ -385,6 +425,14 @@ Laptop equivalente:
   • 3 Edge Functions half-implemented → audit 18/05 (Google Calendar dormindo intencional)
   • V1.9.97-B timezone agenda → coluna time without time zone = BRT (gotcha conhecido)
   • V1.9.99 grounding factual da Nôa → V1.9.453+A+B Matrix Z2 anti-alucinação cobre
+  • Instrumentação custo OpenAI → V1.9.238 já em produção (audit Lovable 26/05 noite
+    refutado): metadata em ai_chat_interactions tem 11 chaves (model + pricing_version
+    + prompt_tokens + completion_tokens + total_tokens + cost_usd_estimate + provider
+    + processing_time + sanitized + simbologia + system). 792 rows empíricos em 14d.
+    Custo agregado 7d mensurado: $5.96 USD / proj R$ 120/mês. Latência 4.7-12s
+  • RPCs SECURITY DEFINER sem search_path → REFUTADO audit Lovable 26/05 noite (0
+    RPCs sem SET search_path; 100% tabelas com RLS ON; 42/447 policies "permissivas"
+    são todas catálogo público legítimo OR service role inserts internos)
 
 🤝 Decisões humanas pendentes (destravam ~50% do roadmap)
   • CNPJ João Vidal (Marco 1) — destrava recebimento direto / pricing / parcerias

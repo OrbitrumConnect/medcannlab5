@@ -62,7 +62,7 @@ Destaques: **V1.9.121** (AEC promotion), **V1.9.299** (PBAD ITI — proteção t
 3. **2º médico independente real** (Marco 2)
 4. **20-30 pacientes externos pagantes** (Marco 2 declarável)
 5. **V1.9.451** function calling (`lookup_patient_status` + `get_appointments_summary`)
-6. **V1.9.452** sanitize `assessment_excerpt` LGPD reforço
+6. **V1.9.452** sanitize `assessment` (campo text — correção empírica 26/05, não `assessment_excerpt`) em `clinical_rationalities` LGPD reforço
 7. **V1.9.455** QR Code embedded no PDF (`project_v1_9_455_qr_code_embedded_pdf_design_25_05`)
 
 ## Princípios meta cristalizados — taxonomia

@@ -628,7 +628,8 @@ Audit empírico do post `75badd3d` (forum, 21/05) revelou `patient_pseudonym=NUL
 2. Detector heurístico de nomes via lookup `clinical_reports` do médico → `window.confirm` se match
 3. 2º checkbox no modal de consent (*"atesto que revisei conteúdo e não tem nome real"*)
 
-**Resíduo NÃO fechado**: excertos de racionalidade (`clinical_rationalities.assessment_excerpt`) ainda podem citar nome real do paciente. Parqueado V1.9.452 pré-Marco 2.
+**Resíduo NÃO fechado**: campo `assessment` (text) em `clinical_rationalities` ainda pode citar nome real do paciente. Parqueado V1.9.452 pré-Marco 2.
+> Correção 26/05: nome do campo é `assessment`, NÃO `assessment_excerpt`. Audit empírico via PAT confirmou schema real — `clinical_rationalities` tem `id, report_id, patient_id, rationality_type, assessment (text), recommendations (jsonb), considerations, approach, generated_by, created_at, updated_at`.
 
 ### 22/05 — Refator Tradevision Core PAUSADO + Schema Hygiene + Tema Dark/Light Revert
 
@@ -1097,7 +1098,8 @@ Branch admin (linha 47-73) NÃO tocada (admin continua vendo todos pacientes via
 
 **Lição cristalizada**: *"Fallback silencioso `|| null` em campo LGPD-crítico é a forma mais barata de criar bomba relógio."* Cristalizado em `feedback_forum_publish_requer_pseudonimo_23_05`.
 
-**Resíduo NÃO fechado**: excertos de racionalidade (`clinical_rationalities.assessment_excerpt`) ainda podem citar nome real. Parqueado V1.9.452 pré-Marco 2 (cristalizado em `feedback_pseudonimizacao_conteudo_forum_21_05`).
+**Resíduo NÃO fechado**: campo `assessment` (text) em `clinical_rationalities` ainda pode citar nome real. Parqueado V1.9.452 pré-Marco 2 (cristalizado em `feedback_pseudonimizacao_conteudo_forum_21_05`).
+> Correção 26/05: nome do campo é `assessment`, NÃO `assessment_excerpt`. Audit empírico confirmou via PAT.
 
 ## Bug #5 — ConsentGuard loop infinito (22/05) 🟠 ALTO
 
@@ -1651,7 +1653,7 @@ Insight arquitetural genuíno. Incorporado como Princípio 4.
 | Versão | Escopo | Trigger pra atacar | Custo estimado |
 |---|---|---|---|
 | **V1.9.451** | Function calling Edge: `lookup_patient_status(name, doctor_id)` + `get_appointments_summary(doctor_id, period)` | Ricardo bater no gap empíricamente de novo (caso Gilda + agenda mês) | ~1-2h conjunto |
-| **V1.9.452** | Sanitize `assessment_excerpt` em `clinical_rationalities` (LGPD reforço) | Pré-Marco 2 (pacientes reais externos) — empíricamente visto 25/05 (Carolina nome vazou no smoke) | ~20min |
+| **V1.9.452** | Sanitize `assessment` (campo text, NÃO `assessment_excerpt` — correção empírica 26/05) em `clinical_rationalities` reusando `pseudonymizePatientReferences` V1.9.407 (LGPD reforço) | Pré-Marco 2 (pacientes reais externos) — empíricamente visto 25/05 (Carolina nome vazou no smoke) + 26/05 audit PAT confirmou 4/5 rows recentes com PII | ~45min + smoke |
 | **V1.9.455** | Anti-fusão de entidades diferentes (GPT externo insight: *"Caso A insônia + Caso B dor → coexistência fictícia"*) | Smoke multi-pacientes em corpus comum mostrar fusão silenciosa | ~30min |
 | **V1.9.460+** | Polish UX Matrix adicional (sort cruzado data, score confiança por dimensão, distinção "selecionado" vs "marcado" vocabulário, accordion "Como funciona" com persistência) | Não-urgente, validação Ricardo | varia |
 | **Categorias chat livre paciente C/D/E** (V1.9.443+A+B cobriu CBD/jornada/iniciar tratamento) | Categoria C identidade doença ("acho que tenho TDAH") / D red flags / E cannabis vulnerável (gravidez/interação) | Trigger empírico (Ricardo flagueir vazamento) ou pedido formal | varia |

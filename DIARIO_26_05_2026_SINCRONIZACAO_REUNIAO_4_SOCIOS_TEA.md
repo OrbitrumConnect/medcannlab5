@@ -967,3 +967,342 @@ Lock V1.9.299 PBAD permanece em qualquer cenário.
 - Retrospectiva V3 (2.338 linhas, sec 2.4.2 corrigida)
 - 3 tags git: `v1.9.299-pbad-conforme-locked` + `v1.9.455-exam-pdf-wiring` + `v1.9.457-sign-pdf-icp-auth-ownership`
 - CLAUDE.md atualizado (14 Edges + V1.9.455/V1.9.457 resolvidos + V1.9.452 P0 único restante)
+
+---
+
+## 🔁 BLOCO R — Sessão noite² desktop (audit Lovable × PAT, ~21h-23h+ BRT)
+
+### R.1 — Trigger
+
+Pedro retornou ao desktop pediu: *"veja memoria e retrospectiva! e diarios de ontem e hoje"* + colou parecer Lovable (outra IA assistente concorrente com acesso ao Supabase) com **17 itens** suspeitos de gap. Pedro: *"pat ! sbp_6ca2f018..."* + *"sem cordar nada ! algo mais a verificar profundamente?"*
+
+### R.2 — Triagem aplicando princípios cristalizados
+
+Apliquei `feedback_doc_institucional_sem_pat_nao_e_valido_23_05` ao parecer Lovable + `feedback_material_b_pode_contradizer_constituicao_22_05` (triar contra Z2/Locks).
+
+Cross-check empírico via PAT (~14 queries paralelas em sequência):
+
+**🟢 6 gaps reais confirmados** (5 acionáveis + 1 já em prod refutado):
+- Dual-write `rationalities` drift (já documentado memory 18/05)
+- 5 AECs órfãs detalhe (CLAUDE.md backlog P1)
+- auth/public.users drift crescente 8 órfãos (vs 5 documentados 28/04 — número atualizado)
+- 5 triggers AFTER INSERT em `auth.users` mapeados detalhe (3 escrevem em `user_profiles` redundância controlada por ON CONFLICT)
+- PITR desligado MAS 8 backups físicos diários WAL-G ativos (`pitr_enabled: false`, `walg_enabled: true`)
+- Instrumentação custo `ai_chat_interactions.metadata` — Lovable item #10 **REFUTADO empíricamente** (V1.9.238 já em prod com 11 chaves: model + pricing_version + prompt_tokens + completion_tokens + total_tokens + cost_usd_estimate + provider + processing_time + sanitized + simbologia + system. 792 rows em 14d. Custos reais 7d: **$5.96 USD / R$ 30 / proj R$ 120/mês**)
+
+**🟢 4 refutados via PAT** (Lovable errou):
+- RPCs SECURITY DEFINER sem search_path: 0 encontradas ✅
+- 100% tabelas com RLS ON, 0 sem RLS
+- 42/447 policies "permissivas" auditadas uma-a-uma: todas catálogo público legítimo OR service role inserts internos
+- NFT "validação on-chain por terceiro" = **ANTI-CONSTITUIÇÃO** (memory `project_nft_sem_blockchain_icp_brasil_e_autoridade_08_05` decisão Pedro V1.9.193 ZERO blockchain pública — ICP-Brasil é autoridade)
+
+**🟡 3 omitidos pelo Lovable** descobertos via PAT:
+- `pgaudit` não instalada — mas REFUTADO empíricamente (`pg_stat_statements` ativa com 4.764 queries capturadas, cobertura agregada sem PII suficiente pré-PMF)
+- 2 cron jobs não catalogados em CLAUDE.md: `monthly-closing-medcannlab` (dia 1 mês 3h, chama gamification que está dormindo) + `expire-renal-suggestions` (todo dia 2h, sidecar renal cleanup vazio empíricamente)
+- Trigger imutabilidade `patient_exam_requests` não existe (só `cfm_prescriptions` tem)
+
+### R.3 — Achado empírico colateral: campo `assessment` (NÃO `assessment_excerpt`)
+
+Schema empírico via PAT confirmou: `clinical_rationalities` tem campo `assessment` (text), **NÃO `assessment_excerpt`** como CLAUDE.md backlog antigo + RETROSPECTIVA V3 + memory snapshot afirmavam. **Refutação da própria memória documentada via PAT**. PII confirmada em 4/5 rows recentes (nomes completos: Maria das Dores Pinto Pitoco / Carolina Campello do Rêgo Valença / Pedro).
+
+---
+
+## 🧨 BLOCO S — Reflexões Olive AI + Babylon Health (pedidas Pedro 22-23h)
+
+Pedro: *"de 4 bi a 0 pq me diga"* + depois *"e babylon"*.
+
+Apresentei linha do tempo factual + 5 razões cumulativas de cada caso + tabela comparativa MedCannLab vs cada um:
+
+**Olive AI ($4B → 0, 2012-2023)**:
+1. Hype "AI" sobre RPA frágil
+2. Crescimento receita ≠ PMF validado
+3. Capital captado virou trava
+4. Founders + VCs presos a narrativa
+5. Healthcare regulado pune hype mais
+
+**Babylon Health ($4.2B → ~0, 2013-2024)**:
+1. AI chatbot diagnostico ERRADO + atacou Dr. Watkins (BMJ 2020)
+2. Unit economics nunca fechou (NHS GP at Hand)
+3. SPAC IPO inflado no auge do boom 2021
+4. Expansão geográfica simultânea precoce
+5. Founder narrativa vs realidade
+
+**Defesas MedCannLab por design** (memory `project_investment_memo_28_04` lista 5 padrões de fracasso evitados):
+- Pirâmide 8 camadas explícita (vs Olive RPA disfarçado)
+- Z2 contida codificada (vs Babylon diagnóstico errado)
+- Refutar elogio externo é cultura (vs Babylon processar crítico)
+- ICP-Brasil REAL + CFM 2.314 built-in (vs Babylon pre-regulação restrita)
+- Anti-overclaim cristalizado em 15 versões parágrafo institucional
+
+Pedro perguntou: *"estamos a frente disso tudo se mantermos a disciplina?"*
+
+Respondi com 3 ressalvas honestas:
+- À frente DE armadilhas mapeadas — NÃO DO SUCESSO garantido
+- À frente CONDICIONAL — disciplina 30d empírica ≠ 18 meses sob pressão capital
+- À frente em algumas dimensões (governança técnica + vacina regulatória + cultura anti-overclaim + tese clínica autoral + empirismo brutal + locks intocáveis), atrás em outras (zero tração + 1 cert ativo + decisões humanas externas + bus factor + North Star não-mensurável + validação fora-corpus-conhecido)
+
+Frase honesta cristalizada: *"3 enquantos verificáveis empiricamente nos próximos 18 meses: manter disciplina ENQUANTO destrava 3 gates humanos ENQUANTO institucionaliza cultura antes de escalar time"*.
+
+---
+
+## 🪞 BLOCO T — Princípio cristalizado VALIDAÇÃO vs DESCOBERTA (Pedro detectou inflação)
+
+### T.1 — Pergunta cirúrgica Pedro
+
+> *"certo mais e a memoria q temos do claude + retrospectiva nao confirma maioria dos achados?"*
+
+Pedro aplicou empíricamente AO MEU PRÓPRIO RELATÓRIO o mesmo princípio que aplicou ao pitch MUHDO (23/05) + parecer Lovable (R.2) + sugestões GPT externo (25/05): *"doc institucional sem PAT cruzar não é válido"*.
+
+### T.2 — Recalibração honesta cruzando com memória
+
+**~70-80% dos "17 achados" reportados em R.2 JÁ ESTAVAM em memória/retrospectiva V3/CLAUDE.md/diários**. Apenas **5 itens genuinamente novos**:
+
+🟢 **NÃO foi novo** (já em memória):
+- Dual-write rationalities (memory 18/05)
+- 5 AECs órfãs (CLAUDE.md backlog P1)
+- auth/public.users drift (memory 28/04)
+- 5 triggers auth.users (CLAUDE.md audit 26/05)
+- NFT anti-Constituição (memory 08/05)
+- `aec_initiated_by` missing (Memo 28/04 explícito)
+- `clinical_qa_runs` desenhada V1.9.85 sem cadência (Memo 28/04)
+- Olive/Babylon padrões (Memo 28/04 5 padrões)
+- V1.9.238 instrumentação custo em prod (diário pré-existente)
+- Cert Ricardo expira 2027-05-06 (audit V1.9.457 26/05)
+- RLS profundidade OK (audit 28/04)
+- Documents 119MB sem 72 órfãos (refutado 22/05)
+
+🟡 **Atualizou memória** (1 item):
+- Schema empírico errado: `assessment` (NÃO `assessment_excerpt`) — **refutação empírica via PAT da própria memória documentada**
+
+🔴 **Genuinamente novo** (5 itens):
+- PITR desligado + walg_enabled
+- 2 cron jobs não catalogados (`monthly-closing-medcannlab` + `expire-renal-suggestions`)
+- `pgaudit` não instalada (refutado pré-PMF)
+- Cobertura `clinical_qa_runs` empírica = 0,75% (1/133)
+- Schema errado em CLAUDE.md
+
+### T.3 — 3 armadilhas em que caí (anti-padrão a evitar)
+
+1. **Enquadrar VALIDAÇÃO como DESCOBERTA**: quando query PAT confirma o que CLAUDE.md já dizia, isso é manutenção empírica, não achado. Apresentei como se fossem 17 achados explosivos quando ~12 eram manutenção
+2. **Aplicar polir-não-inventar ao código mas inventar narrativa pro audit**: princípio P8 obrigava perguntar *"isso já está em memória? então só atualizo número/data"*. Faltou aplicar a mim mesmo
+3. **Over-architected o próprio audit**: anti-padrão Memo 28/04 (*"over-architected before demand proof"*) aplicado a si mesmo. Montei 7 categorias + tabela 17×4 + síntese epistemológica quando 5 críticos + fechamento bastava
+
+### T.4 — Princípio cristalizado em memory
+
+**`feedback_claude_audit_diferenciar_validacao_de_descoberta_26_05`** (NÍVEL 1 entry-point):
+
+> *"Em projeto com memória persistente densa (179 arquivos + 2338 linhas retrospectiva + 26 diários no mês), trabalho marginal de Claude executor NÃO é descobrir — é validar empíricamente + atualizar números + sinalizar desvio."*
+
+**Estrutura obrigatória futura**: 3 buckets 🟢🟡🔴 ANTES de reportar. Pergunta-gatilho pré-relatório: *"já está em memória? Se sim → validação, não descoberta"*.
+
+**Próxima sessão Claude que for audit-empírico-qualquer-escopo deve LER esta memória ANTES de gerar tabela de achados.**
+
+---
+
+## 🛠️ BLOCO U — Fixes doc-only executados (Pedro autorizou *"prosseguir"*)
+
+5 fixes zero código, zero risco regressão, ~50min total:
+
+### U.1 — Drift documental `assessment_excerpt` → `assessment` (3 arquivos canônicos)
+
+- **CLAUDE.md** (2 edits anteriores + 1 implícito): tabela rationalities estrutura empírica + backlog V1.9.452 corrigido com path service + nome correto
+- **RETROSPECTIVA mensal** (3 edits): 2 notas de correção 26/05 preservando histórico + tabela backlog V1.9.452 atualizada com `pseudonymizePatientReferences` V1.9.407 (polir-não-inventar)
+- **memory snapshot** `project_retrospectiva_mensal_26_04_a_25_05_2026` (1 edit): P0 V1.9.452 com nome correto
+
+**Diários 25/05 + 26/05 NÃO tocados**: princípio `feedback_diario_que_mostra_erros_vale_mais_que_diario_polido_24_05` aplicado. Diário é histórico de processo.
+
+### U.2 — Catálogo cron jobs em CLAUDE.md (3 jobs descobertos + telemetria)
+
+Adicionado seção *"## Cron Jobs ativos (pg_cron — catalogado 26/05 noite pós-audit empírico)"*:
+
+| jobname | schedule | comando | telemetria |
+|---|---|---|---|
+| `video-call-reminders-5min` | `*/5 * * * *` | net.http_post Edge V1.9.99-B | rodando OK desde 28/04 |
+| `monthly-closing-medcannlab` | `0 3 1 * *` | `process_monthly_closing` (gamification) | **0 runs ainda** — 1ª execução 01/06/2026 03h BRT |
+| `expire-renal-suggestions` | `0 2 * * *` | UPDATE renal_inline_suggestions expired | OK diariamente, empírico vazio |
+
+**Telemetria agregada 7d**: 2.023 runs, 100% succeeded, last_run 26/05 18:20 BRT.
+
+**⚠️ Atenção `monthly-closing-medcannlab`**: chama gamification (`calculate_monthly_ranking` + `grant_benefits_rewards`). Memory `project_veredito_final_24_04` documentou gamification DESABILITADA por feature flag. **Verificar 02/06/2026** após primeira execução se populou `gamification_points` indevidamente.
+
+### U.3 — Cadência mínima `clinical_qa_runs` (princípio operacional)
+
+Adicionado seção *"## Cadência mínima `clinical_qa_runs` (cristalizado 26/05 noite)"*:
+
+**Cobertura empírica via PAT**: 1 row / 133 reports assináveis = **0,75%**. Última execução 27/04. Framework existe mas **não virou processo**.
+
+**Cadência mínima proposta**:
+1. 1 QA run por nova V1.9.X que toca código clínico (AEC FSM / Pipeline / Verbatim / signature / RAG)
+2. 1 QA run quinzenal num report aleatório (rotação Claude/Pedro/Ricardo)
+3. 1 QA run **OBRIGATÓRIA pré-Marco 2** em report do 1º paciente externo
+
+**Custo**: ~1h30min por run × 2/mês = 3h/mês overhead. Pré-PMF aceitável.
+
+**Trigger pra cristalizar como `feedback`**: 2ª run rodar empíricamente (anti-cristalização-prematura).
+
+### U.4 — Memory `feedback_claude_audit_diferenciar_validacao_de_descoberta_26_05` cristalizada
+
+NÍVEL 1 entry-point. Detalhe em BLOCO T.
+
+### U.5 — MEMORY.md atualizado
+
+Título atualizado pra refletir noite² + audit Lovable × PAT + drift documental fix.
+
+---
+
+## 🏛️ BLOCO V — MARCO EMPÍRICO: Validação ITI externa Pedro Paciente APROVADA (~22h-23h BRT)
+
+### V.1 — Pedro testou empíricamente fluxo V1.9.455 PARTE B
+
+Mandou 2 screenshots + 1 PDF + output portal ITI.
+
+**Screenshot 1 — "Minhas Prescrições" Pedro Paciente** (`medcannlab.com.br/app/clinica/paciente/dashboard?section=minhas-prescricoes`):
+- Exame `e4c97a53` 16/05/2026 16:47 expandido
+- Badge "ICP" verde ✅
+- Selo *"Documento assinado digitalmente com ICP-Brasil. Validade jurídica plena (CFM 2.314/2022 + Lei 14.063/2020). PDF PBAD AD-RB conforme ITI."*
+- 4 botões V1.9.455 PARTE B: **Baixar PDF ICP** + **Validar no ITI** + **WhatsApp + PDF** + **Imprimir**
+- Tooltip mostrou `https://validar.iti.gov.br` (URL REAL, não fake) ✅
+
+Pedro: *"ja 1 imagem confirmando o trigger iti direcinou para la para eu validar"*.
+
+### V.2 — Upload no portal ITI oficial = APROVADO ✓
+
+Pedro fez download via "Baixar PDF ICP" → upload em `validar.iti.gov.br`:
+
+```
+✅ ASSINATURA APROVADA
+
+Nome arquivo: e4c97a53-e98d-40b1-b194-cd116ed64ff9.pdf
+Hash: 1294eeed578a1802a4a7a82a771bc1607f3e1404fb7c788e18d8567f842c7515
+Data validação: 26/05/2026 16:59:16 BRT
+
+Assinado por: RICARDO VALENCA SERVICOS DE SAUDE LTDA
+CNPJ: 46.329.856/0001-06
+CPF representante: ***.194.248-**
+Nº série cert. emitente: 0x568d6f51e2dc47a80d2816e06b56a81b6c4d371a
+Data assinatura: 26/05/2026 13:10:50 BRT
+```
+
+### V.3 — Cruzamento empírico via PAT (anti-overclaim)
+
+| Campo portal ITI | Bate com banco? |
+|---|---|
+| ID arquivo `e4c97a53` | ✅ `patient_exam_requests.id` |
+| Assinante RICARDO VALENCA SERVICOS DE SAUDE LTDA | ✅ `medical_certificates.ac_provider: DigitalSign` cert ativo |
+| CNPJ 46.329.856/0001-06 | ✅ Ricardo PJ regularizado |
+| Data 26/05 13:10:50 BRT | ✅ backfill V1.9.455 PARTE A 26/05 tarde |
+
+### V.4 — Marco arquitetural (1ª validação por terceiro neutro)
+
+**4 marcos em 11 dias** (15/05 → 26/05):
+- V1.9.299 (motor) → algoritmo PBAD AD-RB aprovado V12 16/05 (cert Carolina, smoke interno)
+- V1.9.455 (distribuição) → wiring frontend 26/05 tarde + backfill 11/12 docs legacy
+- V1.9.457 (proteção) → vetor abuso ANON_KEY fechado 26/05 noite
+- **26/05 noite² → validação EXTERNA POR TERCEIRO NEUTRO oficial gov.br** ✅
+
+**Discrepância timing detectada**: diário 26/05 Bloco L.4 documentou backfill *"~15h17-16h45 BRT"* MAS assinatura ITI mostra 13:10:50. 2h de diferença. Princípio cristalizado em memory marco: **timestamps de operações empíricas devem vir de fonte autoritativa (banco/log Edge), não memória do operador**.
+
+Memory cristalizada: `project_marco_empirico_validacao_iti_externa_pedro_paciente_26_05` (NÍVEL 1 entry-point).
+
+---
+
+## 🔍 BLOCO W — V1.9.456 QR Code re-confirmado necessário (Pedro reconheceu empíricamente)
+
+### W.1 — Pedro fechou loop empíricamente
+
+> *"ok acho que sim qr code ainda necessario no pdf amigo..."*
+
+**CONFIRMA empíricamente** princípio cristalizado 25/05 em `feedback_paciente_externo_real_estressa_arquitetura_25_05`: *"validação jurídica ≠ validação operacional"*.
+
+Hoje validou os 2 lados:
+- ✅ Jurídica ICP-Brasil: portal ITI APROVOU (16:59:16 BRT)
+- ❌ Operacional QR Code visual: AINDA falta no binário (gap V1.9.456)
+
+### W.2 — V1.9.456 parqueado aguarda 3 decisões humanas (não código)
+
+Memory `project_v1_9_455_qr_code_embedded_pdf_design_25_05` tem 3 opções A/B/C parqueadas:
+
+| Opção | Risco lock V1.9.299 | Tempo |
+|---|---|---|
+| **A** Mexer dentro de `sign-pdf-icp` | 🔴 ALTO (quebra lock PBAD) | 4-8h + auditoria pesada |
+| **B** 2 PDFs separados | 🟢 ZERO | 2-3h, UX pior |
+| **C** Desenhar QR ANTES de assinar (upstream) | 🟡 MÉDIO | 3-5h + smoke obrigatório (RECOMENDADO) |
+
+**3 perguntas pra Pedro+Ricardo conversarem antes de codar**:
+1. QR aponta pra `validar.iti.gov.br` (oficial) OU portal próprio MedCannLab?
+2. Texto humano ao lado ("Para validar: escaneie ou acesse...")?
+3. Posição no PDF (rodapé / topo / canto)?
+
+**NÃO codar até decisão humana** — princípio anti-especulação `feedback_count_pacientes_v1_9_449_e_gaps_function_calling_v1_9_450_25_05`.
+
+---
+
+## 📋 BLOCO X — Pipeline patient_documents (gap empírico parqueado)
+
+### X.1 — Pedro perguntou empíricamente sobre fluxo upload → prof
+
+Screenshot 2 — "Meus Exames" do paciente Pedro Paciente: tela vazia *"Nenhum exame ainda"* + botão "Adicionar primeiro exame".
+
+Pedro: *"ja nessa outra aba ali ele sobe exames correto?! caso suba exames de sangue ou qlqr outro tipo de exame da para puxar os dados e expelhar oq e interessante preciso rrisco estc ja no terminal de atendimeneto no visao geral do prontuario do pro ficniional e os mais tops no dashboard do pro?"*
+
+Tradução: paciente sobe exame externo → sistema OCR/parse → reflete em Visão Geral Prontuário Prof + Dashboard Prof?
+
+### X.2 — Audit empírico via PAT + Grep
+
+**🟢 Existe (schema PRONTO)**:
+- Tabela `patient_documents` (17 cols rico: file_path + mime_type + category + metadata jsonb + clinical_note + shared_with_professional + uploaded_by_role)
+- Tabela `patient_lab_results` (USER-DEFINED enum test_type + value + reference_range_min/max + is_abnormal boolean)
+- Edge `extract-document-text` v59 deployada
+- Frontend isolado: `PatientMyExams.tsx` + `ProfessionalPatientFiles.tsx`
+- Bucket Storage `patient_documents` (20MB limit)
+- Pattern replicável: sidecar renal V1.9.307
+
+**🔴 NÃO existe (gap empírico)**:
+- `patient_documents`: 0 rows
+- `patient_lab_results`: 0 rows
+- 0 triggers em `patient_documents`
+- Edge `extract-document-text` NÃO está wired ao upload
+- Frontend `PatientMyExams.tsx` + `ProfessionalPatientFiles.tsx` ISOLADOS
+- Sem integração com `RiskCockpit.tsx` nem dashboard prof
+
+### X.3 — PARQUEADO pré-PMF (regra de ouro Memo 28/04)
+
+3 razões honestas:
+1. 0 rows = construir pra fluxo zero = especulação
+2. Trigger empírico não materializou (Ricardo/Faveret/Eduardo não pediram)
+3. Sidecar TEA tem prioridade (Eduardo engajou 26/05 sobre Joaninha autista)
+
+**3 triggers explícitos pra desparquear**:
+- Ricardo subir exame Maria das Dores Pitoco + pedir empíricamente
+- 1º paciente externo Marco 2 subir laudo
+- Eduardo trazer paciente neuro real com 5+ exames passados
+
+**Risco crítico ativação**: OCR errado popular `patient_lab_results` com valor errado → `RiskCockpit` falso alarme = anti-padrão Babylon Health 2020. **Mitigação obrigatória**: validação humana pré-INSERT (card mostrar "Sugestão IA — confirmar?" não escrever direto).
+
+Memory cristalizada: `project_pipeline_patient_documents_ocr_lab_results_parqueado_26_05` (NÍVEL 1 entry-point).
+
+---
+
+## 🎯 BLOCO Y — Frase âncora versão final final final (pós sessão noite²)
+
+> *"O dia começou com sincronização cross-machine (10 commits desktop puxados via fast-forward laptop), absorveu retrospectiva V3 2.338 linhas, cristalizou Marco 3 destravando via reunião 4 sócios + Eduardo engajando + Ricardo semântica relacional do sujeito da frase, codou V1.9.456 longitudinal 30min, V1.9.455 wiring exam PDF ICP em 1h30, V1.9.457 proteção ANON_KEY em 1h, audit 360° com 4 ações fáceis em 30min (sistema 12%→76% PDF binário). À noite² Pedro disparou audit Lovable × PAT (17 itens cross-check) + apresentação Olive/Babylon comparativa + 'estamos à frente?' calibrado em 3 ressalvas honestas — então perguntou 'memoria + retrospectiva nao confirma maioria dos achados?' detectando empíricamente que ~70-80% dos meus 'achados' já estavam em memória/retrospectiva V3/CLAUDE.md/diários. Princípio meta cristalizado: 'IA não descobre — valida, atualiza, sinaliza desvio'. Estrutura obrigatória 3 buckets 🟢🟡🔴 pré-relatório. 5 fixes doc-only executados (drift assessment_excerpt → assessment + 2 cron jobs catalogados + cadência clinical_qa_runs + memory princípio audit + MEMORY.md atualizado). Pedro testou empíricamente V1.9.455 PARTE B + V1.9.299 PBAD via portal `validar.iti.gov.br` oficial gov.br → APROVADO ✓ (hash 1294eeed..., RICARDO VALENCA SERVICOS DE SAUDE LTDA CNPJ 46.329.856, ass. 26/05 13:10:50 BRT). **1ª VALIDAÇÃO POR TERCEIRO NEUTRO** do MedCannLab — 4º marco em 11 dias (motor + distribuição + proteção + validação externa). Pedro reconheceu empíricamente 'qr code ainda necessario no pdf' confirmando princípio 25/05 'validação jurídica ≠ operacional' — V1.9.456 parqueado aguardando 3 decisões humanas A/B/C + URL + posição. Pipeline `patient_documents` → OCR → `patient_lab_results` → KPI prof MAPEADO empíricamente: schema PRONTO mas pipeline 0% wired (0 rows + 0 triggers), parqueado com 3 triggers explícitos. Sessão noite² fechou com 3 memórias NÍVEL 1 novas: marco ITI + pipeline parqueado + princípio audit diferenciar validação/descoberta. CLAUDE.md atualizado com cron jobs + cadência clinical_qa_runs + drift formula correta. Pedro: 'documentar tudo diario e memoria oq preicsar vou jogar um lol por hora' — execução autônoma."*
+
+— Sessão 26/05 noite² encerrada (~23h+ BRT, versão FINAL definitiva). **Estado git pré-commit**: 3 arquivos modificados (CLAUDE.md + RETROSPECTIVA + memory snapshot) + 3 memórias pessoais novas (NÍVEL 1) + MEMORY.md atualizado. Push 4 refs pendente. **Validação por terceiro neutro CONFIRMADA**.
+
+### O QUE ESPERAR pós sessão noite²
+
+| Sintoma | Causa | Ação |
+|---|---|---|
+| Pedro volta do LoL e quer ler diário | ✅ Blocos R-Y documentados honestamente | Ler de R em diante |
+| Marco 2 paciente externo subir exame em "Meus Exames" | 🔴 PIPELINE NÃO ATIVO — fica em `patient_documents` sem OCR | Trigger desparquear sidecar laboratorial |
+| Laboratório do João Guimarães recusa PDF de novo (sem QR) | Esperado — V1.9.456 parqueado | Pedro+Ricardo decidirem 3 perguntas A/B/C |
+| 01/06 03h BRT cron `monthly-closing-medcannlab` rodar | 1ª execução prevista | Verificar 02/06 se gamification populou indevidamente |
+| Próxima sessão Claude rodar audit empírico | Memory `feedback_claude_audit_diferenciar...` ditará estrutura 3 buckets | Esperado |
+
+**Próxima sessão Claude entra com contexto INTEGRAL pós-noite²**:
+- MEMORY.md atualizado (3 novas entradas NÍVEL 1: marco ITI + pipeline parqueado + princípio audit)
+- 12 memórias 26/05 cristalizadas (5 laptop + 4 desktop tarde + 3 noite²)
+- Este diário (Blocos A→Y)
+- Retrospectiva V3 (drift documental corrigido)
+- 3 tags git intactas
+- CLAUDE.md atualizado (cron jobs + cadência clinical_qa_runs + drift formula)
