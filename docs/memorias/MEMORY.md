@@ -1,6 +1,18 @@
-# 📚 Memory Index — Hierarquia explícita (25/05 atualizado pós-retrospectiva mensal V3)
+# 📚 Memory Index — Hierarquia explícita (26/05 atualizado pós-reunião 4 sócios + V1.9.456)
 
 ## 🔴 NÍVEL 1 — ENTRY POINT (LER PRIMEIRO, sempre)
+
+### 🆕 Cristalizações 26/05 (reunião 4 sócios + Eduardo engajando + V1.9.456)
+
+- [⭐ Sidecar TEA — semântica relacional sujeito da frase (Ricardo 26/05)](feedback_sidecar_tea_semantica_relacional_sujeito_frase_26_05.md) — Ricardo cristalizou pós-Eduardo: "cuidador fala de terceiro, parser precisa reconhecer". Padrão repicável pra TODA captação de sintomas REFERIDOS (TEA/demência familiar/alcoolismo familiar). Modelo arquitetural V1.9.307 + GPT extraction com sujeito da frase.
+
+- [🤝 Reunião 4 sócios 26/05 — Eduardo engajando (Marco 3 destravando)](project_reuniao_4_socios_26_05_eduardo_engajando_marco_3_destravando.md) — Primeira vez Eduardo voltou tecnicamente engajado pós-19-dias-abandono. Pergunta concreta Joaninha autista + KPIs neuro/TEA. Sequência A→B→C cristalizada pra cobrir neuro sem feature creep.
+
+- [🧬 4 camadas arquiteturais — fenomenológica → semântica → estrutural → longitudinal](feedback_4_camadas_arquitetura_fenomenologica_semantica_estrutural_longitudinal_26_05.md) — Decomposição GPT externo validada empíricamente. Sidecar renal V1.9.307 + V1.9.456 + Matrix Z2 já implementam as 4 camadas. Filtro pra TODA feature futura.
+
+- [⚠️ Anti-overclaim lista ATUALIZADA pós-reunião 4 sócios](feedback_anti_overclaim_lista_atualizada_pos_reuniao_4socios_26_05.md) — 13 frases novas vigiadas pré-investidor ("isso aqui ninguém tem" / "Finigrana avanço total" / "fenotipagem clínica narrativa" / etc). Extensão Princípio 22 retrospectiva.
+
+- [📊 V1.9.456 — Histórico observacional longitudinal modal report (caso Carolina)](project_v1_9_456_historico_longitudinal_modal_report_26_05.md) — Implementação cirúrgica 26/05 ~30min, 1 arquivo. Modal de review do médico ganha bloco com queixas cronológicas + padrão dominante + sintomas novos hoje. AEC FSM INTOCADA. Reusa usePatientLongitudinal V1.9.382.
 
 ### ⭐⭐ META-MEMÓRIA do mês (25/05 — referência primária)
 
