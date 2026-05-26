@@ -93,7 +93,8 @@ const FALLBACK_PROFESSIONALS: ProfessionalCard[] = [
     rating: '4.9',
     excerpt: 'Especialista em Epilepsia e Cannabis Medicinal. Atendimento personalizado com metodologia AEC.',
     accentClasses: 'bg-emerald-500/15 text-emerald-300',
-    buttonClasses: 'bg-emerald-600/90 hover:bg-emerald-500',
+    // V1.9.459 — high-tech translucent pattern (princípio Brandbook V3 + ChatModeSelector V1.9.458)
+    buttonClasses: 'bg-[rgba(0,229,178,0.10)] border border-[rgba(0,229,178,0.45)] text-[#00E5B2] hover:bg-[rgba(0,229,178,0.18)]',
     bio: 'Atendimento focado em neurologia clínica, com abordagem estruturada e acompanhamento contínuo.',
     tags: ['Epilepsia', 'Sono', 'Ansiedade', 'Acompanhamento'],
     languages: ['Português'],
@@ -109,7 +110,8 @@ const FALLBACK_PROFESSIONALS: ProfessionalCard[] = [
     rating: '5.0',
     excerpt: 'Coordenador científico. Especialista em Arte da Entrevista Clínica e metodologia IMRE.',
     accentClasses: 'bg-primary-500/15 text-primary-300',
-    buttonClasses: 'bg-primary-600/90 hover:bg-primary-500',
+    // V1.9.459 — high-tech translucent pattern unificado verde-vital (igual Eduardo)
+    buttonClasses: 'bg-[rgba(0,229,178,0.10)] border border-[rgba(0,229,178,0.45)] text-[#00E5B2] hover:bg-[rgba(0,229,178,0.18)]',
     bio: 'Coordenação científica e consulta clínica com método IMRE, focado em segurança e rastreabilidade.',
     tags: ['Nefrologia', 'Dor', 'Inflamação', 'IMRE'],
     languages: ['Português'],
@@ -124,7 +126,8 @@ const FALLBACK_PROFESSIONALS: ProfessionalCard[] = [
 // Tier 1 (Equipe Oficial) mantém destaque amber/dourado distinto.
 const PARTNER_ACCENT = {
   accentClasses: 'bg-cyan-500/15 text-cyan-300',
-  buttonClasses: 'bg-cyan-600/90 hover:bg-cyan-500'
+  // V1.9.459 — high-tech translucent pattern unificado verde-vital (igual Tier 1 conforme pedido Pedro 26/05 noite²)
+  buttonClasses: 'bg-[rgba(0,229,178,0.10)] border border-[rgba(0,229,178,0.45)] text-[#00E5B2] hover:bg-[rgba(0,229,178,0.18)]'
 }
 
 const PatientAppointments: React.FC = () => {
@@ -1370,7 +1373,7 @@ const PatientAppointments: React.FC = () => {
               setShowAppointmentModal(true)
             }
           }}
-          className={`w-full inline-flex items-center justify-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-semibold text-white transition-all ${professional.buttonClasses} hover:scale-[1.02]`}
+          className={`w-full inline-flex items-center justify-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all ${professional.buttonClasses} hover:scale-[1.02]`}
         >
           {/* V1.9.448 — Label do botão condicional ao estado de vínculo.
               - Verde (appointment ativo OU direct_invite) → "Agendar consulta"
@@ -2132,7 +2135,7 @@ const PatientAppointments: React.FC = () => {
                       setAppointmentData(prev => ({ ...prev, specialty: professional.specialty }))
                       setShowAppointmentModal(true)
                     }}
-                    className={`w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold text-white transition-colors ${profileProfessional.buttonClasses}`}
+                    className={`w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-colors ${profileProfessional.buttonClasses}`}
                   >
                     {/* V1.9.448 — Mesma lógica condicional do card: Verde = "Agendar consulta"; resto = "Vincular". */}
                     {(() => {
