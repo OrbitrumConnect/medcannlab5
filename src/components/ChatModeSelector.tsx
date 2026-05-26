@@ -197,10 +197,12 @@ export const ChatModeSelector: React.FC<ChatModeSelectorProps> = ({
             </ul>
 
             <div
-              className="mt-auto inline-flex items-center justify-between gap-1.5 px-3 py-2 rounded-lg text-[11px] font-semibold text-white transition-all group-hover:translate-x-0.5"
+              className="mt-auto inline-flex items-center justify-between gap-1.5 px-3 py-2 rounded-lg text-[11px] font-semibold transition-all group-hover:translate-x-0.5 group-hover:bg-[rgba(0,200,83,0.18)]"
               style={{
-                background: 'linear-gradient(135deg, #00C853 0%, #00A845 100%)',
-                boxShadow: '0 4px 14px rgba(0, 200, 83, 0.3)',
+                background: 'rgba(0, 200, 83, 0.10)',
+                border: '1px solid rgba(0, 200, 83, 0.45)',
+                color: '#00E5B2',
+                boxShadow: 'inset 0 0 16px rgba(0, 200, 83, 0.06)',
               }}
             >
               <span>Iniciar Avaliação agora</span>
@@ -273,10 +275,12 @@ export const ChatModeSelector: React.FC<ChatModeSelectorProps> = ({
             </ul>
 
             <div
-              className="mt-auto inline-flex items-center justify-between gap-1.5 px-3 py-2 rounded-lg text-[11px] font-semibold text-white transition-all group-hover:translate-x-0.5"
+              className="mt-auto inline-flex items-center justify-between gap-1.5 px-3 py-2 rounded-lg text-[11px] font-semibold transition-all group-hover:translate-x-0.5 group-hover:bg-[rgba(79,224,193,0.16)]"
               style={{
-                background: 'linear-gradient(135deg, #4FE0C1 0%, #00E5B2 100%)',
-                boxShadow: '0 4px 14px rgba(79, 224, 193, 0.3)',
+                background: 'rgba(79, 224, 193, 0.08)',
+                border: '1px solid rgba(79, 224, 193, 0.45)',
+                color: '#7FF2D6',
+                boxShadow: 'inset 0 0 16px rgba(79, 224, 193, 0.05)',
               }}
             >
               <span>Conversar com a Nôa</span>
