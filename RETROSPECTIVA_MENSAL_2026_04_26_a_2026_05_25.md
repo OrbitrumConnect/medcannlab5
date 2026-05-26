@@ -209,7 +209,7 @@ GROUP BY status;
 | `reviewed` | 1 | Médico revisou e marcou (feature pouco usada — Faveret/Ricardo?) |
 | **Total** | **68** | ✓ bate com 2.1 |
 
-**Insight empírico**: 37 completed em 30 dias = ~1.23 AEC/dia em produção interna. 40 reports SIGNED ICP no mês contra 37 status `completed` significa que **3 reports foram assinados sem alcançar status `completed`** (provavelmente shared/reviewed assinados retroativamente OU race condition de status update). Ponto a investigar pré-Marco 2.
+**Insight empírico**: 37 completed em 30 dias = ~1.23 AEC/dia em produção interna. 40 reports SIGNED ICP no mês contra 37 status `completed` significa que 3 reports foram assinados E DEPOIS transicionaram pra `shared/reviewed`. **CORREÇÃO empírica audit 26/05**: NÃO é race condition — é **design legítimo CFM**. Trigger `fn_cfm_prescriptions_immutability` (migration V1.9.180, linhas 75-77) whitelista transição `signed → sent/shared/reviewed/validated` pós-assinatura. Empíricamente 22 reports no mês total (20 `shared` + 1 `reviewed` + 1 `completed`) seguiram esse fluxo legítimo — médico assinou + compartilhou com paciente OU revisou. Padrão correto, não bug.
 
 ### 2.4.3 — Distribuição racionalidades por tipo (74 do mês)
 

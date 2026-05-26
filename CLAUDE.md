@@ -187,25 +187,26 @@ Memórias completas: `audit_pendencias_um_mes_pos_pbad_20_05.md` (Sprint 1) + me
 | Origem histórica | App nasceu na **Lovable** (no-code), CORS de send-email permite `*.lovable.app` |
 | Repos | hub (`amigo-connect-hub`) + origin (`medcannlab5`) |
 
-## Edge Functions (13 ativas — atualizado 18/05)
+## Edge Functions (14 ativas — atualizado 26/05 pós-V1.9.455 audit Management API)
 
 ```
 🟢 CORE / FUNCIONAIS
-  tradevision-core              Core IA Nôa principal (6697 linhas, auditado completo)
-  digital-signature             Assinatura digital ICP-Brasil/CFM (3 levels)
-  sign-pdf-icp                  PBAD AD-RB ICP-Brasil CONFORME ITI (V1.9.299 LOCK)
-  cert-encrypt-password         Cripto password p/ cert ICP do médico
-  wisecare-session              Provedor vídeo V4H (HOMOLOG, migrar)
-  extract-document-text         OCR via pdfjs-serverless
-  send-email                    Resend
-  video-call-request-notification
-  video-call-reminders          Sweep mode + cron 5min + Resend (V1.9.99-B)
-  generate-nft-from-report      NFT consent peça-a-peça (V1.9.311)
-  renal-signal-extractor        Sidecar renal DRC (V1.9.307)
+  tradevision-core              v415  Core IA Nôa principal (6697 linhas)
+  digital-signature             v65   Assinatura digital ICP-Brasil/CFM (3 levels)
+  sign-pdf-icp                  v18   PBAD AD-RB ICP-Brasil CONFORME ITI (V1.9.299 LOCK)
+  cert-encrypt-password         v3    Cripto password p/ cert ICP do médico
+  wisecare-session              v78   Provedor vídeo V4H (HOMOLOG, migrar)
+  extract-document-text         v59   OCR via pdfjs-serverless
+  send-email                    v59   Resend
+  video-call-request-notification v59
+  video-call-reminders          v28   Sweep mode + cron 5min + Resend (V1.9.99-B)
+  generate-nft-from-report      v3    NFT consent peça-a-peça (V1.9.311)
+  renal-signal-extractor        v1    Sidecar renal DRC (V1.9.307)
+  get_chat_history              v8    ⚠️ Slug snake_case (≠ kebab), audit 26/05 — caller a investigar
 
 💤 FEATURE DORMINDO COMPLETA (Google Calendar integration) — audit 18/05
-  google-auth                   ← Edge OAuth Google (tabelas existem agora, vazias)
-  sync-gcal                     ← Edge cron (tabelas existem agora, vazias)
+  google-auth                   v26   ← Edge OAuth Google (tabelas existem agora, vazias)
+  sync-gcal                     v26   ← Edge cron (tabelas existem agora, vazias)
                                   Schemas professional_integrations + integration_jobs
                                   criados V1.9.99-B (28/04). 0 rows, 0 callers
                                   frontend/backend. Reativar requer só chamadas
@@ -216,7 +217,11 @@ Memórias completas: `audit_pendencias_um_mes_pos_pbad_20_05.md` (Sprint 1) + me
 
 *Cleanup 28/04 ~10h45*: Edge `video-call-request-notification-` (v23, duplicata com hífen) deletada. Backup em `.backups/`. Trigger duplicado `trg_handle_new_auth_user` em auth.users dropado. Edge `video-call-reminders` v52 deletada (P9) → reintroduzida elite v53/v3 com sweep mode + cron + Resend.
 
-*Adições pós-V1.9.299 (16-18/05)*: `sign-pdf-icp` + `cert-encrypt-password` (PBAD ICP-Brasil), `generate-nft-from-report` (V1.9.311 NFT consent), `renal-signal-extractor` (V1.9.307 sidecar DRC). Total: **13 Edge Functions ativas**, 5 triggers em auth.users.
+*Adições pós-V1.9.299 (16-18/05)*: `sign-pdf-icp` + `cert-encrypt-password` (PBAD ICP-Brasil), `generate-nft-from-report` (V1.9.311 NFT consent), `renal-signal-extractor` (V1.9.307 sidecar DRC).
+
+*Audit 26/05 (Management API)*: total real **14 Edge Functions ativas** (descoberto `get_chat_history` órfã não documentada, caller a investigar — provavelmente legacy V1.9.84 Escriba). 5 triggers em auth.users.
+
+*Vetor segurança conhecido (V1.9.457 parqueado pré-Marco 2)*: `sign-pdf-icp` Edge tem `verify_jwt: false` + zero ownership check. ANON_KEY pode invocar pra qualquer `documentId`. Hoje risco BAIXO (34 pacientes rede pessoal), pós-Marco 2 = ALTO LGPD. Pendência: Edge validar JWT + `auth.uid() = professional_id` OR admin.
 
 ## REGRA HARD §1 (constitucional, anti-kevlar)
 
@@ -337,7 +342,7 @@ Laptop equivalente:
 305 interações Core       ~$1.40 USD/h (~$0.60/AEC)
 ```
 
-## Backlog priorizado atual (atualizado 26/05 pós-retrospectiva mensal V3)
+## Backlog priorizado atual (atualizado 26/05 pós-V1.9.455 deploy + audit 360°)
 
 ```
 🔴 P0 (segurança/funcional)
@@ -345,14 +350,30 @@ Laptop equivalente:
   • V1.9.452 sanitize assessment_excerpt em clinical_rationalities
     (LGPD reforço — empíricamente visto vazamento nome 25/05 smoke Carolina;
     pré-Marco 2 obrigatório; trigger: pacientes externos reais)
+  • V1.9.457 Edge sign-pdf-icp validar JWT + ownership (`auth.uid() = professional_id`)
+    — vetor abuso ANON_KEY hoje BAIXO risco (rede pessoal 34 pacientes), pós-Marco 2
+    = ALTO risco LGPD. Edge tem `verify_jwt: false` + zero ownership check (audit 26/05)
 
 🟡 P1 (polish pré-escala)
   • V1.9.451 function calling Edge (lookup_patient_status + get_appointments_summary)
     — gap empírico Ricardo caso Gilda + filtragem agenda mês (24/05 noite)
-  • V1.9.455 QR Code embedded PDF — design 3 opções A/B/C parqueado
-    (caso João Guimarães 25/05 ~17:46-18:44 BRT); DECISÃO ARQUITETURAL Pedro+Ricardo
-  • 13 aec_assessment_state in_progress não-finalizadas — dashboard pra médico
+  • V1.9.456 QR Code visual embedded no PDF gerado pela Edge sign-pdf-icp
+    — exige smoke ITI completo (openssl asn1parse + validar.iti.gov.br + diff binário
+    vs V12 aprovado); mexe no lock V1.9.299 (Edge), risco MÉDIO; design em
+    [[project_v1_9_455_qr_code_embedded_pdf_design_25_05]] PARTE D
+  • 5 aec_assessment_state in_progress órfãs (Illa 22/05 / Pedro 22/05 / Thiago 05/05
+    21d / Solange 27/04 30d / João Eduardo 25/05) — decisão Ricardo
+    (retomar/cancelar/invalidar com motivo); hoje sem UI pra médico
   • 2 forum_posts pending_review — conselho (Ricardo/Eduardo) aprovar/rejeitar
+  • Edge get_chat_history (v8 ACTIVE descoberta 26/05) — investigar caller frontend
+    OU deprecate se órfã
+
+✅ RESOLVIDO HOJE (26/05)
+  • V1.9.455 exam_request PDF ICP wiring (PARTE B+C) — commit 1c71ef3, tag
+    v1.9.455-exam-pdf-wiring. Caso João Guimarães 25/05 + 14 docs legacy
+    backfill (11/12 sucesso, 1 fail graceful Gilda médico legacy sem cert).
+    Sistema saiu de 2/17 docs com PDF binário (12%) pra 13/17 (76%).
+    Núcleo V1.9.299 PBAD AD-RB CONFORME ITI integralmente preservado.
 
 ✅ RESOLVIDOS empíricamente no mês (mantido pra rastreio)
   • RLS chat-images → V1.9.98 (28/04)
