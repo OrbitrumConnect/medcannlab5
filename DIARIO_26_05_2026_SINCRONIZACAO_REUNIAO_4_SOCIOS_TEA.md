@@ -1328,9 +1328,11 @@ Após commit `4a47886` + push 4 refs, push REJEITADO: remote tinha 2 commits nov
 
 > *"falei para ele nao mexer em nada ele mexeu? kkk enfim aqui e a fonte da verdade nao ele.."*
 
-Princípio implícito que Pedro afirmou (não cristalizado em memory por anti-cristalização-prematura — esperar 2ª evidência):
+Princípio implícito que Pedro afirmou:
 
 > *"Em projeto com múltiplas IAs colaborando (Claude executor + Lovable + GPT externos), fonte de verdade é hierárquica: banco + migrations + Edges + locks + diários/memórias (autoritativos) → types.ts codegen + dashboards (derivados). Toda divergência entre IAs resolve consultando a fonte autoritativa via PAT, nunca o derivado."*
+
+**Atualização ~01h BRT 27/05 (princípio diário-mostra-erros aplicado)**: eu marquei aqui *"não cristalizar em memory — esperar 2ª evidência"*. Pedro deu 2ª evidência **em ~5min** afirmando empíricamente: *"normal nao e a 1 vez que rola auditoria lovable e nao fica top 100%! e temos que checar rsrs"*. Cristalização justificada AGORA, não depois — memory `feedback_lovable_audit_nao_fica_100pct_sempre_checar_via_pat_26_05` criada como NÍVEL 1 entry-point. **Lição honesta**: anti-cristalização-prematura é princípio válido contra inflação narrativa MAS quando operador humano com 6+ meses contexto afirma *"não é a 1ª vez"*, 2ª evidência é a própria afirmação dele — não esperar replicação técnica que pode levar semanas.
 
 ### Z.4 — Validação empírica que sustenta o princípio
 
