@@ -28,17 +28,24 @@ import {
   type PubMedArticle,
 } from '../services/pubmedService'
 import OpenFDAPanel from '../components/OpenFDAPanel'
+import AnvisaPanel from '../components/AnvisaPanel'
 
-// [V1.9.464] (27/05/2026) — Adicionada SOURCE TOGGLE no topo (PubMed | OpenFDA).
-// OpenFDAPanel é componente standalone com hook próprio (useOpenFDA) — princípio
-// polir-não-inventar: NÃO refatora hook PubMed existente, adiciona nova source paralela.
-// Refactor multi-source ficará pra Fase 2 ANVISA (parqueada — memory
-// project_anvisa_bulario_indexacao_pdfs_parqueado_27_05).
+// [V1.9.464+465] (27/05/2026) — Source TOGGLE: PubMed | OpenFDA | Bulário BR (ANVISA).
+//
+// V1.9.464 — OpenFDAPanel: bulas U.S. FDA via API pública (Epidiolex, etc).
+//   Pedro validou empiricamente que OpenFDA é tier marginal (US-centric, ruído OTC).
+//
+// V1.9.465 — AnvisaPanel: catálogo MVP top ~42 bulas BR (cannabis + anti-convulsivantes +
+//   psicotrópicos + analgésicos + nefro) com link pro Bulário Eletrônico ANVISA oficial.
+//   Decisão Pedro 27/05 madrugada: "somos app br" — ANVISA é o que destrava valor real.
+//
+// Pattern polir-não-inventar: 3 hooks standalone (zero refactor multi-source).
+// Refactor multi-source justificado quando Fase 2-Pleno ANVISA crawler + OCR ativar.
 //
 // Princípio meta cristalizado em feedback_fronteira_organizar_info_farmacologica_vs_decisao_terapeutica_27_05:
 //   "Organizar acesso à informação oficial" vs "Participar da decisão terapêutica" — só a primeira.
 
-type LiteratureSource = 'pubmed' | 'openfda'
+type LiteratureSource = 'pubmed' | 'openfda' | 'anvisa'
 
 // [V1.9.369-A] (18/05/2026) — Aba Literatura (PubMed) no Terminal de Pesquisa
 //
@@ -157,10 +164,10 @@ const ExternalLiterature: React.FC<Props> = ({ embedded = false, initialTerm, in
     return () => window.removeEventListener('keydown', onKey)
   }, [])
 
-  // V1.9.464 — Source tabs (renderizado em ambos os modos pra toggle sempre acessível).
-  // É JSX (não hook), pode ficar depois dos useEffects sem violar Rules of Hooks.
+  // V1.9.464+465 — Source tabs (renderizado em todos os modos pra toggle sempre acessível).
+  // JSX (não hook) — pode ficar depois dos useEffects sem violar Rules of Hooks.
   const sourceTabsEl = (
-    <div className="flex items-center gap-1 bg-slate-900/40 border border-slate-700/50 rounded-lg p-1 w-fit mb-4">
+    <div className="flex flex-wrap items-center gap-1 bg-slate-900/40 border border-slate-700/50 rounded-lg p-1 w-fit mb-4">
       <button
         type="button"
         onClick={() => setSource('pubmed')}
@@ -176,6 +183,20 @@ const ExternalLiterature: React.FC<Props> = ({ embedded = false, initialTerm, in
       </button>
       <button
         type="button"
+        onClick={() => setSource('anvisa')}
+        className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold transition-all ${
+          source === 'anvisa'
+            ? 'bg-[rgba(0,229,178,0.15)] border border-[rgba(0,229,178,0.45)] text-[#00E5B2]'
+            : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
+        }`}
+        aria-pressed={source === 'anvisa'}
+      >
+        <Pill className="w-3.5 h-3.5" />
+        Bulário BR
+        <span className="text-[9px] bg-[rgba(0,229,178,0.20)] text-[#00E5B2] px-1.5 py-0.5 rounded-full ml-1 font-bold">PT-BR</span>
+      </button>
+      <button
+        type="button"
         onClick={() => setSource('openfda')}
         className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold transition-all ${
           source === 'openfda'
@@ -186,12 +207,21 @@ const ExternalLiterature: React.FC<Props> = ({ embedded = false, initialTerm, in
       >
         <Pill className="w-3.5 h-3.5" />
         OpenFDA
+        <span className="text-[9px] bg-slate-700 text-slate-400 px-1.5 py-0.5 rounded-full ml-1 font-bold">US</span>
       </button>
     </div>
   )
 
-  // V1.9.464-A — Early return pro modo OpenFDA AGORA APÓS todos os hooks
-  // (Rules of Hooks: hooks devem ser chamados sempre na mesma ordem em todo render).
+  // V1.9.464-A + V1.9.465 — Early returns APÓS todos os hooks (Rules of Hooks).
+  if (source === 'anvisa') {
+    return (
+      <div className="w-full max-w-6xl mx-auto">
+        {sourceTabsEl}
+        <AnvisaPanel />
+      </div>
+    )
+  }
+
   if (source === 'openfda') {
     return (
       <div className="w-full max-w-6xl mx-auto">
@@ -214,7 +244,7 @@ const ExternalLiterature: React.FC<Props> = ({ embedded = false, initialTerm, in
             </div>
             <div>
               <h1 className="text-xl font-bold text-white">Literatura</h1>
-              <p className="text-xs text-slate-400">PubMed (artigos científicos) + OpenFDA (bulas FDA)</p>
+              <p className="text-xs text-slate-400">PubMed (artigos científicos) + Bulário BR (ANVISA) + OpenFDA (bulas FDA)</p>
             </div>
           </div>
         )}
