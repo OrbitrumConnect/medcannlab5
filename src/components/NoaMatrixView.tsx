@@ -572,18 +572,19 @@ export const NoaMatrixView: React.FC = () => {
         {/* [V1.9.454] Disclaimer compacto — bloco antigo "Como funciona..." denso
             virou linha mínima + link pra modal elite (MatrixHelpModal). Reduz
             ruído visual sem perder conteúdo (disponível on-demand via "?"). */}
-        <div className="mt-3 flex items-center gap-2 px-3 py-1.5 rounded-lg bg-purple-500/5 border border-purple-500/15">
-          <Info className="w-3.5 h-3.5 text-purple-300/70 flex-shrink-0" />
-          <p className="text-[11px] text-slate-400">
-            Matrix lê APENAS o material marcado — não sugere conduta nem infere diagnóstico.
-            <button
-              type="button"
-              onClick={() => setHelpModalOpen(true)}
-              className="ml-1 text-purple-300 hover:text-purple-200 underline underline-offset-2 transition-colors"
-            >
-              Modo de uso →
-            </button>
-          </p>
+        {/* [V1.9.468-A] (27/05/2026) — Faixa compactada (~50px → ~28px verticais).
+            Disclaimer "Matrix lê APENAS material marcado" movido pro MatrixHelpModal
+            (acessível 1 clique). Botão (?) no header (linha 548) ja abre o mesmo modal —
+            "Modo de uso →" aqui é só atalho visual contextual. */}
+        <div className="mt-2 flex items-center justify-end">
+          <button
+            type="button"
+            onClick={() => setHelpModalOpen(true)}
+            className="text-[11px] text-purple-300/80 hover:text-purple-200 underline underline-offset-2 transition-colors flex items-center gap-1"
+          >
+            <Info className="w-3 h-3" />
+            Modo de uso →
+          </button>
         </div>
       </div>
 
