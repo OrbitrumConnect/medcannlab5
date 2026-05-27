@@ -316,9 +316,14 @@ const SchedulingWidget = ({
     }
     let active = true;
 
+    // V1.9.471: removido early-return `if (loading) return` que travava o widget
+    // quando paciente trocava rapidamente o dropdown de profissional (Ricardo →
+    // Eduardo). Race: 1ª chamada seta loading=true → async pending; troca
+    // dispara cleanup (active=false) + novo useEffect → novo loadSlots vê
+    // loading=true e SAI; 1ª chamada termina mas active=false impede reset →
+    // loading trava em true + availableSlots=[] permanente. Cleanup `active=false`
+    // já protege contra setState stale, guard era redundante e quebrou o fluxo.
     const loadSlots = async () => {
-      if (loading) return;
-
       setLoading(true);
       try {
         const slots = await getAvailableSlots(
