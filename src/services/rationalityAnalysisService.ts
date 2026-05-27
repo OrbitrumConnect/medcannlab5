@@ -1,6 +1,7 @@
 import { supabase } from '../lib/supabase'
 import { NoaResidentAI } from '../lib/noaResidentAI'
 import { simpleCache } from '../lib/simpleCache'
+import { sanitizeAssessmentPII } from '../lib/casePseudonymization'
 
 export type Rationality = 'biomedical' | 'traditional_chinese' | 'ayurvedic' | 'homeopathic' | 'integrative'
 
@@ -563,6 +564,36 @@ FORMATAÇÃO (UI não renderiza markdown):
 
       const resolvedPatientId = patientId || report.patient_id
 
+      // [V1.9.452] (27/05/2026) — Sanitização PII defensiva em assessment ANTES
+      // dos 2 INSERTs (jsonb + tabela). Audit PAT 27/05 confirmou 88.5% rows
+      // (115/130) com nome próprio vazado. Manifestou em 2 dossiês PDF reais
+      // hoje. Fix DEFENSIVO: só impacta NOVAS rows; backfill 115 existentes
+      // requer aprovação Ricardo (parqueado).
+      // Princípio polir-não-inventar: reusa pattern V1.9.407 pseudonimização.
+      let patientName: string | null = null
+      if (resolvedPatientId) {
+        const { data: patientRow } = await supabase
+          .from('users')
+          .select('name')
+          .eq('id', resolvedPatientId)
+          .single()
+        patientName = (patientRow as any)?.name || null
+      }
+
+      const sanitizedAssessment = sanitizeAssessmentPII(
+        analysis.assessment,
+        patientName,
+        resolvedPatientId,
+      )
+
+      if (patientName && sanitizedAssessment !== analysis.assessment) {
+        console.log(
+          `[V1.9.452 LGPD] PII sanitized in assessment (rationality=${rationality}, ` +
+          `tokens removed=${patientName.split(/\s+/).filter((t) => t.length >= 3).length}, ` +
+          `length: ${analysis.assessment.length} → ${sanitizedAssessment.length})`,
+        )
+      }
+
       // 2. Atualizar campo rationalities no content (retrocompatibilidade)
       const currentContent = (report.content as any) || {}
       const currentRationalities = (currentContent as any).rationalities || {}
@@ -572,7 +603,7 @@ FORMATAÇÃO (UI não renderiza markdown):
         : rationality
 
       currentRationalities[rationalityKey] = {
-        assessment: analysis.assessment,
+        assessment: sanitizedAssessment,
         recommendations: analysis.recommendations,
         considerations: analysis.considerations,
         approach: analysis.approach,
@@ -600,7 +631,8 @@ FORMATAÇÃO (UI não renderiza markdown):
             report_id: reportId,
             patient_id: resolvedPatientId,
             rationality_type: rationality,
-            assessment: analysis.assessment,
+            // [V1.9.452] Mesma sanitização do INSERT jsonb acima (consistência dual-write)
+            assessment: sanitizedAssessment,
             recommendations: analysis.recommendations,
             considerations: analysis.considerations || '',
             approach: analysis.approach || ''

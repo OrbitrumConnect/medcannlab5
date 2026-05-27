@@ -226,3 +226,102 @@ export function formatPseudonymizedCaseBody(
 
   return lines.join('\n')
 }
+
+// ════════════════════════════════════════════════════════════════════════════
+// [V1.9.452] (27/05/2026) — Sanitização PII em campo `assessment` de
+// clinical_rationalities + clinical_reports.content.rationalities.
+//
+// Contexto empírico: audit PAT 27/05 confirmou 115/130 rows (88.5%) com
+// nome próprio do paciente vazado no campo `assessment`. Manifestou em 2
+// dossiês PDF reais hoje:
+//   - Dossiê Ricardo manhã: "CAROLINA CAMPELLO DO RÊGO VALENÇA"
+//   - Dossiê Pedro 10:48: "O paciente, Pedro, relata dor..."
+//
+// Gap LGPD bloqueador absoluto pré-Marco 2 (CLAUDE.md P0 backlog desde 25/05).
+//
+// Estratégia: substitui tokens do nome real (Nome + Sobrenome + variantes
+// CAIXA ALTA) por pseudo-ID "Paciente #XXXXXX" (primeiros 6 chars do
+// patient_id em uppercase). Preserva resto do texto clínico intacto.
+//
+// Risco MÉDIO de mutilação clínica se token coincidir com palavra clínica
+// real — mitigado por:
+//   1. Token deve ter length >= 3 (evita matches falsos curtos)
+//   2. Regex \b boundary (evita partial matches dentro de palavras)
+//   3. Patterns conhecidos "O paciente, X," são tratados explicitamente
+//
+// Aplicado em rationalityAnalysisService.saveAnalysisToReport ANTES dos 2
+// INSERTs (jsonb em clinical_reports.content + tabela clinical_rationalities).
+// ════════════════════════════════════════════════════════════════════════════
+
+function escapeRegex(s: string): string {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+}
+
+/**
+ * Sanitiza nome real do paciente em texto livre `assessment`.
+ *
+ * @param assessment Texto bruto da racionalidade (pode conter nome real)
+ * @param patientName Nome real do paciente (de users.name)
+ * @param patientId UUID do paciente (pra gerar pseudo-ID dos primeiros 6 chars)
+ * @returns Texto sanitizado com nome substituído por "Paciente #XXXXXX"
+ */
+export function sanitizeAssessmentPII(
+  assessment: string | null | undefined,
+  patientName: string | null | undefined,
+  patientId: string | null | undefined,
+): string {
+  if (!assessment || typeof assessment !== 'string') return assessment || ''
+  if (!patientName || patientName.trim().length === 0) return assessment
+
+  const pseudoId = patientId
+    ? `Paciente #${patientId.replace(/-/g, '').slice(0, 6).toUpperCase()}`
+    : 'o(a) paciente'
+
+  // Split nome em tokens >= 3 chars (evita "de", "da", "do")
+  const tokens = patientName
+    .split(/\s+/)
+    .filter((t) => t.length >= 3)
+    // Remove conectivos comuns que NÃO devem ser substituídos
+    .filter((t) => !/^(dos?|das?|de|del|von|van)$/i.test(t))
+
+  if (tokens.length === 0) return assessment
+
+  let sanitized = assessment
+
+  // Substitui cada token (case-insensitive, word boundary)
+  // Cobre CAROLINA, Carolina, carolina simultaneamente via flag /gi
+  for (const token of tokens) {
+    const regex = new RegExp(`\\b${escapeRegex(token)}\\b`, 'gi')
+    sanitized = sanitized.replace(regex, pseudoId)
+  }
+
+  // Patterns clássicos GPT que vazam: "O paciente, Pedro," / "A paciente, Maria,"
+  // Mesmo se nome individual já foi substituído, virgulas podem ficar pendentes
+  sanitized = sanitized
+    .replace(new RegExp(`\\bO paciente,\\s*${escapeRegex(pseudoId)},`, 'gi'), 'O(a) paciente,')
+    .replace(new RegExp(`\\bA paciente,\\s*${escapeRegex(pseudoId)},`, 'gi'), 'A(o) paciente,')
+
+  // Dedup: collapse N pseudos consecutivos (com qualquer separador entre eles)
+  // em 1 só. Trata casos "CAROLINA CAMPELLO DO RÊGO VALENÇA" (4 tokens) que
+  // viraram "Paciente #X Paciente #X DO Paciente #X Paciente #X" → "Paciente #X".
+  // Conectivos preservados ("dos?", "das?", "de", "del", "von", "van") ficam
+  // intermediados — collapse só faz sentido se forem todos pseudos.
+  const escPseudo = escapeRegex(pseudoId)
+  // 1ª passada: collapse separadores conectivos entre pseudos: "Paciente #X de Paciente #X" → "Paciente #X"
+  sanitized = sanitized.replace(
+    new RegExp(`(${escPseudo})\\s+(?:dos?|das?|de|del|von|van|do)\\s+(${escPseudo})`, 'gi'),
+    pseudoId,
+  )
+  // 2ª passada (loop): collapse pseudos consecutivos separados só por whitespace ou vírgula
+  let prev: string
+  do {
+    prev = sanitized
+    sanitized = sanitized.replace(
+      new RegExp(`(${escPseudo})[\\s,]+(${escPseudo})`, 'gi'),
+      pseudoId,
+    )
+  } while (sanitized !== prev)
+
+  return sanitized
+}
+
