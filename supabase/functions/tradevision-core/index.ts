@@ -3969,6 +3969,7 @@ Responda SOMENTE com o JSON válido, sem markdown.`
             'OBJECTIVE_QUESTIONS',
             'CONSENSUS_REVIEW',
             'CONSENSUS_REPORT',
+            'CONSENSUS_NOTES',
             'CONSENT_COLLECTION',
             'CONSENSUS_CONFIRMATION',
             'FINAL_RECOMMENDATION',
@@ -4004,6 +4005,7 @@ Responda SOMENTE com o JSON válido, sem markdown.`
             'OBJECTIVE_QUESTIONS',
             'CONSENSUS_REVIEW',
             'CONSENSUS_REPORT',
+            'CONSENSUS_NOTES',
             'CONSENT_COLLECTION',
             'CONSENSUS_CONFIRMATION',
             'FINAL_RECOMMENDATION',
@@ -4065,6 +4067,12 @@ Responda SOMENTE com o JSON válido, sem markdown.`
                 }
                 case 'CONSENSUS_REPORT': {
                     nextQuestionHint = 'Vou resumir o que entendi da sua história e depois peço que me diga se está correto ou se falta algo importante.'
+                    break
+                }
+                case 'CONSENSUS_NOTES': {
+                    // V1.9.473: paciente revisou 2+ vezes; coletamos observação literal
+                    // como anexo do relatório. Pergunta é estática (nunca interpreta).
+                    nextQuestionHint = 'Por favor, escreva agora o que precisa ser corrigido, removido ou adicionado. Sua observação será registrada literal no relatório para o médico ver.'
                     break
                 }
                 case 'CONSENT_COLLECTION': {
@@ -5970,8 +5978,8 @@ ${JSON.stringify(patientData, null, 2)}
                 'INITIAL_GREETING', 'IDENTIFICATION', 'COMPLAINT_LIST', 'MAIN_COMPLAINT',
                 'COMPLAINT_DETAILS', 'MEDICAL_HISTORY', 'FAMILY_HISTORY_MOTHER',
                 'FAMILY_HISTORY_FATHER', 'LIFESTYLE_HABITS', 'OBJECTIVE_QUESTIONS',
-                'CONSENSUS_REVIEW', 'CONSENSUS_REPORT', 'CONSENSUS_CONFIRMATION',
-                'CONSENT_COLLECTION', 'INTERRUPTED'
+                'CONSENSUS_REVIEW', 'CONSENSUS_REPORT', 'CONSENSUS_NOTES',
+                'CONSENSUS_CONFIRMATION', 'CONSENT_COLLECTION', 'INTERRUPTED'
             ])
             const aecActiveCollecting = !!assessmentPhase && AEC_ACTIVE_COLLECTING_PHASES.has(assessmentPhase)
             if (aecActiveCollecting && lastReport) {
@@ -6195,6 +6203,7 @@ ${contentExcerpt || '(Texto não disponível para este documento. O conteúdo ai
                 'CONSENSUS': '🔒 PHASE LOCK: Você está no FECHAMENTO CONSENSUAL (Etapa 9). Resuma a história e peça confirmação. NÃO encerre sem consenso.',
                 'CONSENSUS_REVIEW': '🔒 PHASE LOCK: Etapa 9 — revisão consensual. Respeite o texto do protocolo.',
                 'CONSENSUS_REPORT': '🔒 PHASE LOCK: Etapa 9 — apresente o entendimento e peça concordância do paciente.',
+                'CONSENSUS_NOTES': '🔒 PHASE LOCK: Etapa 9.5 — paciente revisou 2+ vezes sem consenso; estamos coletando observação literal dele para anexar ao relatório (médico verá). Use APENAS o texto do roteiro — não interprete, não reescreva a anamnese, não infira sintomas novos. Após resposta do paciente, FSM avança automaticamente para CONSENT_COLLECTION.',
                 'CONSENT_COLLECTION': '🔒 PHASE LOCK: Coleta de consentimento informado. Siga o roteiro aprovado; não desvie para anamnese.',
                 'CONSENSUS_CONFIRMATION': '🔒 PHASE LOCK: Confirmação de consenso. Seja clara e objetiva.',
                 'FINAL_RECOMMENDATION': '🔒 PHASE LOCK: Recomendação final antes do encerramento formal.',

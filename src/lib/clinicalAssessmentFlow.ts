@@ -47,6 +47,24 @@ function levenshtein(a: string, b: string): number {
   return dp[b.length][a.length]
 }
 
+/**
+ * V1.9.473: rejeita interjeições/conectivos curtos PT-BR isolados quando o
+ * paciente envia mensagem solta no fluxo COMPLAINT_LIST (especialmente comum
+ * via voz, onde browser SR fragmenta frases). Bug raiz exposto por Eduardo
+ * Faveret 27/05: paciente disse "Olha, ..." iniciando narrativa, parser
+ * capturou só "olha" como sintoma, sistema ficou perguntando "Como você
+ * descreveria esse sintoma (olha)?". Filtro é conservador — só match em
+ * frase INTEIRA (palavra única com pontuação mínima), preservando queixas
+ * curtas legítimas como "dor", "tosse", "febre".
+ */
+export function isPhenomenologicalNoise(raw: string): boolean {
+  if (!raw || typeof raw !== 'string') return true
+  const trimmed = raw.trim()
+  if (trimmed.length === 0) return true
+  // Match palavra única (com possível pontuação curta no fim) que é interjeição
+  return /^(olha|olh[áaeé]|veja|hmm?|h[ãa]m+|ah|oh|ai|opa|nossa|n[ée]|t[áa]|ok|uhum|aham|eh|[éeê]|t[íi]po|ent[ãa]o|a[íi]|ent)\s*[.,!?]?\s*$/i.test(trimmed)
+}
+
 /** Trechos RAG/documento injetados no chat nao devem entrar nas respostas clinicas persistidas no AEC. */
 export function stripPlatformInjectionNoise(raw: string): string {
   if (!raw || typeof raw !== 'string') return ''
@@ -79,6 +97,7 @@ export type AssessmentPhase =
   | 'OBJECTIVE_QUESTIONS'
   | 'CONSENSUS_REVIEW'
   | 'CONSENSUS_REPORT'
+  | 'CONSENSUS_NOTES'
   | 'CONSENT_COLLECTION'
   | 'CONSENSUS_CONFIRMATION'
   | 'FINAL_RECOMMENDATION'
@@ -126,6 +145,14 @@ export interface AssessmentData {
   // Consenso
   consensusAgreed: boolean
   consensusRevisions: number
+  // V1.9.473: observações literais do paciente após >=2 discordâncias com
+  // o resumo do sistema. O motor de generateConsensusReport é determinístico
+  // (renderiza state) e não tem semântica pra aplicar correções livres.
+  // Ao invés de loop infinito "Vamos revisar + repete texto", oferecemos
+  // registrar a correção LITERAL como anexo — médico vê ambos (entendimento
+  // sistema + observação paciente). Honra princípio fenomenológico Ricardo
+  // (paciente tem voz que persiste) sem inventar interpretação semântica.
+  patientReviewNotes?: string
 
   // Consentimento Informado (S6)
   consentGiven: boolean
@@ -885,7 +912,9 @@ export class ClinicalAssessmentFlow {
         }
 
         // Se chegou aqui, já temos o nome E a mensagem não é saudação/intro — é a primeira queixa!
-        if (userTurn.trim()) {
+        // V1.9.473: filtro de interjeições curtas isoladas ("olha", "ah") —
+        // bug raiz Eduardo 27/05 onde "olha" entrou como sintoma.
+        if (userTurn.trim() && !isPhenomenologicalNoise(userTurn)) {
           state.data.complaintList.push(userTurn.trim())
         }
         this.markPhaseCompleted(state, 'IDENTIFICATION')
@@ -909,7 +938,10 @@ export class ClinicalAssessmentFlow {
 
         if (hasMore && userTurn.trim() && !isUserStopping && !REACHED_LIMIT) {
           // Adicionar mais queixa à lista e continuar perguntando
-          state.data.complaintList.push(userTurn.trim())
+          // V1.9.473: filtro isPhenomenologicalNoise rejeita "olha", "ah" isolados
+          if (!isPhenomenologicalNoise(userTurn)) {
+            state.data.complaintList.push(userTurn.trim())
+          }
           state.phaseIterationCount++
           state.lastUpdate = new Date()
           return {
@@ -919,7 +951,8 @@ export class ClinicalAssessmentFlow {
           }
         } else {
           // [V1.8.4] Grava o último conteúdo relatado antes de avançar (se não for comando de parada)
-          if (userTurn.trim() && !isUserStopping) {
+          // V1.9.473: idem — filtro de interjeições
+          if (userTurn.trim() && !isUserStopping && !isPhenomenologicalNoise(userTurn)) {
             state.data.complaintList.push(userTurn.trim())
           }
           state.waitingForMore = false
@@ -1147,11 +1180,55 @@ export class ClinicalAssessmentFlow {
         }
         // Não concordou ou resposta ambígua: pedir correções
         state.data.consensusRevisions++
+
+        // V1.9.473: após 2ª discordância, escapa do loop infinito
+        // (REPORT → REVIEW → regenera mesmo report sem aplicar correção).
+        // generateConsensusReport é determinístico — não interpreta correções
+        // livres. Em vez de fingir entender, oferece registrar observação
+        // literal do paciente como anexo do relatório. Caso paradigmático:
+        // Eduardo Faveret 27/05 testando — tentou 3x corrigir "olha" / "aí ela
+        // liga", sistema regenerou mesmo texto, paciente desistiu e disse
+        // "concordo". Bug arquitetural exposto pelo 1º teste empírico.
+        if (state.data.consensusRevisions >= 2) {
+          state.phase = 'CONSENSUS_NOTES'
+          state.lastUpdate = new Date()
+          return {
+            nextQuestion: 'Entendi que ainda há algo a ajustar. Como não consigo reescrever o resumo automaticamente, vou registrar suas observações como **anexo de revisão do paciente** no relatório — o médico verá tanto meu entendimento original quanto sua correção literal.\n\nPor favor, escreva agora o que precisa ser corrigido, removido ou adicionado:',
+            phase: 'CONSENSUS_NOTES',
+            isComplete: false
+          }
+        }
+
         state.phase = 'CONSENSUS_REVIEW'
         state.lastUpdate = new Date()
         return {
           nextQuestion: `Entendi. Vamos revisar. ${userTurn}. Por favor, me diga o que precisa ser corrigido ou adicionado para que eu possa apresentar novamente meu entendimento.`,
           phase: 'CONSENSUS_REVIEW',
+          isComplete: false
+        }
+      }
+
+      case 'CONSENSUS_NOTES': {
+        // V1.9.473: captura observação literal do paciente após escape do loop.
+        // Avança pra CONSENT_COLLECTION (consensusAgreed=true marca como
+        // aceito-com-revisões — médico verá observacoes_paciente no report).
+        if (userTurn.trim()) {
+          state.data.patientReviewNotes = userTurn.trim()
+        }
+        state.data.consensusAgreed = true
+        this.markPhaseCompleted(state, 'CONSENSUS_REPORT')
+        state.phase = 'CONSENT_COLLECTION'
+        state.lastUpdate = new Date()
+        const doc = this.physicianDisplay(state)
+        const docTarget = doc || 'o profissional responsável'
+        return {
+          nextQuestion: '✅ Observação registrada. Obrigada!\n\n📋 **Consentimento Informado**\n\nAgora preciso do seu consentimento:\n\n' +
+            '• Os dados desta avaliacao serao registrados no seu prontuario digital.\n' +
+            `• O relatorio gerado (incluindo sua observação de revisão) sera compartilhado com ${docTarget} para analise clinica.\n` +
+            '• Nenhum dado sera compartilhado com terceiros sem sua autorizacao previa.\n' +
+            '• Este relatorio e uma avaliacao inicial assistida por IA e **não substitui** a consulta médica presencial.\n\n' +
+            'Voce autoriza o registro e compartilhamento destes dados? (sim/não)',
+          phase: 'CONSENT_COLLECTION',
           isComplete: false
         }
       }
@@ -1588,6 +1665,12 @@ export class ClinicalAssessmentFlow {
     if (data.regularMedications) report += `**Medicações Regulares:** ${clean(data.regularMedications)}\n`
     if (data.sporadicMedications) report += `**Medicações Esporádicas:** ${clean(data.sporadicMedications)}\n`
 
+    // V1.9.473: bloco de observações literais do paciente quando ele revisou
+    // o resumo >=2 vezes e o sistema escapou pra CONSENSUS_NOTES.
+    if (data.patientReviewNotes && data.patientReviewNotes.trim().length > 0) {
+      report += `\n**📝 Observação de revisão do paciente:**\n${clean(data.patientReviewNotes)}\n`
+    }
+
     report += '\n**Você concorda com esse entendimento?**'
 
     return report
@@ -1773,7 +1856,11 @@ export class ClinicalAssessmentFlow {
         },
         consenso: {
           aceito: data.consensusAgreed,
-          revisoes_realizadas: data.consensusRevisions
+          revisoes_realizadas: data.consensusRevisions,
+          // V1.9.473: observação literal do paciente quando ele revisou >=2x
+          // e sistema escapou pro CONSENSUS_NOTES. Médico vê no review do
+          // relatório, ao lado do entendimento original do sistema.
+          observacoes_paciente: data.patientReviewNotes || null
         }
       }
     }
