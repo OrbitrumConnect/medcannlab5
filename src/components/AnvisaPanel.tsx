@@ -203,6 +203,10 @@ const CATEGORIA_ICONS: Record<string, string> = {
   anticonvulsivante: '⚡',
   psicotropico: '🧠',
   analgesico: '💊',
+  antibiotico: '🦠',
+  cardiovascular: '❤️',
+  metabolico: '🩸',
+  gastrointestinal: '🍃',
   nefro: '🫘',
   outros: '📋',
 }

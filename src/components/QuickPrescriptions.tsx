@@ -30,6 +30,8 @@ import { useConfirm } from '../contexts/ConfirmContext'
 import { getAllPatients } from '../lib/adminPermissions'
 // V1.9.466 — popover bula no fluxo de prescrição (princípio Ricardo cristalizado 27/05)
 import BulaContextPopover from './BulaContextPopover'
+// V1.9.467 — autocomplete HTML5 datalist nativo populado do seed ANVISA (Ricardo pediu cefalexina)
+import { ANVISA_BULARIO_SEED } from '../data/anvisaBularioSeed'
 // V1.9.264 — Trigger Solicitar Exame inline na aba Prescricoes (Ricardo 13/05 20h45)
 import { ExamRequestModule } from './ExamRequestModule'
 
@@ -1053,14 +1055,33 @@ const QuickPrescriptions: React.FC<QuickPrescriptionsProps> = ({ className = '',
 
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-sm font-medium text-slate-300 mb-1">Medicamento / Princípio Ativo</label>
+                    <label className="block text-sm font-medium text-slate-300 mb-1">
+                      Medicamento / Princípio Ativo
+                      <span className="text-[10px] text-slate-500 font-normal ml-2">· digite cefal, cbd, gabap... pra autocomplete catálogo ANVISA</span>
+                    </label>
+                    {/* V1.9.467 — Autocomplete HTML5 datalist nativo (Ricardo pediu typeahead clássico EHR).
+                        Browser mostra dropdown automático com matches do catálogo curado.
+                        ZERO JS adicional, mobile-friendly, funciona em todos navegadores modernos. */}
                     <input
                       type="text"
+                      list="anvisa-medications-autocomplete"
                       className="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-blue-500"
-                      placeholder="Ex: Canabidiol (CBD) Isolate"
+                      placeholder="Ex: Cefalexina, Canabidiol, Gabapentina..."
                       value={prescriptionForm.medication}
                       onChange={(e) => setPrescriptionForm({ ...prescriptionForm, medication: e.target.value })}
+                      autoComplete="off"
                     />
+                    <datalist id="anvisa-medications-autocomplete">
+                      {ANVISA_BULARIO_SEED.map((entry) => (
+                        <option key={entry.id} value={entry.nomeComercial}>
+                          {entry.principioAtivo} · {entry.classeTerapeutica}
+                        </option>
+                      ))}
+                      {/* Variantes só com princípio ativo pra digitação direta (cbd → Canabidiol, etc) */}
+                      {Array.from(new Set(ANVISA_BULARIO_SEED.map(e => e.principioAtivo.split(/[+(]/)[0].trim()))).map((ativo) => (
+                        <option key={`ativo-${ativo}`} value={ativo} />
+                      ))}
+                    </datalist>
                     {/* V1.9.466 — Popover contextual bula ANVISA (princípio fronteira info farmacológica
                         + princípio Ricardo "bula é infraestrutura cognitiva do médico, NÃO sugestão IA").
                         Aparece SE medicamento digitado match catálogo curado. Médico pode dismissar 24h. */}

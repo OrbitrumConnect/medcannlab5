@@ -92,14 +92,18 @@ function scoreEntry(entry: BularioEntry, normTerm: string): number {
   return score
 }
 
-/** V1.9.465-A — ordem peso pra sort por categoria (cannabis primeiro = wedge clínico MedCannLab) */
+/** V1.9.465-A + V1.9.467 — ordem peso pra sort por categoria (cannabis primeiro = wedge clínico MedCannLab) */
 const CATEGORIA_ORDER: Record<BularioCategoria, number> = {
   cannabis: 1,
   anticonvulsivante: 2,
   psicotropico: 3,
   analgesico: 4,
-  nefro: 5,
-  outros: 6,
+  cardiovascular: 5,
+  nefro: 6,
+  metabolico: 7,
+  antibiotico: 8,
+  gastrointestinal: 9,
+  outros: 10,
 }
 
 /** V1.9.465-A — ordem peso pra sort por tarja (preta = controle mais restritivo primeiro) */
