@@ -125,7 +125,40 @@ const ExternalLiterature: React.FC<Props> = ({ embedded = false, initialTerm, in
 
   const searchInputRef = useRef<HTMLInputElement>(null)
 
-  // V1.9.464 — Source tabs (renderizado em ambos os modos pra toggle sempre acessível)
+  // [V1.9.369-C] Quando vem term via cross-link (Casos Similares → Literatura),
+  // popula automaticamente e força tab de busca livre.
+  // V1.9.464-A — useEffect MOVIDO pra antes do early return source='openfda' (Rules of Hooks).
+  useEffect(() => {
+    if (initialTerm && initialTerm.trim().length >= 3) {
+      setTerm(initialTerm)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialTerm, initialTermKey])
+
+  // Atalhos globais Cmd/Ctrl+K ou "/" focam search (consistente com Casos Similares V1.9.364)
+  // V1.9.464-A — useEffect MOVIDO pra antes do early return (Rules of Hooks).
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement | null
+      const inField = !!target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable)
+      const isMod = e.metaKey || e.ctrlKey
+      if (isMod && e.key.toLowerCase() === 'k') {
+        e.preventDefault()
+        searchInputRef.current?.focus()
+        searchInputRef.current?.select()
+        return
+      }
+      if (e.key === '/' && !inField) {
+        e.preventDefault()
+        searchInputRef.current?.focus()
+      }
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [])
+
+  // V1.9.464 — Source tabs (renderizado em ambos os modos pra toggle sempre acessível).
+  // É JSX (não hook), pode ficar depois dos useEffects sem violar Rules of Hooks.
   const sourceTabsEl = (
     <div className="flex items-center gap-1 bg-slate-900/40 border border-slate-700/50 rounded-lg p-1 w-fit mb-4">
       <button
@@ -157,7 +190,8 @@ const ExternalLiterature: React.FC<Props> = ({ embedded = false, initialTerm, in
     </div>
   )
 
-  // Early return pro modo OpenFDA — UI standalone do painel próprio
+  // V1.9.464-A — Early return pro modo OpenFDA AGORA APÓS todos os hooks
+  // (Rules of Hooks: hooks devem ser chamados sempre na mesma ordem em todo render).
   if (source === 'openfda') {
     return (
       <div className="w-full max-w-6xl mx-auto">
@@ -166,36 +200,6 @@ const ExternalLiterature: React.FC<Props> = ({ embedded = false, initialTerm, in
       </div>
     )
   }
-
-  // [V1.9.369-C] Quando vem term via cross-link (Casos Similares → Literatura),
-  // popula automaticamente e força tab de busca livre
-  useEffect(() => {
-    if (initialTerm && initialTerm.trim().length >= 3) {
-      setTerm(initialTerm)
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [initialTerm, initialTermKey])
-
-  // Atalhos globais Cmd/Ctrl+K ou "/" focam search (consistente com Casos Similares V1.9.364)
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      const target = e.target as HTMLElement | null
-      const inField = !!target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable)
-      const isMod = e.metaKey || e.ctrlKey
-      if (isMod && e.key.toLowerCase() === 'k') {
-        e.preventDefault()
-        searchInputRef.current?.focus()
-        searchInputRef.current?.select()
-        return
-      }
-      if (e.key === '/' && !inField) {
-        e.preventDefault()
-        searchInputRef.current?.focus()
-      }
-    }
-    window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
-  }, [])
 
   const SUGGESTIONS = ['cannabidiol chronic kidney disease', 'cannabis epilepsy', 'CBD anxiety RCT', 'THC pain', 'cannabis sleep']
 
