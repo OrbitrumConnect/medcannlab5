@@ -64,11 +64,20 @@ export interface BularioEntry {
 }
 
 /**
- * Helper: gera URL padrão de busca no Bulário Eletrônico ANVISA.
- * Portal aceita query string `?nomeProduto=X`.
+ * Helper: gera URL Google Search restrita ao Bulário Eletrônico ANVISA.
+ *
+ * [V1.9.467-C] (27/05/2026) — Trocado de URL direta SPA Angular pra Google Search
+ * pattern. Motivo empírico: portal `consultas.anvisa.gov.br/#/bulario/q/` é SPA
+ * Angular frágil — várias bulas (Antak descontinuado, Aspirina, outras) carregam
+ * página branca mesmo com nomeProduto válido. Google Search SERP é robusto:
+ * curl empírico 27/05 confirmou HTTP 200 + ~90KB pra Mevatyl/Cefalexina/Antak.
+ *
+ * Trade-off: usuário cai em SERP (precisa 1 clique extra) em vez de bula direta,
+ * mas elimina 100% dos casos página branca. Aceitável pra MVP — quando >50 bulas
+ * com PDF direto extraído (Fase 2-Pleno scraping), trocar pra link PDF.
  */
 const anvisa = (nomeProduto: string): string =>
-  `https://consultas.anvisa.gov.br/#/bulario/q/?nomeProduto=${encodeURIComponent(nomeProduto)}`
+  `https://www.google.com/search?q=${encodeURIComponent(`bula ${nomeProduto} site:consultas.anvisa.gov.br`)}`
 
 export const ANVISA_BULARIO_SEED: BularioEntry[] = [
   // ────────────────────────────────────────────────────────────────────
@@ -688,7 +697,8 @@ export const ANVISA_BULARIO_SEED: BularioEntry[] = [
   { id: 'esomeprazol-nexium', nomeComercial: 'Nexium (Esomeprazol)', principioAtivo: 'Esomeprazol Magnésio', apresentacao: 'Comprimidos 20, 40 mg · Sachê granulado', classeTerapeutica: 'Inibidor bomba de prótons (IBP)', laboratorio: 'AstraZeneca', categoria: 'gastrointestinal', indicacaoResumida: 'DRGE refratária, esofagite erosiva, Zollinger-Ellison, H. pylori.', bularioUrl: anvisa('Nexium'), tarja: 'branca', observacao: 'Mesmas observações IBP crônico (hipomag + B12 + DRC + osteoporose).' },
   { id: 'pantoprazol-pantozol', nomeComercial: 'Pantozol (Pantoprazol)', principioAtivo: 'Pantoprazol Sódico', apresentacao: 'Comprimidos 20, 40 mg · Ampola IV', classeTerapeutica: 'Inibidor bomba de prótons (IBP)', laboratorio: 'Takeda', categoria: 'gastrointestinal', indicacaoResumida: 'DRGE, úlcera péptica, profilaxia úlcera de estresse (UTI).', bularioUrl: anvisa('Pantozol'), tarja: 'branca', observacao: 'Preferido quando paciente em clopidogrel (menos interação CYP2C19).' },
   { id: 'lansoprazol-ogastro', nomeComercial: 'Ogastro (Lansoprazol)', principioAtivo: 'Lansoprazol', apresentacao: 'Cápsulas 15, 30 mg', classeTerapeutica: 'Inibidor bomba de prótons (IBP)', laboratorio: 'Takeda', categoria: 'gastrointestinal', indicacaoResumida: 'DRGE, úlcera péptica, H. pylori (combinação).', bularioUrl: anvisa('Ogastro'), tarja: 'branca' },
-  { id: 'ranitidina-antak', nomeComercial: 'Antak (Ranitidina)', principioAtivo: 'Ranitidina', apresentacao: 'Comprimidos 150, 300 mg · Xarope · Ampola IV', classeTerapeutica: 'Anti-H2 (antagonista receptor histamina H2)', laboratorio: 'GSK / Genéricos', categoria: 'gastrointestinal', indicacaoResumida: 'DRGE, úlcera péptica (alternativa a IBP).', bularioUrl: anvisa('Antak'), tarja: 'branca', observacao: 'ATENÇÃO: várias marcas removidas mercado mundial (contaminação NDMA 2019-20). Verificar lote.' },
+  // [V1.9.467-C] Antak (Ranitidina) removido — descontinuado mercado mundial (NDMA 2019-20)
+  // + portal ANVISA retorna página branca. Famox (Famotidina) é o substituto clínico padrão.
   { id: 'famotidina-famox', nomeComercial: 'Famox (Famotidina)', principioAtivo: 'Famotidina', apresentacao: 'Comprimidos 20, 40 mg · Ampola IV', classeTerapeutica: 'Anti-H2', laboratorio: 'EMS / Genéricos', categoria: 'gastrointestinal', indicacaoResumida: 'DRGE, dispepsia, úlcera péptica (substituiu ranitidina pós-NDMA).', bularioUrl: anvisa('Famox'), tarja: 'branca' },
   { id: 'ondansetrona-zofran', nomeComercial: 'Zofran (Ondansetrona)', principioAtivo: 'Cloridrato de Ondansetrona', apresentacao: 'Comprimidos 4, 8 mg · Solução oral · Ampola IV/IM', classeTerapeutica: 'Anti-emético antagonista 5-HT3', laboratorio: 'GSK', categoria: 'gastrointestinal', indicacaoResumida: 'Náusea/vômito por quimioterapia, radioterapia, pós-operatório, hiperêmese gravídica.', bularioUrl: anvisa('Zofran'), tarja: 'vermelha', observacao: 'Prolonga QT. Cautela cardiopata. Constipação efeito comum.' },
   { id: 'metoclopramida-plasil', nomeComercial: 'Plasil (Metoclopramida)', principioAtivo: 'Cloridrato de Metoclopramida', apresentacao: 'Comprimidos 10 mg · Gotas 4 mg/mL · Ampola IV/IM', classeTerapeutica: 'Anti-emético procinético (antagonista D2)', laboratorio: 'Sanofi', categoria: 'gastrointestinal', indicacaoResumida: 'Náusea, vômito, gastroparesia diabética, refluxo gastroesofágico.', bularioUrl: anvisa('Plasil'), tarja: 'vermelha', observacao: 'Risco distonia aguda + síndrome neuroléptica + discinesia tardia (uso >12 semanas).' },
