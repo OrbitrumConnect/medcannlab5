@@ -1182,7 +1182,13 @@ const NoaConversationalInterface = React.forwardRef<
 
         // Configurações otimizadas para melhor reconhecimento
         recognition.lang = "pt-BR";
-        recognition.continuous = false; // CHAT COMUM: não contínuo - para quando o usuário para de falar
+        // V1.9.472: continuous=true porque o browser (Chrome/Edge) dispara onend
+        // em ~2-3s de silêncio quando continuous=false, e onend chama flush()
+        // imediato — usuário pausa naturalmente pra pensar e a mensagem é enviada
+        // sem ele terminar a frase. Com continuous=true o browser não para
+        // automaticamente e quem decide o flush é o timer scheduleFlush (10s).
+        // Bug relatado por Eduardo Faveret 27/05 testando AEC pela 1ª vez.
+        recognition.continuous = true;
         recognition.interimResults = true; // Mostrar resultados intermediários no input
         recognition.maxAlternatives = 1; // Uma alternativa é suficiente
 
@@ -1252,9 +1258,14 @@ const NoaConversationalInterface = React.forwardRef<
             handle.inactivityTimer = undefined;
           }
 
-          // Timer para enviar após 1.5 segundos de silêncio (aumentado de 900ms)
+          // V1.9.472: timer de silêncio aumentado 1500ms → 10000ms.
+          // Usuário precisa de tempo pra pensar/respirar mid-frase (especialmente
+          // em AEC clínica onde paciente narra queixa longa). Antes mandava em
+          // 1.5s — frustrante. 10s é generoso mas ainda interrompível: user pode
+          // clicar enviar manual ou parar o mic. Reportado por Eduardo Faveret
+          // 27/05 testando AEC pela 1ª vez.
           console.log(
-            "⏰ Agendando flush() em 1.5s. Buffer atual:",
+            "⏰ Agendando flush() em 10s. Buffer atual:",
             handle.buffer,
           );
           handle.timer = window.setTimeout(() => {
@@ -1263,7 +1274,7 @@ const NoaConversationalInterface = React.forwardRef<
               handle.buffer,
             );
             flush();
-          }, 1500);
+          }, 10000);
 
           // REMOVIDO: Timer de inatividade - o microfone deve ficar sempre ligado
           // handle.inactivityTimer = window.setTimeout(() => {
