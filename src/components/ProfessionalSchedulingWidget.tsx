@@ -702,38 +702,41 @@ const ProfessionalSchedulingWidget: React.FC<ProfessionalSchedulingWidgetProps> 
                       </div>
 
                       {isActive && rule && (
-                        <div className="flex items-center gap-2 md:gap-3 flex-wrap">
-                          <div className="flex items-center gap-1.5 flex-1 md:flex-initial min-w-[120px]">
-                            <span className="text-[10px] text-slate-500 uppercase font-bold flex-shrink-0">De</span>
+                        // V1.9.462 — grid estrito (1 col mobile / 3 cols sm+) substituiu flex-wrap
+                        // V1.9.461 que ainda forçava horizontal no mobile com labels sobrepostas.
+                        // Cada dropdown ocupa linha própria no mobile estreito.
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 md:gap-3 flex-1 w-full md:w-auto">
+                          <label className="flex items-center gap-2 min-w-0">
+                            <span className="text-[10px] text-slate-500 uppercase font-bold flex-shrink-0 w-12">De</span>
                             <input
                               type="time"
                               value={rule.start_time}
                               onChange={(e) => updateRule(dow, 'start_time', e.target.value)}
-                              className="bg-slate-700 border border-slate-600 rounded-lg px-2 py-1 text-white text-xs focus:outline-none focus:border-emerald-500 w-full md:w-24 min-w-[5.5rem]"
+                              className="bg-slate-700 border border-slate-600 rounded-lg px-2 py-1 text-white text-xs focus:outline-none focus:border-emerald-500 flex-1 min-w-0"
                             />
-                          </div>
-                          <div className="flex items-center gap-1.5 flex-1 md:flex-initial min-w-[120px]">
-                            <span className="text-[10px] text-slate-500 uppercase font-bold flex-shrink-0">Até</span>
+                          </label>
+                          <label className="flex items-center gap-2 min-w-0">
+                            <span className="text-[10px] text-slate-500 uppercase font-bold flex-shrink-0 w-12">Até</span>
                             <input
                               type="time"
                               value={rule.end_time}
                               onChange={(e) => updateRule(dow, 'end_time', e.target.value)}
-                              className="bg-slate-700 border border-slate-600 rounded-lg px-2 py-1 text-white text-xs focus:outline-none focus:border-emerald-500 w-full md:w-24 min-w-[5.5rem]"
+                              className="bg-slate-700 border border-slate-600 rounded-lg px-2 py-1 text-white text-xs focus:outline-none focus:border-emerald-500 flex-1 min-w-0"
                             />
-                          </div>
-                          <div className="flex items-center gap-1.5 flex-1 md:flex-initial min-w-[140px]">
-                            <span className="text-[10px] text-slate-500 uppercase font-bold flex-shrink-0">Duração</span>
+                          </label>
+                          <label className="flex items-center gap-2 min-w-0">
+                            <span className="text-[10px] text-slate-500 uppercase font-bold flex-shrink-0 w-16">Duração</span>
                             <select
                               value={rule.slot_duration}
                               onChange={(e) => updateRule(dow, 'slot_duration', parseInt(e.target.value))}
-                              className="bg-slate-700 border border-slate-600 rounded-lg px-2 py-1 text-white text-xs focus:outline-none focus:border-emerald-500 w-full md:w-auto min-w-[5rem]"
+                              className="bg-slate-700 border border-slate-600 rounded-lg px-2 py-1 text-white text-xs focus:outline-none focus:border-emerald-500 flex-1 min-w-0"
                             >
                               <option value={30}>30 min</option>
                               <option value={45}>45 min</option>
                               <option value={60}>60 min</option>
                               <option value={90}>90 min</option>
                             </select>
-                          </div>
+                          </label>
                         </div>
                       )}
                     </div>

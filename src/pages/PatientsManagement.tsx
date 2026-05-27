@@ -37,7 +37,8 @@ import {
   XCircle,
   BarChart3,
   Sparkles,
-  Link2
+  Link2,
+  ChevronDown
 } from 'lucide-react'
 import { QuickReferralModal } from '../components/QuickReferralModal'
 import { useClinicalGovernance } from '../hooks/useClinicalGovernance'
@@ -266,6 +267,9 @@ const PatientsManagement: React.FC<PatientsManagementProps> = ({ embedded = fals
   const [selectedClinic, setSelectedClinic] = useState<string>('all')
   const [selectedRoom, setSelectedRoom] = useState<string>('indifferent')
   const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null)
+  // V1.9.462 — toggle lista pacientes no mobile (Pedro 27/05: "lista pacientes
+  // no mobile precisa ser dropdown pois ocupa mto espaço tbm")
+  const [showPatientListMobile, setShowPatientListMobile] = useState(false)
   const [activeTab, setActiveTab] = useState<'overview' | 'evolution' | 'prescription' | 'exams' | 'files' | 'receipts' | 'charts' | 'appointments' | 'analytics'>('overview')
   const [showNewEvolution, setShowNewEvolution] = useState(false)
   const [evolutionContent, setEvolutionContent] = useState('')
@@ -1202,6 +1206,8 @@ const PatientsManagement: React.FC<PatientsManagementProps> = ({ embedded = fals
   const handleSelectPatient = (patient: Patient) => {
     setSelectedPatient(patient)
     setActiveTab('overview')
+    // V1.9.462: colapsa lista mobile ao selecionar paciente (UX: dá espaço pro detalhe)
+    setShowPatientListMobile(false)
     // V1.9.281: paralelizar fetch da timeline + overview elite. Pattern V1.9.209.
     void Promise.all([
       loadEvolutions(patient.id),
@@ -1468,14 +1474,33 @@ const PatientsManagement: React.FC<PatientsManagementProps> = ({ embedded = fals
           {!detailOnly && (
             <div className="lg:col-span-1">
               <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl border border-slate-700/50">
-                {/* V1.9.119-G: header compacto + contador inline (era 2 linhas) */}
-                <div className="p-3 border-b border-slate-700 flex items-center justify-between">
-                  <h3 className="text-sm font-semibold text-white">Pacientes Ativos</h3>
-                  <span className="text-xs text-slate-400 bg-slate-900/60 px-2 py-0.5 rounded-md font-mono">
-                    {filteredPatients.length}/{patients.length}
-                  </span>
-                </div>
-                <div className="max-h-[calc(100vh-300px)] overflow-y-auto">
+                {/* V1.9.119-G: header compacto + contador inline (era 2 linhas)
+                    V1.9.462: header vira BOTÃO TOGGLE no mobile (lg:cursor-default lg:pointer-events-none).
+                    Mobile clica → expand/collapse lista. Desktop sempre aberto. */}
+                <button
+                  type="button"
+                  onClick={() => setShowPatientListMobile(prev => !prev)}
+                  className="w-full p-3 border-b border-slate-700 flex items-center justify-between gap-2 hover:bg-slate-800/40 lg:hover:bg-transparent transition-colors lg:cursor-default"
+                  aria-expanded={showPatientListMobile}
+                  aria-controls="patient-list-collapsible"
+                >
+                  <div className="flex items-center gap-2 min-w-0">
+                    <h3 className="text-sm font-semibold text-white truncate">
+                      {selectedPatient ? selectedPatient.name : 'Pacientes Ativos'}
+                    </h3>
+                    <span className="text-xs text-slate-400 bg-slate-900/60 px-2 py-0.5 rounded-md font-mono flex-shrink-0">
+                      {filteredPatients.length}/{patients.length}
+                    </span>
+                  </div>
+                  {/* Chevron só visível no mobile (lg:hidden) — desktop não tem toggle */}
+                  <ChevronDown
+                    className={`w-4 h-4 text-slate-400 transition-transform lg:hidden flex-shrink-0 ${showPatientListMobile ? 'rotate-180' : ''}`}
+                  />
+                </button>
+                <div
+                  id="patient-list-collapsible"
+                  className={`max-h-[calc(100vh-300px)] overflow-y-auto ${showPatientListMobile ? '' : 'hidden lg:block'}`}
+                >
                   {loading ? (
                     <div className="p-4 text-center text-slate-400">
                       <Clock className="w-7 h-7 mx-auto mb-2 animate-spin" />
