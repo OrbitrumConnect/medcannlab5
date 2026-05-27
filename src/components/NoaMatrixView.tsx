@@ -37,12 +37,13 @@ import { EVIDENCE_LABELS } from '../services/pubmedService'
 import { ResearchChat } from './ResearchChat'
 import { exportDossierToPDF, type DossierMessage, type DossierData } from '../lib/dossierExport'
 import { KnowledgeBaseIntegration, type KnowledgeDocument } from '../services/knowledgeBaseIntegration'
-import { Sparkles, FileText, StickyNote, Check, Info, Folder, User, Stethoscope, Activity, X, BookOpen, Search, Loader2, Archive, Trash2, Eye, GitBranch, Library, Send, HelpCircle } from 'lucide-react'
+import { ANVISA_BULARIO_SEED, type BularioEntry } from '../data/anvisaBularioSeed'
+import { Sparkles, FileText, StickyNote, Check, Info, Folder, User, Stethoscope, Activity, X, BookOpen, Search, Loader2, Archive, Trash2, Eye, GitBranch, Library, Send, HelpCircle, Pill } from 'lucide-react'
 import { MatrixHelpModal } from './MatrixHelpModal'
 
 interface AttachableCard {
   id: string
-  type: 'case' | 'note' | 'pinned-search' | 'patient-report' | 'patient-rationality' | 'pubmed-article' | 'kb-document'
+  type: 'case' | 'note' | 'pinned-search' | 'patient-report' | 'patient-rationality' | 'pubmed-article' | 'kb-document' | 'bula-anvisa'
   title: string
   subtitle?: string
   body: string  // texto que vai pro contexto do chat
@@ -68,6 +69,12 @@ const CTX_LABEL: Record<AttachableCard['type'], string> = {
   'patient-rationality': 'RACIONALIDADE APLICADA',
   'pubmed-article': 'PAPER PUBMED',
   'kb-document': 'DOCUMENTO DA BASE DE CONHECIMENTO',
+  // [V1.9.468] (27/05/2026) — Bula ANVISA como material referenciável no corpus
+  // marcado da Matrix. Médico marca manualmente (igual paper PubMed). Edge
+  // RESEARCH_PROMPT contém bloco específico anti-síntese cross-bulas, anti-troca,
+  // anti-inferência interação não-documentada (locks micro-factuais V1.9.453 +
+  // princípio fronteira info farmacológica + bula infraestrutura cognitiva 27/05).
+  'bula-anvisa': 'BULA ANVISA (REFERÊNCIA OFICIAL)',
 }
 
 // V1.9.395 (F2) — teto de caracteres por doc anexado da Base de Conhecimento.
@@ -208,6 +215,28 @@ export const NoaMatrixView: React.FC = () => {
     setSelectedIds((prev) => {
       const next = new Set(prev)
       next.delete(`pubmed-${pmid}`)
+      return next
+    })
+  }
+
+  // [V1.9.468] (27/05/2026) — Bulário ANVISA anexável. Médico escolhe bulas do
+  // seed estático (anvisaBularioSeed.ts, 118 entries) pra Matrix usar como
+  // referência. Anexo MANUAL obrigatório (princípio Matrix Z2 não-diretivo —
+  // memory feedback_matrix_z2_bula_como_material_marcado_nao_sintetizada_27_05).
+  // SEED LOCAL, sem fetch (Bulário ANVISA SPA bloqueia Cloudflare — empírico 27/05).
+  const [bularioOpen, setBularioOpen] = useState(false)
+  const [bularioTerm, setBularioTerm] = useState('')
+  const [attachedBulas, setAttachedBulas] = useState<BularioEntry[]>([])
+
+  const attachBula = (entry: BularioEntry) => {
+    setAttachedBulas((prev) => prev.find((b) => b.id === entry.id) ? prev : [...prev, entry])
+    setSelectedIds((prev) => new Set(prev).add(`bula-${entry.id}`))
+  }
+  const detachBula = (id: string) => {
+    setAttachedBulas((prev) => prev.filter((b) => b.id !== id))
+    setSelectedIds((prev) => {
+      const next = new Set(prev)
+      next.delete(`bula-${id}`)
       return next
     })
   }
@@ -402,8 +431,30 @@ export const NoaMatrixView: React.FC = () => {
       })
     })
 
+    // [V1.9.468] (27/05/2026) — Bulas ANVISA marcadas pelo médico (seed estático).
+    // Body inclui METADADOS estruturais (nome + princípio ativo + apresentação +
+    // tarja + indicação resumida + observação curada + link bula completa).
+    // NÃO inclui posologia/contraindicações/interações detalhadas — médico clica
+    // no link e lê bula original ANVISA. Sistema é REFERÊNCIA, não substituto.
+    // Princípios aplicados:
+    //   feedback_fronteira_organizar_info_farmacologica_vs_decisao_terapeutica_27_05
+    //   feedback_bula_e_infraestrutura_cognitiva_no_fluxo_prescricao_27_05
+    //   feedback_matrix_z2_bula_como_material_marcado_nao_sintetizada_27_05
+    attachedBulas.forEach((b) => {
+      const tarjaLabel = b.tarja ? `tarja ${b.tarja}` : 'tarja não especificada'
+      const obs = b.observacao ? `\nObservação clínica curada: ${b.observacao}` : ''
+      list.push({
+        id: `bula-${b.id}`,
+        type: 'bula-anvisa',
+        title: `${b.nomeComercial} (${b.principioAtivo})`,
+        subtitle: `${b.classeTerapeutica} · ${tarjaLabel} · ${b.laboratorio}`,
+        body: `Bula ANVISA (${b.nomeComercial})\nPrincípio ativo: ${b.principioAtivo}\nApresentação: ${b.apresentacao}\nClasse terapêutica: ${b.classeTerapeutica}\nLaboratório: ${b.laboratorio}\nTarja: ${b.tarja || 'não especificada'}\nIndicação resumida: ${b.indicacaoResumida}${obs}\nBulário oficial ANVISA: ${b.bularioUrl}`,
+        externalUrl: b.bularioUrl,
+      })
+    })
+
     return list
-  }, [history.caseOpens, history.notes, history.pinned, longitudinal.reports, longitudinal.rationalities, attachedPubmed, attachedDocs])
+  }, [history.caseOpens, history.notes, history.pinned, longitudinal.reports, longitudinal.rationalities, attachedPubmed, attachedDocs, attachedBulas])
 
   const toggleCard = (id: string) => {
     setSelectedIds((prev) => {
@@ -692,6 +743,7 @@ export const NoaMatrixView: React.FC = () => {
                     card.type === 'note' ? StickyNote :
                     card.type === 'pubmed-article' ? BookOpen :
                     card.type === 'kb-document' ? Library :
+                    card.type === 'bula-anvisa' ? Pill :
                     Sparkles
                   return (
                     <div
@@ -843,6 +895,131 @@ export const NoaMatrixView: React.FC = () => {
                   <span>
                     Busca direta no PubMed (NCBI). Anexar paper o coloca no contexto da Nôa Matrix
                     como card citável (PMID + título). Z2: ela referencia, não infere validade clínica.
+                  </span>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* [V1.9.468] (27/05/2026) — Bulário ANVISA anexável. Mesmo padrão do PubMed:
+              médico escolhe bulas do seed estático (anvisaBularioSeed.ts, 118 entries)
+              pra Matrix usar como REFERÊNCIA FARMACOLÓGICA citável. SEED LOCAL — sem
+              fetch (Bulário ANVISA SPA bloqueia Cloudflare empíricamente).
+              Princípios cristalizados aplicados:
+                feedback_fronteira_organizar_info_farmacologica_vs_decisao_terapeutica_27_05
+                  (IA organiza acesso info oficial, NUNCA participa decisão terapêutica)
+                feedback_bula_e_infraestrutura_cognitiva_no_fluxo_prescricao_27_05
+                  (bula é infraestrutura cognitiva, decisão clínica é do médico)
+                feedback_matrix_z2_bula_como_material_marcado_nao_sintetizada_27_05
+                  (Matrix CITA LITERAL, NUNCA sintetiza cross-bulas, NUNCA sugere troca,
+                   NUNCA infere interação não-documentada)
+              Edge RESEARCH_PROMPT V1.9.468 contém bloco específico bulas (lock micro-factual). */}
+          <div className="bg-slate-900/40 border border-emerald-500/30 rounded-xl overflow-hidden">
+            <button
+              type="button"
+              onClick={() => setBularioOpen((v) => !v)}
+              className="w-full flex items-center justify-between gap-2 px-3 py-2.5 hover:bg-emerald-500/5 transition-colors"
+            >
+              <div className="flex items-center gap-2">
+                <Pill className="w-4 h-4 text-emerald-300" />
+                <span className="text-xs font-semibold text-slate-200">Bulário ANVISA BR</span>
+                {attachedBulas.length > 0 && (
+                  <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-200">
+                    {attachedBulas.length} anexada(s)
+                  </span>
+                )}
+              </div>
+              <span className="text-[10px] text-slate-500">{bularioOpen ? 'fechar' : 'expandir'}</span>
+            </button>
+
+            {bularioOpen && (
+              <div className="border-t border-emerald-500/20 p-3 space-y-2.5">
+                <div className="flex items-center gap-2">
+                  <div className="flex-1 relative">
+                    <Search className="w-3 h-3 text-slate-500 absolute left-2 top-1/2 -translate-y-1/2" />
+                    <input
+                      type="text"
+                      value={bularioTerm}
+                      onChange={(e) => setBularioTerm(e.target.value)}
+                      placeholder="ex: cefalexina, cbd, gabapentina..."
+                      className="w-full bg-slate-800/60 border border-emerald-500/20 rounded-md pl-7 pr-2 py-1.5 text-xs text-white placeholder:text-slate-500 focus:outline-none focus:ring-1 focus:ring-emerald-500/50"
+                    />
+                  </div>
+                </div>
+
+                {(() => {
+                  const term = bularioTerm.trim().toLowerCase()
+                  if (term.length < 2) {
+                    return (
+                      <div className="text-[10px] text-slate-500 italic">
+                        Digite pelo menos 2 letras (nome comercial ou princípio ativo). Seed contém 118 bulas curadas.
+                      </div>
+                    )
+                  }
+                  const matches = ANVISA_BULARIO_SEED.filter((e) =>
+                    e.nomeComercial.toLowerCase().includes(term) ||
+                    e.principioAtivo.toLowerCase().includes(term) ||
+                    e.classeTerapeutica.toLowerCase().includes(term)
+                  ).slice(0, 8)
+                  if (matches.length === 0) {
+                    return <div className="text-[10px] text-slate-500 italic">Nenhuma bula encontrada no seed curado.</div>
+                  }
+                  return (
+                    <div className="space-y-1.5 max-h-[320px] overflow-y-auto pr-1">
+                      {matches.map((entry) => {
+                        const isAttached = attachedBulas.some((b) => b.id === entry.id)
+                        return (
+                          <div
+                            key={entry.id}
+                            className={`rounded-md p-2 border text-[11px] ${
+                              isAttached
+                                ? 'bg-emerald-500/10 border-emerald-500/30'
+                                : 'bg-slate-800/40 border-slate-700/30'
+                            }`}
+                          >
+                            <div className="flex items-start justify-between gap-2">
+                              <div className="flex-1 min-w-0">
+                                <a
+                                  href={entry.bularioUrl}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-emerald-200 hover:underline font-medium line-clamp-1"
+                                  title={`${entry.nomeComercial} — ${entry.principioAtivo}`}
+                                >
+                                  {entry.nomeComercial}
+                                </a>
+                                <div className="text-[10px] text-slate-400 mt-0.5 truncate">
+                                  {entry.principioAtivo} · {entry.classeTerapeutica}
+                                </div>
+                                <div className="text-[10px] text-slate-500 truncate">
+                                  {entry.apresentacao} · tarja {entry.tarja || 'n/e'} · {entry.laboratorio}
+                                </div>
+                              </div>
+                              <button
+                                type="button"
+                                onClick={() => isAttached ? detachBula(entry.id) : attachBula(entry)}
+                                className={`flex-shrink-0 text-[10px] px-2 py-1 rounded transition-colors ${
+                                  isAttached
+                                    ? 'bg-emerald-500/20 text-emerald-200 hover:bg-emerald-500/30'
+                                    : 'bg-slate-700/40 text-slate-300 hover:bg-emerald-500/20 hover:text-emerald-200'
+                                }`}
+                              >
+                                {isAttached ? '✓ anexada' : '+ anexar'}
+                              </button>
+                            </div>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  )
+                })()}
+
+                <div className="flex items-start gap-1.5 text-[10px] text-slate-500 italic leading-tight pt-1 border-t border-slate-700/30">
+                  <Info className="w-3 h-3 flex-shrink-0 mt-0.5" />
+                  <span>
+                    Seed curado ANVISA BR (118 bulas). Anexar bula coloca no contexto da Nôa Matrix
+                    como REFERÊNCIA citável. Z2: ela cita literal — nunca compara cross-bulas, nunca
+                    sugere troca, nunca infere interação não-documentada. Decisão terapêutica é do médico.
                   </span>
                 </div>
               </div>
