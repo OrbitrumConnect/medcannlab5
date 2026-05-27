@@ -161,8 +161,8 @@ const AnvisaPanel: React.FC = () => {
             <span className="text-[10px] text-slate-600 uppercase tracking-wider">ANVISA / Bulário Eletrônico BR</span>
           </div>
 
-          {/* Cards — V1.9.465-A grid responsivo 1/2/3/4 colunas */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+          {/* Cards — V1.9.465-A + V1.9.467-A grid 1/2/3/4/5 colunas (2xl: 5 cols em telas wide) */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-3">
             {entries.map((entry) => (
               <BulaCard key={entry.id} entry={entry} />
             ))}
