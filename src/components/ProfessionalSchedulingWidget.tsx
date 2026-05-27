@@ -674,55 +674,59 @@ const ProfessionalSchedulingWidget: React.FC<ProfessionalSchedulingWidgetProps> 
                   return (
                     <div
                       key={dow}
-                      className={`flex items-center gap-4 p-3 rounded-xl border transition-all ${
+                      // V1.9.461 — mobile-first: stack vertical no mobile (toggle+dia em linha 1,
+                      // DE/ATÉ/DURAÇÃO em linha 2 quebrável). Desktop mantém layout horizontal.
+                      className={`flex flex-col md:flex-row md:items-center gap-2 md:gap-4 p-3 rounded-xl border transition-all ${
                         isActive
                           ? 'bg-slate-800/60 border-emerald-500/20'
                           : 'bg-slate-900/40 border-slate-700/30 opacity-60'
                       }`}
                     >
-                      {/* Toggle */}
-                      <button
-                        onClick={() => toggleDay(dow)}
-                        className={`w-10 h-5 rounded-full relative transition-all flex-shrink-0 ${
-                          isActive ? 'bg-emerald-500' : 'bg-slate-600'
-                        }`}
-                      >
-                        <div className={`w-4 h-4 rounded-full bg-white absolute top-0.5 transition-all shadow-sm ${
-                          isActive ? 'left-5.5' : 'left-0.5'
-                        }`} />
-                      </button>
+                      <div className="flex items-center gap-3 md:gap-4">
+                        {/* Toggle */}
+                        <button
+                          onClick={() => toggleDay(dow)}
+                          className={`w-10 h-5 rounded-full relative transition-all flex-shrink-0 ${
+                            isActive ? 'bg-emerald-500' : 'bg-slate-600'
+                          }`}
+                        >
+                          <div className={`w-4 h-4 rounded-full bg-white absolute top-0.5 transition-all shadow-sm ${
+                            isActive ? 'left-5.5' : 'left-0.5'
+                          }`} />
+                        </button>
 
-                      {/* Day name */}
-                      <span className={`text-sm font-semibold w-24 flex-shrink-0 ${isActive ? 'text-white' : 'text-slate-500'}`}>
-                        {dayName}
-                      </span>
+                        {/* Day name */}
+                        <span className={`text-sm font-semibold w-24 flex-shrink-0 ${isActive ? 'text-white' : 'text-slate-500'}`}>
+                          {dayName}
+                        </span>
+                      </div>
 
                       {isActive && rule && (
-                        <div className="flex items-center gap-3 flex-wrap">
-                          <div className="flex items-center gap-1.5">
-                            <span className="text-[10px] text-slate-500 uppercase font-bold">De</span>
+                        <div className="flex items-center gap-2 md:gap-3 flex-wrap">
+                          <div className="flex items-center gap-1.5 flex-1 md:flex-initial min-w-[120px]">
+                            <span className="text-[10px] text-slate-500 uppercase font-bold flex-shrink-0">De</span>
                             <input
                               type="time"
                               value={rule.start_time}
                               onChange={(e) => updateRule(dow, 'start_time', e.target.value)}
-                              className="bg-slate-700 border border-slate-600 rounded-lg px-2 py-1 text-white text-xs focus:outline-none focus:border-emerald-500 w-24"
+                              className="bg-slate-700 border border-slate-600 rounded-lg px-2 py-1 text-white text-xs focus:outline-none focus:border-emerald-500 w-full md:w-24 min-w-[5.5rem]"
                             />
                           </div>
-                          <div className="flex items-center gap-1.5">
-                            <span className="text-[10px] text-slate-500 uppercase font-bold">Até</span>
+                          <div className="flex items-center gap-1.5 flex-1 md:flex-initial min-w-[120px]">
+                            <span className="text-[10px] text-slate-500 uppercase font-bold flex-shrink-0">Até</span>
                             <input
                               type="time"
                               value={rule.end_time}
                               onChange={(e) => updateRule(dow, 'end_time', e.target.value)}
-                              className="bg-slate-700 border border-slate-600 rounded-lg px-2 py-1 text-white text-xs focus:outline-none focus:border-emerald-500 w-24"
+                              className="bg-slate-700 border border-slate-600 rounded-lg px-2 py-1 text-white text-xs focus:outline-none focus:border-emerald-500 w-full md:w-24 min-w-[5.5rem]"
                             />
                           </div>
-                          <div className="flex items-center gap-1.5">
-                            <span className="text-[10px] text-slate-500 uppercase font-bold">Duração</span>
+                          <div className="flex items-center gap-1.5 flex-1 md:flex-initial min-w-[140px]">
+                            <span className="text-[10px] text-slate-500 uppercase font-bold flex-shrink-0">Duração</span>
                             <select
                               value={rule.slot_duration}
                               onChange={(e) => updateRule(dow, 'slot_duration', parseInt(e.target.value))}
-                              className="bg-slate-700 border border-slate-600 rounded-lg px-2 py-1 text-white text-xs focus:outline-none focus:border-emerald-500"
+                              className="bg-slate-700 border border-slate-600 rounded-lg px-2 py-1 text-white text-xs focus:outline-none focus:border-emerald-500 w-full md:w-auto min-w-[5rem]"
                             >
                               <option value={30}>30 min</option>
                               <option value={45}>45 min</option>

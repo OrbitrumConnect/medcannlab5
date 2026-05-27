@@ -2143,10 +2143,17 @@ const PatientAppointments: React.FC = () => {
                     }}
                     className={`w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-colors ${profileProfessional.buttonClasses}`}
                   >
-                    {/* V1.9.448 — Mesma lógica condicional do card: Verde = "Agendar consulta"; resto = "Vincular". */}
+                    {/* V1.9.448 — Mesma lógica condicional do card: Verde = "Agendar consulta"; resto = "Vincular".
+                        V1.9.461 — fix mobile: pular títulos profissionais ("Dr.", "Dra.", "Prof.") ao
+                        extrair primeiro nome. Bug visto empíricamente 27/05: "Agendar consulta com Dr."
+                        sem nome real porque split(' ')[0] retornava o título. */}
                     {(() => {
                       const v = computeProfessionalVinculo(profileProfessional)
-                      const firstName = profileProfessional.name.split(' ')[0]
+                      const TITLE_PREFIXES = ['Dr.', 'Dra.', 'Prof.', 'Profa.', 'Sr.', 'Sra.']
+                      const parts = profileProfessional.name.trim().split(/\s+/)
+                      const firstName = TITLE_PREFIXES.includes(parts[0]) && parts.length > 1
+                        ? parts[1]
+                        : parts[0]
                       return v?.status === 'green'
                         ? `Agendar consulta com ${firstName}`
                         : `Vincular a ${firstName}`

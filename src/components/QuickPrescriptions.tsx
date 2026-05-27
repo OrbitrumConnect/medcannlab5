@@ -650,13 +650,16 @@ const QuickPrescriptions: React.FC<QuickPrescriptionsProps> = ({ className = '',
         {/* V1.9.265 — TODOS os triggers (filtros + CTAs) num UNICO container rounded-full (Pedro 13/05 21h).
             Antes: 3 grupos visualmente separados. Agora: barra unica com divisores verticais internos. */}
         <div className="flex justify-center w-full px-2">
-          <div className="inline-flex items-center p-1 bg-slate-900/50 rounded-full border border-slate-700 backdrop-blur-md overflow-x-auto no-scrollbar max-w-full gap-1">
+          {/* V1.9.461 — mobile fix: gap-1 (4px) era insuficiente pra 8+ items pill bar mobile,
+              causava abas grudadas "CannabisNefrologSintomátiSuporte". Aumentado gap mobile +
+              reduzido padding mobile pra melhor caber + overflow-x-auto preservado pra scroll. */}
+          <div className="inline-flex items-center p-1 bg-slate-900/50 rounded-full border border-slate-700 backdrop-blur-md overflow-x-auto no-scrollbar max-w-full gap-1.5 md:gap-1">
             {/* Filtros de categoria */}
             {categories.map((category) => (
               <button
                 key={category.id}
                 onClick={() => setSelectedCategory(category.id)}
-                className={`px-4 py-1.5 text-xs font-medium rounded-full transition-all whitespace-nowrap ${selectedCategory === category.id
+                className={`px-3 md:px-4 py-1 md:py-1.5 text-[11px] md:text-xs font-medium rounded-full transition-all whitespace-nowrap ${selectedCategory === category.id
                   ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-900/10'
                   : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
                   }`}
@@ -669,11 +672,12 @@ const QuickPrescriptions: React.FC<QuickPrescriptionsProps> = ({ className = '',
             <div className="w-px h-5 bg-slate-700/50 mx-1 shrink-0"></div>
 
             {/* V1.9.266 — CTAs sem cor solida (Pedro 13/05: "a cor azul e verde nao precisa nos triggers").
-                Discretos como filtros, com icone colorido pra acento sutil. */}
+                Discretos como filtros, com icone colorido pra acento sutil.
+                V1.9.461 — padding mobile reduzido pra cabe melhor. */}
             <button
               onClick={() => setIsModalOpen(true)}
               title="Nova prescrição"
-              className="flex items-center space-x-1.5 px-4 py-1.5 text-slate-200 hover:bg-slate-800/50 hover:text-white font-medium text-xs rounded-full transition-all whitespace-nowrap"
+              className="flex items-center space-x-1.5 px-3 md:px-4 py-1 md:py-1.5 text-slate-200 hover:bg-slate-800/50 hover:text-white font-medium text-[11px] md:text-xs rounded-full transition-all whitespace-nowrap"
             >
               <Plus className="w-3.5 h-3.5 text-emerald-400" />
               <span>Nova Prescrição</span>
@@ -682,7 +686,7 @@ const QuickPrescriptions: React.FC<QuickPrescriptionsProps> = ({ className = '',
             <button
               onClick={() => setShowExamModal(true)}
               title="Solicitar exame para um paciente"
-              className="flex items-center space-x-1.5 px-4 py-1.5 text-slate-200 hover:bg-slate-800/50 hover:text-white font-medium text-xs rounded-full transition-all whitespace-nowrap"
+              className="flex items-center space-x-1.5 px-3 md:px-4 py-1 md:py-1.5 text-slate-200 hover:bg-slate-800/50 hover:text-white font-medium text-[11px] md:text-xs rounded-full transition-all whitespace-nowrap"
             >
               <FlaskConical className="w-3.5 h-3.5 text-cyan-400" />
               <span>Solicitar Exame</span>
@@ -694,7 +698,7 @@ const QuickPrescriptions: React.FC<QuickPrescriptionsProps> = ({ className = '',
                 minhasPrescricoesRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
               }}
               title="Ir para suas prescrições (filtra rascunhos)"
-              className="flex items-center space-x-1.5 px-4 py-1.5 text-slate-200 hover:bg-slate-800/50 hover:text-white font-medium text-xs rounded-full transition-all whitespace-nowrap"
+              className="flex items-center space-x-1.5 px-3 md:px-4 py-1 md:py-1.5 text-slate-200 hover:bg-slate-800/50 hover:text-white font-medium text-[11px] md:text-xs rounded-full transition-all whitespace-nowrap"
             >
               <ListChecks className="w-3.5 h-3.5 text-slate-400" />
               <span>Ver todas / Rascunhos</span>
