@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import {
   Search,
   Loader2,
@@ -15,6 +15,7 @@ import {
   MapPin,
   ScrollText,
   Compass,
+  Pill,
 } from 'lucide-react'
 import {
   useExternalLiterature,
@@ -26,6 +27,18 @@ import {
   type EvidenceLevel,
   type PubMedArticle,
 } from '../services/pubmedService'
+import OpenFDAPanel from '../components/OpenFDAPanel'
+
+// [V1.9.464] (27/05/2026) — Adicionada SOURCE TOGGLE no topo (PubMed | OpenFDA).
+// OpenFDAPanel é componente standalone com hook próprio (useOpenFDA) — princípio
+// polir-não-inventar: NÃO refatora hook PubMed existente, adiciona nova source paralela.
+// Refactor multi-source ficará pra Fase 2 ANVISA (parqueada — memory
+// project_anvisa_bulario_indexacao_pdfs_parqueado_27_05).
+//
+// Princípio meta cristalizado em feedback_fronteira_organizar_info_farmacologica_vs_decisao_terapeutica_27_05:
+//   "Organizar acesso à informação oficial" vs "Participar da decisão terapêutica" — só a primeira.
+
+type LiteratureSource = 'pubmed' | 'openfda'
 
 // [V1.9.369-A] (18/05/2026) — Aba Literatura (PubMed) no Terminal de Pesquisa
 //
@@ -89,6 +102,9 @@ const EDITORIAL_TABS: EditorialTab[] = [
 ]
 
 const ExternalLiterature: React.FC<Props> = ({ embedded = false, initialTerm, initialTermKey }) => {
+  // V1.9.464 — source toggle (PubMed default, OpenFDA opcional)
+  const [source, setSource] = useState<LiteratureSource>('pubmed')
+
   const {
     term,
     setTerm,
@@ -108,6 +124,48 @@ const ExternalLiterature: React.FC<Props> = ({ embedded = false, initialTerm, in
   } = useExternalLiterature()
 
   const searchInputRef = useRef<HTMLInputElement>(null)
+
+  // V1.9.464 — Source tabs (renderizado em ambos os modos pra toggle sempre acessível)
+  const sourceTabsEl = (
+    <div className="flex items-center gap-1 bg-slate-900/40 border border-slate-700/50 rounded-lg p-1 w-fit mb-4">
+      <button
+        type="button"
+        onClick={() => setSource('pubmed')}
+        className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold transition-all ${
+          source === 'pubmed'
+            ? 'bg-[rgba(0,229,178,0.15)] border border-[rgba(0,229,178,0.45)] text-[#00E5B2]'
+            : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
+        }`}
+        aria-pressed={source === 'pubmed'}
+      >
+        <BookOpen className="w-3.5 h-3.5" />
+        PubMed
+      </button>
+      <button
+        type="button"
+        onClick={() => setSource('openfda')}
+        className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold transition-all ${
+          source === 'openfda'
+            ? 'bg-[rgba(0,229,178,0.15)] border border-[rgba(0,229,178,0.45)] text-[#00E5B2]'
+            : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
+        }`}
+        aria-pressed={source === 'openfda'}
+      >
+        <Pill className="w-3.5 h-3.5" />
+        OpenFDA
+      </button>
+    </div>
+  )
+
+  // Early return pro modo OpenFDA — UI standalone do painel próprio
+  if (source === 'openfda') {
+    return (
+      <div className="w-full max-w-6xl mx-auto">
+        {sourceTabsEl}
+        <OpenFDAPanel />
+      </div>
+    )
+  }
 
   // [V1.9.369-C] Quando vem term via cross-link (Casos Similares → Literatura),
   // popula automaticamente e força tab de busca livre
@@ -152,10 +210,13 @@ const ExternalLiterature: React.FC<Props> = ({ embedded = false, initialTerm, in
             </div>
             <div>
               <h1 className="text-xl font-bold text-white">Literatura</h1>
-              <p className="text-xs text-slate-400">PubMed · busca em literatura científica externa</p>
+              <p className="text-xs text-slate-400">PubMed (artigos científicos) + OpenFDA (bulas FDA)</p>
             </div>
           </div>
         )}
+
+        {/* V1.9.464 — Source toggle */}
+        {sourceTabsEl}
 
         {/* Selo FONTE EXTERNA — sempre visível (memory cristalizada) */}
         <div className="bg-indigo-500/5 border-2 border-indigo-500/30 rounded-xl p-4 mb-6">
