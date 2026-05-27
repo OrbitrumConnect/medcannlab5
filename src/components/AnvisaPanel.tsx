@@ -7,10 +7,19 @@ import {
   ShieldCheck,
   AlertCircle,
   FileText,
+  ArrowUpDown,
 } from 'lucide-react'
 import { useAnvisa } from '../hooks/useAnvisa'
 import { BULARIO_CATEGORIAS, type BularioEntry } from '../data/anvisaBularioSeed'
-import type { AnvisaSearchCategoria } from '../services/anvisaService'
+import type { AnvisaSearchCategoria, AnvisaSortBy } from '../services/anvisaService'
+
+const SORT_OPTIONS: Array<{ value: AnvisaSortBy; label: string }> = [
+  { value: 'az', label: 'A → Z' },
+  { value: 'za', label: 'Z → A' },
+  { value: 'categoria', label: 'Categoria (cannabis 1º)' },
+  { value: 'tarja', label: 'Tarja (controle 1º)' },
+  { value: 'relevance', label: '★ Relevância (só com busca)' },
+]
 
 // [V1.9.465] (27/05/2026) — Panel ANVISA Bulário BR (catálogo MVP)
 //
@@ -30,6 +39,8 @@ const AnvisaPanel: React.FC = () => {
     setTerm,
     categoria,
     setCategoria,
+    sortBy,
+    setSortBy,
     entries,
     total,
     seedTotal,
@@ -57,7 +68,7 @@ const AnvisaPanel: React.FC = () => {
         </div>
       </div>
 
-      {/* Busca + filtro categoria */}
+      {/* Busca + filtros (V1.9.465-A: + dropdown sort) */}
       <div className="bg-slate-800/40 border border-slate-700/50 rounded-xl p-3 md:p-4">
         <div className="flex flex-col md:flex-row gap-2 md:gap-3">
           <div className="flex-1 relative">
@@ -82,7 +93,8 @@ const AnvisaPanel: React.FC = () => {
           <select
             value={categoria}
             onChange={(e) => setCategoria(e.target.value as AnvisaSearchCategoria)}
-            className="bg-slate-900/60 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-[#00E5B2]/60 md:w-[260px]"
+            className="bg-slate-900/60 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-[#00E5B2]/60 md:w-[230px]"
+            title="Filtrar por categoria"
           >
             {BULARIO_CATEGORIAS.map((opt) => (
               <option key={opt.value} value={opt.value}>
@@ -90,6 +102,21 @@ const AnvisaPanel: React.FC = () => {
               </option>
             ))}
           </select>
+          <div className="relative md:w-[200px]">
+            <ArrowUpDown className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 pointer-events-none" />
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value as AnvisaSortBy)}
+              className="w-full bg-slate-900/60 border border-slate-700 rounded-lg pl-9 pr-3 py-2 text-sm text-white focus:outline-none focus:border-[#00E5B2]/60"
+              title="Ordenar"
+            >
+              {SORT_OPTIONS.map((opt) => (
+                <option key={opt.value} value={opt.value}>
+                  {opt.label}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
         <p className="text-[11px] text-slate-500 mt-2">
           Busca por nome comercial, princípio ativo, classe terapêutica ou laboratório.
@@ -134,10 +161,12 @@ const AnvisaPanel: React.FC = () => {
             <span className="text-[10px] text-slate-600 uppercase tracking-wider">ANVISA / Bulário Eletrônico BR</span>
           </div>
 
-          {/* Cards */}
-          {entries.map((entry) => (
-            <BulaCard key={entry.id} entry={entry} />
-          ))}
+          {/* Cards — V1.9.465-A grid responsivo 1/2/3/4 colunas */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+            {entries.map((entry) => (
+              <BulaCard key={entry.id} entry={entry} />
+            ))}
+          </div>
 
           {/* Disclaimer CFM 2.314 — princípio fronteira info farmacológica */}
           <div className="bg-[rgba(0,229,178,0.06)] border border-[rgba(0,229,178,0.25)] rounded-xl p-4 mt-4">
@@ -181,79 +210,89 @@ const CATEGORIA_ICONS: Record<string, string> = {
 const BulaCard: React.FC<{ entry: BularioEntry }> = ({ entry }) => {
   const tarjaCfg = entry.tarja ? TARJA_COLORS[entry.tarja] : null
 
+  // V1.9.465-A — card compacto pra grid 4 colunas (densidade alta)
   return (
-    <div className="bg-slate-800/40 border border-slate-700/50 rounded-xl p-4 hover:border-[rgba(0,229,178,0.30)] transition-colors">
-      {/* Header */}
-      <div className="flex items-start justify-between gap-3 mb-2">
+    <div className="bg-slate-800/40 border border-slate-700/50 rounded-xl p-3 hover:border-[rgba(0,229,178,0.30)] transition-colors flex flex-col h-full">
+      {/* Header com icon categoria + nome + tarja */}
+      <div className="flex items-start gap-1.5 mb-1.5">
+        <span className="text-sm flex-shrink-0 mt-0.5" aria-hidden="true">
+          {CATEGORIA_ICONS[entry.categoria]}
+        </span>
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 flex-wrap mb-1">
-            <span className="text-base" aria-hidden="true">{CATEGORIA_ICONS[entry.categoria]}</span>
-            <h4 className="text-sm md:text-base font-semibold text-white">
-              {entry.nomeComercial}
-            </h4>
-            {tarjaCfg && (
-              <span
-                className={`inline-flex items-center px-1.5 py-0.5 rounded-full text-[9px] font-semibold uppercase tracking-wider border ${tarjaCfg.bg} ${tarjaCfg.border} ${tarjaCfg.text}`}
-                title={tarjaCfg.label}
-              >
-                {entry.tarja}
-              </span>
-            )}
-          </div>
-          <p className="text-xs text-slate-400 mt-0.5">
-            <span className="font-mono text-[#00E5B2]/80">{entry.principioAtivo}</span>
-          </p>
-          <p className="text-[11px] text-slate-500 mt-1">
-            {entry.classeTerapeutica} · <span className="text-slate-400">{entry.laboratorio}</span>
+          <h4 className="text-sm font-semibold text-white leading-tight truncate" title={entry.nomeComercial}>
+            {entry.nomeComercial}
+          </h4>
+          <p
+            className="text-[10px] font-mono text-[#00E5B2]/80 truncate mt-0.5"
+            title={entry.principioAtivo}
+          >
+            {entry.principioAtivo}
           </p>
         </div>
+        {tarjaCfg && (
+          <span
+            className={`inline-flex items-center px-1.5 py-0.5 rounded text-[8px] font-bold uppercase border flex-shrink-0 ${tarjaCfg.bg} ${tarjaCfg.border} ${tarjaCfg.text}`}
+            title={tarjaCfg.label}
+          >
+            {entry.tarja}
+          </span>
+        )}
       </div>
 
-      {/* Apresentação */}
-      <div className="mt-3">
-        <p className="text-[10px] text-slate-500 uppercase tracking-wider mb-1 font-semibold">Apresentação</p>
-        <p className="text-xs text-slate-300 leading-relaxed">{entry.apresentacao}</p>
-      </div>
+      {/* Classe + Lab inline (mais compacto) */}
+      <p className="text-[10px] text-slate-500 truncate mb-2" title={`${entry.classeTerapeutica} · ${entry.laboratorio}`}>
+        {entry.classeTerapeutica}
+      </p>
 
-      {/* Indicação resumida */}
-      <div className="mt-3">
-        <p className="text-[10px] text-slate-500 uppercase tracking-wider mb-1 font-semibold">Indicação resumida</p>
-        <p className="text-xs text-slate-300 leading-relaxed">{entry.indicacaoResumida}</p>
-      </div>
+      {/* Indicação resumida (truncada 2 linhas) */}
+      <p className="text-[11px] text-slate-300 leading-snug line-clamp-2 mb-2" title={entry.indicacaoResumida}>
+        {entry.indicacaoResumida}
+      </p>
 
-      {/* Observação clínica (opcional) */}
+      {/* Apresentação resumida (1 linha truncada) */}
+      <p className="text-[10px] text-slate-400 truncate mb-2" title={entry.apresentacao}>
+        <span className="text-slate-500 uppercase tracking-wider font-semibold mr-1">Form:</span>
+        {entry.apresentacao}
+      </p>
+
+      {/* Observação clínica (collapse 1 linha truncada) */}
       {entry.observacao && (
-        <div className="mt-3 bg-amber-500/5 border border-amber-500/20 rounded-lg p-2.5">
-          <div className="flex items-start gap-2">
-            <AlertCircle className="w-3.5 h-3.5 text-amber-400 flex-shrink-0 mt-0.5" />
-            <p className="text-[11px] text-amber-200 leading-relaxed">{entry.observacao}</p>
+        <div className="bg-amber-500/5 border border-amber-500/20 rounded p-1.5 mb-2 mt-auto">
+          <div className="flex items-start gap-1">
+            <AlertCircle className="w-3 h-3 text-amber-400 flex-shrink-0 mt-0.5" />
+            <p
+              className="text-[10px] text-amber-200 leading-snug line-clamp-2"
+              title={entry.observacao}
+            >
+              {entry.observacao}
+            </p>
           </div>
         </div>
       )}
 
-      {/* Footer com links externos */}
-      <div className="mt-4 flex flex-wrap items-center gap-3 pt-3 border-t border-slate-700/50">
+      {/* Footer fixo embaixo (mt-auto se não tem observacao) */}
+      <div className={`flex items-center gap-2 pt-2 border-t border-slate-700/50 ${!entry.observacao ? 'mt-auto' : ''}`}>
         <a
           href={entry.bularioUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-semibold bg-[rgba(0,229,178,0.10)] border border-[rgba(0,229,178,0.45)] text-[#00E5B2] hover:bg-[rgba(0,229,178,0.18)] transition-all"
+          className="flex-1 inline-flex items-center justify-center gap-1 px-2 py-1.5 rounded text-[10px] font-semibold bg-[rgba(0,229,178,0.10)] border border-[rgba(0,229,178,0.45)] text-[#00E5B2] hover:bg-[rgba(0,229,178,0.18)] transition-all"
           title="Abrir bula completa no portal ANVISA"
         >
-          <FileText className="w-3.5 h-3.5" />
-          Ver bula completa (ANVISA)
-          <ExternalLink className="w-3 h-3" />
+          <FileText className="w-3 h-3" />
+          Bula ANVISA
+          <ExternalLink className="w-2.5 h-2.5" />
         </a>
         {entry.dailymedUrl && (
           <a
             href={entry.dailymedUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[11px] text-slate-400 hover:text-[#7FF2D6] transition-colors"
+            className="inline-flex items-center gap-1 px-2 py-1.5 rounded text-[10px] text-slate-400 hover:text-[#7FF2D6] hover:bg-slate-700/40 transition-all"
             title="Equivalente FDA (DailyMed)"
           >
             FDA
-            <ExternalLink className="w-3 h-3" />
+            <ExternalLink className="w-2.5 h-2.5" />
           </a>
         )}
       </div>

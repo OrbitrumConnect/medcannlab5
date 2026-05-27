@@ -28,6 +28,8 @@ import { useAuth } from '../contexts/AuthContext'
 import { useToast } from '../contexts/ToastContext'
 import { useConfirm } from '../contexts/ConfirmContext'
 import { getAllPatients } from '../lib/adminPermissions'
+// V1.9.466 — popover bula no fluxo de prescrição (princípio Ricardo cristalizado 27/05)
+import BulaContextPopover from './BulaContextPopover'
 // V1.9.264 — Trigger Solicitar Exame inline na aba Prescricoes (Ricardo 13/05 20h45)
 import { ExamRequestModule } from './ExamRequestModule'
 
@@ -1059,6 +1061,10 @@ const QuickPrescriptions: React.FC<QuickPrescriptionsProps> = ({ className = '',
                       value={prescriptionForm.medication}
                       onChange={(e) => setPrescriptionForm({ ...prescriptionForm, medication: e.target.value })}
                     />
+                    {/* V1.9.466 — Popover contextual bula ANVISA (princípio fronteira info farmacológica
+                        + princípio Ricardo "bula é infraestrutura cognitiva do médico, NÃO sugestão IA").
+                        Aparece SE medicamento digitado match catálogo curado. Médico pode dismissar 24h. */}
+                    <BulaContextPopover medication={prescriptionForm.medication} silentOnNoMatch={false} />
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
