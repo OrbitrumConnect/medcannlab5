@@ -283,7 +283,7 @@ const PatientDashboard: React.FC = () => {
           appointments={appointments}
           onRefresh={refresh}
           onStartAssessment={handleStartAssessment}
-          onScheduleNew={() => navigate('/app/clinica/paciente/agendamento')}
+          onScheduleNew={() => navigate('/app/clinica/paciente/agendamentos', { state: { openNew: true } })}
         />
       )}
 

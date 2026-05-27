@@ -215,7 +215,7 @@ const ExternalLiterature: React.FC<Props> = ({ embedded = false, initialTerm, in
   // V1.9.464-A + V1.9.465 — Early returns APÓS todos os hooks (Rules of Hooks).
   if (source === 'anvisa') {
     return (
-      <div className="w-full max-w-[1800px] mx-auto">
+      <div className="w-full max-w-[1800px] mx-auto px-4 md:px-6">
         {sourceTabsEl}
         <AnvisaPanel />
       </div>
@@ -224,7 +224,7 @@ const ExternalLiterature: React.FC<Props> = ({ embedded = false, initialTerm, in
 
   if (source === 'openfda') {
     return (
-      <div className="w-full max-w-[1800px] mx-auto">
+      <div className="w-full max-w-[1800px] mx-auto px-4 md:px-6">
         {sourceTabsEl}
         <OpenFDAPanel />
       </div>
