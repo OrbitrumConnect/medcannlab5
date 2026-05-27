@@ -1024,322 +1024,144 @@ const CidadeAmigaDosRins: React.FC = () => {
           </div>
         </div>
 
-        {/* Sistema de Captação de Recursos */}
-        <div className="bg-slate-800 rounded-xl p-8 mb-8 border border-slate-700">
+        {/* V1.9.463 — Sistema de Captação de Recursos movido pra /cidade-amiga-dos-rins/institucional
+            (página B2B/ESG separada). Razões: pitch institucional/investidor não é produto end-user
+            MedCannLab; herança da agenda ESG (artigo COP26) trazida pelo Dr. Ricardo em fase anterior.
+            Aplicado caminho (b) — preserva trabalho histórico (princípio feedback_uso_zero_nao_e_morto)
+            mas limpa página principal pra focar no NÚCLEO clínico (princípio anti-overclaim). */}
+
+        {/* Assinaturas Sopro Saúde Renal — seção standalone (V1.9.463 — era aninhada dentro
+            Sistema Captação). Tier premium nicho CKD R$ 100/200 (acima do canônico R$ 33,33
+            paciente padrão da Landing.tsx). */}
+        <div className="bg-slate-800 rounded-xl p-6 md:p-8 mb-8 border border-slate-700">
           <div className="flex items-center space-x-3 mb-6">
-            <DollarSign className="w-8 h-8 text-green-400" />
-            <h3 className="text-2xl font-bold text-white">Sistema de Captação de Recursos</h3>
+            <Heart className="w-7 h-7 text-[#00E5B2]" />
+            <h3 className="text-xl md:text-2xl font-bold text-white">Sopro Saúde Renal — Programa Premium</h3>
           </div>
-
-          <div className="bg-green-900/20 rounded-lg p-6 mb-6 border border-green-500/20">
-            <h4 className="text-lg font-semibold text-white mb-3">Modelos de Negócio Sustentável</h4>
-            <p className="text-green-100 text-sm leading-relaxed mb-4">
-              Estratégias de desenvolvimento sustentável alinhadas com os princípios de equidade, inovação e mobilização
-              de organizações públicas e privadas, baseadas em evidências científicas do artigo "After COP26 — Putting
-              Health and Equity at the Center of the Climate Movement".
-            </p>
-          </div>
-
-          {/* Modelos de Monetização */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-            <div className="bg-slate-700/50 rounded-lg p-6 border border-green-500/20">
-              <div className="flex items-center justify-between mb-4">
-                <h4 className="text-lg font-semibold text-white">Plataforma de Assinaturas Educacional</h4>
-                <span className="px-3 py-1 bg-green-600 text-white rounded-full text-xs font-semibold">Ativo</span>
-              </div>
-              <div className="space-y-3 mb-4">
-                <p className="text-sm text-slate-300">Investimento: R$ 50.000 - R$ 200.000</p>
-                <div className="w-full bg-slate-600 rounded-full h-2 mb-2">
-                  <div className="bg-green-500 h-2 rounded-full" style={{ width: '85%' }}></div>
-                </div>
-                <p className="text-xs text-slate-400">Progresso de Implementação: 85%</p>
-                <p className="text-sm text-green-200">Conteúdo exclusivo sobre saúde sustentável e práticas ecológicas</p>
-                <div className="bg-slate-800 rounded p-3">
-                  <p className="text-xs font-semibold text-white mb-2">Benefícios Principais:</p>
-                  <ul className="space-y-1 text-xs text-slate-300">
-                    <li>• Receita contínua</li>
-                    <li>• Disseminação de conhecimento</li>
-                    <li>• Educação continuada</li>
-                  </ul>
-                </div>
-              </div>
-              <button className="w-full bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-semibold transition-colors">
-                Investir neste Modelo
-              </button>
-            </div>
-
-            <div className="space-y-4">
-              <div className="bg-slate-700/50 rounded-lg p-4 border border-slate-600">
-                <div className="flex items-center justify-between mb-2">
-                  <h5 className="text-sm font-semibold text-white">Consultoria em Sustentabilidade para Saúde</h5>
-                  <span className="px-2 py-1 bg-yellow-600 text-white rounded-full text-xs">Em desenvolvimento</span>
-                </div>
-              </div>
-              <div className="bg-slate-700/50 rounded-lg p-4 border border-slate-600">
-                <div className="flex items-center justify-between mb-2">
-                  <h5 className="text-sm font-semibold text-white">Marketplace Produtos Sustentáveis</h5>
-                  <span className="px-2 py-1 bg-purple-600 text-white rounded-full text-xs">Planejado</span>
-                </div>
-              </div>
-              <div className="bg-slate-700/50 rounded-lg p-4 border border-slate-600">
-                <div className="flex items-center justify-between mb-2">
-                  <h5 className="text-sm font-semibold text-white">Licenciamento de IA para Saúde Sustentável</h5>
-                  <span className="px-2 py-1 bg-yellow-600 text-white rounded-full text-xs">Em desenvolvimento</span>
-                </div>
-              </div>
-              <div className="bg-slate-700/50 rounded-lg p-4 border border-green-500/20">
-                <div className="flex items-center justify-between mb-2">
-                  <h5 className="text-sm font-semibold text-white">Parcerias Público-Privadas</h5>
-                  <span className="px-2 py-1 bg-green-600 text-white rounded-full text-xs">Ativo</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Assinaturas */}
-          <div className="mt-8">
+          <div>
             <h4 className="text-xl font-semibold text-white mb-6">Assinaturas Sopro Saúde Renal</h4>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Renal Individual */}
-              <div className="bg-gradient-to-br from-blue-900/40 to-cyan-900/40 rounded-xl p-6 border border-emerald-500/20">
-                <h5 className="text-xl font-semibold text-white mb-2">Renal Individual</h5>
-                <div className="text-3xl font-bold text-blue-400 mb-4">R$ 100/mês</div>
-                <p className="text-blue-100 text-sm mb-4">Cuidado renal personalizado para você</p>
-                <ul className="space-y-3 mb-6 text-sm text-blue-200">
+              {/* Renal Individual — V1.9.463 polish high-tech + anti-overclaim */}
+              <div className="bg-gradient-to-br from-slate-900/80 to-slate-800/40 rounded-xl p-5 md:p-6 border border-[rgba(0,229,178,0.25)]">
+                <div className="flex items-center justify-between mb-2">
+                  <h5 className="text-lg md:text-xl font-semibold text-white">Renal Individual</h5>
+                  <span className="px-2 py-0.5 bg-[rgba(0,229,178,0.15)] border border-[rgba(0,229,178,0.4)] text-[#00E5B2] rounded-full text-[10px] font-semibold uppercase tracking-wider">Premium nicho</span>
+                </div>
+                <div className="text-2xl md:text-3xl font-bold text-[#00E5B2] mb-3">R$ 100<span className="text-sm text-slate-400">/mês</span></div>
+                <p className="text-slate-300 text-sm mb-4">Cuidado renal personalizado para você</p>
+                <ul className="space-y-2.5 mb-5 text-sm text-slate-300">
                   <li className="flex items-start space-x-2">
-                    <CheckCircle className="w-5 h-5 text-blue-400 mt-0.5 flex-shrink-0" />
-                    <span>Acesso direto ao WhatsApp do Dr. Ricardo</span>
+                    <CheckCircle className="w-4 h-4 text-[#00E5B2] mt-0.5 flex-shrink-0" />
+                    <span>Agendamento prioritário com especialista da equipe</span>
                   </li>
                   <li className="flex items-start space-x-2">
-                    <CheckCircle className="w-5 h-5 text-blue-400 mt-0.5 flex-shrink-0" />
-                    <span>Escuta personalizada para você</span>
+                    <CheckCircle className="w-4 h-4 text-[#00E5B2] mt-0.5 flex-shrink-0" />
+                    <span>Escuta personalizada via método AEC</span>
                   </li>
                   <li className="flex items-start space-x-2">
-                    <CheckCircle className="w-5 h-5 text-blue-400 mt-0.5 flex-shrink-0" />
-                    <span>Desconto de 50% nas consultas mensais ou bimensais</span>
+                    <CheckCircle className="w-4 h-4 text-[#00E5B2] mt-0.5 flex-shrink-0" />
+                    <span>Desconto de 50% em consultas mensais/bimensais</span>
                   </li>
                   <li className="flex items-start space-x-2">
-                    <CheckCircle className="w-5 h-5 text-blue-400 mt-0.5 flex-shrink-0" />
-                    <span>24h diárias de acesso à Nôa Esperanza</span>
+                    <CheckCircle className="w-4 h-4 text-[#00E5B2] mt-0.5 flex-shrink-0" />
+                    <span>24h diárias de acesso à Nôa Esperanza (IA residente)</span>
                   </li>
                   <li className="flex items-start space-x-2">
-                    <CheckCircle className="w-5 h-5 text-blue-400 mt-0.5 flex-shrink-0" />
-                    <span>Monitoramento renal individualizado</span>
+                    <CheckCircle className="w-4 h-4 text-[#00E5B2] mt-0.5 flex-shrink-0" />
+                    <span>Monitoramento renal individualizado (sidecar CKD-EPI)</span>
                   </li>
                   <li className="flex items-start space-x-2">
-                    <CheckCircle className="w-5 h-5 text-blue-400 mt-0.5 flex-shrink-0" />
+                    <CheckCircle className="w-4 h-4 text-[#00E5B2] mt-0.5 flex-shrink-0" />
                     <span>Avaliação de risco para DRC com Nôa Esperanza</span>
                   </li>
                 </ul>
-                <button className="w-full bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white px-6 py-3 rounded-lg font-bold transition-colors">
-                  Assinar Renal Individual
+                <button
+                  disabled
+                  className="w-full bg-[rgba(0,229,178,0.10)] border border-[rgba(0,229,178,0.45)] text-[#00E5B2] px-5 py-2.5 rounded-lg font-semibold transition-all opacity-70 cursor-not-allowed"
+                  title="Aguardando regularização institucional (CNPJ)"
+                >
+                  Em breve — Aguardando CNPJ
                 </button>
               </div>
 
-              {/* Renal Família */}
-              <div className="bg-gradient-to-br from-purple-900/40 to-pink-900/40 rounded-xl p-6 border-2 border-purple-500/40 relative">
-                <div className="absolute top-4 right-4 bg-purple-600 text-white px-3 py-1 rounded-full text-xs font-bold">
-                  Mais Popular
+              {/* Renal Família — V1.9.463 polish high-tech + anti-overclaim + removido "Programa Amores"
+                  (gamification DESABILITADA por feature flag — memory project_veredito_final_24_04) */}
+              <div className="bg-gradient-to-br from-slate-900/80 to-slate-800/40 rounded-xl p-5 md:p-6 border border-[rgba(79,224,193,0.40)] relative">
+                <div className="absolute -top-2 right-4 bg-[rgba(79,224,193,0.18)] border border-[rgba(79,224,193,0.5)] text-[#7FF2D6] px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider">
+                  Cuidado familiar
                 </div>
-                <h5 className="text-xl font-semibold text-white mb-2">Renal Família</h5>
-                <div className="text-3xl font-bold text-purple-400 mb-4">R$ 200/mês</div>
-                <p className="text-purple-100 text-sm mb-4">Proteção renal para toda a família</p>
-                <ul className="space-y-3 mb-6 text-sm text-purple-200">
+                <div className="flex items-center justify-between mb-2">
+                  <h5 className="text-lg md:text-xl font-semibold text-white">Renal Família</h5>
+                  <span className="px-2 py-0.5 bg-[rgba(79,224,193,0.15)] border border-[rgba(79,224,193,0.4)] text-[#7FF2D6] rounded-full text-[10px] font-semibold uppercase tracking-wider">Premium nicho</span>
+                </div>
+                <div className="text-2xl md:text-3xl font-bold text-[#7FF2D6] mb-3">R$ 200<span className="text-sm text-slate-400">/mês</span></div>
+                <p className="text-slate-300 text-sm mb-4">Proteção renal para toda a família</p>
+                <ul className="space-y-2.5 mb-5 text-sm text-slate-300">
                   <li className="flex items-start space-x-2">
-                    <CheckCircle className="w-5 h-5 text-purple-400 mt-0.5 flex-shrink-0" />
-                    <span>Contato contínuo com Dr. Ricardo</span>
+                    <CheckCircle className="w-4 h-4 text-[#7FF2D6] mt-0.5 flex-shrink-0" />
+                    <span>Suporte clínico contínuo via Nôa + janela mensal com especialista</span>
                   </li>
                   <li className="flex items-start space-x-2">
-                    <CheckCircle className="w-5 h-5 text-purple-400 mt-0.5 flex-shrink-0" />
-                    <span>Escuta personalizada para toda a família</span>
+                    <CheckCircle className="w-4 h-4 text-[#7FF2D6] mt-0.5 flex-shrink-0" />
+                    <span>Escuta personalizada para toda a família (método AEC)</span>
                   </li>
                   <li className="flex items-start space-x-2">
-                    <CheckCircle className="w-5 h-5 text-purple-400 mt-0.5 flex-shrink-0" />
-                    <span>Acesso direto ao WhatsApp</span>
+                    <CheckCircle className="w-4 h-4 text-[#7FF2D6] mt-0.5 flex-shrink-0" />
+                    <span>Agendamento prioritário com especialista</span>
                   </li>
                   <li className="flex items-start space-x-2">
-                    <CheckCircle className="w-5 h-5 text-purple-400 mt-0.5 flex-shrink-0" />
-                    <span>Desconto de 50% nas consultas para toda família</span>
+                    <CheckCircle className="w-4 h-4 text-[#7FF2D6] mt-0.5 flex-shrink-0" />
+                    <span>Desconto de 50% em consultas para toda a família</span>
                   </li>
                   <li className="flex items-start space-x-2">
-                    <CheckCircle className="w-5 h-5 text-purple-400 mt-0.5 flex-shrink-0" />
-                    <span>24h diárias de acesso à Nôa Esperanza</span>
+                    <CheckCircle className="w-4 h-4 text-[#7FF2D6] mt-0.5 flex-shrink-0" />
+                    <span>24h diárias de acesso à Nôa Esperanza (IA residente)</span>
                   </li>
                   <li className="flex items-start space-x-2">
-                    <CheckCircle className="w-5 h-5 text-purple-400 mt-0.5 flex-shrink-0" />
-                    <span>Programa de benefícios Amores</span>
-                  </li>
-                  <li className="flex items-start space-x-2">
-                    <CheckCircle className="w-5 h-5 text-purple-400 mt-0.5 flex-shrink-0" />
-                    <span>Plano de monitoramento familiar</span>
+                    <CheckCircle className="w-4 h-4 text-[#7FF2D6] mt-0.5 flex-shrink-0" />
+                    <span>Plano de monitoramento familiar (sidecar CKD-EPI multi-paciente)</span>
                   </li>
                 </ul>
-                <button className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-6 py-3 rounded-lg font-bold transition-colors">
-                  Assinar Renal Família
+                <button
+                  disabled
+                  className="w-full bg-[rgba(79,224,193,0.10)] border border-[rgba(79,224,193,0.45)] text-[#7FF2D6] px-5 py-2.5 rounded-lg font-semibold transition-all opacity-70 cursor-not-allowed"
+                  title="Aguardando regularização institucional (CNPJ)"
+                >
+                  Em breve — Aguardando CNPJ
                 </button>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Implementação das Atividades */}
-        <div className="bg-slate-800 rounded-xl p-8 mb-8 border border-slate-700">
-          <div className="flex items-center space-x-3 mb-6">
-            <Activity className="w-8 h-8 text-cyan-400" />
-            <h3 className="text-2xl font-bold text-white">Implementação das Atividades Alinhadas com Sustentabilidade</h3>
-          </div>
+        {/* V1.9.463 — Implementação Atividades Sustentabilidade (5 cards COP26/ESG) + Parcerias
+            Institucionais CTA movidos pra /pesquisa/profissional/cidade-amiga-dos-rins/institucional
+            (página B2B separada). Aplicação caminho (b): preserva trabalho histórico Ricardo +
+            limpa página principal pra foco no NÚCLEO clínico (princípio anti-overclaim). */}
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {/* Programas Educacionais */}
-            <div className="bg-slate-700/50 rounded-lg p-6 border border-cyan-500/20">
-              <div className="flex items-center space-x-3 mb-4">
-                <BookOpen className="w-6 h-6 text-cyan-400" />
-                <h4 className="text-lg font-semibold text-white">Programas Educacionais</h4>
-              </div>
-              <p className="text-slate-300 text-sm mb-4">
-                Treinamento em práticas sustentáveis e equidade na saúde
-              </p>
-              <ul className="space-y-2 text-xs text-slate-400">
-                <li className="flex items-center space-x-2">
-                  <CheckCircle className="w-4 h-4 text-cyan-400" />
-                  <span>Workshops presenciais</span>
-                </li>
-                <li className="flex items-center space-x-2">
-                  <CheckCircle className="w-4 h-4 text-cyan-400" />
-                  <span>Seminários online</span>
-                </li>
-                <li className="flex items-center space-x-2">
-                  <CheckCircle className="w-4 h-4 text-cyan-400" />
-                  <span>Cursos especializados</span>
-                </li>
-              </ul>
-            </div>
-
-            {/* Plataforma Interação Comunitária */}
-            <div className="bg-slate-700/50 rounded-lg p-6 border border-cyan-500/20">
-              <div className="flex items-center space-x-3 mb-4">
-                <MessageCircle className="w-6 h-6 text-cyan-400" />
-                <h4 className="text-lg font-semibold text-white">Plataforma Interação Comunitária</h4>
-              </div>
-              <p className="text-slate-300 text-sm mb-4">
-                Discussão e troca sobre saúde e sustentabilidade
-              </p>
-              <ul className="space-y-2 text-xs text-slate-400">
-                <li className="flex items-center space-x-2">
-                  <CheckCircle className="w-4 h-4 text-cyan-400" />
-                  <span>Fóruns de discussão</span>
-                </li>
-                <li className="flex items-center space-x-2">
-                  <CheckCircle className="w-4 h-4 text-cyan-400" />
-                  <span>Sessões Q&A</span>
-                </li>
-                <li className="flex items-center space-x-2">
-                  <CheckCircle className="w-4 h-4 text-cyan-400" />
-                  <span>Grupos temáticos</span>
-                </li>
-              </ul>
-            </div>
-
-            {/* Pesquisa Colaborativa */}
-            <div className="bg-slate-700/50 rounded-lg p-6 border border-cyan-500/20">
-              <div className="flex items-center space-x-3 mb-4">
-                <FlaskConical className="w-6 h-6 text-cyan-400" />
-                <h4 className="text-lg font-semibold text-white">Pesquisa Colaborativa</h4>
-              </div>
-              <p className="text-slate-300 text-sm mb-4">
-                Colaboração entre instituições de pesquisa e ONGs
-              </p>
-              <ul className="space-y-2 text-xs text-slate-400">
-                <li className="flex items-center space-x-2">
-                  <CheckCircle className="w-4 h-4 text-cyan-400" />
-                  <span>Conferências</span>
-                </li>
-                <li className="flex items-center space-x-2">
-                  <CheckCircle className="w-4 h-4 text-cyan-400" />
-                  <span>Grupos de trabalho</span>
-                </li>
-                <li className="flex items-center space-x-2">
-                  <CheckCircle className="w-4 h-4 text-cyan-400" />
-                  <span>Publicações conjuntas</span>
-                </li>
-              </ul>
-            </div>
-
-            {/* Ferramentas Monitoramento */}
-            <div className="bg-slate-700/50 rounded-lg p-6 border border-cyan-500/20">
-              <div className="flex items-center space-x-3 mb-4">
-                <BarChart3 className="w-6 h-6 text-cyan-400" />
-                <h4 className="text-lg font-semibold text-white">Ferramentas Monitoramento</h4>
-              </div>
-              <p className="text-slate-300 text-sm mb-4">
-                Ferramentas digitais para práticas sustentáveis
-              </p>
-              <ul className="space-y-2 text-xs text-slate-400">
-                <li className="flex items-center space-x-2">
-                  <CheckCircle className="w-4 h-4 text-cyan-400" />
-                  <span>Aplicativos móveis</span>
-                </li>
-                <li className="flex items-center space-x-2">
-                  <CheckCircle className="w-4 h-4 text-cyan-400" />
-                  <span>Sistemas software</span>
-                </li>
-                <li className="flex items-center space-x-2">
-                  <CheckCircle className="w-4 h-4 text-cyan-400" />
-                  <span>Dashboards</span>
-                </li>
-              </ul>
-            </div>
-
-            {/* Saúde Comunitária */}
-            <div className="bg-slate-700/50 rounded-lg p-6 border border-cyan-500/20">
-              <div className="flex items-center space-x-3 mb-4">
-                <Heart className="w-6 h-6 text-cyan-400" />
-                <h4 className="text-lg font-semibold text-white">Saúde Comunitária</h4>
-              </div>
-              <p className="text-slate-300 text-sm mb-4">
-                Programas com foco em equidade e sustentabilidade
-              </p>
-              <ul className="space-y-2 text-xs text-slate-400">
-                <li className="flex items-center space-x-2">
-                  <CheckCircle className="w-4 h-4 text-cyan-400" />
-                  <span>Organizações locais</span>
-                </li>
-                <li className="flex items-center space-x-2">
-                  <CheckCircle className="w-4 h-4 text-cyan-400" />
-                  <span>Serviços acessíveis</span>
-                </li>
-                <li className="flex items-center space-x-2">
-                  <CheckCircle className="w-4 h-4 text-cyan-400" />
-                  <span>Iniciativas populares</span>
-                </li>
-              </ul>
-            </div>
-          </div>
-        </div>
-
-        {/* Call to Action */}
-        <div className="bg-gradient-to-r from-blue-900/40 via-cyan-900/40 to-blue-900/40 rounded-xl p-8 border border-emerald-500/20">
-          <div className="text-center mb-6">
-            <h3 className="text-2xl font-bold text-white mb-2">Parcerias Institucionais</h3>
-            <p className="text-blue-200 text-lg mb-6">
-              Modelo de negócio sustentável baseado nos princípios do artigo "After COP26",
-              promovendo saúde, equidade e sustentabilidade através de parcerias estratégicas.
+        {/* CTA Final + Link Versão Institucional — V1.9.463 polish high-tech translúcido */}
+        <div className="bg-slate-800 rounded-xl p-6 md:p-8 border border-[rgba(0,229,178,0.25)]">
+          <div className="text-center mb-5">
+            <h3 className="text-lg md:text-xl font-bold text-white mb-2">Comece sua jornada renal</h3>
+            <p className="text-sm text-slate-400 max-w-2xl mx-auto">
+              Agende uma Avaliação Clínica Inicial (AEC) com Dr. Ricardo Valença ou explore o programa
+              completo da Cidade Amiga dos Rins.
             </p>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <button className="bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white px-6 py-4 rounded-lg font-bold transition-colors">
-              Investir na Plataforma
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+            <button
+              onClick={() => navigate('/app/clinica/paciente/dashboard')}
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-[rgba(0,229,178,0.10)] border border-[rgba(0,229,178,0.45)] text-[#00E5B2] hover:bg-[rgba(0,229,178,0.18)] px-6 py-2.5 rounded-lg font-semibold transition-all text-sm"
+            >
+              <Calendar className="w-4 h-4" />
+              Iniciar Avaliação Clínica
             </button>
-            <button className="bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-700 hover:to-teal-700 text-white px-6 py-4 rounded-lg font-bold transition-colors">
-              Aderir a um Plano
-            </button>
-            <button className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-6 py-4 rounded-lg font-bold transition-colors">
-              Agendar Apresentação
-            </button>
-          </div>
-          <div className="mt-6 text-center">
-            <button className="bg-white text-blue-600 px-8 py-4 rounded-lg font-bold hover:bg-blue-50 transition-colors">
-              Agendar Consulta • Avaliação Clínica Inicial
+            <button
+              onClick={() => navigate('/app/pesquisa/profissional/cidade-amiga-dos-rins/institucional')}
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 text-sm text-slate-400 hover:text-[#00E5B2] transition-colors px-4 py-2.5 rounded-lg hover:bg-slate-700/40"
+            >
+              Ver versão institucional / B2B
+              <span aria-hidden="true">→</span>
             </button>
           </div>
         </div>

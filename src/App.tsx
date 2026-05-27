@@ -66,6 +66,7 @@ import EnsinoDashboard from './pages/EnsinoDashboard'
 import GestaoAlunos from './pages/GestaoAlunos'
 import PesquisaDashboard from './pages/PesquisaDashboard'
 import CidadeAmigaDosRins from './pages/CidadeAmigaDosRins'
+import CidadeAmigaDosRinsInstitucional from './pages/CidadeAmigaDosRinsInstitucional'
 import MedCannLab from './pages/MedCannLab'
 import JardinsDeCura from './pages/JardinsDeCura'
 import AdminDashboard from './pages/AdminDashboard'
@@ -196,6 +197,8 @@ function App() {
                           <Route path="pesquisa/profissional/base-conhecimento" element={<PesquisaDashboard initialTab="library" />} />
                           <Route path="pesquisa/profissional/protocolos" element={<PesquisaDashboard initialTab="protocols" />} />
                           <Route path="pesquisa/profissional/cidade-amiga-dos-rins" element={<PesquisaDashboard initialTab="protocols" />} />
+                          {/* V1.9.463 — página B2B/Institucional separada (Sistema Captação + Sustentabilidade + Parcerias) */}
+                          <Route path="pesquisa/profissional/cidade-amiga-dos-rins/institucional" element={<CidadeAmigaDosRinsInstitucional />} />
                           <Route path="pesquisa/profissional/medcann-lab" element={<MedCannLab />} />
                           <Route path="pesquisa/profissional/jardins-de-cura" element={<JardinsDeCura />} />
                           {/* [V1.9.362] Rota direta pra aba Casos Similares (Pedro 18/05 ~18h05) */}
