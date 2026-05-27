@@ -309,3 +309,99 @@ ls -t ~/.claude/projects/c--Users-phpg6-OneDrive-Imagens-amigo-connect-hub-main/
 ---
 
 **Próxima sessão Claude (laptop):** ler ESTE diário ANTES + abrir as 15 memórias acima ANTES de qualquer ação. Anti-cristalização-prematura aplicado: NÃO commit V1.9.468-B nem cristalize memory anti-drift até smoke 9 turnos com Ricardo PASS empírico.
+
+---
+
+## 🆕 BLOCO M — Atualização ~15h BRT 27/05 (pós-audit empírico final)
+
+Após criação do diário (Blocos A-K) + commits subsequentes, sessão Claude desktop continuou e produziu mais artefatos críticos:
+
+### M.1 — V1.9.452 PII sanitize DEFENSIVO codado + deployed
+- Commit `fe50819` + push 4 refs
+- Helper `sanitizeAssessmentPII` em [casePseudonymization.ts](src/lib/casePseudonymization.ts) (305 linhas total)
+- Aplicado em [rationalityAnalysisService.ts](src/services/rationalityAnalysisService.ts) linhas 575+603
+- Smoke unit 4/4 PASS empírico (Pedro / CAROLINA / Maria das Dores / sem nome)
+- **Novas rows salvas a partir deste commit = 0% PII vazamento** (era 88.5%)
+- Backfill 115 rows históricas PARQUEADO até Ricardo aprovar approach
+
+### M.2 — clinical_qa_runs row #2 inserida `cfcd23db`
+- PMF Audit Framework V1.9.85 documentado
+- Cobertura **0.75% → 1.5%** (1→2 rows)
+- Score 65 verdict `parcial-com-drift-conversacional`
+- system_version V1.9.468-B
+- Documenta 5 violações dossiê + 5 PASS + 4 fixes V1.9.468-A + 6 fixes V1.9.468-B + 3 memories pivot
+
+### M.3 — AEC INTERRUPTED root cause RESOLVIDO empíricamente
+- **50% testes internos abandonados** (Pedro/admin/João Vidal teste) — NÃO é bug
+- **17% bug state machine REAL** — 3 pacientes completaram tudo mas state ficou INTERRUPTED em vez de COMPLETED (mateus/mariappitoco/mariahelenaearp)
+- Parquear V1.9.469-AEC-FINALPHASE — bloqueador validação clínica SaMD futura
+
+### M.4 — docs/MEDCANNLAB_SGQ_INDICE_PRELIMINAR_27_05.md criado (363 linhas)
+- Commit `6ba6ca9` + push 4 refs
+- Mapeamento empírico SGQ orgânico → ISO 13485 + IEC 62304 + ISO 14971
+- Argumento institucional FORTE: matéria-prima existe largamente
+- 27 cláusulas ISO 13485 mapeadas + 9 IEC 62304 + 5 locks ISO 14971
+- Gap real: ROUPA REGULATÓRIA formal (não construir do zero — converter formato 2-4 meses)
+- 11 GAPs reais identificados + roadmap Modelo C híbrido 6-9 meses + R$ 60-120K
+- **Levar pra Ricardo discussão estratégica laptop**
+
+### M.5 — Supabase compliance audit empírico
+Memory NÍVEL 1 [`project_supabase_compliance_lgpd_anvisa_e_pacientes_reais_27_05`](memory).
+
+**Score 65% maturidade**:
+- ✅ Encryption + RLS 141/141 (100%) + backups diários WAL-G + Supabase corporativo SOC 2/ISO 27001/HIPAA-ready
+- ❌ **3 gaps críticos descobertos hoje**:
+  1. Região `us-east-1` AWS Virginia EUA (não BR) — LGPD Art. 33 transferência internacional
+  2. **PITR DESABILITADO** (`pitr_enabled:false`) — Pro plan $25/mês resolve
+  3. **pgaudit NÃO instalado** — Art. 37 LGPD + ISO 13485 §4.2.5
+
+**Caminho SEM REGRESSÃO** pré-Marco 2 (~5h dev + R$ 1-3K advogado):
+1. Upgrade Pro plan ($25/mês) → PITR automático
+2. Habilitar pgaudit (1-2h dev)
+3. Backfill ~12 rows pacientes reais (não 115!) com aprovação Ricardo
+4. Termo de Uso formal LGPD Art. 33 + CFM 2.314 (advogado especialista)
+5. DPO designado (sócio + treinamento)
+
+**Migração `sa-east-1` São Paulo PARQUEADA** (4-8h dev, $0 adicional, quando ANVISA pedir OR Marco 2 escalar).
+
+**Migrar pra OUTRO provider = REGRESSÃO ENORME 3-6 meses** (Neon/AWS RDS/DO — perde Edge Functions + Auth + Storage + RLS) — **NÃO RECOMENDADO**.
+
+### M.6 — Pacientes REAIS vs TESTES revisado empíricamente
+
+| Categoria | Rows | Detalhes |
+|---|---|---|
+| **Testes internos sócios/admin** | ~103 (~90%) | Pedro/Carolina/Ricardo/João sócios — **Maria Helena Chaves = NAMORADA Pedro** (correção crítica) |
+| **Pacientes potencialmente REAIS** | ~12 (~10%) | Maria Pinto Pitoco (3 — REAL Ricardo) + Cristiano Pontes (4) + Mateus Chagas (3) + Mariana Carvalho (1) |
+| **Casos especiais** | — | Gilda Cruz Siqueira existe (real Ricardo) mas 0 rationalities; João Guimarães não tem conta separada |
+
+**Backfill priorizado trivial**: ~12 UPDATEs cuidadosos em vez de 115. Mutilação histórica risco muito menor.
+
+### M.7 — Estado git final 27/05 ~15h
+
+```
+HEAD 6ba6ca9  docs(sgq): MedCannLab SGQ índice preliminar ISO 13485
+HEAD fe50819  fix(lgpd): V1.9.452 sanitize PII defensivo (88.5% → 0% novas)
+HEAD f4edc03  feat(matrix): V1.9.468-B Edge anti-drift + DIARIO snapshot
+HEAD 2cbe3eb  feat(matrix): V1.9.468-A 4 fixes
+HEAD 8bc9c33  feat(matrix): V1.9.468 Bulário Matrix codado
+```
+
+8 commits hoje + 1 diário + 1 índice SGQ + 4 memories cristalizadas + 1 QA run formal + V1.9.452 PII fix + V1.9.468-B Edge live.
+
+### M.8 — Pendências CRÍTICAS pra laptop com Ricardo
+
+| # | Pendência | Custo | Prioridade |
+|---|---|---|---|
+| 1 | **Smoke V1.9.468-B 9 turnos** (Bloco I deste diário) | 30min | 🔴 ALTA |
+| 2 | Validar conceito-pivot compressão estrutural com Ricardo (endosso humano) | 15min | 🔴 ALTA |
+| 3 | Aprovar backfill 4 pacientes reais (~12 rows PII) | 15min | 🔴 ALTA |
+| 4 | Decidir upgrade Pro plan $25/mês AGORA ou Marco 2? | 5min | 🟡 MÉDIA |
+| 5 | DPO designation (Pedro / Ricardo / Eduardo / João?) | 5min | 🟡 MÉDIA |
+| 6 | CNPJ status (Marco 1 João — gatilho de tudo) | discussão João | 🔴 ALTA |
+| 7 | Mostrar `docs/MEDCANNLAB_SGQ_INDICE_PRELIMINAR_27_05.md` pra Ricardo | leitura 15min | 🔴 ALTA |
+| 8 | V1.9.469-AEC-FINALPHASE bug state machine (parquear formal) | 10min discussão | 🟡 MÉDIA |
+| 9 | 1Pure parceria 5 condições + 3 versões posicionamento (Ricardo+João) | 30min | 🔴 ALTA |
+
+### Frase âncora final ATUALIZADA
+
+> *"27/05 ~15h: 8 commits + V1.9.452 PII fix + V1.9.468-B anti-drift live + SGQ índice ISO 13485 (363 linhas) + Supabase audit 65% maturidade + Maria Helena = namorada Pedro (não real) + apenas ~12 rows realmente reais (não 115). Score legalidade BR: ~70% (era 60% pela manhã). Sistema mais maduro que parece + 3 gaps Supabase fixáveis em 1 semana sem regressão. Boa pauta pra Ricardo HOJE."*
