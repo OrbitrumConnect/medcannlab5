@@ -663,7 +663,7 @@ const Prescriptions: React.FC = () => {
           @page { size: A4; margin: 1.5cm; }
           * { box-sizing: border-box; }
           body { font-family: 'Arial', sans-serif; font-size: 11px; color: #000; margin: 0; padding: 0; line-height: 1.4; position: relative; }
-          .watermark { position: fixed; top: 40%; left: 18%; transform: rotate(-30deg); font-size: 90px; font-weight: bold; color: rgba(0,0,0,0.05); letter-spacing: 8px; pointer-events: none; z-index: 0; user-select: none; }
+          .watermark { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-30deg); font-size: 72px; font-weight: bold; color: rgba(0,0,0,0.05); letter-spacing: 6px; pointer-events: none; z-index: 0; user-select: none; white-space: nowrap; }
           .receita-via { position: relative; z-index: 1; padding: 8px; page-break-after: always; }
           .receita-via:last-child { page-break-after: auto; }
           .via-label { position: absolute; top: 0; right: 0; font-size: 10px; font-weight: bold; color: #555; padding: 4px 8px; border: 1px solid #999; }
