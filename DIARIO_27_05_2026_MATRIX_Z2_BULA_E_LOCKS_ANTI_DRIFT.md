@@ -405,3 +405,208 @@ HEAD 8bc9c33  feat(matrix): V1.9.468 Bulário Matrix codado
 ### Frase âncora final ATUALIZADA
 
 > *"27/05 ~15h: 8 commits + V1.9.452 PII fix + V1.9.468-B anti-drift live + SGQ índice ISO 13485 (363 linhas) + Supabase audit 65% maturidade + Maria Helena = namorada Pedro (não real) + apenas ~12 rows realmente reais (não 115). Score legalidade BR: ~70% (era 60% pela manhã). Sistema mais maduro que parece + 3 gaps Supabase fixáveis em 1 semana sem regressão. Boa pauta pra Ricardo HOJE."*
+
+---
+
+# 🌙 BLOCO N — Sessão laptop 27/05 (~14h → ~23h BRT) — Eduardo operacional + 4 fixes UX + mapa neuro Fase A
+
+Sessão Pedro+Claude no laptop (casa do Ricardo), continuação após bloco M do desktop manhã. Cobriu: pull dos commits desktop + 4 fixes UI/funcional empíricos (V1.9.470 → V1.9.473) + Eduardo Faveret entrou OPERACIONAL no app (cadastro + vitrine + sharing + AEC simulada) + audit empírico do report do Eduardo via PAT + mapa neuro TEA/TOD/TDAH Fase A cristalizado + smoke neuro empírico + pitch WhatsApp 3 versões pra conhecidos.
+
+## Estado git final do dia (~23h BRT)
+
+| Item | Valor |
+|---|---|
+| HEAD | `c0ca8d3` (V1.9.473) |
+| Última tag | `v1.9.468-A-matrix-bula-locks-final` (do desktop manhã) |
+| Edge tradevision-core | v416 (V1.9.473 CONSENSUS_NOTES + parser filter) — deployed via PAT |
+| Edge sign-pdf-icp | v19 INTOCADO (lock V1.9.299 PBAD ICP preservado integralmente) |
+| Push 4 refs | OK em todas as 4 versões deployadas hoje |
+| Memórias 27/05 criadas | 3 (Eduardo operacional + mapa neuro + smoke neuro) |
+| Memórias mirrored docs/memorias/ | OK (cross-machine sync) |
+| Smokes runtime pendentes | V1.9.471 widget + V1.9.472 voz + V1.9.473 AEC consenso |
+
+## N.1 — Pull desktop + sync inicial
+
+Pull dos commits do desktop manhã (V1.9.452 PII sanitize + V1.9.468-B anti-drift + SGQ índices). Fast-forward limpo, sem conflito. HEAD veio `c9f45a9`. Working tree limpa (só `tmp/` órfãos, ignorados).
+
+Memórias do desktop lidas no início da sessão pra absorver contexto:
+- `feedback_aec_campo_permissivo_e_triagem_gpt_externo_pos_universo_tea_26_05`
+- `project_universo_sinais_tea_8_categorias_keywords_pre_fase_b_26_05`
+- `project_v1_9_455_exam_request_pdf_icp_wiring_26_05`
+- `project_v1_9_457_sign_pdf_icp_auth_ownership_26_05`
+
+## N.2 — V1.9.470 marca d'água Receituário Controle Especial cortada (commit `4a7eb3c`)
+
+Bug reportado por Ricardo via WhatsApp + print (caso Gilda Cruz Siqueira — receituário antibiótico Clavulin 27/05 14:11 BRT). PDF gerado via `window.print` (template ANVISA Portaria 344/98) renderizava marca d'água como "MEDCANNL..." cortada à direita.
+
+**Causa**: CSS `.watermark` em [Prescriptions.tsx:666](src/pages/Prescriptions.tsx#L666) usava `left: 18% + font-size: 90px + letter-spacing: 8px + rotate(-30deg)`. Conta empírica: 10 chars × ~98px = ~980px diagonal vs ~793px úteis A4 portrait → texto estourava à direita.
+
+**Fix 1 linha**: centralizar via `translate(-50%, -50%) + rotate(-30deg)` + reduzir font 72px + letter-spacing 6px + `white-space: nowrap`. Cabe limpo (~760px) em A4.
+
+**Esclarecimento pro Ricardo**: Receituário de Controle Especial NÃO tem QR Code por design legal (ANVISA Portaria 344/98 exige carimbo físico + talonário numerado). NÃO é bug, é limitação regulatória — só Receituário Simples + Exame têm ICP+QR (caso João Guimarães é V1.9.455 parqueada).
+
+## N.3 — V1.9.471 widget Agendar Consulta trava ao trocar profissional (commit `c8a6898`)
+
+Bug reportado por Pedro: Eduardo Faveret configurou 5 dias de disponibilidade (Seg-Sex 08-18h, validado via PAT 5 rows em `professional_availability`), Pedro tentou agendar com ele e widget mostrou "Nenhum horário disponível" mesmo com banco populado.
+
+**Validação empírica via PAT (3 queries)**:
+- Eduardo type=`professional`, fee R$ 900,00, 5 dias DOW 1-5 is_active=true ✅
+- RPC `get_available_slots_v3(eduardo, '2026-06-01', '2026-06-01')` retorna **10 slots PERFEITOS** mesmo chamada como role anon (SECURITY DEFINER + search_path correto) ✅
+- Backend 100% OK — bug é frontend exclusivo
+
+**Causa raiz**: race condition no useEffect linha 312 do [NoaConversationalInterface.tsx](src/components/NoaConversationalInterface.tsx#L312). Sequência:
+1. Widget abre com Ricardo (default hardcoded line 151)
+2. `loadSlots` começa → `setLoading(true)` → async pending
+3. Paciente troca dropdown pra Eduardo → cleanup seta `active=false` + novo useEffect
+4. Novo loadSlots vê `if (loading) return` → SAI sem executar
+5. Async do Ricardo termina → `if (active)` false → não reseta loading, não seta slots
+6. **State trava: loading=true + availableSlots=[] permanente**
+
+**Fix cirúrgico**: remover o early-return `if (loading) return`. Cleanup `active=false` já protege contra setState stale. 1 linha + comentário documentando o porquê.
+
+## N.4 — V1.9.472 chat Nôa por voz envia mensagem cedo demais (commit `bd03ce8`)
+
+Bug reportado por Eduardo testando AEC pela 1ª vez via voz: *"tempo de detecção muito rápido — pausa de 2s já envia a mensagem"*.
+
+**Causa**: 2 problemas combinados no speech recognition:
+1. `recognition.continuous = false` → browser Chrome dispara `onend` em ~2-3s de silêncio nativo, e `onend` chama `flush()` imediato
+2. Timer `scheduleFlush` hardcoded `1500ms` — se browser não parar primeiro, sistema envia em 1.5s
+
+**Fix**:
+- `continuous: false → true` (browser não para auto, sistema controla via timer)
+- timer `1500ms → 10000ms` (10s generoso pra paciente respirar mid-frase em AEC narrativa)
+- `onend` mantém flush imediato (cobre stop manual / erro / timeout máx 60s Chrome)
+
+Trade-off aceito: mic fica ligado até 10s após última fala. Usuário pode enviar manual a qualquer momento. Sem regressão funcional.
+
+## N.5 — Eduardo OPERACIONAL no app + sharing + AEC simulada (~14h → ~19h BRT)
+
+Marco operacional importante (continuidade da reunião 4 sócios 26/05):
+
+**Step 1 (~14h)**: Pedro confirmou — Eduardo cadastrado no app como profissional (CRM ativo + perfil + vitrine pública criada). Pedro compartilhou 2 relatórios via `passosmir4@gmail.com` → email chegou na conta Eduardo. **Sharing LGPD-sensível validado empíricamente cross-account**.
+
+→ Memory criada: `project_eduardo_faveret_no_app_sharing_validado_27_05`
+
+**Step 2 (~14h53→14:55 BRT)**: Eduardo abriu Matrix Z2 e fez 2 chamadas (logs Edge):
+- Turno 1 (3758 chars input): abriu Matrix DE UM RELATÓRIO existente, contexto formatado `[CONTEXTO MARCADO PELO MÉDICO]` + `[RELATÓRIO DO PACIENTE]`. Response 1462 chars, 12867 tokens, gpt-4o-2024-08-06 full
+- Turno 2 (27 chars): "estruture o relatorio final", historyLength: 2 preservado. Response 2001 chars, 12017 tokens
+- AUTH JWT ✅ + Founder detection → role `master` ✅
+- HYBRID BYPASS ativo (silencia DOC_LIST) ✅
+- DB SAVED Attempt 1 sem retry ✅
+- Custo sessão ~R$ 0,25 (dentro baseline R$ 0,50-0,75/sessão dossiê)
+
+**Step 3 (~18h→19h BRT)**: Eduardo simulou um paciente real na AEC pela 1ª vez. Persona: **médico ex-diretor de clínica multinacional que faliu (4 meses salário não pago) + assédio moral em serviço público + burnout há 3 anos + quadro atual de ansiedade/insônia/depressão + bupropiona 150mg XR + quer substituir parte por canabidiol**.
+
+Pipeline 100% rodou:
+- Report `2bdb57fb-94d6-4463-afce-f3b3817ccf38`
+- clinical_score 70, confidence high
+- Verbatim First atuou em 3 fases (CONSENT → CONSENSUS_REPORT → FINAL_RECOMMENDATION, 0 tokens GPT)
+- Signature ICP-Brasil real (hash 4e4a6f53...)
+- **doctor_id atribuído: f4a62265 = EDUARDO** via DOCTOR_RESOLUTION pelo vínculo appointments ✅
+- Total latency 57s
+- 5 axes + 1 racionalidade integrative coerente
+
+**Marco 3 avançou**: Eduardo saiu de "engajamento verbal na reunião 26/05" pra **uso clínico real em ~5h** — cadastro, sharing validado, AEC simulada, relatório atribuído por vínculo automático.
+
+## N.6 — Bug arquitetural CONSENSUS_REPORT loop infinito (descoberto via smoke Eduardo)
+
+Durante a AEC simulada, Eduardo testou a etapa de revisão. Sistema apresentou "MEU ENTENDIMENTO" com ruídos ("olha", "aí ela liga" — parser confundiu interjeições como sintoma). Eduardo tentou corrigir **3 vezes** sequenciais:
+
+1. "discordo, nao existe o sintoma olha, nem existe a frase ai ela liga"
+2. "que voce retire o sintoma 'olha' e substitua por ansiedade"
+3. "quero que retire a frase *(roteiro de perguntas abaixo focado em olha...)*"
+
+Sistema regenerou MESMO entendimento 3 vezes sem aplicar correção. Eduardo na 4ª escreveu "concordo" e desistiu (registrado em `content.consenso.revisoes_realizadas: 2`).
+
+**Diagnóstico**: FSM handler `CONSENSUS_REPORT` em [clinicalAssessmentFlow.ts:1101](src/lib/clinicalAssessmentFlow.ts#L1101):
+- Reconhece "discordo" → incrementa contador → volta pra `CONSENSUS_REVIEW`
+- `CONSENSUS_REVIEW` → regenera `generateConsensusReport(state)` SEM aplicar correção (renderização determinística do state intacto)
+- **Loop infinito**: REPORT → discordo → REVIEW → REPORT idêntico → ...
+
+## N.7 — V1.9.473 escape CONSENSUS_REPORT + filtro interjeições parser (commit `c0ca8d3` + Edge v416)
+
+Fix Opção A (alinhamento prévio Pedro) — princípio fenomenológico Ricardo aplicado:
+
+1. **AssessmentData** ganha campo `patientReviewNotes?: string`
+2. **AssessmentPhase** ganha `CONSENSUS_NOTES`
+3. **Handler CONSENSUS_REPORT**: após 2ª discordância (`consensusRevisions >= 2`), escapa pro `CONSENSUS_NOTES` com mensagem honesta — *"não consigo reescrever o resumo automaticamente, vou registrar suas observações como anexo"*
+4. **Handler novo CONSENSUS_NOTES**: captura observação literal, marca `consensusAgreed=true`, avança `CONSENT_COLLECTION`
+5. **generateConsensusReport** renderiza bloco "📝 Observação de revisão do paciente" quando preenchido
+6. **content.consenso.observacoes_paciente** persiste no `clinical_reports`
+7. **Helper `isPhenomenologicalNoise()`**: regex conservador match palavra única PT-BR (olha/ah/oh/hmm/né/aí/etc) — preserva queixas curtas legítimas ("dor", "tosse", "febre")
+8. **Aplicado nos 3 pushes** de `complaintList` (IDENTIFICATION→COMPLAINT_LIST + 2 em COMPLAINT_LIST)
+9. **Edge `tradevision-core` v416** deployed: `CONSENSUS_NOTES` em 4 listas (VERBATIM_LOCK + HARD_LOCK + ACTIVE_COLLECTING + PHASE_LOCK instructions + fallback nextQuestionHint)
+
+**Princípios honrados**:
+- Vertente clínica Constituição (fidelidade > completude): sistema admite limite ("não consigo reescrever") em vez de fingir entender
+- Princípio Ricardo "queixa preserva abertura fenomenológica": observação literal do paciente persiste, médico vê
+- Polir-não-inventar: reusa Verbatim Lock + FSM existente, sem GPT pra interpretar correção (evita alucinação completiva V1.9.453)
+- Lock V1.9.299 PBAD intocado
+
+**Smoke runtime OBRIGATÓRIO pendente** (Carolina pegaria em 10min como pegou V1.9.443-B):
+- Smoke 1: AEC completa happy path
+- Smoke 2: 1 discordância → path antigo preservado
+- Smoke 3: 2+ discordâncias → escape pro CONSENSUS_NOTES → observação persistida
+- Smoke 4: "olha" isolado NÃO entra como sintoma; "olha aqui doutor" ENTRA
+
+## N.8 — Mapa neuro TEA + TOD + TDAH Fase A completo
+
+Pós-AEC do Eduardo, discussão evoluiu pra cobertura de espectro neurológico. **Princípio mapear-antes-codar-guardrail aplicado**: mapa primeiro, código depois.
+
+**Decisão técnica cristalizada**: 1 sidecar único `neuro-signal-extractor` (NÃO 3 separados). Justificativa: comorbidade real alta (TEA+TDAH 30-50%, TDAH+TOD 40-50%) torna impossível separar Edges sem perder co-tagging. 1 deploy + 1 chamada GPT + ~$0.001/análise vs 3 Edges + 3 chamadas + ~$0.003/análise.
+
+**20 categorias mapeadas** (8 TEA + 6 TOD + 6 TDAH) × keywords BR × sobreposição semântica (5 falas multi-tag). DSM-5 ancora sem cópia literal — adaptação cultural BR cuidadores/fala coloquial.
+
+**Estrutura output JSON** definida com `confianca` numérica 0-100 + `sujeito` granular (próprio/filho menor/filho adulto/irmão/outro) + `janela_contextual` 5 msgs antes + 2 depois capped ~600 tokens.
+
+**Persistência Opção B (tabela `clinical_neuro_signals`)** + dual-write contract preventivo cristalizado desde o design — NÃO replicar gap não-formalizado de `clinical_rationalities`.
+
+**Card UI Eduardo** = padrão DRC empilhado abaixo do `<RenalSuggestionsCard />` no `ProfessionalMyDashboard.tsx:937`. Cada médico vê só especialidade dele via RLS; Pedro (admin) vê os 2.
+
+**4 fases empíricas** definidas:
+- **A (✅ feita hoje)**: mapa
+- **B (pendente Eduardo)**: trazer 2-3 casos neuro REAIS pra calibrar keywords + decidir 3 UI parqueadas
+- **C**: audit empírico nos 143 reports existentes
+- **D**: sidecar codificado (Edge `neuro-signal-extractor` + tabela + card)
+- **E**: pós-Marco 2 KPIs visuais
+
+→ Memory criada: `project_universo_sinais_neuro_tea_tod_tdah_mapa_completo_27_05`
+
+## N.9 — Smoke neuro empírico no report `2bdb57fb` (Eduardo simulando paciente)
+
+Aplicação manual do mapa Fase A à conversa REAL do Eduardo. **Resultado**: 4 sinais TDAH detectados + 0 TEA + 0 TOD:
+
+| Categoria | Fala literal | Confiança |
+|---|---|---|
+| TDAH-Desatenção | "dificuldade de me concentrar" | 92 |
+| TDAH-Desatenção | "preciso me concentrar diante de muitas demandas como médico" | 88 |
+| TDAH-Comorbidade emocional | "ansiedade + depressão + burn-out há 3 anos" | 65 |
+| TDAH-Terapêutico indireto | "tomando remédios para concentrar" + bupropiona (off-label TDAH adulto) | 55 |
+
+**Veredito clínico não-diagnóstico**: padrão típico de **TDAH residual adulto descompensado por burnout**. Sidecar NÃO diz "é TDAH" — diz "esses 4 sinais TDAH são compatíveis". Eduardo (neuro) interpretaria o diferencial.
+
+**Confirmação importante**: mesmo com lista_indiciária contaminada por "olha" e "aí ela liga", os sinais semânticos foram **perfeitamente captáveis nas 20 mensagens da conversa** — porque sidecar processa CONVERSA INTEIRA (`ai_chat_interactions`), não a lista_indiciária curada. Tese arquitetural confirmada: sidecar = camada semântica decoupled da FSM determinística.
+
+→ Memory criada: `project_smoke_neuro_signal_report_2bdb57fb_27_05`
+
+## N.10 — Pitch WhatsApp 3 versões (pra associação + casual + denso devs)
+
+Pedro pediu material curto pra explicar projeto pra conhecidos. 3 versões iteradas:
+
+1. **Versão associação** (institucional B2B parceria): identidade + entregas + 4 modelos de parceria (acesso paciente / vitrine médicos / educação conjunta / pesquisa colaborativa)
+2. **Versão casual WhatsApp** (~8 linhas, sem emoji, factual): startup + 2 médicos sócios + IA Nôa + ICP-Brasil real + Eduardo entrando essa semana
+3. **Versão denso pra devs** (~15 linhas): premissa centrípeto vs centrífugo + conceito-pivot compressão estrutural vs abstração clínica + arquitetura híbrido determinístico+LLM + ~46% bypass Verbatim First + stack Supabase Edge Deno + sidecar pattern + Audience Contract via RLS
+
+Material NÃO cristalizado em memory (é institucional/pitch, não princípio meta). Pode ser usado/iterado livremente pelo Pedro.
+
+## Próximos gates naturais
+
+1. **Smoke runtime obrigatório V1.9.471 + V1.9.472 + V1.9.473** antes do Eduardo testar de novo (princípio `feedback_smoke_aec_completa_obrigatoria_pos_clinicalassessmentflow_mudanca_24_05`)
+2. **Eduardo voltar com feedback empírico** dos 2 relatórios compartilhados + AEC simulada (validação qualitativa, não só "tá bom")
+3. **Eduardo trazer 2-3 casos neuro REAIS anonimizados** (TEA puro + TDAH puro + comorbidade) pra Fase B do mapa neuro calibrar empíricamente
+4. **Decidir 3 UI parqueadas** do card neuro (confiança numérica vs bolinhas / aprovar=diagnóstico vs read / fala literal vs tooltip)
+5. **Pedências do desktop (Bloco M) ainda em pé**: SMOKE V1.9.468-B 9 turnos com Ricardo + validar conceito-pivot compressão/abstração com Ricardo + backfill 4 pacientes reais ~12 rows PII + CNPJ João + mostrar SGQ preliminar pra Ricardo
+
+## Frase âncora da sessão laptop
+
+> *"27/05 noite: Eduardo virou usuário. Fez AEC. Pegou o bug do CONSENSUS loop em 4 mensagens. Sistema agora sabe admitir que não entendeu — registra observação literal e segue. Mapa neuro TEA/TOD/TDAH Fase A pronto, 4 sinais TDAH detectados no próprio relatório dele via smoke manual. Marco 3 saiu de palavra pra prática em 5h de uso real."*
