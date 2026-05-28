@@ -50,11 +50,29 @@ export interface LongitudinalRationality {
   assessmentExcerpt?: string  // primeiros 200 chars do assessment (recorte estrutural)
 }
 
+// V1.9.483 (Camada 1.3 Matrix-Longitudinal) — Dossiês prévios do paciente em
+// foco como contexto interpretativo da continuidade clínica. Ricardo 28/05:
+// "Matrix deveria puxar continuidade do estudo pelo prontuário". Empírico:
+// Carolina #A41C tem 2 dossiês físicos no banco — quando médico abre Matrix
+// com ela amanhã, deveria ver os 2 prévios como contexto.
+// LGPD: snapshot imutável (só leitura, não modifica). Título + data + cards
+// count + snippet das primeiras mensagens. RLS protege (só dono ou admin).
+export interface LongitudinalPriorDossier {
+  id: string
+  title: string
+  generated_at: string
+  cardsCount: number       // quantos cards estavam marcados no dossiê
+  messagesCount: number    // quantas mensagens conversa Matrix
+  snippet?: string         // primeiros ~200 chars da primeira mensagem do médico
+}
+
 export interface PatientLongitudinalData {
   patientName: string | null         // Nome REAL (médico precisa identificar internamente)
   patientPseudonym: string | null    // V1.9.384 — código curto pra contexto Matrix (LGPD-friendly)
   reports: LongitudinalReport[]
   rationalities: LongitudinalRationality[]
+  // V1.9.483 — dossiês prévios do mesmo paciente (continuidade interpretativa)
+  priorDossiers: LongitudinalPriorDossier[]
   loading: boolean
   error: string | null
 }
@@ -82,6 +100,10 @@ function generatePseudonym(patientId: string): string {
 const MAX_REPORTS = 5
 const MAX_RATIONALITIES = 10
 const ASSESSMENT_EXCERPT_CHARS = 200
+// V1.9.483 — cap defensivo dossiês prévios (anti-DOC_LIST hijacking V1.9.318).
+// 5 é suficiente pra continuidade interpretativa empírica (Carolina tem só 2 hoje).
+const MAX_PRIOR_DOSSIERS = 5
+const DOSSIER_SNIPPET_CHARS = 200
 
 export function usePatientLongitudinal(patientId: string | undefined | null): PatientLongitudinalData {
   const [data, setData] = useState<PatientLongitudinalData>({
@@ -89,13 +111,14 @@ export function usePatientLongitudinal(patientId: string | undefined | null): Pa
     patientPseudonym: null,
     reports: [],
     rationalities: [],
+    priorDossiers: [],
     loading: false,
     error: null,
   })
 
   useEffect(() => {
     if (!patientId) {
-      setData({ patientName: null, patientPseudonym: null, reports: [], rationalities: [], loading: false, error: null })
+      setData({ patientName: null, patientPseudonym: null, reports: [], rationalities: [], priorDossiers: [], loading: false, error: null })
       return
     }
 
@@ -126,6 +149,19 @@ export function usePatientLongitudinal(patientId: string | undefined | null): Pa
           .eq('patient_id', patientId)
           .order('created_at', { ascending: false })
           .limit(MAX_RATIONALITIES)
+
+        // V1.9.483 (Camada 1.3) — dossiês prévios do mesmo paciente como
+        // contexto de continuidade interpretativa. Limit defensivo + ordem desc
+        // (mais recente primeiro). RLS por physician_id protege (médico vê só
+        // os próprios; admin vê todos). Empírico Carolina #A41C tem 2 dossiês
+        // físicos no banco — quando Ricardo abrir Matrix com ela, deveria ver
+        // a continuidade.
+        const { data: dossiersData } = await (supabase as any)
+          .from('physician_research_dossiers')
+          .select('id, title, generated_at, content')
+          .eq('patient_id', patientId)
+          .order('generated_at', { ascending: false })
+          .limit(MAX_PRIOR_DOSSIERS)
 
         if (cancelled) return
 
@@ -158,6 +194,32 @@ export function usePatientLongitudinal(patientId: string | undefined | null): Pa
             : undefined,
         }))
 
+        // V1.9.483 — mapeia dossiês prévios pra interface compacta. Extrai
+        // metadata (cards count, messages count, primeira mensagem médico como
+        // snippet). NÃO inclui content jsonb completo no card pra preservar
+        // payload leve + reduzir vetor PHI no contexto (médico abre via Eye
+        // pra ver dossiê completo se quiser).
+        const priorDossiers: LongitudinalPriorDossier[] = (dossiersData || []).map((d: any) => {
+          const content = d.content || {}
+          const messages = Array.isArray(content.messages) ? content.messages : []
+          const selectedCards = Array.isArray(content.selectedCards) ? content.selectedCards : []
+          // Primeira msg do médico (role 'user' ou similar) como snippet contextual
+          const firstMedicMsg = messages.find((m: any) =>
+            m && typeof m === 'object' && (m.role === 'user' || m.author === 'medico' || m.from === 'physician')
+          )
+          const snippetSource = (firstMedicMsg?.content || firstMedicMsg?.text || '') as string
+          return {
+            id: d.id,
+            title: d.title || `Dossiê ${new Date(d.generated_at).toLocaleDateString('pt-BR')}`,
+            generated_at: d.generated_at,
+            cardsCount: selectedCards.length,
+            messagesCount: messages.length,
+            snippet: typeof snippetSource === 'string' && snippetSource.length > 0
+              ? snippetSource.substring(0, DOSSIER_SNIPPET_CHARS).trim()
+              : undefined,
+          }
+        })
+
         // Audit log LGPD (sem PHI direto, só metadados)
         try {
           await (supabase as any).from('noa_logs').insert({
@@ -166,6 +228,7 @@ export function usePatientLongitudinal(patientId: string | undefined | null): Pa
               patient_id: patientId,
               reports_loaded: reports.length,
               rationalities_loaded: rationalities.length,
+              prior_dossiers_loaded: priorDossiers.length,  // V1.9.483
               source: 'noa_matrix_longitudinal',
             },
           })
@@ -178,6 +241,7 @@ export function usePatientLongitudinal(patientId: string | undefined | null): Pa
           patientPseudonym: generatePseudonym(patientId),  // V1.9.384 — sempre pseudônimo no contexto Matrix
           reports,
           rationalities,
+          priorDossiers,  // V1.9.483
           loading: false,
           error: null,
         })

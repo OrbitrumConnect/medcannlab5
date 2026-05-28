@@ -43,8 +43,11 @@ export interface UseDossierPersistReturn {
   error: string | null
   /** Persiste um dossiê. Retorna o id criado ou null em falha. */
   saveDossier: (data: DossierData, patientId?: string | null) => Promise<string | null>
-  /** Lista dossiês do médico logado (mais recentes primeiro). */
-  listDossiers: (limit?: number) => Promise<SavedDossier[]>
+  /** Lista dossiês do médico logado (mais recentes primeiro).
+   *  V1.9.483 — parâmetro patientId opcional filtra apenas dossiês do paciente
+   *  informado (continuidade interpretativa Matrix-Longitudinal). Sem patientId,
+   *  comportamento original preservado (lista todos do médico). */
+  listDossiers: (limit?: number, patientId?: string | null) => Promise<SavedDossier[]>
   /** Remove um dossiê (RLS garante que só o dono/admin consegue). */
   deleteDossier: (id: string) => Promise<boolean>
 }
@@ -104,15 +107,23 @@ export function useDossierPersist(): UseDossierPersistReturn {
     }
   }, [])
 
-  const listDossiers = useCallback(async (limit = 10): Promise<SavedDossier[]> => {
+  const listDossiers = useCallback(async (limit = 10, patientId?: string | null): Promise<SavedDossier[]> => {
     setLoading(true)
     setError(null)
     try {
-      const { data: rows, error: listErr } = await (supabase as any)
+      // V1.9.483 — filtro opcional por patient_id. Quando informado, retorna
+      // apenas dossiês do paciente para alimentar continuidade interpretativa
+      // do Matrix-Longitudinal (camada 1.3). Sem patientId, lista todos do
+      // médico (comportamento original V1.9.392 preservado pra "Meus Dossiês").
+      let query = (supabase as any)
         .from('physician_research_dossiers')
         .select('*')
         .order('generated_at', { ascending: false })
         .limit(limit)
+      if (patientId) {
+        query = query.eq('patient_id', patientId)
+      }
+      const { data: rows, error: listErr } = await query
       if (listErr) {
         console.warn('[useDossierPersist] erro ao listar:', listErr)
         setError(listErr.message || 'Erro ao carregar dossiês.')

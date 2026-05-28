@@ -43,7 +43,7 @@ import { MatrixHelpModal } from './MatrixHelpModal'
 
 interface AttachableCard {
   id: string
-  type: 'case' | 'note' | 'pinned-search' | 'patient-report' | 'patient-rationality' | 'pubmed-article' | 'kb-document' | 'bula-anvisa'
+  type: 'case' | 'note' | 'pinned-search' | 'patient-report' | 'patient-rationality' | 'patient-prior-dossier' | 'pubmed-article' | 'kb-document' | 'bula-anvisa'
   title: string
   subtitle?: string
   body: string  // texto que vai pro contexto do chat
@@ -67,6 +67,9 @@ const CTX_LABEL: Record<AttachableCard['type'], string> = {
   'pinned-search': 'BUSCA FAVORITADA',
   'patient-report': 'RELATÓRIO DO PACIENTE',
   'patient-rationality': 'RACIONALIDADE APLICADA',
+  // V1.9.483 (Camada 1.3 Matrix-Longitudinal) — dossiê prévio do mesmo paciente
+  // como contexto de continuidade interpretativa. Snapshot imutável (só leitura).
+  'patient-prior-dossier': 'DOSSIÊ ANTERIOR DESTE PACIENTE',
   'pubmed-article': 'PAPER PUBMED',
   'kb-document': 'DOCUMENTO DA BASE DE CONHECIMENTO',
   // [V1.9.468] (27/05/2026) — Bula ANVISA como material referenciável no corpus
@@ -91,6 +94,7 @@ type CardCategory = 'patient' | 'research' | 'memory'
 const CATEGORY_OF_TYPE: Record<AttachableCard['type'], CardCategory> = {
   'patient-report': 'patient',
   'patient-rationality': 'patient',
+  'patient-prior-dossier': 'patient',  // V1.9.483 — agrupa em "Contexto Paciente"
   'pubmed-article': 'research',
   'kb-document': 'research',
   'bula-anvisa': 'research',
@@ -428,6 +432,25 @@ export const NoaMatrixView: React.FC = () => {
       })
     })
 
+    // V1.9.483 (Camada 1.3 Matrix-Longitudinal) — dossiês prévios do MESMO paciente.
+    // Continuidade interpretativa do caso (Ricardo 28/05: "Matrix puxar continuidade
+    // do estudo pelo prontuário"). Snapshot imutável (id, título, data, contadores
+    // + snippet primeira msg médico). Card agrupa em "Contexto Paciente" via
+    // CATEGORY_OF_TYPE V1.9.482. Default não-marcado (atrito intencional V1.9.382).
+    longitudinal.priorDossiers.forEach((d) => {
+      const dateStr = new Date(d.generated_at).toLocaleDateString('pt-BR')
+      const cardsLabel = d.cardsCount === 1 ? '1 card' : `${d.cardsCount} cards`
+      const msgsLabel = d.messagesCount === 1 ? '1 msg' : `${d.messagesCount} msgs`
+      list.push({
+        id: `pr-dos-${d.id}`,
+        type: 'patient-prior-dossier',
+        title: `Dossiê de ${dateStr}`,
+        subtitle: `${cardsLabel} · ${msgsLabel}`,
+        body: `Dossiê prévio sobre ${pseudonym} (${dateStr})\n${cardsLabel} marcados · ${msgsLabel} no chat${d.snippet ? `\nPrimeira reflexão do médico: "${d.snippet}..."` : ''}`,
+        timestamp: new Date(d.generated_at).getTime(),
+      })
+    })
+
     // V1.9.379-D — Casos abertos (até 12 mais recentes)
     // V1.9.450 — body agora formata seções clínicas estruturadas pseudonimizadas
     // (queixa + lista indiciária + HDA + história familiar + hábitos + perguntas
@@ -534,7 +557,7 @@ export const NoaMatrixView: React.FC = () => {
     })
 
     return list
-  }, [history.caseOpens, history.notes, history.pinned, longitudinal.reports, longitudinal.rationalities, attachedPubmed, attachedDocs, attachedBulas])
+  }, [history.caseOpens, history.notes, history.pinned, longitudinal.reports, longitudinal.rationalities, longitudinal.priorDossiers, attachedPubmed, attachedDocs, attachedBulas])
 
   const toggleCard = (id: string) => {
     setSelectedIds((prev) => {
@@ -851,6 +874,7 @@ export const NoaMatrixView: React.FC = () => {
                           const Icon =
                             card.type === 'patient-report' ? Stethoscope :
                             card.type === 'patient-rationality' ? Activity :
+                            card.type === 'patient-prior-dossier' ? Archive :  // V1.9.483 — dossier arquivado (snapshot imutável)
                             card.type === 'case' ? FileText :
                             card.type === 'note' ? StickyNote :
                             card.type === 'pubmed-article' ? BookOpen :
