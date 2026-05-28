@@ -35,7 +35,7 @@
  * - project_smoke_neuro_signal_report_2bdb57fb_27_05
  */
 
-import { Brain, Sparkles, Hourglass, AlertCircle, FlaskConical } from 'lucide-react'
+import { Brain, Sparkles, Hourglass, AlertCircle, FlaskConical, CheckCircle, RotateCcw } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
 
@@ -73,6 +73,24 @@ interface UserContext {
 export default function NeuroSuggestionsCardPlaceholder() {
   const [userCtx, setUserCtx] = useState<UserContext | null>(null)
   const [loading, setLoading] = useState(true)
+  // [V1.9.478] Estado temporário pra mensagem inline quando médico clica
+  // stub "Aprovar" ou "Sinalizar reavaliar". Auto-clear após 4s.
+  const [stubMessage, setStubMessage] = useState<{ text: string; tone: 'info' | 'pending' } | null>(null)
+
+  const handleStubClick = (action: 'approve' | 'flag') => {
+    if (action === 'approve') {
+      setStubMessage({
+        text: 'Aprovação real disponível Fase D (Edge `neuro-signal-extractor` codificado). Por enquanto: validar via fórum Cann Matrix ou anotação manual.',
+        tone: 'info'
+      })
+    } else {
+      setStubMessage({
+        text: 'Sinalização pra reavaliar disponível Fase D. Por enquanto: discutir caso no fórum Cann Matrix com Dr. Eduardo Faveret.',
+        tone: 'pending'
+      })
+    }
+    setTimeout(() => setStubMessage(null), 4500)
+  }
 
   useEffect(() => {
     const loadContext = async () => {
@@ -247,6 +265,45 @@ export default function NeuroSuggestionsCardPlaceholder() {
             </p>
           </div>
         </div>
+
+        {/* [V1.9.478] Botões stub Aprovar/Sinalizar — paridade FUNCIONAL ao
+            Card Renal V1.9.307 (que tem Aprovar/Rejeitar/Arquivar real).
+            Stub porque tabela `clinical_neuro_signals` não existe ainda
+            (Fase D codificada). Clique mostra mensagem inline 4.5s. */}
+        <div className="grid grid-cols-2 gap-2">
+          <button
+            type="button"
+            onClick={() => handleStubClick('approve')}
+            className="px-2 py-1.5 rounded-md bg-emerald-600/15 hover:bg-emerald-600/30 border border-emerald-500/30 text-emerald-200 text-[10px] font-semibold flex items-center justify-center gap-1 transition-colors disabled:opacity-50"
+            title="Validar audit manual (stub — Fase D codificará persistência real)"
+          >
+            <CheckCircle className="w-3 h-3" />
+            Aprovar audit
+          </button>
+          <button
+            type="button"
+            onClick={() => handleStubClick('flag')}
+            className="px-2 py-1.5 rounded-md bg-slate-700/40 hover:bg-slate-700/60 border border-slate-600/40 text-slate-300 text-[10px] font-semibold flex items-center justify-center gap-1 transition-colors disabled:opacity-50"
+            title="Sinalizar pra reavaliar no fórum Cann Matrix"
+          >
+            <RotateCcw className="w-3 h-3" />
+            Sinalizar reavaliar
+          </button>
+        </div>
+
+        {/* Mensagem inline temporária (após click stub, 4.5s) */}
+        {stubMessage && (
+          <div className={`flex items-start gap-1.5 px-2 py-1.5 rounded-md text-[10px] leading-snug border ${
+            stubMessage.tone === 'info'
+              ? 'bg-emerald-500/5 border-emerald-500/25 text-emerald-200/90'
+              : 'bg-slate-700/30 border-slate-600/40 text-slate-300'
+          }`}>
+            <AlertCircle className={`w-3 h-3 flex-shrink-0 mt-0.5 ${
+              stubMessage.tone === 'info' ? 'text-emerald-300/80' : 'text-slate-400/80'
+            }`} />
+            <p>{stubMessage.text}</p>
+          </div>
+        )}
 
         {/* Próximo gate compacto */}
         <div className="flex items-start gap-1.5 px-2 py-1.5 rounded-md bg-amber-500/5 border border-amber-500/20">
