@@ -932,12 +932,11 @@ const ProfessionalMyDashboard: React.FC = () => {
           </section>
         </div>
 
-        {/* V1.9.476 — Container "Sidecars Cognitivos" com fundo discreto +
-            grid responsivo. V1.9.476-A (28/05 00:45 BRT): grid externo
-            reduzido pra 2-col max (era 4-col). Card Renal V1.9.309 tem grid
-            INTERNO 5-col que quebra em col <~480px. Com 2-col max viewport
-            lg+ (~480-500px/col), Renal renderiza OK + Neuro paridade.
-            Slots futuros (Cardio + Endo) entram na 2ª linha grid lg+. */}
+        {/* V1.9.477 (28/05 01:00 BRT) — Reverter grid pra 4-col (Pedro
+            confirmou "ordem correta") + RenalSuggestionsCard com prop
+            compact={true} pra forcar grid interno cols-1 (renderiza OK
+            em col estreita ~352-400px do grid 2xl:grid-cols-4).
+            Trigger validacao Neuro (V1.9.476-A) preservado. */}
         <div className="mb-6 rounded-2xl border border-slate-700/30 bg-gradient-to-br from-slate-900/40 via-emerald-950/5 to-slate-900/40 p-4">
           <div className="flex items-center gap-2 mb-3">
             <Activity className="w-3.5 h-3.5 text-slate-400" />
@@ -948,17 +947,15 @@ const ProfessionalMyDashboard: React.FC = () => {
               · sinais detectados em conversas reais
             </span>
           </div>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
-            {/* Renal (DRC) — V1.9.307 RLS BD vínculo appointments. Sem max-w
-                — ocupa col inteira (lg+ ~480px ou full em mobile). */}
-            <RenalSuggestionsCard />
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-3">
+            {/* Renal (DRC) — V1.9.307 RLS BD + V1.9.477 prop compact pra
+                renderizar OK em col estreita do grid 4-col 2xl */}
+            <RenalSuggestionsCard compact />
 
-            {/* Neuro (TEA/TDAH/TOD) — V1.9.475 embrião visual. Sem max-w-md
-                — paridade visual com Renal (col inteira lg+). */}
+            {/* Neuro (TEA/TDAH/TOD) — V1.9.475 embrião visual */}
             <NeuroSuggestionsCardPlaceholder />
 
-            {/* Slots futuros placeholders — roadmap institucional visível
-                Linha 2 grid lg+ (Cardio esquerda, Endo direita) */}
+            {/* Slots futuros placeholders — roadmap institucional visível */}
             <div className="rounded-xl border border-dashed border-slate-700/40 bg-slate-900/30 p-4 flex flex-col items-center justify-center min-h-[200px] text-center">
               <Heart className="w-6 h-6 text-rose-400/30 mb-2" />
               <span className="text-[11px] font-semibold text-slate-400">Cardiovascular</span>

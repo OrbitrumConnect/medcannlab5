@@ -63,7 +63,15 @@ const STAGE_DESCRIPTIONS: Record<string, { label: string, color: string, bg: str
 
 const PER_PAGE = 5
 
-export default function RenalSuggestionsCard() {
+// [V1.9.477] (28/05 01:00 BRT) — prop compact opcional pra Card renderizar
+// em col estreita (grid externo 2xl:grid-cols-4 = ~352-400px/col). Quando
+// compact=true: forca grid interno cols-1 (em vez de responsivo md/xl/2xl).
+// Default false preserva comportamento atual (callers existentes intactos).
+interface RenalSuggestionsCardProps {
+  compact?: boolean
+}
+
+export default function RenalSuggestionsCard({ compact = false }: RenalSuggestionsCardProps = {}) {
   const navigate = useNavigate()
   const [suggestions, setSuggestions] = useState<RenalSuggestion[]>([])
   const [loading, setLoading] = useState(true)
@@ -219,8 +227,13 @@ export default function RenalSuggestionsCard() {
         </p>
       </div>
 
-      {/* Grid compacto side-by-side (até 5/página) */}
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-5 gap-3">
+      {/* Grid compacto side-by-side (até 5/página).
+          [V1.9.477] compact=true forca cols-1 (renderiza OK em col estreita
+          do grid externo 2xl:grid-cols-4 ~352-400px/col). */}
+      <div className={compact
+        ? "grid grid-cols-1 gap-3"
+        : "grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-5 gap-3"
+      }>
         {paginated.map(sugg => {
           const stageInfo = sugg.drc_stage_suggested ? STAGE_DESCRIPTIONS[sugg.drc_stage_suggested] : null
           const isProcessing = processingId === sugg.id
