@@ -70,6 +70,7 @@ import CidadeAmigaDosRinsInstitucional from './pages/CidadeAmigaDosRinsInstituci
 import MedCannLab from './pages/MedCannLab'
 import JardinsDeCura from './pages/JardinsDeCura'
 import AdminDashboard from './pages/AdminDashboard'
+import AdminFeedbackList from './pages/AdminFeedbackList'  // V1.9.486
 import MedCannLabStructure from './pages/MedCannLabStructure'
 import NotFound from './pages/NotFound'
 // V1.9.230: ClinicalAssessment.tsx + libs IMRE/unifiedAssessment/noaIntegration/clinicalAssessmentService
@@ -344,6 +345,12 @@ function App() {
                           <Route path="admin/financial" element={
                             <ProtectedRoute requiredRole="admin">
                               <AdminDashboardWrapper />
+                            </ProtectedRoute>
+                          } />
+                          {/* V1.9.486 — painel feedback admin */}
+                          <Route path="admin/feedbacks" element={
+                            <ProtectedRoute requiredRole="admin">
+                              <AdminFeedbackList />
                             </ProtectedRoute>
                           } />
                         </Route>
