@@ -635,59 +635,40 @@ export const NoaMatrixView: React.FC = () => {
         </div>
       )}
 
-      {/* Header da view */}
-      <div className="bg-slate-900/40 border border-purple-500/20 rounded-xl p-4">
-        <div className="flex items-start justify-between gap-3 flex-wrap">
-          <div className="flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-purple-500/10 border border-purple-500/30">
-              <Sparkles className="w-5 h-5 text-purple-300" />
+      {/* Header da view — V1.9.485 (Pedro 28/05) compactado pra liberar espaço
+          vertical (especialmente mobile). Removidos: subtitle redundante com
+          tutorial + link "Modo de uso →" duplicado com botão (?). Resultado:
+          ~120px → ~50px verticais. Identidade visual preservada (emerald-purple
+          + Sparkles + Z2 badge). */}
+      <div className="bg-slate-900/40 border border-purple-500/20 rounded-xl p-2.5">
+        <div className="flex items-center justify-between gap-2 flex-wrap">
+          <div className="flex items-center gap-2 min-w-0">
+            <div className="p-1.5 rounded-lg bg-purple-500/10 border border-purple-500/30 flex-shrink-0">
+              <Sparkles className="w-4 h-4 text-purple-300" />
             </div>
-            <div>
-              <h2 className="text-base font-bold text-white flex items-center gap-2">
-                <span>🧬 Nôa Matrix</span>
-                <span className="text-[10px] font-normal text-purple-300/70 px-1.5 py-0.5 rounded bg-purple-500/10 border border-purple-500/20">
-                  Z2 estrutural
-                </span>
-                {/* [V1.9.454] Botão (?) — abre MatrixHelpModal com modo de uso elite */}
-                <button
-                  type="button"
-                  onClick={() => setHelpModalOpen(true)}
-                  className="ml-0.5 p-1 text-purple-300/60 hover:text-purple-200 hover:bg-purple-500/10 rounded-full transition-colors"
-                  title="Modo de uso profissional"
-                  aria-label="Abrir modo de uso"
-                >
-                  <HelpCircle className="w-4 h-4" />
-                </button>
-              </h2>
-              <p className="text-xs text-slate-400 leading-relaxed mt-0.5">
-                Chat de pesquisa não-diretivo. Marque casos, notas e buscas favoritas pra estruturar raciocínio.
-              </p>
-            </div>
+            <h2 className="text-sm font-bold text-white flex items-center gap-1.5 flex-wrap min-w-0">
+              <span className="truncate">🧬 Nôa Matrix</span>
+              <span className="text-[10px] font-normal text-purple-300/70 px-1.5 py-0.5 rounded bg-purple-500/10 border border-purple-500/20 flex-shrink-0">
+                Z2 estrutural
+              </span>
+              {/* [V1.9.454] Botão (?) — abre MatrixHelpModal com modo de uso elite */}
+              <button
+                type="button"
+                onClick={() => setHelpModalOpen(true)}
+                className="p-1 text-purple-300/60 hover:text-purple-200 hover:bg-purple-500/10 rounded-full transition-colors flex-shrink-0"
+                title="Modo de uso profissional"
+                aria-label="Abrir modo de uso"
+              >
+                <HelpCircle className="w-4 h-4" />
+              </button>
+            </h2>
           </div>
-          <div className="flex items-center gap-1.5 text-xs">
+          <div className="flex items-center gap-1.5 text-xs flex-shrink-0">
             <Folder className="w-3.5 h-3.5 text-purple-300" />
             <span className="text-slate-400">
               {selectedCount === 0 ? 'Nenhum item marcado' : `${selectedCount} item${selectedCount === 1 ? '' : 'ns'} no chat`}
             </span>
           </div>
-        </div>
-
-        {/* [V1.9.454] Disclaimer compacto — bloco antigo "Como funciona..." denso
-            virou linha mínima + link pra modal elite (MatrixHelpModal). Reduz
-            ruído visual sem perder conteúdo (disponível on-demand via "?"). */}
-        {/* [V1.9.468-A] (27/05/2026) — Faixa compactada (~50px → ~28px verticais).
-            Disclaimer "Matrix lê APENAS material marcado" movido pro MatrixHelpModal
-            (acessível 1 clique). Botão (?) no header (linha 548) ja abre o mesmo modal —
-            "Modo de uso →" aqui é só atalho visual contextual. */}
-        <div className="mt-2 flex items-center justify-end">
-          <button
-            type="button"
-            onClick={() => setHelpModalOpen(true)}
-            className="text-[11px] text-purple-300/80 hover:text-purple-200 underline underline-offset-2 transition-colors flex items-center gap-1"
-          >
-            <Info className="w-3 h-3" />
-            Modo de uso →
-          </button>
         </div>
       </div>
 

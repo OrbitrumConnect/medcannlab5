@@ -116,56 +116,59 @@ export const MatrixHelpModal: React.FC<MatrixHelpModalProps> = ({ isOpen, onClos
   if (!isOpen) return null
 
   return (
+    // V1.9.485 — Responsividade mobile: padding outer + max-h adaptam ao
+    // viewport. Mobile (<640px): p-2 + max-h-[92vh] aproveita melhor a tela.
+    // Desktop (≥640px): padding generoso original preservado.
     <div
-      className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/80 backdrop-blur-sm p-4"
+      className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/80 backdrop-blur-sm p-2 sm:p-4"
       onClick={onClose}
     >
       <div
-        className="relative w-full max-w-3xl max-h-[90vh] overflow-y-auto bg-gradient-to-b from-slate-900 to-slate-950 border border-emerald-500/30 rounded-2xl shadow-2xl"
+        className="relative w-full max-w-3xl max-h-[92vh] sm:max-h-[90vh] overflow-y-auto bg-gradient-to-b from-slate-900 to-slate-950 border border-emerald-500/30 rounded-2xl shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Header */}
-        <div className="sticky top-0 z-10 flex items-center justify-between p-5 border-b border-emerald-500/20 bg-slate-900/95 backdrop-blur-md rounded-t-2xl">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-emerald-500/10 rounded-lg border border-emerald-500/30">
-              <Sparkles className="w-6 h-6 text-emerald-400" />
+        {/* Header — V1.9.485: padding p-3 mobile / p-5 desktop + título e icon menores em mobile */}
+        <div className="sticky top-0 z-10 flex items-center justify-between p-3 sm:p-5 border-b border-emerald-500/20 bg-slate-900/95 backdrop-blur-md rounded-t-2xl">
+          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+            <div className="p-1.5 sm:p-2 bg-emerald-500/10 rounded-lg border border-emerald-500/30 flex-shrink-0">
+              <Sparkles className="w-5 h-5 sm:w-6 sm:h-6 text-emerald-400" />
             </div>
-            <div>
-              <h2 className="text-lg font-semibold text-white">Nôa Matrix — Modo de uso profissional</h2>
-              <p className="text-xs text-emerald-300/70 mt-0.5">
+            <div className="min-w-0">
+              <h2 className="text-base sm:text-lg font-semibold text-white truncate">Nôa Matrix — Modo de uso</h2>
+              <p className="text-[10px] sm:text-xs text-emerald-300/70 mt-0.5 truncate">
                 Z2 estrutural · pesquisa não-diretiva · organiza corpus marcado
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors"
+            className="p-1.5 sm:p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors flex-shrink-0"
             aria-label="Fechar"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        {/* Sections */}
-        <div className="p-5 space-y-6">
+        {/* Sections — V1.9.485: padding e spacing reduzidos em mobile */}
+        <div className="p-3 sm:p-5 space-y-4 sm:space-y-6">
           {SECTIONS.map((section, idx) => (
             <section key={idx} className="space-y-2">
-              <div className="flex items-center gap-2 mb-2">
+              <div className="flex items-center gap-2 mb-1.5 sm:mb-2">
                 {section.icon}
-                <h3 className="text-base font-semibold text-emerald-100">{section.title}</h3>
+                <h3 className="text-sm sm:text-base font-semibold text-emerald-100">{section.title}</h3>
               </div>
-              <ul className="space-y-2 ml-1">
+              <ul className="space-y-1.5 sm:space-y-2 ml-1">
                 {section.items.map((item, i) => {
                   if (typeof item === 'string') {
                     return (
-                      <li key={i} className="flex gap-2 text-sm text-slate-300 leading-relaxed">
+                      <li key={i} className="flex gap-2 text-xs sm:text-sm text-slate-300 leading-relaxed">
                         <span className="text-emerald-500 mt-1">•</span>
                         <span>{item}</span>
                       </li>
                     )
                   }
                   return (
-                    <li key={i} className="text-sm text-slate-300 leading-relaxed">
+                    <li key={i} className="text-xs sm:text-sm text-slate-300 leading-relaxed">
                       {item.label && (
                         <span className="text-emerald-300 font-medium">{item.label}: </span>
                       )}
@@ -177,9 +180,9 @@ export const MatrixHelpModal: React.FC<MatrixHelpModalProps> = ({ isOpen, onClos
             </section>
           ))}
 
-          {/* Footer princípio */}
-          <div className="mt-6 p-4 bg-emerald-500/5 border border-emerald-500/20 rounded-lg">
-            <p className="text-sm text-emerald-200 italic leading-relaxed">
+          {/* Footer princípio — V1.9.485: padding compactado mobile */}
+          <div className="mt-4 sm:mt-6 p-3 sm:p-4 bg-emerald-500/5 border border-emerald-500/20 rounded-lg">
+            <p className="text-xs sm:text-sm text-emerald-200 italic leading-relaxed">
               <strong className="not-italic font-semibold">Princípio nuclear:</strong> Sustentar lacuna sem colapsar.
               A Matrix organiza o que existe no corpus marcado — NÃO preenche o que falta.
               Honestidade epistemológica &gt; parecer útil. Interpretação clínica é responsabilidade do médico.
