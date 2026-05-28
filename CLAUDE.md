@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **MedCannLab 3.0** — HealthTech/EdTech de Cannabis Medicinal com IA Nôa Esperança. Arquitetura por 3 eixos: **Clínica** (AEC + Relatório + Agendamento), **Ensino** (cursos + TRL), **Pesquisa** (forum + casos clínicos). Sistema cognitivo de 8 camadas onde **GPT é o último a falar e o primeiro a ser checado**.
 
-**Estado atual** (18/05/2026): Locks preservados V1.9.95+V1.9.97+V1.9.98+V1.9.99-B+V1.9.299 (AEC + Pipeline + Agendamento + Resend prod + Storage RLS + PBAD AD-RB ICP-Brasil CONFORME ITI). **HEAD atual `bf2340b` V1.9.334+V1.9.335** (18/05 final). Tag mais recente: `v1.9.299-pbad-conforme-locked` (commit d8e30f5, 16/05). 38 commits cirúrgicos pós-lock V1.9.299 — todos documentados no MEMORY.md e diários. Pré-PMF (zero pacientes externos pagantes; testes internos com Pedro/Dr. Ricardo/Carolina/João Vidal).
+**Estado atual** (27/05/2026 ~21h BRT, pós-sync desktop↔laptop): Locks preservados V1.9.95+97+98+99-B+299+388-A.3+452+453+468-B + sessão laptop produziu V1.9.470 (marca d'água Controle Especial) + V1.9.471 (race condition widget Agendar) + V1.9.472 (voz timer 1.5s→10s + continuous=true) + V1.9.473 (escape CONSENSUS_REPORT loop infinito via CONSENSUS_NOTES). **HEAD atual `4fec6b0`** (27/05 ~20h31 BRT, sessão laptop com Eduardo Faveret operacional). Tags 27/05: `v1.9.452-pii-sanitize-defensivo-final` + `v1.9.468-A-matrix-bula-locks-final` + `v1.9.299-pbad-conforme-locked`. Pré-PMF declarado empíricamente (0 pacientes externos pagantes; **Eduardo Faveret virou usuário operacional 27/05 laptop**; testes internos + 1 paciente externa real confirmada Ricardo: Maria das Dores Pinto Pitoco com 3 racionalidades).
 
 **Memórias 17-18/05 com cobertura completa dos commits pós-PBAD**:
 - RAG truncation endêmico (`feedback_rag_truncation_endemico_17_05`)
@@ -20,6 +20,30 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - DoctorRelationCard parqueado (`project_doctor_relation_card_design_18_05`)
 - 3 marcos de reprecificação valuation (`project_3_marcos_minimos_reprecificacao_valuation_18_05`)
 - Drift histórico dev pré-PMF aceitável (`feedback_drift_historico_dev_aceitavel_pre_pmf_18_05`)
+
+**Memórias 27/05/2026 cristalizadas (sessão desktop manhã/tarde + laptop noite)** — LER ANTES de tocar Matrix/AEC/racionalidades/Supabase/SaMD/neuro/Eduardo:
+
+**Sessão DESKTOP (manhã/tarde):**
+- 🔒 Supabase compliance LGPD/SaMD audit (`project_supabase_compliance_lgpd_anvisa_e_pacientes_reais_27_05`) — score 65% maturidade + 3 gaps críticos fixáveis sem regressão
+- 🔍 Pacientes REAIS vs TESTES clinical_rationalities (`feedback_pacientes_reais_vs_testes_clinical_rationalities_27_05`) — empírico Pedro confirmou: ~96,9% testes; apenas Maria Pinto Pitoco é real (3 rows + 1 sidecar renal)
+- 🎯 Compressão estrutural permitida vs abstração clínica proibida — CONCEITO-PIVOT Z2 (`feedback_compressao_estrutural_vs_abstracao_clinica_27_05`)
+- 🏛️ Lock V1.9.388-A.3 ancoragem regulatória multi-camada CFM/LGPD/AI Act/FDA/WMA (`reference_lock_v1_9_388_a3_ancoragem_regulatoria_multicamada_27_05`)
+- 🧬 Matrix Z2 + Bula ANVISA V1.9.468-B ativado + smoke prolongado pendente (`feedback_matrix_z2_bula_como_material_marcado_nao_sintetizada_27_05`)
+- 💊 Bula é infraestrutura cognitiva no fluxo de prescrição (`feedback_bula_e_infraestrutura_cognitiva_no_fluxo_prescricao_27_05`)
+- 💊 Fronteira info farmacológica vs decisão terapêutica (`feedback_fronteira_organizar_info_farmacologica_vs_decisao_terapeutica_27_05`)
+- 💊 ANVISA Bulário indexação PDFs parqueado (`project_anvisa_bulario_indexacao_pdfs_parqueado_27_05`)
+- 🌿 Portal ANVISA Cannabis parqueado top elite (`project_anvisa_cannabis_portal_parqueado_top_elit_27_05`)
+
+**Sessão LAPTOP (noite, com Eduardo Faveret operacional)** — espelhadas em `docs/memorias/` (cross-machine sync):
+- 🧠 Eduardo Faveret no app + sharing validado cross-account (`docs/memorias/project_eduardo_faveret_no_app_sharing_validado_27_05.md`)
+- 🧠 Universo sinais neuro TEA/TOD/TDAH mapa completo Fase A (`docs/memorias/project_universo_sinais_neuro_tea_tod_tdah_mapa_completo_27_05.md`) — 20 categorias × keywords × Single sidecar
+- 🧠 Smoke neuro empírico report 2bdb57fb (`docs/memorias/project_smoke_neuro_signal_report_2bdb57fb_27_05.md`) — 4 sinais TDAH detectados manualmente
+- 🎯 IA admite limite em vez de fingir entender (`docs/memorias/feedback_ia_admite_limite_em_vez_de_fingir_entender_27_05.md`) — PRINCÍPIO META NOVO descoberto via uso real Eduardo
+
+**Documentos SGQ preliminares pré-petição ANVISA (27/05 desktop)** — leia ANTES de discutir certificação SaMD:
+- `docs/MEDCANNLAB_SGQ_INDICE_PRELIMINAR_27_05.md` (363 linhas — INTERNO técnico-detalhado) — mapeamento empírico SGQ orgânico → ISO 13485 + IEC 62304 + ISO 14971
+- `docs/MEDCANNLAB_SGQ_INDICE_AUDITOR_27_05.md` (432 linhas — versão SANITIZADA pra auditor externo com 8 perguntas-pauta)
+- `DIARIO_27_05_2026_MATRIX_Z2_BULA_E_LOCKS_ANTI_DRIFT.md` — Bloco A-M (desktop) + Bloco N (laptop, sessão Eduardo + 4 fixes UX + mapa neuro)
 
 **⚠️ NÃO TOCAR** (sem auditoria empírica via openssl asn1parse + smoke ITI + diff binário vs PDF aprovado):
 - `supabase/functions/sign-pdf-icp/index.ts` — algoritmo PBAD AD-RB validado, mexer = risco voltar pra "desconhecida"
