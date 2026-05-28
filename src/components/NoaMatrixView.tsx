@@ -38,7 +38,7 @@ import { ResearchChat } from './ResearchChat'
 import { exportDossierToPDF, type DossierMessage, type DossierData } from '../lib/dossierExport'
 import { KnowledgeBaseIntegration, type KnowledgeDocument } from '../services/knowledgeBaseIntegration'
 import { ANVISA_BULARIO_SEED, type BularioEntry } from '../data/anvisaBularioSeed'
-import { Sparkles, FileText, StickyNote, Check, Info, Folder, User, Stethoscope, Activity, X, BookOpen, Search, Loader2, Archive, Trash2, Eye, GitBranch, Library, Send, HelpCircle, Pill } from 'lucide-react'
+import { Sparkles, FileText, StickyNote, Check, Info, Folder, User, Stethoscope, Activity, X, BookOpen, Search, Loader2, Archive, Trash2, Eye, GitBranch, Library, Send, Pill } from 'lucide-react'
 import { MatrixHelpModal } from './MatrixHelpModal'
 
 interface AttachableCard {
@@ -651,15 +651,19 @@ export const NoaMatrixView: React.FC = () => {
               <span className="text-[10px] font-normal text-purple-300/70 px-1.5 py-0.5 rounded bg-purple-500/10 border border-purple-500/20 flex-shrink-0">
                 Z2 estrutural
               </span>
-              {/* [V1.9.454] Botão (?) — abre MatrixHelpModal com modo de uso elite */}
+              {/* [V1.9.454] Botão tutorial — abre MatrixHelpModal com modo de uso elite.
+                  V1.9.485-A (Pedro 28/05): "?" trocado por texto "Modo de uso" pra
+                  comunicar diretamente o que o botão faz (anti-icon-ambiguity).
+                  Ícone Info compacto preserva affordance visual. */}
               <button
                 type="button"
                 onClick={() => setHelpModalOpen(true)}
-                className="p-1 text-purple-300/60 hover:text-purple-200 hover:bg-purple-500/10 rounded-full transition-colors flex-shrink-0"
-                title="Modo de uso profissional"
+                className="flex items-center gap-1 px-2 py-0.5 text-[10px] text-purple-300/80 hover:text-purple-200 hover:bg-purple-500/10 rounded-full border border-purple-500/20 hover:border-purple-500/40 transition-colors flex-shrink-0"
+                title="Como usar a Nôa Matrix"
                 aria-label="Abrir modo de uso"
               >
-                <HelpCircle className="w-4 h-4" />
+                <Info className="w-3 h-3" />
+                <span>Modo de uso</span>
               </button>
             </h2>
           </div>
