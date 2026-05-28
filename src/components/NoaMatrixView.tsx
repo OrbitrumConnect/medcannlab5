@@ -77,6 +77,36 @@ const CTX_LABEL: Record<AttachableCard['type'], string> = {
   'bula-anvisa': 'BULA ANVISA (REFERÊNCIA OFICIAL)',
 }
 
+// V1.9.482 (Pedro 28/05) — Categorias semânticas pra agrupar visibleCards no
+// "Material disponível". Aplicação direta do princípio meta cristalizado 28/05
+// (separação semântica entre fontes — memory feedback_sistema_tem_contexto_demais_falta_semantica_clinica_28_05).
+// ANTES: 7 tipos misturados num único grid → médico via dezenas de cards indistintos
+// (anti-padrão Carolina: 39 reports + dossiês + papers + bulas tudo numa sopa).
+// AGORA: cards agrupados visualmente por contexto clínico (paciente / pesquisa
+// / memória). Headers entre grupos delimitam visualmente sem mudar estrutura
+// do grid. Preparação preventiva pra Camada 1.2/1.3 (basta adicionar tipos
+// novos no map CATEGORY_OF_TYPE). Zero refator estrutural.
+type CardCategory = 'patient' | 'research' | 'memory'
+
+const CATEGORY_OF_TYPE: Record<AttachableCard['type'], CardCategory> = {
+  'patient-report': 'patient',
+  'patient-rationality': 'patient',
+  'pubmed-article': 'research',
+  'kb-document': 'research',
+  'bula-anvisa': 'research',
+  'case': 'memory',
+  'note': 'memory',
+  'pinned-search': 'memory',
+}
+
+const CATEGORY_LABEL: Record<CardCategory, string> = {
+  patient: 'Contexto Paciente',
+  research: 'Pesquisa',
+  memory: 'Memória / Casos',
+}
+
+const CATEGORY_ORDER: CardCategory[] = ['patient', 'research', 'memory']
+
 // V1.9.395 (F2) — teto de caracteres por doc anexado da Base de Conhecimento.
 // Doc grande (ex: 618k chars no acervo atual) estouraria o TOKEN MGMT do Edge
 // (cap 60k tokens). 8000 chars ~= 2k tokens — 3 docs anexados cabem folgado.
@@ -783,66 +813,101 @@ export const NoaMatrixView: React.FC = () => {
                 </div>
               )}
               {/* V1.9.389-C (Pedro 20/05 ~13h30) — altura reduzida 500→320 pra dividir
-                  coluna esquerda 50/50 com bloco PubMed abaixo (anti-aglomeração). */}
+                  coluna esquerda 50/50 com bloco PubMed abaixo (anti-aglomeração).
+                  V1.9.482 (Pedro 28/05) — separação semântica visual em 3 grupos
+                  (Contexto Paciente / Pesquisa / Memória) via headers entre cards.
+                  Container grid IDÊNTICO (max-h-[320px] preservado). Card individual
+                  IDÊNTICO (click, select, hide, ícone — tudo intacto). Zero regressão
+                  estrutural; apenas agrupamento visual. */}
               <div className="space-y-2 max-h-[320px] overflow-y-auto pr-1">
-                {visibleCards.map((card) => {
-                  const isSelected = selectedIds.has(card.id)
-                  const Icon =
-                    card.type === 'patient-report' ? Stethoscope :
-                    card.type === 'patient-rationality' ? Activity :
-                    card.type === 'case' ? FileText :
-                    card.type === 'note' ? StickyNote :
-                    card.type === 'pubmed-article' ? BookOpen :
-                    card.type === 'kb-document' ? Library :
-                    card.type === 'bula-anvisa' ? Pill :
-                    Sparkles
-                  return (
-                    <div
-                      key={card.id}
-                      className={`relative rounded-lg p-3 border transition-all ${
-                        isSelected
-                          ? 'bg-purple-500/15 border-purple-500/40 shadow-md shadow-purple-500/10'
-                          : 'bg-slate-900/40 border-slate-700/30 hover:border-purple-500/30 hover:bg-purple-500/5'
-                      }`}
-                    >
-                      {/* V1.9.386 — Botão remover card.
-                          V1.9.444 — Casos vindos de "Casos Similares" agora
-                          são removidos do histórico persistido (não voltam
-                          após reload). Outros tipos seguem como ocultação
-                          de sessão. */}
-                      <button
-                        onClick={(e) => { e.stopPropagation(); hideCard(card.id) }}
-                        className="absolute top-1.5 right-1.5 p-1 rounded text-slate-600 hover:text-red-300 hover:bg-red-500/10 transition-colors z-10"
-                        title={card.type === 'case' ? 'Remover este caso do histórico' : 'Ocultar este item da lista (só nesta sessão)'}
-                      >
-                        <X className="w-3 h-3" />
-                      </button>
+                {(() => {
+                  // V1.9.482 — agrupa visibleCards por categoria semântica
+                  // preservando ordem dentro de cada grupo (input ja vem ordenado).
+                  const grouped = new Map<CardCategory, AttachableCard[]>()
+                  for (const cat of CATEGORY_ORDER) grouped.set(cat, [])
+                  for (const card of visibleCards) {
+                    const cat = CATEGORY_OF_TYPE[card.type]
+                    if (cat) grouped.get(cat)!.push(card)
+                  }
+                  return CATEGORY_ORDER.map((cat) => {
+                    const cards = grouped.get(cat) || []
+                    if (cards.length === 0) return null
+                    const CategoryIcon =
+                      cat === 'patient' ? User :
+                      cat === 'research' ? Search :
+                      Folder
+                    return (
+                      <React.Fragment key={cat}>
+                        {/* V1.9.482 — header semântico do grupo (não-clicável,
+                            puramente visual). Compacto pra não roubar espaço
+                            do grid 320px. */}
+                        <div className="flex items-center gap-1.5 pt-2 first:pt-0 pb-0.5 pl-1 text-[10px] uppercase tracking-wide text-slate-500 font-semibold">
+                          <CategoryIcon className="w-3 h-3 text-slate-500" />
+                          <span>{CATEGORY_LABEL[cat]}</span>
+                          <span className="text-slate-600 normal-case font-normal">· {cards.length}</span>
+                        </div>
+                        {cards.map((card) => {
+                          const isSelected = selectedIds.has(card.id)
+                          const Icon =
+                            card.type === 'patient-report' ? Stethoscope :
+                            card.type === 'patient-rationality' ? Activity :
+                            card.type === 'case' ? FileText :
+                            card.type === 'note' ? StickyNote :
+                            card.type === 'pubmed-article' ? BookOpen :
+                            card.type === 'kb-document' ? Library :
+                            card.type === 'bula-anvisa' ? Pill :
+                            Sparkles
+                          return (
+                            <div
+                              key={card.id}
+                              className={`relative rounded-lg p-3 border transition-all ${
+                                isSelected
+                                  ? 'bg-purple-500/15 border-purple-500/40 shadow-md shadow-purple-500/10'
+                                  : 'bg-slate-900/40 border-slate-700/30 hover:border-purple-500/30 hover:bg-purple-500/5'
+                              }`}
+                            >
+                              {/* V1.9.386 — Botão remover card.
+                                  V1.9.444 — Casos vindos de "Casos Similares" agora
+                                  são removidos do histórico persistido (não voltam
+                                  após reload). Outros tipos seguem como ocultação
+                                  de sessão. */}
+                              <button
+                                onClick={(e) => { e.stopPropagation(); hideCard(card.id) }}
+                                className="absolute top-1.5 right-1.5 p-1 rounded text-slate-600 hover:text-red-300 hover:bg-red-500/10 transition-colors z-10"
+                                title={card.type === 'case' ? 'Remover este caso do histórico' : 'Ocultar este item da lista (só nesta sessão)'}
+                              >
+                                <X className="w-3 h-3" />
+                              </button>
 
-                      <button
-                        type="button"
-                        onClick={() => toggleCard(card.id)}
-                        className="w-full text-left flex items-start gap-2.5 pr-5"
-                      >
-                        <div className={`mt-0.5 flex-shrink-0 p-1 rounded ${isSelected ? 'bg-purple-500/20' : 'bg-slate-800/60'}`}>
-                          {isSelected ? (
-                            <Check className="w-3 h-3 text-purple-300" />
-                          ) : (
-                            <Icon className="w-3 h-3 text-slate-500" />
-                          )}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="text-xs font-semibold text-white truncate">{card.title}</div>
-                          {card.subtitle && (
-                            <div className="text-[10px] text-slate-500 mt-0.5">{card.subtitle}</div>
-                          )}
-                          <div className="text-[10px] text-slate-400 mt-1 line-clamp-2 leading-relaxed">
-                            {card.body.split('\n').slice(0, 2).join(' · ')}
-                          </div>
-                        </div>
-                      </button>
-                    </div>
-                  )
-                })}
+                              <button
+                                type="button"
+                                onClick={() => toggleCard(card.id)}
+                                className="w-full text-left flex items-start gap-2.5 pr-5"
+                              >
+                                <div className={`mt-0.5 flex-shrink-0 p-1 rounded ${isSelected ? 'bg-purple-500/20' : 'bg-slate-800/60'}`}>
+                                  {isSelected ? (
+                                    <Check className="w-3 h-3 text-purple-300" />
+                                  ) : (
+                                    <Icon className="w-3 h-3 text-slate-500" />
+                                  )}
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <div className="text-xs font-semibold text-white truncate">{card.title}</div>
+                                  {card.subtitle && (
+                                    <div className="text-[10px] text-slate-500 mt-0.5">{card.subtitle}</div>
+                                  )}
+                                  <div className="text-[10px] text-slate-400 mt-1 line-clamp-2 leading-relaxed">
+                                    {card.body.split('\n').slice(0, 2).join(' · ')}
+                                  </div>
+                                </div>
+                              </button>
+                            </div>
+                          )
+                        })}
+                      </React.Fragment>
+                    )
+                  })
+                })()}
               </div>
             </>
           )}
