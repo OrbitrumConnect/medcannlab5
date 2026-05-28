@@ -114,7 +114,11 @@ export default function NeuroSuggestionsCardPlaceholder() {
   if (!isProfessional && !isAdmin) return null
 
   return (
-    <div className="rounded-xl border border-purple-500/30 bg-gradient-to-br from-purple-900/20 via-slate-900/60 to-indigo-900/20 backdrop-blur-sm overflow-hidden flex flex-col">
+    // [V1.9.475-E] max-w-md pra ficar mesmo tamanho do Card Renal (que renderiza
+    // 1 mini-card de ~448px em grid-cols-5 2xl viewport). Conteúdo abaixo
+    // compactado proporcionalmente — mantém valor visual atual (4 sinais TDAH)
+    // mas em footprint do Renal. Feedback Pedro 28/05 00:30 BRT.
+    <div className="rounded-xl border border-purple-500/30 bg-gradient-to-br from-purple-900/20 via-slate-900/60 to-indigo-900/20 backdrop-blur-sm overflow-hidden flex flex-col max-w-md">
       {/* Header compacto */}
       <div className="flex items-center justify-between px-3 py-2.5 border-b border-purple-500/20 bg-purple-500/5">
         <div className="flex items-center gap-2">
