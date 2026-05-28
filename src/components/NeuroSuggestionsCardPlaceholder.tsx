@@ -2,6 +2,8 @@
  * NeuroSuggestionsCardPlaceholder — V1.9.475 (27/05/2026)
  * V1.9.475-A (27/05 23h) — layout compacto preparado pra side-by-side
  * V1.9.475-B (27/05 23h35) — CORREÇÃO conceitual visibilidade (feedback Pedro)
+ * V1.9.475-C (27/05 23h50) — Audit Manual Fase C dentro do card (4 sinais TDAH
+ *   detectados empíricamente no report 2bdb57fb hardcoded até Fase D codada)
  *
  * Card EMBRIÃO VISUAL pra sidecar neuro (TEA/TOD/TDAH). NÃO faz fetch DB.
  *
@@ -33,9 +35,35 @@
  * - project_smoke_neuro_signal_report_2bdb57fb_27_05
  */
 
-import { Brain, Sparkles, Hourglass, AlertCircle } from 'lucide-react'
+import { Brain, Sparkles, Hourglass, AlertCircle, FlaskConical } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
+
+// [V1.9.475-C] Sinais detectados empíricamente via smoke manual no report
+// 2bdb57fb (Eduardo simulando paciente médico burnout via passosmir4@gmail.com,
+// 27/05 21:33-22:05 BRT — 33min AEC completa, ICP signed).
+// Análise manual aplicada sobre conversa de 20 mensagens (ai_chat_interactions).
+// Documentado em diário 27/05 Bloco N.9 + memory project_smoke_neuro_signal_report_2bdb57fb_27_05.
+// FONTE de dados: hardcoded (placeholder pré-Fase D). Quando Edge `neuro-signal-extractor`
+// codificada, fetch real da tabela `clinical_neuro_signals` substitui esse array.
+interface NeuroSignalManual {
+  categoria: string
+  fala_literal: string
+  confianca: number
+}
+
+const SINAIS_MANUAIS_2BDB57FB: NeuroSignalManual[] = [
+  { categoria: 'TDAH-Desatenção', fala_literal: 'dificuldade de me concentrar', confianca: 92 },
+  { categoria: 'TDAH-Desatenção', fala_literal: 'preciso me concentrar diante de muitas demandas como médico', confianca: 88 },
+  { categoria: 'TDAH-Comorbidade Emocional', fala_literal: 'ansiedade + depressão + burn-out há 3 anos', confianca: 65 },
+  { categoria: 'TDAH-Terapêutico Indireto', fala_literal: 'bupropiona' /* off-label TDAH adulto */, confianca: 55 },
+]
+
+function confidenceColor(conf: number): string {
+  if (conf >= 80) return 'text-emerald-300 bg-emerald-500/10 border-emerald-500/30'
+  if (conf >= 60) return 'text-amber-300 bg-amber-500/10 border-amber-500/30'
+  return 'text-orange-300 bg-orange-500/10 border-orange-500/30'
+}
 
 interface UserContext {
   email: string
@@ -113,16 +141,13 @@ export default function NeuroSuggestionsCardPlaceholder() {
 
       {/* Body compacto */}
       <div className="px-3 py-3 space-y-2.5 flex-1 flex flex-col">
-        {/* Mensagem principal */}
+        {/* Mensagem principal — V1.9.475-C condensada (audit detalhado abaixo) */}
         <div className="flex items-start gap-2">
           <Sparkles className="w-3.5 h-3.5 text-purple-300 flex-shrink-0 mt-0.5" />
           <div className="text-[11px] text-slate-300 leading-relaxed">
             <p>
               Mapa <strong className="text-purple-200">20 categorias × keywords BR × DSM-5</strong>{' '}
-              cristalizado. Smoke manual report{' '}
-              <code className="px-1 rounded bg-purple-500/10 text-purple-200 text-[10px]">2bdb57fb</code>{' '}
-              detectou{' '}
-              <strong className="text-emerald-300">4 sinais TDAH</strong>.
+              cristalizado. Detecção manual aplicada sobre report real (audit Fase C abaixo).
             </p>
           </div>
         </div>
@@ -158,6 +183,53 @@ export default function NeuroSuggestionsCardPlaceholder() {
               <div className="text-[9px] text-slate-400 leading-tight">{fase.desc}</div>
             </div>
           ))}
+        </div>
+
+        {/* [V1.9.475-C] Audit Manual Fase C — 1 detecção empírica preliminar.
+            Sinais foram detectados manualmente pelo Claude na sessão 27/05
+            sobre conversa REAL armazenada em ai_chat_interactions. NÃO é mock —
+            é audit manual antecipando o que Edge `neuro-signal-extractor`
+            (Fase D) vai fazer automaticamente. */}
+        <div className="rounded-md border border-purple-500/25 bg-purple-500/5 overflow-hidden">
+          <div className="flex items-center justify-between px-2.5 py-1.5 bg-purple-500/10 border-b border-purple-500/20">
+            <div className="flex items-center gap-1.5">
+              <FlaskConical className="w-3 h-3 text-purple-300" />
+              <span className="text-[10px] font-semibold text-purple-100">
+                Audit Manual Fase C
+              </span>
+              <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-purple-500/20 text-purple-200">
+                1 report
+              </span>
+            </div>
+            <span className="text-[9px] text-purple-300/70">
+              4 sinais TDAH
+            </span>
+          </div>
+
+          <div className="px-2.5 py-2 space-y-1.5">
+            <div className="flex items-center justify-between text-[10px] text-slate-400 pb-1 border-b border-purple-500/10">
+              <span>Paciente teste · <code className="text-purple-200">passosmir4</code></span>
+              <span>27/05 · ICP signed</span>
+            </div>
+
+            {SINAIS_MANUAIS_2BDB57FB.map((sinal, idx) => (
+              <div key={idx} className="flex items-start gap-1.5 text-[10px] leading-tight">
+                <span className={`flex-shrink-0 px-1.5 py-0.5 rounded text-[9px] font-semibold border ${confidenceColor(sinal.confianca)}`}>
+                  {sinal.confianca}
+                </span>
+                <div className="min-w-0 flex-1">
+                  <div className="text-purple-200/90 font-medium">{sinal.categoria}</div>
+                  <div className="text-slate-400 italic truncate" title={sinal.fala_literal}>
+                    "{sinal.fala_literal}"
+                  </div>
+                </div>
+              </div>
+            ))}
+
+            <p className="text-[9px] text-slate-500 italic pt-1 mt-1 border-t border-purple-500/10">
+              Detectado manualmente em sessão. Edge `neuro-signal-extractor` (Fase D) automatiza esta extração quando codificada.
+            </p>
+          </div>
         </div>
 
         {/* Próximo gate compacto */}
