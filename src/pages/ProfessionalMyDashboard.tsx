@@ -933,12 +933,11 @@ const ProfessionalMyDashboard: React.FC = () => {
         </div>
 
         {/* V1.9.476 — Container "Sidecars Cognitivos" com fundo discreto +
-            grid responsivo (Renal + Neuro + slots futuros placeholders).
-            Feedback Pedro 28/05 00:35 BRT: agrupar sidecars em container visual
-            unificado com slots futuros (Cardiovascular + Endócrino pré-Fase A)
-            pra mostrar roadmap institucional + escalabilidade visual.
-            Visibilidade: cada card individual mantém RLS própria. Container
-            externo SEMPRE renderiza (cards retornam null se não-aplicável). */}
+            grid responsivo. V1.9.476-A (28/05 00:45 BRT): grid externo
+            reduzido pra 2-col max (era 4-col). Card Renal V1.9.309 tem grid
+            INTERNO 5-col que quebra em col <~480px. Com 2-col max viewport
+            lg+ (~480-500px/col), Renal renderiza OK + Neuro paridade.
+            Slots futuros (Cardio + Endo) entram na 2ª linha grid lg+. */}
         <div className="mb-6 rounded-2xl border border-slate-700/30 bg-gradient-to-br from-slate-900/40 via-emerald-950/5 to-slate-900/40 p-4">
           <div className="flex items-center gap-2 mb-3">
             <Activity className="w-3.5 h-3.5 text-slate-400" />
@@ -949,31 +948,32 @@ const ProfessionalMyDashboard: React.FC = () => {
               · sinais detectados em conversas reais
             </span>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-3">
-            {/* Renal (DRC) — V1.9.307 RLS BD vínculo appointments */}
-            <div className="max-w-md w-full">
-              <RenalSuggestionsCard />
-            </div>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+            {/* Renal (DRC) — V1.9.307 RLS BD vínculo appointments. Sem max-w
+                — ocupa col inteira (lg+ ~480px ou full em mobile). */}
+            <RenalSuggestionsCard />
 
-            {/* Neuro (TEA/TDAH/TOD) — V1.9.475 embrião visual */}
+            {/* Neuro (TEA/TDAH/TOD) — V1.9.475 embrião visual. Sem max-w-md
+                — paridade visual com Renal (col inteira lg+). */}
             <NeuroSuggestionsCardPlaceholder />
 
-            {/* Slots futuros placeholders — roadmap institucional visível */}
-            <div className="rounded-xl border border-dashed border-slate-700/40 bg-slate-900/30 p-4 flex flex-col items-center justify-center min-h-[240px] text-center max-w-md w-full">
+            {/* Slots futuros placeholders — roadmap institucional visível
+                Linha 2 grid lg+ (Cardio esquerda, Endo direita) */}
+            <div className="rounded-xl border border-dashed border-slate-700/40 bg-slate-900/30 p-4 flex flex-col items-center justify-center min-h-[200px] text-center">
               <Heart className="w-6 h-6 text-rose-400/30 mb-2" />
               <span className="text-[11px] font-semibold text-slate-400">Cardiovascular</span>
               <span className="text-[10px] text-slate-500 mt-1">Pré-Fase A · roadmap</span>
               <span className="text-[9px] text-slate-600 italic mt-2 leading-tight">
-                Sidecar futuro<br/>quando trigger empírico materializar
+                Sidecar futuro · quando trigger empírico materializar
               </span>
             </div>
 
-            <div className="rounded-xl border border-dashed border-slate-700/40 bg-slate-900/30 p-4 flex flex-col items-center justify-center min-h-[240px] text-center max-w-md w-full">
+            <div className="rounded-xl border border-dashed border-slate-700/40 bg-slate-900/30 p-4 flex flex-col items-center justify-center min-h-[200px] text-center">
               <Activity className="w-6 h-6 text-amber-400/30 mb-2" />
               <span className="text-[11px] font-semibold text-slate-400">Endócrino</span>
               <span className="text-[10px] text-slate-500 mt-1">Pré-Fase A · roadmap</span>
               <span className="text-[9px] text-slate-600 italic mt-2 leading-tight">
-                Sidecar futuro<br/>quando trigger empírico materializar
+                Sidecar futuro · quando trigger empírico materializar
               </span>
             </div>
           </div>

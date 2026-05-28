@@ -114,11 +114,11 @@ export default function NeuroSuggestionsCardPlaceholder() {
   if (!isProfessional && !isAdmin) return null
 
   return (
-    // [V1.9.475-E] max-w-md pra ficar mesmo tamanho do Card Renal (que renderiza
-    // 1 mini-card de ~448px em grid-cols-5 2xl viewport). Conteúdo abaixo
-    // compactado proporcionalmente — mantém valor visual atual (4 sinais TDAH)
-    // mas em footprint do Renal. Feedback Pedro 28/05 00:30 BRT.
-    <div className="rounded-xl border border-purple-500/30 bg-gradient-to-br from-purple-900/20 via-slate-900/60 to-indigo-900/20 backdrop-blur-sm overflow-hidden flex flex-col max-w-md">
+    // [V1.9.476-A] max-w-md REMOVIDO (estava em V1.9.475-E). Agora grid externo
+    // 2-col max em ProfessionalMyDashboard:937 garante paridade visual com
+    // Renal. Card Neuro ocupa coluna inteira (lg+ ~480-500px). Feedback Pedro
+    // 28/05 00:45 BRT.
+    <div className="rounded-xl border border-purple-500/30 bg-gradient-to-br from-purple-900/20 via-slate-900/60 to-indigo-900/20 backdrop-blur-sm overflow-hidden flex flex-col">
       {/* Header compacto */}
       <div className="flex items-center justify-between px-3 py-2.5 border-b border-purple-500/20 bg-purple-500/5">
         <div className="flex items-center gap-2">
@@ -145,6 +145,18 @@ export default function NeuroSuggestionsCardPlaceholder() {
 
       {/* Body compacto */}
       <div className="px-3 py-3 space-y-2.5 flex-1 flex flex-col">
+        {/* [V1.9.476-A] Trigger validação status — paridade visual ao Card Renal
+            que mostra "✓ Aprovada por Dr. Ricardo Valença". Card Neuro mostra
+            status atual: audit manual aguardando validação Dr. Eduardo Faveret.
+            Quando Eduardo validar Fase B + Edge codada, troca pra "✓ Validado".
+            Feedback Pedro 28/05 00:45 BRT: trigger validação visual ausente. */}
+        <div className="flex items-center gap-2 px-2.5 py-1.5 rounded-md bg-amber-500/10 border border-amber-500/30">
+          <Hourglass className="w-3 h-3 text-amber-300 flex-shrink-0" />
+          <span className="text-[10px] text-amber-200 font-semibold">
+            Audit manual · aguardando validação Dr. Eduardo Faveret
+          </span>
+        </div>
+
         {/* Mensagem principal — V1.9.475-C condensada (audit detalhado abaixo) */}
         <div className="flex items-start gap-2">
           <Sparkles className="w-3.5 h-3.5 text-purple-300 flex-shrink-0 mt-0.5" />
