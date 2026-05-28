@@ -37,6 +37,7 @@ import IntegratedWorkstation from '../components/IntegratedWorkstation'
 import ProfessionalSchedulingWidget from '../components/ProfessionalSchedulingWidget'
 import ProfessionalChatSystem from '../components/ProfessionalChatSystem'
 import RenalSuggestionsCard from '../components/RenalSuggestionsCard'
+import NeuroSuggestionsCardPlaceholder from '../components/NeuroSuggestionsCardPlaceholder'
 import Prescriptions from './Prescriptions'
 
 const ProfessionalMyDashboard: React.FC = () => {
@@ -936,6 +937,15 @@ const ProfessionalMyDashboard: React.FC = () => {
             Memory: project_v1_9_307_renal_inline_suggestions */}
         <div className="mb-6">
           <RenalSuggestionsCard />
+        </div>
+
+        {/* V1.9.475 — Card Neuro EMBRIÃO (sidecar neuro TEA/TDAH/TOD em calibração).
+            Visibilidade: Eduardo Faveret + admin (Pedro). Ricardo NÃO vê (Renal é dele).
+            Substituído por <NeuroSuggestionsCard /> real quando Fase D codada.
+            Memory: project_universo_sinais_neuro_tea_tod_tdah_mapa_completo_27_05
+                  + project_smoke_neuro_signal_report_2bdb57fb_27_05 */}
+        <div className="mb-6">
+          <NeuroSuggestionsCardPlaceholder />
         </div>
 
         {/* Overlay Scanner verde (Matrix) — paciente “scaneado” no centro (avatar ou inicial) */}
