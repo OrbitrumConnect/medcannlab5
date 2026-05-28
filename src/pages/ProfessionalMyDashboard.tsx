@@ -932,21 +932,51 @@ const ProfessionalMyDashboard: React.FC = () => {
           </section>
         </div>
 
-        {/* V1.9.307 + V1.9.475 — Sidecars cognitivos por especialidade.
-            V1.9.475-B (27/05 23h35): REVERTIDO grid 2-col → 1-col empilhado.
-            Causa: RenalSuggestionsCard V1.9.309 foi desenhado pra layout interno
-            side-by-side (sugestão+paginação) que QUEBRA visualmente em coluna
-            estreita (lg:grid-cols-2 = ~480px). Empilhar full-width preserva
-            integridade visual de ambos cards.
-            Visibilidade: cada card tem RLS própria (BD-side pra Renal,
-            frontend-side pra Neuro placeholder até Fase D). Princípio: médico
-            vê sidecar do PACIENTE DELE (vínculo appointments), não por
-            especialidade médica. Memory: project_v1_9_307 + project_universo_sinais_neuro_27_05 */}
-        <div className="mb-6">
-          <RenalSuggestionsCard />
-        </div>
-        <div className="mb-6">
-          <NeuroSuggestionsCardPlaceholder />
+        {/* V1.9.476 — Container "Sidecars Cognitivos" com fundo discreto +
+            grid responsivo (Renal + Neuro + slots futuros placeholders).
+            Feedback Pedro 28/05 00:35 BRT: agrupar sidecars em container visual
+            unificado com slots futuros (Cardiovascular + Endócrino pré-Fase A)
+            pra mostrar roadmap institucional + escalabilidade visual.
+            Visibilidade: cada card individual mantém RLS própria. Container
+            externo SEMPRE renderiza (cards retornam null se não-aplicável). */}
+        <div className="mb-6 rounded-2xl border border-slate-700/30 bg-gradient-to-br from-slate-900/40 via-emerald-950/5 to-slate-900/40 p-4">
+          <div className="flex items-center gap-2 mb-3">
+            <Activity className="w-3.5 h-3.5 text-slate-400" />
+            <h3 className="text-[11px] font-semibold text-slate-300 uppercase tracking-wide">
+              Sidecars Cognitivos
+            </h3>
+            <span className="text-[10px] text-slate-500">
+              · sinais detectados em conversas reais
+            </span>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-3">
+            {/* Renal (DRC) — V1.9.307 RLS BD vínculo appointments */}
+            <div className="max-w-md w-full">
+              <RenalSuggestionsCard />
+            </div>
+
+            {/* Neuro (TEA/TDAH/TOD) — V1.9.475 embrião visual */}
+            <NeuroSuggestionsCardPlaceholder />
+
+            {/* Slots futuros placeholders — roadmap institucional visível */}
+            <div className="rounded-xl border border-dashed border-slate-700/40 bg-slate-900/30 p-4 flex flex-col items-center justify-center min-h-[240px] text-center max-w-md w-full">
+              <Heart className="w-6 h-6 text-rose-400/30 mb-2" />
+              <span className="text-[11px] font-semibold text-slate-400">Cardiovascular</span>
+              <span className="text-[10px] text-slate-500 mt-1">Pré-Fase A · roadmap</span>
+              <span className="text-[9px] text-slate-600 italic mt-2 leading-tight">
+                Sidecar futuro<br/>quando trigger empírico materializar
+              </span>
+            </div>
+
+            <div className="rounded-xl border border-dashed border-slate-700/40 bg-slate-900/30 p-4 flex flex-col items-center justify-center min-h-[240px] text-center max-w-md w-full">
+              <Activity className="w-6 h-6 text-amber-400/30 mb-2" />
+              <span className="text-[11px] font-semibold text-slate-400">Endócrino</span>
+              <span className="text-[10px] text-slate-500 mt-1">Pré-Fase A · roadmap</span>
+              <span className="text-[9px] text-slate-600 italic mt-2 leading-tight">
+                Sidecar futuro<br/>quando trigger empírico materializar
+              </span>
+            </div>
+          </div>
         </div>
 
         {/* Overlay Scanner verde (Matrix) — paciente “scaneado” no centro (avatar ou inicial) */}
