@@ -177,6 +177,21 @@ export const NoaMatrixView: React.FC = () => {
   const [savedDossiers, setSavedDossiers] = useState<SavedDossier[]>([])
   const [dossiersOpen, setDossiersOpen] = useState(false)
   const [dossierFeedback, setDossierFeedback] = useState<string | null>(null)
+  // V1.9.481 (Camada 1.1 Matrix-Longitudinal — Ricardo 28/05): quando médico
+  // fecha como dossiê SEM paciente em foco (sem ?patientId=X na URL), em vez
+  // de salvar silenciosamente como órfão (caso empírico Ricardo 28/05 14:37:
+  // dossier ecd67cf0 com patient_id=NULL → não aparece no prontuário), abrir
+  // modal pra distinguir Pesquisa Livre vs Vincular paciente do acervo.
+  // Princípio meta cristalizado 28/05: separação semântica > expansão de corpus.
+  // Atrito intencional aplicado apenas no caso ambíguo (patientId existe → fluxo
+  // zero-clique preservado). Resolve futuros dossiês; órfãos existentes ficam
+  // como estão (decisão conservadora — Ricardo regenera).
+  // Reusa caseSearch existente pra busca de paciente (princípio polir-não-inventar).
+  const [pendingDossierContext, setPendingDossierContext] = useState<
+    { dossierData: DossierData; fromRestore: boolean } | null
+  >(null)
+  const [contextSelectMode, setContextSelectMode] = useState<'choose' | 'select-patient'>('choose')
+  const [contextSearchTerm, setContextSearchTerm] = useState('')
   // V1.9.393 (F3 reabrir dossiê) — pedido de restauração passado ao ResearchChat.
   // token = Date.now() a cada clique → reabrir o mesmo dossiê 2× dispara o efeito.
   const [restoreRequest, setRestoreRequest] = useState<
@@ -197,6 +212,41 @@ export const NoaMatrixView: React.FC = () => {
   const refreshDossiers = async () => {
     const list = await listDossiers(10)
     setSavedDossiers(list)
+  }
+
+  // V1.9.481 — Helper que executa o save real (extraído do callback onCloseDossier
+  // original linhas ~1317-1335). Centraliza fluxo PDF + persistência + feedback
+  // pra ser chamado tanto do fluxo normal (patientId existe / re-save snapshot)
+  // quanto do modal V1.9.481 (médico escolheu Pesquisa Livre OU vinculou paciente).
+  const performDossierSave = async (
+    dossierData: DossierData,
+    resolvedPatientId: string | null,
+    fromRestore: boolean,
+    isResaveSkip: boolean
+  ) => {
+    // F3-A.1 — gera PDF (sempre, mesmo se persistência falhar)
+    exportDossierToPDF(dossierData)
+    // V1.9.401 — re-fechar sessão reaberta SEM ter continuado a conversa
+    // = mesma contagem de mensagens = só re-exportar PDF, NÃO cria dossiê novo.
+    if (isResaveSkip) {
+      setDossierFeedback('PDF re-gerado (sem alterações — dossiê não duplicado).')
+      setTimeout(() => setDossierFeedback(null), 6000)
+      return
+    }
+    // F3-A.2 — persiste snapshot no banco (RLS protege)
+    const savedId = await saveDossier(dossierData, resolvedPatientId)
+    if (savedId) {
+      const msg = fromRestore
+        ? 'Dossiê atualizado + PDF gerado.'
+        : resolvedPatientId
+          ? 'Dossiê vinculado ao paciente + PDF gerado.'
+          : 'Dossiê salvo como Pesquisa Livre + PDF gerado.'
+      setDossierFeedback(msg)
+      refreshDossiers()
+    } else {
+      setDossierFeedback('PDF gerado. (Falha ao salvar no histórico — tente novamente.)')
+    }
+    setTimeout(() => setDossierFeedback(null), 6000)
   }
 
   // V1.9.388-A.3 — Reuso pubmedService V1.9.369 (princípio "polir não inventar").
@@ -1314,29 +1364,152 @@ export const NoaMatrixView: React.FC = () => {
                 messages: matrixMessages,
                 generatedAt: new Date(),
               }
-              // F3-A.1 — gera PDF (sempre, mesmo se persistência falhar)
-              exportDossierToPDF(dossierData)
-              // V1.9.401 — re-fechar uma sessão reaberta SEM ter continuado a
-              // conversa (mesma contagem de mensagens) é só re-exportar o PDF —
-              // NÃO cria dossiê novo. Mata o ciclo de dossiês-lixo duplicados.
-              if (snap && matrixMessages.length === snap.messages.length) {
-                setDossierFeedback('PDF re-gerado (sem alterações — dossiê não duplicado).')
-                setTimeout(() => setDossierFeedback(null), 6000)
+              // V1.9.401 check: re-save de snapshot sem mudanças → só PDF, sem insert.
+              const isResaveSkip = !!(snap && matrixMessages.length === snap.messages.length)
+              // V1.9.481 — INTERCEPTA: dossiê NOVO (não-snapshot) SEM patientId → modal
+              // de confirmação Pesquisa Livre vs Vincular paciente. Atrito intencional
+              // só no caso ambíguo; fluxo Terminal→Matrix (com patientId) zero-clique.
+              if (!patientId && !snap && !isResaveSkip) {
+                setPendingDossierContext({ dossierData, fromRestore })
                 return
               }
-              // F3-A.2 — persiste snapshot no banco (RLS protege)
-              const savedId = await saveDossier(dossierData, patientId || null)
-              if (savedId) {
-                setDossierFeedback(snap ? 'Dossiê atualizado + PDF gerado.' : 'Dossiê salvo + PDF gerado.')
-                refreshDossiers()
-              } else {
-                setDossierFeedback('PDF gerado. (Falha ao salvar no histórico — tente novamente.)')
-              }
-              setTimeout(() => setDossierFeedback(null), 6000)
+              // Fluxo normal: patientId existe OU re-save snapshot (preserva V1.9.400/401)
+              await performDossierSave(dossierData, patientId || null, fromRestore, isResaveSkip)
             }}
           />
         </div>
       </div>
+
+      {/* V1.9.481 — modal "Vincular dossiê" quando fechar SEM patientId em foco.
+          Disparado por onCloseDossier quando !patientId && !snap && !isResaveSkip.
+          Atrito intencional: distinguir Pesquisa Livre vs Vincular paciente.
+          Reusa caseSearch (princípio polir-não-inventar). */}
+      {pendingDossierContext && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+          <div className="w-full max-w-md bg-slate-900 border border-emerald-500/30 rounded-xl p-5 space-y-4">
+            <div className="flex items-start gap-2.5">
+              <GitBranch className="w-5 h-5 text-emerald-300 flex-shrink-0 mt-0.5" />
+              <div className="min-w-0">
+                <h3 className="text-base font-semibold text-white">Vincular dossiê</h3>
+                <p className="text-xs text-slate-400 mt-0.5">
+                  Este dossiê não está vinculado a um paciente. Você pode salvá-lo como
+                  <strong className="text-emerald-300"> Pesquisa Livre</strong> ou
+                  <strong className="text-emerald-300"> vincular agora</strong> a um paciente do seu acervo.
+                </p>
+              </div>
+            </div>
+
+            {contextSelectMode === 'choose' && (
+              <div className="space-y-2">
+                <button
+                  onClick={async () => {
+                    const ctx = pendingDossierContext
+                    setPendingDossierContext(null)
+                    await performDossierSave(ctx.dossierData, null, ctx.fromRestore, false)
+                  }}
+                  disabled={dossierSaving}
+                  className="w-full px-4 py-2.5 bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/40 text-emerald-200 rounded-lg text-sm font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {dossierSaving ? 'Salvando...' : 'Salvar como Pesquisa Livre'}
+                </button>
+                <button
+                  onClick={() => {
+                    caseSearch.clear()
+                    setContextSearchTerm('')
+                    setContextSelectMode('select-patient')
+                  }}
+                  disabled={dossierSaving}
+                  className="w-full px-4 py-2.5 bg-slate-800/60 hover:bg-slate-800 border border-slate-700/50 text-slate-200 rounded-lg text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Vincular a um paciente
+                </button>
+                <button
+                  onClick={() => {
+                    setPendingDossierContext(null)
+                    setContextSelectMode('choose')
+                    setContextSearchTerm('')
+                    caseSearch.clear()
+                  }}
+                  disabled={dossierSaving}
+                  className="w-full px-4 py-2 text-slate-500 hover:text-slate-400 rounded text-xs transition-colors disabled:opacity-50"
+                >
+                  Cancelar (não salvar — PDF já foi gerado)
+                </button>
+              </div>
+            )}
+
+            {contextSelectMode === 'select-patient' && (
+              <div className="space-y-2">
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={contextSearchTerm}
+                    onChange={(e) => setContextSearchTerm(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && contextSearchTerm.trim().length >= 3) {
+                        void caseSearch.search(contextSearchTerm, 90)
+                      }
+                    }}
+                    placeholder="Nome, queixa, código do paciente..."
+                    className="flex-1 px-3 py-2 text-sm bg-slate-800 border border-slate-700 rounded text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500"
+                    autoFocus
+                  />
+                  <button
+                    onClick={() => {
+                      if (contextSearchTerm.trim().length >= 3) {
+                        void caseSearch.search(contextSearchTerm, 90)
+                      }
+                    }}
+                    disabled={caseSearch.loading || contextSearchTerm.trim().length < 3}
+                    className="px-3 py-2 bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/40 text-emerald-200 rounded text-xs font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {caseSearch.loading ? <Loader2 className="w-3 h-3 animate-spin" /> : 'buscar'}
+                  </button>
+                </div>
+                {caseSearch.error && (
+                  <p className="text-[11px] text-red-300">{caseSearch.error}</p>
+                )}
+                {!caseSearch.loading && caseSearch.results.length === 0 && contextSearchTerm.trim().length >= 3 && !caseSearch.error && (
+                  <p className="text-[11px] text-slate-500">Nenhum paciente encontrado nos últimos 90 dias.</p>
+                )}
+                {caseSearch.results.length > 0 && (
+                  <div className="max-h-48 overflow-y-auto space-y-1 border border-slate-700/40 rounded p-1">
+                    {caseSearch.results.map((hit) => (
+                      <button
+                        key={hit.reportId}
+                        onClick={async () => {
+                          const ctx = pendingDossierContext
+                          setPendingDossierContext(null)
+                          setContextSelectMode('choose')
+                          setContextSearchTerm('')
+                          caseSearch.clear()
+                          await performDossierSave(ctx.dossierData, hit.patientId, ctx.fromRestore, false)
+                        }}
+                        disabled={dossierSaving}
+                        className="w-full text-left px-3 py-2 bg-slate-800/40 hover:bg-slate-800/80 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        <p className="text-sm text-white truncate">{hit.patientName || 'Paciente anônimo'}</p>
+                        <p className="text-[11px] text-slate-500 truncate">{hit.queixaPrincipal || '—'}</p>
+                      </button>
+                    ))}
+                  </div>
+                )}
+                <button
+                  onClick={() => {
+                    setContextSelectMode('choose')
+                    setContextSearchTerm('')
+                    caseSearch.clear()
+                  }}
+                  disabled={dossierSaving}
+                  className="text-xs text-slate-400 hover:text-slate-300 disabled:opacity-50"
+                >
+                  ← Voltar
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* V1.9.403 (F4.2-A) — modal "Enviar ao Fórum" com atestação de consent */}
       {publishTarget && (
