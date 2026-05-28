@@ -1,10 +1,16 @@
 // =============================================================================
-// MatrixHelpModal — V1.9.454
+// MatrixHelpModal — V1.9.454 → V1.9.484 (Pedro 28/05)
 // =============================================================================
 // Modal acionado pelo botão "?" no header da Nôa Matrix Z2 (research mode).
 // Mostra modo de uso profissional/elite: como organizar corpus marcado, como
 // a Matrix responde (3 cenários V1.9.453-A/B), o que ela NÃO faz, exemplos
 // de perguntas úteis.
+//
+// V1.9.484 — fecha gap de 3 features que entraram nas últimas 24h sem
+// estarem no tutorial: Bulas ANVISA (V1.9.468 27/05), agrupamento semântico
+// 3 categorias (V1.9.482 28/05), dossiês prévios do paciente em foco
+// (V1.9.483 28/05 Camada 1.3 Matrix-Longitudinal). 3 sub-items adicionados
+// na seção "Como montar o corpus marcado". Zero refator estrutural.
 //
 // Princípio polir-não-inventar: visual coerente com NoaChatHelpModal V1.9.54
 // (mesma paleta emerald, mesma estrutura X header / sections / body), mas
@@ -55,6 +61,9 @@ const SECTIONS: Section[] = [
       { label: 'Casos Similares', text: 'Aba "Casos Similares" lista casos análogos com racionalidades aplicadas. Click no card marca como corpus.' },
       { label: 'PubMed', text: 'Painel "Buscar literatura PubMed" — busca artigos científicos por termo. Anexa papers ao corpus pra contextualizar.' },
       { label: 'Base de Conhecimento', text: 'Acervo institucional (Doc #A1, #A2...) anexável ao corpus pra referência estrutural.' },
+      { label: 'Bulas ANVISA', text: 'Painel "Bulário ANVISA BR" — bulas oficiais (CBD, anticonvulsivantes, etc.) como referência farmacológica documentada. Matrix cita literal — NUNCA sugere troca de medicamento, NUNCA infere interação não-documentada, NUNCA sintetiza cross-bulas.' },
+      { label: 'Dossiês prévios do paciente', text: 'Quando você abre a Matrix com paciente em foco, seus dossiês anteriores sobre ELE aparecem automaticamente como cards (até 5 mais recentes) na seção "Contexto Paciente". Continuidade interpretativa: lembrar o que você refletiu antes sem ter que abrir a lista geral "Meus Dossiês".' },
+      { label: 'Organização visual do "Material disponível"', text: 'Cards são agrupados em 3 categorias: 👤 Contexto Paciente (relatórios AEC + racionalidades + dossiês prévios) · 🔬 Pesquisa (PubMed + Base de Conhecimento + Bulas) · 📁 Memória / Casos (casos similares + notas + buscas favoritadas). Categoria sem cards é omitida visualmente.' },
       { label: 'Selecionar pra Matrix', text: 'IMPORTANTE: aparecer no "Material disponível" não basta. Click no card pra SELECIONAR (fica destacado roxo). Só selecionados vão pro contexto da conversa.' },
     ],
   },
