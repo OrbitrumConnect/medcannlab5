@@ -932,12 +932,20 @@ const ProfessionalMyDashboard: React.FC = () => {
           </section>
         </div>
 
-        {/* V1.9.307 + V1.9.475 — Grid 2-col responsivo: Renal (DRC) + Neuro (TEA/TDAH/TOD).
-            Renal só renderiza se houver sugestões pendentes pro médico.
-            Neuro embrião só renderiza pra Eduardo + admin (RLS frontend-side).
-            Mobile 1 col, lg+ 2 cols. Memory: project_v1_9_307 + project_universo_sinais_neuro_27_05 */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
+        {/* V1.9.307 + V1.9.475 — Sidecars cognitivos por especialidade.
+            V1.9.475-B (27/05 23h35): REVERTIDO grid 2-col → 1-col empilhado.
+            Causa: RenalSuggestionsCard V1.9.309 foi desenhado pra layout interno
+            side-by-side (sugestão+paginação) que QUEBRA visualmente em coluna
+            estreita (lg:grid-cols-2 = ~480px). Empilhar full-width preserva
+            integridade visual de ambos cards.
+            Visibilidade: cada card tem RLS própria (BD-side pra Renal,
+            frontend-side pra Neuro placeholder até Fase D). Princípio: médico
+            vê sidecar do PACIENTE DELE (vínculo appointments), não por
+            especialidade médica. Memory: project_v1_9_307 + project_universo_sinais_neuro_27_05 */}
+        <div className="mb-6">
           <RenalSuggestionsCard />
+        </div>
+        <div className="mb-6">
           <NeuroSuggestionsCardPlaceholder />
         </div>
 

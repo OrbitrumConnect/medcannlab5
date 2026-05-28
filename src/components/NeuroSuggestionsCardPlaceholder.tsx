@@ -1,6 +1,7 @@
 /**
  * NeuroSuggestionsCardPlaceholder — V1.9.475 (27/05/2026)
- * V1.9.475-A (27/05 23h) — layout compacto side-by-side com RenalSuggestionsCard
+ * V1.9.475-A (27/05 23h) — layout compacto preparado pra side-by-side
+ * V1.9.475-B (27/05 23h35) — CORREÇÃO conceitual visibilidade (feedback Pedro)
  *
  * Card EMBRIÃO VISUAL pra sidecar neuro (TEA/TOD/TDAH). NÃO faz fetch DB.
  *
@@ -11,11 +12,21 @@
  * - Tabela `clinical_neuro_signals` (Opção B persistência)
  * - Componente fetch via supabase com paginação + aprovar/rejeitar
  *
- * Visibilidade (V1.9.475):
- * - Eduardo Faveret (sócio neuro) — `eduardoscfaveret@gmail.com`
- * - Admin (Pedro) — vê tudo
- * - Ricardo (nefrologia) — NÃO vê (Renal card é dele)
- * - Outros profissionais — NÃO vê
+ * V1.9.475-B — VISIBILIDADE CONCEITUAL CORRIGIDA (Pedro 27/05 23h):
+ *
+ * ❌ ANTES (V1.9.475/A): restringia por especialidade médica (só Eduardo+admin)
+ * ✅ AGORA (V1.9.475-B): cada médico vê sidecar do PACIENTE DELE (vínculo via
+ *    appointments), independente da especialidade do médico.
+ *
+ * Princípio Pedro: "se Ricardo tem caso com sinal neuro, ele vê o card.
+ * Se Eduardo tem caso com sinal renal, ele vê o card renal. Não restringe
+ * por especialidade do médico — restringe por vínculo paciente-médico."
+ *
+ * Implementação placeholder (sem dados ainda):
+ * - Aparece pra TODOS profissionais + admin (embrião visual = roadmap institucional)
+ * - NÃO aparece pra pacientes ou alunos
+ * - Quando Fase D codada (Edge + tabela), RLS BD por paciente-médico
+ *   aplicada igual sidecar Renal V1.9.307 (vínculo appointments)
  *
  * Memórias relacionadas:
  * - project_universo_sinais_neuro_tea_tod_tdah_mapa_completo_27_05
@@ -64,11 +75,15 @@ export default function NeuroSuggestionsCardPlaceholder() {
 
   if (loading || !userCtx) return null
 
-  // [V1.9.475] Visibilidade: Eduardo (neuro) + admin (Pedro). Ricardo NÃO vê.
-  const isEduardo = userCtx.email === 'eduardoscfaveret@gmail.com'
+  // [V1.9.475-B] Visibilidade conceitual corrigida (Pedro 27/05 23h):
+  // Card aparece pra TODOS profissionais + admin (embrião visual = roadmap institucional).
+  // Quando Fase D codada, RLS BD aplica restrição por vínculo paciente-médico
+  // (igual sidecar Renal V1.9.307) — NÃO por especialidade do médico.
+  // Pacientes e alunos NÃO veem (placeholder é pra fluxo profissional).
+  const isProfessional = userCtx.type === 'professional' || userCtx.type === 'profissional'
   const isAdmin = userCtx.type === 'admin'
 
-  if (!isEduardo && !isAdmin) return null
+  if (!isProfessional && !isAdmin) return null
 
   return (
     <div className="rounded-xl border border-purple-500/30 bg-gradient-to-br from-purple-900/20 via-slate-900/60 to-indigo-900/20 backdrop-blur-sm overflow-hidden flex flex-col">
