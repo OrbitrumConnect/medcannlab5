@@ -932,19 +932,12 @@ const ProfessionalMyDashboard: React.FC = () => {
           </section>
         </div>
 
-        {/* V1.9.307 — Sugestões DRC Pendentes (sidecar clínico renal).
-            Card só renderiza se houver sugestões pendentes pra esse médico.
-            Memory: project_v1_9_307_renal_inline_suggestions */}
-        <div className="mb-6">
+        {/* V1.9.307 + V1.9.475 — Grid 2-col responsivo: Renal (DRC) + Neuro (TEA/TDAH/TOD).
+            Renal só renderiza se houver sugestões pendentes pro médico.
+            Neuro embrião só renderiza pra Eduardo + admin (RLS frontend-side).
+            Mobile 1 col, lg+ 2 cols. Memory: project_v1_9_307 + project_universo_sinais_neuro_27_05 */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
           <RenalSuggestionsCard />
-        </div>
-
-        {/* V1.9.475 — Card Neuro EMBRIÃO (sidecar neuro TEA/TDAH/TOD em calibração).
-            Visibilidade: Eduardo Faveret + admin (Pedro). Ricardo NÃO vê (Renal é dele).
-            Substituído por <NeuroSuggestionsCard /> real quando Fase D codada.
-            Memory: project_universo_sinais_neuro_tea_tod_tdah_mapa_completo_27_05
-                  + project_smoke_neuro_signal_report_2bdb57fb_27_05 */}
-        <div className="mb-6">
           <NeuroSuggestionsCardPlaceholder />
         </div>
 
