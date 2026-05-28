@@ -71,6 +71,7 @@ import MedCannLab from './pages/MedCannLab'
 import JardinsDeCura from './pages/JardinsDeCura'
 import AdminDashboard from './pages/AdminDashboard'
 import AdminFeedbackList from './pages/AdminFeedbackList'  // V1.9.486
+import Feedback from './pages/Feedback'  // V1.9.486-B (página dedicada)
 import MedCannLabStructure from './pages/MedCannLabStructure'
 import NotFound from './pages/NotFound'
 // V1.9.230: ClinicalAssessment.tsx + libs IMRE/unifiedAssessment/noaIntegration/clinicalAssessmentService
@@ -227,6 +228,8 @@ function App() {
                           <Route path="forum" element={<ForumCasosClinicos />} />
                           <Route path="gamificacao" element={<Gamificacao />} />
                           <Route path="profile" element={<Profile />} />
+                          {/* V1.9.486-B — página dedicada Feedback / Suporte (qualquer usuário autenticado) */}
+                          <Route path="feedback" element={<Feedback />} />
                           <Route path="professional-my-dashboard" element={<Navigate to="/app/clinica/profissional/dashboard" replace />} />
                           <Route path="drc-monitoring-schedule" element={<DRCMonitoringSchedule />} />
                           <Route path="admin-settings" element={<Navigate to="/app/admin" replace />} />

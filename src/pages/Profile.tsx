@@ -23,7 +23,8 @@ import {
   Award,
   Camera,
   Star,
-  AlertCircle
+  AlertCircle,
+  MessageSquare  // V1.9.486-B — trigger pra página /app/feedback
 } from 'lucide-react'
 
 const Profile: React.FC = () => {
@@ -1237,6 +1238,14 @@ const Profile: React.FC = () => {
               <button className="flex items-center gap-1.5 py-2 px-3 text-xs hover:bg-slate-700/50 rounded-lg transition-colors border border-slate-600/50">
                 <Bell className="w-3.5 h-3.5 text-purple-400 shrink-0" />
                 <span className="text-slate-200">Notificações</span>
+              </button>
+              {/* V1.9.486-B — trigger feedback (substitui modal sidebar V1.9.486) */}
+              <button
+                onClick={() => navigate('/app/feedback')}
+                className="flex items-center gap-1.5 py-2 px-3 text-xs hover:bg-emerald-500/15 hover:border-emerald-500/40 rounded-lg transition-colors border border-slate-600/50"
+              >
+                <MessageSquare className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                <span className="text-slate-200">Feedback / Suporte</span>
               </button>
             </div>
           </div>

@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React from 'react'
 import {
   Calendar,
   MessageCircle,
@@ -20,10 +20,8 @@ import {
   BarChart3,
   Activity,
   Pill,
-  Sparkles,
-  MessageSquare  // V1.9.486 — botão Feedback
+  Sparkles
 } from 'lucide-react'
-import { FeedbackModal } from './FeedbackModal'
 import {
   backgroundGradient,
   surfaceStyle,
@@ -81,9 +79,6 @@ const PatientSidebar: React.FC<PatientSidebarProps> = ({
   onReportProblem,
   onViewPrescriptions
 }) => {
-  // V1.9.486 — modal feedback paciente
-  const [feedbackOpen, setFeedbackOpen] = useState(false)
-
   const getReportStatusLabel = (status: string) => {
     switch (status) {
       case 'draft':
@@ -420,37 +415,6 @@ const PatientSidebar: React.FC<PatientSidebarProps> = ({
           `}</style>
         </div>
       )}
-
-      {/* V1.9.486 — Botão Feedback (acima do Reduzir) */}
-      <div className="px-3 pb-2">
-        <button
-          onClick={() => setFeedbackOpen(true)}
-          className={`w-full flex items-center ${isCollapsed ? 'justify-center' : 'gap-3'} px-3 py-2.5 rounded-lg transition-all group`}
-          style={{
-            background: 'rgba(16, 185, 129, 0.08)',
-            border: '1px solid rgba(16, 185, 129, 0.2)'
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.background = 'rgba(16, 185, 129, 0.18)'
-            e.currentTarget.style.borderColor = 'rgba(16, 185, 129, 0.35)'
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.background = 'rgba(16, 185, 129, 0.08)'
-            e.currentTarget.style.borderColor = 'rgba(16, 185, 129, 0.2)'
-          }}
-          title={isCollapsed ? 'Enviar feedback' : ''}
-        >
-          <MessageSquare className="w-5 h-5 text-emerald-400 flex-shrink-0 group-hover:text-emerald-300" />
-          {!isCollapsed && <span className="text-sm font-medium text-emerald-400 group-hover:text-emerald-300 flex-1 text-left">Feedback</span>}
-        </button>
-      </div>
-
-      {/* V1.9.486 — modal feedback */}
-      <FeedbackModal
-        isOpen={feedbackOpen}
-        onClose={() => setFeedbackOpen(false)}
-        userRole="patient"
-      />
 
       {/* Botão para colapsar/expandir - Posicionado abaixo do Suporte */}
       {onToggleCollapse && (
