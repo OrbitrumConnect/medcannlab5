@@ -99,7 +99,7 @@ export const FeedbackModal: React.FC<FeedbackModalProps> = ({ isOpen, onClose, u
       onClick={!submitting ? resetAndClose : undefined}
     >
       <div
-        className="relative w-full max-w-lg max-h-[92vh] sm:max-h-[90vh] overflow-y-auto bg-gradient-to-b from-slate-900 to-slate-950 border border-emerald-500/30 rounded-2xl shadow-2xl"
+        className="relative w-full max-w-lg sm:max-w-2xl max-h-[92vh] sm:max-h-[90vh] overflow-y-auto bg-gradient-to-b from-slate-900 to-slate-950 border border-emerald-500/30 rounded-2xl shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
@@ -144,13 +144,13 @@ export const FeedbackModal: React.FC<FeedbackModalProps> = ({ isOpen, onClose, u
             </p>
           </div>
         ) : (
-          <div className="p-3 sm:p-5 space-y-4">
-            {/* Categoria */}
+          <div className="p-4 sm:p-6 space-y-5">
+            {/* Categoria — V1.9.486-A: 4 colunas no desktop (mais ar) / 2 mobile */}
             <div>
               <label className="block text-xs sm:text-sm font-medium text-slate-300 mb-2">
                 Categoria
               </label>
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                 {CATEGORY_OPTIONS.map((opt) => (
                   <button
                     key={opt.value}
@@ -203,7 +203,7 @@ export const FeedbackModal: React.FC<FeedbackModalProps> = ({ isOpen, onClose, u
                 onChange={(e) => setMessage(e.target.value.slice(0, 4000))}
                 disabled={submitting}
                 maxLength={4000}
-                rows={5}
+                rows={6}
                 placeholder="Descreva com detalhes. Quanto mais contexto, mais rápido conseguimos te responder."
                 className="w-full px-3 py-2 text-xs sm:text-sm bg-slate-800 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 disabled:opacity-50 resize-none"
               />
