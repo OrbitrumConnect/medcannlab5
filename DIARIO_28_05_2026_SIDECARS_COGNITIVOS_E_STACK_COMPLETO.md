@@ -339,6 +339,146 @@ Já documentado, não-novo. Smoke reproduziu drift esperado.
 
 ---
 
+## 🌅 BLOCO I — Sessão tarde 28/05 (~11h-15h BRT): V1.9.479 + V1.9.480 + Mario fix + Auditoria Matrix completa
+
+### Cronologia
+
+| Hora BRT | Evento |
+|---|---|
+| ~11h | Pedro logs smoke AEC end-to-end PASS via PAT (Bloco H deste diário) |
+| ~12h | Pedro print dashboard paciente + tensão Ricardo "AEC obrigatória" vs "paciente perdido" |
+| ~12h30 | V1.9.479 cirúrgica (destaque AEC + Agendar rebaixado) — commit `1476862` push 4 refs |
+| ~13h | Pedro print Prontuário João Guimarães + pedido Ricardo Matrix corpus expansion + bug Mario typo email |
+| ~13h30 | Mario fix via PAT atomic (`mariorvalenca@oulook.com` → `outlook.com` auth+public) |
+| ~14h | Auditoria empírica Matrix corpus via PAT front+back (6 fontes mapeadas) |
+| ~14h30 | V1.9.480 alterar email Profile (re-auth + Supabase confirmation) — commit `69e88a1` push 4 refs |
+| ~15h | 2 memorias arquiteturais novas cristalizadas + MEMORY.md NÍVEL 1 atualizado |
+
+### V1.9.479 — destaque visual AEC dashboard paciente (`1476862`)
+
+**Contexto**: Ricardo trouxe princípio *"todo usuário deve ser levado a fazer uma avaliação clínica inicial"*. Pedro questionou empíricamente: zero-onboarding deixa paciente perdido. Tensão resolvida via **Opção B (hierarquia visual)**, NÃO Opção C (bloqueio forçado).
+
+**Print Pedro confirmou**: 6 botões "O que você quer fazer agora?" no mesmo nível visual — "Iniciar Avaliação" nivelada com "Vincular Médico" (slate-800/40). V1.9.310 (16/05) tinha escolhido "Agendar Consulta" como primary emerald — anti-AEC.
+
+**Cirurgia ~10 linhas em [PatientHeaderActions.tsx](src/components/PatientHeaderActions.tsx)**:
+- AEC vira primary: `bg-emerald-500/15` + `border-emerald-500/40` + `ring-emerald-500/20` + `shadow-emerald-500/10` + `font-semibold` + Brain icon `animate-pulse` 3s lento + `hover:scale-[1.02]`
+- Agendar Consulta DESCE pra `slate-800/40` (igual aos demais secundários)
+- Demais botões intocados (Enviar Médico, Canal Atendimento, Vincular Médico, WhatsApp)
+
+**Princípios aplicados**: polir-não-inventar / anti-Babylon (glow sutil, não-agressivo) / acessibilidade Ricardo 60+ (`font-semibold` aumenta peso visual sem aumentar tamanho).
+
+### Mario Valença fix empírico via PAT
+
+**Causa raiz descoberta empíricamente**: irmão Mario tinha cadastro com TYPO no email — `mariorvalenca@oulook.com` (sem o "t" em "outlook"). Por isso recovery email NUNCA chegava. Domínio inexistente. Ricardo enviou recovery 2x manualmente, ambos morriam silenciosamente.
+
+**Fix atomic via PAT (BEGIN/COMMIT)**:
+```sql
+UPDATE auth.users SET email = 'mariorvalenca@outlook.com', updated_at = NOW() WHERE id = '05bd8398-...';
+UPDATE public.users SET email = 'mariorvalenca@outlook.com', updated_at = NOW() WHERE id = '05bd8398-...';
+```
+
+`email_confirmed_at` preservado (31/03 original) — Mario NÃO precisa reconfirmar email. Ricardo manda recovery agora, chega no @outlook.com real.
+
+### V1.9.480 — alterar email Profile com re-auth + Supabase confirmation (`69e88a1`)
+
+**Contexto**: Mario fix expôs gap arquitetural — campo email do Profile estava `disabled` HARDCODED (não condicional), bloqueava QUALQUER user de mudar email pelo app. Defesa do dev anterior contra dessync auth↔public, mas sem implementar fluxo correto.
+
+**Implementação em [Profile.tsx](src/pages/Profile.tsx) (~190 linhas)**:
+- State: `isEmailEditing` + `emailData` (newEmail/confirmEmail/currentPassword) + `showEmailPassword`
+- Handler: `handleEmailDataChange` + `handleChangeEmail`
+- UI: bloco "Alterar Email" dentro da seção Segurança, replicando padrão visual do bloco "Alterar Senha"
+- Campo email do form principal **continua disabled** (defesa) — mudança SÓ via modal dedicado
+
+**7 mitigações de risco aplicadas**:
+1. Account takeover → re-auth obrigatório (`signInWithPassword` antes do `updateUser`)
+2. Confirmação Supabase nativa → mensagem clara "clique no link no novo email"
+3. Sync auth/public → NÃO faz UPDATE direto em `public.users` (auth é canônica)
+4. Email duplicado → handle de erro específico "já em uso por outra conta"
+5. Typo novo email → pede 2x (newEmail + confirmEmail) + regex `^[^\s@]+@[^\s@]+\.[^\s@]+$`
+6. Email = atual → bloqueia com mensagem clara
+7. Audit LGPD → `noa_logs` insert type=`profile_email_change_requested_v1_9_480` (best-effort)
+
+**UX honesta**: *"Email de confirmação enviado para X. Clique no link recebido para finalizar. O email atual continua válido até lá."* — sem overclaim "alterado com sucesso" antes de fato estar.
+
+### Auditoria Matrix corpus empírica via PAT front+back (descoberta GRANDE)
+
+**Pedido Ricardo manhã**: *"Matrix deve analisar todos os documentos do prontuário, não só relatórios AEC. Pode ler evoluções, plano terapêutico, linha do tempo. Dossier deveria voltar pro prontuário."*
+
+**Pedro potencializou**: *"Matrix/Nôa deveria virar consciência longitudinal do prontuário inteiro"* — separou Camada paciente (modelar trajetória OK) vs Camada médico (modelar investigação = Babylon).
+
+**Auditoria PAT revelou (descobertas centrais)**:
+
+1. **V1.9.382 `usePatientLongitudinal` JÁ EXISTE desde 19/05** — embrião longitudinal Ricardo nem percebeu. Carrega 5 reports + 10 racionalidades + pseudonimiza Z2 (V1.9.384) + extrai conteúdo clínico (V1.9.450) + audit log LGPD + atrito intencional (cards desmarcados default).
+
+2. **3 fontes embaralhadas como "evolução"** em `PatientsManagement.tsx` linhas 1055-1162 (`loadEvolutions`):
+   - `clinical_assessments` WHERE `FOLLOW_UP` = **18 rows** evoluções reais médicas (4 médicos, 9 pacientes)
+   - `clinical_reports` `initial_assessment` = 145 rows AEC
+   - `patient_medical_records` `chat_interaction` = **6.070 rows** diálogo IA paciente↔Nôa (NÃO é evolução clínica)
+   
+   Todas misturadas na MESMA aba "Evolução" sem distinguir → Ricardo vê 6070 chat IA com 18 evoluções reais → conclui "Matrix não lê" quando o problema é separação semântica.
+
+3. **`patient_therapeutic_plans` = 0 rows** — tabela existe com schema completo (goals jsonb + summary + notes + metadata + started/completed_at) MAS feature **NUNCA codada UI**. Ricardo pediu "Matrix lê plano terapêutico" — empíricamente *"o momento de decisão clínica ainda não foi institucionalizado no sistema"* (frase GPT externo).
+
+4. **Dossier Ricardo hoje ÓRFÃO** — `physician_research_dossiers ecd67cf0` tem `patient_id=NULL`. `useDossierPersist` (V1.9.392) aceita patientId opcional, e Matrix permite "pesquisa livre" sem paciente em foco. Por isso dossier não aparece no prontuário.
+
+### 3 Camadas Matrix decompostas (memory `project_matrix_roadmap_camadas_1_2_3_28_05`)
+
+**Camada 1 (fática, consolidar JÁ existente)** — 6 passos incrementais (~12-15h dev total):
+- 1.1 dossier captura `patient_id` (~1-2h) — degrau cirúrgico imediato
+- 1.2 hook lê `clinical_assessments` FOLLOW_UP (18 rows reais) (~2-3h)
+- 1.3 hook lê dossiês prévios mesmo paciente (~1h)
+- 1.4 UI toggle médico por fonte (V1.9.318 mitigation) (~2-3h)
+- 1.5 aba Evolução separa visualmente 3 fontes (~2-3h)
+- 1.6 hierarquia semântica (texto Ricardo: contexto ativo / relevância temporal / eventos-chave / ecos narrativos / mudanças conduta / reflexões persistentes)
+
+**Camada 2 (conceitual, requer Ricardo)**:
+- 2.1 identidade Matrix redefinida em UI/copy ("lente reflexiva da trajetória clínica")
+- 2.2 dossier vira evento longitudinal na timeline do prontuário
+- 2.3 feature **plano terapêutico** — buraco arquitetural REAL (precursora, sem ela Matrix não tem o que ler)
+
+**Camada 3 (relacional) — VETADA INSTITUCIONALMENTE**: modelar trajetória cognitiva do médico = Babylon-pattern (Watson Health $5B→$1B) + CFM 2.314 + V1.9.388-A.3.
+
+**Alternativa segura Camada 3**: Matrix sugere PERGUNTAS que médico ainda não fez (anti-espelho, pró-complementariedade) — só após Camada 2.1 estabilizar + Ricardo aprovar boundary explícita.
+
+### Princípio meta cristalizado (memory `feedback_sistema_tem_contexto_demais_falta_semantica_clinica_28_05`)
+
+> **"O problema não é falta de dados — é falta de separação epistemológica entre as fontes. Mais valor nasce de SEPARAR o que está junto do que ADICIONAR o que não existe."**
+
+Aplicável a TODA decisão de RAG/corpus expansion futuro. 3 perguntas empíricas obrigatórias antes de "X deve ler mais Y":
+1. Que fontes Y existem hoje? (PAT mapeia)
+2. Estão separadas semanticamente no UI?
+3. Médico distingue empíricamente o que é cada uma?
+
+Se NÃO a #2 ou #3: solução é **separação semântica**, não expansão de corpus.
+
+### 3 perguntas pendentes pro Ricardo (destravar Camada 2)
+
+1. *"Quando você diz 'Matrix lê evoluções', são as 18 FOLLOW_UP (médico escreveu) ou as 6070 conversas IA também?"*
+2. *"Matrix lê automaticamente OU sob comando seu via toggle de fonte?"* (V1.9.318 mitigation)
+3. *"Plano terapêutico — quer construir a feature primeiro (tabela vazia esperando) OR Matrix só lê o que já existe?"*
+
+### Memorias novas cristalizadas (NÍVEL 1 entry point)
+
+- `feedback_sistema_tem_contexto_demais_falta_semantica_clinica_28_05.md` — princípio meta
+- `project_matrix_roadmap_camadas_1_2_3_28_05.md` — roadmap completo
+
+### Pendências de fechamento elite
+
+| Item | Status |
+|---|---|
+| Smoke V1.9.480 empírico (Pedro abrir Perfil + testar) | ❌ Pendente |
+| Decisão dossier Ricardo órfão (`ecd67cf0`) | ❌ Pendente — vincular agora OR aguardar Camada 1.1 |
+| Mensagem Ricardo 3 perguntas (WhatsApp) | ❌ Rascunho entregue, Pedro envia |
+| Sync `public.users.email` após confirmação Supabase | 🟡 Gap aceitável pré-PMF (auth é canônica) |
+| Vercel deploy status | ❓ Não validado (presumido OK — push 4 refs sem erro) |
+| PAT rotation fim de sessão | ❌ Princípio cristalizado, lembrar Pedro |
+
+### Frase âncora Bloco I
+
+> *"Sessão tarde 28/05 ficou triple-A por descomprimir: V1.9.479 cirúrgica (~10 linhas) + V1.9.480 polish defensivo (~190 linhas) + Mario fix empírico + auditoria Matrix REVELADORA (V1.9.382 já existe, 3 fontes embaralhadas, plano terapêutico nunca codado). Sistema ficou mais coerente sem adicionar feature grande. Camada 3 vetada institucionalmente — Babylon-pattern bloqueado. Princípio meta novo cristalizado: o problema não é falta de dados, é falta de separação epistemológica."*
+
+---
+
 ## 📋 ÚLTIMA INSTRUÇÃO pra próxima sessão Claude (laptop ou desktop)
 
 **LER NESTA ORDEM**:
