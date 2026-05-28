@@ -121,15 +121,25 @@ const PatientHeaderActions: React.FC<PatientHeaderActionsProps> = ({
                   neutro + ícone emerald. WhatsApp mantém verde marca (#25D366) como único
                   accent — convenção visual universal reconhecível, mesma lógica do Cann
                   Matrix âmbar no Professional / Fórum no Aluno.
+
+                  V1.9.479 (28/05/2026) — Hierarquia AEC-protagonista. Ricardo trouxe
+                  empíricamente princípio "todo usuário levado à AEC inicial" + Pedro
+                  validou print do dashboard que mostrou Iniciar Avaliação visualmente
+                  nivelada com Vincular Médico (anti-AEC). Solução cirúrgica:
+                  - Iniciar Avaliação vira primary emerald (ring + shadow glow + pulse
+                    lento 3s no ícone Brain + hover scale 1.02)
+                  - Agendar Consulta DESCE pra slate secundário (igual aos demais)
+                  - Restante intocado
+                  Comunica AEC como coração SEM bloquear fluxo (anti-Babylon).
                 */}
                 <div className="grid grid-cols-3 gap-2 md:flex md:flex-wrap md:gap-3">
-                    {/* Agendar Consulta (ação primária) */}
+                    {/* Agendar Consulta (rebaixada V1.9.479 — secundária) */}
                     <button
                         onClick={onScheduleClick}
                         title="Agendar consulta"
-                        className="flex flex-col items-center justify-center gap-1 aspect-[5/4] md:aspect-auto md:flex-row md:gap-2 md:px-5 md:py-3 bg-emerald-500/10 text-emerald-300 hover:bg-emerald-500/20 border border-emerald-500/30 rounded-xl text-[11px] leading-tight md:text-base font-medium transition-colors text-center md:text-left"
+                        className="flex flex-col items-center justify-center gap-1 aspect-[5/4] md:aspect-auto md:flex-row md:gap-2 md:px-5 md:py-3 bg-slate-800/40 text-slate-200 hover:bg-slate-700/60 border border-slate-700/50 rounded-xl text-[11px] leading-tight md:text-base font-medium transition-colors text-center md:text-left"
                     >
-                        <Calendar className="w-5 h-5" />
+                        <Calendar className="w-5 h-5 text-emerald-400" />
                         <span>Agendar<br className="md:hidden" /> Consulta</span>
                     </button>
                     {/* V1.9.253 — Enviar Medico agora abre aba Relatorios (Pedro 13/05).
@@ -144,14 +154,14 @@ const PatientHeaderActions: React.FC<PatientHeaderActionsProps> = ({
                         <FileText className="w-5 h-5 text-emerald-400" />
                         <span>Enviar<br className="md:hidden" /> Médico</span>
                     </button>
-                    {/* Iniciar Avaliação */}
+                    {/* Iniciar Avaliação — V1.9.479 PROTAGONISTA AEC (Ricardo 28/05) */}
                     {onStartAssessment && (
                         <button
                             onClick={onStartAssessment}
-                            title="Iniciar avaliação clínica"
-                            className="flex flex-col items-center justify-center gap-1 aspect-[5/4] md:aspect-auto md:flex-row md:gap-2 md:px-5 md:py-3 bg-slate-800/40 text-slate-200 hover:bg-slate-700/60 border border-slate-700/50 rounded-xl text-[11px] leading-tight md:text-base font-medium transition-colors text-center md:text-left"
+                            title="Iniciar avaliação clínica — o coração da plataforma"
+                            className="flex flex-col items-center justify-center gap-1 aspect-[5/4] md:aspect-auto md:flex-row md:gap-2 md:px-5 md:py-3 bg-emerald-500/15 text-emerald-200 hover:bg-emerald-500/25 border border-emerald-500/40 ring-1 ring-emerald-500/20 shadow-lg shadow-emerald-500/10 hover:shadow-emerald-500/30 hover:scale-[1.02] rounded-xl text-[11px] leading-tight md:text-base font-semibold transition-all duration-300 text-center md:text-left"
                         >
-                            <Brain className="w-5 h-5 text-emerald-400" />
+                            <Brain className="w-5 h-5 animate-pulse" style={{ animationDuration: '3s' }} />
                             <span>Iniciar<br className="md:hidden" /> Avaliação</span>
                         </button>
                     )}

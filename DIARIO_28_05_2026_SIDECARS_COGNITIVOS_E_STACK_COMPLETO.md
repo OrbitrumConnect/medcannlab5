@@ -264,6 +264,81 @@ Anti-overclaim aplicado retroativamente.
 
 ---
 
+## 🩺 BLOCO H — Smoke AEC end-to-end 28/05 manhã (~08h26 BRT)
+
+### Contexto
+
+Pedro (conta paciente teste `d5e01ead`) executou AEC completa: queixa "estresse" → CONSENT_COLLECTION → FINAL_RECOMMENDATION → COMPLETED ("obrigado noa"). Validado via logs Edge `tradevision-core` + PAT no banco.
+
+### Resultado: SMOKE PASS ✅
+
+| Item | Status | Evidência |
+|---|---|---|
+| AEC FSM completou | ✅ | `phase=COMPLETED`, `is_complete=true`, `invalidated_at=null` |
+| Report assinado | ✅ | `ef7b33d9-0e54-4ec3-9e81-3af44e34150d`, signed 11:26:27 |
+| Scores calculados | ✅ | `clinical_score=49`, `confidence=high`, 8 sinais source |
+| AEC GATE V1.5 | ✅ | reteve "concordo" em CONSENT_COLLECTION (REGRA HARD §1) |
+| Verbatim V1.9.86 | ✅ | bypass GPT em 3 fases hard-lock |
+| Idempotência | ✅ | `PIPELINE_REDUNDANT_TRIGGER` capturou re-disparo Caminho 1 |
+| Pipeline 5 stages | ✅ | START → CLEANUP → REPORT → AXES → RATIONALITY → DONE (39s) |
+
+### Achados arquiteturais NOVOS (não estavam em memória)
+
+**1. SHARE faz OVERWRITE em `professional_id` / `doctor_id`, não APPEND**
+
+Pedro compartilhou `ef7b33d9` pra Eduardo (`f4a62265`) 3min50s após signed_at:
+- `professional_id = Eduardo` (sobrescreveu Ricardo)
+- `doctor_id = Eduardo` (sobrescreveu Ricardo)
+- `shared_with = [Eduardo]` (Ricardo NÃO está no array)
+
+**Comportamento histórico mudou em algum momento**: report `8f4876e9` (26/04) tem `shared_with=[Ricardo, 5a9ada8b]` — multi-share funcionou. Hoje virou overwrite. Não sei quando mudou ou se foi intencional.
+
+**Memória clínica preservada nos antigos**: 7 reports pré-22/05 mantêm `professional_id=Ricardo`. Paciente que "volta pro médico antigo" → médico antigo tem histórico intacto via reports antigos.
+
+**2. RLS `Reports access` tem UUIDs HARDCODED + caminho via `is_admin()` transparente**
+
+```sql
+is_admin()                                    -- Ricardo (rrvalenca, admin) vê TUDO
+OR auth.uid() IN [17345b36, f62c3f62, 99286e6f, f4a62265]  -- whitelist
+OR professional_id = auth.uid()
+OR doctor_id = auth.uid()
+OR patient_id = auth.uid()
+```
+
+Eduardo (`f4a62265`) está HARDCODED na policy (anti-pattern). Ricardo vê o report novo 28/05 não por share, mas por ser admin (`role=admin`).
+
+**Lacuna latente**: policy NÃO tem caminho via `appointments`. Quando entrar profissional puro (role=profissional sem admin), reports gerados após paciente compartilhar pra outro médico ficam invisíveis pra ele — mesmo com 11 appointments históricos.
+
+**3. Racionalidades: pipeline gera 1 (integrative), médico aciona as outras 4**
+
+Baseline empírico últimos 10 reports assinados:
+- 9/10 com **1 racionalidade** (`integrative`, `generated_by=noa_ai`)
+- 1/10 com 3 racionalidades (report `fa003f50` de 15/05, alguém acionou análise pós-pipeline)
+
+→ Comportamento ESPERADO. Pipeline `tradevision-core` stage RATIONALITY gera 1 automaticamente. As outras 4 (biomedical/homeopathic/tcm/ayurvedic) são via service `rationalityAnalysisService.saveAnalysisToReport` quando médico aciona UI.
+
+### Backlog RECONFIRMADO (não-novo, mas empíricamente reproduzido hoje)
+
+🔴 **PII em `clinical_rationalities.assessment`**:
+```
+"A análise do relatório clínico de Pedro Paciente revela..."
+                              ^^^^^^^^^^^^^^^^^^^
+```
+V1.9.452 sanitize já no backlog P0 — smoke reproduziu vazamento exato.
+
+🟡 **Dual-write `content.rationalities` jsonb vs tabela** ([[feedback_dual_write_contract_jsonb_vs_tabela_18_05]]):
+- jsonb `content.rationalities = null` ❌
+- tabela 1 row populada ⚠️
+- UI paciente lê do jsonb → vai mostrar zero racionalidade no app
+
+Já documentado, não-novo. Smoke reproduziu drift esperado.
+
+### Frase âncora Bloco H
+
+> *"Smoke AEC 28/05 PASS end-to-end. AEC + Pipeline + Signature + Share + RLS funcionando. 3 aprendizados arquiteturais novos cristalizados: share = overwrite (não append) / RLS admin transparente (Ricardo vê tudo via role) / pipeline gera 1 racionalidade (médico aciona 4). 2 backlog reconfirmados empíricamente: PII em assessment + dual-write jsonb null."*
+
+---
+
 ## 📋 ÚLTIMA INSTRUÇÃO pra próxima sessão Claude (laptop ou desktop)
 
 **LER NESTA ORDEM**:
