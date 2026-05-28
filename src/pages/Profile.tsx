@@ -32,8 +32,16 @@ const Profile: React.FC = () => {
   const { success, error: showError } = useToast()
   const [isEditing, setIsEditing] = useState(false)
   const [isPasswordEditing, setIsPasswordEditing] = useState(false)
+  // V1.9.480 (28/05/2026) — Alterar email com re-auth + confirmacao Supabase Auth.
+  // Empirico caso Mario Valenca: typo no email cadastrado (oulook.com) bloqueava
+  // recovery. Campo email do form principal continua disabled (defesa); mudanca
+  // exclusiva via modal dedicado com senha atual + email duplo + chama
+  // supabase.auth.updateUser({ email }) que envia confirmacao pro NOVO email.
+  // Email antigo continua valido ate confirmacao (protecao nativa Supabase).
+  const [isEmailEditing, setIsEmailEditing] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
+  const [showEmailPassword, setShowEmailPassword] = useState(false)
 
   const [formData, setFormData] = useState({
     name: '',
@@ -57,6 +65,13 @@ const Profile: React.FC = () => {
     currentPassword: '',
     newPassword: '',
     confirmPassword: ''
+  })
+
+  // V1.9.480 — payload alterar email (re-auth + email duplo)
+  const [emailData, setEmailData] = useState({
+    newEmail: '',
+    confirmEmail: '',
+    currentPassword: ''
   })
 
   const [preferences, setPreferences] = useState({
@@ -381,6 +396,95 @@ const Profile: React.FC = () => {
     } catch (err: any) {
       showError(err.message || 'Erro ao alterar senha')
       console.error('Erro:', err)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  // V1.9.480 — handler de input dos campos do modal Alterar Email
+  const handleEmailDataChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target
+    setEmailData(prev => ({
+      ...prev,
+      [name]: name === 'newEmail' || name === 'confirmEmail' ? value.trim().toLowerCase() : value
+    }))
+  }
+
+  // V1.9.480 — alterar email com re-auth + supabase.auth.updateUser
+  const handleChangeEmail = async () => {
+    const newEmail = emailData.newEmail.trim().toLowerCase()
+    const confirmEmail = emailData.confirmEmail.trim().toLowerCase()
+
+    if (!newEmail || !confirmEmail) {
+      showError('Preencha o novo email e a confirmacao.')
+      return
+    }
+    if (newEmail !== confirmEmail) {
+      showError('Os emails nao coincidem.')
+      return
+    }
+    // validacao basica de formato
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!emailRegex.test(newEmail)) {
+      showError('Email invalido.')
+      return
+    }
+    if (user?.email && newEmail === user.email.toLowerCase()) {
+      showError('O novo email e igual ao atual.')
+      return
+    }
+    if (!emailData.currentPassword || emailData.currentPassword.length < 6) {
+      showError('Digite sua senha atual para confirmar a alteracao.')
+      return
+    }
+    if (!user?.email) {
+      showError('Sessao nao detectada. Faca login novamente.')
+      return
+    }
+
+    setIsLoading(true)
+    try {
+      // Re-auth: valida senha atual ANTES de mudar email (anti account takeover)
+      const { error: signInErr } = await supabase.auth.signInWithPassword({
+        email: user.email,
+        password: emailData.currentPassword
+      })
+      if (signInErr) {
+        showError('Senha atual incorreta.')
+        return
+      }
+
+      // Dispara mudanca de email — Supabase envia link de confirmacao pro NOVO email.
+      // public.users.email so sera atualizado quando user confirmar pelo link.
+      const { error } = await supabase.auth.updateUser({ email: newEmail })
+      if (error) throw error
+
+      // Audit log LGPD (best-effort, nao bloqueia em caso de falha)
+      try {
+        await (supabase as any).from('noa_logs').insert({
+          interaction_type: 'profile_email_change_requested_v1_9_480',
+          payload: {
+            user_id: user.id,
+            from_email: user.email,
+            to_email: newEmail,
+            source: 'profile_modal'
+          }
+        })
+      } catch {
+        // fail-open
+      }
+
+      success(`Email de confirmacao enviado para ${newEmail}. Clique no link recebido para finalizar a alteracao. O email atual continua valido ate la.`)
+      setEmailData({ newEmail: '', confirmEmail: '', currentPassword: '' })
+      setIsEmailEditing(false)
+    } catch (err: any) {
+      const msg = err?.message || 'Erro ao alterar email'
+      if (msg.toLowerCase().includes('already')) {
+        showError('Este email ja esta em uso por outra conta.')
+      } else {
+        showError(msg)
+      }
+      console.error('[handleChangeEmail] erro:', err)
     } finally {
       setIsLoading(false)
     }
@@ -1017,6 +1121,100 @@ const Profile: React.FC = () => {
                 </div>
               </div>
             )}
+
+            {/* V1.9.480 — Alterar Email (separador + bloco proprio) */}
+            <div className="mt-4 pt-4 border-t border-slate-700/60">
+              <div className="flex items-center justify-between mb-2">
+                <h3 className="text-xs font-semibold text-slate-300">Email de acesso</h3>
+                {!isEmailEditing && (
+                  <button
+                    onClick={() => setIsEmailEditing(true)}
+                    className="text-emerald-400 hover:text-emerald-300 text-xs font-semibold"
+                  >
+                    Alterar Email
+                  </button>
+                )}
+              </div>
+
+              {!isEmailEditing && (
+                <p className="text-[11px] text-slate-500">
+                  Email atual: <span className="text-slate-300">{user?.email || '—'}</span>
+                </p>
+              )}
+
+              {isEmailEditing && (
+                <div className="space-y-3">
+                  <p className="text-[11px] text-slate-400 leading-relaxed">
+                    Voce vai receber um link de confirmacao no <strong>novo email</strong>.
+                    Clique no link para finalizar. O email atual continua valido ate la.
+                  </p>
+                  <div>
+                    <label className="block text-xs font-medium text-slate-400 mb-1">Novo Email</label>
+                    <input
+                      type="email"
+                      name="newEmail"
+                      value={emailData.newEmail}
+                      onChange={handleEmailDataChange}
+                      autoComplete="off"
+                      className="w-full px-3 py-2 text-sm bg-slate-700 border border-slate-600 rounded text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                      placeholder="novo.email@exemplo.com"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-slate-400 mb-1">Confirmar Novo Email</label>
+                    <input
+                      type="email"
+                      name="confirmEmail"
+                      value={emailData.confirmEmail}
+                      onChange={handleEmailDataChange}
+                      autoComplete="off"
+                      className="w-full px-3 py-2 text-sm bg-slate-700 border border-slate-600 rounded text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                      placeholder="digite o novo email novamente"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-slate-400 mb-1">Senha Atual (seguranca)</label>
+                    <div className="relative">
+                      <input
+                        type={showEmailPassword ? 'text' : 'password'}
+                        name="currentPassword"
+                        value={emailData.currentPassword}
+                        onChange={handleEmailDataChange}
+                        autoComplete="current-password"
+                        className="w-full px-3 py-2 text-sm bg-slate-700 border border-slate-600 rounded text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 pr-9"
+                        placeholder="Digite sua senha atual"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowEmailPassword(!showEmailPassword)}
+                        className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-300"
+                      >
+                        {showEmailPassword ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                      </button>
+                    </div>
+                  </div>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={handleChangeEmail}
+                      disabled={isLoading}
+                      className="bg-emerald-600 hover:bg-emerald-700 disabled:bg-emerald-800 text-white px-3 py-1.5 rounded text-xs font-medium"
+                    >
+                      {isLoading ? 'Enviando...' : 'Confirmar alteracao'}
+                    </button>
+                    <button
+                      onClick={() => {
+                        setIsEmailEditing(false)
+                        setEmailData({ newEmail: '', confirmEmail: '', currentPassword: '' })
+                      }}
+                      disabled={isLoading}
+                      className="bg-slate-600 hover:bg-slate-700 text-white px-3 py-1.5 rounded text-xs font-medium"
+                    >
+                      Cancelar
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Ações Rápidas — abaixo de Segurança, triggers lado a lado */}
