@@ -32,7 +32,8 @@ import {
   LogOut,
   Shield,
   Pill,
-  Sparkles
+  Sparkles,
+  MessageSquare
 } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
 import { useToast } from '../contexts/ToastContext'
@@ -1211,6 +1212,31 @@ const Sidebar: React.FC<SidebarProps> = ({
             </Link>
           </div>
         )}
+
+        {/* V1.9.486-C — Botão Feedback (acima do Sair) — navega pra /app/feedback */}
+        <div className="px-3 pb-2">
+          <Link
+            to="/app/feedback"
+            onClick={() => isMobile && onClose?.()}
+            className={`w-full flex items-center ${isCollapsed ? 'justify-center' : 'gap-3'} px-3 py-2.5 rounded-lg transition-all group`}
+            style={{
+              background: 'rgba(16, 185, 129, 0.08)',
+              border: '1px solid rgba(16, 185, 129, 0.2)'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = 'rgba(16, 185, 129, 0.18)'
+              e.currentTarget.style.borderColor = 'rgba(16, 185, 129, 0.35)'
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = 'rgba(16, 185, 129, 0.08)'
+              e.currentTarget.style.borderColor = 'rgba(16, 185, 129, 0.2)'
+            }}
+            title={isCollapsed ? 'Feedback / Suporte' : ''}
+          >
+            <MessageSquare className="w-5 h-5 text-emerald-400 flex-shrink-0 group-hover:text-emerald-300" />
+            {!isCollapsed && <span className="text-sm font-medium text-emerald-400 group-hover:text-emerald-300 flex-1 text-left">Feedback</span>}
+          </Link>
+        </div>
 
         {/* Botão Sair - Acima do Reduzir */}
         <div className="px-3 pb-2">
