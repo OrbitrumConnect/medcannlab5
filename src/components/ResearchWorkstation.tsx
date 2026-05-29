@@ -79,7 +79,15 @@ const ResearchWorkstation: React.FC<ResearchWorkstationProps> = ({ initialTab })
     //   Noa Matrix será adicionada em V1.9.379-D (chat pesquisa Z2 não-diretivo)
     const tabs: { id: TabId; label: string; icon: any; color: string; group: TabGroup }[] = [
         { id: 'dashboard', label: 'Dashboard de Pesquisa', icon: BarChart3, color: 'text-emerald-400', group: 'pesquisa' },
-        { id: 'casos-similares', label: 'Casos Similares', icon: Sparkles, color: 'text-purple-400', group: 'pesquisa' },
+        // V1.9.492 (Pedro 29/05) — aba "Casos Similares" (V1.9.354 spike admin Fase 1)
+        // ESCONDIDA. Matrix busca embutida (NoaMatrixView "Buscar paciente ou caso")
+        // herdou os MESMOS hooks (useCaseSearch + useSearchHistory.recordCaseOpen) e
+        // cobre 100% do fluxo. Rota + componente AdminCasosSimilares.tsx + hooks
+        // PRESERVADOS (reversão = descomentar 1 linha). Smoke 7-14d sem aba visível
+        // → Fase 2 deleta tudo. Princípio "escolher 1 caminho e matar resto" (CLAUDE.md
+        // classificação 🟡 SUPORTE) aplicado empíricamente: Pedro confirmou 29/05
+        // que ninguém usava a aba; Matrix é o caminho moldado pra Ricardo.
+        // { id: 'casos-similares', label: 'Casos Similares', icon: Sparkles, color: 'text-purple-400', group: 'pesquisa' },
         // [V1.9.383] Reorder Pedro 19/05 noite: Nôa Matrix vem ANTES do Fórum.
         // Fluxo cognitivo: ver casos → ESTRUTURAR (Matrix) → DEBATER (Fórum) → estudar (Literatura)
         { id: 'noa-matrix', label: 'Nôa Matrix', icon: Sparkles, color: 'text-purple-400', group: 'pesquisa' },
