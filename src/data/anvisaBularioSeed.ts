@@ -94,7 +94,7 @@ export const ANVISA_BULARIO_SEED: BularioEntry[] = [
     indicacaoResumida: 'Espasticidade moderada-grave em esclerose múltipla refratária a outros tratamentos.',
     bularioUrl: anvisa('Mevatyl'),
     tarja: 'preta',
-    observacao: 'Único cannabinoide com registro ANVISA stricto sensu como medicamento (RDC 327/2019 + 660/2022).',
+    observacao: 'Primeiro produto cannabis registrado ANVISA como medicamento (2017, nabiximols THC+CBD). Categoria stricto sensu (medicamento), distinta dos canabidióis isolados registrados via RDC 327/2019.',
   },
   {
     id: 'canabidiol-prati-donaduzzi',
@@ -108,7 +108,7 @@ export const ANVISA_BULARIO_SEED: BularioEntry[] = [
     bularioUrl: anvisa('Canabidiol'),
     dailymedUrl: 'https://dailymed.nlm.nih.gov/dailymed/search.cfm?query=cannabidiol',
     tarja: 'preta',
-    observacao: 'Produto cannabis primeiro registrado ANVISA com RDC 327/2019. Importação dispensada via Prati-Donaduzzi.',
+    observacao: 'Primeiro canabidiol isolado nacional registrado ANVISA via RDC 327/2019 (2020). Categoria "produto de cannabis" (≠ medicamento stricto sensu — distinto do Mevatyl). Dispensa autorização individual ANVISA pra importação.',
   },
   {
     id: 'canabidiol-ease-labs',
