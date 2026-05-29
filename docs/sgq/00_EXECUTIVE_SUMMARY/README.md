@@ -1,0 +1,13 @@
+# Executive Summary 5-10 pgs
+
+Esta pasta agrupa documentos relacionados a **executive summary 5-10 pgs** do SGQ MedCannLab.
+
+## Documentos canônicos referenciados
+
+- [EXECUTIVE_SUMMARY.md](00_EXECUTIVE_SUMMARY/EXECUTIVE_SUMMARY.md)
+
+## Como navegar
+
+Os documentos canônicos vivem em [`docs/sgq/drafts/`](../drafts/) para revisão granular. Esta estrutura por pasta numerada (`00_` a `09_`) é a recomendada pela consultoria externa 29/05 para facilitar leitura por auditor.
+
+Para copiar todos em arquivo único, ver [`SGQ_CONSOLIDADO_29_05_2026.md`](../SGQ_CONSOLIDADO_29_05_2026.md).

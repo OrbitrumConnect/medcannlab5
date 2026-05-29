@@ -285,6 +285,17 @@ Cada EVD é uma tag git imutável, commit, ou registro empírico verificável.
 - Linhas da matriz: 18 cadeias URS→EVD completas
 - Itens totais rastreáveis: **193**
 
+## 7.1. Integração com PLN-VER-001 (cobertura por requisito)
+
+Após PLN-VER-001 entregue 29/05 (V1.9.502-C), cobertura SRS → VER-MET adicionada empíricamente:
+
+- **44/44 SRS** têm pelo menos 1 método de verificação ou monitoramento mapeado.
+- **8 Release Gates** (G1-G8) consolidam bloqueadores por escopo da mudança.
+- **10 métodos VER-MET** = expansão dos 11 testes TST originais com semântica IEC 62304 §5.6 explícita.
+- **4 cadências MON-CAD** separadas de VER-CAD para evitar discussão semântica com auditor (sugestão consultoria externa 29/05).
+
+Detalhes em [PLN-VER-001 §8.1](./16_PLN-VER-001_Plano_de_Verificacao.md).
+
 ## 8. Como usar este documento
 
 ### 8.1. Pergunta típica de auditor

@@ -64,11 +64,34 @@ Adicionados após avaliação GPT externa (nota 8/10) que destacou gap em "conhe
 13. **SAD-001** — Software Architecture Document (47 itens: 26 COMP + 5 IFACE + 3 FLOW + 13 DEC)
 14. **TRM-001** — Traceability Matrix (193 itens rastreáveis, 17 CTL + 11 TST + 23 EVD)
 
-### Bloco 3 — Parqueados (3 docs dependem de Marco 2+)
+### Bloco 3 — Operacional + Verificação (2 docs entregues 29/05 noite)
 
-- ⏸️ **PLN-VER-001** — Plano de Verificação formal (depende `clinical_qa_runs` cadência acumulada)
+Adicionados após 2ª avaliação GPT externa que destacou "verificação formal + governança como próximo salto":
+
+15. **PLAN-FLIP-001** — Plano de flip `verify_jwt=true` em Edge `tradevision-core` (com mapping empírico de 5 callers, smoke pré/pós, rollback). Fecha RSK-001 H8 / TRM Gap #3 / SRS-NFR-06.
+16. **PLN-VER-001** — Plano de Verificação (10 métodos + 10 critérios + 7 cadências verif + 4 cadências monitor + 6 responsáveis + 8 Release Gates + cobertura SRS→VER-MET 44/44).
+
+### Bloco 4 — Parqueados (2 docs dependem de Marco 2+ / consultora)
+
 - ⏸️ **PROC-INC-001** — Gestão de Incidentes (depende histórico real de incidentes classificados Tecnovigilância)
 - ⏸️ **PROC-PMS-001** — Post-Market Surveillance (literalmente exige Marco 2 — paciente externo pagante pra haver "market")
+
+## Estrutura por pasta executiva (recomendada pela consultoria 29/05)
+
+Pasta `docs/sgq/` reorganizada em estrutura padrão consultora pra reduzir horas de descoberta:
+
+- `00_EXECUTIVE_SUMMARY/` — Sumário executivo 5-10 páginas para consultora
+- `01_SGQ/` — POPs + Manual + Plano IEC + PLN-VER
+- `02_URS/` — User Requirements
+- `03_SRS/` — Software Requirements
+- `04_SAD/` — Software Architecture
+- `05_RISK/` — Risk Management
+- `06_TRACEABILITY/` — Traceability Matrix
+- `07_EVIDENCES/` — Links pra evidências git
+- `08_TAGS/` — Lista de 11 locks com mensagens
+- `09_CLINICAL_VALIDATION/` — Validação clínica + PLAN-FLIP
+
+Os documentos canônicos continuam em `drafts/` (revisão granular). Cada pasta numerada tem `README.md` apontando pros drafts referenciados.
 
 ## Aviso de conformidade
 
