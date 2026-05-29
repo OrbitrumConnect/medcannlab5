@@ -66,6 +66,23 @@ export interface LongitudinalPriorDossier {
   snippet?: string         // primeiros ~200 chars da primeira mensagem do médico
 }
 
+// V1.9.489 (Camada 1.2 Matrix-Longitudinal — Pedro 29/05) — Evoluções escritas
+// PELO MÉDICO via Terminal "Nova Evolução" (clinical_assessments WHERE
+// assessment_type = 'FOLLOW_UP'). Fonte distinta de AEC (clinical_reports) e
+// de chat_interaction (patient_medical_records). Princípio meta 28/05:
+// separação semântica > expansão de corpus — Matrix vê o que MÉDICO escreveu
+// como contexto separado e não mistura com IA Residente.
+// LGPD: contentExcerpt limitado a 200 chars (preserva body anexável compacto;
+// médico vê excerto + data + auto-identifica). doctor_id deixado opcional pra
+// futuro display ("Evolução por Dr X em DD/MM").
+export interface LongitudinalFollowUp {
+  id: string
+  created_at: string
+  status: string
+  contentExcerpt?: string  // primeiros 200 chars de clinical_report OU data.clinicalNotes
+  doctorIdRef?: string | null
+}
+
 export interface PatientLongitudinalData {
   patientName: string | null         // Nome REAL (médico precisa identificar internamente)
   patientPseudonym: string | null    // V1.9.384 — código curto pra contexto Matrix (LGPD-friendly)
@@ -73,6 +90,8 @@ export interface PatientLongitudinalData {
   rationalities: LongitudinalRationality[]
   // V1.9.483 — dossiês prévios do mesmo paciente (continuidade interpretativa)
   priorDossiers: LongitudinalPriorDossier[]
+  // V1.9.489 — evoluções escritas pelo médico (clinical_assessments FOLLOW_UP)
+  followUps: LongitudinalFollowUp[]
   loading: boolean
   error: string | null
 }
@@ -104,6 +123,11 @@ const ASSESSMENT_EXCERPT_CHARS = 200
 // 5 é suficiente pra continuidade interpretativa empírica (Carolina tem só 2 hoje).
 const MAX_PRIOR_DOSSIERS = 5
 const DOSSIER_SNIPPET_CHARS = 200
+// V1.9.489 — cap defensivo FOLLOW_UP. Sistema tem ~18 rows totais hoje (empírico
+// audit 28/05); por paciente raramente mais que 5-10. Cap 10 evita corpus inflar
+// sem perder continuidade do que o médico escreveu.
+const MAX_FOLLOW_UPS = 10
+const FOLLOW_UP_EXCERPT_CHARS = 200
 
 export function usePatientLongitudinal(patientId: string | undefined | null): PatientLongitudinalData {
   const [data, setData] = useState<PatientLongitudinalData>({
@@ -112,13 +136,14 @@ export function usePatientLongitudinal(patientId: string | undefined | null): Pa
     reports: [],
     rationalities: [],
     priorDossiers: [],
+    followUps: [],
     loading: false,
     error: null,
   })
 
   useEffect(() => {
     if (!patientId) {
-      setData({ patientName: null, patientPseudonym: null, reports: [], rationalities: [], priorDossiers: [], loading: false, error: null })
+      setData({ patientName: null, patientPseudonym: null, reports: [], rationalities: [], priorDossiers: [], followUps: [], loading: false, error: null })
       return
     }
 
@@ -163,6 +188,19 @@ export function usePatientLongitudinal(patientId: string | undefined | null): Pa
           .order('generated_at', { ascending: false })
           .limit(MAX_PRIOR_DOSSIERS)
 
+        // V1.9.489 (Camada 1.2) — evoluções FOLLOW_UP escritas pelo médico via
+        // Terminal "Nova Evolução". Fonte distinta de AEC (clinical_reports)
+        // e de chat_interaction. Filtra exato assessment_type='FOLLOW_UP'
+        // (não incluir TRIAGE/CONSULTA/IMRE — esses são fluxo IA, não evolução
+        // longitudinal escrita pelo médico). doctor_id incluso pra display futuro.
+        const { data: followUpsData } = await (supabase as any)
+          .from('clinical_assessments')
+          .select('id, created_at, status, clinical_report, data, doctor_id')
+          .eq('patient_id', patientId)
+          .eq('assessment_type', 'FOLLOW_UP')
+          .order('created_at', { ascending: false })
+          .limit(MAX_FOLLOW_UPS)
+
         if (cancelled) return
 
         const reports: LongitudinalReport[] = (reportsData || []).map((r: any) => {
@@ -193,6 +231,24 @@ export function usePatientLongitudinal(patientId: string | undefined | null): Pa
             ? r.assessment.substring(0, ASSESSMENT_EXCERPT_CHARS).trim()
             : undefined,
         }))
+
+        // V1.9.489 — mapeia FOLLOW_UPs pra interface compacta. Excerpt vem de
+        // clinical_report (string direta) OU data.clinicalNotes/investigation
+        // (jsonb fallback). Preserva ordem desc (mais recente primeiro).
+        const followUps: LongitudinalFollowUp[] = (followUpsData || []).map((a: any) => {
+          const directReport = typeof a.clinical_report === 'string' ? a.clinical_report : ''
+          const dataNotes = typeof a.data === 'object' && a.data !== null
+            ? (a.data.clinicalNotes || a.data.investigation || '')
+            : ''
+          const source = directReport || (typeof dataNotes === 'string' ? dataNotes : '')
+          return {
+            id: a.id,
+            created_at: a.created_at,
+            status: a.status || 'unknown',
+            contentExcerpt: source.length > 0 ? source.substring(0, FOLLOW_UP_EXCERPT_CHARS).trim() : undefined,
+            doctorIdRef: a.doctor_id || null,
+          }
+        })
 
         // V1.9.483 — mapeia dossiês prévios pra interface compacta. Extrai
         // metadata (cards count, messages count, primeira mensagem médico como
@@ -229,6 +285,7 @@ export function usePatientLongitudinal(patientId: string | undefined | null): Pa
               reports_loaded: reports.length,
               rationalities_loaded: rationalities.length,
               prior_dossiers_loaded: priorDossiers.length,  // V1.9.483
+              follow_ups_loaded: followUps.length,           // V1.9.489
               source: 'noa_matrix_longitudinal',
             },
           })
@@ -242,6 +299,7 @@ export function usePatientLongitudinal(patientId: string | undefined | null): Pa
           reports,
           rationalities,
           priorDossiers,  // V1.9.483
+          followUps,      // V1.9.489
           loading: false,
           error: null,
         })

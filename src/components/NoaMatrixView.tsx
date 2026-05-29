@@ -43,7 +43,7 @@ import { MatrixHelpModal } from './MatrixHelpModal'
 
 interface AttachableCard {
   id: string
-  type: 'case' | 'note' | 'pinned-search' | 'patient-report' | 'patient-rationality' | 'patient-prior-dossier' | 'pubmed-article' | 'kb-document' | 'bula-anvisa'
+  type: 'case' | 'note' | 'pinned-search' | 'patient-report' | 'patient-rationality' | 'patient-prior-dossier' | 'patient-follow-up' | 'pubmed-article' | 'kb-document' | 'bula-anvisa'
   title: string
   subtitle?: string
   body: string  // texto que vai pro contexto do chat
@@ -70,6 +70,11 @@ const CTX_LABEL: Record<AttachableCard['type'], string> = {
   // V1.9.483 (Camada 1.3 Matrix-Longitudinal) — dossiê prévio do mesmo paciente
   // como contexto de continuidade interpretativa. Snapshot imutável (só leitura).
   'patient-prior-dossier': 'DOSSIÊ ANTERIOR DESTE PACIENTE',
+  // V1.9.489 (Camada 1.2 Matrix-Longitudinal) — evolução clínica escrita
+  // pelo MÉDICO via Terminal "Nova Evolução" (clinical_assessments FOLLOW_UP).
+  // Diferenciado de RELATÓRIO (AEC = clinical_reports) e de CHAT IA paciente.
+  // Princípio meta 28/05: separação semântica > expansão de corpus.
+  'patient-follow-up': 'EVOLUÇÃO CLÍNICA DO MÉDICO',
   'pubmed-article': 'PAPER PUBMED',
   'kb-document': 'DOCUMENTO DA BASE DE CONHECIMENTO',
   // [V1.9.468] (27/05/2026) — Bula ANVISA como material referenciável no corpus
@@ -95,6 +100,7 @@ const CATEGORY_OF_TYPE: Record<AttachableCard['type'], CardCategory> = {
   'patient-report': 'patient',
   'patient-rationality': 'patient',
   'patient-prior-dossier': 'patient',  // V1.9.483 — agrupa em "Contexto Paciente"
+  'patient-follow-up': 'patient',      // V1.9.489 — evoluções FOLLOW_UP do médico
   'pubmed-article': 'research',
   'kb-document': 'research',
   'bula-anvisa': 'research',
@@ -381,11 +387,12 @@ export const NoaMatrixView: React.FC = () => {
   // (defaults ON nas existentes; Chat IA OFF por design quando entrar).
   // Princípio meta cristalizado 28/05: separação semântica > expansão de corpus.
   // Toggles só aparecem quando há patientId em foco (zero ruído sem paciente).
-  type PatientSourceKey = 'reports' | 'rationalities' | 'priorDossiers'
+  type PatientSourceKey = 'reports' | 'rationalities' | 'priorDossiers' | 'evolucoes'
   const [patientSources, setPatientSources] = useState<Record<PatientSourceKey, boolean>>({
     reports: true,
     rationalities: true,
     priorDossiers: true,
+    evolucoes: true,  // V1.9.489 — FOLLOW_UP do médico (Camada 1.2)
   })
   const togglePatientSource = (key: PatientSourceKey) => {
     setPatientSources((prev) => {
@@ -396,9 +403,10 @@ export const NoaMatrixView: React.FC = () => {
       // checagem na ordem certa abaixo).
       if (!nextValue) {
         const matchesSource = (id: string): boolean => {
-          if (key === 'reports') return id.startsWith('pr-') && !id.startsWith('pr-rat-') && !id.startsWith('pr-dos-')
+          if (key === 'reports') return id.startsWith('pr-') && !id.startsWith('pr-rat-') && !id.startsWith('pr-dos-') && !id.startsWith('pr-fup-')
           if (key === 'rationalities') return id.startsWith('pr-rat-')
-          return id.startsWith('pr-dos-')
+          if (key === 'priorDossiers') return id.startsWith('pr-dos-')
+          return id.startsWith('pr-fup-')  // evolucoes
         }
         setSelectedIds((sel) => {
           const cleaned = new Set(sel)
@@ -476,6 +484,25 @@ export const NoaMatrixView: React.FC = () => {
     // do estudo pelo prontuário"). Snapshot imutável (id, título, data, contadores
     // + snippet primeira msg médico). Card agrupa em "Contexto Paciente" via
     // CATEGORY_OF_TYPE V1.9.482. Default não-marcado (atrito intencional V1.9.382).
+    // V1.9.489 (Camada 1.2 Matrix-Longitudinal — Pedro 29/05) — evoluções
+    // escritas pelo MÉDICO via Terminal "Nova Evolução" (FOLLOW_UP). Fonte
+    // separada de AEC (clinical_reports IA Residente). Body inclui excerto
+    // pseudonimizado (pseudônimo já aplicado via patientPseudonym; conteúdo
+    // CRU pode ainda ter PII — mitigação V1.9.452 backlog endereça em massa).
+    // Aparece em "Contexto Paciente" via CATEGORY_OF_TYPE V1.9.489.
+    if (patientSources.evolucoes) longitudinal.followUps.forEach((f) => {
+      const dateStr = new Date(f.created_at).toLocaleDateString('pt-BR')
+      const excerpt = f.contentExcerpt ? `\nRecorte: "${f.contentExcerpt}..."` : ''
+      list.push({
+        id: `pr-fup-${f.id}`,
+        type: 'patient-follow-up',
+        title: `Evolução de ${dateStr}`,
+        subtitle: f.status,
+        body: `Evolução clínica escrita pelo médico sobre ${pseudonym} (${dateStr})\nStatus: ${f.status}${excerpt}`,
+        timestamp: new Date(f.created_at).getTime(),
+      })
+    })
+
     if (patientSources.priorDossiers) longitudinal.priorDossiers.forEach((d) => {
       const dateStr = new Date(d.generated_at).toLocaleDateString('pt-BR')
       const cardsLabel = d.cardsCount === 1 ? '1 card' : `${d.cardsCount} cards`
@@ -596,7 +623,7 @@ export const NoaMatrixView: React.FC = () => {
     })
 
     return list
-  }, [history.caseOpens, history.notes, history.pinned, longitudinal.reports, longitudinal.rationalities, longitudinal.priorDossiers, attachedPubmed, attachedDocs, attachedBulas, patientSources])
+  }, [history.caseOpens, history.notes, history.pinned, longitudinal.reports, longitudinal.rationalities, longitudinal.priorDossiers, longitudinal.followUps, attachedPubmed, attachedDocs, attachedBulas, patientSources])
 
   const toggleCard = (id: string) => {
     setSelectedIds((prev) => {
@@ -668,7 +695,7 @@ export const NoaMatrixView: React.FC = () => {
                 ? 'Carregando recortes longitudinais...'
                 : longitudinal.error
                   ? `Erro: ${longitudinal.error}`
-                  : `${longitudinal.reports.length} relatório(s) e ${longitudinal.rationalities.length} racionalidade(s) disponíveis abaixo. Marque o que considerar relevante.`}
+                  : `${longitudinal.reports.length} relatório(s), ${longitudinal.followUps.length} evolução(ões) e ${longitudinal.rationalities.length} racionalidade(s) disponíveis abaixo. Marque o que considerar relevante.`}
             </div>
           </div>
         </div>
@@ -689,6 +716,7 @@ export const NoaMatrixView: React.FC = () => {
           </span>
           {([
             { key: 'reports' as const, label: 'AEC', icon: Stethoscope, count: longitudinal.reports.length },
+            { key: 'evolucoes' as const, label: 'Evoluções', icon: GitBranch, count: longitudinal.followUps.length },  // V1.9.489 Camada 1.2
             { key: 'rationalities' as const, label: 'Racionalidades', icon: Activity, count: longitudinal.rationalities.length },
             { key: 'priorDossiers' as const, label: 'Dossiês prévios', icon: Archive, count: longitudinal.priorDossiers.length },
           ]).map(({ key, label, icon: Icon, count }) => {
@@ -943,6 +971,7 @@ export const NoaMatrixView: React.FC = () => {
                             card.type === 'patient-report' ? Stethoscope :
                             card.type === 'patient-rationality' ? Activity :
                             card.type === 'patient-prior-dossier' ? Archive :  // V1.9.483 — dossier arquivado (snapshot imutável)
+                            card.type === 'patient-follow-up' ? GitBranch :    // V1.9.489 — evolução longitudinal (médico escreveu)
                             card.type === 'case' ? FileText :
                             card.type === 'note' ? StickyNote :
                             card.type === 'pubmed-article' ? BookOpen :
