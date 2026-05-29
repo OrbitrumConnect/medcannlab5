@@ -38,7 +38,7 @@ import { ResearchChat } from './ResearchChat'
 import { exportDossierToPDF, type DossierMessage, type DossierData } from '../lib/dossierExport'
 import { KnowledgeBaseIntegration, type KnowledgeDocument } from '../services/knowledgeBaseIntegration'
 import { ANVISA_BULARIO_SEED, type BularioEntry } from '../data/anvisaBularioSeed'
-import { Sparkles, FileText, StickyNote, Check, Info, Folder, User, Stethoscope, Activity, X, BookOpen, Search, Loader2, Archive, Trash2, Eye, GitBranch, Library, Send, Pill } from 'lucide-react'
+import { Sparkles, FileText, StickyNote, Check, Info, Folder, User, Stethoscope, Activity, X, BookOpen, Search, Loader2, Archive, Trash2, Eye, GitBranch, Library, Send, Pill, Clock } from 'lucide-react'
 import { MatrixHelpModal } from './MatrixHelpModal'
 
 interface AttachableCard {
@@ -676,44 +676,33 @@ export const NoaMatrixView: React.FC = () => {
 
   return (
     <div className="space-y-4">
-      {/* V1.9.491 (Pedro 29/05 ~12h smoke empírico) — banner + toggles consolidados
-          numa só faixa compacta. ANTES: 2 containers separados (banner amber p-3
-          ~60px + faixa toggles px-3 py-2 ~36px = ~96px verticais com gap-4 entre).
-          DEPOIS: 1 container amber com header inline (nome + #code + erro/loading)
-          + pills toggles abaixo (count = single source of truth, sem texto
-          duplicado "5 relatório(s)..."). Resultado: ~96px → ~52px verticais (~46%
-          economia). Princípio aplicado: validação empírica via screenshot >
-          plano teórico (memory feedback_validacao_empirica_screenshot_maior_que_plano_teorico_28_05).
-          Visual amber preservado; identidade Matrix intacta. */}
+      {/* V1.9.493 (Pedro 29/05 ~14h smoke empírico²) — banner achatado pra 1 LINHA
+          única (nome + #code + pills inline). V1.9.491 ainda ficou ~120px reais
+          (pills herdaram padding maior + 2 linhas com flex-wrap = banner gigante).
+          ANTES (V1.9.491): 2 linhas verticais (~120px reais). DEPOIS (V1.9.493):
+          1 linha horizontal flex-wrap (~32-40px em desktop, quebra natural em
+          mobile/estreito). Pills compactados text-[9px] py-0 (eram py-0.5).
+          Loading/erro inline ao final da linha (ml-auto). Princípio aplicado:
+          validação empírica via screenshot > plano teórico. */}
       {patientId && (
-        <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl px-3 py-2">
-          {/* Linha 1 — header compacto: nome + #code + estado (loading/erro) */}
-          <div className="flex items-center gap-2 flex-wrap mb-1.5">
-            <User className="w-3.5 h-3.5 text-amber-300 flex-shrink-0" />
-            <span className="text-xs font-semibold text-amber-200 min-w-0 truncate">
-              {longitudinal.patientName || 'Paciente'}
+        <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl px-3 py-1.5 flex items-center gap-2 flex-wrap">
+          <User className="w-3.5 h-3.5 text-amber-300 flex-shrink-0" />
+          <span className="text-xs font-semibold text-amber-200 min-w-0 truncate">
+            {longitudinal.patientName || 'Paciente'}
+          </span>
+          {longitudinal.patientPseudonym && (
+            <span className="text-[10px] font-mono text-amber-300/70 flex-shrink-0">
+              <strong>#{longitudinal.patientPseudonym}</strong>
             </span>
-            {longitudinal.patientPseudonym && (
-              <span className="text-[10px] font-mono text-amber-300/70 flex-shrink-0">
-                · <strong>#{longitudinal.patientPseudonym}</strong> (LGPD)
-              </span>
-            )}
-            {longitudinal.loading && (
-              <span className="text-[10px] text-amber-300/70 ml-auto">Carregando…</span>
-            )}
-            {longitudinal.error && (
-              <span className="text-[10px] text-red-300 ml-auto">Erro: {longitudinal.error}</span>
-            )}
-          </div>
-          {/* Linha 2 — pills toggles (V1.9.488+489) inline. Count nos pills = SSOT.
-              Sem texto duplicado (antes: "5 relatório(s)..." + pills com counts). */}
+          )}
           {!longitudinal.loading && !longitudinal.error && (
-            <div className="flex items-center gap-1.5 flex-wrap">
+            <>
+              <span className="text-amber-500/30 flex-shrink-0">·</span>
               {([
                 { key: 'reports' as const, label: 'AEC', icon: Stethoscope, count: longitudinal.reports.length },
-                { key: 'evolucoes' as const, label: 'Evoluções', icon: GitBranch, count: longitudinal.followUps.length },  // V1.9.489 Camada 1.2
-                { key: 'rationalities' as const, label: 'Racionalidades', icon: Activity, count: longitudinal.rationalities.length },
-                { key: 'priorDossiers' as const, label: 'Dossiês prévios', icon: Archive, count: longitudinal.priorDossiers.length },
+                { key: 'evolucoes' as const, label: 'Evol', icon: GitBranch, count: longitudinal.followUps.length },
+                { key: 'rationalities' as const, label: 'Rac', icon: Activity, count: longitudinal.rationalities.length },
+                { key: 'priorDossiers' as const, label: 'Dos', icon: Archive, count: longitudinal.priorDossiers.length },
               ]).map(({ key, label, icon: Icon, count }) => {
                 const active = patientSources[key]
                 return (
@@ -722,26 +711,106 @@ export const NoaMatrixView: React.FC = () => {
                     type="button"
                     onClick={() => togglePatientSource(key)}
                     disabled={count === 0}
-                    className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] border transition-colors ${
+                    className={`flex items-center gap-0.5 px-1.5 py-0 rounded-full text-[9px] border transition-colors ${
                       count === 0
                         ? 'bg-slate-900/40 border-slate-700/30 text-slate-600 cursor-not-allowed'
                         : active
                           ? 'bg-amber-500/15 border-amber-500/40 text-amber-200 hover:bg-amber-500/20'
                           : 'bg-slate-900/40 border-slate-700/40 text-slate-500 hover:border-amber-500/30 hover:text-slate-300'
                     }`}
-                    title={count === 0 ? `Sem ${label.toLowerCase()} pra este paciente` : active ? `Desligar ${label}` : `Ligar ${label}`}
+                    title={count === 0 ? `Sem ${label === 'AEC' ? 'AEC' : label === 'Evol' ? 'evoluções' : label === 'Rac' ? 'racionalidades' : 'dossiês'} pra este paciente` : active ? `Desligar ${label}` : `Ligar ${label}`}
                     aria-pressed={active}
                   >
-                    <Icon className="w-3 h-3" />
+                    <Icon className="w-2.5 h-2.5" />
                     <span>{label}</span>
-                    <span className={active ? 'font-mono text-amber-300/80' : 'font-mono text-slate-500'}>· {count}</span>
+                    <span className={active ? 'font-mono text-amber-300/80' : 'font-mono text-slate-500'}>·{count}</span>
                   </button>
                 )
               })}
-            </div>
+            </>
           )}
+          {longitudinal.loading && (
+            <span className="text-[10px] text-amber-300/70 ml-auto flex-shrink-0">Carregando…</span>
+          )}
+          {longitudinal.error && (
+            <span className="text-[10px] text-red-300 ml-auto flex-shrink-0 truncate">Erro: {longitudinal.error}</span>
+          )}
+          <span className="text-[9px] text-amber-300/50 ml-auto flex-shrink-0">LGPD</span>
         </div>
       )}
+
+      {/* V1.9.493 (Pedro 29/05 Camada 1.6) — Mini-timeline cronológica. Condicional:
+          só aparece quando médico marcou ≥2 cards do MESMO paciente (qualquer tipo
+          patient-*). Mostra ORDEM TEMPORAL pura (data + queixa literal truncada),
+          sem síntese, sem categorização, sem inferência. Anti-Camada 3 (Babylon
+          Health $4.2B → 0 pattern). Médico vê o ritmo cronológico; interpretação
+          é responsabilidade dele.
+
+          Triagem 29/05 anti-GPT-externo: GPT externo propunha "extrair progressão
+          corporal automaticamente" + "trajetória narrativa" = Camada 3 vetada.
+          Camada 1.6 mostra APENAS: data + snippet literal + seta cronológica.
+          Smoke 5/5 perguntas-armadilha:
+          1. "Matrix está inferindo trajetória?" NÃO (só ordem temporal)
+          2. "Categorização tipo 'progressão expansiva'?" NÃO
+          3. "Inferência tipo 'dor migrou'?" NÃO (só data → data)
+          4. "Sistema decide cards pertencem juntos?" NÃO (médico marcou)
+          5. "Aparece sem médico marcar?" NÃO (gate ≥2)
+
+          Reusa selectedIds + cards (zero query nova). Aplicação direta princípio
+          meta 28/05 (separação semântica > expansão) + Z2 compressão estrutural
+          permitida (datas+citação literal = fato; não-interpretativo). */}
+      {patientId && (() => {
+        const patientCards = cards.filter(
+          (c) => selectedIds.has(c.id) && c.type.startsWith('patient-') && typeof c.timestamp === 'number'
+        )
+        if (patientCards.length < 2) return null
+        // Agrupa por data (formato pt-BR) — múltiplos cards mesmo dia = "28/05(2)"
+        const sorted = [...patientCards].sort((a, b) => (a.timestamp! - b.timestamp!))
+        const grouped = new Map<string, { dateStr: string; count: number; snippet: string; type: string }>()
+        for (const c of sorted) {
+          const d = new Date(c.timestamp!)
+          const dateStr = d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })
+          const key = dateStr
+          // Snippet: extrai 1ª linha do body OU subtitle (truncado ~20 chars)
+          const firstLine = (c.body || '').split('\n')[0] || c.subtitle || c.title
+          const cleanSnippet = firstLine.replace(/^Relatório clínico de [^(]+\([^)]+\)\s*/i, '').replace(/^Racionalidade [^a]+aplicada a [^e]+em [^\n]+/i, c.subtitle || '').trim().slice(0, 22)
+          if (grouped.has(key)) {
+            const existing = grouped.get(key)!
+            existing.count += 1
+          } else {
+            grouped.set(key, { dateStr, count: 1, snippet: cleanSnippet, type: c.type })
+          }
+        }
+        const entries = Array.from(grouped.values())
+        return (
+          <div className="bg-slate-900/40 border border-emerald-500/15 rounded-xl px-3 py-1.5 flex items-center gap-1.5 flex-wrap">
+            <Clock className="w-3 h-3 text-emerald-300 flex-shrink-0" />
+            <span className="text-[10px] uppercase tracking-wide text-emerald-300/70 font-semibold flex-shrink-0">
+              {patientCards.length} marcados:
+            </span>
+            {entries.map((entry, idx) => (
+              <React.Fragment key={entry.dateStr}>
+                <span className="flex items-center gap-1 text-[10px]">
+                  <span className="font-mono text-emerald-200">
+                    {entry.dateStr}{entry.count > 1 ? `(${entry.count})` : ''}
+                  </span>
+                  {entry.snippet && entry.count === 1 && (
+                    <span className="text-slate-400 italic truncate max-w-[140px]">
+                      "{entry.snippet}"
+                    </span>
+                  )}
+                </span>
+                {idx < entries.length - 1 && (
+                  <span className="text-emerald-500/40 flex-shrink-0">→</span>
+                )}
+              </React.Fragment>
+            ))}
+            <span className="text-[9px] text-emerald-300/40 ml-auto flex-shrink-0 italic">
+              ordem cronológica · sem interpretação
+            </span>
+          </div>
+        )
+      })()}
 
       {/* Header da view — V1.9.485 (Pedro 28/05) compactado pra liberar espaço
           vertical (especialmente mobile). Removidos: subtitle redundante com
