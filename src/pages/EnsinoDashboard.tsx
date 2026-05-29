@@ -41,6 +41,18 @@ import {
 // Schema 18 cols + RLS pré-existente (admins gerenciam, público lê published).
 import { useNewsItems, NEWS_CATEGORIES, getCategoryLabel, getCategoryColor, type NewsItem } from '../hooks/useNewsItems'
 import { NewsItemAdminModal } from '../components/NewsItemAdminModal'
+// V1.9.496 Sprint E Vertical 2 (Pedro 29/05) — Instrumentos de Avaliação plantados.
+// Mock evaluationInstruments substituído por query real à tabela
+// `public.evaluation_instruments` (criada V1.9.496 + RLS + seed 3 instrumentos).
+import {
+  useEvaluationInstruments,
+  getInstrumentCategoryLabel,
+  getInstrumentCategoryColor,
+  getInstrumentStatusLabel,
+  getInstrumentStatusBadge,
+  type EvaluationInstrument,
+} from '../hooks/useEvaluationInstruments'
+import { EvaluationInstrumentAdminModal } from '../components/EvaluationInstrumentAdminModal'
 import { useNoa } from '../contexts/NoaContext'
 import { useNoaPlatform } from '../contexts/NoaPlatformContext'
 import { useDashboardTriggers } from '../contexts/DashboardTriggersContext'
@@ -283,6 +295,36 @@ const EnsinoDashboard: React.FC<EnsinoDashboardProps> = ({ forcedSection }) => {
     await news.togglePublished(item.id, !item.published)
   }
 
+  // V1.9.496 Sprint E V2 — Evaluation Instruments (real DB, substitui mock).
+  const evaluations = useEvaluationInstruments(!isAdmin, 30)
+  const [evalModalOpen, setEvalModalOpen] = useState(false)
+  const [editingEvalItem, setEditingEvalItem] = useState<EvaluationInstrument | undefined>(undefined)
+  const [evalDeleting, setEvalDeleting] = useState<string | null>(null)
+
+  const handleEvalSubmit = async (input: any) => {
+    if (editingEvalItem) {
+      return evaluations.update(editingEvalItem.id, input)
+    }
+    return evaluations.create(input)
+  }
+  const handleEditEvalItem = (item: EvaluationInstrument) => {
+    setEditingEvalItem(item)
+    setEvalModalOpen(true)
+  }
+  const handleCreateEvalItem = () => {
+    setEditingEvalItem(undefined)
+    setEvalModalOpen(true)
+  }
+  const handleDeleteEvalItem = async (id: string) => {
+    if (!confirm('Excluir este instrumento de avaliação? Submissões vinculadas serão removidas em cascata. Ação não reversível.')) return
+    setEvalDeleting(id)
+    await evaluations.remove(id)
+    setEvalDeleting(null)
+  }
+  const handleToggleEvalPublished = async (item: EvaluationInstrument) => {
+    await evaluations.togglePublished(item.id, !item.published)
+  }
+
   // Carregar matrículas do usuário
   useEffect(() => {
     if (user) {
@@ -419,32 +461,10 @@ const EnsinoDashboard: React.FC<EnsinoDashboardProps> = ({ forcedSection }) => {
     }
   ]
 
-  const evaluationInstruments = [
-    {
-      id: 'aec-rubric',
-      title: 'Rubrica AEC 360º',
-      description: 'Avaliação triaxial da entrevista clínica com critérios de comunicação e decisão.',
-      status: 'Disponível',
-      participants: 128,
-      borderColor: 'rgba(16, 185, 129, 0.45)'
-    },
-    {
-      id: 'case-evaluation',
-      title: 'Avaliação de Casos Clínicos',
-      description: 'Instrumento para feedback estruturado em estudos de caso e role-playing.',
-      status: 'Em andamento',
-      participants: 94,
-      borderColor: 'rgba(59, 130, 246, 0.45)'
-    },
-    {
-      id: 'portfolio',
-      title: 'Portfolio Reflexivo',
-      description: 'Registro longitudinal de competências clínicas com acompanhamento de mentores.',
-      status: 'Aberto',
-      participants: 76,
-      borderColor: 'rgba(168, 85, 247, 0.45)'
-    }
-  ]
+  // V1.9.496 Sprint E V2 — Mock evaluationInstruments REMOVIDO. Substituído por
+  // useEvaluationInstruments hook (tabela `public.evaluation_instruments` + RLS +
+  // 3 instrumentos seedados via PAT). Participants = COUNT real de
+  // evaluation_submissions (honesto: empty = 0).
 
   const mentorshipPrograms = [
     {
@@ -745,30 +765,118 @@ const EnsinoDashboard: React.FC<EnsinoDashboardProps> = ({ forcedSection }) => {
             </div>
           )}
 
-          {/* Avaliações */}
+          {/* V1.9.496 Sprint E Vertical 2 — Instrumentos de Avaliação plantados (real DB).
+              Tabelas evaluation_instruments + evaluation_submissions criadas via PAT
+              migration + RLS + seed 3 instrumentos originais (Rubrica AEC 360º, Casos,
+              Portfolio). Contagem participantes = COUNT real de evaluation_submissions
+              (honesto: empty = 0, não inventa "128 participantes" como mock antigo). */}
           {activeSection === 'avaliacao' && (
             <div className="space-y-6">
               <div className="rounded-xl p-4 md:p-6" style={surfaceStyle}>
-                <h3 className="text-xl md:text-2xl font-semibold text-white mb-2">Instrumentos de Avaliação</h3>
-                <p className="text-sm md:text-base text-slate-300">Ferramentas para acompanhamento do progresso acadêmico, avaliações formativas e certificações.</p>
+                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+                  <div>
+                    <h3 className="text-xl md:text-2xl font-semibold text-white mb-2">Instrumentos de Avaliação</h3>
+                    <p className="text-sm md:text-base text-slate-300">Ferramentas para acompanhamento do progresso acadêmico, avaliações formativas e certificações.</p>
+                  </div>
+                  {isAdmin && (
+                    <button
+                      type="button"
+                      onClick={handleCreateEvalItem}
+                      className="flex items-center gap-1.5 px-3 py-1.5 text-sm bg-amber-500/15 text-amber-200 border border-amber-500/40 rounded hover:bg-amber-500/25 transition-colors flex-shrink-0"
+                    >
+                      <PlusCircle className="w-4 h-4" />
+                      Novo instrumento
+                    </button>
+                  )}
+                </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {evaluationInstruments.map(tool => (
-                  <div
-                    key={tool.id}
-                    className="rounded-xl p-4"
-                    style={{ ...cardStyle, border: `1px solid ${tool.borderColor}` }}
-                  >
-                    <h4 className="text-lg font-semibold text-white mb-2">{tool.title}</h4>
-                    <p className="text-sm text-slate-300 mb-4">{tool.description}</p>
-                    <div className="flex items-center justify-between text-xs text-slate-300 stack-mobile">
-                      <span>Status: <strong className="text-white">{tool.status}</strong></span>
-                      <span>{tool.participants} participantes</span>
+              {evaluations.loading ? (
+                <div className="rounded-xl p-8 flex items-center justify-center" style={surfaceStyle}>
+                  <Loader2 className="w-5 h-5 text-amber-300 animate-spin" />
+                  <span className="ml-2 text-sm text-slate-400">Carregando…</span>
+                </div>
+              ) : evaluations.error ? (
+                <div className="rounded-xl p-4 border border-red-500/30 bg-red-500/10">
+                  <p className="text-sm text-red-300">Erro: {evaluations.error}</p>
+                </div>
+              ) : evaluations.items.length === 0 ? (
+                <div className="rounded-xl p-8 text-center" style={surfaceStyle}>
+                  <Inbox className="w-10 h-10 text-slate-600 mx-auto mb-2" />
+                  <p className="text-sm text-slate-400 mb-1">Nenhum instrumento publicado.</p>
+                  <p className="text-xs text-slate-500">
+                    {isAdmin
+                      ? 'Clique em "Novo instrumento" pra cadastrar o primeiro.'
+                      : 'Aguarde — os administradores estão preparando os instrumentos.'}
+                  </p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {evaluations.items.map((tool) => (
+                    <div
+                      key={tool.id}
+                      className={`rounded-xl p-4 relative ${!tool.published ? 'border border-slate-600/50' : ''}`}
+                      style={cardStyle}
+                    >
+                      {!tool.published && isAdmin && (
+                        <span className="absolute top-2 right-2 text-[9px] uppercase px-1.5 py-0.5 rounded bg-slate-700/60 text-slate-300 flex items-center gap-1">
+                          <EyeOff className="w-2.5 h-2.5" /> Rascunho
+                        </span>
+                      )}
+                      <div className="flex items-center gap-2 mb-2 text-[10px] uppercase tracking-wide">
+                        <span className={getInstrumentCategoryColor(tool.category)}>
+                          {getInstrumentCategoryLabel(tool.category)}
+                        </span>
+                        <span className={`px-1.5 py-0.5 rounded ${getInstrumentStatusBadge(tool.status)}`}>
+                          {getInstrumentStatusLabel(tool.status)}
+                        </span>
+                      </div>
+                      <h4 className="text-lg font-semibold text-white mb-2">{tool.title}</h4>
+                      <p className="text-sm text-slate-300 mb-4 line-clamp-3">{tool.description}</p>
+                      <div className="flex items-center justify-between text-xs text-slate-300 stack-mobile">
+                        <span className="flex items-center gap-1">
+                          <Users className="w-3 h-3" />
+                          {tool.submissionsCount ?? 0} {tool.submissionsCount === 1 ? 'participante' : 'participantes'}
+                        </span>
+                        {tool.total_points && (
+                          <span className="text-slate-500">{tool.total_points} pts</span>
+                        )}
+                      </div>
+                      {isAdmin && (
+                        <div className="flex items-center gap-1 mt-3 pt-3 border-t border-slate-700/50">
+                          <button
+                            type="button"
+                            onClick={() => handleEditEvalItem(tool)}
+                            className="flex items-center gap-1 px-2 py-1 text-[11px] text-slate-300 hover:text-amber-200 hover:bg-amber-500/10 rounded transition-colors"
+                            title="Editar"
+                          >
+                            <Pencil className="w-3 h-3" />
+                            Editar
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleToggleEvalPublished(tool)}
+                            className="flex items-center gap-1 px-2 py-1 text-[11px] text-slate-300 hover:text-emerald-200 hover:bg-emerald-500/10 rounded transition-colors"
+                            title={tool.published ? 'Despublicar' : 'Publicar'}
+                          >
+                            {tool.published ? <EyeOff className="w-3 h-3" /> : <Eye className="w-3 h-3" />}
+                            {tool.published ? 'Despublicar' : 'Publicar'}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteEvalItem(tool.id)}
+                            disabled={evalDeleting === tool.id}
+                            className="flex items-center gap-1 px-2 py-1 text-[11px] text-slate-300 hover:text-red-300 hover:bg-red-500/10 rounded transition-colors ml-auto disabled:opacity-50"
+                            title="Excluir"
+                          >
+                            {evalDeleting === tool.id ? <Loader2 className="w-3 h-3 animate-spin" /> : <Trash2 className="w-3 h-3" />}
+                          </button>
+                        </div>
+                      )}
                     </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              )}
 
               <div className="rounded-xl p-4 md:p-6" style={surfaceStyle}>
                 <h4 className="text-lg font-semibold text-white mb-3">Fluxo Acadêmico AEC</h4>
@@ -916,6 +1024,14 @@ const EnsinoDashboard: React.FC<EnsinoDashboardProps> = ({ forcedSection }) => {
             onClose={() => { setNewsModalOpen(false); setEditingNewsItem(undefined) }}
             initialItem={editingNewsItem}
             onSubmit={handleNewsSubmit}
+          />
+
+          {/* V1.9.496 Sprint E V2 — Modal admin Evaluation Instruments */}
+          <EvaluationInstrumentAdminModal
+            isOpen={evalModalOpen}
+            onClose={() => { setEvalModalOpen(false); setEditingEvalItem(undefined) }}
+            initialItem={editingEvalItem}
+            onSubmit={handleEvalSubmit}
           />
 
           {/* Mentoria */}
