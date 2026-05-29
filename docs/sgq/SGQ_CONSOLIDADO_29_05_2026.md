@@ -1,12 +1,15 @@
 # SGQ MedCannLab — Documento Consolidado (29/05/2026)
 
-**Versão:** 0.1 DRAFT pré-consultora SaMD
-**Status:** Concatenação dos 10 drafts + README do diretório `docs/sgq/`
+**Versão:** 0.2 DRAFT pré-consultora SaMD (atualizado com 4 novos docs pós-feedback GPT externo)
+**Status:** Concatenação dos 14 drafts + README do diretório `docs/sgq/`
 **Propósito:** facilitar copy-paste integral para consultora / RT / arquivo único
 
 **Sumário:**
 
 0. README — Modelo C-IA + roadmap pós-CNPJ
+
+### Bloco 1 — Núcleo SGQ (10 docs)
+
 1. POP-CTL-001 — Controle de Documentos (ISO 13485 §7.5.3)
 2. POP-CTL-007 — Controle de Mudanças em Software Médico (§7.3.7 + IEC 62304 §6.2)
 3. PLN-IEC-001 — Plano IEC 62304 Classe B (§5.1)
@@ -17,6 +20,13 @@
 8. PROC-CAPA-001 — Ação Corretiva e Preventiva (§8.5.2 + §8.5.3)
 9. POP-VAL-001 — Validação Clínica Documental (§7.3.7 + IEC 62366)
 10. MAN-SGQ-001 — Manual do SGQ (§4.2.2)
+
+### Bloco 2 — Espinha dorsal de rastreabilidade (4 docs)
+
+11. URS-001 — User Requirements (41 URS por papel)
+12. SRS-001 — Software Requirements (44 SRS: 31 FR + 13 NFR)
+13. SAD-001 — Software Architecture Document (47 itens)
+14. TRM-001 — Traceability Matrix (193 itens rastreáveis)
 
 ---
 
@@ -66,7 +76,9 @@ Caminho cristalizado em conversação 29/05:
 
 ✅ Pacote de matéria-prima formatada que reduz custo e prazo da consultora.
 
-## Lista de drafts (10)
+## Lista de drafts (14)
+
+### Bloco 1 — Núcleo SGQ + Conformidade (10 docs entregues 29/05 manhã)
 
 1. **POP-CTL-001** — Controle de Documentos (ISO 13485 §7.5.3)
 2. **POP-CTL-007** — Controle de Mudanças em Software Médico (ISO 13485 §7.3.7 + IEC 62304 §6.2)
@@ -78,6 +90,21 @@ Caminho cristalizado em conversação 29/05:
 8. **PROC-CAPA-001** — Ação Corretiva e Preventiva (ISO 13485 §8.5.2 + §8.5.3)
 9. **POP-VAL-001** — Validação Clínica Documental (ISO 13485 §7.3.7)
 10. **MAN-SGQ-001** — Manual do SGQ (ISO 13485 §4.2.2)
+
+### Bloco 2 — Espinha dorsal de rastreabilidade (4 docs entregues 29/05 tarde)
+
+Adicionados após avaliação GPT externa (nota 8/10) que destacou gap em "conhecimento indexado vs distribuído":
+
+11. **URS-001** — User Requirements Specification (41 URS por papel)
+12. **SRS-001** — Software Requirements Specification (44 SRS: 31 FR + 13 NFR)
+13. **SAD-001** — Software Architecture Document (47 itens: 26 COMP + 5 IFACE + 3 FLOW + 13 DEC)
+14. **TRM-001** — Traceability Matrix (193 itens rastreáveis, 17 CTL + 11 TST + 23 EVD)
+
+### Bloco 3 — Parqueados (3 docs dependem de Marco 2+)
+
+- ⏸️ **PLN-VER-001** — Plano de Verificação formal (depende `clinical_qa_runs` cadência acumulada)
+- ⏸️ **PROC-INC-001** — Gestão de Incidentes (depende histórico real de incidentes classificados Tecnovigilância)
+- ⏸️ **PROC-PMS-001** — Post-Market Surveillance (literalmente exige Marco 2 — paciente externo pagante pra haver "market")
 
 ## Aviso de conformidade
 
@@ -1890,8 +1917,1287 @@ NÃO substitui auditoria formal por terceiros independentes.
 
 ---
 
+<a name="11_urs-001_user_requirements_specification"></a>
+
+# URS-001 — User Requirements Specification
+
+**Versão draft:** 0.1 (29/05/2026)
+**Status:** DRAFT pré-consultora SaMD
+**Referência normativa:** ISO 13485:2016 §7.2.1 + IEC 62366-1 §5.1
+
+---
+
+## 1. Objetivo
+
+Catalogar as necessidades dos usuários do MedCannLab 3.0 com identificação única para rastreabilidade bidirecional via Traceability Matrix (TRM-001).
+
+## 2. Convenção de IDs
+
+```
+URS-<PAPEL>-<NN>
+```
+
+Onde `<PAPEL>` ∈ { **MED** (médico) / **PAC** (paciente) / **ALU** (aluno) / **ADM** (administrador) / **GLB** (transversal) }
+
+Cada URS rastreia para SRS, RSK, CTL, TST e EVD via TRM-001.
+
+## 3. Papéis e contagem empírica (29/05/2026 via PAT)
+
+| Papel | DB enum | Contagem real |
+|---|---|---:|
+| Médico profissional | `type='professional'` | 11 |
+| Paciente | `type='patient'` | 31 |
+| Administrador | `type='admin'` | 5 |
+| Aluno | `type='aluno'` | **0** (papel especificado, sem usuário ainda) |
+
+## 4. Requisitos do MÉDICO (URS-MED-XX)
+
+### URS-MED-01 — Cadastro de paciente externo offline
+**Necessidade:** Médico precisa cadastrar paciente que ainda não baixou o app (idoso, terceiro responsável).
+**Justificativa:** CFM 2.314 + Manual MedCannLab permitem prontuário sem login app.
+**Memória:** `feedback_padrao_orfaos_public_users_validos_29_05` (Nível 1)
+
+### URS-MED-02 — Conduzir AEC com paciente
+**Necessidade:** Conduzir Avaliação Estruturada com Cannabis em sessão estruturada de 13+ fases determinísticas.
+**Justificativa:** Método AEC criado por Dr. Ricardo Valença, implementado em FSM.
+
+### URS-MED-03 — Revisar relatório gerado pela IA antes de devolver ao paciente
+**Necessidade:** Auditar conteúdo antes de assinar e compartilhar.
+**Justificativa:** Lock V1.9.388-A.3 — médico no loop em TODA decisão.
+
+### URS-MED-04 — Aplicar múltiplas racionalidades médicas
+**Necessidade:** Gerar análise sob ótica Biomédica, MTC, Ayurvédica, Homeopática ou Integrativa.
+**Justificativa:** Modelo de cuidado integrativo MedCannLab.
+
+### URS-MED-05 — Assinar prescrição com ICP-Brasil PBAD AD-RB
+**Necessidade:** Emitir prescrição juridicamente vinculante e validável em Portal ITI.
+**Justificativa:** CFM 2.381 (prescrição digital) + lock V1.9.299.
+
+### URS-MED-06 — Visualizar AECs interrompidas órfãs com decisão
+**Necessidade:** Saber quais pacientes abandonaram AEC e decidir (invalidar com motivo / marcar concluída).
+**Justificativa:** Auditabilidade LGPD + workflow operacional.
+**Implementado:** V1.9.500 InterruptedAECsCard.
+
+### URS-MED-07 — Anexar exames / laudos externos ao prontuário
+**Necessidade:** Centralizar evidências clínicas no histórico do paciente.
+**Justificativa:** ExamRequestModule V1.9.326.
+
+### URS-MED-08 — Compartilhar relatório com outro médico (referência)
+**Necessidade:** Cross-account sharing para 2º opinião.
+**Justificativa:** Validado empíricamente 27/05 (Eduardo recebeu de Ricardo).
+
+### URS-MED-09 — Acompanhar evolução longitudinal do paciente
+**Necessidade:** Ver trajetória do paciente no tempo separada por fonte (AEC IA / FOLLOW_UP médico / chat IA).
+**Justificativa:** Princípio meta cristalizado `feedback_sistema_tem_contexto_demais_falta_semantica_clinica_28_05`.
+**Implementado:** V1.9.487 separação semântica aba Evolução.
+
+### URS-MED-10 — Consultar bula ANVISA em contexto de prescrição
+**Necessidade:** Bula como infraestrutura cognitiva no fluxo, não documento decontextualizado.
+**Justificativa:** Memória `feedback_bula_e_infraestrutura_cognitiva_no_fluxo_prescricao_27_05`.
+**Implementado:** V1.9.466 BulaContextPopover + V1.9.468-A Matrix Z2 + Bula.
+
+### URS-MED-11 — Receber notificações de AEC concluída + agendamento
+**Necessidade:** Saber quando paciente terminou avaliação e quando há agendamento.
+**Justificativa:** Workflow contínuo + V1.9.99-B video-call-reminders.
+
+### URS-MED-12 — Visualizar custos IA por feature
+**Necessidade:** Transparência operacional sobre uso de GPT-4o por Matrix / Escuta Clínica / Simulação.
+**Justificativa:** Painel Observabilidade IA V1.9.374 + cost tracking V1.9.238.
+
+## 5. Requisitos do PACIENTE (URS-PAC-XX)
+
+### URS-PAC-01 — Iniciar AEC autonomamente após convite do médico
+**Necessidade:** Conduzir entrevista clínica orientada por IA.
+**Justificativa:** Eixo Clínica MedCannLab.
+
+### URS-PAC-02 — Consentimento explícito antes de prosseguir para etapas sensíveis
+**Necessidade:** Paciente deve autorizar formalmente uso de seus dados.
+**Justificativa:** REGRA HARD §1 anti-kevlar — "Consentimento ≠ Agendamento".
+**Implementado:** Pirâmide camada 4 AEC Gate V1.5.
+
+### URS-PAC-03 — Retomar AEC interrompida sem perda de contexto
+**Necessidade:** Auto-pause detector permite continuar sessão depois.
+**Justificativa:** V1.9.299 auto-pause + V1.9.474 trigger reset invalidated_at.
+
+### URS-PAC-04 — Visualizar relatório clínico final após assinatura médico
+**Necessidade:** Acessar relatório que paciente leu (snapshot imutável).
+**Justificativa:** Source da UI vem de `clinical_reports.content` (jsonb snapshot).
+
+### URS-PAC-05 — Compartilhar relatório com 2º médico (referência)
+**Necessidade:** Liberdade de buscar 2ª opinião.
+**Justificativa:** Sharing cross-account validado empíricamente.
+
+### URS-PAC-06 — Receber prescrição assinada ICP-Brasil
+**Necessidade:** Documento juridicamente válido para retirar medicamento.
+**Justificativa:** CFM 2.381 + lock V1.9.299 PBAD AD-RB.
+
+### URS-PAC-07 — Solicitar agendamento de consulta com médico responsável
+**Necessidade:** Marcar consulta presencial / telemedicina.
+**Justificativa:** Eixo Clínica.
+
+### URS-PAC-08 — Solicitar anonimização / remoção de dados LGPD
+**Necessidade:** Direito de exclusão LGPD Art. 18.
+**Justificativa:** RPC `anonymize_user_safely`.
+
+### URS-PAC-09 — Acessar histórico de consultas e prescrições próprias
+**Necessidade:** Visualizar timeline pessoal.
+**Justificativa:** Direito de acesso LGPD Art. 9.
+
+### URS-PAC-10 — Pseudonimização automática em texto livre IA
+**Necessidade:** Nome paciente NÃO deve aparecer em campo `assessment` de racionalidades.
+**Justificativa:** LGPD Art. 11 + V1.9.452 sanitize.
+**Implementado:** Edge `tradevision-core` v423 + backfill 132 rows.
+
+## 6. Requisitos do ALUNO (URS-ALU-XX)
+
+### URS-ALU-01 — Inscrever-se em curso "Arte da Entrevista Clínica" (AEC)
+**Necessidade:** Acessar conteúdo formativo.
+**Justificativa:** Eixo Ensino MedCannLab.
+
+### URS-ALU-02 — Realizar teste de nivelamento adaptativo
+**Necessidade:** Identificar nível atual de conhecimento.
+**Justificativa:** Avaliação pré-curso.
+
+### URS-ALU-03 — Realizar simulação clínica com IA (paciente virtual)
+**Necessidade:** Treinar entrevista AEC em ambiente seguro.
+**Justificativa:** 10 sistemas (Respiratório / Urinário / Cardiovascular / etc) + 3 tipos (Geral / DRC / TEA).
+
+### URS-ALU-04 — Solicitar mentoria com profissional cadastrado
+**Necessidade:** Tirar dúvidas com Ricardo / Eduardo.
+**Justificativa:** Sprint E V1.9.497 (Mentoria com agenda).
+
+### URS-ALU-05 — Receber feedback estruturado pós-simulação
+**Necessidade:** Saber pontos de melhoria.
+**Justificativa:** Promessa do prompt simulação Nôa.
+**⚠️ Gap atual:** feedback hoje vem como texto livre da IA — não há `simulation_runs` estruturado (parqueado pós-Marco 3).
+
+### URS-ALU-06 — Visualizar histórico próprio de simulações e avaliações
+**Necessidade:** Acompanhar progresso pessoal.
+**Justificativa:** `evaluation_submissions` (Sprint E V1.9.496).
+
+## 7. Requisitos do ADMINISTRADOR (URS-ADM-XX)
+
+### URS-ADM-01 — Ver todos os pacientes do sistema (todos os médicos)
+**Necessidade:** Auditoria + gestão.
+**Justificativa:** RLS admin policy + `getAllPatients` em `adminPermissions`.
+
+### URS-ADM-02 — Ver telemetria IA agregada (Observabilidade)
+**Necessidade:** Acompanhar custos OpenAI, latências, distribuição por feature.
+**Justificativa:** Painel V1.9.374 AdminAIGovernance.
+
+### URS-ADM-03 — Criar / publicar notícias institucionais
+**Necessidade:** Comunicação científica + eventos.
+**Justificativa:** Sprint E V1.9.495 `news_items`.
+
+### URS-ADM-04 — Criar / gerenciar instrumentos de avaliação
+**Necessidade:** Configurar Pré-AEC, Pós-AEC, Avaliação Curso.
+**Justificativa:** Sprint E V1.9.496 `evaluation_instruments`.
+
+### URS-ADM-05 — Moderar fórum Cann Matrix
+**Necessidade:** Aprovar / rejeitar posts.
+**Justificativa:** Eixo Pesquisa + V1.9.418 fórum.
+
+### URS-ADM-06 — Executar QA runs formais (`clinical_qa_runs`)
+**Necessidade:** Audit de qualidade clínica de relatórios.
+**Justificativa:** Framework PMF Audit V1.9.85 Memo 28/04.
+
+### URS-ADM-07 — Anonimizar pacientes mediante solicitação
+**Necessidade:** Cumprir LGPD Art. 18.
+**Justificativa:** RPC `anonymize_user_safely`.
+
+### URS-ADM-08 — Visualizar canal Feedback com escalação de urgentes
+**Necessidade:** Atendimento a relatos de paciente / médico / aluno.
+**Justificativa:** V1.9.486 Feedback.
+
+## 8. Requisitos TRANSVERSAIS (URS-GLB-XX)
+
+### URS-GLB-01 — Disponibilidade Web 24x7 via Vercel
+**Necessidade:** Acesso contínuo.
+
+### URS-GLB-02 — Segurança LGPD em trânsito (HTTPS) e em repouso (Postgres encrypted)
+**Necessidade:** Proteção de dado sensível de saúde.
+
+### URS-GLB-03 — Versionamento auditável de todas as mudanças
+**Necessidade:** Rastreabilidade temporal completa.
+**Justificativa:** Git + tags + diários + memórias.
+
+### URS-GLB-04 — Resposta IA com latência aceitável (P50 < 5s, P95 < 12s)
+**Necessidade:** UX clínico aceitável.
+**Justificativa:** `ai_chat_interactions.processing_time` instrumentado.
+
+### URS-GLB-05 — Custo OpenAI controlado e instrumentado por feature
+**Necessidade:** Sustentabilidade econômica pré-Marco 3.
+**Justificativa:** V1.9.238 cost tracking + V1.9.374 painel.
+
+## 9. Inventário de URS
+
+- Médico: 12 URS (URS-MED-01..12)
+- Paciente: 10 URS (URS-PAC-01..10)
+- Aluno: 6 URS (URS-ALU-01..06)
+- Administrador: 8 URS (URS-ADM-01..08)
+- Transversal: 5 URS (URS-GLB-01..05)
+
+**Total: 41 URS catalogados.**
+
+Cada URS deve aparecer em [TRM-001 Traceability Matrix](./14_TRM-001_Traceability_Matrix.md) mapeado para SRS / RSK / CTL / TST / EVD.
+
+## 10. Não-cobertos intencionalmente (anti-overclaim)
+
+- URS pós-Marco 3 (vitrine de médicos / monetização paciente / TRL ensino) — escopo posterior.
+- URS pediátricos ou gestantes — requerem revisão clínica adicional.
+
+---
+
+**Aprovação:**
+- [ ] Médico Sócio (validação clínica): Dr. Ricardo Valença — Data: ___/___/___
+- [ ] RT habilitado: ________________ Data: ___/___/___
+- [ ] Tech Lead: Pedro Henrique Passos Galluf — Data: 29/05/2026 (draft)
+
+---
+
+<a name="12_srs-001_software_requirements_specification"></a>
+
+# SRS-001 — Software Requirements Specification
+
+**Versão draft:** 0.1 (29/05/2026)
+**Status:** DRAFT pré-consultora SaMD
+**Referência normativa:** IEC 62304:2006 §5.2 + ISO 13485:2016 §7.3.3
+
+---
+
+## 1. Objetivo
+
+Catalogar requisitos funcionais (FR) e não-funcionais (NFR) do MedCannLab 3.0 com IDs únicos para rastreabilidade bidirecional via TRM-001. Cada requisito deve derivar de pelo menos 1 URS de [URS-001](./11_URS-001_User_Requirements_Specification.md).
+
+## 2. Convenção de IDs
+
+```
+SRS-FR-NN    (Functional Requirement)
+SRS-NFR-NN   (Non-Functional Requirement)
+```
+
+## 3. Requisitos Funcionais (SRS-FR-XX)
+
+### Pirâmide cognitiva 8 camadas
+
+#### SRS-FR-01 — Regra Hard §1 (constitucional)
+**Descrição:** Sistema NÃO PODE interpretar "concordo" durante revisão clínica como autorização de agendamento.
+**Implementação:** Guard `isAskingConsent` em `tradevision-core/index.ts` + AEC Gate V1.5.
+**URS origem:** URS-PAC-02.
+**Lock:** V1.9.95.
+
+#### SRS-FR-02 — COS Kernel v5.0 (5 portas)
+**Descrição:** Sistema DEVE filtrar todo input/output através de KillSwitch / Trauma / Metabolismo / ReadOnly / Policy.
+**Implementação:** `cos_engine.ts` (selado por Magno 04-06/02/2026).
+**URS origem:** URS-GLB-02.
+
+#### SRS-FR-03 — AEC FSM 13+ fases determinísticas
+**Descrição:** Sistema DEVE conduzir AEC em sequência FSM: INITIAL_GREETING → IDENTIFICATION → COMPLAINT_LIST → MAIN_COMPLAINT → COMPLAINT_DETAILS → MEDICAL_HISTORY → FAMILY_HISTORY_* → LIFESTYLE_HABITS → OBJECTIVE_QUESTIONS → CONSENSUS_REVIEW → CONSENSUS_REPORT → CONSENT_COLLECTION → COMPLETED.
+**Implementação:** `clinicalAssessmentFlow.ts`.
+**URS origem:** URS-MED-02, URS-PAC-01.
+
+#### SRS-FR-04 — Verbatim First (V1.9.86)
+**Descrição:** Sistema DEVE bypass GPT em hard-lock phases (~46% das fases AEC) com respostas pré-codificadas auditáveis.
+**Implementação:** Pipeline camada 3.
+**URS origem:** URS-MED-03.
+**NFR relacionado:** SRS-NFR-08 (custo OpenAI).
+
+#### SRS-FR-05 — AEC Gate V1.5 reforçado
+**Descrição:** Sistema DEVE bloquear novo agendamento enquanto AEC do paciente está ativa (NOT is_complete + invalidated_at IS NULL).
+**Implementação:** Camada 4 da pirâmide.
+**URS origem:** URS-MED-06.
+**Lock:** V1.9.95-A.
+
+#### SRS-FR-06 — GPT-4o-2024-08-06 como camada 5 (não primeira)
+**Descrição:** Sistema DEVE chamar GPT-4o APENAS quando camadas 0-4 não resolveram requisição.
+**Implementação:** Edge `tradevision-core` v423.
+**URS origem:** URS-GLB-04, URS-GLB-05.
+
+#### SRS-FR-07 — Pós-processamento (strip tokens, validate UUID, force tags)
+**Descrição:** Sistema DEVE remover tokens internos do output GPT antes de entregar ao usuário.
+**Implementação:** Camada 6 da pirâmide.
+**URS origem:** URS-PAC-04.
+
+#### SRS-FR-08 — Pipeline Orchestrator (REPORT → SCORES → SIGNATURE → AXES → RATIONALITY → DONE)
+**Descrição:** Sistema DEVE executar pipeline pós-AEC em ordem determinística.
+**Implementação:** Camada 7 da pirâmide.
+**URS origem:** URS-MED-02, URS-MED-04.
+
+### Edge Functions críticas
+
+#### SRS-FR-09 — Assinatura ICP-Brasil PBAD AD-RB v2.4
+**Descrição:** Sistema DEVE gerar PDF assinado conforme PA-AD-RB v2.4 do ITI.
+**Implementação:** Edge `sign-pdf-icp` v22 + constants `PA_AD_RB_V24_OID`.
+**URS origem:** URS-MED-05, URS-PAC-06.
+**Lock:** V1.9.299 (validação Portal ITI confirmada).
+
+#### SRS-FR-10 — Auth + ownership check antes de assinar
+**Descrição:** Sistema DEVE validar JWT + verificar que `document.professional_id === user.id` (ou admin / SERVICE_ROLE_KEY).
+**Implementação:** Edge `sign-pdf-icp` v22 (post V1.9.457).
+**URS origem:** URS-GLB-02.
+
+#### SRS-FR-11 — Cripto password ICP
+**Descrição:** Sistema DEVE proteger password do certificado ICP do médico antes de armazenar.
+**Implementação:** Edge `cert-encrypt-password` v3.
+**URS origem:** URS-MED-05.
+
+#### SRS-FR-12 — Cron sweep video-call-reminders
+**Descrição:** Sistema DEVE enviar lembrete por email 24h e 1h antes de consulta agendada.
+**Implementação:** Edge `video-call-reminders` v31 + cron a cada 5min.
+**URS origem:** URS-MED-11.
+
+#### SRS-FR-13 — PII sanitization automática em racionalidades
+**Descrição:** Sistema DEVE substituir nome completo do paciente por pseudônimo `Paciente #XXXXXX` antes de INSERT em `clinical_rationalities.assessment`.
+**Implementação:** Edge `tradevision-core` v423 (helper `sanitizeRationalityPII`).
+**URS origem:** URS-PAC-10.
+**Lock:** V1.9.452.
+
+### Cross-account + Compartilhamento
+
+#### SRS-FR-14 — Share de relatório paciente → 2º médico
+**Descrição:** Sistema DEVE permitir paciente compartilhar relatório com outro médico cadastrado.
+**Implementação:** UI Share + UPDATE `clinical_reports.professional_id`.
+**URS origem:** URS-PAC-05, URS-MED-08.
+**Observação:** Memória `feedback_share_overwrite_professional_id_*` documenta overwrite (não append) — gap RLS pra 3º médico profissional puro post-Marco 3.
+
+#### SRS-FR-15 — Cadastro de paciente externo offline
+**Descrição:** Sistema DEVE permitir médico criar paciente em `public.users` sem auth.users correspondente.
+**Implementação:** UI Cadastro Paciente em PatientsManagement.
+**URS origem:** URS-MED-01.
+**Memória:** `feedback_padrao_orfaos_public_users_validos_29_05`.
+
+### AEC Interrompidas + Workflow Médico
+
+#### SRS-FR-16 — Detecção e listagem de AECs INTERRUPTED órfãs
+**Descrição:** Sistema DEVE listar `aec_assessment_state WHERE phase='INTERRUPTED' AND NOT is_complete AND invalidated_at IS NULL` no dashboard médico.
+**Implementação:** Hook `useInterruptedAECs` + componente `InterruptedAECsCard`.
+**URS origem:** URS-MED-06.
+**Lock:** V1.9.500.
+
+#### SRS-FR-17 — Invalidação com motivo obrigatório
+**Descrição:** Sistema DEVE exigir motivo (texto não-vazio) ao invalidar AEC, preservando linha pra audit.
+**Implementação:** Hook `useInterruptedAECs.invalidate(id, reason)`.
+**URS origem:** URS-MED-06.
+
+### Aba Evolução + Matrix Longitudinal
+
+#### SRS-FR-18 — Separação semântica visual de 3 fontes na aba Evolução
+**Descrição:** Sistema DEVE distinguir visualmente FOLLOW_UP médico / AEC IA / chat IA.
+**Implementação:** PatientsManagement V1.9.487.
+**URS origem:** URS-MED-09.
+
+#### SRS-FR-19 — Toggles de fonte no Matrix Nôa
+**Descrição:** Sistema DEVE permitir médico filtrar quais fontes Matrix usa (AEC / Evoluções / Racionalidades / Dossiês prévios).
+**Implementação:** NoaMatrixView V1.9.488 (4 toggles).
+**URS origem:** URS-MED-09.
+
+#### SRS-FR-20 — Carregamento de FOLLOW_UP em hook longitudinal
+**Descrição:** Sistema DEVE incluir `clinical_assessments WHERE assessment_type='FOLLOW_UP'` no corpus Matrix.
+**Implementação:** `usePatientLongitudinal` V1.9.489.
+**URS origem:** URS-MED-09.
+
+### Bulário ANVISA + Matrix Z2
+
+#### SRS-FR-21 — Bula ANVISA como material marcado pelo médico
+**Descrição:** Sistema DEVE tratar bula como recurso citável no fluxo de prescrição, sem síntese cross-bulas.
+**Implementação:** V1.9.466 BulaContextPopover + V1.9.468-A Matrix Z2 + Bula.
+**URS origem:** URS-MED-10.
+**Lock:** V1.9.468-A.
+
+### Modal Evolução + Visualização
+
+#### SRS-FR-22 — Modal não-disruptivo de detalhe de evolução
+**Descrição:** Sistema DEVE abrir relatório completo em modal ao clicar em card da aba Evolução.
+**Implementação:** EvolutionDetailModal V1.9.498.
+**URS origem:** URS-MED-09.
+
+### Prescrição CFM
+
+#### SRS-FR-23 — Receituário CFM (Simples / Branca C2 / Azul B1B2 / Amarela A1-A3)
+**Descrição:** Sistema DEVE permitir gerar 4 tipos de receituário CFM.
+**Implementação:** IntegrativePrescriptions / cfm_prescriptions / Edge sign-pdf-icp.
+**URS origem:** URS-MED-05, URS-PAC-06.
+
+### Ensino + Mentoria
+
+#### SRS-FR-24 — Notícias institucionais com categorização
+**Descrição:** Sistema DEVE permitir admin criar notícias com 8 categorias válidas (cannabis-medicinal / pesquisa-clinica / metodologia-aec / regulamentacao / nefrologia / clinica / pesquisa / farmacologia).
+**Implementação:** `useNewsItems` + NewsItemAdminModal V1.9.495.
+**URS origem:** URS-ADM-03.
+
+#### SRS-FR-25 — Instrumentos de avaliação CRUD
+**Descrição:** Sistema DEVE permitir admin criar/editar instrumentos com audiência configurável.
+**Implementação:** `useEvaluationInstruments` + EvaluationInstrumentAdminModal V1.9.496.
+**URS origem:** URS-ADM-04.
+
+#### SRS-FR-26 — Solicitação de mentoria por aluno/paciente
+**Descrição:** Sistema DEVE permitir solicitar mentoria com mentor cadastrado em disponibilidade configurada.
+**Implementação:** `useMentorship` + MentorshipRequestModal V1.9.497.
+**URS origem:** URS-ALU-04.
+
+### Telemetria + Observabilidade
+
+#### SRS-FR-27 — Cost tracking por interação IA
+**Descrição:** Sistema DEVE registrar `cost_usd_estimate`, `prompt_tokens`, `completion_tokens`, `model`, `simbologia` em metadata de `ai_chat_interactions`.
+**Implementação:** Edge `tradevision-core` (post V1.9.238).
+**URS origem:** URS-MED-12, URS-ADM-02, URS-GLB-05.
+
+#### SRS-FR-28 — Painel agregado por feature
+**Descrição:** Sistema DEVE exibir cost / latency / users por bucket simbologia.
+**Implementação:** AdminAIGovernance V1.9.374.
+**URS origem:** URS-ADM-02.
+
+### Anonimização LGPD
+
+#### SRS-FR-29 — RPC anonymize_user_safely
+**Descrição:** Sistema DEVE oferecer anonimização preservando agregados estatísticos.
+**Implementação:** RPC SQL SECURITY DEFINER.
+**URS origem:** URS-PAC-08, URS-ADM-07.
+
+### Dashboard Profissional (V1.9.502)
+
+#### SRS-FR-30 — Stats reais (não mock) no Dashboard Profissional
+**Descrição:** Sistema DEVE exibir appointments hoje + reports últimos 7d via query real.
+**Implementação:** `useProfessionalDashboard.loadStats()` V1.9.502.
+**URS origem:** URS-MED-11.
+
+#### SRS-FR-31 — Atividade Recente derivada de reports últimos 7d
+**Descrição:** Sistema DEVE listar top 5 reports recentes na sidebar.
+**Implementação:** `useProfessionalDashboard.stats.recentActivity` V1.9.502.
+**URS origem:** URS-MED-11.
+
+## 4. Requisitos Não-Funcionais (SRS-NFR-XX)
+
+### Performance
+
+#### SRS-NFR-01 — Latência P50 < 5s, P95 < 12s
+**Descrição:** Tempo de resposta Edge `tradevision-core`.
+**Verificação:** Métrica `processing_time` em `ai_chat_interactions`.
+**URS origem:** URS-GLB-04.
+
+#### SRS-NFR-02 — Disponibilidade ≥ 99.5% mensal
+**Descrição:** Uptime Vercel + Supabase + Edge.
+**Verificação:** Monitor Vercel + Supabase status.
+
+### Segurança
+
+#### SRS-NFR-03 — RLS habilitado em 100% das tabelas públicas
+**Descrição:** 144/144 tabelas com Row Level Security ON.
+**Verificação:** Empírico PAT 29/05 — 144/144 confirmado.
+**URS origem:** URS-GLB-02.
+
+#### SRS-NFR-04 — Conexão TLS 1.2+ em trânsito
+**Descrição:** HTTPS obrigatório em todos os endpoints.
+**Verificação:** Vercel cert + Supabase cert.
+**URS origem:** URS-GLB-02.
+
+#### SRS-NFR-05 — Encryption at rest em Postgres
+**Descrição:** Supabase Pro + Cloudflare encryption.
+**URS origem:** URS-GLB-02.
+
+#### SRS-NFR-06 — Verify JWT em Edges sensíveis a auth
+**Descrição:** Edges devem validar JWT antes de processar.
+**⚠️ Estado atual:** `tradevision-core` v423 ainda com `verify_jwt=false` em produção — pendente decisão Sprint A após validação de callers.
+**URS origem:** URS-GLB-02.
+
+### Privacidade (LGPD)
+
+#### SRS-NFR-07 — Sanitização preventiva de PII em texto livre IA
+**Descrição:** Nenhum INSERT em campo de texto livre deve conter nome completo de paciente.
+**Verificação:** V1.9.452 helper + backfill 132 rows.
+**URS origem:** URS-PAC-10.
+
+### Custo
+
+#### SRS-NFR-08 — Custo OpenAI por turn ≤ $0.05 USD (média)
+**Descrição:** Custo aceitável pra escala Marco 3.
+**Verificação:** Empírico 29/05 — Matrix $0.019/turn, Escuta Clínica ~$0.014/turn, Simulação ~$0.026/turn.
+**URS origem:** URS-GLB-05.
+
+### Conformidade
+
+#### SRS-NFR-09 — Versionamento auditável V1.9.X
+**Descrição:** Toda mudança rastreável por tag git + diário + memória.
+**Verificação:** 649 commits/30d, 11 tags imutáveis, 66 diários, 284 memórias.
+**URS origem:** URS-GLB-03.
+
+#### SRS-NFR-10 — Backup contínuo (WAL-G + diário)
+**Descrição:** Recovery point objective < 1h.
+**Verificação:** Supabase Pro plan.
+
+#### SRS-NFR-11 — Logs cron 100% success rate
+**Descrição:** Cron jobs devem completar sem erro.
+**Verificação:** `cron.job_run_details` últimos 7d = 100% (2.023 runs).
+
+### Usabilidade
+
+#### SRS-NFR-12 — Responsivo até 360px de largura
+**Descrição:** Mobile básico suportado.
+**Verificação:** Tailwind breakpoints.
+
+#### SRS-NFR-13 — Empty state honesto (sem dados fake)
+**Descrição:** Componentes devem mostrar "Sem registros" em vez de mock data.
+**Verificação:** V1.9.502 polish ProfessionalDashboard.
+**URS origem:** URS-GLB-03.
+
+## 5. Inventário SRS
+
+- Funcionais: 31 (SRS-FR-01..31)
+- Não-funcionais: 13 (SRS-NFR-01..13)
+
+**Total: 44 SRS catalogados.**
+
+## 6. Rastreabilidade
+
+Cada SRS aparece em [TRM-001](./14_TRM-001_Traceability_Matrix.md) mapeado para URS, SAD, RSK, TST, EVD.
+
+---
+
+**Aprovação:**
+- [ ] Médico Sócio (validação clínica): Dr. Ricardo Valença — Data: ___/___/___
+- [ ] RT habilitado: ________________ Data: ___/___/___
+- [ ] Tech Lead: Pedro Henrique Passos Galluf — Data: 29/05/2026 (draft)
+
+---
+
+<a name="13_sad-001_software_architecture_document"></a>
+
+# SAD-001 — Software Architecture Document
+
+**Versão draft:** 0.1 (29/05/2026)
+**Status:** DRAFT pré-consultora SaMD
+**Referência normativa:** IEC 62304:2006 §5.3 (Software Architectural Design)
+
+---
+
+## 1. Objetivo
+
+Documentar a arquitetura de software do MedCannLab 3.0, mapeando componentes, interfaces, fluxos de dados e decisões arquiteturais críticas com IDs únicos rastreáveis via TRM-001.
+
+## 2. Convenção de IDs
+
+```
+SAD-COMP-NN  (Component)
+SAD-IFACE-NN (Interface)
+SAD-FLOW-NN  (Data Flow)
+SAD-DEC-NN   (Architecture Decision)
+```
+
+## 3. Visão geral da arquitetura
+
+### 3.1. Estilo arquitetural adotado
+
+**Híbrido**: Client-side rich SPA + Serverless functions + Managed Postgres + Pipeline cognitivo determinístico em camadas.
+
+### 3.2. Diagrama lógico (alto nível)
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                       FRONTEND (Vercel)                          │
+│  React 18 + TypeScript + Vite + Tailwind + shadcn/ui            │
+│  363 arquivos .tsx/.ts em src/                                  │
+└─────────────────────┬───────────────────────────────────────────┘
+                      │ HTTPS + supabase-js
+                      ▼
+┌─────────────────────────────────────────────────────────────────┐
+│              SUPABASE (projeto itdjkfubfzmvmuxxjoae)             │
+│                                                                  │
+│  ┌──────────┐  ┌─────────────────┐  ┌─────────────────────┐    │
+│  │ Auth     │  │ Postgres        │  │ Edge Functions Deno │    │
+│  │ JWT      │  │ 144 tabelas     │  │ 15 funções ativas   │    │
+│  │ RLS      │  │ RLS 100%        │  │                     │    │
+│  └──────────┘  └────────┬────────┘  └──────────┬──────────┘    │
+│                         │                      │                │
+│  ┌──────────┐  ┌────────▼────────┐  ┌─────────▼──────────┐    │
+│  │ Storage  │  │ pg_cron         │  │ Telemetria         │    │
+│  │ buckets  │  │ 3 jobs ativos   │  │ ai_chat_inter*     │    │
+│  └──────────┘  └─────────────────┘  └────────────────────┘    │
+└──────┬──────────────────┬──────────────────────┬───────────────┘
+       │                  │                      │
+       ▼                  ▼                      ▼
+   ┌────────┐         ┌─────────┐          ┌─────────┐
+   │ OpenAI │         │ Resend  │          │  ITI    │
+   │ GPT-4o │         │ Email   │          │ ICP-BR  │
+   └────────┘         └─────────┘          └─────────┘
+```
+
+## 4. Componentes principais
+
+### Frontend
+
+#### SAD-COMP-01 — Single Page Application (Vercel)
+**Stack:** React 18 + TypeScript + Vite + Tailwind + shadcn/ui.
+**Volume:** 363 arquivos `.tsx`/`.ts` em `src/`.
+**Deploy:** Auto on push para `main`.
+**Implementa:** SRS-FR-01..31, SRS-NFR-12, SRS-NFR-13.
+
+#### SAD-COMP-02 — NoaConversationalInterface
+**Caminho:** `src/components/NoaConversationalInterface.tsx`.
+**Função:** Chat orquestrador único da IA Residente Nôa Esperança.
+**Consumido por:** Dashboards (Aluno / Profissional / Admin) via `useNoaPlatform`.
+**Implementa:** SRS-FR-03 (AEC FSM), SRS-FR-06 (GPT-4o).
+
+#### SAD-COMP-03 — MedicalRecord
+**Caminho:** `src/components/MedicalRecord.tsx`.
+**Função:** Prontuário completo do paciente com 7 tabs (Visão Geral / Analytics / Evolução / Prescrição / Exames / Agenda / Arquivos / Recebimentos / Gráficos).
+**Implementa:** SRS-FR-18, SRS-FR-22.
+
+#### SAD-COMP-04 — ResearchWorkstation + NoaMatrixView
+**Função:** Pesquisa científica + Matrix de consciência longitudinal.
+**Implementa:** SRS-FR-19, SRS-FR-20.
+
+#### SAD-COMP-05 — IntegrativePrescriptions
+**Caminho:** `src/components/IntegrativePrescriptions.tsx`.
+**Função:** Gestão de prescrição CFM com 4 tipos de receituário + protocolos pré-definidos.
+**Implementa:** SRS-FR-23.
+
+#### SAD-COMP-06 — InterruptedAECsCard
+**Caminho:** `src/components/InterruptedAECsCard.tsx`.
+**Função:** UI médico decide destino de AECs órfãs.
+**Implementa:** SRS-FR-16, SRS-FR-17.
+
+#### SAD-COMP-07 — EvolutionDetailModal
+**Caminho:** `src/components/EvolutionDetailModal.tsx`.
+**Função:** Modal não-disruptivo de detalhe (post V1.9.500-A hotfix).
+**Implementa:** SRS-FR-22.
+
+#### SAD-COMP-08 — RichClinicalReportView (SOBERANO V1.9.86+)
+**Função:** Renderização imutável de relatório AEC com estética bloqueada.
+**Reusado por:** `EvolutionDetailModal`, `ClinicalReports`, PDF gen.
+**Implementa:** SRS-FR-08 (output Pipeline).
+
+#### SAD-COMP-09 — AdminAIGovernance (Observabilidade IA)
+**Caminho:** `src/pages/AdminAIGovernance.tsx`.
+**Função:** Painel agregado custo / latency / users por feature.
+**Implementa:** SRS-FR-28.
+
+#### SAD-COMP-10 — EnsinoDashboard (Sprint E)
+**Função:** Notícias / Avaliações / Mentoria com hooks reais.
+**Implementa:** SRS-FR-24, SRS-FR-25, SRS-FR-26.
+
+### Backend — Edge Functions
+
+#### SAD-COMP-11 — Edge tradevision-core (v423)
+**Tipo:** Edge Function Deno (slug `tradevision-core`).
+**Função:** Core IA Nôa principal — implementa pirâmide cognitiva 8 camadas.
+**Volume:** ~6.700 linhas.
+**verify_jwt:** ⚠️ false (gap conhecido — RSK-001 H8).
+**Implementa:** SRS-FR-01..08, SRS-FR-13, SRS-FR-27.
+
+#### SAD-COMP-12 — Edge sign-pdf-icp (v22)
+**Função:** Assinatura ICP-Brasil PBAD AD-RB v2.4 CONFORME ITI.
+**Auth check:** ✅ V1.9.457 (JWT + ownership).
+**Implementa:** SRS-FR-09, SRS-FR-10.
+**Lock:** V1.9.299.
+
+#### SAD-COMP-13 — Edge digital-signature (v65)
+**Função:** Assinatura CFM 3 levels.
+**Implementa:** SRS-FR-09.
+
+#### SAD-COMP-14 — Edge cert-encrypt-password (v3)
+**Função:** Cripto password ICP do médico.
+**Implementa:** SRS-FR-11.
+
+#### SAD-COMP-15 — Edge wisecare-session (v81)
+**Função:** Provedor vídeo V4H homolog.
+**⚠️ Status:** Homolog — migrar pra produção (Marco 1+).
+
+#### SAD-COMP-16 — Edge send-email (v62)
+**Função:** Envio email via Resend.
+**verify_jwt:** ✅ true.
+
+#### SAD-COMP-17 — Edge video-call-reminders (v31)
+**Função:** Sweep cron 5min + lembretes 24h e 1h via Resend.
+**Implementa:** SRS-FR-12.
+
+#### SAD-COMP-18 — Edge extract-document-text (v59)
+**Função:** OCR via pdfjs-serverless.
+
+#### SAD-COMP-19 — Edges restantes (video-call-request-notification, generate-nft-from-report, renal-signal-extractor, google-auth, sync-gcal, get_chat_history)
+**Função:** Funcionalidades adjacentes ou dormindo.
+
+### Backend — Database
+
+#### SAD-COMP-20 — Postgres Supabase (144 tabelas)
+**Estado:** RLS habilitado em 100% (144/144).
+**Implementa:** SRS-NFR-03.
+
+##### Tabelas core do domínio clínico
+- `public.users` (canônica de perfil — 47 users)
+- `public.clinical_reports` (42 ICP-Brasil signed)
+- `public.clinical_assessments` (FOLLOW_UP médico)
+- `public.clinical_rationalities` (132 rows, 100% sanitizadas V1.9.452)
+- `public.aec_assessment_state` (FSM AEC state machine)
+- `public.cfm_prescriptions` (oficiais CFM)
+- `public.appointments` (93 total)
+- `public.patient_medical_records` (chat IA + outros registros)
+
+##### Tabelas core de telemetria
+- `public.ai_chat_interactions` (instrumentação V1.9.238 — 1.756 em 30d)
+- `public.cognitive_events` (audit trail)
+- `public.clinical_qa_runs` (framework PMF Audit — 17 cols, 2 runs)
+
+##### Tabelas core de Ensino (Sprint E V1.9.495-497)
+- `public.news_items`
+- `public.evaluation_instruments` + `evaluation_submissions`
+- `public.mentors` + `mentorship_requests`
+
+#### SAD-COMP-21 — pg_cron (3 jobs ativos)
+**Jobs:**
+- `video-call-reminders-5min` (a cada 5min)
+- `monthly-closing-medcannlab` (dia 1 às 3h)
+- `expire-renal-suggestions` (todo dia às 2h)
+**Telemetria 7d:** 2.023 runs / 100% success.
+**Implementa:** SRS-NFR-11.
+
+#### SAD-COMP-22 — Auth (Supabase Auth)
+**Mecanismo:** Email + magic link (Google deployed mas não usado).
+**JWT:** RS256 com rotação automática.
+**Implementa:** SRS-NFR-04, SRS-NFR-06.
+
+#### SAD-COMP-23 — Storage (buckets)
+**Buckets críticos:**
+- `chat-images` (privado pós V1.9.98)
+- `documents` (institucional)
+- `patient_documents` (RLS por paciente)
+- `pdfs-icp` (assinaturas ICP-Brasil)
+
+### Integrações externas
+
+#### SAD-COMP-24 — OpenAI (GPT-4o-2024-08-06 + gpt-4o-mini)
+**Função:** Camada 5 da pirâmide cognitiva.
+**Custo médio:** $0.019 USD/turn Matrix.
+**Implementa:** SRS-FR-06.
+
+#### SAD-COMP-25 — Resend
+**Função:** Email transacional.
+**Domínio:** `noreply@medcannlab.com.br` (verified 28/04).
+
+#### SAD-COMP-26 — ITI (ICP-Brasil)
+**Função:** Cadeia de certificados pra validação PBAD AD-RB.
+**Implementa:** SRS-FR-09.
+**Lock:** V1.9.299.
+
+## 5. Interfaces principais
+
+### SAD-IFACE-01 — Frontend ↔ Supabase (supabase-js)
+**Protocolo:** HTTPS REST + WebSocket Realtime.
+**Auth:** JWT no header `Authorization`.
+**RLS:** Filtragem automática no banco baseada em `auth.uid()`.
+
+### SAD-IFACE-02 — Edge Functions ↔ Postgres
+**Protocolo:** PostgREST com SERVICE_ROLE_KEY interno.
+**Bypass RLS:** Sim, com auditoria via `cognitive_events`.
+
+### SAD-IFACE-03 — Edge tradevision-core ↔ OpenAI
+**Protocolo:** HTTPS REST (`https://api.openai.com/v1/chat/completions`).
+**Modelo:** `gpt-4o-2024-08-06` (chat) + `gpt-4o-mini` (Escriba V1.9.84).
+**Token mgmt:** Cap 60k tokens (V1.9.61).
+
+### SAD-IFACE-04 — Edge sign-pdf-icp ↔ ITI
+**Protocolo:** OCSP validation cadeia ICP.
+**Output:** PDF AD-RB válido em `validar.iti.gov.br`.
+
+### SAD-IFACE-05 — Cron ↔ Edge video-call-reminders
+**Protocolo:** `pg_cron` chama `net.http_post`.
+**Schedule:** `*/5 * * * *`.
+
+## 6. Fluxos de dados críticos
+
+### SAD-FLOW-01 — AEC completa (paciente → relatório assinado)
+
+```
+Paciente abre app
+    │
+    ▼
+Edge tradevision-core
+    │  pirâmide 8 camadas
+    ▼  (camadas 0-4 → bypass GPT se aplicável)
+GPT-4o (camada 5) ← APENAS se nada acima resolveu
+    │
+    ▼
+Pós-processamento (camada 6)
+    │
+    ▼
+Pipeline Orchestrator (camada 7):
+    REPORT → SCORES → SIGNATURE → AXES → RATIONALITY → DONE
+    │
+    ▼
+INSERT clinical_reports (status='completed', signed_at=NULL)
+INSERT clinical_rationalities (assessment SANITIZED V1.9.452)
+    │
+    ▼
+Médico revisa (URS-MED-03)
+    │
+    ▼
+Médico chama Edge sign-pdf-icp
+    │  auth + ownership check (V1.9.457)
+    ▼
+PDF AD-RB v2.4 gerado
+UPDATE clinical_reports SET signed_at=NOW(), signature_hash=...
+    │
+    ▼
+Paciente recebe acesso (URS-PAC-04, URS-PAC-06)
+```
+
+### SAD-FLOW-02 — Cron lembrete de consulta
+
+```
+pg_cron */5 * * * *
+    │
+    ▼
+SELECT appointments WHERE status='scheduled'
+   AND now() BETWEEN appointment_date - 24h AND appointment_date - 1h
+    │
+    ▼
+Edge video-call-reminders sweep
+    │
+    ▼
+POST send-email via Resend
+    │
+    ▼
+UPDATE appointments SET reminder_sent_at=NOW()
+```
+
+### SAD-FLOW-03 — Telemetria custo IA
+
+```
+Edge tradevision-core processa turn
+    │
+    ▼
+Calcula cost_usd_estimate:
+   (prompt_tokens × $5/1M) + (completion_tokens × $15/1M)
+    │
+    ▼
+INSERT ai_chat_interactions (
+   user_id, patient_id, user_message, ai_response,
+   metadata: { simbologia, model, prompt_tokens, completion_tokens, cost_usd_estimate, ... }
+)
+    │
+    ▼
+AdminAIGovernance agrega por simbologia + 14d window
+```
+
+## 7. Decisões arquiteturais críticas
+
+### SAD-DEC-01 — Pirâmide cognitiva 8 camadas (defense in depth)
+**Decisão:** GPT é o último a falar e o primeiro a ser checado.
+**Justificativa:** Riscos H1 (Babylon) + H5 (alucinação) mitigados em múltiplas camadas.
+**Selada por:** Magno (versões 04-06/02/2026).
+
+### SAD-DEC-02 — Edge `sign-pdf-icp` desacoplada
+**Decisão:** Assinatura ICP-Brasil isolada em Edge dedicada com lock V1.9.299.
+**Justificativa:** Risco regulatório alto justifica isolamento + auditoria smoke ITI obrigatória.
+
+### SAD-DEC-03 — Source of truth para racionalidades
+**Decisão:** `clinical_reports.content.rationalities` (jsonb) é source da UI; `clinical_rationalities` (tabela) é espelho analítico.
+**Trade-off:** Divergência controlada documentada em `feedback_dual_write_contract_jsonb_vs_tabela_18_05`.
+
+### SAD-DEC-04 — Verbatim First (V1.9.86) reduz custo + risco
+**Decisão:** ~46% das fases AEC bypass GPT com respostas pré-codificadas.
+**Justificativa:** Reduz alucinação + custo + latência simultaneamente.
+
+### SAD-DEC-05 — `aec_assessment_state.is_complete` é coluna gerada
+**Decisão:** Computado automaticamente (não-INSERTável).
+**Justificativa:** Impede inconsistência manual.
+
+### SAD-DEC-06 — Pseudonimização em runtime + backfill histórico
+**Decisão:** V1.9.452 sanitiza no INSERT + backfill 132 rows.
+**Justificativa:** Não confiar em prompt-level — defense in depth LGPD.
+
+### SAD-DEC-07 — Frontend lê só do jsonb (snapshot), nunca da tabela analítica
+**Decisão:** UI paciente derivada de `clinical_reports.content.*` sempre.
+**Justificativa:** Imutabilidade do que paciente viu naquele momento.
+
+### SAD-DEC-08 — Cron jobs preferidos a webhooks para tarefas periódicas
+**Decisão:** `pg_cron` em vez de serviço externo de scheduling.
+**Justificativa:** Reduzir dependência + telemetria nativa via `cron.job_run_details`.
+
+### SAD-DEC-09 — Push 4 refs (2 remotes × main + master)
+**Decisão:** Política operacional obrigatória.
+**Justificativa:** Redundância de remoto sem custo.
+
+### SAD-DEC-10 — Matrix Z2 trata bula como material marcado, não corpus sintetizável
+**Decisão:** Cita literal, NUNCA sintetiza cross-bulas.
+**Justificativa:** Lock V1.9.468-A — anti-deriva farmacológica.
+
+## 8. Restrições arquiteturais
+
+### SAD-DEC-11 — Não fazer DELETE em dados clínicos
+**Decisão:** Soft-delete ou invalidate-with-reason.
+**Justificativa:** Audit LGPD + retenção 5 anos.
+
+### SAD-DEC-12 — Não mexer no Lock V1.9.299 sem smoke ITI
+**Decisão:** Qualquer alteração em `sign-pdf-icp/*` exige openssl asn1parse + validar.iti.gov.br + diff binário.
+
+### SAD-DEC-13 — `tradevision-core` verify_jwt em produção (gap conhecido)
+**Decisão pendente:** Flippar pra `verify_jwt=true` após validação de callers.
+**Status:** RSK-001 H8 — Sprint A.
+
+## 9. Inventário SAD
+
+- Componentes: 26 (SAD-COMP-01..26)
+- Interfaces: 5 (SAD-IFACE-01..05)
+- Fluxos: 3 (SAD-FLOW-01..03)
+- Decisões arquiteturais: 13 (SAD-DEC-01..13)
+
+**Total: 47 itens SAD catalogados.**
+
+## 10. Rastreabilidade
+
+Cada SAD aparece em [TRM-001](./14_TRM-001_Traceability_Matrix.md) mapeado para URS, SRS, RSK, TST, EVD.
+
+---
+
+**Aprovação:**
+- [ ] Médico Sócio (validação clínica): Dr. Ricardo Valença — Data: ___/___/___
+- [ ] RT habilitado: ________________ Data: ___/___/___
+- [ ] Tech Lead: Pedro Henrique Passos Galluf — Data: 29/05/2026 (draft)
+
+---
+
+<a name="14_trm-001_traceability_matrix"></a>
+
+# TRM-001 — Traceability Matrix
+
+**Versão draft:** 0.1 (29/05/2026)
+**Status:** DRAFT pré-consultora SaMD
+**Referência normativa:** IEC 62304:2006 §5.1.3 + ISO 13485:2016 §7.3.4
+
+---
+
+## 1. Objetivo
+
+Estabelecer rastreabilidade bidirecional entre **Necessidade do usuário (URS) → Requisito (SRS) → Arquitetura (SAD) → Risco (RSK) → Controle (CTL) → Teste (TST) → Evidência (EVD)**.
+
+Princípio cristalizado (sessão 29/05): *"O auditor não procura conhecimento distribuído. Ele procura conhecimento indexado."*
+
+## 2. Convenção de IDs (consolidação)
+
+| Prefixo | Significado | Documento mestre |
+|---|---|---|
+| `URS-MED/PAC/ALU/ADM/GLB-NN` | Necessidades do usuário | URS-001 |
+| `SRS-FR-NN` / `SRS-NFR-NN` | Requisitos funcionais / não-funcionais | SRS-001 |
+| `SAD-COMP/IFACE/FLOW/DEC-NN` | Componentes / Interfaces / Fluxos / Decisões | SAD-001 |
+| `RSK-HNN` | Hazards de risco | RSK-001 |
+| `CTL-NN` | Controles implementados | (este doc) |
+| `TST-NN` | Testes / verificações | (este doc) |
+| `EVD-NN` | Evidências empíricas | (este doc) |
+
+## 3. Catálogo de CONTROLES (CTL-XX)
+
+### CTL-01 — Guard `isAskingConsent`
+**Implementação:** `tradevision-core/index.ts`.
+**Verifica:** SRS-FR-01.
+
+### CTL-02 — COS Kernel 5 portas
+**Implementação:** `cos_engine.ts`.
+**Verifica:** SRS-FR-02.
+
+### CTL-03 — AEC FSM 13 fases
+**Implementação:** `clinicalAssessmentFlow.ts`.
+**Verifica:** SRS-FR-03.
+
+### CTL-04 — Verbatim First (bypass GPT)
+**Implementação:** Camada 3 pirâmide.
+**Verifica:** SRS-FR-04.
+
+### CTL-05 — AEC Gate V1.5
+**Implementação:** Camada 4 pirâmide.
+**Verifica:** SRS-FR-05.
+
+### CTL-06 — PII sanitize Edge tradevision-core v423
+**Implementação:** `sanitizeRationalityPII` + backfill 132 rows.
+**Verifica:** SRS-FR-13, SRS-NFR-07.
+
+### CTL-07 — Auth + ownership check Edge sign-pdf-icp
+**Implementação:** V1.9.457 Edge v22.
+**Verifica:** SRS-FR-10, SRS-NFR-06 (parcial — só sign-pdf-icp).
+
+### CTL-08 — PBAD AD-RB v2.4 constants OID + SIGPOLICYHASH
+**Implementação:** `PA_AD_RB_V24_OID` + `PA_AD_RB_V24_SIGPOLICYHASH_HEX`.
+**Verifica:** SRS-FR-09.
+
+### CTL-09 — RLS 100% nas 144 tabelas
+**Implementação:** Migration + audit periódico.
+**Verifica:** SRS-NFR-03.
+
+### CTL-10 — Telemetria custo IA (V1.9.238)
+**Implementação:** Metadata em `ai_chat_interactions`.
+**Verifica:** SRS-FR-27, SRS-NFR-08.
+
+### CTL-11 — pg_cron jobs com `cron.job_run_details`
+**Implementação:** 3 jobs ativos.
+**Verifica:** SRS-FR-12, SRS-NFR-11.
+
+### CTL-12 — Cap tokens 60k (V1.9.61)
+**Implementação:** Limite em Edge.
+**Verifica:** SRS-FR-06 (proteção custo / loop).
+
+### CTL-13 — RPC `anonymize_user_safely` SECURITY DEFINER
+**Implementação:** Função SQL.
+**Verifica:** SRS-FR-29.
+
+### CTL-14 — Versionamento V1.9.X disciplinado + tags imutáveis
+**Implementação:** Política operacional (CLAUDE.md).
+**Verifica:** SRS-NFR-09.
+
+### CTL-15 — Backup WAL-G + diário (Supabase Pro)
+**Implementação:** Supabase Pro plan.
+**Verifica:** SRS-NFR-10.
+
+### CTL-16 — Type-check pre-commit
+**Implementação:** Hook lint-staged.
+**Verifica:** SRS-NFR-09 (qualidade código).
+
+### CTL-17 — Push 4 refs obrigatório
+**Implementação:** Política operacional.
+**Verifica:** SRS-NFR-09 (redundância).
+
+## 4. Catálogo de TESTES (TST-XX)
+
+### TST-01 — Smoke ITI validar.iti.gov.br
+**Método:** `openssl asn1parse` + upload no portal ITI + diff binário.
+**Verifica:** CTL-08 → SRS-FR-09.
+**Cadência:** A cada alteração em `sign-pdf-icp/*`.
+
+### TST-02 — Type-check `npx tsc --noEmit`
+**Método:** EXIT=0 obrigatório pré-commit.
+**Verifica:** CTL-16.
+
+### TST-03 — Smoke PAT schema empírico
+**Método:** `information_schema.columns` antes de INSERT/SELECT.
+**Verifica:** Princípio cristalizado `feedback_nao_chutar_uuid_quando_pat_disponivel_29_05`.
+
+### TST-04 — `clinical_qa_runs` (framework PMF Audit V1.9.85)
+**Método:** Audit estruturado 17 colunas com 4 buckets coloridos.
+**Verifica:** Validação clínica de relatórios.
+**Cadência atual:** 2/30d (target: 2/mês).
+
+### TST-05 — Telemetria latency P50/P95/P99
+**Método:** Percentile sobre `processing_time` em `ai_chat_interactions`.
+**Verifica:** CTL-10 → SRS-NFR-01.
+**Estado:** Painel AdminAIGovernance V1.9.374 já operacional.
+
+### TST-06 — Smoke 401 sem JWT em Edge sign-pdf-icp
+**Método:** Requisição sem header `Authorization` → 401 esperado.
+**Verifica:** CTL-07 → SRS-FR-10.
+**Smoke validado:** V1.9.457 SMOKE 1+2 PASS.
+
+### TST-07 — Smoke empírico UI (Pedro + Ricardo + Eduardo)
+**Método:** Uso real do app antes de paciente externo.
+**Verifica:** Regressão funcional / visual.
+
+### TST-08 — Smoke 5/5 Matrix Z2 + Bula (V1.9.468-A)
+**Método:** 5 perguntas-armadilha (qual CBD melhor / compare / posologia / interação / sugira).
+**Verifica:** CTL relacionado a Matrix.
+**Smoke PASS:** 27/05/2026.
+
+### TST-09 — `cron.job_run_details` success rate
+**Método:** Query agregada `state='succeeded'` últimos 7d.
+**Verifica:** CTL-11 → SRS-NFR-11.
+**Estado:** 2.023/2.023 = 100%.
+
+### TST-10 — Validação RLS via PAT empírico
+**Método:** `pg_class.relrowsecurity` em todas tabelas.
+**Verifica:** CTL-09 → SRS-NFR-03.
+**Estado:** 144/144 confirmado 29/05.
+
+### TST-11 — Smoke 132 rows PII sanitizadas
+**Método:** Query empírica `clinical_rationalities WHERE assessment LIKE 'Paciente #%'`.
+**Verifica:** CTL-06 → SRS-FR-13.
+**Estado:** 132/132 confirmado V1.9.452 backfill.
+
+## 5. Catálogo de EVIDÊNCIAS (EVD-XX)
+
+Cada EVD é uma tag git imutável, commit, ou registro empírico verificável.
+
+### EVD-01 — Lock V1.9.95 (AEC + Relatório + Agendamento)
+**Tag:** `v1.9.95-lock-aec-relatorio-agendamento`.
+**Mensagem:** "LOCK V1.9.95 — AEC + Relatório + Agendamento".
+
+### EVD-02 — Lock V1.9.99 (Resend production)
+**Tag:** `v1.9.99-resend-prod-locked`.
+**Mensagem:** "LOCK V1.9.99 — Resend production-ready (28/04/2026 ~15h45 BRT)".
+
+### EVD-03 — Lock V1.9.113 (AEC + Pipeline + Analisar Paciente)
+**Tag:** `v1.9.113-locked`.
+**Mensagem:** "v1.9.113-locked — Selo AEC + Pipeline + Analisar Paciente estavel".
+
+### EVD-04 — Lock V1.9.299 (PBAD AD-RB CONFORME ITI)
+**Tag:** `v1.9.299-pbad-conforme-locked`.
+**Mensagem:** "🏆 V1.9.299-FINAL — PBAD AD-RB CONFORME validado oficialmente ITI ✅".
+**Importância:** Crítica regulatória — não tocar sem smoke ITI.
+
+### EVD-05 — Lock V1.9.418 (Fórum Cann Matrix)
+**Tag:** `v1.9.418-forum-cann-matrix-checkpoint`.
+
+### EVD-06 — Lock V1.9.452 (PII sanitize)
+**Tag:** `v1.9.452-pii-sanitize-defensivo-final`.
+**Mensagem:** "V1.9.452 PII sanitize defensivo em clinical_rationalities — LGPD reforco pre-Marco 2".
+
+### EVD-07 — Lock V1.9.455 (exam_request PDF ICP wiring)
+**Tag:** `v1.9.455-exam-pdf-wiring`.
+
+### EVD-08 — Lock V1.9.457 (sign-pdf-icp auth + ownership)
+**Tag:** `v1.9.457-sign-pdf-icp-auth-ownership`.
+**Mensagem:** "Nucleo PBAD AD-RB V1.9.299 INTOCADO. Smoke 1+2 validados (401).".
+
+### EVD-09 — Lock V1.9.468-A (Matrix Z2 + Bula)
+**Tag:** `v1.9.468-A-matrix-bula-locks-final`.
+**Mensagem:** "Matrix Z2 + Bula ANVISA locks micro-factuais (smoke 5/5 PASS empirico)".
+
+### EVD-10 — Lock V1.9.474 (AEC reset invalidated_at)
+**Tag:** `v1.9.474-aec-reset-invalidated-trigger`.
+
+### EVD-11 — Lock V1.9.475 (Card Neuro embrião)
+**Tag:** `v1.9.475-card-neuro-embriao`.
+
+### EVD-12 — 42 reports ICP-Brasil signed
+**Fonte:** `SELECT COUNT(*) FROM clinical_reports WHERE signed_at IS NOT NULL AND signature_hash IS NOT NULL`.
+**Estado:** 42 confirmado PAT 29/05.
+
+### EVD-13 — 132 rationalities PII sanitizadas (backfill V1.9.452)
+**Fonte:** `SELECT COUNT(*) FROM clinical_rationalities` = 132 (= total = todas sanitizadas).
+
+### EVD-14 — 144 tabelas com RLS 100%
+**Fonte:** PAT empírico 29/05.
+
+### EVD-15 — 2.023 runs cron / 100% success em 7d
+**Fonte:** `cron.job_run_details`.
+
+### EVD-16 — 649 commits/30d
+**Fonte:** `git log --since="30 days ago"`.
+
+### EVD-17 — 284 memórias cristalizadas
+**Fonte:** `ls ~/.claude/projects/*/memory/*.md`.
+
+### EVD-18 — 66 diários DIARIO_*.md
+**Fonte:** `ls DIARIO_*.md`.
+
+### EVD-19 — 6 Livros Magno
+**Fonte:** `ls docs/LIVRO_MAGNO_*.md` (versões variadas).
+
+### EVD-20 — Painel AdminAIGovernance ativo
+**Fonte:** `src/pages/AdminAIGovernance.tsx` V1.9.374.
+
+### EVD-21 — Smoke Eduardo Faveret operacional
+**Fonte:** Memória `project_eduardo_faveret_no_app_sharing_validado_27_05`.
+
+### EVD-22 — Smoke 4 órfãos AEC visíveis (V1.9.500)
+**Fonte:** Solange (32d) / Thiago (24d) / Pedro (7d) / João (4d) flagrados empíricamente.
+
+### EVD-23 — 2 clinical_qa_runs (cadência mínima ativa)
+**Fonte:** `SELECT COUNT(*) FROM clinical_qa_runs` = 2.
+
+## 6. Matriz de rastreabilidade (núcleo crítico)
+
+### 6.1. Cadeia URS → SRS → SAD → RSK → CTL → TST → EVD
+
+| URS | SRS | SAD | RSK | CTL | TST | EVD |
+|---|---|---|---|---|---|---|
+| URS-PAC-02 | SRS-FR-01 | SAD-COMP-11 SAD-DEC-01 | RSK-H03 | CTL-01 CTL-05 | TST-07 | EVD-01 |
+| URS-GLB-02 | SRS-FR-02 | SAD-DEC-01 | (geral) | CTL-02 | (auditoria) | EVD-01 |
+| URS-MED-02 URS-PAC-01 | SRS-FR-03 | SAD-COMP-02 SAD-COMP-11 | RSK-H05 | CTL-03 | TST-07 | EVD-03 |
+| URS-MED-03 | SRS-FR-04 SRS-FR-07 | SAD-COMP-11 SAD-DEC-04 | RSK-H05 | CTL-04 | TST-07 | EVD-01 |
+| URS-MED-06 | SRS-FR-05 SRS-FR-16 SRS-FR-17 | SAD-COMP-06 | RSK-H03 | CTL-05 | TST-07 | EVD-22 |
+| URS-MED-05 URS-PAC-06 | SRS-FR-09 SRS-FR-10 | SAD-COMP-12 SAD-DEC-02 | RSK-H04 RSK-H10 | CTL-07 CTL-08 | TST-01 TST-06 | EVD-04 EVD-08 EVD-12 |
+| URS-MED-11 | SRS-FR-12 | SAD-COMP-17 SAD-COMP-21 SAD-IFACE-05 | RSK-H09 | CTL-11 | TST-09 | EVD-02 EVD-15 |
+| URS-PAC-10 | SRS-FR-13 SRS-NFR-07 | SAD-COMP-11 SAD-DEC-06 | RSK-H02 | CTL-06 | TST-11 | EVD-06 EVD-13 |
+| URS-MED-08 URS-PAC-05 | SRS-FR-14 | SAD-COMP-03 | RSK-H07 | (RLS overwrite — gap Marco 3) | TST-10 | (smoke 28/05 manhã) |
+| URS-MED-01 | SRS-FR-15 | SAD-COMP-03 SAD-COMP-20 | (n/a pattern válido) | (validação 3 queries) | TST-10 | (memória feedback_padrao_orfaos_*) |
+| URS-MED-09 | SRS-FR-18 SRS-FR-19 SRS-FR-20 | SAD-COMP-03 SAD-COMP-04 | RSK-H05 | CTL-03 | TST-07 | EVD-09 |
+| URS-MED-10 | SRS-FR-21 | SAD-COMP-04 SAD-DEC-10 | RSK-H05 | (Matrix Z2 lock) | TST-08 | EVD-09 |
+| URS-PAC-04 URS-PAC-09 | SRS-FR-22 | SAD-COMP-07 SAD-COMP-08 | (n/a) | (RichClinicalReportView soberano) | TST-07 | (hotfix V1.9.500-A documentado) |
+| URS-ADM-02 URS-MED-12 URS-GLB-05 | SRS-FR-27 SRS-FR-28 | SAD-COMP-09 SAD-COMP-11 | RSK-H05 | CTL-10 | TST-05 | EVD-20 |
+| URS-PAC-08 URS-ADM-07 | SRS-FR-29 | SAD-COMP-20 | (LGPD) | CTL-13 | (manual) | (RPC SQL definida) |
+| URS-GLB-02 | SRS-NFR-03 SRS-NFR-06 | SAD-COMP-20 SAD-COMP-22 | RSK-H07 RSK-H08 | CTL-09 | TST-10 | EVD-14 |
+| URS-GLB-03 | SRS-NFR-09 SRS-NFR-13 | (transversal) | (n/a) | CTL-14 CTL-16 CTL-17 | TST-02 | EVD-16 EVD-17 EVD-18 EVD-19 |
+| URS-GLB-04 | SRS-NFR-01 | SAD-COMP-11 SAD-COMP-24 | RSK-H09 | CTL-12 | TST-05 | EVD-20 |
+
+### 6.2. Cobertura empírica (29/05/2026)
+
+| Métrica | Valor | Observação |
+|---|---:|---|
+| URS catalogados | 41 | URS-001 §9 |
+| SRS catalogados | 44 | SRS-001 §5 (31 FR + 13 NFR) |
+| SAD itens | 47 | SAD-001 §9 (26 COMP + 5 IFACE + 3 FLOW + 13 DEC) |
+| RSK hazards | 10 | RSK-001 §2 |
+| CTL controles | 17 | (este doc §3) |
+| TST testes | 11 | (este doc §4) |
+| EVD evidências | 23 | (este doc §5) |
+| **Total de itens rastreáveis** | **193** | |
+| URS com mapeamento completo URS→EVD | ~18 | ~44% — gap em 23 URS |
+| Evidências com lock git imutável | 11 | Tags v1.9.* |
+
+### 6.3. Gaps de rastreabilidade conhecidos
+
+1. **URS-ALU-05 (feedback estruturado pós-simulação)** — sem `simulation_runs` formal. Gap parqueado pós-Marco 3.
+2. **URS-MED-08 / URS-PAC-05 (Share cross-account)** — pattern overwrite documentado mas sem RLS pra 3º médico profissional puro. Gap Marco 3.
+3. **SRS-NFR-06 (verify_jwt em Edges)** — `tradevision-core` ainda `verify_jwt=false`. Gap Sprint A.
+4. **SRS-FR-15 (Cadastro paciente externo offline)** — pattern válido CFM mas sem UI de "remover paciente cadastrado por engano". Gap operacional.
+
+## 7. Inventário TRM
+
+- Controles: 17 (CTL-01..17)
+- Testes: 11 (TST-01..11)
+- Evidências: 23 (EVD-01..23)
+- Linhas da matriz: 18 cadeias URS→EVD completas
+- Itens totais rastreáveis: **193**
+
+## 8. Como usar este documento
+
+### 8.1. Pergunta típica de auditor
+
+> *"Mostre como vocês garantem que a assinatura ICP-Brasil é confiável."*
+
+**Cadeia de resposta via TRM:**
+1. URS-MED-05 (necessidade do médico)
+2. SRS-FR-09 + SRS-FR-10 (requisitos)
+3. SAD-COMP-12 + SAD-DEC-02 (componente e decisão arquitetural)
+4. RSK-H04 (hazard identificado)
+5. CTL-07 + CTL-08 (controles)
+6. TST-01 + TST-06 (testes empíricos)
+7. EVD-04 + EVD-08 + EVD-12 (evidências: tag git V1.9.299 + V1.9.457 + 42 PDFs signed)
+
+### 8.2. Pergunta típica regulatória
+
+> *"Onde está demonstrada a conformidade com LGPD Art. 11?"*
+
+**Cadeia de resposta:**
+- URS-PAC-10 → SRS-FR-13 + SRS-NFR-07 → SAD-COMP-11 + SAD-DEC-06 → RSK-H02 → CTL-06 → TST-11 → EVD-06 + EVD-13.
+
+## 9. Manutenção da matriz
+
+A TRM deve ser atualizada a cada:
+
+- **Lock V1.9.X** selado (acrescenta EVD)
+- **Novo URS / SRS / SAD** documentado
+- **Novo RSK** identificado em RSK-001
+- **Novo TST** validado empíricamente
+
+Responsabilidade primária: Tech Lead (Pedro). Revisão: RT habilitado pós-CNPJ.
+
+---
+
+**Aprovação:**
+- [ ] Médico Sócio (validação clínica): Dr. Ricardo Valença — Data: ___/___/___
+- [ ] RT habilitado: ________________ Data: ___/___/___
+- [ ] Tech Lead: Pedro Henrique Passos Galluf — Data: 29/05/2026 (draft)
+
+---
+
+## Frase âncora
+
+> *"193 itens rastreáveis (41 URS + 44 SRS + 47 SAD + 10 RSK + 17 CTL + 11 TST + 23 EVD) consolidam num único mapa o conhecimento que estava distribuído entre 11 locks + 66 diários + 284 memórias + 649 commits. TRM-001 não cria informação — indexa o que já existe pra auditor navegar em segundos."*
+
+---
+
 ## Fim do documento consolidado
 
-**Geração:** 29/05/2026 — script de consolidação reusável (`docs/sgq/drafts/*.md` → consolidado)
+**Geração:** 29/05/2026 — script de consolidação reusável.
 
-**Aviso final:** Este é o pacote completo dos drafts. Submeter à consultora SaMD pós-CNPJ pra revisão + assinatura RT habilitado. NÃO substitui auditoria formal por terceiros independentes.
+**Próximos passos:**
+- 3 docs parqueados (PLN-VER-001, PROC-INC-001, PROC-PMS-001) aguardam Marco 2 (paciente externo) + histórico operacional acumulado.
+- Submeter ao consultora SaMD pós-CNPJ para revisão + assinatura RT habilitado.
+- NÃO substitui auditoria formal por terceiros independentes.

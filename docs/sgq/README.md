@@ -40,7 +40,9 @@ Caminho cristalizado em conversação 29/05:
 
 ✅ Pacote de matéria-prima formatada que reduz custo e prazo da consultora.
 
-## Lista de drafts (10)
+## Lista de drafts (14)
+
+### Bloco 1 — Núcleo SGQ + Conformidade (10 docs entregues 29/05 manhã)
 
 1. **POP-CTL-001** — Controle de Documentos (ISO 13485 §7.5.3)
 2. **POP-CTL-007** — Controle de Mudanças em Software Médico (ISO 13485 §7.3.7 + IEC 62304 §6.2)
@@ -52,6 +54,21 @@ Caminho cristalizado em conversação 29/05:
 8. **PROC-CAPA-001** — Ação Corretiva e Preventiva (ISO 13485 §8.5.2 + §8.5.3)
 9. **POP-VAL-001** — Validação Clínica Documental (ISO 13485 §7.3.7)
 10. **MAN-SGQ-001** — Manual do SGQ (ISO 13485 §4.2.2)
+
+### Bloco 2 — Espinha dorsal de rastreabilidade (4 docs entregues 29/05 tarde)
+
+Adicionados após avaliação GPT externa (nota 8/10) que destacou gap em "conhecimento indexado vs distribuído":
+
+11. **URS-001** — User Requirements Specification (41 URS por papel)
+12. **SRS-001** — Software Requirements Specification (44 SRS: 31 FR + 13 NFR)
+13. **SAD-001** — Software Architecture Document (47 itens: 26 COMP + 5 IFACE + 3 FLOW + 13 DEC)
+14. **TRM-001** — Traceability Matrix (193 itens rastreáveis, 17 CTL + 11 TST + 23 EVD)
+
+### Bloco 3 — Parqueados (3 docs dependem de Marco 2+)
+
+- ⏸️ **PLN-VER-001** — Plano de Verificação formal (depende `clinical_qa_runs` cadência acumulada)
+- ⏸️ **PROC-INC-001** — Gestão de Incidentes (depende histórico real de incidentes classificados Tecnovigilância)
+- ⏸️ **PROC-PMS-001** — Post-Market Surveillance (literalmente exige Marco 2 — paciente externo pagante pra haver "market")
 
 ## Aviso de conformidade
 
