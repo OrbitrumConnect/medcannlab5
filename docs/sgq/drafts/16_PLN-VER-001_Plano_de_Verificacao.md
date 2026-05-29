@@ -242,8 +242,12 @@ Cada item rastreável bidirecionalmente via TRM-001.
 - VER-CAD-01 (type-check) — automatizado
 - VER-CAD-04 (smoke ITI)
 - VER-CAD-07 (audit schema)
-- VER-CAD-09 (audit uso real)
+- MON-CAD-02 (audit de uso real semanal)
+- MON-CAD-03 (análise mensal de custos)
+- MON-CAD-04 (cron health check semanal)
 - Selagem de locks V1.9.X (POP-CTL-007 §4)
+
+> **Correção empírica 29/05 20h30 BRT:** versão draft inicial referenciava `VER-CAD-09 (audit uso real)`, ID que não existe — o item migrou para MON-CAD-02 quando §6 foi separado de §7 (sugestão consultoria externa). Bug identificado por auditoria cruzada externa (Claude2) e corrigido empíricamente. Validação do conceito Nível 4 (Auditor IA detectando IDs órfãos).
 
 ### VER-RSP-02 — Médico Sócio (Ricardo Valença)
 

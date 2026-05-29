@@ -565,3 +565,92 @@ Memória [[feedback_pat_curl_windows_utf8_bug_29_05]] como **Nível 1 entry**.
 ### Frase âncora final Bloco K
 
 > *"29/05 ~3h reais condensou ~10-15h backlog: Sprint D Matrix Camada 1.X 6/6 + Sprint E 3 verticais Triple-A + P0 PII fechado 28d + V1.9.500 AECs órfãs visíveis. Sistema saiu do dia mais coerente (145 tabelas + 15 Edges + 405k linhas + 28MB portátil), com 4 fontes longitudinais Matrix separadas semanticamente (princípio meta 28/05) e 132 rows clínicas sanitizadas LGPD. Lock V1.9.299 ICP-Brasil intacto. Restam 15% irreversíveis humanos: PATs + verify_jwt + decisões CNPJ/Eduardo/Marco 2."*
+
+---
+
+## 🌙 BLOCO L — Noite SGQ + Auditoria Externa Cruzada (29/05 ~17h-23h BRT)
+
+### L.1. Polish ProfessionalDashboard (V1.9.502)
+
+Removidos 3 mocks hardcoded confirmados via PAT:
+- Performance "+12%" (realidade: -31% reports 30d vs anterior)
+- `{8}` appointments today (realidade: 0)
+- `{3}` new reports (realidade: 5)
+- Destaque Científico (0 news published)
+- Atividade Recente derivada de `clinical_reports` últimos 7d
+
+Adicionado: `useProfessionalDashboard.loadStats()` com queries reais.
+
+### L.2. SGQ Bloco 1 — Núcleo (10 drafts) + Consolidado
+
+Pasta `docs/sgq/` criada com 10 drafts ISO 13485 + IEC 62304 + ISO 14971:
+1. POP-CTL-001 / 2. POP-CTL-007 / 3. PLN-IEC-001 / 4. RSK-001 / 5. POP-PRJ-002 / 6. POP-QAS-001 / 7. POP-LBL-001 / 8. PROC-CAPA-001 / 9. POP-VAL-001 / 10. MAN-SGQ-001
+
+Documento consolidado `SGQ_CONSOLIDADO_29_05_2026.md` agrupando tudo num arquivo único pra copy-paste.
+
+### L.3. Avaliação GPT externa #1 → Bloco 2 Rastreabilidade (4 drafts)
+
+GPT externo apontou 7 gaps reais (URS/SRS/SAD/TRM/PLN-VER/PROC-INC/PROC-PMS) e nota 8/10 com diagnóstico "cruzaram limiar de documentação".
+
+Entregues bloco rastreabilidade:
+- 11. URS-001 (41 URS por papel)
+- 12. SRS-001 (44 SRS: 31 FR + 13 NFR)
+- 13. SAD-001 (47 itens: 26 COMP + 5 IFACE + 3 FLOW + 13 DEC)
+- 14. TRM-001 (193 itens rastreáveis com 18 cadeias URS→EVD)
+
+### L.4. Avaliação GPT externa #2 → Bloco 3 Operacional + 4 fixes
+
+GPT pediu Release Gate + cobertura SRS→VER-MET + separação verif vs monitor + corrigiu bug matemática "7%/100%".
+
+Entregues:
+- 15. PLAN-FLIP-001 verify_jwt em tradevision-core (mapping empírico 5 callers, todos passam JWT)
+- 16. PLN-VER-001 (49 itens: 10 met + 10 cri + 7 cad verif + 4 cad monit + 6 resp + 8 release gates)
+- Audit cruzada empírica via PAT: descobri PII 86% (113/132) com pseudônimo explícito vs claim 100% — corrigido honestamente
+- Pasta executiva 00..09 + EXECUTIVE_SUMMARY 5 páginas
+
+### L.5. Avaliação Claude2 externa → 5 novos drafts + bug fix
+
+Claude2 cravou: "cruzaram limiar — gargalo agora é verificação formal + governança". 5 novos docs:
+
+- 17. CFG-BASELINE-001 (snapshot V1.9.502-C / `f0aff57`)
+- 18. RACI-001 v0.2 (45 atividades + 3 calibrações Claude2: status DRAFT OPERACIONAL não vinculante, ~13 R+A → R-only com A PENDENTE pós-Marco 1, Eduardo A provisional 90d, seção 9 Limitações de vinculação jurídica)
+- 19. REV-001 (5 Design Reviews retroativos V1.9.95/V1.9.299/V1.9.452/V1.9.468-A/V1.9.502-C)
+- 20. RELEASE_CHECKLIST_template (G1-G8 operacional + smoke pós + telemetria 24h)
+
+**Bug detectado por Claude2 cirurgicamente**: VER-CAD-09 referenciado em VER-RSP-01 mas não definido (virou MON-CAD-02 quando separei §6 de §7). Corrigido + cristalizado como validação do conceito Nível 4 Auditor IA.
+
+### L.6. V1.9.503 Nível 1 automação SGQ — Migration + Cron operacional
+
+Migration `20260529210000_v1_9_503_system_health_alerts.sql`:
+- Tabela `system_health_alerts` (RLS admin) + indexes
+- Function `run_sgq_health_checks()` SECURITY DEFINER com 5 checks
+- Cron `sgq-health-checks-daily` a cada 06h BRT
+
+**Smoke empírico inicial detectou 1 alerta PII** — investigação revelou FALSO POSITIVO (regex 2 palavras capitalizadas pegou "Análise Holística"). Marcado `dismissed` + TODO V1.9.504 refinar regex.
+
+Anti-Babylon aplicado: alertas em fila auditável (não push), bandwidth Pedro respeitado.
+
+### L.7. Memórias cristalizadas
+
+- `project_v1_9_503_sgq_health_checks_nivel1_29_05.md` (Nível 2)
+- `feedback_auditoria_externa_cruzada_gpt_claude2_29_05.md` (Nível 1)
+
+### L.8. Métricas finais do dia
+
+| Métrica | Valor |
+|---|---:|
+| Commits no dia | 16+ |
+| Drafts SGQ entregues | 20 (16 + 4 finais bloco operacional+governança) |
+| Páginas executivas (EXECUTIVE_SUMMARY) | 5 |
+| Pasta 00..09 estrutura consultora | 10 pastas READMEs |
+| IDs catalogados (URS+SRS+SAD+RSK+CTL+TST+EVD+VER+MON+G) | 238+ |
+| Auditorias externas cruzadas | 4 ciclos (GPT×2 + Claude2×2) |
+| Bugs detectados pela auditoria externa | 6 (matemática + PII métrica + VER-CAD-09 + RACI jurídico + 44% self-approval + Eduardo prematuro) |
+| Migration V1.9.503 executada | ✅ |
+| Health checks rodando empíricamente | 5/5 |
+| Alertas no system_health_alerts | 1 falso positivo (dismissed) |
+| Lock V1.9.299 PBAD ICP-Brasil | INTACTO ✅ |
+
+### L.9. Frase âncora final Bloco L
+
+> *"29/05 noite ~6h: dia que cruzou limiar de documentação SGQ — saiu de 10 drafts dispersos para 20 drafts organizados em pasta consultora 00..09 + EXECUTIVE_SUMMARY 5pg + Nível 1 automação operacional. 4 ciclos auditoria externa cruzada GPT+Claude2 detectaram 6 bugs reais (matemática + métrica PII + ID órfão + RACI jurídico + self-approval + A prematuro) — todos corrigidos empíricamente antes do commit. Custo auditoria: ~R$ 0. Economia consultora SaMD estimada: ~R$ 5-10K. Próximo salto não é mais documentação — é evidência operacional acumulada + CNPJ Marco 1."*

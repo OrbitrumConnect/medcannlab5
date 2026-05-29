@@ -76,7 +76,7 @@ Esse padrão (defense in depth multi-camadas) é deliberadamente **anti-Babylon 
 | Tabelas Postgres com RLS habilitado | 144 / 144 (100%) |
 | Edge Functions Supabase Deno ativas | 15 |
 | Reports ICP-Brasil PBAD signed validados | 42 |
-| Racionalidades PII-sanitizadas | 132 / 132 (100%) |
+| Racionalidades total / com pseudônimo explícito | 132 / 113 (86%) — 19 restantes usam texto genérico ("O paciente") sem nome real, **sem vazamento PII** mas sem marca explícita V1.9.452. Audit cruzada empírica 29/05 documentada em CFG-BASELINE-001. |
 | Cron jobs em produção | 3 (success rate 100% em 2.023 runs/7d) |
 | Pacientes cadastrados | 31 |
 | Profissionais (médicos) | 11 |
