@@ -13,6 +13,10 @@ import ProfessionalPatientFiles from '../components/ProfessionalPatientFiles'
 // V1.9.327 — timeline narrativa mensal substitui placeholder "Nenhum gráfico disponível" (Pedro 17/05 opção B)
 import PatientClinicalTimeline from '../components/PatientClinicalTimeline'
 // [V1.9.362] Casos Similares removido do prontuário — usar Terminal de Pesquisa
+// V1.9.498 (Pedro 29/05 — pedido Ricardo): clicar em card da aba Evolução
+// abre modal com relatório completo (Rich AEC ou raw). Não-disruptivo, leitura
+// rápida sem perder contexto do paciente.
+import { EvolutionDetailModal } from '../components/EvolutionDetailModal'
 import {
   ArrowLeft,
   Search,
@@ -388,6 +392,9 @@ const PatientsManagement: React.FC<PatientsManagementProps> = ({ embedded = fals
   // V1.9.292: clicar em item do histórico Visão Geral → aba Evolução com highlight + auto-scroll
   const [highlightEvolutionId, setHighlightEvolutionId] = useState<string | null>(null)
   const highlightedEvolutionRef = useRef<HTMLDivElement | null>(null)
+  // V1.9.498 — modal detalhe evolução (pedido Ricardo). Click no card abre
+  // RichClinicalReportView (AEC) ou raw view (FOLLOW_UP / chat / outros).
+  const [detailEvolution, setDetailEvolution] = useState<Evolution | null>(null)
 
   useEffect(() => {
     if (activeTab === 'evolution' && highlightEvolutionId && highlightedEvolutionRef.current) {
@@ -2336,13 +2343,27 @@ const PatientsManagement: React.FC<PatientsManagementProps> = ({ embedded = fals
                                       {items.map((evolution) => {
                                         const isHighlighted = highlightEvolutionId === evolution.id
                                         return (
+                                          // V1.9.498 (Ricardo 29/05): card vira button — click abre
+                                          // EvolutionDetailModal com relatório completo. Preserva
+                                          // highlight + ref de scroll-into-view + visual identico.
+                                          // role="button" + cursor-pointer + keyboard nav.
                                           <div
                                             key={evolution.id}
                                             ref={isHighlighted ? highlightedEvolutionRef : null}
-                                            className={`bg-slate-700/50 rounded-lg p-4 border transition-all ${isHighlighted
+                                            role="button"
+                                            tabIndex={0}
+                                            onClick={() => setDetailEvolution(evolution)}
+                                            onKeyDown={(e) => {
+                                              if (e.key === 'Enter' || e.key === ' ') {
+                                                e.preventDefault()
+                                                setDetailEvolution(evolution)
+                                              }
+                                            }}
+                                            className={`bg-slate-700/50 rounded-lg p-4 border transition-all cursor-pointer hover:bg-slate-700/70 hover:border-emerald-500/40 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-emerald-500/50 ${isHighlighted
                                               ? 'border-emerald-500 ring-2 ring-emerald-500/40 bg-emerald-500/5 shadow-lg shadow-emerald-900/20'
                                               : 'border-slate-600'
                                               }`}
+                                            title="Clique para ver o relatório completo"
                                           >
                                             <div className="flex items-start justify-between mb-2 gap-2">
                                               <div className="min-w-0">
@@ -2363,7 +2384,10 @@ const PatientsManagement: React.FC<PatientsManagementProps> = ({ embedded = fals
                                                 {evolution.type === 'current' ? 'Atual' : 'Histórico'}
                                               </span>
                                             </div>
-                                            <p className="text-slate-300 text-sm whitespace-pre-wrap">{evolutionContentString(evolution.content, '—')}</p>
+                                            <p className="text-slate-300 text-sm whitespace-pre-wrap line-clamp-3">{evolutionContentString(evolution.content, '—')}</p>
+                                            <div className="flex items-center justify-end mt-2">
+                                              <span className="text-[10px] text-slate-500 italic">Clique para abrir relatório completo →</span>
+                                            </div>
                                           </div>
                                         )
                                       })}
@@ -2485,6 +2509,17 @@ const PatientsManagement: React.FC<PatientsManagementProps> = ({ embedded = fals
       <QuickReferralModal
         open={showReferralModal}
         onClose={() => setShowReferralModal(false)}
+      />
+
+      {/* V1.9.498 (Pedro 29/05 pedido Ricardo) — Modal detalhe de evolução.
+          Click em qualquer card da aba Evolução abre relatório completo em-place,
+          sem perder contexto do paciente. AEC reports usam RichClinicalReportView
+          SOBERANO. FOLLOW_UP/chat-ia usam raw render. */}
+      <EvolutionDetailModal
+        isOpen={!!detailEvolution}
+        evolution={detailEvolution}
+        patientName={selectedPatient?.name || null}
+        onClose={() => setDetailEvolution(null)}
       />
 
       {/* V1.9.440-A — Dropdown Novo Paciente via Portal global (escapa stacking
