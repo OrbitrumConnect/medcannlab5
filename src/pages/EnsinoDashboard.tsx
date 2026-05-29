@@ -53,6 +53,12 @@ import {
   type EvaluationInstrument,
 } from '../hooks/useEvaluationInstruments'
 import { EvaluationInstrumentAdminModal } from '../components/EvaluationInstrumentAdminModal'
+// V1.9.497 Sprint E Vertical 3 (Pedro 29/05) — Mentoria plantada.
+// Mock mentorshipPrograms substituído por query real à tabela
+// `public.mentor_profiles`. Solicitações vão pra `mentorship_requests` (não
+// mais `appointments` com doctor_id string — anti-padrão UUID resolvido).
+import { useMentorship, MENTORSHIP_STATUS_LABELS, type MentorProfile } from '../hooks/useMentorship'
+import { MentorshipRequestModal } from '../components/MentorshipRequestModal'
 import { useNoa } from '../contexts/NoaContext'
 import { useNoaPlatform } from '../contexts/NoaPlatformContext'
 import { useDashboardTriggers } from '../contexts/DashboardTriggersContext'
@@ -73,38 +79,10 @@ import {
 type EnsinoSection = 'dashboard' | 'aulas' | 'biblioteca' | 'avaliacao' | 'newsletter' | 'mentoria'
 
 // Função para validar se a data é válida para o mentor
-const isValidDateForMentor = (dateString: string, mentorId: string): boolean => {
-  const date = new Date(dateString)
-  const dayOfWeek = date.getDay() // 0 = Domingo, 1 = Segunda, ..., 6 = Sábado
-
-  if (mentorId === 'ricardo') {
-    // Dr. Ricardo Valença: Terça (2), Quarta (3), Quinta (4)
-    return dayOfWeek === 2 || dayOfWeek === 3 || dayOfWeek === 4
-  } else if (mentorId === 'eduardo') {
-    // Dr. Eduardo Faveret: Terça (2)
-    return dayOfWeek === 2
-  }
-
-  return true // Para outros mentores (ex: IA Nôa)
-}
-
-// Função para obter horários disponíveis do mentor
-const getAvailableTimes = (mentorId: string): string[] => {
-  if (mentorId === 'ricardo') {
-    // Dr. Ricardo Valença: 14h às 20h
-    const times: string[] = []
-    for (let hour = 14; hour < 20; hour++) {
-      times.push(`${hour.toString().padStart(2, '0')}:00`)
-      times.push(`${hour.toString().padStart(2, '0')}:30`)
-    }
-    return times
-  } else if (mentorId === 'eduardo') {
-    // Dr. Eduardo Faveret: 19h às 21h
-    return ['19:00', '19:30', '20:00', '20:30']
-  }
-
-  return [] // Para outros mentores
-}
+// V1.9.497 Sprint E V3 — Helpers `isValidDateForMentor` + `getAvailableTimes`
+// MOVIDOS pra MentorshipRequestModal.tsx (componente standalone). Agora recebem
+// `slug` ao invés de `id` UUID (estável entre seeds). Default permissivo pra
+// mentores futuros sem regra explícita (9h-20h slots, qualquer dia).
 
 interface EnsinoDashboardProps {
   forcedSection?: EnsinoSection
@@ -121,11 +99,10 @@ const EnsinoDashboard: React.FC<EnsinoDashboardProps> = ({ forcedSection }) => {
   const { user } = useAuth()
 
   // Estados para solicitação de mentoria
-  const [selectedMentor, setSelectedMentor] = useState<typeof mentorshipPrograms[0] | null>(null)
-  const [mentorshipDate, setMentorshipDate] = useState<string>('')
-  const [mentorshipTime, setMentorshipTime] = useState<string>('')
-  const [mentorshipMessage, setMentorshipMessage] = useState<string>('')
-  const [isSubmittingMentorship, setIsSubmittingMentorship] = useState(false)
+  // V1.9.497 Sprint E V3 — selectedMentor agora é MentorProfile (do banco real),
+  // não typeof mentorshipPrograms[0] (mock). Mentorship request modal stand-alone
+  // gerencia seu próprio state (data/horário/tópico/mensagem).
+  const [selectedMentor, setSelectedMentor] = useState<MentorProfile | null>(null)
   const [enrolledCourses, setEnrolledCourses] = useState<any[]>([])
   const [isLoadingCourses, setIsLoadingCourses] = useState(false)
 
@@ -325,6 +302,24 @@ const EnsinoDashboard: React.FC<EnsinoDashboardProps> = ({ forcedSection }) => {
     await evaluations.togglePublished(item.id, !item.published)
   }
 
+  // V1.9.497 Sprint E V3 — Mentoria (real DB). Substitui array mock
+  // mentorshipPrograms + handler antigo (que escrevia em appointments com
+  // doctor_id string — anti-padrão).
+  const mentorship = useMentorship()
+  const handleRequestMentorshipReal = (m: MentorProfile) => {
+    if (m.slug === 'noa-esperanca') {
+      // IA Nôa — abre chat direto, não cria request
+      toggleChat()
+      return
+    }
+    setSelectedMentor(m)
+  }
+  const handleSubmitMentorshipReal = mentorship.submitRequest
+  const handleCancelMentorshipRequest = async (id: string) => {
+    if (!confirm('Cancelar esta solicitação?')) return
+    await mentorship.cancelRequest(id)
+  }
+
   // Carregar matrículas do usuário
   useEffect(() => {
     if (user) {
@@ -466,32 +461,9 @@ const EnsinoDashboard: React.FC<EnsinoDashboardProps> = ({ forcedSection }) => {
   // 3 instrumentos seedados via PAT). Participants = COUNT real de
   // evaluation_submissions (honesto: empty = 0).
 
-  const mentorshipPrograms = [
-    {
-      id: 'ricardo',
-      mentor: 'Dr. Ricardo Valença',
-      role: 'Coordenação Arte da Entrevista Clínica',
-      availability: 'Terça a Quinta-feira • 14h às 20h',
-      channel: 'Zoom • Sala LabPEC',
-      focus: 'Supervisão de entrevistas e projetos integradores'
-    },
-    {
-      id: 'eduardo',
-      mentor: 'Dr. Eduardo Faveret',
-      role: 'Direção Acadêmica Cannabis & Nefrologia',
-      availability: 'Terças • 19h às 21h',
-      channel: 'Teams • Sala MedCannLab',
-      focus: 'Protocolos clínicos, farmacologia e monitoramento renal'
-    },
-    {
-      id: 'noa',
-      mentor: 'IA Nôa Esperança',
-      role: 'Tutoria avançada com IA',
-      availability: 'Disponível 24h',
-      channel: 'Chat integrado na plataforma',
-      focus: 'Revisão de conteúdo, quizzes adaptativos e feedback imediato'
-    }
-  ]
+  // V1.9.497 Sprint E V3 — Mock mentorshipPrograms REMOVIDO. Substituído por
+  // useMentorship hook (tabela `public.mentor_profiles` + RLS + 3 mentores
+  // seedados via PAT). 3 mentores originais preservados: Ricardo / Eduardo / Nôa.
 
 
   // V1.9.495 Sprint E V1 — Mock newsletterUpdates REMOVIDO. Substituído por
@@ -519,68 +491,13 @@ const EnsinoDashboard: React.FC<EnsinoDashboardProps> = ({ forcedSection }) => {
     default: getNavButtonStyle()
   }
 
-  // Handler para solicitar mentoria
-  const handleRequestMentorship = (program: typeof mentorshipPrograms[0]) => {
-    if (program.id === 'noa') {
-      // Para IA Nôa Esperança, abrir chat diretamente
-      toggleChat()
-    } else {
-      // Para mentores humanos, abrir modal de agendamento
-      setSelectedMentor(program)
-      setMentorshipDate('')
-      setMentorshipTime('')
-      setMentorshipMessage('')
-    }
-  }
-
-  // Handler para enviar solicitação de mentoria
-  const handleSubmitMentorship = async () => {
-    if (!selectedMentor || !mentorshipDate || !mentorshipTime || !user) return
-
-    setIsSubmittingMentorship(true)
-    try {
-      // Criar agendamento no Supabase
-      const { data: appointment, error } = await (supabase as any)
-        .from('appointments')
-        .insert({
-          title: 'Solicitação de Mentoria',
-          doctor_id: selectedMentor.id === 'ricardo' ? 'ricardo-valenca' : 'eduardo-faveret',
-          date: mentorshipDate,
-          time: mentorshipTime,
-          type: 'mentorship',
-          status: 'pending',
-          notes: mentorshipMessage || `Solicitação de mentoria com ${selectedMentor.mentor}`,
-          created_at: new Date().toISOString()
-        })
-        .select()
-        .single()
-
-      if (error) throw error
-
-      // Criar notificação
-      await (supabase as any)
-        .from('notifications')
-        .insert({
-          user_id: user.id,
-          type: 'mentorship_request',
-          title: 'Solicitação de Mentoria Enviada',
-          message: `Sua solicitação de mentoria com ${selectedMentor.mentor} foi enviada com sucesso.`,
-          data: { appointment_id: appointment.id },
-          created_at: new Date().toISOString()
-        })
-
-      alert('Solicitação de mentoria enviada com sucesso!')
-      setSelectedMentor(null)
-      setMentorshipDate('')
-      setMentorshipTime('')
-      setMentorshipMessage('')
-    } catch (error: any) {
-      console.error('Erro ao enviar solicitação:', error)
-      alert(`Erro ao enviar solicitação: ${error.message || 'Erro desconhecido'}`)
-    } finally {
-      setIsSubmittingMentorship(false)
-    }
-  }
+  // V1.9.497 Sprint E V3 — Handlers antigos REMOVIDOS. Substituídos por
+  // handleRequestMentorshipReal + handleSubmitMentorshipReal acima (que usam
+  // useMentorship hook + tabela mentorship_requests + RLS).
+  // Handler antigo escrevia em `appointments` com `doctor_id` string
+  // ('ricardo-valenca'/'eduardo-faveret') — anti-padrão UUID (appointments.doctor_id
+  // é uuid). Notification dual-write também removido (preferir trigger SQL futuro
+  // se quiser notification automática quando mentorship_requests inserir).
 
   return (
     <div
@@ -1034,7 +951,10 @@ const EnsinoDashboard: React.FC<EnsinoDashboardProps> = ({ forcedSection }) => {
             onSubmit={handleEvalSubmit}
           />
 
-          {/* Mentoria */}
+          {/* V1.9.497 Sprint E Vertical 3 — Mentoria plantada (real DB).
+              Mock mentorshipPrograms substituído por useMentorship.mentors. Solicitação
+              via MentorshipRequestModal (escreve em mentorship_requests com RLS).
+              IA Nôa (slug 'noa-esperanca') abre chat direto. */}
           {activeSection === 'mentoria' && (
             <div className="space-y-6">
               <div className="rounded-xl p-4 md:p-6" style={surfaceStyle}>
@@ -1042,28 +962,79 @@ const EnsinoDashboard: React.FC<EnsinoDashboardProps> = ({ forcedSection }) => {
                 <p className="text-sm md:text-base text-slate-300">Conecte-se com o corpo docente, agende supervisões e acompanhe as agendas do LabPEC.</p>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {mentorshipPrograms.map(program => (
-                  <div key={program.id} className="rounded-2xl border border-[#00C16A]/20 bg-gradient-to-br from-[#0A192F] via-[#102C45] to-[#1F4B38] p-5 shadow-xl">
-                    <div className="mb-4">
-                      <h4 className="text-xl font-bold text-white mb-1">{program.mentor}</h4>
-                      <p className="text-sm text-emerald-400">{program.role}</p>
+              {mentorship.loading ? (
+                <div className="rounded-xl p-8 flex items-center justify-center" style={surfaceStyle}>
+                  <Loader2 className="w-5 h-5 text-emerald-300 animate-spin" />
+                  <span className="ml-2 text-sm text-slate-400">Carregando mentores…</span>
+                </div>
+              ) : mentorship.error ? (
+                <div className="rounded-xl p-4 border border-red-500/30 bg-red-500/10">
+                  <p className="text-sm text-red-300">Erro: {mentorship.error}</p>
+                </div>
+              ) : mentorship.mentors.length === 0 ? (
+                <div className="rounded-xl p-8 text-center" style={surfaceStyle}>
+                  <Inbox className="w-10 h-10 text-slate-600 mx-auto mb-2" />
+                  <p className="text-sm text-slate-400 mb-1">Nenhum mentor disponível no momento.</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {mentorship.mentors.map((m) => (
+                    <div key={m.id} className="rounded-2xl border border-[#00C16A]/20 bg-gradient-to-br from-[#0A192F] via-[#102C45] to-[#1F4B38] p-5 shadow-xl">
+                      <div className="mb-4">
+                        <h4 className="text-xl font-bold text-white mb-1">{m.display_name}</h4>
+                        <p className="text-sm text-emerald-400">{m.role}</p>
+                      </div>
+                      <div className="space-y-2 text-sm text-slate-300 mb-4">
+                        {m.availability && <p><strong className="text-white">Disponibilidade:</strong> {m.availability}</p>}
+                        {m.channel && <p><strong className="text-white">Canal:</strong> {m.channel}</p>}
+                        {m.focus && <p><strong className="text-white">Foco:</strong> {m.focus}</p>}
+                      </div>
+                      <button
+                        onClick={() => handleRequestMentorshipReal(m)}
+                        className="mt-4 w-full px-4 py-3 rounded-lg font-semibold text-white transition-all hover:scale-105 hover:shadow-xl"
+                        style={{ background: accentGradient }}
+                      >
+                        {m.slug === 'noa-esperanca' ? 'Abrir chat com a Nôa' : 'Solicitar Mentoria'}
+                      </button>
                     </div>
-                    <div className="space-y-2 text-sm text-slate-300 mb-4">
-                      <p><strong className="text-white">Disponibilidade:</strong> {program.availability}</p>
-                      <p><strong className="text-white">Canal:</strong> {program.channel}</p>
-                      <p><strong className="text-white">Foco:</strong> {program.focus}</p>
-                    </div>
-                    <button
-                      onClick={() => handleRequestMentorship(program)}
-                      className="mt-4 w-full px-4 py-3 rounded-lg font-semibold text-white transition-all hover:scale-105 hover:shadow-xl"
-                      style={{ background: accentGradient }}
-                    >
-                      Solicitar Mentoria
-                    </button>
+                  ))}
+                </div>
+              )}
+
+              {/* V1.9.497 — Minhas solicitações (visível pra todos com requests) */}
+              {mentorship.myRequests.length > 0 && (
+                <div className="rounded-xl p-4 md:p-6" style={surfaceStyle}>
+                  <h4 className="text-lg font-semibold text-white mb-3">Minhas Solicitações</h4>
+                  <div className="space-y-2">
+                    {mentorship.myRequests.slice(0, 5).map((req) => {
+                      const mentor = mentorship.mentors.find((m) => m.id === req.mentor_profile_id)
+                      const statusMeta = MENTORSHIP_STATUS_LABELS[req.status]
+                      return (
+                        <div key={req.id} className="flex flex-col md:flex-row md:items-center gap-2 p-3 rounded-lg bg-slate-800/40 border border-slate-700/50">
+                          <div className="flex-1 min-w-0">
+                            <div className="text-sm font-semibold text-white truncate">{req.topic}</div>
+                            <div className="text-[11px] text-slate-400 mt-0.5">
+                              {mentor?.display_name || 'Mentor'} · {req.preferred_date} {req.preferred_time}
+                            </div>
+                          </div>
+                          <span className={`text-[10px] uppercase px-2 py-0.5 rounded-full border ${statusMeta.color}`}>
+                            {statusMeta.label}
+                          </span>
+                          {req.status === 'pending' && (
+                            <button
+                              type="button"
+                              onClick={() => handleCancelMentorshipRequest(req.id)}
+                              className="text-[11px] text-slate-400 hover:text-red-300 transition-colors flex-shrink-0"
+                            >
+                              Cancelar
+                            </button>
+                          )}
+                        </div>
+                      )
+                    })}
                   </div>
-                ))}
-              </div>
+                </div>
+              )}
 
               <div className="rounded-xl p-4 md:p-6" style={surfaceStyle}>
                 <h4 className="text-lg font-semibold text-white mb-3">LabPEC – Agenda Semanal</h4>
@@ -1186,122 +1157,16 @@ const EnsinoDashboard: React.FC<EnsinoDashboardProps> = ({ forcedSection }) => {
         )
       }
 
-      {/* Modal de Solicitação de Mentoria */}
-      {
-        selectedMentor && selectedMentor.id !== 'noa' && (
-          <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-            <div className="bg-slate-800 rounded-xl border border-slate-700 w-full max-w-md">
-              {/* Header */}
-              <div className="flex items-center justify-between p-6 border-b border-slate-700">
-                <div>
-                  <h2 className="text-2xl font-bold text-white">Solicitar Mentoria</h2>
-                  <p className="text-sm text-slate-400 mt-1">{selectedMentor.mentor}</p>
-                </div>
-                <button
-                  onClick={() => setSelectedMentor(null)}
-                  className="p-2 hover:bg-slate-700 rounded-lg transition-colors"
-                >
-                  <X className="w-5 h-5 text-slate-400" />
-                </button>
-              </div>
-
-              {/* Form */}
-              <div className="p-6 space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-2">
-                    Data da Mentoria
-                  </label>
-                  <input
-                    type="date"
-                    value={mentorshipDate}
-                    onChange={(e) => {
-                      const date = e.target.value
-                      if (!date || isValidDateForMentor(date, selectedMentor.id)) {
-                        setMentorshipDate(date)
-                      } else {
-                        const validDays = selectedMentor.id === 'ricardo'
-                          ? ['Terça', 'Quarta', 'Quinta']
-                          : ['Terça']
-                        alert(`Este mentor está disponível apenas nas ${validDays.join('s e ')}s. Por favor, selecione uma data válida.`)
-                      }
-                    }}
-                    min={new Date().toISOString().split('T')[0]}
-                    className="w-full px-4 py-2 bg-slate-900 border border-slate-600 rounded-lg text-white focus:outline-none focus:border-blue-500"
-                  />
-                  <p className="text-xs text-slate-400 mt-1">
-                    Disponível: {selectedMentor.availability}
-                  </p>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-2">
-                    Horário
-                  </label>
-                  <select
-                    value={mentorshipTime}
-                    onChange={(e) => setMentorshipTime(e.target.value)}
-                    className="w-full px-4 py-2 bg-slate-900 border border-slate-600 rounded-lg text-white focus:outline-none focus:border-blue-500"
-                  >
-                    <option value="">Selecione um horário</option>
-                    {getAvailableTimes(selectedMentor.id).map(time => (
-                      <option key={time} value={time}>{time}</option>
-                    ))}
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-2">
-                    Mensagem (opcional)
-                  </label>
-                  <textarea
-                    value={mentorshipMessage}
-                    onChange={(e) => setMentorshipMessage(e.target.value)}
-                    placeholder="Descreva o que você gostaria de discutir na mentoria..."
-                    rows={4}
-                    className="w-full px-4 py-2 bg-slate-900 border border-slate-600 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 resize-none"
-                  />
-                </div>
-
-                <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-3">
-                  <p className="text-xs text-blue-300">
-                    <strong>Canal:</strong> {selectedMentor.channel}
-                  </p>
-                  <p className="text-xs text-blue-300 mt-1">
-                    <strong>Foco:</strong> {selectedMentor.focus}
-                  </p>
-                </div>
-              </div>
-
-              {/* Footer */}
-              <div className="flex items-center justify-end gap-3 p-6 border-t border-slate-700">
-                <button
-                  onClick={() => setSelectedMentor(null)}
-                  className="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg transition-colors"
-                >
-                  Cancelar
-                </button>
-                <button
-                  onClick={handleSubmitMentorship}
-                  disabled={isSubmittingMentorship || !mentorshipDate || !mentorshipTime}
-                  className="px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-800 disabled:cursor-not-allowed text-white rounded-lg transition-colors flex items-center gap-2"
-                >
-                  {isSubmittingMentorship ? (
-                    <>
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                      Enviando...
-                    </>
-                  ) : (
-                    <>
-                      <Send className="w-4 h-4" />
-                      Enviar Solicitação
-                    </>
-                  )}
-                </button>
-              </div>
-            </div>
-          </div>
-        )
-      }
+      {/* V1.9.497 Sprint E V3 — Modal antigo SUBSTITUÍDO por MentorshipRequestModal
+          (componente standalone). Anti-padrão UUID resolvido: agora escreve em
+          mentorship_requests.mentor_profile_id (UUID) ao invés de
+          appointments.doctor_id (string). RLS protege requester_id = auth.uid(). */}
+      <MentorshipRequestModal
+        isOpen={!!selectedMentor && selectedMentor.slug !== 'noa-esperanca'}
+        mentor={selectedMentor}
+        onClose={() => setSelectedMentor(null)}
+        onSubmit={handleSubmitMentorshipReal}
+      />
     </div>
   )
 }
