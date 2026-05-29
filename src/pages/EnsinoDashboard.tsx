@@ -26,8 +26,21 @@ import {
   X,
   Send,
   LayoutDashboard,
-  ArrowRight
+  ArrowRight,
+  PlusCircle,    // V1.9.495 Sprint E V1 — admin CRUD News
+  Pencil,        // V1.9.495 Sprint E V1
+  Trash2,        // V1.9.495 Sprint E V1
+  Eye,           // V1.9.495 Sprint E V1
+  EyeOff,        // V1.9.495 Sprint E V1
+  Loader2,       // V1.9.495 Sprint E V1
+  Inbox,         // V1.9.495 Sprint E V1 — empty state
+  ExternalLink   // V1.9.495 Sprint E V1
 } from 'lucide-react'
+// V1.9.495 Sprint E Vertical 1 (Pedro 29/05) — Notícias & Eventos plantadas.
+// Mock newsletterUpdates substituído por query real à tabela `public.news`.
+// Schema 18 cols + RLS pré-existente (admins gerenciam, público lê published).
+import { useNewsItems, NEWS_CATEGORIES, getCategoryLabel, getCategoryColor, type NewsItem } from '../hooks/useNewsItems'
+import { NewsItemAdminModal } from '../components/NewsItemAdminModal'
 import { useNoa } from '../contexts/NoaContext'
 import { useNoaPlatform } from '../contexts/NoaPlatformContext'
 import { useDashboardTriggers } from '../contexts/DashboardTriggersContext'
@@ -239,6 +252,37 @@ const EnsinoDashboard: React.FC<EnsinoDashboardProps> = ({ forcedSection }) => {
   const userRole = (user as any)?.role || (user as any)?.user_metadata?.role || (user as any)?.type || 'paciente'
   const isAdmin = userRole === 'admin' || userRole === 'master'
 
+  // V1.9.495 Sprint E V1 — News & Eventos (real DB, substitui mock newsletterUpdates).
+  // onlyPublished: admin vê drafts também (RLS bypassa); paciente/aluno vê só published.
+  const news = useNewsItems(!isAdmin, undefined, 30)
+  const [newsModalOpen, setNewsModalOpen] = useState(false)
+  const [editingNewsItem, setEditingNewsItem] = useState<NewsItem | undefined>(undefined)
+  const [newsDeleting, setNewsDeleting] = useState<string | null>(null)
+
+  const handleNewsSubmit = async (input: any) => {
+    if (editingNewsItem) {
+      return news.update(editingNewsItem.id, input)
+    }
+    return news.create(input)
+  }
+  const handleEditNewsItem = (item: NewsItem) => {
+    setEditingNewsItem(item)
+    setNewsModalOpen(true)
+  }
+  const handleCreateNewsItem = () => {
+    setEditingNewsItem(undefined)
+    setNewsModalOpen(true)
+  }
+  const handleDeleteNewsItem = async (id: string) => {
+    if (!confirm('Excluir esta notícia/evento? Ação não reversível.')) return
+    setNewsDeleting(id)
+    await news.remove(id)
+    setNewsDeleting(null)
+  }
+  const handleToggleNewsPublished = async (item: NewsItem) => {
+    await news.togglePublished(item.id, !item.published)
+  }
+
   // Carregar matrículas do usuário
   useEffect(() => {
     if (user) {
@@ -430,29 +474,9 @@ const EnsinoDashboard: React.FC<EnsinoDashboardProps> = ({ forcedSection }) => {
   ]
 
 
-  const newsletterUpdates = [
-    {
-      id: 'evento-sep',
-      title: 'Seminário Internacional de Cannabis & Nefrologia',
-      date: '20 de setembro de 2025',
-      category: 'Evento',
-      description: 'Encontro com participação de 12 especialistas internacionais, estudos de caso e demonstração da metodologia AEC aplicada à nefrologia.'
-    },
-    {
-      id: 'bootcamp',
-      title: 'Bootcamp LabPEC – Role Playing Clínico',
-      date: 'Início em 05 de outubro de 2025',
-      category: 'Mentoria',
-      description: 'Ciclo intensivo de simulações com feedback estrutural do corpo docente e análise automática da IA Nôa Esperança.'
-    },
-    {
-      id: 'publicacao',
-      title: 'Publicação destacada na Revista Brasileira de Nefrologia',
-      date: 'Setembro de 2025',
-      category: 'Pesquisa',
-      description: 'Artigo sobre impacto da cannabis medicinal em pacientes com nefropatia diabética produzido pelo MedCannLab.'
-    }
-  ]
+  // V1.9.495 Sprint E V1 — Mock newsletterUpdates REMOVIDO. Substituído por
+  // useNewsItems hook que carrega da tabela `public.news` (schema 18 cols + RLS).
+  // Admin cadastra via NewsItemAdminModal; público vê só published=true.
 
   // highlightGradient específico desta página (não existe no designSystem)
   const highlightGradient = 'linear-gradient(135deg, rgba(0,193,106,0.22) 0%, rgba(16,49,91,0.38) 55%, rgba(7,22,41,0.82) 100%)'
@@ -766,43 +790,133 @@ const EnsinoDashboard: React.FC<EnsinoDashboardProps> = ({ forcedSection }) => {
             </div>
           )}
 
-          {/* Newsletter & Eventos */}
+          {/* V1.9.495 Sprint E Vertical 1 — Notícias & Eventos plantadas (real DB).
+              Mock newsletterUpdates substituído por query useNewsItems. Admin pode
+              criar/editar/publicar/deletar via modal NewsItemAdminModal. Empty state
+              honesto (não inventa rows). RLS protege: público vê published; admin vê
+              drafts também. */}
           {activeSection === 'newsletter' && (
             <div className="space-y-6">
               <div className="rounded-xl p-4 md:p-6" style={surfaceStyle}>
-                <h3 className="text-xl md:text-2xl font-semibold text-white mb-2">Notícias & Eventos</h3>
-                <p className="text-sm md:text-base text-slate-300">Acompanhe os eventos da pós-graduação, novidades dos eixos integrados e pesquisas em destaque.</p>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {newsletterUpdates.map(update => (
-                  <div key={update.id} className="rounded-xl p-4" style={cardStyle}>
-                    <div className="flex items-center justify-between mb-2 text-xs text-slate-300 stack-mobile">
-                      <span className="uppercase tracking-wide text-[#FFD33D]">{update.category}</span>
-                      <span>{update.date}</span>
-                    </div>
-                    <h4 className="text-lg font-semibold text-white mb-2">{update.title}</h4>
-                    <p className="text-sm text-slate-300">{update.description}</p>
-                  </div>
-                ))}
-              </div>
-
-              <div className="rounded-xl p-4 md:p-6" style={surfaceStyle}>
                 <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
                   <div>
-                    <h4 className="text-lg font-semibold text-white">Próxima Imersão AEC</h4>
-                    <p className="text-sm text-slate-300">Inscrições abertas para a imersão intensiva de novembro com foco em entrevistas clínicas complexas.</p>
+                    <h3 className="text-xl md:text-2xl font-semibold text-white mb-2">Notícias & Eventos</h3>
+                    <p className="text-sm md:text-base text-slate-300">Acompanhe os eventos da pós-graduação, novidades dos eixos integrados e pesquisas em destaque.</p>
                   </div>
-                  <button
-                    className="px-4 py-2 rounded-lg font-semibold"
-                    style={{ background: 'linear-gradient(135deg, #FFD33D 0%, #FFAA00 100%)', color: '#0A192F' }}
-                  >
-                    Reservar Vaga
-                  </button>
+                  {isAdmin && (
+                    <button
+                      type="button"
+                      onClick={handleCreateNewsItem}
+                      className="flex items-center gap-1.5 px-3 py-1.5 text-sm bg-amber-500/15 text-amber-200 border border-amber-500/40 rounded hover:bg-amber-500/25 transition-colors flex-shrink-0"
+                    >
+                      <PlusCircle className="w-4 h-4" />
+                      Nova notícia
+                    </button>
+                  )}
                 </div>
               </div>
+
+              {news.loading ? (
+                <div className="rounded-xl p-8 flex items-center justify-center" style={surfaceStyle}>
+                  <Loader2 className="w-5 h-5 text-amber-300 animate-spin" />
+                  <span className="ml-2 text-sm text-slate-400">Carregando…</span>
+                </div>
+              ) : news.error ? (
+                <div className="rounded-xl p-4 border border-red-500/30 bg-red-500/10">
+                  <p className="text-sm text-red-300">Erro: {news.error}</p>
+                </div>
+              ) : news.items.length === 0 ? (
+                <div className="rounded-xl p-8 text-center" style={surfaceStyle}>
+                  <Inbox className="w-10 h-10 text-slate-600 mx-auto mb-2" />
+                  <p className="text-sm text-slate-400 mb-1">Nenhuma notícia ou evento ainda.</p>
+                  <p className="text-xs text-slate-500">
+                    {isAdmin
+                      ? 'Clique em "Nova notícia" pra cadastrar o primeiro item.'
+                      : 'Aguarde — os administradores estão preparando o conteúdo.'}
+                  </p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {news.items.map((item) => (
+                    <div
+                      key={item.id}
+                      className={`rounded-xl p-4 relative ${!item.published ? 'border border-slate-600/50' : ''}`}
+                      style={cardStyle}
+                    >
+                      {/* Badge "Rascunho" quando admin vê draft */}
+                      {!item.published && isAdmin && (
+                        <span className="absolute top-2 right-2 text-[9px] uppercase px-1.5 py-0.5 rounded bg-slate-700/60 text-slate-300 flex items-center gap-1">
+                          <EyeOff className="w-2.5 h-2.5" /> Rascunho
+                        </span>
+                      )}
+                      <div className="flex items-center justify-between mb-2 text-xs text-slate-300 stack-mobile">
+                        <span className={`uppercase tracking-wide ${getCategoryColor(item.category)}`}>
+                          {getCategoryLabel(item.category)}
+                        </span>
+                        <span>{new Date(item.date).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' })}</span>
+                      </div>
+                      <h4 className="text-lg font-semibold text-white mb-2">{item.title}</h4>
+                      <p className="text-sm text-slate-300">{item.summary}</p>
+                      {item.author && (
+                        <p className="text-[11px] text-slate-500 mt-2">— {item.author}{item.read_time ? ` · ${item.read_time}` : ''}</p>
+                      )}
+                      {item.url && (
+                        <a
+                          href={item.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1 text-[11px] text-amber-300 hover:text-amber-200 mt-2"
+                        >
+                          <ExternalLink className="w-3 h-3" />
+                          Saiba mais
+                        </a>
+                      )}
+                      {isAdmin && (
+                        <div className="flex items-center gap-1 mt-3 pt-3 border-t border-slate-700/50">
+                          <button
+                            type="button"
+                            onClick={() => handleEditNewsItem(item)}
+                            className="flex items-center gap-1 px-2 py-1 text-[11px] text-slate-300 hover:text-amber-200 hover:bg-amber-500/10 rounded transition-colors"
+                            title="Editar"
+                          >
+                            <Pencil className="w-3 h-3" />
+                            Editar
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleToggleNewsPublished(item)}
+                            className="flex items-center gap-1 px-2 py-1 text-[11px] text-slate-300 hover:text-emerald-200 hover:bg-emerald-500/10 rounded transition-colors"
+                            title={item.published ? 'Despublicar' : 'Publicar'}
+                          >
+                            {item.published ? <EyeOff className="w-3 h-3" /> : <Eye className="w-3 h-3" />}
+                            {item.published ? 'Despublicar' : 'Publicar'}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteNewsItem(item.id)}
+                            disabled={newsDeleting === item.id}
+                            className="flex items-center gap-1 px-2 py-1 text-[11px] text-slate-300 hover:text-red-300 hover:bg-red-500/10 rounded transition-colors ml-auto disabled:opacity-50"
+                            title="Excluir"
+                          >
+                            {newsDeleting === item.id ? <Loader2 className="w-3 h-3 animate-spin" /> : <Trash2 className="w-3 h-3" />}
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           )}
+
+          {/* V1.9.495 Sprint E V1 — Modal admin News (renderizado fora da section
+              pra evitar unmount em troca de section). */}
+          <NewsItemAdminModal
+            isOpen={newsModalOpen}
+            onClose={() => { setNewsModalOpen(false); setEditingNewsItem(undefined) }}
+            initialItem={editingNewsItem}
+            onSubmit={handleNewsSubmit}
+          />
 
           {/* Mentoria */}
           {activeSection === 'mentoria' && (
