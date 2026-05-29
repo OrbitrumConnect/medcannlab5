@@ -461,3 +461,107 @@ b04ede9  docs(diario):   Bloco I sessão tarde
 ### Frase âncora final Bloco I+J
 
 > *"Roadmap '100% pronto sem regressão' empíricamente validado: 5 usuários ativos 48h (TODOS internos, Ricardo lidera com 62 interações), 48 commits documentados, 10 docs auditoria + 6 memorias NÍVEL 1 + retrospectiva mensal alinhados. PII P0 + verify_jwt + 3 PATs = 🔐 irreversíveis HOJE. Camada 2.3 plano terapêutico = buraco arquitetural REAL bloqueador. Sistema saudável + preservado + coerente, com 79% prescrições draft (melhorando), 44% appts cancelled (preocupante), 69% AECs interrupted (sem UI gerir). Marco 2 = critério gold; PII sanitize = bloqueador imediato. Custo estimado: ~15-25h dev distribuídos em 3-5 sessões + 1-2 dias resposta Ricardo."*
+
+---
+
+## ✅ BLOCO K — FECHAMENTO DIA 29/05 (~12h BRT)
+
+**Sessão executada**: ~9h00 → ~12h00 BRT (~3h reais condensando ~10-15h backlog).
+
+### K.1 — Entregas por eixo (16 commits / 14 versões V1.9.487 → V1.9.500 + V1.9.452 retroativa)
+
+**🧬 Sprint D Matrix Camadas 1.X — 6/6 COMPLETO**
+- V1.9.487 Camada 1.5: separação semântica visual aba Evolução (3 fontes — FOLLOW_UP médico / AEC IA / chat IA)
+- V1.9.488 Camada 1.4: 4 toggles fonte paciente Matrix (AEC/Evol/Rac/Dos) defaults ON
+- V1.9.489 Camada 1.2: `usePatientLongitudinal` lê `clinical_assessments FOLLOW_UP` 18 rows reais + card `patient-follow-up` GitBranch
+- V1.9.490 fix factual: seed Mevatyl (primeiro MEDICAMENTO cannabis 2017) + Prati-Donaduzzi (primeiro canabidiol ISOLADO RDC 327/2019) — anti-overclaim
+- V1.9.491→494: 4 iterações banner Matrix compactação empírica via screenshot (Pedro flagou "amarelão grande")
+- V1.9.493 Camada 1.6: mini-timeline cronológica condicional (≥2 cards patient-*) — Z2 puro
+- V1.9.494: ordem invertida final (Matrix header TOPO → banner amber DEPOIS)
+
+**🎓 Sprint E 3 verticais Ensino — Triple-A tipado COMPLETO**
+- V1.9.495 Notícias & Eventos: `useNewsItems` + `NewsItemAdminModal` + 1 notícia real plantada (AEC 8ª turma)
+- V1.9.496 Avaliações: `useEvaluationInstruments` + modal CRUD + 3 instrumentos reais plantados
+- V1.9.497 Mentoria: `useMentorship` + `MentorshipRequestModal` + 2 mentores reais (Ricardo + Eduardo) + disponibilidades Ter-Qui
+- `EnsinoDashboard.tsx` substituído 3 arrays mock por hooks reais + loading/error/empty states honestos
+
+**🔒 P0 PII Sanitize — V1.9.452 FECHADO após 28 dias backlog**
+- Edge `tradevision-core` v423 ACTIVE: helper `sanitizeRationalityPII` + `lookupPatientName` + 2 INSERTs patchados (linhas 1723 + 2287)
+- Backfill 132 rows `clinical_rationalities.assessment` via PL/pgSQL replicando lógica JS
+- Tokens >= 3 chars excluídos: dos/das/de/del/von/van/do/paciente/patient/dr/dra/sr/sra/teste/test/noa
+- Telemetry `pii_sanitized=bool` em `metadata`
+
+**🏥 Sprint A V1.9.500 — InterruptedAECsCard**
+- `useInterruptedAECs` hook: phase='INTERRUPTED' + NOT is_complete + invalidated_at IS NULL
+- Card sidebar Dashboard Profissional com badge contagem + cor por urgência (>30d red)
+- 4 órfãas visíveis: Solange URGENTE 32d / Thiago 24d / Pedro 7d / João Eduardo 4d
+- 2 ações: invalidate(motivo) + markComplete — preserva row pra audit LGPD
+- RLS admin policies adicionadas (`aec_assessment_state`)
+
+**🔬 Sprint B investigação 5 órfãos public.users sem auth.users**
+- Pattern arquitetural válido descoberto: paciente CFM externo offline cadastrado pelo médico (appointments válidos sem login app)
+- Não-bug — Joao Vidal cadastra paciente CNPJ futuramente, pattern preservado
+- Memória cristalizada (feedback_padrao_orfaos_public_users_validos_29_05)
+
+**🧠 V1.9.498 — Pedido empírico Ricardo (modal Evolução)**
+- Click em card aba Evolução abre relatório completo em modal não-disruptivo
+- `EvolutionDetailModal` detecta `kind` (aec-report → RichClinicalReportView SOBERANO V1.9.86+ / doctor-evolution → rich render OR raw fallback / chat-ia → record_data)
+- ESC + click fora + X + botão Imprimir/PDF
+
+**🎨 V1.9.499 — Background Literatura backgroundGradient (era flat)**
+- Aba Literatura agora alinha com outras abas (cor uniforme)
+
+### K.2 — Encoding UTF-8 bug cristalizado (Nível 1)
+
+Bug recorrente Windows cURL `-d` inline corrompe acentos portugueses → `?` silencioso em RETURNING.
+
+**Solução empírica**: Write tool cria `.json` UTF-8 + `curl --data-binary @file.json --header "Content-Type: application/json; charset=utf-8"`.
+
+3 tabelas Sprint E (news_items / evaluation_instruments / mentors+mentorship_requests) tinham 7 rows corrompidas — fix via arquivo único multi-statement.
+
+Memória [[feedback_pat_curl_windows_utf8_bug_29_05]] como **Nível 1 entry**.
+
+### K.3 — Métricas reais sessão
+
+| Métrica | Valor |
+|---|---|
+| Commits | 16 |
+| Versões V1.9.X | 14 (487→500 + 452 retroativa) |
+| Arquivos novos | 5 hooks + 4 modais + 1 EvolutionDetailModal = ~10 |
+| Linhas TS adicionadas | ~3.500 |
+| Linhas mock removidas | ~700 |
+| Tabelas Supabase novas | 5 (news_items, evaluation_instruments, evaluation_submissions, mentors, mentorship_requests) |
+| RLS policies | 11 (CRUD por role + admin) |
+| Rows PII sanitizadas | 132 |
+| Smoke PASS | Matrix Z2 4/4 locks + InterruptedAECs 4 órfãas + Mentoria 2 mentores |
+| Tempo execução | ~3h (vs ~10-15h backlog) |
+
+### K.4 — Estado backend pós-sessão
+
+- **Edges**: 15 ativas (tradevision-core v423 ACTIVE com `verify_jwt=false` mantido pendente Sprint A)
+- **Tabelas**: 140 → 145 (+5 Sprint E)
+- **Total código + docs**: ~405k linhas / 28 MB
+- **Conteúdo plantado real**: 1 notícia AEC + 3 instrumentos avaliação + 2 mentores
+- **Lock V1.9.299 PBAD ICP-Brasil**: INTACTO (sign-pdf-icp v22 não tocada)
+
+### K.5 — Pendências pós-sessão
+
+**🔐 Sprint A irreversíveis (depende Pedro 1-2h)**:
+- Rotar 3 PATs (1 sessão exposto Push Protection log + 2 em `.claude/settings.local.json`)
+- Remover `--no-verify-jwt` do `package.json` script `deploy:tradevision` (1 linha)
+
+**🤝 Decisões humanas (50% roadmap)**:
+- CNPJ João Vidal (HOJE pagaria entrada) → destrava recebimento + Sprint B pattern
+- WhatsApp Eduardo Faveret (19 dias silêncio, coordenador Ensino)
+- 1º paciente externo pagante (Marco 2 gold)
+- Decisão Pedro: Badhia Waarrak (0 appts, cadastrada 01/05) anonimizar OR manter
+
+### K.6 — Roadmap "100% pronto sem regressão"
+
+- **~85% pronto** (faltam 15% humanos)
+- Marco 2 gold critério continua: 10 itens E (paciente externo + 2º médico + UI plano terapêutico + ...)
+- Próxima sessão Claude: Sprint A irreversíveis (1-2h) + Sprint D Camada 2.X (depende Ricardo)
+
+### Frase âncora final Bloco K
+
+> *"29/05 ~3h reais condensou ~10-15h backlog: Sprint D Matrix Camada 1.X 6/6 + Sprint E 3 verticais Triple-A + P0 PII fechado 28d + V1.9.500 AECs órfãs visíveis. Sistema saiu do dia mais coerente (145 tabelas + 15 Edges + 405k linhas + 28MB portátil), com 4 fontes longitudinais Matrix separadas semanticamente (princípio meta 28/05) e 132 rows clínicas sanitizadas LGPD. Lock V1.9.299 ICP-Brasil intacto. Restam 15% irreversíveis humanos: PATs + verify_jwt + decisões CNPJ/Eduardo/Marco 2."*
