@@ -181,6 +181,68 @@ function unwrapAecContent(content: any): any {
 // Fim do bloco inline scoreCalculator.
 // ============================================================================
 
+// ============================================================================
+// V1.9.452 (29/05/2026) — PII sanitizer pra clinical_rationalities.assessment.
+// Replica EXATA da lógica em src/lib/casePseudonymization.ts (sanitizeAssessmentPII).
+// Aplicada inline antes de cada INSERT em clinical_rationalities (linhas
+// downstream). Sem isso o pipeline IA vaza nome real do paciente no texto livre
+// `assessment` (audit 27/05 confirmou 82.6% rows com PII; backfill 29/05 limpou
+// histórico).
+// LGPD reforço pré-Marco 2 (paciente externo). Anti-overclaim Babylon/Watson.
+// Princípio polir-não-inventar: lógica idêntica ao helper TS source-of-truth.
+// ============================================================================
+function escapeRegexInline(s: string): string {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+function sanitizeRationalityPII(
+    assessment: string | null | undefined,
+    patientName: string | null | undefined,
+    patientId: string | null | undefined,
+): string {
+    if (!assessment || typeof assessment !== 'string') return assessment || '';
+    if (!patientName || patientName.trim().length === 0) return assessment;
+    const pseudoId = patientId
+        ? `Paciente #${patientId.replace(/-/g, '').slice(0, 6).toUpperCase()}`
+        : 'o(a) paciente';
+    const tokens = patientName
+        .split(/\s+/)
+        .filter((t) => t.length >= 3)
+        .filter((t) => !/^(dos?|das?|de|del|von|van|do|paciente|patient|dr|dra|sr|sra|teste|test|noa)$/i.test(t));
+    if (tokens.length === 0) return assessment;
+    let sanitized = assessment;
+    for (const token of tokens) {
+        const regex = new RegExp(`\\b${escapeRegexInline(token)}\\b`, 'gi');
+        sanitized = sanitized.replace(regex, pseudoId);
+    }
+    sanitized = sanitized
+        .replace(new RegExp(`\\bO paciente,\\s*${escapeRegexInline(pseudoId)},`, 'gi'), 'O(a) paciente,')
+        .replace(new RegExp(`\\bA paciente,\\s*${escapeRegexInline(pseudoId)},`, 'gi'), 'A(o) paciente,');
+    const escPseudo = escapeRegexInline(pseudoId);
+    sanitized = sanitized.replace(
+        new RegExp(`(${escPseudo})\\s+(?:dos?|das?|de|del|von|van|do)\\s+(${escPseudo})`, 'gi'),
+        pseudoId,
+    );
+    let prev: string;
+    do {
+        prev = sanitized;
+        sanitized = sanitized.replace(
+            new RegExp(`(${escPseudo})[\\s,]+(${escPseudo})`, 'gi'),
+            pseudoId,
+        );
+    } while (sanitized !== prev);
+    return sanitized;
+}
+// Helper: fetch nome do paciente pra usar no sanitize (lookup defensivo).
+async function lookupPatientName(supabaseClient: any, patientId: string | null | undefined): Promise<string | null> {
+    if (!patientId) return null;
+    try {
+        const { data } = await supabaseClient.from('users').select('name').eq('id', patientId).maybeSingle();
+        return data?.name || null;
+    } catch {
+        return null;
+    }
+}
+
 const corsHeaders = {
     'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
     'Access-Control-Allow-Methods': 'POST, OPTIONS',
@@ -1720,17 +1782,21 @@ Finalizar SEMPRE com:
             ]
         });
 
+        // V1.9.452 (29/05) — Sanitiza PII em assessment antes de INSERT.
+        const rawAssessment_1723 = completion?.choices?.[0]?.message?.content || "Falha na geração do diagnóstico.";
+        const patientName_1723 = await lookupPatientName(supabaseClient, report.patient_id);
+        const sanitizedAssessment_1723 = sanitizeRationalityPII(rawAssessment_1723, patientName_1723, report.patient_id);
         const { error: ratError } = await supabaseClient.from('clinical_rationalities').insert({
             report_id: report.id,
             patient_id: report.patient_id,
             rationality_type: 'integrative',
-            assessment: completion?.choices?.[0]?.message?.content || "Falha na geração do diagnóstico.",
+            assessment: sanitizedAssessment_1723,
             approach: 'Medicina Integrativa'
         });
         if (ratError) {
             console.error('❌ [PIPELINE_STAGE] RATIONALITY_ERROR', ratError);
         } else {
-            console.log('✅ [PIPELINE_STAGE] RATIONALITY_SYNCED');
+            console.log('✅ [PIPELINE_STAGE] RATIONALITY_SYNCED', { pii_sanitized: sanitizedAssessment_1723 !== rawAssessment_1723 });
         }
         stamp('rationality');
 
@@ -2284,18 +2350,22 @@ Finalizar SEMPRE com:
                         ]
                     });
 
+                    // V1.9.452 (29/05) — Sanitiza PII em assessment antes de INSERT (promotion path).
+                    const rawAssessment_2287 = ratCompletion?.choices?.[0]?.message?.content || 'Falha na geração da análise.';
+                    const patientName_2287 = await lookupPatientName(supabaseClient, existingReport.patient_id);
+                    const sanitizedAssessment_2287 = sanitizeRationalityPII(rawAssessment_2287, patientName_2287, existingReport.patient_id);
                     const insertRatResult = await supabaseClient.from('clinical_rationalities').insert({
                         report_id: reportId,
                         patient_id: existingReport.patient_id,
                         rationality_type: 'integrative',
-                        assessment: ratCompletion?.choices?.[0]?.message?.content || 'Falha na geração da análise.',
+                        assessment: sanitizedAssessment_2287,
                         approach: 'Medicina Integrativa'
                     });
                     ratError = insertRatResult.error;
                     if (ratError) {
                         console.error('❌ [PIPELINE_PROMOTION] RATIONALITY_ERROR', ratError);
                     } else {
-                        console.log('✅ [PIPELINE_PROMOTION] RATIONALITY_SYNCED');
+                        console.log('✅ [PIPELINE_PROMOTION] RATIONALITY_SYNCED', { pii_sanitized: sanitizedAssessment_2287 !== rawAssessment_2287 });
                     }
                 } else {
                     console.log('🔁 [PIPELINE_PROMOTION] RATIONALITY_SKIP (já existe)', { count: ratCount });
