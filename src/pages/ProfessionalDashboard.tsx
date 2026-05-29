@@ -30,6 +30,10 @@ import { IncentivosPanel } from '../components/IncentivosPanel'
 
 import { ProfessionalStats } from '../components/dashboard/professional/ProfessionalStats'
 import { ProfessionalPatientSearch } from '../components/dashboard/professional/ProfessionalPatientSearch'
+// V1.9.500 (Pedro 29/05) — card AECs Interrompidas no dashboard profissional.
+// 4 órfãs reais empíricamente em 29/05 (joao eduardo 4d / Pedro 7d / Thiago 24d /
+// Solange 32d). Médico decide: invalidar com motivo OR marcar concluída.
+import { InterruptedAECsCard } from '../components/InterruptedAECsCard'
 
 const ProfessionalDashboard: React.FC = () => {
   const { user } = useAuth()
@@ -157,6 +161,9 @@ const ProfessionalDashboard: React.FC = () => {
                     />
                   </div>
                   <div className="space-y-6">
+                    {/* V1.9.500 — AECs Interrompidas órfãs (médico decide) */}
+                    <InterruptedAECsCard />
+
                     <div className="bg-slate-900/40 border border-white/5 rounded-2xl p-6 backdrop-blur-xl">
                       <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
                         <Activity className="w-5 h-5 text-emerald-400" /> Atividade Recente
