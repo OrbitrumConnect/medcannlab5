@@ -374,9 +374,48 @@ export const NoaMatrixView: React.FC = () => {
     })
   }
 
+  // V1.9.488 (Camada 1.4 Matrix-Longitudinal — Pedro 29/05) — toggles fonte
+  // paciente. Antes: toda fonte longitudinal ligada sempre (médico sem controle).
+  // Agora: 3 toggles compactos (AEC / Racionalidades / Dossiês prévios) preparam
+  // infraestrutura pra Camada 1.2 (FOLLOW_UP) e fonte futura chat_interaction
+  // (defaults ON nas existentes; Chat IA OFF por design quando entrar).
+  // Princípio meta cristalizado 28/05: separação semântica > expansão de corpus.
+  // Toggles só aparecem quando há patientId em foco (zero ruído sem paciente).
+  type PatientSourceKey = 'reports' | 'rationalities' | 'priorDossiers'
+  const [patientSources, setPatientSources] = useState<Record<PatientSourceKey, boolean>>({
+    reports: true,
+    rationalities: true,
+    priorDossiers: true,
+  })
+  const togglePatientSource = (key: PatientSourceKey) => {
+    setPatientSources((prev) => {
+      const nextValue = !prev[key]
+      // Quando médico desliga fonte, remove cards já marcados daquela fonte
+      // (caso contrário ficariam em selectedIds invisíveis mas no contexto chat).
+      // Match exato do prefixo de id por fonte (pr-rat-* prevalece sobre pr-* —
+      // checagem na ordem certa abaixo).
+      if (!nextValue) {
+        const matchesSource = (id: string): boolean => {
+          if (key === 'reports') return id.startsWith('pr-') && !id.startsWith('pr-rat-') && !id.startsWith('pr-dos-')
+          if (key === 'rationalities') return id.startsWith('pr-rat-')
+          return id.startsWith('pr-dos-')
+        }
+        setSelectedIds((sel) => {
+          const cleaned = new Set(sel)
+          for (const id of Array.from(cleaned)) {
+            if (matchesSource(id)) cleaned.delete(id)
+          }
+          return cleaned
+        })
+      }
+      return { ...prev, [key]: nextValue }
+    })
+  }
+
   // Compor lista de cards anexáveis a partir de múltiplas fontes.
   // V1.9.379-D: localStorage (caseOpens + notes + pinned)
   // V1.9.382: + clinical_reports + clinical_rationalities do paciente em foco (longitudinal)
+  // V1.9.488: + gate por patientSources (médico controla quais fontes longitudinais entram)
   const cards = useMemo<AttachableCard[]>(() => {
     const list: AttachableCard[] = []
 
@@ -384,7 +423,7 @@ export const NoaMatrixView: React.FC = () => {
     // Aparecem PRIMEIRO porque são contexto explícito que o médico trouxe.
     // V1.9.384 — body usa pseudônimo (LGPD higiene). Médico vê nome real só no banner topo.
     const pseudonym = longitudinal.patientPseudonym ? `Paciente #${longitudinal.patientPseudonym}` : 'Paciente'
-    longitudinal.reports.forEach((r) => {
+    if (patientSources.reports) longitudinal.reports.forEach((r) => {
       const dateStr = new Date(r.created_at).toLocaleDateString('pt-BR')
       // [V1.9.450-B] Quando clinicalContent presente (whitelist V1.9.450),
       // usa formatPseudonymizedCaseBody pra corpus rico (família + HDA +
@@ -419,7 +458,7 @@ export const NoaMatrixView: React.FC = () => {
       })
     })
 
-    longitudinal.rationalities.forEach((r) => {
+    if (patientSources.rationalities) longitudinal.rationalities.forEach((r) => {
       const dateStr = new Date(r.created_at).toLocaleDateString('pt-BR')
       const label = RATIONALITY_LABELS[r.rationality_type] || r.rationality_type
       list.push({
@@ -437,7 +476,7 @@ export const NoaMatrixView: React.FC = () => {
     // do estudo pelo prontuário"). Snapshot imutável (id, título, data, contadores
     // + snippet primeira msg médico). Card agrupa em "Contexto Paciente" via
     // CATEGORY_OF_TYPE V1.9.482. Default não-marcado (atrito intencional V1.9.382).
-    longitudinal.priorDossiers.forEach((d) => {
+    if (patientSources.priorDossiers) longitudinal.priorDossiers.forEach((d) => {
       const dateStr = new Date(d.generated_at).toLocaleDateString('pt-BR')
       const cardsLabel = d.cardsCount === 1 ? '1 card' : `${d.cardsCount} cards`
       const msgsLabel = d.messagesCount === 1 ? '1 msg' : `${d.messagesCount} msgs`
@@ -557,7 +596,7 @@ export const NoaMatrixView: React.FC = () => {
     })
 
     return list
-  }, [history.caseOpens, history.notes, history.pinned, longitudinal.reports, longitudinal.rationalities, longitudinal.priorDossiers, attachedPubmed, attachedDocs, attachedBulas])
+  }, [history.caseOpens, history.notes, history.pinned, longitudinal.reports, longitudinal.rationalities, longitudinal.priorDossiers, attachedPubmed, attachedDocs, attachedBulas, patientSources])
 
   const toggleCard = (id: string) => {
     setSelectedIds((prev) => {
@@ -632,6 +671,50 @@ export const NoaMatrixView: React.FC = () => {
                   : `${longitudinal.reports.length} relatório(s) e ${longitudinal.rationalities.length} racionalidade(s) disponíveis abaixo. Marque o que considerar relevante.`}
             </div>
           </div>
+        </div>
+      )}
+
+      {/* V1.9.488 (Camada 1.4 Matrix-Longitudinal — Pedro 29/05) — toggles fonte
+          paciente. 3 pills compactos: AEC / Racionalidades / Dossiês prévios.
+          Só aparece quando há patientId em foco. Defaults ON (zero regressão
+          comportamento anterior). Médico desliga fonte → cards somem do grid
+          + seleções daquela fonte saem do chat (limpeza preventiva no toggle).
+          Aplicação direta princípio meta 28/05 (separação semântica > expansão).
+          Preparatório pra Camada 1.2 (FOLLOW_UP) — basta adicionar nova fonte
+          ao tipo PatientSourceKey + pill correspondente. */}
+      {patientId && !longitudinal.loading && !longitudinal.error && (
+        <div className="bg-slate-900/40 border border-amber-500/15 rounded-xl px-3 py-2 flex items-center gap-2 flex-wrap">
+          <span className="text-[10px] uppercase tracking-wide text-amber-300/70 font-semibold flex-shrink-0">
+            Fontes paciente:
+          </span>
+          {([
+            { key: 'reports' as const, label: 'AEC', icon: Stethoscope, count: longitudinal.reports.length },
+            { key: 'rationalities' as const, label: 'Racionalidades', icon: Activity, count: longitudinal.rationalities.length },
+            { key: 'priorDossiers' as const, label: 'Dossiês prévios', icon: Archive, count: longitudinal.priorDossiers.length },
+          ]).map(({ key, label, icon: Icon, count }) => {
+            const active = patientSources[key]
+            return (
+              <button
+                key={key}
+                type="button"
+                onClick={() => togglePatientSource(key)}
+                disabled={count === 0}
+                className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] border transition-colors ${
+                  count === 0
+                    ? 'bg-slate-900/40 border-slate-700/30 text-slate-600 cursor-not-allowed'
+                    : active
+                      ? 'bg-amber-500/15 border-amber-500/40 text-amber-200 hover:bg-amber-500/20'
+                      : 'bg-slate-900/40 border-slate-700/40 text-slate-500 hover:border-amber-500/30 hover:text-slate-300'
+                }`}
+                title={count === 0 ? `Sem ${label.toLowerCase()} pra este paciente` : active ? `Desligar ${label}` : `Ligar ${label}`}
+                aria-pressed={active}
+              >
+                <Icon className="w-3 h-3" />
+                <span>{label}</span>
+                <span className={active ? 'font-mono text-amber-300/80' : 'font-mono text-slate-500'}>· {count}</span>
+              </button>
+            )
+          })}
         </div>
       )}
 
