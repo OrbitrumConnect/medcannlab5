@@ -38,7 +38,9 @@ import {
   BarChart3,
   Sparkles,
   Link2,
-  ChevronDown
+  ChevronDown,
+  Stethoscope,    // V1.9.487 Camada 1.5 — evoluções escritas pelo médico (FOLLOW_UP)
+  MessageCircle   // V1.9.487 Camada 1.5 — chat IA paciente↔Nôa (chat_interaction)
 } from 'lucide-react'
 import { QuickReferralModal } from '../components/QuickReferralModal'
 import { useClinicalGovernance } from '../hooks/useClinicalGovernance'
@@ -182,6 +184,21 @@ interface Patient {
   email?: string
 }
 
+// V1.9.487 (Camada 1.5 Matrix-Longitudinal — Sprint D, 29/05/2026):
+// Separar visualmente as 3 fontes que loadEvolutions agrega.
+// Aplicacao direta do principio meta cristalizado 28/05:
+// "O problema nao e falta de dados — e falta de separacao epistemologica
+// entre as fontes" (memory feedback_sistema_tem_contexto_demais_falta_
+// semantica_clinica_28_05).
+// Ricardo via aba Evolucao misturada (FOLLOW_UP medico + AEC IA + chat IA
+// paciente) como equivalentes. Camada 1.5 separa por evolutionKind com
+// header semantico (mesmo pattern V1.9.482 CATEGORY_OF_TYPE).
+type EvolutionKind =
+  | 'doctor-evolution'    // clinical_assessments WHERE assessment_type='FOLLOW_UP' (medico escreveu)
+  | 'aec-report'          // clinical_reports (AEC IA Residente)
+  | 'assessment-other'    // clinical_assessments outros tipos (TRIAGE/CONSULTA/IMRE)
+  | 'chat-ia'             // patient_medical_records WHERE record_type='chat_interaction'
+
 interface Evolution {
   id: string
   date: string
@@ -191,10 +208,63 @@ interface Evolution {
   professional: string
   // V1.9.281: tipagem da fonte pra timeline tipada na Visão Geral
   source?: 'assessment' | 'report' | 'record' | 'appointment' | 'prescription'
+  // V1.9.487 — kind granular pra agrupamento semantico visual da aba Evolucao
+  kind?: EvolutionKind
   signed?: boolean
   score?: number | null
   rawCreatedAt?: string
 }
+
+// V1.9.487 — metadados visuais por EvolutionKind (label + icone + cor).
+// Pattern V1.9.482 CATEGORY_OF_TYPE replicado.
+const EVOLUTION_KIND_META: Record<EvolutionKind, {
+  label: string
+  shortLabel: string
+  icon: React.ComponentType<{ className?: string }>
+  colorClass: string
+  borderClass: string
+  bgClass: string
+}> = {
+  'doctor-evolution': {
+    label: 'Evoluções escritas pelo médico',
+    shortLabel: 'Evolução do médico',
+    icon: Stethoscope,
+    colorClass: 'text-blue-300',
+    borderClass: 'border-blue-500/30',
+    bgClass: 'bg-blue-500/5',
+  },
+  'aec-report': {
+    label: 'Relatórios AEC (IA Residente)',
+    shortLabel: 'Relatório AEC',
+    icon: FileText,
+    colorClass: 'text-emerald-300',
+    borderClass: 'border-emerald-500/30',
+    bgClass: 'bg-emerald-500/5',
+  },
+  'assessment-other': {
+    label: 'Outras avaliações (Triagem/Consulta/IMRE)',
+    shortLabel: 'Avaliação',
+    icon: Sparkles,
+    colorClass: 'text-amber-300',
+    borderClass: 'border-amber-500/30',
+    bgClass: 'bg-amber-500/5',
+  },
+  'chat-ia': {
+    label: 'Conversas do paciente com a Nôa',
+    shortLabel: 'Chat IA',
+    icon: MessageCircle,
+    colorClass: 'text-slate-400',
+    borderClass: 'border-slate-600/40',
+    bgClass: 'bg-slate-800/30',
+  },
+}
+
+const EVOLUTION_KIND_ORDER: EvolutionKind[] = [
+  'doctor-evolution',   // mais importante (médico escreveu — alvo Camada 1.2 Matrix)
+  'aec-report',         // segundo (AEC IA — núcleo clínico)
+  'assessment-other',   // terceiro (outras avaliações)
+  'chat-ia',            // último (ruidoso, 6070+ rows tipicamente)
+]
 
 // V1.9.281: dados agregados da Visão Geral elite escalável
 interface OverviewData {
@@ -1067,14 +1137,25 @@ const PatientsManagement: React.FC<PatientsManagementProps> = ({ embedded = fals
 
       if (!assessmentsError && assessments) {
         assessments.forEach(assessment => {
+          // V1.9.487 — distinguir FOLLOW_UP (medico escreveu via Terminal "Nova
+          // Evolucao") de outros tipos (TRIAGE/CONSULTA/IMRE). FOLLOW_UP vai
+          // pra grupo "doctor-evolution" com Stethoscope azul; outros pra
+          // "assessment-other" com Sparkles amber.
+          const assessmentType = (assessment as any).assessment_type as string | null
+          const isFollowUp = assessmentType === 'FOLLOW_UP'
+          const kind: EvolutionKind = isFollowUp ? 'doctor-evolution' : 'assessment-other'
+          // Profissional: FOLLOW_UP é o medico que escreveu (doctor_id),
+          // outros tipos sao IA Residente (TRIAGE inicial) ou desconhecido
+          const doctorIdRef = (assessment as any).doctor_id || (assessment as any).data?.created_by
           evolutionsList.push({
             id: assessment.id,
             date: new Date(assessment.created_at).toLocaleDateString('pt-BR'),
             time: new Date(assessment.created_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
             type: assessment.status === 'completed' ? 'current' : 'historical',
-            content: evolutionContentString((assessment.clinical_report ?? (assessment.data as any)?.clinicalNotes ?? (assessment.data as any)?.investigation) as string, 'Avaliação clínica realizada'),
-            professional: 'IA Residente',
+            content: evolutionContentString((assessment.clinical_report ?? (assessment.data as any)?.clinicalNotes ?? (assessment.data as any)?.investigation) as string, isFollowUp ? 'Evolução clínica' : 'Avaliação clínica realizada'),
+            professional: isFollowUp ? (doctorIdRef ? 'Médico' : 'Médico (id n/d)') : 'IA Residente',
             source: 'assessment',
+            kind,
             signed: false,
             score: typeof (assessment.data as any)?.scores?.clinical_score === 'number' ? (assessment.data as any).scores.clinical_score : null,
             rawCreatedAt: assessment.created_at,
@@ -1104,6 +1185,7 @@ const PatientsManagement: React.FC<PatientsManagementProps> = ({ embedded = fals
                 : (report.content as any)?.investigation || (report.content as any)?.result || 'Relatório clínico gerado',
               professional: (report as any).professional_name || (report.generated_by === 'noa_ai' ? 'IA Residente' : 'Profissional'),
               source: 'report',
+              kind: 'aec-report',  // V1.9.487 — sempre AEC (clinical_reports)
               signed: !!(report as any).signature_hash || !!(report as any).signed_at,
               score: typeof (report.content as any)?.scores?.clinical_score === 'number' ? (report.content as any).scores.clinical_score : null,
               rawCreatedAt: report.generated_at,
@@ -1125,6 +1207,13 @@ const PatientsManagement: React.FC<PatientsManagementProps> = ({ embedded = fals
           medicalRecords.forEach(record => {
             const alreadyAdded = evolutionsList.some(e => e.id === record.id)
             if (!alreadyAdded) {
+              // V1.9.487 — record_type identifica chat_interaction (paciente↔Noa)
+              // vs outros tipos futuros. chat_interaction vai pra grupo "chat-ia"
+              // (slate dim, default colapsado pra ruido nao distrair).
+              const recordType = (record as any).record_type as string | null
+              const kindForRecord: EvolutionKind = recordType === 'chat_interaction'
+                ? 'chat-ia'
+                : 'assessment-other'  // fallback pra outros record_types futuros
               evolutionsList.push({
                 id: record.id,
                 date: new Date(record.created_at).toLocaleDateString('pt-BR'),
@@ -1132,10 +1221,11 @@ const PatientsManagement: React.FC<PatientsManagementProps> = ({ embedded = fals
                 type: 'historical',
                 content: evolutionContentString(
                   typeof record.record_data === 'string' ? record.record_data : ((record.record_data as any)?.content ?? (record.record_data as any)?.summary ?? (record as any).title),
-                  'Registro médico'
+                  recordType === 'chat_interaction' ? 'Conversa com a Nôa' : 'Registro médico'
                 ),
-                professional: typeof (record.record_data as any)?.professional_name === 'string' ? (record.record_data as any).professional_name : 'Sistema',
+                professional: typeof (record.record_data as any)?.professional_name === 'string' ? (record.record_data as any).professional_name : (recordType === 'chat_interaction' ? 'Paciente↔Nôa' : 'Sistema'),
                 source: 'record',
+                kind: kindForRecord,
                 signed: false,
                 score: null,
                 rawCreatedAt: record.created_at,
@@ -2214,34 +2304,74 @@ const PatientsManagement: React.FC<PatientsManagementProps> = ({ embedded = fals
                               <p>Nenhuma evolução registrada</p>
                             </div>
                           ) : (
-                            <div className="space-y-4">
-                              {evolutions.map(evolution => {
-                                const isHighlighted = highlightEvolutionId === evolution.id
-                                return (
-                                  <div
-                                    key={evolution.id}
-                                    ref={isHighlighted ? highlightedEvolutionRef : null}
-                                    className={`bg-slate-700/50 rounded-lg p-4 border transition-all ${isHighlighted
-                                      ? 'border-emerald-500 ring-2 ring-emerald-500/40 bg-emerald-500/5 shadow-lg shadow-emerald-900/20'
-                                      : 'border-slate-600'
-                                      }`}
-                                  >
-                                    <div className="flex items-start justify-between mb-2">
-                                      <div>
-                                        <p className="font-semibold text-white">{evolution.date} • {evolution.time}</p>
-                                        <p className="text-xs text-slate-400">{evolution.professional}</p>
+                            <div className="space-y-5">
+                              {/* V1.9.487 (Camada 1.5) — Agrupamento semantico por kind.
+                                  Aplica principio meta "separacao semantica entre fontes"
+                                  cristalizado 28/05. Grupos vazios sao omitidos.
+                                  Pattern V1.9.482 NoaMatrixView CATEGORY_OF_TYPE replicado. */}
+                              {(() => {
+                                const grouped = new Map<EvolutionKind, Evolution[]>()
+                                for (const k of EVOLUTION_KIND_ORDER) grouped.set(k, [])
+                                for (const ev of evolutions) {
+                                  const k = (ev.kind ?? 'assessment-other') as EvolutionKind
+                                  if (grouped.has(k)) grouped.get(k)!.push(ev)
+                                  else grouped.get('assessment-other')!.push(ev)
+                                }
+                                return EVOLUTION_KIND_ORDER.map((k) => {
+                                  const items = grouped.get(k) || []
+                                  if (items.length === 0) return null
+                                  const meta = EVOLUTION_KIND_META[k]
+                                  const Icon = meta.icon
+                                  return (
+                                    <div key={k} className={`rounded-xl border ${meta.borderClass} ${meta.bgClass} p-3 space-y-3`}>
+                                      {/* Header semantico do grupo */}
+                                      <div className="flex items-center gap-2 px-1">
+                                        <Icon className={`w-4 h-4 ${meta.colorClass} flex-shrink-0`} />
+                                        <h4 className={`text-sm font-semibold ${meta.colorClass}`}>{meta.label}</h4>
+                                        <span className="text-[10px] text-slate-500 font-normal">
+                                          · {items.length}
+                                        </span>
                                       </div>
-                                      <span className={`px-2 py-1 rounded-full text-xs ${evolution.type === 'current'
-                                        ? 'bg-green-500/20 text-green-400'
-                                        : 'bg-blue-500/20 text-blue-400'
-                                        }`}>
-                                        {evolution.type === 'current' ? 'Atual' : 'Histórico'}
-                                      </span>
+                                      {/* Cards individuais (preserva V1.9.x comportamento) */}
+                                      {items.map((evolution) => {
+                                        const isHighlighted = highlightEvolutionId === evolution.id
+                                        return (
+                                          <div
+                                            key={evolution.id}
+                                            ref={isHighlighted ? highlightedEvolutionRef : null}
+                                            className={`bg-slate-700/50 rounded-lg p-4 border transition-all ${isHighlighted
+                                              ? 'border-emerald-500 ring-2 ring-emerald-500/40 bg-emerald-500/5 shadow-lg shadow-emerald-900/20'
+                                              : 'border-slate-600'
+                                              }`}
+                                          >
+                                            <div className="flex items-start justify-between mb-2 gap-2">
+                                              <div className="min-w-0">
+                                                <p className="font-semibold text-white">{evolution.date} • {evolution.time}</p>
+                                                <p className="text-xs text-slate-400 truncate">
+                                                  <span className={`inline-flex items-center gap-1 ${meta.colorClass}`}>
+                                                    <Icon className="w-3 h-3" />
+                                                    {meta.shortLabel}
+                                                  </span>
+                                                  <span className="mx-1 text-slate-600">·</span>
+                                                  {evolution.professional}
+                                                </p>
+                                              </div>
+                                              <span className={`px-2 py-1 rounded-full text-xs flex-shrink-0 ${evolution.type === 'current'
+                                                ? 'bg-green-500/20 text-green-400'
+                                                : 'bg-blue-500/20 text-blue-400'
+                                                }`}>
+                                                {evolution.type === 'current' ? 'Atual' : 'Histórico'}
+                                              </span>
+                                            </div>
+                                            <p className="text-slate-300 text-sm whitespace-pre-wrap">{evolutionContentString(evolution.content, '—')}</p>
+                                          </div>
+                                        )
+                                      })}
                                     </div>
-                                    <p className="text-slate-300 text-sm whitespace-pre-wrap">{evolutionContentString(evolution.content, '—')}</p>
-                                  </div>
-                                )
-                              })}
+                                  )
+                                })
+                              })()}
+                              {/* Lista flat legada removida — substituida por agrupamento V1.9.487 */}
                             </div>
                           )}
                         </div>
