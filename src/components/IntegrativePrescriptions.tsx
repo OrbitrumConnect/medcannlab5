@@ -430,33 +430,53 @@ const IntegrativePrescriptions: React.FC<IntegrativePrescriptionsProps> = ({
         </div>
 
         {/* V1.9.283: KPIs do paciente (só dentro do Prontuário onde patientId existe).
-            Ataca diretamente gargalo 94% DRAFT (memória 05/05) — médico vê o estado prescritivo dele de cara. */}
-        {patientId && (
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-            <div className="bg-slate-800/40 rounded-lg p-3 border border-slate-700/50">
-              <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-0.5">Total</p>
-              <p className="text-lg font-bold text-white">{prescriptionsLoading ? '—' : prescriptionKPIs.total}</p>
-              <p className="text-[10px] text-slate-500">prescrições</p>
+            Ataca diretamente gargalo 94% DRAFT (memória 05/05) — médico vê o estado prescritivo dele de cara.
+            V1.9.501 (29/05): quando paciente NOVO (tudo zero), colapsa em pill inline única
+            (economiza ~80px verticais, mantém sinal "paciente sem prescrição"). Quando há dado real,
+            expande pros 4 cards completos. */}
+        {patientId && (() => {
+          const isEmpty = !prescriptionsLoading
+            && prescriptionKPIs.total === 0
+            && prescriptionKPIs.active === 0
+            && prescriptionKPIs.draft === 0
+            && prescriptionKPIs.completed === 0
+          if (isEmpty) {
+            return (
+              <div className="bg-slate-900/50 border border-slate-800 rounded-lg px-3 py-1.5 flex items-center gap-3 text-[11px] text-slate-500">
+                <span className="text-slate-600">📋</span>
+                <span>Sem prescrições pra este paciente ainda.</span>
+                <span className="text-slate-700">·</span>
+                <span className="text-slate-600">0 ativas · 0 draft · 0 concluídas</span>
+              </div>
+            )
+          }
+          return (
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+              <div className="bg-slate-800/40 rounded-lg p-3 border border-slate-700/50">
+                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-0.5">Total</p>
+                <p className="text-lg font-bold text-white">{prescriptionsLoading ? '—' : prescriptionKPIs.total}</p>
+                <p className="text-[10px] text-slate-500">prescrições</p>
+              </div>
+              <div className="bg-emerald-500/8 rounded-lg p-3 border border-emerald-500/25">
+                <p className="text-[10px] font-bold text-emerald-300 uppercase tracking-wider mb-0.5">✓ Ativas</p>
+                <p className="text-lg font-bold text-white">{prescriptionsLoading ? '—' : prescriptionKPIs.active}</p>
+                <p className="text-[10px] text-slate-500">em curso</p>
+              </div>
+              <div className={`rounded-lg p-3 border ${prescriptionKPIs.draft > 0 ? 'bg-amber-500/10 border-amber-500/30' : 'bg-slate-800/40 border-slate-700/50'}`}>
+                <p className={`text-[10px] font-bold uppercase tracking-wider mb-0.5 ${prescriptionKPIs.draft > 0 ? 'text-amber-300' : 'text-slate-500'}`}>
+                  ⚠️ Draft
+                </p>
+                <p className="text-lg font-bold text-white">{prescriptionsLoading ? '—' : prescriptionKPIs.draft}</p>
+                <p className="text-[10px] text-slate-500">{prescriptionKPIs.draft > 0 ? 'requer ação' : 'nenhuma'}</p>
+              </div>
+              <div className="bg-slate-800/40 rounded-lg p-3 border border-slate-700/50">
+                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-0.5">Concluídas</p>
+                <p className="text-lg font-bold text-white">{prescriptionsLoading ? '—' : prescriptionKPIs.completed}</p>
+                <p className="text-[10px] text-slate-500">finalizadas</p>
+              </div>
             </div>
-            <div className="bg-emerald-500/8 rounded-lg p-3 border border-emerald-500/25">
-              <p className="text-[10px] font-bold text-emerald-300 uppercase tracking-wider mb-0.5">✓ Ativas</p>
-              <p className="text-lg font-bold text-white">{prescriptionsLoading ? '—' : prescriptionKPIs.active}</p>
-              <p className="text-[10px] text-slate-500">em curso</p>
-            </div>
-            <div className={`rounded-lg p-3 border ${prescriptionKPIs.draft > 0 ? 'bg-amber-500/10 border-amber-500/30' : 'bg-slate-800/40 border-slate-700/50'}`}>
-              <p className={`text-[10px] font-bold uppercase tracking-wider mb-0.5 ${prescriptionKPIs.draft > 0 ? 'text-amber-300' : 'text-slate-500'}`}>
-                ⚠️ Draft
-              </p>
-              <p className="text-lg font-bold text-white">{prescriptionsLoading ? '—' : prescriptionKPIs.draft}</p>
-              <p className="text-[10px] text-slate-500">{prescriptionKPIs.draft > 0 ? 'requer ação' : 'nenhuma'}</p>
-            </div>
-            <div className="bg-slate-800/40 rounded-lg p-3 border border-slate-700/50">
-              <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-0.5">Concluídas</p>
-              <p className="text-lg font-bold text-white">{prescriptionsLoading ? '—' : prescriptionKPIs.completed}</p>
-              <p className="text-[10px] text-slate-500">finalizadas</p>
-            </div>
-          </div>
-        )}
+          )
+        })()}
 
         {actionMessage && (
           <div
@@ -581,11 +601,11 @@ const IntegrativePrescriptions: React.FC<IntegrativePrescriptionsProps> = ({
                 </div>
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {filteredTemplates.map(template => (
                   <article
                     key={template.id}
-                    className="group rounded-xl border border-slate-800 bg-slate-950/40 p-3.5 space-y-2.5 transition-all hover:border-primary-500/30 hover:bg-slate-900/80 hover:shadow-lg hover:shadow-primary-900/5 flex flex-col"
+                    className="group rounded-xl border border-slate-800 bg-slate-950/40 p-3.5 space-y-2.5 transition-all hover:border-primary-500/30 hover:bg-slate-900/80 hover:shadow-lg hover:shadow-primary-900/5 flex flex-col min-h-[180px]"
                   >
                     <div className="flex items-start justify-between gap-2">
                       <div className="space-y-1.5">
@@ -623,6 +643,18 @@ const IntegrativePrescriptions: React.FC<IntegrativePrescriptionsProps> = ({
                     </button>
                   </article>
                 ))}
+                {filteredTemplates.length > 0 && filteredTemplates.length < 3 && (
+                  Array.from({ length: 3 - filteredTemplates.length }).map((_, i) => (
+                    <div
+                      key={`placeholder-${i}`}
+                      className="rounded-xl border border-dashed border-slate-800/60 bg-slate-950/20 p-3.5 flex flex-col items-center justify-center text-center min-h-[180px] text-slate-600"
+                    >
+                      <BookOpen className="w-5 h-5 mb-1.5 opacity-40" />
+                      <p className="text-[11px] font-medium leading-tight opacity-70">Mais protocolos em breve</p>
+                      <p className="text-[10px] opacity-50 mt-0.5">biblioteca em expansão</p>
+                    </div>
+                  ))
+                )}
               </div>
             )}
           </div>
