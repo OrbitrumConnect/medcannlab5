@@ -479,6 +479,110 @@ Se NÃO a #2 ou #3: solução é **separação semântica**, não expansão de c
 
 ---
 
+## 🌙 BLOCO J — Sessão noite/madrugada 28/05 → 29/05 (~17h-00h40 BRT): Feedback + Auditoria Integral COMPLETA
+
+### Cronologia
+
+| Hora BRT | Evento |
+|---|---|
+| ~17h | V1.9.481 modal vincular dossier (commit 4f57006) |
+| ~17h30 | V1.9.482 separação semântica cards Matrix (commit a81c736) — smoke visual PASS |
+| ~18h | V1.9.483 Camada 1.3 dossiês prévios no longitudinal (commit 877d1ff) |
+| ~18h30 | V1.9.484 tutorial atualizado (commit 7319521) |
+| ~19h | V1.9.485 compactação header + mobile (commit b6e97c0) |
+| ~19h15 | V1.9.485-A '?' → "Modo de uso" textual (commit 583dca3) |
+| ~19h30 | Mario fix empírico via PAT — investigação revelou: Mario NÃO logou desde 31/03 (V1.9.480 não foi acionado) |
+| ~19h45 | V1.9.486 canal Feedback inicial (commit 1cc661a) — modal sidebar |
+| ~20h | V1.9.486-A modal expandido (1582049) — Pedro: "ficou apertado" |
+| ~20h15 | V1.9.486-B reverso → página dedicada `/app/feedback` (a7fd4b1) |
+| ~20h30 | V1.9.486-C re-adicionou botão sidebar como Link (4d80733) |
+| ~20h45 | Pedro autorizou auditoria integral completa |
+| ~21h-00h40 | **AUDITORIA INTEGRAL Sprints 0-5** entregue: 10 docs em `docs/audit/` |
+
+### V1.9.481-486-C — 11 commits Matrix/Feedback (highlights)
+
+**V1.9.481 Camada 1.1 Matrix-Longitudinal**: modal "Vincular dossier" quando médico fecha como dossier SEM patientId. Reusa `caseSearch`. Zero refator estrutural.
+
+**V1.9.482 Separação semântica visual**: cards do Material Disponível agrupados em 3 categorias (Contexto Paciente / Pesquisa / Memória/Casos) via `CATEGORY_OF_TYPE` Record. Headers visuais entre grupos. **Smoke visual PASS** (Pedro mandou 2 prints confirmando).
+
+**V1.9.483 Camada 1.3 dossiês prévios**: `usePatientLongitudinal` expandido carrega últimos 5 dossiês do mesmo paciente como cards `'patient-prior-dossier'`. Agrupa automaticamente em "Contexto Paciente" via V1.9.482. RLS protege (médico vê só os próprios).
+
+**V1.9.484 tutorial atualizado**: MatrixHelpModal ganhou 3 sub-itens (Bulas ANVISA + Dossiês prévios + Organização visual em 3 categorias).
+
+**V1.9.485 + 485-A compactação**: Header Matrix de ~120px → ~50px verticais (subtitle removido + "Modo de uso →" link removido). Modal tutorial responsivo mobile (`p-3 sm:p-5`, etc). Botão "?" virou "Modo de uso" textual com ícone Info — anti-icon-ambiguity.
+
+**V1.9.486 → 486-C Canal Feedback (4 iterações)**:
+- V1.9.486: tabela `feedback_tickets` + RLS + hook + modal sidebar
+- V1.9.486-A: modal expandido (Pedro: "ainda apertado")
+- V1.9.486-B: **REVERSO** — modal removido, página `/app/feedback` com 2 tabs (Novo / Meus Feedbacks)
+- V1.9.486-C: re-adicionou botão sidebar como `<Link>` (navega pra página, não modal)
+
+**Smoke V1.9.486 Etapa 1 PASS via PAT**:
+- INSERT 2 tickets teste (1 normal + 1 urgente)
+- RLS funcional (admin vê tudo, user vê próprios)
+- Ordenação `is_urgent DESC, created_at DESC` correta
+- Filtros + contadores admin painel funcionais
+
+### Mario Valença — investigação empírica reveladora
+
+Ricardo trouxe: *"Mario tentou usar card novo e alega não ter conseguido"*. Investigação via PAT mostrou:
+
+| Empírico | Achado |
+|---|---|
+| `auth.users.last_sign_in_at` Mario | **31/03/2026** (2 meses sem logar) |
+| `noa_logs` event `profile_email_change_v1_9_480` últimas 24h | **0 rows** |
+| `auth.users.email_change_token_new` | **vazio** (nenhuma tentativa) |
+
+→ **V1.9.480 NUNCA foi acionado por Mario** — exige usuário logado, e Mario não loga desde 31/03. O que ele provavelmente tentou foi recovery email (outro fluxo). Solução: Ricardo manda recovery agora via Supabase Dashboard (email já corrigido) ou "Send magic link".
+
+→ **Princípio cristalizado MANHÃ aplicado retroativamente**: "validar empíricamente antes de assumir bug" — funcionou.
+
+### 🎯 AUDITORIA INTEGRAL Sprints 0-5 (10 docs em `docs/audit/`)
+
+**Proposta inicial GPT externo**: 12 docs auditoria (~17-23h).
+**Custo real**: ~3-4h (economia ~70%) via reuso de 18 auditorias históricas + retrospectiva 2340 linhas + PAT empírico direto.
+
+**Sprint 0** (catalogação): `00_INDEX` + `01_SYSTEM_STATE_28_05` + `PLANO_SPRINTS`
+**Sprint 1** (DB): `03_DATABASE_REALITY` + `09_UNUSED_ARCHITECTURE`
+**Sprint 2** (FE+Sec): `04_FRONTEND_ROUTE_MAP` + `05_SECURITY_AND_SECRETS`
+**Sprint 3** (uso real): `02_REAL_USER_FLOWS_E_08_DRAFT_DROP_OFF`
+**Sprint 4** (clínica): `06_07_10_CLINICAL_LONGITUDINAL_PHILOSOPHICAL`
+**Sprint 5** (consolidação): `11_OPERATIONAL_PRIORITIES_E_12_EMPIRICAL_VERDICTS`
+
+### 🔥 6 ACHADOS CRÍTICOS NOVOS (via auditoria)
+
+1. **🔐 `tradevision-core` verify_jwt flipou true→false** em 6 dias (v407 22/05 → v422 29/05). **Bomba latente avisada em 22/05 cumprida**. Defesa-em-camadas quebrada (auth interna manual cobre).
+
+2. **🔴 8 órfãos `public.users` SEM `auth.users`** (drift novo). 3 anonymized OK, **5 reais** a investigar (incluindo `joao.vidal@remederi.com` — sócio CNPJ Marco 1).
+
+3. **🔴 44% appointments cancelled** + apenas 4 completed (4%). Preocupante — drop-off agendamento alto mesmo com viés interno.
+
+4. **🔴 69% AECs interrupted** (9 vs 4 completed). Backlog P1 conhecido (5 órfãs Illa/Pedro/Thiago/Solange/João Eduardo) cresceu pra 9 sem mitigação.
+
+5. **🟢 60% prescrições CFM EXTERNAS** (29/48) — único componente onde externo > interno. Ricardo prescrevendo real pra pacientes físicos.
+
+6. **🟢 DRAFT melhorou**: prescrições 94%→79% em 6 dias. Ricardo assinou mais.
+
+### Vereditos finais por dimensão
+
+| Dimensão | Estado |
+|---|---|
+| Saúde técnica | 🟢 SAUDÁVEL |
+| Saúde clínica | 🟢 PRESERVADA (com vigilância) |
+| Saúde regulatória | 🟡 MELHORÁVEL (PII P0 + PATs) |
+| Saúde de fluxo | 🟡 ATENÇÃO (drop-offs altos) |
+| Saúde filosófica | 🟢 COERENTE (norte Ricardo respeitado) |
+
+### Pergunta brutal — O que MedCannLab É HOJE?
+
+> *"Pipeline clínico AEC + IA Z2 + assinatura ICP-Brasil maduro, sustentado por uso 87% interno (sócios+amigos teste) e 1 paciente externo real confirmado (Maria Pinto Pitoco). Arquitetura epistemológica pronta esperando Marco 2 (20-30 externos pagantes). Norte filosófico Ricardo preservado. PII P0 não-mitigado há 28d é único bloqueador imediato pra escala. Próximo evento crítico: CNPJ Marco 1 João Vidal → Pro plan Supabase + DPO + advogado especialista → Marco 2."*
+
+### Frase âncora Bloco J
+
+> *"Sessão noite/madrugada 28→29/05 entregou 11 commits Matrix/Feedback (V1.9.481-486-C com 3 reversos arquiteturais) + Auditoria Integral COMPLETA em 10 docs (Sprints 0-5, ~3-4h vs ~17-23h estimados, economia 70% via reuso). 6 achados críticos novos via PAT empírico — incluindo bomba V1.9.299 cumprida (verify_jwt flipado) + 8 órfãos public.users novos + 44% appointments cancelled + 69% AECs interrupted. Sistema saudável tecnicamente, vigilante clinicamente, melhorável regulatoriamente. PII P0 (88.5% rows vazadas) é único bloqueador imediato pra Marco 2. Próximo: rotar 3 PATs urgente + corrigir deploy script + mandar 3 perguntas Ricardo."*
+
+---
+
 ## 📋 ÚLTIMA INSTRUÇÃO pra próxima sessão Claude (laptop ou desktop)
 
 **LER NESTA ORDEM**:
