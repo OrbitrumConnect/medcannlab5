@@ -133,8 +133,10 @@ const ResearchWorkstation: React.FC<ResearchWorkstationProps> = ({ initialTab })
                     </div>
                 )
             case 'literature':
+                // V1.9.499 (Pedro 29/05) — degradê igual aos demais tabs (era bg-[#0f172a] flat).
+                // Alinha com pattern V1.9.413 já aplicado em dashboard/noa-matrix.
                 return (
-                    <div className="h-full overflow-y-auto scrollbar-hide bg-[#0f172a] p-4">
+                    <div className="h-full overflow-y-auto scrollbar-hide p-4" style={{ background: backgroundGradient }}>
                         {/* [V1.9.369-A/C] Literatura externa (PubMed) — aceita termo via cross-link */}
                         <ExternalLiterature
                             embedded
