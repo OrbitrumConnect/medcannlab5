@@ -20,6 +20,14 @@ export interface Patient {
 
 export type ProSection = 'dashboard' | 'prescriptions' | 'clinical-reports' | 'agendamentos' | 'incentivos'
 
+// V1.9.502 (29/05) — stats reais substituindo mocks {8}/{3}/"+12%" do dashboard.
+// Atividade Recente também deriva de reports últimos 7d (era hardcoded).
+export interface ProfessionalDashboardStats {
+    appointmentsToday: number
+    reportsLast7d: number
+    recentActivity: Array<{ id: string; label: string; createdAt: string; kind: 'report' | 'appointment' }>
+}
+
 export function useProfessionalDashboard() {
     const { user } = useAuth()
     const { getEffectiveUserType } = useUserView()
@@ -29,6 +37,11 @@ export function useProfessionalDashboard() {
     const [activeSection, setActiveSection] = useState<ProSection>('dashboard')
     const [selectedPatientId, setSelectedPatientId] = useState<string | null>(null)
     const [selectedPatientData, setSelectedPatientData] = useState<Patient | null>(null)
+    const [stats, setStats] = useState<ProfessionalDashboardStats>({
+        appointmentsToday: 0,
+        reportsLast7d: 0,
+        recentActivity: [],
+    })
 
     const userIsAdmin = isAdmin(user)
     const effectiveType = getEffectiveUserType(user?.type)
@@ -95,6 +108,56 @@ export function useProfessionalDashboard() {
         if (user?.id) loadPatients()
     }, [loadPatients, user?.id])
 
+    // V1.9.502 — stats reais (substitui mocks hardcoded {8}/{3}/+12%)
+    const loadStats = useCallback(async () => {
+        try {
+            const todayStart = new Date()
+            todayStart.setHours(0, 0, 0, 0)
+            const todayEnd = new Date()
+            todayEnd.setHours(23, 59, 59, 999)
+            const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
+
+            const [apptsRes, reportsRes, recentRes] = await Promise.all([
+                supabase
+                    .from('appointments')
+                    .select('id', { count: 'exact', head: true })
+                    .gte('appointment_date', todayStart.toISOString())
+                    .lte('appointment_date', todayEnd.toISOString()),
+                supabase
+                    .from('clinical_reports')
+                    .select('id', { count: 'exact', head: true })
+                    .gte('created_at', sevenDaysAgo.toISOString()),
+                supabase
+                    .from('clinical_reports')
+                    .select('id, patient_name, report_type, created_at')
+                    .gte('created_at', sevenDaysAgo.toISOString())
+                    .order('created_at', { ascending: false })
+                    .limit(5),
+            ])
+
+            const recentActivity = (recentRes.data || []).map((r: any) => ({
+                id: r.id,
+                label: r.report_type === 'follow_up'
+                    ? `Evolução • ${r.patient_name || 'Paciente'}`
+                    : `Relatório clínico • ${r.patient_name || 'Paciente'}`,
+                createdAt: r.created_at,
+                kind: 'report' as const,
+            }))
+
+            setStats({
+                appointmentsToday: apptsRes.count ?? 0,
+                reportsLast7d: reportsRes.count ?? 0,
+                recentActivity,
+            })
+        } catch (error) {
+            console.warn('[useProfessionalDashboard.loadStats] erro:', error)
+        }
+    }, [])
+
+    useEffect(() => {
+        if (user?.id) loadStats()
+    }, [loadStats, user?.id])
+
     const selectPatient = (id: string | null) => {
         setSelectedPatientId(id)
         if (id) {
@@ -113,6 +176,7 @@ export function useProfessionalDashboard() {
         selectedPatientId,
         selectedPatientData,
         selectPatient,
+        stats,
         refresh: loadPatients
     }
 }

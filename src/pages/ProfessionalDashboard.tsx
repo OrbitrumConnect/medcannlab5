@@ -3,17 +3,13 @@ import { useSearchParams } from 'react-router-dom'
 import {
   FileText,
   User,
-  Plus,
   Calendar,
   BarChart3,
   TrendingUp,
   Pill,
   ChevronLeft,
-  ChevronRight,
   Phone,
   AlertCircle,
-  Clock,
-  Brain,
   Activity
 } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
@@ -48,7 +44,8 @@ const ProfessionalDashboard: React.FC = () => {
     setActiveSection,
     selectedPatientId,
     selectedPatientData,
-    selectPatient
+    selectPatient,
+    stats
   } = useProfessionalDashboard()
 
   const sectionParam = searchParams.get('section') as ProSection | null
@@ -100,20 +97,13 @@ const ProfessionalDashboard: React.FC = () => {
   return (
     <div className="min-h-screen bg-[#0f172a] text-white">
       <div className="container mx-auto px-4 py-8 max-w-7xl space-y-8">
-        {/* Header */}
+        {/* V1.9.502: header sem bloco "Performance +12% este mês" — era mock hardcoded
+            (realidade empírica 29/05: 54 reports 30d vs 78 anterior = -31%, mostrar seria
+            desonesto/depressivo). Reativar quando Marco 2 trouxer baseline empírico real. */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
           <div>
             <h1 className="text-3xl font-bold">Olá, Dr(a). {user?.user_metadata?.name?.split(' ')[0] || 'Profissional'}</h1>
             <p className="text-slate-400">Gestão Clínica Inteligente • MedCannLab</p>
-          </div>
-          <div className="flex items-center gap-3 bg-white/5 border border-white/10 p-2 rounded-xl backdrop-blur-md">
-            <div className="w-10 h-10 rounded-lg bg-primary-500/20 flex items-center justify-center border border-primary-500/30">
-              <TrendingUp className="w-5 h-5 text-primary-400" />
-            </div>
-            <div>
-              <p className="text-[10px] text-slate-500 uppercase font-bold tracking-wider">Performance</p>
-              <p className="text-sm font-bold text-emerald-400">+12% este mês</p>
-            </div>
           </div>
         </div>
 
@@ -148,8 +138,8 @@ const ProfessionalDashboard: React.FC = () => {
               <div className="space-y-8">
                 <ProfessionalStats
                   patients={patients}
-                  appointmentsTodayCount={8} // Placeholder, logic can be added to hook
-                  newReportsCount={3} // Placeholder
+                  appointmentsTodayCount={stats.appointmentsToday}
+                  newReportsCount={stats.reportsLast7d}
                 />
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -164,27 +154,33 @@ const ProfessionalDashboard: React.FC = () => {
                     {/* V1.9.500 — AECs Interrompidas órfãs (médico decide) */}
                     <InterruptedAECsCard />
 
+                    {/* V1.9.502: Atividade Recente derivada de clinical_reports.created_at
+                        últimos 7d (top 5). Era hardcoded "Novo relatório (Nôa)" + "Agendamento
+                        amanhã" — mock que aparecia idêntico todo dia pra Ricardo. */}
                     <div className="bg-slate-900/40 border border-white/5 rounded-2xl p-6 backdrop-blur-xl">
                       <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
                         <Activity className="w-5 h-5 text-emerald-400" /> Atividade Recente
                       </h3>
-                      <div className="space-y-4">
-                        <div className="flex items-center gap-3 text-sm">
-                          <div className="w-2 h-2 rounded-full bg-emerald-500" />
-                          <p className="text-slate-300">Novo relatório de avaliação (Nôa)</p>
+                      {stats.recentActivity.length === 0 ? (
+                        <p className="text-xs text-slate-500 italic">Sem registros nos últimos 7 dias.</p>
+                      ) : (
+                        <div className="space-y-3">
+                          {stats.recentActivity.map(item => (
+                            <div key={item.id} className="flex items-center gap-3 text-sm">
+                              <div className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" />
+                              <p className="text-slate-300 truncate flex-1">{item.label}</p>
+                              <p className="text-[10px] text-slate-500 shrink-0">
+                                {new Date(item.createdAt).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })}
+                              </p>
+                            </div>
+                          ))}
                         </div>
-                        <div className="flex items-center gap-3 text-sm">
-                          <div className="w-2 h-2 rounded-full bg-blue-500" />
-                          <p className="text-slate-300">Agendamento confirmado para amanhã</p>
-                        </div>
-                      </div>
+                      )}
                     </div>
-                    {/* Newsletter / Insights */}
-                    <div className="bg-gradient-to-br from-indigo-500/10 to-indigo-600/5 border border-indigo-500/20 rounded-2xl p-6">
-                      <h3 className="text-sm font-bold text-indigo-400 uppercase tracking-widest mb-3">Destaque Científico</h3>
-                      <p className="text-slate-200 text-sm font-medium leading-relaxed">Estudo Fase 3: Eficácia do CBD em Epilepsia Refratária.</p>
-                      <button className="text-indigo-400 text-xs font-bold mt-4 flex items-center gap-1 hover:text-indigo-300">LER ARTIGO <ChevronRight className="w-3 h-3" /></button>
-                    </div>
+                    {/* V1.9.502: bloco "Destaque Científico" REMOVIDO — era hardcoded
+                        "Estudo Fase 3: Eficácia do CBD em Epilepsia Refratária" + botão
+                        "LER ARTIGO" que não navegava pra lugar nenhum. Reativar quando
+                        useNewsItems tiver pelo menos 1 row published=true. */}
                   </div>
                 </div>
               </div>
