@@ -675,67 +675,105 @@ export const NoaMatrixView: React.FC = () => {
     : kbDocs
 
   return (
-    <div className="space-y-4">
-      {/* V1.9.493 (Pedro 29/05 ~14h smoke empírico²) — banner achatado pra 1 LINHA
-          única (nome + #code + pills inline). V1.9.491 ainda ficou ~120px reais
-          (pills herdaram padding maior + 2 linhas com flex-wrap = banner gigante).
-          ANTES (V1.9.491): 2 linhas verticais (~120px reais). DEPOIS (V1.9.493):
-          1 linha horizontal flex-wrap (~32-40px em desktop, quebra natural em
-          mobile/estreito). Pills compactados text-[9px] py-0 (eram py-0.5).
-          Loading/erro inline ao final da linha (ml-auto). Princípio aplicado:
-          validação empírica via screenshot > plano teórico. */}
+    <div className="space-y-3">
+      {/* V1.9.494 (Pedro 29/05 ~15h) — ORDEM INVERTIDA: identidade Matrix vem
+          primeiro (default reading order natural feature-first), contexto
+          paciente vem depois. ANTES (V1.9.493): banner amber em cima → header
+          Matrix embaixo (anti-hierarquia: contexto paciente sobre identidade
+          do produto). DEPOIS: header Matrix → banner amber → timeline 1.6.
+          Plus: banner amber compactado ainda mais (User icon w-3, LGPD inline
+          com #code, removido separador "·" entre #code e pills). */}
+
+      {/* Header da view — V1.9.485 (Pedro 28/05) compactado pra liberar espaço
+          vertical (especialmente mobile). V1.9.494 (29/05): movido pro TOPO. */}
+      <div className="bg-slate-900/40 border border-purple-500/20 rounded-xl p-2.5">
+        <div className="flex items-center justify-between gap-2 flex-wrap">
+          <div className="flex items-center gap-2 min-w-0">
+            <div className="p-1.5 rounded-lg bg-purple-500/10 border border-purple-500/30 flex-shrink-0">
+              <Sparkles className="w-4 h-4 text-purple-300" />
+            </div>
+            <h2 className="text-sm font-bold text-white flex items-center gap-1.5 flex-wrap min-w-0">
+              <span className="truncate">🧬 Nôa Matrix</span>
+              <span className="text-[10px] font-normal text-purple-300/70 px-1.5 py-0.5 rounded bg-purple-500/10 border border-purple-500/20 flex-shrink-0">
+                Z2 estrutural
+              </span>
+              {/* [V1.9.454] Botão tutorial — abre MatrixHelpModal com modo de uso elite.
+                  V1.9.485-A (Pedro 28/05): "?" trocado por texto "Modo de uso" pra
+                  comunicar diretamente o que o botão faz (anti-icon-ambiguity).
+                  Ícone Info compacto preserva affordance visual. */}
+              <button
+                type="button"
+                onClick={() => setHelpModalOpen(true)}
+                className="flex items-center gap-1 px-2 py-0.5 text-[10px] text-purple-300/80 hover:text-purple-200 hover:bg-purple-500/10 rounded-full border border-purple-500/20 hover:border-purple-500/40 transition-colors flex-shrink-0"
+                title="Como usar a Nôa Matrix"
+                aria-label="Abrir modo de uso"
+              >
+                <Info className="w-3 h-3" />
+                <span>Modo de uso</span>
+              </button>
+            </h2>
+          </div>
+          <div className="flex items-center gap-1.5 text-xs flex-shrink-0">
+            <Folder className="w-3.5 h-3.5 text-purple-300" />
+            <span className="text-slate-400">
+              {selectedCount === 0 ? 'Nenhum item marcado' : `${selectedCount} item${selectedCount === 1 ? '' : 'ns'} no chat`}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* [V1.9.454] Modal de modo de uso profissional */}
+      <MatrixHelpModal isOpen={helpModalOpen} onClose={() => setHelpModalOpen(false)} />
+
+      {/* V1.9.494 — banner amber compactado MAX: User w-3, #6ACF(LGPD) inline,
+          sem separador "·" antes dos pills, pills sem mudanças (já compactos
+          V1.9.493). Loading/erro inline ml-auto. ~32px → ~26-28px reais. */}
       {patientId && (
-        <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl px-3 py-1.5 flex items-center gap-2 flex-wrap">
-          <User className="w-3.5 h-3.5 text-amber-300 flex-shrink-0" />
-          <span className="text-xs font-semibold text-amber-200 min-w-0 truncate">
+        <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl px-2.5 py-1 flex items-center gap-1.5 flex-wrap">
+          <User className="w-3 h-3 text-amber-300 flex-shrink-0" />
+          <span className="text-[11px] font-semibold text-amber-200 min-w-0 truncate">
             {longitudinal.patientName || 'Paciente'}
           </span>
           {longitudinal.patientPseudonym && (
-            <span className="text-[10px] font-mono text-amber-300/70 flex-shrink-0">
-              <strong>#{longitudinal.patientPseudonym}</strong>
+            <span className="text-[9px] font-mono text-amber-300/70 flex-shrink-0">
+              <strong>#{longitudinal.patientPseudonym}</strong> <span className="text-amber-300/40">(LGPD)</span>
             </span>
           )}
-          {!longitudinal.loading && !longitudinal.error && (
-            <>
-              <span className="text-amber-500/30 flex-shrink-0">·</span>
-              {([
-                { key: 'reports' as const, label: 'AEC', icon: Stethoscope, count: longitudinal.reports.length },
-                { key: 'evolucoes' as const, label: 'Evol', icon: GitBranch, count: longitudinal.followUps.length },
-                { key: 'rationalities' as const, label: 'Rac', icon: Activity, count: longitudinal.rationalities.length },
-                { key: 'priorDossiers' as const, label: 'Dos', icon: Archive, count: longitudinal.priorDossiers.length },
-              ]).map(({ key, label, icon: Icon, count }) => {
-                const active = patientSources[key]
-                return (
-                  <button
-                    key={key}
-                    type="button"
-                    onClick={() => togglePatientSource(key)}
-                    disabled={count === 0}
-                    className={`flex items-center gap-0.5 px-1.5 py-0 rounded-full text-[9px] border transition-colors ${
-                      count === 0
-                        ? 'bg-slate-900/40 border-slate-700/30 text-slate-600 cursor-not-allowed'
-                        : active
-                          ? 'bg-amber-500/15 border-amber-500/40 text-amber-200 hover:bg-amber-500/20'
-                          : 'bg-slate-900/40 border-slate-700/40 text-slate-500 hover:border-amber-500/30 hover:text-slate-300'
-                    }`}
-                    title={count === 0 ? `Sem ${label === 'AEC' ? 'AEC' : label === 'Evol' ? 'evoluções' : label === 'Rac' ? 'racionalidades' : 'dossiês'} pra este paciente` : active ? `Desligar ${label}` : `Ligar ${label}`}
-                    aria-pressed={active}
-                  >
-                    <Icon className="w-2.5 h-2.5" />
-                    <span>{label}</span>
-                    <span className={active ? 'font-mono text-amber-300/80' : 'font-mono text-slate-500'}>·{count}</span>
-                  </button>
-                )
-              })}
-            </>
-          )}
+          {!longitudinal.loading && !longitudinal.error && ([
+            { key: 'reports' as const, label: 'AEC', icon: Stethoscope, count: longitudinal.reports.length },
+            { key: 'evolucoes' as const, label: 'Evol', icon: GitBranch, count: longitudinal.followUps.length },
+            { key: 'rationalities' as const, label: 'Rac', icon: Activity, count: longitudinal.rationalities.length },
+            { key: 'priorDossiers' as const, label: 'Dos', icon: Archive, count: longitudinal.priorDossiers.length },
+          ]).map(({ key, label, icon: Icon, count }) => {
+            const active = patientSources[key]
+            return (
+              <button
+                key={key}
+                type="button"
+                onClick={() => togglePatientSource(key)}
+                disabled={count === 0}
+                className={`flex items-center gap-0.5 px-1.5 py-0 rounded-full text-[9px] border transition-colors ${
+                  count === 0
+                    ? 'bg-slate-900/40 border-slate-700/30 text-slate-600 cursor-not-allowed'
+                    : active
+                      ? 'bg-amber-500/15 border-amber-500/40 text-amber-200 hover:bg-amber-500/20'
+                      : 'bg-slate-900/40 border-slate-700/40 text-slate-500 hover:border-amber-500/30 hover:text-slate-300'
+                }`}
+                title={count === 0 ? `Sem ${label === 'AEC' ? 'AEC' : label === 'Evol' ? 'evoluções' : label === 'Rac' ? 'racionalidades' : 'dossiês'} pra este paciente` : active ? `Desligar ${label}` : `Ligar ${label}`}
+                aria-pressed={active}
+              >
+                <Icon className="w-2.5 h-2.5" />
+                <span>{label}</span>
+                <span className={active ? 'font-mono text-amber-300/80' : 'font-mono text-slate-500'}>·{count}</span>
+              </button>
+            )
+          })}
           {longitudinal.loading && (
-            <span className="text-[10px] text-amber-300/70 ml-auto flex-shrink-0">Carregando…</span>
+            <span className="text-[9px] text-amber-300/70 ml-auto flex-shrink-0">Carregando…</span>
           )}
           {longitudinal.error && (
-            <span className="text-[10px] text-red-300 ml-auto flex-shrink-0 truncate">Erro: {longitudinal.error}</span>
+            <span className="text-[9px] text-red-300 ml-auto flex-shrink-0 truncate">Erro: {longitudinal.error}</span>
           )}
-          <span className="text-[9px] text-amber-300/50 ml-auto flex-shrink-0">LGPD</span>
         </div>
       )}
 
@@ -812,49 +850,9 @@ export const NoaMatrixView: React.FC = () => {
         )
       })()}
 
-      {/* Header da view — V1.9.485 (Pedro 28/05) compactado pra liberar espaço
-          vertical (especialmente mobile). Removidos: subtitle redundante com
-          tutorial + link "Modo de uso →" duplicado com botão (?). Resultado:
-          ~120px → ~50px verticais. Identidade visual preservada (emerald-purple
-          + Sparkles + Z2 badge). */}
-      <div className="bg-slate-900/40 border border-purple-500/20 rounded-xl p-2.5">
-        <div className="flex items-center justify-between gap-2 flex-wrap">
-          <div className="flex items-center gap-2 min-w-0">
-            <div className="p-1.5 rounded-lg bg-purple-500/10 border border-purple-500/30 flex-shrink-0">
-              <Sparkles className="w-4 h-4 text-purple-300" />
-            </div>
-            <h2 className="text-sm font-bold text-white flex items-center gap-1.5 flex-wrap min-w-0">
-              <span className="truncate">🧬 Nôa Matrix</span>
-              <span className="text-[10px] font-normal text-purple-300/70 px-1.5 py-0.5 rounded bg-purple-500/10 border border-purple-500/20 flex-shrink-0">
-                Z2 estrutural
-              </span>
-              {/* [V1.9.454] Botão tutorial — abre MatrixHelpModal com modo de uso elite.
-                  V1.9.485-A (Pedro 28/05): "?" trocado por texto "Modo de uso" pra
-                  comunicar diretamente o que o botão faz (anti-icon-ambiguity).
-                  Ícone Info compacto preserva affordance visual. */}
-              <button
-                type="button"
-                onClick={() => setHelpModalOpen(true)}
-                className="flex items-center gap-1 px-2 py-0.5 text-[10px] text-purple-300/80 hover:text-purple-200 hover:bg-purple-500/10 rounded-full border border-purple-500/20 hover:border-purple-500/40 transition-colors flex-shrink-0"
-                title="Como usar a Nôa Matrix"
-                aria-label="Abrir modo de uso"
-              >
-                <Info className="w-3 h-3" />
-                <span>Modo de uso</span>
-              </button>
-            </h2>
-          </div>
-          <div className="flex items-center gap-1.5 text-xs flex-shrink-0">
-            <Folder className="w-3.5 h-3.5 text-purple-300" />
-            <span className="text-slate-400">
-              {selectedCount === 0 ? 'Nenhum item marcado' : `${selectedCount} item${selectedCount === 1 ? '' : 'ns'} no chat`}
-            </span>
-          </div>
-        </div>
-      </div>
-
-      {/* [V1.9.454] Modal de modo de uso profissional */}
-      <MatrixHelpModal isOpen={helpModalOpen} onClose={() => setHelpModalOpen(false)} />
+      {/* V1.9.494 — Header Matrix + modal MOVIDOS pro topo do return (linhas ~679).
+          Antes ficavam aqui (embaixo do banner amber) violando hierarquia de leitura.
+          Agora identidade Matrix vem PRIMEIRO; contexto paciente vem DEPOIS. */}
 
       {/* Grid: cards (esquerda) + chat (direita) */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
