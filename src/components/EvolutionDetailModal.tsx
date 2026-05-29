@@ -58,8 +58,6 @@ interface FullReport {
   signed_at: string | null
   signature_hash: string | null
   professional_name: string | null
-  assessment?: string | null
-  plan?: string | null
 }
 
 interface FullAssessment {
@@ -144,9 +142,12 @@ export const EvolutionDetailModal: React.FC<Props> = ({ isOpen, evolution, patie
       setError(null)
       try {
         if (evolution.kind === 'aec-report' || evolution.source === 'report') {
+          // V1.9.500-A (29/05 hotfix): assessment + plan vivem dentro de content jsonb,
+          // NÃO são colunas em clinical_reports. Removidos do SELECT (causava
+          // "column clinical_reports.assessment does not exist").
           const { data, error: err } = await (supabase as any)
             .from('clinical_reports')
-            .select('id, content, generated_at, status, signed_at, signature_hash, professional_name, assessment, plan')
+            .select('id, content, generated_at, status, signed_at, signature_hash, professional_name')
             .eq('id', evolution.id)
             .maybeSingle()
           if (err) throw err
@@ -295,8 +296,8 @@ export const EvolutionDetailModal: React.FC<Props> = ({ isOpen, evolution, patie
             <div className="bg-slate-800/30 rounded-lg p-2 print:bg-white print:p-0">
               <RichClinicalReportView
                 content={richContent}
-                assessment={fullReport?.assessment || fullAssessment?.data?.assessment || undefined}
-                plan={fullReport?.plan || fullAssessment?.data?.plan || undefined}
+                assessment={fullReport?.content?.assessment || fullAssessment?.data?.assessment || undefined}
+                plan={fullReport?.content?.plan || fullAssessment?.data?.plan || undefined}
               />
             </div>
           ) : fullAssessment ? (
