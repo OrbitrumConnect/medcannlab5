@@ -221,43 +221,45 @@ Memórias completas: `audit_pendencias_um_mes_pos_pbad_20_05.md` (Sprint 1) + me
 | Origem histórica | App nasceu na **Lovable** (no-code), CORS de send-email permite `*.lovable.app` |
 | Repos | hub (`amigo-connect-hub`) + origin (`medcannlab5`) |
 
-## Edge Functions (14 ativas — atualizado 30/05 pós V1.9.506+517+518+519 verify_jwt restorations)
+## Edge Functions (14 ativas — atualizado 30/05 ~18h BRT pós V1.9.506+517+518+519+520-526 batch flip verify_jwt)
 
 ```
-🟢 CORE / FUNCIONAIS
-  tradevision-core              v424  Core IA Nôa principal (~7765 linhas) [verify_jwt=true V1.9.506 30/05]
-  digital-signature             v68   Assinatura digital ICP-Brasil/CFM (3 levels)
-  sign-pdf-icp                  v22   PBAD AD-RB ICP-Brasil CONFORME ITI (V1.9.299 LOCK + V1.9.457 auth+ownership)
-  cert-encrypt-password         v6    Cripto password p/ cert ICP do médico
-  wisecare-session              v81   Provedor vídeo V4H (HOMOLOG, migrar)
-  extract-document-text         v62   OCR via pdfjs-serverless [verify_jwt=true]
-  send-email                    v62   Resend [verify_jwt=true]
-  video-call-request-notification v62
-  video-call-reminders          v31   Sweep mode + cron 5min + Resend (V1.9.99-B)
-  generate-nft-from-report      v6    NFT consent peça-a-peça (V1.9.311)
-  renal-signal-extractor        v4    Sidecar renal DRC (V1.9.307)
+🟢 CORE / FUNCIONAIS (verify_jwt=true — defesa em camadas restaurada)
+  tradevision-core              v424  Core IA Nôa principal (~7765 linhas) [V1.9.506]
+  extract-document-text         v62   OCR via pdfjs-serverless [original true]
+  send-email                    v62   Resend [original true]
+  digital-signature             v68   Assinatura digital ICP-Brasil/CFM 3 levels [V1.9.521]
+  cert-encrypt-password         v6    Cripto password p/ cert ICP médico [V1.9.523]
+  wisecare-session              v81   Provedor vídeo V4H (HOMOLOG, migrar) [V1.9.520]
+  generate-nft-from-report      v6    NFT consent peça-a-peça (V1.9.311) [V1.9.522]
+  video-call-reminders          v31   Sweep mode + cron 5min + Resend (V1.9.99-B) [V1.9.526 — service_role JWT bypassa OK]
 
-⚠️ EM OBSERVAÇÃO 48h (flip verify_jwt false→true em 30/05, decisão hard-delete 01/jun)
-  get_chat_history              v8    [V1.9.517] snake_case órfã, audit confirmou 0 callers HOJE.
-                                       Criada 21/jan/2026 (9d DEPOIS do core), v8 = 7 updates
-                                       em 5m = uso histórico real virou órfão pós-refator.
-                                       Body = GET-only ai_chat_interactions filtrado user.id.
-                                       Smoke 2/2 PASS pós-flip (sem JWT 401, JWT inválido 401).
-  google-auth                   v29   [V1.9.518] Edge OAuth Google dormindo desde V1.9.99-B
-                                       (28/04). professional_integrations 0 rows. Smoke 2/2 PASS.
+⚠️ EM OBSERVAÇÃO 48h (5 Edges — decisão hard-delete batch 01/jun ~15h BRT)
+  get_chat_history              v8    [V1.9.517] snake_case órfã, 0 callers HOJE. Criada 21/jan
+                                       (9d DEPOIS do core), v8 = 7 updates históricos. Body =
+                                       GET-only ai_chat_interactions filtrado user.id.
+  google-auth                   v29   [V1.9.518] Edge OAuth Google dormindo desde V1.9.99-B (28/04).
+                                       professional_integrations 0 rows.
   sync-gcal                     v29   [V1.9.519] Edge cron Google Calendar dormindo desde V1.9.99-B.
-                                       integration_jobs 0 rows. Smoke 2/2 PASS.
+                                       integration_jobs 0 rows.
+  renal-signal-extractor        v4    [V1.9.524] Sidecar renal DRC (V1.9.307) — 0 callers grep todo
+                                       codebase = anomalia (esperado uso por Core).
+  video-call-request-notification v62 [V1.9.525] 0 callers grep todo codebase = anomalia (esperado
+                                       uso por VideoCallScheduler).
 
-                                       Decisão hard-delete (V1.9.520+521+522) em 01/jun segunda
-                                       ~15h BRT: se zero 401 inesperado em Supabase Functions
-                                       panel → autoriza delete em batch. Se aparecer 401 com
-                                       user_agent identificado → investigar caller + decidir
-                                       restaurar (PATCH false em 30s) OU comunicar antes.
+🔴 PARQUEADO (1 Edge — sem trigger empírico forte pra flip)
+  sign-pdf-icp                  v22   [verify_jwt=false] PBAD AD-RB ICP-Brasil CONFORME ITI
+                                       (V1.9.299 LOCK + V1.9.457 auth interna runtime já valida
+                                       user + ownership). Flip exige smoke ITI completo
+                                       (openssl asn1parse + validar.iti.gov.br + diff binário V12).
+                                       Parqueado até trigger empírico OR sessão dedicada futura.
 ```
 
-**Total Edges com `verify_jwt=true`**: 6 — tradevision-core, extract-document-text, send-email, get_chat_history, google-auth, sync-gcal.
+**Cobertura defesa em camadas**: **93% (13/14 Edges)** rejeitam anônimo no ingress Supabase ANTES do código Deno.
 
-**Total Edges com `verify_jwt=false`**: 8 — todas com justificativa funcional (webhook público / cron-only / cross-Edge interno).
+**Smoke 14/14 PASS** (V1.9.520-525): cada Edge testada com sem JWT + JWT inválido = 401.
+
+**V1.9.526 fail-fast cron validation**: cron `video-call-reminders-5min` execução pós-flip 17:55:00 UTC retornou `status=succeeded` — service_role JWT do `vault.decrypted_secrets` bypassa verify_jwt=true sem problema. Hipótese empíricamente confirmada.
 
 *Cleanup 28/04 ~10h45*: Edge `video-call-request-notification-` (v23, duplicata com hífen) deletada. Backup em `.backups/`. Trigger duplicado `trg_handle_new_auth_user` em auth.users dropado. Edge `video-call-reminders` v52 deletada (P9) → reintroduzida elite v53/v3 com sweep mode + cron + Resend.
 
