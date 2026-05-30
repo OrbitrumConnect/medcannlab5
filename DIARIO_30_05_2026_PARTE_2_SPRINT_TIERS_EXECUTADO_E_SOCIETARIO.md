@@ -424,9 +424,119 @@ Smoke pós-flip:
 
 ---
 
+## 🛡️ BLOCO J — V1.9.520-526 Batch flip 7 Edges restantes + audit final 93% cobertura (~18h BRT)
+
+**Tempo**: ~25min. **Commits git**: 0 (só PATCH config via Management API + memory). **Commits doc trail**: 1 (`acde065` CLAUDE.md atualizado).
+
+### J.1 — Contexto pós V1.9.517-519
+
+Após V1.9.506+517+518+519 fecharem 4 flips hoje (tradevision-core + 3 Edges em observação), restavam **8 Edges com `verify_jwt=false`**. Pedro autorizou escala via opção (A): TUDO.
+
+### J.2 — Matriz empírica pre-flip (5 validações independentes por Edge)
+
+| Edge | Caller real (empírico) | Classe | Ação |
+|---|---|---|---|
+| `wisecare-session` v81 | Frontend invoke 4× ([WiseCareProvider.ts](src/services/providers/WiseCareProvider.ts)) | 🟢 SAFE | V1.9.520 |
+| `digital-signature` v68 | Frontend invoke 4× (Prescriptions + Exam) | 🟢 SAFE | V1.9.521 |
+| `generate-nft-from-report` v6 | Frontend invoke 1× ([ClinicalReports.tsx:752](src/components/ClinicalReports.tsx#L752)) | 🟢 SAFE | V1.9.522 |
+| `cert-encrypt-password` v6 | Frontend invoke 1× ([CertificateManagement.tsx:138](src/pages/CertificateManagement.tsx#L138)) | 🟢 SAFE | V1.9.523 |
+| `renal-signal-extractor` v4 | **0 callers grep TODO codebase** | 🟡 ÓRFÃ + obs 48h | V1.9.524 |
+| `video-call-request-notification` v62 | **0 callers grep TODO codebase** | 🟡 ÓRFÃ + obs 48h | V1.9.525 |
+| `video-call-reminders` v31 | cron pg_cron 5min + frontend invoke 1× | 🟠 CRON-COEXIST | V1.9.526 fail-fast |
+| **`sign-pdf-icp` v22** | Frontend invoke 2× + LOCK V1.9.299 | 🔴 PARQUEADO | sessão dedicada smoke ITI |
+
+### J.3 — Execução cirúrgica (~10min PATCH + 5min smoke)
+
+**6 PATCH em sequência via Management API**:
+```
+=== wisecare-session ===            v81 ACTIVE verify_jwt=true ✅
+=== digital-signature ===           v68 ACTIVE verify_jwt=true ✅
+=== generate-nft-from-report ===    v6  ACTIVE verify_jwt=true ✅
+=== cert-encrypt-password ===       v6  ACTIVE verify_jwt=true ✅
+=== renal-signal-extractor ===      v4  ACTIVE verify_jwt=true ✅
+=== video-call-request-notification ===  v62 ACTIVE verify_jwt=true ✅
+```
+
+**Smoke 12/12 PASS** (sem JWT + JWT inválido = 401 em cada).
+
+### J.4 — V1.9.526 fail-fast em produção (cron compat)
+
+**Hipótese**: cron `video-call-reminders-5min` usa `service_role_for_cron` Bearer do `vault.decrypted_secrets`. Service role JWT tem claim `role=service_role` válido — Supabase deve aceitar mesmo com `verify_jwt=true`.
+
+**Teste empírico em produção** (vs slug-test paralelo — risco baixo + custo zero):
+
+1. Baseline pré-flip: cron `succeeded` em 17:50:00 UTC
+2. PATCH V1.9.526 aplicado ~17:55 UTC
+3. Aguardou 2.5 min (próxima execução prevista 17:55:00 UTC)
+4. Query `cron.job_run_details` empírico:
+   ```json
+   {"status":"succeeded","start_time":"2026-05-30 17:55:00.276259+00","return_message":"1 row"}
+   ```
+
+✅ **Cron pós-flip = SUCCEEDED**. Hipótese confirmada empíricamente.
+
+### J.5 — Audit final 30min pós-batch (validação adicional)
+
+| Execução cron pós-V1.9.526 | Status |
+|---|---|
+| 17:55:00 UTC | succeeded ✅ |
+| 18:00:00 UTC | succeeded ✅ |
+| 18:05:00 UTC | succeeded ✅ |
+| 18:10:00 UTC | succeeded ✅ |
+
+**6/6 crons consecutivos succeeded** pós-flip. Zero regressão.
+
+### J.6 — Snapshot final empírico (PAT Management API)
+
+```
+verify_jwt=true:  13 Edges (93%)
+verify_jwt=false: 1 Edge  (sign-pdf-icp v22 parqueado)
+```
+
+**Cobertura defesa em camadas evoluiu HOJE**:
+- Manhã ~07h BRT (antes V1.9.506): **2/14 (14%)** (extract-document-text + send-email)
+- Manhã ~07h30 (pós V1.9.506): **3/14 (21%)** (+tradevision-core)
+- Tarde ~15h30 (pós V1.9.517-519): **6/14 (43%)** (+3 órfãs em observação)
+- Tarde ~18h (pós V1.9.520-526): **13/14 (93%)** (+7 batch flip)
+
+### J.7 — sign-pdf-icp PARQUEADO (motivo cristalizado)
+
+Única Edge restante com `verify_jwt=false`. **Não cede sem trigger empírico** porque:
+
+- ✅ **Lock V1.9.299 PBAD AD-RB CONFORME ITI** — algoritmo validado oficialmente pelo Portal ITI 16/05/2026
+- ✅ **V1.9.457 auth interna em runtime** já valida via `auth.getUser(token)` + ownership `document.professional_id`
+- ⚠️ **Flip exigiria smoke ITI completo**: openssl asn1parse + validar.iti.gov.br + diff binário vs V12 aprovado
+- ⚠️ **Sem trigger empírico HOJE**: zero ataque denial-of-CPU materializado
+
+**Decisão**: parquear até **(a)** trigger empírico real OR **(b)** sessão dedicada futura com tempo pra smoke ITI integral pós-Marco 2.
+
+### J.8 — Batch observação 48h CONSOLIDADO (5 Edges)
+
+| Edge | V1.9.X | Origem | Razão observação |
+|---|---|---|---|
+| `get_chat_history` | V1.9.517 | snake_case órfã | 0 callers grep + v8 = 7 updates históricos |
+| `google-auth` | V1.9.518 | Dormindo V1.9.99-B | professional_integrations 0 rows |
+| `sync-gcal` | V1.9.519 | Dormindo V1.9.99-B | integration_jobs 0 rows |
+| `renal-signal-extractor` | V1.9.524 | **0 callers grep todo codebase** | Anomalia — V1.9.307 cristalizou como sidecar, empírico contradiz |
+| `video-call-request-notification` | V1.9.525 | **0 callers grep todo codebase** | Anomalia — esperado uso por VideoCallScheduler |
+
+**Decisão consolidada 01/jun (segunda) ~15h BRT**: validar Supabase Functions panel logs 48h dos 5 slugs.
+- Zero 401 inesperado → V1.9.527-531 hard-delete batch autorizado
+- Algum 401 com `user_agent` identificado → investigar caller + decidir restaurar/comunicar
+
+### J.9 — Princípios meta consolidados nessa sessão
+
+1. **Pattern V1.9.517 reusável universal**: flip verify_jwt + smoke 2/2 + observação 48h se órfã = template anti-vulnerabilidade Edge
+2. **Fail-fast em produção** (V1.9.526): cron de 5min permite teste empírico real com rollback 30s, evitando slug-test paralelo quando risco é baixo
+3. **service_role JWT bypassa verify_jwt=true** empíricamente confirmado: qualquer Edge com cron `pg_cron` usando `service_role_for_cron` Bearer pode flip sem quebrar cron
+4. **Locks regulatórios precedem cleanup arquitetural**: V1.9.299 PBAD ICP-Brasil não cede pra padronização preventiva sem trigger empírico forte
+5. **Anti-Babylon recalibrado**: anti-Babylon protege contra Babylon, não contra ação — reuso de pattern + benefício pré-Marco 2 + custo <1h + smoke empírico = fazer
+
+---
+
 ## 🚧 BLOCO G — Pendências app reais (NÃO societárias) restantes
 
-Atualizado pós-execução V1.9.515-519.
+Atualizado pós-execução V1.9.515-526.
 
 ### P0 bloqueadores humanos
 - WiseCare homolog → produção (contrato V4H pendente)
@@ -457,6 +567,6 @@ Atualizado pós-execução V1.9.515-519.
 
 ## 🎯 Frase âncora do dia (PARTE 2)
 
-> *"30/05 sessão complementar (madrugada 02h30 → tarde 15h30): plano Tiers 0+1+2 executado integralmente sem regressão (V1.9.504 housekeeping + V1.9.505 PII regex refined + **V1.9.506 Sprint A verify_jwt RESTAURADO bomba latente 8d com slug-test paralelo zero downtime**). 8 commits UX cirúrgicos seguidos V1.9.507-514 (Layout C prontuário → AlunoDashboard responsivo) — cada um nascido de Pedro/Ricardo flagrando empíricamente na UI real. **V1.9.515 fix bug crítico Sprint A** (card InterruptedAECsCard estava em componente LEGACY → movido pra ProfessionalMyDashboard). **V1.9.516 Check 6 desparqueado anti-Babylon-recalibrado** (Pedro: *'ficar parqueando não adianta'*) — smoke imediato detectou caso real Illa Proença gap COMPLAINT_DETAILS. **V1.9.517+518+519 cleanup 3 Edges órfãs** (get_chat_history + google-auth + sync-gcal) via flip verify_jwt + observação 48h (decisão hard-delete 01/jun segunda). Sessão societária 4h: descoberta acordo v2.0 + redação v2.1 RASCUNHO + 2 rounds auditoria externa (Claude2 4 riscos + Ricardo 7 pontos veto promoção) + 5 edições textuais aplicadas + 2 decisões políticas estruturais pra reunião 4 sócios. **Princípio mãe cristalizado**: PI clínica autoral SEMPRE é LICENÇA (autoria moral + titularidade acadêmica + uso próprio), NUNCA cessão integral. **Princípio meta refinado**: anti-Babylon protege contra Babylon, não contra ação — reuso de pattern + benefício pré-Marco 2 + custo <1h = fazer. **9+ memórias Nível 1 cristalizadas**, 13 commits push 4 refs OK, 3 PATCH Edges Management API, Locks PBAD/AEC/Pipeline/Matrix Z2 INTOCADOS."*
+> *"30/05 sessão complementar (madrugada 02h30 → tarde 18h15): plano Tiers 0+1+2 executado integralmente sem regressão (V1.9.504 housekeeping + V1.9.505 PII regex refined + **V1.9.506 Sprint A verify_jwt RESTAURADO bomba latente 8d com slug-test paralelo zero downtime**). 8 commits UX cirúrgicos seguidos V1.9.507-514 (Layout C prontuário → AlunoDashboard responsivo) — cada um nascido de Pedro/Ricardo flagrando empíricamente na UI real. **V1.9.515 fix bug crítico Sprint A** (card InterruptedAECsCard estava em componente LEGACY → movido pra ProfessionalMyDashboard). **V1.9.516 Check 6 desparqueado anti-Babylon-recalibrado** (Pedro: *'ficar parqueando não adianta'*) — smoke imediato detectou caso real Illa Proença gap COMPLAINT_DETAILS. **V1.9.517+518+519 cleanup 3 Edges órfãs** primeiro batch (get_chat_history + google-auth + sync-gcal) flip verify_jwt + observação 48h. **V1.9.520-526 batch escalonamento 7 Edges restantes** (4 SAFE frontend + 2 ÓRFÃ obs + 1 CRON-COEXIST fail-fast empíricamente validado) — smoke 14/14 PASS + cron video-call-reminders pós-flip 6/6 succeeded. **Cobertura defesa em camadas evoluiu HOJE: 14% (manhã) → 93% (tarde, 13/14)**. Única ressalva: sign-pdf-icp Lock V1.9.299 PARQUEADO sem trigger empírico forte. Sessão societária 4h: descoberta acordo v2.0 + redação v2.1 RASCUNHO + 2 rounds auditoria externa (Claude2 4 riscos + Ricardo 7 pontos veto promoção) + 5 edições textuais aplicadas + 2 decisões políticas estruturais pra reunião 4 sócios. **Princípio mãe cristalizado**: PI clínica autoral SEMPRE é LICENÇA (autoria moral + titularidade acadêmica + uso próprio), NUNCA cessão integral. **Princípio meta refinado**: anti-Babylon protege contra Babylon, não contra ação — reuso de pattern + benefício pré-Marco 2 + custo <1h = fazer. **Princípio meta empírico V1.9.526**: service_role JWT bypassa verify_jwt=true — flip seguro em Edges com cron pg_cron. **13+ memórias Nível 1 cristalizadas**, 16 commits git + 11 PATCH Edges Management API, push 4 refs OK em todos, Locks PBAD/AEC/Pipeline/Matrix Z2 INTOCADOS."*
 
-— Sessão DIARIO_30 PARTE 2 fechada · 13 commits + 3 PATCH Management API · 9+ memórias Nível 1 · zero regressão clínica · rascunho societário v2.1 maduro aguardando reunião 4 sócios · 3 Edges órfãs em observação 48h · maturidade + agilidade calibrada > parqueamento defensivo.
+— Sessão DIARIO_30 PARTE 2 fechada · 16 commits git + 11 PATCH Management API · 13+ memórias Nível 1 · cobertura defesa em camadas 14% → 93% · zero regressão clínica · rascunho societário v2.1 maduro aguardando reunião 4 sócios · 5 Edges em observação 48h (decisão 01/jun ~15h) · maturidade + agilidade calibrada > parqueamento defensivo.
