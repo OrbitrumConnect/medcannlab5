@@ -13,6 +13,7 @@
     "build:dev": "vite build --mode development",
     "preview": "vite preview",
     "type-check": "tsc --noEmit",
+    "deploy:tradevision": "npx supabase functions deploy tradevision-core --project-ref itdjkfubfzmvmuxxjoae",
     "test": "vitest run --coverage",
     "test:watch": "vitest",
     "test:integration": "vitest run tests/integration",
