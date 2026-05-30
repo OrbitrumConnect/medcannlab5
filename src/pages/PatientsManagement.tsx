@@ -43,7 +43,6 @@ import {
   Sparkles,
   Link2,
   ChevronDown,
-  Filter,          // V1.9.507 — botão "Filtros" colapsável no header
   Stethoscope,    // V1.9.487 Camada 1.5 — evoluções escritas pelo médico (FOLLOW_UP)
   MessageCircle   // V1.9.487 Camada 1.5 — chat IA paciente↔Nôa (chat_interaction)
 } from 'lucide-react'
@@ -338,11 +337,10 @@ const PatientsManagement: React.FC<PatientsManagementProps> = ({ embedded = fals
   const effectiveType = getEffectiveUserType(user?.type)
   const toast = useToast()
   const [searchTerm, setSearchTerm] = useState('')
-  const [selectedSpecialty, setSelectedSpecialty] = useState<string>('all')
-  const [selectedClinic, setSelectedClinic] = useState<string>('all')
-  // V1.9.507 — filtros colapsaveis no header (feedback Ricardo 30/05).
-  // selectedRoom removido junto com filtro Sala 1/2/3 (era 100% mock hardcoded).
-  const [showFilters, setShowFilters] = useState<boolean>(false)
+  // V1.9.508 — Filtros Specialty + Clinic + Sala removidos (overhead visual sem
+  // utilidade real: admin ve todos via RLS, profissional ve so seus via RLS,
+  // search por nome no sidebar cobre 100% casos de uso).
+  // V1.9.507 -> V1.9.508 evolucao: enxugamento total apos validacao empirica Pedro.
   const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null)
   // V1.9.462 — toggle lista pacientes no mobile (Pedro 27/05: "lista pacientes
   // no mobile precisa ser dropdown pois ocupa mto espaço tbm")
@@ -614,63 +612,8 @@ const PatientsManagement: React.FC<PatientsManagementProps> = ({ embedded = fals
     }
   }, [showNewPatientMenu])
 
-  const specialties = [
-    { id: 'none', name: 'Sem especialidade' },
-    { id: 'cannabis', name: 'Cannabis Medicinal' },
-    { id: 'nephrology', name: 'Nefrologia' },
-    { id: 'pain', name: 'Medicina da Dor' },
-    { id: 'psychiatry', name: 'Psiquiatria' }
-  ]
-
-  const [clinics, setClinics] = useState([
-    { id: 'all', name: 'Todas as Unidades' },
-    { id: 'consultorio-ricardo', name: 'Consultório Dr. Ricardo Valença' },
-    { id: 'consultorio-eduardo', name: 'Consultório Dr. Eduardo Faveret' }
-  ])
-
-  // Buscar profissionais dinamicamente se for Admin
-  useEffect(() => {
-    if (isAdmin(user)) {
-      const fetchProfessionals = async () => {
-        try {
-          // Buscar todos os profissionais e admins para povoar a lista de consultórios
-          const { data, error } = await supabase
-            .from('users')
-            .select('id, name')
-            .in('type', ['profissional', 'professional', 'admin'])
-            .order('name')
-
-          if (!error && data) {
-            const dynamicClinics = [
-              { id: 'all', name: 'Todas as Unidades' },
-              ...data.map(u => ({
-                id: u.id,
-                name: u.name.startsWith('Dr.') ? `Consultório ${u.name}` : (u.name.startsWith('Consultório') ? u.name : `Consultório ${u.name}`)
-              }))
-            ]
-            
-            // Remover duplicatas de nomes (caso existam) e atualizar
-            const uniqueClinics = dynamicClinics.filter((clinic, index, self) =>
-              index === self.findIndex((c) => c.name === clinic.name)
-            )
-            
-            setClinics(uniqueClinics)
-            console.log('✅ Lista de consultórios dinâmica carregada (Admin):', uniqueClinics.length)
-          }
-        } catch (err) {
-          console.error('Erro ao buscar profissionais para o terminal:', err)
-        }
-      }
-      fetchProfessionals()
-    } else if (user?.name) {
-      // Se não for admin, mostrar apenas o próprio consultório
-      setClinics([
-        { id: 'all', name: 'Todas as Unidades' },
-        { id: user.id || 'me', name: user.name.startsWith('Dr.') ? `Consultório ${user.name}` : `Consultório ${user.name}` }
-      ])
-    }
-  }, [user])
-
+  // V1.9.508 — specialties + clinics arrays + useEffect dinamico removidos
+  // (eram dados pros filtros que sumiram do header).
   // V1.9.507 — rooms removido (era mock Sala 1/2/3 hardcoded sem uso real)
 
   // Carregar pacientes reais do Supabase
@@ -1271,24 +1214,9 @@ const PatientsManagement: React.FC<PatientsManagementProps> = ({ embedded = fals
     
     if (!matchesSearch) return false
 
-    // 2. Filtro de Clínica / Unidade
-    if (selectedClinic !== 'all') {
-      const targetClinic = clinics.find(c => c.id === selectedClinic)
-      if (targetClinic && !patient.clinic.toLowerCase().includes(targetClinic.name.replace('Consultório ', '').toLowerCase())) {
-        return false
-      }
-    }
-
-    // 3. Filtro de Especialidade
-    if (selectedSpecialty !== 'all') {
-      const targetSpec = specialties.find(s => s.id === selectedSpecialty)
-      if (targetSpec && !patient.specialty.toLowerCase().includes(targetSpec.name.toLowerCase())) {
-        return false
-      }
-    }
-
-    // V1.9.507 — Filtro de Sala removido (era mock Sala 1/2/3 hardcoded).
-    // Reativar quando consultório fisico tiver salas reais com identificador.
+    // V1.9.508 — Filtros Specialty + Clinic + Sala removidos (overhead visual sem
+    // utilidade real). RLS ja filtra: admin ve todos, profissional ve so dele.
+    // Search por nome cobre 100% casos de uso.
 
     return true
   })
@@ -1482,11 +1410,11 @@ const PatientsManagement: React.FC<PatientsManagementProps> = ({ embedded = fals
         </div>
       )}
       <div className="w-full max-w-full mx-auto px-1 md:px-2 py-2">
-        {/* V1.9.507 — Header limpo (feedback Ricardo 30/05):
-            - Search migrou pro sidebar de pacientes (proximo da lista)
-            - Specialty/Clinic colapsaveis em "▾ Filtros" (default fechado)
-            - Sala 1/2/3 removido (era mock hardcoded)
-            - Novo Paciente fica destacado sem competir com filtros */}
+        {/* V1.9.508 — Header ultra-limpo (feedback Pedro 30/05 03h43):
+            Specialty/Clinic filtros removidos completamente — Pedro validou empiricamente
+            que admin (ve todos via RLS) + medico (ve so dele via RLS) + search por nome no
+            sidebar cobre 100% dos casos de uso. Filtros eram overhead visual zero-utilidade.
+            Header agora: ← .......... [+ Novo Paciente] */}
         {!detailOnly && (
           <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl p-3 mb-3 border border-slate-700/50">
             <div className="flex items-center gap-2">
@@ -1496,17 +1424,6 @@ const PatientsManagement: React.FC<PatientsManagementProps> = ({ embedded = fals
                 title="Voltar"
               >
                 <ArrowLeft className="w-4 h-4 text-white" />
-              </button>
-
-              <button
-                onClick={() => setShowFilters(prev => !prev)}
-                className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-700/60 hover:bg-slate-700 border border-slate-600 rounded-lg text-slate-300 hover:text-white text-sm font-medium transition-colors"
-                title="Filtros avançados"
-                aria-expanded={showFilters}
-              >
-                <Filter className="w-3.5 h-3.5" />
-                <span>Filtros</span>
-                <ChevronDown className={`w-3.5 h-3.5 transition-transform ${showFilters ? 'rotate-180' : ''}`} />
               </button>
 
               <div className="flex-1" />
@@ -1524,31 +1441,6 @@ const PatientsManagement: React.FC<PatientsManagementProps> = ({ embedded = fals
                 {/* V1.9.440-A — dropdown movido pra Portal global (fim do return) */}
               </div>
             </div>
-
-            {showFilters && (
-              <div className="mt-3 pt-3 border-t border-slate-700/50 grid grid-cols-1 md:grid-cols-2 gap-2 animate-in fade-in slide-in-from-top-2 duration-200">
-                <select
-                  value={selectedSpecialty}
-                  onChange={(e) => setSelectedSpecialty(e.target.value)}
-                  className="px-3 py-1.5 bg-slate-700 border border-slate-600 rounded-lg text-white text-sm focus:outline-none focus:border-blue-500 transition-colors"
-                >
-                  <option value="all">Todas as Especialidades</option>
-                  {specialties.map(spec => (
-                    <option key={spec.id} value={spec.id}>{spec.name}</option>
-                  ))}
-                </select>
-
-                <select
-                  value={selectedClinic}
-                  onChange={(e) => setSelectedClinic(e.target.value)}
-                  className="px-3 py-1.5 bg-slate-700 border border-slate-600 rounded-lg text-white text-sm focus:outline-none focus:border-blue-500 transition-colors"
-                >
-                  {clinics.map(clinic => (
-                    <option key={clinic.id} value={clinic.id}>{clinic.name}</option>
-                  ))}
-                </select>
-              </div>
-            )}
           </div>
         )}
 
