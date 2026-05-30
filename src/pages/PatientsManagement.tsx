@@ -1455,14 +1455,15 @@ const PatientsManagement: React.FC<PatientsManagementProps> = ({ embedded = fals
                     <button
                       ref={newPatientBtnRef}
                       onClick={() => setShowNewPatientMenu(!showNewPatientMenu)}
-                      className="flex items-center justify-center gap-1 px-2.5 py-1.5 bg-gradient-to-r from-blue-500 to-cyan-500 text-white rounded-lg hover:from-blue-600 hover:to-cyan-600 transition-all hover:scale-[1.02] text-xs font-semibold shadow-md shadow-blue-900/30"
+                      className="flex items-center justify-center gap-1 px-2.5 py-1.5 bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 hover:bg-emerald-500/30 rounded-lg transition-colors text-xs font-semibold"
                       title="Cadastrar novo paciente"
                       type="button"
                     >
                       <UserPlus className="w-3.5 h-3.5" />
                       <span className="hidden sm:inline">Novo</span>
                     </button>
-                    {/* V1.9.440-A — dropdown movido pra Portal global (fim do return) */}
+                    {/* V1.9.440-A — dropdown movido pra Portal global (fim do return).
+                        V1.9.512: cor alinhada com paleta dark/glass V1.9.510 (era gradient azul-cyan fora do padrao). */}
                   </div>
                 </div>
                 {/* V1.9.507 — Search migrou do header pro topo do sidebar (UX Notion/Linear style).
