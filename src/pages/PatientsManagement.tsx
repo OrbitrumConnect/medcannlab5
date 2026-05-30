@@ -43,6 +43,7 @@ import {
   Sparkles,
   Link2,
   ChevronDown,
+  Filter,          // V1.9.507 — botão "Filtros" colapsável no header
   Stethoscope,    // V1.9.487 Camada 1.5 — evoluções escritas pelo médico (FOLLOW_UP)
   MessageCircle   // V1.9.487 Camada 1.5 — chat IA paciente↔Nôa (chat_interaction)
 } from 'lucide-react'
@@ -339,7 +340,9 @@ const PatientsManagement: React.FC<PatientsManagementProps> = ({ embedded = fals
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedSpecialty, setSelectedSpecialty] = useState<string>('all')
   const [selectedClinic, setSelectedClinic] = useState<string>('all')
-  const [selectedRoom, setSelectedRoom] = useState<string>('indifferent')
+  // V1.9.507 — filtros colapsaveis no header (feedback Ricardo 30/05).
+  // selectedRoom removido junto com filtro Sala 1/2/3 (era 100% mock hardcoded).
+  const [showFilters, setShowFilters] = useState<boolean>(false)
   const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null)
   // V1.9.462 — toggle lista pacientes no mobile (Pedro 27/05: "lista pacientes
   // no mobile precisa ser dropdown pois ocupa mto espaço tbm")
@@ -668,12 +671,7 @@ const PatientsManagement: React.FC<PatientsManagementProps> = ({ embedded = fals
     }
   }, [user])
 
-  const rooms = [
-    { id: 'indifferent', name: 'Indiferente' },
-    { id: 'room-1', name: 'Sala 1' },
-    { id: 'room-2', name: 'Sala 2' },
-    { id: 'room-3', name: 'Sala 3' }
-  ]
+  // V1.9.507 — rooms removido (era mock Sala 1/2/3 hardcoded sem uso real)
 
   // Carregar pacientes reais do Supabase
   useEffect(() => {
@@ -1289,13 +1287,8 @@ const PatientsManagement: React.FC<PatientsManagementProps> = ({ embedded = fals
       }
     }
 
-    // 4. Filtro de Sala
-    if (selectedRoom !== 'indifferent') {
-      const roomNum = selectedRoom.split('-')[1] // '1' de 'room-1'
-      if (!patient.room.toLowerCase().includes(roomNum)) {
-        return false
-      }
-    }
+    // V1.9.507 — Filtro de Sala removido (era mock Sala 1/2/3 hardcoded).
+    // Reativar quando consultório fisico tiver salas reais com identificador.
 
     return true
   })
@@ -1489,33 +1482,51 @@ const PatientsManagement: React.FC<PatientsManagementProps> = ({ embedded = fals
         </div>
       )}
       <div className="w-full max-w-full mx-auto px-1 md:px-2 py-2">
-        {/* V1.9.119-G: Filters Bar compactado (era p-6 mb-4 → p-3 mb-3) */}
+        {/* V1.9.507 — Header limpo (feedback Ricardo 30/05):
+            - Search migrou pro sidebar de pacientes (proximo da lista)
+            - Specialty/Clinic colapsaveis em "▾ Filtros" (default fechado)
+            - Sala 1/2/3 removido (era mock hardcoded)
+            - Novo Paciente fica destacado sem competir com filtros */}
         {!detailOnly && (
           <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl p-3 mb-3 border border-slate-700/50">
-            {/* V1.9.280: linha única — back + filtros + Novo Paciente todos na mesma altura. Removido h2 "Filtros de Busca" (redundante). */}
-            <div className="flex flex-col md:flex-row md:items-center gap-2">
+            <div className="flex items-center gap-2">
               <button
                 onClick={handleBack}
-                className="self-start md:self-auto p-1.5 hover:bg-slate-700 rounded-lg transition-all hover:scale-105 shrink-0"
+                className="p-1.5 hover:bg-slate-700 rounded-lg transition-all hover:scale-105 shrink-0"
                 title="Voltar"
               >
                 <ArrowLeft className="w-4 h-4 text-white" />
               </button>
 
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-2 flex-1 min-w-0">
-                {/* Search */}
-                <div className="relative">
-                  <Search className="absolute left-2.5 top-1/2 transform -translate-y-1/2 text-slate-400 w-4 h-4" />
-                  <input
-                    type="text"
-                    placeholder="Buscar por nome, CPF ou código..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full pl-9 pr-3 py-1.5 bg-slate-700 border border-slate-600 rounded-lg text-white text-sm placeholder-slate-400 focus:outline-none focus:border-blue-500 transition-colors"
-                  />
-                </div>
+              <button
+                onClick={() => setShowFilters(prev => !prev)}
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-700/60 hover:bg-slate-700 border border-slate-600 rounded-lg text-slate-300 hover:text-white text-sm font-medium transition-colors"
+                title="Filtros avançados"
+                aria-expanded={showFilters}
+              >
+                <Filter className="w-3.5 h-3.5" />
+                <span>Filtros</span>
+                <ChevronDown className={`w-3.5 h-3.5 transition-transform ${showFilters ? 'rotate-180' : ''}`} />
+              </button>
 
-                {/* Specialty Filter */}
+              <div className="flex-1" />
+
+              <div className="new-patient-menu-container shrink-0">
+                <button
+                  ref={newPatientBtnRef}
+                  onClick={() => setShowNewPatientMenu(!showNewPatientMenu)}
+                  className="flex items-center justify-center gap-1.5 px-4 py-2 bg-gradient-to-r from-blue-500 to-cyan-500 text-white rounded-lg hover:from-blue-600 hover:to-cyan-600 transition-all hover:scale-[1.02] text-sm font-semibold shadow-lg shadow-blue-900/30"
+                  title="Cadastrar novo paciente"
+                >
+                  <UserPlus className="w-4 h-4" />
+                  <span>Novo Paciente</span>
+                </button>
+                {/* V1.9.440-A — dropdown movido pra Portal global (fim do return) */}
+              </div>
+            </div>
+
+            {showFilters && (
+              <div className="mt-3 pt-3 border-t border-slate-700/50 grid grid-cols-1 md:grid-cols-2 gap-2 animate-in fade-in slide-in-from-top-2 duration-200">
                 <select
                   value={selectedSpecialty}
                   onChange={(e) => setSelectedSpecialty(e.target.value)}
@@ -1527,7 +1538,6 @@ const PatientsManagement: React.FC<PatientsManagementProps> = ({ embedded = fals
                   ))}
                 </select>
 
-                {/* Clinic Filter */}
                 <select
                   value={selectedClinic}
                   onChange={(e) => setSelectedClinic(e.target.value)}
@@ -1537,32 +1547,8 @@ const PatientsManagement: React.FC<PatientsManagementProps> = ({ embedded = fals
                     <option key={clinic.id} value={clinic.id}>{clinic.name}</option>
                   ))}
                 </select>
-
-                {/* Room Filter */}
-                <select
-                  value={selectedRoom}
-                  onChange={(e) => setSelectedRoom(e.target.value)}
-                  className="px-3 py-1.5 bg-slate-700 border border-slate-600 rounded-lg text-white text-sm focus:outline-none focus:border-blue-500 transition-colors"
-                >
-                  {rooms.map(room => (
-                    <option key={room.id} value={room.id}>{room.name}</option>
-                  ))}
-                </select>
               </div>
-
-              <div className="new-patient-menu-container shrink-0">
-                <button
-                  ref={newPatientBtnRef}
-                  onClick={() => setShowNewPatientMenu(!showNewPatientMenu)}
-                  className="w-full md:w-auto flex items-center justify-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-blue-500 to-cyan-500 text-white rounded-lg hover:from-blue-600 hover:to-cyan-600 transition-all hover:scale-[1.02] text-sm font-medium shadow-md shadow-blue-900/20"
-                  title="Cadastrar novo paciente"
-                >
-                  <UserPlus className="w-4 h-4" />
-                  <span>Novo Paciente</span>
-                </button>
-                {/* V1.9.440-A — dropdown movido pra Portal global (fim do return) */}
-              </div>
-            </div>
+            )}
           </div>
         )}
 
@@ -1594,9 +1580,23 @@ const PatientsManagement: React.FC<PatientsManagementProps> = ({ embedded = fals
                     className={`w-4 h-4 text-slate-400 transition-transform lg:hidden flex-shrink-0 ${showPatientListMobile ? 'rotate-180' : ''}`}
                   />
                 </button>
+                {/* V1.9.507 — Search migrou do header pro topo do sidebar (UX Notion/Linear style).
+                    Fica colado na lista filtravel, sempre visivel em desktop, dentro do collapse em mobile. */}
+                <div className={`p-2 border-b border-slate-700/50 ${showPatientListMobile ? '' : 'hidden lg:block'}`}>
+                  <div className="relative">
+                    <Search className="absolute left-2.5 top-1/2 transform -translate-y-1/2 text-slate-400 w-4 h-4" />
+                    <input
+                      type="text"
+                      placeholder="Buscar paciente..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="w-full pl-9 pr-3 py-1.5 bg-slate-900/60 border border-slate-700 rounded-lg text-white text-sm placeholder-slate-500 focus:outline-none focus:border-blue-500 transition-colors"
+                    />
+                  </div>
+                </div>
                 <div
                   id="patient-list-collapsible"
-                  className={`max-h-[calc(100vh-300px)] overflow-y-auto ${showPatientListMobile ? '' : 'hidden lg:block'}`}
+                  className={`max-h-[calc(100vh-360px)] overflow-y-auto ${showPatientListMobile ? '' : 'hidden lg:block'}`}
                 >
                   {loading ? (
                     <div className="p-4 text-center text-slate-400">
