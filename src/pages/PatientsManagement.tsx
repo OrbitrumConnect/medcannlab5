@@ -1410,68 +1410,61 @@ const PatientsManagement: React.FC<PatientsManagementProps> = ({ embedded = fals
         </div>
       )}
       <div className="w-full max-w-full mx-auto px-1 md:px-2 py-2">
-        {/* V1.9.508 — Header ultra-limpo (feedback Pedro 30/05 03h43):
-            Specialty/Clinic filtros removidos completamente — Pedro validou empiricamente
-            que admin (ve todos via RLS) + medico (ve so dele via RLS) + search por nome no
-            sidebar cobre 100% dos casos de uso. Filtros eram overhead visual zero-utilidade.
-            Header agora: ← .......... [+ Novo Paciente] */}
-        {!detailOnly && (
-          <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl p-3 mb-3 border border-slate-700/50">
-            <div className="flex items-center gap-2">
-              <button
-                onClick={handleBack}
-                className="p-1.5 hover:bg-slate-700 rounded-lg transition-all hover:scale-105 shrink-0"
-                title="Voltar"
-              >
-                <ArrowLeft className="w-4 h-4 text-white" />
-              </button>
-
-              <div className="flex-1" />
-
-              <div className="new-patient-menu-container shrink-0">
-                <button
-                  ref={newPatientBtnRef}
-                  onClick={() => setShowNewPatientMenu(!showNewPatientMenu)}
-                  className="flex items-center justify-center gap-1.5 px-4 py-2 bg-gradient-to-r from-blue-500 to-cyan-500 text-white rounded-lg hover:from-blue-600 hover:to-cyan-600 transition-all hover:scale-[1.02] text-sm font-semibold shadow-lg shadow-blue-900/30"
-                  title="Cadastrar novo paciente"
-                >
-                  <UserPlus className="w-4 h-4" />
-                  <span>Novo Paciente</span>
-                </button>
-                {/* V1.9.440-A — dropdown movido pra Portal global (fim do return) */}
-              </div>
-            </div>
-          </div>
-        )}
+        {/* V1.9.509 — Header superior eliminado (feedback Pedro 30/05 03h54):
+            Botoes Voltar + Novo Paciente migraram pro header do sidebar de pacientes.
+            Sem mais barra superior ocupando espaco vertical com botao solto. */}
 
         <div className={`grid grid-cols-1 gap-4 ${detailOnly ? 'lg:grid-cols-1' : 'lg:grid-cols-5'}`}>
           {/* Patients List - oculto no modo detailOnly */}
           {!detailOnly && (
             <div className="lg:col-span-1">
               <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl border border-slate-700/50">
-                {/* V1.9.119-G: header compacto + contador inline (era 2 linhas)
-                    V1.9.462: header vira BOTÃO TOGGLE no mobile (lg:cursor-default lg:pointer-events-none).
-                    Mobile clica → expand/collapse lista. Desktop sempre aberto. */}
-                <button
-                  type="button"
-                  onClick={() => setShowPatientListMobile(prev => !prev)}
-                  className="w-full p-3 border-b border-slate-700 flex items-center justify-between gap-2 hover:bg-slate-800/40 lg:hover:bg-transparent transition-colors lg:cursor-default"
-                  aria-expanded={showPatientListMobile}
-                  aria-controls="patient-list-collapsible"
-                >
-                  <div className="flex items-center gap-2 min-w-0">
+                {/* V1.9.509 — Header sidebar absorveu Voltar + Novo Paciente (feedback Pedro 30/05).
+                    Substituiu o <button toggle> por <div> com 3 elementos clicaveis (HTML valido).
+                    Mobile mantem toggle expand/collapse via tap no titulo.
+                    V1.9.119-G: header compacto + contador inline preservado. */}
+                <div className="w-full p-2 border-b border-slate-700 flex items-center gap-2">
+                  <button
+                    onClick={handleBack}
+                    className="p-1.5 hover:bg-slate-700 rounded-lg transition-all hover:scale-105 shrink-0"
+                    title="Voltar"
+                    type="button"
+                  >
+                    <ArrowLeft className="w-4 h-4 text-white" />
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setShowPatientListMobile(prev => !prev)}
+                    className="flex-1 min-w-0 flex items-center gap-2 px-1.5 py-1 hover:bg-slate-800/40 lg:hover:bg-transparent rounded transition-colors lg:cursor-default"
+                    aria-expanded={showPatientListMobile}
+                    aria-controls="patient-list-collapsible"
+                  >
                     <h3 className="text-sm font-semibold text-white truncate">
                       {selectedPatient ? selectedPatient.name : 'Pacientes Ativos'}
                     </h3>
                     <span className="text-xs text-slate-400 bg-slate-900/60 px-2 py-0.5 rounded-md font-mono flex-shrink-0">
                       {filteredPatients.length}/{patients.length}
                     </span>
+                    <ChevronDown
+                      className={`w-4 h-4 text-slate-400 transition-transform lg:hidden flex-shrink-0 ml-auto ${showPatientListMobile ? 'rotate-180' : ''}`}
+                    />
+                  </button>
+
+                  <div className="new-patient-menu-container shrink-0">
+                    <button
+                      ref={newPatientBtnRef}
+                      onClick={() => setShowNewPatientMenu(!showNewPatientMenu)}
+                      className="flex items-center justify-center gap-1 px-2.5 py-1.5 bg-gradient-to-r from-blue-500 to-cyan-500 text-white rounded-lg hover:from-blue-600 hover:to-cyan-600 transition-all hover:scale-[1.02] text-xs font-semibold shadow-md shadow-blue-900/30"
+                      title="Cadastrar novo paciente"
+                      type="button"
+                    >
+                      <UserPlus className="w-3.5 h-3.5" />
+                      <span className="hidden sm:inline">Novo</span>
+                    </button>
+                    {/* V1.9.440-A — dropdown movido pra Portal global (fim do return) */}
                   </div>
-                  {/* Chevron só visível no mobile (lg:hidden) — desktop não tem toggle */}
-                  <ChevronDown
-                    className={`w-4 h-4 text-slate-400 transition-transform lg:hidden flex-shrink-0 ${showPatientListMobile ? 'rotate-180' : ''}`}
-                  />
-                </button>
+                </div>
                 {/* V1.9.507 — Search migrou do header pro topo do sidebar (UX Notion/Linear style).
                     Fica colado na lista filtravel, sempre visivel em desktop, dentro do collapse em mobile. */}
                 <div className={`p-2 border-b border-slate-700/50 ${showPatientListMobile ? '' : 'hidden lg:block'}`}>
