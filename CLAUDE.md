@@ -221,33 +221,43 @@ Memórias completas: `audit_pendencias_um_mes_pos_pbad_20_05.md` (Sprint 1) + me
 | Origem histórica | App nasceu na **Lovable** (no-code), CORS de send-email permite `*.lovable.app` |
 | Repos | hub (`amigo-connect-hub`) + origin (`medcannlab5`) |
 
-## Edge Functions (14 ativas — atualizado 26/05 pós-V1.9.455 audit Management API)
+## Edge Functions (14 ativas — atualizado 30/05 pós V1.9.506+517+518+519 verify_jwt restorations)
 
 ```
 🟢 CORE / FUNCIONAIS
-  tradevision-core              v415  Core IA Nôa principal (6697 linhas)
-  digital-signature             v65   Assinatura digital ICP-Brasil/CFM (3 levels)
-  sign-pdf-icp                  v18   PBAD AD-RB ICP-Brasil CONFORME ITI (V1.9.299 LOCK)
-  cert-encrypt-password         v3    Cripto password p/ cert ICP do médico
-  wisecare-session              v78   Provedor vídeo V4H (HOMOLOG, migrar)
-  extract-document-text         v59   OCR via pdfjs-serverless
-  send-email                    v59   Resend
-  video-call-request-notification v59
-  video-call-reminders          v28   Sweep mode + cron 5min + Resend (V1.9.99-B)
-  generate-nft-from-report      v3    NFT consent peça-a-peça (V1.9.311)
-  renal-signal-extractor        v1    Sidecar renal DRC (V1.9.307)
-  get_chat_history              v8    ⚠️ Slug snake_case (≠ kebab), audit 26/05 — caller a investigar
+  tradevision-core              v424  Core IA Nôa principal (~7765 linhas) [verify_jwt=true V1.9.506 30/05]
+  digital-signature             v68   Assinatura digital ICP-Brasil/CFM (3 levels)
+  sign-pdf-icp                  v22   PBAD AD-RB ICP-Brasil CONFORME ITI (V1.9.299 LOCK + V1.9.457 auth+ownership)
+  cert-encrypt-password         v6    Cripto password p/ cert ICP do médico
+  wisecare-session              v81   Provedor vídeo V4H (HOMOLOG, migrar)
+  extract-document-text         v62   OCR via pdfjs-serverless [verify_jwt=true]
+  send-email                    v62   Resend [verify_jwt=true]
+  video-call-request-notification v62
+  video-call-reminders          v31   Sweep mode + cron 5min + Resend (V1.9.99-B)
+  generate-nft-from-report      v6    NFT consent peça-a-peça (V1.9.311)
+  renal-signal-extractor        v4    Sidecar renal DRC (V1.9.307)
 
-💤 FEATURE DORMINDO COMPLETA (Google Calendar integration) — audit 18/05
-  google-auth                   v26   ← Edge OAuth Google (tabelas existem agora, vazias)
-  sync-gcal                     v26   ← Edge cron (tabelas existem agora, vazias)
-                                  Schemas professional_integrations + integration_jobs
-                                  criados V1.9.99-B (28/04). 0 rows, 0 callers
-                                  frontend/backend. Reativar requer só chamadas
-                                  frontend. Decisão Pedro 18/05: manter intocado
-                                  (drift dev pré-PMF aceitável). NÃO é mais
-                                  "half-implemented" strict.
+⚠️ EM OBSERVAÇÃO 48h (flip verify_jwt false→true em 30/05, decisão hard-delete 01/jun)
+  get_chat_history              v8    [V1.9.517] snake_case órfã, audit confirmou 0 callers HOJE.
+                                       Criada 21/jan/2026 (9d DEPOIS do core), v8 = 7 updates
+                                       em 5m = uso histórico real virou órfão pós-refator.
+                                       Body = GET-only ai_chat_interactions filtrado user.id.
+                                       Smoke 2/2 PASS pós-flip (sem JWT 401, JWT inválido 401).
+  google-auth                   v29   [V1.9.518] Edge OAuth Google dormindo desde V1.9.99-B
+                                       (28/04). professional_integrations 0 rows. Smoke 2/2 PASS.
+  sync-gcal                     v29   [V1.9.519] Edge cron Google Calendar dormindo desde V1.9.99-B.
+                                       integration_jobs 0 rows. Smoke 2/2 PASS.
+
+                                       Decisão hard-delete (V1.9.520+521+522) em 01/jun segunda
+                                       ~15h BRT: se zero 401 inesperado em Supabase Functions
+                                       panel → autoriza delete em batch. Se aparecer 401 com
+                                       user_agent identificado → investigar caller + decidir
+                                       restaurar (PATCH false em 30s) OU comunicar antes.
 ```
+
+**Total Edges com `verify_jwt=true`**: 6 — tradevision-core, extract-document-text, send-email, get_chat_history, google-auth, sync-gcal.
+
+**Total Edges com `verify_jwt=false`**: 8 — todas com justificativa funcional (webhook público / cron-only / cross-Edge interno).
 
 *Cleanup 28/04 ~10h45*: Edge `video-call-request-notification-` (v23, duplicata com hífen) deletada. Backup em `.backups/`. Trigger duplicado `trg_handle_new_auth_user` em auth.users dropado. Edge `video-call-reminders` v52 deletada (P9) → reintroduzida elite v53/v3 com sweep mode + cron + Resend.
 
