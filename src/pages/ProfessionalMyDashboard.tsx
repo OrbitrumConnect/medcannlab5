@@ -38,6 +38,10 @@ import ProfessionalSchedulingWidget from '../components/ProfessionalSchedulingWi
 import ProfessionalChatSystem from '../components/ProfessionalChatSystem'
 import RenalSuggestionsCard from '../components/RenalSuggestionsCard'
 import NeuroSuggestionsCardPlaceholder from '../components/NeuroSuggestionsCardPlaceholder'
+// V1.9.515 (Pedro 30/05) — Fix: card AECs Interrompidas estava em ProfessionalDashboard.tsx
+// LEGACY (nunca renderizado pq ProfessionalDashboardRouter aponta sempre pra
+// ProfessionalMyDashboard). Movido pra cá após bloco Sidecars Cognitivos.
+import { InterruptedAECsCard } from '../components/InterruptedAECsCard'
 import Prescriptions from './Prescriptions'
 
 const ProfessionalMyDashboard: React.FC = () => {
@@ -976,7 +980,27 @@ const ProfessionalMyDashboard: React.FC = () => {
           </div>
         </div>
 
-        {/* Overlay Scanner verde (Matrix) — paciente “scaneado” no centro (avatar ou inicial) */}
+        {/* V1.9.515 (Pedro 30/05) — AECs Interrompidas órfãs (Sprint A V1.9.500
+            entregou o card mas em ProfessionalDashboard.tsx LEGACY que nunca
+            renderiza — bug detectado empíricamente via screenshot 30/05 ~12h57).
+            Bloco semanticamente irmão do Sidecars Cognitivos: ambos são alertas
+            de decisão clínica pendente do médico. RLS: admin vê todas as 4
+            órfãs empíricas (Pedro 0.5d / João Eduardo 4.8d / Thiago 25.5d /
+            Solange 33.1d em 30/05). Médico decide: invalidate(reason) OU markComplete. */}
+        <div className="mb-6 rounded-2xl border border-slate-700/30 bg-gradient-to-br from-slate-900/40 via-amber-950/5 to-slate-900/40 p-4">
+          <div className="flex items-center gap-2 mb-3">
+            <AlertCircle className="w-3.5 h-3.5 text-slate-400" />
+            <h3 className="text-[11px] font-semibold text-slate-300 uppercase tracking-wide">
+              Governança Clínica
+            </h3>
+            <span className="text-[10px] text-slate-500">
+              · AECs interrompidas aguardando decisão
+            </span>
+          </div>
+          <InterruptedAECsCard />
+        </div>
+
+        {/* Overlay Scanner verde (Matrix) — paciente "scaneado" no centro (avatar ou inicial) */}
         {analysisScanning && selectedPatientForAnalysis && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm">
             <div className="relative w-72 h-56 rounded-2xl border-2 border-emerald-500/50 overflow-hidden bg-slate-900/95 flex flex-col items-center justify-center">

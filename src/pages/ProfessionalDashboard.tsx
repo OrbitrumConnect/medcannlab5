@@ -26,9 +26,12 @@ import { IncentivosPanel } from '../components/IncentivosPanel'
 
 import { ProfessionalStats } from '../components/dashboard/professional/ProfessionalStats'
 import { ProfessionalPatientSearch } from '../components/dashboard/professional/ProfessionalPatientSearch'
-// V1.9.500 (Pedro 29/05) — card AECs Interrompidas no dashboard profissional.
-// 4 órfãs reais empíricamente em 29/05 (joao eduardo 4d / Pedro 7d / Thiago 24d /
-// Solange 32d). Médico decide: invalidar com motivo OR marcar concluída.
+// V1.9.500 (Pedro 29/05) — card AECs Interrompidas. ATENÇÃO: este componente
+// (ProfessionalDashboard.tsx) é LEGACY e NÃO É renderizado em produção desde
+// que ProfessionalDashboardRouter aponta sempre pra ProfessionalMyDashboard.
+// V1.9.515 (Pedro 30/05) moveu o card pra ProfessionalMyDashboard.tsx (ativo).
+// Mantido aqui apenas pra trace de origem. Se deletar este arquivo no futuro,
+// validar antes que NENHUMA rota o usa: grep "from.*ProfessionalDashboard'" src/
 import { InterruptedAECsCard } from '../components/InterruptedAECsCard'
 
 const ProfessionalDashboard: React.FC = () => {
