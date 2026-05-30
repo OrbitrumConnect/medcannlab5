@@ -1066,43 +1066,46 @@ const AlunoDashboard: React.FC = () => {
                     com ícone emerald sutil. Fórum mantém amber suave como único accent
                     secundário (módulo de natureza diferente: comunidade vs estudo).
                   */}
-                  <div className="grid grid-cols-3 gap-2 md:flex md:flex-wrap md:gap-3">
+                  {/* V1.9.514 (Pedro 30/05 04h25) — grid responsivo previsivel substitui
+                      flex-wrap que causava orfaos no desktop. Mobile 3 cols, tablet 3 cols
+                      (texto cabe limpo), desktop 6 cols (1 linha alinhada). */}
+                  <div className="grid grid-cols-3 lg:grid-cols-6 gap-2 md:gap-3">
                     {/* Estudar Curso (ação primária do dia) */}
                     <button
                       onClick={() => mainCourse?.id && navigate(`/app/courses/${mainCourse.id}`)}
                       title="Continuar estudando o curso ativo"
                       aria-label="Estudar curso ativo"
-                      className="flex flex-col items-center justify-center gap-1 aspect-[5/4] md:aspect-auto md:flex-row md:gap-2 md:px-5 md:py-3 bg-emerald-500/10 text-emerald-300 hover:bg-emerald-500/20 border border-emerald-500/30 rounded-xl text-[11px] leading-tight md:text-base font-medium transition-colors text-center md:text-left"
+                      className="flex flex-col items-center justify-center gap-1 aspect-[5/4] lg:aspect-auto lg:py-3 lg:px-3 bg-emerald-500/10 text-emerald-300 hover:bg-emerald-500/20 border border-emerald-500/30 rounded-xl text-[11px] leading-tight lg:text-sm font-medium transition-colors text-center"
                     >
                       <GraduationCap className="w-5 h-5" />
-                      <span>Estudar<br className="md:hidden" /> Curso</span>
+                      <span>Estudar<br className="lg:hidden" /> Curso</span>
                     </button>
                     {/* Simulação Clínica */}
                     <button
                       onClick={() => setActiveTab('simulacoes')}
                       title="Simulação clínica com pacientes virtuais"
                       aria-label="Simulação clínica"
-                      className="flex flex-col items-center justify-center gap-1 aspect-[5/4] md:aspect-auto md:flex-row md:gap-2 md:px-5 md:py-3 bg-slate-800/40 text-slate-200 hover:bg-slate-700/60 border border-slate-700/50 rounded-xl text-[11px] leading-tight md:text-base font-medium transition-colors text-center md:text-left"
+                      className="flex flex-col items-center justify-center gap-1 aspect-[5/4] lg:aspect-auto lg:py-3 lg:px-3 bg-slate-800/40 text-slate-200 hover:bg-slate-700/60 border border-slate-700/50 rounded-xl text-[11px] leading-tight lg:text-sm font-medium transition-colors text-center"
                     >
                       <Stethoscope className="w-5 h-5 text-emerald-400" />
-                      <span>Simulação<br className="md:hidden" /> Clínica</span>
+                      <span>Simulação<br className="lg:hidden" /> Clínica</span>
                     </button>
                     {/* Teste de Nivelamento */}
                     <button
                       onClick={() => setActiveTab('teste')}
                       title="Teste de nivelamento adaptativo (20 questões)"
                       aria-label="Teste de nivelamento"
-                      className="flex flex-col items-center justify-center gap-1 aspect-[5/4] md:aspect-auto md:flex-row md:gap-2 md:px-5 md:py-3 bg-slate-800/40 text-slate-200 hover:bg-slate-700/60 border border-slate-700/50 rounded-xl text-[11px] leading-tight md:text-base font-medium transition-colors text-center md:text-left"
+                      className="flex flex-col items-center justify-center gap-1 aspect-[5/4] lg:aspect-auto lg:py-3 lg:px-3 bg-slate-800/40 text-slate-200 hover:bg-slate-700/60 border border-slate-700/50 rounded-xl text-[11px] leading-tight lg:text-sm font-medium transition-colors text-center"
                     >
                       <Trophy className="w-5 h-5 text-emerald-400" />
-                      <span>Teste<br className="md:hidden" /> Nivelamento</span>
+                      <span>Teste<br className="lg:hidden" /> Nivelamento</span>
                     </button>
                     {/* Biblioteca */}
                     <button
                       onClick={() => setActiveTab('biblioteca')}
                       title="Biblioteca de materiais do curso"
                       aria-label="Biblioteca"
-                      className="flex flex-col items-center justify-center gap-1 aspect-[5/4] md:aspect-auto md:flex-row md:gap-2 md:px-5 md:py-3 bg-slate-800/40 text-slate-200 hover:bg-slate-700/60 border border-slate-700/50 rounded-xl text-[11px] leading-tight md:text-base font-medium transition-colors text-center md:text-left"
+                      className="flex flex-col items-center justify-center gap-1 aspect-[5/4] lg:aspect-auto lg:py-3 lg:px-3 bg-slate-800/40 text-slate-200 hover:bg-slate-700/60 border border-slate-700/50 rounded-xl text-[11px] leading-tight lg:text-sm font-medium transition-colors text-center"
                     >
                       <BookOpen className="w-5 h-5 text-emerald-400" />
                       <span>Biblioteca</span>
@@ -1112,20 +1115,20 @@ const AlunoDashboard: React.FC = () => {
                       onClick={() => setActiveTab('forum')}
                       title="Fórum de discussão entre alunos"
                       aria-label="Fórum aluno"
-                      className="flex flex-col items-center justify-center gap-1 aspect-[5/4] md:aspect-auto md:flex-row md:gap-2 md:px-5 md:py-3 bg-amber-500/5 text-amber-300/90 hover:bg-amber-500/10 border border-amber-500/20 rounded-xl text-[11px] leading-tight md:text-base font-medium transition-colors text-center md:text-left"
+                      className="flex flex-col items-center justify-center gap-1 aspect-[5/4] lg:aspect-auto lg:py-3 lg:px-3 bg-amber-500/5 text-amber-300/90 hover:bg-amber-500/10 border border-amber-500/20 rounded-xl text-[11px] leading-tight lg:text-sm font-medium transition-colors text-center"
                     >
                       <MessageCircle className="w-5 h-5" />
-                      <span>Fórum<br className="md:hidden" /> Aluno</span>
+                      <span>Fórum<br className="lg:hidden" /> Aluno</span>
                     </button>
                     {/* Meu Perfil */}
                     <button
                       onClick={() => setActiveTab('perfil')}
                       title="Meu perfil + certificações"
                       aria-label="Meu perfil"
-                      className="flex flex-col items-center justify-center gap-1 aspect-[5/4] md:aspect-auto md:flex-row md:gap-2 md:px-5 md:py-3 bg-slate-800/40 text-slate-200 hover:bg-slate-700/60 border border-slate-700/50 rounded-xl text-[11px] leading-tight md:text-base font-medium transition-colors text-center md:text-left"
+                      className="flex flex-col items-center justify-center gap-1 aspect-[5/4] lg:aspect-auto lg:py-3 lg:px-3 bg-slate-800/40 text-slate-200 hover:bg-slate-700/60 border border-slate-700/50 rounded-xl text-[11px] leading-tight lg:text-sm font-medium transition-colors text-center"
                     >
                       <User className="w-5 h-5 text-emerald-400" />
-                      <span>Meu<br className="md:hidden" /> Perfil</span>
+                      <span>Meu<br className="lg:hidden" /> Perfil</span>
                     </button>
                   </div>
                 </div>
