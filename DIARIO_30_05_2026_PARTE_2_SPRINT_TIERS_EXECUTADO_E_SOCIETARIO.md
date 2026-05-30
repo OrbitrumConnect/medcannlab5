@@ -534,9 +534,90 @@ verify_jwt=false: 1 Edge  (sign-pdf-icp v22 parqueado)
 
 ---
 
+## 📞 BLOCO K — V1.9.527 + V1.9.528 Triggers notification pattern universal "infra existe mas conexão quebrou" (~60min total)
+
+**Commits**: `21ab4c9` (V1.9.527) + `3fd8827` (V1.9.528 + cross-sync 14 memórias docs/memorias/). **Tempo**: ~60min total incluindo investigação empírica.
+
+### K.1 — Trigger universal cristalizado HOJE (3 entregas mesmo template)
+
+Pattern detectado empíricamente: tabelas ATIVAS em produção MAS notifications correlatas PARARAM em algum refator não-documentado.
+
+| Versão | Tabela alvo | Notification | Gap detectado |
+|---|---|---|---|
+| V1.9.527 | `video_call_requests` (255 rows) | `video_call_request` (parou 18/05) | 9 dias |
+| V1.9.528 | `clinical_reports` signed (54 rows/30d) | `new_clinical_report` (parou 14/nov) | **6 MESES** |
+| V1.9.529 | `appointments` (32 rows/30d) | `appointment_created` (sempre 0) | PARQUEADO (complexo) |
+
+### K.2 — V1.9.527 video_call_requests (~35min)
+
+Já documentado em [BLOCO J](#) acima — trigger pg AFTER INSERT reusa RPC `create_video_call_notification` existente. Smoke 100% PASS empírico (Pedro admin → Pedro Paciente, latência <1ms). Cleanup pós-validação. Edge `video-call-request-notification` (V1.9.525) continua parqueada batch hard-delete 01/jun (trigger NÃO chama Edge).
+
+### K.3 — V1.9.528 clinical_reports signed (~25min, incluindo fix V2)
+
+**Migration**: [supabase/migrations/20260530200000_v1_9_528_clinical_report_signed_notification.sql](supabase/migrations/20260530200000_v1_9_528_clinical_report_signed_notification.sql)
+
+**Função `tg_clinical_report_signed_notify()`** SECURITY DEFINER:
+- 2 triggers: AFTER INSERT (cobre report criado JÁ signed) + AFTER UPDATE OF signed_at (caso dominante empírico = médico assina report previamente unsigned)
+- WHEN: transição NULL → NOT NULL em signed_at (mesma lógica `ns_track_aec_finalized` que COEXISTE — esse track metrics, este cria notification user-facing)
+- INSERT direto em `notifications` (sem RPC — não existe `create_new_clinical_report_notification` equivalente)
+- Mitigação duplicação check temporal 5s
+- Exception handling: RAISE WARNING + RETURN NEW (NÃO bloqueia UPDATE)
+
+**Smoke 2x PASS empírico**:
+
+V1 detectou bug cosmético "Dr(a). Dr. Ricardo Valença" (prefix duplicado porque users.name já tem "Dr.").
+
+Fix V2 cirúrgico:
+```sql
+v_message := CASE
+  WHEN v_professional_name ~* '^(Dr\.?|Dra\.?|Drª\.?)\s+' THEN
+    format('%s assinou seu relatório clínico...', v_professional_name)
+  ELSE
+    format('Dr(a). %s assinou seu relatório clínico...', v_professional_name)
+END;
+```
+
+V2 smoke: `"Dr. Ricardo Valença assinou seu relatório clínico. Acesse seu prontuário para visualizar."` ✅
+
+Cleanup: DELETE notification + UPDATE signed_at=NULL no report teste 2bb0b4cf.
+
+### K.4 — V1.9.529 PARQUEADO conscientemente
+
+**Razões parquear** (anti-Babylon estrito aplicado):
+1. **2 destinatários** (paciente + médico ambos avisar) = complexidade copy/perfil
+2. **Possível race** com `handle_appointment_completed` (que JÁ cria notification em status='completed')
+3. **10 triggers existentes** em appointments (sync_ids, trg_ai_predict_risk, trg_appointment_to_wtx, trg_ns_followup_scheduled, trigger_enqueue_gcal, etc) — investigação adicional necessária pra evitar overlap
+4. **Pré-Marco 2** paciente externo não usa empíricamente
+5. **Sem trigger empírico forte HOJE** (zero "marquei consulta e não fui avisado")
+
+**Triggers pra desparquear**:
+- Marco 2 paciente externo solicitar consulta + médico não receber alerta
+- Usuário relatar "marquei consulta e não fui avisado"
+- Sessão dedicada futura (~1-2h) com smoke em 2 perfis + audit 10 triggers existentes
+
+### K.5 — Cross-machine sync 14 memórias 30/05 → docs/memorias/
+
+Resolve gap recorrente desktop↔laptop flaggado audit 30/05 PARTE 1. 14 memórias cristalizadas HOJE copiadas pra `docs/memorias/` (commit `3fd8827`). Pedro pode acessar via laptop pulling repo sem precisar manual cross-machine sync.
+
+### K.6 — Pattern universal cristalizado
+
+Memory `project_v1_9_528_529_trigger_clinical_report_notif_e_appointment_parqueado_30_05` documenta template universal "infra existe mas conexão quebrou":
+
+1. Validar empíricamente gap (tabela ATIVA + notification correlata QUEBRADA)
+2. Verificar se RPC equivalente existe (reusar V1.9.527) OR criar INSERT direto SECURITY DEFINER (V1.9.528)
+3. Trigger AFTER INSERT/UPDATE com WHEN apropriado
+4. Mitigação duplicação temporal (2-5s)
+5. Exception handling NÃO bloqueia tabela alvo
+6. Smoke empírico imediato + cleanup
+7. Documentação cristalizada (memory + migration comment)
+
+Aplicável a TODO novo gap "infra existe mas conexão quebrou" detectado empíricamente futuro.
+
+---
+
 ## 🚧 BLOCO G — Pendências app reais (NÃO societárias) restantes
 
-Atualizado pós-execução V1.9.515-526.
+Atualizado pós-execução V1.9.515-528.
 
 ### P0 bloqueadores humanos
 - WiseCare homolog → produção (contrato V4H pendente)
@@ -549,6 +630,8 @@ Atualizado pós-execução V1.9.515-526.
 - 3 forum_posts pending_review (Ricardo+Eduardo aprovam)
 - ~~Edge `get_chat_history` v8 órfã~~ → **EM OBSERVAÇÃO V1.9.517 (decisão 01/jun)**
 - ~~Edge `google-auth` + `sync-gcal` dormindo~~ → **EM OBSERVAÇÃO V1.9.518+519 (decisão 01/jun)**
+- 🆕 **Triggers `auth.users` 3-way race em `user_profiles`** (3 functions AFTER INSERT inserem em `user_profiles` com campos divergentes + ON CONFLICT divergente — cadastros funcionam mas race latente). Refator sessão dedicada futura ~2-3h. Triggers desparquear: usuário relatar cadastro falho OR audit qualidade user_profiles OR Marco 1 escala onboarding. Memory: [feedback_2_gaps_p1_tecnicos_auth_triggers_e_video_call_notif_30_05](C:/Users/phpg6/.claude/projects/c--Users-phpg6-Desktop-amigo-connect-hub-main/memory/feedback_2_gaps_p1_tecnicos_auth_triggers_e_video_call_notif_30_05.md)
+- 🆕 **Edge `video-call-request-notification` nunca conectada empíricamente** (255 rows em `video_call_requests` ATIVAS via frontend `from().insert()` direto — médico NÃO recebe notificação automática). Hard-delete da Edge em 01/jun continua OK (Edge sem caller). Refator funcionalidade nova quando trigger empírico (Marco 2 paciente externo solicitar videocall). Mesma memory ↑
 
 ### 🆕 P1 humano Pedro (~15min teu lado)
 - **WhatsApp Ricardo**: 4 AECs órfãs INTERRUPTED + **Illa Proença detectada V1.9.516** + 3 forum_posts
