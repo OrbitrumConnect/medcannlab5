@@ -1682,23 +1682,8 @@ const PatientsManagement: React.FC<PatientsManagementProps> = ({ embedded = fals
                   {/* V1.9.282 (Pedro 14/05): Alergias/Medicações/Sangue movidos do header pra DENTRO da Visão Geral
                       (info salva-vidas merece destaque na primeira tela da aba, não escondida no header). */}
 
-                  {/* V1.9.119-F: Métricas compactas em LINHA (era 3 cards grandes — agora inline) */}
-                  <div className="mt-3 pt-3 border-t border-slate-700/50 flex items-center gap-4 text-xs flex-wrap">
-                    <div className="flex items-center gap-1.5">
-                      <span className="text-slate-500 uppercase tracking-wider font-semibold">Atendimentos</span>
-                      <span className="text-white font-bold text-base">{selectedPatient.appointmentsCount}</span>
-                    </div>
-                    <span className="text-slate-700">|</span>
-                    <div className="flex items-center gap-1.5">
-                      <span className="text-slate-500 uppercase tracking-wider font-semibold">Faltas</span>
-                      <span className="text-white font-bold text-base">{selectedPatient.absences}</span>
-                    </div>
-                    <span className="text-slate-700">|</span>
-                    <div className="flex items-center gap-1.5">
-                      <span className="text-slate-500 uppercase tracking-wider font-semibold">Serviços</span>
-                      <span className="text-white font-bold text-base">{selectedPatient.servicesCount}</span>
-                    </div>
-                  </div>
+                  {/* V1.9.511 — Metricas Atendimentos/Faltas/Servicos movidas pra DEPOIS das tabs
+                      (feedback Pedro 30/05 04h). Aparece logo abaixo das tabs em qualquer aba ativa. */}
                 </div>
 
                 {/* Tabs - Apenas quando há paciente selecionado */}
@@ -1738,6 +1723,24 @@ const PatientsManagement: React.FC<PatientsManagementProps> = ({ embedded = fals
                       </div>
                       {/* Gradiente fade direito indicando que tem mais tabs (scroll horizontal) */}
                       <div className="absolute right-0 top-0 bottom-0 w-12 bg-gradient-to-l from-slate-800/70 to-transparent pointer-events-none rounded-tr-xl" />
+                    </div>
+
+                    {/* V1.9.511 — Metricas Atendimentos/Faltas/Servicos abaixo das tabs (feedback Pedro 30/05). */}
+                    <div className="px-4 sm:px-6 pt-3 pb-2 border-b border-slate-700/50 flex items-center gap-4 text-xs flex-wrap">
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-slate-500 uppercase tracking-wider font-semibold">Atendimentos</span>
+                        <span className="text-white font-bold text-base">{selectedPatient.appointmentsCount}</span>
+                      </div>
+                      <span className="text-slate-700">|</span>
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-slate-500 uppercase tracking-wider font-semibold">Faltas</span>
+                        <span className="text-white font-bold text-base">{selectedPatient.absences}</span>
+                      </div>
+                      <span className="text-slate-700">|</span>
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-slate-500 uppercase tracking-wider font-semibold">Serviços</span>
+                        <span className="text-white font-bold text-base">{selectedPatient.servicesCount}</span>
+                      </div>
                     </div>
 
                     {/* Tab Content */}
@@ -1990,20 +1993,22 @@ const PatientsManagement: React.FC<PatientsManagementProps> = ({ embedded = fals
                                 <FileText className="w-3.5 h-3.5 text-orange-400" />
                                 <p className="text-[11px] font-bold text-slate-300 uppercase tracking-wider">Resumo</p>
                               </div>
-                              <div className="grid grid-cols-2 gap-1 text-xs">
-                                <button onClick={() => setActiveTab('evolution')} className="text-left flex items-center justify-between px-2 py-1 rounded hover:bg-slate-600/30 transition-colors">
+                              {/* V1.9.511 — Cards Resumo com margem leve (feedback Pedro 30/05).
+                                  gap-1 -> gap-2 + bg-slate-800/40 individual + padding maior pra cardificar. */}
+                              <div className="grid grid-cols-2 gap-2 text-xs">
+                                <button onClick={() => setActiveTab('evolution')} className="text-left flex items-center justify-between px-2.5 py-1.5 rounded-md bg-slate-800/40 border border-slate-700/40 hover:bg-slate-600/30 hover:border-slate-600 transition-colors">
                                   <span className="text-slate-300">🩺 AECs</span>
                                   <span className="text-white font-bold">{overviewData?.tabCounts.aecs ?? '—'}</span>
                                 </button>
-                                <button onClick={() => setActiveTab('prescription')} className="text-left flex items-center justify-between px-2 py-1 rounded hover:bg-slate-600/30 transition-colors">
+                                <button onClick={() => setActiveTab('prescription')} className="text-left flex items-center justify-between px-2.5 py-1.5 rounded-md bg-slate-800/40 border border-slate-700/40 hover:bg-slate-600/30 hover:border-slate-600 transition-colors">
                                   <span className="text-slate-300">💊 Prescr</span>
                                   <span className="text-white font-bold">{overviewData?.tabCounts.prescriptions ?? '—'}</span>
                                 </button>
-                                <button onClick={() => setActiveTab('exams')} className="text-left flex items-center justify-between px-2 py-1 rounded hover:bg-slate-600/30 transition-colors">
+                                <button onClick={() => setActiveTab('exams')} className="text-left flex items-center justify-between px-2.5 py-1.5 rounded-md bg-slate-800/40 border border-slate-700/40 hover:bg-slate-600/30 hover:border-slate-600 transition-colors">
                                   <span className="text-slate-300">🧪 Exames</span>
                                   <span className="text-white font-bold">{overviewData?.tabCounts.exams ?? '—'}</span>
                                 </button>
-                                <button onClick={() => setActiveTab('appointments')} className="text-left flex items-center justify-between px-2 py-1 rounded hover:bg-slate-600/30 transition-colors">
+                                <button onClick={() => setActiveTab('appointments')} className="text-left flex items-center justify-between px-2.5 py-1.5 rounded-md bg-slate-800/40 border border-slate-700/40 hover:bg-slate-600/30 hover:border-slate-600 transition-colors">
                                   <span className="text-slate-300">📅 Consultas</span>
                                   <span className="text-white font-bold">{overviewData?.tabCounts.appointments ?? '—'}</span>
                                 </button>
