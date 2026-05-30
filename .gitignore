@@ -22,6 +22,12 @@ build/
 # Supabase local/ephemeral files
 supabase/.temp/
 
+# Temp scratch dir (audit jsons, smoke payloads, scripts ad-hoc).
+# Tier 0 ITEM 2 do DIARIO_30: laptop gerou 272 jsons durante auditoria 360 que
+# sujavam git status. Desktop ja tinha 2 arquivos legacy (fix_button.py +
+# supabase_types.ts) preservados localmente.
+tmp/
+
 # IDE
 # .vscode/
 .idea/
