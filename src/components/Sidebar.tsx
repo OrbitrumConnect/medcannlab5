@@ -74,6 +74,10 @@ const Sidebar: React.FC<SidebarProps> = ({
   const { hasActiveCall, callType } = useActiveCallNotification()
   const [isCollapsed, setIsCollapsed] = useState(false)
   const [isMobileOpen, setIsMobileOpen] = useState(false)
+  // V1.9.513 (Pedro 30/05) — auto-collapse desktop ao entrar em Terminal de Atendimento.
+  // Flag previne re-collapse se usuario expandir manualmente dentro da mesma visita.
+  // Reset ao sair da rota = proxima visita re-aciona auto-collapse.
+  const [autoCollapsedOnTerminal, setAutoCollapsedOnTerminal] = useState(false)
 
   const handleLogout = async () => {
     const shouldLogout = await confirm(
@@ -112,6 +116,26 @@ const Sidebar: React.FC<SidebarProps> = ({
     }
     return type
   })()
+
+  // V1.9.513 — Auto-collapse desktop ao entrar em Terminal de Atendimento (Pedro 30/05).
+  // Mobile NAO afeta (ja tem drawer pattern). Se usuario expandir manualmente, nao
+  // re-colapsa enquanto estiver na mesma visita. Sai da rota = reset flag = proxima
+  // visita re-aciona auto-collapse.
+  useEffect(() => {
+    if (isMobile) return // so desktop
+
+    const isOnTerminalAtendimento =
+      location.pathname.includes('/profissional/dashboard') &&
+      new URLSearchParams(location.search).get('section') === 'terminal-clinico'
+
+    if (isOnTerminalAtendimento && !autoCollapsedOnTerminal && !isCollapsed) {
+      setIsCollapsed(true)
+      setAutoCollapsedOnTerminal(true)
+    } else if (!isOnTerminalAtendimento && autoCollapsedOnTerminal) {
+      // Saiu da rota — reseta flag pra proxima visita auto-colapsar de novo
+      setAutoCollapsedOnTerminal(false)
+    }
+  }, [location.pathname, location.search, isMobile, autoCollapsedOnTerminal, isCollapsed])
 
   // Notificar Layout quando sidebar colapsar/expandir
   useEffect(() => {
