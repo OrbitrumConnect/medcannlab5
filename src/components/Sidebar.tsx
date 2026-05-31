@@ -1287,16 +1287,17 @@ const Sidebar: React.FC<SidebarProps> = ({
         </div>
 
         {/* Botão para colapsar/expandir - Estilo do PatientSidebar */}
+        {/* V1.9.545: bug empírico Pedro 31/05 — no mobile o trigger FECHAVA drawer
+            inteiro ao invés de toggle collapse/expand. Sintoma: usuário não conseguia
+            mais EXPANDIR sidebar depois de reduzir (drawer fechava + perdia sidebar).
+            Backdrop overlay (linha 580) já tem onClick handleMobileToggle que fecha
+            drawer ao clicar fora — caminho alternativo preservado. Trigger agora SEMPRE
+            toggla collapsed/expanded em qualquer breakpoint (consistência UX). */}
         <div className="p-3 border-t" style={{ borderColor: 'rgba(0,193,106,0.18)' }}>
           <button
             onClick={() => {
-              if (isMobile && onClose) {
-                // No mobile, fechar completamente a sidebar
-                onClose()
-              } else {
-                const newState = !isCollapsed
-                setIsCollapsed(newState)
-              }
+              const newState = !isCollapsed
+              setIsCollapsed(newState)
             }}
             className={`w-full flex items-center ${isCollapsed ? 'justify-center' : 'gap-3'} px-3 py-2.5 rounded-lg transition-all`}
             style={{
