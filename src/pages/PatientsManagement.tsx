@@ -680,6 +680,13 @@ const PatientsManagement: React.FC<PatientsManagementProps> = ({ embedded = fals
   }, [searchParams, navigate])
 
   // Carregar evoluções quando um paciente é selecionado
+  // V1.9.542: BUG FIX — dependências `selectedPatient` (objeto) + `searchParams`
+  // disparavam useEffect a cada render do react-router (searchParams cria nova
+  // referência sempre), resetando activeTab pra 'overview' QUANDO médico clicava
+  // em outra aba (Prescrição, Exames etc). Empíricamente cravado por Pedro 31/05:
+  // "clico em Prescrição, tenta mudar e volta pro antigo".
+  // Fix: dependência só `selectedPatient?.id` (string estável). Click em aba ≠
+  // trocar paciente, então não dispara reset.
   useEffect(() => {
     if (selectedPatient) {
       loadEvolutions(selectedPatient.id)
@@ -689,7 +696,8 @@ const PatientsManagement: React.FC<PatientsManagementProps> = ({ embedded = fals
         setActiveTab('overview')
       }
     }
-  }, [selectedPatient, searchParams])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedPatient?.id])
 
   // Carregar dados para Evolução e Analytics quando a aba é aberta
   useEffect(() => {
