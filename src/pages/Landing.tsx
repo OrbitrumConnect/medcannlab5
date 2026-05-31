@@ -483,11 +483,13 @@ const Landing: React.FC = () => {
                 ))}
               </div>
 
-              {/* V1.9.435 — Emblema centralizado + glow intensificado */}
+              {/* V1.9.435 — Emblema centralizado + glow intensificado
+                  V1.9.548: -10% tamanho (Pedro 31/05 — logo nova rim+folhas+circuito
+                  ficou um pouco grande na landing 4K). 38.4rem -> 34.56rem. */}
               <img
                 src="/medcannlab-logo.png"
                 alt="MCL — Emblema MedCannLab"
-                className="relative z-10 w-full h-full max-w-[38.4rem] object-contain hover:scale-105 transition-transform duration-700 drop-shadow-2xl"
+                className="relative z-10 w-full h-full max-w-[34.56rem] object-contain hover:scale-105 transition-transform duration-700 drop-shadow-2xl"
                 style={{
                   filter: 'drop-shadow(0 0 40px rgba(16, 185, 129, 0.42)) drop-shadow(0 0 80px rgba(0, 229, 178, 0.18))'
                 }}
