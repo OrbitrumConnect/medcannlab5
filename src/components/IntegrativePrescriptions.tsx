@@ -433,20 +433,35 @@ const IntegrativePrescriptions: React.FC<IntegrativePrescriptionsProps> = ({
             Ataca diretamente gargalo 94% DRAFT (memória 05/05) — médico vê o estado prescritivo dele de cara.
             V1.9.501 (29/05): quando paciente NOVO (tudo zero), colapsa em pill inline única
             (economiza ~80px verticais, mantém sinal "paciente sem prescrição"). Quando há dado real,
-            expande pros 4 cards completos. */}
+            expande pros 4 cards completos.
+            V1.9.543 (31/05): bug UX flagrado por Pedro — durante loading mostrava 4 cards grandes
+            com "—" depois colapsava pra pill (flash feio "tela muda"). Fix: loading state usa
+            SKELETON pill consistente (mesmo formato que empty state, só muda texto). Transição
+            invisível pro médico. */}
         {patientId && (() => {
-          const isEmpty = !prescriptionsLoading
+          const isLoaded = !prescriptionsLoading
+          const isEmpty = isLoaded
             && prescriptionKPIs.total === 0
             && prescriptionKPIs.active === 0
             && prescriptionKPIs.draft === 0
             && prescriptionKPIs.completed === 0
-          if (isEmpty) {
+          // Loading OU empty → mesma pill compacta (zero flash visual)
+          if (!isLoaded || isEmpty) {
             return (
               <div className="bg-slate-900/50 border border-slate-800 rounded-lg px-3 py-1.5 flex items-center gap-3 text-[11px] text-slate-500">
                 <span className="text-slate-600">📋</span>
-                <span>Sem prescrições pra este paciente ainda.</span>
-                <span className="text-slate-700">·</span>
-                <span className="text-slate-600">0 ativas · 0 draft · 0 concluídas</span>
+                {isLoaded ? (
+                  <>
+                    <span>Sem prescrições pra este paciente ainda.</span>
+                    <span className="text-slate-700">·</span>
+                    <span className="text-slate-600">0 ativas · 0 draft · 0 concluídas</span>
+                  </>
+                ) : (
+                  <span className="flex items-center gap-1.5">
+                    <Loader2 className="w-3 h-3 animate-spin" />
+                    Carregando prescrições...
+                  </span>
+                )}
               </div>
             )
           }

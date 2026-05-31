@@ -378,16 +378,7 @@ const PatientsManagement: React.FC<PatientsManagementProps> = ({ embedded = fals
   // V1.9.462 — toggle lista pacientes no mobile (Pedro 27/05: "lista pacientes
   // no mobile precisa ser dropdown pois ocupa mto espaço tbm")
   const [showPatientListMobile, setShowPatientListMobile] = useState(false)
-  const [activeTabRaw, setActiveTabRaw] = useState<'overview' | 'evolution' | 'prescription' | 'exams' | 'files' | 'receipts' | 'charts' | 'appointments' | 'analytics'>('overview')
-  const activeTab = activeTabRaw
-  // V1.9.543 DEBUG: wrapper rastreia QUEM chama setActiveTab + de onde (stack trace)
-  // pra cravar fonte do bug "Prescrição volta pra Overview". Remover após cravar.
-  const setActiveTab = (val: typeof activeTabRaw) => {
-    if (val === 'overview' && activeTabRaw !== 'overview') {
-      console.warn('[V1.9.543 DEBUG] setActiveTab("overview") disparado quando estava em:', activeTabRaw, '\n  Stack:', new Error().stack)
-    }
-    setActiveTabRaw(val)
-  }
+  const [activeTab, setActiveTab] = useState<'overview' | 'evolution' | 'prescription' | 'exams' | 'files' | 'receipts' | 'charts' | 'appointments' | 'analytics'>('overview')
   const [showNewEvolution, setShowNewEvolution] = useState(false)
   const [evolutionContent, setEvolutionContent] = useState('')
   const [patients, setPatients] = useState<Patient[]>([])
