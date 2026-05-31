@@ -421,7 +421,7 @@ const IntegrativePrescriptions: React.FC<IntegrativePrescriptionsProps> = ({
             </div>
             <button
               onClick={() => setShowCFMModal(true)}
-              className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-600/90 hover:bg-emerald-500 text-white text-xs font-medium transition-all hover:scale-[1.02] shadow-md shadow-emerald-900/20"
+              className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/30 text-emerald-300 hover:text-emerald-200 text-xs font-medium transition-all hover:scale-[1.02]"
             >
               <Plus className="w-3.5 h-3.5" />
               Nova Prescrição CFM
@@ -636,25 +636,16 @@ const IntegrativePrescriptions: React.FC<IntegrativePrescriptionsProps> = ({
 
                     <button
                       onClick={() => handleOpenTemplate(template)}
-                      className="w-full inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800 text-slate-300 text-xs font-medium hover:bg-primary-600 hover:text-white transition-all shadow-sm"
+                      className="w-full inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/30 text-emerald-300 hover:text-emerald-200 text-xs font-medium transition-all hover:scale-[1.02]"
                     >
                       Prescrever este protocolo
                       <ArrowRight className="w-3.5 h-3.5" />
                     </button>
                   </article>
                 ))}
-                {filteredTemplates.length > 0 && filteredTemplates.length < 3 && (
-                  Array.from({ length: 3 - filteredTemplates.length }).map((_, i) => (
-                    <div
-                      key={`placeholder-${i}`}
-                      className="rounded-xl border border-dashed border-slate-800/60 bg-slate-950/20 p-3.5 flex flex-col items-center justify-center text-center min-h-[180px] text-slate-600"
-                    >
-                      <BookOpen className="w-5 h-5 mb-1.5 opacity-40" />
-                      <p className="text-[11px] font-medium leading-tight opacity-70">Mais protocolos em breve</p>
-                      <p className="text-[10px] opacity-50 mt-0.5">biblioteca em expansão</p>
-                    </div>
-                  ))
-                )}
+                {/* V1.9.539: removidos 2 placeholders fake "Mais protocolos em breve"
+                    que poluíam visual quando há <3 templates. Grid responsivo já adapta
+                    naturalmente sem precisar preencher slots vazios artificialmente. */}
               </div>
             )}
           </div>

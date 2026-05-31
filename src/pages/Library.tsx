@@ -86,22 +86,11 @@ const Library: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1)
   const ITEMS_PER_PAGE = 6
 
-  const backgroundGradient = 'linear-gradient(135deg, #0A192F 0%, #1a365d 55%, #2d5a3d 100%)'
-
-  const surfaceStyle: React.CSSProperties = {
-    background: 'rgba(7, 22, 41, 0.88)',
-    border: '1px solid rgba(0, 193, 106, 0.12)',
-    boxShadow: '0 18px 42px rgba(2, 12, 27, 0.55)'
-  }
-  const secondarySurfaceStyle: React.CSSProperties = {
-    background: 'rgba(12, 31, 54, 0.78)',
-    border: '1px solid rgba(0, 193, 106, 0.1)',
-    boxShadow: '0 14px 32px rgba(2, 12, 27, 0.45)'
-  }
-  const accentGradient = 'linear-gradient(135deg, #00C16A 0%, #13794f 100%)'
-  const secondaryGradient = 'linear-gradient(135deg, #1a365d 0%, #274a78 100%)'
+  // V1.9.539: removidas declarações locais duplicadas (sobrescreviam imports
+  // do designSystem com cores diferentes — backgroundGradient local era
+  // #0A192F→#1a365d→#2d5a3d vs canonical #0f172a→#1e293b→#1e3a3a).
+  // Agora usa os mesmos valores que o resto do app (DRY).
   const highlightGradient = 'linear-gradient(135deg, rgba(0, 193, 106, 0.25) 0%, rgba(16, 49, 91, 0.4) 60%, rgba(9, 25, 43, 0.75) 100%)'
-  const goldenGradient = 'linear-gradient(135deg, #FFD33D 0%, #FFAA00 100%)'
   const dropzoneStyle: React.CSSProperties = isDragging
     ? {
       border: '1px dashed rgba(0,193,106,0.6)',

@@ -225,9 +225,9 @@ export default function ProfessionalPatientFiles({ patientId, patientName }: Pro
                 </div>
                 <button
                     onClick={() => setUploadModalOpen(true)}
-                    className="flex-shrink-0 flex items-center gap-1.5 px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-lg text-sm font-medium hover:from-purple-600 hover:to-pink-600 transition-colors"
+                    className="flex-shrink-0 inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/30 text-emerald-300 hover:text-emerald-200 text-xs font-medium transition-all hover:scale-[1.02]"
                 >
-                    <Upload className="w-4 h-4" /> Anexar arquivo
+                    <Upload className="w-3.5 h-3.5" /> Anexar arquivo
                 </button>
             </div>
 
@@ -296,9 +296,9 @@ export default function ProfessionalPatientFiles({ patientId, patientName }: Pro
                     </p>
                     <button
                         onClick={() => setUploadModalOpen(true)}
-                        className="px-5 py-2.5 rounded-xl bg-purple-500/10 hover:bg-purple-500/20 text-purple-300 border border-purple-500/30 text-sm font-semibold transition-colors"
+                        className="inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/30 text-emerald-300 hover:text-emerald-200 text-sm font-medium transition-all hover:scale-[1.02]"
                     >
-                        <Upload className="w-4 h-4 inline mr-2" /> Anexar primeiro arquivo
+                        <Upload className="w-4 h-4" /> Anexar primeiro arquivo
                     </button>
                 </div>
             )}

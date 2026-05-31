@@ -1637,9 +1637,9 @@ const PatientsManagement: React.FC<PatientsManagementProps> = ({ embedded = fals
                     </div>
                     <button
                       onClick={() => navigate('/app/clinica/profissional/dashboard?section=terminal-clinico&tab=scheduling')}
-                      className="flex items-center space-x-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors"
+                      className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/30 text-emerald-300 hover:text-emerald-200 text-xs font-medium transition-all hover:scale-[1.02]"
                     >
-                      <Plus className="w-4 h-4" />
+                      <Plus className="w-3.5 h-3.5" />
                       <span>Novo Agendamento</span>
                     </button>
                   </div>
@@ -2402,9 +2402,9 @@ const PatientsManagement: React.FC<PatientsManagementProps> = ({ embedded = fals
                               </div>
                               <button
                                 onClick={() => navigate('/app/clinica/profissional/dashboard?section=terminal-clinico&tab=scheduling')}
-                                className="flex items-center space-x-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors"
+                                className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/30 text-emerald-300 hover:text-emerald-200 text-xs font-medium transition-all hover:scale-[1.02]"
                               >
-                                <Plus className="w-4 h-4" />
+                                <Plus className="w-3.5 h-3.5" />
                                 <span>Novo Agendamento</span>
                               </button>
                             </div>
@@ -2414,18 +2414,11 @@ const PatientsManagement: React.FC<PatientsManagementProps> = ({ embedded = fals
                             <RealAppointmentStats patientId={selectedPatient?.id} />
                             <RealAgendaHoje patientId={selectedPatient?.id} />
 
-                            {/* Ações Rápidas */}
-                            <div className="flex flex-wrap gap-3">
-                              <button
-                                onClick={() => navigate('/app/clinica/profissional/dashboard?section=terminal-clinico&tab=scheduling')}
-                                className="flex items-center space-x-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
-                              >
-                                <Plus className="w-4 h-4" />
-                                <span>Novo Agendamento</span>
-                              </button>
+                            {/* V1.9.539: removida duplicação "Novo Agendamento" (já no header acima) */}
+                            <div className="flex justify-end">
                               <button
                                 onClick={() => navigate('/app/clinica/profissional/dashboard?section=atendimento')}
-                                className="flex items-center space-x-2 px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg transition-colors"
+                                className="flex items-center gap-2 px-4 py-2 text-sm text-slate-300 hover:text-white hover:bg-slate-700/50 rounded-lg transition-all"
                               >
                                 <Calendar className="w-4 h-4" />
                                 <span>Ver Agenda Completa</span>
