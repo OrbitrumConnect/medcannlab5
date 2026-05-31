@@ -493,56 +493,67 @@ const IntegrativePrescriptions: React.FC<IntegrativePrescriptionsProps> = ({
         {/* --- LIBRARY TAB --- */}
         {activeTab === 'library' && (
           <div className="space-y-4 animate-in fade-in zoom-in-95 duration-300">
-            {/* V1.9.283: Trilho de Tipos de Receituário CFM compactado — descrição em tooltip (title), não verbosa */}
-            <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-3">
-              <div className="flex items-center gap-2 mb-2">
+            {/* V1.9.541: cards "Nova receita" elevados pro nível visual do Workstation
+                (Pedro 31/05: "do prontuário tá meio apagada"). Ícone em badge colorido
+                grande (igual padrão Prescriptions.tsx Workstation) + paddings maiores +
+                tipografia mais legível. Mantém mesma funcionalidade (navigate type). */}
+            <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-4">
+              <div className="flex items-center gap-2 mb-3">
                 <Lock className="w-3.5 h-3.5 text-primary-300" />
                 <h3 className="text-xs font-bold text-slate-300 uppercase tracking-wider">Nova receita</h3>
                 <span className="text-[10px] text-slate-500 italic">— clique no tipo de receituário</span>
               </div>
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-2">
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
                 <button
                   onClick={() => navigate('/app/prescriptions?type=simple')}
                   title="Receituário Simples — Medicamentos sem controle especial"
-                  className="flex items-center gap-2 px-3 py-2 rounded-lg border border-slate-800 bg-slate-950/60 text-left hover:border-primary-500/50 hover:bg-primary-500/5 transition-all group"
+                  className="flex items-center gap-3 p-3 rounded-lg border border-slate-800 bg-slate-950/60 text-left hover:border-emerald-500/50 hover:bg-emerald-500/5 transition-all group"
                 >
-                  <FileText className="w-4 h-4 text-primary-300 shrink-0 group-hover:scale-110 transition-transform" />
+                  <div className="w-10 h-10 rounded-lg bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+                    <FileText className="w-5 h-5 text-emerald-300" />
+                  </div>
                   <div className="min-w-0">
-                    <p className="text-white font-semibold text-xs leading-tight truncate">Simples</p>
-                    <p className="text-[10px] text-slate-500 leading-tight truncate">sem controle</p>
+                    <p className="text-white font-bold text-sm leading-tight truncate">Simples</p>
+                    <p className="text-[11px] text-slate-400 leading-tight truncate">sem controle</p>
                   </div>
                 </button>
                 <button
                   onClick={() => navigate('/app/prescriptions?type=special')}
                   title="Controle Especial (Branca) — Lista C2, ANVISA Portaria 344/98, 2 vias"
-                  className="flex items-center gap-2 px-3 py-2 rounded-lg border border-slate-800 bg-slate-950/60 text-left hover:border-sky-500/50 hover:bg-sky-500/5 transition-all group"
+                  className="flex items-center gap-3 p-3 rounded-lg border border-slate-800 bg-slate-950/60 text-left hover:border-slate-500/60 hover:bg-slate-700/20 transition-all group"
                 >
-                  <Lock className="w-4 h-4 text-sky-300 shrink-0 group-hover:scale-110 transition-transform" />
+                  <div className="w-10 h-10 rounded-lg bg-slate-700/40 border border-slate-600/40 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+                    <Lock className="w-5 h-5 text-slate-300" />
+                  </div>
                   <div className="min-w-0">
-                    <p className="text-white font-semibold text-xs leading-tight truncate">Branca (C2)</p>
-                    <p className="text-[10px] text-slate-500 leading-tight truncate">controle especial</p>
+                    <p className="text-white font-bold text-sm leading-tight truncate">Branca (C2)</p>
+                    <p className="text-[11px] text-slate-400 leading-tight truncate">controle especial</p>
                   </div>
                 </button>
                 <button
                   onClick={() => navigate('/app/prescriptions?type=blue')}
                   title="Receita Azul B1/B2 — Entorpecentes e psicotrópicos com QR Code"
-                  className="flex items-center gap-2 px-3 py-2 rounded-lg border border-slate-800 bg-slate-950/60 text-left hover:border-blue-500/50 hover:bg-blue-500/5 transition-all group"
+                  className="flex items-center gap-3 p-3 rounded-lg border border-slate-800 bg-slate-950/60 text-left hover:border-blue-500/50 hover:bg-blue-500/5 transition-all group"
                 >
-                  <Lock className="w-4 h-4 text-blue-300 shrink-0 group-hover:scale-110 transition-transform" />
+                  <div className="w-10 h-10 rounded-lg bg-blue-500/20 border border-blue-500/30 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+                    <Lock className="w-5 h-5 text-blue-300" />
+                  </div>
                   <div className="min-w-0">
-                    <p className="text-white font-semibold text-xs leading-tight truncate">Azul (B1/B2)</p>
-                    <p className="text-[10px] text-slate-500 leading-tight truncate">psicotrópicos</p>
+                    <p className="text-white font-bold text-sm leading-tight truncate">Azul (B1/B2)</p>
+                    <p className="text-[11px] text-slate-400 leading-tight truncate">psicotrópicos</p>
                   </div>
                 </button>
                 <button
                   onClick={() => navigate('/app/prescriptions?type=yellow')}
                   title="Receita Amarela A1/A2/A3 — Entorpecentes restritos, integração Portal ITI"
-                  className="flex items-center gap-2 px-3 py-2 rounded-lg border border-slate-800 bg-slate-950/60 text-left hover:border-amber-500/50 hover:bg-amber-500/5 transition-all group"
+                  className="flex items-center gap-3 p-3 rounded-lg border border-slate-800 bg-slate-950/60 text-left hover:border-amber-500/50 hover:bg-amber-500/5 transition-all group"
                 >
-                  <Lock className="w-4 h-4 text-amber-300 shrink-0 group-hover:scale-110 transition-transform" />
+                  <div className="w-10 h-10 rounded-lg bg-amber-500/20 border border-amber-500/30 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+                    <Lock className="w-5 h-5 text-amber-300" />
+                  </div>
                   <div className="min-w-0">
-                    <p className="text-white font-semibold text-xs leading-tight truncate">Amarela (A1-A3)</p>
-                    <p className="text-[10px] text-slate-500 leading-tight truncate">restrito ITI</p>
+                    <p className="text-white font-bold text-sm leading-tight truncate">Amarela (A1-A3)</p>
+                    <p className="text-[11px] text-slate-400 leading-tight truncate">restrito ITI</p>
                   </div>
                 </button>
               </div>
