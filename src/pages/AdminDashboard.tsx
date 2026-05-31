@@ -90,7 +90,7 @@ const AdminDashboard: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-[#050914] text-white">
+    <div className="min-h-screen app-bg-gradient text-white">
       <div className="max-w-full mx-auto p-4 sm:p-6 space-y-6">
         {/* Barra de navegação principal */}
         <div className="bg-[#0f172a]/50 backdrop-blur-md rounded-2xl border border-slate-800/50 shadow-xl">

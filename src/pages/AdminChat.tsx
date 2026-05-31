@@ -336,7 +336,7 @@ const AdminChat: React.FC = () => {
     : otherParticipants[0]?.email || ''
 
   return (
-    <div className="min-h-[calc(100vh-6rem)] bg-slate-950 text-slate-100 flex">
+    <div className="min-h-[calc(100vh-6rem)] app-bg-gradient text-slate-100 flex">
       {/* Backdrop mobile */}
       <div role="button" tabIndex={0} aria-label="Fechar lista"
         className={`fixed inset-0 z-30 bg-black/50 md:hidden transition-opacity duration-200 ${activeRoomId && mobileSidebarOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
