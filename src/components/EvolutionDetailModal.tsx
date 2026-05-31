@@ -41,6 +41,12 @@ interface EvolutionLite {
   source?: 'assessment' | 'report' | 'record' | string
   kind?: EvolutionKind
   signed?: boolean
+  // V1.9.535 — quando preenchido, chat-ia card representa N turnos do mesmo dia.
+  // Modal busca todos em batch + renderiza timeline detalhada.
+  chatGroupIds?: string[]
+  chatGroupCount?: number
+  chatGroupFirstTime?: string
+  chatGroupLastTime?: string
 }
 
 interface Props {
@@ -74,6 +80,13 @@ interface FullRecord {
   id: string
   created_at: string
   record_type: string | null
+  record_data: any
+}
+
+// V1.9.535 — array de turnos quando chat-ia é grupo do dia
+interface ChatTurn {
+  id: string
+  created_at: string
   record_data: any
 }
 
@@ -114,6 +127,7 @@ export const EvolutionDetailModal: React.FC<Props> = ({ isOpen, evolution, patie
   const [fullReport, setFullReport] = useState<FullReport | null>(null)
   const [fullAssessment, setFullAssessment] = useState<FullAssessment | null>(null)
   const [fullRecord, setFullRecord] = useState<FullRecord | null>(null)
+  const [chatTurns, setChatTurns] = useState<ChatTurn[] | null>(null)  // V1.9.535
 
   // ESC to close
   useEffect(() => {
@@ -131,6 +145,7 @@ export const EvolutionDetailModal: React.FC<Props> = ({ isOpen, evolution, patie
       setFullReport(null)
       setFullAssessment(null)
       setFullRecord(null)
+      setChatTurns(null)
       setError(null)
       return
     }
@@ -160,13 +175,26 @@ export const EvolutionDetailModal: React.FC<Props> = ({ isOpen, evolution, patie
           if (err) throw err
           if (!cancelled) setFullAssessment(data as FullAssessment | null)
         } else if (evolution.kind === 'chat-ia' || evolution.source === 'record') {
-          const { data, error: err } = await (supabase as any)
-            .from('patient_medical_records')
-            .select('id, created_at, record_type, record_data')
-            .eq('id', evolution.id)
-            .maybeSingle()
-          if (err) throw err
-          if (!cancelled) setFullRecord(data as FullRecord | null)
+          // V1.9.535 — chat-ia agora vem agrupado por dia. Se chatGroupIds tem N IDs,
+          // busca todos os turnos em batch + renderiza como timeline. Senão fallback
+          // pra single record antigo.
+          if (evolution.chatGroupIds && evolution.chatGroupIds.length > 0) {
+            const { data, error: err } = await (supabase as any)
+              .from('patient_medical_records')
+              .select('id, created_at, record_data')
+              .in('id', evolution.chatGroupIds)
+              .order('created_at', { ascending: true })
+            if (err) throw err
+            if (!cancelled) setChatTurns((data as ChatTurn[]) || [])
+          } else {
+            const { data, error: err } = await (supabase as any)
+              .from('patient_medical_records')
+              .select('id, created_at, record_type, record_data')
+              .eq('id', evolution.id)
+              .maybeSingle()
+            if (err) throw err
+            if (!cancelled) setFullRecord(data as FullRecord | null)
+          }
         }
       } catch (e: any) {
         if (!cancelled) setError(e?.message || 'Erro ao carregar detalhes')
@@ -330,8 +358,57 @@ export const EvolutionDetailModal: React.FC<Props> = ({ isOpen, evolution, patie
                 </details>
               )}
             </div>
+          ) : chatTurns ? (
+            // V1.9.535 — chat-ia AGRUPADO: timeline de N turnos do mesmo dia
+            <div className="space-y-3">
+              <div className="text-[11px] uppercase tracking-wide text-slate-500 flex items-center gap-2 flex-wrap">
+                <span>{chatTurns.length} mensagens trocadas</span>
+                {evolution.chatGroupFirstTime && evolution.chatGroupLastTime && (
+                  <>
+                    <span>·</span>
+                    <span className="text-slate-300">{evolution.chatGroupFirstTime} → {evolution.chatGroupLastTime}</span>
+                  </>
+                )}
+              </div>
+              {chatTurns.length === 0 ? (
+                <div className="bg-slate-800/40 border border-slate-700 rounded-lg p-4 text-center text-sm text-slate-400">
+                  Nenhuma mensagem encontrada.
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {chatTurns.map((turn) => {
+                    const rd = (turn.record_data || {}) as any
+                    const userMsg = typeof rd.user_message === 'string' ? rd.user_message : null
+                    const aiResp = typeof rd.ai_response === 'string' ? rd.ai_response : null
+                    const time = new Date(turn.created_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
+                    return (
+                      <div key={turn.id} className="bg-slate-800/30 border border-slate-700/50 rounded-lg p-3 space-y-2">
+                        <div className="text-[10px] text-slate-500 uppercase tracking-wide">{time}</div>
+                        {userMsg && (
+                          <div className="flex gap-2">
+                            <span className="text-[10px] text-blue-300 uppercase font-semibold w-16 flex-shrink-0 pt-0.5">Paciente</span>
+                            <p className="text-xs text-slate-200 whitespace-pre-wrap leading-relaxed flex-1">{userMsg}</p>
+                          </div>
+                        )}
+                        {aiResp && (
+                          <div className="flex gap-2">
+                            <span className="text-[10px] text-emerald-300 uppercase font-semibold w-16 flex-shrink-0 pt-0.5">Nôa</span>
+                            <p className="text-xs text-slate-200 whitespace-pre-wrap leading-relaxed flex-1">{aiResp}</p>
+                          </div>
+                        )}
+                        {!userMsg && !aiResp && (
+                          <pre className="text-[10px] text-slate-500 whitespace-pre-wrap font-mono overflow-x-auto">
+                            {JSON.stringify(rd, null, 2)}
+                          </pre>
+                        )}
+                      </div>
+                    )
+                  })}
+                </div>
+              )}
+            </div>
           ) : fullRecord ? (
-            // chat-ia (patient_medical_records) → record_data
+            // chat-ia (patient_medical_records) single turn — fallback pré-V1.9.535
             <div className="space-y-3">
               {fullRecord.record_type && (
                 <div className="text-[11px] uppercase tracking-wide text-slate-500">

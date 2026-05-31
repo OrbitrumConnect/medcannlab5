@@ -217,6 +217,13 @@ interface Evolution {
   signed?: boolean
   score?: number | null
   rawCreatedAt?: string
+  // V1.9.535 — agrupamento chat_interaction por dia. Quando preenchido, este card
+  // representa N turnos do mesmo dia (1 card visual = 1 sessão diária). Modal expande
+  // pra timeline detalhada lendo todos os IDs em batch.
+  chatGroupIds?: string[]
+  chatGroupCount?: number
+  chatGroupFirstTime?: string
+  chatGroupLastTime?: string
 }
 
 // V1.9.487 — metadados visuais por EvolutionKind (label + icone + cor).
@@ -1143,42 +1150,86 @@ const PatientsManagement: React.FC<PatientsManagementProps> = ({ embedded = fals
       }
 
       // 3. Buscar registros médicos do paciente (prontuário)
+      // V1.9.535 — limit aumentado de 20 → 500 pra cobrir Carolina 236 msgs/dia +
+      // outros casos extremos. chat_interaction agora agrupado por dia (1 card
+      // visual = 1 sessão diária), o ruído visual de 200+ cards individuais sumiu.
       try {
         const { data: medicalRecords, error: recordsError } = await supabase
           .from('patient_medical_records')
           .select('*')
           .eq('patient_id', patientId)
           .order('created_at', { ascending: false })
-          .limit(20)
+          .limit(500)
 
         if (!recordsError && medicalRecords) {
+          // V1.9.535 — separa chat_interaction (será agrupado por dia) de outros tipos
+          const chatByDay = new Map<string, any[]>()
+          const nonChatRecords: any[] = []
+
           medicalRecords.forEach(record => {
+            const recordType = (record as any).record_type as string | null
+            if (recordType === 'chat_interaction') {
+              const dayKey = new Date(record.created_at).toLocaleDateString('pt-BR')
+              if (!chatByDay.has(dayKey)) chatByDay.set(dayKey, [])
+              chatByDay.get(dayKey)!.push(record)
+            } else {
+              nonChatRecords.push(record)
+            }
+          })
+
+          // Non-chat records mantém pattern 1 card = 1 record
+          nonChatRecords.forEach(record => {
             const alreadyAdded = evolutionsList.some(e => e.id === record.id)
             if (!alreadyAdded) {
-              // V1.9.487 — record_type identifica chat_interaction (paciente↔Noa)
-              // vs outros tipos futuros. chat_interaction vai pra grupo "chat-ia"
-              // (slate dim, default colapsado pra ruido nao distrair).
-              const recordType = (record as any).record_type as string | null
-              const kindForRecord: EvolutionKind = recordType === 'chat_interaction'
-                ? 'chat-ia'
-                : 'assessment-other'  // fallback pra outros record_types futuros
               evolutionsList.push({
                 id: record.id,
                 date: new Date(record.created_at).toLocaleDateString('pt-BR'),
                 time: new Date(record.created_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
                 type: 'historical',
                 content: evolutionContentString(
-                  typeof record.record_data === 'string' ? record.record_data : ((record.record_data as any)?.content ?? (record.record_data as any)?.summary ?? (record as any).title),
-                  recordType === 'chat_interaction' ? 'Conversa com a Nôa' : 'Registro médico'
+                  typeof record.record_data === 'string' ? record.record_data : ((record.record_data as any)?.content ?? (record.record_data as any)?.summary),
+                  'Registro médico'
                 ),
-                professional: typeof (record.record_data as any)?.professional_name === 'string' ? (record.record_data as any).professional_name : (recordType === 'chat_interaction' ? 'Paciente↔Nôa' : 'Sistema'),
+                professional: typeof (record.record_data as any)?.professional_name === 'string' ? (record.record_data as any).professional_name : 'Sistema',
                 source: 'record',
-                kind: kindForRecord,
+                kind: 'assessment-other',
                 signed: false,
                 score: null,
                 rawCreatedAt: record.created_at,
               })
             }
+          })
+
+          // Chat_interaction: 1 card sintético por DIA (não por turno)
+          chatByDay.forEach((records, dayKey) => {
+            const sorted = records.sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime())
+            const first = sorted[0]
+            const last = sorted[sorted.length - 1]
+            const firstTime = new Date(first.created_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
+            const lastTime = new Date(last.created_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
+            const count = sorted.length
+            const groupId = `chat-day-${patientId}-${dayKey.replace(/\//g, '-')}`
+            const summaryContent = count === 1
+              ? 'Conversa com a Nôa'
+              : `Conversa com a Nôa · ${count} mensagens (${firstTime} - ${lastTime})`
+
+            evolutionsList.push({
+              id: groupId,
+              date: dayKey,
+              time: lastTime,
+              type: 'historical',
+              content: summaryContent,
+              professional: 'Paciente↔Nôa',
+              source: 'record',
+              kind: 'chat-ia',
+              signed: false,
+              score: null,
+              rawCreatedAt: last.created_at,
+              chatGroupIds: sorted.map(r => r.id),
+              chatGroupCount: count,
+              chatGroupFirstTime: firstTime,
+              chatGroupLastTime: lastTime,
+            })
           })
         } else if (recordsError?.code === 'PGRST301' || (recordsError as { status?: number })?.status === 403) {
           // RLS: profissional pode não ter vínculo com o paciente; evoluções de clinical_reports/assessments já foram carregadas
