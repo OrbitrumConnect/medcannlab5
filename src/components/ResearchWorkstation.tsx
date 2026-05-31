@@ -103,7 +103,7 @@ const ResearchWorkstation: React.FC<ResearchWorkstationProps> = ({ initialTab })
     const renderContent = () => {
         switch (activeTab) {
             case 'dashboard':
-                // V1.9.413 — degradê igual aos demais tabs (era bg-[#0f172a] flat)
+                // V1.9.413 — degradê igual aos demais tabs (era app-bg-gradient flat)
                 return (
                     <div className="h-full w-full overflow-hidden relative integrated-terminal-content" style={{ background: backgroundGradient }}>
                         <div className="absolute inset-0 overflow-y-auto overflow-x-hidden scrollbar-hide">
@@ -113,14 +113,14 @@ const ResearchWorkstation: React.FC<ResearchWorkstationProps> = ({ initialTab })
                 )
             case 'forum':
                 return (
-                    <div className="h-full overflow-y-auto scrollbar-hide bg-[#0f172a]">
+                    <div className="h-full overflow-y-auto scrollbar-hide app-bg-gradient">
                         <ForumCasosClinicos />
                     </div>
                 )
             case 'noa-matrix':
                 // [V1.9.379-D] Nôa Matrix — chat pesquisa Z2 com cards anexáveis
                 // (casos abertos + notas + favoritos via useSearchHistory localStorage)
-                // V1.9.413 — degradê igual aos demais tabs (era bg-[#0f172a] flat)
+                // V1.9.413 — degradê igual aos demais tabs (era app-bg-gradient flat)
                 return (
                     <div className="h-full overflow-y-auto scrollbar-hide p-4" style={{ background: backgroundGradient }}>
                         <NoaMatrixView />
@@ -128,12 +128,12 @@ const ResearchWorkstation: React.FC<ResearchWorkstationProps> = ({ initialTab })
                 )
             case 'library':
                 return (
-                    <div className="h-full overflow-y-auto scrollbar-hide bg-[#0f172a]">
+                    <div className="h-full overflow-y-auto scrollbar-hide app-bg-gradient">
                         <Library />
                     </div>
                 )
             case 'literature':
-                // V1.9.499 (Pedro 29/05) — degradê igual aos demais tabs (era bg-[#0f172a] flat).
+                // V1.9.499 (Pedro 29/05) — degradê igual aos demais tabs (era app-bg-gradient flat).
                 // Alinha com pattern V1.9.413 já aplicado em dashboard/noa-matrix.
                 return (
                     <div className="h-full overflow-y-auto scrollbar-hide p-4" style={{ background: backgroundGradient }}>
@@ -147,12 +147,12 @@ const ResearchWorkstation: React.FC<ResearchWorkstationProps> = ({ initialTab })
                 )
             case 'protocols':
                 return (
-                    <div className="h-full overflow-y-auto scrollbar-hide bg-[#0f172a] p-4">
+                    <div className="h-full overflow-y-auto scrollbar-hide app-bg-gradient p-4">
                         <CidadeAmigaDosRins />
                     </div>
                 )
             case 'casos-similares':
-                // V1.9.413 — degradê igual aos demais tabs (era bg-[#0f172a] flat)
+                // V1.9.413 — degradê igual aos demais tabs (era app-bg-gradient flat)
                 return (
                     <div className="h-full overflow-y-auto scrollbar-hide p-4" style={{ background: backgroundGradient }}>
                         {/* [V1.9.366] showSidebar=true → Trilha + Notas Rápidas side-by-side */}
@@ -166,19 +166,19 @@ const ResearchWorkstation: React.FC<ResearchWorkstationProps> = ({ initialTab })
                 )
             case 'mentoria':
                 return (
-                    <div className="h-full overflow-y-auto scrollbar-hide bg-[#0f172a]">
+                    <div className="h-full overflow-y-auto scrollbar-hide app-bg-gradient">
                         <EnsinoDashboard forcedSection="mentoria" />
                     </div>
                 )
             case 'newsletter':
                 return (
-                    <div className="h-full overflow-y-auto scrollbar-hide bg-[#0f172a]">
+                    <div className="h-full overflow-y-auto scrollbar-hide app-bg-gradient">
                         <EnsinoDashboard forcedSection="newsletter" />
                     </div>
                 )
             case 'evaluation':
                 return (
-                    <div className="h-full overflow-y-auto scrollbar-hide bg-[#0f172a]">
+                    <div className="h-full overflow-y-auto scrollbar-hide app-bg-gradient">
                         <EnsinoDashboard forcedSection="avaliacao" />
                     </div>
                 )
@@ -194,7 +194,7 @@ const ResearchWorkstation: React.FC<ResearchWorkstationProps> = ({ initialTab })
         // empurrado pra fora da viewport ou cortado em iOS Safari / Chrome Android.
         // Agora: usa 100dvh (dynamic viewport height) em mobile, calc(100vh-64px) em sm+.
         // dvh respeita barras dinâmicas do browser mobile, fix Pedro 19/05 noite.
-        <div className="flex flex-col h-[calc(100dvh-56px)] sm:h-[calc(100vh-64px)] bg-[#0f172a] w-full max-w-full overflow-hidden" data-integrated-terminal-research>
+        <div className="flex flex-col h-[calc(100dvh-56px)] sm:h-[calc(100vh-64px)] app-bg-gradient w-full max-w-full overflow-hidden" data-integrated-terminal-research>
             {/* V1.9.388-A.7 — Header mobile-aware espelhando padrão IntegratedWorkstation.
                 Bug Pedro 19/05 noite (screenshots WhatsApp): Terminal Atendimento abria
                 grid de cards 5×N em mobile (legível), Terminal Pesquisa só mostrava ícone
@@ -267,7 +267,7 @@ const ResearchWorkstation: React.FC<ResearchWorkstationProps> = ({ initialTab })
                 </div>
             </header>
 
-            <main className="flex-1 overflow-hidden relative bg-[#0f172a] w-full">
+            <main className="flex-1 overflow-hidden relative app-bg-gradient w-full">
                 {renderContent()}
             </main>
 

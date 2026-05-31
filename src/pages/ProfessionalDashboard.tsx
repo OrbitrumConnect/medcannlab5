@@ -88,7 +88,7 @@ const ProfessionalDashboard: React.FC = () => {
 
   if (loading && !patients.length) {
     return (
-      <div className="min-h-screen bg-[#0f172a] flex items-center justify-center">
+      <div className="min-h-screen app-bg-gradient flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-500 mx-auto mb-4" />
           <p className="text-slate-400">Carregando painel profissional...</p>
@@ -98,7 +98,7 @@ const ProfessionalDashboard: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-[#0f172a] text-white">
+    <div className="min-h-screen app-bg-gradient text-white">
       <div className="container mx-auto px-4 py-8 max-w-7xl space-y-8">
         {/* V1.9.502: header sem bloco "Performance +12% este mês" — era mock hardcoded
             (realidade empírica 29/05: 54 reports 30d vs 78 anterior = -31%, mostrar seria

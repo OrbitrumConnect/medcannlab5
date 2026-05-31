@@ -93,7 +93,7 @@ const IntegratedWorkstation: React.FC<IntegratedWorkstationProps> = ({ initialTa
         switch (activeTab) {
             case 'patients':
                 return (
-                    <div className="h-full w-full overflow-hidden bg-[#0f172a] relative integrated-terminal-content">
+                    <div className="h-full w-full overflow-hidden app-bg-gradient relative integrated-terminal-content">
                         <div className="absolute inset-0 overflow-y-auto overflow-x-hidden scrollbar-hide">
                             <PatientsManagement embedded compact />
                         </div>
@@ -101,7 +101,7 @@ const IntegratedWorkstation: React.FC<IntegratedWorkstationProps> = ({ initialTa
                 )
             case 'patient-focus':
                 return (
-                    <div className="h-full bg-[#0f172a] overflow-hidden">
+                    <div className="h-full app-bg-gradient overflow-hidden">
                         <PatientFocusView
                             activePatientId={activePatientId}
                             onPatientChange={(id) => setActivePatientId(id)}
@@ -109,10 +109,10 @@ const IntegratedWorkstation: React.FC<IntegratedWorkstationProps> = ({ initialTa
                     </div>
                 )
             case 'chat':
-                return <div className="h-full bg-[#0f172a]"><ProfessionalChatSystem selectedPatientId={activePatientId} /></div>
+                return <div className="h-full app-bg-gradient"><ProfessionalChatSystem selectedPatientId={activePatientId} /></div>
             case 'renal':
                 return (
-                    <div className="h-full overflow-y-auto bg-[#0f172a]">
+                    <div className="h-full overflow-y-auto app-bg-gradient">
                         <RenalFunctionModule
                             patientId={activePatientId || undefined}
                             onPatientSelect={(id) => setActivePatientId(id || null)}
@@ -121,7 +121,7 @@ const IntegratedWorkstation: React.FC<IntegratedWorkstationProps> = ({ initialTa
                 )
             case 'prescriptions':
                 return (
-                    <div className="h-full overflow-y-auto bg-[#0f172a]">
+                    <div className="h-full overflow-y-auto app-bg-gradient">
                         <QuickPrescriptions patientId={activePatientId || ''} />
                     </div>
                 )
@@ -131,12 +131,12 @@ const IntegratedWorkstation: React.FC<IntegratedWorkstationProps> = ({ initialTa
                 // todos appointments (comportamento original em ProfessionalMyDashboard).
                 // Bug reportado Ricardo 18/05: aba agenda mostrava OUTROS pacientes ao invés do
                 // selecionado (Carolina). Causa: prop patientId não estava sendo passada aqui.
-                return <div className="h-full overflow-y-auto bg-[#0f172a]"><ProfessionalSchedulingWidget patientId={activePatientId || undefined} /></div>
+                return <div className="h-full overflow-y-auto app-bg-gradient"><ProfessionalSchedulingWidget patientId={activePatientId || undefined} /></div>
             case 'team':
-                return <div className="h-full overflow-y-auto bg-[#0f172a]"><TeamManagement /></div>
+                return <div className="h-full overflow-y-auto app-bg-gradient"><TeamManagement /></div>
             case 'governance':
                 return (
-                    <div className="h-full overflow-y-auto bg-[#0f172a]">
+                    <div className="h-full overflow-y-auto app-bg-gradient">
                         <div className="px-4 py-2 border-b border-slate-700/50 bg-slate-800/30 flex items-center gap-2 text-slate-400 text-sm">
                             <Shield className="w-4 h-4 text-purple-400" />
                             <span>Modo analítico / Governança</span>
@@ -149,23 +149,23 @@ const IntegratedWorkstation: React.FC<IntegratedWorkstationProps> = ({ initialTa
                 )
             case 'reports':
                 return (
-                    <div className="h-full overflow-y-auto scrollbar-hide bg-[#0f172a] p-4">
+                    <div className="h-full overflow-y-auto scrollbar-hide app-bg-gradient p-4">
                         <ClinicalReports className="max-w-6xl mx-auto" />
                     </div>
                 )
             case 'knowledge':
-                return <div className="h-full overflow-y-auto scrollbar-hide bg-[#0f172a]"><Library /></div>
+                return <div className="h-full overflow-y-auto scrollbar-hide app-bg-gradient"><Library /></div>
             case 'forum':
-                return <div className="h-full overflow-y-auto scrollbar-hide bg-[#0f172a]"><ForumCasosClinicos /></div>
+                return <div className="h-full overflow-y-auto scrollbar-hide app-bg-gradient"><ForumCasosClinicos /></div>
             case 'gallery':
-                return <div className="h-full overflow-y-auto scrollbar-hide bg-[#0f172a]"><ProfessionalNFTGallery /></div>
+                return <div className="h-full overflow-y-auto scrollbar-hide app-bg-gradient"><ProfessionalNFTGallery /></div>
             default:
                 return null
         }
     }
 
     return (
-        <div className="flex flex-col h-[calc(100vh-64px)] bg-[#0f172a] w-full max-w-full overflow-hidden" data-integrated-terminal>
+        <div className="flex flex-col h-[calc(100vh-64px)] app-bg-gradient w-full max-w-full overflow-hidden" data-integrated-terminal>
             {/* Header do terminal */}
             <header className="bg-gradient-to-r from-slate-900 via-slate-800 to-emerald-900 border-b border-[#334155] shrink-0 z-10 shadow-sm relative w-full min-h-[48px] flex flex-col">
                 {/* Linha 1: Título + tabs visíveis em telas maiores */}
@@ -234,7 +234,7 @@ const IntegratedWorkstation: React.FC<IntegratedWorkstationProps> = ({ initialTa
                 </div>
             </header>
 
-            <main className="flex-1 overflow-hidden relative bg-[#0f172a] w-full">
+            <main className="flex-1 overflow-hidden relative app-bg-gradient w-full">
                 {renderContent()}
             </main>
         </div>

@@ -272,7 +272,7 @@ const RenalFunctionModule: React.FC<RenalFunctionModuleProps> = ({ patientId, pa
     // ─── RENDER ──────────────────────────────────────────────────────
 
     return (
-        <div className="bg-[#0f172a] min-h-[400px] flex flex-col">
+        <div className="app-bg-gradient min-h-[400px] flex flex-col">
             {/* ─── Header ─── */}
             {/* [V1.9.352] (18/05): compactado igual V1.9.346 da Agenda. Título "Módulo de Função Renal" */}
             {/* removido (redundante com aba "Saúde Renal" do terminal pai). Ícone reduzido. */}

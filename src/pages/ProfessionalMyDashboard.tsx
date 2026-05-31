@@ -647,7 +647,7 @@ const ProfessionalMyDashboard: React.FC = () => {
       ? requestedTab
       : 'patients'
     return (
-      <div className="h-screen w-full bg-[#0f172a] flex flex-col">
+      <div className="h-screen w-full app-bg-gradient flex flex-col">
         {/* V1.9.280: removido SectionHeader duplicado — IntegratedWorkstation já tem header próprio ("Terminal Integrado / MedCannLab OS" + tabs) */}
         <div className="flex-1 overflow-hidden">
           <IntegratedWorkstation initialTab={initialTab} />
@@ -658,7 +658,7 @@ const ProfessionalMyDashboard: React.FC = () => {
 
   if (section === 'atendimento') {
     return (
-      <div className="h-screen w-full bg-[#0f172a] flex flex-col">
+      <div className="h-screen w-full app-bg-gradient flex flex-col">
         <SectionHeader title="Agendamentos e Atendimento" icon={Calendar} />
         <div className="flex-1 overflow-auto p-4">
           <ProfessionalSchedulingWidget />
@@ -669,7 +669,7 @@ const ProfessionalMyDashboard: React.FC = () => {
 
   if (section === 'prescricoes') {
     return (
-      <div className="min-h-screen bg-[#0f172a] flex flex-col">
+      <div className="min-h-screen app-bg-gradient flex flex-col">
         <SectionHeader title="Prescrições" icon={FileText} />
         <div className="flex-1 overflow-auto">
           <Prescriptions />
@@ -682,7 +682,7 @@ const ProfessionalMyDashboard: React.FC = () => {
     // V1.9.188-A — passa peer query param pra abrir direto a sala com aquele user
     const peerUserId = query.get('peer')
     return (
-      <div className="h-screen w-full bg-[#0f172a] flex flex-col">
+      <div className="h-screen w-full app-bg-gradient flex flex-col">
         <SectionHeader title="Chat Profissionais" icon={MessageCircle} />
         <div className="flex-1 overflow-hidden">
           <ProfessionalChatSystem peerUserId={peerUserId} />

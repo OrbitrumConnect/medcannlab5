@@ -1092,7 +1092,7 @@ REGRAS RÍGIDAS:
 
   return (
     // [V1.9.361] Padding lateral em embedded (Pedro: muito próximo do sidebar)
-    <div className={embedded ? 'text-white px-4 md:px-6 py-2' : 'min-h-screen bg-[#0f172a] text-white p-6'}>
+    <div className={embedded ? 'text-white px-4 md:px-6 py-2' : 'min-h-screen app-bg-gradient text-white p-6'}>
       {/* [V1.9.367] Largura maior em wide-screen quando sidebar visível (até 1800px) */}
       <div className={sidebarVisible ? (embedded ? 'max-w-[1800px]' : 'max-w-[1800px] mx-auto') : (embedded ? 'max-w-5xl' : 'max-w-5xl mx-auto')}>
       {/* [V1.9.365/V1.9.366] Grid 2 colunas em lg quando sidebar visível: main + sidebar */}

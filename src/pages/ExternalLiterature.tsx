@@ -234,7 +234,7 @@ const ExternalLiterature: React.FC<Props> = ({ embedded = false, initialTerm, in
   const SUGGESTIONS = ['cannabidiol chronic kidney disease', 'cannabis epilepsy', 'CBD anxiety RCT', 'THC pain', 'cannabis sleep']
 
   return (
-    <div className={embedded ? 'text-white px-4 md:px-6 py-2' : 'min-h-screen bg-[#0f172a] text-white p-6'}>
+    <div className={embedded ? 'text-white px-4 md:px-6 py-2' : 'min-h-screen app-bg-gradient text-white p-6'}>
       <div className={embedded ? 'max-w-[1800px]' : 'max-w-[1800px] mx-auto'}>
         {/* Header standalone */}
         {!embedded && (

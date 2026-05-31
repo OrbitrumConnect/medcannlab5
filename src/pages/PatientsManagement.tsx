@@ -83,12 +83,26 @@ const RealAppointmentStats = ({ patientId }: { patientId?: string }) => {
     }
     load()
   }, [patientId])
+  // V1.9.538: KPIs com ícone + cor distintiva + borda colorida + hover (gap visual
+  // flagrado por Pedro 31/05 "tá fraco"). Hierarquia: Hoje/Semana neutros (info) ·
+  // Confirmados emerald (sucesso) · Pendentes amber (atenção).
+  const tiles = [
+    { label: 'Hoje', value: stats.today, Icon: Clock, accent: 'text-cyan-300', border: 'border-cyan-500/20', bg: 'bg-cyan-500/5' },
+    { label: 'Esta Semana', value: stats.thisWeek, Icon: Calendar, accent: 'text-indigo-300', border: 'border-indigo-500/20', bg: 'bg-indigo-500/5' },
+    { label: 'Confirmados', value: stats.confirmed, Icon: CheckCircle, accent: 'text-emerald-300', border: 'border-emerald-500/30', bg: 'bg-emerald-500/10' },
+    { label: 'Pendentes', value: stats.pending, Icon: AlertCircle, accent: 'text-amber-300', border: 'border-amber-500/30', bg: 'bg-amber-500/10' },
+  ]
   return (
-    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-      <div className="bg-slate-700/50 rounded-lg p-4"><p className="text-sm text-slate-400 mb-1">Hoje</p><p className="text-2xl font-bold text-white">{stats.today}</p></div>
-      <div className="bg-slate-700/50 rounded-lg p-4"><p className="text-sm text-slate-400 mb-1">Esta Semana</p><p className="text-2xl font-bold text-white">{stats.thisWeek}</p></div>
-      <div className="bg-slate-700/50 rounded-lg p-4"><p className="text-sm text-slate-400 mb-1">Confirmados</p><p className="text-2xl font-bold text-green-400">{stats.confirmed}</p></div>
-      <div className="bg-slate-700/50 rounded-lg p-4"><p className="text-sm text-slate-400 mb-1">Pendentes</p><p className="text-2xl font-bold text-yellow-400">{stats.pending}</p></div>
+    <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+      {tiles.map(({ label, value, Icon, accent, border, bg }) => (
+        <div key={label} className={`${bg} ${border} border rounded-lg p-3 transition-all hover:scale-[1.02]`}>
+          <div className="flex items-center justify-between mb-1.5">
+            <span className="text-[11px] uppercase tracking-wider text-slate-400">{label}</span>
+            <Icon className={`w-3.5 h-3.5 ${accent} opacity-80`} />
+          </div>
+          <p className={`text-2xl font-bold tabular-nums ${value > 0 ? accent : 'text-slate-500'}`}>{value}</p>
+        </div>
+      ))}
     </div>
   )
 }
@@ -134,10 +148,22 @@ const RealAgendaHoje = ({ patientId }: { patientId?: string }) => {
 
   return (
     <div className="mb-6">
-      <h4 className="text-lg font-bold text-white mb-4">Agenda de Hoje</h4>
+      <h4 className="text-sm uppercase tracking-wider text-slate-400 font-semibold mb-3 flex items-center gap-2">
+        <Clock className="w-3.5 h-3.5 text-cyan-400" />
+        Agenda de Hoje
+        {appointments.length > 0 && (
+          <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300">
+            {appointments.length}
+          </span>
+        )}
+      </h4>
       <div className="space-y-3">
         {appointments.length === 0 ? (
-          <p className="text-slate-500 italic text-sm">Nenhum agendamento para hoje.</p>
+          <div className="bg-slate-800/30 border border-dashed border-slate-700/50 rounded-lg p-6 text-center">
+            <Calendar className="w-8 h-8 text-slate-600 mx-auto mb-2" />
+            <p className="text-sm text-slate-400">Nenhum agendamento para hoje</p>
+            <p className="text-[11px] text-slate-500 mt-1">Use "Novo Agendamento" acima pra criar</p>
+          </div>
         ) : appointments.map(a => {
           const time = a.appointment_time || (a.appointment_date ? new Date(a.appointment_date).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) : '--:--')
           const hour = time.split(':')[0] || '--'
@@ -1624,21 +1650,16 @@ const PatientsManagement: React.FC<PatientsManagementProps> = ({ embedded = fals
                   {/* Agenda de Hoje — dados reais */}
                   <RealAgendaHoje />
 
-                  {/* Ações Rápidas */}
-                  <div className="flex flex-wrap gap-3">
-                    <button
-                      onClick={() => navigate('/app/clinica/profissional/dashboard?section=terminal-clinico&tab=scheduling')}
-                      className="flex items-center space-x-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
-                    >
-                      <Plus className="w-4 h-4" />
-                      <span>Novo Agendamento</span>
-                    </button>
+                  {/* V1.9.538: "Novo Agendamento" já está no header — remover duplicação.
+                      Mantém só "Ver Agenda Completa" como ação secundária. */}
+                  <div className="flex justify-end">
                     <button
                       onClick={() => navigate('/app/clinica/profissional/dashboard?section=atendimento')}
-                      className="flex items-center space-x-2 px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg transition-colors"
+                      className="flex items-center gap-2 px-4 py-2 text-sm text-slate-300 hover:text-white hover:bg-slate-700/50 rounded-lg transition-all"
                     >
                       <Calendar className="w-4 h-4" />
                       <span>Ver Agenda Completa</span>
+                      <ChevronDown className="w-3 h-3 -rotate-90 opacity-60" />
                     </button>
                   </div>
                 </div>
