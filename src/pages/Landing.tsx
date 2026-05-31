@@ -424,12 +424,14 @@ const Landing: React.FC = () => {
               </div>
             </div>
 
-            <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4">
-              <button onClick={() => setShowRegister(true)} className="w-full sm:w-auto px-8 py-4 bg-gradient-to-r from-green-600 to-emerald-600 rounded-2xl text-white font-semibold hover:shadow-lg hover:shadow-green-500/25 transition-all text-lg flex items-center justify-center space-x-2 group">
+            {/* V1.9.547: padding+texto responsivos — mobile fica enorme com px-8/py-4/text-lg.
+                Mobile (<640px): px-5 py-3 text-base / Desktop (sm+): px-8 py-4 text-lg. */}
+            <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-3 sm:gap-4">
+              <button onClick={() => setShowRegister(true)} className="w-full sm:w-auto px-5 sm:px-8 py-3 sm:py-4 bg-gradient-to-r from-green-600 to-emerald-600 rounded-xl sm:rounded-2xl text-white font-semibold hover:shadow-lg hover:shadow-green-500/25 transition-all text-base sm:text-lg flex items-center justify-center space-x-2 group">
                 <span>Iniciar Avaliação com Método AEC</span>
-                <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 group-hover:translate-x-1 transition-transform" />
               </button>
-              <button onClick={() => setShowLogin(true)} className="w-full sm:w-auto px-8 py-4 bg-slate-800/50 border border-emerald-500/40 rounded-2xl text-white font-semibold hover:bg-slate-800 hover:border-emerald-500/60 transition-all text-lg backdrop-blur-sm">
+              <button onClick={() => setShowLogin(true)} className="w-full sm:w-auto px-5 sm:px-8 py-3 sm:py-4 bg-slate-800/50 border border-emerald-500/40 rounded-xl sm:rounded-2xl text-white font-semibold hover:bg-slate-800 hover:border-emerald-500/60 transition-all text-base sm:text-lg backdrop-blur-sm">
                 Já tenho conta — Entrar
               </button>
             </div>
