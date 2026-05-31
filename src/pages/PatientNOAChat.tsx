@@ -63,7 +63,8 @@ const PatientNOAChat: React.FC = () => {
   const { user } = useAuth()
   const hasInitiatedRef = useRef(false)
 
-  const brainSrc = `${import.meta.env.BASE_URL}brain.png`
+  // V1.9.549 (Pedro 31/05): marca dagua usa logo nova neuro-organic.
+  const brainSrc = `${import.meta.env.BASE_URL}medcannlab-logo.png`
 
   // ── Partículas orbitais neon (para fundo) ──
   // Note: These will be behind the chat interface

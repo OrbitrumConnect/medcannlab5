@@ -967,7 +967,8 @@ const PatientDoctorChat: React.FC = () => {
     }
   }
 
-  const brainSrc = `${import.meta.env.BASE_URL}brain.png`
+  // V1.9.549 (Pedro 31/05): marca dagua usa logo nova neuro-organic.
+  const brainSrc = `${import.meta.env.BASE_URL}medcannlab-logo.png`
 
   const ambientParticles = useMemo(() => {
     return Array.from({ length: 18 }).map((_, idx) => ({

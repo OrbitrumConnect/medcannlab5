@@ -45,7 +45,8 @@ const PatientChat: React.FC = () => {
   const dropdownRef = useRef<HTMLDivElement>(null)
 
   const noaAvatarSrc = `${import.meta.env.BASE_URL}noa-avatar.png`
-  const brainSrc = `${import.meta.env.BASE_URL}brain.png`
+  // V1.9.549 (Pedro 31/05): marca dagua usa logo nova neuro-organic.
+  const brainSrc = `${import.meta.env.BASE_URL}medcannlab-logo.png`
 
   // ── Partículas orbitais neon ──
   const orbitalParticles = useMemo(() => {

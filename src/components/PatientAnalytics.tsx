@@ -312,7 +312,10 @@ const PatientAnalytics: React.FC<PatientAnalyticsProps> = ({ reports, loading, u
             .sort((a, b) => new Date(b.generated_at).getTime() - new Date(a.generated_at).getTime())
     }, [reports])
 
-    const brainSrc = `${import.meta.env.BASE_URL}brain.png`
+    // V1.9.549 (Pedro 31/05): marca dagua usa logo nova neuro-organic (rim+folhas+
+    // circuito) ao inves de brain.png — alinha identidade institucional da landing.
+    // Cabecalhos (Sidebar/LandingHeader/PatientSidebar) mantem brain.png intacto.
+    const brainSrc = `${import.meta.env.BASE_URL}medcannlab-logo.png`
 
     const ambientParticles = useMemo(() => {
         const count = 26
