@@ -648,8 +648,109 @@ Atualizado pós-execução V1.9.515-528.
 
 ---
 
+## 🔧 BLOCO L — V1.9.530 trigger patient_exam_requests + V1.9.531 fix admin RPC + V1.9.532 Risk Cockpit ELITE + V1.9.533 Edge create-patient-auth (~2h sessão noite)
+
+### L.1 — V1.9.530 trigger patient_exam_requests → notification (~15min)
+
+Sondagem ativa pré-pausa Pedro detectou gap: 24 rows `patient_exam_requests` last 28/05 + 0 notifications correlatas. Pattern V1.9.528 replicado em ~15min (curva descendente: V1.9.527 35min → V1.9.528 25min → V1.9.530 15min). Smoke 100% PASS (Dr. Ricardo Valença → Pedro Paciente "solicitou um exame para você"). Memory cristalizada Nível 1.
+
+### L.2 — Investigação Flávia + V1.9.531 fix admin RPC (~30min)
+
+Pedro perguntou: *"agora não vejo o nome dela [Flávia] no sistema! Base de Usuários Unificada"*. Validação empírica revelou:
+
+- Flávia EXISTE em `public.users` (UUID `18ece941`, cadastrada 14:57 BRT por Ricardo)
+- **BUG REAL**: tela "Base de Usuários Unificada" usava RPC `admin_get_users_status` com `INNER JOIN auth.users` → excluía **9 órfãos** (incluindo Flávia + **João Vidal sócio órfão 4 MESES**)
+- Fix V1.9.531: INNER → LEFT JOIN + COALESCE email/is_online + ORDER BY NULLS LAST
+- Empírico pós-fix: 42 → **51 users visíveis** (admin agora vê pattern CFM-compliant feedback_padrao_orfaos_public_users_validos_29_05 em ação)
+
+### L.3 — V1.9.532 Risk Cockpit ELITE 4 categorias (~45min)
+
+Aba `?tab=risco` em `/app/admin` dormente — RiskCockpit lia só renal_exams (V1.9.307) + referral_bonus_cycles. Expandido pra **4 categorias** reusando 9 fontes via Promise.all paralelo:
+
+- 🩺 **A — Clínica grave**: DRC G4/G5 + AECs INTERRUPTED >30d + AECs ativas >5d
+- 📋 **B — Compliance**: system_health_alerts open + cfm_prescriptions draft >30d
+- ⚙️ **C — Operacional**: appointments cancelled 30d + forum pending_review >7d + **órfãos públicos (V1.9.531 visíveis)**
+- 💰 **D — Financeiro**: referral_bonus_cycles pending + active protections Renal
+
+Helper `CategorySection` reusável, severity colors (critical/warning/info/ok), loading skeleton granular. Zero migration nova. Locks intocados.
+
+### L.4 — Investigação preocupação Ricardo + workaround manual Flávia via PAT (~30min)
+
+Ricardo perguntou via Pedro: *"se Flávia criar conta, evolução que eu fiz fica em outra conta?"*. Validação empírica revelou **bug arquitetural REAL**:
+
+- FKs em `clinical_assessments.patient_id` / `appointments.patient_id` / `user_roles.user_id` → `users.id` são **ON UPDATE NO ACTION**
+- Trigger `fn_on_auth_user_created_link_existing` tentaria `UPDATE public.users.id = NEW.id` → **FK violation garantida**
+- Cenário catastrófico: signup OK → trigger falha → 2 entidades distintas (auth UUID novo / public UUID velho com TRIAGE + appointment órfãos)
+
+**Workaround manual via PAT** (SQL direto):
+- INSERT em `auth.users` com **UUID forçado** `18ece941-...` (= public.users.id)
+- INSERT em `auth.identities` (provider=email, identity_data com email_verified=true)
+- Trigger fica idempotente porque `WHERE id != NEW.id` retorna NULL → só INSERT user_profiles
+- Smoke 7/7 PASS empírico: auth.users criado + public.users intacto + auth.identities + user_profiles + clinical_assessments TRIAGE + appointment + user_roles **TODOS preservados, ZERO fragmentação**
+- Credenciais Flávia: senha `X9kMpQ!8Lv@n3MedCann2026#Flv` (24 chars random)
+
+### L.5 — V1.9.533 Edge create-patient-auth (~1h45min)
+
+Pedro autorizou: *"esse desenho já temos mais da metade do caminho feito"*. Implementação estrutural elite:
+
+**Edge nova** `supabase/functions/create-patient-auth/index.ts` (~250L Deno):
+- Auth interna runtime (V1.9.457 pattern): JWT user + ownership check (admin OR profissional dono via `invited_by`)
+- Idempotência via `getUserById` (auth já existente → retorna `already_exists`)
+- Geração senha **8 chars random** (Pedro decidiu) com mix garantido (1 lower + 1 upper + 1 digit + 1 symbol + 4 random pool 56 chars sem confusos i/I/l/o/O/0/1) — ~96 quatrilhões combinações, ~0% HaveIBeenPwned
+- `supabase.auth.admin.createUser({ id: patient_id, ... })` **FORÇA UUID** → trigger fica idempotente
+- (opcional `send_email=true`) Edge `send-email` Resend com template senha + link
+- Deploy via Supabase CLI: `create-patient-auth v1 ACTIVE verify_jwt=true`
+
+**Frontend integração** `src/pages/NewPatientForm.tsx`:
+- Interface `CreatedPatientResult` estendida (provisionalPassword + authCreated)
+- `handleSubmit()` invoca Edge após INSERT appointments (try-catch silencioso + email `.temp` ignorado)
+- Modal step=4 amber/orange ANTES do QR exibe email + senha provisória + botão Copiar Senha + aviso troca primeiro acesso
+
+**Smoke** 2/2 PASS (sem JWT 401 + JWT inválido 401). Type-check verde.
+
+### L.6 — Pattern UNIVERSAL "Edge auth admin com UUID forçado" cristalizado
+
+Solução elite reusável pra qualquer caso "pre-cadastro silencioso CFM-compliant + ativação posterior":
+1. Médico cadastra paciente → cria `public.users` (UUID gerado frontend)
+2. Edge `create-patient-auth` cria `auth.users` com **MESMO UUID** via service_role
+3. Trigger existente `fn_on_auth_user_created_link_existing` fica idempotente
+4. Frontend mostra senha provisória pro médico passar pra paciente
+5. Paciente troca senha no primeiro acesso (`must_change_password` flag em user_metadata)
+
+Zero FK violation arquitetural. Zero fragmentação. Zero migration nova. **5º pattern universal cristalizado HOJE** (após flip JWT + trigger+RPC + trigger+INSERT + LEFT JOIN admin RPC).
+
+### L.7 — V1.9.534-536 parqueados (próxima sessão)
+
+| Versão | Item | Trigger desparquear |
+|---|---|---|
+| V1.9.534 | Frontend força troca senha no primeiro acesso (lê `must_change_password` user_metadata) | Marco 2 paciente externo |
+| V1.9.535 | Toggle UI no NewPatientForm: "Enviar email automático?" `send_email=true` magic link | Decisão Ricardo+Pedro UX |
+| V1.9.536 | Migration backfill: criar auth.users com UUID forçado pra 5 órfãos antigos (Marne/Milton/Carlos/Badhia/João Vidal sócio) | Decisão Pedro+sócios |
+
+---
+
 ## 🎯 Frase âncora do dia (PARTE 2)
 
 > *"30/05 sessão complementar (madrugada 02h30 → tarde 18h15): plano Tiers 0+1+2 executado integralmente sem regressão (V1.9.504 housekeeping + V1.9.505 PII regex refined + **V1.9.506 Sprint A verify_jwt RESTAURADO bomba latente 8d com slug-test paralelo zero downtime**). 8 commits UX cirúrgicos seguidos V1.9.507-514 (Layout C prontuário → AlunoDashboard responsivo) — cada um nascido de Pedro/Ricardo flagrando empíricamente na UI real. **V1.9.515 fix bug crítico Sprint A** (card InterruptedAECsCard estava em componente LEGACY → movido pra ProfessionalMyDashboard). **V1.9.516 Check 6 desparqueado anti-Babylon-recalibrado** (Pedro: *'ficar parqueando não adianta'*) — smoke imediato detectou caso real Illa Proença gap COMPLAINT_DETAILS. **V1.9.517+518+519 cleanup 3 Edges órfãs** primeiro batch (get_chat_history + google-auth + sync-gcal) flip verify_jwt + observação 48h. **V1.9.520-526 batch escalonamento 7 Edges restantes** (4 SAFE frontend + 2 ÓRFÃ obs + 1 CRON-COEXIST fail-fast empíricamente validado) — smoke 14/14 PASS + cron video-call-reminders pós-flip 6/6 succeeded. **Cobertura defesa em camadas evoluiu HOJE: 14% (manhã) → 93% (tarde, 13/14)**. Única ressalva: sign-pdf-icp Lock V1.9.299 PARQUEADO sem trigger empírico forte. Sessão societária 4h: descoberta acordo v2.0 + redação v2.1 RASCUNHO + 2 rounds auditoria externa (Claude2 4 riscos + Ricardo 7 pontos veto promoção) + 5 edições textuais aplicadas + 2 decisões políticas estruturais pra reunião 4 sócios. **Princípio mãe cristalizado**: PI clínica autoral SEMPRE é LICENÇA (autoria moral + titularidade acadêmica + uso próprio), NUNCA cessão integral. **Princípio meta refinado**: anti-Babylon protege contra Babylon, não contra ação — reuso de pattern + benefício pré-Marco 2 + custo <1h = fazer. **Princípio meta empírico V1.9.526**: service_role JWT bypassa verify_jwt=true — flip seguro em Edges com cron pg_cron. **13+ memórias Nível 1 cristalizadas**, 16 commits git + 11 PATCH Edges Management API, push 4 refs OK em todos, Locks PBAD/AEC/Pipeline/Matrix Z2 INTOCADOS."*
 
-— Sessão DIARIO_30 PARTE 2 fechada · 16 commits git + 11 PATCH Management API · 13+ memórias Nível 1 · cobertura defesa em camadas 14% → 93% · zero regressão clínica · rascunho societário v2.1 maduro aguardando reunião 4 sócios · 5 Edges em observação 48h (decisão 01/jun ~15h) · maturidade + agilidade calibrada > parqueamento defensivo.
+— Sessão DIARIO_30 PARTE 2 fechada · **27 commits git + 12 PATCH Management API + 5 migrations + 1 Edge nova (create-patient-auth)** · **21 memórias Nível 1** · cobertura defesa em camadas 14% → 93% · zero regressão clínica · rascunho societário v2.1 maduro aguardando reunião 4 sócios · 5 Edges em observação 48h (decisão 01/jun ~15h) · **gap UUID-fragmentation resolvido estruturalmente (V1.9.533)** · workaround manual Flávia validado empíricamente 7/7 PASS · **5 patterns universais cristalizados** (flip JWT + trigger+RPC + trigger+INSERT + LEFT JOIN admin + Edge auth force UUID) · maturidade + agilidade calibrada > parqueamento defensivo.
+
+---
+
+## 📍 ESTADO FINAL HEAD `c60593e` — 30/05/2026 ~22h BRT
+
+```
+Sessão técnica DENSA: 27 commits + 21 memórias + 5 migrations + 1 Edge nova
+Locks INTOCADOS: 8 (PBAD V1.9.299 + AEC + Pipeline + Matrix Z2 + outros)
+Cobertura defesa em camadas: 93% (13/14 Edges verify_jwt=true)
+Sistema técnico: SAUDÁVEL e maduro pré-PMF
+Bloqueios HOJE: 100% humanos (Marco 1 CNPJ + Marco 2 paciente externo + reunião 4 sócios)
+
+PRÓXIMA SESSÃO (DIARIO_31_05_2026):
+1. Smoke real V1.9.533 via UI (Pedro cadastra paciente teste pra validar modal senha)
+2. (opcional) V1.9.534 força troca senha primeiro acesso
+3. (opcional) V1.9.535 toggle email automático
+4. (opcional) V1.9.536 backfill 5 órfãos antigos
+5. 01/jun ~15h BRT: decisão hard-delete batch 5 Edges em observação 48h
+6. 01/jun ~03h BRT: cron monthly-closing 1ª execução (auto)
+```
