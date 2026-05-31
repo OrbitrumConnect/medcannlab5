@@ -383,17 +383,9 @@ const NewPatientForm: React.FC = () => {
       role: 'paciente'
     }).single()
 
-    // Criar avaliação clínica inicial
-    if (currentUser?.id) {
-      await supabase.from('clinical_assessments').insert({
-        patient_id: patientId,
-        doctor_id: currentUser.id,
-        assessment_type: 'INITIAL',
-        status: 'pending',
-        data: { cpf: patientData.cpf || null, gender: patientData.sexo || null },
-        created_at: new Date().toISOString()
-      })
-    }
+    // V1.9.534: INSERT clinical_assessments removido — status='pending' violava
+    // CHECK constraint (apenas in_progress/completed/reviewed aceitos). Dead code
+    // desde criação do CHECK. Vínculo médico-paciente via appointments/AEC/share.
   }
 
   const getFileIcon = (type: string) => {
@@ -517,31 +509,8 @@ const NewPatientForm: React.FC = () => {
         role: 'paciente'
       })
 
-      // Criar avaliação clínica inicial vinculada ao profissional REAL
-      const { error: assessmentError } = await supabase
-        .from('clinical_assessments')
-        .insert({
-          patient_id: patientId,
-          doctor_id: currentProfessional.id,
-          assessment_type: 'INITIAL',
-          status: 'pending',
-          data: {
-            cpf: formData.cpf || null,
-            age,
-            gender: formData.gender,
-            specialty: formData.specialty,
-            referringDoctor: formData.referringDoctor,
-            room: formData.room,
-            observations: formData.observations,
-            patientCode,
-            registeredBy: currentProfessional.name
-          },
-          created_at: new Date().toISOString()
-        })
-
-      if (assessmentError) {
-        console.error('Erro ao criar avaliação clínica:', assessmentError)
-      }
+      // V1.9.534: INSERT clinical_assessments removido — status='pending' violava
+      // CHECK constraint (dead code). Vínculo via appointments abaixo + AEC futura.
 
       // Criar agendamento inicial (link profissional-paciente via appointments)
       await supabase.from('appointments').insert({

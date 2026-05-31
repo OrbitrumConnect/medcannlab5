@@ -75,7 +75,6 @@ interface FullRecord {
   created_at: string
   record_type: string | null
   record_data: any
-  title: string | null
 }
 
 const KIND_META: Record<EvolutionKind, { label: string; icon: any; colorClass: string; bgClass: string; borderClass: string }> = {
@@ -163,7 +162,7 @@ export const EvolutionDetailModal: React.FC<Props> = ({ isOpen, evolution, patie
         } else if (evolution.kind === 'chat-ia' || evolution.source === 'record') {
           const { data, error: err } = await (supabase as any)
             .from('patient_medical_records')
-            .select('id, created_at, record_type, record_data, title')
+            .select('id, created_at, record_type, record_data')
             .eq('id', evolution.id)
             .maybeSingle()
           if (err) throw err
@@ -334,9 +333,6 @@ export const EvolutionDetailModal: React.FC<Props> = ({ isOpen, evolution, patie
           ) : fullRecord ? (
             // chat-ia (patient_medical_records) → record_data
             <div className="space-y-3">
-              {fullRecord.title && (
-                <h3 className="text-sm font-semibold text-white">{fullRecord.title}</h3>
-              )}
               {fullRecord.record_type && (
                 <div className="text-[11px] uppercase tracking-wide text-slate-500">
                   Tipo: <span className="text-slate-300">{fullRecord.record_type}</span>
