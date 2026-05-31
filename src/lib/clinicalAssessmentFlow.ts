@@ -432,20 +432,32 @@ export class ClinicalAssessmentFlow {
         // [V1.9.75 TRACE] persist-snapshot: ver exatamente o que vai pro banco
         const _s = state as AssessmentState
         console.log(`[AEC TRACE] persist-snapshot | uid=${(uid as string).substring(0,8)} phase=${_s.phase} qIdx=${_s.currentQuestionIndex} iter=${_s.phaseIterationCount} sizes={lifestyle:${_s.data.lifestyleHabits?.length||0},fammat:${_s.data.familyHistoryMother?.length||0},famfat:${_s.data.familyHistoryFather?.length||0},hpp:${_s.data.medicalHistory?.length||0},melhora:${_s.data.complaintImprovements?.length||0},piora:${_s.data.complaintWorsening?.length||0}}`)
+        // V1.9.546 BUG FIX cravado 31/05: persist() OMITIA consent_given +
+        // consent_at no upsert → coluna ficava no default false PRA SEMPRE,
+        // MESMO QUANDO paciente dava consent ("Sim" no chat) E state.data.consentGiven
+        // virava true in-memory. Bug afetava TODOS pacientes que completavam AEC
+        // desde sempre (validado empíricamente Flávia + Maria das Dores + Pedro
+        // Paciente + Mateus + Maria Helena Chaves + outros). Fix: persistir
+        // consent_given derivado de state.data.consentGiven + timestamp consent_at.
+        const _stateAny = state as AssessmentState
+        const _consentGiven = !!_stateAny.data?.consentGiven
         const { error } = await supabase
           .from('aec_assessment_state')
           .upsert([{
             user_id: uid as string,
-            phase: (state as AssessmentState).phase,
-            data: JSON.parse(JSON.stringify((state as AssessmentState).data)),
-            current_question_index: (state as AssessmentState).currentQuestionIndex,
-            waiting_for_more: (state as AssessmentState).waitingForMore,
-            phase_iteration_count: (state as AssessmentState).phaseIterationCount,
-            interrupted_from_phase: (state as AssessmentState).interruptedFromPhase || null,
-            started_at: (state as AssessmentState).startedAt.toISOString(),
+            phase: _stateAny.phase,
+            data: JSON.parse(JSON.stringify(_stateAny.data)),
+            current_question_index: _stateAny.currentQuestionIndex,
+            waiting_for_more: _stateAny.waitingForMore,
+            phase_iteration_count: _stateAny.phaseIterationCount,
+            interrupted_from_phase: _stateAny.interruptedFromPhase || null,
+            started_at: _stateAny.startedAt.toISOString(),
             // [V1.9.1] completed_phases — acompanha as fases percorridas.
             // A coluna is_complete (GENERATED) do banco deriva de completed_phases @> required_phases.
-            completed_phases: (state as AssessmentState).completedPhases || [],
+            completed_phases: _stateAny.completedPhases || [],
+            // V1.9.546: consent_given + consent_at (bug fix dessincronização FSM↔DB)
+            consent_given: _consentGiven,
+            consent_at: _consentGiven ? new Date().toISOString() : null,
           } as any], { onConflict: 'user_id' })
 
         if (error) {
@@ -1241,8 +1253,20 @@ export class ClinicalAssessmentFlow {
           state.data.consentGiven = true
           state.data.consentTimestamp = new Date().toISOString()
           this.markPhaseCompleted(state, 'CONSENT_COLLECTION')
-          state.phase = 'FINAL_RECOMMENDATION'
+          // V1.9.546 Fix B (BUG cravado 31/05): marca FINAL_RECOMMENDATION + COMPLETED
+          // no MESMO turno do consent "sim" (era preciso paciente mandar mais 1 msg pra
+          // case 'FINAL_RECOMMENDATION' disparar markCompleted — paciente que fechava
+          // app pós-consent ficava em FINAL_RECOMMENDATION → trigger temporal marcava
+          // INTERRUPTED depois). Empírico: 4 pacientes afetados (Flávia + Maria das
+          // Dores + Maria Helena Chaves + Mateus Chagas) ficaram INTERRUPTED apesar
+          // de terem dado consent — backfill PAT corrigiu rows; fix code previne
+          // novos casos.
+          this.markPhaseCompleted(state, 'FINAL_RECOMMENDATION')
+          state.phase = 'COMPLETED'
           state.lastUpdate = new Date()
+          // Persistir imediatamente o estado COMPLETED + consent_given=true (V1.9.546
+          // persist Fix A já garante consent_given coluna sincronizada).
+          void this.persist(userId)
           const doc = this.physicianDisplay(state)
           const scheduleTarget = doc || 'o profissional disponível na plataforma'
           const presentTarget = doc || 'o profissional escolhido'
@@ -1257,8 +1281,8 @@ export class ClinicalAssessmentFlow {
               'Essa é uma avaliação inicial de acordo com o método desenvolvido pelo Dr. Ricardo Valença, com o objetivo de aperfeiçoar o seu atendimento. ' +
               `Apresente sua avaliação durante a consulta com ${presentTarget} na plataforma Med-Cann Lab.\n\n` +
               '[ASSESSMENT_COMPLETED]',
-            phase: 'FINAL_RECOMMENDATION',
-            isComplete: false
+            phase: 'COMPLETED',
+            isComplete: true
           }
         } else if (lowerResponse.includes('não') || lowerResponse.includes('nao') || lowerResponse.includes('recuso')) {
           state.data.consentGiven = false
