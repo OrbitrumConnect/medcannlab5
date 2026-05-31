@@ -133,11 +133,27 @@ function TeamHealthBadge({ score, memberCount }: { score: number; memberCount: n
     orange:  'from-orange-500/20 to-orange-700/10 border-orange-500/30 text-orange-300',
     red:     'from-red-500/20 to-red-700/10 border-red-500/30 text-red-300',
   }[tier.color]
+  // V1.9.536: tooltip explicativo da fórmula (gap UX flagrado 31/05 — fórmula
+  // existia só no código, médico via número sem entender composição).
+  const formulaTooltip =
+    `Saúde da Equipe = ${score}% (${tier.label})\n\n` +
+    `Composição (pesos):\n` +
+    `• 40% taxa de aceite de chamadas de vídeo\n` +
+    `• 30% proporção de membros online/recentes\n` +
+    `• 30% latência média de resposta (quanto menor, melhor)\n\n` +
+    `Limiar visual:\n` +
+    `• 85%+ Excelente · 70%+ Bom · 50%+ Atenção · <50% Crítico`
   return (
-    <div className={`flex items-center gap-3 px-4 py-3 rounded-xl bg-gradient-to-br ${colorClasses} border`}>
+    <div
+      className={`flex items-center gap-3 px-4 py-3 rounded-xl bg-gradient-to-br ${colorClasses} border cursor-help`}
+      title={formulaTooltip}
+    >
       <Heart className="w-5 h-5" />
       <div>
-        <div className="text-[10px] uppercase tracking-wide opacity-70">Saúde da Equipe</div>
+        <div className="text-[10px] uppercase tracking-wide opacity-70 flex items-center gap-1">
+          Saúde da Equipe
+          <Info className="w-2.5 h-2.5 opacity-60" />
+        </div>
         <div className="flex items-center gap-2">
           <span className="text-2xl font-bold tabular-nums">{score}%</span>
           <span className="text-xs">· {tier.label}</span>
@@ -696,6 +712,22 @@ const TeamManagement: React.FC = () => {
     )
   }, [team])
 
+  // V1.9.536: alertas operacionais — membros aceitos com inatividade significativa.
+  // Reusa minutes_since_seen já presente em TeamMember (zero query extra).
+  // Limiares: >30d critical / 7-30d warning. Convites pendentes (accepted_at=null)
+  // ficam fora — esses têm fluxo próprio "Convites Recebidos" no topo.
+  const inactivityAlerts = useMemo(() => {
+    const items: { member: TeamMember; days: number; severity: 'critical' | 'warning' }[] = []
+    team.forEach(m => {
+      if (m.accepted_at == null) return  // pulsa só convites aceitos
+      if (m.minutes_since_seen == null) return  // sem dado de presence
+      const days = Math.floor(m.minutes_since_seen / 1440)
+      if (days >= 30) items.push({ member: m, days, severity: 'critical' })
+      else if (days >= 7) items.push({ member: m, days, severity: 'warning' })
+    })
+    return items.sort((a, b) => b.days - a.days)
+  }, [team])
+
   // V1.9.187 — Filter + pagination
   const [filterMode, setFilterMode] = useState<'all' | 'online' | 'backup' | 'official'>('all')
   const [page, setPage] = useState(1)
@@ -966,6 +998,48 @@ const TeamManagement: React.FC = () => {
           </p>
         </div>
       </div>
+
+      {/* V1.9.536: Alertas operacionais — membros da MINHA equipe com inatividade.
+          Reusa minutes_since_seen sem query extra. Critical >=30d / Warning 7-30d.
+          Convites pendentes têm fluxo próprio (banner no topo). */}
+      {inactivityAlerts.length > 0 && (
+        <div className="bg-slate-800/30 backdrop-blur-md border border-slate-700/40 rounded-xl p-4">
+          <h3 className="text-xs uppercase tracking-wider text-slate-400 flex items-center gap-2 mb-3">
+            <AlertTriangle className="w-3.5 h-3.5 text-amber-400" /> Alertas operacionais
+            <span
+              className="inline-flex items-center gap-1 text-[10px] normal-case tracking-normal text-slate-500"
+              title="Membros da sua equipe que aceitaram convite mas estão sem acessar a plataforma. >=30 dias críticos / 7-30 dias atenção."
+            >
+              <Info className="w-3 h-3" /> inatividade
+            </span>
+          </h3>
+          <div className="space-y-2">
+            {inactivityAlerts.map(({ member, days, severity }) => {
+              const colorClass = severity === 'critical'
+                ? 'border-red-500/30 bg-red-500/5'
+                : 'border-amber-500/30 bg-amber-500/5'
+              const dotColor = severity === 'critical' ? 'bg-red-400' : 'bg-amber-400'
+              const labelText = severity === 'critical' ? 'Crítico' : 'Atenção'
+              const labelColor = severity === 'critical' ? 'text-red-300' : 'text-amber-300'
+              return (
+                <div key={member.id} className={`flex items-center gap-3 px-3 py-2 rounded-lg border ${colorClass}`}>
+                  <span className={`w-2 h-2 rounded-full ${dotColor} shrink-0`} />
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="text-sm font-medium text-white truncate">{member.member_name}</span>
+                      <span className="text-[10px] text-slate-400 truncate">{member.member_specialty}</span>
+                    </div>
+                    <div className="text-[11px] text-slate-400 mt-0.5">
+                      Sem acesso há <span className="text-slate-200 font-medium">{days} dia{days !== 1 ? 's' : ''}</span>
+                    </div>
+                  </div>
+                  <span className={`text-[10px] font-semibold uppercase ${labelColor} shrink-0`}>{labelText}</span>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      )}
 
       {/* Mapa de Carga — V1.9.430: rótulo honesto + botão refresh manual.
           A % por membro é comparação RELATIVA (não saturação real); capacidade
