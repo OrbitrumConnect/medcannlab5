@@ -385,6 +385,18 @@ const PatientsManagement: React.FC<PatientsManagementProps> = ({ embedded = fals
   const [loading, setLoading] = useState(true)
   const [evolutions, setEvolutions] = useState<Evolution[]>([])
   const [loadingEvolutions, setLoadingEvolutions] = useState(false)
+  // V1.9.540: estado por grupo de Evolução — colapsar/expandir + paginação 10/grupo.
+  // Default: chat-ia COLAPSADO (já é ruidoso por design), demais EXPANDED.
+  // Defaults page=1. Trocar paciente reseta (useEffect abaixo).
+  const [collapsedEvolutionGroups, setCollapsedEvolutionGroups] = useState<Set<EvolutionKind>>(
+    () => new Set<EvolutionKind>(['chat-ia'])
+  )
+  const [evolutionGroupPages, setEvolutionGroupPages] = useState<Record<EvolutionKind, number>>({
+    'doctor-evolution': 1,
+    'aec-report': 1,
+    'assessment-other': 1,
+    'chat-ia': 1,
+  })
   const [showNewPatientMenu, setShowNewPatientMenu] = useState(false)
   // V1.9.440 — Atalho "Enviar Link de Indicação" no menu Novo Paciente
   const [showReferralModal, setShowReferralModal] = useState(false)
@@ -1274,6 +1286,8 @@ const PatientsManagement: React.FC<PatientsManagementProps> = ({ embedded = fals
       })
 
       setEvolutions(evolutionsList)
+      // V1.9.540: reset paginação ao recarregar evoluções (trocou paciente / novo dado)
+      setEvolutionGroupPages({ 'doctor-evolution': 1, 'aec-report': 1, 'assessment-other': 1, 'chat-ia': 1 })
       console.log('✅ Evoluções carregadas:', evolutionsList.length)
     } catch (error) {
       console.error('Erro ao carregar evoluções:', error)
@@ -2299,18 +2313,43 @@ const PatientsManagement: React.FC<PatientsManagementProps> = ({ embedded = fals
                                   if (items.length === 0) return null
                                   const meta = EVOLUTION_KIND_META[k]
                                   const Icon = meta.icon
+                                  // V1.9.540: paginação 10/grupo + colapsável (dropdown).
+                                  // chat-ia colapsado por default (ruído natural).
+                                  const isCollapsed = collapsedEvolutionGroups.has(k)
+                                  const currentPage = evolutionGroupPages[k] || 1
+                                  const PAGE_SIZE = 10
+                                  const totalPages = Math.max(1, Math.ceil(items.length / PAGE_SIZE))
+                                  const safePage = Math.min(currentPage, totalPages)
+                                  const pageStart = (safePage - 1) * PAGE_SIZE
+                                  const pageEnd = Math.min(pageStart + PAGE_SIZE, items.length)
+                                  const visibleItems = isCollapsed ? [] : items.slice(pageStart, pageEnd)
+                                  const toggleCollapsed = () => {
+                                    setCollapsedEvolutionGroups(prev => {
+                                      const next = new Set(prev)
+                                      if (next.has(k)) next.delete(k); else next.add(k)
+                                      return next
+                                    })
+                                  }
                                   return (
                                     <div key={k} className={`rounded-xl border ${meta.borderClass} ${meta.bgClass} p-3 space-y-3`}>
-                                      {/* Header semantico do grupo */}
-                                      <div className="flex items-center gap-2 px-1">
+                                      {/* Header semantico do grupo — clica colapsa/expande */}
+                                      <button
+                                        type="button"
+                                        onClick={toggleCollapsed}
+                                        className="w-full flex items-center gap-2 px-1 -mx-1 py-1 rounded-md hover:bg-slate-800/40 transition-colors text-left"
+                                        title={isCollapsed ? 'Clique para expandir' : 'Clique para colapsar'}
+                                      >
                                         <Icon className={`w-4 h-4 ${meta.colorClass} flex-shrink-0`} />
                                         <h4 className={`text-sm font-semibold ${meta.colorClass}`}>{meta.label}</h4>
                                         <span className="text-[10px] text-slate-500 font-normal">
                                           · {items.length}
                                         </span>
-                                      </div>
+                                        <ChevronDown
+                                          className={`w-3.5 h-3.5 ml-auto text-slate-400 transition-transform ${isCollapsed ? '' : 'rotate-180'}`}
+                                        />
+                                      </button>
                                       {/* Cards individuais (preserva V1.9.x comportamento) */}
-                                      {items.map((evolution) => {
+                                      {visibleItems.map((evolution) => {
                                         const isHighlighted = highlightEvolutionId === evolution.id
                                         return (
                                           // V1.9.498 (Ricardo 29/05): card vira button — click abre
@@ -2361,6 +2400,35 @@ const PatientsManagement: React.FC<PatientsManagementProps> = ({ embedded = fals
                                           </div>
                                         )
                                       })}
+                                      {/* V1.9.540: Footer paginação — só quando expandido E há mais de 10 itens */}
+                                      {!isCollapsed && totalPages > 1 && (
+                                        <div className="flex items-center justify-between px-1 pt-2 border-t border-slate-700/40">
+                                          <span className="text-[11px] text-slate-500">
+                                            {pageStart + 1}–{pageEnd} de {items.length}
+                                          </span>
+                                          <div className="flex items-center gap-1">
+                                            <button
+                                              type="button"
+                                              onClick={() => setEvolutionGroupPages(prev => ({ ...prev, [k]: Math.max(1, safePage - 1) }))}
+                                              disabled={safePage <= 1}
+                                              className="px-2 py-1 rounded-md text-[11px] text-slate-300 hover:bg-slate-700/50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                                            >
+                                              ← Anterior
+                                            </button>
+                                            <span className="text-[11px] text-slate-500 px-1">
+                                              {safePage}/{totalPages}
+                                            </span>
+                                            <button
+                                              type="button"
+                                              onClick={() => setEvolutionGroupPages(prev => ({ ...prev, [k]: Math.min(totalPages, safePage + 1) }))}
+                                              disabled={safePage >= totalPages}
+                                              className="px-2 py-1 rounded-md text-[11px] text-slate-300 hover:bg-slate-700/50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                                            >
+                                              Próxima →
+                                            </button>
+                                          </div>
+                                        </div>
+                                      )}
                                     </div>
                                   )
                                 })
