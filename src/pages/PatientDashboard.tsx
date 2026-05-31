@@ -181,7 +181,8 @@ const PatientDashboard: React.FC = () => {
 
   return (
     // V1.9.237: densificacao laptop (md:p-8 -> md:p-6 + space-y-8 -> space-y-6) — mobile (<768) intacto
-    <div className="p-4 md:p-6 max-w-7xl mx-auto w-full space-y-6">
+    // V1.9.544: max-w-7xl (1280px) -> max-w-screen-2xl (1536px) padronizacao 4K/QHD
+    <div className="p-4 md:p-6 max-w-screen-2xl mx-auto w-full space-y-6">
       {activeTab === 'analytics' && (
         <>
           {/* V1.9.275: banner consent direcionamento (LGPD art. 11 §1) — aparece só

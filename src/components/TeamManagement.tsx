@@ -884,8 +884,10 @@ const TeamManagement: React.FC = () => {
 
   return (
     // V1.9.276 — Aproveita largura ultra-wide: max-w-5xl (1024px) → max-w-7xl (1280px, +25%).
+    // V1.9.544 — Subido pra max-w-screen-2xl (1536px) — sweet spot QHD/4K sem
+    // estourar laptops. Padronização consistente entre paginas principais.
     // Padding mais generoso (p-4 → p-6) pra respiração lateral.
-    <div className="p-6 space-y-5 max-w-7xl mx-auto">
+    <div className="p-6 space-y-5 max-w-screen-2xl mx-auto">
       {/* V1.9.188 — Banner Convites Recebidos (sino + banner inline) */}
       {pendingInvites.length > 0 && (
         <div className="rounded-xl border border-purple-500/40 bg-gradient-to-br from-purple-500/10 to-indigo-600/10 backdrop-blur-md p-4 space-y-3">

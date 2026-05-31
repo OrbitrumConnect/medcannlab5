@@ -693,7 +693,12 @@ const ProfessionalMyDashboard: React.FC = () => {
 
   return (
     <div className="min-h-screen text-white" style={{ background: backgroundGradient }}>
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      {/* V1.9.544: container mx-auto trava em xl (1280px) em telas 4K, deixando
+          ~2560px de margem vazia em monitores 41". Trocado por max-w-screen-2xl
+          (1536px) — sweet spot que aproveita largura QHD/4K sem estourar laptops
+          (em <1536px usa 100% via mx-auto). Padronização consistente entre paginas
+          principais (ProfessionalMyDashboard + TeamManagement + outras dashboards). */}
+      <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         {/* Header — compacto, pro: avatar + nome + XP + ranking + Editar perfil */}
         <div className="mb-4 pb-3 border-b border-white/10">
           <div className="flex items-center gap-3 flex-wrap">

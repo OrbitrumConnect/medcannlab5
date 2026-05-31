@@ -1007,7 +1007,8 @@ const AlunoDashboard: React.FC = () => {
       data-page="aluno-dashboard"
     >
       <div className="px-4 py-3 md:px-6 md:py-4">
-        <div className="max-w-7xl mx-auto space-y-6">
+        {/* V1.9.544: max-w-7xl -> max-w-screen-2xl padronizacao 4K/QHD */}
+        <div className="max-w-screen-2xl mx-auto space-y-6">
           <div className="w-full max-w-full mx-auto overflow-x-hidden space-y-6">
             {/* Dashboard Principal (Workstation) */}
             {activeTab === 'dashboard' && (
