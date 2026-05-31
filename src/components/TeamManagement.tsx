@@ -968,7 +968,7 @@ const TeamManagement: React.FC = () => {
               <Star className="w-4 h-4 text-amber-400" />
             </h2>
             <p className="text-xs text-slate-400">
-              Profissionais que recebem seus pacientes em fallback · status em tempo real · analytics
+              Sua rede · presença em tempo real
             </p>
           </div>
         </div>
@@ -986,17 +986,14 @@ const TeamManagement: React.FC = () => {
         </div>
       </div>
 
-      {/* Info banner — preservado */}
-      <div className="bg-slate-800/40 backdrop-blur-md border border-slate-700/50 rounded-xl p-4 flex items-start gap-3">
-        <AlertTriangle className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" />
-        <div className="text-sm text-slate-300">
-          <p>Quando sua agenda estiver cheia, pacientes verão os membros da sua equipe como alternativa.</p>
-          <p className="text-slate-400 mt-1">
-            Membros com status <strong>Backup</strong> são priorizados ·
-            <span className="text-yellow-400"> ⚡ glow dourado</span> ·
-            <span className="text-emerald-400"> 🟢 online em tempo real</span>
-          </p>
-        </div>
+      {/* V1.9.537: banner compactado (era 2 parágrafos → 1 linha + tooltip) */}
+      <div
+        className="bg-slate-800/30 border border-slate-700/40 rounded-lg px-3 py-2 flex items-center gap-2 text-xs text-slate-400"
+        title="Quando sua agenda estiver cheia, pacientes verão os membros da sua equipe como alternativa. Backup é priorizado (glow dourado). Online em tempo real (verde)."
+      >
+        <AlertTriangle className="w-3.5 h-3.5 text-amber-400/80 shrink-0" />
+        <span>Equipe atua como fallback quando agenda cheia. Backup priorizado.</span>
+        <Info className="w-3 h-3 opacity-50 ml-auto" />
       </div>
 
       {/* V1.9.536: Alertas operacionais — membros da MINHA equipe com inatividade.
