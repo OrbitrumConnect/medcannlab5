@@ -42,6 +42,9 @@ interface CreatedPatientResult {
   email: string
   code: string
   inviteLink: string
+  // V1.9.533: senha provisória gerada pela Edge create-patient-auth (opcional)
+  provisionalPassword?: string
+  authCreated?: boolean
 }
 
 const NewPatientForm: React.FC = () => {
@@ -62,6 +65,8 @@ const NewPatientForm: React.FC = () => {
   const [dragDropFiles, setDragDropFiles] = useState<UploadedFile[]>([])
   const [createdPatient, setCreatedPatient] = useState<CreatedPatientResult | null>(null)
   const [linkCopied, setLinkCopied] = useState(false)
+  // V1.9.533: UI feedback copiar senha provisória
+  const [passwordCopied, setPasswordCopied] = useState(false)
 
   // Ler modo da URL
   useEffect(() => {
@@ -561,16 +566,52 @@ const NewPatientForm: React.FC = () => {
         }
       }
 
+      // V1.9.533 — Edge create-patient-auth cria auth.users com UUID forçado
+      // (resolve gap "infra pre-cadastro silencioso → órfão sem login"
+      //  identificado empíricamente no caso Flávia 30/05).
+      // Try-catch silencioso: se falhar, frontend continua com QR/link fallback.
+      let provisionalPassword: string | undefined
+      let authCreated = false
+      try {
+        const isRealEmail = patientEmail && !patientEmail.endsWith('@medcannlab.temp')
+        if (isRealEmail) {
+          const { data: authResult, error: authErr } = await supabase.functions.invoke(
+            'create-patient-auth',
+            {
+              body: {
+                patient_id: patientId,
+                email: patientEmail,
+                name: formData.name,
+                send_email: false, // por ora médico exibe senha pro paciente — futuro: toggle UI
+              },
+            }
+          )
+          if (!authErr && authResult?.success && authResult?.password_provisional) {
+            provisionalPassword = authResult.password_provisional
+            authCreated = true
+          } else if (authResult?.already_exists) {
+            authCreated = true // conta já existia (idempotente)
+          } else if (authErr) {
+            console.warn('[V1.9.533] create-patient-auth falhou:', authErr.message)
+          }
+        }
+      } catch (e) {
+        // Fallback silencioso — médico ainda tem QR/link
+        console.warn('[V1.9.533] Edge invoke exception:', e)
+      }
+
       // Gerar link de convite
       const inviteLink = generateInviteLink(currentProfessional.id)
 
-      // Mostrar tela de sucesso com QR Code
+      // Mostrar tela de sucesso com QR Code (V1.9.533: + senha provisória se criada)
       setCreatedPatient({
         id: patientId,
         name: formData.name,
         email: patientEmail,
         code: patientCode,
-        inviteLink
+        inviteLink,
+        provisionalPassword,
+        authCreated
       })
       setStep(4) // Step 4 = Tela de sucesso
 
@@ -763,6 +804,53 @@ const NewPatientForm: React.FC = () => {
                 </div>
               </div>
             </div>
+
+            {/* V1.9.533 — Senha provisória (se Edge create-patient-auth criou conta) */}
+            {createdPatient.provisionalPassword && (
+              <div className="bg-gradient-to-br from-amber-500/10 to-orange-500/10 border border-amber-500/30 rounded-xl p-6 mb-6">
+                <div className="flex items-center space-x-2 mb-4">
+                  <CheckCircle className="w-6 h-6 text-amber-400" />
+                  <h3 className="text-xl font-bold text-white">Conta de acesso criada</h3>
+                </div>
+                <p className="text-slate-300 text-sm mb-4">
+                  A conta de acesso do paciente foi criada automaticamente. <strong>Anote ou compartilhe estas credenciais com o paciente</strong> — ele deve trocar a senha no primeiro acesso pelo perfil dele.
+                </p>
+                <div className="bg-slate-900/60 rounded-lg p-4 space-y-3 border border-slate-700/50">
+                  <div>
+                    <label className="block text-xs text-slate-400 mb-1 uppercase tracking-wide">Email</label>
+                    <p className="text-sm text-white font-mono">{createdPatient.email}</p>
+                  </div>
+                  <div>
+                    <label className="block text-xs text-slate-400 mb-1 uppercase tracking-wide">Senha provisória</label>
+                    <div className="flex items-center gap-2">
+                      <code className="flex-1 px-4 py-3 bg-slate-800 text-amber-300 rounded-lg text-base font-mono border border-amber-500/30 select-all">
+                        {createdPatient.provisionalPassword}
+                      </code>
+                      <button
+                        onClick={async () => {
+                          try {
+                            await navigator.clipboard.writeText(createdPatient.provisionalPassword || '')
+                            setPasswordCopied(true)
+                            setTimeout(() => setPasswordCopied(false), 2500)
+                          } catch { /* noop */ }
+                        }}
+                        className={`px-4 py-3 rounded-lg font-semibold text-sm transition-all flex items-center gap-2 ${
+                          passwordCopied
+                            ? 'bg-emerald-500 text-white'
+                            : 'bg-amber-600 hover:bg-amber-500 text-white'
+                        }`}
+                      >
+                        {passwordCopied ? <CheckCircle className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                        {passwordCopied ? 'Copiada!' : 'Copiar senha'}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+                <p className="text-xs text-amber-300/80 mt-3">
+                  ⚠️ Por segurança, oriente o paciente a trocar a senha no primeiro acesso pelo perfil dele.
+                </p>
+              </div>
+            )}
 
             {/* QR Code + Link */}
             <div className="bg-gradient-to-br from-emerald-500/10 to-blue-500/10 border border-emerald-500/30 rounded-xl p-6 mb-6">
