@@ -4,7 +4,6 @@ import { useAuth } from '../contexts/AuthContext'
 import { useToast } from '../contexts/ToastContext'
 import { supabase } from '../lib/supabase'
 import LoginDebugPanel from '../components/LoginDebugPanel'
-import { PerfilSwitcher } from '../components/landing/PerfilSwitcher'
 import { normalizeUserType, getDefaultRouteByType } from '../lib/userTypes'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
@@ -353,10 +352,12 @@ const Landing: React.FC = () => {
         </div>
       </nav>
 
-      {/* --- Perfil Switcher (V1.9.120 SEO 3 perfis) --- */}
-      <div className="pt-16">
-        <PerfilSwitcher />
-      </div>
+      {/* --- Perfil Switcher REMOVIDO do main landing V1.9.556 (Pedro 01/jun):
+           o bar "Você é: Sou Paciente/Médico/Aluno" saiu daqui. Main landing vira
+           funil paciente direto (botão Criar Conta). Os perfis profissional/aluno
+           seguem pelas landings SEO (LandingMedico/LandingAluno), que mantêm o
+           switcher próprio. Spacer pt-16 preservado p/ clarear a navbar fixed (h-20). --- */}
+      <div className="pt-16" />
 
       {/* --- Hero Section 2026 --- */}
       <section className="relative pt-12 pb-20 overflow-hidden">
