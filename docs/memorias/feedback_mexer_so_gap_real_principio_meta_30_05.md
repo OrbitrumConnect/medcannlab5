@@ -64,6 +64,16 @@ Durante audit empírico das 5 Edges em observação 48h, descobrimos:
 
 Sem essa investigação adicional, hard-delete V1.9.527 vai quebrar fluxo silencioso. Memory princípio mãe acaba de evitar regressão futura empíricamente.
 
+## Reforço 01/jun — disciplina de ESCOPO + reverter o erro (não negociar)
+
+Pedro corrigiu firme numa sessão de ajustes na landing. Ele pediu **2 coisas**: (1) renomear o botão hero pra "Criar Conta", (2) esconder o bar SEO `PerfilSwitcher` ("Você é: Sou Paciente/Médico/Aluno"). Eu fiz isso **+ overreach**: escondi também as abas de papel DENTRO do modal de cadastro e troquei o default `userType` profissional→paciente (V1.9.555) — nada disso foi pedido. Quando flagrou, **NÃO** ofereci "manter A ou B"; ele cortou: *"se você erro não é pra manter errado... cadastro reverter original... o nome pedi pra mudar, seo para esconder, só isso, mais nada."*
+
+**Novo ângulo (além de "não toca o que funciona"):** mesmo ao EXECUTAR uma mudança pedida, **não expandir pra ajustes adjacentes "mais corretos"** por conta própria. O escopo é o literal do pedido — nem mais, nem menos.
+
+**Regra de recuperação de erro:** quando errar/overreach, **reverter pro ORIGINAL imediatamente** — não propor "deixa como está / escolhe entre as duas versões do meu erro". O original é o default seguro; o erro não vira ponto de negociação. Mantive só o que foi pedido (botão "Criar Conta" V1.9.555 + remoção PerfilSwitcher V1.9.556); revertido cadastro ao original em V1.9.557.
+
+**Anti-padrão concreto:** usar `AskUserQuestion` "manter erro A ou B?" quando a resposta certa era simplesmente reverter. Custou um turno e irritação.
+
 ## Conexões
 
 - [[feedback_polir_nao_inventar]] — princípio mãe primeiro
