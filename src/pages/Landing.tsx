@@ -460,8 +460,12 @@ const Landing: React.FC = () => {
             {/* Outer Container (Wider but centered) — +20% V1.9.433 */}
             <div className="relative w-full max-w-[43.2rem] mx-auto aspect-square flex items-center justify-center">
 
-              {/* Neural Pulse Rings — Professional Medical Aesthetic */}
-              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+              {/* Neural Pulse Rings — Professional Medical Aesthetic
+                  V1.9.553: emblema redondo fica ~5% acima do centro do PNG (a planta/raízes
+                  puxam o bbox pra baixo). object-contain centraliza o bbox, então os anéis
+                  pulsavam de um ponto abaixo do círculo. translateY(-4%) realinha o pulso ao
+                  centro visual do emblema. Ajustar o % se ainda parecer alto/baixo. */}
+              <div className="absolute inset-0 flex items-center justify-center pointer-events-none" style={{ transform: 'translateY(-4%)' }}>
                 {pulseRings.map((ring, i) => (
                   <motion.div
                     key={`ring-${i}`}
