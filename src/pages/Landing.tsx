@@ -151,7 +151,7 @@ const Landing: React.FC = () => {
     email: '',
     password: '',
     confirmPassword: '',
-    userType: 'profissional' as any,
+    userType: 'paciente' as any, // V1.9.555: default paciente (main landing é patient-facing; landings SEO sobrescrevem via ?cadastro=profissional|aluno)
     councilType: '',
     councilNumber: '',
     councilState: '',
@@ -428,7 +428,7 @@ const Landing: React.FC = () => {
                 Mobile (<640px): px-5 py-3 text-base / Desktop (sm+): px-8 py-4 text-lg. */}
             <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-3 sm:gap-4">
               <button onClick={() => setShowRegister(true)} className="w-full sm:w-auto px-5 sm:px-8 py-3 sm:py-4 bg-gradient-to-r from-green-600 to-emerald-600 rounded-xl sm:rounded-2xl text-white font-semibold hover:shadow-lg hover:shadow-green-500/25 transition-all text-base sm:text-lg flex items-center justify-center space-x-2 group">
-                <span>Iniciar Avaliação com Método AEC</span>
+                <span>Criar Conta</span>
                 <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 group-hover:translate-x-1 transition-transform" />
               </button>
               <button onClick={() => setShowLogin(true)} className="w-full sm:w-auto px-5 sm:px-8 py-3 sm:py-4 bg-slate-800/50 border border-emerald-500/40 rounded-xl sm:rounded-2xl text-white font-semibold hover:bg-slate-800 hover:border-emerald-500/60 transition-all text-base sm:text-lg backdrop-blur-sm">
@@ -1306,18 +1306,12 @@ const Landing: React.FC = () => {
       {/* Register Modal */}
       <AuthModal isOpen={showRegister} onClose={() => setShowRegister(false)} title="Criar Nova Conta">
         <div className="space-y-4">
-          {/* User Type Selector */}
-          <div className="flex bg-slate-800 p-1 rounded-lg mb-4">
-            {['paciente', 'profissional', 'aluno'].map((type) => (
-              <button
-                key={type}
-                onClick={() => setRegisterData({ ...registerData, userType: type as any })}
-                className={`flex-1 py-2 text-sm font-medium rounded-md capitalize transition-all ${registerData.userType === type ? 'bg-slate-600 text-white shadow-md' : 'text-slate-400 hover:text-white'}`}
-              >
-                {type}
-              </button>
-            ))}
-          </div>
+          {/* User Type Selector — ESCONDIDO V1.9.555 (Pedro 01/jun).
+              O papel é definido pelo ponto de entrada: default 'paciente' no main landing
+              OU ?cadastro=profissional|aluno vindo das landings SEO (LandingMedico/Aluno,
+              effect linhas ~185-189). Os campos condicionais de profissional (conselho/
+              especialidade/fee) e aluno seguem renderizando com base em registerData.userType,
+              então o fluxo SEO continua intacto sem o seletor manual visível. */}
 
           <input
             type="text"
