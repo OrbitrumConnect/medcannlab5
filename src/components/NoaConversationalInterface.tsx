@@ -3157,12 +3157,6 @@ const NoaConversationalInterface = React.forwardRef<
                 <span className="flex items-center gap-1 text-slate-400 flex-shrink-0">
                   {messages.length} interações
                 </span>
-                {isRecordingConsultation && (
-                  <span className="flex items-center gap-1 text-red-400 animate-pulse">
-                    <div className="w-3 h-3 rounded-full bg-red-500" />
-                    Gravando consulta...
-                  </span>
-                )}
               </div>
             )}
 
@@ -3182,87 +3176,12 @@ const NoaConversationalInterface = React.forwardRef<
               </div>
             )}
 
-            {/* Seletor de Paciente */}
-            {showPatientSelector && !isRecordingConsultation && (
-              <div className="border-b border-slate-800 bg-slate-900/90 px-5 py-4">
-                <p className="text-sm text-slate-300 mb-3">
-                  Selecione o paciente:
-                </p>
-                <div className="space-y-2 max-h-40 overflow-y-auto">
-                  {availablePatients.length === 0 ? (
-                    <p className="text-xs text-slate-400">
-                      Nenhum paciente encontrado. Você precisa ter pelo menos
-                      uma avaliação clínica com um paciente.
-                    </p>
-                  ) : (
-                    availablePatients.map((patient: any) => (
-                      <button
-                        key={patient.id}
-                        onClick={() => {
-                          setSelectedPatientId(patient.id);
-                          setShowPatientSelector(false);
-                          handleStartConsultationRecording();
-                        }}
-                        className="w-full text-left px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-sm flex items-center gap-2 transition"
-                      >
-                        <User className="w-4 h-4" />
-                        <span>{patient.name || patient.email}</span>
-                      </button>
-                    ))
-                  )}
-                </div>
-                <button
-                  onClick={() => setShowPatientSelector(false)}
-                  className="mt-3 text-xs text-slate-400 hover:text-slate-200"
-                >
-                  Cancelar
-                </button>
-              </div>
-            )}
+            {/* Seletor de Paciente REMOVIDO (V1.9.551): só servia ao fluxo de gravação de consulta. */}
 
-            {/* Controles de Gravação de Consulta (apenas para profissionais e NÃO no modo clean) */}
-            {user &&
-              (normalizeUserType(user.type) === "profissional" ||
-                normalizeUserType(user.type) === "admin") &&
-              !showPatientSelector &&
-              resolvedVariant !== "clean" && (
-                <div className="border-b border-slate-800 bg-slate-900/80 px-5 py-3">
-                  {!isRecordingConsultation ? (
-                    <button
-                      onClick={handleStartConsultationRecording}
-                      className="w-full px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium flex items-center justify-center gap-2 transition"
-                    >
-                      <Mic className="w-4 h-4 text-white" />
-                      Iniciar Gravação de Consulta
-                    </button>
-                  ) : (
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between text-sm text-slate-300">
-                        <span>Gravando consulta...</span>
-                        <span className="text-red-400 animate-pulse">
-                          {consultationStartTime &&
-                            Math.floor(
-                              (new Date().getTime() -
-                                consultationStartTime.getTime()) /
-                                1000,
-                            )}
-                          s
-                        </span>
-                      </div>
-                      <button
-                        onClick={handleStopConsultationRecording}
-                        disabled={isSavingConsultation}
-                        className="w-full px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg font-medium flex items-center justify-center gap-2 transition disabled:opacity-50 disabled:cursor-not-allowed"
-                      >
-                        <X className="w-4 h-4" />
-                        {isSavingConsultation
-                          ? "Salvando..."
-                          : "Parar e Salvar Consulta"}
-                      </button>
-                    </div>
-                  )}
-                </div>
-              )}
+            {/* 🗑️ Gravação de Consulta REMOVIDA (V1.9.551): botão dava erro e era
+                redundante — o chat AEC já registra tudo por escrito (Ricardo 31/05).
+                State/handlers (isRecordingConsultation, handleStart/Stop...) ficam como
+                código morto inofensivo; removida só a UI (botão + seletor + indicador). */}
 
             {/* 🧬 Barra de Progresso AEC — sticky, sempre visível durante avaliação */}
             {(() => {
