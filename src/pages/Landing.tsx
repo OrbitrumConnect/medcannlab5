@@ -457,8 +457,9 @@ const Landing: React.FC = () => {
             transition={{ duration: 0.8, delay: 0.2 }}
             className="flex-1 relative"
           >
-            {/* Outer Container (Wider but centered) — +20% V1.9.433 */}
-            <div className="relative w-full max-w-[43.2rem] mx-auto aspect-square flex items-center justify-center">
+            {/* Outer Container (Wider but centered) — +20% V1.9.433
+                V1.9.554: -15% (Pedro 01/jun) 43.2rem -> 36.72rem — escala container+img+aneis juntos */}
+            <div className="relative w-full max-w-[36.72rem] mx-auto aspect-square flex items-center justify-center">
 
               {/* Neural Pulse Rings — Professional Medical Aesthetic
                   V1.9.553: emblema redondo fica ~5% acima do centro do PNG (a planta/raízes
@@ -489,11 +490,12 @@ const Landing: React.FC = () => {
 
               {/* V1.9.435 — Emblema centralizado + glow intensificado
                   V1.9.548: -10% tamanho (Pedro 31/05 — logo nova rim+folhas+circuito
-                  ficou um pouco grande na landing 4K). 38.4rem -> 34.56rem. */}
+                  ficou um pouco grande na landing 4K). 38.4rem -> 34.56rem.
+                  V1.9.554: -15% (Pedro 01/jun) 34.56rem -> 29.376rem. */}
               <img
                 src="/medcannlab-logo.png"
                 alt="MCL — Emblema MedCannLab"
-                className="relative z-10 w-full h-full max-w-[34.56rem] object-contain hover:scale-105 transition-transform duration-700 drop-shadow-2xl"
+                className="relative z-10 w-full h-full max-w-[29.376rem] object-contain hover:scale-105 transition-transform duration-700 drop-shadow-2xl"
                 style={{
                   filter: 'drop-shadow(0 0 40px rgba(16, 185, 129, 0.42)) drop-shadow(0 0 80px rgba(0, 229, 178, 0.18))'
                 }}
