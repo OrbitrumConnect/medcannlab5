@@ -1,6 +1,6 @@
 ---
 name: reference_ricardo_valenca_bio_autoral_mimre_31_05
-description: Bio autoral oficial Dr. Ricardo Valença (subtítulo correto + trajetória) + definição do MIMRE (Método Incentivador Mínimo do Relato Espontâneo) — fonte de verdade para landing/material institucional
+description: Bio autoral oficial Dr. Ricardo Valença (subtítulo correto + trajetória) + definição do MIMRE (Motor Incentivador Mínimo do Relato Espontâneo) — fonte de verdade para landing/material institucional
 metadata: 
   node_type: memory
   type: reference
@@ -30,10 +30,10 @@ Alternativas que ele também considerou aceitáveis:
 - Essas experiências originaram a **Nôa Esperanza** e a **MedCannLab**.
 - Marco da plataforma: encontro com **Pedro Galluf Passos** — convergência da reflexão clínica + metodologia com engenharia/arquitetura de sistemas viabilizou a transformação dos conceitos em plataforma operacional.
 
-## MIMRE — Método Incentivador Mínimo do Relato Espontâneo
+## MIMRE — Motor Incentivador Mínimo do Relato Espontâneo
 Componente metodológico da AEC para obtenção e organização de **narrativas espontâneas** em avaliação clínica assistida por IA.
 - **Objetivo**: preservar a **prioridade expressiva do usuário**, minimizando induções — os dados clínicos emergem do que o próprio indivíduo considera relevante relatar.
 - Estrutura a coleta a partir de escuta clínica + anamnese tradicional + organização narrativa; serve como **camada inicial de processamento** para documentação clínica e educação em saúde.
 - Desenvolvido por Ricardo Valença como desdobramento da AEC, implementado na arquitetura da Nôa Esperanza e da MedCannLab.
 
-✅ **Pendência IMRE vs MIMRE RESOLVIDA (01/jun, ao ler a memória completa)**: são o **MESMO conceito** — o motor de perguntas da AEC já em produção em `clinicalAssessmentFlow.ts`. **IMRE** = acrônimo usado no código/landing (`sistema_imre`, kb entry, `Landing.tsx:718` "protocolo IMRE"); **MIMRE** = o mesmo, em nome português completo. NÃO são camadas distintas e **NÃO renomear código/RAG** — a coexistência acrônimo(IMRE)/nome-PT(MIMRE) é correta. Fontes que já respondiam isso: [[project_imre_clarification_24_04]] (Ricardo: "IMRE = Incentivator Minimal of Exponential", motor de perguntas da AEC) + [[project_mimre_pesos_narrativos_24_04]] ("MIMRE = Motor Incentivador Mínimo do Relato Espontâneo = IMRE em português"). ⚠️ Variância menor de redação a reconciliar ao publicar institucionalmente: memória 24/04 diz **"Motor"** Incentivador, a bio do Ricardo 31/05 diz **"Método"** Incentivador — mesmo conceito, escolher 1 termo no material oficial.
+✅ **Pendência IMRE vs MIMRE RESOLVIDA (01/jun, ao ler a memória completa)**: são o **MESMO conceito** — o motor de perguntas da AEC já em produção em `clinicalAssessmentFlow.ts`. **IMRE** = acrônimo usado no código/landing (`sistema_imre`, kb entry, `Landing.tsx:718` "protocolo IMRE"); **MIMRE** = o mesmo, em nome português completo. NÃO são camadas distintas e **NÃO renomear código/RAG** — a coexistência acrônimo(IMRE)/nome-PT(MIMRE) é correta. Fontes que já respondiam isso: [[project_imre_clarification_24_04]] (Ricardo: "IMRE = Incentivator Minimal of Exponential", motor de perguntas da AEC) + [[project_mimre_pesos_narrativos_24_04]] ("MIMRE = Motor Incentivador Mínimo do Relato Espontâneo = IMRE em português"). ✅ **Reconciliação 01/06**: termo correto é **"Motor"** Incentivador Mínimo do Relato Espontâneo — alinhado a 3 fontes históricas independentes (memória `project_mimre_pesos_narrativos_24_04` + `docs/MENSAGEM_PAULO_CNPJ_BRIEFING_05_05_2026.md` + `docs/memorias/MEMORY.md` índice). Esta memória foi criada via desktop durante sessão 31/05 (PC travou empíricamente, registrado por Pedro) e gravou "Método" por **drift editorial isolado** — corrigido retroativamente 01/06 ao detectar discrepância contra 3 fontes históricas. Princípio meta: validação cross-source detecta drift que single-source não revela.
