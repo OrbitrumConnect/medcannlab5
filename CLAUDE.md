@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **MedCannLab 3.0** — HealthTech/EdTech de Cannabis Medicinal com IA Nôa Esperança. Arquitetura por 3 eixos: **Clínica** (AEC + Relatório + Agendamento), **Ensino** (cursos + TRL), **Pesquisa** (forum + casos clínicos). Sistema cognitivo de 8 camadas onde **GPT é o último a falar e o primeiro a ser checado**.
 
-**Estado atual** (31/05/2026 ~19h BRT FIM DE DIA, pós sessão UX/VISUAL DENSA + bug login Flávia cravado via PAT — **14 commits sequenciais V1.9.534-544 + 1 migration + 1 utility CSS + 4 memórias Nível 1 novas + audit empírico revelou 5 erros minhas afirmações de memórias stale** — HEAD `cae44e9`).
+**Estado atual** (01/06/2026 ~late BRT, pós pull laptop + análise profunda — desktop entregou 50+ commits 30→01/06: plano DIARIO_30 100% executado (Tier 0+1+2) + 4 princípios meta novos cristalizados + Sprint A verify_jwt + batch 7 Edges + Risk Cockpit ELITE + bug crítico V1.9.546 consent_given + landing polish V1.9.547-557 + cron monthly-closing forense — HEAD `8ebc61d`).
 
 **Entregas 31/05** (sessão ~10h corridas, padrão arquitetura → UX → visual transversal → escalabilidade → bug login):
 - **V1.9.534**: DROP trigger `on_patient_created_triage` drift (auto-criava TRIAGE com doctor_id=Ricardo fallback violando consent-first) + fix bug Card "Conversa com a Nôa" (EvolutionDetailModal coluna `title` inexistente) + dead code NewPatientForm (2 INSERTs broken status='pending')
@@ -92,7 +92,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ```bash
 # Dev local
 npm run dev              # Vite porta 3001
-npm run build            # ⚠️ quebra local por dompurify ausente; Vercel passa
+npm run build            # vite build (dompurify ^3.4.0 instalado; gotcha histórico resolvido)
 npm run type-check       # tsc --noEmit (use isso pra validar mudanças)
 npm run lint             # eslint
 npm run lint:fix
@@ -307,7 +307,7 @@ Memórias completas: `audit_pendencias_um_mes_pos_pbad_20_05.md` (Sprint 1) + me
 | jobname | schedule | comando | telemetria |
 |---|---|---|---|
 | `video-call-reminders-5min` | `*/5 * * * *` | `net.http_post` → Edge `video-call-reminders` (V1.9.99-B sweep+Resend) | rodando OK desde 28/04 |
-| `monthly-closing-medcannlab` | `0 3 1 * *` (dia 1 do mês às 3h) | `SELECT public.process_monthly_closing()` — chama `calculate_monthly_ranking` + `grant_benefits_rewards` (**gamification**) | **0 runs ainda** — cron criado após dia 1/05; primeira execução prevista **01/06/2026 03h BRT** |
+| `monthly-closing-medcannlab` | `0 3 1 * *` (dia 1 do mês 00:00 BRT / 03:00 UTC — pg_cron usa UTC) | `SELECT public.process_monthly_closing()` — chama `calculate_monthly_ranking` + `grant_benefits_rewards` (**gamification**) | 1ª execução 01/06/2026 00:00 BRT FALHOU (null user_id ranking_history — 7 órfãos pré-V1.9.533); ZERO poluição (rollback completo); DECISÃO PEDRO: deixar DORMENTE até lançamento — gamification economicamente acoplada. Próximo disparo+falha 01/07 acende SGQ alert (esperado). Detalhes em `project_cron_monthly_closing_forense_01_06` |
 | `expire-renal-suggestions` | `0 2 * * *` (todo dia 2h) | `UPDATE renal_inline_suggestions SET status='expired' WHERE pending AND expires_at < now()` | rodando OK diariamente, mas empíricamente vazio (1 row total tabela — Maria das Dores 14/05) |
 
 **Telemetria agregada `cron.job_run_details` últimos 7d**: 2.023 runs, **100% succeeded**, last_run 26/05 18:20 BRT.
@@ -414,9 +414,9 @@ Laptop equivalente:
 
 - `selectedSlot` no widget de agendamento é **ISO completo** (`"2026-04-27T14:00:00+00:00"`), não `HH:MM`. Não fazer `.split(":")` nele.
 - Tabela `chat_messages_legacy` (15 rows) tem **nome enganoso** — é a CANÔNICA hoje. `chat_messages` (vazia) é shell planejada.
-- `prescriptions` tem 8 rows mas é **vulnerável historicamente** — RLS já fechado em V1.9.97-D. Use `cfm_prescriptions` (32 rows oficiais) pra modificações.
+- `prescriptions` tem 8 rows mas é **vulnerável historicamente** — RLS já fechado em V1.9.97-D. Use `cfm_prescriptions` (52 rows oficiais) pra modificações.
 - 4 tabelas de perfil existem (`users`, `user_profiles`, `profiles`, `usuarios`) — **`users` é canônica** (38 cols, escrita diariamente). Outras são órfãs/legacy.
-- Build local quebra por `dompurify` (em `node_modules` vazio), Vercel passa porque tem em `package.json`.
+- ~~Build local quebra por `dompurify` ausente~~ → **RESOLVIDO**: `dompurify ^3.4.0` presente em `package.json` + instalado em `node_modules` (audit 01/06 refutou gotcha histórico).
 - 2 Edge Functions Google Calendar dormindo completas (tabelas EXISTEM agora, vazias, sem caller — audit 18/05 atualizou status de "half-impl" → "dormindo intencionalmente").
 - 72 files órfãos no bucket `documents` (~67 MB) de owners deletados — LGPD compliance pendente.
 - `chat-images` storage **fechado em V1.9.98 (28/04)**: bucket `public=false`, 4 policies Opção B (owner OR participante de mesma chat_room via JOIN), AdminChat usa `createSignedUrl` TTL 1 ano. Imagem antiga (1 teste do Pedro) não carrega mais via URL pública direta — impacto zero.
