@@ -905,11 +905,11 @@ const Landing: React.FC = () => {
                 </div>
                 <div>
                   <h3 className="text-xl font-bold text-white">Dr. Ricardo Valença</h3>
-                  <p className="text-sm text-emerald-300 font-medium">Nefrologia · Coordenador Científico</p>
+                  <p className="text-sm text-emerald-300 font-medium">Nefrologista · Pesquisador em Comunicação Clínica e Dados em Saúde</p>
                 </div>
               </div>
               <p className="text-sm text-slate-400 leading-relaxed">
-                Criador do método AEC. <strong className="text-emerald-200">40+ anos</strong> de prática clínica, <strong className="text-emerald-200">2.000+ avaliações</strong> conduzidas. Mestrado defendido sobre o método. Cidade Amiga dos Rins (CKD).
+                Nefrologista com <strong className="text-emerald-200">mais de três décadas</strong> em assistência, ensino e pesquisa. Criador da <strong className="text-emerald-200">Arte da Entrevista Clínica (AEC)</strong> e do <strong className="text-emerald-200">MIMRE</strong>. Mestrado (2002) em comunicação clínica aplicada à nefrologia, a campanha <em>Escute-se!</em> e o programa <strong className="text-emerald-200">Cidade Amiga dos Rins</strong>. Sua defesa da escuta qualificada e da longitudinalidade clínica deu origem à Nôa Esperanza e à MedCannLab.
               </p>
             </div>
 
