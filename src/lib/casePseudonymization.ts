@@ -257,6 +257,22 @@ function escapeRegex(s: string): string {
   return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 }
 
+// V1.9.565: variantes de acento de uma mesma letra-base (José ↔ Jose, Conceição ↔ Conceicao).
+const ACCENT_VARIANTS: Record<string, string> = {
+  a: 'aàáâãäå', e: 'eèéêë', i: 'iìíîï', o: 'oòóôõö', u: 'uùúûü', c: 'cç', n: 'nñ',
+}
+// Padrão insensível a acento a partir da LETRA-BASE do token. Ex.: "jose" -> "j[oòóôõö]s[eèéêë]".
+// Só expande variantes da mesma letra (não amplia o que casa) — outros chars viram literal escapado.
+function accentInsensitivePattern(token: string): string {
+  const base = token.normalize('NFD').replace(/[̀-ͯ]/g, '') // remove acentos do token
+  let pat = ''
+  for (const ch of base) {
+    const lower = ch.toLowerCase()
+    pat += ACCENT_VARIANTS[lower] ? `[${ACCENT_VARIANTS[lower]}]` : escapeRegex(ch)
+  }
+  return pat
+}
+
 /**
  * Sanitiza nome real do paciente em texto livre `assessment`.
  *
@@ -291,8 +307,19 @@ export function sanitizeAssessmentPII(
   // Substitui cada token (case-insensitive, word boundary)
   // Cobre CAROLINA, Carolina, carolina simultaneamente via flag /gi
   for (const token of tokens) {
-    const regex = new RegExp(`\\b${escapeRegex(token)}\\b`, 'gi')
-    sanitized = sanitized.replace(regex, pseudoId)
+    // 1) match EXATO (comportamento atual — sempre roda, nunca regride)
+    sanitized = sanitized.replace(new RegExp(`\\b${escapeRegex(token)}\\b`, 'gi'), pseudoId)
+    // 2) match insensível a ACENTO (aditivo — pega José↔Jose, Conceição↔Conceicao). DEFENSIVO:
+    //    se o runtime não suportar a regex (lookbehind/range Latin-1), o match exato acima já cobre.
+    //    Fronteira ciente de acento (À-ÿ = Latin-1, cobre acentos PT) evita casar DENTRO de palavra.
+    try {
+      const aiPat = accentInsensitivePattern(token)
+      if (aiPat && aiPat !== escapeRegex(token)) {
+        sanitized = sanitized.replace(new RegExp(`(?<![A-Za-zÀ-ÿ])${aiPat}(?![A-Za-zÀ-ÿ])`, 'gi'), pseudoId)
+      }
+    } catch {
+      /* runtime sem lookbehind — match exato já aplicado acima (zero regressão) */
+    }
   }
 
   // Patterns clássicos GPT que vazam: "O paciente, Pedro," / "A paciente, Maria,"
