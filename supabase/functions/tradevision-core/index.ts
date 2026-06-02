@@ -194,6 +194,20 @@ function unwrapAecContent(content: any): any {
 function escapeRegexInline(s: string): string {
   return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
+// V1.9.565: variantes de acento (José ↔ Jose) — espelho do helper TS casePseudonymization.sanitizeAssessmentPII.
+const ACCENT_VARIANTS_INLINE: Record<string, string> = {
+  a: 'aàáâãäå', e: 'eèéêë', i: 'iìíîï', o: 'oòóôõö', u: 'uùúûü', c: 'cç', n: 'nñ',
+};
+// Padrão insensível a acento a partir da LETRA-BASE do token. Só expande variantes da mesma letra.
+function accentInsensitivePatternInline(token: string): string {
+  const base = token.normalize('NFD').replace(/[̀-ͯ]/g, '');
+  let pat = '';
+  for (const ch of base) {
+    const lower = ch.toLowerCase();
+    pat += ACCENT_VARIANTS_INLINE[lower] ? `[${ACCENT_VARIANTS_INLINE[lower]}]` : escapeRegexInline(ch);
+  }
+  return pat;
+}
 function sanitizeRationalityPII(
     assessment: string | null | undefined,
     patientName: string | null | undefined,
@@ -211,8 +225,19 @@ function sanitizeRationalityPII(
     if (tokens.length === 0) return assessment;
     let sanitized = assessment;
     for (const token of tokens) {
-        const regex = new RegExp(`\\b${escapeRegexInline(token)}\\b`, 'gi');
-        sanitized = sanitized.replace(regex, pseudoId);
+        // 1) match EXATO (comportamento atual — sempre roda, nunca regride)
+        sanitized = sanitized.replace(new RegExp(`\\b${escapeRegexInline(token)}\\b`, 'gi'), pseudoId);
+        // 2) match insensível a ACENTO (aditivo, defensivo). Espelho do helper TS V1.9.565.
+        //    Fronteira ciente de acento [A-Za-zÀ-ÿ] evita casar dentro de palavra. try/catch:
+        //    se runtime não suportar lookbehind, o match exato acima já cobre (zero regressão).
+        try {
+            const aiPat = accentInsensitivePatternInline(token);
+            if (aiPat && aiPat !== escapeRegexInline(token)) {
+                sanitized = sanitized.replace(new RegExp(`(?<![A-Za-zÀ-ÿ])${aiPat}(?![A-Za-zÀ-ÿ])`, 'gi'), pseudoId);
+            }
+        } catch (_e) {
+            /* runtime sem lookbehind — match exato já aplicado */
+        }
     }
     sanitized = sanitized
         .replace(new RegExp(`\\bO paciente,\\s*${escapeRegexInline(pseudoId)},`, 'gi'), 'O(a) paciente,')
