@@ -73,6 +73,9 @@ const Library: React.FC = () => {
   const [isUploading, setIsUploading] = useState(false)
   const [uploadProgress, setUploadProgress] = useState(0)
   const [uploadSuccess, setUploadSuccess] = useState(false)
+  // V1.9.560-B: separacao visual Curadoria vs Meus Documentos
+  const [activeViewTab, setActiveViewTab] = useState<'curadoria' | 'meus'>('curadoria')
+  const [shareWithPlatform, setShareWithPlatform] = useState(false)
   const [realDocuments, setRealDocuments] = useState<KnowledgeDocument[]>([])
   const [isLoadingDocuments, setIsLoadingDocuments] = useState(true)
   const [totalDocs, setTotalDocs] = useState(0)
@@ -354,7 +357,14 @@ const Library: React.FC = () => {
           doc.title?.toLowerCase().includes(selectedArea) ||
           doc.summary?.toLowerCase().includes(selectedArea)
 
-        return matchesCategory && matchesType && matchesUserType && matchesArea
+        // V1.9.560-B: filtro Curadoria vs Meus Documentos
+        const docCurated = (doc as any).is_curated !== false // default true (legacy)
+        const docOwner = (doc as any).uploaded_by
+        const matchesViewTab = activeViewTab === 'curadoria'
+          ? docCurated
+          : (!!docOwner && docOwner === user?.id)
+
+        return matchesCategory && matchesType && matchesUserType && matchesArea && matchesViewTab
       })
       setFilteredDocuments(filtered)
       return
@@ -405,7 +415,14 @@ const Library: React.FC = () => {
           doc.title?.toLowerCase().includes(selectedArea) ||
           doc.summary?.toLowerCase().includes(selectedArea)
 
-        return matchesCategory && matchesType && matchesUserType && matchesArea
+        // V1.9.560-B: filtro Curadoria vs Meus Documentos
+        const docCurated = (doc as any).is_curated !== false
+        const docOwner = (doc as any).uploaded_by
+        const matchesViewTab = activeViewTab === 'curadoria'
+          ? docCurated
+          : (!!docOwner && docOwner === user?.id)
+
+        return matchesCategory && matchesType && matchesUserType && matchesArea && matchesViewTab
       })
 
       setFilteredDocuments(filtered)
@@ -421,7 +438,7 @@ const Library: React.FC = () => {
   useEffect(() => {
     performSemanticSearch()
     setCurrentPage(1) // Reset pagination when filters change
-  }, [debouncedSearchTerm, selectedCategory, selectedType, selectedUserType, selectedArea, realDocuments])
+  }, [debouncedSearchTerm, selectedCategory, selectedType, selectedUserType, selectedArea, realDocuments, activeViewTab, user])
 
   // Compute paginated documents
   const totalPages = Math.ceil(filteredDocuments.length / ITEMS_PER_PAGE)
@@ -656,7 +673,9 @@ const Library: React.FC = () => {
         tags: tags,
         isLinkedToAI: category === 'ai-documents' || category === 'research' || documentCategory === 'protocols',
         summary: initialSummary,
-        keywords: keywords
+        keywords: keywords,
+        // V1.9.560-B: privacidade por default. Trigger pg preenche uploaded_by via auth.uid().
+        is_curated: shareWithPlatform
       }
 
       console.log('💾 Salvando metadata física (Garantia de Borda):', documentMetadata)
@@ -807,6 +826,8 @@ const Library: React.FC = () => {
   const handleUpload = async () => {
     if (!uploadedFile) return
     await handleUploadFile(uploadedFile, uploadCategory)
+    // V1.9.560-B: reset checkbox apos upload (default privado pro proximo)
+    setShareWithPlatform(false)
   }
 
   const uploadCategories = [
@@ -1133,6 +1154,34 @@ const Library: React.FC = () => {
               </div>
             </div>
           )}
+        </div>
+
+        {/* V1.9.560-B: Abas Curadoria vs Meus Documentos */}
+        <div className="flex gap-2 mb-3">
+          <button
+            type="button"
+            onClick={() => setActiveViewTab('curadoria')}
+            className={`flex-1 px-4 py-2.5 rounded-lg text-sm font-semibold transition-all flex items-center justify-center gap-2 ${
+              activeViewTab === 'curadoria'
+                ? 'bg-emerald-500/20 border border-emerald-400/50 text-emerald-300'
+                : 'bg-slate-800/50 border border-slate-700 text-slate-400 hover:text-slate-200'
+            }`}
+          >
+            <BookOpen className="w-4 h-4" />
+            Curadoria da Plataforma
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveViewTab('meus')}
+            className={`flex-1 px-4 py-2.5 rounded-lg text-sm font-semibold transition-all flex items-center justify-center gap-2 ${
+              activeViewTab === 'meus'
+                ? 'bg-emerald-500/20 border border-emerald-400/50 text-emerald-300'
+                : 'bg-slate-800/50 border border-slate-700 text-slate-400 hover:text-slate-200'
+            }`}
+          >
+            <FileText className="w-4 h-4" />
+            Meus Documentos
+          </button>
         </div>
 
         {/* Busca e filtros — compacto e pro */}
@@ -1874,6 +1923,25 @@ const Library: React.FC = () => {
                     </label>
                   )}
                 </div>
+              </div>
+
+              {/* V1.9.560-B: Checkbox compartilhar com Curadoria da Plataforma */}
+              <div className="mb-6 p-4 rounded-lg" style={{ background: 'rgba(12,34,54,0.6)', border: '1px solid rgba(0,193,106,0.2)' }}>
+                <label className="flex items-start gap-3 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={shareWithPlatform}
+                    onChange={(e) => setShareWithPlatform(e.target.checked)}
+                    className="mt-1 w-4 h-4 accent-emerald-500"
+                  />
+                  <div className="text-sm">
+                    <p className="text-slate-200 font-medium">Compartilhar com a Curadoria da Plataforma</p>
+                    <p className="text-xs text-slate-400 mt-1">
+                      Por padrão, documentos enviados ficam apenas em <strong>Meus Documentos</strong> (privados).
+                      Marque esta opção para que outros profissionais e alunos também possam acessar via Curadoria.
+                    </p>
+                  </div>
+                </label>
               </div>
 
               {/* Upload Progress */}
