@@ -39,10 +39,10 @@ const FeatureCard = ({ icon: Icon, title, description, delay }: { icon: any, tit
     whileInView={{ opacity: 1, y: 0 }}
     transition={{ duration: 0.5, delay }}
     viewport={{ once: true }}
-    className="bg-slate-800/40 backdrop-blur-md border border-slate-700/50 hover:border-green-500/30 p-6 rounded-2xl hover:bg-slate-800/60 transition-all duration-300 group"
+    className="bg-slate-800/40 backdrop-blur-md border border-slate-700/50 hover:border-teal-500/30 p-6 rounded-2xl hover:bg-slate-800/60 transition-all duration-300 group"
   >
     <div className="w-12 h-12 bg-gradient-to-br from-emerald-600/20 to-teal-600/20 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
-      <Icon className="w-6 h-6 text-emerald-400 group-hover:text-emerald-300 transition-colors" />
+      <Icon className="w-6 h-6 text-teal-400 group-hover:text-teal-300 transition-colors" />
     </div>
     <h3 className="text-xl font-bold text-white mb-2">{title}</h3>
     <p className="text-slate-400 leading-relaxed text-sm">{description}</p>
@@ -51,7 +51,7 @@ const FeatureCard = ({ icon: Icon, title, description, delay }: { icon: any, tit
 
 const StepCard = ({ number, title, description }: { number: string, title: string, description: string }) => (
   <div className="flex items-start space-x-4">
-    <div className="flex-shrink-0 w-10 h-10 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center font-bold text-green-500">
+    <div className="flex-shrink-0 w-10 h-10 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center font-bold text-teal-400">
       {number}
     </div>
     <div>
@@ -101,11 +101,43 @@ const Landing: React.FC = () => {
 
   // Subtle neural pulse ring (professional, medical aesthetic) — V1.9.435 single ring
   const pulseRings = useMemo(() => {
-    return Array.from({ length: 2 }).map((_, i) => ({
-      delay: i * 3.2,
-      duration: 10 + i * 2,
-      maxScale: 1.16 + i * 0.13,
+    // Água-ripple: 3 anéis suaves saindo da borda do oval (Pedro 02/06)
+    return Array.from({ length: 3 }).map((_, i) => ({
+      delay: i * 1.7,
+      duration: 5.1,
+      maxScale: 1.75,
     }))
+  }, [])
+
+  // Chips de circuito subindo da imagem pro topo (Pedro 02/06)
+  const chips = useMemo(() => {
+    return Array.from({ length: 9 }).map((_, i) => ({
+      left: `${10 + i * 9}%`,
+      size: 3 + (i % 3) * 2,
+      delay: i * 0.45,
+      duration: 2.6 + (i % 4) * 0.5,
+      rise: 150 + (i % 3) * 50,
+    }))
+  }, [])
+
+  // V1.9.561: rede neural de fundo (SVG animado) — concentrada à DIREITA (atrás da logo).
+  // Nós menores + cadeias finas entre os maiores + micro-nós que se dissolvem (Pedro 02/06).
+  const neural = useMemo(() => {
+    const dx = 60 // V1.9.561: centrar a rede no emblema (a máscara-buraco vaza o centro). 0 = base.
+    const dy = 0 // V1.9.561: rede espalha em volta do emblema; o "buraco" radial impede de cobrir a foto.
+    const nodes = [
+      { cx: 560, cy: 180 }, { cx: 720, cy: 120 }, { cx: 880, cy: 220 }, { cx: 1060, cy: 140 },
+      { cx: 640, cy: 340 }, { cx: 820, cy: 400 }, { cx: 1000, cy: 320 }, { cx: 1120, cy: 470 },
+      { cx: 760, cy: 540 }, { cx: 940, cy: 560 },
+    ].map((p, i) => ({ ...p, cx: p.cx + dx, cy: p.cy + dy, r: 3 + (i % 2), delay: i * 0.5, dur: 3 + (i % 3) }))
+    const pairs = [[0, 1], [1, 2], [2, 3], [0, 4], [4, 5], [5, 6], [6, 3], [6, 7], [4, 8], [8, 5], [8, 9], [9, 5], [2, 6], [1, 4], [7, 6], [9, 7], [2, 5], [0, 2], [0, 5], [3, 6], [5, 7], [4, 9], [1, 5]]
+    const lines = pairs.map(([a, b], i) => ({ x1: nodes[a].cx, y1: nodes[a].cy, x2: nodes[b].cx, y2: nodes[b].cy, delay: i * 0.35 }))
+    const micro = [
+      { cx: 600, cy: 260 }, { cx: 900, cy: 160 }, { cx: 1040, cy: 400 },
+      { cx: 700, cy: 470 }, { cx: 980, cy: 480 }, { cx: 820, cy: 280 },
+    ].map((p, i) => ({ ...p, cx: p.cx + dx, cy: p.cy + dy, r: 1.2 + (i % 2) * 0.6, delay: i * 0.9, dur: 4 + (i % 3) }))
+    // V1.9.561: MINI-REDE da lateral esquerda — mesh interconectado (igual a principal), posição própria.
+    return { nodes, lines, micro }
   }, [])
 
   // Landing UX: manter scroll funcional, mas esconder a barra (especialmente visível sobre o Hero)
@@ -313,10 +345,10 @@ const Landing: React.FC = () => {
 
   // Partners removed — only add real verified partners
 
-  if (authLoading) return <div className="min-h-screen bg-slate-950 flex items-center justify-center"><div className="w-8 h-8 border-4 border-green-500 border-t-transparent rounded-full animate-spin"></div></div>
+  if (authLoading) return <div className="min-h-screen bg-slate-950 flex items-center justify-center"><div className="w-8 h-8 border-4 border-teal-500 border-t-transparent rounded-full animate-spin"></div></div>
 
   return (
-    <div className="h-screen overflow-y-auto no-scrollbar text-white font-sans selection:bg-green-500/30 overflow-x-hidden" style={{ background: 'linear-gradient(135deg, #0A192F 0%, #1a365d 50%, #2d5a3d 100%)' }}>
+    <div className="h-screen overflow-y-auto no-scrollbar text-white font-sans selection:bg-teal-500/30 overflow-x-hidden" style={{ background: 'linear-gradient(135deg, #051625 0%, #07212e 50%, #03101a 100%)' }}>
 
       {/* --- Navegação High-End --- */}
       <nav className="fixed w-full top-0 z-40 bg-slate-950/80 backdrop-blur-lg border-b border-white/5">
@@ -360,9 +392,176 @@ const Landing: React.FC = () => {
       <div className="pt-16" />
 
       {/* --- Hero Section 2026 --- */}
-      <section className="relative pt-12 pb-20 overflow-hidden">
-        {/* Background Gradients */}
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-[600px] bg-gradient-to-b from-blue-900/20 via-green-900/10 to-transparent blur-3xl -z-10" />
+      <section className="relative isolate pt-12 pb-20 overflow-hidden" style={{ background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #284629 100%)' }}>
+        {/* Background Gradients — glow REDUZIDO (Pedro 02/06) */}
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-[600px] bg-gradient-to-b from-cyan-900/5 to-transparent blur-3xl -z-10" />
+        {/* V1.9.561: background neural em CÓDIGO (SVG animado) — concentrado à direita. Nós menores + cadeias finas + micro-nós que se dissolvem (Pedro 02/06). */}
+        <svg className="absolute inset-0 w-full h-full -z-10 pointer-events-none" preserveAspectRatio="xMidYMid slice" viewBox="0 0 1200 700" fill="none" aria-hidden="true">
+          {/* V1.9.561: fade à direita — a rede DISSOLVE antes da logo (Pedro 02/06: "não deixar linha passar em cima da imagem da direita"). */}
+          <defs>
+            {/* V1.9.561: "buraco" radial sobre o emblema — a rede some onde a logo está (Pedro 02/06: não ficar em cima da foto) e aparece em volta + embaixo. Ajustar cx/cy/r p/ alinhar ao emblema. */}
+            <radialGradient id="neuralHole" gradientUnits="userSpaceOnUse" cx="870" cy="300" r="210">
+              <stop offset="0" stopColor="black" />
+              <stop offset="0.62" stopColor="black" />
+              <stop offset="1" stopColor="white" />
+            </radialGradient>
+            <mask id="neuralMask">
+              <rect x="0" y="0" width="1200" height="700" fill="url(#neuralHole)" />
+            </mask>
+            {/* V1.9.561: degradê das linhas cyan->verde-amarelado, igual o background (Pedro 02/06). */}
+            <linearGradient id="lineGrad" gradientUnits="userSpaceOnUse" x1="620" y1="120" x2="1180" y2="560">
+              <stop offset="0" stopColor="#22d3ee" />
+              <stop offset="1" stopColor="#a3e635" />
+            </linearGradient>
+            {/* V1.9.561: degradê da rede ESQUERDA — mais azulada/ciano, sem verde (Pedro 02/06). */}
+            <linearGradient id="lineGradLeft" gradientUnits="userSpaceOnUse" x1="620" y1="120" x2="1180" y2="560">
+              <stop offset="0" stopColor="#22d3ee" />
+              <stop offset="1" stopColor="#38bdf8" />
+            </linearGradient>
+          </defs>
+          {/* máscara HOLE: rede em volta/embaixo do emblema, vazada no centro (Pedro 02/06). */}
+          <g mask="url(#neuralMask)">
+          {/* V1.9.561: rede PRINCIPAL: rotaciona -90° + translate em tela (Pedro 02/06). TX+ = direita. */}
+          <g transform="translate(60 0) rotate(-90 900 340)">
+          {neural.lines.map((l, i) => (
+            <motion.line
+              key={`nl-${i}`}
+              x1={l.x1} y1={l.y1} x2={l.x2} y2={l.y2}
+              stroke="url(#lineGrad)" strokeWidth="0.6"
+              initial={{ opacity: 0.06 }}
+              animate={{ opacity: [0.06, 0.22, 0.06] }}
+              transition={{ duration: 5, repeat: Infinity, delay: l.delay, ease: 'easeInOut' }}
+            />
+          ))}
+          {neural.nodes.map((n, i) => (
+            <g key={`nn-${i}`}>
+              {/* V1.9.561: 2 anéis-ondinha saindo de cada nó (Pedro 02/06). */}
+              {[0, 1].map((k) => (
+                <motion.circle
+                  key={`nr-${i}-${k}`}
+                  cx={n.cx} cy={n.cy}
+                  fill="none"
+                  stroke="url(#lineGrad)"
+                  strokeWidth="0.5"
+                  initial={{ r: n.r, opacity: 0 }}
+                  animate={{ r: [n.r, n.r * 5], opacity: [0.45, 0] }}
+                  transition={{ duration: n.dur * 1.5, repeat: Infinity, delay: n.delay + k * n.dur * 0.75, ease: 'easeOut' }}
+                />
+              ))}
+              <motion.circle
+                cx={n.cx} cy={n.cy}
+                fill="url(#lineGrad)"
+                style={{ filter: 'drop-shadow(0 0 5px rgba(34,211,238,0.6))' }}
+                initial={{ r: n.r, opacity: 0.25 }}
+                animate={{ r: [n.r, n.r * 1.6, n.r], opacity: [0.25, 0.62, 0.25] }}
+                transition={{ duration: n.dur, repeat: Infinity, delay: n.delay, ease: 'easeInOut' }}
+              />
+            </g>
+          ))}
+          {neural.micro.map((m, i) => (
+            <motion.circle
+              key={`nm-${i}`}
+              cx={m.cx} cy={m.cy} r={m.r}
+              fill="url(#lineGrad)"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: [0, 0.5, 0] }}
+              transition={{ duration: m.dur, repeat: Infinity, delay: m.delay, ease: 'easeInOut' }}
+            />
+          ))}
+          </g>
+          </g>
+          {/* V1.9.561: rede ESPELHADA na esquerda (scale(-1)) — fecha o cerco. translate(1080)=movida 120 (~10%) pra esquerda (Pedro 02/06). */}
+          <g mask="url(#neuralMask)" transform="translate(1080 0) scale(-1 1)">
+          <g transform="translate(60 0) rotate(-90 900 340)">
+          {neural.lines.map((l, i) => (
+            <motion.line
+              key={`mnl-${i}`}
+              x1={l.x1} y1={l.y1} x2={l.x2} y2={l.y2}
+              stroke="url(#lineGradLeft)" strokeWidth="0.6"
+              initial={{ opacity: 0.06 }}
+              animate={{ opacity: [0.06, 0.3, 0.06] }}
+              transition={{ duration: 5, repeat: Infinity, delay: l.delay, ease: 'easeInOut' }}
+            />
+          ))}
+          {neural.nodes.map((n, i) => (
+            <g key={`mnn-${i}`}>
+              {[0, 1].map((k) => (
+                <motion.circle
+                  key={`mnr-${i}-${k}`}
+                  cx={n.cx} cy={n.cy}
+                  fill="none"
+                  stroke="url(#lineGradLeft)"
+                  strokeWidth="0.5"
+                  initial={{ r: n.r, opacity: 0 }}
+                  animate={{ r: [n.r, n.r * 5], opacity: [0.45, 0] }}
+                  transition={{ duration: n.dur * 1.5, repeat: Infinity, delay: n.delay + k * n.dur * 0.75, ease: 'easeOut' }}
+                />
+              ))}
+              <motion.circle
+                cx={n.cx} cy={n.cy}
+                fill="url(#lineGradLeft)"
+                style={{ filter: 'drop-shadow(0 0 5px rgba(34,211,238,0.6))' }}
+                initial={{ r: n.r, opacity: 0.25 }}
+                animate={{ r: [n.r, n.r * 1.6, n.r], opacity: [0.25, 0.62, 0.25] }}
+                transition={{ duration: n.dur, repeat: Infinity, delay: n.delay, ease: 'easeInOut' }}
+              />
+            </g>
+          ))}
+          {neural.micro.map((m, i) => (
+            <motion.circle
+              key={`mnm-${i}`}
+              cx={m.cx} cy={m.cy} r={m.r}
+              fill="url(#lineGradLeft)"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: [0, 0.5, 0] }}
+              transition={{ duration: m.dur, repeat: Infinity, delay: m.delay, ease: 'easeInOut' }}
+            />
+          ))}
+          </g>
+          </g>
+          {/* V1.9.561: faixa de baixo REMOVIDA (Pedro 02/06 "ficou zoada") — brigava com o emblema/stats. As caudas laterais cobrem o conceito. */}
+          {/* V1.9.561: "caudas" das redes saindo pra FORA das bordas laterais (Pedro 02/06) — esq azul, dir verde. */}
+          <g>
+            {[
+              { x1: 1040, y1: 230, x2: 1270, y2: 175 },
+              { x1: 1070, y1: 330, x2: 1290, y2: 300 },
+              { x1: 1050, y1: 420, x2: 1275, y2: 480 },
+              { x1: 1070, y1: 330, x2: 1270, y2: 175 },
+            ].map((l, i) => (
+              <motion.line key={`trl-${i}`} x1={l.x1} y1={l.y1} x2={l.x2} y2={l.y2} stroke="url(#lineGrad)" strokeWidth="0.5" initial={{ opacity: 0.06 }} animate={{ opacity: [0.06, 0.24, 0.06] }} transition={{ duration: 5, repeat: Infinity, delay: i * 0.5, ease: 'easeInOut' }} />
+            ))}
+            {[
+              { x1: 160, y1: 230, x2: -70, y2: 175 },
+              { x1: 130, y1: 330, x2: -90, y2: 300 },
+              { x1: 150, y1: 420, x2: -75, y2: 480 },
+              { x1: 130, y1: 330, x2: -70, y2: 175 },
+            ].map((l, i) => (
+              <motion.line key={`tll-${i}`} x1={l.x1} y1={l.y1} x2={l.x2} y2={l.y2} stroke="url(#lineGradLeft)" strokeWidth="0.5" initial={{ opacity: 0.06 }} animate={{ opacity: [0.06, 0.24, 0.06] }} transition={{ duration: 5, repeat: Infinity, delay: i * 0.5, ease: 'easeInOut' }} />
+            ))}
+          </g>
+          {/* V1.9.561: extensões do C ESQUERDO — TOPO em curvas abstratas subindo, BASE retas pro centro (Pedro 02/06). */}
+          <g>
+            {[
+              'M 330 150 Q 410 55 500 22',
+              'M 375 165 Q 470 80 565 40',
+              'M 300 175 Q 365 90 435 28',
+            ].map((d, i) => (
+              <motion.path key={`lext-${i}`} d={d} fill="none" stroke="url(#lineGradLeft)" strokeWidth="0.5" initial={{ opacity: 0.05 }} animate={{ opacity: [0.05, 0.24, 0.05] }} transition={{ duration: 5, repeat: Infinity, delay: i * 0.6, ease: 'easeInOut' }} />
+            ))}
+            {[
+              { x1: 330, y1: 460, x2: 540, y2: 495 },
+              { x1: 380, y1: 445, x2: 560, y2: 480 },
+            ].map((l, i) => (
+              <motion.line key={`lexb-${i}`} x1={l.x1} y1={l.y1} x2={l.x2} y2={l.y2} stroke="url(#lineGradLeft)" strokeWidth="0.5" initial={{ opacity: 0.05 }} animate={{ opacity: [0.05, 0.22, 0.05] }} transition={{ duration: 5, repeat: Infinity, delay: i * 0.5, ease: 'easeInOut' }} />
+            ))}
+            {[
+              { cx: 500, cy: 22 }, { cx: 565, cy: 40 }, { cx: 435, cy: 28 },
+              { cx: 540, cy: 495 }, { cx: 560, cy: 480 },
+            ].map((n, i) => (
+              <motion.circle key={`lexn-${i}`} cx={n.cx} cy={n.cy} fill="url(#lineGradLeft)" initial={{ r: 1.5, opacity: 0.2 }} animate={{ r: [1.5, 2.3, 1.5], opacity: [0.2, 0.45, 0.2] }} transition={{ duration: 4, repeat: Infinity, delay: i * 0.5, ease: 'easeInOut' }} />
+            ))}
+          </g>
+        </svg>
 
         <div className="container mx-auto px-6 flex flex-col lg:flex-row items-center gap-12">
           <motion.div
@@ -373,7 +572,7 @@ const Landing: React.FC = () => {
           >
             <div className="inline-flex items-center space-x-2 bg-slate-800/50 border border-slate-700 rounded-full px-4 py-1.5 mb-6">
               <div
-                className="w-8 h-8 rounded-full overflow-hidden border border-green-500/40 flex-shrink-0 bg-slate-950/60"
+                className="w-8 h-8 rounded-full overflow-hidden border border-teal-500/40 flex-shrink-0 bg-slate-950/60"
                 style={{ boxShadow: '0 0 14px rgba(0, 193, 106, 0.28)' }}
                 title="Nôa Esperanza"
               >
@@ -389,38 +588,38 @@ const Landing: React.FC = () => {
                 />
               </div>
               <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-cyan-500"></span>
               </span>
-              <span className="text-xs font-semibold tracking-wide text-green-400 uppercase">NOA Esperanza 3.0 Live</span>
+              <span className="text-xs font-semibold tracking-wide text-teal-400 uppercase">NOA Esperanza 3.0 Live</span>
             </div>
 
             <h1 className="text-4xl lg:text-6xl font-bold leading-tight mb-3 tracking-tight">
               Clínica, Ensino e Pesquisa pelo<br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-teal-300">Método AEC.</span>
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-teal-300">Método AEC.</span>
             </h1>
 
             {/* [V1.9.128-C] Hero compactado: 3 parágrafos → 1 enxuto + tagline. Mantém todos elementos-chave. */}
             <p className="text-base text-slate-300 mb-4 max-w-xl mx-auto lg:mx-0 leading-relaxed">
-              Modelo clínico <strong className="text-emerald-300">orientado pela escuta</strong>, fundado na <strong className="text-emerald-300">Arte da Entrevista Clínica (AEC)</strong> — método autoral do <strong className="text-emerald-200">Dr. Ricardo Valença</strong> (Nefrologia, <strong className="text-emerald-200">40 anos</strong> e <strong className="text-emerald-200">2.000+ avaliações</strong>) com direção científica do <strong className="text-teal-200">Dr. Eduardo Faveret</strong> (Neurologia). Aplicável a qualquer especialidade.
+              Modelo clínico <strong className="text-teal-300">orientado pela escuta</strong>, fundado na <strong className="text-teal-300">Arte da Entrevista Clínica (AEC)</strong> — método autoral do <strong className="text-teal-200">Dr. Ricardo Valença</strong> (Nefrologia, <strong className="text-teal-200">40 anos</strong> e <strong className="text-teal-200">2.000+ avaliações</strong>) com direção científica do <strong className="text-teal-200">Dr. Eduardo Faveret</strong> (Neurologia). Aplicável a qualquer especialidade.
             </p>
 
-            <p className="text-base text-emerald-200/90 mb-6 max-w-xl mx-auto lg:mx-0 italic">
+            <p className="text-base text-teal-200/90 mb-6 max-w-xl mx-auto lg:mx-0 italic">
               Sem improviso. Com método. Com responsabilidade clínica.
             </p>
 
             {/* Counter visual — 3 dimensões: autoridade histórica + sistema + time */}
             <div className="grid grid-cols-3 gap-3 mb-8 max-w-xl mx-auto lg:mx-0">
               <div className="bg-slate-900/60 border border-emerald-500/20 rounded-xl px-3 py-3 text-center">
-                <div className="text-2xl lg:text-3xl font-extrabold text-emerald-400">40+</div>
+                <div className="text-2xl lg:text-3xl font-extrabold text-teal-400">40+</div>
                 <div className="text-[10px] uppercase tracking-wider text-slate-400 mt-1">Anos do método<br />em prática</div>
               </div>
               <div className="bg-slate-900/60 border border-teal-500/20 rounded-xl px-3 py-3 text-center">
                 <div className="text-2xl lg:text-3xl font-extrabold text-teal-400">+90</div>
                 <div className="text-[10px] uppercase tracking-wider text-slate-400 mt-1">Avaliações<br />no sistema</div>
               </div>
-              <div className="bg-slate-900/60 border border-green-500/20 rounded-xl px-3 py-3 text-center">
-                <div className="text-2xl lg:text-3xl font-extrabold text-green-400">9</div>
+              <div className="bg-slate-900/60 border border-teal-500/20 rounded-xl px-3 py-3 text-center">
+                <div className="text-2xl lg:text-3xl font-extrabold text-teal-400">9</div>
                 <div className="text-[10px] uppercase tracking-wider text-slate-400 mt-1">Profissionais<br />especialistas</div>
               </div>
             </div>
@@ -428,7 +627,7 @@ const Landing: React.FC = () => {
             {/* V1.9.547: padding+texto responsivos — mobile fica enorme com px-8/py-4/text-lg.
                 Mobile (<640px): px-5 py-3 text-base / Desktop (sm+): px-8 py-4 text-lg. */}
             <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-3 sm:gap-4">
-              <button onClick={() => setShowRegister(true)} className="w-full sm:w-auto px-5 sm:px-8 py-3 sm:py-4 bg-gradient-to-r from-green-600 to-emerald-600 rounded-xl sm:rounded-2xl text-white font-semibold hover:shadow-lg hover:shadow-green-500/25 transition-all text-base sm:text-lg flex items-center justify-center space-x-2 group">
+              <button onClick={() => setShowRegister(true)} className="w-full sm:w-auto px-5 sm:px-8 py-3 sm:py-4 bg-cyan-500/10 backdrop-blur-sm border border-cyan-400/30 rounded-xl sm:rounded-2xl text-cyan-100 font-semibold hover:bg-cyan-500/20 hover:border-cyan-400/50 transition-all text-base sm:text-lg flex items-center justify-center space-x-2 group">
                 <span>Criar Conta</span>
                 <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 group-hover:translate-x-1 transition-transform" />
               </button>
@@ -437,16 +636,16 @@ const Landing: React.FC = () => {
               </button>
             </div>
             <p className="text-center lg:text-left text-sm text-slate-500 mt-3">
-              Novos usuários: 3 dias de acesso livre. <span className="text-emerald-400 font-medium">+90 avaliações clínicas já realizadas</span> com método AEC.
+              Novos usuários: 3 dias de acesso livre. <span className="text-teal-400 font-medium">+90 avaliações clínicas já realizadas</span> com método AEC.
             </p>
 
             <div className="mt-10 flex items-center justify-center lg:justify-start space-x-6 text-sm text-slate-500">
               <div className="flex items-center space-x-2">
-                <Shield className="w-4 h-4 text-green-500" />
+                <Shield className="w-4 h-4 text-teal-400" />
                 <span>Dados Criptografados</span>
               </div>
               <div className="flex items-center space-x-2">
-                <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                <CheckCircle2 className="w-4 h-4 text-teal-400" />
                 <span>Validação Clínica</span>
               </div>
             </div>
@@ -462,44 +661,60 @@ const Landing: React.FC = () => {
                 V1.9.554: -15% (Pedro 01/jun) 43.2rem -> 36.72rem — escala container+img+aneis juntos */}
             <div className="relative w-full max-w-[36.72rem] mx-auto aspect-square flex items-center justify-center">
 
-              {/* Neural Pulse Rings — Professional Medical Aesthetic
-                  V1.9.553: emblema redondo fica ~5% acima do centro do PNG (a planta/raízes
-                  puxam o bbox pra baixo). object-contain centraliza o bbox, então os anéis
-                  pulsavam de um ponto abaixo do círculo. translateY(-4%) realinha o pulso ao
-                  centro visual do emblema. Ajustar o % se ainda parecer alto/baixo. */}
-              <div className="absolute inset-0 flex items-center justify-center pointer-events-none" style={{ transform: 'translateY(-4%)' }}>
+              {/* Anéis água-ripple do meio DESLIGADOS (Pedro 02/06): a pulsação fica só nos
+                  nós da rede neural de fundo (à direita). Reverter: false -> true. */}
+              {false && (
+              <div className="absolute inset-0 flex items-center justify-center pointer-events-none" style={{ transform: 'translateY(0%)' }}>
                 {pulseRings.map((ring, i) => (
                   <motion.div
                     key={`ring-${i}`}
-                    className="absolute rounded-full border-2 border-emerald-400/40"
-                    style={{ width: '60%', height: '60%', boxShadow: '0 0 30px rgba(16, 185, 129, 0.3)' }}
-                    initial={{ scale: 0.7, opacity: 0 }}
+                    className="absolute rounded-full border border-cyan-400/15"
+                    style={{ width: '54%', height: '54%', boxShadow: '0 0 14px rgba(34, 211, 238, 0.08)' }}
+                    initial={{ scale: 1, opacity: 0 }}
                     animate={{
-                      scale: [0.7, ring.maxScale],
-                      opacity: [0, 0.6, 0],
+                      scale: [1, ring.maxScale],
+                      opacity: [0, 0.25, 0],
                     }}
                     transition={{
                       duration: ring.duration,
                       repeat: Infinity,
-                      ease: [0.25, 0.1, 0.25, 1],
+                      ease: 'easeOut',
                       delay: ring.delay,
-                      times: [0, 0.35, 1],
+                      times: [0, 0.15, 1],
                     }}
                   />
                 ))}
               </div>
+              )}
+
+              {/* Chips OCULTOS — Pedro preferiu anéis água-ripple (02/06). Reverter: false->true. */}
+              {false && (
+              <div className="absolute inset-0 pointer-events-none overflow-visible z-20">
+                {chips.map((c, i) => (
+                  <motion.div
+                    key={`chip-${i}`}
+                    className="absolute rounded-sm bg-cyan-400/80"
+                    style={{ width: c.size, height: c.size, left: c.left, top: '44%', boxShadow: '0 0 8px rgba(34, 211, 238, 0.6)' }}
+                    initial={{ y: 0, opacity: 0 }}
+                    animate={{ y: [0, -c.rise], opacity: [0, 1, 0] }}
+                    transition={{ duration: c.duration, repeat: Infinity, delay: c.delay, ease: 'easeOut' }}
+                  />
+                ))}
+              </div>
+              )}
 
               {/* V1.9.435 — Emblema centralizado + glow intensificado
                   V1.9.548: -10% tamanho (Pedro 31/05 — logo nova rim+folhas+circuito
                   ficou um pouco grande na landing 4K). 38.4rem -> 34.56rem.
                   V1.9.554: -15% (Pedro 01/jun) 34.56rem -> 29.376rem. */}
+              {/* V1.9.561 (Pedro 02/06): volta a emblema neuro-orgânica (GPT: identidade mais forte
+                  que o banner-texto) + refino premium em código: ~20% menor, contraste no cérebro,
+                  glow suave, anéis água-ripple discretos + background neural SVG. */}
               <img
                 src="/medcannlab-logo.png"
-                alt="MCL — Emblema MedCannLab"
-                className="relative z-10 w-full h-full max-w-[29.376rem] object-contain hover:scale-105 transition-transform duration-700 drop-shadow-2xl"
-                style={{
-                  filter: 'drop-shadow(0 0 40px rgba(16, 185, 129, 0.42)) drop-shadow(0 0 80px rgba(0, 229, 178, 0.18))'
-                }}
+                alt="MedCannLab — emblema neuro-orgânico (rim · folhas · circuito)"
+                className="relative z-10 w-full h-auto max-w-[24rem] object-contain hover:scale-[1.03] transition-transform duration-700"
+                style={{ filter: 'contrast(1.08) brightness(1.05) drop-shadow(0 0 22px rgba(34,211,238,0.20)) drop-shadow(0 0 55px rgba(16,58,58,0.22))' }}
               />
             </div>
           </motion.div>
@@ -509,12 +724,14 @@ const Landing: React.FC = () => {
       {/* Partners section removed — add real partners when available */}
 
       {/* --- Problem Section --- */}
-      <section className="py-20 bg-slate-950 relative">
+      {/* ⚠️ PREVIEW Gptest 02/06: bg-slate-950 (dark flat) -> gradiente navy/teal igual ao hero
+          (Pedro: "trocar com o de cima"). Reverter: voltar className="py-20 bg-slate-950 relative". */}
+      <section className="py-20 relative" style={{ background: '#0f172a' }}>
         <div className="container mx-auto px-6">
           <div className="text-center max-w-3xl mx-auto mb-16">
             <h2 className="text-3xl md:text-4xl font-bold mb-4">A Medicina Moderna enfrenta um colapso de atenção.</h2>
             <p className="text-slate-400 mb-3">O excesso de dados e a burocracia estão drenando a capacidade humana de escutar.</p>
-            <p className="text-emerald-300 text-base font-medium">A MedCannLab nasce para resolver exatamente esse colapso — estruturando a escuta clínica com método e tecnologia.</p>
+            <p className="text-teal-300 text-base font-medium">A MedCannLab nasce para resolver exatamente esse colapso — estruturando a escuta clínica com método e tecnologia.</p>
           </div>
 
           <div className="grid md:grid-cols-3 gap-8">
@@ -541,7 +758,7 @@ const Landing: React.FC = () => {
       </section>
 
       {/* --- Unified Core Section --- */}
-      <section id="solucao" className="py-24 relative overflow-hidden bg-slate-900/50 backdrop-blur-sm">
+      <section id="solucao" className="py-24 relative overflow-hidden" style={{ background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #284629 100%)' }}>
         <div className="absolute inset-0 bg-blue-900/5 -z-10" />
         <div className="container mx-auto px-6">
           {/* Top: Feature Split */}
@@ -551,7 +768,7 @@ const Landing: React.FC = () => {
                 {/* V1.9.148: avatar Nôa Esperanza maior nesta seção (era w-12 h-12, pequeno
                     em proporção ao h2 4xl ao lado). Mobile w-16, desktop w-24. */}
                 <div
-                  className="w-16 h-16 md:w-24 md:h-24 rounded-full overflow-hidden border-2 border-green-500/40 bg-slate-950/60 flex-shrink-0"
+                  className="w-16 h-16 md:w-24 md:h-24 rounded-full overflow-hidden border-2 border-teal-500/40 bg-slate-950/60 flex-shrink-0"
                   style={{ boxShadow: '0 0 24px rgba(0, 193, 106, 0.3)' }}
                   title="Nôa Esperanza"
                 >
@@ -568,7 +785,7 @@ const Landing: React.FC = () => {
                 </div>
                 <h2 className="text-4xl font-bold leading-tight">
                   Nôa Esperanza: <br />
-                  <span className="text-emerald-400">Inteligência que cuida.</span>
+                  <span className="text-teal-400">Inteligência que cuida.</span>
                 </h2>
               </div>
               <p className="text-slate-400 mb-8 text-lg">
@@ -602,7 +819,7 @@ const Landing: React.FC = () => {
                   <div className="absolute left-4 flex items-center space-x-2">
                     <div className="w-3 h-3 rounded-full bg-red-500/50"></div>
                     <div className="w-3 h-3 rounded-full bg-yellow-500/50"></div>
-                    <div className="w-3 h-3 rounded-full bg-green-500/50"></div>
+                    <div className="w-3 h-3 rounded-full bg-teal-500/50"></div>
                   </div>
                   {/* Avatar Nôa + nome — centralizado, ~20% maior cada iteração */}
                   <div className="flex items-center gap-3">
@@ -627,7 +844,7 @@ const Landing: React.FC = () => {
                         <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-500 border-2 border-slate-900"></span>
                       </span>
                     </div>
-                    <span className="text-sm font-semibold text-emerald-200">Nôa Esperanza</span>
+                    <span className="text-sm font-semibold text-teal-200">Nôa Esperanza</span>
                   </div>
                 </div>
                 {/* Chat body — avatar à esquerda (padrão de chat) */}
@@ -649,12 +866,12 @@ const Landing: React.FC = () => {
                       />
                     </div>
                     <div className="bg-emerald-600/10 border border-emerald-500/20 p-3 rounded-r-xl rounded-bl-xl flex-1">
-                      <p className="text-xs text-emerald-200 mb-2">Analisando padrão de sono e ansiedade...</p>
+                      <p className="text-xs text-teal-200 mb-2">Analisando padrão de sono e ansiedade...</p>
                       <div className="h-2 w-full bg-emerald-500/30 rounded animate-pulse"></div>
                     </div>
                   </div>
                 </div>
-                <div className="absolute bottom-4 right-4 bg-black/80 backdrop-blur px-3 py-1 rounded-full border border-green-500/30 text-xs text-green-400 font-mono">
+                <div className="absolute bottom-4 right-4 bg-black/80 backdrop-blur px-3 py-1 rounded-full border border-teal-500/30 text-xs text-teal-400 font-mono">
                   ● System Active
                 </div>
               </div>
@@ -663,10 +880,10 @@ const Landing: React.FC = () => {
 
       {/* --- Middle: Philosophy Quote (Integrated) --- */}
           <div className="max-w-4xl mx-auto text-center border-t border-slate-800 pt-16 pb-12">
-            <Heart className="w-8 h-8 text-green-500 mx-auto mb-6" />
+            <Heart className="w-8 h-8 text-teal-400 mx-auto mb-6" />
             <h2 className="text-2xl md:text-3xl font-bold mb-4">"Uma epistemologia do cuidado."</h2>
             <p className="text-lg md:text-xl text-slate-300 italic font-light leading-relaxed mb-6">
-              "Enquanto a maioria aposta na automação desumanizante, a MedCannLab propõe uma <span className="text-green-400 font-normal">economia da escuta</span>. Nôa Esperanza não é um chatbot; é um artefato cognitivo desenhado para preservar a humanidade na medicina."
+              "Enquanto a maioria aposta na automação desumanizante, a MedCannLab propõe uma <span className="text-teal-400 font-normal">economia da escuta</span>. Nôa Esperanza não é um chatbot; é um artefato cognitivo desenhado para preservar a humanidade na medicina."
             </p>
             <div className="flex items-center justify-center space-x-2 opacity-70">
               <img src="/brain.png" alt="Logo" className="w-6 h-6 grayscale" />
@@ -678,7 +895,7 @@ const Landing: React.FC = () => {
       </section>
 
       {/* --- AEC 001 Explanation Section --- */}
-      <section className="py-24 bg-slate-900 border-t border-slate-800 relative overflow-hidden">
+      <section className="py-24 relative overflow-hidden" style={{ background: '#0f172a' }}>
         {/* Decorative Background Elements */}
         <div className="absolute top-0 right-0 w-1/3 h-full bg-gradient-to-l from-blue-900/10 to-transparent pointer-events-none" />
         <div className="absolute bottom-0 left-0 w-1/3 h-64 bg-gradient-to-t from-green-900/10 to-transparent pointer-events-none" />
@@ -686,8 +903,8 @@ const Landing: React.FC = () => {
         <div className="container mx-auto px-6 relative z-10">
           <div className="text-center max-w-3xl mx-auto mb-16">
             <div className="inline-flex items-center space-x-2 bg-slate-800/80 border border-slate-700/50 rounded-full px-4 py-1.5 mb-6">
-              <Brain className="w-4 h-4 text-emerald-400" />
-              <span className="text-xs font-bold tracking-widest text-emerald-300 uppercase">AEC 001 Protocol</span>
+              <Brain className="w-4 h-4 text-teal-400" />
+              <span className="text-xs font-bold tracking-widest text-teal-300 uppercase">AEC 001 Protocol</span>
             </div>
             <h2 className="text-3xl md:text-5xl font-bold mb-6 text-white leading-tight">
               A Arte da Entrevista Clínica
@@ -701,10 +918,10 @@ const Landing: React.FC = () => {
             {/* Step 1 */}
             <div className="bg-slate-800/50 border border-slate-700/50 rounded-2xl p-8 hover:bg-slate-800 transition-colors group">
               <div className="w-14 h-14 bg-emerald-500/10 rounded-2xl flex items-center justify-center mb-6 border border-emerald-500/20 group-hover:scale-110 transition-transform">
-                <span className="text-2xl font-black text-emerald-400">1</span>
+                <span className="text-2xl font-black text-teal-400">1</span>
               </div>
               <h3 className="text-xl font-bold text-white mb-3 flex items-center gap-2">
-                <MessageSquare className="w-5 h-5 text-emerald-400" />
+                <MessageSquare className="w-5 h-5 text-teal-400" />
                 A Escuta Ativa
               </h3>
               <p className="text-slate-400 text-sm leading-relaxed">
@@ -732,11 +949,11 @@ const Landing: React.FC = () => {
 
             {/* Step 3 */}
             <div className="bg-slate-800/50 border border-slate-700/50 rounded-2xl p-8 hover:bg-slate-800 transition-colors group">
-              <div className="w-14 h-14 bg-green-500/10 rounded-2xl flex items-center justify-center mb-6 border border-green-500/20 group-hover:scale-110 transition-transform">
-                <span className="text-2xl font-black text-green-400">3</span>
+              <div className="w-14 h-14 bg-teal-500/10 rounded-2xl flex items-center justify-center mb-6 border border-teal-500/20 group-hover:scale-110 transition-transform">
+                <span className="text-2xl font-black text-teal-400">3</span>
               </div>
               <h3 className="text-xl font-bold text-white mb-3 flex items-center gap-2">
-                <UserPlus className="w-5 h-5 text-green-400" />
+                <UserPlus className="w-5 h-5 text-teal-400" />
                 O Encontro Médico
               </h3>
               <p className="text-slate-400 text-sm leading-relaxed">
@@ -748,7 +965,7 @@ const Landing: React.FC = () => {
       </section>
 
       {/* --- Seção Institucional (v15 selado 29/04) — Tese & Arquitetura --- */}
-      <section id="sobre" className="py-24 bg-slate-950 relative border-t border-slate-900 overflow-hidden">
+      <section id="sobre" className="py-24 relative overflow-hidden" style={{ background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #284629 100%)' }}>
         {/* Gradient sutil de fundo */}
         <div className="absolute top-0 left-0 w-1/3 h-full bg-gradient-to-r from-emerald-900/10 to-transparent pointer-events-none -z-10" />
         <div className="absolute bottom-0 right-0 w-1/3 h-full bg-gradient-to-l from-teal-900/10 to-transparent pointer-events-none -z-10" />
@@ -756,13 +973,13 @@ const Landing: React.FC = () => {
         <div className="container mx-auto px-6 relative z-10 max-w-5xl">
           <div className="text-center mb-12">
             <div className="inline-flex items-center space-x-2 bg-slate-800/80 border border-slate-700/50 rounded-full px-4 py-1.5 mb-6">
-              <Microscope className="w-4 h-4 text-emerald-400" />
-              <span className="text-xs font-bold tracking-widest text-emerald-300 uppercase">Sobre a MedCannLab</span>
+              <Microscope className="w-4 h-4 text-teal-400" />
+              <span className="text-xs font-bold tracking-widest text-teal-300 uppercase">Sobre a MedCannLab</span>
             </div>
             <h2 className="text-3xl md:text-5xl font-bold mb-6 text-white leading-tight">
               Tese & Arquitetura
             </h2>
-            <p className="text-lg text-emerald-200/90 italic max-w-2xl mx-auto">
+            <p className="text-lg text-teal-200/90 italic max-w-2xl mx-auto">
               "Transformamos a escuta clínica em cuidado estruturado e auditável."
             </p>
           </div>
@@ -770,7 +987,7 @@ const Landing: React.FC = () => {
           {/* Resumo curto (sempre visível) */}
           <div className="prose prose-invert max-w-3xl mx-auto text-slate-300 leading-relaxed mb-8">
             <p className="text-base md:text-lg">
-              <strong className="text-white">MedCannLab</strong> é uma <strong className="text-emerald-300">Infraestrutura Cognitiva Clínica orientada pela Escuta</strong>, fundada na <strong className="text-emerald-300">Arte da Entrevista Clínica (AEC)</strong> — método autoral do <strong className="text-white">Dr. Ricardo Valença</strong> e operacionalizado por arquitetura cognitiva auditável.
+              <strong className="text-white">MedCannLab</strong> é uma <strong className="text-teal-300">Infraestrutura Cognitiva Clínica orientada pela Escuta</strong>, fundada na <strong className="text-teal-300">Arte da Entrevista Clínica (AEC)</strong> — método autoral do <strong className="text-white">Dr. Ricardo Valença</strong> e operacionalizado por arquitetura cognitiva auditável.
             </p>
           </div>
 
@@ -778,7 +995,7 @@ const Landing: React.FC = () => {
           <div className="text-center mb-2">
             <button
               onClick={() => setShowFullInstitutional(!showFullInstitutional)}
-              className="inline-flex items-center gap-2 px-5 py-2.5 bg-slate-800/60 hover:bg-slate-800 border border-emerald-500/30 hover:border-emerald-500/50 rounded-full text-sm font-medium text-emerald-300 transition-all"
+              className="inline-flex items-center gap-2 px-5 py-2.5 bg-slate-800/60 hover:bg-slate-800 border border-emerald-500/30 hover:border-emerald-500/50 rounded-full text-sm font-medium text-teal-300 transition-all"
             >
               {showFullInstitutional ? 'Recolher tese completa' : 'Ler tese completa'}
               <ArrowRight className={`w-4 h-4 transition-transform ${showFullInstitutional ? 'rotate-90' : 'rotate-0'}`} />
@@ -799,11 +1016,11 @@ const Landing: React.FC = () => {
                 {/* Parágrafo institucional v15 — em blocos legíveis */}
                 <div className="prose prose-invert max-w-3xl mx-auto space-y-6 text-slate-300 leading-relaxed mt-8">
                   <p className="text-base md:text-lg">
-                    O método <strong className="text-emerald-300">Anamnese Triaxial</strong> organiza-se em <strong className="text-emerald-300">3 atos fundamentais</strong>: <strong className="text-emerald-300">Abertura Exponencial</strong> (a escuta se inicia e as queixas são organizadas em lista indiciária) → <strong className="text-emerald-300">Desenvolvimento Indiciário</strong> (cada questão é aprofundada por meio de perguntas cercadoras) → <strong className="text-emerald-300">Fechamento Consensual</strong> (síntese clínica construída e validada com o paciente). Esses três atos não são etapas isoladas, mas expressões de uma mesma lógica clínica de escuta estruturada, operando sob o <strong className="text-emerald-300">motor IMRE</strong> (Incentivator Minimal of Exponential — lógica de perguntas exponenciais), em fluxo determinístico e <strong className="text-emerald-300">28 blocos modulares</strong> (preservando 37 blocos legacy), formando um sistema completo de escuta estruturada e raciocínio diagnóstico.
+                    O método <strong className="text-teal-300">Anamnese Triaxial</strong> organiza-se em <strong className="text-teal-300">3 atos fundamentais</strong>: <strong className="text-teal-300">Abertura Exponencial</strong> (a escuta se inicia e as queixas são organizadas em lista indiciária) → <strong className="text-teal-300">Desenvolvimento Indiciário</strong> (cada questão é aprofundada por meio de perguntas cercadoras) → <strong className="text-teal-300">Fechamento Consensual</strong> (síntese clínica construída e validada com o paciente). Esses três atos não são etapas isoladas, mas expressões de uma mesma lógica clínica de escuta estruturada, operando sob o <strong className="text-teal-300">motor IMRE</strong> (Incentivator Minimal of Exponential — lógica de perguntas exponenciais), em fluxo determinístico e <strong className="text-teal-300">28 blocos modulares</strong> (preservando 37 blocos legacy), formando um sistema completo de escuta estruturada e raciocínio diagnóstico.
                   </p>
 
                   <p className="text-base md:text-lg">
-                    A tradução desse método em sistema executável é a contribuição arquitetural original de <strong className="text-white">Pedro Henrique Passos Galluf</strong> (CTO): o <strong className="text-emerald-300">TradeVision Core</strong> — núcleo originado em sua plataforma anterior e amplamente desenvolvido no MedCannLab — codifica a metodologia clínica autoral em <strong className="text-emerald-300">infraestrutura cognitiva auditável</strong>, com FSM determinístico, Verbatim First, AEC Gate, Pipeline Orchestrator e COS Kernel construídos diretamente sobre a AEC para executar o método sob condições auditáveis. A integração entre método e arquitetura foi orquestrada por Pedro em colaboração técnica com Ricardo.
+                    A tradução desse método em sistema executável é a contribuição arquitetural original de <strong className="text-white">Pedro Henrique Passos Galluf</strong> (CTO): o <strong className="text-teal-300">TradeVision Core</strong> — núcleo originado em sua plataforma anterior e amplamente desenvolvido no MedCannLab — codifica a metodologia clínica autoral em <strong className="text-teal-300">infraestrutura cognitiva auditável</strong>, com FSM determinístico, Verbatim First, AEC Gate, Pipeline Orchestrator e COS Kernel construídos diretamente sobre a AEC para executar o método sob condições auditáveis. A integração entre método e arquitetura foi orquestrada por Pedro em colaboração técnica com Ricardo.
                   </p>
                 </div>
 
@@ -811,19 +1028,19 @@ const Landing: React.FC = () => {
                 <div className="mt-12 max-w-4xl mx-auto">
                   <div className="bg-slate-900/60 border border-slate-800 rounded-2xl p-8">
                     <div className="flex items-center gap-3 mb-6">
-                      <Lock className="w-5 h-5 text-emerald-400" />
+                      <Lock className="w-5 h-5 text-teal-400" />
                       <h3 className="text-lg font-bold text-white tracking-tight">Pirâmide de Governança — 8 camadas</h3>
                     </div>
                     <p className="text-sm text-slate-400 mb-6 leading-relaxed">
-                      A plataforma opera sob uma pirâmide formal de governança, onde <strong className="text-emerald-300">GPT é o último a falar e o primeiro a ser checado</strong> — com 46% das interações em hard-lock bypassando o LLM.
+                      A plataforma opera sob uma pirâmide formal de governança, onde <strong className="text-teal-300">GPT é o último a falar e o primeiro a ser checado</strong> — com 46% das interações em hard-lock bypassando o LLM.
                     </p>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
                       <div className="bg-slate-950/60 border border-emerald-500/20 rounded-lg px-3 py-2.5 text-center">
-                        <div className="text-emerald-400 font-bold mb-1">0</div>
+                        <div className="text-teal-400 font-bold mb-1">0</div>
                         <div className="text-slate-300">Constituição §1</div>
                       </div>
                       <div className="bg-slate-950/60 border border-emerald-500/20 rounded-lg px-3 py-2.5 text-center">
-                        <div className="text-emerald-400 font-bold mb-1">1</div>
+                        <div className="text-teal-400 font-bold mb-1">1</div>
                         <div className="text-slate-300">COS Kernel v5.0</div>
                       </div>
                       <div className="bg-slate-950/60 border border-teal-500/20 rounded-lg px-3 py-2.5 text-center">
@@ -834,20 +1051,20 @@ const Landing: React.FC = () => {
                         <div className="text-teal-400 font-bold mb-1">3</div>
                         <div className="text-slate-300">Verbatim First</div>
                       </div>
-                      <div className="bg-slate-950/60 border border-green-500/20 rounded-lg px-3 py-2.5 text-center">
-                        <div className="text-green-400 font-bold mb-1">4</div>
+                      <div className="bg-slate-950/60 border border-teal-500/20 rounded-lg px-3 py-2.5 text-center">
+                        <div className="text-teal-400 font-bold mb-1">4</div>
                         <div className="text-slate-300">AEC Gate</div>
                       </div>
                       <div className="bg-slate-950/60 border border-slate-700/50 rounded-lg px-3 py-2.5 text-center">
                         <div className="text-slate-400 font-bold mb-1">5</div>
                         <div className="text-slate-300">GPT</div>
                       </div>
-                      <div className="bg-slate-950/60 border border-green-500/20 rounded-lg px-3 py-2.5 text-center">
-                        <div className="text-green-400 font-bold mb-1">6</div>
+                      <div className="bg-slate-950/60 border border-teal-500/20 rounded-lg px-3 py-2.5 text-center">
+                        <div className="text-teal-400 font-bold mb-1">6</div>
                         <div className="text-slate-300">Pós-processamento</div>
                       </div>
                       <div className="bg-slate-950/60 border border-emerald-500/20 rounded-lg px-3 py-2.5 text-center">
-                        <div className="text-emerald-400 font-bold mb-1">7</div>
+                        <div className="text-teal-400 font-bold mb-1">7</div>
                         <div className="text-slate-300">Pipeline Orchestrator</div>
                       </div>
                     </div>
@@ -857,18 +1074,18 @@ const Landing: React.FC = () => {
                 {/* Formação + Constituição */}
                 <div className="prose prose-invert max-w-3xl mx-auto space-y-6 text-slate-300 leading-relaxed mt-12">
                   <p className="text-base md:text-lg">
-                    <strong className="text-emerald-300">Formação clínica é pilar:</strong> cursos AEC (R$ 299,90), IMRE Triaxial (R$ 199,90) e Cannabis Medicinal (R$ 2.999,90), Simulador com 20 personas-pacientes, parceria <em>Cidade Amiga dos Rins</em>.
+                    <strong className="text-teal-300">Formação clínica é pilar:</strong> cursos AEC (R$ 299,90), IMRE Triaxial (R$ 199,90) e Cannabis Medicinal (R$ 2.999,90), Simulador com 20 personas-pacientes, parceria <em>Cidade Amiga dos Rins</em>.
                   </p>
 
                   <p className="text-base md:text-lg">
-                    <strong className="text-emerald-300">Time fundador:</strong> Dr. Ricardo Valença (Nefrologia — criador da AEC), Dr. Eduardo Faveret (Neurologia — direção médica e científica), Pedro Henrique Passos Galluf (CTO — arquitetura cognitiva e TradeVision Core), João Eduardo Vidal (institucional e parcerias).
+                    <strong className="text-teal-300">Time fundador:</strong> Dr. Ricardo Valença (Nefrologia — criador da AEC), Dr. Eduardo Faveret (Neurologia — direção médica e científica), Pedro Henrique Passos Galluf (CTO — arquitetura cognitiva e TradeVision Core), João Eduardo Vidal (institucional e parcerias).
                   </p>
                 </div>
 
                 {/* Frase âncora final */}
                 <div className="mt-12 max-w-3xl mx-auto text-center border-t border-slate-800 pt-10">
                   <p className="text-lg md:text-xl text-white font-semibold leading-relaxed mb-4">
-                    MedCannLab não substitui o método clínico — <span className="text-emerald-300">operacionaliza, preserva e escala o método</span> em condições auditáveis.
+                    MedCannLab não substitui o método clínico — <span className="text-teal-300">operacionaliza, preserva e escala o método</span> em condições auditáveis.
                   </p>
                   <p className="text-sm text-slate-500 italic tracking-wide">
                     Method-first, architecture-grounded, AI-last.
@@ -881,25 +1098,25 @@ const Landing: React.FC = () => {
       </section>
 
       {/* --- Consultório-Escola Exponencial (Ricardo + Eduardo Faveret) --- */}
-      <section id="consultorio-escola" className="py-20 bg-gradient-to-br from-slate-900 via-emerald-950/30 to-slate-900 relative border-t border-slate-900 overflow-hidden">
+      <section id="consultorio-escola" className="py-20 relative overflow-hidden" style={{ background: '#0f172a' }}>
         {/* Glow sutil */}
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-emerald-500/5 rounded-full blur-3xl pointer-events-none" />
 
         <div className="container mx-auto px-6 relative z-10">
           <div className="text-center max-w-3xl mx-auto mb-12">
             <div className="inline-flex items-center space-x-2 bg-slate-800/80 border border-emerald-500/30 rounded-full px-4 py-1.5 mb-6">
-              <Stethoscope className="w-4 h-4 text-emerald-400" />
-              <span className="text-xs font-bold tracking-widest text-emerald-300 uppercase">Consultório-Escola Exponencial</span>
+              <Stethoscope className="w-4 h-4 text-teal-400" />
+              <span className="text-xs font-bold tracking-widest text-teal-300 uppercase">Consultório-Escola Exponencial</span>
             </div>
             <h2 className="text-3xl md:text-5xl font-bold mb-4 text-white leading-tight">
               Dois consultórios, um método.<br />
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-teal-300">Escala que ensina.</span>
             </h2>
-            <p className="text-base text-emerald-200/90 mb-6 max-w-2xl mx-auto leading-relaxed">
+            <p className="text-base text-teal-200/90 mb-6 max-w-2xl mx-auto leading-relaxed">
               Cada atendimento gera <strong className="text-white">cuidado real</strong>, <strong className="text-white">aprendizado contínuo</strong> e <strong className="text-white">base científica</strong>.
             </p>
             <p className="text-lg text-slate-300 leading-relaxed">
-              A junção da prática clínica do <strong className="text-emerald-300">Dr. Ricardo Valença</strong> (Nefrologia) e do <strong className="text-teal-300">Dr. Eduardo Faveret</strong> (Neurologia) — operacionalizada pelo método AEC e amplificada pela infraestrutura digital MedCannLab.
+              A junção da prática clínica do <strong className="text-teal-300">Dr. Ricardo Valença</strong> (Nefrologia) e do <strong className="text-teal-300">Dr. Eduardo Faveret</strong> (Neurologia) — operacionalizada pelo método AEC e amplificada pela infraestrutura digital MedCannLab.
             </p>
           </div>
 
@@ -908,15 +1125,15 @@ const Landing: React.FC = () => {
             <div className="bg-slate-900/70 border border-emerald-500/20 rounded-2xl p-7 hover:border-emerald-500/40 transition-colors">
               <div className="flex items-start gap-4 mb-4">
                 <div className="w-14 h-14 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center flex-shrink-0">
-                  <Heart className="w-7 h-7 text-emerald-400" />
+                  <Heart className="w-7 h-7 text-teal-400" />
                 </div>
                 <div>
                   <h3 className="text-xl font-bold text-white">Dr. Ricardo Valença</h3>
-                  <p className="text-sm text-emerald-300 font-medium">Nefrologista · Pesquisador em Comunicação Clínica e Dados em Saúde</p>
+                  <p className="text-sm text-teal-300 font-medium">Nefrologista · Pesquisador em Comunicação Clínica e Dados em Saúde</p>
                 </div>
               </div>
               <p className="text-sm text-slate-400 leading-relaxed">
-                Nefrologista com <strong className="text-emerald-200">mais de três décadas</strong> em assistência, ensino e pesquisa. Criador da <strong className="text-emerald-200">Arte da Entrevista Clínica (AEC)</strong> e do <strong className="text-emerald-200">MIMRE</strong>. Mestrado (2002) em comunicação clínica aplicada à nefrologia, a campanha <em>Escute-se!</em> e o programa <strong className="text-emerald-200">Cidade Amiga dos Rins</strong>. Sua defesa da escuta qualificada e da longitudinalidade clínica deu origem à Nôa Esperanza e à MedCannLab.
+                Nefrologista com <strong className="text-teal-200">mais de três décadas</strong> em assistência, ensino e pesquisa. Criador da <strong className="text-teal-200">Arte da Entrevista Clínica (AEC)</strong> e do <strong className="text-teal-200">MIMRE</strong>. Mestrado (2002) em comunicação clínica aplicada à nefrologia, a campanha <em>Escute-se!</em> e o programa <strong className="text-teal-200">Cidade Amiga dos Rins</strong>. Sua defesa da escuta qualificada e da longitudinalidade clínica deu origem à Nôa Esperanza e à MedCannLab.
               </p>
             </div>
 
@@ -939,7 +1156,7 @@ const Landing: React.FC = () => {
           {/* 3 dimensões do consultório-escola */}
           <div className="grid md:grid-cols-3 gap-5 max-w-5xl mx-auto">
             <div className="bg-slate-950/60 border border-slate-800 rounded-xl p-5 text-center">
-              <Stethoscope className="w-6 h-6 text-emerald-400 mx-auto mb-3" />
+              <Stethoscope className="w-6 h-6 text-teal-400 mx-auto mb-3" />
               <h4 className="text-white font-semibold mb-2">Atendimento real</h4>
               <p className="text-xs text-slate-400 leading-relaxed">
                 Cada consulta é prática clínica de verdade — pacientes reais, escuta real, decisão real.
@@ -953,7 +1170,7 @@ const Landing: React.FC = () => {
               </p>
             </div>
             <div className="bg-slate-950/60 border border-slate-800 rounded-xl p-5 text-center">
-              <Zap className="w-6 h-6 text-green-400 mx-auto mb-3" />
+              <Zap className="w-6 h-6 text-teal-400 mx-auto mb-3" />
               <h4 className="text-white font-semibold mb-2">Escala metódica</h4>
               <p className="text-xs text-slate-400 leading-relaxed">
                 A infraestrutura digital permite reproduzir o método sem diluir a qualidade clínica.
@@ -962,25 +1179,25 @@ const Landing: React.FC = () => {
           </div>
 
           <p className="text-center text-sm text-slate-500 italic mt-10 max-w-2xl mx-auto">
-            Um modelo onde clínica, ensino e pesquisa <span className="text-emerald-300/80">acontecem juntos — no mesmo atendimento, no mesmo método</span>.
+            Um modelo onde clínica, ensino e pesquisa <span className="text-teal-300/80">acontecem juntos — no mesmo atendimento, no mesmo método</span>.
           </p>
         </div>
       </section>
 
       {/* --- 3 Eixos Section (V1.9.100 SEO) — Clínica + Ensino + Pesquisa --- */}
-      <section id="eixos" className="py-20 bg-slate-950 relative border-t border-slate-900 overflow-hidden">
+      <section id="eixos" className="py-20 relative overflow-hidden" style={{ background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #284629 100%)' }}>
         <div className="absolute inset-0 bg-emerald-900/5 -z-10" />
         <div className="container mx-auto px-6 relative z-10">
           <div className="text-center max-w-3xl mx-auto mb-12">
             <div className="inline-flex items-center space-x-2 bg-slate-800/80 border border-slate-700/50 rounded-full px-4 py-1.5 mb-6">
-              <Brain className="w-4 h-4 text-emerald-400" />
-              <span className="text-xs font-bold tracking-widest text-emerald-300 uppercase">Os 3 Pilares</span>
+              <Brain className="w-4 h-4 text-teal-400" />
+              <span className="text-xs font-bold tracking-widest text-teal-300 uppercase">Os 3 Pilares</span>
             </div>
             <h2 className="text-3xl md:text-4xl font-bold mb-4 text-white leading-tight">
               Clínica, Ensino e Pesquisa em Cannabis Medicinal
             </h2>
             <p className="text-slate-400 text-lg">
-              Três eixos integrados sobre o mesmo método autoral: a <strong className="text-emerald-300">Arte da Entrevista Clínica (AEC)</strong> do Dr. Ricardo Valença.
+              Três eixos integrados sobre o mesmo método autoral: a <strong className="text-teal-300">Arte da Entrevista Clínica (AEC)</strong> do Dr. Ricardo Valença.
             </p>
           </div>
 
@@ -988,7 +1205,7 @@ const Landing: React.FC = () => {
             {/* Eixo 1 — Clínica */}
             <div className="bg-slate-900/60 border border-slate-800 rounded-2xl p-7 hover:border-emerald-500/40 transition-colors">
               <div className="w-12 h-12 bg-emerald-500/10 rounded-xl flex items-center justify-center mb-5 border border-emerald-500/20">
-                <Heart className="w-6 h-6 text-emerald-400" />
+                <Heart className="w-6 h-6 text-teal-400" />
               </div>
               <h3 className="text-xl font-bold text-white mb-3">Clínica — Avaliação com Método AEC</h3>
               <p className="text-slate-400 text-sm leading-relaxed">
@@ -1008,13 +1225,13 @@ const Landing: React.FC = () => {
             </div>
 
             {/* Eixo 3 — Pesquisa */}
-            <div className="bg-slate-900/60 border border-slate-800 rounded-2xl p-7 hover:border-green-500/40 transition-colors">
-              <div className="w-12 h-12 bg-green-500/10 rounded-xl flex items-center justify-center mb-5 border border-green-500/20">
-                <Database className="w-6 h-6 text-green-400" />
+            <div className="bg-slate-900/60 border border-slate-800 rounded-2xl p-7 hover:border-teal-500/40 transition-colors">
+              <div className="w-12 h-12 bg-teal-500/10 rounded-xl flex items-center justify-center mb-5 border border-teal-500/20">
+                <Database className="w-6 h-6 text-teal-400" />
               </div>
               <h3 className="text-xl font-bold text-white mb-3">Pesquisa — Produção Científica</h3>
               <p className="text-slate-400 text-sm leading-relaxed">
-                As avaliações estruturadas pelo método AEC geram dados clínicos organizados e rastreáveis, base para evidência real em cannabis medicinal. <strong className="text-green-300">Mais de 90 casos já estruturados</strong> formam a base inicial. Parceria com Cidade Amiga dos Rins (CKD).
+                As avaliações estruturadas pelo método AEC geram dados clínicos organizados e rastreáveis, base para evidência real em cannabis medicinal. <strong className="text-teal-300">Mais de 90 casos já estruturados</strong> formam a base inicial. Parceria com Cidade Amiga dos Rins (CKD).
               </p>
             </div>
           </div>
@@ -1022,7 +1239,7 @@ const Landing: React.FC = () => {
       </section>
 
       {/* --- Pricing Section --- */}
-      <section id="planos" className="py-24 bg-slate-950 relative border-t border-slate-900">
+      <section id="planos" className="py-24 relative" style={{ background: '#0f172a' }}>
         <div className="absolute inset-0 bg-green-900/5 -z-10" />
         <div className="container mx-auto px-6">
           <div className="text-center max-w-3xl mx-auto mb-16">
@@ -1033,10 +1250,10 @@ const Landing: React.FC = () => {
           <div className="grid lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
             
             {/* Paciente Plan */}
-            <div className="w-full bg-slate-900 rounded-2xl p-8 border border-slate-800 relative flex flex-col h-full hover:border-green-500/50 transition-colors group">
+            <div className="w-full bg-slate-900 rounded-2xl p-8 border border-slate-800 relative flex flex-col h-full hover:border-teal-500/50 transition-colors group">
               <div className="relative z-10 flex-grow">
                 <div className="w-12 h-12 rounded-xl bg-emerald-500/10 flex items-center justify-center mb-6">
-                  <UserPlus className="w-6 h-6 text-emerald-400" />
+                  <UserPlus className="w-6 h-6 text-teal-400" />
                 </div>
                 <h3 className="text-xl font-bold text-white mb-2">Plano Paciente (SaaS)</h3>
                 <p className="text-slate-400 mb-6 text-sm">Assinatura tecnológica para acesso ao Motor Nôa Esperanza e relatórios estruturados AEC.</p>
@@ -1047,15 +1264,15 @@ const Landing: React.FC = () => {
                     <span className="text-slate-400 pb-1">/mês</span>
                   </div>
                   <div className="flex flex-col space-y-1 mt-3">
-                    <p className="text-xs text-green-400 font-bold tracking-wide">+ Taxa de Inscrição Única: R$ 19,90 (Só no 1º mês)</p>
+                    <p className="text-xs text-teal-400 font-bold tracking-wide">+ Taxa de Inscrição Única: R$ 19,90 (Só no 1º mês)</p>
                     <p className="text-xs text-slate-400 font-medium mt-1">Lembrete: O valor da Consulta Médica é cobrado separadamente pelo profissional.</p>
                   </div>
                 </div>
 
                 <ul className="space-y-4 text-sm text-slate-300">
-                  <li className="flex gap-3"><CheckCircle2 className="w-5 h-5 text-green-500 flex-shrink-0" /><span>Avaliação Clínica Inteligente (Nôa AI)</span></li>
-                  <li className="flex gap-3"><CheckCircle2 className="w-5 h-5 text-green-500 flex-shrink-0" /><span>Armazenamento Criptografado de Histórico</span></li>
-                  <li className="flex gap-3"><CheckCircle2 className="w-5 h-5 text-green-500 flex-shrink-0" /><span>Acesso ao Agendador de Especialistas</span></li>
+                  <li className="flex gap-3"><CheckCircle2 className="w-5 h-5 text-teal-400 flex-shrink-0" /><span>Avaliação Clínica Inteligente (Nôa AI)</span></li>
+                  <li className="flex gap-3"><CheckCircle2 className="w-5 h-5 text-teal-400 flex-shrink-0" /><span>Armazenamento Criptografado de Histórico</span></li>
+                  <li className="flex gap-3"><CheckCircle2 className="w-5 h-5 text-teal-400 flex-shrink-0" /><span>Acesso ao Agendador de Especialistas</span></li>
                 </ul>
               </div>
               <button onClick={() => setShowRegister(true)} className="w-full mt-8 py-3 bg-slate-800 text-white rounded-xl font-semibold hover:bg-slate-700 transition">Assinar Plataforma</button>
@@ -1084,10 +1301,10 @@ const Landing: React.FC = () => {
                 </div>
 
                 <ul className="space-y-4 text-sm text-slate-300">
-                  <li className="flex gap-3"><CheckCircle2 className="w-5 h-5 text-green-500 flex-shrink-0" /><span>Acesso a todos os Cursos EAD Familiares e Clínicos</span></li>
-                  <li className="flex gap-3"><CheckCircle2 className="w-5 h-5 text-green-500 flex-shrink-0" /><span>Simulador Clínico da Nôa AI Interativo</span></li>
-                  <li className="flex gap-3"><CheckCircle2 className="w-5 h-5 text-green-500 flex-shrink-0" /><span>Módulo Avançado de Biblioteca Literária</span></li>
-                  <li className="flex gap-3"><CheckCircle2 className="w-5 h-5 text-green-500 flex-shrink-0" /><span>Fórum Comunitário Educacional</span></li>
+                  <li className="flex gap-3"><CheckCircle2 className="w-5 h-5 text-teal-400 flex-shrink-0" /><span>Acesso a todos os Cursos EAD Familiares e Clínicos</span></li>
+                  <li className="flex gap-3"><CheckCircle2 className="w-5 h-5 text-teal-400 flex-shrink-0" /><span>Simulador Clínico da Nôa AI Interativo</span></li>
+                  <li className="flex gap-3"><CheckCircle2 className="w-5 h-5 text-teal-400 flex-shrink-0" /><span>Módulo Avançado de Biblioteca Literária</span></li>
+                  <li className="flex gap-3"><CheckCircle2 className="w-5 h-5 text-teal-400 flex-shrink-0" /><span>Fórum Comunitário Educacional</span></li>
                 </ul>
               </div>
               <button onClick={() => setShowRegister(true)} className="w-full mt-8 py-3 bg-gradient-to-r from-yellow-600 to-amber-600 text-white rounded-xl font-bold hover:shadow-lg transition">Acessar Formação</button>
@@ -1097,7 +1314,7 @@ const Landing: React.FC = () => {
             <div className="w-full bg-slate-900 rounded-2xl p-8 border border-slate-800 relative flex flex-col h-full hover:border-emerald-500/50 transition-colors group">
               <div className="relative z-10 flex-grow">
                 <div className="w-12 h-12 rounded-xl bg-emerald-500/10 flex items-center justify-center mb-6">
-                  <Stethoscope className="w-6 h-6 text-emerald-400" />
+                  <Stethoscope className="w-6 h-6 text-teal-400" />
                 </div>
                 <h3 className="text-xl font-bold text-white mb-2">Pro MedCannLab</h3>
                 <p className="text-slate-400 mb-6 text-sm">Ferramenta Médica SaaS para estruturação de clínicas independentes.</p>
@@ -1107,14 +1324,14 @@ const Landing: React.FC = () => {
                     <span className="text-4xl font-extrabold tracking-tight">R$ 99</span>
                     <span className="text-slate-400 pb-1">,90/mês</span>
                   </div>
-                  <p className="text-xs text-emerald-400 mt-2 font-medium">Taxa de Operação: 30% (Com impostos e infraestrutura já inclusos)</p>
+                  <p className="text-xs text-teal-400 mt-2 font-medium">Taxa de Operação: 30% (Com impostos e infraestrutura já inclusos)</p>
                 </div>
 
                 <ul className="space-y-4 text-sm text-slate-300">
-                  <li className="flex gap-3"><CheckCircle2 className="w-5 h-5 text-green-500 flex-shrink-0" /><span>Acesso ao Prontuário NLP Mastigado</span></li>
-                  <li className="flex gap-3"><CheckCircle2 className="w-5 h-5 text-green-500 flex-shrink-0" /><span>Assinatura Digital Cloud (ICP-Brasil) e Agenda</span></li>
-                  <li className="flex gap-3"><CheckCircle2 className="w-5 h-5 text-green-500 flex-shrink-0" /><span>Liquidação Connect (Split 70/30) Automático</span></li>
-                  <li className="flex gap-3"><CheckCircle2 className="w-5 h-5 text-green-500 flex-shrink-0" /><span>Sem limites de convites a pacientes</span></li>
+                  <li className="flex gap-3"><CheckCircle2 className="w-5 h-5 text-teal-400 flex-shrink-0" /><span>Acesso ao Prontuário NLP Mastigado</span></li>
+                  <li className="flex gap-3"><CheckCircle2 className="w-5 h-5 text-teal-400 flex-shrink-0" /><span>Assinatura Digital Cloud (ICP-Brasil) e Agenda</span></li>
+                  <li className="flex gap-3"><CheckCircle2 className="w-5 h-5 text-teal-400 flex-shrink-0" /><span>Liquidação Connect (Split 70/30) Automático</span></li>
+                  <li className="flex gap-3"><CheckCircle2 className="w-5 h-5 text-teal-400 flex-shrink-0" /><span>Sem limites de convites a pacientes</span></li>
                 </ul>
               </div>
               <button onClick={() => setShowRegister(true)} className="w-full mt-8 py-3 bg-slate-800 text-white rounded-xl font-semibold hover:bg-slate-700 transition">Assinar Licença Pro</button>
@@ -1131,7 +1348,7 @@ const Landing: React.FC = () => {
       </section>
 
       {/* --- Download / Install App Section --- */}
-      <section className="relative py-20 bg-gradient-to-b from-slate-950 to-slate-900 border-t border-slate-800/50">
+      <section className="relative py-20" style={{ background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #284629 100%)' }}>
         <div className="container mx-auto px-6">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
@@ -1140,8 +1357,8 @@ const Landing: React.FC = () => {
             viewport={{ once: true }}
             className="max-w-4xl mx-auto text-center"
           >
-            <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-green-600/20 to-emerald-600/20 border border-green-500/30 mb-6">
-              <Download className="w-8 h-8 text-green-400" />
+            <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-green-600/20 to-emerald-600/20 border border-teal-500/30 mb-6">
+              <Download className="w-8 h-8 text-teal-400" />
             </div>
             <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
               Acesse de Qualquer Dispositivo
@@ -1160,10 +1377,10 @@ const Landing: React.FC = () => {
                     alert('📱 No seu celular:\n\n• iPhone/Safari: Toque em "Compartilhar" → "Adicionar à Tela Início"\n\n• Android/Chrome: Toque no menu ⋮ → "Instalar aplicativo"')
                   }
                 }}
-                className="group flex items-center gap-4 p-6 rounded-2xl bg-slate-800/50 border border-slate-700/50 hover:border-green-500/40 hover:bg-slate-800/80 transition-all duration-300"
+                className="group flex items-center gap-4 p-6 rounded-2xl bg-slate-800/50 border border-slate-700/50 hover:border-teal-500/40 hover:bg-slate-800/80 transition-all duration-300"
               >
                 <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-emerald-600/20 to-teal-600/20 flex items-center justify-center group-hover:scale-110 transition-transform">
-                  <Smartphone className="w-7 h-7 text-emerald-400" />
+                  <Smartphone className="w-7 h-7 text-teal-400" />
                 </div>
                 <div className="text-left">
                   <p className="text-sm text-slate-400 font-medium">Instalar no</p>
@@ -1181,10 +1398,10 @@ const Landing: React.FC = () => {
                     alert('🖥️ No seu computador:\n\n• Chrome: Clique no ícone de instalação na barra de endereço (⊕)\n\n• Edge: Menu ⋯ → "Aplicativos" → "Instalar este site como aplicativo"')
                   }
                 }}
-                className="group flex items-center gap-4 p-6 rounded-2xl bg-slate-800/50 border border-slate-700/50 hover:border-green-500/40 hover:bg-slate-800/80 transition-all duration-300"
+                className="group flex items-center gap-4 p-6 rounded-2xl bg-slate-800/50 border border-slate-700/50 hover:border-teal-500/40 hover:bg-slate-800/80 transition-all duration-300"
               >
                 <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-emerald-600/20 to-green-600/20 flex items-center justify-center group-hover:scale-110 transition-transform">
-                  <Monitor className="w-7 h-7 text-emerald-400" />
+                  <Monitor className="w-7 h-7 text-teal-400" />
                 </div>
                 <div className="text-left">
                   <p className="text-sm text-slate-400 font-medium">Instalar no</p>
@@ -1196,7 +1413,7 @@ const Landing: React.FC = () => {
 
             <p className="text-sm text-slate-500 mt-8 flex items-center justify-center gap-2">
               <Globe className="w-4 h-4" />
-              Também acessível via navegador em <span className="text-green-400 font-medium">medcannlab.com.br</span>
+              Também acessível via navegador em <span className="text-teal-400 font-medium">medcannlab.com.br</span>
             </p>
           </motion.div>
         </div>
@@ -1260,15 +1477,15 @@ const Landing: React.FC = () => {
           <button
             onClick={handleLogin}
             disabled={isLoading}
-            className="w-full bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-lg p-3 font-semibold hover:shadow-lg hover:shadow-green-500/20 transition-all disabled:opacity-50"
+            className="w-full bg-gradient-to-r from-emerald-500 to-cyan-500 text-white rounded-lg p-3 font-semibold hover:shadow-lg hover:shadow-teal-500/20 transition-all disabled:opacity-50"
           >
             {isLoading ? 'Acessando...' : 'Entrar na Plataforma'}
           </button>
           <div className="flex items-center justify-between mt-4">
             <p className="text-sm text-slate-500 cursor-pointer hover:text-white" onClick={() => { setShowLogin(false); setShowRegister(true); }}>
-              Não tem conta? <span className="text-green-400">Criar agora</span>
+              Não tem conta? <span className="text-teal-400">Criar agora</span>
             </p>
-            <p className="text-sm text-slate-500 cursor-pointer hover:text-green-400 transition-colors" onClick={() => { setShowLogin(false); setShowForgotPassword(true); }}>
+            <p className="text-sm text-slate-500 cursor-pointer hover:text-teal-400 transition-colors" onClick={() => { setShowLogin(false); setShowForgotPassword(true); }}>
               Esqueci a senha
             </p>
           </div>
@@ -1294,12 +1511,12 @@ const Landing: React.FC = () => {
           <button
             onClick={handleForgotPassword}
             disabled={isLoading}
-            className="w-full bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-lg p-3 font-semibold hover:shadow-lg hover:shadow-green-500/20 transition-all disabled:opacity-50"
+            className="w-full bg-gradient-to-r from-emerald-500 to-cyan-500 text-white rounded-lg p-3 font-semibold hover:shadow-lg hover:shadow-teal-500/20 transition-all disabled:opacity-50"
           >
             {isLoading ? 'Enviando...' : 'Enviar link de recuperação'}
           </button>
           <p className="text-center text-sm text-slate-500 cursor-pointer hover:text-white" onClick={() => { setShowForgotPassword(false); setShowLogin(true) }}>
-            Lembrou a senha? <span className="text-green-400">Entrar</span>
+            Lembrou a senha? <span className="text-teal-400">Entrar</span>
           </p>
         </div>
       </AuthModal>
@@ -1325,14 +1542,14 @@ const Landing: React.FC = () => {
             placeholder="Nome Completo"
             value={registerData.name}
             onChange={(e) => setRegisterData({ ...registerData, name: e.target.value })}
-            className="w-full bg-slate-800 border border-slate-700 rounded-lg p-3 text-white outline-none focus:border-green-500"
+            className="w-full bg-slate-800 border border-slate-700 rounded-lg p-3 text-white outline-none focus:border-teal-500"
           />
           <input
             type="email"
             placeholder="Email"
             value={registerData.email}
             onChange={(e) => setRegisterData({ ...registerData, email: e.target.value })}
-            className="w-full bg-slate-800 border border-slate-700 rounded-lg p-3 text-white outline-none focus:border-green-500"
+            className="w-full bg-slate-800 border border-slate-700 rounded-lg p-3 text-white outline-none focus:border-teal-500"
           />
           <div className="grid grid-cols-2 gap-2">
             <input
@@ -1340,14 +1557,14 @@ const Landing: React.FC = () => {
               placeholder="Senha"
               value={registerData.password}
               onChange={(e) => setRegisterData({ ...registerData, password: e.target.value })}
-              className="w-full bg-slate-800 border border-slate-700 rounded-lg p-3 text-white outline-none focus:border-green-500"
+              className="w-full bg-slate-800 border border-slate-700 rounded-lg p-3 text-white outline-none focus:border-teal-500"
             />
             <input
               type="password"
               placeholder="Confirmar"
               value={registerData.confirmPassword}
               onChange={(e) => setRegisterData({ ...registerData, confirmPassword: e.target.value })}
-              className="w-full bg-slate-800 border border-slate-700 rounded-lg p-3 text-white outline-none focus:border-green-500"
+              className="w-full bg-slate-800 border border-slate-700 rounded-lg p-3 text-white outline-none focus:border-teal-500"
             />
           </div>
 
@@ -1359,7 +1576,7 @@ const Landing: React.FC = () => {
               placeholder="Código ou Nome de quem indicou"
               value={(registerData as any).referralCode || ''}
               onChange={(e) => setRegisterData({ ...registerData, referralCode: e.target.value } as any)}
-              className="w-full bg-slate-800 border border-slate-700 rounded-lg p-3 text-white outline-none focus:border-green-500 placeholder:text-slate-500"
+              className="w-full bg-slate-800 border border-slate-700 rounded-lg p-3 text-white outline-none focus:border-teal-500 placeholder:text-slate-500"
             />
             <p className="text-[10px] text-slate-500 mt-1 ml-1">
               * Informe o nome do médico, instituição ou código de parceiro se houver.
@@ -1442,7 +1659,7 @@ const Landing: React.FC = () => {
                 placeholder="Especialidade* (ex: Clínica Geral, Nefrologia, Cannabis Medicinal)"
                 value={registerData.specialty}
                 onChange={(e) => setRegisterData({ ...registerData, specialty: e.target.value })}
-                className="w-full bg-slate-800 border border-slate-700 rounded-lg p-3 text-white outline-none focus:border-green-500 placeholder:text-slate-500"
+                className="w-full bg-slate-800 border border-slate-700 rounded-lg p-3 text-white outline-none focus:border-teal-500 placeholder:text-slate-500"
               />
               {/* V1.9.229: valor da consulta (obrigatorio R$350-1300, constraint banco V1.9.150) */}
               <input
@@ -1454,7 +1671,7 @@ const Landing: React.FC = () => {
                 placeholder="Valor da consulta* (R$ 350 a R$ 1.300 — ajustável depois)"
                 value={registerData.consultationFee}
                 onChange={(e) => setRegisterData({ ...registerData, consultationFee: e.target.value })}
-                className="w-full bg-slate-800 border border-slate-700 rounded-lg p-3 text-white outline-none focus:border-green-500 placeholder:text-slate-500"
+                className="w-full bg-slate-800 border border-slate-700 rounded-lg p-3 text-white outline-none focus:border-teal-500 placeholder:text-slate-500"
               />
               <p className="text-[10px] text-slate-500 ml-1">
                 * Você pode ajustar especialidade e valor depois no Perfil.
@@ -1469,7 +1686,7 @@ const Landing: React.FC = () => {
                 placeholder="Matrícula / Instituição de Ensino"
                 value={(registerData as any).studentId || ''}
                 onChange={(e) => setRegisterData({ ...registerData, studentId: e.target.value } as any)}
-                className="w-full bg-slate-800 border border-slate-700 rounded-lg p-3 text-white outline-none focus:border-green-500"
+                className="w-full bg-slate-800 border border-slate-700 rounded-lg p-3 text-white outline-none focus:border-teal-500"
               />
               <div className="p-2 mt-2 bg-blue-900/20 border border-blue-500/20 rounded-lg text-xs text-blue-200 animate-in fade-in">
                 🎓 Acesso exclusivo para estudantes. A matrícula será validada.
@@ -1485,7 +1702,7 @@ const Landing: React.FC = () => {
             {isLoading ? 'Criando Conta...' : `Registrar como ${registerData.userType.charAt(0).toUpperCase() + registerData.userType.slice(1)}`}
           </button>
           <p className="text-center text-sm text-slate-500 mt-4 cursor-pointer hover:text-white" onClick={() => { setShowRegister(false); setShowLogin(true); }}>
-            Já tem conta? <span className="text-green-400">Entrar</span>
+            Já tem conta? <span className="text-teal-400">Entrar</span>
           </p>
         </div>
       </AuthModal>
