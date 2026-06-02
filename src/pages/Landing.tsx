@@ -392,7 +392,7 @@ const Landing: React.FC = () => {
       <div className="pt-16" />
 
       {/* --- Hero Section 2026 --- */}
-      <section className="relative isolate pt-12 pb-20 overflow-hidden" style={{ background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #284629 100%)' }}>
+      <section className="relative isolate pt-12 pb-20 overflow-hidden" style={{ background: 'linear-gradient(135deg, #0f172a 0%, #1a3a47 50%, #284629 100%)' }}>
         {/* Background Gradients — glow REDUZIDO (Pedro 02/06) */}
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-[600px] bg-gradient-to-b from-cyan-900/5 to-transparent blur-3xl -z-10" />
         {/* V1.9.561: background neural em CÓDIGO (SVG animado) — concentrado à direita. Nós menores + cadeias finas + micro-nós que se dissolvem (Pedro 02/06). */}
@@ -539,7 +539,7 @@ const Landing: React.FC = () => {
               <motion.line key={`tll-${i}`} x1={l.x1} y1={l.y1} x2={l.x2} y2={l.y2} stroke="url(#lineGradLeft)" strokeWidth="0.5" initial={{ opacity: 0.06 }} animate={{ opacity: [0.06, 0.24, 0.06] }} transition={{ duration: 5, repeat: Infinity, delay: i * 0.5, ease: 'easeInOut' }} />
             ))}
           </g>
-          {/* V1.9.561: extensões do C ESQUERDO — TOPO em curvas abstratas subindo, BASE retas pro centro (Pedro 02/06). */}
+          {/* V1.9.561: extensões do C ESQUERDO — só TOPO em curvas abstratas subindo (base reta removida, Pedro 02/06). */}
           <g>
             {[
               'M 330 150 Q 410 55 500 22',
@@ -549,14 +549,7 @@ const Landing: React.FC = () => {
               <motion.path key={`lext-${i}`} d={d} fill="none" stroke="url(#lineGradLeft)" strokeWidth="0.5" initial={{ opacity: 0.05 }} animate={{ opacity: [0.05, 0.24, 0.05] }} transition={{ duration: 5, repeat: Infinity, delay: i * 0.6, ease: 'easeInOut' }} />
             ))}
             {[
-              { x1: 330, y1: 460, x2: 540, y2: 495 },
-              { x1: 380, y1: 445, x2: 560, y2: 480 },
-            ].map((l, i) => (
-              <motion.line key={`lexb-${i}`} x1={l.x1} y1={l.y1} x2={l.x2} y2={l.y2} stroke="url(#lineGradLeft)" strokeWidth="0.5" initial={{ opacity: 0.05 }} animate={{ opacity: [0.05, 0.22, 0.05] }} transition={{ duration: 5, repeat: Infinity, delay: i * 0.5, ease: 'easeInOut' }} />
-            ))}
-            {[
               { cx: 500, cy: 22 }, { cx: 565, cy: 40 }, { cx: 435, cy: 28 },
-              { cx: 540, cy: 495 }, { cx: 560, cy: 480 },
             ].map((n, i) => (
               <motion.circle key={`lexn-${i}`} cx={n.cx} cy={n.cy} fill="url(#lineGradLeft)" initial={{ r: 1.5, opacity: 0.2 }} animate={{ r: [1.5, 2.3, 1.5], opacity: [0.2, 0.45, 0.2] }} transition={{ duration: 4, repeat: Infinity, delay: i * 0.5, ease: 'easeInOut' }} />
             ))}
@@ -758,7 +751,7 @@ const Landing: React.FC = () => {
       </section>
 
       {/* --- Unified Core Section --- */}
-      <section id="solucao" className="py-24 relative overflow-hidden" style={{ background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #284629 100%)' }}>
+      <section id="solucao" className="py-24 relative overflow-hidden" style={{ background: 'linear-gradient(135deg, #0f172a 0%, #1a3a47 50%, #284629 100%)' }}>
         <div className="absolute inset-0 bg-blue-900/5 -z-10" />
         <div className="container mx-auto px-6">
           {/* Top: Feature Split */}
@@ -965,7 +958,7 @@ const Landing: React.FC = () => {
       </section>
 
       {/* --- Seção Institucional (v15 selado 29/04) — Tese & Arquitetura --- */}
-      <section id="sobre" className="py-24 relative overflow-hidden" style={{ background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #284629 100%)' }}>
+      <section id="sobre" className="py-24 relative overflow-hidden" style={{ background: 'linear-gradient(135deg, #0f172a 0%, #1a3a47 50%, #284629 100%)' }}>
         {/* Gradient sutil de fundo */}
         <div className="absolute top-0 left-0 w-1/3 h-full bg-gradient-to-r from-emerald-900/10 to-transparent pointer-events-none -z-10" />
         <div className="absolute bottom-0 right-0 w-1/3 h-full bg-gradient-to-l from-teal-900/10 to-transparent pointer-events-none -z-10" />
@@ -1185,7 +1178,7 @@ const Landing: React.FC = () => {
       </section>
 
       {/* --- 3 Eixos Section (V1.9.100 SEO) — Clínica + Ensino + Pesquisa --- */}
-      <section id="eixos" className="py-20 relative overflow-hidden" style={{ background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #284629 100%)' }}>
+      <section id="eixos" className="py-20 relative overflow-hidden" style={{ background: 'linear-gradient(135deg, #0f172a 0%, #1a3a47 50%, #284629 100%)' }}>
         <div className="absolute inset-0 bg-emerald-900/5 -z-10" />
         <div className="container mx-auto px-6 relative z-10">
           <div className="text-center max-w-3xl mx-auto mb-12">
@@ -1348,7 +1341,7 @@ const Landing: React.FC = () => {
       </section>
 
       {/* --- Download / Install App Section --- */}
-      <section className="relative py-20" style={{ background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #284629 100%)' }}>
+      <section className="relative py-20" style={{ background: 'linear-gradient(135deg, #0f172a 0%, #1a3a47 50%, #284629 100%)' }}>
         <div className="container mx-auto px-6">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
