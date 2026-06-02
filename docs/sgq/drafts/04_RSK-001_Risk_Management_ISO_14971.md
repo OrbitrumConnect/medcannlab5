@@ -1,6 +1,6 @@
 # RSK-001 — Análise de Risco ISO 14971 + FMEA Inicial
 
-**Versão draft:** 0.1 (29/05/2026)
+**Versão draft:** 0.2 (02/06/2026 — H8 resolvido V1.9.506; números RLS/assinatura re-verificados via PAT; gap PII residual documentado; overclaim "ICP signed" corrigido p/ hash de integridade)
 **Status:** DRAFT pré-consultora SaMD (requer revisão Ricardo Valença + RT)
 **Referência normativa:** ISO 14971:2019 (Aplicação de gestão de risco a dispositivos médicos)
 
@@ -38,7 +38,7 @@ Identificação, análise e controle de **riscos clínicos** associados ao uso d
 - **Backfill 132 rows** via PL/pgSQL replicando lógica JS `casePseudonymization.ts` V1.9.407
 - **Telemetry `pii_sanitized=true`** em metadata
 
-**Severidade residual:** BAIXA (controle automático)
+**Severidade residual:** BAIXA-MÉDIA. Controle automático ativo (`sanitizeRationalityPII`), MAS **gap conhecido (gap-analysis 02/06)**: o regex de token EXATO (`\b<token>\b`) NÃO cobre variantes ortográficas/typos (ex: nome no DB difere da grafia gerada pelo GPT) → **20/141 racionalidades residuais não-pseudonimizadas** (live 02/06). Fix técnico-interno pendente (normalização de variantes + re-anonimização).
 
 ### H3 — Falha de consentimento (Consentimento ≠ Agendamento)
 
@@ -89,8 +89,8 @@ Identificação, análise e controle de **riscos clínicos** associados ao uso d
 **Descrição:** Médico A ver dados de paciente do médico B sem autorização.
 
 **Controle implementado:**
-- **100% das 144 tabelas com RLS ON**
-- **Audit empírico**: 447 policies, 0 sem `SET search_path`
+- **100% das 145 tabelas com RLS ON** (re-verificado via PAT 02/06/2026)
+- **Audit empírico**: 467 policies, 0 sem `SET search_path` (re-verificado 02/06)
 - **V1.9.98** chat-images bucket fechado (28/04)
 
 **Severidade residual:** BAIXA (cobertura validada)
@@ -99,11 +99,12 @@ Identificação, análise e controle de **riscos clínicos** associados ao uso d
 
 **Descrição:** Edge `tradevision-core` com `verify_jwt=false` permite qualquer caller invocar GPT-4o.
 
-**Controle implementado:** ❌ **PENDENTE**
-- Empíricamente confirmado 29/05: `tradevision-core` v423 ainda com `verify_jwt=false`
-- Documentado em A1 do roadmap, requer validação de callers antes de flippar
+**Controle implementado:** ✅ **RESOLVIDO (V1.9.506, 30/05/2026)**
+- `tradevision-core` v424 com `verify_jwt=true` (flip 30/05; smoke pré+pós: 401 sem JWT e com JWT inválido)
+- Defesa em camadas restaurada: Supabase rejeita anônimo no ingress ANTES do código Deno + auth interna runtime (`assertPatientHasDoctorContext`)
+- Batch V1.9.520-526 estendeu `verify_jwt=true` a **14/15 Edges (93%)** — única exceção `sign-pdf-icp` (lock V1.9.299, auth interna V1.9.457)
 
-**Severidade residual:** **MÉDIA-ALTA** (gap conhecido — Sprint A pendente)
+**Severidade residual:** BAIXA (resolvido — defesa em camadas restaurada)
 
 ### H9 — Loop infinito IA (CONSENSUS_REPORT)
 
@@ -137,13 +138,13 @@ Identificação, análise e controle de **riscos clínicos** associados ao uso d
 | H5 | Alta | Média | Médio | ⚠️ Monitorar |
 | H6 | Alta | Baixa | Baixo | ✅ Aceitável |
 | H7 | Crítica | Muito Baixa | Baixo | ✅ Aceitável |
-| H8 | Alta | Média | **Médio-Alto** | ❌ **MITIGAR (Sprint A)** |
+| H8 | Alta | Muito Baixa | Baixo | ✅ Aceitável (resolvido V1.9.506 — verify_jwt=true) |
 | H9 | Média | Baixa | Baixo | ✅ Aceitável |
 | H10 | Crítica | Muito Baixa | Baixo | ✅ Aceitável |
 
 ## 4. Plano de mitigação dos riscos médio-alto
 
-### H8 (tradevision-core verify_jwt=false) — Plano Sprint A
+### H8 (tradevision-core verify_jwt=false) — Plano Sprint A ✅ EXECUTADO (V1.9.506, 30/05)
 
 1. Mapear callers via grep: `grep -rn "tradevision-core" src/`
 2. Validar que todos usam `supabase.functions.invoke()` (auto-injeta JWT) e não `fetch()` direto
@@ -164,7 +165,7 @@ Identificação, análise e controle de **riscos clínicos** associados ao uso d
 |---|---|---|
 | 25/05 → 29/05 (28d) | PII em `clinical_rationalities.assessment` | Resolvido V1.9.452 |
 | 17/05 → 17/05 (6 casos em 21h) | DOC_LIST hijacking pós-V1.9.308 | Revertido V1.9.318 |
-| 22/05 → 29/05 (7d) | `tradevision-core` verify_jwt=false documentado errado | Em Sprint A |
+| 22/05 → 30/05 | `tradevision-core` verify_jwt=false | Resolvido V1.9.506 (flip v424 verify_jwt=true) |
 | 28/04 → 28/04 | chat-images bucket público | Resolvido V1.9.98 |
 
 ## 6. Conformidade ISO 14971 §9 — Análise de aceitabilidade
@@ -175,9 +176,9 @@ A combinação de:
 - **11 locks com tag git imutável** com tag git imutável
 - **649 commits/30d** rastreáveis
 - **284 memórias persistentes** documentando lessons learned
-- **42 reports ICP-Brasil signed** validados empiricamente
+- **47/150 reports com hash de integridade SHA-256** (re-verificado PAT 02/06) — **NÃO** é assinatura ICP-Brasil; a assinatura ICP real (PKCS#7) está em prescrições (12) e exames; assinar a `Composition` do relatório é roadmap
 
-...estabelece um **perfil de risco aceitável** para classificação SaMD Classe IIa, **condicionado** à resolução do H8 (Sprint A) antes de submissão regulatória.
+...estabelece um **perfil de risco aceitável** para classificação SaMD Classe IIa (sujeita a avaliação regulatória formal). O principal risco médio-alto (H8 — `verify_jwt`) foi **resolvido em V1.9.506 (30/05)**; o perfil de risco residual foi revisado para BAIXO nesse vetor. *(Atualização 02/06: H8 fechado, números RLS e de assinatura re-verificados via PAT.)*
 
 ---
 
