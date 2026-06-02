@@ -1755,6 +1755,25 @@ export class ClinicalAssessmentFlow {
         .then(({ error }) => {
           if (error) console.warn('[AEC V1.9.339] update status falhou (não bloqueia):', error)
         })
+
+      // V1.9.571: persiste alergias/medicações no CAMPO CANÔNICO users.{allergies,medications}
+      // que a "Visão Geral" (PatientsManagement) LÊ — a AEC gravava só no content do relatório
+      // (perguntas_objetivas), nunca em users → card ficava vazio (mesma classe do consent_given
+      // V1.9.546). Corrigir na FONTE, não patch reativo de leitura (princípio
+      // feedback_aec_persistir_campo_canonico_02_06). Defensivo (void, não bloqueia), idempotente,
+      // só seta se houver valor. RLS users permite self-update (auth.uid()=id).
+      if (state.data.allergies || state.data.regularMedications) {
+        void supabase
+          .from('users')
+          .update({
+            ...(state.data.allergies ? { allergies: state.data.allergies } : {}),
+            ...(state.data.regularMedications ? { medications: state.data.regularMedications } : {}),
+          } as any)
+          .eq('id', userId)
+          .then(({ error }: any) => {
+            if (error) console.warn('[AEC V1.9.571] update users allergies/medications falhou (não bloqueia):', error)
+          })
+      }
     }
 
     return state.data
