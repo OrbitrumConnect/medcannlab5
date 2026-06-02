@@ -30,7 +30,7 @@ Números re-conferidos por query direta nesta sessão (não herdados de docs —
 | `clinical_reports` | **150** total · **47 c/ hash SHA-256 (31%)** · **101 c/ consent** | Relatório = integridade, não ICP; consentimento auditável presente |
 | `cfm_prescriptions` | **52** (12 c/ PKCS#7 real) | ICP-Brasil real em prescrições |
 | `patient_exam_requests` | **25** · **`signed_at` NULL em 25/25** | ICP em exames, mas **timestamp de assinatura não gravado** (gap auditabilidade) |
-| `pki_transactions` | **12** · **`signer_cpf='000.000.000-00'` em 12/12** (1 valor distinto) | **CPF/cert real do médico não gravado** (placeholder) |
+| `pki_transactions` | **12** · **`signer_cpf='000.000.000-00'` em 12/12** (1 valor distinto) | **Teste/demo pré-PMF** — o **médico** assina com o cert ICP **próprio** (o app NÃO prescreve nem detém cert); cert real ainda não exercido |
 | `patient_conditions` | **0 rows** | **Zero terminologia codificada** (sem CID-10) |
 | `clinical_rationalities` | **141** · **121 pseudonimizadas (85,8%)** · **20 não** | Pseudonimização ~86%; **20 rows com PII residual** |
 | `patient_lab_results` | coluna real = **`test_type`** (enum); **`exam_type` NÃO existe** | Confirma bug do RPC `calculate_ckd_stage` (INSERT em coluna inexistente) |
@@ -65,14 +65,14 @@ Legenda status: ✅ atende · 🟡 parcial · 🔴 falta · ⚪ não incide hoje
 
 | Requisito | Status | Gap | Esf. | Destrava |
 |---|---|---|---|---|
-| **NGS2** (assinatura ICP, log, RBAC, integridade) | 🟡 | **Alinhado aos princípios, não certificado.** Atende: ICP real em prescrições/exames, RBAC 4 roles, TLS, log (`noa_logs`). Lacunas hard: relatório só hash SHA-256 (não ICP); `signer_cpf` placeholder (12/12); `validation_codes "ITI-"` gerados internamente (sem callback ITI); sem ≥2 ACs; PDFs nunca submetidos ao `validar.iti.gov.br`. | A | Cert |
+| **NGS2** (assinatura ICP, log, RBAC, integridade) | 🟡 | **Alinhado aos princípios, não certificado.** Atende: ICP real em prescrições/exames, RBAC 4 roles, TLS, log (`noa_logs`). Lacunas hard: relatório só hash SHA-256 (não ICP); `signer_cpf` placeholder nos 12 registros de **teste** (o médico assina com cert **próprio** — cert real não exercido pré-PMF); `validation_codes "ITI-"` gerados internamente (sem callback ITI); sem ≥2 ACs; PDFs nunca submetidos ao `validar.iti.gov.br`. | A | Cert |
 | **Certificação SBIS de IA** | ⚪ | Ainda em **consulta pública** (jun/2025) — **não incide hoje**. Posição não-decisional codificada (`index.ts:5239`) é mitigador. Monitorar até virar norma. | — | Cert |
 
 ### 3.4 CFM — 2.314/2022 (telemedicina) · 2.454/2026 (IA)
 
 | Requisito | Status | Gap | Esf. | Destrava |
 |---|---|---|---|---|
-| **Documentos de telemedicina** (CFM 2.314 Art.13) | 🟡 | Prescrições/exames já assinados ICP (PKCS#7 real) atendem. Lacunas: relatório só hash; `signer_cpf` placeholder; **consentimento específico de teleconsulta (Art.15) ≠ consent AEC** (101/150 cobre o clínico AEC, não o de teleconsulta). | M | Ric |
+| **Documentos de telemedicina** (CFM 2.314 Art.13) | 🟡 | Prescrições/exames já assinados ICP (PKCS#7 real) atendem. Lacunas: relatório só hash; `signer_cpf` placeholder em teste (o médico traz o cert próprio — pré-PMF); **consentimento específico de teleconsulta (Art.15) ≠ consent AEC** (101/150 cobre o clínico AEC, não o de teleconsulta). | M | Ric |
 | **PJ prestadora** (CFM 2.314 Art.16-17) | 🔴 | Sem CNPJ → PJ não existe → sem inscrição no CRM da PJ nem RT designado. Dr. Ricardo Valença = candidato natural a RT. 100% dependente do Marco 1. | M | M1 |
 | **CFM 2.454/2026 (IA na medicina)** | 🟡 | **⚠️ ATUALIZAÇÃO:** a norma **EXISTE** — número + **DOU 27/02/2026** + vigência **~26/08/2026** confirmados em fonte web (refuta a marcação interna anterior de "sem lastro"). **PORÉM os números de ARTIGO (supervisão humana, classes de risco, Comissão de IA) vieram de fontes secundárias e ainda precisam ser conferidos no PDF oficial** — tratar como **direção regulatória, não mapeamento artigo-por-artigo**. Núcleo já atendido (supervisão humana, não-decisional, AEC GATE, REGRA HARD §1). Lacunas p/ ~26/08: classificação de risco formal CFM (distinta da ANVISA), aviso explícito ao paciente sobre uso de IA, governança/Comissão de IA. | M | Cons |
 
@@ -96,7 +96,7 @@ Legenda status: ✅ atende · 🟡 parcial · 🔴 falta · ⚪ não incide hoje
 
 | Requisito | Status | Gap | Esf. | Destrava |
 |---|---|---|---|---|
-| **Assinatura qualificada** (Lei 14.063/2020 + CFM 2.381/2024) | 🟡 | Algoritmo **PBAD AD-RB tecnicamente robusto e real** (lock V1.9.299; PKCS#7 detached, OIDs corretos): 12 prescrições + 13 exames com PKCS#7 real. Lacunas auto-verificadas: **`signer_cpf='000.000.000-00'` em 12/12** (CPF real do médico não gravado — viola identificação completa CFM 2.381 Art.13); thumbprint fictício; `validation_codes "ITI-"` internos (sem callback ITI); **`signed_at` NULL em 25/25 exames**; PDFs **nunca submetidos ao `validar.iti.gov.br`** (conformidade declarada no código, não testada externamente). Relatório = hash SHA-256, não ICP (correto por design). | A | Ric |
+| **Assinatura qualificada** (Lei 14.063/2020 + CFM 2.381/2024) | 🟡 | Algoritmo **PBAD AD-RB tecnicamente robusto e real** (lock V1.9.299; PKCS#7 detached, OIDs corretos): 12 prescrições + 13 exames com PKCS#7 real. Lacunas auto-verificadas: **`signer_cpf='000.000.000-00'` em 12/12 = dados de TESTE/DEMO pré-PMF** — o app **NÃO prescreve nem detém certificado**; o **médico assina com o próprio cert ICP**, que fornece o CPF/identificação na hora da assinatura. A identificação completa (CFM 2.381 Art.13) é atendida quando um médico real exerce a assinatura — **o fluxo existe, só não foi exercido com cert real (pré-PMF)**; idem thumbprint (placeholder de teste). Demais lacunas: `validation_codes "ITI-"` internos (sem callback ITI); **`signed_at` NULL em 25/25 exames**; PDFs **nunca submetidos ao `validar.iti.gov.br`** (conformidade declarada no código, não testada externamente). Relatório = hash SHA-256, não ICP (correto por design). | A | Ric |
 
 ### 3.8 ANVISA RDC 1.015/2026 + SNCR (cannabis medicinal)
 
@@ -118,7 +118,7 @@ Legenda status: ✅ atende · 🟡 parcial · 🔴 falta · ⚪ não incide hoje
 
 ### 🟡 Custo zero mas externo — pode iniciar sem CNPJ
 7. **[Cons] Consulta formal de enquadramento SaMD à ANVISA** (GQUIP/GGTPS) — transforma "Classe IIa interno" em certeza regulatória; pré-trabalho da notificação 80272.
-8. **[Ric] Smoke ITI completo**: submeter os 25 PKCS#7 ao `validar.iti.gov.br` + `openssl asn1parse`. Lock V1.9.299 — só validar, não tocar o algoritmo. Gravar CPF/cert real do médico + preencher `signed_at`.
+8. **[Ric] Smoke ITI completo**: submeter os 25 PKCS#7 ao `validar.iti.gov.br` + `openssl asn1parse`. Lock V1.9.299 — só validar, não tocar o algoritmo. **Exercitar o fluxo com o cert ICP REAL de um médico (Ricardo)** — hoje os 12 registros usam cert placeholder de teste; em produção **o médico traz o próprio cert** (CPF/identificação vêm dele, não do app, que não prescreve). + preencher `signed_at`.
 9. **[Ric] Terminologia mínima**: UI p/ o médico anexar CID-10 (`patient_conditions` vazia) + **corrigir o RPC `calculate_ckd_stage`** (faz INSERT em `exam_type`, coluna inexistente — a real é `test_type`). IA não infere (lock preservado).
 
 ### 🔴 Depende de decisão humana — Marco 1 é o gargalo-mãe
