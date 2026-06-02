@@ -13,7 +13,7 @@
 - O modelo de dados do MedCannLab encaixa em **~18 recursos FHIR R4**. A adoção de FHIR é uma **camada de exportação/serialização ADITIVA — não uma reescrita**: os dados já estão estruturados.
 - **4 encaixes têm relevância regulatória destacada:**
   1. **AEC → `QuestionnaireResponse`** — a escuta clínica estruturada já é, nativamente, um questionário FHIR.
-  2. **`clinical_reports` → `Composition`** — documento clínico estruturado com hash de integridade SHA-256, **estrutura preparada para exportação** como RAC/RES da RNDS (serializer FHIR a implementar — ver §6).
+  2. **`clinical_reports` → `Composition`** — documento clínico estruturado com hash de integridade SHA-256, **exportável** como RAC/RES da RNDS (serializer PoC implementado V1.9.563 em `src/lib/fhir/`, validado vs report real; conformação br-core/RNDS = roadmap §6).
   3. **Assinatura ICP-Brasil PBAD AD-RB → `Signature`/`Provenance`** — o FHIR suporta assinatura digital nativa; a nossa foi **validada como conforme pelo validador do ITI** (PBAD AD-RB). Hoje aplicada a **prescrições (`cfm_prescriptions`) e pedidos de exame (`patient_exam_requests`)**; o relatório clínico ainda usa apenas hash de integridade (assinar a `Composition` via ICP-Brasil é roadmap — ver §6).
   4. **Consentimento auditável com registro criptográfico imutável → `Consent`** — cada consentimento é vinculado a um registro com hash de integridade (implementado tecnicamente via `patient_nfts`, assinatura visual determinística em Postgres; não é imutabilidade on-chain/blockchain), **candidato natural a `Consent` + `Provenance`** (o registro serve de prova de integridade; o recurso `Consent` do FHIR é mais rico que um hash — mapeamento fino a modelar).
 - **Enquadramento:** o sistema é **não-decisional por construção** (a IA organiza, o médico decide e assina). O caráter não-decisional é **argumento de mitigação de classe de risco** sob RDC 657 — a posição interna de baseline (SGQ POP-LBL-001 / EXECUTIVE_SUMMARY) é **SaMD Classe IIa, sujeita a avaliação por consultora SaMD e petição ANVISA (Marco 4)**. Para o registro/assinatura do prontuário, a arquitetura é **alinhada aos princípios SBIS-CFM (S-RES)**.
@@ -189,7 +189,7 @@ O FHIR R4 tem o datatype **`Signature`** (e `Bundle.signature` / `Provenance.sig
 
 | Gap | Esforço | Observação |
 |---|---|---|
-| **Serializer/API FHIR inexistente** | Camada aditiva (mapeadores tabela→recurso + endpoint `/fhir`) | dado já estruturado; não é reescrita |
+| **Serializer FHIR — PoC feito (V1.9.563) ✅; falta endpoint HTTP + br-core** | Mapeador `clinical_report→Bundle` em `src/lib/fhir/` (read-only, validado vs report real). Resta endpoint `/fhir` + validação br-core | dado já estruturado; não é reescrita |
 | **Assinatura ICP-Brasil no relatório clínico** | Estender o fluxo PBAD AD-RB (hoje em prescrições/exames) à `Composition`/`Bundle` do prontuário | `clinical_reports` hoje só tem hash de integridade SHA-256, não assinatura ICP |
 | **Consent FHIR — fonte e cobertura** | Mapear de fonte confiável (`data.consentGiven` jsonb + coluna `consent_given` pós-V1.9.546) | coluna íntegra só a partir de 31/05 + backfill; `ip`/`user-agent` de Provenance vazios |
 | **Terminologia não-codificada** | Binding de value sets (CID-10/LOINC/SNOMED) | hoje texto-livre/manual; a IA NÃO infere CID-10 (lock) |
@@ -235,7 +235,7 @@ O FHIR R4 tem o datatype **`Signature`** (e `Bundle.signature` / `Provenance.sig
 ## 8. Anexo — Ressalvas empíricas (verificação via PAT, 02/06)
 
 Pontos que NÃO devem ser afirmados além do verificado:
-- **Serializer/API FHIR inexistente** — 0 `resourceType`, 0 endpoint `/fhir`, 0 Bundle validado no código (fora de `/docs`). Exportação FHIR é potencial/estrutural, não demonstrada.
+- **Serializer FHIR — PoC IMPLEMENTADO (V1.9.563)** em `src/lib/fhir/clinicalReportToFhir.ts` (função pura read-only `clinical_report → Bundle type=document`): 9 testes unit + validado ad-hoc contra 1 report REAL via PAT (7 recursos: Composition/Patient/Practitioner/ClinicalImpression×2/Consent/Provenance; 10 seções; refs 6/6 resolvem; hash de integridade como Provenance/extensão, **não** FHIR Signature). **Ainda NÃO há**: endpoint HTTP `/fhir`, validação contra validador FHIR oficial / perfis **br-core**, nem binding de terminologia. Exportação FHIR **demonstrada em PoC**, não em produção/homologação.
 - **Assinatura ICP-Brasil NÃO cobre o relatório clínico** — `clinical_reports.signature_hash` é SHA-256 de integridade (47/150 reports). PKCS#7 ICP-Brasil real só em `cfm_prescriptions`/`patient_exam_requests`.
 - **Classificação SaMD não decidida** — baseline interno SaMD Classe IIa (SGQ); não afirmar "não-SaMD".
 - **SBIS-CFM não certificado** — apenas "alinhado aos princípios".
@@ -248,14 +248,14 @@ Pontos que NÃO devem ser afirmados além do verificado:
 
 ## 9. Mini Roadmap — Interoperabilidade + Conformidade Regulatória
 
-### 📍 Onde estamos (Fase 0)
-- ✅ Arquitetura **compatível com FHIR R4** · ✅ **ICP-Brasil CONFORME ITI** (prescrições/exames) · ✅ **SGQ — 16 drafts** (ISO 13485 / IEC 62304 / ISO 14971) · ✅ dados estruturados + **RLS 145/145**
-- ❌ Falta: serializer FHIR · terminologia codificada · ICP no relatório clínico · homologação RNDS
+### 📍 Onde estamos (Fase 0 → 1)
+- ✅ Arquitetura **compatível com FHIR R4** · ✅ **Serializer FHIR PoC** (`clinical_report→Bundle`, V1.9.563, validado vs report real) · ✅ **ICP-Brasil CONFORME ITI** (prescrições/exames) · ✅ **SGQ — 16 drafts** (ISO 13485 / IEC 62304 / ISO 14971) · ✅ dados estruturados + **RLS 145/145**
+- ❌ Falta: **endpoint HTTP `/fhir`** + validação **br-core** · terminologia codificada · ICP no relatório clínico · homologação RNDS
 
 ### 🟢 Atacável AGORA (técnico interno — NÃO depende de CNPJ)
 | Ação | Entrega | Esforço |
 |---|---|---|
-| **Serializer/API FHIR** (mapeadores tabela→recurso + endpoint `/fhir`) | recursos FHIR exportáveis | médio |
+| **Serializer FHIR** — PoC ✅ (V1.9.563, `clinical_report→Bundle`); resta endpoint HTTP `/fhir` + validação br-core | recursos FHIR exportáveis (Bundle do relatório já gera) | médio |
 | **Binding de terminologia** (CID-10 / LOINC / SNOMED CT) | semântica interoperável ← **maior trabalho** | alto |
 | **ICP-Brasil no relatório clínico** (estender PBAD à `Composition`/`Bundle`) | prontuário assinado | médio |
 | **Conformidade br-core** | aderência a perfis RNDS | médio |
