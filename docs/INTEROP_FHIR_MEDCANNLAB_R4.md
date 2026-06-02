@@ -243,3 +243,43 @@ Pontos que NÃO devem ser afirmados além do verificado:
 - **CFM 2.454/2026** — número/data não verificados; base CFM consolidada usa CFM 2.314/2022.
 - **Pseudonimização ~86%** (não 100%); resíduo histórico ~14% em backfill.
 - **Validação ITI é jurídica, não operacional** — aceitação por laboratório/RNDS e QR Code visual no PDF são pendências.
+
+---
+
+## 9. Mini Roadmap — Interoperabilidade + Conformidade Regulatória
+
+### 📍 Onde estamos (Fase 0)
+- ✅ Arquitetura **compatível com FHIR R4** · ✅ **ICP-Brasil CONFORME ITI** (prescrições/exames) · ✅ **SGQ — 16 drafts** (ISO 13485 / IEC 62304 / ISO 14971) · ✅ dados estruturados + **RLS 145/145**
+- ❌ Falta: serializer FHIR · terminologia codificada · ICP no relatório clínico · homologação RNDS
+
+### 🟢 Atacável AGORA (técnico interno — NÃO depende de CNPJ)
+| Ação | Entrega | Esforço |
+|---|---|---|
+| **Serializer/API FHIR** (mapeadores tabela→recurso + endpoint `/fhir`) | recursos FHIR exportáveis | médio |
+| **Binding de terminologia** (CID-10 / LOINC / SNOMED CT) | semântica interoperável ← **maior trabalho** | alto |
+| **ICP-Brasil no relatório clínico** (estender PBAD à `Composition`/`Bundle`) | prontuário assinado | médio |
+| **Conformidade br-core** | aderência a perfis RNDS | médio |
+| Fechar gaps operacionais (cadência QA, pre-push hooks, WiseCare→produção) | maturidade SGQ | baixo |
+
+### 🔴 Depende de decisão humana (Marco 1 = gargalo-mãe)
+1. **Marco 1 — CNPJ + RT (Responsável Técnico)** → destrava consultora, petição, Stripe
+2. **Consultora SaMD** (Modelo C-IA, R$ 30-60K) → **gap-analysis formal** contra checklist ANVISA Classe IIa
+3. **Marco 2 / 2.5** — 1º paciente externo pagante + 2º médico independente → **validação clínica** (único bloqueador real ANVISA)
+4. **Marco 4** — homologação RNDS + petição **ANVISA Classe IIa** + certificação ISO 13485 / SBIS-CFM
+
+### 🛣️ Sequência
+```
+[AGORA · paralelo, sem depender de ninguém]
+   Serializer FHIR  +  Terminologia (CID-10/LOINC/SNOMED)  +  ICP no relatório  +  br-core
+        │
+Marco 1 (CNPJ + RT)  →  Consultora SaMD (gap-analysis formal = "saber se estamos de acordo")
+        │
+Marco 2 / 2.5 (1º pagante + 2º médico)  →  validação clínica + PROC-PMS/INC
+        │
+Homologação RNDS  +  Petição ANVISA Classe IIa (Marco 4)  +  ISO 13485 / SBIS-CFM
+```
+
+> **Princípio:** atacamos **JÁ** o técnico (não espera ninguém); o **regulatório formal** e a **validação clínica** destravam com o **Marco 1 (CNPJ)**. "100% conforme" = *submission-ready* internamente + carimbo externo (consultora + RT + ANVISA + entidade certificadora).
+
+### 🏆 Por que viramos referência
+Governança 8 camadas (IA não decide) · ICP-Brasil CONFORME ITI · SGQ orgânico (16 drafts) · rastreabilidade radical (649 commits/30d, 11 locks) · anti-overclaim · este doc FHIR auditor-safe. A maioria do healthtech tem produto **sem** SGQ; aqui há SGQ + método autoral (AEC) + evidência empírica.
