@@ -58,6 +58,18 @@ Duas bases **separadas por design** (ver CLAUDE.md "Fonte de verdade do RAG"):
 - **Não-decisional codificado:** `index.ts:5239` — *"Decisão terapêutica é ato médico (CFM 2.314) — IA não atravessa essa linha"*. A IA **não diagnostica, não prescreve, não decide conduta**.
 - **Reconhecimento honesto (RSK-001 / ISO 14971):** organizar a escuta, estruturar racionalidades e gerar scores **influencia o contexto** da decisão clínica (ainda que não a tome) — por isso a classificação SaMD é tratada como **Classe IIa sujeita a avaliação**, não isenção.
 
+## 4.1 Independência de modelo (LLM-agnostic) + BYO LLM (roadmap)
+
+A governança de 8 camadas é **independente do modelo de IA** — os controles (Verbatim First, AEC FSM, AEC GATE, grounding factual, Matrix Z2, pós-processamento + sanitização) atuam **sobre a saída de QUALQUER LLM**, não só do GPT. O princípio *"a IA é a última a falar e a primeira a ser checada"* vale para qualquer modelo no lugar do GPT-4o.
+
+- **Resiliência / fallback:** como a segurança é **arquitetural** (não depende do modelo), uma indisponibilidade do GPT/OpenAI pode ser absorvida operando com outra LLM (ex.: Claude, Gemini, modelo local) — as camadas continuam protegendo. **Hoje: GPT-4o como provedor único; fallback multi-LLM = roadmap (não implementado).**
+- **BYO LLM (Bring Your Own LLM):** opção **futura** — instituição/clínica poder plugar a própria LLM, incluindo **modelo local/on-premise** (relevante para soberania de dado sensível e LGPD). **Não implementado; opção de roadmap.**
+- **Valor regulatório:** **não há lock-in de fornecedor único.** A conformidade e a segurança **não dependem de um modelo específico** — o controle é do **fabricante, na arquitetura**, não terceirizado ao modelo. Argumento forte para SaMD e governança de IA (CFM 2.454/2026, EU AI Act): a supervisão é **estrutural e portável**.
+- **⚠️ NÃO é plug-and-play (calibração obrigatória por modelo):** trocar de LLM não destrói a governança (arquitetural OK — pattern provider-agnostic), MAS **exige por modelo**: smoke clínico empírico (refusal patterns / confiança / tendência a confabular variam entre modelos), recalibração dos **locks micro-factuais** (Matrix Z2 — 5 perguntas-armadilha), e **dossiê regulatório próprio por provider** (RSK-001 + POP-VAL-001 + `clinical_qa_runs`). Estima-se ~40-60h/modelo. Pode-se trocar **arquiteturalmente**, não **clinicamente sem nova validação**. *(Cristalizado 30/05: "governança independe do LLM subjacente COM calibração necessária". BYO-LLM = conectar API key de provider whitelisted, NÃO um Custom GPT individual — esses vivem fora da API.)*
+- **Infra relacionada já no código:** `src/lib/localLLM.ts` (Xenova/transformers — embeddings/Q&A/sumarização locais) é base para modelo local/on-premise; arquitetura BYO-LLM **parqueada** (19/05). *Há memórias dedicadas (`feedback_governanca_medcannlab_independe_do_llm...`, `project_byo_llm_arquitetura_parqueada_19_05`, `reference_pricing_dinamico_cap_byo...`) — este doc consolida, não duplica.*
+
+> ⚠️ Auditor-safe: hoje o sistema opera com **GPT-4o (provedor único)**. Multi-LLM fallback e BYO LLM são **direção de arquitetura / roadmap COM calibração obrigatória por modelo** (não plug-and-play) — não estado atual. Mas o desenho não-decisional **já é** model-agnostic.
+
 ## 5. Mitigação de riscos específicos de IA (cruz com RSK-001)
 
 | Risco de IA | Controle | Ref |
