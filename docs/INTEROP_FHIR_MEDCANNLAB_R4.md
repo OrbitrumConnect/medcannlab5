@@ -189,11 +189,11 @@ O FHIR R4 tem o datatype **`Signature`** (e `Bundle.signature` / `Provenance.sig
 
 | Gap | Esforço | Observação |
 |---|---|---|
-| **Serializer FHIR — PoC feito (V1.9.563) ✅; falta endpoint HTTP + br-core** | Mapeador `clinical_report→Bundle` em `src/lib/fhir/` (read-only, validado vs report real). Resta endpoint `/fhir` + validação br-core | dado já estruturado; não é reescrita |
+| **Serializer FHIR — PoC feito (V1.9.563) ✅; endpoint `/fhir` (V1.9.569) ✅; validado em R4 base (V1.9.575) ✅; falta br-core** | Mapeador `clinical_report→Bundle` em `src/lib/fhir/` (read-only). Bundle sintético: **0 erros** no `$validate` oficial R4. Resta perfis br-core + homologação RNDS | dado já estruturado; não é reescrita |
 | **Assinatura ICP-Brasil no relatório clínico** | Estender o fluxo PBAD AD-RB (hoje em prescrições/exames) à `Composition`/`Bundle` do prontuário | `clinical_reports` hoje só tem hash de integridade SHA-256, não assinatura ICP |
 | **Consent FHIR — fonte e cobertura** | Mapear de fonte confiável (`data.consentGiven` jsonb + coluna `consent_given` pós-V1.9.546) | coluna íntegra só a partir de 31/05 + backfill; `ip`/`user-agent` de Provenance vazios |
 | **Terminologia não-codificada** | Binding de value sets (CID-10/LOINC/SNOMED) | hoje texto-livre/manual; a IA NÃO infere CID-10 (lock) |
-| **Conformidade br-core / homologação RNDS** | Validação contra perfis RNDS + homologação | 0 endpoint/Bundle validado hoje |
+| **Conformidade br-core / homologação RNDS** | Validação contra perfis RNDS + homologação | Bundle válido em **R4 base** (0 erros, V1.9.575); falta perfil **br-core** + homologação RNDS |
 | **`Condition`/`CarePlan`/lab** | Popular schemas já existentes (`patient_conditions`, `patient_therapeutic_plans`, `patient_lab_results` estão vazios) | |
 
 > ⚠️ **Maior esforço de integração = governança terminológica.** Ter FHIR (estrutura) **≠ interoperabilidade clínica real**. Sem *binding* de **CID-10 / LOINC / SNOMED CT**, os recursos existem mas o significado clínico não trafega de forma interoperável. Hoje a terminologia é **texto-livre** (a IA **NÃO infere CID-10** — lock institucional). Este é, provavelmente, **o maior trabalho da integração** — maior que o próprio serializer.
@@ -235,7 +235,7 @@ O FHIR R4 tem o datatype **`Signature`** (e `Bundle.signature` / `Provenance.sig
 ## 8. Anexo — Ressalvas empíricas (verificação via PAT, 02/06)
 
 Pontos que NÃO devem ser afirmados além do verificado:
-- **Serializer FHIR — PoC IMPLEMENTADO (V1.9.563)** em `src/lib/fhir/clinicalReportToFhir.ts` (função pura read-only `clinical_report → Bundle type=document`): 9 testes unit + validado ad-hoc contra 1 report REAL via PAT (7 recursos: Composition/Patient/Practitioner/ClinicalImpression×2/Consent/Provenance; 10 seções; refs 6/6 resolvem; hash de integridade como Provenance/extensão, **não** FHIR Signature). **Ainda NÃO há**: endpoint HTTP `/fhir`, validação contra validador FHIR oficial / perfis **br-core**, nem binding de terminologia. Exportação FHIR **demonstrada em PoC**, não em produção/homologação.
+- **Serializer FHIR — PoC IMPLEMENTADO (V1.9.563)** em `src/lib/fhir/clinicalReportToFhir.ts` (função pura read-only `clinical_report → Bundle type=document`): 9 testes unit + validado ad-hoc contra 1 report REAL via PAT (7 recursos: Composition/Patient/Practitioner/ClinicalImpression×2/Consent/Provenance; 10 seções; refs 6/6 resolvem; hash de integridade como Provenance/extensão, **não** FHIR Signature). **Endpoint HTTP `/fhir`** existe (Edge `fhir-export`, V1.9.569). **Validação estrutural contra validador FHIR R4 oficial FEITA (V1.9.575)**: Bundle sintético (sem PII) submetido ao `$validate` público (HAPI FHIR R4) → **0 erros estruturais** (corrigidos: `fullUrl` resolvível, `Consent.policyRule` ppc-1, `Bundle.identifier` bdl-9); restam só **warnings esperados** (LOINC não carregado no validador público, CodeSystem custom `aec-section`, `dom-6` narrative best-practice). **Ainda NÃO há**: validação contra perfis **br-core**, homologação RNDS, nem binding de terminologia codificada (CID-10/LOINC). Exportação FHIR **estruturalmente válida em R4 base**, não homologada em perfil nacional.
 - **Assinatura ICP-Brasil NÃO cobre o relatório clínico** — `clinical_reports.signature_hash` é SHA-256 de integridade (47/150 reports). PKCS#7 ICP-Brasil real só em `cfm_prescriptions`/`patient_exam_requests`.
 - **Classificação SaMD não decidida** — baseline interno SaMD Classe IIa (SGQ); não afirmar "não-SaMD".
 - **SBIS-CFM não certificado** — apenas "alinhado aos princípios".

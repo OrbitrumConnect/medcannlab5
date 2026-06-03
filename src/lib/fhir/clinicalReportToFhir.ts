@@ -30,8 +30,14 @@ import type {
   Reference,
 } from './fhirR4.types'
 
-/** Namespace base dos identifiers/extensões internos. */
+/** Namespace base dos identifiers/extensões/CodeSystem internos (canonical, não precisa resolver). */
 const BASE = 'urn:medcannlab'
+/**
+ * Base URL ABSOLUTA p/ os fullUrl dos recursos no Bundle. Precisa ser resolvível
+ * pra que as referências relativas (`Patient/<id>`) batam com os entries — `urn:`
+ * não resolve referência relativa (validador FHIR rejeita). V1.9.575.
+ */
+const RESOURCE_BASE = 'https://fhir.medcannlab.com.br'
 const INTEGRITY_HASH_URL = `${BASE}/fhir/StructureDefinition/content-integrity-hash-sha256`
 const SECTION_NS = `${BASE}/fhir/CodeSystem/aec-section`
 
@@ -176,6 +182,11 @@ function buildConsent(report: ClinicalReportInput, patientRef: Reference): Conse
         coding: [{ system: 'http://loinc.org', code: '59284-0', display: 'Patient Consent' }],
       },
     ],
+    // ppc-1: Consent R4 exige Policy OU PolicyRule. CodeableConcept text-only é válido
+    // e evita código de terminologia inválido (consentimento informado AEC).
+    policyRule: {
+      text: 'Consentimento informado para Avaliação Clínica Inicial (AEC) — MedCannLab',
+    },
     patient: patientRef,
     ...(report.consent_at ? { dateTime: report.consent_at } : {}),
   }
@@ -318,17 +329,19 @@ export function clinicalReportToFhirBundle(
   const provenance = buildProvenance(report, compositionRef, practitionerRef, date)
 
   const entries: BundleEntry[] = []
-  entries.push({ fullUrl: `${BASE}/Composition/${composition.id}`, resource: composition })
-  entries.push({ fullUrl: `${BASE}/Patient/${patient.id}`, resource: patient })
-  if (practitioner) entries.push({ fullUrl: `${BASE}/Practitioner/${practitioner.id}`, resource: practitioner })
-  for (const ci of clinicalImpressions) entries.push({ fullUrl: `${BASE}/ClinicalImpression/${ci.id}`, resource: ci })
-  if (consent) entries.push({ fullUrl: `${BASE}/Consent/${consent.id}`, resource: consent })
-  if (provenance) entries.push({ fullUrl: `${BASE}/Provenance/${provenance.id}`, resource: provenance })
+  entries.push({ fullUrl: `${RESOURCE_BASE}/Composition/${composition.id}`, resource: composition })
+  entries.push({ fullUrl: `${RESOURCE_BASE}/Patient/${patient.id}`, resource: patient })
+  if (practitioner) entries.push({ fullUrl: `${RESOURCE_BASE}/Practitioner/${practitioner.id}`, resource: practitioner })
+  for (const ci of clinicalImpressions) entries.push({ fullUrl: `${RESOURCE_BASE}/ClinicalImpression/${ci.id}`, resource: ci })
+  if (consent) entries.push({ fullUrl: `${RESOURCE_BASE}/Consent/${consent.id}`, resource: consent })
+  if (provenance) entries.push({ fullUrl: `${RESOURCE_BASE}/Provenance/${provenance.id}`, resource: provenance })
 
   return {
     resourceType: 'Bundle',
     id: `${report.id}-document`,
     type: 'document',
+    // bdl-9: document Bundle exige identifier global estável (system + value).
+    identifier: { system: `${RESOURCE_BASE}/fhir/document`, value: report.id },
     timestamp: options.timestamp ?? (date || undefined),
     entry: entries,
   }

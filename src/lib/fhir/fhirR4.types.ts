@@ -124,6 +124,8 @@ export interface Consent {
   category: CodeableConcept[]
   patient?: Reference
   dateTime?: string
+  /** ppc-1: Consent R4 exige Policy OU PolicyRule. */
+  policyRule?: CodeableConcept
 }
 
 export interface ProvenanceAgent {
@@ -159,6 +161,8 @@ export interface Bundle {
   id?: string
   meta?: Meta
   type: 'document'
+  /** bdl-9: document Bundle exige identifier (system + value). */
+  identifier?: Identifier
   timestamp?: string
   entry: BundleEntry[]
 }
