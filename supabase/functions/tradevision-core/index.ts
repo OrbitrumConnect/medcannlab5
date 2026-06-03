@@ -6727,6 +6727,33 @@ ${userInput.substring(0, 2000)}
             }
 
             // ============================================================
+            // [V1.9.580] GUARD ANTI-LEAK: AEC ativa SEM roteiro selado (nextQuestionHint
+            // vazio). Sem este guard, a mensagem cai no motor determinístico de chat livre
+            // abaixo — que, ao detectar um conceito com entrada no RAG (ex: cannabis/CBD),
+            // ANEXA "Encontrei informações na nossa base de conhecimento" (linha ~6932),
+            // sequestrando uma escuta clínica em curso (bug empírico Gisele 03/06, mesma
+            // família do V1.9.318: RAG molda comportamento cognitivo). Durante AEC ativa a
+            // resposta tem que ser SEMPRE escuta — nunca o builder de chat livre.
+            // Devolve continuação neutra de escuta (não-diagnóstica, sem RAG, sem documentos).
+            // ============================================================
+            const aecPhaseActiveNoHint =
+                !!assessmentPhase &&
+                assessmentPhase !== 'COMPLETED' &&
+                assessmentPhase !== 'INTERRUPTED';
+            if (aecPhaseActiveNoHint) {
+                console.log(`🛡️ [V1.9.580 ANTI-LEAK AEC] AEC ativa (${assessmentPhase}) sem hint — continuação neutra de escuta (bloqueia vazamento RAG/documentos no fluxo clínico).`);
+                return {
+                    choices: [{
+                        message: {
+                            content: 'Entendi. Pode seguir — estou te ouvindo.'
+                        }
+                    }],
+                    usage: { total_tokens: 0 },
+                    model: 'TradeVision-Core-AEC-Continuation-v1.9.580'
+                } as any;
+            }
+
+            // ============================================================
             // 2. MOTOR DETERMINÍSTICO SEMÂNTICO (5 Camadas)
             //    Composição textual inteligente sem LLM. Respeita:
             //    - Triggers (imutáveis)
