@@ -87,10 +87,20 @@ export const getAllPatients = async (
 
       if (appError) throw appError
 
+      // V1.9.578: vínculo explícito (Migração de Base Clínica) — torna paciente
+      // importado/vinculado visível mesmo SEM consulta/avaliação prévia (patient_doctors
+      // é VIEW derivada de appointments, não serve). Não-bloqueante: se a query falhar,
+      // a lista segue de assessments+appointments (zero regressão).
+      const { data: linkData, error: linkError } = await (supabase as any)
+        .from('patient_professional_links')
+        .select('patient_id')
+        .eq('professional_id', user.id)
+
       const assessmentIds = assessments?.map(a => a.patient_id).filter(Boolean) || []
       const appointmentIds = appointmentData?.map(a => a.patient_id).filter(Boolean) || []
+      const linkIds = (!linkError && linkData) ? linkData.map((l: any) => l.patient_id).filter(Boolean) : []
 
-      const patientIds = Array.from(new Set([...assessmentIds, ...appointmentIds])).filter((id): id is string => id !== null)
+      const patientIds = Array.from(new Set([...assessmentIds, ...appointmentIds, ...linkIds])).filter((id): id is string => id !== null)
 
       if (patientIds.length === 0) return []
 
