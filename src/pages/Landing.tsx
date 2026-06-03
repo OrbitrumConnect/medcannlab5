@@ -190,6 +190,21 @@ const Landing: React.FC = () => {
     consultationFee: '' // V1.9.229: valor consulta (R$350-1300, obrigatório pra profissional)
   })
 
+  // V1.9.572: contadores AO VIVO via RPC pública get_public_landing_stats (read-only, só agregados, zero PII).
+  // Fallback estático evita flash/layout-shift enquanto carrega.
+  const [liveStats, setLiveStats] = useState<{ avaliacoes: number; profissionais: number } | null>(null)
+  useEffect(() => {
+    let active = true
+    ;(supabase as any)
+      .rpc('get_public_landing_stats')
+      .then(({ data, error }: { data: any; error: any }) => {
+        if (active && !error && data) {
+          setLiveStats({ avaliacoes: Number(data.avaliacoes) || 0, profissionais: Number(data.profissionais) || 0 })
+        }
+      })
+    return () => { active = false }
+  }, [])
+
   // Effects & Handlers
   useEffect(() => {
     if (user && !authLoading) {
@@ -392,7 +407,7 @@ const Landing: React.FC = () => {
       <div className="pt-16" />
 
       {/* --- Hero Section 2026 --- */}
-      <section className="relative isolate pt-12 pb-20 overflow-hidden" style={{ background: 'linear-gradient(135deg, #0f172a 0%, #1a3a47 50%, #284629 100%)' }}>
+      <section className="relative isolate pt-12 pb-20 overflow-hidden" style={{ background: 'linear-gradient(135deg, #0d1730 0%, #163e50 50%, #2a5325 100%)' }}>
         {/* Background Gradients — glow REDUZIDO (Pedro 02/06) */}
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-[600px] bg-gradient-to-b from-cyan-900/5 to-transparent blur-3xl -z-10" />
         {/* V1.9.561: background neural em CÓDIGO (SVG animado) — concentrado à direita. Nós menores + cadeias finas + micro-nós que se dissolvem (Pedro 02/06). */}
@@ -410,13 +425,13 @@ const Landing: React.FC = () => {
             </mask>
             {/* V1.9.561: degradê das linhas cyan->verde-amarelado, igual o background (Pedro 02/06). */}
             <linearGradient id="lineGrad" gradientUnits="userSpaceOnUse" x1="620" y1="120" x2="1180" y2="560">
-              <stop offset="0" stopColor="#22d3ee" />
-              <stop offset="1" stopColor="#a3e635" />
+              <stop offset="0" stopColor="#22ddf5" />
+              <stop offset="1" stopColor="#86e22e" />
             </linearGradient>
             {/* V1.9.561: degradê da rede ESQUERDA — mais azulada/ciano, sem verde (Pedro 02/06). */}
             <linearGradient id="lineGradLeft" gradientUnits="userSpaceOnUse" x1="620" y1="120" x2="1180" y2="560">
-              <stop offset="0" stopColor="#22d3ee" />
-              <stop offset="1" stopColor="#38bdf8" />
+              <stop offset="0" stopColor="#22ddf5" />
+              <stop offset="1" stopColor="#4ccbff" />
             </linearGradient>
           </defs>
           {/* máscara HOLE: rede em volta/embaixo do emblema, vazada no centro (Pedro 02/06). */}
@@ -429,7 +444,7 @@ const Landing: React.FC = () => {
               x1={l.x1} y1={l.y1} x2={l.x2} y2={l.y2}
               stroke="url(#lineGrad)" strokeWidth="0.6"
               initial={{ opacity: 0.06 }}
-              animate={{ opacity: [0.06, 0.22, 0.06] }}
+              animate={{ opacity: [0.06, 0.25, 0.06] }}
               transition={{ duration: 5, repeat: Infinity, delay: l.delay, ease: 'easeInOut' }}
             />
           ))}
@@ -451,9 +466,9 @@ const Landing: React.FC = () => {
               <motion.circle
                 cx={n.cx} cy={n.cy}
                 fill="url(#lineGrad)"
-                style={{ filter: 'drop-shadow(0 0 5px rgba(34,211,238,0.6))' }}
+                style={{ filter: 'drop-shadow(0 0 5px rgba(34,221,245,0.74))' }}
                 initial={{ r: n.r, opacity: 0.25 }}
-                animate={{ r: [n.r, n.r * 1.6, n.r], opacity: [0.25, 0.62, 0.25] }}
+                animate={{ r: [n.r, n.r * 1.6, n.r], opacity: [0.25, 0.71, 0.25] }}
                 transition={{ duration: n.dur, repeat: Infinity, delay: n.delay, ease: 'easeInOut' }}
               />
             </g>
@@ -479,7 +494,7 @@ const Landing: React.FC = () => {
               x1={l.x1} y1={l.y1} x2={l.x2} y2={l.y2}
               stroke="url(#lineGradLeft)" strokeWidth="0.6"
               initial={{ opacity: 0.06 }}
-              animate={{ opacity: [0.06, 0.3, 0.06] }}
+              animate={{ opacity: [0.06, 0.34, 0.06] }}
               transition={{ duration: 5, repeat: Infinity, delay: l.delay, ease: 'easeInOut' }}
             />
           ))}
@@ -500,9 +515,9 @@ const Landing: React.FC = () => {
               <motion.circle
                 cx={n.cx} cy={n.cy}
                 fill="url(#lineGradLeft)"
-                style={{ filter: 'drop-shadow(0 0 5px rgba(34,211,238,0.6))' }}
+                style={{ filter: 'drop-shadow(0 0 5px rgba(34,221,245,0.74))' }}
                 initial={{ r: n.r, opacity: 0.25 }}
-                animate={{ r: [n.r, n.r * 1.6, n.r], opacity: [0.25, 0.62, 0.25] }}
+                animate={{ r: [n.r, n.r * 1.6, n.r], opacity: [0.25, 0.71, 0.25] }}
                 transition={{ duration: n.dur, repeat: Infinity, delay: n.delay, ease: 'easeInOut' }}
               />
             </g>
@@ -608,11 +623,11 @@ const Landing: React.FC = () => {
                 <div className="text-[10px] uppercase tracking-wider text-slate-400 mt-1">Anos do método<br />em prática</div>
               </div>
               <div className="bg-slate-900/60 border border-teal-500/20 rounded-xl px-3 py-3 text-center">
-                <div className="text-2xl lg:text-3xl font-extrabold text-teal-400">+90</div>
+                <div className="text-2xl lg:text-3xl font-extrabold text-teal-400">+{liveStats ? liveStats.avaliacoes : 90}</div>
                 <div className="text-[10px] uppercase tracking-wider text-slate-400 mt-1">Avaliações<br />no sistema</div>
               </div>
               <div className="bg-slate-900/60 border border-teal-500/20 rounded-xl px-3 py-3 text-center">
-                <div className="text-2xl lg:text-3xl font-extrabold text-teal-400">9</div>
+                <div className="text-2xl lg:text-3xl font-extrabold text-teal-400">{liveStats ? liveStats.profissionais : 9}</div>
                 <div className="text-[10px] uppercase tracking-wider text-slate-400 mt-1">Profissionais<br />especialistas</div>
               </div>
             </div>
@@ -629,7 +644,7 @@ const Landing: React.FC = () => {
               </button>
             </div>
             <p className="text-center lg:text-left text-sm text-slate-500 mt-3">
-              Novos usuários: 3 dias de acesso livre. <span className="text-teal-400 font-medium">+90 avaliações clínicas já realizadas</span> com método AEC.
+              Novos usuários: 3 dias de acesso livre. <span className="text-teal-400 font-medium">+{liveStats ? liveStats.avaliacoes : 90} avaliações clínicas já realizadas</span> com método AEC.
             </p>
 
             <div className="mt-10 flex items-center justify-center lg:justify-start space-x-6 text-sm text-slate-500">
@@ -707,7 +722,7 @@ const Landing: React.FC = () => {
                 src="/medcannlab-logo.png"
                 alt="MedCannLab — emblema neuro-orgânico (rim · folhas · circuito)"
                 className="relative z-10 w-full h-auto max-w-[24rem] object-contain hover:scale-[1.03] transition-transform duration-700"
-                style={{ filter: 'contrast(1.08) brightness(1.05) drop-shadow(0 0 22px rgba(34,211,238,0.20)) drop-shadow(0 0 55px rgba(16,58,58,0.22))' }}
+                style={{ filter: 'contrast(1.08) brightness(1.05) drop-shadow(0 0 22px rgba(34,221,245,0.24)) drop-shadow(0 0 55px rgba(16,58,58,0.22))' }}
               />
             </div>
           </motion.div>
@@ -751,7 +766,7 @@ const Landing: React.FC = () => {
       </section>
 
       {/* --- Unified Core Section --- */}
-      <section id="solucao" className="py-24 relative overflow-hidden" style={{ background: 'linear-gradient(135deg, #0f172a 0%, #1a3a47 50%, #284629 100%)' }}>
+      <section id="solucao" className="py-24 relative overflow-hidden" style={{ background: 'linear-gradient(135deg, #0d1730 0%, #163e50 50%, #2a5325 100%)' }}>
         <div className="absolute inset-0 bg-blue-900/5 -z-10" />
         <div className="container mx-auto px-6">
           {/* Top: Feature Split */}
@@ -958,7 +973,7 @@ const Landing: React.FC = () => {
       </section>
 
       {/* --- Seção Institucional (v15 selado 29/04) — Tese & Arquitetura --- */}
-      <section id="sobre" className="py-24 relative overflow-hidden" style={{ background: 'linear-gradient(135deg, #0f172a 0%, #1a3a47 50%, #284629 100%)' }}>
+      <section id="sobre" className="py-24 relative overflow-hidden" style={{ background: 'linear-gradient(135deg, #0d1730 0%, #163e50 50%, #2a5325 100%)' }}>
         {/* Gradient sutil de fundo */}
         <div className="absolute top-0 left-0 w-1/3 h-full bg-gradient-to-r from-emerald-900/10 to-transparent pointer-events-none -z-10" />
         <div className="absolute bottom-0 right-0 w-1/3 h-full bg-gradient-to-l from-teal-900/10 to-transparent pointer-events-none -z-10" />
@@ -1178,7 +1193,7 @@ const Landing: React.FC = () => {
       </section>
 
       {/* --- 3 Eixos Section (V1.9.100 SEO) — Clínica + Ensino + Pesquisa --- */}
-      <section id="eixos" className="py-20 relative overflow-hidden" style={{ background: 'linear-gradient(135deg, #0f172a 0%, #1a3a47 50%, #284629 100%)' }}>
+      <section id="eixos" className="py-20 relative overflow-hidden" style={{ background: 'linear-gradient(135deg, #0d1730 0%, #163e50 50%, #2a5325 100%)' }}>
         <div className="absolute inset-0 bg-emerald-900/5 -z-10" />
         <div className="container mx-auto px-6 relative z-10">
           <div className="text-center max-w-3xl mx-auto mb-12">
@@ -1224,7 +1239,7 @@ const Landing: React.FC = () => {
               </div>
               <h3 className="text-xl font-bold text-white mb-3">Pesquisa — Produção Científica</h3>
               <p className="text-slate-400 text-sm leading-relaxed">
-                As avaliações estruturadas pelo método AEC geram dados clínicos organizados e rastreáveis, base para evidência real em cannabis medicinal. <strong className="text-teal-300">Mais de 90 casos já estruturados</strong> formam a base inicial. Parceria com Cidade Amiga dos Rins (CKD).
+                As avaliações estruturadas pelo método AEC geram dados clínicos organizados e rastreáveis, base para evidência real em cannabis medicinal. <strong className="text-teal-300">Mais de {liveStats ? liveStats.avaliacoes : 90} casos já estruturados</strong> formam a base inicial. Parceria com Cidade Amiga dos Rins (CKD).
               </p>
             </div>
           </div>
@@ -1341,7 +1356,7 @@ const Landing: React.FC = () => {
       </section>
 
       {/* --- Download / Install App Section --- */}
-      <section className="relative py-20" style={{ background: 'linear-gradient(135deg, #0f172a 0%, #1a3a47 50%, #284629 100%)' }}>
+      <section className="relative py-20" style={{ background: 'linear-gradient(135deg, #0d1730 0%, #163e50 50%, #2a5325 100%)' }}>
         <div className="container mx-auto px-6">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
