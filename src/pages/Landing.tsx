@@ -609,7 +609,7 @@ const Landing: React.FC = () => {
 
             {/* [V1.9.128-C] Hero compactado: 3 parágrafos → 1 enxuto + tagline. Mantém todos elementos-chave. */}
             <p className="text-base text-slate-300 mb-4 max-w-xl mx-auto lg:mx-0 leading-relaxed">
-              Modelo clínico <strong className="text-teal-300">orientado pela escuta</strong>, fundado na <strong className="text-teal-300">Arte da Entrevista Clínica (AEC)</strong> — método autoral do <strong className="text-teal-200">Dr. Ricardo Valença</strong> (Nefrologia, <strong className="text-teal-200">40 anos</strong> e <strong className="text-teal-200">2.000+ avaliações</strong>) com direção científica do <strong className="text-teal-200">Dr. Eduardo Faveret</strong> (Neurologia). Aplicável a qualquer especialidade.
+              Modelo clínico <strong className="text-teal-300">orientado pela escuta</strong>, fundado na <strong className="text-teal-300">Arte da Entrevista Clínica (AEC)</strong> — método autoral do <strong className="text-teal-200">Dr. Ricardo Valença</strong> (Nefrologia, <strong className="text-teal-200">40 anos de prática</strong> e <strong className="text-teal-200">mais de 2.000 avaliações clínicas ao longo da carreira</strong>) com direção científica do <strong className="text-teal-200">Dr. Eduardo Faveret</strong> (Neurologia). Aplicável a qualquer especialidade.
             </p>
 
             <p className="text-base text-teal-200/90 mb-6 max-w-xl mx-auto lg:mx-0 italic">
@@ -623,7 +623,7 @@ const Landing: React.FC = () => {
                 <div className="text-[10px] uppercase tracking-wider text-slate-400 mt-1">Anos do método<br />em prática</div>
               </div>
               <div className="bg-slate-900/60 border border-teal-500/20 rounded-xl px-3 py-3 text-center">
-                <div className="text-2xl lg:text-3xl font-extrabold text-teal-400">+{liveStats ? liveStats.avaliacoes : 90}</div>
+                <div className="text-2xl lg:text-3xl font-extrabold text-teal-400">+{liveStats ? liveStats.avaliacoes : 139}</div>
                 <div className="text-[10px] uppercase tracking-wider text-slate-400 mt-1">Avaliações<br />no sistema</div>
               </div>
               <div className="bg-slate-900/60 border border-teal-500/20 rounded-xl px-3 py-3 text-center">
@@ -644,7 +644,7 @@ const Landing: React.FC = () => {
               </button>
             </div>
             <p className="text-center lg:text-left text-sm text-slate-500 mt-3">
-              Novos usuários: 3 dias de acesso livre. <span className="text-teal-400 font-medium">+{liveStats ? liveStats.avaliacoes : 90} avaliações clínicas já realizadas</span> com método AEC.
+              Novos usuários: 3 dias de acesso livre.
             </p>
 
             <div className="mt-10 flex items-center justify-center lg:justify-start space-x-6 text-sm text-slate-500">
@@ -1239,7 +1239,7 @@ const Landing: React.FC = () => {
               </div>
               <h3 className="text-xl font-bold text-white mb-3">Pesquisa — Produção Científica</h3>
               <p className="text-slate-400 text-sm leading-relaxed">
-                As avaliações estruturadas pelo método AEC geram dados clínicos organizados e rastreáveis, base para evidência real em cannabis medicinal. <strong className="text-teal-300">Mais de {liveStats ? liveStats.avaliacoes : 90} casos já estruturados</strong> formam a base inicial. Parceria com Cidade Amiga dos Rins (CKD).
+                As avaliações estruturadas pelo método AEC geram dados clínicos organizados e rastreáveis, base para evidência real em cannabis medicinal. <strong className="text-teal-300">Mais de {liveStats ? liveStats.avaliacoes : 139} casos já estruturados</strong> formam a base inicial. Parceria com Cidade Amiga dos Rins (CKD).
               </p>
             </div>
           </div>
