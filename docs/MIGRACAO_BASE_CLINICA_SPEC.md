@@ -79,3 +79,36 @@ RNDS/API  ──┘
 - **Isolar do pipeline de IA** (proveniência → Matrix/RAG só lê nativo).
 - **Não inflar métricas** (landing/avaliações contam só `import_batch_id IS NULL`).
 - **Motor antes do botão** (anti-overclaim).
+
+---
+
+## 7. Termo de Responsabilidade pela Importação de Dados (#5 — camada operacional)
+
+> ⚠️ **Enquadramento:** este termo é **evidência operacional** (o médico declara base legal + assume responsabilidade), **NÃO substitui** a documentação jurídica da empresa (DPA / Termos de Uso com cláusulas de operador — esses vêm com **CNPJ + advogado de saúde digital**). Para **paciente REAL**, revisar com advogado antes; para **teste/sintético**, usável já. Aceito **antes** da carga, gravado por lote.
+
+### Texto (rascunho V1 — base para revisão jurídica)
+
+**Termo de Responsabilidade pela Importação de Dados**
+
+Ao realizar a importação de dados para a plataforma MedCannLab, o profissional declara que:
+
+1. É o legítimo responsável pelos dados importados ou possui autorização legal para seu tratamento.
+2. Possui base legal para a coleta, armazenamento, utilização e transferência dos dados para a plataforma, nos termos da legislação aplicável, incluindo a Lei Geral de Proteção de Dados Pessoais (LGPD).
+3. Os dados importados referem-se a pacientes sob sua responsabilidade profissional e serão utilizados exclusivamente para finalidades assistenciais, administrativas ou regulatórias relacionadas ao atendimento prestado.
+4. Assegura que a importação não viola obrigações de confidencialidade, sigilo profissional, contratos com terceiros ou determinações legais.
+5. Reconhece que a MedCannLab atua como plataforma tecnológica (operadora) para armazenamento e processamento das informações, comprometendo-se a utilizar os recursos de forma compatível com a legislação vigente.
+6. Responsabiliza-se pela exatidão, origem e legitimidade dos dados importados.
+7. **[refinamento Claude 04/06]** Declara ter cumprido o dever de informação aos pacientes conforme o consentimento original obtido, e reconhece que **os titulares mantêm seus direitos de acesso, correção, portabilidade e exclusão** (LGPD Art. 18) na plataforma.
+8. Concorda que a plataforma registre evidências da operação de importação, incluindo data, hora, usuário responsável, quantidade de registros importados e versão deste termo.
+
+*Declaro que li e concordo com os termos acima.* ☐ Li e concordo
+
+### Auditoria gravada (V1.9.583 — colunas em `import_batches`)
+`import_batch_id` · `professional_id` · `terms_accepted` · `terms_accepted_at` · `terms_version` · `terms_hash` · `accepted_ip` · `accepted_user_agent` · `total_records` (records_imported).
+
+### Status
+- ✅ **Construível já (risco-zero):** texto do termo + colunas de auditoria (V1.9.583) + checkbox-gate na UI.
+- ⏳ **Gated (CNPJ + advogado):** incorporar aos **Termos de Uso** da plataforma + **cláusulas de operador** (equivalente DPA). Aí o checkbox vira aceite específico vinculado ao contrato maior.
+
+### Universalidade
+Fluxo idêntico para Eduardo, Ricardo ou médico externo. Eduardo ser **sócio não muda a lógica do termo** — ele aceita **como profissional** importando pacientes sob responsabilidade dele (arm's-length).
