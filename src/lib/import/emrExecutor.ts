@@ -112,3 +112,109 @@ export function describeImportPlan(plan: ImportPlan): string {
     `${s.documents} documento(s)`,
   ].join(' · ')
 }
+
+// ───────────────────────── REAL LOAD (executeImportPlan) ─────────────────────────
+// A LÓGICA de execução (resolver Id-do-EMR → UUID novo, dedup, ordem, proveniência) vive
+// aqui e é testada com um mock de ImportDb. O ADAPTER Supabase (createSupabaseImportDb)
+// é fino e implementa ImportDb com o client real. Separação = lógica testável sem tocar banco.
+//
+// Modelo prontuário-only: cria public.users (type=patient) SEM auth.users (ativação gota a
+// gota depois). Dedup por CPF → email → source_external_id. Idempotente: re-rodar o mesmo
+// lote não duplica (o adapter usa source_external_id + import_batch_id).
+
+/** Porta de I/O que o executor precisa. Implementada pelo adapter Supabase; mockada no teste. */
+export interface ImportDb {
+  /** Acha user existente por CPF (preferencial) ou email. null se não existe. */
+  findExistingPatient(cpf: string | null, email: string | null): Promise<string | null>
+  /** Insere 1 paciente (public.users type=patient + proveniência). Retorna o UUID novo. */
+  insertPatient(row: WithBatch<MappedPatient>): Promise<string>
+  /** Insere os vínculos já com patient_id resolvido. */
+  insertLinks(rows: Array<{ patient_id: string; professional_id: string; relationship: string; source: string; import_batch_id: string }>): Promise<void>
+  /** Insere evoluções/prescrições/exames/documentos já com patient_id resolvido. */
+  insertRecords(rows: Array<{ patient_id: string; record_type: string; record_data: unknown; source_external_id: string; import_batch_id: string }>): Promise<void>
+  insertPrescriptions(rows: Array<{ patient_id: string; content: string; status: string; source_external_id: string; import_batch_id: string }>): Promise<void>
+  insertExams(rows: Array<{ patient_id: string; description: string; status: string; source_external_id: string; import_batch_id: string }>): Promise<void>
+  insertDocuments(rows: Array<{ patient_id: string; name: string; path: string | null; source_external_id: string; import_batch_id: string }>): Promise<void>
+  /** Marca o lote concluído com as contagens finais. */
+  finishBatch(batchId: string, counts: { patients: number; records: number }): Promise<void>
+}
+
+export interface ImportResult {
+  batchId: string
+  createdPatients: number
+  mergedPatients: number // já existiam (dedup) → reusados, não duplicados
+  links: number
+  records: number
+  prescriptions: number
+  exams: number
+  documents: number
+  skippedOrphans: number // filho cujo paciente não veio no plano
+}
+
+/**
+ * Executa o plano: cria/deduplica pacientes, resolve Id-do-EMR → UUID, grava filhos + vínculos
+ * com proveniência. Orquestração testável (db é injetado). NÃO conhece Supabase diretamente.
+ */
+export async function executeImportPlan(plan: ImportPlan, db: ImportDb): Promise<ImportResult> {
+  const idMap = new Map<string, string>() // source_external_id (EMR) → UUID nosso
+  let createdPatients = 0
+  let mergedPatients = 0
+
+  // 1. Pacientes (dedup por CPF/email; senão cria)
+  for (const p of plan.patients) {
+    const existing = await db.findExistingPatient(p.cpf, p.email)
+    if (existing) {
+      idMap.set(p.source_external_id, existing)
+      mergedPatients++
+    } else {
+      const newId = await db.insertPatient(p)
+      idMap.set(p.source_external_id, newId)
+      createdPatients++
+    }
+  }
+
+  // 2. Vínculos (resolve patient_id)
+  const resolvedLinks = plan.links
+    .map((l) => {
+      const pid = idMap.get(l.source_patient_id)
+      return pid ? { patient_id: pid, professional_id: l.professional_id, relationship: l.relationship, source: l.source, import_batch_id: l.import_batch_id } : null
+    })
+    .filter((x): x is NonNullable<typeof x> => x !== null)
+  if (resolvedLinks.length) await db.insertLinks(resolvedLinks)
+
+  // 3. Filhos — resolve source_patient_id → UUID; órfão (paciente ausente) é pulado
+  let skippedOrphans = 0
+  const resolveChildren = <T extends { source_patient_id: string | null }>(rows: T[]) => {
+    const out: Array<T & { patient_id: string }> = []
+    for (const r of rows) {
+      const pid = r.source_patient_id ? idMap.get(r.source_patient_id) : undefined
+      if (!pid) { skippedOrphans++; continue }
+      out.push({ ...r, patient_id: pid })
+    }
+    return out
+  }
+
+  const recs = resolveChildren(plan.records)
+  const rxs = resolveChildren(plan.prescriptions)
+  const exs = resolveChildren(plan.exams)
+  const docs = resolveChildren(plan.documents)
+
+  if (recs.length) await db.insertRecords(recs.map((r) => ({ patient_id: r.patient_id, record_type: r.record_type, record_data: r.record_data, source_external_id: r.source_external_id, import_batch_id: r.import_batch_id })))
+  if (rxs.length) await db.insertPrescriptions(rxs.map((r) => ({ patient_id: r.patient_id, content: r.content, status: r.status, source_external_id: r.source_external_id, import_batch_id: r.import_batch_id })))
+  if (exs.length) await db.insertExams(exs.map((r) => ({ patient_id: r.patient_id, description: r.description, status: r.status, source_external_id: r.source_external_id, import_batch_id: r.import_batch_id })))
+  if (docs.length) await db.insertDocuments(docs.map((r) => ({ patient_id: r.patient_id, name: r.name, path: r.path, source_external_id: r.source_external_id, import_batch_id: r.import_batch_id })))
+
+  await db.finishBatch(plan.batchId, { patients: createdPatients + mergedPatients, records: recs.length + rxs.length + exs.length + docs.length })
+
+  return {
+    batchId: plan.batchId,
+    createdPatients,
+    mergedPatients,
+    links: resolvedLinks.length,
+    records: recs.length,
+    prescriptions: rxs.length,
+    exams: exs.length,
+    documents: docs.length,
+    skippedOrphans,
+  }
+}

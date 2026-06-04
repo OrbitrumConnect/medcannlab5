@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { mapEmrExport } from '../emrMapper'
-import { buildImportPlan, describeImportPlan } from '../emrExecutor'
+import { buildImportPlan, describeImportPlan, executeImportPlan, type ImportDb } from '../emrExecutor'
 import type { EmrExport } from '../emrTypes'
 
 const fixture: EmrExport = {
@@ -64,5 +64,70 @@ describe('buildImportPlan', () => {
     const empty = buildImportPlan(mapEmrExport({ patients: [] }), OPTS)
     expect(empty.summary.total).toBe(0)
     expect(empty.links.length).toBe(0)
+  })
+})
+
+/** Mock de ImportDb que registra os inserts e resolve UUID deterministicamente. */
+function makeMockDb(existingByKey: Record<string, string> = {}) {
+  const calls = {
+    inserted: [] as Array<{ source: string }>,
+    links: [] as any[],
+    records: [] as any[],
+    prescriptions: [] as any[],
+    exams: [] as any[],
+    documents: [] as any[],
+    finished: null as null | { batchId: string; counts: any },
+  }
+  const db: ImportDb = {
+    async findExistingPatient(cpf, email) {
+      return existingByKey[cpf ?? ''] ?? existingByKey[email ?? ''] ?? null
+    },
+    async insertPatient(row) {
+      calls.inserted.push({ source: row.source_external_id })
+      return `uuid-${row.source_external_id}` // UUID determinístico p/ asserção
+    },
+    async insertLinks(rows) { calls.links.push(...rows) },
+    async insertRecords(rows) { calls.records.push(...rows) },
+    async insertPrescriptions(rows) { calls.prescriptions.push(...rows) },
+    async insertExams(rows) { calls.exams.push(...rows) },
+    async insertDocuments(rows) { calls.documents.push(...rows) },
+    async finishBatch(batchId, counts) { calls.finished = { batchId, counts } },
+  }
+  return { db, calls }
+}
+
+describe('executeImportPlan (mock — lógica de gravação)', () => {
+  const plan = buildImportPlan(mapEmrExport(fixture), OPTS)
+
+  it('cria pacientes novos e resolve Id-do-EMR → UUID nos filhos', async () => {
+    const { db, calls } = makeMockDb()
+    const res = await executeImportPlan(plan, db)
+    expect(res.createdPatients).toBe(2)
+    expect(res.mergedPatients).toBe(0)
+    // filhos ligados ao UUID resolvido (uuid-p1 / uuid-p2)
+    expect(calls.records.map((r) => r.patient_id).sort()).toEqual(['uuid-p1', 'uuid-p2'])
+    expect(calls.prescriptions[0].patient_id).toBe('uuid-p1')
+    expect(calls.exams[0].patient_id).toBe('uuid-p2')
+    expect(calls.links.map((l) => l.patient_id).sort()).toEqual(['uuid-p1', 'uuid-p2'])
+    // proveniência preservada
+    expect(calls.records.every((r) => r.import_batch_id === 'batch-123')).toBe(true)
+  })
+
+  it('DEDUP: paciente existente (por CPF) é reusado, não duplicado', async () => {
+    const exp: EmrExport = { patients: [{ Id: 'p1', Name: 'Dup', PersonalIdentifier: '123.456.789-09' }], notes: [{ Id: 'n1', PatientId: 'p1', Text: 'x' }] }
+    const planDup = buildImportPlan(mapEmrExport(exp), OPTS)
+    const { db, calls } = makeMockDb({ '12345678909': 'uuid-EXISTENTE' })
+    const res = await executeImportPlan(planDup, db)
+    expect(res.createdPatients).toBe(0)
+    expect(res.mergedPatients).toBe(1)
+    expect(calls.inserted.length).toBe(0) // não inseriu paciente novo
+    expect(calls.records[0].patient_id).toBe('uuid-EXISTENTE') // filho ligado ao existente
+  })
+
+  it('finishBatch é chamado com as contagens', async () => {
+    const { db, calls } = makeMockDb()
+    await executeImportPlan(plan, db)
+    expect(calls.finished?.batchId).toBe('batch-123')
+    expect(calls.finished?.counts.patients).toBe(2)
   })
 })
