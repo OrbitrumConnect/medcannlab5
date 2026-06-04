@@ -1,7 +1,9 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { Clock, Calendar, Heart, FileText, BookOpen } from 'lucide-react'
 import { Appointment, PatientPrescriptionSummary, TherapeuticPlan } from '../../../hooks/dashboard/usePatientDashboard'
 import { ClinicalReport } from '../../../lib/clinicalReportService'
+import { useAuth } from '../../../contexts/AuthContext'
+import { supabase } from '../../../lib/supabase'
 
 interface PatientStatsProps {
     appointments: Appointment[]
@@ -20,10 +22,27 @@ export const PatientStats: React.FC<PatientStatsProps> = ({
     const consultasAgendadas = appointments.filter(apt => apt.status === 'scheduled').length
     const consultasConcluidas = appointments.filter(apt => apt.status === 'completed').length
 
+    // V1.9.581: "Dias na Plataforma" canônico via get_user_stats (= public.users.created_at,
+    // MESMA fonte da Nôa). Antes contava dias desde o PRIMEIRO relatório (mostrava 104 em vez
+    // de 125, divergindo da Nôa). Fallback pro cálculo antigo enquanto a RPC carrega (sem flash).
+    const { user } = useAuth()
+    const [diasCanonico, setDiasCanonico] = useState<number | null>(null)
+    useEffect(() => {
+        if (!user?.id) return
+        let active = true
+        ;(supabase as any)
+            .rpc('get_user_stats', { p_user_id: user.id })
+            .then(({ data }: { data: any }) => {
+                if (active && typeof data?.dias_no_app === 'number') setDiasCanonico(data.dias_no_app)
+            })
+        return () => { active = false }
+    }, [user?.id])
+
     const primeiroAcesso = reports.length > 0
         ? new Date(reports[reports.length - 1].generated_at || Date.now())
         : new Date()
-    const diasNoPlataforma = Math.max(0, Math.floor((Date.now() - primeiroAcesso.getTime()) / (1000 * 3600 * 24)))
+    const diasFallback = Math.max(0, Math.floor((Date.now() - primeiroAcesso.getTime()) / (1000 * 3600 * 24)))
+    const diasNoPlataforma = diasCanonico ?? diasFallback
 
     const statCards = [
         { label: 'Dias na Plataforma', value: diasNoPlataforma, icon: Clock, color: 'text-indigo-400', sub: 'Tempo de cuidado' },
