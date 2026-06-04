@@ -30,7 +30,14 @@ Com o **CNPJ entrando este mês**, passa de "ideia futura" para roadmap do dashb
 4. **Upload ZIP** de export de EMR + **wizard de revisão** antes de gravar
 5. **Gate de termos/DPA**
 
-### ⚠️ Achado de schema crítico (anti-regressão)
+### ⚠️ Achado de schema crítico #2 (04/06 — define a arquitetura do real load)
+**`patient_medical_records.patient_id` e `patient_documents.patient_id` têm FK para `auth.users(id)`** (não `public.users`). Logo o paciente importado **PRECISA existir em auth.users** pra ter prontuário/documentos. Implicações:
+- Modelo: criar `auth.users` por paciente via **`auth.admin.createUser`** (service role) **SEM enviar credenciais** (sem blast) → satisfaz o FK + mantém prontuário-only + ativação gota a gota. Mesmo padrão da Edge `create-patient-auth` (V1.9.533).
+- `auth.admin.createUser` exige **service role** → **o real load roda numa EDGE FUNCTION**, não no frontend. O wizard (frontend) parseia/preview e POSTa o plano; a **Edge executa** (cria auth+public + grava filhos com proveniência).
+- `patient_professional_links` **não tem FK** (aceita qualquer patient_id) — OK.
+- Adapter de referência: `src/lib/import/emrSupabaseDb.ts` (a Edge porta essa lógica em Deno).
+
+### ⚠️ Achado de schema crítico #1 (anti-regressão)
 `patient_doctors` é uma **VIEW** (derivada de appointments), NÃO tabela. A lista de pacientes do profissional (`getAllPatients`, adminPermissions.ts) deriva de **clinical_assessments + appointments** — paciente importado (sem nenhum) seria **invisível**. → **#1 exige TABELA DE VÍNCULO NOVA** (a view não serve).
 
 ---
