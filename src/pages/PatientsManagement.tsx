@@ -1092,9 +1092,14 @@ const PatientsManagement: React.FC<PatientsManagementProps> = ({ embedded = fals
         }
       }
 
+      // V1.9.581: contagem canônica de avaliações via get_user_stats (MESMA fonte da Nôa),
+      // evitando o cap do .limit(10) acima que mostrava no máximo 10 AECs. A lista de reports
+      // segue limitada (display dos cards); só o CONTADOR usa a fonte única. Fallback seguro.
+      const { data: ovStats } = await (supabase as any).rpc('get_user_stats', { p_user_id: patientId })
+
       // Contadores por aba
       const tabCounts = {
-        aecs: reports.length,
+        aecs: typeof ovStats?.avaliacoes === 'number' ? ovStats.avaliacoes : reports.length,
         prescriptions: prescriptions.length,
         exams: examsRes.count || 0,
         appointments: appts.length,

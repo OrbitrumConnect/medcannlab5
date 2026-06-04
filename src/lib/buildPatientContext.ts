@@ -53,13 +53,13 @@ export async function buildPatientContext(userId: string): Promise<PatientContex
       .eq('id', userId)
       .maybeSingle()
 
-    // 2. Avaliações do paciente
-    const { data: reports } = await supabase
-      .from('clinical_reports')
-      .select('id, created_at')
-      .eq('patient_id', userId)
-      .order('created_at', { ascending: false })
-      .limit(20)
+    // 2. Stats canônicos via RPC única get_user_stats (V1.9.581).
+    //    Substitui a query antiga com .limit(20) que CAPAVA assessmentsCount em 20
+    //    (bug empírico: Pedro Paciente com 46 reports mostrava "20 avaliações" pra Nôa).
+    //    A RPC conta de verdade (clinical_reports não-draft) e é a MESMA fonte que a UI
+    //    deve usar — consistência Nôa↔UI garantida. daysOnPlatform abaixo permanece
+    //    intocado (já correto, de public.users.created_at).
+    const { data: userStats } = await (supabase as any).rpc('get_user_stats', { p_user_id: userId })
 
     // 3. Próxima consulta (futura, não cancelada)
     const nowIso = new Date().toISOString()
@@ -97,8 +97,8 @@ export async function buildPatientContext(userId: string): Promise<PatientContex
         type: (userData as any)?.type ?? null,
       },
       daysOnPlatform,
-      assessmentsCount: reports?.length ?? 0,
-      lastAssessmentAt: reports?.[0]?.created_at ?? null,
+      assessmentsCount: typeof userStats?.avaliacoes === 'number' ? userStats.avaliacoes : 0,
+      lastAssessmentAt: userStats?.ultima_avaliacao ?? null,
       nextAppointment: nextAppt
         ? {
             date: (nextAppt as any).appointment_date,
