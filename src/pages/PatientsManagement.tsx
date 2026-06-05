@@ -10,6 +10,8 @@ import IntegrativePrescriptions from '../components/IntegrativePrescriptions'
 import { ExamRequestModule } from '../components/ExamRequestModule'
 // V1.9.326 — médico anexa exames/laudos/resultados ao prontuário (Pedro+Ricardo 17/05)
 import ProfessionalPatientFiles from '../components/ProfessionalPatientFiles'
+// V1.9.589 — Wizard de Migração de Base Clínica (importar prontuário de outro EMR)
+import ImportClinicalBaseWizard from '../components/import/ImportClinicalBaseWizard'
 // V1.9.327 — timeline narrativa mensal substitui placeholder "Nenhum gráfico disponível" (Pedro 17/05 opção B)
 import PatientClinicalTimeline from '../components/PatientClinicalTimeline'
 // [V1.9.362] Casos Similares removido do prontuário — usar Terminal de Pesquisa
@@ -44,7 +46,8 @@ import {
   Link2,
   ChevronDown,
   Stethoscope,    // V1.9.487 Camada 1.5 — evoluções escritas pelo médico (FOLLOW_UP)
-  MessageCircle   // V1.9.487 Camada 1.5 — chat IA paciente↔Nôa (chat_interaction)
+  MessageCircle,  // V1.9.487 Camada 1.5 — chat IA paciente↔Nôa (chat_interaction)
+  Database        // V1.9.589 — Migração de Base Clínica (importar prontuário EMR)
 } from 'lucide-react'
 import { QuickReferralModal } from '../components/QuickReferralModal'
 import { useClinicalGovernance } from '../hooks/useClinicalGovernance'
@@ -400,6 +403,7 @@ const PatientsManagement: React.FC<PatientsManagementProps> = ({ embedded = fals
   const [showNewPatientMenu, setShowNewPatientMenu] = useState(false)
   // V1.9.440 — Atalho "Enviar Link de Indicação" no menu Novo Paciente
   const [showReferralModal, setShowReferralModal] = useState(false)
+  const [showImportWizard, setShowImportWizard] = useState(false) // V1.9.589 Migração de Base Clínica
   // V1.9.440-A — anchor do botão Novo Paciente pra dropdown via Portal
   // (escapa stacking context dos parents — antes sobrepunha cards abaixo)
   const newPatientBtnRef = useRef<HTMLButtonElement | null>(null)
@@ -2566,6 +2570,15 @@ const PatientsManagement: React.FC<PatientsManagementProps> = ({ embedded = fals
         onClose={() => setDetailEvolution(null)}
       />
 
+      {/* V1.9.589 — Wizard de Migração de Base Clínica (importar prontuário de outro EMR) */}
+      {user?.id && (
+        <ImportClinicalBaseWizard
+          open={showImportWizard}
+          onClose={() => setShowImportWizard(false)}
+          professionalId={user.id}
+        />
+      )}
+
       {/* V1.9.440-A — Dropdown Novo Paciente via Portal global (escapa stacking
           context dos parents — antes sobrepunha cards abaixo, inviável de usar). */}
       {showNewPatientMenu && newPatientMenuPos && createPortal(
@@ -2597,6 +2610,17 @@ const PatientsManagement: React.FC<PatientsManagementProps> = ({ embedded = fals
             >
               <FileText className="w-4 h-4 text-blue-400" />
               <span>Importar CSV</span>
+            </button>
+            {/* V1.9.589 — Migração de Base Clínica (prontuário completo de outro EMR) */}
+            <button
+              onClick={() => {
+                setShowNewPatientMenu(false)
+                setShowImportWizard(true)
+              }}
+              className="w-full text-left px-3 py-2 rounded-md hover:bg-slate-700 transition-colors text-white flex items-center gap-2 text-sm"
+            >
+              <Database className="w-4 h-4 text-emerald-400" />
+              <span>Importar Prontuário (EMR)</span>
             </button>
             {/* V1.9.440-B — "Importar do Banco" + "Arrastar Arquivos" REMOVIDOS
                 (anti-overclaim): smoke audit revelou que handleDatabaseImport
