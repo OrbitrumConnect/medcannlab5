@@ -139,6 +139,10 @@ export default function PatientMyExams({ onBack, embedded }: Props) {
         }
 
         // 2. Insert metadata
+        // V1.9.594 — uploaded_by + uploaded_by_role='patient' são OBRIGATÓRIOS: a RLS de INSERT
+        // ("Patient INSERT own documents") tem WITH CHECK (auth.uid()=patient_id AND
+        // uploaded_by_role='patient'). Sem isso o campo fica NULL → policy bloqueia → paciente
+        // não consegue enviar exame (bug Flávia 05/06: "new row violates row-level security policy").
         const { error: insErr } = await sb.from('patient_documents').insert({
             patient_id: user.id,
             file_path: filePath,
@@ -147,6 +151,8 @@ export default function PatientMyExams({ onBack, embedded }: Props) {
             size_bytes: file.size,
             category,
             description: description || null,
+            uploaded_by: user.id,
+            uploaded_by_role: 'patient',
         })
         if (insErr) {
             // Rollback storage
