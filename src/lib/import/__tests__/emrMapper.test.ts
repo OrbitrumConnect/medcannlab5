@@ -33,11 +33,11 @@ describe('helpers', () => {
     expect(cleanCpf(undefined)).toBeNull()
   })
   it('normalizeGender — PT/EN/abrev', () => {
-    expect(normalizeGender('Masculino')).toBe('male')
-    expect(normalizeGender('F')).toBe('female')
-    expect(normalizeGender('Female')).toBe('female')
+    expect(normalizeGender('Masculino')).toBe('M')
+    expect(normalizeGender('F')).toBe('F')
+    expect(normalizeGender('Female')).toBe('F')
     expect(normalizeGender('')).toBeNull()
-    expect(normalizeGender('x')).toBe('other')
+    expect(normalizeGender('x')).toBe('Outro')
   })
   it('parseEmrDate — ISO, DD/MM/YYYY, inválido', () => {
     expect(parseEmrDate('2026-05-01T10:00:00Z')).toBe('2026-05-01')
@@ -52,7 +52,7 @@ describe('mappers individuais', () => {
     const p = mapPatient(fixture.patients[0])!
     expect(p.cpf).toBe('12345678909')
     expect(p.email).toBe('um@mail.com')
-    expect(p.gender).toBe('male')
+    expect(p.gender).toBe('M')
     expect(p.birth_date).toBe('1980-03-15')
     expect(p.address).toContain('Rua A')
     expect(mapPatient({ Id: 'x', Name: '' })).toBeNull()

@@ -17,13 +17,17 @@ export function cleanCpf(raw?: string): string | null {
   return d.length === 11 ? d : null
 }
 
-/** Gênero → 'male' | 'female' | 'other' | null (tolerante a PT/EN/abrev). */
+/**
+ * Gênero → 'M' | 'F' | 'Outro' | null (tolerante a PT/EN/abrev).
+ * Emite o MESMO formato que o app usa (CHECK users_gender_check = M/F/Outro; NewPatientForm
+ * grava assim). Achado do piloto e2e 05/06: emitir 'male'/'female' viola a constraint.
+ */
 export function normalizeGender(raw?: string): string | null {
   const g = s(raw).toLowerCase()
   if (!g) return null
-  if (/^(m|masc|male|homem|h)$/.test(g) || g.startsWith('masc')) return 'male'
-  if (/^(f|fem|female|mulher)$/.test(g) || g.startsWith('fem')) return 'female'
-  return 'other'
+  if (/^(m|masc|male|homem|h)$/.test(g) || g.startsWith('masc')) return 'M'
+  if (/^(f|fem|female|mulher)$/.test(g) || g.startsWith('fem')) return 'F'
+  return 'Outro'
 }
 
 /** Datas tolerantes: ISO, YYYY-MM-DD, DD/MM/YYYY, DD-MM-YYYY → ISO (YYYY-MM-DD) ou null. */
