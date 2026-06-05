@@ -15,6 +15,7 @@ import {
 import { useAuth } from '../contexts/AuthContext'
 import { useToast } from '../contexts/ToastContext'
 import { supabase } from '../lib/supabase'
+import { PROFESSIONAL_TYPES } from '../lib/userTypes' // V1.9.596 bilíngue type EN/PT
 import JourneyManualModal from '../components/JourneyManualModal'
 
 interface Message {
@@ -92,7 +93,7 @@ const PatientChat: React.FC = () => {
         const { data, error } = await supabase
           .from('users')
           .select('id, name, email, type')
-          .in('type', ['profissional', 'admin'])
+          .in('type', [...PROFESSIONAL_TYPES, 'admin'])
 
         if (!error && data) {
           setProfessionals(data)

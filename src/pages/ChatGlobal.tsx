@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react'
 import { useAuth } from '../contexts/AuthContext'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
-import type { UserType } from '../lib/userTypes'
+import { type UserType, PROFESSIONAL_TYPES } from '../lib/userTypes' // V1.9.596 bilíngue type EN/PT
 import { useNoaPlatform } from '../contexts/NoaPlatformContext'
 
 // Declaração do tipo para BroadcastChannel
@@ -456,7 +456,7 @@ const ChatGlobal: React.FC = () => {
         .from('users')
         .select('id, name, email, type')
         .in('id', activeUserIds.filter((id): id is string => id !== null))
-        .eq('type', 'profissional') // Filtra apenas profissionais
+        .in('type', PROFESSIONAL_TYPES) // Filtra apenas profissionais (EN+PT)
 
       if (usersError) throw usersError
 

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { Calendar, FileText, Brain, UserPlus, X, Send, Check, MessageCircle } from 'lucide-react'
 import { ClinicalReport } from '../lib/clinicalReportService'
 import { supabase } from '../lib/supabase'
+import { PROFESSIONAL_TYPES } from '../lib/userTypes' // V1.9.596 bilíngue type EN/PT
 
 interface PatientHeaderActionsProps {
     reports?: ClinicalReport[]
@@ -57,7 +58,7 @@ const PatientHeaderActions: React.FC<PatientHeaderActionsProps> = ({
             const { data, error } = await supabase
                 .from('users')
                 .select('id, name, email')
-                .eq('type', 'profissional')
+                .in('type', PROFESSIONAL_TYPES)
                 .order('name', { ascending: true })
             if (error) throw error
             setDoctors((data ?? []) as DoctorOption[])

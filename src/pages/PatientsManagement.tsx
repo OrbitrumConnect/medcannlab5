@@ -3,6 +3,7 @@ import React, { useState, useEffect, useCallback, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import { useNavigate, useSearchParams, useLocation } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
+import { PATIENT_TYPES } from '../lib/userTypes' // V1.9.596 bilíngue type EN/PT
 import { useAuth } from '../contexts/AuthContext'
 import { useUserView } from '../hooks/useUserView'
 import { useToast } from '../contexts/ToastContext'
@@ -887,7 +888,7 @@ const PatientsManagement: React.FC<PatientsManagementProps> = ({ embedded = fals
 
       usersData?.filter(u => {
         if (user?.id && u.id === user.id) return false
-        return u.type === 'patient' || !u.type || u.type === null
+        return PATIENT_TYPES.includes(u.type) || !u.type || u.type === null
       }).forEach(u => {
         const patientAssessments = assessments?.filter(a => a.patient_id === u.id) || []
         const appointmentsCount = patientAssessments.length

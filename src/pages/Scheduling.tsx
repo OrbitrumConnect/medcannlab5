@@ -17,6 +17,7 @@ import {
   AlertCircle
 } from 'lucide-react'
 import { supabase } from '../lib/supabase'
+import { PROFESSIONAL_TYPES } from '../lib/userTypes' // V1.9.596 bilíngue type EN/PT
 import { bookAppointment } from '../lib/scheduling'
 import {
   SCHEDULING_CONFIG,
@@ -69,14 +70,14 @@ const Scheduling: React.FC = () => {
         const { data: users, error: usersError } = await supabase
           .from('users')
           .select('id, email, name, type')
-          .in('type', ['profissional', 'admin'])
+          .in('type', [...PROFESSIONAL_TYPES, 'admin'])
           .eq('email', 'rrvalenca@gmail.com')
           .limit(1)
 
         const { data: users2, error: users2Error } = await supabase
           .from('users')
           .select('id, email, name, type')
-          .in('type', ['profissional', 'admin'])
+          .in('type', [...PROFESSIONAL_TYPES, 'admin'])
           .eq('email', 'eduardoscfaveret@gmail.com')
           .limit(1)
 

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
+import { STUDENT_TYPES } from '../lib/userTypes' // V1.9.596 bilíngue type EN/PT
 import { useAuth } from '../contexts/AuthContext'
 import {
   ArrowLeft,
@@ -59,7 +60,7 @@ const GestaoAlunos: React.FC = () => {
       const { data: usersData, error: usersError } = await supabase
         .from('users')
         .select('id, name, email, phone, type, created_at')
-        .eq('type', 'student')
+        .in('type', STUDENT_TYPES)
         .order('created_at', { ascending: false })
 
       if (usersError) {

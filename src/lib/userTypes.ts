@@ -7,6 +7,18 @@
 export type UserType = 'admin' | 'professional' | 'profissional' | 'patient' | 'paciente' | 'student' | 'aluno' | 'master' | 'unknown';
 
 /**
+ * V1.9.596 — Conjuntos bilíngues p/ queries `.in('type', ...)` sobre a coluna `users.type`,
+ * que tem valores EN e PT misturados (empírico: 33 'patient' + 4 'paciente'; 11 'professional').
+ * A role do usuário LOGADO vem de `user_roles` (get_my_primary_role) e NÃO depende disso — estes
+ * conjuntos só importam em queries que listam OUTROS usuários por tipo. Usar sempre `.in(PATIENT_TYPES)`
+ * em vez de `.eq('type','paciente'|'patient')` evita listas incompletas (bug: profs EN sumiam de telas
+ * que filtravam só 'profissional'). Aditivo/superset → zero regressão.
+ */
+export const PATIENT_TYPES: string[] = ['paciente', 'patient'];
+export const PROFESSIONAL_TYPES: string[] = ['profissional', 'professional'];
+export const STUDENT_TYPES: string[] = ['aluno', 'student'];
+
+/**
  * Função para normalizar tipo de usuário.
  * Mapeia as diferentes strings (English/PT) para os tipos canônicos usados no sistema.
  */

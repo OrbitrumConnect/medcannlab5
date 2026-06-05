@@ -19,6 +19,7 @@ import {
   Clock, BarChart3, Heart, Mail, Check, RefreshCw, Info
 } from 'lucide-react'
 import { supabase } from '../lib/supabase'
+import { PROFESSIONAL_TYPES } from '../lib/userTypes' // V1.9.596 bilíngue type EN/PT
 import { useAuth } from '../contexts/AuthContext'
 import { useToast } from '../contexts/ToastContext'
 import { useConfirm } from '../contexts/ConfirmContext'
@@ -762,7 +763,7 @@ const TeamManagement: React.FC = () => {
     const { data } = await supabase
       .from('users')
       .select('id, name, email, type')
-      .in('type', ['profissional', 'admin'])
+      .in('type', [...PROFESSIONAL_TYPES, 'admin'])
       .neq('id', user!.id)
       .order('name')
     const currentMemberIds = new Set(team.map(t => t.team_member_id))

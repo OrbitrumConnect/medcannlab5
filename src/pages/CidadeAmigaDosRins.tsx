@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
+import { PATIENT_TYPES } from '../lib/userTypes' // V1.9.596 bilíngue type EN/PT
 import { useAuth } from '../contexts/AuthContext'
 import RenalFunctionModule from '../components/RenalFunctionModule'
 import {
@@ -382,7 +383,7 @@ const CidadeAmigaDosRins: React.FC = () => {
         const { data: patientsData, error: patientsError } = await supabase
           .from('users')
           .select('id, name, email')
-          .eq('type', 'paciente')
+          .in('type', PATIENT_TYPES)
           .order('name')
           .limit(50)
 
