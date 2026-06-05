@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **MedCannLab 3.0** — HealthTech/EdTech de Cannabis Medicinal com IA Nôa Esperança. Arquitetura por 3 eixos: **Clínica** (AEC + Relatório + Agendamento), **Ensino** (cursos + TRL), **Pesquisa** (forum + casos clínicos). Sistema cognitivo de 8 camadas onde **GPT é o último a falar e o primeiro a ser checado**.
 
-**Estado atual** (01/06/2026 ~late BRT, pós pull laptop + análise profunda — desktop entregou 50+ commits 30→01/06: plano DIARIO_30 100% executado (Tier 0+1+2) + 4 princípios meta novos cristalizados + Sprint A verify_jwt + batch 7 Edges + Risk Cockpit ELITE + bug crítico V1.9.546 consent_given + landing polish V1.9.547-557 + cron monthly-closing forense — HEAD `8ebc61d`).
+**Estado atual** (05/06/2026 ~cedo BRT, pós pull desktop 60 commits 02→05/06: FHIR PoC+Edge HAPI-validado V1.9.563-575 + Migração Base Clínica EMR completa V1.9.577-593 + 4 bugs cirúrgicos (Gisele V1.9.571+580 / Flávia V1.9.594 / 11 profs invisíveis V1.9.596) + AVALIACAO_360 5 auditorias paralelas. Sessão laptop 05/06: V1.9.597 PII residual Flávia "Cristina" sanitizado + V1.9.598 anti-órfão silencioso Fluxo A NewPatientForm + V1.9.599 housekeeping. HEAD `44d3331`).
 
 **Entregas 31/05** (sessão ~10h corridas, padrão arquitetura → UX → visual transversal → escalabilidade → bug login):
 - **V1.9.534**: DROP trigger `on_patient_created_triage` drift (auto-criava TRIAGE com doctor_id=Ricardo fallback violando consent-first) + fix bug Card "Conversa com a Nôa" (EvolutionDetailModal coluna `title` inexistente) + dead code NewPatientForm (2 INSERTs broken status='pending')
@@ -252,7 +252,7 @@ Memórias completas: `audit_pendencias_um_mes_pos_pbad_20_05.md` (Sprint 1) + me
 | Origem histórica | App nasceu na **Lovable** (no-code), CORS de send-email permite `*.lovable.app` |
 | Repos | hub (`amigo-connect-hub`) + origin (`medcannlab5`) |
 
-## Edge Functions (14 ativas — atualizado 30/05 ~18h BRT pós V1.9.506+517+518+519+520-526 batch flip verify_jwt)
+## Edge Functions (17 ativas — atualizado 05/06: +create-patient-auth V1.9.533 + fhir-export V1.9.569 + bulk-import-emr V1.9.587)
 
 ```
 🟢 CORE / FUNCIONAIS (verify_jwt=true — defesa em camadas restaurada)
@@ -286,7 +286,7 @@ Memórias completas: `audit_pendencias_um_mes_pos_pbad_20_05.md` (Sprint 1) + me
                                        Parqueado até trigger empírico OR sessão dedicada futura.
 ```
 
-**Cobertura defesa em camadas**: **93% (13/14 Edges)** rejeitam anônimo no ingress Supabase ANTES do código Deno.
+**Cobertura defesa em camadas**: **94% (16/17 Edges)** rejeitam anônimo no ingress Supabase ANTES do código Deno (só `sign-pdf-icp` false por design — Lock V1.9.299 PBAD).
 
 **Smoke 14/14 PASS** (V1.9.520-525): cada Edge testada com sem JWT + JWT inválido = 401.
 
@@ -296,7 +296,7 @@ Memórias completas: `audit_pendencias_um_mes_pos_pbad_20_05.md` (Sprint 1) + me
 
 *Adições pós-V1.9.299 (16-18/05)*: `sign-pdf-icp` + `cert-encrypt-password` (PBAD ICP-Brasil), `generate-nft-from-report` (V1.9.311 NFT consent), `renal-signal-extractor` (V1.9.307 sidecar DRC).
 
-*Audit 26/05 (Management API)*: total real **14 Edge Functions ativas** (descoberto `get_chat_history` órfã não documentada, caller a investigar — provavelmente legacy V1.9.84 Escriba). 5 triggers em auth.users.
+*Audit 05/06 (Management API)*: total real **17 Edge Functions ativas** (+3 desde 26/05: `create-patient-auth` V1.9.533 + `fhir-export` V1.9.569 + `bulk-import-emr` V1.9.587). `get_chat_history` v8 segue ACTIVE (caller a investigar — provável legacy V1.9.84 Escriba). 5 triggers em auth.users (incl. `trg_link_existing_user` V1.9.533).
 
 *Vetor segurança FECHADO V1.9.457 (26/05)*: `sign-pdf-icp` Edge v19 agora valida Authorization header obrigatório + resolve user via `auth.getUser(token)` + ownership check (`document.professional_id === user.id` OR admin OR SERVICE_ROLE_KEY bypass). Algoritmo PBAD AD-RB integralmente preservado (lock V1.9.299 intocado). Smoke 1+2 validados (401 sem auth e com ANON_KEY role=anon).
 
