@@ -45,6 +45,8 @@ interface CreatedPatientResult {
   // V1.9.533: senha provisória gerada pela Edge create-patient-auth (opcional)
   provisionalPassword?: string
   authCreated?: boolean
+  // V1.9.598: mensagem clara se Edge auth falhou (anti-orfao silencioso)
+  authError?: string
 }
 
 const NewPatientForm: React.FC = () => {
@@ -538,12 +540,16 @@ const NewPatientForm: React.FC = () => {
       // V1.9.533 — Edge create-patient-auth cria auth.users com UUID forçado
       // (resolve gap "infra pre-cadastro silencioso → órfão sem login"
       //  identificado empíricamente no caso Flávia 30/05).
-      // Try-catch silencioso: se falhar, frontend continua com QR/link fallback.
+      // V1.9.598: anti-orfao silencioso — captura erro visivel para o medico
+      // (4 orfaos pre-V1.9.533: Marne/Milton/Badhia/Carlos; profilatico pre-Marco 2).
       let provisionalPassword: string | undefined
       let authCreated = false
+      let authError: string | undefined
       try {
         const isRealEmail = patientEmail && !patientEmail.endsWith('@medcannlab.temp')
-        if (isRealEmail) {
+        if (!isRealEmail) {
+          authError = 'Email temporário detectado — paciente sem login até informar email real.'
+        } else {
           const { data: authResult, error: authErr } = await supabase.functions.invoke(
             'create-patient-auth',
             {
@@ -561,18 +567,24 @@ const NewPatientForm: React.FC = () => {
           } else if (authResult?.already_exists) {
             authCreated = true // conta já existia (idempotente)
           } else if (authErr) {
-            console.warn('[V1.9.533] create-patient-auth falhou:', authErr.message)
+            authError = `Edge create-patient-auth falhou: ${authErr.message}. Paciente sem login ainda — tente reenviar via "Gerar nova senha" ou compartilhe o link QR abaixo.`
+            console.warn('[V1.9.598] create-patient-auth falhou:', authErr.message)
+          } else if (authResult && !authResult.success) {
+            authError = `Edge retornou sem sucesso: ${authResult?.error || 'motivo desconhecido'}. Paciente sem login — use o QR abaixo.`
+            console.warn('[V1.9.598] create-patient-auth no-success:', authResult)
           }
         }
-      } catch (e) {
-        // Fallback silencioso — médico ainda tem QR/link
-        console.warn('[V1.9.533] Edge invoke exception:', e)
+      } catch (e: any) {
+        // V1.9.598: NÃO silencia mais — mostra ao médico claramente
+        authError = `Erro técnico ao criar conta auth: ${e?.message || String(e)}. Paciente cadastrado mas SEM LOGIN. Compartilhe o QR abaixo OU tente cadastrar de novo.`
+        console.warn('[V1.9.598] Edge invoke exception:', e)
       }
 
       // Gerar link de convite
       const inviteLink = generateInviteLink(currentProfessional.id)
 
       // Mostrar tela de sucesso com QR Code (V1.9.533: + senha provisória se criada)
+      // V1.9.598: + authError se houver falha do Edge (médico vê claramente, anti-órfão silencioso)
       setCreatedPatient({
         id: patientId,
         name: formData.name,
@@ -580,7 +592,8 @@ const NewPatientForm: React.FC = () => {
         code: patientCode,
         inviteLink,
         provisionalPassword,
-        authCreated
+        authCreated,
+        authError
       })
       setStep(4) // Step 4 = Tela de sucesso
 
@@ -773,6 +786,25 @@ const NewPatientForm: React.FC = () => {
                 </div>
               </div>
             </div>
+
+            {/* V1.9.598 — Aviso claro se Edge create-patient-auth falhou (anti-orfão silencioso) */}
+            {createdPatient.authError && !createdPatient.authCreated && (
+              <div className="bg-gradient-to-br from-red-500/10 to-orange-500/10 border border-red-500/40 rounded-xl p-6 mb-6">
+                <div className="flex items-center space-x-2 mb-3">
+                  <AlertCircle className="w-6 h-6 text-red-400" />
+                  <h3 className="text-xl font-bold text-white">Atenção: conta de login NÃO criada</h3>
+                </div>
+                <p className="text-slate-200 text-sm mb-3">
+                  <strong>O paciente foi cadastrado no prontuário</strong>, mas a conta de acesso (login/senha) <strong>não pôde ser criada automaticamente</strong>.
+                </p>
+                <p className="text-red-300 text-xs mb-3 font-mono bg-slate-900/40 rounded p-2 border border-red-500/30">
+                  {createdPatient.authError}
+                </p>
+                <p className="text-slate-300 text-sm">
+                  <strong>Solução imediata:</strong> use o QR Code/link abaixo para o paciente criar a própria conta. O sistema vincula automaticamente quando ele cadastrar com este email.
+                </p>
+              </div>
+            )}
 
             {/* V1.9.533 — Senha provisória (se Edge create-patient-auth criou conta) */}
             {createdPatient.provisionalPassword && (
