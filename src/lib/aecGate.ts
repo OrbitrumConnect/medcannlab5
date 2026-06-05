@@ -19,6 +19,7 @@
  */
 
 import { supabase } from './supabase'
+import { getOfficialDoctorName } from './officialDoctors' // V1.9.601 substitui email.includes
 
 export interface DoctorContext {
   doctorId: string
@@ -77,7 +78,7 @@ export async function getOrPromptDoctorContext(patientId: string | null | undefi
           .maybeSingle()
 
         if (prof?.id) {
-          const doctorName = prof.name || formatDoctorName(prof.email)
+          const doctorName = prof.name || formatDoctorName(prof.id, prof.email)
           return {
             hasContext: true,
             doctor: { doctorId: prof.id, doctorName },
@@ -184,12 +185,19 @@ export async function bindPatientToDoctor(
 }
 
 /**
- * Formata nome do médico a partir do email (fallback se name vazio).
+ * Formata nome do médico (fallback se name vazio).
+ * V1.9.601 — prioriza lookup por UUID (autoritativo via `getOfficialDoctorName`),
+ * mantém fallback por email pra compat com casos onde id ainda não chegou.
  */
-function formatDoctorName(email?: string): string {
-  if (!email) return 'Médico'
-  if (email.includes('rrvalenca')) return 'Dr. Ricardo Valença'
-  if (email.includes('eduardo.faveret') || email.includes('faveret')) return 'Dr. Eduardo Faveret'
+function formatDoctorName(id?: string, email?: string): string {
+  // V1.9.601 — fonte canônica via UUID (banco public.users.is_official=true)
+  const official = getOfficialDoctorName(id)
+  if (official) return official
+  // Fallback legacy email-based (legado pré-V1.9.601, p/ caller sem id)
+  if (email) {
+    if (email.includes('rrvalenca')) return 'Dr. Ricardo Valença'
+    if (email.includes('eduardo.faveret') || email.includes('faveret')) return 'Dr. Eduardo Faveret'
+  }
   return 'Médico'
 }
 

@@ -5,6 +5,7 @@ import { useAuth } from '../contexts/AuthContext'
 import { useToast } from '../contexts/ToastContext'
 import { supabase } from '../lib/supabase'
 import { getVinculoStatus, type VinculoStatus, type VinculoSource } from '../lib/vinculoStatus'
+import { isRicardoValenca, isEduardoFaveret } from '../lib/officialDoctors' // V1.9.601 substitui email.includes
 import {
   Clock,
   Calendar,
@@ -249,8 +250,9 @@ const PatientAppointments: React.FC = () => {
 
         // Mapear dados do banco para ProfessionalCard
         const mapped: ProfessionalCard[] = data.map((prof: any) => {
-          const isRicardo = prof.email?.includes('ricardo') || prof.name?.toLowerCase().includes('ricardo')
-          const isEduardo = prof.email?.includes('eduardo') || prof.name?.toLowerCase().includes('eduardo')
+          // V1.9.601 — prioriza UUID (autoritativo via officialDoctors), fallback nome (legado pré-UUID)
+          const isRicardo = isRicardoValenca(prof.id) || prof.name?.toLowerCase().includes('ricardo')
+          const isEduardo = isEduardoFaveret(prof.id) || prof.name?.toLowerCase().includes('eduardo')
 
           if (isRicardo) {
             const fallback = FALLBACK_PROFESSIONALS.find(f => f.id === 'ricardo-valenca')

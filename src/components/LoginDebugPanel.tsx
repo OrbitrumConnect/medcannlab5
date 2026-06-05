@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { useAuth } from '../contexts/AuthContext'
 import { supabase } from '../lib/supabase'
 import { User, Shield, AlertCircle, CheckCircle, RefreshCw } from 'lucide-react'
+import { isOfficialDoctor } from '../lib/officialDoctors' // V1.9.601 substitui email.includes('admin'|'philip')
 
 interface DebugInfo {
   authUser: any
@@ -43,7 +44,8 @@ const LoginDebugPanel: React.FC = () => {
         userType = metadata.user_type
       } else if (metadata.role) {
         userType = metadata.role
-      } else if (authUser.email?.includes('admin') || authUser.email?.includes('philip')) {
+      } else if (isOfficialDoctor(authUser.id)) {
+        // V1.9.601 — substituiu email.includes('admin'|'philip') por UUID canônico
         userType = 'admin'
       }
 
@@ -224,10 +226,11 @@ const LoginDebugPanel: React.FC = () => {
                 <span className="text-sm">✅ Usando fallback 'patient'</span>
               </div>
             )}
-            {debugInfo.authUser.email?.includes('admin') && debugInfo.userType !== 'admin' && (
+            {/* V1.9.601 — substituiu email.includes('admin') por UUID canônico (officialDoctors). */}
+            {isOfficialDoctor(debugInfo.authUser.id) && debugInfo.userType !== 'admin' && (
               <div className="flex items-center space-x-2 text-red-400">
                 <AlertCircle className="w-4 h-4" />
-                <span className="text-sm">❌ Email admin mas tipo não é admin</span>
+                <span className="text-sm">❌ UUID de médico oficial mas tipo não é admin</span>
               </div>
             )}
           </div>

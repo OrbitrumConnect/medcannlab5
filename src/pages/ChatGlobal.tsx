@@ -3,6 +3,7 @@ import { useAuth } from '../contexts/AuthContext'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { type UserType, PROFESSIONAL_TYPES } from '../lib/userTypes' // V1.9.596 bilíngue type EN/PT
+import { isEduardoFaveret } from '../lib/officialDoctors' // V1.9.601 substitui email.includes('faveret')
 import { useNoaPlatform } from '../contexts/NoaPlatformContext'
 
 // Declaração do tipo para BroadcastChannel
@@ -1587,7 +1588,7 @@ const ChatGlobal: React.FC = () => {
           )}
 
           {/* Painel de Moderação Integrado (apenas para admins e Eduardo Faveret) */}
-          {showModeration && (isAdmin || user?.email?.includes('faveret')) && (
+          {showModeration && (isAdmin || isEduardoFaveret(user?.id)) && (
             <div className="lg:col-span-1">
               <div className="bg-slate-800/80 rounded-lg p-6 border border-slate-700 h-[600px] overflow-y-auto">
                 <h3 className="text-lg font-semibold text-white mb-4">🛡️ Moderação</h3>
@@ -2191,7 +2192,7 @@ const ChatGlobal: React.FC = () => {
       )}
 
       {/* Painel de Moderação (apenas para admins e Eduardo Faveret) */}
-      {showModeration && (isAdmin || user?.email?.includes('faveret')) && (
+      {showModeration && (isAdmin || isEduardoFaveret(user?.id)) && (
         <div className="bg-slate-800/80 rounded-lg p-6 border border-slate-700">
           <h3 className="text-xl font-bold text-white mb-6">🛡️ Painel de Moderação</h3>
 
