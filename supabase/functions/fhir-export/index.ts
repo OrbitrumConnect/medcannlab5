@@ -13,6 +13,10 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
 const BASE = 'urn:medcannlab'
+// V1.9.595 — Base URL ABSOLUTA p/ os fullUrl dos recursos: `urn:` não resolve referência
+// relativa (`Patient/<id>`) → validador FHIR/HAPI rejeita. Paridade com o lib já validado
+// (src/lib/fhir, HAPI 30→0 erros). BASE fica só p/ os system identifiers/extensões internos.
+const RESOURCE_BASE = 'https://fhir.medcannlab.com.br'
 const INTEGRITY_HASH_URL = `${BASE}/fhir/StructureDefinition/content-integrity-hash-sha256`
 const SECTION_NS = `${BASE}/fhir/CodeSystem/aec-section`
 
@@ -77,6 +81,8 @@ function buildConsent(report: any, patientRef: any) {
     resourceType: 'Consent', id: `${report.id}-consent`, status: 'active',
     scope: { coding: [{ system: 'http://terminology.hl7.org/CodeSystem/consentscope', code: 'patient-privacy' }] },
     category: [{ coding: [{ system: 'http://loinc.org', code: '59284-0', display: 'Patient Consent' }] }],
+    // ppc-1: Consent R4 exige Policy OU PolicyRule. CodeableConcept text-only é válido. V1.9.595.
+    policyRule: { text: 'Consentimento informado para Avaliação Clínica Inicial (AEC) — MedCannLab' },
     patient: patientRef, ...(report.consent_at ? { dateTime: report.consent_at } : {}),
   }
 }
@@ -125,13 +131,14 @@ function clinicalReportToFhirBundle(report: any) {
   const composition = buildComposition(report, content, patientRef, practitionerRef, clinicalImpressions, consent, date)
   const provenance = buildProvenance(report, ref('Composition', composition.id), practitionerRef, date)
   const entries: any[] = []
-  entries.push({ fullUrl: `${BASE}/Composition/${composition.id}`, resource: composition })
-  entries.push({ fullUrl: `${BASE}/Patient/${patient.id}`, resource: patient })
-  if (practitioner) entries.push({ fullUrl: `${BASE}/Practitioner/${practitioner.id}`, resource: practitioner })
-  for (const ci of clinicalImpressions) entries.push({ fullUrl: `${BASE}/ClinicalImpression/${ci.id}`, resource: ci })
-  if (consent) entries.push({ fullUrl: `${BASE}/Consent/${consent.id}`, resource: consent })
-  if (provenance) entries.push({ fullUrl: `${BASE}/Provenance/${provenance.id}`, resource: provenance })
-  return { resourceType: 'Bundle', id: `${report.id}-document`, type: 'document', timestamp: date || undefined, entry: entries }
+  entries.push({ fullUrl: `${RESOURCE_BASE}/Composition/${composition.id}`, resource: composition })
+  entries.push({ fullUrl: `${RESOURCE_BASE}/Patient/${patient.id}`, resource: patient })
+  if (practitioner) entries.push({ fullUrl: `${RESOURCE_BASE}/Practitioner/${practitioner.id}`, resource: practitioner })
+  for (const ci of clinicalImpressions) entries.push({ fullUrl: `${RESOURCE_BASE}/ClinicalImpression/${ci.id}`, resource: ci })
+  if (consent) entries.push({ fullUrl: `${RESOURCE_BASE}/Consent/${consent.id}`, resource: consent })
+  if (provenance) entries.push({ fullUrl: `${RESOURCE_BASE}/Provenance/${provenance.id}`, resource: provenance })
+  // bdl-9: document Bundle exige identifier global estável (system + value). V1.9.595.
+  return { resourceType: 'Bundle', id: `${report.id}-document`, type: 'document', identifier: { system: `${RESOURCE_BASE}/fhir/document`, value: report.id }, timestamp: date || undefined, entry: entries }
 }
 
 Deno.serve(async (req: Request) => {
