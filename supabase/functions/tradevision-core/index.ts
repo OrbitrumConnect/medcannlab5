@@ -8,6 +8,23 @@ import { assertPatientHasDoctorContext } from "../_shared/aec_gate.ts"
 import { calcCostUsd, getProviderFor, PRICING_VERSION } from "../_shared/modelPricing.ts"
 
 // ============================================================================
+// [V1.9.603] Tipo bilingue EN/PT inline — Edge nao importa de src/lib/userTypes.ts
+// ----------------------------------------------------------------------------
+// users.type tem valores EN e PT misturados (empirico: 33 'patient' + 4 'paciente';
+// 11 'professional' + 0 'profissional'). Edge filtrava só 'professional' (EN) →
+// profs cadastrados como 'profissional' (PT) sumiam de queries Core.
+//
+// V1.9.596 (desktop) cobriu 9 spots no frontend via PROFESSIONAL_TYPES em
+// src/lib/userTypes.ts. Os 2 spots restantes ficavam aqui no Edge (linhas
+// 1333 e 2803 da versao antiga). Edge Deno NAO pode importar de src/lib/,
+// entao duplicamos consciente (mesmo padrao V1.9.35 clinicalScoreCalculator).
+//
+// Aditivo/superset = ZERO REGRESSAO. Profs EN continuam visiveis + profs PT
+// que sumiam agora aparecem. Type-check verde.
+// ============================================================================
+const PROFESSIONAL_TYPES_EDGE: string[] = ['profissional', 'professional']
+
+// ============================================================================
 // [V1.9.35] Clinical Score Calculator — INLINE dentro do index.ts
 // ----------------------------------------------------------------------------
 // Antes (V1.9.33) estava em ../_shared/scoreCalculator.ts — bundler não pegou.
@@ -1330,7 +1347,7 @@ async function handleFinalizeAssessment(params: {
                     .from('users')
                     .select('id, type')
                     .eq('id', candidateId)
-                    .eq('type', 'professional')
+                    .in('type', PROFESSIONAL_TYPES_EDGE) // V1.9.603 bilingue EN/PT (era .eq 'professional')
                     .maybeSingle();
                 return !!data?.id;
             } catch {
@@ -2800,7 +2817,7 @@ Finalizar SEMPRE com:
             const { data: professionals } = await supabaseClient
                 .from('users')
                 .select('id, name')
-                .eq('type', 'professional')
+                .in('type', PROFESSIONAL_TYPES_EDGE) // V1.9.603 bilingue EN/PT (era .eq 'professional')
 
             if (professionals && professionals.length > 0) {
                 const normMsg = message ? message.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '') : ''
