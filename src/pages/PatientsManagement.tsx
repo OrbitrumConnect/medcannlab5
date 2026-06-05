@@ -2601,16 +2601,12 @@ const PatientsManagement: React.FC<PatientsManagementProps> = ({ embedded = fals
               <UserPlus className="w-4 h-4 text-emerald-400" />
               <span>Cadastro Manual</span>
             </button>
-            <button
-              onClick={() => {
-                setShowNewPatientMenu(false)
-                navigate('/app/new-patient?mode=csv')
-              }}
-              className="w-full text-left px-3 py-2 rounded-md hover:bg-slate-700 transition-colors text-white flex items-center gap-2 text-sm"
-            >
-              <FileText className="w-4 h-4 text-blue-400" />
-              <span>Importar CSV</span>
-            </button>
+            {/* V1.9.593 — "Importar CSV" (mode=csv) APOSENTADO: redundante com o wizard de
+                Migração de Base Clínica (superset: proveniência + auth via Edge + dedup +
+                idempotência + prontuário completo). PatientImportModal (órfão, gravava na
+                tabela profiles legacy) deletado no mesmo commit. O código inline mode=csv do
+                NewPatientForm fica inacessível pelo menu (gut completo = passe dedicado, pois
+                createPatientFromData é compartilhada com o modo drag-drop). */}
             {/* V1.9.589 — Migração de Base Clínica (prontuário completo de outro EMR) */}
             <button
               onClick={() => {
