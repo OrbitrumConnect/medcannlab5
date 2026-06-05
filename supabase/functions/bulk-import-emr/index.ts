@@ -79,7 +79,13 @@ Deno.serve(async (req) => {
           address: p.address, blood_type: p.blood_type, type: 'patient',
           source_external_id: ns(p.source_external_id), import_batch_id: body.import_batch_id,
         }).eq('id', newId)
-        if (uErr) throw uErr
+        if (uErr) {
+          // V1.9.592 — createUser já criou a identidade (auth+public via trigger); o UPDATE falhou →
+          // COMPENSA deletando-a, senão fica órfã SEM source_external_id (invisível ao cleanup-por-proveniência).
+          try { await admin.from('users').delete().eq('id', newId) } catch { /* best-effort */ }
+          try { await admin.auth.admin.deleteUser(newId) } catch { /* best-effort */ }
+          throw uErr
+        }
         idMap.set(p.source_external_id, newId)
         created++
       } catch (e) {
