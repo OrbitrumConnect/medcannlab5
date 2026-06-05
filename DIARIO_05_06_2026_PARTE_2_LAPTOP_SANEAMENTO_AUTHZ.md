@@ -261,4 +261,63 @@ Antes: pra entrar como moderador o sistema checava se "faveret" estava no email.
 
 ---
 
-**Estado de saída**: HEAD esperado pós-commit deste diário + memória authz UUID singleton. Próxima frente: Item 3 Role source Edges (Core, exige slug-test paralelo pattern V1.9.506/566).
+**Estado de saída** (atualizado pós-V1.9.603+604): HEAD `fd2e296` V1.9.603 (Item 5 type EN/PT Core deployed v428) + V1.9.604 docs anexo. Próxima frente: Item 3 Role source Edges (3 spots Core empíricamente confirmados, sessão fresca recomendada).
+
+---
+
+## 🚀 BLOCO L — V1.9.603 type EN/PT Core deployed + V1.9.604 docs
+
+Após Pedro autorizar deploy ("PAT + CLI prossiga"):
+
+### L.1 — Deploy via SUPABASE_ACCESS_TOKEN env var (pattern descoberto)
+
+Primeira tentativa `npx supabase functions deploy tradevision-core` falhou **401 Unauthorized** (CLI não autenticado interativo via `supabase login`).
+
+Workaround empírico: usar mesmo PAT da Management API como env var:
+
+```bash
+SUPABASE_ACCESS_TOKEN="<PAT_DO_DONO>" npx supabase functions deploy tradevision-core \
+  --project-ref itdjkfubfzmvmuxxjoae
+# Deployed Functions on project itdjkfubfzmvmuxxjoae: tradevision-core ✅
+```
+
+Versão incrementou **v427 → v428** automaticamente.
+
+### L.2 — Smoke matriz pós-deploy 3/3 PASS
+
+| Smoke | Esperado | Real |
+|---|---|---|
+| 1. Versão atualizada via Management API | v428 ACTIVE | **v428 ACTIVE** ✅ |
+| 2. curl sem JWT → 401 | HTTP 401 | `HTTP: 401 UNAUTHORIZED_NO_AUTH_HEADER` ✅ |
+| 3. verify_jwt=true preservado (V1.9.506) | true | **true** ✅ |
+
+**Defesa em camadas restaurada V1.9.506 intacta** — Supabase rejeita request anônimo ANTES de chegar à Edge Deno. Locks 8 intocados.
+
+### L.3 — V1.9.604 documentação + memória cristalizada
+
+Memória nova: `reference_deploy_edge_supabase_access_token_env_var_05_06`
+- Pattern canônico de deploy Edge sem `supabase login`
+- 6 casos empíricos categorizados (com slug-test vs direto)
+- 4 anti-padrões cravados
+- Smoke matriz 3 checks documentada
+
+Pra leigo: descobri que mesmo "passe" de acesso ao banco serve pra atualizar a IA Nôa em produção, sem precisar logar com email/senha em browser. Atualizei a IA com a correção bilíngue inglês/português + confirmei que continua protegida contra acessos sem autorização.
+
+### L.4 — Sessão laptop 05/06 FINAL: 8 commits totais
+
+| # | Commit | V1.9.X |
+|---|---|---|
+| 1 | `4982306` | V1.9.597 PII Cristina sanitizado |
+| 2 | `44d3331` | V1.9.598 anti-órfão silencioso Fluxo A |
+| 3 | `3e43305` | V1.9.599 housekeeping (drift roles + CLAUDE.md parcial) |
+| 4 | `84ed0f6` | V1.9.600 sync stales restantes CLAUDE.md |
+| 5 | `437afcd` | V1.9.601 authz UUID singleton (4 spots) |
+| 6 | `ded5091` | V1.9.602 DIARIO + memória authz |
+| 7 | `fd2e296` | V1.9.603 type EN/PT Core (2 spots) + DEPLOYED v428 |
+| 8 | (este commit) | V1.9.604 anexo diário + memória deploy pattern |
+
+**8 commits, 32 pushes (4 refs × 8), 3 memórias novas, locks 8 intocados, type-check verde, smoke matriz por papel onde pertinente. Deploy Edge produção bem-sucedido.**
+
+### L.5 — Frase âncora final 05/06 laptop
+
+> *"8 commits cirúrgicos consecutivos: PII Cristina sanitizado → anti-órfão fluxo cadastro → housekeeping → sync stales CLAUDE.md → UUID singleton authz → docs+memória → type bilíngue Core → deploy Edge v428. Princípio meta cravado por Pedro aplicado consistentemente: 'avaliar sempre analisar — temos diário/PAT/memória pra checar dúvida' — investiguei antes de cada Edit, smoke por papel quando RLS, escopo literal item-a-item, push 4 refs sempre, locks 8 intocados. Pattern deploy SUPABASE_ACCESS_TOKEN env var descoberto e cristalizado (reusável em sessões Claude headless). 5 dos 10 itens do BLOCO 12 fechados (4 laptop + 1 desktop). Sistema escalável triple A, zero regressão verificada empíricamente."*
