@@ -1078,18 +1078,7 @@ const ClinicalReports: React.FC<ClinicalReportsProps> = ({ className = '', onSha
           <div className="flex items-center space-x-1.5">
             <button
               onClick={() => loadSharedReports()}
-              className="px-2.5 py-1 text-xs rounded-md transition-colors"
-              style={{
-                background: 'linear-gradient(135deg, #00C16A 0%, #13794f 100%)',
-                color: '#FFFFFF',
-                boxShadow: '0 4px 12px rgba(0, 193, 106, 0.3)'
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.background = 'linear-gradient(135deg, #00D97A 0%, #158A5F 100%)'
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.background = 'linear-gradient(135deg, #00C16A 0%, #13794f 100%)'
-              }}
+              className="px-2.5 py-1 text-xs rounded-md transition-all bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 hover:bg-emerald-500/25 hover:scale-[1.02]"
               title="Recarregar relatórios"
             >
               🔄 Atualizar
@@ -1111,32 +1100,11 @@ const ClinicalReports: React.FC<ClinicalReportsProps> = ({ className = '', onSha
             <button
               key={key}
               onClick={() => setFilterStatus(key as any)}
-              className="flex items-center space-x-1 px-2.5 py-1.5 rounded-md text-xs transition-colors"
-              style={
+              className={`flex items-center space-x-1 px-2.5 py-1.5 rounded-md text-xs transition-all border ${
                 filterStatus === key
-                  ? {
-                    background: 'linear-gradient(135deg, #00C16A 0%, #13794f 100%)',
-                    color: '#FFFFFF',
-                    boxShadow: '0 4px 12px rgba(0, 193, 106, 0.3)'
-                  }
-                  : {
-                    background: 'rgba(15, 36, 60, 0.7)',
-                    color: '#C8D6E5',
-                    border: '1px solid rgba(0, 193, 106, 0.12)'
-                  }
-              }
-              onMouseEnter={(e) => {
-                if (filterStatus !== key) {
-                  e.currentTarget.style.background = 'rgba(0, 193, 106, 0.1)'
-                  e.currentTarget.style.borderColor = 'rgba(0, 193, 106, 0.2)'
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (filterStatus !== key) {
-                  e.currentTarget.style.background = 'rgba(15, 36, 60, 0.7)'
-                  e.currentTarget.style.borderColor = 'rgba(0, 193, 106, 0.12)'
-                }
-              }}
+                  ? 'bg-emerald-500/15 border-emerald-500/30 text-emerald-300 scale-[1.02]'
+                  : 'bg-slate-900/50 border-emerald-500/10 text-slate-300 hover:bg-emerald-500/10 hover:border-emerald-500/20'
+              }`}
             >
               {icon}
               <span>{label}</span>
@@ -1396,8 +1364,7 @@ const ClinicalReports: React.FC<ClinicalReportsProps> = ({ className = '', onSha
                     })
                     setAppliedRationalities(applied)
                   }}
-                  className="flex items-center space-x-1 px-2.5 py-1.5 rounded-md transition-colors text-white text-xs"
-                  style={{ background: 'linear-gradient(135deg, #00C16A 0%, #13794f 100%)' }}
+                  className="flex items-center space-x-1 px-2.5 py-1.5 rounded-md transition-all text-emerald-300 text-xs bg-emerald-500/15 border border-emerald-500/30 hover:bg-emerald-500/25 hover:scale-[1.02]"
                   title="Abrir para revisar, escrever nota clínica e devolver ao paciente"
                 >
                   <Eye className="w-3.5 h-3.5" />
