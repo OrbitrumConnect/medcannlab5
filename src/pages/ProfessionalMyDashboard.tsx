@@ -37,6 +37,7 @@ import IntegratedWorkstation from '../components/IntegratedWorkstation'
 import ProfessionalSchedulingWidget from '../components/ProfessionalSchedulingWidget'
 import ProfessionalChatSystem from '../components/ProfessionalChatSystem'
 import RenalSuggestionsCard from '../components/RenalSuggestionsCard'
+import RenalSuggestionsCardElite from '../components/RenalSuggestionsCardElite' // V1.9.609 preview elite (gate ?renal_elite=1)
 import NeuroSuggestionsCardPlaceholder from '../components/NeuroSuggestionsCardPlaceholder'
 // V1.9.515 (Pedro 30/05) — Fix: card AECs Interrompidas estava em ProfessionalDashboard.tsx
 // LEGACY (nunca renderizado pq ProfessionalDashboardRouter aponta sempre pra
@@ -959,7 +960,11 @@ const ProfessionalMyDashboard: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-3">
             {/* Renal (DRC) — V1.9.307 RLS BD + V1.9.477 prop compact pra
                 renderizar OK em col estreita do grid 4-col 2xl */}
-            <RenalSuggestionsCard compact />
+            {/* V1.9.609 — preview elite gated: ?renal_elite=1 mostra wrapper (sinais precoces +
+                conduta/evidência); default = card normal intocado (zero regressão). */}
+            {new URLSearchParams(window.location.search).get('renal_elite') === '1'
+              ? <RenalSuggestionsCardElite />
+              : <RenalSuggestionsCard compact />}
 
             {/* Neuro (TEA/TDAH/TOD) — V1.9.475 embrião visual */}
             <NeuroSuggestionsCardPlaceholder />
