@@ -40,6 +40,7 @@ import RenalSuggestionsCard from '../components/RenalSuggestionsCard'
 import RenalSuggestionsCardElite from '../components/RenalSuggestionsCardElite' // V1.9.609 preview elite (gate ?renal_elite=1)
 import NeuroSuggestionsCardReal from '../components/NeuroSuggestionsCardReal' // V1.9.611-F card real (default)
 import ReportedSignalsCardReal from '../components/ReportedSignalsCardReal' // V1.9.612 Sinais do Relato (DOR/SONO/ANSIEDADE)
+import CannabisRelatoCardReal from '../components/CannabisRelatoCardReal' // V1.9.613 Cannabis no Relato (VONTADE/USO/RECEIO)
 // V1.9.515 (Pedro 30/05) — Fix: card AECs Interrompidas estava em ProfessionalDashboard.tsx
 // LEGACY (nunca renderizado pq ProfessionalDashboardRouter aponta sempre pra
 // ProfessionalMyDashboard). Movido pra cá após bloco Sidecars Cognitivos.
@@ -978,14 +979,10 @@ const ProfessionalMyDashboard: React.FC = () => {
                 dado. Auto-extraído do relato pela Edge report-signal-extractor. */}
             <ReportedSignalsCardReal />
 
-            <div className="rounded-xl border border-dashed border-slate-700/40 bg-slate-900/30 p-4 flex flex-col items-center justify-center min-h-[200px] text-center">
-              <Activity className="w-6 h-6 text-amber-400/30 mb-2" />
-              <span className="text-[11px] font-semibold text-slate-400">Endócrino</span>
-              <span className="text-[10px] text-slate-500 mt-1">Pré-Fase A · roadmap</span>
-              <span className="text-[9px] text-slate-600 italic mt-2 leading-tight">
-                Sidecar futuro · quando trigger empírico materializar
-              </span>
-            </div>
+            {/* V1.9.613 — Cannabis no Relato (VONTADE/USO/RECEIO) substitui o placeholder
+                "Endócrino". A autonomia do paciente (vontade/curiosidade/uso) na fala dele,
+                trazida ao médico. Poucos casos hoje, alto valor + cresce. */}
+            <CannabisRelatoCardReal />
           </div>
         </div>
 
