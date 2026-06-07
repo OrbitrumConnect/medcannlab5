@@ -38,8 +38,7 @@ import ProfessionalSchedulingWidget from '../components/ProfessionalSchedulingWi
 import ProfessionalChatSystem from '../components/ProfessionalChatSystem'
 import RenalSuggestionsCard from '../components/RenalSuggestionsCard'
 import RenalSuggestionsCardElite from '../components/RenalSuggestionsCardElite' // V1.9.609 preview elite (gate ?renal_elite=1)
-import NeuroSuggestionsCardPlaceholder from '../components/NeuroSuggestionsCardPlaceholder'
-import NeuroSuggestionsCardReal from '../components/NeuroSuggestionsCardReal' // V1.9.611 card real (gate ?neuro_real=1)
+import NeuroSuggestionsCardReal from '../components/NeuroSuggestionsCardReal' // V1.9.611-F card real (default)
 // V1.9.515 (Pedro 30/05) — Fix: card AECs Interrompidas estava em ProfessionalDashboard.tsx
 // LEGACY (nunca renderizado pq ProfessionalDashboardRouter aponta sempre pra
 // ProfessionalMyDashboard). Movido pra cá após bloco Sidecars Cognitivos.
@@ -967,20 +966,10 @@ const ProfessionalMyDashboard: React.FC = () => {
               ? <RenalSuggestionsCardElite />
               : <RenalSuggestionsCard compact />}
 
-            {/* Neuro (TEA/TDAH/TOD) — V1.9.611: ?neuro_real=1 mostra card REAL
-                (lê clinical_neuro_signals, paginação < >, aprovar/rejeitar) pro
-                Eduardo VER antes de virar default; default = embrião hardcoded
-                intocado (zero regressão até GO formal Eduardo Fase B). */}
-            {(() => {
-              // Gate ?neuro_real=1 STICKY (localStorage) — abre uma vez e fica ativo
-              // mesmo se o param sumir ao navegar. ?neuro_real=0 desliga.
-              const p = new URLSearchParams(window.location.search).get('neuro_real')
-              if (p === '1') { try { localStorage.setItem('neuro_real', '1') } catch { /* ok */ } }
-              else if (p === '0') { try { localStorage.removeItem('neuro_real') } catch { /* ok */ } }
-              let on = p === '1'
-              if (!on) { try { on = localStorage.getItem('neuro_real') === '1' } catch { /* ok */ } }
-              return on ? <NeuroSuggestionsCardReal /> : <NeuroSuggestionsCardPlaceholder />
-            })()}
+            {/* Neuro (TEA/TDAH/TOD/EPILEPSIA) — V1.9.611-F: card REAL é o DEFAULT
+                (Eduardo deu OK). Lê clinical_neuro_signals, paginação < >, aprovar/
+                rejeitar. RLS: cada médico vê os sinais dos seus pacientes; admin vê todos. */}
+            <NeuroSuggestionsCardReal />
 
             {/* Slots futuros placeholders — roadmap institucional visível */}
             <div className="rounded-xl border border-dashed border-slate-700/40 bg-slate-900/30 p-4 flex flex-col items-center justify-center min-h-[200px] text-center">
