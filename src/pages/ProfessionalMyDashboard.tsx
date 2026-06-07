@@ -864,8 +864,9 @@ const ProfessionalMyDashboard: React.FC = () => {
             </Link>
           </div>
 
-          {/* Analisar Paciente — card ao lado da Carteira */}
-          <section className="flex-1 min-w-0 rounded-xl border border-emerald-500/20 bg-gradient-to-br from-emerald-500/5 to-transparent p-4 flex flex-col justify-center">
+          {/* Analisar Paciente — card ao lado da Carteira (V1.9.611-I: largura
+              limitada ~50%, era flex-1 esticado com espaço vazio) */}
+          <section className="flex-1 min-w-0 lg:max-w-md rounded-xl border border-emerald-500/20 bg-gradient-to-br from-emerald-500/5 to-transparent p-4 flex flex-col justify-center">
             <h2 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2 flex items-center gap-2">
               <Stethoscope className="w-4 h-4 text-emerald-400" />
               Analisar Paciente
