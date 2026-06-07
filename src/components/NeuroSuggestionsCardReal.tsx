@@ -12,8 +12,9 @@
  * RLS: médico vê sinais de paciente com quem tem appointment OU admin (V1.9.611).
  * Z2: sinaliza, não diagnostica — Eduardo decide.
  */
-import { Brain, CheckCircle, XCircle, FlaskConical, ChevronLeft, ChevronRight } from 'lucide-react'
+import { Brain, CheckCircle, XCircle, FlaskConical, ChevronLeft, ChevronRight, ExternalLink } from 'lucide-react'
 import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 
 interface NeuroSignal {
@@ -50,6 +51,7 @@ function transtornoBadge(t: string): string {
 }
 
 export default function NeuroSuggestionsCardReal() {
+  const navigate = useNavigate()
   const [cases, setCases] = useState<NeuroCase[]>([])
   const [page, setPage] = useState(1) // 1-indexed
   const [loading, setLoading] = useState(true)
@@ -164,9 +166,14 @@ export default function NeuroSuggestionsCardReal() {
       {/* Body — caso atual */}
       <div className="px-3 py-3 space-y-2.5 flex-1 flex flex-col">
         <div className="flex items-center justify-between text-[10px] text-slate-400 pb-1.5 border-b border-purple-500/10">
-          <span className="font-medium text-purple-200/90 truncate" title={current.patientName}>
+          <button
+            type="button"
+            onClick={() => navigate(`/app/patients?patientId=${current.patientId}&tab=charts`)}
+            className="font-medium text-purple-200/90 truncate hover:text-purple-100 hover:underline text-left"
+            title={`Abrir prontuário de ${current.patientName}`}
+          >
             {current.patientName}
-          </span>
+          </button>
           <span className="flex-shrink-0">{dateStr} · {current.signals.length} sinais</span>
         </div>
 
@@ -205,6 +212,16 @@ export default function NeuroSuggestionsCardReal() {
             </div>
           ))}
         </div>
+
+        {/* Trigger: abrir prontuário do paciente (igual "Ver em Saúde Renal" do renal) */}
+        <button
+          type="button"
+          onClick={() => navigate(`/app/patients?patientId=${current.patientId}&tab=charts`)}
+          className="w-full px-2 py-1.5 bg-purple-500/15 hover:bg-purple-500/30 border border-purple-500/30 text-purple-200 rounded-md text-[10px] font-semibold flex items-center justify-center gap-1 transition-colors"
+          title="Abrir prontuário do paciente"
+        >
+          <ExternalLink className="w-3 h-3" /> Ver no prontuário
+        </button>
 
         {/* Rodapé fixo no fim do card: disclaimer + paginação < > entre casos */}
         <div className="mt-auto pt-1.5 border-t border-purple-500/10">
