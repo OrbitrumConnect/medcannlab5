@@ -52,6 +52,15 @@ REGRAS:
 Responda APENAS JSON válido:
 {"signals":[{"dominio":"VONTADE","subcategoria":"substituir_medicacao","fala_literal":"...","confianca":85,"sujeito":"proprio_paciente","ambiguidade_clinica":false}]}`
 
+// VERBATIM GUARD (V1.9.616): garante fala_literal 100% verbatim — só aceita se for
+// substring REAL do relato (enforça, não só pede no prompt). Retorna fala limpa OU null.
+function verbatimGuard(fala: string, relato: string): string | null {
+  const stripped = String(fala || '').replace(/^[\s."'…]+|[\s."'…]+$/g, '').trim()
+  if (stripped.length < 3) return null
+  const norm = (s: string) => s.toLowerCase().replace(/\s+/g, ' ').trim()
+  return norm(relato).includes(norm(stripped)) ? stripped : null
+}
+
 Deno.serve(async (req: Request) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
 
@@ -135,16 +144,24 @@ Deno.serve(async (req: Request) => {
       ['VONTADE', 'USO', 'RECEIO'].includes(s.dominio)
     )
 
+    // VERBATIM GUARD: só mantém o sinal se fala_literal for substring REAL do relato.
+    const guarded = valid.map((s: any) => {
+      const fv = verbatimGuard(s.fala_literal, relatoCapped)
+      return fv ? { ...s, fala_literal: fv } : null
+    }).filter(Boolean) as any[]
+    const droppedNonVerbatim = valid.length - guarded.length
+
     if (dryRun) {
       return new Response(JSON.stringify({
         success: true, dry_run: true, report_id: reportId,
-        relato_chars: relatoCapped.length, signals_detected: valid.length, signals: valid
+        relato_chars: relatoCapped.length, signals_detected: guarded.length,
+        dropped_non_verbatim: droppedNonVerbatim, signals: guarded
       }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
     }
 
     let created = 0, skippedDup = 0
     const errors: string[] = []
-    for (const s of valid) {
+    for (const s of guarded) {
       const { error: insErr } = await supabase
         .from('clinical_cannabis_signals')
         .insert({
@@ -169,7 +186,8 @@ Deno.serve(async (req: Request) => {
 
     return new Response(JSON.stringify({
       success: true, report_id: reportId,
-      signals_detected: valid.length, signals_created: created,
+      signals_detected: guarded.length, dropped_non_verbatim: droppedNonVerbatim,
+      signals_created: created,
       skipped_duplicates: skippedDup, errors_count: errors.length, errors: errors.slice(0, 5)
     }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
 

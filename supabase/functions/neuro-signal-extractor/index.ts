@@ -82,6 +82,16 @@ Responda APENAS JSON válido neste formato:
 // =====================================================
 // HANDLER PRINCIPAL
 // =====================================================
+// VERBATIM GUARD (V1.9.616): garante fala_literal 100% verbatim — só aceita se for
+// substring REAL do relato (não só pede no prompt, ENFORÇA). Strip reticências/aspas
+// do GPT + normaliza (lowercase, sem acento, espaços). Retorna a fala limpa OU null.
+function verbatimGuard(fala: string, relato: string): string | null {
+  const stripped = String(fala || '').replace(/^[\s."'…]+|[\s."'…]+$/g, '').trim()
+  if (stripped.length < 3) return null
+  const norm = (s: string) => s.toLowerCase().replace(/\s+/g, ' ').trim()
+  return norm(relato).includes(norm(stripped)) ? stripped : null
+}
+
 Deno.serve(async (req: Request) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
@@ -191,13 +201,22 @@ Deno.serve(async (req: Request) => {
       ['TEA', 'TOD', 'TDAH', 'EPILEPSIA'].includes(s.transtorno)
     )
 
+    // VERBATIM GUARD: só mantém o sinal se fala_literal for substring REAL do relato
+    // (anti-paráfrase). fala_literal passa a ser 100% verbatim. Substitui pela fala limpa.
+    const guarded = valid.map((s: any) => {
+      const fv = verbatimGuard(s.fala_literal, relatoCapped)
+      return fv ? { ...s, fala_literal: fv } : null
+    }).filter(Boolean) as any[]
+    const droppedNonVerbatim = valid.length - guarded.length
+
     if (dryRun) {
       return new Response(JSON.stringify({
         success: true, dry_run: true,
         report_id: reportId,
         relato_chars: relatoCapped.length,
-        signals_detected: valid.length,
-        signals: valid
+        signals_detected: guarded.length,
+        dropped_non_verbatim: droppedNonVerbatim,
+        signals: guarded
       }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
     }
 
@@ -208,7 +227,7 @@ Deno.serve(async (req: Request) => {
     let skippedDup = 0
     const errors: string[] = []
 
-    for (const s of valid) {
+    for (const s of guarded) {
       const { error: insErr } = await supabase
         .from('clinical_neuro_signals')
         .insert({
@@ -237,7 +256,8 @@ Deno.serve(async (req: Request) => {
     return new Response(JSON.stringify({
       success: true,
       report_id: reportId,
-      signals_detected: valid.length,
+      signals_detected: guarded.length,
+      dropped_non_verbatim: droppedNonVerbatim,
       signals_created: created,
       skipped_duplicates: skippedDup,
       errors_count: errors.length,
