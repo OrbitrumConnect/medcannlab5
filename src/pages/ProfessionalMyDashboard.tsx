@@ -76,6 +76,8 @@ const ProfessionalMyDashboard: React.FC = () => {
   const [walletCredits, setWalletCredits] = useState(0)
   const [xp, setXp] = useState(0)
   const [ranking, setRanking] = useState<number | null>(null)
+  // V1.9.615 — cards de detalhe por domínio colapsáveis (triagem acima é o resumão)
+  const [sidecarsDetailOpen, setSidecarsDetailOpen] = useState(false)
   const userAvatarUrl = (user as any)?.user_metadata?.avatar_url ?? (user as any)?.avatar_url ?? null
 
   // Analisar Paciente: lista de vinculados, seleção, scan e painel analítico
@@ -965,7 +967,19 @@ const ProfessionalMyDashboard: React.FC = () => {
           {/* V1.9.614 — Cockpit de triagem: feed unificado priorizado (porta sinal-primeiro).
               Os 4 cards abaixo ficam como detalhe por domínio. */}
           <TriagemSinaisPanel />
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-3">
+
+          {/* V1.9.615 — 4 cards de detalhe por domínio COLAPSÁVEIS (a triagem acima já é
+              o resumão; abrir sob demanda limpa a tela + melhora o mobile). */}
+          <button
+            type="button"
+            onClick={() => setSidecarsDetailOpen((v) => !v)}
+            className="w-full mt-1 flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-700/40 bg-white/[0.02] hover:bg-white/[0.05] text-[11px] text-slate-300 transition-colors"
+          >
+            <ChevronDown className={`w-3.5 h-3.5 transition-transform ${sidecarsDetailOpen ? 'rotate-180' : ''}`} />
+            {sidecarsDetailOpen ? 'Ocultar detalhe por domínio' : 'Ver detalhe por domínio (Renal · Neuro · Relato · Cannabis)'}
+          </button>
+          {sidecarsDetailOpen && (
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-3 mt-2">
             {/* Renal (DRC) — V1.9.307 RLS BD + V1.9.477 prop compact pra
                 renderizar OK em col estreita do grid 4-col 2xl */}
             {/* V1.9.609 — preview elite gated: ?renal_elite=1 mostra wrapper (sinais precoces +
@@ -989,6 +1003,7 @@ const ProfessionalMyDashboard: React.FC = () => {
                 trazida ao médico. Poucos casos hoje, alto valor + cresce. */}
             <CannabisRelatoCardReal />
           </div>
+          )}
         </div>
 
         {/* V1.9.515 (Pedro 30/05) — AECs Interrompidas órfãs (Sprint A V1.9.500
