@@ -12,10 +12,9 @@
  * RLS: médico vê sinais de paciente com quem tem appointment OU admin (V1.9.611).
  * Z2: sinaliza, não diagnostica — Eduardo decide.
  */
-import { Brain, CheckCircle, XCircle, FlaskConical } from 'lucide-react'
+import { Brain, CheckCircle, XCircle, FlaskConical, ChevronLeft, ChevronRight } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
-import DotPagination from './ui/DotPagination'
 
 interface NeuroSignal {
   id: string
@@ -207,13 +206,38 @@ export default function NeuroSuggestionsCardReal() {
           ))}
         </div>
 
-        {/* Paginação entre casos */}
-        <DotPagination currentPage={page} totalPages={totalPages} onPageChange={setPage} />
-
-        {/* Footer */}
-        <p className="text-[9px] text-slate-500 italic text-center pt-1 mt-auto border-t border-purple-500/10 flex items-center justify-center gap-1">
-          <FlaskConical className="w-2.5 h-2.5" /> Z2 — sinaliza, não diagnostica. CFM Eduardo decide.
-        </p>
+        {/* Rodapé fixo no fim do card: disclaimer + paginação < > entre casos */}
+        <div className="mt-auto pt-1.5 border-t border-purple-500/10">
+          <p className="text-[9px] text-slate-500 italic text-center flex items-center justify-center gap-1">
+            <FlaskConical className="w-2.5 h-2.5" /> Z2 — sinaliza, não diagnostica. CFM Eduardo decide.
+          </p>
+          {/* Paginação entre casos (passos ↔ Gisele) — < > no fim do card */}
+          {totalPages > 1 && (
+            <div className="flex items-center justify-center gap-3 mt-2 pt-2 border-t border-purple-500/10">
+              <button
+                type="button"
+                onClick={() => setPage(Math.max(1, page - 1))}
+                disabled={page === 1}
+                className="p-1.5 rounded-lg bg-purple-500/15 hover:bg-purple-500/30 border border-purple-500/30 text-purple-200 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                aria-label="Caso anterior"
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </button>
+              <span className="text-[10px] text-purple-200/80 font-medium min-w-[64px] text-center">
+                caso {page} / {totalPages}
+              </span>
+              <button
+                type="button"
+                onClick={() => setPage(Math.min(totalPages, page + 1))}
+                disabled={page === totalPages}
+                className="p-1.5 rounded-lg bg-purple-500/15 hover:bg-purple-500/30 border border-purple-500/30 text-purple-200 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                aria-label="Próximo caso"
+              >
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   )
