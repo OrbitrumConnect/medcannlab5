@@ -20,7 +20,7 @@ CREATE TABLE IF NOT EXISTS public.clinical_neuro_signals (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   patient_id uuid NOT NULL,
   report_id text REFERENCES public.clinical_reports(id) ON DELETE CASCADE,  -- clinical_reports.id é TEXT (gotcha empírico 07/06)
-  transtorno text NOT NULL CHECK (transtorno IN ('TEA', 'TOD', 'TDAH')),
+  transtorno text NOT NULL CHECK (transtorno IN ('TEA', 'TOD', 'TDAH', 'EPILEPSIA')),
   subcategoria text NOT NULL,
   fala_literal text NOT NULL,
   confianca integer NOT NULL CHECK (confianca BETWEEN 0 AND 100),
@@ -68,8 +68,8 @@ CREATE POLICY neuro_sugg_admin_all ON public.clinical_neuro_signals
 COMMENT ON COLUMN public.clinical_neuro_signals.subcategoria IS
   'Categoria livre V1.9.611. Drift LIMITADO pelo prompt-enum da Edge. Hard-enum em V1.9.612 (Fase B Eduardo).';
 
--- ESCOPO: CHECK restrito a TEA/TOD/TDAH é DELIBERADO (escopo Eduardo Fase A). Epilepsia/
--- TOC (empírico: 2 reports c/ convulsão) ficam fora por design — entram via ALTER +
--- 'OUTROS' em V1.9.612 SE Eduardo ampliar escopo. Edge só emite os 3 → CHECK nunca quebra.
+-- ESCOPO: TEA/TOD/TDAH + EPILEPSIA (V1.9.611-C — Pedro: Gisele é caso neuro real;
+-- app já tem KPI "Episódios Epilepsia 30d"). TOC/ansiedade isolada ficam fora por design.
+-- Eduardo valida categorias na Fase B. Edge só emite esses 4 → CHECK nunca quebra.
 COMMENT ON TABLE public.clinical_neuro_signals IS
   'Sidecar Neuro (TEA/TOD/TDAH) V1.9.611 — sinais extraídos do report consolidado pela Edge neuro-signal-extractor (GPT-4o-mini, deployada+validada 07/06: reproduz audit manual Eduardo). Z2: sinaliza, não diagnostica. Pipeline PROVADO E2E (idempotência ok). Só o CARD live aguarda GO Eduardo (Fase B); a tabela JÁ é operacional (flag-gated, OFF default).';

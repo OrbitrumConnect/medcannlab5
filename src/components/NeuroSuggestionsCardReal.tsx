@@ -21,7 +21,7 @@ interface NeuroSignal {
   id: string
   patient_id: string
   report_id: string
-  transtorno: 'TEA' | 'TOD' | 'TDAH'
+  transtorno: 'TEA' | 'TOD' | 'TDAH' | 'EPILEPSIA'
   subcategoria: string
   fala_literal: string
   confianca: number
@@ -46,6 +46,7 @@ function confidenceColor(conf: number): string {
 function transtornoBadge(t: string): string {
   if (t === 'TEA') return 'bg-blue-500/20 text-blue-200 border-blue-500/30'
   if (t === 'TOD') return 'bg-purple-500/20 text-purple-200 border-purple-500/30'
+  if (t === 'EPILEPSIA') return 'bg-rose-500/20 text-rose-200 border-rose-500/30'
   return 'bg-emerald-500/20 text-emerald-200 border-emerald-500/30' // TDAH
 }
 
