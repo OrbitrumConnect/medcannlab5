@@ -1040,9 +1040,12 @@ const ProfessionalMyDashboard: React.FC = () => {
           </div>
         )}
 
-        {/* Painel lateral analítico do paciente — avatar do paciente refletido no card */}
+        {/* Painel analítico do paciente — V1.9.611-H: modal CENTRALIZADO (era drawer
+            colado na lateral) + corpo 2 colunas side-by-side. Avatar refletido no card. */}
         {analysisPanelOpen && selectedPatientForAnalysis && analysisData && (
-          <div className="fixed top-[8vh] bottom-0 right-0 w-full max-w-md bg-slate-900 border-l border-white/10 shadow-2xl z-40 flex flex-col rounded-l-xl">
+          <>
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40" onClick={() => { setAnalysisPanelOpen(false); setSelectedPatientForAnalysis(null); setAnalysisData(null) }} />
+          <div className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[94vw] max-w-4xl max-h-[88vh] bg-slate-900 border border-white/10 shadow-2xl z-50 flex flex-col rounded-2xl overflow-hidden">
             <div className="py-2.5 px-3 border-b border-white/10 flex items-center justify-between shrink-0 bg-slate-900 relative z-10">
               <div className="flex items-center gap-2.5 min-w-0">
                 <HumanoidAvatar
@@ -1063,7 +1066,7 @@ const ProfessionalMyDashboard: React.FC = () => {
                 <X className="w-4 h-4" />
               </button>
             </div>
-            <div className="flex-1 overflow-y-auto p-3 space-y-2.5 min-h-0">
+            <div className="flex-1 overflow-y-auto p-4 grid grid-cols-1 lg:grid-cols-2 gap-3 items-start content-start min-h-0">
               {/* V1.9.112-A1: Resumo executivo + alergias/medicações no topo */}
               {(() => {
                 const age = analysisData.patientBirthDate
@@ -1078,7 +1081,7 @@ const ProfessionalMyDashboard: React.FC = () => {
                 const hasMedications = analysisData.patientMedications && analysisData.patientMedications.trim().length > 0
 
                 return (
-                  <div className="rounded-lg border border-emerald-500/20 bg-gradient-to-br from-emerald-500/5 to-transparent p-3">
+                  <div className="lg:col-span-2 rounded-lg border border-emerald-500/20 bg-gradient-to-br from-emerald-500/5 to-transparent p-3">
                     <div className="flex items-center gap-2 mb-2">
                       <Activity className="w-3.5 h-3.5 text-emerald-400" />
                       <span className="text-[10px] uppercase tracking-wider text-emerald-300 font-bold">
@@ -1376,6 +1379,7 @@ const ProfessionalMyDashboard: React.FC = () => {
               </div>
             </div>
           </div>
+          </>
         )}
 
         {/* [V1.9.127-B] 4 stat cards REMOVIDOS — duplicavam badges em Ações Rápidas no topo */}
