@@ -41,6 +41,7 @@ import RenalSuggestionsCardElite from '../components/RenalSuggestionsCardElite' 
 import NeuroSuggestionsCardReal from '../components/NeuroSuggestionsCardReal' // V1.9.611-F card real (default)
 import ReportedSignalsCardReal from '../components/ReportedSignalsCardReal' // V1.9.612 Sinais do Relato (DOR/SONO/ANSIEDADE)
 import CannabisRelatoCardReal from '../components/CannabisRelatoCardReal' // V1.9.613 Cannabis no Relato (VONTADE/USO/RECEIO)
+import TriagemSinaisPanel from '../components/TriagemSinaisPanel' // V1.9.614 cockpit triagem (feed unificado v_clinical_signals)
 // V1.9.515 (Pedro 30/05) — Fix: card AECs Interrompidas estava em ProfessionalDashboard.tsx
 // LEGACY (nunca renderizado pq ProfessionalDashboardRouter aponta sempre pra
 // ProfessionalMyDashboard). Movido pra cá após bloco Sidecars Cognitivos.
@@ -960,6 +961,10 @@ const ProfessionalMyDashboard: React.FC = () => {
               · sinais detectados em conversas reais
             </span>
           </div>
+
+          {/* V1.9.614 — Cockpit de triagem: feed unificado priorizado (porta sinal-primeiro).
+              Os 4 cards abaixo ficam como detalhe por domínio. */}
+          <TriagemSinaisPanel />
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-3">
             {/* Renal (DRC) — V1.9.307 RLS BD + V1.9.477 prop compact pra
                 renderizar OK em col estreita do grid 4-col 2xl */}
@@ -1192,7 +1197,7 @@ const ProfessionalMyDashboard: React.FC = () => {
                       <>
                         <p className="text-xs text-slate-400">Última: {new Date(analysisData.assessments[0].created_at).toLocaleDateString('pt-BR')}</p>
                         <Link
-                          to={`/app/clinica/profissional/pacientes?patientId=${selectedPatientForAnalysis.id}`}
+                          to={`/app/patients?patientId=${selectedPatientForAnalysis.id}&tab=charts`}
                           className="inline-flex items-center gap-1 text-xs text-emerald-400 hover:text-emerald-300"
                         >
                           Ver avaliação completa
@@ -1350,7 +1355,7 @@ const ProfessionalMyDashboard: React.FC = () => {
                         <div className="flex items-center justify-between gap-2 pt-1.5 border-t border-white/10">
                           <span className="text-[11px] text-slate-400">{analysisData.patientReports.length} relatório(s)</span>
                           <Link
-                            to={`/app/clinica/profissional/pacientes?patientId=${selectedPatientForAnalysis.id}`}
+                            to={`/app/patients?patientId=${selectedPatientForAnalysis.id}&tab=charts`}
                             className="text-xs text-emerald-400 hover:text-emerald-300 font-medium"
                           >
                             Ver evolução completa
@@ -1361,7 +1366,7 @@ const ProfessionalMyDashboard: React.FC = () => {
                       <>
                         <p className="text-xs text-slate-500">Nenhum relatório com indicadores ainda.</p>
                         <Link
-                          to={`/app/clinica/profissional/pacientes?patientId=${selectedPatientForAnalysis.id}`}
+                          to={`/app/patients?patientId=${selectedPatientForAnalysis.id}&tab=charts`}
                           className="inline-flex items-center gap-1 text-xs text-emerald-400 hover:text-emerald-300"
                         >
                           Abrir prontuário e evolução
