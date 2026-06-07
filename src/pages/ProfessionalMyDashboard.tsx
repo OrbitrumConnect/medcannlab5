@@ -39,6 +39,7 @@ import ProfessionalChatSystem from '../components/ProfessionalChatSystem'
 import RenalSuggestionsCard from '../components/RenalSuggestionsCard'
 import RenalSuggestionsCardElite from '../components/RenalSuggestionsCardElite' // V1.9.609 preview elite (gate ?renal_elite=1)
 import NeuroSuggestionsCardPlaceholder from '../components/NeuroSuggestionsCardPlaceholder'
+import NeuroSuggestionsCardReal from '../components/NeuroSuggestionsCardReal' // V1.9.611 card real (gate ?neuro_real=1)
 // V1.9.515 (Pedro 30/05) — Fix: card AECs Interrompidas estava em ProfessionalDashboard.tsx
 // LEGACY (nunca renderizado pq ProfessionalDashboardRouter aponta sempre pra
 // ProfessionalMyDashboard). Movido pra cá após bloco Sidecars Cognitivos.
@@ -966,8 +967,13 @@ const ProfessionalMyDashboard: React.FC = () => {
               ? <RenalSuggestionsCardElite />
               : <RenalSuggestionsCard compact />}
 
-            {/* Neuro (TEA/TDAH/TOD) — V1.9.475 embrião visual */}
-            <NeuroSuggestionsCardPlaceholder />
+            {/* Neuro (TEA/TDAH/TOD) — V1.9.611: ?neuro_real=1 mostra card REAL
+                (lê clinical_neuro_signals, paginação < >, aprovar/rejeitar) pro
+                Eduardo VER antes de virar default; default = embrião hardcoded
+                intocado (zero regressão até GO formal Eduardo Fase B). */}
+            {new URLSearchParams(window.location.search).get('neuro_real') === '1'
+              ? <NeuroSuggestionsCardReal />
+              : <NeuroSuggestionsCardPlaceholder />}
 
             {/* Slots futuros placeholders — roadmap institucional visível */}
             <div className="rounded-xl border border-dashed border-slate-700/40 bg-slate-900/30 p-4 flex flex-col items-center justify-center min-h-[200px] text-center">
