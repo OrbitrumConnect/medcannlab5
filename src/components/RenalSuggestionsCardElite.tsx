@@ -13,6 +13,11 @@
  * ZERO REGRESSÃO: o card real (camada ②) é renderizado intacto. Live só mostra esta versão
  * com `?renal_elite=1` (default = card normal). Conteúdo clínico é DRAFT auditor-safe.
  * Anti-overclaim: nada aqui é diagnóstico nem prescrição; CBG é hipótese (1 menção no corpus).
+ *
+ * ⏳ GATE TEMPORÁRIO — TRIGGER DE REMOÇÃO (evita flag "almost-merged forever"):
+ *   • POSITIVO: remover o gate (virar default) quando Ricardo aprovar o conteúdo empíricamente
+ *   • NEGATIVO: se não houver decisão até 13/06/2026, REVERTER este wrapper e voltar ao card
+ *     original (não deixar gate inativo apodrecendo no código). Decisão registrada na memória.
  */
 import RenalSuggestionsCard from './RenalSuggestionsCard'
 import { Activity, FlaskConical, ShieldAlert, BookOpen, Sparkles } from 'lucide-react'
