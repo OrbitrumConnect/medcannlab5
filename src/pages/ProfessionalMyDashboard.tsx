@@ -971,9 +971,16 @@ const ProfessionalMyDashboard: React.FC = () => {
                 (lê clinical_neuro_signals, paginação < >, aprovar/rejeitar) pro
                 Eduardo VER antes de virar default; default = embrião hardcoded
                 intocado (zero regressão até GO formal Eduardo Fase B). */}
-            {new URLSearchParams(window.location.search).get('neuro_real') === '1'
-              ? <NeuroSuggestionsCardReal />
-              : <NeuroSuggestionsCardPlaceholder />}
+            {(() => {
+              // Gate ?neuro_real=1 STICKY (localStorage) — abre uma vez e fica ativo
+              // mesmo se o param sumir ao navegar. ?neuro_real=0 desliga.
+              const p = new URLSearchParams(window.location.search).get('neuro_real')
+              if (p === '1') { try { localStorage.setItem('neuro_real', '1') } catch { /* ok */ } }
+              else if (p === '0') { try { localStorage.removeItem('neuro_real') } catch { /* ok */ } }
+              let on = p === '1'
+              if (!on) { try { on = localStorage.getItem('neuro_real') === '1' } catch { /* ok */ } }
+              return on ? <NeuroSuggestionsCardReal /> : <NeuroSuggestionsCardPlaceholder />
+            })()}
 
             {/* Slots futuros placeholders — roadmap institucional visível */}
             <div className="rounded-xl border border-dashed border-slate-700/40 bg-slate-900/30 p-4 flex flex-col items-center justify-center min-h-[200px] text-center">
