@@ -459,9 +459,14 @@ const ProfessionalMyDashboard: React.FC = () => {
       // Mantém fallbacks (appointments tenta professional_id, depois doctor_id).
       // Tempo: max(latency) em vez de soma. Reduz ~50-70% tempo de "Analisar Paciente".
       // V1.9.112-A2: SELECT incluindo doctor_private_notes (notas privadas do médico)
+      // V1.9.617: remove filtro frontend doctor_id - RLS ja protege (policy "Medico
+      // visualiza avaliacoes do seu portifolio" cobre: doctor proprio OR vinculado via
+      // appointment OR admin). Filtro frontend duplicava controle E escondia historico
+      // legitimo (caso Pedro Paciente: 3 assessments por Ricardo invisiveis pro Eduardo
+      // logado, criava "AECs: 0" contradizendo lista de reports). Agora consistente.
       const assessmentsPromise = supabase.from('clinical_assessments')
         .select('id, created_at, data, status, doctor_private_notes, doctor_private_notes_updated_at, doctor_private_notes_updated_by')
-        .eq('patient_id', patientId).eq('doctor_id', user?.id)
+        .eq('patient_id', patientId)
         .order('created_at', { ascending: false }).limit(10)
 
       const appointmentsPromise = (async () => {
