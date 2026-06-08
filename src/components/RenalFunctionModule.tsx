@@ -495,9 +495,9 @@ const RenalFunctionModule: React.FC<RenalFunctionModuleProps> = ({ patientId, pa
                             <div>
                                 <label
                                     className="block text-xs font-medium text-slate-400 mb-1"
-                                    title="Relação albumina/creatinina urinária — indicador-chave de albuminúria. KDIGO: A1 <30, A2 30-300, A3 >300 mg/g"
+                                    title="Relação albumina/creatinina urinária — indicador-chave de albuminúria (dano renal). Eixo PARALELO ao estágio G (função renal). KDIGO Heat Map: paciente é G_A_ (ex: G3aA2). A1 <30, A2 30-300, A3 >300 mg/g"
                                 >
-                                    A/Cr <span className="text-[10px] text-slate-500">(mg/g)</span>
+                                    A/Cr <span className="text-[10px] text-slate-500">(mg/g · albuminúria)</span>
                                 </label>
                                 <input
                                     type="number"
@@ -509,13 +509,25 @@ const RenalFunctionModule: React.FC<RenalFunctionModuleProps> = ({ patientId, pa
                                     title="Relação albumina/creatinina urinária — usada com eGFR pra classificar DRC (KDIGO Heat Map G1A1 → G5A3)"
                                 />
                                 {/* V1.9.622: classificacao automatica A1/A2/A3 inline */}
+                                {/* V1.9.623: rotulagem KDIGO explicita (Ricardo perguntou se A1-A3 = G1-G3) */}
                                 {acr && !isNaN(parseFloat(acr)) && (() => {
                                     const cls = classifyAlbuminuria(parseFloat(acr));
                                     if (!cls) return null;
+                                    const labels: Record<string, string> = {
+                                        A1: 'normal/leve (<30)',
+                                        A2: 'moderada (30-300)',
+                                        A3: 'severa (>300)'
+                                    };
                                     return (
-                                        <span className={`inline-block mt-1.5 text-[10px] px-2 py-0.5 rounded font-bold border ${albuminuriaColor(cls)}`}>
-                                            Albuminúria {cls}
-                                        </span>
+                                        <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
+                                            <span
+                                                className={`text-xs px-2 py-0.5 rounded font-bold border ${albuminuriaColor(cls)}`}
+                                                title="Classificação KDIGO de albuminúria (eixo paralelo ao estágio G — função renal). G é função, A é dano."
+                                            >
+                                                Albuminúria {cls}
+                                            </span>
+                                            <span className="text-[10px] text-slate-500 italic">{labels[cls]} mg/g</span>
+                                        </div>
                                     );
                                 })()}
                             </div>
@@ -531,27 +543,30 @@ const RenalFunctionModule: React.FC<RenalFunctionModuleProps> = ({ patientId, pa
                             />
                         </div>
 
-                        {/* Calculator Result Preview */}
+                        {/* Calculator Result Preview — V1.9.623 fontes maiores p/ legibilidade */}
                         {previewEgfr && (
                             <div className={`p-4 rounded-lg border flex items-center justify-between animate-in fade-in duration-300 ${previewEgfr >= 60 ? 'bg-green-900/20 border-green-800' : 'bg-red-900/20 border-red-800'
                                 }`}>
                                 <div>
-                                    <p className="text-xs font-medium text-slate-400 uppercase tracking-wide">eTFG Estimada</p>
-                                    <div className="text-2xl font-bold text-white">
-                                        {previewEgfr} <span className="text-sm font-normal text-slate-400">mL/min/1.73m²</span>
+                                    <p className="text-sm font-medium text-slate-300 uppercase tracking-wide">eTFG Estimada</p>
+                                    <div className="text-3xl font-bold text-white mt-1">
+                                        {previewEgfr} <span className="text-base font-normal text-slate-400">mL/min/1.73m²</span>
                                     </div>
-                                    <p className="text-[10px] text-slate-500 mt-0.5">
+                                    <p className="text-xs text-slate-500 mt-1">
                                         Calculado com {localAge} anos, {localGender === 'female' ? 'feminino' : 'masculino'}
                                     </p>
                                 </div>
                                 <div className="text-right">
-                                    <span className={`inline-block px-3 py-1 rounded-full text-xs font-bold ${classifyStage(previewEgfr).startsWith('G3') || classifyStage(previewEgfr).startsWith('G4') || classifyStage(previewEgfr).startsWith('G5')
-                                        ? 'bg-red-900/50 text-red-300'
-                                        : 'bg-green-900/50 text-green-300'
-                                        }`}>
+                                    <span
+                                        className={`inline-block px-3 py-1.5 rounded-full text-sm font-bold ${classifyStage(previewEgfr).startsWith('G3') || classifyStage(previewEgfr).startsWith('G4') || classifyStage(previewEgfr).startsWith('G5')
+                                            ? 'bg-red-900/50 text-red-300'
+                                            : 'bg-green-900/50 text-green-300'
+                                            }`}
+                                        title="Estágio G = classificação por função renal (eGFR). Eixo paralelo à classificação A de albuminúria."
+                                    >
                                         Estágio {classifyStage(previewEgfr)}
                                     </span>
-                                    <p className="text-[10px] text-slate-500 mt-1">
+                                    <p className="text-sm text-slate-300 mt-1.5 font-medium">
                                         {getStageDescription(classifyStage(previewEgfr)).desc}
                                     </p>
                                 </div>
@@ -731,33 +746,36 @@ const RenalFunctionModule: React.FC<RenalFunctionModuleProps> = ({ patientId, pa
                                                     strokeLinecap="round"
                                                 />
                                             </svg>
-                                            <span className="text-2xl font-black text-white leading-none">{displayEgfr}</span>
-                                            <span className="text-[10px] text-slate-400 mt-0.5">mL/min</span>
+                                            <span className="text-3xl font-black text-white leading-none">{displayEgfr}</span>
+                                            <span className="text-xs text-slate-400 mt-1">mL/min</span>
                                         </div>
                                     </div>
 
-                                    {/* Info panel */}
+                                    {/* Info panel — V1.9.623 fontes maiores p/ legibilidade */}
                                     <div className="flex-1 min-w-0 text-center md:text-left">
-                                        <div className="flex items-center gap-2 justify-center md:justify-start mb-2">
+                                        <div className="flex items-center gap-2 justify-center md:justify-start mb-2 flex-wrap">
                                             <span
-                                                className="w-3 h-3 rounded-full"
+                                                className="w-3.5 h-3.5 rounded-full"
                                                 style={{
                                                     backgroundColor: colors.stroke,
                                                     boxShadow: `0 0 10px ${colors.glow}`,
                                                     animation: `renalDotPulse ${pulseSpeed} ease-in-out infinite`
                                                 }}
                                             />
-                                            <span className={`text-lg font-bold ${colors.text}`}>
+                                            <span
+                                                className={`text-xl font-bold ${colors.text}`}
+                                                title="Estágio G = função renal (eGFR). Eixo paralelo à classificação A de albuminúria. KDIGO classifica paciente por AMBOS (ex: G3aA2)."
+                                            >
                                                 Estágio {displayStage}
                                             </span>
                                             {displaySource === 'preview' && (
-                                                <span className="text-[10px] px-1.5 py-0.5 rounded bg-blue-500/15 text-blue-400 border border-blue-500/20">
+                                                <span className="text-xs px-2 py-0.5 rounded bg-blue-500/15 text-blue-400 border border-blue-500/20 font-semibold">
                                                     Preview
                                                 </span>
                                             )}
                                         </div>
-                                        <p className="text-sm text-slate-300 font-medium">{stageInfo.desc}</p>
-                                        <p className="text-xs text-slate-500 mt-1 max-w-sm">{stageInfo.action}</p>
+                                        <p className="text-base text-slate-200 font-medium">{stageInfo.desc}</p>
+                                        <p className="text-sm text-slate-400 mt-1 max-w-sm leading-relaxed">{stageInfo.action}</p>
 
                                         {/* Mini sparkline */}
                                         {sparklineExams.length >= 2 && (
