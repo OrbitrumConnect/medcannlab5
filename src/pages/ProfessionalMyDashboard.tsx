@@ -975,12 +975,13 @@ const ProfessionalMyDashboard: React.FC = () => {
 
           {/* V1.9.615 — 4 cards de detalhe por domínio COLAPSÁVEIS (a triagem acima já é
               o resumão; abrir sob demanda limpa a tela + melhora o mobile). */}
+          {/* V1.9.630 — destaque leve no trigger (estava cinza/discreto demais; Pedro flagou) */}
           <button
             type="button"
             onClick={() => setSidecarsDetailOpen((v) => !v)}
-            className="w-full mt-1 flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-700/40 bg-white/[0.02] hover:bg-white/[0.05] text-[11px] text-slate-300 transition-colors"
+            className="w-full mt-2 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-emerald-500/30 bg-emerald-500/10 hover:bg-emerald-500/20 hover:border-emerald-500/50 hover:scale-[1.005] text-xs font-semibold text-emerald-200 transition-all"
           >
-            <ChevronDown className={`w-3.5 h-3.5 transition-transform ${sidecarsDetailOpen ? 'rotate-180' : ''}`} />
+            <ChevronDown className={`w-4 h-4 transition-transform ${sidecarsDetailOpen ? 'rotate-180' : ''}`} />
             {sidecarsDetailOpen ? 'Ocultar detalhe por domínio' : 'Ver detalhe por domínio (Renal · Neuro · Relato · Cannabis)'}
           </button>
           {sidecarsDetailOpen && (
