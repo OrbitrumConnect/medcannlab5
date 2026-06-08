@@ -158,16 +158,20 @@ const RenalFunctionModule: React.FC<RenalFunctionModuleProps> = ({ patientId, pa
         let cancelled = false;
         const loadDemo = async () => {
             try {
+                // V1.9.625 — fix bug pre-existente: coluna correta e 'birth_date' (nao date_of_birth).
+                // Query falhava silenciosamente -> caia pros defaults age=40/male -> calculo CKD-EPI
+                // com dados ERRADOS. Pedro flagou: Carolina (35 anos feminino, gender=null no banco)
+                // aparecia como "40 anos masculino" -> eGFR calculado pode estar errado.
                 const { data } = await supabase
                     .from('users')
-                    .select('name, date_of_birth, gender')
+                    .select('name, birth_date, gender')
                     .eq('id', patientId)
                     .maybeSingle();
                 if (cancelled || !data) return;
                 setSelectedPatientName((data as any).name || null);
-                // Calculate age from date_of_birth
-                if ((data as any).date_of_birth) {
-                    const dob = new Date((data as any).date_of_birth);
+                // Calculate age from birth_date
+                if ((data as any).birth_date) {
+                    const dob = new Date((data as any).birth_date);
                     const age = Math.floor((Date.now() - dob.getTime()) / (365.25 * 24 * 60 * 60 * 1000));
                     if (age > 0 && age < 150) setLocalAge(age);
                 }
