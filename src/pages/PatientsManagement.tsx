@@ -1798,15 +1798,19 @@ const PatientsManagement: React.FC<PatientsManagementProps> = ({ embedded = fals
                     <div className="border-b border-slate-700 relative">
                       <div className="flex overflow-x-auto gap-1 p-2 md:p-2.5 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-slate-700" style={{ WebkitOverflowScrolling: 'touch' }}>
                         {[
-                          { id: 'overview', label: 'Visão Geral', icon: Activity },
-                          { id: 'analytics', label: 'Analytics', icon: BarChart3 },
-                          { id: 'evolution', label: 'Evolução', icon: FileText },
-                          { id: 'prescription', label: 'Prescrição', icon: Edit },
-                          { id: 'exams', label: 'Exames', icon: FileText },
-                          { id: 'appointments', label: 'Agenda', icon: Calendar },
-                          { id: 'files', label: 'Arquivos', icon: Archive },
-                          { id: 'receipts', label: 'Recebimentos', icon: Download },
-                          { id: 'charts', label: 'Gráficos', icon: TrendingUp }
+                          // V1.9.621 — labels alinhados com linguagem clinica auditor-safe (reuniao 07/06 Pedro+Ricardo):
+                          //   files: "Arquivos" -> "Arquivos clinicos" (resolve gap UX Flavia: paciente sobe exames AQUI, nao em "Exames")
+                          //   charts: "Graficos" -> "Longitudinal" (conecta com 3a vertente Ricardo seguranca paciente + CAR Digital + CARD-RJ pitch)
+                          //   tooltips nativos via title= explicam escopo completo
+                          { id: 'overview', label: 'Visão Geral', icon: Activity, tooltip: 'Visão Geral' },
+                          { id: 'analytics', label: 'Analytics', icon: BarChart3, tooltip: 'Analytics' },
+                          { id: 'evolution', label: 'Evolução', icon: FileText, tooltip: 'Evolução clínica' },
+                          { id: 'prescription', label: 'Prescrição', icon: Edit, tooltip: 'Prescrição' },
+                          { id: 'exams', label: 'Exames', icon: FileText, tooltip: 'Solicitações de exames feitas pelo médico' },
+                          { id: 'appointments', label: 'Agenda', icon: Calendar, tooltip: 'Agenda do paciente' },
+                          { id: 'files', label: 'Arquivos clínicos', icon: Archive, tooltip: 'Arquivos clínicos: exames, laudos, receitas externas, atestados — enviados pelo paciente' },
+                          { id: 'receipts', label: 'Recebimentos', icon: Download, tooltip: 'Recebimentos' },
+                          { id: 'charts', label: 'Longitudinal', icon: TrendingUp, tooltip: 'Acompanhamento longitudinal: timeline completo (AECs, relatórios, exames, prescrições, consultas)' }
                           // [V1.9.362] Removida aba "Similares" (decisão Pedro 18/05 ~18h05 —
                           // Casos Similares fica APENAS no Terminal de Pesquisa, foco 1 lugar)
                         ].map(tab => {
@@ -1815,6 +1819,7 @@ const PatientsManagement: React.FC<PatientsManagementProps> = ({ embedded = fals
                             <button
                               key={tab.id}
                               onClick={() => setActiveTab(tab.id as any)}
+                              title={tab.tooltip || tab.label}
                               className={`flex items-center gap-1.5 px-2.5 md:px-3.5 py-1.5 md:py-2 rounded-lg transition-all font-medium text-xs md:text-sm whitespace-nowrap shrink-0 ${activeTab === tab.id
                                 ? 'bg-emerald-500/15 text-emerald-300 border border-emerald-500/30'
                                 : 'text-slate-400 hover:text-white hover:bg-slate-700/50 border border-transparent'
