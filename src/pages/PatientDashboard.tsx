@@ -48,6 +48,7 @@ import { PatientSupport } from '../components/dashboard/patient/PatientSupport'
 import { DashboardSectionSkeleton } from '../components/ui/DashboardSectionSkeleton'
 import { FeatureErrorFallback } from '../components/ui/FeatureErrorFallback'
 import ErrorBoundary from '../components/ErrorBoundary'
+import PatientClinicalTimeline from '../components/PatientClinicalTimeline' // V1.9.629 longitudinal real
 
 const PatientDashboard: React.FC = () => {
   const { user } = useAuth()
@@ -400,7 +401,12 @@ const PatientDashboard: React.FC = () => {
                 {/* Progress */}
                 <div className="mb-6">
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm text-slate-400 font-medium">Progresso do plano</span>
+                    <span
+                      className="text-sm text-slate-400 font-medium cursor-help"
+                      title="Marcos do cuidado concluídos: avaliação clínica · plano terapêutico · prescrição · devolutiva do seu médico"
+                    >
+                      Progresso do cuidado <span className="text-[10px] text-slate-500">(marcos)</span>
+                    </span>
                     <span className="text-sm font-bold text-emerald-400">{therapeuticPlan.progress}%</span>
                   </div>
                   <div className="w-full h-3 bg-slate-700/50 rounded-full overflow-hidden">
@@ -433,6 +439,20 @@ const PatientDashboard: React.FC = () => {
                   </div>
                 </div>
               </div>
+
+              {/* V1.9.629 — Linha do tempo do cuidado (longitudinal REAL): exames + relatórios
+                  + prescrições + consultas + estágio renal no tempo. Reusa PatientClinicalTimeline
+                  (V1.9.327). É o "cuidado longitudinal" — fala estruturada → dados → tempo. */}
+              {user?.id && (
+                <div className="bg-slate-900/40 rounded-2xl border border-white/5 p-6">
+                  <h3 className="text-lg font-semibold text-white flex items-center gap-2 mb-4">
+                    <Activity className="w-5 h-5 text-emerald-400" />
+                    Linha do tempo do cuidado
+                    <span className="text-xs text-slate-500 font-normal">· sua jornada longitudinal</span>
+                  </h3>
+                  <PatientClinicalTimeline patientId={user.id} />
+                </div>
+              )}
 
               {/* Quick actions */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

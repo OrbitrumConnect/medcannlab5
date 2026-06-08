@@ -194,10 +194,24 @@ export function usePatientDashboard() {
             })) || [])
 
             // 6. Clinical Devolutions (Sprint 1 — médico → paciente)
+            let devolutionsCount = 0
             try {
                 const devolutions = await clinicalDevolutionService.getPatientDevolutions(patientId, 10)
                 setClinicalDevolutions(devolutions)
+                devolutionsCount = devolutions?.length || 0
             } catch (e) { console.warn('Devolutions load failed:', e); setClinicalDevolutions([]) }
+
+            // 7. V1.9.629 — progresso REAL por MARCOS do cuidado (substitui o contador-de-dias
+            // enganoso: o '%' antigo era só dias-desde-relatório, não progresso clínico).
+            // Marcos: fez AEC/relatório · tem plano · tem prescrição · recebeu devolutiva do médico.
+            const careMilestones = [
+                !!(latestReport || latestAssessment),       // 1. fez a avaliação (fala estruturada)
+                !!planData,                                  // 2. tem plano terapêutico
+                (prescriptionsData?.length || 0) > 0,        // 3. tem prescrição
+                devolutionsCount > 0                         // 4. médico devolveu (loop fechado)
+            ]
+            const realProgress = Math.round((careMilestones.filter(Boolean).length / careMilestones.length) * 100)
+            setTherapeuticPlan(prev => (prev ? { ...prev, progress: realProgress } : prev))
 
         } catch (err) {
             console.error('Patient dashboard hook error:', err)
