@@ -194,7 +194,22 @@ export default function RenalSuggestionsCard({ compact = false }: RenalSuggestio
     )
   }
 
-  if (suggestions.length === 0) return null
+  // V1.9.624 — empty state em vez de return null (padroniza com Neuro/Relato/Cannabis).
+  // Antes: card sumia da tela quando todas sugestoes arquivadas (Maria das Dores 17/05).
+  // Pedro flagou assimetria UX: 3 sidecars novos mostram placeholder, Renal sumia.
+  // Agora card continua visivel - sinaliza que Sidecar Renal V1.9.307 esta ativo + cron rodando.
+  if (suggestions.length === 0) {
+    return (
+      <div className="rounded-xl border border-emerald-500/30 bg-gradient-to-br from-emerald-900/20 via-slate-900/60 to-emerald-900/20 p-4 flex flex-col items-center justify-center min-h-[200px] text-center">
+        <Activity className="w-8 h-8 text-emerald-300/40 mb-2" />
+        <span className="text-base font-semibold text-emerald-200">Sugestões DRC</span>
+        <span className="text-xs text-slate-500 mt-1">Nenhuma sugestão pendente</span>
+        <span className="text-[10px] text-slate-600 mt-2 italic max-w-[220px] leading-relaxed">
+          Sidecar Renal V1.9.307 auto-extrai creatinina, eGFR e A/Cr de menções na fala do paciente
+        </span>
+      </div>
+    )
+  }
 
   return (
     <div className="bg-gradient-to-br from-orange-950/30 to-red-950/20 border border-orange-500/30 rounded-2xl p-5">
