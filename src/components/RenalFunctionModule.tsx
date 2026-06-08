@@ -8,9 +8,26 @@ interface RenalExam {
     id: string;
     exam_date: string;
     creatinine: number;
-    urea: number;
+    urea: number;        // V1.9.622: preservado pra exames legados; nao mais input principal
+    proteinuria: number | null; // V1.9.622: A/Cr mg/g (Ricardo 07/06 - indicador de estagio DRC)
     egfr: number;
     drc_stage: string;
+}
+
+// V1.9.622: classificacao albuminuria KDIGO (Ricardo cravou 07/06: A/Cr e o que importa,
+// nao ureia). A1 = normal (<30); A2 = moderado (30-300); A3 = severo (>300 mg/g)
+function classifyAlbuminuria(acr: number | null | undefined): 'A1' | 'A2' | 'A3' | null {
+    if (acr == null || isNaN(acr) || acr < 0) return null;
+    if (acr < 30) return 'A1';
+    if (acr <= 300) return 'A2';
+    return 'A3';
+}
+
+function albuminuriaColor(stage: 'A1' | 'A2' | 'A3' | null): string {
+    if (stage === 'A1') return 'bg-green-900/40 text-green-300 border-green-800';
+    if (stage === 'A2') return 'bg-yellow-900/40 text-yellow-300 border-yellow-800';
+    if (stage === 'A3') return 'bg-red-900/40 text-red-300 border-red-800';
+    return 'bg-slate-800 text-slate-500 border-slate-700';
 }
 
 interface PatientOption {
@@ -44,8 +61,11 @@ const RenalFunctionModule: React.FC<RenalFunctionModuleProps> = ({ patientId, pa
     const [showConfig, setShowConfig] = useState(false);
 
     // Form State
+    // V1.9.622: ureia substituida por A/Cr (relacao albumina/creatinina urinaria).
+    // Decisao Ricardo na reuniao 07/06: ureia NAO e indicador de estagio DRC;
+    // A/Cr SIM (KDIGO Heat Map cruza eGFR x A/Cr pra G1A1->G5A3).
     const [creatinine, setCreatinine] = useState('');
-    const [urea, setUrea] = useState('');
+    const [acr, setAcr] = useState(''); // relacao albumina/creatinina mg/g
     const [examDate, setExamDate] = useState(new Date().toISOString().split('T')[0]);
 
     // Calculated Preview
@@ -197,7 +217,14 @@ const RenalFunctionModule: React.FC<RenalFunctionModuleProps> = ({ patientId, pa
                 .order('exam_date', { ascending: false });
 
             if (error) throw error;
-            setExams((data || []).map(e => ({ ...e, creatinine: e.creatinine ?? 0, egfr: e.egfr ?? 0, urea: e.urea ?? 0, drc_stage: e.drc_stage ?? '' })) as any);
+            setExams((data || []).map(e => ({
+                ...e,
+                creatinine: e.creatinine ?? 0,
+                egfr: e.egfr ?? 0,
+                urea: e.urea ?? 0,
+                proteinuria: e.proteinuria ?? null, // V1.9.622: A/Cr mg/g
+                drc_stage: e.drc_stage ?? ''
+            })) as any);
         } catch (err) {
             console.error('Error loading renal exams:', err);
         }
@@ -209,13 +236,15 @@ const RenalFunctionModule: React.FC<RenalFunctionModuleProps> = ({ patientId, pa
         setLoading(true);
         try {
             const stage = classifyStage(previewEgfr);
+            // V1.9.622: A/Cr opcional grava em proteinuria (coluna ja existe; Sidecar V1.9.307 usa).
+            const acrValue = acr ? parseFloat(acr) : null;
 
             // Save to renal_exams (local table)
             const { error } = await supabase.from('renal_exams').insert({
                 patient_id: patientId,
                 exam_date: examDate,
                 creatinine: parseFloat(creatinine),
-                urea: parseFloat(urea) || 0,
+                proteinuria: acrValue && !isNaN(acrValue) ? acrValue : null,
                 egfr: previewEgfr,
                 drc_stage: stage,
                 created_at: new Date().toISOString()
@@ -236,7 +265,7 @@ const RenalFunctionModule: React.FC<RenalFunctionModuleProps> = ({ patientId, pa
             }
 
             setCreatinine('');
-            setUrea('');
+            setAcr('');
             loadExams();
         } catch (err) {
             console.error('Error saving exam:', err);
@@ -425,7 +454,7 @@ const RenalFunctionModule: React.FC<RenalFunctionModuleProps> = ({ patientId, pa
                                 <span className="w-5 h-5 rounded-full bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 text-[10px] font-bold flex items-center justify-center">2</span>
                                 <span className="text-xs font-bold text-slate-200">Registrar exame</span>
                             </div>
-                            <p className="text-[11px] text-slate-400 leading-relaxed">Insira creatinina (mg/dL), ureia opcional e data do exame.</p>
+                            <p className="text-[11px] text-slate-400 leading-relaxed">Insira creatinina (mg/dL), A/Cr urinária (mg/g, opcional) e data do exame.</p>
                         </div>
                         <div className="bg-slate-800/40 border border-slate-700/50 rounded-lg p-3 text-left">
                             <div className="flex items-center gap-2 mb-1.5">
@@ -464,14 +493,31 @@ const RenalFunctionModule: React.FC<RenalFunctionModuleProps> = ({ patientId, pa
                                 />
                             </div>
                             <div>
-                                <label className="block text-xs font-medium text-slate-400 mb-1">Ureia (mg/dL)</label>
+                                <label
+                                    className="block text-xs font-medium text-slate-400 mb-1"
+                                    title="Relação albumina/creatinina urinária — indicador-chave de albuminúria. KDIGO: A1 <30, A2 30-300, A3 >300 mg/g"
+                                >
+                                    A/Cr <span className="text-[10px] text-slate-500">(mg/g)</span>
+                                </label>
                                 <input
                                     type="number"
-                                    value={urea}
-                                    onChange={(e) => setUrea(e.target.value)}
+                                    step="0.1"
+                                    value={acr}
+                                    onChange={(e) => setAcr(e.target.value)}
                                     className="w-full px-3 py-2 bg-slate-700 rounded-md border border-slate-600 text-sm text-white focus:ring-emerald-500 focus:border-emerald-500 placeholder-slate-500"
-                                    placeholder="Ex: 35"
+                                    placeholder="Ex: 30"
+                                    title="Relação albumina/creatinina urinária — usada com eGFR pra classificar DRC (KDIGO Heat Map G1A1 → G5A3)"
                                 />
+                                {/* V1.9.622: classificacao automatica A1/A2/A3 inline */}
+                                {acr && !isNaN(parseFloat(acr)) && (() => {
+                                    const cls = classifyAlbuminuria(parseFloat(acr));
+                                    if (!cls) return null;
+                                    return (
+                                        <span className={`inline-block mt-1.5 text-[10px] px-2 py-0.5 rounded font-bold border ${albuminuriaColor(cls)}`}>
+                                            Albuminúria {cls}
+                                        </span>
+                                    );
+                                })()}
                             </div>
                         </div>
 
@@ -540,20 +586,41 @@ const RenalFunctionModule: React.FC<RenalFunctionModuleProps> = ({ patientId, pa
                             <div className="space-y-3 max-h-[400px] overflow-y-auto pr-2 scrollbar-hide">
                                 {exams.map((exam) => {
                                     const stageInfo = getStageDescription(exam.drc_stage);
+                                    // V1.9.622: A/Cr como info primaria, ureia preservada discretamente pra exames legados
+                                    const albuminuria = classifyAlbuminuria(exam.proteinuria);
+                                    const hasAcr = exam.proteinuria != null && exam.proteinuria >= 0;
+                                    const hasLegacyUrea = !hasAcr && exam.urea && exam.urea > 0;
                                     return (
                                         <div key={exam.id} className="p-3 rounded-lg border border-slate-700 bg-slate-800/50 hover:bg-slate-700/50 transition-colors group">
-                                            <div className="flex items-center justify-between">
-                                                <div>
+                                            <div className="flex items-center justify-between gap-2">
+                                                <div className="min-w-0 flex-1">
                                                     <p className="text-xs text-slate-400">{new Date(exam.exam_date).toLocaleDateString('pt-BR')}</p>
                                                     <p className="text-sm font-medium text-slate-200">
                                                         Cr: {exam.creatinine} <span className="text-slate-600">|</span> eTFG: {exam.egfr}
-                                                        <span className="text-slate-600 ml-1">|</span>
-                                                        <span className="text-slate-500 ml-1">Ureia: {exam.urea}</span>
+                                                        {hasAcr && (
+                                                            <>
+                                                                <span className="text-slate-600 ml-1">|</span>
+                                                                <span className="text-slate-300 ml-1">A/Cr: {exam.proteinuria} <span className="text-[10px] text-slate-500">mg/g</span></span>
+                                                            </>
+                                                        )}
+                                                        {hasLegacyUrea && (
+                                                            <>
+                                                                <span className="text-slate-600 ml-1">|</span>
+                                                                <span className="text-slate-600 ml-1 text-[10px] italic" title="Ureia (exame legado — indicador não-classificatório de estágio)">Ureia: {exam.urea}</span>
+                                                            </>
+                                                        )}
                                                     </p>
                                                 </div>
-                                                <span className={`text-xs px-2 py-1 rounded font-medium border ${getStageColor(exam.drc_stage)}`}>
-                                                    {exam.drc_stage}
-                                                </span>
+                                                <div className="flex items-center gap-1.5 flex-shrink-0">
+                                                    {albuminuria && (
+                                                        <span className={`text-[10px] px-1.5 py-0.5 rounded font-bold border ${albuminuriaColor(albuminuria)}`} title="Classificação KDIGO de albuminúria">
+                                                            {albuminuria}
+                                                        </span>
+                                                    )}
+                                                    <span className={`text-xs px-2 py-1 rounded font-medium border ${getStageColor(exam.drc_stage)}`}>
+                                                        {exam.drc_stage}
+                                                    </span>
+                                                </div>
                                             </div>
                                             <p className="text-[10px] text-slate-500 mt-1 opacity-0 group-hover:opacity-100 transition-opacity">
                                                 {stageInfo.desc} — {stageInfo.action}
