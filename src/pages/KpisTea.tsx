@@ -5,10 +5,12 @@ import { backgroundGradient } from '../constants/designSystem'
 
 /**
  * V1.9.131-A — Placeholder honesto KPIs TEA.
+ * V1.9.632 (08/06) — cópia atualizada: o COLETOR já existe (Sidecar Neuro detecta
+ * TEA/TDAH/TOD/epilepsia nas AECs). Empírico: 0 sinais TEA hoje (só EPILEPSIA+TDAH).
+ * Mudou de mechanism-gated → data-gated. Princípio mantido: sem dado real, sem dashboard fake.
  *
  * Página visível mas explícita: feature ainda em desenvolvimento.
- * Princípio P9 inverso pré-PMF: zero pacientes TEA reais hoje.
- * Quando Eduardo Faveret trouxer dado real, esta tela vira dashboard.
+ * Quando houver paciente TEA real + AEC seriada + GO Eduardo (Fase B), vira dashboard.
  */
 const KpisTea: React.FC = () => {
   const navigate = useNavigate()
@@ -35,15 +37,28 @@ const KpisTea: React.FC = () => {
             </div>
           </div>
 
-          <div className="rounded-xl border border-yellow-500/20 bg-yellow-500/[0.05] p-5 mb-6 flex items-start gap-3">
-            <Clock className="w-5 h-5 text-yellow-400 shrink-0 mt-0.5" />
+          {/* V1.9.632 — coletor já existe (Sidecar Neuro); dashboard aguarda dados reais */}
+          <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/[0.05] p-5 mb-4 flex items-start gap-3">
+            <Brain className="w-5 h-5 text-emerald-400 shrink-0 mt-0.5" />
             <div>
-              <h2 className="text-yellow-200 font-semibold mb-1">Em desenvolvimento</h2>
+              <h2 className="text-emerald-200 font-semibold mb-1">Coletor ativo · dashboard aguardando dados reais</h2>
               <p className="text-sm text-slate-300 leading-relaxed">
-                Esta funcionalidade está em construção. O dashboard de KPIs TEA será ativado quando
-                houver coleta clínica real de pacientes neurológicos pela rede MedCannLab.
+                O mecanismo de coleta <strong className="text-emerald-300">já existe</strong>: o
+                Sidecar Neuro detecta sinais de <strong className="text-white">TEA · TDAH · TOD · epilepsia</strong> nos
+                relatórios das AECs e os entrega ao médico. O dashboard de KPIs ativa quando houver
+                <strong className="text-white"> pacientes do espectro com avaliações seriadas</strong> — validado
+                pelo Dr. Eduardo Faveret (Fase B).
               </p>
             </div>
+          </div>
+
+          <div className="rounded-xl border border-yellow-500/20 bg-yellow-500/[0.05] p-4 mb-6 flex items-start gap-3">
+            <Clock className="w-4 h-4 text-yellow-400 shrink-0 mt-0.5" />
+            <p className="text-xs text-slate-400 leading-relaxed">
+              Hoje (empírico): sinais neuro coletados são de <strong className="text-slate-300">epilepsia e TDAH</strong> —
+              ainda <strong className="text-slate-300">0 TEA real</strong> e nenhuma série longitudinal de paciente do
+              espectro. Por isso o dashboard permanece vazio: indicador só aparece com dado que o sustente.
+            </p>
           </div>
 
           <div className="space-y-4">
