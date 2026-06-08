@@ -59,6 +59,11 @@ const RenalFunctionModule: React.FC<RenalFunctionModuleProps> = ({ patientId, pa
     const [localAge, setLocalAge] = useState<number>(patientAge ?? 40);
     const [localGender, setLocalGender] = useState<'male' | 'female'>(patientGender ?? 'male');
     const [showConfig, setShowConfig] = useState(false);
+    // V1.9.627 — rastreia se idade/sexo vieram do CADASTRO real vs default chutado.
+    // 86% dos pacientes nao tem birth_date e muitos gender=NULL -> CKD-EPI cai no
+    // default 40/male e exibe estagio confiante = enganoso. Fix: flag "estimado".
+    const [demoAgeKnown, setDemoAgeKnown] = useState(false);
+    const [demoSexKnown, setDemoSexKnown] = useState(false);
 
     // Form State
     // V1.9.622: ureia substituida por A/Cr (relacao albumina/creatinina urinaria).
@@ -169,16 +174,21 @@ const RenalFunctionModule: React.FC<RenalFunctionModuleProps> = ({ patientId, pa
                     .maybeSingle();
                 if (cancelled || !data) return;
                 setSelectedPatientName((data as any).name || null);
-                // Calculate age from birth_date
+                // Calculate age from birth_date (V1.9.627: rastreia se veio do cadastro)
+                let ageKnown = false;
                 if ((data as any).birth_date) {
                     const dob = new Date((data as any).birth_date);
                     const age = Math.floor((Date.now() - dob.getTime()) / (365.25 * 24 * 60 * 60 * 1000));
-                    if (age > 0 && age < 150) setLocalAge(age);
+                    if (age > 0 && age < 150) { setLocalAge(age); ageKnown = true; }
                 }
-                // Map gender
-                const g = ((data as any).gender || '').toLowerCase();
-                if (g === 'female' || g === 'feminino' || g === 'f') setLocalGender('female');
-                else setLocalGender('male');
+                // Map gender — V1.9.627: distingue 'male' explícito de NULL→default male
+                const g = ((data as any).gender || '').toLowerCase().trim();
+                let sexKnown = false;
+                if (g === 'female' || g === 'feminino' || g === 'f') { setLocalGender('female'); sexKnown = true; }
+                else if (g === 'male' || g === 'masculino' || g === 'm') { setLocalGender('male'); sexKnown = true; }
+                else { setLocalGender('male'); sexKnown = false; } // ausente: usa default MAS sinaliza
+                setDemoAgeKnown(ageKnown);
+                setDemoSexKnown(sexKnown);
             } catch { /* ignore */ }
         };
         loadDemo();
@@ -398,6 +408,19 @@ const RenalFunctionModule: React.FC<RenalFunctionModuleProps> = ({ patientId, pa
                             <span>•</span>
                             <span>{localGender === 'female' ? 'Feminino' : 'Masculino'}</span>
                         </div>
+                        {/* V1.9.627 — aviso quando idade/sexo NÃO vieram do cadastro (CKD-EPI usa
+                            default 40/male = estágio enganoso). Aponta pro ⚙️ que já existe. */}
+                        {(!demoAgeKnown || !demoSexKnown) && (
+                            <button
+                                type="button"
+                                onClick={() => setShowConfig(true)}
+                                className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-amber-500/10 border border-amber-500/30 text-amber-300 text-xs hover:bg-amber-500/20 transition-colors"
+                                title="Idade e/ou sexo não constam no cadastro do paciente — o estágio CKD-EPI está usando valores padrão. Clique para informar."
+                            >
+                                <AlertCircle className="w-3.5 h-3.5 flex-shrink-0" />
+                                Estágio estimado — {!demoAgeKnown && !demoSexKnown ? 'idade e sexo não informados' : !demoAgeKnown ? 'idade não informada' : 'sexo não informado'} (ajustar)
+                            </button>
+                        )}
                     </div>
                 )}
 
@@ -411,7 +434,7 @@ const RenalFunctionModule: React.FC<RenalFunctionModuleProps> = ({ patientId, pa
                                 min={1}
                                 max={120}
                                 value={localAge}
-                                onChange={(e) => setLocalAge(parseInt(e.target.value) || 40)}
+                                onChange={(e) => { setLocalAge(parseInt(e.target.value) || 40); setDemoAgeKnown(true); }}
                                 className="w-16 px-2 py-1 rounded-md bg-slate-700 border border-slate-600 text-sm text-white focus:ring-1 focus:ring-emerald-500/50 focus:outline-none"
                             />
                         </div>
@@ -419,7 +442,7 @@ const RenalFunctionModule: React.FC<RenalFunctionModuleProps> = ({ patientId, pa
                             <label className="text-xs text-slate-400 font-medium">Sexo:</label>
                             <select
                                 value={localGender}
-                                onChange={(e) => setLocalGender(e.target.value as 'male' | 'female')}
+                                onChange={(e) => { setLocalGender(e.target.value as 'male' | 'female'); setDemoSexKnown(true); }}
                                 className="px-2 py-1 rounded-md bg-slate-700 border border-slate-600 text-sm text-white focus:ring-1 focus:ring-emerald-500/50 focus:outline-none"
                             >
                                 <option value="male">Masculino</option>
