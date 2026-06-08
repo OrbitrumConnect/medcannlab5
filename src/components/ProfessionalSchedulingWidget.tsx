@@ -23,7 +23,8 @@ import {
   MessageCircle,
   X,
   Phone,
-  Check
+  Check,
+  FileText
 } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { getAllPatients } from '../lib/adminPermissions'
@@ -858,7 +859,8 @@ const ProfessionalSchedulingWidget: React.FC<ProfessionalSchedulingWidgetProps> 
                 </div>
               )}
 
-              <div className="grid grid-cols-3 gap-2 pt-4">
+              {/* V1.9.619 — adicionado 4o botao Prontuario (rota canonica que sidecars+triagem ja usam) */}
+              <div className="grid grid-cols-4 gap-2 pt-4">
                 <button
                   onClick={() => selectedAppointment.patientPhone && window.open(`https://wa.me/${selectedAppointment.patientPhone.replace(/\D/g, '')}`, '_blank')}
                   className="flex flex-col items-center justify-center gap-1 p-3 rounded-lg bg-slate-700 hover:bg-slate-600 text-white transition-colors"
@@ -879,6 +881,20 @@ const ProfessionalSchedulingWidget: React.FC<ProfessionalSchedulingWidgetProps> 
                 >
                   <MessageCircle className="w-5 h-5 text-blue-400" />
                   <span className="text-xs">Chat</span>
+                </button>
+                <button
+                  onClick={() => {
+                    if (!selectedAppointment.patientId) return
+                    setIsDetailsModalOpen(false)
+                    // V1.9.619: rota canonica do prontuario (mesma usada por TriagemSinaisPanel
+                    // V1.9.614 + sidecars Renal/Neuro/Relato/Cannabis). Tab=charts por default.
+                    navigate(`/app/patients?patientId=${selectedAppointment.patientId}&tab=charts`)
+                  }}
+                  className="flex flex-col items-center justify-center gap-1 p-3 rounded-lg bg-slate-700 hover:bg-emerald-900/30 hover:border-emerald-800 border border-transparent text-white transition-colors group"
+                  title="Abrir prontuario completo do paciente"
+                >
+                  <FileText className="w-5 h-5 text-emerald-400 group-hover:text-emerald-300" />
+                  <span className="text-xs group-hover:text-emerald-300">Prontuário</span>
                 </button>
                 <button
                   onClick={() => handleCancelAppointment(selectedAppointment.id)}
