@@ -395,10 +395,10 @@ export default function RenalSuggestionsCard({ compact = false }: RenalSuggestio
                     onClick={() => goToRenalExam(sugg)}
                     disabled={isProcessing}
                     className="w-full px-2 py-1.5 bg-emerald-600/20 hover:bg-emerald-600/40 text-emerald-200 rounded text-[10px] font-semibold flex items-center justify-center gap-1 disabled:opacity-50 border border-emerald-500/30"
-                    title="Abrir prontuário do paciente (Saúde Renal)"
+                    title="Abrir prontuário do paciente"
                   >
                     <ExternalLink className="w-3 h-3" />
-                    Ver em Saúde Renal
+                    Ver no prontuário
                   </button>
                   <button
                     onClick={() => handleArchive(sugg)}
