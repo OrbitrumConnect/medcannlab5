@@ -124,12 +124,13 @@ export default function NeuroSuggestionsCardReal() {
   if (loading || !visible) return null
 
   // Sem casos ainda (RLS pode ter filtrado tudo pro médico) — embrião discreto
+  // V1.9.620 — fontes acessiveis (Ricardo mal enxergava no laptop)
   if (cases.length === 0) {
     return (
       <div className="rounded-xl border border-purple-500/30 bg-gradient-to-br from-purple-900/20 via-slate-900/60 to-indigo-900/20 p-4 flex flex-col items-center justify-center min-h-[200px] text-center">
-        <Brain className="w-6 h-6 text-purple-300/40 mb-2" />
-        <span className="text-[11px] font-semibold text-purple-200">Sugestões Neuro</span>
-        <span className="text-[10px] text-slate-500 mt-1">Nenhum sinal nos seus pacientes ainda</span>
+        <Brain className="w-8 h-8 text-purple-300/40 mb-2" />
+        <span className="text-base font-semibold text-purple-200">Sugestões Neuro</span>
+        <span className="text-xs text-slate-500 mt-1">Nenhum sinal nos seus pacientes ainda</span>
       </div>
     )
   }
@@ -140,36 +141,36 @@ export default function NeuroSuggestionsCardReal() {
 
   return (
     <div className="rounded-xl border border-purple-500/30 bg-gradient-to-br from-purple-900/20 via-slate-900/60 to-indigo-900/20 backdrop-blur-sm overflow-hidden flex flex-col">
-      {/* Header */}
-      <div className="flex items-center justify-between px-3 py-2.5 border-b border-purple-500/20 bg-purple-500/5">
+      {/* Header — V1.9.620 fontes acessiveis */}
+      <div className="flex items-center justify-between px-3 py-3 border-b border-purple-500/20 bg-purple-500/5">
         <div className="flex items-center gap-2 min-w-0">
-          <div className="w-6 h-6 rounded-lg bg-purple-500/20 border border-purple-500/30 flex items-center justify-center flex-shrink-0">
-            <Brain className="w-3.5 h-3.5 text-purple-300" />
+          <div className="w-8 h-8 rounded-lg bg-purple-500/20 border border-purple-500/30 flex items-center justify-center flex-shrink-0">
+            <Brain className="w-4 h-4 text-purple-300" />
           </div>
           <div className="min-w-0">
-            <h3 className="text-sm font-semibold text-purple-100 flex items-center gap-1.5 truncate">
+            <h3 className="text-base font-semibold text-purple-100 flex items-center gap-1.5 truncate">
               Sugestões Neuro
-              <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-purple-500/20 text-purple-200 font-normal flex-shrink-0">
+              <span className="text-xs px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-200 font-normal flex-shrink-0">
                 TEA · TDAH · TOD
               </span>
             </h3>
-            <p className="text-[10px] text-purple-300/70 mt-0.5">
+            <p className="text-xs text-purple-300/70 mt-0.5">
               Auto-extraído do relatório · {totalPages} caso{totalPages > 1 ? 's' : ''}
             </p>
           </div>
         </div>
-        <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 flex-shrink-0">
+        <span className="text-xs px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 flex-shrink-0">
           ● real
         </span>
       </div>
 
       {/* Body — caso atual */}
-      <div className="px-3 py-3 space-y-2.5 flex-1 flex flex-col">
-        <div className="flex items-center justify-between text-[10px] text-slate-400 pb-1.5 border-b border-purple-500/10">
+      <div className="px-3 py-3 space-y-3 flex-1 flex flex-col">
+        <div className="flex items-center justify-between text-xs text-slate-400 pb-2 border-b border-purple-500/10">
           <button
             type="button"
             onClick={() => navigate(`/app/patients?patientId=${current.patientId}&tab=charts`)}
-            className="font-medium text-purple-200/90 truncate hover:text-purple-100 hover:underline text-left"
+            className="font-medium text-sm text-purple-200/90 truncate hover:text-purple-100 hover:underline text-left"
             title={`Abrir prontuário de ${current.patientName}`}
           >
             {current.patientName}
@@ -177,35 +178,35 @@ export default function NeuroSuggestionsCardReal() {
           <span className="flex-shrink-0">{dateStr} · {current.signals.length} sinais</span>
         </div>
 
-        <div className="space-y-1.5 flex-1">
+        <div className="space-y-2 flex-1">
           {current.signals.map((s) => (
-            <div key={s.id} className="flex items-start gap-1.5 text-[10px] leading-tight">
-              <span className={`flex-shrink-0 px-1.5 py-0.5 rounded text-[9px] font-semibold border ${confidenceColor(s.confianca)}`}>
+            <div key={s.id} className="flex items-start gap-2 text-xs leading-relaxed">
+              <span className={`flex-shrink-0 px-1.5 py-0.5 rounded text-xs font-bold border ${confidenceColor(s.confianca)}`}>
                 {s.confianca}
               </span>
               <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-1">
-                  <span className={`px-1 py-0.5 rounded text-[8px] font-semibold border ${transtornoBadge(s.transtorno)}`}>
+                <div className="flex items-center gap-1.5">
+                  <span className={`px-1.5 py-0.5 rounded text-[10px] font-semibold border ${transtornoBadge(s.transtorno)}`}>
                     {s.transtorno}
                   </span>
-                  <span className="text-purple-200/90 font-medium truncate">{s.subcategoria}</span>
+                  <span className="text-xs text-purple-200/90 font-medium truncate">{s.subcategoria}</span>
                 </div>
-                <div className="text-slate-400 italic truncate" title={s.fala_literal}>"{s.fala_literal}"</div>
+                <div className="text-xs text-slate-400 italic truncate" title={s.fala_literal}>"{s.fala_literal}"</div>
               </div>
               {/* Aprovar / Rejeitar por sinal (UPDATE real) */}
               {s.status === 'pending' ? (
                 <div className="flex items-center gap-1 flex-shrink-0">
                   <button type="button" onClick={() => updateStatus(s.id, 'approved')} title="Aprovar sinal"
-                    className="p-0.5 rounded text-emerald-300/70 hover:text-emerald-300 hover:bg-emerald-500/10 transition-colors">
-                    <CheckCircle className="w-3.5 h-3.5" />
+                    className="p-1 rounded text-emerald-300/70 hover:text-emerald-300 hover:bg-emerald-500/10 transition-colors">
+                    <CheckCircle className="w-4 h-4" />
                   </button>
                   <button type="button" onClick={() => updateStatus(s.id, 'rejected')} title="Rejeitar sinal"
-                    className="p-0.5 rounded text-slate-500 hover:text-rose-300 hover:bg-rose-500/10 transition-colors">
-                    <XCircle className="w-3.5 h-3.5" />
+                    className="p-1 rounded text-slate-500 hover:text-rose-300 hover:bg-rose-500/10 transition-colors">
+                    <XCircle className="w-4 h-4" />
                   </button>
                 </div>
               ) : (
-                <span className={`flex-shrink-0 text-[8px] px-1 py-0.5 rounded ${s.status === 'approved' ? 'text-emerald-300 bg-emerald-500/10' : 'text-rose-300 bg-rose-500/10'}`}>
+                <span className={`flex-shrink-0 text-[10px] px-1.5 py-0.5 rounded font-semibold ${s.status === 'approved' ? 'text-emerald-300 bg-emerald-500/10' : 'text-rose-300 bg-rose-500/10'}`}>
                   {s.status === 'approved' ? '✓' : '✕'}
                 </span>
               )}
@@ -217,16 +218,16 @@ export default function NeuroSuggestionsCardReal() {
         <button
           type="button"
           onClick={() => navigate(`/app/patients?patientId=${current.patientId}&tab=charts`)}
-          className="w-full px-2 py-1.5 bg-purple-500/15 hover:bg-purple-500/30 border border-purple-500/30 text-purple-200 rounded-md text-[10px] font-semibold flex items-center justify-center gap-1 transition-colors"
+          className="w-full px-3 py-2 bg-purple-500/15 hover:bg-purple-500/30 border border-purple-500/30 text-purple-200 rounded-md text-sm font-semibold flex items-center justify-center gap-1.5 transition-colors"
           title="Abrir prontuário do paciente"
         >
-          <ExternalLink className="w-3 h-3" /> Ver no prontuário
+          <ExternalLink className="w-4 h-4" /> Ver no prontuário
         </button>
 
         {/* Rodapé fixo no fim do card: disclaimer + paginação < > entre casos */}
-        <div className="mt-auto pt-1.5 border-t border-purple-500/10">
-          <p className="text-[9px] text-slate-500 italic text-center flex items-center justify-center gap-1">
-            <FlaskConical className="w-2.5 h-2.5" /> Z2 — sinaliza, não diagnostica. CFM Eduardo decide.
+        <div className="mt-auto pt-2 border-t border-purple-500/10">
+          <p className="text-xs text-slate-500 italic text-center flex items-center justify-center gap-1.5">
+            <FlaskConical className="w-3 h-3" /> Z2 — sinaliza, não diagnostica. CFM Eduardo decide.
           </p>
           {/* Paginação entre casos (passos ↔ Gisele) — < > no fim do card */}
           {totalPages > 1 && (
@@ -235,22 +236,22 @@ export default function NeuroSuggestionsCardReal() {
                 type="button"
                 onClick={() => setPage(Math.max(1, page - 1))}
                 disabled={page === 1}
-                className="p-1.5 rounded-lg bg-purple-500/15 hover:bg-purple-500/30 border border-purple-500/30 text-purple-200 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                className="p-2 rounded-lg bg-purple-500/15 hover:bg-purple-500/30 border border-purple-500/30 text-purple-200 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
                 aria-label="Caso anterior"
               >
-                <ChevronLeft className="w-4 h-4" />
+                <ChevronLeft className="w-5 h-5" />
               </button>
-              <span className="text-[10px] text-purple-200/80 font-medium min-w-[64px] text-center">
+              <span className="text-sm text-purple-200/80 font-medium min-w-[72px] text-center">
                 caso {page} / {totalPages}
               </span>
               <button
                 type="button"
                 onClick={() => setPage(Math.min(totalPages, page + 1))}
                 disabled={page === totalPages}
-                className="p-1.5 rounded-lg bg-purple-500/15 hover:bg-purple-500/30 border border-purple-500/30 text-purple-200 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                className="p-2 rounded-lg bg-purple-500/15 hover:bg-purple-500/30 border border-purple-500/30 text-purple-200 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
                 aria-label="Próximo caso"
               >
-                <ChevronRight className="w-4 h-4" />
+                <ChevronRight className="w-5 h-5" />
               </button>
             </div>
           )}
