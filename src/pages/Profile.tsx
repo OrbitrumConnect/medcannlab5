@@ -58,7 +58,11 @@ const Profile: React.FC = () => {
     specialty: '',
     council_state: '',
     tags: '',         // comma-separated → ex: "Nefrologia, Dor, Inflamação"
-    languages: ''     // comma-separated → ex: "Português, Inglês"
+    languages: '',    // comma-separated → ex: "Português, Inglês"
+    // V1.9.628: demografia clínica — sexo BIOLÓGICO (variável do CKD-EPI, não identidade
+    // de gênero) + data de nascimento. Salvas em users (canônica que o Saúde Renal lê).
+    birth_date: '',
+    gender: ''        // 'M' | 'F' | '' (='' = prefiro não informar → estágio estimado)
   })
   const [isLookingUpCep, setIsLookingUpCep] = useState(false)
 
@@ -141,6 +145,24 @@ const Profile: React.FC = () => {
         } catch {
           // Silencioso — fallback ao que já veio do AuthContext
         }
+      })()
+
+      // V1.9.628: carregar data nascimento + sexo biológico de users (canônica) — TODOS os tipos
+      ;(async () => {
+        try {
+          const { data } = await (supabase as any)
+            .from('users')
+            .select('birth_date, gender')
+            .eq('id', user.id)
+            .maybeSingle()
+          if (data) {
+            setFormData(prev => ({
+              ...prev,
+              birth_date: data.birth_date || '',
+              gender: (data.gender === 'M' || data.gender === 'F') ? data.gender : ''
+            }))
+          }
+        } catch { /* silencioso — coluna pode não existir em ambiente antigo */ }
       })()
 
       // V1.9.150: carregar pricing/experiência (só faz sentido pra profissional)
@@ -227,7 +249,7 @@ const Profile: React.FC = () => {
     }
   }
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target
     if (name === 'cep') {
       const digits = value.replace(/\D/g, '').slice(0, 8)
@@ -280,6 +302,17 @@ const Profile: React.FC = () => {
         })
 
       if (error) throw error
+
+      // V1.9.628: salvar data nascimento + sexo biológico em users (canônica que o Saúde
+      // Renal/CKD-EPI lê). TODOS os tipos (paciente inclusive). '' = prefiro não informar → null.
+      try {
+        await (supabase as any).from('users').update({
+          birth_date: formData.birth_date || null,
+          gender: (formData.gender === 'M' || formData.gender === 'F') ? formData.gender : null
+        }).eq('id', user.id)
+      } catch (e: any) {
+        console.warn('⚠️ V1.9.628 demografia não persistida:', e?.message)
+      }
 
       // Atualizar metadata do auth
       const { error: updateError } = await supabase.auth.updateUser({
@@ -534,7 +567,9 @@ const Profile: React.FC = () => {
         specialty: '',
         council_state: '',
         tags: '',
-        languages: ''
+        languages: '',
+        birth_date: '',
+        gender: ''
       })
     }
     setIsEditing(false)
@@ -894,6 +929,37 @@ const Profile: React.FC = () => {
                     placeholder="Bairro, Cidade, UF"
                     className="w-full px-3 py-2 text-sm bg-slate-700 border border-slate-600 rounded text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
                   />
+                </div>
+                {/* V1.9.628: demografia clínica — data nascimento + sexo BIOLÓGICO (CKD-EPI) */}
+                <div>
+                  <label className="block text-xs font-medium text-slate-400 mb-1">Data de nascimento</label>
+                  <input
+                    type="date"
+                    name="birth_date"
+                    value={formData.birth_date}
+                    onChange={handleInputChange}
+                    disabled={!isEditing}
+                    className="w-full px-3 py-2 text-sm bg-slate-700 border border-slate-600 rounded text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                  />
+                </div>
+                <div>
+                  <label
+                    className="block text-xs font-medium text-slate-400 mb-1"
+                    title="Usado apenas no cálculo de função renal (CKD-EPI 2021), que requer sexo biológico. Não se refere a identidade de gênero."
+                  >
+                    Sexo biológico <span className="text-[10px] text-slate-500">(p/ cálculo renal)</span>
+                  </label>
+                  <select
+                    name="gender"
+                    value={formData.gender}
+                    onChange={handleInputChange}
+                    disabled={!isEditing}
+                    className="w-full px-3 py-2 text-sm bg-slate-700 border border-slate-600 rounded text-white focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <option value="">Prefiro não informar</option>
+                    <option value="M">Masculino</option>
+                    <option value="F">Feminino</option>
+                  </select>
                 </div>
               </div>
 
