@@ -104,33 +104,33 @@ export default function TriagemSinaisPanel() {
 
   return (
     <div className="mb-3 rounded-xl border border-slate-700/40 bg-gradient-to-br from-slate-900/60 to-slate-900/30 overflow-hidden">
-      {/* Header */}
-      <div className="flex items-center justify-between gap-2 px-3 py-2.5 border-b border-slate-700/40 bg-white/[0.02]">
+      {/* Header — V1.9.618 fontes maiores p/ acessibilidade (Ricardo) */}
+      <div className="flex items-center justify-between gap-2 px-3 py-3 border-b border-slate-700/40 bg-white/[0.02]">
         <div className="flex items-center gap-2 min-w-0">
-          <Inbox className="w-4 h-4 text-slate-300 flex-shrink-0" />
-          <h4 className="text-[12px] font-semibold text-slate-100">Triagem de Sinais</h4>
-          <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-amber-500/15 text-amber-300 border border-amber-500/30 flex-shrink-0">
+          <Inbox className="w-5 h-5 text-slate-300 flex-shrink-0" />
+          <h4 className="text-base font-semibold text-slate-100">Triagem de Sinais</h4>
+          <span className="text-xs px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-300 border border-amber-500/30 flex-shrink-0">
             {totalPendentes} pendente{totalPendentes !== 1 ? 's' : ''}
           </span>
         </div>
         <button
           type="button"
           onClick={() => setSoPendentes((v) => !v)}
-          className="text-[10px] flex items-center gap-1 text-slate-400 hover:text-slate-200 transition-colors flex-shrink-0"
+          className="text-xs flex items-center gap-1.5 text-slate-400 hover:text-slate-200 transition-colors flex-shrink-0"
           title="Alternar entre só pendentes e todos"
         >
-          <ListFilter className="w-3 h-3" /> {soPendentes ? 'só pendentes' : 'todos'}
+          <ListFilter className="w-4 h-4" /> {soPendentes ? 'só pendentes' : 'todos'}
         </button>
       </div>
 
-      {/* Filtro por tipo */}
-      <div className="flex items-center gap-1.5 px-3 py-2 border-b border-slate-700/30 overflow-x-auto">
+      {/* Filtro por tipo — V1.9.618 chips maiores e mais clicáveis */}
+      <div className="flex items-center gap-2 px-3 py-2.5 border-b border-slate-700/30 overflow-x-auto">
         {TIPOS.map((t) => (
           <button
             key={t}
             type="button"
             onClick={() => setTipoFiltro(t)}
-            className={`text-[10px] px-2 py-0.5 rounded-full border whitespace-nowrap transition-colors ${
+            className={`text-xs font-medium px-3 py-1 rounded-full border whitespace-nowrap transition-colors ${
               tipoFiltro === t
                 ? (t === 'TODOS' ? 'bg-slate-200/20 text-white border-slate-300/40' : tipoStyle(t))
                 : 'bg-transparent text-slate-500 border-slate-700/40 hover:text-slate-300'
@@ -141,44 +141,44 @@ export default function TriagemSinaisPanel() {
         ))}
       </div>
 
-      {/* Lista ranqueada */}
-      <div className="max-h-[280px] overflow-y-auto divide-y divide-slate-800/60">
+      {/* Lista ranqueada — V1.9.618 linhas mais altas + fontes maiores (Ricardo enxerga) */}
+      <div className="max-h-[400px] overflow-y-auto divide-y divide-slate-800/60">
         {shown.length === 0 ? (
-          <div className="px-3 py-6 text-center text-[11px] text-slate-500">Nenhum sinal nesse filtro.</div>
+          <div className="px-3 py-6 text-center text-sm text-slate-500">Nenhum sinal nesse filtro.</div>
         ) : (
           shown.map((r) => (
             <button
               key={r.id}
               type="button"
               onClick={() => navigate(`/app/patients?patientId=${r.patient_id}&tab=charts`)}
-              className="w-full flex items-center gap-2 px-3 py-1.5 text-left hover:bg-white/[0.04] transition-colors group"
+              className="w-full flex items-center gap-2.5 px-3 py-2.5 text-left hover:bg-white/[0.04] transition-colors group"
               title={`Abrir prontuário de ${r.patientName}`}
             >
-              <span className={`flex-shrink-0 text-[8px] px-1 py-0.5 rounded font-semibold border ${tipoStyle(r.tipo)}`}>
+              <span className={`flex-shrink-0 text-[10px] px-1.5 py-0.5 rounded font-semibold border ${tipoStyle(r.tipo)}`}>
                 {r.tipo}
               </span>
-              <span className={`flex-shrink-0 text-[10px] font-bold w-6 text-right ${confColor(r.confianca)}`}>
+              <span className={`flex-shrink-0 text-sm font-bold w-7 text-right ${confColor(r.confianca)}`}>
                 {r.confianca}
               </span>
-              <span className="text-[11px] text-slate-200 font-medium truncate max-w-[140px] flex-shrink-0">
+              <span className="text-sm text-slate-100 font-medium truncate max-w-[180px] flex-shrink-0">
                 {r.patientName}
               </span>
-              <span className="text-[10px] text-slate-400 italic truncate flex-1 min-w-0">
+              <span className="text-xs text-slate-400 italic truncate flex-1 min-w-0">
                 {r.subcategoria} · "{r.fala_literal}"
               </span>
               {r.status !== 'pending' && (
-                <span className={`flex-shrink-0 text-[8px] px-1 rounded ${r.status === 'approved' ? 'text-emerald-300 bg-emerald-500/10' : 'text-slate-400 bg-slate-700/40'}`}>
+                <span className={`flex-shrink-0 text-[10px] px-1.5 py-0.5 rounded font-semibold ${r.status === 'approved' ? 'text-emerald-300 bg-emerald-500/10' : 'text-slate-400 bg-slate-700/40'}`}>
                   {r.status === 'approved' ? '✓' : r.status === 'rejected' ? '✕' : r.status}
                 </span>
               )}
-              <ArrowRight className="w-3 h-3 text-slate-600 group-hover:text-slate-300 flex-shrink-0 transition-colors" />
+              <ArrowRight className="w-4 h-4 text-slate-600 group-hover:text-slate-300 flex-shrink-0 transition-colors" />
             </button>
           ))
         )}
       </div>
 
       {ranked.length > TOP && (
-        <div className="px-3 py-1.5 text-center text-[9px] text-slate-500 border-t border-slate-800/60">
+        <div className="px-3 py-2 text-center text-xs text-slate-500 border-t border-slate-800/60">
           +{ranked.length - TOP} sinais (refine o filtro pra ver)
         </div>
       )}
